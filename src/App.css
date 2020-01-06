@@ -36,3 +36,11 @@
     transform: rotate(360deg);
   }
 }
+
+/* material override */
+@media (min-width: 600px) {
+  .MuiToolbar-gutters {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
