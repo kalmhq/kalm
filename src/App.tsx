@@ -9,24 +9,42 @@ import {
 import Drawer from "@material-ui/core/Drawer";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
-import List from "@material-ui/core/List";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import Typography from "@material-ui/core/Typography";
-import Divider from "@material-ui/core/Divider";
 import IconButton from "@material-ui/core/IconButton";
 import MenuIcon from "@material-ui/icons/Menu";
 import Icon from "@material-ui/core/Icon";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
-import ListItemText from "@material-ui/core/ListItemText";
 
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  NavLink as RouterLink
-} from "react-router-dom";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import InstallPage from "./pages/Install";
+import { Sidenav, SidenavGroupProps } from "./widgets/Sidenav";
+
+const sidenavGroups: SidenavGroupProps[] = [
+  {
+    text: "Install",
+    items: [
+      {
+        text: "install",
+        to: "/0",
+        type: "normal",
+        icon: "save_alt"
+      },
+      {
+        text: "Application",
+        items: [
+          {
+            text: "Application Child",
+            to: "/1",
+            icon: "save_alt",
+            type: "normal"
+          }
+        ],
+        type: "dropdown",
+        icon: "save_alt"
+      }
+    ]
+  }
+];
 
 const drawerWidth = 280;
 
@@ -119,6 +137,9 @@ const useStyles = makeStyles((theme: Theme) => {
     content: {
       flexGrow: 1,
       padding: theme.spacing(3)
+    },
+    nested: {
+      paddingLeft: theme.spacing(4)
     }
   });
 });
@@ -192,48 +213,7 @@ export default function MiniDrawer() {
               <Icon color="inherit">chevron_left_icon</Icon>
             </IconButton>
           </div>
-          <List className={classes.list}>
-            {["Install", "Install"].map((text, index) => (
-              <ListItem
-                button
-                key={index}
-                component={RouterLink}
-                to={"/" + index}
-                activeClassName={classes.listItemSelected}
-                classes={{
-                  gutters: classes.listItemGutters,
-                  selected: classes.listItemSelected
-                }}
-              >
-                <ListItemIcon className={classes.listItemIcon}>
-                  <Icon color="inherit">save_alt</Icon>
-                </ListItemIcon>
-                <ListItemText primary={text} />
-              </ListItem>
-            ))}
-          </List>
-          {/* <Divider />
-        <List>
-          {["Install", "Starred", "Send email", "Drafts"].map((text, index) => (
-            <ListItem button key={text}>
-              <ListItemIcon>
-                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-              </ListItemIcon>
-              <ListItemText primary={text} />
-            </ListItem>
-          ))}
-        </List>
-        <Divider />
-        <List>
-          {["All mail", "Trash", "Spam"].map((text, index) => (
-            <ListItem button key={text}>
-              <ListItemIcon>
-                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-              </ListItemIcon>
-              <ListItemText primary={text} />
-            </ListItem>
-          ))}
-        </List> */}
+          <Sidenav groups={sidenavGroups} isFolded={!open} />
         </Drawer>
         <main className={classes.content}>
           <div className={classes.content}></div>
