@@ -20,6 +20,13 @@ import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  NavLink as RouterLink
+} from "react-router-dom";
+
 const drawerWidth = 280;
 
 const useStyles = makeStyles((theme: Theme) => {
@@ -80,15 +87,14 @@ const useStyles = makeStyles((theme: Theme) => {
       paddingTop: 0,
       paddingBottom: 0
     },
-    listItem: {
-      color: "white",
+    listItemSelected: {
+      backgroundColor: "#039be5 !important"
+    },
+    listItemGutters: {
       [theme.breakpoints.up("sm")]: {
         paddingLeft: 24,
         paddingRight: 24
       }
-    },
-    listItemSelected: {
-      backgroundColor: "#039be5 !important"
     },
     listItemIcon: {
       color: "white"
@@ -130,81 +136,82 @@ export default function MiniDrawer() {
   };
 
   console.log(classes);
-
   return (
-    <div className={classes.root}>
-      <CssBaseline />
-      <AppBar
-        position="fixed"
-        className={clsx(classes.appBar, {
-          [classes.appBarShift]: open
-        })}
-      >
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            onClick={handleDrawerOpen}
-            edge="start"
-            className={clsx(classes.menuButton, {
-              [classes.hide]: open
-            })}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" noWrap>
-            Mini variant drawer
-          </Typography>
-        </Toolbar>
-      </AppBar>
-      <Drawer
-        variant="permanent"
-        className={clsx(classes.drawer, {
-          [classes.drawerOpen]: open,
-          [classes.drawerClose]: !open
-        })}
-        classes={{
-          paper: clsx({
+    <Router>
+      <div className={classes.root}>
+        <CssBaseline />
+        <AppBar
+          position="fixed"
+          className={clsx(classes.appBar, {
+            [classes.appBarShift]: open
+          })}
+        >
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              onClick={handleDrawerOpen}
+              edge="start"
+              className={clsx(classes.menuButton, {
+                [classes.hide]: open
+              })}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography variant="h6" noWrap>
+              Mini variant drawer
+            </Typography>
+          </Toolbar>
+        </AppBar>
+        <Drawer
+          variant="permanent"
+          className={clsx(classes.drawer, {
             [classes.drawerOpen]: open,
             [classes.drawerClose]: !open
-          })
-        }}
-        PaperProps={{ className: classes.paper }}
-      >
-        <div className={classes.toolbar}>
-          <div className={classes.toolbarTitle}>
-            <img
-              src="http://via.placeholder.com/24x24"
-              className={classes.toolbarTitleImg}
-              alt="logo"
-            />
-            Name PLaceholder
-          </div>
+          })}
+          classes={{
+            paper: clsx({
+              [classes.drawerOpen]: open,
+              [classes.drawerClose]: !open
+            })
+          }}
+          PaperProps={{ className: classes.paper }}
+        >
+          <div className={classes.toolbar}>
+            <div className={classes.toolbarTitle}>
+              <img
+                src="http://via.placeholder.com/24x24"
+                className={classes.toolbarTitleImg}
+                alt="logo"
+              />
+              Name PLaceholder
+            </div>
 
-          <IconButton onClick={handleDrawerClose} color="inherit">
-            <Icon color="inherit">chevron_left_icon</Icon>
-          </IconButton>
-        </div>
-        <List className={classes.list}>
-          {["Install", "Install"].map((text, index) => (
-            <ListItem
-              button
-              key={index}
-              selected={index === 0}
-              classes={{
-                root: clsx(classes.listItem, {
-                  [classes.listItemSelected]: index === 0
-                })
-              }}
-            >
-              <ListItemIcon className={classes.listItemIcon}>
-                <Icon color="inherit">save_alt</Icon>
-              </ListItemIcon>
-              <ListItemText primary={text} />
-            </ListItem>
-          ))}
-        </List>
-        {/* <Divider />
+            <IconButton onClick={handleDrawerClose} color="inherit">
+              <Icon color="inherit">chevron_left_icon</Icon>
+            </IconButton>
+          </div>
+          <List className={classes.list}>
+            {["Install", "Install"].map((text, index) => (
+              <ListItem
+                button
+                key={index}
+                component={RouterLink}
+                to={"/" + index}
+                activeClassName={classes.listItemSelected}
+                classes={{
+                  gutters: classes.listItemGutters,
+                  selected: classes.listItemSelected
+                }}
+              >
+                <ListItemIcon className={classes.listItemIcon}>
+                  <Icon color="inherit">save_alt</Icon>
+                </ListItemIcon>
+                <ListItemText primary={text} />
+              </ListItem>
+            ))}
+          </List>
+          {/* <Divider />
         <List>
           {["Install", "Starred", "Send email", "Drafts"].map((text, index) => (
             <ListItem button key={text}>
@@ -226,38 +233,47 @@ export default function MiniDrawer() {
             </ListItem>
           ))}
         </List> */}
-      </Drawer>
-      <main className={classes.content}>
-        <Typography paragraph>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Rhoncus
-          dolor purus non enim praesent elementum facilisis leo vel. Risus at
-          ultrices mi tempus imperdiet. Semper risus in hendrerit gravida rutrum
-          quisque non tellus. Convallis convallis tellus id interdum velit
-          laoreet id donec ultrices. Odio morbi quis commodo odio aenean sed
-          adipiscing. Amet nisl suscipit adipiscing bibendum est ultricies
-          integer quis. Cursus euismod quis viverra nibh cras. Metus vulputate
-          eu scelerisque felis imperdiet proin fermentum leo. Mauris commodo
-          quis imperdiet massa tincidunt. Cras tincidunt lobortis feugiat
-          vivamus at augue. At augue eget arcu dictum varius duis at consectetur
-          lorem. Velit sed ullamcorper morbi tincidunt. Lorem donec massa sapien
-          faucibus et molestie ac.
-        </Typography>
-        <Typography paragraph>
-          Consequat mauris nunc congue nisi vitae suscipit. Fringilla est
-          ullamcorper eget nulla facilisi etiam dignissim diam. Pulvinar
-          elementum integer enim neque volutpat ac tincidunt. Ornare suspendisse
-          sed nisi lacus sed viverra tellus. Purus sit amet volutpat consequat
-          mauris. Elementum eu facilisis sed odio morbi. Euismod lacinia at quis
-          risus sed vulputate odio. Morbi tincidunt ornare massa eget egestas
-          purus viverra accumsan in. In hendrerit gravida rutrum quisque non
-          tellus orci ac. Pellentesque nec nam aliquam sem et tortor. Habitant
-          morbi tristique senectus et. Adipiscing elit duis tristique
-          sollicitudin nibh sit. Ornare aenean euismod elementum nisi quis
-          eleifend. Commodo viverra maecenas accumsan lacus vel facilisis. Nulla
-          posuere sollicitudin aliquam ultrices sagittis orci a.
-        </Typography>
-      </main>
-    </div>
+        </Drawer>
+        <main className={classes.content}>
+          <Switch>
+            <Route exact path="/0">
+              <Typography paragraph>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                Rhoncus dolor purus non enim praesent elementum facilisis leo
+                vel. Risus at ultrices mi tempus imperdiet. Semper risus in
+                hendrerit gravida rutrum quisque non tellus. Convallis convallis
+                tellus id interdum velit laoreet id donec ultrices. Odio morbi
+                quis commodo odio aenean sed adipiscing. Amet nisl suscipit
+                adipiscing bibendum est ultricies integer quis. Cursus euismod
+                quis viverra nibh cras. Metus vulputate eu scelerisque felis
+                imperdiet proin fermentum leo. Mauris commodo quis imperdiet
+                massa tincidunt. Cras tincidunt lobortis feugiat vivamus at
+                augue. At augue eget arcu dictum varius duis at consectetur
+                lorem. Velit sed ullamcorper morbi tincidunt. Lorem donec massa
+                sapien faucibus et molestie ac.
+              </Typography>
+            </Route>
+            <Route exact path="/1">
+              <Typography paragraph>
+                Consequat mauris nunc congue nisi vitae suscipit. Fringilla est
+                ullamcorper eget nulla facilisi etiam dignissim diam. Pulvinar
+                elementum integer enim neque volutpat ac tincidunt. Ornare
+                suspendisse sed nisi lacus sed viverra tellus. Purus sit amet
+                volutpat consequat mauris. Elementum eu facilisis sed odio
+                morbi. Euismod lacinia at quis risus sed vulputate odio. Morbi
+                tincidunt ornare massa eget egestas purus viverra accumsan in.
+                In hendrerit gravida rutrum quisque non tellus orci ac.
+                Pellentesque nec nam aliquam sem et tortor. Habitant morbi
+                tristique senectus et. Adipiscing elit duis tristique
+                sollicitudin nibh sit. Ornare aenean euismod elementum nisi quis
+                eleifend. Commodo viverra maecenas accumsan lacus vel facilisis.
+                Nulla posuere sollicitudin aliquam ultrices sagittis orci a.
+              </Typography>
+            </Route>
+          </Switch>
+        </main>
+      </div>
+    </Router>
   );
 }
