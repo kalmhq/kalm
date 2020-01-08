@@ -21,26 +21,67 @@ import { Sidenav, SidenavGroupProps } from "./widgets/Sidenav";
 
 const sidenavGroups: SidenavGroupProps[] = [
   {
-    text: "Install",
+    text: "Application",
     items: [
-      {
-        text: "install",
-        to: "/0",
-        type: "normal",
-        icon: "save_alt"
-      },
       {
         text: "Application",
         items: [
           {
-            text: "Application Child",
-            to: "/1",
-            icon: "save_alt",
+            text: "Overview",
+            to: "/apps",
+            icon: "reorder",
+            type: "normal"
+          },
+          {
+            text: "Add",
+            to: "/apps/new",
+            icon: "add",
             type: "normal"
           }
         ],
         type: "dropdown",
-        icon: "save_alt"
+        icon: "apps"
+      },
+      {
+        text: "Plugins",
+        items: [
+          {
+            text: "Overview",
+            to: "/plugins",
+            icon: "reorder",
+            type: "normal"
+          },
+          {
+            text: "Add",
+            to: "/plugins/new",
+            icon: "add",
+            type: "normal"
+          }
+        ],
+        type: "dropdown",
+        icon: "library_add"
+      }
+    ]
+  },
+  {
+    text: "Monitoring",
+    items: [
+      {
+        text: "Nodes",
+        to: "/monitoring/node",
+        type: "normal",
+        icon: "settings"
+      }
+    ]
+  },
+  {
+    text: "Settings",
+    items: [
+      {
+        text: "Install",
+        to: "/install",
+        type: "normal",
+        icon: "settings"
       }
     ]
   }
@@ -218,7 +259,7 @@ export default function MiniDrawer() {
         <main className={classes.content}>
           <div className={classes.content}></div>
           <Switch>
-            <Route exact path="/0">
+            <Route exact path="/install">
               <InstallPage />
             </Route>
             <Route exact path="/1">

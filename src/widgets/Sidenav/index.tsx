@@ -195,6 +195,7 @@ const SidenavItemNormal: React.FunctionComponent<SidenavItemNormalProps> = props
       button
       component={RouterLink}
       to={props.to}
+      exact
       activeClassName={classes.listItemSelected}
       className={clsx({
         [classes.nested]: props.nestedLevel
