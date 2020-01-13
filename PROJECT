@@ -1,3 +1,7 @@
 domain: kapp.dev
 repo: github.com/kapp-staging/kapp
+resources:
+- group: core
+  kind: Application
+  version: v1alpha1
 version: "2"
