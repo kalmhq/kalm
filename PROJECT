@@ -1,0 +1,3 @@
+domain: kapp.dev
+repo: github.com/kapp-staging/kapp
+version: "2"
