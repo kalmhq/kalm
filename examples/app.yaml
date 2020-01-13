@@ -1,0 +1,8 @@
+apiVersion: core.kapp.dev/v1alpha1
+kind: Application
+metadata:
+  name: test
+spec:
+  components:
+    - name: hello-world
+      image: hello-world

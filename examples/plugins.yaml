@@ -1,0 +1,7 @@
+apiVersion: core.kapp.dev/v1alpha1
+kind: Plugin
+metadata:
+  name: test
+spec:
+  properties:
+    a: b
