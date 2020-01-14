@@ -1,7 +1,8 @@
 apiVersion: core.kapp.dev/v1alpha1
 kind: Application
 metadata:
-  name: application-sample
+  name: test
 spec:
-  # Add fields here
-  foo: bar
+  components:
+    - name: nginx
+      image: nginx
