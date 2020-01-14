@@ -18,6 +18,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"github.com/kapp-staging/kapp/util"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"time"
@@ -134,7 +135,7 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		// The object is not being deleted, so if it does not have our finalizer,
 		// then lets add the finalizer and update the object. This is equivalent
 		// registering our finalizer.
-		if !containsString(app.ObjectMeta.Finalizers, finalizerName) {
+		if !util.ContainsString(app.ObjectMeta.Finalizers, finalizerName) {
 			app.ObjectMeta.Finalizers = append(app.ObjectMeta.Finalizers, finalizerName)
 			if err := r.Update(context.Background(), &app); err != nil {
 				return ctrl.Result{}, err
@@ -142,7 +143,7 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		}
 	} else {
 		// The object is being deleted
-		if containsString(app.ObjectMeta.Finalizers, finalizerName) {
+		if util.ContainsString(app.ObjectMeta.Finalizers, finalizerName) {
 			// our finalizer is present, so lets handle any external dependency
 			if err := r.deleteExternalResources(ctx, req, &app); err != nil {
 				// if fail to delete the external dependency here, return with error
@@ -151,7 +152,7 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 			}
 
 			// remove our finalizer from the list and update it.
-			app.ObjectMeta.Finalizers = removeString(app.ObjectMeta.Finalizers, finalizerName)
+			app.ObjectMeta.Finalizers = util.RemoveString(app.ObjectMeta.Finalizers, finalizerName)
 			if err := r.Update(ctx, &app); err != nil {
 				return ctrl.Result{}, err
 			}
@@ -187,26 +188,6 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	}
 
 	return ctrl.Result{}, nil
-}
-
-// Helper functions to check and remove string from a slice of strings.
-func containsString(slice []string, s string) bool {
-	for _, item := range slice {
-		if item == s {
-			return true
-		}
-	}
-	return false
-}
-
-func removeString(slice []string, s string) (result []string) {
-	for _, item := range slice {
-		if item == s {
-			continue
-		}
-		result = append(result, item)
-	}
-	return
 }
 
 func (r *ApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
