@@ -144,5 +144,6 @@ func (r *ApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1alpha1.Application{}).
+		Owns(&appv1.Deployment{}).
 		Complete(r)
 }
