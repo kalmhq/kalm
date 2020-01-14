@@ -18,7 +18,6 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"time"
