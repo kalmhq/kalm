@@ -56,7 +56,7 @@ func (r *ApplicationReconciler) constructorDeploymentFromApplication(app *corev1
 		ObjectMeta: metav1.ObjectMeta{
 			Labels:      make(map[string]string),
 			Annotations: make(map[string]string),
-			Name:        app.Name,
+			Name:        fmt.Sprintf("%s-%s", app.Name, app.Spec.Components[0].Name),
 			Namespace:   app.Namespace,
 		},
 		Spec: appv1.DeploymentSpec{
