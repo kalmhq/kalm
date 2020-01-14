@@ -44,6 +44,8 @@ var finalizerName = "storage.finalizers.kapp.dev"
 
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=applications,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=applications/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=extensions,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=extensions,resources=deployments/status,verbs=get
 
 func (r *ApplicationReconciler) constructorDeploymentFromApplication(app *corev1alpha1.Application) (*appv1.Deployment, error) {
 	label := fmt.Sprintf("%s-%d", app.Name, time.Now().UTC().Unix())
