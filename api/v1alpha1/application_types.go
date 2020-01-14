@@ -40,7 +40,7 @@ type ComponentSpec struct {
 
 	Image string `json:"image"`
 
-	Command string `json:"command,omitempty"`
+	Command []string `json:"command,omitempty"`
 
 	Requirements v1.ResourceRequirements `json:"resources,omitempty"`
 

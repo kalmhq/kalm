@@ -38,7 +38,9 @@ spec:
               items:
                 properties:
                   command:
-                    type: string
+                    items:
+                      type: string
+                    type: array
                   env:
                     items:
                       description: EnvVar represents an environment variable present

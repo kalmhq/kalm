@@ -70,9 +70,10 @@ func (r *ApplicationReconciler) constructorDeploymentFromApplication(app *corev1
 					Spec: corev1.PodSpec{
 						Containers: []corev1.Container{
 							{
-								Name:  component.Name,
-								Image: component.Image,
-								Env:   []corev1.EnvVar{},
+								Name:    component.Name,
+								Image:   component.Image,
+								Env:     []corev1.EnvVar{},
+								Command: component.Command,
 							},
 						},
 					},
@@ -84,6 +85,7 @@ func (r *ApplicationReconciler) constructorDeploymentFromApplication(app *corev1
 		}
 	}
 
+	// apply envs
 	deployment.Spec.Template.Spec.Containers[0].Env = deployment.Spec.Template.Spec.Containers[0].Env[0:0]
 	for _, env := range component.Env {
 		deployment.Spec.Template.Spec.Containers[0].Env = append(
