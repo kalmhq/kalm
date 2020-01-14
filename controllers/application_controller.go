@@ -116,11 +116,16 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	var app corev1alpha1.Application
 
 	if err := r.Get(ctx, req.NamespacedName, &app); err != nil {
-		log.Error(err, "unable to fetch Application")
 		// we'll ignore not-found errors, since they can't be fixed by an immediate
 		// requeue (we'll need to wait for a new notification), and we can get them
 		// on deleted requests.
-		return ctrl.Result{}, client.IgnoreNotFound(err)
+		err = client.IgnoreNotFound(err)
+
+		if err != nil {
+			log.Error(err, "unable to fetch Application")
+		}
+
+		return ctrl.Result{}, err
 	}
 
 	// examine DeletionTimestamp to determine if object is under deletion
@@ -146,7 +151,7 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 			// remove our finalizer from the list and update it.
 			app.ObjectMeta.Finalizers = removeString(app.ObjectMeta.Finalizers, finalizerName)
-			if err := r.Update(context.Background(), &app); err != nil {
+			if err := r.Update(ctx, &app); err != nil {
 				return ctrl.Result{}, err
 			}
 		}
@@ -154,22 +159,18 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, nil
 	}
 
-	var deploymentList appv1.DeploymentList
+	deployments, err := r.getDeploymentsOfApp(ctx, req, &app)
 
-	if err := r.List(ctx, &deploymentList, client.InNamespace(req.Namespace), client.MatchingFields{applicationOwnerKey: req.Name}); err != nil {
+	if err != nil {
 		log.Error(err, "unable to list child deployments")
 		return ctrl.Result{}, err
 	}
 
-	spew.Dump(req, app, deploymentList)
-
-	for _, deployment := range deploymentList.Items {
-
+	for _, deployment := range deployments {
 		if deployment.Name == app.Name {
 			log.Info("Is working")
 			return ctrl.Result{}, nil
 		}
-		spew.Dump(deployment.Name, app.Name)
 	}
 
 	deployment, err := r.constructorDeploymentFromApplication(&app)
