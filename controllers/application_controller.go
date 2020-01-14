@@ -111,6 +111,41 @@ func (r *ApplicationReconciler) deleteExternalResources(ctx context.Context, req
 	return nil
 }
 
+func (r *ApplicationReconciler) handlerDelete(ctx context.Context, app *corev1alpha1.Application, req ctrl.Request) (shouldFinishReconcile bool, err error) {
+	// examine DeletionTimestamp to determine if object is under deletion
+	if app.ObjectMeta.DeletionTimestamp.IsZero() {
+		// The object is not being deleted, so if it does not have our finalizer,
+		// then lets add the finalizer and update the object. This is equivalent
+		// registering our finalizer.
+		if !util.ContainsString(app.ObjectMeta.Finalizers, finalizerName) {
+			app.ObjectMeta.Finalizers = append(app.ObjectMeta.Finalizers, finalizerName)
+			if err := r.Update(context.Background(), app); err != nil {
+				return true, err
+			}
+		}
+	} else {
+		// The object is being deleted
+		if util.ContainsString(app.ObjectMeta.Finalizers, finalizerName) {
+			// our finalizer is present, so lets handle any external dependency
+			if err := r.deleteExternalResources(ctx, req, app); err != nil {
+				// if fail to delete the external dependency here, return with error
+				// so that it can be retried
+				return true, err
+			}
+
+			// remove our finalizer from the list and update it.
+			app.ObjectMeta.Finalizers = util.RemoveString(app.ObjectMeta.Finalizers, finalizerName)
+			if err := r.Update(ctx, app); err != nil {
+				return true, err
+			}
+		}
+
+		return true, nil
+	}
+
+	return false, nil
+}
+
 func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("application", req.NamespacedName)
@@ -130,35 +165,12 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, err
 	}
 
-	// examine DeletionTimestamp to determine if object is under deletion
-	if app.ObjectMeta.DeletionTimestamp.IsZero() {
-		// The object is not being deleted, so if it does not have our finalizer,
-		// then lets add the finalizer and update the object. This is equivalent
-		// registering our finalizer.
-		if !util.ContainsString(app.ObjectMeta.Finalizers, finalizerName) {
-			app.ObjectMeta.Finalizers = append(app.ObjectMeta.Finalizers, finalizerName)
-			if err := r.Update(context.Background(), &app); err != nil {
-				return ctrl.Result{}, err
-			}
+	// handle delete
+	if shouldFinishReconcile, err := r.handlerDelete(ctx, &app, req); err != nil || shouldFinishReconcile {
+		if err != nil {
+			log.Error(err, "unable to delete Application")
 		}
-	} else {
-		// The object is being deleted
-		if util.ContainsString(app.ObjectMeta.Finalizers, finalizerName) {
-			// our finalizer is present, so lets handle any external dependency
-			if err := r.deleteExternalResources(ctx, req, &app); err != nil {
-				// if fail to delete the external dependency here, return with error
-				// so that it can be retried
-				return ctrl.Result{}, err
-			}
-
-			// remove our finalizer from the list and update it.
-			app.ObjectMeta.Finalizers = util.RemoveString(app.ObjectMeta.Finalizers, finalizerName)
-			if err := r.Update(ctx, &app); err != nil {
-				return ctrl.Result{}, err
-			}
-		}
-
-		return ctrl.Result{}, nil
+		return ctrl.Result{}, err
 	}
 
 	deployments, err := r.getDeploymentsOfApp(ctx, req, &app)
@@ -168,11 +180,9 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, err
 	}
 
-	for _, deployment := range deployments {
-		if deployment.Name == app.Name {
-			log.Info("Is working")
-			return ctrl.Result{}, nil
-		}
+	if len(deployments) > 0 {
+		log.Info("Is working")
+		return ctrl.Result{}, nil
 	}
 
 	deployment, err := r.constructorDeploymentFromApplication(&app)
