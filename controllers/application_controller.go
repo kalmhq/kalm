@@ -41,6 +41,7 @@ type ApplicationReconciler struct {
 
 var applicationOwnerKey = ".metadata.controller"
 var apiGVStr = corev1alpha1.GroupVersion.String()
+var finalizerName = "storage.finalizers.kapp.dev"
 
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=applications,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=applications/status,verbs=get;update;patch
@@ -76,6 +77,18 @@ func (r *ApplicationReconciler) constructorDeploymentFromApplication(app *corev1
 	return deployment, nil
 }
 
+func (r *ApplicationReconciler) deleteExternalResources(app *corev1alpha1.Application) error {
+	//
+	// delete any external resources associated with the cronJob
+	//
+	// Ensure that delete implementation is idempotent and safe to invoke
+	// multiple types for same object.
+
+	r.Log.Info("Delete !!!!!!!!!!!!!!!!!!!")
+
+	return nil
+}
+
 func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("application", req.NamespacedName)
@@ -88,6 +101,37 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		// requeue (we'll need to wait for a new notification), and we can get them
 		// on deleted requests.
 		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	// examine DeletionTimestamp to determine if object is under deletion
+	if app.ObjectMeta.DeletionTimestamp.IsZero() {
+		// The object is not being deleted, so if it does not have our finalizer,
+		// then lets add the finalizer and update the object. This is equivalent
+		// registering our finalizer.
+		if !containsString(app.ObjectMeta.Finalizers, finalizerName) {
+			app.ObjectMeta.Finalizers = append(app.ObjectMeta.Finalizers, finalizerName)
+			if err := r.Update(context.Background(), &app); err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+	} else {
+		// The object is being deleted
+		if containsString(app.ObjectMeta.Finalizers, finalizerName) {
+			// our finalizer is present, so lets handle any external dependency
+			if err := r.deleteExternalResources(&app); err != nil {
+				// if fail to delete the external dependency here, return with error
+				// so that it can be retried
+				return ctrl.Result{}, err
+			}
+
+			// remove our finalizer from the list and update it.
+			app.ObjectMeta.Finalizers = removeString(app.ObjectMeta.Finalizers, finalizerName)
+			if err := r.Update(context.Background(), &app); err != nil {
+				return ctrl.Result{}, err
+			}
+		}
+
+		return ctrl.Result{}, nil
 	}
 
 	var deploymentList appv1.DeploymentList
@@ -121,6 +165,26 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	}
 
 	return ctrl.Result{}, nil
+}
+
+// Helper functions to check and remove string from a slice of strings.
+func containsString(slice []string, s string) bool {
+	for _, item := range slice {
+		if item == s {
+			return true
+		}
+	}
+	return false
+}
+
+func removeString(slice []string, s string) (result []string) {
+	for _, item := range slice {
+		if item == s {
+			continue
+		}
+		result = append(result, item)
+	}
+	return
 }
 
 func (r *ApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
