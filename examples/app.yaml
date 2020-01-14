@@ -4,5 +4,5 @@ metadata:
   name: test
 spec:
   components:
-    - name: hello-world
-      image: hello-world
+    - name: nginx
+      image: nginx
