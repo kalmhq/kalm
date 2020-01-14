@@ -5,4 +5,4 @@ metadata:
 spec:
   components:
     - name: nginx
-      image: nginx
+      image: nginx:alpine
