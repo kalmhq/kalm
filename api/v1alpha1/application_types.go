@@ -42,6 +42,8 @@ type ComponentSpec struct {
 
 	Command []string `json:"command,omitempty"`
 
+	Args []string `json:"args,omitempty"`
+
 	Requirements v1.ResourceRequirements `json:"resources,omitempty"`
 
 	Type ComponentType `json:"type,omitempty"`

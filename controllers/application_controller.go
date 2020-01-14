@@ -74,6 +74,7 @@ func (r *ApplicationReconciler) constructorDeploymentFromApplication(app *corev1
 								Image:   component.Image,
 								Env:     []corev1.EnvVar{},
 								Command: component.Command,
+								Args:    component.Args,
 							},
 						},
 					},
