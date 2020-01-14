@@ -8,5 +8,5 @@ spec:
       image: nginx:alpine
       plugins:
         - name: manual-scaler
-          replicas: 3
+          replicas: 2
 

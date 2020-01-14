@@ -18,7 +18,6 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/kapp-staging/kapp/util"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -49,28 +48,30 @@ var finalizerName = "storage.finalizers.kapp.dev"
 // +kubebuilder:rbac:groups=extensions,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=extensions,resources=deployments/status,verbs=get
 
-func (r *ApplicationReconciler) constructorDeploymentFromApplication(app *corev1alpha1.Application) (*appv1.Deployment, error) {
+func (r *ApplicationReconciler) constructorDeploymentFromApplication(app *corev1alpha1.Application, deployment *appv1.Deployment) (*appv1.Deployment, error) {
 	label := fmt.Sprintf("%s-%d", app.Name, time.Now().UTC().Unix())
 	labelMap := map[string]string{"kapp-component": label}
 
-	deployment := &appv1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Labels:      make(map[string]string),
-			Annotations: make(map[string]string),
-			Name:        fmt.Sprintf("%s-%s", app.Name, app.Spec.Components[0].Name),
-			Namespace:   app.Namespace,
-		},
-		Spec: appv1.DeploymentSpec{
-			Template: corev1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: labelMap,
+	if deployment == nil {
+		deployment = &appv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Labels:      make(map[string]string),
+				Annotations: make(map[string]string),
+				Name:        fmt.Sprintf("%s-%s", app.Name, app.Spec.Components[0].Name),
+				Namespace:   app.Namespace,
+			},
+			Spec: appv1.DeploymentSpec{
+				Template: corev1.PodTemplateSpec{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: labelMap,
+					},
+					Spec: corev1.PodSpec{Containers: []corev1.Container{{Name: app.Spec.Components[0].Name, Image: app.Spec.Components[0].Image}}},
 				},
-				Spec: corev1.PodSpec{Containers: []corev1.Container{{Name: app.Spec.Components[0].Name, Image: app.Spec.Components[0].Image}}},
+				Selector: &metav1.LabelSelector{
+					MatchLabels: labelMap,
+				},
 			},
-			Selector: &metav1.LabelSelector{
-				MatchLabels: labelMap,
-			},
-		},
+		}
 	}
 
 	// apply plugins
@@ -79,7 +80,6 @@ func (r *ApplicationReconciler) constructorDeploymentFromApplication(app *corev1
 
 		switch p := plugin.(type) {
 		case *corev1alpha1.PluginManualScaler:
-			spew.Dump(p)
 			p.Operate(deployment)
 		}
 	}
@@ -192,21 +192,32 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, err
 	}
 
-	if len(deployments) > 0 {
-		log.Info("Is working")
-		return ctrl.Result{}, nil
+	var deployment *appv1.Deployment
+
+	if len(deployments) != 0 {
+		deployment = &deployments[0]
 	}
 
-	deployment, err := r.constructorDeploymentFromApplication(&app)
+	deployment, err = r.constructorDeploymentFromApplication(&app, deployment)
 
 	if err != nil {
 		log.Error(err, "unable to construct deployment from app")
 		return ctrl.Result{}, err
 	}
 
-	if err := r.Create(ctx, deployment); err != nil {
-		log.Error(err, "unable to create Deployment for Application", "app", app)
-		return ctrl.Result{}, err
+	// TODO: realy check
+	if len(deployments) > 0 {
+		if err := r.Update(ctx, deployment); err != nil {
+			log.Error(err, "unable to update Deployment for Application", "app", app)
+			return ctrl.Result{}, err
+		}
+		log.Info("update Deployment")
+	} else {
+		if err := r.Create(ctx, deployment); err != nil {
+			log.Error(err, "unable to create Deployment for Application", "app", app)
+			return ctrl.Result{}, err
+		}
+		log.Info("create Deployment")
 	}
 
 	return ctrl.Result{}, nil
