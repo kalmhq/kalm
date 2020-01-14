@@ -6,6 +6,11 @@ spec:
   components:
     - name: nginx
       image: nginx:alpine
+      env:
+        - name: a
+          value: b
+        - name: x
+          value: z
       plugins:
         - name: manual-scaler
           replicas: 2

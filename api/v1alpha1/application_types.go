@@ -36,7 +36,7 @@ const (
 type ComponentSpec struct {
 	Name string `json:"name"`
 
-	Envs []EnvVar `json:"envs,omitempty"`
+	Env []EnvVar `json:"env,omitempty"`
 
 	Image string `json:"image"`
 

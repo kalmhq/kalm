@@ -52,6 +52,8 @@ func (r *ApplicationReconciler) constructorDeploymentFromApplication(app *corev1
 	label := fmt.Sprintf("%s-%d", app.Name, time.Now().UTC().Unix())
 	labelMap := map[string]string{"kapp-component": label}
 
+	component := app.Spec.Components[0]
+
 	if deployment == nil {
 		deployment = &appv1.Deployment{
 			ObjectMeta: metav1.ObjectMeta{
@@ -65,13 +67,32 @@ func (r *ApplicationReconciler) constructorDeploymentFromApplication(app *corev1
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: labelMap,
 					},
-					Spec: corev1.PodSpec{Containers: []corev1.Container{{Name: app.Spec.Components[0].Name, Image: app.Spec.Components[0].Image}}},
+					Spec: corev1.PodSpec{
+						Containers: []corev1.Container{
+							{
+								Name:  component.Name,
+								Image: component.Image,
+								Env:   []corev1.EnvVar{},
+							},
+						},
+					},
 				},
 				Selector: &metav1.LabelSelector{
 					MatchLabels: labelMap,
 				},
 			},
 		}
+	}
+
+	deployment.Spec.Template.Spec.Containers[0].Env = deployment.Spec.Template.Spec.Containers[0].Env[0:0]
+	for _, env := range component.Env {
+		deployment.Spec.Template.Spec.Containers[0].Env = append(
+			deployment.Spec.Template.Spec.Containers[0].Env,
+			corev1.EnvVar{
+				Name:  env.Name,
+				Value: env.Value,
+			},
+		)
 	}
 
 	// apply plugins
