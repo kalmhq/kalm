@@ -78,3 +78,9 @@ CONTROLLER_GEN=$(GOBIN)/controller-gen
 else
 CONTROLLER_GEN=$(shell which controller-gen)
 endif
+
+samples:
+	kubectl apply -f ./config/samples/
+
+usamples:
+	kubectl delete -f ./config/samples/
