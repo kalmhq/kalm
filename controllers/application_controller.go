@@ -77,14 +77,34 @@ func (r *ApplicationReconciler) constructorDeploymentFromApplication(app *corev1
 	return deployment, nil
 }
 
-func (r *ApplicationReconciler) deleteExternalResources(app *corev1alpha1.Application) error {
-	//
-	// delete any external resources associated with the cronJob
-	//
-	// Ensure that delete implementation is idempotent and safe to invoke
-	// multiple types for same object.
+func (r *ApplicationReconciler) getDeploymentsOfApp(ctx context.Context, req ctrl.Request, app *corev1alpha1.Application) ([]appv1.Deployment, error) {
+	var deploymentList appv1.DeploymentList
 
-	r.Log.Info("Delete !!!!!!!!!!!!!!!!!!!")
+	if err := r.List(ctx, &deploymentList, client.InNamespace(req.Namespace), client.MatchingFields{applicationOwnerKey: req.Name}); err != nil {
+		r.Log.Error(err, "unable to list child deployments")
+		return nil, err
+	}
+
+	return deploymentList.Items, nil
+}
+
+func (r *ApplicationReconciler) deleteExternalResources(ctx context.Context, req ctrl.Request, app *corev1alpha1.Application) error {
+	deployments, err := r.getDeploymentsOfApp(ctx, req, app)
+
+	if err != nil {
+		r.Log.Error(err, "unable to list child deployments")
+		return err
+	}
+
+	for _, deployment := range deployments {
+		r.Log.Info("delete deployment")
+		if err := r.Delete(ctx, &deployment); err != nil {
+			r.Log.Error(err, "delete deployment error")
+			return err
+		}
+	}
+
+	r.Log.Info("Delete External Resources Done")
 
 	return nil
 }
@@ -118,7 +138,7 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		// The object is being deleted
 		if containsString(app.ObjectMeta.Finalizers, finalizerName) {
 			// our finalizer is present, so lets handle any external dependency
-			if err := r.deleteExternalResources(&app); err != nil {
+			if err := r.deleteExternalResources(ctx, req, &app); err != nil {
 				// if fail to delete the external dependency here, return with error
 				// so that it can be retried
 				return ctrl.Result{}, err
