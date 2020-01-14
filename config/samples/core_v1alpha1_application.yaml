@@ -4,14 +4,81 @@ metadata:
   name: test
 spec:
   components:
-    - name: nginx
+    - name: web
       image: nginx:alpine
       env:
-        - name: a
-          value: b
-        - name: x
-          value: z
+        # Get value of another component export port address,
+        # It will be helpful is the component depends on another.
+        - name: API_URL
+          componentPort: api/http
+          prefix: http://
+          suffix: /v4
+        # Get value from shareEnv
+        - name: SOME_COMMON_ENV
+          shareEnv: SOME_COMMON_ENV
+        # normal env definition
+        - name: SOME_ENV
+          value: SOME_VALUE
+      ports:
+        - port: 80
+          name: http
+          protocol: http
+      resources:
+        cpu:
+          min: 500M
+          max: 1000M
+        memory:
+          min: 500M
+          max: 2G
+        disk:
+          - path: /a/b/c
+            name: tmpfile
+            size: 1G
+            storageClass: ssd
+        volume:
+          - name: config1
+            path: /tmp/config.yml
+      plugins:
+        - name: manual-scaler
+          type: plugins.core.kapp.dev/v1alpha1.manual-scaler
+          replicas: 2
+        # It's allowed to use a plugin more than one time
+        - name: ingress-root
+          type: plugins.core.kapp.dev/v1alpha1.ingress
+          enableHttps: true
+          enableHttp: true
+          # require enabledHttps and enableHttp are all true
+          autoHttps: true
+          hosts:
+            - www.example.com
+            - www.example.io
+          path:
+            - /
+          stripPath: true
+          preserveHost: true
+        - name: ingress-legacy
+          type: plugins.core.kapp.dev/v1alpha1.ingress
+          hosts:
+            - www.example.global
+          path:
+            - /
+          stripPath: false
+          preserveHost: false
+    - name: api
+      image: nginx:alpine
+      env:
+        - name: DB_URL
+          value: postgres://user:password@test.dev:5432/db_name
+        - name: SOME_ENV
+          value: SOME_VALUE
+      ports:
+        - port: 3000
+          name: http
+          protocol: http
       plugins:
         - name: manual-scaler
           replicas: 2
+  shareEnv:
+    - name: SOME_COMMON_ENV
+      value: SOME_VALUE
 
