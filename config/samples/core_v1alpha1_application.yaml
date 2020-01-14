@@ -6,3 +6,7 @@ spec:
   components:
     - name: nginx
       image: nginx:alpine
+      plugins:
+        - name: manual-scaler
+          replicas: 3
+

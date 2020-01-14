@@ -177,15 +177,6 @@ spec:
                     type: string
                   plugins:
                     items:
-                      properties:
-                        name:
-                          type: string
-                        properties:
-                          type: object
-                        status:
-                          type: object
-                      required:
-                      - name
                       type: object
                     type: array
                   readinessProbe:

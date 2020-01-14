@@ -18,6 +18,7 @@ package v1alpha1
 import (
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -51,7 +52,7 @@ type ComponentSpec struct {
 	// +optional
 	ReadinessProbe *v1.Probe `json:"readinessProbe,omitempty"`
 
-	Plugins []PluginBinding `json:"plugins,omitempty"`
+	Plugins []runtime.RawExtension `json:"plugins,omitempty"`
 }
 
 // ApplicationSpec defines the desired state of Application

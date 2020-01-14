@@ -18,6 +18,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/kapp-staging/kapp/util"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -70,6 +71,17 @@ func (r *ApplicationReconciler) constructorDeploymentFromApplication(app *corev1
 				MatchLabels: labelMap,
 			},
 		},
+	}
+
+	// apply plugins
+	for _, pluginDef := range app.Spec.Components[0].Plugins {
+		plugin := corev1alpha1.GetPlugin(pluginDef)
+
+		switch p := plugin.(type) {
+		case *corev1alpha1.PluginManualScaler:
+			spew.Dump(p)
+			p.Operate(deployment)
+		}
 	}
 
 	if err := ctrl.SetControllerReference(app, deployment, r.Scheme); err != nil {
