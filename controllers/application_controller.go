@@ -85,23 +85,23 @@ func (r *ApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		return err
 	}
 
-	//if err := mgr.GetFieldIndexer().IndexField(&corev1.Service{}, applicationOwnerKey, func(rawObj runtime.Object) []string {
-	//	// grab the job object, extract the owner...
-	//	service := rawObj.(*corev1.Service)
-	//	owner := metav1.GetControllerOf(service)
-	//
-	//	if owner == nil {
-	//		return nil
-	//	}
-	//
-	//	if owner.APIVersion != apiGVStr || owner.Kind != "Application" {
-	//		return nil
-	//	}
-	//
-	//	return []string{owner.Name}
-	//}); err != nil {
-	//	return err
-	//}
+	if err := mgr.GetFieldIndexer().IndexField(&corev1.Service{}, applicationOwnerKey, func(rawObj runtime.Object) []string {
+		// grab the job object, extract the owner...
+		service := rawObj.(*corev1.Service)
+		owner := metav1.GetControllerOf(service)
+
+		if owner == nil {
+			return nil
+		}
+
+		if owner.APIVersion != apiGVStr || owner.Kind != "Application" {
+			return nil
+		}
+
+		return []string{owner.Name}
+	}); err != nil {
+		return err
+	}
 
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1alpha1.Application{}).

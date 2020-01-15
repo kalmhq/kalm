@@ -9,6 +9,7 @@ import (
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"time"
@@ -60,12 +61,12 @@ func (act *applicationReconcilerTask) Run() (err error) {
 		return err
 	}
 
-	//err = act.getServices()
-	//
-	//if err != nil {
-	//	log.Error(err, "unable to list child services")
-	//	return err
-	//}
+	err = act.getServices()
+
+	if err != nil {
+		log.Error(err, "unable to list child services")
+		return err
+	}
 
 	err = act.reconcileComponents()
 
@@ -97,10 +98,10 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 	label := fmt.Sprintf("%s-%d", app.Name, time.Now().UTC().Unix())
 	labelMap := map[string]string{"kapp-component": label}
 
-	needCreate := false
+	newDeployment := false
 
 	if deployment == nil {
-		needCreate = true
+		newDeployment = true
 
 		deployment = &appv1.Deployment{
 			ObjectMeta: metav1.ObjectMeta{
@@ -145,6 +146,56 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 		)
 	}
 
+	// ports
+	service := act.getService(component.Name)
+	if len(component.Ports) > 0 {
+		newService := false
+		if service == nil {
+			newService = true
+			service = &corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      getServiceName(app.Name, component.Name),
+					Namespace: app.Namespace,
+				},
+				Spec: corev1.ServiceSpec{},
+			}
+		}
+
+		ps := []corev1.ServicePort{}
+
+		for i, port := range component.Ports {
+			ps = append(ps, corev1.ServicePort{
+				Name:       port.Name,
+				TargetPort: intstr.FromInt(int(port.ExposedPort)),
+				Protocol:   corev1.ProtocolTCP, // TODO
+				Port:       int32(3000 + i),    // TODO
+			})
+		}
+
+		service.Spec.Ports = ps
+
+		if newService {
+			if err := ctrl.SetControllerReference(app, service, act.reconciler.Scheme); err != nil {
+				return err
+			}
+
+			if err := act.reconciler.Create(ctx, service); err != nil {
+				log.Error(err, "unable to create Service for Component", "app", app, "component", component)
+				return err
+			}
+		} else {
+			if err := act.reconciler.Update(ctx, service); err != nil {
+				log.Error(err, "unable to update Service for Component", "app", app, "component", component)
+				return err
+			}
+		}
+	} else if service != nil {
+		if err := act.reconciler.Delete(act.ctx, service); err != nil {
+			log.Error(err, "unable to delete Service for Application Component", "app", app, "component", component)
+			return err
+		}
+	}
+
 	// apply plugins
 	for _, pluginDef := range component.Plugins {
 		plugin := corev1alpha1.GetPlugin(pluginDef)
@@ -155,7 +206,7 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 		}
 	}
 
-	if needCreate {
+	if newDeployment {
 		if err := ctrl.SetControllerReference(app, deployment, act.reconciler.Scheme); err != nil {
 			return err
 		}
@@ -182,6 +233,18 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 		switch p := plugin.(type) {
 		case *corev1alpha1.PluginManualScaler:
 			p.Operate(deployment)
+		}
+	}
+
+	return nil
+}
+
+func (act *applicationReconcilerTask) getService(componentName string) *corev1.Service {
+	for i, _ := range act.services {
+		service := &(act.services[i])
+
+		if service.ObjectMeta.Name == getServiceName(act.app.Name, componentName) {
+			return service
 		}
 	}
 
@@ -302,5 +365,9 @@ func (act *applicationReconcilerTask) deleteExternalResources() error {
 }
 
 func getDeploymentName(appName, componentName string) string {
+	return fmt.Sprintf("%s-%s", appName, componentName)
+}
+
+func getServiceName(appName, componentName string) string {
 	return fmt.Sprintf("%s-%s", appName, componentName)
 }

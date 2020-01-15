@@ -24,6 +24,10 @@ spec:
           servicePort: 80
           name: http
           protocol: http
+#        - exposedPort: 90
+#          servicePort: 90
+#          name: http2
+#          protocol: http
 #      resources:
 #        cpu:
 #          min: 500M
