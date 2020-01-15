@@ -19,6 +19,7 @@ import (
 	"context"
 	"github.com/go-logr/logr"
 	appv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -68,9 +69,26 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 
 func (r *ApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	if err := mgr.GetFieldIndexer().IndexField(&appv1.Deployment{}, applicationOwnerKey, func(rawObj runtime.Object) []string {
-		// grab the job object, extract the owner...
 		deployment := rawObj.(*appv1.Deployment)
 		owner := metav1.GetControllerOf(deployment)
+
+		if owner == nil {
+			return nil
+		}
+
+		if owner.APIVersion != apiGVStr || owner.Kind != "Application" {
+			return nil
+		}
+
+		return []string{owner.Name}
+	}); err != nil {
+		return err
+	}
+
+	if err := mgr.GetFieldIndexer().IndexField(&corev1.Service{}, applicationOwnerKey, func(rawObj runtime.Object) []string {
+		// grab the job object, extract the owner...
+		service := rawObj.(*corev1.Service)
+		owner := metav1.GetControllerOf(service)
 
 		if owner == nil {
 			return nil
@@ -88,5 +106,6 @@ func (r *ApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1alpha1.Application{}).
 		Owns(&appv1.Deployment{}).
+		Owns(&corev1.Service{}).
 		Complete(r)
 }

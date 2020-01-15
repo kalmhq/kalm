@@ -42,7 +42,7 @@ func newApplicationReconcilerTask(
 	}
 }
 
-func (act *applicationReconcilerTask) Run() error {
+func (act *applicationReconcilerTask) Run() (err error) {
 	log := act.log
 	ctx := act.ctx
 	app := act.app
@@ -54,10 +54,17 @@ func (act *applicationReconcilerTask) Run() error {
 		return err
 	}
 
-	err := act.getDeployments()
+	err = act.getDeployments()
 
 	if err != nil {
 		log.Error(err, "unable to list child deployments")
+		return err
+	}
+
+	err = act.getServices()
+
+	if err != nil {
+		log.Error(err, "unable to list child services")
 		return err
 	}
 
