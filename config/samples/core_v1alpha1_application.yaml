@@ -6,38 +6,39 @@ spec:
   components:
     - name: web
       image: nginx:alpine
-      env:
-        # Get value of another component export port address,
-        # It will be helpful is the component depends on another.
-        - name: API_URL
-          componentPort: api/http
-          prefix: http://
-          suffix: /v4
-        # Get value from shareEnv
-        - name: SOME_COMMON_ENV
-          shareEnv: SOME_COMMON_ENV
-        # normal env definition
-        - name: SOME_ENV
-          value: SOME_VALUE
+#      env:
+#        # Get value of another component export port address,
+#        # It will be helpful is the component depends on another.
+#        - name: API_URL
+#          componentPort: api/http
+#          prefix: http://
+#          suffix: /v4
+#        # Get value from shareEnv
+#        - name: SOME_COMMON_ENV
+#          shareEnv: SOME_COMMON_ENV
+#        # normal env definition
+#        - name: SOME_ENV
+#          value: SOME_VALUE
       ports:
-        - port: 80
+        - exposedPort: 80
+          servicePort: 80
           name: http
           protocol: http
-      resources:
-        cpu:
-          min: 500M
-          max: 1000M
-        memory:
-          min: 500M
-          max: 2G
-        disk:
-          - path: /a/b/c
-            name: tmpfile
-            size: 1G
-            storageClass: ssd
-        volume:
-          - name: config1
-            path: /tmp/config.yml
+#      resources:
+#        cpu:
+#          min: 500M
+#          max: 1000M
+#        memory:
+#          min: 500M
+#          max: 2G
+#        disk:
+#          - path: /a/b/c
+#            name: tmpfile
+#            size: 1G
+#            storageClass: ssd
+#        volume:
+#          - name: config1
+#            path: /tmp/config.yml
       plugins:
         - name: manual-scaler
           type: plugins.core.kapp.dev/v1alpha1.manual-scaler
@@ -64,20 +65,20 @@ spec:
             - /
           stripPath: false
           preserveHost: false
-    - name: api
-      image: nginx:alpine
-      env:
-        - name: DB_URL
-          value: postgres://user:password@test.dev:5432/db_name
-        - name: SOME_ENV
-          value: SOME_VALUE
-      ports:
-        - port: 3000
-          name: http
-          protocol: http
-      plugins:
-        - name: manual-scaler
-          replicas: 2
+#    - name: api
+#      image: nginx:alpine
+#      env:
+#        - name: DB_URL
+#          value: postgres://user:password@test.dev:5432/db_name
+#        - name: SOME_ENV
+#          value: SOME_VALUE
+#      ports:
+#        - port: 3000
+#          name: http
+#          protocol: http
+#      plugins:
+#        - name: manual-scaler
+#          replicas: 2
   shareEnv:
     - name: SOME_COMMON_ENV
       value: SOME_VALUE

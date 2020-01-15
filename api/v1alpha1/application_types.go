@@ -46,6 +46,8 @@ type ComponentSpec struct {
 
 	Requirements v1.ResourceRequirements `json:"resources,omitempty"`
 
+	Ports []Port `json:"ports,omitempty"`
+
 	Type ComponentType `json:"type,omitempty"`
 
 	// +optional

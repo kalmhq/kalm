@@ -37,6 +37,10 @@ spec:
             components:
               items:
                 properties:
+                  args:
+                    items:
+                      type: string
+                    type: array
                   command:
                     items:
                       type: string
@@ -179,6 +183,27 @@ spec:
                     type: string
                   plugins:
                     items:
+                      type: object
+                    type: array
+                  ports:
+                    items:
+                      properties:
+                        exposedPort:
+                          format: int32
+                          type: integer
+                        name:
+                          type: string
+                        protocol:
+                          enum:
+                          - http
+                          - tcp
+                          type: string
+                        servicePort:
+                          format: int32
+                          type: integer
+                      required:
+                      - exposedPort
+                      - name
                       type: object
                     type: array
                   readinessProbe:
