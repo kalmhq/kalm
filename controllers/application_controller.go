@@ -17,13 +17,8 @@ package controllers
 
 import (
 	"context"
-	"fmt"
-	"github.com/kapp-staging/kapp/util"
-	appv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
-	"time"
-
 	"github.com/go-logr/logr"
+	appv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -48,140 +43,6 @@ var finalizerName = "storage.finalizers.kapp.dev"
 // +kubebuilder:rbac:groups=extensions,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=extensions,resources=deployments/status,verbs=get
 
-func (r *ApplicationReconciler) constructorDeploymentFromApplication(app *corev1alpha1.Application, deployment *appv1.Deployment) (*appv1.Deployment, error) {
-	label := fmt.Sprintf("%s-%d", app.Name, time.Now().UTC().Unix())
-	labelMap := map[string]string{"kapp-component": label}
-
-	component := app.Spec.Components[0]
-
-	if deployment == nil {
-		deployment = &appv1.Deployment{
-			ObjectMeta: metav1.ObjectMeta{
-				Labels:      make(map[string]string),
-				Annotations: make(map[string]string),
-				Name:        fmt.Sprintf("%s-%s", app.Name, app.Spec.Components[0].Name),
-				Namespace:   app.Namespace,
-			},
-			Spec: appv1.DeploymentSpec{
-				Template: corev1.PodTemplateSpec{
-					ObjectMeta: metav1.ObjectMeta{
-						Labels: labelMap,
-					},
-					Spec: corev1.PodSpec{
-						Containers: []corev1.Container{
-							{
-								Name:    component.Name,
-								Image:   component.Image,
-								Env:     []corev1.EnvVar{},
-								Command: component.Command,
-								Args:    component.Args,
-							},
-						},
-					},
-				},
-				Selector: &metav1.LabelSelector{
-					MatchLabels: labelMap,
-				},
-			},
-		}
-	}
-
-	// apply envs
-	deployment.Spec.Template.Spec.Containers[0].Env = deployment.Spec.Template.Spec.Containers[0].Env[0:0]
-	for _, env := range component.Env {
-		deployment.Spec.Template.Spec.Containers[0].Env = append(
-			deployment.Spec.Template.Spec.Containers[0].Env,
-			corev1.EnvVar{
-				Name:  env.Name,
-				Value: env.Value,
-			},
-		)
-	}
-
-	// apply plugins
-	for _, pluginDef := range app.Spec.Components[0].Plugins {
-		plugin := corev1alpha1.GetPlugin(pluginDef)
-
-		switch p := plugin.(type) {
-		case *corev1alpha1.PluginManualScaler:
-			p.Operate(deployment)
-		}
-	}
-
-	if err := ctrl.SetControllerReference(app, deployment, r.Scheme); err != nil {
-		return nil, err
-	}
-
-	return deployment, nil
-}
-
-func (r *ApplicationReconciler) getDeploymentsOfApp(ctx context.Context, req ctrl.Request, app *corev1alpha1.Application) ([]appv1.Deployment, error) {
-	var deploymentList appv1.DeploymentList
-
-	if err := r.List(ctx, &deploymentList, client.InNamespace(req.Namespace), client.MatchingFields{applicationOwnerKey: req.Name}); err != nil {
-		r.Log.Error(err, "unable to list child deployments")
-		return nil, err
-	}
-
-	return deploymentList.Items, nil
-}
-
-func (r *ApplicationReconciler) deleteExternalResources(ctx context.Context, req ctrl.Request, app *corev1alpha1.Application) error {
-	deployments, err := r.getDeploymentsOfApp(ctx, req, app)
-
-	if err != nil {
-		r.Log.Error(err, "unable to list child deployments")
-		return err
-	}
-
-	for _, deployment := range deployments {
-		r.Log.Info("delete deployment")
-		if err := r.Delete(ctx, &deployment); err != nil {
-			r.Log.Error(err, "delete deployment error")
-			return err
-		}
-	}
-
-	r.Log.Info("Delete External Resources Done")
-
-	return nil
-}
-
-func (r *ApplicationReconciler) handlerDelete(ctx context.Context, app *corev1alpha1.Application, req ctrl.Request) (shouldFinishReconcile bool, err error) {
-	// examine DeletionTimestamp to determine if object is under deletion
-	if app.ObjectMeta.DeletionTimestamp.IsZero() {
-		// The object is not being deleted, so if it does not have our finalizer,
-		// then lets add the finalizer and update the object. This is equivalent
-		// registering our finalizer.
-		if !util.ContainsString(app.ObjectMeta.Finalizers, finalizerName) {
-			app.ObjectMeta.Finalizers = append(app.ObjectMeta.Finalizers, finalizerName)
-			if err := r.Update(context.Background(), app); err != nil {
-				return true, err
-			}
-		}
-	} else {
-		// The object is being deleted
-		if util.ContainsString(app.ObjectMeta.Finalizers, finalizerName) {
-			// our finalizer is present, so lets handle any external dependency
-			if err := r.deleteExternalResources(ctx, req, app); err != nil {
-				// if fail to delete the external dependency here, return with error
-				// so that it can be retried
-				return true, err
-			}
-
-			// remove our finalizer from the list and update it.
-			app.ObjectMeta.Finalizers = util.RemoveString(app.ObjectMeta.Finalizers, finalizerName)
-			if err := r.Update(ctx, app); err != nil {
-				return true, err
-			}
-		}
-
-		return true, nil
-	}
-
-	return false, nil
-}
-
 func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("application", req.NamespacedName)
@@ -201,50 +62,8 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, err
 	}
 
-	// handle delete
-	if shouldFinishReconcile, err := r.handlerDelete(ctx, &app, req); err != nil || shouldFinishReconcile {
-		if err != nil {
-			log.Error(err, "unable to delete Application")
-		}
-		return ctrl.Result{}, err
-	}
-
-	deployments, err := r.getDeploymentsOfApp(ctx, req, &app)
-
-	if err != nil {
-		log.Error(err, "unable to list child deployments")
-		return ctrl.Result{}, err
-	}
-
-	var deployment *appv1.Deployment
-
-	if len(deployments) != 0 {
-		deployment = &deployments[0]
-	}
-
-	deployment, err = r.constructorDeploymentFromApplication(&app, deployment)
-
-	if err != nil {
-		log.Error(err, "unable to construct deployment from app")
-		return ctrl.Result{}, err
-	}
-
-	// TODO: realy check
-	if len(deployments) > 0 {
-		if err := r.Update(ctx, deployment); err != nil {
-			log.Error(err, "unable to update Deployment for Application", "app", app)
-			return ctrl.Result{}, err
-		}
-		log.Info("update Deployment")
-	} else {
-		if err := r.Create(ctx, deployment); err != nil {
-			log.Error(err, "unable to create Deployment for Application", "app", app)
-			return ctrl.Result{}, err
-		}
-		log.Info("create Deployment")
-	}
-
-	return ctrl.Result{}, nil
+	act := newApplicationReconcilerTask(r, &app, req)
+	return ctrl.Result{}, act.Run()
 }
 
 func (r *ApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
