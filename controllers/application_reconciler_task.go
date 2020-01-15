@@ -44,8 +44,7 @@ func newApplicationReconcilerTask(
 
 func (act *applicationReconcilerTask) Run() (err error) {
 	log := act.log
-	ctx := act.ctx
-	app := act.app
+
 	// handle delete
 	if shouldFinishReconcilation, err := act.handleDelete(); err != nil || shouldFinishReconcilation {
 		if err != nil {
@@ -61,39 +60,141 @@ func (act *applicationReconcilerTask) Run() (err error) {
 		return err
 	}
 
-	err = act.getServices()
+	//err = act.getServices()
+	//
+	//if err != nil {
+	//	log.Error(err, "unable to list child services")
+	//	return err
+	//}
 
-	if err != nil {
-		log.Error(err, "unable to list child services")
-		return err
-	}
-
-	var deployment *appv1.Deployment
-
-	if len(act.deployments) != 0 {
-		deployment = &(act.deployments[0])
-	}
-
-	deployment, err = act.constructorDeploymentFromApplication(deployment)
+	err = act.reconcileComponents()
 
 	if err != nil {
 		log.Error(err, "unable to construct deployment from app")
 		return err
 	}
 
-	// TODO: realy check
-	if len(act.deployments) > 0 {
-		if err := act.reconciler.Update(ctx, deployment); err != nil {
-			log.Error(err, "unable to update Deployment for Application", "app", app)
+	return nil
+}
+
+func (act *applicationReconcilerTask) reconcileComponents() (err error) {
+	for _, component := range act.app.Spec.Components {
+		if err = act.reconcileComponent(&component); err != nil {
 			return err
 		}
-		log.Info("update Deployment")
-	} else {
+	}
+
+	return nil
+}
+
+func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1.ComponentSpec) (err error) {
+	app := act.app
+	log := act.log
+	ctx := act.ctx
+
+	deployment := act.getDeployment(component.Name)
+
+	label := fmt.Sprintf("%s-%d", app.Name, time.Now().UTC().Unix())
+	labelMap := map[string]string{"kapp-component": label}
+
+	needCreate := false
+
+	if deployment == nil {
+		needCreate = true
+
+		deployment = &appv1.Deployment{
+			ObjectMeta: metav1.ObjectMeta{
+				Labels:      make(map[string]string),
+				Annotations: make(map[string]string),
+				Name:        getDeploymentName(app.Name, component.Name),
+				Namespace:   app.Namespace,
+			},
+			Spec: appv1.DeploymentSpec{
+				Template: corev1.PodTemplateSpec{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: labelMap,
+					},
+					Spec: corev1.PodSpec{
+						Containers: []corev1.Container{
+							{
+								Name:    component.Name,
+								Image:   component.Image,
+								Env:     []corev1.EnvVar{},
+								Command: component.Command,
+								Args:    component.Args,
+							},
+						},
+					},
+				},
+				Selector: &metav1.LabelSelector{
+					MatchLabels: labelMap,
+				},
+			},
+		}
+	}
+
+	// apply envs
+	deployment.Spec.Template.Spec.Containers[0].Env = deployment.Spec.Template.Spec.Containers[0].Env[0:0]
+	for _, env := range component.Env {
+		deployment.Spec.Template.Spec.Containers[0].Env = append(
+			deployment.Spec.Template.Spec.Containers[0].Env,
+			corev1.EnvVar{
+				Name:  env.Name,
+				Value: env.Value,
+			},
+		)
+	}
+
+	// apply plugins
+	for _, pluginDef := range app.Spec.Components[0].Plugins {
+		plugin := corev1alpha1.GetPlugin(pluginDef)
+
+		switch p := plugin.(type) {
+		case *corev1alpha1.PluginManualScaler:
+			p.Operate(deployment)
+		}
+	}
+
+	if needCreate {
+		if err := ctrl.SetControllerReference(app, deployment, act.reconciler.Scheme); err != nil {
+			return err
+		}
+
 		if err := act.reconciler.Create(ctx, deployment); err != nil {
 			log.Error(err, "unable to create Deployment for Application", "app", app)
 			return err
 		}
+
 		log.Info("create Deployment")
+	} else {
+		if err := act.reconciler.Update(ctx, deployment); err != nil {
+			log.Error(err, "unable to update Deployment for Application", "app", app)
+			return err
+		}
+
+		log.Info("update Deployment")
+	}
+
+	// apply plugins
+	for _, pluginDef := range app.Spec.Components[0].Plugins {
+		plugin := corev1alpha1.GetPlugin(pluginDef)
+
+		switch p := plugin.(type) {
+		case *corev1alpha1.PluginManualScaler:
+			p.Operate(deployment)
+		}
+	}
+
+	return nil
+}
+
+func (act *applicationReconcilerTask) getDeployment(name string) *appv1.Deployment {
+	for i, _ := range act.deployments {
+		deployment := &(act.deployments[i])
+
+		if deployment.ObjectMeta.Name == getDeploymentName(act.app.Name, name) {
+			return deployment
+		}
 	}
 
 	return nil
@@ -200,71 +301,6 @@ func (act *applicationReconcilerTask) deleteExternalResources() error {
 
 }
 
-func (act *applicationReconcilerTask) constructorDeploymentFromApplication(deployment *appv1.Deployment) (*appv1.Deployment, error) {
-	app := act.app
-
-	label := fmt.Sprintf("%s-%d", app.Name, time.Now().UTC().Unix())
-	labelMap := map[string]string{"kapp-component": label}
-
-	component := app.Spec.Components[0]
-
-	if deployment == nil {
-		deployment = &appv1.Deployment{
-			ObjectMeta: metav1.ObjectMeta{
-				Labels:      make(map[string]string),
-				Annotations: make(map[string]string),
-				Name:        fmt.Sprintf("%s-%s", app.Name, app.Spec.Components[0].Name),
-				Namespace:   app.Namespace,
-			},
-			Spec: appv1.DeploymentSpec{
-				Template: corev1.PodTemplateSpec{
-					ObjectMeta: metav1.ObjectMeta{
-						Labels: labelMap,
-					},
-					Spec: corev1.PodSpec{
-						Containers: []corev1.Container{
-							{
-								Name:    component.Name,
-								Image:   component.Image,
-								Env:     []corev1.EnvVar{},
-								Command: component.Command,
-								Args:    component.Args,
-							},
-						},
-					},
-				},
-				Selector: &metav1.LabelSelector{
-					MatchLabels: labelMap,
-				},
-			},
-		}
-	}
-
-	// apply envs
-	deployment.Spec.Template.Spec.Containers[0].Env = deployment.Spec.Template.Spec.Containers[0].Env[0:0]
-	for _, env := range component.Env {
-		deployment.Spec.Template.Spec.Containers[0].Env = append(
-			deployment.Spec.Template.Spec.Containers[0].Env,
-			corev1.EnvVar{
-				Name:  env.Name,
-				Value: env.Value,
-			},
-		)
-	}
-
-	// apply plugins
-	for _, pluginDef := range app.Spec.Components[0].Plugins {
-		plugin := corev1alpha1.GetPlugin(pluginDef)
-
-		switch p := plugin.(type) {
-		case *corev1alpha1.PluginManualScaler:
-			p.Operate(deployment)
-		}
-	}
-
-	if err := ctrl.SetControllerReference(app, deployment, act.reconciler.Scheme); err != nil {
-		return nil, err
-	}
-
-	return deployment, nil
+func getDeploymentName(appName, componentName string) string {
+	return fmt.Sprintf("%s-%s", appName, componentName)
 }
