@@ -65,20 +65,20 @@ spec:
             - /
           stripPath: false
           preserveHost: false
-#    - name: api
-#      image: nginx:alpine
-#      env:
-#        - name: DB_URL
-#          value: postgres://user:password@test.dev:5432/db_name
-#        - name: SOME_ENV
-#          value: SOME_VALUE
-#      ports:
-#        - port: 3000
-#          name: http
-#          protocol: http
-#      plugins:
-#        - name: manual-scaler
-#          replicas: 2
+    - name: api
+      image: nginx:alpine
+      env:
+        - name: DB_URL
+          value: postgres://user:password@test.dev:5432/db_name
+        - name: SOME_ENV
+          value: SOME_VALUE
+      ports:
+        - port: 3000
+          name: http
+          protocol: http
+      plugins:
+        - name: manual-scaler
+          replicas: 1
   shareEnv:
     - name: SOME_COMMON_ENV
       value: SOME_VALUE

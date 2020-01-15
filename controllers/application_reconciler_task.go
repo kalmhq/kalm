@@ -146,7 +146,7 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 	}
 
 	// apply plugins
-	for _, pluginDef := range app.Spec.Components[0].Plugins {
+	for _, pluginDef := range component.Plugins {
 		plugin := corev1alpha1.GetPlugin(pluginDef)
 
 		switch p := plugin.(type) {
