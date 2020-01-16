@@ -37,7 +37,19 @@ spec:
             components:
               items:
                 properties:
+                  afterStart:
+                    items:
+                      type: string
+                    type: array
                   args:
+                    items:
+                      type: string
+                    type: array
+                  beforeDestroy:
+                    items:
+                      type: string
+                    type: array
+                  beforeStart:
                     items:
                       type: string
                     type: array

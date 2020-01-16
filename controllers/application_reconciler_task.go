@@ -12,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"strings"
 	"time"
 )
 
@@ -134,16 +135,74 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 		}
 	}
 
+	mainContainer := &(deployment.Spec.Template.Spec.Containers[0])
+
 	// apply envs
-	deployment.Spec.Template.Spec.Containers[0].Env = deployment.Spec.Template.Spec.Containers[0].Env[0:0]
+	envs := []corev1.EnvVar{}
 	for _, env := range component.Env {
-		deployment.Spec.Template.Spec.Containers[0].Env = append(
-			deployment.Spec.Template.Spec.Containers[0].Env,
-			corev1.EnvVar{
-				Name:  env.Name,
-				Value: env.Value,
+		envs = append(envs, corev1.EnvVar{
+			Name:  env.Name,
+			Value: env.Value,
+		})
+	}
+	mainContainer.Env = envs
+
+	// before start
+	beforeHooks := []corev1.Container{}
+	for i, beforeHook := range component.BeforeStart {
+		beforeHooks = append(beforeHooks, corev1.Container{
+			Image:   component.Image,
+			Name:    fmt.Sprintf("%s-before-hook-%d", component.Name, i),
+			Command: []string{"/bin/sh"}, // TODO: when to use /bin/bash ??
+			Args: []string{
+				"-c",
+				beforeHook,
 			},
-		)
+			Env: envs,
+		})
+	}
+	deployment.Spec.Template.Spec.InitContainers = beforeHooks
+
+	// after start
+	if len(component.AfterStart) == 0 {
+		if mainContainer.Lifecycle != nil {
+			mainContainer.Lifecycle.PostStart = nil
+		}
+	} else {
+		if mainContainer.Lifecycle == nil {
+			mainContainer.Lifecycle = &corev1.Lifecycle{}
+		}
+
+		mainContainer.Lifecycle.PostStart = &corev1.Handler{
+			Exec: &corev1.ExecAction{
+				Command: []string{
+					"/bin/sh",
+					"-c",
+					strings.Join(component.AfterStart, " && "),
+				},
+			},
+		}
+	}
+
+	// before stoop
+	if len(component.BeforeDestroy) == 0 {
+		if mainContainer.Lifecycle != nil {
+			mainContainer.Lifecycle.PreStop = nil
+		}
+	} else {
+		if mainContainer.Lifecycle == nil {
+			mainContainer.Lifecycle = &corev1.Lifecycle{}
+		}
+
+		mainContainer.Lifecycle.PreStop = &corev1.Handler{
+			Exec: &corev1.ExecAction{
+				Command: []string{
+					"/bin/sh",
+					"-c",
+					strings.Join(component.BeforeDestroy, " && "),
+				},
+			},
+		}
 	}
 
 	// ports

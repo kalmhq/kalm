@@ -6,6 +6,15 @@ spec:
   components:
     - name: web
       image: nginx:alpine
+      beforeStart:
+        - ls -alh /
+        - echo "test" > /tmp/bbq
+        - ls -alh /tmp
+      afterStart:
+        - echo "afterSatart" > /tmp/log
+        - cat /tmp/log
+      beforeDestroy:
+        - echo "Bye Bye"
 #      env:
 #        # Get value of another component export port address,
 #        # It will be helpful is the component depends on another.

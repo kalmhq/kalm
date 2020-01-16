@@ -57,6 +57,12 @@ type ComponentSpec struct {
 	ReadinessProbe *v1.Probe `json:"readinessProbe,omitempty"`
 
 	Plugins []runtime.RawExtension `json:"plugins,omitempty"`
+
+	BeforeStart []string `json:"beforeStart,omitempty"`
+
+	AfterStart []string `json:"afterStart,omitempty"`
+
+	BeforeDestroy []string `json:"beforeDestroy,omitempty"`
 }
 
 // ApplicationSpec defines the desired state of Application
