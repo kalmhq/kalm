@@ -120,12 +120,17 @@ func (act *applicationReconcilerTask) reconcileServices() (err error) {
 			ps := []corev1.ServicePort{}
 
 			for _, port := range component.Ports {
-				ps = append(ps, corev1.ServicePort{
+				sp := corev1.ServicePort{
 					Name:       port.Name,
 					TargetPort: intstr.FromInt(int(port.ContainerPort)),
-					Protocol:   corev1.ProtocolTCP,      // TODO
-					Port:       int32(port.ServicePort), // TODO
-				})
+					Port:       int32(port.ServicePort),
+				}
+
+				if port.Protocol != "" {
+					sp.Protocol = port.Protocol
+				}
+
+				ps = append(ps, sp)
 			}
 
 			service.Spec.Ports = ps
