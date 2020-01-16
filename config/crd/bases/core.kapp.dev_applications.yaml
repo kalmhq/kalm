@@ -188,21 +188,24 @@ spec:
                   ports:
                     items:
                       properties:
-                        exposedPort:
+                        containerPort:
                           format: int32
                           type: integer
                         name:
                           type: string
                         protocol:
+                          description: Protocol defines network protocols supported
+                            for things like container ports.
                           enum:
-                          - http
-                          - tcp
+                          - TCP
+                          - UDP
+                          - SCTP
                           type: string
                         servicePort:
                           format: int32
                           type: integer
                       required:
-                      - exposedPort
+                      - containerPort
                       - name
                       type: object
                     type: array

@@ -166,7 +166,7 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 		for i, port := range component.Ports {
 			ps = append(ps, corev1.ServicePort{
 				Name:       port.Name,
-				TargetPort: intstr.FromInt(int(port.ExposedPort)),
+				TargetPort: intstr.FromInt(int(port.ContainerPort)),
 				Protocol:   corev1.ProtocolTCP, // TODO
 				Port:       int32(3000 + i),    // TODO
 			})

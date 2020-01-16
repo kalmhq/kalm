@@ -1,5 +1,7 @@
 package v1alpha1
 
+import corev1 "k8s.io/api/core/v1"
+
 // EnvVar represents an environment variable present in a Container.
 type EnvVar struct {
 	// Name of the environment variable. Must be a C_IDENTIFIER.
@@ -8,22 +10,15 @@ type EnvVar struct {
 	Value string `json:"value"`
 }
 
-type PortProtocolType string
-
-var (
-	PortProtocolTypeHttp PortProtocolType = "http"
-	PortProtocolTypeTCP  PortProtocolType = "tcp"
-)
-
 type Port struct {
 	Name string `json:"name"`
 
 	// +kubebuilder:validation:Maximum:65535
-	ExposedPort uint32 `json:"exposedPort"`
+	ContainerPort uint32 `json:"containerPort"`
 
 	// +kubebuilder:validation:Maximum:65535
 	ServicePort uint32 `json:"servicePort,omitempty"`
 
-	// +kubebuilder:validation:Enum=http;tcp
-	Protocol PortProtocolType `json:"protocol,omitempty"`
+	// +kubebuilder:validation:Enum=TCP;UDP;SCTP
+	Protocol corev1.Protocol `json:"protocol,omitempty"`
 }

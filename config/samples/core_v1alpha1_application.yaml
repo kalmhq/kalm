@@ -20,14 +20,12 @@ spec:
 #        - name: SOME_ENV
 #          value: SOME_VALUE
       ports:
-        - exposedPort: 80
+        - name: http
+          containerPort: 80
           servicePort: 80
-          name: http
-          protocol: http
 #        - exposedPort: 90
 #          servicePort: 90
 #          name: http2
-#          protocol: http
 #      resources:
 #        cpu:
 #          min: 500M
@@ -77,9 +75,9 @@ spec:
         - name: SOME_ENV
           value: SOME_VALUE
       ports:
-        - port: 3000
+        - containerPort: 3000
+          servicePort: 80
           name: http
-          protocol: http
       plugins:
         - name: manual-scaler
           replicas: 1
