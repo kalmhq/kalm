@@ -140,11 +140,26 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 	// apply envs
 	envs := []corev1.EnvVar{}
 	for _, env := range component.Env {
+		var value string
+
+		if env.Value != "" {
+			value = env.Value
+		}
+
+		if env.SharedEnv != "" {
+			value = act.app.Spec.FindShareEnvValue(env.SharedEnv)
+			if value == "" {
+				// TODO is this the corrent way to allocate an error?
+				return fmt.Errorf("Can't find shared env %s", env.SharedEnv)
+			}
+		}
+
 		envs = append(envs, corev1.EnvVar{
 			Name:  env.Name,
-			Value: env.Value,
+			Value: value,
 		})
 	}
+
 	mainContainer.Env = envs
 
 	// before start

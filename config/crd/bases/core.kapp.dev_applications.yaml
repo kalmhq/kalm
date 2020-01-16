@@ -66,11 +66,12 @@ spec:
                           description: Name of the environment variable. Must be a
                             C_IDENTIFIER.
                           type: string
+                        sharedEnv:
+                          type: string
                         value:
                           type: string
                       required:
                       - name
-                      - value
                       type: object
                     type: array
                   image:
@@ -363,6 +364,22 @@ spec:
                     type: string
                 required:
                 - image
+                - name
+                type: object
+              type: array
+            sharedEnv:
+              items:
+                description: EnvVar represents an environment variable present in
+                  a Container.
+                properties:
+                  name:
+                    description: Name of the environment variable. Must be a C_IDENTIFIER.
+                    type: string
+                  sharedEnv:
+                    type: string
+                  value:
+                    type: string
+                required:
                 - name
                 type: object
               type: array

@@ -68,6 +68,16 @@ type ComponentSpec struct {
 // ApplicationSpec defines the desired state of Application
 type ApplicationSpec struct {
 	Components []ComponentSpec `json:"components"`
+	SharedEnv  []EnvVar        `json:"sharedEnv,omitempty"`
+}
+
+func (c *ApplicationSpec) FindShareEnvValue(name string) string {
+	for _, env := range c.SharedEnv {
+		if env.Name == name {
+			return env.Value
+		}
+	}
+	return ""
 }
 
 // ApplicationStatus defines the observed state of Application

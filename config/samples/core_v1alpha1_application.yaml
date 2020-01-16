@@ -15,19 +15,19 @@ spec:
         - cat /tmp/log
       beforeDestroy:
         - echo "Bye Bye"
-#      env:
-#        # Get value of another component export port address,
-#        # It will be helpful is the component depends on another.
+      env:
+        # Get value of another component export port address,
+        # It will be helpful is the component depends on another.
 #        - name: API_URL
 #          componentPort: api/http
 #          prefix: http://
 #          suffix: /v4
-#        # Get value from shareEnv
-#        - name: SOME_COMMON_ENV
-#          shareEnv: SOME_COMMON_ENV
-#        # normal env definition
-#        - name: SOME_ENV
-#          value: SOME_VALUE
+        # Get value from shareEnv
+        - name: SOME_COMMON_ENV
+          sharedEnv: SOME_COMMON_ENV
+        # normal env definition
+        - name: SOME_ENV
+          value: SOME_VALUE
       ports:
         - name: http
           containerPort: 80
@@ -53,7 +53,7 @@ spec:
       plugins:
         - name: manual-scaler
           type: plugins.core.kapp.dev/v1alpha1.manual-scaler
-          replicas: 2
+          replicas: 1
         # It's allowed to use a plugin more than one time
         - name: ingress-root
           type: plugins.core.kapp.dev/v1alpha1.ingress
@@ -90,7 +90,7 @@ spec:
       plugins:
         - name: manual-scaler
           replicas: 1
-  shareEnv:
+  sharedEnv:
     - name: SOME_COMMON_ENV
-      value: SOME_VALUE
+      value: shared_value
 
