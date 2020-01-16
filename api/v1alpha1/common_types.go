@@ -10,6 +10,12 @@ type EnvVar struct {
 	Value string `json:"value,omitempty"`
 
 	SharedEnv string `json:"sharedEnv,omitempty"`
+
+	ComponentPort string `json:"componentPort,omitempty"`
+
+	Prefix string `json:"prefix,omitempty"`
+
+	Suffix string `json:"suffix,omitempty"`
 }
 
 type Port struct {

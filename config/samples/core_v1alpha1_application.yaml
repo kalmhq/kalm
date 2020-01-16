@@ -18,10 +18,10 @@ spec:
       env:
         # Get value of another component export port address,
         # It will be helpful is the component depends on another.
-#        - name: API_URL
-#          componentPort: api/http
-#          prefix: http://
-#          suffix: /v4
+        - name: API_URL
+          componentPort: api/http
+          prefix: http://
+          suffix: /v4
         # Get value from shareEnv
         - name: SOME_COMMON_ENV
           sharedEnv: SOME_COMMON_ENV

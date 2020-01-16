@@ -69,10 +69,17 @@ func (act *applicationReconcilerTask) Run() (err error) {
 		return err
 	}
 
+	err = act.reconcileServices()
+
+	if err != nil {
+		log.Error(err, "unable to construct services")
+		return err
+	}
+
 	err = act.reconcileComponents()
 
 	if err != nil {
-		log.Error(err, "unable to construct deployment from app")
+		log.Error(err, "unable to construct deploymentp")
 		return err
 	}
 
@@ -84,6 +91,74 @@ func (act *applicationReconcilerTask) reconcileComponents() (err error) {
 		if err = act.reconcileComponent(&component); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (act *applicationReconcilerTask) reconcileServices() (err error) {
+	app := act.app
+	ctx := act.ctx
+	log := act.log
+
+	for _, component := range act.app.Spec.Components {
+		// ports
+		service := act.getService(component.Name)
+		if len(component.Ports) > 0 {
+			newService := false
+			if service == nil {
+				newService = true
+				service = &corev1.Service{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      getServiceName(app.Name, component.Name),
+						Namespace: app.Namespace,
+					},
+					Spec: corev1.ServiceSpec{},
+				}
+			}
+
+			ps := []corev1.ServicePort{}
+
+			for _, port := range component.Ports {
+				ps = append(ps, corev1.ServicePort{
+					Name:       port.Name,
+					TargetPort: intstr.FromInt(int(port.ContainerPort)),
+					Protocol:   corev1.ProtocolTCP,      // TODO
+					Port:       int32(port.ServicePort), // TODO
+				})
+			}
+
+			service.Spec.Ports = ps
+
+			if newService {
+				if err := ctrl.SetControllerReference(app, service, act.reconciler.Scheme); err != nil {
+					return err
+				}
+
+				if err := act.reconciler.Create(ctx, service); err != nil {
+					log.Error(err, "unable to create Service for Component", "app", app, "component", component)
+					return err
+				}
+			} else {
+				if err := act.reconciler.Update(ctx, service); err != nil {
+					log.Error(err, "unable to update Service for Component", "app", app, "component", component)
+					return err
+				}
+			}
+		} else if service != nil {
+			if err := act.reconciler.Delete(act.ctx, service); err != nil {
+				log.Error(err, "unable to delete Service for Application Component", "app", app, "component", component)
+				return err
+			}
+		}
+	}
+
+	// refresh services
+	err = act.getServices()
+
+	if err != nil {
+		log.Error(err, "unable to refresh services")
+		return err
 	}
 
 	return nil
@@ -144,19 +219,43 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 
 		if env.Value != "" {
 			value = env.Value
-		}
-
-		if env.SharedEnv != "" {
+		} else if env.SharedEnv != "" {
 			value = act.app.Spec.FindShareEnvValue(env.SharedEnv)
 			if value == "" {
 				// TODO is this the corrent way to allocate an error?
 				return fmt.Errorf("Can't find shared env %s", env.SharedEnv)
 			}
+		} else if env.ComponentPort != "" {
+			parts := strings.Split(env.ComponentPort, "/")
+
+			if len(parts) != 2 {
+				return fmt.Errorf("wrong componentPort config %s, format error", env.ComponentPort)
+			}
+
+			service := act.FindService(parts[0])
+
+			if service == nil {
+				return fmt.Errorf("wrong componentPort config %s, service not exist", env.ComponentPort)
+			}
+
+			var port int32
+
+			for _, servicePort := range service.Spec.Ports {
+				if servicePort.Name == parts[1] {
+					port = servicePort.Port
+				}
+			}
+
+			if port == 0 {
+				return fmt.Errorf("wrong componentPort config %s, port not exist", env.ComponentPort)
+			}
+
+			value = fmt.Sprintf("%s.%s:%d", service.Name, act.app.Namespace, port)
 		}
 
 		envs = append(envs, corev1.EnvVar{
 			Name:  env.Name,
-			Value: value,
+			Value: fmt.Sprintf("%s%s%s", env.Prefix, value, env.Suffix),
 		})
 	}
 
@@ -217,56 +316,6 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 					strings.Join(component.BeforeDestroy, " && "),
 				},
 			},
-		}
-	}
-
-	// ports
-	service := act.getService(component.Name)
-	if len(component.Ports) > 0 {
-		newService := false
-		if service == nil {
-			newService = true
-			service = &corev1.Service{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      getServiceName(app.Name, component.Name),
-					Namespace: app.Namespace,
-				},
-				Spec: corev1.ServiceSpec{},
-			}
-		}
-
-		ps := []corev1.ServicePort{}
-
-		for i, port := range component.Ports {
-			ps = append(ps, corev1.ServicePort{
-				Name:       port.Name,
-				TargetPort: intstr.FromInt(int(port.ContainerPort)),
-				Protocol:   corev1.ProtocolTCP, // TODO
-				Port:       int32(3000 + i),    // TODO
-			})
-		}
-
-		service.Spec.Ports = ps
-
-		if newService {
-			if err := ctrl.SetControllerReference(app, service, act.reconciler.Scheme); err != nil {
-				return err
-			}
-
-			if err := act.reconciler.Create(ctx, service); err != nil {
-				log.Error(err, "unable to create Service for Component", "app", app, "component", component)
-				return err
-			}
-		} else {
-			if err := act.reconciler.Update(ctx, service); err != nil {
-				log.Error(err, "unable to update Service for Component", "app", app, "component", component)
-				return err
-			}
-		}
-	} else if service != nil {
-		if err := act.reconciler.Delete(act.ctx, service); err != nil {
-			log.Error(err, "unable to delete Service for Application Component", "app", app, "component", component)
-			return err
 		}
 	}
 
@@ -436,6 +485,16 @@ func (act *applicationReconcilerTask) deleteExternalResources() error {
 
 	return nil
 
+}
+
+func (act *applicationReconcilerTask) FindService(componentName string) *corev1.Service {
+	for i := range act.services {
+		service := act.services[i]
+		if service.Name == getServiceName(act.app.Name, componentName) {
+			return &service
+		}
+	}
+	return nil
 }
 
 func getDeploymentName(appName, componentName string) string {
