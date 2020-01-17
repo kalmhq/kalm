@@ -1,6 +1,9 @@
 package v1alpha1
 
-import corev1 "k8s.io/api/core/v1"
+import (
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+)
 
 // EnvVar represents an environment variable present in a Container.
 type EnvVar struct {
@@ -29,4 +32,14 @@ type Port struct {
 
 	// +kubebuilder:validation:Enum=TCP;UDP;SCTP
 	Protocol corev1.Protocol `json:"protocol,omitempty"`
+}
+
+type ResourceRange struct {
+	Min resource.Quantity `json:"min"`
+	Max resource.Quantity `json:"max"`
+}
+
+type Resource struct {
+	CPU    ResourceRange `json:"cpu"`
+	Memory ResourceRange `json:"memory"`
 }

@@ -32,16 +32,13 @@ spec:
         - name: http
           containerPort: 80
           servicePort: 80
-#        - exposedPort: 90
-#          servicePort: 90
-#          name: http2
-#      resources:
-#        cpu:
-#          min: 500M
-#          max: 1000M
-#        memory:
-#          min: 500M
-#          max: 2G
+      resources:
+        cpu:
+          min: 200M
+          max: 1000M
+        memory:
+          min: 500M
+          max: 2G
 #        disk:
 #          - path: /a/b/c
 #            name: tmpfile

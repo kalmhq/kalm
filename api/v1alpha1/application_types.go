@@ -44,8 +44,6 @@ type ComponentSpec struct {
 
 	Args []string `json:"args,omitempty"`
 
-	Requirements v1.ResourceRequirements `json:"resources,omitempty"`
-
 	Ports []Port `json:"ports,omitempty"`
 
 	Type ComponentType `json:"type,omitempty"`
@@ -63,6 +61,8 @@ type ComponentSpec struct {
 	AfterStart []string `json:"afterStart,omitempty"`
 
 	BeforeDestroy []string `json:"beforeDestroy,omitempty"`
+
+	Resources Resource `json:"resources,omitempty"`
 }
 
 // ApplicationSpec defines the desired state of Application

@@ -8,6 +8,7 @@ import (
 	"github.com/kapp-staging/kapp/util"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -216,6 +217,31 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 	}
 
 	mainContainer := &(deployment.Spec.Template.Spec.Containers[0])
+
+	if mainContainer.Resources.Requests == nil {
+		mainContainer.Resources.Requests = make(map[corev1.ResourceName]resource.Quantity)
+	}
+
+	if mainContainer.Resources.Limits == nil {
+		mainContainer.Resources.Limits = make(map[corev1.ResourceName]resource.Quantity)
+	}
+
+	// resources
+	if !component.Resources.CPU.Min.IsZero() {
+		mainContainer.Resources.Requests[corev1.ResourceCPU] = component.Resources.CPU.Min
+	}
+
+	if !component.Resources.CPU.Max.IsZero() {
+		mainContainer.Resources.Limits[corev1.ResourceCPU] = component.Resources.CPU.Max
+	}
+
+	if !component.Resources.Memory.Min.IsZero() {
+		mainContainer.Resources.Requests[corev1.ResourceMemory] = component.Resources.Memory.Min
+	}
+
+	if !component.Resources.Memory.Max.IsZero() {
+		mainContainer.Resources.Limits[corev1.ResourceMemory] = component.Resources.Memory.Max
+	}
 
 	// apply envs
 	envs := []corev1.EnvVar{}
