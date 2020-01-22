@@ -34,19 +34,19 @@ spec:
           servicePort: 80
       resources:
         cpu:
-          min: 200M
-          max: 1000M
+          min: 10m
+          max: 100m
         memory:
           min: 500M
           max: 2G
-#        disk:
-#          - path: /a/b/c
-#            name: tmpfile
-#            size: 1G
-#            storageClass: ssd
-#        volume:
-#          - name: config1
-#            path: /tmp/config.yml
+      #        disk:
+      #          - path: /a/b/c
+      #            name: tmpfile
+      #            size: 1G
+      #            storageClass: ssd
+      #        volume:
+      #          - name: config1
+      #            path: /tmp/config.yml
       plugins:
         - name: manual-scaler
           type: plugins.core.kapp.dev/v1alpha1.manual-scaler
@@ -90,4 +90,3 @@ spec:
   sharedEnv:
     - name: SOME_COMMON_ENV
       value: shared_value
-
