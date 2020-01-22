@@ -34,8 +34,8 @@ spec:
           servicePort: 80
       resources:
         cpu:
-          min: 200M
-          max: 1000M
+          min: "0.25"
+          max: "0.25"
         memory:
           min: 500M
           max: 2G
