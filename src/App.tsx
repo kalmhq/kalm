@@ -18,11 +18,34 @@ import Icon from "@material-ui/core/Icon";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import InstallPage from "./pages/Install";
 import { Sidenav, SidenavGroupProps } from "./widgets/Sidenav";
+import { ApplictionList } from "./pages/ApplicationList";
+import { ApplicationNew } from "./pages/ApplicationNew";
+import { ComponentNew } from "./pages/ComponentNew";
+import { Paper } from "@material-ui/core";
 
 const sidenavGroups: SidenavGroupProps[] = [
   {
     text: "Application",
     items: [
+      {
+        text: "Components",
+        type: "dropdown",
+        icon: "extension",
+        items: [
+          {
+            text: "Overview",
+            to: "/components",
+            icon: "reorder",
+            type: "normal"
+          },
+          {
+            text: "Add",
+            to: "/components/new",
+            icon: "add",
+            type: "normal"
+          }
+        ]
+      },
       {
         text: "Application",
         items: [
@@ -95,7 +118,7 @@ const useStyles = makeStyles((theme: Theme) => {
       display: "flex"
     },
     appBar: {
-      zIndex: theme.zIndex.drawer + 1,
+      zIndex: theme.zIndex.drawer,
       transition: theme.transitions.create(["width", "margin"], {
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.leavingScreen
@@ -177,7 +200,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     content: {
       flexGrow: 1,
-      padding: theme.spacing(3)
+      paddingTop: theme.spacing(8)
     },
     nested: {
       paddingLeft: theme.spacing(4)
@@ -188,7 +211,7 @@ const useStyles = makeStyles((theme: Theme) => {
 export default function MiniDrawer() {
   const theme = useTheme();
   const classes = useStyles(theme);
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = React.useState(true);
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -198,13 +221,13 @@ export default function MiniDrawer() {
     setOpen(false);
   };
 
-  console.log(classes);
   return (
     <Router>
       <div className={classes.root}>
         <CssBaseline />
         <AppBar
           position="fixed"
+          color="default"
           className={clsx(classes.appBar, {
             [classes.appBarShift]: open
           })}
@@ -222,7 +245,7 @@ export default function MiniDrawer() {
               <MenuIcon />
             </IconButton>
             <Typography variant="h6" noWrap>
-              Mini variant drawer
+              **
             </Typography>
           </Toolbar>
         </AppBar>
@@ -257,7 +280,6 @@ export default function MiniDrawer() {
           <Sidenav groups={sidenavGroups} isFolded={!open} />
         </Drawer>
         <main className={classes.content}>
-          <div className={classes.content}></div>
           <Switch>
             <Route exact path="/install">
               <InstallPage />
@@ -278,6 +300,18 @@ export default function MiniDrawer() {
                 eleifend. Commodo viverra maecenas accumsan lacus vel facilisis.
                 Nulla posuere sollicitudin aliquam ultrices sagittis orci a.
               </Typography>
+            </Route>
+            <Route exact path="/apps">
+              <ApplictionList />
+            </Route>
+            <Route exact path="/apps/new">
+              <ApplicationNew />
+            </Route>
+            <Route exact path="/components">
+              <ApplicationNew />
+            </Route>
+            <Route exact path="/components/new">
+              <ComponentNew />
             </Route>
           </Switch>
         </main>

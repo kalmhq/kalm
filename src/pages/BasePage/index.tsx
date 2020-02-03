@@ -1,10 +1,9 @@
 import React from "react";
-import Typography from "@material-ui/core/Typography";
-import { DefaultComponentProps } from "@material-ui/core/OverridableComponent";
+import PageHeader from "../../widgets/PageHeader";
 
 export interface BasePageProps {
   title: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   className?: string;
 }
 
@@ -12,9 +11,7 @@ export class BasePage extends React.PureComponent<BasePageProps> {
   public render() {
     return (
       <div className={this.props.className}>
-        <Typography variant="h3" gutterBottom>
-          {this.props.title}
-        </Typography>
+        <PageHeader title={this.props.title}></PageHeader>
         {this.props.children}
       </div>
     );
