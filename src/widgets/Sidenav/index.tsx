@@ -178,9 +178,13 @@ const SidenavGroup: React.FunctionComponent<SidenavGroupProps> = props => {
     >
       {props.items.map((item, index) =>
         item.type === "normal" ? (
-          <SidenavItemNormal {...item} isFolded={props.isFolded} />
+          <SidenavItemNormal key={index} {...item} isFolded={props.isFolded} />
         ) : (
-          <SidenavItemDropdown {...item} isFolded={props.isFolded} />
+          <SidenavItemDropdown
+            key={index}
+            {...item}
+            isFolded={props.isFolded}
+          />
         )
       )}
     </List>
@@ -266,8 +270,8 @@ const SidenavItemDropdown: React.FunctionComponent<SidenavItemDropdownProps> = p
           className={clsx({ [classes.open]: open })}
         >
           <List component="div" disablePadding>
-            {props.items.map(item => (
-              <SidenavItemNormal {...item} nestedLevel={1} />
+            {props.items.map((item, index) => (
+              <SidenavItemNormal key={index} {...item} nestedLevel={1} />
             ))}
           </List>
         </Collapse>
@@ -290,8 +294,8 @@ export const Sidenav: React.FunctionComponent<SidenavProps> = props => {
 
   return (
     <div className={classes.root}>
-      {props.groups.map(group => (
-        <SidenavGroup {...group} isFolded={props.isFolded} />
+      {props.groups.map((group, index) => (
+        <SidenavGroup key={index} {...group} isFolded={props.isFolded} />
       ))}
     </div>
   );

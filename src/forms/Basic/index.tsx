@@ -16,6 +16,8 @@ export const renderTextField = ({
   input,
   placeholder,
   helperText,
+  required,
+  disabled,
   meta: { touched, invalid, error },
   ...custom
 }: FilledTextFieldProps & WrappedFieldProps & Props) => {
@@ -29,13 +31,15 @@ export const renderTextField = ({
     <TextField
       classes={{ root: classes.root }}
       label={label}
+      disabled={disabled}
+      required={required}
       error={touched && invalid}
       helperText={(touched && error) || helperText}
       placeholder={placeholder}
       fullWidth
       size="small"
       margin="normal"
-      variant="filled"
+      variant="outlined"
       {...input}
       {...custom}
     />
@@ -46,6 +50,7 @@ interface Props {
   label?: string;
   helperText?: string;
   placeholder?: string;
+  required?: boolean;
 }
 
 export const CustomTextField = (props: BaseFieldProps & Props) => {
@@ -72,7 +77,7 @@ interface SelectProps {
   children: React.ReactNode;
 }
 
-export const renderSelectField = ({
+export const RenderSelectField = ({
   input,
   label,
   meta: { touched, error },
@@ -80,22 +85,33 @@ export const renderSelectField = ({
   ...custom
 }: WrappedFieldProps & SelectProps) => {
   const id = ID();
-
+  const labelId = ID();
   const classes = makeStyles(theme => ({
     root: {
       display: "flex"
     }
   }))();
 
+  const [labelWidth, setLabelWidth] = React.useState(0);
+  React.useEffect(() => {
+    setLabelWidth(inputLabel.current!.offsetWidth);
+  }, []);
+
+  const inputLabel = React.useRef<HTMLLabelElement>(null);
+
   return (
     <FormControl
       classes={{ root: classes.root }}
       error={touched && error}
-      variant="filled"
+      variant="outlined"
       size="small"
     >
-      <InputLabel htmlFor={id}>{label}</InputLabel>
+      <InputLabel ref={inputLabel} htmlFor={id} id={labelId}>
+        {label}
+      </InputLabel>
       <Select
+        labelWidth={labelWidth}
+        labelId={labelId}
         {...input}
         {...custom}
         inputProps={{

@@ -7,9 +7,19 @@ import {
   WrappedFieldArrayProps
 } from "redux-form";
 import DeleteIcon from "@material-ui/icons/Delete";
-import { renderTextField, renderSelectField } from ".";
-import { Grid, Button, IconButton, MenuItem } from "@material-ui/core";
+import { renderTextField, RenderSelectField } from ".";
+import { Grid, Button, IconButton, MenuItem, Divider } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
+
+export const portTypeTCP = "TCP";
+export const portTypeUDP = "UDP";
+
+const generateNewPort = () => ({
+  name: "",
+  protocol: portTypeTCP,
+  containerPort: "",
+  servicePort: ""
+});
 
 const renderPorts = ({
   fields,
@@ -23,6 +33,9 @@ const renderPorts = ({
     },
     field: {
       margin: 0
+    },
+    divider: {
+      marginBottom: theme.spacing(3)
     }
   }))();
 
@@ -31,45 +44,55 @@ const renderPorts = ({
       <div>{submitFailed && error && <span>{error}</span>}</div>
       {fields.map((port, index) => (
         <div key={index}>
-          <Grid container spacing={2}>
-            <Grid item xs={5}>
-              <Field
-                classes={{ root: classes.field }}
-                name={`${port}.name`}
-                component={renderTextField}
-                label="Port Name"
-              />
+          <Grid container spacing={2} className={classes.divider}>
+            <Grid item xs={10}>
+              <Grid container spacing={2}>
+                <Grid item xs={6}>
+                  <Field
+                    classes={{ root: classes.field }}
+                    name={`${port}.name`}
+                    required
+                    autoFocus
+                    component={renderTextField}
+                    label="Port Name"
+                  />
+                </Grid>
+                <Grid item xs={6}>
+                  <Field
+                    classes={{ root: classes.field }}
+                    name={`${port}.protocol`}
+                    component={RenderSelectField}
+                    label="Protocol"
+                  >
+                    <MenuItem value={portTypeTCP}>TCP</MenuItem>
+                    <MenuItem value={portTypeUDP}>UDP</MenuItem>
+                  </Field>
+                </Grid>
+                <Grid item xs={6}>
+                  <Field
+                    classes={{ root: classes.field }}
+                    name={`${port}.containerPort`}
+                    type="number"
+                    required
+                    component={renderTextField}
+                    label="Conpoment Port"
+                    placeholder="8080"
+                  />
+                </Grid>
+                <Grid item xs={6}>
+                  <Field
+                    classes={{ root: classes.field }}
+                    name={`${port}.servicePort`}
+                    required
+                    type="number"
+                    component={renderTextField}
+                    label="Service Port"
+                    placeholder="80"
+                  />
+                </Grid>
+              </Grid>
             </Grid>
-            <Grid item xs={2}>
-              <Field
-                classes={{ root: classes.field }}
-                name={`${port}.protocol`}
-                component={renderSelectField}
-                label="Protocol"
-              >
-                <MenuItem value="TCP">TCP</MenuItem>
-                <MenuItem value="UDP">UDP</MenuItem>
-              </Field>
-            </Grid>
-            <Grid item xs={2}>
-              <Field
-                classes={{ root: classes.field }}
-                name={`${port}.containerPort`}
-                type="number"
-                component={renderTextField}
-                label="Conpoment Port"
-              />
-            </Grid>
-            <Grid item xs={2}>
-              <Field
-                classes={{ root: classes.field }}
-                name={`${port}.servicePort`}
-                type="number"
-                component={renderTextField}
-                label="Service Port"
-              />
-            </Grid>
-            <Grid item xs={1} className={classes.delete}>
+            <Grid item xs={2} className={classes.delete}>
               <IconButton
                 aria-label="delete"
                 onClick={() => fields.remove(index)}
@@ -78,13 +101,15 @@ const renderPorts = ({
               </IconButton>
             </Grid>
           </Grid>
+          {index !== fields.length - 1 ? (
+            <Divider classes={{ root: classes.divider }} />
+          ) : null}
         </div>
       ))}
       <Button
         variant="contained"
-        type="submit"
         color="primary"
-        onClick={() => fields.push({})}
+        onClick={() => fields.push(generateNewPort())}
       >
         Add Port
       </Button>

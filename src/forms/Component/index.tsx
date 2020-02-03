@@ -18,6 +18,7 @@ import { CustomEnvs } from "../Basic/env";
 import { CustomPorts } from "../Basic/ports";
 import { Button, Grid } from "@material-ui/core";
 import ComponentResources from "./resources";
+import { Paper } from "@material-ui/core";
 
 export interface Props {}
 
@@ -55,7 +56,20 @@ const useStyles = makeStyles((theme: Theme) => ({
   root: {
     flexGrow: 1,
     width: "100%",
-    backgroundColor: theme.palette.background.paper
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(3)
+  },
+  paper: {
+    padding: theme.spacing(3),
+    marginBottom: theme.spacing(5)
+  },
+  sectionHeader: {
+    fontSize: 24,
+    fontWeight: 400
+  },
+  sectionDiscription: {
+    fontSize: 16,
+    margin: "16px 0"
   }
 }));
 
@@ -71,59 +85,112 @@ function ComponentFormRaw(props: Props & InjectedFormProps<{}, Props>) {
   return (
     <div className={classes.root}>
       <form onSubmit={handleSubmit}>
-        <AppBar position="static" color="default">
-          <Tabs
-            value={value}
-            onChange={handleChange}
-            variant="scrollable"
-            scrollButtons="on"
-            indicatorColor="primary"
-            textColor="primary"
-            aria-label="scrollable force tabs example"
-          >
-            <Tab label="Basic" {...a11yProps(0)} />
-            <Tab label="Environment Variables" {...a11yProps(1)} />
-            <Tab label="Ports" {...a11yProps(5)} />
-            <Tab label="Resources" {...a11yProps(2)} />
-            <Tab label="Plugins" {...a11yProps(3)} />
-            <Tab label="Hooks" {...a11yProps(4)} />
-          </Tabs>
-        </AppBar>
         <Grid container spacing={1}>
-          <Grid item xs={8}>
-            <TabPanel value={value} index={0}>
+          <Grid item xs={12} sm={12} md={8} lg={8} xl={6}>
+            <Typography
+              variant="h2"
+              classes={{
+                root: classes.sectionHeader
+              }}
+            >
+              Basic
+            </Typography>
+            <Typography classes={{ root: classes.sectionDiscription }}>
+              Describe how to launch this compoent.
+            </Typography>
+            <Paper
+              elevation={4}
+              square
+              classes={{
+                root: classes.paper
+              }}
+            >
               <CustomTextField
                 name="name"
                 label="Name"
+                required
                 helperText='The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
                 placeholder="Please type the component name"
               />
               <CustomTextField
                 name="image"
                 label="Image"
+                required
                 helperText='Eg: "nginx:latest", "registry.example.com/group/repo:tag"'
               />
               <CustomTextField
                 name="command"
                 label="Command (Optional)"
+                required
                 helperText='Eg: "/bin/app", "rails server".'
               />
-            </TabPanel>
-            <TabPanel value={value} index={1}>
+            </Paper>
+            <Typography
+              variant="h2"
+              classes={{
+                root: classes.sectionHeader
+              }}
+            >
+              Environment variables
+            </Typography>
+            <Typography classes={{ root: classes.sectionDiscription }}>
+              Environment variables are variable whose values are set outside
+              the program, typically through functionality built into the
+              component. An environment variable is made up of a name/value
+              pair, it also support combine a dynamic value associated with
+              other component later in a real running application. Learn More.
+            </Typography>
+            <Paper
+              elevation={4}
+              square
+              classes={{
+                root: classes.paper
+              }}
+            >
               <CustomEnvs />
-            </TabPanel>
-            <TabPanel value={value} index={2}>
+            </Paper>
+            <Typography
+              variant="h2"
+              classes={{
+                root: classes.sectionHeader
+              }}
+            >
+              Ports
+            </Typography>
+            <Typography classes={{ root: classes.sectionDiscription }}>
+              Port is the standard way to expose your program. If you want your
+              component can be accessed by some other parts, you need to define
+              a port.
+            </Typography>
+            <Paper
+              elevation={4}
+              square
+              classes={{
+                root: classes.paper
+              }}
+            >
               <CustomPorts />
-            </TabPanel>
-            <TabPanel value={value} index={3}>
+            </Paper>
+            <Typography
+              variant="h2"
+              classes={{
+                root: classes.sectionHeader
+              }}
+            >
+              Resources
+            </Typography>
+            <Typography classes={{ root: classes.sectionDiscription }}>
+              Cpu, Memory, Disk can be configured here.
+            </Typography>
+            <Paper
+              elevation={4}
+              square
+              classes={{
+                root: classes.paper
+              }}
+            >
               <ComponentResources />
-            </TabPanel>
-            <TabPanel value={value} index={4}>
-              Item Five
-            </TabPanel>
-            <TabPanel value={value} index={5}>
-              Item Six
-            </TabPanel>
+            </Paper>
           </Grid>
         </Grid>
         <Button variant="contained" color="primary" type="submit">

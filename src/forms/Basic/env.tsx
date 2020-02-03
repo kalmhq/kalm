@@ -6,17 +6,37 @@ import {
   BaseFieldProps,
   FieldArray,
   BaseFieldArrayProps,
-  WrappedFieldArrayProps
+  WrappedFieldArrayProps,
+  getFormValues,
+  formValueSelector,
+  focus
 } from "redux-form";
 import DeleteIcon from "@material-ui/icons/Delete";
-import { renderTextField, renderSelectField } from ".";
+import { renderTextField, RenderSelectField } from ".";
 import { Grid, Button, IconButton, MenuItem } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
+import { connect, DispatchProp } from "react-redux";
+import { RootState } from "../../reducers";
+
+interface EnvValue {
+  name: string;
+  type: string;
+  value: string;
+}
+
+export const EnvTypeExternal = "external";
+export const EnvTypeStatic = "static";
+
+const generateEmptyEnv = (): EnvValue => ({
+  name: "",
+  type: EnvTypeStatic,
+  value: ""
+});
 
 const renderEnvs = ({
   fields,
   meta: { error, submitFailed }
-}: WrappedFieldArrayProps<{}>) => {
+}: WrappedFieldArrayProps<EnvValue>) => {
   const classes = makeStyles(theme => ({
     delete: {
       display: "flex",
@@ -28,49 +48,64 @@ const renderEnvs = ({
   return (
     <div>
       <div>{submitFailed && error && <span>{error}</span>}</div>
-      {fields.map((field, index) => (
-        <div key={index}>
-          <Grid container spacing={2}>
-            <Grid item xs={3}>
-              <Field
-                name={`${field}.name`}
-                component={renderTextField}
-                label="Name"
-              />
+      {fields.map((field, index) => {
+        const currentEnv = fields.get(index);
+        const isCurrentEnvExternal =
+          !!currentEnv.type && currentEnv.type === EnvTypeExternal;
+
+        return (
+          <div key={index}>
+            <Grid container spacing={2}>
+              <Grid item xs={2}>
+                <Field
+                  name={`${field}.type`}
+                  component={RenderSelectField}
+                  label="Type"
+                >
+                  <MenuItem value={EnvTypeStatic}>Static</MenuItem>
+                  <MenuItem value={EnvTypeExternal}>External</MenuItem>
+                </Field>
+              </Grid>
+              <Grid item xs={3}>
+                <Field
+                  name={`${field}.name`}
+                  required={true}
+                  component={renderTextField}
+                  label="Name"
+                  autoFocus
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <Field
+                  disabled={isCurrentEnvExternal}
+                  required={!isCurrentEnvExternal}
+                  name={`${field}.value`}
+                  component={renderTextField}
+                  label={
+                    isCurrentEnvExternal
+                      ? "DISABLED. External will be configured later."
+                      : "Value"
+                  }
+                ></Field>
+              </Grid>
+              <Grid item xs={1} className={classes.delete}>
+                <IconButton
+                  aria-label="delete"
+                  onClick={() => {
+                    fields.remove(index);
+                  }}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </Grid>
             </Grid>
-            <Grid item xs={2}>
-              <Field
-                name={`${field}.type`}
-                component={renderSelectField}
-                label="Type"
-              >
-                <MenuItem value="static">Static</MenuItem>
-                <MenuItem value="external">External</MenuItem>
-              </Field>
-            </Grid>
-            <Grid item xs={6}>
-              <Field
-                name={`${field}.value`}
-                component={renderTextField}
-                label="Value"
-              ></Field>
-            </Grid>
-            <Grid item xs={1} className={classes.delete}>
-              <IconButton
-                aria-label="delete"
-                onClick={() => fields.remove(index)}
-              >
-                <DeleteIcon />
-              </IconButton>
-            </Grid>
-          </Grid>
-        </div>
-      ))}
+          </div>
+        );
+      })}
       <Button
         variant="contained"
-        type="submit"
         color="primary"
-        onClick={() => fields.push({})}
+        onClick={() => fields.push(generateEmptyEnv())}
       >
         Add Environment Variable
       </Button>
@@ -105,10 +140,18 @@ interface Props {
   placeholder?: string;
 }
 
-export const CustomEnvs = (props: WrappedFieldArrayProps<{}> | {}) => {
+let envs = (props: WrappedFieldArrayProps<{}> | {}) => {
   return (
     <div>
       <FieldArray {...props} name="env" valid={true} component={renderEnvs} />
     </div>
   );
 };
+
+// export const CustomEnvs = connect((state: RootState) => {
+//   const selector = formValueSelector("component");
+//   const values = selector(state, "env");
+//   return { values };
+// })(envs);
+
+export const CustomEnvs = envs;
