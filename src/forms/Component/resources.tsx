@@ -2,6 +2,9 @@ import React, { ChangeEvent } from "react";
 import Typography from "@material-ui/core/Typography";
 import Slider from "@material-ui/core/Slider";
 import { CustomDisks } from "../Basic/disk";
+import { createStyles, withStyles, WithStyles, Theme } from "@material-ui/core";
+import { CPUSlider } from "../Basic/cpu";
+import { MemorySlider } from "../Basic/memory";
 
 const cpuMarks = [
   {
@@ -61,55 +64,34 @@ const memoryMarks = [
   }
 ];
 
-export default class ComponentResources extends React.PureComponent {
-  private formatCpuText = (value: number) => {
-    return (value / 1000).toString() + "";
-  };
-
-  private formatMemoryText = (value: number) => {
-    const realValue = this.memoryFromNormalizeToReal(value);
-    if (realValue < 1000) {
-      return realValue + "M";
-    } else {
-      return realValue / 1000 + "G";
+const styles = (_: Theme) =>
+  createStyles({
+    header: {
+      marginBottom: 50
+    },
+    diskHeader: {
+      marginTop: 20,
+      marginBottom: 20
     }
-  };
+  });
 
-  private setCpu = (event: ChangeEvent<{}>, value: number | number[]): void => {
-    console.log(value);
-  };
+interface ComponentResourcesProps extends WithStyles<typeof styles> {}
 
-  private setMemory = (
-    event: ChangeEvent<{}>,
-    value: number | number[]
-  ): void => {
-    if (typeof value === "number") {
-      console.log(this.memoryFromNormalizeToReal(value));
-    }
-  };
-
-  private memoryFromNormalizeToReal = (value: number): number => {
-    if (value <= 1000) {
-      return value * 0.1;
-    } else if (value <= 2000) {
-      return value - 1000 + 100;
-    } else {
-      return (value - 2000) * 10 + 1100;
-    }
-  };
-
-  // memory display rules
-  // slider is from 0-2000
-  // 1st 1000 unit is 0.1M
-  // 2st 1000 uint is 1M
-  // 3th 690 units is 10M
-
-  public render() {
-    return (
-      <div>
-        <Typography variant="h5" gutterBottom>
-          CPU
-          <Slider
+export default withStyles(styles)(
+  class ComponentResources extends React.PureComponent<
+    ComponentResourcesProps
+  > {
+    public render() {
+      return (
+        <div>
+          <Typography
+            variant="h5"
+            gutterBottom
+            classes={{ root: this.props.classes.header }}
+          >
+            CPU
+          </Typography>
+          {/* <Slider
             defaultValue={1000}
             // getAriaValueText={this.formatCpuText}
             valueLabelFormat={this.formatCpuText}
@@ -120,28 +102,27 @@ export default class ComponentResources extends React.PureComponent {
             max={16000}
             valueLabelDisplay="on"
             onChange={this.setCpu}
-          />
-        </Typography>
-        <Typography variant="h5" gutterBottom>
-          Memory
-          <Slider
-            defaultValue={500}
-            // getAriaValueText={this.formatCpuText}
-            valueLabelFormat={this.formatMemoryText}
-            aria-labelledby="discrete-slider"
-            step={10}
-            min={10}
-            max={2690}
-            valueLabelDisplay={"on"}
-            marks={memoryMarks}
-            onChange={this.setMemory}
-          />
-        </Typography>
-        <Typography variant="h5" gutterBottom>
-          Disk
+          /> */}
+
+          <CPUSlider />
+          <Typography
+            variant="h5"
+            gutterBottom
+            classes={{ root: this.props.classes.header }}
+          >
+            Memory
+          </Typography>
+          <MemorySlider />
+          <Typography
+            variant="h5"
+            gutterBottom
+            classes={{ root: this.props.classes.diskHeader }}
+          >
+            Disk
+          </Typography>
           <CustomDisks />
-        </Typography>
-      </div>
-    );
+        </div>
+      );
+    }
   }
-}
+);

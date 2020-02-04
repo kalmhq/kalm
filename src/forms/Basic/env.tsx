@@ -17,6 +17,7 @@ import { Grid, Button, IconButton, MenuItem } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { connect, DispatchProp } from "react-redux";
 import { RootState } from "../../reducers";
+import { ValidatorRequired } from "../validator";
 
 interface EnvValue {
   name: string;
@@ -61,6 +62,7 @@ const renderEnvs = ({
                   name={`${field}.type`}
                   component={RenderSelectField}
                   label="Type"
+                  validate={[ValidatorRequired]}
                 >
                   <MenuItem value={EnvTypeStatic}>Static</MenuItem>
                   <MenuItem value={EnvTypeExternal}>External</MenuItem>
@@ -69,16 +71,16 @@ const renderEnvs = ({
               <Grid item xs={3}>
                 <Field
                   name={`${field}.name`}
-                  required={true}
                   component={renderTextField}
                   label="Name"
+                  validate={[ValidatorRequired]}
                   autoFocus
                 />
               </Grid>
               <Grid item xs={6}>
                 <Field
                   disabled={isCurrentEnvExternal}
-                  required={!isCurrentEnvExternal}
+                  validate={!isCurrentEnvExternal ? ValidatorRequired : []}
                   name={`${field}.value`}
                   component={renderTextField}
                   label={
@@ -103,7 +105,8 @@ const renderEnvs = ({
         );
       })}
       <Button
-        variant="contained"
+        variant="outlined"
+        size="small"
         color="primary"
         onClick={() => fields.push(generateEmptyEnv())}
       >
@@ -142,9 +145,7 @@ interface Props {
 
 let envs = (props: WrappedFieldArrayProps<{}> | {}) => {
   return (
-    <div>
-      <FieldArray {...props} name="env" valid={true} component={renderEnvs} />
-    </div>
+    <FieldArray {...props} name="env" valid={true} component={renderEnvs} />
   );
 };
 

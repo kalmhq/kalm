@@ -10,6 +10,8 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import { renderTextField, RenderSelectField } from ".";
 import { Grid, Button, IconButton, MenuItem, Divider } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
+import { ValidatorRequired } from "../validator";
+import { NormalizePort } from "../normalizer";
 
 export const portTypeTCP = "TCP";
 export const portTypeUDP = "UDP";
@@ -51,7 +53,7 @@ const renderPorts = ({
                   <Field
                     classes={{ root: classes.field }}
                     name={`${port}.name`}
-                    required
+                    validate={[ValidatorRequired]}
                     autoFocus
                     component={renderTextField}
                     label="Port Name"
@@ -61,6 +63,7 @@ const renderPorts = ({
                   <Field
                     classes={{ root: classes.field }}
                     name={`${port}.protocol`}
+                    validate={[ValidatorRequired]}
                     component={RenderSelectField}
                     label="Protocol"
                   >
@@ -73,8 +76,9 @@ const renderPorts = ({
                     classes={{ root: classes.field }}
                     name={`${port}.containerPort`}
                     type="number"
-                    required
+                    validate={[ValidatorRequired]}
                     component={renderTextField}
+                    normalize={NormalizePort}
                     label="Conpoment Port"
                     placeholder="8080"
                   />
@@ -83,7 +87,8 @@ const renderPorts = ({
                   <Field
                     classes={{ root: classes.field }}
                     name={`${port}.servicePort`}
-                    required
+                    normalize={NormalizePort}
+                    validate={[ValidatorRequired]}
                     type="number"
                     component={renderTextField}
                     label="Service Port"
@@ -107,8 +112,9 @@ const renderPorts = ({
         </div>
       ))}
       <Button
-        variant="contained"
+        variant="outlined"
         color="primary"
+        size="small"
         onClick={() => fields.push(generateNewPort())}
       >
         Add Port
@@ -146,13 +152,6 @@ interface Props {
 
 export const CustomPorts = (props: WrappedFieldArrayProps<{}> | {}) => {
   return (
-    <div>
-      <FieldArray
-        {...props}
-        name="ports"
-        valid={true}
-        component={renderPorts}
-      />
-    </div>
+    <FieldArray {...props} name="ports" valid={true} component={renderPorts} />
   );
 };

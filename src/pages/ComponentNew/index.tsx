@@ -6,7 +6,11 @@ export class ComponentNew extends React.PureComponent {
   public render() {
     return (
       <BasePage title="New Component">
-        <ComponentForm />
+        <ComponentForm
+          onSubmit={(...args) => {
+            console.log(1, args);
+          }}
+        />
       </BasePage>
     );
   }

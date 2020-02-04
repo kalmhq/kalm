@@ -19,6 +19,7 @@ import { CustomPorts } from "../Basic/ports";
 import { Button, Grid } from "@material-ui/core";
 import ComponentResources from "./resources";
 import { Paper } from "@material-ui/core";
+import { ValidatorRequired } from "../validator";
 
 export interface Props {}
 
@@ -70,6 +71,9 @@ const useStyles = makeStyles((theme: Theme) => ({
   sectionDiscription: {
     fontSize: 16,
     margin: "16px 0"
+  },
+  input: {
+    marginBottom: 12
   }
 }));
 
@@ -108,20 +112,19 @@ function ComponentFormRaw(props: Props & InjectedFormProps<{}, Props>) {
               <CustomTextField
                 name="name"
                 label="Name"
-                required
+                validate={[ValidatorRequired]}
                 helperText='The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
                 placeholder="Please type the component name"
               />
               <CustomTextField
                 name="image"
                 label="Image"
-                required
+                validate={[ValidatorRequired]}
                 helperText='Eg: "nginx:latest", "registry.example.com/group/repo:tag"'
               />
               <CustomTextField
                 name="command"
                 label="Command (Optional)"
-                required
                 helperText='Eg: "/bin/app", "rails server".'
               />
             </Paper>

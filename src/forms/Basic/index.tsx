@@ -1,4 +1,4 @@
-import React from "react";
+import React, { HtmlHTMLAttributes } from "react";
 import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
 import {
   Field,
@@ -7,6 +7,7 @@ import {
   WrappedFieldMetaProps
 } from "redux-form";
 import { FormControl, InputLabel, Select, MenuItem } from "@material-ui/core";
+import { Autocomplete } from "@material-ui/lab";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import { ID } from "../../utils";
 import { makeStyles } from "@material-ui/core/styles";
@@ -31,6 +32,7 @@ export const renderTextField = ({
     <TextField
       classes={{ root: classes.root }}
       label={label}
+      autoComplete="off"
       disabled={disabled}
       required={required}
       error={touched && invalid}
@@ -54,11 +56,7 @@ interface Props {
 }
 
 export const CustomTextField = (props: BaseFieldProps & Props) => {
-  return (
-    <div>
-      <Field {...props} component={renderTextField} />
-    </div>
-  );
+  return <Field {...props} component={renderTextField} />;
 };
 
 const renderFromHelper = ({
@@ -122,5 +120,37 @@ export const RenderSelectField = ({
       </Select>
       {renderFromHelper({ touched, error })}
     </FormControl>
+  );
+};
+
+interface AutoCompleteProps {
+  children: React.ReactElement<{ children: string; value: string }>[];
+}
+
+export const RenderAutoComplete = ({
+  input,
+  // label,
+  meta: { touched, error },
+  children,
+  ...custom
+}: WrappedFieldProps & AutoCompleteProps) => {
+  const options = children.map(item => ({
+    text: item.props.children,
+    value: item.props.value
+  }));
+  return (
+    <Autocomplete
+      options={options}
+      getOptionLabel={option => option.text}
+      renderInput={params => (
+        <TextField
+          {...params}
+          label="Combo box"
+          variant="outlined"
+          fullWidth
+          size="small"
+        />
+      )}
+    />
   );
 };
