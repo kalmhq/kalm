@@ -2,6 +2,7 @@ import { CallHistoryMethodAction } from "connected-react-router";
 
 export const CREATE_COMPONENT_ACTION = "ACTION_CREATE_COMPONENT";
 export const UPDATE_COMPONENT_ACTION = "UPDATE_COMPONENT_ACTION";
+export const DELETE_COMPONENT_ACTION = "DELETE_COMPONENT_ACTION";
 
 export interface ComponentFormValues {
   id: string;
@@ -46,7 +47,15 @@ export interface UpdateComponentAction {
   };
 }
 
+export interface DeleteComponentAction {
+  type: typeof DELETE_COMPONENT_ACTION;
+  payload: {
+    componentId: string;
+  };
+}
+
 export type Actions =
   | CreateComponentAction
+  | DeleteComponentAction
   | UpdateComponentAction
   | CallHistoryMethodAction;

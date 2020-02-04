@@ -8,6 +8,9 @@ import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@material-ui/icons/Delete";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import { push } from "connected-react-router";
+import { deleteComponentAction } from "../../actions/component";
+import { ThunkDispatch } from "redux-thunk";
+import { Actions } from "../../actions";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -20,16 +23,21 @@ const mapStateToProps = (state: RootState) => {
 
 type StateProps = ReturnType<typeof mapStateToProps>;
 
-class List extends React.PureComponent<StateProps & DispatchProp> {
+interface Props extends StateProps {
+  dispatch: ThunkDispatch<RootState, undefined, Actions>;
+}
+
+class List extends React.PureComponent<Props> {
   public render() {
-    const data = this.props.components.map(component => {
+    const { dispatch, components } = this.props;
+    const data = components.map(component => {
       return {
         action: (
           <>
             <IconButton
               aria-label="edit"
               onClick={() => {
-                this.props.dispatch(push(`/components/${component.id}/edit`));
+                dispatch(push(`/components/${component.id}/edit`));
               }}
             >
               <EditIcon />
@@ -38,15 +46,18 @@ class List extends React.PureComponent<StateProps & DispatchProp> {
             <IconButton
               aria-label="edit"
               onClick={() => {
-                this.props.dispatch(
-                  push(`/components/${component.id}/duplicate`)
-                );
+                dispatch(push(`/components/${component.id}/duplicate`));
               }}
             >
               <FileCopyIcon />
             </IconButton>
 
-            <IconButton aria-label="delete" onClick={() => {}}>
+            <IconButton
+              aria-label="delete"
+              onClick={() => {
+                dispatch(deleteComponentAction(component.id));
+              }}
+            >
               <DeleteIcon />
             </IconButton>
           </>

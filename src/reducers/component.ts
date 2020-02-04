@@ -3,7 +3,8 @@ import { ImmutableMap } from "../typings";
 import {
   CREATE_COMPONENT_ACTION,
   ComponentFormValues,
-  UPDATE_COMPONENT_ACTION
+  UPDATE_COMPONENT_ACTION,
+  DELETE_COMPONENT_ACTION
 } from "../actions";
 import { Actions } from "../actions";
 
@@ -105,6 +106,10 @@ const reducer = (state: State = initialState, action: Actions): State => {
         "components",
         components.set(id, action.payload.componentValues)
       );
+      break;
+    }
+    case DELETE_COMPONENT_ACTION: {
+      state = state.deleteIn(["components", action.payload.componentId]);
       break;
     }
   }
