@@ -7,8 +7,8 @@ export class ComponentNew extends React.PureComponent {
     return (
       <BasePage title="New Component">
         <ComponentForm
-          onSubmit={(...args) => {
-            console.log(1, args);
+          onSubmit={values => {
+            console.log(values, JSON.stringify(values));
           }}
         />
       </BasePage>

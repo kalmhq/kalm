@@ -124,13 +124,15 @@ export const RenderSelectField = ({
 };
 
 interface AutoCompleteProps {
+  label?: string;
+  required?: boolean;
   children: React.ReactElement<{ children: string; value: string }>[];
 }
 
 export const RenderAutoComplete = ({
   input,
-  // label,
-  meta: { touched, error },
+  label,
+  required,
   children,
   ...custom
 }: WrappedFieldProps & AutoCompleteProps) => {
@@ -138,14 +140,33 @@ export const RenderAutoComplete = ({
     text: item.props.children,
     value: item.props.value
   }));
+
+  let selectedOption = options.find(x => x.value === input.value);
+
+  if (!selectedOption) {
+    selectedOption = options[0];
+  }
+
+  // TODO, if there is no options, we should disabled the add existing disk
+
   return (
     <Autocomplete
       options={options}
       getOptionLabel={option => option.text}
+      value={selectedOption}
+      disableClearable
+      onChange={(
+        event: React.ChangeEvent<{}>,
+        value: { text: string; value: string } | null
+      ) => {
+        if (value) {
+          input.onChange(value.value);
+        }
+      }}
       renderInput={params => (
         <TextField
           {...params}
-          label="Combo box"
+          label={label}
           variant="outlined"
           fullWidth
           size="small"

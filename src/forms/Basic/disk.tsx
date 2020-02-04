@@ -97,18 +97,25 @@ const renderDisks = ({
                       <Field
                         name={`${field}.existDisk`}
                         component={RenderAutoComplete}
+                        validate={!isNewDisk ? ValidatorRequired : []}
                         label="ExistDisk"
                       >
-                        <option value={1}>PVC/random-name-disk-1</option>
-                        <option value={2}>PVC/fake-disk-placeholder</option>
-                        <option value={3}>PVC/test-disk-placeholder</option>
-                        <option value={4}>PVC/foo-disk-placeholder</option>
-                        <option value={5}>PVC/hello-world</option>
+                        <option value={"1"}>PVC/random-name-disk-1 (1G)</option>
+                        <option value={"2"}>
+                          PVC/fake-disk-placeholder (1G)
+                        </option>
+                        <option value={"3"}>
+                          PVC/test-disk-placeholder (3G)
+                        </option>
+                        <option value={"4"}>
+                          PVC/foo-disk-placeholder (1G)
+                        </option>
+                        <option value={"5"}>PVC/hello-world (8G)</option>
                       </Field>
                     </Grid>
                   )}
 
-                  <Grid item xs={6}>
+                  <Grid item xs={isNewDisk ? 6 : 12}>
                     <Field
                       name={`${field}.path`}
                       component={renderTextField}
@@ -116,15 +123,17 @@ const renderDisks = ({
                       label="Path"
                     />
                   </Grid>
-                  <Grid item xs={6}>
-                    <Field
-                      name={`${field}.size`}
-                      component={renderTextField}
-                      validate={isNewDisk ? ValidatorRequired : []}
-                      type="number"
-                      label="Size (Megabeta, M)"
-                    ></Field>
-                  </Grid>
+                  {isNewDisk ? (
+                    <Grid item xs={6}>
+                      <Field
+                        name={`${field}.size`}
+                        component={renderTextField}
+                        validate={isNewDisk ? ValidatorRequired : []}
+                        type="number"
+                        label="Size (Megabeta, M)"
+                      ></Field>
+                    </Grid>
+                  ) : null}
                 </Grid>
               </Grid>
               <Grid item xs={2} className={classes.delete}>
