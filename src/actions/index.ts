@@ -3,6 +3,7 @@ import { CallHistoryMethodAction } from "connected-react-router";
 export const CREATE_COMPONENT_ACTION = "ACTION_CREATE_COMPONENT";
 
 export interface ComponentFormValues {
+  id: string;
   name: string;
   image: string;
   command: string;

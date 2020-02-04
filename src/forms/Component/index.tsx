@@ -213,39 +213,16 @@ function ComponentFormRaw(
 }
 
 const initialValues = {
-  name: "test",
-  image: "test.com/test:latest",
-  command: "/bin/runapp",
-  env: [
-    { name: "static-name", type: "static", value: "foo-value" },
-    { type: "external", value: "", name: "external" }
-  ],
-  ports: [
-    { name: "http", protocol: "TCP", containerPort: 8080, servicePort: 80 }
-  ],
+  name: "",
+  image: "",
+  command: "",
+  env: [],
+  ports: [],
   cpu: 2600,
   memory: 2000,
-  disk: [
-    {
-      name: "test",
-      type: "new",
-      path: "123",
-      existDisk: "",
-      size: "300",
-      storageClass: "external"
-    },
-    {
-      name: "",
-      type: "existing",
-      path: "23123",
-      existDisk: "1",
-      size: "",
-      storageClass: ""
-    }
-  ]
+  disk: []
 };
 
 export default reduxForm<ComponentFormValues, Props>({
-  form: "component",
-  initialValues: initialValues
+  form: "component"
 })(ComponentFormRaw);

@@ -8,17 +8,86 @@ export type State = ImmutableMap<{
 }>;
 
 const initialState: State = Immutable.Map({
-  components: Immutable.OrderedMap([])
+  components: Immutable.OrderedMap({
+    "0": {
+      id: "0",
+      name: "test",
+      image: "test.com/test:latest",
+      command: "/bin/runapp",
+      env: [
+        { name: "static-name", type: "static", value: "foo-value" },
+        { type: "external", value: "", name: "external" }
+      ],
+      ports: [
+        { name: "http", protocol: "TCP", containerPort: 8080, servicePort: 80 }
+      ],
+      cpu: 2600,
+      memory: 2000,
+      disk: [
+        {
+          name: "test",
+          type: "new",
+          path: "123",
+          existDisk: "",
+          size: "300",
+          storageClass: "external"
+        },
+        {
+          name: "",
+          type: "existing",
+          path: "23123",
+          existDisk: "1",
+          size: "",
+          storageClass: ""
+        }
+      ]
+    },
+    "1": {
+      id: "1",
+      name: "ddex",
+      image: "ddex.com/ddex:laddex",
+      command: "/bin/runapp",
+      env: [
+        { name: "static-name", type: "static", value: "foo-value" },
+        { type: "external", value: "", name: "external" }
+      ],
+      ports: [
+        { name: "http", protocol: "TCP", containerPort: 8080, servicePort: 80 }
+      ],
+      cpu: 2600,
+      memory: 2000,
+      disk: [
+        {
+          name: "ddex",
+          type: "new",
+          path: "123",
+          existDisk: "",
+          size: "300",
+          storageClass: "external"
+        },
+        {
+          name: "",
+          type: "existing",
+          path: "23123",
+          existDisk: "1",
+          size: "",
+          storageClass: ""
+        }
+      ]
+    }
+  })
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
     case CREATE_COMPONENT_ACTION:
       const components = state.get("components");
+      const tmpId = components.size.toString(); // TODO fake id
+      action.payload.componentValues.id = tmpId;
       state = state.set(
         "components",
         components.set(
-          components.size.toString(), // TODO fake id
+          tmpId, // TODO fake id
           action.payload.componentValues
         )
       );

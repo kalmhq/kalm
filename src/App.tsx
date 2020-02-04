@@ -21,6 +21,7 @@ import { Sidenav, SidenavGroupProps } from "./widgets/Sidenav";
 import { ApplictionList } from "./pages/ApplicationList";
 import { ApplicationNew } from "./pages/ApplicationNew";
 import ComponentNew from "./pages/ComponentNew";
+import ComponentEdit from "./pages/ComponentEdit";
 import { ComponentList } from "./pages/ComponentList";
 import { Paper } from "@material-ui/core";
 
@@ -284,35 +285,21 @@ export default function MiniDrawer() {
           <Route exact path="/install">
             <InstallPage />
           </Route>
-          <Route exact path="/1">
-            <Typography paragraph>
-              Consequat mauris nunc congue nisi vitae suscipit. Fringilla est
-              ullamcorper eget nulla facilisi etiam dignissim diam. Pulvinar
-              elementum integer enim neque volutpat ac tincidunt. Ornare
-              suspendisse sed nisi lacus sed viverra tellus. Purus sit amet
-              volutpat consequat mauris. Elementum eu facilisis sed odio morbi.
-              Euismod lacinia at quis risus sed vulputate odio. Morbi tincidunt
-              ornare massa eget egestas purus viverra accumsan in. In hendrerit
-              gravida rutrum quisque non tellus orci ac. Pellentesque nec nam
-              aliquam sem et tortor. Habitant morbi tristique senectus et.
-              Adipiscing elit duis tristique sollicitudin nibh sit. Ornare
-              aenean euismod elementum nisi quis eleifend. Commodo viverra
-              maecenas accumsan lacus vel facilisis. Nulla posuere sollicitudin
-              aliquam ultrices sagittis orci a.
-            </Typography>
-          </Route>
           <Route exact path="/apps">
             <ApplictionList />
           </Route>
           <Route exact path="/apps/new">
             <ApplicationNew />
           </Route>
-          <Route exact path="/components">
-            <ComponentList />
-          </Route>
           <Route exact path="/components/new">
             <ComponentNew />
           </Route>
+          <Route
+            exact
+            path="/components/:componentId/edit"
+            component={ComponentEdit}
+          ></Route>
+          <Route exact path="/components" component={ComponentList}></Route>
         </Switch>
       </main>
     </div>

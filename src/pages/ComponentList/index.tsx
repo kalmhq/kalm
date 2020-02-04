@@ -1,8 +1,12 @@
 import React from "react";
 import { BasePage } from "../BasePage";
 import MaterialTable from "material-table";
-import { connect } from "react-redux";
+import { connect, DispatchProp } from "react-redux";
 import { RootState } from "../../reducers";
+import { IconButton } from "@material-ui/core";
+import EditIcon from "@material-ui/icons/Edit";
+import DeleteIcon from "@material-ui/icons/Delete";
+import { push } from "connected-react-router";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -15,25 +19,52 @@ const mapStateToProps = (state: RootState) => {
 
 type StateProps = ReturnType<typeof mapStateToProps>;
 
-class List extends React.PureComponent<StateProps> {
+class List extends React.PureComponent<StateProps & DispatchProp> {
   public render() {
     const data = this.props.components.map(component => {
       return {
-        action: "",
+        action: (
+          <>
+            <IconButton
+              aria-label="edit"
+              onClick={() => {
+                this.props.dispatch(push(`/components/${component.id}/edit`));
+              }}
+            >
+              <EditIcon />
+            </IconButton>
+
+            <IconButton aria-label="delete" onClick={() => {}}>
+              <DeleteIcon />
+            </IconButton>
+          </>
+        ),
         name: component.name,
-        image: component.image
+        image: component.image,
+        cpu: component.cpu,
+        memory: component.memory
       };
     });
     return (
       <BasePage title="Components">
         <MaterialTable
+          options={{
+            padding: "dense"
+          }}
           columns={[
-            { title: "Action", field: "action" },
-            { title: "Name", field: "name" },
-            { title: "Image", field: "image" }
+            { title: "Name", field: "name", sorting: false },
+            { title: "Image", field: "image", sorting: false },
+            { title: "CPU", field: "cpu", searchable: false },
+            { title: "Memory", field: "memory", searchable: false },
+            {
+              title: "Action",
+              field: "action",
+              sorting: false,
+              searchable: false
+            }
           ]}
           data={data}
-          title="Components"
+          title=""
         />
       </BasePage>
     );

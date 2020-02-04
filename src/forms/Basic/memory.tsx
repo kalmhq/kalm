@@ -53,35 +53,23 @@ const formatMemoryText = (value: number) => {
   }
 };
 
-const memoryFromNormalizeToReal = (
-  value: number | number[]
-): number | number[] => {
-  if (typeof value === "number") {
-    if (value <= 1000) {
-      return value * 0.1;
-    } else if (value <= 2000) {
-      return value - 1000 + 100;
-    } else {
-      return (value - 2000) * 10 + 1100;
-    }
+const memoryFromNormalizeToReal = (value: number): number => {
+  if (value <= 1000) {
+    return value * 0.1;
+  } else if (value <= 2000) {
+    return value - 1000 + 100;
   } else {
-    return value.map(memoryFromNormalizeToReal) as number[];
+    return (value - 2000) * 10 + 1100;
   }
 };
 
-const memoryFromRealToNormalize = (
-  value: number | number[]
-): number | number[] => {
-  if (typeof value === "number") {
-    if (value <= 100) {
-      return value * 10;
-    } else if (value <= 1100) {
-      return value - 100 + 1000;
-    } else {
-      return (value - 1100) / 10 + 2000;
-    }
+const memoryFromRealToNormalize = (value: number): number => {
+  if (value <= 100) {
+    return value * 10;
+  } else if (value <= 1100) {
+    return value - 100 + 1000;
   } else {
-    return value.map(memoryFromRealToNormalize) as number[];
+    return (value - 1100) / 10 + 2000;
   }
 };
 
@@ -98,7 +86,9 @@ const renderMemorySlider = ({
         _event: React.ChangeEvent<{}>,
         value: number | number[]
       ) => {
-        input.onChange(memoryFromNormalizeToReal(value));
+        input.onChange((value: number | number[]) =>
+          memoryFromNormalizeToReal(value as number)
+        );
       }}
       // getAriaValueText={this.formatCpuText}
       valueLabelFormat={formatMemoryText}
