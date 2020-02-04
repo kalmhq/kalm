@@ -6,6 +6,7 @@ import { RootState } from "../../reducers";
 import { IconButton } from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@material-ui/icons/Delete";
+import FileCopyIcon from "@material-ui/icons/FileCopy";
 import { push } from "connected-react-router";
 
 const mapStateToProps = (state: RootState) => {
@@ -32,6 +33,17 @@ class List extends React.PureComponent<StateProps & DispatchProp> {
               }}
             >
               <EditIcon />
+            </IconButton>
+
+            <IconButton
+              aria-label="edit"
+              onClick={() => {
+                this.props.dispatch(
+                  push(`/components/${component.id}/duplicate`)
+                );
+              }}
+            >
+              <FileCopyIcon />
             </IconButton>
 
             <IconButton aria-label="delete" onClick={() => {}}>

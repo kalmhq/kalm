@@ -3,11 +3,11 @@ import { BasePage } from "../BasePage";
 import ComponentForm from "../../forms/Component";
 import { ComponentFormValues, Actions } from "../../actions";
 import { connect, DispatchProp } from "react-redux";
-import { createComponentAction } from "../../actions/component";
+import { updateComponentAction } from "../../actions/component";
 import { ThunkDispatch } from "redux-thunk";
 import { RootState } from "../../reducers";
 import { push } from "connected-react-router";
-import { matchPath, BrowserRouterProps, match } from "react-router-dom";
+import { match } from "react-router-dom";
 
 const mapStateToProps = (
   state: RootState,
@@ -16,7 +16,7 @@ const mapStateToProps = (
   const componentId = ownProps.match.params.componentId;
   const component = state.components.get("components").get(componentId);
 
-  return { component };
+  return { componentId, component };
 };
 
 type StateProps = ReturnType<typeof mapStateToProps>;
@@ -27,8 +27,8 @@ interface Props extends StateProps {
 
 class ComponentEdit extends React.PureComponent<Props> {
   private submit = async (componentFormValues: ComponentFormValues) => {
-    const { dispatch } = this.props;
-    await dispatch(createComponentAction(componentFormValues));
+    const { dispatch, componentId } = this.props;
+    await dispatch(updateComponentAction(componentId, componentFormValues));
     await dispatch(push("/components"));
   };
 

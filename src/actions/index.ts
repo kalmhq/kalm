@@ -1,6 +1,7 @@
 import { CallHistoryMethodAction } from "connected-react-router";
 
 export const CREATE_COMPONENT_ACTION = "ACTION_CREATE_COMPONENT";
+export const UPDATE_COMPONENT_ACTION = "UPDATE_COMPONENT_ACTION";
 
 export interface ComponentFormValues {
   id: string;
@@ -37,4 +38,15 @@ export interface CreateComponentAction {
   };
 }
 
-export type Actions = CreateComponentAction | CallHistoryMethodAction;
+export interface UpdateComponentAction {
+  type: typeof UPDATE_COMPONENT_ACTION;
+  payload: {
+    componentId: string;
+    componentValues: ComponentFormValues;
+  };
+}
+
+export type Actions =
+  | CreateComponentAction
+  | UpdateComponentAction
+  | CallHistoryMethodAction;
