@@ -4,11 +4,18 @@ import "./index.css";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 import { Provider } from "react-redux";
-import store from "./store";
+import { ConnectedRouter } from "connected-react-router";
+import configureStore from "./store";
+import { createBrowserHistory } from "history";
+
+export const history = createBrowserHistory();
+const store = configureStore(history);
 
 ReactDOM.render(
   <Provider store={store}>
-    <App />
+    <ConnectedRouter history={history}>
+      <App />
+    </ConnectedRouter>
   </Provider>,
   document.getElementById("root")
 );

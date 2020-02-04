@@ -20,6 +20,7 @@ import { Button, Grid } from "@material-ui/core";
 import ComponentResources from "./resources";
 import { Paper } from "@material-ui/core";
 import { ValidatorRequired } from "../validator";
+import { ComponentFormValues } from "../../actions";
 
 export interface Props {}
 
@@ -77,7 +78,9 @@ const useStyles = makeStyles((theme: Theme) => ({
   }
 }));
 
-function ComponentFormRaw(props: Props & InjectedFormProps<{}, Props>) {
+function ComponentFormRaw(
+  props: Props & InjectedFormProps<ComponentFormValues, Props>
+) {
   const { handleSubmit } = props;
   const classes = useStyles();
   const [value, setValue] = React.useState(0);
@@ -242,7 +245,7 @@ const initialValues = {
   ]
 };
 
-export default reduxForm<{}, Props>({
+export default reduxForm<ComponentFormValues, Props>({
   form: "component",
   initialValues: initialValues
 })(ComponentFormRaw);

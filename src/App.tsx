@@ -15,12 +15,13 @@ import IconButton from "@material-ui/core/IconButton";
 import MenuIcon from "@material-ui/icons/Menu";
 import Icon from "@material-ui/core/Icon";
 
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import { Switch, Route } from "react-router-dom";
 import InstallPage from "./pages/Install";
 import { Sidenav, SidenavGroupProps } from "./widgets/Sidenav";
 import { ApplictionList } from "./pages/ApplicationList";
 import { ApplicationNew } from "./pages/ApplicationNew";
-import { ComponentNew } from "./pages/ComponentNew";
+import ComponentNew from "./pages/ComponentNew";
+import { ComponentList } from "./pages/ComponentList";
 import { Paper } from "@material-ui/core";
 
 const sidenavGroups: SidenavGroupProps[] = [
@@ -222,100 +223,98 @@ export default function MiniDrawer() {
   };
 
   return (
-    <Router>
-      <div className={classes.root}>
-        <CssBaseline />
-        <AppBar
-          position="fixed"
-          color="default"
-          className={clsx(classes.appBar, {
-            [classes.appBarShift]: open
-          })}
-        >
-          <Toolbar>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              onClick={handleDrawerOpen}
-              edge="start"
-              className={clsx(classes.menuButton, {
-                [classes.hide]: open
-              })}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Typography variant="h6" noWrap>
-              **
-            </Typography>
-          </Toolbar>
-        </AppBar>
-        <Drawer
-          variant="permanent"
-          className={clsx(classes.drawer, {
+    <div className={classes.root}>
+      <CssBaseline />
+      <AppBar
+        position="fixed"
+        color="default"
+        className={clsx(classes.appBar, {
+          [classes.appBarShift]: open
+        })}
+      >
+        <Toolbar>
+          <IconButton
+            color="inherit"
+            aria-label="open drawer"
+            onClick={handleDrawerOpen}
+            edge="start"
+            className={clsx(classes.menuButton, {
+              [classes.hide]: open
+            })}
+          >
+            <MenuIcon />
+          </IconButton>
+          <Typography variant="h6" noWrap>
+            **
+          </Typography>
+        </Toolbar>
+      </AppBar>
+      <Drawer
+        variant="permanent"
+        className={clsx(classes.drawer, {
+          [classes.drawerOpen]: open,
+          [classes.drawerClose]: !open
+        })}
+        classes={{
+          paper: clsx({
             [classes.drawerOpen]: open,
             [classes.drawerClose]: !open
-          })}
-          classes={{
-            paper: clsx({
-              [classes.drawerOpen]: open,
-              [classes.drawerClose]: !open
-            })
-          }}
-          PaperProps={{ className: classes.paper }}
-        >
-          <div className={classes.toolbar}>
-            <div className={classes.toolbarTitle}>
-              <img
-                src="http://via.placeholder.com/24x24"
-                className={classes.toolbarTitleImg}
-                alt="logo"
-              />
-              Name PLaceholder
-            </div>
-
-            <IconButton onClick={handleDrawerClose} color="inherit">
-              <Icon color="inherit">chevron_left_icon</Icon>
-            </IconButton>
+          })
+        }}
+        PaperProps={{ className: classes.paper }}
+      >
+        <div className={classes.toolbar}>
+          <div className={classes.toolbarTitle}>
+            <img
+              src="http://via.placeholder.com/24x24"
+              className={classes.toolbarTitleImg}
+              alt="logo"
+            />
+            Name PLaceholder
           </div>
-          <Sidenav groups={sidenavGroups} isFolded={!open} />
-        </Drawer>
-        <main className={classes.content}>
-          <Switch>
-            <Route exact path="/install">
-              <InstallPage />
-            </Route>
-            <Route exact path="/1">
-              <Typography paragraph>
-                Consequat mauris nunc congue nisi vitae suscipit. Fringilla est
-                ullamcorper eget nulla facilisi etiam dignissim diam. Pulvinar
-                elementum integer enim neque volutpat ac tincidunt. Ornare
-                suspendisse sed nisi lacus sed viverra tellus. Purus sit amet
-                volutpat consequat mauris. Elementum eu facilisis sed odio
-                morbi. Euismod lacinia at quis risus sed vulputate odio. Morbi
-                tincidunt ornare massa eget egestas purus viverra accumsan in.
-                In hendrerit gravida rutrum quisque non tellus orci ac.
-                Pellentesque nec nam aliquam sem et tortor. Habitant morbi
-                tristique senectus et. Adipiscing elit duis tristique
-                sollicitudin nibh sit. Ornare aenean euismod elementum nisi quis
-                eleifend. Commodo viverra maecenas accumsan lacus vel facilisis.
-                Nulla posuere sollicitudin aliquam ultrices sagittis orci a.
-              </Typography>
-            </Route>
-            <Route exact path="/apps">
-              <ApplictionList />
-            </Route>
-            <Route exact path="/apps/new">
-              <ApplicationNew />
-            </Route>
-            <Route exact path="/components">
-              <ApplicationNew />
-            </Route>
-            <Route exact path="/components/new">
-              <ComponentNew />
-            </Route>
-          </Switch>
-        </main>
-      </div>
-    </Router>
+
+          <IconButton onClick={handleDrawerClose} color="inherit">
+            <Icon color="inherit">chevron_left_icon</Icon>
+          </IconButton>
+        </div>
+        <Sidenav groups={sidenavGroups} isFolded={!open} />
+      </Drawer>
+      <main className={classes.content}>
+        <Switch>
+          <Route exact path="/install">
+            <InstallPage />
+          </Route>
+          <Route exact path="/1">
+            <Typography paragraph>
+              Consequat mauris nunc congue nisi vitae suscipit. Fringilla est
+              ullamcorper eget nulla facilisi etiam dignissim diam. Pulvinar
+              elementum integer enim neque volutpat ac tincidunt. Ornare
+              suspendisse sed nisi lacus sed viverra tellus. Purus sit amet
+              volutpat consequat mauris. Elementum eu facilisis sed odio morbi.
+              Euismod lacinia at quis risus sed vulputate odio. Morbi tincidunt
+              ornare massa eget egestas purus viverra accumsan in. In hendrerit
+              gravida rutrum quisque non tellus orci ac. Pellentesque nec nam
+              aliquam sem et tortor. Habitant morbi tristique senectus et.
+              Adipiscing elit duis tristique sollicitudin nibh sit. Ornare
+              aenean euismod elementum nisi quis eleifend. Commodo viverra
+              maecenas accumsan lacus vel facilisis. Nulla posuere sollicitudin
+              aliquam ultrices sagittis orci a.
+            </Typography>
+          </Route>
+          <Route exact path="/apps">
+            <ApplictionList />
+          </Route>
+          <Route exact path="/apps/new">
+            <ApplicationNew />
+          </Route>
+          <Route exact path="/components">
+            <ComponentList />
+          </Route>
+          <Route exact path="/components/new">
+            <ComponentNew />
+          </Route>
+        </Switch>
+      </main>
+    </div>
   );
 }
