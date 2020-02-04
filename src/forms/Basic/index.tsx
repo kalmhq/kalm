@@ -1,4 +1,5 @@
 import React, { HtmlHTMLAttributes } from "react";
+import clsx from "clsx";
 import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
 import {
   Field,
@@ -19,18 +20,19 @@ export const renderTextField = ({
   helperText,
   required,
   disabled,
+  margin,
   meta: { touched, invalid, error },
   ...custom
 }: FilledTextFieldProps & WrappedFieldProps & Props) => {
   const classes = makeStyles(theme => ({
-    root: {
+    noMargin: {
       margin: 0
     }
   }))();
 
   return (
     <TextField
-      classes={{ root: classes.root }}
+      classes={{ root: clsx({ [classes.noMargin]: !margin }) }}
       label={label}
       autoComplete="off"
       disabled={disabled}
@@ -53,6 +55,8 @@ interface Props {
   helperText?: string;
   placeholder?: string;
   required?: boolean;
+  className?: string;
+  margin?: boolean;
 }
 
 export const CustomTextField = (props: BaseFieldProps & Props) => {

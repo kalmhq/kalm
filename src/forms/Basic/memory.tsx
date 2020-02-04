@@ -65,7 +65,23 @@ const memoryFromNormalizeToReal = (
       return (value - 2000) * 10 + 1100;
     }
   } else {
-    return value;
+    return value.map(memoryFromNormalizeToReal) as number[];
+  }
+};
+
+const memoryFromRealToNormalize = (
+  value: number | number[]
+): number | number[] => {
+  if (typeof value === "number") {
+    if (value <= 100) {
+      return value * 10;
+    } else if (value <= 1100) {
+      return value - 100 + 1000;
+    } else {
+      return (value - 1100) / 10 + 2000;
+    }
+  } else {
+    return value.map(memoryFromRealToNormalize) as number[];
   }
 };
 
@@ -74,7 +90,7 @@ const renderMemorySlider = ({
 }: FilledTextFieldProps & WrappedFieldProps) => {
   return (
     <Slider
-      defaultValue={input.value} // there will be a warning as the default value is changed. TODO
+      defaultValue={memoryFromRealToNormalize(input.value)} // there will be a warning as the default value is changed. TODO
       aria-labelledby="discrete-slider"
       marks={memoryMarks}
       valueLabelDisplay="on"

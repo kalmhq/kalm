@@ -110,20 +110,25 @@ function ComponentFormRaw(props: Props & InjectedFormProps<{}, Props>) {
               }}
             >
               <CustomTextField
+                // className={classes.input}
                 name="name"
                 label="Name"
+                margin
                 validate={[ValidatorRequired]}
                 helperText='The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
                 placeholder="Please type the component name"
               />
               <CustomTextField
+                // className={classes.input}
                 name="image"
                 label="Image"
+                margin
                 validate={[ValidatorRequired]}
                 helperText='Eg: "nginx:latest", "registry.example.com/group/repo:tag"'
               />
               <CustomTextField
                 name="command"
+                margin
                 label="Command (Optional)"
                 helperText='Eg: "/bin/app", "rails server".'
               />
@@ -216,7 +221,7 @@ const initialValues = {
     { name: "http", protocol: "TCP", containerPort: 8080, servicePort: 80 }
   ],
   cpu: 2600,
-  memory: 97,
+  memory: 2000,
   disk: [
     {
       name: "test",
