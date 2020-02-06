@@ -7,14 +7,22 @@ import { Provider } from "react-redux";
 import { ConnectedRouter } from "connected-react-router";
 import configureStore from "./store";
 import { createBrowserHistory } from "history";
+import { ThemeProvider, createMuiTheme } from "@material-ui/core";
 
 export const history = createBrowserHistory();
 const store = configureStore(history);
+const theme = createMuiTheme({
+  typography: {
+    fontSize: 12
+  }
+});
 
 ReactDOM.render(
   <Provider store={store}>
     <ConnectedRouter history={history}>
-      <App />
+      <ThemeProvider theme={theme}>
+        <App />
+      </ThemeProvider>
     </ConnectedRouter>
   </Provider>,
   document.getElementById("root")
