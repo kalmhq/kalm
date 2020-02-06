@@ -38,6 +38,7 @@ export interface ComponentFormValues {
 
 export interface ConfigFormValues {
   id: string;
+  parentId: string;
   type: string;
   name: string;
   value: string;

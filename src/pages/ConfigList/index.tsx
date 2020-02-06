@@ -17,6 +17,7 @@ import { push } from "connected-react-router";
 import { deleteConfigAction } from "../../actions/config";
 import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "../../actions";
+import { Link } from "react-router-dom";
 
 const styles = (theme: Theme) => ({
   fileIcon: {
@@ -27,11 +28,15 @@ const styles = (theme: Theme) => ({
   }
 });
 
-const mapStateToProps = (state: RootState) => {
+const mapStateToProps = (state: RootState, ownProps: any) => {
+  const queryParams = new URLSearchParams(ownProps.location.search);
+  const parentId = queryParams.get("parentId") || "";
+  // console.log("parentId", parentId);
   return {
     configs: state.configs
       .get("configs")
       .toList()
+      .filter(config => config.parentId === parentId)
       .toArray()
   };
 };
@@ -83,7 +88,16 @@ class List extends React.PureComponent<Props> {
             <Icon className={classes.fileIcon}>
               {config.type === "folder" ? "folder" : "insert_drive_file"}
             </Icon>
-            <span className={classes.fileName}>{config.name}</span>
+            {config.type === "folder" ? (
+              <Link
+                className={classes.fileName}
+                to={`/configs?parentId=${config.id}`}
+              >
+                {config.name}
+              </Link>
+            ) : (
+              <span className={classes.fileName}>{config.name}</span>
+            )}
           </span>
         ),
         type: config.type,
@@ -91,7 +105,7 @@ class List extends React.PureComponent<Props> {
       };
     });
     return (
-      <BasePage title="Components">
+      <BasePage title="Configs">
         <MaterialTable
           options={{
             padding: "dense"
