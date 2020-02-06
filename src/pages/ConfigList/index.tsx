@@ -3,7 +3,13 @@ import { BasePage } from "../BasePage";
 import MaterialTable from "material-table";
 import { connect, DispatchProp } from "react-redux";
 import { RootState } from "../../reducers";
-import { IconButton, Icon } from "@material-ui/core";
+import {
+  IconButton,
+  Icon,
+  makeStyles,
+  Theme,
+  withStyles
+} from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@material-ui/icons/Delete";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
@@ -11,6 +17,15 @@ import { push } from "connected-react-router";
 import { deleteConfigAction } from "../../actions/config";
 import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "../../actions";
+
+const styles = (theme: Theme) => ({
+  fileIcon: {
+    marginRight: "15px"
+  },
+  fileName: {
+    verticalAlign: "super"
+  }
+});
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -25,11 +40,12 @@ type StateProps = ReturnType<typeof mapStateToProps>;
 
 interface Props extends StateProps {
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
+  classes: any;
 }
 
 class List extends React.PureComponent<Props> {
   public render() {
-    const { dispatch, configs } = this.props;
+    const { dispatch, configs, classes } = this.props;
     const data = configs.map(config => {
       return {
         action: (
@@ -64,12 +80,13 @@ class List extends React.PureComponent<Props> {
         ),
         name: (
           <span>
-            <Icon>
+            <Icon className={classes.fileIcon}>
               {config.type === "folder" ? "folder" : "insert_drive_file"}
             </Icon>
-            {config.name}
+            <span className={classes.fileName}>{config.name}</span>
           </span>
         ),
+        type: config.type,
         value: config.value
       };
     });
@@ -81,6 +98,7 @@ class List extends React.PureComponent<Props> {
           }}
           columns={[
             { title: "Name", field: "name", sorting: false },
+            { title: "Type", field: "type", sorting: false },
             { title: "Value", field: "value", sorting: false },
             {
               title: "Action",
@@ -97,4 +115,4 @@ class List extends React.PureComponent<Props> {
   }
 }
 
-export default connect(mapStateToProps)(List);
+export default connect(mapStateToProps)(withStyles(styles)(List));

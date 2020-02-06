@@ -126,7 +126,7 @@ function ConfigFormRaw(
                 label="Value"
                 margin
                 validate={[ValidatorRequired]}
-                helperText='Eg: "nginx:latest", "registry.example.com/group/repo:tag"'
+                helperText="file value"
               />
             </Paper>
           </Grid>
