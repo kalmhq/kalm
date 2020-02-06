@@ -55,6 +55,7 @@ class List extends React.PureComponent<Props> {
             <IconButton
               aria-label="delete"
               onClick={() => {
+                // TODO delete confirmation
                 dispatch(deleteComponentAction(component.id));
               }}
             >

@@ -27,6 +27,7 @@ import { Paper } from "@material-ui/core";
 import ConfigList from "./pages/ConfigList";
 import ConfigNew from "./pages/ConfigNew";
 import ConfigEdit from "./pages/ConfigEdit";
+import Dashboard from "./pages/Dashboard";
 
 const sidenavGroups: SidenavGroupProps[] = [
   {
@@ -304,6 +305,7 @@ export default function MiniDrawer() {
       </Drawer>
       <main className={classes.content}>
         <Switch>
+          <Route exact path="/" component={Dashboard} />
           <Route exact path="/install">
             <InstallPage />
           </Route>

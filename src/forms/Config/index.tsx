@@ -1,6 +1,6 @@
 import React from "react";
 import { Field, reduxForm, InjectedFormProps } from "redux-form";
-import { CustomTextField, renderTextField } from "../Basic";
+import { CustomTextField, renderTextField, CustomFileField } from "../Basic";
 import { makeStyles, Theme } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
 import Tabs from "@material-ui/core/Tabs";
@@ -126,7 +126,14 @@ function ConfigFormRaw(
                 label="Value"
                 margin
                 validate={[ValidatorRequired]}
-                helperText="file value"
+                helperText="Value"
+              />
+              <CustomFileField
+                // className={classes.input}
+                name="file"
+                label=""
+                margin
+                helperText="select file"
               />
             </Paper>
           </Grid>

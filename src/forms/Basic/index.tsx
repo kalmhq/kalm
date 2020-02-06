@@ -63,6 +63,10 @@ export const CustomTextField = (props: BaseFieldProps & Props) => {
   return <Field {...props} component={renderTextField} />;
 };
 
+export const CustomFileField = (props: BaseFieldProps & Props) => {
+  return <Field {...props} type="file" component={renderTextField} />;
+};
+
 const renderFromHelper = ({
   touched,
   error
