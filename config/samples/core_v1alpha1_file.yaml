@@ -1,8 +1,0 @@
-apiVersion: core.kapp.dev/v1alpha1
-kind: File
-metadata:
-  name: nginx-config
-data: |
-  location / {
-    proxy_pass http://localhost:3000
-  }

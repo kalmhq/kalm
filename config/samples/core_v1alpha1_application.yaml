@@ -1,4 +1,13 @@
 apiVersion: core.kapp.dev/v1alpha1
+kind: File
+metadata:
+  name: nginx-config
+data: |
+  location / {
+    proxy_pass http://localhost:3000
+  }
+---
+apiVersion: core.kapp.dev/v1alpha1
 kind: Application
 metadata:
   name: test
@@ -11,8 +20,7 @@ spec:
         - echo "test" > /tmp/bbq
         - ls -alh /tmp
       afterStart:
-        - echo "afterSatart" > /tmp/log
-        - cat /tmp/log
+        - ls -alh /tmp/
       beforeDestroy:
         - echo "Bye Bye"
       env:
@@ -44,9 +52,9 @@ spec:
       #            name: tmpfile
       #            size: 1G
       #            storageClass: ssd
-      #        volume:
-      #          - name: config1
-      #            path: /tmp/config.yml
+      volumeMounts:
+        - mountPath: /tmp/
+          name: nginx-config
       plugins:
         - name: manual-scaler
           type: plugins.core.kapp.dev/v1alpha1.manual-scaler
@@ -90,3 +98,7 @@ spec:
   sharedEnv:
     - name: SOME_COMMON_ENV
       value: shared_value
+  volumes:
+    - configMap:
+        name: nginx-config
+      name: nginx-config

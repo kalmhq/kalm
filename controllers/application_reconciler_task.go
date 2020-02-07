@@ -3,6 +3,9 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/go-logr/logr"
 	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
 	"github.com/kapp-staging/kapp/util"
@@ -13,8 +16,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"strings"
-	"time"
 )
 
 // There will be a new Task instance for each reconciliation
@@ -200,13 +201,15 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 					Spec: corev1.PodSpec{
 						Containers: []corev1.Container{
 							{
-								Name:    component.Name,
-								Image:   component.Image,
-								Env:     []corev1.EnvVar{},
-								Command: component.Command,
-								Args:    component.Args,
+								Name:         component.Name,
+								Image:        component.Image,
+								Env:          []corev1.EnvVar{},
+								Command:      component.Command,
+								Args:         component.Args,
+								VolumeMounts: component.VolumeMounts,
 							},
 						},
+						Volumes: act.app.Spec.Volumes,
 					},
 				},
 				Selector: &metav1.LabelSelector{
@@ -329,7 +332,17 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 		}
 	}
 
-	// before stoop
+	// Add VolumeMounts
+	if len(component.VolumeMounts) > 0 {
+		if mainContainer.VolumeMounts == nil {
+			mainContainer.VolumeMounts = component.VolumeMounts
+		} else {
+
+		}
+		mainContainer.VolumeMounts = component.VolumeMounts
+	}
+
+	// before stop
 	if len(component.BeforeDestroy) == 0 {
 		if mainContainer.Lifecycle != nil {
 			mainContainer.Lifecycle.PreStop = nil

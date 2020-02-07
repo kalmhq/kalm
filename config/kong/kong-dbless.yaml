@@ -1,185 +1,87 @@
-# https://github.com/Kong/kong-dist-kubernetes/blob/master/kong-dbless.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kapp-kong
+---
+apiVersion: core.kapp.dev/v1alpha1
+data: |
+  # Prometheus metrics server
+  server {
+      server_name kong_prometheus_exporter;
+      listen 0.0.0.0:9542; # can be any other port as well
+      access_log off;
+
+      location /metrics {
+          default_type text/plain;
+          content_by_lua_block {
+               local prometheus = require "kong.plugins.prometheus.exporter"
+               prometheus:collect()
+          }
+      }
+
+      location /nginx_status {
+          internal;
+          stub_status;
+      }
+  }
+  # Health check server
+  server {
+      server_name kong_health_check;
+      listen 0.0.0.0:9001; # can be any other port as well
+
+      access_log off;
+      location /health {
+        return 200;
+      }
+  }
+kind: File
+metadata:
+  name: servers.conf
+  namespace: kapp-kong
+---
 apiVersion: core.kapp.dev/v1alpha1
 kind: Application
 metadata:
-  name: kong-dbless-app
+  name: ingress-kong
+  namespace: kapp-kong
 spec:
   components:
     - name: kong-dbless
-      image: hbagdi/hupit:v0.1.0
-      command:
-        [
-          'hupit',
-          '--file',
-          '/kong',
-          '--command',
-          "curl -v http://localhost:8001/config -F 'config=@/kong/declarative.yaml'",
-        ]
+      image: kong:1.4
       beforeStart:
         - ls -alh /
-        - echo "before kong-dbless-app" > /tmp/bbq
+        - ls -alh /kong
         - ls -alh /tmp
-      afterStart:
-        - echo "afterStart kong-dbless-app" > /tmp/log
-        - cat /tmp/log
       beforeDestroy:
-        - echo "Bye Bye kong-dbless-app"
+        - /bin/sh
+        - -c
+        - kong quit
+      volumeMounts:
+        - mountPath: /kong/servers.conf
+          name: servers-conf
+      resources:
+        cpu:
+          min: 500m
+          max: 1000m
+        memory:
+          min: 500M
+          max: 2G
       env:
         - name: KONG_DATABASE
           value: 'off'
         - name: KONG_NGINX_WORKER_PROCESSES
           value: '1'
-        - name: KONG_LOG_LEVEL
-          value: notice
+        - name: KONG_NGINX_HTTP_INCLUDE
+          value: /kong/servers.conf
         - name: KONG_ADMIN_ACCESS_LOG
           value: /dev/stdout
-        - name: KONG_PROXY_ERROR_LOG
-          value: /dev/stderr
         - name: KONG_ADMIN_ERROR_LOG
           value: /dev/stderr
         - name: KONG_ADMIN_LISTEN
-          value: '127.0.0.1:8001'
+          value: 127.0.0.1:8444 ssl
         - name: KONG_PROXY_LISTEN
-          value: 0.0.0.0:8000,0.0.0.0:8443 ssl
-        - name: KONG_DECLARATIVE_CONFIG
-          value: /kong/declarative.yaml
-      ports:
-        - name: http
-          containerPort: 8000
-          servicePort: 8000
-        - name: https
-          containerPort: 8443
-          servicePort: 8443
-      resources:
-        cpu:
-          min: 200M
-          max: 1000M
-        memory:
-          min: 500M
-          max: 2G
-      plugins:
-        - name: manual-scaler
-          type: plugins.core.kapp.dev/v1alpha1.manual-scaler
-          replicas: 1
-        # It's allowed to use a plugin more than one time
-        - name: ingress-root
-          type: plugins.core.kapp.dev/v1alpha1.ingress
-          enableHttps: true
-          enableHttp: true
-          # require enabledHttps and enableHttp are all true
-          autoHttps: true
-          hosts:
-            - www.example.com
-            - www.example.io
-          path:
-            - /
-          stripPath: true
-          preserveHost: true
-        - name: ingress-legacy
-          type: plugins.core.kapp.dev/v1alpha1.ingress
-          hosts:
-            - www.example.global
-          path:
-            - /
-          stripPath: false
-          preserveHost: false
-  # selector:
-  #   matchLabels:
-  #     app: kong-dbless
-  # strategy:
-  #   rollingUpdate:
-  #     maxSurge: 1
-  #     maxUnavailable: 0
-  #   type: RollingUpdate
-  # template:
-  #   metadata:
-  #     labels:
-  #       app: kong-dbless
-  #   spec:
-  #     containers:
-  #       - name: hupit
-  #         image: hbagdi/hupit:v0.1.0
-  #         command:
-  #           [
-  #             'hupit',
-  #             '--file',
-  #             '/kong',
-  #             '--command',
-  #             "curl -v http://localhost:8001/config -F 'config=@/kong/declarative.yaml'",
-  #           ]
-  #         livenessProbe:
-  #           failureThreshold: 3
-  #           httpGet:
-  #             path: /health
-  #             port: 8042
-  #         readinessProbe:
-  #           failureThreshold: 3
-  #           httpGet:
-  #             path: /health
-  #             port: 8042
-  #         volumeMounts:
-  #           - name: kongdeclarative
-  #             mountPath: /kong
-  #       - name: kong-dbless
-  #         image: kong
-  #         imagePullPolicy: IfNotPresent
-  #         env:
-  #           - name: KONG_DATABASE
-  #             value: 'off'
-  #           - name: KONG_NGINX_WORKER_PROCESSES
-  #             value: '1'
-  #           - name: KONG_LOG_LEVEL
-  #             value: notice
-  #           - name: KONG_ADMIN_ACCESS_LOG
-  #             value: /dev/stdout
-  #           - name: KONG_PROXY_ERROR_LOG
-  #             value: /dev/stderr
-  #           - name: KONG_ADMIN_ERROR_LOG
-  #             value: /dev/stderr
-  #           - name: KONG_ADMIN_LISTEN
-  #             value: '127.0.0.1:8001'
-  #           - name: KONG_PROXY_LISTEN
-  #             value: 0.0.0.0:8000,0.0.0.0:8443 ssl
-  #           - name: KONG_DECLARATIVE_CONFIG
-  #             value: /kong/declarative.yaml
-  #         volumeMounts:
-  #           - name: kongdeclarative
-  #             mountPath: /kong
-  #         ports:
-  #           - name: data-http
-  #             containerPort: 8000
-  #           - name: data-https
-  #             containerPort: 8443
-  #         readinessProbe:
-  #           tcpSocket:
-  #             port: 8000
-  #           initialDelaySeconds: 5
-  #           periodSeconds: 10
-  #         livenessProbe:
-  #           tcpSocket:
-  #             port: 8000
-  #           initialDelaySeconds: 15
-  #           periodSeconds: 20
-  #     volumes:
-  #       - name: kongdeclarative
-  #         configMap:
-  #           name: kongdeclarative
-# ---
-# apiVersion: v1
-# kind: Service
-# metadata:
-#   namespace: kong
-#   name: kong-dbless
-# spec:
-#   type: NodePort
-#   ports:
-#   - name: kong-proxy-http
-#     port: 8000
-#     targetPort: 8000
-#     protocol: TCP
-#   - name: kong-proxy-https
-#     port: 8443
-#     targetPort: 8443
-#     protocol: TCP
-#   selector:
-#     app: kong-dbless
+          value: 0.0.0.0:8000, 0.0.0.0:8443 ssl http2
+  volumes:
+    - name: servers-conf
+      configMap:
+        name: servers.conf
