@@ -46,7 +46,6 @@ func (r *FileReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	// your logic here
 	var file corev1alpha1.File
-	log.Info("file start run!")
 
 	if err := r.Get(ctx, req.NamespacedName, &file); err != nil {
 		err = client.IgnoreNotFound(err)
@@ -55,10 +54,8 @@ func (r *FileReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		}
 		return ctrl.Result{}, err
 	}
-	log.Info("file check ok!", "file", file)
 
 	act := newFileReconcilerTask(r, &file, req)
-	log.Info("file check ok! then", "act", act)
 	return ctrl.Result{}, act.Run()
 }
 
