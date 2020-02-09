@@ -111,4 +111,4 @@ class List extends React.PureComponent<Props> {
   }
 }
 
-export const ComponentList = withStyles(styles)(connect(mapStateToProps)(List));
+export default withStyles(styles)(connect(mapStateToProps)(List));

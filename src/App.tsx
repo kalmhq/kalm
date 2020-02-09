@@ -22,8 +22,11 @@ import { ApplictionList } from "./pages/ApplicationList";
 import { ApplicationNew } from "./pages/ApplicationNew";
 import ComponentNew from "./pages/ComponentNew";
 import ComponentEdit from "./pages/ComponentEdit";
-import { ComponentList } from "./pages/ComponentList";
+import ComponentList from "./pages/ComponentList";
 import { Paper } from "@material-ui/core";
+import ConfigList from "./pages/ConfigList";
+import ConfigNew from "./pages/ConfigNew";
+import ConfigEdit from "./pages/ConfigEdit";
 import Dashboard from "./pages/Dashboard";
 
 const sidenavGroups: SidenavGroupProps[] = [
@@ -86,6 +89,25 @@ const sidenavGroups: SidenavGroupProps[] = [
         ],
         type: "dropdown",
         icon: "library_add"
+      },
+      {
+        text: "Configs",
+        items: [
+          {
+            text: "Overview",
+            to: "/configs",
+            icon: "reorder",
+            type: "normal"
+          },
+          {
+            text: "Add",
+            to: "/configs/new",
+            icon: "add",
+            type: "normal"
+          }
+        ],
+        type: "dropdown",
+        icon: "folder"
       }
     ]
   },
@@ -302,6 +324,15 @@ export default function MiniDrawer() {
             component={ComponentEdit}
           ></Route>
           <Route exact path="/components" component={ComponentList}></Route>
+          <Route exact path="/configs" component={ConfigList}></Route>
+          <Route exact path="/configs/new">
+            <ConfigNew />
+          </Route>
+          <Route
+            exact
+            path="/configs/:componentId/edit"
+            component={ConfigEdit}
+          ></Route>
         </Switch>
       </main>
     </div>
