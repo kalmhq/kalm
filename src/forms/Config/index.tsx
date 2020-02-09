@@ -60,7 +60,6 @@ const useStyles = makeStyles((theme: Theme) => ({
     backgroundColor: theme.palette.background.paper,
     padding: theme.spacing(3)
   },
-
   paper: {
     padding: theme.spacing(3),
     marginBottom: theme.spacing(5)
