@@ -1,17 +1,17 @@
-import React from "react";
+import { Button, Divider, Grid, IconButton, MenuItem } from "@material-ui/core";
+import { makeStyles } from "@material-ui/core/styles";
 import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
+import DeleteIcon from "@material-ui/icons/Delete";
+import React from "react";
 import {
   Field,
-  WrappedFieldProps,
   FieldArray,
-  WrappedFieldArrayProps
+  WrappedFieldArrayProps,
+  WrappedFieldProps
 } from "redux-form";
-import DeleteIcon from "@material-ui/icons/Delete";
-import { renderTextField, RenderSelectField } from ".";
-import { Grid, Button, IconButton, MenuItem, Divider } from "@material-ui/core";
-import { makeStyles } from "@material-ui/core/styles";
-import { ValidatorRequired } from "../validator";
+import { RenderSelectField, renderTextField } from ".";
 import { NormalizePort } from "../normalizer";
+import { ValidatorRequired } from "../validator";
 
 export const portTypeTCP = "TCP";
 export const portTypeUDP = "UDP";

@@ -9,7 +9,7 @@ import {
   WrappedFieldArrayProps
 } from "redux-form";
 import DeleteIcon from "@material-ui/icons/Delete";
-import { renderTextField, RenderSelectField, RenderAutoComplete } from ".";
+import { renderTextField, RenderSelectField, RenderAutoCompleteSelect } from ".";
 import { Grid, Button, IconButton, MenuItem, Divider } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { ValidatorRequired } from "../validator";
@@ -96,7 +96,7 @@ const renderDisks = ({
                     <Grid item xs={12}>
                       <Field
                         name={`${field}.existDisk`}
-                        component={RenderAutoComplete}
+                        component={RenderAutoCompleteSelect}
                         validate={!isNewDisk ? ValidatorRequired : []}
                         label="ExistDisk"
                       >

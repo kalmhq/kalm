@@ -1,14 +1,22 @@
-import React from "react";
-import { BasePage } from "../BasePage";
-import ComponentForm from "../../forms/Component";
-import { ComponentFormValues, Actions } from "../../actions";
-import { connect, DispatchProp } from "react-redux";
-import { createComponentAction } from "../../actions/component";
-import { ThunkDispatch } from "redux-thunk";
-import { RootState } from "../../reducers";
+import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { push } from "connected-react-router";
+import React from "react";
+import { connect } from "react-redux";
+import { ThunkDispatch } from "redux-thunk";
+import { Actions, ComponentFormValues } from "../../actions";
+import { createComponentAction } from "../../actions/component";
+import ComponentForm from "../../forms/Component";
+import { RootState } from "../../reducers";
+import { BasePage } from "../BasePage";
 
-interface Props {
+const styles = (theme: Theme) =>
+  createStyles({
+    root: {
+      padding: theme.spacing(3)
+    }
+  });
+
+interface Props extends WithStyles<typeof styles> {
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
 }
 
@@ -20,12 +28,15 @@ class ComponentNew extends React.PureComponent<Props> {
   };
 
   public render() {
+    const { classes } = this.props;
     return (
       <BasePage title="New Component">
-        <ComponentForm onSubmit={this.submit} />
+        <div className={classes.root}>
+          <ComponentForm onSubmit={this.submit} />
+        </div>
       </BasePage>
     );
   }
 }
 
-export default connect()(ComponentNew);
+export default withStyles(styles)(connect()(ComponentNew));

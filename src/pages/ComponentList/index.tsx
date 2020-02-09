@@ -3,7 +3,14 @@ import { BasePage } from "../BasePage";
 import MaterialTable from "material-table";
 import { connect, DispatchProp } from "react-redux";
 import { RootState } from "../../reducers";
-import { IconButton } from "@material-ui/core";
+import {
+  IconButton,
+  Paper,
+  WithStyles,
+  Theme,
+  createStyles,
+  withStyles
+} from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@material-ui/icons/Delete";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
@@ -23,13 +30,20 @@ const mapStateToProps = (state: RootState) => {
 
 type StateProps = ReturnType<typeof mapStateToProps>;
 
-interface Props extends StateProps {
+const styles = (theme: Theme) =>
+  createStyles({
+    root: {
+      padding: theme.spacing(3)
+    }
+  });
+
+interface Props extends StateProps, WithStyles<typeof styles> {
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
 }
 
 class List extends React.PureComponent<Props> {
   public render() {
-    const { dispatch, components } = this.props;
+    const { dispatch, components, classes } = this.props;
     const data = components.map(component => {
       return {
         action: (
@@ -71,28 +85,30 @@ class List extends React.PureComponent<Props> {
     });
     return (
       <BasePage title="Components">
-        <MaterialTable
-          options={{
-            padding: "dense"
-          }}
-          columns={[
-            { title: "Name", field: "name", sorting: false },
-            { title: "Image", field: "image", sorting: false },
-            { title: "CPU", field: "cpu", searchable: false },
-            { title: "Memory", field: "memory", searchable: false },
-            {
-              title: "Action",
-              field: "action",
-              sorting: false,
-              searchable: false
-            }
-          ]}
-          data={data}
-          title=""
-        />
+        <div className={classes.root}>
+          <MaterialTable
+            options={{
+              padding: "dense"
+            }}
+            columns={[
+              { title: "Name", field: "name", sorting: false },
+              { title: "Image", field: "image", sorting: false },
+              { title: "CPU", field: "cpu", searchable: false },
+              { title: "Memory", field: "memory", searchable: false },
+              {
+                title: "Action",
+                field: "action",
+                sorting: false,
+                searchable: false
+              }
+            ]}
+            data={data}
+            title=""
+          />
+        </div>
       </BasePage>
     );
   }
 }
 
-export const ComponentList = connect(mapStateToProps)(List);
+export const ComponentList = withStyles(styles)(connect(mapStateToProps)(List));

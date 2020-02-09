@@ -10,7 +10,7 @@ export const ValidatorRequired = (
   _props?: any,
   _name?: any
 ) => {
-  return value ? undefined : `Required`;
+  return !!value ? undefined : `Required`;
 };
 
 export const ValidatorStringLength = () => {};

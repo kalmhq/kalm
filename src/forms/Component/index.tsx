@@ -1,26 +1,15 @@
-import React from "react";
-import { Field, reduxForm, InjectedFormProps } from "redux-form";
-import { CustomTextField, renderTextField } from "../Basic";
-import { makeStyles, Theme } from "@material-ui/core/styles";
-import AppBar from "@material-ui/core/AppBar";
-import Tabs from "@material-ui/core/Tabs";
-import Tab from "@material-ui/core/Tab";
-import PhoneIcon from "@material-ui/icons/Phone";
-import FavoriteIcon from "@material-ui/icons/Favorite";
-import PersonPinIcon from "@material-ui/icons/PersonPin";
-import HelpIcon from "@material-ui/icons/Help";
-import ShoppingBasket from "@material-ui/icons/ShoppingBasket";
-import ThumbDown from "@material-ui/icons/ThumbDown";
-import ThumbUp from "@material-ui/icons/ThumbUp";
-import Typography from "@material-ui/core/Typography";
+import { Button, Grid, Paper } from "@material-ui/core";
 import Box from "@material-ui/core/Box";
+import { makeStyles, Theme } from "@material-ui/core/styles";
+import Typography from "@material-ui/core/Typography";
+import React from "react";
+import { InjectedFormProps, reduxForm } from "redux-form";
+import { ComponentFormValues } from "../../actions";
+import { CustomTextField } from "../Basic";
 import { CustomEnvs } from "../Basic/env";
 import { CustomPorts } from "../Basic/ports";
-import { Button, Grid } from "@material-ui/core";
-import ComponentResources from "./resources";
-import { Paper } from "@material-ui/core";
 import { ValidatorRequired } from "../validator";
-import { ComponentFormValues } from "../../actions";
+import ComponentResources from "./resources";
 
 export interface Props {}
 
@@ -58,8 +47,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   root: {
     flexGrow: 1,
     width: "100%",
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(3)
+    backgroundColor: theme.palette.background.paper
   },
   paper: {
     padding: theme.spacing(3),

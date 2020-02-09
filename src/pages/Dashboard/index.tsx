@@ -1,16 +1,16 @@
-import React from "react";
 import {
-  Typography,
-  Grid,
   Button,
-  Theme,
-  WithStyles,
   createStyles,
+  Grid,
+  Theme,
+  Typography,
+  WithStyles,
   withStyles
 } from "@material-ui/core";
 import GithubIcon from "@material-ui/icons/GitHub";
 import MenuBookIcon from "@material-ui/icons/MenuBook";
 import SupervisorAccountIcon from "@material-ui/icons/SupervisorAccount";
+import React from "react";
 import { BasePage } from "../BasePage";
 
 const styles = (theme: Theme) =>

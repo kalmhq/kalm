@@ -1,32 +1,31 @@
-import React, { ComponentType } from "react";
+import { Button, Grid, IconButton, MenuItem } from "@material-ui/core";
+import { makeStyles } from "@material-ui/core/styles";
 import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
+import DeleteIcon from "@material-ui/icons/Delete";
+import React from "react";
 import {
   Field,
-  WrappedFieldProps,
-  BaseFieldProps,
   FieldArray,
-  BaseFieldArrayProps,
   WrappedFieldArrayProps,
-  getFormValues,
-  formValueSelector,
-  focus
+  WrappedFieldProps
 } from "redux-form";
-import DeleteIcon from "@material-ui/icons/Delete";
-import { renderTextField, RenderSelectField } from ".";
-import { Grid, Button, IconButton, MenuItem } from "@material-ui/core";
-import { makeStyles } from "@material-ui/core/styles";
-import { connect, DispatchProp } from "react-redux";
-import { RootState } from "../../reducers";
+import { RenderSelectField, renderTextField, RenderAutoComplete } from ".";
 import { ValidatorRequired } from "../validator";
-
-interface EnvValue {
-  name: string;
-  type: string;
-  value: string;
-}
 
 export const EnvTypeExternal = "external";
 export const EnvTypeStatic = "static";
+export const EnvTypeShared = "shared";
+
+type EnvType =
+  | typeof EnvTypeExternal
+  | typeof EnvTypeStatic
+  | typeof EnvTypeShared;
+
+interface EnvValue {
+  name: string;
+  type: EnvType;
+  value: string;
+}
 
 const generateEmptyEnv = (): EnvValue => ({
   name: "",
@@ -36,8 +35,9 @@ const generateEmptyEnv = (): EnvValue => ({
 
 const renderEnvs = ({
   fields,
-  meta: { error, submitFailed }
-}: WrappedFieldArrayProps<EnvValue>) => {
+  meta: { error, submitFailed },
+  addButtonText
+}: WrappedFieldArrayProps<EnvValue> & Props) => {
   const classes = makeStyles(theme => ({
     delete: {
       display: "flex",
@@ -110,7 +110,75 @@ const renderEnvs = ({
         color="primary"
         onClick={() => fields.push(generateEmptyEnv())}
       >
-        Add Environment Variable
+        {addButtonText || "Add Environment Variable"}
+      </Button>
+    </div>
+  );
+};
+
+const renderSharedEnvs = ({
+  fields,
+  meta: { error, submitFailed },
+  addButtonText
+}: WrappedFieldArrayProps<EnvValue> & Props) => {
+  const classes = makeStyles(theme => ({
+    delete: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    }
+  }))();
+
+  return (
+    <div>
+      <div>{submitFailed && error && <span>{error}</span>}</div>
+      {fields.map((field, index) => {
+        const currentEnv = fields.get(index);
+
+        return (
+          <div key={index}>
+            <Grid container spacing={2}>
+              <Grid item xs={5}>
+                <Field
+                  name={`${field}.name`}
+                  component={RenderAutoComplete}
+                  label="Name"
+                  validate={ValidatorRequired}
+                  autoFocus
+                >
+                  <MenuItem value="DATABASE_URL">DATABASE_URL</MenuItem>
+                  <MenuItem value="ETHEREUM_URL">ETHEREUM_URL</MenuItem>
+                </Field>
+              </Grid>
+              <Grid item xs={6}>
+                <Field
+                  name={`${field}.value`}
+                  component={renderTextField}
+                  validate={ValidatorRequired}
+                  label="Value"
+                ></Field>
+              </Grid>
+              <Grid item xs={1} className={classes.delete}>
+                <IconButton
+                  aria-label="delete"
+                  onClick={() => {
+                    fields.remove(index);
+                  }}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </Grid>
+            </Grid>
+          </div>
+        );
+      })}
+      <Button
+        variant="outlined"
+        size="small"
+        color="primary"
+        onClick={() => fields.push(generateEmptyEnv())}
+      >
+        {addButtonText || "Add Environment Variable"}
       </Button>
     </div>
   );
@@ -141,11 +209,23 @@ interface Props {
   label?: string;
   helperText?: string;
   placeholder?: string;
+  addButtonText?: string;
 }
 
-let envs = (props: WrappedFieldArrayProps<{}> | {}) => {
+let Envs = (props: Props) => {
   return (
     <FieldArray {...props} name="env" valid={true} component={renderEnvs} />
+  );
+};
+
+let SharedEnvs = (props: Props) => {
+  return (
+    <FieldArray
+      {...props}
+      name="sharedEnv"
+      valid={true}
+      component={renderSharedEnvs}
+    />
   );
 };
 
@@ -155,4 +235,12 @@ let envs = (props: WrappedFieldArrayProps<{}> | {}) => {
 //   return { values };
 // })(envs);
 
-export const CustomEnvs = envs;
+export const CustomEnvs = (props: Props) => {
+  return <Envs {...props} addButtonText="Add Environment Variable" />;
+};
+
+export const ApplicationSharedEnvs = (props: Props) => {
+  return (
+    <SharedEnvs {...props} addButtonText="Add Shared Environment Variable" />
+  );
+};

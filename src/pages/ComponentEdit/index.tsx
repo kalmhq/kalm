@@ -8,6 +8,7 @@ import { ThunkDispatch } from "redux-thunk";
 import { RootState } from "../../reducers";
 import { push } from "connected-react-router";
 import { match } from "react-router-dom";
+import { withStyles, createStyles, Theme, WithStyles } from "@material-ui/core";
 
 const mapStateToProps = (
   state: RootState,
@@ -21,7 +22,14 @@ const mapStateToProps = (
 
 type StateProps = ReturnType<typeof mapStateToProps>;
 
-interface Props extends StateProps {
+const styles = (theme: Theme) =>
+  createStyles({
+    root: {
+      padding: theme.spacing(3)
+    }
+  });
+
+interface Props extends StateProps, WithStyles<typeof styles> {
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
 }
 
@@ -33,13 +41,15 @@ class ComponentEdit extends React.PureComponent<Props> {
   };
 
   public render() {
-    const { component } = this.props;
+    const { component, classes } = this.props;
     return (
       <BasePage title={`Edit Component {component.name}`}>
-        <ComponentForm onSubmit={this.submit} initialValues={component} />
+        <div className={classes.root}>
+          <ComponentForm onSubmit={this.submit} initialValues={component} />
+        </div>
       </BasePage>
     );
   }
 }
 
-export default connect(mapStateToProps)(ComponentEdit);
+export default withStyles(styles)(connect(mapStateToProps)(ComponentEdit));

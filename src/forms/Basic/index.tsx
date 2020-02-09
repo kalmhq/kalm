@@ -127,19 +127,28 @@ export const RenderSelectField = ({
   );
 };
 
+const AutoCompleteTypeSelect = "select";
+const AutoCompleteTypeFreeSolo = "freeSolo";
+
+type AutoCompleteType =
+  | typeof AutoCompleteTypeSelect
+  | typeof AutoCompleteTypeFreeSolo;
+
 interface AutoCompleteProps {
   label?: string;
   required?: boolean;
+  type?: AutoCompleteType;
   children: React.ReactElement<{ children: string; value: string }>[];
 }
 
-export const RenderAutoComplete = ({
+export const RenderAutoCompleteSelect = ({
   input,
   label,
-  required,
-  children,
-  ...custom
+  type,
+  children
 }: WrappedFieldProps & AutoCompleteProps) => {
+  children = React.Children.toArray(children);
+
   const options = children.map(item => ({
     text: item.props.children,
     value: item.props.value
@@ -163,6 +172,7 @@ export const RenderAutoComplete = ({
         event: React.ChangeEvent<{}>,
         value: { text: string; value: string } | null
       ) => {
+        console.log(value, event);
         if (value) {
           input.onChange(value.value);
         }
@@ -170,6 +180,45 @@ export const RenderAutoComplete = ({
       renderInput={params => (
         <TextField
           {...params}
+          label={label}
+          variant="outlined"
+          fullWidth
+          size="small"
+        />
+      )}
+    />
+  );
+};
+
+export const RenderAutoComplete = ({
+  input,
+  label,
+  children,
+  meta: { touched, invalid, error }
+}: WrappedFieldProps & AutoCompleteProps) => {
+  children = React.Children.toArray(children);
+
+  const options = children.map(item => ({
+    text: item.props.children,
+    value: item.props.value
+  }));
+
+  const helperText = "";
+
+  return (
+    <Autocomplete
+      options={options}
+      getOptionLabel={option => option.text}
+      disableClearable
+      freeSolo
+      onInputChange={(_event, value) => {
+        input.onChange(value);
+      }}
+      renderInput={params => (
+        <TextField
+          {...params}
+          error={touched && invalid}
+          helperText={(touched && error) || helperText}
           label={label}
           variant="outlined"
           fullWidth
