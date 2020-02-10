@@ -4,4 +4,7 @@ resources:
 - group: core
   kind: Application
   version: v1alpha1
+- group: core
+  kind: File
+  version: v1alpha1
 version: "2"
