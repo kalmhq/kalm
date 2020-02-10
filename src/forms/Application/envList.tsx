@@ -29,13 +29,13 @@ export const EnvList = ({ title, options, defaultOpen }: EnvListProps) => {
       </ListItem>
       <Collapse in={open} timeout="auto" unmountOnExit>
         <List component="div" disablePadding>
-          <ListItem dense disableGutters>
-            {options.map(o => (
+          {options.map(o => (
+            <ListItem dense disableGutters>
               <ListItemText>
                 <Box ml={2}>{o}</Box>
               </ListItemText>
-            ))}
-          </ListItem>
+            </ListItem>
+          ))}
         </List>
       </Collapse>
     </List>

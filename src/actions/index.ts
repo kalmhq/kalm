@@ -36,6 +36,13 @@ export interface ComponentFormValues {
   }[];
 }
 
+export interface ApplicationFormValues {
+  id: string;
+  name: string;
+  sharedEnv: { name: string; value: string }[];
+  components: ComponentFormValues[];
+}
+
 export interface ConfigFormValues {
   id: string;
   parentId: string;

@@ -35,8 +35,7 @@ const generateEmptyEnv = (): EnvValue => ({
 
 const renderEnvs = ({
   fields,
-  meta: { error, submitFailed },
-  addButtonText
+  meta: { error, submitFailed }
 }: WrappedFieldArrayProps<EnvValue> & Props) => {
   const classes = makeStyles(theme => ({
     delete: {
@@ -110,17 +109,21 @@ const renderEnvs = ({
         color="primary"
         onClick={() => fields.push(generateEmptyEnv())}
       >
-        {addButtonText || "Add Environment Variable"}
+        Add Environment Variable
       </Button>
     </div>
   );
 };
 
-const renderSharedEnvs = ({
+interface SharedProps {
+  missingVariables?: string[];
+}
+
+export const RenderSharedEnvs = ({
   fields,
   meta: { error, submitFailed },
-  addButtonText
-}: WrappedFieldArrayProps<EnvValue> & Props) => {
+  missingVariables
+}: WrappedFieldArrayProps<EnvValue> & SharedProps) => {
   const classes = makeStyles(theme => ({
     delete: {
       display: "flex",
@@ -146,8 +149,9 @@ const renderSharedEnvs = ({
                   validate={ValidatorRequired}
                   autoFocus
                 >
-                  <MenuItem value="DATABASE_URL">DATABASE_URL</MenuItem>
-                  <MenuItem value="ETHEREUM_URL">ETHEREUM_URL</MenuItem>
+                  {(missingVariables || []).map(x => (
+                    <MenuItem value={x}>{x}</MenuItem>
+                  ))}
                 </Field>
               </Grid>
               <Grid item xs={6}>
@@ -178,7 +182,7 @@ const renderSharedEnvs = ({
         color="primary"
         onClick={() => fields.push(generateEmptyEnv())}
       >
-        {addButtonText || "Add Environment Variable"}
+        Add Shared Environment Variable
       </Button>
     </div>
   );
@@ -209,7 +213,6 @@ interface Props {
   label?: string;
   helperText?: string;
   placeholder?: string;
-  addButtonText?: string;
 }
 
 let Envs = (props: Props) => {
@@ -224,7 +227,7 @@ let SharedEnvs = (props: Props) => {
       {...props}
       name="sharedEnv"
       valid={true}
-      component={renderSharedEnvs}
+      component={RenderSharedEnvs}
     />
   );
 };
@@ -236,11 +239,5 @@ let SharedEnvs = (props: Props) => {
 // })(envs);
 
 export const CustomEnvs = (props: Props) => {
-  return <Envs {...props} addButtonText="Add Environment Variable" />;
-};
-
-export const ApplicationSharedEnvs = (props: Props) => {
-  return (
-    <SharedEnvs {...props} addButtonText="Add Shared Environment Variable" />
-  );
+  return <Envs {...props} />;
 };

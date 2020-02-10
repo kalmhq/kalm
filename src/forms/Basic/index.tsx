@@ -176,7 +176,6 @@ export const RenderAutoCompleteSelect = ({
         event: React.ChangeEvent<{}>,
         value: { text: string; value: string } | null
       ) => {
-        console.log(value, event);
         if (value) {
           input.onChange(value.value);
         }
@@ -202,21 +201,50 @@ export const RenderAutoComplete = ({
 }: WrappedFieldProps & AutoCompleteProps) => {
   children = React.Children.toArray(children);
 
-  const options = children.map(item => ({
+  let options = children.map(item => ({
     text: item.props.children,
     value: item.props.value
   }));
 
+  let selectedOption = options.find(x => x.value === input.value);
+
+  // add this value as an option if there is no such option in list
+  if (!selectedOption) {
+    selectedOption = {
+      text: input.value,
+      value: input.value
+    };
+  }
+
   const helperText = "";
+
+  let tmpValue = selectedOption;
+
+  const [tempValue, setTempValue] = React.useState("");
 
   return (
     <Autocomplete
       options={options}
       getOptionLabel={option => option.text}
       disableClearable
+      // value={selectedOption}
       freeSolo
       onInputChange={(_event, value) => {
+        // setTempValue(value);
         input.onChange(value);
+      }}
+      onFocus={input.onFocus}
+      onBlur={(...args) => {
+        // input.onChange(tempValue);
+        // input.onBlur();
+      }}
+      onChange={(
+        _event: React.ChangeEvent<{}>,
+        selectOption: { text: string; value: string } | null
+      ) => {
+        if (selectOption) {
+          input.onChange(selectOption.value);
+        }
       }}
       renderInput={params => (
         <TextField
