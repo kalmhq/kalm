@@ -16,7 +16,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1 "k8s.io/api/core/v1"
+	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -63,15 +63,12 @@ type ComponentSpec struct {
 	BeforeDestroy []string `json:"beforeDestroy,omitempty"`
 
 	Resources Resource `json:"resources,omitempty"`
-
-	VolumeMounts []v1.VolumeMount `json:"volumeMounts,omitempty"`
 }
 
 // ApplicationSpec defines the desired state of Application
 type ApplicationSpec struct {
 	Components []ComponentSpec `json:"components"`
 	SharedEnv  []EnvVar        `json:"sharedEnv,omitempty"`
-	Volumes    []v1.Volume     `json:"volumes,omitempty"`
 }
 
 func (c *ApplicationSpec) FindShareEnvValue(name string) string {
