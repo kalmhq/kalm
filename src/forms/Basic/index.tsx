@@ -218,9 +218,19 @@ export const RenderAutoComplete = ({
 
   const helperText = "";
 
-  let tmpValue = selectedOption;
+  const onInputChange = (event: React.ChangeEvent<{}>, value: string) => {
+    if (!event) return;
+    input.onChange(value);
+  };
 
-  const [tempValue, setTempValue] = React.useState("");
+  const onChange = (
+    _event: React.ChangeEvent<{}>,
+    selectOption: { text: string; value: string } | null
+  ) => {
+    if (selectOption) {
+      input.onChange(selectOption.value);
+    }
+  };
 
   return (
     <Autocomplete
@@ -229,34 +239,24 @@ export const RenderAutoComplete = ({
       disableClearable
       // value={selectedOption}
       freeSolo
-      onInputChange={(_event, value) => {
-        // setTempValue(value);
-        input.onChange(value);
-      }}
+      autoComplete
+      inputValue={input.value}
+      onInputChange={onInputChange}
       onFocus={input.onFocus}
-      onBlur={(...args) => {
-        // input.onChange(tempValue);
-        // input.onBlur();
+      onChange={onChange}
+      renderInput={params => {
+        return (
+          <TextField
+            {...params}
+            error={touched && invalid}
+            helperText={(touched && error) || helperText}
+            label={label}
+            variant="outlined"
+            fullWidth
+            size="small"
+          />
+        );
       }}
-      onChange={(
-        _event: React.ChangeEvent<{}>,
-        selectOption: { text: string; value: string } | null
-      ) => {
-        if (selectOption) {
-          input.onChange(selectOption.value);
-        }
-      }}
-      renderInput={params => (
-        <TextField
-          {...params}
-          error={touched && invalid}
-          helperText={(touched && error) || helperText}
-          label={label}
-          variant="outlined"
-          fullWidth
-          size="small"
-        />
-      )}
     />
   );
 };

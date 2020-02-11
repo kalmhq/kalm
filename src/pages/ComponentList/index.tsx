@@ -45,7 +45,7 @@ interface Props extends StateProps, WithStyles<typeof styles> {
 class List extends React.PureComponent<Props> {
   public render() {
     const { dispatch, components, classes } = this.props;
-    console.log(components);
+
     const data = components.map(component => {
       return {
         action: (

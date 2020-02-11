@@ -3,36 +3,28 @@ import {
   Button,
   Chip,
   Collapse,
+  createStyles,
   Divider,
   Grid,
   Grow,
   MenuItem,
-  Typography,
-  createStyles,
-  WithStyles,
   Theme,
+  Typography,
+  WithStyles,
   withStyles
 } from "@material-ui/core";
-import { makeStyles } from "@material-ui/core/styles";
 import AddIcon from "@material-ui/icons/Add";
+import DeleteIcon from "@material-ui/icons/Delete";
+import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
-import { Field, FieldArray, formValueSelector } from "redux-form/immutable";
 import { WrappedFieldArrayProps } from "redux-form";
-import {
-  ComponentFormValues,
-  ApplicationFormValues,
-  SharedEnv
-} from "../../actions";
+import { Field, FieldArray, formValueSelector } from "redux-form/immutable";
+import { ComponentFormValues, SharedEnv } from "../../actions";
 import { RootState } from "../../reducers";
-import { CustomTextField, RenderAutoCompleteSelect } from "../Basic";
-import { ValidatorRequired } from "../validator";
-import { EnvList } from "./envList";
-
-import DeleteIcon from "@material-ui/icons/Delete";
-import { ImmutableMapPropType, ImmutableMap } from "../../typings";
+import { RenderAutoCompleteSelect } from "../Basic";
 import { EnvTypeExternal, EnvTypeStatic } from "../Basic/env";
-import Immutable from "immutable";
+import { EnvList } from "./envList";
 
 const mapStateToProps = (state: RootState) => {
   const selector = formValueSelector("application");
@@ -330,52 +322,6 @@ class RenderComponents extends React.PureComponent<Props, State> {
   }
 }
 
-// const RenderComponents = ({
-//   fields,
-//   meta: { error, submitFailed },
-//   components,
-//   sharedEnv
-// }: WrappedFieldArrayProps<ComponentFormValues> & stateProps) => {
-//   const componentsArray = components.toList().toArray();
-
-//   const classes = makeStyles(theme => ({
-//     delete: {
-//       display: "flex",
-//       alignItems: "center",
-//       justifyContent: "center"
-//     },
-//     inputForm: {
-//       border: `1px dashed`,
-//       padding: theme.spacing(3),
-//       borderRadius: 3
-//     }
-//   }))();
-
-//   const componentsIdAndNames = componentsArray.map(component => {
-//     return {
-//       value: component.id,
-//       text: component.get("name")
-//     };
-//   });
-
-//   const [isFormOpen, setFormOpen] = React.useState(false);
-//   const [isAddButtonDisplayed, setAddButtonDisplay] = React.useState(true);
-
-//   const [open, setOpen] = React.useState(false);
-
-//   const handleClick = () => {
-//     setOpen(!open);
-//   };
-
-//   const isEnvInSharedEnv = (envName: string) => {
-//     return !!sharedEnv.find(x => x.get("name") === envName);
-//   };
-
-//   return (
-
-//   );
-// };
-
 const RenderComponentsWithStyles = withStyles(styles)(RenderComponents);
 
 let components = (props: stateProps) => {
@@ -387,11 +333,5 @@ let components = (props: stateProps) => {
     />
   );
 };
-
-// export const Components = connect((state: RootState) => {
-//   const selector = formValueSelector("component");
-//   const values = selector(state, "env");
-//   return { values };
-// })(components);
 
 export const Components = connect(mapStateToProps)(components);

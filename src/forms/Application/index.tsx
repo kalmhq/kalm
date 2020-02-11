@@ -174,10 +174,27 @@ const initialValues: ApplicationFormValues = Immutable.fromJS({
   id: "0",
   name: "a-sample-application",
   sharedEnv: [
+    { name: "POSTGRES_PASSWORD", value: "password" },
+    { name: "POSTGRES_USER", value: "admin" },
+    { name: "POSTGRES_DB", value: "ddex" },
+    { name: "NODE_ENV", value: "production" },
+    { name: "RAILS_ENV", value: "production" },
+    { name: "REDIS_URL", value: "redis://redis:6379" },
+    { name: "REDIS_ADDR", value: "redis:6379" },
+    { name: "REDIS_URL_WITH_DB", value: "redis://redis:6379/0" },
     {
       name: "DATABASE_URL",
-      value: "postgres://user:password@db.host.com:5432/db_name"
-    }
+      value: "postgresql://admin:password@postgres:5432/ddex?sslmode=disable"
+    },
+    { name: "ETCD_URL", value: "http://etcd:2379" },
+    { name: "KAFKA_ADDRESS", value: "kafka:9092" },
+    { name: "NAMESPACE", value: "ropsten" },
+    { name: "API_URL", value: "http://api" },
+    { name: "PRICE_URL", value: "http://localhost:3005" },
+    { name: "PUBLIC_API_URL", value: "https://bfd-xxxxxx-api.xxx." },
+    { name: "WS_URL", value: "wss://bfd-xxxxx-ws.xxx." },
+    { name: "ETHERSCAN_DOMAIN", value: "https://ropsten.etherscan.io" },
+    { name: "JWT_SECRET", value: "some value" }
   ],
   components: [
     {

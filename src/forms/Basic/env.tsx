@@ -2,13 +2,13 @@ import { Button, Grid, IconButton, MenuItem } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
 import DeleteIcon from "@material-ui/icons/Delete";
+import Imutable from "immutable";
 import React from "react";
 import { WrappedFieldArrayProps, WrappedFieldProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
-import { RenderSelectField, renderTextField, RenderAutoComplete } from ".";
-import { ValidatorRequired } from "../validator";
+import { RenderAutoComplete, RenderSelectField, renderTextField } from ".";
 import { ImmutableMap } from "../../typings";
-import Imutable from "immutable";
+import { ValidatorRequired } from "../validator";
 
 export const EnvTypeExternal = "external";
 export const EnvTypeStatic = "static";
@@ -139,7 +139,7 @@ export const RenderSharedEnvs = ({
         const currentEnv = fields.get(index);
 
         return (
-          <div key={index}>
+          <div key={currentEnv.get("name")}>
             <Grid container spacing={2}>
               <Grid item xs={5}>
                 <Field
