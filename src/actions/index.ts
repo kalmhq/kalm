@@ -1,10 +1,16 @@
 import { CallHistoryMethodAction } from "connected-react-router";
 import Immutable from "immutable";
 import { ImmutableMap } from "../typings";
+import { RootState } from "../reducers";
+import { ThunkAction } from "redux-thunk";
 
 export const CREATE_COMPONENT_ACTION = "CREATE_COMPONENT_ACTION";
 export const UPDATE_COMPONENT_ACTION = "UPDATE_COMPONENT_ACTION";
 export const DELETE_COMPONENT_ACTION = "DELETE_COMPONENT_ACTION";
+
+export const CREATE_APPLICATION_ACTION = "CREATE_APPLICATION_ACTION";
+export const UPDATE_APPLICATION_ACTION = "UPDATE_APPLICATION_ACTION";
+export const DELETE_APPLICATION_ACTION = "DELETE_APPLICATION_ACTION";
 
 export const CREATE_CONFIG_ACTION = "CREATE_CONFIG_ACTION";
 export const UPDATE_CONFIG_ACTION = "UPDATE_CONFIG_ACTION";
@@ -90,6 +96,28 @@ export interface DeleteComponentAction {
   };
 }
 
+export interface CreateApplicationAction {
+  type: typeof CREATE_APPLICATION_ACTION;
+  payload: {
+    applicationValues: ApplicationFormValues;
+  };
+}
+
+export interface UpdateApplicationAction {
+  type: typeof UPDATE_APPLICATION_ACTION;
+  payload: {
+    applicationId: string;
+    applicationValues: ApplicationFormValues;
+  };
+}
+
+export interface DeleteApplicationAction {
+  type: typeof DELETE_APPLICATION_ACTION;
+  payload: {
+    applicationId: string;
+  };
+}
+
 export interface CreateConfigAction {
   type: typeof CREATE_CONFIG_ACTION;
   payload: {
@@ -116,7 +144,12 @@ export type Actions =
   | CreateComponentAction
   | DeleteComponentAction
   | UpdateComponentAction
+  | CreateApplicationAction
+  | DeleteApplicationAction
+  | UpdateApplicationAction
   | CreateConfigAction
   | DeleteConfigAction
   | UpdateConfigAction
   | CallHistoryMethodAction;
+
+export type ThunkResult<R> = ThunkAction<R, RootState, undefined, Actions>;

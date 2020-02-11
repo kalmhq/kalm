@@ -1,38 +1,42 @@
+import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { push } from "connected-react-router";
 import React from "react";
-import { BasePage } from "../BasePage";
-import { makeStyles, Theme } from "@material-ui/core/styles";
+import { connect } from "react-redux";
+import { ThunkDispatch } from "redux-thunk";
+import { Actions, ApplicationFormValues } from "../../actions";
 import ApplicationFrom from "../../forms/Application";
-import { useTheme } from "@material-ui/core/styles";
-import { ApplicationFormValues } from "../../actions";
+import { RootState } from "../../reducers";
+import { BasePage } from "../BasePage";
+import { createApplicationAction } from "../../actions/application";
 
-export interface ApplicationNewProps {
-  children?: React.ReactNode;
-  className?: string;
+const styles = (theme: Theme) =>
+  createStyles({
+    root: {
+      padding: theme.spacing(3)
+    }
+  });
+
+interface Props extends WithStyles<typeof styles> {
+  dispatch: ThunkDispatch<RootState, undefined, Actions>;
 }
 
-const useStyles = makeStyles((theme: Theme) => ({
-  root: {
-    flexGrow: 1,
-    width: "100%",
-    backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(3)
+class ApplicationNew extends React.PureComponent<Props> {
+  private submit = async (applicationFormValue: ApplicationFormValues) => {
+    const { dispatch } = this.props;
+    await dispatch(createApplicationAction(applicationFormValue));
+    await dispatch(push("/applications"));
+  };
+
+  public render() {
+    const { classes } = this.props;
+    return (
+      <BasePage title="New Application">
+        <div className={classes.root}>
+          <ApplicationFrom onSubmit={this.submit} />
+        </div>
+      </BasePage>
+    );
   }
-}));
-
-export function ApplicationNew() {
-  const theme = useTheme();
-  const classes = useStyles(theme);
-  const [value, setValue] = React.useState(0);
-
-  return (
-    <BasePage title="New Application">
-      <div className={classes.root}>
-        <ApplicationFrom
-          onSubmit={(values: ApplicationFormValues) => {
-            console.log("submit", values);
-          }}
-        />
-      </div>
-    </BasePage>
-  );
 }
+
+export default withStyles(styles)(connect()(ApplicationNew));

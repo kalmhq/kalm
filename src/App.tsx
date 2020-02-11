@@ -1,33 +1,31 @@
-import React from "react";
-import clsx from "clsx";
+import AppBar from "@material-ui/core/AppBar";
+import CssBaseline from "@material-ui/core/CssBaseline";
+import Drawer from "@material-ui/core/Drawer";
+import Icon from "@material-ui/core/Icon";
+import IconButton from "@material-ui/core/IconButton";
 import {
   createStyles,
   makeStyles,
-  useTheme,
-  Theme
+  Theme,
+  useTheme
 } from "@material-ui/core/styles";
-import Drawer from "@material-ui/core/Drawer";
-import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
-import CssBaseline from "@material-ui/core/CssBaseline";
 import Typography from "@material-ui/core/Typography";
-import IconButton from "@material-ui/core/IconButton";
 import MenuIcon from "@material-ui/icons/Menu";
-import Icon from "@material-ui/core/Icon";
-
-import { Switch, Route } from "react-router-dom";
-import InstallPage from "./pages/Install";
-import { Sidenav, SidenavGroupProps } from "./widgets/Sidenav";
-import { ApplictionList } from "./pages/ApplicationList";
-import { ApplicationNew } from "./pages/ApplicationNew";
-import ComponentNew from "./pages/ComponentNew";
+import clsx from "clsx";
+import React from "react";
+import { Route, Switch } from "react-router-dom";
+import ApplictionList from "./pages/ApplicationList";
+import ApplicationNew from "./pages/ApplicationNew";
 import ComponentEdit from "./pages/ComponentEdit";
 import ComponentList from "./pages/ComponentList";
-import { Paper } from "@material-ui/core";
+import ComponentNew from "./pages/ComponentNew";
+import ConfigEdit from "./pages/ConfigEdit";
 import ConfigList from "./pages/ConfigList";
 import ConfigNew from "./pages/ConfigNew";
-import ConfigEdit from "./pages/ConfigEdit";
 import Dashboard from "./pages/Dashboard";
+import InstallPage from "./pages/Install";
+import { Sidenav, SidenavGroupProps } from "./widgets/Sidenav";
 
 const sidenavGroups: SidenavGroupProps[] = [
   {
