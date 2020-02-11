@@ -15,7 +15,10 @@ const mapStateToProps = (
   ownProps: { match: match<{ componentId: string }> }
 ) => {
   const componentId = ownProps.match.params.componentId;
-  const component = state.components.get("components").get(componentId);
+  const component = state
+    .get("components")
+    .get("components")
+    .get(componentId);
 
   return { componentId, component };
 };

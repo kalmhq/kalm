@@ -1,7 +1,7 @@
 import { createStore, applyMiddleware, compose } from "redux";
 import thunkMiddleware from "redux-thunk";
 import { History, LocationState } from "history";
-import { routerMiddleware } from "connected-react-router";
+import { routerMiddleware } from "connected-react-router/immutable";
 // Logger with default options
 // import logger from "redux-logger";
 

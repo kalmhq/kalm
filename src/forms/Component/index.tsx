@@ -3,7 +3,8 @@ import Box from "@material-ui/core/Box";
 import { makeStyles, Theme } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import React from "react";
-import { InjectedFormProps, reduxForm } from "redux-form";
+import { reduxForm } from "redux-form/immutable";
+import { InjectedFormProps } from "redux-form";
 import { ComponentFormValues } from "../../actions";
 import { CustomTextField } from "../Basic";
 import { CustomEnvs } from "../Basic/env";
@@ -212,5 +213,6 @@ const initialValues = {
 };
 
 export default reduxForm<ComponentFormValues, Props>({
-  form: "component"
+  form: "component",
+  onSubmitFail: console.log
 })(ComponentFormRaw);

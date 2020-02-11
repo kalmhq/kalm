@@ -1,4 +1,6 @@
 import { CallHistoryMethodAction } from "connected-react-router";
+import Immutable from "immutable";
+import { ImmutableMap } from "../typings";
 
 export const CREATE_COMPONENT_ACTION = "CREATE_COMPONENT_ACTION";
 export const UPDATE_COMPONENT_ACTION = "UPDATE_COMPONENT_ACTION";
@@ -8,40 +10,55 @@ export const CREATE_CONFIG_ACTION = "CREATE_CONFIG_ACTION";
 export const UPDATE_CONFIG_ACTION = "UPDATE_CONFIG_ACTION";
 export const DELETE_CONFIG_ACTION = "DELETE_CONFIG_ACTION";
 
-export interface ComponentFormValues {
+export type ComponentFormValues = ImmutableMap<{
   id: string;
   name: string;
   image: string;
   command: string;
-  env: {
-    name: string;
-    type: string;
-    value: string;
-  }[];
-  ports: {
-    name: string;
-    protocol: string;
-    containerPort: number;
-    servicePort: number;
-  }[];
+  env: Immutable.List<
+    ImmutableMap<{
+      name: string;
+      type: string;
+      value: string;
+    }>
+  >;
+  ports: Immutable.List<
+    ImmutableMap<{
+      name: string;
+      protocol: string;
+      containerPort: number;
+      servicePort: number;
+    }>
+  >;
   cpu: number;
   memory: number;
-  disk: {
-    name: string;
-    type: string;
-    path: string;
-    existDisk: string;
-    size: string;
-    storageClass: string;
-  }[];
-}
+  disk: Immutable.List<
+    ImmutableMap<{
+      name: string;
+      type: string;
+      path: string;
+      existDisk: string;
+      size: string;
+      storageClass: string;
+    }>
+  >;
+}>;
 
-export interface ApplicationFormValues {
+export type SharedEnv = ImmutableMap<{
+  name: string;
+  type: string;
+  value: string;
+}>;
+
+export type EnvItem = SharedEnv;
+export type EnvItems = Immutable.List<EnvItem>;
+
+export type ApplicationFormValues = ImmutableMap<{
   id: string;
   name: string;
-  sharedEnv: { name: string; value: string }[];
-  components: ComponentFormValues[];
-}
+  sharedEnv: Immutable.List<SharedEnv>;
+  components: Immutable.List<ComponentFormValues>;
+}>;
 
 export interface ConfigFormValues {
   id: string;

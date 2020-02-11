@@ -33,7 +33,8 @@ const mapStateToProps = (state: RootState, ownProps: any) => {
   const parentId = queryParams.get("parentId") || "";
   // console.log("parentId", parentId);
   return {
-    configs: state.configs
+    configs: state
+      .get("configs")
       .get("configs")
       .toList()
       .filter(config => config.parentId === parentId)

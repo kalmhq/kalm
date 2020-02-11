@@ -4,7 +4,7 @@ import "./index.css";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 import { Provider } from "react-redux";
-import { ConnectedRouter } from "connected-react-router";
+import { ConnectedRouter } from "connected-react-router/immutable";
 import configureStore from "./store";
 import { createBrowserHistory } from "history";
 import { ThemeProvider, createMuiTheme } from "@material-ui/core";

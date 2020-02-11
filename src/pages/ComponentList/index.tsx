@@ -20,11 +20,12 @@ import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "../../actions";
 
 const mapStateToProps = (state: RootState) => {
+  console.log(state);
   return {
-    components: state.components
+    components: state
+      .get("components")
       .get("components")
       .toList()
-      .toArray()
   };
 };
 
@@ -44,6 +45,7 @@ interface Props extends StateProps, WithStyles<typeof styles> {
 class List extends React.PureComponent<Props> {
   public render() {
     const { dispatch, components, classes } = this.props;
+    console.log(components);
     const data = components.map(component => {
       return {
         action: (
@@ -51,7 +53,7 @@ class List extends React.PureComponent<Props> {
             <IconButton
               aria-label="edit"
               onClick={() => {
-                dispatch(push(`/components/${component.id}/edit`));
+                dispatch(push(`/components/${component.get("id")}/edit`));
               }}
             >
               <EditIcon />
@@ -60,7 +62,7 @@ class List extends React.PureComponent<Props> {
             <IconButton
               aria-label="edit"
               onClick={() => {
-                dispatch(push(`/components/${component.id}/duplicate`));
+                dispatch(push(`/components/${component.get("id")}/duplicate`));
               }}
             >
               <FileCopyIcon />
@@ -70,17 +72,17 @@ class List extends React.PureComponent<Props> {
               aria-label="delete"
               onClick={() => {
                 // TODO delete confirmation
-                dispatch(deleteComponentAction(component.id));
+                dispatch(deleteComponentAction(component.get("id")));
               }}
             >
               <DeleteIcon />
             </IconButton>
           </>
         ),
-        name: component.name,
-        image: component.image,
-        cpu: component.cpu,
-        memory: component.memory
+        name: component.get("name"),
+        image: component.get("image"),
+        cpu: component.get("cpu"),
+        memory: component.get("memory")
       };
     });
     return (
@@ -102,7 +104,7 @@ class List extends React.PureComponent<Props> {
                 searchable: false
               }
             ]}
-            data={data}
+            data={data.toArray()}
             title=""
           />
         </div>

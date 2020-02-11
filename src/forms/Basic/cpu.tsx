@@ -1,6 +1,7 @@
 import React, { HtmlHTMLAttributes } from "react";
 import { FilledTextFieldProps } from "@material-ui/core/TextField";
-import { Field, WrappedFieldProps, BaseFieldProps } from "redux-form";
+import { WrappedFieldProps, BaseFieldProps } from "redux-form";
+import { Field } from "redux-form/immutable";
 import { Slider } from "@material-ui/core";
 
 const formatCpuText = (value: number) => {

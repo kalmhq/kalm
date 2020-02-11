@@ -2,11 +2,11 @@ import React, { HtmlHTMLAttributes } from "react";
 import clsx from "clsx";
 import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
 import {
-  Field,
   WrappedFieldProps,
   BaseFieldProps,
   WrappedFieldMetaProps
 } from "redux-form";
+import { Field } from "redux-form/immutable";
 import { FormControl, InputLabel, Select, MenuItem } from "@material-ui/core";
 import { Autocomplete } from "@material-ui/lab";
 import FormHelperText from "@material-ui/core/FormHelperText";

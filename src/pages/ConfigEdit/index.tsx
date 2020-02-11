@@ -14,7 +14,10 @@ const mapStateToProps = (
   ownProps: { match: match<{ configId: string }> }
 ) => {
   const configId = ownProps.match.params.configId;
-  const config = state.configs.get("configs").get(configId);
+  const config = state
+    .get("configs")
+    .get("configs")
+    .get(configId);
 
   return { configId, config };
 };

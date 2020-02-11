@@ -3,14 +3,12 @@ import { makeStyles } from "@material-ui/core/styles";
 import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
 import DeleteIcon from "@material-ui/icons/Delete";
 import React from "react";
-import {
-  Field,
-  FieldArray,
-  WrappedFieldArrayProps,
-  WrappedFieldProps
-} from "redux-form";
+import { WrappedFieldArrayProps, WrappedFieldProps } from "redux-form";
+import { Field, FieldArray } from "redux-form/immutable";
 import { RenderSelectField, renderTextField, RenderAutoComplete } from ".";
 import { ValidatorRequired } from "../validator";
+import { ImmutableMap } from "../../typings";
+import Imutable from "immutable";
 
 export const EnvTypeExternal = "external";
 export const EnvTypeStatic = "static";
@@ -21,17 +19,18 @@ type EnvType =
   | typeof EnvTypeStatic
   | typeof EnvTypeShared;
 
-interface EnvValue {
+type EnvValue = ImmutableMap<{
   name: string;
   type: EnvType;
   value: string;
-}
+}>;
 
-const generateEmptyEnv = (): EnvValue => ({
-  name: "",
-  type: EnvTypeStatic,
-  value: ""
-});
+const generateEmptyEnv = (): EnvValue =>
+  Imutable.Map({
+    name: "",
+    type: EnvTypeStatic,
+    value: ""
+  });
 
 const renderEnvs = ({
   fields,
@@ -51,7 +50,8 @@ const renderEnvs = ({
       {fields.map((field, index) => {
         const currentEnv = fields.get(index);
         const isCurrentEnvExternal =
-          !!currentEnv.type && currentEnv.type === EnvTypeExternal;
+          !!currentEnv.get("type") &&
+          currentEnv.get("type") === EnvTypeExternal;
 
         return (
           <div key={index}>
@@ -150,7 +150,9 @@ export const RenderSharedEnvs = ({
                   autoFocus
                 >
                   {(missingVariables || []).map(x => (
-                    <MenuItem value={x}>{x}</MenuItem>
+                    <MenuItem key={x} value={x}>
+                      {x}
+                    </MenuItem>
                   ))}
                 </Field>
               </Grid>

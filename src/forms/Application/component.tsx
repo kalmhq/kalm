@@ -17,31 +17,29 @@ import { makeStyles } from "@material-ui/core/styles";
 import AddIcon from "@material-ui/icons/Add";
 import React from "react";
 import { connect } from "react-redux";
+import { Field, FieldArray, formValueSelector } from "redux-form/immutable";
+import { WrappedFieldArrayProps } from "redux-form";
 import {
-  Field,
-  FieldArray,
-  WrappedFieldArrayProps,
-  formValueSelector
-} from "redux-form";
-import { ComponentFormValues, ApplicationFormValues } from "../../actions";
+  ComponentFormValues,
+  ApplicationFormValues,
+  SharedEnv
+} from "../../actions";
 import { RootState } from "../../reducers";
 import { CustomTextField, RenderAutoCompleteSelect } from "../Basic";
 import { ValidatorRequired } from "../validator";
 import { EnvList } from "./envList";
 
 import DeleteIcon from "@material-ui/icons/Delete";
-import { PropType } from "../../typings";
-import { EnvTypeExternal } from "../Basic/env";
+import { ImmutableMapPropType, ImmutableMap } from "../../typings";
+import { EnvTypeExternal, EnvTypeStatic } from "../Basic/env";
+import Immutable from "immutable";
 
 const mapStateToProps = (state: RootState) => {
   const selector = formValueSelector("application");
-  const sharedEnv: PropType<ApplicationFormValues, "sharedEnv"> = selector(
-    state,
-    "sharedEnv"
-  );
+  const sharedEnv: Immutable.List<SharedEnv> = selector(state, "sharedEnv");
 
   return {
-    components: state.components.get("components"),
+    components: state.get("components").get("components"),
     sharedEnv
   };
 };
@@ -104,13 +102,13 @@ class RenderComponents extends React.PureComponent<Props, State> {
 
     const componentsIdAndNames = componentsArray.map(component => {
       return {
-        value: component.id,
-        text: component.name
+        value: component.get("id"),
+        text: component.get("name")
       };
     });
 
     const isEnvInSharedEnv = (envName: string) => {
-      return !!sharedEnv.find(x => x.name === envName);
+      return !!sharedEnv.find(x => x.get("name") === envName);
     };
 
     return (
@@ -120,14 +118,19 @@ class RenderComponents extends React.PureComponent<Props, State> {
           {fields.map((field, index, fields) => {
             const component = fields.get(index);
 
-            const externalEnvs = component.env.filter(x => {
-              return x.type === EnvTypeExternal;
+            const externalEnvs = component.get("env").filter(x => {
+              return x.get("type") === EnvTypeExternal;
             });
 
-            const missingExternalVariables = component.env.filter(x => {
-              return !isEnvInSharedEnv(x.name) && x.type === EnvTypeExternal;
+            const staticEnvs = component.get("env").filter(x => {
+              return x.get("type") === EnvTypeStatic;
             });
-            const envLength = component.env.length;
+
+            const missingExternalVariables = externalEnvs.filter(x => {
+              return !isEnvInSharedEnv(x.get("name"));
+            });
+
+            const envLength = component.get("env").size;
 
             return (
               <div key={index}>
@@ -138,7 +141,9 @@ class RenderComponents extends React.PureComponent<Props, State> {
                       justifyContent="space-between"
                       alignContent="center"
                     >
-                      <Typography variant="h5">{component.name} </Typography>
+                      <Typography variant="h5">
+                        {component.get("name")}{" "}
+                      </Typography>
                       <Box component="small" display="flex" alignItems="center">
                         Server / Cronjob
                       </Box>
@@ -146,7 +151,7 @@ class RenderComponents extends React.PureComponent<Props, State> {
                   </Grid>
                   <Grid item md={5}>
                     <Box>
-                      <Typography>{component.image}</Typography>
+                      <Typography>{component.get("image")}</Typography>
                     </Box>
                     <Box mt={3}>
                       <Box mr={1} display="inline">
@@ -155,7 +160,7 @@ class RenderComponents extends React.PureComponent<Props, State> {
                           color="primary"
                           // icon={<FaceIcon />}
                           size="small"
-                          label={`CPU  ${component.cpu / 1000}Core`}
+                          label={`CPU  ${component.get("cpu") / 1000}Core`}
                         />
                       </Box>
                       <Box mr={1} display="inline">
@@ -164,7 +169,7 @@ class RenderComponents extends React.PureComponent<Props, State> {
                           color="primary"
                           // icon={<FaceIcon />}
                           size="small"
-                          label={`Memory ${component.memory / 1000}G`}
+                          label={`Memory ${component.get("memory") / 1000}G`}
                         />
                       </Box>
                       <Box mr={1} display="inline">
@@ -186,73 +191,18 @@ class RenderComponents extends React.PureComponent<Props, State> {
                     </Box>
                     <Box mt={3}>
                       <EnvList
-                        title={
-                          <>
-                            Linked environment variables:
-                            <Box color="primary.main" display="inline" ml={1}>
-                              <strong>2</strong>
-                            </Box>
-                          </>
-                        }
-                        options={["AAA: 3"]}
+                        title="Linked environment variables"
+                        envs={staticEnvs}
                       />
                       <EnvList
-                        title={
-                          <>
-                            Static environment variables:
-                            <Box color="primary.main" display="inline" ml={1}>
-                              <strong>12</strong>
-                            </Box>
-                          </>
-                        }
-                        options={["AAA: 3"]}
+                        title="Static environment variables"
+                        envs={staticEnvs}
                       />
                       <EnvList
                         defaultOpen={true}
-                        title={
-                          <>
-                            External environment variables
-                            <Box
-                              color={
-                                missingExternalVariables.length > 0
-                                  ? "secondary.main"
-                                  : "primary.main"
-                              }
-                              display="inline"
-                              ml={1}
-                            >
-                              <strong>
-                                {externalEnvs.length -
-                                  missingExternalVariables.length}{" "}
-                                / {externalEnvs.length}
-                              </strong>
-                            </Box>
-                          </>
-                        }
-                        options={externalEnvs.map((x, index) => {
-                          if (!isEnvInSharedEnv(x.name)) {
-                            return (
-                              <Box>
-                                <Chip
-                                  label={x.name}
-                                  color="secondary"
-                                  size="small"
-                                />{" "}
-                                is Missing.
-                              </Box>
-                            );
-                          } else {
-                            return (
-                              <Box>
-                                <Chip
-                                  label={x.name}
-                                  color="primary"
-                                  size="small"
-                                />{" "}
-                              </Box>
-                            );
-                          }
-                        })}
+                        title="External environment variables"
+                        envs={externalEnvs}
+                        missingEnvs={missingExternalVariables}
                       />
                     </Box>
                   </Grid>
@@ -274,14 +224,12 @@ class RenderComponents extends React.PureComponent<Props, State> {
                       }
                     ].map(x => {
                       return (
-                        <Box display="inline-block" mt={1} mr={1}>
+                        <Box display="inline-block" mt={1} mr={1} key={x.title}>
                           <Chip
                             variant="outlined"
                             color="primary"
                             size="small"
                             label={x.title}
-                            onClick={() => {}}
-                            onDelete={() => {}}
                             deleteIcon={<DeleteIcon />}
                           />
                         </Box>
@@ -311,7 +259,9 @@ class RenderComponents extends React.PureComponent<Props, State> {
               <Grid item xs={12}>
                 <Field component={RenderAutoCompleteSelect} label="Component">
                   {componentsIdAndNames.map(x => (
-                    <MenuItem value={x.value}>{x.text}</MenuItem>
+                    <MenuItem value={x.value} key={x.value}>
+                      {x.text}
+                    </MenuItem>
                   ))}
                 </Field>
               </Grid>
@@ -327,7 +277,7 @@ class RenderComponents extends React.PureComponent<Props, State> {
                       color="primary"
                       fullWidth
                       onClick={() => {
-                        fields.push({ ...componentsArray[0], name: "1231" });
+                        fields.push(componentsArray[0].set("name", "1231"));
                         this.setState({ isFormOpen: false });
                       }}
                     >
@@ -404,7 +354,7 @@ class RenderComponents extends React.PureComponent<Props, State> {
 //   const componentsIdAndNames = componentsArray.map(component => {
 //     return {
 //       value: component.id,
-//       text: component.name
+//       text: component.get("name")
 //     };
 //   });
 
@@ -418,7 +368,7 @@ class RenderComponents extends React.PureComponent<Props, State> {
 //   };
 
 //   const isEnvInSharedEnv = (envName: string) => {
-//     return !!sharedEnv.find(x => x.name === envName);
+//     return !!sharedEnv.find(x => x.get("name") === envName);
 //   };
 
 //   return (

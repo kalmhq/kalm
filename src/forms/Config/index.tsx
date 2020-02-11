@@ -1,5 +1,6 @@
 import React from "react";
-import { Field, reduxForm, InjectedFormProps } from "redux-form";
+import { InjectedFormProps } from "redux-form";
+import { Field, reduxForm } from "redux-form/immutable";
 import { CustomTextField, renderTextField, CustomFileField } from "../Basic";
 import { makeStyles, Theme } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";

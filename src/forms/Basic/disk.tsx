@@ -1,41 +1,47 @@
 import React, { ComponentType } from "react";
 import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
 import {
-  Field,
   WrappedFieldProps,
   BaseFieldProps,
-  FieldArray,
   BaseFieldArrayProps,
   WrappedFieldArrayProps
 } from "redux-form";
+import { Field, FieldArray } from "redux-form/immutable";
 import DeleteIcon from "@material-ui/icons/Delete";
-import { renderTextField, RenderSelectField, RenderAutoCompleteSelect } from ".";
+import {
+  renderTextField,
+  RenderSelectField,
+  RenderAutoCompleteSelect
+} from ".";
 import { Grid, Button, IconButton, MenuItem, Divider } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { ValidatorRequired } from "../validator";
+import { ImmutableMap } from "../../typings";
+import Immutable from "immutable";
 
 export const DiskTypeNew = "new";
 export const DiskTypeExisting = "existing";
 
 type DiskType = typeof DiskTypeNew | typeof DiskTypeExisting;
 
-export interface DiskValue {
+type DiskValue = ImmutableMap<{
   name: string;
   type: DiskType;
   path: string;
   existDisk?: string;
   size?: string;
   storageClass?: string;
-}
+}>;
 
-const generateDisk = (type: DiskType): DiskValue => ({
-  name: "",
-  type,
-  path: "",
-  existDisk: "",
-  size: "",
-  storageClass: ""
-});
+const generateDisk = (type: DiskType): DiskValue =>
+  Immutable.Map({
+    name: "",
+    type,
+    path: "",
+    existDisk: "",
+    size: "",
+    storageClass: ""
+  });
 
 const renderDisks = ({
   fields,
@@ -61,7 +67,7 @@ const renderDisks = ({
       {fields.map((field, index, fields) => {
         // const fields.get
         const disk = fields.get(index);
-        const isNewDisk = disk.type === DiskTypeNew;
+        const isNewDisk = disk.get("type") === DiskTypeNew;
 
         return (
           <div key={index}>

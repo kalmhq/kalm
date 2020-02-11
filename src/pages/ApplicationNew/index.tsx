@@ -3,6 +3,7 @@ import { BasePage } from "../BasePage";
 import { makeStyles, Theme } from "@material-ui/core/styles";
 import ApplicationFrom from "../../forms/Application";
 import { useTheme } from "@material-ui/core/styles";
+import { ApplicationFormValues } from "../../actions";
 
 export interface ApplicationNewProps {
   children?: React.ReactNode;
@@ -27,7 +28,7 @@ export function ApplicationNew() {
     <BasePage title="New Application">
       <div className={classes.root}>
         <ApplicationFrom
-          onSubmit={values => {
+          onSubmit={(values: ApplicationFormValues) => {
             console.log("submit", values);
           }}
         />

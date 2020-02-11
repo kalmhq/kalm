@@ -3,12 +3,8 @@ import { makeStyles } from "@material-ui/core/styles";
 import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
 import DeleteIcon from "@material-ui/icons/Delete";
 import React from "react";
-import {
-  Field,
-  FieldArray,
-  WrappedFieldArrayProps,
-  WrappedFieldProps
-} from "redux-form";
+import { WrappedFieldArrayProps, WrappedFieldProps } from "redux-form";
+import { Field, FieldArray } from "redux-form/immutable";
 import { RenderSelectField, renderTextField } from ".";
 import { NormalizePort } from "../normalizer";
 import { ValidatorRequired } from "../validator";
