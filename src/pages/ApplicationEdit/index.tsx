@@ -9,6 +9,7 @@ import { Actions, ApplicationFormValues } from "../../actions";
 import { updateApplicationAction } from "../../actions/application";
 import { RootState } from "../../reducers";
 import { BasePage } from "../BasePage";
+import { setSuccessNotificationAction } from "../../actions/notification";
 
 const mapStateToProps = (
   state: RootState,
@@ -41,6 +42,9 @@ class ApplicationEdit extends React.PureComponent<Props> {
     const { dispatch, applicationId } = this.props;
     await dispatch(
       updateApplicationAction(applicationId, applicationFormValues)
+    );
+    await dispatch(
+      setSuccessNotificationAction("Edit spplication successfully")
     );
     await dispatch(push("/applications"));
   };

@@ -23,7 +23,7 @@ const NotificationRaw = ({ message }: Props) => {
     enqueueSnackbar(message.get("message"), {
       variant: message.get("variant")
     });
-  }, [message]);
+  }, [enqueueSnackbar, message]);
 
   return null;
 };

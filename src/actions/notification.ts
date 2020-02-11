@@ -12,3 +12,15 @@ export const setNotificationMessageAction = (
     });
   };
 };
+
+export const setSuccessNotificationAction = (message: string) =>
+  setNotificationMessageAction(message, "success");
+
+export const setErrorNotificationAction = (message: string) =>
+  setNotificationMessageAction(message, "error");
+
+export const setInfoNotificationAction = (message: string) =>
+  setNotificationMessageAction(message, "info");
+
+export const setWarnNotificationAction = (message: string) =>
+  setNotificationMessageAction(message, "warning");

@@ -8,6 +8,7 @@ import { createComponentAction } from "../../actions/component";
 import ComponentForm from "../../forms/Component";
 import { RootState } from "../../reducers";
 import { BasePage } from "../BasePage";
+import { setSuccessNotificationAction } from "../../actions/notification";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -24,6 +25,9 @@ class ComponentNew extends React.PureComponent<Props> {
   private submit = async (componentFormValues: ComponentFormValues) => {
     const { dispatch } = this.props;
     await dispatch(createComponentAction(componentFormValues));
+    await dispatch(
+      setSuccessNotificationAction("Create component successfully")
+    );
     await dispatch(push("/components"));
   };
 

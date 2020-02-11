@@ -8,6 +8,7 @@ import ApplicationFrom from "../../forms/Application";
 import { RootState } from "../../reducers";
 import { BasePage } from "../BasePage";
 import { createApplicationAction } from "../../actions/application";
+import { setSuccessNotificationAction } from "../../actions/notification";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -24,6 +25,9 @@ class ApplicationNew extends React.PureComponent<Props> {
   private submit = async (applicationFormValue: ApplicationFormValues) => {
     const { dispatch } = this.props;
     await dispatch(createApplicationAction(applicationFormValue));
+    await dispatch(
+      setSuccessNotificationAction("Create application successfully")
+    );
     await dispatch(push("/applications"));
   };
 
