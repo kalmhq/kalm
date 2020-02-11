@@ -20,6 +20,20 @@ metadata:
   namespace: kapp-test
 spec:
   components:
+    - name: api
+      image: nginx:alpine
+      env:
+        - name: DB_URL
+          value: postgres://user:password@test.dev:5432/db_name
+        - name: SOME_ENV
+          value: SOME_VALUE
+      ports:
+        - containerPort: 3000
+          servicePort: 80
+          name: http
+      plugins:
+        - name: manual-scaler
+          replicas: 1
     - name: web
       image: nginx:alpine
       beforeStart:
@@ -88,20 +102,7 @@ spec:
             - /
           stripPath: false
           preserveHost: false
-    - name: api
-      image: nginx:alpine
-      env:
-        - name: DB_URL
-          value: postgres://user:password@test.dev:5432/db_name
-        - name: SOME_ENV
-          value: SOME_VALUE
-      ports:
-        - containerPort: 3000
-          servicePort: 80
-          name: http
-      plugins:
-        - name: manual-scaler
-          replicas: 1
+
   sharedEnv:
     - name: SOME_COMMON_ENV
       value: shared_value
