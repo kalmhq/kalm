@@ -27,6 +27,7 @@ import ConfigNew from "./pages/ConfigNew";
 import Dashboard from "./pages/Dashboard";
 import InstallPage from "./pages/Install";
 import { Sidenav, SidenavGroupProps } from "./widgets/Sidenav";
+import { NotificationComponent } from "./widgets/Notification";
 
 const sidenavGroups: SidenavGroupProps[] = [
   {
@@ -247,6 +248,7 @@ export default function MiniDrawer() {
 
   return (
     <div className={classes.root}>
+      <NotificationComponent />
       <CssBaseline />
       <AppBar
         position="fixed"

@@ -3,6 +3,9 @@ import Immutable from "immutable";
 import { ImmutableMap } from "../typings";
 import { RootState } from "../reducers";
 import { ThunkAction } from "redux-thunk";
+import { VariantType } from "notistack";
+
+import "./notification";
 
 export const CREATE_COMPONENT_ACTION = "CREATE_COMPONENT_ACTION";
 export const UPDATE_COMPONENT_ACTION = "UPDATE_COMPONENT_ACTION";
@@ -15,6 +18,9 @@ export const DELETE_APPLICATION_ACTION = "DELETE_APPLICATION_ACTION";
 export const CREATE_CONFIG_ACTION = "CREATE_CONFIG_ACTION";
 export const UPDATE_CONFIG_ACTION = "UPDATE_CONFIG_ACTION";
 export const DELETE_CONFIG_ACTION = "DELETE_CONFIG_ACTION";
+
+export const SET_NOTIFICATION_MESSAGE_ACTION =
+  "SET_NOTIFICATION_MESSAGE_ACTION";
 
 export type ComponentFormValues = ImmutableMap<{
   id: string;
@@ -140,6 +146,14 @@ export interface DeleteConfigAction {
   };
 }
 
+export interface SetNotificationMessageAction {
+  type: typeof SET_NOTIFICATION_MESSAGE_ACTION;
+  payload: {
+    message: string;
+    variant: VariantType;
+  };
+}
+
 export type Actions =
   | CreateComponentAction
   | DeleteComponentAction
@@ -150,6 +164,7 @@ export type Actions =
   | CreateConfigAction
   | DeleteConfigAction
   | UpdateConfigAction
+  | SetNotificationMessageAction
   | CallHistoryMethodAction;
 
 export type ThunkResult<R> = ThunkAction<R, RootState, undefined, Actions>;

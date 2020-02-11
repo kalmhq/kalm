@@ -8,8 +8,10 @@ import { ConnectedRouter } from "connected-react-router/immutable";
 import configureStore from "./store";
 import { createBrowserHistory } from "history";
 import { ThemeProvider, createMuiTheme } from "@material-ui/core";
+import { SnackbarProvider } from "notistack";
 
 export const history = createBrowserHistory();
+
 const store = configureStore(history);
 const theme = createMuiTheme({
   typography: {
@@ -21,7 +23,15 @@ ReactDOM.render(
   <Provider store={store}>
     <ConnectedRouter history={history}>
       <ThemeProvider theme={theme}>
-        <App />
+        <SnackbarProvider
+          maxSnack={3}
+          anchorOrigin={{
+            horizontal: "right",
+            vertical: "bottom"
+          }}
+        >
+          <App />
+        </SnackbarProvider>
       </ThemeProvider>
     </ConnectedRouter>
   </Provider>,

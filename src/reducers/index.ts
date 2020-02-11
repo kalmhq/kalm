@@ -2,6 +2,7 @@ import { combineReducers } from "redux-immutable";
 import { reducer as formReducer } from "redux-form/immutable";
 import { FormState } from "redux-form";
 import test from "./test";
+import notification, { State as NotificationState } from "./notification";
 import components, { State as ComponentState } from "./component";
 import applications, { State as ApplicationState } from "./application";
 import configs, { State as ConfigState } from "./config";
@@ -14,6 +15,7 @@ export type RootState = ImmutableMap<{
   applications: ApplicationState;
   configs: ConfigState;
   router: RouterState<LocationState>;
+  notification: NotificationState;
   form: FormState;
 }>;
 
@@ -24,5 +26,6 @@ export default (history: History<LocationState>) =>
     components,
     applications,
     configs,
+    notification,
     test
   });
