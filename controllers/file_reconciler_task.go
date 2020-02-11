@@ -82,7 +82,12 @@ func (act *fileReconcilerTask) handleDelete() (shouldFinishReconcilationm bool, 
 				// so that it can be retried
 				return true, err
 			}
+			file.ObjectMeta.Finalizers = util.RemoveString(file.ObjectMeta.Finalizers, finalizerName)
+			if err := act.reconciler.Update(ctx, file); err != nil {
+				return true, err
+			}
 		}
+
 		return true, nil
 	}
 	return false, nil
