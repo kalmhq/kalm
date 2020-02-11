@@ -7,8 +7,8 @@ import styles from "./style.module.css";
 import HomeIcon from "@material-ui/icons/Home";
 
 const breadcrumbNameMap: { [key: string]: string } = {
-  "/apps": "Applications",
-  "/apps/new": "New",
+  "/applications": "Applications",
+  "/applications/new": "New",
   "/components": "Components",
   "/components/new": "New",
   "/components/:componentId/edit": "Edit",

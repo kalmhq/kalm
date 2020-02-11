@@ -17,6 +17,7 @@ import React from "react";
 import { Route, Switch } from "react-router-dom";
 import ApplictionList from "./pages/ApplicationList";
 import ApplicationNew from "./pages/ApplicationNew";
+import ApplicationEdit from "./pages/ApplicationEdit";
 import ComponentEdit from "./pages/ComponentEdit";
 import ComponentList from "./pages/ComponentList";
 import ComponentNew from "./pages/ComponentNew";
@@ -55,13 +56,13 @@ const sidenavGroups: SidenavGroupProps[] = [
         items: [
           {
             text: "Overview",
-            to: "/apps",
+            to: "/applications",
             icon: "reorder",
             type: "normal"
           },
           {
             text: "Add",
-            to: "/apps/new",
+            to: "/applications/new",
             icon: "add",
             type: "normal"
           }
@@ -307,10 +308,15 @@ export default function MiniDrawer() {
           <Route exact path="/install">
             <InstallPage />
           </Route>
-          <Route exact path="/apps">
+          <Route exact path="/applications">
             <ApplictionList />
           </Route>
-          <Route exact path="/apps/new">
+          <Route
+            exact
+            path="/applications/:applicationId/edit"
+            component={ApplicationEdit}
+          ></Route>
+          <Route exact path="/applications/new">
             <ApplicationNew />
           </Route>
           <Route exact path="/components/new">
