@@ -1,4 +1,4 @@
-import { Button, Grid, IconButton, MenuItem } from "@material-ui/core";
+import { Button, Grid, IconButton, MenuItem, Box } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
 import DeleteIcon from "@material-ui/icons/Delete";
@@ -178,14 +178,28 @@ export const RenderSharedEnvs = ({
           </div>
         );
       })}
-      <Button
-        variant="outlined"
-        size="small"
-        color="primary"
-        onClick={() => fields.push(generateEmptyEnv())}
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mt={2}
       >
-        Add Shared Environment Variable
-      </Button>
+        <Button
+          variant="outlined"
+          size="small"
+          color="primary"
+          onClick={() => fields.push(generateEmptyEnv())}
+        >
+          Add Shared Environment Variable
+        </Button>
+
+        {missingVariables ? (
+          <Box color="secondary.main" display="inline">
+            Still <strong>{missingVariables.length}</strong> Environment
+            Variables are not defined.
+          </Box>
+        ) : null}
+      </Box>
     </div>
   );
 };

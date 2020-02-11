@@ -191,10 +191,11 @@ class RenderComponents extends React.PureComponent<Props, State> {
                         envs={staticEnvs}
                       />
                       <EnvList
-                        defaultOpen={true}
+                        defaultOpen={missingExternalVariables.size > 0}
                         title="External environment variables"
                         envs={externalEnvs}
                         missingEnvs={missingExternalVariables}
+                        sharedEnvs={sharedEnv}
                       />
                     </Box>
                   </Grid>
@@ -306,13 +307,7 @@ class RenderComponents extends React.PureComponent<Props, State> {
             color="primary"
             fullWidth
             startIcon={<AddIcon />}
-            onClick={() =>
-              // fields.push({
-              //   name: "",
-              //   type: ""
-              // })
-              this.setState({ isAddButtonDisplayed: false })
-            }
+            onClick={() => this.setState({ isAddButtonDisplayed: false })}
           >
             Add Component
           </Button>

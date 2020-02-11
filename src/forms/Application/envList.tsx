@@ -10,10 +10,12 @@ import {
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
 import { EnvItems, EnvItem } from "../../actions";
+import { EnvTypeExternal, EnvTypeStatic } from "../Basic/env";
 
 export interface EnvListProps {
   title: string;
   envs: EnvItems;
+  sharedEnvs?: EnvItems;
   missingEnvs?: EnvItems;
   defaultOpen?: boolean;
 }
@@ -43,31 +45,25 @@ export class EnvList extends React.PureComponent<EnvListProps, State> {
     );
   };
 
-  public componentDidMount() {
-    console.log("mount");
-  }
+  private getEnvValue = (env: EnvItem) => {
+    if (env.get("type") === EnvTypeStatic) {
+      return env.get("value");
+    }
 
-  public componentWillUnmount() {
-    console.log("unmount");
-  }
+    const { sharedEnvs } = this.props;
+    if (env.get("type") === EnvTypeExternal && sharedEnvs) {
+      return sharedEnvs
+        .find(x => x.get("name") === env.get("name"))
+        ?.get("value");
+    }
+  };
 
-  // public shouldComponentUpdate(
-  //   nextProps: EnvListProps,
-  //   nextState: State
-  // ): boolean {
-  //   const envsNotChange = this.props.envs.equals(nextProps.envs);
-  //   const noMissingEnvs = !this.props.missingEnvs && !nextProps.missingEnvs;
-  //   const hasMissingEnvs = !!this.props.missingEnvs && !!nextProps.missingEnvs;
+  public componentDidMount() {}
 
-  //   const missingEnvsNotChange =
-  //     noMissingEnvs ||
-  //     (hasMissingEnvs && this.props.missingEnvs!.equals(nextProps.missingEnvs));
-
-  //   return !envsNotChange || !missingEnvsNotChange;
-  // }
+  public componentWillUnmount() {}
 
   public render() {
-    const { title, envs, missingEnvs } = this.props;
+    const { title, envs, missingEnvs, sharedEnvs } = this.props;
     const { open } = this.state;
     return (
       <List
@@ -112,12 +108,10 @@ export class EnvList extends React.PureComponent<EnvListProps, State> {
                     mt={1}
                     ml={2}
                   >
-                    <Chip
-                      label={env.get("name")}
-                      color={this.isEnvMissing(env) ? "secondary" : "primary"}
-                      size="small"
-                    />
-                    {this.isEnvMissing(env) ? " is Missing." : ""}
+                    <strong>{env.get("name")}</strong>:
+                    {this.isEnvMissing(env)
+                      ? " is Missing."
+                      : this.getEnvValue(env)}
                   </Box>
                 </ListItemText>
               </ListItem>
