@@ -1,7 +1,13 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kapp-test
+---
 apiVersion: core.kapp.dev/v1alpha1
 kind: File
 metadata:
   name: nginx-config
+  namespace: kapp-test
 data: |
   location / {
     proxy_pass http://localhost:3000
@@ -11,6 +17,7 @@ apiVersion: core.kapp.dev/v1alpha1
 kind: Application
 metadata:
   name: test
+  namespace: kapp-test
 spec:
   components:
     - name: web
