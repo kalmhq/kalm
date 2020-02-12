@@ -56,6 +56,20 @@ export type ComponentFormValues = ImmutableMap<{
   >;
 }>;
 
+export const newEmptyComponentFormValues = (): ComponentFormValues => {
+  return Immutable.Map({
+    id: "",
+    name: "",
+    image: "",
+    command: "",
+    env: Immutable.List([]),
+    ports: Immutable.List([]),
+    disk: Immutable.List([]),
+    cpu: 0,
+    memory: 0
+  });
+};
+
 export type SharedEnv = ImmutableMap<{
   name: string;
   type: string;

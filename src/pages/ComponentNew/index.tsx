@@ -3,7 +3,11 @@ import { push } from "connected-react-router";
 import React from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
-import { Actions, ComponentFormValues } from "../../actions";
+import {
+  Actions,
+  ComponentFormValues,
+  newEmptyComponentFormValues
+} from "../../actions";
 import { createComponentAction } from "../../actions/component";
 import ComponentForm from "../../forms/Component";
 import { RootState } from "../../reducers";
@@ -36,7 +40,10 @@ class ComponentNew extends React.PureComponent<Props> {
     return (
       <BasePage title="New Component">
         <div className={classes.root}>
-          <ComponentForm onSubmit={this.submit} />
+          <ComponentForm
+            onSubmit={this.submit}
+            initialValues={newEmptyComponentFormValues()}
+          />
         </div>
       </BasePage>
     );
