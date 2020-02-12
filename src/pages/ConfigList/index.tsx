@@ -18,6 +18,7 @@ import { deleteConfigAction } from "../../actions/config";
 import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "../../actions";
 import { Link } from "react-router-dom";
+import FileTree from "../../widgets/FileTree";
 
 const styles = (theme: Theme) => ({
   fileIcon: {
@@ -25,6 +26,19 @@ const styles = (theme: Theme) => ({
   },
   fileName: {
     verticalAlign: "super"
+  },
+  displayFlex: {
+    display: "flex"
+  },
+  leftTree: {
+    width: "400px",
+    padding: "15px"
+  },
+  fileDetail: {
+    width: "100%",
+    minHeight: "800px",
+    padding: "15px",
+    backgroundColor: "#fff"
   }
 });
 
@@ -52,7 +66,7 @@ interface Props extends StateProps {
 class List extends React.PureComponent<Props> {
   public render() {
     const { dispatch, configs, classes } = this.props;
-    const data = configs.map(config => {
+    const data = configs.map((config: any) => {
       return {
         action: (
           <>
@@ -107,24 +121,12 @@ class List extends React.PureComponent<Props> {
     });
     return (
       <BasePage title="Configs">
-        <MaterialTable
-          options={{
-            padding: "dense"
-          }}
-          columns={[
-            { title: "Name", field: "name", sorting: false },
-            { title: "Type", field: "type", sorting: false },
-            { title: "Value", field: "value", sorting: false },
-            {
-              title: "Action",
-              field: "action",
-              sorting: false,
-              searchable: false
-            }
-          ]}
-          data={data}
-          title=""
-        />
+        <div className={classes.displayFlex}>
+          <div className={classes.leftTree}>
+            <FileTree />
+          </div>
+          <div className={classes.fileDetail}>file detail</div>
+        </div>
       </BasePage>
     );
   }
