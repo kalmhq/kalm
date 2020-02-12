@@ -87,8 +87,7 @@ export const RenderSelectField = ({
   input,
   label,
   meta: { touched, error },
-  children,
-  ...custom
+  children
 }: WrappedFieldProps & SelectProps) => {
   const id = ID();
   const labelId = ID();
@@ -99,11 +98,19 @@ export const RenderSelectField = ({
   }))();
 
   const [labelWidth, setLabelWidth] = React.useState(0);
+
   React.useEffect(() => {
     setLabelWidth(inputLabel.current!.offsetWidth);
   }, []);
 
   const inputLabel = React.useRef<HTMLLabelElement>(null);
+
+  const onChange = (
+    event: React.ChangeEvent<{ name?: string; value: unknown }>,
+    child: React.ReactNode
+  ) => {
+    input.onChange(event.target.value);
+  };
 
   return (
     <FormControl
@@ -117,9 +124,11 @@ export const RenderSelectField = ({
       </InputLabel>
       <Select
         labelWidth={labelWidth}
+        autoFocus={false}
         labelId={labelId}
-        {...input}
-        {...custom}
+        value={input.value}
+        onChange={onChange}
+        onBlur={input.onBlur}
         inputProps={{
           id: id
         }}

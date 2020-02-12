@@ -28,86 +28,58 @@ import Dashboard from "./pages/Dashboard";
 import InstallPage from "./pages/Install";
 import { Sidenav, SidenavGroupProps } from "./widgets/Sidenav";
 import { NotificationComponent } from "./widgets/Notification";
+import { Box } from "@material-ui/core";
 
 const sidenavGroups: SidenavGroupProps[] = [
   {
     text: "Application",
     items: [
       {
-        text: "Components",
-        type: "dropdown",
-        icon: "extension",
-        items: [
-          {
-            text: "Overview",
-            to: "/components",
-            icon: "reorder",
-            type: "normal"
-          },
-          {
-            text: "Add",
-            to: "/components/new",
-            icon: "add",
-            type: "normal"
-          }
-        ]
-      },
-      {
         text: "Application",
-        items: [
-          {
-            text: "Overview",
-            to: "/applications",
-            icon: "reorder",
-            type: "normal"
-          },
-          {
-            text: "Add",
-            to: "/applications/new",
-            icon: "add",
-            type: "normal"
-          }
-        ],
-        type: "dropdown",
-        icon: "apps"
+        to: "/applications",
+        icon: "apps",
+        type: "normal"
       },
       {
-        text: "Plugins",
-        items: [
-          {
-            text: "Overview",
-            to: "/plugins",
-            icon: "reorder",
-            type: "normal"
-          },
-          {
-            text: "Add",
-            to: "/plugins/new",
-            icon: "add",
-            type: "normal"
-          }
-        ],
-        type: "dropdown",
-        icon: "library_add"
+        text: "Component",
+        to: "/components",
+        icon: "extension",
+        type: "normal"
       },
       {
         text: "Configs",
-        items: [
-          {
-            text: "Overview",
-            to: "/configs",
-            icon: "reorder",
-            type: "normal"
-          },
-          {
-            text: "Add",
-            to: "/configs/new",
-            icon: "add",
-            type: "normal"
-          }
-        ],
-        type: "dropdown",
-        icon: "folder"
+        to: "/configs",
+        icon: "insert_drive_file",
+        type: "normal"
+      },
+      {
+        text: "Routes",
+        to: "/routes",
+        icon: "call_split",
+        type: "normal"
+      }
+    ]
+  },
+  {
+    text: "Cluster",
+    items: [
+      {
+        text: "Nodes",
+        to: "/cluster/nodes",
+        type: "normal",
+        icon: "computer"
+      },
+      {
+        text: "Disks",
+        to: "/cluster/disks",
+        type: "normal",
+        icon: "storage"
+      },
+      {
+        text: "K8s Resources",
+        to: "/cluster/k8s",
+        type: "normal",
+        icon: "settings"
       }
     ]
   },
@@ -115,8 +87,20 @@ const sidenavGroups: SidenavGroupProps[] = [
     text: "Monitoring",
     items: [
       {
-        text: "Nodes",
-        to: "/monitoring/node",
+        text: "Metrics",
+        to: "/monitoring/metrics",
+        type: "normal",
+        icon: "multiline_chart"
+      },
+      {
+        text: "Alerts",
+        to: "/monitoring/alerts",
+        type: "normal",
+        icon: "report_problem"
+      },
+      {
+        text: "DebugPage",
+        to: "/monitoring/metrics",
         type: "normal",
         icon: "settings"
       }
@@ -295,7 +279,7 @@ export default function MiniDrawer() {
               className={classes.toolbarTitleImg}
               alt="logo"
             />
-            Name PLaceholder
+            Kapp Dashboard
           </div>
 
           <IconButton onClick={handleDrawerClose} color="inherit">

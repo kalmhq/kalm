@@ -9,7 +9,9 @@ import {
   WithStyles,
   Theme,
   createStyles,
-  withStyles
+  withStyles,
+  Box,
+  Tooltip
 } from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@material-ui/icons/Delete";
@@ -18,9 +20,16 @@ import { push } from "connected-react-router";
 import { deleteComponentAction } from "../../actions/component";
 import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "../../actions";
+import { DiskTypeNew } from "../../forms/Basic/disk";
+import { Alert } from "@material-ui/lab";
+import { ConfirmDialog } from "../../widgets/ConfirmDialog";
+import { stringify } from "querystring";
+import {
+  setSuccessNotificationAction,
+  setErrorNotificationAction
+} from "../../actions/notification";
 
 const mapStateToProps = (state: RootState) => {
-  console.log(state);
   return {
     components: state
       .get("components")
@@ -42,71 +51,178 @@ interface Props extends StateProps, WithStyles<typeof styles> {
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
 }
 
-class List extends React.PureComponent<Props> {
+interface States {
+  isDeleteConfirmDialogOpen: boolean;
+  deletingComponentId?: string;
+}
+
+class List extends React.PureComponent<Props, States> {
+  constructor(props: Props) {
+    super(props);
+
+    this.state = {
+      isDeleteConfirmDialogOpen: false
+    };
+  }
+
+  public onCreate = () => {
+    this.props.dispatch(push(`/components/new`));
+  };
+
+  private closeConfirmDialog = () => {
+    this.setState({
+      isDeleteConfirmDialogOpen: false,
+      deletingComponentId: undefined
+    });
+  };
+
+  private deleteConfirmedComponent = async () => {
+    const { dispatch } = this.props;
+    try {
+      await dispatch(deleteComponentAction(this.state.deletingComponentId!));
+      await dispatch(
+        setSuccessNotificationAction("Successfully delete a component")
+      );
+    } catch {
+      dispatch(setErrorNotificationAction("Something wrong"));
+    }
+  };
+
+  private setDeletingComponentAndConfirm = (componentId: string) => {
+    this.setState({
+      isDeleteConfirmDialogOpen: true,
+      deletingComponentId: componentId
+    });
+  };
+
   public render() {
     const { dispatch, components, classes } = this.props;
-
+    const { isDeleteConfirmDialogOpen } = this.state;
     const data = components.map(component => {
+      const onDeleteClick = () => {
+        this.setDeletingComponentAndConfirm(component.get("id"));
+      };
       return {
         action: (
           <>
-            <IconButton
-              aria-label="edit"
-              onClick={() => {
-                dispatch(push(`/components/${component.get("id")}/edit`));
-              }}
-            >
-              <EditIcon />
-            </IconButton>
+            <Tooltip title="Edit this component" aria-label="duplicate">
+              <IconButton
+                aria-label="edit"
+                onClick={() => {
+                  dispatch(push(`/components/${component.get("id")}/edit`));
+                }}
+              >
+                <EditIcon />
+              </IconButton>
+            </Tooltip>
 
-            <IconButton
-              aria-label="edit"
-              onClick={() => {
-                dispatch(push(`/components/${component.get("id")}/duplicate`));
-              }}
-            >
-              <FileCopyIcon />
-            </IconButton>
+            <Tooltip title="Duplicate this component" aria-label="duplicate">
+              <IconButton
+                aria-label="edit"
+                onClick={() => {
+                  dispatch(
+                    push(`/components/${component.get("id")}/duplicate`)
+                  );
+                }}
+              >
+                <FileCopyIcon />
+              </IconButton>
+            </Tooltip>
 
-            <IconButton
-              aria-label="delete"
-              onClick={() => {
-                // TODO delete confirmation
-                dispatch(deleteComponentAction(component.get("id")));
-              }}
-            >
-              <DeleteIcon />
-            </IconButton>
+            <Tooltip title="Delete this component" aria-label="duplicate">
+              <IconButton aria-label="delete" onClick={onDeleteClick}>
+                <DeleteIcon />
+              </IconButton>
+            </Tooltip>
           </>
         ),
         name: component.get("name"),
         image: component.get("image"),
         cpu: component.get("cpu"),
-        memory: component.get("memory")
+        memory: component.get("memory"),
+        port: (
+          <div>
+            {component
+              .get("ports")
+              .map(port => {
+                return (
+                  <span>
+                    {port.get("containerPort")} -> {port.get("servicePort")}
+                  </span>
+                );
+              })
+              .toArray()}
+          </div>
+        ),
+        disk: component
+          .get("disk")
+          .map(disk => {
+            return (
+              <div>
+                <strong>{disk.get("size")}M</strong> mount at{" "}
+                <strong>{disk.get("path")}</strong>
+              </div>
+            );
+          })
+          .toArray()
       };
     });
     return (
-      <BasePage title="Components">
+      <BasePage
+        title="Components"
+        onCreate={this.onCreate}
+        createButtonText="Add A Component"
+      >
+        <ConfirmDialog
+          open={isDeleteConfirmDialogOpen}
+          onClose={this.closeConfirmDialog}
+          title="Are you sure to delete this Component?"
+          content="Delete this Component will NOT affect applications that includes this component."
+          onAgree={this.deleteConfirmedComponent}
+        />
+
         <div className={classes.root}>
-          <MaterialTable
-            options={{
-              padding: "dense"
-            }}
-            columns={[
-              { title: "Name", field: "name", sorting: false },
-              { title: "Image", field: "image", sorting: false },
-              { title: "CPU", field: "cpu", searchable: false },
-              { title: "Memory", field: "memory", searchable: false },
-              {
-                title: "Action",
-                field: "action",
-                sorting: false,
-                searchable: false
-              }
-            ]}
-            data={data.toArray()}
-            title=""
-          />
+          <Alert severity="info">
+            Component is a template config describes how to deploy a software on
+            kapp system. Component can't run independently, but it can be easily
+            added into any application. When adding a component into an
+            application, the component config will be copyed into the
+            application, which mean it's free to update existing component
+            anytime without worring about breaking running applications.
+          </Alert>
+          <Box mt={3}>
+            <MaterialTable
+              options={{
+                padding: "dense"
+              }}
+              columns={[
+                {
+                  title: "Name",
+                  field: "name",
+                  sorting: false
+                },
+                { title: "Image", field: "image", sorting: false },
+                { title: "CPU", field: "cpu", searchable: false },
+                { title: "Memory", field: "memory", searchable: false },
+                { title: "Disk", field: "disk", sorting: false },
+                {
+                  title: "Port",
+                  field: "port",
+
+                  sorting: false,
+                  searchable: false
+                },
+                {
+                  title: "Action",
+                  field: "action",
+                  sorting: false,
+                  searchable: false
+                }
+              ]}
+              data={data.toArray()}
+              title=""
+            />
+          </Box>
         </div>
       </BasePage>
     );

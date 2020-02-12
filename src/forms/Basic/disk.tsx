@@ -18,6 +18,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import { ValidatorRequired } from "../validator";
 import { ImmutableMap } from "../../typings";
 import Immutable from "immutable";
+import AddIcon from "@material-ui/icons/Add";
 
 export const DiskTypeNew = "new";
 export const DiskTypeExisting = "existing";
@@ -74,7 +75,7 @@ const renderDisks = ({
             <Field type="hidden" name={`${field}.type`} component="input" />
 
             <Grid container spacing={2} className={classes.divider}>
-              <Grid item xs={10}>
+              <Grid item xs={11}>
                 <Grid container spacing={2}>
                   {isNewDisk ? (
                     <>
@@ -93,8 +94,12 @@ const renderDisks = ({
                           component={RenderSelectField}
                           label="StorageClass"
                         >
-                          <MenuItem value="static">Static</MenuItem>
-                          <MenuItem value="external">External</MenuItem>
+                          <MenuItem value="gcp-classtic">
+                            gcp-classtic (FAKE, TODO)
+                          </MenuItem>
+                          <MenuItem value="gcp-ssd">
+                            gcp-ssd (FAKE, TODO)
+                          </MenuItem>
                         </Field>
                       </Grid>
                     </>
@@ -142,7 +147,7 @@ const renderDisks = ({
                   ) : null}
                 </Grid>
               </Grid>
-              <Grid item xs={2} className={classes.delete}>
+              <Grid item xs={1} className={classes.delete}>
                 <IconButton
                   aria-label="delete"
                   onClick={() => fields.remove(index)}
@@ -163,17 +168,18 @@ const renderDisks = ({
         color="primary"
         onClick={() => fields.push(generateDisk(DiskTypeNew))}
         classes={{ root: classes.firstButton }}
+        startIcon={<AddIcon />}
       >
-        Mount New Disk
+        Add New Disk
       </Button>
-      <Button
+      {/* <Button
         size="small"
         variant="outlined"
         color="primary"
         onClick={() => fields.push(generateDisk(DiskTypeExisting))}
       >
         Attach existing disk
-      </Button>
+      </Button> */}
     </div>
   );
 };

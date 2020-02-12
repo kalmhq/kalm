@@ -8,6 +8,7 @@ import { Field, FieldArray } from "redux-form/immutable";
 import { RenderSelectField, renderTextField } from ".";
 import { NormalizePort } from "../normalizer";
 import { ValidatorRequired } from "../validator";
+import AddIcon from "@material-ui/icons/Add";
 
 export const portTypeTCP = "TCP";
 export const portTypeUDP = "UDP";
@@ -43,7 +44,7 @@ const renderPorts = ({
       {fields.map((port, index) => (
         <div key={index}>
           <Grid container spacing={2} className={classes.divider}>
-            <Grid item xs={10}>
+            <Grid item xs={11}>
               <Grid container spacing={2}>
                 <Grid item xs={6}>
                   <Field
@@ -93,7 +94,7 @@ const renderPorts = ({
                 </Grid>
               </Grid>
             </Grid>
-            <Grid item xs={2} className={classes.delete}>
+            <Grid item xs={1} className={classes.delete}>
               <IconButton
                 aria-label="delete"
                 onClick={() => fields.remove(index)}
@@ -112,6 +113,7 @@ const renderPorts = ({
         color="primary"
         size="small"
         onClick={() => fields.push(generateNewPort())}
+        startIcon={<AddIcon />}
       >
         Add Port
       </Button>

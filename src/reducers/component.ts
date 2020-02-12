@@ -16,85 +16,71 @@ const initialState: State = Immutable.Map({
   components: Immutable.OrderedMap<ComponentFormValues>({
     "0": Immutable.Map({
       id: "0",
-      name: "test",
-      image: "test.com/test:latest",
-      command: "/bin/runapp",
+      name: "postgres",
+      image: "postgres",
+      command: "",
       env: Immutable.List([
         Immutable.Map({
-          name: "static-name",
+          name: "POSTGRES_PASSWORD",
           type: "static",
-          value: "foo-value"
+          value: "password"
         }),
-        Immutable.Map({ type: "external", value: "", name: "external" })
+        Immutable.Map({
+          name: "POSTGRES_USER",
+          type: "static",
+          value: "admin"
+        }),
+        Immutable.Map({
+          name: "POSTGRES_DB",
+          type: "static",
+          value: "db"
+        })
       ]),
       ports: Immutable.List([
         Immutable.Map({
-          name: "http",
+          name: "port",
           protocol: "TCP",
-          containerPort: 8080,
-          servicePort: 80
+          containerPort: 5432,
+          servicePort: 5432
         })
       ]),
-      cpu: 2600,
-      memory: 2000,
+      cpu: 1000,
+      memory: 1000,
       disk: Immutable.List([
         Immutable.Map({
-          name: "test",
+          name: "pg-data",
           type: "new",
-          path: "123",
+          path: "/var/usr/postgres/data",
           existDisk: "",
           size: "300",
-          storageClass: "external"
-        }),
-        Immutable.Map({
-          name: "",
-          type: "existing",
-          path: "23123",
-          existDisk: "1",
-          size: "",
-          storageClass: ""
+          storageClass: "gcp-ssd"
         })
       ])
     }),
     "1": Immutable.Map({
       id: "1",
-      name: "ddex",
-      image: "ddex.com/ddex:laddex",
-      command: "/bin/runapp",
-      env: Immutable.List([
-        Immutable.Map({
-          name: "static-name",
-          type: "static",
-          value: "foo-value"
-        }),
-        Immutable.Map({ type: "external", value: "", name: "external" })
-      ]),
+      name: "redis",
+      image: "redis/redis:latest",
+      command: "",
+      env: Immutable.List([]),
       ports: Immutable.List([
         Immutable.Map({
-          name: "http",
+          name: "port",
           protocol: "TCP",
-          containerPort: 8080,
-          servicePort: 80
+          containerPort: 6379,
+          servicePort: 6379
         })
       ]),
       cpu: 2600,
       memory: 2000,
       disk: Immutable.List([
         Immutable.Map({
-          name: "ddex",
+          name: "redis-data-disk",
           type: "new",
-          path: "123",
+          path: "/data",
           existDisk: "",
           size: "300",
-          storageClass: "external"
-        }),
-        Immutable.Map({
-          name: "",
-          type: "existing",
-          path: "23123",
-          existDisk: "1",
-          size: "",
-          storageClass: ""
+          storageClass: "gcp-ssd"
         })
       ])
     })

@@ -1,16 +1,23 @@
 import { Button, Grid, Paper } from "@material-ui/core";
+
 import Box from "@material-ui/core/Box";
 import { makeStyles, Theme } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import React from "react";
 import { reduxForm } from "redux-form/immutable";
 import { InjectedFormProps } from "redux-form";
+import { getFormValues } from "redux-form/immutable";
 import { ComponentFormValues } from "../../actions";
 import { CustomTextField } from "../Basic";
 import { CustomEnvs } from "../Basic/env";
 import { CustomPorts } from "../Basic/ports";
 import { ValidatorRequired } from "../validator";
 import ComponentResources from "./resources";
+import { RootState } from "../../reducers";
+import { connect } from "react-redux";
+
+import SyntaxHighlighter from "react-syntax-highlighter";
+import { monokai } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 export interface Props {}
 
@@ -18,30 +25,6 @@ interface TabPanelProps {
   children?: React.ReactNode;
   index: any;
   value: any;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <Typography
-      component="div"
-      role="tabpanel"
-      hidden={value !== index}
-      id={`scrollable-force-tabpanel-${index}`}
-      aria-labelledby={`scrollable-force-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box p={3}>{children}</Box>}
-    </Typography>
-  );
-}
-
-function a11yProps(index: any) {
-  return {
-    id: `scrollable-force-tab-${index}`,
-    "aria-controls": `scrollable-force-tabpanel-${index}`
-  };
 }
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -67,8 +50,17 @@ const useStyles = makeStyles((theme: Theme) => ({
   }
 }));
 
+const mapStateToProps = (state: RootState) => {
+  const values = getFormValues("component")(state) as ComponentFormValues;
+  return {
+    values
+  };
+};
+
 function ComponentFormRaw(
-  props: Props & InjectedFormProps<ComponentFormValues, Props>
+  props: Props &
+    InjectedFormProps<ComponentFormValues, Props> &
+    ReturnType<typeof mapStateToProps>
 ) {
   const { handleSubmit } = props;
   const classes = useStyles();
@@ -81,7 +73,7 @@ function ComponentFormRaw(
   return (
     <div className={classes.root}>
       <form onSubmit={handleSubmit}>
-        <Grid container spacing={1}>
+        <Grid container spacing={2}>
           <Grid item xs={12} sm={12} md={8} lg={8} xl={6}>
             <Typography
               variant="h2"
@@ -192,6 +184,21 @@ function ComponentFormRaw(
               <ComponentResources />
             </Paper>
           </Grid>
+
+          <Grid item xs={12} sm={12} md={4} lg={4} xl={6}>
+            <Typography
+              variant="h2"
+              classes={{
+                root: classes.sectionHeader
+              }}
+            >
+              Component Data
+            </Typography>
+
+            <SyntaxHighlighter language="json" style={monokai}>
+              {JSON.stringify(props.values, undefined, 2)}
+            </SyntaxHighlighter>
+          </Grid>
         </Grid>
         <Button variant="contained" color="primary" type="submit">
           Submit
@@ -201,18 +208,7 @@ function ComponentFormRaw(
   );
 }
 
-const initialValues = {
-  name: "",
-  image: "",
-  command: "",
-  env: [],
-  ports: [],
-  cpu: 2600,
-  memory: 2000,
-  disk: []
-};
-
 export default reduxForm<ComponentFormValues, Props>({
   form: "component",
   onSubmitFail: console.log
-})(ComponentFormRaw);
+})(connect(mapStateToProps)(ComponentFormRaw));

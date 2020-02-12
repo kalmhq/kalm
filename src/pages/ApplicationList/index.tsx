@@ -41,10 +41,13 @@ interface Props extends StateProps, WithStyles<typeof styles> {
 }
 
 class List extends React.PureComponent<Props> {
+  public onCreate = () => {
+    this.props.dispatch(push(`/applications/new`));
+  };
+
   public render() {
     const { dispatch, applications, classes } = this.props;
     const data = applications.map(application => {
-      console.log(application);
       return {
         action: (
           <>
@@ -87,7 +90,11 @@ class List extends React.PureComponent<Props> {
       };
     });
     return (
-      <BasePage title="Components">
+      <BasePage
+        title="Applications"
+        onCreate={this.onCreate}
+        createButtonText="Add An Application"
+      >
         <div className={classes.root}>
           <MaterialTable
             options={{

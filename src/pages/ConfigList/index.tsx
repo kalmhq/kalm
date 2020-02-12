@@ -50,6 +50,10 @@ interface Props extends StateProps {
 }
 
 class List extends React.PureComponent<Props> {
+  public onCreate = () => {
+    this.props.dispatch(push(`/configs/new`));
+  };
+
   public render() {
     const { dispatch, configs, classes } = this.props;
     const data = configs.map(config => {
@@ -106,7 +110,7 @@ class List extends React.PureComponent<Props> {
       };
     });
     return (
-      <BasePage title="Configs">
+      <BasePage title="Configs" onCreate={this.onCreate}>
         <MaterialTable
           options={{
             padding: "dense"

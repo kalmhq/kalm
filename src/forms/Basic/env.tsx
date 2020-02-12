@@ -9,6 +9,7 @@ import { Field, FieldArray } from "redux-form/immutable";
 import { RenderAutoComplete, RenderSelectField, renderTextField } from ".";
 import { ImmutableMap } from "../../typings";
 import { ValidatorRequired } from "../validator";
+import AddIcon from "@material-ui/icons/Add";
 
 export const EnvTypeExternal = "external";
 export const EnvTypeStatic = "static";
@@ -79,7 +80,7 @@ const renderEnvs = ({
               <Grid item xs={6}>
                 <Field
                   disabled={isCurrentEnvExternal}
-                  validate={!isCurrentEnvExternal ? ValidatorRequired : []}
+                  validate={!isCurrentEnvExternal ? [ValidatorRequired] : []}
                   name={`${field}.value`}
                   component={renderTextField}
                   label={
@@ -108,6 +109,7 @@ const renderEnvs = ({
         size="small"
         color="primary"
         onClick={() => fields.push(generateEmptyEnv())}
+        startIcon={<AddIcon />}
       >
         Add Environment Variable
       </Button>
