@@ -12,7 +12,7 @@ import ExpandMore from "@material-ui/icons/ExpandMore";
 import { EnvItems, EnvItem } from "../../actions";
 import { EnvTypeExternal, EnvTypeStatic } from "../Basic/env";
 
-export interface EnvListProps {
+export interface Props {
   title: string;
   envs: EnvItems;
   sharedEnvs?: EnvItems;
@@ -24,8 +24,8 @@ interface State {
   open: boolean;
 }
 
-export class EnvList extends React.PureComponent<EnvListProps, State> {
-  constructor(props: EnvListProps) {
+export class EnvList extends React.PureComponent<Props, State> {
+  constructor(props: Props) {
     super(props);
 
     this.state = {
@@ -58,9 +58,32 @@ export class EnvList extends React.PureComponent<EnvListProps, State> {
     }
   };
 
-  public componentDidMount() {}
+  public shouldComponentUpdate(nextProps: Props, nextState: State): boolean {
+    if (nextState.open !== this.state.open) {
+      return true;
+    }
 
-  public componentWillUnmount() {}
+    if (!this.props.envs.equals(nextProps.envs)) {
+      return true;
+    }
+
+    if (this.props.defaultOpen !== nextProps.defaultOpen) {
+      return true;
+    }
+
+    if (this.props.sharedEnvs) {
+      if (!this.props.sharedEnvs.equals(nextProps.sharedEnvs)) {
+        return true;
+      }
+    }
+
+    if (this.props.missingEnvs) {
+      if (!this.props.missingEnvs.equals(nextProps.missingEnvs)) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   public render() {
     const { title, envs, missingEnvs, sharedEnvs } = this.props;

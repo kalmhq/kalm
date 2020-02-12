@@ -139,7 +139,7 @@ export const RenderSharedEnvs = ({
         const currentEnv = fields.get(index);
 
         return (
-          <div key={currentEnv.get("name")}>
+          <div key={index}>
             <Grid container spacing={2}>
               <Grid item xs={5}>
                 <Field
@@ -234,17 +234,6 @@ interface Props {
 let Envs = (props: Props) => {
   return (
     <FieldArray {...props} name="env" valid={true} component={renderEnvs} />
-  );
-};
-
-let SharedEnvs = (props: Props) => {
-  return (
-    <FieldArray
-      {...props}
-      name="sharedEnv"
-      valid={true}
-      component={RenderSharedEnvs}
-    />
   );
 };
 
