@@ -56,37 +56,41 @@ const useStyles = makeStyles({
 });
 
 export interface FileTreeProp {
-  configs: ConfigFormValues;
+  rootConfig: ConfigFormValues;
 }
 
 const renderStyledTreeItem = (config: ConfigFormValues) => {
-  if (config.type === "file") {
-    return <StyledTreeItem nodeId={config.id} label={config.name} />;
+  if (config.get("type") === "file") {
+    return (
+      <StyledTreeItem nodeId={config.get("id")} label={config.get("name")} />
+    );
   }
+
+  const childrenItems: any[] = [];
+  config.get("children").forEach((childConfig: ConfigFormValues) => {
+    // 递归渲染子树
+    childrenItems.push(renderStyledTreeItem(childConfig));
+  });
   return (
-    <StyledTreeItem nodeId={config.id} label={config.name}>
-      {config.children.map((childConfig: ConfigFormValues) => {
-        // 递归渲染子树
-        return renderStyledTreeItem(childConfig);
-      })}
+    <StyledTreeItem nodeId={config.get("id")} label={config.get("name")}>
+      {childrenItems}
     </StyledTreeItem>
   );
 };
 
 export const FileTree = (props: FileTreeProp) => {
   const classes = useStyles();
-  console.log("props", props);
 
   return (
     <TreeView
       onClick={v => console.log(v)}
       className={classes.root}
-      defaultExpanded={[props.configs.id]}
+      defaultExpanded={[props.rootConfig.get("id")]}
       defaultCollapseIcon={<FolderOpenIcon htmlColor="#f9a825" />}
       defaultExpandIcon={<FolderIcon htmlColor="#f9a825" />}
       defaultEndIcon={<InsertDriveFileOutlinedIcon htmlColor="#0277bd" />}
     >
-      {renderStyledTreeItem(props.configs)}
+      {renderStyledTreeItem(props.rootConfig)}
       {/* <StyledTreeItem nodeId="1" label="Main">
         <StyledTreeItem nodeId="2" label="Hello" />
         <StyledTreeItem nodeId="3" label="Subtree with children">

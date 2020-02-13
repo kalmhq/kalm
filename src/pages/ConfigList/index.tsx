@@ -47,10 +47,7 @@ const mapStateToProps = (state: RootState, ownProps: any) => {
   const parentId = queryParams.get("parentId") || "";
   // console.log("parentId", parentId);
   return {
-    configs: state
-      .get("configs")
-      .get("configs")
-      .toJS() as ConfigFormValues
+    rootConfig: state.get("configs").get("rootConfig")
   };
 };
 
@@ -59,7 +56,7 @@ type StateProps = ReturnType<typeof mapStateToProps>;
 interface Props extends StateProps {
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
   classes: any;
-  configs: ConfigFormValues;
+  rootConfig: ConfigFormValues;
 }
 
 class List extends React.PureComponent<Props> {
@@ -68,13 +65,13 @@ class List extends React.PureComponent<Props> {
   };
 
   public render() {
-    const { dispatch, configs, classes } = this.props;
+    const { dispatch, rootConfig, classes } = this.props;
 
     return (
       <BasePage title="Configs" onCreate={this.onCreate}>
         <div className={classes.displayFlex}>
           <div className={classes.leftTree}>
-            <FileTree configs={configs} />
+            <FileTree rootConfig={rootConfig} />
           </div>
           <div className={classes.fileDetail}>file detail</div>
         </div>

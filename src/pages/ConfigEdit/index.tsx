@@ -12,34 +12,25 @@ import { match } from "react-router-dom";
 const mapStateToProps = (
   state: RootState,
   ownProps: { match: match<{ configId: string }> }
-) => {
-  const configId = ownProps.match.params.configId;
-  const config = state
-    .get("configs")
-    .get("configs")
-    .get(configId);
-
-  return { configId, config };
-};
+) => {};
 
 type StateProps = ReturnType<typeof mapStateToProps>;
 
-interface Props extends StateProps {
+interface Props {
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
 }
 
 class ConfigEdit extends React.PureComponent<Props> {
-  private submit = async (configFormValues: ConfigFormValues) => {
-    const { dispatch, configId } = this.props;
-    await dispatch(updateConfigAction(configId, configFormValues));
-    await dispatch(push("/configs"));
-  };
+  // private submit = async (configFormValues: ConfigFormValues) => {
+  //   const { dispatch, configId } = this.props;
+  //   await dispatch(updateConfigAction(configId, configFormValues));
+  //   await dispatch(push("/configs"));
+  // };
 
   public render() {
-    const { config } = this.props;
     return (
       <BasePage title={`Edit Config {config.name}`}>
-        <ConfigForm onSubmit={this.submit} initialValues={config} />
+        {/* <ConfigForm onSubmit={this.submit} initialValues={config} /> */}
       </BasePage>
     );
   }

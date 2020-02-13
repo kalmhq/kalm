@@ -9,29 +9,33 @@ import {
 import { Actions } from "../actions";
 
 export type State = ImmutableMap<{
-  configs: Immutable.OrderedMap<string, ConfigFormValues>;
+  currentFile: string | null;
+  ancestorIds: string[];
+  rootConfig: ConfigFormValues;
 }>;
 
 const initialState: State = Immutable.Map({
-  configs: Immutable.Map({
+  currentFileId: null,
+  ancestorIds: ["0"],
+  rootConfig: Immutable.fromJS({
     id: "0",
     type: "folder",
     name: "/",
     content: "",
-    children: [
-      {
+    children: {
+      "1": {
         id: "1",
         type: "folder",
         name: "nginx configs",
         content: "",
-        children: [
-          {
+        children: {
+          "2": {
             id: "2",
             type: "folder",
             name: "sites-available",
             content: "",
-            children: [
-              {
+            children: {
+              "3": {
                 id: "3",
                 type: "file",
                 name: "test1.conf",
@@ -45,9 +49,9 @@ const initialState: State = Immutable.Map({
                       proxy_pass         http://localhost:8081;
                   }
                 }`,
-                children: []
+                children: {}
               },
-              {
+              "4": {
                 id: "4",
                 type: "file",
                 name: "test2.conf",
@@ -61,17 +65,17 @@ const initialState: State = Immutable.Map({
                       proxy_pass         http://localhost:8081;
                   }
                 }`,
-                children: []
+                children: {}
               }
-            ]
+            }
           },
-          {
+          "5": {
             id: "5",
             type: "folder",
             name: "sites-enabled",
             content: "",
-            children: [
-              {
+            children: {
+              "6": {
                 id: "6",
                 type: "file",
                 name: "test1.conf",
@@ -85,9 +89,9 @@ const initialState: State = Immutable.Map({
                       proxy_pass         http://localhost:8081;
                   }
                 }`,
-                children: []
+                children: {}
               },
-              {
+              "7": {
                 id: "7",
                 type: "file",
                 name: "test2.conf",
@@ -101,11 +105,11 @@ const initialState: State = Immutable.Map({
                       proxy_pass         http://localhost:8081;
                   }
                 }`,
-                children: []
+                children: {}
               }
-            ]
+            }
           },
-          {
+          "8": {
             id: "8",
             type: "file",
             name: "nginx.conf",
@@ -119,23 +123,23 @@ const initialState: State = Immutable.Map({
                   proxy_pass         http://localhost:8081;
               }
             }`,
-            children: []
+            children: {}
           }
-        ]
+        }
       },
-      {
+      "9": {
         id: "9",
         type: "folder",
         name: "dae configs",
         content: "",
-        children: [
-          {
+        children: {
+          "10": {
             id: "10",
             type: "folder",
             name: "DDEX configs",
             content: "",
-            children: [
-              {
+            children: {
+              "11": {
                 id: "11",
                 type: "file",
                 name: "test1.json",
@@ -146,9 +150,9 @@ const initialState: State = Immutable.Map({
                   "NODE_ENV": "production",
                   "RAILS_ENV": "production",
                 }`,
-                children: []
+                children: {}
               },
-              {
+              "12": {
                 id: "12",
                 type: "file",
                 name: "test2.json",
@@ -159,17 +163,17 @@ const initialState: State = Immutable.Map({
                   "NODE_ENV": "production",
                   "RAILS_ENV": "production",
                 }`,
-                children: []
+                children: {}
               }
-            ]
+            }
           },
-          {
+          "13": {
             id: "13",
             type: "folder",
             name: "BFD configs",
             content: "",
-            children: [
-              {
+            children: {
+              "14": {
                 id: "14",
                 type: "file",
                 name: "test1.json",
@@ -180,9 +184,9 @@ const initialState: State = Immutable.Map({
                   "NODE_ENV": "production",
                   "RAILS_ENV": "production",
                 }`,
-                children: []
+                children: {}
               },
-              {
+              "15": {
                 id: "15",
                 type: "file",
                 name: "test2.json",
@@ -193,11 +197,11 @@ const initialState: State = Immutable.Map({
                   "NODE_ENV": "production",
                   "RAILS_ENV": "production",
                 }`,
-                children: []
+                children: {}
               }
-            ]
+            }
           },
-          {
+          "16": {
             id: "16",
             type: "file",
             name: "daetest.json",
@@ -208,11 +212,11 @@ const initialState: State = Immutable.Map({
               "NODE_ENV": "production",
               "RAILS_ENV": "production",
             }`,
-            children: []
+            children: {}
           }
-        ]
+        }
       },
-      {
+      "17": {
         id: "17",
         type: "file",
         name: "config file 1",
@@ -223,34 +227,26 @@ const initialState: State = Immutable.Map({
           "NODE_ENV": "production",
           "RAILS_ENV": "production",
         }`,
-        children: []
+        children: {}
       }
-    ]
+    }
   })
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
     case CREATE_CONFIG_ACTION: {
-      const configs = state.get("configs");
-      const tmpId = configs.size.toString(); // TODO fake id
-      state = state.set(
-        "configs",
-        configs.set(
-          tmpId, // TODO fake id
-          action.payload.config
-        )
-      );
+      const configs = state.get("rootConfig");
+
       break;
     }
     case UPDATE_CONFIG_ACTION: {
-      const configs = state.get("configs");
+      const configs = state.get("rootConfig");
       const id = action.payload.configId;
-      state = state.set("configs", configs.set(id, action.payload.config));
       break;
     }
     case DELETE_CONFIG_ACTION: {
-      state = state.deleteIn(["configs", action.payload.configId]);
+      state = state.deleteIn(["rootConfig", action.payload.configId]);
       break;
     }
   }
