@@ -13,6 +13,7 @@ import { SnackbarProvider } from "notistack";
 export const history = createBrowserHistory();
 
 const store = configureStore(history);
+
 const theme = createMuiTheme({
   typography: {
     fontSize: 12
