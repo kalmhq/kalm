@@ -81,11 +81,33 @@ export type SharedEnv = ImmutableMap<{
 export type EnvItem = SharedEnv;
 export type EnvItems = Immutable.List<EnvItem>;
 
+export const StatusTypeRunning = "RUNNING";
+export const StatusTypePending = "PENDING";
+export const StatusTypeCreating = "CREATING";
+export const StatusTypeError = "Error";
+
+export type Status =
+  | typeof StatusTypeRunning
+  | typeof StatusTypePending
+  | typeof StatusTypeCreating
+  | typeof StatusTypeError;
+
+export type ComponentStatus = {
+  status: Status;
+};
+
+export type ApplicationStatus = ImmutableMap<{
+  status: Status;
+  components: Immutable.List<ComponentStatus>;
+}>;
+
 export type Application = ImmutableMap<{
   id: string;
   name: string;
+  isEnabled: boolean;
   sharedEnv: Immutable.List<SharedEnv>;
   components: Immutable.List<Component>;
+  status: ApplicationStatus;
 }>;
 
 export type ConfigFormValues = ImmutableMap<{

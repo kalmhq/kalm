@@ -24,7 +24,7 @@ interface State {
   open: boolean;
 }
 
-export class EnvList extends React.PureComponent<Props, State> {
+export class EnvList extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
 

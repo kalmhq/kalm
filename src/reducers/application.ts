@@ -4,7 +4,10 @@ import {
   CREATE_APPLICATION_ACTION,
   UPDATE_APPLICATION_ACTION,
   DELETE_APPLICATION_ACTION,
-  Application
+  Application,
+  StatusTypeCreating,
+  StatusTypePending,
+  StatusTypeError
 } from "../actions";
 import { Actions } from "../actions";
 
@@ -12,9 +15,10 @@ export type State = ImmutableMap<{
   applications: Immutable.OrderedMap<string, Application>;
 }>;
 
-const sampleApplication = Immutable.fromJS({
+const sampleApplication: Application = Immutable.fromJS({
   id: "0",
   name: "a-sample-application",
+  isEnabled: false,
   sharedEnv: [
     { name: "POSTGRES_PASSWORD", value: "password" },
     { name: "POSTGRES_USER", value: "admin" },
@@ -38,6 +42,10 @@ const sampleApplication = Immutable.fromJS({
     { name: "ETHERSCAN_DOMAIN", value: "https://ropsten.etherscan.io" },
     { name: "JWT_SECRET", value: "some value" }
   ],
+  status: Immutable.Map({
+    status: StatusTypeCreating,
+    components: Immutable.List([])
+  }),
   components: [
     {
       id: "0",
@@ -258,10 +266,12 @@ const initialState: State = Immutable.Map({
     "0": sampleApplication,
     "1": sampleApplication
       .set("id", "1")
-      .set("name", sampleApplication.get("name") + "duplicate-1"),
+      .set("name", sampleApplication.get("name") + "duplicate-1")
+      .setIn(["status", "status"], StatusTypePending),
     "2": sampleApplication
       .set("id", "2")
       .set("name", sampleApplication.get("name") + "duplicate-2")
+      .setIn(["status", "status"], StatusTypeError)
   })
 });
 

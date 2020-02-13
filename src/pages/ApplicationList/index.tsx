@@ -15,11 +15,21 @@ import MaterialTable from "material-table";
 import React from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
-import { Actions } from "../../actions";
-import { deleteApplicationAction } from "../../actions/application";
+import {
+  Actions,
+  StatusTypePending,
+  StatusTypeCreating,
+  StatusTypeError,
+  StatusTypeRunning
+} from "../../actions";
+import {
+  deleteApplicationAction,
+  updateApplicationAction
+} from "../../actions/application";
 import { RootState } from "../../reducers";
 import { BasePage } from "../BasePage";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
+import { ConfirmDialog } from "../../widgets/ConfirmDialog";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -95,17 +105,112 @@ class StatusPendingRaw extends React.PureComponent<
 
 const StatusPending = withStyles(pendingStyles)(StatusPendingRaw);
 
-class List extends React.PureComponent<Props> {
+interface State {
+  isEnabledConfirmDialogOpen: boolean;
+  switchingIsEnabledApplicationId: string;
+  switchingIsEnabledTitle: string;
+  switchingIsEnabledContent: string;
+}
+
+class List extends React.PureComponent<Props, State> {
+  private defaultState = {
+    isEnabledConfirmDialogOpen: false,
+    switchingIsEnabledApplicationId: "",
+    switchingIsEnabledTitle: "",
+    switchingIsEnabledContent: ""
+  };
+
+  constructor(props: Props) {
+    super(props);
+    this.state = this.defaultState;
+  }
+
   public onCreate = () => {
     this.props.dispatch(push(`/applications/new`));
+  };
+
+  private renderSwitchingIsEnabledConfirmDialog = () => {
+    console.log(this.state);
+    const {
+      isEnabledConfirmDialogOpen,
+      switchingIsEnabledTitle,
+      switchingIsEnabledContent
+    } = this.state;
+
+    return (
+      <ConfirmDialog
+        open={isEnabledConfirmDialogOpen}
+        onClose={this.closeEnabledConfirmDialog}
+        title={switchingIsEnabledTitle}
+        content={switchingIsEnabledContent}
+        onAgree={this.switchEnabledConfirmedComponent}
+      />
+    );
+  };
+
+  private closeEnabledConfirmDialog = () => {
+    this.setState(this.defaultState);
+  };
+
+  private showSwitchingIsEnabledDialog = (applicationId: string) => {
+    const { applications } = this.props;
+    const application = applications.find(x => x.get("id") === applicationId)!;
+
+    let title, content;
+
+    if (application.get("isEnabled")) {
+      title = "Are you sure to disabled this application?";
+      content =
+        "Disabling this application will delete all running resources in your cluster. TODO: (will disk be deleted? will xxx deleted?)";
+    } else {
+      title = "Are you sure to enable this application?";
+      content =
+        "Enabling this application will create xxxx resources. They will spend xxx CPU, xxx Memory. ";
+    }
+
+    this.setState({
+      isEnabledConfirmDialogOpen: true,
+      switchingIsEnabledApplicationId: applicationId,
+      switchingIsEnabledTitle: title,
+      switchingIsEnabledContent: content
+    });
+  };
+
+  private switchEnabledConfirmedComponent = () => {
+    const { applications, dispatch } = this.props;
+    const { switchingIsEnabledApplicationId } = this.state;
+    const application = applications.find(
+      x => x.get("id") === switchingIsEnabledApplicationId
+    )!;
+
+    dispatch(
+      updateApplicationAction(
+        application.get("id"),
+        application.set("isEnabled", !application.get("isEnabled"))
+      )
+    );
   };
 
   public render() {
     const { dispatch, applications, classes } = this.props;
     const data = applications.map((application, index) => {
-      const handleChange = (applicationId: string) => () => {};
+      const handleChange = () => {
+        this.showSwitchingIsEnabledDialog(application.get("id"));
+      };
 
-      let applicationEnabled = false;
+      let status = null;
+
+      switch (application.get("status").get("status")) {
+        case StatusTypePending:
+          status = <StatusPending />;
+          break;
+        case StatusTypeRunning:
+          status = <CheckCircleIcon color="primary" />;
+          break;
+        case StatusTypeError:
+          status = <CheckCircleIcon color="primary" />;
+          break;
+      }
 
       return {
         action: (
@@ -145,8 +250,8 @@ class List extends React.PureComponent<Props> {
         namespace: ["default", "production", "ropsten"][index] || "default",
         enable: (
           <Switch
-            checked={applicationEnabled}
-            onChange={handleChange(application.get("id"))}
+            checked={application.get("isEnabled")}
+            onChange={handleChange}
             value="checkedB"
             color="primary"
             inputProps={{ "aria-label": "enable app.ication" }}
@@ -156,9 +261,7 @@ class List extends React.PureComponent<Props> {
           .get("components")
           .map(x => x.get("name"))
           .toArray(),
-        status: [<StatusPending />, <CheckCircleIcon color="primary" />][
-          index
-        ] || <CheckCircleIcon color="primary" />
+        status: status
       };
     });
     return (
@@ -167,6 +270,7 @@ class List extends React.PureComponent<Props> {
         onCreate={this.onCreate}
         createButtonText="Add An Application"
       >
+        {this.renderSwitchingIsEnabledConfirmDialog()}
         <div className={classes.root}>
           <MaterialTable
             options={{
