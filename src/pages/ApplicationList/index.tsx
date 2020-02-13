@@ -3,7 +3,8 @@ import {
   IconButton,
   Theme,
   WithStyles,
-  withStyles
+  withStyles,
+  CircularProgress
 } from "@material-ui/core";
 import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
@@ -39,6 +40,58 @@ const styles = (theme: Theme) =>
 interface Props extends StateProps, WithStyles<typeof styles> {
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
 }
+
+const pendingStyles = (theme: Theme) =>
+  createStyles({
+    root: {
+      position: "relative",
+      display: "flex",
+      alignItems: "center"
+    },
+    top: {
+      color: "#eef3fd"
+    },
+    bottom: {
+      color: "#6798e5",
+      animationDuration: "550ms",
+      position: "absolute",
+      left: 0
+    },
+    text: {
+      marginLeft: 14
+    }
+  });
+
+class StatusPendingRaw extends React.PureComponent<
+  WithStyles<typeof pendingStyles>
+> {
+  public render() {
+    const { classes } = this.props;
+    return (
+      <div className={classes.root}>
+        <CircularProgress
+          variant="determinate"
+          value={100}
+          className={classes.top}
+          size={24}
+          thickness={4}
+          // {...props}
+        />
+        <CircularProgress
+          variant="indeterminate"
+          disableShrink
+          className={classes.bottom}
+          size={24}
+          thickness={4}
+          // {...props}
+        />
+        <span className={classes.text}>Pending</span>
+      </div>
+    );
+  }
+}
+
+const StatusPending = withStyles(pendingStyles)(StatusPendingRaw);
 
 class List extends React.PureComponent<Props> {
   public onCreate = () => {
@@ -86,7 +139,8 @@ class List extends React.PureComponent<Props> {
         components: application
           .get("components")
           .map(x => x.get("name"))
-          .toArray()
+          .toArray(),
+        status: <StatusPending />
       };
     });
     return (
@@ -103,6 +157,7 @@ class List extends React.PureComponent<Props> {
             columns={[
               { title: "Name", field: "name", sorting: false },
               { title: "Components", field: "components", sorting: false },
+              { title: "Status", field: "status", sorting: false },
               {
                 title: "Action",
                 field: "action",
