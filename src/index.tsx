@@ -5,15 +5,18 @@ import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 import { Provider } from "react-redux";
 import { ConnectedRouter } from "connected-react-router/immutable";
-import configureStore from "./store";
+import configureStore from "./configureStore";
 import { createBrowserHistory } from "history";
 import { ThemeProvider, createMuiTheme } from "@material-ui/core";
 import { SnackbarProvider } from "notistack";
 import { ScrollToTop } from "./widgets/ScrollToTop";
+import { setStore } from "./store";
 
 export const history = createBrowserHistory();
 
 const store = configureStore(history);
+
+setStore(store);
 
 const theme = createMuiTheme({
   typography: {

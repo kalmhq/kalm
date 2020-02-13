@@ -19,6 +19,7 @@ import { ThunkDispatch } from "redux-thunk";
 import { Actions, ConfigFormValues } from "../../actions";
 import { Link } from "react-router-dom";
 import { FileTree } from "../../widgets/FileTree";
+import { getCurrentConfig } from "../../selectors/config";
 
 const styles = (theme: Theme) => ({
   fileIcon: {
@@ -43,10 +44,8 @@ const styles = (theme: Theme) => ({
 });
 
 const mapStateToProps = (state: RootState, ownProps: any) => {
-  const queryParams = new URLSearchParams(ownProps.location.search);
-  const parentId = queryParams.get("parentId") || "";
-  // console.log("parentId", parentId);
   return {
+    currentConfig: getCurrentConfig(),
     rootConfig: state.get("configs").get("rootConfig")
   };
 };
@@ -65,15 +64,19 @@ class List extends React.PureComponent<Props> {
   };
 
   public render() {
-    const { dispatch, rootConfig, classes } = this.props;
+    const { dispatch, rootConfig, classes, currentConfig } = this.props;
 
     return (
       <BasePage title="Configs" onCreate={this.onCreate}>
         <div className={classes.displayFlex}>
           <div className={classes.leftTree}>
-            <FileTree rootConfig={rootConfig} />
+            <FileTree rootConfig={rootConfig} dispatch={dispatch} />
           </div>
-          <div className={classes.fileDetail}>file detail</div>
+          <div className={classes.fileDetail}>
+            {currentConfig.get("type") === "file"
+              ? currentConfig.get("content")
+              : "No selected file"}
+          </div>
         </div>
       </BasePage>
     );
