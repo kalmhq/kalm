@@ -1,22 +1,8 @@
-import { createStore, applyMiddleware, compose } from "redux";
-import thunkMiddleware from "redux-thunk";
-import { History, LocationState } from "history";
-import { routerMiddleware } from "connected-react-router/immutable";
-// Logger with default options
-// import logger from "redux-logger";
+import { Store } from "redux";
+import { RootState } from "./reducers";
 
-import createRootReducer from "./reducers";
+export let store: Store<RootState, any>;
 
-const composeEnhancers =
-  (window["__REDUX_DEVTOOLS_EXTENSION_COMPOSE__"] as typeof compose) || compose;
-
-const configureStore = (history: History<LocationState>) =>
-  createStore(
-    createRootReducer(history),
-    undefined,
-    composeEnhancers(
-      applyMiddleware(routerMiddleware(history), thunkMiddleware)
-    )
-  );
-
-export default configureStore;
+export const setStore = (storeCreated: any) => {
+  store = storeCreated;
+};

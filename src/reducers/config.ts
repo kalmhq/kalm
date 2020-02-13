@@ -4,19 +4,18 @@ import {
   CREATE_CONFIG_ACTION,
   ConfigFormValues,
   UPDATE_CONFIG_ACTION,
-  DELETE_CONFIG_ACTION
+  DELETE_CONFIG_ACTION,
+  SET_CURRENT_CONFIG_ID_CHAIN
 } from "../actions";
 import { Actions } from "../actions";
 
 export type State = ImmutableMap<{
-  currentFile: string | null;
-  ancestorIds: string[];
+  currentConfigIdChain: string[];
   rootConfig: ConfigFormValues;
 }>;
 
 const initialState: State = Immutable.Map({
-  currentFileId: null,
-  ancestorIds: ["0"],
+  currentConfigIdChain: ["0"],
   rootConfig: Immutable.fromJS({
     id: "0",
     type: "folder",
@@ -235,6 +234,11 @@ const initialState: State = Immutable.Map({
 
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
+    case SET_CURRENT_CONFIG_ID_CHAIN: {
+      const idChain = action.payload.idChain;
+      state = state.set("currentConfigIdChain", idChain);
+      break;
+    }
     case CREATE_CONFIG_ACTION: {
       const configs = state.get("rootConfig");
 

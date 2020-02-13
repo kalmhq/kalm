@@ -10,6 +10,7 @@ import FolderIcon from "@material-ui/icons/Folder";
 import FolderOpenIcon from "@material-ui/icons/FolderOpen";
 import InsertDriveFileOutlinedIcon from "@material-ui/icons/InsertDriveFileOutlined";
 import { ConfigFormValues } from "../../actions";
+import { setCurrentConfigIdChainAction } from "../../actions/config";
 
 function TransitionComponent(props: any) {
   const style = useSpring({
@@ -57,19 +58,32 @@ const useStyles = makeStyles({
 
 export interface FileTreeProp {
   rootConfig: ConfigFormValues;
+  dispatch: any;
 }
 
-const renderStyledTreeItem = (config: ConfigFormValues) => {
+const renderStyledTreeItem = (
+  config: ConfigFormValues,
+  idChain: string[],
+  dispatch: any
+) => {
+  let newIdChain = new Array();
+  newIdChain = idChain.slice(0); // copy idChain to newIdChain, different memory addresses
+  newIdChain.push(config.get("id"));
+
   if (config.get("type") === "file") {
     return (
-      <StyledTreeItem nodeId={config.get("id")} label={config.get("name")} />
+      <StyledTreeItem
+        nodeId={config.get("id")}
+        label={config.get("name")}
+        onClick={() => dispatch(setCurrentConfigIdChainAction(newIdChain))}
+      />
     );
   }
 
   const childrenItems: any[] = [];
   config.get("children").forEach((childConfig: ConfigFormValues) => {
     // 递归渲染子树
-    childrenItems.push(renderStyledTreeItem(childConfig));
+    childrenItems.push(renderStyledTreeItem(childConfig, newIdChain, dispatch));
   });
   return (
     <StyledTreeItem nodeId={config.get("id")} label={config.get("name")}>
@@ -83,14 +97,14 @@ export const FileTree = (props: FileTreeProp) => {
 
   return (
     <TreeView
-      onClick={v => console.log(v)}
+      // onClick={v => console.log(v)}
       className={classes.root}
       defaultExpanded={[props.rootConfig.get("id")]}
       defaultCollapseIcon={<FolderOpenIcon htmlColor="#f9a825" />}
       defaultExpandIcon={<FolderIcon htmlColor="#f9a825" />}
       defaultEndIcon={<InsertDriveFileOutlinedIcon htmlColor="#0277bd" />}
     >
-      {renderStyledTreeItem(props.rootConfig)}
+      {renderStyledTreeItem(props.rootConfig, [], props.dispatch)}
       {/* <StyledTreeItem nodeId="1" label="Main">
         <StyledTreeItem nodeId="2" label="Hello" />
         <StyledTreeItem nodeId="3" label="Subtree with children">

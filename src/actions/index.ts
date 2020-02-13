@@ -18,6 +18,7 @@ export const DELETE_APPLICATION_ACTION = "DELETE_APPLICATION_ACTION";
 export const CREATE_CONFIG_ACTION = "CREATE_CONFIG_ACTION";
 export const UPDATE_CONFIG_ACTION = "UPDATE_CONFIG_ACTION";
 export const DELETE_CONFIG_ACTION = "DELETE_CONFIG_ACTION";
+export const SET_CURRENT_CONFIG_ID_CHAIN = "SET_CURRENT_CONFIG_ID_CHAIN";
 
 export const SET_NOTIFICATION_MESSAGE_ACTION =
   "SET_NOTIFICATION_MESSAGE_ACTION";
@@ -160,6 +161,13 @@ export interface DeleteConfigAction {
   };
 }
 
+export interface UpdateCurrentConfigIdChain {
+  type: typeof SET_CURRENT_CONFIG_ID_CHAIN;
+  payload: {
+    idChain: string[];
+  };
+}
+
 export interface SetNotificationMessageAction {
   type: typeof SET_NOTIFICATION_MESSAGE_ACTION;
   payload: {
@@ -178,6 +186,7 @@ export type Actions =
   | CreateConfigAction
   | DeleteConfigAction
   | UpdateConfigAction
+  | UpdateCurrentConfigIdChain
   | SetNotificationMessageAction
   | CallHistoryMethodAction;
 
