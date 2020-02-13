@@ -4,7 +4,8 @@ import {
   Theme,
   WithStyles,
   withStyles,
-  CircularProgress
+  CircularProgress,
+  Switch
 } from "@material-ui/core";
 import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
@@ -18,6 +19,7 @@ import { Actions } from "../../actions";
 import { deleteApplicationAction } from "../../actions/application";
 import { RootState } from "../../reducers";
 import { BasePage } from "../BasePage";
+import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -73,7 +75,7 @@ class StatusPendingRaw extends React.PureComponent<
           variant="determinate"
           value={100}
           className={classes.top}
-          size={24}
+          size={18}
           thickness={4}
           // {...props}
         />
@@ -81,7 +83,7 @@ class StatusPendingRaw extends React.PureComponent<
           variant="indeterminate"
           disableShrink
           className={classes.bottom}
-          size={24}
+          size={18}
           thickness={4}
           // {...props}
         />
@@ -100,7 +102,11 @@ class List extends React.PureComponent<Props> {
 
   public render() {
     const { dispatch, applications, classes } = this.props;
-    const data = applications.map(application => {
+    const data = applications.map((application, index) => {
+      const handleChange = (applicationId: string) => () => {};
+
+      let applicationEnabled = false;
+
       return {
         action: (
           <>
@@ -136,11 +142,23 @@ class List extends React.PureComponent<Props> {
           </>
         ),
         name: application.get("name"),
+        namespace: ["default", "production", "ropsten"][index] || "default",
+        enable: (
+          <Switch
+            checked={applicationEnabled}
+            onChange={handleChange(application.get("id"))}
+            value="checkedB"
+            color="primary"
+            inputProps={{ "aria-label": "enable app.ication" }}
+          />
+        ),
         components: application
           .get("components")
           .map(x => x.get("name"))
           .toArray(),
-        status: <StatusPending />
+        status: [<StatusPending />, <CheckCircleIcon color="primary" />][
+          index
+        ] || <CheckCircleIcon color="primary" />
       };
     });
     return (
@@ -156,8 +174,10 @@ class List extends React.PureComponent<Props> {
             }}
             columns={[
               { title: "Name", field: "name", sorting: false },
+              { title: "Namespace", field: "namespace", sorting: false },
               { title: "Components", field: "components", sorting: false },
               { title: "Status", field: "status", sorting: false },
+              { title: "Enable", field: "enable", sorting: false },
               {
                 title: "Action",
                 field: "action",
