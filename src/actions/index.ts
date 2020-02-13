@@ -81,7 +81,7 @@ export type SharedEnv = ImmutableMap<{
 export type EnvItem = SharedEnv;
 export type EnvItems = Immutable.List<EnvItem>;
 
-export type ApplicationFormValues = ImmutableMap<{
+export type Application = ImmutableMap<{
   id: string;
   name: string;
   sharedEnv: Immutable.List<SharedEnv>;
@@ -127,7 +127,7 @@ export interface DuplicateComponentAction {
 export interface CreateApplicationAction {
   type: typeof CREATE_APPLICATION_ACTION;
   payload: {
-    applicationValues: ApplicationFormValues;
+    applicationValues: Application;
   };
 }
 
@@ -135,7 +135,7 @@ export interface UpdateApplicationAction {
   type: typeof UPDATE_APPLICATION_ACTION;
   payload: {
     applicationId: string;
-    applicationValues: ApplicationFormValues;
+    applicationValues: Application;
   };
 }
 

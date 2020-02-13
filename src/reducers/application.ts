@@ -4,12 +4,12 @@ import {
   CREATE_APPLICATION_ACTION,
   UPDATE_APPLICATION_ACTION,
   DELETE_APPLICATION_ACTION,
-  ApplicationFormValues
+  Application
 } from "../actions";
 import { Actions } from "../actions";
 
 export type State = ImmutableMap<{
-  applications: Immutable.OrderedMap<string, ApplicationFormValues>;
+  applications: Immutable.OrderedMap<string, Application>;
 }>;
 
 const sampleApplication = Immutable.fromJS({

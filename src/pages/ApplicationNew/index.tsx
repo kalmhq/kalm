@@ -3,7 +3,7 @@ import { push } from "connected-react-router";
 import React from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
-import { Actions, ApplicationFormValues } from "../../actions";
+import { Actions, Application } from "../../actions";
 import ApplicationFrom from "../../forms/Application";
 import { RootState } from "../../reducers";
 import { BasePage } from "../BasePage";
@@ -22,7 +22,7 @@ interface Props extends WithStyles<typeof styles> {
 }
 
 class ApplicationNew extends React.PureComponent<Props> {
-  private submit = async (applicationFormValue: ApplicationFormValues) => {
+  private submit = async (applicationFormValue: Application) => {
     const { dispatch } = this.props;
     await dispatch(createApplicationAction(applicationFormValue));
     await dispatch(

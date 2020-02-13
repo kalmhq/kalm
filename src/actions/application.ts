@@ -1,13 +1,13 @@
 import {
   CREATE_APPLICATION_ACTION,
-  ApplicationFormValues,
+  Application,
   UPDATE_APPLICATION_ACTION,
   DELETE_APPLICATION_ACTION,
   ThunkResult
 } from ".";
 
 export const createApplicationAction = (
-  applicationValues: ApplicationFormValues
+  applicationValues: Application
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({
@@ -19,7 +19,7 @@ export const createApplicationAction = (
 
 export const updateApplicationAction = (
   applicationId: string,
-  applicationValues: ApplicationFormValues
+  applicationValues: Application
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({

@@ -5,7 +5,7 @@ import { connect } from "react-redux";
 import { match } from "react-router-dom";
 import { ThunkDispatch } from "redux-thunk";
 import ApplicationForm from "../../forms/Application";
-import { Actions, ApplicationFormValues } from "../../actions";
+import { Actions, Application } from "../../actions";
 import { updateApplicationAction } from "../../actions/application";
 import { RootState } from "../../reducers";
 import { BasePage } from "../BasePage";
@@ -38,11 +38,9 @@ interface Props extends StateProps, WithStyles<typeof styles> {
 }
 
 class ApplicationEdit extends React.PureComponent<Props> {
-  private submit = async (applicationFormValues: ApplicationFormValues) => {
+  private submit = async (application: Application) => {
     const { dispatch, applicationId } = this.props;
-    await dispatch(
-      updateApplicationAction(applicationId, applicationFormValues)
-    );
+    await dispatch(updateApplicationAction(applicationId, application));
     await dispatch(
       setSuccessNotificationAction("Edit spplication successfully")
     );

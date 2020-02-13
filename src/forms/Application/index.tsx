@@ -11,11 +11,7 @@ import Typography from "@material-ui/core/Typography";
 import React from "react";
 import { InjectedFormProps } from "redux-form";
 import { FieldArray, reduxForm, formValueSelector } from "redux-form/immutable";
-import {
-  ComponentFormValues,
-  ApplicationFormValues,
-  SharedEnv
-} from "../../actions";
+import { ComponentFormValues, Application, SharedEnv } from "../../actions";
 import { CustomTextField } from "../Basic";
 import { ValidatorRequired } from "../validator";
 import { Components } from "./component";
@@ -57,7 +53,7 @@ export interface Props {}
 
 class ApplicationFormRaw extends React.PureComponent<
   Props &
-    InjectedFormProps<ApplicationFormValues, Props> &
+    InjectedFormProps<Application, Props> &
     ReturnType<typeof mapStateToProps> &
     WithStyles<typeof styles>
 > {
@@ -170,14 +166,14 @@ class ApplicationFormRaw extends React.PureComponent<
   }
 }
 
-const initialValues: ApplicationFormValues = Immutable.fromJS({
+const initialValues: Application = Immutable.fromJS({
   id: "0",
   name: "a-sample-application",
   sharedEnv: [],
   components: []
 });
 
-export default reduxForm<ApplicationFormValues, Props>({
+export default reduxForm<Application, Props>({
   form: "application",
   initialValues,
   onSubmitFail: (...args) => {
