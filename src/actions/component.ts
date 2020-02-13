@@ -1,6 +1,6 @@
 import {
   CREATE_COMPONENT_ACTION,
-  ComponentFormValues,
+  Component,
   UPDATE_COMPONENT_ACTION,
   DELETE_COMPONENT_ACTION,
   ThunkResult,
@@ -8,7 +8,7 @@ import {
 } from ".";
 
 export const createComponentAction = (
-  componentValues: ComponentFormValues
+  componentValues: Component
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({
@@ -31,7 +31,7 @@ export const duplicateComponentAction = (
 
 export const updateComponentAction = (
   componentId: string,
-  componentValues: ComponentFormValues
+  componentValues: Component
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({

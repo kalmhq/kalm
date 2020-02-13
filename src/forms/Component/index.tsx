@@ -7,7 +7,7 @@ import React from "react";
 import { reduxForm } from "redux-form/immutable";
 import { InjectedFormProps } from "redux-form";
 import { getFormValues } from "redux-form/immutable";
-import { ComponentFormValues } from "../../actions";
+import { Component } from "../../actions";
 import { CustomTextField } from "../Basic";
 import { CustomEnvs } from "../Basic/env";
 import { CustomPorts } from "../Basic/ports";
@@ -51,7 +51,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 const mapStateToProps = (state: RootState) => {
-  const values = getFormValues("component")(state) as ComponentFormValues;
+  const values = getFormValues("component")(state) as Component;
   return {
     values
   };
@@ -59,7 +59,7 @@ const mapStateToProps = (state: RootState) => {
 
 function ComponentFormRaw(
   props: Props &
-    InjectedFormProps<ComponentFormValues, Props> &
+    InjectedFormProps<Component, Props> &
     ReturnType<typeof mapStateToProps>
 ) {
   const { handleSubmit } = props;
@@ -208,7 +208,7 @@ function ComponentFormRaw(
   );
 }
 
-export default reduxForm<ComponentFormValues, Props>({
+export default reduxForm<Component, Props>({
   form: "component",
   onSubmitFail: console.log
 })(connect(mapStateToProps)(ComponentFormRaw));

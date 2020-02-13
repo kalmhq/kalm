@@ -1,7 +1,7 @@
 import React from "react";
 import { BasePage } from "../BasePage";
 import ComponentForm from "../../forms/Component";
-import { ComponentFormValues, Actions } from "../../actions";
+import { Component, Actions } from "../../actions";
 import { connect, DispatchProp } from "react-redux";
 import { updateComponentAction } from "../../actions/component";
 import { ThunkDispatch } from "redux-thunk";
@@ -38,9 +38,9 @@ interface Props extends StateProps, WithStyles<typeof styles> {
 }
 
 class ComponentEdit extends React.PureComponent<Props> {
-  private submit = async (componentFormValues: ComponentFormValues) => {
+  private submit = async (component: Component) => {
     const { dispatch, componentId } = this.props;
-    await dispatch(updateComponentAction(componentId, componentFormValues));
+    await dispatch(updateComponentAction(componentId, component));
     await dispatch(setSuccessNotificationAction("Edit component successfully"));
     await dispatch(push("/components"));
   };

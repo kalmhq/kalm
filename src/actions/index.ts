@@ -24,7 +24,7 @@ export const DELETE_CONFIG_ACTION = "DELETE_CONFIG_ACTION";
 export const SET_NOTIFICATION_MESSAGE_ACTION =
   "SET_NOTIFICATION_MESSAGE_ACTION";
 
-export type ComponentFormValues = ImmutableMap<{
+export type Component = ImmutableMap<{
   id: string;
   name: string;
   image: string;
@@ -58,7 +58,7 @@ export type ComponentFormValues = ImmutableMap<{
   >;
 }>;
 
-export const newEmptyComponentFormValues = (): ComponentFormValues => {
+export const newEmptyComponent = (): Component => {
   return Immutable.Map({
     id: "",
     name: "",
@@ -85,7 +85,7 @@ export type Application = ImmutableMap<{
   id: string;
   name: string;
   sharedEnv: Immutable.List<SharedEnv>;
-  components: Immutable.List<ComponentFormValues>;
+  components: Immutable.List<Component>;
 }>;
 
 export type ConfigFormValues = ImmutableMap<{
@@ -99,7 +99,7 @@ export type ConfigFormValues = ImmutableMap<{
 export interface CreateComponentAction {
   type: typeof CREATE_COMPONENT_ACTION;
   payload: {
-    componentValues: ComponentFormValues;
+    componentValues: Component;
   };
 }
 
@@ -107,7 +107,7 @@ export interface UpdateComponentAction {
   type: typeof UPDATE_COMPONENT_ACTION;
   payload: {
     componentId: string;
-    componentValues: ComponentFormValues;
+    componentValues: Component;
   };
 }
 

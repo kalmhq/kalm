@@ -2,7 +2,7 @@ import Immutable from "immutable";
 import { ImmutableMap } from "../typings";
 import {
   CREATE_COMPONENT_ACTION,
-  ComponentFormValues,
+  Component,
   UPDATE_COMPONENT_ACTION,
   DELETE_COMPONENT_ACTION,
   DUPLICATE_COMPONENT_ACTION
@@ -10,11 +10,11 @@ import {
 import { Actions } from "../actions";
 
 export type State = ImmutableMap<{
-  components: Immutable.OrderedMap<string, ComponentFormValues>;
+  components: Immutable.OrderedMap<string, Component>;
 }>;
 
 const initialState: State = Immutable.Map({
-  components: Immutable.OrderedMap<ComponentFormValues>({
+  components: Immutable.OrderedMap<Component>({
     "0": Immutable.Map({
       id: "0",
       name: "postgres",

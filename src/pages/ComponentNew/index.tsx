@@ -3,11 +3,7 @@ import { push } from "connected-react-router";
 import React from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
-import {
-  Actions,
-  ComponentFormValues,
-  newEmptyComponentFormValues
-} from "../../actions";
+import { Actions, Component, newEmptyComponent } from "../../actions";
 import { createComponentAction } from "../../actions/component";
 import ComponentForm from "../../forms/Component";
 import { RootState } from "../../reducers";
@@ -26,9 +22,9 @@ interface Props extends WithStyles<typeof styles> {
 }
 
 class ComponentNew extends React.PureComponent<Props> {
-  private submit = async (componentFormValues: ComponentFormValues) => {
+  private submit = async (component: Component) => {
     const { dispatch } = this.props;
-    await dispatch(createComponentAction(componentFormValues));
+    await dispatch(createComponentAction(component));
     await dispatch(
       setSuccessNotificationAction("Create component successfully")
     );
@@ -42,7 +38,7 @@ class ComponentNew extends React.PureComponent<Props> {
         <div className={classes.root}>
           <ComponentForm
             onSubmit={this.submit}
-            initialValues={newEmptyComponentFormValues()}
+            initialValues={newEmptyComponent()}
           />
         </div>
       </BasePage>
