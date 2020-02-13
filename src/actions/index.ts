@@ -10,10 +10,12 @@ import "./notification";
 export const CREATE_COMPONENT_ACTION = "CREATE_COMPONENT_ACTION";
 export const UPDATE_COMPONENT_ACTION = "UPDATE_COMPONENT_ACTION";
 export const DELETE_COMPONENT_ACTION = "DELETE_COMPONENT_ACTION";
+export const DUPLICATE_COMPONENT_ACTION = "DUPLICATE_COMPONENT_ACTION";
 
 export const CREATE_APPLICATION_ACTION = "CREATE_APPLICATION_ACTION";
 export const UPDATE_APPLICATION_ACTION = "UPDATE_APPLICATION_ACTION";
 export const DELETE_APPLICATION_ACTION = "DELETE_APPLICATION_ACTION";
+export const DUPLICATE_APPLICATION_ACTION = "DUPLICATE_APPLICATION_ACTION";
 
 export const CREATE_CONFIG_ACTION = "CREATE_CONFIG_ACTION";
 export const UPDATE_CONFIG_ACTION = "UPDATE_CONFIG_ACTION";
@@ -115,6 +117,12 @@ export interface DeleteComponentAction {
     componentId: string;
   };
 }
+export interface DuplicateComponentAction {
+  type: typeof DUPLICATE_COMPONENT_ACTION;
+  payload: {
+    componentId: string;
+  };
+}
 
 export interface CreateApplicationAction {
   type: typeof CREATE_APPLICATION_ACTION;
@@ -179,6 +187,7 @@ export type Actions =
   | DeleteConfigAction
   | UpdateConfigAction
   | SetNotificationMessageAction
-  | CallHistoryMethodAction;
+  | CallHistoryMethodAction
+  | DuplicateComponentAction;
 
 export type ThunkResult<R> = ThunkAction<R, RootState, undefined, Actions>;

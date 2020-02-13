@@ -17,7 +17,10 @@ import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@material-ui/icons/Delete";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import { push } from "connected-react-router";
-import { deleteComponentAction } from "../../actions/component";
+import {
+  deleteComponentAction,
+  duplicateComponentAction
+} from "../../actions/component";
 import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "../../actions";
 import { DiskTypeNew } from "../../forms/Basic/disk";
@@ -120,9 +123,7 @@ class List extends React.PureComponent<Props, States> {
               <IconButton
                 aria-label="edit"
                 onClick={() => {
-                  dispatch(
-                    push(`/components/${component.get("id")}/duplicate`)
-                  );
+                  dispatch(duplicateComponentAction(component.get("id")));
                 }}
               >
                 <FileCopyIcon />
@@ -193,7 +194,8 @@ class List extends React.PureComponent<Props, States> {
           <Box mt={3}>
             <MaterialTable
               options={{
-                padding: "dense"
+                padding: "dense",
+                pageSize: 20
               }}
               columns={[
                 {

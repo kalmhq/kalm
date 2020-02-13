@@ -4,7 +4,8 @@ import {
   CREATE_COMPONENT_ACTION,
   ComponentFormValues,
   UPDATE_COMPONENT_ACTION,
-  DELETE_COMPONENT_ACTION
+  DELETE_COMPONENT_ACTION,
+  DUPLICATE_COMPONENT_ACTION
 } from "../actions";
 import { Actions } from "../actions";
 
@@ -113,6 +114,24 @@ const reducer = (state: State = initialState, action: Actions): State => {
     }
     case DELETE_COMPONENT_ACTION: {
       state = state.deleteIn(["components", action.payload.componentId]);
+      break;
+    }
+    case DUPLICATE_COMPONENT_ACTION: {
+      const components = state.get("components");
+      const tmpId = components.size.toString(); // TODO fake id
+
+      let component = components.get(action.payload.componentId)!;
+      component = component.set("id", tmpId);
+
+      let i = 0;
+      let name = "";
+      do {
+        i += 1;
+        name = `${component.get("name")}-duplicate-${i}`;
+      } while (components.find(x => x.get("name") === name));
+
+      component = component.set("name", name);
+      state = state.set("components", components.set(tmpId, component));
       break;
     }
   }
