@@ -86,13 +86,13 @@ export type ApplicationFormValues = ImmutableMap<{
   components: Immutable.List<ComponentFormValues>;
 }>;
 
-export interface ConfigFormValues {
+export type ConfigFormValues = ImmutableMap<{
   id: string;
-  parentId: string;
-  type: string;
+  type: "folder" | "file";
   name: string;
-  value: string;
-}
+  content: string;
+  children: Immutable.OrderedMap<string, ConfigFormValues>;
+}>;
 
 export interface CreateComponentAction {
   type: typeof CREATE_COMPONENT_ACTION;

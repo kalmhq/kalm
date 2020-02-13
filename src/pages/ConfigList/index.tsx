@@ -16,9 +16,9 @@ import FileCopyIcon from "@material-ui/icons/FileCopy";
 import { push } from "connected-react-router";
 import { deleteConfigAction } from "../../actions/config";
 import { ThunkDispatch } from "redux-thunk";
-import { Actions } from "../../actions";
+import { Actions, ConfigFormValues } from "../../actions";
 import { Link } from "react-router-dom";
-import FileTree from "../../widgets/FileTree";
+import { FileTree } from "../../widgets/FileTree";
 
 const styles = (theme: Theme) => ({
   fileIcon: {
@@ -47,12 +47,7 @@ const mapStateToProps = (state: RootState, ownProps: any) => {
   const parentId = queryParams.get("parentId") || "";
   // console.log("parentId", parentId);
   return {
-    configs: state
-      .get("configs")
-      .get("configs")
-      .toList()
-      .filter(config => config.parentId === parentId)
-      .toArray()
+    rootConfig: state.get("configs").get("rootConfig")
   };
 };
 
@@ -61,6 +56,7 @@ type StateProps = ReturnType<typeof mapStateToProps>;
 interface Props extends StateProps {
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
   classes: any;
+  rootConfig: ConfigFormValues;
 }
 
 class List extends React.PureComponent<Props> {
@@ -69,65 +65,13 @@ class List extends React.PureComponent<Props> {
   };
 
   public render() {
-    const { dispatch, configs, classes } = this.props;
-    const data = configs.map((config: any) => {
-      return {
-        action: (
-          <>
-            <IconButton
-              aria-label="edit"
-              onClick={() => {
-                dispatch(push(`/configs/${config.id}/edit`));
-              }}
-            >
-              <EditIcon />
-            </IconButton>
+    const { dispatch, rootConfig, classes } = this.props;
 
-            <IconButton
-              aria-label="edit"
-              onClick={() => {
-                dispatch(push(`/configs/${config.id}/duplicate`));
-              }}
-            >
-              <FileCopyIcon />
-            </IconButton>
-
-            <IconButton
-              aria-label="delete"
-              onClick={() => {
-                dispatch(deleteConfigAction(config.id));
-              }}
-            >
-              <DeleteIcon />
-            </IconButton>
-          </>
-        ),
-        name: (
-          <span>
-            <Icon className={classes.fileIcon}>
-              {config.type === "folder" ? "folder" : "insert_drive_file"}
-            </Icon>
-            {config.type === "folder" ? (
-              <Link
-                className={classes.fileName}
-                to={`/configs?parentId=${config.id}`}
-              >
-                {config.name}
-              </Link>
-            ) : (
-              <span className={classes.fileName}>{config.name}</span>
-            )}
-          </span>
-        ),
-        type: config.type,
-        value: config.value
-      };
-    });
     return (
       <BasePage title="Configs" onCreate={this.onCreate}>
         <div className={classes.displayFlex}>
           <div className={classes.leftTree}>
-            <FileTree />
+            <FileTree rootConfig={rootConfig} />
           </div>
           <div className={classes.fileDetail}>file detail</div>
         </div>

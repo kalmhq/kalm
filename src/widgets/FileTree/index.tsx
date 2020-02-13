@@ -9,6 +9,7 @@ import { useSpring, animated } from "react-spring/web.cjs"; // web.cjs is requir
 import FolderIcon from "@material-ui/icons/Folder";
 import FolderOpenIcon from "@material-ui/icons/FolderOpen";
 import InsertDriveFileOutlinedIcon from "@material-ui/icons/InsertDriveFileOutlined";
+import { ConfigFormValues } from "../../actions";
 
 function TransitionComponent(props: any) {
   const style = useSpring({
@@ -54,18 +55,43 @@ const useStyles = makeStyles({
   }
 });
 
-export default function FileTree() {
+export interface FileTreeProp {
+  rootConfig: ConfigFormValues;
+}
+
+const renderStyledTreeItem = (config: ConfigFormValues) => {
+  if (config.get("type") === "file") {
+    return (
+      <StyledTreeItem nodeId={config.get("id")} label={config.get("name")} />
+    );
+  }
+
+  const childrenItems: any[] = [];
+  config.get("children").forEach((childConfig: ConfigFormValues) => {
+    // 递归渲染子树
+    childrenItems.push(renderStyledTreeItem(childConfig));
+  });
+  return (
+    <StyledTreeItem nodeId={config.get("id")} label={config.get("name")}>
+      {childrenItems}
+    </StyledTreeItem>
+  );
+};
+
+export const FileTree = (props: FileTreeProp) => {
   const classes = useStyles();
 
   return (
     <TreeView
+      onClick={v => console.log(v)}
       className={classes.root}
-      defaultExpanded={["1"]}
+      defaultExpanded={[props.rootConfig.get("id")]}
       defaultCollapseIcon={<FolderOpenIcon htmlColor="#f9a825" />}
       defaultExpandIcon={<FolderIcon htmlColor="#f9a825" />}
       defaultEndIcon={<InsertDriveFileOutlinedIcon htmlColor="#0277bd" />}
     >
-      <StyledTreeItem nodeId="1" label="Main">
+      {renderStyledTreeItem(props.rootConfig)}
+      {/* <StyledTreeItem nodeId="1" label="Main">
         <StyledTreeItem nodeId="2" label="Hello" />
         <StyledTreeItem nodeId="3" label="Subtree with children">
           <StyledTreeItem nodeId="6" label="Hello" />
@@ -82,7 +108,7 @@ export default function FileTree() {
         </StyledTreeItem>
         <StyledTreeItem nodeId="4" label="World" />
         <StyledTreeItem nodeId="5" label="Something something" />
-      </StyledTreeItem>
+      </StyledTreeItem> */}
     </TreeView>
   );
-}
+};
