@@ -15,6 +15,7 @@ export const getConfigByIdChain = (idChain: string[]): ConfigFormValues => {
   let config = state.get("configs").get("rootConfig");
 
   idChain.forEach((id: string) => {
+    // exclude root config
     if (config.get("id") === id) {
       return;
     }
