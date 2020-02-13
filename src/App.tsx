@@ -29,6 +29,7 @@ import InstallPage from "./pages/Install";
 import { Sidenav, SidenavGroupProps } from "./widgets/Sidenav";
 import { NotificationComponent } from "./widgets/Notification";
 import { Box } from "@material-ui/core";
+import { NoMatch, Page404 } from "./pages/NoMatch";
 
 const sidenavGroups: SidenavGroupProps[] = [
   {
@@ -231,100 +232,106 @@ export default function MiniDrawer() {
   };
 
   return (
-    <div className={classes.root}>
-      <NotificationComponent />
-      <CssBaseline />
-      <AppBar
-        position="fixed"
-        color="default"
-        className={clsx(classes.appBar, {
-          [classes.appBarShift]: open
-        })}
-      >
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            onClick={handleDrawerOpen}
-            edge="start"
-            className={clsx(classes.menuButton, {
-              [classes.hide]: open
-            })}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography variant="h6" noWrap>
-            **
-          </Typography>
-        </Toolbar>
-      </AppBar>
-      <Drawer
-        variant="permanent"
-        className={clsx(classes.drawer, {
-          [classes.drawerOpen]: open,
-          [classes.drawerClose]: !open
-        })}
-        classes={{
-          paper: clsx({
+    <Switch>
+      <Route path="/404" component={Page404} />
+
+      <div className={classes.root}>
+        <NotificationComponent />
+        <CssBaseline />
+        <AppBar
+          position="fixed"
+          color="default"
+          className={clsx(classes.appBar, {
+            [classes.appBarShift]: open
+          })}
+        >
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              onClick={handleDrawerOpen}
+              edge="start"
+              className={clsx(classes.menuButton, {
+                [classes.hide]: open
+              })}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography variant="h6" noWrap>
+              **
+            </Typography>
+          </Toolbar>
+        </AppBar>
+        <Drawer
+          variant="permanent"
+          className={clsx(classes.drawer, {
             [classes.drawerOpen]: open,
             [classes.drawerClose]: !open
-          })
-        }}
-        PaperProps={{ className: classes.paper }}
-      >
-        <div className={classes.toolbar}>
-          <div className={classes.toolbarTitle}>
-            <img
-              src="http://via.placeholder.com/24x24"
-              className={classes.toolbarTitleImg}
-              alt="logo"
-            />
-            Kapp Dashboard
-          </div>
+          })}
+          classes={{
+            paper: clsx({
+              [classes.drawerOpen]: open,
+              [classes.drawerClose]: !open
+            })
+          }}
+          PaperProps={{ className: classes.paper }}
+        >
+          <div className={classes.toolbar}>
+            <div className={classes.toolbarTitle}>
+              <img
+                src="http://via.placeholder.com/24x24"
+                className={classes.toolbarTitleImg}
+                alt="logo"
+              />
+              Kapp Dashboard
+            </div>
 
-          <IconButton onClick={handleDrawerClose} color="inherit">
-            <Icon color="inherit">chevron_left_icon</Icon>
-          </IconButton>
-        </div>
-        <Sidenav groups={sidenavGroups} isFolded={!open} />
-      </Drawer>
-      <main className={classes.content}>
-        <Switch>
-          <Route exact path="/" component={Dashboard} />
-          <Route exact path="/install">
-            <InstallPage />
-          </Route>
-          <Route exact path="/applications">
-            <ApplictionList />
-          </Route>
-          <Route
-            exact
-            path="/applications/:applicationId/edit"
-            component={ApplicationEdit}
-          ></Route>
-          <Route exact path="/applications/new">
-            <ApplicationNew />
-          </Route>
-          <Route exact path="/components/new">
-            <ComponentNew />
-          </Route>
-          <Route
-            exact
-            path="/components/:componentId/edit"
-            component={ComponentEdit}
-          ></Route>
-          <Route exact path="/components" component={ComponentList}></Route>
-          <Route exact path="/configs" component={ConfigList}></Route>
-          <Route exact path="/configs/new">
-            <ConfigNew />
-          </Route>
-          <Route
-            exact
-            path="/configs/:componentId/edit"
-            component={ConfigEdit}
-          ></Route>
-        </Switch>
-      </main>
-    </div>
+            <IconButton onClick={handleDrawerClose} color="inherit">
+              <Icon color="inherit">chevron_left_icon</Icon>
+            </IconButton>
+          </div>
+          <Sidenav groups={sidenavGroups} isFolded={!open} />
+        </Drawer>
+        <main className={classes.content}>
+          <Switch>
+            <Route exact path="/" component={Dashboard} />
+            <Route exact path="/install">
+              <InstallPage />
+            </Route>
+            <Route exact path="/applications">
+              <ApplictionList />
+            </Route>
+            <Route
+              exact
+              path="/applications/:applicationId/edit"
+              component={ApplicationEdit}
+            ></Route>
+            <Route exact path="/applications/new">
+              <ApplicationNew />
+            </Route>
+            <Route exact path="/components/new">
+              <ComponentNew />
+            </Route>
+            <Route
+              exact
+              path="/components/:componentId/edit"
+              component={ComponentEdit}
+            ></Route>
+            <Route exact path="/components" component={ComponentList}></Route>
+            <Route exact path="/configs" component={ConfigList}></Route>
+            <Route exact path="/configs/new">
+              <ConfigNew />
+            </Route>
+            <Route
+              exact
+              path="/configs/:componentId/edit"
+              component={ConfigEdit}
+            ></Route>
+
+            <Route component={NoMatch} />
+          </Switch>
+        </main>
+      </div>
+    </Switch>
   );
 }
