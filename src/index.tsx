@@ -14,7 +14,9 @@ import { setStore } from "./store";
 export const history = createBrowserHistory();
 
 const store = configureStore(history);
+
 setStore(store);
+
 const theme = createMuiTheme({
   typography: {
     fontSize: 12

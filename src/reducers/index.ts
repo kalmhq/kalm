@@ -19,8 +19,12 @@ export type RootState = ImmutableMap<{
   form: FormState;
 }>;
 
+// combineReducers returns immutable map, but the type is not working correctly
+// https://github.com/gajus/redux-immutable/issues/74
+
 export default (history: History<LocationState>) =>
-  combineReducers({
+  combineReducers<RootState>({
+    // @ts-ignore
     form: formReducer,
     router: connectRouter(history),
     components,
