@@ -5,7 +5,8 @@ import {
   Actions,
   UPDATE_CONFIG_ACTION,
   DELETE_CONFIG_ACTION,
-  ConfigFormValues
+  ConfigFormValues,
+  SET_CURRENT_CONFIG_ID_CHAIN
 } from ".";
 
 export type ThunkResult<R> = ThunkAction<R, RootState, undefined, Actions>;
@@ -40,6 +41,17 @@ export const deleteConfigAction = (
     dispatch({
       type: DELETE_CONFIG_ACTION,
       payload: { configId }
+    });
+  };
+};
+
+export const setCurrentConfigIdChainAction = (
+  idChain: string[]
+): ThunkResult<Promise<void>> => {
+  return async dispatch => {
+    dispatch({
+      type: SET_CURRENT_CONFIG_ID_CHAIN,
+      payload: { idChain }
     });
   };
 };
