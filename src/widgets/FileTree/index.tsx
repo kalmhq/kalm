@@ -66,8 +66,7 @@ const renderStyledTreeItem = (
   idChain: string[],
   dispatch: any
 ) => {
-  let newIdChain = new Array();
-  newIdChain = idChain.slice(0); // copy idChain to newIdChain, different memory addresses
+  let newIdChain: string[] = idChain.slice(0); // copy idChain to newIdChain, different memory addresses
   newIdChain.push(config.get("id"));
 
   if (config.get("type") === "file") {
