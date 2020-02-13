@@ -9,6 +9,7 @@ import configureStore from "./store";
 import { createBrowserHistory } from "history";
 import { ThemeProvider, createMuiTheme } from "@material-ui/core";
 import { SnackbarProvider } from "notistack";
+import { ScrollToTop } from "./widgets/ScrollToTop";
 
 export const history = createBrowserHistory();
 
@@ -23,6 +24,7 @@ const theme = createMuiTheme({
 ReactDOM.render(
   <Provider store={store}>
     <ConnectedRouter history={history}>
+      <ScrollToTop />
       <ThemeProvider theme={theme}>
         <SnackbarProvider
           maxSnack={3}
