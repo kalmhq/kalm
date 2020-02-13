@@ -88,10 +88,10 @@ export type ApplicationFormValues = ImmutableMap<{
 
 export interface ConfigFormValues {
   id: string;
-  parentId: string;
-  type: string;
+  type: "folder" | "file";
   name: string;
-  value: string;
+  content: string;
+  children: ConfigFormValues[]; // file is null
 }
 
 export interface CreateComponentAction {

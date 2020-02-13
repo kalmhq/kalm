@@ -13,63 +13,219 @@ export type State = ImmutableMap<{
 }>;
 
 const initialState: State = Immutable.Map({
-  configs: Immutable.OrderedMap({
-    "0": {
-      id: "0",
-      parentId: "",
-      type: "folder",
-      name: "Folder0",
-      value: "config0"
-    },
-    "1": {
-      id: "1",
-      parentId: "",
-      type: "folder",
-      name: "Folder1",
-      value: "config1"
-    },
-    "2": {
-      id: "2",
-      parentId: "",
-      type: "file",
-      name: "File2",
-      value: "config2"
-    },
-    "3": {
-      id: "1",
-      parentId: "",
-      type: "file",
-      name: "File3",
-      value: "config3"
-    },
-    "4": {
-      id: "4",
-      parentId: "0",
-      type: "folder",
-      name: "Folder4",
-      value: "config4"
-    },
-    "5": {
-      id: "5",
-      parentId: "1",
-      type: "folder",
-      name: "Folder5",
-      value: "config5"
-    },
-    "6": {
-      id: "6",
-      parentId: "0",
-      type: "file",
-      name: "File6",
-      value: "config6"
-    },
-    "7": {
-      id: "7",
-      parentId: "1",
-      type: "file",
-      name: "File7",
-      value: "config7"
-    }
+  configs: Immutable.Map({
+    id: "0",
+    type: "folder",
+    name: "/",
+    content: "",
+    children: [
+      {
+        id: "1",
+        type: "folder",
+        name: "nginx configs",
+        content: "",
+        children: [
+          {
+            id: "2",
+            type: "folder",
+            name: "sites-available",
+            content: "",
+            children: [
+              {
+                id: "3",
+                type: "file",
+                name: "test1.conf",
+                content: `server {
+                  listen 80;
+                  server_name regolar.wanglei.me;
+              
+                  location / {
+                      proxy_set_header   X-Real-IP $remote_addr;
+                      proxy_set_header   Host      $http_host;
+                      proxy_pass         http://localhost:8081;
+                  }
+                }`,
+                children: []
+              },
+              {
+                id: "4",
+                type: "file",
+                name: "test2.conf",
+                content: `server {
+                  listen 80;
+                  server_name test.wanglei.me;
+              
+                  location / {
+                      proxy_set_header   X-Real-IP $remote_addr;
+                      proxy_set_header   Host      $http_host;
+                      proxy_pass         http://localhost:8081;
+                  }
+                }`,
+                children: []
+              }
+            ]
+          },
+          {
+            id: "5",
+            type: "folder",
+            name: "sites-enabled",
+            content: "",
+            children: [
+              {
+                id: "6",
+                type: "file",
+                name: "test1.conf",
+                content: `server {
+                  listen 80;
+                  server_name regolar.wanglei.me;
+              
+                  location / {
+                      proxy_set_header   X-Real-IP $remote_addr;
+                      proxy_set_header   Host      $http_host;
+                      proxy_pass         http://localhost:8081;
+                  }
+                }`,
+                children: []
+              },
+              {
+                id: "7",
+                type: "file",
+                name: "test2.conf",
+                content: `server {
+                  listen 80;
+                  server_name test.wanglei.me;
+              
+                  location / {
+                      proxy_set_header   X-Real-IP $remote_addr;
+                      proxy_set_header   Host      $http_host;
+                      proxy_pass         http://localhost:8081;
+                  }
+                }`,
+                children: []
+              }
+            ]
+          },
+          {
+            id: "8",
+            type: "file",
+            name: "nginx.conf",
+            content: `server {
+              listen 80;
+              server_name regolar.wanglei.me;
+          
+              location / {
+                  proxy_set_header   X-Real-IP $remote_addr;
+                  proxy_set_header   Host      $http_host;
+                  proxy_pass         http://localhost:8081;
+              }
+            }`,
+            children: []
+          }
+        ]
+      },
+      {
+        id: "9",
+        type: "folder",
+        name: "dae configs",
+        content: "",
+        children: [
+          {
+            id: "10",
+            type: "folder",
+            name: "DDEX configs",
+            content: "",
+            children: [
+              {
+                id: "11",
+                type: "file",
+                name: "test1.json",
+                content: `{
+                  "POSTGRES_PASSWORD": "db-pass",
+                  "POSTGRES_USER": "db-admin",
+                  "POSTGRES_DB": "db-name",
+                  "NODE_ENV": "production",
+                  "RAILS_ENV": "production",
+                }`,
+                children: []
+              },
+              {
+                id: "12",
+                type: "file",
+                name: "test2.json",
+                content: `{
+                  "POSTGRES_PASSWORD": "db-pass",
+                  "POSTGRES_USER": "db-admin",
+                  "POSTGRES_DB": "db-name",
+                  "NODE_ENV": "production",
+                  "RAILS_ENV": "production",
+                }`,
+                children: []
+              }
+            ]
+          },
+          {
+            id: "13",
+            type: "folder",
+            name: "BFD configs",
+            content: "",
+            children: [
+              {
+                id: "14",
+                type: "file",
+                name: "test1.json",
+                content: `{
+                  "POSTGRES_PASSWORD": "db-pass",
+                  "POSTGRES_USER": "db-admin",
+                  "POSTGRES_DB": "db-name",
+                  "NODE_ENV": "production",
+                  "RAILS_ENV": "production",
+                }`,
+                children: []
+              },
+              {
+                id: "15",
+                type: "file",
+                name: "test2.json",
+                content: `{
+                  "POSTGRES_PASSWORD": "db-pass",
+                  "POSTGRES_USER": "db-admin",
+                  "POSTGRES_DB": "db-name",
+                  "NODE_ENV": "production",
+                  "RAILS_ENV": "production",
+                }`,
+                children: []
+              }
+            ]
+          },
+          {
+            id: "16",
+            type: "file",
+            name: "daetest.json",
+            content: `{
+              "POSTGRES_PASSWORD": "db-pass",
+              "POSTGRES_USER": "db-admin",
+              "POSTGRES_DB": "ddex",
+              "NODE_ENV": "production",
+              "RAILS_ENV": "production",
+            }`,
+            children: []
+          }
+        ]
+      },
+      {
+        id: "17",
+        type: "file",
+        name: "config file 1",
+        content: `{
+          "POSTGRES_PASSWORD": "db-pass",
+          "POSTGRES_USER": "db-admin",
+          "POSTGRES_DB": "ddex",
+          "NODE_ENV": "production",
+          "RAILS_ENV": "production",
+        }`,
+        children: []
+      }
+    ]
   })
 });
 

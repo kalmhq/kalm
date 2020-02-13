@@ -9,6 +9,7 @@ import { useSpring, animated } from "react-spring/web.cjs"; // web.cjs is requir
 import FolderIcon from "@material-ui/icons/Folder";
 import FolderOpenIcon from "@material-ui/icons/FolderOpen";
 import InsertDriveFileOutlinedIcon from "@material-ui/icons/InsertDriveFileOutlined";
+import { ConfigFormValues } from "../../actions";
 
 function TransitionComponent(props: any) {
   const style = useSpring({
@@ -54,18 +55,39 @@ const useStyles = makeStyles({
   }
 });
 
-export default function FileTree() {
+export interface FileTreeProp {
+  configs: ConfigFormValues;
+}
+
+const renderStyledTreeItem = (config: ConfigFormValues) => {
+  if (config.type === "file") {
+    return <StyledTreeItem nodeId={config.id} label={config.name} />;
+  }
+  return (
+    <StyledTreeItem nodeId={config.id} label={config.name}>
+      {config.children.map((childConfig: ConfigFormValues) => {
+        // 递归渲染子树
+        return renderStyledTreeItem(childConfig);
+      })}
+    </StyledTreeItem>
+  );
+};
+
+export const FileTree = (props: FileTreeProp) => {
   const classes = useStyles();
+  console.log("props", props);
 
   return (
     <TreeView
+      onClick={v => console.log(v)}
       className={classes.root}
-      defaultExpanded={["1"]}
+      defaultExpanded={[props.configs.id]}
       defaultCollapseIcon={<FolderOpenIcon htmlColor="#f9a825" />}
       defaultExpandIcon={<FolderIcon htmlColor="#f9a825" />}
       defaultEndIcon={<InsertDriveFileOutlinedIcon htmlColor="#0277bd" />}
     >
-      <StyledTreeItem nodeId="1" label="Main">
+      {renderStyledTreeItem(props.configs)}
+      {/* <StyledTreeItem nodeId="1" label="Main">
         <StyledTreeItem nodeId="2" label="Hello" />
         <StyledTreeItem nodeId="3" label="Subtree with children">
           <StyledTreeItem nodeId="6" label="Hello" />
@@ -82,7 +104,7 @@ export default function FileTree() {
         </StyledTreeItem>
         <StyledTreeItem nodeId="4" label="World" />
         <StyledTreeItem nodeId="5" label="Something something" />
-      </StyledTreeItem>
+      </StyledTreeItem> */}
     </TreeView>
   );
-}
+};
