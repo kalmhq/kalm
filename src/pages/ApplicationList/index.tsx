@@ -1,12 +1,13 @@
 import {
+  CircularProgress,
   createStyles,
   IconButton,
+  Switch,
   Theme,
   WithStyles,
-  withStyles,
-  CircularProgress,
-  Switch
+  withStyles
 } from "@material-ui/core";
+import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
@@ -17,25 +18,22 @@ import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
 import {
   Actions,
-  StatusTypePending,
-  StatusTypeCreating,
   StatusTypeError,
+  StatusTypePending,
   StatusTypeRunning
 } from "../../actions";
 import {
   deleteApplicationAction,
-  updateApplicationAction,
-  duplicateApplicationAction
+  duplicateApplicationAction,
+  updateApplicationAction
 } from "../../actions/application";
-import { RootState } from "../../reducers";
-import { BasePage } from "../BasePage";
-import CheckCircleIcon from "@material-ui/icons/CheckCircle";
-import { ConfirmDialog } from "../../widgets/ConfirmDialog";
-import { duplicateComponentAction } from "../../actions/component";
 import {
-  setSuccessNotificationAction,
-  setErrorNotificationAction
+  setErrorNotificationAction,
+  setSuccessNotificationAction
 } from "../../actions/notification";
+import { RootState } from "../../reducers";
+import { ConfirmDialog } from "../../widgets/ConfirmDialog";
+import { BasePage } from "../BasePage";
 
 const mapStateToProps = (state: RootState) => {
   return {
