@@ -5,6 +5,7 @@ import test from "./test";
 import notification, { State as NotificationState } from "./notification";
 import components, { State as ComponentState } from "./component";
 import applications, { State as ApplicationState } from "./application";
+import nodes, { State as NodesState } from "./node";
 import configs, { State as ConfigState } from "./config";
 import { connectRouter, RouterState } from "connected-react-router/immutable";
 import { History, LocationState } from "history";
@@ -17,6 +18,7 @@ export type RootState = ImmutableMap<{
   router: RouterState<LocationState>;
   notification: NotificationState;
   form: FormState;
+  nodes: NodesState;
 }>;
 
 // combineReducers returns immutable map, but the type is not working correctly
@@ -26,6 +28,7 @@ export default (history: History<LocationState>) =>
   combineReducers<RootState>({
     // @ts-ignore
     form: formReducer,
+    nodes,
     router: connectRouter(history),
     components,
     applications,
