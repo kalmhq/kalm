@@ -24,12 +24,14 @@ import {
 } from "../../actions";
 import {
   deleteApplicationAction,
-  updateApplicationAction
+  updateApplicationAction,
+  duplicateApplicationAction
 } from "../../actions/application";
 import { RootState } from "../../reducers";
 import { BasePage } from "../BasePage";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
+import { duplicateComponentAction } from "../../actions/component";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -227,9 +229,7 @@ class List extends React.PureComponent<Props, State> {
             <IconButton
               aria-label="edit"
               onClick={() => {
-                dispatch(
-                  push(`/applications/${application.get("id")}/duplicate`)
-                );
+                dispatch(duplicateApplicationAction(application.get("id")));
               }}
             >
               <FileCopyIcon />
@@ -259,7 +259,7 @@ class List extends React.PureComponent<Props, State> {
         ),
         components: application
           .get("components")
-          .map(x => x.get("name"))
+          .map(x => <div>{x.get("name")}</div>)
           .toArray(),
         status: status
       };

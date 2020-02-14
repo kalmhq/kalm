@@ -3,7 +3,8 @@ import {
   Application,
   UPDATE_APPLICATION_ACTION,
   DELETE_APPLICATION_ACTION,
-  ThunkResult
+  ThunkResult,
+  DUPLICATE_APPLICATION_ACTION
 } from ".";
 
 export const createApplicationAction = (
@@ -25,6 +26,17 @@ export const updateApplicationAction = (
     dispatch({
       type: UPDATE_APPLICATION_ACTION,
       payload: { applicationId, applicationValues }
+    });
+  };
+};
+
+export const duplicateApplicationAction = (
+  applicationId: string
+): ThunkResult<Promise<void>> => {
+  return async dispatch => {
+    dispatch({
+      type: DUPLICATE_APPLICATION_ACTION,
+      payload: { applicationId }
     });
   };
 };

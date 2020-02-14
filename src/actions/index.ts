@@ -169,6 +169,13 @@ export interface DeleteApplicationAction {
   };
 }
 
+export interface DuplicateApplicationAction {
+  type: typeof DUPLICATE_APPLICATION_ACTION;
+  payload: {
+    applicationId: string;
+  };
+}
+
 export interface CreateConfigAction {
   type: typeof CREATE_CONFIG_ACTION;
   payload: {
@@ -219,6 +226,7 @@ export type Actions =
   | UpdateCurrentConfigIdChain
   | SetNotificationMessageAction
   | CallHistoryMethodAction
-  | DuplicateComponentAction;
+  | DuplicateComponentAction
+  | DuplicateApplicationAction;
 
 export type ThunkResult<R> = ThunkAction<R, RootState, undefined, Actions>;

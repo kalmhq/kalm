@@ -7,7 +7,8 @@ import {
   Application,
   StatusTypeCreating,
   StatusTypePending,
-  StatusTypeError
+  StatusTypeError,
+  DUPLICATE_APPLICATION_ACTION
 } from "../actions";
 import { Actions } from "../actions";
 
@@ -266,11 +267,11 @@ const initialState: State = Immutable.Map({
     "0": sampleApplication,
     "1": sampleApplication
       .set("id", "1")
-      .set("name", sampleApplication.get("name") + "duplicate-1")
+      .set("name", sampleApplication.get("name") + "-duplicate-1")
       .setIn(["status", "status"], StatusTypePending),
     "2": sampleApplication
       .set("id", "2")
-      .set("name", sampleApplication.get("name") + "duplicate-2")
+      .set("name", sampleApplication.get("name") + "-duplicate-2")
       .setIn(["status", "status"], StatusTypeError)
   })
 });
@@ -304,6 +305,24 @@ const reducer = (state: State = initialState, action: Actions): State => {
     }
     case DELETE_APPLICATION_ACTION: {
       state = state.deleteIn(["applications", action.payload.applicationId]);
+      break;
+    }
+    case DUPLICATE_APPLICATION_ACTION: {
+      const applications = state.get("applications");
+      const tmpId = applications.size.toString(); // TODO fake id
+
+      let application = applications.get(action.payload.applicationId)!;
+      application = application.set("id", tmpId);
+
+      let i = 0;
+      let name = "";
+      do {
+        i += 1;
+        name = `${application.get("name")}-duplicate-${i}`;
+      } while (applications.find(x => x.get("name") === name));
+
+      application = application.set("name", name);
+      state = state.set("applications", applications.set(tmpId, application));
       break;
     }
   }
