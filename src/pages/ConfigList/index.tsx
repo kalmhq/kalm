@@ -8,7 +8,10 @@ import {
   Icon,
   makeStyles,
   Theme,
-  withStyles
+  withStyles,
+  Breadcrumbs,
+  Typography,
+  Link
 } from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@material-ui/icons/Delete";
@@ -17,7 +20,6 @@ import { push } from "connected-react-router";
 import { deleteConfigAction } from "../../actions/config";
 import { ThunkDispatch } from "redux-thunk";
 import { Actions, ConfigFormValues } from "../../actions";
-import { Link } from "react-router-dom";
 import { FileTree } from "../../widgets/FileTree";
 import { getCurrentConfig } from "../../selectors/config";
 import SyntaxHighlighter from "react-syntax-highlighter";
@@ -42,13 +44,21 @@ const styles = (theme: Theme) => ({
     minHeight: "800px",
     padding: "15px",
     backgroundColor: "#fff"
+  },
+  noSelectedFile: {
+    width: "100%",
+    height: "300px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center"
   }
 });
 
 const mapStateToProps = (state: RootState, ownProps: any) => {
   return {
     currentConfig: getCurrentConfig(),
-    rootConfig: state.get("configs").get("rootConfig")
+    rootConfig: state.get("configs").get("rootConfig"),
+    currentConfigIdChain: state.get("configs").get("currentConfigIdChain")
   };
 };
 
@@ -65,6 +75,42 @@ class List extends React.PureComponent<Props> {
     this.props.dispatch(push(`/configs/new`));
   };
 
+  public renderFileBreadcrumbs() {
+    const { dispatch, rootConfig, currentConfigIdChain } = this.props;
+
+    let tmpConfig = rootConfig;
+    const links: React.ReactElement[] = [];
+    currentConfigIdChain.forEach((configId: string) => {
+      if (tmpConfig.get("id") !== configId) {
+        tmpConfig = tmpConfig.get("children").get(configId) as ConfigFormValues;
+      }
+
+      links.push(
+        <Link color="inherit" onClick={() => console.log("link", configId)}>
+          {tmpConfig.get("name")}
+        </Link>
+      );
+    });
+
+    return (
+      <Breadcrumbs aria-label="breadcrumb">
+        {links}
+
+        {/* <Link color="inherit" href="/" onClick={() => console.log("link")}>
+          Material-UI
+        </Link>
+        <Link
+          color="inherit"
+          href="/getting-started/installation/"
+          onClick={() => console.log("link")}
+        >
+          Core
+        </Link>
+        <Typography color="textPrimary">Breadcrumb</Typography> */}
+      </Breadcrumbs>
+    );
+  }
+
   public render() {
     const { dispatch, rootConfig, classes, currentConfig } = this.props;
 
@@ -75,12 +121,14 @@ class List extends React.PureComponent<Props> {
             <FileTree rootConfig={rootConfig} dispatch={dispatch} />
           </div>
           <div className={classes.fileDetail}>
+            {this.renderFileBreadcrumbs()}
+
             {currentConfig.get("type") === "file" ? (
               <SyntaxHighlighter>
                 {currentConfig.get("content")}
               </SyntaxHighlighter>
             ) : (
-              "No selected file"
+              <div className={classes.noSelectedFile}>No selected file</div>
             )}
           </div>
         </div>

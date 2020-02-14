@@ -19,7 +19,7 @@ const initialState: State = Immutable.Map({
   rootConfig: Immutable.fromJS({
     id: "0",
     type: "folder",
-    name: "/",
+    name: "root",
     content: "",
     children: {
       "1": {
