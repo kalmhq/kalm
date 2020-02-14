@@ -22,7 +22,9 @@ import { Paper } from "@material-ui/core";
 import { ValidatorRequired } from "../validator";
 import { ConfigFormValues } from "../../actions";
 
-export interface Props {}
+export interface Props {
+  onClose: any;
+}
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -59,7 +61,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     flexGrow: 1,
     width: "100%",
     backgroundColor: theme.palette.background.paper,
-    padding: theme.spacing(3)
+    padding: 0
   },
   paper: {
     padding: theme.spacing(3),
@@ -75,6 +77,12 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   input: {
     marginBottom: 12
+  },
+  buttons: {
+    padding: "30px 0 10px"
+  },
+  cancelButton: {
+    marginLeft: 15
   }
 }));
 
@@ -93,48 +101,36 @@ function ConfigFormRaw(
     <div className={classes.root}>
       <form onSubmit={handleSubmit}>
         <Grid container spacing={1}>
-          <Grid item xs={12} sm={12} md={8} lg={8} xl={6}>
-            <Typography
-              variant="h2"
-              classes={{
-                root: classes.sectionHeader
-              }}
-            >
-              Basic
-            </Typography>
-            <Typography classes={{ root: classes.sectionDiscription }}>
-              Describe how to launch this compoent.
-            </Typography>
-            <Paper
-              elevation={4}
-              square
-              classes={{
-                root: classes.paper
-              }}
-            >
-              <CustomTextField
-                // className={classes.input}
-                name="name"
-                label="Name"
-                margin
-                validate={[ValidatorRequired]}
-                helperText='The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
-                placeholder="Please type the component name"
-              />
-              <CustomTextField
-                // className={classes.input}
-                name="value"
-                label="Value"
-                margin
-                validate={[ValidatorRequired]}
-                helperText="Value"
-              />
-            </Paper>
-          </Grid>
+          <CustomTextField
+            // className={classes.input}
+            name="name"
+            label="Name"
+            margin
+            validate={[ValidatorRequired]}
+            helperText='The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
+            placeholder="Please type the component name"
+          />
+          <CustomTextField
+            // className={classes.input}
+            name="value"
+            label="Value"
+            margin
+            validate={[ValidatorRequired]}
+            helperText="Value"
+          />
         </Grid>
-        <Button variant="contained" color="primary" type="submit">
-          Submit
-        </Button>
+        <div className={classes.buttons}>
+          <Button variant="contained" color="primary" type="submit">
+            Submit
+          </Button>
+          <Button
+            onClick={() => console.log("cancel")}
+            color="primary"
+            className={classes.cancelButton}
+          >
+            Cancel
+          </Button>
+        </div>
       </form>
     </div>
   );

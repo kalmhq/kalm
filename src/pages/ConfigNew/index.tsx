@@ -20,11 +20,7 @@ class ConfigNew extends React.PureComponent<Props> {
   };
 
   public render() {
-    return (
-      <BasePage title="New Config">
-        <ConfigForm onSubmit={this.submit} />
-      </BasePage>
-    );
+    return <BasePage title="New Config"></BasePage>;
   }
 }
 
