@@ -20,6 +20,8 @@ import { Actions, ConfigFormValues } from "../../actions";
 import { Link } from "react-router-dom";
 import { FileTree } from "../../widgets/FileTree";
 import { getCurrentConfig } from "../../selectors/config";
+import SyntaxHighlighter from "react-syntax-highlighter";
+import { monokai } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 const styles = (theme: Theme) => ({
   fileIcon: {
@@ -73,9 +75,13 @@ class List extends React.PureComponent<Props> {
             <FileTree rootConfig={rootConfig} dispatch={dispatch} />
           </div>
           <div className={classes.fileDetail}>
-            {currentConfig.get("type") === "file"
-              ? currentConfig.get("content")
-              : "No selected file"}
+            {currentConfig.get("type") === "file" ? (
+              <SyntaxHighlighter>
+                {currentConfig.get("content")}
+              </SyntaxHighlighter>
+            ) : (
+              "No selected file"
+            )}
           </div>
         </div>
       </BasePage>

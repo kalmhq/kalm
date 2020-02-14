@@ -11,6 +11,7 @@ import FolderOpenIcon from "@material-ui/icons/FolderOpen";
 import InsertDriveFileOutlinedIcon from "@material-ui/icons/InsertDriveFileOutlined";
 import { ConfigFormValues } from "../../actions";
 import { setCurrentConfigIdChainAction } from "../../actions/config";
+import { getCurrentConfig } from "../../selectors/config";
 
 function TransitionComponent(props: any) {
   const style = useSpring({
@@ -35,6 +36,10 @@ TransitionComponent.propTypes = {
   in: PropTypes.bool
 };
 
+interface StyledTreeItemProps extends TreeItemProps {
+  isSelected?: boolean;
+}
+
 const StyledTreeItem = withStyles((theme: any) => ({
   group: {
     marginLeft: 12,
@@ -44,7 +49,7 @@ const StyledTreeItem = withStyles((theme: any) => ({
   content: {
     height: 30
   }
-}))((props: TreeItemProps) => (
+}))((props: StyledTreeItemProps) => (
   <TreeItem {...props} TransitionComponent={TransitionComponent} />
 ));
 
@@ -69,12 +74,15 @@ const renderStyledTreeItem = (
   let newIdChain: string[] = idChain.slice(0); // copy idChain to newIdChain, different memory addresses
   newIdChain.push(config.get("id"));
 
+  const currentConfig = getCurrentConfig();
+
   if (config.get("type") === "file") {
     return (
       <StyledTreeItem
         nodeId={config.get("id")}
         label={config.get("name")}
         onClick={() => dispatch(setCurrentConfigIdChainAction(newIdChain))}
+        isSelected={config.get("id") === currentConfig.get("id")}
       />
     );
   }
