@@ -30,6 +30,7 @@ import { Sidenav, SidenavGroupProps } from "./widgets/Sidenav";
 import { NotificationComponent } from "./widgets/Notification";
 import { Box } from "@material-ui/core";
 import { NoMatch, Page404 } from "./pages/NoMatch";
+import { NodeList } from "./pages/NodeList";
 
 const sidenavGroups: SidenavGroupProps[] = [
   {
@@ -327,6 +328,7 @@ export default function MiniDrawer() {
               path="/configs/:componentId/edit"
               component={ConfigEdit}
             ></Route>
+            <Route exact path="/cluster/nodes" component={NodeList}></Route>
 
             <Route component={NoMatch} />
           </Switch>

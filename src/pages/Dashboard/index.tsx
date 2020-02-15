@@ -42,8 +42,8 @@ class Dashboard extends React.PureComponent<Props> {
         <div className={classes.container}>
           <Typography className={classes.description}>
             Kapp is a central hub for you to manage your devop tasks. It let you
-            manage, monitoring <strong>Applications</strong> and{" "}
-            <strong>configs</strong>.
+            manage, monitoring <strong>Applications</strong> make up of
+            microservices.
           </Typography>
 
           <Grid container spacing={3}>
@@ -52,9 +52,12 @@ class Dashboard extends React.PureComponent<Props> {
                 Learn Kapp
               </Typography>
               <Typography className={classes.cardDescription}>
-                Kapp is build on top of kubernetes. It provides your some best
-                practices of using kubernets and hide obscure details. Wondering
-                what all that means? Have a look at the Kapp documentation.
+                Run a single image is easy, but not for application made up of a
+                bunch of components. Kapp aim to help you handle complicated
+                application with ease. Kapp is build on top of kubernetes. It
+                provides your some best practices of using kubernets and hide
+                obscure details. Wondering what all that means? Have a look at
+                the Kapp documentation.
               </Typography>
               <div>
                 <Button
@@ -71,9 +74,10 @@ class Dashboard extends React.PureComponent<Props> {
                 Get Start
               </Typography>
               <Typography className={classes.cardDescription}>
-                If you don't know where to start, you can try to integrate your{" "}
-                <strong>Image Registry</strong> first. Then try to create your
-                first <strong>Component</strong>, <strong>Application</strong>
+                If you don't know where to start. There are several tutorials of
+                how to use kapp. Please go throught them first. You can also
+                view each page of this dashboard, some details on each page can
+                be helpful to you.
               </Typography>
               <div>
                 <Button

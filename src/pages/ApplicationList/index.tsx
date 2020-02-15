@@ -1,12 +1,13 @@
 import {
+  CircularProgress,
   createStyles,
   IconButton,
+  Switch,
   Theme,
   WithStyles,
-  withStyles,
-  CircularProgress,
-  Switch
+  withStyles
 } from "@material-ui/core";
+import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
@@ -17,19 +18,22 @@ import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
 import {
   Actions,
-  StatusTypePending,
-  StatusTypeCreating,
   StatusTypeError,
+  StatusTypePending,
   StatusTypeRunning
 } from "../../actions";
 import {
   deleteApplicationAction,
+  duplicateApplicationAction,
   updateApplicationAction
 } from "../../actions/application";
+import {
+  setErrorNotificationAction,
+  setSuccessNotificationAction
+} from "../../actions/notification";
 import { RootState } from "../../reducers";
-import { BasePage } from "../BasePage";
-import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
+import { BasePage } from "../BasePage";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -110,6 +114,8 @@ interface State {
   switchingIsEnabledApplicationId: string;
   switchingIsEnabledTitle: string;
   switchingIsEnabledContent: string;
+  isDeleteConfirmDialogOpen: boolean;
+  deletingApplicationId?: string;
 }
 
 class List extends React.PureComponent<Props, State> {
@@ -117,7 +123,9 @@ class List extends React.PureComponent<Props, State> {
     isEnabledConfirmDialogOpen: false,
     switchingIsEnabledApplicationId: "",
     switchingIsEnabledTitle: "",
-    switchingIsEnabledContent: ""
+    switchingIsEnabledContent: "",
+    isDeleteConfirmDialogOpen: false,
+    deletingApplicationId: ""
   };
 
   constructor(props: Props) {
@@ -191,11 +199,57 @@ class List extends React.PureComponent<Props, State> {
     );
   };
 
+  private closeConfirmDialog = () => {
+    this.setState({
+      isDeleteConfirmDialogOpen: false,
+      deletingApplicationId: undefined
+    });
+  };
+
+  private deleteConfirmedApplication = async () => {
+    const { dispatch } = this.props;
+    try {
+      await dispatch(
+        deleteApplicationAction(this.state.deletingApplicationId!)
+      );
+      await dispatch(
+        setSuccessNotificationAction("Successfully delete an application")
+      );
+    } catch {
+      dispatch(setErrorNotificationAction("Something wrong"));
+    }
+  };
+
+  private setDeletingApplicationAndConfirm = (applicationId: string) => {
+    this.setState({
+      isDeleteConfirmDialogOpen: true,
+      deletingApplicationId: applicationId
+    });
+  };
+
+  private renderDeleteConfirmDialog = () => {
+    const { isDeleteConfirmDialogOpen } = this.state;
+
+    return (
+      <ConfirmDialog
+        open={isDeleteConfirmDialogOpen}
+        onClose={this.closeConfirmDialog}
+        title="Are you sure to delete this Application?"
+        content="This application is already disabled. You will lost this application config, and this action is irrevocable."
+        onAgree={this.deleteConfirmedApplication}
+      />
+    );
+  };
+
   public render() {
     const { dispatch, applications, classes } = this.props;
     const data = applications.map((application, index) => {
       const handleChange = () => {
         this.showSwitchingIsEnabledDialog(application.get("id"));
+      };
+
+      const onDeleteClick = () => {
+        this.setDeletingApplicationAndConfirm(application.get("id"));
       };
 
       let status = null;
@@ -227,21 +281,13 @@ class List extends React.PureComponent<Props, State> {
             <IconButton
               aria-label="edit"
               onClick={() => {
-                dispatch(
-                  push(`/applications/${application.get("id")}/duplicate`)
-                );
+                dispatch(duplicateApplicationAction(application.get("id")));
               }}
             >
               <FileCopyIcon />
             </IconButton>
 
-            <IconButton
-              aria-label="delete"
-              onClick={() => {
-                // TODO delete confirmation
-                dispatch(deleteApplicationAction(application.get("id")));
-              }}
-            >
+            <IconButton aria-label="delete" onClick={onDeleteClick}>
               <DeleteIcon />
             </IconButton>
           </>
@@ -259,7 +305,7 @@ class List extends React.PureComponent<Props, State> {
         ),
         components: application
           .get("components")
-          .map(x => x.get("name"))
+          .map(x => <div>{x.get("name")}</div>)
           .toArray(),
         status: status
       };
@@ -270,6 +316,7 @@ class List extends React.PureComponent<Props, State> {
         onCreate={this.onCreate}
         createButtonText="Add An Application"
       >
+        {this.renderDeleteConfirmDialog()}
         {this.renderSwitchingIsEnabledConfirmDialog()}
         <div className={classes.root}>
           <MaterialTable

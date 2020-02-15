@@ -2,9 +2,9 @@ import { CallHistoryMethodAction } from "connected-react-router";
 import Immutable from "immutable";
 import { ImmutableMap } from "../typings";
 import { RootState } from "../reducers";
-import { ThunkAction } from "redux-thunk";
+import { ThunkAction, ThunkDispatch } from "redux-thunk";
 import { VariantType } from "notistack";
-
+import "./node";
 import "./notification";
 
 export const CREATE_COMPONENT_ACTION = "CREATE_COMPONENT_ACTION";
@@ -21,6 +21,8 @@ export const CREATE_CONFIG_ACTION = "CREATE_CONFIG_ACTION";
 export const UPDATE_CONFIG_ACTION = "UPDATE_CONFIG_ACTION";
 export const DELETE_CONFIG_ACTION = "DELETE_CONFIG_ACTION";
 export const SET_CURRENT_CONFIG_ID_CHAIN = "SET_CURRENT_CONFIG_ID_CHAIN";
+
+export const LOAD_NODES_ACTION = "LOAD_NODES_ACTION";
 
 export const SET_NOTIFICATION_MESSAGE_ACTION =
   "SET_NOTIFICATION_MESSAGE_ACTION";
@@ -169,6 +171,13 @@ export interface DeleteApplicationAction {
   };
 }
 
+export interface DuplicateApplicationAction {
+  type: typeof DUPLICATE_APPLICATION_ACTION;
+  payload: {
+    applicationId: string;
+  };
+}
+
 export interface CreateConfigAction {
   type: typeof CREATE_CONFIG_ACTION;
   payload: {
@@ -206,6 +215,13 @@ export interface SetNotificationMessageAction {
   };
 }
 
+export interface LoadNodesAction {
+  type: typeof LOAD_NODES_ACTION;
+  payload: {
+    nodes: kubernetes.Node[];
+  };
+}
+
 export type Actions =
   | CreateComponentAction
   | DeleteComponentAction
@@ -219,6 +235,10 @@ export type Actions =
   | UpdateCurrentConfigIdChain
   | SetNotificationMessageAction
   | CallHistoryMethodAction
-  | DuplicateComponentAction;
+  | DuplicateComponentAction
+  | DuplicateApplicationAction
+  | LoadNodesAction;
 
 export type ThunkResult<R> = ThunkAction<R, RootState, undefined, Actions>;
+export type TDispatch = ThunkDispatch<RootState, undefined, Actions>;
+export type TDispatchProp = { dispatch: TDispatch };
