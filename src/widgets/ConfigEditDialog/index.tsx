@@ -7,13 +7,13 @@ import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import { DispatchType } from "../../types";
 import ConfigForm from "../../forms/Config";
-import { ConfigFormValues } from "../../actions";
+import { Config } from "../../actions";
 
 interface Props {
   open: boolean;
   onClose: () => void;
   dispatch: DispatchType;
-  config: ConfigFormValues;
+  config: Config;
 }
 
 export function ConfigEditDialog(props: Props) {

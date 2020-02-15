@@ -19,7 +19,7 @@ import FileCopyIcon from "@material-ui/icons/FileCopy";
 import { push } from "connected-react-router";
 import { deleteConfigAction } from "../../actions/config";
 import { ThunkDispatch } from "redux-thunk";
-import { Actions, ConfigFormValues } from "../../actions";
+import { Actions, Config } from "../../actions";
 import { FileTree } from "../../widgets/FileTree";
 import { getCurrentConfig } from "../../selectors/config";
 import SyntaxHighlighter from "react-syntax-highlighter";
@@ -74,7 +74,7 @@ type StateProps = ReturnType<typeof mapStateToProps>;
 interface Props extends StateProps {
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
   classes: any;
-  rootConfig: ConfigFormValues;
+  rootConfig: Config;
 }
 
 interface State {
@@ -104,7 +104,7 @@ class List extends React.PureComponent<Props, State> {
     const links: React.ReactElement[] = [];
     currentConfigIdChain.forEach((configId: string) => {
       if (tmpConfig.get("id") !== configId) {
-        tmpConfig = tmpConfig.get("children").get(configId) as ConfigFormValues;
+        tmpConfig = tmpConfig.get("children").get(configId) as Config;
       }
 
       links.push(

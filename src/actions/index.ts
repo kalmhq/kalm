@@ -111,12 +111,12 @@ export type Application = ImmutableMap<{
   status: ApplicationStatus;
 }>;
 
-export type ConfigFormValues = ImmutableMap<{
+export type Config = ImmutableMap<{
   id: string;
   type: "folder" | "file";
   name: string;
   content: string;
-  children: Immutable.OrderedMap<string, ConfigFormValues>;
+  children: Immutable.OrderedMap<string, Config>;
 }>;
 
 export interface CreateComponentAction {
@@ -172,7 +172,7 @@ export interface DeleteApplicationAction {
 export interface CreateConfigAction {
   type: typeof CREATE_CONFIG_ACTION;
   payload: {
-    config: ConfigFormValues;
+    config: Config;
   };
 }
 
@@ -180,7 +180,7 @@ export interface UpdateConfigAction {
   type: typeof UPDATE_CONFIG_ACTION;
   payload: {
     configId: string;
-    config: ConfigFormValues;
+    config: Config;
   };
 }
 

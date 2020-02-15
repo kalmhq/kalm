@@ -9,7 +9,7 @@ import { useSpring, animated } from "react-spring/web.cjs"; // web.cjs is requir
 import FolderIcon from "@material-ui/icons/Folder";
 import FolderOpenIcon from "@material-ui/icons/FolderOpen";
 import InsertDriveFileOutlinedIcon from "@material-ui/icons/InsertDriveFileOutlined";
-import { ConfigFormValues } from "../../actions";
+import { Config } from "../../actions";
 import { setCurrentConfigIdChainAction } from "../../actions/config";
 import { getCurrentConfig } from "../../selectors/config";
 
@@ -62,12 +62,12 @@ const useStyles = makeStyles({
 });
 
 export interface FileTreeProp {
-  rootConfig: ConfigFormValues;
+  rootConfig: Config;
   dispatch: any;
 }
 
 const renderStyledTreeItem = (
-  config: ConfigFormValues,
+  config: Config,
   idChain: string[],
   dispatch: any
 ) => {
@@ -88,7 +88,7 @@ const renderStyledTreeItem = (
   }
 
   const childrenItems: any[] = [];
-  config.get("children").forEach((childConfig: ConfigFormValues) => {
+  config.get("children").forEach((childConfig: Config) => {
     // 递归渲染子树
     childrenItems.push(renderStyledTreeItem(childConfig, newIdChain, dispatch));
   });

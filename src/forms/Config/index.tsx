@@ -20,7 +20,7 @@ import { CustomPorts } from "../Basic/ports";
 import { Button, Grid } from "@material-ui/core";
 import { Paper } from "@material-ui/core";
 import { ValidatorRequired } from "../validator";
-import { ConfigFormValues } from "../../actions";
+import { Config } from "../../actions";
 
 export interface Props {
   onClose: any;
@@ -86,10 +86,8 @@ const useStyles = makeStyles((theme: Theme) => ({
   }
 }));
 
-function ConfigFormRaw(
-  props: Props & InjectedFormProps<ConfigFormValues, Props>
-) {
-  const { handleSubmit } = props;
+function ConfigFormRaw(props: Props & InjectedFormProps<Config, Props>) {
+  const { handleSubmit, onClose } = props;
   const classes = useStyles();
   const [value, setValue] = React.useState(0);
 
@@ -112,11 +110,14 @@ function ConfigFormRaw(
           />
           <CustomTextField
             // className={classes.input}
-            name="value"
-            label="Value"
+            name="content"
+            label="Content"
             margin
             validate={[ValidatorRequired]}
-            helperText="Value"
+            helperText="File content"
+            multiline={true}
+            rows={15}
+            rowsMax={15}
           />
         </Grid>
         <div className={classes.buttons}>
@@ -124,7 +125,7 @@ function ConfigFormRaw(
             Submit
           </Button>
           <Button
-            onClick={() => console.log("cancel")}
+            onClick={onClose}
             color="primary"
             className={classes.cancelButton}
           >
@@ -141,6 +142,6 @@ const initialValues = {
   value: ""
 };
 
-export default reduxForm<ConfigFormValues, Props>({
+export default reduxForm<Config, Props>({
   form: "config"
 })(ConfigFormRaw);

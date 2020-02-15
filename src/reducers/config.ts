@@ -2,7 +2,7 @@ import Immutable from "immutable";
 import { ImmutableMap } from "../typings";
 import {
   CREATE_CONFIG_ACTION,
-  ConfigFormValues,
+  Config,
   UPDATE_CONFIG_ACTION,
   DELETE_CONFIG_ACTION,
   SET_CURRENT_CONFIG_ID_CHAIN
@@ -11,7 +11,7 @@ import { Actions } from "../actions";
 
 export type State = ImmutableMap<{
   currentConfigIdChain: string[];
-  rootConfig: ConfigFormValues;
+  rootConfig: Config;
 }>;
 
 const initialState: State = Immutable.Map({

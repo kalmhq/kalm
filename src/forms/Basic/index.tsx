@@ -57,6 +57,9 @@ interface Props {
   required?: boolean;
   className?: string;
   margin?: boolean;
+  multiline?: boolean;
+  rows?: number;
+  rowsMax?: number;
 }
 
 export const CustomTextField = (props: BaseFieldProps & Props) => {

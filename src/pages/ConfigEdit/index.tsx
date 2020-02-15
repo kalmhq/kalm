@@ -1,7 +1,7 @@
 import React from "react";
 import { BasePage } from "../BasePage";
 import ConfigForm from "../../forms/Config";
-import { ConfigFormValues, Actions } from "../../actions";
+import { Config, Actions } from "../../actions";
 import { connect, DispatchProp } from "react-redux";
 import { updateConfigAction } from "../../actions/config";
 import { ThunkDispatch } from "redux-thunk";

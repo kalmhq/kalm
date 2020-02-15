@@ -5,14 +5,14 @@ import {
   Actions,
   UPDATE_CONFIG_ACTION,
   DELETE_CONFIG_ACTION,
-  ConfigFormValues,
+  Config,
   SET_CURRENT_CONFIG_ID_CHAIN
 } from ".";
 
 export type ThunkResult<R> = ThunkAction<R, RootState, undefined, Actions>;
 
 export const createConfigAction = (
-  config: ConfigFormValues
+  config: Config
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({
@@ -24,7 +24,7 @@ export const createConfigAction = (
 
 export const updateConfigAction = (
   configId: string,
-  config: ConfigFormValues
+  config: Config
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({

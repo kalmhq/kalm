@@ -1,7 +1,7 @@
 import React from "react";
 import { BasePage } from "../BasePage";
 import ConfigForm from "../../forms/Config";
-import { ConfigFormValues, Actions } from "../../actions";
+import { Config, Actions } from "../../actions";
 import { connect, DispatchProp } from "react-redux";
 import { createConfigAction } from "../../actions/config";
 import { ThunkDispatch } from "redux-thunk";
@@ -13,7 +13,7 @@ interface Props {
 }
 
 class ConfigNew extends React.PureComponent<Props> {
-  private submit = async (configFormValues: ConfigFormValues) => {
+  private submit = async (configFormValues: Config) => {
     const { dispatch } = this.props;
     await dispatch(createConfigAction(configFormValues));
     await dispatch(push("/components"));
