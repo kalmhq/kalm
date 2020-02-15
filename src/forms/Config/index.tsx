@@ -139,7 +139,8 @@ function ConfigFormRaw(props: Props & InjectedFormProps<Config, Props>) {
 
 const initialValues = {
   name: "",
-  value: ""
+  type: "file",
+  content: ""
 };
 
 export default reduxForm<Config, Props>({

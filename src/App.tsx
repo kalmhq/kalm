@@ -21,9 +21,7 @@ import ApplicationEdit from "./pages/ApplicationEdit";
 import ComponentEdit from "./pages/ComponentEdit";
 import ComponentList from "./pages/ComponentList";
 import ComponentNew from "./pages/ComponentNew";
-import ConfigEdit from "./pages/ConfigEdit";
 import ConfigList from "./pages/ConfigList";
-import ConfigNew from "./pages/ConfigNew";
 import Dashboard from "./pages/Dashboard";
 import InstallPage from "./pages/Install";
 import { Sidenav, SidenavGroupProps } from "./widgets/Sidenav";
@@ -320,14 +318,6 @@ export default function MiniDrawer() {
             ></Route>
             <Route exact path="/components" component={ComponentList}></Route>
             <Route exact path="/configs" component={ConfigList}></Route>
-            <Route exact path="/configs/new">
-              <ConfigNew />
-            </Route>
-            <Route
-              exact
-              path="/configs/:componentId/edit"
-              component={ConfigEdit}
-            ></Route>
             <Route exact path="/cluster/nodes" component={NodeList}></Route>
 
             <Route component={NoMatch} />
