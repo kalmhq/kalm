@@ -34,8 +34,10 @@ export function ConfigEditDialog(props: Props) {
         onClose={handleClose}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
+        maxWidth={"md"}
+        fullWidth={true}
       >
-        <DialogTitle id="alert-dialog-title">New Config</DialogTitle>
+        <DialogTitle id="alert-dialog-title">Edit Config</DialogTitle>
         <DialogContent>
           <DialogContentText>
             <ConfigForm onSubmit={handleSubmit} onClose={handleClose} />

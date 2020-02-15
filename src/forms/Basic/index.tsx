@@ -66,7 +66,7 @@ export const CustomTextField = (props: BaseFieldProps & Props) => {
   return <Field {...props} component={renderTextField} />;
 };
 
-const renderFromHelper = ({
+const renderFormHelper = ({
   touched,
   error
 }: Pick<WrappedFieldMetaProps, "touched" | "error">) => {
@@ -134,7 +134,7 @@ export const RenderSelectField = ({
       >
         {children}
       </Select>
-      {renderFromHelper({ touched, error })}
+      {renderFormHelper({ touched, error })}
     </FormControl>
   );
 };

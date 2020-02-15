@@ -21,6 +21,8 @@ import { Button, Grid } from "@material-ui/core";
 import { Paper } from "@material-ui/core";
 import { ValidatorRequired } from "../validator";
 import { Config } from "../../actions";
+import { CustomRadioGroup } from "../Basic/radio";
+import Immutable from "immutable";
 
 export interface Props {
   onClose: any;
@@ -89,11 +91,6 @@ const useStyles = makeStyles((theme: Theme) => ({
 function ConfigFormRaw(props: Props & InjectedFormProps<Config, Props>) {
   const { handleSubmit, onClose } = props;
   const classes = useStyles();
-  const [value, setValue] = React.useState(0);
-
-  const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
-    setValue(newValue);
-  };
 
   return (
     <div className={classes.root}>
@@ -107,6 +104,11 @@ function ConfigFormRaw(props: Props & InjectedFormProps<Config, Props>) {
             validate={[ValidatorRequired]}
             helperText='The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
             placeholder="Please type the component name"
+          />
+          <CustomRadioGroup
+            name="type"
+            label="Type"
+            options={["file", "folder"]}
           />
           <CustomTextField
             // className={classes.input}
@@ -137,12 +139,16 @@ function ConfigFormRaw(props: Props & InjectedFormProps<Config, Props>) {
   );
 }
 
-const initialValues = {
+const initialValues: Config = Immutable.fromJS({
   name: "",
   type: "file",
   content: ""
-};
+});
 
 export default reduxForm<Config, Props>({
-  form: "config"
+  form: "config",
+  initialValues,
+  onSubmitFail: (...args) => {
+    console.log("submit failed", args);
+  }
 })(ConfigFormRaw);

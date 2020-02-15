@@ -108,7 +108,11 @@ class List extends React.PureComponent<Props, State> {
       }
 
       links.push(
-        <Link color="inherit" onClick={() => console.log("link", configId)}>
+        <Link
+          key={configId}
+          color="inherit"
+          onClick={() => console.log("link", configId)}
+        >
           {tmpConfig.get("name")}
         </Link>
       );

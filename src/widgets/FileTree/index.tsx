@@ -36,10 +36,6 @@ TransitionComponent.propTypes = {
   in: PropTypes.bool
 };
 
-interface StyledTreeItemProps extends TreeItemProps {
-  isSelected?: boolean;
-}
-
 const StyledTreeItem = withStyles((theme: any) => ({
   group: {
     marginLeft: 12,
@@ -49,7 +45,7 @@ const StyledTreeItem = withStyles((theme: any) => ({
   content: {
     height: 30
   }
-}))((props: StyledTreeItemProps) => (
+}))((props: TreeItemProps) => (
   <TreeItem {...props} TransitionComponent={TransitionComponent} />
 ));
 
@@ -79,10 +75,11 @@ const renderStyledTreeItem = (
   if (config.get("type") === "file") {
     return (
       <StyledTreeItem
+        key={config.get("id")}
         nodeId={config.get("id")}
         label={config.get("name")}
         onClick={() => dispatch(setCurrentConfigIdChainAction(newIdChain))}
-        isSelected={config.get("id") === currentConfig.get("id")}
+        // isSelected={config.get("id") === currentConfig.get("id")}
       />
     );
   }
@@ -93,7 +90,11 @@ const renderStyledTreeItem = (
     childrenItems.push(renderStyledTreeItem(childConfig, newIdChain, dispatch));
   });
   return (
-    <StyledTreeItem nodeId={config.get("id")} label={config.get("name")}>
+    <StyledTreeItem
+      key={config.get("id")}
+      nodeId={config.get("id")}
+      label={config.get("name")}
+    >
       {childrenItems}
     </StyledTreeItem>
   );

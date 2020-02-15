@@ -7,6 +7,7 @@ import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import { DispatchType } from "../../types";
 import ConfigForm from "../../forms/Config";
+import { Config } from "../../actions";
 
 interface Props {
   open: boolean;
@@ -21,7 +22,8 @@ export function ConfigNewDialog(props: Props) {
     onClose();
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (configFormValues: Config) => {
+    console.log("configFormValues", configFormValues.toJS());
     onClose();
   };
 
