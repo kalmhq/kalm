@@ -1,0 +1,416 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kapp-test
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: File
+metadata:
+  name: nginx-config
+  namespace: kapp-test
+data: |
+  location / {
+    proxy_pass http://localhost:3000
+  }
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: gitlab-img-pull-secret
+  namespace: kapp-test
+data:
+  .dockercfg: eyJodHRwczovL3JlZ2lzdHJ5LmRkZXguaW8iOnsidXNlcm5hbWUiOiJrdWJlcm5ldGVzIiwicGFzc3dvcmQiOiJiVFdBR2FyelU1NlZEM3huOVh4cFZqUXEiLCJlbWFpbCI6Imt1YmVybmV0ZXNAZGRleC5pbyIsImF1dGgiOiJhM1ZpWlhKdVpYUmxjenBpVkZkQlIyRnllbFUxTmxaRU0zaHVPVmg0Y0ZacVVYRT0ifX0=
+type: kubernetes.io/dockercfg
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: Application
+metadata:
+  name: test-dae
+  namespace: kapp-test
+spec:
+  components:
+    - name: alpine
+      image: alpine:3
+      command:
+        - /bin/sh
+      args:
+        - -c
+        - "while true; do echo hello world; sleep 10; done"
+      beforeStart:
+        - apk add busybox-extras && apk add curl
+    - name: postgres
+      image: postgres:12.1-alpine
+      ports:
+        - containerPort: 5432
+          servicePort: 5432
+          name: name-for-pg-port
+      env:
+        - name: POSTGRES_PASSWORD
+          sharedEnv: POSTGRES_PASSWORD
+        - name: POSTGRES_USER
+          sharedEnv: POSTGRES_USER
+        - name: POSTGRES_DB
+          sharedEnv: POSTGRES_DB
+    - name: redis
+      image: redis:5.0.7
+      ports:
+        - containerPort: 6379
+          servicePort: 6379
+          name: name-for-redis-port
+    - name: kafka
+      image: spotify/kafka
+      ports:
+        - containerPort: 2181
+          servicePort: 2181
+          name: port-for-kafka1
+        - containerPort: 9092
+          servicePort: 9092
+          name: port-for-kafka2
+      env:
+        - name: ADVERTISED_HOST
+          value: test-dae-kafka
+        - name: _JAVA_OPTIONS
+          value: -Djava.net.preferIPv4Stack=True
+    - name: etcd
+      image: quay.io/coreos/etcd:v3.3.3
+      command:
+        - /usr/local/bin/etcd
+      afterStart:
+        - apk update
+        - apk add curl
+        - >
+          curl http://localhost:2379/v2/keys/k8s-app-configs/kapp-test/engine/config -XPUT -d 'value={"gas_limit_estimation_adjust_ratio": "1.5","gas_limit_special_tokens":"WETH"}'
+      ports:
+        - containerPort: 2379
+          servicePort: 2379
+          name: name-for-etcd
+      env:
+        - name: ETCD_LISTEN_CLIENT_URLS
+          value: http://0.0.0.0:2379
+        - name: ETCD_ADVERTISE_CLIENT_URLS
+          value: http://test-dae-etcd:2379
+    - name: api
+      image: registry./bfd/api:master
+      command:
+        - /bin/api
+      env:
+        - name: PORT
+          value: "3000"
+        - name: ENGINE_URL
+          value: test-dae-engine:80
+        - name: REDIS_URL
+          sharedEnv: REDIS_URL
+        - name: JWT_SECRET
+          sharedEnv: JWT_SECRET
+        - name: DATABASE_URL
+          sharedEnv: DATABASE_URL
+        - name: KAFKA_ADDRESS
+          sharedEnv: KAFKA_ADDRESS
+        - name: KUBE_NAMESPACE
+          sharedEnv: NAMESPACE
+        - name: RELAYER_ADDRESS
+          sharedEnv: RELAYER_ADDRESS
+        - name: BLOCKCHAIN_NODE_URL
+          sharedEnv: BLOCKCHAIN_NODE_URL
+        - name: HOT_CONTRACT_ADDRESS
+          sharedEnv: HOT_CONTRACT_ADDRESS
+        - name: HYDRO_CONTRACT_ADDRESS
+          sharedEnv: HYDRO_CONTRACT_ADDRESS
+        - name: SOME_ENV
+          value: SOME_VALUE
+      ports:
+        - containerPort: 3000
+          servicePort: 80
+          name: http
+      plugins:
+        - name: manual-scaler
+          replicas: 1
+    - name: ddex-admin
+      image: registry./bfd/admin:master
+      beforeStart:
+        - rails db:migrate
+      afterStart:
+        - rails db:seed
+      command:
+        - puma
+      args:
+        - -b
+        - tcp://0.0.0.0:3000
+        - -w
+        - "1"
+        - -t
+        - 0:16
+      env:
+        - name: REDIS_URL
+          sharedEnv: REDIS_URL
+        - name: DATABASE_URL
+          sharedEnv: DATABASE_URL
+        - name: ETHERSCAN_DOMAIN
+          sharedEnv: ETHERSCAN_DOMAIN
+        - name: BLOCKCHAIN_NODE_URL
+          sharedEnv: BLOCKCHAIN_NODE_URL
+        - name: RAILS_ENV
+          value: production
+        - name: SECRET_KEY_BASE
+          value: 568eec62c04e2b0d02710d6cbe21dd419fee2dd9aee5cbae3d8b1421e01ebc935bf6c9d00cd8cf424b3e69a0b256f4cd16711ec45bd093cad32a18c6adafb0cc
+        - name: ENGINE_URL
+          value: test-dae-engine:80
+        - name: SEED_ENABLE
+          value: "true"
+        # "BLOCKCHAIN": "$BLOCKCHAIN",
+        # "RAILS_LOG_TO_STDOUT": "true"
+    - name: engine
+      image: registry./bfd/engine:master
+      command:
+        - /bin/engine
+      ports:
+        - containerPort: 3000
+          servicePort: 80
+          name: http
+      env:
+        # "DDEX_API_ENDPOINT": "",
+        # "PRICE_FETCHER_API_ENDPOINT": "",
+        - name: DDEX_NAMESPACE
+          sharedEnv: NAMESPACE
+        - name: REDIS_URL
+          sharedEnv: REDIS_URL
+        - name: BLOCKCHAIN
+          sharedEnv: BLOCKCHAIN
+        - name: DATABASE_URL
+          sharedEnv: DATABASE_URL
+        - name: RELAYER_ADDRESS
+          sharedEnv: RELAYER_ADDRESS
+        - name: DDEX_KAFKA_ADDRESS
+          sharedEnv: KAFKA_ADDRESS
+        - name: BLOCKCHAIN_NODE_URL
+          sharedEnv: BLOCKCHAIN_NODE_URL
+        - name: BFD_CONTRACT_ADDRESS
+          sharedEnv: HYDRO_CONTRACT_ADDRESS
+        - name: HOT_CONTRACT_ADDRESS
+          sharedEnv: HOT_CONTRACT_ADDRESS
+        - name: HYDRO_CONTRACT_ADDRESS
+          sharedEnv: HYDRO_CONTRACT_ADDRESS
+        - name: DB_MAX_IDLE_CONN
+          value: "5"
+        - name: DB_MAX_OPEN_CONN
+          value: "5"
+        - name: APP_NAME
+          value: engine
+        - name: ETCD_HOST
+          value: http://test-dae-etcd:2379
+        - name: RELAYER_ADDRESS_PRIVATE_KEY
+          value: PKM
+    - name: engine-executor
+      image: registry./bfd/engine:master
+      command:
+        - /bin/executor
+      env:
+        - name: DDEX_NAMESPACE
+          sharedEnv: NAMESPACE
+        - name: REDIS_URL
+          sharedEnv: REDIS_URL
+        - name: BLOCKCHAIN
+          sharedEnv: BLOCKCHAIN
+        - name: DATABASE_URL
+          sharedEnv: DATABASE_URL
+        - name: RELAYER_ADDRESS
+          sharedEnv: RELAYER_ADDRESS
+        - name: DDEX_KAFKA_ADDRESS
+          sharedEnv: KAFKA_ADDRESS
+        - name: BLOCKCHAIN_NODE_URL
+          sharedEnv: BLOCKCHAIN_NODE_URL
+        - name: BFD_CONTRACT_ADDRESS
+          sharedEnv: HYDRO_CONTRACT_ADDRESS
+        - name: HOT_CONTRACT_ADDRESS
+          sharedEnv: HOT_CONTRACT_ADDRESS
+        - name: HYDRO_CONTRACT_ADDRESS
+          sharedEnv: HYDRO_CONTRACT_ADDRESS
+        - name: DB_MAX_IDLE_CONN
+          value: "5"
+        - name: DB_MAX_OPEN_CONN
+          value: "5"
+        - name: APP_NAME
+          value: engine
+        - name: ETCD_HOST
+          value: http://test-dae-etcd:2379
+        - name: RELAYER_ADDRESS_PRIVATE_KEY
+          value: PKM
+    - name: websocket
+      image: registry./bfd/ws:master
+      command:
+        - node
+      args: ["dist/index.js"]
+      ports:
+        - name: http
+          containerPort: 4000
+          servicePort: 80
+      env:
+        - name: NODE_ENV
+          sharedEnv: NODE_ENV
+        - name: NAMESPACE
+          sharedEnv: NAMESPACE
+        - name: JWT_SECRET
+          sharedEnv: JWT_SECRET
+        - name: KAFKA_ADDRESS
+          sharedEnv: KAFKA_ADDRESS
+        - name: INTRA_API_ADDRESS
+          sharedEnv: API_URL
+    - name: web
+      image: registry./bfd/web:master
+      command:
+        - npm
+      args:
+        - run
+        - start:prod
+      ports:
+        - name: http
+          containerPort: 3000
+          servicePort: 80
+      env:
+        - name: BFD_WS
+          sharedEnv: WS_URL
+        - name: NETWORK_ID
+          sharedEnv: NETWORK_ID
+        - name: BFD_INTRA_API_URL
+          sharedEnv: API_URL
+        - name: BFD_PUBLIC_API_URL
+          sharedEnv: PUBLIC_API_URL
+        - name: HYDRO_TOKEN_ADDRESS
+          sharedEnv: HOT_CONTRACT_ADDRESS
+        - name: HYDRO_CONTRACT_ADDRESS
+          sharedEnv: HYDRO_CONTRACT_ADDRESS
+        - name: API_VERSION
+          value: v4
+        - name: ETHEREUM_NODE_WS
+          value: wss://ethereum-jsonrpc-ropsten.intra./ws
+        - name: ETHEREUM_NODE_URL
+          value: https://ethereum-jsonrpc-ropsten.intra.
+#        - name: FORTMATIC_API_KEY
+#          value: pk_test_BE70ABE584E3934E
+      plugins:
+        - name: ingress-root-web
+          type: plugins.core.kapp.dev/v1alpha1.ingress
+          enableHttps: true
+          enableHttp: true
+          autoHttps: true
+          hosts:
+            - www.example.com
+            - www.example.io
+          path:
+            - /
+          stripPath: true
+          preserveHost: true
+#    - name: web
+#      image: nginx:alpine
+#      beforeStart:
+#        - ls -alh /
+#        - echo "test" > /tmp/bbq
+#        - ls -alh /tmp
+#      afterStart:
+#        - ls -alh /tmp/
+#      beforeDestroy:
+#        - echo "Bye Bye"
+#      env:
+#        # Get value of another component export port address,
+#        # It will be helpful is the component depends on another.
+#        - name: API_URL
+#          componentPort: api/http
+#          prefix: http://
+#          suffix: /v4
+#      ports:
+#        - name: http
+#          containerPort: 80
+#          servicePort: 80
+#      resources:
+#        cpu:
+#          min: 10m
+#          max: 100m
+#        memory:
+#          min: 500M
+#          max: 2G
+#      volumeMounts:
+#        - mountPath: /tmp/
+#          name: nginx-config
+#      plugins:
+#        - name: manual-scaler
+#          type: plugins.core.kapp.dev/v1alpha1.manual-scaler
+#          replicas: 1
+#        # It's allowed to use a plugin more than one time
+#        - name: ingress-root
+#          type: plugins.core.kapp.dev/v1alpha1.ingress
+#          enableHttps: true
+#          enableHttp: true
+#          # require enabledHttps and enableHttp are all true
+#          autoHttps: true
+#          hosts:
+#            - www.example.com
+#            - www.example.io
+#          path:
+#            - /
+#          stripPath: true
+#          preserveHost: true
+#        - name: ingress-legacy
+#          type: plugins.core.kapp.dev/v1alpha1.ingress
+#          hosts:
+#            - www.example.global
+#          path:
+#            - /
+#          stripPath: false
+#          preserveHost: false
+  sharedEnv:
+    - name: NETWORK_ID
+      value: "3"
+    - name: REDIS_URL
+      value: redis://test-dae-redis:6379
+    - name: RELAYER_ADDRESS
+      value: 0xC5652a59cD58981d2dC2981256Bc68839D9F4d4F
+    - name: BLOCKCHAIN_NODE_URL
+      value: https://ropsten.infura.io/v3/c5b8508b78e943a2af14d91a7f7a0cfa
+    - name: HOT_CONTRACT_ADDRESS
+      value: 0x9568e9eaf8076230a39f173a85fa38cc9776bc25
+    - name: HYDRO_CONTRACT_ADDRESS
+      value: 0x06898143df04616a8a8f9614deb3b99ba12b3096
+    - name: JWT_SECRET
+      value: YXNkZmFzamRia2RqYmN2aWphZGZ1cXB3aGZvdWFoZGdmb2F1Z2hmdnV5ZHV2YmFzb2lkdmJhZHNvdWJ2YWRvc3Vidm9hZHN1aHZ1b3llcmZnaGVveXVyaGZ1YXNoZHVhc2R1dmJzYWl1dmIzOXVyMzl1bmYzOXVlZmhhc3NkZ2FzZG
+    - name: DATABASE_URL
+      value: postgresql://admin:password@test-dae-postgres:5432/ddex?sslmode=disable
+    - name: KAFKA_ADDRESS
+      value: test-dae-kafka:9092
+    - name: NAMESPACE
+      value: kapp-test
+    - name: POSTGRES_PASSWORD
+      value: password
+    - name:  POSTGRES_USER
+      value: admin
+    - name: POSTGRES_DB
+      value: ddex
+    - name:  NODE_ENV
+      value: production
+    - name: RAILS_ENV
+      value: production
+    - name:  REDIS_ADDR
+      value: redis:6379
+    - name:  REDIS_URL_WITH_DB
+      value: redis://redis:6379/0
+    - name: ETCD_URL
+      value: http://etcd:2379
+    - name: PRICE_URL
+      value: http://localhost:3005
+    - name: API_URL
+      value: http://test-dae-api
+#     value: https://bfd-ropsten-59c1702d-api.intra.
+    - name: PUBLIC_API_URL
+      value: http://localhost:8002
+#     value: https://bfd-ropsten-59c1702d-api.intra.
+    - name: WS_URL
+      value: ws://localhost:8003
+#     value: wss://bfd-ropsten-59c1702d-ws.intra.
+    - name: ETHERSCAN_DOMAIN
+      value: https://ropsten.etherscan.io
+    - name: BLOCKCHAIN
+      value: ETHEREUM
+  volumes:
+    - configMap:
+        name: nginx-config
+      name: nginx-config
+  imagePullSecretName: gitlab-img-pull-secret

@@ -221,6 +221,7 @@ spec:
                           - SCTP
                           type: string
                         servicePort:
+                          description: '? what is service port for?'
                           format: int32
                           type: integer
                       required:
@@ -419,6 +420,8 @@ spec:
                 - name
                 type: object
               type: array
+            imagePullSecretName:
+              type: string
             sharedEnv:
               items:
                 description: EnvVar represents an environment variable present in

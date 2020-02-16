@@ -93,17 +93,17 @@ func (in *ApplicationSpec) DeepCopyInto(out *ApplicationSpec) {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
-	if in.SharedEnv != nil {
-		in, out := &in.SharedEnv, &out.SharedEnv
-		*out = make([]EnvVar, len(*in))
-		copy(*out, *in)
-	}
 	if in.Volumes != nil {
 		in, out := &in.Volumes, &out.Volumes
 		*out = make([]v1.Volume, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
+	}
+	if in.SharedEnv != nil {
+		in, out := &in.SharedEnv, &out.SharedEnv
+		*out = make([]EnvVar, len(*in))
+		copy(*out, *in)
 	}
 }
 

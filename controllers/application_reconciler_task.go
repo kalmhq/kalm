@@ -81,7 +81,7 @@ func (act *applicationReconcilerTask) Run() (err error) {
 	err = act.reconcileComponents()
 
 	if err != nil {
-		log.Error(err, "unable to construct deploymentp")
+		log.Error(err, "unable to construct deployment")
 		return err
 	}
 
@@ -115,7 +115,12 @@ func (act *applicationReconcilerTask) reconcileServices() (err error) {
 						Name:      getServiceName(app.Name, component.Name),
 						Namespace: app.Namespace,
 					},
-					Spec: corev1.ServiceSpec{},
+					Spec: corev1.ServiceSpec{
+						Selector: map[string]string{
+							"application": app.Name,
+							"component":   component.Name,
+						},
+					},
 				}
 			}
 
@@ -179,7 +184,11 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 	deployment := act.getDeployment(component.Name)
 
 	label := fmt.Sprintf("%s-%d", app.Name, time.Now().UTC().Unix())
-	labelMap := map[string]string{"kapp-component": label}
+	labelMap := map[string]string{
+		"kapp-component": label,
+		"application":    app.Name,
+		"component":      component.Name,
+	}
 
 	newDeployment := false
 
@@ -207,6 +216,7 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 								Command:      component.Command,
 								Args:         component.Args,
 								VolumeMounts: component.VolumeMounts,
+								//Ports:        component.Ports,
 							},
 						},
 						Volumes: act.app.Spec.Volumes,
@@ -218,6 +228,17 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 			},
 		}
 	}
+
+	//if len(component.Ports) > 0 {
+	//	var ports []corev1.ContainerPort
+	//	for _, p := range component.Ports {
+	//		ports = append(ports, corev1.ContainerPort{
+	//			Name:          p.Name,
+	//			ContainerPort: int32(p.ContainerPort),
+	//			Protocol:      p.Protocol,
+	//		})
+	//	}
+	//}
 
 	mainContainer := &(deployment.Spec.Template.Spec.Containers[0])
 
@@ -244,6 +265,16 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 
 	if !component.Resources.Memory.Max.IsZero() {
 		mainContainer.Resources.Limits[corev1.ResourceMemory] = component.Resources.Memory.Max
+	}
+
+	// imgPullSecrets
+	log.Info("imgPullSecName", "name", app.Spec.ImagePullSecretName)
+	if app.Spec.ImagePullSecretName != "" {
+		secs := []corev1.LocalObjectReference{
+			{Name: app.Spec.ImagePullSecretName},
+		}
+
+		deployment.Spec.Template.Spec.ImagePullSecrets = secs
 	}
 
 	// apply envs
