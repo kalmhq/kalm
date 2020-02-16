@@ -95,33 +95,31 @@ function ConfigFormRaw(props: Props & InjectedFormProps<Config, Props>) {
   return (
     <div className={classes.root}>
       <form onSubmit={handleSubmit}>
-        <Grid container spacing={1}>
-          <CustomTextField
-            // className={classes.input}
-            name="name"
-            label="Name"
-            margin
-            validate={[ValidatorRequired]}
-            helperText='The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
-            placeholder="Please type the component name"
-          />
-          <CustomRadioGroup
-            name="type"
-            label="Type"
-            options={["file", "folder"]}
-          />
-          <CustomTextField
-            // className={classes.input}
-            name="content"
-            label="Content"
-            margin
-            validate={[ValidatorRequired]}
-            helperText="File content"
-            multiline={true}
-            rows={15}
-            rowsMax={15}
-          />
-        </Grid>
+        <CustomTextField
+          // className={classes.input}
+          name="name"
+          label="Name"
+          margin
+          validate={[ValidatorRequired]}
+          helperText='The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
+          placeholder="Please type the component name"
+        />
+        <CustomRadioGroup
+          name="type"
+          label="Type"
+          options={["file", "folder"]}
+        />
+        <CustomTextField
+          // className={classes.input}
+          name="content"
+          label="Content"
+          margin
+          validate={[ValidatorRequired]}
+          helperText="File content"
+          multiline={true}
+          rows={15}
+          rowsMax={15}
+        />
         <div className={classes.buttons}>
           <Button variant="contained" color="primary" type="submit">
             Submit

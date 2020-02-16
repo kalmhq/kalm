@@ -18,10 +18,9 @@ interface Props {
 
 export const CustomRadioGroup = (props: BaseFieldProps & Props) => {
   return (
-    <FormControl component="fieldset">
-      {/* <FormLabel component="legend">{props.label}</FormLabel> */}
-      <Field {...props} component={renderRadioGroup} />
-    </FormControl>
+    // <FormControl component="fieldset">
+    <Field {...props} component={renderRadioGroup} />
+    // </FormControl>
   );
 };
 
@@ -40,6 +39,7 @@ const renderRadioGroup = ({
   >
     {options.map(option => (
       <FormControlLabel
+        key={option}
         value={option}
         control={<Radio color="primary" />}
         label={option.toUpperCase()}

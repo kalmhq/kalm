@@ -39,9 +39,7 @@ export function ConfigEditDialog(props: Props) {
       >
         <DialogTitle id="alert-dialog-title">Edit Config</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            <ConfigForm onSubmit={handleSubmit} onClose={handleClose} />
-          </DialogContentText>
+          <ConfigForm onSubmit={handleSubmit} onClose={handleClose} />
         </DialogContent>
       </Dialog>
     </div>
