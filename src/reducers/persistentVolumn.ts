@@ -1,19 +1,19 @@
 import Immutable from "immutable";
-import { Actions, LOAD_NODES_ACTION } from "../actions";
+import { Actions, LOAD_PERSISTENT_VOLUMNS_ACTION } from "../actions";
 import { ImmutableMap } from "../typings";
 
 export type State = ImmutableMap<{
-  nodes: kubernetes.Node.Item[];
+  persistentVolumns: kubernetes.PersistentVolumn.Item[];
 }>;
 
 const initialState: State = Immutable.Map({
-  nodes: []
+  persistentVolumns: []
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
-    case LOAD_NODES_ACTION: {
-      return state.set("nodes", action.payload.nodes);
+    case LOAD_PERSISTENT_VOLUMNS_ACTION: {
+      return state.set("persistentVolumns", action.payload.persistentVolumns);
     }
   }
 

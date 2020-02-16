@@ -23,6 +23,7 @@ export const DELETE_CONFIG_ACTION = "DELETE_CONFIG_ACTION";
 export const SET_CURRENT_CONFIG_ID_CHAIN = "SET_CURRENT_CONFIG_ID_CHAIN";
 
 export const LOAD_NODES_ACTION = "LOAD_NODES_ACTION";
+export const LOAD_PERSISTENT_VOLUMNS_ACTION = "LOAD_PERSISTENT_VOLUMNS_ACTION";
 
 export const SET_NOTIFICATION_MESSAGE_ACTION =
   "SET_NOTIFICATION_MESSAGE_ACTION";
@@ -218,7 +219,14 @@ export interface SetNotificationMessageAction {
 export interface LoadNodesAction {
   type: typeof LOAD_NODES_ACTION;
   payload: {
-    nodes: kubernetes.Node[];
+    nodes: kubernetes.Node.Item[];
+  };
+}
+
+export interface LoadPersistentVolumnsAction {
+  type: typeof LOAD_PERSISTENT_VOLUMNS_ACTION;
+  payload: {
+    persistentVolumns: kubernetes.PersistentVolumn.Item[];
   };
 }
 
@@ -237,7 +245,8 @@ export type Actions =
   | CallHistoryMethodAction
   | DuplicateComponentAction
   | DuplicateApplicationAction
-  | LoadNodesAction;
+  | LoadNodesAction
+  | LoadPersistentVolumnsAction;
 
 export type ThunkResult<R> = ThunkAction<R, RootState, undefined, Actions>;
 export type TDispatch = ThunkDispatch<RootState, undefined, Actions>;

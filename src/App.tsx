@@ -29,6 +29,7 @@ import { NotificationComponent } from "./widgets/Notification";
 import { Box } from "@material-ui/core";
 import { NoMatch, Page404 } from "./pages/NoMatch";
 import { NodeList } from "./pages/NodeList";
+import { Disks } from "./pages/Disks";
 
 const sidenavGroups: SidenavGroupProps[] = [
   {
@@ -319,6 +320,7 @@ export default function MiniDrawer() {
             <Route exact path="/components" component={ComponentList}></Route>
             <Route exact path="/configs" component={ConfigList}></Route>
             <Route exact path="/cluster/nodes" component={NodeList}></Route>
+            <Route exact path="/cluster/disks" component={Disks}></Route>
 
             <Route component={NoMatch} />
           </Switch>

@@ -1,100 +1,89 @@
 declare module kubernetes {
-  export interface NodeList {
-    kind: string;
-    apiVersion: string;
-    metadata: Metadata;
-    items: Node[];
-  }
+  declare module Node {
+    export interface List {
+      kind: string;
+      apiVersion: string;
+      metadata: ListMetadata;
+      items: Item[];
+    }
 
-  export interface Node {
-    metadata: NodeMetadata;
-    spec: Spec;
-    status: NodeStatus;
-  }
+    export interface Item {
+      metadata: Metadata;
+      spec: Spec;
+      status: Status;
+    }
 
-  export interface NodeListMetadata {
-    selfLink: string;
-    resourceVersion: string;
-  }
+    export interface Spec {
+      podCIDR: string;
+      providerID: string;
+      taints?: {
+        key: string;
+        effect: string;
+      }[];
+    }
 
-  export interface NodeMetadata {
-    name: string;
-    selfLink: string;
-    uid: string;
-    resourceVersion: string;
-    creationTimestamp: Date;
-    labels: Labels;
-    annotations: Annotations;
-  }
+    export interface Capacity {
+      cpu: string;
+      memory: string;
+      pods: string;
+      [key: string]: string;
+    }
 
-  export interface Labels {
-    [key: string]: string;
-  }
+    export interface Allocatable extends Capacity {}
 
-  export interface Annotations {
-    [key: string]: string;
-  }
+    export interface Condition {
+      type: string;
+      status: string;
+      lastHeartbeatTime: string;
+      lastTransitionTime: string;
+      reason: string;
+      message: string;
+    }
 
-  export interface Spec {}
+    export interface Address {
+      type: string;
+      address: string;
+    }
 
-  export interface Capacity {
-    cpu: string;
-    "ephemeral-storage": string;
-    "hugepages-1Gi": string;
-    "hugepages-2Mi": string;
-    memory: string;
-    pods: string;
-  }
+    export interface KubeletEndpoint {
+      Port: number;
+    }
 
-  export interface Allocatable extends Capacity {}
+    export interface DaemonEndpoints {
+      kubeletEndpoint: KubeletEndpoint;
+    }
 
-  export interface Condition {
-    type: string;
-    status: string;
-    lastHeartbeatTime: Date;
-    lastTransitionTime: Date;
-    reason: string;
-    message: string;
-  }
+    export interface NodeInfo {
+      machineID: string;
+      systemUUID: string;
+      bootID: string;
+      kernelVersion: string;
+      osImage: string;
+      containerRuntimeVersion: string;
+      kubeletVersion: string;
+      kubeProxyVersion: string;
+      operatingSystem: string;
+      architecture: string;
+    }
 
-  export interface Address {
-    type: string;
-    address: string;
-  }
+    export interface Image {
+      names: string[];
+      sizeBytes: number;
+    }
 
-  export interface KubeletEndpoint {
-    Port: number;
-  }
-
-  export interface DaemonEndpoints {
-    kubeletEndpoint: KubeletEndpoint;
-  }
-
-  export interface NodeInfo {
-    machineID: string;
-    systemUUID: string;
-    bootID: string;
-    kernelVersion: string;
-    osImage: string;
-    containerRuntimeVersion: string;
-    kubeletVersion: string;
-    kubeProxyVersion: string;
-    operatingSystem: string;
-    architecture: string;
-  }
-
-  export interface Image {
-    names: string[];
-    sizeBytes: number;
-  }
-
-  export interface NodeStatus {
-    capacity: Capacity;
-    allocatable: Allocatable;
-    conditions: Condition[];
-    addresses: Address[];
-    daemonEndpoints: DaemonEndpoints;
-    nodeInfo: NodeInfo;
-    images: Image[];
+    export interface Status {
+      capacity: Capacity;
+      allocatable: Allocatable;
+      conditions: Condition[];
+      addresses: Address[];
+      daemonEndpoints: DaemonEndpoints;
+      nodeInfo: NodeInfo;
+      images: Image[];
+      volumesInUse?: string[];
+      volumesAttached?: {
+        name: string;
+        devicePath: string;
+      }[];
+    }
   }
 }
