@@ -1,9 +1,39 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kapp-test
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: File
+metadata:
+  name: nginx-config
+  namespace: kapp-test
+data: |
+  location / {
+    proxy_pass http://localhost:3000
+  }
+---
 apiVersion: core.kapp.dev/v1alpha1
 kind: Application
 metadata:
   name: test
+  namespace: kapp-test
 spec:
   components:
+    - name: api
+      image: nginx:alpine
+      env:
+        - name: DB_URL
+          value: postgres://user:password@test.dev:5432/db_name
+        - name: SOME_ENV
+          value: SOME_VALUE
+      ports:
+        - containerPort: 3000
+          servicePort: 80
+          name: http
+      plugins:
+        - name: manual-scaler
+          replicas: 1
     - name: web
       image: nginx:alpine
       beforeStart:
@@ -11,8 +41,7 @@ spec:
         - echo "test" > /tmp/bbq
         - ls -alh /tmp
       afterStart:
-        - echo "afterSatart" > /tmp/log
-        - cat /tmp/log
+        - ls -alh /tmp/
       beforeDestroy:
         - echo "Bye Bye"
       env:
@@ -34,19 +63,19 @@ spec:
           servicePort: 80
       resources:
         cpu:
-          min: "0.25"
-          max: "0.25"
+          min: 10m
+          max: 100m
         memory:
           min: 500M
           max: 2G
-#        disk:
-#          - path: /a/b/c
-#            name: tmpfile
-#            size: 1G
-#            storageClass: ssd
-#        volume:
-#          - name: config1
-#            path: /tmp/config.yml
+      #        disk:
+      #          - path: /a/b/c
+      #            name: tmpfile
+      #            size: 1G
+      #            storageClass: ssd
+      volumeMounts:
+        - mountPath: /tmp/
+          name: nginx-config
       plugins:
         - name: manual-scaler
           type: plugins.core.kapp.dev/v1alpha1.manual-scaler
@@ -73,21 +102,11 @@ spec:
             - /
           stripPath: false
           preserveHost: false
-    - name: api
-      image: nginx:alpine
-      env:
-        - name: DB_URL
-          value: postgres://user:password@test.dev:5432/db_name
-        - name: SOME_ENV
-          value: SOME_VALUE
-      ports:
-        - containerPort: 3000
-          servicePort: 80
-          name: http
-      plugins:
-        - name: manual-scaler
-          replicas: 1
+
   sharedEnv:
     - name: SOME_COMMON_ENV
       value: shared_value
-
+  volumes:
+    - configMap:
+        name: nginx-config
+      name: nginx-config
