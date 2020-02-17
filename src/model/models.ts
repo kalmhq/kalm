@@ -604,6 +604,7 @@ import { V2beta2PodsMetricStatus } from "./v2beta2PodsMetricStatus";
 import { V2beta2ResourceMetricSource } from "./v2beta2ResourceMetricSource";
 import { V2beta2ResourceMetricStatus } from "./v2beta2ResourceMetricStatus";
 import { VersionInfo } from "./versionInfo";
+import kappModels from "../kappModel";
 
 export * from "./admissionregistrationV1beta1ServiceReference";
 export * from "./admissionregistrationV1beta1WebhookClientConfig";
@@ -1828,7 +1829,8 @@ let typeMap: { [index: string]: any } = {
   V2beta2PodsMetricStatus: V2beta2PodsMetricStatus,
   V2beta2ResourceMetricSource: V2beta2ResourceMetricSource,
   V2beta2ResourceMetricStatus: V2beta2ResourceMetricStatus,
-  VersionInfo: VersionInfo
+  VersionInfo: VersionInfo,
+  ...kappModels
 };
 
 export class ObjectSerializer {

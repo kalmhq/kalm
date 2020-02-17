@@ -1,9 +1,11 @@
 import axios from "axios";
 import {
   apiV1Nodes,
-  apiV1PersistentVolumns
+  apiV1PersistentVolumns,
+  apiV1Alpha1ComponentList
 } from "./kubernetesApiResponseSamples";
 import { V1NodeList, V1PersistentVolumeList } from "../model/models";
+import { V1Alpha1ComponentList } from "../kappModel/v1alpha1ComponentList";
 
 export const currentKubernetesAPIAddress = "http://localhost:3001";
 
@@ -31,6 +33,14 @@ export const getPersistentVolumes = async () => {
   }
 };
 
-// export const getKappResources = async () => {
-//   const res = await axios.get<k8s.Kapp.Application>
-// }
+export const getKappComponents = async () => {
+  if (USE_CACHED_VALUE) {
+    return apiV1Alpha1ComponentList.items;
+  } else {
+    const res = await axios.get<V1Alpha1ComponentList>(
+      currentKubernetesAPIAddress +
+        "/apis/core.kapp.dev/v1alpha1/componenttemplates"
+    );
+    return res.data.items;
+  }
+};

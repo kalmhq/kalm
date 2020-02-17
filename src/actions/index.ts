@@ -1,17 +1,19 @@
 import { CallHistoryMethodAction } from "connected-react-router";
 import Immutable from "immutable";
-import { ImmutableMap } from "../typings";
-import { RootState } from "../reducers";
-import { ThunkAction, ThunkDispatch } from "redux-thunk";
 import { VariantType } from "notistack";
+import { ThunkAction, ThunkDispatch } from "redux-thunk";
+import { V1Alpha1Component } from "../kappModel/v1alpha1Component";
+import { V1Node, V1PersistentVolume } from "../model/models";
+import { RootState } from "../reducers";
+import { ImmutableMap } from "../typings";
 import "./node";
 import "./notification";
-import { V1PersistentVolume, V1Node } from "../model/models";
 
 export const CREATE_COMPONENT_ACTION = "CREATE_COMPONENT_ACTION";
 export const UPDATE_COMPONENT_ACTION = "UPDATE_COMPONENT_ACTION";
 export const DELETE_COMPONENT_ACTION = "DELETE_COMPONENT_ACTION";
 export const DUPLICATE_COMPONENT_ACTION = "DUPLICATE_COMPONENT_ACTION";
+export const LOAD_COMPONENTS_ACTION = "LOAD_COMPONENTS_ACTION";
 
 export const CREATE_APPLICATION_ACTION = "CREATE_APPLICATION_ACTION";
 export const UPDATE_APPLICATION_ACTION = "UPDATE_APPLICATION_ACTION";
@@ -151,6 +153,13 @@ export interface DuplicateComponentAction {
   };
 }
 
+export interface LoadComponentsAction {
+  type: typeof LOAD_COMPONENTS_ACTION;
+  payload: {
+    components: Array<V1Alpha1Component>;
+  };
+}
+
 export interface CreateApplicationAction {
   type: typeof CREATE_APPLICATION_ACTION;
   payload: {
@@ -235,6 +244,7 @@ export type Actions =
   | CreateComponentAction
   | DeleteComponentAction
   | UpdateComponentAction
+  | LoadComponentsAction
   | CreateApplicationAction
   | DeleteApplicationAction
   | UpdateApplicationAction

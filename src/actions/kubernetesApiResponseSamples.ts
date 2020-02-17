@@ -1,5 +1,9 @@
-import { V1NodeList, V1PersistentVolumeList } from "../model/models";
-import { ObjectSerializer } from "../model/models";
+import {
+  ObjectSerializer,
+  V1NodeList,
+  V1PersistentVolumeList
+} from "../model/models";
+import { V1Alpha1ComponentList } from "../kappModel/v1alpha1ComponentList";
 
 const apiV1NodesBody = {
   kind: "NodeList",
@@ -8321,6 +8325,82 @@ const apiV1PersistentVolumnBody = {
   ]
 };
 
+const apiV1Alpha1ComponentListBody = {
+  apiVersion: "core.kapp.dev/v1alpha1",
+  items: [
+    {
+      apiVersion: "core.kapp.dev/v1alpha1",
+      kind: "ComponentTemplate",
+      metadata: {
+        annotations: {
+          "kubectl.kubernetes.io/last-applied-configuration":
+            '{"apiVersion":"core.kapp.dev/v1alpha1","kind":"ComponentTemplate","metadata":{"annotations":{},"name":"componenttemplate-sample","namespace":"default"},"spec":{"afterStart":["ls -alh /tmp/"],"beforeDestroy":["echo \\"ByeBye\\""],"beforeStart":["ls -alh /","echo \\"test\\" \\u003e /tmp/bbq","ls -alh /tmp"],"env":[{"componentPort":"api/http","name":"API_URL","prefix":"http://","suffix":"/v4"},{"name":"SOME_COMMON_ENV","sharedEnv":"SOME_COMMON_ENV"},{"name":"SOME_ENV","value":"SOME_VALUE"}],"image":"nginx:alpine","name":"web","ports":[{"containerPort":80,"name":"http","servicePort":80}],"resources":{"cpu":{"max":"100m","min":"10m"},"memory":{"max":"2G","min":"500M"}},"volumeMounts":[{"mountPath":"/tmp/","name":"nginx-config"}]}}\n'
+        },
+        creationTimestamp: "2020-02-17T03:26:53Z",
+        generation: 1,
+        name: "componenttemplate-sample",
+        namespace: "default",
+        resourceVersion: "3048",
+        selfLink:
+          "/apis/core.kapp.dev/v1alpha1/namespaces/default/componenttemplates/componenttemplate-sample",
+        uid: "35df64ba-c35d-4a3b-a377-deebeeb6bf0e"
+      },
+      spec: {
+        afterStart: ["ls -alh /tmp/"],
+        beforeDestroy: ['echo "Bye Bye"'],
+        beforeStart: ["ls -alh /", 'echo "test" > /tmp/bbq', "ls -alh /tmp"],
+        env: [
+          {
+            componentPort: "api/http",
+            name: "API_URL",
+            prefix: "http://",
+            suffix: "/v4"
+          },
+          {
+            name: "SOME_COMMON_ENV",
+            sharedEnv: "SOME_COMMON_ENV"
+          },
+          {
+            name: "SOME_ENV",
+            value: "SOME_VALUE"
+          }
+        ],
+        image: "nginx:alpine",
+        name: "web",
+        ports: [
+          {
+            containerPort: 80,
+            name: "http",
+            servicePort: 80
+          }
+        ],
+        resources: {
+          cpu: {
+            max: "100m",
+            min: "10m"
+          },
+          memory: {
+            max: "2G",
+            min: "500M"
+          }
+        },
+        volumeMounts: [
+          {
+            mountPath: "/tmp/",
+            name: "nginx-config"
+          }
+        ]
+      }
+    }
+  ],
+  kind: "ComponentTemplateList",
+  metadata: {
+    continue: "",
+    resourceVersion: "3304",
+    selfLink: "/apis/core.kapp.dev/v1alpha1/componenttemplates"
+  }
+};
+
 export const apiV1Nodes: V1NodeList = ObjectSerializer.deserialize(
   apiV1NodesBody,
   "V1NodeList"
@@ -8329,4 +8409,9 @@ export const apiV1Nodes: V1NodeList = ObjectSerializer.deserialize(
 export const apiV1PersistentVolumns: V1PersistentVolumeList = ObjectSerializer.deserialize(
   apiV1PersistentVolumnBody,
   "V1PersistentVolumeList"
+);
+
+export const apiV1Alpha1ComponentList: V1Alpha1ComponentList = ObjectSerializer.deserialize(
+  apiV1Alpha1ComponentListBody,
+  "V1Alpha1ComponentList"
 );

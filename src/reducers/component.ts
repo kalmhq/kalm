@@ -5,7 +5,8 @@ import {
   Component,
   UPDATE_COMPONENT_ACTION,
   DELETE_COMPONENT_ACTION,
-  DUPLICATE_COMPONENT_ACTION
+  DUPLICATE_COMPONENT_ACTION,
+  LOAD_COMPONENTS_ACTION
 } from "../actions";
 import { Actions } from "../actions";
 
@@ -90,6 +91,9 @@ const initialState: State = Immutable.Map({
 
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
+    case LOAD_COMPONENTS_ACTION: {
+      return (state = state.set("components", action.payload.components));
+    }
     case CREATE_COMPONENT_ACTION: {
       const components = state.get("components");
       const tmpId = components.size.toString(); // TODO fake id

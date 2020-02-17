@@ -1,11 +1,13 @@
 import {
-  CREATE_COMPONENT_ACTION,
   Component,
-  UPDATE_COMPONENT_ACTION,
+  CREATE_COMPONENT_ACTION,
   DELETE_COMPONENT_ACTION,
+  DUPLICATE_COMPONENT_ACTION,
+  LOAD_COMPONENTS_ACTION,
   ThunkResult,
-  DUPLICATE_COMPONENT_ACTION
+  UPDATE_COMPONENT_ACTION
 } from ".";
+import { getKappComponents } from "./kubernetesApi";
 
 export const createComponentAction = (
   componentValues: Component
@@ -48,6 +50,18 @@ export const deleteComponentAction = (
     dispatch({
       type: DELETE_COMPONENT_ACTION,
       payload: { componentId }
+    });
+  };
+};
+
+export const loadComponentAction = (): ThunkResult<Promise<void>> => {
+  return async dispatch => {
+    const components = await getKappComponents();
+    dispatch({
+      type: LOAD_COMPONENTS_ACTION,
+      payload: {
+        components
+      }
     });
   };
 };
