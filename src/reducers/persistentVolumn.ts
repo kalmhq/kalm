@@ -1,9 +1,10 @@
 import Immutable from "immutable";
 import { Actions, LOAD_PERSISTENT_VOLUMNS_ACTION } from "../actions";
 import { ImmutableMap } from "../typings";
+import { V1PersistentVolume } from "../model/models";
 
 export type State = ImmutableMap<{
-  persistentVolumns: kubernetes.PersistentVolumn.Item[];
+  persistentVolumns: V1PersistentVolume[];
 }>;
 
 const initialState: State = Immutable.Map({

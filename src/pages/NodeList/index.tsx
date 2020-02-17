@@ -63,7 +63,7 @@ export class NodeListRaw extends React.Component<Props, States> {
 
   getTableData = () => {
     const { nodes } = this.props;
-
+    console.log(nodes);
     const data = nodes.map((node, index) => {
       // const handleChange = () => {
       //   this.showSwitchingIsEnabledDialog(application.get("id"));
@@ -88,21 +88,21 @@ export class NodeListRaw extends React.Component<Props, States> {
       // }
 
       return {
-        name: node.metadata.name,
+        name: node.metadata!.name,
         info: (
           <>
-            <Box>Kernel: {node.status.nodeInfo.kernelVersion}</Box>
-            <Box>osImage: {node.status.nodeInfo.osImage}</Box>
+            <Box>Kernel: {node.status!.nodeInfo!.kernelVersion}</Box>
+            <Box>osImage: {node.status!.nodeInfo!.osImage}</Box>
             <Box>
               containerRuntimeVersion:{" "}
-              {node.status.nodeInfo.containerRuntimeVersion}
+              {node.status!.nodeInfo!.containerRuntimeVersion}
             </Box>
           </>
         ),
-        addresses: node.status.addresses.map(x => (
+        addresses: node.status!.addresses!.map(x => (
           <Box mr={1}>{x.address}</Box>
         )),
-        conditions: node.status.conditions.map(x => (
+        conditions: node.status!.conditions!.map(x => (
           <Box mr={1}>
             {x.type} {x.status}
           </Box>
@@ -110,12 +110,12 @@ export class NodeListRaw extends React.Component<Props, States> {
         resources: (
           <>
             <Box>
-              Cpu: {node.status.allocatable.cpu} allocatable / max{" "}
-              {node.status.capacity.cpu}
+              Cpu: {node.status!.allocatable!.cpu} allocatable / max{" "}
+              {node.status!.capacity!.cpu}
             </Box>
             <Box>
-              Memory: {node.status.allocatable.memory} allocatable / max{" "}
-              {node.status.capacity.memory}
+              Memory: {node.status!.allocatable!.memory} allocatable / max{" "}
+              {node.status!.capacity!.memory}
             </Box>
           </>
         )

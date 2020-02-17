@@ -89,10 +89,10 @@ export class DisksRaw extends React.Component<Props, States> {
       // }
 
       return {
-        name: pv.metadata.name,
-        size: pv.spec.capacity.storage,
-        accessModes: pv.spec.accessModes.join(", "),
-        status: pv.status.phase,
+        name: pv.metadata!.name,
+        size: pv.spec!.capacity!.storage,
+        accessModes: pv.spec!.accessModes!.join(", "),
+        status: pv.status!.phase,
         cost: "$5 / month",
         ref: <Link to="/applications/1/edit"> application #1 </Link>
         // info: (

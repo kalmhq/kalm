@@ -6,6 +6,7 @@ import { ThunkAction, ThunkDispatch } from "redux-thunk";
 import { VariantType } from "notistack";
 import "./node";
 import "./notification";
+import { V1PersistentVolume, V1Node } from "../model/models";
 
 export const CREATE_COMPONENT_ACTION = "CREATE_COMPONENT_ACTION";
 export const UPDATE_COMPONENT_ACTION = "UPDATE_COMPONENT_ACTION";
@@ -219,14 +220,14 @@ export interface SetNotificationMessageAction {
 export interface LoadNodesAction {
   type: typeof LOAD_NODES_ACTION;
   payload: {
-    nodes: kubernetes.Node.Item[];
+    nodes: V1Node[];
   };
 }
 
 export interface LoadPersistentVolumnsAction {
   type: typeof LOAD_PERSISTENT_VOLUMNS_ACTION;
   payload: {
-    persistentVolumns: kubernetes.PersistentVolumn.Item[];
+    persistentVolumns: V1PersistentVolume[];
   };
 }
 
