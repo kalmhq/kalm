@@ -24,6 +24,7 @@ import { Config } from "../../actions";
 import { CustomRadioGroup } from "../Basic/radio";
 import Immutable from "immutable";
 import { CustomEditor } from "./editor";
+import { CustomCascader } from "./cascader";
 
 export interface Props {
   onClose: any;
@@ -82,10 +83,20 @@ const useStyles = makeStyles((theme: Theme) => ({
     marginBottom: 12
   },
   buttons: {
-    padding: "30px 0 10px"
+    padding: "30px 0 20px"
   },
   cancelButton: {
     marginLeft: 15
+  },
+  pathAndName: {
+    width: "100%",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between"
+  },
+  nameWrapper: {
+    width: "100%",
+    marginLeft: "20px"
   }
 }));
 
@@ -96,15 +107,21 @@ function ConfigFormRaw(props: Props & InjectedFormProps<Config, Props>) {
   return (
     <div className={classes.root}>
       <form onSubmit={handleSubmit}>
-        <CustomTextField
-          // className={classes.input}
-          name="name"
-          label="Name"
-          margin
-          validate={[ValidatorRequired]}
-          helperText='The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
-          placeholder="Please type the config name"
-        />
+        <div className={classes.pathAndName}>
+          <CustomCascader />
+          <div className={classes.nameWrapper}>
+            <CustomTextField
+              // className={classes.input}
+              name="name"
+              label="Name"
+              margin
+              validate={[ValidatorRequired]}
+              helperText=""
+              placeholder="Please type the config name"
+            />
+          </div>
+        </div>
+
         <CustomRadioGroup
           name="type"
           label="Type"
