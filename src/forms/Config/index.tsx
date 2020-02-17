@@ -23,6 +23,7 @@ import { ValidatorRequired } from "../validator";
 import { Config } from "../../actions";
 import { CustomRadioGroup } from "../Basic/radio";
 import Immutable from "immutable";
+import { CustomEditor } from "./editor";
 
 export interface Props {
   onClose: any;
@@ -102,14 +103,14 @@ function ConfigFormRaw(props: Props & InjectedFormProps<Config, Props>) {
           margin
           validate={[ValidatorRequired]}
           helperText='The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
-          placeholder="Please type the component name"
+          placeholder="Please type the config name"
         />
         <CustomRadioGroup
           name="type"
           label="Type"
           options={["file", "folder"]}
         />
-        <CustomTextField
+        {/* <CustomTextField
           // className={classes.input}
           name="content"
           label="Content"
@@ -119,7 +120,8 @@ function ConfigFormRaw(props: Props & InjectedFormProps<Config, Props>) {
           multiline={true}
           rows={15}
           rowsMax={15}
-        />
+        /> */}
+        <CustomEditor />
         <div className={classes.buttons}>
           <Button variant="contained" color="primary" type="submit">
             Submit

@@ -8,7 +8,8 @@ import {
   BaseFieldProps,
   WrappedFieldMetaProps
 } from "redux-form";
-import { FormLabel, FormControl } from "@material-ui/core";
+import FormControl from "@material-ui/core/FormControl";
+import FormLabel from "@material-ui/core/FormLabel";
 
 interface Props {
   name: string;
@@ -18,9 +19,12 @@ interface Props {
 
 export const CustomRadioGroup = (props: BaseFieldProps & Props) => {
   return (
-    // <FormControl component="fieldset">
-    <Field {...props} component={renderRadioGroup} />
-    // </FormControl>
+    <FormControl component="fieldset" margin="normal">
+      {/* <FormLabel component="legend" style={{ marginBottom: "8px" }}>
+        {props.label}
+      </FormLabel> */}
+      <Field {...props} component={renderRadioGroup} />
+    </FormControl>
   );
 };
 
