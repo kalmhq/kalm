@@ -59,12 +59,6 @@ type ComponentTemplateSpec struct {
 	VolumeMounts []v1.VolumeMount `json:"volumeMounts,omitempty"`
 }
 
-// ComponentTemplateStatus defines the observed state of ComponentTemplate
-type ComponentTemplateStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-}
-
 // +kubebuilder:object:root=true
 
 // ComponentTemplate is the Schema for the componenttemplates API
@@ -72,8 +66,7 @@ type ComponentTemplate struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   ComponentTemplateSpec   `json:"spec,omitempty"`
-	Status ComponentTemplateStatus `json:"status,omitempty"`
+	Spec ComponentTemplateSpec `json:"spec,omitempty"`
 }
 
 // +kubebuilder:object:root=true
