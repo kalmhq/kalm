@@ -176,7 +176,7 @@ class List extends React.PureComponent<Props, State> {
             </div>
 
             {currentConfig.get("type") === "file" ? (
-              <SyntaxHighlighter>
+              <SyntaxHighlighter style={monokai}>
                 {currentConfig.get("content")}
               </SyntaxHighlighter>
             ) : (
