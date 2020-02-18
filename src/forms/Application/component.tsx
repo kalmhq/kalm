@@ -20,7 +20,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { WrappedFieldArrayProps } from "redux-form";
 import { Field, FieldArray, formValueSelector } from "redux-form/immutable";
-import { Component, SharedEnv } from "../../actions";
+import { ComponentTemplate, SharedEnv } from "../../actions";
 import { RootState } from "../../reducers";
 import { RenderAutoCompleteSelect } from "../Basic";
 import { EnvTypeExternal, EnvTypeStatic } from "../Basic/env";
@@ -57,7 +57,7 @@ interface FieldArrayComponentHackType {
   component: any;
 }
 interface Props
-  extends WrappedFieldArrayProps<Component>,
+  extends WrappedFieldArrayProps<ComponentTemplate>,
     WithStyles<typeof styles>,
     stateProps,
     FieldArrayComponentHackType {}

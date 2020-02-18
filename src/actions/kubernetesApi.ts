@@ -8,7 +8,7 @@ import { V1NodeList, V1PersistentVolumeList } from "../model/models";
 import { V1Alpha1ComponentList } from "../kappModel/v1alpha1ComponentList";
 import { convertFromCRDComponentTemplate } from "../convertors/ComponentTemplate";
 import { V1Alpha1Component } from "../kappModel/v1alpha1Component";
-import { Component } from ".";
+import { ComponentTemplate } from ".";
 
 export const currentKubernetesAPIAddress = "http://localhost:3001";
 
@@ -47,7 +47,7 @@ export const getKappComponentTemplates = async () => {
 
 export const updateKappComonentTemplate = async (
   component: V1Alpha1Component
-): Promise<Component> => {
+): Promise<ComponentTemplate> => {
   const res = await axios.put(
     currentKubernetesAPIAddress +
       `/apis/core.kapp.dev/v1alpha1/componenttemplates/${

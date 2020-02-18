@@ -3,7 +3,7 @@ import { push } from "connected-react-router";
 import React from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
-import { Actions, Component, newEmptyComponent } from "../../actions";
+import { Actions, ComponentTemplate, newEmptyComponent } from "../../actions";
 import { createComponentTemplateAction } from "../../actions/component";
 import { setSuccessNotificationAction } from "../../actions/notification";
 import { ComponentTemplateForm } from "../../forms/Component";
@@ -22,7 +22,7 @@ interface Props extends WithStyles<typeof styles> {
 }
 
 class ComponentTemplateNewRaw extends React.PureComponent<Props> {
-  private submit = async (component: Component) => {
+  private submit = async (component: ComponentTemplate) => {
     const { dispatch } = this.props;
     await dispatch(createComponentTemplateAction(component));
     await dispatch(

@@ -1,5 +1,5 @@
 import {
-  Component,
+  ComponentTemplate,
   CREATE_COMPONENT,
   DELETE_COMPONENT,
   DUPLICATE_COMPONENT,
@@ -15,7 +15,7 @@ import {
 import { convertToCRDComponentTemplate } from "../convertors/ComponentTemplate";
 
 export const createComponentTemplateAction = (
-  component: Component
+  component: ComponentTemplate
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({
@@ -38,7 +38,7 @@ export const duplicateComponentAction = (
 
 export const updateComponentAction = (
   componentId: string,
-  componentRaw: Component
+  componentRaw: ComponentTemplate
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
     const component = await updateKappComonentTemplate(

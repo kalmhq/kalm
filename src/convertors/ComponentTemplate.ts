@@ -1,11 +1,11 @@
 import { V1Alpha1Component } from "../kappModel/v1alpha1Component";
-import { Component } from "../actions";
+import { ComponentTemplate } from "../actions";
 import { Map, List } from "immutable";
 import { ObjectSerializer } from "../model/models";
 
 export const convertFromCRDComponentTemplate = (
   c: V1Alpha1Component
-): Component => {
+): ComponentTemplate => {
   console.log(c);
   const spec = c.spec!;
   const metadata = c.metadata!;
@@ -35,7 +35,7 @@ export const convertFromCRDComponentTemplate = (
       )
     : List([]);
 
-  const res: Component = Map({
+  const res: ComponentTemplate = Map({
     id: metadata.name!,
     name: metadata.name!,
     image: spec.image,
@@ -52,7 +52,7 @@ export const convertFromCRDComponentTemplate = (
 };
 
 export const convertToCRDComponentTemplate = (
-  c: Component
+  c: ComponentTemplate
 ): V1Alpha1Component => {
   return ObjectSerializer.deserialize(
     {

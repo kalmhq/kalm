@@ -11,7 +11,7 @@ import Typography from "@material-ui/core/Typography";
 import React from "react";
 import { InjectedFormProps } from "redux-form";
 import { FieldArray, reduxForm, formValueSelector } from "redux-form/immutable";
-import { Component, Application, SharedEnv } from "../../actions";
+import { ComponentTemplate, Application, SharedEnv } from "../../actions";
 import { CustomTextField } from "../Basic";
 import { ValidatorRequired } from "../validator";
 import { Components } from "./component";
@@ -40,7 +40,7 @@ const styles = (theme: Theme) =>
 
 const mapStateToProps = (state: RootState) => {
   const selector = formValueSelector("application");
-  const formComponents: Component[] = selector(state, "components");
+  const formComponents: ComponentTemplate[] = selector(state, "components");
   const sharedEnv: SharedEnv[] = selector(state, "sharedEnv");
 
   return {

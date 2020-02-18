@@ -2,7 +2,7 @@ import Immutable from "immutable";
 import { ImmutableMap } from "../typings";
 import {
   CREATE_COMPONENT,
-  Component,
+  ComponentTemplate,
   UPDATE_COMPONENT,
   DELETE_COMPONENT,
   DUPLICATE_COMPONENT,
@@ -12,7 +12,7 @@ import {
 import { Actions } from "../actions";
 
 export type State = ImmutableMap<{
-  components: Immutable.OrderedMap<string, Component>;
+  components: Immutable.OrderedMap<string, ComponentTemplate>;
   isListLoading: boolean;
   isListFirstLoaded: boolean;
 }>;
@@ -103,7 +103,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
     case LOAD_COMPONENT_TEMPLATES_PENDING:
       return state.set("isListLoading", true);
     case LOAD_COMPONENT_TEMPLATES_FULFILLED: {
-      let om = Immutable.OrderedMap<string, Component>();
+      let om = Immutable.OrderedMap<string, ComponentTemplate>();
 
       action.payload.components.forEach(x => {
         om = om.set(x.get("id"), x);

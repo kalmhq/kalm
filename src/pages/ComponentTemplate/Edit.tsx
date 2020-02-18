@@ -14,7 +14,7 @@ import {
   ComponentTemplateDataWrapper,
   WithComponentTemplatesDataProps
 } from "./DataWrapper";
-import { Component } from "../../actions";
+import { ComponentTemplate } from "../../actions";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -29,7 +29,7 @@ interface Props
     WithStyles<typeof styles> {}
 
 class ComponentTemplateEditRaw extends React.PureComponent<Props> {
-  private submit = async (component: Component) => {
+  private submit = async (component: ComponentTemplate) => {
     const { dispatch, match } = this.props;
     const { componentId } = match!.params;
 

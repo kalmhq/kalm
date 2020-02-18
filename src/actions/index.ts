@@ -32,7 +32,7 @@ export const LOAD_PERSISTENT_VOLUMNS = "LOAD_PERSISTENT_VOLUMNS";
 
 export const SET_NOTIFICATION_MESSAGE = "SET_NOTIFICATION_MESSAGE";
 
-export type Component = ImmutableMap<{
+export type ComponentTemplate = ImmutableMap<{
   id: string;
   name: string;
   image: string;
@@ -67,7 +67,7 @@ export type Component = ImmutableMap<{
   resourceVersion?: string;
 }>;
 
-export const newEmptyComponent = (): Component => {
+export const newEmptyComponent = (): ComponentTemplate => {
   return Immutable.Map({
     id: "",
     name: "",
@@ -115,7 +115,7 @@ export type Application = ImmutableMap<{
   name: string;
   isEnabled: boolean;
   sharedEnv: Immutable.List<SharedEnv>;
-  components: Immutable.List<Component>;
+  components: Immutable.List<ComponentTemplate>;
   status: ApplicationStatus;
 }>;
 
@@ -130,7 +130,7 @@ export type Config = ImmutableMap<{
 export interface createComponentTemplateAction {
   type: typeof CREATE_COMPONENT;
   payload: {
-    component: Component;
+    component: ComponentTemplate;
   };
 }
 
@@ -138,7 +138,7 @@ export interface UpdateComponentAction {
   type: typeof UPDATE_COMPONENT;
   payload: {
     componentId: string;
-    component: Component;
+    component: ComponentTemplate;
   };
 }
 
@@ -162,7 +162,7 @@ export interface LoadComponentTemplatesPendingAction {
 export interface LoadComponentTemplatesFulfilledAction {
   type: typeof LOAD_COMPONENT_TEMPLATES_FULFILLED;
   payload: {
-    components: Array<Component>;
+    components: Array<ComponentTemplate>;
   };
 }
 

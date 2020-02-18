@@ -22,7 +22,7 @@ import SyntaxHighlighter from "react-syntax-highlighter";
 import { monokai } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import { InjectedFormProps } from "redux-form";
 import { getFormValues, reduxForm } from "redux-form/immutable";
-import { Component } from "../../actions";
+import { ComponentTemplate } from "../../actions";
 import { convertToCRDComponentTemplate } from "../../convertors/ComponentTemplate";
 import { RootState } from "../../reducers";
 import { CustomTextField } from "../Basic";
@@ -57,7 +57,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 const mapStateToProps = (state: RootState) => {
-  const values = getFormValues("component")(state) as Component;
+  const values = getFormValues("component")(state) as ComponentTemplate;
   return {
     values
   };
@@ -125,7 +125,7 @@ const StyledTab = withStyles((theme: Theme) =>
 
 function ComponentTemplateFormRaw(
   props: Props &
-    InjectedFormProps<Component, Props> &
+    InjectedFormProps<ComponentTemplate, Props> &
     ReturnType<typeof mapStateToProps>
 ) {
   const { handleSubmit, values } = props;
@@ -332,7 +332,7 @@ function ComponentTemplateFormRaw(
   );
 }
 
-export const ComponentTemplateForm = reduxForm<Component, Props>({
+export const ComponentTemplateForm = reduxForm<ComponentTemplate, Props>({
   form: "component",
   onSubmitFail: console.log
 })(connect(mapStateToProps)(ComponentTemplateFormRaw));
