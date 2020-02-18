@@ -1,17 +1,19 @@
-import { V1AlphaComponentEnvVar } from "./v1alpha1ComponentEnvVar";
+import { V1Alpha1ComponentEnvVar } from "./v1alpha1ComponentEnvVar";
 import { V1Alpha1ComponentPort } from "./v1alpha1ComponentPort";
-import { V1Alpha1ComponentResource } from "./v1alpha1ComponentResource";
 import { V1Alpha1ComponentVolumnMount } from "./v1alpha1ComponentVolumnMount";
+import { V1ResourceRule } from "../model/models";
 
 export class V1Alpha1ComponentSpec {
   "afterStart"?: Array<string>;
   "beforeDestroy"?: Array<string>;
   "beforeStart"?: Array<string>;
-  "env"?: Array<V1AlphaComponentEnvVar>;
+  "env"?: Array<V1Alpha1ComponentEnvVar>;
   "image": string;
   "name": string;
   "ports"?: Array<V1Alpha1ComponentPort>;
-  "resources"?: V1Alpha1ComponentResource;
+  "cpu"?: string;
+  "memory"?: string;
+  "command"?: Array<string>;
   "volumeMounts"?: Array<V1Alpha1ComponentVolumnMount>;
 
   static discriminator: string | undefined = undefined;
@@ -39,7 +41,7 @@ export class V1Alpha1ComponentSpec {
     {
       name: "env",
       baseName: "env",
-      type: "Array<V1AlphaComponentEnvVar>"
+      type: "Array<V1Alpha1ComponentEnvVar>"
     },
     {
       name: "image",
@@ -52,14 +54,24 @@ export class V1Alpha1ComponentSpec {
       type: "string"
     },
     {
+      name: "command",
+      baseName: "command",
+      type: "Array<string>"
+    },
+    {
       name: "ports",
       baseName: "ports",
       type: "Array<V1Alpha1ComponentPort>"
     },
     {
-      name: "resources",
-      baseName: "resources",
-      type: "V1Alpha1ComponentResource"
+      name: "cpu",
+      baseName: "cpu",
+      type: "string"
+    },
+    {
+      name: "memory",
+      baseName: "memory",
+      type: "string"
     },
     {
       name: "volumeMounts",

@@ -1,10 +1,7 @@
-export class V1AlphaComponentEnvVar {
+export class V1Alpha1ComponentEnvVar {
   "name": string;
+  "type": string;
   "value"?: string;
-  "sharedEnv"?: string;
-  "prefix"?: string;
-  "suffix"?: string;
-  "componentPort"?: string;
 
   static discriminator: string | undefined = undefined;
 
@@ -24,28 +21,13 @@ export class V1AlphaComponentEnvVar {
       type: "string"
     },
     {
-      name: "sharedEnv",
-      baseName: "sharedEnv",
-      type: "string"
-    },
-    {
-      name: "prefix",
-      baseName: "prefix",
-      type: "string"
-    },
-    {
-      name: "suffix",
-      baseName: "suffix",
-      type: "string"
-    },
-    {
-      name: "componentPort",
-      baseName: "componentPort",
+      name: "type",
+      baseName: "type",
       type: "string"
     }
   ];
 
   static getAttributeTypeMap() {
-    return V1AlphaComponentEnvVar.attributeTypeMap;
+    return V1Alpha1ComponentEnvVar.attributeTypeMap;
   }
 }

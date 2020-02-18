@@ -1,4 +1,11 @@
-import { Button, Grid, Paper } from "@material-ui/core";
+import {
+  Button,
+  Grid,
+  Paper,
+  ListItem,
+  List as MList,
+  ListItemText
+} from "@material-ui/core";
 
 import Box from "@material-ui/core/Box";
 import { makeStyles, Theme } from "@material-ui/core/styles";
@@ -18,6 +25,7 @@ import { connect } from "react-redux";
 
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { monokai } from "react-syntax-highlighter/dist/esm/styles/hljs";
+import { List } from "immutable";
 
 export interface Props {}
 
@@ -62,14 +70,14 @@ function ComponentFormRaw(
     InjectedFormProps<Component, Props> &
     ReturnType<typeof mapStateToProps>
 ) {
-  const { handleSubmit } = props;
+  const { handleSubmit, values } = props;
   const classes = useStyles();
   const [value, setValue] = React.useState(0);
 
   const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
     setValue(newValue);
   };
-
+  const isEdit = !!values.get("resourceVersion");
   return (
     <div className={classes.root}>
       <form onSubmit={handleSubmit}>
@@ -99,7 +107,12 @@ function ComponentFormRaw(
                 label="Name"
                 margin
                 validate={[ValidatorRequired]}
-                helperText='The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
+                disabled={isEdit}
+                helperText={
+                  isEdit
+                    ? "Name can't be changed."
+                    : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
+                }
                 placeholder="Please type the component name"
               />
               <CustomTextField
@@ -131,6 +144,30 @@ function ComponentFormRaw(
               component. An environment variable is made up of a name/value
               pair, it also support combine a dynamic value associated with
               other component later in a real running application. Learn More.
+              <MList dense={true}>
+                <ListItem>
+                  <ListItemText
+                    primary="Static"
+                    secondary={"A constant value environment variable."}
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText
+                    primary="External"
+                    secondary={
+                      "Value will be set in an application later. External variable with the same name will be consistent across all components in the same application."
+                    }
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText
+                    primary="Linked"
+                    secondary={
+                      "Value will be set in an application later. Linked variable can only be set as another component exposed port address in the same application."
+                    }
+                  />
+                </ListItem>
+              </MList>
             </Typography>
             <Paper
               elevation={4}

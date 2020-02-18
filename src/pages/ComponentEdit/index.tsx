@@ -9,7 +9,10 @@ import { RootState } from "../../reducers";
 import { push } from "connected-react-router";
 import { match } from "react-router-dom";
 import { withStyles, createStyles, Theme, WithStyles } from "@material-ui/core";
-import { setSuccessNotificationAction } from "../../actions/notification";
+import {
+  setSuccessNotificationAction,
+  setErrorNotificationAction
+} from "../../actions/notification";
 
 const mapStateToProps = (
   state: RootState,
@@ -40,9 +43,14 @@ interface Props extends StateProps, WithStyles<typeof styles> {
 class ComponentEdit extends React.PureComponent<Props> {
   private submit = async (component: Component) => {
     const { dispatch, componentId } = this.props;
-    await dispatch(updateComponentAction(componentId, component));
-    await dispatch(setSuccessNotificationAction("Edit component successfully"));
-    await dispatch(push("/components"));
+    try {
+      await dispatch(updateComponentAction(componentId, component));
+
+      dispatch(setSuccessNotificationAction("Component update successful"));
+      dispatch(push("/components"));
+    } catch (e) {
+      dispatch(setErrorNotificationAction("Component update failed"));
+    }
   };
 
   public render() {

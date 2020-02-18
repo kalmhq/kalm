@@ -13,12 +13,12 @@ import AddIcon from "@material-ui/icons/Add";
 
 export const EnvTypeExternal = "external";
 export const EnvTypeStatic = "static";
-export const EnvTypeShared = "shared";
+export const EnvTypeLinked = "linked";
 
 type EnvType =
   | typeof EnvTypeExternal
   | typeof EnvTypeStatic
-  | typeof EnvTypeShared;
+  | typeof EnvTypeLinked;
 
 type EnvValue = ImmutableMap<{
   name: string;
@@ -50,9 +50,10 @@ const renderEnvs = ({
       <div>{submitFailed && error && <span>{error}</span>}</div>
       {fields.map((field, index) => {
         const currentEnv = fields.get(index);
-        const isCurrentEnvExternal =
-          !!currentEnv.get("type") &&
-          currentEnv.get("type") === EnvTypeExternal;
+        const currentEnvDoesNotRequireValue =
+          (!!currentEnv.get("type") &&
+            currentEnv.get("type") === EnvTypeExternal) ||
+          currentEnv.get("type") === EnvTypeLinked;
 
         return (
           <div key={index}>
@@ -66,6 +67,7 @@ const renderEnvs = ({
                 >
                   <MenuItem value={EnvTypeStatic}>Static</MenuItem>
                   <MenuItem value={EnvTypeExternal}>External</MenuItem>
+                  <MenuItem value={EnvTypeLinked}>Linked</MenuItem>
                 </Field>
               </Grid>
               <Grid item xs={3}>
@@ -79,13 +81,15 @@ const renderEnvs = ({
               </Grid>
               <Grid item xs={6}>
                 <Field
-                  disabled={isCurrentEnvExternal}
-                  validate={!isCurrentEnvExternal ? [ValidatorRequired] : []}
+                  disabled={currentEnvDoesNotRequireValue}
+                  validate={
+                    !currentEnvDoesNotRequireValue ? [ValidatorRequired] : []
+                  }
                   name={`${field}.value`}
                   component={renderTextField}
                   label={
-                    isCurrentEnvExternal
-                      ? "DISABLED. External will be configured later."
+                    currentEnvDoesNotRequireValue
+                      ? "This env value will be configured later in an application."
                       : "Value"
                   }
                 ></Field>

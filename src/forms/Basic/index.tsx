@@ -60,6 +60,7 @@ interface Props {
   multiline?: boolean;
   rows?: number;
   rowsMax?: number;
+  disabled?: boolean;
 }
 
 export const CustomTextField = (props: BaseFieldProps & Props) => {

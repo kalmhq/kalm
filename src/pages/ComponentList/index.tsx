@@ -1,36 +1,34 @@
-import React from "react";
-import { BasePage } from "../BasePage";
-import MaterialTable from "material-table";
-import { connect, DispatchProp } from "react-redux";
-import { RootState } from "../../reducers";
 import {
-  IconButton,
-  Paper,
-  WithStyles,
-  Theme,
-  createStyles,
-  withStyles,
   Box,
-  Tooltip
+  createStyles,
+  IconButton,
+  Theme,
+  Tooltip,
+  WithStyles,
+  withStyles
 } from "@material-ui/core";
-import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@material-ui/icons/Delete";
+import EditIcon from "@material-ui/icons/Edit";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
+import { Alert } from "@material-ui/lab";
 import { push } from "connected-react-router";
-import {
-  deleteComponentAction,
-  duplicateComponentAction
-} from "../../actions/component";
+import MaterialTable from "material-table";
+import React from "react";
+import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "../../actions";
-import { DiskTypeNew } from "../../forms/Basic/disk";
-import { Alert } from "@material-ui/lab";
-import { ConfirmDialog } from "../../widgets/ConfirmDialog";
-import { stringify } from "querystring";
 import {
-  setSuccessNotificationAction,
-  setErrorNotificationAction
+  deleteComponentAction,
+  duplicateComponentAction,
+  loadComponentAction
+} from "../../actions/component";
+import {
+  setErrorNotificationAction,
+  setSuccessNotificationAction
 } from "../../actions/notification";
+import { RootState } from "../../reducers";
+import { ConfirmDialog } from "../../widgets/ConfirmDialog";
+import { BasePage } from "../BasePage";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -71,6 +69,10 @@ class List extends React.PureComponent<Props, States> {
   public onCreate = () => {
     this.props.dispatch(push(`/components/new`));
   };
+
+  componentWillMount() {
+    this.props.dispatch(loadComponentAction());
+  }
 
   private closeConfirmDialog = () => {
     this.setState({
@@ -147,7 +149,7 @@ class List extends React.PureComponent<Props, States> {
               .get("ports")
               .map(port => {
                 return (
-                  <span>
+                  <span key={port.get("name")}>
                     {port.get("containerPort")} -> {port.get("servicePort")}
                   </span>
                 );
@@ -159,7 +161,7 @@ class List extends React.PureComponent<Props, States> {
           .get("disk")
           .map(disk => {
             return (
-              <div>
+              <div key={disk.get("name")}>
                 <strong>{disk.get("size")}M</strong> mount at{" "}
                 <strong>{disk.get("path")}</strong>
               </div>

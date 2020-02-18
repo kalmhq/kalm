@@ -2,7 +2,6 @@ import { CallHistoryMethodAction } from "connected-react-router";
 import Immutable from "immutable";
 import { VariantType } from "notistack";
 import { ThunkAction, ThunkDispatch } from "redux-thunk";
-import { V1Alpha1Component } from "../kappModel/v1alpha1Component";
 import { V1Node, V1PersistentVolume } from "../model/models";
 import { RootState } from "../reducers";
 import { ImmutableMap } from "../typings";
@@ -63,6 +62,7 @@ export type Component = ImmutableMap<{
       storageClass: string;
     }>
   >;
+  resourceVersion?: string;
 }>;
 
 export const newEmptyComponent = (): Component => {
@@ -128,7 +128,7 @@ export type Config = ImmutableMap<{
 export interface CreateComponentAction {
   type: typeof CREATE_COMPONENT_ACTION;
   payload: {
-    componentValues: Component;
+    component: Component;
   };
 }
 
@@ -136,7 +136,7 @@ export interface UpdateComponentAction {
   type: typeof UPDATE_COMPONENT_ACTION;
   payload: {
     componentId: string;
-    componentValues: Component;
+    component: Component;
   };
 }
 
@@ -156,7 +156,7 @@ export interface DuplicateComponentAction {
 export interface LoadComponentsAction {
   type: typeof LOAD_COMPONENTS_ACTION;
   payload: {
-    components: Array<V1Alpha1Component>;
+    components: Array<Component>;
   };
 }
 

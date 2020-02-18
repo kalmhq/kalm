@@ -6,6 +6,9 @@ import {
 } from "./kubernetesApiResponseSamples";
 import { V1NodeList, V1PersistentVolumeList } from "../model/models";
 import { V1Alpha1ComponentList } from "../kappModel/v1alpha1ComponentList";
+import { convertFromCRDComponentTemplate } from "../convertors/ComponentTemplate";
+import { V1Alpha1Component } from "../kappModel/v1alpha1Component";
+import { Component } from ".";
 
 export const currentKubernetesAPIAddress = "http://localhost:3001";
 
@@ -34,13 +37,24 @@ export const getPersistentVolumes = async () => {
 };
 
 export const getKappComponents = async () => {
-  if (USE_CACHED_VALUE) {
-    return apiV1Alpha1ComponentList.items;
-  } else {
-    const res = await axios.get<V1Alpha1ComponentList>(
-      currentKubernetesAPIAddress +
-        "/apis/core.kapp.dev/v1alpha1/componenttemplates"
-    );
-    return res.data.items;
-  }
+  const res = await axios.get<V1Alpha1ComponentList>(
+    currentKubernetesAPIAddress +
+      "/apis/core.kapp.dev/v1alpha1/componenttemplates"
+  );
+  console.log(res.data.items[0]);
+  return res.data.items.map(convertFromCRDComponentTemplate);
+};
+
+export const updateKappComonentTemplate = async (
+  component: V1Alpha1Component
+): Promise<Component> => {
+  const res = await axios.put(
+    currentKubernetesAPIAddress +
+      `/apis/core.kapp.dev/v1alpha1/componenttemplates/${
+        component.metadata!.name
+      }`,
+    component
+  );
+
+  return convertFromCRDComponentTemplate(res.data);
 };
