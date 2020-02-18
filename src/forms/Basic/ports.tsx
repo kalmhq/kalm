@@ -9,16 +9,10 @@ import { RenderSelectField, renderTextField } from ".";
 import { NormalizePort } from "../normalizer";
 import { ValidatorRequired } from "../validator";
 import AddIcon from "@material-ui/icons/Add";
+import { newEmptyComponentTemplatePort } from "../../actions";
 
 export const portTypeTCP = "TCP";
 export const portTypeUDP = "UDP";
-
-const generateNewPort = () => ({
-  name: "",
-  protocol: portTypeTCP,
-  containerPort: "",
-  servicePort: ""
-});
 
 const renderPorts = ({
   fields,
@@ -111,7 +105,7 @@ const renderPorts = ({
         variant="outlined"
         color="primary"
         size="small"
-        onClick={() => fields.push(generateNewPort())}
+        onClick={() => fields.push(newEmptyComponentTemplatePort())}
         startIcon={<AddIcon />}
       >
         Add Port

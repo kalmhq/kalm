@@ -32,6 +32,13 @@ export const LOAD_PERSISTENT_VOLUMNS = "LOAD_PERSISTENT_VOLUMNS";
 
 export const SET_NOTIFICATION_MESSAGE = "SET_NOTIFICATION_MESSAGE";
 
+export type ComponentTemplatePort = ImmutableMap<{
+  name: string;
+  protocol: string;
+  containerPort: number;
+  servicePort: number;
+}>;
+
 export type ComponentTemplate = ImmutableMap<{
   id: string;
   name: string;
@@ -44,14 +51,7 @@ export type ComponentTemplate = ImmutableMap<{
       value: string;
     }>
   >;
-  ports: Immutable.List<
-    ImmutableMap<{
-      name: string;
-      protocol: string;
-      containerPort: number;
-      servicePort: number;
-    }>
-  >;
+  ports: Immutable.List<ComponentTemplatePort>;
   cpu: number;
   memory: number;
   disk: Immutable.List<
@@ -78,6 +78,15 @@ export const newEmptyComponent = (): ComponentTemplate => {
     disk: Immutable.List([]),
     cpu: 0,
     memory: 0
+  });
+};
+
+export const newEmptyComponentTemplatePort = (): ComponentTemplatePort => {
+  return Immutable.Map({
+    name: "",
+    protocol: "TCP",
+    containerPort: 3000,
+    servicePort: 80
   });
 };
 

@@ -54,6 +54,7 @@ export const convertFromCRDComponentTemplate = (
 export const convertToCRDComponentTemplate = (
   c: ComponentTemplate
 ): V1Alpha1Component => {
+  console.log(c.get("ports").toArray());
   return ObjectSerializer.deserialize(
     {
       apiVersion: "core.kapp.dev/v1alpha1",
