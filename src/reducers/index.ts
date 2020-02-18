@@ -3,7 +3,9 @@ import { reducer as formReducer } from "redux-form/immutable";
 import { FormState } from "redux-form";
 import test from "./test";
 import notification, { State as NotificationState } from "./notification";
-import components, { State as ComponentState } from "./component";
+import componentTemplates, {
+  State as ComponentTemplateState
+} from "./componentTemplate";
 import applications, { State as ApplicationState } from "./application";
 import nodes, { State as NodesState } from "./node";
 import persistentVolumns, {
@@ -15,7 +17,7 @@ import { History, LocationState } from "history";
 import { ImmutableMap } from "../typings";
 
 export type RootState = ImmutableMap<{
-  components: ComponentState;
+  components: ComponentTemplateState;
   applications: ApplicationState;
   configs: ConfigState;
   router: RouterState<LocationState>;
@@ -34,7 +36,7 @@ export default (history: History<LocationState>) =>
     form: formReducer,
     nodes,
     router: connectRouter(history),
-    components,
+    components: componentTemplates,
     persistentVolumns,
     applications,
     configs,
