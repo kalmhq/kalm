@@ -15,21 +15,20 @@ import MenuIcon from "@material-ui/icons/Menu";
 import clsx from "clsx";
 import React from "react";
 import { Route, Switch } from "react-router-dom";
+import ApplicationEdit from "./pages/ApplicationEdit";
 import ApplictionList from "./pages/ApplicationList";
 import ApplicationNew from "./pages/ApplicationNew";
-import ApplicationEdit from "./pages/ApplicationEdit";
-import ComponentEdit from "./pages/ComponentEdit";
+import { ComponentTemplateEdit } from "./pages/ComponentTemplateEdit";
 import { ComponentTemplateList } from "./pages/ComponentTemplateList";
 import { ComponentTemplateNew } from "./pages/ComponentTemplateNew";
 import ConfigList from "./pages/ConfigList";
 import Dashboard from "./pages/Dashboard";
-import InstallPage from "./pages/Install";
-import { Sidenav, SidenavGroupProps } from "./widgets/Sidenav";
-import { NotificationComponent } from "./widgets/Notification";
-import { Box } from "@material-ui/core";
-import { NoMatch, Page404 } from "./pages/NoMatch";
-import { NodeList } from "./pages/NodeList";
 import { Disks } from "./pages/Disks";
+import InstallPage from "./pages/Install";
+import { NodeList } from "./pages/NodeList";
+import { NoMatch, Page404 } from "./pages/NoMatch";
+import { NotificationComponent } from "./widgets/Notification";
+import { Sidenav, SidenavGroupProps } from "./widgets/Sidenav";
 
 const sidenavGroups: SidenavGroupProps[] = [
   {
@@ -315,7 +314,7 @@ export default function MiniDrawer() {
             <Route
               exact
               path="/components/:componentId/edit"
-              component={ComponentEdit}
+              component={ComponentTemplateEdit}
             ></Route>
             <Route
               exact

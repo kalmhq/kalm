@@ -40,7 +40,7 @@ interface Props extends StateProps, WithStyles<typeof styles> {
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
 }
 
-class ComponentEdit extends React.PureComponent<Props> {
+class ComponentTemplateEditRaw extends React.PureComponent<Props> {
   private submit = async (component: Component) => {
     const { dispatch, componentId } = this.props;
     try {
@@ -68,4 +68,6 @@ class ComponentEdit extends React.PureComponent<Props> {
   }
 }
 
-export default withStyles(styles)(connect(mapStateToProps)(ComponentEdit));
+export const ComponentTemplateEdit = withStyles(styles)(
+  connect(mapStateToProps)(ComponentTemplateEditRaw)
+);
