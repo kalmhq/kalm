@@ -30,7 +30,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
     case LOAD_COMPONENT_TEMPLATES_FULFILLED: {
       let om = Immutable.OrderedMap<string, ComponentTemplate>();
 
-      action.payload.components.forEach(x => {
+      action.payload.componentTemplates.forEach(x => {
         om = om.set(x.get("id"), x);
       });
 
@@ -42,13 +42,13 @@ const reducer = (state: State = initialState, action: Actions): State => {
     case CREATE_COMPONENT: {
       const components = state.get("componentTemplates");
       const tmpId = components.size.toString(); // TODO fake id
-      let component = action.payload.component;
-      component = component.set("id", tmpId);
+      let componentTemplate = action.payload.componentTemplate;
+      componentTemplate = componentTemplate.set("id", tmpId);
       state = state.set(
         "componentTemplates",
         components.set(
           tmpId, // TODO fake id
-          component
+          componentTemplate
         )
       );
       break;
@@ -56,9 +56,12 @@ const reducer = (state: State = initialState, action: Actions): State => {
     case UPDATE_COMPONENT: {
       const components = state.get("componentTemplates");
       const id = action.payload.componentTemplateId;
-      let component = action.payload.component;
-      component = component.set("id", id);
-      state = state.set("componentTemplates", components.set(id, component));
+      let componentTemplate = action.payload.componentTemplate;
+      componentTemplate = componentTemplate.set("id", id);
+      state = state.set(
+        "componentTemplates",
+        components.set(id, componentTemplate)
+      );
       break;
     }
     case DELETE_COMPONENT: {
@@ -69,21 +72,26 @@ const reducer = (state: State = initialState, action: Actions): State => {
       break;
     }
     case DUPLICATE_COMPONENT: {
-      const components = state.get("componentTemplates");
-      const tmpId = components.size.toString(); // TODO fake id
+      const componentTemplates = state.get("componentTemplates");
+      const tmpId = componentTemplates.size.toString(); // TODO fake id
 
-      let component = components.get(action.payload.componentTemplateId)!;
-      component = component.set("id", tmpId);
+      let componentTemplate = componentTemplates.get(
+        action.payload.componentTemplateId
+      )!;
+      componentTemplate = componentTemplate.set("id", tmpId);
 
       let i = 0;
       let name = "";
       do {
         i += 1;
-        name = `${component.get("name")}-duplicate-${i}`;
-      } while (components.find(x => x.get("name") === name));
+        name = `${componentTemplate.get("name")}-duplicate-${i}`;
+      } while (componentTemplates.find(x => x.get("name") === name));
 
-      component = component.set("name", name);
-      state = state.set("componentTemplates", components.set(tmpId, component));
+      componentTemplate = componentTemplate.set("name", name);
+      state = state.set(
+        "componentTemplates",
+        componentTemplates.set(tmpId, componentTemplate)
+      );
       break;
     }
   }

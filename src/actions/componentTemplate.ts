@@ -15,12 +15,12 @@ import {
 import { convertToCRDComponentTemplate } from "../convertors/ComponentTemplate";
 
 export const createComponentTemplateAction = (
-  component: ComponentTemplate
+  componentTemplate: ComponentTemplate
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({
       type: CREATE_COMPONENT,
-      payload: { component }
+      payload: { componentTemplate }
     });
   };
 };
@@ -38,16 +38,16 @@ export const duplicateComponentAction = (
 
 export const updateComponentAction = (
   componentTemplateId: string,
-  componentRaw: ComponentTemplate
+  componentTemplateRaw: ComponentTemplate
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
-    const component = await updateKappComonentTemplate(
-      convertToCRDComponentTemplate(componentRaw)
+    const componentTemplate = await updateKappComonentTemplate(
+      convertToCRDComponentTemplate(componentTemplateRaw)
     );
 
     dispatch({
       type: UPDATE_COMPONENT,
-      payload: { componentTemplateId, component }
+      payload: { componentTemplateId, componentTemplate }
     });
   };
 };
@@ -67,12 +67,12 @@ export const loadComponentTemplatesAction = (): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({ type: LOAD_COMPONENT_TEMPLATES_PENDING });
 
-    const components = await getKappComponentTemplates();
+    const componentTemplates = await getKappComponentTemplates();
 
     dispatch({
       type: LOAD_COMPONENT_TEMPLATES_FULFILLED,
       payload: {
-        components
+        componentTemplates
       }
     });
   };

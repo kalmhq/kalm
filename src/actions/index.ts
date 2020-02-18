@@ -140,7 +140,7 @@ export type Config = ImmutableMap<{
 export interface createComponentTemplateAction {
   type: typeof CREATE_COMPONENT;
   payload: {
-    component: ComponentTemplate;
+    componentTemplate: ComponentTemplate;
   };
 }
 
@@ -148,7 +148,7 @@ export interface UpdateComponentAction {
   type: typeof UPDATE_COMPONENT;
   payload: {
     componentTemplateId: string;
-    component: ComponentTemplate;
+    componentTemplate: ComponentTemplate;
   };
 }
 
@@ -172,7 +172,7 @@ export interface LoadComponentTemplatesPendingAction {
 export interface LoadComponentTemplatesFulfilledAction {
   type: typeof LOAD_COMPONENT_TEMPLATES_FULFILLED;
   payload: {
-    components: Array<ComponentTemplate>;
+    componentTemplates: Array<ComponentTemplate>;
   };
 }
 
