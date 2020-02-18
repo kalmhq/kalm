@@ -31,6 +31,10 @@ const renderCascader = ({
       style={{ width: "100%" }}
       allowClear={false}
       changeOnSelect={true}
+      // onCreate={() => input.onChange(getCascaderDefaultValue())}
+      onChange={(value: string[]) => {
+        input.onChange(value);
+      }}
     />
   );
 };

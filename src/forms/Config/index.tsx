@@ -101,6 +101,9 @@ const useStyles = makeStyles((theme: Theme) => ({
   nameWrapper: {
     width: "100%",
     marginLeft: "20px"
+  },
+  editorWarpper: {
+    width: "100%"
   }
 }));
 
@@ -147,7 +150,9 @@ function ConfigFormRaw(props: Props & InjectedFormProps<Config, Props>) {
           rows={15}
           rowsMax={15}
         /> */}
-        <CustomEditor />
+        <FormControl margin="normal" className={classes.editorWarpper}>
+          <CustomEditor />
+        </FormControl>
         <div className={classes.buttons}>
           <Button variant="contained" color="primary" type="submit">
             Submit
