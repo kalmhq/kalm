@@ -5,6 +5,10 @@ import "antd/es/cascader/style/css";
 import { FilledTextFieldProps } from "@material-ui/core/TextField";
 import { WrappedFieldProps, BaseFieldProps } from "redux-form";
 import { Field } from "redux-form/immutable";
+import {
+  getCascaderOptions,
+  getCascaderDefaultValue
+} from "../../selectors/config";
 
 const options = [
   {
@@ -56,15 +60,16 @@ const renderCascader = ({
 }: FilledTextFieldProps & WrappedFieldProps) => {
   return (
     <Cascader
-      options={options}
-      defaultValue={["zhejiang", "hangzhou", "xihu"]}
+      options={getCascaderOptions()}
+      defaultValue={getCascaderDefaultValue()}
       displayRender={displayRender}
       style={{ width: "100%" }}
       allowClear={false}
+      changeOnSelect={true}
     />
   );
 };
 
 export const CustomCascader = (props: any) => {
-  return <Field name="path" component={renderCascader} />;
+  return <Field name="folders" component={renderCascader} />;
 };

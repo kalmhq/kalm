@@ -157,6 +157,7 @@ function ConfigFormRaw(props: Props & InjectedFormProps<Config, Props>) {
 }
 
 const initialValues: Config = Immutable.fromJS({
+  folders: [],
   name: "",
   type: "file",
   content: ""
