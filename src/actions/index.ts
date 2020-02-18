@@ -154,7 +154,7 @@ export interface DuplicateComponentAction {
   };
 }
 
-export interface LoadComponentsAction {
+export interface LoadComponentTemplatesAction {
   type: typeof LOAD_COMPONENT_TEMPLATES_ACTION;
   payload: {
     components: Array<Component>;
@@ -245,7 +245,7 @@ export type Actions =
   | CreateComponentAction
   | DeleteComponentAction
   | UpdateComponentAction
-  | LoadComponentsAction
+  | LoadComponentTemplatesAction
   | CreateApplicationAction
   | DeleteApplicationAction
   | UpdateApplicationAction
