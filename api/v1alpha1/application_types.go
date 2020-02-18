@@ -17,6 +17,7 @@ package v1alpha1
 
 import (
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -62,7 +63,9 @@ type ComponentSpec struct {
 
 	BeforeDestroy []string `json:"beforeDestroy,omitempty"`
 
-	Resources Resource `json:"resources,omitempty"`
+	CPU resource.Quantity `json:"cpu,omitempty"`
+
+	Memory resource.Quantity `json:"memory,omitempty"`
 
 	VolumeMounts []v1.VolumeMount `json:"volumeMounts,omitempty"`
 }

@@ -17,8 +17,8 @@ package v1alpha1
 
 import (
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -28,7 +28,7 @@ import (
 type ComponentTemplateSpec struct {
 	Name string `json:"name"`
 
-	Env []EnvVar `json:"env,omitempty"`
+	Env []ComponentTemplateEnvVar `json:"env,omitempty"`
 
 	Image string `json:"image"`
 
@@ -46,20 +46,21 @@ type ComponentTemplateSpec struct {
 	// +optional
 	// ReadinessProbe *v1.Probe `json:"readinessProbe,omitempty"`
 
-	Plugins []runtime.RawExtension `json:"plugins,omitempty"`
-
 	BeforeStart []string `json:"beforeStart,omitempty"`
 
 	AfterStart []string `json:"afterStart,omitempty"`
 
 	BeforeDestroy []string `json:"beforeDestroy,omitempty"`
 
-	Resources Resource `json:"resources,omitempty"`
+	CPU resource.Quantity `json:"cpu,omitempty"`
+
+	Memory resource.Quantity `json:"memory,omitempty"`
 
 	VolumeMounts []v1.VolumeMount `json:"volumeMounts,omitempty"`
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:resource:scope=Cluster
 
 // ComponentTemplate is the Schema for the componenttemplates API
 type ComponentTemplate struct {
@@ -70,6 +71,7 @@ type ComponentTemplate struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:resource:scope=Cluster
 
 // ComponentTemplateList contains a list of ComponentTemplate
 type ComponentTemplateList struct {

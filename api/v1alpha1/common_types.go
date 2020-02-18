@@ -2,7 +2,6 @@ package v1alpha1
 
 import (
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 // EnvVar represents an environment variable present in a Container.
@@ -35,12 +34,19 @@ type Port struct {
 	Protocol corev1.Protocol `json:"protocol,omitempty"`
 }
 
-type ResourceRange struct {
-	Min resource.Quantity `json:"min"`
-	Max resource.Quantity `json:"max"`
-}
+type ComponentTemplateEnvType string
 
-type Resource struct {
-	CPU    ResourceRange `json:"cpu"`
-	Memory ResourceRange `json:"memory"`
+const (
+	ComponentTemplateEnvTypeStatic   ComponentTemplateEnvType = "static"
+	ComponentTemplateEnvTypeExternal ComponentTemplateEnvType = "external"
+	ComponentTemplateEnvTypeLinked   ComponentTemplateEnvType = "linked"
+)
+
+type ComponentTemplateEnvVar struct {
+	Name string `json:"name"`
+
+	// +kubebuilder:validation:Enum=static;external;linked
+	Type ComponentTemplateEnvType `json:"type"`
+
+	Value string `json:"value,omitempty"`
 }

@@ -251,20 +251,14 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 	}
 
 	// resources
-	if !component.Resources.CPU.Min.IsZero() {
-		mainContainer.Resources.Requests[corev1.ResourceCPU] = component.Resources.CPU.Min
+	if !component.CPU.IsZero() {
+		mainContainer.Resources.Requests[corev1.ResourceCPU] = component.CPU
+		mainContainer.Resources.Limits[corev1.ResourceCPU] = component.CPU
 	}
 
-	if !component.Resources.CPU.Max.IsZero() {
-		mainContainer.Resources.Limits[corev1.ResourceCPU] = component.Resources.CPU.Max
-	}
-
-	if !component.Resources.Memory.Min.IsZero() {
-		mainContainer.Resources.Requests[corev1.ResourceMemory] = component.Resources.Memory.Min
-	}
-
-	if !component.Resources.Memory.Max.IsZero() {
-		mainContainer.Resources.Limits[corev1.ResourceMemory] = component.Resources.Memory.Max
+	if !component.Memory.IsZero() {
+		mainContainer.Resources.Limits[corev1.ResourceMemory] = component.Memory
+		mainContainer.Resources.Limits[corev1.ResourceMemory] = component.Memory
 	}
 
 	// imgPullSecrets
