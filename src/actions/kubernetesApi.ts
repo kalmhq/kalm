@@ -36,7 +36,7 @@ export const getPersistentVolumes = async () => {
   }
 };
 
-export const getKappComponents = async () => {
+export const getKappComponentTemplates = async () => {
   const res = await axios.get<V1Alpha1ComponentList>(
     currentKubernetesAPIAddress +
       "/apis/core.kapp.dev/v1alpha1/componenttemplates"

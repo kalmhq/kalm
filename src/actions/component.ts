@@ -7,7 +7,10 @@ import {
   ThunkResult,
   UPDATE_COMPONENT_ACTION
 } from ".";
-import { getKappComponents, updateKappComonentTemplate } from "./kubernetesApi";
+import {
+  getKappComponentTemplates,
+  updateKappComonentTemplate
+} from "./kubernetesApi";
 import { convertToCRDComponentTemplate } from "../convertors/ComponentTemplate";
 
 export const createComponentAction = (
@@ -61,7 +64,7 @@ export const deleteComponentAction = (
 
 export const loadComponentTemplatesAction = (): ThunkResult<Promise<void>> => {
   return async dispatch => {
-    const components = await getKappComponents();
+    const components = await getKappComponentTemplates();
 
     dispatch({
       type: LOAD_COMPONENTS_ACTION,
