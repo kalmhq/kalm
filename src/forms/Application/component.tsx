@@ -31,7 +31,7 @@ const mapStateToProps = (state: RootState) => {
   const sharedEnv: Immutable.List<SharedEnv> = selector(state, "sharedEnv");
 
   return {
-    components: state.get("components").get("components"),
+    components: state.get("componentTemplates").get("componentTemplates"),
     sharedEnv
   };
 };

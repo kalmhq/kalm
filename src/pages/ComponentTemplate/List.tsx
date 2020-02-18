@@ -208,7 +208,7 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
 
     return (
       <BasePage
-        title="Components"
+        title="Component Templates"
         onCreate={this.onCreate}
         createButtonText="Add A Component"
       >

@@ -6,9 +6,9 @@ import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "../../actions";
 
 const mapStateToProps = (state: RootState) => {
-  const componentTemplatesState = state.get("components");
+  const componentTemplatesState = state.get("componentTemplates");
   return {
-    components: componentTemplatesState.get("components").toList(),
+    components: componentTemplatesState.get("componentTemplates").toList(),
     isLoading: componentTemplatesState.get("isListLoading"),
     isFirstLoaded: componentTemplatesState.get("isListFirstLoaded")
   };

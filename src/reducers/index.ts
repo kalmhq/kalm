@@ -17,7 +17,7 @@ import { History, LocationState } from "history";
 import { ImmutableMap } from "../typings";
 
 export type RootState = ImmutableMap<{
-  components: ComponentTemplateState;
+  componentTemplates: ComponentTemplateState;
   applications: ApplicationState;
   configs: ConfigState;
   router: RouterState<LocationState>;
@@ -36,7 +36,7 @@ export default (history: History<LocationState>) =>
     form: formReducer,
     nodes,
     router: connectRouter(history),
-    components: componentTemplates,
+    componentTemplates,
     persistentVolumns,
     applications,
     configs,
