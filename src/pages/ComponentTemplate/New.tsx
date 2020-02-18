@@ -10,7 +10,7 @@ import {
 } from "../../actions";
 import { createComponentTemplateAction } from "../../actions/component";
 import { setSuccessNotificationAction } from "../../actions/notification";
-import { ComponentTemplateForm } from "../../forms/Component";
+import { ComponentTemplateForm } from "../../forms/ComponentTemplate";
 import { RootState } from "../../reducers";
 import { BasePage } from "../BasePage";
 

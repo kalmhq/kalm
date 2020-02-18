@@ -7,7 +7,7 @@ import {
   setErrorNotificationAction,
   setSuccessNotificationAction
 } from "../../actions/notification";
-import { ComponentTemplateForm } from "../../forms/Component";
+import { ComponentTemplateForm } from "../../forms/ComponentTemplate";
 import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
 import {
