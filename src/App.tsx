@@ -19,7 +19,7 @@ import ApplictionList from "./pages/ApplicationList";
 import ApplicationNew from "./pages/ApplicationNew";
 import ApplicationEdit from "./pages/ApplicationEdit";
 import ComponentEdit from "./pages/ComponentEdit";
-import ComponentList from "./pages/ComponentList";
+import { ComponentTemplateList } from "./pages/ComponentTemplateList";
 import { ComponentTemplateNew } from "./pages/ComponentTemplateNew";
 import ConfigList from "./pages/ConfigList";
 import Dashboard from "./pages/Dashboard";
@@ -317,7 +317,11 @@ export default function MiniDrawer() {
               path="/components/:componentId/edit"
               component={ComponentEdit}
             ></Route>
-            <Route exact path="/components" component={ComponentList}></Route>
+            <Route
+              exact
+              path="/components"
+              component={ComponentTemplateList}
+            ></Route>
             <Route exact path="/configs" component={ConfigList}></Route>
             <Route exact path="/cluster/nodes" component={NodeList}></Route>
             <Route exact path="/cluster/disks" component={Disks}></Route>

@@ -57,7 +57,7 @@ interface States {
   deletingComponentId?: string;
 }
 
-class List extends React.PureComponent<Props, States> {
+class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
   constructor(props: Props) {
     super(props);
 
@@ -233,4 +233,6 @@ class List extends React.PureComponent<Props, States> {
   }
 }
 
-export default withStyles(styles)(connect(mapStateToProps)(List));
+export const ComponentTemplateList = withStyles(styles)(
+  connect(mapStateToProps)(ComponentTemplateListRaw)
+);
