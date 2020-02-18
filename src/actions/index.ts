@@ -126,7 +126,7 @@ export type Config = ImmutableMap<{
   children: Immutable.OrderedMap<string, Config>;
 }>;
 
-export interface CreateComponentAction {
+export interface createComponentTemplateAction {
   type: typeof CREATE_COMPONENT_ACTION;
   payload: {
     component: Component;
@@ -242,7 +242,7 @@ export interface LoadPersistentVolumnsAction {
 }
 
 export type Actions =
-  | CreateComponentAction
+  | createComponentTemplateAction
   | DeleteComponentAction
   | UpdateComponentAction
   | LoadComponentTemplatesAction

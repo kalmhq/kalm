@@ -4,7 +4,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
 import { Actions, Component, newEmptyComponent } from "../../actions";
-import { createComponentAction } from "../../actions/component";
+import { createComponentTemplateAction } from "../../actions/component";
 import ComponentForm from "../../forms/Component";
 import { RootState } from "../../reducers";
 import { BasePage } from "../BasePage";
@@ -24,7 +24,7 @@ interface Props extends WithStyles<typeof styles> {
 class ComponentNew extends React.PureComponent<Props> {
   private submit = async (component: Component) => {
     const { dispatch } = this.props;
-    await dispatch(createComponentAction(component));
+    await dispatch(createComponentTemplateAction(component));
     await dispatch(
       setSuccessNotificationAction("Create component successfully")
     );

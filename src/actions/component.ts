@@ -13,7 +13,7 @@ import {
 } from "./kubernetesApi";
 import { convertToCRDComponentTemplate } from "../convertors/ComponentTemplate";
 
-export const createComponentAction = (
+export const createComponentTemplateAction = (
   component: Component
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
