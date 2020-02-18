@@ -1,12 +1,20 @@
 import {
+  Box,
   Button,
   Grid,
   List as MList,
   ListItem,
   ListItemText,
-  Paper
+  Paper,
+  Tab,
+  Tabs
 } from "@material-ui/core";
-import { makeStyles, Theme } from "@material-ui/core/styles";
+import {
+  createStyles,
+  makeStyles,
+  Theme,
+  withStyles
+} from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import React from "react";
 import { connect } from "react-redux";
@@ -15,27 +23,21 @@ import { monokai } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import { InjectedFormProps } from "redux-form";
 import { getFormValues, reduxForm } from "redux-form/immutable";
 import { Component } from "../../actions";
+import { convertToCRDComponentTemplate } from "../../convertors/ComponentTemplate";
 import { RootState } from "../../reducers";
 import { CustomTextField } from "../Basic";
 import { CustomEnvs } from "../Basic/env";
 import { CustomPorts } from "../Basic/ports";
 import { ValidatorRequired } from "../validator";
 import ComponentResources from "./resources";
-import { convertToCRDComponentTemplate } from "../../convertors/ComponentTemplate";
 
 export interface Props {}
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: any;
-  value: any;
-}
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
     flexGrow: 1,
-    width: "100%",
-    backgroundColor: theme.palette.background.paper
+    width: "100%"
+    // backgroundColor: theme.palette.background.paper
   },
   paper: {
     padding: theme.spacing(3),
@@ -60,6 +62,66 @@ const mapStateToProps = (state: RootState) => {
     values
   };
 };
+
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: any;
+  value: any;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <Typography
+      component="div"
+      role="tabpanel"
+      hidden={value !== index}
+      id={`scrollable-prevent-tabpanel-${index}`}
+      aria-labelledby={`scrollable-prevent-tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box>{children}</Box>}
+    </Typography>
+  );
+}
+
+interface StyledTabsProps {
+  value: number;
+  onChange: (event: React.ChangeEvent<{}>, newValue: number) => void;
+}
+
+const StyledTabs = withStyles({
+  indicator: {
+    display: "flex",
+    justifyContent: "center",
+    backgroundColor: "transparent",
+    "& > div": {
+      width: "100%",
+      backgroundColor: "#635ee7"
+    }
+  }
+})((props: StyledTabsProps) => (
+  <Tabs {...props} TabIndicatorProps={{ children: <div /> }} />
+));
+
+interface StyledTabProps {
+  label: string;
+}
+
+const StyledTab = withStyles((theme: Theme) =>
+  createStyles({
+    root: {
+      textTransform: "none",
+      fontWeight: theme.typography.fontWeightRegular,
+      fontSize: theme.typography.pxToRem(15),
+      marginRight: theme.spacing(1),
+      "&:focus": {
+        opacity: 1
+      }
+    }
+  })
+)((props: StyledTabProps) => <Tab disableRipple {...props} />);
 
 function ComponentTemplateFormRaw(
   props: Props &
@@ -225,19 +287,41 @@ function ComponentTemplateFormRaw(
                 root: classes.sectionHeader
               }}
             >
-              Component Data
+              Data View
             </Typography>
 
-            <SyntaxHighlighter language="json" style={monokai}>
-              {JSON.stringify(props.values, undefined, 2)}
-            </SyntaxHighlighter>
-            <SyntaxHighlighter language="json" style={monokai}>
-              {JSON.stringify(
-                convertToCRDComponentTemplate(props.values),
-                undefined,
-                2
-              )}
-            </SyntaxHighlighter>
+            <div>
+              <StyledTabs
+                value={value}
+                onChange={handleChange}
+                aria-label="styled tabs example"
+              >
+                <StyledTab label="Kapp JSON" />
+                <StyledTab label="K8s CRD" />
+              </StyledTabs>
+              <TabPanel value={value} index={0}>
+                <SyntaxHighlighter
+                  language="json"
+                  style={monokai}
+                  showLineNumbers
+                >
+                  {JSON.stringify(props.values, undefined, 2)}
+                </SyntaxHighlighter>
+              </TabPanel>
+              <TabPanel value={value} index={1}>
+                <SyntaxHighlighter
+                  language="json"
+                  style={monokai}
+                  showLineNumbers
+                >
+                  {JSON.stringify(
+                    convertToCRDComponentTemplate(props.values),
+                    undefined,
+                    2
+                  )}
+                </SyntaxHighlighter>
+              </TabPanel>
+            </div>
           </Grid>
         </Grid>
         <Button variant="contained" color="primary" type="submit">

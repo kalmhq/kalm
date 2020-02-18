@@ -36,7 +36,7 @@ class ComponentTemplateEditRaw extends React.PureComponent<Props> {
     try {
       await dispatch(updateComponentAction(componentId, component));
       dispatch(setSuccessNotificationAction("Component update successful"));
-      dispatch(push("/components"));
+      dispatch(push("/componenttemplates"));
     } catch (e) {
       dispatch(setErrorNotificationAction("Component update failed"));
     }
@@ -58,9 +58,14 @@ class ComponentTemplateEditRaw extends React.PureComponent<Props> {
 
   public render() {
     const { isLoading, isFirstLoaded, classes } = this.props;
+    const component = this.getComponent();
 
     return (
-      <BasePage title={`Edit Component {component.name}`}>
+      <BasePage
+        title={
+          isLoading || !isFirstLoaded ? "" : `Edit ${component.get("name")}`
+        }
+      >
         <div className={classes.root}>
           {isLoading || !isFirstLoaded ? <Loading /> : this.renderFormContent()}
         </div>

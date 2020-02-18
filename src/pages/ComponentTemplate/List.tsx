@@ -58,7 +58,7 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
   }
 
   public onCreate = () => {
-    this.props.dispatch(push(`/components/new`));
+    this.props.dispatch(push(`/componenttemplates/new`));
   };
 
   componentDidMount() {
@@ -104,7 +104,9 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
               <IconButton
                 aria-label="edit"
                 onClick={() => {
-                  dispatch(push(`/components/${component.get("id")}/edit`));
+                  dispatch(
+                    push(`/componenttemplates/${component.get("id")}/edit`)
+                  );
                 }}
               >
                 <EditIcon />

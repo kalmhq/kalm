@@ -28,7 +28,7 @@ class ComponentTemplateNewRaw extends React.PureComponent<Props> {
     await dispatch(
       setSuccessNotificationAction("Create component successfully")
     );
-    await dispatch(push("/components"));
+    await dispatch(push("/componenttemplates"));
   };
 
   public render() {

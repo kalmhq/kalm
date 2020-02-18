@@ -10,9 +10,9 @@ import styles from "./style.module.css";
 const breadcrumbNameMap: { [key: string]: string } = {
   "/applications": "Applications",
   "/applications/new": "New",
-  "/components": "Components",
-  "/components/new": "New",
-  "/components/:componentId/edit": "Edit",
+  "/componenttemplates": "Component Templates",
+  "/componenttemplates/new": "New",
+  "/componenttemplates/:componentId/edit": "Edit",
   "/configs": "Configs",
   "/configs/new": "New",
   "/configs/:componentId/edit": "Edit"

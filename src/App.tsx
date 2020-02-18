@@ -41,8 +41,8 @@ const sidenavGroups: SidenavGroupProps[] = [
         type: "normal"
       },
       {
-        text: "Component",
-        to: "/components",
+        text: "Component Template",
+        to: "/componenttemplates",
         icon: "extension",
         type: "normal"
       },
@@ -308,17 +308,17 @@ export default function MiniDrawer() {
               <Route exact path="/applications/new">
                 <ApplicationNew />
               </Route>
-              <Route exact path="/components/new">
+              <Route exact path="/componenttemplates/new">
                 <ComponentTemplateNew />
               </Route>
               <Route
                 exact
-                path="/components/:componentId/edit"
+                path="/componenttemplates/:componentId/edit"
                 component={ComponentTemplateEdit}
               ></Route>
               <Route
                 exact
-                path="/components"
+                path="/componenttemplates"
                 component={ComponentTemplateList}
               ></Route>
               <Route exact path="/configs" component={ConfigList}></Route>
