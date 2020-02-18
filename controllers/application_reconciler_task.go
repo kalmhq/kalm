@@ -210,16 +210,16 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 					Spec: corev1.PodSpec{
 						Containers: []corev1.Container{
 							{
-								Name:         component.Name,
-								Image:        component.Image,
-								Env:          []corev1.EnvVar{},
-								Command:      component.Command,
-								Args:         component.Args,
-								VolumeMounts: component.VolumeMounts,
+								Name:    component.Name,
+								Image:   component.Image,
+								Env:     []corev1.EnvVar{},
+								Command: component.Command,
+								Args:    component.Args,
+								//VolumeMounts: component.VolumeMounts,
 								//Ports:        component.Ports,
 							},
 						},
-						Volumes: act.app.Spec.Volumes,
+						//Volumes: act.app.Spec.Volumes,
 					},
 				},
 				Selector: &metav1.LabelSelector{
@@ -346,15 +346,83 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 		}
 	}
 
-	// Add VolumeMounts
-	if len(component.VolumeMounts) > 0 {
-		if mainContainer.VolumeMounts == nil {
-			mainContainer.VolumeMounts = component.VolumeMounts
-		} else {
+	// Disks
+	// make PVCs first
+	log.Info("disk config", "component name:", component.Name, "# disk:", len(component.Disks))
 
+	path2PVC := make(map[string]*corev1.PersistentVolumeClaim)
+	for _, disk := range component.Disks {
+		validNameFromPath := strings.ReplaceAll(disk.Path, "/", "-")
+		volName := fmt.Sprintf("vol%s", validNameFromPath)
+		pvcName := fmt.Sprintf("%s-%s-%s", app.Name, component.Name, volName)
+
+		pvc := &corev1.PersistentVolumeClaim{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      pvcName,
+				Namespace: app.Namespace,
+			},
+			Spec: corev1.PersistentVolumeClaimSpec{
+				AccessModes: []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
+				Resources: corev1.ResourceRequirements{
+					Requests: corev1.ResourceList{
+						corev1.ResourceStorage: disk.Size,
+					},
+				},
+				StorageClassName: nil,
+			},
 		}
-		mainContainer.VolumeMounts = component.VolumeMounts
+
+		pvcExist, err := act.IsPVCExists(pvc.Name)
+		if err != nil {
+			return err
+		}
+		if !pvcExist {
+			if err := act.reconciler.Create(ctx, pvc); err != nil {
+				return fmt.Errorf("fail to create PVC: %s, %s", pvc.Name, err)
+			} else {
+				log.Info("create pvc", "name", pvc.Name)
+			}
+		}
+		//todo how to update PVC?
+
+		path2PVC[disk.Path] = pvc
 	}
+
+	// add volumes & volumesMounts
+	var volumes []corev1.Volume
+	var volumeMounts []corev1.VolumeMount
+	for _, disk := range component.Disks {
+		pvc := path2PVC[disk.Path]
+
+		volumes = append(volumes, corev1.Volume{
+			Name: pvc.Name,
+			VolumeSource: corev1.VolumeSource{
+				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+					ClaimName: pvc.Name,
+				},
+			},
+		})
+
+		volumeMounts = append(volumeMounts, corev1.VolumeMount{
+			Name:      pvc.Name,
+			MountPath: disk.Path,
+		})
+	}
+
+	if len(volumes) > 0 {
+		deployment.Spec.Template.Spec.Volumes = volumes
+		mainContainer.VolumeMounts = volumeMounts
+	}
+
+	//// Add VolumeMounts
+	//if len(component.VolumeMounts) > 0 {
+	//	if mainContainer.VolumeMounts == nil {
+	//		mainContainer.VolumeMounts = component.VolumeMounts
+	//	} else {
+	//
+	//	}
+	//	mainContainer.VolumeMounts = component.VolumeMounts
+	//}
 
 	// before stop
 	if len(component.BeforeDestroy) == 0 {
@@ -565,6 +633,27 @@ func (act *applicationReconcilerTask) FindShareEnvValue(name string) (string, er
 	}
 
 	return "", fmt.Errorf("fail to find ")
+}
+
+func (act *applicationReconcilerTask) IsPVCExists(pvcName string) (bool, error) {
+	pvcList := corev1.PersistentVolumeClaimList{}
+
+	err := act.reconciler.List(
+		context.TODO(),
+		&pvcList,
+		client.InNamespace(act.req.Namespace),
+	)
+	if err != nil {
+		return false, err
+	}
+
+	for _, item := range pvcList.Items {
+		if item.Name == pvcName {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
 func (act *applicationReconcilerTask) getValueOfEnv(env corev1alpha1.EnvVar) (string, error) {

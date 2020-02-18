@@ -44,3 +44,9 @@ type Resource struct {
 	CPU    ResourceRange `json:"cpu"`
 	Memory ResourceRange `json:"memory"`
 }
+
+type Disk struct {
+	Path string            `json:"path"`
+	Size resource.Quantity `json:"size"`
+	Type string            `json:"type,omitempty"`
+}
