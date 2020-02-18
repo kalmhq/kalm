@@ -94,10 +94,10 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
   };
 
   private renderDataContent() {
-    const { dispatch, components } = this.props;
-    const data = components.map(component => {
+    const { dispatch, componentTemplates } = this.props;
+    const data = componentTemplates.map(componentTemplate => {
       const onDeleteClick = () => {
-        this.setDeletingComponentAndConfirm(component.get("id"));
+        this.setDeletingComponentAndConfirm(componentTemplate.get("id"));
       };
       return {
         action: (
@@ -107,7 +107,9 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
                 aria-label="edit"
                 onClick={() => {
                   dispatch(
-                    push(`/componenttemplates/${component.get("id")}/edit`)
+                    push(
+                      `/componenttemplates/${componentTemplate.get("id")}/edit`
+                    )
                   );
                 }}
               >
@@ -119,7 +121,9 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
               <IconButton
                 aria-label="edit"
                 onClick={() => {
-                  dispatch(duplicateComponentAction(component.get("id")));
+                  dispatch(
+                    duplicateComponentAction(componentTemplate.get("id"))
+                  );
                 }}
               >
                 <FileCopyIcon />
@@ -133,13 +137,13 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
             </Tooltip>
           </>
         ),
-        name: component.get("name"),
-        image: component.get("image"),
-        cpu: component.get("cpu"),
-        memory: component.get("memory"),
+        name: componentTemplate.get("name"),
+        image: componentTemplate.get("image"),
+        cpu: componentTemplate.get("cpu"),
+        memory: componentTemplate.get("memory"),
         port: (
           <div>
-            {component
+            {componentTemplate
               .get("ports")
               .map(port => {
                 return (
@@ -151,7 +155,7 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
               .toArray()}
           </div>
         ),
-        disk: component
+        disk: componentTemplate
           .get("disk")
           .map(disk => {
             return (

@@ -8,7 +8,9 @@ import { Actions } from "../../actions";
 const mapStateToProps = (state: RootState) => {
   const componentTemplatesState = state.get("componentTemplates");
   return {
-    components: componentTemplatesState.get("componentTemplates").toList(),
+    componentTemplates: componentTemplatesState
+      .get("componentTemplates")
+      .toList(),
     isLoading: componentTemplatesState.get("isListLoading"),
     isFirstLoaded: componentTemplatesState.get("isListFirstLoaded")
   };

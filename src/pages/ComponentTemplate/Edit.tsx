@@ -42,28 +42,33 @@ class ComponentTemplateEditRaw extends React.PureComponent<Props> {
     }
   };
 
-  private getComponent() {
-    const { components, match } = this.props;
+  private getComponentTemplate() {
+    const { componentTemplates, match } = this.props;
     const { componentTemplateId } = match!.params;
-    return components.find(x => x.get("id") === componentTemplateId)!;
+    return componentTemplates.find(x => x.get("id") === componentTemplateId)!;
   }
 
   private renderFormContent() {
-    const component = this.getComponent();
+    const componentTemplate = this.getComponentTemplate();
 
     return (
-      <ComponentTemplateForm onSubmit={this.submit} initialValues={component} />
+      <ComponentTemplateForm
+        onSubmit={this.submit}
+        initialValues={componentTemplate}
+      />
     );
   }
 
   public render() {
     const { isLoading, isFirstLoaded, classes } = this.props;
-    const component = this.getComponent();
+    const componentTemplate = this.getComponentTemplate();
 
     return (
       <BasePage
         title={
-          isLoading || !isFirstLoaded ? "" : `Edit ${component.get("name")}`
+          isLoading || !isFirstLoaded
+            ? ""
+            : `Edit ${componentTemplate.get("name")}`
         }
       >
         <div className={classes.root}>
