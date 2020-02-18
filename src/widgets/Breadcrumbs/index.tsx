@@ -12,10 +12,10 @@ const breadcrumbNameMap: { [key: string]: string } = {
   "/applications/new": "New",
   "/componenttemplates": "Component Templates",
   "/componenttemplates/new": "New",
-  "/componenttemplates/:componentId/edit": "Edit",
+  "/componenttemplates/:componentTemplateId/edit": "Edit",
   "/configs": "Configs",
   "/configs/new": "New",
-  "/configs/:componentId/edit": "Edit"
+  "/configs/:componentTemplateId/edit": "Edit"
 };
 
 interface LinkRouterProps extends LinkProps {

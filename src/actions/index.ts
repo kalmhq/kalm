@@ -137,7 +137,7 @@ export interface createComponentTemplateAction {
 export interface UpdateComponentAction {
   type: typeof UPDATE_COMPONENT;
   payload: {
-    componentId: string;
+    componentTemplateId: string;
     component: ComponentTemplate;
   };
 }
@@ -145,13 +145,13 @@ export interface UpdateComponentAction {
 export interface DeleteComponentAction {
   type: typeof DELETE_COMPONENT;
   payload: {
-    componentId: string;
+    componentTemplateId: string;
   };
 }
 export interface DuplicateComponentAction {
   type: typeof DUPLICATE_COMPONENT;
   payload: {
-    componentId: string;
+    componentTemplateId: string;
   };
 }
 

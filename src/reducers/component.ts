@@ -130,21 +130,24 @@ const reducer = (state: State = initialState, action: Actions): State => {
     }
     case UPDATE_COMPONENT: {
       const components = state.get("components");
-      const id = action.payload.componentId;
+      const id = action.payload.componentTemplateId;
       let component = action.payload.component;
       component = component.set("id", id);
       state = state.set("components", components.set(id, component));
       break;
     }
     case DELETE_COMPONENT: {
-      state = state.deleteIn(["components", action.payload.componentId]);
+      state = state.deleteIn([
+        "components",
+        action.payload.componentTemplateId
+      ]);
       break;
     }
     case DUPLICATE_COMPONENT: {
       const components = state.get("components");
       const tmpId = components.size.toString(); // TODO fake id
 
-      let component = components.get(action.payload.componentId)!;
+      let component = components.get(action.payload.componentTemplateId)!;
       component = component.set("id", tmpId);
 
       let i = 0;

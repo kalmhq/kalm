@@ -45,7 +45,7 @@ interface Props
 
 interface States {
   isDeleteConfirmDialogOpen: boolean;
-  deletingComponentId?: string;
+  deletingComponentTemplateId?: string;
 }
 
 class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
@@ -68,14 +68,14 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
   private closeConfirmDialog = () => {
     this.setState({
       isDeleteConfirmDialogOpen: false,
-      deletingComponentId: undefined
+      deletingComponentTemplateId: undefined
     });
   };
 
   private deleteConfirmedComponent = async () => {
     const { dispatch } = this.props;
     try {
-      await dispatch(deleteComponentAction(this.state.deletingComponentId!));
+      await dispatch(deleteComponentAction(this.state.deletingComponentTemplateId!));
       await dispatch(
         setSuccessNotificationAction("Successfully delete a component")
       );
@@ -84,10 +84,10 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
     }
   };
 
-  private setDeletingComponentAndConfirm = (componentId: string) => {
+  private setDeletingComponentAndConfirm = (componentTemplateId: string) => {
     this.setState({
       isDeleteConfirmDialogOpen: true,
-      deletingComponentId: componentId
+      deletingComponentTemplateId: componentTemplateId
     });
   };
 

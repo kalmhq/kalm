@@ -26,18 +26,18 @@ export const createComponentTemplateAction = (
 };
 
 export const duplicateComponentAction = (
-  componentId: string
+  componentTemplateId: string
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({
       type: DUPLICATE_COMPONENT,
-      payload: { componentId }
+      payload: { componentTemplateId }
     });
   };
 };
 
 export const updateComponentAction = (
-  componentId: string,
+  componentTemplateId: string,
   componentRaw: ComponentTemplate
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
@@ -47,18 +47,18 @@ export const updateComponentAction = (
 
     dispatch({
       type: UPDATE_COMPONENT,
-      payload: { componentId, component }
+      payload: { componentTemplateId, component }
     });
   };
 };
 
 export const deleteComponentAction = (
-  componentId: string
+  componentTemplateId: string
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({
       type: DELETE_COMPONENT,
-      payload: { componentId }
+      payload: { componentTemplateId }
     });
   };
 };

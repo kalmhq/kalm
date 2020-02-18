@@ -25,16 +25,16 @@ const styles = (theme: Theme) =>
 
 interface Props
   extends WithComponentTemplatesDataProps,
-    RouteChildrenProps<{ componentId: string }>,
+    RouteChildrenProps<{ componentTemplateId: string }>,
     WithStyles<typeof styles> {}
 
 class ComponentTemplateEditRaw extends React.PureComponent<Props> {
   private submit = async (component: ComponentTemplate) => {
     const { dispatch, match } = this.props;
-    const { componentId } = match!.params;
+    const { componentTemplateId } = match!.params;
 
     try {
-      await dispatch(updateComponentAction(componentId, component));
+      await dispatch(updateComponentAction(componentTemplateId, component));
       dispatch(setSuccessNotificationAction("Component update successful"));
       dispatch(push("/componenttemplates"));
     } catch (e) {
@@ -44,8 +44,8 @@ class ComponentTemplateEditRaw extends React.PureComponent<Props> {
 
   private getComponent() {
     const { components, match } = this.props;
-    const { componentId } = match!.params;
-    return components.find(x => x.get("id") === componentId)!;
+    const { componentTemplateId } = match!.params;
+    return components.find(x => x.get("id") === componentTemplateId)!;
   }
 
   private renderFormContent() {

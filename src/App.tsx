@@ -313,7 +313,7 @@ export default function MiniDrawer() {
               </Route>
               <Route
                 exact
-                path="/componenttemplates/:componentId/edit"
+                path="/componenttemplates/:componentTemplateId/edit"
                 component={ComponentTemplateEdit}
               ></Route>
               <Route
