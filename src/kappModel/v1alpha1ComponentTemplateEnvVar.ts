@@ -1,4 +1,4 @@
-export class V1Alpha1ComponentEnvVar {
+export class V1Alpha1ComponentTemplateEnvVar {
   "name": string;
   "type": string;
   "value"?: string;
@@ -28,6 +28,6 @@ export class V1Alpha1ComponentEnvVar {
   ];
 
   static getAttributeTypeMap() {
-    return V1Alpha1ComponentEnvVar.attributeTypeMap;
+    return V1Alpha1ComponentTemplateEnvVar.attributeTypeMap;
   }
 }

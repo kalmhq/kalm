@@ -1,4 +1,4 @@
-export class V1Alpha1ComponentVolumnMount {
+export class V1Alpha1ComponentTemplateVolumnMount {
   "mountPath": string;
   "name": string;
 
@@ -22,6 +22,6 @@ export class V1Alpha1ComponentVolumnMount {
   ];
 
   static getAttributeTypeMap() {
-    return V1Alpha1ComponentVolumnMount.attributeTypeMap;
+    return V1Alpha1ComponentTemplateVolumnMount.attributeTypeMap;
   }
 }

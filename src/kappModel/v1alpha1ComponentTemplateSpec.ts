@@ -1,20 +1,20 @@
-import { V1Alpha1ComponentEnvVar } from "./v1alpha1ComponentEnvVar";
-import { V1Alpha1ComponentPort } from "./v1alpha1ComponentPort";
-import { V1Alpha1ComponentVolumnMount } from "./v1alpha1ComponentVolumnMount";
+import { V1Alpha1ComponentTemplateEnvVar } from "./v1alpha1ComponentTemplateEnvVar";
+import { V1Alpha1ComponentTemplatePort } from "./v1alpha1ComponentTemplatePort";
+import { V1Alpha1ComponentTemplateVolumnMount } from "./v1alpha1ComponentTemplateVolumnMount";
 import { V1ResourceRule } from "../model/models";
 
-export class V1Alpha1ComponentSpec {
+export class V1Alpha1ComponentTemplateSpec {
   "afterStart"?: Array<string>;
   "beforeDestroy"?: Array<string>;
   "beforeStart"?: Array<string>;
-  "env"?: Array<V1Alpha1ComponentEnvVar>;
+  "env"?: Array<V1Alpha1ComponentTemplateEnvVar>;
   "image": string;
   "name": string;
-  "ports"?: Array<V1Alpha1ComponentPort>;
+  "ports"?: Array<V1Alpha1ComponentTemplatePort>;
   "cpu"?: string;
   "memory"?: string;
   "command"?: Array<string>;
-  "volumeMounts"?: Array<V1Alpha1ComponentVolumnMount>;
+  "volumeMounts"?: Array<V1Alpha1ComponentTemplateVolumnMount>;
 
   static discriminator: string | undefined = undefined;
 
@@ -41,7 +41,7 @@ export class V1Alpha1ComponentSpec {
     {
       name: "env",
       baseName: "env",
-      type: "Array<V1Alpha1ComponentEnvVar>"
+      type: "Array<V1Alpha1ComponentTemplateEnvVar>"
     },
     {
       name: "image",
@@ -61,7 +61,7 @@ export class V1Alpha1ComponentSpec {
     {
       name: "ports",
       baseName: "ports",
-      type: "Array<V1Alpha1ComponentPort>"
+      type: "Array<V1Alpha1ComponentTemplatePort>"
     },
     {
       name: "cpu",
@@ -76,11 +76,11 @@ export class V1Alpha1ComponentSpec {
     {
       name: "volumeMounts",
       baseName: "volumeMounts",
-      type: "Array<V1Alpha1ComponentVolumnMount>"
+      type: "Array<V1Alpha1ComponentTemplateVolumnMount>"
     }
   ];
 
   static getAttributeTypeMap() {
-    return V1Alpha1ComponentSpec.attributeTypeMap;
+    return V1Alpha1ComponentTemplateSpec.attributeTypeMap;
   }
 }

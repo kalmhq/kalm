@@ -1,11 +1,11 @@
 import { V1ObjectMeta } from "../model/v1ObjectMeta";
-import { V1Alpha1ComponentSpec } from "./v1alpha1ComponentSpec";
+import { V1Alpha1ComponentTemplateSpec } from "./v1alpha1ComponentTemplateSpec";
 
-export class V1Alpha1Component {
+export class V1Alpha1ComponentTemplate {
   "apiVersion"?: string;
   "kind"?: string;
   "metadata"?: V1ObjectMeta;
-  "spec"?: V1Alpha1ComponentSpec;
+  "spec"?: V1Alpha1ComponentTemplateSpec;
 
   static discriminator: string | undefined = undefined;
 
@@ -32,11 +32,11 @@ export class V1Alpha1Component {
     {
       name: "spec",
       baseName: "spec",
-      type: "V1Alpha1ComponentSpec"
+      type: "V1Alpha1ComponentTemplateSpec"
     }
   ];
 
   static getAttributeTypeMap() {
-    return V1Alpha1Component.attributeTypeMap;
+    return V1Alpha1ComponentTemplate.attributeTypeMap;
   }
 }

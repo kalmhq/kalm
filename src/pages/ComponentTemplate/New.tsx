@@ -3,7 +3,11 @@ import { push } from "connected-react-router";
 import React from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
-import { Actions, ComponentTemplate, newEmptyComponent } from "../../actions";
+import {
+  Actions,
+  ComponentTemplate,
+  newEmptyComponentTemplate
+} from "../../actions";
 import { createComponentTemplateAction } from "../../actions/component";
 import { setSuccessNotificationAction } from "../../actions/notification";
 import { ComponentTemplateForm } from "../../forms/Component";
@@ -38,7 +42,7 @@ class ComponentTemplateNewRaw extends React.PureComponent<Props> {
         <div className={classes.root}>
           <ComponentTemplateForm
             onSubmit={this.submit}
-            initialValues={newEmptyComponent()}
+            initialValues={newEmptyComponentTemplate()}
           />
         </div>
       </BasePage>

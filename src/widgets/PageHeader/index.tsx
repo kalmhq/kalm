@@ -1,16 +1,15 @@
-import React from "react";
 import {
-  Typography,
-  Theme,
+  Button,
   createStyles,
+  Theme,
+  Typography,
   WithStyles,
-  withStyles,
-  Button
+  withStyles
 } from "@material-ui/core";
-import { Breadcrumb } from "../Breadcrumbs";
 import { Variant } from "@material-ui/core/styles/createTypography";
-import { Alert } from "@material-ui/lab";
 import AddIcon from "@material-ui/icons/Add";
+import React from "react";
+import { Breadcrumb } from "../Breadcrumbs";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -26,6 +25,7 @@ const styles = (theme: Theme) =>
     title: {
       fontSize: 20,
       marginTop: 14,
+      color: "white",
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center"

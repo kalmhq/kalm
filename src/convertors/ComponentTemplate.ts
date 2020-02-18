@@ -1,10 +1,10 @@
-import { V1Alpha1Component } from "../kappModel/v1alpha1Component";
+import { V1Alpha1ComponentTemplate } from "../kappModel/v1alpha1ComponentTemplate";
 import { ComponentTemplate } from "../actions";
 import { Map, List } from "immutable";
 import { ObjectSerializer } from "../model/models";
 
 export const convertFromCRDComponentTemplate = (
-  c: V1Alpha1Component
+  c: V1Alpha1ComponentTemplate
 ): ComponentTemplate => {
   console.log(c);
   const spec = c.spec!;
@@ -53,8 +53,7 @@ export const convertFromCRDComponentTemplate = (
 
 export const convertToCRDComponentTemplate = (
   c: ComponentTemplate
-): V1Alpha1Component => {
-  console.log(c.get("ports").toArray());
+): V1Alpha1ComponentTemplate => {
   return ObjectSerializer.deserialize(
     {
       apiVersion: "core.kapp.dev/v1alpha1",
@@ -88,6 +87,6 @@ export const convertToCRDComponentTemplate = (
         memory: c.get("memory")
       }
     },
-    "V1Alpha1Component"
+    "V1Alpha1ComponentTemplate"
   );
 };

@@ -3,7 +3,7 @@ import {
   V1NodeList,
   V1PersistentVolumeList
 } from "../model/models";
-import { V1Alpha1ComponentList } from "../kappModel/v1alpha1ComponentList";
+import { V1Alpha1ComponentTemplateList } from "../kappModel/v1alpha1ComponentTemplateList";
 
 const apiV1NodesBody = {
   kind: "NodeList",
@@ -8325,7 +8325,7 @@ const apiV1PersistentVolumnBody = {
   ]
 };
 
-const apiV1Alpha1ComponentListBody = {
+const apiV1Alpha1ComponentTemplateListBody = {
   apiVersion: "core.kapp.dev/v1alpha1",
   items: [
     {
@@ -8411,7 +8411,7 @@ export const apiV1PersistentVolumns: V1PersistentVolumeList = ObjectSerializer.d
   "V1PersistentVolumeList"
 );
 
-export const apiV1Alpha1ComponentList: V1Alpha1ComponentList = ObjectSerializer.deserialize(
-  apiV1Alpha1ComponentListBody,
-  "V1Alpha1ComponentList"
+export const apiV1Alpha1ComponentTemplateList: V1Alpha1ComponentTemplateList = ObjectSerializer.deserialize(
+  apiV1Alpha1ComponentTemplateListBody,
+  "V1Alpha1ComponentTemplateList"
 );

@@ -2,12 +2,12 @@ import axios from "axios";
 import {
   apiV1Nodes,
   apiV1PersistentVolumns,
-  apiV1Alpha1ComponentList
+  apiV1Alpha1ComponentTemplateList
 } from "./kubernetesApiResponseSamples";
 import { V1NodeList, V1PersistentVolumeList } from "../model/models";
-import { V1Alpha1ComponentList } from "../kappModel/v1alpha1ComponentList";
+import { V1Alpha1ComponentTemplateList } from "../kappModel/v1alpha1ComponentTemplateList";
 import { convertFromCRDComponentTemplate } from "../convertors/ComponentTemplate";
-import { V1Alpha1Component } from "../kappModel/v1alpha1Component";
+import { V1Alpha1ComponentTemplate } from "../kappModel/v1alpha1ComponentTemplate";
 import { ComponentTemplate } from ".";
 
 export const currentKubernetesAPIAddress = "http://localhost:3001";
@@ -37,7 +37,7 @@ export const getPersistentVolumes = async () => {
 };
 
 export const getKappComponentTemplates = async () => {
-  const res = await axios.get<V1Alpha1ComponentList>(
+  const res = await axios.get<V1Alpha1ComponentTemplateList>(
     currentKubernetesAPIAddress +
       "/apis/core.kapp.dev/v1alpha1/componenttemplates"
   );
@@ -46,7 +46,7 @@ export const getKappComponentTemplates = async () => {
 };
 
 export const updateKappComonentTemplate = async (
-  component: V1Alpha1Component
+  component: V1Alpha1ComponentTemplate
 ): Promise<ComponentTemplate> => {
   const res = await axios.put(
     currentKubernetesAPIAddress +

@@ -1,4 +1,4 @@
-export class V1Alpha1ComponentPort {
+export class V1Alpha1ComponentTemplatePort {
   "containerPort": number;
   "servicePort": number;
   "name"?: string;
@@ -34,6 +34,6 @@ export class V1Alpha1ComponentPort {
   ];
 
   static getAttributeTypeMap() {
-    return V1Alpha1ComponentPort.attributeTypeMap;
+    return V1Alpha1ComponentTemplatePort.attributeTypeMap;
   }
 }
