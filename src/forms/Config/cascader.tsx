@@ -10,41 +10,6 @@ import {
   getCascaderDefaultValue
 } from "../../selectors/config";
 
-const options = [
-  {
-    value: "zhejiang",
-    label: "Zhejiang",
-    children: [
-      {
-        value: "hangzhou",
-        label: "Hangzhou",
-        children: [
-          {
-            value: "xihu",
-            label: "West Lakex"
-          }
-        ]
-      }
-    ]
-  },
-  {
-    value: "jiangsu",
-    label: "Jiangsu",
-    children: [
-      {
-        value: "nanjing",
-        label: "Nanjing",
-        children: [
-          {
-            value: "zhonghuamen",
-            label: "Zhong Hua Men"
-          }
-        ]
-      }
-    ]
-  }
-];
-
 const displayRender = (labels: any, selectedOptions: any) => {
   return labels.map((label: any, i: any) => {
     const option = selectedOptions[i];

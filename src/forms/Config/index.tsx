@@ -17,7 +17,7 @@ import Typography from "@material-ui/core/Typography";
 import Box from "@material-ui/core/Box";
 import { CustomEnvs } from "../Basic/env";
 import { CustomPorts } from "../Basic/ports";
-import { Button, Grid } from "@material-ui/core";
+import { Button, Grid, FormControl } from "@material-ui/core";
 import { Paper } from "@material-ui/core";
 import { ValidatorRequired } from "../validator";
 import { Config } from "../../actions";
@@ -25,6 +25,7 @@ import { CustomRadioGroup } from "../Basic/radio";
 import Immutable from "immutable";
 import { CustomEditor } from "./editor";
 import { CustomCascader } from "./cascader";
+import FormHelperText from "@material-ui/core/FormHelperText";
 
 export interface Props {
   onClose: any;
@@ -94,6 +95,9 @@ const useStyles = makeStyles((theme: Theme) => ({
     alignItems: "center",
     justifyContent: "space-between"
   },
+  pathWrapper: {
+    width: "100%"
+  },
   nameWrapper: {
     width: "100%",
     marginLeft: "20px"
@@ -108,7 +112,12 @@ function ConfigFormRaw(props: Props & InjectedFormProps<Config, Props>) {
     <div className={classes.root}>
       <form onSubmit={handleSubmit}>
         <div className={classes.pathAndName}>
-          <CustomCascader />
+          <FormControl className={classes.pathWrapper} margin="normal">
+            <CustomCascader />
+            <FormHelperText className="MuiFormHelperText-contained MuiFormHelperText-marginDense">
+              Select a folder to add config
+            </FormHelperText>
+          </FormControl>
           <div className={classes.nameWrapper}>
             <CustomTextField
               // className={classes.input}
@@ -116,7 +125,7 @@ function ConfigFormRaw(props: Props & InjectedFormProps<Config, Props>) {
               label="Name"
               margin
               validate={[ValidatorRequired]}
-              helperText=""
+              helperText="Please type the config name"
               placeholder="Please type the config name"
             />
           </div>
