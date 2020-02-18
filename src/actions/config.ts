@@ -14,22 +14,29 @@ export type ThunkResult<R> = ThunkAction<R, RootState, undefined, Actions>;
 export const createConfigAction = (
   config: Config
 ): ThunkResult<Promise<void>> => {
+  config = config.set("id", "666"); // TODO fake id now
+
+  const newIdChain = config.get("ancestorIds")
+    ? config.get("ancestorIds")!.toArray()
+    : [];
+  newIdChain.push(config.get("id"));
+
   return async dispatch => {
     dispatch({
       type: CREATE_CONFIG,
       payload: { config }
     });
+    dispatch(setCurrentConfigIdChainAction(newIdChain));
   };
 };
 
 export const updateConfigAction = (
-  configId: string,
   config: Config
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({
       type: UPDATE_CONFIG,
-      payload: { configId, config }
+      payload: { config }
     });
   };
 };

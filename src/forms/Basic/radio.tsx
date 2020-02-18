@@ -31,25 +31,26 @@ export const CustomRadioGroup = (props: BaseFieldProps & Props) => {
 const renderRadioGroup = ({
   input,
   name,
-  value,
   options,
   ...rest
-}: RadioGroupProps & WrappedFieldProps & Props) => (
-  <RadioGroup
-    aria-label={name}
-    name={name}
-    value={value}
-    onChange={(event, value) => input.onChange(value)}
-  >
-    {options.map(option => (
-      <FormControlLabel
-        key={option}
-        value={option}
-        control={<Radio color="primary" />}
-        label={option.toUpperCase()}
-      />
-    ))}
-    {/* <FormControlLabel value="female" control={<Radio />} label="Female" />
+}: RadioGroupProps & WrappedFieldProps & Props) => {
+  return (
+    <RadioGroup
+      aria-label={name}
+      name={name}
+      value={input.value}
+      onChange={(event, value) => input.onChange(value)}
+    >
+      {options.map(option => (
+        <FormControlLabel
+          key={option}
+          value={option}
+          control={<Radio color="primary" />}
+          label={option.toUpperCase()}
+        />
+      ))}
+      {/* <FormControlLabel value="female" control={<Radio />} label="Female" />
     <FormControlLabel value="male" control={<Radio />} label="Male" /> */}
-  </RadioGroup>
-);
+    </RadioGroup>
+  );
+};

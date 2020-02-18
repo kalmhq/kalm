@@ -8,6 +8,7 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import { DispatchType } from "../../types";
 import ConfigForm from "../../forms/Config";
 import { Config } from "../../actions";
+import { updateConfigAction } from "../../actions/config";
 
 interface Props {
   open: boolean;
@@ -17,13 +18,15 @@ interface Props {
 }
 
 export function ConfigEditDialog(props: Props) {
-  const { open, onClose } = props;
+  const { open, onClose, dispatch } = props;
 
   const handleClose = () => {
     onClose();
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (config: Config) => {
+    console.log("ConfigEditDialog update config", config.toJS());
+    dispatch(updateConfigAction(config));
     onClose();
   };
 
@@ -39,7 +42,11 @@ export function ConfigEditDialog(props: Props) {
       >
         <DialogTitle id="alert-dialog-title">Edit Config</DialogTitle>
         <DialogContent>
-          <ConfigForm onSubmit={handleSubmit} onClose={handleClose} />
+          <ConfigForm
+            onSubmit={handleSubmit}
+            onClose={handleClose}
+            formType="edit"
+          />
         </DialogContent>
       </Dialog>
     </div>
