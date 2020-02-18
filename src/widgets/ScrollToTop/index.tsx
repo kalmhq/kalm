@@ -8,7 +8,7 @@ export class ScrollToTopRaw extends Component<RouteComponentProps> {
     }
   }
 
-  public render = () => null;
+  public render = () => this.props.children;
 }
 
 export const ScrollToTop = withRouter(ScrollToTopRaw);

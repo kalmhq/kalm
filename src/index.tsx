@@ -27,18 +27,19 @@ const theme = createMuiTheme({
 ReactDOM.render(
   <Provider store={store}>
     <ConnectedRouter history={history}>
-      <ScrollToTop />
-      <ThemeProvider theme={theme}>
-        <SnackbarProvider
-          maxSnack={3}
-          anchorOrigin={{
-            horizontal: "right",
-            vertical: "bottom"
-          }}
-        >
-          <App />
-        </SnackbarProvider>
-      </ThemeProvider>
+      <ScrollToTop>
+        <ThemeProvider theme={theme}>
+          <SnackbarProvider
+            maxSnack={3}
+            anchorOrigin={{
+              horizontal: "right",
+              vertical: "bottom"
+            }}
+          >
+            <App />
+          </SnackbarProvider>
+        </ThemeProvider>
+      </ScrollToTop>
     </ConnectedRouter>
   </Provider>,
   document.getElementById("root")
