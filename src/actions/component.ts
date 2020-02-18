@@ -59,7 +59,7 @@ export const deleteComponentAction = (
   };
 };
 
-export const loadComponentAction = (): ThunkResult<Promise<void>> => {
+export const loadComponentTemplatesAction = (): ThunkResult<Promise<void>> => {
   return async dispatch => {
     const components = await getKappComponents();
 

@@ -20,7 +20,7 @@ import { Actions } from "../../actions";
 import {
   deleteComponentAction,
   duplicateComponentAction,
-  loadComponentAction
+  loadComponentTemplatesAction
 } from "../../actions/component";
 import {
   setErrorNotificationAction,
@@ -70,8 +70,8 @@ class List extends React.PureComponent<Props, States> {
     this.props.dispatch(push(`/components/new`));
   };
 
-  componentWillMount() {
-    this.props.dispatch(loadComponentAction());
+  componentDidMount() {
+    this.props.dispatch(loadComponentTemplatesAction());
   }
 
   private closeConfirmDialog = () => {
