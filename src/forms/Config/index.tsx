@@ -1,5 +1,5 @@
 import React from "react";
-import { InjectedFormProps } from "redux-form";
+import { InjectedFormProps, getFormValues } from "redux-form";
 import { Field, reduxForm } from "redux-form/immutable";
 import { CustomTextField, renderTextField } from "../Basic";
 import { makeStyles, Theme } from "@material-ui/core/styles";
@@ -26,10 +26,19 @@ import Immutable from "immutable";
 import { CustomEditor } from "./editor";
 import { CustomCascader } from "./cascader";
 import FormHelperText from "@material-ui/core/FormHelperText";
+import { connect } from "react-redux";
+import { RootState } from "../../reducers";
 
 export interface Props {
   onClose: any;
 }
+
+const mapStateToProps = (state: RootState) => {
+  const config = getFormValues("config")(state) as Config;
+  return {
+    config
+  };
+};
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -170,17 +179,22 @@ function ConfigFormRaw(props: Props & InjectedFormProps<Config, Props>) {
   );
 }
 
-const initialValues: Config = Immutable.fromJS({
-  folders: [],
-  name: "",
-  type: "file",
-  content: ""
-});
+// const initialValues: Config = Immutable.fromJS({
+//   folders: [],
+//   name: "",
+//   type: "file",
+//   content: ""
+// });
+
+// export default reduxForm<Config, Props>({
+//   form: "config",
+//   initialValues,
+//   onSubmitFail: (...args) => {
+//     console.log("submit failed", args);
+//   }
+// })(ConfigFormRaw);
 
 export default reduxForm<Config, Props>({
   form: "config",
-  initialValues,
-  onSubmitFail: (...args) => {
-    console.log("submit failed", args);
-  }
-})(ConfigFormRaw);
+  onSubmitFail: console.log
+})(connect(mapStateToProps)(ConfigFormRaw));

@@ -8,24 +8,31 @@ import "ace-builds/src-noconflict/theme-monokai";
 import FormControl from "@material-ui/core/FormControl";
 import FormLabel from "@material-ui/core/FormLabel";
 
+const aceOnBlur = (onBlur: any) => (_event: any, editor?: any) => {
+  const value = editor.getValue();
+  onBlur(value);
+};
+
 const renderEditor = ({ input }: FilledTextFieldProps & WrappedFieldProps) => {
   return (
     <AceEditor
       placeholder="Input file content here."
       mode="javascript"
       theme="monokai"
-      name="blah2"
+      name="editor"
       height="400px"
       width="100%"
       //   onLoad={console.log}
-      onChange={console.log}
+      onBlur={aceOnBlur(input.onBlur)}
+      onChange={input.onChange}
+      value={input.value}
       fontSize={14}
       showPrintMargin={false}
       showGutter={true}
       highlightActiveLine={true}
-      value={`function onLoad(editor) {
-  console.log("i've loaded");
-}`}
+      //       value={`function onLoad(editor) {
+      //   console.log("i've loaded");
+      // }`}
       setOptions={{
         useWorker: false,
         enableBasicAutocompletion: false,
