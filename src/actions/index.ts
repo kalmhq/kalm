@@ -67,7 +67,7 @@ export type ComponentTemplate = ImmutableMap<{
   resourceVersion?: string;
 }>;
 
-export const newEmptyComponent = (): ComponentTemplate => {
+export const newEmptyComponentTemplate = (): ComponentTemplate => {
   return Immutable.Map({
     id: "",
     name: "",
