@@ -70,3 +70,17 @@ export const createKappComonentTemplate = async (
 
   return convertFromCRDComponentTemplate(res.data);
 };
+
+export const deleteKappComonentTemplate = async (
+  component: V1Alpha1ComponentTemplate
+): Promise<void> => {
+  const res = await axios.delete(
+    currentKubernetesAPIAddress +
+      `/apis/core.kapp.dev/v1alpha1/componenttemplates/${
+        component.metadata!.name
+      }`
+  );
+
+  console.log(res.data);
+  // return convertFromCRDComponentTemplate(res.data);
+};

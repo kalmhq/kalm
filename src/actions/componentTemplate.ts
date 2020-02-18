@@ -11,7 +11,8 @@ import {
 import {
   getKappComponentTemplates,
   updateKappComonentTemplate,
-  createKappComonentTemplate
+  createKappComonentTemplate,
+  deleteKappComonentTemplate
 } from "./kubernetesApi";
 import { convertToCRDComponentTemplate } from "../convertors/ComponentTemplate";
 
@@ -69,7 +70,16 @@ export const updateComponentAction = (
 export const deleteComponentAction = (
   componentTemplateId: string
 ): ThunkResult<Promise<void>> => {
-  return async dispatch => {
+  return async (dispatch, getState) => {
+    const componentTemplate = getState()
+      .get("componentTemplates")
+      .get("componentTemplates")
+      .get(componentTemplateId)!;
+
+    await deleteKappComonentTemplate(
+      convertToCRDComponentTemplate(componentTemplate)
+    );
+
     dispatch({
       type: DELETE_COMPONENT,
       payload: { componentTemplateId }

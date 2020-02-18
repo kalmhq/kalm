@@ -24,6 +24,8 @@ export function DuplicateDialog(props: Props) {
     setValue(event.target.value);
   };
 
+  const resetValue = () => setValue("");
+
   const content = (
     <>
       {props.content}
@@ -44,5 +46,12 @@ export function DuplicateDialog(props: Props) {
     props.onAgree(value);
   };
 
-  return <ConfirmDialog {...props} content={content} onAgree={onAgree} />;
+  return (
+    <ConfirmDialog
+      {...props}
+      content={content}
+      onAgree={onAgree}
+      onExited={resetValue}
+    />
+  );
 }

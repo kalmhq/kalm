@@ -1,12 +1,13 @@
-import React from "react";
 import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
+import { TransitionHandlerProps } from "@material-ui/core/transitions";
+import React from "react";
 
-export interface ConfirmDialogProps {
+export interface ConfirmDialogProps extends TransitionHandlerProps {
   content: React.ReactNode;
   title: React.ReactNode;
 
@@ -52,6 +53,12 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
         onClose={handleClose}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
+        onEnter={props.onEnter}
+        onEntering={props.onEntering}
+        onEntered={props.onEntered}
+        onExit={props.onExit}
+        onExiting={props.onExiting}
+        onExited={props.onExited}
       >
         <DialogTitle id="alert-dialog-title">{title}</DialogTitle>
         <DialogContent>
