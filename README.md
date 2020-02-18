@@ -1,3 +1,25 @@
+# Kapp Dashboard
+
+## How to run this project.
+
+```
+npm install
+npm run start
+```
+
+## How to connect the backend services
+
+1. Download the kapp project, Update master to latest.
+2. Install [Docker]([Docker](https://docs.docker.com/install/)), [kubectl]([kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)), [kind]([kind](https://github.com/kubernetes-sigs/kind)) and [kustomize]([kustomize](https://github.com/kubernetes-sigs/kustomize))
+3. Enter kapp project root dir. Start kind cluster `kind create cluster --config hack/kind-config.yaml --image=kindest/node:v1.14.2`
+4. After kind cluster is running. Create a new term session. Enter kapp project root dir. `make install`
+5. Create a new term session. `kubectl proxy`.
+6. Enter kapp-web project root dir. Start a proxy server. `node src/proxyServer/index.js`
+7. Done
+
+
+# Create React App Raw Content
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
