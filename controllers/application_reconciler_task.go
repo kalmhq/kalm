@@ -632,7 +632,7 @@ func (act *applicationReconcilerTask) FindShareEnvValue(name string) (string, er
 		return act.getValueOfEnv(env)
 	}
 
-	return "", fmt.Errorf("fail to find ")
+	return "", fmt.Errorf("fail to find value for shareEnv: %s", name)
 }
 
 func (act *applicationReconcilerTask) IsPVCExists(pvcName string) (bool, error) {
