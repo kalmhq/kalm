@@ -280,12 +280,14 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
 
         <div className={classes.root}>
           <Alert severity="info">
-            Component is a template config describes how to deploy a software on
-            kapp system. Component can't run independently, but it can be easily
-            added into any application. When adding a component into an
-            application, the component config will be copyed into the
+            Component templates are stored configs that describe how to deploy
+            software images on kapp system. Component template can't run
+            independently, but it can be easily copy into any application as a
+            component to run.
+            {/* When adding a component
+            into an application, the component config will be copyed into the
             application, which mean it's free to update existing component
-            anytime without worring about breaking running applications.
+            anytime without worring about breaking running applications. */}
           </Alert>
           <Box mt={3}>{isLoading ? <Loading /> : this.renderDataContent()}</Box>
         </div>
