@@ -18,9 +18,9 @@ import { Route, Switch } from "react-router-dom";
 import ApplicationEdit from "./pages/ApplicationEdit";
 import ApplictionList from "./pages/ApplicationList";
 import ApplicationNew from "./pages/ApplicationNew";
-import { ComponentTemplateEdit } from "./pages/ComponentTemplateEdit";
-import { ComponentTemplateList } from "./pages/ComponentTemplateList";
-import { ComponentTemplateNew } from "./pages/ComponentTemplateNew";
+import { ComponentTemplateEdit } from "./pages/ComponentTemplate/Edit";
+import { ComponentTemplateList } from "./pages/ComponentTemplate/List";
+import { ComponentTemplateNew } from "./pages/ComponentTemplate/New";
 import ConfigList from "./pages/ConfigList";
 import Dashboard from "./pages/Dashboard";
 import { Disks } from "./pages/Disks";
@@ -233,102 +233,103 @@ export default function MiniDrawer() {
   return (
     <Switch>
       <Route path="/404" component={Page404} />
-
-      <div className={classes.root}>
-        <NotificationComponent />
-        <CssBaseline />
-        <AppBar
-          position="fixed"
-          color="default"
-          className={clsx(classes.appBar, {
-            [classes.appBarShift]: open
-          })}
-        >
-          <Toolbar>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              onClick={handleDrawerOpen}
-              edge="start"
-              className={clsx(classes.menuButton, {
-                [classes.hide]: open
-              })}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Typography variant="h6" noWrap>
-              **
-            </Typography>
-          </Toolbar>
-        </AppBar>
-        <Drawer
-          variant="permanent"
-          className={clsx(classes.drawer, {
-            [classes.drawerOpen]: open,
-            [classes.drawerClose]: !open
-          })}
-          classes={{
-            paper: clsx({
+      <Route>
+        <div className={classes.root}>
+          <NotificationComponent />
+          <CssBaseline />
+          <AppBar
+            position="fixed"
+            color="default"
+            className={clsx(classes.appBar, {
+              [classes.appBarShift]: open
+            })}
+          >
+            <Toolbar>
+              <IconButton
+                color="inherit"
+                aria-label="open drawer"
+                onClick={handleDrawerOpen}
+                edge="start"
+                className={clsx(classes.menuButton, {
+                  [classes.hide]: open
+                })}
+              >
+                <MenuIcon />
+              </IconButton>
+              <Typography variant="h6" noWrap>
+                **
+              </Typography>
+            </Toolbar>
+          </AppBar>
+          <Drawer
+            variant="permanent"
+            className={clsx(classes.drawer, {
               [classes.drawerOpen]: open,
               [classes.drawerClose]: !open
-            })
-          }}
-          PaperProps={{ className: classes.paper }}
-        >
-          <div className={classes.toolbar}>
-            <div className={classes.toolbarTitle}>
-              <img
-                src="http://via.placeholder.com/24x24"
-                className={classes.toolbarTitleImg}
-                alt="logo"
-              />
-              Kapp Dashboard
+            })}
+            classes={{
+              paper: clsx({
+                [classes.drawerOpen]: open,
+                [classes.drawerClose]: !open
+              })
+            }}
+            PaperProps={{ className: classes.paper }}
+          >
+            <div className={classes.toolbar}>
+              <div className={classes.toolbarTitle}>
+                <img
+                  src="http://via.placeholder.com/24x24"
+                  className={classes.toolbarTitleImg}
+                  alt="logo"
+                />
+                Kapp Dashboard
+              </div>
+
+              <IconButton onClick={handleDrawerClose} color="inherit">
+                <Icon color="inherit">chevron_left_icon</Icon>
+              </IconButton>
             </div>
+            <Sidenav groups={sidenavGroups} isFolded={!open} />
+          </Drawer>
+          <main className={classes.content}>
+            <Switch>
+              <Route exact path="/" component={Dashboard} />
+              <Route exact path="/install">
+                <InstallPage />
+              </Route>
+              <Route exact path="/applications">
+                <ApplictionList />
+              </Route>
+              <Route
+                exact
+                path="/applications/:applicationId/edit"
+                component={ApplicationEdit}
+              ></Route>
+              <Route exact path="/applications/new">
+                <ApplicationNew />
+              </Route>
+              <Route exact path="/components/new">
+                <ComponentTemplateNew />
+              </Route>
+              <Route
+                exact
+                path="/components/:componentId/edit"
+                component={ComponentTemplateEdit}
+              ></Route>
+              <Route
+                exact
+                path="/components"
+                component={ComponentTemplateList}
+              ></Route>
+              <Route exact path="/configs" component={ConfigList}></Route>
+              <Route exact path="/cluster/nodes" component={NodeList}></Route>
+              <Route exact path="/cluster/disks" component={Disks}></Route>
 
-            <IconButton onClick={handleDrawerClose} color="inherit">
-              <Icon color="inherit">chevron_left_icon</Icon>
-            </IconButton>
-          </div>
-          <Sidenav groups={sidenavGroups} isFolded={!open} />
-        </Drawer>
-        <main className={classes.content}>
-          <Switch>
-            <Route exact path="/" component={Dashboard} />
-            <Route exact path="/install">
-              <InstallPage />
-            </Route>
-            <Route exact path="/applications">
-              <ApplictionList />
-            </Route>
-            <Route
-              exact
-              path="/applications/:applicationId/edit"
-              component={ApplicationEdit}
-            ></Route>
-            <Route exact path="/applications/new">
-              <ApplicationNew />
-            </Route>
-            <Route exact path="/components/new">
-              <ComponentTemplateNew />
-            </Route>
-            <Route
-              exact
-              path="/components/:componentId/edit"
-              component={ComponentTemplateEdit}
-            ></Route>
-            <Route
-              exact
-              path="/components"
-              component={ComponentTemplateList}
-            ></Route>
-            <Route exact path="/configs" component={ConfigList}></Route>
-            <Route exact path="/cluster/nodes" component={NodeList}></Route>
-            <Route exact path="/cluster/disks" component={Disks}></Route>
-
-            <Route component={NoMatch} />
-          </Switch>
-        </main>
-      </div>
+              <Route component={NoMatch} />
+            </Switch>
+          </main>
+        </div>
+      </Route>
     </Switch>
   );
 }

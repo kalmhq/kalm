@@ -1,6 +1,7 @@
 import {
   Box,
   createStyles,
+  Fade,
   IconButton,
   Theme,
   Tooltip,
@@ -14,9 +15,6 @@ import { Alert } from "@material-ui/lab";
 import { push } from "connected-react-router";
 import MaterialTable from "material-table";
 import React from "react";
-import { connect } from "react-redux";
-import { ThunkDispatch } from "redux-thunk";
-import { Actions } from "../../actions";
 import {
   deleteComponentAction,
   duplicateComponentAction,
@@ -26,20 +24,13 @@ import {
   setErrorNotificationAction,
   setSuccessNotificationAction
 } from "../../actions/notification";
-import { RootState } from "../../reducers";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
+import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
-
-const mapStateToProps = (state: RootState) => {
-  return {
-    components: state
-      .get("components")
-      .get("components")
-      .toList()
-  };
-};
-
-type StateProps = ReturnType<typeof mapStateToProps>;
+import {
+  ComponentTemplateDataWrapper,
+  WithComponentTemplatesDataProps
+} from "./DataWrapper";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -48,9 +39,9 @@ const styles = (theme: Theme) =>
     }
   });
 
-interface Props extends StateProps, WithStyles<typeof styles> {
-  dispatch: ThunkDispatch<RootState, undefined, Actions>;
-}
+interface Props
+  extends WithComponentTemplatesDataProps,
+    WithStyles<typeof styles> {}
 
 interface States {
   isDeleteConfirmDialogOpen: boolean;
@@ -100,9 +91,8 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
     });
   };
 
-  public render() {
-    const { dispatch, components, classes } = this.props;
-    const { isDeleteConfirmDialogOpen } = this.state;
+  private renderDataContent() {
+    const { dispatch, components } = this.props;
     const data = components.map(component => {
       const onDeleteClick = () => {
         this.setDeletingComponentAndConfirm(component.get("id"));
@@ -171,6 +161,48 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
       };
     });
     return (
+      <Fade in={true} timeout={500}>
+        <MaterialTable
+          options={{
+            padding: "dense",
+            pageSize: 20
+          }}
+          columns={[
+            {
+              title: "Name",
+              field: "name",
+              sorting: false
+            },
+            { title: "Image", field: "image", sorting: false },
+            { title: "CPU", field: "cpu", searchable: false },
+            { title: "Memory", field: "memory", searchable: false },
+            { title: "Disk", field: "disk", sorting: false },
+            {
+              title: "Port",
+              field: "port",
+
+              sorting: false,
+              searchable: false
+            },
+            {
+              title: "Action",
+              field: "action",
+              sorting: false,
+              searchable: false
+            }
+          ]}
+          data={data.toArray()}
+          title=""
+        />
+      </Fade>
+    );
+  }
+
+  public render() {
+    const { classes, isLoading } = this.props;
+    const { isDeleteConfirmDialogOpen } = this.state;
+
+    return (
       <BasePage
         title="Components"
         onCreate={this.onCreate}
@@ -193,40 +225,7 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
             application, which mean it's free to update existing component
             anytime without worring about breaking running applications.
           </Alert>
-          <Box mt={3}>
-            <MaterialTable
-              options={{
-                padding: "dense",
-                pageSize: 20
-              }}
-              columns={[
-                {
-                  title: "Name",
-                  field: "name",
-                  sorting: false
-                },
-                { title: "Image", field: "image", sorting: false },
-                { title: "CPU", field: "cpu", searchable: false },
-                { title: "Memory", field: "memory", searchable: false },
-                { title: "Disk", field: "disk", sorting: false },
-                {
-                  title: "Port",
-                  field: "port",
-
-                  sorting: false,
-                  searchable: false
-                },
-                {
-                  title: "Action",
-                  field: "action",
-                  sorting: false,
-                  searchable: false
-                }
-              ]}
-              data={data.toArray()}
-              title=""
-            />
-          </Box>
+          <Box mt={3}>{isLoading ? <Loading /> : this.renderDataContent()}</Box>
         </div>
       </BasePage>
     );
@@ -234,5 +233,5 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
 }
 
 export const ComponentTemplateList = withStyles(styles)(
-  connect(mapStateToProps)(ComponentTemplateListRaw)
+  ComponentTemplateDataWrapper(ComponentTemplateListRaw)
 );

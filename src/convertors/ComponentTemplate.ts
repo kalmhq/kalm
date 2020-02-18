@@ -60,7 +60,6 @@ export const convertToCRDComponentTemplate = (
       kind: "ComponentTemplate",
       metadata: {
         name: c.get("name"),
-        namespace: "default",
         resourceVersion: c.get("resourceVersion")
       },
       spec: {

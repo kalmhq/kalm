@@ -3,9 +3,10 @@ import {
   CREATE_COMPONENT,
   DELETE_COMPONENT,
   DUPLICATE_COMPONENT,
-  LOAD_COMPONENT_TEMPLATES,
   ThunkResult,
-  UPDATE_COMPONENT
+  UPDATE_COMPONENT,
+  LOAD_COMPONENT_TEMPLATES_FULFILLED,
+  LOAD_COMPONENT_TEMPLATES_PENDING
 } from ".";
 import {
   getKappComponentTemplates,
@@ -64,10 +65,12 @@ export const deleteComponentAction = (
 
 export const loadComponentTemplatesAction = (): ThunkResult<Promise<void>> => {
   return async dispatch => {
+    dispatch({ type: LOAD_COMPONENT_TEMPLATES_PENDING });
+
     const components = await getKappComponentTemplates();
 
     dispatch({
-      type: LOAD_COMPONENT_TEMPLATES,
+      type: LOAD_COMPONENT_TEMPLATES_FULFILLED,
       payload: {
         components
       }

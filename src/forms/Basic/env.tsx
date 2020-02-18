@@ -76,7 +76,6 @@ const renderEnvs = ({
                   component={renderTextField}
                   label="Name"
                   validate={[ValidatorRequired]}
-                  autoFocus
                 />
               </Grid>
               <Grid item xs={6}>
@@ -153,7 +152,6 @@ export const RenderSharedEnvs = ({
                   component={RenderAutoComplete}
                   label="Name"
                   validate={ValidatorRequired}
-                  autoFocus
                 >
                   {(missingVariables || []).map(x => (
                     <MenuItem key={x} value={x}>

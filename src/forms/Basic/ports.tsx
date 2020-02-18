@@ -51,7 +51,6 @@ const renderPorts = ({
                     classes={{ root: classes.field }}
                     name={`${port}.name`}
                     validate={[ValidatorRequired]}
-                    autoFocus
                     component={renderTextField}
                     label="Port Name"
                   />

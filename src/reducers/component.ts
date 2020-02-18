@@ -6,16 +6,21 @@ import {
   UPDATE_COMPONENT,
   DELETE_COMPONENT,
   DUPLICATE_COMPONENT,
-  LOAD_COMPONENT_TEMPLATES
+  LOAD_COMPONENT_TEMPLATES_FULFILLED,
+  LOAD_COMPONENT_TEMPLATES_PENDING
 } from "../actions";
 import { Actions } from "../actions";
 
 export type State = ImmutableMap<{
   components: Immutable.OrderedMap<string, Component>;
+  isListLoading: boolean;
+  isListFirstLoaded: boolean;
 }>;
 
 const initialState: State = Immutable.Map({
-  components: Immutable.OrderedMap()
+  components: Immutable.OrderedMap(),
+  isListLoading: false,
+  isListFirstLoaded: false
 });
 
 // const initialState: State = Immutable.Map({
@@ -95,7 +100,9 @@ const initialState: State = Immutable.Map({
 
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
-    case LOAD_COMPONENT_TEMPLATES: {
+    case LOAD_COMPONENT_TEMPLATES_PENDING:
+      return state.set("isListLoading", true);
+    case LOAD_COMPONENT_TEMPLATES_FULFILLED: {
       let om = Immutable.OrderedMap<string, Component>();
 
       action.payload.components.forEach(x => {
@@ -103,6 +110,8 @@ const reducer = (state: State = initialState, action: Actions): State => {
       });
 
       state = state.set("components", om);
+      state = state.set("isListLoading", false);
+      state = state.set("isListFirstLoaded", true);
       break;
     }
     case CREATE_COMPONENT: {

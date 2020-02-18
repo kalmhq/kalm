@@ -12,8 +12,10 @@ export const CREATE_COMPONENT = "CREATE_COMPONENT";
 export const UPDATE_COMPONENT = "UPDATE_COMPONENT";
 export const DELETE_COMPONENT = "DELETE_COMPONENT";
 export const DUPLICATE_COMPONENT = "DUPLICATE_COMPONENT";
-export const LOAD_COMPONENT_TEMPLATES =
-  "LOAD_COMPONENT_TEMPLATES";
+export const LOAD_COMPONENT_TEMPLATES_PENDING =
+  "LOAD_COMPONENT_TEMPLATES_PENDING";
+export const LOAD_COMPONENT_TEMPLATES_FULFILLED =
+  "LOAD_COMPONENT_TEMPLATES_FULFILLED";
 
 export const CREATE_APPLICATION = "CREATE_APPLICATION";
 export const UPDATE_APPLICATION = "UPDATE_APPLICATION";
@@ -28,8 +30,7 @@ export const SET_CURRENT_CONFIG_ID_CHAIN = "SET_CURRENT_CONFIG_ID_CHAIN";
 export const LOAD_NODES = "LOAD_NODES";
 export const LOAD_PERSISTENT_VOLUMNS = "LOAD_PERSISTENT_VOLUMNS";
 
-export const SET_NOTIFICATION_MESSAGE =
-  "SET_NOTIFICATION_MESSAGE";
+export const SET_NOTIFICATION_MESSAGE = "SET_NOTIFICATION_MESSAGE";
 
 export type Component = ImmutableMap<{
   id: string;
@@ -154,8 +155,12 @@ export interface DuplicateComponentAction {
   };
 }
 
-export interface LoadComponentTemplatesAction {
-  type: typeof LOAD_COMPONENT_TEMPLATES;
+export interface LoadComponentTemplatesPendingAction {
+  type: typeof LOAD_COMPONENT_TEMPLATES_PENDING;
+}
+
+export interface LoadComponentTemplatesFulfilledAction {
+  type: typeof LOAD_COMPONENT_TEMPLATES_FULFILLED;
   payload: {
     components: Array<Component>;
   };
@@ -245,7 +250,8 @@ export type Actions =
   | createComponentTemplateAction
   | DeleteComponentAction
   | UpdateComponentAction
-  | LoadComponentTemplatesAction
+  | LoadComponentTemplatesFulfilledAction
+  | LoadComponentTemplatesPendingAction
   | CreateApplicationAction
   | DeleteApplicationAction
   | UpdateApplicationAction

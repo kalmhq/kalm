@@ -21,6 +21,7 @@ import { CustomEnvs } from "../Basic/env";
 import { CustomPorts } from "../Basic/ports";
 import { ValidatorRequired } from "../validator";
 import ComponentResources from "./resources";
+import { convertToCRDComponentTemplate } from "../../convertors/ComponentTemplate";
 
 export interface Props {}
 
@@ -139,31 +140,31 @@ function ComponentTemplateFormRaw(
               component. An environment variable is made up of a name/value
               pair, it also support combine a dynamic value associated with
               other component later in a real running application. Learn More.
-              <MList dense={true}>
-                <ListItem>
-                  <ListItemText
-                    primary="Static"
-                    secondary={"A constant value environment variable."}
-                  />
-                </ListItem>
-                <ListItem>
-                  <ListItemText
-                    primary="External"
-                    secondary={
-                      "Value will be set in an application later. External variable with the same name will be consistent across all components in the same application."
-                    }
-                  />
-                </ListItem>
-                <ListItem>
-                  <ListItemText
-                    primary="Linked"
-                    secondary={
-                      "Value will be set in an application later. Linked variable can only be set as another component exposed port address in the same application."
-                    }
-                  />
-                </ListItem>
-              </MList>
             </Typography>
+            <MList dense={true}>
+              <ListItem>
+                <ListItemText
+                  primary="Static"
+                  secondary={"A constant value environment variable."}
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemText
+                  primary="External"
+                  secondary={
+                    "Value will be set in an application later. External variable with the same name will be consistent across all components in the same application."
+                  }
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemText
+                  primary="Linked"
+                  secondary={
+                    "Value will be set in an application later. Linked variable can only be set as another component exposed port address in the same application."
+                  }
+                />
+              </ListItem>
+            </MList>
             <Paper
               elevation={4}
               square
@@ -229,6 +230,13 @@ function ComponentTemplateFormRaw(
 
             <SyntaxHighlighter language="json" style={monokai}>
               {JSON.stringify(props.values, undefined, 2)}
+            </SyntaxHighlighter>
+            <SyntaxHighlighter language="json" style={monokai}>
+              {JSON.stringify(
+                convertToCRDComponentTemplate(props.values),
+                undefined,
+                2
+              )}
             </SyntaxHighlighter>
           </Grid>
         </Grid>
