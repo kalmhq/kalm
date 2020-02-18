@@ -8,6 +8,7 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import { DispatchType } from "../../types";
 import ConfigForm from "../../forms/Config";
 import { Config } from "../../actions";
+import { createConfigAction } from "../../actions/config";
 
 interface Props {
   open: boolean;
@@ -16,14 +17,15 @@ interface Props {
 }
 
 export function ConfigNewDialog(props: Props) {
-  const { open, onClose } = props;
+  const { open, onClose, dispatch } = props;
 
   const handleClose = () => {
     onClose();
   };
 
-  const handleSubmit = (configFormValues: Config) => {
-    console.log("configFormValues", configFormValues.toJS());
+  const handleSubmit = (config: Config) => {
+    console.log("ConfigNewDialog submit config", config.toJS());
+    dispatch(createConfigAction(config));
     onClose();
   };
 
@@ -39,7 +41,11 @@ export function ConfigNewDialog(props: Props) {
       >
         <DialogTitle id="alert-dialog-title">New Config</DialogTitle>
         <DialogContent>
-          <ConfigForm onSubmit={handleSubmit} onClose={handleClose} />
+          <ConfigForm
+            onSubmit={handleSubmit}
+            onClose={handleClose}
+            formType="new"
+          />
         </DialogContent>
       </Dialog>
     </div>

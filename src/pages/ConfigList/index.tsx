@@ -121,7 +121,7 @@ class List extends React.PureComponent<Props, State> {
     return <Breadcrumbs aria-label="breadcrumb">{links}</Breadcrumbs>;
   }
 
-  public renderAction() {
+  public renderActions() {
     const { dispatch } = this.props;
     return (
       <div>
@@ -172,7 +172,7 @@ class List extends React.PureComponent<Props, State> {
           <div className={classes.fileDetail}>
             <div className={classes.breadcrumbsAndAction}>
               {this.renderFileBreadcrumbs()}
-              {this.renderAction()}
+              {currentConfig.get("type") === "file" && this.renderActions()}
             </div>
 
             {currentConfig.get("type") === "file" ? (

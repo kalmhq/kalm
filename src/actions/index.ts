@@ -121,6 +121,7 @@ export type Config = ImmutableMap<{
   name: string;
   content: string;
   children: Immutable.OrderedMap<string, Config>;
+  ancestorIds?: Immutable.List<string>;
 }>;
 
 export interface CreateComponentAction {
@@ -190,7 +191,6 @@ export interface CreateConfigAction {
 export interface UpdateConfigAction {
   type: typeof UPDATE_CONFIG_ACTION;
   payload: {
-    configId: string;
     config: Config;
   };
 }

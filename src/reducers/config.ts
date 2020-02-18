@@ -240,17 +240,57 @@ const reducer = (state: State = initialState, action: Actions): State => {
       break;
     }
     case CREATE_CONFIG_ACTION: {
-      const configs = state.get("rootConfig");
+      const configForm = action.payload.config;
+      const ancestorIds = configForm.get("ancestorIds");
+      const rootConfig = state.get("rootConfig");
+      const immutablePath: string[] = ["rootConfig"];
 
+      ancestorIds &&
+        ancestorIds.forEach((id: string) => {
+          if (id !== rootConfig.get("id")) {
+            immutablePath.push(id);
+          }
+          immutablePath.push("children");
+        });
+
+      const config: Config = Immutable.fromJS({
+        id: configForm.get("id"),
+        type: configForm.get("type"),
+        name: configForm.get("name"),
+        content: configForm.get("content")
+      });
+
+      immutablePath.push(config.get("id"));
+      state = state.updateIn(immutablePath, () => config);
       break;
     }
     case UPDATE_CONFIG_ACTION: {
-      const configs = state.get("rootConfig");
-      const id = action.payload.configId;
+      const configForm = action.payload.config;
+      const ancestorIds = configForm.get("ancestorIds");
+      const rootConfig = state.get("rootConfig");
+      const immutablePath: string[] = ["rootConfig"];
+
+      ancestorIds &&
+        ancestorIds.forEach((id: string) => {
+          if (id !== rootConfig.get("id")) {
+            immutablePath.push(id);
+          }
+          immutablePath.push("children");
+        });
+
+      const config: Config = Immutable.fromJS({
+        id: configForm.get("id"),
+        type: configForm.get("type"),
+        name: configForm.get("name"),
+        content: configForm.get("content")
+      });
+
+      immutablePath.push(config.get("id"));
+      state = state.updateIn(immutablePath, () => config);
       break;
     }
     case DELETE_CONFIG_ACTION: {
-      state = state.deleteIn(["rootConfig", action.payload.configId]);
+      const rootConfig = state.get("rootConfig");
       break;
     }
   }
