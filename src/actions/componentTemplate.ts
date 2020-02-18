@@ -17,9 +17,13 @@ import {
 import { convertToCRDComponentTemplate } from "../convertors/ComponentTemplate";
 
 export const createComponentTemplateAction = (
-  componentTemplate: ComponentTemplate
+  componentTemplateRaw: ComponentTemplate
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
+    const componentTemplate = await createKappComonentTemplate(
+      convertToCRDComponentTemplate(componentTemplateRaw)
+    );
+
     dispatch({
       type: CREATE_COMPONENT,
       payload: { componentTemplate }

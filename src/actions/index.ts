@@ -52,8 +52,8 @@ export type ComponentTemplate = ImmutableMap<{
     }>
   >;
   ports: Immutable.List<ComponentTemplatePort>;
-  cpu: number;
-  memory: number;
+  cpu: string;
+  memory: string;
   disk: Immutable.List<
     ImmutableMap<{
       name: string;
@@ -76,8 +76,8 @@ export const newEmptyComponentTemplate = (): ComponentTemplate => {
     env: Immutable.List([]),
     ports: Immutable.List([]),
     disk: Immutable.List([]),
-    cpu: 0,
-    memory: 0
+    cpu: "100M",
+    memory: "100M"
   });
 };
 

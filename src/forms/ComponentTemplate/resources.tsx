@@ -34,7 +34,7 @@ export default withStyles(styles)(
             CPU
           </Typography>
 
-          <CPUSlider />
+          {/* <CPUSlider /> */}
           <Typography
             variant="h5"
             gutterBottom
@@ -42,7 +42,7 @@ export default withStyles(styles)(
           >
             Memory
           </Typography>
-          <MemorySlider />
+          {/* <MemorySlider /> */}
           <Typography
             variant="h5"
             gutterBottom

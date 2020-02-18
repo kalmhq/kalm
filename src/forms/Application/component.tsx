@@ -152,7 +152,7 @@ class RenderComponents extends React.PureComponent<Props, State> {
                           color="primary"
                           // icon={<FaceIcon />}
                           size="small"
-                          label={`CPU  ${component.get("cpu") / 1000}Core`}
+                          // label={`CPU  ${component.get("cpu") / 1000}Core`}
                         />
                       </Box>
                       <Box mr={1} display="inline">
@@ -161,7 +161,7 @@ class RenderComponents extends React.PureComponent<Props, State> {
                           color="primary"
                           // icon={<FaceIcon />}
                           size="small"
-                          label={`Memory ${component.get("memory") / 1000}G`}
+                          // label={`Memory ${component.get("memory") / 1000}G`}
                         />
                       </Box>
                       <Box mr={1} display="inline">
