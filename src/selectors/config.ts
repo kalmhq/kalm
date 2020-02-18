@@ -35,8 +35,9 @@ export const getCascaderDefaultValue = (): string[] => {
     return idChain;
   }
 
-  idChain.splice(-1, 1);
-  return idChain;
+  const newIdChain = idChain.slice(0);
+  newIdChain.splice(-1, 1);
+  return newIdChain;
 };
 
 export const getCascaderOptions = (): CascaderOptionType[] => {

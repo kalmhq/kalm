@@ -28,20 +28,40 @@ import { CustomCascader } from "./cascader";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import { connect } from "react-redux";
 import { RootState } from "../../reducers";
-import { getCascaderDefaultValue } from "../../selectors/config";
+import {
+  getCascaderDefaultValue,
+  getCurrentConfig
+} from "../../selectors/config";
 
 export interface Props {
   onClose: any;
+  formType: "new" | "edit";
 }
 
-const mapStateToProps = (state: RootState) => {
+const mapStateToProps = (state: RootState, props: Props) => {
   const values = getFormValues("config")(state) as Config;
-  const initialValues: Config = Immutable.fromJS({
-    ancestorIds: getCascaderDefaultValue(),
-    name: "",
-    type: "file",
-    content: ""
-  });
+
+  let initialValues: Config;
+  if (props.formType === "new") {
+    initialValues = Immutable.fromJS({
+      ancestorIds: getCascaderDefaultValue(),
+      name: "",
+      type: "file",
+      content: ""
+    });
+  } else {
+    const config = getCurrentConfig();
+    const idChain = state.get("configs").get("currentConfigIdChain");
+    const newIdChain = idChain.slice(0); // copy idChain to initialValues
+    newIdChain.splice(-1, 1); // remove last id
+    initialValues = Immutable.fromJS({
+      ancestorIds: newIdChain,
+      id: config.get("id"),
+      name: config.get("name"),
+      type: config.get("type"),
+      content: config.get("content")
+    });
+  }
 
   return {
     values,
@@ -114,11 +134,11 @@ const useStyles = makeStyles((theme: Theme) => ({
     justifyContent: "space-between"
   },
   pathWrapper: {
-    width: "100%"
+    width: "100%",
+    marginRight: "20px"
   },
   nameWrapper: {
-    width: "100%",
-    marginLeft: "20px"
+    width: "100%"
   },
   editorWarpper: {
     width: "100%"
@@ -126,9 +146,8 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 function ConfigFormRaw(props: Props & InjectedFormProps<Config, Props>) {
-  const { handleSubmit, onClose } = props;
+  const { handleSubmit, onClose, formType, initialValues } = props;
   const classes = useStyles();
-
   return (
     <div className={classes.root}>
       <form onSubmit={handleSubmit}>
@@ -151,12 +170,13 @@ function ConfigFormRaw(props: Props & InjectedFormProps<Config, Props>) {
             />
           </div>
         </div>
-
-        <CustomRadioGroup
-          name="type"
-          label="Type"
-          options={["file", "folder"]}
-        />
+        {formType === "new" && (
+          <CustomRadioGroup
+            name="type"
+            label="Type"
+            options={["file", "folder"]}
+          />
+        )}
         {/* <CustomTextField
           // className={classes.input}
           name="content"
@@ -168,9 +188,11 @@ function ConfigFormRaw(props: Props & InjectedFormProps<Config, Props>) {
           rows={15}
           rowsMax={15}
         /> */}
-        <FormControl margin="normal" className={classes.editorWarpper}>
-          <CustomEditor />
-        </FormControl>
+        {initialValues.get!("type") === "file" && (
+          <FormControl margin="normal" className={classes.editorWarpper}>
+            <CustomEditor />
+          </FormControl>
+        )}
         <div className={classes.buttons}>
           <Button variant="contained" color="primary" type="submit">
             Submit

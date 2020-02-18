@@ -46,5 +46,5 @@ const renderEditor = ({ input }: FilledTextFieldProps & WrappedFieldProps) => {
 };
 
 export const CustomEditor = (props: any) => {
-  return <Field name="content" component={renderEditor} />;
+  return <Field name="content" required component={renderEditor} />;
 };
