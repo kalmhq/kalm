@@ -8,7 +8,7 @@ import {
   ComponentTemplate,
   newEmptyComponentTemplate
 } from "../../actions";
-import { createComponentTemplateAction } from "../../actions/component";
+import { createComponentTemplateAction } from "../../actions/componentTemplate";
 import { setSuccessNotificationAction } from "../../actions/notification";
 import { ComponentTemplateForm } from "../../forms/ComponentTemplate";
 import { RootState } from "../../reducers";

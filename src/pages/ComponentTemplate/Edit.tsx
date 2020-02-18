@@ -2,7 +2,7 @@ import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { push } from "connected-react-router";
 import React from "react";
 import { RouteChildrenProps } from "react-router";
-import { updateComponentAction } from "../../actions/component";
+import { updateComponentAction } from "../../actions/componentTemplate";
 import {
   setErrorNotificationAction,
   setSuccessNotificationAction

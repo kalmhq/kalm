@@ -19,7 +19,7 @@ import {
   deleteComponentAction,
   duplicateComponentAction,
   loadComponentTemplatesAction
-} from "../../actions/component";
+} from "../../actions/componentTemplate";
 import {
   setErrorNotificationAction,
   setSuccessNotificationAction
@@ -75,7 +75,9 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
   private deleteConfirmedComponent = async () => {
     const { dispatch } = this.props;
     try {
-      await dispatch(deleteComponentAction(this.state.deletingComponentTemplateId!));
+      await dispatch(
+        deleteComponentAction(this.state.deletingComponentTemplateId!)
+      );
       await dispatch(
         setSuccessNotificationAction("Successfully delete a component")
       );
