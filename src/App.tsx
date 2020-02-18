@@ -20,7 +20,7 @@ import ApplicationNew from "./pages/ApplicationNew";
 import ApplicationEdit from "./pages/ApplicationEdit";
 import ComponentEdit from "./pages/ComponentEdit";
 import ComponentList from "./pages/ComponentList";
-import ComponentNew from "./pages/ComponentNew";
+import { ComponentTemplateNew } from "./pages/ComponentTemplateNew";
 import ConfigList from "./pages/ConfigList";
 import Dashboard from "./pages/Dashboard";
 import InstallPage from "./pages/Install";
@@ -310,7 +310,7 @@ export default function MiniDrawer() {
               <ApplicationNew />
             </Route>
             <Route exact path="/components/new">
-              <ComponentNew />
+              <ComponentTemplateNew />
             </Route>
             <Route
               exact

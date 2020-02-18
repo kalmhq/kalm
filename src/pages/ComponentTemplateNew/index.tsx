@@ -5,10 +5,10 @@ import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
 import { Actions, Component, newEmptyComponent } from "../../actions";
 import { createComponentTemplateAction } from "../../actions/component";
+import { setSuccessNotificationAction } from "../../actions/notification";
 import { ComponentTemplateForm } from "../../forms/Component";
 import { RootState } from "../../reducers";
 import { BasePage } from "../BasePage";
-import { setSuccessNotificationAction } from "../../actions/notification";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -21,7 +21,7 @@ interface Props extends WithStyles<typeof styles> {
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
 }
 
-class ComponentNew extends React.PureComponent<Props> {
+class ComponentTemplateNewRaw extends React.PureComponent<Props> {
   private submit = async (component: Component) => {
     const { dispatch } = this.props;
     await dispatch(createComponentTemplateAction(component));
@@ -46,4 +46,6 @@ class ComponentNew extends React.PureComponent<Props> {
   }
 }
 
-export default withStyles(styles)(connect()(ComponentNew));
+export const ComponentTemplateNew = withStyles(styles)(
+  connect()(ComponentTemplateNewRaw)
+);
