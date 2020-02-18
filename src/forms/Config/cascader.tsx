@@ -40,5 +40,5 @@ const renderCascader = ({
 };
 
 export const CustomCascader = (props: any) => {
-  return <Field name="folders" component={renderCascader} />;
+  return <Field name="ancestorIds" component={renderCascader} />;
 };

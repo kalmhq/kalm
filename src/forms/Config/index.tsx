@@ -28,15 +28,24 @@ import { CustomCascader } from "./cascader";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import { connect } from "react-redux";
 import { RootState } from "../../reducers";
+import { getCascaderDefaultValue } from "../../selectors/config";
 
 export interface Props {
   onClose: any;
 }
 
 const mapStateToProps = (state: RootState) => {
-  const config = getFormValues("config")(state) as Config;
+  const values = getFormValues("config")(state) as Config;
+  const initialValues: Config = Immutable.fromJS({
+    ancestorIds: getCascaderDefaultValue(),
+    name: "",
+    type: "file",
+    content: ""
+  });
+
   return {
-    config
+    values,
+    initialValues
   };
 };
 
@@ -180,7 +189,7 @@ function ConfigFormRaw(props: Props & InjectedFormProps<Config, Props>) {
 }
 
 // const initialValues: Config = Immutable.fromJS({
-//   folders: [],
+//   ancestorIds: [],
 //   name: "",
 //   type: "file",
 //   content: ""
@@ -194,7 +203,9 @@ function ConfigFormRaw(props: Props & InjectedFormProps<Config, Props>) {
 //   }
 // })(ConfigFormRaw);
 
-export default reduxForm<Config, Props>({
-  form: "config",
-  onSubmitFail: console.log
-})(connect(mapStateToProps)(ConfigFormRaw));
+export default connect(mapStateToProps)(
+  reduxForm<Config, Props>({
+    form: "config",
+    onSubmitFail: console.log
+  })(ConfigFormRaw)
+);

@@ -119,6 +119,7 @@ export type Config = ImmutableMap<{
   name: string;
   content: string;
   children: Immutable.OrderedMap<string, Config>;
+  ancestorIds?: string[];
 }>;
 
 export interface CreateComponentAction {
