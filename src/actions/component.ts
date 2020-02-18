@@ -3,7 +3,7 @@ import {
   CREATE_COMPONENT_ACTION,
   DELETE_COMPONENT_ACTION,
   DUPLICATE_COMPONENT_ACTION,
-  LOAD_COMPONENTS_ACTION,
+  LOAD_COMPONENT_TEMPLATES_ACTION,
   ThunkResult,
   UPDATE_COMPONENT_ACTION
 } from ".";
@@ -67,7 +67,7 @@ export const loadComponentTemplatesAction = (): ThunkResult<Promise<void>> => {
     const components = await getKappComponentTemplates();
 
     dispatch({
-      type: LOAD_COMPONENTS_ACTION,
+      type: LOAD_COMPONENT_TEMPLATES_ACTION,
       payload: {
         components
       }

@@ -6,7 +6,7 @@ import {
   UPDATE_COMPONENT_ACTION,
   DELETE_COMPONENT_ACTION,
   DUPLICATE_COMPONENT_ACTION,
-  LOAD_COMPONENTS_ACTION
+  LOAD_COMPONENT_TEMPLATES_ACTION
 } from "../actions";
 import { Actions } from "../actions";
 
@@ -95,7 +95,7 @@ const initialState: State = Immutable.Map({
 
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
-    case LOAD_COMPONENTS_ACTION: {
+    case LOAD_COMPONENT_TEMPLATES_ACTION: {
       let om = Immutable.OrderedMap<string, Component>();
 
       action.payload.components.forEach(x => {
