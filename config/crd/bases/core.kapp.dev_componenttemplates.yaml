@@ -101,6 +101,7 @@ spec:
                     - SCTP
                     type: string
                   servicePort:
+                    description: '? what is service port for?'
                     format: int32
                     type: integer
                 required:
