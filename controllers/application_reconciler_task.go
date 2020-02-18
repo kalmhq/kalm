@@ -279,42 +279,25 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 		if env.Value != "" {
 			value = env.Value
 		} else if env.SharedEnv != "" {
-			value = act.app.Spec.FindShareEnvValue(env.SharedEnv)
+			value, err = act.FindShareEnvValue(env.SharedEnv)
+			if err != nil {
+				return err
+			}
+
 			if value == "" {
-				// TODO is this the corrent way to allocate an error?
-				return fmt.Errorf("Can't find shared env %s", env.SharedEnv)
+				// TODO is this the correct way to allocate an error?
+				return fmt.Errorf("can't find shared env %s", env.SharedEnv)
 			}
 		} else if env.ComponentPort != "" {
-			parts := strings.Split(env.ComponentPort, "/")
-
-			if len(parts) != 2 {
-				return fmt.Errorf("wrong componentPort config %s, format error", env.ComponentPort)
+			value, err = act.getValueOfEnv(env)
+			if err != nil {
+				return err
 			}
-
-			service := act.FindService(parts[0])
-
-			if service == nil {
-				return fmt.Errorf("wrong componentPort config %s, service not exist", env.ComponentPort)
-			}
-
-			var port int32
-
-			for _, servicePort := range service.Spec.Ports {
-				if servicePort.Name == parts[1] {
-					port = servicePort.Port
-				}
-			}
-
-			if port == 0 {
-				return fmt.Errorf("wrong componentPort config %s, port not exist", env.ComponentPort)
-			}
-
-			value = fmt.Sprintf("%s.%s:%d", service.Name, act.app.Namespace, port)
 		}
 
 		envs = append(envs, corev1.EnvVar{
 			Name:  env.Name,
-			Value: fmt.Sprintf("%s%s%s", env.Prefix, value, env.Suffix),
+			Value: value,
 		})
 	}
 
@@ -564,6 +547,51 @@ func (act *applicationReconcilerTask) FindService(componentName string) *corev1.
 		}
 	}
 	return nil
+}
+
+func (act *applicationReconcilerTask) FindShareEnvValue(name string) (string, error) {
+	for _, env := range act.app.Spec.SharedEnv {
+		if env.Name != name {
+			continue
+		}
+
+		return act.getValueOfEnv(env)
+	}
+
+	return "", fmt.Errorf("fail to find ")
+}
+
+func (act *applicationReconcilerTask) getValueOfEnv(env corev1alpha1.EnvVar) (string, error) {
+	if env.ComponentPort == "" {
+		return env.Value, nil
+	}
+
+	parts := strings.Split(env.ComponentPort, "/")
+	if len(parts) != 2 {
+		return "", fmt.Errorf("wrong componentPort config %s, format error", env.ComponentPort)
+	}
+
+	service := act.FindService(parts[0])
+	if service == nil {
+		return "", fmt.Errorf("wrong componentPort config %s, service not exist", env.ComponentPort)
+	}
+
+	var port int32
+	for _, servicePort := range service.Spec.Ports {
+		if servicePort.Name == parts[1] {
+			port = servicePort.Port
+		}
+	}
+
+	if port == 0 {
+		return "", fmt.Errorf("wrong componentPort config %s, port not exist", env.ComponentPort)
+	}
+
+	// svc.ns:port
+	value := fmt.Sprintf("%s.%s:%d", service.Name, act.app.Namespace, port)
+
+	// <prefix>value<suffix>
+	return fmt.Sprintf("%s%s%s", env.Prefix, value, env.Suffix), nil
 }
 
 func getDeploymentName(appName, componentName string) string {

@@ -78,14 +78,14 @@ type ApplicationSpec struct {
 	ImagePullSecretName string          `json:"imagePullSecretName,omitempty"`
 }
 
-func (c *ApplicationSpec) FindShareEnvValue(name string) string {
-	for _, env := range c.SharedEnv {
-		if env.Name == name {
-			return env.Value
-		}
-	}
-	return ""
-}
+//func (c *ApplicationSpec) FindShareEnvValue(name string) string {
+//	for _, env := range c.SharedEnv {
+//		if env.Name == name {
+//			return env.Value
+//		}
+//	}
+//	return ""
+//}
 
 // ApplicationStatus defines the observed state of Application
 type ApplicationStatus struct {
