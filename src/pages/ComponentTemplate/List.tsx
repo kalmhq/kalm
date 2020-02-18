@@ -31,6 +31,11 @@ import {
   ComponentTemplateDataWrapper,
   WithComponentTemplatesDataProps
 } from "./DataWrapper";
+import {
+  DuplicateDialog,
+  DuplicateDialogHostState,
+  defaultDuplicateDialogHostStateValue
+} from "../../widgets/DuplicateDialog";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -43,7 +48,7 @@ interface Props
   extends WithComponentTemplatesDataProps,
     WithStyles<typeof styles> {}
 
-interface States {
+interface States extends DuplicateDialogHostState {
   isDeleteConfirmDialogOpen: boolean;
   deletingComponentTemplateId?: string;
 }
@@ -53,7 +58,8 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
     super(props);
 
     this.state = {
-      isDeleteConfirmDialogOpen: false
+      isDeleteConfirmDialogOpen: false,
+      ...defaultDuplicateDialogHostStateValue
     };
   }
 
@@ -72,7 +78,14 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
     });
   };
 
-  private deleteConfirmedComponent = async () => {
+  private closeDuplicateDialog = () => {
+    this.setState({
+      isDuplicateDialogShow: false,
+      duplicatingItemId: ""
+    });
+  };
+
+  private deleteComponent = async () => {
     const { dispatch } = this.props;
     try {
       await dispatch(
@@ -86,10 +99,31 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
     }
   };
 
-  private setDeletingComponentAndConfirm = (componentTemplateId: string) => {
+  private duplicateComponent = async (newName: string) => {
+    const { dispatch } = this.props;
+    try {
+      await dispatch(
+        duplicateComponentAction(this.state.duplicatingItemId!, newName)
+      );
+      await dispatch(
+        setSuccessNotificationAction("Successfully duplicate a component")
+      );
+    } catch {
+      dispatch(setErrorNotificationAction("Something wrong"));
+    }
+  };
+
+  private setDeletingIdAndConfirm = (componentTemplateId: string) => {
     this.setState({
       isDeleteConfirmDialogOpen: true,
       deletingComponentTemplateId: componentTemplateId
+    });
+  };
+
+  private setDuplicatingIdAndConfrim = (componentTemplateId: string) => {
+    this.setState({
+      isDuplicateDialogShow: true,
+      duplicatingItemId: componentTemplateId
     });
   };
 
@@ -97,7 +131,7 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
     const { dispatch, componentTemplates } = this.props;
     const data = componentTemplates.map(componentTemplate => {
       const onDeleteClick = () => {
-        this.setDeletingComponentAndConfirm(componentTemplate.get("id"));
+        this.setDeletingIdAndConfirm(componentTemplate.get("id"));
       };
       return {
         action: (
@@ -121,9 +155,7 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
               <IconButton
                 aria-label="edit"
                 onClick={() => {
-                  dispatch(
-                    duplicateComponentAction(componentTemplate.get("id"))
-                  );
+                  this.setDuplicatingIdAndConfrim(componentTemplate.get("id"));
                 }}
               >
                 <FileCopyIcon />
@@ -208,7 +240,7 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
 
   public render() {
     const { classes, isLoading } = this.props;
-    const { isDeleteConfirmDialogOpen } = this.state;
+    const { isDeleteConfirmDialogOpen, isDuplicateDialogShow } = this.state;
 
     return (
       <BasePage
@@ -221,7 +253,29 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
           onClose={this.closeConfirmDialog}
           title="Are you sure to delete this Component?"
           content="Delete this Component will NOT affect applications that includes this component."
-          onAgree={this.deleteConfirmedComponent}
+          onAgree={this.deleteComponent}
+        />
+
+        <DuplicateDialog
+          open={isDuplicateDialogShow}
+          onClose={this.closeDuplicateDialog}
+          title="Duplicate Component Template"
+          content={
+            <span>
+              You need to give your comming Component Template a new name.{" "}
+              <br />
+              The name can <strong>NOT</strong> be modified later.
+            </span>
+          }
+          textFieldProps={{
+            type: "text",
+            label: "Name",
+            placeholder: "Name of your new Component Template",
+            variant: "outlined",
+            helperText:
+              'Allowed characters are: digits (0-9), lower case letters (a-z), "-", and "."'
+          }}
+          onAgree={this.duplicateComponent}
         />
 
         <div className={classes.root}>

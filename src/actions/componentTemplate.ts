@@ -10,7 +10,8 @@ import {
 } from ".";
 import {
   getKappComponentTemplates,
-  updateKappComonentTemplate
+  updateKappComonentTemplate,
+  createKappComonentTemplate
 } from "./kubernetesApi";
 import { convertToCRDComponentTemplate } from "../convertors/ComponentTemplate";
 
@@ -26,12 +27,25 @@ export const createComponentTemplateAction = (
 };
 
 export const duplicateComponentAction = (
-  componentTemplateId: string
+  componentTemplateId: string,
+  newName: string
 ): ThunkResult<Promise<void>> => {
-  return async dispatch => {
+  return async (dispatch, getState) => {
+    let componentTemplateCopy = getState()
+      .get("componentTemplates")
+      .get("componentTemplates")
+      .get(componentTemplateId)!;
+
+    componentTemplateCopy = componentTemplateCopy.set("name", newName);
+    componentTemplateCopy = componentTemplateCopy.delete("resourceVersion");
+
+    const componentTemplate = await createKappComonentTemplate(
+      convertToCRDComponentTemplate(componentTemplateCopy)
+    );
+
     dispatch({
       type: DUPLICATE_COMPONENT,
-      payload: { componentTemplateId }
+      payload: { componentTemplate }
     });
   };
 };

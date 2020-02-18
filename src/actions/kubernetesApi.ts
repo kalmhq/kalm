@@ -58,3 +58,15 @@ export const updateKappComonentTemplate = async (
 
   return convertFromCRDComponentTemplate(res.data);
 };
+
+export const createKappComonentTemplate = async (
+  component: V1Alpha1ComponentTemplate
+): Promise<ComponentTemplate> => {
+  const res = await axios.post(
+    currentKubernetesAPIAddress +
+      `/apis/core.kapp.dev/v1alpha1/componenttemplates`,
+    component
+  );
+
+  return convertFromCRDComponentTemplate(res.data);
+};

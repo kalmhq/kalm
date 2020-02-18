@@ -161,7 +161,7 @@ export interface DeleteComponentAction {
 export interface DuplicateComponentAction {
   type: typeof DUPLICATE_COMPONENT;
   payload: {
-    componentTemplateId: string;
+    componentTemplate: ComponentTemplate;
   };
 }
 

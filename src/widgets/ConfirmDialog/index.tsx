@@ -6,7 +6,7 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 
-interface Props {
+export interface ConfirmDialogProps {
   content: React.ReactNode;
   title: React.ReactNode;
 
@@ -19,7 +19,7 @@ interface Props {
   onReject?: () => any;
 }
 
-export function ConfirmDialog(props: Props) {
+export function ConfirmDialog(props: ConfirmDialogProps) {
   const {
     title,
     content,

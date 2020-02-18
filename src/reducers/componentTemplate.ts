@@ -73,24 +73,13 @@ const reducer = (state: State = initialState, action: Actions): State => {
     }
     case DUPLICATE_COMPONENT: {
       const componentTemplates = state.get("componentTemplates");
-      const tmpId = componentTemplates.size.toString(); // TODO fake id
 
-      let componentTemplate = componentTemplates.get(
-        action.payload.componentTemplateId
-      )!;
-      componentTemplate = componentTemplate.set("id", tmpId);
-
-      let i = 0;
-      let name = "";
-      do {
-        i += 1;
-        name = `${componentTemplate.get("name")}-duplicate-${i}`;
-      } while (componentTemplates.find(x => x.get("name") === name));
-
-      componentTemplate = componentTemplate.set("name", name);
       state = state.set(
         "componentTemplates",
-        componentTemplates.set(tmpId, componentTemplate)
+        componentTemplates.set(
+          action.payload.componentTemplate.get("name"),
+          action.payload.componentTemplate
+        )
       );
       break;
     }
