@@ -1,12 +1,12 @@
 import Immutable from "immutable";
 import { ImmutableMap } from "../typings";
 import {
-  CREATE_COMPONENT_ACTION,
+  CREATE_COMPONENT,
   Component,
-  UPDATE_COMPONENT_ACTION,
-  DELETE_COMPONENT_ACTION,
-  DUPLICATE_COMPONENT_ACTION,
-  LOAD_COMPONENT_TEMPLATES_ACTION
+  UPDATE_COMPONENT,
+  DELETE_COMPONENT,
+  DUPLICATE_COMPONENT,
+  LOAD_COMPONENT_TEMPLATES
 } from "../actions";
 import { Actions } from "../actions";
 
@@ -95,7 +95,7 @@ const initialState: State = Immutable.Map({
 
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
-    case LOAD_COMPONENT_TEMPLATES_ACTION: {
+    case LOAD_COMPONENT_TEMPLATES: {
       let om = Immutable.OrderedMap<string, Component>();
 
       action.payload.components.forEach(x => {
@@ -105,7 +105,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
       state = state.set("components", om);
       break;
     }
-    case CREATE_COMPONENT_ACTION: {
+    case CREATE_COMPONENT: {
       const components = state.get("components");
       const tmpId = components.size.toString(); // TODO fake id
       let component = action.payload.component;
@@ -119,7 +119,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
       );
       break;
     }
-    case UPDATE_COMPONENT_ACTION: {
+    case UPDATE_COMPONENT: {
       const components = state.get("components");
       const id = action.payload.componentId;
       let component = action.payload.component;
@@ -127,11 +127,11 @@ const reducer = (state: State = initialState, action: Actions): State => {
       state = state.set("components", components.set(id, component));
       break;
     }
-    case DELETE_COMPONENT_ACTION: {
+    case DELETE_COMPONENT: {
       state = state.deleteIn(["components", action.payload.componentId]);
       break;
     }
-    case DUPLICATE_COMPONENT_ACTION: {
+    case DUPLICATE_COMPONENT: {
       const components = state.get("components");
       const tmpId = components.size.toString(); // TODO fake id
 

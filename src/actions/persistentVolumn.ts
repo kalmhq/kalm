@@ -1,4 +1,4 @@
-import { LOAD_PERSISTENT_VOLUMNS_ACTION, ThunkResult } from ".";
+import { LOAD_PERSISTENT_VOLUMNS, ThunkResult } from ".";
 import { getPersistentVolumes } from "./kubernetesApi";
 
 export const loadPersistentVolumes = (): ThunkResult<Promise<void>> => {
@@ -6,7 +6,7 @@ export const loadPersistentVolumes = (): ThunkResult<Promise<void>> => {
     const persistentVolumns = await getPersistentVolumes();
 
     dispatch({
-      type: LOAD_PERSISTENT_VOLUMNS_ACTION,
+      type: LOAD_PERSISTENT_VOLUMNS,
       payload: { persistentVolumns }
     });
   };

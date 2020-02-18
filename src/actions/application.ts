@@ -1,10 +1,10 @@
 import {
-  CREATE_APPLICATION_ACTION,
+  CREATE_APPLICATION,
   Application,
-  UPDATE_APPLICATION_ACTION,
-  DELETE_APPLICATION_ACTION,
+  UPDATE_APPLICATION,
+  DELETE_APPLICATION,
   ThunkResult,
-  DUPLICATE_APPLICATION_ACTION
+  DUPLICATE_APPLICATION
 } from ".";
 
 export const createApplicationAction = (
@@ -12,7 +12,7 @@ export const createApplicationAction = (
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({
-      type: CREATE_APPLICATION_ACTION,
+      type: CREATE_APPLICATION,
       payload: { applicationValues }
     });
   };
@@ -24,7 +24,7 @@ export const updateApplicationAction = (
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({
-      type: UPDATE_APPLICATION_ACTION,
+      type: UPDATE_APPLICATION,
       payload: { applicationId, applicationValues }
     });
   };
@@ -35,7 +35,7 @@ export const duplicateApplicationAction = (
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({
-      type: DUPLICATE_APPLICATION_ACTION,
+      type: DUPLICATE_APPLICATION,
       payload: { applicationId }
     });
   };
@@ -46,7 +46,7 @@ export const deleteApplicationAction = (
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({
-      type: DELETE_APPLICATION_ACTION,
+      type: DELETE_APPLICATION,
       payload: { applicationId }
     });
   };

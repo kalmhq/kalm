@@ -1,10 +1,10 @@
 import Immutable from "immutable";
 import { ImmutableMap } from "../typings";
 import {
-  CREATE_CONFIG_ACTION,
+  CREATE_CONFIG,
   Config,
-  UPDATE_CONFIG_ACTION,
-  DELETE_CONFIG_ACTION,
+  UPDATE_CONFIG,
+  DELETE_CONFIG,
   SET_CURRENT_CONFIG_ID_CHAIN
 } from "../actions";
 import { Actions } from "../actions";
@@ -41,7 +41,7 @@ const initialState: State = Immutable.Map({
                 content: `server {
                   listen 80;
                   server_name regolar.wanglei.me;
-              
+
                   location / {
                       proxy_set_header   X-Real-IP $remote_addr;
                       proxy_set_header   Host      $http_host;
@@ -57,7 +57,7 @@ const initialState: State = Immutable.Map({
                 content: `server {
                   listen 80;
                   server_name test.wanglei.me;
-              
+
                   location / {
                       proxy_set_header   X-Real-IP $remote_addr;
                       proxy_set_header   Host      $http_host;
@@ -81,7 +81,7 @@ const initialState: State = Immutable.Map({
                 content: `server {
                   listen 80;
                   server_name regolar.wanglei.me;
-              
+
                   location / {
                       proxy_set_header   X-Real-IP $remote_addr;
                       proxy_set_header   Host      $http_host;
@@ -97,7 +97,7 @@ const initialState: State = Immutable.Map({
                 content: `server {
                   listen 80;
                   server_name test.wanglei.me;
-              
+
                   location / {
                       proxy_set_header   X-Real-IP $remote_addr;
                       proxy_set_header   Host      $http_host;
@@ -115,7 +115,7 @@ const initialState: State = Immutable.Map({
             content: `server {
               listen 80;
               server_name regolar.wanglei.me;
-          
+
               location / {
                   proxy_set_header   X-Real-IP $remote_addr;
                   proxy_set_header   Host      $http_host;
@@ -239,17 +239,17 @@ const reducer = (state: State = initialState, action: Actions): State => {
       state = state.set("currentConfigIdChain", idChain);
       break;
     }
-    case CREATE_CONFIG_ACTION: {
+    case CREATE_CONFIG: {
       const configs = state.get("rootConfig");
 
       break;
     }
-    case UPDATE_CONFIG_ACTION: {
+    case UPDATE_CONFIG: {
       const configs = state.get("rootConfig");
       const id = action.payload.configId;
       break;
     }
-    case DELETE_CONFIG_ACTION: {
+    case DELETE_CONFIG: {
       state = state.deleteIn(["rootConfig", action.payload.configId]);
       break;
     }

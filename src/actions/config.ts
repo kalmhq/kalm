@@ -1,10 +1,10 @@
 import { ThunkAction } from "redux-thunk";
 import { RootState } from "../reducers";
 import {
-  CREATE_CONFIG_ACTION,
+  CREATE_CONFIG,
   Actions,
-  UPDATE_CONFIG_ACTION,
-  DELETE_CONFIG_ACTION,
+  UPDATE_CONFIG,
+  DELETE_CONFIG,
   Config,
   SET_CURRENT_CONFIG_ID_CHAIN
 } from ".";
@@ -16,7 +16,7 @@ export const createConfigAction = (
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({
-      type: CREATE_CONFIG_ACTION,
+      type: CREATE_CONFIG,
       payload: { config }
     });
   };
@@ -28,7 +28,7 @@ export const updateConfigAction = (
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({
-      type: UPDATE_CONFIG_ACTION,
+      type: UPDATE_CONFIG,
       payload: { configId, config }
     });
   };
@@ -39,7 +39,7 @@ export const deleteConfigAction = (
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({
-      type: DELETE_CONFIG_ACTION,
+      type: DELETE_CONFIG,
       payload: { configId }
     });
   };

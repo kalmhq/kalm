@@ -1,5 +1,5 @@
 import Immutable from "immutable";
-import { Actions, LOAD_PERSISTENT_VOLUMNS_ACTION } from "../actions";
+import { Actions, LOAD_PERSISTENT_VOLUMNS } from "../actions";
 import { ImmutableMap } from "../typings";
 import { V1PersistentVolume } from "../model/models";
 
@@ -13,7 +13,7 @@ const initialState: State = Immutable.Map({
 
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
-    case LOAD_PERSISTENT_VOLUMNS_ACTION: {
+    case LOAD_PERSISTENT_VOLUMNS: {
       return state.set("persistentVolumns", action.payload.persistentVolumns);
     }
   }

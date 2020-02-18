@@ -1,5 +1,5 @@
 import Immutable from "immutable";
-import { Actions, LOAD_NODES_ACTION } from "../actions";
+import { Actions, LOAD_NODES } from "../actions";
 import { V1Node } from "../model/v1Node";
 import { ImmutableMap } from "../typings";
 
@@ -13,7 +13,7 @@ const initialState: State = Immutable.Map({
 
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
-    case LOAD_NODES_ACTION: {
+    case LOAD_NODES: {
       return state.set("nodes", action.payload.nodes);
     }
   }

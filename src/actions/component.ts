@@ -1,11 +1,11 @@
 import {
   Component,
-  CREATE_COMPONENT_ACTION,
-  DELETE_COMPONENT_ACTION,
-  DUPLICATE_COMPONENT_ACTION,
-  LOAD_COMPONENT_TEMPLATES_ACTION,
+  CREATE_COMPONENT,
+  DELETE_COMPONENT,
+  DUPLICATE_COMPONENT,
+  LOAD_COMPONENT_TEMPLATES,
   ThunkResult,
-  UPDATE_COMPONENT_ACTION
+  UPDATE_COMPONENT
 } from ".";
 import {
   getKappComponentTemplates,
@@ -18,7 +18,7 @@ export const createComponentTemplateAction = (
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({
-      type: CREATE_COMPONENT_ACTION,
+      type: CREATE_COMPONENT,
       payload: { component }
     });
   };
@@ -29,7 +29,7 @@ export const duplicateComponentAction = (
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({
-      type: DUPLICATE_COMPONENT_ACTION,
+      type: DUPLICATE_COMPONENT,
       payload: { componentId }
     });
   };
@@ -45,7 +45,7 @@ export const updateComponentAction = (
     );
 
     dispatch({
-      type: UPDATE_COMPONENT_ACTION,
+      type: UPDATE_COMPONENT,
       payload: { componentId, component }
     });
   };
@@ -56,7 +56,7 @@ export const deleteComponentAction = (
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({
-      type: DELETE_COMPONENT_ACTION,
+      type: DELETE_COMPONENT,
       payload: { componentId }
     });
   };
@@ -67,7 +67,7 @@ export const loadComponentTemplatesAction = (): ThunkResult<Promise<void>> => {
     const components = await getKappComponentTemplates();
 
     dispatch({
-      type: LOAD_COMPONENT_TEMPLATES_ACTION,
+      type: LOAD_COMPONENT_TEMPLATES,
       payload: {
         components
       }

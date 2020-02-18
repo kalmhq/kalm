@@ -1,14 +1,14 @@
 import Immutable from "immutable";
 import { ImmutableMap } from "../typings";
 import {
-  CREATE_APPLICATION_ACTION,
-  UPDATE_APPLICATION_ACTION,
-  DELETE_APPLICATION_ACTION,
+  CREATE_APPLICATION,
+  UPDATE_APPLICATION,
+  DELETE_APPLICATION,
   Application,
   StatusTypeCreating,
   StatusTypePending,
   StatusTypeError,
-  DUPLICATE_APPLICATION_ACTION
+  DUPLICATE_APPLICATION
 } from "../actions";
 import { Actions } from "../actions";
 
@@ -278,7 +278,7 @@ const initialState: State = Immutable.Map({
 
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
-    case CREATE_APPLICATION_ACTION: {
+    case CREATE_APPLICATION: {
       const applications = state.get("applications");
       const tmpId = applications.size.toString(); // TODO fake id
       let applicationValues = action.payload.applicationValues;
@@ -292,7 +292,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
       );
       break;
     }
-    case UPDATE_APPLICATION_ACTION: {
+    case UPDATE_APPLICATION: {
       const applications = state.get("applications");
       const id = action.payload.applicationId;
       let applicationValues = action.payload.applicationValues;
@@ -303,11 +303,11 @@ const reducer = (state: State = initialState, action: Actions): State => {
       );
       break;
     }
-    case DELETE_APPLICATION_ACTION: {
+    case DELETE_APPLICATION: {
       state = state.deleteIn(["applications", action.payload.applicationId]);
       break;
     }
-    case DUPLICATE_APPLICATION_ACTION: {
+    case DUPLICATE_APPLICATION: {
       const applications = state.get("applications");
       const tmpId = applications.size.toString(); // TODO fake id
 

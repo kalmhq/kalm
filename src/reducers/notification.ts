@@ -1,5 +1,5 @@
 import Immutable from "immutable";
-import { SET_NOTIFICATION_MESSAGE_ACTION } from "../actions";
+import { SET_NOTIFICATION_MESSAGE } from "../actions";
 import { Actions } from "../actions";
 import { ImmutableMap } from "../typings";
 import { VariantType } from "notistack";
@@ -13,7 +13,7 @@ const initialState: State = Immutable.Map({});
 
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
-    case SET_NOTIFICATION_MESSAGE_ACTION: {
+    case SET_NOTIFICATION_MESSAGE: {
       return Immutable.Map(action.payload);
     }
   }

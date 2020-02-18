@@ -8,28 +8,28 @@ import { ImmutableMap } from "../typings";
 import "./node";
 import "./notification";
 
-export const CREATE_COMPONENT_ACTION = "CREATE_COMPONENT_ACTION";
-export const UPDATE_COMPONENT_ACTION = "UPDATE_COMPONENT_ACTION";
-export const DELETE_COMPONENT_ACTION = "DELETE_COMPONENT_ACTION";
-export const DUPLICATE_COMPONENT_ACTION = "DUPLICATE_COMPONENT_ACTION";
-export const LOAD_COMPONENT_TEMPLATES_ACTION =
-  "LOAD_COMPONENT_TEMPLATES_ACTION";
+export const CREATE_COMPONENT = "CREATE_COMPONENT";
+export const UPDATE_COMPONENT = "UPDATE_COMPONENT";
+export const DELETE_COMPONENT = "DELETE_COMPONENT";
+export const DUPLICATE_COMPONENT = "DUPLICATE_COMPONENT";
+export const LOAD_COMPONENT_TEMPLATES =
+  "LOAD_COMPONENT_TEMPLATES";
 
-export const CREATE_APPLICATION_ACTION = "CREATE_APPLICATION_ACTION";
-export const UPDATE_APPLICATION_ACTION = "UPDATE_APPLICATION_ACTION";
-export const DELETE_APPLICATION_ACTION = "DELETE_APPLICATION_ACTION";
-export const DUPLICATE_APPLICATION_ACTION = "DUPLICATE_APPLICATION_ACTION";
+export const CREATE_APPLICATION = "CREATE_APPLICATION";
+export const UPDATE_APPLICATION = "UPDATE_APPLICATION";
+export const DELETE_APPLICATION = "DELETE_APPLICATION";
+export const DUPLICATE_APPLICATION = "DUPLICATE_APPLICATION";
 
-export const CREATE_CONFIG_ACTION = "CREATE_CONFIG_ACTION";
-export const UPDATE_CONFIG_ACTION = "UPDATE_CONFIG_ACTION";
-export const DELETE_CONFIG_ACTION = "DELETE_CONFIG_ACTION";
+export const CREATE_CONFIG = "CREATE_CONFIG";
+export const UPDATE_CONFIG = "UPDATE_CONFIG";
+export const DELETE_CONFIG = "DELETE_CONFIG";
 export const SET_CURRENT_CONFIG_ID_CHAIN = "SET_CURRENT_CONFIG_ID_CHAIN";
 
-export const LOAD_NODES_ACTION = "LOAD_NODES_ACTION";
-export const LOAD_PERSISTENT_VOLUMNS_ACTION = "LOAD_PERSISTENT_VOLUMNS_ACTION";
+export const LOAD_NODES = "LOAD_NODES";
+export const LOAD_PERSISTENT_VOLUMNS = "LOAD_PERSISTENT_VOLUMNS";
 
-export const SET_NOTIFICATION_MESSAGE_ACTION =
-  "SET_NOTIFICATION_MESSAGE_ACTION";
+export const SET_NOTIFICATION_MESSAGE =
+  "SET_NOTIFICATION_MESSAGE";
 
 export type Component = ImmutableMap<{
   id: string;
@@ -127,14 +127,14 @@ export type Config = ImmutableMap<{
 }>;
 
 export interface createComponentTemplateAction {
-  type: typeof CREATE_COMPONENT_ACTION;
+  type: typeof CREATE_COMPONENT;
   payload: {
     component: Component;
   };
 }
 
 export interface UpdateComponentAction {
-  type: typeof UPDATE_COMPONENT_ACTION;
+  type: typeof UPDATE_COMPONENT;
   payload: {
     componentId: string;
     component: Component;
@@ -142,34 +142,34 @@ export interface UpdateComponentAction {
 }
 
 export interface DeleteComponentAction {
-  type: typeof DELETE_COMPONENT_ACTION;
+  type: typeof DELETE_COMPONENT;
   payload: {
     componentId: string;
   };
 }
 export interface DuplicateComponentAction {
-  type: typeof DUPLICATE_COMPONENT_ACTION;
+  type: typeof DUPLICATE_COMPONENT;
   payload: {
     componentId: string;
   };
 }
 
 export interface LoadComponentTemplatesAction {
-  type: typeof LOAD_COMPONENT_TEMPLATES_ACTION;
+  type: typeof LOAD_COMPONENT_TEMPLATES;
   payload: {
     components: Array<Component>;
   };
 }
 
 export interface CreateApplicationAction {
-  type: typeof CREATE_APPLICATION_ACTION;
+  type: typeof CREATE_APPLICATION;
   payload: {
     applicationValues: Application;
   };
 }
 
 export interface UpdateApplicationAction {
-  type: typeof UPDATE_APPLICATION_ACTION;
+  type: typeof UPDATE_APPLICATION;
   payload: {
     applicationId: string;
     applicationValues: Application;
@@ -177,28 +177,28 @@ export interface UpdateApplicationAction {
 }
 
 export interface DeleteApplicationAction {
-  type: typeof DELETE_APPLICATION_ACTION;
+  type: typeof DELETE_APPLICATION;
   payload: {
     applicationId: string;
   };
 }
 
 export interface DuplicateApplicationAction {
-  type: typeof DUPLICATE_APPLICATION_ACTION;
+  type: typeof DUPLICATE_APPLICATION;
   payload: {
     applicationId: string;
   };
 }
 
 export interface CreateConfigAction {
-  type: typeof CREATE_CONFIG_ACTION;
+  type: typeof CREATE_CONFIG;
   payload: {
     config: Config;
   };
 }
 
 export interface UpdateConfigAction {
-  type: typeof UPDATE_CONFIG_ACTION;
+  type: typeof UPDATE_CONFIG;
   payload: {
     configId: string;
     config: Config;
@@ -206,7 +206,7 @@ export interface UpdateConfigAction {
 }
 
 export interface DeleteConfigAction {
-  type: typeof DELETE_CONFIG_ACTION;
+  type: typeof DELETE_CONFIG;
   payload: {
     configId: string;
   };
@@ -220,7 +220,7 @@ export interface UpdateCurrentConfigIdChain {
 }
 
 export interface SetNotificationMessageAction {
-  type: typeof SET_NOTIFICATION_MESSAGE_ACTION;
+  type: typeof SET_NOTIFICATION_MESSAGE;
   payload: {
     message: string;
     variant: VariantType;
@@ -228,14 +228,14 @@ export interface SetNotificationMessageAction {
 }
 
 export interface LoadNodesAction {
-  type: typeof LOAD_NODES_ACTION;
+  type: typeof LOAD_NODES;
   payload: {
     nodes: V1Node[];
   };
 }
 
 export interface LoadPersistentVolumnsAction {
-  type: typeof LOAD_PERSISTENT_VOLUMNS_ACTION;
+  type: typeof LOAD_PERSISTENT_VOLUMNS;
   payload: {
     persistentVolumns: V1PersistentVolume[];
   };
