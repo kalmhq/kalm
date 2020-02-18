@@ -1,31 +1,26 @@
 import {
   Button,
   Grid,
-  Paper,
-  ListItem,
   List as MList,
-  ListItemText
+  ListItem,
+  ListItemText,
+  Paper
 } from "@material-ui/core";
-
-import Box from "@material-ui/core/Box";
 import { makeStyles, Theme } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import React from "react";
-import { reduxForm } from "redux-form/immutable";
+import { connect } from "react-redux";
+import SyntaxHighlighter from "react-syntax-highlighter";
+import { monokai } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import { InjectedFormProps } from "redux-form";
-import { getFormValues } from "redux-form/immutable";
+import { getFormValues, reduxForm } from "redux-form/immutable";
 import { Component } from "../../actions";
+import { RootState } from "../../reducers";
 import { CustomTextField } from "../Basic";
 import { CustomEnvs } from "../Basic/env";
 import { CustomPorts } from "../Basic/ports";
 import { ValidatorRequired } from "../validator";
 import ComponentResources from "./resources";
-import { RootState } from "../../reducers";
-import { connect } from "react-redux";
-
-import SyntaxHighlighter from "react-syntax-highlighter";
-import { monokai } from "react-syntax-highlighter/dist/esm/styles/hljs";
-import { List } from "immutable";
 
 export interface Props {}
 
@@ -65,7 +60,7 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-function ComponentFormRaw(
+function ComponentTemplateFormRaw(
   props: Props &
     InjectedFormProps<Component, Props> &
     ReturnType<typeof mapStateToProps>
@@ -245,7 +240,7 @@ function ComponentFormRaw(
   );
 }
 
-export default reduxForm<Component, Props>({
+export const ComponentTemplateForm = reduxForm<Component, Props>({
   form: "component",
   onSubmitFail: console.log
-})(connect(mapStateToProps)(ComponentFormRaw));
+})(connect(mapStateToProps)(ComponentTemplateFormRaw));

@@ -1,6 +1,6 @@
 import React from "react";
 import { BasePage } from "../BasePage";
-import ComponentForm from "../../forms/Component";
+import { ComponentTemplateForm } from "../../forms/Component";
 import { Component, Actions } from "../../actions";
 import { connect, DispatchProp } from "react-redux";
 import { updateComponentAction } from "../../actions/component";
@@ -58,7 +58,10 @@ class ComponentEdit extends React.PureComponent<Props> {
     return (
       <BasePage title={`Edit Component {component.name}`}>
         <div className={classes.root}>
-          <ComponentForm onSubmit={this.submit} initialValues={component} />
+          <ComponentTemplateForm
+            onSubmit={this.submit}
+            initialValues={component}
+          />
         </div>
       </BasePage>
     );

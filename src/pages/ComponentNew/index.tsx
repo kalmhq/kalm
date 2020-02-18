@@ -5,7 +5,7 @@ import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
 import { Actions, Component, newEmptyComponent } from "../../actions";
 import { createComponentTemplateAction } from "../../actions/component";
-import ComponentForm from "../../forms/Component";
+import { ComponentTemplateForm } from "../../forms/Component";
 import { RootState } from "../../reducers";
 import { BasePage } from "../BasePage";
 import { setSuccessNotificationAction } from "../../actions/notification";
@@ -36,7 +36,7 @@ class ComponentNew extends React.PureComponent<Props> {
     return (
       <BasePage title="New Component">
         <div className={classes.root}>
-          <ComponentForm
+          <ComponentTemplateForm
             onSubmit={this.submit}
             initialValues={newEmptyComponent()}
           />
