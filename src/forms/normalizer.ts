@@ -16,3 +16,27 @@ export const NormalizePort = (
 
   return portInteger;
 };
+
+export const NormalizeCPU = (value: string): string => {
+  if (!value || value === "0") {
+    return "0";
+  }
+
+  while (value.length > 1 && value[0] === "0" && value[1] !== ".") {
+    value = value.slice(1);
+  }
+
+  return value;
+};
+
+export const NormalizeMemory = (value: string): string => {
+  if (!value || value === "0") {
+    return "0";
+  }
+
+  while (value.length > 0 && value[0] === "0") {
+    value = value.slice(1);
+  }
+
+  return value;
+};

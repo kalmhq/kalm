@@ -1,10 +1,16 @@
-import React, { ChangeEvent } from "react";
+import {
+  createStyles,
+  Grid,
+  Theme,
+  withStyles,
+  WithStyles
+} from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
-import Slider from "@material-ui/core/Slider";
+import React from "react";
+import { CustomTextField } from "../Basic";
 import { CustomDisks } from "../Basic/disk";
-import { createStyles, withStyles, WithStyles, Theme } from "@material-ui/core";
-import { CPUSlider } from "../Basic/cpu";
-import { MemorySlider } from "../Basic/memory";
+import { NormalizeCPU, NormalizeMemory } from "../normalizer";
+import { ValidatorCPU, ValidatorRequired, ValidatorMemory } from "../validator";
 
 const styles = (_: Theme) =>
   createStyles({
@@ -25,33 +31,38 @@ export default withStyles(styles)(
   > {
     public render() {
       return (
-        <div>
-          <Typography
-            variant="h5"
-            gutterBottom
-            classes={{ root: this.props.classes.header }}
-          >
-            CPU
-          </Typography>
-
-          {/* <CPUSlider /> */}
-          <Typography
-            variant="h5"
-            gutterBottom
-            classes={{ root: this.props.classes.header }}
-          >
-            Memory
-          </Typography>
-          {/* <MemorySlider /> */}
-          <Typography
+        <Grid container md={12} spacing={2}>
+          <Grid item md={6}>
+            <CustomTextField
+              // className={classes.input}
+              name="cpu"
+              label="CPU"
+              margin
+              validate={[ValidatorCPU]}
+              normalize={NormalizeCPU}
+              placeholder="Please type the component name"
+            />
+          </Grid>
+          <Grid item md={6}>
+            <CustomTextField
+              // className={classes.input}
+              name="memory"
+              label="Memory"
+              margin
+              validate={[ValidatorMemory]}
+              normalize={NormalizeMemory}
+              placeholder="Please type the component name"
+            />
+          </Grid>
+          {/* <Typography
             variant="h5"
             gutterBottom
             classes={{ root: this.props.classes.diskHeader }}
           >
             Disk
           </Typography>
-          <CustomDisks />
-        </div>
+          <CustomDisks /> */}
+        </Grid>
       );
     }
   }

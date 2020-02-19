@@ -269,6 +269,25 @@ function ComponentTemplateFormRaw(
             <Typography classes={{ root: classes.sectionDiscription }}>
               Cpu, Memory, Disk can be configured here.
             </Typography>
+            <MList dense={true}>
+              <ListItem>
+                <ListItemText
+                  primary="CPU"
+                  secondary={
+                    "Fractional values are allowed. A Container that requests 0.5 CPU is guaranteed half as much CPU as a Container that requests 1 CPU. You can use the suffix m to mean milli. For example 100m CPU, 100 milliCPU, and 0.1 CPU are all the same. Precision finer than 1m is not allowed. CPU is always requested as an absolute quantity, never as a relative quantity; 0.1 is the same amount of CPU on a single-core, dual-core, or 48-core machine."
+                  }
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemText
+                  primary="Memory"
+                  secondary={
+                    "The memory resource is measured in bytes. You can express memory as a plain integer or a fixed-point integer with one of these suffixes: E, P, T, G, M, K, Ei, Pi, Ti, Gi, Mi, Ki. For example, the following represent approximately the same value:"
+                  }
+                />
+              </ListItem>
+            </MList>
+
             <Paper
               elevation={4}
               square
