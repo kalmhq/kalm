@@ -6,8 +6,10 @@ import {
   UPDATE_CONFIG,
   DELETE_CONFIG,
   Config,
-  SET_CURRENT_CONFIG_ID_CHAIN
+  SET_CURRENT_CONFIG_ID_CHAIN,
+  DUPLICATE_CONFIG
 } from ".";
+import Immutable from "immutable";
 
 export type ThunkResult<R> = ThunkAction<R, RootState, undefined, Actions>;
 
@@ -30,6 +32,31 @@ export const createConfigAction = (
   };
 };
 
+export const duplicateConfigAction = (
+  config: Config
+): ThunkResult<Promise<void>> => {
+  config = Immutable.fromJS({
+    id: "666", // TODO fake id now
+    name: config.get("name") + "-duplicate",
+    type: config.get("type"),
+    content: config.get("content"),
+    ancestorIds: config.get("ancestorIds")
+  });
+
+  const newIdChain = config.get("ancestorIds")
+    ? config.get("ancestorIds")!.toArray()
+    : [];
+  newIdChain.push(config.get("id"));
+  console.log("dup", config.toJS());
+  return async dispatch => {
+    dispatch({
+      type: DUPLICATE_CONFIG,
+      payload: { config }
+    });
+    dispatch(setCurrentConfigIdChainAction(newIdChain));
+  };
+};
+
 export const updateConfigAction = (
   config: Config
 ): ThunkResult<Promise<void>> => {
@@ -42,12 +69,13 @@ export const updateConfigAction = (
 };
 
 export const deleteConfigAction = (
-  configId: string
+  config: Config
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
+    dispatch(setCurrentConfigIdChainAction(["0"]));
     dispatch({
       type: DELETE_CONFIG,
-      payload: { configId }
+      payload: { config }
     });
   };
 };

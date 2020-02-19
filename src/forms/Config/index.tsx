@@ -210,21 +210,6 @@ function ConfigFormRaw(props: Props & InjectedFormProps<Config, Props>) {
   );
 }
 
-// const initialValues: Config = Immutable.fromJS({
-//   ancestorIds: [],
-//   name: "",
-//   type: "file",
-//   content: ""
-// });
-
-// export default reduxForm<Config, Props>({
-//   form: "config",
-//   initialValues,
-//   onSubmitFail: (...args) => {
-//     console.log("submit failed", args);
-//   }
-// })(ConfigFormRaw);
-
 export default connect(mapStateToProps)(
   reduxForm<Config, Props>({
     form: "config",

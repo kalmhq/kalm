@@ -3,6 +3,7 @@ import { Config } from "../actions";
 import { RootState } from "../reducers";
 import { store } from "../store";
 import { CascaderOptionType } from "antd/es/cascader";
+import Immutable from "immutable";
 
 export const getCurrentConfig = (): Config => {
   const state = store.getState();
@@ -22,6 +23,10 @@ export const getConfigByIdChain = (idChain: string[]): Config => {
 
     config = config.get("children").get(id) as Config;
   });
+
+  const newIdChain = idChain.slice(0);
+  newIdChain.splice(-1, 1);
+  config = config.set("ancestorIds", Immutable.fromJS(newIdChain));
 
   return config;
 };

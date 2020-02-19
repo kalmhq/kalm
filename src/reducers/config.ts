@@ -5,7 +5,8 @@ import {
   Config,
   UPDATE_CONFIG,
   DELETE_CONFIG,
-  SET_CURRENT_CONFIG_ID_CHAIN
+  SET_CURRENT_CONFIG_ID_CHAIN,
+  DUPLICATE_CONFIG
 } from "../actions";
 import { Actions } from "../actions";
 
@@ -264,6 +265,31 @@ const reducer = (state: State = initialState, action: Actions): State => {
       state = state.updateIn(immutablePath, () => config);
       break;
     }
+    case DUPLICATE_CONFIG: {
+      const configForm = action.payload.config;
+      const ancestorIds = configForm.get("ancestorIds");
+      const rootConfig = state.get("rootConfig");
+      const immutablePath: string[] = ["rootConfig"];
+
+      ancestorIds &&
+        ancestorIds.forEach((id: string) => {
+          if (id !== rootConfig.get("id")) {
+            immutablePath.push(id);
+          }
+          immutablePath.push("children");
+        });
+
+      const config: Config = Immutable.fromJS({
+        id: configForm.get("id"),
+        type: configForm.get("type"),
+        name: configForm.get("name"),
+        content: configForm.get("content")
+      });
+
+      immutablePath.push(config.get("id"));
+      state = state.updateIn(immutablePath, () => config);
+      break;
+    }
     case UPDATE_CONFIG: {
       const configForm = action.payload.config;
       const ancestorIds = configForm.get("ancestorIds");
@@ -290,7 +316,21 @@ const reducer = (state: State = initialState, action: Actions): State => {
       break;
     }
     case DELETE_CONFIG: {
+      const configForm = action.payload.config;
+      const ancestorIds = configForm.get("ancestorIds");
       const rootConfig = state.get("rootConfig");
+      const immutablePath: string[] = ["rootConfig"];
+
+      ancestorIds &&
+        ancestorIds.forEach((id: string) => {
+          if (id !== rootConfig.get("id")) {
+            immutablePath.push(id);
+          }
+          immutablePath.push("children");
+        });
+      immutablePath.push(configForm.get("id"));
+
+      state = state.deleteIn(immutablePath);
       break;
     }
   }
