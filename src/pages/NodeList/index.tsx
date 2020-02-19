@@ -2,7 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { TDispatchProp } from "../../actions";
 import { loadNodesAction } from "../../actions/node";
-import { currentKubernetesAPIAddress } from "../../actions/kubernetesApi";
+import { K8sApiPerfix } from "../../actions/kubernetesApi";
 import { RootState } from "../../reducers";
 import { BasePage } from "../BasePage";
 import { Alert } from "@material-ui/lab";
@@ -136,8 +136,7 @@ export class NodeListRaw extends React.Component<Props, States> {
             <Alert severity="error">
               <Box>
                 Kapp fails to load nodes from current cluster with endpoint{" "}
-                <strong>{currentKubernetesAPIAddress}</strong>. Please check
-                your connection.
+                <strong>{K8sApiPerfix}</strong>. Please check your connection.
               </Box>
             </Alert>
           ) : loadingNodes ? null : (

@@ -1,5 +1,5 @@
 import { V1Alpha1ComponentTemplate } from "../kappModel/v1alpha1ComponentTemplate";
-import { ComponentTemplate } from "../actions";
+import { ComponentTemplate, workloadTypeServer } from "../actions";
 import { Map, List } from "immutable";
 import { ObjectSerializer } from "../model/models";
 
@@ -45,7 +45,8 @@ export const convertFromCRDComponentTemplate = (
     cpu: spec.cpu || "",
     memory: spec.memory || "",
     disk: List([]),
-    resourceVersion: metadata.resourceVersion
+    resourceVersion: metadata.resourceVersion,
+    workloadType: spec.workloadType || workloadTypeServer
   });
 
   return res;
@@ -84,7 +85,8 @@ export const convertToCRDComponentTemplate = (
           }))
           .toArray(),
         cpu: c.get("cpu"),
-        memory: c.get("memory")
+        memory: c.get("memory"),
+        workloadType: c.get("workloadType") || workloadTypeServer
       }
     },
     "V1Alpha1ComponentTemplate"

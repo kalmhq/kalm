@@ -7,7 +7,8 @@ import {
   ListItemText,
   Paper,
   Tab,
-  Tabs
+  Tabs,
+  MenuItem
 } from "@material-ui/core";
 import {
   createStyles,
@@ -21,11 +22,16 @@ import { connect } from "react-redux";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { monokai } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import { InjectedFormProps } from "redux-form";
+import { Field } from "redux-form/immutable";
 import { getFormValues, reduxForm } from "redux-form/immutable";
-import { ComponentTemplate } from "../../actions";
+import {
+  ComponentTemplate,
+  workloadTypeCronjob,
+  workloadTypeServer
+} from "../../actions";
 import { convertToCRDComponentTemplate } from "../../convertors/ComponentTemplate";
 import { RootState } from "../../reducers";
-import { CustomTextField } from "../Basic";
+import { CustomTextField, RenderSelectField } from "../Basic";
 import { CustomEnvs } from "../Basic/env";
 import { CustomPorts } from "../Basic/ports";
 import { ValidatorRequired } from "../validator";
@@ -187,6 +193,16 @@ function ComponentTemplateFormRaw(
                 label="Command (Optional)"
                 helperText='Eg: "/bin/app", "rails server".'
               />
+              <Box mt={3}></Box>
+              <Field
+                name="workloadType"
+                component={RenderSelectField}
+                label="Workload Type"
+                validate={[ValidatorRequired]}
+              >
+                <MenuItem value={workloadTypeServer}>Server ()</MenuItem>
+                <MenuItem value={workloadTypeCronjob}>Cronjob ()</MenuItem>
+              </Field>
             </Paper>
             <Typography
               variant="h2"

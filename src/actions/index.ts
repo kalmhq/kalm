@@ -65,6 +65,7 @@ export type ComponentTemplate = ImmutableMap<{
     }>
   >;
   resourceVersion?: string;
+  workloadType?: WorkloadType;
 }>;
 
 export const newEmptyComponentTemplate = (): ComponentTemplate => {
@@ -77,7 +78,8 @@ export const newEmptyComponentTemplate = (): ComponentTemplate => {
     ports: Immutable.List([]),
     disk: Immutable.List([]),
     cpu: "100M",
-    memory: "100M"
+    memory: "100M",
+    workloadType: "server"
   });
 };
 
@@ -103,6 +105,10 @@ export const StatusTypeRunning = "RUNNING";
 export const StatusTypePending = "PENDING";
 export const StatusTypeCreating = "CREATING";
 export const StatusTypeError = "Error";
+
+export type WorkloadType = string;
+export const workloadTypeServer: WorkloadType = "server";
+export const workloadTypeCronjob: WorkloadType = "cronjob";
 
 export type Status =
   | typeof StatusTypeRunning
