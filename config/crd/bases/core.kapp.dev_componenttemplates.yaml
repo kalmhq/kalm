@@ -147,6 +147,11 @@ spec:
                 - name
                 type: object
               type: array
+            workloadType:
+              enum:
+              - server
+              - cronjob
+              type: string
           required:
           - image
           - name

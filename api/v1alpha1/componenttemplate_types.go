@@ -24,6 +24,13 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+type WorkLoadType string
+
+const (
+	WorkLoadTypeServer  WorkLoadType = "server"
+	WorkLoadTypeCronjob WorkLoadType = "cronjob"
+)
+
 // ComponentTemplateSpec defines the desired state of ComponentTemplate
 type ComponentTemplateSpec struct {
 	Name string `json:"name"`
@@ -45,6 +52,9 @@ type ComponentTemplateSpec struct {
 
 	// +optional
 	// ReadinessProbe *v1.Probe `json:"readinessProbe,omitempty"`
+
+	// +kubebuilder:validation:Enum=server;cronjob
+	WorkLoadType WorkLoadType `json:"workloadType,omitempty"`
 
 	BeforeStart []string `json:"beforeStart,omitempty"`
 
