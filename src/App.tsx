@@ -29,6 +29,7 @@ import { NodeList } from "./pages/NodeList";
 import { NoMatch, Page404 } from "./pages/NoMatch";
 import { NotificationComponent } from "./widgets/Notification";
 import { Sidenav, SidenavGroupProps } from "./widgets/Sidenav";
+import { Fade } from "@material-ui/core";
 
 const sidenavGroups: SidenavGroupProps[] = [
   {
@@ -128,18 +129,26 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     appBar: {
       zIndex: theme.zIndex.drawer,
-      transition: theme.transitions.create(["width", "margin"], {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.leavingScreen
-      })
+      paddingLeft: theme.spacing(9),
+      transition: theme.transitions.create(
+        ["width", "margin", "padding-left"],
+        {
+          easing: theme.transitions.easing.sharp,
+          duration: theme.transitions.duration.leavingScreen
+        }
+      )
     },
     appBarShift: {
       marginLeft: drawerWidth,
       width: `calc(100% - ${drawerWidth}px)`,
-      transition: theme.transitions.create(["width", "margin"], {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.enteringScreen
-      })
+      paddingLeft: 0,
+      transition: theme.transitions.create(
+        ["width", "margin", "padding-left"],
+        {
+          easing: theme.transitions.easing.sharp,
+          duration: theme.transitions.duration.enteringScreen
+        }
+      )
     },
     menuButton: {
       marginRight: 24
@@ -282,12 +291,15 @@ export default function MiniDrawer() {
                   className={classes.toolbarTitleImg}
                   alt="logo"
                 />
-                Kapp Dashboard
+
+                {open ? "Kapp Dashboard" : null}
               </div>
 
-              <IconButton onClick={handleDrawerClose} color="inherit">
-                <Icon color="inherit">chevron_left_icon</Icon>
-              </IconButton>
+              <Fade in={open}>
+                <IconButton onClick={handleDrawerClose} color="inherit">
+                  <Icon color="inherit">chevron_left_icon</Icon>
+                </IconButton>
+              </Fade>
             </div>
             <Sidenav groups={sidenavGroups} isFolded={!open} />
           </Drawer>
