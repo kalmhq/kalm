@@ -23,6 +23,7 @@ export const DELETE_APPLICATION = "DELETE_APPLICATION";
 export const DUPLICATE_APPLICATION = "DUPLICATE_APPLICATION";
 
 export const CREATE_CONFIG = "CREATE_CONFIG";
+export const DUPLICATE_CONFIG = "DUPLICATE_CONFIG";
 export const UPDATE_CONFIG = "UPDATE_CONFIG";
 export const DELETE_CONFIG = "DELETE_CONFIG";
 export const SET_CURRENT_CONFIG_ID_CHAIN = "SET_CURRENT_CONFIG_ID_CHAIN";
@@ -218,6 +219,13 @@ export interface CreateConfigAction {
   };
 }
 
+export interface DuplicateConfigAction {
+  type: typeof DUPLICATE_CONFIG;
+  payload: {
+    config: Config;
+  };
+}
+
 export interface UpdateConfigAction {
   type: typeof UPDATE_CONFIG;
   payload: {
@@ -228,7 +236,7 @@ export interface UpdateConfigAction {
 export interface DeleteConfigAction {
   type: typeof DELETE_CONFIG;
   payload: {
-    configId: string;
+    config: Config;
   };
 }
 
@@ -273,6 +281,7 @@ export type Actions =
   | CreateConfigAction
   | DeleteConfigAction
   | UpdateConfigAction
+  | DuplicateConfigAction
   | UpdateCurrentConfigIdChain
   | SetNotificationMessageAction
   | CallHistoryMethodAction

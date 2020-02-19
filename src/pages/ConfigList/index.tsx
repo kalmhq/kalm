@@ -17,7 +17,10 @@ import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@material-ui/icons/Delete";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import { push } from "connected-react-router";
-import { deleteConfigAction } from "../../actions/config";
+import {
+  deleteConfigAction,
+  duplicateConfigAction
+} from "../../actions/config";
 import { ThunkDispatch } from "redux-thunk";
 import { Actions, Config } from "../../actions";
 import { FileTree } from "../../widgets/FileTree";
@@ -26,6 +29,11 @@ import SyntaxHighlighter from "react-syntax-highlighter";
 import { monokai } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import { ConfigNewDialog } from "../../widgets/ConfigNewDialog";
 import { ConfigEditDialog } from "../../widgets/ConfigEditDialog";
+import {
+  setSuccessNotificationAction,
+  setErrorNotificationAction
+} from "../../actions/notification";
+import { ConfirmDialog } from "../../widgets/ConfirmDialog";
 
 const styles = (theme: Theme) => ({
   fileIcon: {
@@ -80,6 +88,7 @@ interface Props extends StateProps {
 interface State {
   showConfigNewDialog: boolean;
   showConfigEditDialog: boolean;
+  isDeleteConfirmDialogOpen: boolean;
 }
 
 class List extends React.PureComponent<Props, State> {
@@ -87,9 +96,48 @@ class List extends React.PureComponent<Props, State> {
     super(props);
     this.state = {
       showConfigNewDialog: false,
-      showConfigEditDialog: false
+      showConfigEditDialog: false,
+      isDeleteConfirmDialogOpen: false
     };
   }
+
+  private closeConfirmDialog = () => {
+    this.setState({
+      isDeleteConfirmDialogOpen: false
+    });
+  };
+
+  private deleteConfirmedConfig = async () => {
+    const { dispatch } = this.props;
+    try {
+      await dispatch(deleteConfigAction(getCurrentConfig()));
+      await dispatch(
+        setSuccessNotificationAction("Successfully delete an config")
+      );
+    } catch {
+      dispatch(setErrorNotificationAction("Something wrong"));
+    }
+  };
+
+  private setDeletingConfigAndConfirm = () => {
+    this.setState({
+      isDeleteConfirmDialogOpen: true
+    });
+  };
+
+  private renderDeleteConfirmDialog = () => {
+    const { isDeleteConfirmDialogOpen } = this.state;
+
+    return (
+      <ConfirmDialog
+        open={isDeleteConfirmDialogOpen}
+        onClose={this.closeConfirmDialog}
+        title="Are you sure to delete this Config?"
+        content="You will lost this config, and this action is irrevocable."
+        onAgree={this.deleteConfirmedConfig}
+      />
+    );
+  };
 
   public onCreate = () => {
     this.setState({
@@ -137,7 +185,8 @@ class List extends React.PureComponent<Props, State> {
         <IconButton
           aria-label="edit"
           onClick={() => {
-            // TODO duplicate config
+            const config = getCurrentConfig();
+            dispatch(duplicateConfigAction(config));
           }}
         >
           <FileCopyIcon />
@@ -146,7 +195,7 @@ class List extends React.PureComponent<Props, State> {
         <IconButton
           aria-label="delete"
           onClick={() => {
-            // TODO delete config
+            this.setDeletingConfigAndConfirm();
           }}
         >
           <DeleteIcon />
@@ -165,6 +214,7 @@ class List extends React.PureComponent<Props, State> {
         onCreate={this.onCreate}
         createButtonText="Add A Config"
       >
+        {this.renderDeleteConfirmDialog()}
         <div className={classes.displayFlex}>
           <div className={classes.leftTree}>
             <FileTree rootConfig={rootConfig} dispatch={dispatch} />
