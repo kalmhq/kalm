@@ -44,7 +44,13 @@ export const renderTextField = ({
       size="small"
       margin="normal"
       variant="outlined"
-      {...input}
+      // {...input}
+      // onChange={input.onChange}
+      // onChange={(event: any) => input.onChange(event.target.value)}
+      onFocus={input.onChange}
+      onBlur={input.onChange}
+      // value={input.value}
+      defaultValue={input.value}
       {...custom}
     />
   );
