@@ -64,17 +64,19 @@ spec:
                       description: EnvVar represents an environment variable present
                         in a Container.
                       properties:
-                        componentPort:
-                          type: string
                         name:
                           description: Name of the environment variable. Must be a
                             C_IDENTIFIER.
                           type: string
                         prefix:
                           type: string
-                        sharedEnv:
-                          type: string
                         suffix:
+                          type: string
+                        type:
+                          enum:
+                          - static
+                          - external
+                          - linked
                           type: string
                         value:
                           type: string
@@ -407,16 +409,18 @@ spec:
                 description: EnvVar represents an environment variable present in
                   a Container.
                 properties:
-                  componentPort:
-                    type: string
                   name:
                     description: Name of the environment variable. Must be a C_IDENTIFIER.
                     type: string
                   prefix:
                     type: string
-                  sharedEnv:
-                    type: string
                   suffix:
+                    type: string
+                  type:
+                    enum:
+                    - static
+                    - external
+                    - linked
                     type: string
                   value:
                     type: string

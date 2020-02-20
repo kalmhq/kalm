@@ -4,6 +4,14 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+type EnvVarType string
+
+const (
+	EnvVarTypeStatic   EnvVarType = "static"
+	EnvVarTypeExternal EnvVarType = "external"
+	EnvVarTypeLinked   EnvVarType = "linked"
+)
+
 // EnvVar represents an environment variable present in a Container.
 type EnvVar struct {
 	// Name of the environment variable. Must be a C_IDENTIFIER.
@@ -11,9 +19,8 @@ type EnvVar struct {
 
 	Value string `json:"value,omitempty"`
 
-	SharedEnv string `json:"sharedEnv,omitempty"`
-
-	ComponentPort string `json:"componentPort,omitempty"`
+	// +kubebuilder:validation:Enum=static;external;linked
+	Type EnvVarType `json:"type,omitempty"`
 
 	Prefix string `json:"prefix,omitempty"`
 

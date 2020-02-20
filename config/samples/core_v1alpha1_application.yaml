@@ -53,7 +53,8 @@ spec:
           suffix: /v4
         # Get value from shareEnv
         - name: SOME_COMMON_ENV
-          sharedEnv: SOME_COMMON_ENV
+          value: SOME_COMMON_ENV
+          type: external
         # normal env definition
         - name: SOME_ENV
           value: SOME_VALUE

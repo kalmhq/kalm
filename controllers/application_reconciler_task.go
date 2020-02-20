@@ -276,20 +276,20 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 	for _, env := range component.Env {
 		var value string
 
-		if env.Value != "" {
+		if env.Type == "" || env.Type == corev1alpha1.EnvVarTypeStatic {
 			value = env.Value
-		} else if env.SharedEnv != "" {
-			value, err = act.FindShareEnvValue(env.SharedEnv)
+		} else if env.Type == corev1alpha1.EnvVarTypeExternal {
+			value, err = act.FindShareEnvValue(env.Value)
 			if err != nil {
 				return err
 			}
 
 			if value == "" {
 				// TODO is this the correct way to allocate an error?
-				return fmt.Errorf("can't find shared env %s", env.SharedEnv)
+				return fmt.Errorf("can't find shared env %s", env.Value)
 			}
-		} else if env.ComponentPort != "" {
-			value, err = act.getValueOfEnv(env)
+		} else if env.Type == corev1alpha1.EnvVarTypeLinked {
+			value, err = act.getValueOfLinkedEnv(env)
 			if err != nil {
 				return err
 			}
@@ -555,25 +555,30 @@ func (act *applicationReconcilerTask) FindShareEnvValue(name string) (string, er
 			continue
 		}
 
-		return act.getValueOfEnv(env)
+		if env.Type == corev1alpha1.EnvVarTypeLinked {
+			return act.getValueOfLinkedEnv(env)
+		} else if env.Type == "" || env.Type == corev1alpha1.EnvVarTypeStatic {
+			return env.Value, nil
+		}
+
 	}
 
 	return "", fmt.Errorf("fail to find ")
 }
 
-func (act *applicationReconcilerTask) getValueOfEnv(env corev1alpha1.EnvVar) (string, error) {
-	if env.ComponentPort == "" {
+func (act *applicationReconcilerTask) getValueOfLinkedEnv(env corev1alpha1.EnvVar) (string, error) {
+	if env.Value == "" {
 		return env.Value, nil
 	}
 
-	parts := strings.Split(env.ComponentPort, "/")
+	parts := strings.Split(env.Value, "/")
 	if len(parts) != 2 {
-		return "", fmt.Errorf("wrong componentPort config %s, format error", env.ComponentPort)
+		return "", fmt.Errorf("wrong componentPort config %s, format error", env.Value)
 	}
 
 	service := act.FindService(parts[0])
 	if service == nil {
-		return "", fmt.Errorf("wrong componentPort config %s, service not exist", env.ComponentPort)
+		return "", fmt.Errorf("wrong componentPort config %s, service not exist", env.Value)
 	}
 
 	var port int32
@@ -584,7 +589,7 @@ func (act *applicationReconcilerTask) getValueOfEnv(env corev1alpha1.EnvVar) (st
 	}
 
 	if port == 0 {
-		return "", fmt.Errorf("wrong componentPort config %s, port not exist", env.ComponentPort)
+		return "", fmt.Errorf("wrong componentPort config %s, port not exist", env.Value)
 	}
 
 	// svc.ns:port
