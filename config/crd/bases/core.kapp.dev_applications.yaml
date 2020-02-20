@@ -349,10 +349,7 @@ spec:
                         format: int32
                         type: integer
                     type: object
-                  type:
-                    enum:
-                    - Server
-                    - Cronjob
+                  schedule:
                     type: string
                   volumeMounts:
                     items:
@@ -393,6 +390,11 @@ spec:
                       - name
                       type: object
                     type: array
+                  workloadType:
+                    enum:
+                    - server
+                    - cronjob
+                    type: string
                 required:
                 - image
                 - name

@@ -45,8 +45,6 @@ type ComponentTemplateSpec struct {
 
 	Ports []Port `json:"ports,omitempty"`
 
-	Type ComponentType `json:"type,omitempty"`
-
 	// +optional
 	// LivenessProbe *v1.Probe `json:"livenessProbe,omitempty"`
 

@@ -25,15 +25,6 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-// +kubebuilder:validation:Enum=Server;Cronjob
-type ComponentType string
-
-const (
-	ComponentTypeServer ComponentType = "Server"
-
-	ComponentTypeCronjob ComponentType = "Cronjob"
-)
-
 type ComponentSpec struct {
 	Name string `json:"name"`
 
@@ -47,7 +38,10 @@ type ComponentSpec struct {
 
 	Ports []Port `json:"ports,omitempty"`
 
-	Type ComponentType `json:"type,omitempty"`
+	// +kubebuilder:validation:Enum=server;cronjob
+	WorkLoadType WorkLoadType `json:"workloadType,omitempty"`
+
+	Schedule string `json:"schedule,omitempty"`
 
 	// +optional
 	LivenessProbe *v1.Probe `json:"livenessProbe,omitempty"`

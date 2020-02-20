@@ -107,11 +107,6 @@ spec:
               type: array
             schedule:
               type: string
-            type:
-              enum:
-              - Server
-              - Cronjob
-              type: string
             volumeMounts:
               items:
                 description: VolumeMount describes a mounting of a Volume within a
