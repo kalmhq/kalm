@@ -10,29 +10,28 @@
  * Do not edit the class manually.
  */
 
+import { V1alpha1ApplicationSpecEnv } from './v1alpha1ApplicationSpecEnv';
+import { V1alpha1ApplicationSpecLivenessProbe } from './v1alpha1ApplicationSpecLivenessProbe';
 import { V1alpha1ApplicationSpecPorts } from './v1alpha1ApplicationSpecPorts';
 import { V1alpha1ApplicationSpecVolumeMounts } from './v1alpha1ApplicationSpecVolumeMounts';
-import { V1alpha1ComponentTemplateSpecEnv } from './v1alpha1ComponentTemplateSpecEnv';
 
-/**
-* ComponentTemplateSpec defines the desired state of ComponentTemplate
-*/
-export class V1alpha1ComponentTemplateSpec {
+export class V1alpha1ApplicationSpecComponents {
     'afterStart'?: Array<string>;
     'args'?: Array<string>;
     'beforeDestroy'?: Array<string>;
     'beforeStart'?: Array<string>;
     'command'?: Array<string>;
     'cpu'?: string;
-    'env'?: Array<V1alpha1ComponentTemplateSpecEnv>;
+    'env'?: Array<V1alpha1ApplicationSpecEnv>;
     'image': string;
+    'livenessProbe'?: V1alpha1ApplicationSpecLivenessProbe;
     'memory'?: string;
     'name': string;
+    'plugins'?: Array<object>;
     'ports'?: Array<V1alpha1ApplicationSpecPorts>;
-    'schedule'?: string;
+    'readinessProbe'?: V1alpha1ApplicationSpecLivenessProbe;
     'type'?: TypeEnum;
     'volumeMounts'?: Array<V1alpha1ApplicationSpecVolumeMounts>;
-    'workloadType'?: WorkloadTypeEnum;
 
     static discriminator: string | undefined = undefined;
 
@@ -70,12 +69,17 @@ export class V1alpha1ComponentTemplateSpec {
         {
             "name": "env",
             "baseName": "env",
-            "type": "Array<V1alpha1ComponentTemplateSpecEnv>"
+            "type": "Array<V1alpha1ApplicationSpecEnv>"
         },
         {
             "name": "image",
             "baseName": "image",
             "type": "string"
+        },
+        {
+            "name": "livenessProbe",
+            "baseName": "livenessProbe",
+            "type": "V1alpha1ApplicationSpecLivenessProbe"
         },
         {
             "name": "memory",
@@ -88,14 +92,19 @@ export class V1alpha1ComponentTemplateSpec {
             "type": "string"
         },
         {
+            "name": "plugins",
+            "baseName": "plugins",
+            "type": "Array<object>"
+        },
+        {
             "name": "ports",
             "baseName": "ports",
             "type": "Array<V1alpha1ApplicationSpecPorts>"
         },
         {
-            "name": "schedule",
-            "baseName": "schedule",
-            "type": "string"
+            "name": "readinessProbe",
+            "baseName": "readinessProbe",
+            "type": "V1alpha1ApplicationSpecLivenessProbe"
         },
         {
             "name": "type",
@@ -106,15 +115,10 @@ export class V1alpha1ComponentTemplateSpec {
             "name": "volumeMounts",
             "baseName": "volumeMounts",
             "type": "Array<V1alpha1ApplicationSpecVolumeMounts>"
-        },
-        {
-            "name": "workloadType",
-            "baseName": "workloadType",
-            "type": "WorkloadTypeEnum"
         }    ];
 
     static getAttributeTypeMap() {
-        return V1alpha1ComponentTemplateSpec.attributeTypeMap;
+        return V1alpha1ApplicationSpecComponents.attributeTypeMap;
     }
 }
 
@@ -122,8 +126,4 @@ export class V1alpha1ComponentTemplateSpec {
 export enum TypeEnum {
         Server = 'Server',
         Cronjob = 'Cronjob'
-    }
-export enum WorkloadTypeEnum {
-        Server = 'server',
-        Cronjob = 'cronjob'
     }

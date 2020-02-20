@@ -1,10 +1,10 @@
-import { V1Alpha1ComponentTemplate } from "../kappModel/v1alpha1ComponentTemplate";
+import { V1alpha1ComponentTemplate } from "../kappModel/v1alpha1ComponentTemplate";
 import { ComponentTemplate, workloadTypeServer } from "../actions";
 import { Map, List } from "immutable";
 import { ObjectSerializer } from "../model/models";
 
 export const convertFromCRDComponentTemplate = (
-  c: V1Alpha1ComponentTemplate
+  c: V1alpha1ComponentTemplate
 ): ComponentTemplate => {
   console.log(c);
   const spec = c.spec!;
@@ -55,7 +55,7 @@ export const convertFromCRDComponentTemplate = (
 
 export const convertToCRDComponentTemplate = (
   c: ComponentTemplate
-): V1Alpha1ComponentTemplate => {
+): V1alpha1ComponentTemplate => {
   return ObjectSerializer.deserialize(
     {
       apiVersion: "core.kapp.dev/v1alpha1",
@@ -91,6 +91,6 @@ export const convertToCRDComponentTemplate = (
         schedule: c.get("schedule")
       }
     },
-    "V1Alpha1ComponentTemplate"
+    "V1alpha1ComponentTemplate"
   );
 };

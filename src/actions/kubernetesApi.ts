@@ -1,9 +1,9 @@
 import axios from "axios";
 import { ComponentTemplate } from ".";
 import { convertFromCRDComponentTemplate } from "../convertors/ComponentTemplate";
-import { V1Alpha1ComponentTemplate } from "../kappModel/v1alpha1ComponentTemplate";
-import { V1Alpha1ComponentTemplateList } from "../kappModel/v1alpha1ComponentTemplateList";
+import { V1alpha1ComponentTemplate } from "../kappModel/v1alpha1ComponentTemplate";
 import { V1NodeList, V1PersistentVolumeList } from "../model/models";
+import { ItemList } from "../kappModel/List";
 
 export const K8sApiPerfix =
   process.env.REACT_APP_K8S_API_PERFIX || "http://localhost:3001";
@@ -21,15 +21,15 @@ export const getPersistentVolumes = async () => {
 };
 
 export const getKappComponentTemplates = async () => {
-  const res = await axios.get<V1Alpha1ComponentTemplateList>(
+  const res = await axios.get<ItemList<V1alpha1ComponentTemplate>>(
     K8sApiPerfix + "/apis/core.kapp.dev/v1alpha1/componenttemplates"
   );
-  console.log(res.data.items[0]);
+
   return res.data.items.map(convertFromCRDComponentTemplate);
 };
 
 export const updateKappComonentTemplate = async (
-  component: V1Alpha1ComponentTemplate
+  component: V1alpha1ComponentTemplate
 ): Promise<ComponentTemplate> => {
   const res = await axios.put(
     K8sApiPerfix +
@@ -43,7 +43,7 @@ export const updateKappComonentTemplate = async (
 };
 
 export const createKappComonentTemplate = async (
-  component: V1Alpha1ComponentTemplate
+  component: V1alpha1ComponentTemplate
 ): Promise<ComponentTemplate> => {
   const res = await axios.post(
     K8sApiPerfix + `/apis/core.kapp.dev/v1alpha1/componenttemplates`,
@@ -54,7 +54,7 @@ export const createKappComonentTemplate = async (
 };
 
 export const deleteKappComonentTemplate = async (
-  component: V1Alpha1ComponentTemplate
+  component: V1alpha1ComponentTemplate
 ): Promise<void> => {
   const res = await axios.delete(
     K8sApiPerfix +
@@ -63,6 +63,14 @@ export const deleteKappComonentTemplate = async (
       }`
   );
 
-  console.log(res.data);
   // return convertFromCRDComponentTemplate(res.data);
 };
+
+export const getKappApplications = async () => {
+  // const res = await axios.get(
+  //   K8sApiPerfix + "/apis/core.kapp.dev/v1alpha1/applications"
+  // );
+  // console.log(res.data);
+};
+
+getKappApplications();

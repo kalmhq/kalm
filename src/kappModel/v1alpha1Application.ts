@@ -11,12 +11,12 @@
  */
 
 import { V1ObjectMeta } from '../model/models';
-import { V1alpha1ComponentTemplateSpec } from './v1alpha1ComponentTemplateSpec';
+import { V1alpha1ApplicationSpec } from './v1alpha1ApplicationSpec';
 
 /**
-* ComponentTemplate is the Schema for the componenttemplates API
+* Application is the Schema for the applications API
 */
-export class V1alpha1ComponentTemplate {
+export class V1alpha1Application {
     /**
     * APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
     */
@@ -26,7 +26,11 @@ export class V1alpha1ComponentTemplate {
     */
     'kind'?: string;
     'metadata'?: V1ObjectMeta;
-    'spec'?: V1alpha1ComponentTemplateSpec;
+    'spec'?: V1alpha1ApplicationSpec;
+    /**
+    * ApplicationStatus defines the observed state of Application
+    */
+    'status'?: object;
 
     static discriminator: string | undefined = undefined;
 
@@ -49,11 +53,16 @@ export class V1alpha1ComponentTemplate {
         {
             "name": "spec",
             "baseName": "spec",
-            "type": "V1alpha1ComponentTemplateSpec"
+            "type": "V1alpha1ApplicationSpec"
+        },
+        {
+            "name": "status",
+            "baseName": "status",
+            "type": "object"
         }    ];
 
     static getAttributeTypeMap() {
-        return V1alpha1ComponentTemplate.attributeTypeMap;
+        return V1alpha1Application.attributeTypeMap;
     }
 }
 

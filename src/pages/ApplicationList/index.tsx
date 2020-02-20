@@ -305,7 +305,7 @@ class List extends React.PureComponent<Props, State> {
         ),
         components: application
           .get("components")
-          .map(x => <div>{x.get("name")}</div>)
+          .map(x => <div key={x.get("name")}>{x.get("name")}</div>)
           .toArray(),
         status: status
       };

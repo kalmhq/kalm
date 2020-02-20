@@ -11,12 +11,9 @@
  */
 
 import { V1ObjectMeta } from '../model/models';
-import { V1alpha1ComponentTemplateSpec } from './v1alpha1ComponentTemplateSpec';
+import { V1alpha1PluginSpec } from './v1alpha1PluginSpec';
 
-/**
-* ComponentTemplate is the Schema for the componenttemplates API
-*/
-export class V1alpha1ComponentTemplate {
+export class V1alpha1Plugin {
     /**
     * APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
     */
@@ -26,7 +23,8 @@ export class V1alpha1ComponentTemplate {
     */
     'kind'?: string;
     'metadata'?: V1ObjectMeta;
-    'spec'?: V1alpha1ComponentTemplateSpec;
+    'spec'?: V1alpha1PluginSpec;
+    'status'?: object;
 
     static discriminator: string | undefined = undefined;
 
@@ -49,11 +47,16 @@ export class V1alpha1ComponentTemplate {
         {
             "name": "spec",
             "baseName": "spec",
-            "type": "V1alpha1ComponentTemplateSpec"
+            "type": "V1alpha1PluginSpec"
+        },
+        {
+            "name": "status",
+            "baseName": "status",
+            "type": "object"
         }    ];
 
     static getAttributeTypeMap() {
-        return V1alpha1ComponentTemplate.attributeTypeMap;
+        return V1alpha1Plugin.attributeTypeMap;
     }
 }
 
