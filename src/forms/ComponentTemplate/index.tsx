@@ -36,6 +36,7 @@ import { CustomEnvs } from "../Basic/env";
 import { CustomPorts } from "../Basic/ports";
 import { ValidatorRequired, ValidatorSchedule } from "../validator";
 import ComponentResources from "./resources";
+import { HelperContainer } from "../../widgets/Helper";
 
 export interface Props {}
 
@@ -51,11 +52,8 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
   sectionHeader: {
     fontSize: 24,
-    fontWeight: 400
-  },
-  sectionDiscription: {
-    fontSize: 16,
-    margin: "16px 0"
+    fontWeight: 400,
+    marginBottom: 16
   },
   input: {
     marginBottom: 12
@@ -189,9 +187,9 @@ function ComponentTemplateFormRaw(
             >
               Basic
             </Typography>
-            <Typography classes={{ root: classes.sectionDiscription }}>
-              Describe how to launch this compoent.
-            </Typography>
+            <HelperContainer>
+              <Typography>Describe how to launch this compoent.</Typography>
+            </HelperContainer>
             <Paper
               elevation={4}
               square
@@ -251,37 +249,39 @@ function ComponentTemplateFormRaw(
             >
               Environment variables
             </Typography>
-            <Typography classes={{ root: classes.sectionDiscription }}>
-              Environment variables are variable whose values are set outside
-              the program, typically through functionality built into the
-              component. An environment variable is made up of a name/value
-              pair, it also support combine a dynamic value associated with
-              other component later in a real running application. Learn More.
-            </Typography>
-            <MList dense={true}>
-              <ListItem>
-                <ListItemText
-                  primary="Static"
-                  secondary={"A constant value environment variable."}
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemText
-                  primary="External"
-                  secondary={
-                    "Value will be set in an application later. External variable with the same name will be consistent across all components in the same application."
-                  }
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemText
-                  primary="Linked"
-                  secondary={
-                    "Value will be set in an application later. Linked variable can only be set as another component exposed port address in the same application."
-                  }
-                />
-              </ListItem>
-            </MList>
+            <HelperContainer>
+              <Typography>
+                Environment variables are variable whose values are set outside
+                the program, typically through functionality built into the
+                component. An environment variable is made up of a name/value
+                pair, it also support combine a dynamic value associated with
+                other component later in a real running application. Learn More.
+              </Typography>
+              <MList dense={true}>
+                <ListItem>
+                  <ListItemText
+                    primary="Static"
+                    secondary={"A constant value environment variable."}
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText
+                    primary="External"
+                    secondary={
+                      "Value will be set in an application later. External variable with the same name will be consistent across all components in the same application."
+                    }
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText
+                    primary="Linked"
+                    secondary={
+                      "Value will be set in an application later. Linked variable can only be set as another component exposed port address in the same application."
+                    }
+                  />
+                </ListItem>
+              </MList>
+            </HelperContainer>
             <Paper
               elevation={4}
               square
@@ -299,11 +299,13 @@ function ComponentTemplateFormRaw(
             >
               Ports
             </Typography>
-            <Typography classes={{ root: classes.sectionDiscription }}>
-              Port is the standard way to expose your program. If you want your
-              component can be accessed by some other parts, you need to define
-              a port.
-            </Typography>
+            <HelperContainer>
+              <Typography>
+                Port is the standard way to expose your program. If you want
+                your component can be accessed by some other parts, you need to
+                define a port.
+              </Typography>
+            </HelperContainer>
             <Paper
               elevation={4}
               square
@@ -321,28 +323,27 @@ function ComponentTemplateFormRaw(
             >
               Resources
             </Typography>
-            <Typography classes={{ root: classes.sectionDiscription }}>
-              Cpu, Memory, Disk can be configured here.
-            </Typography>
-            <MList dense={true}>
-              <ListItem>
-                <ListItemText
-                  primary="CPU"
-                  secondary={
-                    "Fractional values are allowed. A Container that requests 0.5 CPU is guaranteed half as much CPU as a Container that requests 1 CPU. You can use the suffix m to mean milli. For example 100m CPU, 100 milliCPU, and 0.1 CPU are all the same. Precision finer than 1m is not allowed. CPU is always requested as an absolute quantity, never as a relative quantity; 0.1 is the same amount of CPU on a single-core, dual-core, or 48-core machine."
-                  }
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemText
-                  primary="Memory"
-                  secondary={
-                    "The memory resource is measured in bytes. You can express memory as a plain integer or a fixed-point integer with one of these suffixes: E, P, T, G, M, K, Ei, Pi, Ti, Gi, Mi, Ki. For example, the following represent approximately the same value:"
-                  }
-                />
-              </ListItem>
-            </MList>
-
+            <HelperContainer>
+              <Typography>Cpu, Memory, Disk can be configured here.</Typography>
+              <MList dense={true}>
+                <ListItem>
+                  <ListItemText
+                    primary="CPU"
+                    secondary={
+                      "Fractional values are allowed. A Container that requests 0.5 CPU is guaranteed half as much CPU as a Container that requests 1 CPU. You can use the suffix m to mean milli. For example 100m CPU, 100 milliCPU, and 0.1 CPU are all the same. Precision finer than 1m is not allowed. CPU is always requested as an absolute quantity, never as a relative quantity; 0.1 is the same amount of CPU on a single-core, dual-core, or 48-core machine."
+                    }
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText
+                    primary="Memory"
+                    secondary={
+                      "The memory resource is measured in bytes. You can express memory as a plain integer or a fixed-point integer with one of these suffixes: E, P, T, G, M, K, Ei, Pi, Ti, Gi, Mi, Ki. For example, the following represent approximately the same value:"
+                    }
+                  />
+                </ListItem>
+              </MList>
+            </HelperContainer>
             <Paper
               elevation={4}
               square

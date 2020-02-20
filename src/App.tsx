@@ -29,7 +29,8 @@ import { NodeList } from "./pages/NodeList";
 import { NoMatch, Page404 } from "./pages/NoMatch";
 import { NotificationComponent } from "./widgets/Notification";
 import { Sidenav, SidenavGroupProps } from "./widgets/Sidenav";
-import { Fade } from "@material-ui/core";
+import { Fade, Box } from "@material-ui/core";
+import { HelperSwitch } from "./widgets/Helper";
 
 const sidenavGroups: SidenavGroupProps[] = [
   {
@@ -254,20 +255,30 @@ export default function MiniDrawer() {
             })}
           >
             <Toolbar>
-              <IconButton
-                color="inherit"
-                aria-label="open drawer"
-                onClick={handleDrawerOpen}
-                edge="start"
-                className={clsx(classes.menuButton, {
-                  [classes.hide]: open
-                })}
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                style={{ width: "100%" }}
               >
-                <MenuIcon />
-              </IconButton>
-              <Typography variant="h6" noWrap>
-                **
-              </Typography>
+                <div>
+                  <IconButton
+                    color="inherit"
+                    aria-label="open drawer"
+                    onClick={handleDrawerOpen}
+                    edge="start"
+                    className={clsx(classes.menuButton, {
+                      [classes.hide]: open
+                    })}
+                  >
+                    <MenuIcon />
+                  </IconButton>
+                  <Typography variant="h6" noWrap display="inline">
+                    **
+                  </Typography>
+                </div>
+                <HelperSwitch />
+              </Box>
             </Toolbar>
           </AppBar>
           <Drawer

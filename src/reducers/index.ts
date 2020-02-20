@@ -1,7 +1,7 @@
 import { combineReducers } from "redux-immutable";
 import { reducer as formReducer } from "redux-form/immutable";
 import { FormState } from "redux-form";
-import test from "./test";
+import settings, { State as SettingsState } from "./settings";
 import notification, { State as NotificationState } from "./notification";
 import componentTemplates, {
   State as ComponentTemplateState
@@ -25,6 +25,7 @@ export type RootState = ImmutableMap<{
   form: FormState;
   nodes: NodesState;
   persistentVolumns: PersistentVolumnsState;
+  settings: SettingsState;
 }>;
 
 // combineReducers returns immutable map, but the type is not working correctly
@@ -41,5 +42,5 @@ export default (history: History<LocationState>) =>
     applications,
     configs,
     notification,
-    test
+    settings
   });
