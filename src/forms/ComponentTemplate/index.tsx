@@ -5,10 +5,10 @@ import {
   List as MList,
   ListItem,
   ListItemText,
+  MenuItem,
   Paper,
   Tab,
-  Tabs,
-  MenuItem
+  Tabs
 } from "@material-ui/core";
 import {
   createStyles,
@@ -22,8 +22,7 @@ import { connect } from "react-redux";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { monokai } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import { InjectedFormProps } from "redux-form";
-import { Field } from "redux-form/immutable";
-import { getFormValues, reduxForm } from "redux-form/immutable";
+import { Field, getFormValues, reduxForm } from "redux-form/immutable";
 import {
   ComponentTemplate,
   workloadTypeCronjob,
@@ -31,12 +30,12 @@ import {
 } from "../../actions";
 import { convertToCRDComponentTemplate } from "../../convertors/ComponentTemplate";
 import { RootState } from "../../reducers";
+import { HelperContainer } from "../../widgets/Helper";
 import { CustomTextField, RenderSelectField, RenderTextField } from "../Basic";
 import { CustomEnvs } from "../Basic/env";
 import { CustomPorts } from "../Basic/ports";
 import { ValidatorRequired, ValidatorSchedule } from "../validator";
 import ComponentResources from "./resources";
-import { HelperContainer } from "../../widgets/Helper";
 
 export interface Props {}
 
