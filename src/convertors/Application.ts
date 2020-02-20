@@ -1,10 +1,6 @@
+import { List, Map } from "immutable";
+import { ApplicationComponent, ApplicationNew } from "../actions";
 import { V1alpha1Application } from "../kappModel/v1alpha1Application";
-import {
-  ApplicationNew,
-  workloadTypeServer,
-  ApplicationComponent
-} from "../actions";
-import { Map, List } from "immutable";
 import { ObjectSerializer } from "../model/models";
 import {
   convertFromCRDApplicationComponent,
