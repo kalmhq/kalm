@@ -56,6 +56,8 @@ type ComponentTemplateSpec struct {
 	// +kubebuilder:validation:Enum=server;cronjob
 	WorkLoadType WorkLoadType `json:"workloadType,omitempty"`
 
+	Schedule string `json:"schedule,omitempty"`
+
 	BeforeStart []string `json:"beforeStart,omitempty"`
 
 	AfterStart []string `json:"afterStart,omitempty"`

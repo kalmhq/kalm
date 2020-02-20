@@ -105,6 +105,8 @@ spec:
                 - name
                 type: object
               type: array
+            schedule:
+              type: string
             type:
               enum:
               - Server
