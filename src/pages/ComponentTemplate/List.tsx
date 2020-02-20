@@ -36,6 +36,7 @@ import {
   DuplicateDialogHostState,
   defaultDuplicateDialogHostStateValue
 } from "../../widgets/DuplicateDialog";
+import { HelperContainer } from "../../widgets/Helper";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -279,16 +280,18 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
         />
 
         <div className={classes.root}>
-          <Alert severity="info">
-            Component templates are stored configs that describe how to deploy
-            software images on kapp system. Component template can't run
-            independently, but it can be easily copy into any application as a
-            component to run.
-            {/* When adding a component
+          <HelperContainer>
+            <Alert severity="info">
+              Component templates are stored configs that describe how to deploy
+              software images on kapp system. Component template can't run
+              independently, but it can be easily copy into any application as a
+              component to run.
+              {/* When adding a component
             into an application, the component config will be copyed into the
             application, which mean it's free to update existing component
             anytime without worring about breaking running applications. */}
-          </Alert>
+            </Alert>
+          </HelperContainer>
           <Box mt={3}>{isLoading ? <Loading /> : this.renderDataContent()}</Box>
         </div>
       </BasePage>

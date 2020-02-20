@@ -1,38 +1,23 @@
 import axios from "axios";
-import {
-  apiV1Nodes,
-  apiV1PersistentVolumns,
-  apiV1Alpha1ComponentTemplateList
-} from "./kubernetesApiResponseSamples";
-import { V1NodeList, V1PersistentVolumeList } from "../model/models";
-import { V1Alpha1ComponentTemplateList } from "../kappModel/v1alpha1ComponentTemplateList";
+import { ComponentTemplate } from ".";
 import { convertFromCRDComponentTemplate } from "../convertors/ComponentTemplate";
 import { V1Alpha1ComponentTemplate } from "../kappModel/v1alpha1ComponentTemplate";
-import { ComponentTemplate } from ".";
+import { V1Alpha1ComponentTemplateList } from "../kappModel/v1alpha1ComponentTemplateList";
+import { V1NodeList, V1PersistentVolumeList } from "../model/models";
 
 export const K8sApiPerfix =
   process.env.REACT_APP_K8S_API_PERFIX || "http://localhost:3001";
 
-const USE_CACHED_VALUE = true;
-
 export const getNodes = async () => {
-  if (USE_CACHED_VALUE) {
-    return apiV1Nodes.items;
-  } else {
-    const res = await axios.get<V1NodeList>(K8sApiPerfix + "/api/v1/nodes");
-    return res.data.items;
-  }
+  const res = await axios.get<V1NodeList>(K8sApiPerfix + "/api/v1/nodes");
+  return res.data.items;
 };
 
 export const getPersistentVolumes = async () => {
-  if (USE_CACHED_VALUE) {
-    return apiV1PersistentVolumns.items;
-  } else {
-    const res = await axios.get<V1PersistentVolumeList>(
-      K8sApiPerfix + "/api/v1/persistentvolumes"
-    );
-    return res.data.items;
-  }
+  const res = await axios.get<V1PersistentVolumeList>(
+    K8sApiPerfix + "/api/v1/persistentvolumes"
+  );
+  return res.data.items;
 };
 
 export const getKappComponentTemplates = async () => {
