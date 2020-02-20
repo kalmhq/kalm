@@ -30,7 +30,6 @@ export class V1alpha1ComponentTemplateSpec {
     'name': string;
     'ports'?: Array<V1alpha1ApplicationSpecPorts>;
     'schedule'?: string;
-    'type'?: TypeEnum;
     'volumeMounts'?: Array<V1alpha1ApplicationSpecVolumeMounts>;
     'workloadType'?: WorkloadTypeEnum;
 
@@ -98,11 +97,6 @@ export class V1alpha1ComponentTemplateSpec {
             "type": "string"
         },
         {
-            "name": "type",
-            "baseName": "type",
-            "type": "TypeEnum"
-        },
-        {
             "name": "volumeMounts",
             "baseName": "volumeMounts",
             "type": "Array<V1alpha1ApplicationSpecVolumeMounts>"
@@ -119,10 +113,6 @@ export class V1alpha1ComponentTemplateSpec {
 }
 
 
-export enum TypeEnum {
-        Server = 'Server',
-        Cronjob = 'Cronjob'
-    }
 export enum WorkloadTypeEnum {
         Server = 'server',
         Cronjob = 'cronjob'

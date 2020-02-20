@@ -15,24 +15,18 @@
 * EnvVar represents an environment variable present in a Container.
 */
 export class V1alpha1ApplicationSpecEnv {
-    'componentPort'?: string;
     /**
     * Name of the environment variable. Must be a C_IDENTIFIER.
     */
     'name': string;
     'prefix'?: string;
-    'sharedEnv'?: string;
     'suffix'?: string;
+    'type'?: TypeEnum;
     'value'?: string;
 
     static discriminator: string | undefined = undefined;
 
     static attributeTypeMap: Array<{name: string, baseName: string, type: string}> = [
-        {
-            "name": "componentPort",
-            "baseName": "componentPort",
-            "type": "string"
-        },
         {
             "name": "name",
             "baseName": "name",
@@ -44,14 +38,14 @@ export class V1alpha1ApplicationSpecEnv {
             "type": "string"
         },
         {
-            "name": "sharedEnv",
-            "baseName": "sharedEnv",
-            "type": "string"
-        },
-        {
             "name": "suffix",
             "baseName": "suffix",
             "type": "string"
+        },
+        {
+            "name": "type",
+            "baseName": "type",
+            "type": "TypeEnum"
         },
         {
             "name": "value",
@@ -64,3 +58,9 @@ export class V1alpha1ApplicationSpecEnv {
     }
 }
 
+
+export enum TypeEnum {
+        Static = 'static',
+        External = 'external',
+        Linked = 'linked'
+    }

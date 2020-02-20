@@ -6,7 +6,6 @@ import { ObjectSerializer } from "../model/models";
 export const convertFromCRDComponentTemplate = (
   c: V1alpha1ComponentTemplate
 ): ComponentTemplate => {
-  console.log(c);
   const spec = c.spec!;
   const metadata = c.metadata!;
 

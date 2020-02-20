@@ -4,6 +4,7 @@ import { convertFromCRDComponentTemplate } from "../convertors/ComponentTemplate
 import { V1alpha1ComponentTemplate } from "../kappModel/v1alpha1ComponentTemplate";
 import { V1NodeList, V1PersistentVolumeList } from "../model/models";
 import { ItemList } from "../kappModel/List";
+import { V1alpha1Application } from "../kappModel";
 
 export const K8sApiPerfix =
   process.env.REACT_APP_K8S_API_PERFIX || "http://localhost:3001";
@@ -67,10 +68,11 @@ export const deleteKappComonentTemplate = async (
 };
 
 export const getKappApplications = async () => {
-  // const res = await axios.get(
-  //   K8sApiPerfix + "/apis/core.kapp.dev/v1alpha1/applications"
-  // );
-  // console.log(res.data);
+  const res = await axios.get<ItemList<V1alpha1Application>>(
+    K8sApiPerfix + "/apis/core.kapp.dev/v1alpha1/applications"
+  );
+
+  console.log(res.data);
 };
 
 getKappApplications();

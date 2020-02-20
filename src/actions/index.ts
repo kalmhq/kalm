@@ -139,6 +139,45 @@ export type Application = ImmutableMap<{
   status: ApplicationStatus;
 }>;
 
+export type ApplicationNew = ImmutableMap<{
+  id: string;
+  name: string;
+  isEnabled: boolean;
+  sharedEnv: Immutable.List<SharedEnv>;
+  components: Immutable.List<ComponentTemplate>;
+  status: ApplicationStatus;
+  resourceVersion?: string;
+}>;
+
+export type ApplicationComponent = ImmutableMap<{
+  name: string;
+  image: string;
+  command: string;
+  env: Immutable.List<
+    ImmutableMap<{
+      name: string;
+      type: string;
+      value: string;
+    }>
+  >;
+  ports: Immutable.List<ComponentTemplatePort>;
+  cpu: string;
+  memory: string;
+  disk: Immutable.List<
+    ImmutableMap<{
+      name: string;
+      type: string;
+      path: string;
+      existDisk: string;
+      size: string;
+      storageClass: string;
+    }>
+  >;
+  resourceVersion?: string;
+  workloadType?: WorkloadType;
+  schedule?: string;
+}>;
+
 export type Config = ImmutableMap<{
   id: string;
   type: "folder" | "file";

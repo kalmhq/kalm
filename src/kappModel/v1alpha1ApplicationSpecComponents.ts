@@ -30,8 +30,9 @@ export class V1alpha1ApplicationSpecComponents {
     'plugins'?: Array<object>;
     'ports'?: Array<V1alpha1ApplicationSpecPorts>;
     'readinessProbe'?: V1alpha1ApplicationSpecLivenessProbe;
-    'type'?: TypeEnum;
+    'schedule'?: string;
     'volumeMounts'?: Array<V1alpha1ApplicationSpecVolumeMounts>;
+    'workloadType'?: WorkloadTypeEnum;
 
     static discriminator: string | undefined = undefined;
 
@@ -107,14 +108,19 @@ export class V1alpha1ApplicationSpecComponents {
             "type": "V1alpha1ApplicationSpecLivenessProbe"
         },
         {
-            "name": "type",
-            "baseName": "type",
-            "type": "TypeEnum"
+            "name": "schedule",
+            "baseName": "schedule",
+            "type": "string"
         },
         {
             "name": "volumeMounts",
             "baseName": "volumeMounts",
             "type": "Array<V1alpha1ApplicationSpecVolumeMounts>"
+        },
+        {
+            "name": "workloadType",
+            "baseName": "workloadType",
+            "type": "WorkloadTypeEnum"
         }    ];
 
     static getAttributeTypeMap() {
@@ -123,7 +129,7 @@ export class V1alpha1ApplicationSpecComponents {
 }
 
 
-export enum TypeEnum {
-        Server = 'Server',
-        Cronjob = 'Cronjob'
+export enum WorkloadTypeEnum {
+        Server = 'server',
+        Cronjob = 'cronjob'
     }
