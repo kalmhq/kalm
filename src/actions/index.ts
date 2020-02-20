@@ -7,6 +7,7 @@ import { RootState } from "../reducers";
 import { ImmutableMap } from "../typings";
 import "./node";
 import "./notification";
+import { SettingObject } from "../reducers/settings";
 
 export const CREATE_COMPONENT = "CREATE_COMPONENT";
 export const UPDATE_COMPONENT = "UPDATE_COMPONENT";
@@ -32,6 +33,8 @@ export const LOAD_NODES = "LOAD_NODES";
 export const LOAD_PERSISTENT_VOLUMNS = "LOAD_PERSISTENT_VOLUMNS";
 
 export const SET_NOTIFICATION_MESSAGE = "SET_NOTIFICATION_MESSAGE";
+
+export const SET_SETTINGS = "SET_SETTINGS";
 
 export type ComponentTemplatePort = ImmutableMap<{
   name: string;
@@ -67,6 +70,7 @@ export type ComponentTemplate = ImmutableMap<{
   >;
   resourceVersion?: string;
   workloadType?: WorkloadType;
+  schedule?: string;
 }>;
 
 export const newEmptyComponentTemplate = (): ComponentTemplate => {
@@ -269,6 +273,11 @@ export interface LoadPersistentVolumnsAction {
   };
 }
 
+export interface SetSettingsAction {
+  type: typeof SET_SETTINGS;
+  payload: Partial<SettingObject>;
+}
+
 export type Actions =
   | createComponentTemplateAction
   | DeleteComponentAction
@@ -288,7 +297,8 @@ export type Actions =
   | DuplicateComponentAction
   | DuplicateApplicationAction
   | LoadNodesAction
-  | LoadPersistentVolumnsAction;
+  | LoadPersistentVolumnsAction
+  | SetSettingsAction;
 
 export type ThunkResult<R> = ThunkAction<R, RootState, undefined, Actions>;
 export type TDispatch = ThunkDispatch<RootState, undefined, Actions>;

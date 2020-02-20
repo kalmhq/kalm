@@ -46,7 +46,8 @@ export const convertFromCRDComponentTemplate = (
     memory: spec.memory || "",
     disk: List([]),
     resourceVersion: metadata.resourceVersion,
-    workloadType: spec.workloadType || workloadTypeServer
+    workloadType: spec.workloadType || workloadTypeServer,
+    schedule: spec.schedule
   });
 
   return res;
@@ -86,7 +87,8 @@ export const convertToCRDComponentTemplate = (
           .toArray(),
         cpu: c.get("cpu"),
         memory: c.get("memory"),
-        workloadType: c.get("workloadType") || workloadTypeServer
+        workloadType: c.get("workloadType") || workloadTypeServer,
+        schedule: c.get("schedule")
       }
     },
     "V1Alpha1ComponentTemplate"

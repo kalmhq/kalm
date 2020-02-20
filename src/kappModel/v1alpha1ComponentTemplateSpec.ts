@@ -16,6 +16,7 @@ export class V1Alpha1ComponentTemplateSpec {
   "command"?: Array<string>;
   "volumeMounts"?: Array<V1Alpha1ComponentTemplateVolumnMount>;
   "workloadType"?: string;
+  "schedule"?: string;
 
   static discriminator: string | undefined = undefined;
 
@@ -82,6 +83,11 @@ export class V1Alpha1ComponentTemplateSpec {
     {
       name: "workloadType",
       baseName: "workloadType",
+      type: "string"
+    },
+    {
+      name: "schedule",
+      baseName: "schedule",
       type: "string"
     }
   ];
