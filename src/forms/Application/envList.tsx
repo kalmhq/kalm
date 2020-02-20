@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  Collapse,
-  Box,
-  List,
-  ListItem,
-  ListItemText,
-  Chip
-} from "@material-ui/core";
+import { Collapse, Box, List, ListItem, ListItemText } from "@material-ui/core";
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
 import { EnvItems, EnvItem } from "../../actions";
@@ -86,7 +79,7 @@ export class EnvList extends React.Component<Props, State> {
   }
 
   public render() {
-    const { title, envs, missingEnvs, sharedEnvs } = this.props;
+    const { title, envs, missingEnvs } = this.props;
     const { open } = this.state;
     return (
       <List

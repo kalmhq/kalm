@@ -1,7 +1,7 @@
 import { V1Alpha1ComponentTemplateEnvVar } from "./v1alpha1ComponentTemplateEnvVar";
 import { V1Alpha1ComponentTemplatePort } from "./v1alpha1ComponentTemplatePort";
 import { V1Alpha1ComponentTemplateVolumnMount } from "./v1alpha1ComponentTemplateVolumnMount";
-import { V1ResourceRule } from "../model/models";
+// import { V1ResourceRule } from "../model/models";
 
 export class V1Alpha1ComponentTemplateSpec {
   "afterStart"?: Array<string>;

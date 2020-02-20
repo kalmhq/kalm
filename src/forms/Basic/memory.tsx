@@ -1,6 +1,6 @@
-import React, { HtmlHTMLAttributes } from "react";
+import React from "react";
 import { FilledTextFieldProps } from "@material-ui/core/TextField";
-import { WrappedFieldProps, BaseFieldProps } from "redux-form";
+import { WrappedFieldProps } from "redux-form";
 import { Field } from "redux-form/immutable";
 import { Slider } from "@material-ui/core";
 

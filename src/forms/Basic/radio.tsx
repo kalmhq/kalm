@@ -3,13 +3,8 @@ import Radio from "@material-ui/core/Radio";
 import RadioGroup, { RadioGroupProps } from "@material-ui/core/RadioGroup";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import { Field } from "redux-form/immutable";
-import {
-  WrappedFieldProps,
-  BaseFieldProps,
-  WrappedFieldMetaProps
-} from "redux-form";
+import { WrappedFieldProps, BaseFieldProps } from "redux-form";
 import FormControl from "@material-ui/core/FormControl";
-import FormLabel from "@material-ui/core/FormLabel";
 
 interface Props {
   name: string;

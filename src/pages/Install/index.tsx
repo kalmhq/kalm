@@ -9,8 +9,6 @@ import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import Collapse from "@material-ui/core/Collapse";
 import { BasePage } from "../BasePage";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import Switch from "@material-ui/core/Switch";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -30,9 +28,9 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-function getSteps() {
-  return ["Install DAE", "Install Modules", "Create an ad"];
-}
+// function getSteps() {
+//   return ["Install DAE", "Install Modules", "Create an ad"];
+// }
 
 interface Step {
   title: string;
@@ -124,23 +122,23 @@ const fullSteps: Step[] = [
   }
 ];
 
-function getStepContent(step: number) {
-  switch (step) {
-    case 0:
-      return `For each ad campaign that you create, you can control how much
-              you're willing to spend on clicks and conversions, which networks
-              and geographical locations you want your ads to show on, and more.`;
-    case 1:
-      return "An ad group contains one or more ads which target a shared set of keywords.";
-    case 2:
-      return `Try out different ad text to see what brings in the most customers,
-              and learn how to enhance your ads using features like ad extensions.
-              If you run into any problems with your ads, find out how to tell if
-              they're running and how to resolve approval issues.`;
-    default:
-      return "Unknown step";
-  }
-}
+// function getStepContent(step: number) {
+//   switch (step) {
+//     case 0:
+//       return `For each ad campaign that you create, you can control how much
+//               you're willing to spend on clicks and conversions, which networks
+//               and geographical locations you want your ads to show on, and more.`;
+//     case 1:
+//       return "An ad group contains one or more ads which target a shared set of keywords.";
+//     case 2:
+//       return `Try out different ad text to see what brings in the most customers,
+//               and learn how to enhance your ads using features like ad extensions.
+//               If you run into any problems with your ads, find out how to tell if
+//               they're running and how to resolve approval issues.`;
+//     default:
+//       return "Unknown step";
+//   }
+// }
 
 export default function InstallPage() {
   const classes = useStyles();
@@ -155,9 +153,9 @@ export default function InstallPage() {
     setActiveStep(prevActiveStep => prevActiveStep - 1);
   };
 
-  const handleReset = () => {
-    setActiveStep(0);
-  };
+  // const handleReset = () => {
+  //   setActiveStep(0);
+  // };
 
   return (
     <BasePage className={classes.root} title="Install">

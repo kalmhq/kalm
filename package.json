@@ -49,7 +49,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "lint": "./node_modules/.bin/eslint --ext ts,tsx src --fix --max-warnings=0"
+    "lint": "./node_modules/.bin/eslint --ext ts,tsx src --max-warnings=0"
   },
   "husky": {
     "hooks": {

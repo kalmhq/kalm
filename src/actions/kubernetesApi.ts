@@ -1,8 +1,7 @@
 import axios from "axios";
 import {
   apiV1Nodes,
-  apiV1PersistentVolumns,
-  apiV1Alpha1ComponentTemplateList
+  apiV1PersistentVolumns
 } from "./kubernetesApiResponseSamples";
 import { V1NodeList, V1PersistentVolumeList } from "../model/models";
 import { V1Alpha1ComponentTemplateList } from "../kappModel/v1alpha1ComponentTemplateList";

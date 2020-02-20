@@ -1,6 +1,4 @@
-// import { store } from "../index";
 import { Config } from "../actions";
-import { RootState } from "../reducers";
 import { store } from "../store";
 import { CascaderOptionType } from "antd/es/cascader";
 import Immutable from "immutable";

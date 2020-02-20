@@ -1,22 +1,17 @@
 import React from "react";
 import { BasePage } from "../BasePage";
-import MaterialTable from "material-table";
-import { connect, DispatchProp } from "react-redux";
+import { connect } from "react-redux";
 import { RootState } from "../../reducers";
 import {
   IconButton,
-  Icon,
-  makeStyles,
   Theme,
   withStyles,
   Breadcrumbs,
-  Typography,
   Link
 } from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@material-ui/icons/Delete";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
-import { push } from "connected-react-router";
 import {
   deleteConfigAction,
   duplicateConfigAction
@@ -146,7 +141,7 @@ class List extends React.PureComponent<Props, State> {
   };
 
   public renderFileBreadcrumbs() {
-    const { dispatch, rootConfig, currentConfigIdChain } = this.props;
+    const { rootConfig, currentConfigIdChain } = this.props;
 
     let tmpConfig = rootConfig;
     const links: React.ReactElement[] = [];

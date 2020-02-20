@@ -1,11 +1,6 @@
-import React, { ComponentType } from "react";
+import React from "react";
 import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
-import {
-  WrappedFieldProps,
-  BaseFieldProps,
-  BaseFieldArrayProps,
-  WrappedFieldArrayProps
-} from "redux-form";
+import { WrappedFieldProps, WrappedFieldArrayProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
 import DeleteIcon from "@material-ui/icons/Delete";
 import {

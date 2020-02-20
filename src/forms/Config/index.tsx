@@ -1,24 +1,9 @@
 import React from "react";
 import { InjectedFormProps, getFormValues } from "redux-form";
-import { Field, reduxForm } from "redux-form/immutable";
-import { CustomTextField, renderTextField } from "../Basic";
+import { reduxForm } from "redux-form/immutable";
+import { CustomTextField } from "../Basic";
 import { makeStyles, Theme } from "@material-ui/core/styles";
-import AppBar from "@material-ui/core/AppBar";
-import Tabs from "@material-ui/core/Tabs";
-import Tab from "@material-ui/core/Tab";
-import PhoneIcon from "@material-ui/icons/Phone";
-import FavoriteIcon from "@material-ui/icons/Favorite";
-import PersonPinIcon from "@material-ui/icons/PersonPin";
-import HelpIcon from "@material-ui/icons/Help";
-import ShoppingBasket from "@material-ui/icons/ShoppingBasket";
-import ThumbDown from "@material-ui/icons/ThumbDown";
-import ThumbUp from "@material-ui/icons/ThumbUp";
-import Typography from "@material-ui/core/Typography";
-import Box from "@material-ui/core/Box";
-import { CustomEnvs } from "../Basic/env";
-import { CustomPorts } from "../Basic/ports";
-import { Button, Grid, FormControl } from "@material-ui/core";
-import { Paper } from "@material-ui/core";
+import { Button, FormControl } from "@material-ui/core";
 import { ValidatorRequired } from "../validator";
 import { Config } from "../../actions";
 import { CustomRadioGroup } from "../Basic/radio";
@@ -75,29 +60,29 @@ interface TabPanelProps {
   value: any;
 }
 
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
+// function TabPanel(props: TabPanelProps) {
+//   const { children, value, index, ...other } = props;
 
-  return (
-    <Typography
-      component="div"
-      role="tabpanel"
-      hidden={value !== index}
-      id={`scrollable-force-tabpanel-${index}`}
-      aria-labelledby={`scrollable-force-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box p={3}>{children}</Box>}
-    </Typography>
-  );
-}
+//   return (
+//     <Typography
+//       component="div"
+//       role="tabpanel"
+//       hidden={value !== index}
+//       id={`scrollable-force-tabpanel-${index}`}
+//       aria-labelledby={`scrollable-force-tab-${index}`}
+//       {...other}
+//     >
+//       {value === index && <Box p={3}>{children}</Box>}
+//     </Typography>
+//   );
+// }
 
-function a11yProps(index: any) {
-  return {
-    id: `scrollable-force-tab-${index}`,
-    "aria-controls": `scrollable-force-tabpanel-${index}`
-  };
-}
+// function a11yProps(index: any) {
+//   return {
+//     id: `scrollable-force-tab-${index}`,
+//     "aria-controls": `scrollable-force-tabpanel-${index}`
+//   };
+// }
 
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
