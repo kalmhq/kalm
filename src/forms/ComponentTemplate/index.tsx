@@ -31,10 +31,10 @@ import {
 } from "../../actions";
 import { convertToCRDComponentTemplate } from "../../convertors/ComponentTemplate";
 import { RootState } from "../../reducers";
-import { CustomTextField, RenderSelectField } from "../Basic";
+import { CustomTextField, RenderSelectField, RenderTextField } from "../Basic";
 import { CustomEnvs } from "../Basic/env";
 import { CustomPorts } from "../Basic/ports";
-import { ValidatorRequired } from "../validator";
+import { ValidatorRequired, ValidatorSchedule } from "../validator";
 import ComponentResources from "./resources";
 
 export interface Props {}
@@ -129,6 +129,40 @@ const StyledTab = withStyles((theme: Theme) =>
   })
 )((props: StyledTabProps) => <Tab disableRipple {...props} />);
 
+const RenderSchedule = (
+  props: Pick<ReturnType<typeof mapStateToProps>, "values">
+) => {
+  if (props.values.get("workloadType") !== workloadTypeCronjob) {
+    return null;
+  }
+
+  return (
+    <>
+      <Box mt={3}></Box>
+      <Field
+        name="schedule"
+        component={RenderTextField}
+        placeholder="* * * * * *"
+        label="Cronjob Schedule"
+        required
+        validate={[ValidatorSchedule]}
+        helperText={
+          <span>
+            <a
+              href="https://en.wikipedia.org/wiki/Cron"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Cron
+            </a>{" "}
+            format string.
+          </span>
+        }
+      />
+    </>
+  );
+};
+
 function ComponentTemplateFormRaw(
   props: Props &
     InjectedFormProps<ComponentTemplate, Props> &
@@ -200,9 +234,14 @@ function ComponentTemplateFormRaw(
                 label="Workload Type"
                 validate={[ValidatorRequired]}
               >
-                <MenuItem value={workloadTypeServer}>Server ()</MenuItem>
-                <MenuItem value={workloadTypeCronjob}>Cronjob ()</MenuItem>
+                <MenuItem value={workloadTypeServer}>
+                  Server (continuous running)
+                </MenuItem>
+                <MenuItem value={workloadTypeCronjob}>
+                  Cronjob (periodic running)
+                </MenuItem>
               </Field>
+              {RenderSchedule({ values })}
             </Paper>
             <Typography
               variant="h2"

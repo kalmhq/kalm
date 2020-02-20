@@ -67,6 +67,7 @@ export type ComponentTemplate = ImmutableMap<{
   >;
   resourceVersion?: string;
   workloadType?: WorkloadType;
+  schedule?: string;
 }>;
 
 export const newEmptyComponentTemplate = (): ComponentTemplate => {

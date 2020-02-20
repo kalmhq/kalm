@@ -9,7 +9,7 @@ import {
 import { Field, FieldArray } from "redux-form/immutable";
 import DeleteIcon from "@material-ui/icons/Delete";
 import {
-  renderTextField,
+  RenderTextField,
   RenderSelectField,
   RenderAutoCompleteSelect
 } from ".";
@@ -83,7 +83,7 @@ const renderDisks = ({
                         <Field
                           name={`${field}.name`}
                           validate={isNewDisk ? ValidatorRequired : []}
-                          component={renderTextField}
+                          component={RenderTextField}
                           label="Name"
                         />
                       </Grid>
@@ -129,7 +129,7 @@ const renderDisks = ({
                   <Grid item xs={isNewDisk ? 6 : 12}>
                     <Field
                       name={`${field}.path`}
-                      component={renderTextField}
+                      component={RenderTextField}
                       validate={ValidatorRequired}
                       label="Path"
                     />
@@ -138,7 +138,7 @@ const renderDisks = ({
                     <Grid item xs={6}>
                       <Field
                         name={`${field}.size`}
-                        component={renderTextField}
+                        component={RenderTextField}
                         validate={isNewDisk ? ValidatorRequired : []}
                         type="number"
                         label="Size (Megabeta, M)"

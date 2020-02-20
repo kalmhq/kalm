@@ -13,7 +13,7 @@ import FormHelperText from "@material-ui/core/FormHelperText";
 import { ID } from "../../utils";
 import { makeStyles } from "@material-ui/core/styles";
 
-export const renderTextField = ({
+export const RenderTextField = ({
   label,
   input,
   placeholder,
@@ -46,9 +46,9 @@ export const renderTextField = ({
       variant="outlined"
       // {...input}
       // onChange={input.onChange}
-      // onChange={(event: any) => input.onChange(event.target.value)}
-      onFocus={input.onChange}
-      onBlur={input.onChange}
+      onChange={(event: any) => input.onChange(event.target.value)}
+      // onFocus={input.onChange}
+      // onBlur={input.onChange}
       // value={input.value}
       defaultValue={input.value}
       {...custom}
@@ -70,7 +70,7 @@ interface Props {
 }
 
 export const CustomTextField = (props: BaseFieldProps & Props) => {
-  return <Field {...props} component={renderTextField} />;
+  return <Field {...props} component={RenderTextField} />;
 };
 
 const renderFormHelper = ({

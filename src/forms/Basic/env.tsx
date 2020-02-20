@@ -6,7 +6,7 @@ import Imutable from "immutable";
 import React from "react";
 import { WrappedFieldArrayProps, WrappedFieldProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
-import { RenderAutoComplete, RenderSelectField, renderTextField } from ".";
+import { RenderAutoComplete, RenderSelectField, RenderTextField } from ".";
 import { ImmutableMap } from "../../typings";
 import { ValidatorRequired } from "../validator";
 import AddIcon from "@material-ui/icons/Add";
@@ -73,7 +73,7 @@ const renderEnvs = ({
               <Grid item xs={3}>
                 <Field
                   name={`${field}.name`}
-                  component={renderTextField}
+                  component={RenderTextField}
                   label="Name"
                   validate={[ValidatorRequired]}
                 />
@@ -85,7 +85,7 @@ const renderEnvs = ({
                     !currentEnvDoesNotRequireValue ? [ValidatorRequired] : []
                   }
                   name={`${field}.value`}
-                  component={renderTextField}
+                  component={RenderTextField}
                   label={
                     currentEnvDoesNotRequireValue
                       ? "This env value will be configured later in an application."
@@ -163,7 +163,7 @@ export const RenderSharedEnvs = ({
               <Grid item xs={6}>
                 <Field
                   name={`${field}.value`}
-                  component={renderTextField}
+                  component={RenderTextField}
                   validate={ValidatorRequired}
                   label="Value"
                 ></Field>

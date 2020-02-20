@@ -5,7 +5,7 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import React from "react";
 import { WrappedFieldArrayProps, WrappedFieldProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
-import { RenderSelectField, renderTextField } from ".";
+import { RenderSelectField, RenderTextField } from ".";
 import { NormalizePort } from "../normalizer";
 import { ValidatorRequired } from "../validator";
 import AddIcon from "@material-ui/icons/Add";
@@ -45,7 +45,7 @@ const renderPorts = ({
                     classes={{ root: classes.field }}
                     name={`${port}.name`}
                     validate={[ValidatorRequired]}
-                    component={renderTextField}
+                    component={RenderTextField}
                     label="Port Name"
                   />
                 </Grid>
@@ -67,7 +67,7 @@ const renderPorts = ({
                     name={`${port}.containerPort`}
                     type="number"
                     validate={[ValidatorRequired]}
-                    component={renderTextField}
+                    component={RenderTextField}
                     normalize={NormalizePort}
                     label="Conpoment Port"
                     placeholder="8080"
@@ -80,7 +80,7 @@ const renderPorts = ({
                     normalize={NormalizePort}
                     validate={[ValidatorRequired]}
                     type="number"
-                    component={renderTextField}
+                    component={RenderTextField}
                     label="Service Port"
                     placeholder="80"
                   />
