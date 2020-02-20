@@ -1,6 +1,5 @@
 import React from "react";
 import PropTypes from "prop-types";
-import SvgIcon from "@material-ui/core/SvgIcon";
 import { fade, makeStyles, withStyles } from "@material-ui/core/styles";
 import TreeView from "@material-ui/lab/TreeView";
 import TreeItem, { TreeItemProps } from "@material-ui/lab/TreeItem";
@@ -11,7 +10,6 @@ import FolderOpenIcon from "@material-ui/icons/FolderOpen";
 import InsertDriveFileOutlinedIcon from "@material-ui/icons/InsertDriveFileOutlined";
 import { Config } from "../../actions";
 import { setCurrentConfigIdChainAction } from "../../actions/config";
-import { getCurrentConfig } from "../../selectors/config";
 
 function TransitionComponent(props: any) {
   const style = useSpring({
@@ -70,7 +68,7 @@ const renderStyledTreeItem = (
   let newIdChain: string[] = idChain.slice(0); // copy idChain to newIdChain, different memory addresses
   newIdChain.push(config.get("id"));
 
-  const currentConfig = getCurrentConfig();
+  // const currentConfig = getCurrentConfig();
 
   if (config.get("type") === "file") {
     return (

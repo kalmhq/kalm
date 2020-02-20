@@ -1,6 +1,6 @@
 import React from "react";
 import { RootState } from "../../reducers";
-import { connect, DispatchProp } from "react-redux";
+import { connect } from "react-redux";
 import { loadComponentTemplatesAction } from "../../actions/componentTemplate";
 import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "../../actions";

@@ -141,7 +141,7 @@ export const RenderSharedEnvs = ({
     <div>
       <div>{submitFailed && error && <span>{error}</span>}</div>
       {fields.map((field, index) => {
-        const currentEnv = fields.get(index);
+        // const currentEnv = fields.get(index);
 
         return (
           <div key={index}>

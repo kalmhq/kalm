@@ -1,7 +1,7 @@
 {
   "extends": "react-app",
   "rules": {
-    "@typescript-eslint/no-unused-vars": "off", // TODO set warn
+    "@typescript-eslint/no-unused-vars": "warn",
     "no-loop-func": "off"
   }
 }

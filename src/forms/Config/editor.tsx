@@ -1,12 +1,10 @@
 import React from "react";
 import { FilledTextFieldProps } from "@material-ui/core/TextField";
-import { WrappedFieldProps, BaseFieldProps } from "redux-form";
+import { WrappedFieldProps } from "redux-form";
 import { Field } from "redux-form/immutable";
 import AceEditor from "react-ace";
 import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/theme-monokai";
-import FormControl from "@material-ui/core/FormControl";
-import FormLabel from "@material-ui/core/FormLabel";
 
 const aceOnBlur = (onBlur: any) => (_event: any, editor?: any) => {
   const value = editor.getValue();

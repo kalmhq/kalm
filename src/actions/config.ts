@@ -47,7 +47,6 @@ export const duplicateConfigAction = (
     ? config.get("ancestorIds")!.toArray()
     : [];
   newIdChain.push(config.get("id"));
-  console.log("dup", config.toJS());
   return async dispatch => {
     dispatch({
       type: DUPLICATE_CONFIG,

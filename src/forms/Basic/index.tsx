@@ -1,4 +1,4 @@
-import React, { HtmlHTMLAttributes } from "react";
+import React from "react";
 import clsx from "clsx";
 import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
 import {
@@ -7,7 +7,7 @@ import {
   WrappedFieldMetaProps
 } from "redux-form";
 import { Field } from "redux-form/immutable";
-import { FormControl, InputLabel, Select, MenuItem } from "@material-ui/core";
+import { FormControl, InputLabel, Select } from "@material-ui/core";
 import { Autocomplete } from "@material-ui/lab";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import { ID } from "../../utils";

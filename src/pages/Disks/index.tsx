@@ -131,7 +131,7 @@ export class DisksRaw extends React.Component<Props, States> {
 
   render() {
     const { classes } = this.props;
-    const { loadNodesError, loadingNodes } = this.state;
+    const { loadNodesError } = this.state;
 
     return (
       <BasePage title="Cluster Nodes">

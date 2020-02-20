@@ -5,12 +5,10 @@ import {
   withStyles,
   WithStyles
 } from "@material-ui/core";
-import Typography from "@material-ui/core/Typography";
 import React from "react";
 import { CustomTextField } from "../Basic";
-import { CustomDisks } from "../Basic/disk";
 import { NormalizeCPU, NormalizeMemory } from "../normalizer";
-import { ValidatorCPU, ValidatorRequired, ValidatorMemory } from "../validator";
+import { ValidatorCPU, ValidatorMemory } from "../validator";
 
 const styles = (_: Theme) =>
   createStyles({

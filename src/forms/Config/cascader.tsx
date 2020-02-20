@@ -1,9 +1,8 @@
 import React from "react";
-import ReactDOM from "react-dom";
 import Cascader from "antd/es/cascader";
 import "antd/es/cascader/style/css";
 import { FilledTextFieldProps } from "@material-ui/core/TextField";
-import { WrappedFieldProps, BaseFieldProps } from "redux-form";
+import { WrappedFieldProps } from "redux-form";
 import { Field } from "redux-form/immutable";
 import {
   getCascaderOptions,

@@ -1,5 +1,5 @@
 import React from "react";
-import { Switch, FormControlLabel, Tooltip } from "@material-ui/core";
+import { Switch, FormControlLabel } from "@material-ui/core";
 import { RootState } from "../../reducers";
 import { DispatchProp, connect } from "react-redux";
 import { setSettingsAction } from "../../actions/settings";

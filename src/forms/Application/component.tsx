@@ -88,7 +88,7 @@ class RenderComponents extends React.PureComponent<Props, State> {
       sharedEnv
     } = this.props;
 
-    const { isFormOpen, isAddButtonDisplayed, open } = this.state;
+    const { isFormOpen, isAddButtonDisplayed } = this.state;
 
     const componentsArray = components.toList().toArray();
 
@@ -122,7 +122,7 @@ class RenderComponents extends React.PureComponent<Props, State> {
               return !isEnvInSharedEnv(x.get("name"));
             });
 
-            const envLength = component.get("env").size;
+            // const envLength = component.get("env").size;
 
             return (
               <div key={index}>

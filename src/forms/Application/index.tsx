@@ -6,7 +6,7 @@ import {
   createStyles,
   withStyles
 } from "@material-ui/core";
-import { makeStyles, Theme } from "@material-ui/core/styles";
+import { Theme } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import React from "react";
 import { InjectedFormProps } from "redux-form";
@@ -16,11 +16,9 @@ import { CustomTextField } from "../Basic";
 import { ValidatorRequired } from "../validator";
 import { Components } from "./component";
 import { RenderSharedEnvs, EnvTypeExternal } from "../Basic/env";
-import { PropType } from "../../typings";
 import { RootState } from "../../reducers";
 import { connect } from "react-redux";
 import Immutable from "immutable";
-import { render } from "@testing-library/react";
 
 const styles = (theme: Theme) =>
   createStyles({
