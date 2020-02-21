@@ -5,6 +5,7 @@ import { V1alpha1ComponentTemplate } from "../kappModel/v1alpha1ComponentTemplat
 import { V1NodeList, V1PersistentVolumeList } from "../model/models";
 import { ItemList } from "../kappModel/List";
 import { V1alpha1Application } from "../kappModel";
+import { convertFromCRDApplication } from "../convertors/Application";
 
 export const K8sApiPerfix =
   process.env.REACT_APP_K8S_API_PERFIX || "http://localhost:3001";
@@ -72,7 +73,5 @@ export const getKappApplications = async () => {
     K8sApiPerfix + "/apis/core.kapp.dev/v1alpha1/applications"
   );
 
-  console.log(res.data);
+  return res.data.items.map(convertFromCRDApplication);
 };
-
-getKappApplications();

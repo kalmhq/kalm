@@ -12,7 +12,6 @@
 
 import { V1alpha1ApplicationSpecComponents } from './v1alpha1ApplicationSpecComponents';
 import { V1alpha1ApplicationSpecEnv } from './v1alpha1ApplicationSpecEnv';
-import { V1alpha1ApplicationSpecVolumes } from './v1alpha1ApplicationSpecVolumes';
 
 /**
 * ApplicationSpec defines the desired state of Application
@@ -20,8 +19,10 @@ import { V1alpha1ApplicationSpecVolumes } from './v1alpha1ApplicationSpecVolumes
 export class V1alpha1ApplicationSpec {
     'components': Array<V1alpha1ApplicationSpecComponents>;
     'imagePullSecretName'?: string;
+    /**
+    * Volumes             []v1.Volume     `json:\"volumes,omitempty\"`
+    */
     'sharedEnv'?: Array<V1alpha1ApplicationSpecEnv>;
-    'volumes'?: Array<V1alpha1ApplicationSpecVolumes>;
 
     static discriminator: string | undefined = undefined;
 
@@ -40,11 +41,6 @@ export class V1alpha1ApplicationSpec {
             "name": "sharedEnv",
             "baseName": "sharedEnv",
             "type": "Array<V1alpha1ApplicationSpecEnv>"
-        },
-        {
-            "name": "volumes",
-            "baseName": "volumes",
-            "type": "Array<V1alpha1ApplicationSpecVolumes>"
         }    ];
 
     static getAttributeTypeMap() {

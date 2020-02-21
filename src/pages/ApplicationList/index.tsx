@@ -25,7 +25,8 @@ import {
 import {
   deleteApplicationAction,
   duplicateApplicationAction,
-  updateApplicationAction
+  updateApplicationAction,
+  loadApplicationsAction
 } from "../../actions/application";
 import {
   setErrorNotificationAction,
@@ -135,6 +136,10 @@ class List extends React.PureComponent<Props, State> {
 
   public onCreate = () => {
     this.props.dispatch(push(`/applications/new`));
+  };
+
+  public componentDidMount = () => {
+    this.props.dispatch(loadApplicationsAction());
   };
 
   private renderSwitchingIsEnabledConfirmDialog = () => {

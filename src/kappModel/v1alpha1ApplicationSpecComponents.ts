@@ -10,10 +10,10 @@
  * Do not edit the class manually.
  */
 
+import { V1alpha1ApplicationSpecDisks } from './v1alpha1ApplicationSpecDisks';
 import { V1alpha1ApplicationSpecEnv } from './v1alpha1ApplicationSpecEnv';
 import { V1alpha1ApplicationSpecLivenessProbe } from './v1alpha1ApplicationSpecLivenessProbe';
 import { V1alpha1ApplicationSpecPorts } from './v1alpha1ApplicationSpecPorts';
-import { V1alpha1ApplicationSpecVolumeMounts } from './v1alpha1ApplicationSpecVolumeMounts';
 
 export class V1alpha1ApplicationSpecComponents {
     'afterStart'?: Array<string>;
@@ -22,6 +22,7 @@ export class V1alpha1ApplicationSpecComponents {
     'beforeStart'?: Array<string>;
     'command'?: Array<string>;
     'cpu'?: string;
+    'disks'?: Array<V1alpha1ApplicationSpecDisks>;
     'env'?: Array<V1alpha1ApplicationSpecEnv>;
     'image': string;
     'livenessProbe'?: V1alpha1ApplicationSpecLivenessProbe;
@@ -31,7 +32,6 @@ export class V1alpha1ApplicationSpecComponents {
     'ports'?: Array<V1alpha1ApplicationSpecPorts>;
     'readinessProbe'?: V1alpha1ApplicationSpecLivenessProbe;
     'schedule'?: string;
-    'volumeMounts'?: Array<V1alpha1ApplicationSpecVolumeMounts>;
     'workloadType'?: WorkloadTypeEnum;
 
     static discriminator: string | undefined = undefined;
@@ -66,6 +66,11 @@ export class V1alpha1ApplicationSpecComponents {
             "name": "cpu",
             "baseName": "cpu",
             "type": "string"
+        },
+        {
+            "name": "disks",
+            "baseName": "disks",
+            "type": "Array<V1alpha1ApplicationSpecDisks>"
         },
         {
             "name": "env",
@@ -111,11 +116,6 @@ export class V1alpha1ApplicationSpecComponents {
             "name": "schedule",
             "baseName": "schedule",
             "type": "string"
-        },
-        {
-            "name": "volumeMounts",
-            "baseName": "volumeMounts",
-            "type": "Array<V1alpha1ApplicationSpecVolumeMounts>"
         },
         {
             "name": "workloadType",

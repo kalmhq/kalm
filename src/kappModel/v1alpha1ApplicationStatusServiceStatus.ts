@@ -10,27 +10,25 @@
  * Do not edit the class manually.
  */
 
+import { V1alpha1ApplicationStatusServiceStatusLoadBalancer } from './v1alpha1ApplicationStatusServiceStatusLoadBalancer';
 
 /**
-* CHAP Secret for iSCSI target and initiator authentication
+* ServiceStatus represents the current status of a service.
 */
-export class V1alpha1ApplicationSpecIscsiSecretRef {
-    /**
-    * Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names TODO: Add other useful fields. apiVersion, kind, uid?
-    */
-    'name'?: string;
+export class V1alpha1ApplicationStatusServiceStatus {
+    'loadBalancer'?: V1alpha1ApplicationStatusServiceStatusLoadBalancer;
 
     static discriminator: string | undefined = undefined;
 
     static attributeTypeMap: Array<{name: string, baseName: string, type: string}> = [
         {
-            "name": "name",
-            "baseName": "name",
-            "type": "string"
+            "name": "loadBalancer",
+            "baseName": "loadBalancer",
+            "type": "V1alpha1ApplicationStatusServiceStatusLoadBalancer"
         }    ];
 
     static getAttributeTypeMap() {
-        return V1alpha1ApplicationSpecIscsiSecretRef.attributeTypeMap;
+        return V1alpha1ApplicationStatusServiceStatus.attributeTypeMap;
     }
 }
 

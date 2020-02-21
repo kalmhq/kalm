@@ -40,5 +40,24 @@ export const convertFromCRDApplicationComponent = (
 export const convertToCRDApplicationComponent = (
   c: ApplicationComponent
 ): V1alpha1ApplicationSpecComponents => {
-  return ObjectSerializer.deserialize({}, "V1alpha1ApplicationSpecComponents");
+  return ObjectSerializer.deserialize(
+    {
+      name: c.get("name"),
+      image: c.get("image"),
+      cpu: c.get("cpu"),
+      memory: c.get("memory"),
+      workloadType: c.get("workloadType"),
+      schedule: c.get("schedule"),
+      env: c
+        .get("env")
+        .map(x => ({
+          name: x.get("name"),
+          type: x.get("type"),
+          value: x.get("value")
+        }))
+        .toArray(),
+      command: c.get("command") ? [c.get("command")] : []
+    },
+    "V1alpha1ApplicationSpecComponents"
+  );
 };

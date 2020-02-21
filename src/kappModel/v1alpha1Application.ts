@@ -12,6 +12,7 @@
 
 import { V1ObjectMeta } from '../model/models';
 import { V1alpha1ApplicationSpec } from './v1alpha1ApplicationSpec';
+import { V1alpha1ApplicationStatus } from './v1alpha1ApplicationStatus';
 
 /**
 * Application is the Schema for the applications API
@@ -27,10 +28,7 @@ export class V1alpha1Application {
     'kind'?: string;
     'metadata'?: V1ObjectMeta;
     'spec'?: V1alpha1ApplicationSpec;
-    /**
-    * ApplicationStatus defines the observed state of Application
-    */
-    'status'?: object;
+    'status'?: V1alpha1ApplicationStatus;
 
     static discriminator: string | undefined = undefined;
 
@@ -58,7 +56,7 @@ export class V1alpha1Application {
         {
             "name": "status",
             "baseName": "status",
-            "type": "object"
+            "type": "V1alpha1ApplicationStatus"
         }    ];
 
     static getAttributeTypeMap() {

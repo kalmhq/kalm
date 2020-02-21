@@ -14,7 +14,7 @@
 /**
 * VolumeMount describes a mounting of a Volume within a container.
 */
-export class V1alpha1ApplicationSpecVolumeMounts {
+export class V1alpha1ComponentTemplateSpecVolumeMounts {
     /**
     * Path within the container at which the volume should be mounted.  Must not contain \':\'.
     */
@@ -75,7 +75,7 @@ export class V1alpha1ApplicationSpecVolumeMounts {
         }    ];
 
     static getAttributeTypeMap() {
-        return V1alpha1ApplicationSpecVolumeMounts.attributeTypeMap;
+        return V1alpha1ComponentTemplateSpecVolumeMounts.attributeTypeMap;
     }
 }
 

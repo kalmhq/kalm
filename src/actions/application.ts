@@ -1,11 +1,14 @@
 import {
-  CREATE_APPLICATION,
   Application,
-  UPDATE_APPLICATION,
+  CREATE_APPLICATION,
   DELETE_APPLICATION,
+  DUPLICATE_APPLICATION,
+  LOAD_APPLICATIONS_FULFILLED,
   ThunkResult,
-  DUPLICATE_APPLICATION
+  UPDATE_APPLICATION,
+  LOAD_APPLICATIONS_PENDING
 } from ".";
+import { getKappApplications } from "./kubernetesApi";
 
 export const createApplicationAction = (
   applicationValues: Application
@@ -48,6 +51,21 @@ export const deleteApplicationAction = (
     dispatch({
       type: DELETE_APPLICATION,
       payload: { applicationId }
+    });
+  };
+};
+
+export const loadApplicationsAction = (): ThunkResult<Promise<void>> => {
+  return async dispatch => {
+    dispatch({ type: LOAD_APPLICATIONS_PENDING });
+
+    const applications = await getKappApplications();
+
+    dispatch({
+      type: LOAD_APPLICATIONS_FULFILLED,
+      payload: {
+        applications
+      }
     });
   };
 };

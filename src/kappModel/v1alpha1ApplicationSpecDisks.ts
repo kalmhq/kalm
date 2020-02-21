@@ -11,26 +11,32 @@
  */
 
 
-/**
-* SecretRef is name of the authentication secret for RBDUser. If provided overrides keyring. Default is nil. More info: https://examples.k8s.io/volumes/rbd/README.md#how-to-use-it
-*/
-export class V1alpha1ApplicationSpecRbdSecretRef {
-    /**
-    * Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names TODO: Add other useful fields. apiVersion, kind, uid?
-    */
-    'name'?: string;
+export class V1alpha1ApplicationSpecDisks {
+    'path': string;
+    'size': string;
+    'type'?: string;
 
     static discriminator: string | undefined = undefined;
 
     static attributeTypeMap: Array<{name: string, baseName: string, type: string}> = [
         {
-            "name": "name",
-            "baseName": "name",
+            "name": "path",
+            "baseName": "path",
+            "type": "string"
+        },
+        {
+            "name": "size",
+            "baseName": "size",
+            "type": "string"
+        },
+        {
+            "name": "type",
+            "baseName": "type",
             "type": "string"
         }    ];
 
     static getAttributeTypeMap() {
-        return V1alpha1ApplicationSpecRbdSecretRef.attributeTypeMap;
+        return V1alpha1ApplicationSpecDisks.attributeTypeMap;
     }
 }
 

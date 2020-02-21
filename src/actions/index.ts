@@ -22,6 +22,8 @@ export const CREATE_APPLICATION = "CREATE_APPLICATION";
 export const UPDATE_APPLICATION = "UPDATE_APPLICATION";
 export const DELETE_APPLICATION = "DELETE_APPLICATION";
 export const DUPLICATE_APPLICATION = "DUPLICATE_APPLICATION";
+export const LOAD_APPLICATIONS_PENDING = "LOAD_APPLICATIONS_PENDING";
+export const LOAD_APPLICATIONS_FULFILLED = "LOAD_APPLICATIONS_FULFILLED";
 
 export const CREATE_CONFIG = "CREATE_CONFIG";
 export const DUPLICATE_CONFIG = "DUPLICATE_CONFIG";
@@ -123,6 +125,7 @@ export type Status =
 
 export type ComponentStatus = {
   status: Status;
+  deploymentStatus: any;
 };
 
 export type ApplicationStatus = ImmutableMap<{
@@ -255,6 +258,17 @@ export interface DuplicateApplicationAction {
   };
 }
 
+export interface LoadApplicationsPendingAction {
+  type: typeof LOAD_APPLICATIONS_PENDING;
+}
+
+export interface LoadApplicationsFulfilledAction {
+  type: typeof LOAD_APPLICATIONS_FULFILLED;
+  payload: {
+    applications: Array<ApplicationNew>;
+  };
+}
+
 export interface CreateConfigAction {
   type: typeof CREATE_CONFIG;
   payload: {
@@ -326,6 +340,8 @@ export type Actions =
   | CreateApplicationAction
   | DeleteApplicationAction
   | UpdateApplicationAction
+  | LoadApplicationsFulfilledAction
+  | LoadApplicationsPendingAction
   | CreateConfigAction
   | DeleteConfigAction
   | UpdateConfigAction
