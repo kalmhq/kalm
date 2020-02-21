@@ -55,8 +55,71 @@ class ApplicationFormRaw extends React.PureComponent<
     ReturnType<typeof mapStateToProps> &
     WithStyles<typeof styles>
 > {
-  public render() {
-    const { sharedEnv, handleSubmit, formComponents, classes } = this.props;
+  private renderBaisc() {
+    const { classes } = this.props;
+    return (
+      <>
+        <Typography
+          variant="h2"
+          classes={{
+            root: classes.sectionHeader
+          }}
+        >
+          Basic
+        </Typography>
+        <Typography classes={{ root: classes.sectionDiscription }}>
+          Basic information of this application
+        </Typography>
+        <Paper
+          elevation={4}
+          square
+          classes={{
+            root: classes.paper
+          }}
+        >
+          <CustomTextField
+            name="name"
+            label="Name"
+            margin
+            validate={ValidatorRequired}
+            helperText='The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
+            placeholder="Please type the component name"
+          />
+        </Paper>
+      </>
+    );
+  }
+  private renderComponent() {
+    const { classes } = this.props;
+
+    return (
+      <>
+        <Typography
+          variant="h2"
+          classes={{
+            root: classes.sectionHeader
+          }}
+        >
+          Components
+        </Typography>
+        <Typography classes={{ root: classes.sectionDiscription }}>
+          Select compoents you want to include into this application.
+        </Typography>
+        <Paper
+          elevation={4}
+          square
+          classes={{
+            root: classes.paper
+          }}
+        >
+          <Components />
+        </Paper>
+      </>
+    );
+  }
+
+  private renderSharedEnvs() {
+    const { sharedEnv, formComponents, classes } = this.props;
     const isEnvInSharedEnv = (envName: string) => {
       return !!sharedEnv.find(x => x.get("name") === envName);
     };
@@ -75,84 +138,46 @@ class ApplicationFormRaw extends React.PureComponent<
     ).filter(x => !isEnvInSharedEnv(x));
 
     return (
+      <>
+        <Typography
+          variant="h2"
+          classes={{
+            root: classes.sectionHeader
+          }}
+        >
+          Shared Environment Variables
+        </Typography>
+        <Typography classes={{ root: classes.sectionDiscription }}>
+          Shared environment variable is consistent amoung all components.
+        </Typography>
+        <Paper
+          elevation={4}
+          square
+          classes={{
+            root: classes.paper
+          }}
+        >
+          <FieldArray
+            name="sharedEnv"
+            valid={true}
+            component={RenderSharedEnvs}
+            missingVariables={missingVariables}
+          />
+        </Paper>
+      </>
+    );
+  }
+  public render() {
+    const { handleSubmit } = this.props;
+
+    return (
       <div>
         <form onSubmit={handleSubmit}>
           <Grid container spacing={1}>
             <Grid item xs={12} sm={12} md={8} lg={8} xl={6}>
-              <Typography
-                variant="h2"
-                classes={{
-                  root: classes.sectionHeader
-                }}
-              >
-                Basic
-              </Typography>
-              <Typography classes={{ root: classes.sectionDiscription }}>
-                Basic information of this application
-              </Typography>
-              <Paper
-                elevation={4}
-                square
-                classes={{
-                  root: classes.paper
-                }}
-              >
-                <CustomTextField
-                  name="name"
-                  label="Name"
-                  margin
-                  validate={ValidatorRequired}
-                  helperText='The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
-                  placeholder="Please type the component name"
-                />
-              </Paper>
-
-              <Typography
-                variant="h2"
-                classes={{
-                  root: classes.sectionHeader
-                }}
-              >
-                Components
-              </Typography>
-              <Typography classes={{ root: classes.sectionDiscription }}>
-                Select compoents you want to include into this application.
-              </Typography>
-              <Paper
-                elevation={4}
-                square
-                classes={{
-                  root: classes.paper
-                }}
-              >
-                <Components />
-              </Paper>
-
-              <Typography
-                variant="h2"
-                classes={{
-                  root: classes.sectionHeader
-                }}
-              >
-                Shared Environment Variables
-              </Typography>
-              <Typography classes={{ root: classes.sectionDiscription }}>
-                Shared environment variable is consistent amoung all components.
-              </Typography>
-              <Paper
-                elevation={4}
-                square
-                classes={{
-                  root: classes.paper
-                }}
-              >
-                <FieldArray
-                  name="sharedEnv"
-                  valid={true}
-                  component={RenderSharedEnvs}
-                  missingVariables={missingVariables}
-                />
-              </Paper>
+              {this.renderBaisc()}
+              {this.renderComponent()}
+              {this.renderSharedEnvs()}
             </Grid>
           </Grid>
           <Button variant="contained" color="primary" type="submit">
