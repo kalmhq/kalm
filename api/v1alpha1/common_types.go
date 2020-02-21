@@ -2,6 +2,7 @@ package v1alpha1
 
 import (
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 type EnvVarType string
@@ -56,4 +57,10 @@ type ComponentTemplateEnvVar struct {
 	Type ComponentTemplateEnvType `json:"type"`
 
 	Value string `json:"value,omitempty"`
+}
+
+type Disk struct {
+	Path string            `json:"path"`
+	Size resource.Quantity `json:"size"`
+	Type string            `json:"type,omitempty"`
 }
