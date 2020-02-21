@@ -15,9 +15,9 @@ import MenuIcon from "@material-ui/icons/Menu";
 import clsx from "clsx";
 import React from "react";
 import { Route, Switch } from "react-router-dom";
-import ApplicationEdit from "./pages/ApplicationEdit";
-import ApplictionList from "./pages/ApplicationList";
-import ApplicationNew from "./pages/ApplicationNew";
+import { ApplicationEdit } from "./pages/Application/Edit";
+import { ApplicationList } from "./pages/Application/List";
+import { ApplicationNew } from "./pages/Application/New";
 import { ComponentTemplateEdit } from "./pages/ComponentTemplate/Edit";
 import { ComponentTemplateList } from "./pages/ComponentTemplate/List";
 import { ComponentTemplateNew } from "./pages/ComponentTemplate/New";
@@ -321,7 +321,7 @@ export default function MiniDrawer() {
                 <InstallPage />
               </Route>
               <Route exact path="/applications">
-                <ApplictionList />
+                <ApplicationList />
               </Route>
               <Route
                 exact

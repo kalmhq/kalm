@@ -119,7 +119,7 @@ interface State {
   deletingApplicationId?: string;
 }
 
-class List extends React.PureComponent<Props, State> {
+class ApplicationListRaw extends React.PureComponent<Props, State> {
   private defaultState = {
     isEnabledConfirmDialogOpen: false,
     switchingIsEnabledApplicationId: "",
@@ -350,4 +350,6 @@ class List extends React.PureComponent<Props, State> {
   }
 }
 
-export default withStyles(styles)(connect(mapStateToProps)(List));
+export const ApplicationList = withStyles(styles)(
+  connect(mapStateToProps)(ApplicationListRaw)
+);

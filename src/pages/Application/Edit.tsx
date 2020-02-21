@@ -37,7 +37,7 @@ interface Props extends StateProps, WithStyles<typeof styles> {
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
 }
 
-class ApplicationEdit extends React.PureComponent<Props> {
+class ApplicationEditRaw extends React.PureComponent<Props> {
   private submit = async (application: Application) => {
     const { dispatch, applicationId } = this.props;
     await dispatch(updateApplicationAction(applicationId, application));
@@ -59,4 +59,6 @@ class ApplicationEdit extends React.PureComponent<Props> {
   }
 }
 
-export default withStyles(styles)(connect(mapStateToProps)(ApplicationEdit));
+export const ApplicationEdit = withStyles(styles)(
+  connect(mapStateToProps)(ApplicationEditRaw)
+);

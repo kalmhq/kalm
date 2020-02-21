@@ -21,7 +21,7 @@ interface Props extends WithStyles<typeof styles> {
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
 }
 
-class ApplicationNew extends React.PureComponent<Props> {
+class ApplicationNewRaw extends React.PureComponent<Props> {
   private submit = async (applicationFormValue: Application) => {
     const { dispatch } = this.props;
     await dispatch(createApplicationAction(applicationFormValue));
@@ -43,4 +43,4 @@ class ApplicationNew extends React.PureComponent<Props> {
   }
 }
 
-export default withStyles(styles)(connect()(ApplicationNew));
+export const ApplicationNew = withStyles(styles)(connect()(ApplicationNewRaw));
