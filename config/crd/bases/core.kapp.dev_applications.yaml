@@ -59,6 +59,10 @@ spec:
                     type: array
                   cpu:
                     type: string
+                  dependencies:
+                    items:
+                      type: string
+                    type: array
                   disks:
                     items:
                       properties:
@@ -380,7 +384,6 @@ spec:
             imagePullSecretName:
               type: string
             sharedEnv:
-              description: Volumes             []v1.Volume     `json:"volumes,omitempty"`
               items:
                 description: EnvVar represents an environment variable present in
                   a Container.
