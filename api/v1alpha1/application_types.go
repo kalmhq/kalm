@@ -17,21 +17,13 @@ package v1alpha1
 
 import (
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
-// +kubebuilder:validation:Enum=Server;Cronjob
-type ComponentType string
-
-const (
-	ComponentTypeServer ComponentType = "Server"
-
-	ComponentTypeCronjob ComponentType = "Cronjob"
-)
 
 type ComponentSpec struct {
 	Name string `json:"name"`
@@ -46,7 +38,10 @@ type ComponentSpec struct {
 
 	Ports []Port `json:"ports,omitempty"`
 
-	Type ComponentType `json:"type,omitempty"`
+	// +kubebuilder:validation:Enum=server;cronjob
+	WorkLoadType WorkLoadType `json:"workloadType,omitempty"`
+
+	Schedule string `json:"schedule,omitempty"`
 
 	// +optional
 	LivenessProbe *v1.Probe `json:"livenessProbe,omitempty"`
@@ -62,7 +57,9 @@ type ComponentSpec struct {
 
 	BeforeDestroy []string `json:"beforeDestroy,omitempty"`
 
-	Resources Resource `json:"resources,omitempty"`
+	CPU resource.Quantity `json:"cpu,omitempty"`
+
+	Memory resource.Quantity `json:"memory,omitempty"`
 
 	//VolumeMounts []v1.VolumeMount `json:"volumeMounts,omitempty"`
 

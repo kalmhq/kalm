@@ -57,6 +57,8 @@ spec:
                     items:
                       type: string
                     type: array
+                  cpu:
+                    type: string
                   disks:
                     items:
                       properties:
@@ -76,17 +78,19 @@ spec:
                       description: EnvVar represents an environment variable present
                         in a Container.
                       properties:
-                        componentPort:
-                          type: string
                         name:
                           description: Name of the environment variable. Must be a
                             C_IDENTIFIER.
                           type: string
                         prefix:
                           type: string
-                        sharedEnv:
-                          type: string
                         suffix:
+                          type: string
+                        type:
+                          enum:
+                          - static
+                          - external
+                          - linked
                           type: string
                         value:
                           type: string
@@ -212,6 +216,8 @@ spec:
                         format: int32
                         type: integer
                     type: object
+                  memory:
+                    type: string
                   name:
                     type: string
                   plugins:
@@ -359,36 +365,12 @@ spec:
                         format: int32
                         type: integer
                     type: object
-                  resources:
-                    properties:
-                      cpu:
-                        properties:
-                          max:
-                            type: string
-                          min:
-                            type: string
-                        required:
-                        - max
-                        - min
-                        type: object
-                      memory:
-                        properties:
-                          max:
-                            type: string
-                          min:
-                            type: string
-                        required:
-                        - max
-                        - min
-                        type: object
-                    required:
-                    - cpu
-                    - memory
-                    type: object
-                  type:
+                  schedule:
+                    type: string
+                  workloadType:
                     enum:
-                    - Server
-                    - Cronjob
+                    - server
+                    - cronjob
                     type: string
                 required:
                 - image
@@ -403,16 +385,18 @@ spec:
                 description: EnvVar represents an environment variable present in
                   a Container.
                 properties:
-                  componentPort:
-                    type: string
                   name:
                     description: Name of the environment variable. Must be a C_IDENTIFIER.
                     type: string
                   prefix:
                     type: string
-                  sharedEnv:
-                    type: string
                   suffix:
+                    type: string
+                  type:
+                    enum:
+                    - static
+                    - external
+                    - linked
                     type: string
                   value:
                     type: string

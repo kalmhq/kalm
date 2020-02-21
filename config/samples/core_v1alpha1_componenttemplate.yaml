@@ -6,6 +6,7 @@ spec:
   # Add fields here
   name: web
   image: nginx:alpine
+  workloadType: server
   beforeStart:
     - ls -alh /
     - echo "test" > /tmp/bbq
@@ -18,26 +19,21 @@ spec:
     # Get value of another component export port address,
     # It will be helpful is the component depends on another.
     - name: API_URL
-      componentPort: api/http
-      prefix: http://
-      suffix: /v4
+      type: linked
     # Get value from shareEnv
     - name: SOME_COMMON_ENV
-      sharedEnv: SOME_COMMON_ENV
+      type: external
     # normal env definition
     - name: SOME_ENV
+      type: static
       value: SOME_VALUE
   ports:
     - name: http
+      protocol: TCP
       containerPort: 80
       servicePort: 80
-  resources:
-    cpu:
-      min: 10m
-      max: 100m
-    memory:
-      min: 500M
-      max: 2G
+  cpu: 100m
+  memory: 500m
   #        disk:
   #          - path: /a/b/c
   #            name: tmpfile

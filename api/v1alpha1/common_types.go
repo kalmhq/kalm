@@ -5,6 +5,14 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
+type EnvVarType string
+
+const (
+	EnvVarTypeStatic   EnvVarType = "static"
+	EnvVarTypeExternal EnvVarType = "external"
+	EnvVarTypeLinked   EnvVarType = "linked"
+)
+
 // EnvVar represents an environment variable present in a Container.
 type EnvVar struct {
 	// Name of the environment variable. Must be a C_IDENTIFIER.
@@ -12,9 +20,8 @@ type EnvVar struct {
 
 	Value string `json:"value,omitempty"`
 
-	SharedEnv string `json:"sharedEnv,omitempty"`
-
-	ComponentPort string `json:"componentPort,omitempty"`
+	// +kubebuilder:validation:Enum=static;external;linked
+	Type EnvVarType `json:"type,omitempty"`
 
 	Prefix string `json:"prefix,omitempty"`
 
@@ -35,14 +42,21 @@ type Port struct {
 	Protocol corev1.Protocol `json:"protocol,omitempty"`
 }
 
-type ResourceRange struct {
-	Min resource.Quantity `json:"min"`
-	Max resource.Quantity `json:"max"`
-}
+type ComponentTemplateEnvType string
 
-type Resource struct {
-	CPU    ResourceRange `json:"cpu"`
-	Memory ResourceRange `json:"memory"`
+const (
+	ComponentTemplateEnvTypeStatic   ComponentTemplateEnvType = "static"
+	ComponentTemplateEnvTypeExternal ComponentTemplateEnvType = "external"
+	ComponentTemplateEnvTypeLinked   ComponentTemplateEnvType = "linked"
+)
+
+type ComponentTemplateEnvVar struct {
+	Name string `json:"name"`
+
+	// +kubebuilder:validation:Enum=static;external;linked
+	Type ComponentTemplateEnvType `json:"type"`
+
+	Value string `json:"value,omitempty"`
 }
 
 type Disk struct {

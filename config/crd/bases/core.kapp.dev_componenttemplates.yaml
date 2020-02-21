@@ -14,7 +14,7 @@ spec:
     listKind: ComponentTemplateList
     plural: componenttemplates
     singular: componenttemplate
-  scope: Namespaced
+  scope: Cluster
   validation:
     openAPIV3Schema:
       description: ComponentTemplate is the Schema for the componenttemplates API
@@ -54,36 +54,32 @@ spec:
               items:
                 type: string
               type: array
+            cpu:
+              type: string
             env:
               items:
-                description: EnvVar represents an environment variable present in
-                  a Container.
                 properties:
-                  componentPort:
-                    type: string
                   name:
-                    description: Name of the environment variable. Must be a C_IDENTIFIER.
                     type: string
-                  prefix:
-                    type: string
-                  sharedEnv:
-                    type: string
-                  suffix:
+                  type:
+                    enum:
+                    - static
+                    - external
+                    - linked
                     type: string
                   value:
                     type: string
                 required:
                 - name
+                - type
                 type: object
               type: array
             image:
               type: string
+            memory:
+              type: string
             name:
               type: string
-            plugins:
-              items:
-                type: object
-              type: array
             ports:
               items:
                 properties:
@@ -109,36 +105,7 @@ spec:
                 - name
                 type: object
               type: array
-            resources:
-              properties:
-                cpu:
-                  properties:
-                    max:
-                      type: string
-                    min:
-                      type: string
-                  required:
-                  - max
-                  - min
-                  type: object
-                memory:
-                  properties:
-                    max:
-                      type: string
-                    min:
-                      type: string
-                  required:
-                  - max
-                  - min
-                  type: object
-              required:
-              - cpu
-              - memory
-              type: object
-            type:
-              enum:
-              - Server
-              - Cronjob
+            schedule:
               type: string
             volumeMounts:
               items:
@@ -177,12 +144,14 @@ spec:
                 - name
                 type: object
               type: array
+            workloadType:
+              enum:
+              - server
+              - cronjob
+              type: string
           required:
           - image
           - name
-          type: object
-        status:
-          description: ComponentTemplateStatus defines the observed state of ComponentTemplate
           type: object
       type: object
   version: v1alpha1

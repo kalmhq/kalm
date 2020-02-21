@@ -17,18 +17,25 @@ package v1alpha1
 
 import (
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+type WorkLoadType string
+
+const (
+	WorkLoadTypeServer  WorkLoadType = "server"
+	WorkLoadTypeCronjob WorkLoadType = "cronjob"
+)
+
 // ComponentTemplateSpec defines the desired state of ComponentTemplate
 type ComponentTemplateSpec struct {
 	Name string `json:"name"`
 
-	Env []EnvVar `json:"env,omitempty"`
+	Env []ComponentTemplateEnvVar `json:"env,omitempty"`
 
 	Image string `json:"image"`
 
@@ -38,15 +45,16 @@ type ComponentTemplateSpec struct {
 
 	Ports []Port `json:"ports,omitempty"`
 
-	Type ComponentType `json:"type,omitempty"`
-
 	// +optional
 	// LivenessProbe *v1.Probe `json:"livenessProbe,omitempty"`
 
 	// +optional
 	// ReadinessProbe *v1.Probe `json:"readinessProbe,omitempty"`
 
-	Plugins []runtime.RawExtension `json:"plugins,omitempty"`
+	// +kubebuilder:validation:Enum=server;cronjob
+	WorkLoadType WorkLoadType `json:"workloadType,omitempty"`
+
+	Schedule string `json:"schedule,omitempty"`
 
 	BeforeStart []string `json:"beforeStart,omitempty"`
 
@@ -54,29 +62,26 @@ type ComponentTemplateSpec struct {
 
 	BeforeDestroy []string `json:"beforeDestroy,omitempty"`
 
-	Resources Resource `json:"resources,omitempty"`
+	CPU resource.Quantity `json:"cpu,omitempty"`
+
+	Memory resource.Quantity `json:"memory,omitempty"`
 
 	VolumeMounts []v1.VolumeMount `json:"volumeMounts,omitempty"`
 }
 
-// ComponentTemplateStatus defines the observed state of ComponentTemplate
-type ComponentTemplateStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-}
-
 // +kubebuilder:object:root=true
+// +kubebuilder:resource:scope=Cluster
 
 // ComponentTemplate is the Schema for the componenttemplates API
 type ComponentTemplate struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   ComponentTemplateSpec   `json:"spec,omitempty"`
-	Status ComponentTemplateStatus `json:"status,omitempty"`
+	Spec ComponentTemplateSpec `json:"spec,omitempty"`
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:resource:scope=Cluster
 
 // ComponentTemplateList contains a list of ComponentTemplate
 type ComponentTemplateList struct {
