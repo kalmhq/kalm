@@ -22,7 +22,6 @@ import {
 import {
   deleteApplicationAction,
   duplicateApplicationAction,
-  loadApplicationsAction,
   updateApplicationAction
 } from "../../actions/application";
 import {
@@ -30,12 +29,12 @@ import {
   setSuccessNotificationAction
 } from "../../actions/notification";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
+import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
 import {
   ApplicationDataWrapper,
   WithApplicationsDataProps
 } from "./DataWrapper";
-import { Loading } from "../../widgets/Loading";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -124,10 +123,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
 
   public onCreate = () => {
     this.props.dispatch(push(`/applications/new`));
-  };
-
-  public componentDidMount = () => {
-    this.props.dispatch(loadApplicationsAction());
   };
 
   private renderSwitchingIsEnabledConfirmDialog = () => {

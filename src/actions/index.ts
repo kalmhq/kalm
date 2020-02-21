@@ -1,42 +1,40 @@
-import { CallHistoryMethodAction } from "connected-react-router";
-import Immutable from "immutable";
-import { VariantType } from "notistack";
-import { ThunkAction, ThunkDispatch } from "redux-thunk";
-import { V1Node, V1PersistentVolume } from "../model/models";
-import { RootState } from "../reducers";
-import { ImmutableMap } from "../typings";
-import "./node";
-import "./notification";
-import { SettingObject } from "../reducers/settings";
+import { CallHistoryMethodAction } from 'connected-react-router';
+import Immutable from 'immutable';
+import { VariantType } from 'notistack';
+import { ThunkAction, ThunkDispatch } from 'redux-thunk';
+import { V1Node, V1PersistentVolume } from '../model/models';
+import { RootState } from '../reducers';
+import { ImmutableMap } from '../typings';
+import './node';
+import './notification';
+import { SettingObject } from '../reducers/settings';
 
-export const CREATE_COMPONENT = "CREATE_COMPONENT";
-export const UPDATE_COMPONENT = "UPDATE_COMPONENT";
-export const DELETE_COMPONENT = "DELETE_COMPONENT";
-export const DUPLICATE_COMPONENT = "DUPLICATE_COMPONENT";
-export const LOAD_COMPONENT_TEMPLATES_PENDING =
-  "LOAD_COMPONENT_TEMPLATES_PENDING";
-export const LOAD_COMPONENT_TEMPLATES_FULFILLED =
-  "LOAD_COMPONENT_TEMPLATES_FULFILLED";
+export const CREATE_COMPONENT = 'CREATE_COMPONENT';
+export const UPDATE_COMPONENT = 'UPDATE_COMPONENT';
+export const DELETE_COMPONENT = 'DELETE_COMPONENT';
+export const DUPLICATE_COMPONENT = 'DUPLICATE_COMPONENT';
+export const LOAD_COMPONENT_TEMPLATES_PENDING = 'LOAD_COMPONENT_TEMPLATES_PENDING';
+export const LOAD_COMPONENT_TEMPLATES_FULFILLED = 'LOAD_COMPONENT_TEMPLATES_FULFILLED';
 
-export const CREATE_APPLICATION = "CREATE_APPLICATION";
-export const UPDATE_APPLICATION = "UPDATE_APPLICATION";
-export const DELETE_APPLICATION = "DELETE_APPLICATION";
-export const DUPLICATE_APPLICATION = "DUPLICATE_APPLICATION";
-export const LOAD_APPLICATIONS_PENDING = "LOAD_APPLICATIONS_PENDING";
-export const LOAD_APPLICATIONS_FULFILLED = "LOAD_APPLICATIONS_FULFILLED";
+export const CREATE_APPLICATION = 'CREATE_APPLICATION';
+export const UPDATE_APPLICATION = 'UPDATE_APPLICATION';
+export const DELETE_APPLICATION = 'DELETE_APPLICATION';
+export const DUPLICATE_APPLICATION = 'DUPLICATE_APPLICATION';
+export const LOAD_APPLICATIONS_PENDING = 'LOAD_APPLICATIONS_PENDING';
+export const LOAD_APPLICATIONS_FULFILLED = 'LOAD_APPLICATIONS_FULFILLED';
 
-export const CREATE_CONFIG = "CREATE_CONFIG";
-export const DUPLICATE_CONFIG = "DUPLICATE_CONFIG";
-export const UPDATE_CONFIG = "UPDATE_CONFIG";
-export const DELETE_CONFIG = "DELETE_CONFIG";
-export const SET_CURRENT_CONFIG_ID_CHAIN = "SET_CURRENT_CONFIG_ID_CHAIN";
+export const CREATE_CONFIG = 'CREATE_CONFIG';
+export const DUPLICATE_CONFIG = 'DUPLICATE_CONFIG';
+export const UPDATE_CONFIG = 'UPDATE_CONFIG';
+export const DELETE_CONFIG = 'DELETE_CONFIG';
+export const SET_CURRENT_CONFIG_ID_CHAIN = 'SET_CURRENT_CONFIG_ID_CHAIN';
 
-export const LOAD_NODES = "LOAD_NODES";
-export const LOAD_PERSISTENT_VOLUMNS = "LOAD_PERSISTENT_VOLUMNS";
+export const LOAD_NODES = 'LOAD_NODES';
+export const LOAD_PERSISTENT_VOLUMNS = 'LOAD_PERSISTENT_VOLUMNS';
 
-export const SET_NOTIFICATION_MESSAGE = "SET_NOTIFICATION_MESSAGE";
+export const SET_NOTIFICATION_MESSAGE = 'SET_NOTIFICATION_MESSAGE';
 
-export const SET_SETTINGS = "SET_SETTINGS";
+export const SET_SETTINGS = 'SET_SETTINGS';
 
 export type ComponentTemplatePort = ImmutableMap<{
   name: string;
@@ -77,23 +75,23 @@ export type ComponentTemplate = ImmutableMap<{
 
 export const newEmptyComponentTemplate = (): ComponentTemplate => {
   return Immutable.Map({
-    id: "",
-    name: "",
-    image: "",
-    command: "",
+    id: '',
+    name: '',
+    image: '',
+    command: '',
     env: Immutable.List([]),
     ports: Immutable.List([]),
     disk: Immutable.List([]),
-    cpu: "100M",
-    memory: "100M",
-    workloadType: "server"
+    cpu: '100M',
+    memory: '100M',
+    workloadType: 'server'
   });
 };
 
 export const newEmptyComponentTemplatePort = (): ComponentTemplatePort => {
   return Immutable.Map({
-    name: "",
-    protocol: "TCP",
+    name: '',
+    protocol: 'TCP',
     containerPort: 3000,
     servicePort: 80
   });
@@ -108,14 +106,14 @@ export type SharedEnv = ImmutableMap<{
 export type EnvItem = SharedEnv;
 export type EnvItems = Immutable.List<EnvItem>;
 
-export const StatusTypeRunning = "RUNNING";
-export const StatusTypePending = "PENDING";
-export const StatusTypeCreating = "CREATING";
-export const StatusTypeError = "Error";
+export const StatusTypeRunning = 'RUNNING';
+export const StatusTypePending = 'PENDING';
+export const StatusTypeCreating = 'CREATING';
+export const StatusTypeError = 'Error';
 
 export type WorkloadType = string;
-export const workloadTypeServer: WorkloadType = "server";
-export const workloadTypeCronjob: WorkloadType = "cronjob";
+export const workloadTypeServer: WorkloadType = 'server';
+export const workloadTypeCronjob: WorkloadType = 'cronjob';
 
 export type Status =
   | typeof StatusTypeRunning
@@ -137,15 +135,7 @@ export type Application = ImmutableMap<{
   id: string;
   name: string;
   isEnabled: boolean;
-  sharedEnv: Immutable.List<SharedEnv>;
-  components: Immutable.List<ComponentTemplate>;
-  status: ApplicationStatus;
-}>;
-
-export type ApplicationNew = ImmutableMap<{
-  id: string;
-  name: string;
-  isEnabled: boolean;
+  namespace: string;
   sharedEnv: Immutable.List<SharedEnv>;
   components: Immutable.List<ComponentTemplate>;
   status: ApplicationStatus;
@@ -183,7 +173,7 @@ export type ApplicationComponent = ImmutableMap<{
 
 export type Config = ImmutableMap<{
   id: string;
-  type: "folder" | "file";
+  type: 'folder' | 'file';
   name: string;
   content: string;
   children: Immutable.OrderedMap<string, Config>;
@@ -265,7 +255,7 @@ export interface LoadApplicationsPendingAction {
 export interface LoadApplicationsFulfilledAction {
   type: typeof LOAD_APPLICATIONS_FULFILLED;
   payload: {
-    applications: Array<ApplicationNew>;
+    applications: Array<Application>;
   };
 }
 

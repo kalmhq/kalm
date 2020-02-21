@@ -28,7 +28,10 @@ export const ComponentTemplateDataWrapper = (
     WithComponentTemplatesDataProps
   > {
     componentDidMount() {
-      this.props.dispatch(loadComponentTemplatesAction());
+      const { isFirstLoaded } = this.props;
+      if (!isFirstLoaded) {
+        this.props.dispatch(loadComponentTemplatesAction());
+      }
     }
 
     render() {

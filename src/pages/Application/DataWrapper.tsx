@@ -27,7 +27,10 @@ export const ApplicationDataWrapper = (
     WithApplicationsDataProps
   > {
     componentDidMount() {
-      this.props.dispatch(loadApplicationsAction());
+      const { isFirstLoaded } = this.props;
+      if (!isFirstLoaded) {
+        this.props.dispatch(loadApplicationsAction());
+      }
     }
 
     render() {

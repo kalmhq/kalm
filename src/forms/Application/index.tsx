@@ -1,34 +1,25 @@
-import {
-  Button,
-  Grid,
-  Paper,
-  WithStyles,
-  createStyles,
-  withStyles
-} from "@material-ui/core";
-import { Theme } from "@material-ui/core/styles";
-import Typography from "@material-ui/core/Typography";
-import React from "react";
-import { InjectedFormProps } from "redux-form";
-import { FieldArray, reduxForm, formValueSelector } from "redux-form/immutable";
-import { ComponentTemplate, Application, SharedEnv } from "../../actions";
-import { CustomTextField } from "../Basic";
-import { ValidatorRequired } from "../validator";
-import { Components } from "./component";
-import { RenderSharedEnvs, EnvTypeExternal } from "../Basic/env";
-import { RootState } from "../../reducers";
-import { connect } from "react-redux";
-import Immutable from "immutable";
+import { Button, createStyles, Grid, Paper, WithStyles, withStyles } from '@material-ui/core';
+import { Theme } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
+import React from 'react';
+import { InjectedFormProps } from 'redux-form';
+import { Field, FieldArray, formValueSelector, reduxForm } from 'redux-form/immutable';
+import { Application, ComponentTemplate, SharedEnv } from '../../actions';
+import { ValidatorRequired } from '../validator';
+import { Components } from './component';
+import { EnvTypeExternal, RenderSharedEnvs } from '../Basic/env';
+import { RootState } from '../../reducers';
+import { connect } from 'react-redux';
+import Immutable from 'immutable';
+import { HelperContainer } from '../../widgets/Helper';
+import { TextField } from '../Basic/text';
 
 const styles = (theme: Theme) =>
   createStyles({
     sectionHeader: {
       fontSize: 24,
-      fontWeight: 400
-    },
-    sectionDiscription: {
-      fontSize: 16,
-      margin: "16px 0"
+      fontWeight: 400,
+      margin: '16px 0'
     },
     paper: {
       padding: theme.spacing(3),
@@ -37,9 +28,9 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState) => {
-  const selector = formValueSelector("application");
-  const formComponents: ComponentTemplate[] = selector(state, "components");
-  const sharedEnv: SharedEnv[] = selector(state, "sharedEnv");
+  const selector = formValueSelector('application');
+  const formComponents: ComponentTemplate[] = selector(state, 'components');
+  const sharedEnv: SharedEnv[] = selector(state, 'sharedEnv');
 
   return {
     sharedEnv,
@@ -50,10 +41,7 @@ const mapStateToProps = (state: RootState) => {
 export interface Props {}
 
 class ApplicationFormRaw extends React.PureComponent<
-  Props &
-    InjectedFormProps<Application, Props> &
-    ReturnType<typeof mapStateToProps> &
-    WithStyles<typeof styles>
+  Props & InjectedFormProps<Application, Props> & ReturnType<typeof mapStateToProps> & WithStyles<typeof styles>
 > {
   private renderBaisc() {
     const { classes } = this.props;
@@ -63,32 +51,39 @@ class ApplicationFormRaw extends React.PureComponent<
           variant="h2"
           classes={{
             root: classes.sectionHeader
-          }}
-        >
+          }}>
           Basic
         </Typography>
-        <Typography classes={{ root: classes.sectionDiscription }}>
-          Basic information of this application
-        </Typography>
+        <HelperContainer>
+          <Typography>Basic information of this application</Typography>
+        </HelperContainer>
         <Paper
           elevation={4}
           square
           classes={{
             root: classes.paper
-          }}
-        >
-          <CustomTextField
+          }}>
+          <Field
             name="name"
             label="Name"
-            margin
+            component={TextField}
             validate={ValidatorRequired}
             helperText='The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
             placeholder="Please type the component name"
+          />
+          <Field
+            name="namespace"
+            label="Namespace"
+            component={TextField}
+            validate={ValidatorRequired}
+            placeholder="Please type the namespace"
+            helperText="All resources will running in this namespace."
           />
         </Paper>
       </>
     );
   }
+
   private renderComponent() {
     const { classes } = this.props;
 
@@ -98,20 +93,18 @@ class ApplicationFormRaw extends React.PureComponent<
           variant="h2"
           classes={{
             root: classes.sectionHeader
-          }}
-        >
+          }}>
           Components
         </Typography>
-        <Typography classes={{ root: classes.sectionDiscription }}>
-          Select compoents you want to include into this application.
-        </Typography>
+        <HelperContainer>
+          <Typography>Select compoents you want to include into this application.</Typography>
+        </HelperContainer>
         <Paper
           elevation={4}
           square
           classes={{
             root: classes.paper
-          }}
-        >
+          }}>
           <Components />
         </Paper>
       </>
@@ -121,7 +114,7 @@ class ApplicationFormRaw extends React.PureComponent<
   private renderSharedEnvs() {
     const { sharedEnv, formComponents, classes } = this.props;
     const isEnvInSharedEnv = (envName: string) => {
-      return !!sharedEnv.find(x => x.get("name") === envName);
+      return !!sharedEnv.find(x => x.get('name') === envName);
     };
 
     const missingVariables = Array.from(
@@ -129,9 +122,9 @@ class ApplicationFormRaw extends React.PureComponent<
         formComponents
           .map(component => {
             return component
-              .get("env")
-              .filter(env => env.get("type") === EnvTypeExternal)
-              .map(env => env.get("name"));
+              .get('env')
+              .filter(env => env.get('type') === EnvTypeExternal)
+              .map(env => env.get('name'));
           })
           .reduce((acc, item) => acc.concat(item))
       )
@@ -143,30 +136,24 @@ class ApplicationFormRaw extends React.PureComponent<
           variant="h2"
           classes={{
             root: classes.sectionHeader
-          }}
-        >
+          }}>
           Shared Environment Variables
         </Typography>
-        <Typography classes={{ root: classes.sectionDiscription }}>
-          Shared environment variable is consistent amoung all components.
-        </Typography>
+        <HelperContainer>
+          <Typography>Shared environment variable is consistent amoung all components.</Typography>
+        </HelperContainer>
         <Paper
           elevation={4}
           square
           classes={{
             root: classes.paper
-          }}
-        >
-          <FieldArray
-            name="sharedEnv"
-            valid={true}
-            component={RenderSharedEnvs}
-            missingVariables={missingVariables}
-          />
+          }}>
+          <FieldArray name="sharedEnv" valid={true} component={RenderSharedEnvs} missingVariables={missingVariables} />
         </Paper>
       </>
     );
   }
+
   public render() {
     const { handleSubmit } = this.props;
 
@@ -190,16 +177,16 @@ class ApplicationFormRaw extends React.PureComponent<
 }
 
 const initialValues: Application = Immutable.fromJS({
-  id: "0",
-  name: "a-sample-application",
+  id: '0',
+  name: 'a-sample-application',
   sharedEnv: [],
   components: []
 });
 
 export default reduxForm<Application, Props>({
-  form: "application",
+  form: 'application',
   initialValues,
   onSubmitFail: (...args) => {
-    console.log("submit failed", args);
+    console.log('submit failed', args);
   }
 })(connect(mapStateToProps)(withStyles(styles)(ApplicationFormRaw)));

@@ -1,30 +1,14 @@
-import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { push } from "connected-react-router";
-import React from "react";
-import { connect } from "react-redux";
-import { match } from "react-router-dom";
-import { ThunkDispatch } from "redux-thunk";
-import ApplicationForm from "../../forms/Application";
-import { Actions, Application } from "../../actions";
-import { updateApplicationAction } from "../../actions/application";
-import { RootState } from "../../reducers";
-import { BasePage } from "../BasePage";
-import { setSuccessNotificationAction } from "../../actions/notification";
-
-const mapStateToProps = (
-  state: RootState,
-  ownProps: { match: match<{ applicationId: string }> }
-) => {
-  const applicationId = ownProps.match.params.applicationId;
-  const application = state
-    .get("applications")
-    .get("applications")
-    .get(applicationId);
-
-  return { applicationId, application };
-};
-
-type StateProps = ReturnType<typeof mapStateToProps>;
+import { createStyles, Theme, withStyles, WithStyles } from '@material-ui/core';
+import { push } from 'connected-react-router';
+import React from 'react';
+import { RouteChildrenProps } from 'react-router-dom';
+import { Application } from '../../actions';
+import { updateApplicationAction } from '../../actions/application';
+import { setSuccessNotificationAction } from '../../actions/notification';
+import ApplicationForm from '../../forms/Application';
+import { BasePage } from '../BasePage';
+import { ApplicationDataWrapper, WithApplicationsDataProps } from './DataWrapper';
+import { Loading } from '../../widgets/Loading';
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -33,32 +17,42 @@ const styles = (theme: Theme) =>
     }
   });
 
-interface Props extends StateProps, WithStyles<typeof styles> {
-  dispatch: ThunkDispatch<RootState, undefined, Actions>;
-}
+interface Props
+  extends WithApplicationsDataProps,
+    WithStyles<typeof styles>,
+    RouteChildrenProps<{ applicationId: string }> {}
 
 class ApplicationEditRaw extends React.PureComponent<Props> {
   private submit = async (application: Application) => {
-    const { dispatch, applicationId } = this.props;
+    const { dispatch, match } = this.props;
+    const { applicationId } = match!.params;
+
     await dispatch(updateApplicationAction(applicationId, application));
-    await dispatch(
-      setSuccessNotificationAction("Edit spplication successfully")
-    );
-    await dispatch(push("/applications"));
+    await dispatch(setSuccessNotificationAction('Edit application successfully'));
+    await dispatch(push('/applications'));
   };
 
+  private getApplication() {
+    const { applications, match } = this.props;
+    const { applicationId } = match!.params;
+    return applications.find(x => x.get('id') === applicationId)!;
+  }
+
   public render() {
-    const { application, classes } = this.props;
+    const { classes, isLoading, isFirstLoaded } = this.props;
+    const application = this.getApplication();
     return (
-      <BasePage title={`Edit Application {application.name}`}>
+      <BasePage title={`Edit Application ${application && application.get('name')}`}>
         <div className={classes.root}>
-          <ApplicationForm onSubmit={this.submit} initialValues={application} />
+          {isLoading || !isFirstLoaded ? (
+            <Loading />
+          ) : (
+            <ApplicationForm onSubmit={this.submit} initialValues={application} />
+          )}
         </div>
       </BasePage>
     );
   }
 }
 
-export const ApplicationEdit = withStyles(styles)(
-  connect(mapStateToProps)(ApplicationEditRaw)
-);
+export const ApplicationEdit = withStyles(styles)(ApplicationDataWrapper(ApplicationEditRaw));

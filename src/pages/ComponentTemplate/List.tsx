@@ -17,26 +17,25 @@ import MaterialTable from "material-table";
 import React from "react";
 import {
   deleteComponentAction,
-  duplicateComponentAction,
-  loadComponentTemplatesAction
+  duplicateComponentAction
 } from "../../actions/componentTemplate";
 import {
   setErrorNotificationAction,
   setSuccessNotificationAction
 } from "../../actions/notification";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
+import {
+  defaultDuplicateDialogHostStateValue,
+  DuplicateDialog,
+  DuplicateDialogHostState
+} from "../../widgets/DuplicateDialog";
+import { HelperContainer } from "../../widgets/Helper";
 import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
 import {
   ComponentTemplateDataWrapper,
   WithComponentTemplatesDataProps
 } from "./DataWrapper";
-import {
-  DuplicateDialog,
-  DuplicateDialogHostState,
-  defaultDuplicateDialogHostStateValue
-} from "../../widgets/DuplicateDialog";
-import { HelperContainer } from "../../widgets/Helper";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -67,10 +66,6 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
   public onCreate = () => {
     this.props.dispatch(push(`/componenttemplates/new`));
   };
-
-  componentDidMount() {
-    this.props.dispatch(loadComponentTemplatesAction());
-  }
 
   private closeConfirmDialog = () => {
     this.setState({
