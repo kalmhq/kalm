@@ -5,7 +5,7 @@
   "trailingComma": "none",
   "jsxBracketSameLine": true,
   "semi": true,
-  "singleQuote": true,
+  "singleQuote": false,
   "overrides": [
     {
       "files": ["*.json", ".eslintrc", ".tslintrc", ".prettierrc", ".tern-project"],

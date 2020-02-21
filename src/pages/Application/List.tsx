@@ -1,12 +1,4 @@
-import {
-  CircularProgress,
-  createStyles,
-  IconButton,
-  Switch,
-  Theme,
-  WithStyles,
-  withStyles
-} from "@material-ui/core";
+import { CircularProgress, createStyles, IconButton, Switch, Theme, WithStyles, withStyles } from "@material-ui/core";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
@@ -14,27 +6,17 @@ import FileCopyIcon from "@material-ui/icons/FileCopy";
 import { push } from "connected-react-router";
 import MaterialTable from "material-table";
 import React from "react";
-import {
-  StatusTypeError,
-  StatusTypePending,
-  StatusTypeRunning
-} from "../../actions";
+import { StatusTypeError, StatusTypePending, StatusTypeRunning } from "../../actions";
 import {
   deleteApplicationAction,
   duplicateApplicationAction,
   updateApplicationAction
 } from "../../actions/application";
-import {
-  setErrorNotificationAction,
-  setSuccessNotificationAction
-} from "../../actions/notification";
+import { setErrorNotificationAction, setSuccessNotificationAction } from "../../actions/notification";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
 import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
-import {
-  ApplicationDataWrapper,
-  WithApplicationsDataProps
-} from "./DataWrapper";
+import { ApplicationDataWrapper, WithApplicationsDataProps } from "./DataWrapper";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -66,9 +48,7 @@ const pendingStyles = (theme: Theme) =>
     }
   });
 
-class StatusPendingRaw extends React.PureComponent<
-  WithStyles<typeof pendingStyles>
-> {
+class StatusPendingRaw extends React.PureComponent<WithStyles<typeof pendingStyles>> {
   public render() {
     const { classes } = this.props;
     return (
@@ -126,11 +106,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   private renderSwitchingIsEnabledConfirmDialog = () => {
-    const {
-      isEnabledConfirmDialogOpen,
-      switchingIsEnabledTitle,
-      switchingIsEnabledContent
-    } = this.state;
+    const { isEnabledConfirmDialogOpen, switchingIsEnabledTitle, switchingIsEnabledContent } = this.state;
 
     return (
       <ConfirmDialog
@@ -153,14 +129,13 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
 
     let title, content;
 
-    if (application.get("isEnabled")) {
+    if (application.get("isActive")) {
       title = "Are you sure to disabled this application?";
       content =
         "Disabling this application will delete all running resources in your cluster. TODO: (will disk be deleted? will xxx deleted?)";
     } else {
       title = "Are you sure to enable this application?";
-      content =
-        "Enabling this application will create xxxx resources. They will spend xxx CPU, xxx Memory. ";
+      content = "Enabling this application will create xxxx resources. They will spend xxx CPU, xxx Memory. ";
     }
 
     this.setState({
@@ -174,16 +149,9 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   private switchEnabledConfirmedComponent = () => {
     const { applications, dispatch } = this.props;
     const { switchingIsEnabledApplicationId } = this.state;
-    const application = applications.find(
-      x => x.get("id") === switchingIsEnabledApplicationId
-    )!;
+    const application = applications.find(x => x.get("id") === switchingIsEnabledApplicationId)!;
 
-    dispatch(
-      updateApplicationAction(
-        application.get("id"),
-        application.set("isEnabled", !application.get("isEnabled"))
-      )
-    );
+    dispatch(updateApplicationAction(application.get("id"), application.set("isActive", !application.get("isActive"))));
   };
 
   private closeConfirmDialog = () => {
@@ -196,12 +164,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   private deleteConfirmedApplication = async () => {
     const { dispatch } = this.props;
     try {
-      await dispatch(
-        deleteApplicationAction(this.state.deletingApplicationId!)
-      );
-      await dispatch(
-        setSuccessNotificationAction("Successfully delete an application")
-      );
+      await dispatch(deleteApplicationAction(this.state.deletingApplicationId!));
+      await dispatch(setSuccessNotificationAction("Successfully delete an application"));
     } catch {
       dispatch(setErrorNotificationAction("Something wrong"));
     }
@@ -260,8 +224,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
               aria-label="edit"
               onClick={() => {
                 dispatch(push(`/applications/${application.get("id")}/edit`));
-              }}
-            >
+              }}>
               <EditIcon />
             </IconButton>
 
@@ -269,8 +232,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
               aria-label="edit"
               onClick={() => {
                 dispatch(duplicateApplicationAction(application.get("id")));
-              }}
-            >
+              }}>
               <FileCopyIcon />
             </IconButton>
 
@@ -283,7 +245,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         namespace: ["default", "production", "ropsten"][index] || "default",
         enable: (
           <Switch
-            checked={application.get("isEnabled")}
+            checked={application.get("isActive")}
             onChange={handleChange}
             value="checkedB"
             color="primary"
@@ -298,11 +260,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
       };
     });
     return (
-      <BasePage
-        title="Applications"
-        onCreate={this.onCreate}
-        createButtonText="Add An Application"
-      >
+      <BasePage title="Applications" onCreate={this.onCreate} createButtonText="Add An Application">
         {this.renderDeleteConfirmDialog()}
         {this.renderSwitchingIsEnabledConfirmDialog()}
         <div className={classes.root}>
@@ -336,6 +294,4 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const ApplicationList = withStyles(styles)(
-  ApplicationDataWrapper(ApplicationListRaw)
-);
+export const ApplicationList = withStyles(styles)(ApplicationDataWrapper(ApplicationListRaw));

@@ -40,3 +40,7 @@ export const NormalizeMemory = (value: string): string => {
 
   return value;
 };
+
+export const NormalizeBoolean = (value: string): boolean => {
+  return !!value;
+};

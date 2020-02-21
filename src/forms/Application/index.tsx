@@ -1,25 +1,27 @@
-import { Button, createStyles, Grid, Paper, WithStyles, withStyles } from '@material-ui/core';
-import { Theme } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import React from 'react';
-import { InjectedFormProps } from 'redux-form';
-import { Field, FieldArray, formValueSelector, reduxForm } from 'redux-form/immutable';
-import { Application, ComponentTemplate, SharedEnv } from '../../actions';
-import { ValidatorRequired } from '../validator';
-import { Components } from './component';
-import { EnvTypeExternal, RenderSharedEnvs } from '../Basic/env';
-import { RootState } from '../../reducers';
-import { connect } from 'react-redux';
-import Immutable from 'immutable';
-import { HelperContainer } from '../../widgets/Helper';
-import { TextField } from '../Basic/text';
+import { Button, createStyles, Grid, Paper, WithStyles, withStyles } from "@material-ui/core";
+import { Theme } from "@material-ui/core/styles";
+import Typography from "@material-ui/core/Typography";
+import React from "react";
+import { InjectedFormProps } from "redux-form";
+import { Field, FieldArray, formValueSelector, reduxForm } from "redux-form/immutable";
+import { Application, ComponentTemplate, SharedEnv } from "../../actions";
+import { ValidatorRequired } from "../validator";
+import { Components } from "./component";
+import { EnvTypeExternal, RenderSharedEnvs } from "../Basic/env";
+import { RootState } from "../../reducers";
+import { connect } from "react-redux";
+import Immutable from "immutable";
+import { HelperContainer } from "../../widgets/Helper";
+import { TextField } from "../Basic/text";
+import { SwitchField } from "../Basic/switch";
+import { NormalizeBoolean } from "../normalizer";
 
 const styles = (theme: Theme) =>
   createStyles({
     sectionHeader: {
       fontSize: 24,
       fontWeight: 400,
-      margin: '16px 0'
+      margin: "16px 0"
     },
     paper: {
       padding: theme.spacing(3),
@@ -28,9 +30,9 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState) => {
-  const selector = formValueSelector('application');
-  const formComponents: ComponentTemplate[] = selector(state, 'components');
-  const sharedEnv: SharedEnv[] = selector(state, 'sharedEnv');
+  const selector = formValueSelector("application");
+  const formComponents: ComponentTemplate[] = selector(state, "components");
+  const sharedEnv: SharedEnv[] = selector(state, "sharedEnv");
 
   return {
     sharedEnv,
@@ -79,6 +81,24 @@ class ApplicationFormRaw extends React.PureComponent<
             placeholder="Please type the namespace"
             helperText="All resources will running in this namespace."
           />
+          <div>
+            <Field
+              name="isActive"
+              formControlLabelProps={{
+                label: "Active"
+              }}
+              component={SwitchField}
+              normalizer={NormalizeBoolean}
+            />
+          </div>
+          <Field
+            name="isPersistent"
+            formControlLabelProps={{
+              label: "Persistent"
+            }}
+            component={SwitchField}
+            normalizer={NormalizeBoolean}
+          />
         </Paper>
       </>
     );
@@ -114,7 +134,7 @@ class ApplicationFormRaw extends React.PureComponent<
   private renderSharedEnvs() {
     const { sharedEnv, formComponents, classes } = this.props;
     const isEnvInSharedEnv = (envName: string) => {
-      return !!sharedEnv.find(x => x.get('name') === envName);
+      return !!sharedEnv.find(x => x.get("name") === envName);
     };
 
     const missingVariables = Array.from(
@@ -122,9 +142,9 @@ class ApplicationFormRaw extends React.PureComponent<
         formComponents
           .map(component => {
             return component
-              .get('env')
-              .filter(env => env.get('type') === EnvTypeExternal)
-              .map(env => env.get('name'));
+              .get("env")
+              .filter(env => env.get("type") === EnvTypeExternal)
+              .map(env => env.get("name"));
           })
           .reduce((acc, item) => acc.concat(item))
       )
@@ -177,16 +197,16 @@ class ApplicationFormRaw extends React.PureComponent<
 }
 
 const initialValues: Application = Immutable.fromJS({
-  id: '0',
-  name: 'a-sample-application',
+  id: "0",
+  name: "a-sample-application",
   sharedEnv: [],
   components: []
 });
 
 export default reduxForm<Application, Props>({
-  form: 'application',
+  form: "application",
   initialValues,
   onSubmitFail: (...args) => {
-    console.log('submit failed', args);
+    console.log("submit failed", args);
   }
 })(connect(mapStateToProps)(withStyles(styles)(ApplicationFormRaw)));

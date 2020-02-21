@@ -1,12 +1,12 @@
-import React from "react";
-import { FilledTextFieldProps } from "@material-ui/core/TextField";
-import { WrappedFieldProps } from "redux-form";
-import { Field } from "redux-form/immutable";
-import AceEditor from "react-ace";
-import "ace-builds/src-noconflict/theme-monokai";
-import "ace-builds/src-noconflict/mode-yaml";
-import "ace-builds/src-noconflict/mode-javascript";
-import "ace-builds/src-noconflict/mode-nginx";
+import React from 'react';
+import { FilledTextFieldProps } from '@material-ui/core/TextField';
+import { WrappedFieldProps } from 'redux-form';
+import { Field } from 'redux-form/immutable';
+import AceEditor from 'react-ace';
+import 'ace-builds/src-noconflict/theme-monokai';
+import 'ace-builds/src-noconflict/mode-yaml';
+import 'ace-builds/src-noconflict/mode-javascript';
+import 'ace-builds/src-noconflict/mode-nginx';
 
 const aceOnBlur = (onBlur: any) => (_event: any, editor?: any) => {
   const value = editor.getValue();
@@ -14,13 +14,13 @@ const aceOnBlur = (onBlur: any) => (_event: any, editor?: any) => {
 };
 
 const detectMode = (text: string): string => {
-  text = text.replace(/\s/g, "");
+  text = text.replace(/\s/g, '');
   if (text.startsWith('{"')) {
-    return "javascript";
-  } else if (text.startsWith("server{")) {
-    return "nginx";
+    return 'javascript';
+  } else if (text.startsWith('server{')) {
+    return 'nginx';
   } else {
-    return "yaml";
+    return 'yaml';
   }
 };
 
