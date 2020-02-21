@@ -10,13 +10,14 @@ import {
   DUPLICATE_CONFIG
 } from ".";
 import Immutable from "immutable";
+import { ID } from "../utils";
 
 export type ThunkResult<R> = ThunkAction<R, RootState, undefined, Actions>;
 
 export const createConfigAction = (
   config: Config
 ): ThunkResult<Promise<void>> => {
-  config = config.set("id", "666"); // TODO fake id now
+  config = config.set("id", ID()); // TODO fake id now
 
   const newIdChain = config.get("ancestorIds")
     ? config.get("ancestorIds")!.toArray()
@@ -36,7 +37,7 @@ export const duplicateConfigAction = (
   config: Config
 ): ThunkResult<Promise<void>> => {
   config = Immutable.fromJS({
-    id: "100", // TODO fake id now
+    id: ID(), // TODO fake id now
     name: config.get("name") + "-duplicate",
     type: config.get("type"),
     content: config.get("content"),
