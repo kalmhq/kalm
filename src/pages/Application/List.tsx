@@ -14,10 +14,7 @@ import FileCopyIcon from "@material-ui/icons/FileCopy";
 import { push } from "connected-react-router";
 import MaterialTable from "material-table";
 import React from "react";
-import { connect } from "react-redux";
-import { ThunkDispatch } from "redux-thunk";
 import {
-  Actions,
   StatusTypeError,
   StatusTypePending,
   StatusTypeRunning
@@ -25,27 +22,20 @@ import {
 import {
   deleteApplicationAction,
   duplicateApplicationAction,
-  updateApplicationAction,
-  loadApplicationsAction
+  loadApplicationsAction,
+  updateApplicationAction
 } from "../../actions/application";
 import {
   setErrorNotificationAction,
   setSuccessNotificationAction
 } from "../../actions/notification";
-import { RootState } from "../../reducers";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
 import { BasePage } from "../BasePage";
-
-const mapStateToProps = (state: RootState) => {
-  return {
-    applications: state
-      .get("applications")
-      .get("applications")
-      .toList()
-  };
-};
-
-type StateProps = ReturnType<typeof mapStateToProps>;
+import {
+  ApplicationDataWrapper,
+  WithApplicationsDataProps
+} from "./DataWrapper";
+import { Loading } from "../../widgets/Loading";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -54,9 +44,7 @@ const styles = (theme: Theme) =>
     }
   });
 
-interface Props extends StateProps, WithStyles<typeof styles> {
-  dispatch: ThunkDispatch<RootState, undefined, Actions>;
-}
+interface Props extends WithApplicationsDataProps, WithStyles<typeof styles> {}
 
 const pendingStyles = (theme: Theme) =>
   createStyles({
@@ -143,7 +131,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   private renderSwitchingIsEnabledConfirmDialog = () => {
-    console.log(this.state);
     const {
       isEnabledConfirmDialogOpen,
       switchingIsEnabledTitle,
@@ -247,7 +234,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { dispatch, applications, classes } = this.props;
+    const { dispatch, applications, classes, isLoading } = this.props;
     const data = applications.map((application, index) => {
       const handleChange = () => {
         this.showSwitchingIsEnabledDialog(application.get("id"));
@@ -324,26 +311,30 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         {this.renderDeleteConfirmDialog()}
         {this.renderSwitchingIsEnabledConfirmDialog()}
         <div className={classes.root}>
-          <MaterialTable
-            options={{
-              padding: "dense"
-            }}
-            columns={[
-              { title: "Name", field: "name", sorting: false },
-              { title: "Namespace", field: "namespace", sorting: false },
-              { title: "Components", field: "components", sorting: false },
-              { title: "Status", field: "status", sorting: false },
-              { title: "Enable", field: "enable", sorting: false },
-              {
-                title: "Action",
-                field: "action",
-                sorting: false,
-                searchable: false
-              }
-            ]}
-            data={data.toArray()}
-            title=""
-          />
+          {isLoading ? (
+            <Loading />
+          ) : (
+            <MaterialTable
+              options={{
+                padding: "dense"
+              }}
+              columns={[
+                { title: "Name", field: "name", sorting: false },
+                { title: "Namespace", field: "namespace", sorting: false },
+                { title: "Components", field: "components", sorting: false },
+                { title: "Status", field: "status", sorting: false },
+                { title: "Enable", field: "enable", sorting: false },
+                {
+                  title: "Action",
+                  field: "action",
+                  sorting: false,
+                  searchable: false
+                }
+              ]}
+              data={data.toArray()}
+              title=""
+            />
+          )}
         </div>
       </BasePage>
     );
@@ -351,5 +342,5 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
 }
 
 export const ApplicationList = withStyles(styles)(
-  connect(mapStateToProps)(ApplicationListRaw)
+  ApplicationDataWrapper(ApplicationListRaw)
 );
