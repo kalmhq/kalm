@@ -57,13 +57,12 @@ export const createKappComonentTemplate = async (
 export const deleteKappComonentTemplate = async (
   component: V1alpha1ComponentTemplate
 ): Promise<void> => {
-  const res = await axios.delete(
-    K8sApiPerfix +
-      `/apis/core.kapp.dev/v1alpha1/componenttemplates/${
-        component.metadata!.name
-      }`
-  );
-
+  // const res = await axios.delete(
+  //   K8sApiPerfix +
+  //     `/apis/core.kapp.dev/v1alpha1/componenttemplates/${
+  //       component.metadata!.name
+  //     }`
+  // );
   // return convertFromCRDComponentTemplate(res.data);
 };
 

@@ -1,5 +1,5 @@
 import { V1alpha1ApplicationSpecComponents } from "../kappModel/v1alpha1ApplicationSpecComponents";
-import { ApplicationComponent, workloadTypeServer } from "../actions";
+import { ApplicationComponent } from "../actions";
 import { Map, List } from "immutable";
 import { ObjectSerializer } from "../model/models";
 

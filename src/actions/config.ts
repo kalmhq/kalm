@@ -36,7 +36,7 @@ export const duplicateConfigAction = (
   config: Config
 ): ThunkResult<Promise<void>> => {
   config = Immutable.fromJS({
-    id: "666", // TODO fake id now
+    id: "100", // TODO fake id now
     name: config.get("name") + "-duplicate",
     type: config.get("type"),
     content: config.get("content"),
