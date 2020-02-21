@@ -16,6 +16,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	apps1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -75,22 +76,22 @@ type ApplicationSpec struct {
 	ImagePullSecretName string   `json:"imagePullSecretName,omitempty"`
 }
 
-//func (c *ApplicationSpec) FindShareEnvValue(name string) string {
-//	for _, env := range c.SharedEnv {
-//		if env.Name == name {
-//			return env.Value
-//		}
-//	}
-//	return ""
-//}
+type ComponentStatus struct {
+	Name             string                 `json:"name"`
+	DeploymentStatus apps1.DeploymentStatus `json:"deploymentStatus,omitempty"`
+	ServiceStatus    v1.ServiceStatus       `json:"serviceStatus,omitempty"`
+}
 
 // ApplicationStatus defines the observed state of Application
 type ApplicationStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	IsActive bool `json:"isActive,omitempty"`
+
+	// Failed to use map here, so use array for now.
+	ComponentStatus []ComponentStatus `json:"componentStatus,omitempty"`
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
 
 // Application is the Schema for the applications API
 type Application struct {
