@@ -65,22 +65,28 @@ class ApplicationFormRaw extends React.PureComponent<
           classes={{
             root: classes.paper
           }}>
-          <Field
-            name="name"
-            label="Name"
-            component={TextField}
-            validate={ValidatorRequired}
-            helperText='The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
-            placeholder="Please type the component name"
-          />
-          <Field
-            name="namespace"
-            label="Namespace"
-            component={TextField}
-            validate={ValidatorRequired}
-            placeholder="Please type the namespace"
-            helperText="All resources will running in this namespace."
-          />
+          <Grid container spacing={2}>
+            <Grid item md={6}>
+              <Field
+                name="name"
+                label="Name"
+                component={TextField}
+                validate={ValidatorRequired}
+                helperText='The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
+                placeholder="Please type the component name"
+              />
+            </Grid>
+            <Grid item md={6}>
+              <Field
+                name="namespace"
+                label="Namespace"
+                component={TextField}
+                validate={ValidatorRequired}
+                placeholder="Please type the namespace"
+                helperText="All resources will running in this namespace."
+              />
+            </Grid>
+          </Grid>
           <div>
             <Field
               name="isActive"
@@ -98,6 +104,12 @@ class ApplicationFormRaw extends React.PureComponent<
             }}
             component={SwitchField}
             normalizer={NormalizeBoolean}
+            tooltipProps={{
+              title:
+                "This option controls how disks are mounted. " +
+                "If true, the system will use persistent disks as you defined. Data won't lost during restart. It's suitable for a production deployment." +
+                "If false, it will use temporary disks, data will be lost during a restart. You should only use this mode in test case."
+            }}
           />
         </Paper>
       </>
