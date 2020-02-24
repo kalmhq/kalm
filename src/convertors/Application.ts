@@ -30,7 +30,8 @@ export const convertFromCRDApplication = (c: V1alpha1Application): Application =
     namespace: metadata.namespace,
     sharedEnv: List(sharedEnv),
     components: components,
-    status: Map({})
+    status: Map({}),
+    resourceVersion: metadata.resourceVersion
   });
 
   return res;

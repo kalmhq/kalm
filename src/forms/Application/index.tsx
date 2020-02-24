@@ -3,7 +3,7 @@ import { Theme } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import React from "react";
 import { InjectedFormProps } from "redux-form";
-import { Field, FieldArray, formValueSelector, reduxForm } from "redux-form/immutable";
+import { Field, FieldArray, formValueSelector, getFormValues, reduxForm } from "redux-form/immutable";
 import { Application, ComponentTemplate, SharedEnv } from "../../actions";
 import { ValidatorRequired } from "../validator";
 import { Components } from "./component";
@@ -33,10 +33,12 @@ const mapStateToProps = (state: RootState) => {
   const selector = formValueSelector("application");
   const formComponents: ComponentTemplate[] = selector(state, "components");
   const sharedEnv: SharedEnv[] = selector(state, "sharedEnv");
+  const values = getFormValues("application")(state) as Application;
 
   return {
     sharedEnv,
-    formComponents
+    formComponents,
+    values
   };
 };
 
@@ -45,8 +47,14 @@ export interface Props {}
 class ApplicationFormRaw extends React.PureComponent<
   Props & InjectedFormProps<Application, Props> & ReturnType<typeof mapStateToProps> & WithStyles<typeof styles>
 > {
+  private getIsEdit() {
+    return !!this.props.values.get("resourceVersion");
+  }
+
   private renderBaisc() {
     const { classes } = this.props;
+    const isEdit = this.getIsEdit();
+    console.log(isEdit, this.props.values.toJS());
     return (
       <>
         <Typography
@@ -70,9 +78,14 @@ class ApplicationFormRaw extends React.PureComponent<
               <Field
                 name="name"
                 label="Name"
+                disabled={isEdit}
                 component={TextField}
                 validate={ValidatorRequired}
-                helperText='The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
+                helperText={
+                  isEdit
+                    ? "Can't modify name"
+                    : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
+                }
                 placeholder="Please type the component name"
               />
             </Grid>
@@ -80,36 +93,38 @@ class ApplicationFormRaw extends React.PureComponent<
               <Field
                 name="namespace"
                 label="Namespace"
+                disabled={isEdit}
                 component={TextField}
                 validate={ValidatorRequired}
+                helperText={isEdit ? "Can't modify namespace" : "All resources will running in this namespace."}
                 placeholder="Please type the namespace"
-                helperText="All resources will running in this namespace."
               />
             </Grid>
           </Grid>
           <div>
             <Field
-              name="isActive"
+              name="isPersistent"
               formControlLabelProps={{
-                label: "Active"
+                label: "Persistent"
               }}
+              disabled={isEdit}
               component={SwitchField}
               normalizer={NormalizeBoolean}
+              tooltipProps={{
+                title:
+                  "This option controls how disks are mounted. " +
+                  "If true, the system will use persistent disks as you defined. Data won't lost during restart. It's suitable for a production deployment." +
+                  "If false, it will use temporary disks, data will be lost during a restart. You should only use this mode in test case."
+              }}
             />
           </div>
           <Field
-            name="isPersistent"
+            name="isActive"
             formControlLabelProps={{
-              label: "Persistent"
+              label: "Active"
             }}
             component={SwitchField}
             normalizer={NormalizeBoolean}
-            tooltipProps={{
-              title:
-                "This option controls how disks are mounted. " +
-                "If true, the system will use persistent disks as you defined. Data won't lost during restart. It's suitable for a production deployment." +
-                "If false, it will use temporary disks, data will be lost during a restart. You should only use this mode in test case."
-            }}
           />
         </Paper>
       </>

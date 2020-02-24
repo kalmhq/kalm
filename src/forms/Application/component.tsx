@@ -68,7 +68,7 @@ interface State {
   isAddButtonDisplayed: boolean;
 }
 
-class RenderComponents extends React.PureComponent<Props, State> {
+class RenderComponentsRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
 
@@ -128,14 +128,8 @@ class RenderComponents extends React.PureComponent<Props, State> {
               <div key={index}>
                 <Grid container spacing={2}>
                   <Grid item md={12}>
-                    <Box
-                      display="flex"
-                      justifyContent="space-between"
-                      alignContent="center"
-                    >
-                      <Typography variant="h5">
-                        {component.get("name")}{" "}
-                      </Typography>
+                    <Box display="flex" justifyContent="space-between" alignContent="center">
+                      <Typography variant="h5">{component.get("name")} </Typography>
                       <Box component="small" display="flex" alignItems="center">
                         Server / Cronjob
                       </Box>
@@ -176,20 +170,13 @@ class RenderComponents extends React.PureComponent<Props, State> {
                     </Box>
                     <Box mt={3} display="flex">
                       <Box>
-                        <strong>TCP</strong> <strong>80</strong> ->{" "}
-                        <strong>3000</strong>
+                        <strong>TCP</strong> <strong>80</strong> -> <strong>3000</strong>
                       </Box>
                       <Box ml={3}>web.__namespace__</Box>
                     </Box>
                     <Box mt={3}>
-                      <EnvList
-                        title="Linked environment variables"
-                        envs={staticEnvs}
-                      />
-                      <EnvList
-                        title="Static environment variables"
-                        envs={staticEnvs}
-                      />
+                      <EnvList title="Linked environment variables" envs={staticEnvs} />
+                      <EnvList title="Static environment variables" envs={staticEnvs} />
                       <EnvList
                         defaultOpen={missingExternalVariables.size > 0}
                         title="External environment variables"
@@ -229,24 +216,17 @@ class RenderComponents extends React.PureComponent<Props, State> {
                       );
                     })}
                     <Box mt={3}>
-                      (Comment: I want to put plugins here, but still not figure
-                      out how to deal with the UI. Leave things here for
-                      scomments.)
+                      (Comment: I want to put plugins here, but still not figure out how to deal with the UI. Leave
+                      things here for scomments.)
                     </Box>
                   </Grid>
                 </Grid>
-                <Divider
-                  style={{ marginTop: 24, marginBottom: 24 }}
-                  variant="fullWidth"
-                />
+                <Divider style={{ marginTop: 24, marginBottom: 24 }} variant="fullWidth" />
               </div>
             );
           })}
         </div>
-        <Collapse
-          in={isFormOpen}
-          onExited={() => this.setState({ isAddButtonDisplayed: true })}
-        >
+        <Collapse in={isFormOpen} onExited={() => this.setState({ isAddButtonDisplayed: true })}>
           <div className={classes.inputForm}>
             <Grid container spacing={2}>
               <Grid item xs={12}>
@@ -272,8 +252,7 @@ class RenderComponents extends React.PureComponent<Props, State> {
                       onClick={() => {
                         fields.push(componentsArray[0].set("name", "1231"));
                         this.setState({ isFormOpen: false });
-                      }}
-                    >
+                      }}>
                       Save
                     </Button>
                   </Grid>
@@ -285,8 +264,7 @@ class RenderComponents extends React.PureComponent<Props, State> {
                       color="primary"
                       onClick={() => {
                         this.setState({ isFormOpen: false });
-                      }}
-                    >
+                      }}>
                       Cancel
                     </Button>
                   </Grid>
@@ -299,16 +277,14 @@ class RenderComponents extends React.PureComponent<Props, State> {
           in={isAddButtonDisplayed}
           onExited={() => {
             this.setState({ isFormOpen: true });
-          }}
-        >
+          }}>
           <Button
             variant="outlined"
             size="small"
             color="primary"
             fullWidth
             startIcon={<AddIcon />}
-            onClick={() => this.setState({ isAddButtonDisplayed: false })}
-          >
+            onClick={() => this.setState({ isAddButtonDisplayed: false })}>
             Add Component
           </Button>
         </Grow>
@@ -317,16 +293,10 @@ class RenderComponents extends React.PureComponent<Props, State> {
   }
 }
 
-const RenderComponentsWithStyles = withStyles(styles)(RenderComponents);
+const RenderComponentsWithStyles = withStyles(styles)(RenderComponentsRaw);
 
 let components = (props: stateProps) => {
-  return (
-    <FieldArray
-      name="components"
-      component={RenderComponentsWithStyles}
-      {...props}
-    />
-  );
+  return <FieldArray name="components" component={RenderComponentsWithStyles} {...props} />;
 };
 
 export const Components = connect(mapStateToProps)(components);

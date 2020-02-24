@@ -10,6 +10,7 @@ export const SwitchField = ({
 }: WrappedFieldProps & {
   formControlLabelProps: FormControlLabelProps;
   tooltipProps: TooltipProps;
+  disabled?: boolean;
 }) => {
   const handleChange: (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => void = event => {
     input.onChange(!input.value);
@@ -29,7 +30,7 @@ export const SwitchField = ({
     <FormControlLabel
       {...formControlLabelProps}
       label={label}
-      control={<Switch checked={input.value} onChange={handleChange} color="primary" />}
+      control={<Switch disabled={props.disabled} checked={input.value} onChange={handleChange} color="primary" />}
     />
   );
 
