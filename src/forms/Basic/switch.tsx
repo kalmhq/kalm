@@ -30,7 +30,7 @@ export const SwitchField = ({
     <FormControlLabel
       {...formControlLabelProps}
       label={label}
-      control={<Switch disabled={props.disabled} checked={input.value} onChange={handleChange} color="primary" />}
+      control={<Switch disabled={props.disabled} checked={!!input.value} onChange={handleChange} color="primary" />}
     />
   );
 
