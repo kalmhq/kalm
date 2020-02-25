@@ -33,6 +33,8 @@ type ComponentSpec struct {
 
 	Image string `json:"image"`
 
+	Dependencies []string `json:"dependencies,omitempty"`
+
 	Command []string `json:"command,omitempty"`
 
 	Args []string `json:"args,omitempty"`
@@ -62,18 +64,15 @@ type ComponentSpec struct {
 
 	Memory resource.Quantity `json:"memory,omitempty"`
 
-	//VolumeMounts []v1.VolumeMount `json:"volumeMounts,omitempty"`
-
 	// +optional
 	Disks []Disk `json:"disks,omitempty"`
 }
 
 // ApplicationSpec defines the desired state of Application
 type ApplicationSpec struct {
-	Components []ComponentSpec `json:"components"`
-	//Volumes             []v1.Volume     `json:"volumes,omitempty"`
-	SharedEnv           []EnvVar `json:"sharedEnv,omitempty"`
-	ImagePullSecretName string   `json:"imagePullSecretName,omitempty"`
+	Components          []ComponentSpec `json:"components"`
+	SharedEnv           []EnvVar        `json:"sharedEnv,omitempty"`
+	ImagePullSecretName string          `json:"imagePullSecretName,omitempty"`
 }
 
 type ComponentStatus struct {

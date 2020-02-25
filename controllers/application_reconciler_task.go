@@ -243,6 +243,29 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 
 	deployment := act.getDeployment(component.Name)
 
+	//todo seem will fail to update if dp changed
+	for _, dependency := range component.Dependencies {
+		// if dependencies are not ready, simply skip this reconcile
+		existDps := act.deployments
+
+		ready := false
+		for _, existDp := range existDps {
+			dpNameOfDependency := getDeploymentName(app.Name, dependency)
+			if dpNameOfDependency != existDp.Name {
+				continue
+			}
+
+			ready = existDp.Status.ReadyReplicas >= existDp.Status.Replicas
+			break
+		}
+
+		if !ready {
+			// todo or error?
+			log.Info("dependency not ready", "component", component.Name, "dependency not ready", dependency)
+			return nil
+		}
+	}
+
 	label := fmt.Sprintf("%s-%d", app.Name, time.Now().UTC().Unix())
 	labelMap := map[string]string{
 		"kapp-component": label,
@@ -275,7 +298,6 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 								Env:     []corev1.EnvVar{},
 								Command: component.Command,
 								Args:    component.Args,
-								//VolumeMounts: component.VolumeMounts,
 								//Ports:        component.Ports,
 							},
 						},
@@ -332,7 +354,7 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 	}
 
 	// apply envs
-	envs := []corev1.EnvVar{}
+	var envs []corev1.EnvVar
 	for _, env := range component.Env {
 		var value string
 
@@ -364,7 +386,7 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 	mainContainer.Env = envs
 
 	// before start
-	beforeHooks := []corev1.Container{}
+	var beforeHooks []corev1.Container
 	for i, beforeHook := range component.BeforeStart {
 		beforeHooks = append(beforeHooks, corev1.Container{
 			Image:   component.Image,
@@ -467,16 +489,6 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 		deployment.Spec.Template.Spec.Volumes = volumes
 		mainContainer.VolumeMounts = volumeMounts
 	}
-
-	//// Add VolumeMounts
-	//if len(component.VolumeMounts) > 0 {
-	//	if mainContainer.VolumeMounts == nil {
-	//		mainContainer.VolumeMounts = component.VolumeMounts
-	//	} else {
-	//
-	//	}
-	//	mainContainer.VolumeMounts = component.VolumeMounts
-	//}
 
 	// before stop
 	if len(component.BeforeDestroy) == 0 {
