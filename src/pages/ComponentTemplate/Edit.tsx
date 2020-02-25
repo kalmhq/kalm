@@ -3,17 +3,11 @@ import { push } from "connected-react-router";
 import React from "react";
 import { RouteChildrenProps } from "react-router";
 import { updateComponentAction } from "../../actions/componentTemplate";
-import {
-  setErrorNotificationAction,
-  setSuccessNotificationAction
-} from "../../actions/notification";
-import { ComponentTemplateForm } from "../../forms/ComponentTemplate";
+import { setErrorNotificationAction, setSuccessNotificationAction } from "../../actions/notification";
+import { ComponentTemplateForm } from "../../forms/ComponentLike";
 import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
-import {
-  ComponentTemplateDataWrapper,
-  WithComponentTemplatesDataProps
-} from "./DataWrapper";
+import { ComponentTemplateDataWrapper, WithComponentTemplatesDataProps } from "./DataWrapper";
 import { ComponentTemplate } from "../../actions";
 
 const styles = (theme: Theme) =>
@@ -51,12 +45,7 @@ class ComponentTemplateEditRaw extends React.PureComponent<Props> {
   private renderFormContent() {
     const componentTemplate = this.getComponentTemplate();
 
-    return (
-      <ComponentTemplateForm
-        onSubmit={this.submit}
-        initialValues={componentTemplate}
-      />
-    );
+    return <ComponentTemplateForm onSubmit={this.submit} initialValues={componentTemplate} />;
   }
 
   public render() {
@@ -64,21 +53,11 @@ class ComponentTemplateEditRaw extends React.PureComponent<Props> {
     const componentTemplate = this.getComponentTemplate();
 
     return (
-      <BasePage
-        title={
-          isLoading || !isFirstLoaded
-            ? ""
-            : `Edit ${componentTemplate.get("name")}`
-        }
-      >
-        <div className={classes.root}>
-          {isLoading || !isFirstLoaded ? <Loading /> : this.renderFormContent()}
-        </div>
+      <BasePage title={isLoading || !isFirstLoaded ? "" : `Edit ${componentTemplate.get("name")}`}>
+        <div className={classes.root}>{isLoading || !isFirstLoaded ? <Loading /> : this.renderFormContent()}</div>
       </BasePage>
     );
   }
 }
 
-export const ComponentTemplateEdit = withStyles(styles)(
-  ComponentTemplateDataWrapper(ComponentTemplateEditRaw)
-);
+export const ComponentTemplateEdit = withStyles(styles)(ComponentTemplateDataWrapper(ComponentTemplateEditRaw));
