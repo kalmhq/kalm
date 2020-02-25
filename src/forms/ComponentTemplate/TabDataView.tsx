@@ -99,7 +99,7 @@ export class TabDataView extends React.PureComponent<Props, State> {
         </StyledTabs>
         {tabOptions.map((x, index) => {
           return (
-            <TabPanel value={tabIndex} index={index}>
+            <TabPanel value={tabIndex} key={index}>
               <SyntaxHighlighter language={x.language} style={monokai} showLineNumbers>
                 {x.content}
               </SyntaxHighlighter>
