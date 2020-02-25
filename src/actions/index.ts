@@ -36,43 +36,6 @@ export const SET_NOTIFICATION_MESSAGE = "SET_NOTIFICATION_MESSAGE";
 
 export const SET_SETTINGS = "SET_SETTINGS";
 
-export type ComponentTemplatePort = ImmutableMap<{
-  name: string;
-  protocol: string;
-  containerPort: number;
-  servicePort: number;
-}>;
-
-export type ComponentTemplate = ImmutableMap<{
-  id: string;
-  name: string;
-  image: string;
-  command: string;
-  env: Immutable.List<
-    ImmutableMap<{
-      name: string;
-      type: string;
-      value: string;
-    }>
-  >;
-  ports: Immutable.List<ComponentTemplatePort>;
-  cpu: string;
-  memory: string;
-  disk: Immutable.List<
-    ImmutableMap<{
-      name: string;
-      type: string;
-      path: string;
-      existDisk: string;
-      size: string;
-      storageClass: string;
-    }>
-  >;
-  resourceVersion?: string;
-  workloadType?: WorkloadType;
-  schedule?: string;
-}>;
-
 export const newEmptyComponentTemplate = (): ComponentTemplate => {
   return Immutable.Map({
     id: "",
@@ -126,26 +89,21 @@ export type ComponentStatus = {
   deploymentStatus: any;
 };
 
-export type ApplicationStatus = ImmutableMap<{
-  status: Status;
-  components: Immutable.List<ComponentStatus>;
-}>;
-
-export type Application = ImmutableMap<{
-  id: string;
-  isActive: boolean;
+export type ComponentTemplatePort = ImmutableMap<{
   name: string;
-  namespace: string;
-  sharedEnv: Immutable.List<SharedEnv>;
-  components: Immutable.List<ApplicationComponent>;
-  status: ApplicationStatus;
-  resourceVersion?: string;
+  protocol: string;
+  containerPort: number;
+  servicePort: number;
 }>;
 
-interface ApplicationComponentContent {
+export interface ComponentLikeContent {
   name: string;
   image: string;
   command: string;
+  cpu: string;
+  memory: string;
+  workloadType?: WorkloadType;
+  schedule?: string;
   env: Immutable.List<
     ImmutableMap<{
       name: string;
@@ -154,8 +112,6 @@ interface ApplicationComponentContent {
     }>
   >;
   ports: Immutable.List<ComponentTemplatePort>;
-  cpu: string;
-  memory: string;
   disks: Immutable.List<
     ImmutableMap<{
       name: string;
@@ -166,11 +122,36 @@ interface ApplicationComponentContent {
       storageClass: string;
     }>
   >;
-  workloadType?: WorkloadType;
-  schedule?: string;
 }
 
+export interface ApplicationContent {
+  id: string;
+  isActive: boolean;
+  name: string;
+  namespace: string;
+  sharedEnv: Immutable.List<SharedEnv>;
+  components: Immutable.List<ApplicationComponent>;
+  status: ApplicationStatus;
+  resourceVersion?: string;
+}
+
+export interface ApplicationStatusContent {
+  status: Status;
+  components: Immutable.List<ComponentStatus>;
+}
+
+export interface ApplicationComponentContent extends ComponentLikeContent {}
+
+export interface ComponentTemplateContent extends ComponentLikeContent {
+  id: string;
+  resourceVersion?: string;
+}
+
+export type ComponentLike = ImmutableMap<ComponentLikeContent>;
+export type ComponentTemplate = ImmutableMap<ComponentTemplateContent>;
 export type ApplicationComponent = ImmutableMap<ApplicationComponentContent>;
+export type Application = ImmutableMap<ApplicationContent>;
+export type ApplicationStatus = ImmutableMap<ApplicationStatusContent>;
 
 export type Config = ImmutableMap<{
   id: string;

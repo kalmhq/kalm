@@ -3,11 +3,7 @@ import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
 import { WrappedFieldProps, WrappedFieldArrayProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
 import DeleteIcon from "@material-ui/icons/Delete";
-import {
-  RenderTextField,
-  RenderSelectField,
-  RenderAutoCompleteSelect
-} from ".";
+import { RenderTextField, RenderSelectField, RenderAutoCompleteSelect } from ".";
 import { Grid, Button, IconButton, MenuItem, Divider } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { ValidatorRequired } from "../validator";
@@ -39,10 +35,7 @@ const generateDisk = (type: DiskType): DiskValue =>
     storageClass: ""
   });
 
-const renderDisks = ({
-  fields,
-  meta: { error, submitFailed }
-}: WrappedFieldArrayProps<DiskValue>) => {
+const renderDisks = ({ fields, meta: { error, submitFailed } }: WrappedFieldArrayProps<DiskValue>) => {
   const classes = makeStyles(theme => ({
     delete: {
       display: "flex",
@@ -87,14 +80,9 @@ const renderDisks = ({
                           name={`${field}.storageClass`}
                           validate={isNewDisk ? ValidatorRequired : []}
                           component={RenderSelectField}
-                          label="StorageClass"
-                        >
-                          <MenuItem value="gcp-classtic">
-                            gcp-classtic (FAKE, TODO)
-                          </MenuItem>
-                          <MenuItem value="gcp-ssd">
-                            gcp-ssd (FAKE, TODO)
-                          </MenuItem>
+                          label="StorageClass">
+                          <MenuItem value="gcp-classtic">gcp-classtic (FAKE, TODO)</MenuItem>
+                          <MenuItem value="gcp-ssd">gcp-ssd (FAKE, TODO)</MenuItem>
                         </Field>
                       </Grid>
                     </>
@@ -104,18 +92,11 @@ const renderDisks = ({
                         name={`${field}.existDisk`}
                         component={RenderAutoCompleteSelect}
                         validate={!isNewDisk ? ValidatorRequired : []}
-                        label="ExistDisk"
-                      >
+                        label="ExistDisk">
                         <option value={"1"}>PVC/random-name-disk-1 (1G)</option>
-                        <option value={"2"}>
-                          PVC/fake-disk-placeholder (1G)
-                        </option>
-                        <option value={"3"}>
-                          PVC/test-disk-placeholder (3G)
-                        </option>
-                        <option value={"4"}>
-                          PVC/foo-disk-placeholder (1G)
-                        </option>
+                        <option value={"2"}>PVC/fake-disk-placeholder (1G)</option>
+                        <option value={"3"}>PVC/test-disk-placeholder (3G)</option>
+                        <option value={"4"}>PVC/foo-disk-placeholder (1G)</option>
                         <option value={"5"}>PVC/hello-world (8G)</option>
                       </Field>
                     </Grid>
@@ -136,24 +117,18 @@ const renderDisks = ({
                         component={RenderTextField}
                         validate={isNewDisk ? ValidatorRequired : []}
                         type="number"
-                        label="Size (Megabeta, M)"
-                      ></Field>
+                        label="Size (Megabeta, M)"></Field>
                     </Grid>
                   ) : null}
                 </Grid>
               </Grid>
               <Grid item xs={1} className={classes.delete}>
-                <IconButton
-                  aria-label="delete"
-                  onClick={() => fields.remove(index)}
-                >
+                <IconButton aria-label="delete" onClick={() => fields.remove(index)}>
                   <DeleteIcon />
                 </IconButton>
               </Grid>
             </Grid>
-            {index !== fields.length - 1 ? (
-              <Divider classes={{ root: classes.divider }} />
-            ) : null}
+            {index !== fields.length - 1 ? <Divider classes={{ root: classes.divider }} /> : null}
           </div>
         );
       })}
@@ -163,8 +138,7 @@ const renderDisks = ({
         color="primary"
         onClick={() => fields.push(generateDisk(DiskTypeNew))}
         classes={{ root: classes.firstButton }}
-        startIcon={<AddIcon />}
-      >
+        startIcon={<AddIcon />}>
         Add New Disk
       </Button>
       {/* <Button
@@ -209,7 +183,7 @@ interface Props {
 export const CustomDisks = (props: WrappedFieldArrayProps<DiskValue> | {}) => {
   return (
     <div>
-      <FieldArray {...props} name="disk" valid={true} component={renderDisks} />
+      <FieldArray {...props} name="disks" valid={true} component={renderDisks} />
     </div>
   );
 };

@@ -6,11 +6,13 @@ import React from "react";
 import { connect } from "react-redux";
 import { WrappedFieldArrayProps } from "redux-form";
 import { FieldArray, formValueSelector } from "redux-form/immutable";
-import { ApplicationComponent, SharedEnv } from "../../actions";
+import { ApplicationComponent, SharedEnv, ComponentTemplate } from "../../actions";
 import { RootState } from "../../reducers";
 import { EnvTypeExternal } from "../Basic/env";
 import { KappTooltip } from "./KappTooltip";
 import AddIcon from "@material-ui/icons/Add";
+import { CustomizedDialog } from "./ComponentModal";
+import { ComponentTemplateForm } from "../ComponentTemplate";
 
 const mapStateToProps = (state: RootState) => {
   const selector = formValueSelector("application");
@@ -49,9 +51,7 @@ interface Props
     FieldArrayComponentHackType {}
 
 interface State {
-  isFormOpen: boolean;
-  open: boolean;
-  isAddButtonDisplayed: boolean;
+  isDialogOpen: boolean;
 }
 
 interface RowData {
@@ -64,9 +64,7 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
     super(props);
 
     this.state = {
-      isFormOpen: false,
-      open: false,
-      isAddButtonDisplayed: true
+      isDialogOpen: false
     };
   }
 
@@ -177,10 +175,38 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
     return data;
   }
 
+  private openComponentFormDialog() {
+    this.setState({ isDialogOpen: true });
+  }
+
+  private closeComponentFormDialog = () => {
+    this.setState({ isDialogOpen: false });
+  };
+
+  private saveComponentFormDialog = () => {
+    this.setState({ isDialogOpen: false });
+  };
+
+  private renderDialog() {
+    const { isDialogOpen } = this.state;
+    const { fields } = this.props;
+    console.log(fields.get(0));
+    return (
+      <CustomizedDialog
+        title="Add Component for Application"
+        open={isDialogOpen}
+        handleSave={this.saveComponentFormDialog}
+        handleClose={this.closeComponentFormDialog}>
+        <ComponentTemplateForm onSubmit={console.log} initialValues={fields.get(0) as ComponentTemplate} />
+      </CustomizedDialog>
+    );
+  }
+
   public render() {
     const { fields } = this.props;
     return (
       <div>
+        {this.renderDialog()}
         <MaterialTable
           actions={[
             {
@@ -189,7 +215,7 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
                 color: "primary"
               },
               onClick: (...args) => {
-                console.log(args);
+                this.openComponentFormDialog();
               },
               isFreeAction: true
             },

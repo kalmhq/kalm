@@ -1,13 +1,4 @@
-import {
-  Box,
-  createStyles,
-  Fade,
-  IconButton,
-  Theme,
-  Tooltip,
-  WithStyles,
-  withStyles
-} from "@material-ui/core";
+import { Box, createStyles, Fade, IconButton, Theme, Tooltip, WithStyles, withStyles } from "@material-ui/core";
 import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
@@ -15,14 +6,8 @@ import { Alert } from "@material-ui/lab";
 import { push } from "connected-react-router";
 import MaterialTable from "material-table";
 import React from "react";
-import {
-  deleteComponentAction,
-  duplicateComponentAction
-} from "../../actions/componentTemplate";
-import {
-  setErrorNotificationAction,
-  setSuccessNotificationAction
-} from "../../actions/notification";
+import { deleteComponentAction, duplicateComponentAction } from "../../actions/componentTemplate";
+import { setErrorNotificationAction, setSuccessNotificationAction } from "../../actions/notification";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
 import {
   defaultDuplicateDialogHostStateValue,
@@ -32,10 +17,7 @@ import {
 import { HelperContainer } from "../../widgets/Helper";
 import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
-import {
-  ComponentTemplateDataWrapper,
-  WithComponentTemplatesDataProps
-} from "./DataWrapper";
+import { ComponentTemplateDataWrapper, WithComponentTemplatesDataProps } from "./DataWrapper";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -44,9 +26,7 @@ const styles = (theme: Theme) =>
     }
   });
 
-interface Props
-  extends WithComponentTemplatesDataProps,
-    WithStyles<typeof styles> {}
+interface Props extends WithComponentTemplatesDataProps, WithStyles<typeof styles> {}
 
 interface States extends DuplicateDialogHostState {
   isDeleteConfirmDialogOpen: boolean;
@@ -84,12 +64,8 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
   private deleteComponent = async () => {
     const { dispatch } = this.props;
     try {
-      await dispatch(
-        deleteComponentAction(this.state.deletingComponentTemplateId!)
-      );
-      await dispatch(
-        setSuccessNotificationAction("Successfully delete a component")
-      );
+      await dispatch(deleteComponentAction(this.state.deletingComponentTemplateId!));
+      await dispatch(setSuccessNotificationAction("Successfully delete a component"));
     } catch {
       dispatch(setErrorNotificationAction("Something wrong"));
     }
@@ -98,12 +74,8 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
   private duplicateComponent = async (newName: string) => {
     const { dispatch } = this.props;
     try {
-      await dispatch(
-        duplicateComponentAction(this.state.duplicatingItemId!, newName)
-      );
-      await dispatch(
-        setSuccessNotificationAction("Successfully duplicate a component")
-      );
+      await dispatch(duplicateComponentAction(this.state.duplicatingItemId!, newName));
+      await dispatch(setSuccessNotificationAction("Successfully duplicate a component"));
     } catch {
       dispatch(setErrorNotificationAction("Something wrong"));
     }
@@ -136,13 +108,8 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
               <IconButton
                 aria-label="edit"
                 onClick={() => {
-                  dispatch(
-                    push(
-                      `/componenttemplates/${componentTemplate.get("id")}/edit`
-                    )
-                  );
-                }}
-              >
+                  dispatch(push(`/componenttemplates/${componentTemplate.get("id")}/edit`));
+                }}>
                 <EditIcon />
               </IconButton>
             </Tooltip>
@@ -152,8 +119,7 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
                 aria-label="edit"
                 onClick={() => {
                   this.setDuplicatingIdAndConfrim(componentTemplate.get("id"));
-                }}
-              >
+                }}>
                 <FileCopyIcon />
               </IconButton>
             </Tooltip>
@@ -183,13 +149,12 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
               .toArray()}
           </div>
         ),
-        disk: componentTemplate
-          .get("disk")
+        disks: componentTemplate
+          .get("disks")
           .map(disk => {
             return (
               <div key={disk.get("name")}>
-                <strong>{disk.get("size")}M</strong> mount at{" "}
-                <strong>{disk.get("path")}</strong>
+                <strong>{disk.get("size")}M</strong> mount at <strong>{disk.get("path")}</strong>
               </div>
             );
           })
@@ -212,7 +177,7 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
             { title: "Image", field: "image", sorting: false },
             { title: "CPU", field: "cpu", searchable: false },
             { title: "Memory", field: "memory", searchable: false },
-            { title: "Disk", field: "disk", sorting: false },
+            { title: "Disks", field: "disks", sorting: false },
             {
               title: "Port",
               field: "port",
@@ -239,11 +204,7 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
     const { isDeleteConfirmDialogOpen, isDuplicateDialogShow } = this.state;
 
     return (
-      <BasePage
-        title="Component Templates"
-        onCreate={this.onCreate}
-        createButtonText="Add A Component"
-      >
+      <BasePage title="Component Templates" onCreate={this.onCreate} createButtonText="Add A Component">
         <ConfirmDialog
           open={isDeleteConfirmDialogOpen}
           onClose={this.closeConfirmDialog}
@@ -258,8 +219,7 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
           title="Duplicate Component Template"
           content={
             <span>
-              You need to give your comming Component Template a new name.{" "}
-              <br />
+              You need to give your comming Component Template a new name. <br />
               The name can <strong>NOT</strong> be modified later.
             </span>
           }
@@ -268,8 +228,7 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
             label: "Name",
             placeholder: "Name of your new Component Template",
             variant: "outlined",
-            helperText:
-              'Allowed characters are: digits (0-9), lower case letters (a-z), "-", and "."'
+            helperText: 'Allowed characters are: digits (0-9), lower case letters (a-z), "-", and "."'
           }}
           onAgree={this.duplicateComponent}
         />
@@ -277,10 +236,9 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
         <div className={classes.root}>
           <HelperContainer>
             <Alert severity="info">
-              Component templates are stored configs that describe how to deploy
-              software images on kapp system. Component template can't run
-              independently, but it can be easily copy into any application as a
-              component to run.
+              Component templates are stored configs that describe how to deploy software images on kapp system.
+              Component template can't run independently, but it can be easily copy into any application as a component
+              to run.
               {/* When adding a component
             into an application, the component config will be copyed into the
             application, which mean it's free to update existing component
@@ -294,6 +252,4 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
   }
 }
 
-export const ComponentTemplateList = withStyles(styles)(
-  ComponentTemplateDataWrapper(ComponentTemplateListRaw)
-);
+export const ComponentTemplateList = withStyles(styles)(ComponentTemplateDataWrapper(ComponentTemplateListRaw));

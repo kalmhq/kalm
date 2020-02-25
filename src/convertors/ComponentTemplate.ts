@@ -3,9 +3,7 @@ import { ComponentTemplate, workloadTypeServer } from "../actions";
 import { Map, List } from "immutable";
 import { ObjectSerializer } from "../model/models";
 
-export const convertFromCRDComponentTemplate = (
-  c: V1alpha1ComponentTemplate
-): ComponentTemplate => {
+export const convertFromCRDComponentTemplate = (c: V1alpha1ComponentTemplate): ComponentTemplate => {
   const spec = c.spec!;
   const metadata = c.metadata!;
 
@@ -43,7 +41,7 @@ export const convertFromCRDComponentTemplate = (
     command: spec.command ? spec.command.join(" ") : "",
     cpu: spec.cpu || "",
     memory: spec.memory || "",
-    disk: List([]),
+    disks: List([]),
     resourceVersion: metadata.resourceVersion,
     workloadType: spec.workloadType || workloadTypeServer,
     schedule: spec.schedule
@@ -52,9 +50,7 @@ export const convertFromCRDComponentTemplate = (
   return res;
 };
 
-export const convertToCRDComponentTemplate = (
-  c: ComponentTemplate
-): V1alpha1ComponentTemplate => {
+export const convertToCRDComponentTemplate = (c: ComponentTemplate): V1alpha1ComponentTemplate => {
   return ObjectSerializer.deserialize(
     {
       apiVersion: "core.kapp.dev/v1alpha1",
