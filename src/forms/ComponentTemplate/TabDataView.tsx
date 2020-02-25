@@ -7,6 +7,7 @@ interface TabPanelProps {
   children?: React.ReactNode;
   index: any;
   value: any;
+  key: any;
 }
 
 function TabPanel(props: TabPanelProps) {
@@ -99,7 +100,7 @@ export class TabDataView extends React.PureComponent<Props, State> {
         </StyledTabs>
         {tabOptions.map((x, index) => {
           return (
-            <TabPanel value={tabIndex} key={index}>
+            <TabPanel value={tabIndex} index={index} key={index}>
               <SyntaxHighlighter language={x.language} style={monokai} showLineNumbers>
                 {x.content}
               </SyntaxHighlighter>
