@@ -80,7 +80,7 @@ export const MaterialTableEditTextField = ({
       margin="normal"
       variant="outlined"
       onChange={handleChange}
-      value={value}
+      value={value || ""}
       onKeyPress={event => {
         if (event.key === "Enter") {
           event.preventDefault();
