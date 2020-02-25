@@ -1,10 +1,4 @@
-import {
-  createStyles,
-  Grid,
-  Theme,
-  withStyles,
-  WithStyles
-} from "@material-ui/core";
+import { createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import React from "react";
 import { CustomTextField } from "../Basic";
 import { NormalizeCPU, NormalizeMemory } from "../normalizer";
@@ -24,12 +18,10 @@ const styles = (_: Theme) =>
 interface ComponentResourcesProps extends WithStyles<typeof styles> {}
 
 export default withStyles(styles)(
-  class ComponentResources extends React.PureComponent<
-    ComponentResourcesProps
-  > {
+  class ComponentResources extends React.PureComponent<ComponentResourcesProps> {
     public render() {
       return (
-        <Grid container md={12} spacing={2}>
+        <Grid container spacing={2}>
           <Grid item md={6}>
             <CustomTextField
               // className={classes.input}
