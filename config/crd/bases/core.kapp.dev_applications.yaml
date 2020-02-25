@@ -15,6 +15,8 @@ spec:
     plural: applications
     singular: application
   scope: Namespaced
+  subresources:
+    status: {}
   validation:
     openAPIV3Schema:
       description: Application is the Schema for the applications API
@@ -412,6 +414,127 @@ spec:
           type: object
         status:
           description: ApplicationStatus defines the observed state of Application
+          properties:
+            componentStatus:
+              description: Failed to use map here, so use array for now.
+              items:
+                properties:
+                  deploymentStatus:
+                    description: DeploymentStatus is the most recently observed status
+                      of the Deployment.
+                    properties:
+                      availableReplicas:
+                        description: Total number of available pods (ready for at
+                          least minReadySeconds) targeted by this deployment.
+                        format: int32
+                        type: integer
+                      collisionCount:
+                        description: Count of hash collisions for the Deployment.
+                          The Deployment controller uses this field as a collision
+                          avoidance mechanism when it needs to create the name for
+                          the newest ReplicaSet.
+                        format: int32
+                        type: integer
+                      conditions:
+                        description: Represents the latest available observations
+                          of a deployment's current state.
+                        items:
+                          description: DeploymentCondition describes the state of
+                            a deployment at a certain point.
+                          properties:
+                            lastTransitionTime:
+                              description: Last time the condition transitioned from
+                                one status to another.
+                              format: date-time
+                              type: string
+                            lastUpdateTime:
+                              description: The last time this condition was updated.
+                              format: date-time
+                              type: string
+                            message:
+                              description: A human readable message indicating details
+                                about the transition.
+                              type: string
+                            reason:
+                              description: The reason for the condition's last transition.
+                              type: string
+                            status:
+                              description: Status of the condition, one of True, False,
+                                Unknown.
+                              type: string
+                            type:
+                              description: Type of deployment condition.
+                              type: string
+                          required:
+                          - status
+                          - type
+                          type: object
+                        type: array
+                      observedGeneration:
+                        description: The generation observed by the deployment controller.
+                        format: int64
+                        type: integer
+                      readyReplicas:
+                        description: Total number of ready pods targeted by this deployment.
+                        format: int32
+                        type: integer
+                      replicas:
+                        description: Total number of non-terminated pods targeted
+                          by this deployment (their labels match the selector).
+                        format: int32
+                        type: integer
+                      unavailableReplicas:
+                        description: Total number of unavailable pods targeted by
+                          this deployment. This is the total number of pods that are
+                          still required for the deployment to have 100% available
+                          capacity. They may either be pods that are running but not
+                          yet available or pods that still have not been created.
+                        format: int32
+                        type: integer
+                      updatedReplicas:
+                        description: Total number of non-terminated pods targeted
+                          by this deployment that have the desired template spec.
+                        format: int32
+                        type: integer
+                    type: object
+                  name:
+                    type: string
+                  serviceStatus:
+                    description: ServiceStatus represents the current status of a
+                      service.
+                    properties:
+                      loadBalancer:
+                        description: LoadBalancer contains the current status of the
+                          load-balancer, if one is present.
+                        properties:
+                          ingress:
+                            description: Ingress is a list containing ingress points
+                              for the load-balancer. Traffic intended for the service
+                              should be sent to these ingress points.
+                            items:
+                              description: 'LoadBalancerIngress represents the status
+                                of a load-balancer ingress point: traffic intended
+                                for the service should be sent to an ingress point.'
+                              properties:
+                                hostname:
+                                  description: Hostname is set for load-balancer ingress
+                                    points that are DNS based (typically AWS load-balancers)
+                                  type: string
+                                ip:
+                                  description: IP is set for load-balancer ingress
+                                    points that are IP based (typically GCE or OpenStack
+                                    load-balancers)
+                                  type: string
+                              type: object
+                            type: array
+                        type: object
+                    type: object
+                required:
+                - name
+                type: object
+              type: array
+            isActive:
+              type: boolean
           type: object
       type: object
   version: v1alpha1

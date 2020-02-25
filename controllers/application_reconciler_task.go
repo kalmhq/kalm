@@ -71,6 +71,12 @@ func (act *applicationReconcilerTask) Run() (err error) {
 		return err
 	}
 
+	err = act.UpdateStatus()
+
+	if err != nil {
+		log.Error(err, "unable to update status")
+	}
+
 	err = act.reconcileServices()
 
 	if err != nil {
@@ -86,6 +92,60 @@ func (act *applicationReconcilerTask) Run() (err error) {
 	}
 
 	return nil
+}
+
+func (act *applicationReconcilerTask) UpdateStatus() (err error) {
+	if act.app.Status.ComponentStatus == nil {
+		act.app.Status.ComponentStatus = make([]corev1alpha1.ComponentStatus, 0, 0)
+	}
+
+	for _, component := range act.app.Spec.Components {
+		deployment := act.getDeployment(component.Name)
+		service := act.getService(component.Name)
+
+		statusIndex := -1
+
+		for i := range act.app.Status.ComponentStatus {
+			if act.app.Status.ComponentStatus[i].Name == component.Name {
+				statusIndex = i
+			}
+		}
+
+		if deployment == nil && service == nil {
+			if statusIndex != -1 {
+				act.app.Status.ComponentStatus = append(act.app.Status.ComponentStatus[:statusIndex], act.app.Status.ComponentStatus[statusIndex+1:]...)
+			}
+			continue
+		}
+
+		if statusIndex == -1 {
+			componentStatus := corev1alpha1.ComponentStatus{
+				Name: component.Name,
+			}
+
+			if service != nil {
+				componentStatus.ServiceStatus = service.Status
+			}
+
+			if deployment != nil {
+				componentStatus.DeploymentStatus = deployment.Status
+			}
+
+			act.app.Status.ComponentStatus = append(act.app.Status.ComponentStatus, componentStatus)
+		} else {
+			if deployment != nil {
+				act.app.Status.ComponentStatus[statusIndex].DeploymentStatus = deployment.Status
+			}
+
+			if service != nil {
+				act.app.Status.ComponentStatus[statusIndex].ServiceStatus = service.Status
+			}
+		}
+	}
+
+	err = act.reconciler.Status().Update(act.ctx, act.app)
+
+	return
 }
 
 func (act *applicationReconcilerTask) reconcileComponents() (err error) {
