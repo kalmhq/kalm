@@ -5,8 +5,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { InjectedFormProps } from "redux-form";
 import { Field, getFormValues, reduxForm } from "redux-form/immutable";
-import { ComponentTemplate, workloadTypeCronjob, workloadTypeServer } from "../../actions";
-import { convertToCRDComponentTemplate } from "../../convertors/ComponentTemplate";
+import { workloadTypeCronjob, workloadTypeServer, ComponentLike } from "../../actions";
 import { RootState } from "../../reducers";
 import { HelperContainer } from "../../widgets/Helper";
 import { CustomTextField, RenderSelectField, RenderTextField } from "../Basic";
@@ -17,7 +16,7 @@ import ComponentResources from "./resources";
 import { TabDataView } from "./TabDataView";
 
 const mapStateToProps = (state: RootState) => {
-  const values = getFormValues("component")(state) as ComponentTemplate;
+  const values = getFormValues("component")(state) as ComponentLike;
   return {
     values
   };
@@ -44,12 +43,17 @@ const styles = (theme: Theme) =>
     }
   });
 
-export interface Props
-  extends InjectedFormProps<ComponentTemplate, {}>,
-    ReturnType<typeof mapStateToProps>,
-    WithStyles<typeof styles> {}
+interface RawProps {
+  isEdit?: boolean;
+}
 
-class ComponentTemplateFormRaw extends React.PureComponent<Props> {
+export interface Props
+  extends InjectedFormProps<ComponentLike, RawProps>,
+    ReturnType<typeof mapStateToProps>,
+    WithStyles<typeof styles>,
+    RawProps {}
+
+class ComponentLikeFormRaw extends React.PureComponent<Props> {
   private renderSchedule = () => {
     if (this.props.values.get("workloadType") !== workloadTypeCronjob) {
       return null;
@@ -79,8 +83,7 @@ class ComponentTemplateFormRaw extends React.PureComponent<Props> {
   };
 
   private renderBasic() {
-    const { classes, values } = this.props;
-    const isEdit = !!values.get("resourceVersion");
+    const { classes, isEdit } = this.props;
     return (
       <>
         <Typography
@@ -292,12 +295,12 @@ class ComponentTemplateFormRaw extends React.PureComponent<Props> {
               </Typography>
               <TabDataView
                 tabOptions={[
-                  { title: "Kapp JSON", language: "json", content: JSON.stringify(values, undefined, 2) },
-                  {
-                    title: "k8s CRD",
-                    language: "json",
-                    content: JSON.stringify(convertToCRDComponentTemplate(values), undefined, 2)
-                  }
+                  { title: "Kapp JSON", language: "json", content: JSON.stringify(values, undefined, 2) }
+                  // {
+                  //   title: "k8s CRD",
+                  //   language: "json",
+                  //   content: JSON.stringify(convertToCRDComponentLike(values), undefined, 2)
+                  // }
                 ]}
               />
             </Grid>
@@ -311,7 +314,7 @@ class ComponentTemplateFormRaw extends React.PureComponent<Props> {
   }
 }
 
-export const ComponentTemplateForm = reduxForm<ComponentTemplate, {}>({
+export const ComponentLikeForm = reduxForm<ComponentLike, RawProps>({
   form: "component",
   onSubmitFail: console.log
-})(connect(mapStateToProps)(withStyles(styles)(ComponentTemplateFormRaw)));
+})(connect(mapStateToProps)(withStyles(styles)(ComponentLikeFormRaw)));

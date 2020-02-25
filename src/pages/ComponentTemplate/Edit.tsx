@@ -4,11 +4,11 @@ import React from "react";
 import { RouteChildrenProps } from "react-router";
 import { updateComponentAction } from "../../actions/componentTemplate";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "../../actions/notification";
-import { ComponentTemplateForm } from "../../forms/ComponentLike";
+import { ComponentLikeForm } from "../../forms/ComponentLike";
 import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
 import { ComponentTemplateDataWrapper, WithComponentTemplatesDataProps } from "./DataWrapper";
-import { ComponentTemplate } from "../../actions";
+import { ComponentTemplate, ComponentLike } from "../../actions";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -23,9 +23,10 @@ interface Props
     WithStyles<typeof styles> {}
 
 class ComponentTemplateEditRaw extends React.PureComponent<Props> {
-  private submit = async (component: ComponentTemplate) => {
+  private submit = async (componentLike: ComponentLike) => {
     const { dispatch, match } = this.props;
     const { componentTemplateId } = match!.params;
+    const component = componentLike as ComponentTemplate;
 
     try {
       await dispatch(updateComponentAction(componentTemplateId, component));
@@ -45,7 +46,7 @@ class ComponentTemplateEditRaw extends React.PureComponent<Props> {
   private renderFormContent() {
     const componentTemplate = this.getComponentTemplate();
 
-    return <ComponentTemplateForm onSubmit={this.submit} initialValues={componentTemplate} />;
+    return <ComponentLikeForm onSubmit={this.submit} initialValues={componentTemplate} isEdit={true} />;
   }
 
   public render() {

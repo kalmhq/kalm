@@ -3,10 +3,10 @@ import { push } from "connected-react-router";
 import React from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
-import { Actions, ComponentTemplate, newEmptyComponentTemplate } from "../../actions";
+import { Actions, ComponentTemplate, newEmptyComponentLike, ComponentLike } from "../../actions";
 import { createComponentTemplateAction } from "../../actions/componentTemplate";
 import { setSuccessNotificationAction } from "../../actions/notification";
-import { ComponentTemplateForm } from "../../forms/ComponentLike";
+import { ComponentLikeForm } from "../../forms/ComponentLike";
 import { RootState } from "../../reducers";
 import { BasePage } from "../BasePage";
 
@@ -22,8 +22,9 @@ interface Props extends WithStyles<typeof styles> {
 }
 
 class ComponentTemplateNewRaw extends React.PureComponent<Props> {
-  private submit = async (component: ComponentTemplate) => {
+  private submit = async (componentLike: ComponentLike) => {
     const { dispatch } = this.props;
+    const component = componentLike as ComponentTemplate;
     await dispatch(createComponentTemplateAction(component));
     await dispatch(setSuccessNotificationAction("Create component successfully"));
     await dispatch(push("/componenttemplates"));
@@ -34,7 +35,7 @@ class ComponentTemplateNewRaw extends React.PureComponent<Props> {
     return (
       <BasePage title="New Component">
         <div className={classes.root}>
-          <ComponentTemplateForm onSubmit={this.submit} initialValues={newEmptyComponentTemplate()} />
+          <ComponentLikeForm onSubmit={this.submit} initialValues={newEmptyComponentLike()} />
         </div>
       </BasePage>
     );

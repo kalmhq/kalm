@@ -9,15 +9,12 @@ import { RenderSelectField, RenderTextField } from ".";
 import { NormalizePort } from "../normalizer";
 import { ValidatorRequired } from "../validator";
 import AddIcon from "@material-ui/icons/Add";
-import { newEmptyComponentTemplatePort } from "../../actions";
+import { newEmptyComponentLikePort } from "../../actions";
 
 export const portTypeTCP = "TCP";
 export const portTypeUDP = "UDP";
 
-const renderPorts = ({
-  fields,
-  meta: { error, submitFailed }
-}: WrappedFieldArrayProps<{}>) => {
+const renderPorts = ({ fields, meta: { error, submitFailed } }: WrappedFieldArrayProps<{}>) => {
   const classes = makeStyles(theme => ({
     delete: {
       display: "flex",
@@ -55,8 +52,7 @@ const renderPorts = ({
                     name={`${port}.protocol`}
                     validate={[ValidatorRequired]}
                     component={RenderSelectField}
-                    label="Protocol"
-                  >
+                    label="Protocol">
                     <MenuItem value={portTypeTCP}>TCP</MenuItem>
                     <MenuItem value={portTypeUDP}>UDP</MenuItem>
                   </Field>
@@ -88,26 +84,20 @@ const renderPorts = ({
               </Grid>
             </Grid>
             <Grid item xs={1} className={classes.delete}>
-              <IconButton
-                aria-label="delete"
-                onClick={() => fields.remove(index)}
-              >
+              <IconButton aria-label="delete" onClick={() => fields.remove(index)}>
                 <DeleteIcon />
               </IconButton>
             </Grid>
           </Grid>
-          {index !== fields.length - 1 ? (
-            <Divider classes={{ root: classes.divider }} />
-          ) : null}
+          {index !== fields.length - 1 ? <Divider classes={{ root: classes.divider }} /> : null}
         </div>
       ))}
       <Button
         variant="outlined"
         color="primary"
         size="small"
-        onClick={() => fields.push(newEmptyComponentTemplatePort())}
-        startIcon={<AddIcon />}
-      >
+        onClick={() => fields.push(newEmptyComponentLikePort())}
+        startIcon={<AddIcon />}>
         Add Port
       </Button>
     </div>
@@ -142,7 +132,5 @@ interface Props {
 }
 
 export const CustomPorts = (props: WrappedFieldArrayProps<{}> | {}) => {
-  return (
-    <FieldArray {...props} name="ports" valid={true} component={renderPorts} />
-  );
+  return <FieldArray {...props} name="ports" valid={true} component={renderPorts} />;
 };

@@ -12,7 +12,7 @@ import { EnvTypeExternal } from "../Basic/env";
 import { KappTooltip } from "./KappTooltip";
 import AddIcon from "@material-ui/icons/Add";
 import { CustomizedDialog } from "./ComponentModal";
-import { ComponentTemplateForm } from "../ComponentLike";
+import { ComponentLikeForm } from "../ComponentLike";
 
 const mapStateToProps = (state: RootState) => {
   const selector = formValueSelector("application");
@@ -197,7 +197,7 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
         open={isDialogOpen}
         handleSave={this.saveComponentFormDialog}
         handleClose={this.closeComponentFormDialog}>
-        <ComponentTemplateForm onSubmit={console.log} initialValues={fields.get(0) as ComponentTemplate} />
+        <ComponentLikeForm onSubmit={console.log} initialValues={fields.get(0) as ComponentTemplate} />
       </CustomizedDialog>
     );
   }

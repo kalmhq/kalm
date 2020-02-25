@@ -36,7 +36,7 @@ export const SET_NOTIFICATION_MESSAGE = "SET_NOTIFICATION_MESSAGE";
 
 export const SET_SETTINGS = "SET_SETTINGS";
 
-export const newEmptyComponentTemplate = (): ComponentTemplate => {
+export const newEmptyComponentLike = (): ComponentTemplate => {
   return Immutable.Map({
     id: "",
     name: "",
@@ -51,7 +51,7 @@ export const newEmptyComponentTemplate = (): ComponentTemplate => {
   });
 };
 
-export const newEmptyComponentTemplatePort = (): ComponentTemplatePort => {
+export const newEmptyComponentLikePort = (): ComponentTemplatePort => {
   return Immutable.Map({
     name: "",
     protocol: "TCP",
