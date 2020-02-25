@@ -177,10 +177,10 @@ class RenderSharedEnvs extends React.PureComponent<Props> {
             <br />
             <br />
             {missingVariables.map((x, index) => (
-              <>
+              <span key={x}>
                 <strong>{x}</strong>
                 {index < missingVariables.length - 1 ? <span>, </span> : null}
-              </>
+              </span>
             ))}
           </Box>
         ) : null}
