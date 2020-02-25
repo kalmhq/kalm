@@ -1,4 +1,4 @@
-import { Box, createStyles, Theme, Typography, WithStyles, withStyles } from "@material-ui/core";
+import { Box, createStyles, Theme, Typography, WithStyles, withStyles, Button } from "@material-ui/core";
 import WarningIcon from "@material-ui/icons/Warning";
 import Immutable from "immutable";
 import MaterialTable from "material-table";
@@ -10,6 +10,7 @@ import { ApplicationComponent, SharedEnv } from "../../actions";
 import { RootState } from "../../reducers";
 import { EnvTypeExternal } from "../Basic/env";
 import { KappTooltip } from "./KappTooltip";
+import AddIcon from "@material-ui/icons/Add";
 
 const mapStateToProps = (state: RootState) => {
   const selector = formValueSelector("application");
@@ -179,33 +180,58 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
   public render() {
     const { fields } = this.props;
     return (
-      <MaterialTable
-        options={{
-          padding: "dense",
-          search: false,
-          paging: false,
-          toolbar: false,
-          actionsColumnIndex: -1,
-          addRowPosition: "first"
-        }}
-        components={{ Container: props => props.children }}
-        editable={{
-          // onRowAdd: async (...args) => console.log(args),
-          onRowUpdate: async (...args) => console.log(args),
-          onRowDelete: async data => fields.remove(data.index)
-        }}
-        columns={[
-          { title: "Name", field: "name", sorting: false, render: this.renderNameColumn },
-          { title: "Workload", field: "type", sorting: false, render: this.renderTypeColumn },
-          { title: "Cpu", field: "cpu", sorting: false, render: this.renderCpuColumn },
-          { title: "Memory", field: "memory", sorting: false, render: this.renderMemoryColumn },
-          { title: "Ports", field: "ports", sorting: false, render: this.renderPortsColumn },
-          { title: "Disks", field: "disks", sorting: false, render: this.renderDisksColumn },
-          { title: "Envs", field: "envs", sorting: false, render: this.renderEnvsColumn }
-        ]}
-        data={this.getTableData()}
-        title=""
-      />
+      <div>
+        <MaterialTable
+          actions={[
+            {
+              icon: "add_circle",
+              iconProps: {
+                color: "primary"
+              },
+              onClick: (...args) => {
+                console.log(args);
+              },
+              isFreeAction: true
+            },
+            {
+              icon: "edit",
+              onClick: (...args) => {
+                console.log(args);
+              }
+            }
+          ]}
+          options={{
+            padding: "dense",
+            search: false,
+            paging: false,
+            // toolbar: false,
+            actionsColumnIndex: -1,
+            addRowPosition: "first"
+          }}
+          components={{ Container: props => props.children }}
+          editable={{
+            // onRowAdd: async (...args) => console.log(args),
+            // onRowUpdate: async (...args) => console.log(args),
+            onRowDelete: async data => fields.remove(data.index)
+          }}
+          columns={[
+            { title: "Name", field: "name", sorting: false, render: this.renderNameColumn },
+            { title: "Workload", field: "type", sorting: false, render: this.renderTypeColumn },
+            { title: "Cpu", field: "cpu", sorting: false, render: this.renderCpuColumn },
+            { title: "Memory", field: "memory", sorting: false, render: this.renderMemoryColumn },
+            { title: "Ports", field: "ports", sorting: false, render: this.renderPortsColumn },
+            { title: "Disks", field: "disks", sorting: false, render: this.renderDisksColumn },
+            { title: "Envs", field: "envs", sorting: false, render: this.renderEnvsColumn }
+          ]}
+          data={this.getTableData()}
+          title=""
+        />
+        <Box mt={3}>
+          <Button variant="outlined" size="small" color="primary" fullWidth startIcon={<AddIcon />} onClick={() => {}}>
+            Add Component
+          </Button>
+        </Box>
+      </div>
     );
   }
 }
