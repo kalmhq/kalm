@@ -27,7 +27,7 @@
     "express-http-proxy": "^1.6.0",
     "immutable": "^4.0.0-rc.12",
     "install": "^0.13.0",
-    "material-table": "^1.56.1",
+    "material-table": "^1.57.2",
     "notistack": "^0.9.7",
     "npm": "^6.13.7",
     "prettier": "^1.19.1",

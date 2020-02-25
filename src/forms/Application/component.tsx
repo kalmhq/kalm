@@ -1,37 +1,22 @@
-import {
-  Box,
-  Button,
-  Chip,
-  Collapse,
-  createStyles,
-  Divider,
-  Grid,
-  Grow,
-  MenuItem,
-  Theme,
-  Typography,
-  WithStyles,
-  withStyles
-} from "@material-ui/core";
-import AddIcon from "@material-ui/icons/Add";
-import DeleteIcon from "@material-ui/icons/Delete";
+import { Box, createStyles, Theme, Typography, WithStyles, withStyles } from "@material-ui/core";
+import WarningIcon from "@material-ui/icons/Warning";
 import Immutable from "immutable";
+import MaterialTable from "material-table";
 import React from "react";
 import { connect } from "react-redux";
 import { WrappedFieldArrayProps } from "redux-form";
-import { Field, FieldArray, formValueSelector } from "redux-form/immutable";
-import { ComponentTemplate, SharedEnv } from "../../actions";
+import { FieldArray, formValueSelector } from "redux-form/immutable";
+import { ApplicationComponent, SharedEnv } from "../../actions";
 import { RootState } from "../../reducers";
-import { RenderAutoCompleteSelect } from "../Basic";
-import { EnvTypeExternal, EnvTypeStatic } from "../Basic/env";
-import { EnvList } from "./envList";
+import { EnvTypeExternal } from "../Basic/env";
+import { KappTooltip } from "./KappTooltip";
 
 const mapStateToProps = (state: RootState) => {
   const selector = formValueSelector("application");
   const sharedEnv: Immutable.List<SharedEnv> = selector(state, "sharedEnv");
 
   return {
-    components: state.get("componentTemplates").get("componentTemplates"),
+    componentTemplates: state.get("componentTemplates").get("componentTemplates"),
     sharedEnv
   };
 };
@@ -57,7 +42,7 @@ interface FieldArrayComponentHackType {
   component: any;
 }
 interface Props
-  extends WrappedFieldArrayProps<ComponentTemplate>,
+  extends WrappedFieldArrayProps<ApplicationComponent>,
     WithStyles<typeof styles>,
     stateProps,
     FieldArrayComponentHackType {}
@@ -66,6 +51,11 @@ interface State {
   isFormOpen: boolean;
   open: boolean;
   isAddButtonDisplayed: boolean;
+}
+
+interface RowData {
+  applicationComponent: ApplicationComponent;
+  index: number;
 }
 
 class RenderComponentsRaw extends React.PureComponent<Props, State> {
@@ -79,216 +69,143 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
     };
   }
 
-  public render() {
-    const {
-      fields,
-      meta: { error, submitFailed },
-      components,
-      classes,
-      sharedEnv
-    } = this.props;
+  private isEnvInSharedEnv = (envName: string) => {
+    const { sharedEnv } = this.props;
+    return !!sharedEnv.find(x => x.get("name") === envName);
+  };
 
-    const { isFormOpen, isAddButtonDisplayed } = this.state;
+  private renderNameColumn = (rowData: RowData) => rowData.applicationComponent.get("name");
+  private renderTypeColumn = (rowData: RowData) => rowData.applicationComponent.get("workloadType");
+  private renderCpuColumn = (rowData: RowData) => rowData.applicationComponent.get("cpu") || "-";
+  private renderMemoryColumn = (rowData: RowData) => rowData.applicationComponent.get("memory") || "-";
+  private renderPortsColumn = (rowData: RowData) =>
+    rowData.applicationComponent
+      .get("ports")
+      .map(x => x.get("containerPort"))
+      .toArray()
+      .join(", ");
 
-    const componentsArray = components.toList().toArray();
-
-    const componentsIdAndNames = componentsArray.map(component => {
-      return {
-        value: component.get("id"),
-        text: component.get("name")
-      };
+  private renderDisksColumn = (rowData: RowData) =>
+    rowData.applicationComponent.get("disks").size > 0
+      ? rowData.applicationComponent
+          .get("disks")
+          .map(x => x.get("path"))
+          .toArray()
+          .join(", ")
+      : "-";
+  private renderEnvsColumn = (rowData: RowData) => {
+    const { applicationComponent } = rowData;
+    const externalEnvs = applicationComponent.get("env").filter(x => {
+      return x.get("type") === EnvTypeExternal;
     });
 
-    const isEnvInSharedEnv = (envName: string) => {
-      return !!sharedEnv.find(x => x.get("name") === envName);
-    };
+    // const staticEnvs = applicationComponent.get("env").filter(x => {
+    //   return x.get("type") === EnvTypeStatic;
+    // });
 
+    // const linkedEnvs = applicationComponent.get("env").filter(x => {
+    //   return x.get("type") === EnvTypeLinked;
+    // });
+
+    const missingExternalVariables = externalEnvs.filter(x => {
+      return !this.isEnvInSharedEnv(x.get("name"));
+    });
+
+    const missingLinkedVariables = externalEnvs.filter(x => {
+      return false; //TODO
+    });
+
+    const allEnvCount = applicationComponent.get("env").size;
+    const missingEnvCount = missingLinkedVariables.size + missingExternalVariables.size;
+
+    const envContent =
+      missingEnvCount > 0 ? (
+        <KappTooltip
+          title={
+            <>
+              <Typography color="inherit">
+                <strong>Missing External Variables</strong>
+              </Typography>
+              {missingExternalVariables
+                .map(x => {
+                  return (
+                    <div key={x.get("name")}>
+                      <em>{x.get("name")}</em>
+                    </div>
+                  );
+                })
+                .toArray()}
+            </>
+          }>
+          <Box
+            color="warning.main"
+            display="flex"
+            alignItems="center"
+            justifyContent="space-between"
+            whiteSpace="nowrap">
+            <Box mr={1}>{`${allEnvCount - missingEnvCount} / ${allEnvCount}`}</Box>
+            <WarningIcon />
+          </Box>
+        </KappTooltip>
+      ) : allEnvCount > 0 ? (
+        <Box color="text.primary" display="flex" alignItems="center">
+          <Box mr={1}>{`${allEnvCount} / ${allEnvCount}`}</Box>
+        </Box>
+      ) : (
+        "-"
+      );
+
+    return envContent;
+  };
+
+  private getTableData() {
+    const { fields } = this.props;
+
+    const data: RowData[] = [];
+
+    fields.forEach((field, index, fields) => {
+      const applicationComponent = fields.get(index);
+      // const componentData: componentData = this.getComponentData(applicationComponent, index);
+
+      data.push({
+        applicationComponent,
+        index
+      });
+    });
+
+    return data;
+  }
+
+  public render() {
+    const { fields } = this.props;
     return (
-      <div>
-        <div>{submitFailed && error && <span>{error}</span>}</div>
-        <div>
-          {fields.map((field, index, fields) => {
-            const component = fields.get(index);
-
-            const externalEnvs = component.get("env").filter(x => {
-              return x.get("type") === EnvTypeExternal;
-            });
-
-            const staticEnvs = component.get("env").filter(x => {
-              return x.get("type") === EnvTypeStatic;
-            });
-
-            const missingExternalVariables = externalEnvs.filter(x => {
-              return !isEnvInSharedEnv(x.get("name"));
-            });
-
-            // const envLength = component.get("env").size;
-
-            return (
-              <div key={index}>
-                <Grid container spacing={2}>
-                  <Grid item md={12}>
-                    <Box display="flex" justifyContent="space-between" alignContent="center">
-                      <Typography variant="h5">{component.get("name")} </Typography>
-                      <Box component="small" display="flex" alignItems="center">
-                        Server / Cronjob
-                      </Box>
-                    </Box>
-                  </Grid>
-                  <Grid item md={5}>
-                    <Box>
-                      <Typography>{component.get("image")}</Typography>
-                    </Box>
-                    <Box mt={3}>
-                      <Box mr={1} display="inline">
-                        <Chip
-                          variant="outlined"
-                          color="primary"
-                          // icon={<FaceIcon />}
-                          size="small"
-                          // label={`CPU  ${component.get("cpu") / 1000}Core`}
-                        />
-                      </Box>
-                      <Box mr={1} display="inline">
-                        <Chip
-                          variant="outlined"
-                          color="primary"
-                          // icon={<FaceIcon />}
-                          size="small"
-                          // label={`Memory ${component.get("memory") / 1000}G`}
-                        />
-                      </Box>
-                      <Box mr={1} display="inline">
-                        <Chip
-                          variant="outlined"
-                          color="default"
-                          // icon={<FaceIcon />}
-                          size="small"
-                          label={`No disk`}
-                        />
-                      </Box>
-                    </Box>
-                    <Box mt={3} display="flex">
-                      <Box>
-                        <strong>TCP</strong> <strong>80</strong> -> <strong>3000</strong>
-                      </Box>
-                      <Box ml={3}>web.__namespace__</Box>
-                    </Box>
-                    <Box mt={3}>
-                      <EnvList title="Linked environment variables" envs={staticEnvs} />
-                      <EnvList title="Static environment variables" envs={staticEnvs} />
-                      <EnvList
-                        defaultOpen={missingExternalVariables.size > 0}
-                        title="External environment variables"
-                        envs={externalEnvs}
-                        missingEnvs={missingExternalVariables}
-                        sharedEnvs={sharedEnv}
-                      />
-                    </Box>
-                  </Grid>
-                  <Grid item md={1}>
-                    <Box display="flex" justifyContent="center" height="100%">
-                      <Divider orientation="vertical" />
-                    </Box>
-                  </Grid>
-                  <Grid item md={6}>
-                    {[
-                      {
-                        title: "Monitoring"
-                      },
-                      {
-                        title: "Manually Scale"
-                      },
-                      {
-                        title: "External Access"
-                      }
-                    ].map(x => {
-                      return (
-                        <Box display="inline-block" mt={1} mr={1} key={x.title}>
-                          <Chip
-                            variant="outlined"
-                            color="primary"
-                            size="small"
-                            label={x.title}
-                            deleteIcon={<DeleteIcon />}
-                          />
-                        </Box>
-                      );
-                    })}
-                    <Box mt={3}>
-                      (Comment: I want to put plugins here, but still not figure out how to deal with the UI. Leave
-                      things here for scomments.)
-                    </Box>
-                  </Grid>
-                </Grid>
-                <Divider style={{ marginTop: 24, marginBottom: 24 }} variant="fullWidth" />
-              </div>
-            );
-          })}
-        </div>
-        <Collapse in={isFormOpen} onExited={() => this.setState({ isAddButtonDisplayed: true })}>
-          <div className={classes.inputForm}>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <Field component={RenderAutoCompleteSelect} label="Component">
-                  {componentsIdAndNames.map(x => (
-                    <MenuItem value={x.value} key={x.value}>
-                      {x.text}
-                    </MenuItem>
-                  ))}
-                </Field>
-              </Grid>
-              <Grid item xs={12}>
-                {/* <CustomTextField label="Name" /> */}
-              </Grid>
-              <Grid item xs={12}>
-                <Grid container spacing={2}>
-                  <Grid item xs={6}>
-                    <Button
-                      variant="contained"
-                      size="small"
-                      color="primary"
-                      fullWidth
-                      onClick={() => {
-                        fields.push(componentsArray[0].set("name", "1231"));
-                        this.setState({ isFormOpen: false });
-                      }}>
-                      Save
-                    </Button>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      fullWidth
-                      color="primary"
-                      onClick={() => {
-                        this.setState({ isFormOpen: false });
-                      }}>
-                      Cancel
-                    </Button>
-                  </Grid>
-                </Grid>
-              </Grid>
-            </Grid>
-          </div>
-        </Collapse>
-        <Grow
-          in={isAddButtonDisplayed}
-          onExited={() => {
-            this.setState({ isFormOpen: true });
-          }}>
-          <Button
-            variant="outlined"
-            size="small"
-            color="primary"
-            fullWidth
-            startIcon={<AddIcon />}
-            onClick={() => this.setState({ isAddButtonDisplayed: false })}>
-            Add Component
-          </Button>
-        </Grow>
-      </div>
+      <MaterialTable
+        options={{
+          padding: "dense",
+          search: false,
+          paging: false,
+          toolbar: false,
+          actionsColumnIndex: -1,
+          addRowPosition: "first"
+        }}
+        components={{ Container: props => props.children }}
+        editable={{
+          // onRowAdd: async (...args) => console.log(args),
+          onRowUpdate: async (...args) => console.log(args),
+          onRowDelete: async data => fields.remove(data.index)
+        }}
+        columns={[
+          { title: "Name", field: "name", sorting: false, render: this.renderNameColumn },
+          { title: "Workload", field: "type", sorting: false, render: this.renderTypeColumn },
+          { title: "Cpu", field: "cpu", sorting: false, render: this.renderCpuColumn },
+          { title: "Memory", field: "memory", sorting: false, render: this.renderMemoryColumn },
+          { title: "Ports", field: "ports", sorting: false, render: this.renderPortsColumn },
+          { title: "Disks", field: "disks", sorting: false, render: this.renderDisksColumn },
+          { title: "Envs", field: "envs", sorting: false, render: this.renderEnvsColumn }
+        ]}
+        data={this.getTableData()}
+        title=""
+      />
     );
   }
 }

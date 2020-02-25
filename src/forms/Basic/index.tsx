@@ -1,17 +1,13 @@
-import React from "react";
-import clsx from "clsx";
-import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
-import {
-  WrappedFieldProps,
-  BaseFieldProps,
-  WrappedFieldMetaProps
-} from "redux-form";
-import { Field } from "redux-form/immutable";
 import { FormControl, InputLabel, Select } from "@material-ui/core";
-import { Autocomplete } from "@material-ui/lab";
 import FormHelperText from "@material-ui/core/FormHelperText";
-import { ID } from "../../utils";
 import { makeStyles } from "@material-ui/core/styles";
+import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
+import { Autocomplete } from "@material-ui/lab";
+import clsx from "clsx";
+import React from "react";
+import { BaseFieldProps, WrappedFieldMetaProps, WrappedFieldProps } from "redux-form";
+import { Field } from "redux-form/immutable";
+import { ID } from "../../utils";
 
 export const RenderTextField = ({
   label,
@@ -73,10 +69,7 @@ export const CustomTextField = (props: BaseFieldProps & Props) => {
   return <Field {...props} component={RenderTextField} />;
 };
 
-const renderFormHelper = ({
-  touched,
-  error
-}: Pick<WrappedFieldMetaProps, "touched" | "error">) => {
+const renderFormHelper = ({ touched, error }: Pick<WrappedFieldMetaProps, "touched" | "error">) => {
   if (!(touched && error)) {
     return;
   } else {
@@ -111,20 +104,12 @@ export const RenderSelectField = ({
 
   const inputLabel = React.useRef<HTMLLabelElement>(null);
 
-  const onChange = (
-    event: React.ChangeEvent<{ name?: string; value: unknown }>,
-    child: React.ReactNode
-  ) => {
+  const onChange = (event: React.ChangeEvent<{ name?: string; value: unknown }>, child: React.ReactNode) => {
     input.onChange(event.target.value);
   };
 
   return (
-    <FormControl
-      classes={{ root: classes.root }}
-      error={touched && error}
-      variant="outlined"
-      size="small"
-    >
+    <FormControl classes={{ root: classes.root }} error={touched && error} variant="outlined" size="small">
       <InputLabel ref={inputLabel} htmlFor={id} id={labelId}>
         {label}
       </InputLabel>
@@ -137,8 +122,7 @@ export const RenderSelectField = ({
         onBlur={input.onBlur}
         inputProps={{
           id: id
-        }}
-      >
+        }}>
         {children}
       </Select>
       {renderFormHelper({ touched, error })}
@@ -149,9 +133,7 @@ export const RenderSelectField = ({
 const AutoCompleteTypeSelect = "select";
 const AutoCompleteTypeFreeSolo = "freeSolo";
 
-type AutoCompleteType =
-  | typeof AutoCompleteTypeSelect
-  | typeof AutoCompleteTypeFreeSolo;
+type AutoCompleteType = typeof AutoCompleteTypeSelect | typeof AutoCompleteTypeFreeSolo;
 
 interface AutoCompleteProps {
   label?: string;
@@ -160,12 +142,7 @@ interface AutoCompleteProps {
   children: React.ReactElement<{ children: string; value: string }>[];
 }
 
-export const RenderAutoCompleteSelect = ({
-  input,
-  label,
-  type,
-  children
-}: WrappedFieldProps & AutoCompleteProps) => {
+export const RenderAutoCompleteSelect = ({ input, label, type, children }: WrappedFieldProps & AutoCompleteProps) => {
   children = React.Children.toArray(children);
 
   const options = children.map(item => ({
@@ -187,23 +164,12 @@ export const RenderAutoCompleteSelect = ({
       getOptionLabel={option => option.text}
       value={selectedOption}
       disableClearable
-      onChange={(
-        event: React.ChangeEvent<{}>,
-        value: { text: string; value: string } | null
-      ) => {
+      onChange={(event: React.ChangeEvent<{}>, value: { text: string; value: string } | null) => {
         if (value) {
           input.onChange(value.value);
         }
       }}
-      renderInput={params => (
-        <TextField
-          {...params}
-          label={label}
-          variant="outlined"
-          fullWidth
-          size="small"
-        />
-      )}
+      renderInput={params => <TextField {...params} label={label} variant="outlined" fullWidth size="small" />}
     />
   );
 };
@@ -233,18 +199,23 @@ export const RenderAutoComplete = ({
 
   const helperText = "";
 
-  const onInputChange = (event: React.ChangeEvent<{}>, value: string) => {
-    if (!event) return;
-    input.onChange(value);
-  };
+  // const onInputChange = (event: React.ChangeEvent<{}>, value: string) => {
+  //   if (!event) return;
+  //   input.onChange(value);
+  // };
 
-  const onChange = (
-    _event: React.ChangeEvent<{}>,
-    selectOption: { text: string; value: string } | null
-  ) => {
+  const onChange = (_event: React.ChangeEvent<{}>, selectOption: { text: string; value: string } | null) => {
     if (selectOption) {
       input.onChange(selectOption.value);
     }
+  };
+
+  const [value, setValue] = React.useState(input.value);
+
+  const onInputChange = (event: React.ChangeEvent<{}>, value: string) => {
+    // fix a bug, that onInputChange is first called with an empty value
+    if (!!input.value && !value) return;
+    setValue(value);
   };
 
   return (
@@ -255,7 +226,7 @@ export const RenderAutoComplete = ({
       // value={selectedOption}
       freeSolo
       autoComplete
-      inputValue={input.value}
+      inputValue={value}
       onInputChange={onInputChange}
       onFocus={input.onFocus}
       onChange={onChange}
@@ -265,6 +236,7 @@ export const RenderAutoComplete = ({
             {...params}
             error={touched && invalid}
             helperText={(touched && error) || helperText}
+            onBlur={input.onChange}
             label={label}
             variant="outlined"
             fullWidth

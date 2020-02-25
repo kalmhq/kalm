@@ -8,11 +8,10 @@ import {
   UPDATE_APPLICATION,
   LOAD_APPLICATIONS_PENDING
 } from ".";
-import { getKappApplications } from "./kubernetesApi";
+import { getKappApplications, updateKappApplication } from "./kubernetesApi";
+import { convertToCRDApplication } from "../convertors/Application";
 
-export const createApplicationAction = (
-  applicationValues: Application
-): ThunkResult<Promise<void>> => {
+export const createApplicationAction = (applicationValues: Application): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({
       type: CREATE_APPLICATION,
@@ -23,19 +22,19 @@ export const createApplicationAction = (
 
 export const updateApplicationAction = (
   applicationId: string,
-  applicationValues: Application
+  applicationRaw: Application
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
+    const application = await updateKappApplication(convertToCRDApplication(applicationRaw));
+
     dispatch({
       type: UPDATE_APPLICATION,
-      payload: { applicationId, applicationValues }
+      payload: { applicationId, applicationValues: application }
     });
   };
 };
 
-export const duplicateApplicationAction = (
-  applicationId: string
-): ThunkResult<Promise<void>> => {
+export const duplicateApplicationAction = (applicationId: string): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({
       type: DUPLICATE_APPLICATION,
@@ -44,9 +43,7 @@ export const duplicateApplicationAction = (
   };
 };
 
-export const deleteApplicationAction = (
-  applicationId: string
-): ThunkResult<Promise<void>> => {
+export const deleteApplicationAction = (applicationId: string): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({
       type: DELETE_APPLICATION,

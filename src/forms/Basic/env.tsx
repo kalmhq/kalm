@@ -10,15 +10,13 @@ import { RenderAutoComplete, RenderSelectField, RenderTextField } from ".";
 import { ImmutableMap } from "../../typings";
 import { ValidatorRequired } from "../validator";
 import AddIcon from "@material-ui/icons/Add";
+import { TextFieldChangeOnBlur } from "./text";
 
 export const EnvTypeExternal = "external";
 export const EnvTypeStatic = "static";
 export const EnvTypeLinked = "linked";
 
-type EnvType =
-  | typeof EnvTypeExternal
-  | typeof EnvTypeStatic
-  | typeof EnvTypeLinked;
+type EnvType = typeof EnvTypeExternal | typeof EnvTypeStatic | typeof EnvTypeLinked;
 
 type EnvValue = ImmutableMap<{
   name: string;
@@ -33,10 +31,7 @@ const generateEmptyEnv = (): EnvValue =>
     value: ""
   });
 
-const renderEnvs = ({
-  fields,
-  meta: { error, submitFailed }
-}: WrappedFieldArrayProps<EnvValue> & Props) => {
+const renderEnvs = ({ fields, meta: { error, submitFailed } }: WrappedFieldArrayProps<EnvValue> & Props) => {
   const classes = makeStyles(theme => ({
     delete: {
       display: "flex",
@@ -51,55 +46,40 @@ const renderEnvs = ({
       {fields.map((field, index) => {
         const currentEnv = fields.get(index);
         const currentEnvDoesNotRequireValue =
-          (!!currentEnv.get("type") &&
-            currentEnv.get("type") === EnvTypeExternal) ||
+          (!!currentEnv.get("type") && currentEnv.get("type") === EnvTypeExternal) ||
           currentEnv.get("type") === EnvTypeLinked;
 
         return (
           <div key={index}>
             <Grid container spacing={2}>
               <Grid item xs={2}>
-                <Field
-                  name={`${field}.type`}
-                  component={RenderSelectField}
-                  label="Type"
-                  validate={[ValidatorRequired]}
-                >
+                <Field name={`${field}.type`} component={RenderSelectField} label="Type" validate={[ValidatorRequired]}>
                   <MenuItem value={EnvTypeStatic}>Static</MenuItem>
                   <MenuItem value={EnvTypeExternal}>External</MenuItem>
                   <MenuItem value={EnvTypeLinked}>Linked</MenuItem>
                 </Field>
               </Grid>
               <Grid item xs={3}>
-                <Field
-                  name={`${field}.name`}
-                  component={RenderTextField}
-                  label="Name"
-                  validate={[ValidatorRequired]}
-                />
+                <Field name={`${field}.name`} component={RenderTextField} label="Name" validate={[ValidatorRequired]} />
               </Grid>
               <Grid item xs={6}>
                 <Field
                   disabled={currentEnvDoesNotRequireValue}
-                  validate={
-                    !currentEnvDoesNotRequireValue ? [ValidatorRequired] : []
-                  }
+                  validate={!currentEnvDoesNotRequireValue ? [ValidatorRequired] : []}
                   name={`${field}.value`}
                   component={RenderTextField}
                   label={
                     currentEnvDoesNotRequireValue
                       ? "This env value will be configured later in an application."
                       : "Value"
-                  }
-                ></Field>
+                  }></Field>
               </Grid>
               <Grid item xs={1} className={classes.delete}>
                 <IconButton
                   aria-label="delete"
                   onClick={() => {
                     fields.remove(index);
-                  }}
-                >
+                  }}>
                   <DeleteIcon />
                 </IconButton>
               </Grid>
@@ -112,8 +92,7 @@ const renderEnvs = ({
         size="small"
         color="primary"
         onClick={() => fields.push(generateEmptyEnv())}
-        startIcon={<AddIcon />}
-      >
+        startIcon={<AddIcon />}>
         Add Environment Variable
       </Button>
     </div>
@@ -147,12 +126,7 @@ export const RenderSharedEnvs = ({
           <div key={index}>
             <Grid container spacing={2}>
               <Grid item xs={5}>
-                <Field
-                  name={`${field}.name`}
-                  component={RenderAutoComplete}
-                  label="Name"
-                  validate={ValidatorRequired}
-                >
+                <Field name={`${field}.name`} component={RenderAutoComplete} label="Name" validate={ValidatorRequired}>
                   {(missingVariables || []).map(x => (
                     <MenuItem key={x} value={x}>
                       {x}
@@ -163,18 +137,17 @@ export const RenderSharedEnvs = ({
               <Grid item xs={6}>
                 <Field
                   name={`${field}.value`}
-                  component={RenderTextField}
+                  component={TextFieldChangeOnBlur}
                   validate={ValidatorRequired}
                   label="Value"
-                ></Field>
+                />
               </Grid>
               <Grid item xs={1} className={classes.delete}>
                 <IconButton
                   aria-label="delete"
                   onClick={() => {
                     fields.remove(index);
-                  }}
-                >
+                  }}>
                   <DeleteIcon />
                 </IconButton>
               </Grid>
@@ -182,25 +155,14 @@ export const RenderSharedEnvs = ({
           </div>
         );
       })}
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mt={2}
-      >
-        <Button
-          variant="outlined"
-          size="small"
-          color="primary"
-          onClick={() => fields.push(generateEmptyEnv())}
-        >
+      <Box display="flex" justifyContent="space-between" alignItems="center" mt={2}>
+        <Button variant="outlined" size="small" color="primary" onClick={() => fields.push(generateEmptyEnv())}>
           Add Shared Environment Variable
         </Button>
 
-        {missingVariables ? (
+        {missingVariables && missingVariables.length > 0 ? (
           <Box color="secondary.main" display="inline">
-            Still <strong>{missingVariables.length}</strong> Environment
-            Variables are not defined.
+            Still <strong>{missingVariables.length}</strong> Environment Variables are not defined.
           </Box>
         ) : null}
       </Box>
@@ -236,9 +198,7 @@ interface Props {
 }
 
 let Envs = (props: Props) => {
-  return (
-    <FieldArray {...props} name="env" valid={true} component={renderEnvs} />
-  );
+  return <FieldArray {...props} name="env" valid={true} component={renderEnvs} />;
 };
 
 // export const CustomEnvs = connect((state: RootState) => {

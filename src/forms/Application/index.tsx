@@ -1,20 +1,20 @@
 import { Button, createStyles, Grid, Paper, WithStyles, withStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
+import Immutable from "immutable";
 import React from "react";
+import { connect } from "react-redux";
 import { InjectedFormProps } from "redux-form";
-import { Field, FieldArray, formValueSelector, getFormValues, reduxForm } from "redux-form/immutable";
+import { Field, formValueSelector, getFormValues, reduxForm } from "redux-form/immutable";
 import { Application, ComponentTemplate, SharedEnv } from "../../actions";
+import { RootState } from "../../reducers";
+import { HelperContainer } from "../../widgets/Helper";
+import { SwitchField } from "../Basic/switch";
+import { TextField } from "../Basic/text";
+import { NormalizeBoolean } from "../normalizer";
 import { ValidatorRequired } from "../validator";
 import { Components } from "./component";
-import { EnvTypeExternal, RenderSharedEnvs } from "../Basic/env";
-import { RootState } from "../../reducers";
-import { connect } from "react-redux";
-import Immutable from "immutable";
-import { HelperContainer } from "../../widgets/Helper";
-import { TextField } from "../Basic/text";
-import { SwitchField } from "../Basic/switch";
-import { NormalizeBoolean } from "../normalizer";
+import { SharedEnvs } from "./shardEnv";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -32,7 +32,7 @@ const styles = (theme: Theme) =>
 const mapStateToProps = (state: RootState) => {
   const selector = formValueSelector("application");
   const formComponents: ComponentTemplate[] = selector(state, "components");
-  const sharedEnv: SharedEnv[] = selector(state, "sharedEnv");
+  const sharedEnv: Immutable.List<SharedEnv> = selector(state, "sharedEnv");
   const values = getFormValues("application")(state) as Application;
 
   return {
@@ -54,7 +54,6 @@ class ApplicationFormRaw extends React.PureComponent<
   private renderBaisc() {
     const { classes } = this.props;
     const isEdit = this.getIsEdit();
-    console.log(isEdit, this.props.values.toJS());
     return (
       <>
         <Typography
@@ -159,23 +158,7 @@ class ApplicationFormRaw extends React.PureComponent<
   }
 
   private renderSharedEnvs() {
-    const { sharedEnv, formComponents, classes } = this.props;
-    const isEnvInSharedEnv = (envName: string) => {
-      return !!sharedEnv.find(x => x.get("name") === envName);
-    };
-
-    const missingVariables = Array.from(
-      new Set(
-        formComponents
-          .map(component => {
-            return component
-              .get("env")
-              .filter(env => env.get("type") === EnvTypeExternal)
-              .map(env => env.get("name"));
-          })
-          .reduce((acc, item) => acc.concat(item))
-      )
-    ).filter(x => !isEnvInSharedEnv(x));
+    const { classes } = this.props;
 
     return (
       <>
@@ -195,7 +178,7 @@ class ApplicationFormRaw extends React.PureComponent<
           classes={{
             root: classes.paper
           }}>
-          <FieldArray name="sharedEnv" valid={true} component={RenderSharedEnvs} missingVariables={missingVariables} />
+          <SharedEnvs />
         </Paper>
       </>
     );

@@ -137,12 +137,12 @@ export type Application = ImmutableMap<{
   name: string;
   namespace: string;
   sharedEnv: Immutable.List<SharedEnv>;
-  components: Immutable.List<ComponentTemplate>;
+  components: Immutable.List<ApplicationComponent>;
   status: ApplicationStatus;
   resourceVersion?: string;
 }>;
 
-export type ApplicationComponent = ImmutableMap<{
+interface ApplicationComponentContent {
   name: string;
   image: string;
   command: string;
@@ -156,7 +156,7 @@ export type ApplicationComponent = ImmutableMap<{
   ports: Immutable.List<ComponentTemplatePort>;
   cpu: string;
   memory: string;
-  disk: Immutable.List<
+  disks: Immutable.List<
     ImmutableMap<{
       name: string;
       type: string;
@@ -166,10 +166,11 @@ export type ApplicationComponent = ImmutableMap<{
       storageClass: string;
     }>
   >;
-  resourceVersion?: string;
   workloadType?: WorkloadType;
   schedule?: string;
-}>;
+}
+
+export type ApplicationComponent = ImmutableMap<ApplicationComponentContent>;
 
 export type Config = ImmutableMap<{
   id: string;
