@@ -1,4 +1,4 @@
-import { Box, Button, createStyles, Theme, Typography, withStyles, WithStyles } from "@material-ui/core";
+import { Box, Button, createStyles, Theme, Typography, withStyles, WithStyles, Grid } from "@material-ui/core";
 import WarningIcon from "@material-ui/icons/Warning";
 import Immutable from "immutable";
 import MaterialTable from "material-table";
@@ -222,7 +222,7 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
             {
               icon: "edit",
               onClick: (...args) => {
-                console.log(args);
+                this.openComponentFormDialog();
               }
             }
           ]}
@@ -252,11 +252,31 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
           data={this.getTableData()}
           title=""
         />
-        <Box mt={3}>
-          <Button variant="outlined" size="small" color="primary" fullWidth startIcon={<AddIcon />} onClick={() => {}}>
-            Add Component
-          </Button>
-        </Box>
+        <Box mt={3}></Box>
+        <Grid container spacing={2}>
+          <Grid item xs={6}>
+            <Button
+              variant="outlined"
+              size="small"
+              color="primary"
+              fullWidth
+              startIcon={<AddIcon />}
+              onClick={() => this.openComponentFormDialog()}>
+              Add Component
+            </Button>
+          </Grid>
+          <Grid item xs={6}>
+            <Button
+              variant="outlined"
+              size="small"
+              color="primary"
+              fullWidth
+              startIcon={<AddIcon />}
+              onClick={() => {}}>
+              Import from Component Template
+            </Button>
+          </Grid>
+        </Grid>
       </div>
     );
   }
