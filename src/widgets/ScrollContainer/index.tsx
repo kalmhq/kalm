@@ -38,7 +38,6 @@ class ScrollContainer extends React.PureComponent<Props> {
   }
 
   public componentWillUnmount() {
-    console.log("ScrollContainer componentWillUnmount");
     if (this.ps) {
       this.ps.destroy();
       this.ps = null;
