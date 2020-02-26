@@ -9,9 +9,9 @@ import { ComponentLike, workloadTypeCronjob, workloadTypeServer } from "../../ac
 import { RootState } from "../../reducers";
 import { HelperContainer } from "../../widgets/Helper";
 import { CustomTextField, RenderSelectField, RenderTextField } from "../Basic";
-import { CustomPorts } from "../Basic/ports";
 import { ValidatorRequired, ValidatorSchedule } from "../validator";
 import { Envs } from "./Envs";
+import { Ports } from "./Ports";
 import ComponentResources from "./resources";
 import { TabDataView } from "./TabDataView";
 
@@ -217,7 +217,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
           classes={{
             root: classes.paper
           }}>
-          <CustomPorts />
+          <Ports />
         </Paper>
       </>
     );

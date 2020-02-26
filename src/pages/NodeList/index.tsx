@@ -6,13 +6,7 @@ import { K8sApiPerfix } from "../../actions/kubernetesApi";
 import { RootState } from "../../reducers";
 import { BasePage } from "../BasePage";
 import { Alert } from "@material-ui/lab";
-import {
-  createStyles,
-  Theme,
-  WithStyles,
-  withStyles,
-  Box
-} from "@material-ui/core";
+import { createStyles, Theme, WithStyles, withStyles, Box } from "@material-ui/core";
 import MaterialTable from "material-table";
 
 const mapStateToProps = (state: RootState) => {
@@ -33,9 +27,7 @@ interface States {
   loadingNodes: boolean;
 }
 
-type Props = ReturnType<typeof mapStateToProps> &
-  TDispatchProp &
-  WithStyles<typeof styles>;
+type Props = ReturnType<typeof mapStateToProps> & TDispatchProp & WithStyles<typeof styles>;
 
 export class NodeListRaw extends React.Component<Props, States> {
   constructor(props: Props) {
@@ -63,7 +55,6 @@ export class NodeListRaw extends React.Component<Props, States> {
 
   getTableData = () => {
     const { nodes } = this.props;
-    console.log(nodes);
     const data = nodes.map((node, index) => {
       // const handleChange = () => {
       //   this.showSwitchingIsEnabledDialog(application.get("id"));
@@ -93,15 +84,10 @@ export class NodeListRaw extends React.Component<Props, States> {
           <>
             <Box>Kernel: {node.status!.nodeInfo!.kernelVersion}</Box>
             <Box>osImage: {node.status!.nodeInfo!.osImage}</Box>
-            <Box>
-              containerRuntimeVersion:{" "}
-              {node.status!.nodeInfo!.containerRuntimeVersion}
-            </Box>
+            <Box>containerRuntimeVersion: {node.status!.nodeInfo!.containerRuntimeVersion}</Box>
           </>
         ),
-        addresses: node.status!.addresses!.map(x => (
-          <Box mr={1}>{x.address}</Box>
-        )),
+        addresses: node.status!.addresses!.map(x => <Box mr={1}>{x.address}</Box>),
         conditions: node.status!.conditions!.map(x => (
           <Box mr={1}>
             {x.type} {x.status}
@@ -110,12 +96,10 @@ export class NodeListRaw extends React.Component<Props, States> {
         resources: (
           <>
             <Box>
-              Cpu: {node.status!.allocatable!.cpu} allocatable / max{" "}
-              {node.status!.capacity!.cpu}
+              Cpu: {node.status!.allocatable!.cpu} allocatable / max {node.status!.capacity!.cpu}
             </Box>
             <Box>
-              Memory: {node.status!.allocatable!.memory} allocatable / max{" "}
-              {node.status!.capacity!.memory}
+              Memory: {node.status!.allocatable!.memory} allocatable / max {node.status!.capacity!.memory}
             </Box>
           </>
         )
@@ -135,15 +119,14 @@ export class NodeListRaw extends React.Component<Props, States> {
           {loadNodesError ? (
             <Alert severity="error">
               <Box>
-                Kapp fails to load nodes from current cluster with endpoint{" "}
-                <strong>{K8sApiPerfix}</strong>. Please check your connection.
+                Kapp fails to load nodes from current cluster with endpoint <strong>{K8sApiPerfix}</strong>. Please
+                check your connection.
               </Box>
             </Alert>
           ) : loadingNodes ? null : (
             <Alert severity="info">
-              Node is an original concept of kubernetes. It's a worker machine
-              in Kubernetes, previously known as a minion. A node may be a VM or
-              physical machine, depending on the cluster.
+              Node is an original concept of kubernetes. It's a worker machine in Kubernetes, previously known as a
+              minion. A node may be a VM or physical machine, depending on the cluster.
             </Alert>
           )}
 
@@ -171,6 +154,4 @@ export class NodeListRaw extends React.Component<Props, States> {
   }
 }
 
-export const NodeList = connect(mapStateToProps)(
-  withStyles(styles)(NodeListRaw)
-);
+export const NodeList = connect(mapStateToProps)(withStyles(styles)(NodeListRaw));

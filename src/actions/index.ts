@@ -40,6 +40,9 @@ export const EnvTypeExternal = "external";
 export const EnvTypeStatic = "static";
 export const EnvTypeLinked = "linked";
 
+export const portTypeTCP = "TCP";
+export const portTypeUDP = "UDP";
+
 export const newEmptyComponentLike = (): ComponentTemplate => {
   return Immutable.Map({
     id: "",
@@ -55,7 +58,7 @@ export const newEmptyComponentLike = (): ComponentTemplate => {
   });
 };
 
-export const newEmptyComponentLikePort = (): ComponentTemplatePort => {
+export const newEmptyComponentLikePort = (): ComponentLikePort => {
   return Immutable.Map({
     name: "",
     protocol: "TCP",
@@ -93,7 +96,7 @@ export type ComponentStatus = {
   deploymentStatus: any;
 };
 
-export type ComponentTemplatePort = ImmutableMap<{
+export type ComponentLikePort = ImmutableMap<{
   name: string;
   protocol: string;
   containerPort: number;
@@ -115,7 +118,7 @@ export interface ComponentLikeContent {
       value: string;
     }>
   >;
-  ports: Immutable.List<ComponentTemplatePort>;
+  ports: Immutable.List<ComponentLikePort>;
   disks: Immutable.List<
     ImmutableMap<{
       name: string;

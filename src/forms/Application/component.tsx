@@ -190,7 +190,6 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
   private renderDialog() {
     const { isDialogOpen } = this.state;
     const { fields } = this.props;
-    console.log(fields.get(0));
     return (
       <CustomizedDialog
         title="Add Component for Application"

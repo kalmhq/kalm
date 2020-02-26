@@ -1,5 +1,5 @@
 import { List, Map } from "immutable";
-import { ApplicationComponent, workloadTypeServer } from "../actions";
+import { ApplicationComponent, workloadTypeServer, EnvTypeStatic } from "../actions";
 import { V1alpha1ApplicationSpecComponents } from "../kappModel/v1alpha1ApplicationSpecComponents";
 import { ObjectSerializer } from "../model/models";
 
@@ -10,7 +10,7 @@ export const convertFromCRDApplicationComponent = (x: V1alpha1ApplicationSpecCom
     command: x.command ? x.command[0] : "",
     workloadType: x.workloadType || workloadTypeServer,
     schedule: x.schedule,
-    env: x.env ? List(x.env.map(e => Map({ name: e.name, value: e.value, type: e.type }))) : List([]),
+    env: x.env ? List(x.env.map(e => Map({ name: e.name, value: e.value, type: e.type || EnvTypeStatic }))) : List([]),
     ports: List(
       x.ports
         ? x.ports.map(p =>

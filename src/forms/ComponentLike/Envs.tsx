@@ -128,6 +128,7 @@ class RenderEnvs extends React.PureComponent<Props> {
               title: "Type",
               field: "type",
               sorting: false,
+              initialEditValue: EnvTypeStatic,
               render: this.renderTypeColumn,
               editComponent: this.editTypeComponent
             },
