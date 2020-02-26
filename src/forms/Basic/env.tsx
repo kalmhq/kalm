@@ -202,7 +202,7 @@ let Envs = (props: Props) => {
 };
 
 // export const CustomEnvs = connect((state: RootState) => {
-//   const selector = formValueSelector("component");
+//   const selector = formValueSelector("componentLike");
 //   const values = selector(state, "env");
 //   return { values };
 // })(envs);

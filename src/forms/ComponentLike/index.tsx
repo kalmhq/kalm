@@ -5,18 +5,18 @@ import React from "react";
 import { connect } from "react-redux";
 import { InjectedFormProps } from "redux-form";
 import { Field, getFormValues, reduxForm } from "redux-form/immutable";
-import { workloadTypeCronjob, workloadTypeServer, ComponentLike } from "../../actions";
+import { ComponentLike, workloadTypeCronjob, workloadTypeServer } from "../../actions";
 import { RootState } from "../../reducers";
 import { HelperContainer } from "../../widgets/Helper";
 import { CustomTextField, RenderSelectField, RenderTextField } from "../Basic";
-import { CustomEnvs } from "../Basic/env";
 import { CustomPorts } from "../Basic/ports";
 import { ValidatorRequired, ValidatorSchedule } from "../validator";
+import { Envs } from "./Envs";
 import ComponentResources from "./resources";
 import { TabDataView } from "./TabDataView";
 
 const mapStateToProps = (state: RootState) => {
-  const values = getFormValues("component")(state) as ComponentLike;
+  const values = getFormValues("componentLike")(state) as ComponentLike;
   return {
     values
   };
@@ -187,7 +187,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
           classes={{
             root: classes.paper
           }}>
-          <CustomEnvs />
+          {/* <CustomEnvs /> */}
+          <Envs />
         </Paper>
       </>
     );
@@ -317,6 +318,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
 }
 
 export const ComponentLikeForm = reduxForm<ComponentLike, RawProps>({
-  form: "component",
+  form: "componentLike",
   onSubmitFail: console.log
 })(connect(mapStateToProps)(withStyles(styles)(ComponentLikeFormRaw)));
