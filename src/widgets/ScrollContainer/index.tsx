@@ -17,7 +17,7 @@ interface ContainerProps {
 interface Props extends WithStyles<typeof styles>, ContainerProps {}
 
 class ScrollContainer extends React.PureComponent<Props> {
-  private ps?: PerfectScrollbar;
+  private ps?: PerfectScrollbar | null;
 
   public render() {
     const { children, classes } = this.props;
@@ -35,6 +35,14 @@ class ScrollContainer extends React.PureComponent<Props> {
         {children}
       </div>
     );
+  }
+
+  public componentWillUnmount() {
+    console.log("ScrollContainer componentWillUnmount");
+    if (this.ps) {
+      this.ps.destroy();
+      this.ps = null;
+    }
   }
 }
 
