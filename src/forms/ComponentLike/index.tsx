@@ -45,6 +45,7 @@ const styles = (theme: Theme) =>
 
 interface RawProps {
   isEdit?: boolean;
+  showDataView?: boolean;
 }
 
 export interface Props
@@ -266,7 +267,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
   }
 
   public render() {
-    const { handleSubmit, values, classes } = this.props;
+    const { handleSubmit, values, classes, showDataView } = this.props;
     // const classes = useStyles();
     // const [value, setValue] = React.useState(0);
 
@@ -278,32 +279,33 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
       <div className={classes.root}>
         <form onSubmit={handleSubmit}>
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={12} md={8} lg={8} xl={6}>
+            <Grid item xs={12} sm={12} md={showDataView ? 8 : 12} lg={showDataView ? 8 : 12} xl={showDataView ? 6 : 12}>
               {this.renderBasic()}
               {this.renderEnvs()}
               {this.renderPorts()}
               {this.renderResources()}
             </Grid>
-
-            <Grid item xs={12} sm={12} md={4} lg={4} xl={6}>
-              <Typography
-                variant="h2"
-                classes={{
-                  root: classes.sectionHeader
-                }}>
-                Data View
-              </Typography>
-              <TabDataView
-                tabOptions={[
-                  { title: "Kapp JSON", language: "json", content: JSON.stringify(values, undefined, 2) }
-                  // {
-                  //   title: "k8s CRD",
-                  //   language: "json",
-                  //   content: JSON.stringify(convertToCRDComponentLike(values), undefined, 2)
-                  // }
-                ]}
-              />
-            </Grid>
+            {showDataView ? (
+              <Grid item xs={12} sm={12} md={4} lg={4} xl={6}>
+                <Typography
+                  variant="h2"
+                  classes={{
+                    root: classes.sectionHeader
+                  }}>
+                  Data View
+                </Typography>
+                <TabDataView
+                  tabOptions={[
+                    { title: "Kapp JSON", language: "json", content: JSON.stringify(values, undefined, 2) }
+                    // {
+                    //   title: "k8s CRD",
+                    //   language: "json",
+                    //   content: JSON.stringify(convertToCRDComponentLike(values), undefined, 2)
+                    // }
+                  ]}
+                />
+              </Grid>
+            ) : null}
           </Grid>
           <Button variant="contained" color="primary" type="submit">
             Submit
