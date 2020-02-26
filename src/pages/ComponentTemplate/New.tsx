@@ -35,7 +35,7 @@ class ComponentTemplateNewRaw extends React.PureComponent<Props> {
     return (
       <BasePage title="New Component">
         <div className={classes.root}>
-          <ComponentLikeForm onSubmit={this.submit} initialValues={newEmptyComponentLike()} />
+          <ComponentLikeForm onSubmit={this.submit} initialValues={newEmptyComponentLike()} showDataView showSubmitButton />
         </div>
       </BasePage>
     );

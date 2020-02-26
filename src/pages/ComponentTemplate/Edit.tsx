@@ -46,7 +46,15 @@ class ComponentTemplateEditRaw extends React.PureComponent<Props> {
   private renderFormContent() {
     const componentTemplate = this.getComponentTemplate();
 
-    return <ComponentLikeForm onSubmit={this.submit} initialValues={componentTemplate} isEdit={true} showDataView />;
+    return (
+      <ComponentLikeForm
+        onSubmit={this.submit}
+        initialValues={componentTemplate}
+        isEdit={true}
+        showDataView
+        showSubmitButton
+      />
+    );
   }
 
   public render() {

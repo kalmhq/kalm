@@ -1,18 +1,17 @@
-import { Box, Button, createStyles, Theme, Typography, withStyles, WithStyles, Grid } from "@material-ui/core";
+import { Box, Button, createStyles, Grid, Theme, Typography, withStyles, WithStyles } from "@material-ui/core";
+import AddIcon from "@material-ui/icons/Add";
 import WarningIcon from "@material-ui/icons/Warning";
 import Immutable from "immutable";
 import MaterialTable from "material-table";
 import React from "react";
-import { connect } from "react-redux";
-import { WrappedFieldArrayProps } from "redux-form";
+import { connect, DispatchProp } from "react-redux";
+import { submit, WrappedFieldArrayProps, change, arrayPush } from "redux-form";
 import { FieldArray, formValueSelector } from "redux-form/immutable";
-import { ApplicationComponent, ComponentTemplate, SharedEnv } from "../../actions";
+import { ApplicationComponent, ComponentLike, EnvTypeExternal, newEmptyComponentLike, SharedEnv } from "../../actions";
 import { RootState } from "../../reducers";
-import { EnvTypeExternal } from "../../actions";
-import { KappTooltip } from "./KappTooltip";
-import AddIcon from "@material-ui/icons/Add";
-import { CustomizedDialog } from "./ComponentModal";
 import { ComponentLikeForm } from "../ComponentLike";
+import { CustomizedDialog } from "./ComponentModal";
+import { KappTooltip } from "./KappTooltip";
 
 const mapStateToProps = (state: RootState) => {
   const selector = formValueSelector("application");
@@ -24,7 +23,7 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-type stateProps = ReturnType<typeof mapStateToProps>;
+interface stateProps extends ReturnType<typeof mapStateToProps>, DispatchProp {}
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -52,6 +51,10 @@ interface Props
 
 interface State {
   isDialogOpen: boolean;
+  dialogFormApplicationComponentIndex?: number;
+  dialogFormComponentLikeInstance?: ComponentLike;
+  dialogFormTitle?: string;
+  dialogFormSaveButtonText?: string;
 }
 
 interface RowData {
@@ -175,28 +178,78 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
     return data;
   }
 
-  private openComponentFormDialog() {
-    this.setState({ isDialogOpen: true });
+  private openComponentFormDialog(dialogFormApplicationComponentIndex: number) {
+    const { fields } = this.props;
+    let dialogFormComponentLikeInstance: ComponentLike;
+    let title;
+    let saveButtonText;
+    if (dialogFormApplicationComponentIndex === -1) {
+      title = "Add New Component";
+      saveButtonText = "Add Component";
+      dialogFormComponentLikeInstance = newEmptyComponentLike();
+    } else {
+      title = "Edit Component";
+      saveButtonText = "Save";
+      dialogFormComponentLikeInstance = fields.get(dialogFormApplicationComponentIndex) as ComponentLike;
+    }
+
+    this.setState({
+      isDialogOpen: true,
+      dialogFormComponentLikeInstance,
+      dialogFormApplicationComponentIndex,
+      dialogFormSaveButtonText: saveButtonText,
+      dialogFormTitle: title
+    });
   }
 
   private closeComponentFormDialog = () => {
-    this.setState({ isDialogOpen: false });
+    this.setState({
+      isDialogOpen: false,
+      dialogFormComponentLikeInstance: undefined,
+      dialogFormApplicationComponentIndex: undefined,
+      dialogFormSaveButtonText: undefined,
+      dialogFormTitle: undefined
+    });
   };
 
   private saveComponentFormDialog = () => {
-    this.setState({ isDialogOpen: false });
+    this.props.dispatch(submit("componentLike"));
+  };
+
+  private handleComponentLikeFormSubmit = async (componentLike: ComponentLike) => {
+    const { dialogFormApplicationComponentIndex } = this.state;
+    const { meta, fields } = this.props;
+    if (dialogFormApplicationComponentIndex === undefined) {
+      return;
+    }
+    // console.log(meta.form, fields.name, componentLike);
+    if (dialogFormApplicationComponentIndex === -1) {
+      await this.props.dispatch(arrayPush(meta.form, fields.name, componentLike));
+    } else {
+      await this.props.dispatch(
+        change(meta.form, `${fields.name}[${dialogFormApplicationComponentIndex}]`, componentLike)
+      );
+    }
+
+    this.closeComponentFormDialog();
+    this.forceUpdate();
   };
 
   private renderDialog() {
-    const { isDialogOpen } = this.state;
-    const { fields } = this.props;
+    const { isDialogOpen, dialogFormComponentLikeInstance, dialogFormSaveButtonText, dialogFormTitle } = this.state;
+    // const { fields } = this.props;
     return (
       <CustomizedDialog
-        title="Add Component for Application"
+        title={dialogFormTitle}
+        saveButtonText={dialogFormSaveButtonText}
         open={isDialogOpen}
         handleSave={this.saveComponentFormDialog}
         handleClose={this.closeComponentFormDialog}>
-        <ComponentLikeForm onSubmit={console.log} initialValues={fields.get(0) as ComponentTemplate} />
+        <ComponentLikeForm
+          onSubmit={this.handleComponentLikeFormSubmit}
+          initialValues={dialogFormComponentLikeInstance}
+          showDataView
+        />
       </CustomizedDialog>
     );
   }
@@ -214,14 +267,14 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
                 color: "primary"
               },
               onClick: (...args) => {
-                this.openComponentFormDialog();
+                this.openComponentFormDialog(-1);
               },
               isFreeAction: true
             },
             {
               icon: "edit",
-              onClick: (...args) => {
-                this.openComponentFormDialog();
+              onClick: (_event, data) => {
+                this.openComponentFormDialog((data as RowData).index);
               }
             }
           ]}
@@ -236,8 +289,6 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
           }}
           components={{ Container: props => props.children }}
           editable={{
-            // onRowAdd: async (...args) => console.log(args),
-            // onRowUpdate: async (...args) => console.log(args),
             onRowDelete: async data => fields.remove(data.index)
           }}
           columns={[
@@ -261,7 +312,7 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
               color="primary"
               fullWidth
               startIcon={<AddIcon />}
-              onClick={() => this.openComponentFormDialog()}>
+              onClick={() => this.openComponentFormDialog(-1)}>
               Add Component
             </Button>
           </Grid>

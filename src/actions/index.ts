@@ -43,15 +43,14 @@ export const EnvTypeLinked = "linked";
 export const portTypeTCP = "TCP";
 export const portTypeUDP = "UDP";
 
-export const newEmptyComponentLike = (): ComponentTemplate => {
+export const newEmptyComponentLike = (): ComponentLike => {
   return Immutable.Map({
-    id: "",
     name: "",
     image: "",
     command: "",
     env: Immutable.List([]),
     ports: Immutable.List([]),
-    disk: Immutable.List([]),
+    disks: Immutable.List([]),
     cpu: "100M",
     memory: "100M",
     workloadType: "server"

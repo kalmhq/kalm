@@ -46,6 +46,8 @@ const styles = (theme: Theme) =>
 interface RawProps {
   isEdit?: boolean;
   showDataView?: boolean;
+  showSubmitButton?: boolean;
+  submitButtonText?: string;
 }
 
 export interface Props
@@ -268,7 +270,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
   }
 
   public render() {
-    const { handleSubmit, values, classes, showDataView } = this.props;
+    const { handleSubmit, values, classes, showDataView, showSubmitButton, submitButtonText } = this.props;
     // const classes = useStyles();
     // const [value, setValue] = React.useState(0);
 
@@ -308,9 +310,11 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
               </Grid>
             ) : null}
           </Grid>
-          <Button variant="contained" color="primary" type="submit">
-            Submit
-          </Button>
+          {showSubmitButton ? (
+            <Button variant="contained" color="primary" type="submit">
+              {submitButtonText || "Submit"}
+            </Button>
+          ) : null}
         </form>
       </div>
     );

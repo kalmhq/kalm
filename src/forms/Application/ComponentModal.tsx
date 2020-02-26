@@ -1,5 +1,5 @@
 import React from "react";
-import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
+import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/";
 import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
 import MuiDialogTitle from "@material-ui/core/DialogTitle";
@@ -65,18 +65,30 @@ interface Props {
   handleSave: () => void;
 }
 
-export const CustomizedDialog = (props: Props) => {
-  const { open, handleClose, title, saveButtonText, children, handleSave } = props;
+const dialogStyles = (theme: Theme) => ({
+  paper: {
+    backgroundColor: "#FAFAFA"
+  }
+});
+
+const CustomizedDialogRaw = (props: Props & WithStyles<typeof dialogStyles>) => {
+  const { open, handleClose, title, saveButtonText, children, handleSave, classes } = props;
 
   return (
     <div>
-      <Dialog onClose={handleClose} aria-labelledby="customized-dialog-title" open={open} maxWidth="md">
+      <Dialog
+        classes={classes}
+        fullScreen
+        onClose={handleClose}
+        aria-labelledby="customized-dialog-title"
+        open={open}
+        maxWidth="md">
         <DialogTitle id="customized-dialog-title" onClose={handleClose}>
           {title}
         </DialogTitle>
         <DialogContent>{children}</DialogContent>
         <DialogActions>
-          <Button autoFocus onClick={handleSave} color="primary">
+          <Button onClick={handleSave} color="primary" variant="contained">
             {saveButtonText || "Save changes"}
           </Button>
         </DialogActions>
@@ -84,3 +96,5 @@ export const CustomizedDialog = (props: Props) => {
     </div>
   );
 };
+
+export const CustomizedDialog = withStyles(dialogStyles)(CustomizedDialogRaw);
