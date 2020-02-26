@@ -8,7 +8,7 @@ import { WrappedFieldArrayProps } from "redux-form";
 import { FieldArray, formValueSelector } from "redux-form/immutable";
 import { ApplicationComponent, ComponentTemplate, SharedEnv } from "../../actions";
 import { RootState } from "../../reducers";
-import { EnvTypeExternal } from "../Basic/env";
+import { EnvTypeExternal } from "../../actions";
 import { KappTooltip } from "./KappTooltip";
 import AddIcon from "@material-ui/icons/Add";
 import { CustomizedDialog } from "./ComponentModal";

@@ -36,6 +36,10 @@ export const SET_NOTIFICATION_MESSAGE = "SET_NOTIFICATION_MESSAGE";
 
 export const SET_SETTINGS = "SET_SETTINGS";
 
+export const EnvTypeExternal = "external";
+export const EnvTypeStatic = "static";
+export const EnvTypeLinked = "linked";
+
 export const newEmptyComponentLike = (): ComponentTemplate => {
   return Immutable.Map({
     id: "",

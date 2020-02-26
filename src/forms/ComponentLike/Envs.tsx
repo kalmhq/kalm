@@ -8,7 +8,7 @@ import { arrayUnshift, change, WrappedFieldArrayProps } from "redux-form";
 import { FieldArray } from "redux-form/immutable";
 import { SharedEnv } from "../../actions";
 import { MaterialTableEditTextField } from "../Basic/text";
-import { EnvTypeStatic, EnvTypeExternal, EnvTypeLinked } from "../Basic/env";
+import { EnvTypeStatic, EnvTypeExternal, EnvTypeLinked } from "../../actions";
 import { MaterialTableEditSelectField } from "../Basic/select";
 interface FieldArrayComponentHackType {
   name: any;
