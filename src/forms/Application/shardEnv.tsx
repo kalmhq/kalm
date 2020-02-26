@@ -141,7 +141,8 @@ class RenderSharedEnvs extends React.PureComponent<Props> {
             paging: false,
             //   toolbar: false
             actionsColumnIndex: -1,
-            addRowPosition: "first"
+            addRowPosition: "first",
+            draggable: false
           }}
           icons={{
             Add: forwardRef((props, ref) => <AddCircleIcon ref={ref} {...props} color="primary" />)

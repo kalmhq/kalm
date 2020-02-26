@@ -98,7 +98,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
           <Typography>Describe how to launch this compoent.</Typography>
         </HelperContainer>
         <Paper
-          elevation={4}
+          elevation={1}
           square
           classes={{
             root: classes.paper
@@ -182,7 +182,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
           </MList>
         </HelperContainer>
         <Paper
-          elevation={4}
+          elevation={1}
           square
           classes={{
             root: classes.paper
@@ -212,7 +212,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
           </Typography>
         </HelperContainer>
         <Paper
-          elevation={4}
+          elevation={1}
           square
           classes={{
             root: classes.paper
@@ -256,7 +256,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
           </MList>
         </HelperContainer>
         <Paper
-          elevation={4}
+          elevation={1}
           square
           classes={{
             root: classes.paper

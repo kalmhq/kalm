@@ -232,7 +232,8 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
             paging: false,
             // toolbar: false,
             actionsColumnIndex: -1,
-            addRowPosition: "first"
+            addRowPosition: "first",
+            draggable: false
           }}
           components={{ Container: props => props.children }}
           editable={{

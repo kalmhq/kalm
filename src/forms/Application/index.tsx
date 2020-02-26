@@ -67,7 +67,7 @@ class ApplicationFormRaw extends React.PureComponent<
           <Typography>Basic information of this application</Typography>
         </HelperContainer>
         <Paper
-          elevation={4}
+          elevation={1}
           square
           classes={{
             root: classes.paper
@@ -146,7 +146,7 @@ class ApplicationFormRaw extends React.PureComponent<
           <Typography>Select compoents you want to include into this application.</Typography>
         </HelperContainer>
         <Paper
-          elevation={4}
+          elevation={1}
           square
           classes={{
             root: classes.paper
@@ -173,7 +173,7 @@ class ApplicationFormRaw extends React.PureComponent<
           <Typography>Shared environment variable is consistent amoung all components.</Typography>
         </HelperContainer>
         <Paper
-          elevation={4}
+          elevation={1}
           square
           classes={{
             root: classes.paper
