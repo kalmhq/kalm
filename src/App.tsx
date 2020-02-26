@@ -216,17 +216,21 @@ const useStyles = makeStyles((theme: Theme) => {
   });
 });
 
+const sidebarFoldedKey = "sidebarFoldedKey";
+
 export default function MiniDrawer() {
   const theme = useTheme();
   const classes = useStyles(theme);
-  const [open, setOpen] = React.useState(true);
+  const [open, setOpen] = React.useState(!window.localStorage.getItem(sidebarFoldedKey));
 
   const handleDrawerOpen = () => {
     setOpen(true);
+    window.localStorage.removeItem(sidebarFoldedKey);
   };
 
   const handleDrawerClose = () => {
     setOpen(false);
+    window.localStorage.setItem(sidebarFoldedKey, "t");
   };
 
   return (
