@@ -26,6 +26,7 @@ import { NotificationComponent } from "./widgets/Notification";
 import { Sidenav, SidenavGroupProps } from "./widgets/Sidenav";
 import { Fade, Box } from "@material-ui/core";
 import { HelperSwitch } from "./widgets/Helper";
+import ScrollContainer from "./widgets/ScrollContainer";
 
 const sidenavGroups: SidenavGroupProps[] = [
   {
@@ -121,7 +122,8 @@ const drawerWidth = 280;
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
     root: {
-      display: "flex"
+      display: "flex",
+      height: "100%"
     },
     appBar: {
       zIndex: theme.zIndex.drawer,
@@ -208,7 +210,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     content: {
       flexGrow: 1,
-      paddingTop: theme.spacing(8)
+      paddingTop: theme.spacing(8),
+      height: "100%"
     },
     nested: {
       paddingLeft: theme.spacing(4)
@@ -292,32 +295,34 @@ export default function MiniDrawer() {
             <Sidenav groups={sidenavGroups} isFolded={!open} />
           </Drawer>
           <main className={classes.content}>
-            <Switch>
-              <Route exact path="/" component={Dashboard} />
-              <Route exact path="/install">
-                <InstallPage />
-              </Route>
-              <Route exact path="/applications">
-                <ApplicationList />
-              </Route>
-              <Route exact path="/applications/:applicationId/edit" component={ApplicationEdit}></Route>
-              <Route exact path="/applications/new">
-                <ApplicationNew />
-              </Route>
-              <Route exact path="/componenttemplates/new">
-                <ComponentTemplateNew />
-              </Route>
-              <Route
-                exact
-                path="/componenttemplates/:componentTemplateId/edit"
-                component={ComponentTemplateEdit}></Route>
-              <Route exact path="/componenttemplates" component={ComponentTemplateList}></Route>
-              <Route exact path="/configs" component={ConfigList}></Route>
-              <Route exact path="/cluster/nodes" component={NodeList}></Route>
-              <Route exact path="/cluster/disks" component={Disks}></Route>
+            <ScrollContainer>
+              <Switch>
+                <Route exact path="/" component={Dashboard} />
+                <Route exact path="/install">
+                  <InstallPage />
+                </Route>
+                <Route exact path="/applications">
+                  <ApplicationList />
+                </Route>
+                <Route exact path="/applications/:applicationId/edit" component={ApplicationEdit}></Route>
+                <Route exact path="/applications/new">
+                  <ApplicationNew />
+                </Route>
+                <Route exact path="/componenttemplates/new">
+                  <ComponentTemplateNew />
+                </Route>
+                <Route
+                  exact
+                  path="/componenttemplates/:componentTemplateId/edit"
+                  component={ComponentTemplateEdit}></Route>
+                <Route exact path="/componenttemplates" component={ComponentTemplateList}></Route>
+                <Route exact path="/configs" component={ConfigList}></Route>
+                <Route exact path="/cluster/nodes" component={NodeList}></Route>
+                <Route exact path="/cluster/disks" component={Disks}></Route>
 
-              <Route component={NoMatch} />
-            </Switch>
+                <Route component={NoMatch} />
+              </Switch>
+            </ScrollContainer>
           </main>
         </div>
       </Route>
