@@ -193,7 +193,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { dispatch, applications, classes, isLoading } = this.props;
+    const { dispatch, applications, classes, isLoading, isFirstLoaded } = this.props;
     const data = applications.map((application, index) => {
       const handleChange = () => {
         this.showSwitchingIsEnabledDialog(application.get("id"));
@@ -264,7 +264,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         {this.renderDeleteConfirmDialog()}
         {this.renderSwitchingIsEnabledConfirmDialog()}
         <div className={classes.root}>
-          {isLoading ? (
+          {isLoading && !isFirstLoaded ? (
             <Loading />
           ) : (
             <MaterialTable

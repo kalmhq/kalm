@@ -1,5 +1,5 @@
 import { List, Map } from "immutable";
-import { ApplicationComponent, workloadTypeServer, EnvTypeStatic } from "../actions";
+import { ApplicationComponent, workloadTypeServer, EnvTypeStatic, portTypeTCP } from "../actions";
 import { V1alpha1ApplicationSpecComponents } from "../kappModel/v1alpha1ApplicationSpecComponents";
 import { ObjectSerializer } from "../model/models";
 
@@ -18,7 +18,7 @@ export const convertFromCRDApplicationComponent = (x: V1alpha1ApplicationSpecCom
               name: p.name,
               containerPort: p.containerPort,
               servicePort: p.servicePort,
-              protocol: p.protocol
+              protocol: p.protocol || portTypeTCP
             })
           )
         : []

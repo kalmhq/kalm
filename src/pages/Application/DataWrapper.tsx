@@ -15,21 +15,28 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-export interface WithApplicationsDataProps
-  extends ReturnType<typeof mapStateToProps> {
+export interface WithApplicationsDataProps extends ReturnType<typeof mapStateToProps> {
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
 }
 
-export const ApplicationDataWrapper = (
-  WrappedComponent: React.ComponentType<any>
-) => {
+export const ApplicationDataWrapper = (WrappedComponent: React.ComponentType<any>) => {
   const WithdApplicationsData: React.ComponentType<WithApplicationsDataProps> = class extends React.Component<
     WithApplicationsDataProps
   > {
+    private interval?: number;
+
+    private loadData = () => {
+      this.props.dispatch(loadApplicationsAction());
+      this.interval = window.setTimeout(this.loadData, 5000);
+    };
+
     componentDidMount() {
-      const { isFirstLoaded } = this.props;
-      if (!isFirstLoaded) {
-        this.props.dispatch(loadApplicationsAction());
+      this.loadData();
+    }
+
+    componentWillUnmount() {
+      if (this.interval) {
+        window.clearTimeout(this.interval);
       }
     }
 
@@ -38,9 +45,7 @@ export const ApplicationDataWrapper = (
     }
   };
 
-  WithdApplicationsData.displayName = `WithdApplicationsData(${getDisplayName(
-    WrappedComponent
-  )})`;
+  WithdApplicationsData.displayName = `WithdApplicationsData(${getDisplayName(WrappedComponent)})`;
 
   return connect(mapStateToProps)(WithdApplicationsData);
 };

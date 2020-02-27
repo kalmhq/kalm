@@ -8,29 +8,34 @@ import { Actions } from "../../actions";
 const mapStateToProps = (state: RootState) => {
   const componentTemplatesState = state.get("componentTemplates");
   return {
-    componentTemplates: componentTemplatesState
-      .get("componentTemplates")
-      .toList(),
+    componentTemplates: componentTemplatesState.get("componentTemplates").toList(),
     isLoading: componentTemplatesState.get("isListLoading"),
     isFirstLoaded: componentTemplatesState.get("isListFirstLoaded")
   };
 };
 
-export interface WithComponentTemplatesDataProps
-  extends ReturnType<typeof mapStateToProps> {
+export interface WithComponentTemplatesDataProps extends ReturnType<typeof mapStateToProps> {
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
 }
 
-export const ComponentTemplateDataWrapper = (
-  WrappedComponent: React.ComponentType<any>
-) => {
+export const ComponentTemplateDataWrapper = (WrappedComponent: React.ComponentType<any>) => {
   const WithComponentTemplatesData: React.ComponentType<WithComponentTemplatesDataProps> = class extends React.Component<
     WithComponentTemplatesDataProps
   > {
+    private interval?: number;
+
+    private loadData = () => {
+      this.props.dispatch(loadComponentTemplatesAction());
+      this.interval = window.setTimeout(this.loadData, 5000);
+    };
+
     componentDidMount() {
-      const { isFirstLoaded } = this.props;
-      if (!isFirstLoaded) {
-        this.props.dispatch(loadComponentTemplatesAction());
+      this.loadData();
+    }
+
+    componentWillUnmount() {
+      if (this.interval) {
+        window.clearTimeout(this.interval);
       }
     }
 
@@ -39,9 +44,7 @@ export const ComponentTemplateDataWrapper = (
     }
   };
 
-  WithComponentTemplatesData.displayName = `WithComponentTemplatesData(${getDisplayName(
-    WrappedComponent
-  )})`;
+  WithComponentTemplatesData.displayName = `WithComponentTemplatesData(${getDisplayName(WrappedComponent)})`;
 
   return connect(mapStateToProps)(WithComponentTemplatesData);
 };

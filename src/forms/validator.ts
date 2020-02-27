@@ -4,18 +4,15 @@ export const validator = () => {
   return errors;
 };
 
-export const ValidatorRequired = (
-  value: any,
-  _allValues?: any,
-  _props?: any,
-  _name?: any
-) => {
+export const ValidatorRequired = (value: any, _allValues?: any, _props?: any, _name?: any) => {
   return !!value ? undefined : `Required`;
 };
 
 // https://regex101.com/r/cJ74bX/1/
 export const ValidatorCPU = (value: string) => {
-  if (!value || !value.match(/^\d+(mili|m)|\d+(.\d+)?$/i) || value === "0") {
+  if (!value) return undefined;
+
+  if (!value.match(/^\d+(mili|m)|\d+(.\d+)?$/i) || value === "0") {
     return "Invalid CPU Value";
   }
 
@@ -23,11 +20,9 @@ export const ValidatorCPU = (value: string) => {
 };
 
 export const ValidatorMemory = (value: string) => {
-  if (
-    !value ||
-    !value.match(/^\d+(e\d+)?((m|m|e|p|t|g|k)i?)?$/i) ||
-    value === "0"
-  ) {
+  if (!value) return undefined;
+
+  if (!value.match(/^\d+(e\d+)?((m|m|e|p|t|g|k)i?)?$/i) || value === "0") {
     return "Invalid Memory Value";
   }
 

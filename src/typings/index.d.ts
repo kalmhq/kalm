@@ -1,5 +1,5 @@
 import { Map } from "immutable";
-
+// export * from "./KappDependency";
 export type PropType<TObj, TProp extends keyof TObj> = TObj[TProp];
 
 export interface ImmutableMap<T> extends Map<string, any> {
@@ -8,8 +8,4 @@ export interface ImmutableMap<T> extends Map<string, any> {
   delete<K extends Extract<keyof T, string>>(key: K): this;
 }
 
-export type ImmutableMapPropType<
-  T,
-  TObj extends ImmutableMap<T>,
-  TProp extends string
-> = T[TProp];
+export type ImmutableMapPropType<T, TObj extends ImmutableMap<T>, TProp extends string> = T[TProp];

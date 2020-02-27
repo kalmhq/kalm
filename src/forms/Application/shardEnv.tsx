@@ -42,7 +42,7 @@ class RenderSharedEnvs extends React.PureComponent<Props> {
     super(props);
     this.nameAutoCompleteOptions = this.generateNameAutoCompleteOptionsFromProps(props);
     this.tableRef = React.createRef();
-    window.debug = this.tableRef;
+    // window.debug = this.tableRef;
   }
 
   private generateNameAutoCompleteOptionsFromProps = (props: Props): string[] => {

@@ -1,14 +1,14 @@
-import { createStyles, Theme, withStyles, WithStyles } from '@material-ui/core';
-import { push } from 'connected-react-router';
-import React from 'react';
-import { RouteChildrenProps } from 'react-router-dom';
-import { Application } from '../../actions';
-import { updateApplicationAction } from '../../actions/application';
-import { setSuccessNotificationAction } from '../../actions/notification';
-import ApplicationForm from '../../forms/Application';
-import { BasePage } from '../BasePage';
-import { ApplicationDataWrapper, WithApplicationsDataProps } from './DataWrapper';
-import { Loading } from '../../widgets/Loading';
+import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { push } from "connected-react-router";
+import React from "react";
+import { RouteChildrenProps } from "react-router-dom";
+import { Application } from "../../actions";
+import { updateApplicationAction } from "../../actions/application";
+import { setSuccessNotificationAction } from "../../actions/notification";
+import ApplicationForm from "../../forms/Application";
+import { BasePage } from "../BasePage";
+import { ApplicationDataWrapper, WithApplicationsDataProps } from "./DataWrapper";
+import { Loading } from "../../widgets/Loading";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -28,23 +28,23 @@ class ApplicationEditRaw extends React.PureComponent<Props> {
     const { applicationId } = match!.params;
 
     await dispatch(updateApplicationAction(applicationId, application));
-    await dispatch(setSuccessNotificationAction('Edit application successfully'));
-    await dispatch(push('/applications'));
+    await dispatch(setSuccessNotificationAction("Edit application successfully"));
+    await dispatch(push("/applications"));
   };
 
   private getApplication() {
     const { applications, match } = this.props;
     const { applicationId } = match!.params;
-    return applications.find(x => x.get('id') === applicationId)!;
+    return applications.find(x => x.get("id") === applicationId)!;
   }
 
   public render() {
     const { classes, isLoading, isFirstLoaded } = this.props;
     const application = this.getApplication();
     return (
-      <BasePage title={`Edit Application ${application && application.get('name')}`}>
+      <BasePage title={`Edit Application ${application && application.get("name")}`}>
         <div className={classes.root}>
-          {isLoading || !isFirstLoaded ? (
+          {isLoading && !isFirstLoaded ? (
             <Loading />
           ) : (
             <ApplicationForm onSubmit={this.submit} initialValues={application} />

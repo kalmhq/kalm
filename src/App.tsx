@@ -26,6 +26,7 @@ import { NotificationComponent } from "./widgets/Notification";
 import { Sidenav, SidenavGroupProps } from "./widgets/Sidenav";
 import { Fade, Box } from "@material-ui/core";
 import { HelperSwitch } from "./widgets/Helper";
+import { DependencyList } from "./pages/Dependency/List";
 
 const sidenavGroups: SidenavGroupProps[] = [
   {
@@ -106,11 +107,17 @@ const sidenavGroups: SidenavGroupProps[] = [
   {
     text: "Settings",
     items: [
+      // {
+      //   text: "Install",
+      //   to: "/install",
+      //   type: "normal",
+      //   icon: "settings"
+      // },
       {
-        text: "Install",
-        to: "/install",
+        text: "Dependencies",
+        to: "/settings/dependencies",
         type: "normal",
-        icon: "settings"
+        icon: "view_comfy"
       }
     ]
   }
@@ -319,7 +326,7 @@ export default function MiniDrawer() {
               <Route exact path="/configs" component={ConfigList}></Route>
               <Route exact path="/cluster/nodes" component={NodeList}></Route>
               <Route exact path="/cluster/disks" component={Disks}></Route>
-
+              <Route exact path="/settings/dependencies" component={DependencyList}></Route>
               <Route component={NoMatch} />
             </Switch>
           </main>
