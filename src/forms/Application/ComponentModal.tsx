@@ -35,7 +35,7 @@ const DialogTitle = withStyles(styles)((props: DialogTitleProps) => {
     <MuiDialogTitle disableTypography className={classes.root} {...other}>
       <Typography variant="h6">{children}</Typography>
       {onClose ? (
-        <IconButton aria-label="close" className={classes.closeButton} onClick={onClose}>
+        <IconButton aria-label="close" color="default" className={classes.closeButton} onClick={onClose}>
           <CloseIcon />
         </IconButton>
       ) : null}
@@ -88,6 +88,9 @@ const CustomizedDialogRaw = (props: Props & WithStyles<typeof dialogStyles>) => 
         </DialogTitle>
         <DialogContent>{children}</DialogContent>
         <DialogActions>
+          <Button onClick={handleClose} color="default" variant="contained">
+            Cancel
+          </Button>
           <Button onClick={handleSave} color="primary" variant="contained">
             {saveButtonText || "Save changes"}
           </Button>
