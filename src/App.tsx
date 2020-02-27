@@ -128,7 +128,8 @@ const drawerWidth = 280;
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
     root: {
-      display: "flex"
+      display: "flex",
+      height: "100%"
     },
     appBar: {
       zIndex: theme.zIndex.drawer,
@@ -215,7 +216,8 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     content: {
       flexGrow: 1,
-      paddingTop: theme.spacing(8)
+      paddingTop: theme.spacing(8),
+      height: "100%"
     },
     nested: {
       paddingLeft: theme.spacing(4)
@@ -311,7 +313,9 @@ export default function MiniDrawer() {
               <Route exact path="/applications">
                 <ApplicationList />
               </Route>
-              <Route exact path="/applications/:applicationId/edit" component={ApplicationEdit}></Route>
+              <Route exact path="/applications/:applicationId/edit">
+                <ApplicationEdit />
+              </Route>
               <Route exact path="/applications/new">
                 <ApplicationNew />
               </Route>
