@@ -241,10 +241,18 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
     return (
       <CustomizedDialog
         title={dialogFormTitle}
-        saveButtonText={dialogFormSaveButtonText}
         open={isDialogOpen}
-        handleSave={this.saveComponentFormDialog}
-        handleClose={this.closeComponentFormDialog}>
+        handleClose={this.closeComponentFormDialog}
+        actions={
+          <>
+            <Button onClick={this.closeComponentFormDialog} color="default" variant="contained">
+              Cancel
+            </Button>
+            <Button onClick={this.saveComponentFormDialog} color="primary" variant="contained">
+              {dialogFormSaveButtonText}
+            </Button>
+          </>
+        }>
         <ComponentLikeForm
           onSubmit={this.handleComponentLikeFormSubmit}
           initialValues={dialogFormComponentLikeInstance}

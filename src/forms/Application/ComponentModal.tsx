@@ -1,13 +1,12 @@
-import React from "react";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/";
-import Button from "@material-ui/core/Button";
-import Dialog from "@material-ui/core/Dialog";
-import MuiDialogTitle from "@material-ui/core/DialogTitle";
-import MuiDialogContent from "@material-ui/core/DialogContent";
+import Dialog, { DialogProps } from "@material-ui/core/Dialog";
 import MuiDialogActions from "@material-ui/core/DialogActions";
+import MuiDialogContent from "@material-ui/core/DialogContent";
+import MuiDialogTitle from "@material-ui/core/DialogTitle";
 import IconButton from "@material-ui/core/IconButton";
-import CloseIcon from "@material-ui/icons/Close";
 import Typography from "@material-ui/core/Typography";
+import CloseIcon from "@material-ui/icons/Close";
+import React from "react";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -59,10 +58,10 @@ const DialogActions = withStyles((theme: Theme) => ({
 interface Props {
   open: boolean;
   title?: string;
-  saveButtonText?: string;
   children?: React.ReactNode;
   handleClose: () => void;
-  handleSave: () => void;
+  actions?: React.ReactNode;
+  dialogProps?: Omit<DialogProps, "open">;
 }
 
 const dialogStyles = (theme: Theme) => ({
@@ -72,29 +71,26 @@ const dialogStyles = (theme: Theme) => ({
 });
 
 const CustomizedDialogRaw = (props: Props & WithStyles<typeof dialogStyles>) => {
-  const { open, handleClose, title, saveButtonText, children, handleSave, classes } = props;
+  const { open, handleClose, title, children, actions, classes, dialogProps } = props;
 
   return (
     <div>
       <Dialog
         classes={classes}
-        fullScreen
         onClose={handleClose}
         aria-labelledby="customized-dialog-title"
         open={open}
-        maxWidth="md">
-        <DialogTitle id="customized-dialog-title" onClose={handleClose}>
-          {title}
-        </DialogTitle>
-        <DialogContent>{children}</DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} color="default" variant="contained">
-            Cancel
-          </Button>
-          <Button onClick={handleSave} color="primary" variant="contained">
-            {saveButtonText || "Save changes"}
-          </Button>
-        </DialogActions>
+        maxWidth="md"
+        {...dialogProps}>
+        {title ? (
+          <DialogTitle id="customized-dialog-title" onClose={handleClose}>
+            {title}
+          </DialogTitle>
+        ) : null}
+
+        {children ? <DialogContent>{children}</DialogContent> : null}
+
+        {actions ? <DialogActions>{actions}</DialogActions> : null}
       </Dialog>
     </div>
   );
