@@ -11,6 +11,8 @@ import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
 import Collapse from "@material-ui/core/Collapse";
 import { NavLink as RouterLink } from "react-router-dom";
+import { connect } from "react-redux";
+import { RootState } from "../../reducers";
 
 const drawerWidth = 280;
 
@@ -155,7 +157,7 @@ export interface SidenavGroupProps {
   items: (SidenavItemNormalProps | SidenavItemDropdownProps)[];
 }
 
-const SidenavGroup: React.FunctionComponent<SidenavGroupProps> = props => {
+const SidenavGroup: React.FunctionComponent<SidenavGroupProps & ReturnType<typeof mapStateToProps>> = props => {
   const theme = useTheme();
   const classes = useStyles(theme);
   return (
@@ -172,7 +174,7 @@ const SidenavGroup: React.FunctionComponent<SidenavGroupProps> = props => {
       }>
       {props.items.map((item, index) =>
         item.type === "normal" ? (
-          <SidenavItemNormal key={index} {...item} isFolded={props.isFolded} />
+          <SidenavItemNormal key={index} pathname={props.pathname} {...item} />
         ) : (
           <SidenavItemDropdown key={index} {...item} isFolded={props.isFolded} />
         )
@@ -181,11 +183,18 @@ const SidenavGroup: React.FunctionComponent<SidenavGroupProps> = props => {
   );
 };
 
-const SidenavItemNormal: React.FunctionComponent<SidenavItemNormalProps> = props => {
+const SidenavItemNormal: React.FunctionComponent<SidenavItemNormalProps &
+  ReturnType<typeof mapStateToProps>> = props => {
   const theme = useTheme();
   const classes = useStyles(theme);
+
+  const toParts = props.to.split("/");
+  const currentUrlParts = props.pathname.split("/");
+  const selected = toParts[0] === currentUrlParts[0] && toParts[1] === currentUrlParts[1];
+
   return (
     <ListItem
+      selected={selected}
       button
       component={RouterLink}
       to={props.to}
@@ -254,7 +263,7 @@ const SidenavItemDropdown: React.FunctionComponent<SidenavItemDropdownProps> = p
         <Collapse in={open} timeout="auto" unmountOnExit className={clsx({ [classes.open]: open })}>
           <List component="div" disablePadding>
             {props.items.map((item, index) => (
-              <SidenavItemNormal key={index} {...item} nestedLevel={1} />
+              <SidenavItemNormal key={index} {...item} nestedLevel={1} pathname={""} />
             ))}
           </List>
         </Collapse>
@@ -263,12 +272,19 @@ const SidenavItemDropdown: React.FunctionComponent<SidenavItemDropdownProps> = p
   );
 };
 
-export interface SidenavProps {
+const mapStateToProps = (state: RootState) => {
+  // TODO fix there hacks
+  return {
+    pathname: window.location.pathname
+  };
+};
+
+export interface SidenavProps extends ReturnType<typeof mapStateToProps> {
   groups: SidenavGroupProps[];
   isFolded?: boolean;
 }
 
-export const Sidenav: React.FunctionComponent<SidenavProps> = props => {
+const SidenavRaw: React.FunctionComponent<SidenavProps> = props => {
   const useStyles = makeStyles({
     root: { display: "flex", flexDirection: "column" }
   });
@@ -278,8 +294,10 @@ export const Sidenav: React.FunctionComponent<SidenavProps> = props => {
   return (
     <div className={classes.root}>
       {props.groups.map((group, index) => (
-        <SidenavGroup key={index} {...group} isFolded={props.isFolded} />
+        <SidenavGroup key={index} {...group} isFolded={props.isFolded} pathname={props.pathname} />
       ))}
     </div>
   );
 };
+
+export const Sidenav = connect(mapStateToProps)(SidenavRaw);
