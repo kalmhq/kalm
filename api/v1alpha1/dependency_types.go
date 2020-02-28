@@ -28,16 +28,21 @@ type DependencySpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// Foo is an example field of Dependency. Edit Dependency_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+
+	Type    string `json:"type"`
+	Version string `json:"version"`
 }
 
 // DependencyStatus defines the observed state of Dependency
 type DependencyStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	Status string `json:"status"`
+	ErrMsg string `json:"errMsg"`
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
 
 // Dependency is the Schema for the dependencies API
 type Dependency struct {

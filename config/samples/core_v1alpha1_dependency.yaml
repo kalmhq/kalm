@@ -1,7 +1,8 @@
 apiVersion: core.kapp.dev/v1alpha1
 kind: Dependency
 metadata:
-  name: dependency-sample
+  name: dependency-sample-kong
 spec:
   # Add fields here
-  foo: bar
+  type: kong
+  version: 1.0.1

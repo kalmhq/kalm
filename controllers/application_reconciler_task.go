@@ -2,7 +2,9 @@ package controllers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"k8s.io/api/extensions/v1beta1"
 	"strings"
 	"time"
 
@@ -766,4 +768,107 @@ func getDeploymentName(appName, componentName string) string {
 
 func getServiceName(appName, componentName string) string {
 	return fmt.Sprintf("%s-%s", appName, componentName)
+}
+
+//func AllIngressPlugins(kapp corev1alpha1.Application) (rst []*corev1alpha1.PluginIngress) {
+//
+//	for _, comp := range kapp.Spec.Components {
+//		plugins := GetPlugins(kapp.Name, &comp)
+//		for _, pluginDef := range comp.Plugins {
+//			plugin := corev1alpha1.GetPlugin(pluginDef)
+//
+//			plugin := corev1alpha1.GetPlugin(pluginDef)
+//
+//			switch p := plugin.(type) {
+//			case *corev1alpha1.PluginIngress:
+//				rst = append(rst, p)
+//			}
+//		}
+//	}
+//
+//	return
+//}
+
+func GenRulesOfIngressPlugin(plugin *corev1alpha1.PluginIngress) (rst []v1beta1.IngressRule) {
+
+	for _, host := range plugin.Hosts {
+		rule := v1beta1.IngressRule{
+			Host: host,
+			IngressRuleValue: v1beta1.IngressRuleValue{
+				HTTP: &v1beta1.HTTPIngressRuleValue{
+					Paths: []v1beta1.HTTPIngressPath{
+						{
+							//Path: "",
+							Backend: v1beta1.IngressBackend{
+								ServiceName: plugin.ServiceName,
+								ServicePort: intstr.IntOrString{
+									Type:   intstr.Int,
+									IntVal: int32(plugin.ServicePort),
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		rst = append(rst, rule)
+	}
+
+	return
+}
+
+func GetPlugins(kapp *corev1alpha1.Application) (plugins []interface{}) {
+	appName := kapp.Name
+
+	for _, componentSpec := range kapp.Spec.Components {
+		for _, raw := range componentSpec.Plugins {
+
+			var tmp struct {
+				Name string `json:"name"`
+				Type string `json:"type"`
+			}
+
+			_ = json.Unmarshal(raw.Raw, &tmp)
+
+			if tmp.Name == "manual-scaler" {
+				var p corev1alpha1.PluginManualScaler
+				_ = json.Unmarshal(raw.Raw, &p)
+				plugins = append(plugins, &p)
+				continue
+			}
+
+			switch tmp.Type {
+			case "plugins.core.kapp.dev/v1alpha1.ingress":
+				var ing corev1alpha1.PluginIngress
+				_ = json.Unmarshal(raw.Raw, &ing)
+
+				// todo what if not first ports
+				ing.ServicePort = int(componentSpec.Ports[0].ServicePort)
+				ing.ServiceName = getServiceName(appName, componentSpec.Name)
+				ing.Namespace = kapp.Namespace
+
+				plugins = append(plugins, &ing)
+				continue
+			}
+		}
+	}
+
+	return
+}
+
+func GetIngressPlugins(kapp *corev1alpha1.Application) (rst []*corev1alpha1.PluginIngress) {
+	plugins := GetPlugins(kapp)
+
+	for _, plugin := range plugins {
+		v, yes := plugin.(*corev1alpha1.PluginIngress)
+
+		if !yes {
+			continue
+		}
+
+		rst = append(rst, v)
+	}
+
+	return
 }
