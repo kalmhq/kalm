@@ -1,11 +1,6 @@
 import React from "react";
 import clsx from "clsx";
-import {
-  createStyles,
-  makeStyles,
-  useTheme,
-  Theme
-} from "@material-ui/core/styles";
+import { createStyles, makeStyles, useTheme, Theme } from "@material-ui/core/styles";
 import List from "@material-ui/core/List";
 import Icon from "@material-ui/core/Icon";
 import ListItem from "@material-ui/core/ListItem";
@@ -22,6 +17,11 @@ const drawerWidth = 280;
 // Todo Refactor css
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
+    listItemRoot: {
+      borderBottomRightRadius: theme.spacing(12),
+      borderTopRightRadius: theme.spacing(12),
+      width: `calc(100% - ${theme.spacing(1.5)}px)`
+    },
     root: {
       display: "flex",
       flexDirection: "column"
@@ -166,25 +166,15 @@ const SidenavGroup: React.FunctionComponent<SidenavGroupProps> = props => {
           component="div"
           className={clsx(classes.listSubheader, {
             [classes.groupFolded]: props.isFolded
-          })}
-        >
-          {props.isFolded ? (
-            <Icon style={{ verticalAlign: "middle" }}>remove</Icon>
-          ) : (
-            props.text
-          )}
+          })}>
+          {props.isFolded ? <Icon style={{ verticalAlign: "middle" }}>remove</Icon> : props.text}
         </ListSubheader>
-      }
-    >
+      }>
       {props.items.map((item, index) =>
         item.type === "normal" ? (
           <SidenavItemNormal key={index} {...item} isFolded={props.isFolded} />
         ) : (
-          <SidenavItemDropdown
-            key={index}
-            {...item}
-            isFolded={props.isFolded}
-          />
+          <SidenavItemDropdown key={index} {...item} isFolded={props.isFolded} />
         )
       )}
     </List>
@@ -201,14 +191,13 @@ const SidenavItemNormal: React.FunctionComponent<SidenavItemNormalProps> = props
       to={props.to}
       exact
       activeClassName={classes.listItemSelected}
-      className={clsx({
+      className={clsx(classes.listItemRoot, {
         [classes.nested]: props.nestedLevel
       })}
       classes={{
         gutters: classes.listItemGutters,
         selected: classes.listItemSelected
-      }}
-    >
+      }}>
       <ListItemIcon className={classes.listItemIcon}>
         <Icon color="inherit">{props.icon}</Icon>
       </ListItemIcon>
@@ -254,8 +243,7 @@ const SidenavItemDropdown: React.FunctionComponent<SidenavItemDropdownProps> = p
         classes={{
           gutters: classes.listItemGutters
         }}
-        className={clsx({ [classes.open]: open })}
-      >
+        className={clsx({ [classes.open]: open })}>
         <ListItemIcon className={classes.listItemIcon}>
           <Icon color="inherit">{props.icon}</Icon>
         </ListItemIcon>
@@ -263,12 +251,7 @@ const SidenavItemDropdown: React.FunctionComponent<SidenavItemDropdownProps> = p
         {open ? <ExpandLess /> : <ExpandMore />}
       </ListItem>
       {props.isFolded ? null : (
-        <Collapse
-          in={open}
-          timeout="auto"
-          unmountOnExit
-          className={clsx({ [classes.open]: open })}
-        >
+        <Collapse in={open} timeout="auto" unmountOnExit className={clsx({ [classes.open]: open })}>
           <List component="div" disablePadding>
             {props.items.map((item, index) => (
               <SidenavItemNormal key={index} {...item} nestedLevel={1} />
