@@ -182,7 +182,7 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
     const { fields } = this.props;
     let dialogFormComponentLikeInstance: ComponentLike;
     let title;
-    let saveButtonText;
+    let saveButtonText = "";
     if (dialogFormApplicationComponentIndex === -1) {
       title = "Add New Component";
       saveButtonText = "Add Component";
