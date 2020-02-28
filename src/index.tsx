@@ -3,7 +3,6 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import "./antd.css";
 import "perfect-scrollbar/css/perfect-scrollbar.css";
-import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 import { Provider } from "react-redux";
 import { ConnectedRouter } from "connected-react-router/immutable";
@@ -13,6 +12,8 @@ import { ThemeProvider, createMuiTheme, CssBaseline } from "@material-ui/core";
 import { SnackbarProvider } from "notistack";
 import { ScrollToTop } from "./widgets/ScrollToTop";
 import { setStore } from "./store";
+
+import Dashboard from "./layout/Dashboard";
 
 export const history = createBrowserHistory();
 
@@ -38,7 +39,7 @@ ReactDOM.render(
               horizontal: "right",
               vertical: "bottom"
             }}>
-            <App />
+            <Dashboard />
           </SnackbarProvider>
         </ThemeProvider>
       </ScrollToTop>

@@ -10,23 +10,23 @@ import MenuIcon from "@material-ui/icons/Menu";
 import clsx from "clsx";
 import React from "react";
 import { Route, Switch } from "react-router-dom";
-import { ApplicationEdit } from "./pages/Application/Edit";
-import { ApplicationList } from "./pages/Application/List";
-import { ApplicationNew } from "./pages/Application/New";
-import { ComponentTemplateEdit } from "./pages/ComponentTemplate/Edit";
-import { ComponentTemplateList } from "./pages/ComponentTemplate/List";
-import { ComponentTemplateNew } from "./pages/ComponentTemplate/New";
-import ConfigList from "./pages/ConfigList";
-import Dashboard from "./pages/Dashboard";
-import { DependencyList } from "./pages/Dependency/List";
-import { Disks } from "./pages/Disks";
-import InstallPage from "./pages/Install";
-import { NodeList } from "./pages/NodeList";
-import { NoMatch, Page404 } from "./pages/NoMatch";
-import { HelperSwitch } from "./widgets/Helper";
-import { NotificationComponent } from "./widgets/Notification";
-import ScrollContainer from "./widgets/ScrollContainer";
-import { Sidenav, SidenavGroupProps } from "./widgets/Sidenav";
+import { ApplicationEdit } from "../../pages/Application/Edit";
+import { ApplicationList } from "../../pages/Application/List";
+import { ApplicationNew } from "../../pages/Application/New";
+import { ComponentTemplateEdit } from "../../pages/ComponentTemplate/Edit";
+import { ComponentTemplateList } from "../../pages/ComponentTemplate/List";
+import { ComponentTemplateNew } from "../../pages/ComponentTemplate/New";
+import ConfigList from "../../pages/ConfigList";
+import Dashboard from "../../pages/Dashboard";
+import { DependencyList } from "../../pages/Dependency/List";
+import { Disks } from "../../pages/Disks";
+import InstallPage from "../../pages/Install";
+import { NodeList } from "../../pages/NodeList";
+import { NoMatch, Page404 } from "../../pages/NoMatch";
+import { HelperSwitch } from "../../widgets/Helper";
+import { NotificationComponent } from "../../widgets/Notification";
+import ScrollContainer from "../../widgets/ScrollContainer";
+import { Sidenav, SidenavGroupProps } from "../../widgets/Sidenav";
 
 const sidenavGroups: SidenavGroupProps[] = [
   {
@@ -291,7 +291,11 @@ export default function MiniDrawer() {
             <ScrollContainer>
               <div className={classes.toolbar}>
                 <div className={classes.toolbarTitle}>
-                  <img src={require("./images/placeholder24x24.png")} className={classes.toolbarTitleImg} alt="logo" />
+                  <img
+                    src={require("../../images/placeholder24x24.png")}
+                    className={classes.toolbarTitleImg}
+                    alt="logo"
+                  />
 
                   {open ? "Kapp Dashboard" : null}
                 </div>
