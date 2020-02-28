@@ -7,6 +7,7 @@ import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
 import CloseIcon from "@material-ui/icons/Close";
 import React from "react";
+import ScrollContainer from "../../widgets/ScrollContainer";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -88,7 +89,11 @@ const CustomizedDialogRaw = (props: Props & WithStyles<typeof dialogStyles>) => 
           </DialogTitle>
         ) : null}
 
-        {children ? <DialogContent>{children}</DialogContent> : null}
+        {children ? (
+          <ScrollContainer>
+            <DialogContent>{children}</DialogContent>
+          </ScrollContainer>
+        ) : null}
 
         {actions ? <DialogActions>{actions}</DialogActions> : null}
       </Dialog>

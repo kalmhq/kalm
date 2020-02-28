@@ -269,7 +269,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           ) : (
             <MaterialTable
               options={{
-                padding: "dense"
+                padding: "dense",
+                draggable: false
               }}
               columns={[
                 { title: "Name", field: "name", sorting: false },

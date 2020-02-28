@@ -14,13 +14,15 @@ interface ContainerProps {
   children: React.ReactNode;
 }
 
-interface Props extends WithStyles<typeof styles>, ContainerProps {}
+interface Props extends WithStyles<typeof styles>, ContainerProps {
+  options?: PerfectScrollbar.Options;
+}
 
 class ScrollContainer extends React.PureComponent<Props> {
   private ps?: PerfectScrollbar | null;
 
   public render() {
-    const { children, classes } = this.props;
+    const { children, classes, options } = this.props;
 
     return (
       <div
@@ -28,7 +30,8 @@ class ScrollContainer extends React.PureComponent<Props> {
         ref={ref => {
           if (ref && !this.ps) {
             this.ps = new PerfectScrollbar(ref, {
-              suppressScrollX: true
+              suppressScrollX: true,
+              ...options
             });
           }
         }}>

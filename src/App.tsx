@@ -27,6 +27,7 @@ import { Sidenav, SidenavGroupProps } from "./widgets/Sidenav";
 import { Fade, Box } from "@material-ui/core";
 import { HelperSwitch } from "./widgets/Helper";
 import { DependencyList } from "./pages/Dependency/List";
+import ScrollContainer from "./widgets/ScrollContainer";
 
 const sidenavGroups: SidenavGroupProps[] = [
   {
@@ -289,39 +290,31 @@ export default function MiniDrawer() {
               })
             }}
             PaperProps={{ className: classes.paper }}>
-            <div className={classes.toolbar}>
-              <div className={classes.toolbarTitle}>
-                <img src={require("./images/placeholder24x24.png")} className={classes.toolbarTitleImg} alt="logo" />
+            <ScrollContainer>
+              <div className={classes.toolbar}>
+                <div className={classes.toolbarTitle}>
+                  <img src={require("./images/placeholder24x24.png")} className={classes.toolbarTitleImg} alt="logo" />
 
-                {open ? "Kapp Dashboard" : null}
+                  {open ? "Kapp Dashboard" : null}
+                </div>
+
+                <Fade in={open}>
+                  <IconButton onClick={handleDrawerClose} color="inherit">
+                    <Icon color="inherit">chevron_left_icon</Icon>
+                  </IconButton>
+                </Fade>
               </div>
-
-              <Fade in={open}>
-                <IconButton onClick={handleDrawerClose} color="inherit">
-                  <Icon color="inherit">chevron_left_icon</Icon>
-                </IconButton>
-              </Fade>
-            </div>
-            <Sidenav groups={sidenavGroups} isFolded={!open} />
+              <Sidenav groups={sidenavGroups} isFolded={!open} />
+            </ScrollContainer>
           </Drawer>
           <main className={classes.content}>
             <Switch>
               <Route exact path="/" component={Dashboard} />
-              <Route exact path="/install">
-                <InstallPage />
-              </Route>
-              <Route exact path="/applications">
-                <ApplicationList />
-              </Route>
-              <Route exact path="/applications/:applicationId/edit">
-                <ApplicationEdit />
-              </Route>
-              <Route exact path="/applications/new">
-                <ApplicationNew />
-              </Route>
-              <Route exact path="/componenttemplates/new">
-                <ComponentTemplateNew />
-              </Route>
+              <Route exact path="/install" component={InstallPage} />
+              <Route exact path="/applications" component={ApplicationList} />
+              <Route exact path="/applications/:applicationId/edit" component={ApplicationEdit} />
+              <Route exact path="/applications/new" component={ApplicationNew} />
+              <Route exact path="/componenttemplates/new" component={ComponentTemplateNew} />
               <Route
                 exact
                 path="/componenttemplates/:componentTemplateId/edit"
