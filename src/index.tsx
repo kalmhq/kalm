@@ -13,7 +13,7 @@ import { SnackbarProvider } from "notistack";
 import { ScrollToTop } from "./widgets/ScrollToTop";
 import { setStore } from "./store";
 
-import Dashboard from "./layout/Dashboard";
+import { KappRoutes } from "./routes";
 
 export const history = createBrowserHistory();
 
@@ -39,7 +39,7 @@ ReactDOM.render(
               horizontal: "right",
               vertical: "bottom"
             }}>
-            <Dashboard />
+            {KappRoutes}
           </SnackbarProvider>
         </ThemeProvider>
       </ScrollToTop>
