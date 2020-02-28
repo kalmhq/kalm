@@ -10,7 +10,7 @@ export const TextField = ({
 }: WrappedFieldProps & Partial<OutlinedTextFieldProps>) => {
   return (
     <MTextField
-      style={{ margin: 0 }}
+      // style={{ margin: 0 }}
       {...textFieldProps}
       autoComplete="off"
       error={touched && invalid}

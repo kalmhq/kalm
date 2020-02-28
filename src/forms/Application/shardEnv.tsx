@@ -133,10 +133,22 @@ class RenderSharedEnvs extends React.PureComponent<Props> {
     const missingVariables = Array.from(this.props.envStatus.notDefinedSharedEnvsSet);
     return (
       <div>
+        {missingVariables.length > 0 ? (
+          <Box color="secondary.main" mt={2}>
+            Still <strong>{missingVariables.length}</strong> Environment Variables are not defined.
+            <br />
+            <br />
+            {missingVariables.map((x, index) => (
+              <span key={x}>
+                <strong>{x}</strong>
+                {index < missingVariables.length - 1 ? <span>, </span> : null}
+              </span>
+            ))}
+          </Box>
+        ) : null}
         <MaterialTable
           tableRef={this.tableRef}
           options={{
-            padding: "dense",
             search: false,
             paging: false,
             //   toolbar: false
@@ -172,19 +184,6 @@ class RenderSharedEnvs extends React.PureComponent<Props> {
           data={this.getTableData()}
           title=""
         />
-        {missingVariables.length > 0 ? (
-          <Box color="secondary.main" mt={2}>
-            Still <strong>{missingVariables.length}</strong> Environment Variables are not defined.
-            <br />
-            <br />
-            {missingVariables.map((x, index) => (
-              <span key={x}>
-                <strong>{x}</strong>
-                {index < missingVariables.length - 1 ? <span>, </span> : null}
-              </span>
-            ))}
-          </Box>
-        ) : null}
       </div>
     );
   }

@@ -46,38 +46,38 @@ export const sidenavGroups: SidenavGroupProps[] = [
         to: "/cluster/disks",
         type: "normal",
         icon: "storage"
-      },
-      {
-        text: "K8s Resources",
-        to: "/cluster/k8s",
-        type: "normal",
-        icon: "settings"
       }
+      // {
+      //   text: "K8s Resources",
+      //   to: "/cluster/k8s",
+      //   type: "normal",
+      //   icon: "settings"
+      // }
     ]
   },
-  {
-    text: "Monitoring",
-    items: [
-      {
-        text: "Metrics",
-        to: "/monitoring/metrics",
-        type: "normal",
-        icon: "multiline_chart"
-      },
-      {
-        text: "Alerts",
-        to: "/monitoring/alerts",
-        type: "normal",
-        icon: "report_problem"
-      },
-      {
-        text: "DebugPage",
-        to: "/monitoring/metrics",
-        type: "normal",
-        icon: "settings"
-      }
-    ]
-  },
+  // {
+  //   text: "Monitoring",
+  //   items: [
+  //     {
+  //       text: "Metrics",
+  //       to: "/monitoring/metrics",
+  //       type: "normal",
+  //       icon: "multiline_chart"
+  //     },
+  //     {
+  //       text: "Alerts",
+  //       to: "/monitoring/alerts",
+  //       type: "normal",
+  //       icon: "report_problem"
+  //     },
+  //     {
+  //       text: "DebugPage",
+  //       to: "/monitoring/metrics",
+  //       type: "normal",
+  //       icon: "settings"
+  //     }
+  //   ]
+  // },
   {
     text: "Settings",
     items: [

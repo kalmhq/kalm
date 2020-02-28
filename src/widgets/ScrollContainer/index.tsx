@@ -1,6 +1,7 @@
 import React from "react";
 import PerfectScrollbar from "perfect-scrollbar";
 import { withStyles, Theme, WithStyles, createStyles } from "@material-ui/core";
+import clsx from "clsx";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -14,30 +15,35 @@ interface ContainerProps {
   children: React.ReactNode;
 }
 
-interface Props extends WithStyles<typeof styles>, ContainerProps {
+interface Props extends WithStyles<typeof styles>, ContainerProps, React.RefAttributes<any> {
   options?: PerfectScrollbar.Options;
+  component?: React.ElementType<React.HTMLAttributes<HTMLElement> & React.Props<any>>;
+  className?: string;
 }
 
 class ScrollContainer extends React.PureComponent<Props> {
   private ps?: PerfectScrollbar | null;
 
-  public render() {
-    const { children, classes, options } = this.props;
+  public updatePS = () => {
+    console.log(this.ps);
+    if (!this.ps) return;
+    this.ps.update();
+  };
 
-    return (
-      <div
-        className={classes.scrollContainer}
-        ref={ref => {
-          if (ref && !this.ps) {
-            this.ps = new PerfectScrollbar(ref, {
-              suppressScrollX: true,
-              ...options
-            });
-          }
-        }}>
-        {children}
-      </div>
-    );
+  public render() {
+    const { children, classes, options, component, className } = this.props;
+    return React.createElement(component || "div", {
+      ref: ref => {
+        if (ref && !this.ps) {
+          this.ps = new PerfectScrollbar(ref, {
+            suppressScrollX: true,
+            ...options
+          });
+        }
+      },
+      children,
+      className: clsx(classes.scrollContainer, className)
+    });
   }
 
   public componentWillUnmount() {

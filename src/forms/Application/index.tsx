@@ -1,9 +1,9 @@
-import { createStyles, Grid, Paper, WithStyles, withStyles, Button, Box } from "@material-ui/core";
+import { Button, createStyles, Grid, WithStyles, withStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import Immutable from "immutable";
 import React from "react";
-import { connect } from "react-redux";
+import { connect, DispatchProp } from "react-redux";
 import { InjectedFormProps } from "redux-form";
 import { Field, formValueSelector, getFormValues, reduxForm } from "redux-form/immutable";
 import { Application, ComponentTemplate, SharedEnv } from "../../actions";
@@ -16,19 +16,9 @@ import { ValidatorRequired } from "../validator";
 import { Components } from "./component";
 import { SharedEnvs } from "./shardEnv";
 import { VerticalTabs } from "./verticalTabs";
+import { goBack } from "connected-react-router";
 
-const styles = (theme: Theme) =>
-  createStyles({
-    sectionHeader: {
-      fontSize: 24,
-      fontWeight: 400,
-      margin: "16px 0"
-    },
-    paper: {
-      padding: theme.spacing(3),
-      marginBottom: theme.spacing(5)
-    }
-  });
+const styles = (theme: Theme) => createStyles({});
 
 const mapStateToProps = (state: RootState) => {
   const selector = formValueSelector("application");
@@ -46,141 +36,100 @@ const mapStateToProps = (state: RootState) => {
 export interface Props {}
 
 class ApplicationFormRaw extends React.PureComponent<
-  Props & InjectedFormProps<Application, Props> & ReturnType<typeof mapStateToProps> & WithStyles<typeof styles>
+  Props &
+    InjectedFormProps<Application, Props> &
+    ReturnType<typeof mapStateToProps> &
+    WithStyles<typeof styles> &
+    DispatchProp
 > {
   private getIsEdit() {
     return !!this.props.values.get("resourceVersion");
   }
 
   private renderBaisc() {
-    const { classes } = this.props;
+    // const { classes } = this.props;
     const isEdit = this.getIsEdit();
     return (
       <>
-        <Typography
-          variant="h2"
-          classes={{
-            root: classes.sectionHeader
-          }}>
-          Basic
-        </Typography>
         <HelperContainer>
           <Typography>Basic information of this application</Typography>
         </HelperContainer>
-        <Paper
-          elevation={1}
-          square
-          classes={{
-            root: classes.paper
-          }}>
-          <Grid container spacing={2}>
-            <Grid item md={6}>
-              <Field
-                name="name"
-                label="Name"
-                disabled={isEdit}
-                component={TextField}
-                validate={ValidatorRequired}
-                helperText={
-                  isEdit
-                    ? "Can't modify name"
-                    : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
-                }
-                placeholder="Please type the component name"
-              />
-            </Grid>
-            <Grid item md={6}>
-              <Field
-                name="namespace"
-                label="Namespace"
-                disabled={isEdit}
-                component={TextField}
-                validate={ValidatorRequired}
-                helperText={isEdit ? "Can't modify namespace" : "All resources will running in this namespace."}
-                placeholder="Please type the namespace"
-              />
-            </Grid>
-          </Grid>
-          <div>
+
+        <Grid container spacing={2}>
+          <Grid item md={6}>
             <Field
-              name="isPersistent"
-              formControlLabelProps={{
-                label: "Persistent"
-              }}
+              name="name"
+              label="Name"
               disabled={isEdit}
-              component={SwitchField}
-              normalizer={NormalizeBoolean}
-              tooltipProps={{
-                title:
-                  "This option controls how disks are mounted. " +
-                  "If true, the system will use persistent disks as you defined. Data won't lost during restart. It's suitable for a production deployment." +
-                  "If false, it will use temporary disks, data will be lost during a restart. You should only use this mode in test case."
-              }}
+              component={TextField}
+              validate={ValidatorRequired}
+              helperText={
+                isEdit
+                  ? "Can't modify name"
+                  : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
+              }
+              placeholder="Please type the component name"
             />
-          </div>
+          </Grid>
+          <Grid item md={6}>
+            <Field
+              name="namespace"
+              label="Namespace"
+              disabled={isEdit}
+              component={TextField}
+              validate={ValidatorRequired}
+              helperText={isEdit ? "Can't modify namespace" : "All resources will running in this namespace."}
+              placeholder="Please type the namespace"
+            />
+          </Grid>
+        </Grid>
+        <div>
           <Field
-            name="isActive"
+            name="isPersistent"
             formControlLabelProps={{
-              label: "Active"
+              label: "Persistent"
             }}
+            disabled={isEdit}
             component={SwitchField}
             normalizer={NormalizeBoolean}
+            tooltipProps={{
+              title:
+                "This option controls how disks are mounted. " +
+                "If true, the system will use persistent disks as you defined. Data won't lost during restart. It's suitable for a production deployment." +
+                "If false, it will use temporary disks, data will be lost during a restart. You should only use this mode in test case."
+            }}
           />
-        </Paper>
+        </div>
+        <Field
+          name="isActive"
+          formControlLabelProps={{
+            label: "Active"
+          }}
+          component={SwitchField}
+          normalizer={NormalizeBoolean}
+        />
       </>
     );
   }
 
   private renderComponent() {
-    const { classes } = this.props;
-
     return (
       <>
-        <Typography
-          variant="h2"
-          classes={{
-            root: classes.sectionHeader
-          }}>
-          Components
-        </Typography>
         <HelperContainer>
           <Typography>Select compoents you want to include into this application.</Typography>
         </HelperContainer>
-        <Paper
-          elevation={1}
-          square
-          classes={{
-            root: classes.paper
-          }}>
-          <Components />
-        </Paper>
+        <Components />
       </>
     );
   }
 
   private renderSharedEnvs() {
-    const { classes } = this.props;
-
     return (
       <>
-        <Typography
-          variant="h2"
-          classes={{
-            root: classes.sectionHeader
-          }}>
-          Shared Environment Variables
-        </Typography>
         <HelperContainer>
           <Typography>Shared environment variable is consistent amoung all components.</Typography>
         </HelperContainer>
-        <Paper
-          elevation={1}
-          square
-          classes={{
-            root: classes.paper
-          }}>
-          <SharedEnvs />
-        </Paper>
+        <SharedEnvs />
       </>
     );
   }
@@ -191,15 +140,15 @@ class ApplicationFormRaw extends React.PureComponent<
     const tabs = [
       {
         title: "Basic Info",
-        component: <Box p={2}>{this.renderBaisc()}</Box>
+        component: this.renderBaisc()
       },
       {
         title: "Components",
-        component: <Box p={2}>{this.renderComponent()}</Box>
+        component: this.renderComponent()
       },
       {
         title: "Shared Envs",
-        component: <Box p={2}>{this.renderSharedEnvs()}</Box>
+        component: this.renderSharedEnvs()
       }
     ];
 
@@ -208,11 +157,14 @@ class ApplicationFormRaw extends React.PureComponent<
         <VerticalTabs
           tabs={tabs}
           tabsBottomContent={
-            <Box p={2} textAlign="center">
+            <>
               <Button variant="contained" color="primary" type="submit">
                 Submit
               </Button>
-            </Box>
+              <Button variant="contained" color="default" onClick={() => this.props.dispatch(goBack())}>
+                Close
+              </Button>
+            </>
           }
         />
       </form>

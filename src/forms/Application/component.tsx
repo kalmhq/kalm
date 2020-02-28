@@ -287,7 +287,6 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
             }
           ]}
           options={{
-            padding: "dense",
             search: false,
             paging: false,
             // toolbar: false,
