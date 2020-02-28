@@ -1,11 +1,4 @@
-import {
-  Button,
-  createStyles,
-  Theme,
-  Typography,
-  WithStyles,
-  withStyles
-} from "@material-ui/core";
+import { Button, createStyles, Theme, Typography, WithStyles, withStyles } from "@material-ui/core";
 import { Variant } from "@material-ui/core/styles/createTypography";
 import AddIcon from "@material-ui/icons/Add";
 import React from "react";
@@ -20,7 +13,8 @@ const styles = (theme: Theme) =>
       backgroundColor: "#039be5",
       display: "flex",
       justifyContent: "center",
-      flexDirection: "column"
+      flexDirection: "column",
+      height: "auto"
     },
     title: {
       fontSize: 20,
@@ -40,34 +34,16 @@ export interface PageHeaderProps {
   createButtonText?: string;
 }
 
-export class PageHeaderRaw extends React.PureComponent<
-  PageHeaderProps & WithStyles<typeof styles>
-> {
+export class PageHeaderRaw extends React.PureComponent<PageHeaderProps & WithStyles<typeof styles>> {
   public render() {
-    const {
-      noBreadcrumb,
-      variant,
-      classes,
-      onCreate,
-      createButtonText
-    } = this.props;
+    const { noBreadcrumb, variant, classes, onCreate, createButtonText } = this.props;
     return (
       <div className={classes.root}>
         {noBreadcrumb ? null : <Breadcrumb />}
-        <Typography
-          variant={variant ? variant : "h3"}
-          gutterBottom={!noBreadcrumb}
-          className={classes.title}
-        >
+        <Typography variant={variant ? variant : "h3"} gutterBottom={!noBreadcrumb} className={classes.title}>
           {this.props.title}
           {onCreate ? (
-            <Button
-              variant="contained"
-              color="default"
-              disableElevation
-              startIcon={<AddIcon />}
-              onClick={onCreate}
-            >
+            <Button variant="contained" color="default" disableElevation startIcon={<AddIcon />} onClick={onCreate}>
               {createButtonText || "Add"}
             </Button>
           ) : null}

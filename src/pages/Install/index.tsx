@@ -43,9 +43,8 @@ interface Step {
 const IntallDaeContent: React.FunctionComponent<any> = () => {
   return (
     <div>
-      Congratulations. You have successfully run DAE on your cluster. Now,
-      please follow the steps to finish the installment process. It will take
-      you about 5-20 minutes (depend on your network).
+      Congratulations. You have successfully run DAE on your cluster. Now, please follow the steps to finish the
+      installment process. It will take you about 5-20 minutes (depend on your network).
     </div>
   );
 };
@@ -84,16 +83,12 @@ const ConfigureImageRegistry: React.FunctionComponent = () => {
       <Collapse in={checked}>
         <Paper elevation={1} className={classes.paper}>
           <svg className={classes.svg}>
-            <polygon
-              points="0,100 50,00, 100,100"
-              className={classes.polygon}
-            />
+            <polygon points="0,100 50,00, 100,100" className={classes.polygon} />
           </svg>
         </Paper>
       </Collapse>
-      For each ad campaign that you create, you can control how much you're
-      willing to spend on clicks and conversions, which networks and
-      geographical locations you want your ads to show on, and more.
+      For each ad campaign that you create, you can control how much you're willing to spend on clicks and conversions,
+      which networks and geographical locations you want your ads to show on, and more.
     </div>
   );
 };
@@ -158,7 +153,7 @@ export default function InstallPage() {
   // };
 
   return (
-    <BasePage className={classes.root} title="Install">
+    <BasePage title="Install">
       <Stepper activeStep={activeStep} orientation="vertical">
         {steps.map((step, index) => (
           <Step key={step.title}>
@@ -168,23 +163,14 @@ export default function InstallPage() {
               <div className={classes.actionsContainer}>
                 <div>
                   {step.hasPrivate ? (
-                    <Button
-                      disabled={activeStep === 0}
-                      onClick={handleBack}
-                      className={classes.button}
-                    >
+                    <Button disabled={activeStep === 0} onClick={handleBack} className={classes.button}>
                       {" "}
                       Back
                     </Button>
                   ) : null}
 
                   {step.hasNext ? (
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={handleNext}
-                      className={classes.button}
-                    >
+                    <Button variant="contained" color="primary" onClick={handleNext} className={classes.button}>
                       {activeStep === steps.length - 1 ? "Finish" : "Next"}
                     </Button>
                   ) : null}

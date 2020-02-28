@@ -9,7 +9,7 @@ import { Provider } from "react-redux";
 import { ConnectedRouter } from "connected-react-router/immutable";
 import configureStore from "./configureStore";
 import { createBrowserHistory } from "history";
-import { ThemeProvider, createMuiTheme } from "@material-ui/core";
+import { ThemeProvider, createMuiTheme, CssBaseline } from "@material-ui/core";
 import { SnackbarProvider } from "notistack";
 import { ScrollToTop } from "./widgets/ScrollToTop";
 import { setStore } from "./store";
@@ -29,6 +29,7 @@ const theme = createMuiTheme({
 ReactDOM.render(
   <Provider store={store}>
     <ConnectedRouter history={history}>
+      <CssBaseline />
       <ScrollToTop>
         <ThemeProvider theme={theme}>
           <SnackbarProvider

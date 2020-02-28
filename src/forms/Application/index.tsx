@@ -1,4 +1,4 @@
-import { Button, createStyles, Grid, Paper, WithStyles, withStyles } from "@material-ui/core";
+import { createStyles, Grid, Paper, WithStyles, withStyles, Button, Box } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import Immutable from "immutable";
@@ -15,6 +15,7 @@ import { NormalizeBoolean } from "../normalizer";
 import { ValidatorRequired } from "../validator";
 import { Components } from "./component";
 import { SharedEnvs } from "./shardEnv";
+import { VerticalTabs } from "./verticalTabs";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -187,21 +188,34 @@ class ApplicationFormRaw extends React.PureComponent<
   public render() {
     const { handleSubmit } = this.props;
 
+    const tabs = [
+      {
+        title: "Basic Info",
+        component: <Box p={2}>{this.renderBaisc()}</Box>
+      },
+      {
+        title: "Components",
+        component: <Box p={2}>{this.renderComponent()}</Box>
+      },
+      {
+        title: "Shared Envs",
+        component: <Box p={2}>{this.renderSharedEnvs()}</Box>
+      }
+    ];
+
     return (
-      <div>
-        <form onSubmit={handleSubmit}>
-          <Grid container spacing={1}>
-            <Grid item xs={12} sm={12} md={8} lg={8} xl={6}>
-              {this.renderBaisc()}
-              {this.renderComponent()}
-              {this.renderSharedEnvs()}
-            </Grid>
-          </Grid>
-          <Button variant="contained" color="primary" type="submit">
-            Submit
-          </Button>
-        </form>
-      </div>
+      <form onSubmit={handleSubmit} style={{ height: "100%", overflow: "hidden" }}>
+        <VerticalTabs
+          tabs={tabs}
+          tabsBottomContent={
+            <Box p={2} textAlign="center">
+              <Button variant="contained" color="primary" type="submit">
+                Submit
+              </Button>
+            </Box>
+          }
+        />
+      </form>
     );
   }
 }

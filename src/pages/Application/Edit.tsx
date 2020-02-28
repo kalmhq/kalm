@@ -6,9 +6,9 @@ import { Application } from "../../actions";
 import { updateApplicationAction } from "../../actions/application";
 import { setSuccessNotificationAction } from "../../actions/notification";
 import ApplicationForm from "../../forms/Application";
+import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
 import { ApplicationDataWrapper, WithApplicationsDataProps } from "./DataWrapper";
-import { Loading } from "../../widgets/Loading";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -39,17 +39,15 @@ class ApplicationEditRaw extends React.PureComponent<Props> {
   }
 
   public render() {
-    const { classes, isLoading, isFirstLoaded } = this.props;
+    const { isLoading, isFirstLoaded } = this.props;
     const application = this.getApplication();
     return (
       <BasePage title={`Edit Application ${application && application.get("name")}`}>
-        <div className={classes.root}>
-          {isLoading && !isFirstLoaded ? (
-            <Loading />
-          ) : (
-            <ApplicationForm onSubmit={this.submit} initialValues={application} />
-          )}
-        </div>
+        {isLoading && !isFirstLoaded ? (
+          <Loading />
+        ) : (
+          <ApplicationForm onSubmit={this.submit} initialValues={application} />
+        )}
       </BasePage>
     );
   }

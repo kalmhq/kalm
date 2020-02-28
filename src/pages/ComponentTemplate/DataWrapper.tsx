@@ -26,7 +26,7 @@ export const ComponentTemplateDataWrapper = (WrappedComponent: React.ComponentTy
 
     private loadData = () => {
       this.props.dispatch(loadComponentTemplatesAction());
-      this.interval = window.setTimeout(this.loadData, 5000);
+      // this.interval = window.setTimeout(this.loadData, 5000);
     };
 
     componentDidMount() {

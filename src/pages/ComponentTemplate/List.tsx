@@ -200,7 +200,7 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
   }
 
   public render() {
-    const { classes, isLoading } = this.props;
+    const { classes, isLoading, isFirstLoaded } = this.props;
     const { isDeleteConfirmDialogOpen, isDuplicateDialogShow } = this.state;
 
     return (
@@ -245,7 +245,7 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
             anytime without worring about breaking running applications. */}
             </Alert>
           </HelperContainer>
-          <Box mt={3}>{isLoading ? <Loading /> : this.renderDataContent()}</Box>
+          <Box mt={3}>{isLoading && !isFirstLoaded ? <Loading /> : this.renderDataContent()}</Box>
         </div>
       </BasePage>
     );
