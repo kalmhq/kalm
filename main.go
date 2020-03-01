@@ -26,6 +26,9 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+
+	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
+	//cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -38,6 +41,9 @@ func init() {
 	_ = clientgoscheme.AddToScheme(scheme)
 
 	_ = corev1alpha1.AddToScheme(scheme)
+
+	_ = cmv1alpha2.AddToScheme(scheme)
+
 	// +kubebuilder:scaffold:scheme
 }
 

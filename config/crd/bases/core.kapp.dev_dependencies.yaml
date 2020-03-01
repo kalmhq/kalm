@@ -14,7 +14,7 @@ spec:
     listKind: DependencyList
     plural: dependencies
     singular: dependency
-  scope: Namespaced
+  scope: Cluster
   subresources:
     status: {}
   validation:
@@ -36,6 +36,10 @@ spec:
         spec:
           description: DependencySpec defines the desired state of Dependency
           properties:
+            config:
+              additionalProperties:
+                type: string
+              type: object
             type:
               type: string
             version:

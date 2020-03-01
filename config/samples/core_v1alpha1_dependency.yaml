@@ -6,3 +6,8 @@ spec:
   # Add fields here
   type: kong
   version: 1.0.1
+  config:
+    tlsType: acme
+    challengeProvider: cloudflare
+    challengeEmail: diveintotomorrow@gmail.com
+    challengeSecret: 38f17393420aab873a6e74f2aabfb65a43ec4

@@ -29,8 +29,9 @@ type DependencySpec struct {
 
 	// Foo is an example field of Dependency. Edit Dependency_types.go to remove/update
 
-	Type    string `json:"type"`
-	Version string `json:"version"`
+	Type    string            `json:"type"`
+	Version string            `json:"version"`
+	Config  map[string]string `json:"config,omitempty"`
 }
 
 // DependencyStatus defines the observed state of Dependency
@@ -42,6 +43,7 @@ type DependencyStatus struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:resource:scope=Cluster
 // +kubebuilder:subresource:status
 
 // Dependency is the Schema for the dependencies API
@@ -54,6 +56,7 @@ type Dependency struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:resource:scope=Cluster
 
 // DependencyList contains a list of Dependency
 type DependencyList struct {
