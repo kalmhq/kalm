@@ -44,7 +44,7 @@ type DependencyReconciler struct {
 
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=dependencies,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=dependencies/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=v1,resources=secrets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
 
 func (r *DependencyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
