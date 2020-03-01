@@ -97,3 +97,15 @@ rules:
   - deployments/status
   verbs:
   - get
+- apiGroups:
+  - v1
+  resources:
+  - secrets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
