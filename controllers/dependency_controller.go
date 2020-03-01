@@ -236,7 +236,7 @@ func (r *DependencyReconciler) desiredIngress(
 				{
 					Hosts: hosts,
 					//todo can not set ns here?
-					SecretName: getNameForClusterIssuer(dep),
+					SecretName: getSecNameForClusterIssuer(dep),
 				},
 			},
 			Rules: rules,
@@ -264,15 +264,13 @@ func (r *DependencyReconciler) reconcileClusterIssuer(ctx context.Context, dep *
 		email := config["challengeEmail"]
 		plainSecret := config["challengeSecret"]
 
-		nsedNameInCertManager := types.NamespacedName{
-			Namespace: "cert-manager",
-			Name:      getNameForClusterIssuer(dep),
-		}
-
 		secKey := "sec-content"
 
 		sec := corev1.Secret{}
-		if err := r.Get(ctx, nsedNameInCertManager, &sec); err != nil {
+		if err := r.Get(ctx, types.NamespacedName{
+			Namespace: "cert-manager",
+			Name:      getSecNameForClusterIssuer(dep),
+		}, &sec); err != nil {
 			if !errors.IsNotFound(err) {
 				return err
 			}
@@ -284,7 +282,7 @@ func (r *DependencyReconciler) reconcileClusterIssuer(ctx context.Context, dep *
 				},
 				ObjectMeta: v1.ObjectMeta{
 					Namespace: "cert-manager",
-					Name:      getNameForClusterIssuer(dep),
+					Name:      getSecNameForClusterIssuer(dep),
 				},
 				StringData: map[string]string{
 					secKey: plainSecret,
@@ -315,19 +313,20 @@ func (r *DependencyReconciler) reconcileClusterIssuer(ctx context.Context, dep *
 					Kind:       "ClusterIssuer",
 				},
 				ObjectMeta: v1.ObjectMeta{
-					Namespace: "cert-manager", //?
-					Name:      getNameForClusterIssuer(dep),
+					//Namespace: "cert-manager", //?
+					Name: getNameForClusterIssuer(dep),
 				},
 				Spec: cmv1alpha2.IssuerSpec{
 					IssuerConfig: cmv1alpha2.IssuerConfig{
 						ACME: &v1alpha2.ACMEIssuer{
-							Email:  email,
-							Server: "https://acme-staging-v02.api.letsencrypt.org/directory",
+							Email: email,
+							//Server: "https://acme-staging-v02.api.letsencrypt.org/directory",
+							Server: "https://acme-v02.api.letsencrypt.org/directory",
 							PrivateKey: cmmeta.SecretKeySelector{
 								LocalObjectReference: cmmeta.LocalObjectReference{
-									Name: getNameForClusterIssuer(dep),
+									Name: getPrvKeyNameForClusterIssuer(dep),
 								},
-								Key: secKey,
+								//Key: secKey,
 							},
 							Solvers: []v1alpha2.ACMEChallengeSolver{
 								{
@@ -336,7 +335,7 @@ func (r *DependencyReconciler) reconcileClusterIssuer(ctx context.Context, dep *
 											Email: email,
 											APIKey: &cmmeta.SecretKeySelector{
 												LocalObjectReference: cmmeta.LocalObjectReference{
-													Name: getNameForClusterIssuer(dep),
+													Name: getSecNameForClusterIssuer(dep),
 												},
 												Key: secKey,
 											},
@@ -372,4 +371,15 @@ func getNameForClusterIssuer(dep *corev1alpha1.Dependency) string {
 	tlsType := dep.Spec.Config["tlsType"]
 	provider := dep.Spec.Config["challengeProvider"]
 	return fmt.Sprintf("%s-%s-%s", dep.Name, tlsType, provider)
+}
+
+func getPrvKeyNameForClusterIssuer(dep *corev1alpha1.Dependency) string {
+	tlsType := dep.Spec.Config["tlsType"]
+	provider := dep.Spec.Config["challengeProvider"]
+	return fmt.Sprintf("prvkey-%s-%s-%s", dep.Name, tlsType, provider)
+}
+func getSecNameForClusterIssuer(dep *corev1alpha1.Dependency) string {
+	tlsType := dep.Spec.Config["tlsType"]
+	provider := dep.Spec.Config["challengeProvider"]
+	return fmt.Sprintf("sec-%s-%s-%s", dep.Name, tlsType, provider)
 }
