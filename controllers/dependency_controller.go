@@ -122,17 +122,7 @@ func (r *DependencyReconciler) reconcileKong(ctx context.Context, dep *corev1alp
 	}
 
 	if !isInstalled {
-		dep.Status = corev1alpha1.DependencyStatus{
-			Status: "pending",
-			ErrMsg: "kong controller not installed yet",
-		}
-
-		if err := r.Status().Update(ctx, dep); err != nil {
-			r.Log.Error(err, "fail to update status")
-			return client.IgnoreNotFound(err)
-		}
-
-		return nil
+		return r.UpdateStatus(ctx, dep, corev1alpha1.DependencyStatusNotInstalled)
 	}
 
 	// check if ClusterIssuer is ok
@@ -192,7 +182,7 @@ func (r *DependencyReconciler) reconcileKong(ctx context.Context, dep *corev1alp
 		}
 	}
 
-	return nil
+	return r.UpdateStatus(ctx, dep, corev1alpha1.DependencyStatusRunning)
 }
 
 func (r *DependencyReconciler) isKongControllerInstalled() (bool, error) {
@@ -393,6 +383,19 @@ func (r *DependencyReconciler) reconcileClusterIssuer(ctx context.Context, dep *
 	default:
 		return fmt.Errorf("unknown tlsType: %s", config["tlsType"])
 	}
+}
+
+func (r *DependencyReconciler) UpdateStatus(ctx context.Context, dep *corev1alpha1.Dependency, status string) error {
+	dep.Status = corev1alpha1.DependencyStatus{
+		Status: status,
+	}
+
+	if err := r.Status().Update(ctx, dep); err != nil {
+		r.Log.Error(err, "fail to update status")
+		return err
+	}
+
+	return nil
 }
 
 func getNameForClusterIssuer(dep *corev1alpha1.Dependency) string {

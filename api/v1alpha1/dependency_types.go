@@ -39,8 +39,15 @@ type DependencyStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	Status string `json:"status"`
-	ErrMsg string `json:"errMsg"`
 }
+
+const (
+	DependencyStatusNotInstalled  = "Not Installed"
+	DependencyStatusInstallFailed = "Install Failed"
+	DependencyStatusInstalling    = "Installing"
+	DependencyStatusUninstalling  = "Uninstalling"
+	DependencyStatusRunning       = "Running"
+)
 
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:scope=Cluster

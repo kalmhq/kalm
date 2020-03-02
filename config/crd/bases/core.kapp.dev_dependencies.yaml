@@ -51,15 +51,12 @@ spec:
         status:
           description: DependencyStatus defines the observed state of Dependency
           properties:
-            errMsg:
-              type: string
             status:
               description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
                 of cluster Important: Run "make" to regenerate code after modifying
                 this file'
               type: string
           required:
-          - errMsg
           - status
           type: object
       type: object
