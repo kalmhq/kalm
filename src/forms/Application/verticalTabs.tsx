@@ -108,14 +108,8 @@ export function VerticalTabs({ tabs, tabsBottomContent }: VerticalTabsProps) {
   const classes = useStyles();
   const [value, setValue] = React.useState(0);
 
-  // const scrollContainer = React.useRef<any>();
-
-  const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+  const handleChange = (_event: React.ChangeEvent<{}>, newValue: number) => {
     setValue(newValue);
-    // setTimeout(() => {
-    //   console.log(scrollContainer, scrollContainer.current, scrollContainer.current.updatePS);
-    //   console.log(scrollContainer.current.updatePS());
-    // }, 100);
   };
 
   return (
