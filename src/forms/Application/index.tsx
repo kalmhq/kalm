@@ -15,7 +15,7 @@ import { NormalizeBoolean } from "../normalizer";
 import { ValidatorRequired } from "../validator";
 import { Components } from "./component";
 import { SharedEnvs } from "./shardEnv";
-import { VerticalTabs } from "./verticalTabs";
+import { VerticalTabs } from "../Basic/verticalTabs";
 import { goBack } from "connected-react-router";
 
 const styles = (theme: Theme) => createStyles({});
