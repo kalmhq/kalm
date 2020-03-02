@@ -105,6 +105,11 @@ export type ComponentLikePort = ImmutableMap<{
   servicePort: number;
 }>;
 
+export interface PluginContent {
+  name: string;
+  config: {};
+}
+
 export interface ComponentLikeContent {
   name: string;
   image: string;
@@ -134,6 +139,7 @@ export interface ComponentLikeContent {
       storageClass: string;
     }>
   >;
+  plugins: Immutable.List<Plugin>;
 }
 
 export interface ApplicationContent {
@@ -159,6 +165,7 @@ export interface ComponentTemplateContent extends ComponentLikeContent {
   resourceVersion?: string;
 }
 
+export type Plugin = ImmutableMap<PluginContent>;
 export type ComponentLike = ImmutableMap<ComponentLikeContent>;
 export type ComponentTemplate = ImmutableMap<ComponentTemplateContent>;
 export type ApplicationComponent = ImmutableMap<ApplicationComponentContent>;

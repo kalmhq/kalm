@@ -16,6 +16,7 @@ import { ValidatorRequired, ValidatorSchedule } from "../validator";
 import { Envs } from "./Envs";
 import { Ports } from "./Ports";
 import ComponentResources from "./resources";
+import { Plugins } from "./Plugins";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
@@ -433,29 +434,31 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
   private renderPlugins() {
     const { classes } = this.props;
     return (
-      <Grid container>
-        <Grid item md={6}>
-          <Typography
-            variant="h2"
-            classes={{
-              root: classes.sectionHeader
-            }}>
-            Plugins
+      <>
+        <Typography
+          variant="h2"
+          classes={{
+            root: classes.sectionHeader
+          }}>
+          Plugins
+        </Typography>
+        <HelperContainer>
+          <Typography>
+            Plugins can affect running state of a program, or provide extra functionality for the programs.
           </Typography>
-          <HelperContainer>
-            <Typography>
-              In most cases, the default values for the following options are appropriate for most programs. However,
-              you can modify them as required. Before you do so, make sure you understand what these options do.
-            </Typography>
-          </HelperContainer>
-        </Grid>
-      </Grid>
+        </HelperContainer>
+        <Plugins />
+      </>
     );
   }
 
   public render() {
     const { handleSubmit, submitButtonText } = this.props;
     const tabs = [
+      {
+        title: "Plugins",
+        component: this.renderPlugins()
+      },
       {
         title: "Basic",
         component: this.renderBasic()
@@ -475,10 +478,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
       {
         title: "Advanced",
         component: this.renderAdvanced()
-      },
-      {
-        title: "Plugins",
-        component: this.renderPlugins()
       }
     ];
 
