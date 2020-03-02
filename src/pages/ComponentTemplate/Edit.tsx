@@ -10,12 +10,7 @@ import { BasePage } from "../BasePage";
 import { ComponentTemplateDataWrapper, WithComponentTemplatesDataProps } from "./DataWrapper";
 import { ComponentTemplate, ComponentLike } from "../../actions";
 
-const styles = (theme: Theme) =>
-  createStyles({
-    root: {
-      padding: theme.spacing(3)
-    }
-  });
+const styles = (theme: Theme) => createStyles({});
 
 interface Props
   extends WithComponentTemplatesDataProps,
@@ -58,12 +53,12 @@ class ComponentTemplateEditRaw extends React.PureComponent<Props> {
   }
 
   public render() {
-    const { isLoading, isFirstLoaded, classes } = this.props;
+    const { isLoading, isFirstLoaded } = this.props;
     const componentTemplate = this.getComponentTemplate();
 
     return (
       <BasePage title={isLoading || !isFirstLoaded ? "" : `Edit ${componentTemplate.get("name")}`}>
-        <div className={classes.root}>{isLoading || !isFirstLoaded ? <Loading /> : this.renderFormContent()}</div>
+        {isLoading || !isFirstLoaded ? <Loading /> : this.renderFormContent()}
       </BasePage>
     );
   }

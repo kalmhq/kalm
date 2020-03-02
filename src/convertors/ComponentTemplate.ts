@@ -44,7 +44,10 @@ export const convertFromCRDComponentTemplate = (c: V1alpha1ComponentTemplate): C
     disks: List([]),
     resourceVersion: metadata.resourceVersion,
     workloadType: spec.workloadType || workloadTypeServer,
-    schedule: spec.schedule
+    schedule: spec.schedule,
+    restartStrategy: "rollingUpdate",
+    terminationGracePeriodSeconds: 30,
+    dnsPolicy: "ClusterFirst"
   });
 
   return res;

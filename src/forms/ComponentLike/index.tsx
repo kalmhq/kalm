@@ -1,19 +1,21 @@
-import { Box, Button, Grid, List as MList, ListItem, ListItemText, MenuItem, Paper } from "@material-ui/core";
+import { Box, Button, Divider, Grid, List as MList, ListItem, ListItemText, MenuItem } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
+import { goBack } from "connected-react-router";
 import React from "react";
-import { connect } from "react-redux";
+import { connect, DispatchProp } from "react-redux";
 import { InjectedFormProps } from "redux-form";
 import { Field, getFormValues, reduxForm } from "redux-form/immutable";
 import { ComponentLike, workloadTypeCronjob, workloadTypeServer } from "../../actions";
 import { RootState } from "../../reducers";
 import { HelperContainer } from "../../widgets/Helper";
 import { CustomTextField, RenderSelectField, RenderTextField } from "../Basic";
+import { VerticalTabs } from "../Basic/verticalTabs";
+import { NormalizeNumber } from "../normalizer";
 import { ValidatorRequired, ValidatorSchedule } from "../validator";
 import { Envs } from "./Envs";
 import { Ports } from "./Ports";
 import ComponentResources from "./resources";
-import { TabDataView } from "./TabDataView";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
@@ -37,9 +39,6 @@ const styles = (theme: Theme) =>
       fontSize: 24,
       fontWeight: 400,
       marginBottom: 16
-    },
-    input: {
-      marginBottom: 12
     }
   });
 
@@ -54,10 +53,11 @@ export interface Props
   extends InjectedFormProps<ComponentLike, RawProps>,
     ReturnType<typeof mapStateToProps>,
     WithStyles<typeof styles>,
+    DispatchProp,
     RawProps {}
 
 class ComponentLikeFormRaw extends React.PureComponent<Props> {
-  private renderSchedule = () => {
+  private renderSchedule() {
     if (this.props.values.get("workloadType") !== workloadTypeCronjob) {
       return null;
     }
@@ -83,30 +83,24 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
         />
       </>
     );
-  };
+  }
 
   private renderBasic() {
     const { classes, isEdit } = this.props;
     return (
-      <>
-        <Typography
-          variant="h2"
-          classes={{
-            root: classes.sectionHeader
-          }}>
-          Basic
-        </Typography>
-        <HelperContainer>
-          <Typography>Describe how to launch this compoent.</Typography>
-        </HelperContainer>
-        <Paper
-          elevation={1}
-          square
-          classes={{
-            root: classes.paper
-          }}>
+      <Grid container>
+        <Grid item md={6}>
+          <Typography
+            variant="h2"
+            classes={{
+              root: classes.sectionHeader
+            }}>
+            Basic Info
+          </Typography>
+          <HelperContainer>
+            <Typography>Describe how to launch this compoent.</Typography>
+          </HelperContainer>
           <CustomTextField
-            // className={classes.input}
             name="name"
             label="Name"
             margin
@@ -120,7 +114,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
             placeholder="Please type the component name"
           />
           <CustomTextField
-            // className={classes.input}
             name="image"
             label="Image"
             margin
@@ -139,8 +132,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
             <MenuItem value={workloadTypeCronjob}>Cronjob (periodic running)</MenuItem>
           </Field>
           {this.renderSchedule()}
-        </Paper>
-      </>
+        </Grid>
+      </Grid>
     );
   }
 
@@ -183,15 +176,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
             </ListItem>
           </MList>
         </HelperContainer>
-        <Paper
-          elevation={1}
-          square
-          classes={{
-            root: classes.paper
-          }}>
-          {/* <CustomEnvs /> */}
-          <Envs />
-        </Paper>
+        {/* <CustomEnvs /> */}
+        <Envs />
       </>
     );
   }
@@ -213,14 +199,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
             parts, you need to define a port.
           </Typography>
         </HelperContainer>
-        <Paper
-          elevation={1}
-          square
-          classes={{
-            root: classes.paper
-          }}>
-          <Ports />
-        </Paper>
+        <Ports />
       </>
     );
   }
@@ -257,66 +236,268 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
             </ListItem>
           </MList>
         </HelperContainer>
-        <Paper
-          elevation={1}
-          square
-          classes={{
-            root: classes.paper
-          }}>
-          <ComponentResources />
-        </Paper>
+        <ComponentResources />
       </>
     );
   }
 
-  public render() {
-    const { handleSubmit, values, classes, showDataView, showSubmitButton, submitButtonText } = this.props;
-    // const classes = useStyles();
-    // const [value, setValue] = React.useState(0);
+  private renderAdvanced() {
+    const { classes } = this.props;
 
-    // const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
-    //   setValue(newValue);
-    // };
+    // strategy:
+    //   type: Recreate
+    // terminationGracePeriodSeconds
+    // dnsPolicy
+    // imagePullSecrets
+
+    // livenessProbe:
+    // httpGet:
+    //   path: /
+    //   port: 3000
+    //   scheme: HTTP
+    // initialDelaySeconds: 60
+    // timeoutSeconds: 3
+    // periodSeconds: 10
+    // successThreshold: 1
+    // failureThreshold: 6
+    return (
+      <Grid container>
+        <Grid item md={6}>
+          <Typography
+            variant="h2"
+            classes={{
+              root: classes.sectionHeader
+            }}>
+            Advanced
+          </Typography>
+          <HelperContainer>
+            <Typography>
+              In most cases, the default values for the following options are appropriate for most programs. However,
+              you can modify them as required. Before you do so, make sure you understand what these options do.
+            </Typography>
+          </HelperContainer>
+          <Box mt={3}></Box>
+          <MList dense={true}>
+            <ListItem>
+              <ListItemText
+                primary="Rolling Update"
+                secondary={
+                  <>
+                    This component updates in a rolling update fashion when strategy is RollingUpdate. You can specify
+                    maxUnavailable and maxSurge to control the rolling update process.
+                    <a
+                      target="_blank"
+                      href="https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-update-deployment"
+                      rel="noopener noreferrer">
+                      Read More
+                    </a>
+                    .
+                  </>
+                }
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemText
+                primary="Memory"
+                secondary={
+                  <>
+                    All existing components are killed before new ones are created.
+                    <a
+                      target="_blank"
+                      href="https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#recreate-deployment"
+                      rel="noopener noreferrer">
+                      Read More
+                    </a>
+                    .
+                  </>
+                }
+              />
+            </ListItem>
+          </MList>
+          <Field
+            name="restartStrategy"
+            component={RenderSelectField}
+            label="Restart Strategy"
+            validate={ValidatorRequired}>
+            <MenuItem value="rollingUpdate">Rolling Update</MenuItem>
+            <MenuItem value="recreate">Recreate</MenuItem>
+          </Field>
+
+          {/* terminationGracePeriodSeconds */}
+          {this.renderAdvancedDivider()}
+          {this.renderAdvancedHelper([
+            {
+              title: "Termination Grace Period Seconds",
+              content: (
+                <>
+                  Kubernetes waits for a specified time called the termination grace period. By default, this is 30
+                  seconds.
+                  <a
+                    target="_blank"
+                    href="https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-update-deployment"
+                    rel="noopener noreferrer">
+                    Read More
+                  </a>
+                  .
+                </>
+              )
+            }
+          ])}
+          <CustomTextField
+            name="terminationGracePeriodSeconds"
+            label="Termination Grace Period Seconds"
+            validate={ValidatorRequired}
+            normalize={NormalizeNumber}
+          />
+
+          {/* dnsPolicy */}
+          {this.renderAdvancedDivider()}
+          <Typography>DNS policies can be set on a component.</Typography>
+          {this.renderAdvancedHelper([
+            {
+              title: "Default",
+              content: (
+                <>
+                  The Pod inherits the name resolution configuration from the node that the pods run on. See{" "}
+                  <a
+                    target="_blank"
+                    href="https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/#inheriting-dns-from-the-node"
+                    rel="noopener noreferrer">
+                    related discussion
+                  </a>{" "}
+                  for more details. .
+                </>
+              )
+            },
+            {
+              title: "ClusterFirst",
+              content: (
+                <>
+                  Any DNS query that does not match the configured cluster domain suffix, such as “www.kubernetes.io”,
+                  is forwarded to the upstream nameserver inherited from the node. Cluster administrators may have extra
+                  stub-domain and upstream DNS servers configured. See{" "}
+                  <a
+                    target="_blank"
+                    href="https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/#impacts-on-pods"
+                    rel="noopener noreferrer">
+                    related discussion
+                  </a>{" "}
+                  for details on how DNS queries are handled in those cases.
+                </>
+              )
+            },
+            {
+              title: "ClusterFirstWithHostNet",
+              content: (
+                <>
+                  For Pods running with hostNetwork, you should explicitly set its DNS policy “ClusterFirstWithHostNet”.
+                </>
+              )
+            },
+            {
+              title: "None",
+              content: <>It allows a Pod to ignore DNS settings from the Kubernetes environment.</>
+            }
+          ])}
+          <Field name="dnsPolicy" component={RenderSelectField} label="Dns Policy" validate={ValidatorRequired}>
+            <MenuItem value="ClusterFirst">ClusterFirst</MenuItem>
+            <MenuItem value="Default">Default</MenuItem>
+            <MenuItem value="ClusterFirstWithHostNet">ClusterFirstWithHostNet</MenuItem>
+            <MenuItem value="None">None</MenuItem>
+          </Field>
+        </Grid>
+      </Grid>
+    );
+  }
+
+  private renderAdvancedDivider = () => {
+    return (
+      <Box pt={4} pb={3}>
+        <Divider />
+      </Box>
+    );
+  };
+
+  private renderAdvancedHelper = (options: { title: string; content: React.ReactNode }[]) => {
+    return (
+      <MList dense={true}>
+        {options.map((x, index) => (
+          <ListItem>
+            <ListItemText primary={x.title} key={index} secondary={x.content} />
+          </ListItem>
+        ))}
+      </MList>
+    );
+  };
+
+  private renderPlugins() {
+    const { classes } = this.props;
+    return (
+      <Grid container>
+        <Grid item md={6}>
+          <Typography
+            variant="h2"
+            classes={{
+              root: classes.sectionHeader
+            }}>
+            Plugins
+          </Typography>
+          <HelperContainer>
+            <Typography>
+              In most cases, the default values for the following options are appropriate for most programs. However,
+              you can modify them as required. Before you do so, make sure you understand what these options do.
+            </Typography>
+          </HelperContainer>
+        </Grid>
+      </Grid>
+    );
+  }
+
+  public render() {
+    const { handleSubmit, submitButtonText } = this.props;
+    const tabs = [
+      {
+        title: "Basic",
+        component: this.renderBasic()
+      },
+      {
+        title: "Envrionment Variables",
+        component: this.renderEnvs()
+      },
+      {
+        title: "Ports",
+        component: this.renderPorts()
+      },
+      {
+        title: "Resources",
+        component: this.renderResources()
+      },
+      {
+        title: "Advanced",
+        component: this.renderAdvanced()
+      },
+      {
+        title: "Plugins",
+        component: this.renderPlugins()
+      }
+    ];
 
     return (
-      <div className={classes.root}>
-        <form onSubmit={handleSubmit}>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={12} md={showDataView ? 8 : 12} lg={showDataView ? 8 : 12} xl={showDataView ? 6 : 12}>
-              {this.renderBasic()}
-              {this.renderEnvs()}
-              {this.renderPorts()}
-              {this.renderResources()}
-            </Grid>
-            {showDataView ? (
-              <Grid item xs={12} sm={12} md={4} lg={4} xl={6}>
-                <Typography
-                  variant="h2"
-                  classes={{
-                    root: classes.sectionHeader
-                  }}>
-                  Data View
-                </Typography>
-                <TabDataView
-                  tabOptions={[
-                    { title: "Kapp JSON", language: "json", content: JSON.stringify(values, undefined, 2) }
-                    // {
-                    //   title: "k8s CRD",
-                    //   language: "json",
-                    //   content: JSON.stringify(convertToCRDComponentLike(values), undefined, 2)
-                    // }
-                  ]}
-                />
-              </Grid>
-            ) : null}
-          </Grid>
-          {showSubmitButton ? (
-            <Button variant="contained" color="primary" type="submit">
-              {submitButtonText || "Submit"}
-            </Button>
-          ) : null}
-        </form>
-      </div>
+      <form onSubmit={handleSubmit} style={{ height: "100%", overflow: "hidden" }}>
+        <VerticalTabs
+          tabs={tabs}
+          tabsBottomContent={
+            <>
+              <Button variant="contained" color="primary" type="submit">
+                {submitButtonText || "Submit"}
+              </Button>
+              <Button variant="contained" color="default" onClick={() => this.props.dispatch(goBack())}>
+                Close
+              </Button>
+            </>
+          }
+        />
+      </form>
     );
   }
 }

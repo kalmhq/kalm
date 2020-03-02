@@ -114,6 +114,7 @@ export const RenderSelectField = ({
         {label}
       </InputLabel>
       <Select
+        label={label}
         labelWidth={labelWidth}
         autoFocus={false}
         labelId={labelId}

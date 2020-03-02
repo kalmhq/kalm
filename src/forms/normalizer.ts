@@ -17,6 +17,15 @@ export const NormalizePort = (
   return portInteger;
 };
 
+export const NormalizeNumber = (
+  value: string,
+  _previousValue?: any,
+  _allValues?: any,
+  _previousAllValues?: any
+): number => {
+  return parseInt(value, 10);
+};
+
 export const NormalizeCPU = (value: string): string => {
   if (!value || value === "0") {
     return "0";

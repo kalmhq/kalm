@@ -42,21 +42,6 @@ class ApplicationFormRaw extends React.PureComponent<
     WithStyles<typeof styles> &
     DispatchProp
 > {
-  private tabs = [
-    {
-      title: "Basic Info",
-      component: this.renderBaisc()
-    },
-    {
-      title: "Components",
-      component: this.renderComponent()
-    },
-    {
-      title: "Shared Envs",
-      component: this.renderSharedEnvs()
-    }
-  ];
-
   private getIsEdit() {
     return !!this.props.values.get("resourceVersion");
   }
@@ -152,10 +137,25 @@ class ApplicationFormRaw extends React.PureComponent<
   public render() {
     const { handleSubmit } = this.props;
 
+    const tabs = [
+      {
+        title: "Basic Info",
+        component: this.renderBaisc()
+      },
+      {
+        title: "Components",
+        component: this.renderComponent()
+      },
+      {
+        title: "Shared Envs",
+        component: this.renderSharedEnvs()
+      }
+    ];
+
     return (
       <form onSubmit={handleSubmit} style={{ height: "100%", overflow: "hidden" }}>
         <VerticalTabs
-          tabs={this.tabs}
+          tabs={tabs}
           tabsBottomContent={
             <>
               <Button variant="contained" color="primary" type="submit">

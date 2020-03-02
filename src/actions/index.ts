@@ -53,7 +53,10 @@ export const newEmptyComponentLike = (): ComponentLike => {
     disks: Immutable.List([]),
     cpu: "100M",
     memory: "100M",
-    workloadType: "server"
+    workloadType: "server",
+    restartStrategy: "rollingUpdate",
+    dnsPolicy: "ClusterFirst",
+    terminationGracePeriodSeconds: 30
   });
 };
 
@@ -110,6 +113,9 @@ export interface ComponentLikeContent {
   memory: string;
   workloadType?: WorkloadType;
   schedule?: string;
+  restartStrategy: string;
+  terminationGracePeriodSeconds: number;
+  dnsPolicy: string;
   env: Immutable.List<
     ImmutableMap<{
       name: string;
