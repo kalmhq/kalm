@@ -28,6 +28,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
 	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
@@ -86,6 +88,28 @@ func (r *DependencyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 func (r *DependencyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1alpha1.Dependency{}).
+		//Owns(&cmv1alpha2.ClusterIssuer{}).
+		Watches(
+			&source.Kind{Type: &corev1alpha1.Application{}},
+			&handler.EnqueueRequestsFromMapFunc{
+				ToRequests: handler.ToRequestsFunc(func(obj handler.MapObject) []ctrl.Request {
+					var list corev1alpha1.DependencyList
+					if err := r.List(context.TODO(), &list); err != nil {
+						return nil
+					}
+
+					res := make([]ctrl.Request, len(list.Items))
+					for i, dep := range list.Items {
+						res[i].Name = dep.Name
+						res[i].Namespace = dep.Namespace
+					}
+
+					r.Log.Info("watch applications", "enqueue reqs", len(res), "reqs", res)
+
+					return res
+				}),
+			},
+		).
 		Complete(r)
 }
 
@@ -150,7 +174,7 @@ func (r *DependencyReconciler) reconcileKong(ctx context.Context, dep *corev1alp
 		r.Log.Info("plugins",
 			"ns", ns,
 			"size:", len(ingPlugins),
-			"1stPlugin", ingPlugins)
+			"ingPlugins", ingPlugins)
 
 		ing, exist, err := r.getIngress(ctx, dep, ingPlugins)
 		if err != nil {
@@ -184,19 +208,23 @@ func (r *DependencyReconciler) getIngress(
 
 	ns := ingPlugins[0].Namespace
 
+	desiredIng := r.desiredIngress(dep, ingPlugins)
+
 	ing := v1beta1.Ingress{}
 	if err := r.Get(ctx, types.NamespacedName{Namespace: ns, Name: dep.Name}, &ing); err != nil {
 		if !errors.IsNotFound(err) {
 			return nil, false, err
 		}
 
-		ing := r.desiredIngress(dep, ingPlugins)
+		ing := desiredIng
 		ctrl.SetControllerReference(dep, &ing, r.Scheme)
 
 		return &ing, false, nil
 	}
 
-	//todo make sure config matches
+	// make sure config matches
+	ing.Spec.Rules = desiredIng.Spec.Rules
+	ing.Spec.TLS = desiredIng.Spec.TLS
 
 	return &ing, true, nil
 }
