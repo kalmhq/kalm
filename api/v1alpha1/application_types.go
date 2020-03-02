@@ -16,22 +16,15 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"k8s.io/api/core/v1"
+	apps1 "k8s.io/api/apps/v1"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
-// +kubebuilder:validation:Enum=Server;Cronjob
-type ComponentType string
-
-const (
-	ComponentTypeServer ComponentType = "Server"
-
-	ComponentTypeCronjob ComponentType = "Cronjob"
-)
 
 type ComponentSpec struct {
 	Name string `json:"name"`
@@ -40,13 +33,18 @@ type ComponentSpec struct {
 
 	Image string `json:"image"`
 
+	Dependencies []string `json:"dependencies,omitempty"`
+
 	Command []string `json:"command,omitempty"`
 
 	Args []string `json:"args,omitempty"`
 
 	Ports []Port `json:"ports,omitempty"`
 
-	Type ComponentType `json:"type,omitempty"`
+	// +kubebuilder:validation:Enum=server;cronjob
+	WorkLoadType WorkLoadType `json:"workloadType,omitempty"`
+
+	Schedule string `json:"schedule,omitempty"`
 
 	// +optional
 	LivenessProbe *v1.Probe `json:"livenessProbe,omitempty"`
@@ -62,31 +60,37 @@ type ComponentSpec struct {
 
 	BeforeDestroy []string `json:"beforeDestroy,omitempty"`
 
-	Resources Resource `json:"resources,omitempty"`
+	CPU resource.Quantity `json:"cpu,omitempty"`
+
+	Memory resource.Quantity `json:"memory,omitempty"`
+
+	// +optional
+	Disks []Disk `json:"disks,omitempty"`
 }
 
 // ApplicationSpec defines the desired state of Application
 type ApplicationSpec struct {
-	Components []ComponentSpec `json:"components"`
-	SharedEnv  []EnvVar        `json:"sharedEnv,omitempty"`
+	Components          []ComponentSpec `json:"components"`
+	SharedEnv           []EnvVar        `json:"sharedEnv,omitempty"`
+	ImagePullSecretName string          `json:"imagePullSecretName,omitempty"`
 }
 
-func (c *ApplicationSpec) FindShareEnvValue(name string) string {
-	for _, env := range c.SharedEnv {
-		if env.Name == name {
-			return env.Value
-		}
-	}
-	return ""
+type ComponentStatus struct {
+	Name             string                 `json:"name"`
+	DeploymentStatus apps1.DeploymentStatus `json:"deploymentStatus,omitempty"`
+	ServiceStatus    v1.ServiceStatus       `json:"serviceStatus,omitempty"`
 }
 
 // ApplicationStatus defines the observed state of Application
 type ApplicationStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	IsActive bool `json:"isActive,omitempty"`
+
+	// Failed to use map here, so use array for now.
+	ComponentStatus []ComponentStatus `json:"componentStatus,omitempty"`
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
 
 // Application is the Schema for the applications API
 type Application struct {

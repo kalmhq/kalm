@@ -1,3 +1,4 @@
+kapp
 
 # Binaries for programs and plugins
 *.exe
@@ -22,3 +23,5 @@ bin
 *.swp
 *.swo
 *~
+.DS_Store
+

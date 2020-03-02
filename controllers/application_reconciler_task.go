@@ -3,6 +3,9 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/go-logr/logr"
 	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
 	"github.com/kapp-staging/kapp/util"
@@ -13,8 +16,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"strings"
-	"time"
 )
 
 // There will be a new Task instance for each reconciliation
@@ -70,6 +71,12 @@ func (act *applicationReconcilerTask) Run() (err error) {
 		return err
 	}
 
+	err = act.UpdateStatus()
+
+	if err != nil {
+		log.Error(err, "unable to update status")
+	}
+
 	err = act.reconcileServices()
 
 	if err != nil {
@@ -80,11 +87,65 @@ func (act *applicationReconcilerTask) Run() (err error) {
 	err = act.reconcileComponents()
 
 	if err != nil {
-		log.Error(err, "unable to construct deploymentp")
+		log.Error(err, "unable to construct deployment")
 		return err
 	}
 
 	return nil
+}
+
+func (act *applicationReconcilerTask) UpdateStatus() (err error) {
+	if act.app.Status.ComponentStatus == nil {
+		act.app.Status.ComponentStatus = make([]corev1alpha1.ComponentStatus, 0, 0)
+	}
+
+	for _, component := range act.app.Spec.Components {
+		deployment := act.getDeployment(component.Name)
+		service := act.getService(component.Name)
+
+		statusIndex := -1
+
+		for i := range act.app.Status.ComponentStatus {
+			if act.app.Status.ComponentStatus[i].Name == component.Name {
+				statusIndex = i
+			}
+		}
+
+		if deployment == nil && service == nil {
+			if statusIndex != -1 {
+				act.app.Status.ComponentStatus = append(act.app.Status.ComponentStatus[:statusIndex], act.app.Status.ComponentStatus[statusIndex+1:]...)
+			}
+			continue
+		}
+
+		if statusIndex == -1 {
+			componentStatus := corev1alpha1.ComponentStatus{
+				Name: component.Name,
+			}
+
+			if service != nil {
+				componentStatus.ServiceStatus = service.Status
+			}
+
+			if deployment != nil {
+				componentStatus.DeploymentStatus = deployment.Status
+			}
+
+			act.app.Status.ComponentStatus = append(act.app.Status.ComponentStatus, componentStatus)
+		} else {
+			if deployment != nil {
+				act.app.Status.ComponentStatus[statusIndex].DeploymentStatus = deployment.Status
+			}
+
+			if service != nil {
+				act.app.Status.ComponentStatus[statusIndex].ServiceStatus = service.Status
+			}
+		}
+	}
+
+	err = act.reconciler.Status().Update(act.ctx, act.app)
+
+	return
 }
 
 func (act *applicationReconcilerTask) reconcileComponents() (err error) {
@@ -114,7 +175,12 @@ func (act *applicationReconcilerTask) reconcileServices() (err error) {
 						Name:      getServiceName(app.Name, component.Name),
 						Namespace: app.Namespace,
 					},
-					Spec: corev1.ServiceSpec{},
+					Spec: corev1.ServiceSpec{
+						Selector: map[string]string{
+							"application": app.Name,
+							"component":   component.Name,
+						},
+					},
 				}
 			}
 
@@ -177,8 +243,35 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 
 	deployment := act.getDeployment(component.Name)
 
+	//todo seem will fail to update if dp changed
+	for _, dependency := range component.Dependencies {
+		// if dependencies are not ready, simply skip this reconcile
+		existDps := act.deployments
+
+		ready := false
+		for _, existDp := range existDps {
+			dpNameOfDependency := getDeploymentName(app.Name, dependency)
+			if dpNameOfDependency != existDp.Name {
+				continue
+			}
+
+			ready = existDp.Status.ReadyReplicas >= existDp.Status.Replicas
+			break
+		}
+
+		if !ready {
+			// todo or error?
+			log.Info("dependency not ready", "component", component.Name, "dependency not ready", dependency)
+			return nil
+		}
+	}
+
 	label := fmt.Sprintf("%s-%d", app.Name, time.Now().UTC().Unix())
-	labelMap := map[string]string{"kapp-component": label}
+	labelMap := map[string]string{
+		"kapp-component": label,
+		"application":    app.Name,
+		"component":      component.Name,
+	}
 
 	newDeployment := false
 
@@ -205,8 +298,10 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 								Env:     []corev1.EnvVar{},
 								Command: component.Command,
 								Args:    component.Args,
+								//Ports:        component.Ports,
 							},
 						},
+						//Volumes: act.app.Spec.Volumes,
 					},
 				},
 				Selector: &metav1.LabelSelector{
@@ -215,6 +310,17 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 			},
 		}
 	}
+
+	//if len(component.Ports) > 0 {
+	//	var ports []corev1.ContainerPort
+	//	for _, p := range component.Ports {
+	//		ports = append(ports, corev1.ContainerPort{
+	//			Name:          p.Name,
+	//			ContainerPort: int32(p.ContainerPort),
+	//			Protocol:      p.Protocol,
+	//		})
+	//	}
+	//}
 
 	mainContainer := &(deployment.Spec.Template.Spec.Containers[0])
 
@@ -227,73 +333,60 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 	}
 
 	// resources
-	if !component.Resources.CPU.Min.IsZero() {
-		mainContainer.Resources.Requests[corev1.ResourceCPU] = component.Resources.CPU.Min
+	if !component.CPU.IsZero() {
+		mainContainer.Resources.Requests[corev1.ResourceCPU] = component.CPU
+		mainContainer.Resources.Limits[corev1.ResourceCPU] = component.CPU
 	}
 
-	if !component.Resources.CPU.Max.IsZero() {
-		mainContainer.Resources.Limits[corev1.ResourceCPU] = component.Resources.CPU.Max
+	if !component.Memory.IsZero() {
+		mainContainer.Resources.Limits[corev1.ResourceMemory] = component.Memory
+		mainContainer.Resources.Limits[corev1.ResourceMemory] = component.Memory
 	}
 
-	if !component.Resources.Memory.Min.IsZero() {
-		mainContainer.Resources.Requests[corev1.ResourceMemory] = component.Resources.Memory.Min
-	}
+	// imgPullSecrets
+	log.Info("imgPullSecName", "name", app.Spec.ImagePullSecretName)
+	if app.Spec.ImagePullSecretName != "" {
+		secs := []corev1.LocalObjectReference{
+			{Name: app.Spec.ImagePullSecretName},
+		}
 
-	if !component.Resources.Memory.Max.IsZero() {
-		mainContainer.Resources.Limits[corev1.ResourceMemory] = component.Resources.Memory.Max
+		deployment.Spec.Template.Spec.ImagePullSecrets = secs
 	}
 
 	// apply envs
-	envs := []corev1.EnvVar{}
+	var envs []corev1.EnvVar
 	for _, env := range component.Env {
 		var value string
 
-		if env.Value != "" {
+		if env.Type == "" || env.Type == corev1alpha1.EnvVarTypeStatic {
 			value = env.Value
-		} else if env.SharedEnv != "" {
-			value = act.app.Spec.FindShareEnvValue(env.SharedEnv)
+		} else if env.Type == corev1alpha1.EnvVarTypeExternal {
+			value, err = act.FindShareEnvValue(env.Value)
+			if err != nil {
+				return err
+			}
+
 			if value == "" {
-				// TODO is this the corrent way to allocate an error?
-				return fmt.Errorf("Can't find shared env %s", env.SharedEnv)
+				// TODO is this the correct way to allocate an error?
+				return fmt.Errorf("can't find shared env %s", env.Value)
 			}
-		} else if env.ComponentPort != "" {
-			parts := strings.Split(env.ComponentPort, "/")
-
-			if len(parts) != 2 {
-				return fmt.Errorf("wrong componentPort config %s, format error", env.ComponentPort)
+		} else if env.Type == corev1alpha1.EnvVarTypeLinked {
+			value, err = act.getValueOfLinkedEnv(env)
+			if err != nil {
+				return err
 			}
-
-			service := act.FindService(parts[0])
-
-			if service == nil {
-				return fmt.Errorf("wrong componentPort config %s, service not exist", env.ComponentPort)
-			}
-
-			var port int32
-
-			for _, servicePort := range service.Spec.Ports {
-				if servicePort.Name == parts[1] {
-					port = servicePort.Port
-				}
-			}
-
-			if port == 0 {
-				return fmt.Errorf("wrong componentPort config %s, port not exist", env.ComponentPort)
-			}
-
-			value = fmt.Sprintf("%s.%s:%d", service.Name, act.app.Namespace, port)
 		}
 
 		envs = append(envs, corev1.EnvVar{
 			Name:  env.Name,
-			Value: fmt.Sprintf("%s%s%s", env.Prefix, value, env.Suffix),
+			Value: value,
 		})
 	}
 
 	mainContainer.Env = envs
 
 	// before start
-	beforeHooks := []corev1.Container{}
+	var beforeHooks []corev1.Container
 	for i, beforeHook := range component.BeforeStart {
 		beforeHooks = append(beforeHooks, corev1.Container{
 			Image:   component.Image,
@@ -329,7 +422,75 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 		}
 	}
 
-	// before stoop
+	// Disks
+	// make PVCs first
+	log.Info("disk config", "component name:", component.Name, "# disk:", len(component.Disks))
+
+	path2PVC := make(map[string]*corev1.PersistentVolumeClaim)
+	for _, disk := range component.Disks {
+		validNameFromPath := strings.ReplaceAll(disk.Path, "/", "-")
+		volName := fmt.Sprintf("vol%s", validNameFromPath)
+		pvcName := fmt.Sprintf("%s-%s-%s", app.Name, component.Name, volName)
+
+		pvc := &corev1.PersistentVolumeClaim{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      pvcName,
+				Namespace: app.Namespace,
+			},
+			Spec: corev1.PersistentVolumeClaimSpec{
+				AccessModes: []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
+				Resources: corev1.ResourceRequirements{
+					Requests: corev1.ResourceList{
+						corev1.ResourceStorage: disk.Size,
+					},
+				},
+				StorageClassName: nil,
+			},
+		}
+
+		pvcExist, err := act.IsPVCExists(pvc.Name)
+		if err != nil {
+			return err
+		}
+		if !pvcExist {
+			if err := act.reconciler.Create(ctx, pvc); err != nil {
+				return fmt.Errorf("fail to create PVC: %s, %s", pvc.Name, err)
+			} else {
+				log.Info("create pvc", "name", pvc.Name)
+			}
+		}
+		//todo how to update PVC?
+
+		path2PVC[disk.Path] = pvc
+	}
+
+	// add volumes & volumesMounts
+	var volumes []corev1.Volume
+	var volumeMounts []corev1.VolumeMount
+	for _, disk := range component.Disks {
+		pvc := path2PVC[disk.Path]
+
+		volumes = append(volumes, corev1.Volume{
+			Name: pvc.Name,
+			VolumeSource: corev1.VolumeSource{
+				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+					ClaimName: pvc.Name,
+				},
+			},
+		})
+
+		volumeMounts = append(volumeMounts, corev1.VolumeMount{
+			Name:      pvc.Name,
+			MountPath: disk.Path,
+		})
+	}
+
+	if len(volumes) > 0 {
+		deployment.Spec.Template.Spec.Volumes = volumes
+		mainContainer.VolumeMounts = volumeMounts
+	}
+
+	// before stop
 	if len(component.BeforeDestroy) == 0 {
 		if mainContainer.Lifecycle != nil {
 			mainContainer.Lifecycle.PreStop = nil
@@ -526,6 +687,77 @@ func (act *applicationReconcilerTask) FindService(componentName string) *corev1.
 		}
 	}
 	return nil
+}
+
+func (act *applicationReconcilerTask) FindShareEnvValue(name string) (string, error) {
+	for _, env := range act.app.Spec.SharedEnv {
+		if env.Name != name {
+			continue
+		}
+
+		if env.Type == corev1alpha1.EnvVarTypeLinked {
+			return act.getValueOfLinkedEnv(env)
+		} else if env.Type == "" || env.Type == corev1alpha1.EnvVarTypeStatic {
+			return env.Value, nil
+		}
+
+	}
+
+	return "", fmt.Errorf("fail to find value for shareEnv: %s", name)
+}
+
+func (act *applicationReconcilerTask) IsPVCExists(pvcName string) (bool, error) {
+	pvcList := corev1.PersistentVolumeClaimList{}
+
+	err := act.reconciler.List(
+		context.TODO(),
+		&pvcList,
+		client.InNamespace(act.req.Namespace),
+	)
+	if err != nil {
+		return false, err
+	}
+
+	for _, item := range pvcList.Items {
+		if item.Name == pvcName {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+func (act *applicationReconcilerTask) getValueOfLinkedEnv(env corev1alpha1.EnvVar) (string, error) {
+	if env.Value == "" {
+		return env.Value, nil
+	}
+
+	parts := strings.Split(env.Value, "/")
+	if len(parts) != 2 {
+		return "", fmt.Errorf("wrong componentPort config %s, format error", env.Value)
+	}
+
+	service := act.FindService(parts[0])
+	if service == nil {
+		return "", fmt.Errorf("wrong componentPort config %s, service not exist", env.Value)
+	}
+
+	var port int32
+	for _, servicePort := range service.Spec.Ports {
+		if servicePort.Name == parts[1] {
+			port = servicePort.Port
+		}
+	}
+
+	if port == 0 {
+		return "", fmt.Errorf("wrong componentPort config %s, port not exist", env.Value)
+	}
+
+	// svc.ns:port
+	value := fmt.Sprintf("%s.%s:%d", service.Name, act.app.Namespace, port)
+
+	// <prefix>value<suffix>
+	return fmt.Sprintf("%s%s%s", env.Prefix, value, env.Suffix), nil
 }
 
 func getDeploymentName(appName, componentName string) string {
