@@ -423,7 +423,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
     return (
       <MList dense={true}>
         {options.map((x, index) => (
-          <ListItem>
+          <ListItem key={index}>
             <ListItemText primary={x.title} key={index} secondary={x.content} />
           </ListItem>
         ))}
@@ -456,10 +456,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
     const { handleSubmit, submitButtonText } = this.props;
     const tabs = [
       {
-        title: "Plugins",
-        component: this.renderPlugins()
-      },
-      {
         title: "Basic",
         component: this.renderBasic()
       },
@@ -478,6 +474,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
       {
         title: "Advanced",
         component: this.renderAdvanced()
+      },
+      {
+        title: "Plugins",
+        component: this.renderPlugins()
       }
     ];
 

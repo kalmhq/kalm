@@ -1,13 +1,16 @@
-import { MenuItem } from "@material-ui/core";
+import { MenuItem, Button } from "@material-ui/core";
 import Immutable from "immutable";
 import MaterialTable, { EditComponentProps } from "material-table";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
-import { arrayUnshift, change, WrappedFieldArrayProps } from "redux-form";
+import { arrayUnshift, change, WrappedFieldArrayProps, submit } from "redux-form";
 import { FieldArray } from "redux-form/immutable";
 import { Plugin, portTypeTCP, portTypeUDP } from "../../actions";
 import { MaterialTableEditSelectField } from "../Basic/select";
 import { MaterialTableEditTextField } from "../Basic/text";
+import { ControlledDialog } from "../../widgets/ControlledDialog";
+import { openDialogAction, closeDialogAction } from "../../actions/dialog";
+import { PluginForm } from "../Plugin";
 
 interface FieldArrayComponentHackType {
   name: any;
@@ -98,14 +101,37 @@ class RenderPlugins extends React.PureComponent<Props> {
     );
   };
 
-  private renderCustomizedDialog() {
-    return <div></div>;
+  private renderAddPluginControlledDialog() {
+    return (
+      <ControlledDialog
+        dialogID="AddPlugin"
+        title="Add Plugin"
+        dialogProps={{
+          fullWidth: true,
+          maxWidth: "sm"
+        }}
+        actions={
+          <>
+            <Button
+              onClick={() => this.props.dispatch(closeDialogAction("AddPlugin"))}
+              color="default"
+              variant="contained">
+              Cancel
+            </Button>
+            <Button onClick={() => this.props.dispatch(submit("plugin"))} color="primary" variant="contained">
+              Add
+            </Button>
+          </>
+        }>
+        <PluginForm form="plugin" onSubmit={console.log} />
+      </ControlledDialog>
+    );
   }
 
   public render() {
     return (
       <div>
-        {this.renderCustomizedDialog()}
+        {this.renderAddPluginControlledDialog()}
         <MaterialTable
           tableRef={this.tableRef}
           options={{
@@ -125,6 +151,7 @@ class RenderPlugins extends React.PureComponent<Props> {
               },
               onClick: (...args) => {
                 //   this.openComponentFormDialog(-1);
+                this.props.dispatch(openDialogAction("AddPlugin", {}));
               },
               isFreeAction: true
             }

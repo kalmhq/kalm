@@ -43,3 +43,37 @@ export const ValidatorSchedule = (value: string) => {
 };
 
 export const ValidatorStringLength = () => {};
+
+const validateHost = (value: string) => {
+  if (value.length === 0 || value.length > 511) {
+    return "Host length must be between 1 and 511 characters.";
+  }
+
+  var regExpIp = new RegExp(
+    "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+  );
+  var regResultIp = regExpIp.exec(value);
+  var regExpHostname = new RegExp(
+    /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/
+  ); // RFC 1123
+
+  var regResultHostname = regExpHostname.exec(value);
+  if (regResultIp === null && regResultHostname === null) {
+    return "Host must be a valid IP address or hostname.";
+  }
+
+  return undefined;
+};
+
+export const ValidatorHosts = (values: string[]): (string | undefined)[] | string | undefined => {
+  // console.log("ValidatorHosts", values);
+  if (!values || (Array.isArray(values) && values.length === 0)) return "Required";
+  // console.log("ValidatorHosts2", values);
+  const errors = values.map(x => {
+    const res = validateHost(x);
+    // console.log("ValidatorHost", x, res);
+    return res;
+  });
+
+  return errors.filter(x => !!x).length > 0 ? errors : undefined;
+};

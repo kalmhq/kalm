@@ -53,3 +53,17 @@ export const NormalizeMemory = (value: string): string => {
 export const NormalizeBoolean = (value: string): boolean => {
   return !!value;
 };
+
+export const NormalizeHosts = (values: string[] | string, previousValue: string[]): string[] => {
+  console.log("NormalizeHosts", values, "isArray", Array.isArray(values), previousValue);
+  // only if no tags in autocomplete but unsubmit text in input field
+
+  let res;
+  if (!Array.isArray(values)) {
+    res = previousValue;
+  } else {
+    res = values;
+  }
+  // console.log("res", res);
+  return res;
+};

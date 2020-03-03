@@ -3,7 +3,7 @@ import { push } from "connected-react-router";
 import React from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
-import { Actions, ComponentTemplate, newEmptyComponentLike, ComponentLike } from "../../actions";
+import { Actions, ComponentLike, ComponentTemplate, newEmptyComponentLike } from "../../actions";
 import { createComponentTemplateAction } from "../../actions/componentTemplate";
 import { setSuccessNotificationAction } from "../../actions/notification";
 import { ComponentLikeForm } from "../../forms/ComponentLike";
@@ -12,9 +12,7 @@ import { BasePage } from "../BasePage";
 
 const styles = (theme: Theme) =>
   createStyles({
-    root: {
-      padding: theme.spacing(3)
-    }
+    root: {}
   });
 
 interface Props extends WithStyles<typeof styles> {
@@ -31,12 +29,14 @@ class ComponentTemplateNewRaw extends React.PureComponent<Props> {
   };
 
   public render() {
-    const { classes } = this.props;
     return (
       <BasePage title="New Component">
-        <div className={classes.root}>
-          <ComponentLikeForm onSubmit={this.submit} initialValues={newEmptyComponentLike()} showDataView showSubmitButton />
-        </div>
+        <ComponentLikeForm
+          onSubmit={this.submit}
+          initialValues={newEmptyComponentLike()}
+          showDataView
+          showSubmitButton
+        />
       </BasePage>
     );
   }

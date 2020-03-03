@@ -36,12 +36,22 @@ export const SET_NOTIFICATION_MESSAGE = "SET_NOTIFICATION_MESSAGE";
 
 export const SET_SETTINGS = "SET_SETTINGS";
 
+export const INIT_CONTROLLED_DIALOG = "INIT_CONTROLLED_DIALOG";
+export const DESTROY_CONTROLLED_DIALOG = "DESTROY_CONTROLLED_DIALOG";
+export const OPEN_CONTROLLED_DIALOG = "OPEN_CONTROLLED_DIALOG";
+export const CLOSE_CONTROLLED_DIALOG = "CLOSE_CONTROLLED_DIALOG";
+
 export const EnvTypeExternal = "external";
 export const EnvTypeStatic = "static";
 export const EnvTypeLinked = "linked";
 
 export const portTypeTCP = "TCP";
 export const portTypeUDP = "UDP";
+
+export type ControlledDialogParams<T> = ImmutableMap<{
+  open: boolean;
+  data: T;
+}>;
 
 export const newEmptyComponentLike = (): ComponentLike => {
   return Immutable.Map({
@@ -58,6 +68,10 @@ export const newEmptyComponentLike = (): ComponentLike => {
     dnsPolicy: "ClusterFirst",
     terminationGracePeriodSeconds: 30
   });
+};
+
+export const newEmptyPlugin = (): Plugin => {
+  return Immutable.Map({});
 };
 
 export const newEmptyComponentLikePort = (): ComponentLikePort => {
@@ -322,6 +336,33 @@ export interface SetSettingsAction {
   payload: Partial<SettingObject>;
 }
 
+export interface InitControlledDialogAction {
+  type: typeof INIT_CONTROLLED_DIALOG;
+  payload: {
+    dialogID: string;
+  };
+}
+export interface DestroyControlledDialogAction {
+  type: typeof DESTROY_CONTROLLED_DIALOG;
+  payload: {
+    dialogID: string;
+  };
+}
+export interface OpenControlledDialogAction {
+  type: typeof OPEN_CONTROLLED_DIALOG;
+  payload: {
+    dialogID: string;
+    data: any;
+  };
+}
+
+export interface CloseControlledDialogAction {
+  type: typeof CLOSE_CONTROLLED_DIALOG;
+  payload: {
+    dialogID: string;
+  };
+}
+
 export type Actions =
   | createComponentTemplateAction
   | DeleteComponentAction
@@ -344,7 +385,11 @@ export type Actions =
   | DuplicateApplicationAction
   | LoadNodesAction
   | LoadPersistentVolumnsAction
-  | SetSettingsAction;
+  | SetSettingsAction
+  | InitControlledDialogAction
+  | DestroyControlledDialogAction
+  | OpenControlledDialogAction
+  | CloseControlledDialogAction;
 
 export type ThunkResult<R> = ThunkAction<R, RootState, undefined, Actions>;
 export type TDispatch = ThunkDispatch<RootState, undefined, Actions>;
