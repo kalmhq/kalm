@@ -111,7 +111,6 @@ class RenderEnvs extends React.PureComponent<Props> {
         <MaterialTable
           tableRef={this.tableRef}
           options={{
-            padding: "dense",
             search: false,
             paging: false,
             //   toolbar: false
