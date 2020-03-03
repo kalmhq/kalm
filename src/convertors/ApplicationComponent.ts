@@ -29,7 +29,25 @@ export const convertFromCRDApplicationComponent = (x: V1alpha1ApplicationSpecCom
     restartStrategy: "rollingUpdate",
     terminationGracePeriodSeconds: 30,
     dnsPolicy: "ClusterFirst",
-    plugins: List()
+    plugins: List(
+      x.plugins
+        ? x.plugins
+            .filter((plugin: any) => plugin.type === "plugins.core.kapp.dev/v1alpha1.ingress")
+            .map((plugin: any) =>
+              Map({
+                name: "ingress",
+                type: plugin.type,
+                enableHttps: !!plugin.enableHttps,
+                enableHttp: !!plugin.enableHttp,
+                autoHttps: !!plugin.autoHttps,
+                hosts: plugin.hosts,
+                paths: plugin.path,
+                stripPath: !!plugin.stripPath,
+                preserveHost: !!plugin.preserveHost
+              })
+            )
+        : []
+    )
   });
 
   return res;
@@ -50,6 +68,21 @@ export const convertToCRDApplicationComponent = (c: ApplicationComponent): V1alp
           name: x.get("name"),
           type: x.get("type"),
           value: x.get("value")
+        }))
+        .toArray(),
+      plugins: c
+        .get("plugins")
+        .filter(x => x.get("type") === "plugins.core.kapp.dev/v1alpha1.ingress")
+        .map(x => ({
+          name: x.get("name"),
+          type: x.get("type"),
+          enableHttps: x.get("enableHttps"),
+          enableHttp: x.get("enableHttp"),
+          autoHttps: x.get("autoHttps"),
+          hosts: x.get("hosts"),
+          path: x.get("paths"),
+          stripPath: x.get("stripPath"),
+          preserveHost: x.get("preserveHost")
         }))
         .toArray(),
       command: c.get("command") ? [c.get("command")] : []

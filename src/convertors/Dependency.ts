@@ -28,6 +28,7 @@ export const convertFromCRDDependency = (c: V1alpha1Dependency): KappDependency 
 
   const res: KappDependency = Map({
     name: metadata.name!,
+    type: spec.type,
     version: spec.version,
     imageLink: "",
     description: "",

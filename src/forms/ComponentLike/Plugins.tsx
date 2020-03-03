@@ -9,6 +9,8 @@ import { closeDialogAction, openDialogAction } from "../../actions/dialog";
 import { RootState } from "../../reducers";
 import { ControlledDialog } from "../../widgets/ControlledDialog";
 import { PluginForm } from "../Plugin";
+import SyntaxHighlighter from "react-syntax-highlighter/dist/cjs/default-highlight";
+import { monokai } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 interface FieldArrayComponentHackType {
   name: any;
@@ -59,7 +61,20 @@ class RenderPlugins extends React.PureComponent<Props> {
   }
 
   private renderNameColumn = (rowData: RowData) => rowData.name;
-  private renderConfigColumn = (rowData: RowData) => JSON.stringify(rowData.config);
+  private renderConfigColumn = (rowData: RowData) => {
+    switch (rowData.name) {
+      case "ingress": {
+        return (
+          <SyntaxHighlighter language="json" style={monokai} showLineNumbers>
+            {JSON.stringify(rowData.config, undefined, 2)}
+          </SyntaxHighlighter>
+        );
+      }
+      default: {
+        return null;
+      }
+    }
+  };
 
   private handleDelete = async (rowData: RowData) => {
     this.props.fields.remove(rowData.index);

@@ -17,6 +17,7 @@ export const KappDependencyStatusText = ["Not Installed", "Install Failed", "Ins
 
 export interface KappDependencyContent {
   name: string;
+  type: string;
   version: string;
   imageLink: string;
   description: string;

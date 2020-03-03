@@ -52,6 +52,7 @@ class DependencyListRaw extends React.PureComponent<Props, State> {
     dependencies.forEach(x => {
       res.push({
         name: x.get("name"),
+        type: x.get("type"),
         version: x.get("version"),
         imageLink: require("../../images/kong-logo.png"),
         description:
@@ -201,6 +202,7 @@ class DependencyListRaw extends React.PureComponent<Props, State> {
             render: this.renderName
           },
           { title: "Version", field: "version", sorting: false },
+          { title: "Type", field: "type", sorting: false },
           { title: "Provider", field: "provider", sorting: false },
           { title: "Status", field: "status", sorting: false, render: this.renderStatus }
         ]}

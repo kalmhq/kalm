@@ -95,6 +95,18 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
           .toArray()
           .join(", ")
       : "-";
+
+  private renderPluginsColumn = (rowData: RowData) => {
+    return Array.from(
+      new Set(
+        rowData.applicationComponent
+          .get("plugins")
+          .map(x => x.get("name"))
+          .toArray()
+      )
+    ).join(",");
+  };
+
   private renderEnvsColumn = (rowData: RowData) => {
     const { applicationComponent } = rowData;
     const externalEnvs = applicationComponent.get("env").filter(x => {
@@ -305,6 +317,7 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
             { title: "Memory", field: "memory", sorting: false, render: this.renderMemoryColumn },
             { title: "Ports", field: "ports", sorting: false, render: this.renderPortsColumn },
             { title: "Disks", field: "disks", sorting: false, render: this.renderDisksColumn },
+            { title: "Plugins", field: "plugins", sorting: false, render: this.renderPluginsColumn },
             { title: "Envs", field: "envs", sorting: false, render: this.renderEnvsColumn }
           ]}
           data={this.getTableData()}
