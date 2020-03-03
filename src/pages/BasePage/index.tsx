@@ -25,10 +25,15 @@ export interface BasePageProps
 
 export class BasePageRaw extends React.PureComponent<BasePageProps> {
   public render() {
-    const { classes, children, title } = this.props;
+    const { classes, children, title, onCreate, createButtonText, noBreadcrumb, variant } = this.props;
     return (
       <div className={classes.root}>
-        <PageHeader title={title}></PageHeader>
+        <PageHeader
+          title={title}
+          createButtonText={createButtonText}
+          onCreate={onCreate}
+          noBreadcrumb={noBreadcrumb}
+          variant={variant}></PageHeader>
         <div className={classes.content}>
           <ScrollContainer>{children}</ScrollContainer>
         </div>

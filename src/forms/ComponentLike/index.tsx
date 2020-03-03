@@ -453,7 +453,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
   }
 
   public render() {
-    const { handleSubmit, submitButtonText } = this.props;
+    const { handleSubmit, submitButtonText, showSubmitButton } = this.props;
     const tabs = [
       {
         title: "Basic",
@@ -486,14 +486,16 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
         <VerticalTabs
           tabs={tabs}
           tabsBottomContent={
-            <>
-              <Button variant="contained" color="primary" type="submit">
-                {submitButtonText || "Submit"}
-              </Button>
-              <Button variant="contained" color="default" onClick={() => this.props.dispatch(goBack())}>
-                Close
-              </Button>
-            </>
+            showSubmitButton ? (
+              <>
+                <Button variant="contained" color="primary" type="submit">
+                  {submitButtonText || "Submit"}
+                </Button>
+                <Button variant="contained" color="default" onClick={() => this.props.dispatch(goBack())}>
+                  Close
+                </Button>
+              </>
+            ) : null
           }
         />
       </form>

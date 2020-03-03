@@ -145,9 +145,11 @@ export function VerticalTabs({ tabs, tabsBottomContent }: VerticalTabsProps) {
           </Fade>
         ))}
       </div>
-      <Paper elevation={8} className={classes.bottom} square>
-        {tabsBottomContent}
-      </Paper>
+      {tabsBottomContent ? (
+        <Paper elevation={8} className={classes.bottom} square>
+          {tabsBottomContent}
+        </Paper>
+      ) : null}
     </div>
   );
 }
