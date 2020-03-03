@@ -47,7 +47,9 @@ export const convertFromCRDComponentTemplate = (c: V1alpha1ComponentTemplate): C
     schedule: spec.schedule,
     restartStrategy: "rollingUpdate",
     terminationGracePeriodSeconds: 30,
-    dnsPolicy: "ClusterFirst"
+    dnsPolicy: "ClusterFirst",
+    plugins: List()
+    // plugins: List([Map({ name: "ingress", enableHttp: true, paths: ["3"], hosts: ["123"] })])
   });
 
   return res;

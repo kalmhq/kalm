@@ -1,6 +1,15 @@
 import React from "react";
 import { Autocomplete } from "@material-ui/lab";
-import { TextField, TextFieldProps, Chip, withStyles, Theme, createStyles, PropTypes } from "@material-ui/core";
+import {
+  TextField,
+  TextFieldProps,
+  Chip,
+  withStyles,
+  Theme,
+  createStyles,
+  PropTypes,
+  OutlinedTextFieldProps
+} from "@material-ui/core";
 import { WrappedFieldProps } from "redux-form";
 import { WithStyles } from "@material-ui/styles";
 import { ID } from "../../utils";
@@ -53,7 +62,10 @@ export const MaterialTableEditAutoComplete = ({ value, onChange, options, textFi
   );
 };
 
-export interface ReduxFormMultiTagsFreeSoloAutoCompleteProps extends WrappedFieldProps, WithStyles<typeof styles> {}
+export interface ReduxFormMultiTagsFreeSoloAutoCompleteProps
+  extends WrappedFieldProps,
+    WithStyles<typeof styles>,
+    Pick<OutlinedTextFieldProps, "placeholder"> {}
 
 const styles = (_theme: Theme) =>
   createStyles({
@@ -74,7 +86,8 @@ const ReduxFormMultiTagsFreeSoloAutoCompleteRaw = (props: ReduxFormMultiTagsFree
   const {
     input,
     meta: { touched, invalid, error },
-    classes
+    classes,
+    placeholder
   } = props;
 
   // TODO defualt hosts
@@ -116,6 +129,7 @@ const ReduxFormMultiTagsFreeSoloAutoCompleteRaw = (props: ReduxFormMultiTagsFree
         // As a result, Field that is using this component mush not set a normalizer.
         (input.onBlur as any)();
       }}
+      value={input.value}
       onChange={(_event: React.ChangeEvent<{}>, values) => {
         if (values) {
           input.onChange(values);
@@ -140,7 +154,7 @@ const ReduxFormMultiTagsFreeSoloAutoCompleteRaw = (props: ReduxFormMultiTagsFree
             variant="outlined"
             error={touched && invalid}
             label={capitalize(input.name)}
-            placeholder="Hosts"
+            placeholder={placeholder}
             helperText={touched && invalid && errorText}
           />
         );

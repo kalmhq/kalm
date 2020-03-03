@@ -1,16 +1,16 @@
-import { Box, MenuItem } from "@material-ui/core";
+import { Box, Fade, Grid } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
-import { InjectedFormProps } from "redux-form";
+import { change, InjectedFormProps } from "redux-form";
 import { Field, formValueSelector, reduxForm } from "redux-form/immutable";
 import { Plugin } from "../../actions";
 import { RootState } from "../../reducers";
-import { RenderSelectField } from "../Basic";
 import { ReduxFormMultiTagsFreeSoloAutoComplete } from "../Basic/autoComplete";
 import { SwitchField } from "../Basic/switch";
 import { NormalizeBoolean } from "../normalizer";
 import { ValidatorHosts, ValidatorRequired } from "../validator";
+import { PluginCard } from "./card";
 
 interface OwnProps {}
 
@@ -52,10 +52,20 @@ class PluginRaw extends React.PureComponent<Props> {
     return (
       <>
         <Box mt={3}>
-          <Field name="hosts" component={ReduxFormMultiTagsFreeSoloAutoComplete} validate={[ValidatorHosts]} />
+          <Field
+            name="hosts"
+            component={ReduxFormMultiTagsFreeSoloAutoComplete}
+            validate={[ValidatorHosts]}
+            placeholder="Hosts"
+          />
         </Box>
         <Box mt={3}>
-          <Field name="paths" component={ReduxFormMultiTagsFreeSoloAutoComplete} validate={ValidatorRequired} />
+          <Field
+            name="paths"
+            component={ReduxFormMultiTagsFreeSoloAutoComplete}
+            validate={ValidatorRequired}
+            placeholder="Paths"
+          />
         </Box>
         <Box mt={3}>
           <Field
@@ -120,14 +130,52 @@ class PluginRaw extends React.PureComponent<Props> {
     }
   }
 
+  private renderSelectPlugins = () => {
+    const { dispatch, form, pluginName } = this.props;
+
+    const selectPlugin = (name: string) => {
+      dispatch(change(form, "name", name));
+    };
+
+    return (
+      <>
+        <Field name="name" type="hidden" component="input" />
+
+        {!pluginName ? (
+          <Fade in={true}>
+            <Grid container spacing={2}>
+              <Grid item sm={4}>
+                <PluginCard
+                  title="HTTP Ingress"
+                  description="Configure host, url paths for external http/https access."
+                  onSelect={() => selectPlugin("ingress")}
+                />
+              </Grid>
+              <Grid item sm={4}>
+                <PluginCard
+                  title="Auto scale"
+                  description="Auto scale this component based on cpu and memory usages."
+                  onSelect={() => selectPlugin("auto-scale")}
+                />
+              </Grid>
+              <Grid item sm={4}>
+                <PluginCard
+                  title="File Watch"
+                  description="React specific actions when the some files are changed."
+                  onSelect={() => selectPlugin("file-watch")}
+                />
+              </Grid>
+            </Grid>
+          </Fade>
+        ) : null}
+      </>
+    );
+  };
+
   public render() {
     return (
       <div>
-        <Field component={RenderSelectField} name="name" label="Plugin">
-          <MenuItem value="ingress">Ingress</MenuItem>
-          <MenuItem value="auto-scale">Auto scale</MenuItem>
-          <MenuItem value="file-watch">File Watch</MenuItem>
-        </Field>
+        {this.renderSelectPlugins()}
         {this.renderPluginContent()}
       </div>
     );

@@ -28,7 +28,8 @@ export const convertFromCRDApplicationComponent = (x: V1alpha1ApplicationSpecCom
     disks: List([]),
     restartStrategy: "rollingUpdate",
     terminationGracePeriodSeconds: 30,
-    dnsPolicy: "ClusterFirst"
+    dnsPolicy: "ClusterFirst",
+    plugins: List()
   });
 
   return res;

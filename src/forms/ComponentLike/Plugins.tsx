@@ -1,15 +1,13 @@
-import { MenuItem, Button } from "@material-ui/core";
-import Immutable from "immutable";
-import MaterialTable, { EditComponentProps } from "material-table";
+import { Button } from "@material-ui/core";
+import MaterialTable from "material-table";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
-import { arrayUnshift, change, WrappedFieldArrayProps, submit } from "redux-form";
+import { change, submit, WrappedFieldArrayProps } from "redux-form";
 import { FieldArray } from "redux-form/immutable";
-import { Plugin, portTypeTCP, portTypeUDP } from "../../actions";
-import { MaterialTableEditSelectField } from "../Basic/select";
-import { MaterialTableEditTextField } from "../Basic/text";
+import { newEmptyPlugin, Plugin, portTypeTCP } from "../../actions";
+import { closeDialogAction, openDialogAction } from "../../actions/dialog";
+import { RootState } from "../../reducers";
 import { ControlledDialog } from "../../widgets/ControlledDialog";
-import { openDialogAction, closeDialogAction } from "../../actions/dialog";
 import { PluginForm } from "../Plugin";
 
 interface FieldArrayComponentHackType {
@@ -17,7 +15,7 @@ interface FieldArrayComponentHackType {
   component: any;
 }
 
-interface FieldArrayProps extends DispatchProp {}
+interface FieldArrayProps extends DispatchProp, ReturnType<typeof mapStateToProps> {}
 
 interface Props extends WrappedFieldArrayProps<Plugin>, FieldArrayComponentHackType, FieldArrayProps {}
 
@@ -26,6 +24,16 @@ interface RowData {
   config: {};
   index: number;
 }
+
+const dialogID = "plugin";
+
+const mapStateToProps = (state: RootState) => {
+  const dialog = state.get("dialogs").get(dialogID);
+
+  return {
+    dialogData: dialog ? dialog.get("data") : {}
+  };
+};
 
 class RenderPlugins extends React.PureComponent<Props> {
   private tableRef: React.RefObject<MaterialTable<RowData>>;
@@ -43,7 +51,7 @@ class RenderPlugins extends React.PureComponent<Props> {
       const plugin = fields.get(index);
       data.push({
         name: plugin.get("name"),
-        config: plugin.get("config"),
+        config: plugin.toJS(),
         index
       });
     });
@@ -51,61 +59,38 @@ class RenderPlugins extends React.PureComponent<Props> {
   }
 
   private renderNameColumn = (rowData: RowData) => rowData.name;
-  private renderConfigColumn = (rowData: RowData) => rowData.config;
+  private renderConfigColumn = (rowData: RowData) => JSON.stringify(rowData.config);
 
   private handleDelete = async (rowData: RowData) => {
     this.props.fields.remove(rowData.index);
   };
 
-  private handleEdit = async (newRowData: RowData, oldRowData?: RowData) => {
-    const { meta } = this.props;
-    const formName = meta.form;
-    const baseName = `${this.props.fields.name}[${newRowData.index}]`;
-
-    const promises = [];
-    if (!oldRowData || newRowData.name !== oldRowData.name) {
-      promises.push(this.props.dispatch(change(formName, `${baseName}.name`, newRowData.name)));
+  private addPlugins = (values: Plugin) => {
+    const { fields, dispatch, dialogData, meta } = this.props;
+    if (dialogData.isAdding) {
+      fields.push(values);
+    } else {
+      const index = dialogData.index;
+      this.props.dispatch(change(meta.form, `${fields.name}[${index}]`, values));
     }
 
-    if (!oldRowData || newRowData.config !== oldRowData.config) {
-      promises.push(this.props.dispatch(change(formName, `${baseName}.config`, newRowData.config)));
-    }
-
-    await Promise.all(promises);
-
-    this.forceUpdate();
-  };
-
-  private handleAdd = async (newRowData: RowData) => {
-    const { meta } = this.props;
-    const formName = meta.form;
-
-    const plugin: Plugin = Immutable.Map({
-      name: newRowData.name,
-      config: newRowData.config
-    });
-
-    return this.props.dispatch(arrayUnshift(formName, `${this.props.fields.name}`, plugin));
-  };
-
-  private editNameComponent = (props: EditComponentProps<RowData>) => {
-    return <MaterialTableEditTextField textFieldProps={{ placeholder: "Name", label: "Name" }} {...props} />;
-  };
-
-  private editConfigComponent = (props: EditComponentProps<RowData>) => {
-    return (
-      <MaterialTableEditSelectField {...props} selectProps={{ label: "Protocol" }}>
-        <MenuItem value={portTypeUDP}>{portTypeUDP}</MenuItem>
-        <MenuItem value={portTypeTCP}>{portTypeTCP}</MenuItem>
-      </MaterialTableEditSelectField>
-    );
+    dispatch(closeDialogAction(dialogID));
   };
 
   private renderAddPluginControlledDialog() {
+    const { dialogData, fields } = this.props;
+    let initialValues: Plugin;
+
+    if (dialogData.isEditing) {
+      initialValues = fields.get(dialogData.index);
+    } else {
+      initialValues = newEmptyPlugin();
+    }
+
     return (
       <ControlledDialog
-        dialogID="AddPlugin"
-        title="Add Plugin"
+        dialogID={dialogID}
+        title={dialogData.isAdding ? "Add plugin" : "Edit plugin"}
         dialogProps={{
           fullWidth: true,
           maxWidth: "sm"
@@ -113,17 +98,17 @@ class RenderPlugins extends React.PureComponent<Props> {
         actions={
           <>
             <Button
-              onClick={() => this.props.dispatch(closeDialogAction("AddPlugin"))}
+              onClick={() => this.props.dispatch(closeDialogAction(dialogID))}
               color="default"
               variant="contained">
               Cancel
             </Button>
             <Button onClick={() => this.props.dispatch(submit("plugin"))} color="primary" variant="contained">
-              Add
+              {dialogData.isAdding ? "Add" : "Update"}
             </Button>
           </>
         }>
-        <PluginForm form="plugin" onSubmit={console.log} />
+        <PluginForm form="plugin" initialValues={initialValues} onSubmit={this.addPlugins} />
       </ControlledDialog>
     );
   }
@@ -145,13 +130,27 @@ class RenderPlugins extends React.PureComponent<Props> {
           }}
           actions={[
             {
+              icon: "edit",
+              onClick: (_event: any, rowData: RowData | RowData[]) => {
+                this.props.dispatch(
+                  openDialogAction(dialogID, {
+                    isEditing: true,
+                    index: (rowData as RowData).index
+                  })
+                );
+              }
+            },
+            {
               icon: "add_circle",
               iconProps: {
                 color: "primary"
               },
               onClick: (...args) => {
-                //   this.openComponentFormDialog(-1);
-                this.props.dispatch(openDialogAction("AddPlugin", {}));
+                this.props.dispatch(
+                  openDialogAction(dialogID, {
+                    isAdding: true
+                  })
+                );
               },
               isFreeAction: true
             }
@@ -162,20 +161,17 @@ class RenderPlugins extends React.PureComponent<Props> {
               title: "Name",
               field: "name",
               sorting: false,
-              render: this.renderNameColumn,
-              editComponent: this.editNameComponent
+              render: this.renderNameColumn
             },
             {
               title: "Config",
               field: "config",
               initialEditValue: portTypeTCP,
               sorting: false,
-              render: this.renderConfigColumn,
-              editComponent: this.editConfigComponent
+              render: this.renderConfigColumn
             }
           ]}
           editable={{
-            onRowUpdate: this.handleEdit,
             onRowDelete: this.handleDelete
           }}
           data={this.getTableData()}
@@ -186,6 +182,6 @@ class RenderPlugins extends React.PureComponent<Props> {
   }
 }
 
-export const Plugins = connect()((props: FieldArrayProps) => {
+export const Plugins = connect(mapStateToProps)((props: FieldArrayProps) => {
   return <FieldArray name="plugins" component={RenderPlugins} {...props} />;
 });

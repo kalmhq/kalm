@@ -39,7 +39,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
       break;
     }
     case CLOSE_CONTROLLED_DIALOG: {
-      state = state.setIn([action.payload.dialogID, "open"], false);
+      state = state.set(action.payload.dialogID, emptyControlledDialogParams());
       break;
     }
   }

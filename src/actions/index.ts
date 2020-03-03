@@ -121,7 +121,7 @@ export type ComponentLikePort = ImmutableMap<{
 
 export interface PluginContent {
   name: string;
-  config: {};
+  [key: string]: any;
 }
 
 export interface ComponentLikeContent {
