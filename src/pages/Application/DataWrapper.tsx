@@ -27,7 +27,7 @@ export const ApplicationDataWrapper = (WrappedComponent: React.ComponentType<any
 
     private loadData = () => {
       this.props.dispatch(loadApplicationsAction());
-      this.interval = window.setTimeout(this.loadData, 5000);
+      // this.interval = window.setTimeout(this.loadData, 500000);
     };
 
     componentDidMount() {
