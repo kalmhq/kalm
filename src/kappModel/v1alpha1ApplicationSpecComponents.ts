@@ -22,6 +22,7 @@ export class V1alpha1ApplicationSpecComponents {
     'beforeStart'?: Array<string>;
     'command'?: Array<string>;
     'cpu'?: string;
+    'dependencies'?: Array<string>;
     'disks'?: Array<V1alpha1ApplicationSpecDisks>;
     'env'?: Array<V1alpha1ApplicationSpecEnv>;
     'image': string;
@@ -66,6 +67,11 @@ export class V1alpha1ApplicationSpecComponents {
             "name": "cpu",
             "baseName": "cpu",
             "type": "string"
+        },
+        {
+            "name": "dependencies",
+            "baseName": "dependencies",
+            "type": "Array<string>"
         },
         {
             "name": "disks",

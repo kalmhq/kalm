@@ -4,8 +4,9 @@ import { convertFromCRDComponentTemplate } from "../convertors/ComponentTemplate
 import { V1alpha1ComponentTemplate } from "../kappModel/v1alpha1ComponentTemplate";
 import { V1NodeList, V1PersistentVolumeList } from "../model/models";
 import { ItemList } from "../kappModel/List";
-import { V1alpha1Application } from "../kappModel";
+import { V1alpha1Application, V1alpha1Dependency } from "../kappModel";
 import { convertFromCRDApplication } from "../convertors/Application";
+import { convertFromCRDDependency } from "../convertors/Dependency";
 
 export const K8sApiPerfix = process.env.REACT_APP_K8S_API_PERFIX || "http://localhost:3001";
 
@@ -66,4 +67,9 @@ export const updateKappApplication = async (application: V1alpha1Application): P
   );
 
   return convertFromCRDApplication(res.data);
+};
+
+export const getDependencies = async () => {
+  const res = await axios.get<ItemList<V1alpha1Dependency>>(K8sApiPerfix + "/apis/core.kapp.dev/v1alpha1/dependencies");
+  return res.data.items.map(convertFromCRDDependency);
 };

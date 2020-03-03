@@ -8,6 +8,7 @@ import { ImmutableMap } from "../typings";
 import "./node";
 import "./notification";
 import { SettingObject } from "../reducers/settings";
+import { KappDependency } from "../types";
 
 export const CREATE_COMPONENT = "CREATE_COMPONENT";
 export const UPDATE_COMPONENT = "UPDATE_COMPONENT";
@@ -31,6 +32,9 @@ export const SET_CURRENT_CONFIG_ID_CHAIN = "SET_CURRENT_CONFIG_ID_CHAIN";
 
 export const LOAD_NODES = "LOAD_NODES";
 export const LOAD_PERSISTENT_VOLUMNS = "LOAD_PERSISTENT_VOLUMNS";
+
+export const LOAD_DEPENDENCIES_PENDING = "LOAD_DEPENDENCIES_PENDING";
+export const LOAD_DEPENDENCIES_FULFILLED = "LOAD_DEPENDENCIES_FULFILLED";
 
 export const SET_NOTIFICATION_MESSAGE = "SET_NOTIFICATION_MESSAGE";
 
@@ -363,6 +367,17 @@ export interface CloseControlledDialogAction {
   };
 }
 
+export interface LoadDependenciesPendingAction {
+  type: typeof LOAD_DEPENDENCIES_PENDING;
+}
+
+export interface LoadDependenciesFulfilledAction {
+  type: typeof LOAD_DEPENDENCIES_FULFILLED;
+  payload: {
+    dependencies: Array<KappDependency>;
+  };
+}
+
 export type Actions =
   | createComponentTemplateAction
   | DeleteComponentAction
@@ -389,7 +404,9 @@ export type Actions =
   | InitControlledDialogAction
   | DestroyControlledDialogAction
   | OpenControlledDialogAction
-  | CloseControlledDialogAction;
+  | CloseControlledDialogAction
+  | LoadDependenciesPendingAction
+  | LoadDependenciesFulfilledAction;
 
 export type ThunkResult<R> = ThunkAction<R, RootState, undefined, Actions>;
 export type TDispatch = ThunkDispatch<RootState, undefined, Actions>;

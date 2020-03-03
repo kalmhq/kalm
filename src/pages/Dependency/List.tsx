@@ -3,7 +3,12 @@ import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import WarningIcon from "@material-ui/icons/Warning";
 import MaterialTable from "material-table";
 import React from "react";
+import { connect } from "react-redux";
+import { ThunkDispatch } from "redux-thunk";
+import { Actions } from "../../actions";
+import { loadDependenciesAction } from "../../actions/dependency";
 import { CustomizedDialog } from "../../forms/Application/ComponentModal";
+import { RootState } from "../../reducers";
 import { KappDependencyContent, KappDependencyStatus, KappDependencyStatusText } from "../../types";
 import { FlexRowItemCenterBox } from "../../widgets/Box";
 import { CustomizedButton } from "../../widgets/Button";
@@ -14,9 +19,20 @@ interface State {
   dialogDependency?: KappDependencyContent;
 }
 
-interface Props {}
+interface Props extends ReturnType<typeof mapStateToProps> {
+  dispatch: ThunkDispatch<RootState, undefined, Actions>;
+}
 
-export class DependencyList extends React.PureComponent<Props, State> {
+const mapStateToProps = (state: RootState) => {
+  const dependenciesState = state.get("dependencies");
+  return {
+    dependencies: dependenciesState.get("dependencies").toList(),
+    isLoading: dependenciesState.get("isListLoading"),
+    isFirstLoaded: dependenciesState.get("isListFirstLoaded")
+  };
+};
+
+class DependencyListRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -24,70 +40,94 @@ export class DependencyList extends React.PureComponent<Props, State> {
     };
   }
 
+  componentDidMount() {
+    const { dispatch } = this.props;
+    dispatch(loadDependenciesAction());
+  }
+
   private getTableData = (): KappDependencyContent[] => {
-    return [
-      {
-        name: "Kong",
-        version: "0.1 (kong 0.14)",
+    const { dependencies } = this.props;
+
+    const res: KappDependencyContent[] = [];
+    dependencies.forEach(x => {
+      res.push({
+        name: x.get("name"),
+        version: x.get("version"),
         imageLink: require("../../images/kong-logo.png"),
         description:
           "Kong is a popular open source API gateway. Built for multi-cloud and hybrid, optimized for microservices and distributed architectures. \n" +
           "\n" +
           "Kapp use Kong as a kuberntes ingress. With this dependency intalled, you are able to configure external access, bind domain and certification for your applications.",
         provider: "official",
-        status: KappDependencyStatus.NotInstalled,
+        status: x.get("status"),
         projectHomepageLink: "https://www.kongcompany.com/"
-      },
-      {
-        name: "Prometheus",
-        imageLink: require("../../images/prometheus-logo.png"),
-        description:
-          "Prometheus is an open-source monitoring system with a dimensional data model, flexible query language, efficient time series database and modern alerting approach.\n" +
-          "\n" +
-          "Kapp use Prometheus as a time series database and alert manager. With this dependency installed, you are able to configure alerts.",
-        version: "0.1 (prometheus 1.2)",
-        provider: "official",
-        status: KappDependencyStatus.InstallFailed,
-        statusText: "Disk not enough",
-        projectHomepageLink: "https://www.kongcompany.com/"
-      },
-      {
-        name: "Prometheus",
-        imageLink: require("../../images/prometheus-logo.png"),
-        description:
-          "Prometheus is an open-source monitoring system with a dimensional data model, flexible query language, efficient time series database and modern alerting approach.\n" +
-          "\n" +
-          "Kapp use Prometheus as a time series database and alert manager. With this dependency installed, you are able to configure alerts.",
-        version: "0.1 (prometheus 1.2)",
-        provider: "official",
-        status: KappDependencyStatus.Installing,
-        projectHomepageLink: "https://www.kongcompany.com/"
-      },
-      {
-        name: "Prometheus",
-        imageLink: require("../../images/prometheus-logo.png"),
-        description:
-          "Prometheus is an open-source monitoring system with a dimensional data model, flexible query language, efficient time series database and modern alerting approach.\n" +
-          "\n" +
-          "Kapp use Prometheus as a time series database and alert manager. With this dependency installed, you are able to configure alerts.",
-        version: "0.1 (prometheus 1.2)",
-        provider: "official",
-        status: KappDependencyStatus.Uninstalling,
-        projectHomepageLink: "https://www.kongcompany.com/"
-      },
-      {
-        name: "Prometheus",
-        imageLink: require("../../images/prometheus-logo.png"),
-        description:
-          "Prometheus is an open-source monitoring system with a dimensional data model, flexible query language, efficient time series database and modern alerting approach.\n" +
-          "\n" +
-          "Kapp use Prometheus as a time series database and alert manager. With this dependency installed, you are able to configure alerts.",
-        version: "0.1 (prometheus 1.2)",
-        provider: "official",
-        status: KappDependencyStatus.Running,
-        projectHomepageLink: "https://www.kongcompany.com/"
-      }
-    ];
+      });
+    });
+
+    return res;
+    // return [
+    //   {
+    //     name: "Kong",
+    //     version: "0.1 (kong 0.14)",
+    //     imageLink: require("../../images/kong-logo.png"),
+    //     description:
+    //       "Kong is a popular open source API gateway. Built for multi-cloud and hybrid, optimized for microservices and distributed architectures. \n" +
+    //       "\n" +
+    //       "Kapp use Kong as a kuberntes ingress. With this dependency intalled, you are able to configure external access, bind domain and certification for your applications.",
+    //     provider: "official",
+    //     status: KappDependencyStatus.NotInstalled,
+    //     projectHomepageLink: "https://www.kongcompany.com/"
+    //   },
+    //   {
+    //     name: "Prometheus",
+    //     imageLink: require("../../images/prometheus-logo.png"),
+    //     description:
+    //       "Prometheus is an open-source monitoring system with a dimensional data model, flexible query language, efficient time series database and modern alerting approach.\n" +
+    //       "\n" +
+    //       "Kapp use Prometheus as a time series database and alert manager. With this dependency installed, you are able to configure alerts.",
+    //     version: "0.1 (prometheus 1.2)",
+    //     provider: "official",
+    //     status: KappDependencyStatus.InstallFailed,
+    //     statusText: "Disk not enough",
+    //     projectHomepageLink: "https://www.kongcompany.com/"
+    //   },
+    //   {
+    //     name: "Prometheus",
+    //     imageLink: require("../../images/prometheus-logo.png"),
+    //     description:
+    //       "Prometheus is an open-source monitoring system with a dimensional data model, flexible query language, efficient time series database and modern alerting approach.\n" +
+    //       "\n" +
+    //       "Kapp use Prometheus as a time series database and alert manager. With this dependency installed, you are able to configure alerts.",
+    //     version: "0.1 (prometheus 1.2)",
+    //     provider: "official",
+    //     status: KappDependencyStatus.Installing,
+    //     projectHomepageLink: "https://www.kongcompany.com/"
+    //   },
+    //   {
+    //     name: "Prometheus",
+    //     imageLink: require("../../images/prometheus-logo.png"),
+    //     description:
+    //       "Prometheus is an open-source monitoring system with a dimensional data model, flexible query language, efficient time series database and modern alerting approach.\n" +
+    //       "\n" +
+    //       "Kapp use Prometheus as a time series database and alert manager. With this dependency installed, you are able to configure alerts.",
+    //     version: "0.1 (prometheus 1.2)",
+    //     provider: "official",
+    //     status: KappDependencyStatus.Uninstalling,
+    //     projectHomepageLink: "https://www.kongcompany.com/"
+    //   },
+    //   {
+    //     name: "Prometheus",
+    //     imageLink: require("../../images/prometheus-logo.png"),
+    //     description:
+    //       "Prometheus is an open-source monitoring system with a dimensional data model, flexible query language, efficient time series database and modern alerting approach.\n" +
+    //       "\n" +
+    //       "Kapp use Prometheus as a time series database and alert manager. With this dependency installed, you are able to configure alerts.",
+    //     version: "0.1 (prometheus 1.2)",
+    //     provider: "official",
+    //     status: KappDependencyStatus.Running,
+    //     projectHomepageLink: "https://www.kongcompany.com/"
+    //   }
+    // ];
   };
 
   private renderName = (rowData: KappDependencyContent) => (
@@ -283,3 +323,5 @@ export class DependencyList extends React.PureComponent<Props, State> {
     );
   }
 }
+
+export const DependencyList = connect(mapStateToProps)(DependencyListRaw);

@@ -16,13 +16,9 @@ import {
 } from "./kubernetesApi";
 import { convertToCRDComponentTemplate } from "../convertors/ComponentTemplate";
 
-export const createComponentTemplateAction = (
-  componentTemplateRaw: ComponentTemplate
-): ThunkResult<Promise<void>> => {
+export const createComponentTemplateAction = (componentTemplateRaw: ComponentTemplate): ThunkResult<Promise<void>> => {
   return async dispatch => {
-    const componentTemplate = await createKappComonentTemplate(
-      convertToCRDComponentTemplate(componentTemplateRaw)
-    );
+    const componentTemplate = await createKappComonentTemplate(convertToCRDComponentTemplate(componentTemplateRaw));
 
     dispatch({
       type: CREATE_COMPONENT,
@@ -31,10 +27,7 @@ export const createComponentTemplateAction = (
   };
 };
 
-export const duplicateComponentAction = (
-  componentTemplateId: string,
-  newName: string
-): ThunkResult<Promise<void>> => {
+export const duplicateComponentAction = (componentTemplateId: string, newName: string): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     let componentTemplateCopy = getState()
       .get("componentTemplates")
@@ -44,9 +37,7 @@ export const duplicateComponentAction = (
     componentTemplateCopy = componentTemplateCopy.set("name", newName);
     componentTemplateCopy = componentTemplateCopy.delete("resourceVersion");
 
-    const componentTemplate = await createKappComonentTemplate(
-      convertToCRDComponentTemplate(componentTemplateCopy)
-    );
+    const componentTemplate = await createKappComonentTemplate(convertToCRDComponentTemplate(componentTemplateCopy));
 
     dispatch({
       type: DUPLICATE_COMPONENT,
@@ -60,9 +51,7 @@ export const updateComponentAction = (
   componentTemplateRaw: ComponentTemplate
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
-    const componentTemplate = await updateKappComonentTemplate(
-      convertToCRDComponentTemplate(componentTemplateRaw)
-    );
+    const componentTemplate = await updateKappComonentTemplate(convertToCRDComponentTemplate(componentTemplateRaw));
 
     dispatch({
       type: UPDATE_COMPONENT,
@@ -71,18 +60,14 @@ export const updateComponentAction = (
   };
 };
 
-export const deleteComponentAction = (
-  componentTemplateId: string
-): ThunkResult<Promise<void>> => {
+export const deleteComponentAction = (componentTemplateId: string): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     const componentTemplate = getState()
       .get("componentTemplates")
       .get("componentTemplates")
       .get(componentTemplateId)!;
 
-    await deleteKappComonentTemplate(
-      convertToCRDComponentTemplate(componentTemplate)
-    );
+    await deleteKappComonentTemplate(convertToCRDComponentTemplate(componentTemplate));
 
     dispatch({
       type: DELETE_COMPONENT,

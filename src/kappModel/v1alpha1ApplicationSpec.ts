@@ -19,9 +19,6 @@ import { V1alpha1ApplicationSpecEnv } from './v1alpha1ApplicationSpecEnv';
 export class V1alpha1ApplicationSpec {
     'components': Array<V1alpha1ApplicationSpecComponents>;
     'imagePullSecretName'?: string;
-    /**
-    * Volumes             []v1.Volume     `json:\"volumes,omitempty\"`
-    */
     'sharedEnv'?: Array<V1alpha1ApplicationSpecEnv>;
 
     static discriminator: string | undefined = undefined;

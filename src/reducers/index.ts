@@ -6,6 +6,7 @@ import notification, { State as NotificationState } from "./notification";
 import dialogs, { State as DialogState } from "./dialog";
 import componentTemplates, { State as ComponentTemplateState } from "./componentTemplate";
 import applications, { State as ApplicationState } from "./application";
+import dependencies, { State as DependencyState } from "./dependency";
 import nodes, { State as NodesState } from "./node";
 import persistentVolumns, { State as PersistentVolumnsState } from "./persistentVolumn";
 import configs, { State as ConfigState } from "./config";
@@ -19,6 +20,7 @@ export type RootState = ImmutableMap<{
   configs: ConfigState;
   router: RouterState<LocationState>;
   notification: NotificationState;
+  dependencies: DependencyState;
   dialogs: DialogState;
   form: FormState;
   nodes: NodesState;
@@ -35,6 +37,7 @@ export default (history: History<LocationState>) =>
     form: formReducer,
     nodes,
     dialogs,
+    dependencies,
     router: connectRouter(history),
     componentTemplates,
     persistentVolumns,
