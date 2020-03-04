@@ -21,6 +21,7 @@ import (
 
 	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
 	"github.com/kapp-staging/kapp/controllers"
+	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
@@ -43,6 +44,11 @@ func init() {
 	_ = corev1alpha1.AddToScheme(scheme)
 
 	_ = cmv1alpha2.AddToScheme(scheme)
+
+	err := apiextv1beta1.AddToScheme(scheme)
+	if err != nil {
+		panic(err)
+	}
 
 	// +kubebuilder:scaffold:scheme
 }
