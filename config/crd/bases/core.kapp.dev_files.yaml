@@ -24,8 +24,6 @@ spec:
             of an object. Servers should convert recognized schemas to the latest
             internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
           type: string
-        data:
-          type: string
         kind:
           description: 'Kind is a string value representing the REST resource this
             object represents. Servers may infer this from the endpoint the client
@@ -33,11 +31,19 @@ spec:
           type: string
         metadata:
           type: object
-        status:
-          description: FileStatus defines the observed state of File
+        spec:
+          description: FileSpec defines the desired state of File
+          properties:
+            content:
+              type: string
+            path:
+              type: string
+          required:
+          - content
+          - path
           type: object
       required:
-      - data
+      - spec
       type: object
   version: v1alpha1
   versions:

@@ -28,17 +28,8 @@ type FileSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 	// Standard object's metadata.
 
-	metav1.TypeMeta `json:",inline"`
-	// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
-	// +optional
-	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Data              string `json:"data"`
-}
-
-// FileStatus defines the observed state of File
-type FileStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	Path    string `json:"path"`
+	Content string `json:"content"`
 }
 
 // +kubebuilder:object:root=true
@@ -47,9 +38,7 @@ type FileStatus struct {
 type File struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	Data   string     `json:"data"`
-	Status FileStatus `json:"status,omitempty"`
+	Spec              FileSpec `json:"spec"`
 }
 
 // +kubebuilder:object:root=true

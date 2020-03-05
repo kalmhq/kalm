@@ -54,9 +54,7 @@ func (act *fileReconcilerTask) Run() (err error) {
 				Name:      file.Name,
 				Namespace: file.Namespace,
 			},
-			Data: map[string]string{
-				file.Name: file.Data,
-			},
+			Data: map[string]string{},
 		}
 	}
 	act.reconciler.Create(ctx, config)

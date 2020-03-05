@@ -16,8 +16,6 @@ limitations under the License.
 package controllers
 
 import (
-	"context"
-
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -41,22 +39,23 @@ type FileReconciler struct {
 // +kubebuilder:rbac:groups=extensions,resources=deployments/status,verbs=get
 
 func (r *FileReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	ctx := context.Background()
-	log := r.Log.WithValues("file", req.NamespacedName)
-
-	// your logic here
-	var file corev1alpha1.File
-
-	if err := r.Get(ctx, req.NamespacedName, &file); err != nil {
-		err = client.IgnoreNotFound(err)
-		if err != nil {
-			log.Error(err, "unable to fetch File")
-		}
-		return ctrl.Result{}, err
-	}
-
-	act := newFileReconcilerTask(r, &file, req)
-	return ctrl.Result{}, act.Run()
+	//ctx := context.Background()
+	//log := r.Log.WithValues("file", req.NamespacedName)
+	//
+	//// your logic here
+	//var file corev1alpha1.File
+	//
+	//if err := r.Get(ctx, req.NamespacedName, &file); err != nil {
+	//	err = client.IgnoreNotFound(err)
+	//	if err != nil {
+	//		log.Error(err, "unable to fetch File")
+	//	}
+	//	return ctrl.Result{}, err
+	//}
+	//
+	//act := newFileReconcilerTask(r, &file, req)
+	//return ctrl.Result{}, act.Run()
+	return ctrl.Result{}, nil
 }
 
 func (r *FileReconciler) SetupWithManager(mgr ctrl.Manager) error {
