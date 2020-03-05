@@ -5,7 +5,17 @@ metadata:
 spec:
   # Add fields here
   type: kong
-  version: 1.0.1
+  version: 1.0.0
+  config:
+      cert-manager: dependency-sample-cert-manager
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: Dependency
+metadata:
+  name: dependency-sample-cert-manager
+spec:
+  type: cert-manager
+  version: 1.0.0
   config:
     tlsType: acme
     challengeProvider: cloudflare

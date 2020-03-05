@@ -46,8 +46,8 @@ const (
 	DependencyStatusInstallFailed = "Install Failed"
 	DependencyStatusInstalling    = "Installing"
 	DependencyStatusUninstalling  = "Uninstalling"
-	//DependencyStatusInstalled     = "Installed"
-	DependencyStatusRunning = "Running"
+	DependencyStatusInstalled     = "Installed"
+	DependencyStatusRunning       = "Running"
 )
 
 // +kubebuilder:object:root=true
