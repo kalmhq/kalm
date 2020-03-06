@@ -35,7 +35,7 @@ type ApplicationReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-var applicationOwnerKey = ".metadata.controller"
+var ownerKey = ".metadata.controller"
 var apiGVStr = corev1alpha1.GroupVersion.String()
 var finalizerName = "storage.finalizers.kapp.dev"
 
@@ -68,7 +68,7 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 }
 
 func (r *ApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	if err := mgr.GetFieldIndexer().IndexField(&appv1.Deployment{}, applicationOwnerKey, func(rawObj runtime.Object) []string {
+	if err := mgr.GetFieldIndexer().IndexField(&appv1.Deployment{}, ownerKey, func(rawObj runtime.Object) []string {
 		deployment := rawObj.(*appv1.Deployment)
 		owner := metav1.GetControllerOf(deployment)
 
@@ -85,7 +85,7 @@ func (r *ApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		return err
 	}
 
-	if err := mgr.GetFieldIndexer().IndexField(&corev1.Service{}, applicationOwnerKey, func(rawObj runtime.Object) []string {
+	if err := mgr.GetFieldIndexer().IndexField(&corev1.Service{}, ownerKey, func(rawObj runtime.Object) []string {
 		// grab the job object, extract the owner...
 		service := rawObj.(*corev1.Service)
 		owner := metav1.GetControllerOf(service)

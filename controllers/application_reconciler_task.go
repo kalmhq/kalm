@@ -586,7 +586,7 @@ func (act *applicationReconcilerTask) getDeployments() error {
 		&deploymentList,
 		client.InNamespace(act.req.Namespace),
 		client.MatchingFields{
-			applicationOwnerKey: act.req.Name,
+			ownerKey: act.req.Name,
 		},
 	); err != nil {
 		act.log.Error(err, "unable to list child deployments")
@@ -606,7 +606,7 @@ func (act *applicationReconcilerTask) getServices() error {
 		&serviceList,
 		client.InNamespace(act.req.Namespace),
 		client.MatchingFields{
-			applicationOwnerKey: act.req.Name,
+			ownerKey: act.req.Name,
 		},
 	); err != nil {
 		act.log.Error(err, "unable to list child services")

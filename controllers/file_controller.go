@@ -16,8 +16,10 @@ limitations under the License.
 package controllers
 
 import (
+	"context"
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -28,9 +30,8 @@ import (
 // FileReconciler reconciles a File object
 type FileReconciler struct {
 	client.Client
-	Log       logr.Logger
-	Scheme    *runtime.Scheme
-	ConfigMap *corev1.ConfigMap
+	Log    logr.Logger
+	Scheme *runtime.Scheme
 }
 
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=files,verbs=get;list;watch;create;update;patch;delete
@@ -39,29 +40,38 @@ type FileReconciler struct {
 // +kubebuilder:rbac:groups=extensions,resources=deployments/status,verbs=get
 
 func (r *FileReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	//ctx := context.Background()
-	//log := r.Log.WithValues("file", req.NamespacedName)
-	//
-	//// your logic here
-	//var file corev1alpha1.File
-	//
-	//if err := r.Get(ctx, req.NamespacedName, &file); err != nil {
-	//	err = client.IgnoreNotFound(err)
-	//	if err != nil {
-	//		log.Error(err, "unable to fetch File")
-	//	}
-	//	return ctrl.Result{}, err
-	//}
-	//
-	//act := newFileReconcilerTask(r, &file, req)
-	//return ctrl.Result{}, act.Run()
-	return ctrl.Result{}, nil
+	ctx := context.Background()
+	log := r.Log.WithValues("file", req.NamespacedName)
+
+	var file corev1alpha1.File
+	if err := r.Get(ctx, req.NamespacedName, &file); err != nil {
+		err = client.IgnoreNotFound(err)
+		if err != nil {
+			log.Error(err, "unable to fetch File")
+		}
+		return ctrl.Result{}, err
+	}
+
+	act := newFileReconcilerTask(r, &file, req)
+	return ctrl.Result{}, act.Run()
 }
 
 func (r *FileReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	if r.ConfigMap == nil {
-
+	if err := mgr.GetFieldIndexer().IndexField(&corev1.ConfigMap{}, ownerKey, func(rawObj runtime.Object) []string {
+		// grab the job object, extract the owner...
+		configMap := rawObj.(*corev1.ConfigMap)
+		owner := metav1.GetControllerOf(configMap)
+		if owner == nil {
+			return nil
+		}
+		if owner.APIVersion != apiGVStr || owner.Kind != "File" {
+			return nil
+		}
+		return []string{owner.Name}
+	}); err != nil {
+		return err
 	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1alpha1.File{}).
 		Owns(&corev1.ConfigMap{}).
