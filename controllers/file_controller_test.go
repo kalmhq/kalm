@@ -81,8 +81,28 @@ var _ = Describe("SecretScope Controller", func() {
 	})
 
 	Context("File related resource CREATE", func() {
-		It("Should handle generated config-map correctly", func() {
-
-		})
+		//It("Should handle generated config-map correctly", func() {
+		//	file := generateFile("/a/b/c/d.yml", "value")
+		//
+		//	By("Creating a file & config-map successfully")
+		//	Expect(k8sClient.Create(context.Background(), file)).Should(Succeed())
+		//
+		//	configMapList := &corev1.ConfigMapList{}
+		//	Eventually(func() bool {
+		//		_ = k8sClient.Get(context.Background(), key, configMapList)
+		//
+		//		spew.Dump(configMapList)
+		//		for i := range configMapList.Items {
+		//			configMap := configMapList.Items[i]
+		//
+		//			if getConfigMapNameFromPath(file.Spec.Path) == configMap.Name {
+		//				return true
+		//			}
+		//		}
+		//
+		//		return false
+		//	}, timeout, interval).Should(Succeed())
+		//
+		//})
 	})
 })

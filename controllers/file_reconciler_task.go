@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strings"
 
@@ -58,6 +59,8 @@ func (task *fileReconcilerTask) Run() (err error) {
 	}
 
 	shouldCreated := task.calculateShouldCreated()
+
+	spew.Dump("shouldCreated", shouldCreated)
 
 	if shouldCreated != nil {
 		err := task.reconciler.Create(task.ctx, shouldCreated)
