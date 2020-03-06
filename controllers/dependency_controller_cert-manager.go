@@ -17,7 +17,8 @@ import (
 
 func (r *DependencyReconciler) reconcileCertManager(ctx context.Context, dep *corev1alpha1.Dependency) error {
 	// check if cert-manger installed
-	status, err := r.getDependencyInstallStatus("cert-manager", "cert-manager")
+	status, err := r.getDependencyInstallStatus("cert-manager",
+		"cert-manager", "cert-manager-webhook", "cert-manager-cainjector")
 	if err != nil {
 		return err
 	}

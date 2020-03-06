@@ -7,6 +7,7 @@ import (
 	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	"io/ioutil"
 	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
@@ -26,9 +27,62 @@ const (
 	Installed
 )
 
+func (r *DependencyReconciler) getDependencyInstallStatus(namespace string, dpNames ...string) (DepInstallStatus, error) {
+	var statusList []DepInstallStatus
+
+	for _, dpName := range dpNames {
+		singleDeploymentStatus, err := r.getSingleDpStatusInDependency(namespace, dpName)
+		if err != nil {
+			return 0, err
+		}
+
+		statusList = append(statusList, singleDeploymentStatus)
+	}
+
+	if hasStatus(statusList, InstallFailed) {
+		return InstallFailed, nil
+	}
+	if hasStatus(statusList, Installing) {
+		return Installing, nil
+	}
+
+	if allIsStatus(statusList, Installed) {
+		return Installed, nil
+	}
+	if allIsStatus(statusList, NotInstalled) {
+		return NotInstalled, nil
+	}
+
+	return Installing, nil
+}
+
+func hasStatus(statusList []DepInstallStatus, target DepInstallStatus) bool {
+	for _, status := range statusList {
+		if status == target {
+			return true
+		}
+	}
+
+	return false
+}
+
+func allIsStatus(statusList []DepInstallStatus, target DepInstallStatus) bool {
+	if len(statusList) < 0 {
+		return false
+	}
+
+	for _, status := range statusList {
+		if status != target {
+			return false
+		}
+	}
+
+	return true
+}
+
 // todo more strict check
 // currently only check if given dp exist under ns
-func (r *DependencyReconciler) getDependencyInstallStatus(namespace, dpName string) (DepInstallStatus, error) {
+func (r *DependencyReconciler) getSingleDpStatusInDependency(namespace, dpName string) (DepInstallStatus, error) {
 	dpList := appsv1.DeploymentList{}
 	if err := r.List(context.TODO(), &dpList, client.InNamespace(namespace)); err != nil {
 		return 0, err
@@ -46,10 +100,16 @@ func (r *DependencyReconciler) getDependencyInstallStatus(namespace, dpName stri
 		// todo first or last?
 		latestCondition := dp.Status.Conditions[0]
 
-		// todo latestCondition.Status also matters?
-		switch latestCondition.Type {
+		conditionType := latestCondition.Type
+		conditionStatus := latestCondition.Status
+
+		switch conditionType {
 		case appsv1.DeploymentAvailable:
-			return Installed, nil
+			if conditionStatus == corev1.ConditionTrue {
+				return Installed, nil
+			} else {
+				return Installing, nil
+			}
 		case appsv1.DeploymentProgressing:
 			return Installing, nil
 		case appsv1.DeploymentReplicaFailure:

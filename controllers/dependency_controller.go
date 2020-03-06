@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"github.com/go-logr/logr"
 	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
-	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	"k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -73,7 +72,7 @@ func (r *DependencyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 func (r *DependencyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1alpha1.Dependency{}).
-		Owns(&cmv1alpha2.ClusterIssuer{}).
+		//Owns(&cmv1alpha2.ClusterIssuer{}).
 		Owns(&v1beta1.Ingress{}).
 		Watches(
 			&source.Kind{Type: &corev1alpha1.Application{}},
