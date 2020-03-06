@@ -9,6 +9,7 @@ import (
 func GetPlugin(raw runtime.RawExtension) interface{} {
 	var tmp struct {
 		Name string `json:"name"`
+		Type string `json:"type"`
 	}
 
 	_ = json.Unmarshal(raw.Raw, &tmp)
@@ -31,4 +32,14 @@ func (p *PluginManualScaler) Operate(deployment *v1.Deployment) {
 	var count int32
 	count = int32(p.Replicas)
 	deployment.Spec.Replicas = &count
+}
+
+type PluginIngress struct {
+	Name        string   `json:"name"`
+	Type        string   `json:"type"`
+	Hosts       []string `json:"hosts"`
+	Namespace   string   `json:"namespace"`
+	ServiceName string   `json:"serviceName"`
+	ServicePort int      `json:"servicePort"`
+	//todo more
 }

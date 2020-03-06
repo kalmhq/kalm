@@ -7,6 +7,30 @@ metadata:
   name: manager-role
 rules:
 - apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - cert-manager.io
+  resources:
+  - clusterissuers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
   - core.kapp.dev
   resources:
   - applications
@@ -22,6 +46,26 @@ rules:
   - core.kapp.dev
   resources:
   - applications/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - core.kapp.dev
+  resources:
+  - dependencies
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kapp.dev
+  resources:
+  - dependencies/status
   verbs:
   - get
   - patch
@@ -77,3 +121,15 @@ rules:
   - deployments/status
   verbs:
   - get
+- apiGroups:
+  - extensions
+  resources:
+  - ingresses
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
