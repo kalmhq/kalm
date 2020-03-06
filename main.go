@@ -21,11 +21,15 @@ import (
 
 	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
 	"github.com/kapp-staging/kapp/controllers"
+	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+
+	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
+	//cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -38,6 +42,14 @@ func init() {
 	_ = clientgoscheme.AddToScheme(scheme)
 
 	_ = corev1alpha1.AddToScheme(scheme)
+
+	_ = cmv1alpha2.AddToScheme(scheme)
+
+	err := apiextv1beta1.AddToScheme(scheme)
+	if err != nil {
+		panic(err)
+	}
+
 	// +kubebuilder:scaffold:scheme
 }
 
@@ -78,6 +90,14 @@ func main() {
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "File")
+		os.Exit(1)
+	}
+	if err = (&controllers.DependencyReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("Dependency"),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Dependency")
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder
