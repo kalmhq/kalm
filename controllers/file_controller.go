@@ -17,14 +17,17 @@ package controllers
 
 import (
 	"context"
+	"crypto/rand"
+	"fmt"
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"time"
 
-	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
+	v1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
 )
 
 // FileReconciler reconciles a File object
@@ -34,16 +37,20 @@ type FileReconciler struct {
 	Scheme *runtime.Scheme
 }
 
+func randomName() string {
+	b := make([]byte, 32)
+	_, _ = rand.Read(b)
+	return fmt.Sprintf("%x", b)
+}
+
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=files,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=core.kapp.dev,resources=files/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=extensions,resources=deployments;configmaps,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=extensions,resources=deployments/status,verbs=get
+// +kubebuilder:rbac:groups=extensions,resources=configmaps,verbs=get;list;watch;create;update;patch;delete
 
 func (r *FileReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("file", req.NamespacedName)
 
-	var file corev1alpha1.File
+	var file v1alpha1.File
 	if err := r.Get(ctx, req.NamespacedName, &file); err != nil {
 		err = client.IgnoreNotFound(err)
 		if err != nil {
@@ -53,7 +60,7 @@ func (r *FileReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	act := newFileReconcilerTask(r, &file, req)
-	return ctrl.Result{}, act.Run()
+	return ctrl.Result{RequeueAfter: time.Second}, act.Run()
 }
 
 func (r *FileReconciler) SetupWithManager(mgr ctrl.Manager) error {
@@ -61,9 +68,11 @@ func (r *FileReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		// grab the job object, extract the owner...
 		configMap := rawObj.(*corev1.ConfigMap)
 		owner := metav1.GetControllerOf(configMap)
+
 		if owner == nil {
 			return nil
 		}
+
 		if owner.APIVersion != apiGVStr || owner.Kind != "File" {
 			return nil
 		}
@@ -73,7 +82,7 @@ func (r *FileReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	}
 
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&corev1alpha1.File{}).
+		For(&v1alpha1.File{}).
 		Owns(&corev1.ConfigMap{}).
 		Complete(r)
 }
