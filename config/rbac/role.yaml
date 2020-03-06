@@ -83,18 +83,9 @@ rules:
   - update
   - watch
 - apiGroups:
-  - core.kapp.dev
-  resources:
-  - files/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
   - extensions
   resources:
   - configmaps
-  - deployments
   verbs:
   - create
   - delete

@@ -3,8 +3,8 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/types"
 	"strings"
 
 	"github.com/go-logr/logr"
@@ -21,8 +21,6 @@ type fileReconcilerTask struct {
 	file       *corev1alpha1.File
 	req        ctrl.Request
 	log        logr.Logger
-	data       string
-	ConfigMaps map[string]*corev1.ConfigMap
 }
 
 func newFileReconcilerTask(
@@ -36,13 +34,49 @@ func newFileReconcilerTask(
 		file,
 		req,
 		reconciler.Log,
-		"",
-		make(map[string]*corev1.ConfigMap),
 	}
+}
+
+func (task *fileReconcilerTask) updateConfigMapDataBaseOnFile(configMap *corev1.ConfigMap) error {
+	key := getConfigMapDataKeyFromPath(task.file.Spec.Path)
+
+	if content, exist := configMap.Data[key]; exist && content == task.file.Spec.Content {
+		return nil
+	}
+	configMap.Data[key] = task.file.Spec.Content
+
+	err := task.reconciler.Update(task.ctx, configMap)
+	if err != nil {
+		task.log.Error(err, "update config map failed")
+		return err
+	}
+	return nil
+}
+
+func (task *fileReconcilerTask) removeConfigMapDataBaseOnFileAndPath(configMap *corev1.ConfigMap, path string) error {
+	key := getConfigMapDataKeyFromPath(path)
+	delete(configMap.Data, key)
+
+	if len(configMap.Data) > 0 {
+		err := task.reconciler.Update(task.ctx, configMap)
+		if err != nil {
+			task.log.Error(err, "update config map failed")
+			return err
+		}
+	} else {
+		err := task.reconciler.Delete(task.ctx, configMap)
+		if err != nil {
+			task.log.Error(err, "delete config map failed")
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (task *fileReconcilerTask) Run() (err error) {
 	log := task.log
+	//spew.Dump("task.file.Status.LastPath before", task.file.Status.LastPath)
 
 	if shouldFinishReconcilation, err := task.handleDelete(); err != nil || shouldFinishReconcilation {
 		if err != nil {
@@ -51,31 +85,50 @@ func (task *fileReconcilerTask) Run() (err error) {
 		return err
 	}
 
-	err = task.loadConfigMaps()
+	configMap := &corev1.ConfigMap{}
+	err = task.getCurrentPathConfigMap(configMap)
 
-	if err != nil {
-		task.log.Error(err, "load config maps failed")
+	if errors.IsNotFound(err) {
+		configMap = newConfigMapFromFile(task.file)
+		err = task.reconciler.Create(task.ctx, configMap)
+		if err != nil {
+			task.log.Error(err, "create config map failed")
+			return err
+		}
+	} else if err != nil {
+		task.log.Error(err, "get current path config-map failed")
 		return err
 	}
 
-	shouldCreated := task.calculateShouldCreated()
+	err = task.updateConfigMapDataBaseOnFile(configMap)
 
-	spew.Dump("shouldCreated", shouldCreated)
+	if err != nil {
+		task.log.Error(err, "update file content into config-map failed")
+		return err
+	}
 
-	if shouldCreated != nil {
-		err := task.reconciler.Create(task.ctx, shouldCreated)
+	if task.file.Status.LastPath != "" && task.file.Spec.Path != task.file.Status.LastPath {
+		configMap := &corev1.ConfigMap{}
+		err = task.getLastPathConfigMap(configMap)
 		if err != nil {
-			task.log.Error(err, "create config map failed")
+			task.log.Error(err, "get file last path config map error")
+			return err
+		}
+
+		err = task.removeConfigMapDataBaseOnFileAndPath(configMap, task.file.Status.LastPath)
+		if err != nil {
+			task.log.Error(err, "remote config map file data error")
+			return err
 		}
 	}
 
-	shouldUpdate := task.calculateShouldUpdated()
+	task.file.Status.LastPath = task.file.Spec.Path
+	err = task.reconciler.Status().Update(task.ctx, task.file)
 
-	if shouldUpdate != nil {
-		// TODO
+	if err != nil {
+		task.log.Error(err, "update task status failed")
+		return err
 	}
-
-	//task.reconciler.Create(ctx, config)
 
 	return nil
 }
@@ -90,6 +143,27 @@ func getConfigMapDataKeyFromPath(path string) string {
 	return parts[len(parts)-1]
 }
 
+func (task *fileReconcilerTask) getConfigMap(name string, configMap *corev1.ConfigMap) error {
+	return task.reconciler.Get(
+		task.ctx,
+		types.NamespacedName{
+			Name:      name,
+			Namespace: task.file.Namespace,
+		},
+		configMap,
+	)
+}
+
+func (task *fileReconcilerTask) getCurrentPathConfigMap(configMap *corev1.ConfigMap) error {
+	name := getConfigMapNameFromPath(task.file.Spec.Path)
+	return task.getConfigMap(name, configMap)
+}
+
+func (task *fileReconcilerTask) getLastPathConfigMap(configMap *corev1.ConfigMap) error {
+	name := getConfigMapNameFromPath(task.file.Status.LastPath)
+	return task.getConfigMap(name, configMap)
+}
+
 func newConfigMapFromFile(file *corev1alpha1.File) *corev1.ConfigMap {
 	return &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
@@ -102,52 +176,16 @@ func newConfigMapFromFile(file *corev1alpha1.File) *corev1.ConfigMap {
 	}
 }
 
-func (task *fileReconcilerTask) calculateShouldCreated() *corev1.ConfigMap {
-	path := task.file.Spec.Path
+func (task *fileReconcilerTask) deleteRelatedConfigMap() (err error) {
+	configMap := &corev1.ConfigMap{}
+	err = task.getCurrentPathConfigMap(configMap)
 
-	if _, exist := task.ConfigMaps[getConfigMapNameFromPath(path)]; !exist {
-		return newConfigMapFromFile(task.file)
-	} else {
-		return nil
-	}
-}
-
-func (task *fileReconcilerTask) calculateShouldUpdated() *corev1.ConfigMap {
-	path := task.file.Spec.Path
-
-	if configMap, exist := task.ConfigMaps[getConfigMapNameFromPath(path)]; !exist {
-		return nil
-	} else {
-		key := getConfigMapDataKeyFromPath(path)
-		if content, exist := configMap.Data[key]; exist && content == task.file.Spec.Content {
-			return nil
-		}
-		configMap.Data[key] = task.file.Spec.Content
-		return configMap
-	}
-}
-
-func (task *fileReconcilerTask) loadConfigMaps() error {
-	var configMapList corev1.ConfigMapList
-
-	if err := task.reconciler.List(
-		task.ctx,
-		&configMapList,
-		client.InNamespace(task.req.Namespace),
-		client.MatchingFields{
-			ownerKey: task.req.Name,
-		},
-	); err != nil {
-		task.log.Error(err, "unable to list child config-maps")
+	if err != nil {
+		task.log.Error(err, "get file current path config map error")
 		return err
 	}
 
-	for i := range configMapList.Items {
-		configMap := configMapList.Items[i]
-		task.ConfigMaps[configMap.Name] = &configMap
-	}
-
-	return nil
+	return task.removeConfigMapDataBaseOnFileAndPath(configMap, task.file.Spec.Path)
 }
 
 func (task *fileReconcilerTask) handleDelete() (shouldFinishReconcilationm bool, err error) {
@@ -163,7 +201,7 @@ func (task *fileReconcilerTask) handleDelete() (shouldFinishReconcilationm bool,
 		}
 	} else {
 		if util.ContainsString(file.ObjectMeta.Finalizers, finalizerName) {
-			// TODO delete related resources here
+			task.deleteRelatedConfigMap()
 			file.ObjectMeta.Finalizers = util.RemoveString(file.ObjectMeta.Finalizers, finalizerName)
 			if err := task.reconciler.Update(ctx, file); err != nil {
 				return true, err
@@ -174,7 +212,3 @@ func (task *fileReconcilerTask) handleDelete() (shouldFinishReconcilationm bool,
 	}
 	return false, nil
 }
-
-// func (act *fileReconcilerTask) getConfigMap(name string) *corev1.ConfigMap {
-// 	act.reconciler.ConfigMap.Name
-// }

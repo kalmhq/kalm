@@ -32,13 +32,19 @@ type FileSpec struct {
 	Content string `json:"content"`
 }
 
+type FileStatus struct {
+	LastPath string `json:"lastPath,omitempty"`
+}
+
 // +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
 
 // File is the Schema for the files API
 type File struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              FileSpec `json:"spec"`
+	Spec              FileSpec   `json:"spec,omitempty"`
+	Status            FileStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
