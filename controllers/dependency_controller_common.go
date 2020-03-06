@@ -131,13 +131,22 @@ func (r *DependencyReconciler) reconcileExternalController(ctx context.Context, 
 
 func loadFile(fileName string) []byte {
 	// todo more search paths
-	dat, err := ioutil.ReadFile(fmt.Sprintf("./resources/%s", fileName))
-	if err != nil {
-		fmt.Println("err loadFile:", err)
-		return nil
+	searchDirs := []string{
+		"./resources",
+		"/resources",
 	}
 
-	return dat
+	for _, searchDir := range searchDirs {
+		dat, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", searchDir, fileName))
+		if err != nil {
+			fmt.Println("err loadFile:", err)
+			continue
+		}
+
+		return dat
+	}
+
+	return nil
 }
 
 // ref: https://github.com/kubernetes/client-go/issues/193#issuecomment-363318588
