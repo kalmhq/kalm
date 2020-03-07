@@ -23,9 +23,7 @@ interface LinkRouterProps extends LinkProps {
   replace?: boolean;
 }
 
-const LinkRouter = (props: LinkRouterProps) => (
-  <Link {...props} component={RouterLink as any} />
-);
+const LinkRouter = (props: LinkRouterProps) => <Link {...props} component={RouterLink as any} />;
 
 const BreadcrumbRaw = () => {
   return (
@@ -35,7 +33,7 @@ const BreadcrumbRaw = () => {
 
         return (
           <Breadcrumbs aria-label="breadcrumb" className={styles.breadcrumbs}>
-            <LinkRouter color="inherit" to="/">
+            <LinkRouter color="textSecondary" to="/">
               <HomeIcon fontSize="small" />
             </LinkRouter>
             {matchedPathNames.map((value, index) => {
@@ -49,11 +47,11 @@ const BreadcrumbRaw = () => {
               }
 
               return last ? (
-                <Typography color="textPrimary" key={to}>
+                <Typography color="textSecondary" key={to}>
                   {content}
                 </Typography>
               ) : (
-                <LinkRouter color="inherit" to={to} key={to}>
+                <LinkRouter color="textSecondary" to={to} key={to}>
                   {content}
                 </LinkRouter>
               );

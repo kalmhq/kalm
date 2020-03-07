@@ -1,16 +1,14 @@
-import { Button, createStyles, Theme, Typography, WithStyles, withStyles } from "@material-ui/core";
+import { createStyles, Theme, WithStyles, withStyles } from "@material-ui/core";
 import { Variant } from "@material-ui/core/styles/createTypography";
-import AddIcon from "@material-ui/icons/Add";
 import React from "react";
 import { Breadcrumb } from "../Breadcrumbs";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      padding: theme.spacing(3),
-      color: "white",
-      minHeight: 160,
-      backgroundColor: "#039be5",
+      padding: theme.spacing(1),
+      color: "#039be5",
+      minHeight: 40,
       display: "flex",
       justifyContent: "center",
       flexDirection: "column",
@@ -19,7 +17,7 @@ const styles = (theme: Theme) =>
     title: {
       fontSize: 20,
       marginTop: 14,
-      color: "white",
+      color: "#039be5",
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center"
@@ -36,18 +34,17 @@ export interface PageHeaderProps {
 
 export class PageHeaderRaw extends React.PureComponent<PageHeaderProps & WithStyles<typeof styles>> {
   public render() {
-    const { noBreadcrumb, variant, classes, onCreate, createButtonText } = this.props;
+    const { noBreadcrumb, classes } = this.props;
     return (
       <div className={classes.root}>
         {noBreadcrumb ? null : <Breadcrumb />}
-        <Typography variant={variant ? variant : "h3"} gutterBottom={!noBreadcrumb} className={classes.title}>
-          {this.props.title}
+        {/* <Typography variant={variant ? variant : "h3"} gutterBottom={!noBreadcrumb} className={classes.title}>
           {onCreate ? (
             <Button variant="contained" color="default" disableElevation startIcon={<AddIcon />} onClick={onCreate}>
               {createButtonText || "Add"}
             </Button>
           ) : null}
-        </Typography>
+        </Typography> */}
         {/* <Alert severity="info">
           <Typography>Component is also know as component template.</Typography>
         </Alert> */}
