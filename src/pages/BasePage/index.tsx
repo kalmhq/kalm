@@ -9,7 +9,7 @@ const styles = (_theme: Theme) =>
     root: {
       display: "flex",
       flexDirection: "column",
-      height: "100%",
+      // height: "100%",
       overflow: "hidden"
     },
     content: {

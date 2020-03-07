@@ -268,6 +268,14 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
             <Loading />
           ) : (
             <MaterialTable
+              actions={[
+                {
+                  isFreeAction: true,
+                  icon: "add",
+                  tooltip: "Add",
+                  onClick: this.onCreate
+                }
+              ]}
               options={{
                 padding: "dense",
                 draggable: false
