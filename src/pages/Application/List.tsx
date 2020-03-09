@@ -1,4 +1,16 @@
-import { CircularProgress, createStyles, IconButton, Switch, Theme, WithStyles, withStyles } from "@material-ui/core";
+import {
+  CircularProgress,
+  createStyles,
+  IconButton,
+  Switch,
+  Theme,
+  WithStyles,
+  withStyles,
+  ExpansionPanel,
+  ExpansionPanelSummary,
+  ExpansionPanelDetails,
+  Checkbox
+} from "@material-ui/core";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
@@ -17,11 +29,69 @@ import { ConfirmDialog } from "../../widgets/ConfirmDialog";
 import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
 import { ApplicationDataWrapper, WithApplicationsDataProps } from "./DataWrapper";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import { Dot } from "../../widgets/Dot";
+import RefreshIcon from "@material-ui/icons/Refresh";
+import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew";
+import ArchiveIcon from "@material-ui/icons/Archive";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {
       padding: theme.spacing(3)
+    },
+    expansionPanel: {
+      boxShadow: "none"
+    },
+    panelSummary: {
+      height: "48px !important",
+      minHeight: "48px !important"
+    },
+    componentWrapper: {
+      minWidth: "120px"
+    },
+    componentLine: {
+      display: "inline-block"
+    },
+    bottomBar: {
+      position: "fixed",
+      height: "48px",
+      bottom: "0",
+      left: "0",
+      right: "0",
+      background: "#FFFFFF",
+      boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.25)"
+    },
+    bottomContent: {
+      maxWidth: "1200px",
+      margin: "0 auto",
+      display: "flex",
+      justifyContent: "space-around",
+      height: "48px",
+      alignItems: "center"
+    },
+    applicationSelected: {
+      display: "flex"
+    },
+    selectedNumber: {
+      width: "20px",
+      height: "20px",
+      background: "#1976D2",
+      color: "#ffffff",
+      textAlign: "center",
+      marginRight: "8px"
+    },
+    bottomActions: {
+      width: "500px",
+      display: "flex",
+      justifyContent: "space-around"
+    },
+    bottomAction: {
+      cursor: "pointer",
+      display: "flex"
+    },
+    actionText: {
+      marginLeft: "8px"
     }
   });
 
@@ -84,6 +154,9 @@ interface State {
   switchingIsEnabledContent: string;
   isDeleteConfirmDialogOpen: boolean;
   deletingApplicationId?: string;
+  checkedApplicationIds: {
+    [key: string]: boolean;
+  };
 }
 
 class ApplicationListRaw extends React.PureComponent<Props, State> {
@@ -93,7 +166,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     switchingIsEnabledTitle: "",
     switchingIsEnabledContent: "",
     isDeleteConfirmDialogOpen: false,
-    deletingApplicationId: ""
+    deletingApplicationId: "",
+    checkedApplicationIds: {}
   };
 
   constructor(props: Props) {
@@ -193,6 +267,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
+    console.log(this.state.checkedApplicationIds);
     const { dispatch, applications, classes, isLoading, isFirstLoaded } = this.props;
     const data = applications.map((application, index) => {
       const handleChange = () => {
@@ -216,6 +291,38 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           status = <CheckCircleIcon color="primary" />;
           break;
       }
+
+      const components = (
+        <ExpansionPanel className={classes.expansionPanel}>
+          <ExpansionPanelSummary
+            className={classes.panelSummary}
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="panel1a-content"
+            id="panel1a-header">
+            <div>
+              <Dot color="green" />
+              {application.get("components").size} / {application.get("components").size}
+            </div>
+          </ExpansionPanelSummary>
+          <ExpansionPanelDetails>
+            <div>
+              {application
+                .get("components")
+                .map(x => {
+                  return (
+                    <div key={x.get("name")} className={classes.componentWrapper}>
+                      <Dot color="green" />
+                      <div className={classes.componentLine} key={x.get("name")}>
+                        {x.get("name")}
+                      </div>
+                    </div>
+                  );
+                })
+                .toArray()}
+            </div>
+          </ExpansionPanelDetails>
+        </ExpansionPanel>
+      );
 
       return {
         action: (
@@ -241,6 +348,19 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
             </IconButton>
           </>
         ),
+        checkbox: (
+          <Checkbox
+            onChange={() => {
+              // deep copy, new obj
+              const applicationIds = { ...this.state.checkedApplicationIds };
+              applicationIds[application.get("id")] = !applicationIds[application.get("id")];
+              this.setState({ checkedApplicationIds: applicationIds });
+            }}
+            value="secondary"
+            color="primary"
+            inputProps={{ "aria-label": "secondary checkbox" }}
+          />
+        ),
         name: application.get("name"),
         namespace: ["default", "production", "ropsten"][index] || "default",
         enable: (
@@ -252,10 +372,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
             inputProps={{ "aria-label": "enable app.ication" }}
           />
         ),
-        components: application
-          .get("components")
-          .map(x => <div key={x.get("name")}>{x.get("name")}</div>)
-          .toArray(),
+        components,
         status: status
       };
     });
@@ -278,9 +395,14 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
               ]}
               options={{
                 padding: "dense",
-                draggable: false
+                draggable: false,
+                rowStyle: {
+                  verticalAlign: "baseline"
+                }
               }}
               columns={[
+                // @ts-ignore
+                { title: "", field: "checkbox", sorting: false, width: "20px" },
                 { title: "Name", field: "name", sorting: false },
                 { title: "Namespace", field: "namespace", sorting: false },
                 { title: "Components", field: "components", sorting: false },
@@ -294,9 +416,30 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                 }
               ]}
               data={data.toArray()}
-              title=""
+              title="Applications"
             />
           )}
+        </div>
+        <div className={classes.bottomBar}>
+          <div className={classes.bottomContent}>
+            <div className={classes.applicationSelected}>
+              <div className={classes.selectedNumber}>
+                {Object.values(this.state.checkedApplicationIds).filter(Boolean).length}
+              </div>{" "}
+              Applications Selected
+            </div>
+            <div className={classes.bottomActions}>
+              <div className={classes.bottomAction}>
+                <RefreshIcon /> <div className={classes.actionText}> Restart</div>
+              </div>
+              <div className={classes.bottomAction}>
+                <PowerSettingsNewIcon /> <div className={classes.actionText}> Power Off</div>
+              </div>
+              <div className={classes.bottomAction}>
+                <ArchiveIcon /> <div className={classes.actionText}>Archive</div>
+              </div>
+            </div>
+          </div>
         </div>
       </BasePage>
     );
