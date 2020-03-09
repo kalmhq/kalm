@@ -117,6 +117,7 @@ const TabBarComponentRaw = ({ classes }: Props) => {
           {tabOptions.map((option: TabOption) => {
             return (
               <Tab
+                key={option.to}
                 className={classes.tab}
                 label={option.text}
                 value={option.to}

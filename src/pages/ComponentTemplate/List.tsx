@@ -201,7 +201,7 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
             }
           ]}
           data={data.toArray()}
-          title=""
+          title="Component Templates"
         />
       </Fade>
     );

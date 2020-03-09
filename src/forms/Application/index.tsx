@@ -1,4 +1,4 @@
-import { Button, createStyles, Grid, WithStyles, withStyles } from "@material-ui/core";
+import { Button, createStyles, Grid, WithStyles, withStyles, Paper } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import Immutable from "immutable";
@@ -15,10 +15,14 @@ import { NormalizeBoolean } from "../normalizer";
 import { ValidatorRequired } from "../validator";
 import { Components } from "./component";
 import { SharedEnvs } from "./shardEnv";
-import { VerticalTabs } from "../Basic/verticalTabs";
-import { goBack } from "connected-react-router";
 
-const styles = (theme: Theme) => createStyles({});
+const styles = (theme: Theme) =>
+  createStyles({
+    formSection: {
+      padding: theme.spacing(2),
+      margin: theme.spacing(3)
+    }
+  });
 
 const mapStateToProps = (state: RootState) => {
   const selector = formValueSelector("application");
@@ -135,38 +139,31 @@ class ApplicationFormRaw extends React.PureComponent<
   }
 
   public render() {
-    const { handleSubmit } = this.props;
+    const { handleSubmit, classes } = this.props;
 
-    const tabs = [
-      {
-        title: "Basic Info",
-        component: this.renderBaisc()
-      },
-      {
-        title: "Components",
-        component: this.renderComponent()
-      },
-      {
-        title: "Shared Envs",
-        component: this.renderSharedEnvs()
-      }
-    ];
+    // const tabs = [
+    //   {
+    //     title: "Basic Info",
+    //     component: this.renderBaisc()
+    //   },
+    //   {
+    //     title: "Components",
+    //     component: this.renderComponent()
+    //   },
+    //   {
+    //     title: "Shared Envs",
+    //     component: this.renderSharedEnvs()
+    //   }
+    // ];
 
     return (
       <form onSubmit={handleSubmit} style={{ height: "100%", overflow: "hidden" }}>
-        <VerticalTabs
-          tabs={tabs}
-          tabsBottomContent={
-            <>
-              <Button variant="contained" color="primary" type="submit">
-                Submit
-              </Button>
-              <Button variant="contained" color="default" onClick={() => this.props.dispatch(goBack())}>
-                Close
-              </Button>
-            </>
-          }
-        />
+        <Paper className={classes.formSection}>{this.renderBaisc()}</Paper>
+        <Paper className={classes.formSection}>{this.renderComponent()}</Paper>
+        <Paper className={classes.formSection}>{this.renderSharedEnvs()}</Paper>
+        <Button variant="contained" color="primary" type="submit">
+          Submit
+        </Button>
       </form>
     );
   }
