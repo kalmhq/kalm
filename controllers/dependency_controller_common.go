@@ -16,6 +16,7 @@ import (
 	"regexp"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strings"
+	//monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 )
 
 type DepInstallStatus int
@@ -26,6 +27,12 @@ const (
 	InstallFailed
 	Installed
 )
+
+// todo, support more than just deployments
+// stateful set, daemon set, etc...
+func (r *DependencyReconciler) getInstallStatus(namespace string, kind string, names ...string) (DepInstallStatus, error) {
+	return 0, nil
+}
 
 func (r *DependencyReconciler) getDependencyInstallStatus(namespace string, dpNames ...string) (DepInstallStatus, error) {
 	var statusList []DepInstallStatus
@@ -120,33 +127,72 @@ func (r *DependencyReconciler) getSingleDpStatusInDependency(namespace, dpName s
 	return NotInstalled, nil
 }
 
-func (r *DependencyReconciler) reconcileExternalController(ctx context.Context, fileName string) error {
+func (r *DependencyReconciler) reconcileExternalController(ctx context.Context, fileOrDirName string) error {
 	//load yaml for external-controller
-	file := loadFile(fileName)
-	objs := parseK8sYaml(file)
+	files := loadFiles(fileOrDirName)
+	for _, file := range files {
+		objs := parseK8sYaml(file)
 
-	// only create, no update yet
-	return r.createMany(ctx, objs...)
-}
-
-func loadFile(fileName string) []byte {
-	// todo more search paths
-	searchDirs := []string{
-		"./resources",
-		"/resources",
-	}
-
-	for _, searchDir := range searchDirs {
-		dat, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", searchDir, fileName))
-		if err != nil {
-			fmt.Println("err loadFile:", err)
-			continue
+		// only create, no update yet
+		if err := r.createMany(ctx, objs...); err != nil {
+			return err
 		}
-
-		return dat
 	}
 
 	return nil
+}
+
+func loadFiles(fileOrDirName string) (files [][]byte) {
+	searchDirs := []string{
+		"./resources",
+		"/resources",
+		"../resources",
+	}
+
+	isDir := strings.HasPrefix(fileOrDirName, "/")
+
+	for _, searchDir := range searchDirs {
+
+		if isDir {
+			dirPath := fmt.Sprintf("%s%s", searchDir, fileOrDirName)
+			fileInfos, err := ioutil.ReadDir(dirPath)
+			if err != nil {
+				continue
+			}
+
+			for _, fileInfo := range fileInfos {
+				// only read files directly under this dir
+				if fileInfo.IsDir() {
+					continue
+				}
+
+				// only apply .yaml files
+				if !strings.HasSuffix(fileInfo.Name(), ".yaml") &&
+					!strings.HasSuffix(fileInfo.Name(), ".yml") {
+					continue
+				}
+
+				dat, _ := ioutil.ReadFile(fmt.Sprintf("%s/%s", dirPath, fileInfo.Name()))
+
+				files = append(files, dat)
+			}
+		} else {
+
+			dat, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", searchDir, fileOrDirName))
+			if err != nil {
+				fmt.Println("err loadFile:", err)
+				continue
+			}
+
+			files = append(files, dat)
+		}
+
+		if len(files) > 0 {
+			return
+		}
+	}
+
+	return
 }
 
 // ref: https://github.com/kubernetes/client-go/issues/193#issuecomment-363318588
@@ -154,9 +200,9 @@ func parseK8sYaml(fileR []byte) []runtime.Object {
 
 	acceptedK8sTypes := regexp.MustCompile(`(ValidatingWebhookConfiguration|MutatingWebhookConfiguration|CustomResourceDefinition|ConfigMap|Service|Deployment|Namespace|Role|ClusterRole|RoleBinding|ClusterRoleBinding|ServiceAccount)`)
 	fileAsString := string(fileR[:])
-	sepYamlFiles := strings.Split(fileAsString, "---")
+	sepYamlFiles := strings.Split(fileAsString, "\n---\n")
 	retVal := make([]runtime.Object, 0, len(sepYamlFiles))
-	for _, f := range sepYamlFiles {
+	for i, f := range sepYamlFiles {
 		if f == "\n" || f == "" {
 			// ignore empty cases
 			continue
@@ -172,12 +218,14 @@ func parseK8sYaml(fileR []byte) []runtime.Object {
 		_ = corev1alpha1.AddToScheme(sch)
 		_ = cmv1alpha2.AddToScheme(sch)
 		_ = apiextv1beta1.AddToScheme(sch)
+		_ = corev1.AddToScheme(sch)
+		_ = corev1.AddToScheme(sch)
 
 		decode := serializer.NewCodecFactory(sch).UniversalDeserializer().Decode
 		obj, groupVersionKind, err := decode([]byte(f), nil, nil)
 
 		if err != nil {
-			log.Println(fmt.Sprintf("Error while decoding YAML object(%s). Err was: %s", f, err))
+			log.Println(fmt.Sprintf("Error while decoding YAML object(%d) Err was: %s, obj: %s", i, err, f))
 			continue
 		}
 
