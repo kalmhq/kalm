@@ -212,7 +212,7 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
     const { isDeleteConfirmDialogOpen, isDuplicateDialogShow } = this.state;
 
     return (
-      <BasePage title="Component Templates" onCreate={this.onCreate} createButtonText="Add A Component">
+      <BasePage title="Component Templates">
         <ConfirmDialog
           open={isDeleteConfirmDialogOpen}
           onClose={this.closeConfirmDialog}

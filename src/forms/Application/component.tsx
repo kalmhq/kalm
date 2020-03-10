@@ -266,6 +266,7 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
           </>
         }>
         <ComponentLikeForm
+          isFolded={true}
           onSubmit={this.handleComponentLikeFormSubmit}
           initialValues={dialogFormComponentLikeInstance}
           showDataView

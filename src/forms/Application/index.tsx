@@ -1,4 +1,4 @@
-import { Button, createStyles, Grid, WithStyles, withStyles, Paper } from "@material-ui/core";
+import { createStyles, Grid, WithStyles, withStyles, Paper } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import Immutable from "immutable";
@@ -50,7 +50,7 @@ class ApplicationFormRaw extends React.PureComponent<
     return !!this.props.values.get("resourceVersion");
   }
 
-  private renderBaisc() {
+  private renderBasic() {
     // const { classes } = this.props;
     const isEdit = this.getIsEdit();
     return (
@@ -144,7 +144,7 @@ class ApplicationFormRaw extends React.PureComponent<
     // const tabs = [
     //   {
     //     title: "Basic Info",
-    //     component: this.renderBaisc()
+    //     component: this.renderBasic()
     //   },
     //   {
     //     title: "Components",
@@ -158,12 +158,12 @@ class ApplicationFormRaw extends React.PureComponent<
 
     return (
       <form onSubmit={handleSubmit} style={{ height: "100%", overflow: "hidden" }}>
-        <Paper className={classes.formSection}>{this.renderBaisc()}</Paper>
+        <Paper className={classes.formSection}>{this.renderBasic()}</Paper>
         <Paper className={classes.formSection}>{this.renderComponent()}</Paper>
         <Paper className={classes.formSection}>{this.renderSharedEnvs()}</Paper>
-        <Button variant="contained" color="primary" type="submit">
+        {/* <Button variant="contained" color="primary" type="submit">
           Submit
-        </Button>
+        </Button> */}
       </form>
     );
   }

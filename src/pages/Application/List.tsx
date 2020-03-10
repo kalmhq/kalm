@@ -377,7 +377,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
       };
     });
     return (
-      <BasePage title="Applications" onCreate={this.onCreate} createButtonText="Add An Application">
+      <BasePage title="Applications">
         {this.renderDeleteConfirmDialog()}
         {this.renderSwitchingIsEnabledConfirmDialog()}
         <div className={classes.root}>

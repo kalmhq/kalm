@@ -2,20 +2,11 @@ import React from "react";
 import { BasePage } from "../BasePage";
 import { connect } from "react-redux";
 import { RootState } from "../../reducers";
-import {
-  IconButton,
-  Theme,
-  withStyles,
-  Breadcrumbs,
-  Link
-} from "@material-ui/core";
+import { IconButton, Theme, withStyles, Breadcrumbs, Link } from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@material-ui/icons/Delete";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
-import {
-  deleteConfigAction,
-  duplicateConfigAction
-} from "../../actions/config";
+import { deleteConfigAction, duplicateConfigAction } from "../../actions/config";
 import { ThunkDispatch } from "redux-thunk";
 import { Actions, Config } from "../../actions";
 import { FileTree } from "../../widgets/FileTree";
@@ -24,10 +15,7 @@ import SyntaxHighlighter from "react-syntax-highlighter";
 import { monokai } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import { ConfigNewDialog } from "../../widgets/ConfigNewDialog";
 import { ConfigEditDialog } from "../../widgets/ConfigEditDialog";
-import {
-  setSuccessNotificationAction,
-  setErrorNotificationAction
-} from "../../actions/notification";
+import { setSuccessNotificationAction, setErrorNotificationAction } from "../../actions/notification";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
 
 const styles = (theme: Theme) => ({
@@ -106,9 +94,7 @@ class List extends React.PureComponent<Props, State> {
     const { dispatch } = this.props;
     try {
       await dispatch(deleteConfigAction(getCurrentConfig()));
-      await dispatch(
-        setSuccessNotificationAction("Successfully delete an config")
-      );
+      await dispatch(setSuccessNotificationAction("Successfully delete an config"));
     } catch {
       dispatch(setErrorNotificationAction("Something wrong"));
     }
@@ -151,11 +137,7 @@ class List extends React.PureComponent<Props, State> {
       }
 
       links.push(
-        <Link
-          key={configId}
-          color="inherit"
-          onClick={() => console.log("link", configId)}
-        >
+        <Link key={configId} color="inherit" onClick={() => console.log("link", configId)}>
           {tmpConfig.get("name")}
         </Link>
       );
@@ -172,8 +154,7 @@ class List extends React.PureComponent<Props, State> {
           aria-label="edit"
           onClick={() => {
             this.setState({ showConfigEditDialog: true });
-          }}
-        >
+          }}>
           <EditIcon />
         </IconButton>
 
@@ -182,8 +163,7 @@ class List extends React.PureComponent<Props, State> {
           onClick={() => {
             const config = getCurrentConfig();
             dispatch(duplicateConfigAction(config));
-          }}
-        >
+          }}>
           <FileCopyIcon />
         </IconButton>
 
@@ -191,8 +171,7 @@ class List extends React.PureComponent<Props, State> {
           aria-label="delete"
           onClick={() => {
             this.setDeletingConfigAndConfirm();
-          }}
-        >
+          }}>
           <DeleteIcon />
         </IconButton>
       </div>
@@ -204,11 +183,7 @@ class List extends React.PureComponent<Props, State> {
     const { showConfigNewDialog, showConfigEditDialog } = this.state;
 
     return (
-      <BasePage
-        title="Configs"
-        onCreate={this.onCreate}
-        createButtonText="Add A Config"
-      >
+      <BasePage title="Configs">
         {this.renderDeleteConfirmDialog()}
         <div className={classes.displayFlex}>
           <div className={classes.leftTree}>
@@ -221,9 +196,7 @@ class List extends React.PureComponent<Props, State> {
             </div>
 
             {currentConfig.get("type") === "file" ? (
-              <SyntaxHighlighter style={monokai}>
-                {currentConfig.get("content")}
-              </SyntaxHighlighter>
+              <SyntaxHighlighter style={monokai}>{currentConfig.get("content")}</SyntaxHighlighter>
             ) : (
               <div className={classes.noSelectedFile}>No selected file</div>
             )}

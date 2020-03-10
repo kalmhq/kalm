@@ -9,6 +9,7 @@ import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
 import { ComponentTemplateDataWrapper, WithComponentTemplatesDataProps } from "./DataWrapper";
 import { ComponentTemplate, ComponentLike } from "../../actions";
+import RemoteSubmitComponentLike from "../../forms/ComponentLike/remoteSubmitComponentLike";
 
 const styles = (theme: Theme) => createStyles({});
 
@@ -57,7 +58,9 @@ class ComponentTemplateEditRaw extends React.PureComponent<Props> {
     const componentTemplate = this.getComponentTemplate();
 
     return (
-      <BasePage title={isLoading || !isFirstLoaded ? "" : `Edit ${componentTemplate.get("name")}`}>
+      <BasePage
+        title={isLoading || !isFirstLoaded ? "" : `Edit ${componentTemplate.get("name")}`}
+        rightAction={<RemoteSubmitComponentLike />}>
         {isLoading || !isFirstLoaded ? <Loading /> : this.renderFormContent()}
       </BasePage>
     );

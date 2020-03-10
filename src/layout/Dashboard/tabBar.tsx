@@ -48,7 +48,10 @@ const styles = (theme: Theme) =>
     appBar: {
       height: "120px",
       color: "white",
-      backgroundColor: "#039be5"
+      backgroundColor: "#2196F3",
+      position: "fixed",
+      top: "0px",
+      transition: "0.2s"
     },
     barContainer: {
       height: "100%",
@@ -96,8 +99,18 @@ const TabBarComponentRaw = ({ classes }: Props) => {
     setValue(value);
   };
 
+  window.onscroll = () => {
+    if (document.body.scrollTop > 50 || document.documentElement.scrollTop > 50) {
+      // @ts-ignore
+      document.getElementById("header").style.top = "-72px";
+    } else {
+      // @ts-ignore
+      document.getElementById("header").style.top = "0px";
+    }
+  };
+
   return (
-    <AppBar position="relative" className={classes.appBar}>
+    <AppBar id="header" position="relative" className={classes.appBar}>
       <div className={classes.barContainer}>
         <div className={classes.barTitle}>OpenCore Kapp</div>
         <div className={classes.barStatus}>

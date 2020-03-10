@@ -11,7 +11,7 @@ const useStyles = makeStyles((theme: Theme) => {
     },
     content: {
       flexGrow: 1,
-      paddingTop: theme.spacing(1),
+      paddingTop: "128px",
       // height: "100%",
       maxWidth: "1200px",
       margin: "0 auto"

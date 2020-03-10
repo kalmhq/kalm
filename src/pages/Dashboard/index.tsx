@@ -1,12 +1,4 @@
-import {
-  Button,
-  createStyles,
-  Grid,
-  Theme,
-  Typography,
-  WithStyles,
-  withStyles
-} from "@material-ui/core";
+import { Button, createStyles, Grid, Theme, Typography, WithStyles, withStyles } from "@material-ui/core";
 import GithubIcon from "@material-ui/icons/GitHub";
 import MenuBookIcon from "@material-ui/icons/MenuBook";
 import SupervisorAccountIcon from "@material-ui/icons/SupervisorAccount";
@@ -38,12 +30,11 @@ class Dashboard extends React.PureComponent<Props> {
     const { classes } = this.props;
 
     return (
-      <BasePage title="Welcome to Kapp Dashboard" variant="h2" noBreadcrumb>
+      <BasePage title="Welcome to Kapp Dashboard" noBreadcrumb>
         <div className={classes.container}>
           <Typography className={classes.description}>
-            Kapp is a central hub for you to manage your devop tasks. It let you
-            manage, monitoring <strong>Applications</strong> make up of
-            microservices.
+            Kapp is a central hub for you to manage your devop tasks. It let you manage, monitoring{" "}
+            <strong>Applications</strong> make up of microservices.
           </Typography>
 
           <Grid container spacing={3}>
@@ -52,19 +43,13 @@ class Dashboard extends React.PureComponent<Props> {
                 Learn Kapp
               </Typography>
               <Typography className={classes.cardDescription}>
-                Run a single image is easy, but not for application made up of a
-                bunch of components. Kapp aim to help you handle complicated
-                application with ease. Kapp is build on top of kubernetes. It
-                provides your some best practices of using kubernets and hide
-                obscure details. Wondering what all that means? Have a look at
-                the Kapp documentation.
+                Run a single image is easy, but not for application made up of a bunch of components. Kapp aim to help
+                you handle complicated application with ease. Kapp is build on top of kubernetes. It provides your some
+                best practices of using kubernets and hide obscure details. Wondering what all that means? Have a look
+                at the Kapp documentation.
               </Typography>
               <div>
-                <Button
-                  variant="contained"
-                  size="small"
-                  startIcon={<MenuBookIcon />}
-                >
+                <Button variant="contained" size="small" startIcon={<MenuBookIcon />}>
                   Document
                 </Button>
               </div>
@@ -74,17 +59,12 @@ class Dashboard extends React.PureComponent<Props> {
                 Get Start
               </Typography>
               <Typography className={classes.cardDescription}>
-                If you don't know where to start. There are several tutorials of
-                how to use kapp. Please go throught them first. You can also
-                view each page of this dashboard, some details on each page can
-                be helpful to you.
+                If you don't know where to start. There are several tutorials of how to use kapp. Please go throught
+                them first. You can also view each page of this dashboard, some details on each page can be helpful to
+                you.
               </Typography>
               <div>
-                <Button
-                  variant="contained"
-                  size="small"
-                  startIcon={<SupervisorAccountIcon />}
-                >
+                <Button variant="contained" size="small" startIcon={<SupervisorAccountIcon />}>
                   Get Start
                 </Button>
               </div>
@@ -94,16 +74,11 @@ class Dashboard extends React.PureComponent<Props> {
                 Contribute
               </Typography>
               <Typography className={classes.cardDescription}>
-                Kapp system is an open source system hosted on github under
-                Apache V2 License. See our roadmap for the plans. Pull requests
-                are welcomed.
+                Kapp system is an open source system hosted on github under Apache V2 License. See our roadmap for the
+                plans. Pull requests are welcomed.
               </Typography>
               <div>
-                <Button
-                  variant="contained"
-                  size="small"
-                  startIcon={<GithubIcon />}
-                >
+                <Button variant="contained" size="small" startIcon={<GithubIcon />}>
                   Github
                 </Button>
               </div>
