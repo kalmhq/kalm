@@ -6,6 +6,7 @@ import { Application } from "../../actions";
 import { updateApplicationAction } from "../../actions/application";
 import { setSuccessNotificationAction } from "../../actions/notification";
 import ApplicationForm from "../../forms/Application";
+import RemoteSubmitApplication from "../../forms/Application/remoteSubmitApplication";
 import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
 import { ApplicationDataWrapper, WithApplicationsDataProps } from "./DataWrapper";
@@ -13,7 +14,7 @@ import { ApplicationDataWrapper, WithApplicationsDataProps } from "./DataWrapper
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      padding: theme.spacing(3)
+      // padding: theme.spacing(3)
     }
   });
 
@@ -42,7 +43,9 @@ class ApplicationEditRaw extends React.PureComponent<Props> {
     const { isLoading, isFirstLoaded } = this.props;
     const application = this.getApplication();
     return (
-      <BasePage title={`Edit Application ${application && application.get("name")}`}>
+      <BasePage
+        title={`Edit Application ${application && application.get("name")}`}
+        rightAction={<RemoteSubmitApplication />}>
         {isLoading && !isFirstLoaded ? (
           <Loading />
         ) : (

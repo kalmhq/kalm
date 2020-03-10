@@ -1,7 +1,6 @@
-import { Box, Button, Divider, Grid, List as MList, ListItem, ListItemText, MenuItem } from "@material-ui/core";
+import { Box, Divider, Grid, List as MList, ListItem, ListItemText, MenuItem, Paper } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
-import { goBack } from "connected-react-router";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { InjectedFormProps } from "redux-form";
@@ -10,13 +9,16 @@ import { ComponentLike, workloadTypeCronjob, workloadTypeServer } from "../../ac
 import { RootState } from "../../reducers";
 import { HelperContainer } from "../../widgets/Helper";
 import { CustomTextField, RenderSelectField, RenderTextField } from "../Basic";
-import { VerticalTabs } from "../Basic/verticalTabs";
 import { NormalizeNumber } from "../normalizer";
 import { ValidatorRequired, ValidatorSchedule } from "../validator";
 import { Envs } from "./Envs";
 import { Ports } from "./Ports";
 import ComponentResources from "./resources";
 import { Plugins } from "./Plugins";
+import ExpansionPanel from "@material-ui/core/ExpansionPanel";
+import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
+import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
@@ -40,6 +42,13 @@ const styles = (theme: Theme) =>
       fontSize: 24,
       fontWeight: 400,
       marginBottom: 16
+    },
+    formSection: {
+      padding: theme.spacing(2),
+      margin: theme.spacing(3)
+    },
+    displayBlock: {
+      display: "block"
     }
   });
 
@@ -48,6 +57,7 @@ interface RawProps {
   showDataView?: boolean;
   showSubmitButton?: boolean;
   submitButtonText?: string;
+  isFolded?: boolean;
 }
 
 export interface Props
@@ -87,17 +97,19 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
   }
 
   private renderBasic() {
-    const { classes, isEdit } = this.props;
+    const { classes, isEdit, isFolded } = this.props;
     return (
       <Grid container>
         <Grid item md={6}>
-          <Typography
-            variant="h2"
-            classes={{
-              root: classes.sectionHeader
-            }}>
-            Basic Info
-          </Typography>
+          {!isFolded && (
+            <Typography
+              variant="h2"
+              classes={{
+                root: classes.sectionHeader
+              }}>
+              Basic Info
+            </Typography>
+          )}
           <HelperContainer>
             <Typography>Describe how to launch this compoent.</Typography>
           </HelperContainer>
@@ -139,16 +151,18 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
   }
 
   private renderEnvs() {
-    const { classes } = this.props;
+    const { classes, isFolded } = this.props;
     return (
       <>
-        <Typography
-          variant="h2"
-          classes={{
-            root: classes.sectionHeader
-          }}>
-          Environment variables
-        </Typography>
+        {!isFolded && (
+          <Typography
+            variant="h2"
+            classes={{
+              root: classes.sectionHeader
+            }}>
+            Environment variables
+          </Typography>
+        )}
         <HelperContainer>
           <Typography>
             Environment variables are variable whose values are set outside the program, typically through functionality
@@ -184,16 +198,18 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
   }
 
   public renderPorts() {
-    const { classes } = this.props;
+    const { classes, isFolded } = this.props;
     return (
       <>
-        <Typography
-          variant="h2"
-          classes={{
-            root: classes.sectionHeader
-          }}>
-          Ports
-        </Typography>
+        {!isFolded && (
+          <Typography
+            variant="h2"
+            classes={{
+              root: classes.sectionHeader
+            }}>
+            Ports
+          </Typography>
+        )}
         <HelperContainer>
           <Typography>
             Port is the standard way to expose your program. If you want your component can be accessed by some other
@@ -206,16 +222,18 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
   }
 
   private renderResources() {
-    const { classes } = this.props;
+    const { classes, isFolded } = this.props;
     return (
       <>
-        <Typography
-          variant="h2"
-          classes={{
-            root: classes.sectionHeader
-          }}>
-          Resources
-        </Typography>
+        {!isFolded && (
+          <Typography
+            variant="h2"
+            classes={{
+              root: classes.sectionHeader
+            }}>
+            Resources
+          </Typography>
+        )}
         <HelperContainer>
           <Typography>Cpu, Memory, Disk can be configured here.</Typography>
           <MList dense={true}>
@@ -243,7 +261,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
   }
 
   private renderAdvanced() {
-    const { classes } = this.props;
+    const { classes, isFolded } = this.props;
 
     // strategy:
     //   type: Recreate
@@ -264,13 +282,15 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
     return (
       <Grid container>
         <Grid item md={6}>
-          <Typography
-            variant="h2"
-            classes={{
-              root: classes.sectionHeader
-            }}>
-            Advanced
-          </Typography>
+          {!isFolded && (
+            <Typography
+              variant="h2"
+              classes={{
+                root: classes.sectionHeader
+              }}>
+              Advanced
+            </Typography>
+          )}
           <HelperContainer>
             <Typography>
               In most cases, the default values for the following options are appropriate for most programs. However,
@@ -432,16 +452,18 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
   };
 
   private renderPlugins() {
-    const { classes } = this.props;
+    const { classes, isFolded } = this.props;
     return (
       <>
-        <Typography
-          variant="h2"
-          classes={{
-            root: classes.sectionHeader
-          }}>
-          Plugins
-        </Typography>
+        {!isFolded && (
+          <Typography
+            variant="h2"
+            classes={{
+              root: classes.sectionHeader
+            }}>
+            Plugins
+          </Typography>
+        )}
         <HelperContainer>
           <Typography>
             Plugins can affect running state of a program, or provide extra functionality for the programs.
@@ -452,52 +474,68 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
     );
   }
 
+  public renderPanel(title: string, content: any): React.ReactNode {
+    const { classes } = this.props;
+    return (
+      <ExpansionPanel>
+        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id="panel1a-header">
+          {title}
+        </ExpansionPanelSummary>
+        <ExpansionPanelDetails className={classes.displayBlock}>{content}</ExpansionPanelDetails>
+      </ExpansionPanel>
+    );
+  }
+
   public render() {
-    const { handleSubmit, submitButtonText, showSubmitButton } = this.props;
-    const tabs = [
-      {
-        title: "Basic",
-        component: this.renderBasic()
-      },
-      {
-        title: "Envrionment Variables",
-        component: this.renderEnvs()
-      },
-      {
-        title: "Ports",
-        component: this.renderPorts()
-      },
-      {
-        title: "Resources",
-        component: this.renderResources()
-      },
-      {
-        title: "Advanced",
-        component: this.renderAdvanced()
-      },
-      {
-        title: "Plugins",
-        component: this.renderPlugins()
-      }
-    ];
+    const { handleSubmit, classes, isFolded } = this.props;
+    // const tabs = [
+    //   {
+    //     title: "Basic",
+    //     component: this.renderBasic()
+    //   },
+    //   {
+    //     title: "Envrionment Variables",
+    //     component: this.renderEnvs()
+    //   },
+    //   {
+    //     title: "Ports",
+    //     component: this.renderPorts()
+    //   },
+    //   {
+    //     title: "Resources",
+    //     component: this.renderResources()
+    //   },
+    //   {
+    //     title: "Advanced",
+    //     component: this.renderAdvanced()
+    //   },
+    //   {
+    //     title: "Plugins",
+    //     component: this.renderPlugins()
+    //   }
+    // ];
+
+    if (isFolded) {
+      return (
+        <form onSubmit={handleSubmit} style={{ height: "100%", overflow: "hidden" }}>
+          {this.renderPanel("Basic Info", this.renderBasic())}
+          {this.renderPanel("Environment variables", this.renderEnvs())}
+          {this.renderPanel("Ports", this.renderPorts())}
+          {this.renderPanel("Resources", this.renderResources())}
+          {this.renderPanel("Advanced", this.renderAdvanced())}
+          {this.renderPanel("Plugins", this.renderPlugins())}
+        </form>
+      );
+    }
 
     return (
       <form onSubmit={handleSubmit} style={{ height: "100%", overflow: "hidden" }}>
-        <VerticalTabs
-          tabs={tabs}
-          tabsBottomContent={
-            showSubmitButton ? (
-              <>
-                <Button variant="contained" color="primary" type="submit">
-                  {submitButtonText || "Submit"}
-                </Button>
-                <Button variant="contained" color="default" onClick={() => this.props.dispatch(goBack())}>
-                  Close
-                </Button>
-              </>
-            ) : null
-          }
-        />
+        <Paper className={classes.formSection}>{this.renderBasic()}</Paper>
+        <Paper className={classes.formSection}>{this.renderEnvs()}</Paper>
+        <Paper className={classes.formSection}>{this.renderPorts()}</Paper>
+        <Paper className={classes.formSection}>{this.renderResources()}</Paper>
+        <Paper className={classes.formSection}>{this.renderAdvanced()}</Paper>
+        <Paper className={classes.formSection}>{this.renderPlugins()}</Paper>
       </form>
     );
   }

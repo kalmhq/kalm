@@ -9,6 +9,7 @@ import { setSuccessNotificationAction } from "../../actions/notification";
 import { ComponentLikeForm } from "../../forms/ComponentLike";
 import { RootState } from "../../reducers";
 import { BasePage } from "../BasePage";
+import RemoteSubmitComponentLike from "../../forms/ComponentLike/remoteSubmitComponentLike";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -30,7 +31,7 @@ class ComponentTemplateNewRaw extends React.PureComponent<Props> {
 
   public render() {
     return (
-      <BasePage title="New Component">
+      <BasePage title="New Component" rightAction={<RemoteSubmitComponentLike />}>
         <ComponentLikeForm
           onSubmit={this.submit}
           initialValues={newEmptyComponentLike()}
