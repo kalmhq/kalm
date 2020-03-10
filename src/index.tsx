@@ -12,8 +12,8 @@ import { ThemeProvider, createMuiTheme, CssBaseline } from "@material-ui/core";
 import { SnackbarProvider } from "notistack";
 import { ScrollToTop } from "./widgets/ScrollToTop";
 import { setStore } from "./store";
-
 import { KappRoutes } from "./routes";
+import blue from "@material-ui/core/colors/blue";
 
 export const history = createBrowserHistory();
 
@@ -22,6 +22,9 @@ const store = configureStore(history);
 setStore(store);
 
 const theme = createMuiTheme({
+  palette: {
+    primary: blue
+  },
   typography: {
     fontSize: 12
   }

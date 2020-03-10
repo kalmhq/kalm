@@ -48,7 +48,7 @@ const styles = (theme: Theme) =>
     appBar: {
       height: "120px",
       color: "white",
-      backgroundColor: "#039be5"
+      backgroundColor: "#2196F3"
     },
     barContainer: {
       height: "100%",
