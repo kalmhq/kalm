@@ -93,6 +93,7 @@ interface Props extends WithStyles<typeof styles> {}
 
 const TabBarComponentRaw = ({ classes }: Props) => {
   let pathname = "/";
+
   if (window.location.pathname !== "/") {
     for (let option of tabOptions) {
       if (option.to === "/") {
