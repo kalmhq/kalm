@@ -141,21 +141,6 @@ class ApplicationFormRaw extends React.PureComponent<
   public render() {
     const { handleSubmit, classes } = this.props;
 
-    // const tabs = [
-    //   {
-    //     title: "Basic Info",
-    //     component: this.renderBasic()
-    //   },
-    //   {
-    //     title: "Components",
-    //     component: this.renderComponent()
-    //   },
-    //   {
-    //     title: "Shared Envs",
-    //     component: this.renderSharedEnvs()
-    //   }
-    // ];
-
     return (
       <form onSubmit={handleSubmit} style={{ height: "100%", overflow: "hidden" }}>
         <Paper className={classes.formSection}>{this.renderBasic()}</Paper>
