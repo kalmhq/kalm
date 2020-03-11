@@ -98,7 +98,6 @@ const TabBarComponentRaw = ({ classes }: Props) => {
       if (option.to === "/") {
         continue;
       }
-
       if (window.location.pathname.startsWith(option.to)) {
         pathname = option.to;
         break;
