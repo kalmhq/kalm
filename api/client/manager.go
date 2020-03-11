@@ -1,6 +1,8 @@
 package client
 
 import (
+	"github.com/kapp-staging/kapp/api/auth"
+	"github.com/labstack/echo/v4"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -19,21 +21,21 @@ type ClientManager struct {
 	inClusterConfig *rest.Config
 }
 
-func (c *ClientManager) isInCluster() bool {
-	return c.ApiServerHost == "" && c.KubeConfigPath == ""
+func (m *ClientManager) isInCluster() bool {
+	return m.ApiServerHost == "" && m.KubeConfigPath == ""
 }
 
-func (c *ClientManager) buildClusterConfig() (*rest.Config, error) {
-	if c.isInCluster() {
-		return c.inClusterConfig, nil
+func (m *ClientManager) buildClusterConfig() (*rest.Config, error) {
+	if m.isInCluster() {
+		return m.inClusterConfig, nil
 	} else {
 		return clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-			&clientcmd.ClientConfigLoadingRules{ExplicitPath: c.KubeConfigPath},
-			&clientcmd.ConfigOverrides{ClusterInfo: api.Cluster{Server: c.ApiServerHost}}).ClientConfig()
+			&clientcmd.ClientConfigLoadingRules{ExplicitPath: m.KubeConfigPath},
+			&clientcmd.ConfigOverrides{ClusterInfo: api.Cluster{Server: m.ApiServerHost}}).ClientConfig()
 	}
 }
 
-func (self *ClientManager) buildCmdConfig(authInfo *api.AuthInfo, cfg *rest.Config) clientcmd.ClientConfig {
+func (m *ClientManager) buildCmdConfig(authInfo *api.AuthInfo, cfg *rest.Config) clientcmd.ClientConfig {
 	cmdCfg := api.NewConfig()
 	cmdCfg.Clusters[DefaultCmdConfigName] = &api.Cluster{
 		Server:                   cfg.Host,
@@ -54,14 +56,8 @@ func (self *ClientManager) buildCmdConfig(authInfo *api.AuthInfo, cfg *rest.Conf
 	)
 }
 
-func (c *ClientManager) IsAuthInfoWorking(authInfo *api.AuthInfo) error {
-	cfg, err := c.buildClusterConfig()
-	if err != nil {
-		return err
-	}
-
-	clientConfig := c.buildCmdConfig(authInfo, cfg)
-	cfg, err = clientConfig.ClientConfig()
+func (m *ClientManager) IsAuthInfoWorking(authInfo *api.AuthInfo) error {
+	cfg, err := m.getClientConfigWithAuthInfo(authInfo)
 	if err != nil {
 		return err
 	}
@@ -75,12 +71,52 @@ func (c *ClientManager) IsAuthInfoWorking(authInfo *api.AuthInfo) error {
 	return err
 }
 
-func (c *ClientManager) initInClusterClientConfiguration() {
+func (m *ClientManager) initInClusterClientConfiguration() {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		panic(err.Error())
 	}
-	c.inClusterConfig = config
+	m.inClusterConfig = config
+}
+
+func (m *ClientManager) getClientConfigWithAuthInfo(authInfo *api.AuthInfo) (*rest.Config, error) {
+	cfg, err := m.buildClusterConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	clientConfig := m.buildCmdConfig(authInfo, cfg)
+
+	cfg, err = clientConfig.ClientConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	return cfg, nil
+}
+
+func (m *ClientManager) getClientConfig(c echo.Context) (*rest.Config, error) {
+	authInfo, err := auth.GetAuthInfo(c)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return m.getClientConfigWithAuthInfo(authInfo)
+}
+
+func (m *ClientManager) GetClient(c echo.Context) (kubernetes.Interface, error) {
+	cfg, err := m.getClientConfig(c)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := kubernetes.NewForConfig(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	return client, nil
 }
 
 func NewClientManager(apiServerHost, kubeConfigPath string) *ClientManager {
