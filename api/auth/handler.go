@@ -2,7 +2,9 @@ package auth
 
 import (
 	"errors"
+	"github.com/labstack/echo/v4"
 	"k8s.io/client-go/tools/clientcmd/api"
+	"strings"
 )
 
 type LoginData struct {
@@ -17,15 +19,25 @@ type LoginData struct {
 	Token string `form:"token" json:"token"`
 }
 
-func (l *LoginData) GetAuthInfo() (*api.AuthInfo, error) {
+func GetAuthInfo(c echo.Context) (*api.AuthInfo, error) {
+	var loginData LoginData
+
+	if err := c.Bind(&loginData); err != nil {
+		return nil, err
+	}
+
 	authInfo := api.AuthInfo{}
 
-	if len(l.Token) > 0 {
-		authInfo.Token = l.Token
-	} else if len(l.Username) > 0 && len(l.Password) > 0 {
-		authInfo.Username = l.Username
-		authInfo.Password = l.Password
-	} else if len(l.KubeConfig) > 0 {
+	authHeader := c.Request().Header.Get(echo.HeaderAuthorization)
+
+	if authHeader != "" && strings.HasPrefix(authHeader, "Bearer ") {
+		authInfo.Token = strings.ReplaceAll(authHeader, "Bearer ", "")
+	} else if len(loginData.Token) > 0 {
+		authInfo.Token = loginData.Token
+	} else if len(loginData.Username) > 0 && len(loginData.Password) > 0 {
+		authInfo.Username = loginData.Username
+		authInfo.Password = loginData.Password
+	} else if len(loginData.KubeConfig) > 0 {
 		// TODO
 		return nil, errors.New("Not implement")
 	} else {

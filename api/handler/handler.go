@@ -19,12 +19,7 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 }
 
 func (h *ApiHandler) handlerLogin(c echo.Context) error {
-	var loginData auth.LoginData
-	if err := c.Bind(&loginData); err != nil {
-		return err
-	}
-
-	authInfo, err := loginData.GetAuthInfo()
+	authInfo, err := auth.GetAuthInfo(c)
 	if err != nil {
 		return err
 	}
