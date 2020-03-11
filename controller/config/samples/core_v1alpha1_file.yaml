@@ -1,0 +1,15 @@
+apiVersion: core.kapp.dev/v1alpha1
+kind: File
+metadata:
+  name: test1
+spec:
+  path: /a/b/c/d.yml
+  content: value
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: File
+metadata:
+  name: test2
+spec:
+  path: /a/b
+  content: value2

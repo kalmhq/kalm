@@ -1,0 +1,16 @@
+domain: kapp.dev
+repo: github.com/kapp-staging/kapp
+resources:
+- group: core
+  kind: Application
+  version: v1alpha1
+- group: core
+  kind: File
+  version: v1alpha1
+- group: core
+  kind: ComponentTemplate
+  version: v1alpha1
+- group: core
+  kind: Dependency
+  version: v1alpha1
+version: "2"
