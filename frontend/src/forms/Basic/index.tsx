@@ -109,7 +109,12 @@ export const RenderSelectField = ({
   };
 
   return (
-    <FormControl classes={{ root: classes.root }} error={touched && error} variant="outlined" size="small">
+    <FormControl
+      classes={{ root: classes.root }}
+      error={touched && error}
+      variant="outlined"
+      size="small"
+      margin="normal">
       <InputLabel ref={inputLabel} htmlFor={id} id={labelId}>
         {label}
       </InputLabel>

@@ -196,8 +196,8 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
     let title;
     let saveButtonText = "";
     if (dialogFormApplicationComponentIndex === -1) {
-      title = "Add New Component";
-      saveButtonText = "Add Component";
+      title = "New Component";
+      saveButtonText = "Save";
       dialogFormComponentLikeInstance = newEmptyComponentLike();
     } else {
       title = "Edit Component";
@@ -257,9 +257,9 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
         handleClose={this.closeComponentFormDialog}
         actions={
           <>
-            <Button onClick={this.closeComponentFormDialog} color="default" variant="contained">
+            {/* <Button onClick={this.closeComponentFormDialog} color="default" variant="contained">
               Cancel
-            </Button>
+            </Button> */}
             <Button onClick={this.saveComponentFormDialog} color="primary" variant="contained">
               {dialogFormSaveButtonText}
             </Button>

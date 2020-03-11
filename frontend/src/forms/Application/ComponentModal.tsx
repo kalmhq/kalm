@@ -1,11 +1,8 @@
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/";
 import Dialog, { DialogProps } from "@material-ui/core/Dialog";
-import MuiDialogActions from "@material-ui/core/DialogActions";
 import MuiDialogContent from "@material-ui/core/DialogContent";
 import MuiDialogTitle from "@material-ui/core/DialogTitle";
-import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
-import CloseIcon from "@material-ui/icons/Close";
 import React from "react";
 import ScrollContainer from "../../widgets/ScrollContainer";
 
@@ -13,7 +10,10 @@ const styles = (theme: Theme) =>
   createStyles({
     root: {
       margin: 0,
-      padding: theme.spacing(2)
+      padding: theme.spacing(2),
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center"
     },
     closeButton: {
       position: "absolute",
@@ -23,22 +23,38 @@ const styles = (theme: Theme) =>
     }
   });
 
+// export interface DialogTitleProps extends WithStyles<typeof styles> {
+//   id: string;
+//   children: React.ReactNode;
+//   onClose: () => void;
+// }
+
+// const DialogTitle = withStyles(styles)((props: DialogTitleProps) => {
+//   const { children, classes, onClose, ...other } = props;
+//   return (
+//     <MuiDialogTitle disableTypography className={classes.root} {...other}>
+//       <Typography variant="h6">{children}</Typography>
+//       {onClose ? (
+//         <IconButton aria-label="close" color="default" className={classes.closeButton} onClick={onClose}>
+//           <CloseIcon />
+//         </IconButton>
+//       ) : null}
+//     </MuiDialogTitle>
+//   );
+// });
+
 export interface DialogTitleProps extends WithStyles<typeof styles> {
   id: string;
   children: React.ReactNode;
-  onClose: () => void;
+  rightActions?: React.ReactNode;
 }
 
 const DialogTitle = withStyles(styles)((props: DialogTitleProps) => {
-  const { children, classes, onClose, ...other } = props;
+  const { children, classes, rightActions, ...other } = props;
   return (
     <MuiDialogTitle disableTypography className={classes.root} {...other}>
       <Typography variant="h6">{children}</Typography>
-      {onClose ? (
-        <IconButton aria-label="close" color="default" className={classes.closeButton} onClick={onClose}>
-          <CloseIcon />
-        </IconButton>
-      ) : null}
+      {rightActions}
     </MuiDialogTitle>
   );
 });
@@ -49,12 +65,12 @@ const DialogContent = withStyles((theme: Theme) => ({
   }
 }))(MuiDialogContent);
 
-const DialogActions = withStyles((theme: Theme) => ({
-  root: {
-    margin: 0,
-    padding: theme.spacing(1)
-  }
-}))(MuiDialogActions);
+// const DialogActions = withStyles((theme: Theme) => ({
+//   root: {
+//     margin: 0,
+//     padding: theme.spacing(1)
+//   }
+// }))(MuiDialogActions);
 
 interface Props {
   open: boolean;
@@ -84,7 +100,7 @@ const CustomizedDialogRaw = (props: Props & WithStyles<typeof dialogStyles>) => 
         maxWidth="md"
         {...dialogProps}>
         {title ? (
-          <DialogTitle id="customized-dialog-title" onClose={handleClose}>
+          <DialogTitle id="customized-dialog-title" rightActions={actions}>
             {title}
           </DialogTitle>
         ) : null}
@@ -95,7 +111,7 @@ const CustomizedDialogRaw = (props: Props & WithStyles<typeof dialogStyles>) => 
           </ScrollContainer>
         ) : null}
 
-        {actions ? <DialogActions>{actions}</DialogActions> : null}
+        {/* {actions ? <DialogActions>{actions}</DialogActions> : null} */}
       </Dialog>
     </div>
   );

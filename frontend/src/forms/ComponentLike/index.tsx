@@ -111,8 +111,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private renderBasic() {
     const { classes, isEdit, isFolded } = this.props;
     return (
-      <Grid container>
-        <Grid item md={6}>
+      <Grid container spacing={2}>
+        <Grid md={12}>
           {!isFolded && (
             <Typography
               variant="h2"
@@ -125,6 +125,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           <HelperContainer>
             <Typography>Describe how to launch this compoent.</Typography>
           </HelperContainer>
+        </Grid>
+        <Grid item md={6}>
           <CustomTextField
             name="name"
             label="Name"
@@ -138,6 +140,13 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             }
             placeholder="Please type the component name"
           />
+          <Field name="workloadType" component={RenderSelectField} label="Workload Type" validate={[ValidatorRequired]}>
+            <MenuItem value={workloadTypeServer}>Server (continuous running)</MenuItem>
+            <MenuItem value={workloadTypeCronjob}>Cronjob (periodic running)</MenuItem>
+          </Field>
+          {this.renderSchedule()}
+        </Grid>
+        <Grid item md={6}>
           <CustomTextField
             name="image"
             label="Image"
@@ -151,12 +160,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             label="Command (Optional)"
             helperText='Eg: "/bin/app", "rails server".'
           />
-          <Box mt={3}></Box>
-          <Field name="workloadType" component={RenderSelectField} label="Workload Type" validate={[ValidatorRequired]}>
-            <MenuItem value={workloadTypeServer}>Server (continuous running)</MenuItem>
-            <MenuItem value={workloadTypeCronjob}>Cronjob (periodic running)</MenuItem>
-          </Field>
-          {this.renderSchedule()}
         </Grid>
       </Grid>
     );
@@ -293,7 +296,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     // failureThreshold: 6
     return (
       <Grid container>
-        <Grid item md={6}>
+        <Grid item md={12}>
           {!isFolded && (
             <Typography
               variant="h2"

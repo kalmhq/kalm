@@ -92,7 +92,19 @@ function a11yProps(index: any) {
 interface Props extends WithStyles<typeof styles> {}
 
 const TabBarComponentRaw = ({ classes }: Props) => {
-  const [value, setValue] = React.useState(window.location.pathname);
+  let pathname = "/";
+  if (window.location.pathname !== "/") {
+    for (let option of tabOptions) {
+      if (option.to === "/") {
+        continue;
+      }
+      if (window.location.pathname.startsWith(option.to)) {
+        pathname = option.to;
+        break;
+      }
+    }
+  }
+  const [value, setValue] = React.useState(pathname);
 
   const handleChange = (event: object, value: any) => {
     // console.log("tab value", value);

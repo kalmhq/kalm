@@ -267,7 +267,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    console.log(this.state.checkedApplicationIds);
     const { dispatch, applications, classes, isLoading, isFirstLoaded } = this.props;
     const data = applications.map((application, index) => {
       const handleChange = () => {
