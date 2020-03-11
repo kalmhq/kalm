@@ -1,13 +1,51 @@
 package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/kapp-staging/kapp/api/client"
+	"github.com/kapp-staging/kapp/api/handler"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	"net/http"
+	"os"
+	"path/filepath"
+	//"k8s.io/client-go/tools/clientcmd/api"
+	//"k8s.io/client-go/plugin/pkg/client/auth"
+)
+
+func customHTTPErrorHandler(err error, c echo.Context) {
+	code := http.StatusInternalServerError
+	if he, ok := err.(*echo.HTTPError); ok {
+		code = he.Code
+	}
+
+	c.Logger().Error(err)
+
+	if !c.Response().Committed {
+		c.JSON(code, map[string]interface{}{"desc": err.Error()})
+	}
+}
+
+func newEchoInstance() *echo.Echo {
+	e := echo.New()
+	e.HideBanner = true
+	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+		Format: "method=${method}, uri=${uri}, status=${status}\n",
+	}))
+	e.HTTPErrorHandler = customHTTPErrorHandler
+
+	return e
+}
 
 func main() {
-	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
+	e := newEchoInstance()
+
+	clientManager := client.NewClientManager("https://127.0.0.1:32771", filepath.Join(os.Getenv("HOME"), ".kube", "config"))
+	apiHandler := handler.NewApiHandler(clientManager)
+	apiHandler.Install(e)
+
+	e.GET("/ping", func(c echo.Context) error {
+		return c.String(200, "ok")
 	})
-	r.Run()
+
+	e.Logger.Fatal(e.Start(":8080"))
 }
