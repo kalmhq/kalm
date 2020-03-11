@@ -21,6 +21,16 @@ const styles = (theme: Theme) =>
     formSection: {
       padding: theme.spacing(2),
       margin: theme.spacing(3)
+    },
+    formSectionContainer: {
+      margin: "0",
+      width: "auto"
+    },
+    formSectionItem: {
+      padding: "0px !important"
+    },
+    statusMarginBasic: {
+      marginTop: theme.spacing(3)
     }
   });
 
@@ -87,7 +97,20 @@ class ApplicationFormRaw extends React.PureComponent<
             />
           </Grid>
         </Grid>
-        <div>
+      </>
+    );
+  }
+
+  private renderStatus() {
+    const { classes } = this.props;
+    const isEdit = this.getIsEdit();
+    return (
+      <>
+        <HelperContainer>
+          <Typography>Status</Typography>
+        </HelperContainer>
+
+        <div className={classes.statusMarginBasic}>
           <Field
             name="isPersistent"
             formControlLabelProps={{
@@ -143,7 +166,14 @@ class ApplicationFormRaw extends React.PureComponent<
 
     return (
       <form onSubmit={handleSubmit} style={{ height: "100%", overflow: "hidden" }}>
-        <Paper className={classes.formSection}>{this.renderBasic()}</Paper>
+        <Grid container spacing={2} className={classes.formSectionContainer}>
+          <Grid className={classes.formSectionItem} item md={8}>
+            <Paper className={classes.formSection}>{this.renderBasic()}</Paper>
+          </Grid>
+          <Grid className={classes.formSectionItem} item md={4}>
+            <Paper className={classes.formSection}>{this.renderStatus()}</Paper>
+          </Grid>
+        </Grid>
         <Paper className={classes.formSection}>{this.renderComponent()}</Paper>
         <Paper className={classes.formSection}>{this.renderSharedEnvs()}</Paper>
         {/* <Button variant="contained" color="primary" type="submit">

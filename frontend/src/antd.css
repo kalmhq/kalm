@@ -19,7 +19,7 @@
 
 .ant-input:focus,
 .ant-cascader-picker:focus .ant-cascader-input {
-    border-color: #3f51b5 !important;
+    border-color: #2196f3 !important;
     border-width: 2px !important;
     border-right-width: 2px !important;
     -webkit-box-shadow: none !important;
@@ -41,5 +41,5 @@ div .ant-cascader-picker:focus .ant-cascader-input {
 
 div .ant-cascader-picker:focus .ant-cascader-picker-label:hover + .ant-cascader-input {
     border-width: 2px !important;
-    border-color: #3f51b5 !important;
+    border-color: #2196f3 !important;
 }
