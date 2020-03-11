@@ -2,7 +2,7 @@ import React from "react";
 import { BasePage } from "../BasePage";
 import { connect } from "react-redux";
 import { RootState } from "../../reducers";
-import { IconButton, Theme, withStyles, Breadcrumbs, Link } from "@material-ui/core";
+import { IconButton, Theme, withStyles, Breadcrumbs, Link, Button } from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@material-ui/icons/Delete";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
@@ -25,8 +25,9 @@ const styles = (theme: Theme) => ({
   fileName: {
     verticalAlign: "super"
   },
-  displayFlex: {
-    display: "flex"
+  root: {
+    display: "flex",
+    padding: "24px"
   },
   leftTree: {
     width: "400px",
@@ -183,9 +184,15 @@ class List extends React.PureComponent<Props, State> {
     const { showConfigNewDialog, showConfigEditDialog } = this.state;
 
     return (
-      <BasePage title="Configs">
+      <BasePage
+        title="Configs"
+        rightAction={
+          <Button variant="contained" color="primary" onClick={this.onCreate}>
+            Add
+          </Button>
+        }>
         {this.renderDeleteConfirmDialog()}
-        <div className={classes.displayFlex}>
+        <div className={classes.root}>
           <div className={classes.leftTree}>
             <FileTree rootConfig={rootConfig} dispatch={dispatch} />
           </div>

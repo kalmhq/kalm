@@ -67,7 +67,19 @@ export interface Props
     DispatchProp,
     RawProps {}
 
-class ComponentLikeFormRaw extends React.PureComponent<Props> {
+interface State {
+  currentPanel: string;
+}
+
+class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
+  constructor(props: Props) {
+    super(props);
+
+    this.state = {
+      currentPanel: "basic"
+    };
+  }
+
   private renderSchedule() {
     if (this.props.values.get("workloadType") !== workloadTypeCronjob) {
       return null;
@@ -474,10 +486,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
     );
   }
 
-  public renderPanel(title: string, content: any): React.ReactNode {
+  private handleChangePanel(key: string) {
+    this.setState({ currentPanel: key });
+  }
+
+  private renderPanel(key: string, title: string, content: any): React.ReactNode {
     const { classes } = this.props;
     return (
-      <ExpansionPanel>
+      <ExpansionPanel expanded={key === this.state.currentPanel} onChange={() => this.handleChangePanel(key)}>
         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id="panel1a-header">
           {title}
         </ExpansionPanelSummary>
@@ -488,42 +504,16 @@ class ComponentLikeFormRaw extends React.PureComponent<Props> {
 
   public render() {
     const { handleSubmit, classes, isFolded } = this.props;
-    // const tabs = [
-    //   {
-    //     title: "Basic",
-    //     component: this.renderBasic()
-    //   },
-    //   {
-    //     title: "Envrionment Variables",
-    //     component: this.renderEnvs()
-    //   },
-    //   {
-    //     title: "Ports",
-    //     component: this.renderPorts()
-    //   },
-    //   {
-    //     title: "Resources",
-    //     component: this.renderResources()
-    //   },
-    //   {
-    //     title: "Advanced",
-    //     component: this.renderAdvanced()
-    //   },
-    //   {
-    //     title: "Plugins",
-    //     component: this.renderPlugins()
-    //   }
-    // ];
 
     if (isFolded) {
       return (
         <form onSubmit={handleSubmit} style={{ height: "100%", overflow: "hidden" }}>
-          {this.renderPanel("Basic Info", this.renderBasic())}
-          {this.renderPanel("Environment variables", this.renderEnvs())}
-          {this.renderPanel("Ports", this.renderPorts())}
-          {this.renderPanel("Resources", this.renderResources())}
-          {this.renderPanel("Advanced", this.renderAdvanced())}
-          {this.renderPanel("Plugins", this.renderPlugins())}
+          {this.renderPanel("basic", "Basic Info", this.renderBasic())}
+          {this.renderPanel("envs", "Environment variables", this.renderEnvs())}
+          {this.renderPanel("ports", "Ports", this.renderPorts())}
+          {this.renderPanel("resources", "Resources", this.renderResources())}
+          {this.renderPanel("advanced", "Advanced", this.renderAdvanced())}
+          {this.renderPanel("plugins", "Plugins", this.renderPlugins())}
         </form>
       );
     }
