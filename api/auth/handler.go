@@ -19,6 +19,13 @@ type LoginData struct {
 	Token string `form:"token" json:"token"`
 }
 
+func ExtractTokenFromHeader(header string) string {
+	if header != "" && strings.HasPrefix(header, "Bearer ") {
+		return strings.TrimPrefix(header, "Bearer ")
+	}
+	return ""
+}
+
 func GetAuthInfo(c echo.Context) (*api.AuthInfo, error) {
 	var loginData LoginData
 
@@ -31,7 +38,7 @@ func GetAuthInfo(c echo.Context) (*api.AuthInfo, error) {
 	authHeader := c.Request().Header.Get(echo.HeaderAuthorization)
 
 	if authHeader != "" && strings.HasPrefix(authHeader, "Bearer ") {
-		authInfo.Token = strings.ReplaceAll(authHeader, "Bearer ", "")
+		authInfo.Token = ExtractTokenFromHeader(authHeader)
 	} else if len(loginData.Token) > 0 {
 		authInfo.Token = loginData.Token
 	} else if len(loginData.Username) > 0 && len(loginData.Password) > 0 {

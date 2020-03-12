@@ -95,8 +95,23 @@ func (m *ClientManager) getClientConfigWithAuthInfo(authInfo *api.AuthInfo) (*re
 	return cfg, nil
 }
 
+func (m *ClientManager) extractAuthInfo(c echo.Context) (*api.AuthInfo, error) {
+	req := c.Request()
+	authHeader := req.Header.Get(echo.HeaderAuthorization)
+	token := auth.ExtractTokenFromHeader(authHeader)
+
+	// TODO Impersonate
+
+	if token != "" {
+		authInfo := &api.AuthInfo{Token: token}
+		return authInfo, nil
+	}
+
+	return nil, echo.ErrUnauthorized
+}
+
 func (m *ClientManager) getClientConfig(c echo.Context) (*rest.Config, error) {
-	authInfo, err := auth.GetAuthInfo(c)
+	authInfo, err := m.extractAuthInfo(c)
 
 	if err != nil {
 		return nil, err
