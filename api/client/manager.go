@@ -110,7 +110,7 @@ func (m *ClientManager) extractAuthInfo(c echo.Context) (*api.AuthInfo, error) {
 	return nil, echo.ErrUnauthorized
 }
 
-func (m *ClientManager) getClientConfig(c echo.Context) (*rest.Config, error) {
+func (m *ClientManager) GetClientConfig(c echo.Context) (*rest.Config, error) {
 	authInfo, err := m.extractAuthInfo(c)
 
 	if err != nil {
@@ -118,20 +118,6 @@ func (m *ClientManager) getClientConfig(c echo.Context) (*rest.Config, error) {
 	}
 
 	return m.getClientConfigWithAuthInfo(authInfo)
-}
-
-func (m *ClientManager) GetClient(c echo.Context) (kubernetes.Interface, error) {
-	cfg, err := m.getClientConfig(c)
-	if err != nil {
-		return nil, err
-	}
-
-	client, err := kubernetes.NewForConfig(cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	return client, nil
 }
 
 func NewClientManager(apiServerHost, kubeConfigPath string) *ClientManager {

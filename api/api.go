@@ -31,6 +31,9 @@ func newEchoInstance() *echo.Echo {
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: "method=${method}, uri=${uri}, status=${status}\n",
 	}))
+
+	// TODO, only enabled cors on dev env
+	e.Use(middleware.CORS())
 	e.HTTPErrorHandler = customHTTPErrorHandler
 
 	return e
@@ -39,7 +42,7 @@ func newEchoInstance() *echo.Echo {
 func main() {
 	e := newEchoInstance()
 
-	clientManager := client.NewClientManager("https://127.0.0.1:32771", filepath.Join(os.Getenv("HOME"), ".kube", "config"))
+	clientManager := client.NewClientManager("https://192.168.64.3:8443", filepath.Join(os.Getenv("HOME"), ".kube", "config"))
 	apiHandler := handler.NewApiHandler(clientManager)
 	apiHandler.Install(e)
 
@@ -47,5 +50,5 @@ func main() {
 		return c.String(200, "ok")
 	})
 
-	e.Logger.Fatal(e.Start(":8080"))
+	e.Logger.Fatal(e.Start(":3001"))
 }
