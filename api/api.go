@@ -5,6 +5,7 @@ import (
 	"github.com/kapp-staging/kapp/api/handler"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"k8s.io/client-go/tools/clientcmd"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -42,7 +43,16 @@ func newEchoInstance() *echo.Echo {
 func main() {
 	e := newEchoInstance()
 
-	clientManager := client.NewClientManager("https://192.168.64.3:8443", filepath.Join(os.Getenv("HOME"), ".kube", "config"))
+	kubeConfigPath := filepath.Join(os.Getenv("HOME"), ".kube", "config")
+	// TODO remove this part and configure api server path from arguments
+
+	config, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
+
+	if err != nil {
+		panic(err)
+	}
+
+	clientManager := client.NewClientManager(config.Host, kubeConfigPath)
 	apiHandler := handler.NewApiHandler(clientManager)
 	apiHandler.Install(e)
 
