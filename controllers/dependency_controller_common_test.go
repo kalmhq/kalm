@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/yaml.v2"
 	"strings"
 	"testing"
 )
@@ -25,4 +26,48 @@ is---
 
 	parts := strings.Split(str, "\n---\n")
 	assert.Equal(t, len(parts), 2)
+}
+
+var dat = `
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: grafana-dashboard-apiserver
+    namespace: kapp-monitoring
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: grafana-dashboard-apiserver2
+    namespace: kapp-monitoring
+kind: ConfigMapList
+`
+
+func TestYamlDecode(t *testing.T) {
+
+	m := make(map[string]interface{})
+	_ = yaml.NewDecoder(strings.NewReader(dat)).Decode(&m)
+
+	k := m["kind"]
+	v, yes := k.(string)
+	assert.True(t, yes)
+	assert.Equal(t, "ConfigMapList", v)
+
+	itms := m["items"]
+	items, ok := itms.([]interface{})
+	assert.True(t, ok)
+	assert.Equal(t, 2, len(items))
+
+	for i, item := range items {
+		fmt.Println(i, item)
+		out, err := yaml.Marshal(item)
+		fmt.Println(string(out), err)
+	}
+}
+
+func TestParseK8sYaml2(t *testing.T) {
+	objs := parseK8sYaml([]byte(dat))
+
+	assert.Equal(t, 2, len(objs))
 }

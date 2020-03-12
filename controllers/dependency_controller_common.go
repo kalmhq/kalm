@@ -3,8 +3,11 @@ package controllers
 import (
 	"context"
 	"fmt"
+	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
+	"github.com/influxdata/influxdb/pkg/slices"
 	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -12,11 +15,13 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	//apireg "apiregistration.k8s.io/v1"
+	//	apireg "k8s.io/api/apiregistration/v1"
+	apiregistration "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
 	"log"
 	"regexp"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strings"
-	//monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 )
 
 type DepInstallStatus int
@@ -131,6 +136,8 @@ func (r *DependencyReconciler) reconcileExternalController(ctx context.Context, 
 	//load yaml for external-controller
 	files := loadFiles(fileOrDirName)
 	for _, file := range files {
+		//r.Log.Info("parsing file", "i", i)
+
 		objs := parseK8sYaml(file)
 
 		// only create, no update yet
@@ -198,7 +205,7 @@ func loadFiles(fileOrDirName string) (files [][]byte) {
 // ref: https://github.com/kubernetes/client-go/issues/193#issuecomment-363318588
 func parseK8sYaml(fileR []byte) []runtime.Object {
 
-	acceptedK8sTypes := regexp.MustCompile(`(ValidatingWebhookConfiguration|MutatingWebhookConfiguration|CustomResourceDefinition|ConfigMap|Service|Deployment|Namespace|Role|ClusterRole|RoleBinding|ClusterRoleBinding|ServiceAccount)`)
+	acceptedK8sTypes := regexp.MustCompile(`(Prometheus|DaemonSet|Alertmanager|Secret|ValidatingWebhookConfiguration|MutatingWebhookConfiguration|CustomResourceDefinition|ConfigMap|Service|Deployment|Namespace|Role|ClusterRole|RoleBinding|ClusterRoleBinding|ServiceAccount)`)
 	fileAsString := string(fileR[:])
 	sepYamlFiles := strings.Split(fileAsString, "\n---\n")
 	retVal := make([]runtime.Object, 0, len(sepYamlFiles))
@@ -219,18 +226,42 @@ func parseK8sYaml(fileR []byte) []runtime.Object {
 		_ = cmv1alpha2.AddToScheme(sch)
 		_ = apiextv1beta1.AddToScheme(sch)
 		_ = corev1.AddToScheme(sch)
-		_ = corev1.AddToScheme(sch)
+		_ = monitoringv1.AddToScheme(sch)
+		apiregistration.AddToScheme(sch)
 
 		decode := serializer.NewCodecFactory(sch).UniversalDeserializer().Decode
 		obj, groupVersionKind, err := decode([]byte(f), nil, nil)
-
 		if err != nil {
 			log.Println(fmt.Sprintf("Error while decoding YAML object(%d) Err was: %s, obj: %s", i, err, f))
 			continue
 		}
 
+		//fmt.Println("gkv", groupVersionKind)
+		//fmt.Println("obj", obj)
+
+		listShouldSeparate := []string{"RoleList", "ConfigMapList", "RoleBindingList"}
+
 		if !acceptedK8sTypes.MatchString(groupVersionKind.Kind) {
 			log.Printf("The custom-roles configMap contained K8s object types which are not supported! Skipping object with type: %s", groupVersionKind.Kind)
+		} else if slices.Exists(listShouldSeparate, groupVersionKind.Kind) {
+			//todo clean code
+			m := make(map[string]interface{})
+			if err := yaml.NewDecoder(strings.NewReader(f)).Decode(m); err != nil {
+				log.Println("fail decode ***List", err)
+				continue
+			}
+
+			items, _ := m["items"]
+			for _, item := range items.([]interface{}) {
+				inYaml, _ := yaml.Marshal(item)
+				obj, groupVersionKind, err = decode(inYaml, nil, nil)
+				if err != nil {
+					log.Println(fmt.Sprintf("Error while decoding ***List YAML object(%d) Err was: %s, obj: %s", i, err, inYaml))
+					continue
+				}
+
+				retVal = append(retVal, obj)
+			}
 		} else {
 			retVal = append(retVal, obj)
 		}
