@@ -112,7 +112,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     const { classes, isEdit, isFolded } = this.props;
     return (
       <Grid container spacing={2}>
-        <Grid md={12}>
+        <Grid item md={12}>
           {!isFolded && (
             <Typography
               variant="h2"
