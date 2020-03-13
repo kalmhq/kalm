@@ -73,5 +73,58 @@ func (r *DependencyReconciler) reconcileKubePrometheus(ctx context.Context, d *c
 		r.Log.Info("prometheus other parts installed too")
 	}
 
+	// check config
+	config := d.Spec.Config
+	if config == nil {
+		return nil
+	}
+
+	ingPlugins := genIngressPluginsIfExist(config)
+	ing, exist, err := r.getIngress(ctx, d, ingPlugins)
+	if err != nil {
+		return err
+	}
+
+	if !exist {
+		if err := r.Create(ctx, ing); err != nil {
+			return err
+		}
+	} else {
+		if err := r.Update(ctx, ing); err != nil {
+			return err
+		}
+	}
+
 	return nil
+}
+
+const (
+	kubePromethuesNS = "kapp-monitoring"
+	pluginIngress    = "plugins.core.kapp.dev/v1alpha1.ingress"
+)
+
+func genIngressPluginsIfExist(config map[string]string) (rst []*corev1alpha1.PluginIngress) {
+	if gHost, exist := config["grafanaHost"]; exist {
+		rst = append(rst, &corev1alpha1.PluginIngress{
+			Name:        "grafana",
+			Type:        pluginIngress,
+			Hosts:       []string{gHost},
+			Namespace:   kubePromethuesNS,
+			ServiceName: "grafana",
+			ServicePort: 3000,
+		})
+	}
+
+	if pHost, exist := config["prometheusHost"]; exist {
+		rst = append(rst, &corev1alpha1.PluginIngress{
+			Name:        "prometheus",
+			Type:        pluginIngress,
+			Hosts:       []string{pHost},
+			Namespace:   kubePromethuesNS,
+			ServiceName: "prometheus-k8s",
+			ServicePort: 9090,
+		})
+	}
+
+	return
 }
