@@ -6,7 +6,10 @@ require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/googleapis/gnostic v0.4.1 // indirect
 	github.com/imdario/mergo v0.3.8 // indirect
+	github.com/joho/godotenv v1.3.0
 	github.com/labstack/echo/v4 v4.1.15
+	github.com/sirupsen/logrus v1.4.2
+	github.com/urfave/cli/v2 v2.2.0
 	golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073 // indirect
 	golang.org/x/net v0.0.0-20200301022130-244492dfa37a // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
