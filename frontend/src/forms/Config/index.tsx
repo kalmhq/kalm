@@ -5,7 +5,7 @@ import { CustomTextField } from "../Basic";
 import { makeStyles, Theme } from "@material-ui/core/styles";
 import { Button, FormControl } from "@material-ui/core";
 import { ValidatorRequired } from "../validator";
-import { Config } from "../../actions";
+import { ConfigNode } from "../../actions";
 import { CustomRadioGroup } from "../Basic/radio";
 import Immutable from "immutable";
 import { CustomEditor } from "./editor";
@@ -13,10 +13,7 @@ import { CustomCascader } from "./cascader";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import { connect } from "react-redux";
 import { RootState } from "../../reducers";
-import {
-  getCascaderDefaultValue,
-  getCurrentConfig
-} from "../../selectors/config";
+import { getCascaderDefaultValue, getCurrentConfig } from "../../selectors/config";
 
 export interface Props {
   onClose: any;
@@ -24,9 +21,9 @@ export interface Props {
 }
 
 const mapStateToProps = (state: RootState, props: Props) => {
-  const values = getFormValues("config")(state) as Config;
+  const values = getFormValues("config")(state) as ConfigNode;
 
-  let initialValues: Config;
+  let initialValues: ConfigNode;
   if (props.formType === "new") {
     initialValues = Immutable.fromJS({
       ancestorIds: getCascaderDefaultValue(),
@@ -130,7 +127,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   }
 }));
 
-function ConfigFormRaw(props: Props & InjectedFormProps<Config, Props>) {
+function ConfigFormRaw(props: Props & InjectedFormProps<ConfigNode, Props>) {
   const { handleSubmit, onClose, formType, initialValues } = props;
   const classes = useStyles();
   return (
@@ -155,13 +152,7 @@ function ConfigFormRaw(props: Props & InjectedFormProps<Config, Props>) {
             />
           </div>
         </div>
-        {formType === "new" && (
-          <CustomRadioGroup
-            name="type"
-            label="Type"
-            options={["file", "folder"]}
-          />
-        )}
+        {formType === "new" && <CustomRadioGroup name="type" label="Type" options={["file", "folder"]} />}
         {/* <CustomTextField
           // className={classes.input}
           name="content"
@@ -182,11 +173,7 @@ function ConfigFormRaw(props: Props & InjectedFormProps<Config, Props>) {
           <Button variant="contained" color="primary" type="submit">
             Submit
           </Button>
-          <Button
-            onClick={onClose}
-            color="primary"
-            className={classes.cancelButton}
-          >
+          <Button onClick={onClose} color="primary" className={classes.cancelButton}>
             Cancel
           </Button>
         </div>
@@ -196,7 +183,7 @@ function ConfigFormRaw(props: Props & InjectedFormProps<Config, Props>) {
 }
 
 export default connect(mapStateToProps)(
-  reduxForm<Config, Props>({
+  reduxForm<ConfigNode, Props>({
     form: "config",
     onSubmitFail: console.log
   })(ConfigFormRaw)

@@ -2,17 +2,21 @@ import Immutable from "immutable";
 import { ImmutableMap } from "../typings";
 import {
   CREATE_CONFIG,
-  Config,
+  ConfigNode,
   UPDATE_CONFIG,
   DELETE_CONFIG,
   SET_CURRENT_CONFIG_ID_CHAIN,
-  DUPLICATE_CONFIG
+  DUPLICATE_CONFIG,
+  LOAD_CONFIGS_FULFILLED,
+  LOAD_CONFIGS_PENDING
 } from "../actions";
 import { Actions } from "../actions";
 
 export type State = ImmutableMap<{
   currentConfigIdChain: string[];
-  rootConfig: Config;
+  rootConfig: ConfigNode;
+  isListLoading: boolean;
+  isListFirstLoaded: boolean;
 }>;
 
 const initialState: State = Immutable.Map({
@@ -20,7 +24,7 @@ const initialState: State = Immutable.Map({
   rootConfig: Immutable.fromJS({
     id: "0",
     type: "folder",
-    name: "root",
+    name: "/",
     content: "",
     children: {
       "1": {
@@ -235,6 +239,17 @@ const initialState: State = Immutable.Map({
 
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
+    case LOAD_CONFIGS_PENDING: {
+      state = state.set("isListLoading", true);
+      break;
+    }
+    case LOAD_CONFIGS_FULFILLED: {
+      state = state.set("isListFirstLoaded", true).set("isListLoading", false);
+      const configNode = action.payload.configNode;
+
+      state = state.set("rootConfig", configNode);
+      break;
+    }
     case SET_CURRENT_CONFIG_ID_CHAIN: {
       const idChain = action.payload.idChain;
       state = state.set("currentConfigIdChain", idChain);
@@ -254,7 +269,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
           immutablePath.push("children");
         });
 
-      const config: Config = Immutable.fromJS({
+      const config: ConfigNode = Immutable.fromJS({
         id: configForm.get("id"),
         type: configForm.get("type"),
         name: configForm.get("name"),
@@ -279,7 +294,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
           immutablePath.push("children");
         });
 
-      const config: Config = Immutable.fromJS({
+      const config: ConfigNode = Immutable.fromJS({
         id: configForm.get("id"),
         type: configForm.get("type"),
         name: configForm.get("name"),
@@ -304,7 +319,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
           immutablePath.push("children");
         });
 
-      const config: Config = Immutable.fromJS({
+      const config: ConfigNode = Immutable.fromJS({
         id: configForm.get("id"),
         type: configForm.get("type"),
         name: configForm.get("name"),
