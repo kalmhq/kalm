@@ -10,9 +10,9 @@ import Immutable from "immutable";
 const displayRender = (labels: any, selectedOptions: any) => {
   return labels.map((label: any, i: any) => {
     const option = selectedOptions[i];
-    // if (i === labels.length - 1) {
-    //   return <span key={option.value}>{label}</span>;
-    // }
+    if (label === "/") {
+      return <span key={option.value}>/ </span>;
+    }
     return <span key={option.value}>{label} / </span>;
   });
 };

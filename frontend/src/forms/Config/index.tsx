@@ -4,9 +4,8 @@ import { reduxForm } from "redux-form/immutable";
 import { CustomTextField } from "../Basic";
 import { makeStyles, Theme } from "@material-ui/core/styles";
 import { Button, FormControl } from "@material-ui/core";
-import { ValidatorRequired } from "../validator";
+import { ValidatorRequired, ValidatorName } from "../validator";
 import { ConfigNode } from "../../actions";
-import { CustomRadioGroup } from "../Basic/radio";
 import Immutable from "immutable";
 import { CustomEditor } from "./editor";
 import { CustomCascader } from "./cascader";
@@ -41,7 +40,7 @@ const mapStateToProps = (state: RootState, props: Props) => {
       id: config.get("id"),
       resourceVersion: config.get("resourceVersion"),
       name: config.get("name"),
-      type: config.get("type"),
+      type: "file",
       content: config.get("content")
     });
   }
@@ -129,7 +128,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 function ConfigFormRaw(props: Props & InjectedFormProps<ConfigNode, Props>) {
-  const { handleSubmit, onClose, formType, initialValues } = props;
+  const { handleSubmit, onClose, initialValues } = props;
   const classes = useStyles();
   return (
     <div className={classes.root}>
@@ -147,13 +146,13 @@ function ConfigFormRaw(props: Props & InjectedFormProps<ConfigNode, Props>) {
               name="name"
               label="Name"
               margin
-              validate={[ValidatorRequired]}
+              validate={[ValidatorRequired, ValidatorName]}
               helperText="Please type the config name"
               placeholder="Please type the config name"
             />
           </div>
         </div>
-        {formType === "new" && <CustomRadioGroup name="type" label="Type" options={["file", "folder"]} />}
+        {/* {formType === "new" && <CustomRadioGroup name="type" label="Type" options={["file", "folder"]} />} */}
         {/* <CustomTextField
           // className={classes.input}
           name="content"

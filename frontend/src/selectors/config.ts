@@ -10,7 +10,6 @@ export const getCurrentConfig = (): ConfigNode => {
 };
 
 export const getConfigByIdChain = (idChain: string[]): ConfigNode => {
-  console.log("idChain", idChain);
   const state = store.getState();
   let config = state.get("configs").get("rootConfig");
 
@@ -71,7 +70,7 @@ const configToCascaderOption = (config: ConfigNode): CascaderOptionType => {
   if (config.get("id") === "0") {
     return {
       value: config.get("id"),
-      label: "",
+      label: "/",
       children: cascaderOptionChildren
     } as CascaderOptionType;
   }
