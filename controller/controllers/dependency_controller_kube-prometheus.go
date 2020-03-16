@@ -9,6 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 func (r *DependencyReconciler) reconcileKubePrometheus(ctx context.Context, d *corev1alpha1.Dependency) error {
@@ -142,6 +143,10 @@ func (r *DependencyReconciler) reconcileKubePrometheus(ctx context.Context, d *c
 	}
 
 	if !exist {
+		if err := ctrl.SetControllerReference(d, ing, r.Scheme); err != nil {
+			return err
+		}
+
 		if err := r.Create(ctx, ing); err != nil {
 			return err
 		}
@@ -150,6 +155,8 @@ func (r *DependencyReconciler) reconcileKubePrometheus(ctx context.Context, d *c
 			return err
 		}
 	}
+
+	//todo what to do if dep is deleted? delete all prometheus infra?
 
 	return nil
 }
