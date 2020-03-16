@@ -97,14 +97,16 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
       : "-";
 
   private renderPluginsColumn = (rowData: RowData) => {
-    return Array.from(
-      new Set(
-        rowData.applicationComponent
-          .get("plugins")
-          .map(x => x.get("name"))
-          .toArray()
-      )
-    ).join(",");
+    return rowData.applicationComponent.get("plugins")
+      ? Array.from(
+          new Set(
+            rowData.applicationComponent
+              .get("plugins")
+              .map(x => x.get("name"))
+              .toArray()
+          )
+        ).join(",")
+      : "-";
   };
 
   private renderEnvsColumn = (rowData: RowData) => {
