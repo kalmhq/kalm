@@ -1,12 +1,13 @@
 import axios from "axios";
-import { ComponentTemplate, Application } from ".";
+import { ComponentTemplate, Application, ConfigFile } from ".";
 import { convertFromCRDComponentTemplate } from "../convertors/ComponentTemplate";
 import { V1alpha1ComponentTemplate } from "../kappModel/v1alpha1ComponentTemplate";
 import { V1NodeList, V1PersistentVolumeList } from "../model/models";
 import { ItemList } from "../kappModel/List";
-import { V1alpha1Application, V1alpha1Dependency } from "../kappModel";
+import { V1alpha1Application, V1alpha1Dependency, V1alpha1File } from "../kappModel";
 import { convertFromCRDApplication } from "../convertors/Application";
 import { convertFromCRDDependency } from "../convertors/Dependency";
+import { convertFromCRDFile } from "../convertors/File";
 
 export const K8sApiPerfix = process.env.REACT_APP_K8S_API_PERFIX || "http://localhost:3001";
 
@@ -69,4 +70,28 @@ export const updateKappApplication = async (application: V1alpha1Application): P
 export const getDependencies = async () => {
   const res = await axiosClient.get<ItemList<V1alpha1Dependency>>(K8sApiPerfix + "/v1/dependencies");
   return res.data.items.map(convertFromCRDDependency);
+};
+
+export const getKappFiles = async () => {
+  const res = await axiosClient.get<ItemList<V1alpha1File>>(K8sApiPerfix + "/v1/files");
+
+  return res.data.items.map(convertFromCRDFile);
+};
+
+export const createKappFile = async (file: V1alpha1File): Promise<ConfigFile> => {
+  const res = await axiosClient.post(K8sApiPerfix + `/v1/files`, file);
+
+  return convertFromCRDFile(res.data);
+};
+
+export const updateKappFile = async (file: V1alpha1File): Promise<ConfigFile> => {
+  const res = await axiosClient.put(K8sApiPerfix + `/v1/files/${file.metadata!.name}`, file);
+
+  return convertFromCRDFile(res.data);
+};
+
+export const deleteKappFile = async (file: V1alpha1File): Promise<void> => {
+  await axiosClient.delete(K8sApiPerfix + `/v1/files/${file.metadata!.name}`);
+
+  // return convertFromCRDFile(res.data);
 };

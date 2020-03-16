@@ -1,15 +1,15 @@
-import { Config } from "../actions";
+import { ConfigNode } from "../actions";
 import { store } from "../store";
 import { CascaderOptionType } from "antd/es/cascader";
 import Immutable from "immutable";
 
-export const getCurrentConfig = (): Config => {
+export const getCurrentConfig = (): ConfigNode => {
   const state = store.getState();
   const idChain = state.get("configs").get("currentConfigIdChain");
   return getConfigByIdChain(idChain);
 };
 
-export const getConfigByIdChain = (idChain: string[]): Config => {
+export const getConfigByIdChain = (idChain: string[]): ConfigNode => {
   const state = store.getState();
   let config = state.get("configs").get("rootConfig");
 
@@ -19,7 +19,7 @@ export const getConfigByIdChain = (idChain: string[]): Config => {
       return;
     }
 
-    config = config.get("children").get(id) as Config;
+    config = config.get("children").get(id) as ConfigNode;
   });
 
   const newIdChain = idChain.slice(0);
@@ -53,19 +53,27 @@ export const getCascaderOptions = (): CascaderOptionType[] => {
   return options;
 };
 
-const configToCascaderOption = (config: Config): CascaderOptionType => {
+const configToCascaderOption = (config: ConfigNode): CascaderOptionType => {
   const children = config.get("children");
 
   let childrenHaveFolder = false;
   const cascaderOptionChildren: CascaderOptionType[] = [];
 
-  children.forEach((childConfig: Config) => {
+  children.forEach((childConfig: ConfigNode) => {
     if (childConfig.get("type") === "folder") {
       childrenHaveFolder = true;
 
       cascaderOptionChildren.push(configToCascaderOption(childConfig));
     }
   });
+
+  if (config.get("id") === "0") {
+    return {
+      value: config.get("id"),
+      label: "/",
+      children: cascaderOptionChildren
+    } as CascaderOptionType;
+  }
 
   if (childrenHaveFolder) {
     return {

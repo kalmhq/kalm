@@ -12,7 +12,7 @@ import { HelperContainer } from "../../widgets/Helper";
 import { SwitchField } from "../Basic/switch";
 import { TextField } from "../Basic/text";
 import { NormalizeBoolean } from "../normalizer";
-import { ValidatorRequired } from "../validator";
+import { ValidatorRequired, ValidatorName } from "../validator";
 import { Components } from "./component";
 import { SharedEnvs } from "./shardEnv";
 
@@ -76,7 +76,7 @@ class ApplicationFormRaw extends React.PureComponent<
               label="Name"
               disabled={isEdit}
               component={TextField}
-              validate={ValidatorRequired}
+              validate={[ValidatorRequired, ValidatorName]}
               helperText={
                 isEdit
                   ? "Can't modify name"

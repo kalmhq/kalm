@@ -8,6 +8,16 @@ export const ValidatorRequired = (value: any, _allValues?: any, _props?: any, _n
   return !!value ? undefined : `Required`;
 };
 
+export const ValidatorName = (value: string) => {
+  if (!value) return undefined;
+
+  if (!value.match(/^[a-zA-Z0-9.-]*$/i) || value === "0") {
+    return "Invalid Name Value";
+  }
+
+  return undefined;
+};
+
 // https://regex101.com/r/cJ74bX/1/
 export const ValidatorCPU = (value: string) => {
   if (!value) return undefined;

@@ -8,7 +8,7 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import { deleteConfigAction, duplicateConfigAction } from "../../actions/config";
 import { ThunkDispatch } from "redux-thunk";
-import { Actions, Config } from "../../actions";
+import { Actions, ConfigNode } from "../../actions";
 import { FileTree } from "../../widgets/FileTree";
 import { getCurrentConfig } from "../../selectors/config";
 import SyntaxHighlighter from "react-syntax-highlighter";
@@ -17,6 +17,7 @@ import { ConfigNewDialog } from "../../widgets/ConfigNewDialog";
 import { ConfigEditDialog } from "../../widgets/ConfigEditDialog";
 import { setSuccessNotificationAction, setErrorNotificationAction } from "../../actions/notification";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
+import { loadConfigsAction } from "../../actions/config";
 
 const styles = (theme: Theme) => ({
   fileIcon: {
@@ -66,7 +67,7 @@ type StateProps = ReturnType<typeof mapStateToProps>;
 interface Props extends StateProps {
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
   classes: any;
-  rootConfig: Config;
+  rootConfig: ConfigNode;
 }
 
 interface State {
@@ -83,6 +84,12 @@ class List extends React.PureComponent<Props, State> {
       showConfigEditDialog: false,
       isDeleteConfirmDialogOpen: false
     };
+  }
+
+  public componentDidMount() {
+    const { dispatch } = this.props;
+
+    dispatch(loadConfigsAction());
   }
 
   private closeConfirmDialog = () => {
@@ -134,7 +141,16 @@ class List extends React.PureComponent<Props, State> {
     const links: React.ReactElement[] = [];
     currentConfigIdChain.forEach((configId: string) => {
       if (tmpConfig.get("id") !== configId) {
-        tmpConfig = tmpConfig.get("children").get(configId) as Config;
+        tmpConfig = tmpConfig.get("children").get(configId) as ConfigNode;
+      }
+
+      if (tmpConfig.get("id") === "0") {
+        links.push(
+          <Link key={configId} color="inherit" onClick={() => console.log("link", configId)}>
+            {""}
+          </Link>
+        );
+        return;
       }
 
       links.push(

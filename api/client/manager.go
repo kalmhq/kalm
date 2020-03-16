@@ -2,11 +2,13 @@ package client
 
 import (
 	"github.com/kapp-staging/kapp/api/auth"
+	"github.com/kapp-staging/kapp/api/config"
 	"github.com/labstack/echo/v4"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
+	"log"
 )
 
 const (
@@ -15,24 +17,12 @@ const (
 )
 
 type ClientManager struct {
-	ApiServerHost  string
-	KubeConfigPath string
-
-	inClusterConfig *rest.Config
+	Config        *config.Config
+	ClusterConfig *rest.Config
 }
 
 func (m *ClientManager) isInCluster() bool {
-	return m.ApiServerHost == "" && m.KubeConfigPath == ""
-}
-
-func (m *ClientManager) buildClusterConfig() (*rest.Config, error) {
-	if m.isInCluster() {
-		return m.inClusterConfig, nil
-	} else {
-		return clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-			&clientcmd.ClientConfigLoadingRules{ExplicitPath: m.KubeConfigPath},
-			&clientcmd.ConfigOverrides{ClusterInfo: api.Cluster{Server: m.ApiServerHost}}).ClientConfig()
-	}
+	return m.Config.KubernetesApiServerAddress == "" && m.Config.KubeConfigPath == ""
 }
 
 func (m *ClientManager) buildCmdConfig(authInfo *api.AuthInfo, cfg *rest.Config) clientcmd.ClientConfig {
@@ -71,23 +61,42 @@ func (m *ClientManager) IsAuthInfoWorking(authInfo *api.AuthInfo) error {
 	return err
 }
 
-func (m *ClientManager) initInClusterClientConfiguration() {
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		panic(err.Error())
+func (m *ClientManager) initClusterClientConfiguration() (err error) {
+	var cfg *rest.Config
+
+	if m.isInCluster() {
+		cfg, err = rest.InClusterConfig()
+	} else {
+		if m.Config.KubernetesApiServerAddress != "" {
+			TLSClientConfig := rest.TLSClientConfig{}
+
+			if m.Config.KubernetesApiServerCAFilePath != "" {
+				TLSClientConfig.CAFile = m.Config.KubernetesApiServerCAFilePath
+			}
+
+			cfg = &rest.Config{
+				Host:            m.Config.KubernetesApiServerAddress,
+				TLSClientConfig: TLSClientConfig,
+			}
+		} else if m.Config.KubeConfigPath != "" {
+			cfg, err = clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+				&clientcmd.ClientConfigLoadingRules{ExplicitPath: m.Config.KubeConfigPath},
+				&clientcmd.ConfigOverrides{}).ClientConfig()
+		}
 	}
-	m.inClusterConfig = config
+
+	if err != nil {
+		return err
+	}
+
+	m.ClusterConfig = cfg
+	return nil
 }
 
 func (m *ClientManager) getClientConfigWithAuthInfo(authInfo *api.AuthInfo) (*rest.Config, error) {
-	cfg, err := m.buildClusterConfig()
-	if err != nil {
-		return nil, err
-	}
+	clientConfig := m.buildCmdConfig(authInfo, m.ClusterConfig)
 
-	clientConfig := m.buildCmdConfig(authInfo, cfg)
-
-	cfg, err = clientConfig.ClientConfig()
+	cfg, err := clientConfig.ClientConfig()
 	if err != nil {
 		return nil, err
 	}
@@ -120,14 +129,15 @@ func (m *ClientManager) GetClientConfig(c echo.Context) (*rest.Config, error) {
 	return m.getClientConfigWithAuthInfo(authInfo)
 }
 
-func NewClientManager(apiServerHost, kubeConfigPath string) *ClientManager {
+func NewClientManager(config *config.Config) *ClientManager {
 	m := &ClientManager{
-		ApiServerHost:  apiServerHost,
-		KubeConfigPath: kubeConfigPath,
+		Config: config,
 	}
 
-	if m.isInCluster() {
-		m.initInClusterClientConfiguration()
+	err := m.initClusterClientConfiguration()
+
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	return m

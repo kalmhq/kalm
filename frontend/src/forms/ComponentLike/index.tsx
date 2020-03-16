@@ -10,7 +10,7 @@ import { RootState } from "../../reducers";
 import { HelperContainer } from "../../widgets/Helper";
 import { CustomTextField, RenderSelectField, RenderTextField } from "../Basic";
 import { NormalizeNumber } from "../normalizer";
-import { ValidatorRequired, ValidatorSchedule } from "../validator";
+import { ValidatorRequired, ValidatorSchedule, ValidatorName } from "../validator";
 import { Envs } from "./Envs";
 import { Ports } from "./Ports";
 import ComponentResources from "./resources";
@@ -112,7 +112,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     const { classes, isEdit, isFolded } = this.props;
     return (
       <Grid container spacing={2}>
-        <Grid md={12}>
+        <Grid item md={12}>
           {!isFolded && (
             <Typography
               variant="h2"
@@ -131,7 +131,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             name="name"
             label="Name"
             margin
-            validate={[ValidatorRequired]}
+            validate={[ValidatorRequired, ValidatorName]}
             disabled={isEdit}
             helperText={
               isEdit

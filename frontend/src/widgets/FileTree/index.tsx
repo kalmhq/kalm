@@ -8,7 +8,7 @@ import { useSpring, animated } from "react-spring/web.cjs"; // web.cjs is requir
 import FolderIcon from "@material-ui/icons/Folder";
 import FolderOpenIcon from "@material-ui/icons/FolderOpen";
 import InsertDriveFileOutlinedIcon from "@material-ui/icons/InsertDriveFileOutlined";
-import { Config } from "../../actions";
+import { ConfigNode } from "../../actions";
 import { setCurrentConfigIdChainAction } from "../../actions/config";
 
 function TransitionComponent(props: any) {
@@ -43,9 +43,7 @@ const StyledTreeItem = withStyles((theme: any) => ({
   content: {
     height: 30
   }
-}))((props: TreeItemProps) => (
-  <TreeItem {...props} TransitionComponent={TransitionComponent} />
-));
+}))((props: TreeItemProps) => <TreeItem {...props} TransitionComponent={TransitionComponent} />);
 
 const useStyles = makeStyles({
   root: {
@@ -56,15 +54,11 @@ const useStyles = makeStyles({
 });
 
 export interface FileTreeProp {
-  rootConfig: Config;
+  rootConfig: ConfigNode;
   dispatch: any;
 }
 
-const renderStyledTreeItem = (
-  config: Config,
-  idChain: string[],
-  dispatch: any
-) => {
+const renderStyledTreeItem = (config: ConfigNode, idChain: string[], dispatch: any) => {
   let newIdChain: string[] = idChain.slice(0); // copy idChain to newIdChain, different memory addresses
   newIdChain.push(config.get("id"));
 
@@ -83,16 +77,12 @@ const renderStyledTreeItem = (
   }
 
   const childrenItems: any[] = [];
-  config.get("children").forEach((childConfig: Config) => {
+  config.get("children").forEach((childConfig: ConfigNode) => {
     // 递归渲染子树
     childrenItems.push(renderStyledTreeItem(childConfig, newIdChain, dispatch));
   });
   return (
-    <StyledTreeItem
-      key={config.get("id")}
-      nodeId={config.get("id")}
-      label={config.get("name")}
-    >
+    <StyledTreeItem key={config.get("id")} nodeId={config.get("id")} label={config.get("name")}>
       {childrenItems}
     </StyledTreeItem>
   );
@@ -108,8 +98,7 @@ export const FileTree = (props: FileTreeProp) => {
       defaultExpanded={[props.rootConfig.get("id")]}
       defaultCollapseIcon={<FolderOpenIcon htmlColor="#f9a825" />}
       defaultExpandIcon={<FolderIcon htmlColor="#f9a825" />}
-      defaultEndIcon={<InsertDriveFileOutlinedIcon htmlColor="#0277bd" />}
-    >
+      defaultEndIcon={<InsertDriveFileOutlinedIcon htmlColor="#0277bd" />}>
       {renderStyledTreeItem(props.rootConfig, [], props.dispatch)}
       {/* <StyledTreeItem nodeId="1" label="Main">
         <StyledTreeItem nodeId="2" label="Hello" />
