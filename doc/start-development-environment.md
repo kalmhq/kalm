@@ -16,7 +16,7 @@ cd controller
 make install
 ```
 
-1. Start Controller
+3. Start Controller
 
 ```
 cd controller
