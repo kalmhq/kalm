@@ -9,6 +9,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/go-bindata/go-bindata v3.1.2+incompatible // indirect
 	github.com/go-logr/logr v0.1.0
+	github.com/google/go-jsonnet v0.15.0 // indirect
 	github.com/influxdata/influxdb v1.7.7
 	github.com/jetstack/cert-manager v0.13.1
 	github.com/jsonnet-bundler/jsonnet-bundler v0.2.0 // indirect
