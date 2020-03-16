@@ -39,6 +39,7 @@ const mapStateToProps = (state: RootState, props: Props) => {
     initialValues = Immutable.fromJS({
       ancestorIds: newIdChain,
       id: config.get("id"),
+      resourceVersion: config.get("resourceVersion"),
       name: config.get("name"),
       type: config.get("type"),
       content: config.get("content")

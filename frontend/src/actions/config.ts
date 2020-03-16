@@ -14,79 +14,83 @@ import {
 } from ".";
 import Immutable from "immutable";
 import { randomName } from "../utils";
-import { getKappFiles, createKappFile } from "./kubernetesApi";
+import { getKappFiles, createKappFile, updateKappFile, deleteKappFile } from "./kubernetesApi";
 import { convertToCRDFile } from "../convertors/File";
 
 export type ThunkResult<R> = ThunkAction<R, RootState, undefined, Actions>;
 
 export const createConfigAction = (config: ConfigNode): ThunkResult<Promise<void>> => {
   return async dispatch => {
-    config = config.set("id", randomName()); // TODO fake id now
+    config = config.set("id", randomName());
 
-    console.log("ancestorIds", config.get("ancestorIds")?.toJS());
-    const ancestorIds = config.get("ancestorIds")!.toArray() || [];
-    let path = "";
-    for (let i = 1; i <= ancestorIds.length - 1; i++) {
-      path = path + "/" + ancestorIds[i];
-    }
-    path = path + "/" + config.get("name");
-    const configFile: ConfigFile = Immutable.fromJS({
-      id: config.get("id"),
-      name: config.get("name"),
-      content: config.get("content"),
-      path
-    });
-
-    const resConfig = await createKappFile(convertToCRDFile(configFile));
-    console.log("resConfig", resConfig);
-
-    const newIdChain = ancestorIds;
-    newIdChain.push(config.get("id"));
+    const configFile = configToConfigFile(config);
+    await createKappFile(convertToCRDFile(configFile));
 
     dispatch({
       type: CREATE_CONFIG,
       payload: { config }
     });
+
+    const newIdChain = config.get("ancestorIds")!.toArray() || [];
+    newIdChain.push(config.get("id"));
     dispatch(setCurrentConfigIdChainAction(newIdChain));
   };
 };
 
 export const duplicateConfigAction = (config: ConfigNode): ThunkResult<Promise<void>> => {
-  config = Immutable.fromJS({
-    id: randomName(), // TODO fake id now
-    name: config.get("name") + "-duplicate",
-    type: config.get("type"),
-    content: config.get("content"),
-    ancestorIds: config.get("ancestorIds")
-  });
-
-  const newIdChain = config.get("ancestorIds") ? config.get("ancestorIds")!.toArray() : [];
-  newIdChain.push(config.get("id"));
   return async dispatch => {
+    config = Immutable.fromJS({
+      id: randomName(),
+      name: config.get("name") + "-duplicate",
+      type: config.get("type"),
+      content: config.get("content"),
+      ancestorIds: config.get("ancestorIds")
+    });
+
+    const configFile = configToConfigFile(config);
+    await createKappFile(convertToCRDFile(configFile));
+
     dispatch({
       type: DUPLICATE_CONFIG,
       payload: { config }
     });
+
+    const newIdChain = config.get("ancestorIds")!.toArray() || [];
+    newIdChain.push(config.get("id"));
     dispatch(setCurrentConfigIdChainAction(newIdChain));
   };
 };
 
 export const updateConfigAction = (config: ConfigNode): ThunkResult<Promise<void>> => {
   return async dispatch => {
+    const configFile = configToConfigFile(config);
+    await updateKappFile(convertToCRDFile(configFile));
+
     dispatch({
       type: UPDATE_CONFIG,
       payload: { config }
     });
+
+    const newIdChain = config.get("ancestorIds")!.toArray() || [];
+    newIdChain.push(config.get("id"));
+    dispatch(setCurrentConfigIdChainAction(newIdChain));
+
+    dispatch(loadConfigsAction());
   };
 };
 
 export const deleteConfigAction = (config: ConfigNode): ThunkResult<Promise<void>> => {
   return async dispatch => {
+    const configFile = configToConfigFile(config);
+    await deleteKappFile(convertToCRDFile(configFile));
+
     dispatch(setCurrentConfigIdChainAction(["0"]));
     dispatch({
       type: DELETE_CONFIG,
       payload: { config }
     });
+
+    dispatch(loadConfigsAction());
   };
 };
 
@@ -112,6 +116,25 @@ export const loadConfigsAction = (): ThunkResult<Promise<void>> => {
       }
     });
   };
+};
+
+export const configToConfigFile = (config: ConfigNode): ConfigFile => {
+  const ancestorIds = config.get("ancestorIds")!.toArray() || [];
+
+  let path = "";
+  for (let i = 1; i <= ancestorIds.length - 1; i++) {
+    path = path + "/" + ancestorIds[i];
+  }
+  path = path + "/" + config.get("name");
+  const configFile: ConfigFile = Immutable.fromJS({
+    id: config.get("id"),
+    resourceVersion: config.get("resourceVersion"),
+    name: config.get("name"),
+    content: config.get("content"),
+    path
+  });
+
+  return configFile;
 };
 
 // file list to file tree
@@ -149,6 +172,7 @@ export const configsToConfigNode = (configs: ConfigFile[]): ConfigNode => {
     immutablePath.push(configFile.get("id"));
     const config: ConfigNode = Immutable.fromJS({
       id: configFile.get("id"),
+      resourceVersion: configFile.get("resourceVersion"),
       type: "file",
       name: configFile.get("name"),
       content: configFile.get("content"),

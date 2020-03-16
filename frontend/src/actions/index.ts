@@ -197,10 +197,12 @@ export type ConfigFile = ImmutableMap<{
   name: string;
   path: string;
   content: string;
+  resourceVersion?: string;
 }>;
 
 export type ConfigNode = ImmutableMap<{
   id: string; // for folder is split path, for file is name in metadata
+  resourceVersion?: string;
   type: "folder" | "file";
   name: string; // split path
   content: string;

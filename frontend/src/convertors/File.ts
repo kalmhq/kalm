@@ -12,6 +12,7 @@ export const convertFromCRDFile = (c: V1alpha1File): ConfigFile => {
   const res: ConfigFile = Map({
     id: metadata.name!,
     name: pathSlits[pathSlits.length - 1],
+    resourceVersion: metadata.resourceVersion,
     path: spec.path,
     content: spec.content
   });
@@ -25,7 +26,8 @@ export const convertToCRDFile = (c: ConfigFile): V1alpha1File => {
       apiVersion: "core.kapp.dev/v1alpha1",
       kind: "File",
       metadata: {
-        name: c.get("id")
+        name: c.get("id"),
+        resourceVersion: c.get("resourceVersion")
       },
       spec: {
         path: c.get("path"),
