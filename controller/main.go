@@ -17,6 +17,7 @@ package main
 
 import (
 	"flag"
+	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	"os"
 
 	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
@@ -29,6 +30,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
+	apiregistration "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
+	//apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	//cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
 	// +kubebuilder:scaffold:imports
 )
@@ -49,6 +52,15 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
+
+	err = monitoringv1.AddToScheme(scheme)
+	if err != nil {
+		panic(err)
+	}
+
+	apiregistration.AddToScheme(scheme)
+
+	//apiextv1.AddToScheme(scheme)
 
 	// +kubebuilder:scaffold:scheme
 }
