@@ -22,6 +22,7 @@ func returnRstForError(err error) (ctrl.Result, error) {
 	if errors.IsNotFound(err) {
 		return ctrl.Result{}, nil
 	} else if isRetryLaterErr(err) {
+		fmt.Println("returnRstForError retryLater")
 		return ctrl.Result{Requeue: true}, nil
 	} else {
 		return ctrl.Result{}, err
@@ -41,11 +42,6 @@ func (r *DependencyReconciler) reconcileKong(ctx context.Context, dep *corev1alp
 
 	switch status {
 	case NotInstalled:
-		// try install
-		if err := r.UpdateStatusIfNotMatch(ctx, dep, corev1alpha1.DependencyStatusInstalling); err != nil {
-			return err
-		}
-
 		// try installing kong first
 		if err := r.reconcileExternalController(ctx, "kong_1.0.0.yaml"); err != nil {
 			return err
@@ -216,32 +212,6 @@ func (r *DependencyReconciler) desiredIngress(
 	}
 
 	return ing
-}
-
-func (r *DependencyReconciler) UpdateStatusIfNotMatch(ctx context.Context, dep *corev1alpha1.Dependency, status string) error {
-	if dep.Status.Status == status {
-		r.Log.Info("same status, ignored",
-			"status", status, "dep", dep)
-		return nil
-	}
-
-	dep.Status = corev1alpha1.DependencyStatus{
-		Status: status,
-	}
-
-	if err := r.Status().Update(ctx, dep); err != nil {
-		if errors.IsConflict(err) {
-			r.Log.Info("errors.IsConflict, retry later",
-				"err", err, "dep", dep, "status", status)
-
-			return nil
-		}
-
-		r.Log.Error(err, "fail to update status")
-		return err
-	}
-
-	return nil
 }
 
 func getPrvKeyNameForClusterIssuer(dep *corev1alpha1.Dependency) string {

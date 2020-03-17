@@ -328,3 +328,31 @@ func (r *DependencyReconciler) createMany(ctx context.Context, objs ...runtime.O
 
 	return nil
 }
+
+func (r *DependencyReconciler) UpdateStatusIfNotMatch(ctx context.Context, dep *corev1alpha1.Dependency, status string) error {
+	if dep.Status.Status == status {
+		r.Log.Info("same status, ignored",
+			"status", status, "dep", dep)
+		return nil
+	}
+
+	dep.Status = corev1alpha1.DependencyStatus{
+		Status: status,
+	}
+
+	if err := r.Status().Update(ctx, dep); err != nil {
+		if errors.IsConflict(err) {
+			r.Log.Info("errors.IsConflict, retry later",
+				"err", err, "dep", dep, "status", status)
+
+			return nil
+		}
+
+		r.Log.Error(err, "fail to update status")
+		return err
+	}
+
+	r.Log.Info("finish updating status", "to", status)
+
+	return nil
+}

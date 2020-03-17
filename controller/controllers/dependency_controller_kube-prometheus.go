@@ -54,10 +54,6 @@ func (r *DependencyReconciler) reconcileKubePrometheus(ctx context.Context, d *c
 	case NotInstalled:
 		r.Log.Info("prometheus operator otherParts not installed")
 
-		if err := r.UpdateStatusIfNotMatch(ctx, d, corev1alpha1.DependencyStatusInstalling); err != nil {
-			return err
-		}
-
 		// try install remaining parts, including
 		// grafana
 		// prome-adapter
