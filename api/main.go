@@ -127,6 +127,17 @@ func run(runningConfig *config.Config) {
 	apiHandler := handler.NewApiHandler(clientManager)
 	apiHandler.Install(e)
 
+	// in production docker build, all things are in a single docker
+	// golang api server is charge of return frontend files to users
+	// If the STATIC_FILE_ROOT is set, add extra routes to handle static files
+	staticFileRoot := os.Getenv("STATIC_FILE_ROOT")
+	if staticFileRoot != "" {
+		e.Use(middleware.StaticWithConfig(middleware.StaticConfig{
+			Root:  staticFileRoot,
+			HTML5: true,
+		}))
+	}
+
 	e.GET("/ping", func(c echo.Context) error {
 		return c.String(200, "ok")
 	})
