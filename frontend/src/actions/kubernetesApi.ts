@@ -10,7 +10,7 @@ import { convertFromCRDDependency } from "../convertors/Dependency";
 import { convertFromCRDFile } from "../convertors/File";
 import { store } from "../store";
 
-export const K8sApiPerfix = process.env.REACT_APP_K8S_API_PERFIX || "http://localhost:3001";
+export const K8sApiPerfix = process.env.REACT_APP_K8S_API_PERFIX;
 
 const getAxiosClient = () => {
   const token = store
