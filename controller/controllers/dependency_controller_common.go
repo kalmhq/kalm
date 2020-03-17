@@ -12,6 +12,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -48,11 +49,15 @@ func (r *DependencyReconciler) getDependencyInstallStatus(namespace string, dpNa
 			return 0, err
 		}
 
+		r.Log.Info("singleDeploymentStatus", dpName, singleDeploymentStatus)
 		statusList = append(statusList, singleDeploymentStatus)
 	}
 
 	if hasStatus(statusList, InstallFailed) {
 		return InstallFailed, nil
+	}
+	if hasStatus(statusList, NotInstalled) {
+		return NotInstalled, nil
 	}
 	if hasStatus(statusList, Installing) {
 		return Installing, nil
@@ -61,11 +66,8 @@ func (r *DependencyReconciler) getDependencyInstallStatus(namespace string, dpNa
 	if allIsStatus(statusList, Installed) {
 		return Installed, nil
 	}
-	if allIsStatus(statusList, NotInstalled) {
-		return NotInstalled, nil
-	}
 
-	return Installing, nil
+	return NotInstalled, nil
 }
 
 func hasStatus(statusList []DepInstallStatus, target DepInstallStatus) bool {
@@ -105,28 +107,36 @@ func (r *DependencyReconciler) getSingleDpStatusInDependency(namespace, dpName s
 			continue
 		}
 
-		if len(dp.Status.Conditions) <= 0 {
+		if dp.Status.ReadyReplicas >= dp.Status.Replicas {
+			return Installed, nil
+		} else {
 			return Installing, nil
 		}
 
-		// todo first or last?
-		latestCondition := dp.Status.Conditions[0]
+		// todo when is installFailed?
 
-		conditionType := latestCondition.Type
-		conditionStatus := latestCondition.Status
-
-		switch conditionType {
-		case appsv1.DeploymentAvailable:
-			if conditionStatus == corev1.ConditionTrue {
-				return Installed, nil
-			} else {
-				return Installing, nil
-			}
-		case appsv1.DeploymentProgressing:
-			return Installing, nil
-		case appsv1.DeploymentReplicaFailure:
-			return InstallFailed, nil
-		}
+		//if len(dp.Status.Conditions) <= 0 {
+		//	return Installing, nil
+		//}
+		//
+		//// todo first or last?
+		//latestCondition := dp.Status.Conditions[0]
+		//
+		//conditionType := latestCondition.Type
+		//conditionStatus := latestCondition.Status
+		//
+		//switch conditionType {
+		//case appsv1.DeploymentAvailable:
+		//	if conditionStatus == corev1.ConditionTrue {
+		//		return Installed, nil
+		//	} else {
+		//		return Installing, nil
+		//	}
+		//case appsv1.DeploymentProgressing:
+		//	return Installing, nil
+		//case appsv1.DeploymentReplicaFailure:
+		//	return InstallFailed, nil
+		//}
 	}
 
 	return NotInstalled, nil
@@ -142,11 +152,30 @@ func (r *DependencyReconciler) reconcileExternalController(ctx context.Context, 
 
 		// only create, no update yet
 		if err := r.createMany(ctx, objs...); err != nil {
+			if isAlreadyExistsErr(err) {
+				continue
+			}
+
 			return err
 		}
 	}
 
 	return nil
+}
+
+func isAlreadyExistsErr(err error) bool {
+	if errors.IsAlreadyExists(err) {
+		fmt.Println("errors.IsAlreadyExists, err:", err)
+		return true
+	}
+
+	// todo
+	if strings.Contains(err.Error(), "already exists") {
+		fmt.Println("isAlreadyExistsErr, str match:", err)
+		return true
+	}
+
+	return false
 }
 
 func loadFiles(fileOrDirName string) (files [][]byte) {
@@ -286,16 +315,44 @@ func isCommentOnly(f string) bool {
 }
 
 func (r *DependencyReconciler) createMany(ctx context.Context, objs ...runtime.Object) error {
-	for i, obj := range objs {
+	for _, obj := range objs {
 		if err := r.Create(ctx, obj); err != nil {
-			r.Log.Error(err, "fail when createMany",
-				"i", i,
-				"obj", fmt.Sprintf("%+v", obj),
-			)
+			//r.Log.Info(err, "fail when createMany",
+			//	"i", i,
+			//	"obj", fmt.Sprintf("%+v", obj),
+			//)
 
 			return err
 		}
 	}
+
+	return nil
+}
+
+func (r *DependencyReconciler) UpdateStatusIfNotMatch(ctx context.Context, dep *corev1alpha1.Dependency, status string) error {
+	if dep.Status.Status == status {
+		r.Log.Info("same status, ignored",
+			"status", status, "dep", dep)
+		return nil
+	}
+
+	dep.Status = corev1alpha1.DependencyStatus{
+		Status: status,
+	}
+
+	if err := r.Status().Update(ctx, dep); err != nil {
+		if errors.IsConflict(err) {
+			r.Log.Info("errors.IsConflict, retry later",
+				"err", err, "dep", dep, "status", status)
+
+			return nil
+		}
+
+		r.Log.Error(err, "fail to update status")
+		return err
+	}
+
+	r.Log.Info("finish updating status", "to", status)
 
 	return nil
 }

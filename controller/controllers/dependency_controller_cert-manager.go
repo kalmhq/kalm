@@ -28,9 +28,9 @@ func (r *DependencyReconciler) reconcileCertManager(ctx context.Context, dep *co
 
 	switch status {
 	case NotInstalled:
-		if err := r.UpdateStatus(ctx, dep, corev1alpha1.DependencyStatusInstalling); err != nil {
-			return err
-		}
+		//if err := r.UpdateStatusIfNotMatch(ctx, dep, corev1alpha1.DependencyStatusInstalling); err != nil {
+		//	return err
+		//}
 
 		// try installing first
 		if err := r.reconcileExternalController(ctx, "cert-manager-1.0.0.yaml"); err != nil {
@@ -40,17 +40,17 @@ func (r *DependencyReconciler) reconcileCertManager(ctx context.Context, dep *co
 		return retryLaterErr
 	case Installing:
 		// wait
-		r.UpdateStatus(ctx, dep, corev1alpha1.DependencyStatusInstalling)
+		r.UpdateStatusIfNotMatch(ctx, dep, corev1alpha1.DependencyStatusInstalling)
 		return retryLaterErr
 	case InstallFailed:
 		// failed, nothing can be done
-		if err := r.UpdateStatus(ctx, dep, corev1alpha1.DependencyStatusInstallFailed); err != nil {
+		if err := r.UpdateStatusIfNotMatch(ctx, dep, corev1alpha1.DependencyStatusInstallFailed); err != nil {
 			return err
 		}
 		return nil
 	case Installed:
 		r.Log.Info("cert-manager installed")
-		r.UpdateStatus(ctx, dep, corev1alpha1.DependencyStatusInstalled)
+		//r.UpdateStatusIfNotMatch(ctx, dep, corev1alpha1.DependencyStatusInstalled)
 		// go on to do more
 	}
 
@@ -59,6 +59,8 @@ func (r *DependencyReconciler) reconcileCertManager(ctx context.Context, dep *co
 		r.Log.Error(fmt.Errorf("must porvide config for cert-manager"), "")
 		return nil
 	}
+
+	r.Log.Info("cert-m detail", "dep", dep)
 
 	return r.reconcileClusterIssuer(ctx, dep)
 }
@@ -115,6 +117,8 @@ func (r *DependencyReconciler) reconcileClusterIssuer(ctx context.Context, dep *
 			if err := r.Create(ctx, &sec); err != nil {
 				return err
 			}
+
+			r.Log.Info("secret created")
 		}
 		// todo update
 
@@ -179,7 +183,7 @@ func (r *DependencyReconciler) reconcileClusterIssuer(ctx context.Context, dep *
 
 		// todo update
 
-		return nil
+		return r.UpdateStatusIfNotMatch(ctx, dep, corev1alpha1.DependencyStatusRunning)
 
 	default:
 		return fmt.Errorf("unknown tlsType: %s", config["tlsType"])

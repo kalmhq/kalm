@@ -22,6 +22,7 @@ func returnRstForError(err error) (ctrl.Result, error) {
 	if errors.IsNotFound(err) {
 		return ctrl.Result{}, nil
 	} else if isRetryLaterErr(err) {
+		fmt.Println("returnRstForError retryLater")
 		return ctrl.Result{Requeue: true}, nil
 	} else {
 		return ctrl.Result{}, err
@@ -41,11 +42,6 @@ func (r *DependencyReconciler) reconcileKong(ctx context.Context, dep *corev1alp
 
 	switch status {
 	case NotInstalled:
-		// try install
-		if err := r.UpdateStatus(ctx, dep, corev1alpha1.DependencyStatusInstalling); err != nil {
-			return err
-		}
-
 		// try installing kong first
 		if err := r.reconcileExternalController(ctx, "kong_1.0.0.yaml"); err != nil {
 			return err
@@ -54,11 +50,11 @@ func (r *DependencyReconciler) reconcileKong(ctx context.Context, dep *corev1alp
 		return retryLaterErr
 	case Installing:
 		// wait
-		r.UpdateStatus(ctx, dep, corev1alpha1.DependencyStatusInstalling)
+		r.UpdateStatusIfNotMatch(ctx, dep, corev1alpha1.DependencyStatusInstalling)
 		return retryLaterErr
 	case InstallFailed:
 		// failed, nothing can be done
-		if err := r.UpdateStatus(ctx, dep, corev1alpha1.DependencyStatusInstallFailed); err != nil {
+		if err := r.UpdateStatusIfNotMatch(ctx, dep, corev1alpha1.DependencyStatusInstallFailed); err != nil {
 			return err
 		}
 		return nil
@@ -115,17 +111,19 @@ func (r *DependencyReconciler) reconcileKong(ctx context.Context, dep *corev1alp
 		}
 
 		if !exist {
+			r.Log.Info("creating ing")
 			if err := r.Create(ctx, ing); err != nil {
 				return err
 			}
 		} else {
+			r.Log.Info("updating ing")
 			if err := r.Update(ctx, ing); err != nil {
 				return err
 			}
 		}
 	}
 
-	return r.UpdateStatus(ctx, dep, corev1alpha1.DependencyStatusRunning)
+	return r.UpdateStatusIfNotMatch(ctx, dep, corev1alpha1.DependencyStatusRunning)
 }
 
 func (r *DependencyReconciler) getIngress(
@@ -214,19 +212,6 @@ func (r *DependencyReconciler) desiredIngress(
 	}
 
 	return ing
-}
-
-func (r *DependencyReconciler) UpdateStatus(ctx context.Context, dep *corev1alpha1.Dependency, status string) error {
-	dep.Status = corev1alpha1.DependencyStatus{
-		Status: status,
-	}
-
-	if err := r.Status().Update(ctx, dep); err != nil {
-		r.Log.Error(err, "fail to update status")
-		return err
-	}
-
-	return nil
 }
 
 func getPrvKeyNameForClusterIssuer(dep *corev1alpha1.Dependency) string {

@@ -3,8 +3,7 @@ kind: Dependency
 metadata:
   name: dependency-sample-kong
 spec:
-  # Add fields here
   type: kong
   version: 1.0.0
   config:
-      cert-manager: dependency-sample-cert-manager
+      cert-manager: dependency-sample-cert-manager # cert manager this kong will use

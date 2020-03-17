@@ -20,7 +20,7 @@ func (r *DependencyReconciler) reconcileKubePrometheus(ctx context.Context, d *c
 
 	switch operatorStatus {
 	case NotInstalled:
-		if err := r.UpdateStatus(ctx, d, corev1alpha1.DependencyStatusInstalling); err != nil {
+		if err := r.UpdateStatusIfNotMatch(ctx, d, corev1alpha1.DependencyStatusInstalling); err != nil {
 			return err
 		}
 
@@ -31,10 +31,10 @@ func (r *DependencyReconciler) reconcileKubePrometheus(ctx context.Context, d *c
 
 		return retryLaterErr
 	case Installing:
-		r.UpdateStatus(ctx, d, corev1alpha1.DependencyStatusInstalling)
+		r.UpdateStatusIfNotMatch(ctx, d, corev1alpha1.DependencyStatusInstalling)
 		return retryLaterErr
 	case InstallFailed:
-		r.UpdateStatus(ctx, d, corev1alpha1.DependencyStatusInstallFailed)
+		r.UpdateStatusIfNotMatch(ctx, d, corev1alpha1.DependencyStatusInstallFailed)
 		return nil
 	case Installed:
 		r.Log.Info("prometheus operator installed")
@@ -52,9 +52,7 @@ func (r *DependencyReconciler) reconcileKubePrometheus(ctx context.Context, d *c
 	}
 	switch otherPartsStatus {
 	case NotInstalled:
-		if err := r.UpdateStatus(ctx, d, corev1alpha1.DependencyStatusInstalling); err != nil {
-			return err
-		}
+		r.Log.Info("prometheus operator otherParts not installed")
 
 		// try install remaining parts, including
 		// grafana
@@ -72,13 +70,16 @@ func (r *DependencyReconciler) reconcileKubePrometheus(ctx context.Context, d *c
 
 		return retryLaterErr
 	case Installing:
-		r.UpdateStatus(ctx, d, corev1alpha1.DependencyStatusInstalling)
+		r.Log.Info("prometheus operator otherParts installing")
+		r.UpdateStatusIfNotMatch(ctx, d, corev1alpha1.DependencyStatusInstalling)
 		return retryLaterErr
 	case InstallFailed:
-		r.UpdateStatus(ctx, d, corev1alpha1.DependencyStatusInstallFailed)
+		r.Log.Info("prometheus operator otherParts install failed")
+		r.UpdateStatusIfNotMatch(ctx, d, corev1alpha1.DependencyStatusInstallFailed)
 		return nil
 	case Installed:
 		r.Log.Info("prometheus other parts installed too")
+		//r.UpdateStatusIfNotMatch(ctx, d, corev1alpha1.DependencyStatusInstalled)
 	}
 
 	// check config
@@ -158,7 +159,7 @@ func (r *DependencyReconciler) reconcileKubePrometheus(ctx context.Context, d *c
 
 	//todo what to do if dep is deleted? delete all prometheus infra?
 
-	return nil
+	return r.UpdateStatusIfNotMatch(ctx, d, corev1alpha1.DependencyStatusRunning)
 }
 
 const (
