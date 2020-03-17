@@ -10,6 +10,9 @@ import "./notification";
 import { SettingObject } from "../reducers/settings";
 import { KappDependency } from "../types";
 
+export const INIT_AUTH = "INIT_AUTH";
+export const SET_AUTH_TOKEN = "SET_AUTH_TOKEN";
+
 export const CREATE_COMPONENT = "CREATE_COMPONENT";
 export const UPDATE_COMPONENT = "UPDATE_COMPONENT";
 export const DELETE_COMPONENT = "DELETE_COMPONENT";
@@ -400,7 +403,23 @@ export interface LoadDependenciesFulfilledAction {
   };
 }
 
+export interface InitAuthAction {
+  type: typeof INIT_AUTH;
+  payload: {
+    authorized: boolean;
+  };
+}
+
+export interface SetAuthTokenAction {
+  type: typeof SET_AUTH_TOKEN;
+  payload: {
+    token: string;
+  };
+}
+
 export type Actions =
+  | SetAuthTokenAction
+  | InitAuthAction
   | createComponentTemplateAction
   | DeleteComponentAction
   | UpdateComponentAction

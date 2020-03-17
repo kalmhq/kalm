@@ -2,6 +2,7 @@ import { createStyles, makeStyles, Theme, useTheme } from "@material-ui/core/sty
 import React from "react";
 import { NotificationComponent } from "../../widgets/Notification";
 import { TabBarComponent } from "./tabBar";
+import { AuthWrapper } from "./authWrapper";
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -21,7 +22,7 @@ const useStyles = makeStyles((theme: Theme) => {
 
 // const sidebarFoldedKey = "sidebarFoldedKey";
 
-export const Dashboard = (props: React.Props<any>) => {
+export const Dashboard = AuthWrapper((props: React.Props<any>) => {
   const theme = useTheme();
   const classes = useStyles(theme);
 
@@ -34,4 +35,4 @@ export const Dashboard = (props: React.Props<any>) => {
       <main className={classes.content}>{props.children}</main>
     </div>
   );
-};
+});

@@ -8,16 +8,40 @@ import { V1alpha1Application, V1alpha1Dependency, V1alpha1File } from "../kappMo
 import { convertFromCRDApplication } from "../convertors/Application";
 import { convertFromCRDDependency } from "../convertors/Dependency";
 import { convertFromCRDFile } from "../convertors/File";
+import { store } from "../store";
 
 export const K8sApiPerfix = process.env.REACT_APP_K8S_API_PERFIX || "http://localhost:3001";
 
-const getAxiosClient = () =>
-  axios.create({
-    timeout: 3000,
-    headers: {
-      Authorization: `Bearer ${window.localStorage.getItem("authorization_token")}`
-    }
-  });
+const getAxiosClient = () => {
+  const token = store
+    .getState()
+    .get("auth")
+    .get("token");
+
+  if (token) {
+    return axios.create({
+      timeout: 3000,
+      headers: {
+        Authorization: `Bearer ${store
+          .getState()
+          .get("auth")
+          .get("token")}`
+      }
+    });
+  } else {
+    return axios;
+  }
+};
+
+export const getLoginStatus = async () => {
+  const res = await getAxiosClient().get(K8sApiPerfix + "/login/status");
+  return res.data.authorized as boolean;
+};
+
+export const login = async (token: string) => {
+  const res = await axios.post(K8sApiPerfix + "/login", { token });
+  return res.data.authorized as boolean;
+};
 
 export const getNodes = async () => {
   const res = await getAxiosClient().get<V1NodeList>(K8sApiPerfix + "/v1/nodes");

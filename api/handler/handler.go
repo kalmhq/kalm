@@ -67,7 +67,7 @@ func (h *ApiHandler) handleLogin(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return c.JSON(http.StatusOK, H{"ok": true})
+	return c.JSON(http.StatusOK, H{"authorized": true})
 }
 
 func (h *ApiHandler) handleLoginStatus(c echo.Context) error {

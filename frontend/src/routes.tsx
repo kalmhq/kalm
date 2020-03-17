@@ -15,10 +15,12 @@ import { DependencyList } from "./pages/Dependency/List";
 import { Disks } from "./pages/Disks";
 import InstallPage from "./pages/Install";
 import { NodeList } from "./pages/NodeList";
+import { Login } from "./layout/Login";
 
 export const KappRoutes = (
   <Switch>
     <Route path="/404" component={Page404} />
+    <Route path="/login" component={Login} />
     <Route path="/">
       <Dashboard>
         <Switch>
