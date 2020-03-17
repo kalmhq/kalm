@@ -52,6 +52,8 @@ func (r *DependencyReconciler) reconcileKubePrometheus(ctx context.Context, d *c
 	}
 	switch otherPartsStatus {
 	case NotInstalled:
+		r.Log.Info("prometheus operator otherParts not installed")
+
 		if err := r.UpdateStatus(ctx, d, corev1alpha1.DependencyStatusInstalling); err != nil {
 			return err
 		}
@@ -72,9 +74,11 @@ func (r *DependencyReconciler) reconcileKubePrometheus(ctx context.Context, d *c
 
 		return retryLaterErr
 	case Installing:
+		r.Log.Info("prometheus operator otherParts installing")
 		r.UpdateStatus(ctx, d, corev1alpha1.DependencyStatusInstalling)
 		return retryLaterErr
 	case InstallFailed:
+		r.Log.Info("prometheus operator otherParts install failed")
 		r.UpdateStatus(ctx, d, corev1alpha1.DependencyStatusInstallFailed)
 		return nil
 	case Installed:

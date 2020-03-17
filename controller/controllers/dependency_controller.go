@@ -38,8 +38,16 @@ type DependencyReconciler struct {
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=dependencies,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=dependencies/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="cert-manager.io",resources=clusterissuers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="extensions",resources=ingresses,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=apiextensions.k8s.io,resources=customresourcedefinitions,verbs=*
+// +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=*,verbs=*
+// +kubebuilder:rbac:groups=monitoring.coreos.com,resources=*,verbs=*
+//
+// +kubebuilder:rbac:groups=apps,resources=*,verbs=*
+// +kubebuilder:rbac:groups="",resources=*,verbs=*
+//
 
 func (r *DependencyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()

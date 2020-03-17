@@ -12,6 +12,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -142,11 +143,30 @@ func (r *DependencyReconciler) reconcileExternalController(ctx context.Context, 
 
 		// only create, no update yet
 		if err := r.createMany(ctx, objs...); err != nil {
+			if isAlreadyExistsErr(err) {
+				continue
+			}
+
 			return err
 		}
 	}
 
 	return nil
+}
+
+func isAlreadyExistsErr(err error) bool {
+	if errors.IsAlreadyExists(err) {
+		fmt.Println("errors.IsAlreadyExists, err:", err)
+		return true
+	}
+
+	// todo
+	if strings.Contains(err.Error(), "already exists") {
+		fmt.Println("isAlreadyExistsErr, str match:", err)
+		return true
+	}
+
+	return false
 }
 
 func loadFiles(fileOrDirName string) (files [][]byte) {

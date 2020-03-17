@@ -44,6 +44,7 @@ func randomName() string {
 }
 
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=files,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core.kapp.dev,resources=files/status,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=extensions,resources=configmaps,verbs=get;list;watch;create;update;patch;delete
 
 func (r *FileReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
