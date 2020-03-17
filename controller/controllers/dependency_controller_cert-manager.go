@@ -28,7 +28,7 @@ func (r *DependencyReconciler) reconcileCertManager(ctx context.Context, dep *co
 
 	switch status {
 	case NotInstalled:
-		if err := r.UpdateStatus(ctx, dep, corev1alpha1.DependencyStatusInstalling); err != nil {
+		if err := r.UpdateStatusIfNotMatch(ctx, dep, corev1alpha1.DependencyStatusInstalling); err != nil {
 			return err
 		}
 
@@ -40,17 +40,17 @@ func (r *DependencyReconciler) reconcileCertManager(ctx context.Context, dep *co
 		return retryLaterErr
 	case Installing:
 		// wait
-		r.UpdateStatus(ctx, dep, corev1alpha1.DependencyStatusInstalling)
+		r.UpdateStatusIfNotMatch(ctx, dep, corev1alpha1.DependencyStatusInstalling)
 		return retryLaterErr
 	case InstallFailed:
 		// failed, nothing can be done
-		if err := r.UpdateStatus(ctx, dep, corev1alpha1.DependencyStatusInstallFailed); err != nil {
+		if err := r.UpdateStatusIfNotMatch(ctx, dep, corev1alpha1.DependencyStatusInstallFailed); err != nil {
 			return err
 		}
 		return nil
 	case Installed:
 		r.Log.Info("cert-manager installed")
-		r.UpdateStatus(ctx, dep, corev1alpha1.DependencyStatusInstalled)
+		//r.UpdateStatusIfNotMatch(ctx, dep, corev1alpha1.DependencyStatusInstalled)
 		// go on to do more
 	}
 
@@ -179,7 +179,7 @@ func (r *DependencyReconciler) reconcileClusterIssuer(ctx context.Context, dep *
 
 		// todo update
 
-		return nil
+		return r.UpdateStatusIfNotMatch(ctx, dep, corev1alpha1.DependencyStatusRunning)
 
 	default:
 		return fmt.Errorf("unknown tlsType: %s", config["tlsType"])

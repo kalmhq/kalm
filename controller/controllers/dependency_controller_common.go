@@ -49,11 +49,15 @@ func (r *DependencyReconciler) getDependencyInstallStatus(namespace string, dpNa
 			return 0, err
 		}
 
+		r.Log.Info("singleDeploymentStatus", dpName, singleDeploymentStatus)
 		statusList = append(statusList, singleDeploymentStatus)
 	}
 
 	if hasStatus(statusList, InstallFailed) {
 		return InstallFailed, nil
+	}
+	if hasStatus(statusList, NotInstalled) {
+		return NotInstalled, nil
 	}
 	if hasStatus(statusList, Installing) {
 		return Installing, nil
@@ -62,11 +66,8 @@ func (r *DependencyReconciler) getDependencyInstallStatus(namespace string, dpNa
 	if allIsStatus(statusList, Installed) {
 		return Installed, nil
 	}
-	if allIsStatus(statusList, NotInstalled) {
-		return NotInstalled, nil
-	}
 
-	return Installing, nil
+	return NotInstalled, nil
 }
 
 func hasStatus(statusList []DepInstallStatus, target DepInstallStatus) bool {
@@ -106,28 +107,36 @@ func (r *DependencyReconciler) getSingleDpStatusInDependency(namespace, dpName s
 			continue
 		}
 
-		if len(dp.Status.Conditions) <= 0 {
+		if dp.Status.ReadyReplicas >= dp.Status.Replicas {
+			return Installed, nil
+		} else {
 			return Installing, nil
 		}
 
-		// todo first or last?
-		latestCondition := dp.Status.Conditions[0]
+		// todo when is installFailed?
 
-		conditionType := latestCondition.Type
-		conditionStatus := latestCondition.Status
-
-		switch conditionType {
-		case appsv1.DeploymentAvailable:
-			if conditionStatus == corev1.ConditionTrue {
-				return Installed, nil
-			} else {
-				return Installing, nil
-			}
-		case appsv1.DeploymentProgressing:
-			return Installing, nil
-		case appsv1.DeploymentReplicaFailure:
-			return InstallFailed, nil
-		}
+		//if len(dp.Status.Conditions) <= 0 {
+		//	return Installing, nil
+		//}
+		//
+		//// todo first or last?
+		//latestCondition := dp.Status.Conditions[0]
+		//
+		//conditionType := latestCondition.Type
+		//conditionStatus := latestCondition.Status
+		//
+		//switch conditionType {
+		//case appsv1.DeploymentAvailable:
+		//	if conditionStatus == corev1.ConditionTrue {
+		//		return Installed, nil
+		//	} else {
+		//		return Installing, nil
+		//	}
+		//case appsv1.DeploymentProgressing:
+		//	return Installing, nil
+		//case appsv1.DeploymentReplicaFailure:
+		//	return InstallFailed, nil
+		//}
 	}
 
 	return NotInstalled, nil
@@ -306,12 +315,12 @@ func isCommentOnly(f string) bool {
 }
 
 func (r *DependencyReconciler) createMany(ctx context.Context, objs ...runtime.Object) error {
-	for i, obj := range objs {
+	for _, obj := range objs {
 		if err := r.Create(ctx, obj); err != nil {
-			r.Log.Error(err, "fail when createMany",
-				"i", i,
-				"obj", fmt.Sprintf("%+v", obj),
-			)
+			//r.Log.Info(err, "fail when createMany",
+			//	"i", i,
+			//	"obj", fmt.Sprintf("%+v", obj),
+			//)
 
 			return err
 		}

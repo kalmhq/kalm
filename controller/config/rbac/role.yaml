@@ -43,6 +43,12 @@ rules:
   verbs:
   - '*'
 - apiGroups:
+  - apiregistration.k8s.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
   - apps
   resources:
   - '*'

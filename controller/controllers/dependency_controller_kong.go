@@ -42,7 +42,7 @@ func (r *DependencyReconciler) reconcileKong(ctx context.Context, dep *corev1alp
 	switch status {
 	case NotInstalled:
 		// try install
-		if err := r.UpdateStatus(ctx, dep, corev1alpha1.DependencyStatusInstalling); err != nil {
+		if err := r.UpdateStatusIfNotMatch(ctx, dep, corev1alpha1.DependencyStatusInstalling); err != nil {
 			return err
 		}
 
@@ -54,11 +54,11 @@ func (r *DependencyReconciler) reconcileKong(ctx context.Context, dep *corev1alp
 		return retryLaterErr
 	case Installing:
 		// wait
-		r.UpdateStatus(ctx, dep, corev1alpha1.DependencyStatusInstalling)
+		r.UpdateStatusIfNotMatch(ctx, dep, corev1alpha1.DependencyStatusInstalling)
 		return retryLaterErr
 	case InstallFailed:
 		// failed, nothing can be done
-		if err := r.UpdateStatus(ctx, dep, corev1alpha1.DependencyStatusInstallFailed); err != nil {
+		if err := r.UpdateStatusIfNotMatch(ctx, dep, corev1alpha1.DependencyStatusInstallFailed); err != nil {
 			return err
 		}
 		return nil
@@ -115,17 +115,19 @@ func (r *DependencyReconciler) reconcileKong(ctx context.Context, dep *corev1alp
 		}
 
 		if !exist {
+			r.Log.Info("creating ing")
 			if err := r.Create(ctx, ing); err != nil {
 				return err
 			}
 		} else {
+			r.Log.Info("updating ing")
 			if err := r.Update(ctx, ing); err != nil {
 				return err
 			}
 		}
 	}
 
-	return r.UpdateStatus(ctx, dep, corev1alpha1.DependencyStatusRunning)
+	return r.UpdateStatusIfNotMatch(ctx, dep, corev1alpha1.DependencyStatusRunning)
 }
 
 func (r *DependencyReconciler) getIngress(
@@ -216,12 +218,25 @@ func (r *DependencyReconciler) desiredIngress(
 	return ing
 }
 
-func (r *DependencyReconciler) UpdateStatus(ctx context.Context, dep *corev1alpha1.Dependency, status string) error {
+func (r *DependencyReconciler) UpdateStatusIfNotMatch(ctx context.Context, dep *corev1alpha1.Dependency, status string) error {
+	if dep.Status.Status == status {
+		r.Log.Info("same status, ignored",
+			"status", status, "dep", dep)
+		return nil
+	}
+
 	dep.Status = corev1alpha1.DependencyStatus{
 		Status: status,
 	}
 
 	if err := r.Status().Update(ctx, dep); err != nil {
+		if errors.IsConflict(err) {
+			r.Log.Info("errors.IsConflict, retry later",
+				"err", err, "dep", dep, "status", status)
+
+			return nil
+		}
+
 		r.Log.Error(err, "fail to update status")
 		return err
 	}

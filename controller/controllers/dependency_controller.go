@@ -47,6 +47,7 @@ type DependencyReconciler struct {
 //
 // +kubebuilder:rbac:groups=apps,resources=*,verbs=*
 // +kubebuilder:rbac:groups="",resources=*,verbs=*
+// +kubebuilder:rbac:groups="apiregistration.k8s.io",resources=*,verbs=*
 //
 
 func (r *DependencyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
@@ -78,6 +79,7 @@ func (r *DependencyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 		log.Error(fmt.Errorf("unkonwn dependency: %s", dep.Spec.Type), "ignored")
 	}
 
+	log.Info("finish reconciling dep...")
 	return ctrl.Result{}, nil
 }
 
