@@ -255,27 +255,26 @@ export interface LoadComponentTemplatesFulfilledAction {
 export interface CreateApplicationAction {
   type: typeof CREATE_APPLICATION;
   payload: {
-    applicationValues: Application;
+    application: Application;
+  };
+}
+
+export interface DuplicateApplicationAction {
+  type: typeof DUPLICATE_APPLICATION;
+  payload: {
+    application: Application;
   };
 }
 
 export interface UpdateApplicationAction {
   type: typeof UPDATE_APPLICATION;
   payload: {
-    applicationId: string;
-    applicationValues: Application;
+    application: Application;
   };
 }
 
 export interface DeleteApplicationAction {
   type: typeof DELETE_APPLICATION;
-  payload: {
-    applicationId: string;
-  };
-}
-
-export interface DuplicateApplicationAction {
-  type: typeof DUPLICATE_APPLICATION;
   payload: {
     applicationId: string;
   };

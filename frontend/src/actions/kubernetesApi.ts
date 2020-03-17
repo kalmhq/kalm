@@ -86,6 +86,15 @@ export const getKappApplications = async () => {
   return res.data.items.map(convertFromCRDApplication);
 };
 
+export const createKappApplication = async (application: V1alpha1Application): Promise<Application> => {
+  const res = await getAxiosClient().post(
+    K8sApiPerfix + `/v1/applications/${application.metadata!.namespace}`,
+    application
+  );
+
+  return convertFromCRDApplication(res.data);
+};
+
 export const updateKappApplication = async (application: V1alpha1Application): Promise<Application> => {
   const res = await getAxiosClient().put(
     K8sApiPerfix + `/v1/applications/${application.metadata!.namespace}/${application.metadata!.name}`,
@@ -93,6 +102,12 @@ export const updateKappApplication = async (application: V1alpha1Application): P
   );
 
   return convertFromCRDApplication(res.data);
+};
+
+export const deleteKappApplication = async (application: V1alpha1Application): Promise<void> => {
+  await getAxiosClient().delete(
+    K8sApiPerfix + `/v1/applications/${application.metadata!.namespace}/${application.metadata!.name}`
+  );
 };
 
 export const getDependencies = async () => {
