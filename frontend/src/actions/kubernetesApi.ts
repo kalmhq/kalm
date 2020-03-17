@@ -58,6 +58,12 @@ export const getKappApplications = async () => {
   return res.data.items.map(convertFromCRDApplication);
 };
 
+export const createKappApplication = async (application: V1alpha1Application): Promise<Application> => {
+  const res = await axiosClient.post(K8sApiPerfix + `/v1/applications/${application.metadata!.namespace}`, application);
+
+  return convertFromCRDApplication(res.data);
+};
+
 export const updateKappApplication = async (application: V1alpha1Application): Promise<Application> => {
   const res = await axiosClient.put(
     K8sApiPerfix + `/v1/applications/${application.metadata!.namespace}/${application.metadata!.name}`,
@@ -65,6 +71,12 @@ export const updateKappApplication = async (application: V1alpha1Application): P
   );
 
   return convertFromCRDApplication(res.data);
+};
+
+export const deleteKappApplication = async (application: V1alpha1Application): Promise<void> => {
+  await axiosClient.delete(
+    K8sApiPerfix + `/v1/applications/${application.metadata!.namespace}/${application.metadata!.name}`
+  );
 };
 
 export const getDependencies = async () => {
@@ -92,6 +104,4 @@ export const updateKappFile = async (file: V1alpha1File): Promise<ConfigFile> =>
 
 export const deleteKappFile = async (file: V1alpha1File): Promise<void> => {
   await axiosClient.delete(K8sApiPerfix + `/v1/files/${file.metadata!.name}`);
-
-  // return convertFromCRDFile(res.data);
 };

@@ -46,9 +46,9 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 
 	gV1.GET("/applications", h.handleGetApplications)
 	gV1.GET("/applications/:namespace", h.handleGetApplications)
-	//gV1.POST("/applications", h.handleCreateComponentTemplate)
+	gV1.POST("/applications/:namespace", h.handleCreateApplication)
 	gV1.PUT("/applications/:namespace/:name", h.handleUpdateApplication)
-	//gV1.DELETE("/applications/:namespace/:name", h.handleDeleteComponentTemplate)
+	gV1.DELETE("/applications/:namespace/:name", h.handleDeleteApplication)
 
 	gV1.GET("/files", h.handleGetFiles)
 	gV1.POST("/files", h.handleCreateFile)
@@ -132,9 +132,31 @@ func (h *ApiHandler) handleGetApplications(c echo.Context) error {
 	return c.JSONBlob(200, res)
 }
 
+func (h *ApiHandler) handleCreateApplication(c echo.Context) error {
+	k8sClient := getK8sClient(c)
+	res, err := k8sClient.RESTClient().Post().Body(c.Request().Body).AbsPath("/apis/core.kapp.dev/v1alpha1/namespaces/" + c.Param("namespace") + "/applications").DoRaw()
+
+	if err != nil {
+		return err
+	}
+
+	return c.JSONBlob(200, res)
+}
+
 func (h *ApiHandler) handleUpdateApplication(c echo.Context) error {
 	k8sClient := getK8sClient(c)
 	res, err := k8sClient.RESTClient().Put().Body(c.Request().Body).AbsPath("/apis/core.kapp.dev/v1alpha1/namespaces/" + c.Param("namespace") + "/applications/" + c.Param("name")).DoRaw()
+
+	if err != nil {
+		return err
+	}
+
+	return c.JSONBlob(200, res)
+}
+
+func (h *ApiHandler) handleDeleteApplication(c echo.Context) error {
+	k8sClient := getK8sClient(c)
+	res, err := k8sClient.RESTClient().Delete().AbsPath("/apis/core.kapp.dev/v1alpha1/namespaces/" + c.Param("namespace") + "/applications/" + c.Param("name")).DoRaw()
 
 	if err != nil {
 		return err
@@ -154,9 +176,9 @@ func (h *ApiHandler) handleGetComponentTemplates(c echo.Context) error {
 	return c.JSONBlob(200, res)
 }
 
-func (h *ApiHandler) handleUpdateComponentTemplate(c echo.Context) error {
+func (h *ApiHandler) handleCreateComponentTemplate(c echo.Context) error {
 	k8sClient := getK8sClient(c)
-	res, err := k8sClient.RESTClient().Put().Body(c.Request().Body).AbsPath("/apis/core.kapp.dev/v1alpha1/componenttemplates/" + c.Param("name")).DoRaw()
+	res, err := k8sClient.RESTClient().Post().Body(c.Request().Body).AbsPath("/apis/core.kapp.dev/v1alpha1/componenttemplates").DoRaw()
 
 	if err != nil {
 		return err
@@ -165,9 +187,9 @@ func (h *ApiHandler) handleUpdateComponentTemplate(c echo.Context) error {
 	return c.JSONBlob(200, res)
 }
 
-func (h *ApiHandler) handleCreateComponentTemplate(c echo.Context) error {
+func (h *ApiHandler) handleUpdateComponentTemplate(c echo.Context) error {
 	k8sClient := getK8sClient(c)
-	res, err := k8sClient.RESTClient().Post().Body(c.Request().Body).AbsPath("/apis/core.kapp.dev/v1alpha1/componenttemplates").DoRaw()
+	res, err := k8sClient.RESTClient().Put().Body(c.Request().Body).AbsPath("/apis/core.kapp.dev/v1alpha1/componenttemplates/" + c.Param("name")).DoRaw()
 
 	if err != nil {
 		return err
