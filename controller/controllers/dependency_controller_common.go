@@ -3,8 +3,11 @@ package controllers
 import (
 	"context"
 	"fmt"
+	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
+	"github.com/influxdata/influxdb/pkg/slices"
 	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -12,6 +15,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	//apireg "apiregistration.k8s.io/v1"
+	//	apireg "k8s.io/api/apiregistration/v1"
+	apiregistration "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
 	"log"
 	"regexp"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -26,6 +32,12 @@ const (
 	InstallFailed
 	Installed
 )
+
+// todo, support more than just deployments
+// stateful set, daemon set, etc...
+func (r *DependencyReconciler) getInstallStatus(namespace string, kind string, names ...string) (DepInstallStatus, error) {
+	return 0, nil
+}
 
 func (r *DependencyReconciler) getDependencyInstallStatus(namespace string, dpNames ...string) (DepInstallStatus, error) {
 	var statusList []DepInstallStatus
@@ -120,43 +132,84 @@ func (r *DependencyReconciler) getSingleDpStatusInDependency(namespace, dpName s
 	return NotInstalled, nil
 }
 
-func (r *DependencyReconciler) reconcileExternalController(ctx context.Context, fileName string) error {
+func (r *DependencyReconciler) reconcileExternalController(ctx context.Context, fileOrDirName string) error {
 	//load yaml for external-controller
-	file := loadFile(fileName)
-	objs := parseK8sYaml(file)
+	files := loadFiles(fileOrDirName)
+	for _, file := range files {
+		//r.Log.Info("parsing file", "i", i)
 
-	// only create, no update yet
-	return r.createMany(ctx, objs...)
-}
+		objs := parseK8sYaml(file)
 
-func loadFile(fileName string) []byte {
-	// todo more search paths
-	searchDirs := []string{
-		"./resources",
-		"/resources",
-	}
-
-	for _, searchDir := range searchDirs {
-		dat, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", searchDir, fileName))
-		if err != nil {
-			fmt.Println("err loadFile:", err)
-			continue
+		// only create, no update yet
+		if err := r.createMany(ctx, objs...); err != nil {
+			return err
 		}
-
-		return dat
 	}
 
 	return nil
 }
 
+func loadFiles(fileOrDirName string) (files [][]byte) {
+	searchDirs := []string{
+		"./resources",
+		"/resources",
+		"../resources",
+	}
+
+	isDir := strings.HasPrefix(fileOrDirName, "/")
+
+	for _, searchDir := range searchDirs {
+
+		if isDir {
+			dirPath := fmt.Sprintf("%s%s", searchDir, fileOrDirName)
+			fileInfos, err := ioutil.ReadDir(dirPath)
+			if err != nil {
+				continue
+			}
+
+			for _, fileInfo := range fileInfos {
+				// only read files directly under this dir
+				if fileInfo.IsDir() {
+					continue
+				}
+
+				// only apply .yaml files
+				if !strings.HasSuffix(fileInfo.Name(), ".yaml") &&
+					!strings.HasSuffix(fileInfo.Name(), ".yml") {
+					continue
+				}
+
+				dat, _ := ioutil.ReadFile(fmt.Sprintf("%s/%s", dirPath, fileInfo.Name()))
+
+				files = append(files, dat)
+			}
+		} else {
+
+			dat, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", searchDir, fileOrDirName))
+			if err != nil {
+				fmt.Println("err loadFile:", err)
+				continue
+			}
+
+			files = append(files, dat)
+		}
+
+		if len(files) > 0 {
+			return
+		}
+	}
+
+	return
+}
+
 // ref: https://github.com/kubernetes/client-go/issues/193#issuecomment-363318588
 func parseK8sYaml(fileR []byte) []runtime.Object {
 
-	acceptedK8sTypes := regexp.MustCompile(`(ValidatingWebhookConfiguration|MutatingWebhookConfiguration|CustomResourceDefinition|ConfigMap|Service|Deployment|Namespace|Role|ClusterRole|RoleBinding|ClusterRoleBinding|ServiceAccount)`)
+	acceptedK8sTypes := regexp.MustCompile(`(Prometheus|DaemonSet|Alertmanager|Secret|ValidatingWebhookConfiguration|MutatingWebhookConfiguration|CustomResourceDefinition|ConfigMap|Service|Deployment|Namespace|Role|ClusterRole|RoleBinding|ClusterRoleBinding|ServiceAccount)`)
 	fileAsString := string(fileR[:])
-	sepYamlFiles := strings.Split(fileAsString, "---")
+	sepYamlFiles := strings.Split(fileAsString, "\n---\n")
 	retVal := make([]runtime.Object, 0, len(sepYamlFiles))
-	for _, f := range sepYamlFiles {
+	for i, f := range sepYamlFiles {
 		if f == "\n" || f == "" {
 			// ignore empty cases
 			continue
@@ -172,17 +225,43 @@ func parseK8sYaml(fileR []byte) []runtime.Object {
 		_ = corev1alpha1.AddToScheme(sch)
 		_ = cmv1alpha2.AddToScheme(sch)
 		_ = apiextv1beta1.AddToScheme(sch)
+		_ = corev1.AddToScheme(sch)
+		_ = monitoringv1.AddToScheme(sch)
+		apiregistration.AddToScheme(sch)
 
 		decode := serializer.NewCodecFactory(sch).UniversalDeserializer().Decode
 		obj, groupVersionKind, err := decode([]byte(f), nil, nil)
-
 		if err != nil {
-			log.Println(fmt.Sprintf("Error while decoding YAML object(%s). Err was: %s", f, err))
+			log.Println(fmt.Sprintf("Error while decoding YAML object(%d) Err was: %s, obj: %s", i, err, f))
 			continue
 		}
 
+		//fmt.Println("gkv", groupVersionKind)
+		//fmt.Println("obj", obj)
+
+		listShouldSeparate := []string{"RoleList", "ConfigMapList", "RoleBindingList"}
+
 		if !acceptedK8sTypes.MatchString(groupVersionKind.Kind) {
 			log.Printf("The custom-roles configMap contained K8s object types which are not supported! Skipping object with type: %s", groupVersionKind.Kind)
+		} else if slices.Exists(listShouldSeparate, groupVersionKind.Kind) {
+			//todo clean code
+			m := make(map[string]interface{})
+			if err := yaml.NewDecoder(strings.NewReader(f)).Decode(m); err != nil {
+				log.Println("fail decode ***List", err)
+				continue
+			}
+
+			items, _ := m["items"]
+			for _, item := range items.([]interface{}) {
+				inYaml, _ := yaml.Marshal(item)
+				obj, groupVersionKind, err = decode(inYaml, nil, nil)
+				if err != nil {
+					log.Println(fmt.Sprintf("Error while decoding ***List YAML object(%d) Err was: %s, obj: %s", i, err, inYaml))
+					continue
+				}
+
+				retVal = append(retVal, obj)
+			}
 		} else {
 			retVal = append(retVal, obj)
 		}

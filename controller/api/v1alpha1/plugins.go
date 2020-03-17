@@ -35,11 +35,12 @@ func (p *PluginManualScaler) Operate(deployment *v1.Deployment) {
 }
 
 type PluginIngress struct {
-	Name        string   `json:"name"`
-	Type        string   `json:"type"`
-	Hosts       []string `json:"hosts"`
-	Namespace   string   `json:"namespace"`
-	ServiceName string   `json:"serviceName"`
-	ServicePort int      `json:"servicePort"`
+	Name  string   `json:"name"`
+	Type  string   `json:"type"`
+	Hosts []string `json:"hosts"`
+
+	Namespace   string `json:"namespace"`
+	ServiceName string `json:"serviceName"`
+	ServicePort int    `json:"servicePort"`
 	//todo more
 }
