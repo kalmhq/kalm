@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"k8s.io/client-go/kubernetes"
 	"net/http"
 
 	"github.com/kapp-staging/kapp/api/auth"
@@ -27,7 +28,8 @@ type H map[string]interface{}
 
 func (h *ApiHandler) Install(e *echo.Echo) {
 	// permission routes
-	e.POST("/login", h.handlerLogin)
+	e.POST("/login", h.handleLogin)
+	e.GET("/login/status", h.handleLoginStatus)
 
 	// original resources routes
 	gV1 := e.Group("/v1", h.AuthClientMiddleware)
@@ -56,7 +58,7 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gV1.DELETE("/files/:name", h.handleDeleteFile)
 }
 
-func (h *ApiHandler) handlerLogin(c echo.Context) error {
+func (h *ApiHandler) handleLogin(c echo.Context) error {
 	authInfo, err := auth.GetAuthInfo(c)
 	if err != nil {
 		return err
@@ -66,6 +68,29 @@ func (h *ApiHandler) handlerLogin(c echo.Context) error {
 		return err
 	}
 	return c.JSON(http.StatusOK, H{"ok": true})
+}
+
+func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
+	clientConfig, err := h.clientManager.GetClientConfig(c)
+
+	if err != nil {
+		return c.JSON(200, H{
+			"authorized": false,
+		})
+	}
+
+	k8sClient, err := kubernetes.NewForConfig(clientConfig)
+	if err != nil {
+		return c.JSON(200, H{
+			"authorized": false,
+		})
+	}
+
+	_, err = k8sClient.ServerVersion()
+
+	return c.JSON(200, H{
+		"authorized": err == nil,
+	})
 }
 
 func (h *ApiHandler) handleGetDeployments(c echo.Context) error {
