@@ -273,7 +273,8 @@ const reducer = (state: State = initialState, action: Actions): State => {
         id: configForm.get("id"),
         type: configForm.get("type"),
         name: configForm.get("name"),
-        content: configForm.get("content")
+        content: configForm.get("content"),
+        children: configForm.get("children")
       });
 
       immutablePath.push(config.get("id"));

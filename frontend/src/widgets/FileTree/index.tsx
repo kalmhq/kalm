@@ -67,6 +67,7 @@ const renderStyledTreeItem = (config: ConfigNode, idChain: string[], dispatch: a
   if (config.get("type") === "file") {
     return (
       <StyledTreeItem
+        // icon={<InsertDriveFileOutlinedIcon htmlColor="#0277bd" />}
         key={config.get("id")}
         nodeId={config.get("id")}
         label={config.get("name")}
@@ -82,7 +83,20 @@ const renderStyledTreeItem = (config: ConfigNode, idChain: string[], dispatch: a
     childrenItems.push(renderStyledTreeItem(childConfig, newIdChain, dispatch));
   });
   return (
-    <StyledTreeItem key={config.get("id")} nodeId={config.get("id")} label={config.get("name")}>
+    <StyledTreeItem
+      // icon={<FolderIcon htmlColor="#f9a825" />}
+      // expandIcon={<FolderIcon htmlColor="#f9a825" />}
+      // collapseIcon={<FolderOpenIcon htmlColor="#f9a825" />}
+      endIcon={
+        childrenItems.length === 0 ? (
+          <FolderOpenIcon htmlColor="#f9a825" />
+        ) : (
+          <InsertDriveFileOutlinedIcon htmlColor="#0277bd" />
+        )
+      }
+      key={config.get("id")}
+      nodeId={config.get("id")}
+      label={config.get("name")}>
       {childrenItems}
     </StyledTreeItem>
   );
@@ -100,6 +114,7 @@ export const FileTree = (props: FileTreeProp) => {
       defaultExpandIcon={<FolderIcon htmlColor="#f9a825" />}
       defaultEndIcon={<InsertDriveFileOutlinedIcon htmlColor="#0277bd" />}>
       {renderStyledTreeItem(props.rootConfig, [], props.dispatch)}
+
       {/* <StyledTreeItem nodeId="1" label="Main">
         <StyledTreeItem nodeId="2" label="Hello" />
         <StyledTreeItem nodeId="3" label="Subtree with children">

@@ -21,10 +21,12 @@ export type ThunkResult<R> = ThunkAction<R, RootState, undefined, Actions>;
 
 export const createConfigAction = (config: ConfigNode): ThunkResult<Promise<void>> => {
   return async dispatch => {
-    config = config.set("id", randomName());
+    config = config.set("id", config.get("type") === "file" ? randomName() : config.get("name"));
 
-    const configFile = configToConfigFile(config);
-    await createKappFile(convertToCRDFile(configFile));
+    if (config.get("type") === "file") {
+      const configFile = configToConfigFile(config);
+      await createKappFile(convertToCRDFile(configFile));
+    }
 
     dispatch({
       type: CREATE_CONFIG,

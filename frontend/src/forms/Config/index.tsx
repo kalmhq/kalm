@@ -1,6 +1,6 @@
 import React from "react";
-import { InjectedFormProps, getFormValues } from "redux-form";
-import { reduxForm } from "redux-form/immutable";
+import { InjectedFormProps } from "redux-form";
+import { reduxForm, getFormValues } from "redux-form/immutable";
 import { CustomTextField } from "../Basic";
 import { makeStyles, Theme } from "@material-ui/core/styles";
 import { Button, FormControl } from "@material-ui/core";
@@ -13,22 +13,25 @@ import FormHelperText from "@material-ui/core/FormHelperText";
 import { connect } from "react-redux";
 import { RootState } from "../../reducers";
 import { getCascaderDefaultValue, getCurrentConfig } from "../../selectors/config";
+import { CustomRadioGroup } from "../Basic/radio";
 
 export interface Props {
   onClose: any;
   formType: "new" | "edit";
+  formValues?: ConfigNode;
 }
 
 const mapStateToProps = (state: RootState, props: Props) => {
-  const values = getFormValues("config")(state) as ConfigNode;
-
+  const formValues = getFormValues("config")(state) as ConfigNode;
+  // console.log("formValues", formValues && formValues.toJS());
   let initialValues: ConfigNode;
   if (props.formType === "new") {
     initialValues = Immutable.fromJS({
       ancestorIds: getCascaderDefaultValue(),
       name: "",
       type: "file",
-      content: ""
+      content: "",
+      children: Immutable.fromJS({})
     });
   } else {
     const config = getCurrentConfig();
@@ -46,7 +49,7 @@ const mapStateToProps = (state: RootState, props: Props) => {
   }
 
   return {
-    values,
+    formValues,
     initialValues
   };
 };
@@ -128,7 +131,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 function ConfigFormRaw(props: Props & InjectedFormProps<ConfigNode, Props>) {
-  const { handleSubmit, onClose, initialValues } = props;
+  const { handleSubmit, onClose, formValues, formType } = props;
   const classes = useStyles();
   return (
     <div className={classes.root}>
@@ -152,7 +155,7 @@ function ConfigFormRaw(props: Props & InjectedFormProps<ConfigNode, Props>) {
             />
           </div>
         </div>
-        {/* {formType === "new" && <CustomRadioGroup name="type" label="Type" options={["file", "folder"]} />} */}
+        {formType === "new" && <CustomRadioGroup name="type" label="Type" options={["file", "folder"]} />}
         {/* <CustomTextField
           // className={classes.input}
           name="content"
@@ -164,7 +167,7 @@ function ConfigFormRaw(props: Props & InjectedFormProps<ConfigNode, Props>) {
           rows={15}
           rowsMax={15}
         /> */}
-        {initialValues.get!("type") === "file" && (
+        {formValues && formValues!.get("type") === "file" && (
           <FormControl margin="normal" className={classes.editorWarpper}>
             <CustomEditor />
           </FormControl>
