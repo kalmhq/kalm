@@ -2,7 +2,7 @@ const YAML = require("yaml");
 const fs = require("fs");
 const { exec } = require("child_process");
 
-const baseDir = "../kapp/config/crd/bases/";
+const baseDir = "controller/config/crd/bases/";
 const fileNames = fs.readdirSync(baseDir).map(x => `${baseDir}${x}`);
 
 const generateYamlTemplate = {
@@ -22,53 +22,9 @@ const generateYamlTemplate = {
 const fixGeneratedModelFile = fileName => {
   let content = fs.readFileSync(fileName).toString();
 
-  if (content.indexOf(`'metadata'?: object;`) !== -1) {
-    content = content.replace(
-      "'metadata'?: object;",
-      "'metadata'?: V1ObjectMeta;"
-    );
+  content = content.replace("package openapi", "package kappmodel");
 
-    content = content.replace(
-      "import { RequestFile } from '../api';\n",
-      "import { V1ObjectMeta } from '../model/models';\n"
-    );
-  }
-
-  // rename enum
-  //   const match = content.match(/export namespace (.*) {\n/);
-  //   if (match) {
-  //     const namespaceName = match[1];
-  //     content = content.replace(
-  //       `namespace ${namespaceName}`,
-  //       `namespace ${namespaceName}Internal`
-  //     );
-
-  //     content.match(new RegExp(`${namespaceName}.(.*)Enum`, "g")).forEach(x => {
-  //       content = content.replace(
-  //         x,
-  //         x.replace(namespaceName, namespaceName + "Internal")
-  //       );
-  //     });
-  //   }
-
-  const match = content.match(/export namespace (.*) {(.|[\r\n])*/m);
-  if (match) {
-    const enums = content.match(/export enum (.*) {(.|[\r\n])*?}/gm);
-    content = content.replace(match[0], "");
-    content = content.replace(
-      new RegExp(match[1] + "\\.(.*)?Enum", "g"),
-      "$1Enum"
-    );
-
-    enums.forEach(x => {
-      content = content + "\n" + x.replace(/<any> /g, "");
-    });
-  }
-
-  fs.writeFileSync(
-    fileName,
-    content.replace("import { RequestFile } from '../api';\n", "")
-  );
+  fs.writeFileSync(fileName, content);
 };
 
 const ExtractModelFromFile = filepath => {
@@ -95,7 +51,7 @@ const run = async () => {
     -v ${tmpDir}:/local \
     openapitools/openapi-generator-cli generate \
     -i /local/swagger.yaml \
-    -g typescript-node \
+    -g go \
     -o /local/output`;
 
   console.log(command);
@@ -122,32 +78,22 @@ const run = async () => {
   await runCommandPromise;
 
   // remove current kapp models
-  const currentModelsDir = __dirname + "/../src/kappModel";
-  fs.readdirSync(currentModelsDir)
-    .filter(x => x !== "List.ts")
-    .map(x => fs.unlinkSync(`${currentModelsDir}/${x}`));
+  const currentModelsDir = __dirname + "/../../api/kappmodel";
+  fs.readdirSync(currentModelsDir).map(x => fs.unlinkSync(`${currentModelsDir}/${x}`));
 
-  const indexFileName = currentModelsDir + "/index.ts";
-  fs.writeFileSync(indexFileName, "");
-
-  // copy new models file into kappModel dir
-  const modelDir = `${tmpDir}/output/model`;
+  // copy new models file into kappmodel dir
+  const modelDir = `${tmpDir}/output`;
   fs.readdirSync(modelDir)
-    .filter(x => x !== "models.ts")
+    .filter(x => x.startsWith("model_v1alpha1_"))
     .forEach(fileName => {
       const abFileName = `${modelDir}/${fileName}`;
       fixGeneratedModelFile(abFileName);
       fs.copyFileSync(abFileName, currentModelsDir + "/" + fileName);
-
-      const exportStatement = `export { ${fileName.charAt(0).toUpperCase() +
-        fileName.slice(1).replace(".ts", "")} } from "./${fileName.replace(
-        ".ts",
-        ""
-      )}";\n`;
-      fs.appendFileSync(indexFileName, exportStatement);
     });
 
   console.log("tmpDir", tmpDir);
 };
 
+// cd kapp
+// node frontend/scripts/generate_crd_swagger_models_go.js
 run();

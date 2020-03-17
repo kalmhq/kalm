@@ -29,8 +29,9 @@ const renderCascader = ({ input }: FilledTextFieldProps & WrappedFieldProps) => 
       // onCreate={() => input.onChange(getCascaderDefaultValue())}
       onChange={(value: string[]) => {
         input.onChange(Immutable.fromJS(value));
-      }}
-    />
+      }}>
+      {/* <input /> */}
+    </Cascader>
   );
 };
 

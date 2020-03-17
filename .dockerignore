@@ -1,0 +1,42 @@
+frontend/scripts
+frontend/.env
+frontend/.env.sample
+frontend/.gitignore
+frontend/.git
+frontend/.gitlab-ci.yml
+frontend/.prettierrc
+frontend/README.md
+
+frontend/.vscode
+frontend/!.vscode/settings.json
+frontend/.idea
+
+# dependencies
+frontend/node_modules
+frontend/.pnp
+frontend/.pnp.js
+
+# testing
+frontend/coverage
+
+# production
+frontend/build
+
+# misc
+frontend/.DS_Store
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+api/.idea
+api/.env
+api/.env.sample
+api/.git
+api/.gitignore
+api/.DS_Store

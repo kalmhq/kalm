@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"k8s.io/client-go/kubernetes"
 	"net/http"
 
 	"github.com/kapp-staging/kapp/api/auth"
@@ -27,7 +28,8 @@ type H map[string]interface{}
 
 func (h *ApiHandler) Install(e *echo.Echo) {
 	// permission routes
-	e.POST("/login", h.handlerLogin)
+	e.POST("/login", h.handleLogin)
+	e.GET("/login/status", h.handleLoginStatus)
 
 	// original resources routes
 	gV1 := e.Group("/v1", h.AuthClientMiddleware)
@@ -46,9 +48,9 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 
 	gV1.GET("/applications", h.handleGetApplications)
 	gV1.GET("/applications/:namespace", h.handleGetApplications)
-	//gV1.POST("/applications", h.handleCreateComponentTemplate)
+	gV1.POST("/applications/:namespace", h.handleCreateApplication)
 	gV1.PUT("/applications/:namespace/:name", h.handleUpdateApplication)
-	//gV1.DELETE("/applications/:namespace/:name", h.handleDeleteComponentTemplate)
+	gV1.DELETE("/applications/:namespace/:name", h.handleDeleteApplication)
 
 	gV1.GET("/files", h.handleGetFiles)
 	gV1.POST("/files", h.handleCreateFile)
@@ -56,7 +58,7 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gV1.DELETE("/files/:name", h.handleDeleteFile)
 }
 
-func (h *ApiHandler) handlerLogin(c echo.Context) error {
+func (h *ApiHandler) handleLogin(c echo.Context) error {
 	authInfo, err := auth.GetAuthInfo(c)
 	if err != nil {
 		return err
@@ -65,7 +67,30 @@ func (h *ApiHandler) handlerLogin(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return c.JSON(http.StatusOK, H{"ok": true})
+	return c.JSON(http.StatusOK, H{"authorized": true})
+}
+
+func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
+	clientConfig, err := h.clientManager.GetClientConfig(c)
+
+	if err != nil {
+		return c.JSON(200, H{
+			"authorized": false,
+		})
+	}
+
+	k8sClient, err := kubernetes.NewForConfig(clientConfig)
+	if err != nil {
+		return c.JSON(200, H{
+			"authorized": false,
+		})
+	}
+
+	_, err = k8sClient.ServerVersion()
+
+	return c.JSON(200, H{
+		"authorized": err == nil,
+	})
 }
 
 func (h *ApiHandler) handleGetDeployments(c echo.Context) error {
@@ -132,9 +157,31 @@ func (h *ApiHandler) handleGetApplications(c echo.Context) error {
 	return c.JSONBlob(200, res)
 }
 
+func (h *ApiHandler) handleCreateApplication(c echo.Context) error {
+	k8sClient := getK8sClient(c)
+	res, err := k8sClient.RESTClient().Post().Body(c.Request().Body).AbsPath("/apis/core.kapp.dev/v1alpha1/namespaces/" + c.Param("namespace") + "/applications").DoRaw()
+
+	if err != nil {
+		return err
+	}
+
+	return c.JSONBlob(200, res)
+}
+
 func (h *ApiHandler) handleUpdateApplication(c echo.Context) error {
 	k8sClient := getK8sClient(c)
 	res, err := k8sClient.RESTClient().Put().Body(c.Request().Body).AbsPath("/apis/core.kapp.dev/v1alpha1/namespaces/" + c.Param("namespace") + "/applications/" + c.Param("name")).DoRaw()
+
+	if err != nil {
+		return err
+	}
+
+	return c.JSONBlob(200, res)
+}
+
+func (h *ApiHandler) handleDeleteApplication(c echo.Context) error {
+	k8sClient := getK8sClient(c)
+	res, err := k8sClient.RESTClient().Delete().AbsPath("/apis/core.kapp.dev/v1alpha1/namespaces/" + c.Param("namespace") + "/applications/" + c.Param("name")).DoRaw()
 
 	if err != nil {
 		return err
@@ -154,9 +201,9 @@ func (h *ApiHandler) handleGetComponentTemplates(c echo.Context) error {
 	return c.JSONBlob(200, res)
 }
 
-func (h *ApiHandler) handleUpdateComponentTemplate(c echo.Context) error {
+func (h *ApiHandler) handleCreateComponentTemplate(c echo.Context) error {
 	k8sClient := getK8sClient(c)
-	res, err := k8sClient.RESTClient().Put().Body(c.Request().Body).AbsPath("/apis/core.kapp.dev/v1alpha1/componenttemplates/" + c.Param("name")).DoRaw()
+	res, err := k8sClient.RESTClient().Post().Body(c.Request().Body).AbsPath("/apis/core.kapp.dev/v1alpha1/componenttemplates").DoRaw()
 
 	if err != nil {
 		return err
@@ -165,9 +212,9 @@ func (h *ApiHandler) handleUpdateComponentTemplate(c echo.Context) error {
 	return c.JSONBlob(200, res)
 }
 
-func (h *ApiHandler) handleCreateComponentTemplate(c echo.Context) error {
+func (h *ApiHandler) handleUpdateComponentTemplate(c echo.Context) error {
 	k8sClient := getK8sClient(c)
-	res, err := k8sClient.RESTClient().Post().Body(c.Request().Body).AbsPath("/apis/core.kapp.dev/v1alpha1/componenttemplates").DoRaw()
+	res, err := k8sClient.RESTClient().Put().Body(c.Request().Body).AbsPath("/apis/core.kapp.dev/v1alpha1/componenttemplates/" + c.Param("name")).DoRaw()
 
 	if err != nil {
 		return err
