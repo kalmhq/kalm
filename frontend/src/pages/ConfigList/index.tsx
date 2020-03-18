@@ -2,7 +2,7 @@ import React from "react";
 import { BasePage } from "../BasePage";
 import { connect } from "react-redux";
 import { RootState } from "../../reducers";
-import { IconButton, Theme, withStyles, Breadcrumbs, Link, Button } from "@material-ui/core";
+import { IconButton, Theme, withStyles, Breadcrumbs, Link, Button, WithStyles, createStyles } from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@material-ui/icons/Delete";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
@@ -19,40 +19,41 @@ import { setSuccessNotificationAction, setErrorNotificationAction } from "../../
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
 import { loadConfigsAction } from "../../actions/config";
 
-const styles = (theme: Theme) => ({
-  fileIcon: {
-    marginRight: "15px"
-  },
-  fileName: {
-    verticalAlign: "super"
-  },
-  root: {
-    display: "flex",
-    padding: "24px"
-  },
-  leftTree: {
-    width: "400px",
-    padding: "15px"
-  },
-  fileDetail: {
-    width: "100%",
-    minHeight: "800px",
-    padding: "15px",
-    backgroundColor: "#fff"
-  },
-  breadcrumbsAndAction: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between"
-  },
-  noSelectedFile: {
-    width: "100%",
-    height: "300px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center"
-  }
-});
+const styles = (theme: Theme) =>
+  createStyles({
+    fileIcon: {
+      marginRight: "15px"
+    },
+    fileName: {
+      verticalAlign: "super"
+    },
+    root: {
+      display: "flex",
+      padding: "24px"
+    },
+    leftTree: {
+      width: "400px",
+      padding: "15px"
+    },
+    fileDetail: {
+      width: "100%",
+      minHeight: "800px",
+      padding: "15px",
+      backgroundColor: "#fff"
+    },
+    breadcrumbsAndAction: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between"
+    },
+    noSelectedFile: {
+      width: "100%",
+      height: "300px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    }
+  });
 
 const mapStateToProps = (state: RootState, ownProps: any) => {
   return {
@@ -64,9 +65,8 @@ const mapStateToProps = (state: RootState, ownProps: any) => {
 
 type StateProps = ReturnType<typeof mapStateToProps>;
 
-interface Props extends StateProps {
+interface Props extends StateProps, WithStyles<typeof styles> {
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
-  classes: any;
   rootConfig: ConfigNode;
 }
 

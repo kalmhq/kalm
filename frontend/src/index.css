@@ -5,11 +5,12 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     background-color: rgba(0, 0, 0, 0.87);
+    height: auto;
 }
 
-#root {
+/* #root {
     height: 100%;
-}
+} */
 
 code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
