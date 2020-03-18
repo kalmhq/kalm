@@ -2,7 +2,14 @@ import axios from "axios";
 import { ComponentTemplate, Application, ConfigFile } from ".";
 import { convertFromCRDComponentTemplate } from "../convertors/ComponentTemplate";
 import { V1alpha1ComponentTemplate } from "../kappModel/v1alpha1ComponentTemplate";
-import { V1NodeList, V1PersistentVolumeList } from "../model/models";
+import {
+  V1NodeList,
+  V1PersistentVolumeList,
+  V1ClusterRole,
+  V1ClusterRoleBinding,
+  V1ServiceAccount,
+  V1Secret
+} from "../model/models";
 import { ItemList } from "../kappModel/List";
 import { V1alpha1Application, V1alpha1Dependency, V1alpha1File } from "../kappModel";
 import { convertFromCRDApplication } from "../convertors/Application";
@@ -137,4 +144,54 @@ export const deleteKappFile = async (file: V1alpha1File): Promise<void> => {
   await getAxiosClient().delete(K8sApiPerfix + `/v1/files/${file.metadata!.name}`);
 
   // return convertFromCRDFile(res.data);
+};
+
+export const getKappClusterRoles = async () => {
+  const res = await getAxiosClient().get<ItemList<V1ClusterRole>>(K8sApiPerfix + "/v1/clusterroles");
+
+  return res.data.items as V1ClusterRole[];
+};
+
+export const createKappClusterRole = async (clusterRole: V1ClusterRole): Promise<V1ClusterRole> => {
+  const res = await getAxiosClient().post(K8sApiPerfix + `/v1/clusterroles`, clusterRole);
+
+  return res.data;
+};
+
+export const getKappClusterRoleBindings = async () => {
+  const res = await getAxiosClient().get<ItemList<V1ClusterRoleBinding>>(K8sApiPerfix + "/v1/clusterrolebindings");
+
+  return res.data.items as V1ClusterRoleBinding[];
+};
+
+export const createKappClusterRoleBinding = async (
+  clusterRoleBinding: V1ClusterRoleBinding
+): Promise<V1ClusterRoleBinding> => {
+  const res = await getAxiosClient().post(K8sApiPerfix + `/v1/clusterrolebindings`, clusterRoleBinding);
+
+  return res.data;
+};
+
+export const getKappServiceAccounts = async () => {
+  const res = await getAxiosClient().get<ItemList<V1ServiceAccount>>(K8sApiPerfix + "/v1/serviceaccounts");
+
+  return res.data.items as V1ServiceAccount[];
+};
+
+export const createKappServiceAccount = async (serviceAccount: V1ServiceAccount): Promise<V1ServiceAccount> => {
+  const res = await getAxiosClient().post(K8sApiPerfix + `/v1/serviceaccounts`, serviceAccount);
+
+  return res.data;
+};
+
+export const getKappSecrets = async () => {
+  const res = await getAxiosClient().get<ItemList<V1Secret>>(K8sApiPerfix + "/v1/secrets");
+
+  return res.data.items as V1Secret[];
+};
+
+export const createKappSecret = async (secret: V1Secret): Promise<V1Secret> => {
+  const res = await getAxiosClient().post(K8sApiPerfix + `/v1/secrets`, secret);
+
+  return res.data;
 };

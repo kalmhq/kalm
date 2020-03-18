@@ -57,6 +57,18 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gV1.PUT("/files/:name", h.handleUpdateFile)
 	gV1.DELETE("/files/:name", h.handleDeleteFile)
 
+	gV1.GET("/clusterroles", h.handleGetClusterRoles)
+	gV1.POST("/clusterroles", h.handleCreateClusterRoles)
+
+	gV1.GET("/clusterrolebindings", h.handleGetClusterRoleBindings)
+	gV1.POST("/clusterrolebindings", h.handleCreateClusterRoleBindings)
+
+	gV1.GET("/serviceaccounts", h.handleGetServiceAccounts)
+	gV1.POST("/serviceaccounts", h.handleCreateServiceAccounts)
+
+	gV1.GET("/secrets", h.handleGetSecrets)
+	gV1.POST("/secrets", h.handleCreateSecrets)
+
 	gV1Alpha1 := e.Group("/v1alpha1", h.AuthClientMiddleware)
 	gV1Alpha1.GET("/applications", h.handleGetApplications)
 	gV1Alpha1.GET("/applications/:namespace", h.handleGetApplications)
