@@ -11,6 +11,7 @@ import (
 	"net/http/httptest"
 	"path/filepath"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
+	"strings"
 )
 
 type BasicTestSuite struct {
@@ -76,9 +77,12 @@ func (suite *BasicTestSuite) NewRequest(method string, path string, body interfa
 func (suite *BasicTestSuite) NewRequestWithHeaders(method string, path string, body interface{}, headers map[string]string) *ResponseRecorder {
 	var reader io.Reader
 
-	if body == nil {
+	switch v := body.(type) {
+	case nil:
 		reader = bytes.NewReader([]byte{})
-	} else {
+	case string:
+		reader = strings.NewReader(v)
+	default:
 		reader = toReader(body)
 	}
 

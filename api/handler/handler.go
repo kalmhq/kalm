@@ -73,7 +73,7 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gV1Alpha1.GET("/applications", h.handleGetApplications)
 	gV1Alpha1.GET("/applications/:namespace", h.handleGetApplications)
 	gV1Alpha1.GET("/applications/:namespace/:name", h.handleGetApplicationDetails)
-	gV1.POST("/applications/:namespace", h.handleCreateApplicationNew)
+	gV1Alpha1.POST("/applications/:namespace", h.handleCreateApplicationNew)
 }
 
 func NewApiHandler(clientManager *client.ClientManager) *ApiHandler {

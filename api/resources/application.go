@@ -70,6 +70,10 @@ type ApplicationResponse struct {
 	Application *Application `json:"application"`
 }
 
+type CreateApplicationRequest struct {
+	Application *Application `json:"application"`
+}
+
 type Application struct {
 	Name       string                   `json:"name"`
 	Namespace  string                   `json:"namespace"`
