@@ -10,7 +10,7 @@ type EventListChannel struct {
 	Error chan error
 }
 
-func (builder *ResponseBuilder) GetEventListChannel(namespaces string, listOptions metaV1.ListOptions) *EventListChannel {
+func (builder *Builder) GetEventListChannel(namespaces string, listOptions metaV1.ListOptions) *EventListChannel {
 	channel := &EventListChannel{
 		List:  make(chan *coreV1.EventList, 1),
 		Error: make(chan error, 1),

@@ -10,7 +10,7 @@ type DeploymentListChannel struct {
 	Error chan error
 }
 
-func (builder *ResponseBuilder) GetDeploymentListChannel(namespaces string, listOptions metaV1.ListOptions) *DeploymentListChannel {
+func (builder *Builder) GetDeploymentListChannel(namespaces string, listOptions metaV1.ListOptions) *DeploymentListChannel {
 	channel := &DeploymentListChannel{
 		List:  make(chan *appsV1.DeploymentList, 1),
 		Error: make(chan error, 1),

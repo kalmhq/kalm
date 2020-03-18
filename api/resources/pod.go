@@ -10,7 +10,7 @@ type PodListChannel struct {
 	Error chan error
 }
 
-func (builder *ResponseBuilder) GetPodListChannel(namespaces string, listOptions metaV1.ListOptions) *PodListChannel {
+func (builder *Builder) GetPodListChannel(namespaces string, listOptions metaV1.ListOptions) *PodListChannel {
 	channel := &PodListChannel{
 		List:  make(chan *coreV1.PodList, 1),
 		Error: make(chan error, 1),

@@ -10,7 +10,7 @@ type ReplicaSetListChannel struct {
 	Error chan error
 }
 
-func (builder *ResponseBuilder) GetReplicaSetListChannel(namespaces string, listOptions metaV1.ListOptions) *ReplicaSetListChannel {
+func (builder *Builder) GetReplicaSetListChannel(namespaces string, listOptions metaV1.ListOptions) *ReplicaSetListChannel {
 	channel := &ReplicaSetListChannel{
 		List:  make(chan *appsV1.ReplicaSetList, 1),
 		Error: make(chan error, 1),

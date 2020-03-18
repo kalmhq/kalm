@@ -78,7 +78,7 @@ type Application struct {
 	Components []v1alpha1.ComponentSpec `json:"components"`
 }
 
-func (builder *ResponseBuilder) BuildApplicationDetailsResponse(application *v1alpha1.Application) *ApplicationResponse {
+func (builder *Builder) BuildApplicationDetailsResponse(application *v1alpha1.Application) *ApplicationResponse {
 	formatEnvs(application.Spec.SharedEnv)
 	formatApplicationComponents(application.Spec.Components)
 
@@ -108,7 +108,7 @@ func formatApplicationComponents(components []v1alpha1.ComponentSpec) {
 	}
 }
 
-func (builder *ResponseBuilder) BuildApplicationListResponse(applications *v1alpha1.ApplicationList) *ApplicationListResponse {
+func (builder *Builder) BuildApplicationListResponse(applications *v1alpha1.ApplicationList) *ApplicationListResponse {
 
 	apps := []*ApplicationListResponseItem{}
 
@@ -123,7 +123,7 @@ func (builder *ResponseBuilder) BuildApplicationListResponse(applications *v1alp
 	}
 }
 
-func (builder *ResponseBuilder) buildApplicationListResponseItem(application *v1alpha1.Application) *ApplicationListResponseItem {
+func (builder *Builder) buildApplicationListResponseItem(application *v1alpha1.Application) *ApplicationListResponseItem {
 	ns := application.Namespace
 	listOptions := labelsBelongsToApplication(application.Name)
 
@@ -152,7 +152,7 @@ func (builder *ResponseBuilder) buildApplicationListResponseItem(application *v1
 	}
 }
 
-func (builder *ResponseBuilder) buildApplicationComponentStatus(application *v1alpha1.Application, resources *Resources) []*ComponentStatus {
+func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Application, resources *Resources) []*ComponentStatus {
 	res := []*ComponentStatus{}
 
 	for i := range application.Spec.Components {

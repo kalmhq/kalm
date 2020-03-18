@@ -103,7 +103,7 @@ func labelsBelongsToApplication(name string) metaV1.ListOptions {
 	return matchLabel("kapp-application", name)
 }
 
-type ResponseBuilder struct {
+type Builder struct {
 	K8sClient *kubernetes.Clientset
 	Logger    *logrus.Logger
 }
