@@ -1,8 +1,9 @@
 package handler
 
 import (
-	"k8s.io/client-go/kubernetes"
 	"net/http"
+
+	"k8s.io/client-go/kubernetes"
 
 	"github.com/kapp-staging/kapp/api/auth"
 	"github.com/kapp-staging/kapp/api/client"
@@ -56,6 +57,19 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gV1.POST("/files", h.handleCreateFile)
 	gV1.PUT("/files/:name", h.handleUpdateFile)
 	gV1.DELETE("/files/:name", h.handleDeleteFile)
+
+	gV1.GET("/clusterroles", h.handleGetClusterRoles)
+	gV1.POST("/clusterroles", h.handleCreateClusterRoles)
+
+	gV1.GET("/clusterrolebindings", h.handleGetClusterRoleBindings)
+	gV1.POST("/clusterrolebindings", h.handleCreateClusterRoleBindings)
+
+	gV1.GET("/serviceaccounts", h.handleGetServiceAccounts)
+	gV1.POST("/serviceaccounts", h.handleCreateServiceAccounts)
+
+	gV1.GET("/secrets", h.handleGetSecrets)
+	gV1.POST("/secrets", h.handleCreateSecrets)
+
 }
 
 func (h *ApiHandler) handleLogin(c echo.Context) error {
@@ -282,6 +296,116 @@ func (h *ApiHandler) handleUpdateFile(c echo.Context) error {
 func (h *ApiHandler) handleDeleteFile(c echo.Context) error {
 	k8sClient := getK8sClient(c)
 	res, err := k8sClient.RESTClient().Delete().AbsPath("/apis/core.kapp.dev/v1alpha1/namespaces/default/files/" + c.Param("name")).DoRaw()
+
+	if err != nil {
+		return err
+	}
+
+	return c.JSONBlob(200, res)
+}
+
+// func (h *ApiHandler) handleGetRoles(c echo.Context) error {
+// 	k8sClient := getK8sClient(c)
+// 	res, err := k8sClient.RESTClient().Get().AbsPath("/apis/rbac.authorization.k8s.io/v1/namespaces/default/roles").DoRaw()
+
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	return c.JSONBlob(200, res)
+// }
+
+// func (h *ApiHandler) handleGetRoleBindings(c echo.Context) error {
+// 	k8sClient := getK8sClient(c)
+// 	res, err := k8sClient.RESTClient().Get().AbsPath("/apis/rbac.authorization.k8s.io/v1/namespaces/default/clusterrolebindings").DoRaw()
+
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	return c.JSONBlob(200, res)
+// }
+
+func (h *ApiHandler) handleGetClusterRoles(c echo.Context) error {
+	k8sClient := getK8sClient(c)
+	res, err := k8sClient.RESTClient().Get().AbsPath("/apis/rbac.authorization.k8s.io/v1/clusterroles").DoRaw()
+
+	if err != nil {
+		return err
+	}
+
+	return c.JSONBlob(200, res)
+}
+
+func (h *ApiHandler) handleCreateClusterRoles(c echo.Context) error {
+	k8sClient := getK8sClient(c)
+	res, err := k8sClient.RESTClient().Post().Body(c.Request().Body).AbsPath("/apis/rbac.authorization.k8s.io/v1/clusterroles").DoRaw()
+
+	if err != nil {
+		return err
+	}
+
+	return c.JSONBlob(200, res)
+}
+
+func (h *ApiHandler) handleGetClusterRoleBindings(c echo.Context) error {
+	k8sClient := getK8sClient(c)
+	res, err := k8sClient.RESTClient().Get().AbsPath("/apis/rbac.authorization.k8s.io/v1/clusterrolebindings").DoRaw()
+
+	if err != nil {
+		return err
+	}
+
+	return c.JSONBlob(200, res)
+}
+
+func (h *ApiHandler) handleCreateClusterRoleBindings(c echo.Context) error {
+	k8sClient := getK8sClient(c)
+	res, err := k8sClient.RESTClient().Post().Body(c.Request().Body).AbsPath("/apis/rbac.authorization.k8s.io/v1/clusterrolebindings").DoRaw()
+
+	if err != nil {
+		return err
+	}
+
+	return c.JSONBlob(200, res)
+}
+
+func (h *ApiHandler) handleGetServiceAccounts(c echo.Context) error {
+	k8sClient := getK8sClient(c)
+	res, err := k8sClient.RESTClient().Get().AbsPath("/api/v1/namespaces/default/serviceaccounts").DoRaw()
+
+	if err != nil {
+		return err
+	}
+
+	return c.JSONBlob(200, res)
+}
+
+func (h *ApiHandler) handleCreateServiceAccounts(c echo.Context) error {
+	k8sClient := getK8sClient(c)
+	res, err := k8sClient.RESTClient().Post().Body(c.Request().Body).AbsPath("/api/v1/namespaces/default/serviceaccounts").DoRaw()
+
+	if err != nil {
+		return err
+	}
+
+	return c.JSONBlob(200, res)
+}
+
+func (h *ApiHandler) handleGetSecrets(c echo.Context) error {
+	k8sClient := getK8sClient(c)
+	res, err := k8sClient.RESTClient().Get().AbsPath("/api/v1/namespaces/default/secrets").DoRaw()
+
+	if err != nil {
+		return err
+	}
+
+	return c.JSONBlob(200, res)
+}
+
+func (h *ApiHandler) handleCreateSecrets(c echo.Context) error {
+	k8sClient := getK8sClient(c)
+	res, err := k8sClient.RESTClient().Post().Body(c.Request().Body).AbsPath("/api/v1/namespaces/default/secrets").DoRaw()
 
 	if err != nil {
 		return err
