@@ -3,6 +3,9 @@ package handler
 import (
 	"net/http"
 
+	"github.com/kapp-staging/kapp/api/resources"
+	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/sirupsen/logrus"
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/kapp-staging/kapp/api/auth"
@@ -15,7 +18,7 @@ import (
 )
 
 var (
-	listAll = v1.ListOptions{
+	ListAll = v1.ListOptions{
 		LabelSelector: labels.Everything().String(),
 		FieldSelector: fields.Everything().String(),
 	}
@@ -23,6 +26,7 @@ var (
 
 type ApiHandler struct {
 	clientManager *client.ClientManager
+	logger        *logrus.Logger
 }
 
 type H map[string]interface{}
@@ -46,9 +50,12 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gV1.DELETE("/componenttemplates/:name", h.handleDeleteComponentTemplate)
 
 	gV1.GET("/dependencies", h.handleGetDependencies)
+	gV1.GET("/dependencies/available", h.handleGetAvailableDependencies)
 
-	gV1.GET("/applications", h.handleGetApplications)
+	gV1.GET("/applications", h.handleGetApplicationsOld)
+	gV1.GET("/applicationsNew", h.handleGetApplications)
 	gV1.GET("/applications/:namespace", h.handleGetApplications)
+	gV1.GET("/applications/:namespace/:name", h.handleGetApplicationDetails)
 	gV1.POST("/applications/:namespace", h.handleCreateApplication)
 	gV1.PUT("/applications/:namespace/:name", h.handleUpdateApplication)
 	gV1.DELETE("/applications/:namespace/:name", h.handleDeleteApplication)
@@ -109,7 +116,7 @@ func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
 
 func (h *ApiHandler) handleGetDeployments(c echo.Context) error {
 	k8sClient := getK8sClient(c)
-	list, err := k8sClient.AppsV1().Deployments("").List(listAll)
+	list, err := k8sClient.AppsV1().Deployments("").List(ListAll)
 	if err != nil {
 		return err
 	}
@@ -118,7 +125,7 @@ func (h *ApiHandler) handleGetDeployments(c echo.Context) error {
 
 func (h *ApiHandler) handleGetPVs(c echo.Context) error {
 	k8sClient := getK8sClient(c)
-	list, err := k8sClient.CoreV1().PersistentVolumes().List(listAll)
+	list, err := k8sClient.CoreV1().PersistentVolumes().List(ListAll)
 	if err != nil {
 		return err
 	}
@@ -127,7 +134,7 @@ func (h *ApiHandler) handleGetPVs(c echo.Context) error {
 
 func (h *ApiHandler) handleGetNodes(c echo.Context) error {
 	k8sClient := getK8sClient(c)
-	list, err := k8sClient.CoreV1().Nodes().List(listAll)
+	list, err := k8sClient.CoreV1().Nodes().List(ListAll)
 	if err != nil {
 		return err
 	}
@@ -142,12 +149,32 @@ func (h *ApiHandler) handleGetNodeMetrics(c echo.Context) error {
 		return err
 	}
 
-	nodeMetrics, err := k8sMetricClient.MetricsV1beta1().NodeMetricses().List(listAll)
+	nodeMetrics, err := k8sMetricClient.MetricsV1beta1().NodeMetricses().List(ListAll)
 	if err != nil {
 		return err
 	}
 
 	return c.JSON(200, nodeMetrics)
+}
+func (h *ApiHandler) handleGetApplicationsOld(c echo.Context) error {
+	k8sClient := getK8sClient(c)
+	namespace := c.Param("namespace")
+
+	var path string
+
+	if namespace == "" {
+		path = "/apis/core.kapp.dev/v1alpha1/applications"
+	} else {
+		path = "/apis/core.kapp.dev/v1alpha1/namespaces/" + namespace + "/applications"
+	}
+
+	bts, err := k8sClient.RESTClient().Get().AbsPath(path).DoRaw()
+
+	if err != nil {
+		return err
+	}
+
+	return c.JSONBlob(200, bts)
 }
 
 func (h *ApiHandler) handleGetApplications(c echo.Context) error {
@@ -162,13 +189,38 @@ func (h *ApiHandler) handleGetApplications(c echo.Context) error {
 		path = "/apis/core.kapp.dev/v1alpha1/namespaces/" + namespace + "/applications"
 	}
 
-	res, err := k8sClient.RESTClient().Get().AbsPath(path).DoRaw()
+	var applicationList v1alpha1.ApplicationList
+
+	err := k8sClient.RESTClient().Get().AbsPath(path).Do().Into(&applicationList)
 
 	if err != nil {
 		return err
 	}
 
-	return c.JSONBlob(200, res)
+	builder := resources.ResponseBuilder{
+		k8sClient,
+		h.logger,
+	}
+
+	return c.JSON(200, builder.BuildApplicationListResponse(&applicationList))
+}
+
+func (h *ApiHandler) handleGetApplicationDetails(c echo.Context) error {
+	k8sClient := getK8sClient(c)
+	namespace := c.Param("namespace")
+	name := c.Param("name")
+	var application v1alpha1.Application
+	err := k8sClient.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/namespaces/" + namespace + "/applications/" + name).Do().Into(&application)
+
+	if err != nil {
+		return err
+	}
+
+	builder := resources.ResponseBuilder{
+		k8sClient,
+		h.logger,
+	}
+	return c.JSON(200, builder.BuildApplicationDetailsResponse(&application))
 }
 
 func (h *ApiHandler) handleCreateApplication(c echo.Context) error {
@@ -257,6 +309,13 @@ func (h *ApiHandler) handleGetDependencies(c echo.Context) error {
 	}
 
 	return c.JSONBlob(200, res)
+}
+
+// TODO
+func (h *ApiHandler) handleGetAvailableDependencies(c echo.Context) error {
+	return c.JSON(200, H{
+		"dependencies": []string{},
+	})
 }
 
 func (h *ApiHandler) handleGetFiles(c echo.Context) error {
@@ -417,5 +476,6 @@ func (h *ApiHandler) handleCreateSecrets(c echo.Context) error {
 func NewApiHandler(clientManager *client.ClientManager) *ApiHandler {
 	return &ApiHandler{
 		clientManager: clientManager,
+		logger:        logrus.New(),
 	}
 }

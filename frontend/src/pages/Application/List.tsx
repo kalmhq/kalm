@@ -245,6 +245,10 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     }
   };
 
+  private renderDetails = (rowData: any) => {
+    return <div>123</div>;
+  };
+
   private setDeletingApplicationAndConfirm = (applicationId: string) => {
     this.setState({
       isDeleteConfirmDialogOpen: true,
@@ -414,6 +418,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                   searchable: false
                 }
               ]}
+              detailPanel={this.renderDetails}
+              onRowClick={(_event, _rowData, togglePanel) => togglePanel!()}
               data={data.toArray()}
               title="Applications"
             />
