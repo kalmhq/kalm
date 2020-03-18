@@ -13,7 +13,8 @@ const styles = (theme: Theme) =>
       backgroundColor: "#2196F3",
       height: "286px",
       width: "100%",
-      marginTop: "calc( 50vh - 183px )"
+      position: "fixed",
+      top: "calc( 50vh - 183px )"
     },
     paperContainer: {
       maxWidth: "850px",
