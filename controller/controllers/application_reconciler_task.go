@@ -4,20 +4,18 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"k8s.io/api/extensions/v1beta1"
-	"strings"
-	"time"
-
 	"github.com/go-logr/logr"
 	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
 	"github.com/kapp-staging/kapp/util"
 	appv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"strings"
 )
 
 // There will be a new Task instance for each reconciliation
@@ -268,11 +266,9 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 		}
 	}
 
-	label := fmt.Sprintf("%s-%d", app.Name, time.Now().UTC().Unix())
 	labelMap := map[string]string{
-		"kapp-component": label,
-		"application":    app.Name,
-		"component":      component.Name,
+		"kapp-application": app.Name,
+		"kapp-component":   component.Name,
 	}
 
 	newDeployment := false
@@ -282,7 +278,7 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 
 		deployment = &appv1.Deployment{
 			ObjectMeta: metav1.ObjectMeta{
-				Labels:      make(map[string]string),
+				Labels:      labelMap,
 				Annotations: make(map[string]string),
 				Name:        getDeploymentName(app.Name, component.Name),
 				Namespace:   app.Namespace,
