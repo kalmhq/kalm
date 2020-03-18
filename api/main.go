@@ -138,9 +138,5 @@ func run(runningConfig *config.Config) {
 		}))
 	}
 
-	e.GET("/ping", func(c echo.Context) error {
-		return c.String(200, "ok")
-	})
-
 	e.Logger.Fatal(e.Start(runningConfig.GetServerAddress()))
 }

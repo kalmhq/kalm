@@ -24,6 +24,8 @@ type ApiHandler struct {
 type H map[string]interface{}
 
 func (h *ApiHandler) Install(e *echo.Echo) {
+	e.GET("/ping", handlePing)
+
 	// permission routes
 	e.POST("/login", h.handleLogin)
 	e.GET("/login/status", h.handleLoginStatus)
