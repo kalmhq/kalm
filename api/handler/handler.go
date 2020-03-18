@@ -49,10 +49,12 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gV1.DELETE("/componenttemplates/:name", h.handleDeleteComponentTemplate)
 
 	gV1.GET("/dependencies", h.handleGetDependencies)
+	gV1.GET("/dependencies/available", h.handleGetAvailableDependencies)
 
 	gV1.GET("/applications", h.handleGetApplicationsOld)
 	gV1.GET("/applicationsNew", h.handleGetApplications)
 	gV1.GET("/applications/:namespace", h.handleGetApplications)
+	gV1.GET("/applications/:namespace/:name", h.handleGetApplicationDetails)
 	gV1.POST("/applications/:namespace", h.handleCreateApplication)
 	gV1.PUT("/applications/:namespace/:name", h.handleUpdateApplication)
 	gV1.DELETE("/applications/:namespace/:name", h.handleDeleteApplication)
@@ -189,6 +191,24 @@ func (h *ApiHandler) handleGetApplications(c echo.Context) error {
 	return c.JSON(200, builder.BuildApplicationListResponse(&applicationList))
 }
 
+func (h *ApiHandler) handleGetApplicationDetails(c echo.Context) error {
+	k8sClient := getK8sClient(c)
+	namespace := c.Param("namespace")
+	name := c.Param("name")
+	var application v1alpha1.Application
+	err := k8sClient.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/namespaces/" + namespace + "/applications/" + name).Do().Into(&application)
+
+	if err != nil {
+		return err
+	}
+
+	builder := resources.ResponseBuilder{
+		k8sClient,
+		h.logger,
+	}
+	return c.JSON(200, builder.BuildApplicationDetailsResponse(&application))
+}
+
 func (h *ApiHandler) handleCreateApplication(c echo.Context) error {
 	k8sClient := getK8sClient(c)
 	res, err := k8sClient.RESTClient().Post().Body(c.Request().Body).AbsPath("/apis/core.kapp.dev/v1alpha1/namespaces/" + c.Param("namespace") + "/applications").DoRaw()
@@ -275,6 +295,13 @@ func (h *ApiHandler) handleGetDependencies(c echo.Context) error {
 	}
 
 	return c.JSONBlob(200, res)
+}
+
+// TODO
+func (h *ApiHandler) handleGetAvailableDependencies(c echo.Context) error {
+	return c.JSON(200, H{
+		"dependencies": []string{},
+	})
 }
 
 func (h *ApiHandler) handleGetFiles(c echo.Context) error {

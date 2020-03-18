@@ -9,7 +9,6 @@ import (
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/selection"
 	"time"
 )
 
@@ -67,6 +66,48 @@ type ApplicationListResponse struct {
 	Applications []*ApplicationListResponseItem `json:"applications"`
 }
 
+type ApplicationResponse struct {
+	Application *Application `json:"application"`
+}
+
+type Application struct {
+	Name       string                   `json:"name"`
+	Namespace  string                   `json:"namespace"`
+	IsActive   bool                     `json:"isActive"`
+	SharedEnvs []v1alpha1.EnvVar        `json:"sharedEnvs"`
+	Components []v1alpha1.ComponentSpec `json:"components"`
+}
+
+func (builder *ResponseBuilder) BuildApplicationDetailsResponse(application *v1alpha1.Application) *ApplicationResponse {
+	formatEnvs(application.Spec.SharedEnv)
+	formatApplicationComponents(application.Spec.Components)
+
+	return &ApplicationResponse{
+		&Application{
+			Name:       application.Name,
+			Namespace:  application.Namespace,
+			IsActive:   application.Status.IsActive,
+			SharedEnvs: application.Spec.SharedEnv,
+			Components: application.Spec.Components,
+		},
+	}
+}
+
+// TODO formatters should be deleted in the feature, Use validator instead
+func formatEnvs(envs []v1alpha1.EnvVar) {
+	for i := range envs {
+		if envs[i].Type == "" {
+			envs[i].Type = v1alpha1.EnvVarTypeStatic
+		}
+	}
+}
+
+func formatApplicationComponents(components []v1alpha1.ComponentSpec) {
+	for i := range components {
+		formatEnvs(components[i].Env)
+	}
+}
+
 func (builder *ResponseBuilder) BuildApplicationListResponse(applications *v1alpha1.ApplicationList) *ApplicationListResponse {
 
 	apps := []*ApplicationListResponseItem{}
@@ -102,11 +143,6 @@ func (builder *ResponseBuilder) buildApplicationListResponseItem(application *v1
 		builder.Logger.Error(err)
 	}
 
-	return builder.buildApplicationListItemFromChannels(application, resources)
-}
-
-func (builder *ResponseBuilder) buildApplicationListItemFromChannels(application *v1alpha1.Application, resources *Resources) *ApplicationListResponseItem {
-
 	return &ApplicationListResponseItem{
 		Name:       application.ObjectMeta.Name,
 		Namespace:  application.ObjectMeta.Namespace,
@@ -114,39 +150,6 @@ func (builder *ResponseBuilder) buildApplicationListItemFromChannels(application
 		CreatedAt:  application.ObjectMeta.CreationTimestamp.Time,
 		Components: builder.buildApplicationComponentStatus(application, resources),
 	}
-}
-
-func (builder *ResponseBuilder) getDeploymentPodsStatus(componentName, namespace string) []*coreV1.PodStatus {
-	selector := labels.NewSelector()
-	requirement, _ := labels.NewRequirement("component", selection.Equals, []string{componentName})
-	selector.Add(*requirement)
-
-	pods, err := builder.K8sClient.CoreV1().Pods(namespace).List(metaV1.ListOptions{
-		LabelSelector: selector.String(),
-	})
-
-	if err != nil {
-		println(err)
-	}
-
-	status := []*coreV1.PodStatus{}
-
-	for i := range pods.Items {
-		status = append(status, &pods.Items[i].Status)
-	}
-
-	return status
-}
-
-func (builder *ResponseBuilder) getDeploymentStatus(name, namespace string) appsV1.DeploymentStatus {
-
-	deployment, err := builder.K8sClient.AppsV1().Deployments(namespace).Get(name, metaV1.GetOptions{})
-
-	if err != nil {
-		println(err, err.Error())
-	}
-
-	return deployment.Status
 }
 
 func (builder *ResponseBuilder) buildApplicationComponentStatus(application *v1alpha1.Application, resources *Resources) []*ComponentStatus {
