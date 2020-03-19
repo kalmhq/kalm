@@ -42,23 +42,6 @@ type Port struct {
 	Protocol corev1.Protocol `json:"protocol,omitempty"`
 }
 
-type ComponentTemplateEnvType string
-
-const (
-	ComponentTemplateEnvTypeStatic   ComponentTemplateEnvType = "static"
-	ComponentTemplateEnvTypeExternal ComponentTemplateEnvType = "external"
-	ComponentTemplateEnvTypeLinked   ComponentTemplateEnvType = "linked"
-)
-
-type ComponentTemplateEnvVar struct {
-	Name string `json:"name"`
-
-	// +kubebuilder:validation:Enum=static;external;linked
-	Type ComponentTemplateEnvType `json:"type"`
-
-	Value string `json:"value,omitempty"`
-}
-
 type Disk struct {
 	Path string            `json:"path"`
 	Size resource.Quantity `json:"size"`
