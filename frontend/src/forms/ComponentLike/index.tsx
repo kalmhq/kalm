@@ -19,6 +19,7 @@ import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import Immutable from "immutable";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
@@ -159,6 +160,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             margin
             label="Command (Optional)"
             helperText='Eg: "/bin/app", "rails server".'
+            formValueToEditValue={(value: Immutable.List<string>) => {
+              console.log("formValueToEditValue", value);
+              return value && value.toArray()[0] ? value.toArray()[0] : "";
+            }}
+            editValueToFormValue={(value: string) => {
+              console.log("value", value);
+              return value ? Immutable.List([value]) : Immutable.List([]);
+            }}
           />
         </Grid>
       </Grid>
@@ -534,7 +543,12 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 }
 
+const initialValues: ComponentLike = Immutable.fromJS({
+  command: Immutable.List([])
+});
+
 export const ComponentLikeForm = reduxForm<ComponentLike, RawProps>({
   form: "componentLike",
+  initialValues,
   onSubmitFail: console.log
 })(connect(mapStateToProps)(withStyles(styles)(ComponentLikeFormRaw)));

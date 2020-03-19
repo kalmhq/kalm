@@ -1,5 +1,4 @@
 import {
-  CircularProgress,
   createStyles,
   IconButton,
   Switch,
@@ -11,14 +10,12 @@ import {
   ExpansionPanelDetails,
   Checkbox
 } from "@material-ui/core";
-import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import { push } from "connected-react-router";
 import MaterialTable from "material-table";
 import React from "react";
-import { StatusTypeError, StatusTypePending, StatusTypeRunning } from "../../actions";
 import {
   deleteApplicationAction,
   duplicateApplicationAction,
@@ -28,12 +25,13 @@ import { setErrorNotificationAction, setSuccessNotificationAction } from "../../
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
 import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
-import { ApplicationDataWrapper, WithApplicationsDataProps } from "./DataWrapper";
+import { ApplicationListDataWrapper, WithApplicationsDataProps } from "./ListDataWrapper";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import { Dot } from "../../widgets/Dot";
 import RefreshIcon from "@material-ui/icons/Refresh";
 import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew";
 import ArchiveIcon from "@material-ui/icons/Archive";
+import { getApplicationByName } from "../../selectors/application";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -97,56 +95,6 @@ const styles = (theme: Theme) =>
 
 interface Props extends WithApplicationsDataProps, WithStyles<typeof styles> {}
 
-const pendingStyles = (theme: Theme) =>
-  createStyles({
-    root: {
-      position: "relative",
-      display: "flex",
-      alignItems: "center"
-    },
-    top: {
-      color: "#eef3fd"
-    },
-    bottom: {
-      color: "#6798e5",
-      animationDuration: "550ms",
-      position: "absolute",
-      left: 0
-    },
-    text: {
-      marginLeft: 14
-    }
-  });
-
-class StatusPendingRaw extends React.PureComponent<WithStyles<typeof pendingStyles>> {
-  public render() {
-    const { classes } = this.props;
-    return (
-      <div className={classes.root}>
-        <CircularProgress
-          variant="determinate"
-          value={100}
-          className={classes.top}
-          size={18}
-          thickness={4}
-          // {...props}
-        />
-        <CircularProgress
-          variant="indeterminate"
-          disableShrink
-          className={classes.bottom}
-          size={18}
-          thickness={4}
-          // {...props}
-        />
-        <span className={classes.text}>Pending</span>
-      </div>
-    );
-  }
-}
-
-const StatusPending = withStyles(pendingStyles)(StatusPendingRaw);
-
 interface State {
   isEnabledConfirmDialogOpen: boolean;
   switchingIsEnabledApplicationId: string;
@@ -197,13 +145,13 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     this.setState(this.defaultState);
   };
 
-  private showSwitchingIsEnabledDialog = (applicationId: string) => {
-    const { applications } = this.props;
-    const application = applications.find(x => x.get("id") === applicationId)!;
+  private showSwitchingIsEnabledDialog = (applicationName: string) => {
+    const { applicationList } = this.props;
+    const application = applicationList.find(x => x.get("name") === applicationName)!;
 
     let title, content;
 
-    if (application.get("isActive")) {
+    if (application.get("isEnabled")) {
       title = "Are you sure to disabled this application?";
       content =
         "Disabling this application will delete all running resources in your cluster. TODO: (will disk be deleted? will xxx deleted?)";
@@ -214,18 +162,19 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
 
     this.setState({
       isEnabledConfirmDialogOpen: true,
-      switchingIsEnabledApplicationId: applicationId,
+      switchingIsEnabledApplicationId: applicationName,
       switchingIsEnabledTitle: title,
       switchingIsEnabledContent: content
     });
   };
 
   private switchEnabledConfirmedComponent = () => {
-    const { applications, dispatch } = this.props;
+    const { dispatch } = this.props;
     const { switchingIsEnabledApplicationId } = this.state;
-    const application = applications.find(x => x.get("id") === switchingIsEnabledApplicationId)!;
+    // const application = applicationList.find(x => x.get("name") === switchingIsEnabledApplicationId)!;
+    const application = getApplicationByName(switchingIsEnabledApplicationId);
 
-    dispatch(updateApplicationAction(application.get("id"), application.set("isActive", !application.get("isActive"))));
+    dispatch(updateApplicationAction(application.set("isEnabled", !application.get("isEnabled"))));
   };
 
   private closeConfirmDialog = () => {
@@ -245,14 +194,14 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private renderDetails = (rowData: any) => {
-    return <div>123</div>;
-  };
+  // private renderDetails = (rowData: any) => {
+  //   return <div>123</div>;
+  // };
 
-  private setDeletingApplicationAndConfirm = (applicationId: string) => {
+  private setDeletingApplicationAndConfirm = (applicationName: string) => {
     this.setState({
       isDeleteConfirmDialogOpen: true,
-      deletingApplicationId: applicationId
+      deletingApplicationId: applicationName
     });
   };
 
@@ -271,29 +220,15 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { dispatch, applications, classes, isLoading, isFirstLoaded } = this.props;
-    const data = applications.map((application, index) => {
+    const { dispatch, applicationList, classes, isLoading, isFirstLoaded } = this.props;
+    const data = applicationList.map((applicationListItem, index) => {
       const handleChange = () => {
-        this.showSwitchingIsEnabledDialog(application.get("id"));
+        this.showSwitchingIsEnabledDialog(applicationListItem.get("name"));
       };
 
       const onDeleteClick = () => {
-        this.setDeletingApplicationAndConfirm(application.get("id"));
+        this.setDeletingApplicationAndConfirm(applicationListItem.get("name"));
       };
-
-      let status = null;
-
-      switch (application.get("status").get("status")) {
-        case StatusTypePending:
-          status = <StatusPending />;
-          break;
-        case StatusTypeRunning:
-          status = <CheckCircleIcon color="primary" />;
-          break;
-        case StatusTypeError:
-          status = <CheckCircleIcon color="primary" />;
-          break;
-      }
 
       const components = (
         <ExpansionPanel className={classes.expansionPanel}>
@@ -304,12 +239,12 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
             id="panel1a-header">
             <div>
               <Dot color="green" />
-              {application.get("components").size} / {application.get("components").size}
+              {applicationListItem.get("components").size} / {applicationListItem.get("components").size}
             </div>
           </ExpansionPanelSummary>
           <ExpansionPanelDetails>
             <div>
-              {application
+              {applicationListItem
                 .get("components")
                 .map(x => {
                   return (
@@ -333,7 +268,9 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
             <IconButton
               aria-label="edit"
               onClick={() => {
-                dispatch(push(`/applications/${application.get("id")}/edit`));
+                dispatch(
+                  push(`/applications/${applicationListItem.get("namespace")}/${applicationListItem.get("name")}/edit`)
+                );
               }}>
               <EditIcon />
             </IconButton>
@@ -341,7 +278,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
             <IconButton
               aria-label="edit"
               onClick={() => {
-                dispatch(duplicateApplicationAction(application.get("id")));
+                dispatch(duplicateApplicationAction(applicationListItem.get("name")));
               }}>
               <FileCopyIcon />
             </IconButton>
@@ -355,28 +292,27 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           <Checkbox
             onChange={() => {
               // deep copy, new obj
-              const applicationIds = { ...this.state.checkedApplicationIds };
-              applicationIds[application.get("id")] = !applicationIds[application.get("id")];
-              this.setState({ checkedApplicationIds: applicationIds });
+              const applicationNames = { ...this.state.checkedApplicationIds };
+              applicationNames[applicationListItem.get("name")] = !applicationNames[applicationListItem.get("name")];
+              this.setState({ checkedApplicationIds: applicationNames });
             }}
             value="secondary"
             color="primary"
             inputProps={{ "aria-label": "secondary checkbox" }}
           />
         ),
-        name: application.get("name"),
+        name: applicationListItem.get("name"),
         namespace: ["default", "production", "ropsten"][index] || "default",
         enable: (
           <Switch
-            checked={application.get("isActive")}
+            checked={applicationListItem.get("isEnabled")}
             onChange={handleChange}
             value="checkedB"
             color="primary"
             inputProps={{ "aria-label": "enable app.ication" }}
           />
         ),
-        components,
-        status: status
+        components
       };
     });
     return (
@@ -409,7 +345,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                 { title: "Name", field: "name", sorting: false },
                 { title: "Namespace", field: "namespace", sorting: false },
                 { title: "Components", field: "components", sorting: false },
-                { title: "Status", field: "status", sorting: false },
                 { title: "Enable", field: "enable", sorting: false },
                 {
                   title: "Action",
@@ -418,8 +353,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                   searchable: false
                 }
               ]}
-              detailPanel={this.renderDetails}
-              onRowClick={(_event, _rowData, togglePanel) => togglePanel!()}
+              // detailPanel={this.renderDetails}
+              // onRowClick={(_event, _rowData, togglePanel) => togglePanel!()}
               data={data.toArray()}
               title="Applications"
             />
@@ -451,4 +386,4 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const ApplicationList = withStyles(styles)(ApplicationDataWrapper(ApplicationListRaw));
+export const ApplicationListPage = withStyles(styles)(ApplicationListDataWrapper(ApplicationListRaw));

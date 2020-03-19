@@ -68,23 +68,27 @@ export const convertToCRDComponentTemplate = (c: ComponentTemplate): V1alpha1Com
         name: c.get("name"),
         image: c.get("image"),
         command: [c.get("command")],
-        env: c
-          .get("env")
-          .map(x => ({
-            name: x.get("name"),
-            type: x.get("type"),
-            value: x.get("value")
-          }))
-          .toArray(),
-        ports: c
-          .get("ports")
-          .map(x => ({
-            name: x.get("name"),
-            protocol: x.get("protocol"),
-            containerPort: x.get("containerPort"),
-            servicePort: x.get("servicePort")
-          }))
-          .toArray(),
+        env: c.get("env")
+          ? c
+              .get("env")!
+              .map(x => ({
+                name: x.get("name"),
+                type: x.get("type"),
+                value: x.get("value")
+              }))
+              .toArray()
+          : [],
+        ports: c.get("ports")
+          ? c
+              .get("ports")!
+              .map(x => ({
+                name: x.get("name"),
+                protocol: x.get("protocol"),
+                containerPort: x.get("containerPort"),
+                servicePort: x.get("servicePort")
+              }))
+              .toArray()
+          : [],
         cpu: c.get("cpu"),
         memory: c.get("memory"),
         workloadType: c.get("workloadType") || workloadTypeServer,

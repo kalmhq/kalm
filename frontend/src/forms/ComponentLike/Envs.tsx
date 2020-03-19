@@ -6,10 +6,10 @@ import React, { forwardRef } from "react";
 import { connect, DispatchProp } from "react-redux";
 import { arrayUnshift, change, WrappedFieldArrayProps } from "redux-form";
 import { FieldArray } from "redux-form/immutable";
-import { SharedEnv } from "../../actions";
 import { MaterialTableEditTextField } from "../Basic/text";
 import { EnvTypeStatic, EnvTypeExternal, EnvTypeLinked } from "../../actions";
 import { MaterialTableEditSelectField } from "../Basic/select";
+import { SharedEnv } from "../../types/application";
 interface FieldArrayComponentHackType {
   name: any;
   component: any;

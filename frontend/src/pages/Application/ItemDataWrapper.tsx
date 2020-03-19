@@ -3,15 +3,18 @@ import { RootState } from "../../reducers";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "../../actions";
-import { loadApplicationsAction } from "../../actions/application";
+import { loadApplicationAction } from "../../actions/application";
 
-const mapStateToProps = (state: RootState) => {
+const mapStateToProps = (state: RootState, props: any) => {
   const applications = state.get("applications");
+  const { match } = props;
+  const { namespace, applicationName } = match!.params;
 
   return {
-    applications: applications.get("applications").toList(),
-    isLoading: applications.get("isListLoading"),
-    isFirstLoaded: applications.get("isListFirstLoaded")
+    applicationName,
+    namespace,
+    application: applications.get("applications").get(applicationName),
+    isLoading: applications.get("isItemLoading")
   };
 };
 
@@ -19,14 +22,15 @@ export interface WithApplicationsDataProps extends ReturnType<typeof mapStateToP
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
 }
 
-export const ApplicationDataWrapper = (WrappedComponent: React.ComponentType<any>) => {
+export const ApplicationItemDataWrapper = (WrappedComponent: React.ComponentType<any>) => {
   const WithdApplicationsData: React.ComponentType<WithApplicationsDataProps> = class extends React.Component<
     WithApplicationsDataProps
   > {
     private interval?: number;
 
     private loadData = () => {
-      this.props.dispatch(loadApplicationsAction());
+      const { namespace, applicationName } = this.props;
+      this.props.dispatch(loadApplicationAction(namespace, applicationName));
       // this.interval = window.setTimeout(this.loadData, 500000);
     };
 

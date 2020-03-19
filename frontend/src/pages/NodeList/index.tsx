@@ -154,4 +154,4 @@ export class NodeListRaw extends React.Component<Props, States> {
   }
 }
 
-export const NodeList = connect(mapStateToProps)(withStyles(styles)(NodeListRaw));
+export const NodeListPage = connect(mapStateToProps)(withStyles(styles)(NodeListRaw));

@@ -137,28 +137,32 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
         memory: componentTemplate.get("memory"),
         port: (
           <div>
-            {componentTemplate
-              .get("ports")
-              .map(port => {
-                return (
-                  <span key={port.get("name")}>
-                    {port.get("containerPort")} -> {port.get("servicePort")}
-                  </span>
-                );
-              })
-              .toArray()}
+            {componentTemplate.get("ports")
+              ? componentTemplate
+                  .get("ports")!
+                  .map(port => {
+                    return (
+                      <span key={port.get("name")}>
+                        {port.get("containerPort")} -> {port.get("servicePort")}
+                      </span>
+                    );
+                  })
+                  .toArray()
+              : []}
           </div>
         ),
-        disks: componentTemplate
-          .get("disks")
-          .map(disk => {
-            return (
-              <div key={disk.get("name")}>
-                <strong>{disk.get("size")}M</strong> mount at <strong>{disk.get("path")}</strong>
-              </div>
-            );
-          })
-          .toArray()
+        disks: componentTemplate.get("disks")
+          ? componentTemplate
+              .get("disks")!
+              .map(disk => {
+                return (
+                  <div key={disk.get("name")}>
+                    <strong>{disk.get("size")}M</strong> mount at <strong>{disk.get("path")}</strong>
+                  </div>
+                );
+              })
+              .toArray()
+          : []
       };
     });
     return (
@@ -260,4 +264,4 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
   }
 }
 
-export const ComponentTemplateList = withStyles(styles)(ComponentTemplateDataWrapper(ComponentTemplateListRaw));
+export const ComponentTemplateListPage = withStyles(styles)(ComponentTemplateDataWrapper(ComponentTemplateListRaw));

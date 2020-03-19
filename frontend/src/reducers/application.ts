@@ -1,26 +1,33 @@
 import Immutable from "immutable";
-import {
-  Actions,
-  FormApplication,
-  CREATE_APPLICATION,
-  DELETE_APPLICATION,
-  DUPLICATE_APPLICATION,
-  LOAD_APPLICATIONS_FULFILLED,
-  LOAD_APPLICATIONS_PENDING,
-  UPDATE_APPLICATION
-} from "../actions";
+import { Actions } from "../actions";
 import { ImmutableMap } from "../typings";
+import {
+  ApplicationList,
+  Application,
+  LOAD_APPLICATIONS_PENDING,
+  LOAD_APPLICATIONS_FULFILLED,
+  CREATE_APPLICATION,
+  DUPLICATE_APPLICATION,
+  UPDATE_APPLICATION,
+  DELETE_APPLICATION,
+  LOAD_APPLICATION_PENDING,
+  LOAD_APPLICATION_FULFILLED
+} from "../types/application";
 
 export type State = ImmutableMap<{
-  applications: Immutable.OrderedMap<string, FormApplication>;
+  applicationList: ApplicationList;
+  applications: Immutable.OrderedMap<string, Application>;
   isListLoading: boolean;
   isListFirstLoaded: boolean;
+  isItemLoading: boolean;
 }>;
 
 const initialState: State = Immutable.Map({
+  applicationList: Immutable.List(),
   applications: Immutable.OrderedMap({}),
   isListLoading: false,
-  isListFirstLoaded: false
+  isListFirstLoaded: false,
+  isItemLoading: false
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {
@@ -31,13 +38,20 @@ const reducer = (state: State = initialState, action: Actions): State => {
     }
     case LOAD_APPLICATIONS_FULFILLED: {
       state = state.set("isListFirstLoaded", true).set("isListLoading", false);
-      let om = Immutable.OrderedMap<string, FormApplication>();
+      state = state.set("applicationList", action.payload.applicationList);
+      break;
+    }
+    case LOAD_APPLICATION_PENDING: {
+      state = state.set("isItemLoading", true);
+      break;
+    }
+    case LOAD_APPLICATION_FULFILLED: {
+      state = state.set("isItemLoading", false);
+      const applications = state.get("applications");
 
-      action.payload.applications.forEach(x => {
-        om = om.set(x.get("id"), x);
-      });
+      let application = action.payload.application;
 
-      state = state.set("applications", om);
+      state = state.set("applications", applications.set(application.get("name"), application));
       break;
     }
     case CREATE_APPLICATION: {
@@ -45,7 +59,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
 
       let application = action.payload.application;
 
-      state = state.set("applications", applications.set(application.get("id"), application));
+      state = state.set("applications", applications.set(application.get("name"), application));
       break;
     }
     case DUPLICATE_APPLICATION: {
@@ -53,7 +67,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
 
       let application = action.payload.application;
 
-      state = state.set("applications", applications.set(application.get("id"), application));
+      state = state.set("applications", applications.set(application.get("name"), application));
       break;
     }
     case UPDATE_APPLICATION: {
@@ -61,11 +75,11 @@ const reducer = (state: State = initialState, action: Actions): State => {
 
       let application = action.payload.application;
 
-      state = state.set("applications", applications.set(application.get("id"), application));
+      state = state.set("applications", applications.set(application.get("name"), application));
       break;
     }
     case DELETE_APPLICATION: {
-      state = state.deleteIn(["applications", action.payload.applicationId]);
+      state = state.deleteIn(["applications", action.payload.applicationName]);
       break;
     }
   }

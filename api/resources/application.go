@@ -2,6 +2,8 @@ package resources
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	appsV1 "k8s.io/api/apps/v1"
 	v1betav1 "k8s.io/api/batch/v1beta1"
@@ -9,7 +11,6 @@ import (
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
-	"time"
 )
 
 type ListMeta struct {
@@ -75,11 +76,12 @@ type CreateApplicationRequest struct {
 }
 
 type Application struct {
-	Name       string                   `json:"name"`
-	Namespace  string                   `json:"namespace"`
-	IsActive   bool                     `json:"isActive"`
-	SharedEnvs []v1alpha1.EnvVar        `json:"sharedEnvs"`
-	Components []v1alpha1.ComponentSpec `json:"components"`
+	Name            string                   `json:"name"`
+	Namespace       string                   `json:"namespace"`
+	IsActive        bool                     `json:"isActive"`
+	SharedEnvs      []v1alpha1.EnvVar        `json:"sharedEnvs"`
+	Components      []v1alpha1.ComponentSpec `json:"components"`
+	ResourceVersion string                   `json:"resourceVersion,omitempty"`
 }
 
 func (builder *Builder) BuildApplicationDetailsResponse(application *v1alpha1.Application) *ApplicationResponse {
@@ -88,11 +90,12 @@ func (builder *Builder) BuildApplicationDetailsResponse(application *v1alpha1.Ap
 
 	return &ApplicationResponse{
 		&Application{
-			Name:       application.Name,
-			Namespace:  application.Namespace,
-			IsActive:   application.Status.IsActive,
-			SharedEnvs: application.Spec.SharedEnv,
-			Components: application.Spec.Components,
+			Name:            application.Name,
+			Namespace:       application.Namespace,
+			IsActive:        application.Status.IsActive,
+			SharedEnvs:      application.Spec.SharedEnv,
+			Components:      application.Spec.Components,
+			ResourceVersion: application.ObjectMeta.ResourceVersion,
 		},
 	}
 }

@@ -326,4 +326,4 @@ class DependencyListRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const DependencyList = connect(mapStateToProps)(DependencyListRaw);
+export const DependencyListPage = connect(mapStateToProps)(DependencyListRaw);

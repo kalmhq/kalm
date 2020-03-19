@@ -1,10 +1,11 @@
 import { List, Map } from "immutable";
-import { FormApplicationComponent, workloadTypeServer, EnvTypeStatic, portTypeTCP } from "../actions";
+import { workloadTypeServer, EnvTypeStatic, portTypeTCP } from "../actions";
 import { V1alpha1ApplicationSpecComponents } from "../kappModel/v1alpha1ApplicationSpecComponents";
 import { ObjectSerializer } from "../model/models";
+import { ApplicationComponent } from "../types/application";
 
-export const convertFromCRDApplicationComponent = (x: V1alpha1ApplicationSpecComponents): FormApplicationComponent => {
-  const res: FormApplicationComponent = Map({
+export const convertFromCRDApplicationComponent = (x: V1alpha1ApplicationSpecComponents): ApplicationComponent => {
+  const res: ApplicationComponent = Map({
     name: x.name,
     image: x.image,
     command: x.command ? x.command[0] : "",
@@ -53,7 +54,7 @@ export const convertFromCRDApplicationComponent = (x: V1alpha1ApplicationSpecCom
   return res;
 };
 
-export const convertToCRDApplicationComponent = (c: FormApplicationComponent): V1alpha1ApplicationSpecComponents => {
+export const convertToCRDApplicationComponent = (c: ApplicationComponent): V1alpha1ApplicationSpecComponents => {
   return ObjectSerializer.deserialize(
     {
       name: c.get("name"),
@@ -62,29 +63,33 @@ export const convertToCRDApplicationComponent = (c: FormApplicationComponent): V
       memory: c.get("memory"),
       workloadType: c.get("workloadType"),
       schedule: c.get("schedule"),
-      env: c
-        .get("env")
-        .map(x => ({
-          name: x.get("name"),
-          type: x.get("type"),
-          value: x.get("value")
-        }))
-        .toArray(),
-      plugins: c
-        .get("plugins")
-        .filter(x => x.get("type") === "plugins.core.kapp.dev/v1alpha1.ingress")
-        .map(x => ({
-          name: x.get("name"),
-          type: x.get("type"),
-          enableHttps: x.get("enableHttps"),
-          enableHttp: x.get("enableHttp"),
-          autoHttps: x.get("autoHttps"),
-          hosts: x.get("hosts"),
-          path: x.get("paths"),
-          stripPath: x.get("stripPath"),
-          preserveHost: x.get("preserveHost")
-        }))
-        .toArray(),
+      env: c.get("env")
+        ? c
+            .get("env")!
+            .map(x => ({
+              name: x.get("name"),
+              type: x.get("type"),
+              value: x.get("value")
+            }))
+            .toArray()
+        : [],
+      plugins: c.get("plugins")
+        ? c
+            .get("plugins")!
+            .filter(x => x.get("type") === "plugins.core.kapp.dev/v1alpha1.ingress")
+            .map(x => ({
+              name: x.get("name"),
+              type: x.get("type"),
+              enableHttps: x.get("enableHttps"),
+              enableHttp: x.get("enableHttp"),
+              autoHttps: x.get("autoHttps"),
+              hosts: x.get("hosts"),
+              path: x.get("paths"),
+              stripPath: x.get("stripPath"),
+              preserveHost: x.get("preserveHost")
+            }))
+            .toArray()
+        : [],
       command: c.get("command") ? [c.get("command")] : []
     },
     "V1alpha1ApplicationSpecComponents"

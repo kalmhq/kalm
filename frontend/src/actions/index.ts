@@ -9,6 +9,7 @@ import "./node";
 import "./notification";
 import { SettingObject } from "../reducers/settings";
 import { KappDependency } from "../types";
+import { ApplicationActions } from "../types/application";
 
 export const INIT_AUTH = "INIT_AUTH";
 export const SET_AUTH_TOKEN = "SET_AUTH_TOKEN";
@@ -19,13 +20,6 @@ export const DELETE_COMPONENT = "DELETE_COMPONENT";
 export const DUPLICATE_COMPONENT = "DUPLICATE_COMPONENT";
 export const LOAD_COMPONENT_TEMPLATES_PENDING = "LOAD_COMPONENT_TEMPLATES_PENDING";
 export const LOAD_COMPONENT_TEMPLATES_FULFILLED = "LOAD_COMPONENT_TEMPLATES_FULFILLED";
-
-export const CREATE_APPLICATION = "CREATE_APPLICATION";
-export const UPDATE_APPLICATION = "UPDATE_APPLICATION";
-export const DELETE_APPLICATION = "DELETE_APPLICATION";
-export const DUPLICATE_APPLICATION = "DUPLICATE_APPLICATION";
-export const LOAD_APPLICATIONS_PENDING = "LOAD_APPLICATIONS_PENDING";
-export const LOAD_APPLICATIONS_FULFILLED = "LOAD_APPLICATIONS_FULFILLED";
 
 export const CREATE_CONFIG = "CREATE_CONFIG";
 export const DUPLICATE_CONFIG = "DUPLICATE_CONFIG";
@@ -95,15 +89,6 @@ export const newEmptyComponentLikePort = (): ComponentLikePort => {
   });
 };
 
-export type SharedEnv = ImmutableMap<{
-  name: string;
-  type: string;
-  value: string;
-}>;
-
-export type EnvItem = SharedEnv;
-export type EnvItems = Immutable.List<EnvItem>;
-
 export const StatusTypeRunning = "RUNNING";
 export const StatusTypePending = "PENDING";
 export const StatusTypeCreating = "CREATING";
@@ -139,23 +124,23 @@ export interface PluginContent {
 export interface ComponentLikeContent {
   name: string;
   image: string;
-  command: string;
+  command: Immutable.List<string>;
   cpu: string;
   memory: string;
   workloadType?: WorkloadType;
   schedule?: string;
-  restartStrategy: string;
-  terminationGracePeriodSeconds: number;
-  dnsPolicy: string;
-  env: Immutable.List<
+  restartStrategy?: string;
+  terminationGracePeriodSeconds?: number;
+  dnsPolicy?: string;
+  env?: Immutable.List<
     ImmutableMap<{
       name: string;
       type: string;
       value: string;
     }>
   >;
-  ports: Immutable.List<ComponentLikePort>;
-  disks: Immutable.List<
+  ports?: Immutable.List<ComponentLikePort>;
+  disks?: Immutable.List<
     ImmutableMap<{
       name: string;
       type: string;
@@ -165,26 +150,8 @@ export interface ComponentLikeContent {
       storageClass: string;
     }>
   >;
-  plugins: Immutable.List<Plugin>;
+  plugins?: Immutable.List<Plugin>;
 }
-
-export interface FormApplicationContent {
-  id: string;
-  isActive: boolean;
-  name: string;
-  namespace: string;
-  sharedEnv: Immutable.List<SharedEnv>;
-  components: Immutable.List<FormApplicationComponent>;
-  status: FormApplicationStatus;
-  resourceVersion?: string;
-}
-
-export interface FormApplicationStatusContent {
-  status: Status;
-  components: Immutable.List<ComponentStatus>;
-}
-
-export interface FormApplicationComponentContent extends ComponentLikeContent {}
 
 export interface ComponentTemplateContent extends ComponentLikeContent {
   id: string;
@@ -194,9 +161,6 @@ export interface ComponentTemplateContent extends ComponentLikeContent {
 export type Plugin = ImmutableMap<PluginContent>;
 export type ComponentLike = ImmutableMap<ComponentLikeContent>;
 export type ComponentTemplate = ImmutableMap<ComponentTemplateContent>;
-export type FormApplicationComponent = ImmutableMap<FormApplicationComponentContent>;
-export type FormApplication = ImmutableMap<FormApplicationContent>;
-export type FormApplicationStatus = ImmutableMap<FormApplicationStatusContent>;
 
 export type ConfigFile = ImmutableMap<{
   id: string;
@@ -282,45 +246,6 @@ export interface LoadComponentTemplatesFulfilledAction {
   type: typeof LOAD_COMPONENT_TEMPLATES_FULFILLED;
   payload: {
     componentTemplates: Array<ComponentTemplate>;
-  };
-}
-
-export interface CreateApplicationAction {
-  type: typeof CREATE_APPLICATION;
-  payload: {
-    application: FormApplication;
-  };
-}
-
-export interface DuplicateApplicationAction {
-  type: typeof DUPLICATE_APPLICATION;
-  payload: {
-    application: FormApplication;
-  };
-}
-
-export interface UpdateApplicationAction {
-  type: typeof UPDATE_APPLICATION;
-  payload: {
-    application: FormApplication;
-  };
-}
-
-export interface DeleteApplicationAction {
-  type: typeof DELETE_APPLICATION;
-  payload: {
-    applicationId: string;
-  };
-}
-
-export interface LoadApplicationsPendingAction {
-  type: typeof LOAD_APPLICATIONS_PENDING;
-}
-
-export interface LoadApplicationsFulfilledAction {
-  type: typeof LOAD_APPLICATIONS_FULFILLED;
-  payload: {
-    applications: Array<FormApplication>;
   };
 }
 
@@ -468,11 +393,6 @@ export type Actions =
   | UpdateComponentAction
   | LoadComponentTemplatesFulfilledAction
   | LoadComponentTemplatesPendingAction
-  | CreateApplicationAction
-  | DeleteApplicationAction
-  | UpdateApplicationAction
-  | LoadApplicationsFulfilledAction
-  | LoadApplicationsPendingAction
   | LoadConfigsFulfilledAction
   | LoadConfigsPendingAction
   | LoadUsersPendingAction
@@ -485,7 +405,6 @@ export type Actions =
   | SetNotificationMessageAction
   | CallHistoryMethodAction
   | DuplicateComponentAction
-  | DuplicateApplicationAction
   | LoadNodesAction
   | LoadPersistentVolumnsAction
   | SetSettingsAction
@@ -494,7 +413,8 @@ export type Actions =
   | OpenControlledDialogAction
   | CloseControlledDialogAction
   | LoadDependenciesPendingAction
-  | LoadDependenciesFulfilledAction;
+  | LoadDependenciesFulfilledAction
+  | ApplicationActions;
 
 export type ThunkResult<R> = ThunkAction<R, RootState, undefined, Actions>;
 export type TDispatch = ThunkDispatch<RootState, undefined, Actions>;

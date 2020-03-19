@@ -3,13 +3,14 @@ import { push } from "connected-react-router";
 import React from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
-import { Actions, FormApplication } from "../../actions";
+import { Actions } from "../../actions";
 import ApplicationFrom from "../../forms/Application";
 import { RootState } from "../../reducers";
 import { BasePage } from "../BasePage";
 import { createApplicationAction } from "../../actions/application";
 import { setSuccessNotificationAction } from "../../actions/notification";
 import RemoteSubmitApplication from "../../forms/Application/remoteSubmitApplication";
+import { Application } from "../../types/application";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -23,8 +24,9 @@ interface Props extends WithStyles<typeof styles> {
 }
 
 class ApplicationNewRaw extends React.PureComponent<Props> {
-  private submit = async (applicationFormValue: FormApplication) => {
+  private submit = async (applicationFormValue: Application) => {
     const { dispatch } = this.props;
+    console.log("applicationFormValue", applicationFormValue.toJS());
     await dispatch(createApplicationAction(applicationFormValue));
     await dispatch(setSuccessNotificationAction("Create application successfully"));
     await dispatch(push("/applications"));

@@ -6,7 +6,7 @@ import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { InjectedFormProps } from "redux-form";
 import { Field, formValueSelector, getFormValues, reduxForm } from "redux-form/immutable";
-import { FormApplication, ComponentTemplate, SharedEnv } from "../../actions";
+import { ComponentTemplate } from "../../actions";
 import { RootState } from "../../reducers";
 import { HelperContainer } from "../../widgets/Helper";
 import { SwitchField } from "../Basic/switch";
@@ -15,6 +15,7 @@ import { NormalizeBoolean } from "../normalizer";
 import { ValidatorRequired, ValidatorName } from "../validator";
 import { Components } from "./component";
 import { SharedEnvs } from "./shardEnv";
+import { Application, SharedEnv } from "../../types/application";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -37,11 +38,11 @@ const styles = (theme: Theme) =>
 const mapStateToProps = (state: RootState) => {
   const selector = formValueSelector("application");
   const formComponents: ComponentTemplate[] = selector(state, "components");
-  const sharedEnv: Immutable.List<SharedEnv> = selector(state, "sharedEnv");
-  const values = getFormValues("application")(state) as FormApplication;
+  const sharedEnvs: Immutable.List<SharedEnv> = selector(state, "sharedEnvs");
+  const values = getFormValues("application")(state) as Application;
 
   return {
-    sharedEnv,
+    sharedEnvs,
     formComponents,
     values
   };
@@ -51,7 +52,7 @@ export interface Props {}
 
 class ApplicationFormRaw extends React.PureComponent<
   Props &
-    InjectedFormProps<FormApplication, Props> &
+    InjectedFormProps<Application, Props> &
     ReturnType<typeof mapStateToProps> &
     WithStyles<typeof styles> &
     DispatchProp
@@ -63,6 +64,7 @@ class ApplicationFormRaw extends React.PureComponent<
   private renderBasic() {
     // const { classes } = this.props;
     const isEdit = this.getIsEdit();
+    // console.log("isEdit", isEdit);
     return (
       <>
         <HelperContainer>
@@ -184,14 +186,13 @@ class ApplicationFormRaw extends React.PureComponent<
   }
 }
 
-const initialValues: FormApplication = Immutable.fromJS({
-  id: "0",
+const initialValues: Application = Immutable.fromJS({
   name: "a-sample-application",
-  sharedEnv: [],
+  sharedEnvs: [],
   components: []
 });
 
-export default reduxForm<FormApplication, Props>({
+export default reduxForm<Application, Props>({
   form: "application",
   initialValues,
   onSubmitFail: (...args) => {

@@ -7,21 +7,16 @@ import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { submit, WrappedFieldArrayProps, change, arrayPush } from "redux-form";
 import { FieldArray, formValueSelector } from "redux-form/immutable";
-import {
-  FormApplicationComponent,
-  ComponentLike,
-  EnvTypeExternal,
-  newEmptyComponentLike,
-  SharedEnv
-} from "../../actions";
+import { ComponentLike, EnvTypeExternal, newEmptyComponentLike } from "../../actions";
 import { RootState } from "../../reducers";
 import { ComponentLikeForm } from "../ComponentLike";
 import { CustomizedDialog } from "./ComponentModal";
 import { KappTooltip } from "./KappTooltip";
+import { ApplicationComponent, SharedEnv } from "../../types/application";
 
 const mapStateToProps = (state: RootState) => {
   const selector = formValueSelector("application");
-  const sharedEnv: Immutable.List<SharedEnv> = selector(state, "sharedEnv");
+  const sharedEnv: Immutable.List<SharedEnv> = selector(state, "sharedEnvs");
 
   return {
     componentTemplates: state.get("componentTemplates").get("componentTemplates"),
@@ -50,7 +45,7 @@ interface FieldArrayComponentHackType {
   component: any;
 }
 interface Props
-  extends WrappedFieldArrayProps<FormApplicationComponent>,
+  extends WrappedFieldArrayProps<ApplicationComponent>,
     WithStyles<typeof styles>,
     stateProps,
     FieldArrayComponentHackType {}
@@ -64,7 +59,7 @@ interface State {
 }
 
 interface RowData {
-  applicationComponent: FormApplicationComponent;
+  applicationComponent: ApplicationComponent;
   index: number;
 }
 
@@ -87,16 +82,18 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
   private renderCpuColumn = (rowData: RowData) => rowData.applicationComponent.get("cpu") || "-";
   private renderMemoryColumn = (rowData: RowData) => rowData.applicationComponent.get("memory") || "-";
   private renderPortsColumn = (rowData: RowData) =>
-    rowData.applicationComponent
-      .get("ports")
-      .map(x => x.get("containerPort"))
-      .toArray()
-      .join(", ");
+    rowData.applicationComponent.get("ports")
+      ? rowData.applicationComponent
+          .get("ports")!
+          .map(x => x.get("containerPort"))
+          .toArray()
+          .join(", ")
+      : "-";
 
   private renderDisksColumn = (rowData: RowData) =>
-    rowData.applicationComponent.get("disks").size > 0
+    rowData.applicationComponent.get("disks") && rowData.applicationComponent.get("disks")!.size > 0
       ? rowData.applicationComponent
-          .get("disks")
+          .get("disks")!
           .map(x => x.get("path"))
           .toArray()
           .join(", ")
@@ -107,7 +104,7 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
       ? Array.from(
           new Set(
             rowData.applicationComponent
-              .get("plugins")
+              .get("plugins")!
               .map(x => x.get("name"))
               .toArray()
           )
@@ -117,9 +114,11 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
 
   private renderEnvsColumn = (rowData: RowData) => {
     const { applicationComponent } = rowData;
-    const externalEnvs = applicationComponent.get("env").filter(x => {
-      return x.get("type") === EnvTypeExternal;
-    });
+    const externalEnvs = applicationComponent.get("env")
+      ? applicationComponent.get("env")!.filter(x => {
+          return x.get("type") === EnvTypeExternal;
+        })
+      : Immutable.List([]);
 
     // const staticEnvs = applicationComponent.get("env").filter(x => {
     //   return x.get("type") === EnvTypeStatic;
@@ -137,7 +136,7 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
       return false; //TODO
     });
 
-    const allEnvCount = applicationComponent.get("env").size;
+    const allEnvCount = applicationComponent.get("env") ? applicationComponent.get("env")!.size : 0;
     const missingEnvCount = missingLinkedVariables.size + missingExternalVariables.size;
 
     const envContent =

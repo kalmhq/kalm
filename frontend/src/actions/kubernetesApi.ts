@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ComponentTemplate, FormApplication, ConfigFile } from ".";
+import { ComponentTemplate, ConfigFile } from ".";
 import { convertFromCRDComponentTemplate } from "../convertors/ComponentTemplate";
 import { V1alpha1ComponentTemplate } from "../kappModel/v1alpha1ComponentTemplate";
 import {
@@ -12,10 +12,11 @@ import {
 } from "../model/models";
 import { ItemList } from "../kappModel/List";
 import { V1alpha1Application, V1alpha1Dependency, V1alpha1File } from "../kappModel";
-import { convertFromCRDApplication } from "../convertors/Application";
 import { convertFromCRDDependency } from "../convertors/Dependency";
 import { convertFromCRDFile } from "../convertors/File";
 import { store } from "../store";
+import { ApplicationList, Application } from "../types/application";
+import Immutable from "immutable";
 
 export const K8sApiPerfix = process.env.REACT_APP_K8S_API_PERFIX;
 
@@ -87,29 +88,58 @@ export const deleteKappComonentTemplate = async (component: V1alpha1ComponentTem
   // return convertFromCRDComponentTemplate(res.data);
 };
 
-export const getKappApplications = async () => {
-  const res = await getAxiosClient().get<ItemList<V1alpha1Application>>(K8sApiPerfix + "/v1/applications");
+export const getKappApplicationList = async (): Promise<ApplicationList> => {
+  const res = await getAxiosClient().get(K8sApiPerfix + "/v1alpha1/applications");
 
-  return res.data.items.map(convertFromCRDApplication);
+  return Immutable.fromJS(res.data.applications);
 };
 
-export const createKappApplication = async (application: V1alpha1Application): Promise<FormApplication> => {
-  const res = await getAxiosClient().post(
-    K8sApiPerfix + `/v1/applications/${application.metadata!.namespace}`,
+export const getKappApplication = async (namespace: string, name: string): Promise<Application> => {
+  const res = await getAxiosClient().get(K8sApiPerfix + `/v1alpha1/applications/${namespace}/${name}`);
+
+  return Immutable.fromJS(res.data.application);
+};
+
+export const createKappApplication = async (application: Application): Promise<Application> => {
+  const res = await getAxiosClient().post(K8sApiPerfix + `/v1alpha1/applications/${application.get("namespace")}`, {
     application
-  );
+  });
 
-  return convertFromCRDApplication(res.data);
+  return Immutable.fromJS(res.data.application);
 };
 
-export const updateKappApplication = async (application: V1alpha1Application): Promise<FormApplication> => {
+export const updateKappApplication = async (application: Application): Promise<Application> => {
   const res = await getAxiosClient().put(
-    K8sApiPerfix + `/v1/applications/${application.metadata!.namespace}/${application.metadata!.name}`,
+    K8sApiPerfix + `/v1alpha1/applications/${application.get("namespace")}/${application.get("name")}`,
     application
   );
 
-  return convertFromCRDApplication(res.data);
+  return Immutable.fromJS(res.data.application);
 };
+
+// export const getKappApplications = async () => {
+//   const res = await getAxiosClient().get<ItemList<V1alpha1Application>>(K8sApiPerfix + "/v1/applications");
+
+//   return res.data.items.map(convertFromCRDApplication);
+// };
+
+// export const createKappApplication = async (application: V1alpha1Application): Promise<Application> => {
+//   const res = await getAxiosClient().post(
+//     K8sApiPerfix + `/v1/applications/${application.metadata!.namespace}`,
+//     application
+//   );
+
+//   return convertFromCRDApplication(res.data);
+// };
+
+// export const updateKappApplication = async (application: V1alpha1Application): Promise<Application> => {
+//   const res = await getAxiosClient().put(
+//     K8sApiPerfix + `/v1/applications/${application.metadata!.namespace}/${application.metadata!.name}`,
+//     application
+//   );
+
+//   return convertFromCRDApplication(res.data);
+// };
 
 export const deleteKappApplication = async (application: V1alpha1Application): Promise<void> => {
   await getAxiosClient().delete(

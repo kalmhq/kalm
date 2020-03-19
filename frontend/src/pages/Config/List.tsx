@@ -76,7 +76,7 @@ interface State {
   isDeleteConfirmDialogOpen: boolean;
 }
 
-class List extends React.PureComponent<Props, State> {
+class ConfigListRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -242,4 +242,4 @@ class List extends React.PureComponent<Props, State> {
   }
 }
 
-export default connect(mapStateToProps)(withStyles(styles)(List));
+export const ConfigListPage = connect(mapStateToProps)(withStyles(styles)(ConfigListRaw));

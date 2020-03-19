@@ -1,10 +1,10 @@
 import { List, Map } from "immutable";
-import { FormApplication, FormApplicationComponent } from "../actions";
 import { V1alpha1Application } from "../kappModel/v1alpha1Application";
 import { ObjectSerializer } from "../model/models";
 import { convertFromCRDApplicationComponent, convertToCRDApplicationComponent } from "./ApplicationComponent";
+import { ApplicationComponent, Application } from "../types/application";
 
-export const convertFromCRDApplication = (c: V1alpha1Application): FormApplication => {
+export const convertFromCRDApplication = (c: V1alpha1Application): Application => {
   const spec = c.spec!;
   const metadata = c.metadata!;
 
@@ -19,11 +19,11 @@ export const convertFromCRDApplication = (c: V1alpha1Application): FormApplicati
       )
     : List([]);
 
-  const components: List<FormApplicationComponent> = spec.components
+  const components: List<ApplicationComponent> = spec.components
     ? List(spec.components.map(convertFromCRDApplicationComponent))
     : List();
 
-  const res: FormApplication = Map({
+  const res: Application = Map({
     id: metadata.name!,
     isActive: c.status?.isActive,
     name: metadata.name!,
@@ -37,7 +37,7 @@ export const convertFromCRDApplication = (c: V1alpha1Application): FormApplicati
   return res;
 };
 
-export const convertToCRDApplication = (c: FormApplication): V1alpha1Application => {
+export const convertToCRDApplication = (c: Application): V1alpha1Application => {
   return ObjectSerializer.deserialize(
     {
       apiVersion: "core.kapp.dev/v1alpha1",
@@ -49,7 +49,7 @@ export const convertToCRDApplication = (c: FormApplication): V1alpha1Application
       },
       spec: {
         sharedEnv: c
-          .get("sharedEnv")
+          .get("sharedEnvs")
           .map(x => ({
             name: x.get("name"),
             value: x.get("value")
