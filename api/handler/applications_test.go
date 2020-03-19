@@ -116,6 +116,42 @@ func (suite *ApplicationsHandlerTestSuite) TestUpdateAppliation() {
 	suite.Equal("value1-new", res.Application.SharedEnvs[0].Value)
 }
 
+func (suite *ApplicationsHandlerTestSuite) TestDeleteAppliation() {
+	body := `{
+  "application": {
+    "name": "test3",
+    "namespace": "test3",
+    "sharedEnvs": [{
+      "name": "env1",
+      "value": "value1"
+    }, {
+      "name": "env2",
+      "value": "value2",
+      "type": "external"
+    }],
+    "components": []
+  }
+}`
+	// create first
+	var res resources.ApplicationResponse
+	rec := suite.NewRequest(http.MethodPost, "/v1alpha1/applications/test3", body)
+	rec.BodyAsJSON(&res)
+
+	suite.NotNil(res.Application)
+	suite.Equal("test3", res.Application.Name)
+	suite.Equal("test3", res.Application.Namespace)
+	suite.Equal(2, len(res.Application.SharedEnvs))
+	suite.Equal("value1", res.Application.SharedEnvs[0].Value)
+
+	// delete
+	rec = suite.NewRequest(http.MethodDelete, "/v1alpha1/applications/test3/test3", body)
+	var deleteRes struct {
+		OK bool `json:"ok"`
+	}
+	rec.BodyAsJSON(&deleteRes)
+	suite.Equal(true, deleteRes.OK)
+}
+
 func TestApplicationsHanlderTestSuite(t *testing.T) {
 	suite.Run(t, new(ApplicationsHandlerTestSuite))
 }

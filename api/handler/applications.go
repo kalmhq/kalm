@@ -195,3 +195,12 @@ func (h *ApiHandler) handleDeleteApplication(c echo.Context) error {
 
 	return c.JSONBlob(200, res)
 }
+
+func (h *ApiHandler) handleDeleteApplicationNew(c echo.Context) error {
+	k8sClient := getK8sClient(c)
+	_, err := k8sClient.RESTClient().Delete().Body(c.Request().Body).AbsPath("/apis/core.kapp.dev/v1alpha1/namespaces/" + c.Param("namespace") + "/applications/" + c.Param("name")).DoRaw()
+	if err != nil {
+		return err
+	}
+	return c.JSON(200, H{"ok": true})
+}
