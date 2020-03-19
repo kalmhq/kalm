@@ -18,7 +18,6 @@ export interface ApplicationContent {
   namespace: string;
   sharedEnvs: Immutable.List<SharedEnv>;
   components: Immutable.List<ApplicationComponent>;
-  resourceVersion?: string;
 }
 
 export interface ApplicationStatusContent {

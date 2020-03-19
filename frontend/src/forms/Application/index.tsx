@@ -58,7 +58,7 @@ class ApplicationFormRaw extends React.PureComponent<
     DispatchProp
 > {
   private getIsEdit() {
-    return !!this.props.values.get("resourceVersion");
+    return !!this.props.values.get("name") && !!this.props.values.get("namespace");
   }
 
   private renderBasic() {

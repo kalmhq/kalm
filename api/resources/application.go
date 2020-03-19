@@ -76,12 +76,11 @@ type CreateOrUpdateApplicationRequest struct {
 }
 
 type Application struct {
-	Name            string                   `json:"name"`
-	Namespace       string                   `json:"namespace"`
-	IsActive        bool                     `json:"isActive"`
-	SharedEnvs      []v1alpha1.EnvVar        `json:"sharedEnvs"`
-	Components      []v1alpha1.ComponentSpec `json:"components"`
-	ResourceVersion string                   `json:"resourceVersion,omitempty"`
+	Name       string                   `json:"name"`
+	Namespace  string                   `json:"namespace"`
+	IsActive   bool                     `json:"isActive"`
+	SharedEnvs []v1alpha1.EnvVar        `json:"sharedEnvs"`
+	Components []v1alpha1.ComponentSpec `json:"components"`
 }
 
 func (builder *Builder) BuildApplicationDetailsResponse(application *v1alpha1.Application) *ApplicationResponse {
@@ -90,12 +89,11 @@ func (builder *Builder) BuildApplicationDetailsResponse(application *v1alpha1.Ap
 
 	return &ApplicationResponse{
 		&Application{
-			Name:            application.Name,
-			Namespace:       application.Namespace,
-			IsActive:        application.Status.IsActive,
-			SharedEnvs:      application.Spec.SharedEnv,
-			Components:      application.Spec.Components,
-			ResourceVersion: application.ObjectMeta.ResourceVersion,
+			Name:       application.Name,
+			Namespace:  application.Namespace,
+			IsActive:   application.Status.IsActive,
+			SharedEnvs: application.Spec.SharedEnv,
+			Components: application.Spec.Components,
 		},
 	}
 }

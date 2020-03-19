@@ -11,7 +11,7 @@ import {
   V1Secret
 } from "../model/models";
 import { ItemList } from "../kappModel/List";
-import { V1alpha1Application, V1alpha1Dependency, V1alpha1File } from "../kappModel";
+import { V1alpha1Dependency, V1alpha1File } from "../kappModel";
 import { convertFromCRDDependency } from "../convertors/Dependency";
 import { convertFromCRDFile } from "../convertors/File";
 import { store } from "../store";
@@ -111,39 +111,15 @@ export const createKappApplication = async (application: Application): Promise<A
 export const updateKappApplication = async (application: Application): Promise<Application> => {
   const res = await getAxiosClient().put(
     K8sApiPerfix + `/v1alpha1/applications/${application.get("namespace")}/${application.get("name")}`,
-    application
+    { application }
   );
 
   return Immutable.fromJS(res.data.application);
 };
 
-// export const getKappApplications = async () => {
-//   const res = await getAxiosClient().get<ItemList<V1alpha1Application>>(K8sApiPerfix + "/v1/applications");
-
-//   return res.data.items.map(convertFromCRDApplication);
-// };
-
-// export const createKappApplication = async (application: V1alpha1Application): Promise<Application> => {
-//   const res = await getAxiosClient().post(
-//     K8sApiPerfix + `/v1/applications/${application.metadata!.namespace}`,
-//     application
-//   );
-
-//   return convertFromCRDApplication(res.data);
-// };
-
-// export const updateKappApplication = async (application: V1alpha1Application): Promise<Application> => {
-//   const res = await getAxiosClient().put(
-//     K8sApiPerfix + `/v1/applications/${application.metadata!.namespace}/${application.metadata!.name}`,
-//     application
-//   );
-
-//   return convertFromCRDApplication(res.data);
-// };
-
-export const deleteKappApplication = async (application: V1alpha1Application): Promise<void> => {
+export const deleteKappApplication = async (application: Application): Promise<void> => {
   await getAxiosClient().delete(
-    K8sApiPerfix + `/v1/applications/${application.metadata!.namespace}/${application.metadata!.name}`
+    K8sApiPerfix + `/v1alpha1/applications/${application.get("namespace")}/${application.get("name")}`
   );
 };
 

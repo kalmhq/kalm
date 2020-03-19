@@ -44,8 +44,8 @@ export const convertToCRDApplication = (c: Application): V1alpha1Application => 
       kind: "Application",
       metadata: {
         name: c.get("name"),
-        namespace: c.get("namespace"),
-        resourceVersion: c.get("resourceVersion")
+        namespace: c.get("namespace")
+        // resourceVersion: c.get("resourceVersion")
       },
       spec: {
         sharedEnv: c

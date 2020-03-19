@@ -23,7 +23,6 @@ export const duplicateApplication = (application: Application): Application => {
   } while (applications.find(x => x.get("name") === name));
 
   application = application.set("name", name);
-  application = application.set("resourceVersion", undefined);
 
   return application;
 };

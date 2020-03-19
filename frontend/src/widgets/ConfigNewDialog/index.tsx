@@ -21,7 +21,6 @@ export function ConfigNewDialog(props: Props) {
   };
 
   const handleSubmit = (config: ConfigNode) => {
-    console.log("ConfigNewDialog submit config", config.toJS());
     dispatch(createConfigAction(config));
     onClose();
   };

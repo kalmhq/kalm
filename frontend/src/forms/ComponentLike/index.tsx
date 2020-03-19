@@ -161,11 +161,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             label="Command (Optional)"
             helperText='Eg: "/bin/app", "rails server".'
             formValueToEditValue={(value: Immutable.List<string>) => {
-              console.log("formValueToEditValue", value);
               return value && value.toArray()[0] ? value.toArray()[0] : "";
             }}
             editValueToFormValue={(value: string) => {
-              console.log("value", value);
               return value ? Immutable.List([value]) : Immutable.List([]);
             }}
           />

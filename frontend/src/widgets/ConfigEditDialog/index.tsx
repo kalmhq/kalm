@@ -22,7 +22,6 @@ export function ConfigEditDialog(props: Props) {
   };
 
   const handleSubmit = (config: ConfigNode) => {
-    console.log("ConfigEditDialog update config", config.toJS());
     dispatch(updateConfigAction(config));
     onClose();
   };

@@ -6,7 +6,6 @@ import {
   getKappApplicationList,
   getKappApplication
 } from "./kubernetesApi";
-import { convertToCRDApplication } from "../convertors/Application";
 import { getApplicationByName, duplicateApplication } from "../selectors/application";
 import {
   LOAD_APPLICATIONS_PENDING,
@@ -57,7 +56,7 @@ export const duplicateApplicationAction = (applicationName: string): ThunkResult
 export const deleteApplicationAction = (applicationName: string): ThunkResult<Promise<void>> => {
   return async dispatch => {
     const application = getApplicationByName(applicationName);
-    await deleteKappApplication(convertToCRDApplication(application));
+    await deleteKappApplication(application);
 
     dispatch({
       type: DELETE_APPLICATION,

@@ -26,7 +26,6 @@ interface Props extends WithStyles<typeof styles> {
 class ApplicationNewRaw extends React.PureComponent<Props> {
   private submit = async (applicationFormValue: Application) => {
     const { dispatch } = this.props;
-    console.log("applicationFormValue", applicationFormValue.toJS());
     await dispatch(createApplicationAction(applicationFormValue));
     await dispatch(setSuccessNotificationAction("Create application successfully"));
     await dispatch(push("/applications"));
