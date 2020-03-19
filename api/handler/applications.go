@@ -125,6 +125,55 @@ func (h *ApiHandler) handleCreateApplicationNew(c echo.Context) error {
 	return c.JSON(200, builder.BuildApplicationDetailsResponse(&application))
 }
 
+func (h *ApiHandler) handleUpdateApplicationNew(c echo.Context) error {
+	k8sClient := getK8sClient(c)
+	namespace := c.Param("namespace")
+	name := c.Param("name")
+
+	var fetched v1alpha1.Application
+	err := k8sClient.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/namespaces/" + namespace + "/applications/" + name).Do().Into(&fetched)
+
+	if err != nil {
+		return err
+	}
+
+	var req resources.CreateApplicationRequest
+	if err := c.Bind(&req); err != nil {
+		return err
+	}
+
+	crdApplication := &v1alpha1.Application{
+		TypeMeta: metaV1.TypeMeta{
+			Kind:       "Application",
+			APIVersion: "core.kapp.dev/v1alpha1",
+		},
+		ObjectMeta: metaV1.ObjectMeta{
+			Namespace:       req.Application.Namespace,
+			Name:            req.Application.Name,
+			ResourceVersion: fetched.ResourceVersion,
+		},
+		Spec: v1alpha1.ApplicationSpec{
+			SharedEnv:  req.Application.SharedEnvs,
+			Components: req.Application.Components,
+		},
+	}
+
+	bts, _ := json.Marshal(crdApplication)
+	var application v1alpha1.Application
+	err = k8sClient.RESTClient().Put().Body(bts).AbsPath("/apis/core.kapp.dev/v1alpha1/namespaces/" + namespace + "/applications/" + name).Do().Into(&application)
+
+	if err != nil {
+		return err
+	}
+
+	builder := resources.Builder{
+		k8sClient,
+		h.logger,
+	}
+
+	return c.JSON(200, builder.BuildApplicationDetailsResponse(&application))
+}
+
 func (h *ApiHandler) handleUpdateApplication(c echo.Context) error {
 	k8sClient := getK8sClient(c)
 	res, err := k8sClient.RESTClient().Put().Body(c.Request().Body).AbsPath("/apis/core.kapp.dev/v1alpha1/namespaces/" + c.Param("namespace") + "/applications/" + c.Param("name")).DoRaw()

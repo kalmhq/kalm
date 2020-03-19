@@ -73,6 +73,7 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gV1Alpha1.GET("/applications", h.handleGetApplications)
 	gV1Alpha1.GET("/applications/:namespace", h.handleGetApplications)
 	gV1Alpha1.GET("/applications/:namespace/:name", h.handleGetApplicationDetails)
+	gV1Alpha1.PUT("/applications/:namespace/:name", h.handleUpdateApplicationNew)
 	gV1Alpha1.POST("/applications/:namespace", h.handleCreateApplicationNew)
 }
 

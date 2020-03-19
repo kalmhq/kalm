@@ -68,6 +68,54 @@ func (suite *ApplicationsHandlerTestSuite) TestCreateEmptyAppliation() {
 	suite.Equal(v1alpha1.EnvVarTypeExternal, res.Application.Components[0].Env[1].Type)
 }
 
+func (suite *ApplicationsHandlerTestSuite) TestUpdateAppliation() {
+	body := `{
+  "application": {
+    "name": "test2",
+    "namespace": "test2",
+    "sharedEnvs": [{
+      "name": "env1",
+      "value": "value1"
+    }, {
+      "name": "env2",
+      "value": "value2",
+      "type": "external"
+    }],
+    "components": []
+  }
+}`
+	// create first
+	var res resources.ApplicationResponse
+	rec := suite.NewRequest(http.MethodPost, "/v1alpha1/applications/test2", body)
+	rec.BodyAsJSON(&res)
+
+	suite.NotNil(res.Application)
+	suite.Equal("test2", res.Application.Name)
+	suite.Equal("test2", res.Application.Namespace)
+	suite.Equal(2, len(res.Application.SharedEnvs))
+	suite.Equal("value1", res.Application.SharedEnvs[0].Value)
+
+	// edit
+	body = `{
+  "application": {
+    "name": "test2",
+    "namespace": "test2",
+    "sharedEnvs": [{
+      "name": "env1",
+      "value": "value1-new"
+    }],
+    "components": []
+  }
+}`
+	rec = suite.NewRequest(http.MethodPut, "/v1alpha1/applications/test2/test2", body)
+	rec.BodyAsJSON(&res)
+	suite.NotNil(res.Application)
+	suite.Equal("test2", res.Application.Name)
+	suite.Equal("test2", res.Application.Namespace)
+	suite.Equal(1, len(res.Application.SharedEnvs))
+	suite.Equal("value1-new", res.Application.SharedEnvs[0].Value)
+}
+
 func TestApplicationsHanlderTestSuite(t *testing.T) {
 	suite.Run(t, new(ApplicationsHandlerTestSuite))
 }
