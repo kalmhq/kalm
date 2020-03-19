@@ -35,7 +35,7 @@ const (
 type ComponentTemplateSpec struct {
 	Name string `json:"name"`
 
-	Env []ComponentTemplateEnvVar `json:"env,omitempty"`
+	Env []EnvVar `json:"env,omitempty"`
 
 	Image string `json:"image"`
 

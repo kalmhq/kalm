@@ -76,6 +76,11 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gV1Alpha1.PUT("/applications/:namespace/:name", h.handleUpdateApplicationNew)
 	gV1Alpha1.DELETE("/applications/:namespace/:name", h.handleDeleteApplication)
 	gV1Alpha1.POST("/applications/:namespace", h.handleCreateApplicationNew)
+
+	gV1Alpha1.GET("/componenttemplates", h.handleGetComponentTemplatesNew)
+	gV1Alpha1.POST("/componenttemplates", h.handleCreateComponentTemplateNew)
+	gV1Alpha1.PUT("/componenttemplates/:name", h.handleUpdateComponentTemplateNew)
+	gV1Alpha1.DELETE("/componenttemplates/:name", h.handleDeleteComponentTemplateNew)
 }
 
 func NewApiHandler(clientManager *client.ClientManager) *ApiHandler {
