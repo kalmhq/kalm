@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/kapp-staging/kapp/api/client"
 	"github.com/kapp-staging/kapp/api/config"
+	"github.com/kapp-staging/kapp/api/server"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/suite"
 	"io"
@@ -16,21 +17,25 @@ import (
 
 type BasicTestSuite struct {
 	suite.Suite
-	testEnv    *envtest.Environment
-	apiServer  *echo.Echo
-	apiHandler *ApiHandler
+	testEnv   *envtest.Environment
+	apiServer *echo.Echo
 }
 
 type ResponseRecorder struct {
 	*httptest.ResponseRecorder
+	bytes []byte
+}
+
+func (r *ResponseRecorder) read() {
+	r.bytes = r.Body.Bytes()
 }
 
 func (r *ResponseRecorder) BodyAsString() string {
-	return r.Body.String()
+	return string(r.bytes)
 }
 
 func (r *ResponseRecorder) BodyAsJSON(obj interface{}) {
-	_ = json.Unmarshal(r.Body.Bytes(), obj)
+	_ = json.Unmarshal(r.bytes, obj)
 }
 
 func (suite *BasicTestSuite) SetupSuite() {
@@ -53,16 +58,16 @@ func (suite *BasicTestSuite) SetupSuite() {
 	//spew.Dump(k8sClient.ServerVersion())
 	//spew.Dump(k8sClient.CoreV1().Nodes().List(ListAll))
 
-	e := echo.New()
-	clientManager := client.NewClientManager(&config.Config{
+	runningConfig := &config.Config{
 		KubernetesApiServerAddress: cfg.Host,
-	})
+	}
 
+	e := server.NewEchoServer(runningConfig)
+	clientManager := client.NewClientManager(runningConfig)
 	apiHandler := NewApiHandler(clientManager)
 	apiHandler.Install(e)
 
 	suite.apiServer = e
-	suite.apiHandler = apiHandler
 }
 
 func (suite *BasicTestSuite) TearDownSuite() {
@@ -94,8 +99,11 @@ func (suite *BasicTestSuite) NewRequestWithHeaders(method string, path string, b
 		}
 	}
 	req.Header.Add(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	rec := &ResponseRecorder{httptest.NewRecorder()}
+	rec := &ResponseRecorder{
+		ResponseRecorder: httptest.NewRecorder(),
+	}
 	suite.apiServer.ServeHTTP(rec, req)
+	rec.read()
 	return rec
 }
 
