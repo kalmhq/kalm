@@ -71,7 +71,7 @@ type ApplicationResponse struct {
 	Application *Application `json:"application"`
 }
 
-type CreateApplicationRequest struct {
+type CreateOrUpdateApplicationRequest struct {
 	Application *Application `json:"application"`
 }
 
