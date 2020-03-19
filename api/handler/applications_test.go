@@ -145,11 +145,7 @@ func (suite *ApplicationsHandlerTestSuite) TestDeleteAppliation() {
 
 	// delete
 	rec = suite.NewRequest(http.MethodDelete, "/v1alpha1/applications/test3/test3", body)
-	var deleteRes struct {
-		OK bool `json:"ok"`
-	}
-	rec.BodyAsJSON(&deleteRes)
-	suite.Equal(true, deleteRes.OK)
+	suite.Equal(http.StatusNoContent, rec.Code)
 }
 
 func TestApplicationsHanlderTestSuite(t *testing.T) {
