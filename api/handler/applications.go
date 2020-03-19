@@ -32,15 +32,13 @@ func (h *ApiHandler) handleGetApplicationsOld(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleGetApplications(c echo.Context) error {
-	k8sClient := getK8sClient(c)
+	applicationList, err := getKappApplicationList(c)
 
-	var applicationList v1alpha1.ApplicationList
-	err := k8sClient.RESTClient().Get().AbsPath(kappApplicationUrl(c)).Do().Into(&applicationList)
 	if err != nil {
 		return err
 	}
 
-	return c.JSON(200, h.applicationListResponse(c, &applicationList))
+	return c.JSON(200, h.applicationListResponse(c, applicationList))
 }
 
 func (h *ApiHandler) handleGetApplicationDetails(c echo.Context) error {
@@ -161,6 +159,16 @@ func updateKappApplication(c echo.Context) (*v1alpha1.Application, error) {
 func getKappApplication(c echo.Context) (*v1alpha1.Application, error) {
 	k8sClient := getK8sClient(c)
 	var fetched v1alpha1.Application
+	err := k8sClient.RESTClient().Get().AbsPath(kappApplicationUrl(c)).Do().Into(&fetched)
+	if err != nil {
+		return nil, err
+	}
+	return &fetched, nil
+}
+
+func getKappApplicationList(c echo.Context) (*v1alpha1.ApplicationList, error) {
+	k8sClient := getK8sClient(c)
+	var fetched v1alpha1.ApplicationList
 	err := k8sClient.RESTClient().Get().AbsPath(kappApplicationUrl(c)).Do().Into(&fetched)
 	if err != nil {
 		return nil, err
