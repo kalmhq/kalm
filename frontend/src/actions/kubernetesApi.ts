@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ComponentTemplate, Application, ConfigFile } from ".";
+import { ComponentTemplate, FormApplication, ConfigFile } from ".";
 import { convertFromCRDComponentTemplate } from "../convertors/ComponentTemplate";
 import { V1alpha1ComponentTemplate } from "../kappModel/v1alpha1ComponentTemplate";
 import {
@@ -93,7 +93,7 @@ export const getKappApplications = async () => {
   return res.data.items.map(convertFromCRDApplication);
 };
 
-export const createKappApplication = async (application: V1alpha1Application): Promise<Application> => {
+export const createKappApplication = async (application: V1alpha1Application): Promise<FormApplication> => {
   const res = await getAxiosClient().post(
     K8sApiPerfix + `/v1/applications/${application.metadata!.namespace}`,
     application
@@ -102,7 +102,7 @@ export const createKappApplication = async (application: V1alpha1Application): P
   return convertFromCRDApplication(res.data);
 };
 
-export const updateKappApplication = async (application: V1alpha1Application): Promise<Application> => {
+export const updateKappApplication = async (application: V1alpha1Application): Promise<FormApplication> => {
   const res = await getAxiosClient().put(
     K8sApiPerfix + `/v1/applications/${application.metadata!.namespace}/${application.metadata!.name}`,
     application

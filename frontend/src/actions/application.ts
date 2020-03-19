@@ -1,5 +1,5 @@
 import {
-  Application,
+  FormApplication,
   CREATE_APPLICATION,
   DELETE_APPLICATION,
   DUPLICATE_APPLICATION,
@@ -17,7 +17,7 @@ import {
 import { convertToCRDApplication } from "../convertors/Application";
 import { getApplicationById, duplicateApplication } from "../selectors/application";
 
-export const createApplicationAction = (applicationValues: Application): ThunkResult<Promise<void>> => {
+export const createApplicationAction = (applicationValues: FormApplication): ThunkResult<Promise<void>> => {
   return async dispatch => {
     const application = await createKappApplication(convertToCRDApplication(applicationValues));
 
@@ -30,7 +30,7 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
 
 export const updateApplicationAction = (
   applicationId: string,
-  applicationRaw: Application
+  applicationRaw: FormApplication
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
     const application = await updateKappApplication(convertToCRDApplication(applicationRaw));

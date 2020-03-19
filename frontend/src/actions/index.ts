@@ -168,23 +168,23 @@ export interface ComponentLikeContent {
   plugins: Immutable.List<Plugin>;
 }
 
-export interface ApplicationContent {
+export interface FormApplicationContent {
   id: string;
   isActive: boolean;
   name: string;
   namespace: string;
   sharedEnv: Immutable.List<SharedEnv>;
-  components: Immutable.List<ApplicationComponent>;
-  status: ApplicationStatus;
+  components: Immutable.List<FormApplicationComponent>;
+  status: FormApplicationStatus;
   resourceVersion?: string;
 }
 
-export interface ApplicationStatusContent {
+export interface FormApplicationStatusContent {
   status: Status;
   components: Immutable.List<ComponentStatus>;
 }
 
-export interface ApplicationComponentContent extends ComponentLikeContent {}
+export interface FormApplicationComponentContent extends ComponentLikeContent {}
 
 export interface ComponentTemplateContent extends ComponentLikeContent {
   id: string;
@@ -194,9 +194,9 @@ export interface ComponentTemplateContent extends ComponentLikeContent {
 export type Plugin = ImmutableMap<PluginContent>;
 export type ComponentLike = ImmutableMap<ComponentLikeContent>;
 export type ComponentTemplate = ImmutableMap<ComponentTemplateContent>;
-export type ApplicationComponent = ImmutableMap<ApplicationComponentContent>;
-export type Application = ImmutableMap<ApplicationContent>;
-export type ApplicationStatus = ImmutableMap<ApplicationStatusContent>;
+export type FormApplicationComponent = ImmutableMap<FormApplicationComponentContent>;
+export type FormApplication = ImmutableMap<FormApplicationContent>;
+export type FormApplicationStatus = ImmutableMap<FormApplicationStatusContent>;
 
 export type ConfigFile = ImmutableMap<{
   id: string;
@@ -288,21 +288,21 @@ export interface LoadComponentTemplatesFulfilledAction {
 export interface CreateApplicationAction {
   type: typeof CREATE_APPLICATION;
   payload: {
-    application: Application;
+    application: FormApplication;
   };
 }
 
 export interface DuplicateApplicationAction {
   type: typeof DUPLICATE_APPLICATION;
   payload: {
-    application: Application;
+    application: FormApplication;
   };
 }
 
 export interface UpdateApplicationAction {
   type: typeof UPDATE_APPLICATION;
   payload: {
-    application: Application;
+    application: FormApplication;
   };
 }
 
@@ -320,7 +320,7 @@ export interface LoadApplicationsPendingAction {
 export interface LoadApplicationsFulfilledAction {
   type: typeof LOAD_APPLICATIONS_FULFILLED;
   payload: {
-    applications: Array<Application>;
+    applications: Array<FormApplication>;
   };
 }
 

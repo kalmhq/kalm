@@ -6,7 +6,7 @@ import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { InjectedFormProps } from "redux-form";
 import { Field, formValueSelector, getFormValues, reduxForm } from "redux-form/immutable";
-import { Application, ComponentTemplate, SharedEnv } from "../../actions";
+import { FormApplication, ComponentTemplate, SharedEnv } from "../../actions";
 import { RootState } from "../../reducers";
 import { HelperContainer } from "../../widgets/Helper";
 import { SwitchField } from "../Basic/switch";
@@ -38,7 +38,7 @@ const mapStateToProps = (state: RootState) => {
   const selector = formValueSelector("application");
   const formComponents: ComponentTemplate[] = selector(state, "components");
   const sharedEnv: Immutable.List<SharedEnv> = selector(state, "sharedEnv");
-  const values = getFormValues("application")(state) as Application;
+  const values = getFormValues("application")(state) as FormApplication;
 
   return {
     sharedEnv,
@@ -51,7 +51,7 @@ export interface Props {}
 
 class ApplicationFormRaw extends React.PureComponent<
   Props &
-    InjectedFormProps<Application, Props> &
+    InjectedFormProps<FormApplication, Props> &
     ReturnType<typeof mapStateToProps> &
     WithStyles<typeof styles> &
     DispatchProp
@@ -184,14 +184,14 @@ class ApplicationFormRaw extends React.PureComponent<
   }
 }
 
-const initialValues: Application = Immutable.fromJS({
+const initialValues: FormApplication = Immutable.fromJS({
   id: "0",
   name: "a-sample-application",
   sharedEnv: [],
   components: []
 });
 
-export default reduxForm<Application, Props>({
+export default reduxForm<FormApplication, Props>({
   form: "application",
   initialValues,
   onSubmitFail: (...args) => {

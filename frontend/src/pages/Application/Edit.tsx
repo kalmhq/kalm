@@ -2,7 +2,7 @@ import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { push } from "connected-react-router";
 import React from "react";
 import { RouteChildrenProps } from "react-router-dom";
-import { Application } from "../../actions";
+import { FormApplication } from "../../actions";
 import { updateApplicationAction } from "../../actions/application";
 import { setSuccessNotificationAction } from "../../actions/notification";
 import ApplicationForm from "../../forms/Application";
@@ -24,7 +24,7 @@ interface Props
     RouteChildrenProps<{ applicationId: string }> {}
 
 class ApplicationEditRaw extends React.PureComponent<Props> {
-  private submit = async (application: Application) => {
+  private submit = async (application: FormApplication) => {
     const { dispatch, match } = this.props;
     const { applicationId } = match!.params;
 

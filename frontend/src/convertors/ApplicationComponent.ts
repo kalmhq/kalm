@@ -1,10 +1,10 @@
 import { List, Map } from "immutable";
-import { ApplicationComponent, workloadTypeServer, EnvTypeStatic, portTypeTCP } from "../actions";
+import { FormApplicationComponent, workloadTypeServer, EnvTypeStatic, portTypeTCP } from "../actions";
 import { V1alpha1ApplicationSpecComponents } from "../kappModel/v1alpha1ApplicationSpecComponents";
 import { ObjectSerializer } from "../model/models";
 
-export const convertFromCRDApplicationComponent = (x: V1alpha1ApplicationSpecComponents): ApplicationComponent => {
-  const res: ApplicationComponent = Map({
+export const convertFromCRDApplicationComponent = (x: V1alpha1ApplicationSpecComponents): FormApplicationComponent => {
+  const res: FormApplicationComponent = Map({
     name: x.name,
     image: x.image,
     command: x.command ? x.command[0] : "",
@@ -53,7 +53,7 @@ export const convertFromCRDApplicationComponent = (x: V1alpha1ApplicationSpecCom
   return res;
 };
 
-export const convertToCRDApplicationComponent = (c: ApplicationComponent): V1alpha1ApplicationSpecComponents => {
+export const convertToCRDApplicationComponent = (c: FormApplicationComponent): V1alpha1ApplicationSpecComponents => {
   return ObjectSerializer.deserialize(
     {
       name: c.get("name"),

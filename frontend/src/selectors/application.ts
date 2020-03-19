@@ -1,17 +1,17 @@
 import { getFormValues } from "redux-form/immutable";
-import { Application } from "../actions";
+import { FormApplication } from "../actions";
 import { EnvTypeExternal } from "../actions/";
 import { store } from "../store";
 
-export const getApplicationById = (applicationId: string): Application => {
+export const getApplicationById = (applicationId: string): FormApplication => {
   const state = store.getState();
   return state
     .get("applications")
     .get("applications")
-    .get(applicationId) as Application;
+    .get(applicationId) as FormApplication;
 };
 
-export const duplicateApplication = (application: Application): Application => {
+export const duplicateApplication = (application: FormApplication): FormApplication => {
   const state = store.getState();
   const applications = state.get("applications").get("applications");
 
@@ -29,13 +29,13 @@ export const duplicateApplication = (application: Application): Application => {
   return application;
 };
 
-export const getCurrentFormApplication = (): Application => {
+export const getCurrentFormApplication = (): FormApplication => {
   const state = store.getState();
-  const application = getFormValues("application")(state) as Application;
+  const application = getFormValues("application")(state) as FormApplication;
   return application;
 };
 
-export const getApplicationSharedEnvNamesSet = (application: Application): Set<string> => {
+export const getApplicationSharedEnvNamesSet = (application: FormApplication): Set<string> => {
   return new Set(
     application
       .get("sharedEnv")
@@ -44,7 +44,7 @@ export const getApplicationSharedEnvNamesSet = (application: Application): Set<s
   );
 };
 
-export const getApplicationEnvStatus = (application: Application) => {
+export const getApplicationEnvStatus = (application: FormApplication) => {
   const applicationSharedEnvNamesSet = getApplicationSharedEnvNamesSet(application);
   const applicationComponentExternalEnvsSet = new Set<string>();
 

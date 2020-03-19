@@ -1,10 +1,10 @@
 import { List, Map } from "immutable";
-import { Application, ApplicationComponent } from "../actions";
+import { FormApplication, FormApplicationComponent } from "../actions";
 import { V1alpha1Application } from "../kappModel/v1alpha1Application";
 import { ObjectSerializer } from "../model/models";
 import { convertFromCRDApplicationComponent, convertToCRDApplicationComponent } from "./ApplicationComponent";
 
-export const convertFromCRDApplication = (c: V1alpha1Application): Application => {
+export const convertFromCRDApplication = (c: V1alpha1Application): FormApplication => {
   const spec = c.spec!;
   const metadata = c.metadata!;
 
@@ -19,11 +19,11 @@ export const convertFromCRDApplication = (c: V1alpha1Application): Application =
       )
     : List([]);
 
-  const components: List<ApplicationComponent> = spec.components
+  const components: List<FormApplicationComponent> = spec.components
     ? List(spec.components.map(convertFromCRDApplicationComponent))
     : List();
 
-  const res: Application = Map({
+  const res: FormApplication = Map({
     id: metadata.name!,
     isActive: c.status?.isActive,
     name: metadata.name!,
@@ -37,7 +37,7 @@ export const convertFromCRDApplication = (c: V1alpha1Application): Application =
   return res;
 };
 
-export const convertToCRDApplication = (c: Application): V1alpha1Application => {
+export const convertToCRDApplication = (c: FormApplication): V1alpha1Application => {
   return ObjectSerializer.deserialize(
     {
       apiVersion: "core.kapp.dev/v1alpha1",

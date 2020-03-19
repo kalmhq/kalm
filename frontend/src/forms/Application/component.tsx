@@ -7,7 +7,13 @@ import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { submit, WrappedFieldArrayProps, change, arrayPush } from "redux-form";
 import { FieldArray, formValueSelector } from "redux-form/immutable";
-import { ApplicationComponent, ComponentLike, EnvTypeExternal, newEmptyComponentLike, SharedEnv } from "../../actions";
+import {
+  FormApplicationComponent,
+  ComponentLike,
+  EnvTypeExternal,
+  newEmptyComponentLike,
+  SharedEnv
+} from "../../actions";
 import { RootState } from "../../reducers";
 import { ComponentLikeForm } from "../ComponentLike";
 import { CustomizedDialog } from "./ComponentModal";
@@ -44,7 +50,7 @@ interface FieldArrayComponentHackType {
   component: any;
 }
 interface Props
-  extends WrappedFieldArrayProps<ApplicationComponent>,
+  extends WrappedFieldArrayProps<FormApplicationComponent>,
     WithStyles<typeof styles>,
     stateProps,
     FieldArrayComponentHackType {}
@@ -58,7 +64,7 @@ interface State {
 }
 
 interface RowData {
-  applicationComponent: ApplicationComponent;
+  applicationComponent: FormApplicationComponent;
   index: number;
 }
 

@@ -1,7 +1,7 @@
 import Immutable from "immutable";
 import {
   Actions,
-  Application,
+  FormApplication,
   CREATE_APPLICATION,
   DELETE_APPLICATION,
   DUPLICATE_APPLICATION,
@@ -12,7 +12,7 @@ import {
 import { ImmutableMap } from "../typings";
 
 export type State = ImmutableMap<{
-  applications: Immutable.OrderedMap<string, Application>;
+  applications: Immutable.OrderedMap<string, FormApplication>;
   isListLoading: boolean;
   isListFirstLoaded: boolean;
 }>;
@@ -31,7 +31,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
     }
     case LOAD_APPLICATIONS_FULFILLED: {
       state = state.set("isListFirstLoaded", true).set("isListLoading", false);
-      let om = Immutable.OrderedMap<string, Application>();
+      let om = Immutable.OrderedMap<string, FormApplication>();
 
       action.payload.applications.forEach(x => {
         om = om.set(x.get("id"), x);
