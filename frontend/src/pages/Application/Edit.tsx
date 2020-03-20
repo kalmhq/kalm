@@ -40,7 +40,7 @@ class ApplicationEditRaw extends React.PureComponent<Props> {
       <BasePage
         title={`Edit Application ${application && application.get("name")}`}
         rightAction={<RemoteSubmitApplication />}>
-        {isLoading ? <Loading /> : <ApplicationForm onSubmit={this.submit} initialValues={application} />}
+        {isLoading ? <Loading /> : <ApplicationForm onSubmit={this.submit} initialValues={application} isEdit={true} />}
       </BasePage>
     );
   }
