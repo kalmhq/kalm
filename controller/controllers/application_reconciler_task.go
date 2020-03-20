@@ -541,12 +541,12 @@ func (act *applicationReconcilerTask) getDeployment(name string) *appsV1.Deploym
 func (act *applicationReconcilerTask) getCronjobs() error {
 	var cronjobList batchV1Beta1.CronJobList
 
-	if err := act.reconciler.List(
+	if err := act.reconciler.Reader.List(
 		act.ctx,
 		&cronjobList,
 		client.InNamespace(act.req.Namespace),
-		client.MatchingFields{
-			ownerKey: act.req.Name,
+		client.MatchingLabels{
+			"kapp-application": act.app.Name,
 		},
 	); err != nil {
 		act.log.Error(err, "unable to list child deployments")
@@ -580,12 +580,12 @@ func (act *applicationReconcilerTask) getDeployments() error {
 func (act *applicationReconcilerTask) getServices() error {
 	var serviceList coreV1.ServiceList
 
-	if err := act.reconciler.List(
+	if err := act.reconciler.Reader.List(
 		act.ctx,
 		&serviceList,
 		client.InNamespace(act.req.Namespace),
-		client.MatchingFields{
-			ownerKey: act.req.Name,
+		client.MatchingLabels{
+			"kapp-application": act.app.Name,
 		},
 	); err != nil {
 		act.log.Error(err, "unable to list child services")
