@@ -80,6 +80,11 @@ const reducer = (state: State = initialState, action: Actions): State => {
     }
     case DELETE_APPLICATION: {
       state = state.deleteIn(["applications", action.payload.applicationName]);
+
+      let applicationList = state.get("applicationList");
+      applicationList = applicationList.filter(item => item.get("name") !== action.payload.applicationName);
+
+      state = state.set("applicationList", applicationList);
       break;
     }
   }

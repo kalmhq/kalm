@@ -124,10 +124,8 @@ export const updateKappApplication = async (application: Application): Promise<A
   return Immutable.fromJS(res.data.application);
 };
 
-export const deleteKappApplication = async (application: Application): Promise<void> => {
-  await getAxiosClient().delete(
-    K8sApiPerfix + `/v1alpha1/applications/${application.get("namespace")}/${application.get("name")}`
-  );
+export const deleteKappApplication = async (namespace: string, name: string): Promise<void> => {
+  await getAxiosClient().delete(K8sApiPerfix + `/v1alpha1/applications/${namespace}/${name}`);
 };
 
 export const getDependencies = async () => {

@@ -32,6 +32,7 @@ import RefreshIcon from "@material-ui/icons/Refresh";
 import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew";
 import ArchiveIcon from "@material-ui/icons/Archive";
 import { getApplicationByName } from "../../selectors/application";
+import { ApplicationListItem } from "../../types/application";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -101,7 +102,7 @@ interface State {
   switchingIsEnabledTitle: string;
   switchingIsEnabledContent: string;
   isDeleteConfirmDialogOpen: boolean;
-  deletingApplicationName?: string;
+  deletingApplicationListItem?: ApplicationListItem;
   checkedApplicationNames: {
     [key: string]: boolean;
   };
@@ -114,7 +115,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     switchingIsEnabledTitle: "",
     switchingIsEnabledContent: "",
     isDeleteConfirmDialogOpen: false,
-    deletingApplicationName: "",
+    deletingApplicationListItem: undefined,
     checkedApplicationNames: {}
   };
 
@@ -180,15 +181,20 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   private closeConfirmDialog = () => {
     this.setState({
       isDeleteConfirmDialogOpen: false,
-      deletingApplicationName: undefined
+      deletingApplicationListItem: undefined
     });
   };
 
   private deleteConfirmedApplication = async () => {
     const { dispatch } = this.props;
     try {
-      await dispatch(deleteApplicationAction(this.state.deletingApplicationName!));
-      await dispatch(setSuccessNotificationAction("Successfully delete an application"));
+      const { deletingApplicationListItem } = this.state;
+      if (deletingApplicationListItem) {
+        await dispatch(
+          deleteApplicationAction(deletingApplicationListItem.get("namespace"), deletingApplicationListItem.get("name"))
+        );
+        await dispatch(setSuccessNotificationAction("Successfully delete an application"));
+      }
     } catch {
       dispatch(setErrorNotificationAction("Something wrong"));
     }
@@ -198,10 +204,10 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   //   return <div>123</div>;
   // };
 
-  private setDeletingApplicationAndConfirm = (applicationName: string) => {
+  private setDeletingApplicationAndConfirm = (deletingApplicationListItem: ApplicationListItem) => {
     this.setState({
       isDeleteConfirmDialogOpen: true,
-      deletingApplicationName: applicationName
+      deletingApplicationListItem
     });
   };
 
@@ -227,7 +233,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
       };
 
       const onDeleteClick = () => {
-        this.setDeletingApplicationAndConfirm(applicationListItem.get("name"));
+        this.setDeletingApplicationAndConfirm(applicationListItem);
       };
 
       const components = (

@@ -53,15 +53,13 @@ export const duplicateApplicationAction = (applicationName: string): ThunkResult
   };
 };
 
-export const deleteApplicationAction = (applicationName: string): ThunkResult<Promise<void>> => {
+export const deleteApplicationAction = (namespace: string, name: string): ThunkResult<Promise<void>> => {
   return async dispatch => {
-    const application = getApplicationByName(applicationName);
-    console.log("deleteApplicationAction", applicationName);
-    await deleteKappApplication(application);
+    await deleteKappApplication(namespace, name);
 
     dispatch({
       type: DELETE_APPLICATION,
-      payload: { applicationName }
+      payload: { applicationName: name }
     });
   };
 };
