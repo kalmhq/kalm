@@ -43,6 +43,17 @@ func updateApplication(application *v1alpha1.Application) {
 
 func createApplication(application *v1alpha1.Application) {
 	Expect(k8sClient.Create(context.Background(), application)).Should(Succeed())
+
+	// after the finalizer is set, the application won't auto change
+	Eventually(func() bool {
+		reloadApplication(application)
+		for i := range application.Finalizers {
+			if application.Finalizers[i] == finalizerName {
+				return true
+			}
+		}
+		return false
+	}, timeout, interval).Should(Equal(true))
 }
 
 func deleteApplication(application *v1alpha1.Application) {
