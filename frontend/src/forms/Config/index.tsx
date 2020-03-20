@@ -5,7 +5,7 @@ import { CustomTextField } from "../Basic";
 import { makeStyles, Theme } from "@material-ui/core/styles";
 import { Button, FormControl } from "@material-ui/core";
 import { ValidatorRequired, ValidatorName } from "../validator";
-import { ConfigNode } from "../../actions";
+import { ConfigNode } from "../../types/config";
 import Immutable from "immutable";
 import { CustomEditor } from "./editor";
 import { CustomCascader } from "./cascader";

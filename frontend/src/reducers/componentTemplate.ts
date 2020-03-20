@@ -1,15 +1,15 @@
 import Immutable from "immutable";
 import { ImmutableMap } from "../typings";
+import { Actions } from "../types";
 import {
-  CREATE_COMPONENT,
   ComponentTemplate,
-  UPDATE_COMPONENT,
-  DELETE_COMPONENT,
-  DUPLICATE_COMPONENT,
+  LOAD_COMPONENT_TEMPLATES_PENDING,
   LOAD_COMPONENT_TEMPLATES_FULFILLED,
-  LOAD_COMPONENT_TEMPLATES_PENDING
-} from "../actions";
-import { Actions } from "../actions";
+  CREATE_COMPONENT,
+  UPDATE_COMPONENT,
+  DUPLICATE_COMPONENT,
+  DELETE_COMPONENT
+} from "../types/componentTemplate";
 
 export type State = ImmutableMap<{
   componentTemplates: Immutable.OrderedMap<string, ComponentTemplate>;

@@ -1,6 +1,7 @@
 import { ImmutableMap } from "../typings";
-import { Actions, SET_SETTINGS } from "../actions";
+import { Actions } from "../types";
 import Immutable from "immutable";
+import { SET_SETTINGS } from "../types/common";
 
 export interface SettingObject {
   isDisplayingHelpers: boolean;
@@ -9,8 +10,7 @@ export interface SettingObject {
 export type State = ImmutableMap<SettingObject>;
 
 const initialState: State = Immutable.Map({
-  isDisplayingHelpers:
-    window.localStorage.getItem("isDisplayingHelpers") === "true"
+  isDisplayingHelpers: window.localStorage.getItem("isDisplayingHelpers") === "true"
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {
@@ -22,10 +22,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
     }
   }
 
-  window.localStorage.setItem(
-    "isDisplayingHelpers",
-    state.get("isDisplayingHelpers").toString()
-  );
+  window.localStorage.setItem("isDisplayingHelpers", state.get("isDisplayingHelpers").toString());
 
   return state;
 };

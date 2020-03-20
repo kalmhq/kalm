@@ -1,6 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-import { TDispatchProp } from "../../actions";
+import { TDispatchProp } from "../../types";
 import { loadNodesAction } from "../../actions/node";
 import { K8sApiPerfix } from "../../actions/kubernetesApi";
 import { RootState } from "../../reducers";

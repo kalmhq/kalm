@@ -1,7 +1,7 @@
 import { Map } from "immutable";
 import { V1alpha1Dependency } from "../kappModel/v1alpha1Dependency";
 import { ObjectSerializer } from "../model/models";
-import { KappDependency, KappDependencyStatus, KappDependencyStatusText } from "../types";
+import { KappDependency, KappDependencyStatus, KappDependencyStatusText } from "../types/dependency";
 
 // name: string;
 // version: string;

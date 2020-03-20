@@ -6,10 +6,11 @@ import React, { forwardRef } from "react";
 import { connect, DispatchProp } from "react-redux";
 import { arrayUnshift, change, WrappedFieldArrayProps } from "redux-form";
 import { FieldArray } from "redux-form/immutable";
-import { ComponentLikePort, portTypeTCP, portTypeUDP } from "../../actions";
 import { MaterialTableEditSelectField } from "../Basic/select";
 import { MaterialTableEditTextField } from "../Basic/text";
 import { NormalizePort } from "../normalizer";
+import { ComponentLikePort } from "../../types/componentTemplate";
+import { portTypeUDP, portTypeTCP } from "../../types/common";
 
 interface FieldArrayComponentHackType {
   name: any;

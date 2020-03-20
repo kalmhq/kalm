@@ -1,23 +1,19 @@
-import { ThunkAction } from "redux-thunk";
-import { RootState } from "../reducers";
-import {
-  CREATE_CONFIG,
-  Actions,
-  UPDATE_CONFIG,
-  DELETE_CONFIG,
-  ConfigNode,
-  SET_CURRENT_CONFIG_ID_CHAIN,
-  DUPLICATE_CONFIG,
-  LOAD_CONFIGS_PENDING,
-  LOAD_CONFIGS_FULFILLED,
-  ConfigFile
-} from ".";
 import Immutable from "immutable";
 import { randomName } from "../utils";
 import { getKappFiles, createKappFile, updateKappFile, deleteKappFile } from "./kubernetesApi";
 import { convertToCRDFile } from "../convertors/File";
-
-export type ThunkResult<R> = ThunkAction<R, RootState, undefined, Actions>;
+import {
+  ConfigNode,
+  CREATE_CONFIG,
+  UPDATE_CONFIG,
+  DUPLICATE_CONFIG,
+  DELETE_CONFIG,
+  SET_CURRENT_CONFIG_ID_CHAIN,
+  LOAD_CONFIGS_PENDING,
+  LOAD_CONFIGS_FULFILLED,
+  ConfigFile
+} from "../types/config";
+import { ThunkResult } from "../types";
 
 export const createConfigAction = (config: ConfigNode): ThunkResult<Promise<void>> => {
   return async dispatch => {

@@ -7,12 +7,13 @@ import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { submit, WrappedFieldArrayProps, change, arrayPush } from "redux-form";
 import { FieldArray, formValueSelector } from "redux-form/immutable";
-import { ComponentLike, EnvTypeExternal, newEmptyComponentLike } from "../../actions";
 import { RootState } from "../../reducers";
 import { ComponentLikeForm } from "../ComponentLike";
 import { CustomizedDialog } from "./ComponentModal";
 import { KappTooltip } from "./KappTooltip";
 import { ApplicationComponent, SharedEnv } from "../../types/application";
+import { ComponentLike, newEmptyComponentLike } from "../../types/componentTemplate";
+import { EnvTypeExternal } from "../../types/common";
 
 const mapStateToProps = (state: RootState) => {
   const selector = formValueSelector("application");

@@ -8,8 +8,8 @@ import { ComponentLikeForm } from "../../forms/ComponentLike";
 import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
 import { ComponentTemplateDataWrapper, WithComponentTemplatesDataProps } from "./DataWrapper";
-import { ComponentTemplate, ComponentLike } from "../../actions";
 import RemoteSubmitComponentLike from "../../forms/ComponentLike/remoteSubmitComponentLike";
+import { ComponentLike, ComponentTemplate } from "../../types/componentTemplate";
 
 const styles = (theme: Theme) => createStyles({});
 
