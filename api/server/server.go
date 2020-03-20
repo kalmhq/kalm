@@ -29,7 +29,13 @@ func newEchoInstance() *echo.Echo {
 	}))
 
 	// TODO, only enabled cors on dev env
-	e.Use(middleware.CORS())
+
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
+		MaxAge:       86400,
+	}))
+
 	e.HTTPErrorHandler = customHTTPErrorHandler
 
 	return e

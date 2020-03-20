@@ -19,6 +19,7 @@ import (
 	"context"
 	"github.com/go-logr/logr"
 	appv1 "k8s.io/api/apps/v1"
+	"k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -43,6 +44,8 @@ var finalizerName = "storage.finalizers.kapp.dev"
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=applications/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=extensions,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=extensions,resources=deployments/status,verbs=get
+// +kubebuilder:rbac:groups=batch,resources=cronjobs,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=batch,resources=cronjobs/status,verbs=get
 
 func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
@@ -85,6 +88,23 @@ func (r *ApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		return err
 	}
 
+	if err := mgr.GetFieldIndexer().IndexField(&v1beta1.CronJob{}, ownerKey, func(rawObj runtime.Object) []string {
+		cronjob := rawObj.(*v1beta1.CronJob)
+		owner := metav1.GetControllerOf(cronjob)
+
+		if owner == nil {
+			return nil
+		}
+
+		if owner.APIVersion != apiGVStr || owner.Kind != "Application" {
+			return nil
+		}
+
+		return []string{owner.Name}
+	}); err != nil {
+		return err
+	}
+
 	if err := mgr.GetFieldIndexer().IndexField(&corev1.Service{}, ownerKey, func(rawObj runtime.Object) []string {
 		// grab the job object, extract the owner...
 		service := rawObj.(*corev1.Service)
@@ -106,6 +126,7 @@ func (r *ApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1alpha1.Application{}).
 		Owns(&appv1.Deployment{}).
+		Owns(&v1beta1.CronJob{}).
 		Owns(&corev1.Service{}).
 		Complete(r)
 }

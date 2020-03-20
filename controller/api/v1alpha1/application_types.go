@@ -83,18 +83,9 @@ type ApplicationSpec struct {
 	ImagePullSecretName string          `json:"imagePullSecretName,omitempty"`
 }
 
-type ComponentStatus struct {
-	Name             string                 `json:"name"`
-	DeploymentStatus apps1.DeploymentStatus `json:"deploymentStatus,omitempty"`
-	ServiceStatus    v1.ServiceStatus       `json:"serviceStatus,omitempty"`
-}
-
 // ApplicationStatus defines the observed state of Application
 type ApplicationStatus struct {
 	IsActive bool `json:"isActive,omitempty"`
-
-	// Failed to use map here, so use array for now.
-	ComponentStatus []ComponentStatus `json:"componentStatus,omitempty"`
 }
 
 // +kubebuilder:object:root=true
