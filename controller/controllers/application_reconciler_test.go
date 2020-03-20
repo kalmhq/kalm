@@ -33,6 +33,28 @@ func generateEmptyApplication() *v1alpha1.Application {
 	return application
 }
 
+func reloadApplication(application *v1alpha1.Application) {
+	Expect(k8sClient.Get(context.Background(), types.NamespacedName{Name: application.Name, Namespace: application.Namespace}, application)).Should(Succeed())
+}
+
+func updateApplication(application *v1alpha1.Application) {
+	Expect(k8sClient.Update(context.Background(), application)).Should(Succeed())
+}
+
+func createApplication(application *v1alpha1.Application) {
+	Expect(k8sClient.Create(context.Background(), application)).Should(Succeed())
+}
+
+func deleteApplication(application *v1alpha1.Application) {
+	Expect(k8sClient.Delete(context.Background(), application)).Should(Succeed())
+}
+
+func getApplicationDeployments(application *v1alpha1.Application) []v1.Deployment {
+	var deploymentList v1.DeploymentList
+	_ = k8sClient.List(context.Background(), &deploymentList, client.MatchingLabels{"kapp-application": application.Name})
+	return deploymentList.Items
+}
+
 const timeout = time.Second * 20
 const interval = time.Millisecond * 500
 
@@ -42,7 +64,7 @@ var _ = Describe("Application basic CRUD", func() {
 	It("Should handle application correctly", func() {
 		By("Create")
 		application := generateEmptyApplication()
-		Expect(k8sClient.Create(context.Background(), application)).Should(Succeed())
+		createApplication(application)
 
 		By("Ready")
 		fetched := &v1alpha1.Application{}
@@ -56,7 +78,8 @@ var _ = Describe("Application basic CRUD", func() {
 			Value: "value",
 			Type:  v1alpha1.EnvVarTypeStatic,
 		})
-		Expect(k8sClient.Update(context.Background(), fetched)).Should(Succeed())
+
+		updateApplication(fetched)
 		fetchedUpdated := &v1alpha1.Application{}
 		Eventually(func() bool {
 			_ = k8sClient.Get(context.Background(), types.NamespacedName{Name: application.Name, Namespace: application.Namespace}, fetchedUpdated)
@@ -65,9 +88,8 @@ var _ = Describe("Application basic CRUD", func() {
 
 		By("Delete")
 		Eventually(func() error {
-			f := &v1alpha1.Application{}
-			_ = k8sClient.Get(context.Background(), types.NamespacedName{Name: application.Name, Namespace: application.Namespace}, f)
-			return k8sClient.Delete(context.Background(), f)
+			reloadApplication(application)
+			return k8sClient.Delete(context.Background(), application)
 		}, timeout, interval).Should(Succeed())
 
 		By("Read after delete")
@@ -104,13 +126,13 @@ var _ = Describe("Application Envs", func() {
 			application := generateApplication()
 			Expect(k8sClient.Create(context.Background(), application)).Should(Succeed())
 
-			deploymentList := &v1.DeploymentList{}
+			var deployments []v1.Deployment
 			Eventually(func() bool {
-				_ = k8sClient.List(context.Background(), deploymentList, client.MatchingLabels{"kapp-application": application.Name})
-				return len(deploymentList.Items) == 1
+				deployments = getApplicationDeployments(application)
+				return len(deployments) == 1
 			}, timeout, interval).Should(Equal(true))
 
-			deployment := deploymentList.Items[0]
+			deployment := deployments[0]
 			Expect(deployment.Name).Should(Equal(getDeploymentName(application.Name, "test")))
 			Expect(*deployment.Spec.Replicas).Should(Equal(int32(1)))
 			Expect(len(deployment.Spec.Template.Spec.Containers)).Should(Equal(1))
@@ -121,46 +143,44 @@ var _ = Describe("Application Envs", func() {
 			deployment.Spec.Template.Spec.Containers[0].Env[0].Value = "new-value"
 			Expect(k8sClient.Update(context.Background(), &deployment)).Should(Succeed())
 			Eventually(func() bool {
-				_ = k8sClient.List(context.Background(), deploymentList, client.MatchingLabels{"kapp-application": application.Name})
-				return len(deploymentList.Items) == 1 && deploymentList.Items[0].Spec.Template.Spec.Containers[0].Env[0].Value == "bar"
+				deployments = getApplicationDeployments(application)
+				return len(deployments) == 1 &&
+					deployments[0].Spec.Template.Spec.Containers[0].Env[0].Value == "bar"
 			}, timeout, interval).Should(Equal(true))
 
 			By("Add env")
-			Expect(k8sClient.Get(context.Background(), types.NamespacedName{Name: application.Name, Namespace: application.Namespace}, application)).Should(Succeed())
+			reloadApplication(application)
 			application.Spec.Components[0].Env = append(application.Spec.Components[0].Env, v1alpha1.EnvVar{
 				Name:  "newName",
 				Value: "newValue",
 				Type:  v1alpha1.EnvVarTypeStatic,
 			})
-			Expect(k8sClient.Update(context.Background(), application)).Should(Succeed())
+			updateApplication(application)
 			Eventually(func() bool {
-				var deploymentList v1.DeploymentList
-				_ = k8sClient.List(context.Background(), &deploymentList, client.MatchingLabels{"kapp-application": application.Name})
-				return len(deploymentList.Items) == 1 &&
-					len(deploymentList.Items[0].Spec.Template.Spec.Containers[0].Env) == 2 &&
-					deploymentList.Items[0].Spec.Template.Spec.Containers[0].Env[1].Value == "newValue"
+				deployments = getApplicationDeployments(application)
+				return len(deployments) == 1 &&
+					len(deployments[0].Spec.Template.Spec.Containers[0].Env) == 2 &&
+					deployments[0].Spec.Template.Spec.Containers[0].Env[1].Value == "newValue"
 			}, timeout, interval).Should(Equal(true))
 
 			By("Update env")
-			Expect(k8sClient.Get(context.Background(), types.NamespacedName{Name: application.Name, Namespace: application.Namespace}, application)).Should(Succeed())
+			reloadApplication(application)
 			application.Spec.Components[0].Env[1].Value = "newValue2"
-			Expect(k8sClient.Update(context.Background(), application)).Should(Succeed())
+			updateApplication(application)
 			Eventually(func() bool {
-				var deploymentList v1.DeploymentList
-				_ = k8sClient.List(context.Background(), &deploymentList, client.MatchingLabels{"kapp-application": application.Name})
-				return len(deploymentList.Items) == 1 &&
-					deploymentList.Items[0].Spec.Template.Spec.Containers[0].Env[1].Value == "newValue2"
+				deployments = getApplicationDeployments(application)
+				return len(deployments) == 1 &&
+					deployments[0].Spec.Template.Spec.Containers[0].Env[1].Value == "newValue2"
 			}, timeout, interval).Should(Equal(true))
 
 			By("Delete envs")
-			Expect(k8sClient.Get(context.Background(), types.NamespacedName{Name: application.Name, Namespace: application.Namespace}, application)).Should(Succeed())
+			reloadApplication(application)
 			application.Spec.Components[0].Env = application.Spec.Components[0].Env[:0]
-			Expect(k8sClient.Update(context.Background(), application)).Should(Succeed())
+			updateApplication(application)
 			Eventually(func() bool {
-				var deploymentList v1.DeploymentList
-				_ = k8sClient.List(context.Background(), &deploymentList, client.MatchingLabels{"kapp-application": application.Name})
-				return len(deploymentList.Items) == 1 &&
-					len(deploymentList.Items[0].Spec.Template.Spec.Containers[0].Env) == 0
+				deployments = getApplicationDeployments(application)
+				return len(deployments) == 1 &&
+					len(deployments[0].Spec.Template.Spec.Containers[0].Env) == 0
 			}, timeout, interval).Should(Equal(true))
 		})
 	})
