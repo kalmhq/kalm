@@ -1,4 +1,4 @@
-import { ConfigNode } from "../actions";
+import { ConfigNode } from "../types/config";
 import { store } from "../store";
 import { CascaderOptionType } from "antd/es/cascader";
 import Immutable from "immutable";

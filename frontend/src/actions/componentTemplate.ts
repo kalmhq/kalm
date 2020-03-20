@@ -1,19 +1,19 @@
 import {
-  ComponentTemplate,
-  CREATE_COMPONENT,
-  DELETE_COMPONENT,
-  DUPLICATE_COMPONENT,
-  ThunkResult,
-  UPDATE_COMPONENT,
-  LOAD_COMPONENT_TEMPLATES_FULFILLED,
-  LOAD_COMPONENT_TEMPLATES_PENDING
-} from ".";
-import {
   getKappComponentTemplates,
   updateKappComonentTemplate,
   createKappComonentTemplate,
   deleteKappComonentTemplate
 } from "./kubernetesApi";
+import {
+  ComponentTemplate,
+  CREATE_COMPONENT,
+  DUPLICATE_COMPONENT,
+  UPDATE_COMPONENT,
+  LOAD_COMPONENT_TEMPLATES_PENDING,
+  LOAD_COMPONENT_TEMPLATES_FULFILLED,
+  DELETE_COMPONENT
+} from "../types/componentTemplate";
+import { ThunkResult } from "../types";
 
 export const createComponentTemplateAction = (componentTemplateRaw: ComponentTemplate): ThunkResult<Promise<void>> => {
   return async dispatch => {

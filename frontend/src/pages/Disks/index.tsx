@@ -1,15 +1,9 @@
-import {
-  Box,
-  createStyles,
-  Theme,
-  WithStyles,
-  withStyles
-} from "@material-ui/core";
+import { Box, createStyles, Theme, WithStyles, withStyles } from "@material-ui/core";
 import { Alert } from "@material-ui/lab";
 import MaterialTable from "material-table";
 import React from "react";
 import { connect } from "react-redux";
-import { TDispatchProp } from "../../actions";
+import { TDispatchProp } from "../../types";
 import { K8sApiPerfix } from "../../actions/kubernetesApi";
 import { loadPersistentVolumes } from "../../actions/persistentVolumn";
 import { RootState } from "../../reducers";
@@ -34,9 +28,7 @@ interface States {
   loadingNodes: boolean;
 }
 
-type Props = ReturnType<typeof mapStateToProps> &
-  TDispatchProp &
-  WithStyles<typeof styles>;
+type Props = ReturnType<typeof mapStateToProps> & TDispatchProp & WithStyles<typeof styles>;
 
 export class DisksRaw extends React.Component<Props, States> {
   constructor(props: Props) {
@@ -139,9 +131,8 @@ export class DisksRaw extends React.Component<Props, States> {
           {loadNodesError ? (
             <Alert severity="error">
               <Box>
-                Kapp fails to load persistentVolumns from current cluster with
-                endpoint <strong>{K8sApiPerfix}</strong>. Please check your
-                connection.
+                Kapp fails to load persistentVolumns from current cluster with endpoint <strong>{K8sApiPerfix}</strong>.
+                Please check your connection.
               </Box>
             </Alert>
           ) : null}

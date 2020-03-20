@@ -1,5 +1,4 @@
 import axios from "axios";
-import { ComponentTemplate, ConfigFile } from ".";
 import {
   convertFromCRDComponentTemplateSpec,
   convertToCRDComponentTemplateSpec
@@ -19,6 +18,8 @@ import { convertFromCRDFile } from "../convertors/File";
 import { store } from "../store";
 import { ApplicationList, Application } from "../types/application";
 import Immutable from "immutable";
+import { ComponentTemplate } from "../types/componentTemplate";
+import { ConfigFile } from "../types/config";
 
 export const K8sApiPerfix = process.env.REACT_APP_K8S_API_PERFIX;
 
@@ -123,10 +124,8 @@ export const updateKappApplication = async (application: Application): Promise<A
   return Immutable.fromJS(res.data.application);
 };
 
-export const deleteKappApplication = async (application: Application): Promise<void> => {
-  await getAxiosClient().delete(
-    K8sApiPerfix + `/v1alpha1/applications/${application.get("namespace")}/${application.get("name")}`
-  );
+export const deleteKappApplication = async (namespace: string, name: string): Promise<void> => {
+  await getAxiosClient().delete(K8sApiPerfix + `/v1alpha1/applications/${namespace}/${name}`);
 };
 
 export const getDependencies = async () => {
@@ -206,4 +205,10 @@ export const createKappSecret = async (secret: V1Secret): Promise<V1Secret> => {
   const res = await getAxiosClient().post(K8sApiPerfix + `/v1/secrets`, secret);
 
   return res.data;
+};
+
+export const getKappSecret = async (name: string) => {
+  const res = await getAxiosClient().get<ItemList<V1Secret>>(K8sApiPerfix + `/v1/secrets/default/${name}`);
+
+  return res.data as V1Secret;
 };

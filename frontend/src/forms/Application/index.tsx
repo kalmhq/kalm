@@ -6,7 +6,6 @@ import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { InjectedFormProps } from "redux-form";
 import { Field, formValueSelector, getFormValues, reduxForm } from "redux-form/immutable";
-import { ComponentTemplate } from "../../actions";
 import { RootState } from "../../reducers";
 import { HelperContainer } from "../../widgets/Helper";
 import { SwitchField } from "../Basic/switch";
@@ -16,6 +15,7 @@ import { ValidatorRequired, ValidatorName } from "../validator";
 import { Components } from "./component";
 import { SharedEnvs } from "./shardEnv";
 import { Application, SharedEnv } from "../../types/application";
+import { ComponentTemplate } from "../../types/componentTemplate";
 
 const styles = (theme: Theme) =>
   createStyles({

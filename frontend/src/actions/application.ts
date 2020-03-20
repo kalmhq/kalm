@@ -1,4 +1,3 @@
-import { ThunkResult } from ".";
 import {
   updateKappApplication,
   createKappApplication,
@@ -18,6 +17,7 @@ import {
   LOAD_APPLICATION_PENDING,
   LOAD_APPLICATION_FULFILLED
 } from "../types/application";
+import { ThunkResult } from "../types";
 
 export const createApplicationAction = (applicationValues: Application): ThunkResult<Promise<void>> => {
   return async dispatch => {
@@ -53,14 +53,13 @@ export const duplicateApplicationAction = (applicationName: string): ThunkResult
   };
 };
 
-export const deleteApplicationAction = (applicationName: string): ThunkResult<Promise<void>> => {
+export const deleteApplicationAction = (namespace: string, name: string): ThunkResult<Promise<void>> => {
   return async dispatch => {
-    const application = getApplicationByName(applicationName);
-    await deleteKappApplication(application);
+    await deleteKappApplication(namespace, name);
 
     dispatch({
       type: DELETE_APPLICATION,
-      payload: { applicationName }
+      payload: { applicationName: name }
     });
   };
 };

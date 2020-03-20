@@ -8,7 +8,7 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import { deleteConfigAction, duplicateConfigAction } from "../../actions/config";
 import { ThunkDispatch } from "redux-thunk";
-import { Actions, ConfigNode } from "../../actions";
+import { Actions } from "../../types";
 import { FileTree } from "../../widgets/FileTree";
 import { getCurrentConfig } from "../../selectors/config";
 import SyntaxHighlighter from "react-syntax-highlighter";
@@ -18,6 +18,7 @@ import { ConfigEditDialog } from "../../widgets/ConfigEditDialog";
 import { setSuccessNotificationAction, setErrorNotificationAction } from "../../actions/notification";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
 import { loadConfigsAction } from "../../actions/config";
+import { ConfigNode } from "../../types/config";
 
 const styles = (theme: Theme) =>
   createStyles({

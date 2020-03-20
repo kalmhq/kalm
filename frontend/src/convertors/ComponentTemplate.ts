@@ -1,7 +1,7 @@
-import { ComponentTemplate, workloadTypeServer } from "../actions";
 import { Map, List } from "immutable";
 import { ObjectSerializer } from "../model/models";
 import { V1alpha1ComponentTemplateSpec } from "../kappModel/v1alpha1ComponentTemplateSpec";
+import { ComponentTemplate, workloadTypeServer } from "../types/componentTemplate";
 
 export const convertFromCRDComponentTemplateSpec = (c: V1alpha1ComponentTemplateSpec): ComponentTemplate => {
   const env = c.env

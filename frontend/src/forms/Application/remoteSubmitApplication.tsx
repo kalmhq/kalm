@@ -1,10 +1,10 @@
 import React from "react";
 import { connect } from "react-redux";
 import { submit } from "redux-form";
-import { DispatchType } from "../../types";
+import { TDispatch } from "../../types";
 import { Button } from "@material-ui/core";
 
-const RemoteSubmitApplication = ({ dispatch }: { dispatch: DispatchType }) => (
+const RemoteSubmitApplication = ({ dispatch }: { dispatch: TDispatch }) => (
   <Button variant="contained" color="primary" onClick={() => dispatch(submit("application"))}>
     Save
   </Button>

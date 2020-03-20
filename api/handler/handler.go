@@ -68,6 +68,7 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 
 	gV1.GET("/secrets", h.handleGetSecrets)
 	gV1.POST("/secrets", h.handleCreateSecrets)
+	gV1.GET("/secrets/:namespace/:name", h.handleGetSecret)
 
 	gV1Alpha1 := e.Group("/v1alpha1", h.AuthClientMiddleware)
 	gV1Alpha1.GET("/applications", h.handleGetApplications)

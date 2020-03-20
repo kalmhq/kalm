@@ -9,8 +9,8 @@ import {
   DUPLICATE_CONFIG,
   LOAD_CONFIGS_FULFILLED,
   LOAD_CONFIGS_PENDING
-} from "../actions";
-import { Actions } from "../actions";
+} from "../types/config";
+import { Actions } from "../types";
 
 export type State = ImmutableMap<{
   currentConfigIdChain: string[];

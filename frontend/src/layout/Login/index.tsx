@@ -2,7 +2,7 @@ import { push } from "connected-react-router";
 import React, { ChangeEvent } from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
-import { Actions } from "../../actions";
+import { Actions } from "../../types";
 import { loginAction } from "../../actions/auth";
 import { RootState } from "../../reducers";
 import { Button, TextField, Theme, withStyles, Paper, WithStyles, createStyles } from "@material-ui/core";

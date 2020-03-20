@@ -1,7 +1,7 @@
 import Immutable from "immutable";
-import { Actions, LOAD_DEPENDENCIES_FULFILLED, LOAD_DEPENDENCIES_PENDING } from "../actions";
-import { KappDependency } from "../types";
+import { LOAD_DEPENDENCIES_FULFILLED, LOAD_DEPENDENCIES_PENDING, KappDependency } from "../types/dependency";
 import { ImmutableMap } from "../typings";
+import { Actions } from "../types";
 
 export interface DependencyStateContent {
   dependencies: Immutable.OrderedMap<string, KappDependency>;

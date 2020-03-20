@@ -1,7 +1,7 @@
 import { getFormValues } from "redux-form/immutable";
-import { EnvTypeExternal } from "../actions/";
 import { store } from "../store";
 import { Application } from "../types/application";
+import { EnvTypeExternal } from "../types/common";
 
 export const getApplicationByName = (applicationName: string): Application => {
   const state = store.getState();

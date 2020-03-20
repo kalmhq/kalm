@@ -8,7 +8,7 @@ import { useSpring, animated } from "react-spring/web.cjs"; // web.cjs is requir
 import FolderIcon from "@material-ui/icons/Folder";
 import FolderOpenIcon from "@material-ui/icons/FolderOpen";
 import InsertDriveFileOutlinedIcon from "@material-ui/icons/InsertDriveFileOutlined";
-import { ConfigNode } from "../../actions";
+import { ConfigNode } from "../../types/config";
 import { setCurrentConfigIdChainAction } from "../../actions/config";
 
 function TransitionComponent(props: any) {
