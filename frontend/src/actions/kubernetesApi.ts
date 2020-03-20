@@ -1,7 +1,9 @@
 import axios from "axios";
 import { ComponentTemplate, ConfigFile } from ".";
-import { convertFromCRDComponentTemplate } from "../convertors/ComponentTemplate";
-import { V1alpha1ComponentTemplate } from "../kappModel/v1alpha1ComponentTemplate";
+import {
+  convertFromCRDComponentTemplateSpec,
+  convertToCRDComponentTemplateSpec
+} from "../convertors/ComponentTemplate";
 import {
   V1NodeList,
   V1PersistentVolumeList,
@@ -11,7 +13,7 @@ import {
   V1Secret
 } from "../model/models";
 import { ItemList } from "../kappModel/List";
-import { V1alpha1Dependency, V1alpha1File } from "../kappModel";
+import { V1alpha1Dependency, V1alpha1File, V1alpha1ComponentTemplateSpec } from "../kappModel";
 import { convertFromCRDDependency } from "../convertors/Dependency";
 import { convertFromCRDFile } from "../convertors/File";
 import { store } from "../store";
@@ -62,28 +64,32 @@ export const getPersistentVolumes = async () => {
 };
 
 export const getKappComponentTemplates = async () => {
-  const res = await getAxiosClient().get<ItemList<V1alpha1ComponentTemplate>>(K8sApiPerfix + "/v1/componenttemplates");
-
-  return res.data.items.map(convertFromCRDComponentTemplate);
+  const res = await getAxiosClient().get<V1alpha1ComponentTemplateSpec[]>(
+    K8sApiPerfix + "/v1alpha1/componenttemplates"
+  );
+  return res.data.map(convertFromCRDComponentTemplateSpec);
 };
 
-export const updateKappComonentTemplate = async (component: V1alpha1ComponentTemplate): Promise<ComponentTemplate> => {
-  const res = await getAxiosClient().put(
-    K8sApiPerfix + `/v1/componenttemplates/${component.metadata!.name}`,
-    component
+export const createKappComonentTemplate = async (component: ComponentTemplate): Promise<ComponentTemplate> => {
+  const res = await getAxiosClient().post(
+    K8sApiPerfix + `/v1alpha1/componenttemplates`,
+    convertToCRDComponentTemplateSpec(component)
   );
 
-  return convertFromCRDComponentTemplate(res.data);
+  return convertFromCRDComponentTemplateSpec(res.data);
 };
 
-export const createKappComonentTemplate = async (component: V1alpha1ComponentTemplate): Promise<ComponentTemplate> => {
-  const res = await getAxiosClient().post(K8sApiPerfix + `/v1/componenttemplates`, component);
+export const updateKappComonentTemplate = async (component: ComponentTemplate): Promise<ComponentTemplate> => {
+  const res = await getAxiosClient().put(
+    K8sApiPerfix + `/v1alpha1/componenttemplates/${component.get("name")}`,
+    convertToCRDComponentTemplateSpec(component)
+  );
 
-  return convertFromCRDComponentTemplate(res.data);
+  return convertFromCRDComponentTemplateSpec(res.data);
 };
 
-export const deleteKappComonentTemplate = async (component: V1alpha1ComponentTemplate): Promise<void> => {
-  await getAxiosClient().delete(K8sApiPerfix + `/v1/componenttemplates/${component.metadata!.name}`);
+export const deleteKappComonentTemplate = async (component: ComponentTemplate): Promise<void> => {
+  await getAxiosClient().delete(K8sApiPerfix + `/v1alpha1/componenttemplates/${component.get("name")}`);
 
   // return convertFromCRDComponentTemplate(res.data);
 };
