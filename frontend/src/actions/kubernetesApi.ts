@@ -206,3 +206,9 @@ export const createKappSecret = async (secret: V1Secret): Promise<V1Secret> => {
 
   return res.data;
 };
+
+export const getKappSecret = async (name: string) => {
+  const res = await getAxiosClient().get<ItemList<V1Secret>>(K8sApiPerfix + `/v1/secrets/default/${name}`);
+
+  return res.data as V1Secret;
+};
