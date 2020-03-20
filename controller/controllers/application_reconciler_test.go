@@ -125,6 +125,43 @@ var _ = Describe("Application Envs", func() {
 				return len(deploymentList.Items) == 1 && deploymentList.Items[0].Spec.Template.Spec.Containers[0].Env[0].Value == "bar"
 			}, timeout, interval).Should(Equal(true))
 
+			By("Add env")
+			Expect(k8sClient.Get(context.Background(), types.NamespacedName{Name: application.Name, Namespace: application.Namespace}, application)).Should(Succeed())
+			application.Spec.Components[0].Env = append(application.Spec.Components[0].Env, v1alpha1.EnvVar{
+				Name:  "newName",
+				Value: "newValue",
+				Type:  v1alpha1.EnvVarTypeStatic,
+			})
+			Expect(k8sClient.Update(context.Background(), application)).Should(Succeed())
+			Eventually(func() bool {
+				var deploymentList v1.DeploymentList
+				_ = k8sClient.List(context.Background(), &deploymentList, client.MatchingLabels{"kapp-application": application.Name})
+				return len(deploymentList.Items) == 1 &&
+					len(deploymentList.Items[0].Spec.Template.Spec.Containers[0].Env) == 2 &&
+					deploymentList.Items[0].Spec.Template.Spec.Containers[0].Env[1].Value == "newValue"
+			}, timeout, interval).Should(Equal(true))
+
+			By("Update env")
+			Expect(k8sClient.Get(context.Background(), types.NamespacedName{Name: application.Name, Namespace: application.Namespace}, application)).Should(Succeed())
+			application.Spec.Components[0].Env[1].Value = "newValue2"
+			Expect(k8sClient.Update(context.Background(), application)).Should(Succeed())
+			Eventually(func() bool {
+				var deploymentList v1.DeploymentList
+				_ = k8sClient.List(context.Background(), &deploymentList, client.MatchingLabels{"kapp-application": application.Name})
+				return len(deploymentList.Items) == 1 &&
+					deploymentList.Items[0].Spec.Template.Spec.Containers[0].Env[1].Value == "newValue2"
+			}, timeout, interval).Should(Equal(true))
+
+			By("Delete envs")
+			Expect(k8sClient.Get(context.Background(), types.NamespacedName{Name: application.Name, Namespace: application.Namespace}, application)).Should(Succeed())
+			application.Spec.Components[0].Env = application.Spec.Components[0].Env[:0]
+			Expect(k8sClient.Update(context.Background(), application)).Should(Succeed())
+			Eventually(func() bool {
+				var deploymentList v1.DeploymentList
+				_ = k8sClient.List(context.Background(), &deploymentList, client.MatchingLabels{"kapp-application": application.Name})
+				return len(deploymentList.Items) == 1 &&
+					len(deploymentList.Items[0].Spec.Template.Spec.Containers[0].Env) == 0
+			}, timeout, interval).Should(Equal(true))
 		})
 	})
 })
