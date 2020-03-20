@@ -15,8 +15,8 @@ import (
 var _ = Describe("File Controller", func() {
 	defer GinkgoRecover()
 
-	const timeout = time.Second * 10
-	const interval = time.Second * 1
+	const timeout = time.Second * 20
+	const interval = time.Millisecond * 500
 
 	BeforeEach(func() {
 	})
