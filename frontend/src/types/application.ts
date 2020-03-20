@@ -1,7 +1,17 @@
 import Immutable from "immutable";
 import { ImmutableMap } from "../typings";
 import { V1beta1CronJobStatus, V1DeploymentStatus } from "../model/models";
-import { ComponentLikeContent, Status } from "../actions";
+import { ComponentLikeContent } from "./componentTemplate";
+import { Status } from "./common";
+
+export const CREATE_APPLICATION = "CREATE_APPLICATION";
+export const UPDATE_APPLICATION = "UPDATE_APPLICATION";
+export const DELETE_APPLICATION = "DELETE_APPLICATION";
+export const DUPLICATE_APPLICATION = "DUPLICATE_APPLICATION";
+export const LOAD_APPLICATIONS_PENDING = "LOAD_APPLICATIONS_PENDING";
+export const LOAD_APPLICATIONS_FULFILLED = "LOAD_APPLICATIONS_FULFILLED";
+export const LOAD_APPLICATION_PENDING = "LOAD_APPLICATION_PENDING";
+export const LOAD_APPLICATION_FULFILLED = "LOAD_APPLICATION_FULFILLED";
 
 export type SharedEnv = ImmutableMap<{
   name: string;
@@ -81,15 +91,6 @@ export type ApplicationList = Immutable.List<ApplicationListItem>;
 //   sharedEnvs: Immutable.List<V1EnvVar>;
 //   components: Immutable.List<V1alpha1ApplicationSpecComponents>;
 // }>;
-
-export const CREATE_APPLICATION = "CREATE_APPLICATION";
-export const UPDATE_APPLICATION = "UPDATE_APPLICATION";
-export const DELETE_APPLICATION = "DELETE_APPLICATION";
-export const DUPLICATE_APPLICATION = "DUPLICATE_APPLICATION";
-export const LOAD_APPLICATIONS_PENDING = "LOAD_APPLICATIONS_PENDING";
-export const LOAD_APPLICATIONS_FULFILLED = "LOAD_APPLICATIONS_FULFILLED";
-export const LOAD_APPLICATION_PENDING = "LOAD_APPLICATION_PENDING";
-export const LOAD_APPLICATION_FULFILLED = "LOAD_APPLICATION_FULFILLED";
 
 export interface CreateApplicationAction {
   type: typeof CREATE_APPLICATION;

@@ -2,7 +2,7 @@ import React from "react";
 import { RootState } from "../../reducers";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
-import { Actions } from "../../actions";
+import { Actions } from "../../types";
 import { loadApplicationsAction } from "../../actions/application";
 
 const mapStateToProps = (state: RootState) => {

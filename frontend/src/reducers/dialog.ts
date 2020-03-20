@@ -1,12 +1,12 @@
 import Immutable from "immutable";
 import {
-  Actions,
   ControlledDialogParams,
   DESTROY_CONTROLLED_DIALOG,
   INIT_CONTROLLED_DIALOG,
   OPEN_CONTROLLED_DIALOG,
   CLOSE_CONTROLLED_DIALOG
-} from "../actions";
+} from "../types/common";
+import { Actions } from "../types";
 
 export type State = Immutable.Map<string, ControlledDialogParams<any>>;
 

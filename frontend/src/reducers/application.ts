@@ -1,5 +1,5 @@
 import Immutable from "immutable";
-import { Actions } from "../actions";
+import { Actions } from "../types";
 import { ImmutableMap } from "../typings";
 import {
   ApplicationList,

@@ -1,5 +1,6 @@
-import { LOAD_NODES, ThunkResult } from ".";
 import { getNodes } from "./kubernetesApi";
+import { ThunkResult } from "../types";
+import { LOAD_NODES } from "../types/common";
 
 export const loadNodesAction = (): ThunkResult<Promise<void>> => {
   return async dispatch => {

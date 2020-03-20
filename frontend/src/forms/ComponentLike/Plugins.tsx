@@ -4,13 +4,14 @@ import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { change, submit, WrappedFieldArrayProps } from "redux-form";
 import { FieldArray } from "redux-form/immutable";
-import { newEmptyPlugin, Plugin, portTypeTCP } from "../../actions";
 import { closeDialogAction, openDialogAction } from "../../actions/dialog";
 import { RootState } from "../../reducers";
 import { ControlledDialog } from "../../widgets/ControlledDialog";
 import { PluginForm } from "../Plugin";
 import SyntaxHighlighter from "react-syntax-highlighter/dist/cjs/default-highlight";
 import { monokai } from "react-syntax-highlighter/dist/esm/styles/hljs";
+import { newEmptyPlugin, Plugin } from "../../types/componentTemplate";
+import { portTypeTCP } from "../../types/common";
 
 interface FieldArrayComponentHackType {
   name: any;

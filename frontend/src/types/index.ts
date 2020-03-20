@@ -1,30 +1,20 @@
-import { ThunkDispatch } from "redux-thunk";
+import { ThunkDispatch, ThunkAction } from "redux-thunk";
 import { RootState } from "../reducers";
-import { Actions } from "../actions";
-import { ImmutableMap } from "../typings";
+import { CommonActions } from "./common";
+import { ApplicationActions } from "./application";
+import { ComponentTemplateActions } from "./componentTemplate";
+import { ConfigActions } from "./config";
+import { UserActions } from "./user";
+import { DependencyActions } from "./dependency";
 
-export type DispatchType = ThunkDispatch<RootState, undefined, Actions>;
+export type Actions =
+  | CommonActions
+  | ApplicationActions
+  | ComponentTemplateActions
+  | ConfigActions
+  | UserActions
+  | DependencyActions;
 
-export enum KappDependencyStatus {
-  NotInstalled,
-  InstallFailed,
-  Installing,
-  Uninstalling,
-  Running
-}
-
-export const KappDependencyStatusText = ["Not Installed", "Install Failed", "Installing", "Uninstalling", "Running"];
-
-export interface KappDependencyContent {
-  name: string;
-  type: string;
-  version: string;
-  imageLink: string;
-  description: string;
-  provider: string;
-  status: KappDependencyStatus;
-  statusText?: string;
-  projectHomepageLink: string;
-}
-
-export type KappDependency = ImmutableMap<KappDependencyContent>;
+export type ThunkResult<R> = ThunkAction<R, RootState, undefined, Actions>;
+export type TDispatch = ThunkDispatch<RootState, undefined, Actions>;
+export type TDispatchProp = { dispatch: TDispatch };

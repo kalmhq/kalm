@@ -2,15 +2,15 @@ import React from "react";
 import Dialog from "@material-ui/core/Dialog";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogTitle from "@material-ui/core/DialogTitle";
-import { DispatchType } from "../../types";
+import { TDispatch } from "../../types";
 import ConfigForm from "../../forms/Config";
-import { ConfigNode } from "../../actions";
+import { ConfigNode } from "../../types/config";
 import { updateConfigAction } from "../../actions/config";
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  dispatch: DispatchType;
+  dispatch: TDispatch;
   config: ConfigNode;
 }
 

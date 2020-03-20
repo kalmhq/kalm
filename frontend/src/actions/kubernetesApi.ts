@@ -1,5 +1,4 @@
 import axios from "axios";
-import { ComponentTemplate, ConfigFile } from ".";
 import {
   convertFromCRDComponentTemplateSpec,
   convertToCRDComponentTemplateSpec
@@ -19,6 +18,8 @@ import { convertFromCRDFile } from "../convertors/File";
 import { store } from "../store";
 import { ApplicationList, Application } from "../types/application";
 import Immutable from "immutable";
+import { ComponentTemplate } from "../types/componentTemplate";
+import { ConfigFile } from "../types/config";
 
 export const K8sApiPerfix = process.env.REACT_APP_K8S_API_PERFIX;
 

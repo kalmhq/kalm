@@ -3,7 +3,7 @@ import { RootState } from "../../reducers";
 import { connect } from "react-redux";
 import { loadComponentTemplatesAction } from "../../actions/componentTemplate";
 import { ThunkDispatch } from "redux-thunk";
-import { Actions } from "../../actions";
+import { Actions } from "../../types";
 
 const mapStateToProps = (state: RootState) => {
   const componentTemplatesState = state.get("componentTemplates");

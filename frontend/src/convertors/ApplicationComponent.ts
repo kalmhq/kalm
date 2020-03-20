@@ -1,8 +1,9 @@
 import { List, Map } from "immutable";
-import { workloadTypeServer, EnvTypeStatic, portTypeTCP } from "../actions";
 import { V1alpha1ApplicationSpecComponents } from "../kappModel/v1alpha1ApplicationSpecComponents";
 import { ObjectSerializer } from "../model/models";
 import { ApplicationComponent } from "../types/application";
+import { workloadTypeServer } from "../types/componentTemplate";
+import { EnvTypeStatic, portTypeTCP } from "../types/common";
 
 export const convertFromCRDApplicationComponent = (x: V1alpha1ApplicationSpecComponents): ApplicationComponent => {
   const res: ApplicationComponent = Map({

@@ -3,13 +3,14 @@ import { push } from "connected-react-router";
 import React from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
-import { Actions, ComponentLike, ComponentTemplate, newEmptyComponentLike } from "../../actions";
+import { Actions } from "../../types";
 import { createComponentTemplateAction } from "../../actions/componentTemplate";
 import { setSuccessNotificationAction } from "../../actions/notification";
 import { ComponentLikeForm } from "../../forms/ComponentLike";
 import { RootState } from "../../reducers";
 import { BasePage } from "../BasePage";
 import RemoteSubmitComponentLike from "../../forms/ComponentLike/remoteSubmitComponentLike";
+import { newEmptyComponentLike, ComponentLike, ComponentTemplate } from "../../types/componentTemplate";
 
 const styles = (theme: Theme) =>
   createStyles({

@@ -1,18 +1,18 @@
 import {
-  ThunkResult,
-  LOAD_USERS_PENDING,
-  LOAD_USERS_FULFILLED,
-  ClusterRoleName,
-  clusterRoleNames,
-  UserInterface
-} from ".";
-import {
   getKappClusterRoles,
   getKappClusterRoleBindings,
   getKappServiceAccounts,
   getKappSecrets
 } from "./kubernetesApi";
 import Immutable, { OrderedMap } from "immutable";
+import { ThunkResult } from "../types";
+import {
+  LOAD_USERS_PENDING,
+  UserInterface,
+  clusterRoleNames,
+  ClusterRoleName,
+  LOAD_USERS_FULFILLED
+} from "../types/user";
 
 export const loadDependenciesAction = (): ThunkResult<Promise<void>> => {
   return async dispatch => {
