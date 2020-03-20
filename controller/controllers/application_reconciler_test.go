@@ -98,8 +98,8 @@ var _ = Describe("Application Envs", func() {
 		return app
 	}
 
-	Context("Only Static Envs", func() {
-		It("", func() {
+	Context("Envs", func() {
+		It("Only Static", func() {
 			By("Create Application")
 			application := generateApplication()
 			Expect(k8sClient.Create(context.Background(), application)).Should(Succeed())
@@ -116,6 +116,15 @@ var _ = Describe("Application Envs", func() {
 			Expect(len(deployment.Spec.Template.Spec.Containers)).Should(Equal(1))
 			Expect(len(deployment.Spec.Template.Spec.Containers[0].Env)).Should(Equal(1))
 			Expect(deployment.Spec.Template.Spec.Containers[0].Env[0].Value).Should(Equal("bar"))
+
+			By("Update Deployment manually should have no effects eventually")
+			deployment.Spec.Template.Spec.Containers[0].Env[0].Value = "new-value"
+			Expect(k8sClient.Update(context.Background(), &deployment)).Should(Succeed())
+			Eventually(func() bool {
+				_ = k8sClient.List(context.Background(), deploymentList, client.MatchingLabels{"kapp-application": application.Name})
+				return len(deploymentList.Items) == 1 && deploymentList.Items[0].Spec.Template.Spec.Containers[0].Env[0].Value == "bar"
+			}, timeout, interval).Should(Equal(true))
+
 		})
 	})
 })

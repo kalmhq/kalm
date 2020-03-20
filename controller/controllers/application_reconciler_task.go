@@ -455,6 +455,8 @@ func (act *applicationReconcilerTask) reconcileComponent(component *kappV1Alpha1
 				},
 			},
 		}
+	} else {
+		deployment.Spec.Template = *template
 	}
 
 	//if len(component.Ports) > 0 {
