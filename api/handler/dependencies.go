@@ -13,7 +13,7 @@ func (h *ApiHandler) handleGetDependencies(c echo.Context) error {
 	return c.JSONBlob(200, res)
 }
 
-// TODO
+// TODO list support dependencies
 func (h *ApiHandler) handleGetAvailableDependencies(c echo.Context) error {
 	return c.JSON(200, H{
 		"dependencies": []string{},

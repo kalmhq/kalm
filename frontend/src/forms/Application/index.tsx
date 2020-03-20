@@ -48,7 +48,9 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-export interface Props {}
+export interface Props {
+  isEdit?: boolean;
+}
 
 class ApplicationFormRaw extends React.PureComponent<
   Props &
@@ -62,8 +64,7 @@ class ApplicationFormRaw extends React.PureComponent<
   }
 
   private renderBasic() {
-    // const { classes } = this.props;
-    const isEdit = this.getIsEdit();
+    const { isEdit } = this.props;
     // console.log("isEdit", isEdit);
     return (
       <>
@@ -104,8 +105,8 @@ class ApplicationFormRaw extends React.PureComponent<
   }
 
   private renderStatus() {
-    const { classes } = this.props;
-    const isEdit = this.getIsEdit();
+    const { classes, isEdit } = this.props;
+
     return (
       <>
         <HelperContainer>

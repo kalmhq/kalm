@@ -36,7 +36,7 @@ class ApplicationNewRaw extends React.PureComponent<Props> {
     return (
       <BasePage title="New Application" rightAction={<RemoteSubmitApplication />}>
         <div className={classes.root}>
-          <ApplicationFrom onSubmit={this.submit} />
+          <ApplicationFrom onSubmit={this.submit} isEdit={false} />
         </div>
       </BasePage>
     );
