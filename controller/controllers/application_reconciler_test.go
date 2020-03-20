@@ -33,8 +33,12 @@ func generateEmptyApplication() *v1alpha1.Application {
 	return application
 }
 
+func getApplicationNamespacedName(app *v1alpha1.Application) types.NamespacedName {
+	return types.NamespacedName{Name: app.Name, Namespace: app.Namespace}
+}
+
 func reloadApplication(application *v1alpha1.Application) {
-	Expect(k8sClient.Get(context.Background(), types.NamespacedName{Name: application.Name, Namespace: application.Namespace}, application)).Should(Succeed())
+	Expect(k8sClient.Get(context.Background(), getApplicationNamespacedName(application), application)).Should(Succeed())
 }
 
 func updateApplication(application *v1alpha1.Application) {
@@ -80,7 +84,7 @@ var _ = Describe("Application basic CRUD", func() {
 		By("Ready")
 		fetched := &v1alpha1.Application{}
 		Eventually(func() error {
-			return k8sClient.Get(context.Background(), types.NamespacedName{Name: application.Name, Namespace: application.Namespace}, fetched)
+			return k8sClient.Get(context.Background(), getApplicationNamespacedName(application), fetched)
 		}, timeout, interval).Should(Succeed())
 
 		By("Update")
@@ -93,7 +97,7 @@ var _ = Describe("Application basic CRUD", func() {
 		updateApplication(fetched)
 		fetchedUpdated := &v1alpha1.Application{}
 		Eventually(func() bool {
-			_ = k8sClient.Get(context.Background(), types.NamespacedName{Name: application.Name, Namespace: application.Namespace}, fetchedUpdated)
+			_ = k8sClient.Get(context.Background(), getApplicationNamespacedName(application), fetchedUpdated)
 			return len(fetchedUpdated.Spec.SharedEnv) == 1 && fetchedUpdated.Spec.SharedEnv[0].Value == "value"
 		}, timeout, interval).Should(Equal(true))
 
@@ -106,7 +110,7 @@ var _ = Describe("Application basic CRUD", func() {
 		By("Read after delete")
 		Eventually(func() error {
 			f := &v1alpha1.Application{}
-			return k8sClient.Get(context.Background(), types.NamespacedName{Name: application.Name, Namespace: application.Namespace}, f)
+			return k8sClient.Get(context.Background(), getApplicationNamespacedName(application), f)
 		}, timeout, interval).ShouldNot(Succeed())
 	})
 })
