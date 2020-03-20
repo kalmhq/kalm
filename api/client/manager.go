@@ -137,7 +137,7 @@ func NewClientManager(config *config.Config) *ClientManager {
 	err := m.initClusterClientConfiguration()
 
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("[Fatal] initClusterClientConfiguration failed: ", err)
 	}
 
 	return m
