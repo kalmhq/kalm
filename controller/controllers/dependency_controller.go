@@ -75,6 +75,10 @@ func (r *DependencyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 		if err := r.reconcileKubePrometheus(ctx, &dep); err != nil {
 			return returnRstForError(err)
 		}
+	case "log":
+		if err := r.reconcileELK(ctx, &dep); err != nil {
+			return returnRstForError(err)
+		}
 	default:
 		log.Error(fmt.Errorf("unkonwn dependency: %s", dep.Spec.Type), "ignored")
 	}

@@ -1,0 +1,29 @@
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: quickstart
+  namespace: kapp-log
+spec:
+  version: 7.6.1
+  nodeSets:
+  - name: default
+    count: 1
+    podTemplate:
+      spec:
+        containers:
+        - name: elasticsearch
+          env:
+          - name: ES_JAVA_OPTS
+            value: -Xms512m -Xmx512m
+          resources:
+            requests:
+              memory: 512Mi
+              cpu: 0.5
+            limits:
+              memory: 1Gi
+              cpu: 2
+    config:
+      node.master: true
+      node.data: true
+      node.ingest: true
+      node.store.allow_mmap: false

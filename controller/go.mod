@@ -7,6 +7,7 @@ require (
 	github.com/brancz/gojsontoyaml v0.0.0-20190425155809-e8bd32d46b3d // indirect
 	github.com/coreos/prometheus-operator v0.29.0
 	github.com/davecgh/go-spew v1.1.1
+	github.com/elastic/cloud-on-k8s v0.0.0-20200204083752-bcb7468838a8
 	github.com/go-bindata/go-bindata v3.1.2+incompatible // indirect
 	github.com/go-logr/logr v0.1.0
 	github.com/google/go-jsonnet v0.15.0 // indirect
@@ -27,5 +28,4 @@ require (
 	k8s.io/client-go v0.17.3
 	k8s.io/kube-aggregator v0.17.0
 	sigs.k8s.io/controller-runtime v0.4.0
-	sigs.k8s.io/controller-tools v0.2.4 // indirect
 )

@@ -18,6 +18,8 @@ package main
 import (
 	"flag"
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
+	elkv1 "github.com/elastic/cloud-on-k8s/pkg/apis/elasticsearch/v1"
+	kibanav1 "github.com/elastic/cloud-on-k8s/pkg/apis/kibana/v1"
 	"os"
 
 	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
@@ -60,7 +62,8 @@ func init() {
 
 	apiregistration.AddToScheme(scheme)
 
-	//apiextv1.AddToScheme(scheme)
+	elkv1.AddToScheme(scheme)
+	kibanav1.AddToScheme(scheme)
 
 	// +kubebuilder:scaffold:scheme
 }

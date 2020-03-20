@@ -9,7 +9,7 @@ import (
 )
 
 func TestLoadFiles(t *testing.T) {
-	files := loadFiles("/kube-prometheus/setup")
+	files, _ := loadFiles("/kube-prometheus/setup")
 
 	fmt.Println(len(files))
 
