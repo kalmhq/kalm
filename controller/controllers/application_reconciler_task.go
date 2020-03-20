@@ -36,13 +36,14 @@ func newApplicationReconcilerTask(
 	reconciler *ApplicationReconciler,
 	app *kappV1Alpha1.Application,
 	req ctrl.Request,
+	log logr.Logger,
 ) *applicationReconcilerTask {
 	return &applicationReconcilerTask{
 		context.Background(),
 		reconciler,
 		app,
 		req,
-		reconciler.Log,
+		log,
 		[]appsV1.Deployment{},
 		[]batchV1Beta1.CronJob{},
 		[]coreV1.Service{},
@@ -101,13 +102,6 @@ func (act *applicationReconcilerTask) Run() (err error) {
 func (act *applicationReconcilerTask) reconcileComponents() (err error) {
 	for i := range act.app.Spec.Components {
 		component := act.app.Spec.Components[i]
-		template, err := act.generateTemplate(&component)
-
-		if err != nil {
-			return err
-		}
-
-		println(template)
 
 		if err = act.reconcileComponent(&component); err != nil {
 			return err
@@ -127,18 +121,6 @@ func (act *applicationReconcilerTask) generateTemplate(component *kappV1Alpha1.C
 		Resources: coreV1.ResourceRequirements{
 			Requests: make(map[coreV1.ResourceName]resource.Quantity),
 			Limits:   make(map[coreV1.ResourceName]resource.Quantity),
-		},
-	}
-
-	template = &coreV1.PodTemplateSpec{
-		ObjectMeta: metaV1.ObjectMeta{
-			Labels: getComponentLabels(act.app.Name, component.Name),
-		},
-		Spec: coreV1.PodSpec{
-			Containers: []coreV1.Container{
-				*mainContainer,
-			},
-			//Volumes: act.app.Spec.Volumes,
 		},
 	}
 
@@ -195,7 +177,7 @@ func (act *applicationReconcilerTask) generateTemplate(component *kappV1Alpha1.C
 
 	// Disks
 	// make PVCs first
-	act.log.Info("disk config", "component name:", component.Name, "# disk:", len(component.Disks))
+	//act.log.Info("disk config", "component", component.Name)
 
 	path2PVC := make(map[string]*coreV1.PersistentVolumeClaim)
 	for _, disk := range component.Disks {
@@ -318,6 +300,17 @@ func (act *applicationReconcilerTask) generateTemplate(component *kappV1Alpha1.C
 	//		},
 	//	}
 	//}
+	template = &coreV1.PodTemplateSpec{
+		ObjectMeta: metaV1.ObjectMeta{
+			Labels: getComponentLabels(act.app.Name, component.Name),
+		},
+		Spec: coreV1.PodSpec{
+			Containers: []coreV1.Container{
+				*mainContainer,
+			},
+			//Volumes: act.app.Spec.Volumes,
+		},
+	}
 
 	return template, nil
 }
@@ -487,22 +480,23 @@ func (act *applicationReconcilerTask) reconcileComponent(component *kappV1Alpha1
 
 	if newDeployment {
 		if err := ctrl.SetControllerReference(app, deployment, act.reconciler.Scheme); err != nil {
+			log.Error(err, "unable to set owner for deployment")
 			return err
 		}
 
 		if err := act.reconciler.Create(ctx, deployment); err != nil {
-			log.Error(err, "unable to create Deployment for Application", "app", app)
+			log.Error(err, "unable to create Deployment for Application")
 			return err
 		}
 
-		log.Info("create Deployment")
+		log.Info("create Deployment " + deployment.Name)
 	} else {
 		if err := act.reconciler.Update(ctx, deployment); err != nil {
-			log.Error(err, "unable to update Deployment for Application", "app", app)
+			log.Error(err, "unable to update Deployment for Application")
 			return err
 		}
 
-		log.Info("update Deployment")
+		log.Info("update Deployment " + deployment.Name)
 	}
 
 	// apply plugins
@@ -564,12 +558,12 @@ func (act *applicationReconcilerTask) getCronjobs() error {
 func (act *applicationReconcilerTask) getDeployments() error {
 	var deploymentList appsV1.DeploymentList
 
-	if err := act.reconciler.List(
+	if err := act.reconciler.Reader.List(
 		act.ctx,
 		&deploymentList,
 		client.InNamespace(act.req.Namespace),
-		client.MatchingFields{
-			ownerKey: act.req.Name,
+		client.MatchingLabels{
+			"kapp-application": act.app.Name,
 		},
 	); err != nil {
 		act.log.Error(err, "unable to list child deployments")
@@ -615,6 +609,7 @@ func (act *applicationReconcilerTask) handleDelete() (shouldFinishReconcilation 
 			if err := act.reconciler.Update(context.Background(), app); err != nil {
 				return true, err
 			}
+			act.log.Info("add finalizer", app.Namespace, app.Name)
 		}
 	} else {
 		// The object is being deleted

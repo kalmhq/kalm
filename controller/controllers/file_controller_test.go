@@ -2,8 +2,6 @@ package controllers
 
 import (
 	"context"
-	"github.com/davecgh/go-spew/spew"
-
 	//"github.com/davecgh/go-spew/spew"
 	"github.com/kapp-staging/kapp/api/v1alpha1"
 	. "github.com/onsi/ginkgo"
@@ -14,7 +12,7 @@ import (
 	"time"
 )
 
-var _ = Describe("SecretScope Controller", func() {
+var _ = Describe("File Controller", func() {
 	defer GinkgoRecover()
 
 	const timeout = time.Second * 10
@@ -54,6 +52,7 @@ var _ = Describe("SecretScope Controller", func() {
 		}
 
 		return file
+
 	}
 
 	Context("File basic CRUD", func() {
@@ -175,7 +174,7 @@ var _ = Describe("SecretScope Controller", func() {
 					Name:      getConfigMapNameFromPath(file.Spec.Path),
 				}, configMap)
 
-				spew.Dump(configMap)
+				//spew.Dump(configMap)
 
 				return len(configMap.Data) == 1 && configMap.Data[getConfigMapDataKeyFromPath(file.Spec.Path)] == file.Spec.Content
 			}, timeout, interval).Should(BeTrue())

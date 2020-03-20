@@ -18,6 +18,7 @@ package controllers
 import (
 	"context"
 	"github.com/go-logr/logr"
+	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
 	appv1 "k8s.io/api/apps/v1"
 	"k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
@@ -25,13 +26,12 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
 )
 
 // ApplicationReconciler reconciles a Application object
 type ApplicationReconciler struct {
 	client.Client
+	Reader client.Reader
 	Log    logr.Logger
 	Scheme *runtime.Scheme
 }
@@ -50,6 +50,7 @@ var finalizerName = "storage.finalizers.kapp.dev"
 func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("application", req.NamespacedName)
+	log.Info("=========== start reconcile =============")
 
 	var app corev1alpha1.Application
 
@@ -66,7 +67,7 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 		return ctrl.Result{}, err
 	}
 
-	act := newApplicationReconcilerTask(r, &app, req)
+	act := newApplicationReconcilerTask(r, &app, req, log)
 	return ctrl.Result{}, act.Run()
 }
 
