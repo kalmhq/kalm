@@ -150,9 +150,10 @@ var _ = Describe("Application Envs", func() {
 			deployment := deployments[0]
 			Expect(deployment.Name).Should(Equal(getDeploymentName(application.Name, "test")))
 			Expect(*deployment.Spec.Replicas).Should(Equal(int32(1)))
-			Expect(len(deployment.Spec.Template.Spec.Containers)).Should(Equal(1))
-			Expect(len(deployment.Spec.Template.Spec.Containers[0].Env)).Should(Equal(1))
-			Expect(deployment.Spec.Template.Spec.Containers[0].Env[0].Value).Should(Equal("bar"))
+			containers := deployment.Spec.Template.Spec.Containers
+			Expect(len(containers)).Should(Equal(1))
+			Expect(len(containers[0].Env)).Should(Equal(1))
+			Expect(containers[0].Env[0].Value).Should(Equal("bar"))
 
 			By("Update Deployment manually should have no effects eventually")
 			deployment.Spec.Template.Spec.Containers[0].Env[0].Value = "new-value"
@@ -173,9 +174,12 @@ var _ = Describe("Application Envs", func() {
 			updateApplication(application)
 			Eventually(func() bool {
 				deployments = getApplicationDeployments(application)
-				return len(deployments) == 1 &&
-					len(deployments[0].Spec.Template.Spec.Containers[0].Env) == 2 &&
-					deployments[0].Spec.Template.Spec.Containers[0].Env[1].Value == "newValue"
+				if len(deployments) != 1 {
+					return false
+				}
+				mainContainer := deployments[0].Spec.Template.Spec.Containers[0]
+				return len(mainContainer.Env) == 2 &&
+					mainContainer.Env[1].Value == "newValue"
 			}, timeout, interval).Should(Equal(true))
 
 			By("Update env")
