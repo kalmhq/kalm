@@ -99,7 +99,7 @@ var _ = Describe("Application Envs", func() {
 	}
 
 	Context("Only Static Envs", func() {
-		FIt("", func() {
+		It("", func() {
 			By("Create Application")
 			application := generateApplication()
 			Expect(k8sClient.Create(context.Background(), application)).Should(Succeed())

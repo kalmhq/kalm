@@ -35,6 +35,7 @@ type FileReconciler struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
+	Reader client.Reader
 }
 
 func randomName() string {
@@ -52,7 +53,7 @@ func (r *FileReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("file", req.NamespacedName)
 
 	var file v1alpha1.File
-	if err := r.Get(ctx, req.NamespacedName, &file); err != nil {
+	if err := r.Reader.Get(ctx, req.NamespacedName, &file); err != nil {
 		err = client.IgnoreNotFound(err)
 		if err != nil {
 			log.Error(err, "unable to fetch File")
