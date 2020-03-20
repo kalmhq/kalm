@@ -24,4 +24,4 @@ bin
 *.swo
 *~
 .DS_Store
-
+tmp

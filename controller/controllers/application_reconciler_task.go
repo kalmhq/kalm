@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-logr/logr"
-	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
+	kappV1Alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
 	"github.com/kapp-staging/kapp/util"
-	appv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
+	appsV1 "k8s.io/api/apps/v1"
+	batchV1Beta1 "k8s.io/api/batch/v1beta1"
+	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -22,17 +23,18 @@ import (
 type applicationReconcilerTask struct {
 	ctx        context.Context
 	reconciler *ApplicationReconciler
-	app        *corev1alpha1.Application
+	app        *kappV1Alpha1.Application
 	req        ctrl.Request
 	log        logr.Logger
 
-	deployments []appv1.Deployment
-	services    []corev1.Service
+	deployments []appsV1.Deployment
+	cronjobs    []batchV1Beta1.CronJob
+	services    []coreV1.Service
 }
 
 func newApplicationReconcilerTask(
 	reconciler *ApplicationReconciler,
-	app *corev1alpha1.Application,
+	app *kappV1Alpha1.Application,
 	req ctrl.Request,
 ) *applicationReconcilerTask {
 	return &applicationReconcilerTask{
@@ -41,8 +43,9 @@ func newApplicationReconcilerTask(
 		app,
 		req,
 		reconciler.Log,
-		[]appv1.Deployment{},
-		[]corev1.Service{},
+		[]appsV1.Deployment{},
+		[]batchV1Beta1.CronJob{},
+		[]coreV1.Service{},
 	}
 }
 
@@ -54,6 +57,13 @@ func (act *applicationReconcilerTask) Run() (err error) {
 		if err != nil {
 			log.Error(err, "unable to delete Application")
 		}
+		return err
+	}
+
+	err = act.getCronjobs()
+
+	if err != nil {
+		log.Error(err, "unable to list child conjobs")
 		return err
 	}
 
@@ -69,12 +79,6 @@ func (act *applicationReconcilerTask) Run() (err error) {
 	if err != nil {
 		log.Error(err, "unable to list child services")
 		return err
-	}
-
-	err = act.UpdateStatus()
-
-	if err != nil {
-		log.Error(err, "unable to update status")
 	}
 
 	err = act.reconcileServices()
@@ -94,68 +98,228 @@ func (act *applicationReconcilerTask) Run() (err error) {
 	return nil
 }
 
-func (act *applicationReconcilerTask) UpdateStatus() (err error) {
-	if act.app.Status.ComponentStatus == nil {
-		act.app.Status.ComponentStatus = make([]corev1alpha1.ComponentStatus, 0, 0)
-	}
-
-	for _, component := range act.app.Spec.Components {
-		deployment := act.getDeployment(component.Name)
-		service := act.getService(component.Name)
-
-		statusIndex := -1
-
-		for i := range act.app.Status.ComponentStatus {
-			if act.app.Status.ComponentStatus[i].Name == component.Name {
-				statusIndex = i
-			}
-		}
-
-		if deployment == nil && service == nil {
-			if statusIndex != -1 {
-				act.app.Status.ComponentStatus = append(act.app.Status.ComponentStatus[:statusIndex], act.app.Status.ComponentStatus[statusIndex+1:]...)
-			}
-			continue
-		}
-
-		if statusIndex == -1 {
-			componentStatus := corev1alpha1.ComponentStatus{
-				Name: component.Name,
-			}
-
-			if service != nil {
-				componentStatus.ServiceStatus = service.Status
-			}
-
-			if deployment != nil {
-				componentStatus.DeploymentStatus = deployment.Status
-			}
-
-			act.app.Status.ComponentStatus = append(act.app.Status.ComponentStatus, componentStatus)
-		} else {
-			if deployment != nil {
-				act.app.Status.ComponentStatus[statusIndex].DeploymentStatus = deployment.Status
-			}
-
-			if service != nil {
-				act.app.Status.ComponentStatus[statusIndex].ServiceStatus = service.Status
-			}
-		}
-	}
-
-	err = act.reconciler.Status().Update(act.ctx, act.app)
-
-	return
-}
-
 func (act *applicationReconcilerTask) reconcileComponents() (err error) {
-	for _, component := range act.app.Spec.Components {
+	for i := range act.app.Spec.Components {
+		component := act.app.Spec.Components[i]
+		template, err := act.generateTemplate(&component)
+
+		if err != nil {
+			return err
+		}
+
+		println(template)
+
 		if err = act.reconcileComponent(&component); err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+func (act *applicationReconcilerTask) generateTemplate(component *kappV1Alpha1.ComponentSpec) (template *coreV1.PodTemplateSpec, err error) {
+	mainContainer := &coreV1.Container{
+		Name:    component.Name,
+		Image:   component.Image,
+		Env:     []coreV1.EnvVar{},
+		Command: component.Command,
+		Args:    component.Args,
+		Resources: coreV1.ResourceRequirements{
+			Requests: make(map[coreV1.ResourceName]resource.Quantity),
+			Limits:   make(map[coreV1.ResourceName]resource.Quantity),
+		},
+	}
+
+	template = &coreV1.PodTemplateSpec{
+		ObjectMeta: metaV1.ObjectMeta{
+			Labels: getComponentLabels(act.app.Name, component.Name),
+		},
+		Spec: coreV1.PodSpec{
+			Containers: []coreV1.Container{
+				*mainContainer,
+			},
+			//Volumes: act.app.Spec.Volumes,
+		},
+	}
+
+	// resources
+	if !component.CPU.IsZero() {
+		mainContainer.Resources.Requests[coreV1.ResourceCPU] = component.CPU
+		mainContainer.Resources.Limits[coreV1.ResourceCPU] = component.CPU
+	}
+
+	if !component.Memory.IsZero() {
+		mainContainer.Resources.Limits[coreV1.ResourceMemory] = component.Memory
+		mainContainer.Resources.Limits[coreV1.ResourceMemory] = component.Memory
+	}
+
+	// set image secret
+	if act.app.Spec.ImagePullSecretName != "" {
+		secs := []coreV1.LocalObjectReference{
+			{Name: act.app.Spec.ImagePullSecretName},
+		}
+		template.Spec.ImagePullSecrets = secs
+	}
+
+	// apply envs
+	var envs []coreV1.EnvVar
+	for _, env := range component.Env {
+		var value string
+
+		if env.Type == "" || env.Type == kappV1Alpha1.EnvVarTypeStatic {
+			value = env.Value
+		} else if env.Type == kappV1Alpha1.EnvVarTypeExternal {
+			value, err = act.FindShareEnvValue(env.Value)
+			if err != nil {
+				return nil, err
+			}
+
+			if value == "" {
+				// TODO is this the correct way to allocate an error?
+				return nil, fmt.Errorf("can't find shared env %s", env.Value)
+			}
+		} else if env.Type == kappV1Alpha1.EnvVarTypeLinked {
+			value, err = act.getValueOfLinkedEnv(env)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		envs = append(envs, coreV1.EnvVar{
+			Name:  env.Name,
+			Value: value,
+		})
+	}
+
+	mainContainer.Env = envs
+
+	// Disks
+	// make PVCs first
+	act.log.Info("disk config", "component name:", component.Name, "# disk:", len(component.Disks))
+
+	path2PVC := make(map[string]*coreV1.PersistentVolumeClaim)
+	for _, disk := range component.Disks {
+		validNameFromPath := strings.ReplaceAll(disk.Path, "/", "-")
+		volName := fmt.Sprintf("vol%s", validNameFromPath)
+		pvcName := fmt.Sprintf("%s-%s-%s", act.app.Name, component.Name, volName)
+
+		pvc := &coreV1.PersistentVolumeClaim{
+			ObjectMeta: metaV1.ObjectMeta{
+				Name:      pvcName,
+				Namespace: act.app.Namespace,
+			},
+			Spec: coreV1.PersistentVolumeClaimSpec{
+				AccessModes: []coreV1.PersistentVolumeAccessMode{coreV1.ReadWriteOnce},
+				Resources: coreV1.ResourceRequirements{
+					Requests: coreV1.ResourceList{
+						coreV1.ResourceStorage: disk.Size,
+					},
+				},
+				StorageClassName: nil,
+			},
+		}
+
+		pvcExist, err := act.IsPVCExists(pvc.Name)
+		if err != nil {
+			return nil, err
+		}
+		if !pvcExist {
+			if err := act.reconciler.Create(act.ctx, pvc); err != nil {
+				return nil, fmt.Errorf("fail to create PVC: %s, %s", pvc.Name, err)
+			} else {
+				act.log.Info("create pvc", "name", pvc.Name)
+			}
+		}
+		//todo how to update PVC?
+
+		path2PVC[disk.Path] = pvc
+	}
+
+	// add volumes & volumesMounts
+	var volumes []coreV1.Volume
+	var volumeMounts []coreV1.VolumeMount
+	for _, disk := range component.Disks {
+		pvc := path2PVC[disk.Path]
+
+		volumes = append(volumes, coreV1.Volume{
+			Name: pvc.Name,
+			VolumeSource: coreV1.VolumeSource{
+				PersistentVolumeClaim: &coreV1.PersistentVolumeClaimVolumeSource{
+					ClaimName: pvc.Name,
+				},
+			},
+		})
+
+		volumeMounts = append(volumeMounts, coreV1.VolumeMount{
+			Name:      pvc.Name,
+			MountPath: disk.Path,
+		})
+	}
+
+	if len(volumes) > 0 {
+		template.Spec.Volumes = volumes
+		mainContainer.VolumeMounts = volumeMounts
+	}
+
+	/*	// before start
+		var beforeHooks []coreV1.Container
+		for i, beforeHook := range component.BeforeStart {
+			beforeHooks = append(beforeHooks, coreV1.Container{
+				Image:   component.Image,
+				Name:    fmt.Sprintf("%s-before-hook-%d", component.Name, i),
+				Command: []string{"/bin/sh"}, // TODO: when to use /bin/bash ??
+				Args: []string{
+					"-c",
+					beforeHook,
+				},
+				Env: envs,
+			})
+		}
+		deployment.Spec.Template.Spec.InitContainers = beforeHooks
+
+		// after start
+		if len(component.AfterStart) == 0 {
+			if mainContainer.Lifecycle != nil {
+				mainContainer.Lifecycle.PostStart = nil
+			}
+		} else {
+			if mainContainer.Lifecycle == nil {
+				mainContainer.Lifecycle = &coreV1.Lifecycle{}
+			}
+
+			mainContainer.Lifecycle.PostStart = &coreV1.Handler{
+				Exec: &coreV1.ExecAction{
+					Command: []string{
+						"/bin/sh",
+						"-c",
+						strings.Join(component.AfterStart, " && "),
+					},
+				},
+			}
+		}*/
+
+	// before stop
+	//if len(component.BeforeDestroy) == 0 {
+	//	if mainContainer.Lifecycle != nil {
+	//		mainContainer.Lifecycle.PreStop = nil
+	//	}
+	//} else {
+	//	if mainContainer.Lifecycle == nil {
+	//		mainContainer.Lifecycle = &coreV1.Lifecycle{}
+	//	}
+	//
+	//	mainContainer.Lifecycle.PreStop = &coreV1.Handler{
+	//		Exec: &coreV1.ExecAction{
+	//			Command: []string{
+	//				"/bin/sh",
+	//				"-c",
+	//				strings.Join(component.BeforeDestroy, " && "),
+	//			},
+	//		},
+	//	}
+	//}
+
+	return template, nil
 }
 
 func (act *applicationReconcilerTask) reconcileServices() (err error) {
@@ -170,12 +334,12 @@ func (act *applicationReconcilerTask) reconcileServices() (err error) {
 			newService := false
 			if service == nil {
 				newService = true
-				service = &corev1.Service{
-					ObjectMeta: metav1.ObjectMeta{
+				service = &coreV1.Service{
+					ObjectMeta: metaV1.ObjectMeta{
 						Name:      getServiceName(app.Name, component.Name),
 						Namespace: app.Namespace,
 					},
-					Spec: corev1.ServiceSpec{
+					Spec: coreV1.ServiceSpec{
 						Selector: map[string]string{
 							"application": app.Name,
 							"component":   component.Name,
@@ -184,10 +348,10 @@ func (act *applicationReconcilerTask) reconcileServices() (err error) {
 				}
 			}
 
-			ps := []corev1.ServicePort{}
+			ps := []coreV1.ServicePort{}
 
 			for _, port := range component.Ports {
-				sp := corev1.ServicePort{
+				sp := coreV1.ServicePort{
 					Name:       port.Name,
 					TargetPort: intstr.FromInt(int(port.ContainerPort)),
 					Port:       int32(port.ServicePort),
@@ -236,12 +400,25 @@ func (act *applicationReconcilerTask) reconcileServices() (err error) {
 	return nil
 }
 
-func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1.ComponentSpec) (err error) {
+func getComponentLabels(appName, componentName string) map[string]string {
+	return map[string]string{
+		"kapp-application": appName,
+		"kapp-component":   componentName,
+	}
+}
+
+func (act *applicationReconcilerTask) reconcileComponent(component *kappV1Alpha1.ComponentSpec) (err error) {
 	app := act.app
 	log := act.log
 	ctx := act.ctx
 
+	labelMap := getComponentLabels(act.app.Name, component.Name)
 	deployment := act.getDeployment(component.Name)
+	template, err := act.generateTemplate(component)
+
+	if err != nil {
+		return err
+	}
 
 	//todo seem will fail to update if dp changed
 	for _, dependency := range component.Dependencies {
@@ -266,43 +443,21 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 		}
 	}
 
-	labelMap := map[string]string{
-		"kapp-application": app.Name,
-		"kapp-component":   component.Name,
-	}
-
 	newDeployment := false
 
 	if deployment == nil {
 		newDeployment = true
 
-		deployment = &appv1.Deployment{
-			ObjectMeta: metav1.ObjectMeta{
+		deployment = &appsV1.Deployment{
+			ObjectMeta: metaV1.ObjectMeta{
 				Labels:      labelMap,
 				Annotations: make(map[string]string),
 				Name:        getDeploymentName(app.Name, component.Name),
 				Namespace:   app.Namespace,
 			},
-			Spec: appv1.DeploymentSpec{
-				Template: corev1.PodTemplateSpec{
-					ObjectMeta: metav1.ObjectMeta{
-						Labels: labelMap,
-					},
-					Spec: corev1.PodSpec{
-						Containers: []corev1.Container{
-							{
-								Name:    component.Name,
-								Image:   component.Image,
-								Env:     []corev1.EnvVar{},
-								Command: component.Command,
-								Args:    component.Args,
-								//Ports:        component.Ports,
-							},
-						},
-						//Volumes: act.app.Spec.Volumes,
-					},
-				},
-				Selector: &metav1.LabelSelector{
+			Spec: appsV1.DeploymentSpec{
+				Template: *template,
+				Selector: &metaV1.LabelSelector{
 					MatchLabels: labelMap,
 				},
 			},
@@ -310,9 +465,9 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 	}
 
 	//if len(component.Ports) > 0 {
-	//	var ports []corev1.ContainerPort
+	//	var ports []coreV1.ContainerPort
 	//	for _, p := range component.Ports {
-	//		ports = append(ports, corev1.ContainerPort{
+	//		ports = append(ports, coreV1.ContainerPort{
 	//			Name:          p.Name,
 	//			ContainerPort: int32(p.ContainerPort),
 	//			Protocol:      p.Protocol,
@@ -320,201 +475,12 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 	//	}
 	//}
 
-	mainContainer := &(deployment.Spec.Template.Spec.Containers[0])
-
-	if mainContainer.Resources.Requests == nil {
-		mainContainer.Resources.Requests = make(map[corev1.ResourceName]resource.Quantity)
-	}
-
-	if mainContainer.Resources.Limits == nil {
-		mainContainer.Resources.Limits = make(map[corev1.ResourceName]resource.Quantity)
-	}
-
-	// resources
-	if !component.CPU.IsZero() {
-		mainContainer.Resources.Requests[corev1.ResourceCPU] = component.CPU
-		mainContainer.Resources.Limits[corev1.ResourceCPU] = component.CPU
-	}
-
-	if !component.Memory.IsZero() {
-		mainContainer.Resources.Limits[corev1.ResourceMemory] = component.Memory
-		mainContainer.Resources.Limits[corev1.ResourceMemory] = component.Memory
-	}
-
-	// imgPullSecrets
-	log.Info("imgPullSecName", "name", app.Spec.ImagePullSecretName)
-	if app.Spec.ImagePullSecretName != "" {
-		secs := []corev1.LocalObjectReference{
-			{Name: app.Spec.ImagePullSecretName},
-		}
-
-		deployment.Spec.Template.Spec.ImagePullSecrets = secs
-	}
-
-	// apply envs
-	var envs []corev1.EnvVar
-	for _, env := range component.Env {
-		var value string
-
-		if env.Type == "" || env.Type == corev1alpha1.EnvVarTypeStatic {
-			value = env.Value
-		} else if env.Type == corev1alpha1.EnvVarTypeExternal {
-			value, err = act.FindShareEnvValue(env.Value)
-			if err != nil {
-				return err
-			}
-
-			if value == "" {
-				// TODO is this the correct way to allocate an error?
-				return fmt.Errorf("can't find shared env %s", env.Value)
-			}
-		} else if env.Type == corev1alpha1.EnvVarTypeLinked {
-			value, err = act.getValueOfLinkedEnv(env)
-			if err != nil {
-				return err
-			}
-		}
-
-		envs = append(envs, corev1.EnvVar{
-			Name:  env.Name,
-			Value: value,
-		})
-	}
-
-	mainContainer.Env = envs
-
-	// before start
-	var beforeHooks []corev1.Container
-	for i, beforeHook := range component.BeforeStart {
-		beforeHooks = append(beforeHooks, corev1.Container{
-			Image:   component.Image,
-			Name:    fmt.Sprintf("%s-before-hook-%d", component.Name, i),
-			Command: []string{"/bin/sh"}, // TODO: when to use /bin/bash ??
-			Args: []string{
-				"-c",
-				beforeHook,
-			},
-			Env: envs,
-		})
-	}
-	deployment.Spec.Template.Spec.InitContainers = beforeHooks
-
-	// after start
-	if len(component.AfterStart) == 0 {
-		if mainContainer.Lifecycle != nil {
-			mainContainer.Lifecycle.PostStart = nil
-		}
-	} else {
-		if mainContainer.Lifecycle == nil {
-			mainContainer.Lifecycle = &corev1.Lifecycle{}
-		}
-
-		mainContainer.Lifecycle.PostStart = &corev1.Handler{
-			Exec: &corev1.ExecAction{
-				Command: []string{
-					"/bin/sh",
-					"-c",
-					strings.Join(component.AfterStart, " && "),
-				},
-			},
-		}
-	}
-
-	// Disks
-	// make PVCs first
-	log.Info("disk config", "component name:", component.Name, "# disk:", len(component.Disks))
-
-	path2PVC := make(map[string]*corev1.PersistentVolumeClaim)
-	for _, disk := range component.Disks {
-		validNameFromPath := strings.ReplaceAll(disk.Path, "/", "-")
-		volName := fmt.Sprintf("vol%s", validNameFromPath)
-		pvcName := fmt.Sprintf("%s-%s-%s", app.Name, component.Name, volName)
-
-		pvc := &corev1.PersistentVolumeClaim{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      pvcName,
-				Namespace: app.Namespace,
-			},
-			Spec: corev1.PersistentVolumeClaimSpec{
-				AccessModes: []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
-				Resources: corev1.ResourceRequirements{
-					Requests: corev1.ResourceList{
-						corev1.ResourceStorage: disk.Size,
-					},
-				},
-				StorageClassName: nil,
-			},
-		}
-
-		pvcExist, err := act.IsPVCExists(pvc.Name)
-		if err != nil {
-			return err
-		}
-		if !pvcExist {
-			if err := act.reconciler.Create(ctx, pvc); err != nil {
-				return fmt.Errorf("fail to create PVC: %s, %s", pvc.Name, err)
-			} else {
-				log.Info("create pvc", "name", pvc.Name)
-			}
-		}
-		//todo how to update PVC?
-
-		path2PVC[disk.Path] = pvc
-	}
-
-	// add volumes & volumesMounts
-	var volumes []corev1.Volume
-	var volumeMounts []corev1.VolumeMount
-	for _, disk := range component.Disks {
-		pvc := path2PVC[disk.Path]
-
-		volumes = append(volumes, corev1.Volume{
-			Name: pvc.Name,
-			VolumeSource: corev1.VolumeSource{
-				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-					ClaimName: pvc.Name,
-				},
-			},
-		})
-
-		volumeMounts = append(volumeMounts, corev1.VolumeMount{
-			Name:      pvc.Name,
-			MountPath: disk.Path,
-		})
-	}
-
-	if len(volumes) > 0 {
-		deployment.Spec.Template.Spec.Volumes = volumes
-		mainContainer.VolumeMounts = volumeMounts
-	}
-
-	// before stop
-	if len(component.BeforeDestroy) == 0 {
-		if mainContainer.Lifecycle != nil {
-			mainContainer.Lifecycle.PreStop = nil
-		}
-	} else {
-		if mainContainer.Lifecycle == nil {
-			mainContainer.Lifecycle = &corev1.Lifecycle{}
-		}
-
-		mainContainer.Lifecycle.PreStop = &corev1.Handler{
-			Exec: &corev1.ExecAction{
-				Command: []string{
-					"/bin/sh",
-					"-c",
-					strings.Join(component.BeforeDestroy, " && "),
-				},
-			},
-		}
-	}
-
 	// apply plugins
 	for _, pluginDef := range component.Plugins {
-		plugin := corev1alpha1.GetPlugin(pluginDef)
+		plugin := kappV1Alpha1.GetPlugin(pluginDef)
 
 		switch p := plugin.(type) {
-		case *corev1alpha1.PluginManualScaler:
+		case *kappV1Alpha1.PluginManualScaler:
 			p.Operate(deployment)
 		}
 	}
@@ -541,10 +507,10 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 
 	// apply plugins
 	for _, pluginDef := range app.Spec.Components[0].Plugins {
-		plugin := corev1alpha1.GetPlugin(pluginDef)
+		plugin := kappV1Alpha1.GetPlugin(pluginDef)
 
 		switch p := plugin.(type) {
-		case *corev1alpha1.PluginManualScaler:
+		case *kappV1Alpha1.PluginManualScaler:
 			p.Operate(deployment)
 		}
 	}
@@ -552,7 +518,7 @@ func (act *applicationReconcilerTask) reconcileComponent(component *corev1alpha1
 	return nil
 }
 
-func (act *applicationReconcilerTask) getService(componentName string) *corev1.Service {
+func (act *applicationReconcilerTask) getService(componentName string) *coreV1.Service {
 	for i, _ := range act.services {
 		service := &(act.services[i])
 
@@ -564,7 +530,7 @@ func (act *applicationReconcilerTask) getService(componentName string) *corev1.S
 	return nil
 }
 
-func (act *applicationReconcilerTask) getDeployment(name string) *appv1.Deployment {
+func (act *applicationReconcilerTask) getDeployment(name string) *appsV1.Deployment {
 	for i, _ := range act.deployments {
 		deployment := &(act.deployments[i])
 
@@ -576,8 +542,27 @@ func (act *applicationReconcilerTask) getDeployment(name string) *appv1.Deployme
 	return nil
 }
 
+func (act *applicationReconcilerTask) getCronjobs() error {
+	var cronjobList batchV1Beta1.CronJobList
+
+	if err := act.reconciler.List(
+		act.ctx,
+		&cronjobList,
+		client.InNamespace(act.req.Namespace),
+		client.MatchingFields{
+			ownerKey: act.req.Name,
+		},
+	); err != nil {
+		act.log.Error(err, "unable to list child deployments")
+		return err
+	}
+
+	act.cronjobs = cronjobList.Items
+	return nil
+}
+
 func (act *applicationReconcilerTask) getDeployments() error {
-	var deploymentList appv1.DeploymentList
+	var deploymentList appsV1.DeploymentList
 
 	if err := act.reconciler.List(
 		act.ctx,
@@ -597,7 +582,7 @@ func (act *applicationReconcilerTask) getDeployments() error {
 }
 
 func (act *applicationReconcilerTask) getServices() error {
-	var serviceList corev1.ServiceList
+	var serviceList coreV1.ServiceList
 
 	if err := act.reconciler.List(
 		act.ctx,
@@ -677,7 +662,7 @@ func (act *applicationReconcilerTask) deleteExternalResources() error {
 
 }
 
-func (act *applicationReconcilerTask) FindService(componentName string) *corev1.Service {
+func (act *applicationReconcilerTask) FindService(componentName string) *coreV1.Service {
 	for i := range act.services {
 		service := act.services[i]
 		if service.Name == getServiceName(act.app.Name, componentName) {
@@ -693,9 +678,9 @@ func (act *applicationReconcilerTask) FindShareEnvValue(name string) (string, er
 			continue
 		}
 
-		if env.Type == corev1alpha1.EnvVarTypeLinked {
+		if env.Type == kappV1Alpha1.EnvVarTypeLinked {
 			return act.getValueOfLinkedEnv(env)
-		} else if env.Type == "" || env.Type == corev1alpha1.EnvVarTypeStatic {
+		} else if env.Type == "" || env.Type == kappV1Alpha1.EnvVarTypeStatic {
 			return env.Value, nil
 		}
 
@@ -705,7 +690,7 @@ func (act *applicationReconcilerTask) FindShareEnvValue(name string) (string, er
 }
 
 func (act *applicationReconcilerTask) IsPVCExists(pvcName string) (bool, error) {
-	pvcList := corev1.PersistentVolumeClaimList{}
+	pvcList := coreV1.PersistentVolumeClaimList{}
 
 	err := act.reconciler.List(
 		context.TODO(),
@@ -725,7 +710,7 @@ func (act *applicationReconcilerTask) IsPVCExists(pvcName string) (bool, error) 
 	return false, nil
 }
 
-func (act *applicationReconcilerTask) getValueOfLinkedEnv(env corev1alpha1.EnvVar) (string, error) {
+func (act *applicationReconcilerTask) getValueOfLinkedEnv(env kappV1Alpha1.EnvVar) (string, error) {
 	if env.Value == "" {
 		return env.Value, nil
 	}
@@ -766,17 +751,17 @@ func getServiceName(appName, componentName string) string {
 	return fmt.Sprintf("%s-%s", appName, componentName)
 }
 
-//func AllIngressPlugins(kapp corev1alpha1.Application) (rst []*corev1alpha1.PluginIngress) {
+//func AllIngressPlugins(kapp kappV1Alpha1.Application) (rst []*kappV1Alpha1.PluginIngress) {
 //
 //	for _, comp := range kapp.Spec.Components {
 //		plugins := GetPlugins(kapp.Name, &comp)
 //		for _, pluginDef := range comp.Plugins {
-//			plugin := corev1alpha1.GetPlugin(pluginDef)
+//			plugin := kappV1Alpha1.GetPlugin(pluginDef)
 //
-//			plugin := corev1alpha1.GetPlugin(pluginDef)
+//			plugin := kappV1Alpha1.GetPlugin(pluginDef)
 //
 //			switch p := plugin.(type) {
-//			case *corev1alpha1.PluginIngress:
+//			case *kappV1Alpha1.PluginIngress:
 //				rst = append(rst, p)
 //			}
 //		}
@@ -785,7 +770,7 @@ func getServiceName(appName, componentName string) string {
 //	return
 //}
 
-func GenRulesOfIngressPlugin(plugin *corev1alpha1.PluginIngress) (rst []v1beta1.IngressRule) {
+func GenRulesOfIngressPlugin(plugin *kappV1Alpha1.PluginIngress) (rst []v1beta1.IngressRule) {
 
 	for _, host := range plugin.Hosts {
 		rule := v1beta1.IngressRule{
@@ -814,7 +799,7 @@ func GenRulesOfIngressPlugin(plugin *corev1alpha1.PluginIngress) (rst []v1beta1.
 	return
 }
 
-func GetPlugins(kapp *corev1alpha1.Application) (plugins []interface{}) {
+func GetPlugins(kapp *kappV1Alpha1.Application) (plugins []interface{}) {
 	appName := kapp.Name
 
 	for _, componentSpec := range kapp.Spec.Components {
@@ -828,7 +813,7 @@ func GetPlugins(kapp *corev1alpha1.Application) (plugins []interface{}) {
 			_ = json.Unmarshal(raw.Raw, &tmp)
 
 			if tmp.Name == "manual-scaler" {
-				var p corev1alpha1.PluginManualScaler
+				var p kappV1Alpha1.PluginManualScaler
 				_ = json.Unmarshal(raw.Raw, &p)
 				plugins = append(plugins, &p)
 				continue
@@ -836,7 +821,7 @@ func GetPlugins(kapp *corev1alpha1.Application) (plugins []interface{}) {
 
 			switch tmp.Type {
 			case "plugins.core.kapp.dev/v1alpha1.ingress":
-				var ing corev1alpha1.PluginIngress
+				var ing kappV1Alpha1.PluginIngress
 				_ = json.Unmarshal(raw.Raw, &ing)
 
 				// todo what if not first ports
@@ -853,11 +838,11 @@ func GetPlugins(kapp *corev1alpha1.Application) (plugins []interface{}) {
 	return
 }
 
-func GetIngressPlugins(kapp *corev1alpha1.Application) (rst []*corev1alpha1.PluginIngress) {
+func GetIngressPlugins(kapp *kappV1Alpha1.Application) (rst []*kappV1Alpha1.PluginIngress) {
 	plugins := GetPlugins(kapp)
 
 	for _, plugin := range plugins {
-		v, yes := plugin.(*corev1alpha1.PluginIngress)
+		v, yes := plugin.(*kappV1Alpha1.PluginIngress)
 
 		if !yes {
 			continue
