@@ -90,7 +90,7 @@ func main() {
 	err := app.Run(os.Args)
 
 	if err != nil {
-		log.Fatal('[Fatal] app.Run Failed:', err)
+		log.Fatal("[Fatal] app.Run Failed:", err)
 	}
 }
 
