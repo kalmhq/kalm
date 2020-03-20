@@ -110,6 +110,23 @@ func formatEnvs(envs []v1alpha1.EnvVar) {
 func formatApplicationComponents(components []v1alpha1.ComponentSpec) {
 	for i := range components {
 		formatEnvs(components[i].Env)
+
+		if components[i].DnsPolicy == "" {
+			components[i].DnsPolicy = coreV1.DNSClusterFirst
+		}
+
+		if components[i].RestartPolicy == "" {
+			components[i].RestartPolicy = coreV1.RestartPolicyAlways
+		}
+
+		if components[i].TerminationGracePeriodSeconds == nil {
+			x := int64(30)
+			components[i].TerminationGracePeriodSeconds = &x
+		}
+
+		if components[i].RestartStrategy == "" {
+			components[i].RestartStrategy = appsV1.RollingUpdateDeploymentStrategyType
+		}
 	}
 }
 

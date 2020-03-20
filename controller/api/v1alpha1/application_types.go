@@ -64,6 +64,14 @@ type ComponentSpec struct {
 
 	Memory resource.Quantity `json:"memory,omitempty"`
 
+	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty"`
+
+	DnsPolicy v1.DNSPolicy `json:"dnsPolicy,omitemtpy"`
+
+	RestartPolicy v1.RestartPolicy `json:"restartPolicy,omitempty"`
+
+	RestartStrategy apps1.DeploymentStrategyType `json:"restartStrategy,omitempty"`
+
 	// +optional
 	Disks []Disk `json:"disks,omitempty"`
 }
