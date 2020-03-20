@@ -31,7 +31,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
       let om = Immutable.OrderedMap<string, ComponentTemplate>();
 
       action.payload.componentTemplates.forEach(x => {
-        om = om.set(x.get("id"), x);
+        om = om.set(x.get("name"), x);
       });
 
       state = state.set("componentTemplates", om);
@@ -41,46 +41,24 @@ const reducer = (state: State = initialState, action: Actions): State => {
     }
     case CREATE_COMPONENT: {
       const components = state.get("componentTemplates");
-      const tmpId = components.size.toString(); // TODO fake id
       let componentTemplate = action.payload.componentTemplate;
-      componentTemplate = componentTemplate.set("id", tmpId);
-      state = state.set(
-        "componentTemplates",
-        components.set(
-          tmpId, // TODO fake id
-          componentTemplate
-        )
-      );
+      state = state.set("componentTemplates", components.set(componentTemplate.get("name"), componentTemplate));
       break;
     }
     case UPDATE_COMPONENT: {
       const components = state.get("componentTemplates");
-      const id = action.payload.componentTemplateId;
       let componentTemplate = action.payload.componentTemplate;
-      componentTemplate = componentTemplate.set("id", id);
-      state = state.set(
-        "componentTemplates",
-        components.set(id, componentTemplate)
-      );
-      break;
-    }
-    case DELETE_COMPONENT: {
-      state = state.deleteIn([
-        "componentTemplates",
-        action.payload.componentTemplateId
-      ]);
+      state = state.set("componentTemplates", components.set(componentTemplate.get("name"), componentTemplate));
       break;
     }
     case DUPLICATE_COMPONENT: {
-      const componentTemplates = state.get("componentTemplates");
-
-      state = state.set(
-        "componentTemplates",
-        componentTemplates.set(
-          action.payload.componentTemplate.get("name"),
-          action.payload.componentTemplate
-        )
-      );
+      const components = state.get("componentTemplates");
+      let componentTemplate = action.payload.componentTemplate;
+      state = state.set("componentTemplates", components.set(componentTemplate.get("name"), componentTemplate));
+      break;
+    }
+    case DELETE_COMPONENT: {
+      state = state.deleteIn(["componentTemplates", action.payload.componentTemplateName]);
       break;
     }
   }

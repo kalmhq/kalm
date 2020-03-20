@@ -97,12 +97,12 @@ interface Props extends WithApplicationsDataProps, WithStyles<typeof styles> {}
 
 interface State {
   isEnabledConfirmDialogOpen: boolean;
-  switchingIsEnabledApplicationId: string;
+  switchingIsEnabledApplicationName: string;
   switchingIsEnabledTitle: string;
   switchingIsEnabledContent: string;
   isDeleteConfirmDialogOpen: boolean;
-  deletingApplicationId?: string;
-  checkedApplicationIds: {
+  deletingApplicationName?: string;
+  checkedApplicationNames: {
     [key: string]: boolean;
   };
 }
@@ -110,12 +110,12 @@ interface State {
 class ApplicationListRaw extends React.PureComponent<Props, State> {
   private defaultState = {
     isEnabledConfirmDialogOpen: false,
-    switchingIsEnabledApplicationId: "",
+    switchingIsEnabledApplicationName: "",
     switchingIsEnabledTitle: "",
     switchingIsEnabledContent: "",
     isDeleteConfirmDialogOpen: false,
-    deletingApplicationId: "",
-    checkedApplicationIds: {}
+    deletingApplicationName: "",
+    checkedApplicationNames: {}
   };
 
   constructor(props: Props) {
@@ -162,7 +162,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
 
     this.setState({
       isEnabledConfirmDialogOpen: true,
-      switchingIsEnabledApplicationId: applicationName,
+      switchingIsEnabledApplicationName: applicationName,
       switchingIsEnabledTitle: title,
       switchingIsEnabledContent: content
     });
@@ -170,9 +170,9 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
 
   private switchEnabledConfirmedComponent = () => {
     const { dispatch } = this.props;
-    const { switchingIsEnabledApplicationId } = this.state;
-    // const application = applicationList.find(x => x.get("name") === switchingIsEnabledApplicationId)!;
-    const application = getApplicationByName(switchingIsEnabledApplicationId);
+    const { switchingIsEnabledApplicationName } = this.state;
+    // const application = applicationList.find(x => x.get("name") === switchingIsEnabledApplicationName)!;
+    const application = getApplicationByName(switchingIsEnabledApplicationName);
 
     dispatch(updateApplicationAction(application.set("isEnabled", !application.get("isEnabled"))));
   };
@@ -180,14 +180,14 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   private closeConfirmDialog = () => {
     this.setState({
       isDeleteConfirmDialogOpen: false,
-      deletingApplicationId: undefined
+      deletingApplicationName: undefined
     });
   };
 
   private deleteConfirmedApplication = async () => {
     const { dispatch } = this.props;
     try {
-      await dispatch(deleteApplicationAction(this.state.deletingApplicationId!));
+      await dispatch(deleteApplicationAction(this.state.deletingApplicationName!));
       await dispatch(setSuccessNotificationAction("Successfully delete an application"));
     } catch {
       dispatch(setErrorNotificationAction("Something wrong"));
@@ -201,7 +201,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   private setDeletingApplicationAndConfirm = (applicationName: string) => {
     this.setState({
       isDeleteConfirmDialogOpen: true,
-      deletingApplicationId: applicationName
+      deletingApplicationName: applicationName
     });
   };
 
@@ -292,9 +292,9 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           <Checkbox
             onChange={() => {
               // deep copy, new obj
-              const applicationNames = { ...this.state.checkedApplicationIds };
+              const applicationNames = { ...this.state.checkedApplicationNames };
               applicationNames[applicationListItem.get("name")] = !applicationNames[applicationListItem.get("name")];
-              this.setState({ checkedApplicationIds: applicationNames });
+              this.setState({ checkedApplicationNames: applicationNames });
             }}
             value="secondary"
             color="primary"
@@ -364,7 +364,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           <div className={classes.bottomContent}>
             <div className={classes.applicationSelected}>
               <div className={classes.selectedNumber}>
-                {Object.values(this.state.checkedApplicationIds).filter(Boolean).length}
+                {Object.values(this.state.checkedApplicationNames).filter(Boolean).length}
               </div>{" "}
               Applications Selected
             </div>

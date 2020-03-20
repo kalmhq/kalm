@@ -153,10 +153,7 @@ export interface ComponentLikeContent {
   plugins?: Immutable.List<Plugin>;
 }
 
-export interface ComponentTemplateContent extends ComponentLikeContent {
-  id: string;
-  resourceVersion?: string;
-}
+export interface ComponentTemplateContent extends ComponentLikeContent {}
 
 export type Plugin = ImmutableMap<PluginContent>;
 export type ComponentLike = ImmutableMap<ComponentLikeContent>;
@@ -220,7 +217,6 @@ export interface createComponentTemplateAction {
 export interface UpdateComponentAction {
   type: typeof UPDATE_COMPONENT;
   payload: {
-    componentTemplateId: string;
     componentTemplate: ComponentTemplate;
   };
 }
@@ -228,7 +224,7 @@ export interface UpdateComponentAction {
 export interface DeleteComponentAction {
   type: typeof DELETE_COMPONENT;
   payload: {
-    componentTemplateId: string;
+    componentTemplateName: string;
   };
 }
 export interface DuplicateComponentAction {
