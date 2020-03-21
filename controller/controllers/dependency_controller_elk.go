@@ -5,7 +5,9 @@ import (
 	elkcommonv1 "github.com/elastic/cloud-on-k8s/pkg/apis/common/v1"
 	elkv1 "github.com/elastic/cloud-on-k8s/pkg/apis/elasticsearch/v1"
 	kibanav1 "github.com/elastic/cloud-on-k8s/pkg/apis/kibana/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -90,7 +92,7 @@ func (r *DependencyReconciler) reconcileES(ctx context.Context, d *corev1alpha1.
 	return nil
 }
 
-var ns = "kapp-log"
+var nsKappLog = "kapp-log"
 var esName = "elasticsearch"
 var kibanaName = "kibana"
 
@@ -99,7 +101,7 @@ func (r *DependencyReconciler) getElasticSearch(ctx context.Context, d *corev1al
 	desiredES := desiredElasticSearch(d)
 
 	es := elkv1.Elasticsearch{}
-	if err := r.Get(ctx, types.NamespacedName{Namespace: ns, Name: esName}, &es); err != nil {
+	if err := r.Get(ctx, types.NamespacedName{Namespace: nsKappLog, Name: esName}, &es); err != nil {
 		if errors.IsNotFound(err) {
 			es = desiredES
 
@@ -128,7 +130,7 @@ func desiredElasticSearch(dep *corev1alpha1.Dependency) elkv1.Elasticsearch {
 	desiredES := elkv1.Elasticsearch{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      esName,
-			Namespace: ns,
+			Namespace: nsKappLog,
 		},
 		Spec: elkv1.ElasticsearchSpec{
 			Version: "7.6.1",
@@ -214,7 +216,7 @@ func (r *DependencyReconciler) getKibana(ctx context.Context, d *corev1alpha1.De
 	desired := r.desiredKibana(d)
 	k := kibanav1.Kibana{}
 
-	if err := r.Get(ctx, types.NamespacedName{Namespace: ns, Name: kibanaName}, &k); err != nil {
+	if err := r.Get(ctx, types.NamespacedName{Namespace: nsKappLog, Name: kibanaName}, &k); err != nil {
 		if errors.IsNotFound(err) {
 			k = desired
 			return &k, false, nil
@@ -234,7 +236,7 @@ func (r *DependencyReconciler) desiredKibana(d *corev1alpha1.Dependency) kibanav
 	return kibanav1.Kibana{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      kibanaName,
-			Namespace: ns,
+			Namespace: nsKappLog,
 		},
 		Spec: kibanav1.KibanaSpec{
 			Version: "7.6.1",
@@ -251,10 +253,24 @@ func (r *DependencyReconciler) reconcileFileBeat(ctx context.Context, d *corev1a
 		return err
 	}
 
-	// todo role & account & roleBinding
-	// todo ds of filebeat
+	if err := r.reconcileClusterRolesForFileBeat(ctx, d); err != nil {
+		return err
+	}
 
-	return nil
+	if err := r.reconcileServiceAccountForFileBeat(ctx, d); err != nil {
+		return err
+	}
+
+	if err := r.reconcileClusterRoleBindingForFileBeat(ctx, d); err != nil {
+		return err
+	}
+
+	// ds of filebeat
+	if err := r.reconcileDaemonSetForFileBeat(ctx, d); err != nil {
+		return err
+	}
+
+	return r.UpdateStatusIfNotMatch(ctx, d, corev1alpha1.DependencyStatusRunning)
 }
 
 func (r *DependencyReconciler) reconcileConfigMapForFileBeat(ctx context.Context, d *corev1alpha1.Dependency) error {
@@ -312,7 +328,7 @@ output.elasticsearch:
 	desiredCM := corev1.ConfigMap{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      cmName,
-			Namespace: ns,
+			Namespace: nsKappLog,
 			Labels: map[string]string{
 				"k8s-app": "filebeat",
 			},
@@ -323,7 +339,7 @@ output.elasticsearch:
 	}
 
 	cm := corev1.ConfigMap{}
-	err := r.Get(ctx, types.NamespacedName{Namespace: ns, Name: cmName}, &cm)
+	err := r.Get(ctx, types.NamespacedName{Namespace: nsKappLog, Name: cmName}, &cm)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			cm = desiredCM
@@ -339,4 +355,312 @@ output.elasticsearch:
 	cm.Data = desiredCM.Data
 
 	return &cm, true, nil
+}
+
+var crNameForFilebeat = "filebeat"
+
+// todo role & account & roleBinding
+func (r *DependencyReconciler) reconcileClusterRolesForFileBeat(ctx context.Context, d *corev1alpha1.Dependency) error {
+
+	desiredCR := rbacv1.ClusterRole{
+		ObjectMeta: v1.ObjectMeta{
+			Name:      crNameForFilebeat,
+			Namespace: nsKappLog,
+			Labels: map[string]string{
+				"k8s-app": "filebeat",
+			},
+		},
+		Rules: []rbacv1.PolicyRule{
+			{
+				APIGroups: []string{""},
+				Resources: []string{"namespaces", "pods"},
+				Verbs:     []string{"get", "watch", "list"},
+			},
+		},
+	}
+
+	cr := rbacv1.ClusterRole{}
+
+	exist := false
+	if err := r.Get(ctx, types.NamespacedName{Name: crNameForFilebeat}, &cr); err != nil {
+		if errors.IsNotFound(err) {
+			cr = desiredCR
+			ctrl.SetControllerReference(d, &cr, r.Scheme)
+		} else {
+			return err
+		}
+	} else {
+		exist = true
+
+		// ensure
+		cr.Rules = desiredCR.Rules
+	}
+
+	var err error
+	if exist {
+		err = r.Update(ctx, &cr)
+	} else {
+		err = r.Create(ctx, &cr)
+	}
+
+	return err
+}
+
+var saNameForFilebeat = "filebeat"
+
+func (r *DependencyReconciler) reconcileServiceAccountForFileBeat(ctx context.Context, d *corev1alpha1.Dependency) error {
+
+	desiredSA := corev1.ServiceAccount{
+		ObjectMeta: v1.ObjectMeta{
+			Namespace: nsKappLog,
+			Name:      saNameForFilebeat,
+			Labels: map[string]string{
+				"k8s-app": "filebeat",
+			},
+		},
+	}
+
+	sa := corev1.ServiceAccount{}
+	exist := false
+	if err := r.Get(ctx, types.NamespacedName{Namespace: nsKappLog, Name: saNameForFilebeat}, &sa); err != nil {
+		if errors.IsNotFound(err) {
+			sa = desiredSA
+
+			ctrl.SetControllerReference(d, &sa, r.Scheme)
+		} else {
+			return err
+		}
+	} else {
+		exist = true
+	}
+
+	var err error
+	if exist {
+		err = r.Update(ctx, &sa)
+	} else {
+		err = r.Create(ctx, &sa)
+	}
+
+	//todo get again to check is exist?
+
+	return err
+}
+
+var crbNameForFileBeat = "filebeat"
+
+func (r *DependencyReconciler) reconcileClusterRoleBindingForFileBeat(ctx context.Context, d *corev1alpha1.Dependency) error {
+
+	desiredCRB := rbacv1.ClusterRoleBinding{
+		ObjectMeta: v1.ObjectMeta{
+			Name: crbNameForFileBeat,
+		},
+		Subjects: []rbacv1.Subject{
+			{
+				Kind:      "ServiceAccount",
+				Name:      saNameForFilebeat,
+				Namespace: nsKappLog,
+			},
+		},
+		RoleRef: rbacv1.RoleRef{
+			Kind:     "ClusterRole",
+			Name:     crNameForFilebeat,
+			APIGroup: rbacv1.GroupName,
+		},
+	}
+
+	crb := rbacv1.ClusterRoleBinding{}
+	exist := false
+	if err := r.Get(ctx, types.NamespacedName{Name: crbNameForFileBeat}, &crb); err != nil {
+		if errors.IsNotFound(err) {
+			crb = desiredCRB
+			ctrl.SetControllerReference(d, &crb, r.Scheme)
+		} else {
+			return err
+		}
+	} else {
+		exist = true
+
+		crb.Subjects = desiredCRB.Subjects
+		crb.RoleRef = desiredCRB.RoleRef
+	}
+
+	var err error
+	if exist {
+		err = r.Update(ctx, &crb)
+	} else {
+		err = r.Create(ctx, &crb)
+	}
+
+	return err
+}
+
+var dsNameFilebeat = "filebeat"
+
+func (r *DependencyReconciler) reconcileDaemonSetForFileBeat(ctx context.Context, d *corev1alpha1.Dependency) error {
+	labels := map[string]string{
+		"k8s-app": "filebeat",
+	}
+
+	terminationGracePeriodSecs := int64(30)
+	secRunAsUser := int64(0)
+	accessMode600 := int32(0600)
+
+	hostPathTypeDirOrCreate := corev1.HostPathType("DirectoryOrCreate")
+
+	desiredDS := appsv1.DaemonSet{
+		ObjectMeta: v1.ObjectMeta{
+			Name:      dsNameFilebeat,
+			Namespace: nsKappLog,
+			Labels: map[string]string{
+				"k8s-app": "filebeat",
+			},
+		},
+		Spec: appsv1.DaemonSetSpec{
+			Selector: &v1.LabelSelector{
+				MatchLabels: labels,
+			},
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: v1.ObjectMeta{
+					Labels: labels,
+				},
+				Spec: corev1.PodSpec{
+					ServiceAccountName:            saNameForFilebeat,
+					TerminationGracePeriodSeconds: &terminationGracePeriodSecs,
+					HostNetwork:                   true,
+					DNSPolicy:                     corev1.DNSPolicy("ClusterFirstWithHostNet"),
+					Containers: []corev1.Container{
+						{
+							Name:  "filebeat",
+							Image: "docker.elastic.co/beats/filebeat:7.6.1",
+							Args:  []string{"-c", "/etc/filebeat.yml", "-e"},
+							Env: []corev1.EnvVar{
+								{Name: "ELASTICSEARCH_HOST", Value: "elasticsearch-es-http"},
+								{Name: "ELASTICSEARCH_PORT", Value: "9200"},
+								{Name: "ELASTICSEARCH_USERNAME", Value: "elastic"},
+								{Name: "ELASTICSEARCH_PASSWORD", ValueFrom: &corev1.EnvVarSource{
+									SecretKeyRef: &corev1.SecretKeySelector{
+										LocalObjectReference: corev1.LocalObjectReference{Name: "elasticsearch-es-elastic-user"},
+										Key:                  "elastic",
+									},
+								}},
+								{Name: "NODE_NAME", ValueFrom: &corev1.EnvVarSource{
+									FieldRef: &corev1.ObjectFieldSelector{
+										FieldPath: "spec.nodeName",
+									},
+								}},
+							},
+							SecurityContext: &corev1.SecurityContext{
+								RunAsUser: &secRunAsUser,
+							},
+							Resources: corev1.ResourceRequirements{
+								Limits: corev1.ResourceList{
+									corev1.ResourceMemory: resource.MustParse("200Mi"),
+								},
+								Requests: corev1.ResourceList{
+									corev1.ResourceCPU:    resource.MustParse("100m"),
+									corev1.ResourceMemory: resource.MustParse("100Mi"),
+								},
+							},
+							VolumeMounts: []corev1.VolumeMount{
+								{
+									Name:      "config",
+									MountPath: "/etc/filebeat.yml",
+									ReadOnly:  true,
+									SubPath:   "filebeat.yml",
+								},
+								{
+									Name:      "data",
+									MountPath: "/usr/share/filebeat/data",
+								},
+								{
+									Name:      "varlibdockercontainers",
+									MountPath: "/var/lib/docker/containers",
+									ReadOnly:  true,
+								},
+								{
+									Name:      "varlog",
+									MountPath: "/var/log",
+									ReadOnly:  true,
+								},
+								{
+									Name:      "es-certs",
+									MountPath: "/mnt/elastic/tls.crt",
+									ReadOnly:  true,
+									SubPath:   "tls.crt",
+								},
+							},
+						},
+					},
+					Volumes: []corev1.Volume{
+						{
+							Name: "config",
+							VolumeSource: corev1.VolumeSource{
+								ConfigMap: &corev1.ConfigMapVolumeSource{
+									LocalObjectReference: corev1.LocalObjectReference{Name: "filebeat-config"},
+									DefaultMode:          &accessMode600,
+								},
+							},
+						},
+						{
+							Name: "varlibdockercontainers",
+							VolumeSource: corev1.VolumeSource{
+								HostPath: &corev1.HostPathVolumeSource{
+									Path: "/var/lib/docker/containers",
+								},
+							},
+						},
+						{
+							Name: "varlog",
+							VolumeSource: corev1.VolumeSource{
+								HostPath: &corev1.HostPathVolumeSource{
+									Path: "/var/log",
+								},
+							},
+						},
+						{
+							Name: "data",
+							VolumeSource: corev1.VolumeSource{
+								HostPath: &corev1.HostPathVolumeSource{
+									Path: "/var/lib/filebeat-data",
+									Type: &hostPathTypeDirOrCreate,
+								},
+							},
+						},
+						{
+							Name: "es-certs",
+							VolumeSource: corev1.VolumeSource{
+								Secret: &corev1.SecretVolumeSource{
+									SecretName: "elasticsearch-es-http-certs-public",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	ds := appsv1.DaemonSet{}
+	exist := false
+	if err := r.Get(ctx, types.NamespacedName{Name: desiredDS.Name, Namespace: desiredDS.Namespace}, &ds); err != nil {
+		if errors.IsNotFound(err) {
+			ds = desiredDS
+		} else {
+			return err
+		}
+	} else {
+		exist = true
+
+		// ensure
+		ds.Spec.Template.Spec.Containers = desiredDS.Spec.Template.Spec.Containers
+	}
+
+	var err error
+	if exist {
+		err = r.Update(ctx, &ds)
+	} else {
+		err = r.Create(ctx, &ds)
+	}
+
+	return err
 }
