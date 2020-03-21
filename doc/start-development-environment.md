@@ -1,4 +1,4 @@
-# Sepup development environment
+# Setup development environment
 
 1. start localhost k8s cluster
 
