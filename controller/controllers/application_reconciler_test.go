@@ -51,7 +51,12 @@ func createApplication(application *v1alpha1.Application) {
 
 	// after the finalizer is set, the application won't auto change
 	Eventually(func() bool {
-		reloadApplication(application)
+		err := k8sClient.Get(context.Background(), getApplicationNamespacedName(application), application)
+
+		if err != nil {
+			return false
+		}
+
 		for i := range application.Finalizers {
 			if application.Finalizers[i] == finalizerName {
 				return true
@@ -141,7 +146,7 @@ var _ = Describe("Application Envs", func() {
 			Ports: []v1alpha1.Port{
 				{
 					Name:          "test",
-					ContainerPort: 80,
+					ContainerPort: 8080,
 					ServicePort:   80,
 					Protocol:      coreV1.ProtocolTCP,
 				},
@@ -280,9 +285,34 @@ var _ = Describe("Application Envs", func() {
 		It("should create corresponding services", func() {
 			application := generateApplication()
 			createApplication(application)
+			var services []coreV1.Service
 			Eventually(func() bool {
-				services := getApplicationServices(application)
+				services = getApplicationServices(application)
 				return len(services) == 1
+			}, timeout, interval).Should(Equal(true))
+			Expect(len(services[0].Spec.Ports)).Should(Equal(1))
+			applicationPortConfig := application.Spec.Components[0].Ports[0]
+			servicePort := services[0].Spec.Ports[0]
+			Expect(servicePort.Protocol).Should(Equal(applicationPortConfig.Protocol))
+			Expect(uint32(servicePort.TargetPort.IntValue())).Should(Equal(applicationPortConfig.ContainerPort))
+			Expect(uint32(servicePort.Port)).Should(Equal(applicationPortConfig.ServicePort))
+
+			By("Update application port")
+			reloadApplication(application)
+			application.Spec.Components[0].Ports[0].ContainerPort = 3322
+			updateApplication(application)
+			Eventually(func() bool {
+				services = getApplicationServices(application)
+				return len(services) == 1 && services[0].Spec.Ports[0].TargetPort.IntValue() == 3322
+			}, timeout, interval).Should(Equal(true))
+
+			By("Delete application port")
+			reloadApplication(application)
+			application.Spec.Components[0].Ports = application.Spec.Components[0].Ports[:0]
+			updateApplication(application)
+			Eventually(func() bool {
+				services = getApplicationServices(application)
+				return len(services) == 0
 			}, timeout, interval).Should(Equal(true))
 		})
 	})
