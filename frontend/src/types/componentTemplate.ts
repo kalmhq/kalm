@@ -21,7 +21,7 @@ export const newEmptyComponentLike = (): ComponentLike => {
     env: Immutable.List([]),
     ports: Immutable.List([]),
     disks: Immutable.List([]),
-    cpu: "100M",
+    cpu: "100m",
     memory: "100M",
     workloadType: "server",
     restartStrategy: "rollingUpdate",
