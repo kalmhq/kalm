@@ -202,5 +202,62 @@ var _ = Describe("Application Envs", func() {
 					len(deployments[0].Spec.Template.Spec.Containers[0].Env) == 0
 			}, timeout, interval).Should(Equal(true))
 		})
+
+		It("External Static", func() {
+			By("Create Application")
+			application := generateApplication()
+			application.Spec.Components[0].Env = []v1alpha1.EnvVar{
+				{
+					Name:  "env1",
+					Value: "sharedEnv1",
+					Type:  v1alpha1.EnvVarTypeExternal,
+				},
+			}
+			application.Spec.SharedEnv = []v1alpha1.EnvVar{
+				{
+					Name:  "sharedEnv1",
+					Value: "value1",
+				},
+			}
+			Expect(k8sClient.Create(context.Background(), application)).Should(Succeed())
+
+			var deployments []v1.Deployment
+			Eventually(func() bool {
+				deployments = getApplicationDeployments(application)
+				return len(deployments) == 1
+			}, timeout, interval).Should(Equal(true))
+
+			deployment := deployments[0]
+			Expect(deployment.Name).Should(Equal(getDeploymentName(application.Name, "test")))
+			Expect(*deployment.Spec.Replicas).Should(Equal(int32(1)))
+			containers := deployment.Spec.Template.Spec.Containers
+			Expect(len(containers)).Should(Equal(1))
+			Expect(len(containers[0].Env)).Should(Equal(1))
+			Expect(containers[0].Env[0].Value).Should(Equal("value1"))
+
+			By("Update SharedEnv value should update deployment env value")
+			reloadApplication(application)
+			application.Spec.SharedEnv[0].Value = "value1-new"
+			updateApplication(application)
+			Eventually(func() bool {
+				deployments = getApplicationDeployments(application)
+				if len(deployments) != 1 {
+					return false
+				}
+				mainContainer := deployments[0].Spec.Template.Spec.Containers[0]
+				return len(mainContainer.Env) == 1 &&
+					mainContainer.Env[0].Value == "value1-new"
+			}, timeout, interval).Should(Equal(true))
+
+			By("non-exist external value will be ignore")
+			reloadApplication(application)
+			application.Spec.SharedEnv = application.Spec.SharedEnv[:0] // delete all sharedEnvs
+			updateApplication(application)
+			Eventually(func() bool {
+				deployments = getApplicationDeployments(application)
+				mainContainer := deployments[0].Spec.Template.Spec.Containers[0]
+				return len(mainContainer.Env) == 0
+			}, timeout, interval).Should(Equal(true))
+		})
 	})
 })

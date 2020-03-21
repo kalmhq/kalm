@@ -152,13 +152,10 @@ func (act *applicationReconcilerTask) generateTemplate(component *kappV1Alpha1.C
 			value = env.Value
 		} else if env.Type == kappV1Alpha1.EnvVarTypeExternal {
 			value, err = act.FindShareEnvValue(env.Value)
-			if err != nil {
-				return nil, err
-			}
 
-			if value == "" {
-				// TODO is this the correct way to allocate an error?
-				return nil, fmt.Errorf("can't find shared env %s", env.Value)
+			//  if the env can't be found in sharedEnv, ignore it
+			if err != nil {
+				continue
 			}
 		} else if env.Type == kappV1Alpha1.EnvVarTypeLinked {
 			value, err = act.getValueOfLinkedEnv(env)
