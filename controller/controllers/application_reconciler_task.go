@@ -320,6 +320,8 @@ func (act *applicationReconcilerTask) reconcileServices() (err error) {
 	for _, component := range act.app.Spec.Components {
 		// ports
 		service := act.getService(component.Name)
+
+		lables := getComponentLabels(app.Name, component.Name)
 		if len(component.Ports) > 0 {
 			newService := false
 			if service == nil {
@@ -328,12 +330,10 @@ func (act *applicationReconcilerTask) reconcileServices() (err error) {
 					ObjectMeta: metaV1.ObjectMeta{
 						Name:      getServiceName(app.Name, component.Name),
 						Namespace: app.Namespace,
+						Labels:    lables,
 					},
 					Spec: coreV1.ServiceSpec{
-						Selector: map[string]string{
-							"application": app.Name,
-							"component":   component.Name,
-						},
+						Selector: lables,
 					},
 				}
 			}
@@ -742,7 +742,14 @@ func getDeploymentName(appName, componentName string) string {
 }
 
 func getServiceName(appName, componentName string) string {
-	return fmt.Sprintf("%s-%s", appName, componentName)
+	// a DNS-1035 label must consist of lower case alphanumeric characters or '-',
+	// start with an alphabetic character,
+	// and end with an alphanumeric character
+	// (e.g. 'my-name',  or 'abc-123', regex used for validation is '[a-z]([-a-z0-9]*[a-z0-9])?')
+
+	// Add a prefix to avoid name error
+
+	return fmt.Sprintf("svc-%s-%s", appName, componentName)
 }
 
 //func AllIngressPlugins(kapp kappV1Alpha1.Application) (rst []*kappV1Alpha1.PluginIngress) {

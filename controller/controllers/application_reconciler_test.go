@@ -6,6 +6,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	v1 "k8s.io/api/apps/v1"
+	coreV1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -70,6 +71,12 @@ func getApplicationDeployments(application *v1alpha1.Application) []v1.Deploymen
 	return deploymentList.Items
 }
 
+func getApplicationServices(application *v1alpha1.Application) []coreV1.Service {
+	var serviceList coreV1.ServiceList
+	_ = k8sClient.List(context.Background(), &serviceList, client.MatchingLabels{"kapp-application": application.Name})
+	return serviceList.Items
+}
+
 const timeout = time.Second * 20
 const interval = time.Millisecond * 500
 
@@ -131,6 +138,14 @@ var _ = Describe("Application Envs", func() {
 					Type:  v1alpha1.EnvVarTypeStatic,
 				},
 			},
+			Ports: []v1alpha1.Port{
+				{
+					Name:          "test",
+					ContainerPort: 80,
+					ServicePort:   80,
+					Protocol:      coreV1.ProtocolTCP,
+				},
+			},
 		})
 		return app
 	}
@@ -139,7 +154,7 @@ var _ = Describe("Application Envs", func() {
 		It("Only Static", func() {
 			By("Create Application")
 			application := generateApplication()
-			Expect(k8sClient.Create(context.Background(), application)).Should(Succeed())
+			createApplication(application)
 
 			var deployments []v1.Deployment
 			Eventually(func() bool {
@@ -257,6 +272,17 @@ var _ = Describe("Application Envs", func() {
 				deployments = getApplicationDeployments(application)
 				mainContainer := deployments[0].Spec.Template.Spec.Containers[0]
 				return len(mainContainer.Env) == 0
+			}, timeout, interval).Should(Equal(true))
+		})
+	})
+
+	Context("Ports", func() {
+		It("should create corresponding services", func() {
+			application := generateApplication()
+			createApplication(application)
+			Eventually(func() bool {
+				services := getApplicationServices(application)
+				return len(services) == 1
 			}, timeout, interval).Should(Equal(true))
 		})
 	})
