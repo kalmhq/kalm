@@ -50,7 +50,7 @@ var finalizerName = "storage.finalizers.kapp.dev"
 func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("application", req.NamespacedName)
-	log.Info("=========== start reconcile =============")
+	log.Info("=========== start reconciling =============")
 
 	var app corev1alpha1.Application
 

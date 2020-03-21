@@ -152,13 +152,10 @@ func (act *applicationReconcilerTask) generateTemplate(component *kappV1Alpha1.C
 			value = env.Value
 		} else if env.Type == kappV1Alpha1.EnvVarTypeExternal {
 			value, err = act.FindShareEnvValue(env.Value)
-			if err != nil {
-				return nil, err
-			}
 
-			if value == "" {
-				// TODO is this the correct way to allocate an error?
-				return nil, fmt.Errorf("can't find shared env %s", env.Value)
+			//  if the env can't be found in sharedEnv, ignore it
+			if err != nil {
+				continue
 			}
 		} else if env.Type == kappV1Alpha1.EnvVarTypeLinked {
 			value, err = act.getValueOfLinkedEnv(env)
@@ -323,6 +320,8 @@ func (act *applicationReconcilerTask) reconcileServices() (err error) {
 	for _, component := range act.app.Spec.Components {
 		// ports
 		service := act.getService(component.Name)
+
+		labels := getComponentLabels(app.Name, component.Name)
 		if len(component.Ports) > 0 {
 			newService := false
 			if service == nil {
@@ -331,12 +330,10 @@ func (act *applicationReconcilerTask) reconcileServices() (err error) {
 					ObjectMeta: metaV1.ObjectMeta{
 						Name:      getServiceName(app.Name, component.Name),
 						Namespace: app.Namespace,
+						Labels:    labels,
 					},
 					Spec: coreV1.ServiceSpec{
-						Selector: map[string]string{
-							"application": app.Name,
-							"component":   component.Name,
-						},
+						Selector: labels,
 					},
 				}
 			}
@@ -745,7 +742,14 @@ func getDeploymentName(appName, componentName string) string {
 }
 
 func getServiceName(appName, componentName string) string {
-	return fmt.Sprintf("%s-%s", appName, componentName)
+	// a DNS-1035 label must consist of lower case alphanumeric characters or '-',
+	// start with an alphabetic character,
+	// and end with an alphanumeric character
+	// (e.g. 'my-name',  or 'abc-123', regex used for validation is '[a-z]([-a-z0-9]*[a-z0-9])?')
+
+	// Add a prefix to avoid name error
+
+	return fmt.Sprintf("svc-%s-%s", appName, componentName)
 }
 
 //func AllIngressPlugins(kapp kappV1Alpha1.Application) (rst []*kappV1Alpha1.PluginIngress) {

@@ -6,6 +6,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	v1 "k8s.io/api/apps/v1"
+	coreV1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -50,7 +51,12 @@ func createApplication(application *v1alpha1.Application) {
 
 	// after the finalizer is set, the application won't auto change
 	Eventually(func() bool {
-		reloadApplication(application)
+		err := k8sClient.Get(context.Background(), getApplicationNamespacedName(application), application)
+
+		if err != nil {
+			return false
+		}
+
 		for i := range application.Finalizers {
 			if application.Finalizers[i] == finalizerName {
 				return true
@@ -68,6 +74,12 @@ func getApplicationDeployments(application *v1alpha1.Application) []v1.Deploymen
 	var deploymentList v1.DeploymentList
 	_ = k8sClient.List(context.Background(), &deploymentList, client.MatchingLabels{"kapp-application": application.Name})
 	return deploymentList.Items
+}
+
+func getApplicationServices(application *v1alpha1.Application) []coreV1.Service {
+	var serviceList coreV1.ServiceList
+	_ = k8sClient.List(context.Background(), &serviceList, client.MatchingLabels{"kapp-application": application.Name})
+	return serviceList.Items
 }
 
 const timeout = time.Second * 20
@@ -112,6 +124,11 @@ var _ = Describe("Application basic CRUD", func() {
 			f := &v1alpha1.Application{}
 			return k8sClient.Get(context.Background(), getApplicationNamespacedName(application), f)
 		}, timeout, interval).ShouldNot(Succeed())
+		Eventually(func() bool {
+			deployments := getApplicationDeployments(application)
+			services := getApplicationServices(application)
+			return len(deployments) == 0 && len(services) == 0
+		}, timeout, interval).Should(Equal(true))
 	})
 })
 
@@ -131,6 +148,14 @@ var _ = Describe("Application Envs", func() {
 					Type:  v1alpha1.EnvVarTypeStatic,
 				},
 			},
+			Ports: []v1alpha1.Port{
+				{
+					Name:          "test",
+					ContainerPort: 8080,
+					ServicePort:   80,
+					Protocol:      coreV1.ProtocolTCP,
+				},
+			},
 		})
 		return app
 	}
@@ -139,7 +164,7 @@ var _ = Describe("Application Envs", func() {
 		It("Only Static", func() {
 			By("Create Application")
 			application := generateApplication()
-			Expect(k8sClient.Create(context.Background(), application)).Should(Succeed())
+			createApplication(application)
 
 			var deployments []v1.Deployment
 			Eventually(func() bool {
@@ -200,6 +225,99 @@ var _ = Describe("Application Envs", func() {
 				deployments = getApplicationDeployments(application)
 				return len(deployments) == 1 &&
 					len(deployments[0].Spec.Template.Spec.Containers[0].Env) == 0
+			}, timeout, interval).Should(Equal(true))
+		})
+
+		It("External Static", func() {
+			By("Create Application")
+			application := generateApplication()
+			application.Spec.Components[0].Env = []v1alpha1.EnvVar{
+				{
+					Name:  "env1",
+					Value: "sharedEnv1",
+					Type:  v1alpha1.EnvVarTypeExternal,
+				},
+			}
+			application.Spec.SharedEnv = []v1alpha1.EnvVar{
+				{
+					Name:  "sharedEnv1",
+					Value: "value1",
+				},
+			}
+			Expect(k8sClient.Create(context.Background(), application)).Should(Succeed())
+
+			var deployments []v1.Deployment
+			Eventually(func() bool {
+				deployments = getApplicationDeployments(application)
+				return len(deployments) == 1
+			}, timeout, interval).Should(Equal(true))
+
+			deployment := deployments[0]
+			Expect(deployment.Name).Should(Equal(getDeploymentName(application.Name, "test")))
+			Expect(*deployment.Spec.Replicas).Should(Equal(int32(1)))
+			containers := deployment.Spec.Template.Spec.Containers
+			Expect(len(containers)).Should(Equal(1))
+			Expect(len(containers[0].Env)).Should(Equal(1))
+			Expect(containers[0].Env[0].Value).Should(Equal("value1"))
+
+			By("Update SharedEnv value should update deployment env value")
+			reloadApplication(application)
+			application.Spec.SharedEnv[0].Value = "value1-new"
+			updateApplication(application)
+			Eventually(func() bool {
+				deployments = getApplicationDeployments(application)
+				if len(deployments) != 1 {
+					return false
+				}
+				mainContainer := deployments[0].Spec.Template.Spec.Containers[0]
+				return len(mainContainer.Env) == 1 &&
+					mainContainer.Env[0].Value == "value1-new"
+			}, timeout, interval).Should(Equal(true))
+
+			By("non-exist external value will be ignore")
+			reloadApplication(application)
+			application.Spec.SharedEnv = application.Spec.SharedEnv[:0] // delete all sharedEnvs
+			updateApplication(application)
+			Eventually(func() bool {
+				deployments = getApplicationDeployments(application)
+				mainContainer := deployments[0].Spec.Template.Spec.Containers[0]
+				return len(mainContainer.Env) == 0
+			}, timeout, interval).Should(Equal(true))
+		})
+	})
+
+	Context("Ports", func() {
+		It("should create corresponding services", func() {
+			application := generateApplication()
+			createApplication(application)
+			var services []coreV1.Service
+			Eventually(func() bool {
+				services = getApplicationServices(application)
+				return len(services) == 1
+			}, timeout, interval).Should(Equal(true))
+			Expect(len(services[0].Spec.Ports)).Should(Equal(1))
+			applicationPortConfig := application.Spec.Components[0].Ports[0]
+			servicePort := services[0].Spec.Ports[0]
+			Expect(servicePort.Protocol).Should(Equal(applicationPortConfig.Protocol))
+			Expect(uint32(servicePort.TargetPort.IntValue())).Should(Equal(applicationPortConfig.ContainerPort))
+			Expect(uint32(servicePort.Port)).Should(Equal(applicationPortConfig.ServicePort))
+
+			By("Update application port")
+			reloadApplication(application)
+			application.Spec.Components[0].Ports[0].ContainerPort = 3322
+			updateApplication(application)
+			Eventually(func() bool {
+				services = getApplicationServices(application)
+				return len(services) == 1 && services[0].Spec.Ports[0].TargetPort.IntValue() == 3322
+			}, timeout, interval).Should(Equal(true))
+
+			By("Delete application port")
+			reloadApplication(application)
+			application.Spec.Components[0].Ports = application.Spec.Components[0].Ports[:0]
+			updateApplication(application)
+			Eventually(func() bool {
+				services = getApplicationServices(application)
+				return len(services) == 0
 			}, timeout, interval).Should(Equal(true))
 		})
 	})
