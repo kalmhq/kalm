@@ -124,6 +124,11 @@ var _ = Describe("Application basic CRUD", func() {
 			f := &v1alpha1.Application{}
 			return k8sClient.Get(context.Background(), getApplicationNamespacedName(application), f)
 		}, timeout, interval).ShouldNot(Succeed())
+		Eventually(func() bool {
+			deployments := getApplicationDeployments(application)
+			services := getApplicationServices(application)
+			return len(deployments) == 0 && len(services) == 0
+		}, timeout, interval).Should(Equal(true))
 	})
 })
 
