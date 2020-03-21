@@ -321,7 +321,7 @@ func (act *applicationReconcilerTask) reconcileServices() (err error) {
 		// ports
 		service := act.getService(component.Name)
 
-		lables := getComponentLabels(app.Name, component.Name)
+		labels := getComponentLabels(app.Name, component.Name)
 		if len(component.Ports) > 0 {
 			newService := false
 			if service == nil {
@@ -330,10 +330,10 @@ func (act *applicationReconcilerTask) reconcileServices() (err error) {
 					ObjectMeta: metaV1.ObjectMeta{
 						Name:      getServiceName(app.Name, component.Name),
 						Namespace: app.Namespace,
-						Labels:    lables,
+						Labels:    labels,
 					},
 					Spec: coreV1.ServiceSpec{
-						Selector: lables,
+						Selector: labels,
 					},
 				}
 			}
