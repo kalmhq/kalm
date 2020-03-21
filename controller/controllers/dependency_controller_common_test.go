@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
 	"strings"
@@ -11,7 +10,7 @@ import (
 func TestLoadFiles(t *testing.T) {
 	files := loadFiles("/kube-prometheus/setup")
 
-	fmt.Println(len(files))
+	//fmt.Println(len(files))
 
 	assert.NotNil(t, files)
 	assert.Greater(t, len(files), 0)
@@ -59,10 +58,10 @@ func TestYamlDecode(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, 2, len(items))
 
-	for i, item := range items {
-		fmt.Println(i, item)
-		out, err := yaml.Marshal(item)
-		fmt.Println(string(out), err)
+	for _, item := range items {
+		//fmt.Println(i, item)
+		_, _ = yaml.Marshal(item)
+		//fmt.Println(string(out), err)
 	}
 }
 

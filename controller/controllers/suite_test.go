@@ -80,6 +80,7 @@ var _ = BeforeSuite(func(done Done) {
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("File"),
 		Scheme: mgr.GetScheme(),
+		Reader: mgr.GetAPIReader(),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
@@ -87,6 +88,7 @@ var _ = BeforeSuite(func(done Done) {
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("Application"),
 		Scheme: mgr.GetScheme(),
+		Reader: mgr.GetAPIReader(),
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 

@@ -2,7 +2,9 @@ import {
   getKappClusterRoles,
   getKappClusterRoleBindings,
   getKappServiceAccounts,
-  getKappSecrets
+  getKappSecrets,
+  createKappClusterRoleBinding,
+  createKappServiceAccount
 } from "./kubernetesApi";
 import Immutable, { OrderedMap } from "immutable";
 import { ThunkResult } from "../types";
@@ -11,8 +13,32 @@ import {
   UserInterface,
   clusterRoleNames,
   ClusterRoleName,
-  LOAD_USERS_FULFILLED
+  LOAD_USERS_FULFILLED,
+  User
 } from "../types/user";
+import { convertToCRDClusterRoleBinding } from "../convertors/ClusterRoleBinding";
+import { convertToCRDServiceAccount } from "../convertors/ServiceAccount";
+
+export const createUserAction = (user: User): ThunkResult<Promise<void>> => {
+  return async dispatch => {
+    if (user.get("type") === "oidc") {
+      // oidc user
+      const createKappClusterRoleBindings = user.get("clusterRoleNames").map(clusterRoleName => {
+        createKappClusterRoleBinding(convertToCRDClusterRoleBinding(user.get("name"), clusterRoleName, "oidc"));
+      });
+      await Promise.all(createKappClusterRoleBindings);
+    } else {
+      // serviceAccount
+      await createKappServiceAccount(convertToCRDServiceAccount(user.get("name")));
+      const createKappClusterRoleBindings = user.get("clusterRoleNames").map(clusterRoleName => {
+        createKappClusterRoleBinding(
+          convertToCRDClusterRoleBinding(user.get("name"), clusterRoleName, "serviceAccount")
+        );
+      });
+      await Promise.all(createKappClusterRoleBindings);
+    }
+  };
+};
 
 export const loadDependenciesAction = (): ThunkResult<Promise<void>> => {
   return async dispatch => {
