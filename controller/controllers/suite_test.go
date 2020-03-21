@@ -39,6 +39,7 @@ import (
 var cfg *rest.Config
 var k8sClient client.Client
 var testEnv *envtest.Environment
+var mgrStopChannel chan struct{}
 
 func TestAPIs(t *testing.T) {
 	RegisterFailHandler(Fail)
@@ -92,8 +93,10 @@ var _ = BeforeSuite(func(done Done) {
 	}).SetupWithManager(mgr)
 	Expect(err).ToNot(HaveOccurred())
 
+	mgrStopChannel = make(chan struct{})
+
 	go func() {
-		err = mgr.Start(ctrl.SetupSignalHandler())
+		err = mgr.Start(mgrStopChannel)
 		Expect(err).ToNot(HaveOccurred())
 	}()
 
@@ -104,7 +107,7 @@ var _ = BeforeSuite(func(done Done) {
 }, 60)
 
 var _ = AfterSuite(func() {
-
+	mgrStopChannel <- struct{}{}
 	By("tearing down the test environment")
 	err := testEnv.Stop()
 	Expect(err).ToNot(HaveOccurred())
