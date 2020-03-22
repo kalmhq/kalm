@@ -412,6 +412,8 @@ spec:
               type: array
             imagePullSecretName:
               type: string
+            isEnabled:
+              type: boolean
             sharedEnv:
               items:
                 description: EnvVar represents an environment variable present in
@@ -438,6 +440,7 @@ spec:
               type: array
           required:
           - components
+          - isEnabled
           type: object
         status:
           description: ApplicationStatus defines the observed state of Application

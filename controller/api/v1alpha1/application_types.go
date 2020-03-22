@@ -78,6 +78,7 @@ type ComponentSpec struct {
 
 // ApplicationSpec defines the desired state of Application
 type ApplicationSpec struct {
+	IsEnabled           bool            `json:"isEnabled"`
 	Components          []ComponentSpec `json:"components"`
 	SharedEnv           []EnvVar        `json:"sharedEnv,omitempty"`
 	ImagePullSecretName string          `json:"imagePullSecretName,omitempty"`

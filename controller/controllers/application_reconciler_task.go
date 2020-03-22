@@ -741,6 +741,32 @@ func (act *applicationReconcilerTask) deleteExternalResources() error {
 		}
 	}
 
+	if err := act.getServices(); err != nil {
+		log.Error(err, "unable to list services")
+		return err
+	}
+
+	for _, service := range act.services {
+		log.Info("delete service")
+		if err := act.reconciler.Delete(ctx, &service); err != nil {
+			log.Error(err, "delete service error")
+			return err
+		}
+	}
+
+	if err := act.getCronjobs(); err != nil {
+		log.Error(err, "unable to list services")
+		return err
+	}
+
+	for _, cronjob := range act.cronjobs {
+		log.Info("delete cronjob")
+		if err := act.reconciler.Delete(ctx, &cronjob); err != nil {
+			log.Error(err, "delete service error")
+			return err
+		}
+	}
+
 	log.Info("Delete External Resources Done")
 
 	return nil
