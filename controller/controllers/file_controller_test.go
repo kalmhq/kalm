@@ -12,6 +12,23 @@ import (
 	"time"
 )
 
+func generateFile(path, content string) *v1alpha1.File {
+	fileSpec := v1alpha1.FileSpec{
+		Path:    path,
+		Content: content,
+	}
+
+	file := &v1alpha1.File{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      randomName(),
+			Namespace: TestNameSpaceName,
+		},
+		Spec: fileSpec,
+	}
+
+	return file
+}
+
 var _ = Describe("File Controller", func() {
 	defer GinkgoRecover()
 
@@ -35,24 +52,6 @@ var _ = Describe("File Controller", func() {
 
 	deleteFile := func(file *v1alpha1.File) {
 		Expect(k8sClient.Delete(context.Background(), file)).Should(Succeed())
-	}
-
-	generateFile := func(path, content string) *v1alpha1.File {
-		fileSpec := v1alpha1.FileSpec{
-			Path:    path,
-			Content: content,
-		}
-
-		file := &v1alpha1.File{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      randomName(),
-				Namespace: "default",
-			},
-			Spec: fileSpec,
-		}
-
-		return file
-
 	}
 
 	Context("File basic CRUD", func() {

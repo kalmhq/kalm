@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"crypto/md5"
 	"encoding/json"
 	"fmt"
 	"github.com/go-logr/logr"
@@ -11,8 +12,10 @@ import (
 	batchV1Beta1 "k8s.io/api/batch/v1beta1"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -112,17 +115,29 @@ func (act *applicationReconcilerTask) reconcileComponents() (err error) {
 }
 
 func (act *applicationReconcilerTask) generateTemplate(component *kappV1Alpha1.ComponentSpec) (template *coreV1.PodTemplateSpec, err error) {
-	mainContainer := &coreV1.Container{
-		Name:    component.Name,
-		Image:   component.Image,
-		Env:     []coreV1.EnvVar{},
-		Command: component.Command,
-		Args:    component.Args,
-		Resources: coreV1.ResourceRequirements{
-			Requests: make(map[coreV1.ResourceName]resource.Quantity),
-			Limits:   make(map[coreV1.ResourceName]resource.Quantity),
+
+	template = &coreV1.PodTemplateSpec{
+		ObjectMeta: metaV1.ObjectMeta{
+			Labels: getComponentLabels(act.app.Name, component.Name),
+		},
+		Spec: coreV1.PodSpec{
+			Containers: []coreV1.Container{
+				{
+					Name:    component.Name,
+					Image:   component.Image,
+					Env:     []coreV1.EnvVar{},
+					Command: component.Command,
+					Args:    component.Args,
+					Resources: coreV1.ResourceRequirements{
+						Requests: make(map[coreV1.ResourceName]resource.Quantity),
+						Limits:   make(map[coreV1.ResourceName]resource.Quantity),
+					},
+				},
+			},
 		},
 	}
+
+	mainContainer := &template.Spec.Containers[0]
 
 	// resources
 	if !component.CPU.IsZero() {
@@ -173,64 +188,151 @@ func (act *applicationReconcilerTask) generateTemplate(component *kappV1Alpha1.C
 	mainContainer.Env = envs
 
 	// Disks
-	// make PVCs first
-	//act.log.Info("disk config", "component", component.Name)
-
-	path2PVC := make(map[string]*coreV1.PersistentVolumeClaim)
-	for _, disk := range component.Disks {
-		validNameFromPath := strings.ReplaceAll(disk.Path, "/", "-")
-		volName := fmt.Sprintf("vol%s", validNameFromPath)
-		pvcName := fmt.Sprintf("%s-%s-%s", act.app.Name, component.Name, volName)
-
-		pvc := &coreV1.PersistentVolumeClaim{
-			ObjectMeta: metaV1.ObjectMeta{
-				Name:      pvcName,
-				Namespace: act.app.Namespace,
-			},
-			Spec: coreV1.PersistentVolumeClaimSpec{
-				AccessModes: []coreV1.PersistentVolumeAccessMode{coreV1.ReadWriteOnce},
-				Resources: coreV1.ResourceRequirements{
-					Requests: coreV1.ResourceList{
-						coreV1.ResourceStorage: disk.Size,
-					},
-				},
-				StorageClassName: nil,
-			},
-		}
-
-		pvcExist, err := act.IsPVCExists(pvc.Name)
-		if err != nil {
-			return nil, err
-		}
-		if !pvcExist {
-			if err := act.reconciler.Create(act.ctx, pvc); err != nil {
-				return nil, fmt.Errorf("fail to create PVC: %s, %s", pvc.Name, err)
-			} else {
-				act.log.Info("create pvc", "name", pvc.Name)
-			}
-		}
-		//todo how to update PVC?
-
-		path2PVC[disk.Path] = pvc
-	}
-
 	// add volumes & volumesMounts
 	var volumes []coreV1.Volume
 	var volumeMounts []coreV1.VolumeMount
-	for _, disk := range component.Disks {
-		pvc := path2PVC[disk.Path]
+	for i, disk := range component.Disks {
+		volumeSource := coreV1.VolumeSource{}
+
+		// TODO generate this name at api level
+		pvcName := fmt.Sprintf("%s-%s-%x", act.app.Name, component.Name, md5.Sum([]byte(disk.Path)))
+
+		if disk.Type == kappV1Alpha1.DiskTypePersistentVolumeClaim {
+			var pvc *coreV1.PersistentVolumeClaim
+
+			if disk.PersistentVolumeClaimName != "" {
+				pvcName = disk.PersistentVolumeClaimName
+			}
+
+			pvcFetched, err := act.getPVC(pvcName)
+
+			if err != nil {
+				return nil, err
+			}
+
+			if pvcFetched != nil {
+				pvc = pvcFetched
+			} else {
+				pvc = &coreV1.PersistentVolumeClaim{
+					ObjectMeta: metaV1.ObjectMeta{
+						Name:      pvcName,
+						Namespace: act.app.Namespace,
+						Labels:    getComponentLabels(act.app.Name, component.Name),
+					},
+					Spec: coreV1.PersistentVolumeClaimSpec{
+						AccessModes: []coreV1.PersistentVolumeAccessMode{coreV1.ReadWriteOnce},
+						Resources: coreV1.ResourceRequirements{
+							Requests: coreV1.ResourceList{
+								coreV1.ResourceStorage: disk.Size,
+							},
+						},
+						StorageClassName: disk.StorageClassName,
+					},
+				}
+
+				if err := act.reconciler.Create(act.ctx, pvc); err != nil {
+					return nil, fmt.Errorf("fail to create PVC: %s, %s", pvc.Name, err)
+				}
+
+				component.Disks[i].PersistentVolumeClaimName = pvcName
+			}
+
+			volumeSource.PersistentVolumeClaim = &coreV1.PersistentVolumeClaimVolumeSource{
+				ClaimName: pvcName,
+			}
+
+		} else if disk.Type == kappV1Alpha1.DiskTypeTemporaryDisk {
+			volumeSource.EmptyDir = &coreV1.EmptyDirVolumeSource{
+				Medium: coreV1.StorageMediumDefault,
+			}
+		} else if disk.Type == kappV1Alpha1.DiskTypeTemporaryMemory {
+			volumeSource.EmptyDir = &coreV1.EmptyDirVolumeSource{
+				Medium: coreV1.StorageMediumMemory,
+			}
+		} else if disk.Type == kappV1Alpha1.DiskTypeKappConfigs {
+			// check if kapp config path is a dir
+
+			configMapVolumeSource := &coreV1.ConfigMapVolumeSource{
+				LocalObjectReference: coreV1.LocalObjectReference{},
+			}
+
+			parts := strings.Split(disk.KappConfigPath, "/")
+			configMapName := fmt.Sprintf("config-%s-dir", strings.Join(parts[1:], "-"))
+
+			configMap := coreV1.ConfigMap{}
+
+			err := act.reconciler.Get(
+				act.ctx,
+				types.NamespacedName{
+					Namespace: act.app.Namespace,
+					Name:      configMapName,
+				},
+				&configMap,
+			)
+
+			if errors.IsNotFound(err) {
+				act.log.Info(fmt.Sprintf("Can't find config map %s as dir, try to load it as a object.", configMapName))
+
+				configMapName = getConfigMapNameFromPath(disk.KappConfigPath)
+				err := act.reconciler.Get(
+					act.ctx,
+					types.NamespacedName{
+						Namespace: act.app.Namespace,
+						Name:      configMapName,
+					},
+					&configMap,
+				)
+
+				if errors.IsNotFound(err) {
+					// TODO Requeue ???
+					act.log.Info(fmt.Sprintf("Can't find config map %s", configMapName))
+					continue
+				} else if err != nil {
+					return nil, err
+				}
+
+				// kapp config is a file and config map is founded
+				fileName := getConfigMapDataKeyFromPath(disk.KappConfigPath)
+
+				if _, ok := configMap.Data[fileName]; !ok {
+					err := fmt.Errorf("Can't find %s key in configMap %s", fileName, configMapName)
+					act.log.Error(err, "load file content from configMap Failed")
+
+					// TODO need somehow record an warning event
+					continue
+				}
+
+				configMapVolumeSource.Items = []coreV1.KeyToPath{
+					{
+						Key:  fileName,
+						Path: fileName,
+					},
+				}
+			} else if err != nil {
+				return nil, err
+			}
+
+			// config map is found, set the name
+			configMapVolumeSource.LocalObjectReference.Name = configMapName
+
+			// kapp config path is a single object
+			volumeSource.ConfigMap = configMapVolumeSource
+		} else {
+			// TODO wrong disk type
+		}
+
+		// save pvc name into applications
+		if err := act.reconciler.Update(act.ctx, act.app); err != nil {
+			return nil, fmt.Errorf("fail to save PVC name: %s, %s", pvcName, err)
+		}
 
 		volumes = append(volumes, coreV1.Volume{
-			Name: pvc.Name,
-			VolumeSource: coreV1.VolumeSource{
-				PersistentVolumeClaim: &coreV1.PersistentVolumeClaimVolumeSource{
-					ClaimName: pvc.Name,
-				},
-			},
+			Name:         pvcName,
+			VolumeSource: volumeSource,
 		})
 
 		volumeMounts = append(volumeMounts, coreV1.VolumeMount{
-			Name:      pvc.Name,
+			Name:      pvcName,
 			MountPath: disk.Path,
 		})
 	}
@@ -297,17 +399,6 @@ func (act *applicationReconcilerTask) generateTemplate(component *kappV1Alpha1.C
 	//		},
 	//	}
 	//}
-	template = &coreV1.PodTemplateSpec{
-		ObjectMeta: metaV1.ObjectMeta{
-			Labels: getComponentLabels(act.app.Name, component.Name),
-		},
-		Spec: coreV1.PodSpec{
-			Containers: []coreV1.Container{
-				*mainContainer,
-			},
-			//Volumes: act.app.Spec.Volumes,
-		},
-	}
 
 	return template, nil
 }
@@ -683,7 +774,7 @@ func (act *applicationReconcilerTask) FindShareEnvValue(name string) (string, er
 	return "", fmt.Errorf("fail to find value for shareEnv: %s", name)
 }
 
-func (act *applicationReconcilerTask) IsPVCExists(pvcName string) (bool, error) {
+func (act *applicationReconcilerTask) getPVC(pvcName string) (*coreV1.PersistentVolumeClaim, error) {
 	pvcList := coreV1.PersistentVolumeClaimList{}
 
 	err := act.reconciler.List(
@@ -692,16 +783,16 @@ func (act *applicationReconcilerTask) IsPVCExists(pvcName string) (bool, error) 
 		client.InNamespace(act.req.Namespace),
 	)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
 	for _, item := range pvcList.Items {
 		if item.Name == pvcName {
-			return true, nil
+			return &item, nil
 		}
 	}
 
-	return false, nil
+	return nil, nil
 }
 
 func (act *applicationReconcilerTask) getValueOfLinkedEnv(env kappV1Alpha1.EnvVar) (string, error) {

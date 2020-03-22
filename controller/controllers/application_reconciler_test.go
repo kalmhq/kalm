@@ -7,6 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 	v1 "k8s.io/api/apps/v1"
 	coreV1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -23,7 +24,7 @@ func generateEmptyApplication() *v1alpha1.Application {
 		},
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      name,
-			Namespace: "test",
+			Namespace: TestNameSpaceName,
 		},
 		Spec: v1alpha1.ApplicationSpec{
 			Components: []v1alpha1.ComponentSpec{},
@@ -80,6 +81,12 @@ func getApplicationServices(application *v1alpha1.Application) []coreV1.Service 
 	var serviceList coreV1.ServiceList
 	_ = k8sClient.List(context.Background(), &serviceList, client.MatchingLabels{"kapp-application": application.Name})
 	return serviceList.Items
+}
+
+func getApplicationPVCs(application *v1alpha1.Application) []coreV1.PersistentVolumeClaim {
+	var pvcList coreV1.PersistentVolumeClaimList
+	_ = k8sClient.List(context.Background(), &pvcList, client.MatchingLabels{"kapp-application": application.Name})
+	return pvcList.Items
 }
 
 const timeout = time.Second * 20
@@ -319,6 +326,220 @@ var _ = Describe("Application Envs", func() {
 				services = getApplicationServices(application)
 				return len(services) == 0
 			}, timeout, interval).Should(Equal(true))
+		})
+	})
+
+	Context("Disks", func() {
+		Context("type pvc", func() {
+			It("pvc without storageClass", func() {
+				application := generateApplication()
+				application.Spec.Components[0].Disks = []v1alpha1.Disk{
+					{
+						Type: v1alpha1.DiskTypePersistentVolumeClaim,
+						Path: "/test/b",
+						Size: resource.MustParse("10m"),
+					},
+				}
+				createApplication(application)
+				var pvcs []coreV1.PersistentVolumeClaim
+				Eventually(func() bool {
+					pvcs = getApplicationPVCs(application)
+					return len(pvcs) == 1
+				}, timeout, interval).Should(Equal(true))
+
+				var deployments []v1.Deployment
+				Eventually(func() bool {
+					deployments = getApplicationDeployments(application)
+					return len(deployments) == 1
+				}, timeout, interval).Should(Equal(true))
+
+				mountPath := deployments[0].Spec.Template.Spec.Containers[0].VolumeMounts[0]
+				volume := deployments[0].Spec.Template.Spec.Volumes[0]
+
+				Expect(mountPath.Name).Should(Equal(pvcs[0].Name))
+				Expect(mountPath.MountPath).Should(Equal("/test/b"))
+				Expect(volume.Name).Should(Equal(pvcs[0].Name))
+				Expect(volume.PersistentVolumeClaim.ClaimName).Should(Equal(pvcs[0].Name))
+
+				Eventually(func() bool {
+					reloadApplication(application)
+					return application.Spec.Components[0].Disks[0].PersistentVolumeClaimName == pvcs[0].Name
+				}, timeout, interval).Should(Equal(true))
+			})
+		})
+
+		It("temporary disk volume", func() {
+			application := generateApplication()
+			application.Spec.Components[0].Disks = []v1alpha1.Disk{
+				{
+					Type: v1alpha1.DiskTypeTemporaryDisk,
+					Path: "/test/b",
+					Size: resource.MustParse("10m"),
+				},
+			}
+			createApplication(application)
+
+			// will has a deployment
+			var deployments []v1.Deployment
+			Eventually(func() bool {
+				deployments = getApplicationDeployments(application)
+				return len(deployments) == 1
+			}, timeout, interval).Should(Equal(true))
+
+			mountPath := deployments[0].Spec.Template.Spec.Containers[0].VolumeMounts[0]
+			volume := deployments[0].Spec.Template.Spec.Volumes[0]
+			Expect(mountPath.MountPath).Should(Equal("/test/b"))
+			Expect(volume.EmptyDir.Medium).Should(Equal(coreV1.StorageMediumDefault))
+
+			// won't create pvc
+			Eventually(func() bool {
+				pvcs := getApplicationPVCs(application)
+				return len(pvcs) == 0
+			}, 2*time.Second, interval).Should(Equal(true))
+		})
+
+		It("temporary memory volume", func() {
+			application := generateApplication()
+			application.Spec.Components[0].Disks = []v1alpha1.Disk{
+				{
+					Type: v1alpha1.DiskTypeTemporaryMemory,
+					Path: "/test/b",
+					Size: resource.MustParse("10m"),
+				},
+			}
+			createApplication(application)
+
+			// will has a deployment
+			var deployments []v1.Deployment
+			Eventually(func() bool {
+				deployments = getApplicationDeployments(application)
+				return len(deployments) == 1
+			}, timeout, interval).Should(Equal(true))
+
+			mountPath := deployments[0].Spec.Template.Spec.Containers[0].VolumeMounts[0]
+			volume := deployments[0].Spec.Template.Spec.Volumes[0]
+			Expect(mountPath.MountPath).Should(Equal("/test/b"))
+			Expect(volume.EmptyDir.Medium).Should(Equal(coreV1.StorageMediumMemory))
+
+			// won't create pvc
+			Eventually(func() bool {
+				pvcs := getApplicationPVCs(application)
+				return len(pvcs) == 0
+			}, 2*time.Second, interval).Should(Equal(true))
+		})
+
+		Context("type kapp configs", func() {
+			// TODO add a test to mound nested dir
+			It("mount config dir", func() {
+				file := generateFile("/a/d.yml", "value")
+				Expect(k8sClient.Create(context.Background(), file)).Should(Succeed())
+				file = generateFile("/a/e.yml", "value2")
+				Expect(k8sClient.Create(context.Background(), file)).Should(Succeed())
+
+				// There will have a config-map called config-a-dir
+				//   d.yml: value
+				//   e.yml: value2
+
+				configMap := &coreV1.ConfigMap{}
+				Eventually(func() bool {
+					_ = k8sClient.Get(context.Background(), types.NamespacedName{
+						Namespace: file.Namespace,
+						Name:      getConfigMapNameFromPath(file.Spec.Path),
+					}, configMap)
+					return len(configMap.Data) == 2
+				}, timeout, interval).Should(BeTrue())
+
+				application := generateApplication()
+				application.Spec.Components[0].Disks = []v1alpha1.Disk{
+					{
+						Type:           v1alpha1.DiskTypeKappConfigs,
+						Path:           "/test/b",
+						Size:           resource.MustParse("10m"),
+						KappConfigPath: "/a",
+					},
+				}
+				createApplication(application)
+
+				// will has a deployment
+				var deployments []v1.Deployment
+				Eventually(func() bool {
+					deployments = getApplicationDeployments(application)
+					return len(deployments) == 1
+				}, timeout, interval).Should(Equal(true))
+
+				mountPath := deployments[0].Spec.Template.Spec.Containers[0].VolumeMounts[0]
+				volume := deployments[0].Spec.Template.Spec.Volumes[0]
+				Expect(mountPath.MountPath).Should(Equal("/test/b"))
+				Expect(mountPath.Name).Should(Equal(volume.Name))
+				Expect(volume.ConfigMap.Name).Should(Equal(configMap.Name))
+				Expect(len(volume.ConfigMap.Items)).Should(Equal(0))
+			})
+
+			It("mount config file", func() {
+				file := generateFile("/a.yml", "value")
+				Expect(k8sClient.Create(context.Background(), file)).Should(Succeed())
+
+				// There will have a config-map called config--dir
+				//   a.yml: value
+
+				configMap := &coreV1.ConfigMap{}
+				Eventually(func() bool {
+					_ = k8sClient.Get(context.Background(), types.NamespacedName{
+						Namespace: file.Namespace,
+						Name:      getConfigMapNameFromPath(file.Spec.Path),
+					}, configMap)
+					return len(configMap.Data) == 1
+				}, timeout, interval).Should(BeTrue())
+
+				application := generateApplication()
+				application.Spec.Components[0].Disks = []v1alpha1.Disk{
+					{
+						Type:           v1alpha1.DiskTypeKappConfigs,
+						Path:           "/test/b",
+						Size:           resource.MustParse("10m"),
+						KappConfigPath: "/a.yml",
+					},
+				}
+				createApplication(application)
+
+				// will has a deployment
+				var deployments []v1.Deployment
+				Eventually(func() bool {
+					deployments = getApplicationDeployments(application)
+					return len(deployments) == 1
+				}, timeout, interval).Should(Equal(true))
+
+				mountPath := deployments[0].Spec.Template.Spec.Containers[0].VolumeMounts[0]
+				volume := deployments[0].Spec.Template.Spec.Volumes[0]
+				Expect(mountPath.MountPath).Should(Equal("/test/b"))
+				Expect(mountPath.Name).Should(Equal(volume.Name))
+				Expect(volume.ConfigMap.Name).Should(Equal(configMap.Name))
+				Expect(len(volume.ConfigMap.Items)).Should(Equal(1))
+				Expect(volume.ConfigMap.Items[0].Path).Should(Equal("a.yml"))
+				Expect(volume.ConfigMap.Items[0].Key).Should(Equal("a.yml"))
+
+				By("An application with wrong kapp config path should ignore that mount")
+				application = generateApplication()
+				application.Spec.Components[0].Disks = []v1alpha1.Disk{
+					{
+						Type:           v1alpha1.DiskTypeKappConfigs,
+						Path:           "/test/b",
+						Size:           resource.MustParse("10m"),
+						KappConfigPath: "/not-exist.yml",
+					},
+				}
+				createApplication(application)
+
+				// will has a deployment
+				Eventually(func() bool {
+					deployments = getApplicationDeployments(application)
+					return len(deployments) == 1
+				}, timeout, interval).Should(Equal(true))
+
+				// but don't have any mounts
+				Expect(len(deployments[0].Spec.Template.Spec.Containers[0].VolumeMounts)).Should(Equal(0))
+				Expect(len(deployments[0].Spec.Template.Spec.Volumes)).Should(Equal(0))
+			})
 		})
 	})
 })

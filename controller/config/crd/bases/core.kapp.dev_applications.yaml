@@ -68,9 +68,21 @@ spec:
                   disks:
                     items:
                       properties:
+                        kappConfigPath:
+                          description: the config path of kapp config, can be a file
+                            or a directory
+                          type: string
                         path:
                           type: string
+                        persistentVolumeClaimName:
+                          description: use to store pvc name, so the disk won't be
+                            recreate during restart This field also can be used with
+                            existing pvc
+                          type: string
                         size:
+                          type: string
+                        storageClassName:
+                          description: Identify the StorageClass to create the pvc
                           type: string
                         type:
                           type: string

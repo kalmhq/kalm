@@ -41,6 +41,10 @@ var k8sClient client.Client
 var testEnv *envtest.Environment
 var mgrStopChannel chan struct{}
 
+const (
+	TestNameSpaceName = "default"
+)
+
 func TestAPIs(t *testing.T) {
 	RegisterFailHandler(Fail)
 
