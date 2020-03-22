@@ -27,7 +27,7 @@ func generateEmptyApplication() *v1alpha1.Application {
 			Namespace: TestNameSpaceName,
 		},
 		Spec: v1alpha1.ApplicationSpec{
-			IsEnabled:  true,
+			IsActive:   true,
 			Components: []v1alpha1.ComponentSpec{},
 			SharedEnv:  []v1alpha1.EnvVar{},
 		},
@@ -169,7 +169,7 @@ var _ = Describe("Application Envs", func() {
 		return app
 	}
 
-	It("should delete related resources when isEnabled is false", func() {
+	It("should delete related resources when isActive is false", func() {
 		application := generateApplication()
 		application.Spec.Components[0].Disks = []v1alpha1.Disk{
 			{
@@ -191,13 +191,23 @@ var _ = Describe("Application Envs", func() {
 		}, timeout, interval).Should(Equal(true))
 
 		reloadApplication(application)
-		application.Spec.IsEnabled = false
+		application.Spec.IsActive = false
 		updateApplication(application)
 
 		Eventually(func() bool {
 			deployments = getApplicationDeployments(application)
 			services = getApplicationServices(application)
 			return len(deployments) == 0 && len(services) == 0
+		}, timeout, interval).Should(Equal(true))
+
+		reloadApplication(application)
+		application.Spec.IsActive = true
+		updateApplication(application)
+
+		Eventually(func() bool {
+			deployments = getApplicationDeployments(application)
+			services = getApplicationServices(application)
+			return len(deployments) == 1 && len(services) == 1
 		}, timeout, interval).Should(Equal(true))
 	})
 

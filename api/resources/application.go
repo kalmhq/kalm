@@ -91,7 +91,7 @@ func (builder *Builder) BuildApplicationDetailsResponse(application *v1alpha1.Ap
 		&Application{
 			Name:       application.Name,
 			Namespace:  application.Namespace,
-			IsActive:   application.Status.IsActive,
+			IsActive:   application.Spec.IsEnabled,
 			SharedEnvs: application.Spec.SharedEnv,
 			Components: application.Spec.Components,
 		},
@@ -168,7 +168,7 @@ func (builder *Builder) buildApplicationListResponseItem(application *v1alpha1.A
 	return &ApplicationListResponseItem{
 		Name:       application.ObjectMeta.Name,
 		Namespace:  application.ObjectMeta.Namespace,
-		IsEnabled:  application.Status.IsActive,
+		IsEnabled:  application.Spec.IsEnabled,
 		CreatedAt:  application.ObjectMeta.CreationTimestamp.Time,
 		Components: builder.buildApplicationComponentStatus(application, resources),
 	}

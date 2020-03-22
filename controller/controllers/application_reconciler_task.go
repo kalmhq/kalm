@@ -64,7 +64,7 @@ func (act *applicationReconcilerTask) Run() (err error) {
 		return err
 	}
 
-	if !act.app.Spec.IsEnabled {
+	if !act.app.Spec.IsActive {
 		return act.deleteExternalResources()
 	}
 

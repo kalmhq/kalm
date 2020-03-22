@@ -412,7 +412,7 @@ spec:
               type: array
             imagePullSecretName:
               type: string
-            isEnabled:
+            isActive:
               type: boolean
             sharedEnv:
               items:
@@ -440,7 +440,7 @@ spec:
               type: array
           required:
           - components
-          - isEnabled
+          - isActive
           type: object
         status:
           description: ApplicationStatus defines the observed state of Application
