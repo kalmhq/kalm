@@ -64,6 +64,10 @@ func (act *applicationReconcilerTask) Run() (err error) {
 		return err
 	}
 
+	if !act.app.Spec.IsEnabled {
+		return act.deleteExternalResources()
+	}
+
 	err = act.getCronjobs()
 
 	if err != nil {
