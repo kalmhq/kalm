@@ -431,9 +431,9 @@ var _ = Describe("Application Envs", func() {
 		Context("type kapp configs", func() {
 			// TODO add a test to mound nested dir
 			It("mount config dir", func() {
-				file := generateFile("/a/d.yml", "value")
+				file := generateFile("/app/d.yml", "value")
 				Expect(k8sClient.Create(context.Background(), file)).Should(Succeed())
-				file = generateFile("/a/e.yml", "value2")
+				file = generateFile("/app/e.yml", "value2")
 				Expect(k8sClient.Create(context.Background(), file)).Should(Succeed())
 
 				// There will have a config-map called config-a-dir
@@ -455,7 +455,7 @@ var _ = Describe("Application Envs", func() {
 						Type:           v1alpha1.DiskTypeKappConfigs,
 						Path:           "/test/b",
 						Size:           resource.MustParse("10m"),
-						KappConfigPath: "/a",
+						KappConfigPath: "/app",
 					},
 				}
 				createApplication(application)
@@ -476,7 +476,7 @@ var _ = Describe("Application Envs", func() {
 			})
 
 			It("mount config file", func() {
-				file := generateFile("/a.yml", "value")
+				file := generateFile("/app.yml", "value")
 				Expect(k8sClient.Create(context.Background(), file)).Should(Succeed())
 
 				// There will have a config-map called config--dir
@@ -497,7 +497,7 @@ var _ = Describe("Application Envs", func() {
 						Type:           v1alpha1.DiskTypeKappConfigs,
 						Path:           "/test/b",
 						Size:           resource.MustParse("10m"),
-						KappConfigPath: "/a.yml",
+						KappConfigPath: "/app.yml",
 					},
 				}
 				createApplication(application)
@@ -515,8 +515,8 @@ var _ = Describe("Application Envs", func() {
 				Expect(mountPath.Name).Should(Equal(volume.Name))
 				Expect(volume.ConfigMap.Name).Should(Equal(configMap.Name))
 				Expect(len(volume.ConfigMap.Items)).Should(Equal(1))
-				Expect(volume.ConfigMap.Items[0].Path).Should(Equal("a.yml"))
-				Expect(volume.ConfigMap.Items[0].Key).Should(Equal("a.yml"))
+				Expect(volume.ConfigMap.Items[0].Path).Should(Equal("app.yml"))
+				Expect(volume.ConfigMap.Items[0].Key).Should(Equal("app.yml"))
 
 				By("An application with wrong kapp config path should ignore that mount")
 				application = generateApplication()
