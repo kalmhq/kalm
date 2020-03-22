@@ -308,7 +308,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           />
         ),
         name: applicationListItem.get("name"),
-        namespace: ["default", "production", "ropsten"][index] || "default",
+        namespace: applicationListItem.get("namespace"), // ["default", "production", "ropsten"][index] || "default",
         active: (
           <Switch
             checked={applicationListItem.get("isActive")}
