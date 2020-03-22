@@ -58,7 +58,7 @@ type ApplicationListResponseItem struct {
 	Name       string             `json:"name"`
 	Namespace  string             `json:"namespace"`
 	CreatedAt  time.Time          `json:"createdAt"`
-	IsEnabled  bool               `json:"isEnabled"`
+	IsActive   bool               `json:"isActive"`
 	Components []*ComponentStatus `json:"components"`
 }
 
@@ -91,7 +91,7 @@ func (builder *Builder) BuildApplicationDetailsResponse(application *v1alpha1.Ap
 		&Application{
 			Name:       application.Name,
 			Namespace:  application.Namespace,
-			IsActive:   application.Spec.IsEnabled,
+			IsActive:   application.Spec.IsActive,
 			SharedEnvs: application.Spec.SharedEnv,
 			Components: application.Spec.Components,
 		},
@@ -168,7 +168,7 @@ func (builder *Builder) buildApplicationListResponseItem(application *v1alpha1.A
 	return &ApplicationListResponseItem{
 		Name:       application.ObjectMeta.Name,
 		Namespace:  application.ObjectMeta.Namespace,
-		IsEnabled:  application.Spec.IsEnabled,
+		IsActive:   application.Spec.IsActive,
 		CreatedAt:  application.ObjectMeta.CreationTimestamp.Time,
 		Components: builder.buildApplicationComponentStatus(application, resources),
 	}

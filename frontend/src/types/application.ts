@@ -23,7 +23,7 @@ export type EnvItem = SharedEnv;
 export type EnvItems = Immutable.List<EnvItem>;
 
 export interface ApplicationContent {
-  isEnabled: boolean;
+  isActive: boolean;
   name: string;
   namespace: string;
   sharedEnvs: Immutable.List<SharedEnv>;
@@ -78,7 +78,7 @@ export type ApplicationListItem = ImmutableMap<{
   name: string;
   namespace: string;
   createdAt: string;
-  isEnabled: boolean;
+  isActive: boolean;
   components: Immutable.List<ComponentStatus>;
 }>;
 

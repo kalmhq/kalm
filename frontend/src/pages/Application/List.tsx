@@ -97,10 +97,10 @@ const styles = (theme: Theme) =>
 interface Props extends WithApplicationsDataProps, WithStyles<typeof styles> {}
 
 interface State {
-  isEnabledConfirmDialogOpen: boolean;
-  switchingIsEnabledApplicationName: string;
-  switchingIsEnabledTitle: string;
-  switchingIsEnabledContent: string;
+  isActiveConfirmDialogOpen: boolean;
+  switchingIsActiveApplicationName: string;
+  switchingIsActiveTitle: string;
+  switchingIsActiveContent: string;
   isDeleteConfirmDialogOpen: boolean;
   deletingApplicationListItem?: ApplicationListItem;
   checkedApplicationNames: {
@@ -110,10 +110,10 @@ interface State {
 
 class ApplicationListRaw extends React.PureComponent<Props, State> {
   private defaultState = {
-    isEnabledConfirmDialogOpen: false,
-    switchingIsEnabledApplicationName: "",
-    switchingIsEnabledTitle: "",
-    switchingIsEnabledContent: "",
+    isActiveConfirmDialogOpen: false,
+    switchingIsActiveApplicationName: "",
+    switchingIsActiveTitle: "",
+    switchingIsActiveContent: "",
     isDeleteConfirmDialogOpen: false,
     deletingApplicationListItem: undefined,
     checkedApplicationNames: {}
@@ -128,15 +128,15 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     this.props.dispatch(push(`/applications/new`));
   };
 
-  private renderSwitchingIsEnabledConfirmDialog = () => {
-    const { isEnabledConfirmDialogOpen, switchingIsEnabledTitle, switchingIsEnabledContent } = this.state;
+  private renderSwitchingIsActiveConfirmDialog = () => {
+    const { isActiveConfirmDialogOpen, switchingIsActiveTitle, switchingIsActiveContent } = this.state;
 
     return (
       <ConfirmDialog
-        open={isEnabledConfirmDialogOpen}
+        open={isActiveConfirmDialogOpen}
         onClose={this.closeEnabledConfirmDialog}
-        title={switchingIsEnabledTitle}
-        content={switchingIsEnabledContent}
+        title={switchingIsActiveTitle}
+        content={switchingIsActiveContent}
         onAgree={this.switchEnabledConfirmedComponent}
       />
     );
@@ -146,36 +146,36 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     this.setState(this.defaultState);
   };
 
-  private showSwitchingIsEnabledDialog = (applicationName: string) => {
+  private showSwitchingIsActiveDialog = (applicationName: string) => {
     const { applicationList } = this.props;
     const application = applicationList.find(x => x.get("name") === applicationName)!;
 
     let title, content;
 
-    if (application.get("isEnabled")) {
+    if (application.get("isActive")) {
       title = "Are you sure to disabled this application?";
       content =
         "Disabling this application will delete all running resources in your cluster. TODO: (will disk be deleted? will xxx deleted?)";
     } else {
-      title = "Are you sure to enable this application?";
+      title = "Are you sure to active this application?";
       content = "Enabling this application will create xxxx resources. They will spend xxx CPU, xxx Memory. ";
     }
 
     this.setState({
-      isEnabledConfirmDialogOpen: true,
-      switchingIsEnabledApplicationName: applicationName,
-      switchingIsEnabledTitle: title,
-      switchingIsEnabledContent: content
+      isActiveConfirmDialogOpen: true,
+      switchingIsActiveApplicationName: applicationName,
+      switchingIsActiveTitle: title,
+      switchingIsActiveContent: content
     });
   };
 
   private switchEnabledConfirmedComponent = () => {
     const { dispatch } = this.props;
-    const { switchingIsEnabledApplicationName } = this.state;
-    // const application = applicationList.find(x => x.get("name") === switchingIsEnabledApplicationName)!;
-    const application = getApplicationByName(switchingIsEnabledApplicationName);
+    const { switchingIsActiveApplicationName } = this.state;
 
-    dispatch(updateApplicationAction(application.set("isEnabled", !application.get("isEnabled"))));
+    // const application = applicationList.find(x => x.get("name") === switchingIsActiveApplicationName)!;
+    const application = getApplicationByName(switchingIsActiveApplicationName);
+    dispatch(updateApplicationAction(application.set("isActive", !application.get("isActive"))));
   };
 
   private closeConfirmDialog = () => {
@@ -229,7 +229,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     const { dispatch, applicationList, classes, isLoading, isFirstLoaded } = this.props;
     const data = applicationList.map((applicationListItem, index) => {
       const handleChange = () => {
-        this.showSwitchingIsEnabledDialog(applicationListItem.get("name"));
+        this.showSwitchingIsActiveDialog(applicationListItem.get("name"));
       };
 
       const onDeleteClick = () => {
@@ -309,13 +309,13 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         ),
         name: applicationListItem.get("name"),
         namespace: ["default", "production", "ropsten"][index] || "default",
-        enable: (
+        active: (
           <Switch
-            checked={applicationListItem.get("isEnabled")}
+            checked={applicationListItem.get("isActive")}
             onChange={handleChange}
             value="checkedB"
             color="primary"
-            inputProps={{ "aria-label": "enable app.ication" }}
+            inputProps={{ "aria-label": "active app.ication" }}
           />
         ),
         components
@@ -324,7 +324,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     return (
       <BasePage title="Applications">
         {this.renderDeleteConfirmDialog()}
-        {this.renderSwitchingIsEnabledConfirmDialog()}
+        {this.renderSwitchingIsActiveConfirmDialog()}
         <div className={classes.root}>
           {isLoading && !isFirstLoaded ? (
             <Loading />
@@ -351,7 +351,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                 { title: "Name", field: "name", sorting: false },
                 { title: "Namespace", field: "namespace", sorting: false },
                 { title: "Components", field: "components", sorting: false },
-                { title: "Enable", field: "enable", sorting: false },
+                { title: "Enable", field: "active", sorting: false },
                 {
                   title: "Action",
                   field: "action",
