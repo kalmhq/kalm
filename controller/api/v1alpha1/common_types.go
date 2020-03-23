@@ -55,9 +55,14 @@ const (
 )
 
 type Disk struct {
-	Path string            `json:"path"`
+	// the path we use to mount this volume to container
+	Path string `json:"path"`
+
+	// If we need to create this volume first, the size of the volume
 	Size resource.Quantity `json:"size"`
-	Type DiskType          `json:"type,omitempty"`
+
+	// Disk type
+	Type DiskType `json:"type,omitempty"`
 
 	// the config path of kapp config, can be a file or a directory
 	KappConfigPath string `json:"kappConfigPath,omitempty"`
