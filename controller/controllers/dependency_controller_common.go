@@ -16,8 +16,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
-	//apireg "apiregistration.k8s.io/v1"
-	//	apireg "k8s.io/api/apiregistration/v1"
 	apiregistration "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
 	"log"
 	"regexp"
@@ -36,21 +34,33 @@ const (
 
 // todo, support more than just deployments
 // stateful set, daemon set, etc...
-func (r *DependencyReconciler) getInstallStatus(namespace string, kind string, names ...string) (DepInstallStatus, error) {
-	return 0, nil
-}
+//func (r *DependencyReconciler) getInstallStatus(namespace string, kind string, names ...string) (DepInstallStatus, error) {
+//	return 0, nil
+//}
 
-func (r *DependencyReconciler) getDependencyInstallStatus(namespace string, dpNames ...string) (DepInstallStatus, error) {
+func (r *DependencyReconciler) getDependencyInstallStatus(namespace string, dpNames []string, stsNames []string) (DepInstallStatus, error) {
 	var statusList []DepInstallStatus
 
+	// deployment
 	for _, dpName := range dpNames {
-		singleDeploymentStatus, err := r.getSingleDpStatusInDependency(namespace, dpName)
+		dpStatus, err := r.getDpStatus(namespace, dpName)
 		if err != nil {
 			return 0, err
 		}
 
-		r.Log.Info("singleDeploymentStatus", dpName, singleDeploymentStatus)
-		statusList = append(statusList, singleDeploymentStatus)
+		r.Log.Info("dpStatus", dpName, dpStatus)
+		statusList = append(statusList, dpStatus)
+	}
+
+	// statefulSet
+	for _, stsName := range stsNames {
+		stsStatus, err := r.getStsStatus(namespace, stsName)
+		if err != nil {
+			return 0, err
+		}
+
+		r.Log.Info("stsStatus", stsName, stsStatus)
+		statusList = append(statusList, stsStatus)
 	}
 
 	if hasStatus(statusList, InstallFailed) {
@@ -96,7 +106,7 @@ func allIsStatus(statusList []DepInstallStatus, target DepInstallStatus) bool {
 
 // todo more strict check
 // currently only check if given dp exist under ns
-func (r *DependencyReconciler) getSingleDpStatusInDependency(namespace, dpName string) (DepInstallStatus, error) {
+func (r *DependencyReconciler) getDpStatus(namespace, dpName string) (DepInstallStatus, error) {
 	dpList := appsv1.DeploymentList{}
 	if err := r.List(context.TODO(), &dpList, client.InNamespace(namespace)); err != nil {
 		return 0, err
@@ -114,29 +124,27 @@ func (r *DependencyReconciler) getSingleDpStatusInDependency(namespace, dpName s
 		}
 
 		// todo when is installFailed?
+	}
 
-		//if len(dp.Status.Conditions) <= 0 {
-		//	return Installing, nil
-		//}
-		//
-		//// todo first or last?
-		//latestCondition := dp.Status.Conditions[0]
-		//
-		//conditionType := latestCondition.Type
-		//conditionStatus := latestCondition.Status
-		//
-		//switch conditionType {
-		//case appsv1.DeploymentAvailable:
-		//	if conditionStatus == corev1.ConditionTrue {
-		//		return Installed, nil
-		//	} else {
-		//		return Installing, nil
-		//	}
-		//case appsv1.DeploymentProgressing:
-		//	return Installing, nil
-		//case appsv1.DeploymentReplicaFailure:
-		//	return InstallFailed, nil
-		//}
+	return NotInstalled, nil
+}
+
+func (r *DependencyReconciler) getStsStatus(namespace, stsName string) (DepInstallStatus, error) {
+	list := appsv1.StatefulSetList{}
+	if err := r.List(context.TODO(), &list, client.InNamespace(namespace)); err != nil {
+		return 0, err
+	}
+
+	for _, item := range list.Items {
+		if item.Name != stsName {
+			continue
+		}
+
+		if item.Status.ReadyReplicas >= item.Status.Replicas {
+			return Installed, nil
+		} else {
+			return Installing, nil
+		}
 	}
 
 	return NotInstalled, nil
@@ -144,17 +152,14 @@ func (r *DependencyReconciler) getSingleDpStatusInDependency(namespace, dpName s
 
 func (r *DependencyReconciler) reconcileExternalController(ctx context.Context, fileOrDirName string) error {
 	//load yaml for external-controller
-	files := loadFiles(fileOrDirName)
-	for _, file := range files {
-		//r.Log.Info("parsing file", "i", i)
+	files, fileNames := loadFiles(fileOrDirName)
+	for i, file := range files {
+		r.Log.Info("parsing file", "i", i, "fileName", fileNames[i])
 
 		objs := parseK8sYaml(file)
 
 		// only create, no update yet
 		if err := r.createMany(ctx, objs...); err != nil {
-			if isAlreadyExistsErr(err) {
-				continue
-			}
 
 			return err
 		}
@@ -178,14 +183,15 @@ func isAlreadyExistsErr(err error) bool {
 	return false
 }
 
-func loadFiles(fileOrDirName string) (files [][]byte) {
+func loadFiles(fileOrDirName string) (files [][]byte, fileNames []string) {
 	searchDirs := []string{
 		"./resources",
 		"/resources",
 		"../resources",
 	}
 
-	isDir := strings.HasPrefix(fileOrDirName, "/")
+	isDir := strings.HasPrefix(fileOrDirName, "/") ||
+		strings.HasSuffix(fileOrDirName, "/")
 
 	for _, searchDir := range searchDirs {
 
@@ -211,6 +217,7 @@ func loadFiles(fileOrDirName string) (files [][]byte) {
 				dat, _ := ioutil.ReadFile(fmt.Sprintf("%s/%s", dirPath, fileInfo.Name()))
 
 				files = append(files, dat)
+				fileNames = append(fileNames, fileInfo.Name())
 			}
 		} else {
 
@@ -221,6 +228,7 @@ func loadFiles(fileOrDirName string) (files [][]byte) {
 			}
 
 			files = append(files, dat)
+			fileNames = append(fileNames, fileOrDirName)
 		}
 
 		if len(files) > 0 {
@@ -234,7 +242,12 @@ func loadFiles(fileOrDirName string) (files [][]byte) {
 // ref: https://github.com/kubernetes/client-go/issues/193#issuecomment-363318588
 func parseK8sYaml(fileR []byte) []runtime.Object {
 
-	acceptedK8sTypes := regexp.MustCompile(`(Prometheus|DaemonSet|Alertmanager|Secret|ValidatingWebhookConfiguration|MutatingWebhookConfiguration|CustomResourceDefinition|ConfigMap|Service|Deployment|Namespace|Role|ClusterRole|RoleBinding|ClusterRoleBinding|ServiceAccount)`)
+	//kinds := []string{
+	//	"StatefulSet",
+	//	more
+	//}
+
+	acceptedK8sTypes := regexp.MustCompile(`(StatefulSet|Prometheus|DaemonSet|Alertmanager|Secret|ValidatingWebhookConfiguration|MutatingWebhookConfiguration|CustomResourceDefinition|ConfigMap|Service|Deployment|Namespace|Role|ClusterRole|RoleBinding|ClusterRoleBinding|ServiceAccount)`)
 	fileAsString := string(fileR[:])
 	sepYamlFiles := strings.Split(fileAsString, "\n---\n")
 	retVal := make([]runtime.Object, 0, len(sepYamlFiles))
@@ -257,6 +270,7 @@ func parseK8sYaml(fileR []byte) []runtime.Object {
 		_ = corev1.AddToScheme(sch)
 		_ = monitoringv1.AddToScheme(sch)
 		apiregistration.AddToScheme(sch)
+		//elkv1.AddToScheme(sch)
 
 		decode := serializer.NewCodecFactory(sch).UniversalDeserializer().Decode
 		obj, groupVersionKind, err := decode([]byte(f), nil, nil)
@@ -317,10 +331,9 @@ func isCommentOnly(f string) bool {
 func (r *DependencyReconciler) createMany(ctx context.Context, objs ...runtime.Object) error {
 	for _, obj := range objs {
 		if err := r.Create(ctx, obj); err != nil {
-			//r.Log.Info(err, "fail when createMany",
-			//	"i", i,
-			//	"obj", fmt.Sprintf("%+v", obj),
-			//)
+			if isAlreadyExistsErr(err) {
+				continue
+			}
 
 			return err
 		}
