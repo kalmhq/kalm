@@ -5,7 +5,6 @@ import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { InjectedFormProps } from "redux-form";
 import { Field, getFormValues, reduxForm } from "redux-form/immutable";
-import { ComponentLike, workloadTypeCronjob, workloadTypeServer } from "../../actions";
 import { RootState } from "../../reducers";
 import { HelperContainer } from "../../widgets/Helper";
 import { CustomTextField, RenderSelectField, RenderTextField } from "../Basic";
@@ -19,6 +18,8 @@ import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import Immutable from "immutable";
+import { ComponentLike, workloadTypeCronjob, workloadTypeServer } from "../../types/componentTemplate";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
@@ -159,6 +160,12 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             margin
             label="Command (Optional)"
             helperText='Eg: "/bin/app", "rails server".'
+            formValueToEditValue={(value: Immutable.List<string>) => {
+              return value && value.toArray().join(" ") ? value.toArray().join(" ") : "";
+            }}
+            editValueToFormValue={(value: string) => {
+              return value ? Immutable.List([value]) : Immutable.List([]);
+            }}
           />
         </Grid>
       </Grid>
@@ -355,8 +362,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             component={RenderSelectField}
             label="Restart Strategy"
             validate={ValidatorRequired}>
-            <MenuItem value="rollingUpdate">Rolling Update</MenuItem>
-            <MenuItem value="recreate">Recreate</MenuItem>
+            <MenuItem value="RollingUpdate">Rolling Update</MenuItem>
+            <MenuItem value="Recreate">Recreate</MenuItem>
           </Field>
 
           {/* terminationGracePeriodSeconds */}
@@ -534,7 +541,12 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 }
 
+const initialValues: ComponentLike = Immutable.fromJS({
+  command: Immutable.List([])
+});
+
 export const ComponentLikeForm = reduxForm<ComponentLike, RawProps>({
   form: "componentLike",
+  initialValues,
   onSubmitFail: console.log
 })(connect(mapStateToProps)(withStyles(styles)(ComponentLikeFormRaw)));

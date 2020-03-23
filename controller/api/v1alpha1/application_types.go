@@ -64,29 +64,29 @@ type ComponentSpec struct {
 
 	Memory resource.Quantity `json:"memory,omitempty"`
 
+	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty"`
+
+	DnsPolicy v1.DNSPolicy `json:"dnsPolicy,omitemtpy"`
+
+	RestartPolicy v1.RestartPolicy `json:"restartPolicy,omitempty"`
+
+	RestartStrategy apps1.DeploymentStrategyType `json:"restartStrategy,omitempty"`
+
 	// +optional
 	Disks []Disk `json:"disks,omitempty"`
 }
 
 // ApplicationSpec defines the desired state of Application
 type ApplicationSpec struct {
+	IsActive            bool            `json:"isActive"`
 	Components          []ComponentSpec `json:"components"`
 	SharedEnv           []EnvVar        `json:"sharedEnv,omitempty"`
 	ImagePullSecretName string          `json:"imagePullSecretName,omitempty"`
 }
 
-type ComponentStatus struct {
-	Name             string                 `json:"name"`
-	DeploymentStatus apps1.DeploymentStatus `json:"deploymentStatus,omitempty"`
-	ServiceStatus    v1.ServiceStatus       `json:"serviceStatus,omitempty"`
-}
-
 // ApplicationStatus defines the observed state of Application
 type ApplicationStatus struct {
 	IsActive bool `json:"isActive,omitempty"`
-
-	// Failed to use map here, so use array for now.
-	ComponentStatus []ComponentStatus `json:"componentStatus,omitempty"`
 }
 
 // +kubebuilder:object:root=true

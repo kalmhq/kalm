@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
@@ -14,8 +13,8 @@ kind: Namespace
 metadata:
   name: test-ns`
 
-	rst := parseK8sYaml([]byte(yaml))
-	fmt.Println(rst)
+	_ = parseK8sYaml([]byte(yaml))
+	//fmt.Println(rst)
 }
 
 func TestTrimSpace(t *testing.T) {
@@ -26,7 +25,7 @@ func TestTrimSpace(t *testing.T) {
 
 	s = strings.TrimSpace(s)
 
-	fmt.Println(s)
+	//fmt.Println(s)
 }
 func TestIsCommentOnly(t *testing.T) {
 	s := `# Source: cert-manager/templates/webhook-psp.yaml

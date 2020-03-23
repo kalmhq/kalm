@@ -1,5 +1,6 @@
-import { ThunkResult, LOAD_DEPENDENCIES_PENDING, LOAD_DEPENDENCIES_FULFILLED } from ".";
 import { getDependencies } from "./kubernetesApi";
+import { ThunkResult } from "../types";
+import { LOAD_DEPENDENCIES_PENDING, LOAD_DEPENDENCIES_FULFILLED } from "../types/dependency";
 
 // export const createDependencyAction = (dependencyRaw: Dependency): ThunkResult<Promise<void>> => {
 //   return async dispatch => {

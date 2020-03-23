@@ -1,5 +1,6 @@
 import { getLoginStatus, login } from "./kubernetesApi";
-import { ThunkResult, INIT_AUTH, SET_AUTH_TOKEN } from ".";
+import { ThunkResult } from "../types";
+import { INIT_AUTH, SET_AUTH_TOKEN } from "../types/common";
 
 export const initAuthStatus = (): ThunkResult<Promise<void>> => {
   return async dispatch => {

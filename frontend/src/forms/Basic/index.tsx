@@ -4,7 +4,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
 import { Autocomplete } from "@material-ui/lab";
 import clsx from "clsx";
-import React from "react";
+import React, { useEffect } from "react";
 import { BaseFieldProps, WrappedFieldMetaProps, WrappedFieldProps } from "redux-form";
 import { Field } from "redux-form/immutable";
 import { ID } from "../../utils";
@@ -17,6 +17,8 @@ export const RenderTextField = ({
   required,
   disabled,
   margin,
+  formValueToEditValue,
+  editValueToFormValue,
   meta: { touched, invalid, error },
   ...custom
 }: FilledTextFieldProps & WrappedFieldProps & Props) => {
@@ -25,6 +27,13 @@ export const RenderTextField = ({
       margin: 0
     }
   }))();
+
+  useEffect(() => {
+    if (editValueToFormValue) {
+      input.onChange(editValueToFormValue(input.value));
+    }
+    // eslint-disable-next-line
+  }, []);
 
   return (
     <TextField
@@ -42,11 +51,15 @@ export const RenderTextField = ({
       variant="outlined"
       // {...input}
       // onChange={input.onChange}
-      onChange={(event: any) => input.onChange(event.target.value)}
+      onChange={(event: any) =>
+        editValueToFormValue
+          ? input.onChange(editValueToFormValue(event.target.value))
+          : input.onChange(event.target.value)
+      }
       // onFocus={input.onChange}
       // onBlur={input.onChange}
       // value={input.value}
-      defaultValue={input.value}
+      defaultValue={formValueToEditValue ? formValueToEditValue(input.value) : input.value}
       {...custom}
     />
   );
@@ -63,6 +76,8 @@ interface Props {
   rows?: number;
   rowsMax?: number;
   disabled?: boolean;
+  formValueToEditValue?: (value: any) => string;
+  editValueToFormValue?: (value: string) => any;
 }
 
 export const CustomTextField = (props: BaseFieldProps & Props) => {

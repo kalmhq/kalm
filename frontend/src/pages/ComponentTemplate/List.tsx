@@ -30,7 +30,7 @@ interface Props extends WithComponentTemplatesDataProps, WithStyles<typeof style
 
 interface States extends DuplicateDialogHostState {
   isDeleteConfirmDialogOpen: boolean;
-  deletingComponentTemplateId?: string;
+  deletingComponentTemplateName?: string;
 }
 
 class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
@@ -50,7 +50,7 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
   private closeConfirmDialog = () => {
     this.setState({
       isDeleteConfirmDialogOpen: false,
-      deletingComponentTemplateId: undefined
+      deletingComponentTemplateName: undefined
     });
   };
 
@@ -64,7 +64,7 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
   private deleteComponent = async () => {
     const { dispatch } = this.props;
     try {
-      await dispatch(deleteComponentAction(this.state.deletingComponentTemplateId!));
+      await dispatch(deleteComponentAction(this.state.deletingComponentTemplateName!));
       await dispatch(setSuccessNotificationAction("Successfully delete a component"));
     } catch {
       dispatch(setErrorNotificationAction("Something wrong"));
@@ -81,17 +81,17 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
     }
   };
 
-  private setDeletingIdAndConfirm = (componentTemplateId: string) => {
+  private setDeletingIdAndConfirm = (componentTemplateName: string) => {
     this.setState({
       isDeleteConfirmDialogOpen: true,
-      deletingComponentTemplateId: componentTemplateId
+      deletingComponentTemplateName: componentTemplateName
     });
   };
 
-  private setDuplicatingIdAndConfrim = (componentTemplateId: string) => {
+  private setDuplicatingIdAndConfrim = (componentTemplateName: string) => {
     this.setState({
       isDuplicateDialogShow: true,
-      duplicatingItemId: componentTemplateId
+      duplicatingItemId: componentTemplateName
     });
   };
 
@@ -99,7 +99,7 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
     const { dispatch, componentTemplates } = this.props;
     const data = componentTemplates.map(componentTemplate => {
       const onDeleteClick = () => {
-        this.setDeletingIdAndConfirm(componentTemplate.get("id"));
+        this.setDeletingIdAndConfirm(componentTemplate.get("name"));
       };
       return {
         action: (
@@ -108,7 +108,7 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
               <IconButton
                 aria-label="edit"
                 onClick={() => {
-                  dispatch(push(`/componenttemplates/${componentTemplate.get("id")}/edit`));
+                  dispatch(push(`/componenttemplates/${componentTemplate.get("name")}/edit`));
                 }}>
                 <EditIcon />
               </IconButton>
@@ -118,7 +118,7 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
               <IconButton
                 aria-label="edit"
                 onClick={() => {
-                  this.setDuplicatingIdAndConfrim(componentTemplate.get("id"));
+                  this.setDuplicatingIdAndConfrim(componentTemplate.get("name"));
                 }}>
                 <FileCopyIcon />
               </IconButton>
@@ -137,28 +137,32 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
         memory: componentTemplate.get("memory"),
         port: (
           <div>
-            {componentTemplate
-              .get("ports")
-              .map(port => {
-                return (
-                  <span key={port.get("name")}>
-                    {port.get("containerPort")} -> {port.get("servicePort")}
-                  </span>
-                );
-              })
-              .toArray()}
+            {componentTemplate.get("ports")
+              ? componentTemplate
+                  .get("ports")!
+                  .map(port => {
+                    return (
+                      <span key={port.get("name")}>
+                        {port.get("containerPort")} -> {port.get("servicePort")}
+                      </span>
+                    );
+                  })
+                  .toArray()
+              : []}
           </div>
         ),
-        disks: componentTemplate
-          .get("disks")
-          .map(disk => {
-            return (
-              <div key={disk.get("name")}>
-                <strong>{disk.get("size")}M</strong> mount at <strong>{disk.get("path")}</strong>
-              </div>
-            );
-          })
-          .toArray()
+        disks: componentTemplate.get("disks")
+          ? componentTemplate
+              .get("disks")!
+              .map(disk => {
+                return (
+                  <div key={disk.get("name")}>
+                    <strong>{disk.get("size")}M</strong> mount at <strong>{disk.get("path")}</strong>
+                  </div>
+                );
+              })
+              .toArray()
+          : []
       };
     });
     return (
@@ -260,4 +264,4 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
   }
 }
 
-export const ComponentTemplateList = withStyles(styles)(ComponentTemplateDataWrapper(ComponentTemplateListRaw));
+export const ComponentTemplateListPage = withStyles(styles)(ComponentTemplateDataWrapper(ComponentTemplateListRaw));

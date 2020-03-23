@@ -1,6 +1,6 @@
 import Immutable from "immutable";
-import { INIT_AUTH, SET_AUTH_TOKEN } from "../actions";
-import { Actions } from "../actions";
+import { INIT_AUTH, SET_AUTH_TOKEN } from "../types/common";
+import { Actions } from "../types";
 import { ImmutableMap } from "../typings";
 
 export type State = ImmutableMap<{

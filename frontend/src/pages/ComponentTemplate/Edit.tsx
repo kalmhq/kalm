@@ -8,24 +8,23 @@ import { ComponentLikeForm } from "../../forms/ComponentLike";
 import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
 import { ComponentTemplateDataWrapper, WithComponentTemplatesDataProps } from "./DataWrapper";
-import { ComponentTemplate, ComponentLike } from "../../actions";
 import RemoteSubmitComponentLike from "../../forms/ComponentLike/remoteSubmitComponentLike";
+import { ComponentLike, ComponentTemplate } from "../../types/componentTemplate";
 
 const styles = (theme: Theme) => createStyles({});
 
 interface Props
   extends WithComponentTemplatesDataProps,
-    RouteChildrenProps<{ componentTemplateId: string }>,
+    RouteChildrenProps<{ componentTemplateName: string }>,
     WithStyles<typeof styles> {}
 
 class ComponentTemplateEditRaw extends React.PureComponent<Props> {
   private submit = async (componentLike: ComponentLike) => {
-    const { dispatch, match } = this.props;
-    const { componentTemplateId } = match!.params;
+    const { dispatch } = this.props;
     const component = componentLike as ComponentTemplate;
 
     try {
-      await dispatch(updateComponentAction(componentTemplateId, component));
+      await dispatch(updateComponentAction(component));
       dispatch(setSuccessNotificationAction("Component update successful"));
       dispatch(push("/componenttemplates"));
     } catch (e) {
@@ -35,8 +34,8 @@ class ComponentTemplateEditRaw extends React.PureComponent<Props> {
 
   private getComponentTemplate() {
     const { componentTemplates, match } = this.props;
-    const { componentTemplateId } = match!.params;
-    return componentTemplates.find(x => x.get("id") === componentTemplateId)!;
+    const { componentTemplateName } = match!.params;
+    return componentTemplates.find(x => x.get("name") === componentTemplateName)!;
   }
 
   private renderFormContent() {

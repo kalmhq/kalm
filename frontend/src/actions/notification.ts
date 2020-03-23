@@ -1,10 +1,8 @@
-import { SET_NOTIFICATION_MESSAGE, ThunkResult } from ".";
 import { VariantType } from "notistack";
+import { SET_NOTIFICATION_MESSAGE } from "../types/common";
+import { ThunkResult } from "../types";
 
-export const setNotificationMessageAction = (
-  message: string,
-  variant: VariantType
-): ThunkResult<Promise<void>> => {
+export const setNotificationMessageAction = (message: string, variant: VariantType): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({
       type: SET_NOTIFICATION_MESSAGE,
@@ -13,14 +11,10 @@ export const setNotificationMessageAction = (
   };
 };
 
-export const setSuccessNotificationAction = (message: string) =>
-  setNotificationMessageAction(message, "success");
+export const setSuccessNotificationAction = (message: string) => setNotificationMessageAction(message, "success");
 
-export const setErrorNotificationAction = (message: string) =>
-  setNotificationMessageAction(message, "error");
+export const setErrorNotificationAction = (message: string) => setNotificationMessageAction(message, "error");
 
-export const setInfoNotificationAction = (message: string) =>
-  setNotificationMessageAction(message, "info");
+export const setInfoNotificationAction = (message: string) => setNotificationMessageAction(message, "info");
 
-export const setWarnNotificationAction = (message: string) =>
-  setNotificationMessageAction(message, "warning");
+export const setWarnNotificationAction = (message: string) => setNotificationMessageAction(message, "warning");

@@ -1,44 +1,35 @@
-# Sepup development environment
+# Setup development environment
 
 1. start localhost k8s cluster
 
-```
+```bash
 minikube start
 ```
 
-2. Install CRD
+2. Install CRD and Start Controller
 
-```
+```bash
 cd controller
-```
-
-```
-make install
-```
-
-3. Start Controller
-
-```
-cd controller
+make install 
 make run
 ```
 
-This step is **optional**. You can find some samples in config/samples dir. Choose the ones you need then install them.
+> This step is **optional**. You can find some samples in config/samples dir. Choose the ones you need then install them.
 
-```
+```bash
 kubectl apply -f config/samples/___.yaml
 ```
 
-4. Start Api Server
+3. Start Api Server
 
-```
+```bash
 cd api
 go run .
 ```
 
-5. Start frontend
+4. Start frontend
 
-```
+```bash
 cd frontend
 ```
 

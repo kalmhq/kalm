@@ -2,14 +2,14 @@ import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { push } from "connected-react-router";
 import React from "react";
 import { RouteChildrenProps } from "react-router-dom";
-import { Application } from "../../actions";
 import { updateApplicationAction } from "../../actions/application";
 import { setSuccessNotificationAction } from "../../actions/notification";
 import ApplicationForm from "../../forms/Application";
 import RemoteSubmitApplication from "../../forms/Application/remoteSubmitApplication";
 import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
-import { ApplicationDataWrapper, WithApplicationsDataProps } from "./DataWrapper";
+import { ApplicationItemDataWrapper, WithApplicationsDataProps } from "./ItemDataWrapper";
+import { Application } from "../../types/application";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -21,39 +21,29 @@ const styles = (theme: Theme) =>
 interface Props
   extends WithApplicationsDataProps,
     WithStyles<typeof styles>,
-    RouteChildrenProps<{ applicationId: string }> {}
+    RouteChildrenProps<{ applicationName: string }> {}
 
 class ApplicationEditRaw extends React.PureComponent<Props> {
   private submit = async (application: Application) => {
-    const { dispatch, match } = this.props;
-    const { applicationId } = match!.params;
+    const { dispatch } = this.props;
+    // const { applicationName } = match!.params;
 
-    await dispatch(updateApplicationAction(applicationId, application));
+    await dispatch(updateApplicationAction(application));
     await dispatch(setSuccessNotificationAction("Edit application successfully"));
     await dispatch(push("/applications"));
   };
 
-  private getApplication() {
-    const { applications, match } = this.props;
-    const { applicationId } = match!.params;
-    return applications.find(x => x.get("id") === applicationId)!;
-  }
-
   public render() {
-    const { isLoading, isFirstLoaded } = this.props;
-    const application = this.getApplication();
+    const { isLoading, application } = this.props;
+    // console.log("application", application?.toJS());
     return (
       <BasePage
         title={`Edit Application ${application && application.get("name")}`}
         rightAction={<RemoteSubmitApplication />}>
-        {isLoading && !isFirstLoaded ? (
-          <Loading />
-        ) : (
-          <ApplicationForm onSubmit={this.submit} initialValues={application} />
-        )}
+        {isLoading ? <Loading /> : <ApplicationForm onSubmit={this.submit} initialValues={application} isEdit={true} />}
       </BasePage>
     );
   }
 }
 
-export const ApplicationEdit = withStyles(styles)(ApplicationDataWrapper(ApplicationEditRaw));
+export const ApplicationEdit = withStyles(styles)(ApplicationItemDataWrapper(ApplicationEditRaw));

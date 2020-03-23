@@ -1,8 +1,8 @@
 import { List, Map } from "immutable";
-import { Application, ApplicationComponent } from "../actions";
 import { V1alpha1Application } from "../kappModel/v1alpha1Application";
 import { ObjectSerializer } from "../model/models";
 import { convertFromCRDApplicationComponent, convertToCRDApplicationComponent } from "./ApplicationComponent";
+import { ApplicationComponent, Application } from "../types/application";
 
 export const convertFromCRDApplication = (c: V1alpha1Application): Application => {
   const spec = c.spec!;
@@ -44,12 +44,12 @@ export const convertToCRDApplication = (c: Application): V1alpha1Application => 
       kind: "Application",
       metadata: {
         name: c.get("name"),
-        namespace: c.get("namespace"),
-        resourceVersion: c.get("resourceVersion")
+        namespace: c.get("namespace")
+        // resourceVersion: c.get("resourceVersion")
       },
       spec: {
         sharedEnv: c
-          .get("sharedEnv")
+          .get("sharedEnvs")
           .map(x => ({
             name: x.get("name"),
             value: x.get("value")

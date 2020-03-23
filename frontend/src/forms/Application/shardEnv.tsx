@@ -7,11 +7,11 @@ import React, { forwardRef } from "react";
 import { connect, DispatchProp } from "react-redux";
 import { arrayUnshift, change, WrappedFieldArrayProps } from "redux-form";
 import { FieldArray } from "redux-form/immutable";
-import { SharedEnv } from "../../actions";
 import { getApplicationEnvStatus, getCurrentFormApplication } from "../../selectors/application";
 import { MaterialTableEditAutoComplete } from "../Basic/autoComplete";
 import { MaterialTableEditTextField } from "../Basic/text";
 import { KappTooltip } from "./KappTooltip";
+import { SharedEnv } from "../../types/application";
 
 const mapStateToProps = () => {
   const application = getCurrentFormApplication();
@@ -190,5 +190,5 @@ class RenderSharedEnvs extends React.PureComponent<Props> {
 }
 
 export const SharedEnvs = connect(mapStateToProps)((props: FieldArrayProps) => {
-  return <FieldArray name="sharedEnv" component={RenderSharedEnvs} {...props} />;
+  return <FieldArray name="sharedEnvs" component={RenderSharedEnvs} {...props} />;
 });

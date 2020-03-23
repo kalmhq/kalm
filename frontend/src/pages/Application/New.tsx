@@ -3,13 +3,14 @@ import { push } from "connected-react-router";
 import React from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
-import { Actions, Application } from "../../actions";
-import ApplicationFrom from "../../forms/Application";
+import { Actions } from "../../types";
+import ApplicationForm from "../../forms/Application";
 import { RootState } from "../../reducers";
 import { BasePage } from "../BasePage";
 import { createApplicationAction } from "../../actions/application";
 import { setSuccessNotificationAction } from "../../actions/notification";
 import RemoteSubmitApplication from "../../forms/Application/remoteSubmitApplication";
+import { Application } from "../../types/application";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -35,7 +36,7 @@ class ApplicationNewRaw extends React.PureComponent<Props> {
     return (
       <BasePage title="New Application" rightAction={<RemoteSubmitApplication />}>
         <div className={classes.root}>
-          <ApplicationFrom onSubmit={this.submit} />
+          <ApplicationForm onSubmit={this.submit} isEdit={false} />
         </div>
       </BasePage>
     );

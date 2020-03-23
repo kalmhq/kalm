@@ -6,7 +6,6 @@ import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { InjectedFormProps } from "redux-form";
 import { Field, formValueSelector, getFormValues, reduxForm } from "redux-form/immutable";
-import { Application, ComponentTemplate, SharedEnv } from "../../actions";
 import { RootState } from "../../reducers";
 import { HelperContainer } from "../../widgets/Helper";
 import { SwitchField } from "../Basic/switch";
@@ -15,6 +14,8 @@ import { NormalizeBoolean } from "../normalizer";
 import { ValidatorRequired, ValidatorName } from "../validator";
 import { Components } from "./component";
 import { SharedEnvs } from "./shardEnv";
+import { Application, SharedEnv } from "../../types/application";
+import { ComponentTemplate } from "../../types/componentTemplate";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -37,17 +38,19 @@ const styles = (theme: Theme) =>
 const mapStateToProps = (state: RootState) => {
   const selector = formValueSelector("application");
   const formComponents: ComponentTemplate[] = selector(state, "components");
-  const sharedEnv: Immutable.List<SharedEnv> = selector(state, "sharedEnv");
+  const sharedEnvs: Immutable.List<SharedEnv> = selector(state, "sharedEnvs");
   const values = getFormValues("application")(state) as Application;
 
   return {
-    sharedEnv,
+    sharedEnvs,
     formComponents,
     values
   };
 };
 
-export interface Props {}
+export interface Props {
+  isEdit?: boolean;
+}
 
 class ApplicationFormRaw extends React.PureComponent<
   Props &
@@ -56,13 +59,9 @@ class ApplicationFormRaw extends React.PureComponent<
     WithStyles<typeof styles> &
     DispatchProp
 > {
-  private getIsEdit() {
-    return !!this.props.values.get("resourceVersion");
-  }
-
   private renderBasic() {
-    // const { classes } = this.props;
-    const isEdit = this.getIsEdit();
+    const { isEdit } = this.props;
+    // console.log("isEdit", isEdit);
     return (
       <>
         <HelperContainer>
@@ -102,8 +101,8 @@ class ApplicationFormRaw extends React.PureComponent<
   }
 
   private renderStatus() {
-    const { classes } = this.props;
-    const isEdit = this.getIsEdit();
+    const { classes, isEdit } = this.props;
+
     return (
       <>
         <HelperContainer>
@@ -185,9 +184,8 @@ class ApplicationFormRaw extends React.PureComponent<
 }
 
 const initialValues: Application = Immutable.fromJS({
-  id: "0",
   name: "a-sample-application",
-  sharedEnv: [],
+  sharedEnvs: [],
   components: []
 });
 

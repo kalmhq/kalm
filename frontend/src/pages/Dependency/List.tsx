@@ -5,11 +5,11 @@ import MaterialTable from "material-table";
 import React from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
-import { Actions } from "../../actions";
+import { Actions } from "../../types";
 import { loadDependenciesAction } from "../../actions/dependency";
 import { CustomizedDialog } from "../../forms/Application/ComponentModal";
 import { RootState } from "../../reducers";
-import { KappDependencyContent, KappDependencyStatus, KappDependencyStatusText } from "../../types";
+import { KappDependencyContent, KappDependencyStatus, KappDependencyStatusText } from "../../types/dependency";
 import { FlexRowItemCenterBox } from "../../widgets/Box";
 import { CustomizedButton } from "../../widgets/Button";
 import { BasePage } from "../BasePage";
@@ -326,4 +326,4 @@ class DependencyListRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const DependencyList = connect(mapStateToProps)(DependencyListRaw);
+export const DependencyListPage = connect(mapStateToProps)(DependencyListRaw);

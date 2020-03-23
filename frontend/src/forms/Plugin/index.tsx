@@ -4,13 +4,13 @@ import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { change, InjectedFormProps } from "redux-form";
 import { Field, formValueSelector, reduxForm } from "redux-form/immutable";
-import { Plugin } from "../../actions";
 import { RootState } from "../../reducers";
 import { ReduxFormMultiTagsFreeSoloAutoComplete } from "../Basic/autoComplete";
 import { SwitchField } from "../Basic/switch";
 import { NormalizeBoolean } from "../normalizer";
 import { ValidatorHosts, ValidatorRequired } from "../validator";
 import { PluginCard } from "./card";
+import { Plugin } from "../../types/componentTemplate";
 
 interface OwnProps {}
 

@@ -1,5 +1,5 @@
 import { Map } from "immutable";
-import { ConfigFile } from "../actions";
+import { ConfigFile } from "../types/config";
 import { V1alpha1File } from "../kappModel/v1alpha1File";
 import { ObjectSerializer } from "../model/models";
 

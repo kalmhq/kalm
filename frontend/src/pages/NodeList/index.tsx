@@ -1,6 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-import { TDispatchProp } from "../../actions";
+import { TDispatchProp } from "../../types";
 import { loadNodesAction } from "../../actions/node";
 import { K8sApiPerfix } from "../../actions/kubernetesApi";
 import { RootState } from "../../reducers";
@@ -154,4 +154,4 @@ export class NodeListRaw extends React.Component<Props, States> {
   }
 }
 
-export const NodeList = connect(mapStateToProps)(withStyles(styles)(NodeListRaw));
+export const NodeListPage = connect(mapStateToProps)(withStyles(styles)(NodeListRaw));

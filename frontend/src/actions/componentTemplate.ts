@@ -1,24 +1,23 @@
 import {
-  ComponentTemplate,
-  CREATE_COMPONENT,
-  DELETE_COMPONENT,
-  DUPLICATE_COMPONENT,
-  ThunkResult,
-  UPDATE_COMPONENT,
-  LOAD_COMPONENT_TEMPLATES_FULFILLED,
-  LOAD_COMPONENT_TEMPLATES_PENDING
-} from ".";
-import {
   getKappComponentTemplates,
   updateKappComonentTemplate,
   createKappComonentTemplate,
   deleteKappComonentTemplate
 } from "./kubernetesApi";
-import { convertToCRDComponentTemplate } from "../convertors/ComponentTemplate";
+import {
+  ComponentTemplate,
+  CREATE_COMPONENT,
+  DUPLICATE_COMPONENT,
+  UPDATE_COMPONENT,
+  LOAD_COMPONENT_TEMPLATES_PENDING,
+  LOAD_COMPONENT_TEMPLATES_FULFILLED,
+  DELETE_COMPONENT
+} from "../types/componentTemplate";
+import { ThunkResult } from "../types";
 
 export const createComponentTemplateAction = (componentTemplateRaw: ComponentTemplate): ThunkResult<Promise<void>> => {
   return async dispatch => {
-    const componentTemplate = await createKappComonentTemplate(convertToCRDComponentTemplate(componentTemplateRaw));
+    const componentTemplate = await createKappComonentTemplate(componentTemplateRaw);
 
     dispatch({
       type: CREATE_COMPONENT,
@@ -27,17 +26,19 @@ export const createComponentTemplateAction = (componentTemplateRaw: ComponentTem
   };
 };
 
-export const duplicateComponentAction = (componentTemplateId: string, newName: string): ThunkResult<Promise<void>> => {
+export const duplicateComponentAction = (
+  componentTemplateName: string,
+  newName: string
+): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     let componentTemplateCopy = getState()
       .get("componentTemplates")
       .get("componentTemplates")
-      .get(componentTemplateId)!;
+      .get(componentTemplateName)!;
 
     componentTemplateCopy = componentTemplateCopy.set("name", newName);
-    componentTemplateCopy = componentTemplateCopy.delete("resourceVersion");
 
-    const componentTemplate = await createKappComonentTemplate(convertToCRDComponentTemplate(componentTemplateCopy));
+    const componentTemplate = await createKappComonentTemplate(componentTemplateCopy);
 
     dispatch({
       type: DUPLICATE_COMPONENT,
@@ -46,32 +47,29 @@ export const duplicateComponentAction = (componentTemplateId: string, newName: s
   };
 };
 
-export const updateComponentAction = (
-  componentTemplateId: string,
-  componentTemplateRaw: ComponentTemplate
-): ThunkResult<Promise<void>> => {
+export const updateComponentAction = (componentTemplateRaw: ComponentTemplate): ThunkResult<Promise<void>> => {
   return async dispatch => {
-    const componentTemplate = await updateKappComonentTemplate(convertToCRDComponentTemplate(componentTemplateRaw));
+    const componentTemplate = await updateKappComonentTemplate(componentTemplateRaw);
 
     dispatch({
       type: UPDATE_COMPONENT,
-      payload: { componentTemplateId, componentTemplate }
+      payload: { componentTemplate }
     });
   };
 };
 
-export const deleteComponentAction = (componentTemplateId: string): ThunkResult<Promise<void>> => {
+export const deleteComponentAction = (componentTemplateName: string): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     const componentTemplate = getState()
       .get("componentTemplates")
       .get("componentTemplates")
-      .get(componentTemplateId)!;
+      .get(componentTemplateName)!;
 
-    await deleteKappComonentTemplate(convertToCRDComponentTemplate(componentTemplate));
+    await deleteKappComonentTemplate(componentTemplate);
 
     dispatch({
       type: DELETE_COMPONENT,
-      payload: { componentTemplateId }
+      payload: { componentTemplateName }
     });
   };
 };

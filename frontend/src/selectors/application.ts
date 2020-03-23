@@ -1,14 +1,14 @@
 import { getFormValues } from "redux-form/immutable";
-import { Application } from "../actions";
-import { EnvTypeExternal } from "../actions/";
 import { store } from "../store";
+import { Application } from "../types/application";
+import { EnvTypeExternal } from "../types/common";
 
-export const getApplicationById = (applicationId: string): Application => {
+export const getApplicationByName = (applicationName: string): Application => {
   const state = store.getState();
   return state
     .get("applications")
     .get("applications")
-    .get(applicationId) as Application;
+    .get(applicationName) as Application;
 };
 
 export const duplicateApplication = (application: Application): Application => {
@@ -22,9 +22,7 @@ export const duplicateApplication = (application: Application): Application => {
     name = `${application.get("name")}-duplicate-${i}`;
   } while (applications.find(x => x.get("name") === name));
 
-  application = application.set("id", name);
   application = application.set("name", name);
-  application = application.set("resourceVersion", undefined);
 
   return application;
 };
@@ -37,10 +35,12 @@ export const getCurrentFormApplication = (): Application => {
 
 export const getApplicationSharedEnvNamesSet = (application: Application): Set<string> => {
   return new Set(
-    application
-      .get("sharedEnv")
-      .map(x => x.get("name"))
-      .toArray()
+    application.get("sharedEnvs")
+      ? application
+          .get("sharedEnvs")
+          .map(x => x.get("name"))
+          .toArray()
+      : []
   );
 };
 
@@ -49,13 +49,14 @@ export const getApplicationEnvStatus = (application: Application) => {
   const applicationComponentExternalEnvsSet = new Set<string>();
 
   application.get("components").forEach((applicationComponent, index) => {
-    applicationComponent
-      .get("env")
-      .filter(x => x.get("type") === EnvTypeExternal)
-      .map(x => x.get("name"))
-      .forEach(envName => {
-        applicationComponentExternalEnvsSet.add(envName);
-      });
+    applicationComponent.get("env") &&
+      applicationComponent
+        .get("env")!
+        .filter(x => x.get("type") === EnvTypeExternal)
+        .map(x => x.get("name"))
+        .forEach(envName => {
+          applicationComponentExternalEnvsSet.add(envName);
+        });
   });
 
   const notUsedSharedEnvsSet = new Set(

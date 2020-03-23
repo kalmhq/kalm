@@ -1,25 +1,27 @@
 import {
-  Application,
-  CREATE_APPLICATION,
-  DELETE_APPLICATION,
-  DUPLICATE_APPLICATION,
-  LOAD_APPLICATIONS_FULFILLED,
-  ThunkResult,
-  UPDATE_APPLICATION,
-  LOAD_APPLICATIONS_PENDING
-} from ".";
-import {
-  getKappApplications,
   updateKappApplication,
   createKappApplication,
-  deleteKappApplication
+  deleteKappApplication,
+  getKappApplicationList,
+  getKappApplication
 } from "./kubernetesApi";
-import { convertToCRDApplication } from "../convertors/Application";
-import { getApplicationById, duplicateApplication } from "../selectors/application";
+import { getApplicationByName, duplicateApplication } from "../selectors/application";
+import {
+  LOAD_APPLICATIONS_PENDING,
+  LOAD_APPLICATIONS_FULFILLED,
+  DELETE_APPLICATION,
+  DUPLICATE_APPLICATION,
+  UPDATE_APPLICATION,
+  Application,
+  CREATE_APPLICATION,
+  LOAD_APPLICATION_PENDING,
+  LOAD_APPLICATION_FULFILLED
+} from "../types/application";
+import { ThunkResult } from "../types";
 
 export const createApplicationAction = (applicationValues: Application): ThunkResult<Promise<void>> => {
   return async dispatch => {
-    const application = await createKappApplication(convertToCRDApplication(applicationValues));
+    const application = await createKappApplication(applicationValues);
 
     dispatch({
       type: CREATE_APPLICATION,
@@ -28,12 +30,9 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
   };
 };
 
-export const updateApplicationAction = (
-  applicationId: string,
-  applicationRaw: Application
-): ThunkResult<Promise<void>> => {
+export const updateApplicationAction = (applicationRaw: Application): ThunkResult<Promise<void>> => {
   return async dispatch => {
-    const application = await updateKappApplication(convertToCRDApplication(applicationRaw));
+    const application = await updateKappApplication(applicationRaw);
 
     dispatch({
       type: UPDATE_APPLICATION,
@@ -42,10 +41,10 @@ export const updateApplicationAction = (
   };
 };
 
-export const duplicateApplicationAction = (applicationId: string): ThunkResult<Promise<void>> => {
+export const duplicateApplicationAction = (applicationName: string): ThunkResult<Promise<void>> => {
   return async dispatch => {
-    const duplicatedApplication = duplicateApplication(getApplicationById(applicationId));
-    const application = await createKappApplication(convertToCRDApplication(duplicatedApplication));
+    const duplicatedApplication = duplicateApplication(getApplicationByName(applicationName));
+    const application = await createKappApplication(duplicatedApplication);
 
     dispatch({
       type: DUPLICATE_APPLICATION,
@@ -54,14 +53,28 @@ export const duplicateApplicationAction = (applicationId: string): ThunkResult<P
   };
 };
 
-export const deleteApplicationAction = (applicationId: string): ThunkResult<Promise<void>> => {
+export const deleteApplicationAction = (namespace: string, name: string): ThunkResult<Promise<void>> => {
   return async dispatch => {
-    const application = getApplicationById(applicationId);
-    await deleteKappApplication(convertToCRDApplication(application));
+    await deleteKappApplication(namespace, name);
 
     dispatch({
       type: DELETE_APPLICATION,
-      payload: { applicationId }
+      payload: { applicationName: name }
+    });
+  };
+};
+
+export const loadApplicationAction = (namespace: string, name: string): ThunkResult<Promise<void>> => {
+  return async dispatch => {
+    dispatch({ type: LOAD_APPLICATION_PENDING });
+
+    const application = await getKappApplication(namespace, name);
+    // console.log("applicationList", JSON.stringify(applicationList.toJS()));
+    dispatch({
+      type: LOAD_APPLICATION_FULFILLED,
+      payload: {
+        application
+      }
     });
   };
 };
@@ -70,12 +83,12 @@ export const loadApplicationsAction = (): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({ type: LOAD_APPLICATIONS_PENDING });
 
-    const applications = await getKappApplications();
-
+    const applicationList = await getKappApplicationList();
+    // console.log("applicationList", JSON.stringify(applicationList.toJS()));
     dispatch({
       type: LOAD_APPLICATIONS_FULFILLED,
       payload: {
-        applications
+        applicationList
       }
     });
   };

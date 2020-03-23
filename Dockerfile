@@ -11,6 +11,7 @@ RUN npm run build
 # ============== Api ==============
 FROM golang:1.12 as api-builder
 WORKDIR /workspace
+COPY controller/ /controller
 COPY api/go.mod go.mod
 COPY api/go.sum go.sum
 RUN go mod download

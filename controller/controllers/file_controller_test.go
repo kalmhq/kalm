@@ -2,8 +2,6 @@ package controllers
 
 import (
 	"context"
-	"github.com/davecgh/go-spew/spew"
-
 	//"github.com/davecgh/go-spew/spew"
 	"github.com/kapp-staging/kapp/api/v1alpha1"
 	. "github.com/onsi/ginkgo"
@@ -14,11 +12,28 @@ import (
 	"time"
 )
 
-var _ = Describe("SecretScope Controller", func() {
+func generateFile(path, content string) *v1alpha1.File {
+	fileSpec := v1alpha1.FileSpec{
+		Path:    path,
+		Content: content,
+	}
+
+	file := &v1alpha1.File{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      randomName(),
+			Namespace: TestNameSpaceName,
+		},
+		Spec: fileSpec,
+	}
+
+	return file
+}
+
+var _ = Describe("File Controller", func() {
 	defer GinkgoRecover()
 
-	const timeout = time.Second * 10
-	const interval = time.Second * 1
+	const timeout = time.Second * 20
+	const interval = time.Millisecond * 500
 
 	BeforeEach(func() {
 	})
@@ -37,23 +52,6 @@ var _ = Describe("SecretScope Controller", func() {
 
 	deleteFile := func(file *v1alpha1.File) {
 		Expect(k8sClient.Delete(context.Background(), file)).Should(Succeed())
-	}
-
-	generateFile := func(path, content string) *v1alpha1.File {
-		fileSpec := v1alpha1.FileSpec{
-			Path:    path,
-			Content: content,
-		}
-
-		file := &v1alpha1.File{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      randomName(),
-				Namespace: "default",
-			},
-			Spec: fileSpec,
-		}
-
-		return file
 	}
 
 	Context("File basic CRUD", func() {
@@ -175,7 +173,7 @@ var _ = Describe("SecretScope Controller", func() {
 					Name:      getConfigMapNameFromPath(file.Spec.Path),
 				}, configMap)
 
-				spew.Dump(configMap)
+				//spew.Dump(configMap)
 
 				return len(configMap.Data) == 1 && configMap.Data[getConfigMapDataKeyFromPath(file.Spec.Path)] == file.Spec.Content
 			}, timeout, interval).Should(BeTrue())

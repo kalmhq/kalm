@@ -1,7 +1,8 @@
 import Immutable from "immutable";
-import { Actions, LOAD_NODES } from "../actions";
+import { Actions } from "../types";
 import { V1Node } from "../model/v1Node";
 import { ImmutableMap } from "../typings";
+import { LOAD_NODES } from "../types/common";
 
 export type State = ImmutableMap<{
   nodes: V1Node[];

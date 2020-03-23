@@ -144,7 +144,7 @@ func getConfigMapDataKeyFromPath(path string) string {
 }
 
 func (task *fileReconcilerTask) getConfigMap(name string, configMap *corev1.ConfigMap) error {
-	return task.reconciler.Get(
+	return task.reconciler.Reader.Get(
 		task.ctx,
 		types.NamespacedName{
 			Name:      name,

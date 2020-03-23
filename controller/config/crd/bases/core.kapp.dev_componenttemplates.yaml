@@ -58,8 +58,15 @@ spec:
               type: string
             env:
               items:
+                description: EnvVar represents an environment variable present in
+                  a Container.
                 properties:
                   name:
+                    description: Name of the environment variable. Must be a C_IDENTIFIER.
+                    type: string
+                  prefix:
+                    type: string
+                  suffix:
                     type: string
                   type:
                     enum:
@@ -71,7 +78,6 @@ spec:
                     type: string
                 required:
                 - name
-                - type
                 type: object
               type: array
             image:
