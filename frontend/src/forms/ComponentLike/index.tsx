@@ -20,6 +20,7 @@ import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import Immutable from "immutable";
 import { ComponentLike, workloadTypeCronjob, workloadTypeServer } from "../../types/componentTemplate";
+import { Volumes } from "./volumes";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
@@ -282,6 +283,59 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
+  private renderVolumes() {
+    const { classes, isFolded } = this.props;
+    return (
+      <>
+        {!isFolded && (
+          <Typography
+            variant="h2"
+            classes={{
+              root: classes.sectionHeader
+            }}>
+            Volumes
+          </Typography>
+        )}
+        <HelperContainer>
+          <Typography>Mount different kinds of volumes to this component.</Typography>
+          <MList dense={true}>
+            <ListItem>
+              <ListItemText
+                primary="New Disk"
+                secondary={"Create a disk according to the storageClass definition you selected."}
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemText
+                primary="Temporary Disk"
+                secondary={
+                  "This sort of volumes are stored on whatever medium is backing the node, which might be disk or SSD or network storage, depending on your environment."
+                }
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemText
+                primary="Temporary Memory Media Disk"
+                secondary={
+                  "It will mount a tmpfs (RAM-backed filesystem) for you. While tmpfs is very fast, be aware that unlike disks, tmpfs is cleared on node reboot and any files you write will count against your Container’s memory limit."
+                }
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemText
+                primary="Existing Persistent Volume Claim"
+                secondary={
+                  "PersistentVolumeClaim and PersistentVolume are a kubernetes original resources. A persistentVolumeClaim volume is used to mount a PersistentVolume into a Pod. PersistentVolumes are a way for users to “claim” durable storage (such as a GCE PersistentDisk or an iSCSI volume) without knowing the details of the particular cloud environment."
+                }
+              />
+            </ListItem>
+          </MList>
+        </HelperContainer>
+        <Volumes />
+      </>
+    );
+  }
+
   private renderAdvanced() {
     const { classes, isFolded } = this.props;
 
@@ -522,6 +576,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           {this.renderPanel("envs", "Environment variables", this.renderEnvs())}
           {this.renderPanel("ports", "Ports", this.renderPorts())}
           {this.renderPanel("resources", "Resources", this.renderResources())}
+          {this.renderPanel("volumes", "Volumes", this.renderVolumes())}
           {this.renderPanel("advanced", "Advanced", this.renderAdvanced())}
           {this.renderPanel("plugins", "Plugins", this.renderPlugins())}
         </form>
@@ -534,6 +589,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Paper className={classes.formSection}>{this.renderEnvs()}</Paper>
         <Paper className={classes.formSection}>{this.renderPorts()}</Paper>
         <Paper className={classes.formSection}>{this.renderResources()}</Paper>
+        <Paper className={classes.formSection}>{this.renderVolumes()}</Paper>
         <Paper className={classes.formSection}>{this.renderAdvanced()}</Paper>
         <Paper className={classes.formSection}>{this.renderPlugins()}</Paper>
       </form>

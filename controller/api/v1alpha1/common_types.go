@@ -42,27 +42,27 @@ type Port struct {
 	Protocol corev1.Protocol `json:"protocol,omitempty"`
 }
 
-type DiskType string
+type VolumeType string
 
 const (
-	DiskTypeTemporaryMemory       DiskType = "emptyDirMemory"
-	DiskTypeTemporaryDisk         DiskType = "emptyDir"
-	DiskTypeKappConfigs           DiskType = "kapp-configs"
-	DiskTypePersistentVolumeClaim DiskType = "pvc"
+	VolumeTypeTemporaryMemory       VolumeType = "emptyDirMemory"
+	VolumeTypeTemporaryDisk         VolumeType = "emptyDir"
+	VolumeTypeKappConfigs           VolumeType = "kapp-configs"
+	VolumeTypePersistentVolumeClaim VolumeType = "pvc"
 
 	// TODO
 	// HostPath
 )
 
-type Disk struct {
+type Volume struct {
 	// the path we use to mount this volume to container
 	Path string `json:"path"`
 
 	// If we need to create this volume first, the size of the volume
 	Size resource.Quantity `json:"size"`
 
-	// Disk type
-	Type DiskType `json:"type,omitempty"`
+	// Volume type
+	Type VolumeType `json:"type,omitempty"`
 
 	// the config path of kapp config, can be a file or a directory
 	KappConfigPath string `json:"kappConfigPath,omitempty"`

@@ -183,7 +183,7 @@ interface Props {
 export const CustomDisks = (props: WrappedFieldArrayProps<DiskValue> | {}) => {
   return (
     <div>
-      <FieldArray {...props} name="disks" valid={true} component={renderDisks} />
+      <FieldArray {...props} name="volumes" valid={true} component={renderDisks} />
     </div>
   );
 };

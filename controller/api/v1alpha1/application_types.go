@@ -73,7 +73,7 @@ type ComponentSpec struct {
 	RestartStrategy apps1.DeploymentStrategyType `json:"restartStrategy,omitempty"`
 
 	// +optional
-	Disks []Disk `json:"disks,omitempty"`
+	Volumes []Volume `json:"volumes,omitempty"`
 }
 
 // ApplicationSpec defines the desired state of Application

@@ -34,6 +34,10 @@ export const newEmptyPlugin = (): Plugin => {
   return Immutable.Map({});
 };
 
+export const newEmptyVolume = (): Volume => {
+  return Immutable.Map({});
+};
+
 export const newEmptyComponentLikePort = (): ComponentLikePort => {
   return Immutable.Map({
     name: "",
@@ -60,6 +64,27 @@ export interface PluginContent {
   [key: string]: any;
 }
 
+export type VolumeType = string;
+export const VolumeTypeTemporaryMemory: VolumeType = "emptyDirMemory";
+export const VolumeTypeTemporaryDisk: VolumeType = "emptyDir";
+export const VolumeTypeKappConfigs: VolumeType = "kapp-configs";
+export const VolumeTypePersistentVolumeClaim: VolumeType = "pvc";
+
+// derivative
+export const VolumeTypePersistentVolumeClaimNew: VolumeType = "pvc-new";
+export const VolumeTypePersistentVolumeClaimExisting: VolumeType = "pvc-existing";
+
+export interface VolumeContent {
+  type: VolumeType;
+  path: string;
+  size: string;
+  kappConfigPath: string;
+  storageClassName: string;
+  persistentVolumeClaimName: string;
+}
+
+export type Volume = ImmutableMap<VolumeContent>;
+
 export interface ComponentLikeContent {
   name: string;
   image: string;
@@ -79,16 +104,7 @@ export interface ComponentLikeContent {
     }>
   >;
   ports?: Immutable.List<ComponentLikePort>;
-  disks?: Immutable.List<
-    ImmutableMap<{
-      name: string;
-      type: string;
-      path: string;
-      existDisk: string;
-      size: string;
-      storageClass: string;
-    }>
-  >;
+  volumes?: Immutable.List<Volume>;
   plugins?: Immutable.List<Plugin>;
 }
 

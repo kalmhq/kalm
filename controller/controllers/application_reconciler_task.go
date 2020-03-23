@@ -191,17 +191,17 @@ func (act *applicationReconcilerTask) generateTemplate(component *kappV1Alpha1.C
 
 	mainContainer.Env = envs
 
-	// Disks
+	// Volumes
 	// add volumes & volumesMounts
 	var volumes []coreV1.Volume
 	var volumeMounts []coreV1.VolumeMount
-	for i, disk := range component.Disks {
+	for i, disk := range component.Volumes {
 		volumeSource := coreV1.VolumeSource{}
 
 		// TODO generate this name at api level
 		pvcName := fmt.Sprintf("%s-%s-%x", act.app.Name, component.Name, md5.Sum([]byte(disk.Path)))
 
-		if disk.Type == kappV1Alpha1.DiskTypePersistentVolumeClaim {
+		if disk.Type == kappV1Alpha1.VolumeTypePersistentVolumeClaim {
 			var pvc *coreV1.PersistentVolumeClaim
 
 			if disk.PersistentVolumeClaimName != "" {
@@ -238,22 +238,22 @@ func (act *applicationReconcilerTask) generateTemplate(component *kappV1Alpha1.C
 					return nil, fmt.Errorf("fail to create PVC: %s, %s", pvc.Name, err)
 				}
 
-				component.Disks[i].PersistentVolumeClaimName = pvcName
+				component.Volumes[i].PersistentVolumeClaimName = pvcName
 			}
 
 			volumeSource.PersistentVolumeClaim = &coreV1.PersistentVolumeClaimVolumeSource{
 				ClaimName: pvcName,
 			}
 
-		} else if disk.Type == kappV1Alpha1.DiskTypeTemporaryDisk {
+		} else if disk.Type == kappV1Alpha1.VolumeTypeTemporaryDisk {
 			volumeSource.EmptyDir = &coreV1.EmptyDirVolumeSource{
 				Medium: coreV1.StorageMediumDefault,
 			}
-		} else if disk.Type == kappV1Alpha1.DiskTypeTemporaryMemory {
+		} else if disk.Type == kappV1Alpha1.VolumeTypeTemporaryMemory {
 			volumeSource.EmptyDir = &coreV1.EmptyDirVolumeSource{
 				Medium: coreV1.StorageMediumMemory,
 			}
-		} else if disk.Type == kappV1Alpha1.DiskTypeKappConfigs {
+		} else if disk.Type == kappV1Alpha1.VolumeTypeKappConfigs {
 			// check if kapp config path is a dir
 
 			configMapVolumeSource := &coreV1.ConfigMapVolumeSource{

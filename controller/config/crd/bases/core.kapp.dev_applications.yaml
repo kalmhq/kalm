@@ -65,32 +65,6 @@ spec:
                     items:
                       type: string
                     type: array
-                  disks:
-                    items:
-                      properties:
-                        kappConfigPath:
-                          description: the config path of kapp config, can be a file
-                            or a directory
-                          type: string
-                        path:
-                          type: string
-                        persistentVolumeClaimName:
-                          description: use to store pvc name, so the disk won't be
-                            recreate during restart This field also can be used with
-                            existing pvc
-                          type: string
-                        size:
-                          type: string
-                        storageClassName:
-                          description: Identify the StorageClass to create the pvc
-                          type: string
-                        type:
-                          type: string
-                      required:
-                      - path
-                      - size
-                      type: object
-                    type: array
                   dnsPolicy:
                     description: DNSPolicy defines how a pod's DNS will be configured.
                     type: string
@@ -399,6 +373,36 @@ spec:
                   terminationGracePeriodSeconds:
                     format: int64
                     type: integer
+                  volumes:
+                    items:
+                      properties:
+                        kappConfigPath:
+                          description: the config path of kapp config, can be a file
+                            or a directory
+                          type: string
+                        path:
+                          description: the path we use to mount this volume to container
+                          type: string
+                        persistentVolumeClaimName:
+                          description: use to store pvc name, so the disk won't be
+                            recreate during restart This field also can be used with
+                            existing pvc
+                          type: string
+                        size:
+                          description: If we need to create this volume first, the
+                            size of the volume
+                          type: string
+                        storageClassName:
+                          description: Identify the StorageClass to create the pvc
+                          type: string
+                        type:
+                          description: Volume type
+                          type: string
+                      required:
+                      - path
+                      - size
+                      type: object
+                    type: array
                   workloadType:
                     enum:
                     - server
