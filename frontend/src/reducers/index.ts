@@ -11,7 +11,7 @@ import auth, { State as AuthState } from "./auth";
 import nodes, { State as NodesState } from "./node";
 import persistentVolumns, { State as PersistentVolumnsState } from "./persistentVolumn";
 import configs, { State as ConfigState } from "./config";
-import users, { State as UserState } from "./config";
+import users, { State as UserState } from "./user";
 import { connectRouter, RouterState } from "connected-react-router/immutable";
 import { History, LocationState } from "history";
 import { ImmutableMap } from "../typings";
