@@ -10,9 +10,7 @@ import {
   withStyles,
   Theme,
   createStyles,
-  IconButton,
   DialogActions,
-  Paper,
   ExpansionPanel,
   ExpansionPanelSummary,
   ExpansionPanelDetails,
@@ -51,18 +49,9 @@ interface Props extends StateProps, WithStyles<typeof styles> {
   dispatch: TDispatch;
 }
 
-interface State {
-  selectedUser?: User;
-}
+interface State {}
 
 class UsersDialogRaw extends React.PureComponent<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    // this.state = {
-    //   selectedUser: undefined
-    // };
-  }
-
   public componentDidMount() {
     const { dispatch } = this.props;
     dispatch(loadUsersAction());
@@ -83,42 +72,42 @@ class UsersDialogRaw extends React.PureComponent<Props, State> {
     const switchItems = [
       {
         label: "Applications View",
-        checked: rowData.permissions.indexOf("application_viewer_role") != -1,
+        checked: rowData.permissions.indexOf("application_viewer_role") !== -1,
         onChange: (v: any) => console.log(v)
       },
       {
         label: "Applications Edit",
-        checked: rowData.permissions.indexOf("application_editor_role") != -1,
+        checked: rowData.permissions.indexOf("application_editor_role") !== -1,
         onChange: (v: any) => console.log(v)
       },
       {
         label: "Components View",
-        checked: rowData.permissions.indexOf("component_viewer_role") != -1,
+        checked: rowData.permissions.indexOf("component_viewer_role") !== -1,
         onChange: (v: any) => console.log(v)
       },
       {
         label: "Components Edit",
-        checked: rowData.permissions.indexOf("component_editor_role") != -1,
+        checked: rowData.permissions.indexOf("component_editor_role") !== -1,
         onChange: (v: any) => console.log(v)
       },
       {
         label: "Configs View",
-        checked: rowData.permissions.indexOf("file_viewer_role") != -1,
+        checked: rowData.permissions.indexOf("file_viewer_role") !== -1,
         onChange: (v: any) => console.log(v)
       },
       {
         label: "Configs Edit",
-        checked: rowData.permissions.indexOf("file_editor_role") != -1,
+        checked: rowData.permissions.indexOf("file_editor_role") !== -1,
         onChange: (v: any) => console.log(v)
       },
       {
         label: "Dependencies View",
-        checked: rowData.permissions.indexOf("dependency_viewer_role") != -1,
+        checked: rowData.permissions.indexOf("dependency_viewer_role") !== -1,
         onChange: (v: any) => console.log(v)
       },
       {
         label: "Dependencies Edit",
-        checked: rowData.permissions.indexOf("dependency_editor_role") != -1,
+        checked: rowData.permissions.indexOf("dependency_editor_role") !== -1,
         onChange: (v: any) => console.log(v)
       }
     ];
@@ -162,7 +151,12 @@ class UsersDialogRaw extends React.PureComponent<Props, State> {
         ]}
         data={tableData}
         options={{
-          actionsColumnIndex: -1
+          actionsColumnIndex: -1,
+          padding: "dense",
+          draggable: false,
+          rowStyle: {
+            verticalAlign: "baseline"
+          }
         }}
         // detailPanel={() => this.renderPermissions()}
         // onRowClick={(_event, _rowData, togglePanel) => togglePanel!()}
