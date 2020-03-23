@@ -5,7 +5,20 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import { TDispatch } from "../../types";
 import MaterialTable from "material-table";
 import { RootState } from "../../reducers";
-import { WithStyles, withStyles, Theme, createStyles, IconButton, DialogActions, Paper } from "@material-ui/core";
+import {
+  WithStyles,
+  withStyles,
+  Theme,
+  createStyles,
+  IconButton,
+  DialogActions,
+  Paper,
+  ExpansionPanel,
+  ExpansionPanelSummary,
+  ExpansionPanelDetails,
+  FormControlLabel,
+  Switch
+} from "@material-ui/core";
 import { connect } from "react-redux";
 import { loadUsersAction, createUserAction } from "../../actions/user";
 import { Loading } from "../Loading";
@@ -13,7 +26,15 @@ import Immutable from "immutable";
 import { clusterRoleNames, User } from "../../types/user";
 import SettingsIcon from "@material-ui/icons/Settings";
 
-const styles = (theme: Theme) => createStyles({});
+const styles = (theme: Theme) =>
+  createStyles({
+    expansionPanel: {
+      boxShadow: "none"
+    },
+    panelDetail: {
+      display: "block"
+    }
+  });
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -32,20 +53,14 @@ interface Props extends StateProps, WithStyles<typeof styles> {
 
 interface State {
   selectedUser?: User;
-  clickedPanelName?: string;
 }
 
 class UsersDialogRaw extends React.PureComponent<Props, State> {
-  private tableRef: React.RefObject<any>;
-
   constructor(props: Props) {
     super(props);
-    this.state = {
-      selectedUser: undefined,
-      clickedPanelName: undefined
-    };
-
-    this.tableRef = React.createRef();
+    // this.state = {
+    //   selectedUser: undefined
+    // };
   }
 
   public componentDidMount() {
@@ -63,9 +78,66 @@ class UsersDialogRaw extends React.PureComponent<Props, State> {
     onClose && onClose();
   }
 
-  private renderPermissions() {
-    const { selectedUser } = this.state;
-    return <Paper>{selectedUser && selectedUser?.get("clusterRoleNames")}</Paper>;
+  private renderPermissions(rowData: any) {
+    const { classes } = this.props;
+    const switchItems = [
+      {
+        label: "Applications View",
+        checked: rowData.permissions.indexOf("application_viewer_role") != -1,
+        onChange: (v: any) => console.log(v)
+      },
+      {
+        label: "Applications Edit",
+        checked: rowData.permissions.indexOf("application_editor_role") != -1,
+        onChange: (v: any) => console.log(v)
+      },
+      {
+        label: "Components View",
+        checked: rowData.permissions.indexOf("component_viewer_role") != -1,
+        onChange: (v: any) => console.log(v)
+      },
+      {
+        label: "Components Edit",
+        checked: rowData.permissions.indexOf("component_editor_role") != -1,
+        onChange: (v: any) => console.log(v)
+      },
+      {
+        label: "Configs View",
+        checked: rowData.permissions.indexOf("file_viewer_role") != -1,
+        onChange: (v: any) => console.log(v)
+      },
+      {
+        label: "Configs Edit",
+        checked: rowData.permissions.indexOf("file_editor_role") != -1,
+        onChange: (v: any) => console.log(v)
+      },
+      {
+        label: "Dependencies View",
+        checked: rowData.permissions.indexOf("dependency_viewer_role") != -1,
+        onChange: (v: any) => console.log(v)
+      },
+      {
+        label: "Dependencies Edit",
+        checked: rowData.permissions.indexOf("dependency_editor_role") != -1,
+        onChange: (v: any) => console.log(v)
+      }
+    ];
+    return (
+      <ExpansionPanel className={classes.expansionPanel}>
+        <ExpansionPanelSummary aria-controls="panel1bh-content" id="panel1bh-header">
+          <SettingsIcon />
+        </ExpansionPanelSummary>
+        <ExpansionPanelDetails className={classes.panelDetail}>
+          {switchItems.map(item => (
+            <FormControlLabel
+              key={item.label}
+              control={<Switch checked={item.checked} onChange={item.onChange} name="checkedB" color="primary" />}
+              label={item.label}
+            />
+          ))}
+        </ExpansionPanelDetails>
+      </ExpansionPanel>
+    );
   }
 
   private renderTable() {
@@ -76,46 +148,17 @@ class UsersDialogRaw extends React.PureComponent<Props, State> {
       tableData.push({
         name: user.get("name"),
         type: user.get("type"),
-        permissions: (
-          <IconButton
-            onClick={() => {
-              this.setState({
-                selectedUser: user
-              });
-              // hack, first time expand panel by click setting, need click twice
-              // if (user.get("name") !== this.state.clickedPanelName) {
-              //   console.log("aaaaaaaaaaaaaaaaaaa");
-              //   this.tableRef.current.onToggleDetailPanel(
-              //     [
-              //       this.tableRef.current.dataManager.sortedData.findIndex(
-              //         (item: any) => item.name === user.get("name")
-              //       )
-              //     ],
-              //     () => this.renderPermissions()
-              //   );
-              // }
-
-              this.tableRef.current.onToggleDetailPanel(
-                [this.tableRef.current.dataManager.sortedData.findIndex((item: any) => item.name === user.get("name"))],
-                () => this.renderPermissions()
-              );
-
-              this.setState({ clickedPanelName: user.get("name") });
-            }}>
-            <SettingsIcon fontSize="default" />
-          </IconButton>
-        )
+        permissions: user.get("clusterRoleNames")
       });
     });
 
     return (
       <MaterialTable
-        tableRef={this.tableRef}
         title="Users Management"
         columns={[
           { title: "User Name", field: "name" },
           { title: "Token Provider", field: "type" },
-          { title: "Permissions", field: "permissions" }
+          { title: "Permissions", field: "permissions", render: rowData => this.renderPermissions(rowData) }
         ]}
         data={tableData}
         options={{
@@ -135,23 +178,16 @@ class UsersDialogRaw extends React.PureComponent<Props, State> {
           // onRowUpdate: (newData, oldData) =>
           //   new Promise((resolve, reject) => {
           //     setTimeout(() => {
-          //         //   const data = this.state.data;
-          //         //   const index = data.indexOf(oldData);
-          //         //   data[index] = newData;
-          //         //   this.setState({ data }, () => resolve());
+          //       //   const data = this.state.data;
+          //       //   const index = data.indexOf(oldData);
+          //       //   data[index] = newData;
+          //       //   this.setState({ data }, () => resolve());
           //       resolve();
           //     }, 1000);
           //   }),
-          onRowDelete: oldData =>
-            new Promise((resolve, reject) => {
-              setTimeout(() => {
-                console.log("oldData", oldData);
-                //   let data = this.state.data;
-                //   const index = data.indexOf(oldData);
-                //   data.splice(index, 1);
-                //   this.setState({ data }, () => resolve());
-              }, 1000);
-            })
+          onRowDelete: async oldData => {
+            console.log("oldData", oldData);
+          }
         }}
       />
     );
