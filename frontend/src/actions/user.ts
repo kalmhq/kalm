@@ -40,7 +40,7 @@ export const createUserAction = (user: User): ThunkResult<Promise<void>> => {
   };
 };
 
-export const loadDependenciesAction = (): ThunkResult<Promise<void>> => {
+export const loadUsersAction = (): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({ type: LOAD_USERS_PENDING });
     // @ts-ignore TODO

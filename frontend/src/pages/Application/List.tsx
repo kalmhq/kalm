@@ -19,7 +19,9 @@ import React from "react";
 import {
   deleteApplicationAction,
   duplicateApplicationAction,
-  updateApplicationAction
+  updateApplicationAction,
+  loadApplicationAction,
+  loadApplicationsAction
 } from "../../actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "../../actions/notification";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
@@ -98,7 +100,7 @@ interface Props extends WithApplicationsDataProps, WithStyles<typeof styles> {}
 
 interface State {
   isActiveConfirmDialogOpen: boolean;
-  switchingIsActiveApplicationName: string;
+  switchingIsActiveApplicationListItem?: ApplicationListItem;
   switchingIsActiveTitle: string;
   switchingIsActiveContent: string;
   isDeleteConfirmDialogOpen: boolean;
@@ -111,7 +113,7 @@ interface State {
 class ApplicationListRaw extends React.PureComponent<Props, State> {
   private defaultState = {
     isActiveConfirmDialogOpen: false,
-    switchingIsActiveApplicationName: "",
+    switchingIsActiveApplicationListItem: undefined,
     switchingIsActiveTitle: "",
     switchingIsActiveContent: "",
     isDeleteConfirmDialogOpen: false,
@@ -146,13 +148,10 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     this.setState(this.defaultState);
   };
 
-  private showSwitchingIsActiveDialog = (applicationName: string) => {
-    const { applicationList } = this.props;
-    const application = applicationList.find(x => x.get("name") === applicationName)!;
-
+  private showSwitchingIsActiveDialog = (applicationListItem: ApplicationListItem) => {
     let title, content;
 
-    if (application.get("isActive")) {
+    if (applicationListItem.get("isActive")) {
       title = "Are you sure to disabled this application?";
       content =
         "Disabling this application will delete all running resources in your cluster. TODO: (will disk be deleted? will xxx deleted?)";
@@ -163,19 +162,28 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
 
     this.setState({
       isActiveConfirmDialogOpen: true,
-      switchingIsActiveApplicationName: applicationName,
+      switchingIsActiveApplicationListItem: applicationListItem,
       switchingIsActiveTitle: title,
       switchingIsActiveContent: content
     });
   };
 
-  private switchEnabledConfirmedComponent = () => {
+  private switchEnabledConfirmedComponent = async () => {
     const { dispatch } = this.props;
-    const { switchingIsActiveApplicationName } = this.state;
+    const { switchingIsActiveApplicationListItem } = this.state;
 
-    // const application = applicationList.find(x => x.get("name") === switchingIsActiveApplicationName)!;
-    const application = getApplicationByName(switchingIsActiveApplicationName);
-    dispatch(updateApplicationAction(application.set("isActive", !application.get("isActive"))));
+    // const application = applicationList.find(x => x.get("name") === switchingIsActiveApplicationListItem)!;
+    if (switchingIsActiveApplicationListItem) {
+      await dispatch(
+        loadApplicationAction(
+          switchingIsActiveApplicationListItem?.get("namespace"),
+          switchingIsActiveApplicationListItem?.get("name")
+        )
+      );
+      const application = getApplicationByName(switchingIsActiveApplicationListItem?.get("name"));
+      await dispatch(updateApplicationAction(application.set("isActive", !application.get("isActive"))));
+      dispatch(loadApplicationsAction());
+    }
   };
 
   private closeConfirmDialog = () => {
@@ -229,7 +237,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     const { dispatch, applicationList, classes, isLoading, isFirstLoaded } = this.props;
     const data = applicationList.map((applicationListItem, index) => {
       const handleChange = () => {
-        this.showSwitchingIsActiveDialog(applicationListItem.get("name"));
+        this.showSwitchingIsActiveDialog(applicationListItem);
       };
 
       const onDeleteClick = () => {

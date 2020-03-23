@@ -13,7 +13,7 @@ import (
 )
 
 func (r *DependencyReconciler) reconcileKubePrometheus(ctx context.Context, d *corev1alpha1.Dependency) error {
-	operatorStatus, err := r.getDependencyInstallStatus("kapp-monitoring", "prometheus-operator")
+	operatorStatus, err := r.getDependencyInstallStatus("kapp-monitoring", []string{"prometheus-operator"}, nil)
 	if err != nil {
 		return err
 	}
@@ -46,7 +46,7 @@ func (r *DependencyReconciler) reconcileKubePrometheus(ctx context.Context, d *c
 		"kube-state-metrics",
 		"prometheus-adapter",
 	}
-	otherPartsStatus, err := r.getDependencyInstallStatus("kapp-monitoring", otherParts...)
+	otherPartsStatus, err := r.getDependencyInstallStatus("kapp-monitoring", otherParts, nil)
 	if err != nil {
 		return err
 	}
