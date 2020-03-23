@@ -10,6 +10,7 @@ import (
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -86,7 +87,7 @@ func (r *DependencyReconciler) reconcileES(ctx context.Context, d *corev1alpha1.
 	}
 
 	// why yellow?
-	if !exist || es.Status.Health < elkv1.ElasticsearchYellowHealth {
+	if !exist || es.Status.Health.Less(elkv1.ElasticsearchYellowHealth) {
 		return retryLaterErr
 	}
 
@@ -128,6 +129,18 @@ func (r *DependencyReconciler) getElasticSearch(ctx context.Context, d *corev1al
 }
 
 func desiredElasticSearch(dep *corev1alpha1.Dependency) elkv1.Elasticsearch {
+	// todo should be configurable
+	storageClassName := "standard"
+
+	storage := resource.MustParse("512Mi")
+	if s, exist := dep.Spec.Config["storage"]; exist {
+		if parsed, err := resource.ParseQuantity(s); err == nil {
+			if parsed.Cmp(storage) > 0 {
+				storage = parsed
+			}
+		}
+	}
+
 	desiredES := elkv1.Elasticsearch{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      esName,
@@ -161,6 +174,23 @@ func desiredElasticSearch(dep *corev1alpha1.Dependency) elkv1.Elasticsearch {
 										},
 									},
 								},
+							},
+						},
+					},
+					VolumeClaimTemplates: []corev1.PersistentVolumeClaim{
+						{
+							ObjectMeta: metav1.ObjectMeta{Name: "elasticsearch-data"},
+							Spec: corev1.PersistentVolumeClaimSpec{
+								AccessModes: []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
+								Resources: corev1.ResourceRequirements{
+									Requests: map[corev1.ResourceName]resource.Quantity{
+										"storage": storage,
+									},
+									Limits: map[corev1.ResourceName]resource.Quantity{
+										"storage": storage,
+									},
+								},
+								StorageClassName: &storageClassName,
 							},
 						},
 					},
