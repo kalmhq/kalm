@@ -409,7 +409,6 @@ spec:
                     - cronjob
                     type: string
                 required:
-                - dnsPolicy
                 - image
                 - name
                 type: object
