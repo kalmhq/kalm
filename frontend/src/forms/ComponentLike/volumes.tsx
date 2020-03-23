@@ -20,7 +20,6 @@ import {
 } from "../../types/componentTemplate";
 import { ControlledDialog } from "../../widgets/ControlledDialog";
 import { VolumeForm } from "../Volume";
-import { validate } from "json-schema";
 
 interface FieldArrayComponentHackType {
   name: any;
