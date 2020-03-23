@@ -870,7 +870,7 @@ func getServiceName(appName, componentName string) string {
 
 	// Add a prefix to avoid name error
 
-	return fmt.Sprintf("svc-%s-%s", appName, componentName)
+	return fmt.Sprintf("%s-%s", appName, componentName)
 }
 
 //func AllIngressPlugins(kapp kappV1Alpha1.Application) (rst []*kappV1Alpha1.PluginIngress) {
