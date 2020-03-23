@@ -85,7 +85,8 @@ func (r *DependencyReconciler) reconcileES(ctx context.Context, d *corev1alpha1.
 		return err
 	}
 
-	if !exist || es.Status.Health != elkv1.ElasticsearchGreenHealth {
+	// why yellow?
+	if !exist || es.Status.Health < elkv1.ElasticsearchYellowHealth {
 		return retryLaterErr
 	}
 
@@ -209,6 +210,31 @@ func (r *DependencyReconciler) reconcileKibana(ctx context.Context, d *corev1alp
 		return retryLaterErr
 	}
 
+	if host, exist := d.Spec.Config["kibanaHost"]; exist && host != "" {
+		pluginIng := &corev1alpha1.PluginIngress{
+			Name:        "kibana",
+			Type:        pluginIngress,
+			Hosts:       []string{host},
+			Namespace:   nsKappLog,
+			ServiceName: "kibana-kb-http",
+			ServicePort: 5601,
+		}
+
+		ing, exist, err := r.getIngress(ctx, d, []*corev1alpha1.PluginIngress{pluginIng})
+		if err != nil {
+			return err
+		}
+
+		if exist {
+			err = r.Update(ctx, ing)
+		} else {
+			err = r.Create(ctx, ing)
+		}
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -219,6 +245,8 @@ func (r *DependencyReconciler) getKibana(ctx context.Context, d *corev1alpha1.De
 	if err := r.Get(ctx, types.NamespacedName{Namespace: nsKappLog, Name: kibanaName}, &k); err != nil {
 		if errors.IsNotFound(err) {
 			k = desired
+			ctrl.SetControllerReference(d, &k, r.Scheme)
+
 			return &k, false, nil
 		}
 
@@ -228,6 +256,7 @@ func (r *DependencyReconciler) getKibana(ctx context.Context, d *corev1alpha1.De
 	k.Spec.ElasticsearchRef = desired.Spec.ElasticsearchRef
 	k.Spec.Version = desired.Spec.Version
 	k.Spec.Count = desired.Spec.Count
+	k.Spec.HTTP = desired.Spec.HTTP
 
 	return &k, true, nil
 }
@@ -243,6 +272,14 @@ func (r *DependencyReconciler) desiredKibana(d *corev1alpha1.Dependency) kibanav
 			Count:   1,
 			ElasticsearchRef: elkcommonv1.ObjectSelector{
 				Name: esName,
+			},
+			// todo only for local test, disable https
+			HTTP: elkcommonv1.HTTPConfig{
+				TLS: elkcommonv1.TLSOptions{
+					SelfSignedCertificate: &elkcommonv1.SelfSignedCertificate{
+						Disabled: true,
+					},
+				},
 			},
 		},
 	}
@@ -645,6 +682,8 @@ func (r *DependencyReconciler) reconcileDaemonSetForFileBeat(ctx context.Context
 	if err := r.Get(ctx, types.NamespacedName{Name: desiredDS.Name, Namespace: desiredDS.Namespace}, &ds); err != nil {
 		if errors.IsNotFound(err) {
 			ds = desiredDS
+			ctrl.SetControllerReference(d, &ds, r.Scheme)
+
 		} else {
 			return err
 		}
