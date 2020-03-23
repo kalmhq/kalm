@@ -90,7 +90,6 @@ func (act *applicationReconcilerTask) Run() (err error) {
 	}
 
 	err = act.reconcileServices()
-
 	if err != nil {
 		log.Error(err, "unable to construct services")
 		return err
@@ -433,9 +432,13 @@ func (act *applicationReconcilerTask) reconcileServices() (err error) {
 				}
 			}
 
-			ps := []coreV1.ServicePort{}
-
+			var ps []coreV1.ServicePort
 			for _, port := range component.Ports {
+				// if service port is missing, set it same as containerPort
+				if port.ServicePort == 0 && port.ContainerPort != 0 {
+					port.ServicePort = port.ContainerPort
+				}
+
 				sp := coreV1.ServicePort{
 					Name:       port.Name,
 					TargetPort: intstr.FromInt(int(port.ContainerPort)),
@@ -870,7 +873,9 @@ func getServiceName(appName, componentName string) string {
 
 	// Add a prefix to avoid name error
 
-	return fmt.Sprintf("svc-%s-%s", appName, componentName)
+	// todo socks assumes no prefix of svc
+	//return fmt.Sprintf("svc-%s-%s", appName, componentName)
+	return componentName
 }
 
 //func AllIngressPlugins(kapp kappV1Alpha1.Application) (rst []*kappV1Alpha1.PluginIngress) {
