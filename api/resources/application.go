@@ -127,6 +127,10 @@ func formatApplicationComponents(components []v1alpha1.ComponentSpec) {
 		if components[i].RestartStrategy == "" {
 			components[i].RestartStrategy = appsV1.RollingUpdateDeploymentStrategyType
 		}
+
+		if components[i].WorkLoadType == "" {
+			components[i].WorkLoadType = v1alpha1.WorkLoadTypeServer
+		}
 	}
 }
 

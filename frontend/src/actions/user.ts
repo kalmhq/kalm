@@ -6,7 +6,7 @@ import {
   createKappClusterRoleBinding,
   createKappServiceAccount
 } from "./kubernetesApi";
-import Immutable, { OrderedMap } from "immutable";
+import Immutable from "immutable";
 import { ThunkResult } from "../types";
 import {
   LOAD_USERS_PENDING,
@@ -24,32 +24,37 @@ export const createUserAction = (user: User): ThunkResult<Promise<void>> => {
     if (user.get("type") === "oidc") {
       // oidc user
       const createKappClusterRoleBindings = user.get("clusterRoleNames").map(clusterRoleName => {
-        createKappClusterRoleBinding(convertToCRDClusterRoleBinding(user.get("name"), clusterRoleName, "oidc"));
+        return createKappClusterRoleBinding(convertToCRDClusterRoleBinding(user.get("name"), clusterRoleName, "oidc"));
       });
       await Promise.all(createKappClusterRoleBindings);
     } else {
       // serviceAccount
       await createKappServiceAccount(convertToCRDServiceAccount(user.get("name")));
       const createKappClusterRoleBindings = user.get("clusterRoleNames").map(clusterRoleName => {
-        createKappClusterRoleBinding(
+        return createKappClusterRoleBinding(
           convertToCRDClusterRoleBinding(user.get("name"), clusterRoleName, "serviceAccount")
         );
       });
       await Promise.all(createKappClusterRoleBindings);
     }
+    dispatch(loadUsersAction());
   };
 };
 
 export const loadUsersAction = (): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({ type: LOAD_USERS_PENDING });
-    // @ts-ignore TODO
+
     const [clusterRoles, clusterRoleBindings, serviceAccounts, secrets] = await Promise.all([
       getKappClusterRoles(),
       getKappClusterRoleBindings(),
       getKappServiceAccounts(),
       getKappSecrets()
     ]);
+
+    console.log("clusterRoles", clusterRoles);
+    console.log("serviceAccounts", serviceAccounts);
+    console.log("secrets", secrets);
 
     const clusterRoleNamesMap: { [key: string]: boolean } = {};
     clusterRoleNames.forEach(name => {

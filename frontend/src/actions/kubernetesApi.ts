@@ -169,6 +169,10 @@ export const createKappClusterRole = async (clusterRole: V1ClusterRole): Promise
   return res.data;
 };
 
+export const deleteKappClusterRole = async (name: string): Promise<void> => {
+  await getAxiosClient().delete(K8sApiPerfix + `/v1/clusterroles/${name}`);
+};
+
 export const getKappClusterRoleBindings = async () => {
   const res = await getAxiosClient().get<ItemList<V1ClusterRoleBinding>>(K8sApiPerfix + "/v1/clusterrolebindings");
 
@@ -183,6 +187,10 @@ export const createKappClusterRoleBinding = async (
   return res.data;
 };
 
+export const deleteKappClusterRoleBinding = async (name: string): Promise<void> => {
+  await getAxiosClient().delete(K8sApiPerfix + `/v1/clusterrolebindings/${name}`);
+};
+
 export const getKappServiceAccounts = async () => {
   const res = await getAxiosClient().get<ItemList<V1ServiceAccount>>(K8sApiPerfix + "/v1/serviceaccounts");
 
@@ -193,6 +201,10 @@ export const createKappServiceAccount = async (serviceAccount: V1ServiceAccount)
   const res = await getAxiosClient().post(K8sApiPerfix + `/v1/serviceaccounts`, serviceAccount);
 
   return res.data;
+};
+
+export const deleteKappServiceAccount = async (name: string): Promise<void> => {
+  await getAxiosClient().delete(K8sApiPerfix + `/v1/serviceaccounts/${name}`);
 };
 
 export const getKappSecrets = async () => {
@@ -208,7 +220,11 @@ export const createKappSecret = async (secret: V1Secret): Promise<V1Secret> => {
 };
 
 export const getKappSecret = async (name: string) => {
-  const res = await getAxiosClient().get<ItemList<V1Secret>>(K8sApiPerfix + `/v1/secrets/default/${name}`);
+  const res = await getAxiosClient().get<ItemList<V1Secret>>(K8sApiPerfix + `/v1/secrets/${name}`);
 
   return res.data as V1Secret;
+};
+
+export const deleteKappSecret = async (name: string): Promise<void> => {
+  await getAxiosClient().delete(K8sApiPerfix + `/v1/secrets/${name}`);
 };
