@@ -953,6 +953,10 @@ func GetPlugins(kapp *kappV1Alpha1.Application) (plugins []interface{}) {
 
 				// todo what if not first ports
 				ing.ServicePort = int(componentSpec.Ports[0].ServicePort)
+				if ing.ServicePort == 0 {
+					ing.ServicePort = int(componentSpec.Ports[0].ContainerPort)
+				}
+
 				ing.ServiceName = getServiceName(appName, componentSpec.Name)
 				ing.Namespace = kapp.Namespace
 
