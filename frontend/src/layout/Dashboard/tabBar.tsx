@@ -43,8 +43,8 @@ export const tabOptions: TabOption[] = [
     to: "/cluster/nodes"
   },
   {
-    text: "Disks",
-    to: "/cluster/disks"
+    text: "Volumes",
+    to: "/cluster/volumes"
   },
   {
     text: "Dependencies",

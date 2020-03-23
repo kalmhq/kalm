@@ -127,6 +127,10 @@ func formatApplicationComponents(components []v1alpha1.ComponentSpec) {
 		if components[i].RestartStrategy == "" {
 			components[i].RestartStrategy = appsV1.RollingUpdateDeploymentStrategyType
 		}
+
+		if components[i].WorkLoadType == "" {
+			components[i].WorkLoadType = v1alpha1.WorkLoadTypeServer
+		}
 	}
 }
 
@@ -196,7 +200,8 @@ func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Ap
 			deployment := findDeploymentByName(resources.DeploymentList, deploymentName)
 
 			if deployment == nil {
-				builder.Logger.Errorf("Can't find deployment with name %s", deploymentName)
+				// this is not an error, for example if an application is not active, we can't find the deployment
+				builder.Logger.Info("Can't find deployment with name %s", deploymentName)
 			} else {
 				componentStatus.DeploymentStatus = deployment.Status
 				pods := findPods(resources.PodList, component.Name)

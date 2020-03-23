@@ -28,12 +28,12 @@ export const RenderTextField = ({
     }
   }))();
 
-  useEffect(() => {
-    if (editValueToFormValue) {
-      input.onChange(editValueToFormValue(input.value));
-    }
-    // eslint-disable-next-line
-  }, []);
+  // useEffect(() => {
+  //   if (editValueToFormValue) {
+  //     input.onChange(editValueToFormValue(input.value));
+  //   }
+  //   // eslint-disable-next-line
+  // }, []);
 
   return (
     <TextField

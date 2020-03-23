@@ -42,8 +42,8 @@ export const sidenavGroups: SidenavGroupProps[] = [
         icon: "computer"
       },
       {
-        text: "Disks",
-        to: "/cluster/disks",
+        text: "Volumes",
+        to: "/cluster/volumes",
         type: "normal",
         icon: "storage"
       }

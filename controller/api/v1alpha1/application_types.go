@@ -60,20 +60,20 @@ type ComponentSpec struct {
 
 	BeforeDestroy []string `json:"beforeDestroy,omitempty"`
 
-	CPU resource.Quantity `json:"cpu,omitempty"`
+	CPU *resource.Quantity `json:"cpu,omitempty"`
 
-	Memory resource.Quantity `json:"memory,omitempty"`
+	Memory *resource.Quantity `json:"memory,omitempty"`
 
 	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty"`
 
-	DnsPolicy v1.DNSPolicy `json:"dnsPolicy,omitemtpy"`
+	DnsPolicy v1.DNSPolicy `json:"dnsPolicy,omitempty"`
 
 	RestartPolicy v1.RestartPolicy `json:"restartPolicy,omitempty"`
 
 	RestartStrategy apps1.DeploymentStrategyType `json:"restartStrategy,omitempty"`
 
 	// +optional
-	Disks []Disk `json:"disks,omitempty"`
+	Volumes []Volume `json:"volumes,omitempty"`
 }
 
 // ApplicationSpec defines the desired state of Application

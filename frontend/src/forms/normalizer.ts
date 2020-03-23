@@ -26,13 +26,9 @@ export const NormalizeNumber = (
   return parseInt(value, 10);
 };
 
-export const NormalizeCPU = (value: string): string => {
-  if (!value || value === "0") {
-    return "0";
-  }
-
-  while (value.length > 1 && value[0] === "0" && value[1] !== ".") {
-    value = value.slice(1);
+export const NormalizeCPU = (value: string): string | null => {
+  if (!value || value === "") {
+    return null;
   }
 
   return value;

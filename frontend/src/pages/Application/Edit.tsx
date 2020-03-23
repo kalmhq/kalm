@@ -27,7 +27,7 @@ class ApplicationEditRaw extends React.PureComponent<Props> {
   private submit = async (application: Application) => {
     const { dispatch } = this.props;
     // const { applicationName } = match!.params;
-
+    console.log(application, application.toJS());
     await dispatch(updateApplicationAction(application));
     await dispatch(setSuccessNotificationAction("Edit application successfully"));
     await dispatch(push("/applications"));

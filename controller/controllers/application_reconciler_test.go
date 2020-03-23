@@ -171,9 +171,9 @@ var _ = Describe("Application Envs", func() {
 
 	It("should delete related resources when isActive is false", func() {
 		application := generateApplication()
-		application.Spec.Components[0].Disks = []v1alpha1.Disk{
+		application.Spec.Components[0].Volumes = []v1alpha1.Volume{
 			{
-				Type:           v1alpha1.DiskTypeKappConfigs,
+				Type:           v1alpha1.VolumeTypeKappConfigs,
 				Path:           "/test/b",
 				Size:           resource.MustParse("10m"),
 				KappConfigPath: "/app.yml",
@@ -373,13 +373,13 @@ var _ = Describe("Application Envs", func() {
 		})
 	})
 
-	Context("Disks", func() {
+	Context("Volumes", func() {
 		Context("type pvc", func() {
 			It("pvc without storageClass", func() {
 				application := generateApplication()
-				application.Spec.Components[0].Disks = []v1alpha1.Disk{
+				application.Spec.Components[0].Volumes = []v1alpha1.Volume{
 					{
-						Type: v1alpha1.DiskTypePersistentVolumeClaim,
+						Type: v1alpha1.VolumeTypePersistentVolumeClaim,
 						Path: "/test/b",
 						Size: resource.MustParse("10m"),
 					},
@@ -407,16 +407,16 @@ var _ = Describe("Application Envs", func() {
 
 				Eventually(func() bool {
 					reloadApplication(application)
-					return application.Spec.Components[0].Disks[0].PersistentVolumeClaimName == pvcs[0].Name
+					return application.Spec.Components[0].Volumes[0].PersistentVolumeClaimName == pvcs[0].Name
 				}, timeout, interval).Should(Equal(true))
 			})
 		})
 
 		It("temporary disk volume", func() {
 			application := generateApplication()
-			application.Spec.Components[0].Disks = []v1alpha1.Disk{
+			application.Spec.Components[0].Volumes = []v1alpha1.Volume{
 				{
-					Type: v1alpha1.DiskTypeTemporaryDisk,
+					Type: v1alpha1.VolumeTypeTemporaryDisk,
 					Path: "/test/b",
 					Size: resource.MustParse("10m"),
 				},
@@ -444,9 +444,9 @@ var _ = Describe("Application Envs", func() {
 
 		It("temporary memory volume", func() {
 			application := generateApplication()
-			application.Spec.Components[0].Disks = []v1alpha1.Disk{
+			application.Spec.Components[0].Volumes = []v1alpha1.Volume{
 				{
-					Type: v1alpha1.DiskTypeTemporaryMemory,
+					Type: v1alpha1.VolumeTypeTemporaryMemory,
 					Path: "/test/b",
 					Size: resource.MustParse("10m"),
 				},
@@ -494,9 +494,9 @@ var _ = Describe("Application Envs", func() {
 				}, timeout, interval).Should(BeTrue())
 
 				application := generateApplication()
-				application.Spec.Components[0].Disks = []v1alpha1.Disk{
+				application.Spec.Components[0].Volumes = []v1alpha1.Volume{
 					{
-						Type:           v1alpha1.DiskTypeKappConfigs,
+						Type:           v1alpha1.VolumeTypeKappConfigs,
 						Path:           "/test/b",
 						Size:           resource.MustParse("10m"),
 						KappConfigPath: "/app",
@@ -536,9 +536,9 @@ var _ = Describe("Application Envs", func() {
 				}, timeout, interval).Should(BeTrue())
 
 				application := generateApplication()
-				application.Spec.Components[0].Disks = []v1alpha1.Disk{
+				application.Spec.Components[0].Volumes = []v1alpha1.Volume{
 					{
-						Type:           v1alpha1.DiskTypeKappConfigs,
+						Type:           v1alpha1.VolumeTypeKappConfigs,
 						Path:           "/test/b",
 						Size:           resource.MustParse("10m"),
 						KappConfigPath: "/app.yml",
@@ -564,9 +564,9 @@ var _ = Describe("Application Envs", func() {
 
 				By("An application with wrong kapp config path should ignore that mount")
 				application = generateApplication()
-				application.Spec.Components[0].Disks = []v1alpha1.Disk{
+				application.Spec.Components[0].Volumes = []v1alpha1.Volume{
 					{
-						Type:           v1alpha1.DiskTypeKappConfigs,
+						Type:           v1alpha1.VolumeTypeKappConfigs,
 						Path:           "/test/b",
 						Size:           resource.MustParse("10m"),
 						KappConfigPath: "/not-exist.yml",
