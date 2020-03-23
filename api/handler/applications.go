@@ -2,13 +2,14 @@ package handler
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/kapp-staging/kapp/api/resources"
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"net/http"
 )
 
 // Deprecated
@@ -164,7 +165,6 @@ func updateKappApplication(c echo.Context) (*v1alpha1.Application, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	crdApplication.ResourceVersion = fetched.ResourceVersion
 
 	bts, _ := json.Marshal(crdApplication)
