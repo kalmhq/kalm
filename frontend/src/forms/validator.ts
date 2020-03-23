@@ -22,7 +22,7 @@ export const ValidatorName = (value: string) => {
 export const ValidatorCPU = (value: string) => {
   if (!value) return undefined;
 
-  if (!value.match(/^\d+(mili|m)|\d+(.\d+)?$/i) || value === "0") {
+  if (!value.match(/^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/i) || value === "0") {
     return "Invalid CPU Value";
   }
 
@@ -32,7 +32,7 @@ export const ValidatorCPU = (value: string) => {
 export const ValidatorMemory = (value: string) => {
   if (!value) return undefined;
 
-  if (!value.match(/^\d+(e\d+)?((m|m|e|p|t|g|k)i?)?$/i) || value === "0") {
+  if (!value.match(/^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/i) || value === "0") {
     return "Invalid Memory Value";
   }
 

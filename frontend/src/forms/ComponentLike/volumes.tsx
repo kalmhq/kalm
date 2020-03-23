@@ -20,6 +20,7 @@ import {
 } from "../../types/componentTemplate";
 import { ControlledDialog } from "../../widgets/ControlledDialog";
 import { VolumeForm } from "../Volume";
+import { validate } from "json-schema";
 
 interface FieldArrayComponentHackType {
   name: any;
@@ -38,7 +39,9 @@ interface FieldArrayProps extends DispatchProp, ReturnType<typeof mapStateToProp
 
 const dialogID = "volume";
 
-interface RowData extends Volume {}
+interface RowData extends Volume {
+  index: number;
+}
 
 interface Props extends WrappedFieldArrayProps<Volume>, FieldArrayComponentHackType, FieldArrayProps {}
 
@@ -48,8 +51,9 @@ class RenderVolumes extends React.PureComponent<Props> {
     const data: RowData[] = [];
 
     fields.forEach((_, index) => {
-      const volume = fields.get(index);
-      data.push(volume);
+      const rowData = fields.get(index) as RowData;
+      rowData.index = index;
+      data.push(rowData);
     });
 
     return data;
@@ -144,6 +148,10 @@ class RenderVolumes extends React.PureComponent<Props> {
     );
   }
 
+  private handleDelete = async (rowData: RowData) => {
+    this.props.fields.remove(rowData.index);
+  };
+
   public render() {
     return (
       <>
@@ -209,6 +217,7 @@ class RenderVolumes extends React.PureComponent<Props> {
             //   // editComponent: this.editValueComponent
             // }
           ]}
+          editable={{ onRowDelete: this.handleDelete }}
           data={this.getTableData()}
           title=""
         />

@@ -144,14 +144,14 @@ func (act *applicationReconcilerTask) generateTemplate(component *kappV1Alpha1.C
 	mainContainer := &template.Spec.Containers[0]
 
 	// resources
-	if !component.CPU.IsZero() {
-		mainContainer.Resources.Requests[coreV1.ResourceCPU] = component.CPU
-		mainContainer.Resources.Limits[coreV1.ResourceCPU] = component.CPU
+	if component.CPU != nil && !component.CPU.IsZero() {
+		mainContainer.Resources.Requests[coreV1.ResourceCPU] = *component.CPU
+		mainContainer.Resources.Limits[coreV1.ResourceCPU] = *component.CPU
 	}
 
-	if !component.Memory.IsZero() {
-		mainContainer.Resources.Limits[coreV1.ResourceMemory] = component.Memory
-		mainContainer.Resources.Limits[coreV1.ResourceMemory] = component.Memory
+	if component.Memory != nil && !component.Memory.IsZero() {
+		mainContainer.Resources.Limits[coreV1.ResourceMemory] = *component.Memory
+		mainContainer.Resources.Limits[coreV1.ResourceMemory] = *component.Memory
 	}
 
 	// set image secret

@@ -60,9 +60,9 @@ type ComponentSpec struct {
 
 	BeforeDestroy []string `json:"beforeDestroy,omitempty"`
 
-	CPU resource.Quantity `json:"cpu,omitempty"`
+	CPU *resource.Quantity `json:"cpu,omitempty"`
 
-	Memory resource.Quantity `json:"memory,omitempty"`
+	Memory *resource.Quantity `json:"memory,omitempty"`
 
 	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty"`
 

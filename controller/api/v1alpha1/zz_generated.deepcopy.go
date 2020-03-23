@@ -185,8 +185,16 @@ func (in *ComponentSpec) DeepCopyInto(out *ComponentSpec) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
-	out.CPU = in.CPU.DeepCopy()
-	out.Memory = in.Memory.DeepCopy()
+	if in.CPU != nil {
+		in, out := &in.CPU, &out.CPU
+		x := (*in).DeepCopy()
+		*out = &x
+	}
+	if in.Memory != nil {
+		in, out := &in.Memory, &out.Memory
+		x := (*in).DeepCopy()
+		*out = &x
+	}
 	if in.TerminationGracePeriodSeconds != nil {
 		in, out := &in.TerminationGracePeriodSeconds, &out.TerminationGracePeriodSeconds
 		*out = new(int64)
