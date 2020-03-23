@@ -164,8 +164,20 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             formValueToEditValue={(value: Immutable.List<string>) => {
               return value && value.toArray().join(" ") ? value.toArray().join(" ") : "";
             }}
-            editValueToFormValue={(value: string) => {
+            editValueToFormValue={(value: any) => {
               return value ? Immutable.List([value]) : Immutable.List([]);
+            }}
+          />
+          <CustomTextField
+            name="args"
+            margin
+            label="Arguments (Optional)"
+            helperText='Eg: "--port=80"'
+            formValueToEditValue={(value: Immutable.List<string>) => {
+              return value && value.toArray().join(" ") ? value.toArray().join(" ") : "";
+            }}
+            editValueToFormValue={(value: string) => {
+              return value ? Immutable.List(value.split(" ")) : Immutable.List([]);
             }}
           />
         </Grid>

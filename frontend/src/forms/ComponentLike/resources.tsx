@@ -17,8 +17,8 @@ const styles = (_: Theme) =>
   });
 
 interface ComponentResourcesProps extends WithStyles<typeof styles>, DispatchProp {
-  cpu: string;
-  memory: string;
+  cpu: string | null;
+  memory: string | null;
   formName: string;
 }
 
