@@ -101,8 +101,13 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             <span>
               <a href="https://en.wikipedia.org/wiki/Cron" target="_blank" rel="noopener noreferrer">
                 Cron
-              </a>{" "}
-              format string.
+              </a>
+              {" \n"}
+              format string. You can create schedule expressions with{" "}
+              <a href="https://crontab.guru/" target="_blank" rel="noopener noreferrer">
+                Crontab Guru
+              </a>
+              .
             </span>
           }
         />
