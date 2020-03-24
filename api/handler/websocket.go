@@ -352,6 +352,22 @@ func (h *ApiHandler) websocketHandler(c echo.Context) error {
 		writeLock:                  &sync.Mutex{},
 	}
 
+	if conn.IsAuthorized {
+		clientConfig, err := h.clientManager.GetClientConfig(c)
+
+		if err != nil {
+			return err
+		}
+
+		k8sClient, err := kubernetes.NewForConfig(clientConfig)
+
+		if err != nil {
+			return err
+		}
+
+		conn.K8sClient = k8sClient
+	}
+
 	defer conn.Close()
 	defer stop()
 
