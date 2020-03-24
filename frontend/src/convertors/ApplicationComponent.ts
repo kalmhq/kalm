@@ -9,7 +9,7 @@ export const convertFromCRDApplicationComponent = (x: V1alpha1ApplicationSpecCom
   const res: ApplicationComponent = Map({
     name: x.name,
     image: x.image,
-    command: x.command ? x.command[0] : "",
+    command: x.command ? x.command[0] : [],
     workloadType: x.workloadType || workloadTypeServer,
     schedule: x.schedule,
     env: x.env ? List(x.env.map(e => Map({ name: e.name, value: e.value, type: e.type || EnvTypeStatic }))) : List([]),

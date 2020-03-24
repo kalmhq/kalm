@@ -25,7 +25,7 @@ class ScrollContainer extends React.PureComponent<Props> {
   private ps?: PerfectScrollbar | null;
 
   public updatePS = () => {
-    console.log(this.ps);
+    // console.log(this.ps);
     if (!this.ps) return;
     this.ps.update();
   };

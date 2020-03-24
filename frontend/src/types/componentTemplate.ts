@@ -17,7 +17,7 @@ export const newEmptyComponentLike = (): ComponentLike => {
   return Immutable.Map({
     name: "",
     image: "",
-    command: "",
+    command: Immutable.List([]),
     env: Immutable.List([]),
     ports: Immutable.List([]),
     disks: Immutable.List([]),
@@ -95,7 +95,7 @@ export interface ComponentLikeContent {
   schedule?: string;
   restartStrategy?: string;
   terminationGracePeriodSeconds?: number;
-  dnsPolicy?: string;
+  dnsPolicy: string;
   env?: Immutable.List<
     ImmutableMap<{
       name: string;

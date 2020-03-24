@@ -59,16 +59,20 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 
 	gV1.GET("/clusterroles", h.handleGetClusterRoles)
 	gV1.POST("/clusterroles", h.handleCreateClusterRoles)
+	gV1.DELETE("/clusterroles/:name", h.handleDeleteSecrets)
 
 	gV1.GET("/clusterrolebindings", h.handleGetClusterRoleBindings)
 	gV1.POST("/clusterrolebindings", h.handleCreateClusterRoleBindings)
+	gV1.DELETE("/clusterrolebindings/:name", h.handleDeleteClusterRoleBindings)
 
 	gV1.GET("/serviceaccounts", h.handleGetServiceAccounts)
 	gV1.POST("/serviceaccounts", h.handleCreateServiceAccounts)
+	gV1.DELETE("/serviceaccounts/:name", h.handleDeleteServiceAccounts)
 
 	gV1.GET("/secrets", h.handleGetSecrets)
 	gV1.POST("/secrets", h.handleCreateSecrets)
-	gV1.GET("/secrets/:namespace/:name", h.handleGetSecret)
+	gV1.GET("/secrets/:name", h.handleGetSecret)
+	gV1.DELETE("/secrets/:name", h.handleDeleteSecrets)
 
 	gv1Alpha1 := e.Group("/v1alpha1")
 	gv1Alpha1.GET("/logs", h.websocketHandler)
