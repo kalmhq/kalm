@@ -5,7 +5,7 @@ export const LOAD_USERS_PENDING = "LOAD_USERS_PENDING";
 export const LOAD_USERS_FULFILLED = "LOAD_USERS_FULFILLED";
 export const CREATE_USER = "CREATE_USER";
 
-export const clusterRoleNames = [
+export const allClusterRoleNames = [
   "application_editor_role",
   "application_viewer_role",
   "component_editor_role",
@@ -31,8 +31,10 @@ export type UserType = "serviceAccount" | "oidc";
 export interface UserInterface {
   name: string;
   type: UserType;
+  serviceAccountName?: string;
+  secretName?: string;
   token?: string;
-  clusterRoleNames: ClusterRoleName[];
+  clusterRoleNames: Immutable.OrderedMap<string, boolean>;
 }
 
 export type User = ImmutableMap<UserInterface>;

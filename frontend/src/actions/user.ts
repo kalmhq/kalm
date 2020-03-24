@@ -11,7 +11,7 @@ import { ThunkResult } from "../types";
 import {
   LOAD_USERS_PENDING,
   UserInterface,
-  clusterRoleNames,
+  allClusterRoleNames,
   ClusterRoleName,
   LOAD_USERS_FULFILLED,
   User
@@ -23,17 +23,23 @@ export const createUserAction = (user: User): ThunkResult<Promise<void>> => {
   return async dispatch => {
     if (user.get("type") === "oidc") {
       // oidc user
-      const createKappClusterRoleBindings = user.get("clusterRoleNames").map(clusterRoleName => {
-        return createKappClusterRoleBinding(convertToCRDClusterRoleBinding(user.get("name"), clusterRoleName, "oidc"));
+      const createKappClusterRoleBindings = user.get("clusterRoleNames").map((exist, clusterRoleName) => {
+        if (exist) {
+          return createKappClusterRoleBinding(
+            convertToCRDClusterRoleBinding(user.get("name"), clusterRoleName, "oidc")
+          );
+        }
       });
       await Promise.all(createKappClusterRoleBindings);
     } else {
       // serviceAccount
       await createKappServiceAccount(convertToCRDServiceAccount(user.get("name")));
-      const createKappClusterRoleBindings = user.get("clusterRoleNames").map(clusterRoleName => {
-        return createKappClusterRoleBinding(
-          convertToCRDClusterRoleBinding(user.get("name"), clusterRoleName, "serviceAccount")
-        );
+      const createKappClusterRoleBindings = user.get("clusterRoleNames").map((exist, clusterRoleName) => {
+        if (exist) {
+          return createKappClusterRoleBinding(
+            convertToCRDClusterRoleBinding(user.get("name"), clusterRoleName, "serviceAccount")
+          );
+        }
       });
       await Promise.all(createKappClusterRoleBindings);
     }
@@ -52,12 +58,25 @@ export const loadUsersAction = (): ThunkResult<Promise<void>> => {
       getKappSecrets()
     ]);
 
-    console.log("clusterRoles", clusterRoles);
-    console.log("serviceAccounts", serviceAccounts);
-    console.log("secrets", secrets);
+    clusterRoles.map(() => {});
+    // console.log("clusterRoles", clusterRoles);
+
+    const serviceAccountSecretNameMap: { [key: string]: string } = {};
+    serviceAccounts.map(serviceAccount => {
+      if (serviceAccount.metadata && serviceAccount.metadata.name && serviceAccount.secrets![0].name) {
+        serviceAccountSecretNameMap[serviceAccount.metadata.name] = serviceAccount.secrets![0].name;
+      }
+    });
+
+    const secretNameTokenMap: { [key: string]: string } = {};
+    secrets.map(secret => {
+      if (secret.metadata && secret.metadata.name && secret.data) {
+        secretNameTokenMap[secret.metadata.name] = atob(secret.data.token); // decode base64
+      }
+    });
 
     const clusterRoleNamesMap: { [key: string]: boolean } = {};
-    clusterRoleNames.forEach(name => {
+    allClusterRoleNames.forEach(name => {
       clusterRoleNamesMap[name] = true;
     });
 
@@ -72,28 +91,35 @@ export const loadUsersAction = (): ThunkResult<Promise<void>> => {
         ) {
           // serviceAccount
           if (usersMap[clusterRoleBinding.subjects![0].name]) {
-            usersMap[clusterRoleBinding.subjects![0].name].clusterRoleNames.push(
-              clusterRoleBinding.roleRef.name as ClusterRoleName
-            );
+            usersMap[clusterRoleBinding.subjects![0].name].clusterRoleNames = usersMap[
+              clusterRoleBinding.subjects![0].name
+            ].clusterRoleNames.set(clusterRoleBinding.roleRef.name, true);
           } else {
+            const nameSplits = clusterRoleBinding.subjects![0].name.split(":");
+            const serviceAccountName = nameSplits[nameSplits.length - 1];
+            const secretName = serviceAccountSecretNameMap[serviceAccountName];
+            const token = secretNameTokenMap[secretName];
+
             usersMap[clusterRoleBinding.subjects![0].name] = {
               name: clusterRoleBinding.subjects![0].name,
               type: "serviceAccount",
-              token: "",
-              clusterRoleNames: [clusterRoleBinding.roleRef.name as ClusterRoleName]
+              serviceAccountName,
+              secretName,
+              token,
+              clusterRoleNames: Immutable.fromJS({}).set(clusterRoleBinding.roleRef.name, true)
             };
           }
         } else {
           // oidc
           if (usersMap[clusterRoleBinding.subjects![0].name]) {
-            usersMap[clusterRoleBinding.subjects![0].name].clusterRoleNames.push(
-              clusterRoleBinding.roleRef.name as ClusterRoleName
-            );
+            usersMap[clusterRoleBinding.subjects![0].name].clusterRoleNames = usersMap[
+              clusterRoleBinding.subjects![0].name
+            ].clusterRoleNames.set(clusterRoleBinding.roleRef.name, true);
           } else {
             usersMap[clusterRoleBinding.subjects![0].name] = {
               name: clusterRoleBinding.subjects![0].name,
               type: "oidc",
-              clusterRoleNames: [clusterRoleBinding.roleRef.name as ClusterRoleName]
+              clusterRoleNames: Immutable.fromJS({}).set(clusterRoleBinding.roleRef.name, true)
             };
           }
         }
