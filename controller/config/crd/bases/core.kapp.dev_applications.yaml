@@ -65,6 +65,9 @@ spec:
                     items:
                       type: string
                     type: array
+                  dnsPolicy:
+                    description: DNSPolicy defines how a pod's DNS will be configured.
+                    type: string
                   env:
                     items:
                       description: EnvVar represents an environment variable present
@@ -211,9 +214,6 @@ spec:
                   memory:
                     type: string
                   name:
-                    type: string
-                  omitempty:
-                    description: DNSPolicy defines how a pod's DNS will be configured.
                     type: string
                   plugins:
                     items:
