@@ -23,7 +23,9 @@ import { ConfigFile } from "../types/config";
 import { ImmutableMap } from "../typings";
 
 export const K8sApiPrefix = process.env.REACT_APP_K8S_API_PERFIX;
-export const k8sWsPrefix = !K8sApiPrefix ? window.location.origin : K8sApiPrefix.replace("http", "ws");
+export const k8sWsPrefix = !K8sApiPrefix
+  ? window.location.origin.replace(/^http/, "ws")
+  : K8sApiPrefix.replace(/^http/, "ws");
 
 const getAxiosClient = () => {
   const token = store
