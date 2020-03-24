@@ -145,7 +145,7 @@ const TabBarComponentRaw = ({ classes, dispatch }: Props) => {
       <div className={classes.barContainer}>
         <div className={classes.barTitle}>OpenCore Kapp</div>
         <IconButton className={classes.barSettings} onClick={() => setIsOpenSettings(true)}>
-          <SettingsIcon fontSize="default" />
+          <SettingsIcon />
         </IconButton>
         <div className={classes.barStatus}>
           <Avatar>A</Avatar>

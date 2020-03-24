@@ -29,6 +29,7 @@ import Immutable from "immutable";
 import { allClusterRoleNames, User } from "../../types/user";
 import SettingsIcon from "@material-ui/icons/Settings";
 import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
+import { SercetField } from "../SecretField";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -117,7 +118,7 @@ class UsersDialogRaw extends React.PureComponent<Props, State> {
       <ExpansionPanel className={classes.expansionPanel}>
         <ExpansionPanelSummary aria-controls="panel1bh-content">
           <IconButton>
-            <SettingsIcon fontSize="default" />
+            <SettingsIcon />
           </IconButton>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails className={classes.panelDetail}>
@@ -143,7 +144,8 @@ class UsersDialogRaw extends React.PureComponent<Props, State> {
     if (rowData.type === "oidc") {
       return <div>External Auth</div>;
     }
-    return <div>Auth Token</div>;
+    const { dispatch } = this.props;
+    return <SercetField content={rowData.token} dispatch={dispatch} />;
   }
 
   private renderTable() {
@@ -154,7 +156,8 @@ class UsersDialogRaw extends React.PureComponent<Props, State> {
       tableData.push({
         name: user.get("name"),
         type: user.get("type"),
-        permissions: user.get("clusterRoleNames")
+        permissions: user.get("clusterRoleNames"),
+        token: user.get("token")
       });
     });
 
