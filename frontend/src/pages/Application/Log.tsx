@@ -9,7 +9,7 @@ import React, { RefObject } from "react";
 import { Terminal } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
 import "xterm/css/xterm.css";
-import { k8sWsPerfix } from "../../actions/kubernetesApi";
+import { k8sWsPrefix } from "../../actions/kubernetesApi";
 import { Breadcrumb } from "../../widgets/Breadcrumbs";
 import { Loading } from "../../widgets/Loading";
 import { ApplicationItemDataWrapper, WithApplicationsDataProps } from "./ItemDataWrapper";
@@ -156,7 +156,7 @@ export class LogStream extends React.PureComponent<Props, State> {
   }
 
   connectWs = () => {
-    const ws = new WebSocket(`${k8sWsPerfix}/v1alpha1/logs`);
+    const ws = new WebSocket(`${k8sWsPrefix}/v1alpha1/logs`);
 
     ws.onopen = evt => {
       ws.send(
