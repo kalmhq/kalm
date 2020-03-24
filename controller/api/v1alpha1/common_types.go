@@ -34,7 +34,7 @@ type Port struct {
 	// +kubebuilder:validation:Maximum:65535
 	ContainerPort uint32 `json:"containerPort"`
 
-	// ? what is service port for?
+	// port for service
 	// +kubebuilder:validation:Maximum:65535
 	ServicePort uint32 `json:"servicePort,omitempty"`
 

@@ -66,7 +66,8 @@ type ComponentSpec struct {
 
 	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty"`
 
-	DnsPolicy v1.DNSPolicy `json:"dnsPolicy,omitempty"`
+	// +optional
+	DnsPolicy v1.DNSPolicy `json:"dnsPolicy,omitemtpy"`
 
 	RestartPolicy v1.RestartPolicy `json:"restartPolicy,omitempty"`
 
