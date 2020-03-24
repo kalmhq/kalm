@@ -73,7 +73,7 @@ class SercetFieldRaw extends React.PureComponent<Props, State> {
     }
     return (
       <div className={classes.sercetField}>
-        ******
+        **********
         <IconButton onClick={() => this.setState({ show: true })}>
           <VisibilityIcon />
         </IconButton>

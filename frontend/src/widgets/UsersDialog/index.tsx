@@ -23,13 +23,20 @@ import {
   InputLabel
 } from "@material-ui/core";
 import { connect } from "react-redux";
-import { loadUsersAction, createUserAction } from "../../actions/user";
-import { Loading } from "../Loading";
+import {
+  loadUsersAction,
+  createUserAction,
+  deleteUserAction,
+  createClusterRoleBinding,
+  deleteClusterRoleBinding
+} from "../../actions/user";
 import Immutable from "immutable";
-import { allClusterRoleNames, User } from "../../types/user";
+import { User } from "../../types/user";
 import SettingsIcon from "@material-ui/icons/Settings";
-import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
+import TextField from "@material-ui/core/TextField";
 import { SercetField } from "../SecretField";
+import { getUserByName } from "../../selectors/user";
+import { setErrorNotificationAction } from "../../actions/notification";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -100,10 +107,6 @@ class UsersDialogRaw extends React.PureComponent<Props, State> {
   public componentDidMount() {
     const { dispatch } = this.props;
     dispatch(loadUsersAction());
-
-    // this.tableRef &&
-    //   this.tableRef.current &&
-    //   this.tableRef.current.onToggleDetailPanel([0], this.tableRef.current.props.detailPanel);
   }
 
   private handleClose() {
@@ -113,7 +116,7 @@ class UsersDialogRaw extends React.PureComponent<Props, State> {
   }
 
   private renderPermissions(rowData: any) {
-    const { classes } = this.props;
+    const { classes, dispatch } = this.props;
     return (
       <ExpansionPanel className={classes.expansionPanel}>
         <ExpansionPanelSummary aria-controls="panel1bh-content">
@@ -128,7 +131,14 @@ class UsersDialogRaw extends React.PureComponent<Props, State> {
               control={
                 <Switch
                   checked={!!rowData.permissions.get(item.key)}
-                  onChange={() => console.log("123")}
+                  onChange={event => {
+                    const user = getUserByName(rowData.name);
+                    if (event.target.checked) {
+                      dispatch(createClusterRoleBinding(user, item.key));
+                    } else {
+                      dispatch(deleteClusterRoleBinding(user, item.key));
+                    }
+                  }}
                   color="primary"
                 />
               }
@@ -211,7 +221,6 @@ class UsersDialogRaw extends React.PureComponent<Props, State> {
             }),
             render: rowData => this.renderPermissions(rowData),
             editComponent: props => {
-              console.log("props", props);
               return (
                 <div>
                   {switchItems.map(item => (
@@ -247,7 +256,11 @@ class UsersDialogRaw extends React.PureComponent<Props, State> {
         editable={{
           onRowAdd: newData =>
             new Promise((resolve, reject) => {
-              console.log("newData", newData);
+              if (!newData.name) {
+                dispatch(setErrorNotificationAction("User name is required."));
+                reject();
+              }
+
               const user: User = Immutable.fromJS({
                 name: newData.name,
                 type: newData.type,
@@ -255,6 +268,7 @@ class UsersDialogRaw extends React.PureComponent<Props, State> {
               });
               dispatch(createUserAction(user));
 
+              resolve();
               // reject();
             }),
           // onRowUpdate: (newData, oldData) =>
@@ -267,16 +281,21 @@ class UsersDialogRaw extends React.PureComponent<Props, State> {
           //       resolve();
           //     }, 1000);
           //   }),
-          onRowDelete: async oldData => {
-            console.log("oldData", oldData);
-          }
+          onRowDelete: oldData =>
+            new Promise((resolve, reject) => {
+              const user = getUserByName(oldData.name);
+              dispatch(deleteUserAction(user));
+
+              resolve();
+              // reject();
+            })
         }}
       />
     );
   }
 
   public render() {
-    const { open, isLoading } = this.props;
+    const { open } = this.props;
 
     return (
       <div>
