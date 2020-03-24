@@ -151,12 +151,12 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
               : []}
           </div>
         ),
-        disks: componentTemplate.get("disks")
+        disks: componentTemplate.get("volumes")
           ? componentTemplate
-              .get("disks")!
-              .map(disk => {
+              .get("volumes")!
+              .map((disk, i) => {
                 return (
-                  <div key={disk.get("name")}>
+                  <div key={i}>
                     <strong>{disk.get("size")}M</strong> mount at <strong>{disk.get("path")}</strong>
                   </div>
                 );
@@ -189,7 +189,7 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
             { title: "Image", field: "image", sorting: false },
             { title: "CPU", field: "cpu", searchable: false },
             { title: "Memory", field: "memory", searchable: false },
-            { title: "Disks", field: "disks", sorting: false },
+            { title: "Volumes", field: "volumes", sorting: false },
             {
               title: "Port",
               field: "port",

@@ -1,7 +1,16 @@
 import React from "react";
-import { createStyles, Theme, AppBar, Tab, Tabs, Avatar } from "@material-ui/core";
+import { createStyles, Theme, AppBar, Tab, Tabs, Avatar, IconButton } from "@material-ui/core";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import { NavLink } from "react-router-dom";
+import SettingsIcon from "@material-ui/icons/Settings";
+import { UsersDialog } from "../../widgets/UsersDialog";
+import { connect } from "react-redux";
+import { RootState } from "../../reducers";
+import { TDispatch } from "../../types";
+
+const mapStateToProps = (state: RootState) => {
+  return {};
+};
 
 interface TabOption {
   text: string;
@@ -34,8 +43,8 @@ export const tabOptions: TabOption[] = [
     to: "/cluster/nodes"
   },
   {
-    text: "Disks",
-    to: "/cluster/disks"
+    text: "Volumes",
+    to: "/cluster/volumes"
   },
   {
     text: "Dependencies",
@@ -67,7 +76,14 @@ const styles = (theme: Theme) =>
     barStatus: {
       position: "absolute",
       top: "15px",
-      right: "0px"
+      right: "0px",
+      cursor: "pointer"
+    },
+    barSettings: {
+      position: "absolute",
+      top: "12px",
+      right: "55px",
+      color: "#fff"
     },
     tabs: {
       width: "1200px",
@@ -89,9 +105,11 @@ function a11yProps(index: any) {
   };
 }
 
-interface Props extends WithStyles<typeof styles> {}
+interface Props extends WithStyles<typeof styles> {
+  dispatch: TDispatch;
+}
 
-const TabBarComponentRaw = ({ classes }: Props) => {
+const TabBarComponentRaw = ({ classes, dispatch }: Props) => {
   let pathname = "/";
   if (window.location.pathname !== "/") {
     for (let option of tabOptions) {
@@ -105,6 +123,7 @@ const TabBarComponentRaw = ({ classes }: Props) => {
     }
   }
   const [value, setValue] = React.useState(pathname);
+  const [isOpenSettings, setIsOpenSettings] = React.useState(false);
 
   const handleChange = (event: object, value: any) => {
     // console.log("tab value", value);
@@ -125,6 +144,9 @@ const TabBarComponentRaw = ({ classes }: Props) => {
     <AppBar id="header" position="relative" className={classes.appBar}>
       <div className={classes.barContainer}>
         <div className={classes.barTitle}>OpenCore Kapp</div>
+        <IconButton className={classes.barSettings} onClick={() => setIsOpenSettings(true)}>
+          <SettingsIcon fontSize="default" />
+        </IconButton>
         <div className={classes.barStatus}>
           <Avatar>A</Avatar>
         </div>
@@ -154,8 +176,16 @@ const TabBarComponentRaw = ({ classes }: Props) => {
           })}
         </Tabs>
       </div>
+      {
+        <UsersDialog
+          open={isOpenSettings}
+          onClose={() => {
+            setIsOpenSettings(false);
+          }}
+        />
+      }
     </AppBar>
   );
 };
 
-export const TabBarComponent = withStyles(styles)(TabBarComponentRaw);
+export const TabBarComponent = connect(mapStateToProps)(withStyles(styles)(TabBarComponentRaw));

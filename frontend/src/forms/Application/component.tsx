@@ -91,10 +91,10 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
           .join(", ")
       : "-";
 
-  private renderDisksColumn = (rowData: RowData) =>
-    rowData.applicationComponent.get("disks") && rowData.applicationComponent.get("disks")!.size > 0
+  private renderVolumesColumn = (rowData: RowData) =>
+    rowData.applicationComponent.get("volumes") && rowData.applicationComponent.get("volumes")!.size > 0
       ? rowData.applicationComponent
-          .get("disks")!
+          .get("volumes")!
           .map(x => x.get("path"))
           .toArray()
           .join(", ")
@@ -325,7 +325,7 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
             { title: "Cpu", field: "cpu", sorting: false, render: this.renderCpuColumn },
             { title: "Memory", field: "memory", sorting: false, render: this.renderMemoryColumn },
             { title: "Ports", field: "ports", sorting: false, render: this.renderPortsColumn },
-            { title: "Disks", field: "disks", sorting: false, render: this.renderDisksColumn },
+            { title: "Volumes", field: "volumes", sorting: false, render: this.renderVolumesColumn },
             { title: "Plugins", field: "plugins", sorting: false, render: this.renderPluginsColumn },
             { title: "Envs", field: "envs", sorting: false, render: this.renderEnvsColumn }
           ]}
