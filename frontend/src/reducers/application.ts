@@ -17,6 +17,7 @@ import {
 export type State = ImmutableMap<{
   applicationList: ApplicationList;
   applications: Immutable.OrderedMap<string, Application>;
+  applicationPodNames: Immutable.Map<string, Immutable.List<string>>;
   isListLoading: boolean;
   isListFirstLoaded: boolean;
   isItemLoading: boolean;
@@ -25,6 +26,7 @@ export type State = ImmutableMap<{
 const initialState: State = Immutable.Map({
   applicationList: Immutable.List(),
   applications: Immutable.OrderedMap({}),
+  applicationPodNames: Immutable.Map({}),
   isListLoading: false,
   isListFirstLoaded: false,
   isItemLoading: false
@@ -52,6 +54,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
       let application = action.payload.application;
 
       state = state.set("applications", applications.set(application.get("name"), application));
+      state = state.setIn(["applicationPodNames", application.get("name")], action.payload.podNames);
       break;
     }
     case CREATE_APPLICATION: {

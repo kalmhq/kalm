@@ -20,8 +20,10 @@ import { ApplicationList, Application } from "../types/application";
 import Immutable from "immutable";
 import { ComponentTemplate } from "../types/componentTemplate";
 import { ConfigFile } from "../types/config";
+import { ImmutableMap } from "../typings";
 
 export const K8sApiPerfix = process.env.REACT_APP_K8S_API_PERFIX;
+export const k8sWsPerfix = !K8sApiPerfix ? "" : K8sApiPerfix.replace("http", "ws");
 
 const getAxiosClient = () => {
   const token = store
@@ -101,10 +103,13 @@ export const getKappApplicationList = async (): Promise<ApplicationList> => {
   return Immutable.fromJS(res.data.applications);
 };
 
-export const getKappApplication = async (namespace: string, name: string): Promise<Application> => {
+export const getKappApplication = async (
+  namespace: string,
+  name: string
+): Promise<ImmutableMap<{ application: Application; podNames: Immutable.List<string> }>> => {
   const res = await getAxiosClient().get(K8sApiPerfix + `/v1alpha1/applications/${namespace}/${name}`);
 
-  return Immutable.fromJS(res.data.application);
+  return Immutable.fromJS(res.data);
 };
 
 export const createKappApplication = async (application: Application): Promise<Application> => {

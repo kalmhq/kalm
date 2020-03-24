@@ -16,6 +16,7 @@ import { Disks } from "./pages/Disks";
 import InstallPage from "./pages/Install";
 import { NodeListPage } from "./pages/NodeList";
 import { Login } from "./layout/Login";
+import { Log } from "./pages/Application/Log";
 
 export const KappRoutes = (
   <Switch>
@@ -28,6 +29,7 @@ export const KappRoutes = (
           <Route exact path="/install" component={InstallPage} />
           <Route exact path="/applications" component={ApplicationListPage} />
           <Route exact path="/applications/:namespace/:applicationName/edit" component={ApplicationEdit} />
+          <Route exact path="/applications/:namespace/:applicationName/logs" component={Log} />
           <Route exact path="/applications/new" component={ApplicationNew} />
           <Route exact path="/componenttemplates/new" component={ComponentTemplateNew} />
           <Route exact path="/componenttemplates/:componentTemplateName/edit" component={ComponentTemplateEdit}></Route>

@@ -69,6 +69,7 @@ type ApplicationListResponse struct {
 
 type ApplicationResponse struct {
 	Application *Application `json:"application"`
+	PodNames    []string     `json:"podNames"`
 }
 
 type CreateOrUpdateApplicationRequest struct {
@@ -84,17 +85,43 @@ type Application struct {
 }
 
 func (builder *Builder) BuildApplicationDetailsResponse(application *v1alpha1.Application) *ApplicationResponse {
+	ns := application.Namespace
+	listOptions := labelsBelongsToApplication(application.Name)
+
+	resourceChannels := &ResourceChannels{
+		//DeploymentList: builder.GetDeploymentListChannel(ns, listOptions),
+		PodList: builder.GetPodListChannel(ns, listOptions),
+		//ReplicaSetList: builder.GetReplicaSetListChannel(ns, listOptions),
+		//EventList: builder.GetEventListChannel(ns, metaV1.ListOptions{
+		//	LabelSelector: labels.Everything().String(),
+		//	FieldSelector: fields.Everything().String(),
+		//}),
+	}
+
+	resources, err := resourceChannels.ToResources()
+
+	if err != nil {
+		builder.Logger.Error(err)
+	}
+
 	formatEnvs(application.Spec.SharedEnv)
 	formatApplicationComponents(application.Spec.Components)
 
+	podNames := []string{}
+
+	for _, pod := range resources.PodList.Items {
+		podNames = append(podNames, pod.Name)
+	}
+
 	return &ApplicationResponse{
-		&Application{
+		Application: &Application{
 			Name:       application.Name,
 			Namespace:  application.Namespace,
 			IsActive:   application.Spec.IsActive,
 			SharedEnvs: application.Spec.SharedEnv,
 			Components: application.Spec.Components,
 		},
+		PodNames: podNames,
 	}
 }
 

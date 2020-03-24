@@ -27,6 +27,14 @@ type WSConn struct {
 	IsAuthorized bool
 
 	subAndUnsubRequestsChannel chan *WSSubscribeOrUnsubscribePodLogRequest
+
+	writeLock *sync.Mutex
+}
+
+func (conn *WSConn) WriteJSON(v interface{}) error {
+	conn.writeLock.Lock()
+	defer conn.writeLock.Unlock()
+	return conn.Conn.WriteJSON(v)
 }
 
 type WSRequestType string
@@ -229,8 +237,11 @@ func wsWriteLoop(conn *WSConn) {
 				k8sClient := conn.K8sClient
 				conn.mut.RUnlock()
 
+				lines := int64(300)
+
 				podLogOpts := v1.PodLogOptions{
-					Follow: true,
+					Follow:    true,
+					TailLines: &lines,
 				}
 
 				req := k8sClient.CoreV1().Pods(m.Namespace).GetLogs(m.PodName, &podLogOpts)
@@ -338,6 +349,7 @@ func (h *ApiHandler) websocketHandler(c echo.Context) error {
 		mut:                        &sync.RWMutex{},
 		subAndUnsubRequestsChannel: make(chan *WSSubscribeOrUnsubscribePodLogRequest),
 		IsAuthorized:               authInfo != nil && h.clientManager.IsAuthInfoWorking(authInfo) == nil,
+		writeLock:                  &sync.Mutex{},
 	}
 
 	defer conn.Close()

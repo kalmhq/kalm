@@ -35,7 +35,7 @@ import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew";
 import ArchiveIcon from "@material-ui/icons/Archive";
 import { getApplicationByName } from "../../selectors/application";
 import { ApplicationListItem } from "../../types/application";
-
+import ViewHeadlineIcon from "@material-ui/icons/ViewHeadline";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
@@ -295,6 +295,16 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                 dispatch(duplicateApplicationAction(applicationListItem.get("name")));
               }}>
               <FileCopyIcon />
+            </IconButton>
+
+            <IconButton
+              aria-label="logs"
+              onClick={() => {
+                dispatch(
+                  push(`/applications/${applicationListItem.get("namespace")}/${applicationListItem.get("name")}/logs`)
+                );
+              }}>
+              <ViewHeadlineIcon />
             </IconButton>
 
             <IconButton aria-label="delete" onClick={onDeleteClick}>

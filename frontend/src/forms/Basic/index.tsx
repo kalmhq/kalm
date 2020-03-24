@@ -4,7 +4,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
 import { Autocomplete } from "@material-ui/lab";
 import clsx from "clsx";
-import React, { useEffect } from "react";
+import React from "react";
 import { BaseFieldProps, WrappedFieldMetaProps, WrappedFieldProps } from "redux-form";
 import { Field } from "redux-form/immutable";
 import { ID } from "../../utils";

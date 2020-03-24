@@ -9,13 +9,11 @@ import {
   Volume,
   VolumeTypeKappConfigs,
   VolumeTypePersistentVolumeClaimExisting,
+  VolumeTypePersistentVolumeClaimNew,
   VolumeTypeTemporaryDisk,
-  VolumeTypeTemporaryMemory,
-  VolumeTypePersistentVolumeClaimNew
+  VolumeTypeTemporaryMemory
 } from "../../types/componentTemplate";
 import { RenderSelectField } from "../Basic";
-import { SwitchField } from "../Basic/switch";
-import { NormalizeBoolean } from "../normalizer";
 import { TextField } from "../Basic/text";
 
 interface OwnProps {}

@@ -68,12 +68,13 @@ export const loadApplicationAction = (namespace: string, name: string): ThunkRes
   return async dispatch => {
     dispatch({ type: LOAD_APPLICATION_PENDING });
 
-    const application = await getKappApplication(namespace, name);
+    const res = await getKappApplication(namespace, name);
     // console.log("applicationList", JSON.stringify(applicationList.toJS()));
     dispatch({
       type: LOAD_APPLICATION_FULFILLED,
       payload: {
-        application
+        application: res.get("application"),
+        podNames: res.get("podNames")
       }
     });
   };

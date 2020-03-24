@@ -21,16 +21,18 @@ const styles = (_theme: Theme) =>
 export interface BasePageProps
   extends React.Props<any>,
     WithStyles<typeof styles>,
-    Pick<PageHeaderProps, "title" | "noBreadcrumb" | "rightAction"> {}
+    Pick<PageHeaderProps, "title" | "noBreadcrumb" | "rightAction"> {
+  noScrollContainer?: boolean;
+}
 
 export class BasePageRaw extends React.PureComponent<BasePageProps> {
   public render() {
-    const { classes, children, title, rightAction, noBreadcrumb } = this.props;
+    const { classes, children, title, rightAction, noBreadcrumb, noScrollContainer } = this.props;
     return (
       <div className={classes.root}>
         <PageHeader title={title} noBreadcrumb={noBreadcrumb} rightAction={rightAction}></PageHeader>
         <div className={classes.content}>
-          <ScrollContainer>{children}</ScrollContainer>
+          {noScrollContainer ? children : <ScrollContainer>{children}</ScrollContainer>}
         </div>
       </div>
     );

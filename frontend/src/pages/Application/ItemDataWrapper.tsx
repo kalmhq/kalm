@@ -4,6 +4,7 @@ import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "../../types";
 import { loadApplicationAction } from "../../actions/application";
+import hoistNonReactStatics from "hoist-non-react-statics";
 
 const mapStateToProps = (state: RootState, props: any) => {
   const applications = state.get("applications");
@@ -14,7 +15,8 @@ const mapStateToProps = (state: RootState, props: any) => {
     applicationName,
     namespace,
     application: applications.get("applications").get(applicationName),
-    isLoading: applications.get("isItemLoading")
+    isLoading: applications.get("isItemLoading"),
+    podNames: applications.get("applicationPodNames").get(applicationName)
   };
 };
 
@@ -50,7 +52,7 @@ export const ApplicationItemDataWrapper = (WrappedComponent: React.ComponentType
   };
 
   WithdApplicationsData.displayName = `WithdApplicationsData(${getDisplayName(WrappedComponent)})`;
-
+  hoistNonReactStatics(WithdApplicationsData, WrappedComponent);
   return connect(mapStateToProps)(WithdApplicationsData);
 };
 
