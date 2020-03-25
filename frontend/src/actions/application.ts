@@ -5,7 +5,6 @@ import {
   getKappApplicationList,
   getKappApplication
 } from "./kubernetesApi";
-import { getApplicationByName, duplicateApplication } from "../selectors/application";
 import {
   LOAD_APPLICATIONS_PENDING,
   LOAD_APPLICATIONS_FULFILLED,
@@ -23,6 +22,7 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
   return async dispatch => {
     const application = await createKappApplication(applicationValues);
 
+    dispatch(loadApplicationsAction());
     dispatch({
       type: CREATE_APPLICATION,
       payload: { application }
@@ -34,6 +34,7 @@ export const updateApplicationAction = (applicationRaw: Application): ThunkResul
   return async dispatch => {
     const application = await updateKappApplication(applicationRaw);
 
+    dispatch(loadApplicationsAction());
     dispatch({
       type: UPDATE_APPLICATION,
       payload: { application }
@@ -41,11 +42,11 @@ export const updateApplicationAction = (applicationRaw: Application): ThunkResul
   };
 };
 
-export const duplicateApplicationAction = (applicationName: string): ThunkResult<Promise<void>> => {
+export const duplicateApplicationAction = (duplicatedApplication: Application): ThunkResult<Promise<void>> => {
   return async dispatch => {
-    const duplicatedApplication = duplicateApplication(getApplicationByName(applicationName));
     const application = await createKappApplication(duplicatedApplication);
 
+    dispatch(loadApplicationsAction());
     dispatch({
       type: DUPLICATE_APPLICATION,
       payload: { application }
