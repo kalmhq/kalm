@@ -93,6 +93,7 @@ type WSPodLogDisconnectedResponse struct {
 	Type      WSResponseType `json:"type"`
 	Namespace string         `json:"namespace"`
 	PodName   string         `json:"podName"`
+	Data      string         `json:"data"`
 }
 
 var upgrader = websocket.Upgrader{
@@ -249,6 +250,12 @@ func wsWriteLoop(conn *WSConn) {
 
 				if err != nil {
 					log.Error(err)
+					_ = conn.WriteJSON(&WSPodLogDisconnectedResponse{
+						Type:      WSResponseTypePodLogDisconnected,
+						Namespace: m.Namespace,
+						PodName:   m.PodName,
+						Data:      err.Error(),
+					})
 					continue
 				}
 
