@@ -11,7 +11,7 @@ export const getApplicationByName = (applicationName: string): Application => {
     .get(applicationName) as Application;
 };
 
-export const duplicateApplication = (application: Application): Application => {
+export const duplicateApplicationName = (applicationName: string): string => {
   const state = store.getState();
   const applicationList = state.get("applications").get("applicationList");
 
@@ -19,13 +19,10 @@ export const duplicateApplication = (application: Application): Application => {
   let name = "";
   do {
     i += 1;
-    name = `${application.get("name")}-duplicate-${i}`;
+    name = `${applicationName}-duplicate-${i}`;
   } while (applicationList.find(x => x.get("name") === name));
 
-  application = application.set("name", name);
-  application = application.set("isActive", false);
-
-  return application;
+  return name;
 };
 
 export const getCurrentFormApplication = (): Application => {

@@ -8,7 +8,8 @@ import {
   ExpansionPanel,
   ExpansionPanelSummary,
   ExpansionPanelDetails,
-  Checkbox
+  Checkbox,
+  TextField
 } from "@material-ui/core";
 import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
@@ -33,7 +34,7 @@ import { Dot } from "../../widgets/Dot";
 import RefreshIcon from "@material-ui/icons/Refresh";
 import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew";
 import ArchiveIcon from "@material-ui/icons/Archive";
-import { getApplicationByName } from "../../selectors/application";
+import { getApplicationByName, duplicateApplicationName } from "../../selectors/application";
 import { ApplicationListItem } from "../../types/application";
 import ViewHeadlineIcon from "@material-ui/icons/ViewHeadline";
 const styles = (theme: Theme) =>
@@ -93,6 +94,12 @@ const styles = (theme: Theme) =>
     },
     actionText: {
       marginLeft: "8px"
+    },
+    duplicateConfirmFileds: {
+      marginTop: "20px",
+      width: "100%",
+      display: "flex",
+      justifyContent: "space-between"
     }
   });
 
@@ -101,57 +108,58 @@ interface Props extends WithApplicationsDataProps, WithStyles<typeof styles> {}
 interface State {
   isActiveConfirmDialogOpen: boolean;
   switchingIsActiveApplicationListItem?: ApplicationListItem;
-  switchingIsActiveTitle: string;
-  switchingIsActiveContent: string;
   isDeleteConfirmDialogOpen: boolean;
   deletingApplicationListItem?: ApplicationListItem;
+  isDuplicateConfirmDialogOpen: boolean;
+  duplicatingApplicationListItem?: ApplicationListItem;
   checkedApplicationNames: {
     [key: string]: boolean;
   };
 }
 
 class ApplicationListRaw extends React.PureComponent<Props, State> {
+  private duplicateApplicationNameRef: React.RefObject<any>;
+  private duplicateApplicationNamespaceRef: React.RefObject<any>;
+
   private defaultState = {
     isActiveConfirmDialogOpen: false,
     switchingIsActiveApplicationListItem: undefined,
-    switchingIsActiveTitle: "",
-    switchingIsActiveContent: "",
     isDeleteConfirmDialogOpen: false,
     deletingApplicationListItem: undefined,
+    isDuplicateConfirmDialogOpen: false,
+    duplicatingApplicationListItem: undefined,
     checkedApplicationNames: {}
   };
 
   constructor(props: Props) {
     super(props);
     this.state = this.defaultState;
+
+    this.duplicateApplicationNameRef = React.createRef();
+    this.duplicateApplicationNamespaceRef = React.createRef();
   }
 
   public onCreate = () => {
     this.props.dispatch(push(`/applications/new`));
   };
 
-  private renderSwitchingIsActiveConfirmDialog = () => {
-    const { isActiveConfirmDialogOpen, switchingIsActiveTitle, switchingIsActiveContent } = this.state;
-
-    return (
-      <ConfirmDialog
-        open={isActiveConfirmDialogOpen}
-        onClose={this.closeEnabledConfirmDialog}
-        title={switchingIsActiveTitle}
-        content={switchingIsActiveContent}
-        onAgree={this.switchEnabledConfirmedComponent}
-      />
-    );
+  private showSwitchingIsActiveConfirmDialog = (applicationListItem: ApplicationListItem) => {
+    this.setState({
+      isActiveConfirmDialogOpen: true,
+      switchingIsActiveApplicationListItem: applicationListItem
+    });
   };
 
-  private closeEnabledConfirmDialog = () => {
+  private closeSwitchingIsActiveConfirmDialog = () => {
     this.setState(this.defaultState);
   };
 
-  private showSwitchingIsActiveDialog = (applicationListItem: ApplicationListItem) => {
+  private renderSwitchingIsActiveConfirmDialog = () => {
+    const { isActiveConfirmDialogOpen, switchingIsActiveApplicationListItem } = this.state;
+
     let title, content;
 
-    if (applicationListItem.get("isActive")) {
+    if (switchingIsActiveApplicationListItem && switchingIsActiveApplicationListItem.get("isActive")) {
       title = "Are you sure to disabled this application?";
       content =
         "Disabling this application will delete all running resources in your cluster. TODO: (will disk be deleted? will xxx deleted?)";
@@ -160,19 +168,21 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
       content = "Enabling this application will create xxxx resources. They will spend xxx CPU, xxx Memory. ";
     }
 
-    this.setState({
-      isActiveConfirmDialogOpen: true,
-      switchingIsActiveApplicationListItem: applicationListItem,
-      switchingIsActiveTitle: title,
-      switchingIsActiveContent: content
-    });
+    return (
+      <ConfirmDialog
+        open={isActiveConfirmDialogOpen}
+        onClose={this.closeSwitchingIsActiveConfirmDialog}
+        title={title}
+        content={content}
+        onAgree={this.confirmSwitchIsActive}
+      />
+    );
   };
 
-  private switchEnabledConfirmedComponent = async () => {
+  private confirmSwitchIsActive = async () => {
     const { dispatch } = this.props;
     const { switchingIsActiveApplicationListItem } = this.state;
 
-    // const application = applicationList.find(x => x.get("name") === switchingIsActiveApplicationListItem)!;
     if (switchingIsActiveApplicationListItem) {
       await dispatch(
         loadApplicationAction(
@@ -186,14 +196,107 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private closeConfirmDialog = () => {
+  private showDuplicateConfirmDialog = (duplicatingApplicationListItem: ApplicationListItem) => {
     this.setState({
-      isDeleteConfirmDialogOpen: false,
-      deletingApplicationListItem: undefined
+      isDuplicateConfirmDialogOpen: true,
+      duplicatingApplicationListItem
     });
   };
 
-  private deleteConfirmedApplication = async () => {
+  private closeDuplicateConfirmDialog = () => {
+    this.setState(this.defaultState);
+  };
+
+  private renderDuplicateConfirmDialog = () => {
+    const { classes } = this.props;
+    const { isDuplicateConfirmDialogOpen, duplicatingApplicationListItem } = this.state;
+
+    let title, content;
+    title = "Are you sure to duplicate this application?";
+    content = (
+      <div>
+        Please confirm the namespace and name of new application.
+        <div className={classes.duplicateConfirmFileds}>
+          <TextField
+            inputRef={this.duplicateApplicationNamespaceRef}
+            label="Namespace"
+            variant="outlined"
+            defaultValue={duplicatingApplicationListItem?.get("namespace")}
+            required
+          />
+          <TextField
+            inputRef={this.duplicateApplicationNameRef}
+            label="Name"
+            variant="outlined"
+            defaultValue={duplicateApplicationName(duplicatingApplicationListItem?.get("name") as string)}
+            required
+          />
+        </div>
+      </div>
+    );
+
+    return (
+      <ConfirmDialog
+        open={isDuplicateConfirmDialogOpen}
+        onClose={this.closeDuplicateConfirmDialog}
+        title={title}
+        content={content}
+        onAgree={this.confirmDuplicate}
+      />
+    );
+  };
+
+  private confirmDuplicate = async () => {
+    const { dispatch } = this.props;
+    try {
+      const { duplicatingApplicationListItem } = this.state;
+      if (duplicatingApplicationListItem) {
+        await dispatch(
+          loadApplicationAction(
+            duplicatingApplicationListItem.get("namespace"),
+            duplicatingApplicationListItem.get("name")
+          )
+        );
+
+        let newApplication = getApplicationByName(duplicatingApplicationListItem.get("name"));
+
+        newApplication = newApplication.set("namespace", this.duplicateApplicationNamespaceRef.current.value);
+        newApplication = newApplication.set("name", this.duplicateApplicationNameRef.current.value);
+        newApplication = newApplication.set("isActive", false);
+
+        dispatch(duplicateApplicationAction(newApplication));
+      }
+    } catch {
+      dispatch(setErrorNotificationAction("Something wrong"));
+    }
+  };
+
+  private showDeleteConfirmDialog = (deletingApplicationListItem: ApplicationListItem) => {
+    this.setState({
+      isDeleteConfirmDialogOpen: true,
+      deletingApplicationListItem
+    });
+  };
+
+  private closeDeleteConfirmDialog = () => {
+    this.setState(this.defaultState);
+  };
+
+  private renderDeleteConfirmDialog = () => {
+    const { isDeleteConfirmDialogOpen } = this.state;
+
+    return (
+      <ConfirmDialog
+        open={isDeleteConfirmDialogOpen}
+        onClose={this.closeDeleteConfirmDialog}
+        title="Are you sure to delete this Application?"
+        content="This application is already disabled. You will lost this application config, and this action is irrevocable."
+        onAgree={this.confirmDelete}
+      />
+    );
+  };
+
+  private confirmDelete = async () => {
     const { dispatch } = this.props;
     try {
       const { deletingApplicationListItem } = this.state;
@@ -212,38 +315,9 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   //   return <div>123</div>;
   // };
 
-  private setDeletingApplicationAndConfirm = (deletingApplicationListItem: ApplicationListItem) => {
-    this.setState({
-      isDeleteConfirmDialogOpen: true,
-      deletingApplicationListItem
-    });
-  };
-
-  private renderDeleteConfirmDialog = () => {
-    const { isDeleteConfirmDialogOpen } = this.state;
-
-    return (
-      <ConfirmDialog
-        open={isDeleteConfirmDialogOpen}
-        onClose={this.closeConfirmDialog}
-        title="Are you sure to delete this Application?"
-        content="This application is already disabled. You will lost this application config, and this action is irrevocable."
-        onAgree={this.deleteConfirmedApplication}
-      />
-    );
-  };
-
   public render() {
     const { dispatch, applicationList, classes, isLoading, isFirstLoaded } = this.props;
     const data = applicationList.map((applicationListItem, index) => {
-      const handleChange = () => {
-        this.showSwitchingIsActiveDialog(applicationListItem);
-      };
-
-      const onDeleteClick = () => {
-        this.setDeletingApplicationAndConfirm(applicationListItem);
-      };
-
       const components = (
         <ExpansionPanel className={classes.expansionPanel}>
           <ExpansionPanelSummary
@@ -290,11 +364,9 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
             </IconButton>
 
             <IconButton
-              aria-label="edit"
+              aria-label="duplicate"
               onClick={() => {
-                dispatch(
-                  duplicateApplicationAction(applicationListItem.get("namespace"), applicationListItem.get("name"))
-                );
+                this.showDuplicateConfirmDialog(applicationListItem);
               }}>
               <FileCopyIcon />
             </IconButton>
@@ -309,7 +381,11 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
               <ViewHeadlineIcon />
             </IconButton>
 
-            <IconButton aria-label="delete" onClick={onDeleteClick}>
+            <IconButton
+              aria-label="delete"
+              onClick={() => {
+                this.showDeleteConfirmDialog(applicationListItem);
+              }}>
               <DeleteIcon />
             </IconButton>
           </>
@@ -332,7 +408,9 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         active: (
           <Switch
             checked={applicationListItem.get("isActive")}
-            onChange={handleChange}
+            onChange={() => {
+              this.showSwitchingIsActiveConfirmDialog(applicationListItem);
+            }}
             value="checkedB"
             color="primary"
             inputProps={{ "aria-label": "active app.ication" }}
@@ -344,6 +422,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     return (
       <BasePage title="Applications">
         {this.renderDeleteConfirmDialog()}
+        {this.renderDuplicateConfirmDialog()}
         {this.renderSwitchingIsActiveConfirmDialog()}
         <div className={classes.root}>
           {isLoading && !isFirstLoaded ? (
