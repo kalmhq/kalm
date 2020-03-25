@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/gorilla/websocket"
 	"github.com/kapp-staging/kapp/api/client"
+	"github.com/kapp-staging/kapp/api/utils"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 	"io"
@@ -288,7 +289,9 @@ func copyPodLogStreamToWS(ctx context.Context, namespace, podName string, conn *
 		})
 	}()
 
-	buf := make([]byte, 1024)
+	buf := utils.BufferPool.Get()
+	defer utils.BufferPool.Put(buf)
+
 	bufChan := make(chan []byte)
 
 	go func() {
