@@ -222,16 +222,12 @@ func wsWriteLoop(conn *WSConn) {
 		}
 	}()
 
-	getKeyName := func(ns, podName string) string {
-		return fmt.Sprintf("%s___%s", ns, podName)
-	}
-
 	for {
 		select {
 		case <-conn.ctx.Done():
 			return
 		case m := <-conn.subAndUnsubRequestsChannel:
-			key := getKeyName(m.Namespace, m.PodName)
+			key := fmt.Sprintf("%s___%s", m.Namespace, m.PodName)
 
 			if m.Type == WSRequestTypeSubscribePodLog {
 				conn.mut.RLock()
