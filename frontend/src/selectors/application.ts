@@ -13,16 +13,17 @@ export const getApplicationByName = (applicationName: string): Application => {
 
 export const duplicateApplication = (application: Application): Application => {
   const state = store.getState();
-  const applications = state.get("applications").get("applications");
+  const applicationList = state.get("applications").get("applicationList");
 
   let i = 0;
   let name = "";
   do {
     i += 1;
     name = `${application.get("name")}-duplicate-${i}`;
-  } while (applications.find(x => x.get("name") === name));
+  } while (applicationList.find(x => x.get("name") === name));
 
   application = application.set("name", name);
+  application = application.set("isActive", false);
 
   return application;
 };

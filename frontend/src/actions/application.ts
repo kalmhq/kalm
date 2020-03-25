@@ -23,6 +23,7 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
   return async dispatch => {
     const application = await createKappApplication(applicationValues);
 
+    dispatch(loadApplicationsAction());
     dispatch({
       type: CREATE_APPLICATION,
       payload: { application }
@@ -34,6 +35,7 @@ export const updateApplicationAction = (applicationRaw: Application): ThunkResul
   return async dispatch => {
     const application = await updateKappApplication(applicationRaw);
 
+    dispatch(loadApplicationsAction());
     dispatch({
       type: UPDATE_APPLICATION,
       payload: { application }
@@ -41,11 +43,14 @@ export const updateApplicationAction = (applicationRaw: Application): ThunkResul
   };
 };
 
-export const duplicateApplicationAction = (applicationName: string): ThunkResult<Promise<void>> => {
+export const duplicateApplicationAction = (namespace: string, applicationName: string): ThunkResult<Promise<void>> => {
   return async dispatch => {
+    await dispatch(loadApplicationAction(namespace, applicationName));
+
     const duplicatedApplication = duplicateApplication(getApplicationByName(applicationName));
     const application = await createKappApplication(duplicatedApplication);
 
+    dispatch(loadApplicationsAction());
     dispatch({
       type: DUPLICATE_APPLICATION,
       payload: { application }

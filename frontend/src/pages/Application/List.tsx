@@ -292,7 +292,9 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
             <IconButton
               aria-label="edit"
               onClick={() => {
-                dispatch(duplicateApplicationAction(applicationListItem.get("name")));
+                dispatch(
+                  duplicateApplicationAction(applicationListItem.get("namespace"), applicationListItem.get("name"))
+                );
               }}>
               <FileCopyIcon />
             </IconButton>
