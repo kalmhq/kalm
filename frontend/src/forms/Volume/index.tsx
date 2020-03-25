@@ -9,9 +9,9 @@ import {
   Volume,
   VolumeTypeKappConfigs,
   VolumeTypePersistentVolumeClaimExisting,
+  VolumeTypePersistentVolumeClaimNew,
   VolumeTypeTemporaryDisk,
-  VolumeTypeTemporaryMemory,
-  VolumeTypePersistentVolumeClaimNew
+  VolumeTypeTemporaryMemory
 } from "../../types/componentTemplate";
 import { RenderSelectField } from "../Basic";
 import { TextField } from "../Basic/text";

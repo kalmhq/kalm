@@ -22,6 +22,7 @@
     "antd": "^3.26.11",
     "axios": "^0.19.2",
     "connected-react-router": "^6.6.1",
+    "hoist-non-react-statics": "^3.3.2",
     "immutable": "^4.0.0-rc.12",
     "install": "^0.13.0",
     "material-table": "^1.57.2",
@@ -42,6 +43,8 @@
     "redux-promise-middleware": "^6.1.2",
     "redux-thunk": "^2.3.0",
     "typescript": "^3.7.4",
+    "xterm": "^4.4.0",
+    "xterm-addon-fit": "^0.3.0",
     "yaml": "^1.7.2"
   },
   "scripts": {
@@ -52,8 +55,16 @@
     "lint": "./node_modules/.bin/eslint --ext ts,tsx src --max-warnings=0"
   },
   "browserslist": {
-    "production": [">0.2%", "not dead", "not op_mini all"],
-    "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   },
   "devDependencies": {
     "husky": "^4.2.1"

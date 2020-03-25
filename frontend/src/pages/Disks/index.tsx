@@ -4,7 +4,7 @@ import MaterialTable from "material-table";
 import React from "react";
 import { connect } from "react-redux";
 import { TDispatchProp } from "../../types";
-import { K8sApiPerfix } from "../../actions/kubernetesApi";
+import { K8sApiPrefix } from "../../actions/kubernetesApi";
 import { loadPersistentVolumes } from "../../actions/persistentVolumn";
 import { RootState } from "../../reducers";
 import { BasePage } from "../BasePage";
@@ -131,7 +131,7 @@ export class DisksRaw extends React.Component<Props, States> {
           {loadNodesError ? (
             <Alert severity="error">
               <Box>
-                Kapp fails to load persistentVolumns from current cluster with endpoint <strong>{K8sApiPerfix}</strong>.
+                Kapp fails to load persistentVolumns from current cluster with endpoint <strong>{K8sApiPrefix}</strong>.
                 Please check your connection.
               </Box>
             </Alert>

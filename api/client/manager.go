@@ -25,7 +25,7 @@ func (m *ClientManager) isInCluster() bool {
 	return m.Config.KubernetesApiServerAddress == "" && m.Config.KubeConfigPath == ""
 }
 
-func (m *ClientManager) buildCmdConfig(authInfo *api.AuthInfo, cfg *rest.Config) clientcmd.ClientConfig {
+func BuildCmdConfig(authInfo *api.AuthInfo, cfg *rest.Config) clientcmd.ClientConfig {
 	cmdCfg := api.NewConfig()
 	cmdCfg.Clusters[DefaultCmdConfigName] = &api.Cluster{
 		Server:                   cfg.Host,
@@ -47,7 +47,7 @@ func (m *ClientManager) buildCmdConfig(authInfo *api.AuthInfo, cfg *rest.Config)
 }
 
 func (m *ClientManager) IsAuthInfoWorking(authInfo *api.AuthInfo) error {
-	cfg, err := m.getClientConfigWithAuthInfo(authInfo)
+	cfg, err := m.GetClientConfigWithAuthInfo(authInfo)
 	if err != nil {
 		return err
 	}
@@ -93,8 +93,8 @@ func (m *ClientManager) initClusterClientConfiguration() (err error) {
 	return nil
 }
 
-func (m *ClientManager) getClientConfigWithAuthInfo(authInfo *api.AuthInfo) (*rest.Config, error) {
-	clientConfig := m.buildCmdConfig(authInfo, m.ClusterConfig)
+func (m *ClientManager) GetClientConfigWithAuthInfo(authInfo *api.AuthInfo) (*rest.Config, error) {
+	clientConfig := BuildCmdConfig(authInfo, m.ClusterConfig)
 
 	cfg, err := clientConfig.ClientConfig()
 	if err != nil {
@@ -104,7 +104,7 @@ func (m *ClientManager) getClientConfigWithAuthInfo(authInfo *api.AuthInfo) (*re
 	return cfg, nil
 }
 
-func (m *ClientManager) extractAuthInfo(c echo.Context) (*api.AuthInfo, error) {
+func ExtractAuthInfo(c echo.Context) *api.AuthInfo {
 	req := c.Request()
 	authHeader := req.Header.Get(echo.HeaderAuthorization)
 	token := auth.ExtractTokenFromHeader(authHeader)
@@ -112,21 +112,20 @@ func (m *ClientManager) extractAuthInfo(c echo.Context) (*api.AuthInfo, error) {
 	// TODO Impersonate
 
 	if token != "" {
-		authInfo := &api.AuthInfo{Token: token}
-		return authInfo, nil
+		return &api.AuthInfo{Token: token}
 	}
 
-	return nil, echo.ErrUnauthorized
+	return nil
 }
 
 func (m *ClientManager) GetClientConfig(c echo.Context) (*rest.Config, error) {
-	authInfo, err := m.extractAuthInfo(c)
+	authInfo := ExtractAuthInfo(c)
 
-	if err != nil {
-		return nil, err
+	if authInfo == nil {
+		return nil, echo.ErrUnauthorized
 	}
 
-	return m.getClientConfigWithAuthInfo(authInfo)
+	return m.GetClientConfigWithAuthInfo(authInfo)
 }
 
 func NewClientManager(config *config.Config) *ClientManager {

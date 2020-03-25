@@ -103,7 +103,7 @@ spec:
                     - SCTP
                     type: string
                   servicePort:
-                    description: '? what is service port for?'
+                    description: port for service
                     format: int32
                     type: integer
                 required:

@@ -4,8 +4,9 @@ import { ImmutableMap } from "../typings";
 export const LOAD_USERS_PENDING = "LOAD_USERS_PENDING";
 export const LOAD_USERS_FULFILLED = "LOAD_USERS_FULFILLED";
 export const CREATE_USER = "CREATE_USER";
+export const DELETE_USER = "DELETE_USER";
 
-export const clusterRoleNames = [
+export const allClusterRoleNames = [
   "application_editor_role",
   "application_viewer_role",
   "component_editor_role",
@@ -31,8 +32,13 @@ export type UserType = "serviceAccount" | "oidc";
 export interface UserInterface {
   name: string;
   type: UserType;
+  serviceAccountName?: string;
+  secretName?: string;
   token?: string;
-  clusterRoleNames: ClusterRoleName[];
+  // key: clusterRoleName
+  clusterRoleNames: Immutable.OrderedMap<string, boolean>;
+  // key: clusterRoleName, value: clusterRoleBindingName
+  clusterRoleBindingNames: Immutable.OrderedMap<string, string>;
 }
 
 export type User = ImmutableMap<UserInterface>;
@@ -56,4 +62,11 @@ export interface CreateUserAction {
   };
 }
 
-export type UserActions = LoadUsersPendingAction | LoadUsersFulfilledAction | CreateUserAction;
+export interface DeleteUserAction {
+  type: typeof DELETE_USER;
+  payload: {
+    user: User;
+  };
+}
+
+export type UserActions = LoadUsersPendingAction | LoadUsersFulfilledAction | CreateUserAction | DeleteUserAction;

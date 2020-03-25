@@ -94,7 +94,7 @@ func (h *ApiHandler) handleCreateClusterRoles(c echo.Context) error {
 
 func (h *ApiHandler) handleDeleteClusterRoles(c echo.Context) error {
 	k8sClient := getK8sClient(c)
-	res, err := k8sClient.RESTClient().Delete().AbsPath("/apis/rbac.authorization.k8s.io/v1/clusterroles" + c.Param("name")).DoRaw()
+	res, err := k8sClient.RESTClient().Delete().AbsPath("/apis/rbac.authorization.k8s.io/v1/clusterroles/" + c.Param("name")).DoRaw()
 
 	if err != nil {
 		return err
@@ -127,7 +127,7 @@ func (h *ApiHandler) handleCreateClusterRoleBindings(c echo.Context) error {
 
 func (h *ApiHandler) handleDeleteClusterRoleBindings(c echo.Context) error {
 	k8sClient := getK8sClient(c)
-	res, err := k8sClient.RESTClient().Delete().AbsPath("/apis/rbac.authorization.k8s.io/v1/clusterrolebindings" + c.Param("name")).DoRaw()
+	res, err := k8sClient.RESTClient().Delete().AbsPath("/apis/rbac.authorization.k8s.io/v1/clusterrolebindings/" + c.Param("name")).DoRaw()
 
 	if err != nil {
 		return err
@@ -160,7 +160,7 @@ func (h *ApiHandler) handleCreateServiceAccounts(c echo.Context) error {
 
 func (h *ApiHandler) handleDeleteServiceAccounts(c echo.Context) error {
 	k8sClient := getK8sClient(c)
-	res, err := k8sClient.RESTClient().Delete().AbsPath("/api/v1/namespaces/default/serviceaccounts" + c.Param("name")).DoRaw()
+	res, err := k8sClient.RESTClient().Delete().AbsPath("/api/v1/namespaces/default/serviceaccounts/" + c.Param("name")).DoRaw()
 
 	if err != nil {
 		return err
@@ -193,7 +193,7 @@ func (h *ApiHandler) handleCreateSecrets(c echo.Context) error {
 
 func (h *ApiHandler) handleDeleteSecrets(c echo.Context) error {
 	k8sClient := getK8sClient(c)
-	res, err := k8sClient.RESTClient().Delete().AbsPath("/api/v1/namespaces/default/secrets" + c.Param("name")).DoRaw()
+	res, err := k8sClient.RESTClient().Delete().AbsPath("/api/v1/namespaces/default/secrets/" + c.Param("name")).DoRaw()
 
 	if err != nil {
 		return err
@@ -205,7 +205,7 @@ func (h *ApiHandler) handleDeleteSecrets(c echo.Context) error {
 func (h *ApiHandler) handleGetSecret(c echo.Context) error {
 	k8sClient := getK8sClient(c)
 
-	res, err := k8sClient.RESTClient().Get().AbsPath("/api/v1/namespaces/default/secrets" + c.Param("name")).DoRaw()
+	res, err := k8sClient.RESTClient().Get().AbsPath("/api/v1/namespaces/default/secrets/" + c.Param("name")).DoRaw()
 
 	if err != nil {
 		return err

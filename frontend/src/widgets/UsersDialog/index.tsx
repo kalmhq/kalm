@@ -15,14 +15,28 @@ import {
   ExpansionPanelSummary,
   ExpansionPanelDetails,
   FormControlLabel,
-  Switch
+  Switch,
+  IconButton,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel
 } from "@material-ui/core";
 import { connect } from "react-redux";
-import { loadUsersAction, createUserAction } from "../../actions/user";
-import { Loading } from "../Loading";
+import {
+  loadUsersAction,
+  createUserAction,
+  deleteUserAction,
+  createClusterRoleBinding,
+  deleteClusterRoleBinding
+} from "../../actions/user";
 import Immutable from "immutable";
-import { clusterRoleNames, User } from "../../types/user";
+import { User } from "../../types/user";
 import SettingsIcon from "@material-ui/icons/Settings";
+import TextField from "@material-ui/core/TextField";
+import { SercetField } from "../SecretField";
+import { getUserByName } from "../../selectors/user";
+import { setErrorNotificationAction } from "../../actions/notification";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -31,6 +45,9 @@ const styles = (theme: Theme) =>
     },
     panelDetail: {
       display: "block"
+    },
+    formControlWidth: {
+      width: "100%"
     }
   });
 
@@ -51,14 +68,45 @@ interface Props extends StateProps, WithStyles<typeof styles> {
 
 interface State {}
 
+const switchItems = [
+  {
+    label: "Applications View",
+    key: "application_viewer_role"
+  },
+  {
+    label: "Applications Edit",
+    key: "application_editor_role"
+  },
+  {
+    label: "Components View",
+    key: "component_viewer_role"
+  },
+  {
+    label: "Components Edit",
+    key: "component_editor_role"
+  },
+  {
+    label: "Configs View",
+    key: "file_viewer_role"
+  },
+  {
+    label: "Configs Edit",
+    key: "file_editor_role"
+  },
+  {
+    label: "Dependencies View",
+    key: "dependency_viewer_role"
+  },
+  {
+    label: "Dependencies Edit",
+    key: "dependency_editor_role"
+  }
+];
+
 class UsersDialogRaw extends React.PureComponent<Props, State> {
   public componentDidMount() {
     const { dispatch } = this.props;
     dispatch(loadUsersAction());
-
-    // this.tableRef &&
-    //   this.tableRef.current &&
-    //   this.tableRef.current.onToggleDetailPanel([0], this.tableRef.current.props.detailPanel);
   }
 
   private handleClose() {
@@ -68,59 +116,32 @@ class UsersDialogRaw extends React.PureComponent<Props, State> {
   }
 
   private renderPermissions(rowData: any) {
-    const { classes } = this.props;
-    const switchItems = [
-      {
-        label: "Applications View",
-        checked: rowData.permissions.indexOf("application_viewer_role") !== -1,
-        onChange: (v: any) => console.log(v)
-      },
-      {
-        label: "Applications Edit",
-        checked: rowData.permissions.indexOf("application_editor_role") !== -1,
-        onChange: (v: any) => console.log(v)
-      },
-      {
-        label: "Components View",
-        checked: rowData.permissions.indexOf("component_viewer_role") !== -1,
-        onChange: (v: any) => console.log(v)
-      },
-      {
-        label: "Components Edit",
-        checked: rowData.permissions.indexOf("component_editor_role") !== -1,
-        onChange: (v: any) => console.log(v)
-      },
-      {
-        label: "Configs View",
-        checked: rowData.permissions.indexOf("file_viewer_role") !== -1,
-        onChange: (v: any) => console.log(v)
-      },
-      {
-        label: "Configs Edit",
-        checked: rowData.permissions.indexOf("file_editor_role") !== -1,
-        onChange: (v: any) => console.log(v)
-      },
-      {
-        label: "Dependencies View",
-        checked: rowData.permissions.indexOf("dependency_viewer_role") !== -1,
-        onChange: (v: any) => console.log(v)
-      },
-      {
-        label: "Dependencies Edit",
-        checked: rowData.permissions.indexOf("dependency_editor_role") !== -1,
-        onChange: (v: any) => console.log(v)
-      }
-    ];
+    const { classes, dispatch } = this.props;
     return (
       <ExpansionPanel className={classes.expansionPanel}>
-        <ExpansionPanelSummary aria-controls="panel1bh-content" id="panel1bh-header">
-          <SettingsIcon />
+        <ExpansionPanelSummary aria-controls="panel1bh-content">
+          <IconButton>
+            <SettingsIcon />
+          </IconButton>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails className={classes.panelDetail}>
           {switchItems.map(item => (
             <FormControlLabel
               key={item.label}
-              control={<Switch checked={item.checked} onChange={item.onChange} name="checkedB" color="primary" />}
+              control={
+                <Switch
+                  checked={!!rowData.permissions.get(item.key)}
+                  onChange={event => {
+                    const user = getUserByName(rowData.name);
+                    if (event.target.checked) {
+                      dispatch(createClusterRoleBinding(user, item.key));
+                    } else {
+                      dispatch(deleteClusterRoleBinding(user, item.key));
+                    }
+                  }}
+                  color="primary"
+                />
+              }
               label={item.label}
             />
           ))}
@@ -129,29 +150,101 @@ class UsersDialogRaw extends React.PureComponent<Props, State> {
     );
   }
 
+  private renderType(rowData: any) {
+    if (rowData.type === "oidc") {
+      return <div>External Auth</div>;
+    }
+    const { dispatch } = this.props;
+    return <SercetField content={rowData.token} dispatch={dispatch} />;
+  }
+
   private renderTable() {
-    const { dispatch, users } = this.props;
+    const { dispatch, users, classes, isLoading } = this.props;
 
     const tableData: any[] = [];
     users.forEach(user => {
       tableData.push({
         name: user.get("name"),
         type: user.get("type"),
-        permissions: user.get("clusterRoleNames")
+        permissions: user.get("clusterRoleNames"),
+        token: user.get("token")
       });
     });
 
     return (
       <MaterialTable
+        isLoading={isLoading}
         title="Users Management"
         columns={[
-          { title: "User Name", field: "name" },
-          { title: "Token Provider", field: "type" },
-          { title: "Permissions", field: "permissions", render: rowData => this.renderPermissions(rowData) }
+          {
+            title: "User Name",
+            field: "name",
+            initialEditValue: "",
+            editComponent: props => (
+              <TextField
+                required
+                className={classes.formControlWidth}
+                label="User Name"
+                variant="outlined"
+                value={props.value ? props.value : ""}
+                onChange={e => props.onChange(e.target.value)}
+              />
+            )
+          },
+          {
+            title: "Token Provider",
+            field: "type",
+            initialEditValue: "oidc",
+            render: rowData => this.renderType(rowData),
+            editComponent: props => (
+              <FormControl variant="outlined" className={classes.formControlWidth}>
+                <InputLabel>Token Provider</InputLabel>
+                <Select
+                  value={props.value ? props.value : "oidc"}
+                  onChange={e => props.onChange(e.target.value)}
+                  labelId="demo-simple-select-outlined-label"
+                  label="Token Provider">
+                  <MenuItem value={"serviceAccount"}>Auth Token</MenuItem>
+                  <MenuItem value={"oidc"}>External Auth</MenuItem>
+                </Select>
+              </FormControl>
+            )
+          },
+          {
+            title: "Permissions",
+            field: "permissions",
+            initialEditValue: Immutable.fromJS({
+              application_viewer_role: true,
+              component_viewer_role: true,
+              file_viewer_role: true,
+              dependency_viewer_role: true
+            }),
+            render: rowData => this.renderPermissions(rowData),
+            editComponent: props => {
+              return (
+                <div>
+                  {switchItems.map(item => (
+                    <FormControlLabel
+                      key={item.label}
+                      control={
+                        <Switch
+                          checked={!!props.value.get(item.key)}
+                          onChange={() => props.onChange(props.value.set(item.key, !props.value.get(item.key)))}
+                          color="primary"
+                        />
+                      }
+                      label={item.label}
+                    />
+                  ))}
+                </div>
+              );
+            }
+          }
         ]}
-        data={tableData}
+        data={tableData.reverse()}
         options={{
           actionsColumnIndex: -1,
+          addRowPosition: "first",
           padding: "dense",
           draggable: false,
           rowStyle: {
@@ -161,14 +254,23 @@ class UsersDialogRaw extends React.PureComponent<Props, State> {
         // detailPanel={() => this.renderPermissions()}
         // onRowClick={(_event, _rowData, togglePanel) => togglePanel!()}
         editable={{
-          onRowAdd: async newData => {
-            const user: User = Immutable.fromJS({
-              name: newData.name,
-              type: newData.type,
-              clusterRoleNames: clusterRoleNames
-            });
-            dispatch(createUserAction(user));
-          },
+          onRowAdd: newData =>
+            new Promise((resolve, reject) => {
+              if (!newData.name) {
+                dispatch(setErrorNotificationAction("User name is required."));
+                reject();
+              }
+
+              const user: User = Immutable.fromJS({
+                name: newData.name,
+                type: newData.type,
+                clusterRoleNames: newData.permissions
+              });
+              dispatch(createUserAction(user));
+
+              resolve();
+              // reject();
+            }),
           // onRowUpdate: (newData, oldData) =>
           //   new Promise((resolve, reject) => {
           //     setTimeout(() => {
@@ -179,16 +281,21 @@ class UsersDialogRaw extends React.PureComponent<Props, State> {
           //       resolve();
           //     }, 1000);
           //   }),
-          onRowDelete: async oldData => {
-            console.log("oldData", oldData);
-          }
+          onRowDelete: oldData =>
+            new Promise((resolve, reject) => {
+              const user = getUserByName(oldData.name);
+              dispatch(deleteUserAction(user));
+
+              resolve();
+              // reject();
+            })
         }}
       />
     );
   }
 
   public render() {
-    const { open, isLoading } = this.props;
+    const { open } = this.props;
 
     return (
       <div>
@@ -200,7 +307,7 @@ class UsersDialogRaw extends React.PureComponent<Props, State> {
           maxWidth={"md"}
           fullWidth={true}>
           <DialogTitle id="alert-dialog-title">Settings</DialogTitle>
-          <DialogContent>{isLoading ? <Loading /> : this.renderTable()}</DialogContent>
+          <DialogContent>{this.renderTable()}</DialogContent>
           <DialogActions></DialogActions>
         </Dialog>
       </div>

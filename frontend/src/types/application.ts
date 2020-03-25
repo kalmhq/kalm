@@ -139,6 +139,7 @@ export interface LoadApplicationFulfilledAction {
   type: typeof LOAD_APPLICATION_FULFILLED;
   payload: {
     application: Application;
+    podNames: Immutable.List<string>;
   };
 }
 
