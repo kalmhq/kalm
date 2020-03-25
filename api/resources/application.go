@@ -2,6 +2,8 @@ package resources
 
 import (
 	"fmt"
+	metricv1beta1 "k8s.io/metrics/pkg/apis/metrics/v1beta1"
+	"strings"
 	"time"
 
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
@@ -50,8 +52,29 @@ type ComponentStatus struct {
 	CronjobStatus    v1betav1.CronJobStatus  `json:"cronjobStatus,omitempty"`
 	PodInfo          *PodInfo                `json:"podsInfo"`
 
-	// TODO, cpu, memory usage time series
-	Metrics interface{} `json:"metrics"`
+	MetricsList metricv1beta1.PodMetricsList `json:"podMetricsList"`
+	// TODO, aggregate cpu, memory usage time series
+	MetricsSum interface{} `json:"metricsSum"`
+}
+
+// https://github.com/kubernetes/dashboard/blob/master/src/app/backend/resource/pod/metrics.go#L37
+type MetricsSum struct {
+	// todo why pointer of uint64
+
+	// Most recent measure of CPU usage on all cores in nanoseconds.
+	CPUUsage int64 `json:"cpuUsage"`
+	// Pod memory usage in bytes.
+	MemoryUsage int64 `json:"memoryUsage"`
+	// Timestamped samples of CPUUsage over some short period of history
+	CPUUsageHistory []MetricPoint `json:"cpuUsageHistory"`
+	// Timestamped samples of pod memory usage over some short period of history
+	MemoryUsageHistory []MetricPoint `json:"memoryUsageHistory"`
+}
+
+// https://github.com/kubernetes/dashboard/blob/master/src/app/backend/integration/metric/api/types.go#L121
+type MetricPoint struct {
+	Timestamp time.Time `json:"timestamp"`
+	Value     uint64    `json:"value"`
 }
 
 type ApplicationListResponseItem struct {
@@ -188,6 +211,7 @@ func (builder *Builder) buildApplicationListResponseItem(application *v1alpha1.A
 			LabelSelector: labels.Everything().String(),
 			FieldSelector: fields.Everything().String(),
 		}),
+		PodMetricsList: builder.GetPodMetricsListChannel(ns, listOptions),
 	}
 
 	resources, err := resourceChannels.ToResources()
@@ -217,7 +241,7 @@ func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Ap
 			DeploymentStatus: appsV1.DeploymentStatus{},
 			CronjobStatus:    v1betav1.CronJobStatus{},
 			PodInfo:          &PodInfo{},
-			Metrics:          nil, // TODO
+			MetricsSum:       nil, // TODO
 		}
 
 		// TODO fix the default value, there should be a empty string
@@ -231,9 +255,16 @@ func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Ap
 				builder.Logger.Info("Can't find deployment with name %s", deploymentName)
 			} else {
 				componentStatus.DeploymentStatus = deployment.Status
+
 				pods := findPods(resources.PodList, component.Name)
 				componentStatus.PodInfo = getPodsInfo(deployment.Status.Replicas, deployment.Spec.Replicas, pods)
 				componentStatus.PodInfo.Warnings = filterPodWarningEvents(resources.EventList.Items, pods)
+
+				podMetricsList := getPodMetricsListForComponent(deploymentName, resources.PodMetricsList)
+				componentStatus.MetricsList = podMetricsList
+
+				metricsSum := getMetricsSum(podMetricsList)
+				componentStatus.MetricsSum = metricsSum
 			}
 		}
 
@@ -242,9 +273,42 @@ func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Ap
 		//	componentStatus.CronjobStatus = v1betav1.CronJobStatus{}
 		//}
 
+		// todo fill metric info
+
 		res = append(res, componentStatus)
 	}
 	return res
+}
+
+func getPodMetricsListForComponent(componentDpName string, list *metricv1beta1.PodMetricsList) metricv1beta1.PodMetricsList {
+	metricsList := metricv1beta1.PodMetricsList{
+		TypeMeta: list.TypeMeta,
+		ListMeta: list.ListMeta,
+	}
+
+	for _, podMetrics := range list.Items {
+		if !strings.HasPrefix(podMetrics.Name, componentDpName) {
+			continue
+		}
+
+		metricsList.Items = append(metricsList.Items, podMetrics)
+	}
+
+	return metricsList
+}
+
+func getMetricsSum(podMetricsList metricv1beta1.PodMetricsList) (resp MetricsSum) {
+	for _, m := range podMetricsList.Items {
+		for _, c := range m.Containers {
+			cpu := c.Usage.Cpu()
+			mem := c.Usage.Memory()
+
+			resp.CPUUsage += cpu.Value()
+			resp.MemoryUsage += mem.Value()
+		}
+	}
+
+	return
 }
 
 func getPodsInfo(current int32, desired *int32, pods []coreV1.Pod) *PodInfo {
