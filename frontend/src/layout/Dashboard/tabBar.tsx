@@ -64,29 +64,34 @@ const styles = (theme: Theme) =>
     },
     barContainer: {
       height: "100%",
-      width: "1200px",
+      width: "100%",
       margin: "0 auto",
-      position: "relative"
+      position: "relative",
+      padding: "0 24px",
+      display: "flex",
+      alignItems: "baseline",
+      justifyContent: "space-between"
     },
     barTitle: {
       fontSize: "24px",
       fontWeight: "bold",
       padding: "15px 0"
     },
-    barStatus: {
-      position: "absolute",
-      top: "15px",
-      right: "0px",
+    barRight: {
+      display: "flex",
+      alignItems: "center",
+      "& > *": {
+        marginLeft: "8px"
+      }
+    },
+    barAvatar: {
       cursor: "pointer"
     },
     barSettings: {
-      position: "absolute",
-      top: "12px",
-      right: "55px",
       color: "#fff"
     },
     tabs: {
-      width: "1200px",
+      width: "100%",
       position: "absolute",
       bottom: "0"
     },
@@ -144,12 +149,15 @@ const TabBarComponentRaw = ({ classes, dispatch }: Props) => {
     <AppBar id="header" position="relative" className={classes.appBar}>
       <div className={classes.barContainer}>
         <div className={classes.barTitle}>OpenCore Kapp</div>
-        <IconButton className={classes.barSettings} onClick={() => setIsOpenSettings(true)}>
-          <SettingsIcon />
-        </IconButton>
-        <div className={classes.barStatus}>
-          <Avatar>A</Avatar>
+        <div className={classes.barRight}>
+          <IconButton className={classes.barSettings} onClick={() => setIsOpenSettings(true)}>
+            <SettingsIcon />
+          </IconButton>
+          <div className={classes.barAvatar}>
+            <Avatar>A</Avatar>
+          </div>
         </div>
+
         <Tabs
           value={value}
           onChange={handleChange}
