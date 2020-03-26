@@ -54,21 +54,27 @@ type ComponentStatus struct {
 
 	MetricsList metricv1beta1.PodMetricsList `json:"podMetricsList"`
 	// TODO, aggregate cpu, memory usage time series
-	MetricsSum MetricsSum `json:"metricsSum"`
+	ComponentMetricsSum `json:"metricsSum"`
 }
 
 // https://github.com/kubernetes/dashboard/blob/master/src/app/backend/resource/pod/metrics.go#L37
 type MetricsSum struct {
 	// todo why pointer of uint64
 
-	// Most recent measure of CPU usage on all cores in nanoseconds.
+	//// Most recent measure of CPU usage on all cores in nanoseconds.
 	CPUUsage int64 `json:"cpuUsage"`
-	// Pod memory usage in bytes.
+	//// Pod memory usage in bytes.
 	MemoryUsage int64 `json:"memoryUsage"`
 	// Timestamped samples of CPUUsage over some short period of history
 	CPUUsageHistory []MetricPoint `json:"cpuUsageHistory"`
 	// Timestamped samples of pod memory usage over some short period of history
 	MemoryUsageHistory []MetricPoint `json:"memoryUsageHistory"`
+}
+
+type ComponentMetricsSum struct {
+	Name string
+	MetricsSum
+	Pods map[string]MetricsSum
 }
 
 // https://github.com/kubernetes/dashboard/blob/master/src/app/backend/integration/metric/api/types.go#L121
@@ -232,16 +238,18 @@ func (builder *Builder) buildApplicationListResponseItem(application *v1alpha1.A
 func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Application, resources *Resources) []*ComponentStatus {
 	res := []*ComponentStatus{}
 
+	sumMap := getComponentMetricSumList()
+
 	for i := range application.Spec.Components {
 		component := application.Spec.Components[i]
 
 		componentStatus := &ComponentStatus{
-			Name:             component.Name,
-			WorkloadType:     component.WorkLoadType,
-			DeploymentStatus: appsV1.DeploymentStatus{},
-			CronjobStatus:    v1betav1.CronJobStatus{},
-			PodInfo:          &PodInfo{},
-			MetricsSum:       nil, // TODO
+			Name:                component.Name,
+			WorkloadType:        component.WorkLoadType,
+			DeploymentStatus:    appsV1.DeploymentStatus{},
+			CronjobStatus:       v1betav1.CronJobStatus{},
+			PodInfo:             &PodInfo{},
+			//ComponentMetricsSum: ComponentMetricsSum{}, // TODO
 		}
 
 		// TODO fix the default value, there should be a empty string
@@ -252,7 +260,7 @@ func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Ap
 
 			if deployment == nil {
 				// this is not an error, for example if an application is not active, we can't find the deployment
-				builder.Logger.Info("Can't find deployment with name %s", deploymentName)
+				builder.Logger.Infof("Can't find deployment with name %s", deploymentName)
 			} else {
 				componentStatus.DeploymentStatus = deployment.Status
 
@@ -263,8 +271,12 @@ func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Ap
 				podMetricsList := getPodMetricsListForComponent(deploymentName, resources.PodMetricsList)
 				componentStatus.MetricsList = podMetricsList
 
-				metricsSum := getMetricsSum(podMetricsList)
-				componentStatus.MetricsSum = metricsSum
+				//metricsSum := getMetricsSum(podMetricsList)
+				//componentStatus.MetricsSum = metricsSum
+				componentKey := fmt.Sprintf("%s-%s", application.Namespace, component.Name)
+				if v, exist := sumMap[componentKey]; exist {
+					componentStatus.ComponentMetricsSum = v
+				}
 			}
 		}
 
