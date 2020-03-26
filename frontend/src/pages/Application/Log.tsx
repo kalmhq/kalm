@@ -129,7 +129,7 @@ class XtermRaw extends React.PureComponent<XtermProps, XtermState> {
       cursorBlink: false,
       disableStdin: true,
       convertEol: true,
-      fontSize: 12,
+      // fontSize: 12,
       theme: { selection: "rgba(255, 255, 72, 0.5)" }
     });
 
