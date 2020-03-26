@@ -20,16 +20,11 @@ import (
 
 type WSConn struct {
 	*websocket.Conn
-
-	ctx context.Context
-
-	mut          *sync.RWMutex
-	K8sClient    *kubernetes.Clientset
-	IsAuthorized bool
-
+	ctx                        context.Context
+	K8sClient                  *kubernetes.Clientset
+	IsAuthorized               bool
 	subAndUnsubRequestsChannel chan *WSSubscribeOrUnsubscribePodLogRequest
-
-	writeLock *sync.Mutex
+	writeLock                  *sync.Mutex
 }
 
 func (conn *WSConn) WriteJSON(v interface{}) error {
@@ -107,7 +102,7 @@ func isNormalWebsocketCloseError(err error) bool {
 	return websocket.IsCloseError(err, websocket.CloseGoingAway, websocket.CloseNormalClosure, websocket.CloseNoStatusReceived)
 }
 
-func wsReadLoop(conn *WSConn, clientManager *client.ClientManager) (err error) {
+func logWsReadLoop(conn *WSConn, clientManager *client.ClientManager) (err error) {
 	for {
 		_, message, err := conn.ReadMessage()
 
@@ -160,10 +155,8 @@ func wsReadLoop(conn *WSConn, clientManager *client.ClientManager) (err error) {
 					continue
 				}
 
-				conn.mut.Lock()
 				conn.K8sClient = k8sClient
 				conn.IsAuthorized = true
-				conn.mut.Unlock()
 
 				res.Status = StatusOK
 				res.Message = "Auth Successfully"
@@ -171,9 +164,7 @@ func wsReadLoop(conn *WSConn, clientManager *client.ClientManager) (err error) {
 				res.Message = "Invalid Auth Token"
 			}
 		case WSRequestTypeSubscribePodLog, WSRequestTypeUnsubscribePodLog:
-			conn.mut.RLock()
 			isAuthorized := conn.IsAuthorized
-			conn.mut.RUnlock()
 
 			if !isAuthorized {
 				res.Message = "Unauthorized, Please verify yourself first."
@@ -214,7 +205,7 @@ func wsReadLoop(conn *WSConn, clientManager *client.ClientManager) (err error) {
 	}
 }
 
-func wsWriteLoop(conn *WSConn) {
+func logWsWriteLoop(conn *WSConn) {
 	podRegistrations := make(map[string]context.CancelFunc)
 
 	defer func() {
@@ -231,9 +222,7 @@ func wsWriteLoop(conn *WSConn) {
 			key := fmt.Sprintf("%s___%s", m.Namespace, m.PodName)
 
 			if m.Type == WSRequestTypeSubscribePodLog {
-				conn.mut.RLock()
 				k8sClient := conn.K8sClient
-				conn.mut.RUnlock()
 
 				lines := int64(300)
 
@@ -338,7 +327,7 @@ func copyPodLogStreamToWS(ctx context.Context, namespace, podName string, conn *
 	}
 }
 
-func (h *ApiHandler) websocketHandler(c echo.Context) error {
+func (h *ApiHandler) logWebsocketHandler(c echo.Context) error {
 	ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
 
 	if err != nil {
@@ -352,7 +341,6 @@ func (h *ApiHandler) websocketHandler(c echo.Context) error {
 	conn := &WSConn{
 		Conn:                       ws,
 		ctx:                        ctx,
-		mut:                        &sync.RWMutex{},
 		subAndUnsubRequestsChannel: make(chan *WSSubscribeOrUnsubscribePodLogRequest),
 		IsAuthorized:               authInfo != nil && h.clientManager.IsAuthInfoWorking(authInfo) == nil,
 		writeLock:                  &sync.Mutex{},
@@ -377,8 +365,8 @@ func (h *ApiHandler) websocketHandler(c echo.Context) error {
 	defer conn.Close()
 	defer stop()
 
-	go wsWriteLoop(conn)
-	_ = wsReadLoop(conn, h.clientManager)
+	go logWsWriteLoop(conn)
+	_ = logWsReadLoop(conn, h.clientManager)
 
 	return nil
 }
