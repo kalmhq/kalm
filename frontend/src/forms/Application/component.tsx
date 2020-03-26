@@ -237,7 +237,6 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
   };
 
   private handleComponentLikeFormSubmit = async (componentLike: ComponentLike) => {
-    console.log("submit", componentLike.toJS());
     const { dialogFormApplicationComponentIndex } = this.state;
     const { meta, fields } = this.props;
     if (dialogFormApplicationComponentIndex === undefined) {

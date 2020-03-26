@@ -10,6 +10,9 @@ import FolderOpenIcon from "@material-ui/icons/FolderOpen";
 import InsertDriveFileOutlinedIcon from "@material-ui/icons/InsertDriveFileOutlined";
 import { ConfigNode } from "../../types/config";
 import { setCurrentConfigIdChainAction, getConfigPath } from "../../actions/config";
+import { MenuItem, Popper, Grow, Paper, MenuList, ClickAwayListener } from "@material-ui/core";
+import { TDispatch } from "../../types";
+import { getCurrentConfig } from "../../selectors/config";
 
 function TransitionComponent(props: any) {
   const style = useSpring({
@@ -34,6 +37,16 @@ TransitionComponent.propTypes = {
   in: PropTypes.bool
 };
 
+interface StyledTreeItemProps extends TreeItemProps {
+  dispatch: TDispatch;
+  config: ConfigNode;
+  idChain: string[];
+  handleAdd: () => void;
+  handleEdit: () => void;
+  handleDuplicate: () => void;
+  handleDelete: () => void;
+}
+
 const StyledTreeItem = withStyles((theme: any) => ({
   group: {
     marginLeft: 12,
@@ -42,8 +55,92 @@ const StyledTreeItem = withStyles((theme: any) => ({
   },
   content: {
     height: 30
+  },
+  label: {
+    zIndex: -1
   }
-}))((props: TreeItemProps) => <TreeItem {...props} TransitionComponent={TransitionComponent} />);
+}))((props: StyledTreeItemProps) => {
+  const { dispatch, config, idChain, handleAdd, handleEdit, handleDuplicate, handleDelete } = props;
+
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+
+  const handleClick = () => {
+    dispatch(setCurrentConfigIdChainAction(idChain));
+  };
+
+  const handleContextMenu = (event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
+    event.preventDefault();
+    dispatch(setCurrentConfigIdChainAction(idChain));
+    setAnchorEl(event.currentTarget.firstChild as any);
+    event.stopPropagation();
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleListKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === "Tab") {
+      event.preventDefault();
+      setAnchorEl(null);
+    }
+  };
+
+  const copiedProps = { ...props };
+  delete copiedProps.dispatch;
+  delete copiedProps.config;
+  delete copiedProps.idChain;
+  delete copiedProps.handleAdd;
+  delete copiedProps.handleEdit;
+  delete copiedProps.handleDuplicate;
+  delete copiedProps.handleDelete;
+
+  return (
+    <>
+      <TreeItem
+        {...copiedProps}
+        TransitionComponent={TransitionComponent}
+        onClick={handleClick}
+        onContextMenu={handleContextMenu}
+      />
+
+      <Popper
+        open={getConfigPath(config) === getConfigPath(getCurrentConfig()) && Boolean(anchorEl)}
+        anchorEl={anchorEl}
+        role={undefined}
+        transition
+        disablePortal>
+        {({ TransitionProps, placement }) => (
+          <Grow
+            {...TransitionProps}
+            style={{ transformOrigin: placement === "bottom" ? "center top" : "center bottom" }}>
+            <Paper>
+              <ClickAwayListener onClickAway={handleClose}>
+                <MenuList autoFocusItem={Boolean(anchorEl)} id="menu-list-grow" onKeyDown={handleListKeyDown}>
+                  {config.get("type") === "folder" ? (
+                    <MenuItem onClick={handleAdd}>Add</MenuItem>
+                  ) : (
+                    [
+                      <MenuItem key="edit" onClick={handleEdit}>
+                        Edit
+                      </MenuItem>,
+                      <MenuItem key="duplicate" onClick={handleDuplicate}>
+                        Dupliate
+                      </MenuItem>,
+                      <MenuItem key="delete" onClick={handleDelete}>
+                        Delete
+                      </MenuItem>
+                    ]
+                  )}
+                </MenuList>
+              </ClickAwayListener>
+            </Paper>
+          </Grow>
+        )}
+      </Popper>
+    </>
+  );
+});
 
 const useStyles = makeStyles({
   root: {
@@ -53,66 +150,86 @@ const useStyles = makeStyles({
   }
 });
 
-export interface FileTreeProp {
+export interface FileTreeProps {
   rootConfig: ConfigNode;
   dispatch: any;
+  handleAdd: () => void;
+  handleEdit: () => void;
+  handleDuplicate: () => void;
+  handleDelete: () => void;
 }
 
-const renderStyledTreeItem = (config: ConfigNode, idChain: string[], dispatch: any) => {
-  // copy idChain to newIdChain, different memory addresses
-  let newIdChain: string[] = idChain.slice(0);
-  newIdChain.push(config.get("id"));
+export const FileTree = (props: FileTreeProps) => {
+  const classes = useStyles();
 
-  if (config.get("type") === "file") {
+  const { dispatch, rootConfig, handleAdd, handleEdit, handleDuplicate, handleDelete } = props;
+
+  const renderStyledTreeItem = (config: ConfigNode, idChain: string[]) => {
+    // copy idChain to newIdChain, different memory addresses
+    let newIdChain: string[] = idChain.slice(0);
+    newIdChain.push(config.get("id"));
+
+    if (config.get("type") === "file") {
+      return (
+        <StyledTreeItem
+          dispatch={dispatch}
+          config={config}
+          idChain={newIdChain}
+          key={getConfigPath(config)}
+          nodeId={getConfigPath(config)}
+          label={config.get("name")}
+          handleAdd={handleAdd}
+          handleEdit={handleEdit}
+          handleDuplicate={handleDuplicate}
+          handleDelete={handleDelete}
+        />
+      );
+    }
+
+    const childrenItems: any[] = [];
+    config.get("children").forEach((childConfig: ConfigNode) => {
+      // recursive render children
+      childrenItems.push(renderStyledTreeItem(childConfig, newIdChain));
+    });
     return (
       <StyledTreeItem
-        key={config.get("id")}
-        nodeId={config.get("id")}
-        label={config.get("name")}
-        onClick={() => dispatch(setCurrentConfigIdChainAction(newIdChain))}
-      />
+        handleAdd={handleAdd}
+        handleEdit={handleEdit}
+        handleDuplicate={handleDuplicate}
+        handleDelete={handleDelete}
+        dispatch={dispatch}
+        config={config}
+        idChain={newIdChain}
+        endIcon={
+          childrenItems.length === 0 ? (
+            <FolderOpenIcon htmlColor="#f9a825" />
+          ) : (
+            <InsertDriveFileOutlinedIcon htmlColor="#0277bd" />
+          )
+        }
+        key={getConfigPath(config)}
+        nodeId={getConfigPath(config)}
+        label={config.get("name")}>
+        {childrenItems}
+      </StyledTreeItem>
     );
-  }
-
-  const childrenItems: any[] = [];
-  config.get("children").forEach((childConfig: ConfigNode) => {
-    // recursive render children
-    childrenItems.push(renderStyledTreeItem(childConfig, newIdChain, dispatch));
-  });
-  return (
-    <StyledTreeItem
-      endIcon={
-        childrenItems.length === 0 ? (
-          <FolderOpenIcon htmlColor="#f9a825" />
-        ) : (
-          <InsertDriveFileOutlinedIcon htmlColor="#0277bd" />
-        )
-      }
-      key={getConfigPath(config)}
-      nodeId={getConfigPath(config)}
-      label={config.get("name")}>
-      {childrenItems}
-    </StyledTreeItem>
-  );
-};
-
-export const FileTree = (props: FileTreeProp) => {
-  const classes = useStyles();
+  };
 
   return (
     <TreeView
-      onNodeSelect={(event: React.ChangeEvent<{}>, nodeIds: string[]) => {
-        console.log("onNodeSelect", event, nodeIds);
-      }}
-      onNodeToggle={(event: React.ChangeEvent<{}>, nodeIds: string[]) => {
-        console.log("onNodeToggle", event, nodeIds);
-      }}
+      // onNodeSelect={(event: React.ChangeEvent<{}>, nodeIds: string[]) => {
+      //   console.log("onNodeSelect", event, nodeIds);
+      // }}
+      // onNodeToggle={(event: React.ChangeEvent<{}>, nodeIds: string[]) => {
+      //   console.log("onNodeToggle", event, nodeIds);
+      // }}
+      selected={getConfigPath(getCurrentConfig())}
       className={classes.root}
-      defaultExpanded={[props.rootConfig.get("id")]}
+      defaultExpanded={[rootConfig.get("id")]}
       defaultCollapseIcon={<FolderOpenIcon htmlColor="#f9a825" />}
       defaultExpandIcon={<FolderIcon htmlColor="#f9a825" />}
       defaultEndIcon={<InsertDriveFileOutlinedIcon htmlColor="#0277bd" />}>
-      {renderStyledTreeItem(props.rootConfig, [], props.dispatch)}
+      {renderStyledTreeItem(rootConfig, [])}
     </TreeView>
   );
 };
