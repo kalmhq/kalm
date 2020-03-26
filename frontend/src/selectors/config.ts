@@ -1,4 +1,4 @@
-import { ConfigNode } from "../types/config";
+import { ConfigNode, initialRootConfigNode } from "../types/config";
 import { store } from "../store";
 import { CascaderOptionType } from "antd/es/cascader";
 import Immutable from "immutable";
@@ -67,7 +67,7 @@ const configToCascaderOption = (config: ConfigNode): CascaderOptionType => {
     }
   });
 
-  if (config.get("id") === "0") {
+  if (config.get("id") === initialRootConfigNode.get("id")) {
     return {
       value: config.get("id"),
       label: "/",

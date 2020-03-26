@@ -9,7 +9,7 @@ import FolderIcon from "@material-ui/icons/Folder";
 import FolderOpenIcon from "@material-ui/icons/FolderOpen";
 import InsertDriveFileOutlinedIcon from "@material-ui/icons/InsertDriveFileOutlined";
 import { ConfigNode } from "../../types/config";
-import { setCurrentConfigIdChainAction } from "../../actions/config";
+import { setCurrentConfigIdChainAction, getConfigPath } from "../../actions/config";
 
 function TransitionComponent(props: any) {
   const style = useSpring({
@@ -59,34 +59,28 @@ export interface FileTreeProp {
 }
 
 const renderStyledTreeItem = (config: ConfigNode, idChain: string[], dispatch: any) => {
-  let newIdChain: string[] = idChain.slice(0); // copy idChain to newIdChain, different memory addresses
+  // copy idChain to newIdChain, different memory addresses
+  let newIdChain: string[] = idChain.slice(0);
   newIdChain.push(config.get("id"));
-
-  // const currentConfig = getCurrentConfig();
 
   if (config.get("type") === "file") {
     return (
       <StyledTreeItem
-        // icon={<InsertDriveFileOutlinedIcon htmlColor="#0277bd" />}
         key={config.get("id")}
         nodeId={config.get("id")}
         label={config.get("name")}
         onClick={() => dispatch(setCurrentConfigIdChainAction(newIdChain))}
-        // isSelected={config.get("id") === currentConfig.get("id")}
       />
     );
   }
 
   const childrenItems: any[] = [];
   config.get("children").forEach((childConfig: ConfigNode) => {
-    // 递归渲染子树
+    // recursive render children
     childrenItems.push(renderStyledTreeItem(childConfig, newIdChain, dispatch));
   });
   return (
     <StyledTreeItem
-      // icon={<FolderIcon htmlColor="#f9a825" />}
-      // expandIcon={<FolderIcon htmlColor="#f9a825" />}
-      // collapseIcon={<FolderOpenIcon htmlColor="#f9a825" />}
       endIcon={
         childrenItems.length === 0 ? (
           <FolderOpenIcon htmlColor="#f9a825" />
@@ -94,8 +88,8 @@ const renderStyledTreeItem = (config: ConfigNode, idChain: string[], dispatch: a
           <InsertDriveFileOutlinedIcon htmlColor="#0277bd" />
         )
       }
-      key={config.get("id")}
-      nodeId={config.get("id")}
+      key={getConfigPath(config)}
+      nodeId={getConfigPath(config)}
       label={config.get("name")}>
       {childrenItems}
     </StyledTreeItem>
@@ -107,32 +101,18 @@ export const FileTree = (props: FileTreeProp) => {
 
   return (
     <TreeView
-      // onClick={v => console.log(v)}
+      onNodeSelect={(event: React.ChangeEvent<{}>, nodeIds: string[]) => {
+        console.log("onNodeSelect", event, nodeIds);
+      }}
+      onNodeToggle={(event: React.ChangeEvent<{}>, nodeIds: string[]) => {
+        console.log("onNodeToggle", event, nodeIds);
+      }}
       className={classes.root}
       defaultExpanded={[props.rootConfig.get("id")]}
       defaultCollapseIcon={<FolderOpenIcon htmlColor="#f9a825" />}
       defaultExpandIcon={<FolderIcon htmlColor="#f9a825" />}
       defaultEndIcon={<InsertDriveFileOutlinedIcon htmlColor="#0277bd" />}>
       {renderStyledTreeItem(props.rootConfig, [], props.dispatch)}
-
-      {/* <StyledTreeItem nodeId="1" label="Main">
-        <StyledTreeItem nodeId="2" label="Hello" />
-        <StyledTreeItem nodeId="3" label="Subtree with children">
-          <StyledTreeItem nodeId="6" label="Hello" />
-          <StyledTreeItem nodeId="7" label="Sub-subtree with children">
-            <StyledTreeItem nodeId="9" label="Child 1" />
-            <StyledTreeItem nodeId="10" label="Child 2" />
-            <StyledTreeItem nodeId="11" label="Child 3" />
-          </StyledTreeItem>
-          <StyledTreeItem
-            nodeId="8"
-            label="Hello"
-            onClick={() => console.log("hello")}
-          />
-        </StyledTreeItem>
-        <StyledTreeItem nodeId="4" label="World" />
-        <StyledTreeItem nodeId="5" label="Something something" />
-      </StyledTreeItem> */}
     </TreeView>
   );
 };

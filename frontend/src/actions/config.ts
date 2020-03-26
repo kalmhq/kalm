@@ -11,9 +11,11 @@ import {
   SET_CURRENT_CONFIG_ID_CHAIN,
   LOAD_CONFIGS_PENDING,
   LOAD_CONFIGS_FULFILLED,
-  ConfigFile
+  ConfigFile,
+  initialRootConfigNode
 } from "../types/config";
 import { ThunkResult } from "../types";
+import { setSuccessNotificationAction } from "./notification";
 
 export const createConfigAction = (config: ConfigNode): ThunkResult<Promise<void>> => {
   return async dispatch => {
@@ -22,6 +24,9 @@ export const createConfigAction = (config: ConfigNode): ThunkResult<Promise<void
     if (config.get("type") === "file") {
       const configFile = configToConfigFile(config);
       await createKappFile(convertToCRDFile(configFile));
+      dispatch(setSuccessNotificationAction("Create config successful."));
+    } else {
+      dispatch(setSuccessNotificationAction("Create folder successful."));
     }
 
     dispatch({
@@ -47,6 +52,7 @@ export const duplicateConfigAction = (config: ConfigNode): ThunkResult<Promise<v
 
     const configFile = configToConfigFile(config);
     await createKappFile(convertToCRDFile(configFile));
+    dispatch(setSuccessNotificationAction("Create config successful."));
 
     dispatch({
       type: DUPLICATE_CONFIG,
@@ -63,6 +69,7 @@ export const updateConfigAction = (config: ConfigNode): ThunkResult<Promise<void
   return async dispatch => {
     const configFile = configToConfigFile(config);
     await updateKappFile(convertToCRDFile(configFile));
+    dispatch(setSuccessNotificationAction("Update config successful."));
 
     dispatch({
       type: UPDATE_CONFIG,
@@ -81,8 +88,9 @@ export const deleteConfigAction = (config: ConfigNode): ThunkResult<Promise<void
   return async dispatch => {
     const configFile = configToConfigFile(config);
     await deleteKappFile(convertToCRDFile(configFile));
+    dispatch(setSuccessNotificationAction("Delete config successful."));
 
-    dispatch(setCurrentConfigIdChainAction(["0"]));
+    dispatch(setCurrentConfigIdChainAction([initialRootConfigNode.get("id")]));
     dispatch({
       type: DELETE_CONFIG,
       payload: { config }
@@ -116,14 +124,25 @@ export const loadConfigsAction = (): ThunkResult<Promise<void>> => {
   };
 };
 
-export const configToConfigFile = (config: ConfigNode): ConfigFile => {
-  const ancestorIds = config.get("ancestorIds")!.toArray() || [];
+export const getConfigPath = (config: ConfigNode): string => {
+  if (config.get("id") === initialRootConfigNode.get("id")) {
+    return "/";
+  }
+
+  const ancestorIds = config.get("ancestorIds") ? config.get("ancestorIds")!.toArray() : [];
 
   let path = "";
   for (let i = 1; i <= ancestorIds.length - 1; i++) {
     path = path + "/" + ancestorIds[i];
   }
   path = path + "/" + config.get("name");
+
+  return path;
+};
+
+export const configToConfigFile = (config: ConfigNode): ConfigFile => {
+  const path = getConfigPath(config);
+
   const configFile: ConfigFile = Immutable.fromJS({
     id: config.get("id"),
     resourceVersion: config.get("resourceVersion"),
@@ -137,15 +156,10 @@ export const configToConfigFile = (config: ConfigNode): ConfigFile => {
 
 // file list to file tree
 export const configsToConfigNode = (configs: ConfigFile[]): ConfigNode => {
-  let rootConfig: ConfigNode = Immutable.fromJS({
-    id: "0",
-    type: "folder",
-    name: "/",
-    content: "",
-    children: {}
-  });
+  let rootConfig = initialRootConfigNode;
 
   for (let configFile of configs) {
+    const ancestorIds: string[] = [initialRootConfigNode.get("id")];
     const immutablePath: string[] = ["children"];
     const paths = configFile.get("path").split("/");
     // eg    /a/b/c/d.yml  =>  ["", "a", "b", "c", "d.yml"]
@@ -157,7 +171,8 @@ export const configsToConfigNode = (configs: ConfigFile[]): ConfigNode => {
         type: "folder",
         name: paths[i],
         content: "",
-        children: {}
+        children: {},
+        ancestorIds
       });
       rootConfig = rootConfig.updateIn(immutablePath, (originConfig: ConfigNode) => {
         if (originConfig) {
@@ -165,6 +180,7 @@ export const configsToConfigNode = (configs: ConfigFile[]): ConfigNode => {
         }
         return config;
       });
+      ancestorIds.push(paths[i]);
       immutablePath.push("children");
     }
     immutablePath.push(configFile.get("id"));
@@ -174,7 +190,8 @@ export const configsToConfigNode = (configs: ConfigFile[]): ConfigNode => {
       type: "file",
       name: configFile.get("name"),
       content: configFile.get("content"),
-      children: {}
+      children: {},
+      ancestorIds
     });
     rootConfig = rootConfig.updateIn(immutablePath, () => config);
   }
