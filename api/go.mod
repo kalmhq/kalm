@@ -3,7 +3,9 @@ module github.com/kapp-staging/kapp/api
 go 1.12
 
 require (
+	github.com/aws/aws-sdk-go v1.25.48 // indirect
 	github.com/davecgh/go-spew v1.1.1
+	github.com/google/pprof v0.0.0-20190723021845-34ac40c74b70 // indirect
 	github.com/gorilla/websocket v1.4.2
 	github.com/kapp-staging/kapp/controller v0.1.0
 	github.com/joho/godotenv v1.3.0

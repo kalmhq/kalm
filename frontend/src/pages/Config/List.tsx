@@ -15,10 +15,10 @@ import SyntaxHighlighter from "react-syntax-highlighter";
 import { monokai } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import { ConfigNewDialog } from "../../widgets/ConfigNewDialog";
 import { ConfigEditDialog } from "../../widgets/ConfigEditDialog";
-import { setSuccessNotificationAction, setErrorNotificationAction } from "../../actions/notification";
+import { setErrorNotificationAction } from "../../actions/notification";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
 import { loadConfigsAction } from "../../actions/config";
-import { ConfigNode } from "../../types/config";
+import { ConfigNode, initialRootConfigNode } from "../../types/config";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -103,7 +103,6 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
     const { dispatch } = this.props;
     try {
       await dispatch(deleteConfigAction(getCurrentConfig()));
-      await dispatch(setSuccessNotificationAction("Successfully delete an config"));
     } catch {
       dispatch(setErrorNotificationAction("Something wrong"));
     }
@@ -145,7 +144,7 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
         tmpConfig = tmpConfig.get("children").get(configId) as ConfigNode;
       }
 
-      if (tmpConfig.get("id") === "0") {
+      if (tmpConfig.get("id") === initialRootConfigNode.get("id")) {
         links.push(
           <Link key={configId} color="inherit" onClick={() => console.log("link", configId)}>
             {""}

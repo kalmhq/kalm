@@ -18,14 +18,23 @@ export type ConfigFile = ImmutableMap<{
 }>;
 
 export type ConfigNode = ImmutableMap<{
-  id: string; // for folder is split path, for file is name in metadata
-  resourceVersion?: string;
   type: "folder" | "file";
-  name: string; // split path
+  id: string; // for folder is display name, for file is metadata name
+  name: string; // display name
   content: string;
   children: Immutable.OrderedMap<string, ConfigNode>;
-  ancestorIds?: Immutable.List<string>;
+  ancestorIds: Immutable.List<string>;
+  resourceVersion?: string;
 }>;
+
+export const initialRootConfigNode: ConfigNode = Immutable.fromJS({
+  type: "folder",
+  id: "/",
+  name: "/",
+  content: "",
+  children: {},
+  ancestorIds: []
+});
 
 export interface LoadConfigsPendingAction {
   type: typeof LOAD_CONFIGS_PENDING;

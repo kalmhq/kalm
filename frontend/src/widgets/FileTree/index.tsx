@@ -9,7 +9,7 @@ import FolderIcon from "@material-ui/icons/Folder";
 import FolderOpenIcon from "@material-ui/icons/FolderOpen";
 import InsertDriveFileOutlinedIcon from "@material-ui/icons/InsertDriveFileOutlined";
 import { ConfigNode } from "../../types/config";
-import { setCurrentConfigIdChainAction } from "../../actions/config";
+import { setCurrentConfigIdChainAction, getConfigPath } from "../../actions/config";
 
 function TransitionComponent(props: any) {
   const style = useSpring({
@@ -88,8 +88,8 @@ const renderStyledTreeItem = (config: ConfigNode, idChain: string[], dispatch: a
           <InsertDriveFileOutlinedIcon htmlColor="#0277bd" />
         )
       }
-      key={config.get("id")}
-      nodeId={config.get("id")}
+      key={getConfigPath(config)}
+      nodeId={getConfigPath(config)}
       label={config.get("name")}>
       {childrenItems}
     </StyledTreeItem>
@@ -101,14 +101,12 @@ export const FileTree = (props: FileTreeProp) => {
 
   return (
     <TreeView
-      // doesn't support onNodeSelect now. but is alreay in doc: https://material-ui.com/zh/api/tree-view/
-      // @ts-ignore
-      // onNodeSelect={(event, value) => {
-      //   console.log("onNodeSelect", event, value);
-      // }}
-      // onNodeToggle={(event, nodeIds) => {
-      //   console.log("onNodeToggle", event, nodeIds);
-      // }}
+      onNodeSelect={(event: React.ChangeEvent<{}>, nodeIds: string[]) => {
+        console.log("onNodeSelect", event, nodeIds);
+      }}
+      onNodeToggle={(event: React.ChangeEvent<{}>, nodeIds: string[]) => {
+        console.log("onNodeToggle", event, nodeIds);
+      }}
       className={classes.root}
       defaultExpanded={[props.rootConfig.get("id")]}
       defaultCollapseIcon={<FolderOpenIcon htmlColor="#f9a825" />}
