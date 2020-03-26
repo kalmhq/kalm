@@ -54,7 +54,7 @@ type ComponentStatus struct {
 
 	MetricsList metricv1beta1.PodMetricsList `json:"podMetricsList"`
 	// TODO, aggregate cpu, memory usage time series
-	MetricsSum interface{} `json:"metricsSum"`
+	MetricsSum MetricsSum `json:"metricsSum"`
 }
 
 // https://github.com/kubernetes/dashboard/blob/master/src/app/backend/resource/pod/metrics.go#L37
