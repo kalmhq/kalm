@@ -59,34 +59,28 @@ export interface FileTreeProp {
 }
 
 const renderStyledTreeItem = (config: ConfigNode, idChain: string[], dispatch: any) => {
-  let newIdChain: string[] = idChain.slice(0); // copy idChain to newIdChain, different memory addresses
+  // copy idChain to newIdChain, different memory addresses
+  let newIdChain: string[] = idChain.slice(0);
   newIdChain.push(config.get("id"));
-
-  // const currentConfig = getCurrentConfig();
 
   if (config.get("type") === "file") {
     return (
       <StyledTreeItem
-        // icon={<InsertDriveFileOutlinedIcon htmlColor="#0277bd" />}
         key={config.get("id")}
         nodeId={config.get("id")}
         label={config.get("name")}
         onClick={() => dispatch(setCurrentConfigIdChainAction(newIdChain))}
-        // isSelected={config.get("id") === currentConfig.get("id")}
       />
     );
   }
 
   const childrenItems: any[] = [];
   config.get("children").forEach((childConfig: ConfigNode) => {
-    // 递归渲染子树
+    // recursive render children
     childrenItems.push(renderStyledTreeItem(childConfig, newIdChain, dispatch));
   });
   return (
     <StyledTreeItem
-      // icon={<FolderIcon htmlColor="#f9a825" />}
-      // expandIcon={<FolderIcon htmlColor="#f9a825" />}
-      // collapseIcon={<FolderOpenIcon htmlColor="#f9a825" />}
       endIcon={
         childrenItems.length === 0 ? (
           <FolderOpenIcon htmlColor="#f9a825" />
@@ -107,7 +101,6 @@ export const FileTree = (props: FileTreeProp) => {
 
   return (
     <TreeView
-      // onClick={v => console.log(v)}
       className={classes.root}
       defaultExpanded={[props.rootConfig.get("id")]}
       defaultCollapseIcon={<FolderOpenIcon htmlColor="#f9a825" />}
