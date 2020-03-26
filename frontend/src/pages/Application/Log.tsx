@@ -404,7 +404,7 @@ export class LogStream extends React.PureComponent<Props, State> {
         const terminal = this.terminals.get(data.podName);
         if (terminal && terminal.xterm) {
           terminal.xterm.writeln(data.data);
-          terminal.xterm.writeln("Please reload later");
+          terminal.xterm.writeln("\n\u001b[1;31mPod log stream disconnected\u001b[0m");
         }
         return;
       }
