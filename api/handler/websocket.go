@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/gorilla/websocket"
 	"github.com/kapp-staging/kapp/api/client"
+	"github.com/kapp-staging/kapp/api/utils"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 	"io"
@@ -93,6 +94,7 @@ type WSPodLogDisconnectedResponse struct {
 	Type      WSResponseType `json:"type"`
 	Namespace string         `json:"namespace"`
 	PodName   string         `json:"podName"`
+	Data      string         `json:"data"`
 }
 
 var upgrader = websocket.Upgrader{
@@ -221,16 +223,12 @@ func wsWriteLoop(conn *WSConn) {
 		}
 	}()
 
-	getKeyName := func(ns, podName string) string {
-		return fmt.Sprintf("%s___%s", ns, podName)
-	}
-
 	for {
 		select {
 		case <-conn.ctx.Done():
 			return
 		case m := <-conn.subAndUnsubRequestsChannel:
-			key := getKeyName(m.Namespace, m.PodName)
+			key := fmt.Sprintf("%s___%s", m.Namespace, m.PodName)
 
 			if m.Type == WSRequestTypeSubscribePodLog {
 				conn.mut.RLock()
@@ -249,6 +247,12 @@ func wsWriteLoop(conn *WSConn) {
 
 				if err != nil {
 					log.Error(err)
+					_ = conn.WriteJSON(&WSPodLogDisconnectedResponse{
+						Type:      WSResponseTypePodLogDisconnected,
+						Namespace: m.Namespace,
+						PodName:   m.PodName,
+						Data:      err.Error(),
+					})
 					continue
 				}
 
@@ -285,7 +289,9 @@ func copyPodLogStreamToWS(ctx context.Context, namespace, podName string, conn *
 		})
 	}()
 
-	buf := make([]byte, 1024)
+	buf := utils.BufferPool.Get()
+	defer utils.BufferPool.Put(buf)
+
 	bufChan := make(chan []byte)
 
 	go func() {

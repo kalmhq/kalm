@@ -4,7 +4,7 @@ import Typography from "@material-ui/core/Typography";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { InjectedFormProps } from "redux-form";
-import { Field, getFormValues, reduxForm } from "redux-form/immutable";
+import { Field, getFormValues, reduxForm, getFormSyncErrors } from "redux-form/immutable";
 import { RootState } from "../../reducers";
 import { HelperContainer } from "../../widgets/Helper";
 import { CustomTextField, RenderSelectField, RenderTextField } from "../Basic";
@@ -21,11 +21,15 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import Immutable from "immutable";
 import { ComponentLike, workloadTypeCronjob, workloadTypeServer } from "../../types/componentTemplate";
 import { Volumes } from "./volumes";
+import ErrorIcon from "@material-ui/icons/Error";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
+  const syncErrors = getFormSyncErrors("componentLike")(state);
+
   return {
-    values
+    values,
+    syncErrors
   };
 };
 
@@ -51,6 +55,13 @@ const styles = (theme: Theme) =>
     },
     displayBlock: {
       display: "block"
+    },
+    summaryError: {
+      color: "#f44336",
+      display: "flex"
+    },
+    summaryIcon: {
+      marginLeft: "8px"
     }
   });
 
@@ -568,19 +579,62 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private handleChangePanel(key: string) {
+    if (this.state.currentPanel === key) {
+      this.setState({ currentPanel: "" });
+      return;
+    }
     this.setState({ currentPanel: key });
   }
 
   private renderPanel(key: string, title: string, content: any): React.ReactNode {
-    const { classes } = this.props;
+    const { classes, syncErrors, anyTouched } = this.props;
+
+    const errors: { [key: string]: any } = syncErrors;
+    const fieldNames = this.getPanelFieldNames(key);
+
+    let hasError = false;
+    if (anyTouched) {
+      fieldNames.forEach(name => {
+        if (errors[name]) {
+          hasError = true;
+        }
+      });
+    }
+
+    console.log("syncErrors", syncErrors);
+    console.log("anyTouched", anyTouched);
+
     return (
       <ExpansionPanel expanded={key === this.state.currentPanel} onChange={() => this.handleChangePanel(key)}>
         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id="panel1a-header">
-          {title}
+          <div className={hasError ? classes.summaryError : ""}>
+            {title} {hasError ? <ErrorIcon className={classes.summaryIcon} /> : null}
+          </div>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails className={classes.displayBlock}>{content}</ExpansionPanelDetails>
       </ExpansionPanel>
     );
+  }
+
+  private getPanelFieldNames(panelName: string): string[] {
+    switch (panelName) {
+      case "basic":
+        return ["name", "image", "workloadType", "command", "args"];
+      case "envs":
+        return ["env"];
+      case "ports":
+        return ["ports"];
+      case "resources":
+        return ["cpu", "memory"];
+      case "volumes":
+        return ["volumes"];
+      case "advanced":
+        return ["restartStrategy", "terminationGracePeriodSeconds", "dnsPolicy"];
+      case "plugins":
+        return ["plugins"];
+      default:
+        return [];
+    }
   }
 
   public render() {
