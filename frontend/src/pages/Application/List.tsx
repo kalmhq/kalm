@@ -37,6 +37,7 @@ import ArchiveIcon from "@material-ui/icons/Archive";
 import { getApplicationByName, duplicateApplicationName } from "../../selectors/application";
 import { ApplicationListItem } from "../../types/application";
 import ViewHeadlineIcon from "@material-ui/icons/ViewHeadline";
+import PlayArrowIcon from "@material-ui/icons/PlayArrow";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
@@ -379,6 +380,16 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                 );
               }}>
               <ViewHeadlineIcon />
+            </IconButton>
+
+            <IconButton
+              aria-label="exec"
+              onClick={() => {
+                dispatch(
+                  push(`/applications/${applicationListItem.get("namespace")}/${applicationListItem.get("name")}/shells`)
+                );
+              }}>
+              <PlayArrowIcon />
             </IconButton>
 
             <IconButton

@@ -11,6 +11,7 @@ const breadcrumbNameMap: { [key: string]: string } = {
   "/applications": "Applications",
   "/applications/new": "New",
   "/applications/:namespace/:applicationName/logs": "Logs",
+  "/applications/:namespace/:applicationName/shells": "Shells",
   "/applications/:namespace/:applicationName/edit": "Edit",
   "/componenttemplates": "Component Templates",
   "/componenttemplates/new": "New",

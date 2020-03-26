@@ -75,7 +75,8 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gV1.DELETE("/secrets/:name", h.handleDeleteSecrets)
 
 	gv1Alpha1 := e.Group("/v1alpha1")
-	gv1Alpha1.GET("/logs", h.websocketHandler)
+	gv1Alpha1.GET("/logs", h.logWebsocketHandler)
+	gv1Alpha1.GET("/exec", h.execWebsocketHandler)
 
 	gv1Alpha1WithAuth := gv1Alpha1.Group("", h.AuthClientMiddleware)
 	gv1Alpha1WithAuth.GET("/applications", h.handleGetApplications)
