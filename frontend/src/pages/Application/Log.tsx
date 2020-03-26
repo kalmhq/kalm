@@ -1,21 +1,19 @@
-import { Chip, createStyles, IconButton, Paper, TextField, Theme, withStyles } from "@material-ui/core";
+import { Chip, createStyles, Paper, TextField, Theme, withStyles } from "@material-ui/core";
 import { WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
-import CloseIcon from "@material-ui/icons/Close";
 import { Autocomplete, AutocompleteProps, UseAutocompleteProps } from "@material-ui/lab";
 import { replace } from "connected-react-router";
 import debug from "debug";
-import React, { RefObject } from "react";
+import queryString from "query-string";
+import React from "react";
 import ReconnectingWebSocket from "reconnecting-websocket";
-import { Terminal } from "xterm";
-import { FitAddon } from "xterm-addon-fit";
-import { SearchAddon } from "xterm-addon-search";
 import "xterm/css/xterm.css";
 import { k8sWsPrefix } from "../../actions/kubernetesApi";
 import { Breadcrumb } from "../../widgets/Breadcrumbs";
 import { Loading } from "../../widgets/Loading";
 import { ApplicationItemDataWrapper, WithApplicationsDataProps } from "./ItemDataWrapper";
-import queryString from "query-string";
+import { Xterm, XtermRaw } from "./Xterm";
+import { ITerminalOptions } from "xterm";
 
 const logger = debug("ws");
 const detailedLogger = debug("ws:details");
@@ -37,6 +35,20 @@ const logDocs =
 \u001b[1;32m3\u001b[0m. The url is changing with your choices, you can share this url with other colleagues who has permissions.
 
 \u001b[1;32m4\u001b[0m. Only the latest logs of each pod are displayed. If you want query older logs with advanced tool, please try learn about kapp log dependency.`;
+
+const shellDocs =
+  " _____  _          _ _   _______          _   _____           _                   _   _                 \n" +
+  "/ ____ | |        | | | |__   __|        | | |_   _|         | |                 | | (_)                \n" +
+  "| (___ | |__   ___| | |    | | ___   ___ | |   | |  _ __  ___| |_ _ __ _   _  ___| |_ _  ___  _ __  ___ \n" +
+  "\\___  \\| '_ \\ / _ \\ | |    | |/ _ \\ / _ \\| |   | | | '_ \\/ __| __| '__| | | |/ __| __| |/ _ \\| '_ \\/ __|\n" +
+  "____)  | | | |  __/ | |    | | (_) | (_) | |  _| |_| | | \\__ \\ |_| |  | |_| | (__| |_| | (_) | | | \\__ \\\n" +
+  "|_____/|_| |_|\\___|_|_|    |_|\\___/ \\___/|_| |_____|_| |_|___/\\__|_|   \\__,_|\\___|\\__|_|\\___/|_| |_|___/\n" +
+  "\n\n\n\n" +
+  `\u001b[1;32m1\u001b[0m. Select the pod you are following in the selection menu above.
+
+\u001b[1;32m2\u001b[0m. The select supports multiple selections, you can switch the shell sessions by clicking on the pod's tab.
+
+\u001b[1;32m3\u001b[0m. The url is changing with your choices, you can share this url with other colleagues who has permissions.`;
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -77,189 +89,6 @@ const MyAutocomplete = withStyles(autocompleteStyles)(
   }
 );
 
-interface XtermProps extends WithStyles<typeof xtermStyles> {
-  show: boolean;
-  initializedContent?: string;
-}
-
-interface XtermState {
-  showSearch: boolean;
-  searchValue: string;
-}
-
-const xtermStyles = (theme: Theme) =>
-  createStyles({
-    root: {
-      position: "relative",
-      "& .terminal.xterm": {
-        padding: 10
-      }
-    },
-    searchArea: {
-      position: "absolute",
-      top: 0,
-      right: 0,
-      padding: theme.spacing(1),
-      zIndex: 999,
-      display: "flex",
-      alignItems: "center",
-      background: "#f1f1f1",
-      borderBottomLeftRadius: "3px",
-      "& .MuiInputBase-root": {
-        background: "white",
-        width: 250,
-        marginRight: theme.spacing(1)
-      }
-    }
-  });
-
-class XtermRaw extends React.PureComponent<XtermProps, XtermState> {
-  private myRef: RefObject<HTMLDivElement>;
-  public xterm: Terminal;
-  public fitAddon: FitAddon;
-  public searchAddon: SearchAddon;
-  private shown: boolean = false;
-
-  private searchInputRef: React.RefObject<HTMLInputElement> = React.createRef();
-
-  constructor(props: any) {
-    super(props);
-    this.myRef = React.createRef();
-    this.xterm = new Terminal({
-      cursorBlink: false,
-      disableStdin: true,
-      convertEol: true,
-      // fontSize: 12,
-      theme: { selection: "rgba(255, 255, 72, 0.5)" }
-    });
-
-    this.fitAddon = new FitAddon();
-    this.searchAddon = new SearchAddon();
-    this.xterm.loadAddon(this.fitAddon);
-    this.xterm.loadAddon(this.searchAddon);
-
-    this.state = {
-      showSearch: false,
-      searchValue: ""
-    };
-  }
-
-  componentDidUpdate(_prevProps: XtermProps, prevState: XtermState) {
-    if (this.props.show) {
-      if (!this.shown) {
-        this.xterm.open(this.myRef.current!);
-        this.shown = true;
-      }
-
-      this.fitAddon.fit();
-    }
-
-    if (!prevState.showSearch && this.state.showSearch) {
-      this.searchInputRef.current!.focus();
-      this.searchInputRef.current!.select();
-    }
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener("keydown", this.keyDownHander as any);
-  }
-
-  componentDidMount() {
-    if (this.props.show) {
-      this.shown = true;
-      this.xterm.open(this.myRef.current!);
-      if (this.props.initializedContent) {
-        this.xterm.write(this.props.initializedContent);
-      }
-      this.fitAddon.fit();
-    }
-
-    window.addEventListener("keydown", this.keyDownHander as any);
-  }
-
-  keyDownHander = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (!this.props.show) {
-      return;
-    }
-
-    if (e.keyCode === 70 && (e.ctrlKey || e.metaKey)) {
-      if (this.state.showSearch) {
-        this.searchInputRef.current!.focus();
-        this.searchInputRef.current!.select();
-      } else {
-        this.setState({ showSearch: true });
-      }
-
-      e.preventDefault();
-    } else if (e.keyCode === 27) {
-      this.setState({ showSearch: false });
-    }
-  };
-
-  closeSearch = () => {
-    this.setState({ showSearch: false });
-  };
-
-  renderSearchInput = () => {
-    const { classes } = this.props;
-    const { showSearch, searchValue } = this.state;
-
-    if (!showSearch) {
-      return null;
-    }
-
-    return (
-      <div className={classes.searchArea}>
-        <TextField
-          autoFocus
-          variant="outlined"
-          placeholder="Search in terminal"
-          size="small"
-          onChange={this.onSearch}
-          value={searchValue}
-          onKeyDown={this.onSearchInputKeyDown}
-          inputRef={this.searchInputRef}
-        />
-        <IconButton size="small" onClick={this.closeSearch}>
-          <CloseIcon />
-        </IconButton>
-      </div>
-    );
-  };
-
-  onSearchInputKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.keyCode === 13) {
-      this.searchAddon.findNext(this.state.searchValue, { caseSensitive: false, incremental: false });
-    } else if (e.keyCode === 27) {
-      this.setState({ showSearch: false });
-    }
-  };
-
-  onSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = event.target.value;
-    this.setState({ searchValue: newValue });
-    this.searchAddon.findNext(newValue, { caseSensitive: false, incremental: true });
-
-    const selectionText = this.xterm.getSelection();
-    if (selectionText.toLocaleLowerCase() !== newValue.toLocaleLowerCase()) {
-      this.xterm.clearSelection();
-    }
-  };
-
-  render() {
-    const { classes } = this.props;
-
-    return (
-      <div className={classes.root}>
-        {this.renderSearchInput()}
-        <div ref={this.myRef} style={{ height: 700 }}></div>
-      </div>
-    );
-  }
-}
-
-const Xterm = withStyles(xtermStyles)(XtermRaw);
-
 interface Props extends WithApplicationsDataProps, WithStyles<typeof styles> {}
 
 interface State {
@@ -280,7 +109,7 @@ export class LogStream extends React.PureComponent<Props, State> {
   private wsQueueMessages: any[] = [];
   private terminals: Map<string, XtermRaw> = new Map();
   private initalizedFromQuery: boolean = false;
-
+  private isLog: boolean; // TODO: refactor this flag
   constructor(props: Props) {
     super(props);
 
@@ -288,6 +117,8 @@ export class LogStream extends React.PureComponent<Props, State> {
       value: "",
       subscribedPodNames: new Set()
     };
+
+    this.isLog = window.location.pathname.includes("logs");
 
     this.ws = this.connectWs();
   }
@@ -364,7 +195,7 @@ export class LogStream extends React.PureComponent<Props, State> {
   }
 
   connectWs = () => {
-    const ws = new ReconnectingWebSocket(`${k8sWsPrefix}/v1alpha1/logs`);
+    const ws = new ReconnectingWebSocket(`${k8sWsPrefix}/v1alpha1/${this.isLog ? "logs" : "exec"}`);
 
     ws.onopen = evt => {
       logger("WS Connection connected.");
@@ -391,24 +222,33 @@ export class LogStream extends React.PureComponent<Props, State> {
       detailedLogger("Received Message: " + evt.data);
       const data = JSON.parse(evt.data);
 
-      if (data.type === "logStreamUpdate") {
+      if (data.type === "logStreamUpdate" || data.type === "execStreamUpdate") {
         const terminal = this.terminals.get(data.podName);
         if (terminal && terminal.xterm) {
           terminal.xterm.write(data.data);
         }
+
         return;
       }
 
       if (data.type === "logStreamDisconnected") {
         const terminal = this.terminals.get(data.podName);
         if (terminal && terminal.xterm) {
-          terminal.xterm.writeln(data.data);
-          terminal.xterm.writeln("\n\u001b[1;31mPod log stream disconnected\u001b[0m");
+          terminal.xterm.write(data.data);
+          terminal.xterm.writeln("\n\u001b[1;31mPod log stream disconnected\u001b[0m\n");
         }
         return;
       }
 
-      // TODO use more meaningful type
+      if (data.type === "execStreamDisconnected") {
+        const terminal = this.terminals.get(data.podName);
+        if (terminal && terminal.xterm) {
+          terminal.xterm.write(data.data);
+          terminal.xterm.writeln("\n\u001b[1;31mTerminal disconnected\u001b[0m\n");
+        }
+        return;
+      }
+
       if ((data.type === "authResult" && data.status === 0) || (data.type === "authStatus" && data.status === 0)) {
         afterWsAuthSuccess();
         return;
@@ -435,9 +275,10 @@ export class LogStream extends React.PureComponent<Props, State> {
   subscribe = (podName: string) => {
     logger("subscribe", podName);
     const { namespace } = this.props;
+
     this.sendOrQueueMessage(
       JSON.stringify({
-        type: "subscribePodLog",
+        type: this.isLog ? "subscribePodLog" : "execStartSession",
         podName: podName,
         namespace: namespace
       })
@@ -446,9 +287,10 @@ export class LogStream extends React.PureComponent<Props, State> {
 
   unsubscribe = (podName: string) => {
     const { namespace } = this.props;
+    logger("unsubscribe", podName);
     this.sendOrQueueMessage(
       JSON.stringify({
-        type: "unsubscribePodLog",
+        type: this.isLog ? "unsubscribePodLog" : "execEndSession",
         podName: podName,
         namespace: namespace
       })
@@ -527,6 +369,72 @@ export class LogStream extends React.PureComponent<Props, State> {
     );
   }
 
+  private renderLogTerminal = (podName: string, initializedContent?: string) => {
+    const { value } = this.state;
+    return (
+      <Xterm
+        innerRef={el => this.saveTerminal(podName, el)}
+        show={value === podName}
+        initializedContent={initializedContent}
+        terminalOptions={{
+          cursorBlink: false,
+          cursorStyle: "bar",
+          cursorWidth: 0,
+          disableStdin: true,
+          convertEol: true,
+          // fontSize: 12,
+          theme: { selection: "rgba(255, 255, 72, 0.5)" }
+        }}
+      />
+    );
+  };
+
+  private renderExecTerminal = (podName: string, initializedContent?: string) => {
+    const { value } = this.state;
+    return (
+      <Xterm
+        innerRef={el => this.saveTerminal(podName, el)}
+        show={value === podName}
+        initializedContent={initializedContent}
+        termianlOnData={(data: any) => {
+          this.sendOrQueueMessage(
+            JSON.stringify({
+              type: "stdin",
+              podName: podName,
+              namespace: this.props.namespace,
+              data: data
+            })
+          );
+        }}
+        termianlOnBinary={(data: any) => {
+          this.sendOrQueueMessage(
+            JSON.stringify({
+              type: "stdin",
+              podName: podName,
+              namespace: this.props.namespace,
+              data: data
+            })
+          );
+        }}
+        terminalOnResize={(size: { cols: number; rows: number }) => {
+          this.sendOrQueueMessage(
+            JSON.stringify({
+              type: "resize",
+              podName: podName,
+              namespace: this.props.namespace,
+              data: `${size.cols},${size.rows}`
+            })
+          );
+        }}
+        terminalOptions={{
+          // convertEol: true,
+          // fontSize: 12,
+          theme: { selection: "rgba(255, 255, 72, 0.5)" }
+        }}
+      />
+    );
+  };
+
   public render() {
     const { isLoading, application, classes } = this.props;
     const { value, subscribedPodNames } = this.state;
@@ -541,12 +449,12 @@ export class LogStream extends React.PureComponent<Props, State> {
             {this.renderInput()}
             <div>
               <TabPanel value={value} key={"empty"} index={""}>
-                <Xterm initializedContent={logDocs} show={subscribedPodNames.size === 0} />
+                {this.isLog ? this.renderLogTerminal("", logDocs) : this.renderLogTerminal("", shellDocs)}
               </TabPanel>
               {Array.from(subscribedPodNames).map(x => {
                 return (
                   <TabPanel value={value} key={x} index={x}>
-                    <Xterm innerRef={el => this.saveTerminal(x, el)} show={value === x} />
+                    {this.isLog ? this.renderLogTerminal(x) : this.renderExecTerminal(x)}
                   </TabPanel>
                 );
               })}

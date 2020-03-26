@@ -386,7 +386,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
               aria-label="exec"
               onClick={() => {
                 dispatch(
-                  push(`/applications/${applicationListItem.get("namespace")}/${applicationListItem.get("name")}/exec`)
+                  push(`/applications/${applicationListItem.get("namespace")}/${applicationListItem.get("name")}/shells`)
                 );
               }}>
               <PlayArrowIcon />
