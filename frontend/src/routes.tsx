@@ -30,6 +30,7 @@ export const KappRoutes = (
           <Route exact path="/applications" component={ApplicationListPage} />
           <Route exact path="/applications/:namespace/:applicationName/edit" component={ApplicationEdit} />
           <Route exact path="/applications/:namespace/:applicationName/logs" component={Log} />
+          <Route exact path="/applications/:namespace/:applicationName/exec" component={Log} />
           <Route exact path="/applications/new" component={ApplicationNew} />
           <Route exact path="/componenttemplates/new" component={ComponentTemplateNew} />
           <Route exact path="/componenttemplates/:componentTemplateName/edit" component={ComponentTemplateEdit}></Route>
