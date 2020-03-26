@@ -34,7 +34,7 @@ export const createConfigAction = (config: ConfigNode): ThunkResult<Promise<void
       payload: { config }
     });
 
-    const newIdChain = config.get("ancestorIds")!.toArray() || [];
+    const newIdChain = config.get("ancestorIds").toArray() || [];
     newIdChain.push(config.get("id"));
     dispatch(setCurrentConfigIdChainAction(newIdChain));
   };
@@ -50,6 +50,7 @@ export const duplicateConfigAction = (config: ConfigNode): ThunkResult<Promise<v
       ancestorIds: config.get("ancestorIds")
     });
 
+    console.log("config", config.toJS());
     const configFile = configToConfigFile(config);
     await createKappFile(convertToCRDFile(configFile));
     dispatch(setSuccessNotificationAction("Create config successful."));
@@ -59,7 +60,7 @@ export const duplicateConfigAction = (config: ConfigNode): ThunkResult<Promise<v
       payload: { config }
     });
 
-    const newIdChain = config.get("ancestorIds")!.toArray() || [];
+    const newIdChain = config.get("ancestorIds").toArray() || [];
     newIdChain.push(config.get("id"));
     dispatch(setCurrentConfigIdChainAction(newIdChain));
   };
