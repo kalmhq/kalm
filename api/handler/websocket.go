@@ -43,8 +43,7 @@ const (
 )
 
 type WSRequest struct {
-	Type      WSRequestType `json:"type"`
-	RequestID string        `json:"requestId"`
+	Type WSRequestType `json:"type"`
 }
 
 type WSClientAuthRequest struct {
@@ -66,16 +65,17 @@ const StatusError StatusValue = -1
 type WSResponseType string
 
 const (
-	WSResponseTypeCommon             WSResponseType = "common"
-	WSResponseTypeLogStream          WSResponseType = "logStream"
-	WSResponseTypePodLogDisconnected WSResponseType = "podDisconnected"
+	WSResponseTypeCommon                WSResponseType = "common"
+	WSResponseTypeAuthResult            WSResponseType = "authResult"
+	WSResponseTypeAuthStatus            WSResponseType = "authStatus"
+	WSResponseTypeLogStreamUpdate       WSResponseType = "logStreamUpdate"
+	WSResponseTypeLogStreamDisconnected WSResponseType = "logStreamDisconnected"
 )
 
 type WSResponse struct {
-	Type      WSResponseType `json:"type"`
-	Status    StatusValue    `json:"status"`
-	RequestID string         `json:"requestId"`
-	Message   string         `json:"message"`
+	Type    WSResponseType `json:"type"`
+	Status  StatusValue    `json:"status"`
+	Message string         `json:"message"`
 }
 
 type WSPodLogResponse struct {
@@ -123,13 +123,13 @@ func logWsReadLoop(conn *WSConn, clientManager *client.ClientManager) (err error
 		}
 
 		res := WSResponse{
-			Type:      WSResponseTypeCommon,
-			RequestID: basicMessage.RequestID,
-			Status:    StatusError,
+			Type:   WSResponseTypeCommon,
+			Status: StatusError,
 		}
 
 		switch basicMessage.Type {
 		case WSRequestTypeAuth:
+			res.Type = WSResponseTypeAuthResult
 			var m WSClientAuthRequest
 			err = json.Unmarshal(message, &m)
 
@@ -184,6 +184,7 @@ func logWsReadLoop(conn *WSConn, clientManager *client.ClientManager) (err error
 			res.Status = StatusOK
 			res.Message = "Request Success"
 		case WSRequestTypeAuthStatus:
+			res.Type = WSResponseTypeAuthStatus
 			if conn.IsAuthorized {
 				res.Status = StatusOK
 				res.Message = "You are authorized"
@@ -237,7 +238,7 @@ func logWsWriteLoop(conn *WSConn) {
 				if err != nil {
 					log.Error(err)
 					_ = conn.WriteJSON(&WSPodLogDisconnectedResponse{
-						Type:      WSResponseTypePodLogDisconnected,
+						Type:      WSResponseTypeLogStreamDisconnected,
 						Namespace: m.Namespace,
 						PodName:   m.PodName,
 						Data:      err.Error(),
@@ -272,7 +273,7 @@ func copyPodLogStreamToWS(ctx context.Context, namespace, podName string, conn *
 		// tell client we are no longer provide logs of this pod
 		// It doesn't matter if the conn is closed, ignore the error
 		_ = conn.WriteJSON(&WSPodLogDisconnectedResponse{
-			Type:      WSResponseTypePodLogDisconnected,
+			Type:      WSResponseTypeLogStreamDisconnected,
 			Namespace: namespace,
 			PodName:   podName,
 		})
@@ -310,7 +311,7 @@ func copyPodLogStreamToWS(ctx context.Context, namespace, podName string, conn *
 			}
 
 			err := conn.WriteJSON(&WSPodLogResponse{
-				Type:      WSResponseTypeLogStream,
+				Type:      WSResponseTypeLogStreamUpdate,
 				Namespace: namespace,
 				PodName:   podName,
 				Data:      string(data),
@@ -365,7 +366,10 @@ func (h *ApiHandler) logWebsocketHandler(c echo.Context) error {
 	defer conn.Close()
 	defer stop()
 
+	// handle k8s api logs stream -> client
 	go logWsWriteLoop(conn)
+
+	// handle client request
 	_ = logWsReadLoop(conn, h.clientManager)
 
 	return nil

@@ -370,8 +370,7 @@ export class LogStream extends React.PureComponent<Props, State> {
       logger("WS Connection connected.");
       ws.send(
         JSON.stringify({
-          type: "authStatus",
-          requestId: "checkAuthStatus"
+          type: "authStatus"
         })
       );
     };
@@ -392,7 +391,7 @@ export class LogStream extends React.PureComponent<Props, State> {
       detailedLogger("Received Message: " + evt.data);
       const data = JSON.parse(evt.data);
 
-      if (data.type === "logStream") {
+      if (data.type === "logStreamUpdate") {
         const terminal = this.terminals.get(data.podName);
         if (terminal && terminal.xterm) {
           terminal.xterm.write(data.data);
@@ -400,7 +399,7 @@ export class LogStream extends React.PureComponent<Props, State> {
         return;
       }
 
-      if (data.type === "podDisconnected") {
+      if (data.type === "logStreamDisconnected") {
         const terminal = this.terminals.get(data.podName);
         if (terminal && terminal.xterm) {
           terminal.xterm.writeln(data.data);
@@ -410,25 +409,19 @@ export class LogStream extends React.PureComponent<Props, State> {
       }
 
       // TODO use more meaningful type
-      if (data.type === "common") {
-        if (data.requestId === "sendAuthToken" && data.status === 0) {
-          afterWsAuthSuccess();
-          return;
-        }
+      if ((data.type === "authResult" && data.status === 0) || (data.type === "authStatus" && data.status === 0)) {
+        afterWsAuthSuccess();
+        return;
+      }
 
-        if (data.requestId === "checkAuthStatus") {
-          if (data.status === -1) {
-            ws.send(
-              JSON.stringify({
-                type: "auth",
-                requestId: "sendAuthToken",
-                authToken: window.localStorage.AUTHORIZED_TOKEN_KEY
-              })
-            );
-          } else {
-            afterWsAuthSuccess();
-          }
-        }
+      if (data.type === "authStatus" && data.status === -1) {
+        ws.send(
+          JSON.stringify({
+            type: "auth",
+            authToken: window.localStorage.AUTHORIZED_TOKEN_KEY
+          })
+        );
+        return;
       }
     };
 
@@ -445,7 +438,6 @@ export class LogStream extends React.PureComponent<Props, State> {
     this.sendOrQueueMessage(
       JSON.stringify({
         type: "subscribePodLog",
-        requestID: "sub-" + podName,
         podName: podName,
         namespace: namespace
       })
@@ -457,7 +449,6 @@ export class LogStream extends React.PureComponent<Props, State> {
     this.sendOrQueueMessage(
       JSON.stringify({
         type: "unsubscribePodLog",
-        requestID: "sub-" + podName,
         podName: podName,
         namespace: namespace
       })
