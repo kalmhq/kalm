@@ -101,17 +101,19 @@ export const FileTree = (props: FileTreeProp) => {
 
   return (
     <TreeView
+      // doesn't support onNodeSelect now. but is alreay in doc: https://material-ui.com/zh/api/tree-view/
+      // @ts-ignore
+      // onNodeSelect={(event, value) => {
+      //   console.log("onNodeSelect", event, value);
+      // }}
+      // onNodeToggle={(event, nodeIds) => {
+      //   console.log("onNodeToggle", event, nodeIds);
+      // }}
       className={classes.root}
       defaultExpanded={[props.rootConfig.get("id")]}
       defaultCollapseIcon={<FolderOpenIcon htmlColor="#f9a825" />}
       defaultExpandIcon={<FolderIcon htmlColor="#f9a825" />}
-      defaultEndIcon={<InsertDriveFileOutlinedIcon htmlColor="#0277bd" />}
-      // onNodeSelect={(event, value) => {
-      //   console.log("onNodeSelect", event, value);
-      // }}
-      onNodeToggle={(event, nodeIds) => {
-        console.log("onNodeToggle", event, nodeIds);
-      }}>
+      defaultEndIcon={<InsertDriveFileOutlinedIcon htmlColor="#0277bd" />}>
       {renderStyledTreeItem(props.rootConfig, [], props.dispatch)}
     </TreeView>
   );
