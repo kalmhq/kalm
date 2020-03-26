@@ -54,36 +54,6 @@ const mapStateToProps = (state: RootState, props: Props) => {
   };
 };
 
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: any;
-  value: any;
-}
-
-// function TabPanel(props: TabPanelProps) {
-//   const { children, value, index, ...other } = props;
-
-//   return (
-//     <Typography
-//       component="div"
-//       role="tabpanel"
-//       hidden={value !== index}
-//       id={`scrollable-force-tabpanel-${index}`}
-//       aria-labelledby={`scrollable-force-tab-${index}`}
-//       {...other}
-//     >
-//       {value === index && <Box p={3}>{children}</Box>}
-//     </Typography>
-//   );
-// }
-
-// function a11yProps(index: any) {
-//   return {
-//     id: `scrollable-force-tab-${index}`,
-//     "aria-controls": `scrollable-force-tabpanel-${index}`
-//   };
-// }
-
 const useStyles = makeStyles((theme: Theme) => ({
   root: {
     flexGrow: 1,
@@ -143,6 +113,7 @@ function ConfigFormRaw(props: Props & InjectedFormProps<ConfigNode, Props>) {
               Select a folder to add config
             </FormHelperText>
           </FormControl>
+
           <div className={classes.nameWrapper}>
             <CustomTextField
               // className={classes.input}
@@ -155,23 +126,15 @@ function ConfigFormRaw(props: Props & InjectedFormProps<ConfigNode, Props>) {
             />
           </div>
         </div>
+
         {formType === "new" && <CustomRadioGroup name="type" label="Type" options={["file", "folder"]} />}
-        {/* <CustomTextField
-          // className={classes.input}
-          name="content"
-          label="Content"
-          margin
-          validate={[ValidatorRequired]}
-          helperText="File content"
-          multiline={true}
-          rows={15}
-          rowsMax={15}
-        /> */}
+
         {formValues && formValues!.get("type") === "file" && (
           <FormControl margin="normal" className={classes.editorWarpper}>
             <CustomEditor />
           </FormControl>
         )}
+
         <div className={classes.buttons}>
           <Button variant="contained" color="primary" type="submit">
             Submit

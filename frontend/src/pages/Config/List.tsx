@@ -93,24 +93,15 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
     dispatch(loadConfigsAction());
   }
 
-  private closeConfirmDialog = () => {
+  private showDeleteConfirmDialog = () => {
     this.setState({
-      isDeleteConfirmDialogOpen: false
+      isDeleteConfirmDialogOpen: true
     });
   };
 
-  private deleteConfirmedConfig = async () => {
-    const { dispatch } = this.props;
-    try {
-      await dispatch(deleteConfigAction(getCurrentConfig()));
-    } catch {
-      dispatch(setErrorNotificationAction("Something wrong"));
-    }
-  };
-
-  private setDeletingConfigAndConfirm = () => {
+  private closeDeleteConfirmDialog = () => {
     this.setState({
-      isDeleteConfirmDialogOpen: true
+      isDeleteConfirmDialogOpen: false
     });
   };
 
@@ -120,18 +111,41 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
     return (
       <ConfirmDialog
         open={isDeleteConfirmDialogOpen}
-        onClose={this.closeConfirmDialog}
+        onClose={this.closeDeleteConfirmDialog}
         title="Are you sure to delete this Config?"
         content="You will lost this config, and this action is irrevocable."
-        onAgree={this.deleteConfirmedConfig}
+        onAgree={this.confirmDelete}
       />
     );
   };
 
-  public onCreate = () => {
+  private confirmDelete = async () => {
+    const { dispatch } = this.props;
+    try {
+      await dispatch(deleteConfigAction(getCurrentConfig()));
+    } catch {
+      dispatch(setErrorNotificationAction("Something wrong"));
+    }
+  };
+
+  public handleAdd = () => {
     this.setState({
       showConfigNewDialog: true
     });
+  };
+
+  public handleEdit = () => {
+    this.setState({ showConfigEditDialog: true });
+  };
+
+  public handleDuplicate = () => {
+    const { dispatch } = this.props;
+    const config = getCurrentConfig();
+    dispatch(duplicateConfigAction(config));
+  };
+
+  public handleDelete = () => {
+    this.showDeleteConfirmDialog();
   };
 
   public renderFileBreadcrumbs() {
@@ -164,31 +178,17 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
   }
 
   public renderActions() {
-    const { dispatch } = this.props;
     return (
       <div>
-        <IconButton
-          aria-label="edit"
-          onClick={() => {
-            this.setState({ showConfigEditDialog: true });
-          }}>
+        <IconButton aria-label="edit" onClick={() => this.handleEdit()}>
           <EditIcon />
         </IconButton>
 
-        <IconButton
-          aria-label="edit"
-          onClick={() => {
-            const config = getCurrentConfig();
-            dispatch(duplicateConfigAction(config));
-          }}>
+        <IconButton aria-label="edit" onClick={() => this.handleDuplicate()}>
           <FileCopyIcon />
         </IconButton>
 
-        <IconButton
-          aria-label="delete"
-          onClick={() => {
-            this.setDeletingConfigAndConfirm();
-          }}>
+        <IconButton aria-label="delete" onClick={() => this.handleDelete()}>
           <DeleteIcon />
         </IconButton>
       </div>
@@ -203,14 +203,21 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
       <BasePage
         title="Configs"
         rightAction={
-          <Button variant="contained" color="primary" onClick={this.onCreate}>
+          <Button variant="contained" color="primary" onClick={() => this.handleAdd()}>
             Add
           </Button>
         }>
         {this.renderDeleteConfirmDialog()}
         <div className={classes.root}>
           <div className={classes.leftTree}>
-            <FileTree rootConfig={rootConfig} dispatch={dispatch} />
+            <FileTree
+              rootConfig={rootConfig}
+              dispatch={dispatch}
+              handleAdd={() => this.handleAdd()}
+              handleEdit={() => this.handleEdit()}
+              handleDuplicate={() => this.handleDuplicate()}
+              handleDelete={() => this.handleDelete()}
+            />
           </div>
           <div className={classes.fileDetail}>
             <div className={classes.breadcrumbsAndAction}>

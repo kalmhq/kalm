@@ -49,20 +49,20 @@ const reducer = (state: State = initialState, action: Actions): State => {
       const rootConfig = state.get("rootConfig");
       const immutablePath: string[] = ["rootConfig"];
 
-      ancestorIds &&
-        ancestorIds.forEach((id: string) => {
-          if (id !== rootConfig.get("id")) {
-            immutablePath.push(id);
-          }
-          immutablePath.push("children");
-        });
+      ancestorIds.forEach((id: string) => {
+        if (id !== rootConfig.get("id")) {
+          immutablePath.push(id);
+        }
+        immutablePath.push("children");
+      });
 
       const config: ConfigNode = Immutable.fromJS({
         id: configForm.get("id"),
         type: configForm.get("type"),
         name: configForm.get("name"),
         content: configForm.get("content"),
-        children: configForm.get("children")
+        children: configForm.get("children"),
+        ancestorIds
       });
 
       immutablePath.push(config.get("id"));
@@ -75,19 +75,19 @@ const reducer = (state: State = initialState, action: Actions): State => {
       const rootConfig = state.get("rootConfig");
       const immutablePath: string[] = ["rootConfig"];
 
-      ancestorIds &&
-        ancestorIds.forEach((id: string) => {
-          if (id !== rootConfig.get("id")) {
-            immutablePath.push(id);
-          }
-          immutablePath.push("children");
-        });
+      ancestorIds.forEach((id: string) => {
+        if (id !== rootConfig.get("id")) {
+          immutablePath.push(id);
+        }
+        immutablePath.push("children");
+      });
 
       const config: ConfigNode = Immutable.fromJS({
         id: configForm.get("id"),
         type: configForm.get("type"),
         name: configForm.get("name"),
-        content: configForm.get("content")
+        content: configForm.get("content"),
+        ancestorIds
       });
 
       immutablePath.push(config.get("id"));
@@ -100,19 +100,19 @@ const reducer = (state: State = initialState, action: Actions): State => {
       const rootConfig = state.get("rootConfig");
       const immutablePath: string[] = ["rootConfig"];
 
-      ancestorIds &&
-        ancestorIds.forEach((id: string) => {
-          if (id !== rootConfig.get("id")) {
-            immutablePath.push(id);
-          }
-          immutablePath.push("children");
-        });
+      ancestorIds.forEach((id: string) => {
+        if (id !== rootConfig.get("id")) {
+          immutablePath.push(id);
+        }
+        immutablePath.push("children");
+      });
 
       const config: ConfigNode = Immutable.fromJS({
         id: configForm.get("id"),
         type: configForm.get("type"),
         name: configForm.get("name"),
-        content: configForm.get("content")
+        content: configForm.get("content"),
+        ancestorIds
       });
 
       immutablePath.push(config.get("id"));
@@ -125,13 +125,12 @@ const reducer = (state: State = initialState, action: Actions): State => {
       const rootConfig = state.get("rootConfig");
       const immutablePath: string[] = ["rootConfig"];
 
-      ancestorIds &&
-        ancestorIds.forEach((id: string) => {
-          if (id !== rootConfig.get("id")) {
-            immutablePath.push(id);
-          }
-          immutablePath.push("children");
-        });
+      ancestorIds.forEach((id: string) => {
+        if (id !== rootConfig.get("id")) {
+          immutablePath.push(id);
+        }
+        immutablePath.push("children");
+      });
       immutablePath.push(configForm.get("id"));
 
       state = state.deleteIn(immutablePath);
