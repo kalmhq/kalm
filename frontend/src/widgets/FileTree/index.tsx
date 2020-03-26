@@ -105,27 +105,14 @@ export const FileTree = (props: FileTreeProp) => {
       defaultExpanded={[props.rootConfig.get("id")]}
       defaultCollapseIcon={<FolderOpenIcon htmlColor="#f9a825" />}
       defaultExpandIcon={<FolderIcon htmlColor="#f9a825" />}
-      defaultEndIcon={<InsertDriveFileOutlinedIcon htmlColor="#0277bd" />}>
+      defaultEndIcon={<InsertDriveFileOutlinedIcon htmlColor="#0277bd" />}
+      // onNodeSelect={(event, value) => {
+      //   console.log("onNodeSelect", event, value);
+      // }}
+      onNodeToggle={(event, nodeIds) => {
+        console.log("onNodeToggle", event, nodeIds);
+      }}>
       {renderStyledTreeItem(props.rootConfig, [], props.dispatch)}
-
-      {/* <StyledTreeItem nodeId="1" label="Main">
-        <StyledTreeItem nodeId="2" label="Hello" />
-        <StyledTreeItem nodeId="3" label="Subtree with children">
-          <StyledTreeItem nodeId="6" label="Hello" />
-          <StyledTreeItem nodeId="7" label="Sub-subtree with children">
-            <StyledTreeItem nodeId="9" label="Child 1" />
-            <StyledTreeItem nodeId="10" label="Child 2" />
-            <StyledTreeItem nodeId="11" label="Child 3" />
-          </StyledTreeItem>
-          <StyledTreeItem
-            nodeId="8"
-            label="Hello"
-            onClick={() => console.log("hello")}
-          />
-        </StyledTreeItem>
-        <StyledTreeItem nodeId="4" label="World" />
-        <StyledTreeItem nodeId="5" label="Something something" />
-      </StyledTreeItem> */}
     </TreeView>
   );
 };

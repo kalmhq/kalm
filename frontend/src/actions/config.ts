@@ -14,6 +14,7 @@ import {
   ConfigFile
 } from "../types/config";
 import { ThunkResult } from "../types";
+import { setSuccessNotificationAction } from "./notification";
 
 export const createConfigAction = (config: ConfigNode): ThunkResult<Promise<void>> => {
   return async dispatch => {
@@ -22,6 +23,9 @@ export const createConfigAction = (config: ConfigNode): ThunkResult<Promise<void
     if (config.get("type") === "file") {
       const configFile = configToConfigFile(config);
       await createKappFile(convertToCRDFile(configFile));
+      dispatch(setSuccessNotificationAction("Create config successful."));
+    } else {
+      dispatch(setSuccessNotificationAction("Create folder successful."));
     }
 
     dispatch({
@@ -47,6 +51,7 @@ export const duplicateConfigAction = (config: ConfigNode): ThunkResult<Promise<v
 
     const configFile = configToConfigFile(config);
     await createKappFile(convertToCRDFile(configFile));
+    dispatch(setSuccessNotificationAction("Create config successful."));
 
     dispatch({
       type: DUPLICATE_CONFIG,
@@ -63,6 +68,7 @@ export const updateConfigAction = (config: ConfigNode): ThunkResult<Promise<void
   return async dispatch => {
     const configFile = configToConfigFile(config);
     await updateKappFile(convertToCRDFile(configFile));
+    dispatch(setSuccessNotificationAction("Update config successful."));
 
     dispatch({
       type: UPDATE_CONFIG,
@@ -81,6 +87,7 @@ export const deleteConfigAction = (config: ConfigNode): ThunkResult<Promise<void
   return async dispatch => {
     const configFile = configToConfigFile(config);
     await deleteKappFile(convertToCRDFile(configFile));
+    dispatch(setSuccessNotificationAction("Delete config successful."));
 
     dispatch(setCurrentConfigIdChainAction(["0"]));
     dispatch({
