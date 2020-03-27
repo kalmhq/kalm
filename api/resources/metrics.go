@@ -11,7 +11,6 @@ import (
 	//metricv1alpha1 "k8s.io/metrics/pkg/apis/metrics/v1alpha1"
 	metricv1beta1 "k8s.io/metrics/pkg/apis/metrics/v1beta1"
 	mclientv1beta1 "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
-	"strings"
 	"time"
 )
 
@@ -77,10 +76,13 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 			case <-ticker.C:
 				// get all kapp-applications
 				var appList v1alpha1.ApplicationList
-				err := k8sClient.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/applications").Do().Into(&appList)
+
+				err = k8sClient.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/applications").Do().Into(&appList)
 				if err != nil {
 					fmt.Errorf("fail get applications, err: %s", err)
 				}
+
+				fmt.Println("apps found:", len(appList.Items))
 
 				for _, app := range appList.Items {
 					// fetch & fill new metrics
@@ -88,6 +90,8 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 					if err != nil {
 						fmt.Print("fail to list podMetrics, err:", err)
 					}
+
+					fmt.Printf("metrics found under ns(%s): %d", app.Namespace, len(metricsList.Items))
 
 					for _, component := range app.Spec.Components {
 						componentKey := fmt.Sprintf("%s-%s", app.Namespace, component.Name)
@@ -99,9 +103,23 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 
 						for _, podMetrics := range metricsList.Items {
 
-							if podMetrics.Namespace != app.Namespace ||
-								!strings.HasPrefix(podMetrics.Name, fmt.Sprintf("%s-%s", app.Name, component.Name)) {
+							if podMetrics.Namespace != app.Namespace {
 								// ignore if is not pod of this app
+								continue
+							}
+
+							// real dirty impl details here, should replace this if exists any better way
+							var hit bool
+							for _, c := range podMetrics.Containers{
+								if c.Name != component.Name {
+									continue
+								}
+
+								hit = true
+								break
+							}
+
+							if !hit {
 								continue
 							}
 
