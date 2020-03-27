@@ -65,7 +65,7 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 
 	metricResolution := 5 * time.Second
 	//metricResolution := 1 * time.Minute
-	//metricDuration := 15 * time.Minute
+	metricCount := 3
 
 	ticker := time.NewTicker(metricResolution)
 
@@ -82,28 +82,34 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 					fmt.Errorf("fail get applications, err: %s", err)
 				}
 
-				// fetch & fill new metrics
-				metricsList, err := metricClient.PodMetricses("").List(metav1.ListOptions{})
-				if err != nil {
-					fmt.Print("fail to list podMetrics, err:", err)
-				}
-
 				for _, app := range appList.Items {
+					// fetch & fill new metrics
+					metricsList, err := metricClient.PodMetricses(app.Namespace).List(metav1.ListOptions{})
+					if err != nil {
+						fmt.Print("fail to list podMetrics, err:", err)
+					}
+
 					for _, component := range app.Spec.Components {
 						componentKey := fmt.Sprintf("%s-%s", app.Namespace, component.Name)
 
 						if _, exist := componentMetricDB[componentKey]; !exist {
+							// init map: pod -> metrics time serials
 							componentMetricDB[componentKey] = make(map[string][]metricv1beta1.PodMetrics)
 						}
 
+						shownPods := make(map[string]interface{})
 						for _, podMetrics := range metricsList.Items {
 
 							if podMetrics.Namespace != app.Namespace ||
 								!strings.HasPrefix(podMetrics.Name, fmt.Sprintf("%s-%s", app.Name, component.Name)) {
+								// ignore if is not pod of this app
 								continue
 							}
 
+							shownPods[podMetrics.Name] = true
+
 							vPodMetricsSlice := componentMetricDB[componentKey][podMetrics.Name]
+
 							// ignore if ts is same
 							if len(vPodMetricsSlice) > 0 &&
 								vPodMetricsSlice[len(vPodMetricsSlice)-1].Timestamp.Unix() == podMetrics.Timestamp.Unix() {
@@ -111,15 +117,31 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 							}
 
 							vPodMetricsSlice = append(vPodMetricsSlice, podMetrics)
+							if len(vPodMetricsSlice) > metricCount {
+								// purge old metrics
+								vPodMetricsSlice = vPodMetricsSlice[len(vPodMetricsSlice)-metricCount:]
+							}
+
 							componentMetricDB[componentKey][podMetrics.Name] = vPodMetricsSlice
 
 							fmt.Println(fmt.Sprintf("%s -> %s", componentKey, podMetrics.Name), vPodMetricsSlice, len(vPodMetricsSlice))
 						}
+
+						// clean pods not shown, deleted
+						var deletedPods []string
+						for inDBPod, _ := range componentMetricDB[componentKey] {
+							if _, exist := shownPods[inDBPod]; exist {
+								continue
+							}
+
+							deletedPods = append(deletedPods, inDBPod)
+						}
+
+						for _, deletedPod := range deletedPods {
+							delete(componentMetricDB[componentKey], deletedPod)
+						}
 					}
 				}
-
-				// todo rm not showing pod list (deleted)
-				// todo clean if metrics older than 15min
 			}
 		}
 	}()
@@ -128,11 +150,11 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 }
 
 // componentName -> componentMetricsSum
-func getComponentMetricSumList() map[string]ComponentMetricsSum {
-	rst := make(map[string]ComponentMetricsSum)
+func getComponentMetricSumList() map[string]ComponentMetrics {
+	rst := make(map[string]ComponentMetrics)
 
 	for compName, podMap := range componentMetricDB {
-		compMetricSum := ComponentMetricsSum{
+		compMetricSum := ComponentMetrics{
 			Name: compName,
 			Pods: make(map[string]MetricsSum),
 		}
