@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"github.com/kapp-staging/kapp/api/client"
 	"github.com/kapp-staging/kapp/api/handler"
+	"github.com/kapp-staging/kapp/api/resources"
 	"github.com/kapp-staging/kapp/api/server"
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -100,6 +102,8 @@ func run(runningConfig *config.Config) {
 	clientManager := client.NewClientManager(runningConfig)
 	apiHandler := handler.NewApiHandler(clientManager)
 	apiHandler.Install(e)
+
+	resources.StartMetricsScraper(context.Background(), clientManager.ClusterConfig)
 
 	e.Logger.Fatal(e.Start(runningConfig.GetServerAddress()))
 }
