@@ -38,6 +38,7 @@ import { getApplicationByName, duplicateApplicationName } from "../../selectors/
 import { ApplicationListItem } from "../../types/application";
 import ViewHeadlineIcon from "@material-ui/icons/ViewHeadline";
 import PlayArrowIcon from "@material-ui/icons/PlayArrow";
+import { FoldButtonGroup } from "../../widgets/FoldButtonGroup";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
@@ -354,51 +355,59 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
       return {
         action: (
           <>
-            <IconButton
-              aria-label="edit"
-              onClick={() => {
-                dispatch(
-                  push(`/applications/${applicationListItem.get("namespace")}/${applicationListItem.get("name")}/edit`)
-                );
-              }}>
-              <EditIcon />
-            </IconButton>
-
-            <IconButton
-              aria-label="duplicate"
-              onClick={() => {
-                this.showDuplicateConfirmDialog(applicationListItem);
-              }}>
-              <FileCopyIcon />
-            </IconButton>
-
-            <IconButton
-              aria-label="logs"
-              onClick={() => {
-                dispatch(
-                  push(`/applications/${applicationListItem.get("namespace")}/${applicationListItem.get("name")}/logs`)
-                );
-              }}>
-              <ViewHeadlineIcon />
-            </IconButton>
-
-            <IconButton
-              aria-label="exec"
-              onClick={() => {
-                dispatch(
-                  push(`/applications/${applicationListItem.get("namespace")}/${applicationListItem.get("name")}/shells`)
-                );
-              }}>
-              <PlayArrowIcon />
-            </IconButton>
-
-            <IconButton
-              aria-label="delete"
-              onClick={() => {
-                this.showDeleteConfirmDialog(applicationListItem);
-              }}>
-              <DeleteIcon />
-            </IconButton>
+            <FoldButtonGroup
+              options={[
+                {
+                  text: "Edit",
+                  onClick: () => {
+                    dispatch(
+                      push(
+                        `/applications/${applicationListItem.get("namespace")}/${applicationListItem.get("name")}/edit`
+                      )
+                    );
+                  },
+                  icon: "edit"
+                },
+                {
+                  text: "Duplicate",
+                  onClick: () => {
+                    this.showDuplicateConfirmDialog(applicationListItem);
+                  },
+                  icon: "file_copy"
+                },
+                {
+                  text: "Logs",
+                  onClick: () => {
+                    dispatch(
+                      push(
+                        `/applications/${applicationListItem.get("namespace")}/${applicationListItem.get("name")}/logs`
+                      )
+                    );
+                  },
+                  icon: "view_headline"
+                },
+                {
+                  text: "Shell",
+                  onClick: () => {
+                    dispatch(
+                      push(
+                        `/applications/${applicationListItem.get("namespace")}/${applicationListItem.get(
+                          "name"
+                        )}/shells`
+                      )
+                    );
+                  },
+                  icon: "play_arrow"
+                },
+                {
+                  text: "Delete",
+                  onClick: () => {
+                    this.showDeleteConfirmDialog(applicationListItem);
+                  },
+                  icon: "delete"
+                }
+              ]}
+            />
           </>
         ),
         checkbox: (
