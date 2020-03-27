@@ -9,6 +9,8 @@ import (
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	metricv1beta1 "k8s.io/metrics/pkg/apis/metrics/v1beta1"
 )
 
 type ResourceChannels struct {
@@ -16,6 +18,7 @@ type ResourceChannels struct {
 	DeploymentList *DeploymentListChannel
 	PodList        *PodListChannel
 	EventList      *EventListChannel
+	PodMetricsList *PodMetricsListChannel
 }
 
 type Resources struct {
@@ -23,6 +26,7 @@ type Resources struct {
 	DeploymentList *appV1.DeploymentList
 	PodList        *coreV1.PodList
 	EventList      *coreV1.EventList
+	PodMetricsList *metricv1beta1.PodMetricsList
 }
 
 func (c *ResourceChannels) ToResources() (r *Resources, err error) {
@@ -58,6 +62,14 @@ func (c *ResourceChannels) ToResources() (r *Resources, err error) {
 			return nil, err
 		}
 		resources.EventList = <-c.EventList.List
+	}
+
+	if c.PodMetricsList != nil {
+		err = <-c.PodMetricsList.Error
+		if err != nil {
+			return nil, err
+		}
+		resources.PodMetricsList = <-c.PodMetricsList.List
 	}
 
 	return resources, nil
@@ -106,4 +118,5 @@ func labelsBelongsToApplication(name string) metaV1.ListOptions {
 type Builder struct {
 	K8sClient *kubernetes.Clientset
 	Logger    *logrus.Logger
+	Config    *rest.Config
 }

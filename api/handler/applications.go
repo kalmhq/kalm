@@ -241,9 +241,12 @@ func getApplicationFromContext(c echo.Context) (*v1alpha1.Application, error) {
 
 func (h *ApiHandler) applicationResponse(c echo.Context, application *v1alpha1.Application) *resources.ApplicationResponse {
 	k8sClient := getK8sClient(c)
+	k8sClientConfig := getK8sClientConfig(c)
+
 	builder := resources.Builder{
-		k8sClient,
-		h.logger,
+		K8sClient: k8sClient,
+		Logger:    h.logger,
+		Config:    k8sClientConfig,
 	}
 
 	return builder.BuildApplicationDetailsResponse(application)
@@ -251,9 +254,13 @@ func (h *ApiHandler) applicationResponse(c echo.Context, application *v1alpha1.A
 
 func (h *ApiHandler) applicationListResponse(c echo.Context, applicationList *v1alpha1.ApplicationList) *resources.ApplicationListResponse {
 	k8sClient := getK8sClient(c)
+	k8sClientConfig := getK8sClientConfig(c)
+
 	builder := resources.Builder{
-		k8sClient,
-		h.logger,
+		K8sClient: k8sClient,
+		Logger:    h.logger,
+		Config:    k8sClientConfig,
 	}
+
 	return builder.BuildApplicationListResponse(applicationList)
 }
