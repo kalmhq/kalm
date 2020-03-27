@@ -13,7 +13,7 @@ import { TextField } from "../Basic/text";
 import { NormalizeBoolean } from "../normalizer";
 import { ValidatorRequired, ValidatorName } from "../validator";
 import { Components } from "./component";
-import { SharedEnvs } from "./shardEnv";
+import { SharedEnvs } from "./sharedEnv";
 import { Application, SharedEnv } from "../../types/application";
 import { ComponentTemplate } from "../../types/componentTemplate";
 
