@@ -78,10 +78,6 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 				// get all kapp-applications
 				var appList v1alpha1.ApplicationList
 
-				rst := k8sClient.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/applications").Do()
-				body, err :=  rst.Raw()
-				fmt.Println("/apps", string(body), err)
-
 				err = k8sClient.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/applications").Do().Into(&appList)
 				if err != nil {
 					fmt.Errorf("fail get applications, err: %s", err)
@@ -136,7 +132,7 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 
 							componentMetricDB[componentKey][podMetrics.Name] = vPodMetricsSlice
 
-							fmt.Println(fmt.Sprintf("%s -> %s", componentKey, podMetrics.Name), vPodMetricsSlice, len(vPodMetricsSlice))
+							//fmt.Println(fmt.Sprintf("%s -> %s", componentKey, podMetrics.Name), vPodMetricsSlice, len(vPodMetricsSlice))
 						}
 					}
 				}
