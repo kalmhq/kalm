@@ -1,11 +1,12 @@
 import React from "react";
-import { Theme, createStyles, withStyles, IconButton, WithStyles, TextField } from "@material-ui/core";
+import { Theme, createStyles, withStyles, WithStyles, TextField } from "@material-ui/core";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import VisibilityOffIcon from "@material-ui/icons/VisibilityOff";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import { ID } from "../../utils";
 import { TDispatch } from "../../types";
 import { setSuccessNotificationAction } from "../../actions/notification";
+import { IconButtonWithTooltip } from "../IconButtonWithTooltip";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -50,7 +51,8 @@ class SercetFieldRaw extends React.PureComponent<Props, State> {
       return (
         <div className={classes.sercetField}>
           <TextField label="Token" variant="outlined" value={content} id={this.hiddenInputId} />
-          <IconButton
+          <IconButtonWithTooltip
+            tooltipTitle="Copy"
             onClick={() => {
               let copyText = document.getElementById(this.hiddenInputId) as HTMLInputElement;
 
@@ -64,19 +66,19 @@ class SercetFieldRaw extends React.PureComponent<Props, State> {
               }
             }}>
             <FileCopyIcon />
-          </IconButton>
-          <IconButton onClick={() => this.setState({ show: false })}>
+          </IconButtonWithTooltip>
+          <IconButtonWithTooltip tooltipTitle="Hide token" onClick={() => this.setState({ show: false })}>
             <VisibilityOffIcon />
-          </IconButton>
+          </IconButtonWithTooltip>
         </div>
       );
     }
     return (
       <div className={classes.sercetField}>
         **********
-        <IconButton onClick={() => this.setState({ show: true })}>
+        <IconButtonWithTooltip tooltipTitle="Show token" onClick={() => this.setState({ show: true })}>
           <VisibilityIcon />
-        </IconButton>
+        </IconButtonWithTooltip>
       </div>
     );
   }

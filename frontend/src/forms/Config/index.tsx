@@ -5,7 +5,7 @@ import { CustomTextField } from "../Basic";
 import { makeStyles, Theme } from "@material-ui/core/styles";
 import { Button, FormControl } from "@material-ui/core";
 import { ValidatorRequired, ValidatorName } from "../validator";
-import { ConfigNode } from "../../types/config";
+import { ConfigNode, ConfigNodeType } from "../../types/config";
 import Immutable from "immutable";
 import { CustomEditor } from "./editor";
 import { CustomCascader } from "./cascader";
@@ -13,12 +13,12 @@ import FormHelperText from "@material-ui/core/FormHelperText";
 import { connect } from "react-redux";
 import { RootState } from "../../reducers";
 import { getCascaderDefaultValue, getCurrentConfig } from "../../selectors/config";
-import { CustomRadioGroup } from "../Basic/radio";
 
 export interface Props {
   onClose: any;
   formType: "new" | "edit";
   formValues?: ConfigNode;
+  configType: ConfigNodeType;
 }
 
 const mapStateToProps = (state: RootState, props: Props) => {
@@ -29,7 +29,7 @@ const mapStateToProps = (state: RootState, props: Props) => {
     initialValues = Immutable.fromJS({
       ancestorIds: getCascaderDefaultValue(),
       name: "",
-      type: "file",
+      type: props.configType,
       content: "",
       children: Immutable.fromJS({})
     });
@@ -101,7 +101,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 function ConfigFormRaw(props: Props & InjectedFormProps<ConfigNode, Props>) {
-  const { handleSubmit, onClose, formValues, formType } = props;
+  const { handleSubmit, onClose, configType } = props;
   const classes = useStyles();
   return (
     <div className={classes.root}>
@@ -127,9 +127,9 @@ function ConfigFormRaw(props: Props & InjectedFormProps<ConfigNode, Props>) {
           </div>
         </div>
 
-        {formType === "new" && <CustomRadioGroup name="type" label="Type" options={["file", "folder"]} />}
+        {/* {formType === "new" && <CustomRadioGroup name="type" label="Type" options={["file", "folder"]} />} */}
 
-        {formValues && formValues!.get("type") === "file" && (
+        {configType === "file" && (
           <FormControl margin="normal" className={classes.editorWarpper}>
             <CustomEditor />
           </FormControl>

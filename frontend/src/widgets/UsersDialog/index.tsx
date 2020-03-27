@@ -16,7 +16,6 @@ import {
   ExpansionPanelDetails,
   FormControlLabel,
   Switch,
-  IconButton,
   Select,
   MenuItem,
   FormControl,
@@ -37,6 +36,7 @@ import TextField from "@material-ui/core/TextField";
 import { SercetField } from "../SecretField";
 import { getUserByName } from "../../selectors/user";
 import { setErrorNotificationAction } from "../../actions/notification";
+import { IconButtonWithTooltip } from "../IconButtonWithTooltip";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -120,9 +120,9 @@ class UsersDialogRaw extends React.PureComponent<Props, State> {
     return (
       <ExpansionPanel className={classes.expansionPanel}>
         <ExpansionPanelSummary aria-controls="panel1bh-content">
-          <IconButton>
+          <IconButtonWithTooltip tooltipTitle="Permissions">
             <SettingsIcon />
-          </IconButton>
+          </IconButtonWithTooltip>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails className={classes.panelDetail}>
           {switchItems.map(item => (

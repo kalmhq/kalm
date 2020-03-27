@@ -1,5 +1,5 @@
 import React from "react";
-import { createStyles, Theme, AppBar, Tab, Tabs, Avatar, IconButton } from "@material-ui/core";
+import { createStyles, Theme, AppBar, Tab, Tabs, Avatar } from "@material-ui/core";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import { NavLink } from "react-router-dom";
 import SettingsIcon from "@material-ui/icons/Settings";
@@ -7,6 +7,7 @@ import { UsersDialog } from "../../widgets/UsersDialog";
 import { connect } from "react-redux";
 import { RootState } from "../../reducers";
 import { TDispatch } from "../../types";
+import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
 
 const mapStateToProps = (state: RootState) => {
   return {};
@@ -150,9 +151,12 @@ const TabBarComponentRaw = ({ classes, dispatch }: Props) => {
       <div className={classes.barContainer}>
         <div className={classes.barTitle}>OpenCore Kapp</div>
         <div className={classes.barRight}>
-          <IconButton className={classes.barSettings} onClick={() => setIsOpenSettings(true)}>
+          <IconButtonWithTooltip
+            tooltipTitle="Settings"
+            className={classes.barSettings}
+            onClick={() => setIsOpenSettings(true)}>
             <SettingsIcon />
-          </IconButton>
+          </IconButtonWithTooltip>
           <div className={classes.barAvatar}>
             <Avatar>A</Avatar>
           </div>

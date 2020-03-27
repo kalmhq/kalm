@@ -4,23 +4,25 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import { TDispatch } from "../../types";
 import ConfigForm from "../../forms/Config";
-import { ConfigNode } from "../../types/config";
+import { ConfigNode, ConfigNodeType } from "../../types/config";
 import { createConfigAction } from "../../actions/config";
 
 interface Props {
   open: boolean;
   onClose: () => void;
   dispatch: TDispatch;
+  configType: ConfigNodeType;
 }
 
-export function ConfigNewDialog(props: Props) {
-  const { open, onClose, dispatch } = props;
+export const ConfigNewDialog = (props: Props) => {
+  const { open, onClose, dispatch, configType } = props;
 
   const handleClose = () => {
     onClose();
   };
 
   const handleSubmit = (config: ConfigNode) => {
+    // console.log("config", config.toJS());
     dispatch(createConfigAction(config));
     onClose();
   };
@@ -34,11 +36,11 @@ export function ConfigNewDialog(props: Props) {
         aria-describedby="alert-dialog-description"
         maxWidth={"md"}
         fullWidth={true}>
-        <DialogTitle id="alert-dialog-title">New Config</DialogTitle>
+        <DialogTitle id="alert-dialog-title">{`New ${configType}`}</DialogTitle>
         <DialogContent>
-          <ConfigForm onSubmit={handleSubmit} onClose={handleClose} formType="new" />
+          <ConfigForm onSubmit={handleSubmit} onClose={handleClose} formType="new" configType={configType} />
         </DialogContent>
       </Dialog>
     </div>
   );
-}
+};

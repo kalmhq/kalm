@@ -14,7 +14,7 @@ interface Props {
   config: ConfigNode;
 }
 
-export function ConfigEditDialog(props: Props) {
+export const ConfigEditDialog = (props: Props) => {
   const { open, onClose, dispatch } = props;
 
   const handleClose = () => {
@@ -35,11 +35,11 @@ export function ConfigEditDialog(props: Props) {
         aria-describedby="alert-dialog-description"
         maxWidth={"md"}
         fullWidth={true}>
-        <DialogTitle id="alert-dialog-title">Edit Config</DialogTitle>
+        <DialogTitle id="alert-dialog-title">Edit File</DialogTitle>
         <DialogContent>
-          <ConfigForm onSubmit={handleSubmit} onClose={handleClose} formType="edit" />
+          <ConfigForm onSubmit={handleSubmit} onClose={handleClose} formType="edit" configType="file" />
         </DialogContent>
       </Dialog>
     </div>
   );
-}
+};

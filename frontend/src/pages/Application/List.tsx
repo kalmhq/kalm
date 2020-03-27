@@ -1,44 +1,38 @@
 import {
+  Checkbox,
   createStyles,
-  IconButton,
+  ExpansionPanel,
+  ExpansionPanelDetails,
+  ExpansionPanelSummary,
   Switch,
+  TextField,
   Theme,
   WithStyles,
-  withStyles,
-  ExpansionPanel,
-  ExpansionPanelSummary,
-  ExpansionPanelDetails,
-  Checkbox,
-  TextField
+  withStyles
 } from "@material-ui/core";
-import DeleteIcon from "@material-ui/icons/Delete";
-import EditIcon from "@material-ui/icons/Edit";
-import FileCopyIcon from "@material-ui/icons/FileCopy";
+import ArchiveIcon from "@material-ui/icons/Archive";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew";
+import RefreshIcon from "@material-ui/icons/Refresh";
 import { push } from "connected-react-router";
 import MaterialTable from "material-table";
 import React from "react";
 import {
   deleteApplicationAction,
   duplicateApplicationAction,
-  updateApplicationAction,
   loadApplicationAction,
-  loadApplicationsAction
+  loadApplicationsAction,
+  updateApplicationAction
 } from "../../actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "../../actions/notification";
+import { duplicateApplicationName, getApplicationByName } from "../../selectors/application";
+import { ApplicationListItem } from "../../types/application";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
+import { Dot } from "../../widgets/Dot";
+import { FoldButtonGroup } from "../../widgets/FoldButtonGroup";
 import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
 import { ApplicationListDataWrapper, WithApplicationsDataProps } from "./ListDataWrapper";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import { Dot } from "../../widgets/Dot";
-import RefreshIcon from "@material-ui/icons/Refresh";
-import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew";
-import ArchiveIcon from "@material-ui/icons/Archive";
-import { getApplicationByName, duplicateApplicationName } from "../../selectors/application";
-import { ApplicationListItem } from "../../types/application";
-import ViewHeadlineIcon from "@material-ui/icons/ViewHeadline";
-import PlayArrowIcon from "@material-ui/icons/PlayArrow";
-import { FoldButtonGroup } from "../../widgets/FoldButtonGroup";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
