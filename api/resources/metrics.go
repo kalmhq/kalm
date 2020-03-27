@@ -77,7 +77,12 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 			case <-ticker.C:
 				// get all kapp-applications
 				var appList v1alpha1.ApplicationList
-				err := k8sClient.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/applications").Do().Into(&appList)
+
+				rst := k8sClient.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/applications").Do()
+				body, err :=  rst.Raw()
+				fmt.Println("/apps", string(body), err)
+
+				err = k8sClient.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/applications").Do().Into(&appList)
 				if err != nil {
 					fmt.Errorf("fail get applications, err: %s", err)
 				}
