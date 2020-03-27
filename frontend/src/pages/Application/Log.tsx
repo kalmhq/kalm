@@ -13,7 +13,6 @@ import { Breadcrumb } from "../../widgets/Breadcrumbs";
 import { Loading } from "../../widgets/Loading";
 import { ApplicationItemDataWrapper, WithApplicationsDataProps } from "./ItemDataWrapper";
 import { Xterm, XtermRaw } from "./Xterm";
-import { ITerminalOptions } from "xterm";
 
 const logger = debug("ws");
 const detailedLogger = debug("ws:details");
