@@ -10,12 +10,15 @@ import { MaterialTableEditTextField } from "../Basic/text";
 import { EnvTypeStatic, EnvTypeExternal, EnvTypeLinked } from "../../types/common";
 import { MaterialTableEditSelectField } from "../Basic/select";
 import { SharedEnv } from "../../types/application";
+import { MaterialTableEditAutoComplete } from "../Basic/autoComplete";
 interface FieldArrayComponentHackType {
   name: any;
   component: any;
 }
 
-interface FieldArrayProps extends DispatchProp {}
+interface FieldArrayProps extends DispatchProp {
+  sharedEnv?: Immutable.List<SharedEnv>;
+}
 
 interface Props extends WrappedFieldArrayProps<SharedEnv>, FieldArrayComponentHackType, FieldArrayProps {}
 
@@ -27,11 +30,34 @@ interface RowData {
 }
 
 class RenderEnvs extends React.PureComponent<Props> {
+  private nameAutoCompleteOptions: string[];
   private tableRef: React.RefObject<MaterialTable<RowData>>;
 
   constructor(props: Props) {
     super(props);
     this.tableRef = React.createRef();
+    this.nameAutoCompleteOptions = this.generateNameAutoCompleteOptionsFromProps(props);
+  }
+
+  private generateNameAutoCompleteOptionsFromProps = (props: Props): string[] => {
+    const { sharedEnv, fields } = props;
+    if (!sharedEnv) {
+      return [];
+    }
+
+    const sharedEnvNamesSet = new Set(sharedEnv ? sharedEnv.map(x => x.get("name")).toArray() : []);
+    const fieldsEnvNamesSet = new Set<string>();
+
+    fields.forEach((_, index) => {
+      const env = fields.get(index);
+      fieldsEnvNamesSet.add(env.get("name"));
+    });
+
+    return Array.from(sharedEnvNamesSet).filter(x => !fieldsEnvNamesSet.has(x));
+  };
+
+  public componentDidUpdate() {
+    this.nameAutoCompleteOptions = this.generateNameAutoCompleteOptionsFromProps(this.props);
   }
 
   private getTableData() {
@@ -88,6 +114,16 @@ class RenderEnvs extends React.PureComponent<Props> {
   };
 
   private editNameComponent = (props: EditComponentProps<RowData>) => {
+    if (this.props.sharedEnv) {
+      return (
+        <MaterialTableEditAutoComplete
+          {...props}
+          options={this.nameAutoCompleteOptions}
+          textFieldProps={{ autoFocus: true, placeholder: "Name", label: "Name" }}
+        />
+      );
+    }
+
     return <MaterialTableEditTextField textFieldProps={{ placeholder: "Name", label: "Name" }} {...props} />;
   };
 

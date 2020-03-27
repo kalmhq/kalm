@@ -22,6 +22,7 @@ import Immutable from "immutable";
 import { ComponentLike, workloadTypeCronjob, workloadTypeServer } from "../../types/componentTemplate";
 import { Volumes } from "./volumes";
 import ErrorIcon from "@material-ui/icons/Error";
+import { SharedEnv } from "../../types/application";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
@@ -71,6 +72,7 @@ interface RawProps {
   showSubmitButton?: boolean;
   submitButtonText?: string;
   isFolded?: boolean;
+  sharedEnv?: Immutable.List<SharedEnv>;
 }
 
 export interface Props
@@ -202,7 +204,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderEnvs() {
-    const { classes, isFolded } = this.props;
+    const { classes, isFolded, sharedEnv } = this.props;
     return (
       <>
         {!isFolded && (
@@ -243,7 +245,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </MList>
         </HelperContainer>
         {/* <CustomEnvs /> */}
-        <Envs />
+        <Envs sharedEnv={sharedEnv} />
       </>
     );
   }
@@ -600,9 +602,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         }
       });
     }
-
-    console.log("syncErrors", syncErrors);
-    console.log("anyTouched", anyTouched);
 
     return (
       <ExpansionPanel expanded={key === this.state.currentPanel} onChange={() => this.handleChangePanel(key)}>

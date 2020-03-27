@@ -91,7 +91,7 @@ const styles = (theme: Theme) =>
       color: "#fff"
     },
     tabs: {
-      width: "100%",
+      width: "calc(100% - 48px)",
       position: "absolute",
       bottom: "0"
     },

@@ -257,7 +257,8 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
 
   private renderDialog() {
     const { isDialogOpen, dialogFormComponentLikeInstance, dialogFormSaveButtonText, dialogFormTitle } = this.state;
-    // const { fields } = this.props;
+    const { sharedEnv } = this.props;
+
     return (
       <CustomizedDialog
         title={dialogFormTitle}
@@ -275,6 +276,7 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
         }>
         <ComponentLikeForm
           isFolded={true}
+          sharedEnv={sharedEnv}
           onSubmit={this.handleComponentLikeFormSubmit}
           initialValues={dialogFormComponentLikeInstance}
           showDataView
