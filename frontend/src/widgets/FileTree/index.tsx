@@ -8,7 +8,7 @@ import { useSpring, animated } from "react-spring/web.cjs"; // web.cjs is requir
 import FolderIcon from "@material-ui/icons/Folder";
 import FolderOpenIcon from "@material-ui/icons/FolderOpen";
 import InsertDriveFileOutlinedIcon from "@material-ui/icons/InsertDriveFileOutlined";
-import { ConfigNode } from "../../types/config";
+import { ConfigNode, ConfigNodeType } from "../../types/config";
 import { setCurrentConfigIdChainAction, getConfigPath } from "../../actions/config";
 import { MenuItem, Popper, Grow, Paper, MenuList, ClickAwayListener } from "@material-ui/core";
 import { TDispatch } from "../../types";
@@ -41,7 +41,7 @@ interface StyledTreeItemProps extends TreeItemProps {
   dispatch: TDispatch;
   config: ConfigNode;
   idChain: string[];
-  handleAdd: () => void;
+  handleAdd: (configType: ConfigNodeType) => void;
   handleEdit: () => void;
   handleDuplicate: () => void;
   handleDelete: () => void;
@@ -117,21 +117,26 @@ const StyledTreeItem = withStyles((theme: any) => ({
             <Paper>
               <ClickAwayListener onClickAway={handleClose}>
                 <MenuList autoFocusItem={Boolean(anchorEl)} id="menu-list-grow" onKeyDown={handleListKeyDown}>
-                  {config.get("type") === "folder" ? (
-                    <MenuItem onClick={handleAdd}>Add</MenuItem>
-                  ) : (
-                    [
-                      <MenuItem key="edit" onClick={handleEdit}>
-                        Edit
-                      </MenuItem>,
-                      <MenuItem key="duplicate" onClick={handleDuplicate}>
-                        Dupliate
-                      </MenuItem>,
-                      <MenuItem key="delete" onClick={handleDelete}>
-                        Delete
-                      </MenuItem>
-                    ]
-                  )}
+                  {config.get("type") === "folder"
+                    ? [
+                        <MenuItem key="add-file" onClick={() => handleAdd("file")}>
+                          Add file
+                        </MenuItem>,
+                        <MenuItem key="add-folder" onClick={() => handleAdd("folder")}>
+                          Add folder
+                        </MenuItem>
+                      ]
+                    : [
+                        <MenuItem key="edit" onClick={handleEdit}>
+                          Edit
+                        </MenuItem>,
+                        <MenuItem key="duplicate" onClick={handleDuplicate}>
+                          Dupliate
+                        </MenuItem>,
+                        <MenuItem key="delete" onClick={handleDelete}>
+                          Delete
+                        </MenuItem>
+                      ]}
                 </MenuList>
               </ClickAwayListener>
             </Paper>
@@ -153,7 +158,7 @@ const useStyles = makeStyles({
 export interface FileTreeProps {
   rootConfig: ConfigNode;
   dispatch: any;
-  handleAdd: () => void;
+  handleAdd: (configType: ConfigNodeType) => void;
   handleEdit: () => void;
   handleDuplicate: () => void;
   handleDelete: () => void;

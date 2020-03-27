@@ -17,8 +17,10 @@ export type ConfigFile = ImmutableMap<{
   resourceVersion?: string;
 }>;
 
+export type ConfigNodeType = "file" | "folder";
+
 export type ConfigNode = ImmutableMap<{
-  type: "folder" | "file";
+  type: ConfigNodeType;
   id: string; // for folder is display name, for file is metadata name
   name: string; // display name
   content: string;
