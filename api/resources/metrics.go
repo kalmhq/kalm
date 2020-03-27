@@ -11,7 +11,6 @@ import (
 	//metricv1alpha1 "k8s.io/metrics/pkg/apis/metrics/v1alpha1"
 	metricv1beta1 "k8s.io/metrics/pkg/apis/metrics/v1beta1"
 	mclientv1beta1 "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
-	"strings"
 	"time"
 )
 
@@ -104,9 +103,23 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 
 						for _, podMetrics := range metricsList.Items {
 
-							if podMetrics.Namespace != app.Namespace ||
-								!strings.HasPrefix(podMetrics.Name, fmt.Sprintf("%s-%s", app.Name, component.Name)) {
+							if podMetrics.Namespace != app.Namespace {
 								// ignore if is not pod of this app
+								continue
+							}
+
+							// real dirty impl details here, should replace this if exists any better way
+							var hit bool
+							for _, c := range podMetrics.Containers{
+								if c.Name != component.Name {
+									continue
+								}
+
+								hit = true
+								break
+							}
+
+							if !hit {
 								continue
 							}
 
