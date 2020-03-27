@@ -33,10 +33,14 @@ import { FoldButtonGroup } from "../../widgets/FoldButtonGroup";
 import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
 import { ApplicationListDataWrapper, WithApplicationsDataProps } from "./ListDataWrapper";
+import { SmallLineChart, SmallMemoryLineChart, SmallCPULineChart } from "../../widgets/SmallLineChart";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      padding: theme.spacing(3)
+      padding: theme.spacing(3),
+      "& tr.MuiTableRow-root td": {
+        verticalAlign: "middle"
+      }
     },
     expansionPanel: {
       boxShadow: "none"
@@ -346,6 +350,46 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         </ExpansionPanel>
       );
 
+      // TODO: hack!! application data will return from backend.
+      const cpuData = applicationListItem
+        .get("components")
+        .map(component => {
+          if (component.get("metrics") && component.get("metrics")!.get("cpu")) {
+            return component
+              .get("metrics")!
+              .get("cpu")!
+              .toJS();
+          } else {
+            return [];
+          }
+        })
+        .toArray()
+        .filter(x => x.length > 0)
+        .reduce((a, b) => {
+          return b.map((n, i) => ({ x: n.x, y: n.y + (a[i] ? a[i].y : 0) }));
+        }, []);
+
+      console.log(cpuData);
+      const memoryData = applicationListItem
+        .get("components")
+        .map(component => {
+          if (component.get("metrics") && component.get("metrics")!.get("memory")) {
+            return component
+              .get("metrics")!
+              .get("memory")!
+              .toJS();
+          } else {
+            return [];
+          }
+        })
+        .toArray()
+        .filter(x => x.length > 0)
+        .reduce((a, b) => {
+          return b.map((n, i) => ({ x: n.x, y: n.y + (a[i] ? a[i].y : 0) }));
+        }, []);
+
+      // console.log(cpuData, memoryData);
+
       return {
         action: (
           <>
@@ -417,6 +461,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
             inputProps={{ "aria-label": "secondary checkbox" }}
           />
         ),
+        cpu: <SmallCPULineChart data={cpuData} />,
+        memory: <SmallMemoryLineChart data={memoryData} />,
         name: applicationListItem.get("name"),
         namespace: applicationListItem.get("namespace"), // ["default", "production", "ropsten"][index] || "default",
         active: (
@@ -464,6 +510,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                 { title: "Name", field: "name", sorting: false },
                 { title: "Namespace", field: "namespace", sorting: false },
                 { title: "Components", field: "components", sorting: false },
+                { title: "CPU", field: "cpu" },
+                { title: "Memory", field: "memory" },
                 { title: "Enable", field: "active", sorting: false },
                 {
                   title: "Action",

@@ -64,7 +64,7 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 
 	//metricResolution := 5 * time.Second
 	metricResolution := 1 * time.Minute
-	metricDuration := 15*time.Minute
+	metricDuration := 15 * time.Minute
 
 	ticker := time.NewTicker(metricResolution)
 
@@ -110,7 +110,7 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 
 							// real dirty impl details here, should replace this if exists any better way
 							var hit bool
-							for _, c := range podMetrics.Containers{
+							for _, c := range podMetrics.Containers {
 								if c.Name != component.Name {
 									continue
 								}
