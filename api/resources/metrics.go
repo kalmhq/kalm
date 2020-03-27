@@ -82,12 +82,16 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 					fmt.Errorf("fail get applications, err: %s", err)
 				}
 
+				fmt.Println("apps found:", len(appList.Items))
+
 				for _, app := range appList.Items {
 					// fetch & fill new metrics
 					metricsList, err := metricClient.PodMetricses(app.Namespace).List(metav1.ListOptions{})
 					if err != nil {
 						fmt.Print("fail to list podMetrics, err:", err)
 					}
+
+					fmt.Printf("metrics found under ns(%s): %d", app.Namespace, len(metricsList.Items))
 
 					for _, component := range app.Spec.Components {
 						componentKey := fmt.Sprintf("%s-%s", app.Namespace, component.Name)
@@ -127,7 +131,7 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 
 							componentMetricDB[componentKey][podMetrics.Name] = vPodMetricsSlice
 
-							//fmt.Println(fmt.Sprintf("%s -> %s", componentKey, podMetrics.Name), vPodMetricsSlice, len(vPodMetricsSlice))
+							fmt.Println(fmt.Sprintf("%s -> %s", componentKey, podMetrics.Name), vPodMetricsSlice, len(vPodMetricsSlice))
 						}
 					}
 				}
