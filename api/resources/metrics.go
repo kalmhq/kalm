@@ -127,7 +127,7 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 
 							componentMetricDB[componentKey][podMetrics.Name] = vPodMetricsSlice
 
-							fmt.Println(fmt.Sprintf("%s -> %s", componentKey, podMetrics.Name), vPodMetricsSlice, len(vPodMetricsSlice))
+							//fmt.Println(fmt.Sprintf("%s -> %s", componentKey, podMetrics.Name), vPodMetricsSlice, len(vPodMetricsSlice))
 						}
 					}
 				}
