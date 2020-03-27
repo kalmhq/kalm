@@ -8,7 +8,8 @@ import {
   SET_CURRENT_CONFIG_ID_CHAIN,
   DUPLICATE_CONFIG,
   LOAD_CONFIGS_FULFILLED,
-  LOAD_CONFIGS_PENDING
+  LOAD_CONFIGS_PENDING,
+  initialRootConfigNode
 } from "../types/config";
 import { Actions } from "../types";
 
@@ -20,221 +21,8 @@ export type State = ImmutableMap<{
 }>;
 
 const initialState: State = Immutable.Map({
-  currentConfigIdChain: ["0"],
-  rootConfig: Immutable.fromJS({
-    id: "0",
-    type: "folder",
-    name: "/",
-    content: "",
-    children: {
-      "1": {
-        id: "1",
-        type: "folder",
-        name: "nginx configs",
-        content: "",
-        children: {
-          "2": {
-            id: "2",
-            type: "folder",
-            name: "sites-available",
-            content: "",
-            children: {
-              "3": {
-                id: "3",
-                type: "file",
-                name: "test1.conf",
-                content: `server {
-                  listen 80;
-                  server_name regolar.wanglei.me;
-
-                  location / {
-                      proxy_set_header   X-Real-IP $remote_addr;
-                      proxy_set_header   Host      $http_host;
-                      proxy_pass         http://localhost:8081;
-                  }
-                }`,
-                children: {}
-              },
-              "4": {
-                id: "4",
-                type: "file",
-                name: "test2.conf",
-                content: `server {
-                  listen 80;
-                  server_name test.wanglei.me;
-
-                  location / {
-                      proxy_set_header   X-Real-IP $remote_addr;
-                      proxy_set_header   Host      $http_host;
-                      proxy_pass         http://localhost:8081;
-                  }
-                }`,
-                children: {}
-              }
-            }
-          },
-          "5": {
-            id: "5",
-            type: "folder",
-            name: "sites-enabled",
-            content: "",
-            children: {
-              "6": {
-                id: "6",
-                type: "file",
-                name: "test1.conf",
-                content: `server {
-                  listen 80;
-                  server_name regolar.wanglei.me;
-
-                  location / {
-                      proxy_set_header   X-Real-IP $remote_addr;
-                      proxy_set_header   Host      $http_host;
-                      proxy_pass         http://localhost:8081;
-                  }
-                }`,
-                children: {}
-              },
-              "7": {
-                id: "7",
-                type: "file",
-                name: "test2.conf",
-                content: `server {
-                  listen 80;
-                  server_name test.wanglei.me;
-
-                  location / {
-                      proxy_set_header   X-Real-IP $remote_addr;
-                      proxy_set_header   Host      $http_host;
-                      proxy_pass         http://localhost:8081;
-                  }
-                }`,
-                children: {}
-              }
-            }
-          },
-          "8": {
-            id: "8",
-            type: "file",
-            name: "nginx.conf",
-            content: `server {
-              listen 80;
-              server_name regolar.wanglei.me;
-
-              location / {
-                  proxy_set_header   X-Real-IP $remote_addr;
-                  proxy_set_header   Host      $http_host;
-                  proxy_pass         http://localhost:8081;
-              }
-            }`,
-            children: {}
-          }
-        }
-      },
-      "9": {
-        id: "9",
-        type: "folder",
-        name: "dae configs",
-        content: "",
-        children: {
-          "10": {
-            id: "10",
-            type: "folder",
-            name: "DDEX configs",
-            content: "",
-            children: {
-              "11": {
-                id: "11",
-                type: "file",
-                name: "test1.json",
-                content: `{
-                  "POSTGRES_PASSWORD": "db-pass",
-                  "POSTGRES_USER": "db-admin",
-                  "POSTGRES_DB": "db-name",
-                  "NODE_ENV": "production",
-                  "RAILS_ENV": "production",
-                }`,
-                children: {}
-              },
-              "12": {
-                id: "12",
-                type: "file",
-                name: "test2.json",
-                content: `{
-                  "POSTGRES_PASSWORD": "db-pass",
-                  "POSTGRES_USER": "db-admin",
-                  "POSTGRES_DB": "db-name",
-                  "NODE_ENV": "production",
-                  "RAILS_ENV": "production",
-                }`,
-                children: {}
-              }
-            }
-          },
-          "13": {
-            id: "13",
-            type: "folder",
-            name: "BFD configs",
-            content: "",
-            children: {
-              "14": {
-                id: "14",
-                type: "file",
-                name: "test1.json",
-                content: `{
-                  "POSTGRES_PASSWORD": "db-pass",
-                  "POSTGRES_USER": "db-admin",
-                  "POSTGRES_DB": "db-name",
-                  "NODE_ENV": "production",
-                  "RAILS_ENV": "production",
-                }`,
-                children: {}
-              },
-              "15": {
-                id: "15",
-                type: "file",
-                name: "test2.json",
-                content: `{
-                  "POSTGRES_PASSWORD": "db-pass",
-                  "POSTGRES_USER": "db-admin",
-                  "POSTGRES_DB": "db-name",
-                  "NODE_ENV": "production",
-                  "RAILS_ENV": "production",
-                }`,
-                children: {}
-              }
-            }
-          },
-          "16": {
-            id: "16",
-            type: "file",
-            name: "daetest.json",
-            content: `{
-              "POSTGRES_PASSWORD": "db-pass",
-              "POSTGRES_USER": "db-admin",
-              "POSTGRES_DB": "ddex",
-              "NODE_ENV": "production",
-              "RAILS_ENV": "production",
-            }`,
-            children: {}
-          }
-        }
-      },
-      "17": {
-        id: "17",
-        type: "file",
-        name: "config file 1",
-        content: `{
-          "POSTGRES_PASSWORD": "db-pass",
-          "POSTGRES_USER": "db-admin",
-          "POSTGRES_DB": "ddex",
-          "NODE_ENV": "production",
-          "RAILS_ENV": "production",
-        }`,
-        children: {}
-      }
-    }
-  })
+  currentConfigIdChain: [initialRootConfigNode.get("id")],
+  rootConfig: initialRootConfigNode
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {
@@ -261,20 +49,20 @@ const reducer = (state: State = initialState, action: Actions): State => {
       const rootConfig = state.get("rootConfig");
       const immutablePath: string[] = ["rootConfig"];
 
-      ancestorIds &&
-        ancestorIds.forEach((id: string) => {
-          if (id !== rootConfig.get("id")) {
-            immutablePath.push(id);
-          }
-          immutablePath.push("children");
-        });
+      ancestorIds.forEach((id: string) => {
+        if (id !== rootConfig.get("id")) {
+          immutablePath.push(id);
+        }
+        immutablePath.push("children");
+      });
 
       const config: ConfigNode = Immutable.fromJS({
         id: configForm.get("id"),
         type: configForm.get("type"),
         name: configForm.get("name"),
         content: configForm.get("content"),
-        children: configForm.get("children")
+        children: configForm.get("children"),
+        ancestorIds
       });
 
       immutablePath.push(config.get("id"));
@@ -287,19 +75,19 @@ const reducer = (state: State = initialState, action: Actions): State => {
       const rootConfig = state.get("rootConfig");
       const immutablePath: string[] = ["rootConfig"];
 
-      ancestorIds &&
-        ancestorIds.forEach((id: string) => {
-          if (id !== rootConfig.get("id")) {
-            immutablePath.push(id);
-          }
-          immutablePath.push("children");
-        });
+      ancestorIds.forEach((id: string) => {
+        if (id !== rootConfig.get("id")) {
+          immutablePath.push(id);
+        }
+        immutablePath.push("children");
+      });
 
       const config: ConfigNode = Immutable.fromJS({
         id: configForm.get("id"),
         type: configForm.get("type"),
         name: configForm.get("name"),
-        content: configForm.get("content")
+        content: configForm.get("content"),
+        ancestorIds
       });
 
       immutablePath.push(config.get("id"));
@@ -312,19 +100,19 @@ const reducer = (state: State = initialState, action: Actions): State => {
       const rootConfig = state.get("rootConfig");
       const immutablePath: string[] = ["rootConfig"];
 
-      ancestorIds &&
-        ancestorIds.forEach((id: string) => {
-          if (id !== rootConfig.get("id")) {
-            immutablePath.push(id);
-          }
-          immutablePath.push("children");
-        });
+      ancestorIds.forEach((id: string) => {
+        if (id !== rootConfig.get("id")) {
+          immutablePath.push(id);
+        }
+        immutablePath.push("children");
+      });
 
       const config: ConfigNode = Immutable.fromJS({
         id: configForm.get("id"),
         type: configForm.get("type"),
         name: configForm.get("name"),
-        content: configForm.get("content")
+        content: configForm.get("content"),
+        ancestorIds
       });
 
       immutablePath.push(config.get("id"));
@@ -337,13 +125,12 @@ const reducer = (state: State = initialState, action: Actions): State => {
       const rootConfig = state.get("rootConfig");
       const immutablePath: string[] = ["rootConfig"];
 
-      ancestorIds &&
-        ancestorIds.forEach((id: string) => {
-          if (id !== rootConfig.get("id")) {
-            immutablePath.push(id);
-          }
-          immutablePath.push("children");
-        });
+      ancestorIds.forEach((id: string) => {
+        if (id !== rootConfig.get("id")) {
+          immutablePath.push(id);
+        }
+        immutablePath.push("children");
+      });
       immutablePath.push(configForm.get("id"));
 
       state = state.deleteIn(immutablePath);

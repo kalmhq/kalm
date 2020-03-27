@@ -56,12 +56,14 @@ const styles = (theme: Theme) =>
       padding: "20px"
     },
     input: {
-      width: "280px"
+      width: "280px",
+      marginTop: "20px"
     }
   });
 
 interface State {
   value: string;
+  error?: string;
 }
 
 interface Props extends WithStyles<typeof styles> {
@@ -72,24 +74,32 @@ export class LoginRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      value: ""
+      value: "",
+      error: undefined
     };
   }
 
   private handleChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
-    this.setState({ value: event.target.value });
+    this.setState({ value: event.target.value, error: undefined });
   };
 
   private handleSubmit = async () => {
-    const res = await this.props.dispatch(loginAction(this.state.value));
+    if (!this.state.value) {
+      this.setState({ error: "Auth token is required." });
+      return;
+    }
 
+    const res = await this.props.dispatch(loginAction(this.state.value));
     if (res) {
       this.props.dispatch(push("/"));
+    } else {
+      this.setState({ error: "Auth token is invalid." });
     }
   };
 
   public render() {
     const { classes } = this.props;
+    const { error } = this.state;
 
     return (
       <div>
@@ -103,9 +113,12 @@ export class LoginRaw extends React.PureComponent<Props, State> {
                 id="login-token"
                 label="Token"
                 variant="outlined"
-                placeholder="type your token"
+                placeholder="auth token"
                 onChange={this.handleChange}
+                helperText={error ? error : "Plaese contact kapp admin to get token"}
+                error={!!error}
               />
+
               <Button variant="contained" color="primary" onClick={this.handleSubmit}>
                 Login
               </Button>

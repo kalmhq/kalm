@@ -2,7 +2,6 @@ import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
-import DialogContentText from "@material-ui/core/DialogContentText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import { TransitionHandlerProps } from "@material-ui/core/transitions";
 import React from "react";
@@ -21,16 +20,7 @@ export interface ConfirmDialogProps extends TransitionHandlerProps {
 }
 
 export function ConfirmDialog(props: ConfirmDialogProps) {
-  const {
-    title,
-    content,
-    agreeText,
-    rejectText,
-    onAgree,
-    onReject,
-    onClose,
-    open
-  } = props;
+  const { title, content, agreeText, rejectText, onAgree, onReject, onClose, open } = props;
 
   const handleClose = () => {
     onClose();
@@ -58,12 +48,9 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
         onEntered={props.onEntered}
         onExit={props.onExit}
         onExiting={props.onExiting}
-        onExited={props.onExited}
-      >
+        onExited={props.onExited}>
         <DialogTitle id="alert-dialog-title">{title}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>{content}</DialogContentText>
-        </DialogContent>
+        <DialogContent>{content}</DialogContent>
         <DialogActions>
           <Button onClick={handleReject} color="primary">
             {rejectText || "Close"}

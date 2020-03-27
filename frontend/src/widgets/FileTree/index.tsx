@@ -9,7 +9,10 @@ import FolderIcon from "@material-ui/icons/Folder";
 import FolderOpenIcon from "@material-ui/icons/FolderOpen";
 import InsertDriveFileOutlinedIcon from "@material-ui/icons/InsertDriveFileOutlined";
 import { ConfigNode } from "../../types/config";
-import { setCurrentConfigIdChainAction } from "../../actions/config";
+import { setCurrentConfigIdChainAction, getConfigPath } from "../../actions/config";
+import { MenuItem, Popper, Grow, Paper, MenuList, ClickAwayListener } from "@material-ui/core";
+import { TDispatch } from "../../types";
+import { getCurrentConfig } from "../../selectors/config";
 
 function TransitionComponent(props: any) {
   const style = useSpring({
@@ -34,6 +37,16 @@ TransitionComponent.propTypes = {
   in: PropTypes.bool
 };
 
+interface StyledTreeItemProps extends TreeItemProps {
+  dispatch: TDispatch;
+  config: ConfigNode;
+  idChain: string[];
+  handleAdd: () => void;
+  handleEdit: () => void;
+  handleDuplicate: () => void;
+  handleDelete: () => void;
+}
+
 const StyledTreeItem = withStyles((theme: any) => ({
   group: {
     marginLeft: 12,
@@ -42,8 +55,92 @@ const StyledTreeItem = withStyles((theme: any) => ({
   },
   content: {
     height: 30
+  },
+  label: {
+    zIndex: -1
   }
-}))((props: TreeItemProps) => <TreeItem {...props} TransitionComponent={TransitionComponent} />);
+}))((props: StyledTreeItemProps) => {
+  const { dispatch, config, idChain, handleAdd, handleEdit, handleDuplicate, handleDelete } = props;
+
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+
+  const handleClick = () => {
+    dispatch(setCurrentConfigIdChainAction(idChain));
+  };
+
+  const handleContextMenu = (event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
+    event.preventDefault();
+    dispatch(setCurrentConfigIdChainAction(idChain));
+    setAnchorEl(event.currentTarget.firstChild as any);
+    event.stopPropagation();
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleListKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === "Tab") {
+      event.preventDefault();
+      setAnchorEl(null);
+    }
+  };
+
+  const copiedProps = { ...props };
+  delete copiedProps.dispatch;
+  delete copiedProps.config;
+  delete copiedProps.idChain;
+  delete copiedProps.handleAdd;
+  delete copiedProps.handleEdit;
+  delete copiedProps.handleDuplicate;
+  delete copiedProps.handleDelete;
+
+  return (
+    <>
+      <TreeItem
+        {...copiedProps}
+        TransitionComponent={TransitionComponent}
+        onClick={handleClick}
+        onContextMenu={handleContextMenu}
+      />
+
+      <Popper
+        open={getConfigPath(config) === getConfigPath(getCurrentConfig()) && Boolean(anchorEl)}
+        anchorEl={anchorEl}
+        role={undefined}
+        transition
+        disablePortal>
+        {({ TransitionProps, placement }) => (
+          <Grow
+            {...TransitionProps}
+            style={{ transformOrigin: placement === "bottom" ? "center top" : "center bottom" }}>
+            <Paper>
+              <ClickAwayListener onClickAway={handleClose}>
+                <MenuList autoFocusItem={Boolean(anchorEl)} id="menu-list-grow" onKeyDown={handleListKeyDown}>
+                  {config.get("type") === "folder" ? (
+                    <MenuItem onClick={handleAdd}>Add</MenuItem>
+                  ) : (
+                    [
+                      <MenuItem key="edit" onClick={handleEdit}>
+                        Edit
+                      </MenuItem>,
+                      <MenuItem key="duplicate" onClick={handleDuplicate}>
+                        Dupliate
+                      </MenuItem>,
+                      <MenuItem key="delete" onClick={handleDelete}>
+                        Delete
+                      </MenuItem>
+                    ]
+                  )}
+                </MenuList>
+              </ClickAwayListener>
+            </Paper>
+          </Grow>
+        )}
+      </Popper>
+    </>
+  );
+});
 
 const useStyles = makeStyles({
   root: {
@@ -53,86 +150,86 @@ const useStyles = makeStyles({
   }
 });
 
-export interface FileTreeProp {
+export interface FileTreeProps {
   rootConfig: ConfigNode;
   dispatch: any;
+  handleAdd: () => void;
+  handleEdit: () => void;
+  handleDuplicate: () => void;
+  handleDelete: () => void;
 }
 
-const renderStyledTreeItem = (config: ConfigNode, idChain: string[], dispatch: any) => {
-  let newIdChain: string[] = idChain.slice(0); // copy idChain to newIdChain, different memory addresses
-  newIdChain.push(config.get("id"));
+export const FileTree = (props: FileTreeProps) => {
+  const classes = useStyles();
 
-  // const currentConfig = getCurrentConfig();
+  const { dispatch, rootConfig, handleAdd, handleEdit, handleDuplicate, handleDelete } = props;
 
-  if (config.get("type") === "file") {
+  const renderStyledTreeItem = (config: ConfigNode, idChain: string[]) => {
+    // copy idChain to newIdChain, different memory addresses
+    let newIdChain: string[] = idChain.slice(0);
+    newIdChain.push(config.get("id"));
+
+    if (config.get("type") === "file") {
+      return (
+        <StyledTreeItem
+          dispatch={dispatch}
+          config={config}
+          idChain={newIdChain}
+          key={getConfigPath(config)}
+          nodeId={getConfigPath(config)}
+          label={config.get("name")}
+          handleAdd={handleAdd}
+          handleEdit={handleEdit}
+          handleDuplicate={handleDuplicate}
+          handleDelete={handleDelete}
+        />
+      );
+    }
+
+    const childrenItems: any[] = [];
+    config.get("children").forEach((childConfig: ConfigNode) => {
+      // recursive render children
+      childrenItems.push(renderStyledTreeItem(childConfig, newIdChain));
+    });
     return (
       <StyledTreeItem
-        // icon={<InsertDriveFileOutlinedIcon htmlColor="#0277bd" />}
-        key={config.get("id")}
-        nodeId={config.get("id")}
-        label={config.get("name")}
-        onClick={() => dispatch(setCurrentConfigIdChainAction(newIdChain))}
-        // isSelected={config.get("id") === currentConfig.get("id")}
-      />
+        handleAdd={handleAdd}
+        handleEdit={handleEdit}
+        handleDuplicate={handleDuplicate}
+        handleDelete={handleDelete}
+        dispatch={dispatch}
+        config={config}
+        idChain={newIdChain}
+        endIcon={
+          childrenItems.length === 0 ? (
+            <FolderOpenIcon htmlColor="#f9a825" />
+          ) : (
+            <InsertDriveFileOutlinedIcon htmlColor="#0277bd" />
+          )
+        }
+        key={getConfigPath(config)}
+        nodeId={getConfigPath(config)}
+        label={config.get("name")}>
+        {childrenItems}
+      </StyledTreeItem>
     );
-  }
-
-  const childrenItems: any[] = [];
-  config.get("children").forEach((childConfig: ConfigNode) => {
-    // 递归渲染子树
-    childrenItems.push(renderStyledTreeItem(childConfig, newIdChain, dispatch));
-  });
-  return (
-    <StyledTreeItem
-      // icon={<FolderIcon htmlColor="#f9a825" />}
-      // expandIcon={<FolderIcon htmlColor="#f9a825" />}
-      // collapseIcon={<FolderOpenIcon htmlColor="#f9a825" />}
-      endIcon={
-        childrenItems.length === 0 ? (
-          <FolderOpenIcon htmlColor="#f9a825" />
-        ) : (
-          <InsertDriveFileOutlinedIcon htmlColor="#0277bd" />
-        )
-      }
-      key={config.get("id")}
-      nodeId={config.get("id")}
-      label={config.get("name")}>
-      {childrenItems}
-    </StyledTreeItem>
-  );
-};
-
-export const FileTree = (props: FileTreeProp) => {
-  const classes = useStyles();
+  };
 
   return (
     <TreeView
-      // onClick={v => console.log(v)}
+      // onNodeSelect={(event: React.ChangeEvent<{}>, nodeIds: string[]) => {
+      //   console.log("onNodeSelect", event, nodeIds);
+      // }}
+      // onNodeToggle={(event: React.ChangeEvent<{}>, nodeIds: string[]) => {
+      //   console.log("onNodeToggle", event, nodeIds);
+      // }}
+      selected={getConfigPath(getCurrentConfig())}
       className={classes.root}
-      defaultExpanded={[props.rootConfig.get("id")]}
+      defaultExpanded={[rootConfig.get("id")]}
       defaultCollapseIcon={<FolderOpenIcon htmlColor="#f9a825" />}
       defaultExpandIcon={<FolderIcon htmlColor="#f9a825" />}
       defaultEndIcon={<InsertDriveFileOutlinedIcon htmlColor="#0277bd" />}>
-      {renderStyledTreeItem(props.rootConfig, [], props.dispatch)}
-
-      {/* <StyledTreeItem nodeId="1" label="Main">
-        <StyledTreeItem nodeId="2" label="Hello" />
-        <StyledTreeItem nodeId="3" label="Subtree with children">
-          <StyledTreeItem nodeId="6" label="Hello" />
-          <StyledTreeItem nodeId="7" label="Sub-subtree with children">
-            <StyledTreeItem nodeId="9" label="Child 1" />
-            <StyledTreeItem nodeId="10" label="Child 2" />
-            <StyledTreeItem nodeId="11" label="Child 3" />
-          </StyledTreeItem>
-          <StyledTreeItem
-            nodeId="8"
-            label="Hello"
-            onClick={() => console.log("hello")}
-          />
-        </StyledTreeItem>
-        <StyledTreeItem nodeId="4" label="World" />
-        <StyledTreeItem nodeId="5" label="Something something" />
-      </StyledTreeItem> */}
+      {renderStyledTreeItem(rootConfig, [])}
     </TreeView>
   );
 };
