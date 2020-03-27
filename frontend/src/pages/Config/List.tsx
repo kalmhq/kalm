@@ -188,26 +188,43 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
     if (currentConfig.get("type") === "file") {
       return (
         <div>
-          <IconButtonWithTooltip tooltipTitle="Edit" aria-label="edit" onClick={() => this.handleEdit()}>
+          <IconButtonWithTooltip
+            tooltipPlacement="top"
+            tooltipTitle="Edit"
+            aria-label="edit"
+            onClick={() => this.handleEdit()}>
             <EditIcon />
           </IconButtonWithTooltip>
 
-          <IconButtonWithTooltip tooltipTitle="Duplicate" aria-label="duplicate" onClick={() => this.handleDuplicate()}>
+          <IconButtonWithTooltip
+            tooltipPlacement="top"
+            tooltipTitle="Duplicate"
+            aria-label="duplicate"
+            onClick={() => this.handleDuplicate()}>
             <FileCopyIcon />
           </IconButtonWithTooltip>
 
-          <IconButtonWithTooltip tooltipTitle="Add File" aria-label="add-file" onClick={() => this.handleAdd("file")}>
+          <IconButtonWithTooltip
+            tooltipPlacement="top"
+            tooltipTitle="Add File"
+            aria-label="add-file"
+            onClick={() => this.handleAdd("file")}>
             <NoteAddIcon />
           </IconButtonWithTooltip>
 
           <IconButtonWithTooltip
+            tooltipPlacement="top"
             tooltipTitle="Add Folder"
             aria-label="add-folder"
             onClick={() => this.handleAdd("folder")}>
             <CreateNewFolderIcon />
           </IconButtonWithTooltip>
 
-          <IconButtonWithTooltip tooltipTitle="Delete" aria-label="delete" onClick={() => this.handleDelete()}>
+          <IconButtonWithTooltip
+            tooltipPlacement="top"
+            tooltipTitle="Delete"
+            aria-label="delete"
+            onClick={() => this.handleDelete()}>
             <DeleteIcon />
           </IconButtonWithTooltip>
         </div>
@@ -215,11 +232,16 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
     } else {
       return (
         <div>
-          <IconButtonWithTooltip tooltipTitle="Add file" aria-label="add-file" onClick={() => this.handleAdd("file")}>
+          <IconButtonWithTooltip
+            tooltipPlacement="top"
+            tooltipTitle="Add file"
+            aria-label="add-file"
+            onClick={() => this.handleAdd("file")}>
             <NoteAddIcon />
           </IconButtonWithTooltip>
 
           <IconButtonWithTooltip
+            tooltipPlacement="top"
             tooltipTitle="Add folder"
             aria-label="add-folder"
             onClick={() => this.handleAdd("folder")}>
