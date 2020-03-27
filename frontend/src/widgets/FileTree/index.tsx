@@ -131,7 +131,7 @@ const StyledTreeItem = withStyles((theme: any) => ({
                           Edit
                         </MenuItem>,
                         <MenuItem key="duplicate" onClick={handleDuplicate}>
-                          Dupliate
+                          Duplicate
                         </MenuItem>,
                         <MenuItem key="delete" onClick={handleDelete}>
                           Delete

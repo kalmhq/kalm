@@ -2,7 +2,7 @@ import React from "react";
 import { BasePage } from "../BasePage";
 import { connect } from "react-redux";
 import { RootState } from "../../reducers";
-import { IconButton, Theme, withStyles, Breadcrumbs, Link, WithStyles, createStyles } from "@material-ui/core";
+import { Theme, withStyles, Breadcrumbs, Link, WithStyles, createStyles } from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@material-ui/icons/Delete";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
@@ -21,6 +21,7 @@ import { setErrorNotificationAction } from "../../actions/notification";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
 import { loadConfigsAction } from "../../actions/config";
 import { ConfigNode, initialRootConfigNode, ConfigNodeType } from "../../types/config";
+import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -187,37 +188,43 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
     if (currentConfig.get("type") === "file") {
       return (
         <div>
-          <IconButton aria-label="edit" onClick={() => this.handleEdit()}>
+          <IconButtonWithTooltip tooltipTitle="Edit" aria-label="edit" onClick={() => this.handleEdit()}>
             <EditIcon />
-          </IconButton>
+          </IconButtonWithTooltip>
 
-          <IconButton aria-label="duplicate" onClick={() => this.handleDuplicate()}>
+          <IconButtonWithTooltip tooltipTitle="Duplicate" aria-label="duplicate" onClick={() => this.handleDuplicate()}>
             <FileCopyIcon />
-          </IconButton>
+          </IconButtonWithTooltip>
 
-          <IconButton aria-label="add-file" onClick={() => this.handleAdd("file")}>
+          <IconButtonWithTooltip tooltipTitle="Add File" aria-label="add-file" onClick={() => this.handleAdd("file")}>
             <NoteAddIcon />
-          </IconButton>
+          </IconButtonWithTooltip>
 
-          <IconButton aria-label="add-folder" onClick={() => this.handleAdd("folder")}>
+          <IconButtonWithTooltip
+            tooltipTitle="Add Folder"
+            aria-label="add-folder"
+            onClick={() => this.handleAdd("folder")}>
             <CreateNewFolderIcon />
-          </IconButton>
+          </IconButtonWithTooltip>
 
-          <IconButton aria-label="delete" onClick={() => this.handleDelete()}>
+          <IconButtonWithTooltip tooltipTitle="Delete" aria-label="delete" onClick={() => this.handleDelete()}>
             <DeleteIcon />
-          </IconButton>
+          </IconButtonWithTooltip>
         </div>
       );
     } else {
       return (
         <div>
-          <IconButton aria-label="add-file" onClick={() => this.handleAdd("file")}>
+          <IconButtonWithTooltip tooltipTitle="Add file" aria-label="add-file" onClick={() => this.handleAdd("file")}>
             <NoteAddIcon />
-          </IconButton>
+          </IconButtonWithTooltip>
 
-          <IconButton aria-label="add-folder" onClick={() => this.handleAdd("folder")}>
+          <IconButtonWithTooltip
+            tooltipTitle="Add folder"
+            aria-label="add-folder"
+            onClick={() => this.handleAdd("folder")}>
             <CreateNewFolderIcon />
-          </IconButton>
+          </IconButtonWithTooltip>
         </div>
       );
     }

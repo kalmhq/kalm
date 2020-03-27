@@ -1,6 +1,5 @@
 import {
   createStyles,
-  IconButton,
   Switch,
   Theme,
   WithStyles,
@@ -38,6 +37,7 @@ import { getApplicationByName, duplicateApplicationName } from "../../selectors/
 import { ApplicationListItem } from "../../types/application";
 import ViewHeadlineIcon from "@material-ui/icons/ViewHeadline";
 import PlayArrowIcon from "@material-ui/icons/PlayArrow";
+import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
@@ -354,7 +354,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
       return {
         action: (
           <>
-            <IconButton
+            <IconButtonWithTooltip
+              tooltipTitle="Edit"
               aria-label="edit"
               onClick={() => {
                 dispatch(
@@ -362,17 +363,19 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                 );
               }}>
               <EditIcon />
-            </IconButton>
+            </IconButtonWithTooltip>
 
-            <IconButton
+            <IconButtonWithTooltip
+              tooltipTitle="Duplicate"
               aria-label="duplicate"
               onClick={() => {
                 this.showDuplicateConfirmDialog(applicationListItem);
               }}>
               <FileCopyIcon />
-            </IconButton>
+            </IconButtonWithTooltip>
 
-            <IconButton
+            <IconButtonWithTooltip
+              tooltipTitle="Logs"
               aria-label="logs"
               onClick={() => {
                 dispatch(
@@ -380,25 +383,29 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                 );
               }}>
               <ViewHeadlineIcon />
-            </IconButton>
+            </IconButtonWithTooltip>
 
-            <IconButton
+            <IconButtonWithTooltip
+              tooltipTitle="Exec"
               aria-label="exec"
               onClick={() => {
                 dispatch(
-                  push(`/applications/${applicationListItem.get("namespace")}/${applicationListItem.get("name")}/shells`)
+                  push(
+                    `/applications/${applicationListItem.get("namespace")}/${applicationListItem.get("name")}/shells`
+                  )
                 );
               }}>
               <PlayArrowIcon />
-            </IconButton>
+            </IconButtonWithTooltip>
 
-            <IconButton
+            <IconButtonWithTooltip
+              tooltipTitle="Delete"
               aria-label="delete"
               onClick={() => {
                 this.showDeleteConfirmDialog(applicationListItem);
               }}>
               <DeleteIcon />
-            </IconButton>
+            </IconButtonWithTooltip>
           </>
         ),
         checkbox: (

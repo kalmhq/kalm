@@ -4,12 +4,13 @@ import { WrappedFieldProps, WrappedFieldArrayProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
 import DeleteIcon from "@material-ui/icons/Delete";
 import { RenderTextField, RenderSelectField, RenderAutoCompleteSelect } from ".";
-import { Grid, Button, IconButton, MenuItem, Divider } from "@material-ui/core";
+import { Grid, Button, MenuItem, Divider } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { ValidatorRequired } from "../validator";
 import { ImmutableMap } from "../../typings";
 import Immutable from "immutable";
 import AddIcon from "@material-ui/icons/Add";
+import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
 
 export const DiskTypeNew = "new";
 export const DiskTypeExisting = "existing";
@@ -123,9 +124,9 @@ const renderDisks = ({ fields, meta: { error, submitFailed } }: WrappedFieldArra
                 </Grid>
               </Grid>
               <Grid item xs={1} className={classes.delete}>
-                <IconButton aria-label="delete" onClick={() => fields.remove(index)}>
+                <IconButtonWithTooltip tooltipTitle="Delete" aria-label="delete" onClick={() => fields.remove(index)}>
                   <DeleteIcon />
-                </IconButton>
+                </IconButtonWithTooltip>
               </Grid>
             </Grid>
             {index !== fields.length - 1 ? <Divider classes={{ root: classes.divider }} /> : null}
