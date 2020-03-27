@@ -63,9 +63,9 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 		return err
 	}
 
-	metricResolution := 5 * time.Second
-	//metricResolution := 1 * time.Minute
-	metricCount := 3
+	//metricResolution := 5 * time.Second
+	metricResolution := 1 * time.Minute
+	metricDuration := 15*time.Minute
 
 	ticker := time.NewTicker(metricResolution)
 
@@ -97,7 +97,6 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 							componentMetricDB[componentKey] = make(map[string][]metricv1beta1.PodMetrics)
 						}
 
-						shownPods := make(map[string]interface{})
 						for _, podMetrics := range metricsList.Items {
 
 							if podMetrics.Namespace != app.Namespace ||
@@ -105,8 +104,6 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 								// ignore if is not pod of this app
 								continue
 							}
-
-							shownPods[podMetrics.Name] = true
 
 							vPodMetricsSlice := componentMetricDB[componentKey][podMetrics.Name]
 
@@ -117,28 +114,20 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 							}
 
 							vPodMetricsSlice = append(vPodMetricsSlice, podMetrics)
-							if len(vPodMetricsSlice) > metricCount {
-								// purge old metrics
-								vPodMetricsSlice = vPodMetricsSlice[len(vPodMetricsSlice)-metricCount:]
+
+							// purge old metrics
+							for len(vPodMetricsSlice) > 0 {
+								cutTs := time.Now().Add(-1 * metricDuration)
+								if vPodMetricsSlice[0].Timestamp.Time.After(cutTs) {
+									break
+								}
+
+								vPodMetricsSlice = vPodMetricsSlice[1:]
 							}
 
 							componentMetricDB[componentKey][podMetrics.Name] = vPodMetricsSlice
 
 							fmt.Println(fmt.Sprintf("%s -> %s", componentKey, podMetrics.Name), vPodMetricsSlice, len(vPodMetricsSlice))
-						}
-
-						// clean pods not shown, deleted
-						var deletedPods []string
-						for inDBPod, _ := range componentMetricDB[componentKey] {
-							if _, exist := shownPods[inDBPod]; exist {
-								continue
-							}
-
-							deletedPods = append(deletedPods, inDBPod)
-						}
-
-						for _, deletedPod := range deletedPods {
-							delete(componentMetricDB[componentKey], deletedPod)
 						}
 					}
 				}
@@ -154,20 +143,20 @@ func getComponentMetricSumList() map[string]ComponentMetrics {
 	rst := make(map[string]ComponentMetrics)
 
 	for compName, podMap := range componentMetricDB {
-		compMetricSum := ComponentMetrics{
+		compMetrics := ComponentMetrics{
 			Name: compName,
 			Pods: make(map[string]MetricsSum),
 		}
 
 		for podName, metricsHistory := range podMap {
-			compMetricSum.Pods[podName] = toMetricSum(metricsHistory)
+			compMetrics.Pods[podName] = toMetricSum(metricsHistory)
 		}
 
-		podsMetricsSum := aggregatePodsSum(compMetricSum.Pods)
-		compMetricSum.MemoryUsageHistory = podsMetricsSum.MemoryUsageHistory
-		compMetricSum.CPUUsageHistory = podsMetricsSum.CPUUsageHistory
+		podsMetricsSum := aggregatePodsSum(compMetrics.Pods)
+		compMetrics.MemoryUsageHistory = podsMetricsSum.MemoryUsageHistory
+		compMetrics.CPUUsageHistory = podsMetricsSum.CPUUsageHistory
 
-		rst[compName] = compMetricSum
+		rst[compName] = compMetrics
 	}
 
 	return rst
@@ -230,7 +219,7 @@ func aggregateMetrics(pods map[string]MetricsSum, mType string) []MetricPoint {
 		// add back if
 		if item.n+1 < len(item.value) {
 			item.n += 1
-			pq.Push(item)
+			heap.Push(&pq, item)
 		}
 	}
 
