@@ -56,24 +56,10 @@ type ComponentStatus struct {
 	ComponentMetrics `json:"metrics"`
 }
 
-// https://github.com/kubernetes/dashboard/blob/master/src/app/backend/resource/pod/metrics.go#L37
-type MetricsSum struct {
-	// todo why pointer of uint64
-
-	////// Most recent measure of CPU usage on all cores in nanoseconds.
-	//CPUUsage int64 `json:"cpuUsage"`
-	////// Pod memory usage in bytes.
-	//MemoryUsage int64 `json:"memoryUsage"`
-	// Timestamped samples of CPUUsage over some short period of history
-	CPUUsageHistory []MetricPoint `json:"cpu"`
-	// Timestamped samples of pod memory usage over some short period of history
-	MemoryUsageHistory []MetricPoint `json:"memory"`
-}
-
 type ComponentMetrics struct {
-	Name       string `json:"-"`
-	MetricsSum `json:",inline,omitempty"`
-	Pods       map[string]MetricsSum `json:"pods"`
+	Name            string `json:"-"`
+	MetricHistories `json:",inline,omitempty"`
+	Pods            map[string]MetricHistories `json:"pods"`
 }
 
 // https://github.com/kubernetes/dashboard/blob/master/src/app/backend/integration/metric/api/types.go#L121
@@ -95,6 +81,12 @@ type ApplicationListResponseItem struct {
 	CreatedAt  time.Time          `json:"createdAt"`
 	IsActive   bool               `json:"isActive"`
 	Components []*ComponentStatus `json:"components"`
+	Metrics    MetricHistories    `json:"metrics"`
+}
+
+type MetricHistories struct {
+	CPU    MetricHistory `json:"cpu"`
+	Memory MetricHistory `json:"memory"`
 }
 
 type ApplicationListResponse struct {
@@ -232,12 +224,27 @@ func (builder *Builder) buildApplicationListResponseItem(application *v1alpha1.A
 		builder.Logger.Error(err)
 	}
 
+	componentStatus := builder.buildApplicationComponentStatus(application, resources)
+
+	var cpuHistoryList []MetricHistory
+	var memHistoryList []MetricHistory
+	for _, status := range componentStatus {
+		cpuHistoryList = append(cpuHistoryList, status.CPU)
+		memHistoryList = append(memHistoryList, status.Memory)
+	}
+	appCpuHistory := aggregateHistoryList(cpuHistoryList)
+	appMemHistory := aggregateHistoryList(memHistoryList)
+
 	return &ApplicationListResponseItem{
 		Name:       application.ObjectMeta.Name,
 		Namespace:  application.ObjectMeta.Namespace,
 		IsActive:   application.Spec.IsActive,
 		CreatedAt:  application.ObjectMeta.CreationTimestamp.Time,
-		Components: builder.buildApplicationComponentStatus(application, resources),
+		Components: componentStatus,
+		Metrics: MetricHistories{
+			CPU:    appCpuHistory,
+			Memory: appMemHistory,
+		},
 	}
 }
 
@@ -296,6 +303,7 @@ func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Ap
 
 		res = append(res, componentStatus)
 	}
+
 	return res
 }
 

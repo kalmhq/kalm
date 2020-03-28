@@ -91,7 +91,7 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 						fmt.Print("fail to list podMetrics, err:", err)
 					}
 
-					fmt.Printf("metrics found under ns(%s): %d", app.Namespace, len(metricsList.Items))
+					fmt.Printf("metrics found under ns(%s): %d\n", app.Namespace, len(metricsList.Items))
 
 					for _, component := range app.Spec.Components {
 						componentKey := fmt.Sprintf("%s-%s", app.Namespace, component.Name)
@@ -163,7 +163,7 @@ func getComponentMetricSumList() map[string]ComponentMetrics {
 	for compName, podMap := range componentMetricDB {
 		compMetrics := ComponentMetrics{
 			Name: compName,
-			Pods: make(map[string]MetricsSum),
+			Pods: make(map[string]MetricHistories),
 		}
 
 		for podName, metricsHistory := range podMap {
@@ -171,8 +171,8 @@ func getComponentMetricSumList() map[string]ComponentMetrics {
 		}
 
 		podsMetricsSum := aggregatePodsSum(compMetrics.Pods)
-		compMetrics.MemoryUsageHistory = podsMetricsSum.MemoryUsageHistory
-		compMetrics.CPUUsageHistory = podsMetricsSum.CPUUsageHistory
+		compMetrics.Memory = podsMetricsSum.Memory
+		compMetrics.CPU = podsMetricsSum.CPU
 
 		rst[compName] = compMetrics
 	}
@@ -180,28 +180,17 @@ func getComponentMetricSumList() map[string]ComponentMetrics {
 	return rst
 }
 
-func aggregateMetrics(pods map[string]MetricsSum, mType string) []MetricPoint {
-	var points []MetricPoint
+type MetricHistory []MetricPoint
 
-	pq := make(PriorityQueue, len(pods))
+func aggregateHistoryList(historyList []MetricHistory) (history MetricHistory) {
+	pq := make(PriorityQueue, len(historyList))
 
-	i := 0
-	for _, pod := range pods {
-		if mType == "cpu" {
-			pq[i] = &Item{
-				value: pod.CPUUsageHistory,
-				n:     0,
-				index: i,
-			}
-		} else {
-			pq[i] = &Item{
-				value: pod.MemoryUsageHistory,
-				n:     0,
-				index: i,
-			}
+	for i, history := range historyList {
+		pq[i] = &Item{
+			value: history,
+			n:     0,
+			index: i,
 		}
-
-		i++
 	}
 	heap.Init(&pq)
 
@@ -215,19 +204,19 @@ func aggregateMetrics(pods map[string]MetricsSum, mType string) []MetricPoint {
 
 		target := item.value[item.n]
 
-		if len(points) == 0 {
-			points = append(points, MetricPoint{
+		if len(history) == 0 {
+			history = append(history, MetricPoint{
 				Timestamp: target.Timestamp,
 				Value:     target.Value,
 			})
 		} else {
-			latestPoint := &points[len(points)-1]
+			latestPoint := &history[len(history)-1]
 			if latestPoint.Timestamp.Unix() == target.Timestamp.Unix() {
 				// merge
 				latestPoint.Value += target.Value
 			} else {
 				// append
-				points = append(points, MetricPoint{
+				history = append(history, MetricPoint{
 					Timestamp: target.Timestamp,
 					Value:     target.Value,
 				})
@@ -241,15 +230,28 @@ func aggregateMetrics(pods map[string]MetricsSum, mType string) []MetricPoint {
 		}
 	}
 
-	return points
+	return
 }
-func aggregatePodsSum(pods map[string]MetricsSum) MetricsSum {
-	cpuPoints := aggregateMetrics(pods, "cpu")
-	memoryPoints := aggregateMetrics(pods, "memory")
 
-	return MetricsSum{
-		CPUUsageHistory:    cpuPoints,
-		MemoryUsageHistory: memoryPoints,
+func aggregateMapOfPod2Metrics(pods map[string]MetricHistories, mType string) MetricHistory {
+	var historyList []MetricHistory
+	for _, pod := range pods {
+		if mType == "cpu" {
+			historyList = append(historyList, pod.CPU)
+		} else {
+			historyList = append(historyList, pod.Memory)
+		}
+	}
+
+	return aggregateHistoryList(historyList)
+}
+func aggregatePodsSum(pods map[string]MetricHistories) MetricHistories {
+	cpuPoints := aggregateMapOfPod2Metrics(pods, "cpu")
+	memoryPoints := aggregateMapOfPod2Metrics(pods, "memory")
+
+	return MetricHistories{
+		CPU:    cpuPoints,
+		Memory: memoryPoints,
 	}
 }
 
@@ -311,8 +313,8 @@ func (pq *PriorityQueue) Pop() interface{} {
 //	heap.Fix(pq, item.index)
 //}
 
-func toMetricSum(history []metricv1beta1.PodMetrics) MetricsSum {
-	sum := MetricsSum{}
+func toMetricSum(history []metricv1beta1.PodMetrics) MetricHistories {
+	sum := MetricHistories{}
 
 	for _, podMetrics := range history {
 		var memSum uint64
@@ -326,11 +328,11 @@ func toMetricSum(history []metricv1beta1.PodMetrics) MetricsSum {
 			cpuSum += uint64(cpu.Value())
 		}
 
-		sum.MemoryUsageHistory = append(sum.MemoryUsageHistory, MetricPoint{
+		sum.Memory = append(sum.Memory, MetricPoint{
 			Timestamp: podMetrics.Timestamp.Time,
 			Value:     memSum,
 		})
-		sum.CPUUsageHistory = append(sum.CPUUsageHistory, MetricPoint{
+		sum.CPU = append(sum.CPU, MetricPoint{
 			Timestamp: podMetrics.Timestamp.Time,
 			Value:     cpuSum,
 		})
