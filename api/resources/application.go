@@ -224,13 +224,13 @@ func (builder *Builder) buildApplicationListResponseItem(application *v1alpha1.A
 		builder.Logger.Error(err)
 	}
 
-	componentStatus := builder.buildApplicationComponentStatus(application, resources)
+	componentsStatusList := builder.buildApplicationComponentStatus(application, resources)
 
 	var cpuHistoryList []MetricHistory
 	var memHistoryList []MetricHistory
-	for _, status := range componentStatus {
-		cpuHistoryList = append(cpuHistoryList, status.CPU)
-		memHistoryList = append(memHistoryList, status.Memory)
+	for _, compStatus := range componentsStatusList {
+		cpuHistoryList = append(cpuHistoryList, compStatus.CPU)
+		memHistoryList = append(memHistoryList, compStatus.Memory)
 	}
 	appCpuHistory := aggregateHistoryList(cpuHistoryList)
 	appMemHistory := aggregateHistoryList(memHistoryList)
@@ -240,7 +240,7 @@ func (builder *Builder) buildApplicationListResponseItem(application *v1alpha1.A
 		Namespace:  application.ObjectMeta.Namespace,
 		IsActive:   application.Spec.IsActive,
 		CreatedAt:  application.ObjectMeta.CreationTimestamp.Time,
-		Components: componentStatus,
+		Components: componentsStatusList,
 		Metrics: MetricHistories{
 			CPU:    appCpuHistory,
 			Memory: appMemHistory,
@@ -251,7 +251,7 @@ func (builder *Builder) buildApplicationListResponseItem(application *v1alpha1.A
 func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Application, resources *Resources) []*ComponentStatus {
 	res := []*ComponentStatus{}
 
-	sumMap := getComponentMetricSumList()
+	componentKey2MetricMap := getComponentKey2MetricMap()
 
 	for i := range application.Spec.Components {
 		component := application.Spec.Components[i]
@@ -262,8 +262,6 @@ func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Ap
 			DeploymentStatus: appsV1.DeploymentStatus{},
 			CronjobStatus:    v1betav1.CronJobStatus{},
 			PodInfo:          &PodInfo{},
-
-			//ComponentMetrics: ComponentMetrics{}, // TODO
 		}
 
 		// TODO fix the default value, there should be a empty string
@@ -282,13 +280,8 @@ func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Ap
 				componentStatus.PodInfo = getPodsInfo(deployment.Status.Replicas, deployment.Spec.Replicas, pods)
 				componentStatus.PodInfo.Warnings = filterPodWarningEvents(resources.EventList.Items, pods)
 
-				//podMetricsList := getPodMetricsListForComponent(deploymentName, resources.PodMetricsList)
-				//componentStatus.MetricsList = podMetricsList
-
-				//metricsSum := getMetricsSum(podMetricsList)
-				//componentStatus.MetricsSum = metricsSum
 				componentKey := fmt.Sprintf("%s-%s", application.Namespace, component.Name)
-				if v, exist := sumMap[componentKey]; exist {
+				if v, exist := componentKey2MetricMap[componentKey]; exist {
 					componentStatus.ComponentMetrics = v
 				}
 			}
@@ -298,8 +291,6 @@ func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Ap
 		//if component.WorkLoadType == v1alpha1.WorkLoadTypeCronjob {
 		//	componentStatus.CronjobStatus = v1betav1.CronJobStatus{}
 		//}
-
-		// todo fill metric info
 
 		res = append(res, componentStatus)
 	}

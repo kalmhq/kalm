@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/influxdata/influxdb/pkg/slices"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -47,6 +48,10 @@ import (
 //               {pod2 -> metric, metric, ...}
 var componentMetricDB = make(map[string]map[string][]metricv1beta1.PodMetrics)
 
+// nodeName1 -> {metricT1, metricT2, ...}
+// nodeName2 -> {metricT1, ...}
+var nodeMetricDB = make(map[string][]metricv1beta1.NodeMetrics)
+
 // todo lock
 
 //metricResolution := 5 * time.Second
@@ -75,7 +80,6 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 			case <-ticker.C:
 				// get all kapp-applications
 				var appList v1alpha1.ApplicationList
-
 				err = k8sClient.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/applications").Do().Into(&appList)
 				if err != nil {
 					fmt.Errorf("fail get applications, err: %s", err)
@@ -107,11 +111,31 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 
 					cacheMetricsForAppIntoLocalDB(app, metricsList)
 				}
+
+				// nodes metrics
+				nodeMetricsList, err := metricClient.NodeMetricses().List(metav1.ListOptions{})
+				if err != nil {
+					fmt.Errorf("fail get nodes, err: %s", err)
+				}
+
+				fmt.Printf("node metrics found %d\n", len(nodeMetricsList.Items))
+				cacheMetricsForNodesIntoLocalDB(nodeMetricsList)
 			}
 		}
 	}()
 
 	return nil
+}
+
+func cacheMetricsForNodesIntoLocalDB(nodeMetricsList *metricv1beta1.NodeMetricsList) {
+	for _, nodeMetrics := range nodeMetricsList.Items {
+		nodeName := nodeMetrics.Name
+
+		v := nodeMetricDB[nodeName]
+		v = append(v, nodeMetrics)
+
+		nodeMetricDB[nodeName] = v
+	}
 }
 
 func cacheMetricsForAppIntoLocalDB(app v1alpha1.Application, metricsList *metricv1beta1.PodMetricsList) {
@@ -173,8 +197,70 @@ func cacheMetricsForAppIntoLocalDB(app v1alpha1.Application, metricsList *metric
 	}
 }
 
+type NodesMetricHistories struct {
+	CPU    MetricHistory         `json:"cpu"`
+	Memory MetricHistory         `json:"memory"`
+	Nodes  []NodeMetricHistories `json:"nodes"`
+}
+
+type NodeMetricHistories struct {
+	Name   string        `json:"name"`
+	CPU    MetricHistory `json:"cpu"`
+	Memory MetricHistory `json:"memory"`
+}
+
+func GetFilteredNodeMetrics(nodes []string) NodesMetricHistories {
+	var nodeMetricHistoriesList []NodeMetricHistories
+
+	var cpuHistoryList []MetricHistory
+	var memHistoryList []MetricHistory
+	for nodeName, nodeMetricsList := range nodeMetricDB {
+		if !slices.Exists(nodes, nodeName) {
+			continue
+		}
+
+		oneNode := getNodeMetricHistories(nodeName, nodeMetricsList)
+		nodeMetricHistoriesList = append(nodeMetricHistoriesList, oneNode)
+
+		cpuHistoryList = append(cpuHistoryList, oneNode.CPU)
+		memHistoryList = append(memHistoryList, oneNode.Memory)
+	}
+
+	aggCpu := aggregateHistoryList(cpuHistoryList)
+	aggMem := aggregateHistoryList(memHistoryList)
+
+	return NodesMetricHistories{
+		CPU:    aggCpu,
+		Memory: aggMem,
+		Nodes:  nodeMetricHistoriesList,
+	}
+}
+
+func getNodeMetricHistories(name string, list []metricv1beta1.NodeMetrics) NodeMetricHistories {
+	var memHistory MetricHistory
+	var cpuHistory MetricHistory
+	for _, nodeMetric := range list {
+		memHistory = append(memHistory, MetricPoint{
+			Timestamp: nodeMetric.Timestamp.Time,
+			Value:     uint64(nodeMetric.Usage.Memory().Value()),
+		})
+
+		cpuHistory = append(cpuHistory, MetricPoint{
+			Timestamp: nodeMetric.Timestamp.Time,
+			Value:     uint64(nodeMetric.Usage.Cpu().Value()),
+		})
+	}
+
+	return NodeMetricHistories{
+		Name:   name,
+		Memory: memHistory,
+		CPU:    cpuHistory,
+	}
+
+}
+
 // componentName -> componentMetricsSum
-func getComponentMetricSumList() map[string]ComponentMetrics {
+func getComponentKey2MetricMap() map[string]ComponentMetrics {
 	rst := make(map[string]ComponentMetrics)
 
 	for compName, podMap := range componentMetricDB {

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/kapp-staging/kapp/api/resources"
 	"github.com/labstack/echo/v4"
 	"k8s.io/metrics/pkg/client/clientset/versioned"
 )
@@ -68,6 +69,28 @@ func (h *ApiHandler) handleGetNodeMetrics(c echo.Context) error {
 	}
 
 	return c.JSON(200, nodeMetrics)
+}
+
+func (h *ApiHandler) handleGetNodeMetricsNew(c echo.Context) error {
+	clientConfig := getK8sClientConfig(c)
+	k8sMetricClient, err := versioned.NewForConfig(clientConfig)
+
+	if err != nil {
+		return err
+	}
+
+	nodeMetrics, err := k8sMetricClient.MetricsV1beta1().NodeMetricses().List(ListAll)
+	if err != nil {
+		return err
+	}
+
+	var nodeNames []string
+	for _, n := range nodeMetrics.Items {
+		nodeNames = append(nodeNames, n.Name)
+	}
+
+	resp := resources.GetFilteredNodeMetrics(nodeNames)
+	return c.JSON(200, resp)
 }
 
 func (h *ApiHandler) handleGetClusterRoles(c echo.Context) error {
