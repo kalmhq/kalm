@@ -215,7 +215,7 @@ func (builder *Builder) buildApplicationListResponseItem(application *v1alpha1.A
 			LabelSelector: labels.Everything().String(),
 			FieldSelector: fields.Everything().String(),
 		}),
-		PodMetricsList: builder.GetPodMetricsListChannel(ns, listOptions),
+		//PodMetricsList: builder.GetPodMetricsListChannel(ns, listOptions),
 	}
 
 	resources, err := resourceChannels.ToResources()
