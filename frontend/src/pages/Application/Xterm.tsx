@@ -1,4 +1,4 @@
-import { createStyles, IconButton, TextField, Theme, withStyles } from "@material-ui/core";
+import { createStyles, TextField, Theme, withStyles } from "@material-ui/core";
 import { WithStyles } from "@material-ui/core/styles";
 import CloseIcon from "@material-ui/icons/Close";
 import React, { RefObject } from "react";
@@ -6,6 +6,7 @@ import { Terminal, ITerminalOptions } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
 import { SearchAddon } from "xterm-addon-search";
 import "xterm/css/xterm.css";
+import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
 
 interface XtermProps extends WithStyles<typeof xtermStyles> {
   show: boolean;
@@ -162,9 +163,9 @@ export class XtermRaw extends React.PureComponent<XtermProps, XtermState> {
           onKeyDown={this.onSearchInputKeyDown}
           inputRef={this.searchInputRef}
         />
-        <IconButton size="small" onClick={this.closeSearch}>
+        <IconButtonWithTooltip tooltipTitle="Close" size="small" onClick={this.closeSearch}>
           <CloseIcon />
-        </IconButton>
+        </IconButtonWithTooltip>
       </div>
     );
   };

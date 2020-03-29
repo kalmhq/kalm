@@ -1,47 +1,29 @@
-import {
-  createStyles,
-  IconButton,
-  Switch,
-  Theme,
-  WithStyles,
-  withStyles,
-  ExpansionPanel,
-  ExpansionPanelSummary,
-  ExpansionPanelDetails,
-  Checkbox,
-  TextField
-} from "@material-ui/core";
-import DeleteIcon from "@material-ui/icons/Delete";
-import EditIcon from "@material-ui/icons/Edit";
-import FileCopyIcon from "@material-ui/icons/FileCopy";
+import { Checkbox, createStyles, ExpansionPanel, ExpansionPanelDetails, ExpansionPanelSummary, Switch, TextField, Theme, WithStyles, withStyles } from "@material-ui/core";
+import ArchiveIcon from "@material-ui/icons/Archive";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew";
+import RefreshIcon from "@material-ui/icons/Refresh";
 import { push } from "connected-react-router";
 import MaterialTable from "material-table";
 import React from "react";
-import {
-  deleteApplicationAction,
-  duplicateApplicationAction,
-  updateApplicationAction,
-  loadApplicationAction,
-  loadApplicationsAction
-} from "../../actions/application";
+import { deleteApplicationAction, duplicateApplicationAction, loadApplicationAction, loadApplicationsAction, updateApplicationAction } from "../../actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "../../actions/notification";
+import { duplicateApplicationName, getApplicationByName } from "../../selectors/application";
+import { ApplicationListItem } from "../../types/application";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
+import { Dot } from "../../widgets/Dot";
+import { FoldButtonGroup } from "../../widgets/FoldButtonGroup";
 import { Loading } from "../../widgets/Loading";
+import { SmallCPULineChart, SmallMemoryLineChart } from "../../widgets/SmallLineChart";
 import { BasePage } from "../BasePage";
 import { ApplicationListDataWrapper, WithApplicationsDataProps } from "./ListDataWrapper";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import { Dot } from "../../widgets/Dot";
-import RefreshIcon from "@material-ui/icons/Refresh";
-import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew";
-import ArchiveIcon from "@material-ui/icons/Archive";
-import { getApplicationByName, duplicateApplicationName } from "../../selectors/application";
-import { ApplicationListItem } from "../../types/application";
-import ViewHeadlineIcon from "@material-ui/icons/ViewHeadline";
-import PlayArrowIcon from "@material-ui/icons/PlayArrow";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      padding: theme.spacing(3)
+      padding: theme.spacing(3),
+      "& tr.MuiTableRow-root td": {
+        verticalAlign: "middle"
+      }
     },
     expansionPanel: {
       boxShadow: "none"
@@ -351,54 +333,102 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         </ExpansionPanel>
       );
 
+      // TODO: hack!! application data will return from backend.
+      const cpuData = applicationListItem
+        .get("components")
+        .map(component => {
+          if (component.get("metrics") && component.get("metrics")!.get("cpu")) {
+            return component
+              .get("metrics")!
+              .get("cpu")!
+              .toJS();
+          } else {
+            return [];
+          }
+        })
+        .toArray()
+        .filter(x => x.length > 0)
+        .reduce((a, b) => {
+          return b.map((n, i) => ({ x: n.x, y: n.y + (a[i] ? a[i].y : 0) }));
+        }, []);
+
+      console.log(cpuData);
+      const memoryData = applicationListItem
+        .get("components")
+        .map(component => {
+          if (component.get("metrics") && component.get("metrics")!.get("memory")) {
+            return component
+              .get("metrics")!
+              .get("memory")!
+              .toJS();
+          } else {
+            return [];
+          }
+        })
+        .toArray()
+        .filter(x => x.length > 0)
+        .reduce((a, b) => {
+          return b.map((n, i) => ({ x: n.x, y: n.y + (a[i] ? a[i].y : 0) }));
+        }, []);
+
+      // console.log(cpuData, memoryData);
+
       return {
         action: (
           <>
-            <IconButton
-              aria-label="edit"
-              onClick={() => {
-                dispatch(
-                  push(`/applications/${applicationListItem.get("namespace")}/${applicationListItem.get("name")}/edit`)
-                );
-              }}>
-              <EditIcon />
-            </IconButton>
-
-            <IconButton
-              aria-label="duplicate"
-              onClick={() => {
-                this.showDuplicateConfirmDialog(applicationListItem);
-              }}>
-              <FileCopyIcon />
-            </IconButton>
-
-            <IconButton
-              aria-label="logs"
-              onClick={() => {
-                dispatch(
-                  push(`/applications/${applicationListItem.get("namespace")}/${applicationListItem.get("name")}/logs`)
-                );
-              }}>
-              <ViewHeadlineIcon />
-            </IconButton>
-
-            <IconButton
-              aria-label="exec"
-              onClick={() => {
-                dispatch(
-                  push(`/applications/${applicationListItem.get("namespace")}/${applicationListItem.get("name")}/shells`)
-                );
-              }}>
-              <PlayArrowIcon />
-            </IconButton>
-
-            <IconButton
-              aria-label="delete"
-              onClick={() => {
-                this.showDeleteConfirmDialog(applicationListItem);
-              }}>
-              <DeleteIcon />
-            </IconButton>
+            <FoldButtonGroup
+              options={[
+                {
+                  text: "Edit",
+                  onClick: () => {
+                    dispatch(
+                      push(
+                        `/applications/${applicationListItem.get("namespace")}/${applicationListItem.get("name")}/edit`
+                      )
+                    );
+                  },
+                  icon: "edit"
+                },
+                {
+                  text: "Duplicate",
+                  onClick: () => {
+                    this.showDuplicateConfirmDialog(applicationListItem);
+                  },
+                  icon: "file_copy"
+                },
+                {
+                  text: "Logs",
+                  onClick: () => {
+                    dispatch(
+                      push(
+                        `/applications/${applicationListItem.get("namespace")}/${applicationListItem.get("name")}/logs`
+                      )
+                    );
+                  },
+                  icon: "view_headline"
+                },
+                {
+                  text: "Shell",
+                  onClick: () => {
+                    dispatch(
+                      push(
+                        `/applications/${applicationListItem.get("namespace")}/${applicationListItem.get(
+                          "name"
+                        )}/shells`
+                      )
+                    );
+                  },
+                  icon: "play_arrow"
+                },
+                {
+                  text: "Delete",
+                  onClick: () => {
+                    this.showDeleteConfirmDialog(applicationListItem);
+                  },
+                  icon: "delete"
+                }
+              ]}
+            />
           </>
         ),
         checkbox: (
@@ -414,6 +444,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
             inputProps={{ "aria-label": "secondary checkbox" }}
           />
         ),
+        cpu: <SmallCPULineChart data={cpuData} />,
+        memory: <SmallMemoryLineChart data={memoryData} />,
         name: applicationListItem.get("name"),
         namespace: applicationListItem.get("namespace"), // ["default", "production", "ropsten"][index] || "default",
         active: (
@@ -461,6 +493,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                 { title: "Name", field: "name", sorting: false },
                 { title: "Namespace", field: "namespace", sorting: false },
                 { title: "Components", field: "components", sorting: false },
+                { title: "CPU", field: "cpu" },
+                { title: "Memory", field: "memory" },
                 { title: "Enable", field: "active", sorting: false },
                 {
                   title: "Action",

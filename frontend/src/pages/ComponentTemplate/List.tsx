@@ -1,4 +1,4 @@
-import { Box, createStyles, Fade, IconButton, Theme, Tooltip, WithStyles, withStyles } from "@material-ui/core";
+import { Box, createStyles, Fade, Theme, Tooltip, WithStyles, withStyles } from "@material-ui/core";
 import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
@@ -18,6 +18,7 @@ import { HelperContainer } from "../../widgets/Helper";
 import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
 import { ComponentTemplateDataWrapper, WithComponentTemplatesDataProps } from "./DataWrapper";
+import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -105,29 +106,31 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
         action: (
           <>
             <Tooltip title="Edit this component" aria-label="duplicate">
-              <IconButton
+              <IconButtonWithTooltip
+                tooltipTitle="Edit"
                 aria-label="edit"
                 onClick={() => {
                   dispatch(push(`/componenttemplates/${componentTemplate.get("name")}/edit`));
                 }}>
                 <EditIcon />
-              </IconButton>
+              </IconButtonWithTooltip>
             </Tooltip>
 
             <Tooltip title="Duplicate this component" aria-label="duplicate">
-              <IconButton
+              <IconButtonWithTooltip
+                tooltipTitle="Duplicate"
                 aria-label="edit"
                 onClick={() => {
                   this.setDuplicatingIdAndConfrim(componentTemplate.get("name"));
                 }}>
                 <FileCopyIcon />
-              </IconButton>
+              </IconButtonWithTooltip>
             </Tooltip>
 
             <Tooltip title="Delete this component" aria-label="duplicate">
-              <IconButton aria-label="delete" onClick={onDeleteClick}>
+              <IconButtonWithTooltip tooltipTitle="Delete" aria-label="delete" onClick={onDeleteClick}>
                 <DeleteIcon />
-              </IconButton>
+              </IconButtonWithTooltip>
             </Tooltip>
           </>
         ),

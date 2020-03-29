@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -52,7 +53,7 @@ type ComponentStatus struct {
 
 	//MetricsList metricv1beta1.PodMetricsList `json:"podMetricsList"`
 	// TODO, aggregate cpu, memory usage time series
-	ComponentMetrics `json:"componentMetrics"`
+	ComponentMetrics `json:"metrics"`
 }
 
 // https://github.com/kubernetes/dashboard/blob/master/src/app/backend/resource/pod/metrics.go#L37
@@ -64,21 +65,28 @@ type MetricsSum struct {
 	////// Pod memory usage in bytes.
 	//MemoryUsage int64 `json:"memoryUsage"`
 	// Timestamped samples of CPUUsage over some short period of history
-	CPUUsageHistory []MetricPoint `json:"cpuUsageHistory"`
+	CPUUsageHistory []MetricPoint `json:"cpu"`
 	// Timestamped samples of pod memory usage over some short period of history
-	MemoryUsageHistory []MetricPoint `json:"memoryUsageHistory"`
+	MemoryUsageHistory []MetricPoint `json:"memory"`
 }
 
 type ComponentMetrics struct {
-	Name       string `json:"name"`
-	MetricsSum `json:"metricsSum"`
+	Name       string `json:"-"`
+	MetricsSum `json:",inline,omitempty"`
 	Pods       map[string]MetricsSum `json:"pods"`
 }
 
 // https://github.com/kubernetes/dashboard/blob/master/src/app/backend/integration/metric/api/types.go#L121
 type MetricPoint struct {
-	Timestamp time.Time `json:"timestamp"`
-	Value     uint64    `json:"value"`
+	Timestamp time.Time
+	Value     uint64
+}
+
+func (m *MetricPoint) MarshalJSON() ([]byte, error) {
+	return json.Marshal(map[string]interface{}{
+		"x": m.Timestamp.Unix() * 1000,
+		"y": m.Value,
+	})
 }
 
 type ApplicationListResponseItem struct {
@@ -247,6 +255,7 @@ func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Ap
 			DeploymentStatus: appsV1.DeploymentStatus{},
 			CronjobStatus:    v1betav1.CronJobStatus{},
 			PodInfo:          &PodInfo{},
+
 			//ComponentMetrics: ComponentMetrics{}, // TODO
 		}
 

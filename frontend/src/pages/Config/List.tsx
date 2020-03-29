@@ -2,10 +2,12 @@ import React from "react";
 import { BasePage } from "../BasePage";
 import { connect } from "react-redux";
 import { RootState } from "../../reducers";
-import { IconButton, Theme, withStyles, Breadcrumbs, Link, Button, WithStyles, createStyles } from "@material-ui/core";
+import { Theme, withStyles, Breadcrumbs, Link, WithStyles, createStyles } from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@material-ui/icons/Delete";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
+import NoteAddIcon from "@material-ui/icons/NoteAdd";
+import CreateNewFolderIcon from "@material-ui/icons/CreateNewFolder";
 import { deleteConfigAction, duplicateConfigAction } from "../../actions/config";
 import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "../../types";
@@ -18,7 +20,8 @@ import { ConfigEditDialog } from "../../widgets/ConfigEditDialog";
 import { setErrorNotificationAction } from "../../actions/notification";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
 import { loadConfigsAction } from "../../actions/config";
-import { ConfigNode, initialRootConfigNode } from "../../types/config";
+import { ConfigNode, initialRootConfigNode, ConfigNodeType } from "../../types/config";
+import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -73,6 +76,7 @@ interface Props extends StateProps, WithStyles<typeof styles> {
 
 interface State {
   showConfigNewDialog: boolean;
+  newConfigType: ConfigNodeType;
   showConfigEditDialog: boolean;
   isDeleteConfirmDialogOpen: boolean;
 }
@@ -82,6 +86,7 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
     super(props);
     this.state = {
       showConfigNewDialog: false,
+      newConfigType: "file",
       showConfigEditDialog: false,
       isDeleteConfirmDialogOpen: false
     };
@@ -128,9 +133,10 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  public handleAdd = () => {
+  public handleAdd = (configType: ConfigNodeType) => {
     this.setState({
-      showConfigNewDialog: true
+      showConfigNewDialog: true,
+      newConfigType: configType
     });
   };
 
@@ -178,42 +184,87 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
   }
 
   public renderActions() {
-    return (
-      <div>
-        <IconButton aria-label="edit" onClick={() => this.handleEdit()}>
-          <EditIcon />
-        </IconButton>
+    const { currentConfig } = this.props;
+    if (currentConfig.get("type") === "file") {
+      return (
+        <div>
+          <IconButtonWithTooltip
+            tooltipPlacement="top"
+            tooltipTitle="Edit"
+            aria-label="edit"
+            onClick={() => this.handleEdit()}>
+            <EditIcon />
+          </IconButtonWithTooltip>
 
-        <IconButton aria-label="edit" onClick={() => this.handleDuplicate()}>
-          <FileCopyIcon />
-        </IconButton>
+          <IconButtonWithTooltip
+            tooltipPlacement="top"
+            tooltipTitle="Duplicate"
+            aria-label="duplicate"
+            onClick={() => this.handleDuplicate()}>
+            <FileCopyIcon />
+          </IconButtonWithTooltip>
 
-        <IconButton aria-label="delete" onClick={() => this.handleDelete()}>
-          <DeleteIcon />
-        </IconButton>
-      </div>
-    );
+          <IconButtonWithTooltip
+            tooltipPlacement="top"
+            tooltipTitle="Add File"
+            aria-label="add-file"
+            onClick={() => this.handleAdd("file")}>
+            <NoteAddIcon />
+          </IconButtonWithTooltip>
+
+          <IconButtonWithTooltip
+            tooltipPlacement="top"
+            tooltipTitle="Add Folder"
+            aria-label="add-folder"
+            onClick={() => this.handleAdd("folder")}>
+            <CreateNewFolderIcon />
+          </IconButtonWithTooltip>
+
+          <IconButtonWithTooltip
+            tooltipPlacement="top"
+            tooltipTitle="Delete"
+            aria-label="delete"
+            onClick={() => this.handleDelete()}>
+            <DeleteIcon />
+          </IconButtonWithTooltip>
+        </div>
+      );
+    } else {
+      return (
+        <div>
+          <IconButtonWithTooltip
+            tooltipPlacement="top"
+            tooltipTitle="Add file"
+            aria-label="add-file"
+            onClick={() => this.handleAdd("file")}>
+            <NoteAddIcon />
+          </IconButtonWithTooltip>
+
+          <IconButtonWithTooltip
+            tooltipPlacement="top"
+            tooltipTitle="Add folder"
+            aria-label="add-folder"
+            onClick={() => this.handleAdd("folder")}>
+            <CreateNewFolderIcon />
+          </IconButtonWithTooltip>
+        </div>
+      );
+    }
   }
 
   public render() {
     const { dispatch, rootConfig, classes, currentConfig } = this.props;
-    const { showConfigNewDialog, showConfigEditDialog } = this.state;
+    const { showConfigNewDialog, showConfigEditDialog, newConfigType } = this.state;
 
     return (
-      <BasePage
-        title="Configs"
-        rightAction={
-          <Button variant="contained" color="primary" onClick={() => this.handleAdd()}>
-            Add
-          </Button>
-        }>
+      <BasePage title="Configs">
         {this.renderDeleteConfirmDialog()}
         <div className={classes.root}>
           <div className={classes.leftTree}>
             <FileTree
               rootConfig={rootConfig}
               dispatch={dispatch}
-              handleAdd={() => this.handleAdd()}
+              handleAdd={(configType: ConfigNodeType) => this.handleAdd(configType)}
               handleEdit={() => this.handleEdit()}
               handleDuplicate={() => this.handleDuplicate()}
               handleDelete={() => this.handleDelete()}
@@ -222,7 +273,7 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
           <div className={classes.fileDetail}>
             <div className={classes.breadcrumbsAndAction}>
               {this.renderFileBreadcrumbs()}
-              {currentConfig.get("type") === "file" && this.renderActions()}
+              {this.renderActions()}
             </div>
 
             {currentConfig.get("type") === "file" ? (
@@ -236,6 +287,7 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
         <ConfigNewDialog
           dispatch={dispatch}
           open={showConfigNewDialog}
+          configType={newConfigType}
           onClose={() => this.setState({ showConfigNewDialog: false })}
         />
         <ConfigEditDialog
