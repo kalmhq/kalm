@@ -22,6 +22,7 @@ export const FoldButtonGroup = (props: Props) => {
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
+    event.stopPropagation();
   };
 
   const handleClose = () => {

@@ -103,6 +103,15 @@ const styles = (theme: Theme) =>
     }
   });
 
+export const generateQueryForPods = (podNames: string[], active?: string) => {
+  const search = {
+    pods: podNames.length > 0 ? podNames : undefined,
+    active: active || undefined
+  };
+
+  return queryString.stringify(search, { arrayFormat: "comma" });
+};
+
 export class LogStream extends React.PureComponent<Props, State> {
   private ws: ReconnectingWebSocket;
   private wsQueueMessages: any[] = [];
@@ -243,7 +252,7 @@ export class LogStream extends React.PureComponent<Props, State> {
         const terminal = this.terminals.get(data.podName);
         if (terminal && terminal.xterm) {
           terminal.xterm.write(data.data);
-          terminal.xterm.writeln("\n\u001b[1;31mTerminal disconnected\u001b[0m\n");
+          terminal.xterm.writeln("\n\r\u001b[1;31mTerminal disconnected\u001b[0m\n");
         }
         return;
       }

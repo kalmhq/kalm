@@ -33,19 +33,29 @@ const getAxiosClient = () => {
     .get("auth")
     .get("token");
 
-  if (token) {
-    return axios.create({
-      timeout: 3000,
-      headers: {
-        Authorization: `Bearer ${store
-          .getState()
-          .get("auth")
-          .get("token")}`
-      }
-    });
-  } else {
-    return axios;
-  }
+  const instance = token
+    ? axios.create({
+        timeout: 3000,
+        headers: {
+          Authorization: `Bearer ${store
+            .getState()
+            .get("auth")
+            .get("token")}`
+        }
+      })
+    : axios;
+
+  instance.interceptors.response.use(
+    response => {
+      return response;
+    },
+    error => {
+      console.log("error", error.response.status);
+      return Promise.reject(error);
+    }
+  );
+
+  return instance;
 };
 
 export const getLoginStatus = async () => {

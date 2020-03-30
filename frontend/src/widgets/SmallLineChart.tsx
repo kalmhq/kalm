@@ -3,23 +3,30 @@ import { Line, ChartData } from "react-chartjs-2";
 import * as chartjs from "chart.js";
 import { withStyles, createStyles, WithStyles } from "@material-ui/styles";
 import { Theme } from "@material-ui/core";
+import { MetricList } from "../types/application";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {
       border: "1px solid #DDD",
-      position: "relative"
+      position: "relative",
+      background: "white",
+      display: "inline-block"
     },
     text: {
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0,
       position: "absolute",
-      top: "50%",
-      transform: "translate(-50%, -50%)",
-      left: "50%"
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-around"
     }
   });
 
 interface Props extends WithStyles<typeof styles> {
-  data: { x: number; y: number }[];
+  data: MetricList;
   formatValue?: (value: number) => string;
 }
 
@@ -28,7 +35,7 @@ class SmallLineChartRaw extends React.PureComponent<Props> {
     const { data } = this.props;
 
     return {
-      labels: data.map(n => n.x),
+      labels: data.map(n => n.get("x")).toArray(),
       datasets: [
         {
           //   fill: false,
@@ -50,7 +57,7 @@ class SmallLineChartRaw extends React.PureComponent<Props> {
           //   pointHoverBorderWidth: 2,
           pointRadius: 0,
           pointHitRadius: 0,
-          data: data.map(n => n.y)
+          data: data.map(n => n.get("y")).toArray()
         }
       ]
     };
@@ -60,56 +67,67 @@ class SmallLineChartRaw extends React.PureComponent<Props> {
     const { data, formatValue } = this.props;
     let text = "No Data";
 
-    if (data.length > 0) {
+    if (data && data.size > 0) {
       if (formatValue) {
-        text = formatValue(data[data.length - 1].y);
+        text = formatValue(data.get(data.size - 1)!.get("y"));
       } else {
-        text = data[data.length - 1].y.toString();
+        text = data
+          .get(data.size - 1)!
+          .get("y")
+          .toString();
       }
     }
 
     return <div className={this.props.classes.text}>{text}</div>;
   }
 
+  private hasData = () => {
+    const { data } = this.props;
+    return data && data.size > 0;
+  };
+
   public render() {
     const { classes } = this.props;
+    const hasData = this.hasData();
     return (
-      <div style={{ width: 120, height: 40 }} className={classes.root}>
+      <div style={{ width: 120, height: 30 }} className={classes.root}>
         {this.renderText()}
-        <Line
-          //   width={160}
-          //   height={50}
-          legend={{ display: false }}
-          options={{
-            responsive: true,
-            maintainAspectRatio: false,
-            tooltips: {
-              enabled: false
-            },
-            scales: {
-              yAxes: [
-                {
-                  display: false,
-                  gridLines: {
-                    display: false
-                  },
-                  ticks: {
-                    beginAtZero: true
+        {hasData ? (
+          <Line
+            //   width={160}
+            //   height={50}
+            legend={{ display: false }}
+            options={{
+              responsive: true,
+              maintainAspectRatio: false,
+              tooltips: {
+                enabled: false
+              },
+              scales: {
+                yAxes: [
+                  {
+                    display: false,
+                    gridLines: {
+                      display: false
+                    },
+                    ticks: {
+                      beginAtZero: true
+                    }
                   }
-                }
-              ],
-              xAxes: [
-                {
-                  display: false,
-                  gridLines: {
-                    display: false
+                ],
+                xAxes: [
+                  {
+                    display: false,
+                    gridLines: {
+                      display: false
+                    }
                   }
-                }
-              ]
-            }
-          }}
-          data={this.generateData()}
-        />
+                ]
+              }
+            }}
+            data={this.generateData()}
+          />
+        ) : null}
       </div>
     );
   }

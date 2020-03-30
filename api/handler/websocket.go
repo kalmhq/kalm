@@ -450,6 +450,7 @@ func startExecTerminalSession(conn *WSConn, shell string, terminalSession *Termi
 func handleExecRequests(conn *WSConn) {
 	podRegistrations := make(map[string]context.CancelFunc)
 	terminalSessions := make(map[string]*TerminalSession)
+	mut := &sync.Mutex{}
 
 	defer func() {
 		for _, cancelFunc := range podRegistrations {
@@ -473,10 +474,20 @@ func handleExecRequests(conn *WSConn) {
 
 				session := NewTerminalSession(conn, ctx, m.Namespace, m.PodName)
 
+				mut.Lock()
 				podRegistrations[key] = stop
 				terminalSessions[key] = session
+				mut.Unlock()
 
 				go func() {
+					defer func() {
+						stop()
+						mut.Lock()
+						delete(podRegistrations, key)
+						delete(terminalSessions, key)
+						mut.Unlock()
+					}()
+
 					var err error
 					validShells := []string{"bash", "sh"}
 					for _, shell := range validShells {
@@ -490,7 +501,7 @@ func handleExecRequests(conn *WSConn) {
 					var data string
 
 					if err != nil {
-						log.Error(err)
+						log.Error("Start Exec Terminal Session Error:", err)
 						data = err.Error()
 					}
 
@@ -504,8 +515,10 @@ func handleExecRequests(conn *WSConn) {
 			} else if m.Type == WSRequestTypeExecEndSession {
 				if stop, existing := podRegistrations[key]; existing {
 					stop()
+					mut.Lock()
 					delete(podRegistrations, key)
 					delete(terminalSessions, key)
+					mut.Unlock()
 				}
 			} else if m.Type == WSRequestTypeExecStdin {
 				session, existing := terminalSessions[key]

@@ -129,7 +129,7 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
     try {
       await dispatch(deleteConfigAction(getCurrentConfig()));
     } catch {
-      dispatch(setErrorNotificationAction("Something wrong"));
+      dispatch(setErrorNotificationAction());
     }
   };
 

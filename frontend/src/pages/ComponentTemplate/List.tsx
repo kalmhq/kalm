@@ -1,4 +1,4 @@
-import { Box, createStyles, Fade, Theme, Tooltip, WithStyles, withStyles } from "@material-ui/core";
+import { Box, createStyles, Fade, Theme, WithStyles, withStyles } from "@material-ui/core";
 import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
@@ -68,7 +68,7 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
       await dispatch(deleteComponentAction(this.state.deletingComponentTemplateName!));
       await dispatch(setSuccessNotificationAction("Successfully delete a component"));
     } catch {
-      dispatch(setErrorNotificationAction("Something wrong"));
+      dispatch(setErrorNotificationAction());
     }
   };
 
@@ -78,7 +78,7 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
       await dispatch(duplicateComponentAction(this.state.duplicatingItemId!, newName));
       await dispatch(setSuccessNotificationAction("Successfully duplicate a component"));
     } catch {
-      dispatch(setErrorNotificationAction("Something wrong"));
+      dispatch(setErrorNotificationAction());
     }
   };
 
@@ -105,33 +105,27 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
       return {
         action: (
           <>
-            <Tooltip title="Edit this component" aria-label="duplicate">
-              <IconButtonWithTooltip
-                tooltipTitle="Edit"
-                aria-label="edit"
-                onClick={() => {
-                  dispatch(push(`/componenttemplates/${componentTemplate.get("name")}/edit`));
-                }}>
-                <EditIcon />
-              </IconButtonWithTooltip>
-            </Tooltip>
+            <IconButtonWithTooltip
+              tooltipTitle="Edit this component"
+              aria-label="edit"
+              onClick={() => {
+                dispatch(push(`/componenttemplates/${componentTemplate.get("name")}/edit`));
+              }}>
+              <EditIcon />
+            </IconButtonWithTooltip>
 
-            <Tooltip title="Duplicate this component" aria-label="duplicate">
-              <IconButtonWithTooltip
-                tooltipTitle="Duplicate"
-                aria-label="edit"
-                onClick={() => {
-                  this.setDuplicatingIdAndConfrim(componentTemplate.get("name"));
-                }}>
-                <FileCopyIcon />
-              </IconButtonWithTooltip>
-            </Tooltip>
+            <IconButtonWithTooltip
+              tooltipTitle="Duplicate this component"
+              aria-label="edit"
+              onClick={() => {
+                this.setDuplicatingIdAndConfrim(componentTemplate.get("name"));
+              }}>
+              <FileCopyIcon />
+            </IconButtonWithTooltip>
 
-            <Tooltip title="Delete this component" aria-label="duplicate">
-              <IconButtonWithTooltip tooltipTitle="Delete" aria-label="delete" onClick={onDeleteClick}>
-                <DeleteIcon />
-              </IconButtonWithTooltip>
-            </Tooltip>
+            <IconButtonWithTooltip tooltipTitle="Delete this component" aria-label="delete" onClick={onDeleteClick}>
+              <DeleteIcon />
+            </IconButtonWithTooltip>
           </>
         ),
         name: componentTemplate.get("name"),
