@@ -354,7 +354,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   private renderComponents = (applicationListItem: RowData) => {
-    const { classes } = this.props;
+    // const { classes } = this.props;
     return null;
     // <ExpansionPanel className={classes.expansionPanel}>
     //   <ExpansionPanelSummary
