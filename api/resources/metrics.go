@@ -141,10 +141,25 @@ func cacheMetricsForNodesIntoLocalDB(nodeMetricsList *metricv1beta1.NodeMetricsL
 		nodeName := nodeMetrics.Name
 
 		v := nodeMetricDB[nodeName]
+
+		nodeMetrics = alignMetricsByMinute(nodeMetrics)
+		if len(v) > 0 && v[len(v) - 1].Timestamp.Unix() == nodeMetrics.Timestamp.Unix() {
+			// ignore duplicate
+			continue
+		}
+
 		v = append(v, nodeMetrics)
 
 		nodeMetricDB[nodeName] = v
 	}
+}
+
+func alignMetricsByMinute(metrics metricv1beta1.NodeMetrics) metricv1beta1.NodeMetrics {
+	alignTsByMinute := metrics.Timestamp.Time.Unix() / 60 * 60
+
+	metrics.Timestamp = metav1.NewTime(time.Unix(alignTsByMinute, 0))
+
+	return metrics
 }
 
 func cacheMetricsForAppIntoLocalDB(app v1alpha1.Application, metricsList *metricv1beta1.PodMetricsList) {
