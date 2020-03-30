@@ -14,7 +14,6 @@ const initialState: State = Immutable.Map({});
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
     case SET_NOTIFICATION_MESSAGE: {
-      console.log("SET_NOTIFICATION_MESSAGE", action.payload);
       return Immutable.Map(action.payload);
     }
   }

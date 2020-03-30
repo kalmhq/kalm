@@ -1,6 +1,5 @@
 import { createStyles, makeStyles, Theme, useTheme } from "@material-ui/core/styles";
 import React from "react";
-import { NotificationComponent } from "../../widgets/Notification";
 import { TabBarComponent } from "./tabBar";
 import { AuthWrapper } from "./authWrapper";
 
@@ -28,7 +27,6 @@ export const Dashboard = AuthWrapper((props: React.Props<any>) => {
 
   return (
     <div className={classes.root}>
-      <NotificationComponent />
       {/* <DashboardAppBar open={open} handleDrawerOpen={handleDrawerOpen} /> */}
       {/* <DrawerComponent open={open} handleDrawerClose={handleDrawerClose} /> */}
       <TabBarComponent />
