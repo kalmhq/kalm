@@ -118,7 +118,12 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 					fmt.Errorf("fail get nodes, err: %s", err)
 				}
 
-				fmt.Printf("node metrics found %d\n", len(nodeMetricsList.Items))
+				nodeMetricsCnt := 0
+				if nodeMetricsList != nil {
+					nodeMetricsCnt = len(nodeMetricsList.Items)
+				}
+				fmt.Printf("node metrics found %d\n", nodeMetricsCnt)
+
 				cacheMetricsForNodesIntoLocalDB(nodeMetricsList)
 			}
 		}
@@ -128,6 +133,10 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 }
 
 func cacheMetricsForNodesIntoLocalDB(nodeMetricsList *metricv1beta1.NodeMetricsList) {
+	if nodeMetricsList == nil {
+		return
+	}
+
 	for _, nodeMetrics := range nodeMetricsList.Items {
 		nodeName := nodeMetrics.Name
 
