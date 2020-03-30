@@ -243,7 +243,7 @@ export class LogStream extends React.PureComponent<Props, State> {
         const terminal = this.terminals.get(data.podName);
         if (terminal && terminal.xterm) {
           terminal.xterm.write(data.data);
-          terminal.xterm.writeln("\n\u001b[1;31mTerminal disconnected\u001b[0m\n");
+          terminal.xterm.writeln("\n\r\u001b[1;31mTerminal disconnected\u001b[0m\n");
         }
         return;
       }

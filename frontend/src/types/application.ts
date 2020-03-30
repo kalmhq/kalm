@@ -70,8 +70,7 @@ export type ComponentStatus = ImmutableMap<{
   deploymentStatus?: V1DeploymentStatus;
   cronjobStatus?: V1beta1CronJobStatus;
   podsInfo: PodInfo;
-  // cpu, memory usage time series
-  metrics: ComponentStatusMetrics;
+  metrics: Metrics;
 }>;
 
 export type MetricItem = ImmutableMap<{
@@ -81,14 +80,16 @@ export type MetricItem = ImmutableMap<{
 
 export type MetricList = Immutable.List<MetricItem>;
 
-export type ComponentStatusMetrics = ImmutableMap<{
-  cpu?: MetricList;
-  memory?: MetricList;
-  pods?: ImmutableMap<{
-    [key: string]: ImmutableMap<{
-      cpu: MetricList;
-      memory: MetricList;
-    }>;
+export type Metrics = ImmutableMap<{
+  cpu: MetricList;
+  memory: MetricList;
+}>;
+
+export type MetricsAndPodMetrics = ImmutableMap<{
+  cpu: MetricList;
+  memory: MetricList;
+  pods: ImmutableMap<{
+    [key: string]: Metrics;
   }>;
 }>;
 
@@ -98,6 +99,7 @@ export type ApplicationListItem = ImmutableMap<{
   createdAt: string;
   isActive: boolean;
   components: Immutable.List<ComponentStatus>;
+  metrics: Metrics;
 }>;
 
 export type ApplicationList = Immutable.List<ApplicationListItem>;

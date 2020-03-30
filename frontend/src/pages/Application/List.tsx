@@ -1,4 +1,15 @@
-import { Checkbox, createStyles, ExpansionPanel, ExpansionPanelDetails, ExpansionPanelSummary, Switch, TextField, Theme, WithStyles, withStyles } from "@material-ui/core";
+import {
+  Checkbox,
+  createStyles,
+  ExpansionPanel,
+  ExpansionPanelDetails,
+  ExpansionPanelSummary,
+  Switch,
+  TextField,
+  Theme,
+  WithStyles,
+  withStyles
+} from "@material-ui/core";
 import ArchiveIcon from "@material-ui/icons/Archive";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew";
@@ -6,7 +17,13 @@ import RefreshIcon from "@material-ui/icons/Refresh";
 import { push } from "connected-react-router";
 import MaterialTable from "material-table";
 import React from "react";
-import { deleteApplicationAction, duplicateApplicationAction, loadApplicationAction, loadApplicationsAction, updateApplicationAction } from "../../actions/application";
+import {
+  deleteApplicationAction,
+  duplicateApplicationAction,
+  loadApplicationAction,
+  loadApplicationsAction,
+  updateApplicationAction
+} from "../../actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "../../actions/notification";
 import { duplicateApplicationName, getApplicationByName } from "../../selectors/application";
 import { ApplicationListItem } from "../../types/application";
@@ -17,6 +34,7 @@ import { Loading } from "../../widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "../../widgets/SmallLineChart";
 import { BasePage } from "../BasePage";
 import { ApplicationListDataWrapper, WithApplicationsDataProps } from "./ListDataWrapper";
+import { Details } from "./Detail";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
@@ -294,9 +312,9 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  // private renderDetails = (rowData: any) => {
-  //   return <div>123</div>;
-  // };
+  private renderDetails = (rowData: any) => {
+    return <Details>3123123</Details>;
+  };
 
   public render() {
     const { dispatch, applicationList, classes, isLoading, isFirstLoaded } = this.props;
@@ -333,45 +351,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         </ExpansionPanel>
       );
 
-      // TODO: hack!! application data will return from backend.
-      const cpuData = applicationListItem
-        .get("components")
-        .map(component => {
-          if (component.get("metrics") && component.get("metrics")!.get("cpu")) {
-            return component
-              .get("metrics")!
-              .get("cpu")!
-              .toJS();
-          } else {
-            return [];
-          }
-        })
-        .toArray()
-        .filter(x => x.length > 0)
-        .reduce((a, b) => {
-          return b.map((n, i) => ({ x: n.x, y: n.y + (a[i] ? a[i].y : 0) }));
-        }, []);
-
-      console.log(cpuData);
-      const memoryData = applicationListItem
-        .get("components")
-        .map(component => {
-          if (component.get("metrics") && component.get("metrics")!.get("memory")) {
-            return component
-              .get("metrics")!
-              .get("memory")!
-              .toJS();
-          } else {
-            return [];
-          }
-        })
-        .toArray()
-        .filter(x => x.length > 0)
-        .reduce((a, b) => {
-          return b.map((n, i) => ({ x: n.x, y: n.y + (a[i] ? a[i].y : 0) }));
-        }, []);
-
-      // console.log(cpuData, memoryData);
+      const cpuData = applicationListItem.get("metrics").get("cpu");
+      const memoryData = applicationListItem.get("metrics").get("memory");
 
       return {
         action: (
@@ -503,8 +484,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                   searchable: false
                 }
               ]}
-              // detailPanel={this.renderDetails}
-              // onRowClick={(_event, _rowData, togglePanel) => togglePanel!()}
+              detailPanel={this.renderDetails}
+              onRowClick={(_event, _rowData, togglePanel) => togglePanel!()}
               data={data.toArray()}
               title="Applications"
             />

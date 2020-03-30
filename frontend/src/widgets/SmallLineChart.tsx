@@ -3,6 +3,7 @@ import { Line, ChartData } from "react-chartjs-2";
 import * as chartjs from "chart.js";
 import { withStyles, createStyles, WithStyles } from "@material-ui/styles";
 import { Theme } from "@material-ui/core";
+import { MetricList } from "../types/application";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -11,15 +12,19 @@ const styles = (theme: Theme) =>
       position: "relative"
     },
     text: {
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0,
       position: "absolute",
-      top: "50%",
-      transform: "translate(-50%, -50%)",
-      left: "50%"
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-around"
     }
   });
 
 interface Props extends WithStyles<typeof styles> {
-  data: { x: number; y: number }[];
+  data: MetricList;
   formatValue?: (value: number) => string;
 }
 
@@ -28,7 +33,7 @@ class SmallLineChartRaw extends React.PureComponent<Props> {
     const { data } = this.props;
 
     return {
-      labels: data.map(n => n.x),
+      labels: data.map(n => n.get("x")).toArray(),
       datasets: [
         {
           //   fill: false,
@@ -50,7 +55,7 @@ class SmallLineChartRaw extends React.PureComponent<Props> {
           //   pointHoverBorderWidth: 2,
           pointRadius: 0,
           pointHitRadius: 0,
-          data: data.map(n => n.y)
+          data: data.map(n => n.get("y")).toArray()
         }
       ]
     };
@@ -60,11 +65,14 @@ class SmallLineChartRaw extends React.PureComponent<Props> {
     const { data, formatValue } = this.props;
     let text = "No Data";
 
-    if (data.length > 0) {
+    if (data.size > 0) {
       if (formatValue) {
-        text = formatValue(data[data.length - 1].y);
+        text = formatValue(data.get(data.size - 1)!.get("y"));
       } else {
-        text = data[data.length - 1].y.toString();
+        text = data
+          .get(data.size - 1)!
+          .get("y")
+          .toString();
       }
     }
 
