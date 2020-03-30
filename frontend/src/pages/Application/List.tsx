@@ -260,7 +260,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         dispatch(duplicateApplicationAction(newApplication));
       }
     } catch {
-      dispatch(setErrorNotificationAction("Something wrong"));
+      dispatch(setErrorNotificationAction());
     }
   };
 
@@ -300,7 +300,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         await dispatch(setSuccessNotificationAction("Successfully delete an application"));
       }
     } catch {
-      dispatch(setErrorNotificationAction("Something wrong"));
+      dispatch(setErrorNotificationAction());
     }
   };
 

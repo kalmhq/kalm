@@ -1,14 +1,16 @@
 package client
 
 import (
+	"log"
+
 	"github.com/kapp-staging/kapp/api/auth"
 	"github.com/kapp-staging/kapp/api/config"
+	"github.com/kapp-staging/kapp/api/errors"
 	"github.com/labstack/echo/v4"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/clientcmd/api"
-	"log"
 )
 
 const (
@@ -122,7 +124,7 @@ func (m *ClientManager) GetClientConfig(c echo.Context) (*rest.Config, error) {
 	authInfo := ExtractAuthInfo(c)
 
 	if authInfo == nil {
-		return nil, echo.ErrUnauthorized
+		return nil, errors.NewUnauthorized("")
 	}
 
 	return m.GetClientConfigWithAuthInfo(authInfo)

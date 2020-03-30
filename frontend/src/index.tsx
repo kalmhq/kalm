@@ -14,6 +14,7 @@ import { ScrollToTop } from "./widgets/ScrollToTop";
 import { setStore } from "./store";
 import { KappRoutes } from "./routes";
 import blue from "@material-ui/core/colors/blue";
+import { NotificationComponent } from "./widgets/Notification";
 
 export const history = createBrowserHistory();
 
@@ -42,6 +43,7 @@ ReactDOM.render(
               horizontal: "right",
               vertical: "bottom"
             }}>
+            <NotificationComponent />
             {KappRoutes}
           </SnackbarProvider>
         </ThemeProvider>

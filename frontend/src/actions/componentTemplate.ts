@@ -13,11 +13,23 @@ import {
   LOAD_COMPONENT_TEMPLATES_FULFILLED,
   DELETE_COMPONENT
 } from "../types/componentTemplate";
-import { ThunkResult } from "../types";
+import { ThunkResult, StatusFailure } from "../types";
+import { setErrorNotificationAction } from "./notification";
 
 export const createComponentTemplateAction = (componentTemplateRaw: ComponentTemplate): ThunkResult<Promise<void>> => {
   return async dispatch => {
-    const componentTemplate = await createKappComonentTemplate(componentTemplateRaw);
+    let componentTemplate: ComponentTemplate;
+
+    try {
+      componentTemplate = await createKappComonentTemplate(componentTemplateRaw);
+    } catch (e) {
+      if (e.response.data.status === StatusFailure) {
+        dispatch(setErrorNotificationAction(e.response.data.message));
+      } else {
+        dispatch(setErrorNotificationAction());
+      }
+      return;
+    }
 
     dispatch({
       type: CREATE_COMPONENT,
@@ -38,7 +50,18 @@ export const duplicateComponentAction = (
 
     componentTemplateCopy = componentTemplateCopy.set("name", newName);
 
-    const componentTemplate = await createKappComonentTemplate(componentTemplateCopy);
+    let componentTemplate: ComponentTemplate;
+
+    try {
+      componentTemplate = await createKappComonentTemplate(componentTemplateCopy);
+    } catch (e) {
+      if (e.response.data.status === StatusFailure) {
+        dispatch(setErrorNotificationAction(e.response.data.message));
+      } else {
+        dispatch(setErrorNotificationAction());
+      }
+      return;
+    }
 
     dispatch({
       type: DUPLICATE_COMPONENT,
@@ -49,7 +72,18 @@ export const duplicateComponentAction = (
 
 export const updateComponentAction = (componentTemplateRaw: ComponentTemplate): ThunkResult<Promise<void>> => {
   return async dispatch => {
-    const componentTemplate = await updateKappComonentTemplate(componentTemplateRaw);
+    let componentTemplate: ComponentTemplate;
+
+    try {
+      componentTemplate = await updateKappComonentTemplate(componentTemplateRaw);
+    } catch (e) {
+      if (e.response.data.status === StatusFailure) {
+        dispatch(setErrorNotificationAction(e.response.data.message));
+      } else {
+        dispatch(setErrorNotificationAction());
+      }
+      return;
+    }
 
     dispatch({
       type: UPDATE_COMPONENT,
@@ -66,6 +100,17 @@ export const deleteComponentAction = (componentTemplateName: string): ThunkResul
       .get(componentTemplateName)!;
 
     await deleteKappComonentTemplate(componentTemplate);
+
+    try {
+      await deleteKappComonentTemplate(componentTemplate);
+    } catch (e) {
+      if (e.response.data.status === StatusFailure) {
+        dispatch(setErrorNotificationAction(e.response.data.message));
+      } else {
+        dispatch(setErrorNotificationAction());
+      }
+      return;
+    }
 
     dispatch({
       type: DELETE_COMPONENT,

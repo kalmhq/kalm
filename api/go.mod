@@ -3,7 +3,8 @@ module github.com/kapp-staging/kapp/api
 go 1.12
 
 require (
-	github.com/davecgh/go-spew v1.1.1
+	github.com/aws/aws-sdk-go v1.25.48 // indirect
+	github.com/google/pprof v0.0.0-20190723021845-34ac40c74b70 // indirect
 	github.com/gorilla/websocket v1.4.2
 	github.com/kapp-staging/kapp/controller v0.1.0
 	github.com/influxdata/influxdb v1.7.7
@@ -12,8 +13,8 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.5.1
 	github.com/urfave/cli/v2 v2.2.0
-	golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073
-	golang.org/x/net v0.0.0-20200301022130-244492dfa37a
+	golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073 // indirect
+	golang.org/x/net v0.0.0-20200301022130-244492dfa37a // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
 	gotest.tools v2.2.0+incompatible
 	k8s.io/api v0.17.3
