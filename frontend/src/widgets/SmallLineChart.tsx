@@ -9,7 +9,9 @@ const styles = (theme: Theme) =>
   createStyles({
     root: {
       border: "1px solid #DDD",
-      position: "relative"
+      position: "relative",
+      background: "white",
+      display: "inline-block"
     },
     text: {
       left: 0,
@@ -65,7 +67,7 @@ class SmallLineChartRaw extends React.PureComponent<Props> {
     const { data, formatValue } = this.props;
     let text = "No Data";
 
-    if (data.size > 0) {
+    if (data && data.size > 0) {
       if (formatValue) {
         text = formatValue(data.get(data.size - 1)!.get("y"));
       } else {
@@ -79,45 +81,53 @@ class SmallLineChartRaw extends React.PureComponent<Props> {
     return <div className={this.props.classes.text}>{text}</div>;
   }
 
+  private hasData = () => {
+    const { data } = this.props;
+    return data && data.size > 0;
+  };
+
   public render() {
     const { classes } = this.props;
+    const hasData = this.hasData();
     return (
-      <div style={{ width: 120, height: 40 }} className={classes.root}>
+      <div style={{ width: 120, height: 30 }} className={classes.root}>
         {this.renderText()}
-        <Line
-          //   width={160}
-          //   height={50}
-          legend={{ display: false }}
-          options={{
-            responsive: true,
-            maintainAspectRatio: false,
-            tooltips: {
-              enabled: false
-            },
-            scales: {
-              yAxes: [
-                {
-                  display: false,
-                  gridLines: {
-                    display: false
-                  },
-                  ticks: {
-                    beginAtZero: true
+        {hasData ? (
+          <Line
+            //   width={160}
+            //   height={50}
+            legend={{ display: false }}
+            options={{
+              responsive: true,
+              maintainAspectRatio: false,
+              tooltips: {
+                enabled: false
+              },
+              scales: {
+                yAxes: [
+                  {
+                    display: false,
+                    gridLines: {
+                      display: false
+                    },
+                    ticks: {
+                      beginAtZero: true
+                    }
                   }
-                }
-              ],
-              xAxes: [
-                {
-                  display: false,
-                  gridLines: {
-                    display: false
+                ],
+                xAxes: [
+                  {
+                    display: false,
+                    gridLines: {
+                      display: false
+                    }
                   }
-                }
-              ]
-            }
-          }}
-          data={this.generateData()}
-        />
+                ]
+              }
+            }}
+            data={this.generateData()}
+          />
+        ) : null}
       </div>
     );
   }

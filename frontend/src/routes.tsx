@@ -17,6 +17,7 @@ import InstallPage from "./pages/Install";
 import { NodeListPage } from "./pages/NodeList";
 import { Login } from "./layout/Login";
 import { Log } from "./pages/Application/Log";
+import { ApplicationShow } from "./pages/Application/Show";
 
 export const KappRoutes = (
   <Switch>
@@ -28,6 +29,7 @@ export const KappRoutes = (
           <Route exact path="/" component={PageDashboard} />
           <Route exact path="/install" component={InstallPage} />
           <Route exact path="/applications" component={ApplicationListPage} />
+          <Route exact path="/applications/:namespace/:applicationName" component={ApplicationShow} />
           <Route exact path="/applications/:namespace/:applicationName/edit" component={ApplicationEdit} />
           <Route exact path="/applications/:namespace/:applicationName/logs" component={Log} />
           <Route exact path="/applications/:namespace/:applicationName/shells" component={Log} />

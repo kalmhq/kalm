@@ -103,6 +103,15 @@ const styles = (theme: Theme) =>
     }
   });
 
+export const generateQueryForPods = (podNames: string[], active?: string) => {
+  const search = {
+    pods: podNames.length > 0 ? podNames : undefined,
+    active: active || undefined
+  };
+
+  return queryString.stringify(search, { arrayFormat: "comma" });
+};
+
 export class LogStream extends React.PureComponent<Props, State> {
   private ws: ReconnectingWebSocket;
   private wsQueueMessages: any[] = [];

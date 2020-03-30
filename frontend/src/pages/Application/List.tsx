@@ -1,17 +1,5 @@
-import {
-  Checkbox,
-  createStyles,
-  ExpansionPanel,
-  ExpansionPanelDetails,
-  ExpansionPanelSummary,
-  Switch,
-  TextField,
-  Theme,
-  WithStyles,
-  withStyles
-} from "@material-ui/core";
+import { Checkbox, createStyles, Switch, TextField, Theme, WithStyles, withStyles } from "@material-ui/core";
 import ArchiveIcon from "@material-ui/icons/Archive";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew";
 import RefreshIcon from "@material-ui/icons/Refresh";
 import { push } from "connected-react-router";
@@ -28,13 +16,12 @@ import { setErrorNotificationAction, setSuccessNotificationAction } from "../../
 import { duplicateApplicationName, getApplicationByName } from "../../selectors/application";
 import { ApplicationListItem } from "../../types/application";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
-import { Dot } from "../../widgets/Dot";
 import { FoldButtonGroup } from "../../widgets/FoldButtonGroup";
 import { Loading } from "../../widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "../../widgets/SmallLineChart";
 import { BasePage } from "../BasePage";
-import { ApplicationListDataWrapper, WithApplicationsDataProps } from "./ListDataWrapper";
 import { Details } from "./Detail";
+import { ApplicationListDataWrapper, WithApplicationsDataProps } from "./ListDataWrapper";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
@@ -118,9 +105,14 @@ interface State {
   };
 }
 
+interface RowData extends ApplicationListItem {
+  index: number;
+}
+
 class ApplicationListRaw extends React.PureComponent<Props, State> {
   private duplicateApplicationNameRef: React.RefObject<any>;
   private duplicateApplicationNamespaceRef: React.RefObject<any>;
+  private tableRef: React.RefObject<MaterialTable<ApplicationListItem>> = React.createRef();
 
   private defaultState = {
     isActiveConfirmDialogOpen: false,
@@ -312,137 +304,156 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private renderDetails = (rowData: any) => {
-    return <Details>3123123</Details>;
+  private renderDetails = (applicationListItem: ApplicationListItem) => {
+    return <Details application={applicationListItem} dispatch={this.props.dispatch} />;
+  };
+
+  private renderCheckbox = (applicationListItem: RowData) => {
+    return (
+      <Checkbox
+        onChange={() => {
+          // deep copy, new obj
+          const applicationNames = { ...this.state.checkedApplicationNames };
+          applicationNames[applicationListItem.get("name")] = !applicationNames[applicationListItem.get("name")];
+          this.setState({ checkedApplicationNames: applicationNames });
+        }}
+        value="secondary"
+        color="primary"
+        inputProps={{ "aria-label": "secondary checkbox" }}
+      />
+    );
+  };
+
+  private renderCPU = (applicationListItem: RowData) => {
+    const cpuData = applicationListItem.get("metrics").get("cpu");
+    return <SmallCPULineChart data={cpuData} />;
+  };
+  private renderMemory = (applicationListItem: RowData) => {
+    const memoryData = applicationListItem.get("metrics").get("memory");
+    return <SmallMemoryLineChart data={memoryData} />;
+  };
+  private renderName = (applicationListItem: RowData) => {
+    return applicationListItem.get("name");
+  };
+  private renderNamespace = (applicationListItem: RowData) => {
+    return applicationListItem.get("namespace"); // ["default", "production", "ropsten"][index] || "default",
+  };
+
+  private renderEnable = (applicationListItem: RowData) => {
+    return (
+      <Switch
+        checked={applicationListItem.get("isActive")}
+        onChange={() => {
+          this.showSwitchingIsActiveConfirmDialog(applicationListItem);
+        }}
+        value="checkedB"
+        color="primary"
+        inputProps={{ "aria-label": "active app.ication" }}
+      />
+    );
+  };
+
+  private renderComponents = (applicationListItem: RowData) => {
+    const { classes } = this.props;
+    return null;
+    // <ExpansionPanel className={classes.expansionPanel}>
+    //   <ExpansionPanelSummary
+    //     className={classes.panelSummary}
+    //     expandIcon={<ExpandMoreIcon />}
+    //     aria-controls="panel1a-content"
+    //     id="panel1a-header">
+    //     <div>
+    //       <Dot color="green" />
+    //       {applicationListItem.get("components").size} / {applicationListItem.get("components").size}
+    //     </div>
+    //   </ExpansionPanelSummary>
+    //   <ExpansionPanelDetails>
+    //     <div>
+    //       {applicationListItem
+    //         .get("components")
+    //         .map(x => {
+    //           return (
+    //             <div key={x.get("name")} className={classes.componentWrapper}>
+    //               <Dot color="green" />
+    //               <div className={classes.componentLine} key={x.get("name")}>
+    //                 {x.get("name")}
+    //               </div>
+    //             </div>
+    //           );
+    //         })
+    //         .toArray()}
+    //     </div>
+    //   </ExpansionPanelDetails>
+    // </ExpansionPanel>
+  };
+
+  private renderActions = (rowData: RowData) => {
+    const { dispatch } = this.props;
+    return (
+      <FoldButtonGroup
+        options={[
+          {
+            text: "Details",
+            onClick: () => {
+              dispatch(push(`/applications/${rowData.get("namespace")}/${rowData.get("name")}`));
+            },
+            icon: "fullscreen"
+          },
+          {
+            text: "Edit",
+            onClick: () => {
+              dispatch(push(`/applications/${rowData.get("namespace")}/${rowData.get("name")}/edit`));
+            },
+            icon: "edit"
+          },
+          {
+            text: "Duplicate",
+            onClick: () => {
+              this.showDuplicateConfirmDialog(rowData);
+            },
+            icon: "file_copy"
+          },
+          {
+            text: "Logs",
+            onClick: () => {
+              dispatch(push(`/applications/${rowData.get("namespace")}/${rowData.get("name")}/logs`));
+            },
+            icon: "view_headline"
+          },
+          {
+            text: "Shell",
+            onClick: () => {
+              dispatch(push(`/applications/${rowData.get("namespace")}/${rowData.get("name")}/shells`));
+            },
+            icon: "play_arrow"
+          },
+          {
+            text: "Delete",
+            onClick: () => {
+              this.showDeleteConfirmDialog(rowData);
+            },
+            icon: "delete"
+          }
+        ]}
+      />
+    );
+  };
+
+  private getData = () => {
+    const { applicationList } = this.props;
+    const data = applicationList
+      .map((applicationListItem, index) => {
+        const rowData: any = applicationListItem;
+        // @ts-ignore
+        rowData.index = index;
+        return rowData as RowData;
+      })
+      .toArray();
+    return data;
   };
 
   public render() {
-    const { dispatch, applicationList, classes, isLoading, isFirstLoaded } = this.props;
-    const data = applicationList.map((applicationListItem, index) => {
-      const components = (
-        <ExpansionPanel className={classes.expansionPanel}>
-          <ExpansionPanelSummary
-            className={classes.panelSummary}
-            expandIcon={<ExpandMoreIcon />}
-            aria-controls="panel1a-content"
-            id="panel1a-header">
-            <div>
-              <Dot color="green" />
-              {applicationListItem.get("components").size} / {applicationListItem.get("components").size}
-            </div>
-          </ExpansionPanelSummary>
-          <ExpansionPanelDetails>
-            <div>
-              {applicationListItem
-                .get("components")
-                .map(x => {
-                  return (
-                    <div key={x.get("name")} className={classes.componentWrapper}>
-                      <Dot color="green" />
-                      <div className={classes.componentLine} key={x.get("name")}>
-                        {x.get("name")}
-                      </div>
-                    </div>
-                  );
-                })
-                .toArray()}
-            </div>
-          </ExpansionPanelDetails>
-        </ExpansionPanel>
-      );
-
-      const cpuData = applicationListItem.get("metrics").get("cpu");
-      const memoryData = applicationListItem.get("metrics").get("memory");
-
-      return {
-        action: (
-          <>
-            <FoldButtonGroup
-              options={[
-                {
-                  text: "Edit",
-                  onClick: () => {
-                    dispatch(
-                      push(
-                        `/applications/${applicationListItem.get("namespace")}/${applicationListItem.get("name")}/edit`
-                      )
-                    );
-                  },
-                  icon: "edit"
-                },
-                {
-                  text: "Duplicate",
-                  onClick: () => {
-                    this.showDuplicateConfirmDialog(applicationListItem);
-                  },
-                  icon: "file_copy"
-                },
-                {
-                  text: "Logs",
-                  onClick: () => {
-                    dispatch(
-                      push(
-                        `/applications/${applicationListItem.get("namespace")}/${applicationListItem.get("name")}/logs`
-                      )
-                    );
-                  },
-                  icon: "view_headline"
-                },
-                {
-                  text: "Shell",
-                  onClick: () => {
-                    dispatch(
-                      push(
-                        `/applications/${applicationListItem.get("namespace")}/${applicationListItem.get(
-                          "name"
-                        )}/shells`
-                      )
-                    );
-                  },
-                  icon: "play_arrow"
-                },
-                {
-                  text: "Delete",
-                  onClick: () => {
-                    this.showDeleteConfirmDialog(applicationListItem);
-                  },
-                  icon: "delete"
-                }
-              ]}
-            />
-          </>
-        ),
-        checkbox: (
-          <Checkbox
-            onChange={() => {
-              // deep copy, new obj
-              const applicationNames = { ...this.state.checkedApplicationNames };
-              applicationNames[applicationListItem.get("name")] = !applicationNames[applicationListItem.get("name")];
-              this.setState({ checkedApplicationNames: applicationNames });
-            }}
-            value="secondary"
-            color="primary"
-            inputProps={{ "aria-label": "secondary checkbox" }}
-          />
-        ),
-        cpu: <SmallCPULineChart data={cpuData} />,
-        memory: <SmallMemoryLineChart data={memoryData} />,
-        name: applicationListItem.get("name"),
-        namespace: applicationListItem.get("namespace"), // ["default", "production", "ropsten"][index] || "default",
-        active: (
-          <Switch
-            checked={applicationListItem.get("isActive")}
-            onChange={() => {
-              this.showSwitchingIsActiveConfirmDialog(applicationListItem);
-            }}
-            value="checkedB"
-            color="primary"
-            inputProps={{ "aria-label": "active app.ication" }}
-          />
-        ),
-        components
-      };
-    });
+    const { classes, isLoading, isFirstLoaded } = this.props;
     return (
       <BasePage title="Applications">
         {this.renderDeleteConfirmDialog()}
@@ -453,6 +464,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
             <Loading />
           ) : (
             <MaterialTable
+              tableRef={this.tableRef}
               actions={[
                 {
                   isFreeAction: true,
@@ -470,23 +482,27 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
               }}
               columns={[
                 // @ts-ignore
-                { title: "", field: "checkbox", sorting: false, width: "20px" },
-                { title: "Name", field: "name", sorting: false },
-                { title: "Namespace", field: "namespace", sorting: false },
-                { title: "Components", field: "components", sorting: false },
-                { title: "CPU", field: "cpu" },
-                { title: "Memory", field: "memory" },
-                { title: "Enable", field: "active", sorting: false },
+                { title: "", field: "checkbox", sorting: false, width: "20px", render: this.renderCheckbox },
+                { title: "Name", field: "name", sorting: false, render: this.renderName },
+                { title: "Namespace", field: "namespace", sorting: false, render: this.renderNamespace },
+                { title: "Components", field: "components", sorting: false, render: this.renderComponents },
+                { title: "CPU", field: "cpu", render: this.renderCPU },
+                { title: "Memory", field: "memory", render: this.renderMemory },
+                { title: "Enable", field: "active", sorting: false, render: this.renderEnable },
                 {
                   title: "Action",
                   field: "action",
                   sorting: false,
-                  searchable: false
+                  searchable: false,
+                  render: this.renderActions
                 }
               ]}
               detailPanel={this.renderDetails}
-              onRowClick={(_event, _rowData, togglePanel) => togglePanel!()}
-              data={data.toArray()}
+              // onRowClick={(_event, _rowData, togglePanel) => {
+              //   togglePanel!();
+              //   console.log(_event);
+              // }}
+              data={this.getData()}
               title="Applications"
             />
           )}
