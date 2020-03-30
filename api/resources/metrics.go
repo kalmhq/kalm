@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/influxdata/influxdb/pkg/slices"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -14,40 +15,48 @@ import (
 	"time"
 )
 
-type PodMetricsListChannel struct {
-	List  chan *metricv1beta1.PodMetricsList
-	Error chan error
-}
+//type PodMetricsListChannel struct {
+//	List  chan *metricv1beta1.PodMetricsList
+//	Error chan error
+//}
 
-func (builder *Builder) GetPodMetricsListChannel(namespaces string, listOptions metav1.ListOptions) *PodMetricsListChannel {
-	channel := &PodMetricsListChannel{
-		List:  make(chan *metricv1beta1.PodMetricsList, 1),
-		Error: make(chan error, 1),
-	}
-
-	client, err := mclientv1beta1.NewForConfig(builder.Config)
-	if err != nil {
-		channel.List <- nil
-		channel.Error <- err
-
-		return channel
-	}
-
-	go func() {
-		list, err := client.PodMetricses(namespaces).List(listOptions)
-
-		channel.List <- list
-		channel.Error <- err
-	}()
-
-	return channel
-}
+//func (builder *Builder) GetPodMetricsListChannel(namespaces string, listOptions metav1.ListOptions) *PodMetricsListChannel {
+//	channel := &PodMetricsListChannel{
+//		List:  make(chan *metricv1beta1.PodMetricsList, 1),
+//		Error: make(chan error, 1),
+//	}
+//
+//	client, err := mclientv1beta1.NewForConfig(builder.Config)
+//	if err != nil {
+//		channel.List <- nil
+//		channel.Error <- err
+//
+//		return channel
+//	}
+//
+//	go func() {
+//		list, err := client.PodMetricses(namespaces).List(listOptions)
+//
+//		channel.List <- list
+//		channel.Error <- err
+//	}()
+//
+//	return channel
+//}
 
 // componentA -> {pod1 -> metric, metric, ...}
 //               {pod2 -> metric, metric, ...}
 var componentMetricDB = make(map[string]map[string][]metricv1beta1.PodMetrics)
 
+// nodeName1 -> {metricT1, metricT2, ...}
+// nodeName2 -> {metricT1, ...}
+var nodeMetricDB = make(map[string][]metricv1beta1.NodeMetrics)
+
 // todo lock
+
+//metricResolution := 5 * time.Second
+var metricResolution = 30 * time.Second
+var metricDuration = 15 * time.Minute
 
 func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 	fmt.Println("metrics scraper running")
@@ -62,12 +71,7 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 		return err
 	}
 
-	//metricResolution := 5 * time.Second
-	metricResolution := 1 * time.Minute
-	metricDuration := 15 * time.Minute
-
 	ticker := time.NewTicker(metricResolution)
-
 	go func() {
 		for {
 			select {
@@ -76,7 +80,6 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 			case <-ticker.C:
 				// get all kapp-applications
 				var appList v1alpha1.ApplicationList
-
 				err = k8sClient.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/applications").Do().Into(&appList)
 				if err != nil {
 					fmt.Errorf("fail get applications, err: %s", err)
@@ -84,71 +87,39 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 
 				fmt.Println("apps found:", len(appList.Items))
 
+				// get metrics under apps' ns
+				ns2MetricsListMap := make(map[string]*metricv1beta1.PodMetricsList)
 				for _, app := range appList.Items {
-					// fetch & fill new metrics
+					if _, exist := ns2MetricsListMap[app.Namespace]; exist {
+						continue
+					}
+
 					metricsList, err := metricClient.PodMetricses(app.Namespace).List(metav1.ListOptions{})
 					if err != nil {
-						fmt.Print("fail to list podMetrics, err:", err)
+						fmt.Printf("fail to list podMetrics for ns: %s, err: %s\n", app.Namespace, err)
 					}
 
-					fmt.Printf("metrics found under ns(%s): %d", app.Namespace, len(metricsList.Items))
-
-					for _, component := range app.Spec.Components {
-						componentKey := fmt.Sprintf("%s-%s", app.Namespace, component.Name)
-
-						if _, exist := componentMetricDB[componentKey]; !exist {
-							// init map: pod -> metrics time serials
-							componentMetricDB[componentKey] = make(map[string][]metricv1beta1.PodMetrics)
-						}
-
-						for _, podMetrics := range metricsList.Items {
-
-							if podMetrics.Namespace != app.Namespace {
-								// ignore if is not pod of this app
-								continue
-							}
-
-							// real dirty impl details here, should replace this if exists any better way
-							var hit bool
-							for _, c := range podMetrics.Containers {
-								if c.Name != component.Name {
-									continue
-								}
-
-								hit = true
-								break
-							}
-
-							if !hit {
-								continue
-							}
-
-							vPodMetricsSlice := componentMetricDB[componentKey][podMetrics.Name]
-
-							// ignore if ts is same
-							if len(vPodMetricsSlice) > 0 &&
-								vPodMetricsSlice[len(vPodMetricsSlice)-1].Timestamp.Unix() == podMetrics.Timestamp.Unix() {
-								continue
-							}
-
-							vPodMetricsSlice = append(vPodMetricsSlice, podMetrics)
-
-							// purge old metrics
-							for len(vPodMetricsSlice) > 0 {
-								cutTs := time.Now().Add(-1 * metricDuration)
-								if vPodMetricsSlice[0].Timestamp.Time.After(cutTs) {
-									break
-								}
-
-								vPodMetricsSlice = vPodMetricsSlice[1:]
-							}
-
-							componentMetricDB[componentKey][podMetrics.Name] = vPodMetricsSlice
-
-							//fmt.Println(fmt.Sprintf("%s -> %s", componentKey, podMetrics.Name), vPodMetricsSlice, len(vPodMetricsSlice))
-						}
-					}
+					ns2MetricsListMap[app.Namespace] = metricsList
+					fmt.Printf("metrics found under ns(%s): %d\n", app.Namespace, len(metricsList.Items))
 				}
+
+				for _, app := range appList.Items {
+					metricsList, exist := ns2MetricsListMap[app.Namespace]
+					if !exist {
+						continue
+					}
+
+					cacheMetricsForAppIntoLocalDB(app, metricsList)
+				}
+
+				// nodes metrics
+				nodeMetricsList, err := metricClient.NodeMetricses().List(metav1.ListOptions{})
+				if err != nil {
+					fmt.Errorf("fail get nodes, err: %s", err)
+				}
+
+				fmt.Printf("node metrics found %d\n", len(nodeMetricsList.Items))
+				cacheMetricsForNodesIntoLocalDB(nodeMetricsList)
 			}
 		}
 	}()
@@ -156,14 +127,146 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 	return nil
 }
 
+func cacheMetricsForNodesIntoLocalDB(nodeMetricsList *metricv1beta1.NodeMetricsList) {
+	for _, nodeMetrics := range nodeMetricsList.Items {
+		nodeName := nodeMetrics.Name
+
+		v := nodeMetricDB[nodeName]
+		v = append(v, nodeMetrics)
+
+		nodeMetricDB[nodeName] = v
+	}
+}
+
+func cacheMetricsForAppIntoLocalDB(app v1alpha1.Application, metricsList *metricv1beta1.PodMetricsList) {
+
+	for _, component := range app.Spec.Components {
+		componentKey := fmt.Sprintf("%s-%s", app.Namespace, component.Name)
+
+		if _, exist := componentMetricDB[componentKey]; !exist {
+			// init map: pod -> metrics time serials
+			componentMetricDB[componentKey] = make(map[string][]metricv1beta1.PodMetrics)
+		}
+
+		for _, podMetrics := range metricsList.Items {
+
+			if podMetrics.Namespace != app.Namespace {
+				// ignore if is not pod of this app
+				continue
+			}
+
+			// real dirty impl details here, should replace this if exists any better way
+			var hit bool
+			for _, c := range podMetrics.Containers {
+				if c.Name != component.Name {
+					continue
+				}
+
+				hit = true
+				break
+			}
+
+			if !hit {
+				continue
+			}
+
+			vPodMetricsSlice := componentMetricDB[componentKey][podMetrics.Name]
+
+			// ignore if ts is same
+			if len(vPodMetricsSlice) > 0 &&
+				vPodMetricsSlice[len(vPodMetricsSlice)-1].Timestamp.Unix() == podMetrics.Timestamp.Unix() {
+				continue
+			}
+
+			vPodMetricsSlice = append(vPodMetricsSlice, podMetrics)
+
+			// purge old metrics
+			for len(vPodMetricsSlice) > 0 {
+				cutTs := time.Now().Add(-1 * metricDuration)
+				if vPodMetricsSlice[0].Timestamp.Time.After(cutTs) {
+					break
+				}
+
+				vPodMetricsSlice = vPodMetricsSlice[1:]
+			}
+
+			componentMetricDB[componentKey][podMetrics.Name] = vPodMetricsSlice
+
+			//fmt.Println(fmt.Sprintf("%s -> %s", componentKey, podMetrics.Name), vPodMetricsSlice, len(vPodMetricsSlice))
+		}
+	}
+}
+
+type NodesMetricHistories struct {
+	CPU    MetricHistory         `json:"cpu"`
+	Memory MetricHistory         `json:"memory"`
+	Nodes  []NodeMetricHistories `json:"nodes"`
+}
+
+type NodeMetricHistories struct {
+	Name   string        `json:"name"`
+	CPU    MetricHistory `json:"cpu"`
+	Memory MetricHistory `json:"memory"`
+}
+
+func GetFilteredNodeMetrics(nodes []string) NodesMetricHistories {
+	var nodeMetricHistoriesList []NodeMetricHistories
+
+	var cpuHistoryList []MetricHistory
+	var memHistoryList []MetricHistory
+	for nodeName, nodeMetricsList := range nodeMetricDB {
+		if !slices.Exists(nodes, nodeName) {
+			continue
+		}
+
+		oneNode := getNodeMetricHistories(nodeName, nodeMetricsList)
+		nodeMetricHistoriesList = append(nodeMetricHistoriesList, oneNode)
+
+		cpuHistoryList = append(cpuHistoryList, oneNode.CPU)
+		memHistoryList = append(memHistoryList, oneNode.Memory)
+	}
+
+	aggCpu := aggregateHistoryList(cpuHistoryList)
+	aggMem := aggregateHistoryList(memHistoryList)
+
+	return NodesMetricHistories{
+		CPU:    aggCpu,
+		Memory: aggMem,
+		Nodes:  nodeMetricHistoriesList,
+	}
+}
+
+func getNodeMetricHistories(name string, list []metricv1beta1.NodeMetrics) NodeMetricHistories {
+	var memHistory MetricHistory
+	var cpuHistory MetricHistory
+	for _, nodeMetric := range list {
+		memHistory = append(memHistory, MetricPoint{
+			Timestamp: nodeMetric.Timestamp.Time,
+			Value:     uint64(nodeMetric.Usage.Memory().Value()),
+		})
+
+		cpuHistory = append(cpuHistory, MetricPoint{
+			Timestamp: nodeMetric.Timestamp.Time,
+			Value:     uint64(nodeMetric.Usage.Cpu().Value()),
+		})
+	}
+
+	return NodeMetricHistories{
+		Name:   name,
+		Memory: memHistory,
+		CPU:    cpuHistory,
+	}
+
+}
+
 // componentName -> componentMetricsSum
-func getComponentMetricSumList() map[string]ComponentMetrics {
+func getComponentKey2MetricMap() map[string]ComponentMetrics {
 	rst := make(map[string]ComponentMetrics)
 
 	for compName, podMap := range componentMetricDB {
 		compMetrics := ComponentMetrics{
 			Name: compName,
-			Pods: make(map[string]MetricsSum),
+			Pods: make(map[string]MetricHistories),
 		}
 
 		for podName, metricsHistory := range podMap {
@@ -171,8 +274,8 @@ func getComponentMetricSumList() map[string]ComponentMetrics {
 		}
 
 		podsMetricsSum := aggregatePodsSum(compMetrics.Pods)
-		compMetrics.MemoryUsageHistory = podsMetricsSum.MemoryUsageHistory
-		compMetrics.CPUUsageHistory = podsMetricsSum.CPUUsageHistory
+		compMetrics.Memory = podsMetricsSum.Memory
+		compMetrics.CPU = podsMetricsSum.CPU
 
 		rst[compName] = compMetrics
 	}
@@ -180,28 +283,17 @@ func getComponentMetricSumList() map[string]ComponentMetrics {
 	return rst
 }
 
-func aggregateMetrics(pods map[string]MetricsSum, mType string) []MetricPoint {
-	var points []MetricPoint
+type MetricHistory []MetricPoint
 
-	pq := make(PriorityQueue, len(pods))
+func aggregateHistoryList(historyList []MetricHistory) (history MetricHistory) {
+	pq := make(PriorityQueue, len(historyList))
 
-	i := 0
-	for _, pod := range pods {
-		if mType == "cpu" {
-			pq[i] = &Item{
-				value: pod.CPUUsageHistory,
-				n:     0,
-				index: i,
-			}
-		} else {
-			pq[i] = &Item{
-				value: pod.MemoryUsageHistory,
-				n:     0,
-				index: i,
-			}
+	for i, history := range historyList {
+		pq[i] = &Item{
+			value: history,
+			n:     0,
+			index: i,
 		}
-
-		i++
 	}
 	heap.Init(&pq)
 
@@ -215,19 +307,19 @@ func aggregateMetrics(pods map[string]MetricsSum, mType string) []MetricPoint {
 
 		target := item.value[item.n]
 
-		if len(points) == 0 {
-			points = append(points, MetricPoint{
+		if len(history) == 0 {
+			history = append(history, MetricPoint{
 				Timestamp: target.Timestamp,
 				Value:     target.Value,
 			})
 		} else {
-			latestPoint := &points[len(points)-1]
+			latestPoint := &history[len(history)-1]
 			if latestPoint.Timestamp.Unix() == target.Timestamp.Unix() {
 				// merge
 				latestPoint.Value += target.Value
 			} else {
 				// append
-				points = append(points, MetricPoint{
+				history = append(history, MetricPoint{
 					Timestamp: target.Timestamp,
 					Value:     target.Value,
 				})
@@ -241,18 +333,32 @@ func aggregateMetrics(pods map[string]MetricsSum, mType string) []MetricPoint {
 		}
 	}
 
-	return points
+	return
 }
-func aggregatePodsSum(pods map[string]MetricsSum) MetricsSum {
-	cpuPoints := aggregateMetrics(pods, "cpu")
-	memoryPoints := aggregateMetrics(pods, "memory")
 
-	return MetricsSum{
-		CPUUsageHistory:    cpuPoints,
-		MemoryUsageHistory: memoryPoints,
+func aggregateMapOfPod2Metrics(pods map[string]MetricHistories, mType string) MetricHistory {
+	var historyList []MetricHistory
+	for _, pod := range pods {
+		if mType == "cpu" {
+			historyList = append(historyList, pod.CPU)
+		} else {
+			historyList = append(historyList, pod.Memory)
+		}
+	}
+
+	return aggregateHistoryList(historyList)
+}
+func aggregatePodsSum(pods map[string]MetricHistories) MetricHistories {
+	cpuPoints := aggregateMapOfPod2Metrics(pods, "cpu")
+	memoryPoints := aggregateMapOfPod2Metrics(pods, "memory")
+
+	return MetricHistories{
+		CPU:    cpuPoints,
+		Memory: memoryPoints,
 	}
 }
 
+// https://golang.org/pkg/container/heap/
 type Item struct {
 	value []MetricPoint
 	// tracks which point we are using
@@ -311,8 +417,8 @@ func (pq *PriorityQueue) Pop() interface{} {
 //	heap.Fix(pq, item.index)
 //}
 
-func toMetricSum(history []metricv1beta1.PodMetrics) MetricsSum {
-	sum := MetricsSum{}
+func toMetricSum(history []metricv1beta1.PodMetrics) MetricHistories {
+	sum := MetricHistories{}
 
 	for _, podMetrics := range history {
 		var memSum uint64
@@ -326,11 +432,11 @@ func toMetricSum(history []metricv1beta1.PodMetrics) MetricsSum {
 			cpuSum += uint64(cpu.Value())
 		}
 
-		sum.MemoryUsageHistory = append(sum.MemoryUsageHistory, MetricPoint{
+		sum.Memory = append(sum.Memory, MetricPoint{
 			Timestamp: podMetrics.Timestamp.Time,
 			Value:     memSum,
 		})
-		sum.CPUUsageHistory = append(sum.CPUUsageHistory, MetricPoint{
+		sum.CPU = append(sum.CPU, MetricPoint{
 			Timestamp: podMetrics.Timestamp.Time,
 			Value:     cpuSum,
 		})

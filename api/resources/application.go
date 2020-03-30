@@ -56,24 +56,10 @@ type ComponentStatus struct {
 	ComponentMetrics `json:"metrics"`
 }
 
-// https://github.com/kubernetes/dashboard/blob/master/src/app/backend/resource/pod/metrics.go#L37
-type MetricsSum struct {
-	// todo why pointer of uint64
-
-	////// Most recent measure of CPU usage on all cores in nanoseconds.
-	//CPUUsage int64 `json:"cpuUsage"`
-	////// Pod memory usage in bytes.
-	//MemoryUsage int64 `json:"memoryUsage"`
-	// Timestamped samples of CPUUsage over some short period of history
-	CPUUsageHistory []MetricPoint `json:"cpu"`
-	// Timestamped samples of pod memory usage over some short period of history
-	MemoryUsageHistory []MetricPoint `json:"memory"`
-}
-
 type ComponentMetrics struct {
-	Name       string `json:"-"`
-	MetricsSum `json:",inline,omitempty"`
-	Pods       map[string]MetricsSum `json:"pods"`
+	Name            string `json:"-"`
+	MetricHistories `json:",inline,omitempty"`
+	Pods            map[string]MetricHistories `json:"pods"`
 }
 
 // https://github.com/kubernetes/dashboard/blob/master/src/app/backend/integration/metric/api/types.go#L121
@@ -95,6 +81,12 @@ type ApplicationListResponseItem struct {
 	CreatedAt  time.Time          `json:"createdAt"`
 	IsActive   bool               `json:"isActive"`
 	Components []*ComponentStatus `json:"components"`
+	Metrics    MetricHistories    `json:"metrics"`
+}
+
+type MetricHistories struct {
+	CPU    MetricHistory `json:"cpu"`
+	Memory MetricHistory `json:"memory"`
 }
 
 type ApplicationListResponse struct {
@@ -223,7 +215,7 @@ func (builder *Builder) buildApplicationListResponseItem(application *v1alpha1.A
 			LabelSelector: labels.Everything().String(),
 			FieldSelector: fields.Everything().String(),
 		}),
-		PodMetricsList: builder.GetPodMetricsListChannel(ns, listOptions),
+		//PodMetricsList: builder.GetPodMetricsListChannel(ns, listOptions),
 	}
 
 	resources, err := resourceChannels.ToResources()
@@ -232,19 +224,34 @@ func (builder *Builder) buildApplicationListResponseItem(application *v1alpha1.A
 		builder.Logger.Error(err)
 	}
 
+	componentsStatusList := builder.buildApplicationComponentStatus(application, resources)
+
+	var cpuHistoryList []MetricHistory
+	var memHistoryList []MetricHistory
+	for _, compStatus := range componentsStatusList {
+		cpuHistoryList = append(cpuHistoryList, compStatus.CPU)
+		memHistoryList = append(memHistoryList, compStatus.Memory)
+	}
+	appCpuHistory := aggregateHistoryList(cpuHistoryList)
+	appMemHistory := aggregateHistoryList(memHistoryList)
+
 	return &ApplicationListResponseItem{
 		Name:       application.ObjectMeta.Name,
 		Namespace:  application.ObjectMeta.Namespace,
 		IsActive:   application.Spec.IsActive,
 		CreatedAt:  application.ObjectMeta.CreationTimestamp.Time,
-		Components: builder.buildApplicationComponentStatus(application, resources),
+		Components: componentsStatusList,
+		Metrics: MetricHistories{
+			CPU:    appCpuHistory,
+			Memory: appMemHistory,
+		},
 	}
 }
 
 func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Application, resources *Resources) []*ComponentStatus {
 	res := []*ComponentStatus{}
 
-	sumMap := getComponentMetricSumList()
+	componentKey2MetricMap := getComponentKey2MetricMap()
 
 	for i := range application.Spec.Components {
 		component := application.Spec.Components[i]
@@ -255,8 +262,6 @@ func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Ap
 			DeploymentStatus: appsV1.DeploymentStatus{},
 			CronjobStatus:    v1betav1.CronJobStatus{},
 			PodInfo:          &PodInfo{},
-
-			//ComponentMetrics: ComponentMetrics{}, // TODO
 		}
 
 		// TODO fix the default value, there should be a empty string
@@ -275,13 +280,8 @@ func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Ap
 				componentStatus.PodInfo = getPodsInfo(deployment.Status.Replicas, deployment.Spec.Replicas, pods)
 				componentStatus.PodInfo.Warnings = filterPodWarningEvents(resources.EventList.Items, pods)
 
-				//podMetricsList := getPodMetricsListForComponent(deploymentName, resources.PodMetricsList)
-				//componentStatus.MetricsList = podMetricsList
-
-				//metricsSum := getMetricsSum(podMetricsList)
-				//componentStatus.MetricsSum = metricsSum
 				componentKey := fmt.Sprintf("%s-%s", application.Namespace, component.Name)
-				if v, exist := sumMap[componentKey]; exist {
+				if v, exist := componentKey2MetricMap[componentKey]; exist {
 					componentStatus.ComponentMetrics = v
 				}
 			}
@@ -292,10 +292,9 @@ func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Ap
 		//	componentStatus.CronjobStatus = v1betav1.CronJobStatus{}
 		//}
 
-		// todo fill metric info
-
 		res = append(res, componentStatus)
 	}
+
 	return res
 }
 

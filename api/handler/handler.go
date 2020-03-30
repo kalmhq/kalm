@@ -90,6 +90,8 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gv1Alpha1WithAuth.POST("/componenttemplates", h.handleCreateComponentTemplateNew)
 	gv1Alpha1WithAuth.PUT("/componenttemplates/:name", h.handleUpdateComponentTemplateNew)
 	gv1Alpha1WithAuth.DELETE("/componenttemplates/:name", h.handleDeleteComponentTemplateNew)
+
+	gv1Alpha1WithAuth.GET("/nodes/metrics", h.handleGetNodeMetricsNew)
 }
 
 func NewApiHandler(clientManager *client.ClientManager) *ApiHandler {

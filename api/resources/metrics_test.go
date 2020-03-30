@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-var podMap1 = map[string]MetricsSum{
+var podMap1 = map[string]MetricHistories{
 	"pod1": {
 		CPUUsageHistory: []MetricPoint{
 			{
@@ -28,13 +28,13 @@ var podMap1 = map[string]MetricsSum{
 }
 
 func TestAggregateMetrics(t *testing.T) {
-	points := aggregateMetrics(podMap1, "cpu")
+	points := aggregateMapOfPod2Metrics(podMap1, "cpu")
 
 	assert.Equal(t, len(points), 1)
 	assert.Equal(t, points[0].Value, uint64(3))
 }
 
-var podMap2 = map[string]MetricsSum{
+var podMap2 = map[string]MetricHistories{
 	"pod1": {
 		CPUUsageHistory: []MetricPoint{
 			{
@@ -69,7 +69,7 @@ var podMap2 = map[string]MetricsSum{
 }
 
 func TestAggregateMetrics2(t *testing.T) {
-	points := aggregateMetrics(podMap2, "cpu")
+	points := aggregateMapOfPod2Metrics(podMap2, "cpu")
 
 	assert.Equal(t, len(points), 3)
 	assert.Equal(t, points[0].Value, uint64(3))
@@ -89,7 +89,7 @@ func TestAggregatePodsSum(t *testing.T) {
 	assert.Equal(t, mSum.MemoryUsageHistory[0].Value, uint64(99))
 }
 
-var podMap3 = map[string]MetricsSum{
+var podMap3 = map[string]MetricHistories{
 	"pod1": {
 		CPUUsageHistory: []MetricPoint{
 			{

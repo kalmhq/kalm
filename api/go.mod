@@ -6,6 +6,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/gorilla/websocket v1.4.2
 	github.com/kapp-staging/kapp/controller v0.1.0
+	github.com/influxdata/influxdb v1.7.7
 	github.com/joho/godotenv v1.3.0
 	github.com/labstack/echo/v4 v4.1.15
 	github.com/sirupsen/logrus v1.4.2
