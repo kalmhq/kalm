@@ -1,25 +1,14 @@
 package server
 
 import (
-	"github.com/kapp-staging/kapp/api/config"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"net/http"
 	"os"
+
+	"github.com/kapp-staging/kapp/api/config"
+	"github.com/kapp-staging/kapp/api/errors"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
-
-func customHTTPErrorHandler(err error, c echo.Context) {
-	code := http.StatusInternalServerError
-	if he, ok := err.(*echo.HTTPError); ok {
-		code = he.Code
-	}
-
-	c.Logger().Error(err)
-
-	if !c.Response().Committed {
-		c.JSON(code, map[string]interface{}{"desc": err.Error()})
-	}
-}
 
 func newEchoInstance() *echo.Echo {
 	e := echo.New()
@@ -36,7 +25,7 @@ func newEchoInstance() *echo.Echo {
 		MaxAge:       86400,
 	}))
 
-	e.HTTPErrorHandler = customHTTPErrorHandler
+	e.HTTPErrorHandler = errors.CustomHTTPErrorHandler
 
 	return e
 }

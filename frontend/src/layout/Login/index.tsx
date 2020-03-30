@@ -89,11 +89,11 @@ export class LoginRaw extends React.PureComponent<Props, State> {
       return;
     }
 
-    const res = await this.props.dispatch(loginAction(this.state.value));
-    if (res) {
+    const loginError = await this.props.dispatch(loginAction(this.state.value));
+    if (!loginError) {
       this.props.dispatch(push("/"));
     } else {
-      this.setState({ error: "Auth token is invalid." });
+      this.setState({ error: loginError });
     }
   };
 

@@ -1,6 +1,7 @@
 import { getLoginStatus, login } from "./kubernetesApi";
-import { ThunkResult } from "../types";
+import { ThunkResult, SomethingWrong } from "../types";
 import { INIT_AUTH, SET_AUTH_TOKEN } from "../types/common";
+import { setErrorNotificationAction } from "./notification";
 
 export const initAuthStatus = (): ThunkResult<Promise<void>> => {
   return async dispatch => {
@@ -13,14 +14,18 @@ export const initAuthStatus = (): ThunkResult<Promise<void>> => {
   };
 };
 
-export const loginAction = (token: string): ThunkResult<Promise<boolean>> => {
+export const loginAction = (token: string): ThunkResult<Promise<string | undefined>> => {
   return async dispatch => {
-    let authorized = false;
-
+    let authorized;
     try {
       authorized = await login(token);
     } catch (e) {
-      console.log(e);
+      if (e.response.status === 401) {
+        dispatch(setErrorNotificationAction("aaaaa"));
+        return "Auth token is invalid.";
+      } else if (e.response.status > 200) {
+        return SomethingWrong;
+      }
     }
 
     if (authorized) {
@@ -32,6 +37,6 @@ export const loginAction = (token: string): ThunkResult<Promise<boolean>> => {
       console.log(`login failed`);
     }
 
-    return authorized;
+    return;
   };
 };

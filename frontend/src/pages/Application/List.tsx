@@ -1,4 +1,15 @@
-import { Checkbox, createStyles, ExpansionPanel, ExpansionPanelDetails, ExpansionPanelSummary, Switch, TextField, Theme, WithStyles, withStyles } from "@material-ui/core";
+import {
+  Checkbox,
+  createStyles,
+  ExpansionPanel,
+  ExpansionPanelDetails,
+  ExpansionPanelSummary,
+  Switch,
+  TextField,
+  Theme,
+  WithStyles,
+  withStyles
+} from "@material-ui/core";
 import ArchiveIcon from "@material-ui/icons/Archive";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew";
@@ -6,7 +17,13 @@ import RefreshIcon from "@material-ui/icons/Refresh";
 import { push } from "connected-react-router";
 import MaterialTable from "material-table";
 import React from "react";
-import { deleteApplicationAction, duplicateApplicationAction, loadApplicationAction, loadApplicationsAction, updateApplicationAction } from "../../actions/application";
+import {
+  deleteApplicationAction,
+  duplicateApplicationAction,
+  loadApplicationAction,
+  loadApplicationsAction,
+  updateApplicationAction
+} from "../../actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "../../actions/notification";
 import { duplicateApplicationName, getApplicationByName } from "../../selectors/application";
 import { ApplicationListItem } from "../../types/application";
@@ -250,7 +267,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         dispatch(duplicateApplicationAction(newApplication));
       }
     } catch {
-      dispatch(setErrorNotificationAction("Something wrong"));
+      dispatch(setErrorNotificationAction());
     }
   };
 
@@ -290,7 +307,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         await dispatch(setSuccessNotificationAction("Successfully delete an application"));
       }
     } catch {
-      dispatch(setErrorNotificationAction("Something wrong"));
+      dispatch(setErrorNotificationAction());
     }
   };
 

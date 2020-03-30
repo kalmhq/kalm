@@ -16,11 +16,22 @@ import {
   LOAD_APPLICATION_PENDING,
   LOAD_APPLICATION_FULFILLED
 } from "../types/application";
-import { ThunkResult } from "../types";
+import { ThunkResult, StatusFailure } from "../types";
+import { setErrorNotificationAction } from "./notification";
 
 export const createApplicationAction = (applicationValues: Application): ThunkResult<Promise<void>> => {
   return async dispatch => {
-    const application = await createKappApplication(applicationValues);
+    let application: Application;
+    try {
+      application = await createKappApplication(applicationValues);
+    } catch (e) {
+      if (e.response.data.status === StatusFailure) {
+        dispatch(setErrorNotificationAction(e.response.data.message));
+      } else {
+        dispatch(setErrorNotificationAction());
+      }
+      return;
+    }
 
     dispatch(loadApplicationsAction());
     dispatch({
@@ -32,7 +43,17 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
 
 export const updateApplicationAction = (applicationRaw: Application): ThunkResult<Promise<void>> => {
   return async dispatch => {
-    const application = await updateKappApplication(applicationRaw);
+    let application: Application;
+    try {
+      application = await updateKappApplication(applicationRaw);
+    } catch (e) {
+      if (e.response.data.status === StatusFailure) {
+        dispatch(setErrorNotificationAction(e.response.data.message));
+      } else {
+        dispatch(setErrorNotificationAction());
+      }
+      return;
+    }
 
     dispatch(loadApplicationsAction());
     dispatch({
@@ -44,7 +65,17 @@ export const updateApplicationAction = (applicationRaw: Application): ThunkResul
 
 export const duplicateApplicationAction = (duplicatedApplication: Application): ThunkResult<Promise<void>> => {
   return async dispatch => {
-    const application = await createKappApplication(duplicatedApplication);
+    let application: Application;
+    try {
+      application = await createKappApplication(duplicatedApplication);
+    } catch (e) {
+      if (e.response.data.status === StatusFailure) {
+        dispatch(setErrorNotificationAction(e.response.data.message));
+      } else {
+        dispatch(setErrorNotificationAction());
+      }
+      return;
+    }
 
     dispatch(loadApplicationsAction());
     dispatch({
@@ -56,7 +87,16 @@ export const duplicateApplicationAction = (duplicatedApplication: Application): 
 
 export const deleteApplicationAction = (namespace: string, name: string): ThunkResult<Promise<void>> => {
   return async dispatch => {
-    await deleteKappApplication(namespace, name);
+    try {
+      await deleteKappApplication(namespace, name);
+    } catch (e) {
+      if (e.response.data.status === StatusFailure) {
+        dispatch(setErrorNotificationAction(e.response.data.message));
+      } else {
+        dispatch(setErrorNotificationAction());
+      }
+      return;
+    }
 
     dispatch({
       type: DELETE_APPLICATION,

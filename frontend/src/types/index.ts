@@ -18,3 +18,7 @@ export type Actions =
 export type ThunkResult<R> = ThunkAction<R, RootState, undefined, Actions>;
 export type TDispatch = ThunkDispatch<RootState, undefined, Actions>;
 export type TDispatchProp = { dispatch: TDispatch };
+
+export const StatusFailure = "Failure";
+export const StatusSuccess = "Success";
+export const SomethingWrong = "Something wrong";

@@ -14,8 +14,8 @@ import {
   ConfigFile,
   initialRootConfigNode
 } from "../types/config";
-import { ThunkResult } from "../types";
-import { setSuccessNotificationAction } from "./notification";
+import { ThunkResult, StatusFailure } from "../types";
+import { setSuccessNotificationAction, setErrorNotificationAction } from "./notification";
 
 export const createConfigAction = (config: ConfigNode): ThunkResult<Promise<void>> => {
   return async dispatch => {
@@ -23,7 +23,18 @@ export const createConfigAction = (config: ConfigNode): ThunkResult<Promise<void
 
     if (config.get("type") === "file") {
       const configFile = configToConfigFile(config);
-      await createKappFile(convertToCRDFile(configFile));
+
+      try {
+        await createKappFile(convertToCRDFile(configFile));
+      } catch (e) {
+        if (e.response.data.status === StatusFailure) {
+          dispatch(setErrorNotificationAction(e.response.data.message));
+        } else {
+          dispatch(setErrorNotificationAction());
+        }
+        return;
+      }
+
       dispatch(setSuccessNotificationAction("Create config successful."));
     } else {
       dispatch(setSuccessNotificationAction("Create folder successful."));
@@ -50,9 +61,19 @@ export const duplicateConfigAction = (config: ConfigNode): ThunkResult<Promise<v
       ancestorIds: config.get("ancestorIds")
     });
 
-    console.log("config", config.toJS());
     const configFile = configToConfigFile(config);
-    await createKappFile(convertToCRDFile(configFile));
+
+    try {
+      await createKappFile(convertToCRDFile(configFile));
+    } catch (e) {
+      if (e.response.data.status === StatusFailure) {
+        dispatch(setErrorNotificationAction(e.response.data.message));
+      } else {
+        dispatch(setErrorNotificationAction());
+      }
+      return;
+    }
+
     dispatch(setSuccessNotificationAction("Create config successful."));
 
     dispatch({
@@ -69,7 +90,18 @@ export const duplicateConfigAction = (config: ConfigNode): ThunkResult<Promise<v
 export const updateConfigAction = (config: ConfigNode): ThunkResult<Promise<void>> => {
   return async dispatch => {
     const configFile = configToConfigFile(config);
-    await updateKappFile(convertToCRDFile(configFile));
+
+    try {
+      await updateKappFile(convertToCRDFile(configFile));
+    } catch (e) {
+      if (e.response.data.status === StatusFailure) {
+        dispatch(setErrorNotificationAction(e.response.data.message));
+      } else {
+        dispatch(setErrorNotificationAction());
+      }
+      return;
+    }
+
     dispatch(setSuccessNotificationAction("Update config successful."));
 
     dispatch({
@@ -88,7 +120,18 @@ export const updateConfigAction = (config: ConfigNode): ThunkResult<Promise<void
 export const deleteConfigAction = (config: ConfigNode): ThunkResult<Promise<void>> => {
   return async dispatch => {
     const configFile = configToConfigFile(config);
-    await deleteKappFile(convertToCRDFile(configFile));
+
+    try {
+      await deleteKappFile(convertToCRDFile(configFile));
+    } catch (e) {
+      if (e.response.data.status === StatusFailure) {
+        dispatch(setErrorNotificationAction(e.response.data.message));
+      } else {
+        dispatch(setErrorNotificationAction());
+      }
+      return;
+    }
+
     dispatch(setSuccessNotificationAction("Delete config successful."));
 
     dispatch(setCurrentConfigIdChainAction([initialRootConfigNode.get("id")]));
