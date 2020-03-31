@@ -33,6 +33,8 @@ type ComponentSpec struct {
 
 	Image string `json:"image"`
 
+	Replicas *int32 `json:"replicas,omitempty"`
+
 	Dependencies []string `json:"dependencies,omitempty"`
 
 	Command []string `json:"command,omitempty"`

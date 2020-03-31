@@ -133,6 +133,11 @@ func (in *ComponentSpec) DeepCopyInto(out *ComponentSpec) {
 		*out = make([]EnvVar, len(*in))
 		copy(*out, *in)
 	}
+	if in.Replicas != nil {
+		in, out := &in.Replicas, &out.Replicas
+		*out = new(int32)
+		**out = **in
+	}
 	if in.Dependencies != nil {
 		in, out := &in.Dependencies, &out.Dependencies
 		*out = make([]string, len(*in))
