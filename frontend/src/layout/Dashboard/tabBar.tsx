@@ -27,18 +27,18 @@ export const tabOptions: TabOption[] = [
     text: "Application",
     to: "/applications"
   },
-  {
-    text: "Component Template",
-    to: "/componenttemplates"
-  },
+  // {
+  //   text: "Component Template",
+  //   to: "/componenttemplates"
+  // },
   {
     text: "Configs",
     to: "/configs"
   },
-  {
-    text: "Routes",
-    to: "/routes"
-  },
+  // {
+  //   text: "Routes",
+  //   to: "/routes"
+  // },
   {
     text: "Nodes",
     to: "/cluster/nodes"
