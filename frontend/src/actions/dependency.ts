@@ -38,7 +38,7 @@ export const loadDependenciesAction = (): ThunkResult<Promise<void>> => {
     try {
       dependencies = await getDependencies();
     } catch (e) {
-      if (e.response.data.status === StatusFailure) {
+      if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
       } else {
         dispatch(setErrorNotificationAction());
