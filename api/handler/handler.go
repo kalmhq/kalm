@@ -52,10 +52,10 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gV1.PUT("/applications/:namespace/:name", h.handleUpdateApplication)
 	gV1.DELETE("/applications/:namespace/:name", h.handleDeleteApplication)
 
-	gV1.GET("/files", h.handleGetFiles)
-	gV1.POST("/files", h.handleCreateFile)
-	gV1.PUT("/files/:name", h.handleUpdateFile)
-	gV1.DELETE("/files/:name", h.handleDeleteFile)
+	gV1.GET("/files", h.handleGetFilesOld)
+	gV1.POST("/files", h.handleCreateFileOld)
+	gV1.PUT("/files/:name", h.handleUpdateFileOld)
+	gV1.DELETE("/files/:name", h.handleDeleteFileOld)
 
 	gV1.GET("/clusterroles", h.handleGetClusterRoles)
 	gV1.POST("/clusterroles", h.handleCreateClusterRoles)
@@ -90,6 +90,12 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gv1Alpha1WithAuth.POST("/componenttemplates", h.handleCreateComponentTemplateNew)
 	gv1Alpha1WithAuth.PUT("/componenttemplates/:name", h.handleUpdateComponentTemplateNew)
 	gv1Alpha1WithAuth.DELETE("/componenttemplates/:name", h.handleDeleteComponentTemplateNew)
+
+	gv1Alpha1WithAuth.GET("/files/:namespace", h.handleListFiles)
+	gv1Alpha1WithAuth.POST("/files/:namespace", h.handleCreateFile)
+	gv1Alpha1WithAuth.PUT("/files/:namespace", h.handleUpdateFile)
+	gv1Alpha1WithAuth.PUT("/files/:namespace/move", h.handleMoveFile)
+	gv1Alpha1WithAuth.DELETE("/files/:namespace", h.handleDeleteFile)
 
 	gv1Alpha1WithAuth.GET("/nodes/metrics", h.handleGetNodeMetricsNew)
 }

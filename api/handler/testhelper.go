@@ -9,15 +9,17 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/suite"
 	"io"
+	"k8s.io/client-go/kubernetes"
 	"net/http/httptest"
 	"path/filepath"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	"strings"
 )
 
-type BasicTestSuite struct {
+type WithControllerTestSuite struct {
 	suite.Suite
 	testEnv   *envtest.Environment
+	k8sClinet *kubernetes.Clientset
 	apiServer *echo.Echo
 }
 
@@ -38,7 +40,7 @@ func (r *ResponseRecorder) BodyAsJSON(obj interface{}) {
 	_ = json.Unmarshal(r.bytes, obj)
 }
 
-func (suite *BasicTestSuite) SetupSuite() {
+func (suite *WithControllerTestSuite) SetupSuite() {
 	suite.testEnv = &envtest.Environment{
 		CRDDirectoryPaths: []string{filepath.Join("..", "..", "controller", "config", "crd", "bases")},
 	}
@@ -51,10 +53,13 @@ func (suite *BasicTestSuite) SetupSuite() {
 
 	// TODO the test server has no permissions
 
-	//k8sClient, err := kubernetes.NewForConfig(cfg)
-	//if err != nil {
-	//	panic(err)
-	//}
+	k8sClient, err := kubernetes.NewForConfig(cfg)
+
+	if err != nil {
+		panic(err)
+	}
+
+	suite.k8sClinet = k8sClient
 	//spew.Dump(k8sClient.ServerVersion())
 	//spew.Dump(k8sClient.CoreV1().Nodes().List(ListAll))
 
@@ -70,16 +75,16 @@ func (suite *BasicTestSuite) SetupSuite() {
 	suite.apiServer = e
 }
 
-func (suite *BasicTestSuite) TearDownSuite() {
+func (suite *WithControllerTestSuite) TearDownSuite() {
 }
 
-func (suite *BasicTestSuite) NewRequest(method string, path string, body interface{}) *ResponseRecorder {
+func (suite *WithControllerTestSuite) NewRequest(method string, path string, body interface{}) *ResponseRecorder {
 	return suite.NewRequestWithHeaders(method, path, body, map[string]string{
 		echo.HeaderAuthorization: "Bearer faketoken", // TODO use a real token
 	})
 }
 
-func (suite *BasicTestSuite) NewRequestWithHeaders(method string, path string, body interface{}, headers map[string]string) *ResponseRecorder {
+func (suite *WithControllerTestSuite) NewRequestWithHeaders(method string, path string, body interface{}, headers map[string]string) *ResponseRecorder {
 	var reader io.Reader
 
 	switch v := body.(type) {

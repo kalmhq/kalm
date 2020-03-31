@@ -9,7 +9,7 @@ import (
 )
 
 type ComponentTemplateTestSuite struct {
-	BasicTestSuite
+	WithControllerTestSuite
 }
 
 func (suite *ComponentTemplateTestSuite) TestGetEmptyCTList() {
