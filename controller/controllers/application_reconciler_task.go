@@ -554,6 +554,14 @@ func (act *applicationReconcilerTask) reconcileComponent(component *kappV1Alpha1
 		deployment.Spec.Template = *template
 	}
 
+	if component.Replicas == nil {
+		defaultComponentReplicas := int32(1)
+
+		deployment.Spec.Replicas = &defaultComponentReplicas
+	} else {
+		deployment.Spec.Replicas = component.Replicas
+	}
+
 	//if len(component.Ports) > 0 {
 	//	var ports []coreV1.ContainerPort
 	//	for _, p := range component.Ports {
