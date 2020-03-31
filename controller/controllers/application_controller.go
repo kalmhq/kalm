@@ -72,6 +72,7 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 }
 
 func (r *ApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
+
 	if err := mgr.GetFieldIndexer().IndexField(&appv1.Deployment{}, ownerKey, func(rawObj runtime.Object) []string {
 		deployment := rawObj.(*appv1.Deployment)
 		owner := metav1.GetControllerOf(deployment)
