@@ -20,9 +20,9 @@ export const loginAction = (token: string): ThunkResult<Promise<string | undefin
     try {
       authorized = await login(token);
     } catch (e) {
-      if (e.response.status === 401) {
+      if (e.response && e.response.status === 401) {
         return "Auth token is invalid.";
-      } else if (e.response.status > 200) {
+      } else {
         dispatch(setErrorNotificationAction(SomethingWrong));
         return SomethingWrong;
       }

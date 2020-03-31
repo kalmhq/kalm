@@ -23,7 +23,7 @@ export const createComponentTemplateAction = (componentTemplateRaw: ComponentTem
     try {
       componentTemplate = await createKappComonentTemplate(componentTemplateRaw);
     } catch (e) {
-      if (e.response.data.status === StatusFailure) {
+      if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
       } else {
         dispatch(setErrorNotificationAction());
@@ -55,7 +55,7 @@ export const duplicateComponentAction = (
     try {
       componentTemplate = await createKappComonentTemplate(componentTemplateCopy);
     } catch (e) {
-      if (e.response.data.status === StatusFailure) {
+      if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
       } else {
         dispatch(setErrorNotificationAction());
@@ -77,7 +77,7 @@ export const updateComponentAction = (componentTemplateRaw: ComponentTemplate): 
     try {
       componentTemplate = await updateKappComonentTemplate(componentTemplateRaw);
     } catch (e) {
-      if (e.response.data.status === StatusFailure) {
+      if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
       } else {
         dispatch(setErrorNotificationAction());
@@ -104,7 +104,7 @@ export const deleteComponentAction = (componentTemplateName: string): ThunkResul
     try {
       await deleteKappComonentTemplate(componentTemplate);
     } catch (e) {
-      if (e.response.data.status === StatusFailure) {
+      if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
       } else {
         dispatch(setErrorNotificationAction());
@@ -127,7 +127,7 @@ export const loadComponentTemplatesAction = (): ThunkResult<Promise<void>> => {
     try {
       componentTemplates = await getKappComponentTemplates();
     } catch (e) {
-      if (e.response.data.status === StatusFailure) {
+      if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
       } else {
         dispatch(setErrorNotificationAction());

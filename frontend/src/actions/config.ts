@@ -28,7 +28,7 @@ export const createConfigAction = (config: ConfigNode): ThunkResult<Promise<void
       try {
         await createKappFile(convertToCRDFile(configFile));
       } catch (e) {
-        if (e.response.data.status === StatusFailure) {
+        if (e.response && e.response.data.status === StatusFailure) {
           dispatch(setErrorNotificationAction(e.response.data.message));
         } else {
           dispatch(setErrorNotificationAction());
@@ -67,7 +67,7 @@ export const duplicateConfigAction = (config: ConfigNode): ThunkResult<Promise<v
     try {
       await createKappFile(convertToCRDFile(configFile));
     } catch (e) {
-      if (e.response.data.status === StatusFailure) {
+      if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
       } else {
         dispatch(setErrorNotificationAction());
@@ -95,7 +95,7 @@ export const updateConfigAction = (config: ConfigNode): ThunkResult<Promise<void
     try {
       await updateKappFile(convertToCRDFile(configFile));
     } catch (e) {
-      if (e.response.data.status === StatusFailure) {
+      if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
       } else {
         dispatch(setErrorNotificationAction());
@@ -125,7 +125,7 @@ export const deleteConfigAction = (config: ConfigNode): ThunkResult<Promise<void
     try {
       await deleteKappFile(convertToCRDFile(configFile));
     } catch (e) {
-      if (e.response.data.status === StatusFailure) {
+      if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
       } else {
         dispatch(setErrorNotificationAction());
@@ -162,7 +162,7 @@ export const loadConfigsAction = (): ThunkResult<Promise<void>> => {
     try {
       configs = await getKappFiles();
     } catch (e) {
-      if (e.response.data.status === StatusFailure) {
+      if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
       } else {
         dispatch(setErrorNotificationAction());

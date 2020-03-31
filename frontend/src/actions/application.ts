@@ -27,7 +27,7 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
     try {
       application = await createKappApplication(applicationValues);
     } catch (e) {
-      if (e.response.data.status === StatusFailure) {
+      if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
       } else {
         dispatch(setErrorNotificationAction());
@@ -49,7 +49,7 @@ export const updateApplicationAction = (applicationRaw: Application): ThunkResul
     try {
       application = await updateKappApplication(applicationRaw);
     } catch (e) {
-      if (e.response.data.status === StatusFailure) {
+      if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
       } else {
         dispatch(setErrorNotificationAction());
@@ -71,7 +71,7 @@ export const duplicateApplicationAction = (duplicatedApplication: Application): 
     try {
       application = await createKappApplication(duplicatedApplication);
     } catch (e) {
-      if (e.response.data.status === StatusFailure) {
+      if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
       } else {
         dispatch(setErrorNotificationAction());
@@ -92,7 +92,7 @@ export const deleteApplicationAction = (namespace: string, name: string): ThunkR
     try {
       await deleteKappApplication(namespace, name);
     } catch (e) {
-      if (e.response.data.status === StatusFailure) {
+      if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
       } else {
         dispatch(setErrorNotificationAction());
@@ -115,7 +115,7 @@ export const loadApplicationAction = (namespace: string, name: string): ThunkRes
     try {
       res = await getKappApplication(namespace, name);
     } catch (e) {
-      if (e.response.data.status === StatusFailure) {
+      if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
       } else {
         dispatch(setErrorNotificationAction());
@@ -142,7 +142,7 @@ export const loadApplicationsAction = (): ThunkResult<Promise<void>> => {
     try {
       applicationList = await getKappApplicationList();
     } catch (e) {
-      if (e.response.data.status === StatusFailure) {
+      if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
       } else {
         dispatch(setErrorNotificationAction());
