@@ -50,7 +50,7 @@ const getAxiosClient = () => {
       return response;
     },
     error => {
-      console.log("error", error.response.status);
+      // console.log("error", error.response.status);
       return Promise.reject(error);
     }
   );
