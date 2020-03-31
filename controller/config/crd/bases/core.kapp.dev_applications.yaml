@@ -360,6 +360,9 @@ spec:
                         format: int32
                         type: integer
                     type: object
+                  replicas:
+                    format: int32
+                    type: integer
                   restartPolicy:
                     description: RestartPolicy describes how the container should
                       be restarted. Only one of the following restart policies may

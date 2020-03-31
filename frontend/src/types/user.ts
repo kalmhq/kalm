@@ -3,6 +3,7 @@ import { ImmutableMap } from "../typings";
 
 export const LOAD_USERS_PENDING = "LOAD_USERS_PENDING";
 export const LOAD_USERS_FULFILLED = "LOAD_USERS_FULFILLED";
+export const LOAD_USERS_FAILED = "LOAD_USERS_FAILED";
 export const CREATE_USER = "CREATE_USER";
 export const DELETE_USER = "DELETE_USER";
 
@@ -48,6 +49,10 @@ export interface LoadUsersPendingAction {
   type: typeof LOAD_USERS_PENDING;
 }
 
+export interface LoadUsersFailedAction {
+  type: typeof LOAD_USERS_FAILED;
+}
+
 export interface LoadUsersFulfilledAction {
   type: typeof LOAD_USERS_FULFILLED;
   payload: {
@@ -69,4 +74,9 @@ export interface DeleteUserAction {
   };
 }
 
-export type UserActions = LoadUsersPendingAction | LoadUsersFulfilledAction | CreateUserAction | DeleteUserAction;
+export type UserActions =
+  | LoadUsersPendingAction
+  | LoadUsersFailedAction
+  | LoadUsersFulfilledAction
+  | CreateUserAction
+  | DeleteUserAction;

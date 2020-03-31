@@ -8,6 +8,7 @@ export const DELETE_CONFIG = "DELETE_CONFIG";
 export const SET_CURRENT_CONFIG_ID_CHAIN = "SET_CURRENT_CONFIG_ID_CHAIN";
 export const LOAD_CONFIGS_PENDING = "LOAD_CONFIGS_PENDING";
 export const LOAD_CONFIGS_FULFILLED = "LOAD_CONFIGS_FULFILLED";
+export const LOAD_CONFIGS_FAILED = "LOAD_CONFIGS_FAILED";
 
 export type ConfigFile = ImmutableMap<{
   id: string;
@@ -40,6 +41,10 @@ export const initialRootConfigNode: ConfigNode = Immutable.fromJS({
 
 export interface LoadConfigsPendingAction {
   type: typeof LOAD_CONFIGS_PENDING;
+}
+
+export interface LoadConfigsFailedAction {
+  type: typeof LOAD_CONFIGS_FAILED;
 }
 
 export interface LoadConfigsFulfilledAction {
@@ -87,6 +92,7 @@ export interface UpdateCurrentConfigIdChain {
 export type ConfigActions =
   | LoadConfigsFulfilledAction
   | LoadConfigsPendingAction
+  | LoadConfigsFailedAction
   | CreateConfigAction
   | DeleteConfigAction
   | UpdateConfigAction

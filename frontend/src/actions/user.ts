@@ -8,10 +8,11 @@ import {
   deleteKappClusterRoleBinding
 } from "./kubernetesApi";
 import Immutable from "immutable";
-import { ThunkResult } from "../types";
+import { ThunkResult, StatusFailure } from "../types";
 import { LOAD_USERS_PENDING, UserInterface, allClusterRoleNames, LOAD_USERS_FULFILLED, User } from "../types/user";
 import { convertToCRDClusterRoleBinding } from "../convertors/ClusterRoleBinding";
 import { convertToCRDServiceAccount } from "../convertors/ServiceAccount";
+import { setErrorNotificationAction } from "./notification";
 
 export const createClusterRoleBinding = (user: User, clusterRoleName: string): ThunkResult<Promise<void>> => {
   return async dispatch => {
@@ -89,7 +90,14 @@ export const loadUsersAction = (): ThunkResult<Promise<void>> => {
       getKappClusterRoleBindings(),
       getKappServiceAccounts(),
       getKappSecrets()
-    ]);
+    ]).catch(e => {
+      if (e.response.data.status === StatusFailure) {
+        dispatch(setErrorNotificationAction(e.response.data.message));
+      } else {
+        dispatch(setErrorNotificationAction());
+      }
+      return [[], [], [], []];
+    });
 
     clusterRoles.forEach(() => {});
     // console.log("clusterRoles", clusterRoles);

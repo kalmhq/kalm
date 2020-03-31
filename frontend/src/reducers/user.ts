@@ -1,5 +1,5 @@
 import Immutable from "immutable";
-import { LOAD_USERS_PENDING, LOAD_USERS_FULFILLED } from "../types/user";
+import { LOAD_USERS_PENDING, LOAD_USERS_FULFILLED, LOAD_USERS_FAILED } from "../types/user";
 import { Actions } from "../types";
 import { ImmutableMap } from "../typings";
 import { Users } from "../types/user";
@@ -18,6 +18,10 @@ const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
     case LOAD_USERS_PENDING: {
       state = state.set("isLoading", true);
+      break;
+    }
+    case LOAD_USERS_FAILED: {
+      state = state.set("isLoading", false);
       break;
     }
     case LOAD_USERS_FULFILLED: {

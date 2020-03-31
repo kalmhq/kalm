@@ -13,6 +13,7 @@ spec:
   components:
     - name: payment
       image: weaveworksdemos/payment:0.4.3
+      replicas: 1
       cpu: 100m
       memory: 100Mi
       ports:

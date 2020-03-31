@@ -12,7 +12,8 @@ import {
   LOAD_CONFIGS_PENDING,
   LOAD_CONFIGS_FULFILLED,
   ConfigFile,
-  initialRootConfigNode
+  initialRootConfigNode,
+  LOAD_CONFIGS_FAILED
 } from "../types/config";
 import { ThunkResult, StatusFailure } from "../types";
 import { setSuccessNotificationAction, setErrorNotificationAction } from "./notification";
@@ -157,7 +158,19 @@ export const loadConfigsAction = (): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({ type: LOAD_CONFIGS_PENDING });
 
-    const configs = await getKappFiles();
+    let configs;
+    try {
+      configs = await getKappFiles();
+    } catch (e) {
+      if (e.response.data.status === StatusFailure) {
+        dispatch(setErrorNotificationAction(e.response.data.message));
+      } else {
+        dispatch(setErrorNotificationAction());
+      }
+      dispatch({ type: LOAD_CONFIGS_FAILED });
+      return;
+    }
+
     const configNode = configsToConfigNode(configs);
     dispatch({
       type: LOAD_CONFIGS_FULFILLED,

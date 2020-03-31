@@ -2,6 +2,7 @@ import { ImmutableMap } from "../typings";
 
 export const LOAD_DEPENDENCIES_PENDING = "LOAD_DEPENDENCIES_PENDING";
 export const LOAD_DEPENDENCIES_FULFILLED = "LOAD_DEPENDENCIES_FULFILLED";
+export const LOAD_DEPENDENCIES_FAILED = "LOAD_DEPENDENCIES_FAILED";
 
 export enum KappDependencyStatus {
   NotInstalled,
@@ -31,6 +32,10 @@ export interface LoadDependenciesPendingAction {
   type: typeof LOAD_DEPENDENCIES_PENDING;
 }
 
+export interface LoadDependenciesFailedAction {
+  type: typeof LOAD_DEPENDENCIES_FAILED;
+}
+
 export interface LoadDependenciesFulfilledAction {
   type: typeof LOAD_DEPENDENCIES_FULFILLED;
   payload: {
@@ -38,4 +43,7 @@ export interface LoadDependenciesFulfilledAction {
   };
 }
 
-export type DependencyActions = LoadDependenciesPendingAction | LoadDependenciesFulfilledAction;
+export type DependencyActions =
+  | LoadDependenciesPendingAction
+  | LoadDependenciesFailedAction
+  | LoadDependenciesFulfilledAction;
