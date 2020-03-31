@@ -61,6 +61,9 @@ const styles = (theme: Theme) =>
       color: "#f44336",
       display: "flex"
     },
+    summaryBold: {
+      fontWeight: "bold"
+    },
     summaryIcon: {
       marginLeft: "8px"
     }
@@ -584,10 +587,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderPanel(key: string, title: string, content: any): React.ReactNode {
-    const { classes, syncErrors, anyTouched } = this.props;
+    const { classes, syncErrors, anyTouched, values, initialValues } = this.props;
 
-    const errors: { [key: string]: any } = syncErrors;
     const fieldNames = this.getPanelFieldNames(key);
+    const errors: { [key: string]: any } = syncErrors;
 
     let hasError = false;
     if (anyTouched) {
@@ -598,10 +601,18 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       });
     }
 
+    let isChanged = false;
+    fieldNames.forEach(name => {
+      // @ts-ignore
+      if (values.get(name) !== initialValues.get(name)) {
+        isChanged = true;
+      }
+    });
+
     return (
       <ExpansionPanel expanded={key === this.state.currentPanel} onChange={() => this.handleChangePanel(key)}>
         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id="panel1a-header">
-          <div className={hasError ? classes.summaryError : ""}>
+          <div className={hasError ? classes.summaryError : isChanged ? classes.summaryBold : ""}>
             {title} {hasError ? <ErrorIcon className={classes.summaryIcon} /> : null}
           </div>
         </ExpansionPanelSummary>
