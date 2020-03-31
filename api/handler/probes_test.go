@@ -7,7 +7,7 @@ import (
 )
 
 type ProbesTestSuite struct {
-	BasicTestSuite
+	WithControllerTestSuite
 }
 
 func (suite *ProbesTestSuite) TestProbe() {

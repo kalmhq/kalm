@@ -12,7 +12,7 @@ type (
 	}
 
 	AuthTestSuite struct {
-		BasicTestSuite
+		WithControllerTestSuite
 	}
 )
 

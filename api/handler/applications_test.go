@@ -9,7 +9,7 @@ import (
 )
 
 type ApplicationsHandlerTestSuite struct {
-	BasicTestSuite
+	WithControllerTestSuite
 }
 
 func (suite *ApplicationsHandlerTestSuite) TestGetEmptyList() {

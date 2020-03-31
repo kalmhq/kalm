@@ -184,7 +184,7 @@ class ApplicationFormRaw extends React.PureComponent<
 }
 
 const initialValues: Application = Immutable.fromJS({
-  name: "a-sample-application",
+  name: "",
   sharedEnvs: [],
   components: []
 });
