@@ -1,5 +1,10 @@
 import Immutable from "immutable";
-import { LOAD_DEPENDENCIES_FULFILLED, LOAD_DEPENDENCIES_PENDING, KappDependency } from "../types/dependency";
+import {
+  LOAD_DEPENDENCIES_FULFILLED,
+  LOAD_DEPENDENCIES_PENDING,
+  LOAD_DEPENDENCIES_FAILED,
+  KappDependency
+} from "../types/dependency";
 import { ImmutableMap } from "../typings";
 import { Actions } from "../types";
 
@@ -21,6 +26,10 @@ const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
     case LOAD_DEPENDENCIES_PENDING: {
       state = state.set("isListLoading", true);
+      break;
+    }
+    case LOAD_DEPENDENCIES_FAILED: {
+      state = state.set("isListLoading", false);
       break;
     }
     case LOAD_DEPENDENCIES_FULFILLED: {

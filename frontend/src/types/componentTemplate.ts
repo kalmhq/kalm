@@ -8,6 +8,7 @@ export const DELETE_COMPONENT = "DELETE_COMPONENT";
 export const DUPLICATE_COMPONENT = "DUPLICATE_COMPONENT";
 export const LOAD_COMPONENT_TEMPLATES_PENDING = "LOAD_COMPONENT_TEMPLATES_PENDING";
 export const LOAD_COMPONENT_TEMPLATES_FULFILLED = "LOAD_COMPONENT_TEMPLATES_FULFILLED";
+export const LOAD_COMPONENT_TEMPLATES_FAILED = "LOAD_COMPONENT_TEMPLATES_FAILED";
 
 export type WorkloadType = string;
 export const workloadTypeServer: WorkloadType = "server";
@@ -145,6 +146,10 @@ export interface LoadComponentTemplatesPendingAction {
   type: typeof LOAD_COMPONENT_TEMPLATES_PENDING;
 }
 
+export interface LoadComponentTemplatesFailedAction {
+  type: typeof LOAD_COMPONENT_TEMPLATES_FAILED;
+}
+
 export interface LoadComponentTemplatesFulfilledAction {
   type: typeof LOAD_COMPONENT_TEMPLATES_FULFILLED;
   payload: {
@@ -158,4 +163,5 @@ export type ComponentTemplateActions =
   | UpdateComponentAction
   | LoadComponentTemplatesFulfilledAction
   | LoadComponentTemplatesPendingAction
+  | LoadComponentTemplatesFailedAction
   | DuplicateComponentAction;

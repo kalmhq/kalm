@@ -5,6 +5,7 @@ import {
   ComponentTemplate,
   LOAD_COMPONENT_TEMPLATES_PENDING,
   LOAD_COMPONENT_TEMPLATES_FULFILLED,
+  LOAD_COMPONENT_TEMPLATES_FAILED,
   CREATE_COMPONENT,
   UPDATE_COMPONENT,
   DUPLICATE_COMPONENT,
@@ -27,6 +28,8 @@ const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
     case LOAD_COMPONENT_TEMPLATES_PENDING:
       return state.set("isListLoading", true);
+    case LOAD_COMPONENT_TEMPLATES_FAILED:
+      return state.set("isListLoading", false);
     case LOAD_COMPONENT_TEMPLATES_FULFILLED: {
       let om = Immutable.OrderedMap<string, ComponentTemplate>();
 

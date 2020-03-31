@@ -14,7 +14,9 @@ import {
   Application,
   CREATE_APPLICATION,
   LOAD_APPLICATION_PENDING,
-  LOAD_APPLICATION_FULFILLED
+  LOAD_APPLICATION_FULFILLED,
+  LOAD_APPLICATION_FAILED,
+  LOAD_APPLICATIONS_FAILED
 } from "../types/application";
 import { ThunkResult, StatusFailure } from "../types";
 import { setErrorNotificationAction } from "./notification";
@@ -109,8 +111,19 @@ export const loadApplicationAction = (namespace: string, name: string): ThunkRes
   return async dispatch => {
     dispatch({ type: LOAD_APPLICATION_PENDING });
 
-    const res = await getKappApplication(namespace, name);
-    // console.log("applicationList", JSON.stringify(applicationList.toJS()));
+    let res;
+    try {
+      res = await getKappApplication(namespace, name);
+    } catch (e) {
+      if (e.response.data.status === StatusFailure) {
+        dispatch(setErrorNotificationAction(e.response.data.message));
+      } else {
+        dispatch(setErrorNotificationAction());
+      }
+      dispatch({ type: LOAD_APPLICATION_FAILED });
+      return;
+    }
+
     dispatch({
       type: LOAD_APPLICATION_FULFILLED,
       payload: {
@@ -125,7 +138,19 @@ export const loadApplicationsAction = (): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({ type: LOAD_APPLICATIONS_PENDING });
 
-    const applicationList = await getKappApplicationList();
+    let applicationList;
+    try {
+      applicationList = await getKappApplicationList();
+    } catch (e) {
+      if (e.response.data.status === StatusFailure) {
+        dispatch(setErrorNotificationAction(e.response.data.message));
+      } else {
+        dispatch(setErrorNotificationAction());
+      }
+      dispatch({ type: LOAD_APPLICATIONS_FAILED });
+      return;
+    }
+
     // console.log("applicationList", JSON.stringify(applicationList.toJS()));
     dispatch({
       type: LOAD_APPLICATIONS_FULFILLED,

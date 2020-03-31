@@ -9,6 +9,7 @@ import {
   DUPLICATE_CONFIG,
   LOAD_CONFIGS_FULFILLED,
   LOAD_CONFIGS_PENDING,
+  LOAD_CONFIGS_FAILED,
   initialRootConfigNode
 } from "../types/config";
 import { Actions } from "../types";
@@ -29,6 +30,10 @@ const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
     case LOAD_CONFIGS_PENDING: {
       state = state.set("isListLoading", true);
+      break;
+    }
+    case LOAD_CONFIGS_FAILED: {
+      state = state.set("isListLoading", false);
       break;
     }
     case LOAD_CONFIGS_FULFILLED: {

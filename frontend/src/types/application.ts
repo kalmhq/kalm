@@ -10,8 +10,10 @@ export const DELETE_APPLICATION = "DELETE_APPLICATION";
 export const DUPLICATE_APPLICATION = "DUPLICATE_APPLICATION";
 export const LOAD_APPLICATIONS_PENDING = "LOAD_APPLICATIONS_PENDING";
 export const LOAD_APPLICATIONS_FULFILLED = "LOAD_APPLICATIONS_FULFILLED";
+export const LOAD_APPLICATIONS_FAILED = "LOAD_APPLICATIONS_FAILED";
 export const LOAD_APPLICATION_PENDING = "LOAD_APPLICATION_PENDING";
 export const LOAD_APPLICATION_FULFILLED = "LOAD_APPLICATION_FULFILLED";
+export const LOAD_APPLICATION_FAILED = "LOAD_APPLICATION_FAILED";
 
 export type SharedEnv = ImmutableMap<{
   name: string;
@@ -142,6 +144,10 @@ export interface LoadApplicationsPendingAction {
   type: typeof LOAD_APPLICATIONS_PENDING;
 }
 
+export interface LoadApplicationsFailedAction {
+  type: typeof LOAD_APPLICATIONS_FAILED;
+}
+
 export interface LoadApplicationsFulfilledAction {
   type: typeof LOAD_APPLICATIONS_FULFILLED;
   payload: {
@@ -151,6 +157,10 @@ export interface LoadApplicationsFulfilledAction {
 
 export interface LoadApplicationPendingAction {
   type: typeof LOAD_APPLICATION_PENDING;
+}
+
+export interface LoadApplicationFailedAction {
+  type: typeof LOAD_APPLICATION_FAILED;
 }
 
 export interface LoadApplicationFulfilledAction {
@@ -168,5 +178,7 @@ export type ApplicationActions =
   | DuplicateApplicationAction
   | LoadApplicationsFulfilledAction
   | LoadApplicationsPendingAction
+  | LoadApplicationsFailedAction
   | LoadApplicationPendingAction
-  | LoadApplicationFulfilledAction;
+  | LoadApplicationFulfilledAction
+  | LoadApplicationFailedAction;

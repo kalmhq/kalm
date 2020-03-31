@@ -123,7 +123,18 @@ export const loadComponentTemplatesAction = (): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({ type: LOAD_COMPONENT_TEMPLATES_PENDING });
 
-    const componentTemplates = await getKappComponentTemplates();
+    let componentTemplates;
+    try {
+      componentTemplates = await getKappComponentTemplates();
+    } catch (e) {
+      if (e.response.data.status === StatusFailure) {
+        dispatch(setErrorNotificationAction(e.response.data.message));
+      } else {
+        dispatch(setErrorNotificationAction());
+      }
+      dispatch({ type: LOAD_COMPONENT_TEMPLATES_PENDING });
+      return;
+    }
 
     dispatch({
       type: LOAD_COMPONENT_TEMPLATES_FULFILLED,

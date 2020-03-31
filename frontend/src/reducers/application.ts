@@ -11,7 +11,9 @@ import {
   UPDATE_APPLICATION,
   DELETE_APPLICATION,
   LOAD_APPLICATION_PENDING,
-  LOAD_APPLICATION_FULFILLED
+  LOAD_APPLICATION_FULFILLED,
+  LOAD_APPLICATIONS_FAILED,
+  LOAD_APPLICATION_FAILED
 } from "../types/application";
 
 export type State = ImmutableMap<{
@@ -38,6 +40,10 @@ const reducer = (state: State = initialState, action: Actions): State => {
       state = state.set("isListLoading", true);
       break;
     }
+    case LOAD_APPLICATIONS_FAILED: {
+      state = state.set("isListLoading", false);
+      break;
+    }
     case LOAD_APPLICATIONS_FULFILLED: {
       state = state.set("isListFirstLoaded", true).set("isListLoading", false);
       state = state.set("applicationList", action.payload.applicationList);
@@ -45,6 +51,10 @@ const reducer = (state: State = initialState, action: Actions): State => {
     }
     case LOAD_APPLICATION_PENDING: {
       state = state.set("isItemLoading", true);
+      break;
+    }
+    case LOAD_APPLICATION_FAILED: {
+      state = state.set("isItemLoading", false);
       break;
     }
     case LOAD_APPLICATION_FULFILLED: {
