@@ -2,14 +2,15 @@ package handler
 
 import (
 	"fmt"
+	"net/http"
+	"sort"
+	"strings"
+
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"net/http"
-	"sort"
-	"strings"
 )
 
 type File struct {
@@ -228,8 +229,8 @@ func (h *ApiHandler) handleListFiles(c echo.Context) error {
 }
 
 type FileItem struct {
-	Name     string      `json:"path"`
-	AbsPath  string      `json:"absPath"`
+	Name     string      `json:"name"`
+	AbsPath  string      `json:"path"`
 	IsDir    bool        `json:"isDir"`
 	Content  string      `json:"content"`
 	Children []*FileItem `json:"children,omitempty"`

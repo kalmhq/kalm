@@ -10,24 +10,24 @@ export const LOAD_CONFIGS_PENDING = "LOAD_CONFIGS_PENDING";
 export const LOAD_CONFIGS_FULFILLED = "LOAD_CONFIGS_FULFILLED";
 export const LOAD_CONFIGS_FAILED = "LOAD_CONFIGS_FAILED";
 
-export type ConfigFile = ImmutableMap<{
-  id: string;
+export interface ConfigRes {
   name: string;
   path: string;
+  isDir: boolean;
   content: string;
-  resourceVersion?: string;
-}>;
+  children?: ConfigRes[];
+}
 
 export type ConfigNodeType = "file" | "folder";
 
 export type ConfigNode = ImmutableMap<{
+  id: string;
+  name: string;
   type: ConfigNodeType;
-  id: string; // for folder is display name, for file is metadata name
-  name: string; // display name
+  oldPath: string;
   content: string;
   children: Immutable.OrderedMap<string, ConfigNode>;
   ancestorIds: Immutable.List<string>;
-  resourceVersion?: string;
 }>;
 
 export const initialRootConfigNode: ConfigNode = Immutable.fromJS({
