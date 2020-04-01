@@ -4,8 +4,10 @@ go 1.12
 
 require (
 	github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802
+	github.com/aws/aws-sdk-go v1.25.48 // indirect
 	github.com/davecgh/go-spew v1.1.1
 	github.com/elastic/cloud-on-k8s v0.0.0-20200204083752-bcb7468838a8
+	github.com/google/pprof v0.0.0-20190723021845-34ac40c74b70 // indirect
 	github.com/gorilla/websocket v1.4.2
 	github.com/kapp-staging/kapp/controller v0.1.0
 	github.com/influxdata/influxdb v1.7.7

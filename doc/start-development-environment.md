@@ -3,14 +3,15 @@
 1. start localhost k8s cluster
 
 ```bash
-minikube start
+minikube start --memory 8192 --cpus 4  --kubernetes-version v1.15.0
+minikube addons enable metrics-server
 ```
 
 2. Install CRD and Start Controller
 
 ```bash
 cd controller
-make install 
+make install
 make run
 ```
 
@@ -36,3 +37,14 @@ cd frontend
 before you start, you need to apply a token for authorization. If you already have token you can skip this step. Otherwise, please follow [Create test service account](./create-test-service-account.md) to get a token.
 
 You should set this token in window.localStorage.authorization_token.
+
+5. test kapp socks
+
+```bash
+
+kubectl apply -f controller/config/samples/core_v1alpha1_application-socks.yaml
+
+kubectl port-forward $(kubectl get pod -n kapp-socks -l kapp-component=front-end  -o jsonpath='{.items[0].metadata.name}') -n kapp-socks 8079:8079
+
+view http://localhost:8079
+```
