@@ -34,7 +34,6 @@ class ConfigUploadDialogRaw extends React.PureComponent<Props, State> {
     };
 
     const handleSubmit = () => {
-      console.log("handle--------");
       onClose();
     };
 
