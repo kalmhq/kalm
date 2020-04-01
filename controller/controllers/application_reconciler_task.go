@@ -883,10 +883,7 @@ func getServiceName(appName, componentName string) string {
 	// (e.g. 'my-name',  or 'abc-123', regex used for validation is '[a-z]([-a-z0-9]*[a-z0-9])?')
 
 	// Add a prefix to avoid name error
-
-	// todo socks assumes no prefix of svc
-	//return fmt.Sprintf("svc-%s-%s", appName, componentName)
-	return componentName
+	return fmt.Sprintf("svc-%s-%s", appName, componentName)
 }
 
 //func AllIngressPlugins(kapp kappV1Alpha1.Application) (rst []*kappV1Alpha1.PluginIngress) {
