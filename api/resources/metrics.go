@@ -143,7 +143,7 @@ func cacheMetricsForNodesIntoLocalDB(nodeMetricsList *metricv1beta1.NodeMetricsL
 		v := nodeMetricDB[nodeName]
 
 		nodeMetrics = alignMetricsByMinute(nodeMetrics)
-		if len(v) > 0 && v[len(v) - 1].Timestamp.Unix() == nodeMetrics.Timestamp.Unix() {
+		if len(v) > 0 && v[len(v)-1].Timestamp.Unix() == nodeMetrics.Timestamp.Unix() {
 			// ignore duplicate
 			continue
 		}

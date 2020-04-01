@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/go-logr/logr"
 	kappV1Alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
+	"github.com/kapp-staging/kapp/lib/files"
 	"github.com/kapp-staging/kapp/util"
 	appsV1 "k8s.io/api/apps/v1"
 	batchV1Beta1 "k8s.io/api/batch/v1beta1"
@@ -338,6 +339,69 @@ func (act *applicationReconcilerTask) generateTemplate(component *kappV1Alpha1.C
 			Name:      pvcName,
 			MountPath: disk.Path,
 		})
+	}
+
+	if component.Configs != nil {
+		var configMap coreV1.ConfigMap
+
+		err := act.reconciler.Client.Get(act.ctx, types.NamespacedName{
+			Name:      files.KAPP_CONFIG_MAP_NAME,
+			Namespace: act.app.Namespace,
+		}, &configMap)
+
+		if err != nil {
+			act.log.Error(err, "can't get files config-map. Skip configs.")
+		}
+
+		// key is mount dir, values is the files
+		mountPaths := make(map[string]map[string]bool)
+
+		for _, config := range component.Configs {
+			mountPath := config.MountPath
+
+			for _, path := range config.Paths {
+				root, err := files.GetFileItemTree(&configMap, path)
+
+				if err != nil {
+					act.log.Error(err, "can't find file item at", path)
+					continue
+				}
+
+				files.ResolveMountPaths(mountPaths, mountPath, root)
+			}
+		}
+
+		for mountPath, rawFileNamesMap := range mountPaths {
+			name := fmt.Sprintf("configs-%x", md5.Sum([]byte(mountPath)))
+			items := make([]coreV1.KeyToPath, 0, len(rawFileNamesMap))
+
+			for itemRawFileName := range rawFileNamesMap {
+
+				items = append(items, coreV1.KeyToPath{
+					Path: files.GetFileNameFromRawPath(itemRawFileName),
+					Key:  files.EncodeFilePath(itemRawFileName),
+				})
+			}
+
+			volume := coreV1.Volume{
+				Name: name,
+				VolumeSource: coreV1.VolumeSource{
+					ConfigMap: &coreV1.ConfigMapVolumeSource{
+						LocalObjectReference: coreV1.LocalObjectReference{},
+						Items:                items,
+					},
+				},
+			}
+
+			volumeMount := coreV1.VolumeMount{
+				Name:      name,
+				MountPath: mountPath,
+			}
+
+			volumes = append(volumes, volume)
+			volumeMounts = append(volumeMounts, volumeMount)
+		}
+
 	}
 
 	if len(volumes) > 0 {

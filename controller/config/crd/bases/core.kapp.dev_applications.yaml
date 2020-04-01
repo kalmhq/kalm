@@ -59,6 +59,20 @@ spec:
                     items:
                       type: string
                     type: array
+                  configs:
+                    items:
+                      properties:
+                        mountPath:
+                          type: string
+                        paths:
+                          items:
+                            type: string
+                          type: array
+                      required:
+                      - mountPath
+                      - paths
+                      type: object
+                    type: array
                   cpu:
                     type: string
                   dependencies:

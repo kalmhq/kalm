@@ -122,6 +122,7 @@ var podMap3 = map[string]MetricHistories{
 		MemoryUsageHistory: nil,
 	},
 }
+
 func TestAggregatePodsSum2(t *testing.T) {
 	mSum := aggregatePodsSum(podMap3)
 

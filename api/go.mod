@@ -3,22 +3,20 @@ module github.com/kapp-staging/kapp/api
 go 1.12
 
 require (
-	github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802
 	github.com/aws/aws-sdk-go v1.25.48 // indirect
 	github.com/davecgh/go-spew v1.1.1
-	github.com/elastic/cloud-on-k8s v0.0.0-20200204083752-bcb7468838a8
 	github.com/google/pprof v0.0.0-20190723021845-34ac40c74b70 // indirect
 	github.com/gorilla/websocket v1.4.2
 	github.com/kapp-staging/kapp/controller v0.1.0
+	github.com/kapp-staging/kapp/lib v0.0.0-00010101000000-000000000000
 	github.com/influxdata/influxdb v1.7.7
 	github.com/joho/godotenv v1.3.0
 	github.com/labstack/echo/v4 v4.1.15
 	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.5.1
 	github.com/urfave/cli/v2 v2.2.0
-	github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77
 	golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073 // indirect
-	golang.org/x/net v0.0.0-20200301022130-244492dfa37a
+	golang.org/x/net v0.0.0-20200301022130-244492dfa37a // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
 	gotest.tools v2.2.0+incompatible
 	k8s.io/api v0.17.3
@@ -30,3 +28,5 @@ require (
 )
 
 replace github.com/kapp-staging/kapp/controller => ../controller
+
+replace github.com/kapp-staging/kapp/lib => ../lib

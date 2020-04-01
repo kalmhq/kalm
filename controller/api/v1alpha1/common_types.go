@@ -74,3 +74,8 @@ type Volume struct {
 	// This field also can be used with existing pvc
 	PersistentVolumeClaimName string `json:"persistentVolumeClaimName,omitempty"`
 }
+
+type Config struct {
+	Paths     []string `json:"paths"`
+	MountPath string   `json:"mountPath"`
+}
