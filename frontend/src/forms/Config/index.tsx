@@ -30,6 +30,7 @@ const mapStateToProps = (state: RootState, props: Props) => {
       ancestorIds: getCascaderDefaultValue(),
       name: "",
       type: props.configType,
+      oldPath: "",
       content: "",
       children: Immutable.fromJS({})
     });
@@ -41,8 +42,8 @@ const mapStateToProps = (state: RootState, props: Props) => {
     initialValues = Immutable.fromJS({
       ancestorIds: newIdChain,
       id: config.get("id"),
-      resourceVersion: config.get("resourceVersion"),
       name: config.get("name"),
+      oldPath: config.get("oldPath"),
       type: "file",
       content: config.get("content")
     });
