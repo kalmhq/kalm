@@ -2,9 +2,10 @@ package files
 
 import (
 	"fmt"
-	coreV1 "k8s.io/api/core/v1"
 	"sort"
 	"strings"
+
+	coreV1 "k8s.io/api/core/v1"
 )
 
 type File struct {
@@ -28,8 +29,8 @@ const KAPP_PERSISTENT_DIR_PLACEHOLDER = "__PDIR__"
 const KAPP_SLASH_REPLACER = "__D__"
 
 type FileItem struct {
-	Name     string      `json:"path"`
-	AbsPath  string      `json:"absPath"`
+	Name     string      `json:"name"`
+	AbsPath  string      `json:"path"`
 	IsDir    bool        `json:"isDir"`
 	Content  string      `json:"content"`
 	Children []*FileItem `json:"children,omitempty"`
