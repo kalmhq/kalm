@@ -171,14 +171,6 @@ var _ = Describe("Application Envs", func() {
 
 	It("should delete related resources when isActive is false", func() {
 		application := generateApplication()
-		application.Spec.Components[0].Volumes = []v1alpha1.Volume{
-			{
-				Type:           v1alpha1.VolumeTypeKappConfigs,
-				Path:           "/test/b",
-				Size:           resource.MustParse("10m"),
-				KappConfigPath: "/app.yml",
-			},
-		}
 		createApplication(application)
 
 		// will has a deployment
@@ -470,120 +462,6 @@ var _ = Describe("Application Envs", func() {
 				pvcs := getApplicationPVCs(application)
 				return len(pvcs) == 0
 			}, 2*time.Second, interval).Should(Equal(true))
-		})
-
-		Context("type kapp configs", func() {
-			// TODO add a test to mound nested dir
-			It("mount config dir", func() {
-				file := generateFile("/app/d.yml", "value")
-				Expect(k8sClient.Create(context.Background(), file)).Should(Succeed())
-				file = generateFile("/app/e.yml", "value2")
-				Expect(k8sClient.Create(context.Background(), file)).Should(Succeed())
-
-				// There will have a config-map called config-a-dir
-				//   d.yml: value
-				//   e.yml: value2
-
-				configMap := &coreV1.ConfigMap{}
-				Eventually(func() bool {
-					_ = k8sClient.Get(context.Background(), types.NamespacedName{
-						Namespace: file.Namespace,
-						Name:      getConfigMapNameFromPath(file.Spec.Path),
-					}, configMap)
-					return len(configMap.Data) == 2
-				}, timeout, interval).Should(BeTrue())
-
-				application := generateApplication()
-				application.Spec.Components[0].Volumes = []v1alpha1.Volume{
-					{
-						Type:           v1alpha1.VolumeTypeKappConfigs,
-						Path:           "/test/b",
-						Size:           resource.MustParse("10m"),
-						KappConfigPath: "/app",
-					},
-				}
-				createApplication(application)
-
-				// will has a deployment
-				var deployments []v1.Deployment
-				Eventually(func() bool {
-					deployments = getApplicationDeployments(application)
-					return len(deployments) == 1
-				}, timeout, interval).Should(Equal(true))
-
-				mountPath := deployments[0].Spec.Template.Spec.Containers[0].VolumeMounts[0]
-				volume := deployments[0].Spec.Template.Spec.Volumes[0]
-				Expect(mountPath.MountPath).Should(Equal("/test/b"))
-				Expect(mountPath.Name).Should(Equal(volume.Name))
-				Expect(volume.ConfigMap.Name).Should(Equal(configMap.Name))
-				Expect(len(volume.ConfigMap.Items)).Should(Equal(0))
-			})
-
-			It("mount config file", func() {
-				file := generateFile("/app.yml", "value")
-				Expect(k8sClient.Create(context.Background(), file)).Should(Succeed())
-
-				// There will have a config-map called config--dir
-				//   a.yml: value
-
-				configMap := &coreV1.ConfigMap{}
-				Eventually(func() bool {
-					_ = k8sClient.Get(context.Background(), types.NamespacedName{
-						Namespace: file.Namespace,
-						Name:      getConfigMapNameFromPath(file.Spec.Path),
-					}, configMap)
-					return len(configMap.Data) == 1
-				}, timeout, interval).Should(BeTrue())
-
-				application := generateApplication()
-				application.Spec.Components[0].Volumes = []v1alpha1.Volume{
-					{
-						Type:           v1alpha1.VolumeTypeKappConfigs,
-						Path:           "/test/b",
-						Size:           resource.MustParse("10m"),
-						KappConfigPath: "/app.yml",
-					},
-				}
-				createApplication(application)
-
-				// will has a deployment
-				var deployments []v1.Deployment
-				Eventually(func() bool {
-					deployments = getApplicationDeployments(application)
-					return len(deployments) == 1
-				}, timeout, interval).Should(Equal(true))
-
-				mountPath := deployments[0].Spec.Template.Spec.Containers[0].VolumeMounts[0]
-				volume := deployments[0].Spec.Template.Spec.Volumes[0]
-				Expect(mountPath.MountPath).Should(Equal("/test/b"))
-				Expect(mountPath.Name).Should(Equal(volume.Name))
-				Expect(volume.ConfigMap.Name).Should(Equal(configMap.Name))
-				Expect(len(volume.ConfigMap.Items)).Should(Equal(1))
-				Expect(volume.ConfigMap.Items[0].Path).Should(Equal("app.yml"))
-				Expect(volume.ConfigMap.Items[0].Key).Should(Equal("app.yml"))
-
-				By("An application with wrong kapp config path should ignore that mount")
-				application = generateApplication()
-				application.Spec.Components[0].Volumes = []v1alpha1.Volume{
-					{
-						Type:           v1alpha1.VolumeTypeKappConfigs,
-						Path:           "/test/b",
-						Size:           resource.MustParse("10m"),
-						KappConfigPath: "/not-exist.yml",
-					},
-				}
-				createApplication(application)
-
-				// will has a deployment
-				Eventually(func() bool {
-					deployments = getApplicationDeployments(application)
-					return len(deployments) == 1
-				}, timeout, interval).Should(Equal(true))
-
-				// but don't have any mounts
-				Expect(len(deployments[0].Spec.Template.Spec.Containers[0].VolumeMounts)).Should(Equal(0))
-				Expect(len(deployments[0].Spec.Template.Spec.Volumes)).Should(Equal(0))
-			})
 		})
 	})
 })

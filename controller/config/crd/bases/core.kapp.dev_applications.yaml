@@ -393,10 +393,6 @@ spec:
                   volumes:
                     items:
                       properties:
-                        kappConfigPath:
-                          description: the config path of kapp config, can be a file
-                            or a directory
-                          type: string
                         path:
                           description: the path we use to mount this volume to container
                           type: string
