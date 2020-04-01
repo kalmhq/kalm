@@ -118,6 +118,71 @@ func (act *applicationReconcilerTask) reconcileComponents() (err error) {
 	return nil
 }
 
+func (act *applicationReconcilerTask) parseComponentConfigs(component *kappV1Alpha1.ComponentSpec, volumes *[]coreV1.Volume, volumeMounts *[]coreV1.VolumeMount) {
+	var configMap coreV1.ConfigMap
+
+	err := act.reconciler.Client.Get(act.ctx, types.NamespacedName{
+		Name:      files.KAPP_CONFIG_MAP_NAME,
+		Namespace: act.app.Namespace,
+	}, &configMap)
+
+	if err != nil {
+		act.log.Error(err, "can't get files config-map. Skip configs.")
+		return
+	}
+
+	// key is mount dir, values is the files
+	mountPaths := make(map[string]map[string]bool)
+
+	for _, config := range component.Configs {
+		mountPath := config.MountPath
+
+		for _, path := range config.Paths {
+			root, err := files.GetFileItemTree(&configMap, path)
+
+			if err != nil {
+				act.log.Error(err, fmt.Sprintf("can't find file item at %s", path))
+				continue
+			}
+
+			files.ResolveMountPaths(mountPaths, mountPath, root)
+		}
+	}
+
+	for mountPath, rawFileNamesMap := range mountPaths {
+		name := fmt.Sprintf("configs-%x", md5.Sum([]byte(mountPath)))
+		items := make([]coreV1.KeyToPath, 0, len(rawFileNamesMap))
+
+		for itemRawFileName := range rawFileNamesMap {
+
+			items = append(items, coreV1.KeyToPath{
+				Path: files.GetFileNameFromRawPath(itemRawFileName),
+				Key:  files.EncodeFilePath(itemRawFileName),
+			})
+		}
+
+		volume := coreV1.Volume{
+			Name: name,
+			VolumeSource: coreV1.VolumeSource{
+				ConfigMap: &coreV1.ConfigMapVolumeSource{
+					LocalObjectReference: coreV1.LocalObjectReference{
+						Name: files.KAPP_CONFIG_MAP_NAME,
+					},
+					Items: items,
+				},
+			},
+		}
+
+		volumeMount := coreV1.VolumeMount{
+			Name:      name,
+			MountPath: mountPath,
+		}
+
+		*volumes = append(*volumes, volume)
+		*volumeMounts = append(*volumeMounts, volumeMount)
+	}
+}
+
 func (act *applicationReconcilerTask) generateTemplate(component *kappV1Alpha1.ComponentSpec) (template *coreV1.PodTemplateSpec, err error) {
 
 	template = &coreV1.PodTemplateSpec{
@@ -344,66 +409,7 @@ func (act *applicationReconcilerTask) generateTemplate(component *kappV1Alpha1.C
 	}
 
 	if component.Configs != nil {
-		var configMap coreV1.ConfigMap
-
-		err := act.reconciler.Client.Get(act.ctx, types.NamespacedName{
-			Name:      files.KAPP_CONFIG_MAP_NAME,
-			Namespace: act.app.Namespace,
-		}, &configMap)
-
-		if err != nil {
-			act.log.Error(err, "can't get files config-map. Skip configs.")
-		}
-
-		// key is mount dir, values is the files
-		mountPaths := make(map[string]map[string]bool)
-
-		for _, config := range component.Configs {
-			mountPath := config.MountPath
-
-			for _, path := range config.Paths {
-				root, err := files.GetFileItemTree(&configMap, path)
-
-				if err != nil {
-					act.log.Error(err, "can't find file item at", path)
-					continue
-				}
-
-				files.ResolveMountPaths(mountPaths, mountPath, root)
-			}
-		}
-
-		for mountPath, rawFileNamesMap := range mountPaths {
-			name := fmt.Sprintf("configs-%x", md5.Sum([]byte(mountPath)))
-			items := make([]coreV1.KeyToPath, 0, len(rawFileNamesMap))
-
-			for itemRawFileName := range rawFileNamesMap {
-
-				items = append(items, coreV1.KeyToPath{
-					Path: files.GetFileNameFromRawPath(itemRawFileName),
-					Key:  files.EncodeFilePath(itemRawFileName),
-				})
-			}
-
-			volume := coreV1.Volume{
-				Name: name,
-				VolumeSource: coreV1.VolumeSource{
-					ConfigMap: &coreV1.ConfigMapVolumeSource{
-						LocalObjectReference: coreV1.LocalObjectReference{},
-						Items:                items,
-					},
-				},
-			}
-
-			volumeMount := coreV1.VolumeMount{
-				Name:      name,
-				MountPath: mountPath,
-			}
-
-			volumes = append(volumes, volume)
-			volumeMounts = append(volumeMounts, volumeMount)
-		}
-
+		act.parseComponentConfigs(component, &volumes, &volumeMounts)
 	}
 
 	if len(volumes) > 0 {

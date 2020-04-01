@@ -54,8 +54,9 @@ var nodeMetricDB = make(map[string][]metricv1beta1.NodeMetrics)
 
 // todo lock
 
-//metricResolution := 5 * time.Second
-var metricResolution = 30 * time.Second
+var metricResolution = 5 * time.Second
+
+//var metricResolution = 30 * time.Second
 var metricDuration = 15 * time.Minute
 
 func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
