@@ -12,14 +12,13 @@ import {
   V1Secret
 } from "../model/models";
 import { ItemList } from "../kappModel/List";
-import { V1alpha1Dependency, V1alpha1File, V1alpha1ComponentTemplateSpec } from "../kappModel";
+import { V1alpha1Dependency, V1alpha1ComponentTemplateSpec } from "../kappModel";
 import { convertFromCRDDependency } from "../convertors/Dependency";
-import { convertFromCRDFile } from "../convertors/File";
 import { store } from "../store";
 import { ApplicationList, Application } from "../types/application";
 import Immutable from "immutable";
 import { ComponentTemplate } from "../types/componentTemplate";
-import { ConfigFile } from "../types/config";
+import { ConfigRes } from "../types/config";
 import { ImmutableMap } from "../typings";
 
 export const K8sApiPrefix = process.env.REACT_APP_K8S_API_PERFIX;
@@ -27,7 +26,7 @@ export const k8sWsPrefix = !K8sApiPrefix
   ? window.location.origin.replace(/^http/, "ws")
   : K8sApiPrefix.replace(/^http/, "ws");
 
-const getAxiosClient = () => {
+export const getAxiosClient = () => {
   const token = store
     .getState()
     .get("auth")
@@ -150,28 +149,46 @@ export const getDependencies = async () => {
   return res.data.items.map(convertFromCRDDependency);
 };
 
-export const getKappFiles = async () => {
-  const res = await getAxiosClient().get<ItemList<V1alpha1File>>(K8sApiPrefix + "/v1/files");
+export const getKappFilesV1alpha1 = async () => {
+  const namespace = "default";
+  const res = await getAxiosClient().get(K8sApiPrefix + `/v1alpha1/files/${namespace}`);
 
-  return res.data.items.map(convertFromCRDFile);
+  return res.data as ConfigRes;
 };
 
-export const createKappFile = async (file: V1alpha1File): Promise<ConfigFile> => {
-  const res = await getAxiosClient().post(K8sApiPrefix + `/v1/files`, file);
-
-  return convertFromCRDFile(res.data);
+export const createKappFileV1alpha1 = async (path: string, isDir: boolean, content: string) => {
+  const namespace = "default";
+  await getAxiosClient().post(K8sApiPrefix + `/v1alpha1/files/${namespace}`, {
+    path,
+    isDir,
+    content
+  });
 };
 
-export const updateKappFile = async (file: V1alpha1File): Promise<ConfigFile> => {
-  const res = await getAxiosClient().put(K8sApiPrefix + `/v1/files/${file.metadata!.name}`, file);
-
-  return convertFromCRDFile(res.data);
+export const updateKappFileV1alpha1 = async (path: string, content: string) => {
+  const namespace = "default";
+  await getAxiosClient().put(K8sApiPrefix + `/v1alpha1/files/${namespace}`, {
+    path,
+    content
+  });
 };
 
-export const deleteKappFile = async (file: V1alpha1File): Promise<void> => {
-  await getAxiosClient().delete(K8sApiPrefix + `/v1/files/${file.metadata!.name}`);
+export const moveKappFileV1alpha1 = async (oldPath: string, newPath: string) => {
+  const namespace = "default";
+  await getAxiosClient().put(K8sApiPrefix + `/v1alpha1/files/${namespace}/move`, {
+    oldPath,
+    newPath
+  });
+};
 
-  // return convertFromCRDFile(res.data);
+export const deleteKappFileV1alpha1 = async (path: string) => {
+  const namespace = "default";
+  await getAxiosClient().delete(K8sApiPrefix + `/v1alpha1/files/${namespace}`, {
+    // https://github.com/axios/axios/issues/897#issuecomment-343715381
+    data: {
+      path
+    }
+  });
 };
 
 export const getKappClusterRoles = async () => {
