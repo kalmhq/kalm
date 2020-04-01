@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"context"
+	"crypto/rand"
+	"fmt"
 	"github.com/kapp-staging/kapp/api/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -13,6 +15,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"time"
 )
+
+func randomName() string {
+	b := make([]byte, 32)
+	_, _ = rand.Read(b)
+	return fmt.Sprintf("%x", b)
+}
 
 func generateEmptyApplication() *v1alpha1.Application {
 	name := randomName()[:12]

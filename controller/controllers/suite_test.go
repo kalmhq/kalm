@@ -81,14 +81,6 @@ var _ = BeforeSuite(func(done Done) {
 	Expect(mgr).ToNot(BeNil())
 	Expect(err).ToNot(HaveOccurred())
 
-	err = (&FileReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("File"),
-		Scheme: mgr.GetScheme(),
-		Reader: mgr.GetAPIReader(),
-	}).SetupWithManager(mgr)
-	Expect(err).ToNot(HaveOccurred())
-
 	err = (&ApplicationReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("Application"),
