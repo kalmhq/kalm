@@ -135,6 +135,8 @@ func (act *applicationReconcilerTask) generateTemplate(component *kappV1Alpha1.C
 						Requests: make(map[coreV1.ResourceName]resource.Quantity),
 						Limits:   make(map[coreV1.ResourceName]resource.Quantity),
 					},
+					ReadinessProbe: component.ReadinessProbe,
+					LivenessProbe:  component.LivenessProbe,
 				},
 			},
 		},
@@ -554,6 +556,7 @@ func (act *applicationReconcilerTask) reconcileComponent(component *kappV1Alpha1
 		deployment.Spec.Template = *template
 	}
 
+	// replicas
 	if component.Replicas == nil {
 		defaultComponentReplicas := int32(1)
 
