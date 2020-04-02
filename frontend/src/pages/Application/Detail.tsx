@@ -1,4 +1,4 @@
-import { createStyles, Grid, Paper, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { createStyles, Grid, Paper, Theme, withStyles, WithStyles, Box } from "@material-ui/core";
 import LaptopWindowsIcon from "@material-ui/icons/LaptopWindows";
 import ViewHeadlineIcon from "@material-ui/icons/ViewHeadline";
 import clsx from "clsx";
@@ -108,31 +108,19 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     this.state = {};
   }
 
-  private renderStatus = (status: string) => {
+  private renderPodStatus = (status: string) => {
     switch (status) {
       case "Running": {
-        return <SuccessBedge text="Running" />;
-      }
-      case "ContainerCreating": {
-        return <PendingBedge text="ContainerCreating" />;
-      }
-      case "Terminating": {
-        return <PendingBedge text="Terminating" />;
+        return <SuccessBedge />;
       }
       case "Pending": {
-        return <PendingBedge text="Pending" />;
+        return <PendingBedge />;
       }
       case "Succeeded": {
-        return <SuccessBedge text="Succeeded" />;
+        return <SuccessBedge />;
       }
       case "Failed": {
-        return <ErrorBedge text="Failed" />;
-      }
-      case "CrashLoopBackOff": {
-        return <ErrorBedge text="CrashLoopBackOff" />;
-      }
-      default: {
-        return <UnknownBedge text={status} />;
+        return <ErrorBedge />;
       }
     }
   };
@@ -140,7 +128,6 @@ class DetailsRaw extends React.PureComponent<Props, State> {
   private renderComponent = (index: number) => {
     const { classes, application } = this.props;
     const component = application.get("components")!.get(index)!;
-
     return (
       <Paper className={classes.componentContainer} key={index}>
         <div className={clsx(classes.rowContainer, classes.componentRow)}>
@@ -176,50 +163,70 @@ class DetailsRaw extends React.PureComponent<Props, State> {
             .get("pods")
             .map(x => {
               let restartsCount = 0;
+
               x.get("containers").forEach(c => {
                 if (c.get("restartCount") > restartsCount) {
                   restartsCount = c.get("restartCount");
                 }
               });
+
               return (
-                <div key={x.get("name")} className={clsx(classes.rowContainer, classes.podDataRow)}>
-                  {/* <div className={classes.podContainer} key={x.get("name")}> */}
-                  <div>{x.get("name")}</div>
-                  <div>{x.get("node")}</div>
-                  <div className="right-part">
-                    <div className={classes.restartsCountCell}>{restartsCount}</div>
-                    <div className={classes.statusCell}>{this.renderStatus(x.get("status"))}</div>
-                    <div className={classes.timeCell}>{formatTimeDistance(x.get("createTimestamp"))}</div>
-                    {/* <div className={classes.timeCell}>{differenceInMinutes(x.get("startTimestamp"), new Date())}</div> */}
-                    <div className={classes.chartTabelCell}>
-                      <SmallCPULineChart data={x.get("metrics").get("cpu")!} />
+                <div>
+                  <div key={x.get("name")} className={clsx(classes.rowContainer, classes.podDataRow)}>
+                    {/* <div className={classes.podContainer} key={x.get("name")}> */}
+
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      {this.renderPodStatus(x.get("status"))}
+                      {x.get("name")}
                     </div>
-                    <div className={classes.chartTabelCell}>
-                      <SmallMemoryLineChart data={x.get("metrics").get("memory")!} />
-                    </div>
-                    <div className={classes.actionCell}>
-                      <IconLinkWithToolTip
-                        className={classes.podActionButton}
-                        size="small"
-                        tooltipTitle="Log"
-                        to={
-                          `/applications/${application.get("namespace")}/${application.get("name")}/logs?` +
-                          generateQueryForPods([x.get("name")], x.get("name"))
-                        }>
-                        <ViewHeadlineIcon />
-                      </IconLinkWithToolTip>
-                      <IconLinkWithToolTip
-                        tooltipTitle="Shell"
-                        size="small"
-                        className={classes.podActionButton}
-                        to={
-                          `/applications/${application.get("namespace")}/${application.get("name")}/shells?` +
-                          generateQueryForPods([x.get("name")], x.get("name"))
-                        }>
-                        <LaptopWindowsIcon />
-                      </IconLinkWithToolTip>
+                    <div>{x.get("node")}</div>
+                    <div className="right-part">
+                      <div className={classes.restartsCountCell}>{restartsCount}</div>
+                      <div className={classes.statusCell}>{x.get("statusText")}</div>
+                      <div className={classes.timeCell}>{formatTimeDistance(x.get("createTimestamp"))}</div>
+                      {/* <div className={classes.timeCell}>{differenceInMinutes(x.get("startTimestamp"), new Date())}</div> */}
+                      <div className={classes.chartTabelCell}>
+                        <SmallCPULineChart data={x.get("metrics").get("cpu")!} />
+                      </div>
+                      <div className={classes.chartTabelCell}>
+                        <SmallMemoryLineChart data={x.get("metrics").get("memory")!} />
+                      </div>
+                      <div className={classes.actionCell}>
+                        <IconLinkWithToolTip
+                          className={classes.podActionButton}
+                          size="small"
+                          tooltipTitle="Log"
+                          to={
+                            `/applications/${application.get("namespace")}/${application.get("name")}/logs?` +
+                            generateQueryForPods([x.get("name")], x.get("name"))
+                          }>
+                          <ViewHeadlineIcon />
+                        </IconLinkWithToolTip>
+                        <IconLinkWithToolTip
+                          tooltipTitle="Shell"
+                          size="small"
+                          className={classes.podActionButton}
+                          to={
+                            `/applications/${application.get("namespace")}/${application.get("name")}/shells?` +
+                            generateQueryForPods([x.get("name")], x.get("name"))
+                          }>
+                          <LaptopWindowsIcon />
+                        </IconLinkWithToolTip>
+                      </div>
                     </div>
                   </div>
+                  <Box pl={2} pr={2}>
+                    {x
+                      .get("warnings")
+                      .map((w, index) => {
+                        return (
+                          <Box ml={2} color="error.main" key={index}>
+                            {index + 1}. {w.get("message")}
+                          </Box>
+                        );
+                      })
+                      .toArray()}
+                  </Box>
                 </div>
               );
             })

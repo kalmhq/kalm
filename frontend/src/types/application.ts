@@ -81,8 +81,8 @@ export type ComponentStatus = ImmutableMap<{
 export type PodStatus = ImmutableMap<{
   name: string;
   node: string;
-  phase: string;
   status: string;
+  statusText: string;
   message: string;
   podIps: string[];
   hostIp: string;
@@ -95,6 +95,11 @@ export type PodStatus = ImmutableMap<{
       ready: boolean;
       started: boolean;
       startedAt: number;
+    }>
+  >;
+  warnings: Immutable.List<
+    ImmutableMap<{
+      message: string;
     }>
   >;
   metrics: Metrics;

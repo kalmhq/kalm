@@ -183,7 +183,7 @@ class LineChartRaw extends React.PureComponent<LineChartProps> {
     const { data, borderColor, backgroundColor } = this.props;
 
     return {
-      labels: data.map(n => n.get("x")).toArray(),
+      labels: data ? data.map(n => n.get("x")).toArray() : [],
       datasets: [
         {
           //   fill: false,
@@ -204,7 +204,7 @@ class LineChartRaw extends React.PureComponent<LineChartProps> {
           pointHoverBorderWidth: 2,
           pointRadius: 1,
           pointHitRadius: 1,
-          data: data.map(n => n.get("y")).toArray()
+          data: data ? data.map(n => n.get("y")).toArray() : []
         }
       ]
     };
