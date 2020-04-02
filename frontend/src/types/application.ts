@@ -14,6 +14,8 @@ export const LOAD_APPLICATIONS_FAILED = "LOAD_APPLICATIONS_FAILED";
 export const LOAD_APPLICATION_PENDING = "LOAD_APPLICATION_PENDING";
 export const LOAD_APPLICATION_FULFILLED = "LOAD_APPLICATION_FULFILLED";
 export const LOAD_APPLICATION_FAILED = "LOAD_APPLICATION_FAILED";
+export const SET_IS_SUBMITTING_APPLICATION = "SET_IS_SUBMITTING_APPLICATION";
+export const SET_IS_SUBMITTING_APPLICATION_COMPONENT = "SET_IS_SUBMITTING_APPLICATION_COMPONENT";
 
 export type SharedEnv = ImmutableMap<{
   name: string;
@@ -188,6 +190,20 @@ export interface LoadApplicationFulfilledAction {
   };
 }
 
+export interface SetIsSubmittingApplication {
+  type: typeof SET_IS_SUBMITTING_APPLICATION;
+  payload: {
+    isSubmittingApplication: boolean;
+  };
+}
+
+export interface SetIsSubmittingApplicationComponent {
+  type: typeof SET_IS_SUBMITTING_APPLICATION_COMPONENT;
+  payload: {
+    isSubmittingApplicationComponent: boolean;
+  };
+}
+
 export type ApplicationActions =
   | CreateApplicationAction
   | UpdateApplicationAction
@@ -198,4 +214,6 @@ export type ApplicationActions =
   | LoadApplicationsFailedAction
   | LoadApplicationPendingAction
   | LoadApplicationFulfilledAction
-  | LoadApplicationFailedAction;
+  | LoadApplicationFailedAction
+  | SetIsSubmittingApplication
+  | SetIsSubmittingApplicationComponent;
