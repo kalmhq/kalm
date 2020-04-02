@@ -22,6 +22,7 @@ import { SmallCPULineChart, SmallMemoryLineChart } from "../../widgets/SmallLine
 import { BasePage } from "../BasePage";
 import { Details } from "./Detail";
 import { ApplicationListDataWrapper, WithApplicationsDataProps } from "./ListDataWrapper";
+import { Link } from "react-router-dom";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
@@ -334,9 +335,10 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     const memoryData = applicationListItem.get("metrics").get("memory");
     return <SmallMemoryLineChart data={memoryData} />;
   };
-  private renderName = (applicationListItem: RowData) => {
-    return applicationListItem.get("name");
+  private renderName = (rowData: RowData) => {
+    return <Link to={`/applications/${rowData.get("namespace")}/${rowData.get("name")}`}>{rowData.get("name")}</Link>;
   };
+
   private renderNamespace = (applicationListItem: RowData) => {
     return applicationListItem.get("namespace"); // ["default", "production", "ropsten"][index] || "default",
   };

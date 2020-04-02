@@ -1,18 +1,25 @@
-import { createStyles, Paper, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { createStyles, Grid, Paper, Theme, withStyles, WithStyles } from "@material-ui/core";
 import LaptopWindowsIcon from "@material-ui/icons/LaptopWindows";
 import ViewHeadlineIcon from "@material-ui/icons/ViewHeadline";
 import clsx from "clsx";
-import { formatDistance } from "date-fns";
 import React from "react";
 import { DispatchProp } from "react-redux";
 import { ApplicationListItem } from "../../types/application";
+import { formatTimeDistance } from "../../utils";
 import { ErrorBedge, PendingBedge, SuccessBedge, UnknownBedge } from "../../widgets/Bedge";
 import { IconLinkWithToolTip } from "../../widgets/IconButtonWithTooltip";
-import { SmallCPULineChart, SmallMemoryLineChart } from "../../widgets/SmallLineChart";
+import {
+  BigCPULineChart,
+  BigMemoryLineChart,
+  SmallCPULineChart,
+  SmallMemoryLineChart
+} from "../../widgets/SmallLineChart";
 import { generateQueryForPods } from "./Log";
 const styles = (theme: Theme) =>
   createStyles({
-    root: {},
+    root: {
+      padding: theme.spacing(2)
+    },
     componentRow: {
       paddingTop: theme.spacing(1.5),
       paddingBottom: theme.spacing(1.5),
@@ -21,7 +28,7 @@ const styles = (theme: Theme) =>
       }
     },
     componentContainer: {
-      margin: theme.spacing(2),
+      marginTop: theme.spacing(2),
       background: "#f5f5f5"
     },
     podContainer: {
@@ -32,11 +39,15 @@ const styles = (theme: Theme) =>
       textAlign: "center"
     },
     timeCell: {
-      width: 120,
+      width: 100,
       textAlign: "center"
     },
     statusCell: {
       width: 200,
+      textAlign: "center"
+    },
+    restartsCountCell: {
+      width: 90,
       textAlign: "center"
     },
     rowContainer: {
@@ -57,12 +68,12 @@ const styles = (theme: Theme) =>
       lineHeight: "1.2857142857142856rem",
       "& .headerCell": {
         padding: "6px 16px 6px 16px",
-        "&:first-child": {
-          paddingLeft: 0
-        },
         "&:last-child": {
           paddingRight: 0
         }
+      },
+      "& > .headerCell:first-child": {
+        paddingLeft: 0
       }
     },
     podDataRow: {
@@ -81,7 +92,8 @@ const styles = (theme: Theme) =>
     },
     podActionButton: {
       background: "white"
-    }
+    },
+    metrics: {}
   });
 
 interface Props extends WithStyles<typeof styles>, DispatchProp {
@@ -133,16 +145,8 @@ class DetailsRaw extends React.PureComponent<Props, State> {
       <Paper className={classes.componentContainer} key={index}>
         <div className={clsx(classes.rowContainer, classes.componentRow)}>
           <div className="name">
-            <strong>{component.get("name")}</strong>
+            <strong>{component.get("name")}</strong> ({component.get("workloadType")})
           </div>
-          <div>
-            <strong>Workload:</strong> {component.get("workloadType")}
-          </div>
-          <div>
-            <strong>Image:</strong> registry.exmaple.com/group/project_name:tag_name (TODO)
-          </div>
-          <div>23 / 30 (TODO)</div>
-          <div>10 days (TODO)</div>
           {/* <div className="right-part">
             <div className={classes.chartTabelCell}>
               <SmallCPULineChart data={component.get("metrics").get("cpu")!} />
@@ -158,9 +162,10 @@ class DetailsRaw extends React.PureComponent<Props, State> {
               <div className="headerCell">Pod Name</div>
               <div className="headerCell">Node</div>
               <div className="right-part">
+                <div className={clsx("headerCell", classes.restartsCountCell)}>Restarts</div>
                 <div className={clsx("headerCell", classes.statusCell)}>Status</div>
-                <div className={clsx("headerCell", classes.timeCell)}>CreatedAt</div>
-                <div className={clsx("headerCell", classes.timeCell)}>StartedAt</div>
+                <div className={clsx("headerCell", classes.timeCell)}>AGE</div>
+                {/* <div className={clsx("headerCell", classes.timeCell)}>StartedAt</div> */}
                 <div className={clsx("headerCell", classes.chartTabelCell)}>CPU</div>
                 <div className={clsx("headerCell", classes.chartTabelCell)}>Memory</div>
                 <div className={clsx("headerCell", classes.actionCell)}>Actions</div>
@@ -170,15 +175,22 @@ class DetailsRaw extends React.PureComponent<Props, State> {
           {component
             .get("pods")
             .map(x => {
+              let restartsCount = 0;
+              x.get("containers").forEach(c => {
+                if (c.get("restartCount") > restartsCount) {
+                  restartsCount = c.get("restartCount");
+                }
+              });
               return (
                 <div key={x.get("name")} className={clsx(classes.rowContainer, classes.podDataRow)}>
                   {/* <div className={classes.podContainer} key={x.get("name")}> */}
                   <div>{x.get("name")}</div>
                   <div>{x.get("node")}</div>
                   <div className="right-part">
+                    <div className={classes.restartsCountCell}>{restartsCount}</div>
                     <div className={classes.statusCell}>{this.renderStatus(x.get("status"))}</div>
-                    <div className={classes.timeCell}>{formatDistance(x.get("createTimestamp"), new Date())}</div>
-                    <div className={classes.timeCell}>{formatDistance(x.get("startTimestamp"), new Date())}</div>
+                    <div className={classes.timeCell}>{formatTimeDistance(x.get("createTimestamp"))}</div>
+                    {/* <div className={classes.timeCell}>{differenceInMinutes(x.get("startTimestamp"), new Date())}</div> */}
                     <div className={classes.chartTabelCell}>
                       <SmallCPULineChart data={x.get("metrics").get("cpu")!} />
                     </div>
@@ -221,6 +233,14 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     const { application, classes } = this.props;
     return (
       <div className={classes.root}>
+        <Grid container spacing={2} className={classes.metrics}>
+          <Grid item md={6}>
+            <BigCPULineChart data={application.get("metrics").get("cpu")} />
+          </Grid>
+          <Grid item md={6}>
+            <BigMemoryLineChart data={application.get("metrics").get("memory")} />
+          </Grid>
+        </Grid>
         {application
           .get("components")!
           .map((_x, index) => this.renderComponent(index))
