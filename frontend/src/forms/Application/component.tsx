@@ -1,19 +1,18 @@
-import { Box, Button, createStyles, Grid, Theme, Typography, withStyles, WithStyles } from "@material-ui/core";
-import AddIcon from "@material-ui/icons/Add";
+import { Box, Button, createStyles, Theme, Typography, withStyles, WithStyles } from "@material-ui/core";
 import WarningIcon from "@material-ui/icons/Warning";
 import Immutable from "immutable";
 import MaterialTable from "material-table";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
-import { submit, WrappedFieldArrayProps, change, arrayPush } from "redux-form";
+import { arrayPush, change, submit, WrappedFieldArrayProps } from "redux-form";
 import { FieldArray, formValueSelector } from "redux-form/immutable";
 import { RootState } from "../../reducers";
+import { ApplicationComponent, SharedEnv } from "../../types/application";
+import { EnvTypeExternal } from "../../types/common";
+import { ComponentLike, newEmptyComponentLike } from "../../types/componentTemplate";
 import { ComponentLikeForm } from "../ComponentLike";
 import { CustomizedDialog } from "./ComponentModal";
 import { KappTooltip } from "./KappTooltip";
-import { ApplicationComponent, SharedEnv } from "../../types/application";
-import { ComponentLike, newEmptyComponentLike } from "../../types/componentTemplate";
-import { EnvTypeExternal } from "../../types/common";
 
 const mapStateToProps = (state: RootState) => {
   const selector = formValueSelector("application");

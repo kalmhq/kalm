@@ -39,7 +39,7 @@ export const KappRoutes = (
           <Route exact path="/componenttemplates" component={ComponentTemplateListPage}></Route>
           <Route exact path="/configs" component={ConfigListPage}></Route>
           <Route exact path="/cluster/nodes" component={NodeListPage}></Route>
-          <Route exact path="/cluster/disks" component={Disks}></Route>
+          <Route exact path="/cluster/volumes" component={Disks}></Route>
           <Route exact path="/settings/dependencies" component={DependencyListPage}></Route>
           <Route component={NoMatch} />
         </Switch>
