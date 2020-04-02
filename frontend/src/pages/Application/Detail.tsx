@@ -116,6 +116,9 @@ class DetailsRaw extends React.PureComponent<Props, State> {
       case "Failed": {
         return <ErrorBedge text="Failed" />;
       }
+      case "CrashLoopBackOff": {
+        return <ErrorBedge text="CrashLoopBackOff" />;
+      }
       default: {
         return <UnknownBedge text={status} />;
       }

@@ -205,7 +205,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     const { isDuplicateConfirmDialogOpen, duplicatingApplicationListItem } = this.state;
 
     let title, content;
-    title = "Are you sure to duplicate this application?";
+    title = "Duplicate Application";
     content = (
       <div>
         Please confirm the namespace and name of new application.
@@ -213,6 +213,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           <TextField
             inputRef={this.duplicateApplicationNamespaceRef}
             label="Namespace"
+            size="small"
             variant="outlined"
             defaultValue={duplicatingApplicationListItem?.get("namespace")}
             required
@@ -220,6 +221,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           <TextField
             inputRef={this.duplicateApplicationNameRef}
             label="Name"
+            size="small"
             variant="outlined"
             defaultValue={duplicateApplicationName(duplicatingApplicationListItem?.get("name") as string)}
             required
@@ -488,7 +490,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                   render: this.renderActions
                 }
               ]}
-              detailPanel={this.renderDetails}
+              // detailPanel={this.renderDetails}
               // onRowClick={(_event, _rowData, togglePanel) => {
               //   togglePanel!();
               //   console.log(_event);

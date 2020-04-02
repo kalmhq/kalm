@@ -334,7 +334,7 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
           data={this.getTableData()}
           title=""
         />
-        <Box mt={3}></Box>
+        {/* <Box mt={3}></Box>
         <Grid container spacing={2}>
           <Grid item xs={6}>
             <Button
@@ -358,7 +358,7 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
               Import from Component Template
             </Button>
           </Grid>
-        </Grid>
+        </Grid> */}
       </div>
     );
   }
