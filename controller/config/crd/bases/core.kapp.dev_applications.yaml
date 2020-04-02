@@ -59,6 +59,20 @@ spec:
                     items:
                       type: string
                     type: array
+                  configs:
+                    items:
+                      properties:
+                        mountPath:
+                          type: string
+                        paths:
+                          items:
+                            type: string
+                          type: array
+                      required:
+                      - mountPath
+                      - paths
+                      type: object
+                    type: array
                   cpu:
                     type: string
                   dependencies:
@@ -379,10 +393,6 @@ spec:
                   volumes:
                     items:
                       properties:
-                        kappConfigPath:
-                          description: the config path of kapp config, can be a file
-                            or a directory
-                          type: string
                         path:
                           description: the path we use to mount this volume to container
                           type: string

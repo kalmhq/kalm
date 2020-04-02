@@ -18,7 +18,7 @@ import { store } from "../store";
 import { ApplicationList, Application } from "../types/application";
 import Immutable from "immutable";
 import { ComponentTemplate } from "../types/componentTemplate";
-import { ConfigRes } from "../types/config";
+import { ConfigRes, ConfigCreate } from "../types/config";
 import { ImmutableMap } from "../typings";
 
 export const K8sApiPrefix = process.env.REACT_APP_K8S_API_PERFIX;
@@ -156,12 +156,10 @@ export const getKappFilesV1alpha1 = async () => {
   return res.data as ConfigRes;
 };
 
-export const createKappFileV1alpha1 = async (path: string, isDir: boolean, content: string) => {
+export const createKappFilesV1alpha1 = async (files: ConfigCreate[]) => {
   const namespace = "default";
   await getAxiosClient().post(K8sApiPrefix + `/v1alpha1/files/${namespace}`, {
-    path,
-    isDir,
-    content
+    files
   });
 };
 

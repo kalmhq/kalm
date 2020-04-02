@@ -47,7 +47,6 @@ type VolumeType string
 const (
 	VolumeTypeTemporaryMemory       VolumeType = "emptyDirMemory"
 	VolumeTypeTemporaryDisk         VolumeType = "emptyDir"
-	VolumeTypeKappConfigs           VolumeType = "kapp-configs"
 	VolumeTypePersistentVolumeClaim VolumeType = "pvc"
 
 	// TODO
@@ -64,13 +63,15 @@ type Volume struct {
 	// Volume type
 	Type VolumeType `json:"type,omitempty"`
 
-	// the config path of kapp config, can be a file or a directory
-	KappConfigPath string `json:"kappConfigPath,omitempty"`
-
 	// Identify the StorageClass to create the pvc
 	StorageClassName *string `json:"storageClassName,omitempty"`
 
 	// use to store pvc name, so the disk won't be recreate during restart
 	// This field also can be used with existing pvc
 	PersistentVolumeClaimName string `json:"persistentVolumeClaimName,omitempty"`
+}
+
+type Config struct {
+	Paths     []string `json:"paths"`
+	MountPath string   `json:"mountPath"`
 }

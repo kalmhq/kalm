@@ -7,12 +7,12 @@ import (
 	"fmt"
 	"github.com/go-logr/logr"
 	kappV1Alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
+	"github.com/kapp-staging/kapp/lib/files"
 	"github.com/kapp-staging/kapp/util"
 	appsV1 "k8s.io/api/apps/v1"
 	batchV1Beta1 "k8s.io/api/batch/v1beta1"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -115,6 +115,71 @@ func (act *applicationReconcilerTask) reconcileComponents() (err error) {
 	}
 
 	return nil
+}
+
+func (act *applicationReconcilerTask) parseComponentConfigs(component *kappV1Alpha1.ComponentSpec, volumes *[]coreV1.Volume, volumeMounts *[]coreV1.VolumeMount) {
+	var configMap coreV1.ConfigMap
+
+	err := act.reconciler.Client.Get(act.ctx, types.NamespacedName{
+		Name:      files.KAPP_CONFIG_MAP_NAME,
+		Namespace: act.app.Namespace,
+	}, &configMap)
+
+	if err != nil {
+		act.log.Error(err, "can't get files config-map. Skip configs.")
+		return
+	}
+
+	// key is mount dir, values is the files
+	mountPaths := make(map[string]map[string]bool)
+
+	for _, config := range component.Configs {
+		mountPath := config.MountPath
+
+		for _, path := range config.Paths {
+			root, err := files.GetFileItemTree(&configMap, path)
+
+			if err != nil {
+				act.log.Error(err, fmt.Sprintf("can't find file item at %s", path))
+				continue
+			}
+
+			files.ResolveMountPaths(mountPaths, mountPath, root)
+		}
+	}
+
+	for mountPath, rawFileNamesMap := range mountPaths {
+		name := fmt.Sprintf("configs-%x", md5.Sum([]byte(mountPath)))
+		items := make([]coreV1.KeyToPath, 0, len(rawFileNamesMap))
+
+		for itemRawFileName := range rawFileNamesMap {
+
+			items = append(items, coreV1.KeyToPath{
+				Path: files.GetFileNameFromRawPath(itemRawFileName),
+				Key:  files.EncodeFilePath(itemRawFileName),
+			})
+		}
+
+		volume := coreV1.Volume{
+			Name: name,
+			VolumeSource: coreV1.VolumeSource{
+				ConfigMap: &coreV1.ConfigMapVolumeSource{
+					LocalObjectReference: coreV1.LocalObjectReference{
+						Name: files.KAPP_CONFIG_MAP_NAME,
+					},
+					Items: items,
+				},
+			},
+		}
+
+		volumeMount := coreV1.VolumeMount{
+			Name:      name,
+			MountPath: mountPath,
+		}
+
+		*volumes = append(*volumes, volume)
+		*volumeMounts = append(*volumeMounts, volumeMount)
+	}
 }
 
 func (act *applicationReconcilerTask) generateTemplate(component *kappV1Alpha1.ComponentSpec) (template *coreV1.PodTemplateSpec, err error) {
@@ -254,74 +319,6 @@ func (act *applicationReconcilerTask) generateTemplate(component *kappV1Alpha1.C
 			volumeSource.EmptyDir = &coreV1.EmptyDirVolumeSource{
 				Medium: coreV1.StorageMediumMemory,
 			}
-		} else if disk.Type == kappV1Alpha1.VolumeTypeKappConfigs {
-			// check if kapp config path is a dir
-
-			configMapVolumeSource := &coreV1.ConfigMapVolumeSource{
-				LocalObjectReference: coreV1.LocalObjectReference{},
-			}
-
-			parts := strings.Split(disk.KappConfigPath, "/")
-			configMapName := fmt.Sprintf("config-%s-dir", strings.Join(parts[1:], "-"))
-
-			configMap := coreV1.ConfigMap{}
-
-			err := act.reconciler.Get(
-				act.ctx,
-				types.NamespacedName{
-					Namespace: act.app.Namespace,
-					Name:      configMapName,
-				},
-				&configMap,
-			)
-
-			if errors.IsNotFound(err) {
-				act.log.Info(fmt.Sprintf("Can't find config map %s as dir, try to load it as a object.", configMapName))
-
-				configMapName = getConfigMapNameFromPath(disk.KappConfigPath)
-				err := act.reconciler.Get(
-					act.ctx,
-					types.NamespacedName{
-						Namespace: act.app.Namespace,
-						Name:      configMapName,
-					},
-					&configMap,
-				)
-
-				if errors.IsNotFound(err) {
-					// TODO Requeue ???
-					act.log.Info(fmt.Sprintf("Can't find config map %s", configMapName))
-					continue
-				} else if err != nil {
-					return nil, err
-				}
-
-				// kapp config is a file and config map is founded
-				fileName := getConfigMapDataKeyFromPath(disk.KappConfigPath)
-
-				if _, ok := configMap.Data[fileName]; !ok {
-					err := fmt.Errorf("Can't find %s key in configMap %s", fileName, configMapName)
-					act.log.Error(err, "load file content from configMap Failed")
-
-					// TODO need somehow record an warning event
-					continue
-				}
-
-				configMapVolumeSource.Items = []coreV1.KeyToPath{
-					{
-						Key:  fileName,
-						Path: fileName,
-					},
-				}
-			} else if err != nil {
-				return nil, err
-			}
-
-			// config map is found, set the name
-			configMapVolumeSource.LocalObjectReference.Name = configMapName
-
-			// kapp config path is a single object
-			volumeSource.ConfigMap = configMapVolumeSource
 		} else {
 			// TODO wrong disk type
 		}
@@ -340,6 +337,10 @@ func (act *applicationReconcilerTask) generateTemplate(component *kappV1Alpha1.C
 			Name:      pvcName,
 			MountPath: disk.Path,
 		})
+	}
+
+	if component.Configs != nil {
+		act.parseComponentConfigs(component, &volumes, &volumeMounts)
 	}
 
 	if len(volumes) > 0 {

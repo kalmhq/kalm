@@ -11,6 +11,7 @@ require (
 	github.com/go-bindata/go-bindata v3.1.2+incompatible // indirect
 	github.com/go-logr/logr v0.1.0
 	github.com/google/go-jsonnet v0.15.0 // indirect
+	github.com/kapp-staging/kapp/lib v0.0.0-00010101000000-000000000000
 	github.com/influxdata/influxdb v1.7.7
 	github.com/jetstack/cert-manager v0.13.1
 	github.com/jsonnet-bundler/jsonnet-bundler v0.2.0 // indirect
@@ -19,7 +20,7 @@ require (
 	github.com/onsi/ginkgo v1.10.3
 	github.com/onsi/gomega v1.7.1
 	github.com/openshift/prom-label-proxy v0.1.1-0.20191016113035-b8153a7f39f1 // indirect
-	github.com/stretchr/testify v1.4.0
+	github.com/stretchr/testify v1.5.1
 	github.com/thanos-io/thanos v0.10.1 // indirect
 	gopkg.in/yaml.v2 v2.2.8
 	k8s.io/api v0.17.3
@@ -29,3 +30,5 @@ require (
 	k8s.io/kube-aggregator v0.17.0
 	sigs.k8s.io/controller-runtime v0.4.0
 )
+
+replace github.com/kapp-staging/kapp/lib => ../lib

@@ -1,7 +1,7 @@
 import Immutable from "immutable";
 import {
   getKappFilesV1alpha1,
-  createKappFileV1alpha1,
+  createKappFilesV1alpha1,
   updateKappFileV1alpha1,
   moveKappFileV1alpha1,
   deleteKappFileV1alpha1
@@ -17,17 +17,55 @@ import {
   LOAD_CONFIGS_FULFILLED,
   initialRootConfigNode,
   LOAD_CONFIGS_FAILED,
-  ConfigRes
+  ConfigRes,
+  FilesUpload,
+  ConfigCreate
 } from "../types/config";
 import { ThunkResult, StatusFailure } from "../types";
 import { setSuccessNotificationAction, setErrorNotificationAction } from "./notification";
+
+export const uploadConfigsAction = (ancestorIds: string[], filesUpload: FilesUpload): ThunkResult<Promise<void>> => {
+  return async dispatch => {
+    // console.log("files", filesUpload.toJS());
+
+    try {
+      const files: ConfigCreate[] = [];
+      filesUpload.forEach((content, name) => {
+        files.push({
+          path: ancestorIdsToPath(ancestorIds, name),
+          isDir: false,
+          content
+        });
+      });
+      await createKappFilesV1alpha1(files);
+    } catch (e) {
+      if (e.response && e.response.data.status === StatusFailure) {
+        dispatch(setErrorNotificationAction(e.response.data.message));
+      } else {
+        dispatch(setErrorNotificationAction());
+      }
+      return;
+    }
+
+    dispatch(loadConfigsAction());
+    dispatch(setSuccessNotificationAction("Upload configs successful."));
+    dispatch(setCurrentConfigIdChainAction(ancestorIds));
+  };
+};
 
 export const createConfigAction = (config: ConfigNode): ThunkResult<Promise<void>> => {
   return async dispatch => {
     config = config.set("id", config.get("name"));
 
     try {
-      await createKappFileV1alpha1(getConfigPath(config), config.get("type") === "folder", config.get("content"));
+      const files = [
+        {
+          path: getConfigPath(config),
+          isDir: config.get("type") === "folder",
+          content: config.get("content")
+        }
+      ];
+      await createKappFilesV1alpha1(files);
     } catch (e) {
       if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
@@ -63,7 +101,14 @@ export const duplicateConfigAction = (config: ConfigNode): ThunkResult<Promise<v
     config = config.set("oldPath", getConfigPath(config));
 
     try {
-      await createKappFileV1alpha1(getConfigPath(config), config.get("type") === "folder", config.get("content"));
+      const files = [
+        {
+          path: getConfigPath(config),
+          isDir: config.get("type") === "folder",
+          content: config.get("content")
+        }
+      ];
+      await createKappFilesV1alpha1(files);
     } catch (e) {
       if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
@@ -188,12 +233,16 @@ export const getConfigPath = (config: ConfigNode): string => {
   }
 
   const ancestorIds = config.get("ancestorIds").toArray();
+  const name = config.get("name");
+  return ancestorIdsToPath(ancestorIds, name);
+};
 
+export const ancestorIdsToPath = (ancestorIds: string[], name: string): string => {
   let path = "";
   for (let i = 1; i <= ancestorIds.length - 1; i++) {
     path = path + "/" + ancestorIds[i];
   }
-  path = path + "/" + config.get("name");
+  path = path + "/" + name;
 
   return path;
 };

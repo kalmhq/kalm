@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/kapp-staging/kapp/lib/files"
 	"github.com/stretchr/testify/suite"
 	"net/http"
 	"testing"
@@ -11,25 +12,37 @@ type FilesTestSuite struct {
 }
 
 func (suite *FilesTestSuite) TearDownTest() {
-	err := suite.k8sClinet.CoreV1().ConfigMaps("default").Delete(KAPP_CONFIG_MAP_NAME, nil)
+	err := suite.k8sClinet.CoreV1().ConfigMaps("default").Delete(files.KAPP_CONFIG_MAP_NAME, nil)
 	suite.Nil(err)
 }
 
-func (suite *FilesTestSuite) GetFileList() *FileItem {
+func (suite *FilesTestSuite) GetFileList() *files.FileItem {
 	rec := suite.NewRequest(http.MethodGet, "/v1alpha1/files/default", nil)
 	suite.Equal(200, rec.Code)
 
-	var res FileItem
+	var res files.FileItem
 	rec.BodyAsJSON(&res)
 	return &res
 }
 
 func (suite *FilesTestSuite) createFile(path string, isDir bool, content string) *ResponseRecorder {
+	// two ways to pass create file params
+
 	return suite.NewRequest(http.MethodPost, "/v1alpha1/files/default", map[string]interface{}{
-		"path":    path,
-		"isDir":   isDir,
-		"content": content,
+		"files": []interface{}{map[string]interface{}{
+			"path":    path,
+			"isDir":   isDir,
+			"content": content,
+		}},
 	})
+
+	//return suite.NewRequest(http.MethodPost, "/v1alpha1/files/default", map[string]interface{}{
+	//	"file": map[string]interface{}{
+	//		"path":    path,
+	//		"isDir":   isDir,
+	//		"content": content,
+	//	},
+	//})
 }
 
 func (suite *FilesTestSuite) updateFile(path string, content string) *ResponseRecorder {

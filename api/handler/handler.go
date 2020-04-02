@@ -52,11 +52,6 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gV1.PUT("/applications/:namespace/:name", h.handleUpdateApplication)
 	gV1.DELETE("/applications/:namespace/:name", h.handleDeleteApplication)
 
-	gV1.GET("/files", h.handleGetFilesOld)
-	gV1.POST("/files", h.handleCreateFileOld)
-	gV1.PUT("/files/:name", h.handleUpdateFileOld)
-	gV1.DELETE("/files/:name", h.handleDeleteFileOld)
-
 	gV1.GET("/clusterroles", h.handleGetClusterRoles)
 	gV1.POST("/clusterroles", h.handleCreateClusterRoles)
 	gV1.DELETE("/clusterroles/:name", h.handleDeleteSecrets)

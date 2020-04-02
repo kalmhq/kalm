@@ -54,8 +54,9 @@ var nodeMetricDB = make(map[string][]metricv1beta1.NodeMetrics)
 
 // todo lock
 
-//metricResolution := 5 * time.Second
-var metricResolution = 30 * time.Second
+var metricResolution = 5 * time.Second
+
+//var metricResolution = 30 * time.Second
 var metricDuration = 15 * time.Minute
 
 func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
@@ -143,7 +144,7 @@ func cacheMetricsForNodesIntoLocalDB(nodeMetricsList *metricv1beta1.NodeMetricsL
 		v := nodeMetricDB[nodeName]
 
 		nodeMetrics = alignMetricsByMinute(nodeMetrics)
-		if len(v) > 0 && v[len(v) - 1].Timestamp.Unix() == nodeMetrics.Timestamp.Unix() {
+		if len(v) > 0 && v[len(v)-1].Timestamp.Unix() == nodeMetrics.Timestamp.Unix() {
 			// ignore duplicate
 			continue
 		}

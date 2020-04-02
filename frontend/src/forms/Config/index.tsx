@@ -66,17 +66,6 @@ const useStyles = makeStyles((theme: Theme) => ({
     padding: theme.spacing(3),
     marginBottom: theme.spacing(5)
   },
-  sectionHeader: {
-    fontSize: 24,
-    fontWeight: 400
-  },
-  sectionDiscription: {
-    fontSize: 16,
-    margin: "16px 0"
-  },
-  input: {
-    marginBottom: 12
-  },
   buttons: {
     padding: "30px 0 20px"
   },
@@ -101,7 +90,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   }
 }));
 
-function ConfigFormRaw(props: Props & InjectedFormProps<ConfigNode, Props>) {
+const ConfigFormRaw = (props: Props & InjectedFormProps<ConfigNode, Props>) => {
   const { handleSubmit, onClose, configType } = props;
   const classes = useStyles();
   return (
@@ -117,7 +106,6 @@ function ConfigFormRaw(props: Props & InjectedFormProps<ConfigNode, Props>) {
 
           <div className={classes.nameWrapper}>
             <CustomTextField
-              // className={classes.input}
               name="name"
               label="Name"
               margin
@@ -147,7 +135,7 @@ function ConfigFormRaw(props: Props & InjectedFormProps<ConfigNode, Props>) {
       </form>
     </div>
   );
-}
+};
 
 export default connect(mapStateToProps)(
   reduxForm<ConfigNode, Props>({

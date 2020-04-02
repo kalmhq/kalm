@@ -10,6 +10,15 @@ export const LOAD_CONFIGS_PENDING = "LOAD_CONFIGS_PENDING";
 export const LOAD_CONFIGS_FULFILLED = "LOAD_CONFIGS_FULFILLED";
 export const LOAD_CONFIGS_FAILED = "LOAD_CONFIGS_FAILED";
 
+// name, content
+export type FilesUpload = Immutable.OrderedMap<string, string>;
+
+export interface ConfigCreate {
+  path: string;
+  isDir: boolean;
+  content: string;
+}
+
 export interface ConfigRes {
   name: string;
   path: string;

@@ -7,6 +7,7 @@ import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@material-ui/icons/Delete";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import NoteAddIcon from "@material-ui/icons/NoteAdd";
+import PublishIcon from "@material-ui/icons/Publish";
 import CreateNewFolderIcon from "@material-ui/icons/CreateNewFolder";
 import { deleteConfigAction, duplicateConfigAction } from "../../actions/config";
 import { ThunkDispatch } from "redux-thunk";
@@ -22,6 +23,7 @@ import { ConfirmDialog } from "../../widgets/ConfirmDialog";
 import { loadConfigsAction } from "../../actions/config";
 import { ConfigNode, initialRootConfigNode, ConfigNodeType } from "../../types/config";
 import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
+import { ConfigUploadDialog } from "../../widgets/ConfigUploadDialog";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -78,7 +80,8 @@ interface State {
   showConfigNewDialog: boolean;
   newConfigType: ConfigNodeType;
   showConfigEditDialog: boolean;
-  isDeleteConfirmDialogOpen: boolean;
+  showConfigDeleteDialog: boolean;
+  showConfigUploadDialog: boolean;
 }
 
 class ConfigListRaw extends React.PureComponent<Props, State> {
@@ -88,7 +91,8 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
       showConfigNewDialog: false,
       newConfigType: "file",
       showConfigEditDialog: false,
-      isDeleteConfirmDialogOpen: false
+      showConfigDeleteDialog: false,
+      showConfigUploadDialog: false
     };
   }
 
@@ -100,22 +104,22 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
 
   private showDeleteConfirmDialog = () => {
     this.setState({
-      isDeleteConfirmDialogOpen: true
+      showConfigDeleteDialog: true
     });
   };
 
   private closeDeleteConfirmDialog = () => {
     this.setState({
-      isDeleteConfirmDialogOpen: false
+      showConfigDeleteDialog: false
     });
   };
 
   private renderDeleteConfirmDialog = () => {
-    const { isDeleteConfirmDialogOpen } = this.state;
+    const { showConfigDeleteDialog } = this.state;
 
     return (
       <ConfirmDialog
-        open={isDeleteConfirmDialogOpen}
+        open={showConfigDeleteDialog}
         onClose={this.closeDeleteConfirmDialog}
         title="Are you sure to delete this Config?"
         content="You will lost this config, and this action is irrevocable."
@@ -131,6 +135,27 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
     } catch {
       dispatch(setErrorNotificationAction());
     }
+  };
+
+  private showUploadConfirmDialog = () => {
+    this.setState({
+      showConfigUploadDialog: true
+    });
+  };
+
+  private closeUploadConfirmDialog = () => {
+    this.setState({
+      showConfigUploadDialog: false
+    });
+  };
+
+  private renderUploadConfirmDialog = () => {
+    const { showConfigUploadDialog } = this.state;
+    const { dispatch } = this.props;
+
+    return (
+      <ConfigUploadDialog open={showConfigUploadDialog} onClose={this.closeUploadConfirmDialog} dispatch={dispatch} />
+    );
   };
 
   public handleAdd = (configType: ConfigNodeType) => {
@@ -152,6 +177,10 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
 
   public handleDelete = () => {
     this.showDeleteConfirmDialog();
+  };
+
+  public handleUpload = () => {
+    this.showUploadConfirmDialog();
   };
 
   public renderFileBreadcrumbs() {
@@ -222,6 +251,14 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
 
           <IconButtonWithTooltip
             tooltipPlacement="top"
+            tooltipTitle="Upload configs"
+            aria-label="upload-configs"
+            onClick={() => this.handleUpload()}>
+            <PublishIcon />
+          </IconButtonWithTooltip>
+
+          <IconButtonWithTooltip
+            tooltipPlacement="top"
             tooltipTitle="Delete"
             aria-label="delete"
             onClick={() => this.handleDelete()}>
@@ -247,6 +284,14 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
             onClick={() => this.handleAdd("folder")}>
             <CreateNewFolderIcon />
           </IconButtonWithTooltip>
+
+          <IconButtonWithTooltip
+            tooltipPlacement="top"
+            tooltipTitle="Upload configs"
+            aria-label="upload-configs"
+            onClick={() => this.handleUpload()}>
+            <PublishIcon />
+          </IconButtonWithTooltip>
         </div>
       );
     }
@@ -258,7 +303,6 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
 
     return (
       <BasePage title="Configs">
-        {this.renderDeleteConfirmDialog()}
         <div className={classes.root}>
           <div className={classes.leftTree}>
             <FileTree
@@ -296,6 +340,8 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
           config={currentConfig}
           onClose={() => this.setState({ showConfigEditDialog: false })}
         />
+        {this.renderDeleteConfirmDialog()}
+        {this.renderUploadConfirmDialog()}
       </BasePage>
     );
   }
