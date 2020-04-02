@@ -13,6 +13,8 @@ import Dropzone from "react-dropzone";
 import { getCascaderDefaultValue } from "../../selectors/config";
 import { uploadConfigsAction } from "../../actions/config";
 import { TDispatch } from "../../types";
+import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
+import DeleteIcon from "@material-ui/icons/Delete";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -35,7 +37,7 @@ const styles = (theme: Theme) =>
       outline: "none !important"
     },
     dropzoneArea: {
-      height: "300px",
+      minHeight: "300px",
       border: "2px dashed #d0d0d0",
       borderRadius: "4px",
       outline: "none !important"
@@ -43,6 +45,19 @@ const styles = (theme: Theme) =>
     dropzoneTitle: {
       padding: "24px",
       textAlign: "center"
+    },
+    preveiwArea: {
+      display: "flex",
+      flexWrap: "wrap"
+    },
+    previewItem: {
+      padding: "5px 30px",
+      minWidth: "33%",
+      display: "flex",
+      alignItems: "center"
+    },
+    previewName: {
+      marginRight: "20px"
     }
   });
 
@@ -87,6 +102,12 @@ class ConfigUploadFormRaw extends React.PureComponent<Props & InjectedFormProps<
     });
   }
 
+  private handleDelete(event: React.MouseEvent<HTMLButtonElement, MouseEvent>, name: string) {
+    event.stopPropagation();
+
+    this.setState({ files: this.state.files.delete(name) });
+  }
+
   private handleSubmit(values: any) {
     const { dispatch, onClose } = this.props;
     const { files } = this.state;
@@ -102,7 +123,17 @@ class ConfigUploadFormRaw extends React.PureComponent<Props & InjectedFormProps<
 
     const fileNames: any[] = [];
     this.state.files.forEach((_, name) => {
-      fileNames.push(<div key={name}>{name}</div>);
+      fileNames.push(
+        <div key={name} className={classes.previewItem}>
+          <div className={classes.previewName}>{name}</div>
+          <IconButtonWithTooltip
+            tooltipTitle="Delete"
+            aria-label="delete"
+            onClick={event => this.handleDelete(event, name)}>
+            <DeleteIcon />
+          </IconButtonWithTooltip>
+        </div>
+      );
     });
 
     return (
@@ -124,7 +155,7 @@ class ConfigUploadFormRaw extends React.PureComponent<Props & InjectedFormProps<
                   <input {...getInputProps()} />
                   <div className={classes.dropzoneArea}>
                     <div className={classes.dropzoneTitle}>Drop some files here, or click to select files</div>
-                    <div>{fileNames}</div>
+                    <div className={classes.preveiwArea}>{fileNames}</div>
                   </div>
                 </div>
               </section>
