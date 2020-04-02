@@ -88,6 +88,8 @@ export type PodStatus = ImmutableMap<{
   hostIp: string;
   createTimestamp: number;
   startTimestamp: number;
+  isTerminating: boolean;
+  restarts: number;
   containers: Immutable.List<
     ImmutableMap<{
       name: string;

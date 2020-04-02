@@ -189,6 +189,10 @@ export const deleteKappFileV1alpha1 = async (path: string) => {
   });
 };
 
+export const deletePod = async (namespace: string, name: string) => {
+  return await getAxiosClient().delete(K8sApiPrefix + `/v1alpha1/pods/${namespace}/${name}`);
+};
+
 export const getKappClusterRoles = async () => {
   const res = await getAxiosClient().get<ItemList<V1ClusterRole>>(K8sApiPrefix + "/v1/clusterroles");
 

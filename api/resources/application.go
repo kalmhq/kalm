@@ -59,6 +59,9 @@ type PodStatus struct {
 	// Restarts
 	Restarts int `json:"restarts"`
 
+	// Is terminating
+	IsTerminating bool `json:"isTerminating"`
+
 	PodIPs            []string          `json:"podIps"`
 	HostIP            string            `json:"hostIp"`
 	CreationTimestamp int64             `json:"createTimestamp"`
@@ -419,10 +422,6 @@ func getPods(pods []coreV1.Pod, events []coreV1.Event, componentMetrics Componen
 			}
 		}
 
-		if pod.DeletionTimestamp != nil {
-			statusText = "Terminating"
-		}
-
 		warnings := []coreV1.Event{}
 
 		if !IsReadyOrSucceeded(pod) {
@@ -438,6 +437,7 @@ func getPods(pods []coreV1.Pod, events []coreV1.Event, componentMetrics Componen
 			Phase:             pod.Status.Phase,
 			PodIPs:            ips, // TODO, when to use host ip??
 			HostIP:            pod.Status.HostIP,
+			IsTerminating:     pod.DeletionTimestamp != nil,
 			CreationTimestamp: pod.CreationTimestamp.UnixNano() / int64(time.Millisecond),
 			StartTimestamp:    startTimestamp,
 			Containers:        containers,

@@ -93,6 +93,8 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gv1Alpha1WithAuth.DELETE("/files/:namespace", h.handleDeleteFile)
 
 	gv1Alpha1WithAuth.GET("/nodes/metrics", h.handleGetNodeMetricsNew)
+
+	gv1Alpha1WithAuth.DELETE("/pods/:namespace/:name", h.handleDeletePod)
 }
 
 func NewApiHandler(clientManager *client.ClientManager) *ApiHandler {

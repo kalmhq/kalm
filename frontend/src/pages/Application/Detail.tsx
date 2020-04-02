@@ -1,13 +1,19 @@
-import { createStyles, Grid, Paper, Theme, withStyles, WithStyles, Box } from "@material-ui/core";
+import { Box, createStyles, Grid, Paper, Theme, withStyles, WithStyles } from "@material-ui/core";
+import DeleteIcon from "@material-ui/icons/Delete";
 import LaptopWindowsIcon from "@material-ui/icons/LaptopWindows";
 import ViewHeadlineIcon from "@material-ui/icons/ViewHeadline";
+import { AxiosResponse } from "axios";
 import clsx from "clsx";
 import React from "react";
-import { DispatchProp } from "react-redux";
-import { ApplicationListItem } from "../../types/application";
+import { ThunkDispatch } from "redux-thunk";
+import { deletePod } from "../../actions/kubernetesApi";
+import { setErrorNotificationAction, setSuccessNotificationAction } from "../../actions/notification";
+import { RootState } from "../../reducers";
+import { Actions } from "../../types";
+import { ApplicationListItem, PodStatus } from "../../types/application";
 import { formatTimeDistance } from "../../utils";
-import { ErrorBedge, PendingBedge, SuccessBedge, UnknownBedge } from "../../widgets/Bedge";
-import { IconLinkWithToolTip } from "../../widgets/IconButtonWithTooltip";
+import { ErrorBedge, PendingBedge, SuccessBedge } from "../../widgets/Bedge";
+import { IconButtonWithTooltip, IconLinkWithToolTip } from "../../widgets/IconButtonWithTooltip";
 import {
   BigCPULineChart,
   BigMemoryLineChart,
@@ -15,6 +21,7 @@ import {
   SmallMemoryLineChart
 } from "../../widgets/SmallLineChart";
 import { generateQueryForPods } from "./Log";
+import { loadApplicationsAction } from "../../actions/application";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
@@ -85,7 +92,7 @@ const styles = (theme: Theme) =>
       }
     },
     actionCell: {
-      width: 80,
+      width: 100,
       display: "flex",
       alignItems: "center",
       justifyContent: "space-around"
@@ -96,8 +103,9 @@ const styles = (theme: Theme) =>
     metrics: {}
   });
 
-interface Props extends WithStyles<typeof styles>, DispatchProp {
+interface Props extends WithStyles<typeof styles> {
   application: ApplicationListItem;
+  dispatch: ThunkDispatch<RootState, undefined, Actions>;
 }
 
 interface State {}
@@ -108,8 +116,12 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     this.state = {};
   }
 
-  private renderPodStatus = (status: string) => {
-    switch (status) {
+  private renderPodStatus = (pod: PodStatus) => {
+    if (pod.get("isTerminating")) {
+      return <PendingBedge />;
+    }
+
+    switch (pod.get("status")) {
       case "Running": {
         return <SuccessBedge />;
       }
@@ -126,7 +138,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
   };
 
   private renderComponent = (index: number) => {
-    const { classes, application } = this.props;
+    const { classes, application, dispatch } = this.props;
     const component = application.get("components")!.get(index)!;
     return (
       <Paper className={classes.componentContainer} key={index}>
@@ -162,26 +174,18 @@ class DetailsRaw extends React.PureComponent<Props, State> {
           {component
             .get("pods")
             .map(x => {
-              let restartsCount = 0;
-
-              x.get("containers").forEach(c => {
-                if (c.get("restartCount") > restartsCount) {
-                  restartsCount = c.get("restartCount");
-                }
-              });
-
               return (
                 <div>
                   <div key={x.get("name")} className={clsx(classes.rowContainer, classes.podDataRow)}>
                     {/* <div className={classes.podContainer} key={x.get("name")}> */}
 
                     <div style={{ display: "flex", alignItems: "center" }}>
-                      {this.renderPodStatus(x.get("status"))}
+                      {this.renderPodStatus(x)}
                       {x.get("name")}
                     </div>
                     <div>{x.get("node")}</div>
                     <div className="right-part">
-                      <div className={classes.restartsCountCell}>{restartsCount}</div>
+                      <div className={classes.restartsCountCell}>{x.get("restarts")}</div>
                       <div className={classes.statusCell}>{x.get("statusText")}</div>
                       <div className={classes.timeCell}>{formatTimeDistance(x.get("createTimestamp"))}</div>
                       {/* <div className={classes.timeCell}>{differenceInMinutes(x.get("startTimestamp"), new Date())}</div> */}
@@ -212,20 +216,40 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                           }>
                           <LaptopWindowsIcon />
                         </IconLinkWithToolTip>
+                        <IconButtonWithTooltip
+                          tooltipTitle="Delete"
+                          size="small"
+                          className={classes.podActionButton}
+                          onClick={async () => {
+                            let res: AxiosResponse<any>;
+                            try {
+                              res = await deletePod(application.get("namespace"), x.get("name"));
+                              dispatch(setSuccessNotificationAction(`Delete pod ${x.get("name")} successfully`));
+                              // reload
+                              dispatch(loadApplicationsAction());
+                            } catch (e) {
+                              dispatch(setErrorNotificationAction(e.response.data.message));
+                            }
+                          }}>
+                          <DeleteIcon />
+                        </IconButtonWithTooltip>
                       </div>
                     </div>
                   </div>
                   <Box pl={2} pr={2}>
-                    {x
-                      .get("warnings")
-                      .map((w, index) => {
-                        return (
-                          <Box ml={2} color="error.main" key={index}>
-                            {index + 1}. {w.get("message")}
-                          </Box>
-                        );
-                      })
-                      .toArray()}
+                    {/* Do not show errors when pod is terminating */}
+                    {x.get("isTerminating")
+                      ? null
+                      : x
+                          .get("warnings")
+                          .map((w, index) => {
+                            return (
+                              <Box ml={2} color="error.main" key={index}>
+                                {index + 1}. {w.get("message")}
+                              </Box>
+                            );
+                          })
+                          .toArray()}
                   </Box>
                 </div>
               );
