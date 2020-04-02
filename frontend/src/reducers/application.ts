@@ -13,7 +13,9 @@ import {
   LOAD_APPLICATION_PENDING,
   LOAD_APPLICATION_FULFILLED,
   LOAD_APPLICATIONS_FAILED,
-  LOAD_APPLICATION_FAILED
+  LOAD_APPLICATION_FAILED,
+  SET_IS_SUBMITTING_APPLICATION,
+  SET_IS_SUBMITTING_APPLICATION_COMPONENT
 } from "../types/application";
 
 export type State = ImmutableMap<{
@@ -23,6 +25,8 @@ export type State = ImmutableMap<{
   isListLoading: boolean;
   isListFirstLoaded: boolean;
   isItemLoading: boolean;
+  isSubmittingApplication: boolean;
+  isSubmittingApplicationComponent: boolean;
 }>;
 
 const initialState: State = Immutable.Map({
@@ -31,11 +35,21 @@ const initialState: State = Immutable.Map({
   applicationPodNames: Immutable.Map({}),
   isListLoading: false,
   isListFirstLoaded: false,
-  isItemLoading: false
+  isItemLoading: false,
+  isSubmittingApplication: false,
+  isSubmittingApplicationComponent: false
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
+    case SET_IS_SUBMITTING_APPLICATION: {
+      state = state.set("isSubmittingApplication", action.payload.isSubmittingApplication);
+      break;
+    }
+    case SET_IS_SUBMITTING_APPLICATION_COMPONENT: {
+      state = state.set("isSubmittingApplicationComponent", action.payload.isSubmittingApplicationComponent);
+      break;
+    }
     case LOAD_APPLICATIONS_PENDING: {
       state = state.set("isListLoading", true);
       break;

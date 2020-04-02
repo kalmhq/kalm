@@ -16,14 +16,20 @@ import {
   LOAD_APPLICATION_PENDING,
   LOAD_APPLICATION_FULFILLED,
   LOAD_APPLICATION_FAILED,
-  LOAD_APPLICATIONS_FAILED
+  LOAD_APPLICATIONS_FAILED,
+  SET_IS_SUBMITTING_APPLICATION,
+  SET_IS_SUBMITTING_APPLICATION_COMPONENT,
+  SetIsSubmittingApplication,
+  SetIsSubmittingApplicationComponent
 } from "../types/application";
 import { ThunkResult, StatusFailure } from "../types";
 import { setErrorNotificationAction } from "./notification";
 
 export const createApplicationAction = (applicationValues: Application): ThunkResult<Promise<void>> => {
   return async dispatch => {
+    dispatch(setIsSubmittingApplication(true));
     let application: Application;
+
     try {
       application = await createKappApplication(applicationValues);
     } catch (e) {
@@ -33,6 +39,10 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
         dispatch(setErrorNotificationAction());
       }
       return;
+    } finally {
+      setTimeout(() => {
+        dispatch(setIsSubmittingApplication(false));
+      }, 2000);
     }
 
     dispatch(loadApplicationsAction());
@@ -45,7 +55,9 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
 
 export const updateApplicationAction = (applicationRaw: Application): ThunkResult<Promise<void>> => {
   return async dispatch => {
+    dispatch(setIsSubmittingApplication(true));
     let application: Application;
+
     try {
       application = await updateKappApplication(applicationRaw);
     } catch (e) {
@@ -55,6 +67,10 @@ export const updateApplicationAction = (applicationRaw: Application): ThunkResul
         dispatch(setErrorNotificationAction());
       }
       return;
+    } finally {
+      setTimeout(() => {
+        dispatch(setIsSubmittingApplication(false));
+      }, 2000);
     }
 
     dispatch(loadApplicationsAction());
@@ -158,5 +174,25 @@ export const loadApplicationsAction = (): ThunkResult<Promise<void>> => {
         applicationList
       }
     });
+  };
+};
+
+export const setIsSubmittingApplication = (isSubmittingApplication: boolean): SetIsSubmittingApplication => {
+  return {
+    type: SET_IS_SUBMITTING_APPLICATION,
+    payload: {
+      isSubmittingApplication
+    }
+  };
+};
+
+export const setIsSubmittingApplicationComponent = (
+  isSubmittingApplicationComponent: boolean
+): SetIsSubmittingApplicationComponent => {
+  return {
+    type: SET_IS_SUBMITTING_APPLICATION_COMPONENT,
+    payload: {
+      isSubmittingApplicationComponent
+    }
   };
 };

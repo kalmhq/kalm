@@ -19,7 +19,9 @@ import {
   LOAD_CONFIGS_FAILED,
   ConfigRes,
   FilesUpload,
-  ConfigCreate
+  ConfigCreate,
+  SET_IS_SUBMITTING_CONFIG,
+  SetIsSubmittingConfig
 } from "../types/config";
 import { ThunkResult, StatusFailure } from "../types";
 import { setSuccessNotificationAction, setErrorNotificationAction } from "./notification";
@@ -27,6 +29,7 @@ import { setSuccessNotificationAction, setErrorNotificationAction } from "./noti
 export const uploadConfigsAction = (ancestorIds: string[], filesUpload: FilesUpload): ThunkResult<Promise<void>> => {
   return async dispatch => {
     // console.log("files", filesUpload.toJS());
+    dispatch(setIsSubmittingConfig(true));
 
     try {
       const files: ConfigCreate[] = [];
@@ -45,6 +48,10 @@ export const uploadConfigsAction = (ancestorIds: string[], filesUpload: FilesUpl
         dispatch(setErrorNotificationAction());
       }
       return;
+    } finally {
+      setTimeout(() => {
+        dispatch(setIsSubmittingConfig(false));
+      }, 2000);
     }
 
     dispatch(loadConfigsAction());
@@ -56,6 +63,7 @@ export const uploadConfigsAction = (ancestorIds: string[], filesUpload: FilesUpl
 export const createConfigAction = (config: ConfigNode): ThunkResult<Promise<void>> => {
   return async dispatch => {
     config = config.set("id", config.get("name"));
+    dispatch(setIsSubmittingConfig(true));
 
     try {
       const files = [
@@ -73,6 +81,10 @@ export const createConfigAction = (config: ConfigNode): ThunkResult<Promise<void
         dispatch(setErrorNotificationAction());
       }
       return;
+    } finally {
+      setTimeout(() => {
+        dispatch(setIsSubmittingConfig(false));
+      }, 2000);
     }
 
     dispatch(setSuccessNotificationAction("Create config successful."));
@@ -135,6 +147,7 @@ export const updateConfigAction = (config: ConfigNode): ThunkResult<Promise<void
   return async dispatch => {
     config = config.set("id", config.get("name"));
     const newPath = getConfigPath(config);
+    dispatch(setIsSubmittingConfig(true));
 
     try {
       await updateKappFileV1alpha1(config.get("oldPath"), config.get("content"));
@@ -149,6 +162,10 @@ export const updateConfigAction = (config: ConfigNode): ThunkResult<Promise<void
         dispatch(setErrorNotificationAction());
       }
       return;
+    } finally {
+      setTimeout(() => {
+        dispatch(setIsSubmittingConfig(false));
+      }, 2000);
     }
 
     dispatch(setSuccessNotificationAction("Update config successful."));
@@ -287,4 +304,13 @@ export const configResToConfigNode = (configRes: ConfigRes): ConfigNode => {
     children,
     ancestorIds: pathToAncestorIds(configRes.path)
   });
+};
+
+export const setIsSubmittingConfig = (isSubmittingConfig: boolean): SetIsSubmittingConfig => {
+  return {
+    type: SET_IS_SUBMITTING_CONFIG,
+    payload: {
+      isSubmittingConfig
+    }
+  };
 };

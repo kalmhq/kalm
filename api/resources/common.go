@@ -97,6 +97,26 @@ func filterPodEventsWithType(events []coreV1.Event, pods []coreV1.Pod, eventType
 	return result
 }
 
+// Returns true if given pod is in state ready or succeeded, false otherwise
+func IsReadyOrSucceeded(pod coreV1.Pod) bool {
+	if pod.Status.Phase == coreV1.PodSucceeded {
+		return true
+	}
+	if pod.Status.Phase == coreV1.PodRunning {
+		for _, c := range pod.Status.Conditions {
+			if c.Type == coreV1.PodReady {
+				if c.Status == coreV1.ConditionFalse {
+					return false
+				}
+			}
+		}
+
+		return true
+	}
+
+	return false
+}
+
 func filterPodWarningEvents(events []coreV1.Event, pods []coreV1.Pod) []coreV1.Event {
 	return filterPodEventsWithType(events, pods, coreV1.EventTypeWarning)
 }

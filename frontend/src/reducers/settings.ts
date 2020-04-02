@@ -5,6 +5,7 @@ import { SET_SETTINGS } from "../types/common";
 
 export interface SettingObject {
   isDisplayingHelpers: boolean;
+  isSubmittingApplication: boolean;
 }
 
 export type State = ImmutableMap<SettingObject>;

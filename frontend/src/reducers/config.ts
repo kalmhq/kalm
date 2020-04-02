@@ -10,7 +10,8 @@ import {
   LOAD_CONFIGS_FULFILLED,
   LOAD_CONFIGS_PENDING,
   LOAD_CONFIGS_FAILED,
-  initialRootConfigNode
+  initialRootConfigNode,
+  SET_IS_SUBMITTING_CONFIG
 } from "../types/config";
 import { Actions } from "../types";
 
@@ -19,15 +20,23 @@ export type State = ImmutableMap<{
   rootConfig: ConfigNode;
   isListLoading: boolean;
   isListFirstLoaded: boolean;
+  isSubmittingConfig: boolean;
 }>;
 
 const initialState: State = Immutable.Map({
   currentConfigIdChain: [initialRootConfigNode.get("id")],
-  rootConfig: initialRootConfigNode
+  rootConfig: initialRootConfigNode,
+  isListLoading: false,
+  isListFirstLoaded: false,
+  isSubmittingConfig: false
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
+    case SET_IS_SUBMITTING_CONFIG: {
+      state = state.set("isSubmittingConfig", action.payload.isSubmittingConfig);
+      break;
+    }
     case LOAD_CONFIGS_PENDING: {
       state = state.set("isListLoading", true);
       break;

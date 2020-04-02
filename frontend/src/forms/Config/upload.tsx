@@ -15,6 +15,7 @@ import { uploadConfigsAction } from "../../actions/config";
 import { TDispatch } from "../../types";
 import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
 import DeleteIcon from "@material-ui/icons/Delete";
+import { CustomizedButton } from "../../widgets/Button";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -28,7 +29,8 @@ const styles = (theme: Theme) =>
       width: "100%"
     },
     buttons: {
-      padding: "30px 0 20px"
+      padding: "30px 0 20px",
+      display: "flex"
     },
     cancelButton: {
       marginLeft: 15
@@ -64,6 +66,7 @@ const styles = (theme: Theme) =>
 interface Props extends WithStyles<typeof styles> {
   onClose: () => void;
   dispatch: TDispatch;
+  isSubmittingConfig?: boolean;
 }
 
 interface State {
@@ -74,7 +77,7 @@ const mapStateToProps = (state: RootState, props: Props) => {
   const initialValues = Immutable.fromJS({
     ancestorIds: getCascaderDefaultValue()
   });
-  return { initialValues };
+  return { initialValues, isSubmittingConfig: state.get("configs").get("isSubmittingConfig") };
 };
 
 class ConfigUploadFormRaw extends React.PureComponent<Props & InjectedFormProps<any, Props>, State> {
@@ -119,7 +122,7 @@ class ConfigUploadFormRaw extends React.PureComponent<Props & InjectedFormProps<
   }
 
   public render() {
-    const { handleSubmit, onClose, classes } = this.props;
+    const { handleSubmit, onClose, classes, isSubmittingConfig } = this.props;
 
     const fileNames: any[] = [];
     this.state.files.forEach((_, name) => {
@@ -163,9 +166,9 @@ class ConfigUploadFormRaw extends React.PureComponent<Props & InjectedFormProps<
           </Dropzone>
 
           <div className={classes.buttons}>
-            <Button variant="contained" color="primary" type="submit">
-              Upload
-            </Button>
+            <CustomizedButton pending={isSubmittingConfig} variant="contained" color="primary" type="submit">
+              Submit
+            </CustomizedButton>
             <Button onClick={onClose} color="primary" className={classes.cancelButton}>
               Cancel
             </Button>

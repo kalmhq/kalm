@@ -6,9 +6,6 @@ export const CustomizedButton = withStyles((theme: Theme) =>
     root: {
       display: "flex",
       alignItems: "center"
-    },
-    progress: {
-      marginRight: theme.spacing(1)
     }
   })
 )(
@@ -17,9 +14,17 @@ export const CustomizedButton = withStyles((theme: Theme) =>
       pending?: boolean;
     }
   ) => {
+    const copiedProps = { ...props };
+    delete copiedProps.pending;
+    // console.log("pending", props.pending);
     return (
-      <Button {...props} disabled={props.disabled || props.pending}>
-        {props.pending ? <CircularProgress style={{ marginRight: "6px" }} color="inherit" size={14} /> : null}
+      <Button {...copiedProps} disabled={props.disabled || props.pending}>
+        <CircularProgress
+          style={{ marginRight: "6px", display: props.pending ? "inline" : "none" }}
+          disableShrink={true}
+          color="inherit"
+          size={14}
+        />
         {props.children}
       </Button>
     );
