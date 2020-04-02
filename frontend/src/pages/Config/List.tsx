@@ -292,6 +292,16 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
             onClick={() => this.handleUpload()}>
             <PublishIcon />
           </IconButtonWithTooltip>
+
+          {currentConfig.get("children").size === 0 && (
+            <IconButtonWithTooltip
+              tooltipPlacement="top"
+              tooltipTitle="Delete"
+              aria-label="delete"
+              onClick={() => this.handleDelete()}>
+              <DeleteIcon />
+            </IconButtonWithTooltip>
+          )}
         </div>
       );
     }
@@ -323,7 +333,9 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
             {currentConfig.get("type") === "file" ? (
               <SyntaxHighlighter style={monokai}>{currentConfig.get("content")}</SyntaxHighlighter>
             ) : (
-              <div className={classes.noSelectedFile}>No selected file</div>
+              <div className={classes.noSelectedFile}>
+                {currentConfig.get("children").size > 0 ? "No selected file" : "Empty folder"}{" "}
+              </div>
             )}
           </div>
         </div>

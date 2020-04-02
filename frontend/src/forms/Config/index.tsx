@@ -13,12 +13,14 @@ import FormHelperText from "@material-ui/core/FormHelperText";
 import { connect } from "react-redux";
 import { RootState } from "../../reducers";
 import { getCascaderDefaultValue, getCurrentConfig } from "../../selectors/config";
+import { CustomizedButton } from "../../widgets/Button";
 
 export interface Props {
   onClose: any;
   formType: "new" | "edit";
-  formValues?: ConfigNode;
   configType: ConfigNodeType;
+  formValues?: ConfigNode;
+  isSubmittingConfig?: boolean;
 }
 
 const mapStateToProps = (state: RootState, props: Props) => {
@@ -51,7 +53,8 @@ const mapStateToProps = (state: RootState, props: Props) => {
 
   return {
     formValues,
-    initialValues
+    initialValues,
+    isSubmittingConfig: state.get("configs").get("isSubmittingConfig")
   };
 };
 
@@ -67,7 +70,8 @@ const useStyles = makeStyles((theme: Theme) => ({
     marginBottom: theme.spacing(5)
   },
   buttons: {
-    padding: "30px 0 20px"
+    padding: "30px 0 20px",
+    display: "flex"
   },
   cancelButton: {
     marginLeft: 15
@@ -91,7 +95,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 const ConfigFormRaw = (props: Props & InjectedFormProps<ConfigNode, Props>) => {
-  const { handleSubmit, onClose, configType } = props;
+  const { handleSubmit, onClose, configType, isSubmittingConfig } = props;
   const classes = useStyles();
   return (
     <div className={classes.root}>
@@ -125,9 +129,9 @@ const ConfigFormRaw = (props: Props & InjectedFormProps<ConfigNode, Props>) => {
         )}
 
         <div className={classes.buttons}>
-          <Button variant="contained" color="primary" type="submit">
+          <CustomizedButton pending={isSubmittingConfig} variant="contained" color="primary" type="submit">
             Submit
-          </Button>
+          </CustomizedButton>
           <Button onClick={onClose} color="primary" className={classes.cancelButton}>
             Cancel
           </Button>

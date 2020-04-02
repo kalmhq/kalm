@@ -23,6 +23,8 @@ import { BasePage } from "../BasePage";
 import { Details } from "./Detail";
 import { ApplicationListDataWrapper, WithApplicationsDataProps } from "./ListDataWrapper";
 import { Link } from "react-router-dom";
+import AddIcon from "@material-ui/icons/Add";
+
 const styles = (theme: Theme) =>
   createStyles({
     root: {
@@ -89,6 +91,13 @@ const styles = (theme: Theme) =>
       width: "100%",
       display: "flex",
       justifyContent: "space-between"
+    },
+    addAction: {
+      display: "flex",
+      alignItems: "center",
+      fontSize: "14px",
+      fontWeight: "bold",
+      color: "#2196F3"
     }
   });
 
@@ -463,8 +472,12 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
               actions={[
                 {
                   isFreeAction: true,
-                  icon: "add",
-                  tooltip: "Add",
+                  icon: () => (
+                    <span className={classes.addAction}>
+                      <AddIcon style={{ marginRight: "6px" }} />
+                      Add
+                    </span>
+                  ),
                   onClick: this.onCreate
                 }
               ]}

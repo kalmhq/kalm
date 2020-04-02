@@ -2,12 +2,27 @@ import React from "react";
 import { connect } from "react-redux";
 import { submit } from "redux-form";
 import { TDispatch } from "../../types";
-import { Button } from "@material-ui/core";
+import { CustomizedButton } from "../../widgets/Button";
+import { RootState } from "../../reducers";
 
-const RemoteSubmitApplication = ({ dispatch }: { dispatch: TDispatch }) => (
-  <Button variant="contained" color="primary" onClick={() => dispatch(submit("application"))}>
+const mapStateToProps = (state: RootState) => {
+  return { isSubmittingApplication: state.get("applications").get("isSubmittingApplication") };
+};
+
+const RemoteSubmitApplication = ({
+  dispatch,
+  isSubmittingApplication
+}: {
+  dispatch: TDispatch;
+  isSubmittingApplication: boolean;
+}) => (
+  <CustomizedButton
+    variant="contained"
+    color="primary"
+    pending={isSubmittingApplication}
+    onClick={() => dispatch(submit("application"))}>
     Save
-  </Button>
+  </CustomizedButton>
 );
 
-export default connect()(RemoteSubmitApplication);
+export default connect(mapStateToProps)(RemoteSubmitApplication);
