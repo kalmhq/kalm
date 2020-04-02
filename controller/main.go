@@ -33,7 +33,6 @@ import (
 
 	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	apiregistration "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
-	//apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	//cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
 	// +kubebuilder:scaffold:imports
 )
