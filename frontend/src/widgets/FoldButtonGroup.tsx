@@ -4,11 +4,13 @@ import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import Icon from "@material-ui/core/Icon";
+import { Link } from "react-router-dom";
 const ITEM_HEIGHT = 48;
 
 interface Option {
   text: string;
-  onClick: any;
+  onClick?: any;
+  to?: string;
   icon?: string;
 }
 
@@ -45,11 +47,15 @@ export const FoldButtonGroup = (props: Props) => {
             maxHeight: ITEM_HEIGHT * 4.5
           }
         }}>
-        {props.options.map(option => (
-          <MenuItem key={option.text} selected={false} onClick={option.onClick} style={{ padding: "6px 20px" }}>
-            {option.icon ? <Icon style={{ marginRight: "20px" }}>{option.icon}</Icon> : null}
-            {option.text}
-          </MenuItem>
+        {props.options.map((option, index) => (
+          <Link to={option.to || "#"} onClick={option.onClick} style={{ color: "inherit" }} key={index}>
+            <MenuItem key={option.text} selected={false} style={{ padding: "6px 20px" }}>
+              {/* onClick={option.onClick}  */}
+
+              {option.icon ? <Icon style={{ marginRight: "20px" }}>{option.icon}</Icon> : null}
+              {option.text}
+            </MenuItem>
+          </Link>
         ))}
       </Menu>
     </div>

@@ -2,13 +2,12 @@ import { createStyles, Paper, Theme, withStyles, WithStyles } from "@material-ui
 import LaptopWindowsIcon from "@material-ui/icons/LaptopWindows";
 import ViewHeadlineIcon from "@material-ui/icons/ViewHeadline";
 import clsx from "clsx";
-import { push } from "connected-react-router";
 import { formatDistance } from "date-fns";
 import React from "react";
 import { DispatchProp } from "react-redux";
 import { ApplicationListItem } from "../../types/application";
-import { SuccessBedge, PendingBedge, ErrorBedge, UnknownBedge } from "../../widgets/Bedge";
-import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
+import { ErrorBedge, PendingBedge, SuccessBedge, UnknownBedge } from "../../widgets/Bedge";
+import { IconLinkWithToolTip } from "../../widgets/IconButtonWithTooltip";
 import { SmallCPULineChart, SmallMemoryLineChart } from "../../widgets/SmallLineChart";
 import { generateQueryForPods } from "./Log";
 const styles = (theme: Theme) =>
@@ -124,7 +123,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
   };
 
   private renderComponent = (index: number) => {
-    const { classes, dispatch, application } = this.props;
+    const { classes, application } = this.props;
     const component = application.get("components")!.get(index)!;
 
     return (
@@ -184,34 +183,26 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                       <SmallMemoryLineChart data={x.get("metrics").get("memory")!} />
                     </div>
                     <div className={classes.actionCell}>
-                      <IconButtonWithTooltip
+                      <IconLinkWithToolTip
                         className={classes.podActionButton}
                         size="small"
                         tooltipTitle="Log"
-                        onClick={() => {
-                          dispatch(
-                            push(
-                              `/applications/${application.get("namespace")}/${application.get("name")}/logs?` +
-                                generateQueryForPods([x.get("name")], x.get("name"))
-                            )
-                          );
-                        }}>
+                        to={
+                          `/applications/${application.get("namespace")}/${application.get("name")}/logs?` +
+                          generateQueryForPods([x.get("name")], x.get("name"))
+                        }>
                         <ViewHeadlineIcon />
-                      </IconButtonWithTooltip>
-                      <IconButtonWithTooltip
+                      </IconLinkWithToolTip>
+                      <IconLinkWithToolTip
                         tooltipTitle="Shell"
                         size="small"
                         className={classes.podActionButton}
-                        onClick={() => {
-                          dispatch(
-                            push(
-                              `/applications/${application.get("namespace")}/${application.get("name")}/shells?` +
-                                generateQueryForPods([x.get("name")], x.get("name"))
-                            )
-                          );
-                        }}>
+                        to={
+                          `/applications/${application.get("namespace")}/${application.get("name")}/shells?` +
+                          generateQueryForPods([x.get("name")], x.get("name"))
+                        }>
                         <LaptopWindowsIcon />
-                      </IconButtonWithTooltip>
+                      </IconLinkWithToolTip>
                     </div>
                   </div>
                 </div>

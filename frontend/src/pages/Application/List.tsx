@@ -388,22 +388,17 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   private renderActions = (rowData: RowData) => {
-    const { dispatch } = this.props;
     return (
       <FoldButtonGroup
         options={[
           {
             text: "Details",
-            onClick: () => {
-              dispatch(push(`/applications/${rowData.get("namespace")}/${rowData.get("name")}`));
-            },
+            to: `/applications/${rowData.get("namespace")}/${rowData.get("name")}`,
             icon: "fullscreen"
           },
           {
             text: "Edit",
-            onClick: () => {
-              dispatch(push(`/applications/${rowData.get("namespace")}/${rowData.get("name")}/edit`));
-            },
+            to: `/applications/${rowData.get("namespace")}/${rowData.get("name")}/edit`,
             icon: "edit"
           },
           {
@@ -415,16 +410,12 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           },
           {
             text: "Logs",
-            onClick: () => {
-              dispatch(push(`/applications/${rowData.get("namespace")}/${rowData.get("name")}/logs`));
-            },
+            to: `/applications/${rowData.get("namespace")}/${rowData.get("name")}/logs`,
             icon: "view_headline"
           },
           {
             text: "Shell",
-            onClick: () => {
-              dispatch(push(`/applications/${rowData.get("namespace")}/${rowData.get("name")}/shells`));
-            },
+            to: `/applications/${rowData.get("namespace")}/${rowData.get("name")}/shells`,
             icon: "play_arrow"
           },
           {
