@@ -1,4 +1,4 @@
-# ============== Frontend ==============
+#============== Frontend ==============
 FROM node:10 as frontend-builder
 WORKDIR /workspace
 ENV REACT_APP_K8S_API_PERFIX ""
@@ -11,7 +11,10 @@ RUN npm run build
 # ============== Api ==============
 FROM golang:1.12 as api-builder
 WORKDIR /workspace
+
+COPY lib/ /lib
 COPY controller/ /controller
+
 COPY api/go.mod go.mod
 COPY api/go.sum go.sum
 RUN go mod download
