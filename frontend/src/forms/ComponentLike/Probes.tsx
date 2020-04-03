@@ -219,7 +219,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    console.log(this.props);
+    // console.log(this.props);
     const { type } = this.state;
     const { label } = this.props;
     const name = this.props.input.name;
