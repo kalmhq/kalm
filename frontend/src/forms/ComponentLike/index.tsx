@@ -615,7 +615,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     });
 
     return (
-      <ExpansionPanel expanded={key === this.state.currentPanel} onChange={() => this.handleChangePanel(key)}>
+      <ExpansionPanel
+        expanded={key === this.state.currentPanel || isChanged}
+        onChange={() => this.handleChangePanel(key)}>
         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id="panel1a-header">
           <div className={hasError ? classes.summaryError : isChanged ? classes.summaryBold : ""}>
             {title} {hasError ? <ErrorIcon className={classes.summaryIcon} /> : null}
