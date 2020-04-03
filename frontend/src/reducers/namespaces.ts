@@ -1,33 +1,48 @@
 import Immutable from "immutable";
-import { ImmutableMap } from "../typings";
 import { Actions } from "../types";
 import {
-  LOAD_NAMESPACES_PENDING,
+  CREATE_NAMESPACE_FULFILLED,
+  CREATE_NAMESPACE_PENDING,
   LOAD_NAMESPACES_FAILED,
   LOAD_NAMESPACES_FULFILLED,
+  LOAD_NAMESPACES_PENDING,
+  Namespaces,
   SET_CURRENT_NAMESPACE
 } from "../types/namespace";
+import { ImmutableMap } from "../typings";
 
 export type State = ImmutableMap<{
-  currentNamespace: string;
+  namespaces: Namespaces;
+  active: string;
   isListLoading: boolean;
-  namespaces: string[];
+  isCreating: boolean;
 }>;
 
 const KAPP_CURRENT_NAMESPACE_KEY = "KAPP_CURRENT_NAMESPACE_KEY";
 
 const initialState: State = Immutable.Map({
-  currentNamespace: window.localStorage.getItem(KAPP_CURRENT_NAMESPACE_KEY) || "default",
-  isListFirstLoaded: false,
-  namespaces: []
+  namespaces: Immutable.List(),
+  active: window.localStorage.getItem(KAPP_CURRENT_NAMESPACE_KEY) || "",
+  isCreating: false,
+  isListLoading: false
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
     case SET_CURRENT_NAMESPACE: {
-      state = state.set("currentNamespace", action.payload.namespace);
+      state = state.set("active", action.payload.namespace);
       window.localStorage.setItem(KAPP_CURRENT_NAMESPACE_KEY, action.payload.namespace);
       break;
+    }
+    case LOAD_NAMESPACES_FULFILLED: {
+      state = state.set("isListLoading", false);
+      return state.set("namespaces", action.payload.namespaces);
+    }
+    case CREATE_NAMESPACE_FULFILLED: {
+      return state.set("isCreating", false);
+    }
+    case CREATE_NAMESPACE_PENDING: {
+      return state.set("isCreating", true);
     }
     case LOAD_NAMESPACES_PENDING: {
       state = state.set("isListLoading", true);
@@ -37,13 +52,8 @@ const reducer = (state: State = initialState, action: Actions): State => {
       state = state.set("isListLoading", false);
       break;
     }
-    case LOAD_NAMESPACES_FULFILLED: {
-      state = state.set("isListLoading", false);
-
-      state = state.set("namespaces", action.payload.namespaces);
-      break;
-    }
   }
+
   return state;
 };
 

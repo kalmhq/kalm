@@ -21,6 +21,7 @@ import Immutable from "immutable";
 import { ComponentTemplate } from "../types/componentTemplate";
 import { ConfigRes, ConfigCreate } from "../types/config";
 import { ImmutableMap } from "../typings";
+import { Namespaces } from "../types/namespace";
 import { getCurrentNamespace } from "../selectors/namespace";
 
 export const K8sApiPrefix = process.env.REACT_APP_K8S_API_PERFIX;
@@ -195,6 +196,19 @@ export const deletePod = async (namespace: string, name: string) => {
   return await getAxiosClient().delete(K8sApiPrefix + `/v1alpha1/pods/${namespace}/${name}`);
 };
 
+export const getNamespaces = async () => {
+  const res = await getAxiosClient().get<{ namespaces: any }>(K8sApiPrefix + "/v1alpha1/namespaces");
+  return Immutable.fromJS(res.data.namespaces) as Namespaces;
+};
+
+export const createNamespace = async (name: string) => {
+  await getAxiosClient().post<null>(K8sApiPrefix + "/v1alpha1/namespaces/" + name);
+};
+
+export const deleteNamespace = async (name: string) => {
+  await getAxiosClient().delete<null>(K8sApiPrefix + "/v1alpha1/namespaces/" + name);
+};
+
 export const getKappClusterRoles = async () => {
   const res = await getAxiosClient().get<ItemList<V1ClusterRole>>(K8sApiPrefix + "/v1/clusterroles");
 
@@ -265,10 +279,4 @@ export const getKappSecret = async (name: string) => {
 
 export const deleteKappSecret = async (name: string): Promise<void> => {
   await getAxiosClient().delete(K8sApiPrefix + `/v1/secrets/${name}`);
-};
-
-export const getKappNamespaces = async () => {
-  const res = await getAxiosClient().get<V1NamespaceList>(K8sApiPrefix + "/v1/namespaces");
-
-  return res.data.items.map(namespace => namespace.metadata!.name as string);
 };

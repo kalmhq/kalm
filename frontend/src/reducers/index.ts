@@ -3,6 +3,7 @@ import { reducer as formReducer } from "redux-form/immutable";
 import { FormState } from "redux-form";
 import settings, { State as SettingsState } from "./settings";
 import notification, { State as NotificationState } from "./notification";
+import namespaces, { State as NamespacesState } from "./namespaces";
 import dialogs, { State as DialogState } from "./dialog";
 import componentTemplates, { State as ComponentTemplateState } from "./componentTemplate";
 import applications, { State as ApplicationState } from "./application";
@@ -12,13 +13,13 @@ import nodes, { State as NodesState } from "./node";
 import persistentVolumns, { State as PersistentVolumnsState } from "./persistentVolumn";
 import configs, { State as ConfigState } from "./config";
 import users, { State as UserState } from "./user";
-import namespaces, { State as NamespaceState } from "./namespace";
 import { connectRouter, RouterState } from "connected-react-router/immutable";
 import { History, LocationState } from "history";
 import { ImmutableMap } from "../typings";
 
 export type RootState = ImmutableMap<{
   componentTemplates: ComponentTemplateState;
+  namespaces: NamespacesState;
   applications: ApplicationState;
   configs: ConfigState;
   auth: AuthState;
@@ -31,7 +32,6 @@ export type RootState = ImmutableMap<{
   persistentVolumns: PersistentVolumnsState;
   settings: SettingsState;
   users: UserState;
-  namespaces: NamespaceState;
 }>;
 
 // combineReducers returns immutable map, but the type is not working correctly
@@ -41,6 +41,7 @@ export default (history: History<LocationState>) =>
   combineReducers<RootState>({
     // @ts-ignore
     form: formReducer,
+    namespaces,
     nodes,
     auth,
     dialogs,
@@ -52,6 +53,5 @@ export default (history: History<LocationState>) =>
     configs,
     notification,
     settings,
-    users,
-    namespaces
+    users
   });

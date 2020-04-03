@@ -41,7 +41,13 @@ func (h *ApiHandler) handleGetApplications(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(200, h.applicationListResponse(c, applicationList))
+	res, err := h.applicationListResponse(c, applicationList)
+
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(200, res)
 }
 
 func (h *ApiHandler) handleGetApplicationDetails(c echo.Context) error {
@@ -252,7 +258,7 @@ func (h *ApiHandler) applicationResponse(c echo.Context, application *v1alpha1.A
 	return builder.BuildApplicationDetailsResponse(application)
 }
 
-func (h *ApiHandler) applicationListResponse(c echo.Context, applicationList *v1alpha1.ApplicationList) *resources.ApplicationListResponse {
+func (h *ApiHandler) applicationListResponse(c echo.Context, applicationList *v1alpha1.ApplicationList) (*resources.ApplicationListResponse, error) {
 	k8sClient := getK8sClient(c)
 	k8sClientConfig := getK8sClientConfig(c)
 

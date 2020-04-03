@@ -24,7 +24,7 @@ export const initDialogAction = (dialogID: string): Actions => {
   };
 };
 
-export const openDialogAction = (dialogID: string, data: any): Actions => {
+export const openDialogAction = (dialogID: string, data?: any): Actions => {
   return {
     type: OPEN_CONTROLLED_DIALOG,
     payload: {

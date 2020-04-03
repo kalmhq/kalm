@@ -81,9 +81,9 @@ class VolumeRaw extends React.PureComponent<Props> {
               name="storageClassName"
               component={RenderSelectField}
               placeholder="Select the type of your disk">
-              <MenuItem value={"123"}>Storage Class 1</MenuItem>
-              <MenuItem value={"123"}>Storage Class 2</MenuItem>
-              <MenuItem value={"123"}>Storage Class 3</MenuItem>
+              <MenuItem value={"standard"}>Storage Class 1</MenuItem>
+              <MenuItem value={"standard"}>Storage Class 2</MenuItem>
+              <MenuItem value={"standard"}>Storage Class 3</MenuItem>
             </Field>
           </Box>
         </>
