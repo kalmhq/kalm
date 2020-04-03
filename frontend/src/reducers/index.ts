@@ -13,6 +13,7 @@ import nodes, { State as NodesState } from "./node";
 import persistentVolumns, { State as PersistentVolumnsState } from "./persistentVolumn";
 import configs, { State as ConfigState } from "./config";
 import users, { State as UserState } from "./user";
+import namespaces, { State as NamespaceState } from "./namespace";
 import { connectRouter, RouterState } from "connected-react-router/immutable";
 import { History, LocationState } from "history";
 import { ImmutableMap } from "../typings";
@@ -32,6 +33,7 @@ export type RootState = ImmutableMap<{
   persistentVolumns: PersistentVolumnsState;
   settings: SettingsState;
   users: UserState;
+  namespaces: NamespaceState;
 }>;
 
 // combineReducers returns immutable map, but the type is not working correctly
@@ -53,5 +55,6 @@ export default (history: History<LocationState>) =>
     configs,
     notification,
     settings,
-    users
+    users,
+    namespaces
   });

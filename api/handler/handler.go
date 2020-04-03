@@ -69,6 +69,8 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gV1.GET("/secrets/:name", h.handleGetSecret)
 	gV1.DELETE("/secrets/:name", h.handleDeleteSecrets)
 
+	gV1.GET("/namespaces", h.handleGetNamespaces)
+
 	gv1Alpha1 := e.Group("/v1alpha1")
 	gv1Alpha1.GET("/logs", h.logWebsocketHandler)
 	gv1Alpha1.GET("/exec", h.execWebsocketHandler)

@@ -2,7 +2,18 @@ import React from "react";
 import { BasePage } from "../BasePage";
 import { connect } from "react-redux";
 import { RootState } from "../../reducers";
-import { Theme, withStyles, Breadcrumbs, Link, WithStyles, createStyles } from "@material-ui/core";
+import {
+  Theme,
+  withStyles,
+  Breadcrumbs,
+  Link,
+  WithStyles,
+  createStyles,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
+} from "@material-ui/core";
 import EditIcon from "@material-ui/icons/Edit";
 import DeleteIcon from "@material-ui/icons/Delete";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
@@ -24,6 +35,7 @@ import { loadConfigsAction } from "../../actions/config";
 import { ConfigNode, initialRootConfigNode, ConfigNodeType } from "../../types/config";
 import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
 import { ConfigUploadDialog } from "../../widgets/ConfigUploadDialog";
+import { loadNamespacesAction, setCurrentNamespace } from "../../actions/namespace";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -65,7 +77,9 @@ const mapStateToProps = (state: RootState, ownProps: any) => {
   return {
     currentConfig: getCurrentConfig(),
     rootConfig: state.get("configs").get("rootConfig"),
-    currentConfigIdChain: state.get("configs").get("currentConfigIdChain")
+    currentConfigIdChain: state.get("configs").get("currentConfigIdChain"),
+    namespaces: state.get("namespaces").get("namespaces"),
+    currentNamespace: state.get("namespaces").get("currentNamespace")
   };
 };
 
@@ -97,9 +111,10 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
   }
 
   public componentDidMount() {
-    const { dispatch } = this.props;
+    const { dispatch, currentNamespace } = this.props;
 
-    dispatch(loadConfigsAction());
+    dispatch(loadNamespacesAction());
+    dispatch(loadConfigsAction(currentNamespace));
   }
 
   private showDeleteConfirmDialog = () => {
@@ -293,7 +308,7 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
             <PublishIcon />
           </IconButtonWithTooltip>
 
-          {currentConfig.get("children").size === 0 && (
+          {currentConfig.get("id") !== initialRootConfigNode.get("id") && currentConfig.get("children").size === 0 && (
             <IconButtonWithTooltip
               tooltipPlacement="top"
               tooltipTitle="Delete"
@@ -307,6 +322,30 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
     }
   }
 
+  private renderNamespaceSelector() {
+    const { dispatch, namespaces, currentNamespace } = this.props;
+
+    return (
+      <FormControl style={{ width: "100%", marginBottom: "20px" }}>
+        <InputLabel>Namespace</InputLabel>
+        <Select
+          value={currentNamespace}
+          onChange={(event: React.ChangeEvent<{ value: unknown }>) => {
+            const namespace = event.target.value as string;
+            dispatch(setCurrentNamespace(namespace));
+            dispatch(loadConfigsAction(namespace));
+          }}
+          label="Namespace">
+          {namespaces.map(namespace => (
+            <MenuItem key={namespace} value={namespace}>
+              {namespace}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+    );
+  }
+
   public render() {
     const { dispatch, rootConfig, classes, currentConfig } = this.props;
     const { showConfigNewDialog, showConfigEditDialog, newConfigType } = this.state;
@@ -315,6 +354,7 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
       <BasePage title="Configs">
         <div className={classes.root}>
           <div className={classes.leftTree}>
+            {this.renderNamespaceSelector()}
             <FileTree
               rootConfig={rootConfig}
               dispatch={dispatch}
