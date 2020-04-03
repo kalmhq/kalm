@@ -217,13 +217,13 @@ export const setCurrentConfigIdChainAction = (idChain: string[]): ThunkResult<Pr
   };
 };
 
-export const loadConfigsAction = (): ThunkResult<Promise<void>> => {
+export const loadConfigsAction = (namespace?: string): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({ type: LOAD_CONFIGS_PENDING });
 
     let configRes;
     try {
-      configRes = await getKappFilesV1alpha1();
+      configRes = await getKappFilesV1alpha1(namespace);
     } catch (e) {
       if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));

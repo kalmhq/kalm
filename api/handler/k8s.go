@@ -236,3 +236,14 @@ func (h *ApiHandler) handleGetSecret(c echo.Context) error {
 
 	return c.JSONBlob(200, res)
 }
+
+func (h *ApiHandler) handleGetNamespaces(c echo.Context) error {
+	k8sClient := getK8sClient(c)
+	res, err := k8sClient.RESTClient().Get().AbsPath("/api/v1/namespaces").DoRaw()
+
+	if err != nil {
+		return err
+	}
+
+	return c.JSONBlob(200, res)
+}
