@@ -200,6 +200,7 @@ func (r *DependencyReconciler) desiredIngress(
 			{
 				Hosts: hosts,
 				//todo can not set ns here?
+				// todo should delete this secret if ing deleted
 				SecretName: "this-sec-name-does-not-matter-" + cmName,
 			},
 		}
