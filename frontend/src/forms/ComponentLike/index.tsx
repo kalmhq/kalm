@@ -659,6 +659,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         return ["restartStrategy", "terminationGracePeriodSeconds", "dnsPolicy"];
       case "plugins":
         return ["plugins"];
+      case "probes":
+        return ["livenessProbe", "readinessProbe"];
       default:
         return [];
     }

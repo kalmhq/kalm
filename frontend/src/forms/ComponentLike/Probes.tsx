@@ -32,6 +32,48 @@ class RenderProbe extends React.PureComponent<Props, State> {
     };
   }
 
+  public componentDidMount() {
+    const input = this.props.input;
+    const value = this.props.input.value;
+
+    // console.log(value.get && value.get("httpGet") && value.get("httpGet").toJS());
+
+    // if have get method
+    if (value.get) {
+      if (value.get("httpGet")) {
+        this.setState({ type: "httpGet" });
+        input.onChange(value.set("type", "httpGet"));
+      } else if (value.get("exec")) {
+        this.setState({ type: "exec" });
+        input.onChange(value.set("type", "exec"));
+      } else if (value.get("tcpSocket")) {
+        this.setState({ type: "tcpSocket" });
+        input.onChange(value.set("type", "tcpSocket"));
+      }
+    }
+  }
+
+  private handleChangeType(type: string) {
+    const input = this.props.input;
+    const value = this.props.input.value;
+    this.setState({ type });
+
+    if (type === "httpGet") {
+      input.onChange(value.delete("exec").delete("tcpSocket"));
+    } else if (type === "exec") {
+      input.onChange(value.delete("httpGet").delete("tcpSocket"));
+    } else if (type === "tcpSocket") {
+      input.onChange(value.delete("httpGet").delete("exec"));
+    } else {
+      input.onChange(
+        value
+          .delete("httpGet")
+          .delete("exec")
+          .delete("tcpSocket")
+      );
+    }
+  }
+
   private renderHttpGet() {
     const name = this.props.input.name;
     return (
@@ -112,7 +154,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
     return (
       <Grid item md={6}>
         <CustomTextField
-          name={`${name}.exec.host`}
+          name={`${name}.exec.command`}
           label="Command (Optional)"
           margin
           helperText='Eg: "/bin/app", "rails server".'
@@ -195,8 +237,9 @@ class RenderProbe extends React.PureComponent<Props, State> {
             name={`${name}.type`}
             component={RenderSelectField}
             label="Type"
+            value={type}
             onChange={(value: any) => {
-              this.setState({ type: value });
+              this.handleChangeType(value);
             }}>
             <MenuItem value={""}>none</MenuItem>
             <MenuItem value={"httpGet"}>httpGet</MenuItem>

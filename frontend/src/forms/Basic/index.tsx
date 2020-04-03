@@ -94,12 +94,14 @@ const renderFormHelper = ({ touched, error }: Pick<WrappedFieldMetaProps, "touch
 
 interface SelectProps {
   label: string;
+  value?: string;
   children: React.ReactNode;
 }
 
 export const RenderSelectField = ({
   input,
   label,
+  value,
   meta: { touched, error },
   children
 }: WrappedFieldProps & SelectProps) => {
