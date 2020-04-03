@@ -9,7 +9,8 @@ import {
   V1ClusterRole,
   V1ClusterRoleBinding,
   V1ServiceAccount,
-  V1Secret
+  V1Secret,
+  V1NamespaceList
 } from "../model/models";
 import { ItemList } from "../kappModel/List";
 import { V1alpha1Dependency, V1alpha1ComponentTemplateSpec } from "../kappModel";
@@ -20,6 +21,7 @@ import Immutable from "immutable";
 import { ComponentTemplate } from "../types/componentTemplate";
 import { ConfigRes, ConfigCreate } from "../types/config";
 import { ImmutableMap } from "../typings";
+import { getCurrentNamespace } from "../selectors/namespace";
 
 export const K8sApiPrefix = process.env.REACT_APP_K8S_API_PERFIX;
 export const k8sWsPrefix = !K8sApiPrefix
@@ -149,22 +151,22 @@ export const getDependencies = async () => {
   return res.data.items.map(convertFromCRDDependency);
 };
 
-export const getKappFilesV1alpha1 = async () => {
-  const namespace = "default";
+export const getKappFilesV1alpha1 = async (namespace?: string) => {
+  namespace = namespace || getCurrentNamespace();
   const res = await getAxiosClient().get(K8sApiPrefix + `/v1alpha1/files/${namespace}`);
 
   return res.data as ConfigRes;
 };
 
 export const createKappFilesV1alpha1 = async (files: ConfigCreate[]) => {
-  const namespace = "default";
+  const namespace = getCurrentNamespace();
   await getAxiosClient().post(K8sApiPrefix + `/v1alpha1/files/${namespace}`, {
     files
   });
 };
 
 export const updateKappFileV1alpha1 = async (path: string, content: string) => {
-  const namespace = "default";
+  const namespace = getCurrentNamespace();
   await getAxiosClient().put(K8sApiPrefix + `/v1alpha1/files/${namespace}`, {
     path,
     content
@@ -172,7 +174,7 @@ export const updateKappFileV1alpha1 = async (path: string, content: string) => {
 };
 
 export const moveKappFileV1alpha1 = async (oldPath: string, newPath: string) => {
-  const namespace = "default";
+  const namespace = getCurrentNamespace();
   await getAxiosClient().put(K8sApiPrefix + `/v1alpha1/files/${namespace}/move`, {
     oldPath,
     newPath
@@ -180,7 +182,7 @@ export const moveKappFileV1alpha1 = async (oldPath: string, newPath: string) => 
 };
 
 export const deleteKappFileV1alpha1 = async (path: string) => {
-  const namespace = "default";
+  const namespace = getCurrentNamespace();
   await getAxiosClient().delete(K8sApiPrefix + `/v1alpha1/files/${namespace}`, {
     // https://github.com/axios/axios/issues/897#issuecomment-343715381
     data: {
@@ -263,4 +265,10 @@ export const getKappSecret = async (name: string) => {
 
 export const deleteKappSecret = async (name: string): Promise<void> => {
   await getAxiosClient().delete(K8sApiPrefix + `/v1/secrets/${name}`);
+};
+
+export const getKappNamespaces = async () => {
+  const res = await getAxiosClient().get<V1NamespaceList>(K8sApiPrefix + "/v1/namespaces");
+
+  return res.data.items.map(namespace => namespace.metadata!.name as string);
 };
