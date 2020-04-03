@@ -86,6 +86,38 @@ export interface VolumeContent {
 
 export type Volume = ImmutableMap<VolumeContent>;
 
+export type HttpHeader = ImmutableMap<{
+  name: string;
+  value: string;
+}>;
+
+export type HttpHeaders = Immutable.List<HttpHeader>;
+
+export type Probe = ImmutableMap<{
+  exec?: ImmutableMap<{
+    command?: Immutable.List<string>;
+  }>;
+
+  httpGet?: ImmutableMap<{
+    host?: string;
+    httpHeaders?: HttpHeaders;
+    path?: string;
+    port: object;
+    scheme?: string;
+  }>;
+
+  tcpSocket?: ImmutableMap<{
+    host?: string;
+    port: object;
+  }>;
+
+  initialDelaySeconds?: number;
+  timeoutSeconds?: number;
+  periodSeconds?: number;
+  successThreshold?: number;
+  failureThreshold?: number;
+}>;
+
 export interface ComponentLikeContent {
   name: string;
   image: string;
@@ -107,6 +139,8 @@ export interface ComponentLikeContent {
   ports?: Immutable.List<ComponentLikePort>;
   volumes?: Immutable.List<Volume>;
   plugins?: Immutable.List<Plugin>;
+  livenessProbe?: Probe;
+  ReadinessProbe?: Probe;
 }
 
 export interface ComponentTemplateContent extends ComponentLikeContent {}

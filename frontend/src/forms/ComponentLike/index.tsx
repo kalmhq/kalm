@@ -23,6 +23,7 @@ import { ComponentLike, workloadTypeCronjob, workloadTypeServer } from "../../ty
 import { Volumes } from "./volumes";
 import ErrorIcon from "@material-ui/icons/Error";
 import { SharedEnv } from "../../types/application";
+import { ReadinessProbe, LivenessProbe } from "./Probes";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
@@ -578,6 +579,27 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
+  private renderProbes() {
+    const { classes, isFolded } = this.props;
+    return (
+      <Grid container spacing={2}>
+        <Grid item md={12}>
+          {!isFolded && (
+            <Typography
+              variant="h2"
+              classes={{
+                root: classes.sectionHeader
+              }}>
+              Probes
+            </Typography>
+          )}
+        </Grid>
+        <LivenessProbe />
+        <ReadinessProbe />
+      </Grid>
+    );
+  }
+
   private handleChangePanel(key: string) {
     if (this.state.currentPanel === key) {
       this.setState({ currentPanel: "" });
@@ -655,6 +677,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           {this.renderPanel("volumes", "Volumes", this.renderVolumes())}
           {this.renderPanel("advanced", "Advanced", this.renderAdvanced())}
           {this.renderPanel("plugins", "Plugins", this.renderPlugins())}
+          {this.renderPanel("probes", "Probes", this.renderProbes())}
         </form>
       );
     }
@@ -668,6 +691,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Paper className={classes.formSection}>{this.renderVolumes()}</Paper>
         <Paper className={classes.formSection}>{this.renderAdvanced()}</Paper>
         <Paper className={classes.formSection}>{this.renderPlugins()}</Paper>
+        <Paper className={classes.formSection}>{this.renderProbes()}</Paper>
       </form>
     );
   }
