@@ -629,10 +629,28 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     }
 
     let isChanged = false;
-    fieldNames.forEach(name => {
-      // @ts-ignore
-      if (values.get(name) !== initialValues.get(name)) {
-        isChanged = true;
+    fieldNames.forEach((name: any) => {
+      if (!values.get(name) || typeof values.get(name) === "string") {
+        if (values.get(name) !== initialValues.get!(name)) {
+          isChanged = true;
+        }
+        // immutable compare
+      } else if (values.get(name).equals) {
+        if (name === "livenessProbe" || name === "readinessProbe") {
+          // since auto set probe type
+          if (
+            !values
+              .get(name)
+              .delete("type")
+              .equals(initialValues.get!(name))
+          ) {
+            isChanged = true;
+          }
+        } else {
+          if (!values.get(name).equals(initialValues.get!(name))) {
+            isChanged = true;
+          }
+        }
       }
     });
 
