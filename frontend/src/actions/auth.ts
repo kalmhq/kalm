@@ -5,7 +5,12 @@ import { setErrorNotificationAction } from "./notification";
 
 export const initAuthStatus = (): ThunkResult<Promise<void>> => {
   return async dispatch => {
-    const authorized = await getLoginStatus();
+    let authorized: boolean = false;
+    try {
+      authorized = await getLoginStatus();
+    } catch (e) {
+      dispatch(setErrorNotificationAction(SomethingWrong));
+    }
 
     dispatch({
       type: INIT_AUTH,
