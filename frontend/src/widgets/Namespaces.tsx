@@ -14,7 +14,7 @@ import {
 import React from "react";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
-import { loadNamespaces } from "actions/namespaces";
+import { loadNamespacesAction } from "actions/namespaces";
 import { RootState } from "reducers";
 
 const styles = (theme: Theme) =>
@@ -66,7 +66,7 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
   };
 
   componentDidMount() {
-    this.props.dispatch(loadNamespaces());
+    this.props.dispatch(loadNamespacesAction());
   }
 
   public render() {

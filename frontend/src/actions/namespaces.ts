@@ -1,26 +1,46 @@
-import { ThunkResult, StatusFailure } from "../types";
-import { LOAD_NAMESPACES, CREATE_NAMESPACE_PENDING, CREATE_NAMESPACE_FULFILLED } from "../types/namespace";
+import { Actions, StatusFailure, ThunkResult } from "../types";
 import {
-  getNamespaces,
+  CREATE_NAMESPACE_FULFILLED,
+  CREATE_NAMESPACE_PENDING,
+  LOAD_NAMESPACES_FAILED,
+  LOAD_NAMESPACES_FULFILLED,
+  LOAD_NAMESPACES_PENDING,
+  SET_CURRENT_NAMESPACE
+} from "../types/namespace";
+import {
   createNamespace as createNamespaceApi,
-  deleteNamespace as deleteNamespaceApi
+  deleteNamespace as deleteNamespaceApi,
+  getNamespaces
 } from "./kubernetesApi";
 import { setErrorNotificationAction } from "./notification";
 
-export const loadNamespaces = (): ThunkResult<Promise<void>> => {
+export const loadNamespacesAction = (): ThunkResult<Promise<void>> => {
   return async dispatch => {
-    const ns = await getNamespaces();
+    dispatch({ type: LOAD_NAMESPACES_PENDING });
+
+    let namespaces;
+    try {
+      namespaces = await getNamespaces();
+    } catch (e) {
+      if (e.response && e.response.data.status === StatusFailure) {
+        dispatch(setErrorNotificationAction(e.response.data.message));
+      } else {
+        dispatch(setErrorNotificationAction());
+      }
+      dispatch({ type: LOAD_NAMESPACES_FAILED });
+      return;
+    }
 
     dispatch({
-      type: LOAD_NAMESPACES,
+      type: LOAD_NAMESPACES_FULFILLED,
       payload: {
-        namespaces: ns
+        namespaces
       }
     });
   };
 };
 
-export const createNamespace = (name: string): ThunkResult<Promise<boolean>> => {
+export const createNamespaceAction = (name: string): ThunkResult<Promise<boolean>> => {
   return async dispatch => {
     dispatch({
       type: CREATE_NAMESPACE_PENDING
@@ -30,7 +50,7 @@ export const createNamespace = (name: string): ThunkResult<Promise<boolean>> => 
       await createNamespaceApi(name);
 
       // reload
-      dispatch(loadNamespaces());
+      dispatch(loadNamespacesAction());
       return true;
     } catch (e) {
       if (e.response && e.response.data.status === StatusFailure) {
@@ -47,13 +67,13 @@ export const createNamespace = (name: string): ThunkResult<Promise<boolean>> => 
   };
 };
 
-export const deleteNamespace = (name: string): ThunkResult<Promise<void>> => {
+export const deleteNamespaceAction = (name: string): ThunkResult<Promise<void>> => {
   return async dispatch => {
     try {
       await deleteNamespaceApi(name);
 
       // reload
-      dispatch(loadNamespaces());
+      dispatch(loadNamespacesAction());
     } catch (e) {
       if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
@@ -61,6 +81,15 @@ export const deleteNamespace = (name: string): ThunkResult<Promise<void>> => {
         dispatch(setErrorNotificationAction());
       }
       return;
+    }
+  };
+};
+
+export const setCurrentNamespaceAction = (namespace: string): Actions => {
+  return {
+    type: SET_CURRENT_NAMESPACE,
+    payload: {
+      namespace
     }
   };
 };

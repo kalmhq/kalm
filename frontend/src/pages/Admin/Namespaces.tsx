@@ -2,7 +2,6 @@ import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import AddCircleIcon from "@material-ui/icons/AddCircle";
 import DeleteIcon from "@material-ui/icons/Delete";
 import { closeDialogAction, openDialogAction } from "actions/dialog";
-import { createNamespace, loadNamespaces, deleteNamespace } from "actions/namespaces";
 import { NamespaceForm } from "forms/Namespace";
 import MaterialTable from "material-table";
 import React, { forwardRef } from "react";
@@ -12,6 +11,7 @@ import { submit } from "redux-form";
 import { TDispatchProp } from "types";
 import { CustomizedButton } from "widgets/Button";
 import { ControlledDialog } from "widgets/ControlledDialog";
+import { createNamespaceAction, deleteNamespaceAction, loadNamespacesAction } from "actions/namespaces";
 
 const dialogID = "admin/namespace/add";
 
@@ -47,7 +47,7 @@ class AdminNamespacesRaw extends React.PureComponent<Props, State> {
 
   componentDidMount() {
     // TODO use admin api
-    this.props.dispatch(loadNamespaces());
+    this.props.dispatch(loadNamespacesAction());
   }
 
   private getData = (): RowData[] => {
@@ -77,7 +77,7 @@ class AdminNamespacesRaw extends React.PureComponent<Props, State> {
   };
 
   private handleDelete = async (rowData: RowData) => {
-    this.props.dispatch(deleteNamespace(rowData.name));
+    this.props.dispatch(deleteNamespaceAction(rowData.name));
   };
 
   private renderAddForm() {
@@ -112,7 +112,7 @@ class AdminNamespacesRaw extends React.PureComponent<Props, State> {
         <NamespaceForm
           form={formID}
           onSubmit={async namespace => {
-            const success = await this.props.dispatch(createNamespace(namespace.get("name")));
+            const success = await this.props.dispatch(createNamespaceAction(namespace.get("name")));
             if (success) {
               this.props.dispatch(closeDialogAction(dialogID));
             }
