@@ -11,9 +11,26 @@
  */
 
 
-export class V1alpha1ApplicationSpecDisks {
+export class V1alpha1ApplicationSpecVolumes {
+    /**
+    * the path we use to mount this volume to container
+    */
     'path': string;
+    /**
+    * use to store pvc name, so the disk won\'t be recreate during restart This field also can be used with existing pvc
+    */
+    'persistentVolumeClaimName'?: string;
+    /**
+    * If we need to create this volume first, the size of the volume
+    */
     'size': string;
+    /**
+    * Identify the StorageClass to create the pvc
+    */
+    'storageClassName'?: string;
+    /**
+    * Volume type
+    */
     'type'?: string;
 
     static discriminator: string | undefined = undefined;
@@ -25,8 +42,18 @@ export class V1alpha1ApplicationSpecDisks {
             "type": "string"
         },
         {
+            "name": "persistentVolumeClaimName",
+            "baseName": "persistentVolumeClaimName",
+            "type": "string"
+        },
+        {
             "name": "size",
             "baseName": "size",
+            "type": "string"
+        },
+        {
+            "name": "storageClassName",
+            "baseName": "storageClassName",
             "type": "string"
         },
         {
@@ -36,7 +63,7 @@ export class V1alpha1ApplicationSpecDisks {
         }    ];
 
     static getAttributeTypeMap() {
-        return V1alpha1ApplicationSpecDisks.attributeTypeMap;
+        return V1alpha1ApplicationSpecVolumes.attributeTypeMap;
     }
 }
 

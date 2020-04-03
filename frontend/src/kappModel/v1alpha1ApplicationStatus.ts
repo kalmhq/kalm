@@ -10,26 +10,16 @@
  * Do not edit the class manually.
  */
 
-import { V1alpha1ApplicationStatusComponentStatus } from './v1alpha1ApplicationStatusComponentStatus';
 
 /**
 * ApplicationStatus defines the observed state of Application
 */
 export class V1alpha1ApplicationStatus {
-    /**
-    * Failed to use map here, so use array for now.
-    */
-    'componentStatus'?: Array<V1alpha1ApplicationStatusComponentStatus>;
     'isActive'?: boolean;
 
     static discriminator: string | undefined = undefined;
 
     static attributeTypeMap: Array<{name: string, baseName: string, type: string}> = [
-        {
-            "name": "componentStatus",
-            "baseName": "componentStatus",
-            "type": "Array<V1alpha1ApplicationStatusComponentStatus>"
-        },
         {
             "name": "isActive",
             "baseName": "isActive",
