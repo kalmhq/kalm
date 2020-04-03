@@ -224,29 +224,35 @@ func formatApplicationComponents(components []v1alpha1.ComponentSpec) {
 	}
 }
 
-func (builder *Builder) BuildApplicationListResponse(applications *v1alpha1.ApplicationList) *ApplicationListResponse {
+func (builder *Builder) BuildApplicationListResponse(applications *v1alpha1.ApplicationList) (*ApplicationListResponse, error) {
 
 	apps := []*ApplicationListResponseItem{}
 
 	// TODO concurrent build response items
 	for i := range applications.Items {
-		apps = append(apps, builder.buildApplicationListResponseItem(&applications.Items[i]))
+		item, err := builder.buildApplicationListResponseItem(&applications.Items[i])
+
+		if err != nil {
+			return nil, err
+		}
+
+		apps = append(apps, item)
 	}
 
 	return &ApplicationListResponse{
 		//ListMeta:     &ListMeta{}, // TODO
 		Applications: apps,
-	}
+	}, nil
 }
 
-func (builder *Builder) buildApplicationListResponseItem(application *v1alpha1.Application) *ApplicationListResponseItem {
+func (builder *Builder) buildApplicationListResponseItem(application *v1alpha1.Application) (*ApplicationListResponseItem, error) {
 	ns := application.Namespace
 	listOptions := labelsBelongsToApplication(application.Name)
 
 	resourceChannels := &ResourceChannels{
 		DeploymentList: builder.GetDeploymentListChannel(ns, listOptions),
 		PodList:        builder.GetPodListChannel(ns, listOptions),
-		ReplicaSetList: builder.GetReplicaSetListChannel(ns, listOptions),
+		//ReplicaSetList: builder.GetReplicaSetListChannel(ns, listOptions),
 		EventList: builder.GetEventListChannel(ns, metaV1.ListOptions{
 			LabelSelector: labels.Everything().String(),
 			FieldSelector: fields.Everything().String(),
@@ -258,6 +264,7 @@ func (builder *Builder) buildApplicationListResponseItem(application *v1alpha1.A
 
 	if err != nil {
 		builder.Logger.Error(err)
+		return nil, err
 	}
 
 	componentsStatusList := builder.buildApplicationComponentStatus(application, resources)
@@ -281,7 +288,7 @@ func (builder *Builder) buildApplicationListResponseItem(application *v1alpha1.A
 			CPU:    appCpuHistory,
 			Memory: appMemHistory,
 		},
-	}
+	}, nil
 }
 
 func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Application, resources *Resources) []*ComponentStatus {

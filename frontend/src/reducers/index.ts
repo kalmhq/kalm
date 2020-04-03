@@ -3,6 +3,7 @@ import { reducer as formReducer } from "redux-form/immutable";
 import { FormState } from "redux-form";
 import settings, { State as SettingsState } from "./settings";
 import notification, { State as NotificationState } from "./notification";
+import namespaces, { State as NamespacesState } from "./namespaces";
 import dialogs, { State as DialogState } from "./dialog";
 import componentTemplates, { State as ComponentTemplateState } from "./componentTemplate";
 import applications, { State as ApplicationState } from "./application";
@@ -18,6 +19,7 @@ import { ImmutableMap } from "../typings";
 
 export type RootState = ImmutableMap<{
   componentTemplates: ComponentTemplateState;
+  namespaces: NamespacesState;
   applications: ApplicationState;
   configs: ConfigState;
   auth: AuthState;
@@ -39,6 +41,7 @@ export default (history: History<LocationState>) =>
   combineReducers<RootState>({
     // @ts-ignore
     form: formReducer,
+    namespaces,
     nodes,
     auth,
     dialogs,

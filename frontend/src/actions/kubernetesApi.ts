@@ -20,6 +20,7 @@ import Immutable from "immutable";
 import { ComponentTemplate } from "../types/componentTemplate";
 import { ConfigRes, ConfigCreate } from "../types/config";
 import { ImmutableMap } from "../typings";
+import { Namespaces } from "../types/namespace";
 
 export const K8sApiPrefix = process.env.REACT_APP_K8S_API_PERFIX;
 export const k8sWsPrefix = !K8sApiPrefix
@@ -191,6 +192,19 @@ export const deleteKappFileV1alpha1 = async (path: string) => {
 
 export const deletePod = async (namespace: string, name: string) => {
   return await getAxiosClient().delete(K8sApiPrefix + `/v1alpha1/pods/${namespace}/${name}`);
+};
+
+export const getNamespaces = async () => {
+  const res = await getAxiosClient().get<{ namespaces: any }>(K8sApiPrefix + "/v1alpha1/namespaces");
+  return Immutable.fromJS(res.data.namespaces) as Namespaces;
+};
+
+export const createNamespace = async (name: string) => {
+  await getAxiosClient().post<null>(K8sApiPrefix + "/v1alpha1/namespaces/" + name);
+};
+
+export const deleteNamespace = async (name: string) => {
+  await getAxiosClient().delete<null>(K8sApiPrefix + "/v1alpha1/namespaces/" + name);
 };
 
 export const getKappClusterRoles = async () => {

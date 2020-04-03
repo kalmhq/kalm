@@ -13,7 +13,7 @@ import (
 )
 
 type ResourceChannels struct {
-	ReplicaSetList *ReplicaSetListChannel
+	//ReplicaSetList *ReplicaSetListChannel
 	DeploymentList *DeploymentListChannel
 	PodList        *PodListChannel
 	EventList      *EventListChannel
@@ -21,7 +21,7 @@ type ResourceChannels struct {
 }
 
 type Resources struct {
-	ReplicaSetList *appV1.ReplicaSetList
+	//ReplicaSetList *appV1.ReplicaSetList
 	DeploymentList *appV1.DeploymentList
 	PodList        *coreV1.PodList
 	EventList      *coreV1.EventList
@@ -31,13 +31,13 @@ type Resources struct {
 func (c *ResourceChannels) ToResources() (r *Resources, err error) {
 	resources := &Resources{}
 
-	if c.ReplicaSetList != nil {
-		err = <-c.ReplicaSetList.Error
-		if err != nil {
-			return nil, err
-		}
-		resources.ReplicaSetList = <-c.ReplicaSetList.List
-	}
+	//if c.ReplicaSetList != nil {
+	//	err = <-c.ReplicaSetList.Error
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//	resources.ReplicaSetList = <-c.ReplicaSetList.List
+	//}
 
 	if c.DeploymentList != nil {
 		err = <-c.DeploymentList.Error
