@@ -6,6 +6,7 @@ import { InjectedFormProps } from "redux-form";
 import { Field, reduxForm } from "redux-form/immutable";
 import { ValidatorRequired } from "../validator";
 import { Namespace } from "types/namespace";
+import InputAdornment from "@material-ui/core/InputAdornment";
 
 interface OwnProps {}
 
@@ -24,6 +25,9 @@ class NamespaceFormRaw extends React.PureComponent<Props> {
           name="name"
           label="Name"
           autoFocus
+          InputProps={{
+            startAdornment: <InputAdornment position="start">kapp -</InputAdornment>
+          }}
           component={TextField}
           validate={ValidatorRequired}
           placeholder="Please type the namespace name"
