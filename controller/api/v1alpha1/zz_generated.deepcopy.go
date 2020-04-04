@@ -138,6 +138,13 @@ func (in *ComponentSpec) DeepCopyInto(out *ComponentSpec) {
 		*out = new(int32)
 		**out = **in
 	}
+	if in.NodeSelectorLabels != nil {
+		in, out := &in.NodeSelectorLabels, &out.NodeSelectorLabels
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	if in.Dependencies != nil {
 		in, out := &in.Dependencies, &out.Dependencies
 		*out = make([]string, len(*in))
