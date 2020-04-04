@@ -9,6 +9,8 @@ export const SET_CURRENT_CONFIG_ID_CHAIN = "SET_CURRENT_CONFIG_ID_CHAIN";
 export const LOAD_CONFIGS_PENDING = "LOAD_CONFIGS_PENDING";
 export const LOAD_CONFIGS_FULFILLED = "LOAD_CONFIGS_FULFILLED";
 export const LOAD_CONFIGS_FAILED = "LOAD_CONFIGS_FAILED";
+export const SET_IS_SUBMITTING_CONFIG = "SET_IS_SUBMITTING_CONFIG";
+export const SET_IS_SUBMITTING_CONFIG_UPLOAD = "SET_IS_SUBMITTING_CONFIG_UPLOAD";
 
 // name, content
 export type FilesUpload = Immutable.OrderedMap<string, string>;
@@ -98,6 +100,13 @@ export interface UpdateCurrentConfigIdChain {
   };
 }
 
+export interface SetIsSubmittingConfig {
+  type: typeof SET_IS_SUBMITTING_CONFIG;
+  payload: {
+    isSubmittingConfig: boolean;
+  };
+}
+
 export type ConfigActions =
   | LoadConfigsFulfilledAction
   | LoadConfigsPendingAction
@@ -106,4 +115,5 @@ export type ConfigActions =
   | DeleteConfigAction
   | UpdateConfigAction
   | DuplicateConfigAction
-  | UpdateCurrentConfigIdChain;
+  | UpdateCurrentConfigIdChain
+  | SetIsSubmittingConfig;

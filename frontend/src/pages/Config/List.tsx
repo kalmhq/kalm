@@ -1,29 +1,40 @@
-import React from "react";
-import { BasePage } from "../BasePage";
-import { connect } from "react-redux";
-import { RootState } from "../../reducers";
-import { Theme, withStyles, Breadcrumbs, Link, WithStyles, createStyles } from "@material-ui/core";
-import EditIcon from "@material-ui/icons/Edit";
+import {
+  Breadcrumbs,
+  createStyles,
+  FormControl,
+  InputLabel,
+  Link,
+  MenuItem,
+  Select,
+  Theme,
+  withStyles,
+  WithStyles
+} from "@material-ui/core";
+import CreateNewFolderIcon from "@material-ui/icons/CreateNewFolder";
 import DeleteIcon from "@material-ui/icons/Delete";
+import EditIcon from "@material-ui/icons/Edit";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import NoteAddIcon from "@material-ui/icons/NoteAdd";
 import PublishIcon from "@material-ui/icons/Publish";
-import CreateNewFolderIcon from "@material-ui/icons/CreateNewFolder";
-import { deleteConfigAction, duplicateConfigAction } from "../../actions/config";
-import { ThunkDispatch } from "redux-thunk";
-import { Actions } from "../../types";
-import { FileTree } from "../../widgets/FileTree";
-import { getCurrentConfig } from "../../selectors/config";
+import React from "react";
+import { connect } from "react-redux";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { monokai } from "react-syntax-highlighter/dist/esm/styles/hljs";
-import { ConfigNewDialog } from "../../widgets/ConfigNewDialog";
-import { ConfigEditDialog } from "../../widgets/ConfigEditDialog";
+import { ThunkDispatch } from "redux-thunk";
+import { deleteConfigAction, duplicateConfigAction, loadConfigsAction } from "../../actions/config";
+import { loadNamespacesAction, setCurrentNamespaceAction } from "../../actions/namespaces";
 import { setErrorNotificationAction } from "../../actions/notification";
-import { ConfirmDialog } from "../../widgets/ConfirmDialog";
-import { loadConfigsAction } from "../../actions/config";
-import { ConfigNode, initialRootConfigNode, ConfigNodeType } from "../../types/config";
-import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
+import { RootState } from "../../reducers";
+import { getCurrentConfig } from "../../selectors/config";
+import { Actions } from "../../types";
+import { ConfigNode, ConfigNodeType, initialRootConfigNode } from "../../types/config";
+import { ConfigEditDialog } from "../../widgets/ConfigEditDialog";
+import { ConfigNewDialog } from "../../widgets/ConfigNewDialog";
 import { ConfigUploadDialog } from "../../widgets/ConfigUploadDialog";
+import { ConfirmDialog } from "../../widgets/ConfirmDialog";
+import { FileTree } from "../../widgets/FileTree";
+import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
+import { BasePage } from "../BasePage";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -65,7 +76,9 @@ const mapStateToProps = (state: RootState, ownProps: any) => {
   return {
     currentConfig: getCurrentConfig(),
     rootConfig: state.get("configs").get("rootConfig"),
-    currentConfigIdChain: state.get("configs").get("currentConfigIdChain")
+    currentConfigIdChain: state.get("configs").get("currentConfigIdChain"),
+    namespaces: state.get("namespaces").get("namespaces"),
+    currentNamespace: state.get("namespaces").get("active")
   };
 };
 
@@ -97,9 +110,10 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
   }
 
   public componentDidMount() {
-    const { dispatch } = this.props;
+    const { dispatch, currentNamespace } = this.props;
 
-    dispatch(loadConfigsAction());
+    dispatch(loadNamespacesAction());
+    dispatch(loadConfigsAction(currentNamespace));
   }
 
   private showDeleteConfirmDialog = () => {
@@ -292,9 +306,43 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
             onClick={() => this.handleUpload()}>
             <PublishIcon />
           </IconButtonWithTooltip>
+
+          {currentConfig.get("id") !== initialRootConfigNode.get("id") && currentConfig.get("children").size === 0 && (
+            <IconButtonWithTooltip
+              tooltipPlacement="top"
+              tooltipTitle="Delete"
+              aria-label="delete"
+              onClick={() => this.handleDelete()}>
+              <DeleteIcon />
+            </IconButtonWithTooltip>
+          )}
         </div>
       );
     }
+  }
+
+  private renderNamespaceSelector() {
+    const { dispatch, namespaces, currentNamespace } = this.props;
+
+    return (
+      <FormControl style={{ width: "100%", marginBottom: "20px" }}>
+        <InputLabel>Namespace</InputLabel>
+        <Select
+          value={currentNamespace}
+          onChange={(event: React.ChangeEvent<{ value: unknown }>) => {
+            const namespace = event.target.value as string;
+            dispatch(setCurrentNamespaceAction(namespace));
+            dispatch(loadConfigsAction(namespace));
+          }}
+          label="Namespace">
+          {namespaces.map(namespace => (
+            <MenuItem key={namespace.get("name")} value={namespace.get("name")}>
+              {namespace}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+    );
   }
 
   public render() {
@@ -305,6 +353,7 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
       <BasePage title="Configs">
         <div className={classes.root}>
           <div className={classes.leftTree}>
+            {this.renderNamespaceSelector()}
             <FileTree
               rootConfig={rootConfig}
               dispatch={dispatch}
@@ -323,7 +372,9 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
             {currentConfig.get("type") === "file" ? (
               <SyntaxHighlighter style={monokai}>{currentConfig.get("content")}</SyntaxHighlighter>
             ) : (
-              <div className={classes.noSelectedFile}>No selected file</div>
+              <div className={classes.noSelectedFile}>
+                {currentConfig.get("children").size > 0 ? "No selected file" : "Empty folder"}{" "}
+              </div>
             )}
           </div>
         </div>

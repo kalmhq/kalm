@@ -95,13 +95,13 @@ func (h *ApiHandler) handleGetNodeMetricsNew(c echo.Context) error {
 
 func (h *ApiHandler) handleGetClusterRoles(c echo.Context) error {
 	k8sClient := getK8sClient(c)
-	res, err := k8sClient.RESTClient().Get().AbsPath("/apis/rbac.authorization.k8s.io/v1/clusterroles").DoRaw()
+	res, err := k8sClient.RbacV1().ClusterRoles().List(ListAll)
 
 	if err != nil {
 		return err
 	}
 
-	return c.JSONBlob(200, res)
+	return c.JSON(200, res)
 }
 
 func (h *ApiHandler) handleCreateClusterRoles(c echo.Context) error {
@@ -229,6 +229,17 @@ func (h *ApiHandler) handleGetSecret(c echo.Context) error {
 	k8sClient := getK8sClient(c)
 
 	res, err := k8sClient.RESTClient().Get().AbsPath("/api/v1/namespaces/default/secrets/" + c.Param("name")).DoRaw()
+
+	if err != nil {
+		return err
+	}
+
+	return c.JSONBlob(200, res)
+}
+
+func (h *ApiHandler) handleGetNamespaces(c echo.Context) error {
+	k8sClient := getK8sClient(c)
+	res, err := k8sClient.RESTClient().Get().AbsPath("/api/v1/namespaces").DoRaw()
 
 	if err != nil {
 		return err

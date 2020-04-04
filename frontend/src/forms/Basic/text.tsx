@@ -81,13 +81,16 @@ export const MaterialTableEditTextField = ({
       variant="outlined"
       onChange={handleChange}
       value={value || ""}
-      onKeyPress={event => {
-        if (event.key === "Enter") {
-          event.preventDefault();
+      onKeyPress={
+        textFieldProps?.onKeyPress ||
+        (event => {
+          if (event.key === "Enter") {
+            event.preventDefault();
 
-          // TODO, submit the edit form here
-        }
-      }}
+            // TODO, submit the edit form here
+          }
+        })
+      }
     />
   );
 };

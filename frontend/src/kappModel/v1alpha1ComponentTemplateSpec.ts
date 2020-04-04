@@ -10,8 +10,8 @@
  * Do not edit the class manually.
  */
 
+import { V1alpha1ApplicationSpecEnv } from './v1alpha1ApplicationSpecEnv';
 import { V1alpha1ApplicationSpecPorts } from './v1alpha1ApplicationSpecPorts';
-import { V1alpha1ComponentTemplateSpecEnv } from './v1alpha1ComponentTemplateSpecEnv';
 import { V1alpha1ComponentTemplateSpecVolumeMounts } from './v1alpha1ComponentTemplateSpecVolumeMounts';
 
 /**
@@ -24,7 +24,7 @@ export class V1alpha1ComponentTemplateSpec {
     'beforeStart'?: Array<string>;
     'command'?: Array<string>;
     'cpu'?: string;
-    'env'?: Array<V1alpha1ComponentTemplateSpecEnv>;
+    'env'?: Array<V1alpha1ApplicationSpecEnv>;
     'image': string;
     'memory'?: string;
     'name': string;
@@ -69,7 +69,7 @@ export class V1alpha1ComponentTemplateSpec {
         {
             "name": "env",
             "baseName": "env",
-            "type": "Array<V1alpha1ComponentTemplateSpecEnv>"
+            "type": "Array<V1alpha1ApplicationSpecEnv>"
         },
         {
             "name": "image",

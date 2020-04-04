@@ -19,6 +19,7 @@ import { V1alpha1ApplicationSpecEnv } from './v1alpha1ApplicationSpecEnv';
 export class V1alpha1ApplicationSpec {
     'components': Array<V1alpha1ApplicationSpecComponents>;
     'imagePullSecretName'?: string;
+    'isActive': boolean;
     'sharedEnv'?: Array<V1alpha1ApplicationSpecEnv>;
 
     static discriminator: string | undefined = undefined;
@@ -33,6 +34,11 @@ export class V1alpha1ApplicationSpec {
             "name": "imagePullSecretName",
             "baseName": "imagePullSecretName",
             "type": "string"
+        },
+        {
+            "name": "isActive",
+            "baseName": "isActive",
+            "type": "boolean"
         },
         {
             "name": "sharedEnv",

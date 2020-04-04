@@ -54,8 +54,9 @@ var nodeMetricDB = make(map[string][]metricv1beta1.NodeMetrics)
 
 // todo lock
 
-//metricResolution := 5 * time.Second
-var metricResolution = 30 * time.Second
+var metricResolution = 5 * time.Second
+
+//var metricResolution = 30 * time.Second
 var metricDuration = 15 * time.Minute
 
 func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
@@ -85,7 +86,7 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 					fmt.Errorf("fail get applications, err: %s", err)
 				}
 
-				fmt.Println("apps found:", len(appList.Items))
+				//fmt.Println("apps found:", len(appList.Items))
 
 				// get metrics under apps' ns
 				ns2MetricsListMap := make(map[string]*metricv1beta1.PodMetricsList)
@@ -100,7 +101,7 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 					}
 
 					ns2MetricsListMap[app.Namespace] = metricsList
-					fmt.Printf("metrics found under ns(%s): %d\n", app.Namespace, len(metricsList.Items))
+					//fmt.Printf("metrics found under ns(%s): %d\n", app.Namespace, len(metricsList.Items))
 				}
 
 				for _, app := range appList.Items {
@@ -118,11 +119,11 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 					fmt.Errorf("fail get nodes, err: %s", err)
 				}
 
-				nodeMetricsCnt := 0
-				if nodeMetricsList != nil {
-					nodeMetricsCnt = len(nodeMetricsList.Items)
-				}
-				fmt.Printf("node metrics found %d\n", nodeMetricsCnt)
+				//nodeMetricsCnt := 0
+				//if nodeMetricsList != nil {
+				//	nodeMetricsCnt = len(nodeMetricsList.Items)
+				//}
+				//fmt.Printf("node metrics found %d\n", nodeMetricsCnt)
 
 				cacheMetricsForNodesIntoLocalDB(nodeMetricsList)
 			}

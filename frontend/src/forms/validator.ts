@@ -18,6 +18,16 @@ export const ValidatorName = (value: string) => {
   return undefined;
 };
 
+export const ValidatorHttpHeaders = (value: any) => {
+  if (!value) return undefined;
+
+  if (typeof value === "string") {
+    return "Invalid JSON";
+  }
+
+  return undefined;
+};
+
 // https://regex101.com/r/cJ74bX/1/
 export const ValidatorCPU = (value: string) => {
   if (!value) return undefined;

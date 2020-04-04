@@ -5,16 +5,16 @@ import CancelIcon from "@material-ui/icons/Cancel";
 import HelpIcon from "@material-ui/icons/Help";
 export const SuccessBedge = (props: { text?: string }) => {
   return (
-    <Box display="inline-flex" alignItems="center" margin="auto">
+    <Box display="inline-flex" alignItems="center">
       <CheckCircleIcon style={{ marginRight: 6 }} color="primary" />
-      {props.text || "Success"}
+      {props.text}
     </Box>
   );
 };
 
 export const PendingBedge = (props: { text?: string }) => {
   return (
-    <Box display="inline-flex" alignItems="center" margin="auto">
+    <Box display="inline-flex" alignItems="center">
       <CircularProgress
         variant="indeterminate"
         disableShrink
@@ -23,25 +23,25 @@ export const PendingBedge = (props: { text?: string }) => {
         {...props}
         style={{ marginRight: 6 }}
       />
-      {props.text || "Pending"}
+      {props.text}
     </Box>
   );
 };
 
 export const ErrorBedge = (props: { text?: string }) => {
   return (
-    <Box display="inline-flex" alignItems="center" margin="auto">
+    <Box display="inline-flex" alignItems="center">
       <CancelIcon style={{ marginRight: 6 }} color="secondary" />
-      {props.text || "Error"}
+      {props.text}
     </Box>
   );
 };
 
 export const UnknownBedge = (props: { text?: string }) => {
   return (
-    <Box display="inline-flex" alignItems="center" margin="auto">
+    <Box display="inline-flex" alignItems="center">
       <HelpIcon style={{ marginRight: 6 }} color="disabled" />
-      {props.text || "Unknown"}
+      {props.text}
     </Box>
   );
 };

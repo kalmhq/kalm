@@ -5,9 +5,6 @@ resources:
   kind: Application
   version: v1alpha1
 - group: core
-  kind: File
-  version: v1alpha1
-- group: core
   kind: ComponentTemplate
   version: v1alpha1
 - group: core

@@ -52,11 +52,6 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gV1.PUT("/applications/:namespace/:name", h.handleUpdateApplication)
 	gV1.DELETE("/applications/:namespace/:name", h.handleDeleteApplication)
 
-	gV1.GET("/files", h.handleGetFilesOld)
-	gV1.POST("/files", h.handleCreateFileOld)
-	gV1.PUT("/files/:name", h.handleUpdateFileOld)
-	gV1.DELETE("/files/:name", h.handleDeleteFileOld)
-
 	gV1.GET("/clusterroles", h.handleGetClusterRoles)
 	gV1.POST("/clusterroles", h.handleCreateClusterRoles)
 	gV1.DELETE("/clusterroles/:name", h.handleDeleteSecrets)
@@ -73,6 +68,8 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gV1.POST("/secrets", h.handleCreateSecrets)
 	gV1.GET("/secrets/:name", h.handleGetSecret)
 	gV1.DELETE("/secrets/:name", h.handleDeleteSecrets)
+
+	gV1.GET("/namespaces", h.handleGetNamespaces)
 
 	gv1Alpha1 := e.Group("/v1alpha1")
 	gv1Alpha1.GET("/logs", h.logWebsocketHandler)
@@ -98,6 +95,12 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gv1Alpha1WithAuth.DELETE("/files/:namespace", h.handleDeleteFile)
 
 	gv1Alpha1WithAuth.GET("/nodes/metrics", h.handleGetNodeMetricsNew)
+
+	gv1Alpha1WithAuth.DELETE("/pods/:namespace/:name", h.handleDeletePod)
+
+	gv1Alpha1WithAuth.GET("/namespaces", h.handleListNamespaces)
+	gv1Alpha1WithAuth.POST("/namespaces/:name", h.handleCreateNamespace)
+	gv1Alpha1WithAuth.DELETE("/namespaces/:name", h.handleDeleteNamespace)
 }
 
 func NewApiHandler(clientManager *client.ClientManager) *ApiHandler {

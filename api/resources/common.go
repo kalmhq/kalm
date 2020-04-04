@@ -13,7 +13,7 @@ import (
 )
 
 type ResourceChannels struct {
-	ReplicaSetList *ReplicaSetListChannel
+	//ReplicaSetList *ReplicaSetListChannel
 	DeploymentList *DeploymentListChannel
 	PodList        *PodListChannel
 	EventList      *EventListChannel
@@ -21,7 +21,7 @@ type ResourceChannels struct {
 }
 
 type Resources struct {
-	ReplicaSetList *appV1.ReplicaSetList
+	//ReplicaSetList *appV1.ReplicaSetList
 	DeploymentList *appV1.DeploymentList
 	PodList        *coreV1.PodList
 	EventList      *coreV1.EventList
@@ -31,13 +31,13 @@ type Resources struct {
 func (c *ResourceChannels) ToResources() (r *Resources, err error) {
 	resources := &Resources{}
 
-	if c.ReplicaSetList != nil {
-		err = <-c.ReplicaSetList.Error
-		if err != nil {
-			return nil, err
-		}
-		resources.ReplicaSetList = <-c.ReplicaSetList.List
-	}
+	//if c.ReplicaSetList != nil {
+	//	err = <-c.ReplicaSetList.Error
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//	resources.ReplicaSetList = <-c.ReplicaSetList.List
+	//}
 
 	if c.DeploymentList != nil {
 		err = <-c.DeploymentList.Error
@@ -95,6 +95,26 @@ func filterPodEventsWithType(events []coreV1.Event, pods []coreV1.Pod, eventType
 	}
 
 	return result
+}
+
+// Returns true if given pod is in state ready or succeeded, false otherwise
+func IsReadyOrSucceeded(pod coreV1.Pod) bool {
+	if pod.Status.Phase == coreV1.PodSucceeded {
+		return true
+	}
+	if pod.Status.Phase == coreV1.PodRunning {
+		for _, c := range pod.Status.Conditions {
+			if c.Type == coreV1.PodReady {
+				if c.Status == coreV1.ConditionFalse {
+					return false
+				}
+			}
+		}
+
+		return true
+	}
+
+	return false
 }
 
 func filterPodWarningEvents(events []coreV1.Event, pods []coreV1.Pod) []coreV1.Event {

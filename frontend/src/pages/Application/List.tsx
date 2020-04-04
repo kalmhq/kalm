@@ -22,6 +22,9 @@ import { SmallCPULineChart, SmallMemoryLineChart } from "../../widgets/SmallLine
 import { BasePage } from "../BasePage";
 import { Details } from "./Detail";
 import { ApplicationListDataWrapper, WithApplicationsDataProps } from "./ListDataWrapper";
+import { Link } from "react-router-dom";
+import AddIcon from "@material-ui/icons/Add";
+
 const styles = (theme: Theme) =>
   createStyles({
     root: {
@@ -88,6 +91,13 @@ const styles = (theme: Theme) =>
       width: "100%",
       display: "flex",
       justifyContent: "space-between"
+    },
+    addAction: {
+      display: "flex",
+      alignItems: "center",
+      fontSize: "14px",
+      fontWeight: "bold",
+      color: "#2196F3"
     }
   });
 
@@ -205,7 +215,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     const { isDuplicateConfirmDialogOpen, duplicatingApplicationListItem } = this.state;
 
     let title, content;
-    title = "Are you sure to duplicate this application?";
+    title = "Duplicate Application";
     content = (
       <div>
         Please confirm the namespace and name of new application.
@@ -213,6 +223,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           <TextField
             inputRef={this.duplicateApplicationNamespaceRef}
             label="Namespace"
+            size="small"
             variant="outlined"
             defaultValue={duplicatingApplicationListItem?.get("namespace")}
             required
@@ -220,6 +231,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           <TextField
             inputRef={this.duplicateApplicationNameRef}
             label="Name"
+            size="small"
             variant="outlined"
             defaultValue={duplicateApplicationName(duplicatingApplicationListItem?.get("name") as string)}
             required
@@ -332,9 +344,10 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     const memoryData = applicationListItem.get("metrics").get("memory");
     return <SmallMemoryLineChart data={memoryData} />;
   };
-  private renderName = (applicationListItem: RowData) => {
-    return applicationListItem.get("name");
+  private renderName = (rowData: RowData) => {
+    return <Link to={`/applications/${rowData.get("namespace")}/${rowData.get("name")}`}>{rowData.get("name")}</Link>;
   };
+
   private renderNamespace = (applicationListItem: RowData) => {
     return applicationListItem.get("namespace"); // ["default", "production", "ropsten"][index] || "default",
   };
@@ -388,22 +401,17 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   private renderActions = (rowData: RowData) => {
-    const { dispatch } = this.props;
     return (
       <FoldButtonGroup
         options={[
           {
             text: "Details",
-            onClick: () => {
-              dispatch(push(`/applications/${rowData.get("namespace")}/${rowData.get("name")}`));
-            },
+            to: `/applications/${rowData.get("namespace")}/${rowData.get("name")}`,
             icon: "fullscreen"
           },
           {
             text: "Edit",
-            onClick: () => {
-              dispatch(push(`/applications/${rowData.get("namespace")}/${rowData.get("name")}/edit`));
-            },
+            to: `/applications/${rowData.get("namespace")}/${rowData.get("name")}/edit`,
             icon: "edit"
           },
           {
@@ -415,16 +423,12 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           },
           {
             text: "Logs",
-            onClick: () => {
-              dispatch(push(`/applications/${rowData.get("namespace")}/${rowData.get("name")}/logs`));
-            },
+            to: `/applications/${rowData.get("namespace")}/${rowData.get("name")}/logs`,
             icon: "view_headline"
           },
           {
             text: "Shell",
-            onClick: () => {
-              dispatch(push(`/applications/${rowData.get("namespace")}/${rowData.get("name")}/shells`));
-            },
+            to: `/applications/${rowData.get("namespace")}/${rowData.get("name")}/shells`,
             icon: "play_arrow"
           },
           {
@@ -468,8 +472,12 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
               actions={[
                 {
                   isFreeAction: true,
-                  icon: "add",
-                  tooltip: "Add",
+                  icon: () => (
+                    <span className={classes.addAction}>
+                      <AddIcon style={{ marginRight: "6px" }} />
+                      Add
+                    </span>
+                  ),
                   onClick: this.onCreate
                 }
               ]}
@@ -497,7 +505,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                   render: this.renderActions
                 }
               ]}
-              detailPanel={this.renderDetails}
+              // detailPanel={this.renderDetails}
               // onRowClick={(_event, _rowData, togglePanel) => {
               //   togglePanel!();
               //   console.log(_event);

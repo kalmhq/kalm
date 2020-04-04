@@ -23,6 +23,7 @@ import { ComponentLike, workloadTypeCronjob, workloadTypeServer } from "../../ty
 import { Volumes } from "./volumes";
 import ErrorIcon from "@material-ui/icons/Error";
 import { SharedEnv } from "../../types/application";
+import { ReadinessProbe, LivenessProbe } from "./Probes";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
@@ -117,8 +118,13 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             <span>
               <a href="https://en.wikipedia.org/wiki/Cron" target="_blank" rel="noopener noreferrer">
                 Cron
-              </a>{" "}
-              format string.
+              </a>
+              {" \n"}
+              format string. You can create schedule expressions with{" "}
+              <a href="https://crontab.guru/" target="_blank" rel="noopener noreferrer">
+                Crontab Guru
+              </a>
+              .
             </span>
           }
         />
@@ -578,6 +584,27 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
+  private renderProbes() {
+    const { classes, isFolded } = this.props;
+    return (
+      <Grid container spacing={2}>
+        <Grid item md={12}>
+          {!isFolded && (
+            <Typography
+              variant="h2"
+              classes={{
+                root: classes.sectionHeader
+              }}>
+              Probes
+            </Typography>
+          )}
+        </Grid>
+        <LivenessProbe />
+        <ReadinessProbe />
+      </Grid>
+    );
+  }
+
   private handleChangePanel(key: string) {
     if (this.state.currentPanel === key) {
       this.setState({ currentPanel: "" });
@@ -602,15 +629,35 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     }
 
     let isChanged = false;
-    fieldNames.forEach(name => {
-      // @ts-ignore
-      if (values.get(name) !== initialValues.get(name)) {
-        isChanged = true;
+    fieldNames.forEach((name: any) => {
+      if (!values.get(name) || typeof values.get(name) === "string") {
+        if (values.get(name) !== initialValues.get!(name)) {
+          isChanged = true;
+        }
+        // immutable compare
+      } else if (values.get(name).equals) {
+        if (name === "livenessProbe" || name === "readinessProbe") {
+          // since auto set probe type
+          if (
+            !values
+              .get(name)
+              .delete("type")
+              .equals(initialValues.get!(name))
+          ) {
+            isChanged = true;
+          }
+        } else {
+          if (!values.get(name).equals(initialValues.get!(name))) {
+            isChanged = true;
+          }
+        }
       }
     });
 
     return (
-      <ExpansionPanel expanded={key === this.state.currentPanel} onChange={() => this.handleChangePanel(key)}>
+      <ExpansionPanel
+        expanded={key === this.state.currentPanel || isChanged}
+        onChange={() => this.handleChangePanel(key)}>
         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id="panel1a-header">
           <div className={hasError ? classes.summaryError : isChanged ? classes.summaryBold : ""}>
             {title} {hasError ? <ErrorIcon className={classes.summaryIcon} /> : null}
@@ -637,6 +684,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         return ["restartStrategy", "terminationGracePeriodSeconds", "dnsPolicy"];
       case "plugins":
         return ["plugins"];
+      case "probes":
+        return ["livenessProbe", "readinessProbe"];
       default:
         return [];
     }
@@ -655,6 +704,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           {this.renderPanel("volumes", "Volumes", this.renderVolumes())}
           {this.renderPanel("advanced", "Advanced", this.renderAdvanced())}
           {this.renderPanel("plugins", "Plugins", this.renderPlugins())}
+          {this.renderPanel("probes", "Probes", this.renderProbes())}
         </form>
       );
     }
@@ -668,6 +718,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Paper className={classes.formSection}>{this.renderVolumes()}</Paper>
         <Paper className={classes.formSection}>{this.renderAdvanced()}</Paper>
         <Paper className={classes.formSection}>{this.renderPlugins()}</Paper>
+        <Paper className={classes.formSection}>{this.renderProbes()}</Paper>
       </form>
     );
   }

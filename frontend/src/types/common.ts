@@ -3,6 +3,7 @@ import { VariantType } from "notistack";
 import { V1Node, V1PersistentVolume } from "../model/models";
 import { ImmutableMap } from "../typings";
 import { SettingObject } from "../reducers/settings";
+import { NamespaceActions } from "./namespace";
 
 export const INIT_AUTH = "INIT_AUTH";
 export const SET_AUTH_TOKEN = "SET_AUTH_TOKEN";
@@ -11,7 +12,6 @@ export const LOAD_NODES = "LOAD_NODES";
 export const LOAD_PERSISTENT_VOLUMNS = "LOAD_PERSISTENT_VOLUMNS";
 
 export const SET_NOTIFICATION_MESSAGE = "SET_NOTIFICATION_MESSAGE";
-
 export const SET_SETTINGS = "SET_SETTINGS";
 
 export const INIT_CONTROLLED_DIALOG = "INIT_CONTROLLED_DIALOG";
@@ -121,4 +121,5 @@ export type CommonActions =
   | InitControlledDialogAction
   | DestroyControlledDialogAction
   | OpenControlledDialogAction
-  | CloseControlledDialogAction;
+  | CloseControlledDialogAction
+  | NamespaceActions;

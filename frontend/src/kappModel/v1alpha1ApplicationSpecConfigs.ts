@@ -10,25 +10,27 @@
  * Do not edit the class manually.
  */
 
-import { V1alpha1ApplicationStatusServiceStatusLoadBalancer } from './v1alpha1ApplicationStatusServiceStatusLoadBalancer';
 
-/**
-* ServiceStatus represents the current status of a service.
-*/
-export class V1alpha1ApplicationStatusServiceStatus {
-    'loadBalancer'?: V1alpha1ApplicationStatusServiceStatusLoadBalancer;
+export class V1alpha1ApplicationSpecConfigs {
+    'mountPath': string;
+    'paths': Array<string>;
 
     static discriminator: string | undefined = undefined;
 
     static attributeTypeMap: Array<{name: string, baseName: string, type: string}> = [
         {
-            "name": "loadBalancer",
-            "baseName": "loadBalancer",
-            "type": "V1alpha1ApplicationStatusServiceStatusLoadBalancer"
+            "name": "mountPath",
+            "baseName": "mountPath",
+            "type": "string"
+        },
+        {
+            "name": "paths",
+            "baseName": "paths",
+            "type": "Array<string>"
         }    ];
 
     static getAttributeTypeMap() {
-        return V1alpha1ApplicationStatusServiceStatus.attributeTypeMap;
+        return V1alpha1ApplicationSpecConfigs.attributeTypeMap;
     }
 }
 

@@ -1,7 +1,7 @@
 import { createStyles, makeStyles, Theme, useTheme } from "@material-ui/core/styles";
 import React from "react";
-import { TabBarComponent } from "./tabBar";
-import { AuthWrapper } from "./authWrapper";
+import { AuthWrapper } from "./AuthWrapper";
+import { TabBarComponent } from "./TabBar";
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -20,6 +20,28 @@ const useStyles = makeStyles((theme: Theme) => {
 });
 
 // const sidebarFoldedKey = "sidebarFoldedKey";
+export const tabOptions = [
+  {
+    text: "Dashboard",
+    to: "/"
+  },
+  {
+    text: "Application",
+    to: "/applications"
+  },
+  {
+    text: "Configs",
+    to: "/configs"
+  },
+  {
+    text: "Nodes",
+    to: "/cluster/nodes"
+  },
+  {
+    text: "Volumes",
+    to: "/cluster/volumes"
+  }
+];
 
 export const Dashboard = AuthWrapper((props: React.Props<any>) => {
   const theme = useTheme();
@@ -29,7 +51,7 @@ export const Dashboard = AuthWrapper((props: React.Props<any>) => {
     <div className={classes.root}>
       {/* <DashboardAppBar open={open} handleDrawerOpen={handleDrawerOpen} /> */}
       {/* <DrawerComponent open={open} handleDrawerClose={handleDrawerClose} /> */}
-      <TabBarComponent />
+      <TabBarComponent tabOptions={tabOptions} title="OpenCore Kapp" />
       <main className={classes.content}>{props.children}</main>
     </div>
   );

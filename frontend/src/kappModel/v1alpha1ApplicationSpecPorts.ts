@@ -19,7 +19,7 @@ export class V1alpha1ApplicationSpecPorts {
     */
     'protocol'?: ProtocolEnum;
     /**
-    * ? what is service port for?
+    * port for service
     */
     'servicePort'?: number;
 

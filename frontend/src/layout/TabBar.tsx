@@ -1,13 +1,15 @@
 import React from "react";
-import { createStyles, Theme, AppBar, Tab, Tabs, Avatar } from "@material-ui/core";
+import { createStyles, Theme, AppBar, Tab, Tabs, Avatar, Box } from "@material-ui/core";
 import { WithStyles, withStyles } from "@material-ui/styles";
-import { NavLink } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import SettingsIcon from "@material-ui/icons/Settings";
-import { UsersDialog } from "../../widgets/UsersDialog";
+import { UsersDialog } from "widgets/UsersDialog";
 import { connect } from "react-redux";
-import { RootState } from "../../reducers";
-import { TDispatch } from "../../types";
-import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
+import { RootState } from "reducers";
+import { TDispatch } from "types";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import { Namespaces } from "widgets/Namespaces";
+import { FlexRowItemCenterBox } from "widgets/Box";
 
 const mapStateToProps = (state: RootState) => {
   return {};
@@ -17,41 +19,6 @@ interface TabOption {
   text: string;
   to: string;
 }
-
-export const tabOptions: TabOption[] = [
-  {
-    text: "Dashboard",
-    to: "/"
-  },
-  {
-    text: "Application",
-    to: "/applications"
-  },
-  // {
-  //   text: "Component Template",
-  //   to: "/componenttemplates"
-  // },
-  {
-    text: "Configs",
-    to: "/configs"
-  },
-  // {
-  //   text: "Routes",
-  //   to: "/routes"
-  // },
-  {
-    text: "Nodes",
-    to: "/cluster/nodes"
-  },
-  {
-    text: "Volumes",
-    to: "/cluster/volumes"
-  },
-  {
-    text: "Dependencies",
-    to: "/settings/dependencies"
-  }
-];
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -74,9 +41,13 @@ const styles = (theme: Theme) =>
       justifyContent: "space-between"
     },
     barTitle: {
+      color: "inherit",
       fontSize: "24px",
       fontWeight: "bold",
-      padding: "15px 0"
+      padding: "15px 0",
+      "&:hover": {
+        color: "inherit"
+      }
     },
     barRight: {
       display: "flex",
@@ -113,9 +84,12 @@ function a11yProps(index: any) {
 
 interface Props extends WithStyles<typeof styles> {
   dispatch: TDispatch;
+  title: string;
+  tabOptions: TabOption[];
+  isAdmin?: boolean; // refactor this option and layout, temporary solution
 }
 
-const TabBarComponentRaw = ({ classes, dispatch }: Props) => {
+const TabBarComponentRaw = ({ classes, dispatch, title, isAdmin, tabOptions }: Props) => {
   let pathname = "/";
   if (window.location.pathname !== "/") {
     for (let option of tabOptions) {
@@ -149,7 +123,12 @@ const TabBarComponentRaw = ({ classes, dispatch }: Props) => {
   return (
     <AppBar id="header" position="relative" className={classes.appBar}>
       <div className={classes.barContainer}>
-        <div className={classes.barTitle}>OpenCore Kapp</div>
+        <FlexRowItemCenterBox>
+          <Link className={classes.barTitle} to="/">
+            {title}
+          </Link>
+          {isAdmin ? null : <Namespaces />}
+        </FlexRowItemCenterBox>
         <div className={classes.barRight}>
           <IconButtonWithTooltip
             tooltipTitle="Settings"

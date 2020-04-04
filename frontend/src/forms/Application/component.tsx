@@ -1,27 +1,31 @@
-import { Box, Button, createStyles, Grid, Theme, Typography, withStyles, WithStyles } from "@material-ui/core";
-import AddIcon from "@material-ui/icons/Add";
+import { Box, createStyles, Theme, Typography, withStyles, WithStyles } from "@material-ui/core";
 import WarningIcon from "@material-ui/icons/Warning";
 import Immutable from "immutable";
 import MaterialTable from "material-table";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
-import { submit, WrappedFieldArrayProps, change, arrayPush } from "redux-form";
+import { arrayPush, change, getFormSyncErrors, submit, WrappedFieldArrayProps } from "redux-form";
 import { FieldArray, formValueSelector } from "redux-form/immutable";
+import { setIsSubmittingApplicationComponent } from "../../actions/application";
 import { RootState } from "../../reducers";
+import { ApplicationComponent, SharedEnv } from "../../types/application";
+import { EnvTypeExternal } from "../../types/common";
+import { ComponentLike, newEmptyComponentLike } from "../../types/componentTemplate";
+import { CustomizedButton } from "../../widgets/Button";
 import { ComponentLikeForm } from "../ComponentLike";
 import { CustomizedDialog } from "./ComponentModal";
 import { KappTooltip } from "./KappTooltip";
-import { ApplicationComponent, SharedEnv } from "../../types/application";
-import { ComponentLike, newEmptyComponentLike } from "../../types/componentTemplate";
-import { EnvTypeExternal } from "../../types/common";
 
 const mapStateToProps = (state: RootState) => {
   const selector = formValueSelector("application");
   const sharedEnv: Immutable.List<SharedEnv> = selector(state, "sharedEnvs");
+  const syncErrors = getFormSyncErrors("componentLike")(state);
 
   return {
+    isSubmittingApplicationComponent: state.get("applications").get("isSubmittingApplicationComponent"),
     componentTemplates: state.get("componentTemplates").get("componentTemplates"),
-    sharedEnv
+    sharedEnv,
+    syncErrors
   };
 };
 
@@ -233,16 +237,22 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
   };
 
   private saveComponentFormDialog = () => {
-    this.props.dispatch(submit("componentLike"));
+    const { dispatch } = this.props;
+
+    dispatch(setIsSubmittingApplicationComponent(true));
+
+    setTimeout(() => {
+      dispatch(submit("componentLike"));
+    }, 200);
   };
 
   private handleComponentLikeFormSubmit = async (componentLike: ComponentLike) => {
     const { dialogFormApplicationComponentIndex } = this.state;
-    const { meta, fields } = this.props;
+    const { meta, fields, dispatch } = this.props;
     if (dialogFormApplicationComponentIndex === undefined) {
       return;
     }
-    // console.log(meta.form, fields.name, componentLike);
+
     if (dialogFormApplicationComponentIndex === -1) {
       await this.props.dispatch(arrayPush(meta.form, fields.name, componentLike));
     } else {
@@ -253,11 +263,13 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
 
     this.closeComponentFormDialog();
     this.forceUpdate();
+
+    dispatch(setIsSubmittingApplicationComponent(false));
   };
 
   private renderDialog() {
     const { isDialogOpen, dialogFormComponentLikeInstance, dialogFormSaveButtonText, dialogFormTitle } = this.state;
-    const { sharedEnv } = this.props;
+    const { sharedEnv, isSubmittingApplicationComponent, dispatch } = this.props;
 
     return (
       <CustomizedDialog
@@ -269,15 +281,22 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
             {/* <Button onClick={this.closeComponentFormDialog} color="default" variant="contained">
               Cancel
             </Button> */}
-            <Button onClick={this.saveComponentFormDialog} color="primary" variant="contained">
+            <CustomizedButton
+              pending={isSubmittingApplicationComponent}
+              onClick={() => this.saveComponentFormDialog()}
+              color="primary"
+              variant="contained">
               {dialogFormSaveButtonText}
-            </Button>
+            </CustomizedButton>
           </>
         }>
         <ComponentLikeForm
           isFolded={true}
           sharedEnv={sharedEnv}
           onSubmit={this.handleComponentLikeFormSubmit}
+          onSubmitFail={() => {
+            dispatch(setIsSubmittingApplicationComponent(false));
+          }}
           initialValues={dialogFormComponentLikeInstance}
           showDataView
         />
@@ -334,7 +353,7 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
           data={this.getTableData()}
           title=""
         />
-        <Box mt={3}></Box>
+        {/* <Box mt={3}></Box>
         <Grid container spacing={2}>
           <Grid item xs={6}>
             <Button
@@ -358,7 +377,7 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
               Import from Component Template
             </Button>
           </Grid>
-        </Grid>
+        </Grid> */}
       </div>
     );
   }

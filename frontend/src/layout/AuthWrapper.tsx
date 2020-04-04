@@ -2,10 +2,10 @@ import { push } from "connected-react-router";
 import React from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
-import { Actions } from "../../types";
-import { initAuthStatus } from "../../actions/auth";
-import { RootState } from "../../reducers";
-import { Loading } from "../../widgets/Loading";
+import { Actions } from "types";
+import { initAuthStatus } from "actions/auth";
+import { RootState } from "reducers";
+import { Loading } from "widgets/Loading";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
