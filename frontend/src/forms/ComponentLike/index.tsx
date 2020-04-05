@@ -1,5 +1,7 @@
 import { Box, Divider, Grid, List as MList, ListItem, ListItemText, MenuItem, Paper } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
+import grey from "@material-ui/core/colors/grey";
+import clsx from "clsx";
 import Typography from "@material-ui/core/Typography";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
@@ -67,6 +69,35 @@ const styles = (theme: Theme) =>
     },
     summaryIcon: {
       marginLeft: "8px"
+    },
+    summaryShow: {
+      display: "block",
+      padding: "8px 4px 0px 0px"
+    },
+    summaryHide: {
+      display: "none"
+    },
+    summaryKey: {
+      fontSize: 14,
+      fontWeight: 400,
+      color: grey[700]
+    },
+    summaryValue: {
+      padding: "0px  10px",
+      fontSize: 14,
+      fontWeight: 200,
+      color: grey[700]
+    },
+    summaryChanged: {
+      fontWeight: 500,
+      color: grey[800]
+    },
+    summaryItem: {
+      display: "flex"
+    },
+    summaryValueGroup: {
+      display: "flex",
+      flexDirection: "column"
     }
   });
 
@@ -88,6 +119,12 @@ export interface Props
 
 interface State {
   currentPanel: string;
+}
+
+interface Summary {
+  name: string;
+  value: any;
+  hasChanged: boolean;
 }
 
 class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
@@ -613,7 +650,50 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     this.setState({ currentPanel: key });
   }
 
-  private renderPanel(key: string, title: string, content: any): React.ReactNode {
+  private renderSummary(summaryInfos: Summary[]): React.ReactNode {
+    const { classes } = this.props;
+    const renderValues = (summary: Summary) => {
+      if (typeof summary.value === "string") {
+        return (
+          <Typography
+            variant="body2"
+            className={clsx(classes.summaryValue, summary.hasChanged ? classes.summaryChanged : null)}>
+            {summary.value}
+          </Typography>
+        );
+      } else {
+        const values = summary.value;
+        console.log("values", values);
+        if (values.size && values.size > 0) {
+          return values.map((v: string, index: number) => {
+            return (
+              <Typography
+                key={index}
+                variant="body2"
+                className={clsx(classes.summaryValue, summary.hasChanged ? classes.summaryChanged : null)}>
+                {v}
+              </Typography>
+            );
+          });
+        } else {
+          return null;
+        }
+      }
+    };
+    const listItems = summaryInfos.map((summary, index) => {
+      return (
+        <div key={index} className={classes.summaryItem}>
+          <Typography variant="body2" className={clsx(classes.summaryKey)}>
+            {summary.name + " : "}
+          </Typography>
+          <div className={classes.summaryValueGroup}>{renderValues(summary)}</div>
+        </div>
+      );
+    });
+    return <>{listItems}</>;
+  }
+
+  private renderPanel(key: string, title: string, content: any, summary: string = "xxxx"): React.ReactNode {
     const { classes, syncErrors, anyTouched, values, initialValues } = this.props;
 
     const fieldNames = this.getPanelFieldNames(key);
@@ -627,12 +707,21 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         }
       });
     }
-
+    let summaryInfos: Summary[] = [];
     let isChanged = false;
     fieldNames.forEach((name: any) => {
+      let summaryInfo: Summary = {} as Summary;
+      summaryInfo.name = name;
       if (!values.get(name) || typeof values.get(name) === "string") {
         if (values.get(name) !== initialValues.get!(name)) {
           isChanged = true;
+
+          summaryInfo.value = values.get(name);
+          summaryInfo.hasChanged = true;
+        } else {
+          if (values.get(name) != null && values.get(name) !== undefined && values.get(name).length > 0) {
+            summaryInfo.value = values.get(name);
+          }
         }
         // immutable compare
       } else if (values.get(name).equals) {
@@ -645,22 +734,40 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               .equals(initialValues.get!(name))
           ) {
             isChanged = true;
+            summaryInfo.hasChanged = true;
+            if (values.get(name).size && values.get(name).size > 0) {
+              summaryInfo.value = values.get(name).map((item: any) => {
+                return item.join(",");
+              });
+            }
           }
         } else {
           if (!values.get(name).equals(initialValues.get!(name))) {
             isChanged = true;
+            if (values.get(name).size && values.get(name).size > 0) {
+              summaryInfo.value = values.get(name).map((item: any) => {
+                return item.join(",");
+              });
+            }
+            summaryInfo.hasChanged = true;
           }
         }
+        if (values.get(name).size && values.get(name).size > 0) {
+          summaryInfo.value = values.get(name).map((item: any) => {
+            return item.join(",");
+          });
+        }
       }
+      summaryInfo.value && summaryInfos.push(summaryInfo);
     });
-
     return (
-      <ExpansionPanel
-        expanded={key === this.state.currentPanel || isChanged}
-        onChange={() => this.handleChangePanel(key)}>
+      <ExpansionPanel expanded={key === this.state.currentPanel} onChange={() => this.handleChangePanel(key)}>
         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id="panel1a-header">
           <div className={hasError ? classes.summaryError : isChanged ? classes.summaryBold : ""}>
             {title} {hasError ? <ErrorIcon className={classes.summaryIcon} /> : null}
+            <div className={key === this.state.currentPanel ? classes.summaryHide : classes.summaryShow}>
+              {this.renderSummary(summaryInfos)}
+            </div>
           </div>
         </ExpansionPanelSummary>
         <ExpansionPanelDetails className={classes.displayBlock}>{content}</ExpansionPanelDetails>
@@ -702,9 +809,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           {this.renderPanel("ports", "Ports", this.renderPorts())}
           {this.renderPanel("resources", "Resources", this.renderResources())}
           {this.renderPanel("volumes", "Volumes", this.renderVolumes())}
-          {this.renderPanel("advanced", "Advanced", this.renderAdvanced())}
           {this.renderPanel("plugins", "Plugins", this.renderPlugins())}
           {this.renderPanel("probes", "Probes", this.renderProbes())}
+          {this.renderPanel("advanced", "Advanced", this.renderAdvanced())}
         </form>
       );
     }
@@ -716,9 +823,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Paper className={classes.formSection}>{this.renderPorts()}</Paper>
         <Paper className={classes.formSection}>{this.renderResources()}</Paper>
         <Paper className={classes.formSection}>{this.renderVolumes()}</Paper>
-        <Paper className={classes.formSection}>{this.renderAdvanced()}</Paper>
         <Paper className={classes.formSection}>{this.renderPlugins()}</Paper>
         <Paper className={classes.formSection}>{this.renderProbes()}</Paper>
+        <Paper className={classes.formSection}>{this.renderAdvanced()}</Paper>
       </form>
     );
   }
