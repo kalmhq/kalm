@@ -178,7 +178,7 @@ class RenderPorts extends React.PureComponent<Props> {
             },
 
             {
-              title: "Value",
+              title: "ServicePort",
               field: "servicePort",
               initialEditValue: "80",
               sorting: false,

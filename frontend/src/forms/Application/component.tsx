@@ -90,7 +90,7 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
     rowData.applicationComponent.get("ports")
       ? rowData.applicationComponent
           .get("ports")!
-          .map(x => x.get("containerPort"))
+          .map(x => x.get("containerPort") + ":" + x.get("servicePort"))
           .toArray()
           .join(", ")
       : "-";
