@@ -10,7 +10,8 @@ const styles = (theme: Theme) =>
       minHeight: 40,
       display: "flex",
       justifyContent: "space-between",
-      height: "auto"
+      height: "auto",
+      alignItems: "center"
     },
     title: {
       fontSize: 20,

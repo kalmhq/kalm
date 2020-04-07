@@ -9,8 +9,7 @@ import {
   V1ClusterRole,
   V1ClusterRoleBinding,
   V1ServiceAccount,
-  V1Secret,
-  V1NamespaceList
+  V1Secret
 } from "../model/models";
 import { ItemList } from "../kappModel/List";
 import { V1alpha1Dependency, V1alpha1ComponentTemplateSpec } from "../kappModel";

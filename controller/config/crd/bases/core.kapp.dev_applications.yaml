@@ -229,10 +229,16 @@ spec:
                     type: string
                   name:
                     type: string
+                  nodeSelectorLabels:
+                    additionalProperties:
+                      type: string
+                    type: object
                   plugins:
                     items:
                       type: object
                     type: array
+                  podAffinityType:
+                    type: string
                   ports:
                     items:
                       properties:

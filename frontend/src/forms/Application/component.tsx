@@ -15,6 +15,7 @@ import { CustomizedButton } from "../../widgets/Button";
 import { ComponentLikeForm } from "../ComponentLike";
 import { CustomizedDialog } from "./ComponentModal";
 import { KappTooltip } from "./KappTooltip";
+import { TableTitle } from "widgets/TableTitle";
 
 const mapStateToProps = (state: RootState) => {
   const selector = formValueSelector("application");
@@ -351,7 +352,7 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
             { title: "Envs", field: "envs", sorting: false, render: this.renderEnvsColumn }
           ]}
           data={this.getTableData()}
-          title=""
+          title={TableTitle("Components")}
         />
         {/* <Box mt={3}></Box>
         <Grid container spacing={2}>

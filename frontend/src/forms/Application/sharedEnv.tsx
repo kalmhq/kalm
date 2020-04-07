@@ -12,6 +12,7 @@ import { MaterialTableEditAutoComplete } from "../Basic/autoComplete";
 import { MaterialTableEditTextField } from "../Basic/text";
 import { KappTooltip } from "./KappTooltip";
 import { SharedEnv } from "../../types/application";
+import { TableTitle } from "widgets/TableTitle";
 
 const mapStateToProps = () => {
   const application = getCurrentFormApplication();
@@ -182,7 +183,7 @@ class RenderSharedEnvs extends React.PureComponent<Props> {
             onRowDelete: this.handleDelete
           }}
           data={this.getTableData()}
-          title=""
+          title={TableTitle("Shared Envs")}
         />
       </div>
     );

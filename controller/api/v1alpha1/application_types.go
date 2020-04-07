@@ -26,6 +26,13 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+const (
+	PodAffinityTypePreferFanout PodAffinityType = "prefer-fanout" // multi host
+	PodAffinityTypePreferGather PodAffinityType = "prefer-gather" //same host
+)
+
+type PodAffinityType string
+
 type ComponentSpec struct {
 	Name string `json:"name"`
 
@@ -34,6 +41,9 @@ type ComponentSpec struct {
 	Image string `json:"image"`
 
 	Replicas *int32 `json:"replicas,omitempty"`
+
+	PodAffinityType    PodAffinityType   `json:"podAffinityType,omitempty"`
+	NodeSelectorLabels map[string]string `json:"nodeSelectorLabels,omitempty"`
 
 	Dependencies []string `json:"dependencies,omitempty"`
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { createStyles, Theme, AppBar, Tab, Tabs, Avatar, Box } from "@material-ui/core";
+import { createStyles, Theme, AppBar, Tab, Tabs, Avatar } from "@material-ui/core";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import { NavLink, Link } from "react-router-dom";
 import SettingsIcon from "@material-ui/icons/Settings";
@@ -10,6 +10,7 @@ import { TDispatch } from "types";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { Namespaces } from "widgets/Namespaces";
 import { FlexRowItemCenterBox } from "widgets/Box";
+import blue from "@material-ui/core/colors/blue";
 
 const mapStateToProps = (state: RootState) => {
   return {};
@@ -25,7 +26,7 @@ const styles = (theme: Theme) =>
     appBar: {
       height: "120px",
       color: "white",
-      backgroundColor: "#2196F3",
+      backgroundColor: blue[500],
       position: "fixed",
       top: "0px",
       transition: "0.2s"
