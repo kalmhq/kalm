@@ -65,6 +65,14 @@ export interface PluginContent {
   [key: string]: any;
 }
 
+export type NodeSelectorLabels = ImmutableMap<{
+  [key: string]: string;
+}>;
+
+export type PodAffinityType = string;
+export const PodAffinityTypePreferFanout: PodAffinityType = "prefer-fanout"; // multi host
+export const PodAffinityTypePreferGather: PodAffinityType = "prefer-gather"; //same host
+
 export type VolumeType = string;
 export const VolumeTypeTemporaryMemory: VolumeType = "emptyDirMemory";
 export const VolumeTypeTemporaryDisk: VolumeType = "emptyDir";
@@ -141,6 +149,8 @@ export interface ComponentLikeContent {
   plugins?: Immutable.List<Plugin>;
   livenessProbe?: Probe;
   ReadinessProbe?: Probe;
+  nodeSelectorLabels?: NodeSelectorLabels;
+  podAffinityType?: PodAffinityType;
 }
 
 export interface ComponentTemplateContent extends ComponentLikeContent {}

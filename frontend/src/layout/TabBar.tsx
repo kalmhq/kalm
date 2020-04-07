@@ -1,5 +1,5 @@
 import React from "react";
-import { createStyles, Theme, AppBar, Tab, Tabs, Avatar, Box } from "@material-ui/core";
+import { createStyles, Theme, AppBar, Tab, Tabs, Avatar } from "@material-ui/core";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import { NavLink, Link } from "react-router-dom";
 import SettingsIcon from "@material-ui/icons/Settings";

@@ -39,6 +39,7 @@ export const MaterialTableEditSelectField = ({
         labelWidth={labelWidth}
         autoFocus={false}
         labelId={labelId}
+        defaultValue={value}
         value={value}
         onChange={handleOnChange}
         inputProps={{
