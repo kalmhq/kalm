@@ -1,4 +1,15 @@
-import { Checkbox, createStyles, Switch, TextField, Theme, WithStyles, withStyles } from "@material-ui/core";
+import {
+  Checkbox,
+  createStyles,
+  Switch,
+  TextField,
+  Theme,
+  WithStyles,
+  withStyles,
+  Typography,
+  Button,
+  Box
+} from "@material-ui/core";
 import ArchiveIcon from "@material-ui/icons/Archive";
 import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew";
 import RefreshIcon from "@material-ui/icons/Refresh";
@@ -24,6 +35,7 @@ import { Details } from "./Detail";
 import { ApplicationListDataWrapper, WithApplicationsDataProps } from "./ListDataWrapper";
 import { Link } from "react-router-dom";
 import AddIcon from "@material-ui/icons/Add";
+import { blue, grey } from "@material-ui/core/colors";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -96,8 +108,7 @@ const styles = (theme: Theme) =>
       display: "flex",
       alignItems: "center",
       fontSize: "14px",
-      fontWeight: "bold",
-      color: "#2196F3"
+      fontWeight: "bold"
     }
   });
 
@@ -469,15 +480,24 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           ) : (
             <MaterialTable
               tableRef={this.tableRef}
+              components={{
+                Actions: props => {
+                  return (
+                    <Button
+                      color="primary"
+                      size="large"
+                      className={classes.addAction}
+                      startIcon={<AddIcon />}
+                      onClick={this.onCreate}>
+                      Add
+                    </Button>
+                  );
+                }
+              }}
               actions={[
                 {
                   isFreeAction: true,
-                  icon: () => (
-                    <span className={classes.addAction}>
-                      <AddIcon style={{ marginRight: "6px" }} />
-                      Add
-                    </span>
-                  ),
+                  icon: "add",
                   onClick: this.onCreate
                 }
               ]}
@@ -486,7 +506,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                 draggable: false,
                 rowStyle: {
                   verticalAlign: "baseline"
-                }
+                },
+                headerStyle: { color: grey[400] }
               }}
               columns={[
                 // @ts-ignore
@@ -511,7 +532,13 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
               //   console.log(_event);
               // }}
               data={this.getData()}
-              title="Applications"
+              title={
+                <Typography variant="h6" color="primary">
+                  <Box fontWeight="fontWeightMedium" m={1}>
+                    Applications
+                  </Box>
+                </Typography>
+              }
             />
           )}
         </div>
