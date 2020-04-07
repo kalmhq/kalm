@@ -36,6 +36,7 @@ import { ApplicationListDataWrapper, WithApplicationsDataProps } from "./ListDat
 import { Link } from "react-router-dom";
 import AddIcon from "@material-ui/icons/Add";
 import { grey } from "@material-ui/core/colors";
+import { TableTitle } from "widgets/TableTitle";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -532,13 +533,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
               //   console.log(_event);
               // }}
               data={this.getData()}
-              title={
-                <Typography variant="h6" color="primary">
-                  <Box fontWeight="fontWeightMedium" m={1}>
-                    Applications
-                  </Box>
-                </Typography>
-              }
+              title={TableTitle("Applications")}
             />
           )}
         </div>
