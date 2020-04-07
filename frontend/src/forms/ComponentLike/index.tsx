@@ -4,7 +4,7 @@ import grey from "@material-ui/core/colors/grey";
 import clsx from "clsx";
 import Typography from "@material-ui/core/Typography";
 import React from "react";
-import { connect, DispatchProp } from "react-redux";
+import { connect } from "react-redux";
 import { InjectedFormProps } from "redux-form";
 import { Field, getFormValues, reduxForm, getFormSyncErrors } from "redux-form/immutable";
 import { RootState } from "../../reducers";
@@ -26,14 +26,20 @@ import { Volumes } from "./volumes";
 import ErrorIcon from "@material-ui/icons/Error";
 import { SharedEnv } from "../../types/application";
 import { ReadinessProbe, LivenessProbe } from "./Probes";
+import { loadNodesAction } from "../../actions/node";
+import { TDispatchProp } from "../../types";
+import { CustomLabels, AffinityType } from "./NodeSelector";
+import { getNodeLabels } from "../../selectors/node";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
   const syncErrors = getFormSyncErrors("componentLike")(state);
+  const nodeLabels = getNodeLabels();
 
   return {
     values,
-    syncErrors
+    syncErrors,
+    nodeLabels
   };
 };
 
@@ -114,7 +120,7 @@ export interface Props
   extends InjectedFormProps<ComponentLike, RawProps>,
     ReturnType<typeof mapStateToProps>,
     WithStyles<typeof styles>,
-    DispatchProp,
+    TDispatchProp,
     RawProps {}
 
 interface State {
@@ -134,6 +140,12 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     this.state = {
       currentPanel: "basic"
     };
+  }
+
+  public componentDidMount() {
+    const { dispatch } = this.props;
+    // load node labels for node selectors
+    dispatch(loadNodesAction());
   }
 
   private renderSchedule() {
@@ -642,6 +654,35 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
+  private renderNodeSelector() {
+    const { classes, isFolded, nodeLabels } = this.props;
+    return (
+      <Grid container spacing={2}>
+        <Grid item md={12}>
+          {!isFolded && (
+            <Typography
+              variant="h2"
+              classes={{
+                root: classes.sectionHeader
+              }}>
+              Node Selector
+            </Typography>
+          )}
+        </Grid>
+        <Grid item md={12}>
+          <CustomLabels nodeLabels={nodeLabels} />
+        </Grid>
+        <Grid item md={6}>
+          <AffinityType />
+        </Grid>
+        <Grid item md={6}>
+          {/* TODO */}
+          <div>TODO describe this field</div>
+        </Grid>
+      </Grid>
+    );
+  }
+
   private handleChangePanel(key: string) {
     if (this.state.currentPanel === key) {
       this.setState({ currentPanel: "" });
@@ -811,6 +852,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           {this.renderPanel("volumes", "Volumes", this.renderVolumes())}
           {this.renderPanel("plugins", "Plugins", this.renderPlugins())}
           {this.renderPanel("probes", "Probes", this.renderProbes())}
+          {this.renderPanel("nodeSelector", "Node Selector", this.renderNodeSelector())}
           {this.renderPanel("advanced", "Advanced", this.renderAdvanced())}
         </form>
       );
@@ -825,6 +867,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Paper className={classes.formSection}>{this.renderVolumes()}</Paper>
         <Paper className={classes.formSection}>{this.renderPlugins()}</Paper>
         <Paper className={classes.formSection}>{this.renderProbes()}</Paper>
+        <Paper className={classes.formSection}>{this.renderNodeSelector()}</Paper>
         <Paper className={classes.formSection}>{this.renderAdvanced()}</Paper>
       </form>
     );

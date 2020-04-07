@@ -58,19 +58,21 @@ class RenderProbe extends React.PureComponent<Props, State> {
     const value = this.props.input.value;
     this.setState({ type });
 
-    if (type === "httpGet") {
-      input.onChange(value.delete("exec").delete("tcpSocket"));
-    } else if (type === "exec") {
-      input.onChange(value.delete("httpGet").delete("tcpSocket"));
-    } else if (type === "tcpSocket") {
-      input.onChange(value.delete("httpGet").delete("exec"));
-    } else {
-      input.onChange(
-        value
-          .delete("httpGet")
-          .delete("exec")
-          .delete("tcpSocket")
-      );
+    if (value.delete) {
+      if (type === "httpGet") {
+        input.onChange(value.delete("exec").delete("tcpSocket"));
+      } else if (type === "exec") {
+        input.onChange(value.delete("httpGet").delete("tcpSocket"));
+      } else if (type === "tcpSocket") {
+        input.onChange(value.delete("httpGet").delete("exec"));
+      } else {
+        input.onChange(
+          value
+            .delete("httpGet")
+            .delete("exec")
+            .delete("tcpSocket")
+        );
+      }
     }
   }
 
