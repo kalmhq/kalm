@@ -35,7 +35,7 @@ import { Details } from "./Detail";
 import { ApplicationListDataWrapper, WithApplicationsDataProps } from "./ListDataWrapper";
 import { Link } from "react-router-dom";
 import AddIcon from "@material-ui/icons/Add";
-import { blue, grey } from "@material-ui/core/colors";
+import { grey } from "@material-ui/core/colors";
 
 const styles = (theme: Theme) =>
   createStyles({
