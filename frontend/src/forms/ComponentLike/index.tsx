@@ -852,8 +852,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           {this.renderPanel("volumes", "Volumes", this.renderVolumes())}
           {this.renderPanel("plugins", "Plugins", this.renderPlugins())}
           {this.renderPanel("probes", "Probes", this.renderProbes())}
-          {this.renderPanel("advanced", "Advanced", this.renderAdvanced())}
           {this.renderPanel("nodeSelector", "Node Selector", this.renderNodeSelector())}
+          {this.renderPanel("advanced", "Advanced", this.renderAdvanced())}
         </form>
       );
     }
@@ -867,8 +867,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Paper className={classes.formSection}>{this.renderVolumes()}</Paper>
         <Paper className={classes.formSection}>{this.renderPlugins()}</Paper>
         <Paper className={classes.formSection}>{this.renderProbes()}</Paper>
-        <Paper className={classes.formSection}>{this.renderAdvanced()}</Paper>
         <Paper className={classes.formSection}>{this.renderNodeSelector()}</Paper>
+        <Paper className={classes.formSection}>{this.renderAdvanced()}</Paper>
       </form>
     );
   }
