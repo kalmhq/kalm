@@ -26,7 +26,9 @@ func (h *ApiHandler) handleListNamespaces(c echo.Context) error {
 		return err
 	}
 
-	var res NamespaceListResponse
+	res := NamespaceListResponse{
+		Namespaces: make([]Namespace, 0),
+	}
 
 	for _, ns := range ns.Items {
 		// only return kapp namespaces

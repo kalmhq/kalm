@@ -23,6 +23,7 @@ import { ConfigRes, ConfigCreate } from "../types/config";
 import { ImmutableMap } from "../typings";
 import { Namespaces } from "../types/namespace";
 import { getCurrentNamespace } from "../selectors/namespace";
+import { RoleBinding, RoleBindingsRequestBody } from "types/user";
 
 export const K8sApiPrefix = process.env.REACT_APP_K8S_API_PERFIX;
 export const k8sWsPrefix = !K8sApiPrefix
@@ -223,6 +224,26 @@ export const createKappClusterRole = async (clusterRole: V1ClusterRole): Promise
 
 export const deleteKappClusterRole = async (name: string): Promise<void> => {
   await getAxiosClient().delete(K8sApiPrefix + `/v1/clusterroles/${name}`);
+};
+
+export const loadRolebindings = async () => {
+  const res = await getAxiosClient().get<{ roleBindings: any }>(K8sApiPrefix + "/v1alpha1/rolebindings");
+  return Immutable.fromJS(res.data.roleBindings) as Immutable.List<RoleBinding>;
+};
+
+export const createRoleBindings = async (roleBindingRequestBody: RoleBindingsRequestBody) => {
+  await getAxiosClient().post(K8sApiPrefix + "/v1alpha1/rolebindings", roleBindingRequestBody.toJS());
+};
+
+export const deleteRoleBindings = async (namespace: string, bindingName: string) => {
+  await getAxiosClient().delete(K8sApiPrefix + "/v1alpha1/rolebindings/" + namespace + "/" + bindingName);
+};
+
+export const getServiceAccountSecret = async (name: string) => {
+  const res = await getAxiosClient().get<{ token: string; "ca.crt": string }>(
+    K8sApiPrefix + "/v1alpha1/serviceaccounts/" + name
+  );
+  return res.data;
 };
 
 export const getKappClusterRoleBindings = async () => {

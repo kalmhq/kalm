@@ -19,6 +19,7 @@ import { NodeListPage } from "pages/NodeList";
 import { NoMatch, Page404 } from "pages/NoMatch";
 import React from "react";
 import { Route, Switch } from "react-router";
+import { AdminRoles } from "pages/Admin/Roles";
 
 export const KappRoutes = (
   <Switch>
@@ -27,7 +28,8 @@ export const KappRoutes = (
     <Route path="/admin">
       <Admin>
         <Switch>
-          <Route exact path="/admin/namespaces" component={AdminNamespaces} />
+          <Route exact path={["/admin/namespaces", "/admin"]} component={AdminNamespaces} />
+          <Route exact path={["/admin/roles", "/roles"]} component={AdminRoles} />
         </Switch>
       </Admin>
     </Route>
