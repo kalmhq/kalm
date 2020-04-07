@@ -12,6 +12,8 @@ spec:
   isActive: true
   components:
     - name: payment
+      dependencies: 
+        - shippingservice
       image: weaveworksdemos/payment:0.4.3
       replicas: 1
       cpu: 100m
@@ -31,6 +33,27 @@ spec:
           port: 80
         initialDelaySeconds: 180
         periodSeconds: 3
+    - name: shippingservice
+      dependencies: 
+        - payment
+      image: diveinto/shippingservice:v0.1.4-4-g997b5e8
+      replicas: 1
+      cpu: 50m
+      memory: 64Mi
+      ports:
+        - name: grpc
+          containerPort: 50051
+          servicePort: 50051
+      env:
+        - name: PORT
+          value: "50051"
+      readinessProbe:
+        periodSeconds: 5
+        exec:
+          command: ["/bin/grpc_health_probe", "-addr=:50051"]
+      livenessProbe:
+        exec:
+          command: ["/bin/grpc_health_probe", "-addr=:50051"]
   sharedEnv:
     - name: SOME_COMMON_ENV
       value: shared_value

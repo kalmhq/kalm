@@ -35,7 +35,7 @@ func (r *Application) SetupWebhookWithManager(mgr ctrl.Manager) error {
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 
-// kubebuilder:webhook:path=/mutate-core-kapp-dev-v1alpha1-application,mutating=true,failurePolicy=fail,groups=core.kapp.dev,resources=applications,verbs=create;update,versions=v1alpha1,name=mapplication.kb.io
+// +kubebuilder:webhook:path=/mutate-core-kapp-dev-v1alpha1-application,mutating=true,failurePolicy=fail,groups=core.kapp.dev,resources=applications,verbs=create;update,versions=v1alpha1,name=mapplication.kb.io
 
 var _ webhook.Defaulter = &Application{}
 
@@ -47,7 +47,7 @@ func (r *Application) Default() {
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
-// kubebuilder:webhook:verbs=create;update,path=/validate-core-kapp-dev-v1alpha1-application,mutating=false,failurePolicy=fail,groups=core.kapp.dev,resources=applications,versions=v1alpha1,name=vapplication.kb.io
+// +kubebuilder:webhook:verbs=create;update,path=/validate-core-kapp-dev-v1alpha1-application,mutating=false,failurePolicy=fail,groups=core.kapp.dev,resources=applications,versions=v1alpha1,name=vapplication.kb.io
 
 var _ webhook.Validator = &Application{}
 
