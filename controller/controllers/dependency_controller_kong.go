@@ -177,10 +177,11 @@ func (r *DependencyReconciler) desiredIngress(
 		ObjectMeta: v1.ObjectMeta{
 			Name:      dep.Name,
 			Namespace: ns,
-			//Annotations: map[string]string{
-			//	"kubernetes.io/tls-acme":         "true",
-			//	"cert-manager.io/cluster-issuer": getNameForClusterIssuer(dep),
-			//},
+			Annotations: map[string]string{
+				"kubernetes.io/ingress.class": "kong",
+				//	"kubernetes.io/tls-acme":         "true",
+				//	"cert-manager.io/cluster-issuer": getNameForClusterIssuer(dep),
+			},
 		},
 		Spec: v1beta1.IngressSpec{
 			//TLS: []v1beta1.IngressTLS{
@@ -199,6 +200,7 @@ func (r *DependencyReconciler) desiredIngress(
 			{
 				Hosts: hosts,
 				//todo can not set ns here?
+				// todo should delete this secret if ing deleted
 				SecretName: "this-sec-name-does-not-matter-" + cmName,
 			},
 		}

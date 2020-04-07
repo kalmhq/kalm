@@ -519,6 +519,10 @@ spec:
           value: /dev/stderr
         - name: KONG_ADMIN_LISTEN
           value: 127.0.0.1:8444 ssl
+        - name: KONG_PROXY_ACCESS_LOG
+          value: /dev/stdout
+        - name: KONG_PROXY_ERROR_LOG
+          value: /dev/stderr
         - name: KONG_PROXY_LISTEN
           value: 0.0.0.0:8000, 0.0.0.0:8443 ssl http2
         image: kong:1.4

@@ -207,6 +207,11 @@ func (act *applicationReconcilerTask) generateTemplate(component *kappV1Alpha1.C
 		},
 	}
 
+	//decide affinity
+	if affinity, exist := decideAffinity(act.app.Name, component); exist {
+		template.Spec.Affinity = affinity
+	}
+
 	mainContainer := &template.Spec.Containers[0]
 
 	// resources
@@ -407,6 +412,77 @@ func (act *applicationReconcilerTask) generateTemplate(component *kappV1Alpha1.C
 	//}
 
 	return template, nil
+}
+
+func decideAffinity(appName string, component *kappV1Alpha1.ComponentSpec) (*coreV1.Affinity, bool) {
+	var nodeSelectorTerms []coreV1.NodeSelectorTerm
+	for label, v := range component.NodeSelectorLabels {
+		nodeSelectorTerms = append(nodeSelectorTerms, coreV1.NodeSelectorTerm{
+			MatchExpressions: []coreV1.NodeSelectorRequirement{
+				{
+					Key:      label,
+					Operator: coreV1.NodeSelectorOpIn,
+					Values:   []string{v},
+				},
+			},
+		})
+	}
+
+	var nodeAffinity *coreV1.NodeAffinity
+	if len(nodeSelectorTerms) > 0 {
+		nodeAffinity = &coreV1.NodeAffinity{
+			RequiredDuringSchedulingIgnoredDuringExecution: &coreV1.NodeSelector{
+				NodeSelectorTerms: nodeSelectorTerms,
+			},
+		}
+	}
+
+	labelsOfThisComponent := getComponentLabels(appName, component.Name)
+
+	var podAffinity *coreV1.PodAffinity
+	if component.PodAffinityType == kappV1Alpha1.PodAffinityTypePreferGather {
+		// same
+		podAffinity = &coreV1.PodAffinity{
+			PreferredDuringSchedulingIgnoredDuringExecution: []coreV1.WeightedPodAffinityTerm{
+				{
+					Weight: 1,
+					PodAffinityTerm: coreV1.PodAffinityTerm{
+						TopologyKey: "kubernetes.io/hostname",
+						LabelSelector: &metaV1.LabelSelector{
+							MatchLabels: labelsOfThisComponent,
+						},
+					},
+				},
+			},
+		}
+	}
+
+	var podAntiAffinity *coreV1.PodAntiAffinity
+	if component.PodAffinityType == kappV1Alpha1.PodAffinityTypePreferFanout {
+		podAntiAffinity = &coreV1.PodAntiAffinity{
+			PreferredDuringSchedulingIgnoredDuringExecution: []coreV1.WeightedPodAffinityTerm{
+				{
+					Weight: 1,
+					PodAffinityTerm: coreV1.PodAffinityTerm{
+						TopologyKey: "kubernetes.io/hostname",
+						LabelSelector: &metaV1.LabelSelector{
+							MatchLabels: labelsOfThisComponent,
+						},
+					},
+				},
+			},
+		}
+	}
+
+	if nodeAffinity == nil && podAffinity == nil && podAntiAffinity == nil {
+		return nil, false
+	}
+
+	return &coreV1.Affinity{
+		NodeAffinity:    nodeAffinity,
+		PodAffinity:     podAffinity,
+		PodAntiAffinity: podAntiAffinity,
+	}, true
 }
 
 func (act *applicationReconcilerTask) reconcileServices() (err error) {
