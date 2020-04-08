@@ -32,6 +32,7 @@ import { CustomLabels, AffinityType } from "./NodeSelector";
 import { getNodeLabels } from "../../selectors/node";
 import { red } from "@material-ui/core/colors";
 import { extractSummaryInfoFromMap, extractSummaryInfoFromList } from "forms/summarizer";
+import { loadConfigsAction } from "../../actions/config";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
@@ -148,6 +149,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     const { dispatch } = this.props;
     // load node labels for node selectors
     dispatch(loadNodesAction());
+    // load configs for volume
+    dispatch(loadConfigsAction());
   }
 
   private renderSchedule() {
@@ -901,7 +904,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       case "plugins":
         return ["plugins"];
       case "nodeSelector":
-        return ["podAffinityType", "nodeSelectorLabels"];
+        return ["nodeSelectorLabels", "podAffinityType"];
       case "probes":
         return ["livenessProbe", "readinessProbe"];
       default:

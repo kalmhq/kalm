@@ -2,6 +2,7 @@ import { combineReducers } from "redux-immutable";
 import { reducer as formReducer } from "redux-form/immutable";
 import { FormState } from "redux-form";
 import settings, { State as SettingsState } from "./settings";
+import admin, { State as AdminState } from "./admin";
 import notification, { State as NotificationState } from "./notification";
 import namespaces, { State as NamespacesState } from "./namespaces";
 import dialogs, { State as DialogState } from "./dialog";
@@ -32,6 +33,7 @@ export type RootState = ImmutableMap<{
   persistentVolumns: PersistentVolumnsState;
   settings: SettingsState;
   users: UserState;
+  admin: AdminState;
 }>;
 
 // combineReducers returns immutable map, but the type is not working correctly
@@ -53,5 +55,6 @@ export default (history: History<LocationState>) =>
     configs,
     notification,
     settings,
-    users
+    users,
+    admin
   });

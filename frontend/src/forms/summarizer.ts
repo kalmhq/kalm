@@ -28,7 +28,8 @@ export const extractSummaryInfoFromMap = (values: Map<string, any>, name: string
 };
 
 export const extractSummaryInfoFromList = (values: Map<string, any>, name: string): string => {
-  return values.get(name).map((item: any) => {
-    return item.join(",");
-  });
+  return JSON.stringify(values.get(name).toJS());
+  // return values.get(name).map((item: any) => {
+  //   return item.join(",");
+  // });
 };

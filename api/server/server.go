@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/go-playground/validator/v10"
 	"net/http"
 	"os"
 
@@ -30,6 +31,14 @@ func newEchoInstance() *echo.Echo {
 	return e
 }
 
+type CustomValidator struct {
+	validator *validator.Validate
+}
+
+func (cv *CustomValidator) Validate(i interface{}) error {
+	return cv.validator.Struct(i)
+}
+
 func NewEchoServer(runningConfig *config.Config) *echo.Echo {
 	e := newEchoInstance()
 
@@ -43,6 +52,8 @@ func NewEchoServer(runningConfig *config.Config) *echo.Echo {
 			HTML5: true,
 		}))
 	}
+
+	e.Validator = &CustomValidator{validator: validator.New()}
 
 	return e
 }

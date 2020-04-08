@@ -1,10 +1,14 @@
-import { Checkbox, createStyles, Switch, TextField, Theme, WithStyles, withStyles, Button } from "@material-ui/core";
+import { Button, Checkbox, createStyles, Switch, TextField, Theme, WithStyles, withStyles } from "@material-ui/core";
+import { grey } from "@material-ui/core/colors";
+import AddIcon from "@material-ui/icons/Add";
 import ArchiveIcon from "@material-ui/icons/Archive";
 import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew";
 import RefreshIcon from "@material-ui/icons/Refresh";
 import { push } from "connected-react-router";
 import MaterialTable from "material-table";
 import React from "react";
+import { Link } from "react-router-dom";
+import { TableTitle } from "widgets/TableTitle";
 import {
   deleteApplicationAction,
   duplicateApplicationAction,
@@ -22,10 +26,6 @@ import { SmallCPULineChart, SmallMemoryLineChart } from "../../widgets/SmallLine
 import { BasePage } from "../BasePage";
 import { Details } from "./Detail";
 import { ApplicationListDataWrapper, WithApplicationsDataProps } from "./ListDataWrapper";
-import { Link } from "react-router-dom";
-import AddIcon from "@material-ui/icons/Add";
-import { grey } from "@material-ui/core/colors";
-import { TableTitle } from "widgets/TableTitle";
 
 const styles = (theme: Theme) =>
   createStyles({

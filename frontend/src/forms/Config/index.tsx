@@ -8,11 +8,11 @@ import { ValidatorRequired, ValidatorName } from "../validator";
 import { ConfigNode, ConfigNodeType } from "../../types/config";
 import Immutable from "immutable";
 import { CustomEditor } from "./editor";
-import { CustomCascader } from "./cascader";
+import { AncestorIds } from "./ancestorIds";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import { connect } from "react-redux";
 import { RootState } from "../../reducers";
-import { getCascaderDefaultValue, getCurrentConfig } from "../../selectors/config";
+import { getAncestorIdsDefaultValue, getCurrentConfig } from "../../selectors/config";
 import { CustomizedButton } from "../../widgets/Button";
 
 export interface Props {
@@ -29,7 +29,7 @@ const mapStateToProps = (state: RootState, props: Props) => {
   let initialValues: ConfigNode;
   if (props.formType === "new") {
     initialValues = Immutable.fromJS({
-      ancestorIds: getCascaderDefaultValue(),
+      ancestorIds: getAncestorIdsDefaultValue(),
       name: "",
       type: props.configType,
       oldPath: "",
@@ -102,7 +102,7 @@ const ConfigFormRaw = (props: Props & InjectedFormProps<ConfigNode, Props>) => {
       <form onSubmit={handleSubmit}>
         <div className={classes.pathAndName}>
           <FormControl className={classes.pathWrapper} margin="normal">
-            <CustomCascader />
+            <AncestorIds />
             <FormHelperText className="MuiFormHelperText-contained MuiFormHelperText-marginDense">
               Select a folder to add config
             </FormHelperText>

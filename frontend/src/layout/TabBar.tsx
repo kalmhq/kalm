@@ -1,16 +1,15 @@
-import React from "react";
-import { createStyles, Theme, AppBar, Tab, Tabs, Avatar } from "@material-ui/core";
-import { WithStyles, withStyles } from "@material-ui/styles";
-import { NavLink, Link } from "react-router-dom";
+import { AppBar, Avatar, createStyles, Tab, Tabs, Theme } from "@material-ui/core";
+import blue from "@material-ui/core/colors/blue";
 import SettingsIcon from "@material-ui/icons/Settings";
-import { UsersDialog } from "widgets/UsersDialog";
+import { WithStyles, withStyles } from "@material-ui/styles";
+import React from "react";
 import { connect } from "react-redux";
+import { Link, NavLink } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
-import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { Namespaces } from "widgets/Namespaces";
 import { FlexRowItemCenterBox } from "widgets/Box";
-import blue from "@material-ui/core/colors/blue";
+import { Namespaces } from "widgets/Namespaces";
+import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 
 const mapStateToProps = (state: RootState) => {
   return {};
@@ -104,7 +103,6 @@ const TabBarComponentRaw = ({ classes, dispatch, title, isAdmin, tabOptions }: P
     }
   }
   const [value, setValue] = React.useState(pathname);
-  const [isOpenSettings, setIsOpenSettings] = React.useState(false);
 
   const handleChange = (event: object, value: any) => {
     // console.log("tab value", value);
@@ -131,12 +129,9 @@ const TabBarComponentRaw = ({ classes, dispatch, title, isAdmin, tabOptions }: P
           {isAdmin ? null : <Namespaces />}
         </FlexRowItemCenterBox>
         <div className={classes.barRight}>
-          <IconButtonWithTooltip
-            tooltipTitle="Settings"
-            className={classes.barSettings}
-            onClick={() => setIsOpenSettings(true)}>
+          <IconLinkWithToolTip tooltipTitle="Settings" className={classes.barSettings} to="/admin">
             <SettingsIcon />
-          </IconButtonWithTooltip>
+          </IconLinkWithToolTip>
           <div className={classes.barAvatar}>
             <Avatar>A</Avatar>
           </div>
@@ -168,14 +163,6 @@ const TabBarComponentRaw = ({ classes, dispatch, title, isAdmin, tabOptions }: P
           })}
         </Tabs>
       </div>
-      {
-        <UsersDialog
-          open={isOpenSettings}
-          onClose={() => {
-            setIsOpenSettings(false);
-          }}
-        />
-      }
     </AppBar>
   );
 };

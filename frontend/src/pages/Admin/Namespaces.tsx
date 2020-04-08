@@ -155,6 +155,7 @@ class AdminNamespacesRaw extends React.PureComponent<Props, State> {
           options={{
             draggable: false,
             search: false,
+            // padding: "dense",
             paging: false,
             //   toolbar: false
             actionsColumnIndex: -1,

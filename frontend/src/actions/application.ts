@@ -151,12 +151,24 @@ export const loadApplicationAction = (namespace: string, name: string): ThunkRes
 };
 
 export const loadApplicationsAction = (): ThunkResult<Promise<void>> => {
-  return async dispatch => {
+  return async (dispatch, getState) => {
+    const activeNamespace = getState()
+      .get("namespaces")
+      .get("active");
     dispatch({ type: LOAD_APPLICATIONS_PENDING });
 
     let applicationList;
     try {
-      applicationList = await getKappApplicationList();
+      applicationList = await getKappApplicationList(activeNamespace);
+
+      // if the namespace is changed, return
+      if (
+        getState()
+          .get("namespaces")
+          .get("active") !== activeNamespace
+      ) {
+        return;
+      }
     } catch (e) {
       if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));

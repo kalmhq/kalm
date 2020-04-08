@@ -2,10 +2,10 @@ import { Box, createStyles, Grid, Paper, Theme, withStyles, WithStyles } from "@
 import DeleteIcon from "@material-ui/icons/Delete";
 import LaptopWindowsIcon from "@material-ui/icons/LaptopWindows";
 import ViewHeadlineIcon from "@material-ui/icons/ViewHeadline";
-import { AxiosResponse } from "axios";
 import clsx from "clsx";
 import React from "react";
 import { ThunkDispatch } from "redux-thunk";
+import { loadApplicationsAction } from "../../actions/application";
 import { deletePod } from "../../actions/kubernetesApi";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "../../actions/notification";
 import { RootState } from "../../reducers";
@@ -21,7 +21,6 @@ import {
   SmallMemoryLineChart
 } from "../../widgets/SmallLineChart";
 import { generateQueryForPods } from "./Log";
-import { loadApplicationsAction } from "../../actions/application";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
@@ -221,9 +220,8 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                           size="small"
                           className={classes.podActionButton}
                           onClick={async () => {
-                            let res: AxiosResponse<any>;
                             try {
-                              res = await deletePod(application.get("namespace"), x.get("name"));
+                              await deletePod(application.get("namespace"), x.get("name"));
                               dispatch(setSuccessNotificationAction(`Delete pod ${x.get("name")} successfully`));
                               // reload
                               dispatch(loadApplicationsAction());

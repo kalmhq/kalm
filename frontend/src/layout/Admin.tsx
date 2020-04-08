@@ -26,8 +26,8 @@ export const tabOptions = [
     to: "/admin/namespaces"
   },
   {
-    text: "Users",
-    to: "/admin/users"
+    text: "Roles & Permissions",
+    to: "/admin/roles"
   },
   {
     text: "Dependencies",

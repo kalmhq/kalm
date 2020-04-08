@@ -29,7 +29,7 @@ export const getConfigByIdChain = (idChain: string[]): ConfigNode => {
   return config;
 };
 
-export const getCascaderDefaultValue = (): string[] => {
+export const getAncestorIdsDefaultValue = (): string[] => {
   const state = store.getState();
   const idChain = state.get("configs").get("currentConfigIdChain");
   const currentConfig = getConfigByIdChain(idChain);
@@ -43,27 +43,30 @@ export const getCascaderDefaultValue = (): string[] => {
   return newIdChain;
 };
 
-export const getCascaderOptions = (): CascaderOptionType[] => {
+export const getCascaderOptions = (isSelectFolder: boolean = true): CascaderOptionType[] => {
   const state = store.getState();
 
   let config = state.get("configs").get("rootConfig");
   const options: CascaderOptionType[] = [];
-  options.push(configToCascaderOption(config));
+  options.push(configToCascaderOption(config, isSelectFolder));
 
   return options;
 };
 
-const configToCascaderOption = (config: ConfigNode): CascaderOptionType => {
+const configToCascaderOption = (config: ConfigNode, isSelectFolder: boolean = true): CascaderOptionType => {
   const children = config.get("children");
 
-  let childrenHaveFolder = false;
   const cascaderOptionChildren: CascaderOptionType[] = [];
 
   children.forEach((childConfig: ConfigNode) => {
     if (childConfig.get("type") === "folder") {
-      childrenHaveFolder = true;
-
-      cascaderOptionChildren.push(configToCascaderOption(childConfig));
+      if (isSelectFolder) {
+        cascaderOptionChildren.push(configToCascaderOption(childConfig, isSelectFolder));
+      } else if (childConfig.get("children").size > 0) {
+        cascaderOptionChildren.push(configToCascaderOption(childConfig, isSelectFolder));
+      }
+    } else if (!isSelectFolder) {
+      cascaderOptionChildren.push(configToCascaderOption(childConfig, isSelectFolder));
     }
   });
 
@@ -75,16 +78,9 @@ const configToCascaderOption = (config: ConfigNode): CascaderOptionType => {
     } as CascaderOptionType;
   }
 
-  if (childrenHaveFolder) {
-    return {
-      value: config.get("id"),
-      label: config.get("name"),
-      children: cascaderOptionChildren
-    } as CascaderOptionType;
-  }
-
   return {
     value: config.get("id"),
-    label: config.get("name")
+    label: config.get("name"),
+    children: cascaderOptionChildren
   } as CascaderOptionType;
 };

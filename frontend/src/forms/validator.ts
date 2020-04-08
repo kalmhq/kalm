@@ -5,6 +5,10 @@ export const validator = () => {
 };
 
 export const ValidatorRequired = (value: any, _allValues?: any, _props?: any, _name?: any) => {
+  if (Array.isArray(value)) {
+    return value.length > 0 ? undefined : "Required";
+  }
+
   return !!value ? undefined : `Required`;
 };
 
