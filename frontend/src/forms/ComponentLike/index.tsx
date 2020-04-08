@@ -33,6 +33,7 @@ import { getNodeLabels } from "../../selectors/node";
 import { red } from "@material-ui/core/colors";
 import { extractSummaryInfoFromMap, extractSummaryInfoFromList } from "forms/summarizer";
 import { loadConfigsAction } from "../../actions/config";
+import { SectionTitle } from "widgets/SectionTitle";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
@@ -187,19 +188,11 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderBasic() {
-    const { classes, isEdit, isFolded } = this.props;
+    const { isEdit, isFolded } = this.props;
     return (
       <Grid container spacing={2}>
         <Grid item md={12}>
-          {!isFolded && (
-            <Typography
-              variant="h2"
-              classes={{
-                root: classes.sectionHeader
-              }}>
-              Basic Info
-            </Typography>
-          )}
+          {!isFolded && SectionTitle("Basic Info")}
           <HelperContainer>
             <Typography>Describe how to launch this compoent.</Typography>
           </HelperContainer>
@@ -262,18 +255,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderEnvs() {
-    const { classes, isFolded, sharedEnv } = this.props;
+    const { isFolded, sharedEnv } = this.props;
     return (
       <>
-        {!isFolded && (
-          <Typography
-            variant="h2"
-            classes={{
-              root: classes.sectionHeader
-            }}>
-            Environment variables
-          </Typography>
-        )}
+        {!isFolded && SectionTitle("Environment variables")}
         <HelperContainer>
           <Typography>
             Environment variables are variable whose values are set outside the program, typically through functionality
@@ -309,18 +294,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   public renderPorts() {
-    const { classes, isFolded } = this.props;
+    const { isFolded } = this.props;
     return (
       <>
-        {!isFolded && (
-          <Typography
-            variant="h2"
-            classes={{
-              root: classes.sectionHeader
-            }}>
-            Ports
-          </Typography>
-        )}
+        {!isFolded && SectionTitle("Ports")}
         <HelperContainer>
           <Typography>
             Port is the standard way to expose your program. If you want your component can be accessed by some other
@@ -333,18 +310,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderResources() {
-    const { classes, isFolded, values, dispatch, form } = this.props;
+    const { isFolded, values, dispatch, form } = this.props;
     return (
       <>
-        {!isFolded && (
-          <Typography
-            variant="h2"
-            classes={{
-              root: classes.sectionHeader
-            }}>
-            Resources
-          </Typography>
-        )}
+        {!isFolded && SectionTitle("Resources")}
         <HelperContainer>
           <Typography>Cpu, Memory, Disk can be configured here.</Typography>
           <MList dense={true}>
@@ -372,18 +341,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderVolumes() {
-    const { classes, isFolded } = this.props;
+    const { isFolded } = this.props;
     return (
       <>
-        {!isFolded && (
-          <Typography
-            variant="h2"
-            classes={{
-              root: classes.sectionHeader
-            }}>
-            Volumes
-          </Typography>
-        )}
+        {!isFolded && SectionTitle("Volumes")}
         <HelperContainer>
           <Typography>Mount different kinds of volumes to this component.</Typography>
           <MList dense={true}>
@@ -425,7 +386,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderAdvanced() {
-    const { classes, isFolded } = this.props;
+    const { isFolded } = this.props;
 
     // strategy:
     //   type: Recreate
@@ -446,15 +407,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return (
       <Grid container>
         <Grid item md={12}>
-          {!isFolded && (
-            <Typography
-              variant="h2"
-              classes={{
-                root: classes.sectionHeader
-              }}>
-              Advanced
-            </Typography>
-          )}
+          {!isFolded && SectionTitle("Advanced")}
           <HelperContainer>
             <Typography>
               In most cases, the default values for the following options are appropriate for most programs. However,
@@ -616,18 +569,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   };
 
   private renderPlugins() {
-    const { classes, isFolded } = this.props;
+    const { isFolded } = this.props;
     return (
       <>
-        {!isFolded && (
-          <Typography
-            variant="h2"
-            classes={{
-              root: classes.sectionHeader
-            }}>
-            Plugins
-          </Typography>
-        )}
+        {!isFolded && SectionTitle("Plugins")}
         <HelperContainer>
           <Typography>
             Plugins can affect running state of a program, or provide extra functionality for the programs.
@@ -639,19 +584,11 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderProbes() {
-    const { classes, isFolded } = this.props;
+    const { isFolded } = this.props;
     return (
       <Grid container spacing={2}>
         <Grid item md={12}>
-          {!isFolded && (
-            <Typography
-              variant="h2"
-              classes={{
-                root: classes.sectionHeader
-              }}>
-              Probes
-            </Typography>
-          )}
+          {!isFolded && SectionTitle("Probes")}
         </Grid>
         <LivenessProbe />
         <ReadinessProbe />
@@ -660,19 +597,11 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderNodeSelector() {
-    const { classes, isFolded, nodeLabels } = this.props;
+    const { isFolded, nodeLabels } = this.props;
     return (
       <Grid container spacing={2}>
         <Grid item md={12}>
-          {!isFolded && (
-            <Typography
-              variant="h2"
-              classes={{
-                root: classes.sectionHeader
-              }}>
-              Node Selector
-            </Typography>
-          )}
+          {!isFolded && SectionTitle("Node Selector")}
         </Grid>
         <Grid item md={12}>
           <CustomLabels nodeLabels={nodeLabels} />
