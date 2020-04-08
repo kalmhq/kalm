@@ -32,38 +32,12 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 
 	// original resources routes
 	gV1 := e.Group("/v1", h.AuthClientMiddleware)
-	gV1.GET("/deployments", h.handleGetDeployments)
 	gV1.GET("/nodes", h.handleGetNodes)
 	gV1.GET("/nodes/metrics", h.handleGetNodeMetrics)
 	gV1.GET("/persistentvolumes", h.handleGetPVs)
 
 	gV1.GET("/dependencies", h.handleGetDependencies)
 	gV1.GET("/dependencies/available", h.handleGetAvailableDependencies)
-
-	gV1.GET("/applications", h.handleGetApplicationsOld)
-	gV1.GET("/applications/:namespace", h.handleGetApplicationsOld)
-	gV1.POST("/applications/:namespace", h.handleCreateApplication)
-	gV1.PUT("/applications/:namespace/:name", h.handleUpdateApplication)
-	gV1.DELETE("/applications/:namespace/:name", h.handleDeleteApplication)
-
-	gV1.GET("/clusterroles", h.handleGetClusterRoles)
-	gV1.POST("/clusterroles", h.handleCreateClusterRoles)
-	gV1.DELETE("/clusterroles/:name", h.handleDeleteSecrets)
-
-	gV1.GET("/clusterrolebindings", h.handleGetClusterRoleBindings)
-	gV1.POST("/clusterrolebindings", h.handleCreateClusterRoleBindings)
-	gV1.DELETE("/clusterrolebindings/:name", h.handleDeleteClusterRoleBindings)
-
-	gV1.GET("/serviceaccounts", h.handleGetServiceAccounts)
-	gV1.POST("/serviceaccounts", h.handleCreateServiceAccounts)
-	gV1.DELETE("/serviceaccounts/:name", h.handleDeleteServiceAccounts)
-
-	gV1.GET("/secrets", h.handleGetSecrets)
-	gV1.POST("/secrets", h.handleCreateSecrets)
-	gV1.GET("/secrets/:name", h.handleGetSecret)
-	gV1.DELETE("/secrets/:name", h.handleDeleteSecrets)
-
-	gV1.GET("/namespaces", h.handleGetNamespaces)
 
 	gv1Alpha1 := e.Group("/v1alpha1")
 	gv1Alpha1.GET("/logs", h.logWebsocketHandler)
