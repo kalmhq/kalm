@@ -3,11 +3,10 @@ package handler
 import (
 	"fmt"
 	"github.com/kapp-staging/kapp/api/errors"
+	"github.com/kapp-staging/kapp/api/resources"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
-	coreV1 "k8s.io/api/core/v1"
 	rbacV1 "k8s.io/api/rbac/v1"
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/http"
 	"strings"
 )
@@ -56,7 +55,7 @@ type RoleBindingResponse struct {
 func (h *ApiHandler) handleListRoleBindings(c echo.Context) error {
 	k8sClient := getK8sClient(c)
 
-	bindings, err := k8sClient.RbacV1().RoleBindings("").List(ListAll)
+	bindings, err := resources.ListRoleBindings(k8sClient, "")
 
 	if err != nil {
 		log.Error("list role bindings error", err)
@@ -64,16 +63,12 @@ func (h *ApiHandler) handleListRoleBindings(c echo.Context) error {
 	}
 
 	res := RoleBindingResponse{
-		RoleBindings: make([]RoleBindingItem, 0, len(bindings.Items)),
+		RoleBindings: make([]RoleBindingItem, 0, len(bindings)),
 	}
 
 	roleBindingsMap := make(map[string]map[string][]string)
 
-	for _, binding := range bindings.Items {
-		if !strings.HasPrefix(binding.Namespace, "kapp-") {
-			continue
-		}
-
+	for _, binding := range bindings {
 		for _, subject := range binding.Subjects {
 			key := fmt.Sprintf("%s__SEP__%s", subject.Kind, subject.Name)
 
@@ -140,44 +135,15 @@ func (h *ApiHandler) handleCreateRoleBinding(c echo.Context) (err error) {
 			subject.Namespace = "kapp-system"
 			subject.APIGroup = ""
 
-			// TODO, move this to a init place
-			_, err := k8sClient.CoreV1().Namespaces().Create(&coreV1.Namespace{
-				ObjectMeta: metaV1.ObjectMeta{Name: "kapp-system"},
-			})
-
-			if err != nil && !errors.IsAlreadyExists(err) {
-				return err
-			}
-
-			// try to create the service account
-			_, err = k8sClient.CoreV1().ServiceAccounts("kapp-system").Create(&coreV1.ServiceAccount{
-				ObjectMeta: metaV1.ObjectMeta{
-					Namespace: "kapp-system",
-					Name:      subject.Name,
-				},
-			})
-
+			err = resources.CreateKappServiceAccount(k8sClient, subject.Name)
 			if err != nil && !errors.IsAlreadyExists(err) {
 				return err
 			}
 		}
 
-		_, err = k8sClient.RbacV1().RoleBindings(body.Namespace).Create(&rbacV1.RoleBinding{
-			ObjectMeta: metaV1.ObjectMeta{
-				Name:      fmt.Sprintf("%s:%s:Role:%s", body.Kind, body.Name, role),
-				Namespace: body.Namespace,
-			},
-			Subjects: []rbacV1.Subject{
-				subject,
-			},
-			RoleRef: rbacV1.RoleRef{
-				Kind:     "Role",
-				Name:     string(role),
-				APIGroup: "rbac.authorization.k8s.io",
-			},
-		})
+		err := resources.CreateRoleBinding(k8sClient, body.Namespace, subject, string(role))
 
-		if errors.IsAlreadyExists(err) {
+		if err != nil && errors.IsAlreadyExists(err) {
 			continue
 		}
 
@@ -190,11 +156,7 @@ func (h *ApiHandler) handleCreateRoleBinding(c echo.Context) (err error) {
 }
 
 func (h *ApiHandler) handleDeleteRoleBinding(c echo.Context) error {
-	namespace := c.Param("namespace")
-	name := c.Param("name")
-	k8sClient := getK8sClient(c)
-
-	err := k8sClient.RbacV1().RoleBindings(namespace).Delete(name, nil)
+	err := resources.DeleteRoleBinding(getK8sClient(c), c.Param("namespace"), c.Param("name"))
 
 	if err != nil {
 		return err
@@ -203,23 +165,19 @@ func (h *ApiHandler) handleDeleteRoleBinding(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
+func (h *ApiHandler) resolveClusterRole() error {
+	return nil
+}
+
 func (h *ApiHandler) handleGetServiceAccount(c echo.Context) error {
-	name := c.Param("name")
-	k8sClient := getK8sClient(c)
-	serviceaccount, err := k8sClient.CoreV1().ServiceAccounts("kapp-system").Get(name, metaV1.GetOptions{})
-
-	if err != nil {
-		return err
-	}
-
-	secret, err := k8sClient.CoreV1().Secrets("kapp-system").Get(serviceaccount.Secrets[0].Name, metaV1.GetOptions{})
+	token, crt, err := resources.GetServiceAccountSecrets(getK8sClient(c), c.Param("name"))
 
 	if err != nil {
 		return err
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"token":  string(secret.Data["token"]),
-		"ca.crt": string(secret.Data["ca.crt"]),
+		"token":  string(token),
+		"ca.crt": string(crt),
 	})
 }

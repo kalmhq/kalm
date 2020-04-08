@@ -1,6 +1,5 @@
 import Immutable from "immutable";
 import { ImmutableMap } from "../typings";
-import { V1beta1CronJobStatus, V1DeploymentStatus } from "../model/models";
 import { ComponentLikeContent } from "./componentTemplate";
 import { Status } from "./common";
 
@@ -71,8 +70,6 @@ export type PodInfo = ImmutableMap<{
 export type ComponentStatus = ImmutableMap<{
   name: string;
   workloadType: string;
-  deploymentStatus?: V1DeploymentStatus;
-  cronjobStatus?: V1beta1CronJobStatus;
   podsInfo: PodInfo;
   metrics: Metrics;
   pods: Immutable.List<PodStatus>;

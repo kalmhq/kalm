@@ -1,11 +1,11 @@
-import React from "react";
+import { FilledTextFieldProps } from "@material-ui/core/TextField";
 import Cascader from "antd/es/cascader";
 import "antd/es/cascader/style/css";
-import { FilledTextFieldProps } from "@material-ui/core/TextField";
+import React from "react";
 import { WrappedFieldProps } from "redux-form";
 import { Field } from "redux-form/immutable";
-import { getCascaderOptions } from "../../selectors/config";
 import { pathToAncestorIds } from "../../actions/config";
+import { getCascaderOptions } from "../../selectors/config";
 
 const displayRender = (labels: any, selectedOptions: any) => {
   return labels.map((label: any, i: any) => {

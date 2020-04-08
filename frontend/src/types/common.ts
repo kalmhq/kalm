@@ -1,6 +1,5 @@
 import { CallHistoryMethodAction } from "connected-react-router";
 import { VariantType } from "notistack";
-import { V1Node, V1PersistentVolume } from "../model/models";
 import { ImmutableMap } from "../typings";
 import { SettingObject } from "../reducers/settings";
 import { NamespaceActions } from "./namespace";
@@ -53,14 +52,14 @@ export interface SetNotificationMessageAction {
 export interface LoadNodesAction {
   type: typeof LOAD_NODES;
   payload: {
-    nodes: V1Node[];
+    nodes: any[];
   };
 }
 
 export interface LoadPersistentVolumnsAction {
   type: typeof LOAD_PERSISTENT_VOLUMNS;
   payload: {
-    persistentVolumns: V1PersistentVolume[];
+    persistentVolumns: any[];
   };
 }
 
