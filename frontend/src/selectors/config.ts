@@ -43,17 +43,17 @@ export const getAncestorIdsDefaultValue = (): string[] => {
   return newIdChain;
 };
 
-export const getAncestorIdsOptions = (): CascaderOptionType[] => {
+export const getCascaderOptions = (): CascaderOptionType[] => {
   const state = store.getState();
 
   let config = state.get("configs").get("rootConfig");
   const options: CascaderOptionType[] = [];
-  options.push(configToAncestorIdsOption(config));
+  options.push(configToCascaderOption(config));
 
   return options;
 };
 
-const configToAncestorIdsOption = (config: ConfigNode): CascaderOptionType => {
+const configToCascaderOption = (config: ConfigNode): CascaderOptionType => {
   const children = config.get("children");
 
   let childrenHaveFolder = false;
@@ -63,7 +63,7 @@ const configToAncestorIdsOption = (config: ConfigNode): CascaderOptionType => {
     if (childConfig.get("type") === "folder") {
       childrenHaveFolder = true;
 
-      cascaderOptionChildren.push(configToAncestorIdsOption(childConfig));
+      cascaderOptionChildren.push(configToCascaderOption(childConfig));
     }
   });
 

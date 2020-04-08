@@ -4,7 +4,7 @@ import "antd/es/cascader/style/css";
 import { FilledTextFieldProps } from "@material-ui/core/TextField";
 import { WrappedFieldProps } from "redux-form";
 import { Field } from "redux-form/immutable";
-import { getAncestorIdsOptions, getAncestorIdsDefaultValue } from "../../selectors/config";
+import { getCascaderOptions, getAncestorIdsDefaultValue } from "../../selectors/config";
 import Immutable from "immutable";
 
 const displayRender = (labels: any, selectedOptions: any) => {
@@ -20,7 +20,7 @@ const displayRender = (labels: any, selectedOptions: any) => {
 const renderAncestorIds = ({ input }: FilledTextFieldProps & WrappedFieldProps) => {
   return (
     <Cascader
-      options={getAncestorIdsOptions()}
+      options={getCascaderOptions()}
       defaultValue={getAncestorIdsDefaultValue()}
       displayRender={displayRender}
       style={{ width: "100%" }}
