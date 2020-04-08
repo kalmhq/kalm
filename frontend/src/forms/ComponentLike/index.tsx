@@ -777,26 +777,26 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             isChanged = true;
             summaryInfo.hasChanged = true;
             if (values.get(name).size && values.get(name).size > 0) {
-              summaryInfo.value = values.get(name).map((item: any) => {
-                return item.join(",");
-              });
+              summaryInfo.value = JSON.stringify(values.get(name).toJS());
             }
           }
         } else {
           if (!values.get(name).equals(initialValues.get!(name))) {
             isChanged = true;
             if (values.get(name).size && values.get(name).size > 0) {
-              summaryInfo.value = values.get(name).map((item: any) => {
-                return item.join(",");
-              });
+              // summaryInfo.value = values.get(name).map((item: any) => {
+              //   return item.join(",");
+              // });
+              summaryInfo.value = JSON.stringify(values.get(name).toJS());
             }
             summaryInfo.hasChanged = true;
           }
         }
         if (values.get(name).size && values.get(name).size > 0) {
-          summaryInfo.value = values.get(name).map((item: any) => {
-            return item.join(",");
-          });
+          // summaryInfo.value = values.get(name).map((item: any) => {
+          //   return item.join(",");
+          // });
+          summaryInfo.value = JSON.stringify(values.get(name).toJS());
         }
       }
       summaryInfo.value && summaryInfos.push(summaryInfo);
