@@ -30,6 +30,7 @@ import { loadNodesAction } from "../../actions/node";
 import { TDispatchProp } from "../../types";
 import { CustomLabels, AffinityType } from "./NodeSelector";
 import { getNodeLabels } from "../../selectors/node";
+import { loadConfigsAction } from "../../actions/config";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
@@ -146,6 +147,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     const { dispatch } = this.props;
     // load node labels for node selectors
     dispatch(loadNodesAction());
+    // load configs for volume
+    dispatch(loadConfigsAction());
   }
 
   private renderSchedule() {
@@ -777,26 +780,26 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             isChanged = true;
             summaryInfo.hasChanged = true;
             if (values.get(name).size && values.get(name).size > 0) {
-              summaryInfo.value = values.get(name).map((item: any) => {
-                return item.join(",");
-              });
+              summaryInfo.value = JSON.stringify(values.get(name).toJS());
             }
           }
         } else {
           if (!values.get(name).equals(initialValues.get!(name))) {
             isChanged = true;
             if (values.get(name).size && values.get(name).size > 0) {
-              summaryInfo.value = values.get(name).map((item: any) => {
-                return item.join(",");
-              });
+              // summaryInfo.value = values.get(name).map((item: any) => {
+              //   return item.join(",");
+              // });
+              summaryInfo.value = JSON.stringify(values.get(name).toJS());
             }
             summaryInfo.hasChanged = true;
           }
         }
         if (values.get(name).size && values.get(name).size > 0) {
-          summaryInfo.value = values.get(name).map((item: any) => {
-            return item.join(",");
-          });
+          // summaryInfo.value = values.get(name).map((item: any) => {
+          //   return item.join(",");
+          // });
+          summaryInfo.value = JSON.stringify(values.get(name).toJS());
         }
       }
       summaryInfo.value && summaryInfos.push(summaryInfo);
@@ -832,6 +835,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         return ["restartStrategy", "terminationGracePeriodSeconds", "dnsPolicy"];
       case "plugins":
         return ["plugins"];
+      case "nodeSelector":
+        return ["nodeSelectorLabels", "podAffinityType"];
       case "probes":
         return ["livenessProbe", "readinessProbe"];
       default:
