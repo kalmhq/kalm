@@ -53,16 +53,15 @@ export const getCascaderOptions = (): CascaderOptionType[] => {
   return options;
 };
 
-const configToCascaderOption = (config: ConfigNode): CascaderOptionType => {
+const configToCascaderOption = (config: ConfigNode, onlyFlders: boolean = true): CascaderOptionType => {
   const children = config.get("children");
 
-  let childrenHaveFolder = false;
   const cascaderOptionChildren: CascaderOptionType[] = [];
 
   children.forEach((childConfig: ConfigNode) => {
     if (childConfig.get("type") === "folder") {
-      childrenHaveFolder = true;
-
+      cascaderOptionChildren.push(configToCascaderOption(childConfig));
+    } else if (!onlyFlders) {
       cascaderOptionChildren.push(configToCascaderOption(childConfig));
     }
   });
@@ -75,16 +74,9 @@ const configToCascaderOption = (config: ConfigNode): CascaderOptionType => {
     } as CascaderOptionType;
   }
 
-  if (childrenHaveFolder) {
-    return {
-      value: config.get("id"),
-      label: config.get("name"),
-      children: cascaderOptionChildren
-    } as CascaderOptionType;
-  }
-
   return {
     value: config.get("id"),
-    label: config.get("name")
+    label: config.get("name"),
+    children: cascaderOptionChildren
   } as CascaderOptionType;
 };
