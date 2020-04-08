@@ -8,6 +8,8 @@ import { HttpHeaders, HttpHeader } from "../../types/componentTemplate";
 import { HelperContainer } from "../../widgets/Helper";
 import { CustomTextField, RenderSelectField } from "../Basic";
 import { ValidatorRequired, ValidatorHttpHeaders } from "../validator";
+import { NormalizeNumber } from "forms/normalizer";
+import { SectionTitle } from "widgets/SectionTitle";
 
 interface FieldComponentHackType {
   name: any;
@@ -200,21 +202,46 @@ class RenderProbe extends React.PureComponent<Props, State> {
           <CustomTextField
             name={`${name}.initialDelaySeconds`}
             label="InitialDelaySeconds (Optional)"
+            normalize={NormalizeNumber}
             margin
             helperText=""
           />
         </Grid>
         <Grid item md={6}>
-          <CustomTextField name={`${name}.timeoutSeconds`} label="TimeoutSeconds (Optional)" margin helperText="" />
+          <CustomTextField
+            name={`${name}.timeoutSeconds`}
+            label="TimeoutSeconds (Optional)"
+            normalize={NormalizeNumber}
+            margin
+            helperText=""
+          />
         </Grid>
         <Grid item md={6}>
-          <CustomTextField name={`${name}.periodSeconds`} label="PeriodSeconds (Optional)" margin helperText="" />
+          <CustomTextField
+            name={`${name}.periodSeconds`}
+            label="PeriodSeconds (Optional)"
+            normalize={NormalizeNumber}
+            margin
+            helperText=""
+          />
         </Grid>
         <Grid item md={6}>
-          <CustomTextField name={`${name}.successThreshold`} label="SuccessThreshold (Optional)" margin helperText="" />
+          <CustomTextField
+            name={`${name}.successThreshold`}
+            label="SuccessThreshold (Optional)"
+            normalize={NormalizeNumber}
+            margin
+            helperText=""
+          />
         </Grid>
         <Grid item md={6}>
-          <CustomTextField name={`${name}.failureThreshold`} label="FailureThreshold (Optional)" margin helperText="" />
+          <CustomTextField
+            name={`${name}.failureThreshold`}
+            label="FailureThreshold (Optional)"
+            normalize={NormalizeNumber}
+            margin
+            helperText=""
+          />
         </Grid>
       </>
     );
@@ -232,6 +259,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
           <HelperContainer>
             <Typography>{label}</Typography>
           </HelperContainer>
+          {SectionTitle(label)}
         </Grid>
 
         <Grid item md={6}>

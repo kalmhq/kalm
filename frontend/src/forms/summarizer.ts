@@ -2,7 +2,7 @@ import { Map, List } from "immutable";
 
 export const extractSummaryInfoFromMap = (values: Map<string, any>, name: string): string => {
   return values.get(name).map((value: any, key: string) => {
-    if (typeof value === "string") {
+    if (typeof value === "string" || typeof value === "number") {
       return value;
     } else if (Map.isMap(value)) {
       return value.map((v: any, key: string) => {
