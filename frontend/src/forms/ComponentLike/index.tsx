@@ -756,13 +756,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       summaryInfo.name = name;
       if (!values.get(name) || typeof values.get(name) === "string" || typeof values.get(name) === "number") {
         if (values.get(name) !== initialValues.get!(name)) {
-          summaryInfo.value = values.get(name);
           summaryInfo.hasChanged = true;
-        } else {
-          if (values.get(name) != null && values.get(name) !== undefined && values.get(name).length > 0) {
-            summaryInfo.value = values.get(name);
-          }
         }
+        summaryInfo.value = values.get(name);
         // immutable compare
       } else if (values.get(name).equals) {
         if (name === "livenessProbe" || name === "readinessProbe") {
@@ -774,31 +770,21 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               .equals(initialValues.get!(name))
           ) {
             summaryInfo.hasChanged = true;
-            if (values.get(name).size && values.get(name).size > 0) {
-              summaryInfo.value = extractSummaryInfoFromMap(values, name);
-            } else {
-              summaryInfo.value = values.get(name);
-            }
+          }
+          if (values.get(name).size && values.get(name).size > 0) {
+            summaryInfo.value = extractSummaryInfoFromMap(values, name);
+          } else {
+            summaryInfo.value = values.get(name);
           }
         } else {
           if (!values.get(name).equals(initialValues.get!(name))) {
             summaryInfo.hasChanged = true;
-            if (Map.isMap(values.get(name))) {
-              summaryInfo.value = extractSummaryInfoFromMap(values, name);
-            } else if (List.isList(values.get(name))) {
-              if (values.get(name).size && values.get(name).size > 0) {
-                summaryInfo.value = extractSummaryInfoFromList(values, name);
-              }
-            }
-          } else {
-            if (Map.isMap(values.get(name))) {
-              summaryInfo.value = extractSummaryInfoFromMap(values, name);
-            } else if (List.isList(values.get(name))) {
-              if (values.get(name).size && values.get(name).size > 0) {
-                summaryInfo.value = values.get(name).map((item: any) => {
-                  return item.join(",");
-                });
-              }
+          }
+          if (Map.isMap(values.get(name))) {
+            summaryInfo.value = extractSummaryInfoFromMap(values, name);
+          } else if (List.isList(values.get(name))) {
+            if (values.get(name).size && values.get(name).size > 0) {
+              summaryInfo.value = extractSummaryInfoFromList(values, name);
             }
           }
         }
