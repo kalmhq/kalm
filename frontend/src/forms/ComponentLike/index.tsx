@@ -20,7 +20,7 @@ import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import Immutable from "immutable";
+import Immutable, { Map, List } from "immutable";
 import { ComponentLike, workloadTypeCronjob, workloadTypeServer } from "../../types/componentTemplate";
 import { Volumes } from "./volumes";
 import ErrorIcon from "@material-ui/icons/Error";
@@ -30,6 +30,8 @@ import { loadNodesAction } from "../../actions/node";
 import { TDispatchProp } from "../../types";
 import { CustomLabels, AffinityType } from "./NodeSelector";
 import { getNodeLabels } from "../../selectors/node";
+import { red } from "@material-ui/core/colors";
+import { extractSummaryInfoFromMap, extractSummaryInfoFromList } from "forms/summarizer";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
@@ -67,14 +69,14 @@ const styles = (theme: Theme) =>
       display: "block"
     },
     summaryError: {
-      color: "#f44336",
-      display: "flex"
+      color: red[700]
     },
     summaryBold: {
       fontWeight: "bold"
     },
     summaryIcon: {
-      marginLeft: "8px"
+      marginLeft: "8px",
+      position: "absolute"
     },
     summaryShow: {
       display: "block",
@@ -499,8 +501,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             component={RenderSelectField}
             label="Restart Strategy"
             validate={ValidatorRequired}>
-            <MenuItem value="RollingUpdate">Rolling Update</MenuItem>
-            <MenuItem value="Recreate">Recreate</MenuItem>
+            <MenuItem value="rollingUpdate">Rolling Update</MenuItem>
+            <MenuItem value="recreate">Recreate</MenuItem>
           </Field>
 
           {/* terminationGracePeriodSeconds */}
@@ -702,20 +704,55 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             {summary.value}
           </Typography>
         );
+      } else if (typeof summary.value === "number") {
+        return (
+          <Typography
+            variant="body2"
+            className={clsx(classes.summaryValue, summary.hasChanged ? classes.summaryChanged : null)}>
+            {summary.value}
+          </Typography>
+        );
       } else {
         const values = summary.value;
-        console.log("values", values);
         if (values.size && values.size > 0) {
-          return values.map((v: string, index: number) => {
-            return (
-              <Typography
-                key={index}
-                variant="body2"
-                className={clsx(classes.summaryValue, summary.hasChanged ? classes.summaryChanged : null)}>
-                {v}
-              </Typography>
-            );
-          });
+          if (List.isList(values)) {
+            return values.map((v: any, index: number) => {
+              return (
+                <Typography
+                  key={index}
+                  variant="body2"
+                  className={clsx(classes.summaryValue, summary.hasChanged ? classes.summaryChanged : null)}>
+                  {v}
+                </Typography>
+              );
+            });
+          } else if (Map.isMap(values)) {
+            let keys = values.keySeq().toArray();
+            return values.toList().map((value: any, index: number) => {
+              if (Map.isMap(value)) {
+                let subKeys = value.keySeq().toArray();
+                return value.toList().map((subValue: any, subIndex: number) => {
+                  return (
+                    <Typography
+                      key={subIndex}
+                      variant="body2"
+                      className={clsx(classes.summaryValue, summary.hasChanged ? classes.summaryChanged : null)}>
+                      {subKeys[subIndex]} : {subValue}
+                    </Typography>
+                  );
+                });
+              } else {
+                return (
+                  <Typography
+                    key={index}
+                    variant="body2"
+                    className={clsx(classes.summaryValue, summary.hasChanged ? classes.summaryChanged : null)}>
+                    {keys[index]} : {value}
+                  </Typography>
+                );
+              }
+            });
+          }
         } else {
           return null;
         }
@@ -734,9 +771,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return <>{listItems}</>;
   }
 
-  private renderPanel(key: string, title: string, content: any, summary: string = "xxxx"): React.ReactNode {
-    const { classes, syncErrors, anyTouched, values, initialValues } = this.props;
-
+  private composeErrorInfo(key: string): boolean {
+    const { syncErrors, anyTouched } = this.props;
     const fieldNames = this.getPanelFieldNames(key);
     const errors: { [key: string]: any } = syncErrors;
 
@@ -748,15 +784,54 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         }
       });
     }
-    let summaryInfos: Summary[] = [];
+    return hasError;
+  }
+
+  private composeChangedState(key: string): boolean {
+    const { values, initialValues } = this.props;
+    const fieldNames = this.getPanelFieldNames(key);
+
     let isChanged = false;
     fieldNames.forEach((name: any) => {
-      let summaryInfo: Summary = {} as Summary;
-      summaryInfo.name = name;
       if (!values.get(name) || typeof values.get(name) === "string") {
         if (values.get(name) !== initialValues.get!(name)) {
           isChanged = true;
+        }
+        // immutable compare
+      } else if (!values.get(name) || typeof values.get(name) === "number") {
+        if (values.get(name) !== initialValues.get!(name)) {
+          isChanged = true;
+        }
+      } else if (values.get(name).equals) {
+        if (name === "livenessProbe" || name === "readinessProbe") {
+          // since auto set probe type
+          if (
+            !values
+              .get(name)
+              .delete("type")
+              .equals(initialValues.get!(name))
+          ) {
+            isChanged = true;
+          }
+        } else {
+          if (!values.get(name).equals(initialValues.get!(name))) {
+            isChanged = true;
+          }
+        }
+      }
+    });
+    return isChanged;
+  }
 
+  private composeSummaryInfo(key: string): Summary[] {
+    const { values, initialValues } = this.props;
+    const fieldNames = this.getPanelFieldNames(key);
+    let summaryInfos: Summary[] = [];
+    fieldNames.forEach((name: any) => {
+      let summaryInfo: Summary = {} as Summary;
+      summaryInfo.name = name;
+      if (!values.get(name) || typeof values.get(name) === "string" || typeof values.get(name) === "number") {
+        if (values.get(name) !== initialValues.get!(name)) {
           summaryInfo.value = values.get(name);
           summaryInfo.hasChanged = true;
         } else {
@@ -774,46 +849,39 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               .delete("type")
               .equals(initialValues.get!(name))
           ) {
-            isChanged = true;
             summaryInfo.hasChanged = true;
             if (values.get(name).size && values.get(name).size > 0) {
-              summaryInfo.value = values.get(name).map((item: any) => {
-                return item.join(",");
-              });
+              summaryInfo.value = extractSummaryInfoFromMap(values, name);
+            } else {
+              summaryInfo.value = values.get(name);
             }
           }
         } else {
           if (!values.get(name).equals(initialValues.get!(name))) {
-            isChanged = true;
-            if (values.get(name).size && values.get(name).size > 0) {
-              summaryInfo.value = values.get(name).map((item: any) => {
-                return item.join(",");
-              });
-            }
             summaryInfo.hasChanged = true;
+            if (Map.isMap(values.get(name))) {
+              summaryInfo.value = extractSummaryInfoFromMap(values, name);
+            } else if (List.isList(values.get(name))) {
+              if (values.get(name).size && values.get(name).size > 0) {
+                summaryInfo.value = extractSummaryInfoFromList(values, name);
+              }
+            }
+          } else {
+            if (Map.isMap(values.get(name))) {
+              summaryInfo.value = extractSummaryInfoFromMap(values, name);
+            } else if (List.isList(values.get(name))) {
+              if (values.get(name).size && values.get(name).size > 0) {
+                summaryInfo.value = values.get(name).map((item: any) => {
+                  return item.join(",");
+                });
+              }
+            }
           }
-        }
-        if (values.get(name).size && values.get(name).size > 0) {
-          summaryInfo.value = values.get(name).map((item: any) => {
-            return item.join(",");
-          });
         }
       }
       summaryInfo.value && summaryInfos.push(summaryInfo);
     });
-    return (
-      <ExpansionPanel expanded={key === this.state.currentPanel} onChange={() => this.handleChangePanel(key)}>
-        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id="panel1a-header">
-          <div className={hasError ? classes.summaryError : isChanged ? classes.summaryBold : ""}>
-            {title} {hasError ? <ErrorIcon className={classes.summaryIcon} /> : null}
-            <div className={key === this.state.currentPanel ? classes.summaryHide : classes.summaryShow}>
-              {this.renderSummary(summaryInfos)}
-            </div>
-          </div>
-        </ExpansionPanelSummary>
-        <ExpansionPanelDetails className={classes.displayBlock}>{content}</ExpansionPanelDetails>
-      </ExpansionPanel>
-    );
+    return summaryInfos;
   }
 
   private getPanelFieldNames(panelName: string): string[] {
@@ -832,11 +900,34 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         return ["restartStrategy", "terminationGracePeriodSeconds", "dnsPolicy"];
       case "plugins":
         return ["plugins"];
+      case "nodeSelector":
+        return ["podAffinityType", "nodeSelectorLabels"];
       case "probes":
         return ["livenessProbe", "readinessProbe"];
       default:
         return [];
     }
+  }
+
+  private renderPanel(key: string, title: string, content: any): React.ReactNode {
+    const { classes } = this.props;
+    let hasError = this.composeErrorInfo(key);
+    let isChanged = this.composeChangedState(key);
+    let summaryInfos = this.composeSummaryInfo(key);
+
+    return (
+      <ExpansionPanel expanded={key === this.state.currentPanel} onChange={() => this.handleChangePanel(key)}>
+        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id="panel1a-header">
+          <div className={hasError ? classes.summaryError : isChanged ? classes.summaryBold : ""}>
+            {title} {hasError ? <ErrorIcon className={classes.summaryIcon} /> : null}
+            <div className={key === this.state.currentPanel ? classes.summaryHide : classes.summaryShow}>
+              {this.renderSummary(summaryInfos)}
+            </div>
+          </div>
+        </ExpansionPanelSummary>
+        <ExpansionPanelDetails className={classes.displayBlock}>{content}</ExpansionPanelDetails>
+      </ExpansionPanel>
+    );
   }
 
   public render() {

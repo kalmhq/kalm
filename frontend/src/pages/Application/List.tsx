@@ -1,15 +1,4 @@
-import {
-  Checkbox,
-  createStyles,
-  Switch,
-  TextField,
-  Theme,
-  WithStyles,
-  withStyles,
-  Typography,
-  Button,
-  Box
-} from "@material-ui/core";
+import { Checkbox, createStyles, Switch, TextField, Theme, WithStyles, withStyles, Button } from "@material-ui/core";
 import ArchiveIcon from "@material-ui/icons/Archive";
 import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew";
 import RefreshIcon from "@material-ui/icons/Refresh";
