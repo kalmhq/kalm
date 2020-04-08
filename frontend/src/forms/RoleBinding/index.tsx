@@ -45,7 +45,7 @@ class RoleBindingFormRaw extends React.PureComponent<Props> {
   }
 
   public render() {
-    const { namespaces, kind, name } = this.props;
+    const { namespaces, kind } = this.props;
     return (
       <Grid container spacing={2}>
         <Grid item md={6}>

@@ -1,11 +1,10 @@
 import Immutable from "immutable";
 import { Actions } from "../types";
-import { V1Node } from "../model/v1Node";
 import { ImmutableMap } from "../typings";
 import { LOAD_NODES } from "../types/common";
 
 export type State = ImmutableMap<{
-  nodes: V1Node[];
+  nodes: any[];
   // use list instead of map, prevent some nodes labels have same key, but different value
   labels: Immutable.List<string>;
 }>;

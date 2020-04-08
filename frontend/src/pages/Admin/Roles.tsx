@@ -1,10 +1,12 @@
-import { Chip, createStyles, Theme, withStyles, WithStyles, Box, Tooltip, IconButton } from "@material-ui/core";
+import { Box, Chip, createStyles, IconButton, Theme, Tooltip, withStyles, WithStyles } from "@material-ui/core";
 import AddCircleIcon from "@material-ui/icons/AddCircle";
 import DeleteIcon from "@material-ui/icons/Delete";
+import VisibilityOffIcon from "@material-ui/icons/VisibilityOff";
 import { closeDialogAction, openDialogAction } from "actions/dialog";
-import { deleteNamespaceAction, loadNamespacesAction } from "actions/namespaces";
-import { createRoleBindingsAction, loadRoleBindingsAction, deleteRoleBindingsAction } from "actions/user";
+import { loadNamespacesAction } from "actions/namespaces";
+import { createRoleBindingsAction, deleteRoleBindingsAction, loadRoleBindingsAction } from "actions/user";
 import { RoleBindingForm } from "forms/RoleBinding";
+import Immutable from "immutable";
 import MaterialTable from "material-table";
 import React, { forwardRef } from "react";
 import { connect } from "react-redux";
@@ -12,11 +14,9 @@ import { RootState } from "reducers";
 import { submit } from "redux-form";
 import { TDispatchProp } from "types";
 import { RoleBindingsRequestBody } from "types/user";
+import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
 import { ControlledDialog } from "widgets/ControlledDialog";
-import Immutable from "immutable";
-import VisibilityOffIcon from "@material-ui/icons/VisibilityOff";
-import { FlexRowItemCenterBox } from "widgets/Box";
 import { ServiceAccountSecret } from "widgets/ServiceAccountSecret";
 
 const dialogID = "admin/rolebinding/add";
