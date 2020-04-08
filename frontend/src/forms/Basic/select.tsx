@@ -14,7 +14,6 @@ import { EditComponentProps } from "material-table";
 import { ID } from "../../utils";
 import { WrappedFieldProps, WrappedFieldMetaProps } from "redux-form";
 import FormHelperText from "@material-ui/core/FormHelperText";
-import Input from "antd/es/input";
 
 export const MaterialTableEditSelectField = ({
   value,
