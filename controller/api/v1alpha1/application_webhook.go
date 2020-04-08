@@ -100,11 +100,13 @@ func (r *Application) validateDependency() error {
 func buildDependencyGraph(spec ApplicationSpec) map[string]*node {
 	var nodeMap = make(map[string]*node)
 	for _, component := range spec.Components {
-		curNode := &node{
-			Name: component.Name,
-		}
 
-		nodeMap[curNode.Name] = curNode
+		if _, exist := nodeMap[component.Name]; !exist {
+			nodeMap[component.Name] = &node{
+				Name: component.Name,
+			}
+		}
+		curNode := nodeMap[component.Name]
 
 		for _, dep := range component.Dependencies {
 			if _, exist := nodeMap[dep]; !exist {
@@ -114,9 +116,13 @@ func buildDependencyGraph(spec ApplicationSpec) map[string]*node {
 			}
 
 			nodeMap[dep].Refed = append(nodeMap[dep].Refed, curNode)
+			fmt.Println("> node:", dep, "refedBy:", nodeMap[dep].Refed[0])
 		}
+
+		fmt.Println("node in depGraph:", component.Name, "dependOn:", component.Dependencies)
 	}
 
+	fmt.Println("graph size:", len(nodeMap))
 	return nodeMap
 }
 
@@ -131,7 +137,7 @@ func bfsCheckIfLoopExist(nodeMap map[string]*node) bool {
 
 	for queue.Len() > 0 {
 		size := queue.Len()
-		fmt.Println("size:", size)
+		fmt.Println("queue size of 0-degree nodes:", size)
 
 		for i := 0; i < size; i++ {
 			curEle := queue.Front()

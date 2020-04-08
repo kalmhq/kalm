@@ -52,6 +52,21 @@ func TestCheckLoop(t *testing.T) {
 func TestCheckLoopExist(t *testing.T) {
 	a := &node{Name: "a"}
 	b := &node{Name: "b"}
+
+	a.Refed = []*node{b}
+	b.Refed = []*node{a}
+
+	nodeMap := make(map[string]*node)
+	nodeMap[a.Name] = a
+	nodeMap[b.Name] = b
+
+	loopExist := bfsCheckIfLoopExist(nodeMap)
+	assert.True(t, loopExist)
+}
+
+func TestCheckLoopExist1(t *testing.T) {
+	a := &node{Name: "a"}
+	b := &node{Name: "b"}
 	c := &node{Name: "c"}
 
 	c.Refed = []*node{a}
