@@ -1,11 +1,4 @@
-import {
-  createStyles,
-  Link,
-  Theme,
-  Typography,
-  withStyles,
-  WithStyles
-} from "@material-ui/core";
+import { createStyles, Link, Theme, Typography, withStyles, WithStyles } from "@material-ui/core";
 import { push, replace } from "connected-react-router";
 import React, { Component } from "react";
 import { connect, DispatchProp } from "react-redux";
@@ -13,7 +6,7 @@ import { connect, DispatchProp } from "react-redux";
 interface NoMatchRawProps extends DispatchProp {}
 
 class NoMatchRaw extends Component<NoMatchRawProps> {
-  componentWillMount() {
+  componentDidMount() {
     this.props.dispatch(replace("/404"));
   }
 

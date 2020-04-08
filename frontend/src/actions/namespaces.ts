@@ -1,4 +1,6 @@
-import { Actions, StatusFailure, ThunkResult } from "../types";
+import { push } from "connected-react-router";
+import queryString from "query-string";
+import { StatusFailure, ThunkResult } from "../types";
 import {
   CREATE_NAMESPACE_FULFILLED,
   CREATE_NAMESPACE_PENDING,
@@ -13,8 +15,6 @@ import {
   getNamespaces
 } from "./kubernetesApi";
 import { setErrorNotificationAction } from "./notification";
-import { push } from "connected-react-router";
-import queryString from "query-string";
 
 export const loadNamespacesAction = (): ThunkResult<Promise<void>> => {
   return async dispatch => {

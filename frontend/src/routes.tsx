@@ -38,13 +38,12 @@ export const KappRoutes = (
           <Route exact path="/settings/dependencies" component={DependencyListPage}></Route>
 
           <Route exact path="/applications" component={ApplicationListPage} />
+          <Route exact path="/applications/new" component={ApplicationNew} />
           <Route exact path="/applications/:applicationName" component={ApplicationShow} />
           <Route exact path="/applications/:applicationName/edit" component={ApplicationEdit} />
           <Route exact path="/applications/:applicationName/logs" component={Log} />
           <Route exact path="/applications/:applicationName/shells" component={Log} />
-          <Route exact path="/applications/new" component={ApplicationNew} />
           <Route exact path="/configs" component={ConfigListPage}></Route>
-
           <Route component={NoMatch} />
         </Switch>
       </Dashboard>

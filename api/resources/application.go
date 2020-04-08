@@ -92,10 +92,10 @@ type MetricHistories struct {
 }
 
 type ApplicationDetails struct {
-	Application     *Application      `json:"application"`
-	ComponentStatus []ComponentStatus `json:"componentStatus"`
-	PodNames        []string          `json:"podNames"`
-	Metrics         MetricHistories   `json:"metrics"`
+	*Application     `json:",inline"`
+	ComponentsStatus []ComponentStatus `json:"componentsStatus"`
+	PodNames         []string          `json:"podNames"`
+	Metrics          MetricHistories   `json:"metrics"`
 }
 
 type CreateOrUpdateApplicationRequest struct {
@@ -157,8 +157,8 @@ func (builder *Builder) BuildApplicationDetails(application *v1alpha1.Applicatio
 			SharedEnvs: application.Spec.SharedEnv,
 			Components: application.Spec.Components,
 		},
-		PodNames:        podNames,
-		ComponentStatus: componentsStatusList,
+		PodNames:         podNames,
+		ComponentsStatus: componentsStatusList,
 		Metrics: MetricHistories{
 			CPU:    appCpuHistory,
 			Memory: appMemHistory,

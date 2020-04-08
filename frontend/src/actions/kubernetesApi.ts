@@ -4,11 +4,10 @@ import { KappDependency } from "types/dependency";
 import { RoleBinding, RoleBindingsRequestBody } from "types/user";
 import { getCurrentNamespace } from "../selectors/namespace";
 import { store } from "../store";
-import { Application, ApplicationList } from "../types/application";
+import { Application, ApplicationDetails, ApplicationDetailsList } from "../types/application";
 import { ComponentTemplate } from "../types/componentTemplate";
 import { ConfigCreate, ConfigRes } from "../types/config";
 import { Namespaces } from "../types/namespace";
-import { ImmutableMap } from "../typings";
 
 export const K8sApiPrefix = process.env.REACT_APP_K8S_API_PERFIX;
 export const k8sWsPrefix = !K8sApiPrefix
@@ -99,41 +98,39 @@ export const deleteKappComonentTemplate = async (component: ComponentTemplate): 
   // return convertFromCRDComponentTemplate(res.data);
 };
 
-export const getKappApplicationList = async (namespace: string): Promise<ApplicationList> => {
+// applications
+
+export const getKappApplicationList = async (namespace: string): Promise<ApplicationDetailsList> => {
   const res = await getAxiosClient().get(K8sApiPrefix + "/v1alpha1/applications/" + namespace);
-
-  return Immutable.fromJS(res.data.applications);
-};
-
-export const getKappApplication = async (
-  namespace: string,
-  name: string
-): Promise<ImmutableMap<{ application: Application; podNames: Immutable.List<string> }>> => {
-  const res = await getAxiosClient().get(K8sApiPrefix + `/v1alpha1/applications/${namespace}/${name}`);
-
   return Immutable.fromJS(res.data);
 };
 
-export const createKappApplication = async (application: Application): Promise<Application> => {
+export const getKappApplication = async (namespace: string, name: string): Promise<ApplicationDetails> => {
+  const res = await getAxiosClient().get(K8sApiPrefix + `/v1alpha1/applications/${namespace}/${name}`);
+  return Immutable.fromJS(res.data);
+};
+
+export const createKappApplication = async (application: Application): Promise<ApplicationDetails> => {
   const res = await getAxiosClient().post(K8sApiPrefix + `/v1alpha1/applications/${application.get("namespace")}`, {
     application
   });
 
-  return Immutable.fromJS(res.data.application);
+  return Immutable.fromJS(res.data);
 };
 
-export const updateKappApplication = async (application: Application): Promise<Application> => {
+export const updateKappApplication = async (application: Application): Promise<ApplicationDetails> => {
   const res = await getAxiosClient().put(
     K8sApiPrefix + `/v1alpha1/applications/${application.get("namespace")}/${application.get("name")}`,
     { application }
   );
-
-  return Immutable.fromJS(res.data.application);
+  return Immutable.fromJS(res.data);
 };
 
 export const deleteKappApplication = async (namespace: string, name: string): Promise<void> => {
   await getAxiosClient().delete(K8sApiPrefix + `/v1alpha1/applications/${namespace}/${name}`);
 };
+
+// dependencies
 
 export const getDependencies = async (): Promise<Array<KappDependency>> => {
   await getAxiosClient().get<Array<KappDependency>>(K8sApiPrefix + "/v1/dependencies");

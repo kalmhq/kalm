@@ -8,19 +8,18 @@ export const getApplicationByName = (applicationName: string): Application => {
   return state
     .get("applications")
     .get("applications")
-    .get(applicationName) as Application;
+    .find(x => x.get("name") === applicationName) as Application;
 };
 
 export const duplicateApplicationName = (applicationName: string): string => {
   const state = store.getState();
-  const applicationList = state.get("applications").get("applicationList");
-
+  const applications = state.get("applications").get("applications");
   let i = 0;
   let name = "";
   do {
     i += 1;
     name = `${applicationName}-duplicate-${i}`;
-  } while (applicationList.find(x => x.get("name") === name));
+  } while (applications.find(x => x.get("name") === name));
 
   return name;
 };

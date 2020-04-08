@@ -38,7 +38,7 @@ export class NodeListRaw extends React.Component<Props, States> {
     };
   }
 
-  componentWillMount() {
+  componentDidMount() {
     this.props
       .dispatch(loadNodesAction())
       .catch(e => {

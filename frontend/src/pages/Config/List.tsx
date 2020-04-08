@@ -1,30 +1,18 @@
-import {
-  Breadcrumbs,
-  createStyles,
-  FormControl,
-  InputLabel,
-  Link,
-  MenuItem,
-  Select,
-  Theme,
-  withStyles,
-  WithStyles
-} from "@material-ui/core";
+import { Breadcrumbs, createStyles, Link, Theme, withStyles, WithStyles } from "@material-ui/core";
 import CreateNewFolderIcon from "@material-ui/icons/CreateNewFolder";
 import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import NoteAddIcon from "@material-ui/icons/NoteAdd";
 import PublishIcon from "@material-ui/icons/Publish";
+import { deleteConfigAction, duplicateConfigAction, loadConfigsAction } from "actions/config";
+import { setErrorNotificationAction } from "actions/notification";
 import React from "react";
 import { connect } from "react-redux";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { monokai } from "react-syntax-highlighter/dist/esm/styles/hljs";
-import { ThunkDispatch } from "redux-thunk";
-import { deleteConfigAction, duplicateConfigAction, loadConfigsAction } from "actions/config";
-import { loadNamespacesAction, setCurrentNamespaceAction } from "actions/namespaces";
-import { setErrorNotificationAction } from "actions/notification";
 import { RootState } from "reducers";
+import { ThunkDispatch } from "redux-thunk";
 import { getCurrentConfig } from "selectors/config";
 import { Actions } from "types";
 import { ConfigNode, ConfigNodeType, initialRootConfigNode } from "types/config";

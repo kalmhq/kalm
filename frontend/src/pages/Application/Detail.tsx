@@ -5,12 +5,12 @@ import ViewHeadlineIcon from "@material-ui/icons/ViewHeadline";
 import clsx from "clsx";
 import React from "react";
 import { ThunkDispatch } from "redux-thunk";
-import { loadApplicationsAction } from "../../actions/application";
+import { loadApplicationAction } from "../../actions/application";
 import { deletePod } from "../../actions/kubernetesApi";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "../../actions/notification";
 import { RootState } from "../../reducers";
 import { Actions } from "../../types";
-import { ApplicationListItem, PodStatus } from "../../types/application";
+import { ApplicationDetails, PodStatus } from "../../types/application";
 import { formatTimeDistance } from "../../utils";
 import { ErrorBedge, PendingBedge, SuccessBedge } from "../../widgets/Bedge";
 import { IconButtonWithTooltip, IconLinkWithToolTip } from "../../widgets/IconButtonWithTooltip";
@@ -103,7 +103,7 @@ const styles = (theme: Theme) =>
   });
 
 interface Props extends WithStyles<typeof styles> {
-  application: ApplicationListItem;
+  application: ApplicationDetails;
   activeNamespaceName: string;
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
 }
@@ -139,12 +139,12 @@ class DetailsRaw extends React.PureComponent<Props, State> {
 
   private renderComponent = (index: number) => {
     const { classes, application, dispatch } = this.props;
-    const component = application.get("components")!.get(index)!;
+    const componentsStatus = application.get("componentsStatus")!.get(index)!;
     return (
       <Paper className={classes.componentContainer} key={index}>
         <div className={clsx(classes.rowContainer, classes.componentRow)}>
           <div className="name">
-            <strong>{component.get("name")}</strong> ({component.get("workloadType")})
+            <strong>{componentsStatus.get("name")}</strong> ({componentsStatus.get("workloadType")})
           </div>
           {/* <div className="right-part">
             <div className={classes.chartTabelCell}>
@@ -156,7 +156,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
           </div> */}
         </div>
         <div className={classes.podContainer}>
-          {component.get("pods").size > 0 ? (
+          {componentsStatus.get("pods").size > 0 ? (
             <div className={clsx(classes.rowContainer, classes.podHeaderRow, classes.podDataRow)}>
               <div className="headerCell">Pod Name</div>
               <div className="headerCell">Node</div>
@@ -171,11 +171,11 @@ class DetailsRaw extends React.PureComponent<Props, State> {
               </div>
             </div>
           ) : null}
-          {component
+          {componentsStatus
             .get("pods")
             .map(x => {
               return (
-                <div>
+                <div key={x.get("name")}>
                   <div key={x.get("name")} className={clsx(classes.rowContainer, classes.podDataRow)}>
                     {/* <div className={classes.podContainer} key={x.get("name")}> */}
 
@@ -225,7 +225,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                               await deletePod(application.get("namespace"), x.get("name"));
                               dispatch(setSuccessNotificationAction(`Delete pod ${x.get("name")} successfully`));
                               // reload
-                              dispatch(loadApplicationsAction());
+                              dispatch(loadApplicationAction(application.get("namespace"), application.get("name")));
                             } catch (e) {
                               dispatch(setErrorNotificationAction(e.response.data.message));
                             }

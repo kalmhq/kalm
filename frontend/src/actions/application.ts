@@ -1,34 +1,36 @@
+import { StatusFailure, ThunkResult } from "../types";
 import {
-  updateKappApplication,
-  createKappApplication,
-  deleteKappApplication,
-  getKappApplicationList,
-  getKappApplication
-} from "./kubernetesApi";
-import {
-  LOAD_APPLICATIONS_PENDING,
-  LOAD_APPLICATIONS_FULFILLED,
+  Application,
+  ApplicationDetails,
+  ApplicationDetailsList,
+  CREATE_APPLICATION,
   DELETE_APPLICATION,
   DUPLICATE_APPLICATION,
-  UPDATE_APPLICATION,
-  Application,
-  CREATE_APPLICATION,
-  LOAD_APPLICATION_PENDING,
-  LOAD_APPLICATION_FULFILLED,
-  LOAD_APPLICATION_FAILED,
   LOAD_APPLICATIONS_FAILED,
+  LOAD_APPLICATIONS_FULFILLED,
+  LOAD_APPLICATIONS_PENDING,
+  LOAD_APPLICATION_FAILED,
+  LOAD_APPLICATION_FULFILLED,
+  LOAD_APPLICATION_PENDING,
+  SetIsSubmittingApplication,
+  SetIsSubmittingApplicationComponent,
   SET_IS_SUBMITTING_APPLICATION,
   SET_IS_SUBMITTING_APPLICATION_COMPONENT,
-  SetIsSubmittingApplication,
-  SetIsSubmittingApplicationComponent
+  UPDATE_APPLICATION
 } from "../types/application";
-import { ThunkResult, StatusFailure } from "../types";
+import {
+  createKappApplication,
+  deleteKappApplication,
+  getKappApplication,
+  getKappApplicationList,
+  updateKappApplication
+} from "./kubernetesApi";
 import { setErrorNotificationAction } from "./notification";
 
 export const createApplicationAction = (applicationValues: Application): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch(setIsSubmittingApplication(true));
-    let application: Application;
+    let application: ApplicationDetails;
 
     try {
       application = await createKappApplication(applicationValues);
@@ -56,7 +58,7 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
 export const updateApplicationAction = (applicationRaw: Application): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch(setIsSubmittingApplication(true));
-    let application: Application;
+    let application: ApplicationDetails;
 
     try {
       application = await updateKappApplication(applicationRaw);
@@ -83,7 +85,7 @@ export const updateApplicationAction = (applicationRaw: Application): ThunkResul
 
 export const duplicateApplicationAction = (duplicatedApplication: Application): ThunkResult<Promise<void>> => {
   return async dispatch => {
-    let application: Application;
+    let application: ApplicationDetails;
     try {
       application = await createKappApplication(duplicatedApplication);
     } catch (e) {
@@ -127,9 +129,9 @@ export const loadApplicationAction = (namespace: string, name: string): ThunkRes
   return async dispatch => {
     dispatch({ type: LOAD_APPLICATION_PENDING });
 
-    let res;
+    let application: ApplicationDetails;
     try {
-      res = await getKappApplication(namespace, name);
+      application = await getKappApplication(namespace, name);
     } catch (e) {
       if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
@@ -143,8 +145,7 @@ export const loadApplicationAction = (namespace: string, name: string): ThunkRes
     dispatch({
       type: LOAD_APPLICATION_FULFILLED,
       payload: {
-        application: res.get("application"),
-        podNames: res.get("podNames")
+        application
       }
     });
   };
@@ -157,7 +158,7 @@ export const loadApplicationsAction = (): ThunkResult<Promise<void>> => {
       .get("active");
     dispatch({ type: LOAD_APPLICATIONS_PENDING });
 
-    let applicationList;
+    let applicationList: ApplicationDetailsList;
     try {
       applicationList = await getKappApplicationList(activeNamespace);
 

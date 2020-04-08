@@ -19,7 +19,7 @@ import { CustomizedButton } from "widgets/Button";
 import { ControlledDialog } from "widgets/ControlledDialog";
 import { ServiceAccountSecret } from "widgets/ServiceAccountSecret";
 
-const dialogID = "admin/rolebinding/add";
+const dialogID = "rolebinding/add";
 const serviceAccountSecretDialogID = "serviceAccountSecretDialogID";
 
 const styles = (theme: Theme) =>
@@ -40,10 +40,10 @@ const styles = (theme: Theme) =>
 const mapStateToProps = (state: RootState) => {
   return {
     namespaces: state.get("namespaces").get("namespaces"),
-    roleBindings: state.get("admin").get("roleBindings"),
-    isFirstLoaded: state.get("admin").get("roleBindingsFirstLoaded"),
-    isLoading: state.get("admin").get("roleBindingsLoading"),
-    isCreating: state.get("admin").get("isRoleBindingCreating"),
+    roleBindings: state.get("roles").get("roleBindings"),
+    isFirstLoaded: state.get("roles").get("roleBindingsFirstLoaded"),
+    isLoading: state.get("roles").get("roleBindingsLoading"),
+    isCreating: state.get("roles").get("isRoleBindingCreating"),
     serviceAccountDialogData: state
       .get("dialogs")
       .get(serviceAccountSecretDialogID)

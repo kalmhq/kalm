@@ -17,14 +17,12 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-export interface WithApplicationsDataProps extends ReturnType<typeof mapStateToProps> {
+interface Props extends ReturnType<typeof mapStateToProps> {
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
 }
 
 export const AuthWrapper = (WrappedComponent: React.ComponentType<any>) => {
-  const authWrapper: React.ComponentType<WithApplicationsDataProps> = class extends React.Component<
-    WithApplicationsDataProps
-  > {
+  const authWrapper: React.ComponentType<Props> = class extends React.Component<Props> {
     componentDidMount() {
       const { firstLoaded } = this.props;
       if (!firstLoaded) {

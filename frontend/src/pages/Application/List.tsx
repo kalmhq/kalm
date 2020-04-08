@@ -18,15 +18,13 @@ import {
 } from "../../actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "../../actions/notification";
 import { duplicateApplicationName, getApplicationByName } from "../../selectors/application";
-import { ApplicationListItem } from "../../types/application";
+import { ApplicationDetails } from "../../types/application";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
 import { FoldButtonGroup } from "../../widgets/FoldButtonGroup";
 import { Loading } from "../../widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "../../widgets/SmallLineChart";
 import { BasePage } from "../BasePage";
-import { Details } from "./Detail";
-import { ApplicationListDataWrapper, WithApplicationsDataProps } from "./ListDataWrapper";
-import { NamespaceQueryWrapper } from "hoc/NamespaceWrapper";
+import { ApplicationListDataWrapper, WithApplicationsListDataProps } from "./ListDataWrapper";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -103,28 +101,28 @@ const styles = (theme: Theme) =>
     }
   });
 
-interface Props extends WithApplicationsDataProps, WithStyles<typeof styles> {}
+interface Props extends WithApplicationsListDataProps, WithStyles<typeof styles> {}
 
 interface State {
   isActiveConfirmDialogOpen: boolean;
-  switchingIsActiveApplicationListItem?: ApplicationListItem;
+  switchingIsActiveApplicationListItem?: ApplicationDetails;
   isDeleteConfirmDialogOpen: boolean;
-  deletingApplicationListItem?: ApplicationListItem;
+  deletingApplicationListItem?: ApplicationDetails;
   isDuplicateConfirmDialogOpen: boolean;
-  duplicatingApplicationListItem?: ApplicationListItem;
+  duplicatingApplicationListItem?: ApplicationDetails;
   checkedApplicationNames: {
     [key: string]: boolean;
   };
 }
 
-interface RowData extends ApplicationListItem {
+interface RowData extends ApplicationDetails {
   index: number;
 }
 
 class ApplicationListRaw extends React.PureComponent<Props, State> {
   private duplicateApplicationNameRef: React.RefObject<any>;
   private duplicateApplicationNamespaceRef: React.RefObject<any>;
-  private tableRef: React.RefObject<MaterialTable<ApplicationListItem>> = React.createRef();
+  private tableRef: React.RefObject<MaterialTable<ApplicationDetails>> = React.createRef();
 
   private defaultState = {
     isActiveConfirmDialogOpen: false,
@@ -148,7 +146,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     this.props.dispatch(push(`/applications/new`));
   };
 
-  private showSwitchingIsActiveConfirmDialog = (applicationListItem: ApplicationListItem) => {
+  private showSwitchingIsActiveConfirmDialog = (applicationListItem: ApplicationDetails) => {
     this.setState({
       isActiveConfirmDialogOpen: true,
       switchingIsActiveApplicationListItem: applicationListItem
@@ -201,7 +199,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private showDuplicateConfirmDialog = (duplicatingApplicationListItem: ApplicationListItem) => {
+  private showDuplicateConfirmDialog = (duplicatingApplicationListItem: ApplicationDetails) => {
     this.setState({
       isDuplicateConfirmDialogOpen: true,
       duplicatingApplicationListItem
@@ -278,7 +276,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private showDeleteConfirmDialog = (deletingApplicationListItem: ApplicationListItem) => {
+  private showDeleteConfirmDialog = (deletingApplicationListItem: ApplicationDetails) => {
     this.setState({
       isDeleteConfirmDialogOpen: true,
       deletingApplicationListItem
@@ -417,10 +415,10 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   private getData = () => {
-    const { applicationList } = this.props;
-    const data = applicationList
-      .map((applicationListItem, index) => {
-        const rowData: any = applicationListItem;
+    const { applications } = this.props;
+    const data = applications
+      .map((application, index) => {
+        const rowData: any = application;
         // @ts-ignore
         rowData.index = index;
         return rowData as RowData;
@@ -524,6 +522,4 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const ApplicationListPage = withStyles(styles)(
-  NamespaceQueryWrapper(ApplicationListDataWrapper(ApplicationListRaw))
-);
+export const ApplicationListPage = withStyles(styles)(ApplicationListDataWrapper(ApplicationListRaw));

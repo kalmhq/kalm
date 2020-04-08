@@ -8,7 +8,7 @@ import ApplicationForm from "../../forms/Application";
 import RemoteSubmitApplication from "../../forms/Application/remoteSubmitApplication";
 import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
-import { ApplicationItemDataWrapper, WithApplicationsDataProps } from "./ItemDataWrapper";
+import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./ItemDataWrapper";
 import { Application } from "../../types/application";
 
 const styles = (theme: Theme) =>
@@ -19,7 +19,7 @@ const styles = (theme: Theme) =>
   });
 
 interface Props
-  extends WithApplicationsDataProps,
+  extends WithApplicationItemDataProps,
     WithStyles<typeof styles>,
     RouteChildrenProps<{ applicationName: string }> {}
 
@@ -46,4 +46,6 @@ class ApplicationEditRaw extends React.PureComponent<Props> {
   }
 }
 
-export const ApplicationEdit = withStyles(styles)(ApplicationItemDataWrapper(ApplicationEditRaw));
+export const ApplicationEdit = withStyles(styles)(
+  ApplicationItemDataWrapper({ reloadFrequency: 0 })(ApplicationEditRaw)
+);

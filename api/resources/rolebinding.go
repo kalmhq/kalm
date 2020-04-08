@@ -163,6 +163,10 @@ func resolveSubjectClusterRoleBindings(k8sClient *kubernetes.Clientset, kind str
 			},
 		})
 
+		if errors.IsAlreadyExists(err) {
+			return nil
+		}
+
 		return err
 	} else {
 		return k8sClient.RbacV1().ClusterRoleBindings().Delete(clusterRoleBindingName, nil)

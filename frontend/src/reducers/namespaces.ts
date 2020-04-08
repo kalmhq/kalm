@@ -21,10 +21,11 @@ export type State = ImmutableMap<{
 }>;
 
 const search = queryString.parse(window.location.search);
+const LAST_SELECTED_NAMESPACE_CACHE_KEY = "LAST_SELECTED_NAMESPACE_CACHE_KEY";
 
 const initialState: State = Immutable.Map({
   namespaces: Immutable.List(),
-  active: search.namespace || "",
+  active: search.namespace || window.localStorage.getItem(LAST_SELECTED_NAMESPACE_CACHE_KEY) || "",
   isCreating: false,
   isListLoading: false,
   isFirstLoaded: false
@@ -34,6 +35,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
     case SET_CURRENT_NAMESPACE: {
       state = state.set("active", action.payload.namespace);
+      window.localStorage.setItem(LAST_SELECTED_NAMESPACE_CACHE_KEY, action.payload.namespace);
       break;
     }
     case LOAD_NAMESPACES_FULFILLED: {

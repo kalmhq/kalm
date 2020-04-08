@@ -1,6 +1,5 @@
 import { AppBar, Avatar, createStyles, Tab, Tabs, Theme } from "@material-ui/core";
 import blue from "@material-ui/core/colors/blue";
-import SettingsIcon from "@material-ui/icons/Settings";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import React from "react";
 import { connect } from "react-redux";
@@ -9,7 +8,6 @@ import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { Namespaces } from "widgets/Namespaces";
-import { IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 
 const mapStateToProps = (state: RootState) => {
   return {};
@@ -109,13 +107,15 @@ const TabBarComponentRaw = ({ classes, dispatch, title, isAdmin, tabOptions }: P
     setValue(value);
   };
 
+  // TODO: what's this ?????? Can any one fix this ?????
   window.onscroll = () => {
-    if (document.body.scrollTop > 50 || document.documentElement.scrollTop > 50) {
+    const header = document.getElementById("header");
+    if ((document.body.scrollTop > 50 || document.documentElement.scrollTop > 50) && header) {
       // @ts-ignore
-      document.getElementById("header").style.top = "-72px";
+      header.style.top = "-72px";
     } else {
       // @ts-ignore
-      document.getElementById("header").style.top = "0px";
+      header.style.top = "0px";
     }
   };
 

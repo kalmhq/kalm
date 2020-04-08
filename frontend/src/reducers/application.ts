@@ -1,27 +1,25 @@
 import Immutable from "immutable";
 import { Actions } from "../types";
-import { ImmutableMap } from "../typings";
 import {
-  ApplicationList,
-  Application,
-  LOAD_APPLICATIONS_PENDING,
-  LOAD_APPLICATIONS_FULFILLED,
   CREATE_APPLICATION,
-  DUPLICATE_APPLICATION,
-  UPDATE_APPLICATION,
   DELETE_APPLICATION,
-  LOAD_APPLICATION_PENDING,
-  LOAD_APPLICATION_FULFILLED,
+  DUPLICATE_APPLICATION,
   LOAD_APPLICATIONS_FAILED,
+  LOAD_APPLICATIONS_FULFILLED,
+  LOAD_APPLICATIONS_PENDING,
   LOAD_APPLICATION_FAILED,
+  LOAD_APPLICATION_FULFILLED,
+  LOAD_APPLICATION_PENDING,
   SET_IS_SUBMITTING_APPLICATION,
-  SET_IS_SUBMITTING_APPLICATION_COMPONENT
+  SET_IS_SUBMITTING_APPLICATION_COMPONENT,
+  UPDATE_APPLICATION,
+  ApplicationDetailsList,
+  ApplicationDetails
 } from "../types/application";
+import { ImmutableMap } from "../typings";
 
 export type State = ImmutableMap<{
-  applicationList: ApplicationList;
-  applications: Immutable.OrderedMap<string, Application>;
-  applicationPodNames: Immutable.Map<string, Immutable.List<string>>;
+  applications: ApplicationDetailsList;
   isListLoading: boolean;
   isListFirstLoaded: boolean;
   isItemLoading: boolean;
@@ -30,15 +28,25 @@ export type State = ImmutableMap<{
 }>;
 
 const initialState: State = Immutable.Map({
-  applicationList: Immutable.List(),
-  applications: Immutable.OrderedMap({}),
-  applicationPodNames: Immutable.Map({}),
+  applications: Immutable.List(),
   isListLoading: false,
   isListFirstLoaded: false,
   isItemLoading: false,
   isSubmittingApplication: false,
   isSubmittingApplicationComponent: false
 });
+
+const putApplicationIntoState = (state: State, application: ApplicationDetails): State => {
+  const applications = state.get("applications");
+  const index = applications.findIndex(app => app.get("name") === application.get("name"));
+
+  if (index < 0) {
+    state = state.set("applications", applications.push(application));
+  } else {
+    state = state.setIn(["applications", index], application);
+  }
+  return state;
+};
 
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
@@ -60,7 +68,8 @@ const reducer = (state: State = initialState, action: Actions): State => {
     }
     case LOAD_APPLICATIONS_FULFILLED: {
       state = state.set("isListFirstLoaded", true).set("isListLoading", false);
-      state = state.set("applicationList", action.payload.applicationList);
+      state = state.set("applications", action.payload.applicationList);
+
       break;
     }
     case LOAD_APPLICATION_PENDING: {
@@ -73,45 +82,29 @@ const reducer = (state: State = initialState, action: Actions): State => {
     }
     case LOAD_APPLICATION_FULFILLED: {
       state = state.set("isItemLoading", false);
-      const applications = state.get("applications");
-
-      let application = action.payload.application;
-
-      state = state.set("applications", applications.set(application.get("name"), application));
-      state = state.setIn(["applicationPodNames", application.get("name")], action.payload.podNames);
+      state = putApplicationIntoState(state, action.payload.application);
       break;
     }
     case CREATE_APPLICATION: {
-      const applications = state.get("applications");
-
-      let application = action.payload.application;
-
-      state = state.set("applications", applications.set(application.get("name"), application));
+      state = putApplicationIntoState(state, action.payload.application);
       break;
     }
     case DUPLICATE_APPLICATION: {
-      const applications = state.get("applications");
-
-      let application = action.payload.application;
-
-      state = state.set("applications", applications.set(application.get("name"), application));
+      state = putApplicationIntoState(state, action.payload.application);
       break;
     }
     case UPDATE_APPLICATION: {
-      const applications = state.get("applications");
-
-      let application = action.payload.application;
-
-      state = state.set("applications", applications.set(application.get("name"), application));
+      state = putApplicationIntoState(state, action.payload.application);
       break;
     }
     case DELETE_APPLICATION: {
-      state = state.deleteIn(["applications", action.payload.applicationName]);
+      const applications = state.get("applications");
+      const index = applications.findIndex(app => app.get("name") === action.payload.applicationName);
 
-      let applicationList = state.get("applicationList");
-      applicationList = applicationList.filter(item => item.get("name") !== action.payload.applicationName);
+      if (index >= 0) {
+        state = state.deleteIn(["applications", index]);
+      }
 
-      state = state.set("applicationList", applicationList);
       break;
     }
   }
