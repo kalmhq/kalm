@@ -30,6 +30,7 @@ import { loadNodesAction } from "../../actions/node";
 import { TDispatchProp } from "../../types";
 import { CustomLabels, AffinityType } from "./NodeSelector";
 import { getNodeLabels } from "../../selectors/node";
+import { loadConfigsAction } from "../../actions/config";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
@@ -146,6 +147,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     const { dispatch } = this.props;
     // load node labels for node selectors
     dispatch(loadNodesAction());
+    // load configs for volume
+    dispatch(loadConfigsAction());
   }
 
   private renderSchedule() {

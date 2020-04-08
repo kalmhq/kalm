@@ -43,26 +43,30 @@ export const getAncestorIdsDefaultValue = (): string[] => {
   return newIdChain;
 };
 
-export const getCascaderOptions = (): CascaderOptionType[] => {
+export const getCascaderOptions = (isSelectFolder: boolean = true): CascaderOptionType[] => {
   const state = store.getState();
 
   let config = state.get("configs").get("rootConfig");
   const options: CascaderOptionType[] = [];
-  options.push(configToCascaderOption(config));
+  options.push(configToCascaderOption(config, isSelectFolder));
 
   return options;
 };
 
-const configToCascaderOption = (config: ConfigNode, onlyFlders: boolean = true): CascaderOptionType => {
+const configToCascaderOption = (config: ConfigNode, isSelectFolder: boolean = true): CascaderOptionType => {
   const children = config.get("children");
 
   const cascaderOptionChildren: CascaderOptionType[] = [];
 
   children.forEach((childConfig: ConfigNode) => {
     if (childConfig.get("type") === "folder") {
-      cascaderOptionChildren.push(configToCascaderOption(childConfig));
-    } else if (!onlyFlders) {
-      cascaderOptionChildren.push(configToCascaderOption(childConfig));
+      if (isSelectFolder) {
+        cascaderOptionChildren.push(configToCascaderOption(childConfig, isSelectFolder));
+      } else if (childConfig.get("children").size > 0) {
+        cascaderOptionChildren.push(configToCascaderOption(childConfig, isSelectFolder));
+      }
+    } else if (!isSelectFolder) {
+      cascaderOptionChildren.push(configToCascaderOption(childConfig, isSelectFolder));
     }
   });
 
