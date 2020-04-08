@@ -24,7 +24,7 @@ export type RootState = ImmutableMap<{
   applications: ApplicationState;
   configs: ConfigState;
   auth: AuthState;
-  router: RouterState<LocationState>;
+  router: ImmutableMap<any>; //RouterState<LocationState>;
   notification: NotificationState;
   dependencies: DependencyState;
   dialogs: DialogState;

@@ -69,7 +69,7 @@ interface RowData {
   }[];
 }
 
-class AdminRolesRaw extends React.PureComponent<Props, State> {
+class RolesPageRaw extends React.PureComponent<Props, State> {
   private tableRef: React.RefObject<MaterialTable<RowData>> = React.createRef();
 
   constructor(props: Props) {
@@ -326,4 +326,4 @@ class AdminRolesRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const AdminRoles = withStyles(styles)(connect(mapStateToProps)(AdminRolesRaw));
+export const RolesPage = withStyles(styles)(connect(mapStateToProps)(RolesPageRaw));

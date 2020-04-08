@@ -38,7 +38,7 @@ class ApplicationShowRaw extends React.PureComponent<Props> {
         {isLoading && !isFirstLoaded ? (
           <Loading />
         ) : application ? (
-          <Details application={application} dispatch={dispatch} />
+          <Details application={application} dispatch={dispatch} activeNamespaceName={this.props.activeNamespaceName} />
         ) : (
           `Can't find application with name ${applicationName}`
         )}

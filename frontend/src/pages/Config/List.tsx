@@ -21,19 +21,19 @@ import { connect } from "react-redux";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { monokai } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import { ThunkDispatch } from "redux-thunk";
-import { deleteConfigAction, duplicateConfigAction, loadConfigsAction } from "../../actions/config";
-import { loadNamespacesAction, setCurrentNamespaceAction } from "../../actions/namespaces";
-import { setErrorNotificationAction } from "../../actions/notification";
-import { RootState } from "../../reducers";
-import { getCurrentConfig } from "../../selectors/config";
-import { Actions } from "../../types";
-import { ConfigNode, ConfigNodeType, initialRootConfigNode } from "../../types/config";
-import { ConfigEditDialog } from "../../widgets/ConfigEditDialog";
-import { ConfigNewDialog } from "../../widgets/ConfigNewDialog";
-import { ConfigUploadDialog } from "../../widgets/ConfigUploadDialog";
-import { ConfirmDialog } from "../../widgets/ConfirmDialog";
-import { FileTree } from "../../widgets/FileTree";
-import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
+import { deleteConfigAction, duplicateConfigAction, loadConfigsAction } from "actions/config";
+import { loadNamespacesAction, setCurrentNamespaceAction } from "actions/namespaces";
+import { setErrorNotificationAction } from "actions/notification";
+import { RootState } from "reducers";
+import { getCurrentConfig } from "selectors/config";
+import { Actions } from "types";
+import { ConfigNode, ConfigNodeType, initialRootConfigNode } from "types/config";
+import { ConfigEditDialog } from "widgets/ConfigEditDialog";
+import { ConfigNewDialog } from "widgets/ConfigNewDialog";
+import { ConfigUploadDialog } from "widgets/ConfigUploadDialog";
+import { ConfirmDialog } from "widgets/ConfirmDialog";
+import { FileTree } from "widgets/FileTree";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { BasePage } from "../BasePage";
 
 const styles = (theme: Theme) =>
@@ -77,7 +77,6 @@ const mapStateToProps = (state: RootState, ownProps: any) => {
     currentConfig: getCurrentConfig(),
     rootConfig: state.get("configs").get("rootConfig"),
     currentConfigIdChain: state.get("configs").get("currentConfigIdChain"),
-    namespaces: state.get("namespaces").get("namespaces"),
     currentNamespace: state.get("namespaces").get("active")
   };
 };
@@ -98,22 +97,30 @@ interface State {
 }
 
 class ConfigListRaw extends React.PureComponent<Props, State> {
+  private initialState: State = {
+    showConfigNewDialog: false,
+    newConfigType: "file",
+    showConfigEditDialog: false,
+    showConfigDeleteDialog: false,
+    showConfigUploadDialog: false
+  };
+
   constructor(props: Props) {
     super(props);
-    this.state = {
-      showConfigNewDialog: false,
-      newConfigType: "file",
-      showConfigEditDialog: false,
-      showConfigDeleteDialog: false,
-      showConfigUploadDialog: false
-    };
+    this.state = this.initialState;
   }
 
   public componentDidMount() {
     const { dispatch, currentNamespace } = this.props;
 
-    dispatch(loadNamespacesAction());
     dispatch(loadConfigsAction(currentNamespace));
+  }
+
+  public componentDidUpdate(prevProps: Props) {
+    if (prevProps.currentNamespace !== this.props.currentNamespace) {
+      this.props.dispatch(loadConfigsAction(this.props.currentNamespace));
+      this.setState(this.initialState);
+    }
   }
 
   private showDeleteConfirmDialog = () => {
@@ -321,30 +328,6 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
     }
   }
 
-  private renderNamespaceSelector() {
-    const { dispatch, namespaces, currentNamespace } = this.props;
-
-    return (
-      <FormControl style={{ width: "100%", marginBottom: "20px" }}>
-        <InputLabel>Namespace</InputLabel>
-        <Select
-          value={currentNamespace}
-          onChange={(event: React.ChangeEvent<{ value: unknown }>) => {
-            const namespace = event.target.value as string;
-            dispatch(setCurrentNamespaceAction(namespace));
-            dispatch(loadConfigsAction(namespace));
-          }}
-          label="Namespace">
-          {namespaces.map(namespace => (
-            <MenuItem key={namespace.get("name")} value={namespace.get("name")}>
-              {namespace}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-    );
-  }
-
   public render() {
     const { dispatch, rootConfig, classes, currentConfig } = this.props;
     const { showConfigNewDialog, showConfigEditDialog, newConfigType } = this.state;
@@ -353,7 +336,6 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
       <BasePage title="Configs">
         <div className={classes.root}>
           <div className={classes.leftTree}>
-            {this.renderNamespaceSelector()}
             <FileTree
               rootConfig={rootConfig}
               dispatch={dispatch}

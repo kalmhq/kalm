@@ -129,9 +129,6 @@ const TabBarComponentRaw = ({ classes, dispatch, title, isAdmin, tabOptions }: P
           {isAdmin ? null : <Namespaces />}
         </FlexRowItemCenterBox>
         <div className={classes.barRight}>
-          <IconLinkWithToolTip tooltipTitle="Settings" className={classes.barSettings} to="/admin">
-            <SettingsIcon />
-          </IconLinkWithToolTip>
           <div className={classes.barAvatar}>
             <Avatar>A</Avatar>
           </div>

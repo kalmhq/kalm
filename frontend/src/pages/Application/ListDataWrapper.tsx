@@ -9,6 +9,7 @@ const mapStateToProps = (state: RootState) => {
   const applications = state.get("applications");
 
   return {
+    activeNamespaceName: state.get("namespaces").get("active"),
     applicationList: applications.get("applicationList"),
     applications: applications.get("applications").toList(),
     isLoading: applications.get("isListLoading"),
@@ -33,6 +34,13 @@ export const ApplicationListDataWrapper = (WrappedComponent: React.ComponentType
 
     componentDidMount() {
       this.loadData();
+    }
+
+    componentDidUpdate(prevProps: WithApplicationsDataProps) {
+      if (prevProps.activeNamespaceName !== this.props.activeNamespaceName) {
+        window.clearTimeout(this.interval);
+        this.loadData();
+      }
     }
 
     componentWillUnmount() {

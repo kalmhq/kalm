@@ -26,6 +26,7 @@ import { SmallCPULineChart, SmallMemoryLineChart } from "../../widgets/SmallLine
 import { BasePage } from "../BasePage";
 import { Details } from "./Detail";
 import { ApplicationListDataWrapper, WithApplicationsDataProps } from "./ListDataWrapper";
+import { NamespaceQueryWrapper } from "hoc/NamespaceWrapper";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -317,10 +318,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private renderDetails = (applicationListItem: ApplicationListItem) => {
-    return <Details application={applicationListItem} dispatch={this.props.dispatch} />;
-  };
-
   private renderCheckbox = (applicationListItem: RowData) => {
     return (
       <Checkbox
@@ -345,8 +342,13 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     const memoryData = applicationListItem.get("metrics").get("memory");
     return <SmallMemoryLineChart data={memoryData} />;
   };
+
   private renderName = (rowData: RowData) => {
-    return <Link to={`/applications/${rowData.get("namespace")}/${rowData.get("name")}`}>{rowData.get("name")}</Link>;
+    return (
+      <Link to={`/applications/${rowData.get("name")}?namespace=${this.props.activeNamespaceName}`}>
+        {rowData.get("name")}
+      </Link>
+    );
   };
 
   private renderNamespace = (applicationListItem: RowData) => {
@@ -368,37 +370,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   private renderComponents = (applicationListItem: RowData) => {
-    // const { classes } = this.props;
     return null;
-    // <ExpansionPanel className={classes.expansionPanel}>
-    //   <ExpansionPanelSummary
-    //     className={classes.panelSummary}
-    //     expandIcon={<ExpandMoreIcon />}
-    //     aria-controls="panel1a-content"
-    //     id="panel1a-header">
-    //     <div>
-    //       <Dot color="green" />
-    //       {applicationListItem.get("components").size} / {applicationListItem.get("components").size}
-    //     </div>
-    //   </ExpansionPanelSummary>
-    //   <ExpansionPanelDetails>
-    //     <div>
-    //       {applicationListItem
-    //         .get("components")
-    //         .map(x => {
-    //           return (
-    //             <div key={x.get("name")} className={classes.componentWrapper}>
-    //               <Dot color="green" />
-    //               <div className={classes.componentLine} key={x.get("name")}>
-    //                 {x.get("name")}
-    //               </div>
-    //             </div>
-    //           );
-    //         })
-    //         .toArray()}
-    //     </div>
-    //   </ExpansionPanelDetails>
-    // </ExpansionPanel>
   };
 
   private renderActions = (rowData: RowData) => {
@@ -407,12 +379,12 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         options={[
           {
             text: "Details",
-            to: `/applications/${rowData.get("namespace")}/${rowData.get("name")}`,
+            to: `/applications/${rowData.get("name")}?namespace=${this.props.activeNamespaceName}`,
             icon: "fullscreen"
           },
           {
             text: "Edit",
-            to: `/applications/${rowData.get("namespace")}/${rowData.get("name")}/edit`,
+            to: `/applications/${rowData.get("name")}/edit?namespace=${this.props.activeNamespaceName}`,
             icon: "edit"
           },
           {
@@ -424,12 +396,12 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           },
           {
             text: "Logs",
-            to: `/applications/${rowData.get("namespace")}/${rowData.get("name")}/logs`,
+            to: `/applications/${rowData.get("name")}/logs?namespace=${this.props.activeNamespaceName}`,
             icon: "view_headline"
           },
           {
             text: "Shell",
-            to: `/applications/${rowData.get("namespace")}/${rowData.get("name")}/shells`,
+            to: `/applications/${rowData.get("name")}/shells?namespace=${this.props.activeNamespaceName}`,
             icon: "play_arrow"
           },
           {
@@ -552,4 +524,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const ApplicationListPage = withStyles(styles)(ApplicationListDataWrapper(ApplicationListRaw));
+export const ApplicationListPage = withStyles(styles)(
+  NamespaceQueryWrapper(ApplicationListDataWrapper(ApplicationListRaw))
+);

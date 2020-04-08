@@ -10,6 +10,7 @@ import {
   SET_CURRENT_NAMESPACE
 } from "../types/namespace";
 import { ImmutableMap } from "../typings";
+import queryString from "query-string";
 
 export type State = ImmutableMap<{
   namespaces: Namespaces;
@@ -19,11 +20,11 @@ export type State = ImmutableMap<{
   isFirstLoaded: boolean;
 }>;
 
-const KAPP_CURRENT_NAMESPACE_KEY = "KAPP_CURRENT_NAMESPACE_KEY";
+const search = queryString.parse(window.location.search);
 
 const initialState: State = Immutable.Map({
   namespaces: Immutable.List(),
-  active: window.localStorage.getItem(KAPP_CURRENT_NAMESPACE_KEY) || "",
+  active: search.namespace || "",
   isCreating: false,
   isListLoading: false,
   isFirstLoaded: false
@@ -33,18 +34,11 @@ const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
     case SET_CURRENT_NAMESPACE: {
       state = state.set("active", action.payload.namespace);
-      window.localStorage.setItem(KAPP_CURRENT_NAMESPACE_KEY, action.payload.namespace);
       break;
     }
     case LOAD_NAMESPACES_FULFILLED: {
       state = state.set("isListLoading", false);
       state = state.set("isFirstLoaded", true);
-      if (
-        (!state.get("active") || !action.payload.namespaces.find(x => x.get("name") === state.get("active"))) &&
-        action.payload.namespaces.size > 0
-      ) {
-        state = state.set("active", action.payload.namespaces.get(0)!.get("name"));
-      }
       return state.set("namespaces", action.payload.namespaces);
     }
     case CREATE_NAMESPACE_FULFILLED: {

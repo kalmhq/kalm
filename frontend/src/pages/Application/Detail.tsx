@@ -104,6 +104,7 @@ const styles = (theme: Theme) =>
 
 interface Props extends WithStyles<typeof styles> {
   application: ApplicationListItem;
+  activeNamespaceName: string;
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
 }
 
@@ -200,8 +201,8 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                           size="small"
                           tooltipTitle="Log"
                           to={
-                            `/applications/${application.get("namespace")}/${application.get("name")}/logs?` +
-                            generateQueryForPods([x.get("name")], x.get("name"))
+                            `/applications/${application.get("name")}/logs?` +
+                            generateQueryForPods(this.props.activeNamespaceName, [x.get("name")], x.get("name"))
                           }>
                           <ViewHeadlineIcon />
                         </IconLinkWithToolTip>
@@ -210,8 +211,8 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                           size="small"
                           className={classes.podActionButton}
                           to={
-                            `/applications/${application.get("namespace")}/${application.get("name")}/shells?` +
-                            generateQueryForPods([x.get("name")], x.get("name"))
+                            `/applications/${application.get("name")}/shells?` +
+                            generateQueryForPods(this.props.activeNamespaceName, [x.get("name")], x.get("name"))
                           }>
                           <LaptopWindowsIcon />
                         </IconLinkWithToolTip>

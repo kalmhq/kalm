@@ -103,10 +103,11 @@ const styles = (theme: Theme) =>
     }
   });
 
-export const generateQueryForPods = (podNames: string[], active?: string) => {
+export const generateQueryForPods = (namespace: string, podNames: string[], active?: string) => {
   const search = {
     pods: podNames.length > 0 ? podNames : undefined,
-    active: active || undefined
+    active: active || undefined,
+    namespace
   };
 
   return queryString.stringify(search, { arrayFormat: "comma" });

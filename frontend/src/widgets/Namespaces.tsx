@@ -92,7 +92,7 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
           size="medium"
           className={classes.namespaceButton}
           onClick={this.handleToggle}>
-          {isListFirstLoading ? "Loading..." : activeNamespace ? activeNamespace.get("name") : "No Nampespace"}
+          {isListFirstLoading ? "Loading..." : activeNamespace ? activeNamespace.get("name") : "Select a namespace"}
         </Button>
         <Popper open={open} anchorEl={this.anchorRef.current} role={undefined} transition disablePortal>
           {({ TransitionProps, placement }) => (

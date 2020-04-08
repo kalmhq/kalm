@@ -11,7 +11,12 @@ import { submit } from "redux-form";
 import { TDispatchProp } from "types";
 import { CustomizedButton } from "widgets/Button";
 import { ControlledDialog } from "widgets/ControlledDialog";
-import { createNamespaceAction, deleteNamespaceAction, loadNamespacesAction } from "actions/namespaces";
+import {
+  createNamespaceAction,
+  deleteNamespaceAction,
+  loadNamespacesAction,
+  setCurrentNamespaceAction
+} from "actions/namespaces";
 
 const dialogID = "admin/namespace/add";
 
@@ -24,6 +29,7 @@ const styles = (theme: Theme) =>
 
 const mapStateToProps = (state: RootState) => {
   return {
+    active: state.get("namespaces").get("active"),
     namespaces: state.get("namespaces").get("namespaces"),
     isCreating: state.get("namespaces").get("isCreating")
   };
@@ -37,7 +43,7 @@ interface RowData {
   name: string;
 }
 
-class AdminNamespacesRaw extends React.PureComponent<Props, State> {
+class NamespacesPageRaw extends React.PureComponent<Props, State> {
   private tableRef: React.RefObject<MaterialTable<RowData>> = React.createRef();
 
   constructor(props: Props) {
@@ -60,9 +66,14 @@ class AdminNamespacesRaw extends React.PureComponent<Props, State> {
       .toArray();
   };
 
-  private renderName(rowData: RowData) {
-    return rowData.name;
-  }
+  private renderName = (rowData: RowData) => {
+    const { active } = this.props;
+    if (rowData.name === active) {
+      return <strong>{rowData.name} (Current active)</strong>;
+    } else {
+      return rowData.name;
+    }
+  };
 
   private renderAppCount(rowData: RowData) {
     return "TODO";
@@ -172,6 +183,9 @@ class AdminNamespacesRaw extends React.PureComponent<Props, State> {
             { title: "Created At", field: "createdAt", sorting: false, render: this.renderCreatedAt, editable: "never" }
           ]}
           data={this.getData()}
+          onRowClick={(event: any, rowData?: RowData) => {
+            this.props.dispatch(setCurrentNamespaceAction(rowData!.name));
+          }}
           title="Namespaces"
           editable={{
             onRowDelete: this.handleDelete
@@ -182,4 +196,4 @@ class AdminNamespacesRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const AdminNamespaces = withStyles(styles)(connect(mapStateToProps)(AdminNamespacesRaw));
+export const NamespacesPage = withStyles(styles)(connect(mapStateToProps)(NamespacesPageRaw));
