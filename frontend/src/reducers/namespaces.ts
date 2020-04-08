@@ -16,6 +16,7 @@ export type State = ImmutableMap<{
   active: string;
   isListLoading: boolean;
   isCreating: boolean;
+  isFirstLoaded: boolean;
 }>;
 
 const KAPP_CURRENT_NAMESPACE_KEY = "KAPP_CURRENT_NAMESPACE_KEY";
@@ -24,7 +25,8 @@ const initialState: State = Immutable.Map({
   namespaces: Immutable.List(),
   active: window.localStorage.getItem(KAPP_CURRENT_NAMESPACE_KEY) || "",
   isCreating: false,
-  isListLoading: false
+  isListLoading: false,
+  isFirstLoaded: false
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {
@@ -36,6 +38,13 @@ const reducer = (state: State = initialState, action: Actions): State => {
     }
     case LOAD_NAMESPACES_FULFILLED: {
       state = state.set("isListLoading", false);
+      state = state.set("isFirstLoaded", true);
+      if (
+        (!state.get("active") || !action.payload.namespaces.find(x => x.get("name") === state.get("active"))) &&
+        action.payload.namespaces.size > 0
+      ) {
+        state = state.set("active", action.payload.namespaces.get(0)!.get("name"));
+      }
       return state.set("namespaces", action.payload.namespaces);
     }
     case CREATE_NAMESPACE_FULFILLED: {

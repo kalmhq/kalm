@@ -4,7 +4,9 @@ import (
 	"github.com/sirupsen/logrus"
 	appV1 "k8s.io/api/apps/v1"
 	coreV1 "k8s.io/api/core/v1"
+	rbacV1 "k8s.io/api/rbac/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/types"
@@ -18,6 +20,8 @@ type ResourceChannels struct {
 	PodList        *PodListChannel
 	EventList      *EventListChannel
 	//PodMetricsList *PodMetricsListChannel
+	RoleBindingList *RoleBindingListChannel
+	NamespaceList   *NamespaceListChannel
 }
 
 type Resources struct {
@@ -26,7 +30,16 @@ type Resources struct {
 	PodList        *coreV1.PodList
 	EventList      *coreV1.EventList
 	//PodMetricsList *metricv1beta1.PodMetricsList
+	RoleBindings []rbacV1.RoleBinding
+	Namespaces   []coreV1.Namespace
 }
+
+var ListAll = metaV1.ListOptions{
+	LabelSelector: labels.Everything().String(),
+	FieldSelector: fields.Everything().String(),
+}
+
+var AllNamespaces = ""
 
 func (c *ResourceChannels) ToResources() (r *Resources, err error) {
 	resources := &Resources{}
@@ -61,6 +74,22 @@ func (c *ResourceChannels) ToResources() (r *Resources, err error) {
 			return nil, err
 		}
 		resources.EventList = <-c.EventList.List
+	}
+
+	if c.RoleBindingList != nil {
+		err = <-c.RoleBindingList.Error
+		if err != nil {
+			return nil, err
+		}
+		resources.RoleBindings = <-c.RoleBindingList.List
+	}
+
+	if c.NamespaceList != nil {
+		err = <-c.NamespaceList.Error
+		if err != nil {
+			return nil, err
+		}
+		resources.Namespaces = <-c.NamespaceList.List
 	}
 
 	//if c.PodMetricsList != nil {

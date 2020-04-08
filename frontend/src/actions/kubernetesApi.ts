@@ -111,8 +111,8 @@ export const deleteKappComonentTemplate = async (component: ComponentTemplate): 
   // return convertFromCRDComponentTemplate(res.data);
 };
 
-export const getKappApplicationList = async (): Promise<ApplicationList> => {
-  const res = await getAxiosClient().get(K8sApiPrefix + "/v1alpha1/applications");
+export const getKappApplicationList = async (namespace: string): Promise<ApplicationList> => {
+  const res = await getAxiosClient().get(K8sApiPrefix + "/v1alpha1/applications/" + namespace);
 
   return Immutable.fromJS(res.data.applications);
 };
