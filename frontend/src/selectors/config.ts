@@ -29,7 +29,7 @@ export const getConfigByIdChain = (idChain: string[]): ConfigNode => {
   return config;
 };
 
-export const getCascaderDefaultValue = (): string[] => {
+export const getAncestorIdsDefaultValue = (): string[] => {
   const state = store.getState();
   const idChain = state.get("configs").get("currentConfigIdChain");
   const currentConfig = getConfigByIdChain(idChain);
@@ -43,17 +43,17 @@ export const getCascaderDefaultValue = (): string[] => {
   return newIdChain;
 };
 
-export const getCascaderOptions = (): CascaderOptionType[] => {
+export const getAncestorIdsOptions = (): CascaderOptionType[] => {
   const state = store.getState();
 
   let config = state.get("configs").get("rootConfig");
   const options: CascaderOptionType[] = [];
-  options.push(configToCascaderOption(config));
+  options.push(configToAncestorIdsOption(config));
 
   return options;
 };
 
-const configToCascaderOption = (config: ConfigNode): CascaderOptionType => {
+const configToAncestorIdsOption = (config: ConfigNode): CascaderOptionType => {
   const children = config.get("children");
 
   let childrenHaveFolder = false;
@@ -63,7 +63,7 @@ const configToCascaderOption = (config: ConfigNode): CascaderOptionType => {
     if (childConfig.get("type") === "folder") {
       childrenHaveFolder = true;
 
-      cascaderOptionChildren.push(configToCascaderOption(childConfig));
+      cascaderOptionChildren.push(configToAncestorIdsOption(childConfig));
     }
   });
 
