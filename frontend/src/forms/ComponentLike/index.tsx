@@ -699,15 +699,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private renderSummary(summaryInfos: Summary[]): React.ReactNode {
     const { classes } = this.props;
     const renderValues = (summary: Summary) => {
-      if (typeof summary.value === "string") {
-        return (
-          <Typography
-            variant="body2"
-            className={clsx(classes.summaryValue, summary.hasChanged ? classes.summaryChanged : null)}>
-            {summary.value}
-          </Typography>
-        );
-      } else if (typeof summary.value === "number") {
+      if (typeof summary.value === "string" || typeof summary.value === "number") {
         return (
           <Typography
             variant="body2"
