@@ -6,28 +6,6 @@ import (
 	"k8s.io/metrics/pkg/client/clientset/versioned"
 )
 
-// func (h *ApiHandler) handleGetRoles(c echo.Context) error {
-// 	k8sClient := getK8sClient(c)
-// 	res, err := k8sClient.RESTClient().Get().AbsPath("/apis/rbac.authorization.k8s.io/v1/namespaces/default/roles").DoRaw()
-
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	return c.JSONBlob(200, res)
-// }
-
-// func (h *ApiHandler) handleGetRoleBindings(c echo.Context) error {
-// 	k8sClient := getK8sClient(c)
-// 	res, err := k8sClient.RESTClient().Get().AbsPath("/apis/rbac.authorization.k8s.io/v1/namespaces/default/clusterrolebindings").DoRaw()
-
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	return c.JSONBlob(200, res)
-// }
-
 func (h *ApiHandler) handleGetPVs(c echo.Context) error {
 	k8sClient := getK8sClient(c)
 	list, err := k8sClient.CoreV1().PersistentVolumes().List(ListAll)

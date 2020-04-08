@@ -3,13 +3,11 @@ module github.com/kapp-staging/kapp/api
 go 1.12
 
 require (
-	github.com/aws/aws-sdk-go v1.25.48 // indirect
 	github.com/containerd/continuity v0.0.0-20200228182428-0f16d7a0959c // indirect
 	github.com/davecgh/go-spew v1.1.1
 	github.com/docker/distribution v2.7.1+incompatible // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/go-playground/validator/v10 v10.2.0
-	github.com/google/pprof v0.0.0-20190723021845-34ac40c74b70 // indirect
 	github.com/gorilla/websocket v1.4.2
 	github.com/kapp-staging/kapp/controller v0.1.0
 	github.com/kapp-staging/kapp/lib v0.0.0-00010101000000-000000000000
