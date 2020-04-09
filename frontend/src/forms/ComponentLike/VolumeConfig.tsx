@@ -6,6 +6,7 @@ import { WrappedFieldProps } from "redux-form";
 import { Field } from "redux-form/immutable";
 import { pathToAncestorIds } from "../../actions/config";
 import { getCascaderOptions } from "../../selectors/config";
+import { ValidatorRequired } from "../validator";
 
 const displayRender = (labels: any, selectedOptions: any) => {
   return labels.map((label: any, i: any) => {
@@ -17,7 +18,7 @@ const displayRender = (labels: any, selectedOptions: any) => {
   });
 };
 
-const renderKappConfigPath = ({ input }: FilledTextFieldProps & WrappedFieldProps) => {
+const renderKappConfigPath = ({ input, meta: { touched, error } }: FilledTextFieldProps & WrappedFieldProps) => {
   let defaultValue;
   if (input.value) {
     const ancestorIds = pathToAncestorIds(input.value);
@@ -27,9 +28,11 @@ const renderKappConfigPath = ({ input }: FilledTextFieldProps & WrappedFieldProp
     defaultValue = ancestorIds;
   }
 
+  const inputLabel = "Kapp Config Path";
+
   return (
     <Cascader
-      placeholder="Kapp Config Path"
+      placeholder={inputLabel}
       options={getCascaderOptions(false)}
       displayRender={displayRender}
       style={{ width: "100%" }}
@@ -42,8 +45,8 @@ const renderKappConfigPath = ({ input }: FilledTextFieldProps & WrappedFieldProp
         for (let i = 1; i <= value.length - 1; i++) {
           path = path + "/" + value[i];
         }
-        console.log("value", value);
-        console.log("path", path);
+        // console.log("value", value);
+        // console.log("path", path);
         input.onChange(path);
       }}>
       {/* <input /> */}
@@ -52,5 +55,5 @@ const renderKappConfigPath = ({ input }: FilledTextFieldProps & WrappedFieldProp
 };
 
 export const KappConfigPath = (props: any) => {
-  return <Field name="kappConfigPath" component={renderKappConfigPath} />;
+  return <Field name="kappConfigPath" component={renderKappConfigPath} validate={ValidatorRequired} />;
 };
