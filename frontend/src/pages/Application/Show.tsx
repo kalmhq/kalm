@@ -7,6 +7,7 @@ import { Details } from "./Detail";
 import { Loading } from "../../widgets/Loading";
 import { connect } from "react-redux";
 import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./ItemDataWrapper";
+import { withNamespace, withNamespaceProps } from "permission/Namespace";
 
 const mapStateToProps = (_: any, props: any) => {
   const { match } = props;
@@ -26,20 +27,24 @@ const styles = (theme: Theme) =>
 
 interface Props
   extends WithApplicationItemDataProps,
+    withNamespaceProps,
     WithStyles<typeof styles>,
     ReturnType<typeof mapStateToProps>,
     RouteChildrenProps<{ applicationName: string }> {}
 
 class ApplicationShowRaw extends React.PureComponent<Props> {
   public render() {
-    const { isLoading, application, applicationName, dispatch } = this.props;
+    const { isLoading, application, applicationName, dispatch, hasRole } = this.props;
+    const hasWriterRole = hasRole("writer");
     return (
       <BasePage
         title={`Application ${application && application.get("name")}`}
         rightAction={
-          <Link to={`/applications/${application && application.get("name")}/edit`}>
-            <Button>Edit</Button>
-          </Link>
+          hasWriterRole ? (
+            <Link to={`/applications/${application && application.get("name")}/edit`}>
+              <Button>Edit</Button>
+            </Link>
+          ) : null
         }>
         {isLoading && !application ? (
           <Loading />
@@ -54,5 +59,5 @@ class ApplicationShowRaw extends React.PureComponent<Props> {
 }
 
 export const ApplicationShow = withStyles(styles)(
-  connect(mapStateToProps)(ApplicationItemDataWrapper({ reloadFrequency: 5000 })(ApplicationShowRaw))
+  connect(mapStateToProps)(ApplicationItemDataWrapper({ reloadFrequency: 5000 })(withNamespace(ApplicationShowRaw)))
 );

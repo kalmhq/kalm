@@ -19,9 +19,9 @@ import { NoMatch, Page404 } from "pages/NoMatch";
 import { RolesPage } from "pages/Roles";
 import React from "react";
 import { Route, Switch } from "react-router";
-import { RequireNotAuthorizated, RequireAuthorizated } from "hoc/Authorization";
-import { RequireAdmin } from "hoc/Role";
-import { RequireNamespaceReader, RequireNamespaceWriter } from "hoc/Namespace";
+import { RequireNotAuthorizated, RequireAuthorizated } from "permission/Authorization";
+import { RequireAdmin } from "permission/Role";
+import { RequireNamespaceReader, RequireNamespaceWriter } from "permission/Namespace";
 
 const RequireAuthorizatedDashboard = RequireAuthorizated(Dashboard);
 

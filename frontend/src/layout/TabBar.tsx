@@ -8,6 +8,7 @@ import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { Namespaces } from "widgets/Namespaces";
+import { OnlyVisiableToAdmin } from "permission/Role";
 
 const mapStateToProps = (state: RootState) => {
   return {};
@@ -16,6 +17,7 @@ const mapStateToProps = (state: RootState) => {
 interface TabOption {
   text: string;
   to: string;
+  requireAdmin?: boolean;
 }
 
 const HEADER_HEIGHT = 120;
@@ -151,7 +153,7 @@ const TabBarComponentRaw = ({ classes, dispatch, title, isAdmin, tabOptions }: P
             }
           }}>
           {tabOptions.map((option: TabOption) => {
-            return (
+            const tab = (
               <Tab
                 key={option.to}
                 className={classes.tab}
@@ -162,6 +164,12 @@ const TabBarComponentRaw = ({ classes, dispatch, title, isAdmin, tabOptions }: P
                 {...a11yProps(option.to)}
               />
             );
+
+            if (option.requireAdmin) {
+              return <OnlyVisiableToAdmin>{tab}</OnlyVisiableToAdmin>;
+            }
+
+            return tab;
           })}
         </Tabs>
       </div>

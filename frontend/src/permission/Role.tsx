@@ -62,5 +62,6 @@ export const Roles = ({ requireAdmin, redirectOnUnauthorized }: Options) => (
 export const RequireAdmin = (WrappedComponent: React.ComponentType<any>) =>
   Roles({ requireAdmin: true, redirectOnUnauthorized: true })(WrappedComponent);
 
-export const OnlyVisiableToAdmin = (WrappedComponent: React.ComponentType<any>) =>
-  Roles({ requireAdmin: true, redirectOnUnauthorized: false })(WrappedComponent);
+export const OnlyVisiableToAdmin = Roles({ requireAdmin: true, redirectOnUnauthorized: false })((props: any) => {
+  return props.children;
+});

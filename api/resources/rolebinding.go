@@ -292,10 +292,32 @@ func createWriterRole(k8sClient *kubernetes.Clientset, namespace string) (err er
 		Rules: []rbacV1.PolicyRule{
 			{
 				Verbs: []string{
-					"list", "get", "watch",
+					"list", "get", "watch", "delete", "update", "create", "patch",
 				},
 				Resources: []string{
-					"deployments",
+					"pods", "events", "configmaps",
+				},
+				APIGroups: []string{
+					"",
+				},
+			},
+			{
+				Verbs: []string{
+					"get",
+				},
+				Resources: []string{
+					"pods/log",
+				},
+				APIGroups: []string{
+					"",
+				},
+			},
+			{
+				Verbs: []string{
+					"create",
+				},
+				Resources: []string{
+					"pods/exec",
 				},
 				APIGroups: []string{
 					"",
@@ -304,6 +326,17 @@ func createWriterRole(k8sClient *kubernetes.Clientset, namespace string) (err er
 			{
 				Verbs: []string{
 					"list", "get", "watch",
+				},
+				Resources: []string{
+					"deployments",
+				},
+				APIGroups: []string{
+					"apps",
+				},
+			},
+			{
+				Verbs: []string{
+					"list", "get", "watch", "update", "create", "patch", "delete",
 				},
 				Resources: []string{
 					"applications",
