@@ -457,8 +457,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             component={RenderSelectField}
             label="Restart Strategy"
             validate={ValidatorRequired}>
-            <MenuItem value="rollingUpdate">Rolling Update</MenuItem>
-            <MenuItem value="recreate">Recreate</MenuItem>
+            <MenuItem value="RollingUpdate">Rolling Update</MenuItem>
+            <MenuItem value="Recreate">Recreate</MenuItem>
           </Field>
 
           {/* terminationGracePeriodSeconds */}
