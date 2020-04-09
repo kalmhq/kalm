@@ -92,6 +92,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
             margin
             helperText=""
             validate={[ValidatorRequired]}
+            normalize={NormalizeNumber}
           />
         </Grid>
         <Grid item md={6}>
@@ -166,7 +167,13 @@ class RenderProbe extends React.PureComponent<Props, State> {
             return value && value.toArray().join(" ") ? value.toArray().join(" ") : "";
           }}
           editValueToFormValue={(value: any) => {
-            return value ? Immutable.List([value]) : Immutable.List([]);
+            console.log("editValueToFormValue input value", value);
+            let inputList = value.split(",");
+            inputList = inputList.map((item: string) => {
+              item = item.replace(/\"/g, "");
+              return item.trim();
+            });
+            return value ? Immutable.List(inputList) : Immutable.List([]);
           }}
         />
       </Grid>
