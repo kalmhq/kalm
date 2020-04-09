@@ -34,6 +34,7 @@ import { red } from "@material-ui/core/colors";
 import { extractSummaryInfoFromMap, extractSummaryInfoFromList } from "forms/summarizer";
 import { loadConfigsAction } from "../../actions/config";
 import { SectionTitle } from "widgets/SectionTitle";
+import { Files } from "./Files";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
@@ -381,6 +382,19 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </MList>
         </HelperContainer>
         <Volumes />
+      </>
+    );
+  }
+
+  private renderFiles() {
+    const { isFolded } = this.props;
+    return (
+      <>
+        {!isFolded && SectionTitle("Files")}
+        <HelperContainer>
+          <Typography>Mount Config Files</Typography>
+        </HelperContainer>
+        <Files />
       </>
     );
   }
@@ -851,6 +865,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           {this.renderPanel("ports", "Ports", this.renderPorts())}
           {this.renderPanel("resources", "Resources", this.renderResources())}
           {this.renderPanel("volumes", "Volumes", this.renderVolumes())}
+          {this.renderPanel("files", "Files", this.renderFiles())}
           {this.renderPanel("plugins", "Plugins", this.renderPlugins())}
           {this.renderPanel("probes", "Probes", this.renderProbes())}
           {this.renderPanel("nodeSelector", "Node Selector", this.renderNodeSelector())}
@@ -866,6 +881,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Paper className={classes.formSection}>{this.renderPorts()}</Paper>
         <Paper className={classes.formSection}>{this.renderResources()}</Paper>
         <Paper className={classes.formSection}>{this.renderVolumes()}</Paper>
+        <Paper className={classes.formSection}>{this.renderFiles()}</Paper>
         <Paper className={classes.formSection}>{this.renderPlugins()}</Paper>
         <Paper className={classes.formSection}>{this.renderProbes()}</Paper>
         <Paper className={classes.formSection}>{this.renderNodeSelector()}</Paper>
