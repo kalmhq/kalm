@@ -1,9 +1,9 @@
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import React from "react";
-import { AuthWrapper } from "./AuthWrapper";
 import { TabBarComponent } from "./TabBar";
 import { RootState } from "reducers";
 import { connect } from "react-redux";
+import { RequireAuthorizated } from "hoc/Authorization";
 
 const styles = (theme: Theme) => {
   return createStyles({
@@ -71,4 +71,4 @@ class DashboardRaw extends React.PureComponent<Props> {
   }
 }
 
-export const Dashboard = withStyles(styles)(AuthWrapper(connect(mapStateToProps)(DashboardRaw)));
+export const Dashboard = withStyles(styles)(RequireAuthorizated(connect(mapStateToProps)(DashboardRaw)));

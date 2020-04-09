@@ -20,9 +20,15 @@ export const loadNamespacesAction = (): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({ type: LOAD_NAMESPACES_PENDING });
 
-    let namespaces;
     try {
-      namespaces = await getNamespaces();
+      const namespaces = await getNamespaces();
+
+      dispatch({
+        type: LOAD_NAMESPACES_FULFILLED,
+        payload: {
+          namespaces
+        }
+      });
     } catch (e) {
       if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
@@ -32,13 +38,6 @@ export const loadNamespacesAction = (): ThunkResult<Promise<void>> => {
       dispatch({ type: LOAD_NAMESPACES_FAILED });
       return;
     }
-
-    dispatch({
-      type: LOAD_NAMESPACES_FULFILLED,
-      payload: {
-        namespaces
-      }
-    });
   };
 };
 

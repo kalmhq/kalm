@@ -3,8 +3,9 @@ import { VariantType } from "notistack";
 import { ImmutableMap } from "../typings";
 import { SettingObject } from "../reducers/settings";
 import { NamespaceActions } from "./namespace";
+import { LoginStatus } from "./authorization";
 
-export const INIT_AUTH = "INIT_AUTH";
+export const LOAD_LOGIN_STATUS = "LOAD_LOGIN_STATUS";
 export const SET_AUTH_TOKEN = "SET_AUTH_TOKEN";
 
 export const LOAD_NODES = "LOAD_NODES";
@@ -95,10 +96,10 @@ export interface CloseControlledDialogAction {
   };
 }
 
-export interface InitAuthAction {
-  type: typeof INIT_AUTH;
+export interface LoadLoginStatusAction {
+  type: typeof LOAD_LOGIN_STATUS;
   payload: {
-    authorized: boolean;
+    loginStatus: LoginStatus;
   };
 }
 
@@ -111,7 +112,7 @@ export interface SetAuthTokenAction {
 
 export type CommonActions =
   | SetAuthTokenAction
-  | InitAuthAction
+  | LoadLoginStatusAction
   | SetNotificationMessageAction
   | CallHistoryMethodAction
   | LoadNodesAction

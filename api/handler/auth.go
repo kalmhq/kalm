@@ -8,7 +8,12 @@ import (
 	"net/http"
 )
 
-func (h *ApiHandler) handleLogin(c echo.Context) error {
+type LoginStatusResponse struct {
+	Authorized bool `json:"authorized"`
+	IsAdmin    bool `json:"isAdmin"`
+}
+
+func (h *ApiHandler) handleValidateToken(c echo.Context) error {
 	authInfo, err := auth.GetAuthInfo(c)
 	if err != nil {
 		return err
@@ -17,12 +22,7 @@ func (h *ApiHandler) handleLogin(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return c.JSON(http.StatusOK, H{"authorized": true})
-}
-
-type LoginStatusResponse struct {
-	Authorized bool `json:"authorized"`
-	IsAdmin    bool `json:"isAdmin"`
+	return c.NoContent(http.StatusOK)
 }
 
 func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
