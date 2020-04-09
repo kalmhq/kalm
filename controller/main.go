@@ -120,6 +120,8 @@ func main() {
 			os.Exit(1)
 		}
 		setupLog.Info("WEBHOOK enabled")
+	} else {
+		setupLog.Info("WEBHOOK not enabled")
 	}
 
 	// +kubebuilder:scaffold:builder
