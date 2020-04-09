@@ -3,13 +3,21 @@ import { FilledTextFieldProps } from "@material-ui/core/TextField";
 import { WrappedFieldProps } from "redux-form";
 import { Field } from "redux-form/immutable";
 import Immutable from "immutable";
-import { FormControl, InputLabel, Select, MenuItem, Chip } from "@material-ui/core";
+import { MenuItem } from "@material-ui/core";
 import {
   NodeSelectorLabels,
   PodAffinityTypePreferFanout,
   PodAffinityTypePreferGather
 } from "../../types/componentTemplate";
 import { RenderSelectField } from "../Basic";
+import Checkbox from "@material-ui/core/Checkbox";
+import TextField from "@material-ui/core/TextField";
+import Autocomplete from "@material-ui/lab/Autocomplete";
+import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
+import CheckBoxIcon from "@material-ui/icons/CheckBox";
+
+const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
+const checkedIcon = <CheckBoxIcon fontSize="small" color="primary" />;
 
 interface Props {
   nodeLabels: Immutable.List<string>;
@@ -25,50 +33,44 @@ const renderSelectLabels = ({ input, nodeLabels }: FilledTextFieldProps & Wrappe
     });
   }
 
-  const inputLabel = "Node Selector Labels";
+  const options = nodeLabels.toArray();
+
   return (
-    <FormControl variant="outlined" size="small" margin="normal" style={{ width: "100%" }}>
-      <InputLabel id="node-labels">{inputLabel}</InputLabel>
-      <Select
-        label={inputLabel}
-        multiple={true}
-        // multiline={true}
-        onChange={(event: any) => {
-          const value = event.target.value as string[];
+    <Autocomplete
+      multiple
+      options={options}
+      disableCloseOnSelect
+      getOptionLabel={option => option}
+      renderOption={(option, { selected }) => (
+        <React.Fragment>
+          <Checkbox icon={icon} checkedIcon={checkedIcon} style={{ marginRight: 8 }} checked={selected} />
+          {option}
+        </React.Fragment>
+      )}
+      renderInput={params => (
+        <TextField
+          {...params}
+          variant="outlined"
+          label="Node Selector Labels"
+          placeholder="Select Node Selector Labels"
+          size={"small"}
+        />
+      )}
+      defaultValue={defaultValue}
+      onChange={(_, v: any) => {
+        const value = v as string[];
 
-          let nodeSelectorLabels = Immutable.OrderedMap({});
+        let nodeSelectorLabels = Immutable.OrderedMap({});
 
-          value.forEach(nodeLabel => {
-            const kv = nodeLabel.split(":");
+        value.forEach(nodeLabel => {
+          const kv = nodeLabel.split(":");
 
-            nodeSelectorLabels = nodeSelectorLabels.set(kv[0], kv[1]);
-          });
+          nodeSelectorLabels = nodeSelectorLabels.set(kv[0], kv[1]);
+        });
 
-          input.onChange(nodeSelectorLabels);
-        }}
-        defaultValue={defaultValue}
-        // @ts-ignore
-        renderValue={(selected: string[]) => (
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap"
-            }}>
-            {selected.map(value => (
-              <Chip key={value} label={value} style={{ margin: 2 }} />
-            ))}
-          </div>
-        )}>
-        {nodeLabels &&
-          nodeLabels.map(label => {
-            return (
-              <MenuItem key={label} value={label}>
-                {label}
-              </MenuItem>
-            );
-          })}
-      </Select>
-    </FormControl>
+        input.onChange(nodeSelectorLabels);
+      }}
+    />
   );
 };
 
