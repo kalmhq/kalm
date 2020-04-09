@@ -22,8 +22,12 @@ export const NormalizeNumber = (
   _previousValue?: any,
   _allValues?: any,
   _previousAllValues?: any
-): number => {
-  return parseInt(value, 10);
+): number | any => {
+  if (value.toString().length > 0) {
+    return parseInt(value, 10);
+  } else {
+    return "";
+  }
 };
 
 export const NormalizeCPU = (value: string): string | null => {
@@ -62,4 +66,16 @@ export const NormalizeHosts = (values: string[] | string, previousValue: string[
   }
   // console.log("res", res);
   return res;
+};
+
+export const NormalizeNumberOrAlphabet = (value: string): string | number => {
+  const portInteger = parseInt(value, 10);
+  if (isNaN(portInteger) && portInteger > 0) {
+    return portInteger;
+  } else {
+    if (value.match(/^([a-zA-Z]*)$/)) {
+      return value;
+    }
+  }
+  return "";
 };
