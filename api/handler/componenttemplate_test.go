@@ -15,7 +15,7 @@ type ComponentTemplateTestSuite struct {
 func (suite *ComponentTemplateTestSuite) TestGetEmptyCTList() {
 	rec := suite.NewRequest(http.MethodGet, "/v1alpha1/componenttemplates", nil)
 
-	var res resources.ApplicationListResponse
+	var res []resources.ApplicationDetails
 	rec.BodyAsJSON(&res)
 
 	suite.Equal(200, rec.Code)

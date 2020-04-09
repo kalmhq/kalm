@@ -15,7 +15,7 @@ type ApplicationsHandlerTestSuite struct {
 func (suite *ApplicationsHandlerTestSuite) TestGetEmptyList() {
 	rec := suite.NewRequest(http.MethodGet, "/v1alpha1/applications", nil)
 
-	var res resources.ApplicationListResponse
+	var res []resources.ApplicationDetails
 	rec.BodyAsJSON(&res)
 
 	suite.Equal(200, rec.Code)

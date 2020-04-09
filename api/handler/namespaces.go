@@ -6,12 +6,8 @@ import (
 	"net/http"
 )
 
-type Namespace struct {
-	Name string `json:"name"`
-}
-
 type NamespaceListResponse struct {
-	Namespaces []Namespace `json:"namespaces"`
+	Namespaces []resources.Namespace `json:"namespaces"`
 }
 
 func (h *ApiHandler) handleListNamespaces(c echo.Context) error {
@@ -21,17 +17,7 @@ func (h *ApiHandler) handleListNamespaces(c echo.Context) error {
 		return err
 	}
 
-	res := NamespaceListResponse{
-		Namespaces: make([]Namespace, 0),
-	}
-
-	for _, namespace := range namespaces {
-		res.Namespaces = append(res.Namespaces, Namespace{
-			Name: namespace.Name,
-		})
-	}
-
-	return c.JSON(http.StatusOK, res)
+	return c.JSON(http.StatusOK, NamespaceListResponse{Namespaces: namespaces})
 }
 
 func (h *ApiHandler) handleCreateNamespace(c echo.Context) error {

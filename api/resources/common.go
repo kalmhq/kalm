@@ -31,7 +31,7 @@ type Resources struct {
 	EventList      *coreV1.EventList
 	//PodMetricsList *metricv1beta1.PodMetricsList
 	RoleBindings []rbacV1.RoleBinding
-	Namespaces   []coreV1.Namespace
+	Namespaces   []Namespace
 }
 
 var ListAll = metaV1.ListOptions{
