@@ -1,13 +1,12 @@
-package validate
+package v1alpha1
 
 import (
 	"container/list"
 	"fmt"
-	"github.com/kapp-staging/kapp/api/v1alpha1"
 )
 
 // 1. check if there is any loop in dependency graph
-func isValidateDependency(spec v1alpha1.ApplicationSpec) error {
+func isValidateDependency(spec ApplicationSpec) error {
 	// build graph
 	nodeMap := buildDependencyGraph(spec)
 	loopExist := bfsCheckIfLoopExist(nodeMap)
@@ -19,7 +18,7 @@ func isValidateDependency(spec v1alpha1.ApplicationSpec) error {
 	return nil
 }
 
-func buildDependencyGraph(spec v1alpha1.ApplicationSpec) map[string]*node {
+func buildDependencyGraph(spec ApplicationSpec) map[string]*node {
 	var nodeMap = make(map[string]*node)
 	for _, component := range spec.Components {
 

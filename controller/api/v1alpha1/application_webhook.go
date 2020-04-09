@@ -16,7 +16,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/kapp-staging/kapp/validate"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
@@ -74,7 +73,7 @@ func (r *Application) ValidateDelete() error {
 
 func (r *Application) validateApplication() error {
 
-	if err := validate.TryValidateApplication(r.Spec); err != nil {
+	if err := TryValidateApplication(r.Spec); err != nil {
 		return err
 	}
 
