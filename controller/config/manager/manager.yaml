@@ -31,6 +31,9 @@ spec:
         - --enable-leader-election
         image: controller:latest
         name: manager
+        env:
+          - name: ENABLE_WEBHOOKS
+            value: "true"
         resources:
           limits:
             cpu: 100m
