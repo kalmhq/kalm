@@ -12,6 +12,21 @@ export const ValidatorRequired = (value: any, _allValues?: any, _props?: any, _n
   return !!value ? undefined : `Required`;
 };
 
+export const ValidatorNumberOrAlphabet = (value: any, _allValues?: any, _props?: any, _name?: any) => {
+  const portInteger = parseInt(value, 10);
+  if (isNaN(portInteger) && portInteger > 0) {
+    if (portInteger.toString().length !== value.toString().length) {
+      return "Not a valid port value";
+    }
+    return undefined;
+  } else {
+    if (value.match(/^([a-zA-Z]*)$/)) {
+      return undefined;
+    }
+  }
+  return "Not a valid port value";
+};
+
 export const ValidatorName = (value: string) => {
   if (!value) return undefined;
 

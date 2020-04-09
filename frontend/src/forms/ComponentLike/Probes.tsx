@@ -7,8 +7,8 @@ import { Field } from "redux-form/immutable";
 import { HttpHeaders, HttpHeader } from "../../types/componentTemplate";
 import { HelperContainer } from "../../widgets/Helper";
 import { CustomTextField, RenderSelectField } from "../Basic";
-import { ValidatorRequired, ValidatorHttpHeaders } from "../validator";
-import { NormalizeNumber } from "forms/normalizer";
+import { ValidatorRequired, ValidatorHttpHeaders, ValidatorNumberOrAlphabet } from "../validator";
+import { NormalizeNumber, NormalizeNumberOrAlphabet } from "forms/normalizer";
 import { SectionTitle } from "widgets/SectionTitle";
 
 interface FieldComponentHackType {
@@ -170,7 +170,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
             console.log("editValueToFormValue input value", value);
             let inputList = value.split(",");
             inputList = inputList.map((item: string) => {
-              item = item.replace(/\"/g, "");
+              item = item.replace(/"/g, "");
               return item.trim();
             });
             return value ? Immutable.List(inputList) : Immutable.List([]);
@@ -193,7 +193,8 @@ class RenderProbe extends React.PureComponent<Props, State> {
             label="Port"
             margin
             helperText=""
-            validate={[ValidatorRequired]}
+            validate={[ValidatorRequired, ValidatorNumberOrAlphabet]}
+            normalize={NormalizeNumberOrAlphabet}
           />
         </Grid>
       </>

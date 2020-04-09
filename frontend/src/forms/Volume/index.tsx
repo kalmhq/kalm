@@ -15,7 +15,8 @@ import {
 } from "../../types/componentTemplate";
 import { RenderSelectField } from "../Basic";
 import { TextField } from "../Basic/text";
-import { KappConfigPath } from "../ComponentLike/VolumeConfig";
+import { SelectKappConfigPath } from "../ComponentLike/VolumeConfig";
+import { ValidatorRequired } from "../validator";
 
 interface OwnProps {}
 
@@ -106,7 +107,7 @@ class VolumeRaw extends React.PureComponent<Props> {
     } else if (volumeType === VolumeTypeKappConfigs) {
       return (
         <Box mt={2}>
-          <KappConfigPath />
+          <SelectKappConfigPath />
         </Box>
       );
     }
@@ -117,7 +118,13 @@ class VolumeRaw extends React.PureComponent<Props> {
         {this.renderSelectType()}
         {this.renderRest()}
         <Box mt={2}>
-          <Field name="path" component={TextField} label={"Mount Path"} placehoder="/var/tmp" />
+          <Field
+            name="path"
+            component={TextField}
+            label={"Mount Path"}
+            placehoder="/var/tmp"
+            validate={ValidatorRequired}
+          />
         </Box>
       </div>
     );

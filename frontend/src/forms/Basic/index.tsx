@@ -57,7 +57,7 @@ export const RenderTextField = ({
           : input.onChange(event.target.value)
       }
       // onFocus={input.onChange}
-      // onBlur={input.onChange}
+      onBlur={input.onBlur}
       // value={input.value}
       defaultValue={formValueToEditValue ? formValueToEditValue(input.value) : input.value}
       {...custom}
