@@ -34,10 +34,12 @@ const (
 type PodAffinityType string
 
 type ComponentSpec struct {
+	// +kubebuilder:validation:Required
 	Name string `json:"name"`
 
 	Env []EnvVar `json:"env,omitempty"`
 
+	// +kubebuilder:validation:Required
 	Image string `json:"image"`
 
 	Replicas *int32 `json:"replicas,omitempty"`
@@ -58,8 +60,11 @@ type ComponentSpec struct {
 
 	Schedule string `json:"schedule,omitempty"`
 
+	// +k8s:openapi-gen=true
 	// +optional
 	LivenessProbe *v1.Probe `json:"livenessProbe,omitempty"`
+
+	//PodSpec v1.PodSpec
 
 	// +optional
 	ReadinessProbe *v1.Probe `json:"readinessProbe,omitempty"`

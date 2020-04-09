@@ -112,10 +112,15 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Dependency")
 		os.Exit(1)
 	}
-	if err = (&corekappdevv1alpha1.Application{}).SetupWebhookWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create webhook", "webhook", "Application")
-		os.Exit(1)
+
+	// only run webhook if explicitly declared
+	if os.Getenv("ENABLE_WEBHOOKS") == "true" {
+		if err = (&corekappdevv1alpha1.Application{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "Application")
+			os.Exit(1)
+		}
 	}
+
 	// +kubebuilder:scaffold:builder
 
 	setupLog.Info("starting manager")

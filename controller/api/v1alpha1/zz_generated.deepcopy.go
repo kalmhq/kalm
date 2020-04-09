@@ -170,6 +170,7 @@ func (in *ComponentSpec) DeepCopyInto(out *ComponentSpec) {
 		*out = new(v1.Probe)
 		(*in).DeepCopyInto(*out)
 	}
+	in.PodSpec.DeepCopyInto(&out.PodSpec)
 	if in.ReadinessProbe != nil {
 		in, out := &in.ReadinessProbe, &out.ReadinessProbe
 		*out = new(v1.Probe)

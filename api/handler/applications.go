@@ -6,6 +6,7 @@ import (
 
 	"github.com/kapp-staging/kapp/api/resources"
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/kapp-staging/kapp/controller/validate"
 	"github.com/labstack/echo/v4"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -128,6 +129,9 @@ func createKappApplication(c echo.Context) (*v1alpha1.Application, error) {
 		return nil, err
 	}
 
+	if err := validate.TryValidateApplication(crdApplication.Spec); err != nil {
+		return nil, err
+	}
 	_, err = k8sClient.CoreV1().Namespaces().Get(crdApplication.Namespace, metaV1.GetOptions{TypeMeta: metaV1.TypeMeta{Kind: "Namespace", APIVersion: "v1"}})
 
 	if errors.IsNotFound(err) {
