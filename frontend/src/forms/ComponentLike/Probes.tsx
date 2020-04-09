@@ -164,16 +164,15 @@ class RenderProbe extends React.PureComponent<Props, State> {
           margin
           helperText='Eg: "/bin/app", "rails server".'
           formValueToEditValue={(value: Immutable.List<string>) => {
-            return value && value.toArray().join(" ") ? value.toArray().join(" ") : "";
+            return value && value.toArray && value.toArray().join(" ") ? value.toArray().join(" ") : "";
           }}
           editValueToFormValue={(value: any) => {
-            console.log("editValueToFormValue input value", value);
             let inputList = value.split(",");
             inputList = inputList.map((item: string) => {
               item = item.replace(/"/g, "");
               return item.trim();
             });
-            return value ? Immutable.List(inputList) : Immutable.List([]);
+            return inputList && inputList.length > 0 ? Immutable.List(inputList) : Immutable.List([]);
           }}
         />
       </Grid>

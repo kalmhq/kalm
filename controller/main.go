@@ -17,10 +17,11 @@ package main
 
 import (
 	"flag"
+	"os"
+
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	elkv1 "github.com/elastic/cloud-on-k8s/pkg/apis/elasticsearch/v1"
 	kibanav1 "github.com/elastic/cloud-on-k8s/pkg/apis/kibana/v1"
-	"os"
 
 	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
 	"github.com/kapp-staging/kapp/controllers"
@@ -33,7 +34,9 @@ import (
 
 	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	apiregistration "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
+
 	//cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
+	corekappdevv1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -64,6 +67,7 @@ func init() {
 	elkv1.AddToScheme(scheme)
 	kibanav1.AddToScheme(scheme)
 
+	_ = corekappdevv1alpha1.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme
 }
 
@@ -108,6 +112,18 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Dependency")
 		os.Exit(1)
 	}
+
+	// only run webhook if explicitly declared
+	if os.Getenv("ENABLE_WEBHOOKS") == "true" {
+		if err = (&corekappdevv1alpha1.Application{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "Application")
+			os.Exit(1)
+		}
+		setupLog.Info("WEBHOOK enabled")
+	} else {
+		setupLog.Info("WEBHOOK not enabled")
+	}
+
 	// +kubebuilder:scaffold:builder
 
 	setupLog.Info("starting manager")
