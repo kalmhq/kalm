@@ -167,7 +167,6 @@ class RenderProbe extends React.PureComponent<Props, State> {
             return value && value.toArray && value.toArray().join(" ") ? value.toArray().join(" ") : "";
           }}
           editValueToFormValue={(value: any) => {
-            console.log("editValueToFormValue input value", value);
             let inputList = value.split(",");
             inputList = inputList.map((item: string) => {
               item = item.replace(/"/g, "");
