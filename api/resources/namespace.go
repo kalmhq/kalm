@@ -100,10 +100,12 @@ func getNamespaceListChannel(k8sClient *kubernetes.Clientset, listOptions metaV1
 				roles = append(roles, "reader")
 			}
 
-			list = append(list, Namespace{
-				Name:  item.Name,
-				Roles: roles,
-			})
+			if len(roles) > 0 {
+				list = append(list, Namespace{
+					Name:  item.Name,
+					Roles: roles,
+				})
+			}
 		}
 
 		channel.List <- list
