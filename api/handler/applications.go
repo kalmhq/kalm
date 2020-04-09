@@ -101,6 +101,9 @@ func createKappApplication(c echo.Context) (*v1alpha1.Application, error) {
 		return nil, err
 	}
 
+	if err := v1alpha1.TryValidateApplication(crdApplication.Spec); err != nil {
+		return nil, err
+	}
 	_, err = k8sClient.CoreV1().Namespaces().Get(crdApplication.Namespace, metaV1.GetOptions{TypeMeta: metaV1.TypeMeta{Kind: "Namespace", APIVersion: "v1"}})
 
 	if errors.IsNotFound(err) {

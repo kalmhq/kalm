@@ -1032,7 +1032,7 @@ func GetPlugins(kapp *kappV1Alpha1.Application) (plugins []interface{}) {
 			}
 
 			switch tmp.Type {
-			case "plugins.core.kapp.dev/v1alpha1.ingress":
+			case pluginIngress:
 				var ing kappV1Alpha1.PluginIngress
 				_ = json.Unmarshal(raw.Raw, &ing)
 

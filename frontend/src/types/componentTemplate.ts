@@ -110,13 +110,13 @@ export type Probe = ImmutableMap<{
     host?: string;
     httpHeaders?: HttpHeaders;
     path?: string;
-    port: object;
+    port: number | string;
     scheme?: string;
   }>;
 
   tcpSocket?: ImmutableMap<{
     host?: string;
-    port: object;
+    port: number | string;
   }>;
 
   initialDelaySeconds?: number;

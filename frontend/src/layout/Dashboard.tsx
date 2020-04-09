@@ -42,7 +42,7 @@ class DashboardRaw extends React.PureComponent<Props> {
         to: "/roles"
       },
       {
-        text: "Application",
+        text: "Applications",
         to: "/applications?namespace=" + activeNamespaceName
       },
       {

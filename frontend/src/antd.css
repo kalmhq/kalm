@@ -13,6 +13,10 @@
     border-color: rgba(0, 0, 0, 0.23) !important;
 }
 
+.ant-cascader-picker {
+    background-color: inherit !important;
+}
+
 .ant-cascader-picker-label {
     padding-left: 14px !important;
 }

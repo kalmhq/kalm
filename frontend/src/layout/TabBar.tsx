@@ -18,10 +18,13 @@ interface TabOption {
   to: string;
 }
 
+const HEADER_HEIGHT = 120;
+const TABS_HEIGHT = 48;
+
 const styles = (theme: Theme) =>
   createStyles({
     appBar: {
-      height: "120px",
+      height: HEADER_HEIGHT,
       color: "white",
       backgroundColor: blue[500],
       position: "fixed",
@@ -89,12 +92,13 @@ interface Props extends WithStyles<typeof styles> {
 
 const TabBarComponentRaw = ({ classes, dispatch, title, isAdmin, tabOptions }: Props) => {
   let pathname = "/";
+
   if (window.location.pathname !== "/") {
     for (let option of tabOptions) {
       if (option.to === "/") {
         continue;
       }
-      if (window.location.pathname.startsWith(option.to)) {
+      if (window.location.pathname.startsWith(option.to.split("?")[0])) {
         pathname = option.to;
         break;
       }
@@ -107,20 +111,21 @@ const TabBarComponentRaw = ({ classes, dispatch, title, isAdmin, tabOptions }: P
     setValue(value);
   };
 
-  // TODO: what's this ?????? Can any one fix this ?????
+  const headerRef = React.createRef();
+
+  // Shrink header
   window.onscroll = () => {
-    const header = document.getElementById("header");
-    if ((document.body.scrollTop > 50 || document.documentElement.scrollTop > 50) && header) {
+    if ((document.body.scrollTop > 50 || document.documentElement.scrollTop > 50) && headerRef.current) {
       // @ts-ignore
-      header.style.top = "-72px";
+      headerRef.current.style.top = `${TABS_HEIGHT - HEADER_HEIGHT}px`;
     } else {
       // @ts-ignore
-      header.style.top = "0px";
+      headerRef.current.style.top = "0px";
     }
   };
 
   return (
-    <AppBar id="header" position="relative" className={classes.appBar}>
+    <AppBar ref={headerRef} id="header" position="relative" className={classes.appBar}>
       <div className={classes.barContainer}>
         <FlexRowItemCenterBox>
           <Link className={classes.barTitle} to="/">
