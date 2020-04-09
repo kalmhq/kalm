@@ -25,7 +25,7 @@ export const newEmptyComponentLike = (): ComponentLike => {
     cpu: null,
     memory: null,
     workloadType: "server",
-    restartStrategy: "rollingUpdate",
+    restartStrategy: "RollingUpdate",
     dnsPolicy: "ClusterFirst",
     terminationGracePeriodSeconds: 30
   });
