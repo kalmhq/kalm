@@ -4,7 +4,6 @@ go 1.12
 
 require (
 	github.com/containerd/continuity v0.0.0-20200228182428-0f16d7a0959c // indirect
-	github.com/davecgh/go-spew v1.1.1
 	github.com/docker/distribution v2.7.1+incompatible // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/go-playground/validator/v10 v10.2.0
@@ -22,7 +21,6 @@ require (
 	github.com/stretchr/testify v1.5.1
 	github.com/urfave/cli/v2 v2.2.0
 	github.com/vbatts/tar-split v0.11.1 // indirect
-	github.com/vektah/gqlparser v1.1.2
 	golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073 // indirect
 	golang.org/x/net v0.0.0-20200301022130-244492dfa37a // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
