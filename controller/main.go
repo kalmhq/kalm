@@ -119,6 +119,7 @@ func main() {
 			setupLog.Error(err, "unable to create webhook", "webhook", "Application")
 			os.Exit(1)
 		}
+		setupLog.Info("WEBHOOK enabled")
 	}
 
 	// +kubebuilder:scaffold:builder
