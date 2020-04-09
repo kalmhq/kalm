@@ -1,4 +1,5 @@
-import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { createStyles, Theme, withStyles, WithStyles, Button } from "@material-ui/core";
+import { Link } from "react-router-dom";
 import React from "react";
 import { RouteChildrenProps } from "react-router-dom";
 import { BasePage } from "../BasePage";
@@ -33,7 +34,13 @@ class ApplicationShowRaw extends React.PureComponent<Props> {
   public render() {
     const { isLoading, application, applicationName, dispatch } = this.props;
     return (
-      <BasePage title={`Application ${application && application.get("name")}`}>
+      <BasePage
+        title={`Application ${application && application.get("name")}`}
+        rightAction={
+          <Link to={`/applications/${application && application.get("name")}/edit`}>
+            <Button>Edit</Button>
+          </Link>
+        }>
         {isLoading && !application ? (
           <Loading />
         ) : application ? (
