@@ -20,29 +20,6 @@ type ListMeta struct {
 	CurrentPageNumber int `json:"page"`
 }
 
-type PodInfo struct {
-	// Number of pods that are created.
-	Current int32 `json:"current"`
-
-	// Number of pods that are desired.
-	Desired *int32 `json:"desired,omitempty"`
-
-	// Number of pods that are currently running.
-	Running int32 `json:"running"`
-
-	// Number of pods that are currently waiting.
-	Pending int32 `json:"pending"`
-
-	// Number of pods that are failed.
-	Failed int32 `json:"failed"`
-
-	// Number of pods that are succeeded.
-	Succeeded int32 `json:"succeeded"`
-
-	// Unique warning messages related to pods in this resource.
-	Warnings []coreV1.Event `json:"warnings"`
-}
-
 type PodStatus struct {
 	Name string `json:"name"`
 	Node string `json:"node"`
@@ -87,8 +64,6 @@ type ComponentStatus struct {
 	CronjobStatus    v1betav1.CronJobStatus  `json:"cronjobStatus,omitempty"`
 	Pods             []PodStatus             `json:"pods"`
 
-	//MetricsList metricv1beta1.PodMetricsList `json:"podMetricsList"`
-	// TODO, aggregate cpu, memory usage time series
 	ComponentMetrics `json:"metrics"`
 }
 
@@ -111,28 +86,16 @@ func (m *MetricPoint) MarshalJSON() ([]byte, error) {
 	})
 }
 
-type ApplicationListResponseItem struct {
-	Name       string             `json:"name"`
-	Namespace  string             `json:"namespace"`
-	CreatedAt  time.Time          `json:"createdAt"`
-	IsActive   bool               `json:"isActive"`
-	Components []*ComponentStatus `json:"components"`
-	Metrics    MetricHistories    `json:"metrics"`
-}
-
 type MetricHistories struct {
 	CPU    MetricHistory `json:"cpu"`
 	Memory MetricHistory `json:"memory"`
 }
 
-type ApplicationListResponse struct {
-	//ListMeta     *ListMeta                      `json:"listMeta"`
-	Applications []*ApplicationListResponseItem `json:"applications"`
-}
-
-type ApplicationResponse struct {
-	Application *Application `json:"application"`
-	PodNames    []string     `json:"podNames"`
+type ApplicationDetails struct {
+	*Application     `json:",inline"`
+	ComponentsStatus []ComponentStatus `json:"componentsStatus"`
+	PodNames         []string          `json:"podNames"`
+	Metrics          MetricHistories   `json:"metrics"`
 }
 
 type CreateOrUpdateApplicationRequest struct {
@@ -147,25 +110,26 @@ type Application struct {
 	Components []v1alpha1.ComponentSpec `json:"components"`
 }
 
-func (builder *Builder) BuildApplicationDetailsResponse(application *v1alpha1.Application) *ApplicationResponse {
+func (builder *Builder) BuildApplicationDetails(application *v1alpha1.Application) (*ApplicationDetails, error) {
 	ns := application.Namespace
 	listOptions := labelsBelongsToApplication(application.Name)
 
 	resourceChannels := &ResourceChannels{
-		//DeploymentList: builder.GetDeploymentListChannel(ns, listOptions),
 		PodList: builder.GetPodListChannel(ns, listOptions),
-		//ReplicaSetList: builder.GetReplicaSetListChannel(ns, listOptions),
-		//EventList: builder.GetEventListChannel(ns, metaV1.ListOptions{
-		//	LabelSelector: labels.Everything().String(),
-		//	FieldSelector: fields.Everything().String(),
-		//}),
+		EventList: builder.GetEventListChannel(ns, metaV1.ListOptions{
+			LabelSelector: labels.Everything().String(),
+			FieldSelector: fields.Everything().String(),
+		}),
 	}
 
 	resources, err := resourceChannels.ToResources()
 
 	if err != nil {
 		builder.Logger.Error(err)
+		return nil, err
 	}
+
+	componentsStatusList := builder.buildApplicationComponentStatus(application, resources)
 
 	formatEnvs(application.Spec.SharedEnv)
 	formatApplicationComponents(application.Spec.Components)
@@ -176,7 +140,16 @@ func (builder *Builder) BuildApplicationDetailsResponse(application *v1alpha1.Ap
 		podNames = append(podNames, pod.Name)
 	}
 
-	return &ApplicationResponse{
+	var cpuHistoryList []MetricHistory
+	var memHistoryList []MetricHistory
+	for _, compStatus := range componentsStatusList {
+		cpuHistoryList = append(cpuHistoryList, compStatus.CPU)
+		memHistoryList = append(memHistoryList, compStatus.Memory)
+	}
+	appCpuHistory := aggregateHistoryList(cpuHistoryList)
+	appMemHistory := aggregateHistoryList(memHistoryList)
+
+	return &ApplicationDetails{
 		Application: &Application{
 			Name:       application.Name,
 			Namespace:  application.Namespace,
@@ -184,8 +157,13 @@ func (builder *Builder) BuildApplicationDetailsResponse(application *v1alpha1.Ap
 			SharedEnvs: application.Spec.SharedEnv,
 			Components: application.Spec.Components,
 		},
-		PodNames: podNames,
-	}
+		PodNames:         podNames,
+		ComponentsStatus: componentsStatusList,
+		Metrics: MetricHistories{
+			CPU:    appCpuHistory,
+			Memory: appMemHistory,
+		},
+	}, nil
 }
 
 // TODO formatters should be deleted in the feature, Use validator instead
@@ -224,75 +202,25 @@ func formatApplicationComponents(components []v1alpha1.ComponentSpec) {
 	}
 }
 
-func (builder *Builder) BuildApplicationListResponse(applications *v1alpha1.ApplicationList) (*ApplicationListResponse, error) {
-
-	apps := []*ApplicationListResponseItem{}
+func (builder *Builder) BuildApplicationListResponse(applications *v1alpha1.ApplicationList) ([]ApplicationDetails, error) {
+	apps := []ApplicationDetails{}
 
 	// TODO concurrent build response items
 	for i := range applications.Items {
-		item, err := builder.buildApplicationListResponseItem(&applications.Items[i])
+		item, err := builder.BuildApplicationDetails(&applications.Items[i])
 
 		if err != nil {
 			return nil, err
 		}
 
-		apps = append(apps, item)
+		apps = append(apps, *item)
 	}
 
-	return &ApplicationListResponse{
-		//ListMeta:     &ListMeta{}, // TODO
-		Applications: apps,
-	}, nil
+	return apps, nil
 }
 
-func (builder *Builder) buildApplicationListResponseItem(application *v1alpha1.Application) (*ApplicationListResponseItem, error) {
-	ns := application.Namespace
-	listOptions := labelsBelongsToApplication(application.Name)
-
-	resourceChannels := &ResourceChannels{
-		DeploymentList: builder.GetDeploymentListChannel(ns, listOptions),
-		PodList:        builder.GetPodListChannel(ns, listOptions),
-		//ReplicaSetList: builder.GetReplicaSetListChannel(ns, listOptions),
-		EventList: builder.GetEventListChannel(ns, metaV1.ListOptions{
-			LabelSelector: labels.Everything().String(),
-			FieldSelector: fields.Everything().String(),
-		}),
-		//PodMetricsList: builder.GetPodMetricsListChannel(ns, listOptions),
-	}
-
-	resources, err := resourceChannels.ToResources()
-
-	if err != nil {
-		builder.Logger.Error(err)
-		return nil, err
-	}
-
-	componentsStatusList := builder.buildApplicationComponentStatus(application, resources)
-
-	var cpuHistoryList []MetricHistory
-	var memHistoryList []MetricHistory
-	for _, compStatus := range componentsStatusList {
-		cpuHistoryList = append(cpuHistoryList, compStatus.CPU)
-		memHistoryList = append(memHistoryList, compStatus.Memory)
-	}
-	appCpuHistory := aggregateHistoryList(cpuHistoryList)
-	appMemHistory := aggregateHistoryList(memHistoryList)
-
-	return &ApplicationListResponseItem{
-		Name:       application.ObjectMeta.Name,
-		Namespace:  application.ObjectMeta.Namespace,
-		IsActive:   application.Spec.IsActive,
-		CreatedAt:  application.ObjectMeta.CreationTimestamp.Time,
-		Components: componentsStatusList,
-		Metrics: MetricHistories{
-			CPU:    appCpuHistory,
-			Memory: appMemHistory,
-		},
-	}, nil
-}
-
-func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Application, resources *Resources) []*ComponentStatus {
-	res := []*ComponentStatus{}
+func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Application, resources *Resources) []ComponentStatus {
+	res := []ComponentStatus{}
 
 	componentKey2MetricMap := getComponentKey2MetricMap()
 
@@ -306,7 +234,7 @@ func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Ap
 			workLoadType = v1alpha1.WorkLoadTypeServer
 		}
 
-		componentStatus := &ComponentStatus{
+		componentStatus := ComponentStatus{
 			Name:             component.Name,
 			WorkloadType:     workLoadType,
 			DeploymentStatus: appsV1.DeploymentStatus{},
@@ -454,16 +382,6 @@ func getPods(pods []coreV1.Pod, events []coreV1.Event, componentMetrics Componen
 	}
 
 	return res
-}
-
-func findDeploymentByName(list *appsV1.DeploymentList, name string) *appsV1.Deployment {
-	for i := range list.Items {
-		if list.Items[i].Name == name {
-			return &list.Items[i]
-		}
-	}
-
-	return nil
 }
 
 func findPods(list *coreV1.PodList, componentName string) []coreV1.Pod {

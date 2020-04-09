@@ -38,7 +38,7 @@ export class NodeListRaw extends React.Component<Props, States> {
     };
   }
 
-  componentWillMount() {
+  componentDidMount() {
     this.props
       .dispatch(loadNodesAction())
       .catch(e => {
@@ -87,16 +87,16 @@ export class NodeListRaw extends React.Component<Props, States> {
             <Box>containerRuntimeVersion: {node.status!.nodeInfo!.containerRuntimeVersion}</Box>
           </>
         ),
-        addresses: node.status!.addresses!.map((x, index) => (
-          <Box mr={1} key={index}>
-            {x.address}
-          </Box>
-        )),
-        conditions: node.status!.conditions!.map((x, index) => (
-          <Box mr={1} key={index}>
-            {x.type} {x.status}
-          </Box>
-        )),
+        // addresses: node.status!.addresses!.map((x, index) => (
+        //   <Box mr={1} key={index}>
+        //     {x.address}
+        //   </Box>
+        // )),
+        // conditions: node.status!.conditions!.map((x, index) => (
+        //   <Box mr={1} key={index}>
+        //     {x.type} {x.status}
+        //   </Box>
+        // )),
         resources: (
           <>
             <Box>

@@ -1,4 +1,6 @@
-import { Actions, StatusFailure, ThunkResult } from "../types";
+import { push } from "connected-react-router";
+import queryString from "query-string";
+import { StatusFailure, ThunkResult } from "../types";
 import {
   CREATE_NAMESPACE_FULFILLED,
   CREATE_NAMESPACE_PENDING,
@@ -85,11 +87,16 @@ export const deleteNamespaceAction = (name: string): ThunkResult<Promise<void>> 
   };
 };
 
-export const setCurrentNamespaceAction = (namespace: string): Actions => {
-  return {
-    type: SET_CURRENT_NAMESPACE,
-    payload: {
-      namespace
-    }
+export const setCurrentNamespaceAction = (namespace: string): ThunkResult<Promise<void>> => {
+  return async dispatch => {
+    const query = queryString.stringify({ ...queryString.parse(window.location.search), namespace });
+    dispatch(push(window.location.pathname + "?" + query + window.location.hash));
+
+    dispatch({
+      type: SET_CURRENT_NAMESPACE,
+      payload: {
+        namespace
+      }
+    });
   };
 };

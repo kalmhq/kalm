@@ -15,6 +15,8 @@ import { CustomizedButton } from "../../widgets/Button";
 import { ComponentLikeForm } from "../ComponentLike";
 import { CustomizedDialog } from "./ComponentModal";
 import { KappTooltip } from "./KappTooltip";
+import { TableTitle } from "widgets/TableTitle";
+import { grey } from "@material-ui/core/colors";
 
 const mapStateToProps = (state: RootState) => {
   const selector = formValueSelector("application");
@@ -334,7 +336,8 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
             // toolbar: false,
             actionsColumnIndex: -1,
             addRowPosition: "first",
-            draggable: false
+            draggable: false,
+            headerStyle: { color: grey[400] }
           }}
           components={{ Container: props => props.children }}
           editable={{
@@ -351,7 +354,7 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
             { title: "Envs", field: "envs", sorting: false, render: this.renderEnvsColumn }
           ]}
           data={this.getTableData()}
-          title=""
+          title={TableTitle("Components")}
         />
         {/* <Box mt={3}></Box>
         <Grid container spacing={2}>

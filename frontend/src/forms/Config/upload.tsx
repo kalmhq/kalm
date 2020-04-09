@@ -5,12 +5,12 @@ import { Theme, WithStyles, createStyles, withStyles } from "@material-ui/core/s
 import { Button, FormControl } from "@material-ui/core";
 import { FilesUpload } from "../../types/config";
 import Immutable from "immutable";
-import { CustomCascader } from "./cascader";
+import { AncestorIds } from "./ancestorIds";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import { connect } from "react-redux";
 import { RootState } from "../../reducers";
 import Dropzone from "react-dropzone";
-import { getCascaderDefaultValue } from "../../selectors/config";
+import { getAncestorIdsDefaultValue } from "../../selectors/config";
 import { uploadConfigsAction } from "../../actions/config";
 import { TDispatch } from "../../types";
 import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
@@ -75,7 +75,7 @@ interface State {
 
 const mapStateToProps = (state: RootState, props: Props) => {
   const initialValues = Immutable.fromJS({
-    ancestorIds: getCascaderDefaultValue()
+    ancestorIds: getAncestorIdsDefaultValue()
   });
   return { initialValues, isSubmittingConfig: state.get("configs").get("isSubmittingConfig") };
 };
@@ -143,7 +143,7 @@ class ConfigUploadFormRaw extends React.PureComponent<Props & InjectedFormProps<
       <div className={classes.root}>
         <form onSubmit={handleSubmit(values => this.handleSubmit(values))}>
           <FormControl margin="normal" className={classes.cascaderWrapper}>
-            <CustomCascader />
+            <AncestorIds />
             <FormHelperText className="MuiFormHelperText-contained MuiFormHelperText-marginDense">
               Select a folder to upload configs
             </FormHelperText>

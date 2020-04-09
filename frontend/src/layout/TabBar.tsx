@@ -1,15 +1,13 @@
-import React from "react";
-import { createStyles, Theme, AppBar, Tab, Tabs, Avatar, Box } from "@material-ui/core";
+import { AppBar, Avatar, createStyles, Tab, Tabs, Theme } from "@material-ui/core";
+import blue from "@material-ui/core/colors/blue";
 import { WithStyles, withStyles } from "@material-ui/styles";
-import { NavLink, Link } from "react-router-dom";
-import SettingsIcon from "@material-ui/icons/Settings";
-import { UsersDialog } from "widgets/UsersDialog";
+import React from "react";
 import { connect } from "react-redux";
+import { Link, NavLink } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
-import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { Namespaces } from "widgets/Namespaces";
 import { FlexRowItemCenterBox } from "widgets/Box";
+import { Namespaces } from "widgets/Namespaces";
 
 const mapStateToProps = (state: RootState) => {
   return {};
@@ -25,7 +23,7 @@ const styles = (theme: Theme) =>
     appBar: {
       height: "120px",
       color: "white",
-      backgroundColor: "#2196F3",
+      backgroundColor: blue[500],
       position: "fixed",
       top: "0px",
       transition: "0.2s"
@@ -103,20 +101,21 @@ const TabBarComponentRaw = ({ classes, dispatch, title, isAdmin, tabOptions }: P
     }
   }
   const [value, setValue] = React.useState(pathname);
-  const [isOpenSettings, setIsOpenSettings] = React.useState(false);
 
   const handleChange = (event: object, value: any) => {
     // console.log("tab value", value);
     setValue(value);
   };
 
+  // TODO: what's this ?????? Can any one fix this ?????
   window.onscroll = () => {
-    if (document.body.scrollTop > 50 || document.documentElement.scrollTop > 50) {
+    const header = document.getElementById("header");
+    if ((document.body.scrollTop > 50 || document.documentElement.scrollTop > 50) && header) {
       // @ts-ignore
-      document.getElementById("header").style.top = "-72px";
+      header.style.top = "-72px";
     } else {
       // @ts-ignore
-      document.getElementById("header").style.top = "0px";
+      header.style.top = "0px";
     }
   };
 
@@ -130,12 +129,6 @@ const TabBarComponentRaw = ({ classes, dispatch, title, isAdmin, tabOptions }: P
           {isAdmin ? null : <Namespaces />}
         </FlexRowItemCenterBox>
         <div className={classes.barRight}>
-          <IconButtonWithTooltip
-            tooltipTitle="Settings"
-            className={classes.barSettings}
-            onClick={() => setIsOpenSettings(true)}>
-            <SettingsIcon />
-          </IconButtonWithTooltip>
           <div className={classes.barAvatar}>
             <Avatar>A</Avatar>
           </div>
@@ -167,14 +160,6 @@ const TabBarComponentRaw = ({ classes, dispatch, title, isAdmin, tabOptions }: P
           })}
         </Tabs>
       </div>
-      {
-        <UsersDialog
-          open={isOpenSettings}
-          onClose={() => {
-            setIsOpenSettings(false);
-          }}
-        />
-      }
     </AppBar>
   );
 };

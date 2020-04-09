@@ -49,7 +49,7 @@ func (suite *ApplicationsHandlerTestSuite) TestCreateEmptyAppliation() {
   }
 }`
 
-	var res resources.ApplicationResponse
+	var res resources.ApplicationDetails
 	rec := suite.NewRequest(http.MethodPost, "/v1alpha1/applications/test", body)
 	rec.BodyAsJSON(&res)
 
@@ -85,7 +85,7 @@ func (suite *ApplicationsHandlerTestSuite) TestUpdateAppliation() {
   }
 }`
 	// create first
-	var res resources.ApplicationResponse
+	var res resources.ApplicationDetails
 	rec := suite.NewRequest(http.MethodPost, "/v1alpha1/applications/test2", body)
 	rec.BodyAsJSON(&res)
 
@@ -133,7 +133,7 @@ func (suite *ApplicationsHandlerTestSuite) TestDeleteAppliation() {
   }
 }`
 	// create first
-	var res resources.ApplicationResponse
+	var res resources.ApplicationDetails
 	rec := suite.NewRequest(http.MethodPost, "/v1alpha1/applications/test3", body)
 	rec.BodyAsJSON(&res)
 

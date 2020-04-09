@@ -9,20 +9,20 @@ const mapStateToProps = (state: RootState) => {
   const applications = state.get("applications");
 
   return {
-    applicationList: applications.get("applicationList"),
-    applications: applications.get("applications").toList(),
+    activeNamespaceName: state.get("namespaces").get("active"),
+    applications: applications.get("applications"),
     isLoading: applications.get("isListLoading"),
     isFirstLoaded: applications.get("isListFirstLoaded")
   };
 };
 
-export interface WithApplicationsDataProps extends ReturnType<typeof mapStateToProps> {
+export interface WithApplicationsListDataProps extends ReturnType<typeof mapStateToProps> {
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
 }
 
 export const ApplicationListDataWrapper = (WrappedComponent: React.ComponentType<any>) => {
-  const WithdApplicationsData: React.ComponentType<WithApplicationsDataProps> = class extends React.Component<
-    WithApplicationsDataProps
+  const WithdApplicationsData: React.ComponentType<WithApplicationsListDataProps> = class extends React.Component<
+    WithApplicationsListDataProps
   > {
     private interval?: number;
 
@@ -33,6 +33,13 @@ export const ApplicationListDataWrapper = (WrappedComponent: React.ComponentType
 
     componentDidMount() {
       this.loadData();
+    }
+
+    componentDidUpdate(prevProps: WithApplicationsListDataProps) {
+      if (prevProps.activeNamespaceName !== this.props.activeNamespaceName) {
+        window.clearTimeout(this.interval);
+        this.loadData();
+      }
     }
 
     componentWillUnmount() {

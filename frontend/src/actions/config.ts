@@ -272,7 +272,7 @@ export const pathToAncestorIds = (path: string): string[] => {
   }
 
   // eg.
-  // "/a/b/c.yaml" =>
+  // split "/a/b/c.yaml" =>
   // ["", "a", "b", "c.yaml"]
   const names = path.split("/");
 

@@ -13,28 +13,6 @@ import (
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// Deprecated
-func (h *ApiHandler) handleGetApplicationsOld(c echo.Context) error {
-	k8sClient := getK8sClient(c)
-	namespace := c.Param("namespace")
-
-	var path string
-
-	if namespace == "" {
-		path = "/apis/core.kapp.dev/v1alpha1/applications"
-	} else {
-		path = "/apis/core.kapp.dev/v1alpha1/namespaces/" + namespace + "/applications"
-	}
-
-	bts, err := k8sClient.RESTClient().Get().AbsPath(path).DoRaw()
-
-	if err != nil {
-		return err
-	}
-
-	return c.JSONBlob(200, bts)
-}
-
 func (h *ApiHandler) handleGetApplications(c echo.Context) error {
 	applicationList, err := getKappApplicationList(c)
 
@@ -58,18 +36,13 @@ func (h *ApiHandler) handleGetApplicationDetails(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(200, h.applicationResponse(c, application))
-}
+	res, err := h.applicationResponse(c, application)
 
-// Deprecated
-func (h *ApiHandler) handleCreateApplication(c echo.Context) error {
-	k8sClient := getK8sClient(c)
-
-	res, err := k8sClient.RESTClient().Post().Body(c.Request().Body).AbsPath("/apis/core.kapp.dev/v1alpha1/namespaces/" + c.Param("namespace") + "/applications").DoRaw()
 	if err != nil {
 		return err
 	}
-	return c.JSONBlob(200, res)
+
+	return c.JSON(200, res)
 }
 
 func (h *ApiHandler) handleCreateApplicationNew(c echo.Context) error {
@@ -79,7 +52,13 @@ func (h *ApiHandler) handleCreateApplicationNew(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusCreated, h.applicationResponse(c, application))
+	res, err := h.applicationResponse(c, application)
+
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusCreated, res)
 }
 
 func (h *ApiHandler) handleUpdateApplicationNew(c echo.Context) error {
@@ -89,19 +68,13 @@ func (h *ApiHandler) handleUpdateApplicationNew(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(200, h.applicationResponse(c, application))
-}
-
-// Deprecated
-func (h *ApiHandler) handleUpdateApplication(c echo.Context) error {
-	k8sClient := getK8sClient(c)
-	res, err := k8sClient.RESTClient().Put().Body(c.Request().Body).AbsPath("/apis/core.kapp.dev/v1alpha1/namespaces/" + c.Param("namespace") + "/applications/" + c.Param("name")).DoRaw()
+	res, err := h.applicationResponse(c, application)
 
 	if err != nil {
 		return err
 	}
 
-	return c.JSONBlob(200, res)
+	return c.JSON(200, res)
 }
 
 func (h *ApiHandler) handleDeleteApplication(c echo.Context) error {
@@ -249,7 +222,7 @@ func getApplicationFromContext(c echo.Context) (*v1alpha1.Application, error) {
 	return crdApplication, nil
 }
 
-func (h *ApiHandler) applicationResponse(c echo.Context, application *v1alpha1.Application) *resources.ApplicationResponse {
+func (h *ApiHandler) applicationResponse(c echo.Context, application *v1alpha1.Application) (*resources.ApplicationDetails, error) {
 	k8sClient := getK8sClient(c)
 	k8sClientConfig := getK8sClientConfig(c)
 
@@ -259,10 +232,10 @@ func (h *ApiHandler) applicationResponse(c echo.Context, application *v1alpha1.A
 		Config:    k8sClientConfig,
 	}
 
-	return builder.BuildApplicationDetailsResponse(application)
+	return builder.BuildApplicationDetails(application)
 }
 
-func (h *ApiHandler) applicationListResponse(c echo.Context, applicationList *v1alpha1.ApplicationList) (*resources.ApplicationListResponse, error) {
+func (h *ApiHandler) applicationListResponse(c echo.Context, applicationList *v1alpha1.ApplicationList) ([]resources.ApplicationDetails, error) {
 	k8sClient := getK8sClient(c)
 	k8sClientConfig := getK8sClientConfig(c)
 

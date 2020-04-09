@@ -15,6 +15,7 @@ import {
 } from "../../types/componentTemplate";
 import { RenderSelectField } from "../Basic";
 import { TextField } from "../Basic/text";
+import { KappConfigPath } from "../ComponentLike/VolumeConfig";
 
 interface OwnProps {}
 
@@ -103,7 +104,11 @@ class VolumeRaw extends React.PureComponent<Props> {
         </Box>
       );
     } else if (volumeType === VolumeTypeKappConfigs) {
-      return <Box mt={2}>TODO, show an auto complete field to select configs</Box>;
+      return (
+        <Box mt={2}>
+          <KappConfigPath />
+        </Box>
+      );
     }
   };
   public render() {

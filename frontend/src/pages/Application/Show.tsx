@@ -1,11 +1,12 @@
-import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { createStyles, Theme, withStyles, WithStyles, Button } from "@material-ui/core";
+import { Link } from "react-router-dom";
 import React from "react";
 import { RouteChildrenProps } from "react-router-dom";
 import { BasePage } from "../BasePage";
 import { Details } from "./Detail";
 import { Loading } from "../../widgets/Loading";
-import { ApplicationListDataWrapper, WithApplicationsDataProps } from "./ListDataWrapper";
 import { connect } from "react-redux";
+import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./ItemDataWrapper";
 
 const mapStateToProps = (_: any, props: any) => {
   const { match } = props;
@@ -24,21 +25,26 @@ const styles = (theme: Theme) =>
   });
 
 interface Props
-  extends WithApplicationsDataProps,
+  extends WithApplicationItemDataProps,
     WithStyles<typeof styles>,
     ReturnType<typeof mapStateToProps>,
     RouteChildrenProps<{ applicationName: string }> {}
 
 class ApplicationShowRaw extends React.PureComponent<Props> {
   public render() {
-    const { isLoading, isFirstLoaded, applicationList, applicationName, dispatch } = this.props;
-    const application = applicationList.find(x => x.get("name") === applicationName);
+    const { isLoading, application, applicationName, dispatch } = this.props;
     return (
-      <BasePage title={`Application ${application && application.get("name")}`}>
-        {isLoading && !isFirstLoaded ? (
+      <BasePage
+        title={`Application ${application && application.get("name")}`}
+        rightAction={
+          <Link to={`/applications/${application && application.get("name")}/edit`}>
+            <Button>Edit</Button>
+          </Link>
+        }>
+        {isLoading && !application ? (
           <Loading />
         ) : application ? (
-          <Details application={application} dispatch={dispatch} />
+          <Details application={application} dispatch={dispatch} activeNamespaceName={this.props.activeNamespaceName} />
         ) : (
           `Can't find application with name ${applicationName}`
         )}
@@ -48,5 +54,5 @@ class ApplicationShowRaw extends React.PureComponent<Props> {
 }
 
 export const ApplicationShow = withStyles(styles)(
-  connect(mapStateToProps)(ApplicationListDataWrapper(ApplicationShowRaw))
+  connect(mapStateToProps)(ApplicationItemDataWrapper({ reloadFrequency: 5000 })(ApplicationShowRaw))
 );

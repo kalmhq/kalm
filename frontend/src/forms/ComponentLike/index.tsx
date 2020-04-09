@@ -4,7 +4,7 @@ import grey from "@material-ui/core/colors/grey";
 import clsx from "clsx";
 import Typography from "@material-ui/core/Typography";
 import React from "react";
-import { connect, DispatchProp } from "react-redux";
+import { connect } from "react-redux";
 import { InjectedFormProps } from "redux-form";
 import { Field, getFormValues, reduxForm, getFormSyncErrors } from "redux-form/immutable";
 import { RootState } from "../../reducers";
@@ -20,20 +20,30 @@ import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import Immutable from "immutable";
+import Immutable, { Map, List } from "immutable";
 import { ComponentLike, workloadTypeCronjob, workloadTypeServer } from "../../types/componentTemplate";
 import { Volumes } from "./volumes";
 import ErrorIcon from "@material-ui/icons/Error";
 import { SharedEnv } from "../../types/application";
 import { ReadinessProbe, LivenessProbe } from "./Probes";
+import { loadNodesAction } from "../../actions/node";
+import { TDispatchProp } from "../../types";
+import { CustomLabels, AffinityType } from "./NodeSelector";
+import { getNodeLabels } from "../../selectors/node";
+import { red } from "@material-ui/core/colors";
+import { extractSummaryInfoFromMap, extractSummaryInfoFromList } from "forms/summarizer";
+import { loadConfigsAction } from "../../actions/config";
+import { SectionTitle } from "widgets/SectionTitle";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
   const syncErrors = getFormSyncErrors("componentLike")(state);
+  const nodeLabels = getNodeLabels();
 
   return {
     values,
-    syncErrors
+    syncErrors,
+    nodeLabels
   };
 };
 
@@ -61,14 +71,14 @@ const styles = (theme: Theme) =>
       display: "block"
     },
     summaryError: {
-      color: "#f44336",
-      display: "flex"
+      color: red[700]
     },
     summaryBold: {
       fontWeight: "bold"
     },
     summaryIcon: {
-      marginLeft: "8px"
+      marginLeft: "8px",
+      position: "absolute"
     },
     summaryShow: {
       display: "block",
@@ -114,7 +124,7 @@ export interface Props
   extends InjectedFormProps<ComponentLike, RawProps>,
     ReturnType<typeof mapStateToProps>,
     WithStyles<typeof styles>,
-    DispatchProp,
+    TDispatchProp,
     RawProps {}
 
 interface State {
@@ -134,6 +144,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     this.state = {
       currentPanel: "basic"
     };
+  }
+
+  public componentDidMount() {
+    const { dispatch } = this.props;
+    // load node labels for node selectors
+    dispatch(loadNodesAction());
+    // load configs for volume
+    dispatch(loadConfigsAction());
   }
 
   private renderSchedule() {
@@ -170,19 +188,11 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderBasic() {
-    const { classes, isEdit, isFolded } = this.props;
+    const { isEdit, isFolded } = this.props;
     return (
       <Grid container spacing={2}>
         <Grid item md={12}>
-          {!isFolded && (
-            <Typography
-              variant="h2"
-              classes={{
-                root: classes.sectionHeader
-              }}>
-              Basic Info
-            </Typography>
-          )}
+          {!isFolded && SectionTitle("Basic Info")}
           <HelperContainer>
             <Typography>Describe how to launch this compoent.</Typography>
           </HelperContainer>
@@ -245,18 +255,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderEnvs() {
-    const { classes, isFolded, sharedEnv } = this.props;
+    const { isFolded, sharedEnv } = this.props;
     return (
       <>
-        {!isFolded && (
-          <Typography
-            variant="h2"
-            classes={{
-              root: classes.sectionHeader
-            }}>
-            Environment variables
-          </Typography>
-        )}
+        {!isFolded && SectionTitle("Environment variables")}
         <HelperContainer>
           <Typography>
             Environment variables are variable whose values are set outside the program, typically through functionality
@@ -292,18 +294,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   public renderPorts() {
-    const { classes, isFolded } = this.props;
+    const { isFolded } = this.props;
     return (
       <>
-        {!isFolded && (
-          <Typography
-            variant="h2"
-            classes={{
-              root: classes.sectionHeader
-            }}>
-            Ports
-          </Typography>
-        )}
+        {!isFolded && SectionTitle("Ports")}
         <HelperContainer>
           <Typography>
             Port is the standard way to expose your program. If you want your component can be accessed by some other
@@ -316,18 +310,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderResources() {
-    const { classes, isFolded, values, dispatch, form } = this.props;
+    const { isFolded, values, dispatch, form } = this.props;
     return (
       <>
-        {!isFolded && (
-          <Typography
-            variant="h2"
-            classes={{
-              root: classes.sectionHeader
-            }}>
-            Resources
-          </Typography>
-        )}
+        {!isFolded && SectionTitle("Resources")}
         <HelperContainer>
           <Typography>Cpu, Memory, Disk can be configured here.</Typography>
           <MList dense={true}>
@@ -355,18 +341,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderVolumes() {
-    const { classes, isFolded } = this.props;
+    const { isFolded } = this.props;
     return (
       <>
-        {!isFolded && (
-          <Typography
-            variant="h2"
-            classes={{
-              root: classes.sectionHeader
-            }}>
-            Volumes
-          </Typography>
-        )}
+        {!isFolded && SectionTitle("Volumes")}
         <HelperContainer>
           <Typography>Mount different kinds of volumes to this component.</Typography>
           <MList dense={true}>
@@ -408,7 +386,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderAdvanced() {
-    const { classes, isFolded } = this.props;
+    const { isFolded } = this.props;
 
     // strategy:
     //   type: Recreate
@@ -429,15 +407,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return (
       <Grid container>
         <Grid item md={12}>
-          {!isFolded && (
-            <Typography
-              variant="h2"
-              classes={{
-                root: classes.sectionHeader
-              }}>
-              Advanced
-            </Typography>
-          )}
+          {!isFolded && SectionTitle("Advanced")}
           <HelperContainer>
             <Typography>
               In most cases, the default values for the following options are appropriate for most programs. However,
@@ -599,18 +569,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   };
 
   private renderPlugins() {
-    const { classes, isFolded } = this.props;
+    const { isFolded } = this.props;
     return (
       <>
-        {!isFolded && (
-          <Typography
-            variant="h2"
-            classes={{
-              root: classes.sectionHeader
-            }}>
-            Plugins
-          </Typography>
-        )}
+        {!isFolded && SectionTitle("Plugins")}
         <HelperContainer>
           <Typography>
             Plugins can affect running state of a program, or provide extra functionality for the programs.
@@ -622,22 +584,35 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderProbes() {
-    const { classes, isFolded } = this.props;
+    const { isFolded } = this.props;
     return (
       <Grid container spacing={2}>
         <Grid item md={12}>
-          {!isFolded && (
-            <Typography
-              variant="h2"
-              classes={{
-                root: classes.sectionHeader
-              }}>
-              Probes
-            </Typography>
-          )}
+          {!isFolded && SectionTitle("Probes")}
         </Grid>
         <LivenessProbe />
         <ReadinessProbe />
+      </Grid>
+    );
+  }
+
+  private renderNodeSelector() {
+    const { isFolded, nodeLabels } = this.props;
+    return (
+      <Grid container spacing={2}>
+        <Grid item md={12}>
+          {!isFolded && SectionTitle("Node Selector")}
+        </Grid>
+        <Grid item md={12}>
+          <CustomLabels nodeLabels={nodeLabels} />
+        </Grid>
+        <Grid item md={6}>
+          <AffinityType />
+        </Grid>
+        <Grid item md={6}>
+          {/* TODO */}
+          <div>TODO describe this field</div>
+        </Grid>
       </Grid>
     );
   }
@@ -653,7 +628,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private renderSummary(summaryInfos: Summary[]): React.ReactNode {
     const { classes } = this.props;
     const renderValues = (summary: Summary) => {
-      if (typeof summary.value === "string") {
+      if (typeof summary.value === "string" || typeof summary.value === "number") {
         return (
           <Typography
             variant="body2"
@@ -663,18 +638,45 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         );
       } else {
         const values = summary.value;
-        console.log("values", values);
         if (values.size && values.size > 0) {
-          return values.map((v: string, index: number) => {
-            return (
-              <Typography
-                key={index}
-                variant="body2"
-                className={clsx(classes.summaryValue, summary.hasChanged ? classes.summaryChanged : null)}>
-                {v}
-              </Typography>
-            );
-          });
+          if (List.isList(values)) {
+            return values.map((v: any, index: number) => {
+              return (
+                <Typography
+                  key={index}
+                  variant="body2"
+                  className={clsx(classes.summaryValue, summary.hasChanged ? classes.summaryChanged : null)}>
+                  {v}
+                </Typography>
+              );
+            });
+          } else if (Map.isMap(values)) {
+            let keys = values.keySeq().toArray();
+            return values.toList().map((value: any, index: number) => {
+              if (Map.isMap(value)) {
+                let subKeys = value.keySeq().toArray();
+                return value.toList().map((subValue: any, subIndex: number) => {
+                  return (
+                    <Typography
+                      key={subIndex}
+                      variant="body2"
+                      className={clsx(classes.summaryValue, summary.hasChanged ? classes.summaryChanged : null)}>
+                      {subKeys[subIndex]} : {subValue}
+                    </Typography>
+                  );
+                });
+              } else {
+                return (
+                  <Typography
+                    key={index}
+                    variant="body2"
+                    className={clsx(classes.summaryValue, summary.hasChanged ? classes.summaryChanged : null)}>
+                    {keys[index]} : {value}
+                  </Typography>
+                );
+              }
+            });
+          }
         } else {
           return null;
         }
@@ -693,9 +695,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return <>{listItems}</>;
   }
 
-  private renderPanel(key: string, title: string, content: any, summary: string = "xxxx"): React.ReactNode {
-    const { classes, syncErrors, anyTouched, values, initialValues } = this.props;
-
+  private composeErrorInfo(key: string): boolean {
+    const { syncErrors, anyTouched } = this.props;
     const fieldNames = this.getPanelFieldNames(key);
     const errors: { [key: string]: any } = syncErrors;
 
@@ -707,23 +708,24 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         }
       });
     }
-    let summaryInfos: Summary[] = [];
+    return hasError;
+  }
+
+  private composeChangedState(key: string): boolean {
+    const { values, initialValues } = this.props;
+    const fieldNames = this.getPanelFieldNames(key);
+
     let isChanged = false;
     fieldNames.forEach((name: any) => {
-      let summaryInfo: Summary = {} as Summary;
-      summaryInfo.name = name;
       if (!values.get(name) || typeof values.get(name) === "string") {
         if (values.get(name) !== initialValues.get!(name)) {
           isChanged = true;
-
-          summaryInfo.value = values.get(name);
-          summaryInfo.hasChanged = true;
-        } else {
-          if (values.get(name) != null && values.get(name) !== undefined && values.get(name).length > 0) {
-            summaryInfo.value = values.get(name);
-          }
         }
         // immutable compare
+      } else if (!values.get(name) || typeof values.get(name) === "number") {
+        if (values.get(name) !== initialValues.get!(name)) {
+          isChanged = true;
+        }
       } else if (values.get(name).equals) {
         if (name === "livenessProbe" || name === "readinessProbe") {
           // since auto set probe type
@@ -734,45 +736,62 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               .equals(initialValues.get!(name))
           ) {
             isChanged = true;
-            summaryInfo.hasChanged = true;
-            if (values.get(name).size && values.get(name).size > 0) {
-              summaryInfo.value = values.get(name).map((item: any) => {
-                return item.join(",");
-              });
-            }
           }
         } else {
           if (!values.get(name).equals(initialValues.get!(name))) {
             isChanged = true;
-            if (values.get(name).size && values.get(name).size > 0) {
-              summaryInfo.value = values.get(name).map((item: any) => {
-                return item.join(",");
-              });
-            }
-            summaryInfo.hasChanged = true;
           }
         }
-        if (values.get(name).size && values.get(name).size > 0) {
-          summaryInfo.value = values.get(name).map((item: any) => {
-            return item.join(",");
-          });
+      }
+    });
+    return isChanged;
+  }
+
+  private composeSummaryInfo(key: string): Summary[] {
+    const { values, initialValues } = this.props;
+    const fieldNames = this.getPanelFieldNames(key);
+    let summaryInfos: Summary[] = [];
+    fieldNames.forEach((name: any) => {
+      let summaryInfo: Summary = {} as Summary;
+      summaryInfo.name = name;
+      if (!values.get(name) || typeof values.get(name) === "string" || typeof values.get(name) === "number") {
+        if (values.get(name) !== initialValues.get!(name)) {
+          summaryInfo.hasChanged = true;
+        }
+        summaryInfo.value = values.get(name);
+        // immutable compare
+      } else if (values.get(name).equals) {
+        if (name === "livenessProbe" || name === "readinessProbe") {
+          // since auto set probe type
+          if (
+            !values
+              .get(name)
+              .delete("type")
+              .equals(initialValues.get!(name))
+          ) {
+            summaryInfo.hasChanged = true;
+          }
+          if (values.get(name).size && values.get(name).size > 0) {
+            summaryInfo.value = extractSummaryInfoFromMap(values, name);
+          } else {
+            summaryInfo.value = values.get(name);
+          }
+        } else {
+          if (!values.get(name).equals(initialValues.get!(name))) {
+            summaryInfo.hasChanged = true;
+          }
+          if (Map.isMap(values.get(name))) {
+            summaryInfo.value = extractSummaryInfoFromMap(values, name);
+          } else if (List.isList(values.get(name))) {
+            if (values.get(name).size && values.get(name).size > 0) {
+              summaryInfo.value = extractSummaryInfoFromList(values, name);
+            }
+          }
         }
       }
       summaryInfo.value && summaryInfos.push(summaryInfo);
     });
-    return (
-      <ExpansionPanel expanded={key === this.state.currentPanel} onChange={() => this.handleChangePanel(key)}>
-        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id="panel1a-header">
-          <div className={hasError ? classes.summaryError : isChanged ? classes.summaryBold : ""}>
-            {title} {hasError ? <ErrorIcon className={classes.summaryIcon} /> : null}
-            <div className={key === this.state.currentPanel ? classes.summaryHide : classes.summaryShow}>
-              {this.renderSummary(summaryInfos)}
-            </div>
-          </div>
-        </ExpansionPanelSummary>
-        <ExpansionPanelDetails className={classes.displayBlock}>{content}</ExpansionPanelDetails>
-      </ExpansionPanel>
-    );
+    return summaryInfos;
   }
 
   private getPanelFieldNames(panelName: string): string[] {
@@ -791,11 +810,34 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         return ["restartStrategy", "terminationGracePeriodSeconds", "dnsPolicy"];
       case "plugins":
         return ["plugins"];
+      case "nodeSelector":
+        return ["nodeSelectorLabels", "podAffinityType"];
       case "probes":
         return ["livenessProbe", "readinessProbe"];
       default:
         return [];
     }
+  }
+
+  private renderPanel(key: string, title: string, content: any): React.ReactNode {
+    const { classes } = this.props;
+    let hasError = this.composeErrorInfo(key);
+    let isChanged = this.composeChangedState(key);
+    let summaryInfos = this.composeSummaryInfo(key);
+
+    return (
+      <ExpansionPanel expanded={key === this.state.currentPanel} onChange={() => this.handleChangePanel(key)}>
+        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id="panel1a-header">
+          <div className={hasError ? classes.summaryError : isChanged ? classes.summaryBold : ""}>
+            {title} {hasError ? <ErrorIcon className={classes.summaryIcon} /> : null}
+            <div className={key === this.state.currentPanel ? classes.summaryHide : classes.summaryShow}>
+              {this.renderSummary(summaryInfos)}
+            </div>
+          </div>
+        </ExpansionPanelSummary>
+        <ExpansionPanelDetails className={classes.displayBlock}>{content}</ExpansionPanelDetails>
+      </ExpansionPanel>
+    );
   }
 
   public render() {
@@ -811,6 +853,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           {this.renderPanel("volumes", "Volumes", this.renderVolumes())}
           {this.renderPanel("plugins", "Plugins", this.renderPlugins())}
           {this.renderPanel("probes", "Probes", this.renderProbes())}
+          {this.renderPanel("nodeSelector", "Node Selector", this.renderNodeSelector())}
           {this.renderPanel("advanced", "Advanced", this.renderAdvanced())}
         </form>
       );
@@ -825,6 +868,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Paper className={classes.formSection}>{this.renderVolumes()}</Paper>
         <Paper className={classes.formSection}>{this.renderPlugins()}</Paper>
         <Paper className={classes.formSection}>{this.renderProbes()}</Paper>
+        <Paper className={classes.formSection}>{this.renderNodeSelector()}</Paper>
         <Paper className={classes.formSection}>{this.renderAdvanced()}</Paper>
       </form>
     );

@@ -12,6 +12,8 @@ import { MaterialTableEditAutoComplete } from "../Basic/autoComplete";
 import { MaterialTableEditTextField } from "../Basic/text";
 import { KappTooltip } from "./KappTooltip";
 import { SharedEnv } from "../../types/application";
+import { TableTitle } from "widgets/TableTitle";
+import { grey } from "@material-ui/core/colors";
 
 const mapStateToProps = () => {
   const application = getCurrentFormApplication();
@@ -154,7 +156,8 @@ class RenderSharedEnvs extends React.PureComponent<Props> {
             //   toolbar: false
             actionsColumnIndex: -1,
             addRowPosition: "first",
-            draggable: false
+            draggable: false,
+            headerStyle: { color: grey[400] }
           }}
           icons={{
             Add: forwardRef((props, ref) => <AddCircleIcon ref={ref} {...props} color="primary" />)
@@ -182,7 +185,7 @@ class RenderSharedEnvs extends React.PureComponent<Props> {
             onRowDelete: this.handleDelete
           }}
           data={this.getTableData()}
-          title=""
+          title={TableTitle("Shared Envs")}
         />
       </div>
     );

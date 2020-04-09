@@ -1,8 +1,6 @@
 import Immutable from "immutable";
 import { ImmutableMap } from "../typings";
-import { V1beta1CronJobStatus, V1DeploymentStatus } from "../model/models";
 import { ComponentLikeContent } from "./componentTemplate";
-import { Status } from "./common";
 
 export const CREATE_APPLICATION = "CREATE_APPLICATION";
 export const UPDATE_APPLICATION = "UPDATE_APPLICATION";
@@ -34,16 +32,10 @@ export interface ApplicationContent {
   components: Immutable.List<ApplicationComponent>;
 }
 
-export interface ApplicationStatusContent {
-  status: Status;
-  components: Immutable.List<ComponentStatus>;
-}
-
 export interface ApplicationComponentContent extends ComponentLikeContent {}
 
 export type ApplicationComponent = ImmutableMap<ApplicationComponentContent>;
 export type Application = ImmutableMap<ApplicationContent>;
-export type ApplicationStatus = ImmutableMap<ApplicationStatusContent>;
 
 export type ListMeta = ImmutableMap<{
   totalCount: number;
@@ -51,29 +43,9 @@ export type ListMeta = ImmutableMap<{
   page: number;
 }>;
 
-export type PodInfo = ImmutableMap<{
-  // Number of pods that are created.
-  current: number;
-  // Number of pods that are desired.
-  desired?: number;
-  // Number of pods that are currently running.
-  running: number;
-  // Number of pods that are currently waiting.
-  pending: number;
-  // Number of pods that are failed.
-  failed: number;
-  // Number of pods that are succeeded.
-  succeeded: number;
-  // Unique warning messages related to pods in this resource.
-  warnings: any;
-}>;
-
 export type ComponentStatus = ImmutableMap<{
   name: string;
   workloadType: string;
-  deploymentStatus?: V1DeploymentStatus;
-  cronjobStatus?: V1beta1CronJobStatus;
-  podsInfo: PodInfo;
   metrics: Metrics;
   pods: Immutable.List<PodStatus>;
 }>;
@@ -119,43 +91,41 @@ export type Metrics = ImmutableMap<{
   memory: MetricList;
 }>;
 
-export type ApplicationListItem = ImmutableMap<{
+export type ApplicationDetails = ImmutableMap<{
+  // application inline
   name: string;
   namespace: string;
   createdAt: string;
   isActive: boolean;
-  components: Immutable.List<ComponentStatus>;
+  sharedEnvs: Immutable.List<SharedEnv>;
+  components: Immutable.List<ApplicationComponent>;
+
+  // addition fields
+  componentsStatus: Immutable.List<ComponentStatus>;
+  podNames: Immutable.List<string>;
   metrics: Metrics;
 }>;
 
-export type ApplicationList = Immutable.List<ApplicationListItem>;
-
-// export type ApplicationDetail = ImmutableMap<{
-//   name: string;
-//   namespace: string;
-//   isActive: boolean;
-//   sharedEnvs: Immutable.List<V1EnvVar>;
-//   components: Immutable.List<V1alpha1ApplicationSpecComponents>;
-// }>;
+export type ApplicationDetailsList = Immutable.List<ApplicationDetails>;
 
 export interface CreateApplicationAction {
   type: typeof CREATE_APPLICATION;
   payload: {
-    application: Application;
+    application: ApplicationDetails;
   };
 }
 
 export interface DuplicateApplicationAction {
   type: typeof DUPLICATE_APPLICATION;
   payload: {
-    application: Application;
+    application: ApplicationDetails;
   };
 }
 
 export interface UpdateApplicationAction {
   type: typeof UPDATE_APPLICATION;
   payload: {
-    application: Application;
+    application: ApplicationDetails;
   };
 }
 
@@ -177,7 +147,7 @@ export interface LoadApplicationsFailedAction {
 export interface LoadApplicationsFulfilledAction {
   type: typeof LOAD_APPLICATIONS_FULFILLED;
   payload: {
-    applicationList: ApplicationList;
+    applicationList: ApplicationDetailsList;
   };
 }
 
@@ -192,8 +162,7 @@ export interface LoadApplicationFailedAction {
 export interface LoadApplicationFulfilledAction {
   type: typeof LOAD_APPLICATION_FULFILLED;
   payload: {
-    application: Application;
-    podNames: Immutable.List<string>;
+    application: ApplicationDetails;
   };
 }
 

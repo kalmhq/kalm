@@ -16,11 +16,16 @@ import { Components } from "./component";
 import { SharedEnvs } from "./sharedEnv";
 import { Application, SharedEnv } from "../../types/application";
 import { ComponentTemplate } from "../../types/componentTemplate";
+import { TableTitle } from "widgets/TableTitle";
 
 const styles = (theme: Theme) =>
   createStyles({
     formSection: {
       padding: theme.spacing(2),
+      margin: theme.spacing(3)
+    },
+    formSectionTable: {
+      padding: theme.spacing(0),
       margin: theme.spacing(3)
     },
     formSectionContainer: {
@@ -67,7 +72,7 @@ class ApplicationFormRaw extends React.PureComponent<
         <HelperContainer>
           <Typography>Basic information of this application</Typography>
         </HelperContainer>
-
+        {TableTitle("Basic Info")}
         <Grid container spacing={2}>
           <Grid item md={6}>
             <Field
@@ -108,7 +113,7 @@ class ApplicationFormRaw extends React.PureComponent<
         <HelperContainer>
           <Typography>Status</Typography>
         </HelperContainer>
-
+        {TableTitle("Status")}
         <div className={classes.statusMarginBasic}>
           <Field
             name="isPersistent"
@@ -173,8 +178,8 @@ class ApplicationFormRaw extends React.PureComponent<
             <Paper className={classes.formSection}>{this.renderStatus()}</Paper>
           </Grid>
         </Grid>
-        <Paper className={classes.formSection}>{this.renderComponent()}</Paper>
-        <Paper className={classes.formSection}>{this.renderSharedEnvs()}</Paper>
+        <Paper className={classes.formSectionTable}>{this.renderComponent()}</Paper>
+        <Paper className={classes.formSectionTable}>{this.renderSharedEnvs()}</Paper>
         {/* <Button variant="contained" color="primary" type="submit">
           Submit
         </Button> */}

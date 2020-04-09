@@ -5,39 +5,55 @@ import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "../../types";
 import { loadApplicationAction } from "../../actions/application";
 import hoistNonReactStatics from "hoist-non-react-statics";
+import { Loading } from "widgets/Loading";
+import { push } from "connected-react-router";
 
 const mapStateToProps = (state: RootState, props: any) => {
   const applications = state.get("applications");
   const { match } = props;
-  const { namespace, applicationName } = match!.params;
+  const { applicationName } = match!.params;
+
+  const activeNamespaceName = state.get("namespaces").get("active");
 
   return {
     applicationName,
-    namespace,
-    application: applications.get("applications").get(applicationName),
-    isLoading: applications.get("isItemLoading"),
-    podNames: applications.get("applicationPodNames").get(applicationName)
+    activeNamespaceName,
+    application: applications.get("applications").find(x => x.get("name") === applicationName),
+    isLoading: applications.get("isItemLoading")
   };
 };
 
-export interface WithApplicationsDataProps extends ReturnType<typeof mapStateToProps> {
+export interface WithApplicationItemDataProps extends ReturnType<typeof mapStateToProps> {
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
 }
 
-export const ApplicationItemDataWrapper = (WrappedComponent: React.ComponentType<any>) => {
-  const WithdApplicationsData: React.ComponentType<WithApplicationsDataProps> = class extends React.Component<
-    WithApplicationsDataProps
+// if reloadFrequency > 0, will keep reload the item
+// otherwize, will only load the item once
+export const ApplicationItemDataWrapper = ({ reloadFrequency }: { reloadFrequency: number }) => (
+  WrappedComponent: React.ComponentType<any>
+) => {
+  const WithdApplicationsData: React.ComponentType<WithApplicationItemDataProps> = class extends React.Component<
+    WithApplicationItemDataProps
   > {
     private interval?: number;
 
     private loadData = () => {
-      const { namespace, applicationName } = this.props;
-      this.props.dispatch(loadApplicationAction(namespace, applicationName));
-      // this.interval = window.setTimeout(this.loadData, 500000);
+      const { activeNamespaceName, applicationName } = this.props;
+      this.props.dispatch(loadApplicationAction(activeNamespaceName, applicationName));
+
+      if (reloadFrequency > 0) {
+        this.interval = window.setTimeout(this.loadData, reloadFrequency);
+      }
     };
 
     componentDidMount() {
       this.loadData();
+    }
+
+    componentDidUpdate(prevProps: WithApplicationItemDataProps) {
+      if (prevProps.activeNamespaceName !== this.props.activeNamespaceName) {
+        this.props.dispatch(push("/applications?namespace=" + this.props.activeNamespaceName));
+      }
     }
 
     componentWillUnmount() {
@@ -47,6 +63,12 @@ export const ApplicationItemDataWrapper = (WrappedComponent: React.ComponentType
     }
 
     render() {
+      const { application } = this.props;
+
+      if (!application) {
+        return <Loading />;
+      }
+
       return <WrappedComponent {...this.props} />;
     }
   };

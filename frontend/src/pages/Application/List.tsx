@@ -1,10 +1,14 @@
-import { Checkbox, createStyles, Switch, TextField, Theme, WithStyles, withStyles } from "@material-ui/core";
+import { Button, Checkbox, createStyles, Switch, TextField, Theme, WithStyles, withStyles } from "@material-ui/core";
+import { grey } from "@material-ui/core/colors";
+import AddIcon from "@material-ui/icons/Add";
 import ArchiveIcon from "@material-ui/icons/Archive";
 import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew";
 import RefreshIcon from "@material-ui/icons/Refresh";
 import { push } from "connected-react-router";
 import MaterialTable from "material-table";
 import React from "react";
+import { Link } from "react-router-dom";
+import { TableTitle } from "widgets/TableTitle";
 import {
   deleteApplicationAction,
   duplicateApplicationAction,
@@ -14,16 +18,13 @@ import {
 } from "../../actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "../../actions/notification";
 import { duplicateApplicationName, getApplicationByName } from "../../selectors/application";
-import { ApplicationListItem } from "../../types/application";
+import { ApplicationDetails } from "../../types/application";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
 import { FoldButtonGroup } from "../../widgets/FoldButtonGroup";
 import { Loading } from "../../widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "../../widgets/SmallLineChart";
 import { BasePage } from "../BasePage";
-import { Details } from "./Detail";
-import { ApplicationListDataWrapper, WithApplicationsDataProps } from "./ListDataWrapper";
-import { Link } from "react-router-dom";
-import AddIcon from "@material-ui/icons/Add";
+import { ApplicationListDataWrapper, WithApplicationsListDataProps } from "./ListDataWrapper";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -96,33 +97,32 @@ const styles = (theme: Theme) =>
       display: "flex",
       alignItems: "center",
       fontSize: "14px",
-      fontWeight: "bold",
-      color: "#2196F3"
+      fontWeight: "bold"
     }
   });
 
-interface Props extends WithApplicationsDataProps, WithStyles<typeof styles> {}
+interface Props extends WithApplicationsListDataProps, WithStyles<typeof styles> {}
 
 interface State {
   isActiveConfirmDialogOpen: boolean;
-  switchingIsActiveApplicationListItem?: ApplicationListItem;
+  switchingIsActiveApplicationListItem?: ApplicationDetails;
   isDeleteConfirmDialogOpen: boolean;
-  deletingApplicationListItem?: ApplicationListItem;
+  deletingApplicationListItem?: ApplicationDetails;
   isDuplicateConfirmDialogOpen: boolean;
-  duplicatingApplicationListItem?: ApplicationListItem;
+  duplicatingApplicationListItem?: ApplicationDetails;
   checkedApplicationNames: {
     [key: string]: boolean;
   };
 }
 
-interface RowData extends ApplicationListItem {
+interface RowData extends ApplicationDetails {
   index: number;
 }
 
 class ApplicationListRaw extends React.PureComponent<Props, State> {
   private duplicateApplicationNameRef: React.RefObject<any>;
   private duplicateApplicationNamespaceRef: React.RefObject<any>;
-  private tableRef: React.RefObject<MaterialTable<ApplicationListItem>> = React.createRef();
+  private tableRef: React.RefObject<MaterialTable<ApplicationDetails>> = React.createRef();
 
   private defaultState = {
     isActiveConfirmDialogOpen: false,
@@ -146,7 +146,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     this.props.dispatch(push(`/applications/new`));
   };
 
-  private showSwitchingIsActiveConfirmDialog = (applicationListItem: ApplicationListItem) => {
+  private showSwitchingIsActiveConfirmDialog = (applicationListItem: ApplicationDetails) => {
     this.setState({
       isActiveConfirmDialogOpen: true,
       switchingIsActiveApplicationListItem: applicationListItem
@@ -199,7 +199,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private showDuplicateConfirmDialog = (duplicatingApplicationListItem: ApplicationListItem) => {
+  private showDuplicateConfirmDialog = (duplicatingApplicationListItem: ApplicationDetails) => {
     this.setState({
       isDuplicateConfirmDialogOpen: true,
       duplicatingApplicationListItem
@@ -276,7 +276,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private showDeleteConfirmDialog = (deletingApplicationListItem: ApplicationListItem) => {
+  private showDeleteConfirmDialog = (deletingApplicationListItem: ApplicationDetails) => {
     this.setState({
       isDeleteConfirmDialogOpen: true,
       deletingApplicationListItem
@@ -316,10 +316,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private renderDetails = (applicationListItem: ApplicationListItem) => {
-    return <Details application={applicationListItem} dispatch={this.props.dispatch} />;
-  };
-
   private renderCheckbox = (applicationListItem: RowData) => {
     return (
       <Checkbox
@@ -344,8 +340,13 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     const memoryData = applicationListItem.get("metrics").get("memory");
     return <SmallMemoryLineChart data={memoryData} />;
   };
+
   private renderName = (rowData: RowData) => {
-    return <Link to={`/applications/${rowData.get("namespace")}/${rowData.get("name")}`}>{rowData.get("name")}</Link>;
+    return (
+      <Link to={`/applications/${rowData.get("name")}?namespace=${this.props.activeNamespaceName}`}>
+        {rowData.get("name")}
+      </Link>
+    );
   };
 
   private renderNamespace = (applicationListItem: RowData) => {
@@ -367,37 +368,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   private renderComponents = (applicationListItem: RowData) => {
-    // const { classes } = this.props;
     return null;
-    // <ExpansionPanel className={classes.expansionPanel}>
-    //   <ExpansionPanelSummary
-    //     className={classes.panelSummary}
-    //     expandIcon={<ExpandMoreIcon />}
-    //     aria-controls="panel1a-content"
-    //     id="panel1a-header">
-    //     <div>
-    //       <Dot color="green" />
-    //       {applicationListItem.get("components").size} / {applicationListItem.get("components").size}
-    //     </div>
-    //   </ExpansionPanelSummary>
-    //   <ExpansionPanelDetails>
-    //     <div>
-    //       {applicationListItem
-    //         .get("components")
-    //         .map(x => {
-    //           return (
-    //             <div key={x.get("name")} className={classes.componentWrapper}>
-    //               <Dot color="green" />
-    //               <div className={classes.componentLine} key={x.get("name")}>
-    //                 {x.get("name")}
-    //               </div>
-    //             </div>
-    //           );
-    //         })
-    //         .toArray()}
-    //     </div>
-    //   </ExpansionPanelDetails>
-    // </ExpansionPanel>
   };
 
   private renderActions = (rowData: RowData) => {
@@ -406,12 +377,12 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         options={[
           {
             text: "Details",
-            to: `/applications/${rowData.get("namespace")}/${rowData.get("name")}`,
+            to: `/applications/${rowData.get("name")}?namespace=${this.props.activeNamespaceName}`,
             icon: "fullscreen"
           },
           {
             text: "Edit",
-            to: `/applications/${rowData.get("namespace")}/${rowData.get("name")}/edit`,
+            to: `/applications/${rowData.get("name")}/edit?namespace=${this.props.activeNamespaceName}`,
             icon: "edit"
           },
           {
@@ -423,12 +394,12 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           },
           {
             text: "Logs",
-            to: `/applications/${rowData.get("namespace")}/${rowData.get("name")}/logs`,
+            to: `/applications/${rowData.get("name")}/logs?namespace=${this.props.activeNamespaceName}`,
             icon: "view_headline"
           },
           {
             text: "Shell",
-            to: `/applications/${rowData.get("namespace")}/${rowData.get("name")}/shells`,
+            to: `/applications/${rowData.get("name")}/shells?namespace=${this.props.activeNamespaceName}`,
             icon: "play_arrow"
           },
           {
@@ -444,10 +415,10 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   private getData = () => {
-    const { applicationList } = this.props;
-    const data = applicationList
-      .map((applicationListItem, index) => {
-        const rowData: any = applicationListItem;
+    const { applications } = this.props;
+    const data = applications
+      .map((application, index) => {
+        const rowData: any = application;
         // @ts-ignore
         rowData.index = index;
         return rowData as RowData;
@@ -469,15 +440,24 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           ) : (
             <MaterialTable
               tableRef={this.tableRef}
+              components={{
+                Actions: props => {
+                  return (
+                    <Button
+                      color="primary"
+                      size="large"
+                      className={classes.addAction}
+                      startIcon={<AddIcon />}
+                      onClick={this.onCreate}>
+                      Add
+                    </Button>
+                  );
+                }
+              }}
               actions={[
                 {
                   isFreeAction: true,
-                  icon: () => (
-                    <span className={classes.addAction}>
-                      <AddIcon style={{ marginRight: "6px" }} />
-                      Add
-                    </span>
-                  ),
+                  icon: "add",
                   onClick: this.onCreate
                 }
               ]}
@@ -486,7 +466,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                 draggable: false,
                 rowStyle: {
                   verticalAlign: "baseline"
-                }
+                },
+                headerStyle: { color: grey[400] }
               }}
               columns={[
                 // @ts-ignore
@@ -511,7 +492,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
               //   console.log(_event);
               // }}
               data={this.getData()}
-              title="Applications"
+              title={TableTitle("Applications")}
             />
           )}
         </div>

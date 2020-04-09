@@ -25,7 +25,7 @@ export const newEmptyComponentLike = (): ComponentLike => {
     cpu: null,
     memory: null,
     workloadType: "server",
-    restartStrategy: "rollingUpdate",
+    restartStrategy: "RollingUpdate",
     dnsPolicy: "ClusterFirst",
     terminationGracePeriodSeconds: 30
   });
@@ -64,6 +64,14 @@ export interface PluginContent {
   name: string;
   [key: string]: any;
 }
+
+export type NodeSelectorLabels = ImmutableMap<{
+  [key: string]: string;
+}>;
+
+export type PodAffinityType = string;
+export const PodAffinityTypePreferFanout: PodAffinityType = "prefer-fanout"; // multi host
+export const PodAffinityTypePreferGather: PodAffinityType = "prefer-gather"; //same host
 
 export type VolumeType = string;
 export const VolumeTypeTemporaryMemory: VolumeType = "emptyDirMemory";
@@ -141,6 +149,8 @@ export interface ComponentLikeContent {
   plugins?: Immutable.List<Plugin>;
   livenessProbe?: Probe;
   ReadinessProbe?: Probe;
+  nodeSelectorLabels?: NodeSelectorLabels;
+  podAffinityType?: PodAffinityType;
 }
 
 export interface ComponentTemplateContent extends ComponentLikeContent {}

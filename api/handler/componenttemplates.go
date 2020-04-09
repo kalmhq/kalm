@@ -9,55 +9,7 @@ import (
 	"net/http"
 )
 
-// Deprecated
 func (h *ApiHandler) handleGetComponentTemplates(c echo.Context) error {
-	k8sClient := getK8sClient(c)
-	res, err := k8sClient.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/componenttemplates").DoRaw()
-
-	if err != nil {
-		return err
-	}
-
-	return c.JSONBlob(200, res)
-}
-
-// Deprecated
-func (h *ApiHandler) handleCreateComponentTemplate(c echo.Context) error {
-	k8sClient := getK8sClient(c)
-	res, err := k8sClient.RESTClient().Post().Body(c.Request().Body).AbsPath("/apis/core.kapp.dev/v1alpha1/componenttemplates").DoRaw()
-
-	if err != nil {
-		return err
-	}
-
-	return c.JSONBlob(200, res)
-}
-
-// Deprecated
-func (h *ApiHandler) handleUpdateComponentTemplate(c echo.Context) error {
-	k8sClient := getK8sClient(c)
-	res, err := k8sClient.RESTClient().Put().Body(c.Request().Body).AbsPath("/apis/core.kapp.dev/v1alpha1/componenttemplates/" + c.Param("name")).DoRaw()
-
-	if err != nil {
-		return err
-	}
-
-	return c.JSONBlob(200, res)
-}
-
-// Deprecated
-func (h *ApiHandler) handleDeleteComponentTemplate(c echo.Context) error {
-	k8sClient := getK8sClient(c)
-	res, err := k8sClient.RESTClient().Delete().AbsPath("/apis/core.kapp.dev/v1alpha1/componenttemplates/" + c.Param("name")).DoRaw()
-
-	if err != nil {
-		return err
-	}
-
-	return c.JSONBlob(200, res)
-}
-
-func (h *ApiHandler) handleGetComponentTemplatesNew(c echo.Context) error {
 	componentTemplateList, err := getKappComponentTemplateList(c)
 
 	if err != nil {
@@ -67,7 +19,7 @@ func (h *ApiHandler) handleGetComponentTemplatesNew(c echo.Context) error {
 	return c.JSON(200, h.componentTemplateListResponse(c, componentTemplateList))
 }
 
-func (h *ApiHandler) handleCreateComponentTemplateNew(c echo.Context) error {
+func (h *ApiHandler) handleCreateComponentTemplate(c echo.Context) error {
 	componentTemplate, err := createKappComponentTemplate(c)
 
 	if err != nil {
@@ -77,7 +29,7 @@ func (h *ApiHandler) handleCreateComponentTemplateNew(c echo.Context) error {
 	return c.JSON(201, h.componentTemplateResponse(c, componentTemplate))
 }
 
-func (h *ApiHandler) handleUpdateComponentTemplateNew(c echo.Context) error {
+func (h *ApiHandler) handleUpdateComponentTemplate(c echo.Context) error {
 	componentTemplate, err := updateKappComponentTemplate(c)
 
 	if err != nil {
@@ -87,7 +39,7 @@ func (h *ApiHandler) handleUpdateComponentTemplateNew(c echo.Context) error {
 	return c.JSON(200, h.componentTemplateResponse(c, componentTemplate))
 }
 
-func (h *ApiHandler) handleDeleteComponentTemplateNew(c echo.Context) error {
+func (h *ApiHandler) handleDeleteComponentTemplate(c echo.Context) error {
 	err := deleteKappComponentTemplate(c)
 	if err != nil {
 		return err

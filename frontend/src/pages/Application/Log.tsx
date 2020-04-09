@@ -11,7 +11,7 @@ import "xterm/css/xterm.css";
 import { k8sWsPrefix } from "../../actions/kubernetesApi";
 import { Breadcrumb } from "../../widgets/Breadcrumbs";
 import { Loading } from "../../widgets/Loading";
-import { ApplicationItemDataWrapper, WithApplicationsDataProps } from "./ItemDataWrapper";
+import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./ItemDataWrapper";
 import { Xterm, XtermRaw } from "./Xterm";
 
 const logger = debug("ws");
@@ -88,7 +88,7 @@ const MyAutocomplete = withStyles(autocompleteStyles)(
   }
 );
 
-interface Props extends WithApplicationsDataProps, WithStyles<typeof styles> {}
+interface Props extends WithApplicationItemDataProps, WithStyles<typeof styles> {}
 
 interface State {
   value: any;
@@ -103,10 +103,11 @@ const styles = (theme: Theme) =>
     }
   });
 
-export const generateQueryForPods = (podNames: string[], active?: string) => {
+export const generateQueryForPods = (namespace: string, podNames: string[], active?: string) => {
   const search = {
     pods: podNames.length > 0 ? podNames : undefined,
-    active: active || undefined
+    active: active || undefined,
+    namespace
   };
 
   return queryString.stringify(search, { arrayFormat: "comma" });
@@ -146,14 +147,15 @@ export class LogStream extends React.PureComponent<Props, State> {
   }
 
   componentDidUpdate(prevProps: Props, prevState: State) {
-    const { podNames } = this.props;
-
+    const { application } = this.props;
+    const podNames = application!.get("podNames");
     if (
       prevState.subscribedPodNames.size !== this.state.subscribedPodNames.size ||
       this.state.value !== prevState.value
     ) {
       // save selected pods in query
       const search = {
+        ...queryString.parse(window.location.search, { arrayFormat: "comma" }),
         pods: this.state.subscribedPodNames.size > 0 ? Array.from(this.state.subscribedPodNames) : undefined,
         active: !!this.state.value ? this.state.value : undefined
       };
@@ -282,25 +284,25 @@ export class LogStream extends React.PureComponent<Props, State> {
 
   subscribe = (podName: string) => {
     logger("subscribe", podName);
-    const { namespace } = this.props;
+    const { activeNamespaceName } = this.props;
 
     this.sendOrQueueMessage(
       JSON.stringify({
         type: this.isLog ? "subscribePodLog" : "execStartSession",
         podName: podName,
-        namespace: namespace
+        namespace: activeNamespaceName
       })
     );
   };
 
   unsubscribe = (podName: string) => {
-    const { namespace } = this.props;
+    const { activeNamespaceName } = this.props;
     logger("unsubscribe", podName);
     this.sendOrQueueMessage(
       JSON.stringify({
         type: this.isLog ? "unsubscribePodLog" : "execEndSession",
         podName: podName,
-        namespace: namespace
+        namespace: activeNamespaceName
       })
     );
   };
@@ -342,7 +344,8 @@ export class LogStream extends React.PureComponent<Props, State> {
   };
 
   private renderInput() {
-    const { podNames } = this.props;
+    const { application } = this.props;
+    const podNames = application!.get("podNames");
     const { value, subscribedPodNames } = this.state;
     const names = podNames!.toArray().filter(x => !subscribedPodNames.has(x));
 
@@ -409,7 +412,7 @@ export class LogStream extends React.PureComponent<Props, State> {
             JSON.stringify({
               type: "stdin",
               podName: podName,
-              namespace: this.props.namespace,
+              namespace: this.props.activeNamespaceName,
               data: data
             })
           );
@@ -419,7 +422,7 @@ export class LogStream extends React.PureComponent<Props, State> {
             JSON.stringify({
               type: "stdin",
               podName: podName,
-              namespace: this.props.namespace,
+              namespace: this.props.activeNamespaceName,
               data: data
             })
           );
@@ -429,7 +432,7 @@ export class LogStream extends React.PureComponent<Props, State> {
             JSON.stringify({
               type: "resize",
               podName: podName,
-              namespace: this.props.namespace,
+              namespace: this.props.activeNamespaceName,
               data: `${size.cols},${size.rows}`
             })
           );
@@ -474,4 +477,4 @@ export class LogStream extends React.PureComponent<Props, State> {
   }
 }
 
-export const Log = withStyles(styles)(ApplicationItemDataWrapper(LogStream));
+export const Log = withStyles(styles)(ApplicationItemDataWrapper({ reloadFrequency: 0 })(LogStream));

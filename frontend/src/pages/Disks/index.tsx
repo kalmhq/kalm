@@ -39,7 +39,7 @@ export class DisksRaw extends React.Component<Props, States> {
     };
   }
 
-  componentWillMount() {
+  componentDidMount() {
     this.props
       .dispatch(loadPersistentVolumes())
       .catch(e => {
