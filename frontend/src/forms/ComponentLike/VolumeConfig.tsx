@@ -7,6 +7,25 @@ import { Field } from "redux-form/immutable";
 import { pathToAncestorIds } from "../../actions/config";
 import { getCascaderOptions } from "../../selectors/config";
 import { ValidatorRequired } from "../validator";
+import { EditComponentProps } from "material-table";
+
+export const cascaderValueToPath = (value: string[]): string => {
+  let path = "";
+  for (let i = 1; i <= value.length - 1; i++) {
+    path = path + "/" + value[i];
+  }
+  return path;
+};
+
+export const pathToCasCaderValue = (path: string): string[] => {
+  let defaultValue;
+  const ancestorIds = pathToAncestorIds(path);
+  const splits = path.split("/");
+  const configName = splits[splits.length - 1];
+  ancestorIds.push(configName);
+  defaultValue = ancestorIds;
+  return defaultValue;
+};
 
 const displayRender = (labels: any, selectedOptions: any) => {
   return labels.map((label: any, i: any) => {
@@ -21,39 +40,43 @@ const displayRender = (labels: any, selectedOptions: any) => {
 const renderKappConfigPath = ({ input, meta: { touched, error } }: FilledTextFieldProps & WrappedFieldProps) => {
   let defaultValue;
   if (input.value) {
-    const ancestorIds = pathToAncestorIds(input.value);
-    const splits = input.value.split("/");
-    const configName = splits[splits.length - 1];
-    ancestorIds.push(configName);
-    defaultValue = ancestorIds;
+    defaultValue = pathToCasCaderValue(input.value);
   }
-
-  const inputLabel = "Kapp Config Path";
 
   return (
     <Cascader
-      placeholder={inputLabel}
+      placeholder={"Kapp Config Path"}
       options={getCascaderOptions(false)}
       displayRender={displayRender}
       style={{ width: "100%" }}
       allowClear={false}
-      // showSearch={true}
-      // changeOnSelect={true}
       defaultValue={defaultValue}
       onChange={(value: string[]) => {
-        let path = "";
-        for (let i = 1; i <= value.length - 1; i++) {
-          path = path + "/" + value[i];
-        }
-        // console.log("value", value);
-        // console.log("path", path);
-        input.onChange(path);
-      }}>
-      {/* <input /> */}
-    </Cascader>
+        input.onChange(cascaderValueToPath(value));
+      }}></Cascader>
   );
 };
 
-export const KappConfigPath = (props: any) => {
+export const SelectKappConfigPath = (props: any) => {
   return <Field name="kappConfigPath" component={renderKappConfigPath} validate={ValidatorRequired} />;
+};
+
+export const MaterialTableEditVolumeConfigField = ({ value, onChange }: EditComponentProps<{}>) => {
+  let defaultValue;
+  if (value) {
+    defaultValue = pathToCasCaderValue(value);
+  }
+
+  return (
+    <Cascader
+      placeholder={"Kapp Config Path"}
+      options={getCascaderOptions(false)}
+      displayRender={displayRender}
+      style={{ width: "100%" }}
+      allowClear={false}
+      defaultValue={defaultValue}
+      onChange={(value: string[]) => {
+        onChange(cascaderValueToPath(value));
+      }}></Cascader>
+  );
 };
