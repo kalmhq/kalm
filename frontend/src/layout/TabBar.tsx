@@ -117,12 +117,14 @@ const TabBarComponentRaw = ({ classes, dispatch, title, isAdmin, tabOptions }: P
 
   // Shrink header
   window.onscroll = () => {
-    if ((document.body.scrollTop > 50 || document.documentElement.scrollTop > 50) && headerRef.current) {
-      // @ts-ignore
-      headerRef.current.style.top = `${TABS_HEIGHT - HEADER_HEIGHT}px`;
-    } else {
-      // @ts-ignore
-      headerRef.current.style.top = "0px";
+    if (headerRef.current) {
+      if (document.body.scrollTop > 50 || document.documentElement.scrollTop > 50) {
+        // @ts-ignore
+        headerRef.current.style.top = `${TABS_HEIGHT - HEADER_HEIGHT}px`;
+      } else {
+        // @ts-ignore
+        headerRef.current.style.top = "0px";
+      }
     }
   };
 

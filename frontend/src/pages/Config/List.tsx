@@ -24,6 +24,7 @@ import { FileTree } from "widgets/FileTree";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { BasePage } from "../BasePage";
 import { withNamespace, withNamespaceProps } from "permission/Namespace";
+import { grey } from "@material-ui/core/colors";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -58,6 +59,17 @@ const styles = (theme: Theme) =>
       display: "flex",
       alignItems: "center",
       justifyContent: "center"
+    },
+    fileViewer: {
+      maxWidth: "1440px",
+      height: "75vh",
+      overflow: "auto"
+    },
+    fileTreeAction: {
+      display: "flex",
+      justifyContent: "flex-end",
+      backgroundColor: grey[100],
+      borderRadius: "4px"
     }
   });
 
@@ -221,7 +233,37 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
 
     return <Breadcrumbs aria-label="breadcrumb">{links}</Breadcrumbs>;
   }
+  public renderFileTreeActions() {
+    const { currentConfig, classes } = this.props;
 
+    return (
+      <div className={classes.fileTreeAction}>
+        <IconButtonWithTooltip
+          tooltipPlacement="top"
+          tooltipTitle="Add file"
+          aria-label="add-file"
+          onClick={() => this.handleAdd("file")}>
+          <NoteAddIcon />
+        </IconButtonWithTooltip>
+
+        <IconButtonWithTooltip
+          tooltipPlacement="top"
+          tooltipTitle="Add folder"
+          aria-label="add-folder"
+          onClick={() => this.handleAdd("folder")}>
+          <CreateNewFolderIcon />
+        </IconButtonWithTooltip>
+
+        <IconButtonWithTooltip
+          tooltipPlacement="top"
+          tooltipTitle="Upload configs"
+          aria-label="upload-configs"
+          onClick={() => this.handleUpload()}>
+          <PublishIcon />
+        </IconButtonWithTooltip>
+      </div>
+    );
+  }
   public renderActions() {
     const { currentConfig, hasRole } = this.props;
     if (!hasRole("writer")) {
@@ -248,30 +290,6 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
 
           <IconButtonWithTooltip
             tooltipPlacement="top"
-            tooltipTitle="Add File"
-            aria-label="add-file"
-            onClick={() => this.handleAdd("file")}>
-            <NoteAddIcon />
-          </IconButtonWithTooltip>
-
-          <IconButtonWithTooltip
-            tooltipPlacement="top"
-            tooltipTitle="Add Folder"
-            aria-label="add-folder"
-            onClick={() => this.handleAdd("folder")}>
-            <CreateNewFolderIcon />
-          </IconButtonWithTooltip>
-
-          <IconButtonWithTooltip
-            tooltipPlacement="top"
-            tooltipTitle="Upload configs"
-            aria-label="upload-configs"
-            onClick={() => this.handleUpload()}>
-            <PublishIcon />
-          </IconButtonWithTooltip>
-
-          <IconButtonWithTooltip
-            tooltipPlacement="top"
             tooltipTitle="Delete"
             aria-label="delete"
             onClick={() => this.handleDelete()}>
@@ -282,30 +300,6 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
     } else {
       return (
         <div>
-          <IconButtonWithTooltip
-            tooltipPlacement="top"
-            tooltipTitle="Add file"
-            aria-label="add-file"
-            onClick={() => this.handleAdd("file")}>
-            <NoteAddIcon />
-          </IconButtonWithTooltip>
-
-          <IconButtonWithTooltip
-            tooltipPlacement="top"
-            tooltipTitle="Add folder"
-            aria-label="add-folder"
-            onClick={() => this.handleAdd("folder")}>
-            <CreateNewFolderIcon />
-          </IconButtonWithTooltip>
-
-          <IconButtonWithTooltip
-            tooltipPlacement="top"
-            tooltipTitle="Upload configs"
-            aria-label="upload-configs"
-            onClick={() => this.handleUpload()}>
-            <PublishIcon />
-          </IconButtonWithTooltip>
-
           {currentConfig.get("id") !== initialRootConfigNode.get("id") && currentConfig.get("children").size === 0 && (
             <IconButtonWithTooltip
               tooltipPlacement="top"
@@ -328,6 +322,7 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
       <BasePage title="Configs">
         <div className={classes.root}>
           <div className={classes.leftTree}>
+            {this.renderFileTreeActions()}
             <FileTree
               rootConfig={rootConfig}
               dispatch={dispatch}
@@ -344,7 +339,9 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
             </div>
 
             {currentConfig.get("type") === "file" ? (
-              <SyntaxHighlighter style={monokai}>{currentConfig.get("content")}</SyntaxHighlighter>
+              <SyntaxHighlighter className={classes.fileViewer} style={monokai}>
+                {currentConfig.get("content")}
+              </SyntaxHighlighter>
             ) : (
               <div className={classes.noSelectedFile}>
                 {currentConfig.get("children").size > 0 ? "No selected file" : "Empty folder"}{" "}

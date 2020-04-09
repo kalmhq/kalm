@@ -16,7 +16,8 @@ import {
   VolumeTypePersistentVolumeClaimExisting,
   VolumeTypePersistentVolumeClaimNew,
   VolumeTypeTemporaryDisk,
-  VolumeTypeTemporaryMemory
+  VolumeTypeTemporaryMemory,
+  VolumeContent
 } from "../../types/componentTemplate";
 import { ControlledDialog } from "../../widgets/ControlledDialog";
 import { VolumeForm } from "../Volume";
@@ -38,7 +39,7 @@ interface FieldArrayProps extends DispatchProp, ReturnType<typeof mapStateToProp
 
 const dialogID = "volume";
 
-interface RowData extends Volume {
+interface RowData extends VolumeContent {
   index: number;
 }
 
@@ -50,16 +51,18 @@ class RenderVolumes extends React.PureComponent<Props> {
     const data: RowData[] = [];
 
     fields.forEach((_, index) => {
-      const rowData = fields.get(index) as RowData;
-      rowData.index = index;
-      data.push(rowData);
+      const rowData = fields.get(index).toJS() as RowData;
+      if (rowData.type !== VolumeTypeKappConfigs) {
+        rowData.index = index;
+        data.push(rowData);
+      }
     });
 
     return data;
   }
 
   private renderTypeColumn = (rowData: RowData) => {
-    switch (rowData.get("type")) {
+    switch (rowData.type) {
       case VolumeTypePersistentVolumeClaim:
         return "Disk";
       case VolumeTypeKappConfigs:
@@ -73,8 +76,8 @@ class RenderVolumes extends React.PureComponent<Props> {
     }
   };
 
-  private renderSizeColumn = (rowData: RowData) => (rowData.get("size") === "0" ? "-" : rowData.get("size"));
-  private renderMountPath = (rowData: RowData) => rowData.get("path");
+  private renderSizeColumn = (rowData: RowData) => (rowData.size === "0" ? "-" : rowData.size);
+  private renderMountPath = (rowData: RowData) => rowData.path;
 
   private handleAdd = async (_newRowData: RowData) => {
     const { meta } = this.props;
