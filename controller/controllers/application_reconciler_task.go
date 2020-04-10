@@ -991,7 +991,7 @@ func GenRulesOfIngressPlugin(plugin *kappV1Alpha1.PluginIngress) (rst []v1beta1.
 				HTTP: &v1beta1.HTTPIngressRuleValue{
 					Paths: []v1beta1.HTTPIngressPath{
 						{
-							//Path: "",
+							Path: plugin.Path,
 							Backend: v1beta1.IngressBackend{
 								ServiceName: plugin.ServiceName,
 								ServicePort: intstr.IntOrString{
