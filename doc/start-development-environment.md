@@ -32,6 +32,9 @@ go run .
 
 ```bash
 cd frontend
+
+# before start, copy .env.sample to .env, then edit .env
+
 npm install
 npm run start
 ```
