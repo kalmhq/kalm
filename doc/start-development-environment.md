@@ -32,6 +32,8 @@ go run .
 
 ```bash
 cd frontend
+npm install
+npm run start
 ```
 
 before you start, you need to apply a token for authorization. If you already have token you can skip this step. Otherwise, please follow [Create test service account](./create-test-service-account.md) to get a token.
