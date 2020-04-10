@@ -76,7 +76,6 @@ export const PodAffinityTypePreferGather: PodAffinityType = "prefer-gather"; //s
 export type VolumeType = string;
 export const VolumeTypeTemporaryMemory: VolumeType = "emptyDirMemory";
 export const VolumeTypeTemporaryDisk: VolumeType = "emptyDir";
-export const VolumeTypeKappConfigs: VolumeType = "kapp-configs";
 export const VolumeTypePersistentVolumeClaim: VolumeType = "pvc";
 
 // derivative
@@ -87,12 +86,16 @@ export interface VolumeContent {
   type: VolumeType;
   path: string;
   size: string;
-  kappConfigPath: string;
   storageClassName: string;
   persistentVolumeClaimName: string;
 }
 
 export type Volume = ImmutableMap<VolumeContent>;
+
+export type ConfigMount = ImmutableMap<{
+  paths: Immutable.List<string>;
+  mountPath: string;
+}>;
 
 export type HttpHeader = ImmutableMap<{
   name: string;
@@ -146,6 +149,7 @@ export interface ComponentLikeContent {
   >;
   ports?: Immutable.List<ComponentLikePort>;
   volumes?: Immutable.List<Volume>;
+  configs?: Immutable.List<ConfigMount>;
   plugins?: Immutable.List<Plugin>;
   livenessProbe?: Probe;
   ReadinessProbe?: Probe;

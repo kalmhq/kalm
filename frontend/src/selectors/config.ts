@@ -3,6 +3,14 @@ import { store } from "../store";
 import { CascaderOptionType } from "antd/es/cascader";
 import Immutable from "immutable";
 
+export const getConfigFilePaths = (): string[] => {
+  const state = store.getState();
+  return state
+    .get("configs")
+    .get("configFilePaths")
+    .toArray();
+};
+
 export const getCurrentConfig = (): ConfigNode => {
   const state = store.getState();
   const idChain = state.get("configs").get("currentConfigIdChain");

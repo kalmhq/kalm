@@ -5,9 +5,17 @@ import React from "react";
 import { WrappedFieldProps } from "redux-form";
 import { Field } from "redux-form/immutable";
 import { pathToAncestorIds } from "../../actions/config";
-import { getCascaderOptions } from "../../selectors/config";
+import { getCascaderOptions, getConfigFilePaths } from "../../selectors/config";
 import { ValidatorRequired } from "../validator";
 import { EditComponentProps } from "material-table";
+import Checkbox from "@material-ui/core/Checkbox";
+import TextField from "@material-ui/core/TextField";
+import Autocomplete from "@material-ui/lab/Autocomplete";
+import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
+import CheckBoxIcon from "@material-ui/icons/CheckBox";
+
+const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
+const checkedIcon = <CheckBoxIcon fontSize="small" color="primary" />;
 
 export const cascaderValueToPath = (value: string[]): string => {
   let path = "";
@@ -78,5 +86,37 @@ export const MaterialTableEditVolumeConfigField = ({ value, onChange }: EditComp
       onChange={(value: string[]) => {
         onChange(cascaderValueToPath(value));
       }}></Cascader>
+  );
+};
+
+export const MaterialTableEditConfigField = ({ value, onChange }: EditComponentProps<{}>) => {
+  return (
+    <Autocomplete
+      multiple
+      options={getConfigFilePaths()}
+      disableCloseOnSelect
+      getOptionLabel={option => option}
+      renderOption={(option, { selected }) => (
+        <React.Fragment>
+          <Checkbox icon={icon} checkedIcon={checkedIcon} style={{ marginRight: 8 }} checked={selected} />
+          {option}
+        </React.Fragment>
+      )}
+      renderInput={params => (
+        <TextField
+          {...params}
+          variant="outlined"
+          label="Node Selector Labels"
+          placeholder="Select Node Selector Labels"
+          size={"small"}
+        />
+      )}
+      defaultValue={value}
+      onChange={(_, v: any) => {
+        const value = v as string[];
+
+        onChange(value);
+      }}
+    />
   );
 };

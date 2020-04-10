@@ -11,7 +11,6 @@ import { RootState } from "../../reducers";
 import {
   newEmptyVolume,
   Volume,
-  VolumeTypeKappConfigs,
   VolumeTypePersistentVolumeClaim,
   VolumeTypePersistentVolumeClaimExisting,
   VolumeTypePersistentVolumeClaimNew,
@@ -52,10 +51,8 @@ class RenderVolumes extends React.PureComponent<Props> {
 
     fields.forEach((_, index) => {
       const rowData = fields.get(index).toJS() as RowData;
-      if (rowData.type !== VolumeTypeKappConfigs) {
-        rowData.index = index;
-        data.push(rowData);
-      }
+      rowData.index = index;
+      data.push(rowData);
     });
 
     return data;
@@ -65,8 +62,6 @@ class RenderVolumes extends React.PureComponent<Props> {
     switch (rowData.type) {
       case VolumeTypePersistentVolumeClaim:
         return "Disk";
-      case VolumeTypeKappConfigs:
-        return "Configs";
       case VolumeTypeTemporaryDisk:
         return "Temporary Disk";
       case VolumeTypeTemporaryMemory:

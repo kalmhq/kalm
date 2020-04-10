@@ -21,13 +21,7 @@ import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import Immutable, { Map, List } from "immutable";
-import {
-  ComponentLike,
-  workloadTypeCronjob,
-  workloadTypeServer,
-  Volume,
-  VolumeTypeKappConfigs
-} from "../../types/componentTemplate";
+import { ComponentLike, workloadTypeCronjob, workloadTypeServer } from "../../types/componentTemplate";
 import { Volumes } from "./volumes";
 import ErrorIcon from "@material-ui/icons/Error";
 import { SharedEnv } from "../../types/application";
@@ -40,7 +34,7 @@ import { red } from "@material-ui/core/colors";
 import { extractSummaryInfoFromMap, extractSummaryInfoFromList } from "forms/summarizer";
 import { loadConfigsAction } from "../../actions/config";
 import { SectionTitle } from "widgets/SectionTitle";
-import { Files } from "./Files";
+import { Configs } from "./Configs";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
@@ -392,15 +386,15 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderFiles() {
+  private renderConfigs() {
     const { isFolded } = this.props;
     return (
       <>
-        {!isFolded && SectionTitle("Files")}
+        {!isFolded && SectionTitle("Configs")}
         <HelperContainer>
-          <Typography>Mount Config Files</Typography>
+          <Typography>Mount Configs</Typography>
         </HelperContainer>
-        <Files />
+        <Configs />
       </>
     );
   }
@@ -757,28 +751,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           ) {
             isChanged = true;
           }
-        } else if (key === "volumes" && name === "volumes") {
-          if (
-            values.get(name) &&
-            initialValues.get!("volumes") &&
-            !values
-              .get("volumes")!
-              .filter((v: Volume) => v.get("type") !== VolumeTypeKappConfigs)
-              .equals(initialValues.get!("volumes")!.filter((v: Volume) => v.get("type") !== VolumeTypeKappConfigs))
-          ) {
-            isChanged = true;
-          }
-        } else if (key === "files" && name === "volumes") {
-          if (
-            values.get(name) &&
-            initialValues.get!("volumes") &&
-            !values
-              .get("volumes")!
-              .filter((v: Volume) => v.get("type") === VolumeTypeKappConfigs)
-              .equals(initialValues.get!("volumes")!.filter((v: Volume) => v.get("type") === VolumeTypeKappConfigs))
-          ) {
-            isChanged = true;
-          }
         } else {
           if (!values.get(name).equals(initialValues.get!(name))) {
             isChanged = true;
@@ -818,38 +790,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           } else {
             summaryInfo.value = values.get(name);
           }
-        } else if (key === "volumes" && name === "volumes") {
-          if (
-            values.get(name) &&
-            initialValues.get!("volumes") &&
-            !values
-              .get("volumes")!
-              .filter((v: Volume) => v.get("type") !== VolumeTypeKappConfigs)
-              .equals(initialValues.get!("volumes")!.filter((v: Volume) => v.get("type") !== VolumeTypeKappConfigs))
-          ) {
-            summaryInfo.hasChanged = true;
-          }
-          if (values.get(name)) {
-            summaryInfo.value = extractSummaryInfoFromList(
-              values.get(name)!.filter((v: Volume) => v.get("type") !== VolumeTypeKappConfigs)
-            );
-          }
-        } else if (key === "files" && name === "volumes") {
-          if (
-            values.get(name) &&
-            initialValues.get!("volumes") &&
-            !values
-              .get("volumes")!
-              .filter((v: Volume) => v.get("type") === VolumeTypeKappConfigs)
-              .equals(initialValues.get!("volumes")!.filter((v: Volume) => v.get("type") === VolumeTypeKappConfigs))
-          ) {
-            summaryInfo.hasChanged = true;
-          }
-          if (values.get(name)) {
-            summaryInfo.value = extractSummaryInfoFromList(
-              values.get(name)!.filter((v: Volume) => v.get("type") === VolumeTypeKappConfigs)
-            );
-          }
         } else {
           if (!values.get(name).equals(initialValues.get!(name))) {
             summaryInfo.hasChanged = true;
@@ -880,8 +820,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         return ["cpu", "memory"];
       case "volumes":
         return ["volumes"];
-      case "files":
-        return ["volumes"];
+      case "configs":
+        return ["configs"];
       case "advanced":
         return ["restartStrategy", "terminationGracePeriodSeconds", "dnsPolicy"];
       case "plugins":
@@ -927,7 +867,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           {this.renderPanel("ports", "Ports", this.renderPorts())}
           {this.renderPanel("resources", "Resources", this.renderResources())}
           {this.renderPanel("volumes", "Volumes", this.renderVolumes())}
-          {this.renderPanel("files", "Files", this.renderFiles())}
+          {this.renderPanel("configs", "Configs", this.renderConfigs())}
           {this.renderPanel("plugins", "Plugins", this.renderPlugins())}
           {this.renderPanel("probes", "Probes", this.renderProbes())}
           {this.renderPanel("nodeSelector", "Node Selector", this.renderNodeSelector())}
@@ -943,7 +883,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Paper className={classes.formSection}>{this.renderPorts()}</Paper>
         <Paper className={classes.formSection}>{this.renderResources()}</Paper>
         <Paper className={classes.formSection}>{this.renderVolumes()}</Paper>
-        <Paper className={classes.formSection}>{this.renderFiles()}</Paper>
+        <Paper className={classes.formSection}>{this.renderConfigs()}</Paper>
         <Paper className={classes.formSection}>{this.renderPlugins()}</Paper>
         <Paper className={classes.formSection}>{this.renderProbes()}</Paper>
         <Paper className={classes.formSection}>{this.renderNodeSelector()}</Paper>
