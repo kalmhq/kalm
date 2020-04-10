@@ -10,8 +10,9 @@ import { ControlledDialog } from "../../widgets/ControlledDialog";
 import { PluginForm } from "../Plugin";
 import SyntaxHighlighter from "react-syntax-highlighter/dist/cjs/default-highlight";
 import { monokai } from "react-syntax-highlighter/dist/esm/styles/hljs";
-import { newEmptyPlugin, Plugin } from "../../types/componentTemplate";
+import { newEmptyPlugin } from "../../types/componentTemplate";
 import { portTypeTCP } from "../../types/common";
+import { Plugin } from "types/plugin";
 
 interface FieldArrayComponentHackType {
   name: any;

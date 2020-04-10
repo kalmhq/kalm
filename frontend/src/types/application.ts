@@ -43,11 +43,25 @@ export type ListMeta = ImmutableMap<{
   page: number;
 }>;
 
+export type ServiceStatus = ImmutableMap<{
+  name: string;
+  clusterIP: string;
+  ports: Immutable.List<
+    ImmutableMap<{
+      name: string;
+      protocol: string;
+      port: number;
+      targetPort: number;
+    }>
+  >;
+}>;
+
 export type ComponentStatus = ImmutableMap<{
   name: string;
   workloadType: string;
   metrics: Metrics;
   pods: Immutable.List<PodStatus>;
+  services: Immutable.List<ServiceStatus>;
 }>;
 
 export type PodStatus = ImmutableMap<{

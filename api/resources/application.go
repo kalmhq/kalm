@@ -56,6 +56,12 @@ type ContainerStatus struct {
 	StartedAt    int64  `json:"startedAt"`
 }
 
+type ServiceStatus struct {
+	Name      string               `json:"name"`
+	ClusterIP string               `json:"clusterIP"`
+	Ports     []coreV1.ServicePort `json:"ports"`
+}
+
 type ComponentStatus struct {
 	Name         string                `json:"name"`
 	WorkloadType v1alpha1.WorkLoadType `json:"workloadType"`
@@ -63,6 +69,7 @@ type ComponentStatus struct {
 	DeploymentStatus appsV1.DeploymentStatus `json:"deploymentStatus,omitempty"`
 	CronjobStatus    v1betav1.CronJobStatus  `json:"cronjobStatus,omitempty"`
 	Pods             []PodStatus             `json:"pods"`
+	Services         []ServiceStatus         `json:"services"`
 
 	ComponentMetrics `json:"metrics"`
 }
@@ -120,6 +127,7 @@ func (builder *Builder) BuildApplicationDetails(application *v1alpha1.Applicatio
 			LabelSelector: labels.Everything().String(),
 			FieldSelector: fields.Everything().String(),
 		}),
+		ServiceList: builder.GetServiceListChannel(ns, listOptions),
 	}
 
 	resources, err := resourceChannels.ToResources()
@@ -234,12 +242,27 @@ func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Ap
 			workLoadType = v1alpha1.WorkLoadTypeServer
 		}
 
+		serviceStatus := []ServiceStatus{}
+
+		for _, item := range resources.ServiceList.Items {
+			if item.Labels["kapp-component"] != component.Name {
+				continue
+			}
+
+			serviceStatus = append(serviceStatus, ServiceStatus{
+				Name:      item.Name,
+				ClusterIP: item.Spec.ClusterIP,
+				Ports:     item.Spec.Ports,
+			})
+		}
+
 		componentStatus := ComponentStatus{
 			Name:             component.Name,
 			WorkloadType:     workLoadType,
 			DeploymentStatus: appsV1.DeploymentStatus{},
 			CronjobStatus:    v1betav1.CronJobStatus{},
 			Pods:             []PodStatus{},
+			Services:         serviceStatus,
 		}
 
 		// TODO fix the default value, there should be a empty string

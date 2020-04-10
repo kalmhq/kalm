@@ -1,7 +1,7 @@
 import Immutable from "immutable";
 import { ImmutableMap } from "../typings";
 import { Status } from "./common";
-
+import { Plugin } from "./plugin";
 export const CREATE_COMPONENT = "CREATE_COMPONENT";
 export const UPDATE_COMPONENT = "UPDATE_COMPONENT";
 export const DELETE_COMPONENT = "DELETE_COMPONENT";
@@ -59,11 +59,6 @@ export type ComponentLikePort = ImmutableMap<{
   containerPort: number;
   servicePort: number;
 }>;
-
-export interface PluginContent {
-  name: string;
-  [key: string]: any;
-}
 
 export type NodeSelectorLabels = ImmutableMap<{
   [key: string]: string;
@@ -155,7 +150,6 @@ export interface ComponentLikeContent {
 
 export interface ComponentTemplateContent extends ComponentLikeContent {}
 
-export type Plugin = ImmutableMap<PluginContent>;
 export type ComponentLike = ImmutableMap<ComponentLikeContent>;
 export type ComponentTemplate = ImmutableMap<ComponentTemplateContent>;
 
