@@ -42,7 +42,9 @@ class ApplicationShowRaw extends React.PureComponent<Props> {
         rightAction={
           hasWriterRole ? (
             <Link to={`/applications/${application && application.get("name")}/edit`}>
-              <Button>Edit</Button>
+              <Button variant="outlined" color="primary">
+                Edit
+              </Button>
             </Link>
           ) : null
         }>
