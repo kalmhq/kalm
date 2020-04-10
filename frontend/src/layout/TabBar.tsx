@@ -95,93 +95,109 @@ interface Props extends WithStyles<typeof styles> {
   isAdmin?: boolean; // refactor this option and layout, temporary solution
 }
 
-const TabBarComponentRaw = ({ classes, dispatch, title, isAdmin, tabOptions }: Props) => {
-  let pathname = "/";
+interface State {
+  currentTab: string;
+}
 
-  if (window.location.pathname !== "/") {
-    for (let option of tabOptions) {
-      if (option.to === "/") {
-        continue;
-      }
-      if (window.location.pathname.startsWith(option.to.split("?")[0])) {
-        pathname = option.to;
-        break;
+class TabBarComponentRaw extends React.PureComponent<Props, State> {
+  private headerRef = React.createRef<React.ReactNode>();
+
+  constructor(props: Props) {
+    super(props);
+
+    const { tabOptions } = props;
+    let pathname = "/";
+
+    if (window.location.pathname !== "/") {
+      for (let option of tabOptions) {
+        if (option.to === "/") {
+          continue;
+        }
+        if (window.location.pathname.startsWith(option.to.split("?")[0])) {
+          pathname = option.to;
+          break;
+        }
       }
     }
+
+    this.state = {
+      currentTab: pathname
+    };
   }
-  const [value, setValue] = React.useState(pathname);
 
-  const handleChange = (event: object, value: any) => {
-    // console.log("tab value", value);
-    setValue(value);
-  };
-
-  const headerRef = React.createRef();
-
-  // Shrink header
-  window.onscroll = () => {
-    if (headerRef.current) {
-      if (document.body.scrollTop > 50 || document.documentElement.scrollTop > 50) {
-        // @ts-ignore
-        headerRef.current.style.top = `${TABS_HEIGHT - HEADER_HEIGHT}px`;
-      } else {
-        // @ts-ignore
-        headerRef.current.style.top = "0px";
+  public componentDidMount() {
+    // Shrink header
+    window.onscroll = () => {
+      if (this.headerRef.current) {
+        if (document.body.scrollTop > 50 || document.documentElement.scrollTop > 50) {
+          // @ts-ignore
+          headerRef.current.style.top = `${TABS_HEIGHT - HEADER_HEIGHT}px`;
+        } else {
+          // @ts-ignore
+          headerRef.current.style.top = "0px";
+        }
       }
-    }
-  };
+    };
+  }
 
-  return (
-    <AppBar ref={headerRef} id="header" position="relative" className={classes.appBar}>
-      <div className={classes.barContainer}>
-        <FlexRowItemCenterBox>
-          <Link className={classes.barTitle} to="/">
-            {title}
-          </Link>
-          {isAdmin ? <Namespaces /> : null}
-        </FlexRowItemCenterBox>
-        <div className={classes.barRight}>
-          <div className={classes.barAvatar}>
-            <Avatar>A</Avatar>
+  render() {
+    const { classes, title, isAdmin, tabOptions } = this.props;
+
+    return (
+      <AppBar ref={this.headerRef} id="header" position="relative" className={classes.appBar}>
+        <div className={classes.barContainer}>
+          <FlexRowItemCenterBox>
+            <Link className={classes.barTitle} to="/">
+              {title}
+            </Link>
+            {isAdmin ? <Namespaces /> : null}
+          </FlexRowItemCenterBox>
+          <div className={classes.barRight}>
+            <div className={classes.barAvatar}>
+              <Avatar>A</Avatar>
+            </div>
           </div>
+
+          <Tabs
+            value={this.state.currentTab}
+            onChange={(event: object, value: any) => {
+              // console.log("tab value", value);
+              this.setState({ currentTab: value });
+            }}
+            className={classes.tabs}
+            variant="scrollable"
+            scrollButtons="auto"
+            TabIndicatorProps={{
+              style: {
+                backgroundColor: "#FFFFFF"
+              }
+            }}>
+            {tabOptions.map((option: TabOption) => {
+              const tab = (
+                <Tab
+                  key={option.to}
+                  className={classes.tab}
+                  label={option.text}
+                  value={option.to}
+                  component={NavLink}
+                  to={option.to}
+                  {...a11yProps(option.to)}
+                />
+              );
+
+              if (option.requireAdmin && !isAdmin) {
+                return null;
+                // since Tabs children can only be Tab, if set other component will cause some problems
+                // return <OnlyVisiableToAdmin>{tab}</OnlyVisiableToAdmin>;
+              }
+
+              return tab;
+            })}
+          </Tabs>
         </div>
-
-        <Tabs
-          value={value}
-          onChange={handleChange}
-          className={classes.tabs}
-          variant="scrollable"
-          scrollButtons="auto"
-          TabIndicatorProps={{
-            style: {
-              backgroundColor: "#FFFFFF"
-            }
-          }}>
-          {tabOptions.map((option: TabOption) => {
-            const tab = (
-              <Tab
-                key={option.to}
-                className={classes.tab}
-                label={option.text}
-                value={option.to}
-                component={NavLink}
-                to={option.to}
-                {...a11yProps(option.to)}
-              />
-            );
-
-            if (option.requireAdmin && !isAdmin) {
-              return null;
-              // since Tabs children can only be Tab, if set other component will cause some problems
-              // return <OnlyVisiableToAdmin>{tab}</OnlyVisiableToAdmin>;
-            }
-
-            return tab;
-          })}
-        </Tabs>
-      </div>
-    </AppBar>
-  );
-};
+      </AppBar>
+    );
+  }
+}
 
 export const TabBarComponent = connect(mapStateToProps)(withStyles(styles)(TabBarComponentRaw));
