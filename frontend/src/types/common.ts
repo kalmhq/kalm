@@ -18,6 +18,7 @@ export const INIT_CONTROLLED_DIALOG = "INIT_CONTROLLED_DIALOG";
 export const DESTROY_CONTROLLED_DIALOG = "DESTROY_CONTROLLED_DIALOG";
 export const OPEN_CONTROLLED_DIALOG = "OPEN_CONTROLLED_DIALOG";
 export const CLOSE_CONTROLLED_DIALOG = "CLOSE_CONTROLLED_DIALOG";
+export const CLEAR_CONTROLLED_DIALOG_DATA = "CLEAR_CONTROLLED_DIALOG_DATA";
 
 export const EnvTypeExternal = "external";
 export const EnvTypeStatic = "static";
@@ -96,6 +97,13 @@ export interface CloseControlledDialogAction {
   };
 }
 
+export interface ClearControlledDialogAction {
+  type: typeof CLEAR_CONTROLLED_DIALOG_DATA;
+  payload: {
+    dialogID: string;
+  };
+}
+
 export interface LoadLoginStatusAction {
   type: typeof LOAD_LOGIN_STATUS;
   payload: {
@@ -122,4 +130,5 @@ export type CommonActions =
   | DestroyControlledDialogAction
   | OpenControlledDialogAction
   | CloseControlledDialogAction
+  | ClearControlledDialogAction
   | NamespaceActions;

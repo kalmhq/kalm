@@ -4,7 +4,8 @@ import {
   DESTROY_CONTROLLED_DIALOG,
   INIT_CONTROLLED_DIALOG,
   OPEN_CONTROLLED_DIALOG,
-  CLOSE_CONTROLLED_DIALOG
+  CLOSE_CONTROLLED_DIALOG,
+  CLEAR_CONTROLLED_DIALOG_DATA
 } from "../types/common";
 import { Actions } from "../types";
 
@@ -39,7 +40,13 @@ const reducer = (state: State = initialState, action: Actions): State => {
       break;
     }
     case CLOSE_CONTROLLED_DIALOG: {
-      state = state.set(action.payload.dialogID, emptyControlledDialogParams());
+      state = state.setIn([action.payload.dialogID, "open"], false);
+      break;
+    }
+    case CLEAR_CONTROLLED_DIALOG_DATA: {
+      if (state.get(action.payload.dialogID)) {
+        state = state.setIn([action.payload.dialogID, "data"], {});
+      }
       break;
     }
   }

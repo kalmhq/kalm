@@ -13,6 +13,7 @@ import {
 import { WrappedFieldProps } from "redux-form";
 import { WithStyles } from "@material-ui/styles";
 import { ID } from "../../utils";
+import Immutable from "immutable";
 
 interface Props {
   value: string;
@@ -129,7 +130,8 @@ const ReduxFormMultiTagsFreeSoloAutoCompleteRaw = (props: ReduxFormMultiTagsFree
         // As a result, Field that is using this component mush not set a normalizer.
         (input.onBlur as any)();
       }}
-      value={input.value}
+      // it the value is a Immutable.List, change it to an array
+      value={Immutable.isCollection(input.value) ? input.value.toArray() : input.value}
       onChange={(_event: React.ChangeEvent<{}>, values) => {
         if (values) {
           input.onChange(values);

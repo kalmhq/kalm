@@ -10,7 +10,7 @@ import { SwitchField } from "../Basic/switch";
 import { NormalizeBoolean } from "../normalizer";
 import { ValidatorHosts, ValidatorRequired } from "../validator";
 import { PluginCard } from "./card";
-import { Plugin } from "../../types/componentTemplate";
+import { Plugin, EXTERNAL_ACCESS_PLUGIN_TYPE } from "../../types/plugin";
 
 interface OwnProps {}
 
@@ -18,7 +18,7 @@ const mapStateToProps = (state: RootState, ownProps: InjectedFormProps<Plugin, O
   const selector = formValueSelector(ownProps.form);
 
   return {
-    pluginName: selector(state, "name")
+    pluginType: selector(state, "type")
   };
 };
 
@@ -112,16 +112,16 @@ class PluginRaw extends React.PureComponent<Props> {
   }
 
   private renderPluginContent() {
-    const { pluginName } = this.props;
+    const { pluginType } = this.props;
 
-    if (!pluginName) {
+    if (!pluginType) {
       return null;
     }
 
     // TODO define plugin name as consts
 
-    switch (pluginName) {
-      case "ingress": {
+    switch (pluginType) {
+      case EXTERNAL_ACCESS_PLUGIN_TYPE: {
         return this.renderIngressContent();
       }
       default: {
@@ -131,7 +131,7 @@ class PluginRaw extends React.PureComponent<Props> {
   }
 
   private renderSelectPlugins = () => {
-    const { dispatch, form, pluginName } = this.props;
+    const { dispatch, form, pluginType } = this.props;
 
     const selectPlugin = (name: string) => {
       dispatch(change(form, "name", name));
@@ -141,7 +141,7 @@ class PluginRaw extends React.PureComponent<Props> {
       <>
         <Field name="name" type="hidden" component="input" />
 
-        {!pluginName ? (
+        {!pluginType ? (
           <Fade in={true}>
             <Grid container spacing={2}>
               <Grid item sm={4}>

@@ -1,7 +1,7 @@
 import Immutable from "immutable";
 import { ImmutableMap } from "../typings";
 import { Status } from "./common";
-
+import { Plugin } from "./plugin";
 export const CREATE_COMPONENT = "CREATE_COMPONENT";
 export const UPDATE_COMPONENT = "UPDATE_COMPONENT";
 export const DELETE_COMPONENT = "DELETE_COMPONENT";
@@ -60,11 +60,6 @@ export type ComponentLikePort = ImmutableMap<{
   servicePort: number;
 }>;
 
-export interface PluginContent {
-  name: string;
-  [key: string]: any;
-}
-
 export type NodeSelectorLabels = ImmutableMap<{
   [key: string]: string;
 }>;
@@ -76,7 +71,6 @@ export const PodAffinityTypePreferGather: PodAffinityType = "prefer-gather"; //s
 export type VolumeType = string;
 export const VolumeTypeTemporaryMemory: VolumeType = "emptyDirMemory";
 export const VolumeTypeTemporaryDisk: VolumeType = "emptyDir";
-export const VolumeTypeKappConfigs: VolumeType = "kapp-configs";
 export const VolumeTypePersistentVolumeClaim: VolumeType = "pvc";
 
 // derivative
@@ -87,12 +81,16 @@ export interface VolumeContent {
   type: VolumeType;
   path: string;
   size: string;
-  kappConfigPath: string;
   storageClassName: string;
   persistentVolumeClaimName: string;
 }
 
 export type Volume = ImmutableMap<VolumeContent>;
+
+export type ConfigMount = ImmutableMap<{
+  paths: Immutable.List<string>;
+  mountPath: string;
+}>;
 
 export type HttpHeader = ImmutableMap<{
   name: string;
@@ -146,6 +144,7 @@ export interface ComponentLikeContent {
   >;
   ports?: Immutable.List<ComponentLikePort>;
   volumes?: Immutable.List<Volume>;
+  configs?: Immutable.List<ConfigMount>;
   plugins?: Immutable.List<Plugin>;
   livenessProbe?: Probe;
   ReadinessProbe?: Probe;
@@ -155,7 +154,6 @@ export interface ComponentLikeContent {
 
 export interface ComponentTemplateContent extends ComponentLikeContent {}
 
-export type Plugin = ImmutableMap<PluginContent>;
 export type ComponentLike = ImmutableMap<ComponentLikeContent>;
 export type ComponentTemplate = ImmutableMap<ComponentTemplateContent>;
 

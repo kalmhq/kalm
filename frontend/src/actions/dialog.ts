@@ -3,7 +3,8 @@ import {
   DESTROY_CONTROLLED_DIALOG,
   OPEN_CONTROLLED_DIALOG,
   CLOSE_CONTROLLED_DIALOG,
-  INIT_CONTROLLED_DIALOG
+  INIT_CONTROLLED_DIALOG,
+  CLEAR_CONTROLLED_DIALOG_DATA
 } from "../types/common";
 
 export const destroyDialogAction = (dialogID: string): Actions => {
@@ -37,6 +38,15 @@ export const openDialogAction = (dialogID: string, data?: any): Actions => {
 export const closeDialogAction = (dialogID: string): Actions => {
   return {
     type: CLOSE_CONTROLLED_DIALOG,
+    payload: {
+      dialogID
+    }
+  };
+};
+
+export const clearDialogAction = (dialogID: string): Actions => {
+  return {
+    type: CLEAR_CONTROLLED_DIALOG_DATA,
     payload: {
       dialogID
     }

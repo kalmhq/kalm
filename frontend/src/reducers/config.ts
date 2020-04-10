@@ -18,6 +18,7 @@ import { Actions } from "../types";
 export type State = ImmutableMap<{
   currentConfigIdChain: string[];
   rootConfig: ConfigNode;
+  configFilePaths: Immutable.List<string>;
   isListLoading: boolean;
   isListFirstLoaded: boolean;
   isSubmittingConfig: boolean;
@@ -26,6 +27,7 @@ export type State = ImmutableMap<{
 const initialState: State = Immutable.Map({
   currentConfigIdChain: [initialRootConfigNode.get("id")],
   rootConfig: initialRootConfigNode,
+  configFilePaths: Immutable.List([]),
   isListLoading: false,
   isListFirstLoaded: false,
   isSubmittingConfig: false
@@ -49,6 +51,20 @@ const reducer = (state: State = initialState, action: Actions): State => {
       state = state.set("isListFirstLoaded", true).set("isListLoading", false);
       const configNode = action.payload.configNode;
 
+      let configFilePaths: Immutable.List<string> = Immutable.List([]);
+
+      const pushToPaths = (node: ConfigNode) => {
+        if (node.get("type") === "folder") {
+          node.get("children").forEach(childNode => {
+            pushToPaths(childNode);
+          });
+          return;
+        }
+        configFilePaths = configFilePaths.push(node.get("oldPath"));
+      };
+      pushToPaths(configNode);
+
+      state = state.set("configFilePaths", configFilePaths);
       state = state.set("rootConfig", configNode);
       break;
     }

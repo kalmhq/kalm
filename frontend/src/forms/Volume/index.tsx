@@ -7,7 +7,6 @@ import { Field, formValueSelector, reduxForm } from "redux-form/immutable";
 import { RootState } from "../../reducers";
 import {
   Volume,
-  VolumeTypeKappConfigs,
   VolumeTypePersistentVolumeClaimExisting,
   VolumeTypePersistentVolumeClaimNew,
   VolumeTypeTemporaryDisk,
@@ -15,7 +14,6 @@ import {
 } from "../../types/componentTemplate";
 import { RenderSelectField } from "../Basic";
 import { TextField } from "../Basic/text";
-import { SelectKappConfigPath } from "../ComponentLike/VolumeConfig";
 import { ValidatorRequired } from "../validator";
 
 interface OwnProps {}
@@ -102,12 +100,6 @@ class VolumeRaw extends React.PureComponent<Props> {
             <MenuItem value={"123"}>PVC 2</MenuItem>
             <MenuItem value={"123"}>PVC 3</MenuItem>
           </Field>
-        </Box>
-      );
-    } else if (volumeType === VolumeTypeKappConfigs) {
-      return (
-        <Box mt={2}>
-          <SelectKappConfigPath />
         </Box>
       );
     }

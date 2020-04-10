@@ -1,4 +1,15 @@
-import { Button, Checkbox, createStyles, Switch, TextField, Theme, WithStyles, withStyles } from "@material-ui/core";
+import {
+  Button,
+  Checkbox,
+  createStyles,
+  Switch,
+  TextField,
+  Theme,
+  WithStyles,
+  withStyles,
+  Box,
+  Tooltip
+} from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import AddIcon from "@material-ui/icons/Add";
 import ArchiveIcon from "@material-ui/icons/Archive";
@@ -27,6 +38,19 @@ import { BasePage } from "../BasePage";
 import { ApplicationListDataWrapper, WithApplicationsListDataProps } from "./ListDataWrapper";
 import { withNamespace, withNamespaceProps } from "permission/Namespace";
 import { AddLink } from "widgets/AddButton";
+import { PendingBedge, SuccessBedge, WarningBedge, ErrorBedge } from "widgets/Bedge";
+import { FlexRowItemCenterBox } from "widgets/Box";
+import HelpIcon from "@material-ui/icons/Help";
+import { ControlledDialog } from "widgets/ControlledDialog";
+import { CustomizedButton } from "widgets/Button";
+import { closeDialogAction, openDialogAction } from "actions/dialog";
+import { connect } from "react-redux";
+import { RootState } from "reducers";
+import { EXTERNAL_ACCESS_PLUGIN_TYPE, ExternalAccessPlugin } from "types/plugin";
+import { ImmutableMap } from "typings";
+
+const externalEndpointsModalID = "externalEndpointsModalID";
+const internalEndpointsModalID = "internalEndpointsModalID";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -97,7 +121,20 @@ const styles = (theme: Theme) =>
     }
   });
 
-interface Props extends WithApplicationsListDataProps, WithStyles<typeof styles>, withNamespaceProps {}
+const mapStateToProps = (state: RootState) => {
+  const internalEndpointsDialog = state.get("dialogs").get(internalEndpointsModalID);
+  const externalEndpointsDialog = state.get("dialogs").get(externalEndpointsModalID);
+
+  return {
+    internalEndpointsDialogData: internalEndpointsDialog ? internalEndpointsDialog.get("data") : {},
+    externalEndpointsDialogData: externalEndpointsDialog ? externalEndpointsDialog.get("data") : {}
+  };
+};
+interface Props
+  extends WithApplicationsListDataProps,
+    WithStyles<typeof styles>,
+    withNamespaceProps,
+    ReturnType<typeof mapStateToProps> {}
 
 interface State {
   isActiveConfirmDialogOpen: boolean;
@@ -359,8 +396,221 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderComponents = (applicationListItem: RowData) => {
-    return null;
+  private renderStatus = (applicationDetails: RowData) => {
+    let podCount = 0;
+    let successCount = 0;
+    let pendingCount = 0;
+    let errorCount = 0;
+    applicationDetails.get("componentsStatus").forEach(componentStatus => {
+      componentStatus.get("pods").forEach(podStatus => {
+        podCount++;
+        switch (podStatus.get("status")) {
+          case "Running": {
+            successCount++;
+            break;
+          }
+          case "Pending": {
+            pendingCount++;
+            break;
+          }
+          case "Succeeded": {
+            successCount++;
+            break;
+          }
+          case "Failed": {
+            errorCount++;
+            break;
+          }
+        }
+      });
+    });
+
+    const tooltipTitle = `Total ${podCount} pods are found. \n${successCount} ready, ${pendingCount} pending, ${errorCount} failed. Click to view details.`;
+
+    return (
+      <Link
+        to={`/applications/${applicationDetails.get("name")}?namespace=${this.props.activeNamespaceName}`}
+        color="inherit">
+        <Tooltip title={tooltipTitle} enterDelay={500}>
+          <FlexRowItemCenterBox>
+            {successCount > 0 ? (
+              <FlexRowItemCenterBox mr={1}>
+                <SuccessBedge />
+                {successCount}
+              </FlexRowItemCenterBox>
+            ) : null}
+
+            {pendingCount > 0 ? (
+              <FlexRowItemCenterBox mr={1}>
+                <PendingBedge />
+                {pendingCount}
+              </FlexRowItemCenterBox>
+            ) : null}
+
+            {errorCount > 0 ? (
+              <FlexRowItemCenterBox>
+                <ErrorBedge />
+                {errorCount}
+              </FlexRowItemCenterBox>
+            ) : null}
+          </FlexRowItemCenterBox>
+        </Tooltip>
+      </Link>
+    );
+  };
+
+  private renderInternalEndpoints = (applicationDetails: RowData) => {
+    let count = 0;
+
+    applicationDetails.get("componentsStatus").forEach(componentStatus => {
+      count += componentStatus.get("services").size;
+    });
+
+    if (count > 0) {
+      return (
+        <div>
+          <Button
+            onClick={() => this.props.dispatch(openDialogAction(internalEndpointsModalID, { applicationDetails }))}
+            color="primary">
+            {count} Endpoints
+          </Button>
+        </div>
+      );
+    } else {
+      return "No Endpoints";
+    }
+  };
+
+  private renderExternalEndpoints = (applicationDetails: RowData) => {
+    let count = 0;
+
+    applicationDetails.get("components").forEach(component => {
+      if (!component.get("plugins")) {
+        return;
+      }
+
+      component.get("plugins")!.forEach(plugin => {
+        if (plugin.get("type") === EXTERNAL_ACCESS_PLUGIN_TYPE) {
+          count += 1;
+        }
+      });
+    });
+    if (count > 0) {
+      return (
+        <div>
+          <Button
+            onClick={() => this.props.dispatch(openDialogAction(externalEndpointsModalID, { applicationDetails }))}
+            color="primary">
+            {count} Endpoints
+          </Button>
+        </div>
+      );
+    } else {
+      return "No Endpoints";
+    }
+  };
+
+  private renderInternalEndpointsDialog = () => {
+    const applicationDetails: RowData = this.props.internalEndpointsDialogData.applicationDetails;
+    return (
+      <ControlledDialog
+        dialogID={internalEndpointsModalID}
+        title="Internal Endpoints"
+        dialogProps={{
+          fullWidth: true,
+          maxWidth: "sm"
+        }}
+        actions={
+          <CustomizedButton
+            onClick={() => this.props.dispatch(closeDialogAction(internalEndpointsModalID))}
+            color="default"
+            variant="contained">
+            Close
+          </CustomizedButton>
+        }>
+        {applicationDetails
+          ? applicationDetails
+              .get("componentsStatus")
+              .map(componentStatus => {
+                return componentStatus.get("services").map(serviceStatus => {
+                  const dns = `${serviceStatus.get("name")}.${applicationDetails.get("namespace")}`;
+                  return serviceStatus
+                    .get("ports")
+                    .map(port => {
+                      const url = `${dns}:${port.get("port")}`;
+                      return <div key={url}>{url}</div>;
+                    })
+                    .toArray();
+                });
+              })
+              .toArray()
+              .flat()
+          : null}
+      </ControlledDialog>
+    );
+  };
+
+  private renderExternalEndpointsDialog = () => {
+    const applicationDetails: RowData = this.props.externalEndpointsDialogData.applicationDetails;
+    return (
+      <ControlledDialog
+        dialogID={externalEndpointsModalID}
+        title="External Endpoints"
+        dialogProps={{
+          fullWidth: true,
+          maxWidth: "sm"
+        }}
+        actions={
+          <CustomizedButton
+            onClick={() => this.props.dispatch(closeDialogAction(externalEndpointsModalID))}
+            color="default"
+            variant="contained">
+            Close
+          </CustomizedButton>
+        }>
+        {this.renderExternalEndpointsDialogContent(applicationDetails)}
+      </ControlledDialog>
+    );
+  };
+
+  private renderExternalEndpointsDialogContent = (applicationDetails: RowData) => {
+    if (!applicationDetails) {
+      return null;
+    }
+
+    let urls: string[] = [];
+    applicationDetails.get("components").forEach(component => {
+      const plugins = component.get("plugins");
+      console.log(plugins);
+      if (!plugins) {
+        return;
+      }
+
+      plugins.forEach(plugin => {
+        if (plugin.get("type") !== EXTERNAL_ACCESS_PLUGIN_TYPE) {
+          return;
+        }
+
+        const _plugin = plugin as ImmutableMap<ExternalAccessPlugin>;
+
+        const hosts: string[] = _plugin.get("hosts") ? _plugin.get("hosts")!.toArray() : [];
+        const paths: string[] = _plugin.get("paths") ? _plugin.get("paths")!.toArray() : ["/"];
+        const schema = _plugin.get("enableHttps") ? "https" : "http";
+        console.log(hosts, paths, schema);
+        hosts.forEach(host => {
+          paths.forEach(path => {
+            const url = `${schema}://${host}${path}`;
+            urls.push(url);
+          });
+        });
+      });
+    });
+
+    return urls.map(url => (
+      <a href={url} key={url}>
+        {url}
+      </a>
+    ));
   };
 
   private renderActions = (rowData: RowData) => {
@@ -436,6 +686,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
 
     return (
       <BasePage title="Applications">
+        {this.renderInternalEndpointsDialog()}
+        {this.renderExternalEndpointsDialog()}
         {this.renderDeleteConfirmDialog()}
         {this.renderDuplicateConfirmDialog()}
         {this.renderSwitchingIsActiveConfirmDialog()}
@@ -458,8 +710,31 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                 // @ts-ignore
                 { title: "", field: "checkbox", sorting: false, width: "20px", render: this.renderCheckbox },
                 { title: "Name", field: "name", sorting: false, render: this.renderName },
-                { title: "Namespace", field: "namespace", sorting: false, render: this.renderNamespace },
-                { title: "Components", field: "components", sorting: false, render: this.renderComponents },
+                { title: "Status", field: "status", sorting: false, render: this.renderStatus },
+                {
+                  title: (
+                    <Tooltip title="Addresses can be used to access components in each application. Only visible inside the cluster.">
+                      <FlexRowItemCenterBox width="auto">
+                        Internal Endpoints <HelpIcon fontSize="small" />
+                      </FlexRowItemCenterBox>
+                    </Tooltip>
+                  ),
+                  field: "internalEndpoints",
+                  sorting: false,
+                  render: this.renderInternalEndpoints
+                },
+                {
+                  title: (
+                    <Tooltip title="Addresses can be used to access your services publicly.">
+                      <FlexRowItemCenterBox width="auto">
+                        External Endpoints <HelpIcon fontSize="small" />
+                      </FlexRowItemCenterBox>
+                    </Tooltip>
+                  ),
+                  field: "internalEndpoints",
+                  sorting: false,
+                  render: this.renderExternalEndpoints
+                },
                 { title: "CPU", field: "cpu", render: this.renderCPU },
                 { title: "Memory", field: "memory", render: this.renderMemory },
                 { title: "Enable", field: "active", sorting: false, render: this.renderEnable, hidden: !hasWriterRole },
@@ -507,4 +782,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const ApplicationListPage = withStyles(styles)(withNamespace(ApplicationListDataWrapper(ApplicationListRaw)));
+export const ApplicationListPage = withStyles(styles)(
+  withNamespace(ApplicationListDataWrapper(connect(mapStateToProps)(ApplicationListRaw)))
+);
