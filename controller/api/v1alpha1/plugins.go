@@ -38,6 +38,7 @@ type PluginIngress struct {
 	Name  string   `json:"name"`
 	Type  string   `json:"type"`
 	Hosts []string `json:"hosts"`
+	Path  string   `json:"path"`
 
 	Namespace   string `json:"namespace"`
 	ServiceName string `json:"serviceName"`
