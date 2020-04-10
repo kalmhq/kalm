@@ -234,7 +234,7 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
     return <Breadcrumbs aria-label="breadcrumb">{links}</Breadcrumbs>;
   }
   public renderFileTreeActions() {
-    const { currentConfig, classes } = this.props;
+    const { classes } = this.props;
 
     return (
       <div className={classes.fileTreeAction}>
