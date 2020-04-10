@@ -100,7 +100,7 @@ interface State {
 }
 
 class TabBarComponentRaw extends React.PureComponent<Props, State> {
-  private headerRef = React.createRef<React.ReactNode>();
+  private headerRef = React.createRef<React.ReactElement>();
 
   constructor(props: Props) {
     super(props);
