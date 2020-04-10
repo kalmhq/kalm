@@ -8,10 +8,13 @@ import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { Namespaces } from "widgets/Namespaces";
-import { OnlyVisiableToAdmin } from "permission/Role";
 
 const mapStateToProps = (state: RootState) => {
-  return {};
+  const auth = state.get("auth");
+  const isAdmin = auth.get("isAdmin");
+  return {
+    isAdmin
+  };
 };
 
 interface TabOption {
@@ -135,7 +138,7 @@ const TabBarComponentRaw = ({ classes, dispatch, title, isAdmin, tabOptions }: P
           <Link className={classes.barTitle} to="/">
             {title}
           </Link>
-          {isAdmin ? null : <Namespaces />}
+          {isAdmin ? <Namespaces /> : null}
         </FlexRowItemCenterBox>
         <div className={classes.barRight}>
           <div className={classes.barAvatar}>
@@ -167,8 +170,10 @@ const TabBarComponentRaw = ({ classes, dispatch, title, isAdmin, tabOptions }: P
               />
             );
 
-            if (option.requireAdmin) {
-              return <OnlyVisiableToAdmin>{tab}</OnlyVisiableToAdmin>;
+            if (option.requireAdmin && !isAdmin) {
+              return null;
+              // since Tabs children can only be Tab, if set other component will cause some problems
+              // return <OnlyVisiableToAdmin>{tab}</OnlyVisiableToAdmin>;
             }
 
             return tab;
