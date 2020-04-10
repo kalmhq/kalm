@@ -578,7 +578,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     let urls: string[] = [];
     applicationDetails.get("components").forEach(component => {
       const plugins = component.get("plugins");
-      console.log(plugins);
       if (!plugins) {
         return;
       }
@@ -593,7 +592,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         const hosts: string[] = _plugin.get("hosts") ? _plugin.get("hosts")!.toArray() : [];
         const paths: string[] = _plugin.get("paths") ? _plugin.get("paths")!.toArray() : ["/"];
         const schema = _plugin.get("enableHttps") ? "https" : "http";
-        console.log(hosts, paths, schema);
         hosts.forEach(host => {
           paths.forEach(path => {
             const url = `${schema}://${host}${path}`;
