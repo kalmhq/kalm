@@ -5,7 +5,7 @@ import ArchiveIcon from "@material-ui/icons/Archive";
 import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew";
 import RefreshIcon from "@material-ui/icons/Refresh";
 import { push } from "connected-react-router";
-import MaterialTable from "material-table";
+import MaterialTable, { Components } from "material-table";
 import React from "react";
 import { Link } from "react-router-dom";
 import { TableTitle } from "widgets/TableTitle";
@@ -25,6 +25,7 @@ import { Loading } from "../../widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "../../widgets/SmallLineChart";
 import { BasePage } from "../BasePage";
 import { ApplicationListDataWrapper, WithApplicationsListDataProps } from "./ListDataWrapper";
+import { withNamespace, withNamespaceProps } from "permission/Namespace";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -101,7 +102,7 @@ const styles = (theme: Theme) =>
     }
   });
 
-interface Props extends WithApplicationsListDataProps, WithStyles<typeof styles> {}
+interface Props extends WithApplicationsListDataProps, WithStyles<typeof styles>, withNamespaceProps {}
 
 interface State {
   isActiveConfirmDialogOpen: boolean;
@@ -383,14 +384,16 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           {
             text: "Edit",
             to: `/applications/${rowData.get("name")}/edit?namespace=${this.props.activeNamespaceName}`,
-            icon: "edit"
+            icon: "edit",
+            requiredRole: "writer"
           },
           {
             text: "Duplicate",
             onClick: () => {
               this.showDuplicateConfirmDialog(rowData);
             },
-            icon: "file_copy"
+            icon: "file_copy",
+            requiredRole: "writer"
           },
           {
             text: "Logs",
@@ -400,14 +403,16 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           {
             text: "Shell",
             to: `/applications/${rowData.get("name")}/shells?namespace=${this.props.activeNamespaceName}`,
-            icon: "play_arrow"
+            icon: "play_arrow",
+            requiredRole: "writer"
           },
           {
             text: "Delete",
             onClick: () => {
               this.showDeleteConfirmDialog(rowData);
             },
-            icon: "delete"
+            icon: "delete",
+            requiredRole: "writer"
           }
         ]}
       />
@@ -428,7 +433,26 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { classes, isLoading, isFirstLoaded } = this.props;
+    const { classes, isLoading, isFirstLoaded, hasRole } = this.props;
+    const components: Components = {};
+    const hasWriterRole = hasRole("writer");
+
+    if (hasWriterRole) {
+      components.Actions = () => {
+        // TODO use link
+        return (
+          <Button
+            color="primary"
+            size="large"
+            className={classes.addAction}
+            startIcon={<AddIcon />}
+            onClick={this.onCreate}>
+            Add
+          </Button>
+        );
+      };
+    }
+
     return (
       <BasePage title="Applications">
         {this.renderDeleteConfirmDialog()}
@@ -440,27 +464,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           ) : (
             <MaterialTable
               tableRef={this.tableRef}
-              components={{
-                Actions: props => {
-                  return (
-                    <Button
-                      color="primary"
-                      size="large"
-                      className={classes.addAction}
-                      startIcon={<AddIcon />}
-                      onClick={this.onCreate}>
-                      Add
-                    </Button>
-                  );
-                }
-              }}
-              actions={[
-                {
-                  isFreeAction: true,
-                  icon: "add",
-                  onClick: this.onCreate
-                }
-              ]}
+              components={components}
               options={{
                 padding: "dense",
                 draggable: false,
@@ -477,7 +481,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                 { title: "Components", field: "components", sorting: false, render: this.renderComponents },
                 { title: "CPU", field: "cpu", render: this.renderCPU },
                 { title: "Memory", field: "memory", render: this.renderMemory },
-                { title: "Enable", field: "active", sorting: false, render: this.renderEnable },
+                { title: "Enable", field: "active", sorting: false, render: this.renderEnable, hidden: !hasWriterRole },
                 {
                   title: "Action",
                   field: "action",
@@ -522,4 +526,4 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const ApplicationListPage = withStyles(styles)(ApplicationListDataWrapper(ApplicationListRaw));
+export const ApplicationListPage = withStyles(styles)(withNamespace(ApplicationListDataWrapper(ApplicationListRaw)));

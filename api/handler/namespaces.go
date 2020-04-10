@@ -6,14 +6,6 @@ import (
 	"net/http"
 )
 
-type Namespace struct {
-	Name string `json:"name"`
-}
-
-type NamespaceListResponse struct {
-	Namespaces []Namespace `json:"namespaces"`
-}
-
 func (h *ApiHandler) handleListNamespaces(c echo.Context) error {
 	namespaces, err := resources.ListNamespaces(getK8sClient(c))
 
@@ -21,17 +13,7 @@ func (h *ApiHandler) handleListNamespaces(c echo.Context) error {
 		return err
 	}
 
-	res := NamespaceListResponse{
-		Namespaces: make([]Namespace, 0),
-	}
-
-	for _, namespace := range namespaces {
-		res.Namespaces = append(res.Namespaces, Namespace{
-			Name: namespace.Name,
-		})
-	}
-
-	return c.JSON(http.StatusOK, res)
+	return c.JSON(http.StatusOK, namespaces)
 }
 
 func (h *ApiHandler) handleCreateNamespace(c echo.Context) error {

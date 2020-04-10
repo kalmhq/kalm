@@ -5,6 +5,7 @@ import MenuItem from "@material-ui/core/MenuItem";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import Icon from "@material-ui/core/Icon";
 import { Link } from "react-router-dom";
+import { NamespaceVisibleContainer } from "permission/Namespace";
 const ITEM_HEIGHT = 48;
 
 interface Option {
@@ -12,6 +13,7 @@ interface Option {
   onClick?: any;
   to?: string;
   icon?: string;
+  requiredRole?: string;
 }
 
 interface Props {
@@ -48,14 +50,16 @@ export const FoldButtonGroup = (props: Props) => {
           }
         }}>
         {props.options.map((option, index) => (
-          <Link to={option.to || "#"} onClick={option.onClick} style={{ color: "inherit" }} key={index}>
-            <MenuItem key={option.text} selected={false} style={{ padding: "6px 20px" }}>
-              {/* onClick={option.onClick}  */}
+          <NamespaceVisibleContainer key={index} requiredRole={option.requiredRole}>
+            <Link to={option.to || "#"} onClick={option.onClick} style={{ color: "inherit" }} key={index}>
+              <MenuItem key={option.text} selected={false} style={{ padding: "6px 20px" }}>
+                {/* onClick={option.onClick}  */}
 
-              {option.icon ? <Icon style={{ marginRight: "20px" }}>{option.icon}</Icon> : null}
-              {option.text}
-            </MenuItem>
-          </Link>
+                {option.icon ? <Icon style={{ marginRight: "20px" }}>{option.icon}</Icon> : null}
+                {option.text}
+              </MenuItem>
+            </Link>
+          </NamespaceVisibleContainer>
         ))}
       </Menu>
     </div>

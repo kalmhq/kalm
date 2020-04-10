@@ -21,7 +21,13 @@ import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import Immutable, { Map, List } from "immutable";
-import { ComponentLike, workloadTypeCronjob, workloadTypeServer } from "../../types/componentTemplate";
+import {
+  ComponentLike,
+  workloadTypeCronjob,
+  workloadTypeServer,
+  Volume,
+  VolumeTypeKappConfigs
+} from "../../types/componentTemplate";
 import { Volumes } from "./volumes";
 import ErrorIcon from "@material-ui/icons/Error";
 import { SharedEnv } from "../../types/application";
@@ -751,6 +757,28 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           ) {
             isChanged = true;
           }
+        } else if (key === "volumes" && name === "volumes") {
+          if (
+            values.get(name) &&
+            initialValues.get!("volumes") &&
+            !values
+              .get("volumes")!
+              .filter((v: Volume) => v.get("type") !== VolumeTypeKappConfigs)
+              .equals(initialValues.get!("volumes")!.filter((v: Volume) => v.get("type") !== VolumeTypeKappConfigs))
+          ) {
+            isChanged = true;
+          }
+        } else if (key === "files" && name === "volumes") {
+          if (
+            values.get(name) &&
+            initialValues.get!("volumes") &&
+            !values
+              .get("volumes")!
+              .filter((v: Volume) => v.get("type") === VolumeTypeKappConfigs)
+              .equals(initialValues.get!("volumes")!.filter((v: Volume) => v.get("type") === VolumeTypeKappConfigs))
+          ) {
+            isChanged = true;
+          }
         } else {
           if (!values.get(name).equals(initialValues.get!(name))) {
             isChanged = true;
@@ -786,19 +814,51 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             summaryInfo.hasChanged = true;
           }
           if (values.get(name).size && values.get(name).size > 0) {
-            summaryInfo.value = extractSummaryInfoFromMap(values, name);
+            summaryInfo.value = extractSummaryInfoFromMap(values.get(name));
           } else {
             summaryInfo.value = values.get(name);
+          }
+        } else if (key === "volumes" && name === "volumes") {
+          if (
+            values.get(name) &&
+            initialValues.get!("volumes") &&
+            !values
+              .get("volumes")!
+              .filter((v: Volume) => v.get("type") !== VolumeTypeKappConfigs)
+              .equals(initialValues.get!("volumes")!.filter((v: Volume) => v.get("type") !== VolumeTypeKappConfigs))
+          ) {
+            summaryInfo.hasChanged = true;
+          }
+          if (values.get(name)) {
+            summaryInfo.value = extractSummaryInfoFromList(
+              values.get(name)!.filter((v: Volume) => v.get("type") !== VolumeTypeKappConfigs)
+            );
+          }
+        } else if (key === "files" && name === "volumes") {
+          if (
+            values.get(name) &&
+            initialValues.get!("volumes") &&
+            !values
+              .get("volumes")!
+              .filter((v: Volume) => v.get("type") === VolumeTypeKappConfigs)
+              .equals(initialValues.get!("volumes")!.filter((v: Volume) => v.get("type") === VolumeTypeKappConfigs))
+          ) {
+            summaryInfo.hasChanged = true;
+          }
+          if (values.get(name)) {
+            summaryInfo.value = extractSummaryInfoFromList(
+              values.get(name)!.filter((v: Volume) => v.get("type") === VolumeTypeKappConfigs)
+            );
           }
         } else {
           if (!values.get(name).equals(initialValues.get!(name))) {
             summaryInfo.hasChanged = true;
           }
           if (Map.isMap(values.get(name))) {
-            summaryInfo.value = extractSummaryInfoFromMap(values, name);
+            summaryInfo.value = extractSummaryInfoFromMap(values.get(name));
           } else if (List.isList(values.get(name))) {
             if (values.get(name).size && values.get(name).size > 0) {
-              summaryInfo.value = extractSummaryInfoFromList(values, name);
+              summaryInfo.value = extractSummaryInfoFromList(values.get(name));
             }
           }
         }
@@ -819,6 +879,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       case "resources":
         return ["cpu", "memory"];
       case "volumes":
+        return ["volumes"];
+      case "files":
         return ["volumes"];
       case "advanced":
         return ["restartStrategy", "terminationGracePeriodSeconds", "dnsPolicy"];

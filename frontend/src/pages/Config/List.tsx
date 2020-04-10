@@ -23,6 +23,7 @@ import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { FileTree } from "widgets/FileTree";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { BasePage } from "../BasePage";
+import { withNamespace, withNamespaceProps } from "permission/Namespace";
 import { grey } from "@material-ui/core/colors";
 
 const styles = (theme: Theme) =>
@@ -83,7 +84,7 @@ const mapStateToProps = (state: RootState, ownProps: any) => {
 
 type StateProps = ReturnType<typeof mapStateToProps>;
 
-interface Props extends StateProps, WithStyles<typeof styles> {
+interface Props extends StateProps, WithStyles<typeof styles>, withNamespaceProps {
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
   rootConfig: ConfigNode;
 }
@@ -264,7 +265,10 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
     );
   }
   public renderActions() {
-    const { currentConfig } = this.props;
+    const { currentConfig, hasRole } = this.props;
+    if (!hasRole("writer")) {
+      return null;
+    }
     if (currentConfig.get("type") === "file") {
       return (
         <div>
@@ -365,4 +369,4 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const ConfigListPage = connect(mapStateToProps)(withStyles(styles)(ConfigListRaw));
+export const ConfigListPage = connect(mapStateToProps)(withNamespace(withStyles(styles)(ConfigListRaw)));

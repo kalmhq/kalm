@@ -1,7 +1,7 @@
 import { Map, List } from "immutable";
 
-export const extractSummaryInfoFromMap = (values: Map<string, any>, name: string): string => {
-  return values.get(name).map((value: any, key: string) => {
+export const extractSummaryInfoFromMap = (fieldValue: Map<string, any>): any => {
+  return fieldValue.map((value: any, key: string) => {
     if (typeof value === "string" || typeof value === "number") {
       return value;
     } else if (Map.isMap(value)) {
@@ -27,8 +27,8 @@ export const extractSummaryInfoFromMap = (values: Map<string, any>, name: string
   });
 };
 
-export const extractSummaryInfoFromList = (values: Map<string, any>, name: string): string => {
-  return values.get(name).map((item: any) => {
+export const extractSummaryInfoFromList = (feildValue: List<any>): any => {
+  return feildValue.map((item: any) => {
     if (Map.isMap(item)) {
       const keys = item.keySeq().toArray();
       return item

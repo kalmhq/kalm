@@ -1,9 +1,9 @@
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import React from "react";
-import { AuthWrapper } from "./AuthWrapper";
 import { TabBarComponent } from "./TabBar";
 import { RootState } from "reducers";
 import { connect } from "react-redux";
+import { RequireAuthorizated } from "permission/Authorization";
 
 const styles = (theme: Theme) => {
   return createStyles({
@@ -30,45 +30,46 @@ const mapStateToProps = (state: RootState) => {
 interface Props extends WithStyles<typeof styles>, React.Props<any>, ReturnType<typeof mapStateToProps> {}
 
 class DashboardRaw extends React.PureComponent<Props> {
-  private getTabOptions = () => {
-    const { activeNamespaceName } = this.props;
-    return [
-      {
-        text: "Namespaces",
-        to: "/"
-      },
-      {
-        text: "Roles & Permissions",
-        to: "/roles"
-      },
-      {
-        text: "Applications",
-        to: "/applications?namespace=" + activeNamespaceName
-      },
-      {
-        text: "Configs",
-        to: "/configs?namespace=" + activeNamespaceName
-      },
-      {
-        text: "Nodes",
-        to: "/cluster/nodes"
-      },
-      {
-        text: "Volumes",
-        to: "/cluster/volumes"
-      }
-    ];
-  };
-
   render() {
     const { classes, children, activeNamespaceName } = this.props;
     return (
       <div className={classes.root}>
-        <TabBarComponent tabOptions={this.getTabOptions()} title="OpenCore Kapp" key={activeNamespaceName} />
+        <TabBarComponent
+          tabOptions={[
+            {
+              text: "Namespaces",
+              to: "/namespaces",
+              requireAdmin: true
+            },
+            {
+              text: "Roles & Permissions",
+              to: "/roles",
+              requireAdmin: true
+            },
+            {
+              text: "Applications",
+              to: "/applications?namespace=" + activeNamespaceName
+            },
+            {
+              text: "Configs",
+              to: "/configs?namespace=" + activeNamespaceName
+            },
+            {
+              text: "Nodes",
+              to: "/cluster/nodes"
+            },
+            {
+              text: "Volumes",
+              to: "/cluster/volumes"
+            }
+          ]}
+          title="OpenCore Kapp"
+          key={activeNamespaceName}
+        />
         <main className={classes.content}>{children}</main>
       </div>
     );
   }
 }
 
-export const Dashboard = withStyles(styles)(AuthWrapper(connect(mapStateToProps)(DashboardRaw)));
+export const Dashboard = withStyles(styles)(RequireAuthorizated(connect(mapStateToProps)(DashboardRaw)));

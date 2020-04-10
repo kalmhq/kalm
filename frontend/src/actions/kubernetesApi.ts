@@ -8,6 +8,7 @@ import { Application, ApplicationDetails, ApplicationDetailsList } from "../type
 import { ComponentTemplate } from "../types/componentTemplate";
 import { ConfigCreate, ConfigRes } from "../types/config";
 import { Namespaces } from "../types/namespace";
+import { LoginStatus, LoginStatusContent } from "types/authorization";
 
 export const K8sApiPrefix = process.env.REACT_APP_K8S_API_PERFIX;
 export const k8sWsPrefix = !K8sApiPrefix
@@ -45,14 +46,14 @@ export const getAxiosClient = () => {
   return instance;
 };
 
-export const getLoginStatus = async () => {
-  const res = await getAxiosClient().get(K8sApiPrefix + "/login/status");
-  return res.data.authorized as boolean;
+export const getLoginStatus = async (): Promise<LoginStatus> => {
+  const res = await getAxiosClient().get<LoginStatusContent>(K8sApiPrefix + "/login/status");
+  return Immutable.Map(res.data);
 };
 
-export const login = async (token: string) => {
-  const res = await axios.post(K8sApiPrefix + "/login", { token });
-  return res.data.authorized as boolean;
+export const validateToken = async (token: string): Promise<boolean> => {
+  const res = await axios.post(K8sApiPrefix + "/login/token", { token });
+  return res.status === 200;
 };
 
 export const getNodes = async () => {
@@ -183,8 +184,8 @@ export const deletePod = async (namespace: string, name: string) => {
 };
 
 export const getNamespaces = async () => {
-  const res = await getAxiosClient().get<{ namespaces: any }>(K8sApiPrefix + "/v1alpha1/namespaces");
-  return Immutable.fromJS(res.data.namespaces) as Namespaces;
+  const res = await getAxiosClient().get(K8sApiPrefix + "/v1alpha1/namespaces");
+  return Immutable.fromJS(res.data) as Namespaces;
 };
 
 export const createNamespace = async (name: string) => {

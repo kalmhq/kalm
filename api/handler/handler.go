@@ -27,7 +27,7 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	e.GET("/ping", handlePing)
 
 	// permission routes
-	e.POST("/login", h.handleLogin)
+	e.POST("/login/token", h.handleValidateToken)
 	e.GET("/login/status", h.handleLoginStatus)
 
 	// original resources routes

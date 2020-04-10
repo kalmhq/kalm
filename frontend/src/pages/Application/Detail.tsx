@@ -21,6 +21,7 @@ import {
   SmallMemoryLineChart
 } from "../../widgets/SmallLineChart";
 import { generateQueryForPods } from "./Log";
+import { withNamespace, withNamespaceProps } from "permission/Namespace";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
@@ -102,7 +103,7 @@ const styles = (theme: Theme) =>
     metrics: {}
   });
 
-interface Props extends WithStyles<typeof styles> {
+interface Props extends WithStyles<typeof styles>, withNamespaceProps {
   application: ApplicationDetails;
   activeNamespaceName: string;
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
@@ -138,8 +139,9 @@ class DetailsRaw extends React.PureComponent<Props, State> {
   };
 
   private renderComponent = (index: number) => {
-    const { classes, application, dispatch } = this.props;
+    const { classes, application, dispatch, hasRole } = this.props;
     const componentsStatus = application.get("componentsStatus")!.get(index)!;
+    const hasWriterRole = hasRole("writer");
     return (
       <Paper className={classes.componentContainer} key={index}>
         <div className={clsx(classes.rowContainer, classes.componentRow)}>
@@ -206,32 +208,36 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                           }>
                           <ViewHeadlineIcon />
                         </IconLinkWithToolTip>
-                        <IconLinkWithToolTip
-                          tooltipTitle="Shell"
-                          size="small"
-                          className={classes.podActionButton}
-                          to={
-                            `/applications/${application.get("name")}/shells?` +
-                            generateQueryForPods(this.props.activeNamespaceName, [x.get("name")], x.get("name"))
-                          }>
-                          <LaptopWindowsIcon />
-                        </IconLinkWithToolTip>
-                        <IconButtonWithTooltip
-                          tooltipTitle="Delete"
-                          size="small"
-                          className={classes.podActionButton}
-                          onClick={async () => {
-                            try {
-                              await deletePod(application.get("namespace"), x.get("name"));
-                              dispatch(setSuccessNotificationAction(`Delete pod ${x.get("name")} successfully`));
-                              // reload
-                              dispatch(loadApplicationAction(application.get("namespace"), application.get("name")));
-                            } catch (e) {
-                              dispatch(setErrorNotificationAction(e.response.data.message));
-                            }
-                          }}>
-                          <DeleteIcon />
-                        </IconButtonWithTooltip>
+                        {hasWriterRole ? (
+                          <IconLinkWithToolTip
+                            tooltipTitle="Shell"
+                            size="small"
+                            className={classes.podActionButton}
+                            to={
+                              `/applications/${application.get("name")}/shells?` +
+                              generateQueryForPods(this.props.activeNamespaceName, [x.get("name")], x.get("name"))
+                            }>
+                            <LaptopWindowsIcon />
+                          </IconLinkWithToolTip>
+                        ) : null}
+                        {hasWriterRole ? (
+                          <IconButtonWithTooltip
+                            tooltipTitle="Delete"
+                            size="small"
+                            className={classes.podActionButton}
+                            onClick={async () => {
+                              try {
+                                await deletePod(application.get("namespace"), x.get("name"));
+                                dispatch(setSuccessNotificationAction(`Delete pod ${x.get("name")} successfully`));
+                                // reload
+                                dispatch(loadApplicationAction(application.get("namespace"), application.get("name")));
+                              } catch (e) {
+                                dispatch(setErrorNotificationAction(e.response.data.message));
+                              }
+                            }}>
+                            <DeleteIcon />
+                          </IconButtonWithTooltip>
+                        ) : null}
                       </div>
                     </div>
                   </div>
@@ -280,4 +286,4 @@ class DetailsRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const Details = withStyles(styles)(DetailsRaw);
+export const Details = withStyles(styles)(withNamespace(DetailsRaw));

@@ -1,47 +1,41 @@
-import { getLoginStatus, login } from "./kubernetesApi";
+import { getLoginStatus, validateToken } from "./kubernetesApi";
 import { ThunkResult, SomethingWrong } from "../types";
-import { INIT_AUTH, SET_AUTH_TOKEN } from "../types/common";
+import { LOAD_LOGIN_STATUS, SET_AUTH_TOKEN } from "../types/common";
 import { setErrorNotificationAction } from "./notification";
+import { LoginStatus } from "types/authorization";
 
-export const initAuthStatus = (): ThunkResult<Promise<void>> => {
+export const loadLoginStatus = (): ThunkResult<Promise<void>> => {
   return async dispatch => {
-    let authorized: boolean = false;
+    let loginStatus: LoginStatus;
+
     try {
-      authorized = await getLoginStatus();
+      loginStatus = await getLoginStatus();
+      dispatch({
+        type: LOAD_LOGIN_STATUS,
+        payload: { loginStatus }
+      });
     } catch (e) {
       dispatch(setErrorNotificationAction(SomethingWrong));
     }
-
-    dispatch({
-      type: INIT_AUTH,
-      payload: { authorized }
-    });
   };
 };
 
-export const loginAction = (token: string): ThunkResult<Promise<string | undefined>> => {
+export const validateTokenAction = (token: string): ThunkResult<Promise<boolean>> => {
   return async dispatch => {
-    let authorized;
     try {
-      authorized = await login(token);
-    } catch (e) {
-      if (e.response && e.response.status === 401) {
-        return "Auth token is invalid.";
-      } else {
-        dispatch(setErrorNotificationAction(SomethingWrong));
-        return SomethingWrong;
-      }
-    }
+      await validateToken(token);
 
-    if (authorized) {
       dispatch({
         type: SET_AUTH_TOKEN,
         payload: { token }
       });
-    } else {
-      console.log(`login failed`);
-    }
 
-    return;
+      dispatch(loadLoginStatus());
+
+      return true;
+    } catch (e) {
+      // 401 Unauthorized
+      return false;
+    }
   };
 };

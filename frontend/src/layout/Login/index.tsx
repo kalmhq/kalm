@@ -3,7 +3,7 @@ import React, { ChangeEvent } from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "../../types";
-import { loginAction } from "../../actions/auth";
+import { validateTokenAction } from "../../actions/auth";
 import { RootState } from "../../reducers";
 import { Button, TextField, Theme, withStyles, Paper, WithStyles, createStyles } from "@material-ui/core";
 
@@ -89,11 +89,12 @@ export class LoginRaw extends React.PureComponent<Props, State> {
       return;
     }
 
-    const loginError = await this.props.dispatch(loginAction(this.state.value));
-    if (!loginError) {
+    const tokenValid = await this.props.dispatch(validateTokenAction(this.state.value));
+
+    if (tokenValid) {
       this.props.dispatch(push("/"));
     } else {
-      this.setState({ error: loginError });
+      this.setState({ error: "Authentication failed." });
     }
   };
 
@@ -112,6 +113,7 @@ export class LoginRaw extends React.PureComponent<Props, State> {
                 className={classes.input}
                 id="login-token"
                 label="Token"
+                size="small"
                 variant="outlined"
                 placeholder="auth token"
                 onChange={this.handleChange}

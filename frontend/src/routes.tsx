@@ -11,6 +11,7 @@ import { ComponentTemplateNew } from "pages/ComponentTemplate/New";
 import { ConfigListPage } from "pages/Config/List";
 import { DependencyListPage } from "pages/Dependency/List";
 import { Disks } from "pages/Disks";
+import DashboardPage from "pages/Dashboard";
 import InstallPage from "pages/Install";
 import { NamespacesPage } from "pages/Namespace";
 import { NodeListPage } from "pages/NodeList";
@@ -18,35 +19,44 @@ import { NoMatch, Page404 } from "pages/NoMatch";
 import { RolesPage } from "pages/Roles";
 import React from "react";
 import { Route, Switch } from "react-router";
+import { RequireNotAuthorizated, RequireAuthorizated } from "permission/Authorization";
+import { RequireAdmin } from "permission/Role";
+import { RequireNamespaceReader, RequireNamespaceWriter } from "permission/Namespace";
+
+const RequireAuthorizatedDashboard = RequireAuthorizated(Dashboard);
 
 export const KappRoutes = (
   <Switch>
     <Route path="/404" component={Page404} />
-    <Route path="/login" component={Login} />
+    <Route path="/login" component={RequireNotAuthorizated(Login)} />
     <Route path="/">
-      <Dashboard>
+      <RequireAuthorizatedDashboard>
         <Switch>
-          <Route exact path={["/", "/namespaces"]} component={NamespacesPage} />
-          <Route exact path="/roles" component={RolesPage} />
+          <Route exact path="/" component={DashboardPage} />
+          <Route exact path="/namespaces" component={RequireAdmin(NamespacesPage)} />
+          <Route exact path="/roles" component={RequireAdmin(RolesPage)} />
 
+          {/* begin, TODO */}
           <Route exact path="/install" component={InstallPage} />
           <Route exact path="/componenttemplates/new" component={ComponentTemplateNew} />
           <Route exact path="/componenttemplates/:componentTemplateName/edit" component={ComponentTemplateEdit}></Route>
           <Route exact path="/componenttemplates" component={ComponentTemplateListPage}></Route>
+          {/* end */}
+
           <Route exact path="/cluster/nodes" component={NodeListPage}></Route>
           <Route exact path="/cluster/volumes" component={Disks}></Route>
-          <Route exact path="/settings/dependencies" component={DependencyListPage}></Route>
+          <Route exact path="/settings/dependencies" component={RequireAdmin(DependencyListPage)}></Route>
 
-          <Route exact path="/applications" component={ApplicationListPage} />
-          <Route exact path="/applications/new" component={ApplicationNew} />
-          <Route exact path="/applications/:applicationName" component={ApplicationShow} />
-          <Route exact path="/applications/:applicationName/edit" component={ApplicationEdit} />
-          <Route exact path="/applications/:applicationName/logs" component={Log} />
-          <Route exact path="/applications/:applicationName/shells" component={Log} />
-          <Route exact path="/configs" component={ConfigListPage}></Route>
+          <Route exact path="/applications" component={RequireNamespaceReader(ApplicationListPage)} />
+          <Route exact path="/applications/new" component={RequireNamespaceWriter(ApplicationNew)} />
+          <Route exact path="/applications/:applicationName" component={RequireNamespaceReader(ApplicationShow)} />
+          <Route exact path="/applications/:applicationName/edit" component={RequireNamespaceWriter(ApplicationEdit)} />
+          <Route exact path="/applications/:applicationName/logs" component={RequireNamespaceReader(Log)} />
+          <Route exact path="/applications/:applicationName/shells" component={RequireNamespaceWriter(Log)} />
+          <Route exact path="/configs" component={RequireNamespaceReader(ConfigListPage)}></Route>
           <Route component={NoMatch} />
         </Switch>
-      </Dashboard>
+      </RequireAuthorizatedDashboard>
     </Route>
   </Switch>
 );

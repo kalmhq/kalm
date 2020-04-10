@@ -5,6 +5,7 @@ import { ImmutableMap } from "../typings";
 
 export type Namespace = ImmutableMap<{
   name: string;
+  roles: Immutable.List<string>;
 }>;
 
 export type Namespaces = Immutable.List<Namespace>;

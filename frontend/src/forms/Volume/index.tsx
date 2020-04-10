@@ -60,7 +60,7 @@ class VolumeRaw extends React.PureComponent<Props> {
         <Field label="Volume type" name="type" component={RenderSelectField} placeholder="Select a volume type">
           <MenuItem value={VolumeTypePersistentVolumeClaimNew}>Create and mount disk</MenuItem>
           <MenuItem value={VolumeTypePersistentVolumeClaimExisting}>Mount an existing disk</MenuItem>
-          <MenuItem value={VolumeTypeKappConfigs}>Mount configs</MenuItem>
+          {/* <MenuItem value={VolumeTypeKappConfigs}>Mount configs</MenuItem> */}
           <MenuItem value={VolumeTypeTemporaryDisk}>Mount a temporary Disk</MenuItem>
           <MenuItem value={VolumeTypeTemporaryMemory}>Mount a temporary memory Disk</MenuItem>
         </Field>

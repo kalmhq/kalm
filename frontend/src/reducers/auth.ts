@@ -1,11 +1,12 @@
 import Immutable from "immutable";
-import { INIT_AUTH, SET_AUTH_TOKEN } from "../types/common";
+import { LOAD_LOGIN_STATUS, SET_AUTH_TOKEN } from "../types/common";
 import { Actions } from "../types";
 import { ImmutableMap } from "../typings";
 
 export type State = ImmutableMap<{
   firstLoaded: boolean;
   authorized: boolean;
+  isAdmin: boolean;
   token: string;
 }>;
 
@@ -19,8 +20,9 @@ const initialState: State = Immutable.Map({
 
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
-    case INIT_AUTH: {
-      state = state.set("authorized", action.payload.authorized);
+    case LOAD_LOGIN_STATUS: {
+      state = state.set("authorized", action.payload.loginStatus.get("authorized"));
+      state = state.set("isAdmin", action.payload.loginStatus.get("isAdmin"));
       state = state.set("firstLoaded", true);
       break;
     }
