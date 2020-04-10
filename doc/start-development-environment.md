@@ -38,7 +38,7 @@ npm run start
 
 before you start, you need to apply a token for authorization. If you already have token you can skip this step. Otherwise, please follow [Create test service account](./create-test-service-account.md) to get a token.
 
-You should set this token in window.localStorage.authorization_token.
+You should login with this token on login page.
 
 5. test kapp hipster
 
