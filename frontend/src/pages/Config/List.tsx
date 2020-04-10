@@ -335,7 +335,7 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
             </div>
 
             {currentConfig.get("type") === "file" ? (
-              <SyntaxHighlighter className={classes.fileViewer} style={monokai}>
+              <SyntaxHighlighter showLineNumbers className={classes.fileViewer} style={monokai}>
                 {currentConfig.get("content")}
               </SyntaxHighlighter>
             ) : (

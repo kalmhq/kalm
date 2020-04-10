@@ -38,13 +38,13 @@ before you start, you need to apply a token for authorization. If you already ha
 
 You should set this token in window.localStorage.authorization_token.
 
-5. test kapp socks
+5. test kapp hipster
 
 ```bash
 
-kubectl apply -f controller/config/samples/core_v1alpha1_application-socks.yaml
+kubectl apply -f controller/config/samples/core_v1alpha1_application-hipster.yaml
 
-kubectl port-forward $(kubectl get pod -n kapp-socks -l kapp-component=front-end  -o jsonpath='{.items[0].metadata.name}') -n kapp-socks 8079:8079
+kubectl port-forward $(kubectl get pod -n kapp-hipster -l kapp-component=frontend  -o jsonpath='{.items[0].metadata.name}') -n kapp-hipster 8080:8080
 
-view http://localhost:8079
+view http://localhost:8080
 ```
