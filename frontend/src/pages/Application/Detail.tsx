@@ -1,4 +1,4 @@
-import { Box, createStyles, Grid, Paper, Theme, withStyles, WithStyles, Chip } from "@material-ui/core";
+import { Box, createStyles, Grid, Paper, Theme, withStyles, WithStyles } from "@material-ui/core";
 import DeleteIcon from "@material-ui/icons/Delete";
 import LaptopWindowsIcon from "@material-ui/icons/LaptopWindows";
 import ViewHeadlineIcon from "@material-ui/icons/ViewHeadline";
@@ -201,7 +201,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                     return paths.map(path => {
                       const url = `${schema}://${host}${path}`;
                       return (
-                        <a href={url} key={url} target="_blank">
+                        <a href={url} key={url} target="_blank" rel="noopener noreferrer">
                           {url}
                         </a>
                       );

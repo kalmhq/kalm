@@ -7,15 +7,12 @@ import {
   Theme,
   WithStyles,
   withStyles,
-  Box,
   Tooltip
 } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
-import AddIcon from "@material-ui/icons/Add";
 import ArchiveIcon from "@material-ui/icons/Archive";
 import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew";
 import RefreshIcon from "@material-ui/icons/Refresh";
-import { push } from "connected-react-router";
 import MaterialTable, { Components } from "material-table";
 import React from "react";
 import { Link } from "react-router-dom";
