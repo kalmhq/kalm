@@ -61,7 +61,8 @@ const styles = (theme: Theme) =>
       justifyContent: "center"
     },
     fileViewer: {
-      maxWidth: "1440px",
+      maxWidth: "80vw",
+      minWidth: "70vw",
       height: "75vh",
       overflow: "auto"
     },
