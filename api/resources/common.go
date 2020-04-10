@@ -20,6 +20,7 @@ type ResourceChannels struct {
 	PodList        *PodListChannel
 	EventList      *EventListChannel
 	//PodMetricsList *PodMetricsListChannel
+	ServiceList     *ServiceListChannel
 	RoleBindingList *RoleBindingListChannel
 	NamespaceList   *NamespaceListChannel
 }
@@ -30,6 +31,7 @@ type Resources struct {
 	PodList        *coreV1.PodList
 	EventList      *coreV1.EventList
 	//PodMetricsList *metricv1beta1.PodMetricsList
+	ServiceList  *coreV1.ServiceList
 	RoleBindings []rbacV1.RoleBinding
 	Namespaces   []Namespace
 }
@@ -74,6 +76,14 @@ func (c *ResourceChannels) ToResources() (r *Resources, err error) {
 			return nil, err
 		}
 		resources.EventList = <-c.EventList.List
+	}
+
+	if c.ServiceList != nil {
+		err = <-c.ServiceList.Error
+		if err != nil {
+			return nil, err
+		}
+		resources.ServiceList = <-c.ServiceList.List
 	}
 
 	if c.RoleBindingList != nil {

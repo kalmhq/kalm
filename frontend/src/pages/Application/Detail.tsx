@@ -1,4 +1,4 @@
-import { Box, createStyles, Grid, Paper, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { Box, createStyles, Grid, Paper, Theme, withStyles, WithStyles, Chip } from "@material-ui/core";
 import DeleteIcon from "@material-ui/icons/Delete";
 import LaptopWindowsIcon from "@material-ui/icons/LaptopWindows";
 import ViewHeadlineIcon from "@material-ui/icons/ViewHeadline";
@@ -22,6 +22,9 @@ import {
 } from "../../widgets/SmallLineChart";
 import { generateQueryForPods } from "./Log";
 import { withNamespace, withNamespaceProps } from "permission/Namespace";
+import { EXTERNAL_ACCESS_PLUGIN_TYPE, ExternalAccessPlugin } from "types/plugin";
+import Immutable from "immutable";
+import { ImmutableMap } from "typings";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
@@ -140,13 +143,19 @@ class DetailsRaw extends React.PureComponent<Props, State> {
 
   private renderComponent = (index: number) => {
     const { classes, application, dispatch, hasRole } = this.props;
-    const componentsStatus = application.get("componentsStatus")!.get(index)!;
+    const componentStatus = application.get("componentsStatus")!.get(index)!;
+    const component = application.get("components").get(index)!;
     const hasWriterRole = hasRole("writer");
+    const externalAccessPlugin =
+      component.get("plugins") &&
+      (component.get("plugins")!.filter(p => p.get("type") === EXTERNAL_ACCESS_PLUGIN_TYPE) as
+        | Immutable.List<ImmutableMap<ExternalAccessPlugin>>
+        | undefined);
     return (
       <Paper className={classes.componentContainer} key={index}>
         <div className={clsx(classes.rowContainer, classes.componentRow)}>
           <div className="name">
-            <strong>{componentsStatus.get("name")}</strong> ({componentsStatus.get("workloadType")})
+            <strong>{componentStatus.get("name")}</strong> ({componentStatus.get("workloadType")})
           </div>
           {/* <div className="right-part">
             <div className={classes.chartTabelCell}>
@@ -157,8 +166,55 @@ class DetailsRaw extends React.PureComponent<Props, State> {
             </div>
           </div> */}
         </div>
+        <Box p={2}>
+          <div>Internal Endpoints:</div>
+          <Box ml={2}>
+            {componentStatus
+              .get("services")
+              .map(serviceStatus => {
+                const dns = `${serviceStatus.get("name")}.${application.get("namespace")}`;
+                return serviceStatus
+                  .get("ports")
+                  .map(port => {
+                    return (
+                      <div key={port.get("name")}>
+                        <strong>{port.get("name")}</strong>: {dns}:{port.get("port")}
+                      </div>
+                    );
+                  })
+                  .toArray();
+              })
+              .toArray()
+              .flat()}
+          </Box>
+        </Box>
+        {externalAccessPlugin ? (
+          <Box p={2}>
+            <div>External Endpoints:</div>
+            <Box ml={2}>
+              {externalAccessPlugin
+                .map(plugin => {
+                  const hosts: string[] = plugin.get("hosts") ? plugin.get("hosts")!.toArray() : [];
+                  const paths: string[] = plugin.get("paths") ? plugin.get("paths")!.toArray() : ["/"];
+                  const schema = plugin.get("enableHttps") ? "https" : "http";
+                  return hosts.map(host => {
+                    return paths.map(path => {
+                      const url = `${schema}://${host}${path}`;
+                      return (
+                        <a href={url} key={url} target="_blank">
+                          {url}
+                        </a>
+                      );
+                    });
+                  });
+                })
+                .toArray()
+                .flat()}
+            </Box>
+          </Box>
+        ) : null}
         <div className={classes.podContainer}>
-          {componentsStatus.get("pods").size > 0 ? (
+          {componentStatus.get("pods").size > 0 ? (
             <div className={clsx(classes.rowContainer, classes.podHeaderRow, classes.podDataRow)}>
               <div className="headerCell">Pod Name</div>
               <div className="headerCell">Node</div>
@@ -173,7 +229,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
               </div>
             </div>
           ) : null}
-          {componentsStatus
+          {componentStatus
             .get("pods")
             .map(x => {
               return (

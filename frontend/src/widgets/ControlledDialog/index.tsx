@@ -8,7 +8,7 @@ import Typography from "@material-ui/core/Typography";
 import CloseIcon from "@material-ui/icons/Close";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
-import { closeDialogAction, destroyDialogAction, initDialogAction } from "../../actions/dialog";
+import { closeDialogAction, destroyDialogAction, initDialogAction, clearDialogAction } from "../../actions/dialog";
 import { RootState } from "../../reducers";
 import ScrollContainer from "../../widgets/ScrollContainer";
 
@@ -101,17 +101,24 @@ class ControlledDialogRaw extends React.PureComponent<Props & WithStyles<typeof 
     dispatch(closeDialogAction(dialogID));
   };
 
+  private handleClear = () => {
+    const { dispatch, dialogID } = this.props;
+    dispatch(clearDialogAction(dialogID));
+  };
+
   public render() {
     const { dialogID, open, classes, dialogProps, title, actions, children } = this.props;
 
     return (
       <div>
         <Dialog
+          transitionDuration={500}
           key={`Conrolled-Dialog-${dialogID}`}
           classes={classes}
           onClose={this.handleClose}
           aria-labelledby="customized-dialog-title"
           open={open}
+          onExited={this.handleClear}
           maxWidth="md"
           {...dialogProps}>
           {title ? (
