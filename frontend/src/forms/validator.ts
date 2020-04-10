@@ -20,7 +20,7 @@ export const ValidatorNumberOrAlphabet = (value: any, _allValues?: any, _props?:
     }
     return undefined;
   } else {
-    if (value.match(/^([a-zA-Z]*)$/)) {
+    if (value.match && value.match(/^([a-zA-Z]*)$/)) {
       return undefined;
     }
   }

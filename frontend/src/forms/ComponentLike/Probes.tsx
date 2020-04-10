@@ -1,4 +1,4 @@
-import { MenuItem, Grid, Typography } from "@material-ui/core";
+import { MenuItem, Grid, Typography, Divider } from "@material-ui/core";
 import Immutable from "immutable";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
@@ -82,10 +82,10 @@ class RenderProbe extends React.PureComponent<Props, State> {
     const name = this.props.input.name;
     return (
       <>
-        <Grid item md={6}>
+        <Grid item md={10}>
           <CustomTextField name={`${name}.httpGet.host`} label="Host (Optional)" margin helperText="" />
         </Grid>
-        <Grid item md={6}>
+        <Grid item md={10}>
           <CustomTextField
             name={`${name}.httpGet.port`}
             label="Port"
@@ -95,13 +95,13 @@ class RenderProbe extends React.PureComponent<Props, State> {
             normalize={NormalizeNumber}
           />
         </Grid>
-        <Grid item md={6}>
+        <Grid item md={10}>
           <CustomTextField name={`${name}.httpGet.path`} label="Path (Optional)" margin helperText="" />
         </Grid>
-        <Grid item md={6}>
+        <Grid item md={10}>
           <CustomTextField name={`${name}.httpGet.scheme`} label="Scheme (Optional)" margin helperText="" />
         </Grid>
-        <Grid item md={6}>
+        <Grid item md={10}>
           <CustomTextField
             name={`${name}.httpGet.httpHeaders`}
             label="httpHeaders (Optional)"
@@ -157,7 +157,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
   private renderExec() {
     const name = this.props.input.name;
     return (
-      <Grid item md={6}>
+      <Grid item md={10}>
         <CustomTextField
           name={`${name}.exec.command`}
           label="Command (Optional)"
@@ -183,10 +183,10 @@ class RenderProbe extends React.PureComponent<Props, State> {
     const name = this.props.input.name;
     return (
       <>
-        <Grid item md={6}>
+        <Grid item md={10}>
           <CustomTextField name={`${name}.tcpSocket.host`} label="Host (Optional)" margin helperText="" />
         </Grid>
-        <Grid item md={6}>
+        <Grid item md={10}>
           <CustomTextField
             name={`${name}.tcpSocket.port`}
             label="Port"
@@ -205,7 +205,8 @@ class RenderProbe extends React.PureComponent<Props, State> {
 
     return (
       <>
-        <Grid item md={6}>
+        {SectionTitle("Optionals")}
+        <Grid item md={10}>
           <CustomTextField
             name={`${name}.initialDelaySeconds`}
             label="InitialDelaySeconds (Optional)"
@@ -214,7 +215,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
             helperText=""
           />
         </Grid>
-        <Grid item md={6}>
+        <Grid item md={10}>
           <CustomTextField
             name={`${name}.timeoutSeconds`}
             label="TimeoutSeconds (Optional)"
@@ -223,7 +224,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
             helperText=""
           />
         </Grid>
-        <Grid item md={6}>
+        <Grid item md={10}>
           <CustomTextField
             name={`${name}.periodSeconds`}
             label="PeriodSeconds (Optional)"
@@ -232,7 +233,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
             helperText=""
           />
         </Grid>
-        <Grid item md={6}>
+        <Grid item md={10}>
           <CustomTextField
             name={`${name}.successThreshold`}
             label="SuccessThreshold (Optional)"
@@ -241,7 +242,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
             helperText=""
           />
         </Grid>
-        <Grid item md={6}>
+        <Grid item md={10}>
           <CustomTextField
             name={`${name}.failureThreshold`}
             label="FailureThreshold (Optional)"
@@ -270,26 +271,31 @@ class RenderProbe extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item md={6}>
-          <Field
-            name={`${name}.type`}
-            component={RenderSelectField}
-            label="Type"
-            value={type}
-            onChange={(value: any) => {
-              this.handleChangeType(value);
-            }}>
-            <MenuItem value={""}>none</MenuItem>
-            <MenuItem value={"httpGet"}>httpGet</MenuItem>
-            <MenuItem value={"exec"}>exec</MenuItem>
-            <MenuItem value={"tcpSocket"}>tcpSocket</MenuItem>
-          </Field>
+          <Grid item md={10}>
+            <Field
+              name={`${name}.type`}
+              component={RenderSelectField}
+              label="Type"
+              value={type}
+              onChange={(value: any) => {
+                this.handleChangeType(value);
+              }}>
+              <MenuItem value={""}>none</MenuItem>
+              <MenuItem value={"httpGet"}>httpGet</MenuItem>
+              <MenuItem value={"exec"}>exec</MenuItem>
+              <MenuItem value={"tcpSocket"}>tcpSocket</MenuItem>
+            </Field>
+          </Grid>
+          {type === "httpGet" && this.renderHttpGet()}
+          {type === "exec" && this.renderExec()}
+          {type === "tcpSocket" && this.renderTcpSocket()}
         </Grid>
-
-        {type === "httpGet" && this.renderHttpGet()}
-        {type === "exec" && this.renderExec()}
-        {type === "tcpSocket" && this.renderTcpSocket()}
-
-        {type !== "" && this.renderCommon()}
+        <Grid item md={1}>
+          {type !== "" && <Divider orientation="vertical" />}
+        </Grid>
+        <Grid item md={5}>
+          {type !== "" && this.renderCommon()}
+        </Grid>
       </>
     );
   }
