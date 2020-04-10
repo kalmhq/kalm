@@ -131,10 +131,10 @@ class TabBarComponentRaw extends React.PureComponent<Props, State> {
       if (this.headerRef.current) {
         if (document.body.scrollTop > 50 || document.documentElement.scrollTop > 50) {
           // @ts-ignore
-          headerRef.current.style.top = `${TABS_HEIGHT - HEADER_HEIGHT}px`;
+          this.headerRef.current.style.top = `${TABS_HEIGHT - HEADER_HEIGHT}px`;
         } else {
           // @ts-ignore
-          headerRef.current.style.top = "0px";
+          this.headerRef.current.style.top = "0px";
         }
       }
     };
