@@ -26,6 +26,7 @@ import { SmallCPULineChart, SmallMemoryLineChart } from "../../widgets/SmallLine
 import { BasePage } from "../BasePage";
 import { ApplicationListDataWrapper, WithApplicationsListDataProps } from "./ListDataWrapper";
 import { withNamespace, withNamespaceProps } from "permission/Namespace";
+import { AddLink } from "widgets/AddButton";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -93,12 +94,6 @@ const styles = (theme: Theme) =>
       width: "100%",
       display: "flex",
       justifyContent: "space-between"
-    },
-    addAction: {
-      display: "flex",
-      alignItems: "center",
-      fontSize: "14px",
-      fontWeight: "bold"
     }
   });
 
@@ -142,10 +137,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     this.duplicateApplicationNameRef = React.createRef();
     this.duplicateApplicationNamespaceRef = React.createRef();
   }
-
-  public onCreate = () => {
-    this.props.dispatch(push(`/applications/new`));
-  };
 
   private showSwitchingIsActiveConfirmDialog = (applicationListItem: ApplicationDetails) => {
     this.setState({
@@ -439,17 +430,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
 
     if (hasWriterRole) {
       components.Actions = () => {
-        // TODO use link
-        return (
-          <Button
-            color="primary"
-            size="large"
-            className={classes.addAction}
-            startIcon={<AddIcon />}
-            onClick={this.onCreate}>
-            Add
-          </Button>
-        );
+        return <AddLink to={`/applications/new?namespace=${this.props.activeNamespaceName}`} />;
       };
     }
 
