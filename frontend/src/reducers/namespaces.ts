@@ -11,6 +11,7 @@ import {
 } from "../types/namespace";
 import { ImmutableMap } from "../typings";
 import queryString from "query-string";
+import { LOGOUT } from "types/common";
 
 export type State = ImmutableMap<{
   namespaces: Namespaces;
@@ -33,6 +34,9 @@ const initialState: State = Immutable.Map({
 
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
+    case LOGOUT: {
+      return initialState;
+    }
     case SET_CURRENT_NAMESPACE: {
       state = state.set("active", action.payload.namespace);
       window.localStorage.setItem(LAST_SELECTED_NAMESPACE_CACHE_KEY, action.payload.namespace);

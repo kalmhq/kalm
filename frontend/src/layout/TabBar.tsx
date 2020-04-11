@@ -1,4 +1,4 @@
-import { AppBar, Avatar, createStyles, Tab, Tabs, Theme } from "@material-ui/core";
+import { AppBar, Avatar, createStyles, Tab, Tabs, Theme, IconButton, Menu, MenuItem, Divider } from "@material-ui/core";
 import blue from "@material-ui/core/colors/blue";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import React from "react";
@@ -8,12 +8,16 @@ import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { Namespaces } from "widgets/Namespaces";
+import AccountCircle from "@material-ui/icons/AccountCircle";
+import { logoutAction } from "actions/auth";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
   const isAdmin = auth.get("isAdmin");
+  const entity = auth.get("entity");
   return {
-    isAdmin
+    isAdmin,
+    entity
   };
 };
 
@@ -88,15 +92,15 @@ function a11yProps(index: any) {
   };
 }
 
-interface Props extends WithStyles<typeof styles> {
+interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps> {
   dispatch: TDispatch;
   title: string;
   tabOptions: TabOption[];
-  isAdmin?: boolean; // refactor this option and layout, temporary solution
 }
 
 interface State {
   currentTab: string;
+  authMenuAnchorElement: null | HTMLElement;
 }
 
 class TabBarComponentRaw extends React.PureComponent<Props, State> {
@@ -121,7 +125,8 @@ class TabBarComponentRaw extends React.PureComponent<Props, State> {
     }
 
     this.state = {
-      currentTab: pathname
+      currentTab: pathname,
+      authMenuAnchorElement: null
     };
   }
 
@@ -140,6 +145,50 @@ class TabBarComponentRaw extends React.PureComponent<Props, State> {
     };
   }
 
+  renderAuthEntity() {
+    const { entity } = this.props;
+    const { authMenuAnchorElement } = this.state;
+    return (
+      <div>
+        <IconButton
+          aria-label="account of current user"
+          aria-controls="menu-appbar"
+          aria-haspopup="true"
+          onClick={(event: React.MouseEvent<HTMLElement>) => {
+            this.setState({ authMenuAnchorElement: event.currentTarget });
+          }}
+          color="inherit">
+          <AccountCircle />
+        </IconButton>
+        <Menu
+          id="menu-appbar"
+          anchorEl={authMenuAnchorElement}
+          anchorOrigin={{
+            vertical: "top",
+            horizontal: "right"
+          }}
+          keepMounted
+          transformOrigin={{
+            vertical: "top",
+            horizontal: "right"
+          }}
+          open={Boolean(authMenuAnchorElement)}
+          onClose={() => {
+            this.setState({ authMenuAnchorElement: null });
+          }}>
+          <MenuItem disabled>Auth as {entity}</MenuItem>
+          <Divider />
+          <MenuItem
+            onClick={() => {
+              this.props.dispatch(logoutAction());
+            }}>
+            Logout
+          </MenuItem>
+        </Menu>
+      </div>
+    );
+  }
+
   render() {
     const { classes, title, isAdmin, tabOptions } = this.props;
 
@@ -153,9 +202,7 @@ class TabBarComponentRaw extends React.PureComponent<Props, State> {
             {isAdmin ? <Namespaces /> : null}
           </FlexRowItemCenterBox>
           <div className={classes.barRight}>
-            <div className={classes.barAvatar}>
-              <Avatar>A</Avatar>
-            </div>
+            <div className={classes.barAvatar}>{this.renderAuthEntity()}</div>
           </div>
 
           <Tabs
@@ -187,8 +234,6 @@ class TabBarComponentRaw extends React.PureComponent<Props, State> {
 
               if (option.requireAdmin && !isAdmin) {
                 return null;
-                // since Tabs children can only be Tab, if set other component will cause some problems
-                // return <OnlyVisiableToAdmin>{tab}</OnlyVisiableToAdmin>;
               }
 
               return tab;

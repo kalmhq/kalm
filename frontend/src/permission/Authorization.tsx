@@ -12,8 +12,10 @@ const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
   const authorized = auth.get("authorized");
   const firstLoaded = auth.get("firstLoaded");
+  const isLoading = auth.get("isLoading");
 
   return {
+    isLoading,
     authorized,
     firstLoaded
   };
@@ -41,9 +43,9 @@ export const Authorizated = ({ mustAuthorized, mustNotAuthorized }: Options) => 
     }
 
     componentDidUpdate() {
-      const { firstLoaded, authorized } = this.props;
+      const { firstLoaded, authorized, isLoading } = this.props;
 
-      if (!firstLoaded) {
+      if (isLoading && !firstLoaded) {
         return;
       }
 
@@ -57,9 +59,9 @@ export const Authorizated = ({ mustAuthorized, mustNotAuthorized }: Options) => 
     }
 
     render() {
-      const { firstLoaded, authorized } = this.props;
+      const { firstLoaded, authorized, isLoading } = this.props;
 
-      if (!firstLoaded) {
+      if (!firstLoaded && isLoading) {
         return <Loading />;
       }
 

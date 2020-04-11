@@ -235,7 +235,7 @@ func createReaderRole(k8sClient *kubernetes.Clientset, namespace string) (err er
 					"list", "get", "watch",
 				},
 				Resources: []string{
-					"pods", "events", "configmaps",
+					"pods", "events", "configmaps", "services",
 				},
 				APIGroups: []string{
 					"",
@@ -295,7 +295,7 @@ func createWriterRole(k8sClient *kubernetes.Clientset, namespace string) (err er
 					"list", "get", "watch", "delete", "update", "create", "patch",
 				},
 				Resources: []string{
-					"pods", "events", "configmaps",
+					"pods", "events", "configmaps", "services",
 				},
 				APIGroups: []string{
 					"",

@@ -7,6 +7,7 @@ import {
 } from "../types/dependency";
 import { ImmutableMap } from "../typings";
 import { Actions } from "../types";
+import { LOGOUT } from "types/common";
 
 export interface DependencyStateContent {
   dependencies: Immutable.OrderedMap<string, KappDependency>;
@@ -24,6 +25,9 @@ const initialState: State = Immutable.Map({
 
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
+    case LOGOUT: {
+      return initialState;
+    }
     case LOAD_DEPENDENCIES_PENDING: {
       state = state.set("isListLoading", true);
       break;

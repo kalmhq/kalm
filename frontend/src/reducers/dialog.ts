@@ -5,7 +5,8 @@ import {
   INIT_CONTROLLED_DIALOG,
   OPEN_CONTROLLED_DIALOG,
   CLOSE_CONTROLLED_DIALOG,
-  CLEAR_CONTROLLED_DIALOG_DATA
+  CLEAR_CONTROLLED_DIALOG_DATA,
+  LOGOUT
 } from "../types/common";
 import { Actions } from "../types";
 
@@ -21,6 +22,9 @@ const emptyControlledDialogParams = () =>
 
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
+    case LOGOUT: {
+      return initialState;
+    }
     case INIT_CONTROLLED_DIALOG: {
       state = state.set(action.payload.dialogID, emptyControlledDialogParams());
       break;
