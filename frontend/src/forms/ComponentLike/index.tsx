@@ -192,13 +192,13 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     const { isEdit, isFolded } = this.props;
     return (
       <Grid container spacing={2}>
-        <Grid item md={12}>
+        <Grid item xs={12} sm={12} md={12}>
           {!isFolded && SectionTitle("Basic Info")}
           <HelperContainer>
             <Typography>Describe how to launch this compoent.</Typography>
           </HelperContainer>
         </Grid>
-        <Grid item md={6}>
+        <Grid item xs={12} sm={6} md={6}>
           <CustomTextField
             name="name"
             label="Name"
@@ -218,7 +218,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </Field>
           {this.renderSchedule()}
         </Grid>
-        <Grid item md={6}>
+        <Grid item xs={12} sm={6} md={6}>
           <CustomTextField
             name="image"
             label="Image"
@@ -604,8 +604,12 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Grid item md={12}>
           {!isFolded && SectionTitle("Probes")}
         </Grid>
-        <LivenessProbe />
-        <ReadinessProbe />
+        <Grid item xs={12} sm={12} md={12}>
+          <LivenessProbe />
+        </Grid>
+        <Grid item xs={12} sm={12} md={12}>
+          <ReadinessProbe />
+        </Grid>
       </Grid>
     );
   }
@@ -617,15 +621,15 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Grid item md={12}>
           {!isFolded && SectionTitle("Node Selector")}
         </Grid>
-        <Grid item md={12}>
+        <Grid item xs={12} sm={12} md={12}>
           <CustomLabels nodeLabels={nodeLabels} />
         </Grid>
-        <Grid item md={6}>
+        <Grid item xs={12} sm={6} md={6}>
           <AffinityType />
         </Grid>
-        <Grid item md={6}>
+        <Grid item xs={12} sm={6} md={6}>
           {/* TODO */}
-          <div>TODO describe this field</div>
+          <Typography variant="body2">description for fanout and gather.</Typography>
         </Grid>
       </Grid>
     );

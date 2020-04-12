@@ -37,7 +37,7 @@ class ComponentResourcesRaw extends React.PureComponent<ComponentResourcesProps>
   public render() {
     return (
       <Grid container spacing={2}>
-        <Grid item md={6}>
+        <Grid item xs={12} sm={6} md={6}>
           <CustomTextField
             // className={classes.input}
             name="cpu"
@@ -48,7 +48,7 @@ class ComponentResourcesRaw extends React.PureComponent<ComponentResourcesProps>
             placeholder="Please type the component name"
           />
         </Grid>
-        <Grid item md={6}>
+        <Grid item xs={12} sm={6} md={6}>
           <CustomTextField
             // className={classes.input}
             name="memory"

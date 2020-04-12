@@ -171,10 +171,10 @@ class ApplicationFormRaw extends React.PureComponent<
     return (
       <form onSubmit={handleSubmit} style={{ height: "100%", overflow: "hidden" }}>
         <Grid container spacing={2} className={classes.formSectionContainer}>
-          <Grid className={classes.formSectionItem} item md={8}>
+          <Grid className={classes.formSectionItem} item xs={12} sm={8} md={8}>
             <Paper className={classes.formSection}>{this.renderBasic()}</Paper>
           </Grid>
-          <Grid className={classes.formSectionItem} item md={4}>
+          <Grid className={classes.formSectionItem} item xs={12} sm={4} md={4}>
             <Paper className={classes.formSection}>{this.renderStatus()}</Paper>
           </Grid>
         </Grid>

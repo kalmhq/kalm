@@ -1,4 +1,4 @@
-import { MenuItem, Grid, Typography, Divider } from "@material-ui/core";
+import { MenuItem, Grid, Typography, Divider, Hidden } from "@material-ui/core";
 import Immutable from "immutable";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
@@ -157,7 +157,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
   private renderExec() {
     const name = this.props.input.name;
     return (
-      <Grid item md={10}>
+      <Grid item xs={12} sm={12} md={10}>
         <CustomTextField
           name={`${name}.exec.command`}
           label="Command (Optional)"
@@ -262,16 +262,13 @@ class RenderProbe extends React.PureComponent<Props, State> {
     const name = this.props.input.name;
 
     return (
-      <>
-        <Grid item md={12}>
-          <HelperContainer>
-            <Typography>{label}</Typography>
-          </HelperContainer>
+      <Grid container spacing={2} xs={12} sm={12} md={12}>
+        <Grid item xs={12} sm={12} md={12}>
           {SectionTitle(label)}
         </Grid>
 
-        <Grid item md={6}>
-          <Grid item md={10}>
+        <Grid item xs={12} sm={6} md={6}>
+          <Grid item xs={12} sm={12} md={10}>
             <Field
               name={`${name}.type`}
               component={RenderSelectField}
@@ -290,13 +287,15 @@ class RenderProbe extends React.PureComponent<Props, State> {
           {type === "exec" && this.renderExec()}
           {type === "tcpSocket" && this.renderTcpSocket()}
         </Grid>
-        <Grid item md={1}>
-          {type !== "" && <Divider orientation="vertical" />}
-        </Grid>
-        <Grid item md={5}>
+        <Hidden only={["xs"]}>
+          <Grid item md={1}>
+            {type !== "" && <Divider orientation="vertical" />}
+          </Grid>
+        </Hidden>
+        <Grid item xs={12} sm={5} md={5}>
           {type !== "" && this.renderCommon()}
         </Grid>
-      </>
+      </Grid>
     );
   }
 }
