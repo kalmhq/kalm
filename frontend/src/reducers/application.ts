@@ -17,6 +17,7 @@ import {
   ApplicationDetails
 } from "../types/application";
 import { ImmutableMap } from "../typings";
+import { LOGOUT } from "types/common";
 
 export type State = ImmutableMap<{
   applications: ApplicationDetailsList;
@@ -50,6 +51,9 @@ const putApplicationIntoState = (state: State, application: ApplicationDetails):
 
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
+    case LOGOUT: {
+      return initialState;
+    }
     case SET_IS_SUBMITTING_APPLICATION: {
       state = state.set("isSubmittingApplication", action.payload.isSubmittingApplication);
       break;

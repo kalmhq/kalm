@@ -10,6 +10,7 @@ import {
 } from "types/user";
 import { Actions } from "../types";
 import { ImmutableMap } from "../typings";
+import { LOGOUT } from "types/common";
 
 export type State = ImmutableMap<{
   roleBindingsLoading: boolean;
@@ -27,6 +28,9 @@ const initialState: State = Immutable.Map({
 
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
+    case LOGOUT: {
+      return initialState;
+    }
     case LOAD_ROLE_BINDINGS_FULFILLED: {
       state = state.set("roleBindingsLoading", false);
       state = state.set("roleBindingsFirstLoaded", true);

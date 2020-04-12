@@ -1,22 +1,20 @@
-import { createStyles, Grid, WithStyles, withStyles, Paper } from "@material-ui/core";
+import { createStyles, Grid, Paper, WithStyles, withStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
-import Typography from "@material-ui/core/Typography";
 import Immutable from "immutable";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { InjectedFormProps } from "redux-form";
 import { Field, formValueSelector, getFormValues, reduxForm } from "redux-form/immutable";
+import { TableTitle } from "widgets/TableTitle";
 import { RootState } from "../../reducers";
-import { HelperContainer } from "../../widgets/Helper";
+import { Application, SharedEnv } from "../../types/application";
+import { ComponentTemplate } from "../../types/componentTemplate";
 import { SwitchField } from "../Basic/switch";
 import { TextField } from "../Basic/text";
 import { NormalizeBoolean } from "../normalizer";
-import { ValidatorRequired, ValidatorName } from "../validator";
+import { ValidatorName, ValidatorRequired } from "../validator";
 import { Components } from "./component";
 import { SharedEnvs } from "./sharedEnv";
-import { Application, SharedEnv } from "../../types/application";
-import { ComponentTemplate } from "../../types/componentTemplate";
-import { TableTitle } from "widgets/TableTitle";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -69,9 +67,9 @@ class ApplicationFormRaw extends React.PureComponent<
     // console.log("isEdit", isEdit);
     return (
       <>
-        <HelperContainer>
+        {/* <HelperContainer>
           <Typography>Basic information of this application</Typography>
-        </HelperContainer>
+        </HelperContainer> */}
         {TableTitle("Basic Info")}
         <Grid container spacing={2}>
           <Grid item md={6}>
@@ -110,9 +108,9 @@ class ApplicationFormRaw extends React.PureComponent<
 
     return (
       <>
-        <HelperContainer>
+        {/* <HelperContainer>
           <Typography>Status</Typography>
-        </HelperContainer>
+        </HelperContainer> */}
         {TableTitle("Status")}
         <div className={classes.statusMarginBasic}>
           <Field
@@ -146,9 +144,9 @@ class ApplicationFormRaw extends React.PureComponent<
   private renderComponent() {
     return (
       <>
-        <HelperContainer>
+        {/* <HelperContainer>
           <Typography>Select compoents you want to include into this application.</Typography>
-        </HelperContainer>
+        </HelperContainer> */}
         <Components />
       </>
     );
@@ -157,9 +155,9 @@ class ApplicationFormRaw extends React.PureComponent<
   private renderSharedEnvs() {
     return (
       <>
-        <HelperContainer>
+        {/* <HelperContainer>
           <Typography>Shared environment variable is consistent amoung all components.</Typography>
-        </HelperContainer>
+        </HelperContainer> */}
         <SharedEnvs />
       </>
     );

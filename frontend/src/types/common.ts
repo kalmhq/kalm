@@ -5,8 +5,11 @@ import { SettingObject } from "../reducers/settings";
 import { NamespaceActions } from "./namespace";
 import { LoginStatus } from "./authorization";
 
-export const LOAD_LOGIN_STATUS = "LOAD_LOGIN_STATUS";
+export const LOAD_LOGIN_STATUS_PENDING = "LOAD_LOGIN_STATUS_PENDING";
+export const LOAD_LOGIN_STATUS_FULFILLED = "LOAD_LOGIN_STATUS_FULFILLED";
+export const LOAD_LOGIN_STATUS_FAILED = "LOAD_LOGIN_STATUS_FAILED";
 export const SET_AUTH_TOKEN = "SET_AUTH_TOKEN";
+export const LOGOUT = "LOGOUT";
 
 export const LOAD_NODES = "LOAD_NODES";
 export const LOAD_PERSISTENT_VOLUMNS = "LOAD_PERSISTENT_VOLUMNS";
@@ -105,7 +108,7 @@ export interface ClearControlledDialogAction {
 }
 
 export interface LoadLoginStatusAction {
-  type: typeof LOAD_LOGIN_STATUS;
+  type: typeof LOAD_LOGIN_STATUS_FULFILLED;
   payload: {
     loginStatus: LoginStatus;
   };
@@ -118,7 +121,17 @@ export interface SetAuthTokenAction {
   };
 }
 
+export interface LogoutAction {
+  type: typeof LOGOUT;
+}
+
+export interface LoadStatusAction {
+  type: typeof LOAD_LOGIN_STATUS_FAILED | typeof LOAD_LOGIN_STATUS_PENDING;
+}
+
 export type CommonActions =
+  | LogoutAction
+  | LoadStatusAction
   | SetAuthTokenAction
   | LoadLoginStatusAction
   | SetNotificationMessageAction

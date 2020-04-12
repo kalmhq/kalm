@@ -1,7 +1,7 @@
 import Immutable from "immutable";
 import { Actions } from "../types";
 import { ImmutableMap } from "../typings";
-import { LOAD_NODES } from "../types/common";
+import { LOAD_NODES, LOGOUT } from "../types/common";
 
 export type State = ImmutableMap<{
   nodes: any[];
@@ -16,6 +16,9 @@ const initialState: State = Immutable.Map({
 
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
+    case LOGOUT: {
+      return initialState;
+    }
     case LOAD_NODES: {
       state = state.set("nodes", action.payload.nodes);
       let labelsSet = Immutable.Set();

@@ -11,6 +11,7 @@ import {
   DUPLICATE_COMPONENT,
   DELETE_COMPONENT
 } from "../types/componentTemplate";
+import { LOGOUT } from "types/common";
 
 export type State = ImmutableMap<{
   componentTemplates: Immutable.OrderedMap<string, ComponentTemplate>;
@@ -26,6 +27,9 @@ const initialState: State = Immutable.Map({
 
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
+    case LOGOUT: {
+      return initialState;
+    }
     case LOAD_COMPONENT_TEMPLATES_PENDING:
       return state.set("isListLoading", true);
     case LOAD_COMPONENT_TEMPLATES_FAILED:

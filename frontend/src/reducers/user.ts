@@ -3,6 +3,7 @@ import { LOAD_USERS_PENDING, LOAD_USERS_FULFILLED, LOAD_USERS_FAILED } from "../
 import { Actions } from "../types";
 import { ImmutableMap } from "../typings";
 import { Users } from "../types/user";
+import { LOGOUT } from "types/common";
 
 export type State = ImmutableMap<{
   isLoading: boolean;
@@ -16,6 +17,9 @@ const initialState: State = Immutable.Map({
 
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
+    case LOGOUT: {
+      return initialState;
+    }
     case LOAD_USERS_PENDING: {
       state = state.set("isLoading", true);
       break;
