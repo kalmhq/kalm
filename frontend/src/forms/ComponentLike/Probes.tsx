@@ -262,7 +262,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
     const name = this.props.input.name;
 
     return (
-      <Grid container spacing={2} xs={12} sm={12} md={12}>
+      <Grid container spacing={2}>
         <Grid item xs={12} sm={12} md={12}>
           {SectionTitle(label)}
         </Grid>
