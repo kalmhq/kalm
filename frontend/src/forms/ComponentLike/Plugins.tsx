@@ -12,7 +12,7 @@ import SyntaxHighlighter from "react-syntax-highlighter/dist/cjs/default-highlig
 import { monokai } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import { newEmptyPlugin } from "../../types/componentTemplate";
 import { portTypeTCP } from "../../types/common";
-import { Plugin } from "types/plugin";
+import { Plugin, EXTERNAL_ACCESS_PLUGIN_TYPE } from "types/plugin";
 
 interface FieldArrayComponentHackType {
   name: any;
@@ -25,6 +25,7 @@ interface Props extends WrappedFieldArrayProps<Plugin>, FieldArrayComponentHackT
 
 interface RowData {
   name: string;
+  type: string;
   config: {};
   index: number;
 }
@@ -55,6 +56,7 @@ class RenderPlugins extends React.PureComponent<Props> {
       const plugin = fields.get(index);
       data.push({
         name: plugin.get("name"),
+        type: plugin.get("type"),
         config: plugin.toJS(),
         index
       });
@@ -64,8 +66,8 @@ class RenderPlugins extends React.PureComponent<Props> {
 
   private renderNameColumn = (rowData: RowData) => rowData.name;
   private renderConfigColumn = (rowData: RowData) => {
-    switch (rowData.name) {
-      case "ingress": {
+    switch (rowData.type) {
+      case EXTERNAL_ACCESS_PLUGIN_TYPE: {
         return (
           <SyntaxHighlighter language="json" style={monokai} showLineNumbers>
             {JSON.stringify(rowData.config, undefined, 2)}

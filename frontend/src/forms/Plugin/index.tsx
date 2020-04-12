@@ -11,6 +11,7 @@ import { NormalizeBoolean } from "../normalizer";
 import { ValidatorHosts, ValidatorRequired } from "../validator";
 import { PluginCard } from "./card";
 import { Plugin, EXTERNAL_ACCESS_PLUGIN_TYPE } from "../../types/plugin";
+import { RenderTextField } from "forms/Basic";
 
 interface OwnProps {}
 
@@ -51,6 +52,9 @@ class PluginRaw extends React.PureComponent<Props> {
   private renderIngressContent() {
     return (
       <>
+        <Box mt={3}>
+          <Field name="name" component={RenderTextField} validate={ValidatorRequired} placeholder="Name" />
+        </Box>
         <Box mt={3}>
           <Field
             name="hosts"
@@ -134,7 +138,7 @@ class PluginRaw extends React.PureComponent<Props> {
     const { dispatch, form, pluginType } = this.props;
 
     const selectPlugin = (name: string) => {
-      dispatch(change(form, "name", name));
+      dispatch(change(form, "type", name));
     };
 
     return (
@@ -148,7 +152,7 @@ class PluginRaw extends React.PureComponent<Props> {
                 <PluginCard
                   title="HTTP Ingress"
                   description="Configure host, url paths for external http/https access."
-                  onSelect={() => selectPlugin("ingress")}
+                  onSelect={() => selectPlugin(EXTERNAL_ACCESS_PLUGIN_TYPE)}
                 />
               </Grid>
               <Grid item sm={4}>
