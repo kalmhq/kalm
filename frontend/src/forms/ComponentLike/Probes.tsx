@@ -1,11 +1,10 @@
-import { MenuItem, Grid, Typography, Divider, Hidden } from "@material-ui/core";
+import { MenuItem, Grid, Divider, Hidden } from "@material-ui/core";
 import Immutable from "immutable";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { WrappedFieldProps } from "redux-form";
 import { Field } from "redux-form/immutable";
 import { HttpHeaders, HttpHeader } from "../../types/componentTemplate";
-import { HelperContainer } from "../../widgets/Helper";
 import { CustomTextField, RenderSelectField } from "../Basic";
 import { ValidatorRequired, ValidatorHttpHeaders, ValidatorNumberOrAlphabet } from "../validator";
 import { NormalizeNumber, NormalizeNumberOrAlphabet } from "forms/normalizer";
