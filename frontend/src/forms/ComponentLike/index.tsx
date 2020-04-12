@@ -227,6 +227,19 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             helperText='Eg: "nginx:latest", "registry.example.com/group/repo:tag"'
           />
           <CustomTextField
+            name="replicas"
+            margin
+            label="replicas"
+            helperText=""
+            formValueToEditValue={(value: any) => {
+              return value ? value : 1;
+            }}
+            editValueToFormValue={(value: any) => {
+              return value;
+            }}
+            normalize={NormalizeNumber}
+          />
+          <CustomTextField
             name="command"
             margin
             label="Command (Optional)"

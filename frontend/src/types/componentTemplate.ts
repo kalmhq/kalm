@@ -18,6 +18,7 @@ export const newEmptyComponentLike = (): ComponentLike => {
   return Immutable.Map({
     name: "",
     image: "",
+    replicas: 1,
     command: Immutable.List([]),
     env: Immutable.List([]),
     ports: Immutable.List([]),
@@ -127,6 +128,7 @@ export type Probe = ImmutableMap<{
 export interface ComponentLikeContent {
   name: string;
   image: string;
+  replicas: number;
   command: Immutable.List<string>;
   cpu: string | null;
   memory: string | null;
