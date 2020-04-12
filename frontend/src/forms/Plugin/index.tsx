@@ -64,12 +64,7 @@ class PluginRaw extends React.PureComponent<Props> {
           />
         </Box>
         <Box mt={3}>
-          <Field
-            name="paths"
-            component={ReduxFormMultiTagsFreeSoloAutoComplete}
-            validate={ValidatorRequired}
-            placeholder="Paths"
-          />
+          <Field name="paths" component={ReduxFormMultiTagsFreeSoloAutoComplete} placeholder="Paths" />
         </Box>
         <Box mt={3}>
           <Field
