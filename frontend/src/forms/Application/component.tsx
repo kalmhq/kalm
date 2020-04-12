@@ -86,6 +86,7 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
 
   private renderNameColumn = (rowData: RowData) => rowData.applicationComponent.get("name");
   private renderTypeColumn = (rowData: RowData) => rowData.applicationComponent.get("workloadType");
+  private renderReplicasColumn = (rowData: RowData) => rowData.applicationComponent.get("replicas");
   private renderCpuColumn = (rowData: RowData) => rowData.applicationComponent.get("cpu") || "-";
   private renderMemoryColumn = (rowData: RowData) => rowData.applicationComponent.get("memory") || "-";
   private renderPortsColumn = (rowData: RowData) =>
@@ -346,6 +347,7 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
           columns={[
             { title: "Name", field: "name", sorting: false, render: this.renderNameColumn },
             { title: "Workload", field: "type", sorting: false, render: this.renderTypeColumn },
+            { title: "Replicas", field: "replicas", sorting: false, render: this.renderReplicasColumn },
             { title: "Cpu", field: "cpu", sorting: false, render: this.renderCpuColumn },
             { title: "Memory", field: "memory", sorting: false, render: this.renderMemoryColumn },
             { title: "Ports", field: "ports", sorting: false, render: this.renderPortsColumn },
