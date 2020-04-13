@@ -7,6 +7,10 @@ git:
 
 jobs:
   include:
-    - language: go
+    - go: 1.12
       script:
         - ls
+      cache:
+        directories:
+          - $HOME/.cache/go-build
+          - $HOME/gopath/pkg/mod
