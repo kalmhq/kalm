@@ -7,7 +7,9 @@ git:
 
 jobs:
   include:
-    - go: 1.12
+    - language: go
+      go:
+        - 1.12
       before_install:
         - cd api
         - go get ./...
@@ -22,7 +24,9 @@ jobs:
         directories:
           - $HOME/.cache/go-build
           - $HOME/gopath/pkg/mod
-    - go: 1.12
+    - language: go
+      go:
+        - 1.12
       before_install:
         - cd controller
       script:
