@@ -32,8 +32,10 @@ jobs:
         - 1.12
       stage: test
       name: controller
-      script:
+      install:
         - cd controller
+        - go get ./...
+      script:
         - go test -race -coverprofile=coverage.txt -covermode=atomic
       after_success:
         - bash <(curl -s https://codecov.io/bash)
