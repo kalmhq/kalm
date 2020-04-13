@@ -8,10 +8,16 @@ git:
 jobs:
   include:
     - go: 1.12
+      before_install:
+        - cd api
+        - go get -t -v ./...
       script:
         - ls
         - ls -alh $HOME/.cache/go-build
         - ls -alh $HOME/gopath/pkg/mod
+        - go test -race -coverprofile=coverage.txt -covermode=atomic
+      after_success:
+        - bash <(curl -s https://codecov.io/bash)
       cache:
         directories:
           - $HOME/.cache/go-build
