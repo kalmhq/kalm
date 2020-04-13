@@ -265,7 +265,7 @@ export const ancestorIdsToPath = (ancestorIds: string[], name: string): string =
 };
 
 export const pathToAncestorIds = (path: string): string[] => {
-  const ancestorIds: string[] = [];
+  const ancestorIds: string[] = [initialRootConfigNode.get("id")];
 
   if (path === "/") {
     return ancestorIds;

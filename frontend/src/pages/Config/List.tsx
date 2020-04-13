@@ -5,7 +5,12 @@ import EditIcon from "@material-ui/icons/Edit";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import NoteAddIcon from "@material-ui/icons/NoteAdd";
 import PublishIcon from "@material-ui/icons/Publish";
-import { deleteConfigAction, duplicateConfigAction, loadConfigsAction } from "actions/config";
+import {
+  deleteConfigAction,
+  duplicateConfigAction,
+  loadConfigsAction,
+  setCurrentConfigIdChainAction
+} from "actions/config";
 import { setErrorNotificationAction } from "actions/notification";
 import React from "react";
 import { connect } from "react-redux";
@@ -120,6 +125,7 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
 
   public componentDidUpdate(prevProps: Props) {
     if (prevProps.currentNamespace !== this.props.currentNamespace) {
+      this.props.dispatch(setCurrentConfigIdChainAction([initialRootConfigNode.get("id")]));
       this.props.dispatch(loadConfigsAction(this.props.currentNamespace));
       this.setState(this.initialState);
     }
