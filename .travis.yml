@@ -32,6 +32,7 @@ jobs:
         directories:
           - $HOME/.cache/go-build
           - $HOME/gopath/pkg/mod
+          - $HOME/kubebuilder/bin
     - language: go
       env:
         - GO111MODULE=on # remove this when change to golang 1.13
@@ -58,3 +59,4 @@ jobs:
         directories:
           - $HOME/.cache/go-build
           - $HOME/gopath/pkg/mod
+          - $HOME/kubebuilder/bin
