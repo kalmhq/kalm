@@ -8,8 +8,12 @@ git:
 jobs:
   include:
     - language: go
+      env:
+        - GO111MODULE=on # remove this when change to golang 1.13
       go:
         - 1.12
+      stage: test
+      name: api
       before_install:
         - cd api
         - go get ./...
@@ -25,8 +29,12 @@ jobs:
           - $HOME/.cache/go-build
           - $HOME/gopath/pkg/mod
     - language: go
+      env:
+        - GO111MODULE=on # remove this when change to golang 1.13
       go:
         - 1.12
+      stage: test
+      name: controller
       before_install:
         - cd controller
       script:
