@@ -18,7 +18,7 @@ jobs:
         - cd api
         - go get ./...
       script:
-        - go test -race -coverprofile=coverage.txt -covermode=atomic
+        - go test -race -coverprofile=coverage.txt -covermode=atomic ./...
       after_success:
         - bash <(curl -s https://codecov.io/bash)
       cache:
@@ -36,7 +36,7 @@ jobs:
         - cd controller
         - go get ./...
       script:
-        - go test -race -coverprofile=coverage.txt -covermode=atomic
+        - go test -race -coverprofile=coverage.txt -covermode=atomic ./...
       after_success:
         - bash <(curl -s https://codecov.io/bash)
       cache:
