@@ -18,9 +18,7 @@ jobs:
         - cd api
         - go get ./...
       script:
-        - ls
-        - ls -alh $HOME/.cache/go-build
-        - ls -alh $HOME/gopath/pkg/mod
+        - cd api
         - go test -race -coverprofile=coverage.txt -covermode=atomic
       after_success:
         - bash <(curl -s https://codecov.io/bash)
@@ -35,9 +33,8 @@ jobs:
         - 1.12
       stage: test
       name: controller
-      before_install:
-        - cd controller
       script:
+        - cd controller
         - make test
       after_success:
         - bash <(curl -s https://codecov.io/bash)
