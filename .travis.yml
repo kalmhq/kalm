@@ -15,16 +15,10 @@ jobs:
         - os=$(go env GOOS)
         - arch=$(go env GOARCH)
         - curl -L https://go.kubebuilder.io/dl/2.3.1/${os}/${arch} | tar -xz -C /tmp/
-        - ls -alh /tmp
-        - ls -alh /tmp/kubebuilder_2.3.1_${os}_${arch}; true
-        - ls -alh /tmp/kubebuilder_2.3.1_${os}_${arch}/bin; true
         - sudo mv /tmp/kubebuilder_2.3.1_${os}_${arch} $HOME/kubebuilder
         - export PATH=$PATH:$HOME/kubebuilder/bin
-        - ls -alh $HOME/kubebuilder/bin
       install:
         - cd api
-        - ls -alh $HOME/kubebuilder
-        - ls -alh $HOME/kubebuilder/bin
         - go get ./...
       script:
         - go test -race -coverprofile=coverage.txt -covermode=atomic ./...
@@ -34,7 +28,6 @@ jobs:
         directories:
           - $HOME/.cache/go-build
           - $HOME/gopath/pkg/mod
-          - $HOME/kubebuilder/bin
     - language: go
       env:
         - GO111MODULE=on # remove this when change to golang 1.13
@@ -61,4 +54,3 @@ jobs:
         directories:
           - $HOME/.cache/go-build
           - $HOME/gopath/pkg/mod
-          - $HOME/kubebuilder/bin
