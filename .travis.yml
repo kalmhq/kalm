@@ -10,12 +10,23 @@ jobs:
     - go: 1.12
       before_install:
         - cd api
-        - go get -t -v ./...
+        - go get ./...
       script:
         - ls
         - ls -alh $HOME/.cache/go-build
         - ls -alh $HOME/gopath/pkg/mod
         - go test -race -coverprofile=coverage.txt -covermode=atomic
+      after_success:
+        - bash <(curl -s https://codecov.io/bash)
+      cache:
+        directories:
+          - $HOME/.cache/go-build
+          - $HOME/gopath/pkg/mod
+    - go: 1.12
+      before_install:
+        - cd controller
+      script:
+        - make test
       after_success:
         - bash <(curl -s https://codecov.io/bash)
       cache:

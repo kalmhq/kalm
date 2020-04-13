@@ -9,9 +9,9 @@ require (
 	github.com/elastic/cloud-on-k8s v0.0.0-20200204083752-bcb7468838a8
 	github.com/go-logr/logr v0.1.0
 	github.com/golang/groupcache v0.0.0-20191027212112-611e8accdfc9 // indirect
-	github.com/kapp-staging/kapp/lib v0.0.0-00010101000000-000000000000
 	github.com/influxdata/influxdb v1.7.7
 	github.com/jetstack/cert-manager v0.13.1
+	github.com/kapp-staging/kapp/lib v0.0.0-00010101000000-000000000000
 	github.com/onsi/ginkgo v1.10.3
 	github.com/onsi/gomega v1.7.1
 	github.com/prometheus/client_golang v1.2.1 // indirect
