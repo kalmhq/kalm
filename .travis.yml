@@ -10,6 +10,8 @@ jobs:
     - go: 1.12
       script:
         - ls
+        - ls -alh $HOME/.cache/go-build
+        - ls -alh $HOME/gopath/pkg/mod
       cache:
         directories:
           - $HOME/.cache/go-build
