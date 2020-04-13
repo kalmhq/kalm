@@ -8,22 +8,22 @@ import (
 
 var podMap1 = map[string]MetricHistories{
 	"pod1": {
-		CPUUsageHistory: []MetricPoint{
+		CPU: []MetricPoint{
 			{
 				Timestamp: time.Unix(1, 0),
 				Value:     1,
 			},
 		},
-		MemoryUsageHistory: nil,
+		Memory: nil,
 	},
 	"pod2": {
-		CPUUsageHistory: []MetricPoint{
+		CPU: []MetricPoint{
 			{
 				Timestamp: time.Unix(1, 0),
 				Value:     2,
 			},
 		},
-		MemoryUsageHistory: nil,
+		Memory: nil,
 	},
 }
 
@@ -36,7 +36,7 @@ func TestAggregateMetrics(t *testing.T) {
 
 var podMap2 = map[string]MetricHistories{
 	"pod1": {
-		CPUUsageHistory: []MetricPoint{
+		CPU: []MetricPoint{
 			{
 				Timestamp: time.Unix(1, 0),
 				Value:     1,
@@ -46,7 +46,7 @@ var podMap2 = map[string]MetricHistories{
 				Value:     2,
 			},
 		},
-		MemoryUsageHistory: []MetricPoint{
+		Memory: []MetricPoint{
 			{
 				Timestamp: time.Unix(99, 0),
 				Value:     99,
@@ -54,7 +54,7 @@ var podMap2 = map[string]MetricHistories{
 		},
 	},
 	"pod2": {
-		CPUUsageHistory: []MetricPoint{
+		CPU: []MetricPoint{
 			{
 				Timestamp: time.Unix(1, 0),
 				Value:     2,
@@ -64,7 +64,7 @@ var podMap2 = map[string]MetricHistories{
 				Value:     3,
 			},
 		},
-		MemoryUsageHistory: nil,
+		Memory: nil,
 	},
 }
 
@@ -80,24 +80,24 @@ func TestAggregateMetrics2(t *testing.T) {
 func TestAggregatePodsSum(t *testing.T) {
 	mSum := aggregatePodsSum(podMap2)
 
-	assert.Equal(t, len(mSum.CPUUsageHistory), 3)
-	assert.Equal(t, mSum.CPUUsageHistory[0].Value, uint64(3))
-	assert.Equal(t, mSum.CPUUsageHistory[1].Value, uint64(2))
-	assert.Equal(t, mSum.CPUUsageHistory[2].Value, uint64(3))
+	assert.Equal(t, len(mSum.CPU), 3)
+	assert.Equal(t, mSum.CPU[0].Value, uint64(3))
+	assert.Equal(t, mSum.CPU[1].Value, uint64(2))
+	assert.Equal(t, mSum.CPU[2].Value, uint64(3))
 
-	assert.Equal(t, len(mSum.MemoryUsageHistory), 1)
-	assert.Equal(t, mSum.MemoryUsageHistory[0].Value, uint64(99))
+	assert.Equal(t, len(mSum.Memory), 1)
+	assert.Equal(t, mSum.Memory[0].Value, uint64(99))
 }
 
 var podMap3 = map[string]MetricHistories{
 	"pod1": {
-		CPUUsageHistory: []MetricPoint{
+		CPU: []MetricPoint{
 			{
 				Timestamp: time.Unix(5, 0),
 				Value:     1,
 			},
 		},
-		MemoryUsageHistory: []MetricPoint{
+		Memory: []MetricPoint{
 			{
 				Timestamp: time.Unix(99, 0),
 				Value:     99,
@@ -105,7 +105,7 @@ var podMap3 = map[string]MetricHistories{
 		},
 	},
 	"pod2": {
-		CPUUsageHistory: []MetricPoint{
+		CPU: []MetricPoint{
 			{
 				Timestamp: time.Unix(1, 0),
 				Value:     2,
@@ -119,16 +119,16 @@ var podMap3 = map[string]MetricHistories{
 				Value:     5,
 			},
 		},
-		MemoryUsageHistory: nil,
+		Memory: nil,
 	},
 }
 
 func TestAggregatePodsSum2(t *testing.T) {
 	mSum := aggregatePodsSum(podMap3)
 
-	//fmt.Println("cpu", mSum.CPUUsageHistory)
-	assert.Equal(t, len(mSum.CPUUsageHistory), 3)
-	assert.Equal(t, mSum.CPUUsageHistory[0].Value, uint64(2))
-	assert.Equal(t, mSum.CPUUsageHistory[1].Value, uint64(3))
-	assert.Equal(t, mSum.CPUUsageHistory[2].Value, uint64(6))
+	//fmt.Println("cpu", mSum.CPU)
+	assert.Equal(t, len(mSum.CPU), 3)
+	assert.Equal(t, mSum.CPU[0].Value, uint64(2))
+	assert.Equal(t, mSum.CPU[1].Value, uint64(3))
+	assert.Equal(t, mSum.CPU[2].Value, uint64(6))
 }
