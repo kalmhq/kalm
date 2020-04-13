@@ -34,6 +34,7 @@ jobs:
       name: controller
       install:
         - cd controller
+        - which kubebuilder
         - go get ./...
       script:
         - go test -race -coverprofile=coverage.txt -covermode=atomic ./...
