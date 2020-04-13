@@ -1,0 +1,12 @@
+branches:
+  only:
+    - ci
+
+git:
+  depth: false
+
+jobs:
+  include:
+    - language: go
+      script:
+        - ls
