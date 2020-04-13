@@ -1,7 +1,3 @@
-branches:
-  only:
-    - ci
-
 git:
   depth: false
 
