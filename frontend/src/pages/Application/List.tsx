@@ -35,7 +35,7 @@ import { BasePage } from "../BasePage";
 import { ApplicationListDataWrapper, WithApplicationsListDataProps } from "./ListDataWrapper";
 import { withNamespace, withNamespaceProps } from "permission/Namespace";
 import { AddLink } from "widgets/AddButton";
-import { PendingBedge, SuccessBedge, WarningBedge, ErrorBedge } from "widgets/Bedge";
+import { PendingBedge, SuccessBedge, ErrorBedge } from "widgets/Bedge";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import HelpIcon from "@material-ui/icons/Help";
 import { ControlledDialog } from "widgets/ControlledDialog";
@@ -45,6 +45,7 @@ import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { EXTERNAL_ACCESS_PLUGIN_TYPE, ExternalAccessPlugin } from "types/plugin";
 import { ImmutableMap } from "typings";
+import { customSearchForImmutable } from "../../utils/tableSearch";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -657,14 +658,14 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
 
   private getData = () => {
     const { applications } = this.props;
-    const data = applications
-      .map((application, index) => {
-        const rowData: any = application;
-        // @ts-ignore
-        rowData.index = index;
-        return rowData as RowData;
-      })
-      .toArray();
+    const data: RowData[] = [];
+
+    applications.forEach((application, index) => {
+      const rowData = application as RowData;
+      rowData.index = index;
+      data.push(rowData);
+    });
+
     return data;
   };
 
@@ -704,7 +705,13 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
               columns={[
                 // @ts-ignore
                 { title: "", field: "checkbox", sorting: false, width: "20px", render: this.renderCheckbox },
-                { title: "Name", field: "name", sorting: false, render: this.renderName },
+                {
+                  title: "Name",
+                  field: "name",
+                  sorting: false,
+                  render: this.renderName,
+                  customFilterAndSearch: customSearchForImmutable
+                },
                 { title: "Status", field: "status", sorting: false, render: this.renderStatus },
                 {
                   title: (
