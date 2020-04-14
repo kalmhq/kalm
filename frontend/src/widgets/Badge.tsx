@@ -4,7 +4,7 @@ import { Box, CircularProgress } from "@material-ui/core";
 import CancelIcon from "@material-ui/icons/Cancel";
 import HelpIcon from "@material-ui/icons/Help";
 import WarningIcon from "@material-ui/icons/Warning";
-export const SuccessBedge = (props: { text?: string }) => {
+export const SuccessBadge = (props: { text?: string }) => {
   return (
     <Box display="inline-flex" alignItems="center">
       <CheckCircleIcon style={{ marginRight: 6 }} color="primary" />
@@ -13,7 +13,7 @@ export const SuccessBedge = (props: { text?: string }) => {
   );
 };
 
-export const PendingBedge = (props: { text?: string }) => {
+export const PendingBadge = (props: { text?: string }) => {
   return (
     <Box display="inline-flex" alignItems="center">
       <CircularProgress
@@ -29,7 +29,7 @@ export const PendingBedge = (props: { text?: string }) => {
   );
 };
 
-export const WarningBedge = (props: { text?: string }) => {
+export const WarningBadge = (props: { text?: string }) => {
   return (
     <Box display="inline-flex" alignItems="center">
       <WarningIcon style={{ marginRight: 6 }} color="secondary" />
@@ -38,7 +38,7 @@ export const WarningBedge = (props: { text?: string }) => {
   );
 };
 
-export const ErrorBedge = (props: { text?: string }) => {
+export const ErrorBadge = (props: { text?: string }) => {
   return (
     <Box display="inline-flex" alignItems="center">
       <CancelIcon style={{ marginRight: 6 }} color="secondary" />
@@ -47,7 +47,7 @@ export const ErrorBedge = (props: { text?: string }) => {
   );
 };
 
-export const UnknownBedge = (props: { text?: string }) => {
+export const UnknownBadge = (props: { text?: string }) => {
   return (
     <Box display="inline-flex" alignItems="center">
       <HelpIcon style={{ marginRight: 6 }} color="disabled" />

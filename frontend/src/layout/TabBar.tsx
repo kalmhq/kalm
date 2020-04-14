@@ -1,4 +1,4 @@
-import { AppBar, Avatar, createStyles, Tab, Tabs, Theme, IconButton, Menu, MenuItem, Divider } from "@material-ui/core";
+import { AppBar, createStyles, Tab, Tabs, Theme, IconButton, Menu, MenuItem, Divider } from "@material-ui/core";
 import blue from "@material-ui/core/colors/blue";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import React from "react";
