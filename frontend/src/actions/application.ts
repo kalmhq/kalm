@@ -25,7 +25,9 @@ import {
   getKappApplicationList,
   updateKappApplication
 } from "./kubernetesApi";
-import { setErrorNotificationAction } from "./notification";
+import { setErrorNotificationAction, setSuccessNotificationAction } from "./notification";
+// import { SubmissionError } from "redux-form";
+import { push } from "connected-react-router";
 
 export const createApplicationAction = (applicationValues: Application): ThunkResult<Promise<void>> => {
   return async dispatch => {
@@ -40,6 +42,9 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
       } else {
         dispatch(setErrorNotificationAction());
       }
+      // throw new SubmissionError({
+      //   name: "User does not exist"
+      // });
       return;
     } finally {
       setTimeout(() => {
@@ -52,6 +57,8 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
       type: CREATE_APPLICATION,
       payload: { application }
     });
+    dispatch(setSuccessNotificationAction("Create application successfully"));
+    dispatch(push("/applications"));
   };
 };
 
@@ -80,6 +87,8 @@ export const updateApplicationAction = (applicationRaw: Application): ThunkResul
       type: UPDATE_APPLICATION,
       payload: { application }
     });
+    dispatch(setSuccessNotificationAction("Edit application successfully"));
+    dispatch(push("/applications"));
   };
 };
 
