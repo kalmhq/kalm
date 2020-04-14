@@ -47,9 +47,9 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gv1Alpha1WithAuth.GET("/applications", h.handleGetApplications)
 	gv1Alpha1WithAuth.GET("/applications/:namespace", h.handleGetApplications)
 	gv1Alpha1WithAuth.GET("/applications/:namespace/:name", h.handleGetApplicationDetails)
-	gv1Alpha1WithAuth.PUT("/applications/:namespace/:name", h.handleUpdateApplicationNew)
+	gv1Alpha1WithAuth.PUT("/applications/:namespace/:name", h.handleUpdateApplication)
 	gv1Alpha1WithAuth.DELETE("/applications/:namespace/:name", h.handleDeleteApplication)
-	gv1Alpha1WithAuth.POST("/applications/:namespace", h.handleCreateApplicationNew)
+	gv1Alpha1WithAuth.POST("/applications/:namespace", h.handleCreateApplication)
 
 	gv1Alpha1WithAuth.GET("/componenttemplates", h.handleGetComponentTemplates)
 	gv1Alpha1WithAuth.POST("/componenttemplates", h.handleCreateComponentTemplate)
