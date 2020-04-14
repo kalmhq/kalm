@@ -32,9 +32,6 @@ const styles = (theme: Theme) =>
     },
     formSectionItem: {
       padding: "0px !important"
-    },
-    statusMarginBasic: {
-      marginTop: theme.spacing(3)
     }
   });
 
@@ -63,8 +60,7 @@ class ApplicationFormRaw extends React.PureComponent<
     DispatchProp
 > {
   private renderBasic() {
-    const { isEdit } = this.props;
-    // console.log("isEdit", isEdit);
+    const { isEdit, initialValues } = this.props;
     return (
       <>
         {/* <HelperContainer>
@@ -112,23 +108,6 @@ class ApplicationFormRaw extends React.PureComponent<
           <Typography>Status</Typography>
         </HelperContainer> */}
         {TableTitle("Status")}
-        <div className={classes.statusMarginBasic}>
-          <Field
-            name="isPersistent"
-            formControlLabelProps={{
-              label: "Persistent"
-            }}
-            disabled={isEdit}
-            component={SwitchField}
-            normalizer={NormalizeBoolean}
-            tooltipProps={{
-              title:
-                "This option controls how disks are mounted. " +
-                "If true, the system will use persistent disks as you defined. Data won't lost during restart. It's suitable for a production deployment." +
-                "If false, it will use temporary disks, data will be lost during a restart. You should only use this mode in test case."
-            }}
-          />
-        </div>
         <Field
           name="isActive"
           formControlLabelProps={{
@@ -186,7 +165,7 @@ class ApplicationFormRaw extends React.PureComponent<
   }
 }
 
-const initialValues: Application = Immutable.fromJS({
+export const applicationInitialValues: Application = Immutable.fromJS({
   name: "",
   sharedEnvs: [],
   components: []
@@ -194,7 +173,7 @@ const initialValues: Application = Immutable.fromJS({
 
 export default reduxForm<Application, Props>({
   form: "application",
-  initialValues,
+  initialValues: applicationInitialValues,
   onSubmitFail: (...args) => {
     console.log("submit failed", args);
   }
