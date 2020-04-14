@@ -32,9 +32,6 @@ const styles = (theme: Theme) =>
     },
     formSectionItem: {
       padding: "0px !important"
-    },
-    statusMarginBasic: {
-      marginTop: theme.spacing(3)
     }
   });
 
@@ -89,54 +86,15 @@ class ApplicationFormRaw extends React.PureComponent<
           </Grid>
           <Grid item md={6}>
             <Field
-              name="namespace"
-              label="Namespace"
-              disabled={isEdit}
-              component={TextField}
-              validate={ValidatorRequired}
-              helperText={isEdit ? "Can't modify namespace" : "All resources will running in this namespace."}
-              placeholder="Please type the namespace"
+              name="isActive"
+              formControlLabelProps={{
+                label: "Active"
+              }}
+              component={SwitchField}
+              normalizer={NormalizeBoolean}
             />
           </Grid>
         </Grid>
-      </>
-    );
-  }
-
-  private renderStatus() {
-    const { classes, isEdit } = this.props;
-
-    return (
-      <>
-        {/* <HelperContainer>
-          <Typography>Status</Typography>
-        </HelperContainer> */}
-        {TableTitle("Status")}
-        <div className={classes.statusMarginBasic}>
-          <Field
-            name="isPersistent"
-            formControlLabelProps={{
-              label: "Persistent"
-            }}
-            disabled={isEdit}
-            component={SwitchField}
-            normalizer={NormalizeBoolean}
-            tooltipProps={{
-              title:
-                "This option controls how disks are mounted. " +
-                "If true, the system will use persistent disks as you defined. Data won't lost during restart. It's suitable for a production deployment." +
-                "If false, it will use temporary disks, data will be lost during a restart. You should only use this mode in test case."
-            }}
-          />
-        </div>
-        <Field
-          name="isActive"
-          formControlLabelProps={{
-            label: "Active"
-          }}
-          component={SwitchField}
-          normalizer={NormalizeBoolean}
-        />
       </>
     );
   }
@@ -171,9 +129,6 @@ class ApplicationFormRaw extends React.PureComponent<
         <Grid container spacing={2} className={classes.formSectionContainer}>
           <Grid className={classes.formSectionItem} item xs={12} sm={8} md={8}>
             <Paper className={classes.formSection}>{this.renderBasic()}</Paper>
-          </Grid>
-          <Grid className={classes.formSectionItem} item xs={12} sm={4} md={4}>
-            <Paper className={classes.formSection}>{this.renderStatus()}</Paper>
           </Grid>
         </Grid>
         <Paper className={classes.formSectionTable}>{this.renderComponent()}</Paper>
