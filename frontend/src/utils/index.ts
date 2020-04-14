@@ -44,3 +44,32 @@ export const formatTimeDistance = (t: any) => {
   }
   return res;
 };
+
+export interface ResError {
+  key: string;
+  message: string;
+}
+
+export const resErrorsToSubmitErrors = (errors: ResError[]) => {
+  // "errors": [
+  //   {
+  //      "key": ".components[1].dependencies",
+  //      "message": "should no have loop in dependencies"
+  //   }
+  // ]
+  const submitErrors: { [key: string]: string } = {};
+  errors.forEach(error => {
+    if (error.key === ".name") {
+      submitErrors["name"] = error.message;
+    } else if (error.key.startsWith(".components")) {
+      // ".components[1].dependencies".split(".")
+      // => ["", "components[1]", "dependencies"]
+      const keySplits = error.key.split(".");
+      if (keySplits[2]) {
+        submitErrors[keySplits[1]] = `${keySplits[2]}: ${error.message}`;
+      }
+    }
+  });
+
+  return submitErrors;
+};

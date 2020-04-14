@@ -26,8 +26,9 @@ import {
   updateKappApplication
 } from "./kubernetesApi";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "./notification";
-// import { SubmissionError } from "redux-form";
+import { SubmissionError } from "redux-form";
 import { push } from "connected-react-router";
+import { resErrorsToSubmitErrors } from "../utils";
 
 export const createApplicationAction = (applicationValues: Application): ThunkResult<Promise<void>> => {
   return async dispatch => {
@@ -37,14 +38,14 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
     try {
       application = await createKappApplication(applicationValues);
     } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
+      if (e.response && e.response.data.errors) {
+        const submitErrors = resErrorsToSubmitErrors(e.response.data.errors);
+        throw new SubmissionError(submitErrors);
+      } else if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
       } else {
         dispatch(setErrorNotificationAction());
       }
-      // throw new SubmissionError({
-      //   name: "User does not exist"
-      // });
       return;
     } finally {
       setTimeout(() => {
@@ -70,11 +71,15 @@ export const updateApplicationAction = (applicationRaw: Application): ThunkResul
     try {
       application = await updateKappApplication(applicationRaw);
     } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
+      if (e.response && e.response.data.errors) {
+        const submitErrors = resErrorsToSubmitErrors(e.response.data.errors);
+        throw new SubmissionError(submitErrors);
+      } else if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
       } else {
         dispatch(setErrorNotificationAction());
       }
+
       return;
     } finally {
       setTimeout(() => {
