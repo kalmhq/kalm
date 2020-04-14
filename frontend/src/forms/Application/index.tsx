@@ -87,7 +87,7 @@ class ApplicationFormRaw extends React.PureComponent<
             <Field
               name="namespace"
               label="Namespace"
-              disabled={isEdit}
+              disabled={true}
               component={TextField}
               validate={ValidatorRequired}
               helperText={isEdit ? "Can't modify namespace" : "All resources will running in this namespace."}
