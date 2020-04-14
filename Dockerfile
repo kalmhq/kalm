@@ -70,4 +70,4 @@ ENV STATIC_FILE_ROOT build
 COPY --from=api-builder /workspace/api/kapp-api-server .
 COPY --from=frontend-builder /workspace/build/ build/
 COPY --from=controller-builder /workspace/controller/kapp-controller .
-COPY --from=controller-builder /workspace/controller/resources /resources
+COPY --from=controller-builder /workspace/controller/resources resources/
