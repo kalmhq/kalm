@@ -24,7 +24,14 @@ export const getAxiosClient = () => {
   const instance = token
     ? axios.create({
         timeout: 3000,
+        withCredentials: true,
+        // xsrfCookieName: "_csrf",
+        // xsrfHeaderName: "X-CSRF-Token",
         headers: {
+          "X-CSRF-Token": store
+            .getState()
+            .get("auth")
+            .get("csrf"),
           Authorization: `Bearer ${store
             .getState()
             .get("auth")
@@ -48,6 +55,7 @@ export const getAxiosClient = () => {
 
 export const getLoginStatus = async (): Promise<LoginStatus> => {
   const res = await getAxiosClient().get<LoginStatusContent>(K8sApiPrefix + "/login/status");
+  console.log("headers", res.headers);
   return Immutable.Map(res.data);
 };
 

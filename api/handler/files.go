@@ -2,13 +2,14 @@ package handler
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/kapp-staging/kapp/lib/files"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"net/http"
 )
 
 // TODO validate path

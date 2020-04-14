@@ -5,17 +5,18 @@ go 1.12
 require (
 	github.com/aws/aws-sdk-go v1.25.48 // indirect
 	github.com/containerd/continuity v0.0.0-20200228182428-0f16d7a0959c // indirect
-	github.com/davecgh/go-spew v1.1.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/docker/distribution v2.7.1+incompatible // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/go-playground/validator/v10 v10.2.0
 	github.com/google/pprof v0.0.0-20190723021845-34ac40c74b70 // indirect
+	github.com/gorilla/csrf v1.6.2
 	github.com/gorilla/websocket v1.4.2
-	github.com/kapp-staging/kapp/controller v0.1.0
-	github.com/kapp-staging/kapp/lib v0.0.0-00010101000000-000000000000
 	github.com/influxdata/influxdb v1.7.7
 	github.com/joho/godotenv v1.3.0
+	github.com/kapp-staging/kapp/controller v0.1.0
+	github.com/kapp-staging/kapp/lib v0.0.0-00010101000000-000000000000
+	github.com/labstack/echo v3.3.10+incompatible
 	github.com/labstack/echo/v4 v4.1.15
 	github.com/mattn/go-shellwords v1.0.10 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
