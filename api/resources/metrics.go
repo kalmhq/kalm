@@ -225,17 +225,11 @@ func cacheMetricsForAppIntoLocalDB(app v1alpha1.Application, metricsList *metric
 type NodesMetricHistories struct {
 	CPU    MetricHistory         `json:"cpu"`
 	Memory MetricHistory         `json:"memory"`
-	Nodes  []NodeMetricHistories `json:"nodes"`
-}
-
-type NodeMetricHistories struct {
-	Name   string        `json:"name"`
-	CPU    MetricHistory `json:"cpu"`
-	Memory MetricHistory `json:"memory"`
+	Nodes  map[string]MetricHistories `json:"nodes"`
 }
 
 func GetFilteredNodeMetrics(nodes []string) NodesMetricHistories {
-	var nodeMetricHistoriesList []NodeMetricHistories
+	nodeMetricHistories := make(map[string]MetricHistories)
 
 	var cpuHistoryList []MetricHistory
 	var memHistoryList []MetricHistory
@@ -245,7 +239,7 @@ func GetFilteredNodeMetrics(nodes []string) NodesMetricHistories {
 		}
 
 		oneNode := getNodeMetricHistories(nodeName, nodeMetricsList)
-		nodeMetricHistoriesList = append(nodeMetricHistoriesList, oneNode)
+		nodeMetricHistories[nodeName] = oneNode
 
 		cpuHistoryList = append(cpuHistoryList, oneNode.CPU)
 		memHistoryList = append(memHistoryList, oneNode.Memory)
@@ -257,13 +251,14 @@ func GetFilteredNodeMetrics(nodes []string) NodesMetricHistories {
 	return NodesMetricHistories{
 		CPU:    aggCpu,
 		Memory: aggMem,
-		Nodes:  nodeMetricHistoriesList,
+		Nodes:  nodeMetricHistories,
 	}
 }
 
-func getNodeMetricHistories(name string, list []metricv1beta1.NodeMetrics) NodeMetricHistories {
+func getNodeMetricHistories(name string, list []metricv1beta1.NodeMetrics) MetricHistories {
 	var memHistory MetricHistory
 	var cpuHistory MetricHistory
+
 	for _, nodeMetric := range list {
 		memHistory = append(memHistory, MetricPoint{
 			Timestamp: nodeMetric.Timestamp.Time,
@@ -276,8 +271,7 @@ func getNodeMetricHistories(name string, list []metricv1beta1.NodeMetrics) NodeM
 		})
 	}
 
-	return NodeMetricHistories{
-		Name:   name,
+	return MetricHistories{
 		Memory: memHistory,
 		CPU:    cpuHistory,
 	}

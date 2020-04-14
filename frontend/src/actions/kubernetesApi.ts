@@ -59,7 +59,7 @@ export const validateToken = async (token: string): Promise<boolean> => {
 
 export const getNodes = async (): Promise<Immutable.List<Node>> => {
   const res = await getAxiosClient().get(K8sApiPrefix + "/v1alpha1/nodes");
-  return Immutable.fromJS(res.data);
+  return Immutable.fromJS(res.data.nodes);
 };
 
 export const getPersistentVolumes = async (): Promise<any[]> => {

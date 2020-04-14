@@ -75,7 +75,6 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gv1Alpha1WithAuth.GET("/serviceaccounts/:name", h.handleGetServiceAccount)
 
 	gv1Alpha1WithAuth.GET("/nodes", h.handleListNodes)
-	gv1Alpha1WithAuth.GET("/nodes/metrics", h.handleGetNodeMetrics)
 }
 
 func NewApiHandler(clientManager *client.ClientManager) *ApiHandler {

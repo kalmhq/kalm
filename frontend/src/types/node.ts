@@ -1,5 +1,6 @@
 import { ImmutableMap } from "typings";
 import Immutable from "immutable";
+import { Metrics } from "./common";
 
 export const LOAD_NODES_PENDING = "LOAD_NODES_PENDING";
 export const LOAD_NODES_FULFILlED = "LOAD_NODES_FULFILlED";
@@ -14,7 +15,7 @@ export type ResourceList = ImmutableMap<{
 
 export interface NodeContent {
   name: string;
-  labels: { [key: string]: string };
+  labels: ImmutableMap<{ [key: string]: string }>;
   status: ImmutableMap<{
     capacity: ResourceList;
     allocatable: ResourceList;
@@ -53,6 +54,7 @@ export interface NodeContent {
       }>
     >;
   }>;
+  metrics: Metrics;
 }
 
 export type Node = ImmutableMap<NodeContent>;

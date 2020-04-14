@@ -4,6 +4,7 @@ import { ImmutableMap } from "../typings";
 import { SettingObject } from "../reducers/settings";
 import { NamespaceActions } from "./namespace";
 import { LoginStatus } from "./authorization";
+import Immutable from "immutable";
 
 export const LOAD_LOGIN_STATUS_PENDING = "LOAD_LOGIN_STATUS_PENDING";
 export const LOAD_LOGIN_STATUS_FULFILLED = "LOAD_LOGIN_STATUS_FULFILLED";
@@ -32,6 +33,18 @@ export const portTypeUDP = "UDP";
 export type ControlledDialogParams<T> = ImmutableMap<{
   open: boolean;
   data: T;
+}>;
+
+export type MetricItem = ImmutableMap<{
+  x: number;
+  y: number;
+}>;
+
+export type MetricList = Immutable.List<MetricItem>;
+
+export type Metrics = ImmutableMap<{
+  cpu: MetricList;
+  memory: MetricList;
 }>;
 
 export const StatusTypeRunning = "RUNNING";

@@ -1,13 +1,12 @@
+import { Box, createStyles, Theme, WithStyles, withStyles } from "@material-ui/core";
+import MaterialTable from "material-table";
 import React from "react";
 import { connect } from "react-redux";
-import { TDispatchProp } from "../../types";
+import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { loadNodesAction } from "../../actions/node";
-import { K8sApiPrefix } from "../../actions/kubernetesApi";
 import { RootState } from "../../reducers";
+import { TDispatchProp } from "../../types";
 import { BasePage } from "../BasePage";
-import { Alert } from "@material-ui/lab";
-import { createStyles, Theme, WithStyles, withStyles, Box } from "@material-ui/core";
-import MaterialTable from "material-table";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -22,35 +21,18 @@ const styles = (theme: Theme) =>
     }
   });
 
-interface States {
-  loadNodesError: boolean;
-  loadingNodes: boolean;
-}
+interface States {}
 
 type Props = ReturnType<typeof mapStateToProps> & TDispatchProp & WithStyles<typeof styles>;
 
 export class NodeListRaw extends React.Component<Props, States> {
   constructor(props: Props) {
     super(props);
-    this.state = {
-      loadNodesError: false,
-      loadingNodes: true
-    };
+    this.state = {};
   }
 
   componentDidMount() {
-    this.props
-      .dispatch(loadNodesAction())
-      .catch(e => {
-        if (e.isAxiosError) {
-          this.setState({ loadNodesError: true });
-        }
-      })
-      .finally(() => {
-        this.setState({
-          loadingNodes: false
-        });
-      });
+    this.props.dispatch(loadNodesAction());
   }
 
   getTableData = () => {
@@ -97,6 +79,8 @@ export class NodeListRaw extends React.Component<Props, States> {
             </>
           ),
           addresses,
+          cpu: <SmallCPULineChart data={node.get("metrics").get("cpu")} />,
+          memory: <SmallMemoryLineChart data={node.get("metrics").get("memory")} />,
           resources: (
             <>
               <Box>
@@ -117,7 +101,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                   .get("status")
                   .get("allocatable")
                   .get("memory")}
-                } allocatable / max{" "}
+                allocatable / max{" "}
                 {node
                   .get("status")
                   .get("capacity")
@@ -134,25 +118,10 @@ export class NodeListRaw extends React.Component<Props, States> {
 
   render() {
     const { classes } = this.props;
-    const { loadNodesError, loadingNodes } = this.state;
 
     return (
       <BasePage title="Cluster Nodes">
         <div className={classes.root}>
-          {loadNodesError ? (
-            <Alert severity="error">
-              <Box>
-                Kapp fails to load nodes from current cluster with endpoint <strong>{K8sApiPrefix}</strong>. Please
-                check your connection.
-              </Box>
-            </Alert>
-          ) : loadingNodes ? null : (
-            <Alert severity="info">
-              Node is an original concept of kubernetes. It's a worker machine in Kubernetes, previously known as a
-              minion. A node may be a VM or physical machine, depending on the cluster.
-            </Alert>
-          )}
-
           <Box mt={3}>
             <MaterialTable
               options={{
@@ -164,6 +133,8 @@ export class NodeListRaw extends React.Component<Props, States> {
                 { title: "Info", field: "info", sorting: false },
                 { title: "Address", field: "addresses", sorting: false },
                 { title: "Resources", field: "resources", sorting: false },
+                { title: "CPU", field: "cpu", sorting: false },
+                { title: "Memory", field: "memory", sorting: false },
                 { title: "Alerts", field: "components", sorting: false }
               ]}
               data={this.getTableData()}
