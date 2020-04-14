@@ -9,6 +9,7 @@ import { ComponentTemplate } from "../types/componentTemplate";
 import { ConfigCreate, ConfigRes } from "../types/config";
 import { Namespaces } from "../types/namespace";
 import { LoginStatus, LoginStatusContent } from "types/authorization";
+import { Node } from "types/node";
 
 export const K8sApiPrefix = process.env.REACT_APP_K8S_API_PERFIX;
 export const k8sWsPrefix = !K8sApiPrefix
@@ -56,9 +57,9 @@ export const validateToken = async (token: string): Promise<boolean> => {
   return res.status === 200;
 };
 
-export const getNodes = async () => {
+export const getNodes = async (): Promise<Immutable.List<Node>> => {
   const res = await getAxiosClient().get(K8sApiPrefix + "/v1alpha1/nodes");
-  return res.data.items;
+  return Immutable.fromJS(res.data);
 };
 
 export const getPersistentVolumes = async (): Promise<any[]> => {

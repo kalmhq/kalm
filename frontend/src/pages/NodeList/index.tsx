@@ -55,60 +55,79 @@ export class NodeListRaw extends React.Component<Props, States> {
 
   getTableData = () => {
     const { nodes } = this.props;
-    const data = nodes.map((node, index) => {
-      // const handleChange = () => {
-      //   this.showSwitchingIsEnabledDialog(application.get("id"));
-      // };
+    const data = nodes
+      .map((node, index) => {
+        const addresses = node
+          .get("status")
+          .get("addresses")
+          .map((address, index) => {
+            return (
+              <div key={index}>
+                {address.get("type")}: {address.get("address")}
+              </div>
+            );
+          })
+          .toArray();
 
-      // const onDeleteClick = () => {
-      //   this.setDeletingApplicationAndConfirm(application.get("id"));
-      // };
-
-      // let status = null;
-
-      // switch (application.get("status").get("status")) {
-      //   case StatusTypePending:
-      //     status = <StatusPending />;
-      //     break;
-      //   case StatusTypeRunning:
-      //     status = <CheckCircleIcon color="primary" />;
-      //     break;
-      //   case StatusTypeError:
-      //     status = <CheckCircleIcon color="primary" />;
-      //     break;
-      // }
-
-      return {
-        name: node.metadata!.name,
-        info: (
-          <>
-            <Box>Kernel: {node.status!.nodeInfo!.kernelVersion}</Box>
-            <Box>osImage: {node.status!.nodeInfo!.osImage}</Box>
-            <Box>containerRuntimeVersion: {node.status!.nodeInfo!.containerRuntimeVersion}</Box>
-          </>
-        ),
-        // addresses: node.status!.addresses!.map((x, index) => (
-        //   <Box mr={1} key={index}>
-        //     {x.address}
-        //   </Box>
-        // )),
-        // conditions: node.status!.conditions!.map((x, index) => (
-        //   <Box mr={1} key={index}>
-        //     {x.type} {x.status}
-        //   </Box>
-        // )),
-        resources: (
-          <>
-            <Box>
-              Cpu: {node.status!.allocatable!.cpu} allocatable / max {node.status!.capacity!.cpu}
-            </Box>
-            <Box>
-              Memory: {node.status!.allocatable!.memory} allocatable / max {node.status!.capacity!.memory}
-            </Box>
-          </>
-        )
-      };
-    });
+        return {
+          name: node.get("name"),
+          info: (
+            <>
+              <Box>
+                Kernel:{" "}
+                {node
+                  .get("status")
+                  .get("nodeInfo")
+                  .get("kernelVersion")}
+              </Box>
+              <Box>
+                osImage:{" "}
+                {node
+                  .get("status")
+                  .get("nodeInfo")
+                  .get("osImage")}
+              </Box>
+              <Box>
+                containerRuntimeVersion:{" "}
+                {node
+                  .get("status")
+                  .get("nodeInfo")
+                  .get("containerRuntimeVersion")}
+              </Box>
+            </>
+          ),
+          addresses,
+          resources: (
+            <>
+              <Box>
+                Cpu:{" "}
+                {node
+                  .get("status")
+                  .get("allocatable")
+                  .get("cpu")}{" "}
+                allocatable / max{" "}
+                {node
+                  .get("status")
+                  .get("capacity")
+                  .get("cpu")}
+              </Box>
+              <Box>
+                Memory:{" "}
+                {node
+                  .get("status")
+                  .get("allocatable")
+                  .get("memory")}
+                } allocatable / max{" "}
+                {node
+                  .get("status")
+                  .get("capacity")
+                  .get("memory")}
+              </Box>
+            </>
+          )
+        };
+      })
+      .toArray();
 
     return data;
   };
@@ -144,7 +163,6 @@ export class NodeListRaw extends React.Component<Props, States> {
                 { title: "Name", field: "name", sorting: false },
                 { title: "Info", field: "info", sorting: false },
                 { title: "Address", field: "addresses", sorting: false },
-                { title: "Conditions", field: "conditions", sorting: false },
                 { title: "Resources", field: "resources", sorting: false },
                 { title: "Alerts", field: "components", sorting: false }
               ]}
