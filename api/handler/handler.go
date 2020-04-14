@@ -24,16 +24,15 @@ type ApiHandler struct {
 type H map[string]interface{}
 
 func (h *ApiHandler) Install(e *echo.Echo) {
+	// liveness readiness probes
 	e.GET("/ping", handlePing)
 
-	// permission routes
+	// login
 	e.POST("/login/token", h.handleValidateToken)
 	e.GET("/login/status", h.handleLoginStatus)
 
 	// original resources routes
 	gV1 := e.Group("/v1", h.AuthClientMiddleware)
-	gV1.GET("/nodes", h.handleGetNodes)
-	gV1.GET("/nodes/metrics", h.handleGetNodeMetrics)
 	gV1.GET("/persistentvolumes", h.handleGetPVs)
 
 	gV1.GET("/dependencies", h.handleGetDependencies)
@@ -62,7 +61,6 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gv1Alpha1WithAuth.PUT("/files/:namespace/move", h.handleMoveFile)
 	gv1Alpha1WithAuth.DELETE("/files/:namespace", h.handleDeleteFile)
 
-	gv1Alpha1WithAuth.GET("/nodes/metrics", h.handleGetNodeMetricsNew)
 
 	gv1Alpha1WithAuth.DELETE("/pods/:namespace/:name", h.handleDeletePod)
 
@@ -75,6 +73,9 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gv1Alpha1WithAuth.DELETE("/rolebindings/:namespace/:name", h.handleDeleteRoleBinding)
 
 	gv1Alpha1WithAuth.GET("/serviceaccounts/:name", h.handleGetServiceAccount)
+
+	gv1Alpha1WithAuth.GET("/nodes", h.handleListNodes)
+	gv1Alpha1WithAuth.GET("/nodes/metrics", h.handleGetNodeMetrics)
 }
 
 func NewApiHandler(clientManager *client.ClientManager) *ApiHandler {
