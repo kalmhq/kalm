@@ -24,11 +24,13 @@ func CustomHTTPErrorHandler(err error, c echo.Context) {
 	}
 
 	code := http.StatusInternalServerError
+	message := err.Error()
 	if httpError, ok := err.(*echo.HTTPError); ok {
 		code = httpError.Code
+		message = httpError.Message.(string)
 	}
 
 	if !c.Response().Committed {
-		c.JSON(code, &ErrorRes{Status: metav1.StatusFailure, Message: err.Error()})
+		c.JSON(code, &ErrorRes{Status: metav1.StatusFailure, Message: message})
 	}
 }
