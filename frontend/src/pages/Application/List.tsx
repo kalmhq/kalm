@@ -35,7 +35,7 @@ import { BasePage } from "../BasePage";
 import { ApplicationListDataWrapper, WithApplicationsListDataProps } from "./ListDataWrapper";
 import { withNamespace, withNamespaceProps } from "permission/Namespace";
 import { AddLink } from "widgets/AddButton";
-import { PendingBedge, SuccessBedge, ErrorBedge } from "widgets/Bedge";
+import { PendingBadge, SuccessBadge, WarningBadge, ErrorBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import HelpIcon from "@material-ui/icons/Help";
 import { ControlledDialog } from "widgets/ControlledDialog";
@@ -433,21 +433,21 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           <FlexRowItemCenterBox>
             {successCount > 0 ? (
               <FlexRowItemCenterBox mr={1}>
-                <SuccessBedge />
+                <SuccessBadge />
                 {successCount}
               </FlexRowItemCenterBox>
             ) : null}
 
             {pendingCount > 0 ? (
               <FlexRowItemCenterBox mr={1}>
-                <PendingBedge />
+                <PendingBadge />
                 {pendingCount}
               </FlexRowItemCenterBox>
             ) : null}
 
             {errorCount > 0 ? (
               <FlexRowItemCenterBox>
-                <ErrorBedge />
+                <ErrorBadge />
                 {errorCount}
               </FlexRowItemCenterBox>
             ) : null}
