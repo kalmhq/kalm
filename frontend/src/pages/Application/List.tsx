@@ -5,17 +5,29 @@ import {
   Switch,
   TextField,
   Theme,
+  Tooltip,
   WithStyles,
-  withStyles,
-  Tooltip
+  withStyles
 } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import ArchiveIcon from "@material-ui/icons/Archive";
+import HelpIcon from "@material-ui/icons/Help";
 import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew";
 import RefreshIcon from "@material-ui/icons/Refresh";
+import { closeDialogAction, openDialogAction } from "actions/dialog";
 import MaterialTable, { Components } from "material-table";
+import { withNamespace, withNamespaceProps } from "permission/Namespace";
 import React from "react";
+import { connect } from "react-redux";
 import { Link } from "react-router-dom";
+import { RootState } from "reducers";
+import { ExternalAccessPlugin, EXTERNAL_ACCESS_PLUGIN_TYPE } from "types/plugin";
+import { ImmutableMap } from "typings";
+import { AddLink } from "widgets/AddButton";
+import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
+import { FlexRowItemCenterBox } from "widgets/Box";
+import { CustomizedButton } from "widgets/Button";
+import { ControlledDialog } from "widgets/ControlledDialog";
 import { TableTitle } from "widgets/TableTitle";
 import {
   deleteApplicationAction,
@@ -27,25 +39,13 @@ import {
 import { setErrorNotificationAction, setSuccessNotificationAction } from "../../actions/notification";
 import { duplicateApplicationName, getApplicationByName } from "../../selectors/application";
 import { ApplicationDetails } from "../../types/application";
+import { customSearchForImmutable } from "../../utils/tableSearch";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
 import { FoldButtonGroup } from "../../widgets/FoldButtonGroup";
 import { Loading } from "../../widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "../../widgets/SmallLineChart";
 import { BasePage } from "../BasePage";
 import { ApplicationListDataWrapper, WithApplicationsListDataProps } from "./ListDataWrapper";
-import { withNamespace, withNamespaceProps } from "permission/Namespace";
-import { AddLink } from "widgets/AddButton";
-import { PendingBadge, SuccessBadge, WarningBadge, ErrorBadge } from "widgets/Badge";
-import { FlexRowItemCenterBox } from "widgets/Box";
-import HelpIcon from "@material-ui/icons/Help";
-import { ControlledDialog } from "widgets/ControlledDialog";
-import { CustomizedButton } from "widgets/Button";
-import { closeDialogAction, openDialogAction } from "actions/dialog";
-import { connect } from "react-redux";
-import { RootState } from "reducers";
-import { EXTERNAL_ACCESS_PLUGIN_TYPE, ExternalAccessPlugin } from "types/plugin";
-import { ImmutableMap } from "typings";
-import { customSearchForImmutable } from "../../utils/tableSearch";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";

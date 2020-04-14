@@ -1,8 +1,8 @@
-import { Box, createStyles, Theme, WithStyles, withStyles } from "@material-ui/core";
+import { Box, createStyles, Theme, WithStyles, withStyles, Grid } from "@material-ui/core";
 import MaterialTable from "material-table";
 import React from "react";
 import { connect } from "react-redux";
-import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
+import { SmallCPULineChart, SmallMemoryLineChart, BigCPULineChart, BigMemoryLineChart } from "widgets/SmallLineChart";
 import { loadNodesAction } from "../../actions/node";
 import { RootState } from "../../reducers";
 import { TDispatchProp } from "../../types";
@@ -10,7 +10,8 @@ import { BasePage } from "../BasePage";
 
 const mapStateToProps = (state: RootState) => {
   return {
-    nodes: state.get("nodes").get("nodes")
+    nodes: state.get("nodes").get("nodes"),
+    metrics: state.get("nodes").get("metrics")
   };
 };
 
@@ -117,11 +118,19 @@ export class NodeListRaw extends React.Component<Props, States> {
   };
 
   render() {
-    const { classes } = this.props;
+    const { classes, metrics } = this.props;
 
     return (
       <BasePage title="Cluster Nodes">
         <div className={classes.root}>
+          <Grid container spacing={2}>
+            <Grid item md={6}>
+              <BigCPULineChart data={metrics.get("cpu")} />
+            </Grid>
+            <Grid item md={6}>
+              <BigMemoryLineChart data={metrics.get("memory")} />
+            </Grid>
+          </Grid>
           <Box mt={3}>
             <MaterialTable
               options={{

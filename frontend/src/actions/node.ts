@@ -7,11 +7,11 @@ export const loadNodesAction = (): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({ type: LOAD_NODES_PENDING });
     try {
-      const nodes = await getNodes();
+      const res = await getNodes();
 
       dispatch({
         type: LOAD_NODES_FULFILlED,
-        payload: { nodes }
+        payload: res
       });
     } catch (e) {
       if (e.response && e.response.data.status === StatusFailure) {

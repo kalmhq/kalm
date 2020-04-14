@@ -57,13 +57,16 @@ export interface NodeContent {
   metrics: Metrics;
 }
 
+export type NodesListResponse = ImmutableMap<{
+  nodes: Immutable.List<Node>;
+  metrics: Metrics;
+}>;
+
 export type Node = ImmutableMap<NodeContent>;
 
 export interface LoadNodesAction {
   type: typeof LOAD_NODES_FULFILlED;
-  payload: {
-    nodes: Immutable.List<Node>;
-  };
+  payload: NodesListResponse;
 }
 
 export interface NodeStateAction {
