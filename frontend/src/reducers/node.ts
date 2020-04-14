@@ -40,9 +40,9 @@ const reducer = (state: State = initialState, action: Actions): State => {
       action.payload.nodes.forEach(node => {
         const labels = node.get("labels");
         if (labels) {
-          for (let key in labels) {
-            labelsSet = labelsSet.add(`${key}:${labels[key]}`);
-          }
+          labels.map((value, key) => {
+            labelsSet = labelsSet.add(`${key}:${value}`);
+          });
         }
       });
       state = state.set("labels", labelsSet.toList());
