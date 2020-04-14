@@ -38,6 +38,7 @@ export const FoldButtonGroup = (props: Props) => {
       <IconButton aria-label="more" aria-controls="long-menu" aria-haspopup="true" onClick={handleClick}>
         <MoreVertIcon />
       </IconButton>
+      {/* ForwardRef ISSUE https://github.com/mui-org/material-ui/issues/15903 */}
       <Menu
         id="long-menu"
         anchorEl={anchorEl}
