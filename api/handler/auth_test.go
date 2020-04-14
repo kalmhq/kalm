@@ -18,14 +18,12 @@ type (
 
 func (suite *AuthTestSuite) TestLoginWithUsernameAndPassword() {
 	// TODO use real password and username
-	rec := suite.NewRequestWithHeaders(http.MethodPost, "/login", H{
+	rec := suite.NewRequestWithHeaders(http.MethodPost, "/login/token", H{
 		"username": "foo",
 		"password": "bar",
 	}, nil)
 
-	var res Res
-	rec.BodyAsJSON(&res)
-	suite.Equal(true, res.Authorized)
+	suite.Equal(http.StatusOK, rec.Code)
 }
 
 func (suite *AuthTestSuite) TestLoginStatusWithToken() {
