@@ -5,7 +5,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (h*ApiHandler) handleListNodes(c echo.Context) error {
+func (h *ApiHandler) handleListNodes(c echo.Context) error {
 	res, err := resources.ListNodes(getK8sClient(c))
 
 	if err != nil {

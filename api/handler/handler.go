@@ -61,7 +61,6 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gv1Alpha1WithAuth.PUT("/files/:namespace/move", h.handleMoveFile)
 	gv1Alpha1WithAuth.DELETE("/files/:namespace", h.handleDeleteFile)
 
-
 	gv1Alpha1WithAuth.DELETE("/pods/:namespace/:name", h.handleDeletePod)
 
 	gv1Alpha1WithAuth.GET("/namespaces", h.handleListNamespaces)

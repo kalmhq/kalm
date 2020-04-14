@@ -6,14 +6,14 @@ import (
 )
 
 type Node struct {
-	Name string `json:"name"`
-	Labels map[string]string `json:"labels"`
-	Status coreV1.NodeStatus `json:"status"`
-	Metrics MetricHistories `json:"metrics"`
+	Name    string            `json:"name"`
+	Labels  map[string]string `json:"labels"`
+	Status  coreV1.NodeStatus `json:"status"`
+	Metrics MetricHistories   `json:"metrics"`
 }
 
 type NodesResponse struct {
-	Nodes []Node `json:"nodes"`
+	Nodes   []Node          `json:"nodes"`
 	Metrics MetricHistories `json:"metrics"`
 }
 
@@ -41,9 +41,9 @@ func ListNodes(k8sClient *kubernetes.Clientset) (*NodesResponse, error) {
 
 	for _, item := range list.Items {
 		res.Nodes = append(res.Nodes, Node{
-			Name: item.Name,
-			Labels: item.Labels,
-			Status: item.Status,
+			Name:    item.Name,
+			Labels:  item.Labels,
+			Status:  item.Status,
 			Metrics: histories.Nodes[item.Name],
 		})
 	}

@@ -4,8 +4,8 @@ import (
 	"container/heap"
 	"context"
 	"fmt"
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	"github.com/influxdata/influxdb/pkg/slices"
+	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -223,8 +223,8 @@ func cacheMetricsForAppIntoLocalDB(app v1alpha1.Application, metricsList *metric
 }
 
 type NodesMetricHistories struct {
-	CPU    MetricHistory         `json:"cpu"`
-	Memory MetricHistory         `json:"memory"`
+	CPU    MetricHistory              `json:"cpu"`
+	Memory MetricHistory              `json:"memory"`
 	Nodes  map[string]MetricHistories `json:"nodes"`
 }
 

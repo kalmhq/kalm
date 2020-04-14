@@ -21,4 +21,3 @@ func (h *ApiHandler) handleGetNodes(c echo.Context) error {
 	}
 	return c.JSON(200, list)
 }
-

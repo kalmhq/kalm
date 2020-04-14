@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
+	_ "github.com/joho/godotenv/autoload"
 	"github.com/kapp-staging/kapp/api/client"
 	"github.com/kapp-staging/kapp/api/handler"
 	"github.com/kapp-staging/kapp/api/resources"
 	"github.com/kapp-staging/kapp/api/server"
-	_ "github.com/joho/godotenv/autoload"
 )
 
 import (
