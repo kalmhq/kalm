@@ -7,6 +7,8 @@ import (
 
 // 1. check if there is any loop in dependency graph
 func isValidateDependency(spec ApplicationSpec) KappValidateErrorList {
+	//spec := app.Spec
+
 	// build graph
 	nodeMap := buildDependencyGraph(spec)
 	loopExist, nodesInLoop := bfsCheckIfLoopExist(nodeMap)
