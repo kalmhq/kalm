@@ -57,7 +57,7 @@ export const validateToken = async (token: string): Promise<boolean> => {
 };
 
 export const getNodes = async () => {
-  const res = await getAxiosClient().get(K8sApiPrefix + "/v1/nodes");
+  const res = await getAxiosClient().get(K8sApiPrefix + "/v1alpha1/nodes");
   return res.data.items;
 };
 
