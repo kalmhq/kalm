@@ -85,35 +85,15 @@ class ApplicationFormRaw extends React.PureComponent<
           </Grid>
           <Grid item md={6}>
             <Field
-              name="namespace"
-              label="Namespace"
-              disabled={true}
-              component={TextField}
-              validate={ValidatorRequired}
-              helperText={isEdit ? "Can't modify namespace" : "All resources will running in this namespace."}
-              placeholder="Please type the namespace"
+              name="isActive"
+              formControlLabelProps={{
+                label: "Active"
+              }}
+              component={SwitchField}
+              normalizer={NormalizeBoolean}
             />
           </Grid>
         </Grid>
-      </>
-    );
-  }
-
-  private renderStatus() {
-    return (
-      <>
-        {/* <HelperContainer>
-          <Typography>Status</Typography>
-        </HelperContainer> */}
-        {TableTitle("Status")}
-        <Field
-          name="isActive"
-          formControlLabelProps={{
-            label: "Active"
-          }}
-          component={SwitchField}
-          normalizer={NormalizeBoolean}
-        />
       </>
     );
   }
@@ -148,9 +128,6 @@ class ApplicationFormRaw extends React.PureComponent<
         <Grid container spacing={2} className={classes.formSectionContainer}>
           <Grid className={classes.formSectionItem} item xs={12} sm={8} md={8}>
             <Paper className={classes.formSection}>{this.renderBasic()}</Paper>
-          </Grid>
-          <Grid className={classes.formSectionItem} item xs={12} sm={4} md={4}>
-            <Paper className={classes.formSection}>{this.renderStatus()}</Paper>
           </Grid>
         </Grid>
         <Paper className={classes.formSectionTable}>{this.renderComponent()}</Paper>
