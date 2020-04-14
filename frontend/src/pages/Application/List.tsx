@@ -35,7 +35,7 @@ import { BasePage } from "../BasePage";
 import { ApplicationListDataWrapper, WithApplicationsListDataProps } from "./ListDataWrapper";
 import { withNamespace, withNamespaceProps } from "permission/Namespace";
 import { AddLink } from "widgets/AddButton";
-import { PendingBadge, SuccessBadge, WarningBadge, ErrorBadge } from "widgets/Badge";
+import { PendingBadge, SuccessBadge, ErrorBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import HelpIcon from "@material-ui/icons/Help";
 import { ControlledDialog } from "widgets/ControlledDialog";

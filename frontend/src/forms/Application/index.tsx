@@ -60,7 +60,7 @@ class ApplicationFormRaw extends React.PureComponent<
     DispatchProp
 > {
   private renderBasic() {
-    const { isEdit, initialValues } = this.props;
+    const { isEdit } = this.props;
     return (
       <>
         {/* <HelperContainer>
@@ -100,8 +100,6 @@ class ApplicationFormRaw extends React.PureComponent<
   }
 
   private renderStatus() {
-    const { classes, isEdit } = this.props;
-
     return (
       <>
         {/* <HelperContainer>
