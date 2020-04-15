@@ -65,6 +65,24 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
 
 export const updateApplicationAction = (applicationRaw: Application): ThunkResult<Promise<void>> => {
   return async dispatch => {
+    // const testErrors = [
+    //   {
+    //     key: ".name",
+    //     message: "name errors"
+    //   },
+    //   {
+    //     key: ".components[1].name",
+    //     message: "components name errors"
+    //   },
+    //   {
+    //     key: ".components[1].ports",
+    //     message: "components ports errors"
+    //   }
+    // ];
+    // const submitErrors = resErrorsToSubmitErrors(testErrors);
+    // console.log("throw", submitErrors);
+    // throw new SubmissionError(submitErrors);
+
     dispatch(setIsSubmittingApplication(true));
     let application: ApplicationDetails;
 
