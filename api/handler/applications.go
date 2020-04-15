@@ -99,7 +99,7 @@ func createKappApplication(c echo.Context) (*v1alpha1.Application, error) {
 		return nil, err
 	}
 
-	if err := v1alpha1.TryValidateApplication(crdApplication.Spec); err != nil {
+	if err := v1alpha1.TryValidateApplication(crdApplication.Spec, crdApplication.Name, crdApplication.Namespace); err != nil {
 		return nil, err
 	}
 

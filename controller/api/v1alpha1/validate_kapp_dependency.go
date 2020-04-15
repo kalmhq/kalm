@@ -6,18 +6,45 @@ import (
 )
 
 // 1. check if there is any loop in dependency graph
-func isValidateDependency(spec ApplicationSpec) error {
+func isValidateDependency(spec ApplicationSpec) KappValidateErrorList {
+	//spec := app.Spec
+
 	// build graph
 	nodeMap := buildDependencyGraph(spec)
-	loopExist := bfsCheckIfLoopExist(nodeMap)
+	loopExist, nodesInLoop := bfsCheckIfLoopExist(nodeMap)
 
-	if loopExist {
-		return fmt.Errorf("dependency loop exist")
+	if !loopExist {
+		return nil
 	}
 
-	return nil
+	var errs []KappValidateError
+	for _, node := range nodesInLoop {
+		errs = append(errs, KappValidateError{
+			Err:  "dependency loop exist",
+			Path: getJsonPathOfWrongField(node.Name, spec),
+		})
+	}
+
+	return errs
 }
 
+func getJsonPathOfWrongField(name string, spec ApplicationSpec) string {
+	idx := idxOfComponent(name, spec)
+
+	return fmt.Sprintf(".components[%d].dependencies", idx)
+}
+
+func idxOfComponent(componentName string, spec ApplicationSpec) int {
+	for i := range spec.Components {
+		if componentName == spec.Components[i].Name {
+			return i
+		}
+	}
+
+	return -1
+}
+
+// componentName -> node
 func buildDependencyGraph(spec ApplicationSpec) map[string]*node {
 	var nodeMap = make(map[string]*node)
 	for _, component := range spec.Components {
@@ -47,7 +74,7 @@ func buildDependencyGraph(spec ApplicationSpec) map[string]*node {
 	return nodeMap
 }
 
-func bfsCheckIfLoopExist(nodeMap map[string]*node) bool {
+func bfsCheckIfLoopExist(nodeMap map[string]*node) (bool, []*node) {
 	// bfs
 	var queue = list.New()
 	for _, v := range nodeMap {
@@ -88,7 +115,13 @@ func bfsCheckIfLoopExist(nodeMap map[string]*node) bool {
 	}
 
 	loopExist := len(nodeMap) > 0
-	return loopExist
+
+	var nodesInLoop []*node
+	for _, node := range nodeMap {
+		nodesInLoop = append(nodesInLoop, node)
+	}
+
+	return loopExist, nodesInLoop
 }
 
 func existNode(slice []*node, target *node) bool {
