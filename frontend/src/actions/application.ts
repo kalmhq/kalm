@@ -38,7 +38,7 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
     try {
       application = await createKappApplication(applicationValues);
     } catch (e) {
-      if (e.response && e.response.data.errors) {
+      if (e.response && e.response.data.errors && e.response.data.errors.length > 0) {
         const submitErrors = resErrorsToSubmitErrors(e.response.data.errors);
         throw new SubmissionError(submitErrors);
       } else if (e.response && e.response.data.status === StatusFailure) {
@@ -71,7 +71,7 @@ export const updateApplicationAction = (applicationRaw: Application): ThunkResul
     try {
       application = await updateKappApplication(applicationRaw);
     } catch (e) {
-      if (e.response && e.response.data.errors) {
+      if (e.response && e.response.data.errors && e.response.data.errors.length > 0) {
         const submitErrors = resErrorsToSubmitErrors(e.response.data.errors);
         throw new SubmissionError(submitErrors);
       } else if (e.response && e.response.data.status === StatusFailure) {

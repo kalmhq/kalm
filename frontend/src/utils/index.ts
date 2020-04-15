@@ -59,14 +59,18 @@ export const resErrorsToSubmitErrors = (errors: ResError[]) => {
   // ]
   const submitErrors: { [key: string]: string } = {};
   errors.forEach(error => {
-    if (error.key === ".name") {
-      submitErrors["name"] = error.message;
-    } else if (error.key.startsWith(".components")) {
-      // ".components[1].dependencies".split(".")
-      // => ["", "components[1]", "dependencies"]
-      const keySplits = error.key.split(".");
-      if (keySplits[2]) {
-        submitErrors[keySplits[1]] = `${keySplits[2]}: ${error.message}`;
+    // ".components[1].dependencies".split(".")
+    // => ["", "components[1]", "dependencies"]
+    const keySplits = error.key.split(".");
+    if (keySplits[1]) {
+      if (keySplits[1] === "name") {
+        submitErrors["name"] = error.message;
+      } else if (keySplits[1] === "components" && keySplits[2]) {
+        if (submitErrors[keySplits[1]]) {
+          submitErrors[keySplits[1]] = `${submitErrors[keySplits[1]]}, ${keySplits[2]}: ${error.message}`;
+        } else {
+          submitErrors[keySplits[1]] = `${keySplits[2]}: ${error.message}`;
+        }
       }
     }
   });
