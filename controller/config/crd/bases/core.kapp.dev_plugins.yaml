@@ -15,8 +15,11 @@ spec:
     plural: plugins
     singular: plugin
   scope: Namespaced
+  subresources:
+    status: {}
   validation:
     openAPIV3Schema:
+      description: Plugin is the Schema for the plugins API
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -31,15 +34,28 @@ spec:
         metadata:
           type: object
         spec:
+          description: PluginSpec defines the desired state of Plugin
           properties:
-            properties:
-              type: object
-            type:
+            availableWorkloadType:
+              items:
+                type: string
+              type: array
+            src:
               type: string
           required:
-          - type
+          - availableWorkloadType
+          - src
           type: object
         status:
+          description: PluginStatus defines the observed state of Plugin
+          properties:
+            compiledSuccessfully:
+              description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
+                of cluster Important: Run "make" to regenerate code after modifying
+                this file'
+              type: boolean
+          required:
+          - compiledSuccessfully
           type: object
       type: object
   version: v1alpha1

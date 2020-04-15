@@ -10,4 +10,7 @@ resources:
 - group: core
   kind: Dependency
   version: v1alpha1
+- group: core
+  kind: Plugin
+  version: v1alpha1
 version: "2"
