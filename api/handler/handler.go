@@ -24,17 +24,15 @@ type ApiHandler struct {
 type H map[string]interface{}
 
 func (h *ApiHandler) Install(e *echo.Echo) {
-
+	// liveness readiness probes
 	e.GET("/ping", handlePing)
 
-	// permission routes
+	// login
 	e.POST("/login/token", h.handleValidateToken)
 	e.GET("/login/status", h.handleLoginStatus)
 
 	// original resources routes
 	gV1 := e.Group("/v1", h.AuthClientMiddleware)
-	gV1.GET("/nodes", h.handleGetNodes)
-	gV1.GET("/nodes/metrics", h.handleGetNodeMetrics)
 	gV1.GET("/persistentvolumes", h.handleGetPVs)
 
 	gV1.GET("/dependencies", h.handleGetDependencies)
@@ -48,9 +46,9 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gv1Alpha1WithAuth.GET("/applications", h.handleGetApplications)
 	gv1Alpha1WithAuth.GET("/applications/:namespace", h.handleGetApplications)
 	gv1Alpha1WithAuth.GET("/applications/:namespace/:name", h.handleGetApplicationDetails)
-	gv1Alpha1WithAuth.PUT("/applications/:namespace/:name", h.handleUpdateApplicationNew)
+	gv1Alpha1WithAuth.PUT("/applications/:namespace/:name", h.handleUpdateApplication)
 	gv1Alpha1WithAuth.DELETE("/applications/:namespace/:name", h.handleDeleteApplication)
-	gv1Alpha1WithAuth.POST("/applications/:namespace", h.handleCreateApplicationNew)
+	gv1Alpha1WithAuth.POST("/applications/:namespace", h.handleCreateApplication)
 
 	gv1Alpha1WithAuth.GET("/componenttemplates", h.handleGetComponentTemplates)
 	gv1Alpha1WithAuth.POST("/componenttemplates", h.handleCreateComponentTemplate)
@@ -63,8 +61,6 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gv1Alpha1WithAuth.PUT("/files/:namespace/move", h.handleMoveFile)
 	gv1Alpha1WithAuth.DELETE("/files/:namespace", h.handleDeleteFile)
 
-	gv1Alpha1WithAuth.GET("/nodes/metrics", h.handleGetNodeMetricsNew)
-
 	gv1Alpha1WithAuth.DELETE("/pods/:namespace/:name", h.handleDeletePod)
 
 	gv1Alpha1WithAuth.GET("/namespaces", h.handleListNamespaces)
@@ -76,6 +72,8 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gv1Alpha1WithAuth.DELETE("/rolebindings/:namespace/:name", h.handleDeleteRoleBinding)
 
 	gv1Alpha1WithAuth.GET("/serviceaccounts/:name", h.handleGetServiceAccount)
+
+	gv1Alpha1WithAuth.GET("/nodes", h.handleListNodes)
 }
 
 func NewApiHandler(clientManager *client.ClientManager) *ApiHandler {

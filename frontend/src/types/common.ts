@@ -4,6 +4,7 @@ import { ImmutableMap } from "../typings";
 import { SettingObject } from "../reducers/settings";
 import { NamespaceActions } from "./namespace";
 import { LoginStatus } from "./authorization";
+import Immutable from "immutable";
 
 export const LOAD_LOGIN_STATUS_PENDING = "LOAD_LOGIN_STATUS_PENDING";
 export const LOAD_LOGIN_STATUS_FULFILLED = "LOAD_LOGIN_STATUS_FULFILLED";
@@ -11,7 +12,6 @@ export const LOAD_LOGIN_STATUS_FAILED = "LOAD_LOGIN_STATUS_FAILED";
 export const SET_AUTH_TOKEN = "SET_AUTH_TOKEN";
 export const LOGOUT = "LOGOUT";
 
-export const LOAD_NODES = "LOAD_NODES";
 export const LOAD_PERSISTENT_VOLUMNS = "LOAD_PERSISTENT_VOLUMNS";
 
 export const SET_NOTIFICATION_MESSAGE = "SET_NOTIFICATION_MESSAGE";
@@ -35,6 +35,18 @@ export type ControlledDialogParams<T> = ImmutableMap<{
   data: T;
 }>;
 
+export type MetricItem = ImmutableMap<{
+  x: number;
+  y: number;
+}>;
+
+export type MetricList = Immutable.List<MetricItem>;
+
+export type Metrics = ImmutableMap<{
+  cpu: MetricList;
+  memory: MetricList;
+}>;
+
 export const StatusTypeRunning = "RUNNING";
 export const StatusTypePending = "PENDING";
 export const StatusTypeCreating = "CREATING";
@@ -53,14 +65,6 @@ export interface SetNotificationMessageAction {
     variant: VariantType;
   };
 }
-
-export interface LoadNodesAction {
-  type: typeof LOAD_NODES;
-  payload: {
-    nodes: any[];
-  };
-}
-
 export interface LoadPersistentVolumnsAction {
   type: typeof LOAD_PERSISTENT_VOLUMNS;
   payload: {
@@ -136,7 +140,6 @@ export type CommonActions =
   | LoadLoginStatusAction
   | SetNotificationMessageAction
   | CallHistoryMethodAction
-  | LoadNodesAction
   | LoadPersistentVolumnsAction
   | SetSettingsAction
   | InitControlledDialogAction

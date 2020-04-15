@@ -1,11 +1,11 @@
-import { Box, createStyles, Theme, Typography, withStyles, WithStyles } from "@material-ui/core";
+import { Box, createStyles, Theme, Typography, withStyles, WithStyles, Tooltip } from "@material-ui/core";
 import WarningIcon from "@material-ui/icons/Warning";
 import Immutable from "immutable";
 import MaterialTable from "material-table";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
-import { arrayPush, change, getFormSyncErrors, submit, WrappedFieldArrayProps } from "redux-form";
-import { FieldArray, formValueSelector } from "redux-form/immutable";
+import { arrayPush, change, getFormSyncErrors, submit, WrappedFieldArrayProps, stopSubmit } from "redux-form";
+import { FieldArray, formValueSelector, getFormSubmitErrors } from "redux-form/immutable";
 import { setIsSubmittingApplicationComponent } from "../../actions/application";
 import { RootState } from "../../reducers";
 import { ApplicationComponent, SharedEnv } from "../../types/application";
@@ -16,18 +16,21 @@ import { ComponentLikeForm } from "../ComponentLike";
 import { CustomizedDialog } from "./ComponentModal";
 import { KappTooltip } from "./KappTooltip";
 import { TableTitle } from "widgets/TableTitle";
-import { grey } from "@material-ui/core/colors";
+import { grey, red } from "@material-ui/core/colors";
+import ErrorIcon from "@material-ui/icons/Error";
 
 const mapStateToProps = (state: RootState) => {
   const selector = formValueSelector("application");
   const sharedEnv: Immutable.List<SharedEnv> = selector(state, "sharedEnvs");
   const syncErrors = getFormSyncErrors("componentLike")(state);
+  const submitErrors = getFormSubmitErrors("application")(state) as Immutable.Map<string, any>;
 
   return {
     isSubmittingApplicationComponent: state.get("applications").get("isSubmittingApplicationComponent"),
     componentTemplates: state.get("componentTemplates").get("componentTemplates"),
     sharedEnv,
-    syncErrors
+    syncErrors,
+    submitErrors
   };
 };
 
@@ -44,6 +47,14 @@ const styles = (theme: Theme) =>
       border: `1px dashed`,
       padding: theme.spacing(3),
       borderRadius: 3
+    },
+    rowError: {
+      color: red[700],
+      display: "flex",
+      alignItems: "center"
+    },
+    errorIcon: {
+      marginRight: "6px"
     }
   });
 
@@ -84,7 +95,20 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
     return !!sharedEnv.find(x => x.get("name") === envName);
   };
 
-  private renderNameColumn = (rowData: RowData) => rowData.applicationComponent.get("name");
+  private renderNameColumn = (rowData: RowData) => {
+    const { submitErrors, classes } = this.props;
+    if (submitErrors.get(`components[${rowData.index}]`)) {
+      return (
+        <Tooltip title={submitErrors.get(`components[${rowData.index}]`)} placement="top-start">
+          <div className={classes.rowError}>
+            <ErrorIcon className={classes.errorIcon} />
+            {rowData.applicationComponent.get("name")}
+          </div>
+        </Tooltip>
+      );
+    }
+    return rowData.applicationComponent.get("name");
+  };
   private renderTypeColumn = (rowData: RowData) => rowData.applicationComponent.get("workloadType");
   private renderReplicasColumn = (rowData: RowData) => rowData.applicationComponent.get("replicas");
   private renderCpuColumn = (rowData: RowData) => rowData.applicationComponent.get("cpu") || "-";
@@ -308,7 +332,8 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { fields } = this.props;
+    const { fields, dispatch } = this.props;
+
     return (
       <div>
         {this.renderDialog()}
@@ -327,6 +352,7 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
             {
               icon: "edit",
               onClick: (_event, data) => {
+                dispatch(stopSubmit("application", {})); // clear submitErrors
                 this.openComponentFormDialog((data as RowData).index);
               }
             }

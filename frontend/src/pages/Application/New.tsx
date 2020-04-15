@@ -1,16 +1,15 @@
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { push } from "connected-react-router";
 import React from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "../../types";
-import ApplicationForm from "../../forms/Application";
+import ApplicationForm, { applicationInitialValues } from "../../forms/Application";
 import { RootState } from "../../reducers";
 import { BasePage } from "../BasePage";
 import { createApplicationAction } from "../../actions/application";
-import { setSuccessNotificationAction } from "../../actions/notification";
 import RemoteSubmitApplication from "../../forms/Application/remoteSubmitApplication";
 import { Application } from "../../types/application";
+import { getCurrentNamespace } from "../../selectors/namespace";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -27,8 +26,6 @@ class ApplicationNewRaw extends React.PureComponent<Props> {
   private submit = async (applicationFormValue: Application) => {
     const { dispatch } = this.props;
     await dispatch(createApplicationAction(applicationFormValue));
-    await dispatch(setSuccessNotificationAction("Create application successfully"));
-    await dispatch(push("/applications"));
   };
 
   public render() {
@@ -36,7 +33,11 @@ class ApplicationNewRaw extends React.PureComponent<Props> {
     return (
       <BasePage title="New Application" rightAction={<RemoteSubmitApplication />}>
         <div className={classes.root}>
-          <ApplicationForm onSubmit={this.submit} isEdit={false} />
+          <ApplicationForm
+            onSubmit={this.submit}
+            isEdit={false}
+            initialValues={applicationInitialValues.set("namespace", getCurrentNamespace())}
+          />
         </div>
       </BasePage>
     );

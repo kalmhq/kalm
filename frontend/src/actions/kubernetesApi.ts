@@ -1,6 +1,8 @@
 import axios from "axios";
 import Immutable from "immutable";
+import { LoginStatus, LoginStatusContent } from "types/authorization";
 import { KappDependency } from "types/dependency";
+import { NodesListResponse } from "types/node";
 import { RoleBinding, RoleBindingsRequestBody } from "types/user";
 import { getCurrentNamespace } from "../selectors/namespace";
 import { store } from "../store";
@@ -8,7 +10,6 @@ import { Application, ApplicationDetails, ApplicationDetailsList } from "../type
 import { ComponentTemplate } from "../types/componentTemplate";
 import { ConfigCreate, ConfigRes } from "../types/config";
 import { Namespaces } from "../types/namespace";
-import { LoginStatus, LoginStatusContent } from "types/authorization";
 
 export const K8sApiPrefix = process.env.REACT_APP_K8S_API_PERFIX;
 export const k8sWsPrefix = !K8sApiPrefix
@@ -56,9 +57,9 @@ export const validateToken = async (token: string): Promise<boolean> => {
   return res.status === 200;
 };
 
-export const getNodes = async () => {
-  const res = await getAxiosClient().get(K8sApiPrefix + "/v1/nodes");
-  return res.data.items;
+export const getNodes = async (): Promise<NodesListResponse> => {
+  const res = await getAxiosClient().get(K8sApiPrefix + "/v1alpha1/nodes");
+  return Immutable.fromJS(res.data);
 };
 
 export const getPersistentVolumes = async (): Promise<any[]> => {

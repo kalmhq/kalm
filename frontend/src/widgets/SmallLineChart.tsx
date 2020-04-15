@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import React from "react";
 // @ts-ignore
 import { Chart, ChartData, Line } from "react-chartjs-2";
-import { MetricList } from "../types/application";
+import { MetricList } from "../types/common";
 
 Chart.controllers.line = Chart.controllers.line.extend({
   draw: function(ease: any) {
