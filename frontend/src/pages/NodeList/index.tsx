@@ -1,17 +1,17 @@
+import { Box, createStyles, Theme, WithStyles, withStyles, Grid } from "@material-ui/core";
+import MaterialTable from "material-table";
 import React from "react";
 import { connect } from "react-redux";
-import { TDispatchProp } from "../../types";
+import { SmallCPULineChart, SmallMemoryLineChart, BigCPULineChart, BigMemoryLineChart } from "widgets/SmallLineChart";
 import { loadNodesAction } from "../../actions/node";
-import { K8sApiPrefix } from "../../actions/kubernetesApi";
 import { RootState } from "../../reducers";
+import { TDispatchProp } from "../../types";
 import { BasePage } from "../BasePage";
-import { Alert } from "@material-ui/lab";
-import { createStyles, Theme, WithStyles, withStyles, Box } from "@material-ui/core";
-import MaterialTable from "material-table";
 
 const mapStateToProps = (state: RootState) => {
   return {
-    nodes: state.get("nodes").get("nodes")
+    nodes: state.get("nodes").get("nodes"),
+    metrics: state.get("nodes").get("metrics")
   };
 };
 
@@ -22,118 +22,115 @@ const styles = (theme: Theme) =>
     }
   });
 
-interface States {
-  loadNodesError: boolean;
-  loadingNodes: boolean;
-}
+interface States {}
 
 type Props = ReturnType<typeof mapStateToProps> & TDispatchProp & WithStyles<typeof styles>;
 
 export class NodeListRaw extends React.Component<Props, States> {
   constructor(props: Props) {
     super(props);
-    this.state = {
-      loadNodesError: false,
-      loadingNodes: true
-    };
+    this.state = {};
   }
 
   componentDidMount() {
-    this.props
-      .dispatch(loadNodesAction())
-      .catch(e => {
-        if (e.isAxiosError) {
-          this.setState({ loadNodesError: true });
-        }
-      })
-      .finally(() => {
-        this.setState({
-          loadingNodes: false
-        });
-      });
+    this.props.dispatch(loadNodesAction());
   }
 
   getTableData = () => {
     const { nodes } = this.props;
-    const data = nodes.map((node, index) => {
-      // const handleChange = () => {
-      //   this.showSwitchingIsEnabledDialog(application.get("id"));
-      // };
+    const data = nodes
+      .map((node, index) => {
+        const addresses = node
+          .get("status")
+          .get("addresses")
+          .map((address, index) => {
+            return (
+              <div key={index}>
+                {address.get("type")}: {address.get("address")}
+              </div>
+            );
+          })
+          .toArray();
 
-      // const onDeleteClick = () => {
-      //   this.setDeletingApplicationAndConfirm(application.get("id"));
-      // };
-
-      // let status = null;
-
-      // switch (application.get("status").get("status")) {
-      //   case StatusTypePending:
-      //     status = <StatusPending />;
-      //     break;
-      //   case StatusTypeRunning:
-      //     status = <CheckCircleIcon color="primary" />;
-      //     break;
-      //   case StatusTypeError:
-      //     status = <CheckCircleIcon color="primary" />;
-      //     break;
-      // }
-
-      return {
-        name: node.metadata!.name,
-        info: (
-          <>
-            <Box>Kernel: {node.status!.nodeInfo!.kernelVersion}</Box>
-            <Box>osImage: {node.status!.nodeInfo!.osImage}</Box>
-            <Box>containerRuntimeVersion: {node.status!.nodeInfo!.containerRuntimeVersion}</Box>
-          </>
-        ),
-        // addresses: node.status!.addresses!.map((x, index) => (
-        //   <Box mr={1} key={index}>
-        //     {x.address}
-        //   </Box>
-        // )),
-        // conditions: node.status!.conditions!.map((x, index) => (
-        //   <Box mr={1} key={index}>
-        //     {x.type} {x.status}
-        //   </Box>
-        // )),
-        resources: (
-          <>
-            <Box>
-              Cpu: {node.status!.allocatable!.cpu} allocatable / max {node.status!.capacity!.cpu}
-            </Box>
-            <Box>
-              Memory: {node.status!.allocatable!.memory} allocatable / max {node.status!.capacity!.memory}
-            </Box>
-          </>
-        )
-      };
-    });
+        return {
+          name: node.get("name"),
+          info: (
+            <>
+              <Box>
+                Kernel:{" "}
+                {node
+                  .get("status")
+                  .get("nodeInfo")
+                  .get("kernelVersion")}
+              </Box>
+              <Box>
+                osImage:{" "}
+                {node
+                  .get("status")
+                  .get("nodeInfo")
+                  .get("osImage")}
+              </Box>
+              <Box>
+                containerRuntimeVersion:{" "}
+                {node
+                  .get("status")
+                  .get("nodeInfo")
+                  .get("containerRuntimeVersion")}
+              </Box>
+            </>
+          ),
+          addresses,
+          cpu: <SmallCPULineChart data={node.get("metrics").get("cpu")} />,
+          memory: <SmallMemoryLineChart data={node.get("metrics").get("memory")} />,
+          resources: (
+            <>
+              <Box>
+                Cpu:{" "}
+                {node
+                  .get("status")
+                  .get("allocatable")
+                  .get("cpu")}{" "}
+                allocatable / max{" "}
+                {node
+                  .get("status")
+                  .get("capacity")
+                  .get("cpu")}
+              </Box>
+              <Box>
+                Memory:{" "}
+                {node
+                  .get("status")
+                  .get("allocatable")
+                  .get("memory")}
+                allocatable / max{" "}
+                {node
+                  .get("status")
+                  .get("capacity")
+                  .get("memory")}
+              </Box>
+            </>
+          )
+        };
+      })
+      .toArray();
 
     return data;
   };
 
   render() {
-    const { classes } = this.props;
-    const { loadNodesError, loadingNodes } = this.state;
+    const { classes, metrics } = this.props;
 
     return (
       <BasePage title="Cluster Nodes">
         <div className={classes.root}>
-          {loadNodesError ? (
-            <Alert severity="error">
-              <Box>
-                Kapp fails to load nodes from current cluster with endpoint <strong>{K8sApiPrefix}</strong>. Please
-                check your connection.
-              </Box>
-            </Alert>
-          ) : loadingNodes ? null : (
-            <Alert severity="info">
-              Node is an original concept of kubernetes. It's a worker machine in Kubernetes, previously known as a
-              minion. A node may be a VM or physical machine, depending on the cluster.
-            </Alert>
-          )}
-
+          <Grid container spacing={2}>
+            <Grid item md={6}>
+              <BigCPULineChart data={metrics.get("cpu")} />
+            </Grid>
+            <Grid item md={6}>
+              <BigMemoryLineChart data={metrics.get("memory")} />
+            </Grid>
+          </Grid>
           <Box mt={3}>
             <MaterialTable
               options={{
@@ -144,8 +141,9 @@ export class NodeListRaw extends React.Component<Props, States> {
                 { title: "Name", field: "name", sorting: false },
                 { title: "Info", field: "info", sorting: false },
                 { title: "Address", field: "addresses", sorting: false },
-                { title: "Conditions", field: "conditions", sorting: false },
                 { title: "Resources", field: "resources", sorting: false },
+                { title: "CPU", field: "cpu", sorting: false },
+                { title: "Memory", field: "memory", sorting: false },
                 { title: "Alerts", field: "components", sorting: false }
               ]}
               data={this.getTableData()}

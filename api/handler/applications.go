@@ -42,7 +42,7 @@ func (h *ApiHandler) handleGetApplicationDetails(c echo.Context) error {
 	return c.JSON(200, res)
 }
 
-func (h *ApiHandler) handleCreateApplicationNew(c echo.Context) error {
+func (h *ApiHandler) handleCreateApplication(c echo.Context) error {
 	application, err := createKappApplication(c)
 
 	if err != nil {
@@ -58,7 +58,7 @@ func (h *ApiHandler) handleCreateApplicationNew(c echo.Context) error {
 	return c.JSON(http.StatusCreated, res)
 }
 
-func (h *ApiHandler) handleUpdateApplicationNew(c echo.Context) error {
+func (h *ApiHandler) handleUpdateApplication(c echo.Context) error {
 	application, err := updateKappApplication(c)
 
 	if err != nil {
@@ -99,7 +99,7 @@ func createKappApplication(c echo.Context) (*v1alpha1.Application, error) {
 		return nil, err
 	}
 
-	if err := v1alpha1.TryValidateApplication(crdApplication.Spec); err != nil {
+	if err := v1alpha1.TryValidateApplication(crdApplication.Spec, crdApplication.Name, crdApplication.Namespace); err != nil {
 		return nil, err
 	}
 

@@ -1,6 +1,7 @@
 import Immutable from "immutable";
 import { ImmutableMap } from "../typings";
 import { ComponentLikeContent } from "./componentTemplate";
+import { Metrics } from "./common";
 
 export const CREATE_APPLICATION = "CREATE_APPLICATION";
 export const UPDATE_APPLICATION = "UPDATE_APPLICATION";
@@ -91,18 +92,6 @@ export type PodStatus = ImmutableMap<{
     }>
   >;
   metrics: Metrics;
-}>;
-
-export type MetricItem = ImmutableMap<{
-  x: number;
-  y: number;
-}>;
-
-export type MetricList = Immutable.List<MetricItem>;
-
-export type Metrics = ImmutableMap<{
-  cpu: MetricList;
-  memory: MetricList;
 }>;
 
 export type ApplicationDetails = ImmutableMap<{

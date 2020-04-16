@@ -12,7 +12,7 @@ import { RootState } from "../../reducers";
 import { Actions } from "../../types";
 import { ApplicationDetails, PodStatus } from "../../types/application";
 import { formatTimeDistance } from "../../utils";
-import { ErrorBedge, PendingBedge, SuccessBedge } from "../../widgets/Bedge";
+import { ErrorBadge, PendingBadge, SuccessBadge } from "../../widgets/Badge";
 import { IconButtonWithTooltip, IconLinkWithToolTip } from "../../widgets/IconButtonWithTooltip";
 import {
   BigCPULineChart,
@@ -122,21 +122,21 @@ class DetailsRaw extends React.PureComponent<Props, State> {
 
   private renderPodStatus = (pod: PodStatus) => {
     if (pod.get("isTerminating")) {
-      return <PendingBedge />;
+      return <PendingBadge />;
     }
 
     switch (pod.get("status")) {
       case "Running": {
-        return <SuccessBedge />;
+        return <SuccessBadge />;
       }
       case "Pending": {
-        return <PendingBedge />;
+        return <PendingBadge />;
       }
       case "Succeeded": {
-        return <SuccessBedge />;
+        return <SuccessBadge />;
       }
       case "Failed": {
-        return <ErrorBedge />;
+        return <ErrorBadge />;
       }
     }
   };

@@ -73,7 +73,7 @@ func (r *Application) ValidateDelete() error {
 
 func (r *Application) validateApplication() error {
 
-	if err := TryValidateApplication(r.Spec); err != nil {
+	if err := TryValidateApplication(r.Spec, r.Name, r.Namespace); err != nil {
 		return err
 	}
 

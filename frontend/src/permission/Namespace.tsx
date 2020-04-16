@@ -89,4 +89,6 @@ class NamespaceVisibleContainerRaw extends React.Component<
   }
 }
 
-export const NamespaceVisibleContainer = withNamespace(NamespaceVisibleContainerRaw);
+export const NamespaceVisibleContainer = connect(mapStateToProps, null, null, { forwardRef: true })(
+  NamespaceVisibleContainerRaw
+);

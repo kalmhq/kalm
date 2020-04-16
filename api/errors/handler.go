@@ -1,6 +1,7 @@
 package errors
 
 import (
+	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -9,7 +10,13 @@ import (
 )
 
 type ErrorRes struct {
-	Status  string `json:"status"`
+	Status  string      `json:"status"`
+	Message string      `json:"message"`
+	Errors  []ErrDetail `json:"errors"`
+}
+
+type ErrDetail struct {
+	Key     string `json:"key"`
 	Message string `json:"message"`
 }
 
@@ -17,9 +24,28 @@ func CustomHTTPErrorHandler(err error, c echo.Context) {
 	c.Logger().Error(err)
 
 	statusError, ok := err.(*errors.StatusError)
-
 	if ok && statusError.Status().Code > 0 {
 		c.JSON(int(statusError.ErrStatus.Code), &ErrorRes{Status: statusError.ErrStatus.Status, Message: statusError.ErrStatus.Message})
+		return
+	}
+
+	if validateErrList, ok := err.(v1alpha1.KappValidateErrorList); ok {
+		code := http.StatusBadRequest
+
+		var errs []ErrDetail
+		for _, e := range validateErrList {
+			errs = append(errs, ErrDetail{
+				Key:     e.Path,
+				Message: e.Err,
+			})
+		}
+
+		c.JSON(code, &ErrorRes{
+			Status:  metav1.StatusFailure,
+			Message: "validation error",
+			Errors:  errs,
+		})
+
 		return
 	}
 

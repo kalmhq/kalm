@@ -25,7 +25,10 @@ import {
   getKappApplicationList,
   updateKappApplication
 } from "./kubernetesApi";
-import { setErrorNotificationAction } from "./notification";
+import { setErrorNotificationAction, setSuccessNotificationAction } from "./notification";
+import { SubmissionError } from "redux-form";
+import { push } from "connected-react-router";
+import { resErrorsToSubmitErrors } from "../utils";
 
 export const createApplicationAction = (applicationValues: Application): ThunkResult<Promise<void>> => {
   return async dispatch => {
@@ -35,7 +38,10 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
     try {
       application = await createKappApplication(applicationValues);
     } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
+      if (e.response && e.response.data.errors && e.response.data.errors.length > 0) {
+        const submitErrors = resErrorsToSubmitErrors(e.response.data.errors);
+        throw new SubmissionError(submitErrors);
+      } else if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
       } else {
         dispatch(setErrorNotificationAction());
@@ -52,22 +58,46 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
       type: CREATE_APPLICATION,
       payload: { application }
     });
+    dispatch(setSuccessNotificationAction("Create application successfully"));
+    dispatch(push("/applications"));
   };
 };
 
 export const updateApplicationAction = (applicationRaw: Application): ThunkResult<Promise<void>> => {
   return async dispatch => {
+    // const testErrors = [
+    //   {
+    //     key: ".name",
+    //     message: "name errors"
+    //   },
+    //   {
+    //     key: ".components[1].name",
+    //     message: "components name errors"
+    //   },
+    //   {
+    //     key: ".components[1].ports",
+    //     message: "components ports errors"
+    //   }
+    // ];
+    // const submitErrors = resErrorsToSubmitErrors(testErrors);
+    // console.log("throw", submitErrors);
+    // throw new SubmissionError(submitErrors);
+
     dispatch(setIsSubmittingApplication(true));
     let application: ApplicationDetails;
 
     try {
       application = await updateKappApplication(applicationRaw);
     } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
+      if (e.response && e.response.data.errors && e.response.data.errors.length > 0) {
+        const submitErrors = resErrorsToSubmitErrors(e.response.data.errors);
+        throw new SubmissionError(submitErrors);
+      } else if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
       } else {
         dispatch(setErrorNotificationAction());
       }
+
       return;
     } finally {
       setTimeout(() => {
@@ -80,6 +110,8 @@ export const updateApplicationAction = (applicationRaw: Application): ThunkResul
       type: UPDATE_APPLICATION,
       payload: { application }
     });
+    dispatch(setSuccessNotificationAction("Edit application successfully"));
+    dispatch(push("/applications"));
   };
 };
 

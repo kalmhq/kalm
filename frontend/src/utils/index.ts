@@ -44,3 +44,45 @@ export const formatTimeDistance = (t: any) => {
   }
   return res;
 };
+
+export interface ResError {
+  key: string;
+  message: string;
+}
+
+export const resErrorsToSubmitErrors = (errors: ResError[]) => {
+  // "errors": [
+  //   {
+  //      "key": ".components[1].dependencies",
+  //      "message": "should no have loop in dependencies"
+  //   }
+  // ]
+  const submitErrors: { [key: string]: any } = {};
+  errors.forEach(error => {
+    // ".components[1].dependencies".split(".")
+    // => ["", "components[1]", "dependencies"]
+    const keySplits = error.key.split(".");
+    if (keySplits[1]) {
+      if (keySplits[1] === "name") {
+        submitErrors["name"] = error.message;
+      } else if (keySplits[1].startsWith("components") && keySplits[2]) {
+        if (submitErrors[keySplits[1]]) {
+          submitErrors[keySplits[1]][keySplits[2]] = error.message;
+        } else {
+          submitErrors[keySplits[1]] = { [keySplits[2]]: error.message };
+        }
+
+        // if (submitErrors[keySplits[1]]) {
+        //   let componentErrors: { [key: string]: string } = {};
+        //   componentErrors = JSON.parse(submitErrors[keySplits[1]]);
+        //   componentErrors[keySplits[2]] = error.message;
+        //   submitErrors[keySplits[1]] = JSON.stringify(componentErrors[keySplits[2]]);
+        // } else {
+        //   submitErrors[keySplits[1]] = JSON.stringify({ [keySplits[2]]: error.message });
+        // }
+      }
+    }
+  });
+
+  return submitErrors;
+};

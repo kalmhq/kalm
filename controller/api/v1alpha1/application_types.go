@@ -64,8 +64,6 @@ type ComponentSpec struct {
 	// +optional
 	LivenessProbe *v1.Probe `json:"livenessProbe,omitempty"`
 
-	//PodSpec v1.PodSpec
-
 	// +optional
 	ReadinessProbe *v1.Probe `json:"readinessProbe,omitempty"`
 

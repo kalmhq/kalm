@@ -1,9 +1,7 @@
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { push } from "connected-react-router";
 import React from "react";
 import { RouteChildrenProps } from "react-router-dom";
 import { updateApplicationAction } from "../../actions/application";
-import { setSuccessNotificationAction } from "../../actions/notification";
 import ApplicationForm from "../../forms/Application";
 import RemoteSubmitApplication from "../../forms/Application/remoteSubmitApplication";
 import { Loading } from "../../widgets/Loading";
@@ -26,16 +24,13 @@ interface Props
 class ApplicationEditRaw extends React.PureComponent<Props> {
   private submit = async (application: Application) => {
     const { dispatch } = this.props;
-    // const { applicationName } = match!.params;
-    // console.log(application, application.toJS());
+
     await dispatch(updateApplicationAction(application));
-    await dispatch(setSuccessNotificationAction("Edit application successfully"));
-    await dispatch(push("/applications"));
   };
 
   public render() {
     const { isLoading, application } = this.props;
-    // console.log("application", application?.toJS());
+
     return (
       <BasePage
         title={`Edit Application ${application && application.get("name")}`}

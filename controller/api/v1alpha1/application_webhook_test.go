@@ -8,9 +8,9 @@ import (
 
 func TestRemoveFromSlice(t *testing.T) {
 	slice := []*node{
-		&node{Name: "1"},
-		&node{Name: "2"},
-		&node{Name: "3"},
+		{Name: "1"},
+		{Name: "2"},
+		{Name: "3"},
 	}
 
 	fmt.Println(slice)
@@ -45,7 +45,7 @@ func TestCheckLoop(t *testing.T) {
 	nodeMap[b.Name] = b
 	nodeMap[c.Name] = c
 
-	loopExist := bfsCheckIfLoopExist(nodeMap)
+	loopExist, _ := bfsCheckIfLoopExist(nodeMap)
 	assert.False(t, loopExist)
 }
 
@@ -60,7 +60,7 @@ func TestCheckLoopExist(t *testing.T) {
 	nodeMap[a.Name] = a
 	nodeMap[b.Name] = b
 
-	loopExist := bfsCheckIfLoopExist(nodeMap)
+	loopExist, _ := bfsCheckIfLoopExist(nodeMap)
 	assert.True(t, loopExist)
 }
 
@@ -78,7 +78,7 @@ func TestCheckLoopExist1(t *testing.T) {
 	nodeMap[b.Name] = b
 	nodeMap[c.Name] = c
 
-	loopExist := bfsCheckIfLoopExist(nodeMap)
+	loopExist, _ := bfsCheckIfLoopExist(nodeMap)
 	assert.True(t, loopExist)
 }
 
@@ -95,6 +95,6 @@ func TestCheckLoopExist2(t *testing.T) {
 	nodeMap[b.Name] = b
 	nodeMap[c.Name] = c
 
-	loopExist := bfsCheckIfLoopExist(nodeMap)
+	loopExist, _ := bfsCheckIfLoopExist(nodeMap)
 	assert.True(t, loopExist)
 }

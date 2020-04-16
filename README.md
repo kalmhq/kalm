@@ -1,6 +1,6 @@
 # Kapp - Kubernetes application manager
 
-[![codecov](https://codecov.io/gh/kapp-staging/kapp/branch/master/graph/badge.svg)](https://codecov.io/gh/kapp-staging/kapp) [![Build Status](https://travis-ci.com/kapp-staging/kapp.svg?branch=master)](https://travis-ci.com/kapp-staging/kapp)
+[![codecov](https://codecov.io/gh/kapp-staging/kapp/branch/master/graph/badge.svg)](https://codecov.io/gh/kapp-staging/kapp) [![Build Status](https://travis-ci.com/kapp-staging/kapp.svg?branch=master)](https://travis-ci.com/kapp-staging/kapp) [![Go Report](https://goreportcard.com/badge/github.com/kapp-staging/kapp)](https://goreportcard.com/badge/github.com/kapp-staging/kapp)
 
 More than just another kubernetes dashboard, but also a new angle of application management.
 

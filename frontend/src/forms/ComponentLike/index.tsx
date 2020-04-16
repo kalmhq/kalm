@@ -5,7 +5,7 @@ import clsx from "clsx";
 import Typography from "@material-ui/core/Typography";
 import React from "react";
 import { connect } from "react-redux";
-import { InjectedFormProps } from "redux-form";
+import { InjectedFormProps, stopSubmit } from "redux-form";
 import { Field, getFormValues, reduxForm, getFormSyncErrors } from "redux-form/immutable";
 import { RootState } from "../../reducers";
 import { HelperContainer } from "../../widgets/Helper";
@@ -81,6 +81,7 @@ const styles = (theme: Theme) =>
       marginLeft: "8px",
       position: "absolute"
     },
+    panelSubmitErrors: {},
     summaryShow: {
       display: "block",
       padding: "8px 4px 0px 0px"
@@ -109,6 +110,15 @@ const styles = (theme: Theme) =>
     summaryValueGroup: {
       display: "flex",
       flexDirection: "column"
+    },
+    submitErrorItem: {
+      display: "flex"
+    },
+    submitErrorKey: {
+      fontWeight: "bold"
+    },
+    submitErrorValueGroup: {
+      marginLeft: "6px"
     }
   });
 
@@ -119,6 +129,7 @@ interface RawProps {
   submitButtonText?: string;
   isFolded?: boolean;
   sharedEnv?: Immutable.List<SharedEnv>;
+  submitAppplicationErrors?: Immutable.Map<string, any>;
 }
 
 export interface Props
@@ -153,6 +164,17 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     dispatch(loadNodesAction());
     // load configs for volume
     dispatch(loadConfigsAction());
+  }
+
+  componentDidUpdate(prevProps: Props) {
+    if (this.props.submitAppplicationErrors && this.props.submitAppplicationErrors.size > 0) {
+      const oldValues = prevProps.values.deleteIn(["livenessProbe", "type"]).deleteIn(["readinessProbe", "type"]);
+      const newVavlues = this.props.values.deleteIn(["livenessProbe", "type"]).deleteIn(["readinessProbe", "type"]);
+
+      if (oldValues.equals && !oldValues.equals(newVavlues)) {
+        this.props.dispatch(stopSubmit("application", {})); // clear application submitErrors
+      }
+    }
   }
 
   private renderSchedule() {
@@ -656,6 +678,22 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     this.setState({ currentPanel: key });
   }
 
+  private renderSubmitErrors(errors: { [key: string]: string }) {
+    const { classes } = this.props;
+    const listItems: any[] = [];
+
+    for (let key in errors) {
+      listItems.push(
+        <div key={key} className={classes.submitErrorItem}>
+          <div className={classes.submitErrorKey}>{key + " : "}</div>
+          <div className={classes.submitErrorValueGroup}>{errors[key]}</div>
+        </div>
+      );
+    }
+
+    return <>{listItems}</>;
+  }
+
   private renderSummary(summaryInfos: Summary[]): React.ReactNode {
     const { classes } = this.props;
     const renderValues = (summary: Summary) => {
@@ -726,9 +764,28 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return <>{listItems}</>;
   }
 
-  private composeErrorInfo(key: string): boolean {
+  private composeSubmitErrorInfo(panelKey: string): { [key: string]: any } {
+    const { submitAppplicationErrors } = this.props;
+    const fieldNames = this.getPanelFieldNames(panelKey);
+
+    const panelSubmitErrors: { [key: string]: any } = {};
+
+    if (submitAppplicationErrors?.get(panelKey)) {
+      panelSubmitErrors[panelKey] = submitAppplicationErrors.get(panelKey);
+    }
+
+    fieldNames.forEach(name => {
+      if (submitAppplicationErrors?.get(name)) {
+        panelSubmitErrors[name] = submitAppplicationErrors.get(name);
+      }
+    });
+
+    return panelSubmitErrors;
+  }
+
+  private composeSyncErrorInfo(panelKey: string): boolean {
     const { syncErrors, anyTouched } = this.props;
-    const fieldNames = this.getPanelFieldNames(key);
+    const fieldNames = this.getPanelFieldNames(panelKey);
     const errors: { [key: string]: any } = syncErrors;
 
     let hasError = false;
@@ -742,9 +799,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return hasError;
   }
 
-  private composeChangedState(key: string): boolean {
+  private composeChangedState(panelKey: string): boolean {
     const { values, initialValues } = this.props;
-    const fieldNames = this.getPanelFieldNames(key);
+    const fieldNames = this.getPanelFieldNames(panelKey);
 
     let isChanged = false;
     fieldNames.forEach((name: any) => {
@@ -778,9 +835,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return isChanged;
   }
 
-  private composeSummaryInfo(key: string): Summary[] {
+  private composeSummaryInfo(panelKey: string): Summary[] {
     const { values, initialValues } = this.props;
-    const fieldNames = this.getPanelFieldNames(key);
+    const fieldNames = this.getPanelFieldNames(panelKey);
     let summaryInfos: Summary[] = [];
     fieldNames.forEach((name: any) => {
       let summaryInfo: Summary = {} as Summary;
@@ -825,8 +882,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return summaryInfos;
   }
 
-  private getPanelFieldNames(panelName: string): string[] {
-    switch (panelName) {
+  private getPanelFieldNames(panelKey: string): string[] {
+    switch (panelKey) {
       case "basic":
         return ["name", "image", "workloadType", "command", "args"];
       case "envs":
@@ -852,18 +909,23 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     }
   }
 
-  private renderPanel(key: string, title: string, content: any): React.ReactNode {
+  private renderPanel(panelKey: string, title: string, content: any): React.ReactNode {
     const { classes } = this.props;
-    let hasError = this.composeErrorInfo(key);
-    let isChanged = this.composeChangedState(key);
-    let summaryInfos = this.composeSummaryInfo(key);
+
+    let panelSubmitErrors = this.composeSubmitErrorInfo(panelKey);
+    let hasError = this.composeSyncErrorInfo(panelKey) || Object.keys(panelSubmitErrors).length > 0;
+    let isChanged = this.composeChangedState(panelKey);
+    let summaryInfos = this.composeSummaryInfo(panelKey);
 
     return (
-      <ExpansionPanel expanded={key === this.state.currentPanel} onChange={() => this.handleChangePanel(key)}>
+      <ExpansionPanel expanded={panelKey === this.state.currentPanel} onChange={() => this.handleChangePanel(panelKey)}>
         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id="panel1a-header">
           <div className={hasError ? classes.summaryError : isChanged ? classes.summaryBold : ""}>
             {title} {hasError ? <ErrorIcon className={classes.summaryIcon} /> : null}
-            <div className={key === this.state.currentPanel ? classes.summaryHide : classes.summaryShow}>
+            <div className={classes.panelSubmitErrors}>
+              {Object.keys(panelSubmitErrors).length > 0 ? this.renderSubmitErrors(panelSubmitErrors) : null}
+            </div>
+            <div className={panelKey === this.state.currentPanel ? classes.summaryHide : classes.summaryShow}>
               {this.renderSummary(summaryInfos)}
             </div>
           </div>
