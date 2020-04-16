@@ -35,6 +35,7 @@ type PodAffinityType string
 
 type ComponentSpec struct {
 	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Pattern:=^[a-zA-Z-]+$
 	Name string `json:"name"`
 
 	Env []EnvVar `json:"env,omitempty"`
@@ -116,6 +117,7 @@ type Application struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
+	// +kubebuilder:validation:Required
 	Spec   ApplicationSpec   `json:"spec,omitempty"`
 	Status ApplicationStatus `json:"status,omitempty"`
 }

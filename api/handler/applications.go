@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/kapp-staging/kapp/api/resources"
@@ -40,6 +41,19 @@ func (h *ApiHandler) handleGetApplicationDetails(c echo.Context) error {
 	}
 
 	return c.JSON(200, res)
+}
+
+func (h *ApiHandler) handleValidateApplications(c echo.Context) error {
+	crdApplication, err := getApplicationFromContext(c)
+	if err != nil {
+		return err
+	}
+
+	if err := v1alpha1.TryValidateApplicationFromAPI(crdApplication.Spec, crdApplication.Name, crdApplication.Namespace); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (h *ApiHandler) handleCreateApplication(c echo.Context) error {
@@ -94,12 +108,11 @@ func createKappApplication(c echo.Context) (*v1alpha1.Application, error) {
 	k8sClient := getK8sClient(c)
 
 	crdApplication, err := getApplicationFromContext(c)
-
 	if err != nil {
 		return nil, err
 	}
 
-	if err := v1alpha1.TryValidateApplication(crdApplication.Spec, crdApplication.Name, crdApplication.Namespace); err != nil {
+	if err := v1alpha1.TryValidateApplicationFromAPI(crdApplication.Spec, crdApplication.Name, crdApplication.Namespace); err != nil {
 		return nil, err
 	}
 
@@ -179,6 +192,10 @@ func getApplicationFromContext(c echo.Context) (*v1alpha1.Application, error) {
 
 	if err := c.Bind(&req); err != nil {
 		return nil, err
+	}
+
+	if req.Application == nil {
+		return nil, fmt.Errorf("not valid application spec")
 	}
 
 	crdApplication := &v1alpha1.Application{
