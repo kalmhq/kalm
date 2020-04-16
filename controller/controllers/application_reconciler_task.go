@@ -956,6 +956,17 @@ func (act *applicationReconcilerTask) runComponentPlugins(methodName string, com
 			continue
 		}
 
+		workloadType := component.WorkLoadType
+
+		if workloadType == "" {
+			// TODO are we safe to remove this fallback value?
+			workloadType = kappV1Alpha1.WorkloadTypeServer
+		}
+
+		if !pluginProgram.AvailableForAllWorkloadTypes && !pluginProgram.AvailableWorkloadTypes[workloadType] {
+			continue
+		}
+
 		rt := act.initPluginRuntime(component)
 		rt.Set("scope", "component")
 
@@ -986,6 +997,17 @@ func (act *applicationReconcilerTask) runApplicationPlugins(methodName string, c
 		}
 
 		if !pluginProgram.Methods[methodName] {
+			continue
+		}
+
+		workloadType := component.WorkLoadType
+
+		if workloadType == "" {
+			// TODO are we safe to remove this fallback value?
+			workloadType = kappV1Alpha1.WorkloadTypeServer
+		}
+
+		if !pluginProgram.AvailableForAllWorkloadTypes && !pluginProgram.AvailableWorkloadTypes[workloadType] {
 			continue
 		}
 

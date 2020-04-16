@@ -58,6 +58,9 @@ type PluginProgram struct {
 
 	// a map of defined hooks
 	Methods map[string]bool
+
+	AvailableForAllWorkloadTypes bool
+	AvailableWorkloadTypes       map[corev1alpha1.WorkloadType]bool
 }
 
 type PluginsCache struct {
@@ -167,10 +170,23 @@ func (r *PluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, nil
 	}
 
+	availableWorkloadTypes := make(map[corev1alpha1.WorkloadType]bool)
+	var availableForAllWorkloadTypes bool
+
+	if len(plugin.Spec.AvailableWorkloadType) == 0 {
+		availableForAllWorkloadTypes = true
+	} else {
+		for _, workloadType := range plugin.Spec.AvailableWorkloadType {
+			availableWorkloadTypes[workloadType] = true
+		}
+	}
+
 	if plugin.Status.CompiledSuccessfully {
 		pluginsCache.Set(plugin.Name, &PluginProgram{
-			Program: program,
-			Methods: methods,
+			Program:                      program,
+			Methods:                      methods,
+			AvailableForAllWorkloadTypes: availableForAllWorkloadTypes,
+			AvailableWorkloadTypes:       availableWorkloadTypes,
 		})
 	}
 
