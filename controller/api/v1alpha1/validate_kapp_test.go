@@ -3,19 +3,21 @@ package v1alpha1
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/go-openapi/validate"
 	"github.com/stretchr/testify/assert"
+	"io/ioutil"
 	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apiextensions-apiserver/pkg/apiserver/validation"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	yaml2 "k8s.io/apimachinery/pkg/util/yaml"
 	"testing"
 )
 
-func TestValidateUsingOpenAPI(t *testing.T) {
-	var crdSpec = []byte(`
+var crdSpec = []byte(`
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -62,13 +64,13 @@ status:
   conditions: []
   storedVersions: []`)
 
+func getValidatorForKappSpec(crdDefinition []byte) *validate.SchemaValidator {
 	sch := runtime.NewScheme()
 	_ = apiextv1beta1.AddToScheme(sch)
 
-	//decode := scheme.Codecs.UniversalDeserializer().Decode
 	decode := serializer.NewCodecFactory(sch).UniversalDeserializer().Decode
 
-	obj, _, err := decode(crdSpec, nil, nil)
+	obj, _, err := decode(crdDefinition, nil, nil)
 	if err != nil {
 		fmt.Printf("%#v", err)
 	}
@@ -76,7 +78,7 @@ status:
 	//fmt.Println("obj:", obj)
 	crd, ok := obj.(*apiextv1beta1.CustomResourceDefinition)
 	if !ok {
-		t.Fatal("no CRD")
+		panic("not CRD")
 	}
 
 	openAPIV3Schema := crd.Spec.Validation.OpenAPIV3Schema
@@ -85,14 +87,23 @@ status:
 	out := apiextensions.JSONSchemaProps{}
 	err = apiextv1beta1.Convert_v1beta1_JSONSchemaProps_To_apiextensions_JSONSchemaProps(in, &out, nil)
 	if err != nil {
-		t.Fatal(err)
+		panic(err)
 	}
 
-	validator, _, err := validation.NewSchemaValidator(&apiextensions.CustomResourceValidation{OpenAPIV3Schema: &out})
+	validator, _, err := validation.NewSchemaValidator(
+		&apiextensions.CustomResourceValidation{
+			OpenAPIV3Schema: &out,
+		})
 	if err != nil {
-		t.Fatal(err)
+		panic(err)
 	}
-	//fmt.Println("openAPIV3Schema:", openAPIV3Schema)
+
+	return validator
+}
+
+func TestValidateUsingOpenAPI(t *testing.T) {
+
+	validator := getValidatorForKappSpec(crdSpec)
 
 	goodSampleApp := `apiVersion: core.kapp.dev/v1alpha1
 kind: Application
@@ -105,35 +116,36 @@ kind: Application
 metadata: foobar`
 
 	tests := []struct {
-		appSpec       string
-		expectedError []string
+		appSpec        string
+		expectedErrors []string
 	}{
 		{
-			appSpec:       goodSampleApp,
-			expectedError: nil,
+			appSpec:        goodSampleApp,
+			expectedErrors: nil,
 		},
 		{
-			appSpec:       badSampleApp,
-			expectedError: []string{`metadata: Invalid value: "string": metadata in body must be of type object: "string"`},
+			appSpec:        badSampleApp,
+			expectedErrors: []string{`metadata: Invalid value: "string": metadata in body must be of type object: "string"`},
 		},
 		{
-			appSpec: `kind: 123`,
-			expectedError: []string{`kind: Invalid value: "number": kind in body must be of type string: "number"`},
+			appSpec:        `kind: 123`,
+			expectedErrors: []string{`kind: Invalid value: "number": kind in body must be of type string: "number"`},
 		},
 	}
 
 	for i, test := range tests {
 
-		j, err := yaml2.ToJSON([]byte(test.appSpec))
+		// yaml -> json
+		jsonInBytes, err := yaml2.ToJSON([]byte(test.appSpec))
 		assert.Nil(t, err)
 
 		unstructured := make(map[string]interface{})
-		err = json.Unmarshal(j, &unstructured)
+		err = json.Unmarshal(jsonInBytes, &unstructured)
 		assert.Nil(t, err)
 
 		errs := validation.ValidateCustomResource(nil, unstructured, validator)
 		if len(errs) > 0 {
-			if test.expectedError == nil {
+			if test.expectedErrors == nil {
 				t.Errorf("unexpected validation error for %v: %v", unstructured, errs)
 			} else {
 				sawErrors := sets.NewString()
@@ -142,18 +154,69 @@ metadata: foobar`
 					//fmt.Println("sawError", err.Field)
 				}
 
-				expectErrs := sets.NewString(test.expectedError...)
+				expectErrs := sets.NewString(test.expectedErrors...)
 
 				for _, unexpectedError := range sawErrors.Difference(expectErrs).List() {
 					t.Errorf("%d: unexpected error: %s", i, unexpectedError)
 				}
 			}
 		} else {
-			if test.expectedError == nil {
+			if test.expectedErrors == nil {
 				continue
 			}
 
-			t.Errorf("missing validation errors: %v", test.expectedError)
+			t.Errorf("missing validation errors: %v", test.expectedErrors)
 		}
 	}
+}
+
+func TestUsingRealKappCRD(t *testing.T) {
+	crdSpec, err := ioutil.ReadFile("../../config/crd/bases/core.kapp.dev_applications.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	validator := getValidatorForKappSpec(crdSpec)
+	assert.NotNil(t, validator)
+
+	componentSpecWithoutImage := `apiVersion: core.kapp.dev/v1alpha1
+kind: Application
+metadata:
+  name: socks
+  namespace: kapp-socks
+spec:
+  isActive: true
+  components:
+    - name: payment
+      dependencies: 
+        - shippingservice
+      #image: weaveworksdemos/payment:0.4.3
+      cpu: 100m
+      memory: 100Mi
+      ports:
+        - name: http
+          containerPort: 80
+      livenessProbe:
+        httpGet:
+          path: /health
+          port: 80
+        initialDelaySeconds: 300
+        periodSeconds: 3
+      readinessProbe:
+        httpGet:
+          path: /health
+          port: 80
+        initialDelaySeconds: 180
+        periodSeconds: 3`
+
+	jsonInBytes, err := yaml2.ToJSON([]byte(componentSpecWithoutImage))
+	assert.Nil(t, err)
+
+	unstructured := make(map[string]interface{})
+	err = json.Unmarshal(jsonInBytes, &unstructured)
+	assert.Nil(t, err)
+
+	errs := validation.ValidateCustomResource(field.NewPath("spec", "components"), unstructured, validator)
+	assert.Equal(t, 1, len(errs))
+	assert.Equal(t, "spec.components.spec.components.image: Required value", errs[0].Error())
 }
