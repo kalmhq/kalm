@@ -44,8 +44,8 @@ func GetDefinedMethods(src string, methods []string) (map[string]bool, error) {
 	return tmp, nil
 }
 
-func RunMethod(runtime *js.Runtime, program *js.Program, hookName string, dest interface{}, args ...interface{}) error {
-	runtime.Set("__targetMethodName", hookName)
+func RunMethod(runtime *js.Runtime, program *js.Program, methodName string, dest interface{}, args ...interface{}) error {
+	runtime.Set("__targetMethodName", methodName)
 
 	if args != nil {
 		_args := make([]interface{}, 0, len(args))

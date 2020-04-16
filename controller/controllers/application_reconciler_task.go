@@ -958,13 +958,13 @@ func (act *applicationReconcilerTask) runApplicationPlugins(methodName string, c
 
 		rt := vm.InitRuntime()
 
-		if pluginProgram.Methods["ComponentFilter"] {
+		if pluginProgram.Methods[PluginMethodComponentFilter] {
 			shouldExecute := new(bool)
 
 			err := vm.RunMethod(
 				rt,
 				pluginProgram.Program,
-				"ComponentFilter",
+				PluginMethodComponentFilter,
 				shouldExecute,
 				component,
 			)

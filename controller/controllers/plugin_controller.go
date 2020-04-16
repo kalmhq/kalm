@@ -32,12 +32,22 @@ import (
 	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
 )
 
-var ValidPluginMethods = []string{
-	"ComponentFilter",
-	"AfterPodTemplateGeneration",
-	"BeforeDeploymentSave",
-	"BeforeServiceSave",
-	"BeforeCronjobSave",
+type PluginMethod = string
+
+const (
+	PluginMethodComponentFilter            PluginMethod = "ComponentFilter"
+	PluginMethodAfterPodTemplateGeneration PluginMethod = "AfterPodTemplateGeneration"
+	PluginMethodBeforeDeploymentSave       PluginMethod = "BeforeDeploymentSave"
+	PluginMethodBeforeServiceSave          PluginMethod = "BeforeServiceSave"
+	PluginMethodBeforeCronjobSave          PluginMethod = "BeforeCronjobSave"
+)
+
+var ValidPluginMethods = []PluginMethod{
+	PluginMethodComponentFilter,
+	PluginMethodAfterPodTemplateGeneration,
+	PluginMethodBeforeDeploymentSave,
+	PluginMethodBeforeServiceSave,
+	PluginMethodBeforeCronjobSave,
 }
 
 var pluginsCache *PluginsCache
