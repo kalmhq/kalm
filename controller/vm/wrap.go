@@ -12,6 +12,7 @@ function __entrypoint() {
 		throw(__targetMethodName + " function is not defined.")
     }
 
+	console.debug("scope is", typeof scope === "undefined" ? "undefined" : scope);
 	console.debug("invoke", __targetMethodName);
 
 	if (typeof __args !== "undefined") {

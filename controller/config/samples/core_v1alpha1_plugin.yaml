@@ -34,6 +34,18 @@ spec:
     - server
 ---
 apiVersion: core.kapp.dev/v1alpha1
+kind: Plugin
+metadata:
+  name: kapp-test-default-embedded-functions
+spec:
+  src: |
+    function BeforeDeploymentSave(deployment) {
+      console.log("getApplicationName", getApplicationName());
+      console.log("getCurrentComponentName", getCurrentComponent().name);
+      return deployment;
+    }
+---
+apiVersion: core.kapp.dev/v1alpha1
 kind: Application
 metadata:
   name: test-plugin-sample-application
@@ -50,4 +62,5 @@ spec:
       workloadType: server
   pluginsNew:
     - name: kapp-scale-name-with-suffix-tiple
+    - name: kapp-test-default-embedded-functions
   isActive: true

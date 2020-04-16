@@ -5,6 +5,7 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
+	js "github.com/dop251/goja"
 	"github.com/go-logr/logr"
 	kappV1Alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
 	"github.com/kapp-staging/kapp/lib/files"
@@ -898,6 +899,23 @@ func GetPlugins(kapp *kappV1Alpha1.Application) (plugins []interface{}) {
 	return
 }
 
+func (act *applicationReconcilerTask) initPluginRuntime(component *kappV1Alpha1.ComponentSpec) *js.Runtime {
+	rt := vm.InitRuntime()
+
+	rt.Set("getApplicationName", func(call js.FunctionCall) js.Value {
+		return rt.ToValue(act.app.Name)
+	})
+
+	rt.Set("getCurrentComponent", func(call js.FunctionCall) js.Value {
+		bts, _ := json.Marshal(component)
+		var res map[string]interface{}
+		_ = json.Unmarshal(bts, &res)
+		return rt.ToValue(res)
+	})
+
+	return rt
+}
+
 func (act *applicationReconcilerTask) runPlugins(methodName string, component *kappV1Alpha1.ComponentSpec, desc interface{}, args ...interface{}) (err error) {
 	err = act.runApplicationPlugins(methodName, component, desc, args...)
 
@@ -928,7 +946,8 @@ func (act *applicationReconcilerTask) runComponentPlugins(methodName string, com
 			return fmt.Errorf("Can't find plugin %s in cache.", tmp.Name)
 		}
 
-		rt := vm.InitRuntime()
+		rt := act.initPluginRuntime(component)
+		rt.Set("scope", "component")
 
 		return vm.RunMethod(
 			rt,
@@ -956,7 +975,8 @@ func (act *applicationReconcilerTask) runApplicationPlugins(methodName string, c
 			return fmt.Errorf("Can't find plugin %s in cache.", tmp.Name)
 		}
 
-		rt := vm.InitRuntime()
+		rt := act.initPluginRuntime(component)
+		rt.Set("scope", "application")
 
 		if pluginProgram.Methods[PluginMethodComponentFilter] {
 			shouldExecute := new(bool)
