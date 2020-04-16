@@ -25,7 +25,12 @@ export const getAxiosClient = () => {
   const instance = token
     ? axios.create({
         timeout: 3000,
+        withCredentials: true,
         headers: {
+          "X-CSRF-Token": store
+            .getState()
+            .get("auth")
+            .get("csrf"),
           Authorization: `Bearer ${store
             .getState()
             .get("auth")

@@ -57,16 +57,29 @@ export const resErrorsToSubmitErrors = (errors: ResError[]) => {
   //      "message": "should no have loop in dependencies"
   //   }
   // ]
-  const submitErrors: { [key: string]: string } = {};
+  const submitErrors: { [key: string]: any } = {};
   errors.forEach(error => {
-    if (error.key === ".name") {
-      submitErrors["name"] = error.message;
-    } else if (error.key.startsWith(".components")) {
-      // ".components[1].dependencies".split(".")
-      // => ["", "components[1]", "dependencies"]
-      const keySplits = error.key.split(".");
-      if (keySplits[2]) {
-        submitErrors[keySplits[1]] = `${keySplits[2]}: ${error.message}`;
+    // ".components[1].dependencies".split(".")
+    // => ["", "components[1]", "dependencies"]
+    const keySplits = error.key.split(".");
+    if (keySplits[1]) {
+      if (keySplits[1] === "name") {
+        submitErrors["name"] = error.message;
+      } else if (keySplits[1].startsWith("components") && keySplits[2]) {
+        if (submitErrors[keySplits[1]]) {
+          submitErrors[keySplits[1]][keySplits[2]] = error.message;
+        } else {
+          submitErrors[keySplits[1]] = { [keySplits[2]]: error.message };
+        }
+
+        // if (submitErrors[keySplits[1]]) {
+        //   let componentErrors: { [key: string]: string } = {};
+        //   componentErrors = JSON.parse(submitErrors[keySplits[1]]);
+        //   componentErrors[keySplits[2]] = error.message;
+        //   submitErrors[keySplits[1]] = JSON.stringify(componentErrors[keySplits[2]]);
+        // } else {
+        //   submitErrors[keySplits[1]] = JSON.stringify({ [keySplits[2]]: error.message });
+        // }
       }
     }
   });

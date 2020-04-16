@@ -1,18 +1,21 @@
 package handler
 
 import (
+	"net/http"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/kapp-staging/kapp/api/auth"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	authorizationV1 "k8s.io/api/authorization/v1"
 	"k8s.io/client-go/kubernetes"
-	"net/http"
 )
 
 type LoginStatusResponse struct {
 	Authorized bool   `json:"authorized"`
 	IsAdmin    bool   `json:"isAdmin"`
 	Entity     string `json:"entity"`
+	CSRF       string `json:"csrf"`
 }
 
 func (h *ApiHandler) handleValidateToken(c echo.Context) error {
@@ -67,6 +70,8 @@ func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
 	entity := tryToParseEntityFromToken(auth.ExtractTokenFromHeader(c.Request().Header.Get(echo.HeaderAuthorization)))
 	res.IsAdmin = review.Status.Allowed
 	res.Entity = entity
+	res.CSRF = c.Get(middleware.DefaultCSRFConfig.ContextKey).(string)
+
 	return c.JSON(http.StatusOK, res)
 }
 

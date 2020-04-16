@@ -38,7 +38,7 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
     try {
       application = await createKappApplication(applicationValues);
     } catch (e) {
-      if (e.response && e.response.data.errors) {
+      if (e.response && e.response.data.errors && e.response.data.errors.length > 0) {
         const submitErrors = resErrorsToSubmitErrors(e.response.data.errors);
         throw new SubmissionError(submitErrors);
       } else if (e.response && e.response.data.status === StatusFailure) {
@@ -65,13 +65,31 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
 
 export const updateApplicationAction = (applicationRaw: Application): ThunkResult<Promise<void>> => {
   return async dispatch => {
+    // const testErrors = [
+    //   {
+    //     key: ".name",
+    //     message: "name errors"
+    //   },
+    //   {
+    //     key: ".components[1].name",
+    //     message: "components name errors"
+    //   },
+    //   {
+    //     key: ".components[1].ports",
+    //     message: "components ports errors"
+    //   }
+    // ];
+    // const submitErrors = resErrorsToSubmitErrors(testErrors);
+    // console.log("throw", submitErrors);
+    // throw new SubmissionError(submitErrors);
+
     dispatch(setIsSubmittingApplication(true));
     let application: ApplicationDetails;
 
     try {
       application = await updateKappApplication(applicationRaw);
     } catch (e) {
-      if (e.response && e.response.data.errors) {
+      if (e.response && e.response.data.errors && e.response.data.errors.length > 0) {
         const submitErrors = resErrorsToSubmitErrors(e.response.data.errors);
         throw new SubmissionError(submitErrors);
       } else if (e.response && e.response.data.status === StatusFailure) {

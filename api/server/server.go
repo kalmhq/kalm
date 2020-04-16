@@ -1,9 +1,10 @@
 package server
 
 import (
-	"github.com/go-playground/validator/v10"
 	"net/http"
 	"os"
+
+	"github.com/go-playground/validator/v10"
 
 	"github.com/kapp-staging/kapp/api/config"
 	"github.com/kapp-staging/kapp/api/errors"
@@ -21,9 +22,15 @@ func newEchoInstance() *echo.Echo {
 	// TODO, only enabled cors on dev env
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"*"},
-		AllowMethods: []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
-		MaxAge:       86400,
+		AllowOrigins:     []string{"http://localhost:3000", "*"},
+		AllowMethods:     []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
+		AllowCredentials: true,
+		MaxAge:           86400,
+	}))
+
+	e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
+		CookiePath:     "/",
+		CookieHTTPOnly: true,
 	}))
 
 	e.HTTPErrorHandler = errors.CustomHTTPErrorHandler

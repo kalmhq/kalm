@@ -4,8 +4,8 @@ import Immutable from "immutable";
 import MaterialTable from "material-table";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
-import { arrayPush, change, getFormSyncErrors, submit, WrappedFieldArrayProps, stopSubmit } from "redux-form";
-import { FieldArray, formValueSelector, getFormSubmitErrors } from "redux-form/immutable";
+import { arrayPush, change, submit, WrappedFieldArrayProps } from "redux-form";
+import { FieldArray, formValueSelector, getFormSyncErrors, getFormSubmitErrors } from "redux-form/immutable";
 import { setIsSubmittingApplicationComponent } from "../../actions/application";
 import { RootState } from "../../reducers";
 import { ApplicationComponent, SharedEnv } from "../../types/application";
@@ -24,7 +24,7 @@ const mapStateToProps = (state: RootState) => {
   const sharedEnv: Immutable.List<SharedEnv> = selector(state, "sharedEnvs");
   const syncErrors = getFormSyncErrors("componentLike")(state);
   const submitErrors = getFormSubmitErrors("application")(state) as Immutable.Map<string, any>;
-
+  // console.log("submitErrors", submitErrors.toJS());
   return {
     isSubmittingApplicationComponent: state.get("applications").get("isSubmittingApplicationComponent"),
     componentTemplates: state.get("componentTemplates").get("componentTemplates"),
@@ -295,8 +295,14 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
   };
 
   private renderDialog() {
-    const { isDialogOpen, dialogFormComponentLikeInstance, dialogFormSaveButtonText, dialogFormTitle } = this.state;
-    const { sharedEnv, isSubmittingApplicationComponent, dispatch } = this.props;
+    const {
+      isDialogOpen,
+      dialogFormComponentLikeInstance,
+      dialogFormSaveButtonText,
+      dialogFormTitle,
+      dialogFormApplicationComponentIndex
+    } = this.state;
+    const { sharedEnv, isSubmittingApplicationComponent, dispatch, submitErrors } = this.props;
 
     return (
       <CustomizedDialog
@@ -325,6 +331,7 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
             dispatch(setIsSubmittingApplicationComponent(false));
           }}
           initialValues={dialogFormComponentLikeInstance}
+          submitAppplicationErrors={submitErrors.get(`components[${dialogFormApplicationComponentIndex}]`)}
           showDataView
         />
       </CustomizedDialog>
@@ -332,7 +339,7 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { fields, dispatch } = this.props;
+    const { fields } = this.props;
 
     return (
       <div>
@@ -352,7 +359,7 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
             {
               icon: "edit",
               onClick: (_event, data) => {
-                dispatch(stopSubmit("application", {})); // clear submitErrors
+                // dispatch(stopSubmit("application", {})); // clear application submitErrors
                 this.openComponentFormDialog((data as RowData).index);
               }
             }
