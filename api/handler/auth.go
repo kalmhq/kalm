@@ -70,7 +70,6 @@ func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
 	entity := tryToParseEntityFromToken(auth.ExtractTokenFromHeader(c.Request().Header.Get(echo.HeaderAuthorization)))
 	res.IsAdmin = review.Status.Allowed
 	res.Entity = entity
-	// res.CSRF = csrf.Token(c.Request())
 	res.CSRF = c.Get(middleware.DefaultCSRFConfig.ContextKey).(string)
 
 	return c.JSON(http.StatusOK, res)

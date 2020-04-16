@@ -22,14 +22,16 @@ func newEchoInstance() *echo.Echo {
 	// TODO, only enabled cors on dev env
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowOrigins:     []string{"http://localhost:3000", "*"},
 		AllowMethods:     []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
 		AllowCredentials: true,
 		MaxAge:           86400,
 	}))
 
-	// e.Use(echo.WrapMiddleware(CSRF))
-	e.Use(middleware.CSRF())
+	e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
+		CookiePath:     "/",
+		CookieHTTPOnly: true,
+	}))
 
 	e.HTTPErrorHandler = errors.CustomHTTPErrorHandler
 
