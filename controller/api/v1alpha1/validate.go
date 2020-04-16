@@ -46,14 +46,14 @@ const isNotIntegerErrorMsg string = `must be an integer`
 const isNotPositiveErrorMsg string = `must be greater than zero`
 
 // ValidateResourceQuantityValue enforces that specified quantity is valid for specified resource
-func ValidateResourceQuantityValue(/*resource string, */value resource.Quantity, fldPath *field.Path) field.ErrorList {
+func ValidateResourceQuantityValue( /*resource string, */ value resource.Quantity, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 	allErrs = append(allErrs, ValidateNonnegativeQuantity(value, fldPath)...)
 
 	//if helper.IsIntegerResourceName(resource) {
-		if value.MilliValue()%int64(1000) != int64(0) {
-			allErrs = append(allErrs, field.Invalid(fldPath, value, isNotIntegerErrorMsg))
-		}
+	if value.MilliValue()%int64(1000) != int64(0) {
+		allErrs = append(allErrs, field.Invalid(fldPath, value, isNotIntegerErrorMsg))
+	}
 	//}
 
 	return allErrs
@@ -88,7 +88,6 @@ func validateProbe(probe *corev1.Probe, fldPath *field.Path) field.ErrorList {
 func ValidateNonnegativeField(value int64, fldPath *field.Path) field.ErrorList {
 	return apimachineryvalidation.ValidateNonnegativeField(value, fldPath)
 }
-
 
 func validateHandler(handler *corev1.Handler, fldPath *field.Path) field.ErrorList {
 	numHandlers := 0
