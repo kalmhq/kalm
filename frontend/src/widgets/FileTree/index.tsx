@@ -222,12 +222,6 @@ export const FileTree = (props: FileTreeProps) => {
 
   return (
     <TreeView
-      // onNodeSelect={(event: React.ChangeEvent<{}>, nodeIds: string[]) => {
-      //   console.log("onNodeSelect", event, nodeIds);
-      // }}
-      // onNodeToggle={(event: React.ChangeEvent<{}>, nodeIds: string[]) => {
-      //   console.log("onNodeToggle", event, nodeIds);
-      // }}
       selected={getConfigPath(getCurrentConfig())}
       className={classes.root}
       defaultExpanded={[rootConfig.get("id")]}
