@@ -952,6 +952,10 @@ func (act *applicationReconcilerTask) runComponentPlugins(methodName string, com
 			return fmt.Errorf("Can't find plugin %s in cache.", tmp.Name)
 		}
 
+		if !pluginProgram.Methods[methodName] {
+			continue
+		}
+
 		rt := act.initPluginRuntime(component)
 		rt.Set("scope", "component")
 
@@ -979,6 +983,10 @@ func (act *applicationReconcilerTask) runApplicationPlugins(methodName string, c
 
 		if pluginProgram == nil {
 			return fmt.Errorf("Can't find plugin %s in cache.", tmp.Name)
+		}
+
+		if !pluginProgram.Methods[methodName] {
+			continue
 		}
 
 		rt := act.initPluginRuntime(component)
