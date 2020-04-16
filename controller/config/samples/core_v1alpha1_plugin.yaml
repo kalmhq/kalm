@@ -39,6 +39,7 @@ metadata:
   name: kapp-test-default-embedded-functions
 spec:
   src: |
+    // you will see logs in controller consoles
     function BeforeDeploymentSave(deployment) {
       console.log("getApplicationName", getApplicationName());
       console.log("getCurrentComponentName", getCurrentComponent().name);

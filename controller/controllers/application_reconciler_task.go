@@ -357,7 +357,12 @@ func (act *applicationReconcilerTask) generatePodTemplateSpec(component *kappV1A
 		mainContainer.VolumeMounts = volumeMounts
 	}
 
-	// TODO plugin AfterPodTemplateGeneration
+	err = act.runPlugins(PluginMethodAfterPodTemplateGeneration, component, template, template)
+
+	if err != nil {
+		act.log.Error(err, "run "+PluginMethodAfterPodTemplateGeneration+" save plugin error")
+		return nil, err
+	}
 
 	return template, nil
 }
@@ -526,6 +531,7 @@ func (act *applicationReconcilerTask) reconcileComponent(component *kappV1Alpha1
 
 	labelMap := getComponentLabels(act.app.Name, component.Name)
 	podTemplateSpec, err := act.generatePodTemplateSpec(component)
+
 	if err != nil {
 		return err
 	}
@@ -1217,7 +1223,7 @@ func (act *applicationReconcilerTask) reconcileAsDeployment(
 		}
 	}
 
-	return nil
+	return act.runPlugins(PluginMethodBeforeDeploymentSave, component, deployment, deployment)
 }
 
 func getCronJobName(appName, componentName string) string {

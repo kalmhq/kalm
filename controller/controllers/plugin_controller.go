@@ -35,7 +35,8 @@ import (
 type PluginMethod = string
 
 const (
-	PluginMethodComponentFilter            PluginMethod = "ComponentFilter"
+	PluginMethodComponentFilter PluginMethod = "ComponentFilter"
+
 	PluginMethodAfterPodTemplateGeneration PluginMethod = "AfterPodTemplateGeneration"
 	PluginMethodBeforeDeploymentSave       PluginMethod = "BeforeDeploymentSave"
 	PluginMethodBeforeServiceSave          PluginMethod = "BeforeServiceSave"
