@@ -16,6 +16,7 @@ export type State = ImmutableMap<{
   isAdmin: boolean;
   token: string;
   entity: string;
+  csrf: string;
 }>;
 
 const AUTHORIZED_TOKEN_KEY = "AUTHORIZED_TOKEN_KEY";
@@ -26,7 +27,8 @@ const initialState: State = Immutable.Map({
   isLoading: false,
   token: window.localStorage.getItem(AUTHORIZED_TOKEN_KEY) || "",
   entity: "",
-  isAdmin: false
+  isAdmin: false,
+  csrf: ""
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {
@@ -35,6 +37,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
       state = state.set("authorized", action.payload.loginStatus.get("authorized"));
       state = state.set("isAdmin", action.payload.loginStatus.get("isAdmin"));
       state = state.set("entity", action.payload.loginStatus.get("entity"));
+      state = state.set("csrf", action.payload.loginStatus.get("csrf"));
       state = state.set("firstLoaded", true);
       state = state.set("isLoading", false);
       break;
