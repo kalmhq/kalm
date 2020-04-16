@@ -19,6 +19,7 @@ import (
 	"k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -938,33 +939,43 @@ func (act *applicationReconcilerTask) runPlugins(methodName string, component *k
 	return nil
 }
 
+func findPluginFromCache(plugin runtime.RawExtension, methodName string, component *kappV1Alpha1.ComponentSpec) (*PluginProgram, error) {
+	var tmp struct {
+		Name string `json:"name"`
+	}
+
+	_ = json.Unmarshal(plugin.Raw, &tmp)
+
+	pluginProgram := pluginsCache.Get(tmp.Name)
+
+	if pluginProgram == nil {
+		return nil, fmt.Errorf("Can't find plugin %s in cache.", tmp.Name)
+	}
+
+	if !pluginProgram.Methods[methodName] {
+		return nil, nil
+	}
+
+	workloadType := component.WorkLoadType
+
+	if workloadType == "" {
+		// TODO are we safe to remove this fallback value?
+		workloadType = kappV1Alpha1.WorkloadTypeServer
+	}
+
+	if !pluginProgram.AvailableForAllWorkloadTypes && !pluginProgram.AvailableWorkloadTypes[workloadType] {
+		return nil, nil
+	}
+
+	return pluginProgram, nil
+}
+
 func (act *applicationReconcilerTask) runComponentPlugins(methodName string, component *kappV1Alpha1.ComponentSpec, desc interface{}, args ...interface{}) error {
 	for _, plugin := range component.PluginsNew {
-		var tmp struct {
-			Name string `json:"name"`
-		}
+		pluginProgram, err := findPluginFromCache(plugin, methodName, component)
 
-		_ = json.Unmarshal(plugin.Raw, &tmp)
-
-		pluginProgram := pluginsCache.Get(tmp.Name)
-
-		if pluginProgram == nil {
-			return fmt.Errorf("Can't find plugin %s in cache.", tmp.Name)
-		}
-
-		if !pluginProgram.Methods[methodName] {
-			continue
-		}
-
-		workloadType := component.WorkLoadType
-
-		if workloadType == "" {
-			// TODO are we safe to remove this fallback value?
-			workloadType = kappV1Alpha1.WorkloadTypeServer
-		}
-
-		if !pluginProgram.AvailableForAllWorkloadTypes && !pluginProgram.AvailableWorkloadTypes[workloadType] {
-			continue
+		if err != nil {
+			return nil
 		}
 
 		rt := act.initPluginRuntime(component)
@@ -984,31 +995,9 @@ func (act *applicationReconcilerTask) runComponentPlugins(methodName string, com
 
 func (act *applicationReconcilerTask) runApplicationPlugins(methodName string, component *kappV1Alpha1.ComponentSpec, desc interface{}, args ...interface{}) error {
 	for _, plugin := range act.app.Spec.PluginsNew {
-		var tmp struct {
-			Name string `json:"name"`
-		}
-
-		_ = json.Unmarshal(plugin.Raw, &tmp)
-
-		pluginProgram := pluginsCache.Get(tmp.Name)
-
-		if pluginProgram == nil {
-			return fmt.Errorf("Can't find plugin %s in cache.", tmp.Name)
-		}
-
-		if !pluginProgram.Methods[methodName] {
-			continue
-		}
-
-		workloadType := component.WorkLoadType
-
-		if workloadType == "" {
-			// TODO are we safe to remove this fallback value?
-			workloadType = kappV1Alpha1.WorkloadTypeServer
-		}
-
-		if !pluginProgram.AvailableForAllWorkloadTypes && !pluginProgram.AvailableWorkloadTypes[workloadType] {
-			continue
+		pluginProgram, err := findPluginFromCache(plugin, methodName, component)
+		if err != nil {
+			return nil
 		}
 
 		rt := act.initPluginRuntime(component)
