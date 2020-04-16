@@ -975,7 +975,11 @@ func (act *applicationReconcilerTask) runComponentPlugins(methodName string, com
 		pluginProgram, err := findPluginFromCache(plugin, methodName, component)
 
 		if err != nil {
-			return nil
+			return err
+		}
+
+		if pluginProgram == nil {
+			continue
 		}
 
 		rt := act.initPluginRuntime(component)
@@ -996,8 +1000,13 @@ func (act *applicationReconcilerTask) runComponentPlugins(methodName string, com
 func (act *applicationReconcilerTask) runApplicationPlugins(methodName string, component *kappV1Alpha1.ComponentSpec, desc interface{}, args ...interface{}) error {
 	for _, plugin := range act.app.Spec.PluginsNew {
 		pluginProgram, err := findPluginFromCache(plugin, methodName, component)
+
 		if err != nil {
-			return nil
+			return err
+		}
+
+		if pluginProgram == nil {
+			continue
 		}
 
 		rt := act.initPluginRuntime(component)
