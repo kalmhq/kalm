@@ -5,8 +5,8 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/kapp-staging/kapp/api/auth"
-	"github.com/labstack/echo/middleware"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	authorizationV1 "k8s.io/api/authorization/v1"
 	"k8s.io/client-go/kubernetes"
 )
