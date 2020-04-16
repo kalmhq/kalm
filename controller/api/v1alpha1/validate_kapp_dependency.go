@@ -64,13 +64,13 @@ func buildDependencyGraph(spec ApplicationSpec) map[string]*node {
 			}
 
 			nodeMap[dep].Refed = append(nodeMap[dep].Refed, curNode)
-			fmt.Println("> node:", dep, "refedBy:", nodeMap[dep].Refed[0])
+			//fmt.Println("> node:", dep, "refedBy:", nodeMap[dep].Refed[0])
 		}
 
-		fmt.Println("node in depGraph:", component.Name, "dependOn:", component.Dependencies)
+		//fmt.Println("node in depGraph:", component.Name, "dependOn:", component.Dependencies)
 	}
 
-	fmt.Println("graph size:", len(nodeMap))
+	//fmt.Println("graph size:", len(nodeMap))
 	return nodeMap
 }
 

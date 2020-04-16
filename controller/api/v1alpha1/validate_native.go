@@ -26,6 +26,7 @@ func toKappValidateErrors(errList field.ErrorList) (rst []KappValidateError) {
 	for _, err := range errList {
 		rst = append(rst, KappValidateError{
 			Err:  err.Error(),
+			//Err:  fmt.Sprintf("invalid value: %v, %s", err.BadValue, err.Detail),
 			Path: err.Field,
 		})
 	}

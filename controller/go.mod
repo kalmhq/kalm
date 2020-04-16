@@ -8,6 +8,7 @@ require (
 	github.com/coreos/prometheus-operator v0.29.0
 	github.com/elastic/cloud-on-k8s v0.0.0-20200204083752-bcb7468838a8
 	github.com/go-logr/logr v0.1.0
+	github.com/go-openapi/validate v0.19.5
 	github.com/golang/groupcache v0.0.0-20191027212112-611e8accdfc9 // indirect
 	github.com/influxdata/influxdb v1.7.7
 	github.com/jetstack/cert-manager v0.13.1
@@ -15,6 +16,7 @@ require (
 	github.com/onsi/ginkgo v1.10.3
 	github.com/onsi/gomega v1.7.1
 	github.com/prometheus/client_golang v1.2.1 // indirect
+	github.com/prometheus/common v0.7.0
 	github.com/prometheus/procfs v0.0.6 // indirect
 	github.com/stretchr/testify v1.5.1
 	golang.org/x/net v0.0.0-20191112182307-2180aed22343 // indirect
