@@ -16,6 +16,7 @@ require (
 	github.com/onsi/ginkgo v1.10.3
 	github.com/onsi/gomega v1.7.1
 	github.com/prometheus/client_golang v1.2.1 // indirect
+	github.com/prometheus/common v0.7.0
 	github.com/prometheus/procfs v0.0.6 // indirect
 	github.com/stretchr/testify v1.5.1
 	golang.org/x/net v0.0.0-20191112182307-2180aed22343 // indirect

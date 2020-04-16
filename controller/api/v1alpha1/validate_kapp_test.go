@@ -3,21 +3,16 @@ package v1alpha1
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/go-openapi/validate"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
-	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
-	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apiextensions-apiserver/pkg/apiserver/validation"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	yaml2 "k8s.io/apimachinery/pkg/util/yaml"
 	"testing"
 )
 
-var crdSpec = []byte(`
+var crdDefinitionInYaml = []byte(`
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -64,46 +59,10 @@ status:
   conditions: []
   storedVersions: []`)
 
-func getValidatorForKappSpec(crdDefinition []byte) *validate.SchemaValidator {
-	sch := runtime.NewScheme()
-	_ = apiextv1beta1.AddToScheme(sch)
-
-	decode := serializer.NewCodecFactory(sch).UniversalDeserializer().Decode
-
-	obj, _, err := decode(crdDefinition, nil, nil)
-	if err != nil {
-		fmt.Printf("%#v", err)
-	}
-
-	//fmt.Println("obj:", obj)
-	crd, ok := obj.(*apiextv1beta1.CustomResourceDefinition)
-	if !ok {
-		panic("not CRD")
-	}
-
-	openAPIV3Schema := crd.Spec.Validation.OpenAPIV3Schema
-
-	in := openAPIV3Schema
-	out := apiextensions.JSONSchemaProps{}
-	err = apiextv1beta1.Convert_v1beta1_JSONSchemaProps_To_apiextensions_JSONSchemaProps(in, &out, nil)
-	if err != nil {
-		panic(err)
-	}
-
-	validator, _, err := validation.NewSchemaValidator(
-		&apiextensions.CustomResourceValidation{
-			OpenAPIV3Schema: &out,
-		})
-	if err != nil {
-		panic(err)
-	}
-
-	return validator
-}
-
 func TestValidateUsingOpenAPI(t *testing.T) {
 
-	validator := getValidatorForKappSpec(crdSpec)
+	validator, err := getValidatorForKappSpec(crdDefinitionInYaml)
+	assert.Nil(t, err)
 
 	goodSampleApp := `apiVersion: core.kapp.dev/v1alpha1
 kind: Application
@@ -170,16 +129,36 @@ metadata: foobar`
 	}
 }
 
+func TestTryValidateOpenAPIV3(t *testing.T) {
+
+	app := Application{
+		Spec: ApplicationSpec{
+			Components: []ComponentSpec{
+				{
+					WorkLoadType: "not-exist-type",
+				},
+			},
+		},
+	}
+
+	errList := tryValidateUsingOpenAPIV3(app)
+
+	assert.NotNil(t, errList)
+	assert.Equal(t, 2, len(errList))
+	fmt.Println(errList)
+}
+
 func TestUsingRealKappCRD(t *testing.T) {
-	crdSpec, err := ioutil.ReadFile("../../config/crd/bases/core.kapp.dev_applications.yaml")
+	realCrdDef, err := ioutil.ReadFile("../../config/crd/bases/core.kapp.dev_applications.yaml")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	validator := getValidatorForKappSpec(crdSpec)
+	validator, err := getValidatorForKappSpec(realCrdDef)
 	assert.NotNil(t, validator)
+	assert.Nil(t, err)
 
-	componentSpecWithoutImage := `apiVersion: core.kapp.dev/v1alpha1
+	appSpecWithoutImage := `apiVersion: core.kapp.dev/v1alpha1
 kind: Application
 metadata:
   name: socks
@@ -209,7 +188,7 @@ spec:
         initialDelaySeconds: 180
         periodSeconds: 3`
 
-	jsonInBytes, err := yaml2.ToJSON([]byte(componentSpecWithoutImage))
+	jsonInBytes, err := yaml2.ToJSON([]byte(appSpecWithoutImage))
 	assert.Nil(t, err)
 
 	unstructured := make(map[string]interface{})

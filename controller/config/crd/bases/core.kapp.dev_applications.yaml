@@ -228,6 +228,7 @@ spec:
                   memory:
                     type: string
                   name:
+                    pattern: ^[a-zA-Z-]+$
                     type: string
                   nodeSelectorLabels:
                     additionalProperties:
