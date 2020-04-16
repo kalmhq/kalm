@@ -20,7 +20,9 @@ interface XtermProps extends WithStyles<typeof xtermStyles> {
 interface XtermState {
   showSearch: boolean;
   searchValue: string;
+  isSearchFocused: boolean;
 }
+
 window.debug = Terminal;
 const xtermStyles = (theme: Theme) =>
   createStyles({
@@ -81,7 +83,8 @@ export class XtermRaw extends React.PureComponent<XtermProps, XtermState> {
 
     this.state = {
       showSearch: false,
-      searchValue: ""
+      searchValue: "",
+      isSearchFocused: false
     };
   }
 
@@ -93,7 +96,10 @@ export class XtermRaw extends React.PureComponent<XtermProps, XtermState> {
       }
 
       this.fitAddon.fit();
-      this.xterm.focus();
+
+      if (!this.state.isSearchFocused) {
+        this.xterm.focus();
+      }
     }
 
     if (!prevState.showSearch && this.state.showSearch) {
@@ -139,7 +145,7 @@ export class XtermRaw extends React.PureComponent<XtermProps, XtermState> {
   };
 
   closeSearch = () => {
-    this.setState({ showSearch: false });
+    this.setState({ showSearch: false, isSearchFocused: false });
     this.xterm.focus();
   };
 
@@ -162,6 +168,12 @@ export class XtermRaw extends React.PureComponent<XtermProps, XtermState> {
           value={searchValue}
           onKeyDown={this.onSearchInputKeyDown}
           inputRef={this.searchInputRef}
+          onFocus={() => {
+            this.setState({ isSearchFocused: true });
+          }}
+          onBlur={() => {
+            this.setState({ isSearchFocused: false });
+          }}
         />
         <IconButtonWithTooltip tooltipTitle="Close" size="small" onClick={this.closeSearch}>
           <CloseIcon />
