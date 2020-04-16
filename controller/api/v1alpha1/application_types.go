@@ -70,6 +70,8 @@ type ComponentSpec struct {
 
 	Plugins []runtime.RawExtension `json:"plugins,omitempty"`
 
+	PluginsNew []runtime.RawExtension `json:"pluginsNew,omitempty"`
+
 	BeforeStart []string `json:"beforeStart,omitempty"`
 
 	AfterStart []string `json:"afterStart,omitempty"`
@@ -98,10 +100,11 @@ type ComponentSpec struct {
 
 // ApplicationSpec defines the desired state of Application
 type ApplicationSpec struct {
-	IsActive            bool            `json:"isActive"`
-	Components          []ComponentSpec `json:"components"`
-	SharedEnv           []EnvVar        `json:"sharedEnv,omitempty"`
-	ImagePullSecretName string          `json:"imagePullSecretName,omitempty"`
+	IsActive            bool                   `json:"isActive"`
+	Components          []ComponentSpec        `json:"components"`
+	SharedEnv           []EnvVar               `json:"sharedEnv,omitempty"`
+	PluginsNew          []runtime.RawExtension `json:"pluginsNew,omitempty"`
+	ImagePullSecretName string                 `json:"imagePullSecretName,omitempty"`
 }
 
 // ApplicationStatus defines the observed state of Application

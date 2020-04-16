@@ -32,20 +32,35 @@ import (
 	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
 )
 
+var ValidPluginMethods = []string{
+	"ComponentFilter",
+	"AfterPodTemplateGeneration",
+	"BeforeDeploymentSave",
+	"BeforeServiceSave",
+	"BeforeCronjobSave",
+}
+
 var pluginsCache *PluginsCache
+
+type PluginProgram struct {
+	*js.Program
+
+	// a map of defined hooks
+	Methods map[string]bool
+}
 
 type PluginsCache struct {
 	mut      sync.RWMutex
-	Programs map[string]*js.Program
+	Programs map[string]*PluginProgram
 }
 
-func (c *PluginsCache) Set(name string, program *js.Program) {
+func (c *PluginsCache) Set(name string, program *PluginProgram) {
 	c.mut.Lock()
 	defer c.mut.Unlock()
 	c.Programs[name] = program
 }
 
-func (c *PluginsCache) Get(name string) *js.Program {
+func (c *PluginsCache) Get(name string) *PluginProgram {
 	c.mut.RLock()
 	defer c.mut.RUnlock()
 	return c.Programs[name]
@@ -60,7 +75,7 @@ func (c *PluginsCache) Delete(name string) {
 func init() {
 	pluginsCache = &PluginsCache{
 		mut:      sync.RWMutex{},
-		Programs: make(map[string]*js.Program),
+		Programs: make(map[string]*PluginProgram),
 	}
 }
 
@@ -91,8 +106,6 @@ func (r *PluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, err
 	}
 
-	cacheKeyName := fmt.Sprintf("%s/%s", plugin.GroupVersionKind(), plugin.Name)
-
 	// handle delete
 	if plugin.ObjectMeta.DeletionTimestamp.IsZero() {
 		// add finalizer
@@ -104,7 +117,7 @@ func (r *PluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	} else {
 		// The object is being deleted
 		if util.ContainsString(plugin.ObjectMeta.Finalizers, finalizerName) {
-			pluginsCache.Delete(cacheKeyName)
+			pluginsCache.Delete(plugin.Name)
 			// remove our finalizer from the list and update it.
 			plugin.ObjectMeta.Finalizers = util.RemoveString(plugin.ObjectMeta.Finalizers, finalizerName)
 			err := r.Update(ctx, &plugin)
@@ -136,8 +149,18 @@ func (r *PluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		}
 	}
 
+	methods, err := vm.GetDefinedMethods(plugin.Spec.Src, ValidPluginMethods)
+
+	if err != nil {
+		r.Log.Error(err, "Get Defined Methods error.")
+		return ctrl.Result{}, nil
+	}
+
 	if plugin.Status.CompiledSuccessfully {
-		pluginsCache.Set(cacheKeyName, program)
+		pluginsCache.Set(plugin.Name, &PluginProgram{
+			Program: program,
+			Methods: methods,
+		})
 	}
 
 	return ctrl.Result{}, nil

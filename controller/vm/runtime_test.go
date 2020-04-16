@@ -18,13 +18,28 @@ function fakeHookName(stringArg) {
 	return stringArg;
 }
 `)
-	_, err = RunMethod(runtime, program, "test")
+	err = RunMethod(runtime, program, "test", nil, nil)
 	suite.NotNil(err)
 	suite.True(strings.Contains(err.Error(), "test function is not defined."))
 
-	res, err := RunMethod(runtime, program, "fakeHookName", "sample-string")
+	var res string
+	err = RunMethod(runtime, program, "fakeHookName", &res, "sample-string")
 	suite.Nil(err)
 	suite.Equal("sample-string", res)
+}
+
+func (suite *VmTestSuite) TestGetDefinedMethods() {
+	res, err := GetDefinedMethods(`
+function fakeHookName(stringArg) {
+	return stringArg;
+}
+`, []string{"fakeHookName", "anotherName"})
+
+	suite.Nil(err)
+	suite.Equal(map[string]bool{
+		"fakeHookName": true,
+		"anotherName":  false,
+	}, res)
 }
 
 func (suite *VmTestSuite) TestComplicatedArguments() {
@@ -50,7 +65,8 @@ function fakeHookName(stringArg, boolArg, numberArg, deepMap) {
 	return deepMap.a.b.c.d;
 }
 `)
-	res, err := RunMethod(runtime, program, "fakeHookName", "abc", true, 123, map[string]interface{}{
+	var res string
+	err := RunMethod(runtime, program, "fakeHookName", &res, "abc", true, 123, map[string]interface{}{
 		"a": map[string]interface{}{
 			"b": map[string]interface{}{
 				"c": map[string]interface{}{

@@ -1,7 +1,53 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kapp-test
+---
 apiVersion: core.kapp.dev/v1alpha1
 kind: Plugin
 metadata:
-  name: plugin-sample
+  name: kapp-static-sacle-double
 spec:
-  # Add fields here
-  foo: bar
+  src: |
+    function BeforeDeploymentSave(deployment) {
+      deployment.spec.replicas = 2;
+      return deployment;
+    }
+  availableWorkloadType:
+    - server
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: Plugin
+metadata:
+  name: kapp-scale-name-with-suffix-tiple
+spec:
+  src: |
+    function ComponentFilter(component) {
+      return component.name.endsWith("tiple");
+    }
+
+    function BeforeDeploymentSave(deployment) {
+      deployment.spec.replicas = 3;
+      return deployment;
+    }
+  availableWorkloadType:
+    - server
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: Application
+metadata:
+  name: test-plugin-sample-application
+  namespace: kapp-test
+spec:
+  components:
+    - image: nginx:alpine
+      name: nginx-double
+      workloadType: server
+      pluginsNew:
+        - name: kapp-static-sacle-double
+    - image: nginx:alpine
+      name: nginx-tiple
+      workloadType: server
+  pluginsNew:
+    - name: kapp-scale-name-with-suffix-tiple
+  isActive: true

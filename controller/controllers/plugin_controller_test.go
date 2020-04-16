@@ -29,8 +29,7 @@ func generateEmptyPlugin() *v1alpha1.Plugin {
 			APIVersion: "core.kapp.dev/v1alpha1",
 		},
 		ObjectMeta: metaV1.ObjectMeta{
-			Name:      name,
-			Namespace: TestNameSpaceName,
+			Name: name,
 		},
 		Spec: v1alpha1.PluginSpec{
 			Src:                   "",
@@ -42,7 +41,8 @@ func generateEmptyPlugin() *v1alpha1.Plugin {
 }
 
 func getPluginNamespacedName(app *v1alpha1.Plugin) types.NamespacedName {
-	return types.NamespacedName{Name: app.Name, Namespace: app.Namespace}
+	// cluster scope resource
+	return types.NamespacedName{Name: app.Name, Namespace: ""}
 }
 
 func updatePlugin(plugin *v1alpha1.Plugin) {

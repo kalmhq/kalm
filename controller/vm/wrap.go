@@ -14,11 +14,34 @@ function __entrypoint() {
 
 	console.debug("invoke", __targetMethodName);
 
-	return __targetMethod.apply(null, __args);
+	if (typeof __args !== "undefined") {
+		return __targetMethod.apply(null, __args);
+	}
+
+	return __targetMethod.apply(null);	
 }
 
 // run
 __entrypoint();
 `
-	return src + entrypoint
+	return polyfill + src + entrypoint
+}
+
+func getMethodsWrap(src string) string {
+	entrypoint := `
+;
+function __getMethods() {
+	var res = {};
+
+	for (var i=0;i<__methods.length;i++) {
+		var method = __methods[i];
+		res[method] = typeof global[method] === "function";
+	}
+
+	return res;
+}
+
+__getMethods();
+`
+	return polyfill + src + entrypoint
 }

@@ -9,6 +9,7 @@ import (
 	kappV1Alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
 	"github.com/kapp-staging/kapp/lib/files"
 	"github.com/kapp-staging/kapp/util"
+	"github.com/kapp-staging/kapp/vm"
 	"github.com/sirupsen/logrus"
 	appsV1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/batch/v1"
@@ -355,63 +356,7 @@ func (act *applicationReconcilerTask) generatePodTemplateSpec(component *kappV1A
 		mainContainer.VolumeMounts = volumeMounts
 	}
 
-	/*	// before start
-		var beforeHooks []coreV1.Container
-		for i, beforeHook := range component.BeforeStart {
-			beforeHooks = append(beforeHooks, coreV1.Container{
-				Image:   component.Image,
-				Name:    fmt.Sprintf("%s-before-hook-%d", component.Name, i),
-				Command: []string{"/bin/sh"}, // TODO: when to use /bin/bash ??
-				Args: []string{
-					"-c",
-					beforeHook,
-				},
-				Env: envs,
-			})
-		}
-		deployment.Spec.Template.Spec.InitContainers = beforeHooks
-
-		// after start
-		if len(component.AfterStart) == 0 {
-			if mainContainer.Lifecycle != nil {
-				mainContainer.Lifecycle.PostStart = nil
-			}
-		} else {
-			if mainContainer.Lifecycle == nil {
-				mainContainer.Lifecycle = &coreV1.Lifecycle{}
-			}
-
-			mainContainer.Lifecycle.PostStart = &coreV1.Handler{
-				Exec: &coreV1.ExecAction{
-					Command: []string{
-						"/bin/sh",
-						"-c",
-						strings.Join(component.AfterStart, " && "),
-					},
-				},
-			}
-		}*/
-
-	// before stop
-	//if len(component.BeforeDestroy) == 0 {
-	//	if mainContainer.Lifecycle != nil {
-	//		mainContainer.Lifecycle.PreStop = nil
-	//	}
-	//} else {
-	//	if mainContainer.Lifecycle == nil {
-	//		mainContainer.Lifecycle = &coreV1.Lifecycle{}
-	//	}
-	//
-	//	mainContainer.Lifecycle.PreStop = &coreV1.Handler{
-	//		Exec: &coreV1.ExecAction{
-	//			Command: []string{
-	//				"/bin/sh",
-	//				"-c",
-	//				strings.Join(component.BeforeDestroy, " && "),
-	//			},
-	//		},
-	//	}
-	//}
+	// TODO plugin AfterPodTemplateGeneration
 
 	return template, nil
 }
@@ -585,9 +530,9 @@ func (act *applicationReconcilerTask) reconcileComponent(component *kappV1Alpha1
 	}
 
 	switch component.WorkLoadType {
-	case kappV1Alpha1.WorkLoadTypeServer, "":
+	case kappV1Alpha1.WorkloadTypeServer, "":
 		return act.reconcileAsDeployment(component, labelMap, podTemplateSpec)
-	case kappV1Alpha1.WorkLoadTypeCronjob:
+	case kappV1Alpha1.WorkloadTypeCronjob:
 		return act.reconcileAsCronJob(component, labelMap, podTemplateSpec)
 	default:
 		logrus.Warnln("see unknown WorkLoadType:", component.WorkLoadType)
@@ -951,6 +896,98 @@ func GetPlugins(kapp *kappV1Alpha1.Application) (plugins []interface{}) {
 	}
 
 	return
+}
+
+func (act *applicationReconcilerTask) runPlugins(methodName string, component *kappV1Alpha1.ComponentSpec, desc interface{}, args ...interface{}) (err error) {
+	err = act.runApplicationPlugins(methodName, component, desc, args...)
+
+	if err != nil {
+		return err
+	}
+
+	err = act.runComponentPlugins(methodName, component, desc, args...)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (act *applicationReconcilerTask) runComponentPlugins(methodName string, component *kappV1Alpha1.ComponentSpec, desc interface{}, args ...interface{}) error {
+	for _, plugin := range component.PluginsNew {
+		var tmp struct {
+			Name string `json:"name"`
+		}
+
+		_ = json.Unmarshal(plugin.Raw, &tmp)
+
+		pluginProgram := pluginsCache.Get(tmp.Name)
+
+		if pluginProgram == nil {
+			return fmt.Errorf("Can't find plugin %s in cache.", tmp.Name)
+		}
+
+		rt := vm.InitRuntime()
+
+		return vm.RunMethod(
+			rt,
+			pluginProgram.Program,
+			methodName,
+			desc,
+			args...,
+		)
+	}
+
+	return nil
+}
+
+func (act *applicationReconcilerTask) runApplicationPlugins(methodName string, component *kappV1Alpha1.ComponentSpec, desc interface{}, args ...interface{}) error {
+	for _, plugin := range act.app.Spec.PluginsNew {
+		var tmp struct {
+			Name string `json:"name"`
+		}
+
+		_ = json.Unmarshal(plugin.Raw, &tmp)
+
+		pluginProgram := pluginsCache.Get(tmp.Name)
+
+		if pluginProgram == nil {
+			return fmt.Errorf("Can't find plugin %s in cache.", tmp.Name)
+		}
+
+		rt := vm.InitRuntime()
+
+		if pluginProgram.Methods["ComponentFilter"] {
+			shouldExecute := new(bool)
+
+			err := vm.RunMethod(
+				rt,
+				pluginProgram.Program,
+				"ComponentFilter",
+				shouldExecute,
+				component,
+			)
+
+			if err != nil {
+				return err
+			}
+
+			if !*shouldExecute {
+				continue
+			}
+		}
+
+		return vm.RunMethod(
+			rt,
+			pluginProgram.Program,
+			methodName,
+			desc,
+			args...,
+		)
+	}
+
+	return nil
 }
 
 func GetIngressPlugins(kapp *kappV1Alpha1.Application) (rst []*kappV1Alpha1.PluginIngress) {

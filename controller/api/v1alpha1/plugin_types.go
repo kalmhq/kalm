@@ -27,8 +27,15 @@ type PluginSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	Src                   string         `json:"src"`
-	AvailableWorkloadType []WorkloadType `json:"availableWorkloadType"`
+	// source code of the plugin
+	Src string `json:"src"`
+
+	// If empty, means the plugin can be applied on all kinds of component
+	// If Not empty, this plugin can only be used on components with workload type exists in this array.
+	AvailableWorkloadType []WorkloadType `json:"availableWorkloadType,omitempty"`
+
+	// icon of this plugin
+	Icon string `json:"icon,omitempty"`
 }
 
 // PluginStatus defines the observed state of Plugin
@@ -39,6 +46,7 @@ type PluginStatus struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:resource:scope=Cluster
 // +kubebuilder:subresource:status
 
 // Plugin is the Schema for the plugins API
@@ -51,6 +59,7 @@ type Plugin struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:resource:scope=Cluster
 
 // PluginList contains a list of Plugin
 type PluginList struct {

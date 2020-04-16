@@ -14,7 +14,7 @@ spec:
     listKind: PluginList
     plural: plugins
     singular: plugin
-  scope: Namespaced
+  scope: Cluster
   subresources:
     status: {}
   validation:
@@ -37,13 +37,19 @@ spec:
           description: PluginSpec defines the desired state of Plugin
           properties:
             availableWorkloadType:
+              description: If empty, means the plugin can be applied on all kinds
+                of component If Not empty, this plugin can only be used on components
+                with workload type exists in this array.
               items:
                 type: string
               type: array
+            icon:
+              description: icon of this plugin
+              type: string
             src:
+              description: source code of the plugin
               type: string
           required:
-          - availableWorkloadType
           - src
           type: object
         status:
