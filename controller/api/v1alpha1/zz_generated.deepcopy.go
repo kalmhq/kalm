@@ -20,6 +20,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"encoding/json"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -634,6 +635,11 @@ func (in *PluginSpec) DeepCopyInto(out *PluginSpec) {
 	if in.AvailableWorkloadType != nil {
 		in, out := &in.AvailableWorkloadType, &out.AvailableWorkloadType
 		*out = make([]WorkloadType, len(*in))
+		copy(*out, *in)
+	}
+	if in.ConfigSchema != nil {
+		in, out := &in.ConfigSchema, &out.ConfigSchema
+		*out = make(json.RawMessage, len(*in))
 		copy(*out, *in)
 	}
 }

@@ -21,6 +21,7 @@ import (
 	js "github.com/dop251/goja"
 	"github.com/kapp-staging/kapp/util"
 	"github.com/kapp-staging/kapp/vm"
+	"github.com/xeipuuv/gojsonschema"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"sync"
 
@@ -57,6 +58,8 @@ type PluginProgram struct {
 	*js.Program
 
 	Name string
+
+	ConfigSchema *gojsonschema.Schema
 
 	// a map of defined hooks
 	Methods map[string]bool
@@ -165,6 +168,17 @@ func (r *PluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		}
 	}
 
+	var configSchema *gojsonschema.Schema
+	if plugin.Spec.ConfigSchema != nil {
+		schemaLoader := gojsonschema.NewStringLoader(string(plugin.Spec.ConfigSchema))
+		configSchema, err = gojsonschema.NewSchema(schemaLoader)
+
+		if err != nil {
+			log.Error(err, "compile plugin config schema error")
+			return ctrl.Result{}, nil
+		}
+	}
+
 	methods, err := vm.GetDefinedMethods(plugin.Spec.Src, ValidPluginMethods)
 
 	if err != nil {
@@ -190,6 +204,7 @@ func (r *PluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			Methods:                      methods,
 			AvailableForAllWorkloadTypes: availableForAllWorkloadTypes,
 			AvailableWorkloadTypes:       availableWorkloadTypes,
+			ConfigSchema:                 configSchema,
 		})
 	}
 

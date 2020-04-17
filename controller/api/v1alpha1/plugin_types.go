@@ -16,6 +16,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"encoding/json"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -36,6 +37,8 @@ type PluginSpec struct {
 
 	// icon of this plugin
 	Icon string `json:"icon,omitempty"`
+
+	ConfigSchema json.RawMessage `json:"configSchema,omitempty"`
 }
 
 // PluginStatus defines the observed state of Plugin

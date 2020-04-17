@@ -13,6 +13,7 @@ import (
 	"github.com/kapp-staging/kapp/vm"
 	"github.com/prometheus/common/log"
 	"github.com/sirupsen/logrus"
+	"github.com/xeipuuv/gojsonschema"
 	appsV1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/batch/v1"
 	batchV1Beta1 "k8s.io/api/batch/v1beta1"
@@ -942,9 +943,10 @@ func (act *applicationReconcilerTask) runPlugins(methodName string, component *k
 	return nil
 }
 
-func findPluginFromCache(plugin runtime.RawExtension, methodName string, component *kappV1Alpha1.ComponentSpec) (*PluginProgram, error) {
+func findPluginAndValidateConfig(plugin runtime.RawExtension, methodName string, component *kappV1Alpha1.ComponentSpec) (*PluginProgram, error) {
 	var tmp struct {
-		Name string `json:"name"`
+		Name   string          `json:"name"`
+		Config json.RawMessage `json:"config"`
 	}
 
 	_ = json.Unmarshal(plugin.Raw, &tmp)
@@ -970,12 +972,25 @@ func findPluginFromCache(plugin runtime.RawExtension, methodName string, compone
 		return nil, nil
 	}
 
+	if pluginProgram.ConfigSchema != nil {
+		pluginConfig := gojsonschema.NewStringLoader(string(tmp.Config))
+		res, err := pluginProgram.ConfigSchema.Validate(pluginConfig)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if !res.Valid() {
+			return nil, fmt.Errorf(res.Errors()[0].String())
+		}
+	}
+
 	return pluginProgram, nil
 }
 
 func (act *applicationReconcilerTask) runComponentPlugins(methodName string, component *kappV1Alpha1.ComponentSpec, desc interface{}, args ...interface{}) error {
 	for _, plugin := range component.PluginsNew {
-		pluginProgram, err := findPluginFromCache(plugin, methodName, component)
+		pluginProgram, err := findPluginAndValidateConfig(plugin, methodName, component)
 
 		if err != nil {
 			return err
@@ -1006,7 +1021,7 @@ func (act *applicationReconcilerTask) runComponentPlugins(methodName string, com
 
 func (act *applicationReconcilerTask) runApplicationPlugins(methodName string, component *kappV1Alpha1.ComponentSpec, desc interface{}, args ...interface{}) error {
 	for _, plugin := range act.app.Spec.PluginsNew {
-		pluginProgram, err := findPluginFromCache(plugin, methodName, component)
+		pluginProgram, err := findPluginAndValidateConfig(plugin, methodName, component)
 
 		if err != nil {
 			return err
