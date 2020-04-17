@@ -25,3 +25,5 @@ bin
 *~
 .DS_Store
 tmp
+
+core_v1alpha1_application-dev.yaml

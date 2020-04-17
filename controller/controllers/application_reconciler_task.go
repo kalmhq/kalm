@@ -17,6 +17,7 @@ import (
 	"k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -32,9 +33,12 @@ type applicationReconcilerTask struct {
 	req        ctrl.Request
 	log        logr.Logger
 
-	deployments []appsV1.Deployment
-	cronjobs    []batchV1Beta1.CronJob
-	services    []coreV1.Service
+	deployments  []appsV1.Deployment
+	cronjobs     []batchV1Beta1.CronJob
+	daemonSets   []appsV1.DaemonSet
+	statefulSets []appsV1.StatefulSet
+
+	services []coreV1.Service
 }
 
 func newApplicationReconcilerTask(
@@ -51,6 +55,8 @@ func newApplicationReconcilerTask(
 		log,
 		[]appsV1.Deployment{},
 		[]batchV1Beta1.CronJob{},
+		[]appsV1.DaemonSet{},
+		[]appsV1.StatefulSet{},
 		[]coreV1.Service{},
 	}
 }
@@ -70,22 +76,31 @@ func (act *applicationReconcilerTask) Run() (err error) {
 		return act.deleteExternalResources()
 	}
 
-	err = act.getCronjobs()
-
+	err = act.getCronJobs()
 	if err != nil {
 		log.Error(err, "unable to list child conjobs")
 		return err
 	}
 
 	err = act.getDeployments()
-
 	if err != nil {
 		log.Error(err, "unable to list child deployments")
 		return err
 	}
 
-	err = act.getServices()
+	err = act.getDaemonSets()
+	if err != nil {
+		log.Error(err, "unable to list child ds")
+		return err
+	}
 
+	err = act.getStatefulSet()
+	if err != nil {
+		log.Error(err, "unable to list child sts")
+		return err
+	}
+
+	err = act.getServices()
 	if err != nil {
 		log.Error(err, "unable to list child services")
 		return err
@@ -589,6 +604,10 @@ func (act *applicationReconcilerTask) reconcileComponent(component *kappV1Alpha1
 		return act.reconcileAsDeployment(component, labelMap, podTemplateSpec)
 	case kappV1Alpha1.WorkLoadTypeCronjob:
 		return act.reconcileAsCronJob(component, labelMap, podTemplateSpec)
+	case kappV1Alpha1.WorkLoadTypeDaemonSet:
+		return act.reconcileAsDS(component, labelMap, podTemplateSpec)
+	case kappV1Alpha1.WorkLoadTypeStatefulSet:
+		return act.reconcileAsSTS(component, labelMap, podTemplateSpec)
 	default:
 		logrus.Warnln("see unknown WorkLoadType:", component.WorkLoadType)
 	}
@@ -608,30 +627,11 @@ func (act *applicationReconcilerTask) getService(componentName string) *coreV1.S
 	return nil
 }
 
-func (act *applicationReconcilerTask) getDeployment(name string) *appsV1.Deployment {
-	for i, _ := range act.deployments {
-		deployment := &(act.deployments[i])
-
-		if deployment.ObjectMeta.Name == getDeploymentName(act.app.Name, name) {
-			return deployment
-		}
-	}
-
-	return nil
-}
-
-func (act *applicationReconcilerTask) getCronjobs() error {
+func (act *applicationReconcilerTask) getCronJobs() error {
 	var cronjobList batchV1Beta1.CronJobList
 
-	if err := act.reconciler.Reader.List(
-		act.ctx,
-		&cronjobList,
-		client.InNamespace(act.req.Namespace),
-		client.MatchingLabels{
-			"kapp-application": act.app.Name,
-		},
-	); err != nil {
-		act.log.Error(err, "unable to list child deployments")
+	err := act.getK8sRuntimeObjList(&cronjobList)
+	if err != nil {
 		return err
 	}
 
@@ -639,22 +639,111 @@ func (act *applicationReconcilerTask) getCronjobs() error {
 	return nil
 }
 
-func (act *applicationReconcilerTask) getDeployments() error {
-	var deploymentList appsV1.DeploymentList
-
+func (act *applicationReconcilerTask) getK8sRuntimeObjList(objList runtime.Object) error {
 	if err := act.reconciler.Reader.List(
 		act.ctx,
-		&deploymentList,
+		objList,
 		client.InNamespace(act.req.Namespace),
 		client.MatchingLabels{
 			"kapp-application": act.app.Name,
 		},
 	); err != nil {
+		act.log.Error(err, "unable to list runtime.Object")
+		return err
+	}
+
+	return nil
+}
+
+func getCronJobName(appName, componentName string) string {
+	return fmt.Sprintf("%s-%s", appName, componentName)
+}
+
+func (act *applicationReconcilerTask) findCronJob(name string) *batchV1Beta1.CronJob {
+	for i := range act.cronjobs {
+		cj := &act.cronjobs[i]
+
+		if cj.ObjectMeta.Name == getCronJobName(act.app.Name, name) {
+			return cj
+		}
+	}
+
+	return nil
+}
+
+func (act *applicationReconcilerTask) getDeployments() error {
+	var deploymentList appsV1.DeploymentList
+
+	err := act.getK8sRuntimeObjList(&deploymentList)
+	if err != nil {
 		act.log.Error(err, "unable to list child deployments")
 		return err
 	}
 
 	act.deployments = deploymentList.Items
+
+	return nil
+}
+
+func (act *applicationReconcilerTask) findDeployment(name string) *appsV1.Deployment {
+	for i, _ := range act.deployments {
+		deployment := &(act.deployments[i])
+
+		if deployment.ObjectMeta.Name == getNameForKappWordLoad(act.app.Name, name) {
+			return deployment
+		}
+	}
+
+	return nil
+}
+
+func (act *applicationReconcilerTask) getDaemonSets() error {
+	var dsList appsV1.DaemonSetList
+
+	err := act.getK8sRuntimeObjList(&dsList)
+	if err != nil {
+		return err
+	}
+
+	act.daemonSets = dsList.Items
+	act.log.Info("getting ds ", "len:", len(dsList.Items))
+	return nil
+}
+
+func (act *applicationReconcilerTask) findDaemonSet(name string) *appsV1.DaemonSet {
+
+	for i := range act.daemonSets {
+		ds := &(act.daemonSets[i])
+
+		if ds.ObjectMeta.Name == getNameForKappWordLoad(act.app.Name, name) {
+			return ds
+		}
+	}
+
+	return nil
+}
+
+func (act *applicationReconcilerTask) getStatefulSet() error {
+	var stsList appsV1.StatefulSetList
+
+	err := act.getK8sRuntimeObjList(&stsList)
+	if err != nil {
+		return err
+	}
+
+	act.statefulSets = stsList.Items
+	return nil
+}
+
+func (act *applicationReconcilerTask) findStatefulSet(name string) *appsV1.StatefulSet {
+
+	for i := range act.statefulSets {
+		ds := &(act.statefulSets[i])
+
+		if ds.ObjectMeta.Name == getNameForKappWordLoad(act.app.Name, name) {
+			return ds
+		}
+	}
 
 	return nil
 }
@@ -748,7 +837,7 @@ func (act *applicationReconcilerTask) deleteExternalResources() error {
 		}
 	}
 
-	if err := act.getCronjobs(); err != nil {
+	if err := act.getCronJobs(); err != nil {
 		log.Error(err, "unable to list services")
 		return err
 	}
@@ -848,7 +937,11 @@ func (act *applicationReconcilerTask) getValueOfLinkedEnv(env kappV1Alpha1.EnvVa
 	return fmt.Sprintf("%s%s%s", env.Prefix, value, env.Suffix), nil
 }
 
-func getDeploymentName(appName, componentName string) string {
+//func getDeploymentName(appName, componentName string) string {
+//	return fmt.Sprintf("%s-%s", appName, componentName)
+//}
+
+func getNameForKappWordLoad(appName, componentName string) string {
 	return fmt.Sprintf("%s-%s", appName, componentName)
 }
 
@@ -1059,7 +1152,7 @@ func (act *applicationReconcilerTask) reconcileAsDeployment(
 
 		ready := false
 		for _, existDp := range existDps {
-			dpNameOfDependency := getDeploymentName(app.Name, dependency)
+			dpNameOfDependency := getNameForKappWordLoad(app.Name, dependency)
 			if dpNameOfDependency != existDp.Name {
 				continue
 			}
@@ -1075,7 +1168,7 @@ func (act *applicationReconcilerTask) reconcileAsDeployment(
 		}
 	}
 
-	deployment := act.getDeployment(component.Name)
+	deployment := act.findDeployment(component.Name)
 	isNewDeployment := false
 
 	if deployment == nil {
@@ -1085,7 +1178,7 @@ func (act *applicationReconcilerTask) reconcileAsDeployment(
 			ObjectMeta: metaV1.ObjectMeta{
 				Labels:      labelMap,
 				Annotations: make(map[string]string),
-				Name:        getDeploymentName(app.Name, component.Name),
+				Name:        getNameForKappWordLoad(app.Name, component.Name),
 				Namespace:   app.Namespace,
 			},
 			Spec: appsV1.DeploymentSpec{
@@ -1163,17 +1256,104 @@ func (act *applicationReconcilerTask) reconcileAsDeployment(
 	return nil
 }
 
-func getCronJobName(appName, componentName string) string {
-	return fmt.Sprintf("%s-%s", appName, componentName)
+func (act *applicationReconcilerTask) reconcileAsDS(component *kappV1Alpha1.ComponentSpec, labelMap map[string]string, podTemplateSpec *coreV1.PodTemplateSpec) error {
+	log := act.log
+
+	daemonSet := act.findDaemonSet(component.Name)
+	isNewDs := false
+
+	if daemonSet == nil {
+		isNewDs = true
+
+		daemonSet = &appsV1.DaemonSet{
+			ObjectMeta: metaV1.ObjectMeta{
+				Labels:      labelMap,
+				Annotations: make(map[string]string),
+				Name:        getNameForKappWordLoad(act.app.Name, component.Name),
+				Namespace:   act.app.Namespace,
+			},
+			Spec: appsV1.DaemonSetSpec{
+				Template: *podTemplateSpec,
+				Selector: &metaV1.LabelSelector{
+					MatchLabels: labelMap,
+				},
+			},
+		}
+	} else {
+		daemonSet.Spec.Template = *podTemplateSpec
+	}
+
+	if isNewDs {
+		if err := ctrl.SetControllerReference(act.app, daemonSet, act.reconciler.Scheme); err != nil {
+			log.Error(err, "unable to set owner for daemonSet")
+			return err
+		}
+
+		if err := act.reconciler.Create(act.ctx, daemonSet); err != nil {
+			log.Error(err, "unable to create daemonSet for Application")
+			return err
+		}
+
+		log.Info("create daemonSet " + daemonSet.Name)
+	} else {
+		if err := act.reconciler.Update(act.ctx, daemonSet); err != nil {
+			log.Error(err, "unable to update daemonSet for Application")
+			return err
+		}
+
+		log.Info("update daemonSet " + daemonSet.Name)
+	}
+
+	return nil
 }
 
-func (act *applicationReconcilerTask) findCronJob(name string) *batchV1Beta1.CronJob {
-	for i := range act.cronjobs {
-		cj := &act.cronjobs[i]
+func (act *applicationReconcilerTask) reconcileAsSTS(component *kappV1Alpha1.ComponentSpec, labelMap map[string]string, spec *coreV1.PodTemplateSpec) error {
 
-		if cj.ObjectMeta.Name == getCronJobName(act.app.Name, name) {
-			return cj
+	log := act.log
+
+	sts := act.findStatefulSet(component.Name)
+	isNewSts := false
+
+	if sts == nil {
+		isNewSts = true
+
+		sts = &appsV1.StatefulSet{
+			ObjectMeta: metaV1.ObjectMeta{
+				Labels:      labelMap,
+				Annotations: make(map[string]string),
+				Name:        getNameForKappWordLoad(act.app.Name, component.Name),
+				Namespace:   act.app.Namespace,
+			},
+			Spec: appsV1.StatefulSetSpec{
+				Template: *spec,
+				Selector: &metaV1.LabelSelector{
+					MatchLabels: labelMap,
+				},
+			},
 		}
+	} else {
+		sts.Spec.Template = *spec
+	}
+
+	if isNewSts {
+		if err := ctrl.SetControllerReference(act.app, sts, act.reconciler.Scheme); err != nil {
+			log.Error(err, "unable to set owner for sts")
+			return err
+		}
+
+		if err := act.reconciler.Create(act.ctx, sts); err != nil {
+			log.Error(err, "unable to create sts for Application")
+			return err
+		}
+
+		log.Info("create sts " + sts.Name)
+	} else {
+		if err := act.reconciler.Update(act.ctx, sts); err != nil {
+			log.Error(err, "unable to update sts for Application")
+			return err
+		}
+
+		log.Info("update sts " + sts.Name)
 	}
 
 	return nil
