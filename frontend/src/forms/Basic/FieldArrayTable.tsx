@@ -1,15 +1,9 @@
-import { Box, MenuItem } from "@material-ui/core";
 import AddCircleIcon from "@material-ui/icons/AddCircle";
 import Immutable from "immutable";
 import MaterialTable, { EditComponentProps, Column } from "material-table";
 import React, { forwardRef } from "react";
-import { connect, DispatchProp } from "react-redux";
+import { DispatchProp } from "react-redux";
 import { arrayUnshift, change, WrappedFieldArrayProps } from "redux-form";
-import { FieldArray } from "redux-form/immutable";
-import { MaterialTableEditSelectField } from "../Basic/select";
-import { MaterialTableEditTextField } from "../Basic/text";
-import { NormalizePort } from "../normalizer";
-import { ComponentLikePort } from "../../types/componentTemplate";
 
 interface FieldArrayComponentHackType {
   name: any;
