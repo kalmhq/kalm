@@ -57,7 +57,7 @@ type ComponentSpec struct {
 	Ports []Port `json:"ports,omitempty"`
 
 	// +kubebuilder:validation:Enum=server;cronjob
-	WorkLoadType WorkLoadType `json:"workloadType,omitempty"`
+	WorkLoadType WorkloadType `json:"workloadType,omitempty"`
 
 	Schedule string `json:"schedule,omitempty"`
 
@@ -69,6 +69,8 @@ type ComponentSpec struct {
 	ReadinessProbe *v1.Probe `json:"readinessProbe,omitempty"`
 
 	Plugins []runtime.RawExtension `json:"plugins,omitempty"`
+
+	PluginsNew []runtime.RawExtension `json:"pluginsNew,omitempty"`
 
 	BeforeStart []string `json:"beforeStart,omitempty"`
 
@@ -98,10 +100,11 @@ type ComponentSpec struct {
 
 // ApplicationSpec defines the desired state of Application
 type ApplicationSpec struct {
-	IsActive            bool            `json:"isActive"`
-	Components          []ComponentSpec `json:"components"`
-	SharedEnv           []EnvVar        `json:"sharedEnv,omitempty"`
-	ImagePullSecretName string          `json:"imagePullSecretName,omitempty"`
+	IsActive            bool                   `json:"isActive"`
+	Components          []ComponentSpec        `json:"components"`
+	SharedEnv           []EnvVar               `json:"sharedEnv,omitempty"`
+	PluginsNew          []runtime.RawExtension `json:"pluginsNew,omitempty"`
+	ImagePullSecretName string                 `json:"imagePullSecretName,omitempty"`
 }
 
 // ApplicationStatus defines the observed state of Application

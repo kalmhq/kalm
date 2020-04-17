@@ -42,8 +42,7 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gv1Alpha1.GET("/logs", h.logWebsocketHandler)
 	gv1Alpha1.GET("/exec", h.execWebsocketHandler)
 
-	gv1Alpha1WithAuth := gv1Alpha1.Group("")
-	//gv1Alpha1WithAuth := gv1Alpha1.Group("", h.AuthClientMiddleware)
+	gv1Alpha1WithAuth := gv1Alpha1.Group("", h.AuthClientMiddleware)
 	gv1Alpha1WithAuth.GET("/applications", h.handleGetApplications)
 	gv1Alpha1WithAuth.POST("/applications/validate", h.handleValidateApplications)
 	gv1Alpha1WithAuth.GET("/applications/:namespace", h.handleGetApplications)

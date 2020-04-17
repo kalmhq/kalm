@@ -64,7 +64,7 @@ type ServiceStatus struct {
 
 type ComponentStatus struct {
 	Name         string                `json:"name"`
-	WorkloadType v1alpha1.WorkLoadType `json:"workloadType"`
+	WorkloadType v1alpha1.WorkloadType `json:"workloadType"`
 
 	DeploymentStatus appsV1.DeploymentStatus `json:"deploymentStatus,omitempty"`
 	CronjobStatus    v1betav1.CronJobStatus  `json:"cronjobStatus,omitempty"`
@@ -205,7 +205,7 @@ func formatApplicationComponents(components []v1alpha1.ComponentSpec) {
 		}
 
 		if components[i].WorkLoadType == "" {
-			components[i].WorkLoadType = v1alpha1.WorkLoadTypeServer
+			components[i].WorkLoadType = v1alpha1.WorkloadTypeServer
 		}
 	}
 }
@@ -239,7 +239,7 @@ func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Ap
 
 		// TODO remote default value
 		if workLoadType == "" {
-			workLoadType = v1alpha1.WorkLoadTypeServer
+			workLoadType = v1alpha1.WorkloadTypeServer
 		}
 
 		serviceStatus := []ServiceStatus{}
@@ -266,7 +266,7 @@ func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Ap
 		}
 
 		// TODO fix the default value, there should be a empty string
-		if component.WorkLoadType == v1alpha1.WorkLoadTypeServer || component.WorkLoadType == "" {
+		if component.WorkLoadType == v1alpha1.WorkloadTypeServer || component.WorkLoadType == "" {
 
 			//deploymentName := fmt.Sprintf("%s-%s", application.Name, component.Name)
 			//deployment := findDeploymentByName(resources.DeploymentList, deploymentName)
