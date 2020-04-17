@@ -4,6 +4,7 @@ import MaterialTable, { EditComponentProps, Column } from "material-table";
 import React, { forwardRef } from "react";
 import { DispatchProp } from "react-redux";
 import { arrayUnshift, change, WrappedFieldArrayProps } from "redux-form";
+import { MaterialTableEditTextField } from "./text";
 
 interface FieldArrayComponentHackType {
   name: any;
@@ -111,7 +112,7 @@ export class FieldArrayTable extends React.PureComponent<Props> {
     let copiedRowData = { ...newRowData };
     delete copiedRowData.index;
 
-    const row: ComponentLikePort = Immutable.Map(copiedRowData);
+    const row = Immutable.Map(copiedRowData);
 
     return this.props.dispatch(arrayUnshift(formName, `${this.props.fields.name}`, row));
   };
