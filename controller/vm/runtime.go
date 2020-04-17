@@ -44,7 +44,7 @@ func GetDefinedMethods(src string, methods []string) (map[string]bool, error) {
 	return tmp, nil
 }
 
-func RunMethod(runtime *js.Runtime, program *js.Program, methodName string, dest interface{}, args ...interface{}) error {
+func RunMethod(runtime *js.Runtime, program *js.Program, methodName string, config []byte, dest interface{}, args ...interface{}) error {
 	runtime.Set("__targetMethodName", methodName)
 
 	if args != nil {
@@ -66,6 +66,18 @@ func RunMethod(runtime *js.Runtime, program *js.Program, methodName string, dest
 
 		runtime.Set("__args", _args)
 	}
+
+	runtime.Set("getConfig", func(call js.FunctionCall) js.Value {
+		if config == nil {
+			return js.Undefined()
+		}
+
+		res := make(map[string]interface{})
+
+		_ = json.Unmarshal(config, &res)
+
+		return runtime.ToValue(res)
+	})
 
 	res, err := runtime.RunProgram(program)
 

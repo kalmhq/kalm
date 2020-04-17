@@ -23,9 +23,28 @@ function fakeHookName(stringArg) {
 	suite.True(strings.Contains(err.Error(), "test function is not defined."))
 
 	var res string
-	err = RunMethod(runtime, program, "fakeHookName", &res, "sample-string")
+	err = RunMethod(runtime, program, "fakeHookName", nil, &res, "sample-string")
 	suite.Nil(err)
 	suite.Equal("sample-string", res)
+}
+
+func (suite *VmTestSuite) TestConfig() {
+	var err error
+	runtime := InitRuntime()
+	program, _ := CompileProgram(`
+function testGetConfig() {
+	return getConfig();
+}
+`)
+
+	var res interface{}
+	err = RunMethod(runtime, program, "testGetConfig", nil, &res)
+	suite.Nil(err)
+	suite.Equal(nil, res)
+
+	err = RunMethod(runtime, program, "testGetConfig", []byte(`{"a": 1}`), &res)
+	suite.Nil(err)
+	suite.Equal(map[string]interface{}{"a": float64(1)}, res)
 }
 
 func (suite *VmTestSuite) TestGetDefinedMethods() {
@@ -66,7 +85,7 @@ function fakeHookName(stringArg, boolArg, numberArg, deepMap) {
 }
 `)
 	var res string
-	err := RunMethod(runtime, program, "fakeHookName", &res, "abc", true, 123, map[string]interface{}{
+	err := RunMethod(runtime, program, "fakeHookName", nil, &res, "abc", true, 123, map[string]interface{}{
 		"a": map[string]interface{}{
 			"b": map[string]interface{}{
 				"c": map[string]interface{}{

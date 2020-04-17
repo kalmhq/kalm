@@ -18,7 +18,7 @@ function run(){
 `)
 	suite.Nil(err)
 	var dest bool
-	err = RunMethod(runtime, p, "run", &dest)
+	err = RunMethod(runtime, p, "run", nil, &dest)
 	suite.Nil(err)
 	suite.True(dest)
 
@@ -29,7 +29,7 @@ function run(){
 `)
 
 	suite.Nil(err)
-	err = RunMethod(runtime, p, "run", &dest)
+	err = RunMethod(runtime, p, "run", nil, &dest)
 	suite.Nil(err)
 	suite.False(dest)
 }

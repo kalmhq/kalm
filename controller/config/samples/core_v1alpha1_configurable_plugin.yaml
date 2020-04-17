@@ -10,20 +10,19 @@ metadata:
 spec:
   src: |
     function addProbesForContainer(container) {
-      if (!container.readinessProbe) {
-        container.readinessProbe = {};
+      var config = getConfig();
+
+      if (!config) {
+        return
       }
 
-      container.readinessProbe.httpGet = {
-        path: "/",
-        port: 80
-      };
+      if (config.readinessProbe) {
+        container.readinessProbe = config.readinessProbe
+      }
 
-      container.readinessProbe.initialDelaySeconds = 5;
-      container.readinessProbe.timeoutSeconds = 20;
-      container.readinessProbe.periodSeconds = 5;
-      container.readinessProbe.successThreshold = 1;
-      container.readinessProbe.failureThreshold = 3;
+      if (config.livenessProbe) {
+        container.livenessProbe = config.livenessProbe
+      }
     }
 
     function AfterPodTemplateGeneration(pod) {
@@ -282,6 +281,22 @@ spec:
       pluginsNew:
         - name: kapp-configurable-probes
           config:
-            a: 1
-            b: 2
+            readinessProbe:
+              httpGet:
+                path: /
+                port: 80
+              initialDelaySeconds: 5
+              timeoutSeconds: 20
+              periodSeconds: 5
+              successThreshold: 1
+              failureThreshold: 3
+            livenessProbe:
+              httpGet:
+                path: /
+                port: 80
+              initialDelaySeconds: 50
+              timeoutSeconds: 20
+              periodSeconds: 5
+              successThreshold: 1
+              failureThreshold: 3
   isActive: true

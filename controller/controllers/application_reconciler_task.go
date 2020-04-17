@@ -943,7 +943,7 @@ func (act *applicationReconcilerTask) runPlugins(methodName string, component *k
 	return nil
 }
 
-func findPluginAndValidateConfig(plugin runtime.RawExtension, methodName string, component *kappV1Alpha1.ComponentSpec) (*PluginProgram, error) {
+func findPluginAndValidateConfig(plugin runtime.RawExtension, methodName string, component *kappV1Alpha1.ComponentSpec) (*PluginProgram, []byte, error) {
 	var tmp struct {
 		Name   string          `json:"name"`
 		Config json.RawMessage `json:"config"`
@@ -954,11 +954,11 @@ func findPluginAndValidateConfig(plugin runtime.RawExtension, methodName string,
 	pluginProgram := pluginsCache.Get(tmp.Name)
 
 	if pluginProgram == nil {
-		return nil, fmt.Errorf("Can't find plugin %s in cache.", tmp.Name)
+		return nil, nil, fmt.Errorf("Can't find plugin %s in cache.", tmp.Name)
 	}
 
 	if !pluginProgram.Methods[methodName] {
-		return nil, nil
+		return nil, nil, nil
 	}
 
 	workloadType := component.WorkLoadType
@@ -969,7 +969,7 @@ func findPluginAndValidateConfig(plugin runtime.RawExtension, methodName string,
 	}
 
 	if !pluginProgram.AvailableForAllWorkloadTypes && !pluginProgram.AvailableWorkloadTypes[workloadType] {
-		return nil, nil
+		return nil, nil, nil
 	}
 
 	if pluginProgram.ConfigSchema != nil {
@@ -977,20 +977,20 @@ func findPluginAndValidateConfig(plugin runtime.RawExtension, methodName string,
 		res, err := pluginProgram.ConfigSchema.Validate(pluginConfig)
 
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		if !res.Valid() {
-			return nil, fmt.Errorf(res.Errors()[0].String())
+			return nil, nil, fmt.Errorf(res.Errors()[0].String())
 		}
 	}
 
-	return pluginProgram, nil
+	return pluginProgram, tmp.Config, nil
 }
 
 func (act *applicationReconcilerTask) runComponentPlugins(methodName string, component *kappV1Alpha1.ComponentSpec, desc interface{}, args ...interface{}) error {
 	for _, plugin := range component.PluginsNew {
-		pluginProgram, err := findPluginAndValidateConfig(plugin, methodName, component)
+		pluginProgram, config, err := findPluginAndValidateConfig(plugin, methodName, component)
 
 		if err != nil {
 			return err
@@ -1007,6 +1007,7 @@ func (act *applicationReconcilerTask) runComponentPlugins(methodName string, com
 			rt,
 			pluginProgram.Program,
 			methodName,
+			config,
 			desc,
 			args...,
 		)
@@ -1021,7 +1022,7 @@ func (act *applicationReconcilerTask) runComponentPlugins(methodName string, com
 
 func (act *applicationReconcilerTask) runApplicationPlugins(methodName string, component *kappV1Alpha1.ComponentSpec, desc interface{}, args ...interface{}) error {
 	for _, plugin := range act.app.Spec.PluginsNew {
-		pluginProgram, err := findPluginAndValidateConfig(plugin, methodName, component)
+		pluginProgram, config, err := findPluginAndValidateConfig(plugin, methodName, component)
 
 		if err != nil {
 			return err
@@ -1041,6 +1042,7 @@ func (act *applicationReconcilerTask) runApplicationPlugins(methodName string, c
 				rt,
 				pluginProgram.Program,
 				PluginMethodComponentFilter,
+				config,
 				shouldExecute,
 				component,
 			)
@@ -1058,6 +1060,7 @@ func (act *applicationReconcilerTask) runApplicationPlugins(methodName string, c
 			rt,
 			pluginProgram.Program,
 			methodName,
+			config,
 			desc,
 			args...,
 		)

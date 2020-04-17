@@ -170,7 +170,7 @@ func (r *PluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	var configSchema *gojsonschema.Schema
 	if plugin.Spec.ConfigSchema != nil {
-		schemaLoader := gojsonschema.NewStringLoader(string(plugin.Spec.ConfigSchema))
+		schemaLoader := gojsonschema.NewStringLoader(string(plugin.Spec.ConfigSchema.Raw))
 		configSchema, err = gojsonschema.NewSchema(schemaLoader)
 
 		if err != nil {
