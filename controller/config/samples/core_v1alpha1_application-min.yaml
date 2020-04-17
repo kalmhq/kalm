@@ -11,9 +11,14 @@ metadata:
 spec:
   isActive: true
   components:
+    - name: cj-echo
+      workloadType: cronjob
+      image: busybox
+      schedule: "* * * * *"
+      command: ["echo", "Hello World"]
     - name: payment
-      dependencies: 
-        - shippingservice
+      #dependencies:
+      #  - shippingservice
       image: weaveworksdemos/payment:0.4.3
       cpu: 100m
       memory: 100Mi
@@ -32,27 +37,27 @@ spec:
           port: 80
         initialDelaySeconds: 180
         periodSeconds: 3
-    - name: shippingservice
-      dependencies:
-        - payment
-      image: diveinto/shippingservice:v0.1.4-4-g997b5e8
-      replicas: 1
-      cpu: 50m
-      memory: 64Mi
-      ports:
-        - name: grpc
-          containerPort: 50051
-          servicePort: 50051
-      env:
-        - name: PORT
-          value: "50051"
-      readinessProbe:
-        periodSeconds: 5
-        exec:
-          command: ["/bin/grpc_health_probe", "-addr=:50051"]
-      livenessProbe:
-        exec:
-          command: ["/bin/grpc_health_probe", "-addr=:50051"]
+    #- name: shippingservice
+    #  dependencies:
+    #    - payment
+    #  image: diveinto/shippingservice:v0.1.4-4-g997b5e8
+    #  replicas: 1
+    #  cpu: 50m
+    #  memory: 64Mi
+    #  ports:
+    #    - name: grpc
+    #      containerPort: 50051
+    #      servicePort: 50051
+    #  env:
+    #    - name: PORT
+    #      value: "50051"
+    #  readinessProbe:
+    #    periodSeconds: 5
+    #    exec:
+    #      command: ["/bin/grpc_health_probe", "-addr=:50051"]
+    #  livenessProbe:
+    #    exec:
+    #      command: ["/bin/grpc_health_probe", "-addr=:50051"]
   sharedEnv:
     - name: SOME_COMMON_ENV
       value: shared_value

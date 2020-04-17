@@ -27,8 +27,10 @@ import (
 type WorkLoadType string
 
 const (
-	WorkLoadTypeServer  WorkLoadType = "server"
-	WorkLoadTypeCronjob WorkLoadType = "cronjob"
+	WorkLoadTypeServer      WorkLoadType = "server"
+	WorkLoadTypeCronjob     WorkLoadType = "cronjob"
+	WorkLoadTypeDaemonSet   WorkLoadType = "daemonset"
+	WorkLoadTypeStatefulSet WorkLoadType = "statefulset"
 )
 
 // ComponentTemplateSpec defines the desired state of ComponentTemplate

@@ -9,7 +9,9 @@ import (
 	kappV1Alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
 	"github.com/kapp-staging/kapp/lib/files"
 	"github.com/kapp-staging/kapp/util"
+	"github.com/sirupsen/logrus"
 	appsV1 "k8s.io/api/apps/v1"
+	v1 "k8s.io/api/batch/v1"
 	batchV1Beta1 "k8s.io/api/batch/v1beta1"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
@@ -182,7 +184,7 @@ func (act *applicationReconcilerTask) parseComponentConfigs(component *kappV1Alp
 	}
 }
 
-func (act *applicationReconcilerTask) generateTemplate(component *kappV1Alpha1.ComponentSpec) (template *coreV1.PodTemplateSpec, err error) {
+func (act *applicationReconcilerTask) generatePodTemplateSpec(component *kappV1Alpha1.ComponentSpec) (template *coreV1.PodTemplateSpec, err error) {
 
 	template = &coreV1.PodTemplateSpec{
 		ObjectMeta: metaV1.ObjectMeta{
@@ -575,123 +577,20 @@ func getComponentLabels(appName, componentName string) map[string]string {
 }
 
 func (act *applicationReconcilerTask) reconcileComponent(component *kappV1Alpha1.ComponentSpec) (err error) {
-	app := act.app
-	log := act.log
-	ctx := act.ctx
 
 	labelMap := getComponentLabels(act.app.Name, component.Name)
-	deployment := act.getDeployment(component.Name)
-	template, err := act.generateTemplate(component)
-
+	podTemplateSpec, err := act.generatePodTemplateSpec(component)
 	if err != nil {
 		return err
 	}
 
-	//todo seem will fail to update if dp changed
-	for _, dependency := range component.Dependencies {
-		// if dependencies are not ready, simply skip this reconcile
-		existDps := act.deployments
-
-		ready := false
-		for _, existDp := range existDps {
-			dpNameOfDependency := getDeploymentName(app.Name, dependency)
-			if dpNameOfDependency != existDp.Name {
-				continue
-			}
-
-			ready = existDp.Status.ReadyReplicas >= existDp.Status.Replicas
-			break
-		}
-
-		if !ready {
-			// todo or error?
-			log.Info("dependency not ready", "component", component.Name, "dependency not ready", dependency)
-			return nil
-		}
-	}
-
-	newDeployment := false
-
-	if deployment == nil {
-		newDeployment = true
-
-		deployment = &appsV1.Deployment{
-			ObjectMeta: metaV1.ObjectMeta{
-				Labels:      labelMap,
-				Annotations: make(map[string]string),
-				Name:        getDeploymentName(app.Name, component.Name),
-				Namespace:   app.Namespace,
-			},
-			Spec: appsV1.DeploymentSpec{
-				Template: *template,
-				Selector: &metaV1.LabelSelector{
-					MatchLabels: labelMap,
-				},
-			},
-		}
-	} else {
-		deployment.Spec.Template = *template
-	}
-
-	// replicas
-	if component.Replicas == nil {
-		defaultComponentReplicas := int32(1)
-
-		deployment.Spec.Replicas = &defaultComponentReplicas
-	} else {
-		deployment.Spec.Replicas = component.Replicas
-	}
-
-	//if len(component.Ports) > 0 {
-	//	var ports []coreV1.ContainerPort
-	//	for _, p := range component.Ports {
-	//		ports = append(ports, coreV1.ContainerPort{
-	//			Name:          p.Name,
-	//			ContainerPort: int32(p.ContainerPort),
-	//			Protocol:      p.Protocol,
-	//		})
-	//	}
-	//}
-
-	// apply plugins
-	for _, pluginDef := range component.Plugins {
-		plugin := kappV1Alpha1.GetPlugin(pluginDef)
-
-		switch p := plugin.(type) {
-		case *kappV1Alpha1.PluginManualScaler:
-			p.Operate(deployment)
-		}
-	}
-
-	if newDeployment {
-		if err := ctrl.SetControllerReference(app, deployment, act.reconciler.Scheme); err != nil {
-			log.Error(err, "unable to set owner for deployment")
-			return err
-		}
-
-		if err := act.reconciler.Create(ctx, deployment); err != nil {
-			log.Error(err, "unable to create Deployment for Application")
-			return err
-		}
-
-		log.Info("create Deployment " + deployment.Name)
-	} else {
-		if err := act.reconciler.Update(ctx, deployment); err != nil {
-			log.Error(err, "unable to update Deployment for Application")
-			return err
-		}
-
-		log.Info("update Deployment " + deployment.Name)
-	}
-
-	// apply plugins
-	for _, pluginDef := range app.Spec.Components[0].Plugins {
-		plugin := kappV1Alpha1.GetPlugin(pluginDef)
-
-		switch p := plugin.(type) {
-		case *kappV1Alpha1.PluginManualScaler:
-			p.Operate(deployment)
-		}
+	switch component.WorkLoadType {
+	case kappV1Alpha1.WorkLoadTypeServer, "":
+		return act.reconcileAsDeployment(component, labelMap, podTemplateSpec)
+	case kappV1Alpha1.WorkLoadTypeCronjob:
+		return act.reconcileAsCronJob(component, labelMap, podTemplateSpec)
+	default:
+		logrus.Warnln("see unknown WorkLoadType:", component.WorkLoadType)
 	}
 
 	return nil
@@ -1068,4 +967,214 @@ func GetIngressPlugins(kapp *kappV1Alpha1.Application) (rst []*kappV1Alpha1.Plug
 	}
 
 	return
+}
+
+func (act *applicationReconcilerTask) reconcileAsCronJob(
+	component *kappV1Alpha1.ComponentSpec,
+	labelMap map[string]string,
+	podTemplateSpec *coreV1.PodTemplateSpec,
+) error {
+	app := act.app
+	log := act.log
+	ctx := act.ctx
+
+	cj := act.findCronJob(component.Name)
+
+	// restartPolicy
+	if podTemplateSpec.Spec.RestartPolicy == coreV1.RestartPolicyAlways ||
+		podTemplateSpec.Spec.RestartPolicy == "" {
+
+		podTemplateSpec.Spec.RestartPolicy = coreV1.RestartPolicyOnFailure
+
+	}
+
+	successJobHistoryLimit := int32(3)
+	failJobHistoryLimit := int32(5)
+
+	desiredCJSpec := batchV1Beta1.CronJobSpec{
+		Schedule: component.Schedule,
+		JobTemplate: batchV1Beta1.JobTemplateSpec{
+			Spec: v1.JobSpec{
+				Template: *podTemplateSpec,
+			},
+		},
+		SuccessfulJobsHistoryLimit: &successJobHistoryLimit,
+		FailedJobsHistoryLimit:     &failJobHistoryLimit,
+	}
+
+	var isNewCJ bool
+	if cj == nil {
+		isNewCJ = true
+
+		cj = &batchV1Beta1.CronJob{
+			ObjectMeta: metaV1.ObjectMeta{
+				Name:      getCronJobName(app.Name, component.Name),
+				Namespace: app.Namespace,
+				Labels:    labelMap,
+			},
+			Spec: desiredCJSpec,
+		}
+	} else {
+		cj.Spec = desiredCJSpec
+	}
+
+	if isNewCJ {
+		if err := ctrl.SetControllerReference(app, cj, act.reconciler.Scheme); err != nil {
+			log.Error(err, "unable to set owner for cronJob")
+			return err
+		}
+
+		if err := act.reconciler.Create(ctx, cj); err != nil {
+			log.Error(err, "unable to create CronJob for Application")
+			return err
+		}
+
+		log.Info("create CronJob " + cj.Name)
+	} else {
+		if err := act.reconciler.Update(ctx, cj); err != nil {
+			log.Error(err, "unable to update CronJob for Application")
+			return err
+		}
+
+		log.Info("update CronJob:" + cj.Name)
+	}
+
+	return nil
+}
+
+func (act *applicationReconcilerTask) reconcileAsDeployment(
+	component *kappV1Alpha1.ComponentSpec,
+	labelMap map[string]string,
+	podTemplateSpec *coreV1.PodTemplateSpec,
+) error {
+
+	app := act.app
+	log := act.log
+	ctx := act.ctx
+
+	//todo seem will fail to update if dp changed
+	for _, dependency := range component.Dependencies {
+		// if dependencies are not ready, simply skip this reconcile
+		existDps := act.deployments
+
+		ready := false
+		for _, existDp := range existDps {
+			dpNameOfDependency := getDeploymentName(app.Name, dependency)
+			if dpNameOfDependency != existDp.Name {
+				continue
+			}
+
+			ready = existDp.Status.ReadyReplicas >= existDp.Status.Replicas
+			break
+		}
+
+		if !ready {
+			// todo or error?
+			log.Info("dependency not ready", "component", component.Name, "dependency not ready", dependency)
+			return nil
+		}
+	}
+
+	deployment := act.getDeployment(component.Name)
+	isNewDeployment := false
+
+	if deployment == nil {
+		isNewDeployment = true
+
+		deployment = &appsV1.Deployment{
+			ObjectMeta: metaV1.ObjectMeta{
+				Labels:      labelMap,
+				Annotations: make(map[string]string),
+				Name:        getDeploymentName(app.Name, component.Name),
+				Namespace:   app.Namespace,
+			},
+			Spec: appsV1.DeploymentSpec{
+				Template: *podTemplateSpec,
+				Selector: &metaV1.LabelSelector{
+					MatchLabels: labelMap,
+				},
+			},
+		}
+	} else {
+		deployment.Spec.Template = *podTemplateSpec
+	}
+
+	// replicas
+	if component.Replicas == nil {
+		defaultComponentReplicas := int32(1)
+
+		deployment.Spec.Replicas = &defaultComponentReplicas
+	} else {
+		deployment.Spec.Replicas = component.Replicas
+	}
+
+	//if len(component.Ports) > 0 {
+	//	var ports []coreV1.ContainerPort
+	//	for _, p := range component.Ports {
+	//		ports = append(ports, coreV1.ContainerPort{
+	//			Name:          p.Name,
+	//			ContainerPort: int32(p.ContainerPort),
+	//			Protocol:      p.Protocol,
+	//		})
+	//	}
+	//}
+
+	// apply plugins
+	for _, pluginDef := range component.Plugins {
+		plugin := kappV1Alpha1.GetPlugin(pluginDef)
+
+		switch p := plugin.(type) {
+		case *kappV1Alpha1.PluginManualScaler:
+			p.Operate(deployment)
+		}
+	}
+
+	if isNewDeployment {
+		if err := ctrl.SetControllerReference(app, deployment, act.reconciler.Scheme); err != nil {
+			log.Error(err, "unable to set owner for deployment")
+			return err
+		}
+
+		if err := act.reconciler.Create(ctx, deployment); err != nil {
+			log.Error(err, "unable to create Deployment for Application")
+			return err
+		}
+
+		log.Info("create Deployment " + deployment.Name)
+	} else {
+		if err := act.reconciler.Update(ctx, deployment); err != nil {
+			log.Error(err, "unable to update Deployment for Application")
+			return err
+		}
+
+		log.Info("update Deployment " + deployment.Name)
+	}
+
+	// apply plugins
+	for _, pluginDef := range app.Spec.Components[0].Plugins {
+		plugin := kappV1Alpha1.GetPlugin(pluginDef)
+
+		switch p := plugin.(type) {
+		case *kappV1Alpha1.PluginManualScaler:
+			p.Operate(deployment)
+		}
+	}
+
+	return nil
+}
+
+func getCronJobName(appName, componentName string) string {
+	return fmt.Sprintf("%s-%s", appName, componentName)
+}
+
+func (act *applicationReconcilerTask) findCronJob(name string) *batchV1Beta1.CronJob {
+	for i := range act.cronjobs {
+		cj := &act.cronjobs[i]
+
+		if cj.ObjectMeta.Name == getCronJobName(act.app.Name, name) {
+			return cj
+		}
+	}
+
+	return nil
 }
