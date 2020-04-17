@@ -56,6 +56,8 @@ var pluginsCache *PluginsCache
 type PluginProgram struct {
 	*js.Program
 
+	Name string
+
 	// a map of defined hooks
 	Methods map[string]bool
 
@@ -183,6 +185,7 @@ func (r *PluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	if plugin.Status.CompiledSuccessfully {
 		pluginsCache.Set(plugin.Name, &PluginProgram{
+			Name:                         plugin.Name,
 			Program:                      program,
 			Methods:                      methods,
 			AvailableForAllWorkloadTypes: availableForAllWorkloadTypes,

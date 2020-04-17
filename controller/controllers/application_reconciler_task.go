@@ -11,6 +11,7 @@ import (
 	"github.com/kapp-staging/kapp/lib/files"
 	"github.com/kapp-staging/kapp/util"
 	"github.com/kapp-staging/kapp/vm"
+	"github.com/prometheus/common/log"
 	"github.com/sirupsen/logrus"
 	appsV1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/batch/v1"
@@ -714,6 +715,8 @@ func (act *applicationReconcilerTask) deleteExternalResources() error {
 		}
 	}
 
+	act.removePluginUsings()
+
 	log.Info("Delete External Resources Done")
 
 	return nil
@@ -985,13 +988,17 @@ func (act *applicationReconcilerTask) runComponentPlugins(methodName string, com
 		rt := act.initPluginRuntime(component)
 		rt.Set("scope", "component")
 
-		return vm.RunMethod(
+		err = vm.RunMethod(
 			rt,
 			pluginProgram.Program,
 			methodName,
 			desc,
 			args...,
 		)
+
+		if err == nil {
+			act.savePluginUsing(pluginProgram)
+		}
 	}
 
 	return nil
@@ -1032,16 +1039,104 @@ func (act *applicationReconcilerTask) runApplicationPlugins(methodName string, c
 			}
 		}
 
-		return vm.RunMethod(
+		err = vm.RunMethod(
 			rt,
 			pluginProgram.Program,
 			methodName,
 			desc,
 			args...,
 		)
+
+		if err == nil {
+			act.savePluginUsing(pluginProgram)
+		}
 	}
 
 	return nil
+}
+
+func (act *applicationReconcilerTask) savePluginUsing(pluginProgram *PluginProgram) (err error) {
+	usingName := types.NamespacedName{
+		Name:      act.app.Name,
+		Namespace: act.app.Namespace,
+	}.String()
+
+	var plugin kappV1Alpha1.Plugin
+	// TODO cache the plugin
+	err = act.reconciler.Reader.Get(act.ctx, types.NamespacedName{Name: pluginProgram.Name}, &plugin)
+
+	if err != nil {
+		log.Error(err, "can't get plugin")
+		return err
+	}
+
+	for _, name := range plugin.Status.UsingByApplications {
+		if name == usingName {
+			return nil
+		}
+	}
+
+	patchPlugin := plugin.DeepCopy()
+	patchPlugin.Status.UsingByApplications = append(plugin.Status.UsingByApplications, usingName)
+
+	return act.reconciler.Status().Patch(act.ctx, patchPlugin, client.MergeFrom(&plugin))
+}
+
+func (act *applicationReconcilerTask) removePluginUsings() (err error) {
+	for _, plugin := range act.app.Spec.PluginsNew {
+		act.removePluginUsing(plugin)
+	}
+	for _, component := range act.app.Spec.Components {
+		for _, plugin := range component.PluginsNew {
+			act.removePluginUsing(plugin)
+		}
+	}
+	return nil
+}
+
+func (act *applicationReconcilerTask) removePluginUsing(plugin runtime.RawExtension) (err error) {
+	var tmp struct {
+		Name string `json:"name"`
+	}
+
+	_ = json.Unmarshal(plugin.Raw, &tmp)
+
+	pluginProgram := pluginsCache.Get(tmp.Name)
+
+	if pluginProgram == nil {
+		return nil
+	}
+
+	usingName := types.NamespacedName{
+		Name:      act.app.Name,
+		Namespace: act.app.Namespace,
+	}.String()
+
+	var pluginCRD kappV1Alpha1.Plugin
+	// TODO cache the plugin
+	err = act.reconciler.Reader.Get(act.ctx, types.NamespacedName{Name: pluginProgram.Name}, &pluginCRD)
+
+	if err != nil {
+		log.Error(err, "can't get plugin")
+		return err
+	}
+
+	index := -1
+	for i, name := range pluginCRD.Status.UsingByApplications {
+		if name == usingName {
+			index = i
+			break
+		}
+	}
+
+	if index < 0 {
+		return nil
+	}
+
+	patchPlugin := pluginCRD.DeepCopy()
+	patchPlugin.Status.UsingByApplications = append(patchPlugin.Status.UsingByApplications[:index], patchPlugin.Status.UsingByApplications[index+1:]...)
+
+	return act.reconciler.Status().Patch(act.ctx, patchPlugin, client.MergeFrom(&pluginCRD))
 }
 
 func GetIngressPlugins(kapp *kappV1Alpha1.Application) (rst []*kappV1Alpha1.PluginIngress) {

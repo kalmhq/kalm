@@ -43,6 +43,8 @@ type PluginStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	CompiledSuccessfully bool `json:"compiledSuccessfully"`
+
+	UsingByApplications []string `json:"usingByApplications,omitempty"`
 }
 
 // +kubebuilder:object:root=true
