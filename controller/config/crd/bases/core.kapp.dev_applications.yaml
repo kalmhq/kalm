@@ -76,6 +76,7 @@ spec:
                   cpu:
                     type: string
                   dependencies:
+                    description: todo change name to avoid confusion
                     items:
                       type: string
                     type: array
@@ -431,6 +432,8 @@ spec:
                     enum:
                     - server
                     - cronjob
+                    - daemonset
+                    - statefulset
                     type: string
                 required:
                 - image

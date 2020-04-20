@@ -17,6 +17,7 @@ spec:
       schedule: "* * * * *"
       command: ["echo", "Hello World"]
     - name: payment
+      workloadType: statefulset
       #dependencies:
       #  - shippingservice
       image: weaveworksdemos/payment:0.4.3

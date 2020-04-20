@@ -224,7 +224,7 @@ var _ = Describe("Application Envs", func() {
 			}, timeout, interval).Should(Equal(true))
 
 			deployment := deployments[0]
-			Expect(deployment.Name).Should(Equal(getDeploymentName(application.Name, "test")))
+			Expect(deployment.Name).Should(Equal(getNameForKappWordLoad(application.Name, "test")))
 			Expect(*deployment.Spec.Replicas).Should(Equal(int32(1)))
 			containers := deployment.Spec.Template.Spec.Containers
 			Expect(len(containers)).Should(Equal(1))
@@ -304,7 +304,7 @@ var _ = Describe("Application Envs", func() {
 			}, timeout, interval).Should(Equal(true))
 
 			deployment := deployments[0]
-			Expect(deployment.Name).Should(Equal(getDeploymentName(application.Name, "test")))
+			Expect(deployment.Name).Should(Equal(getNameForKappWordLoad(application.Name, "test")))
 			Expect(*deployment.Spec.Replicas).Should(Equal(int32(1)))
 			containers := deployment.Spec.Template.Spec.Containers
 			Expect(len(containers)).Should(Equal(1))
