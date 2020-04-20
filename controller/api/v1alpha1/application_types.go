@@ -16,9 +16,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	apps1 "k8s.io/api/apps/v1"
-	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -32,71 +29,6 @@ const (
 )
 
 type PodAffinityType string
-
-type ComponentSpec struct {
-	// +kubebuilder:validation:Required
-	// +kubebuilder:validation:Pattern:=^[a-zA-Z-]+$
-	Name string `json:"name"`
-
-	Env []EnvVar `json:"env,omitempty"`
-
-	// +kubebuilder:validation:Required
-	Image string `json:"image"`
-
-	Replicas *int32 `json:"replicas,omitempty"`
-
-	PodAffinityType    PodAffinityType   `json:"podAffinityType,omitempty"`
-	NodeSelectorLabels map[string]string `json:"nodeSelectorLabels,omitempty"`
-
-	StartAfterComponents []string `json:"startAfterComponents,omitempty"`
-
-	Command []string `json:"command,omitempty"`
-
-	Args []string `json:"args,omitempty"`
-
-	Ports []Port `json:"ports,omitempty"`
-
-	// +kubebuilder:validation:Enum=server;cronjob;daemonset;statefulset
-	WorkLoadType WorkloadType `json:"workloadType,omitempty"`
-
-	Schedule string `json:"schedule,omitempty"`
-
-	// +k8s:openapi-gen=true
-	// +optional
-	LivenessProbe *v1.Probe `json:"livenessProbe,omitempty"`
-
-	// +optional
-	ReadinessProbe *v1.Probe `json:"readinessProbe,omitempty"`
-
-	Plugins []runtime.RawExtension `json:"plugins,omitempty"`
-
-	PluginsNew []runtime.RawExtension `json:"pluginsNew,omitempty"`
-
-	BeforeStart []string `json:"beforeStart,omitempty"`
-
-	AfterStart []string `json:"afterStart,omitempty"`
-
-	BeforeDestroy []string `json:"beforeDestroy,omitempty"`
-
-	CPU *resource.Quantity `json:"cpu,omitempty"`
-
-	Memory *resource.Quantity `json:"memory,omitempty"`
-
-	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty"`
-
-	// +optional
-	DnsPolicy v1.DNSPolicy `json:"dnsPolicy,omitemtpy"`
-
-	RestartPolicy v1.RestartPolicy `json:"restartPolicy,omitempty"`
-
-	RestartStrategy apps1.DeploymentStrategyType `json:"restartStrategy,omitempty"`
-
-	// +optional
-	Configs []Config `json:"configs,omitempty"`
-
-	// +optional
-	Volumes []Volume `json:"volumes,omitempty"`
-}
 
 // ApplicationSpec defines the desired state of Application
 type ApplicationSpec struct {

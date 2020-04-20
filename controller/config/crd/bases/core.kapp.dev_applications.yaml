@@ -38,6 +38,7 @@ spec:
           properties:
             components:
               items:
+                description: ComponentSpec defines the desired state of Component
                 properties:
                   afterStart:
                     items:
