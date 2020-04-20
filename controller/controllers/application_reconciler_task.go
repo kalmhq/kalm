@@ -709,7 +709,7 @@ func (act *applicationReconcilerTask) deleteExternalResources() error {
 	}
 
 	for _, cronjob := range act.cronjobs {
-		log.Info("delete cronjob")
+		log.Info("delete cronJob")
 		if err := act.reconciler.Delete(ctx, &cronjob); err != nil {
 			log.Error(err, "delete service error")
 			return err
