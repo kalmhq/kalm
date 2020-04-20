@@ -558,9 +558,9 @@ func (act *applicationReconcilerTask) reconcileComponent(component *kappV1Alpha1
 		return act.reconcileAsDeployment(component, labelMap, podTemplateSpec)
 	case kappV1Alpha1.WorkloadTypeCronjob:
 		return act.reconcileAsCronJob(component, labelMap, podTemplateSpec)
-	case kappV1Alpha1.WorkLoadTypeDaemonSet:
+	case kappV1Alpha1.WorkloadTypeDaemonSet:
 		return act.reconcileAsDS(component, labelMap, podTemplateSpec)
-	case kappV1Alpha1.WorkLoadTypeStatefulSet:
+	case kappV1Alpha1.WorkloadTypeStatefulSet:
 		return act.reconcileAsSTS(component, labelMap, podTemplateSpec)
 	default:
 		logrus.Warnln("see unknown WorkLoadType:", component.WorkLoadType)
