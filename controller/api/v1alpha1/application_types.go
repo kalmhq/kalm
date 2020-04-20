@@ -48,8 +48,7 @@ type ComponentSpec struct {
 	PodAffinityType    PodAffinityType   `json:"podAffinityType,omitempty"`
 	NodeSelectorLabels map[string]string `json:"nodeSelectorLabels,omitempty"`
 
-	// todo change name to avoid confusion
-	Dependencies []string `json:"dependencies,omitempty"`
+	StartAfterComponents []string `json:"startAfterComponents,omitempty"`
 
 	Command []string `json:"command,omitempty"`
 

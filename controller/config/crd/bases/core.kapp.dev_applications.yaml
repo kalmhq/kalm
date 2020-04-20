@@ -75,11 +75,6 @@ spec:
                     type: array
                   cpu:
                     type: string
-                  dependencies:
-                    description: todo change name to avoid confusion
-                    items:
-                      type: string
-                    type: array
                   dnsPolicy:
                     description: DNSPolicy defines how a pod's DNS will be configured.
                     type: string
@@ -399,6 +394,10 @@ spec:
                     type: string
                   schedule:
                     type: string
+                  startAfterComponents:
+                    items:
+                      type: string
+                    type: array
                   terminationGracePeriodSeconds:
                     format: int64
                     type: integer
