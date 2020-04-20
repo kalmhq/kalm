@@ -5,11 +5,15 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
+	js "github.com/dop251/goja"
 	"github.com/go-logr/logr"
 	kappV1Alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
 	"github.com/kapp-staging/kapp/lib/files"
 	"github.com/kapp-staging/kapp/util"
+	"github.com/kapp-staging/kapp/vm"
+	"github.com/prometheus/common/log"
 	"github.com/sirupsen/logrus"
+	"github.com/xeipuuv/gojsonschema"
 	appsV1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/batch/v1"
 	batchV1Beta1 "k8s.io/api/batch/v1beta1"
@@ -370,63 +374,12 @@ func (act *applicationReconcilerTask) generatePodTemplateSpec(component *kappV1A
 		mainContainer.VolumeMounts = volumeMounts
 	}
 
-	/*	// before start
-		var beforeHooks []coreV1.Container
-		for i, beforeHook := range component.BeforeStart {
-			beforeHooks = append(beforeHooks, coreV1.Container{
-				Image:   component.Image,
-				Name:    fmt.Sprintf("%s-before-hook-%d", component.Name, i),
-				Command: []string{"/bin/sh"}, // TODO: when to use /bin/bash ??
-				Args: []string{
-					"-c",
-					beforeHook,
-				},
-				Env: envs,
-			})
-		}
-		deployment.Spec.Template.Spec.InitContainers = beforeHooks
+	err = act.runPlugins(PluginMethodAfterPodTemplateGeneration, component, template, template)
 
-		// after start
-		if len(component.AfterStart) == 0 {
-			if mainContainer.Lifecycle != nil {
-				mainContainer.Lifecycle.PostStart = nil
-			}
-		} else {
-			if mainContainer.Lifecycle == nil {
-				mainContainer.Lifecycle = &coreV1.Lifecycle{}
-			}
-
-			mainContainer.Lifecycle.PostStart = &coreV1.Handler{
-				Exec: &coreV1.ExecAction{
-					Command: []string{
-						"/bin/sh",
-						"-c",
-						strings.Join(component.AfterStart, " && "),
-					},
-				},
-			}
-		}*/
-
-	// before stop
-	//if len(component.BeforeDestroy) == 0 {
-	//	if mainContainer.Lifecycle != nil {
-	//		mainContainer.Lifecycle.PreStop = nil
-	//	}
-	//} else {
-	//	if mainContainer.Lifecycle == nil {
-	//		mainContainer.Lifecycle = &coreV1.Lifecycle{}
-	//	}
-	//
-	//	mainContainer.Lifecycle.PreStop = &coreV1.Handler{
-	//		Exec: &coreV1.ExecAction{
-	//			Command: []string{
-	//				"/bin/sh",
-	//				"-c",
-	//				strings.Join(component.BeforeDestroy, " && "),
-	//			},
-	//		},
-	//	}
-	//}
+	if err != nil {
+		act.log.Error(err, "run "+PluginMethodAfterPodTemplateGeneration+" save plugin error")
+		return nil, err
+	}
 
 	return template, nil
 }
@@ -595,14 +548,15 @@ func (act *applicationReconcilerTask) reconcileComponent(component *kappV1Alpha1
 
 	labelMap := getComponentLabels(act.app.Name, component.Name)
 	podTemplateSpec, err := act.generatePodTemplateSpec(component)
+
 	if err != nil {
 		return err
 	}
 
 	switch component.WorkLoadType {
-	case kappV1Alpha1.WorkLoadTypeServer, "":
+	case kappV1Alpha1.WorkloadTypeServer, "":
 		return act.reconcileAsDeployment(component, labelMap, podTemplateSpec)
-	case kappV1Alpha1.WorkLoadTypeCronjob:
+	case kappV1Alpha1.WorkloadTypeCronjob:
 		return act.reconcileAsCronJob(component, labelMap, podTemplateSpec)
 	case kappV1Alpha1.WorkLoadTypeDaemonSet:
 		return act.reconcileAsDS(component, labelMap, podTemplateSpec)
@@ -850,6 +804,8 @@ func (act *applicationReconcilerTask) deleteExternalResources() error {
 		}
 	}
 
+	act.removePluginUsings()
+
 	log.Info("Delete External Resources Done")
 
 	return nil
@@ -1044,6 +1000,253 @@ func GetPlugins(kapp *kappV1Alpha1.Application) (plugins []interface{}) {
 	}
 
 	return
+}
+
+func (act *applicationReconcilerTask) initPluginRuntime(component *kappV1Alpha1.ComponentSpec) *js.Runtime {
+	rt := vm.InitRuntime()
+
+	rt.Set("getApplicationName", func(call js.FunctionCall) js.Value {
+		return rt.ToValue(act.app.Name)
+	})
+
+	rt.Set("getCurrentComponent", func(call js.FunctionCall) js.Value {
+		bts, _ := json.Marshal(component)
+		var res map[string]interface{}
+		_ = json.Unmarshal(bts, &res)
+		return rt.ToValue(res)
+	})
+
+	return rt
+}
+
+func (act *applicationReconcilerTask) runPlugins(methodName string, component *kappV1Alpha1.ComponentSpec, desc interface{}, args ...interface{}) (err error) {
+	err = act.runApplicationPlugins(methodName, component, desc, args...)
+
+	if err != nil {
+		return err
+	}
+
+	err = act.runComponentPlugins(methodName, component, desc, args...)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func findPluginAndValidateConfig(plugin runtime.RawExtension, methodName string, component *kappV1Alpha1.ComponentSpec) (*PluginProgram, []byte, error) {
+	var tmp struct {
+		Name   string          `json:"name"`
+		Config json.RawMessage `json:"config"`
+	}
+
+	_ = json.Unmarshal(plugin.Raw, &tmp)
+
+	pluginProgram := pluginsCache.Get(tmp.Name)
+
+	if pluginProgram == nil {
+		return nil, nil, fmt.Errorf("Can't find plugin %s in cache.", tmp.Name)
+	}
+
+	if !pluginProgram.Methods[methodName] {
+		return nil, nil, nil
+	}
+
+	workloadType := component.WorkLoadType
+
+	if workloadType == "" {
+		// TODO are we safe to remove this fallback value?
+		workloadType = kappV1Alpha1.WorkloadTypeServer
+	}
+
+	if !pluginProgram.AvailableForAllWorkloadTypes && !pluginProgram.AvailableWorkloadTypes[workloadType] {
+		return nil, nil, nil
+	}
+
+	if pluginProgram.ConfigSchema != nil {
+		pluginConfig := gojsonschema.NewStringLoader(string(tmp.Config))
+		res, err := pluginProgram.ConfigSchema.Validate(pluginConfig)
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		if !res.Valid() {
+			return nil, nil, fmt.Errorf(res.Errors()[0].String())
+		}
+	}
+
+	return pluginProgram, tmp.Config, nil
+}
+
+func (act *applicationReconcilerTask) runComponentPlugins(methodName string, component *kappV1Alpha1.ComponentSpec, desc interface{}, args ...interface{}) error {
+	for _, plugin := range component.PluginsNew {
+		pluginProgram, config, err := findPluginAndValidateConfig(plugin, methodName, component)
+
+		if err != nil {
+			return err
+		}
+
+		if pluginProgram == nil {
+			continue
+		}
+
+		rt := act.initPluginRuntime(component)
+		rt.Set("scope", "component")
+
+		err = vm.RunMethod(
+			rt,
+			pluginProgram.Program,
+			methodName,
+			config,
+			desc,
+			args...,
+		)
+
+		if err == nil {
+			act.savePluginUsing(pluginProgram)
+		}
+	}
+
+	return nil
+}
+
+func (act *applicationReconcilerTask) runApplicationPlugins(methodName string, component *kappV1Alpha1.ComponentSpec, desc interface{}, args ...interface{}) error {
+	for _, plugin := range act.app.Spec.PluginsNew {
+		pluginProgram, config, err := findPluginAndValidateConfig(plugin, methodName, component)
+
+		if err != nil {
+			return err
+		}
+
+		if pluginProgram == nil {
+			continue
+		}
+
+		rt := act.initPluginRuntime(component)
+		rt.Set("scope", "application")
+
+		if pluginProgram.Methods[PluginMethodComponentFilter] {
+			shouldExecute := new(bool)
+
+			err := vm.RunMethod(
+				rt,
+				pluginProgram.Program,
+				PluginMethodComponentFilter,
+				config,
+				shouldExecute,
+				component,
+			)
+
+			if err != nil {
+				return err
+			}
+
+			if !*shouldExecute {
+				continue
+			}
+		}
+
+		err = vm.RunMethod(
+			rt,
+			pluginProgram.Program,
+			methodName,
+			config,
+			desc,
+			args...,
+		)
+
+		if err == nil {
+			act.savePluginUsing(pluginProgram)
+		}
+	}
+
+	return nil
+}
+
+func (act *applicationReconcilerTask) savePluginUsing(pluginProgram *PluginProgram) (err error) {
+	usingName := types.NamespacedName{
+		Name:      act.app.Name,
+		Namespace: act.app.Namespace,
+	}.String()
+
+	var plugin kappV1Alpha1.Plugin
+	// TODO cache the plugin
+	err = act.reconciler.Reader.Get(act.ctx, types.NamespacedName{Name: pluginProgram.Name}, &plugin)
+
+	if err != nil {
+		log.Error(err, "can't get plugin")
+		return err
+	}
+
+	for _, name := range plugin.Status.UsingByApplications {
+		if name == usingName {
+			return nil
+		}
+	}
+
+	patchPlugin := plugin.DeepCopy()
+	patchPlugin.Status.UsingByApplications = append(plugin.Status.UsingByApplications, usingName)
+
+	return act.reconciler.Status().Patch(act.ctx, patchPlugin, client.MergeFrom(&plugin))
+}
+
+func (act *applicationReconcilerTask) removePluginUsings() (err error) {
+	for _, plugin := range act.app.Spec.PluginsNew {
+		act.removePluginUsing(plugin)
+	}
+	for _, component := range act.app.Spec.Components {
+		for _, plugin := range component.PluginsNew {
+			act.removePluginUsing(plugin)
+		}
+	}
+	return nil
+}
+
+func (act *applicationReconcilerTask) removePluginUsing(plugin runtime.RawExtension) (err error) {
+	var tmp struct {
+		Name string `json:"name"`
+	}
+
+	_ = json.Unmarshal(plugin.Raw, &tmp)
+
+	pluginProgram := pluginsCache.Get(tmp.Name)
+
+	if pluginProgram == nil {
+		return nil
+	}
+
+	usingName := types.NamespacedName{
+		Name:      act.app.Name,
+		Namespace: act.app.Namespace,
+	}.String()
+
+	var pluginCRD kappV1Alpha1.Plugin
+	// TODO cache the plugin
+	err = act.reconciler.Reader.Get(act.ctx, types.NamespacedName{Name: pluginProgram.Name}, &pluginCRD)
+
+	if err != nil {
+		log.Error(err, "can't get plugin")
+		return err
+	}
+
+	index := -1
+	for i, name := range pluginCRD.Status.UsingByApplications {
+		if name == usingName {
+			index = i
+			break
+		}
+	}
+
+	if index < 0 {
+		return nil
+	}
+
+	patchPlugin := pluginCRD.DeepCopy()
+	patchPlugin.Status.UsingByApplications = append(patchPlugin.Status.UsingByApplications[:index], patchPlugin.Status.UsingByApplications[index+1:]...)
+
+	return act.reconciler.Status().Patch(act.ctx, patchPlugin, client.MergeFrom(&pluginCRD))
 }
 
 func GetIngressPlugins(kapp *kappV1Alpha1.Application) (rst []*kappV1Alpha1.PluginIngress) {
@@ -1253,7 +1456,7 @@ func (act *applicationReconcilerTask) reconcileAsDeployment(
 		}
 	}
 
-	return nil
+	return act.runPlugins(PluginMethodBeforeDeploymentSave, component, deployment, deployment)
 }
 
 func (act *applicationReconcilerTask) reconcileAsDS(component *kappV1Alpha1.ComponentSpec, labelMap map[string]string, podTemplateSpec *coreV1.PodTemplateSpec) error {

@@ -239,6 +239,10 @@ spec:
                     items:
                       type: object
                     type: array
+                  pluginsNew:
+                    items:
+                      type: object
+                    type: array
                   podAffinityType:
                     type: string
                   ports:
@@ -440,6 +444,10 @@ spec:
               type: string
             isActive:
               type: boolean
+            pluginsNew:
+              items:
+                type: object
+              type: array
             sharedEnv:
               items:
                 description: EnvVar represents an environment variable present in

@@ -113,6 +113,16 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err = (&controllers.PluginReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("Plugin"),
+		Scheme: mgr.GetScheme(),
+		Reader: mgr.GetAPIReader(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Plugin")
+		os.Exit(1)
+	}
+
 	// only run webhook if explicitly declared
 	if os.Getenv("ENABLE_WEBHOOKS") == "true" {
 		if err = (&corekappdevv1alpha1.Application{}).SetupWebhookWithManager(mgr); err != nil {

@@ -1,0 +1,99 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kapp-test
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: Plugin
+metadata:
+  name: kapp-static-sacle-double
+spec:
+  src: |
+    function BeforeDeploymentSave(deployment) {
+      deployment.spec.replicas = 2;
+      return deployment;
+    }
+  availableWorkloadType:
+    - server
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: Plugin
+metadata:
+  name: kapp-scale-name-with-suffix-tiple
+spec:
+  src: |
+    function ComponentFilter(component) {
+      return component.name.endsWith("tiple");
+    }
+
+    function BeforeDeploymentSave(deployment) {
+      deployment.spec.replicas = 3;
+      return deployment;
+    }
+  availableWorkloadType:
+    - server
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: Plugin
+metadata:
+  name: kapp-test-default-embedded-functions
+spec:
+  src: |
+    // you will see logs in controller consoles
+    function BeforeDeploymentSave(deployment) {
+      console.log("getApplicationName", getApplicationName());
+      console.log("getCurrentComponentName", getCurrentComponent().name);
+      return deployment;
+    }
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: Plugin
+metadata:
+  name: kapp-customize-probes
+spec:
+  src: |
+    function addProbesForContainer(container) {
+      if (!container.readinessProbe) {
+        container.readinessProbe = {};
+      }
+
+      container.readinessProbe.httpGet = {
+        path: "/",
+        port: 80
+      };
+
+      container.readinessProbe.initialDelaySeconds = 5;
+      container.readinessProbe.timeoutSeconds = 20;
+      container.readinessProbe.periodSeconds = 5;
+      container.readinessProbe.successThreshold = 1;
+      container.readinessProbe.failureThreshold = 3;
+    }
+
+    function AfterPodTemplateGeneration(pod) {
+      var containers = pod.spec.containers;
+      containers.forEach(addProbesForContainer)
+      return pod;
+    }
+  availableWorkloadType:
+    - server
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: Application
+metadata:
+  name: test-plugin-sample-application
+  namespace: kapp-test
+spec:
+  components:
+    - image: nginx:alpine
+      name: nginx-double
+      workloadType: server
+      pluginsNew:
+        - name: kapp-static-sacle-double
+    - image: nginx:alpine
+      name: nginx-tiple
+      workloadType: server
+  pluginsNew:
+    - name: kapp-scale-name-with-suffix-tiple
+    - name: kapp-customize-probes
+    - name: kapp-test-default-embedded-functions
+  isActive: true
