@@ -1349,7 +1349,7 @@ func (act *applicationReconcilerTask) reconcileAsDeployment(
 	ctx := act.ctx
 
 	//todo seem will fail to update if dp changed
-	for _, dependency := range component.Dependencies {
+	for _, dependency := range component.StartAfterComponents {
 		// if dependencies are not ready, simply skip this reconcile
 		existDps := act.deployments
 

@@ -11,12 +11,12 @@ func TestIsValidateDependency(t *testing.T) {
 	appSpec := ApplicationSpec{
 		Components: []ComponentSpec{
 			{
-				Name:         "a",
-				Dependencies: []string{"b"},
+				Name:                 "a",
+				StartAfterComponents: []string{"b"},
 			},
 			{
-				Name:         "b",
-				Dependencies: []string{"a"},
+				Name:                 "b",
+				StartAfterComponents: []string{"a"},
 			},
 		},
 	}
