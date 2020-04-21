@@ -154,6 +154,7 @@ func (r *PluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		program, err = vm.CompileProgram(plugin.Spec.Src)
 	}
 
+	// TODO create some events to explain details
 	if plugin.Status.CompiledSuccessfully != (err == nil) {
 		plugin.Status.CompiledSuccessfully = err == nil
 
@@ -179,6 +180,11 @@ func (r *PluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		}
 	}
 
+	// The plugin must be compilable before move on
+	if !plugin.Status.CompiledSuccessfully {
+		return ctrl.Result{}, nil
+	}
+
 	methods, err := vm.GetDefinedMethods(plugin.Spec.Src, ValidPluginMethods)
 
 	if err != nil {
@@ -197,16 +203,14 @@ func (r *PluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		}
 	}
 
-	if plugin.Status.CompiledSuccessfully {
-		pluginsCache.Set(plugin.Name, &PluginProgram{
-			Name:                         plugin.Name,
-			Program:                      program,
-			Methods:                      methods,
-			AvailableForAllWorkloadTypes: availableForAllWorkloadTypes,
-			AvailableWorkloadTypes:       availableWorkloadTypes,
-			ConfigSchema:                 configSchema,
-		})
-	}
+	pluginsCache.Set(plugin.Name, &PluginProgram{
+		Name:                         plugin.Name,
+		Program:                      program,
+		Methods:                      methods,
+		AvailableForAllWorkloadTypes: availableForAllWorkloadTypes,
+		AvailableWorkloadTypes:       availableWorkloadTypes,
+		ConfigSchema:                 configSchema,
+	})
 
 	return ctrl.Result{}, nil
 }
