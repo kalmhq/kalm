@@ -2,7 +2,6 @@ package v1alpha1
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"k8s.io/apiextensions-apiserver/pkg/apiserver/validation"
@@ -129,24 +128,24 @@ metadata: foobar`
 	}
 }
 
-func TestTryValidateOpenAPIV3(t *testing.T) {
-
-	app := Application{
-		Spec: ApplicationSpec{
-			Components: []ComponentSpec{
-				{
-					WorkLoadType: "not-exist-type",
-				},
-			},
-		},
-	}
-
-	errList := tryValidateUsingOpenAPIV3(app)
-
-	assert.NotNil(t, errList)
-	assert.Equal(t, 2, len(errList))
-	fmt.Println(errList)
-}
+//func TestTryValidateOpenAPIV3(t *testing.T) {
+//
+//	app := Application{
+//		Spec: ApplicationSpec{
+//			Components: []ComponentSpec{
+//				{
+//					WorkLoadType: "not-exist-type",
+//				},
+//			},
+//		},
+//	}
+//
+//	errList := tryValidateUsingOpenAPIV3(app)
+//
+//	assert.NotNil(t, errList)
+//	assert.Equal(t, 2, len(errList))
+//	fmt.Println(errList)
+//}
 
 func TestUsingRealKappCRD(t *testing.T) {
 	realCrdDef, err := ioutil.ReadFile("../../config/crd/bases/core.kapp.dev_applications.yaml")

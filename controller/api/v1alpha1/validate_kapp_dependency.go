@@ -6,69 +6,69 @@ import (
 )
 
 // 1. check if there is any loop in dependency graph
-func isValidateDependency(spec ApplicationSpec) KappValidateErrorList {
-	//spec := app.Spec
+//func isValidateDependency(spec ComponentSpec) KappValidateErrorList {
+//	//spec := app.Spec
+//
+//	// build graph
+//	nodeMap := buildDependencyGraph(spec)
+//	loopExist, nodesInLoop := bfsCheckIfLoopExist(nodeMap)
+//
+//	if !loopExist {
+//		return nil
+//	}
+//
+//	var errs []KappValidateError
+//	for _, node := range nodesInLoop {
+//		errs = append(errs, KappValidateError{
+//			Err:  "dependency loop exist",
+//			Path: getJsonPathOfWrongField(node.Name, spec),
+//		})
+//	}
+//
+//	return errs
+//}
 
-	// build graph
-	nodeMap := buildDependencyGraph(spec)
-	loopExist, nodesInLoop := bfsCheckIfLoopExist(nodeMap)
-
-	if !loopExist {
-		return nil
-	}
-
-	var errs []KappValidateError
-	for _, node := range nodesInLoop {
-		errs = append(errs, KappValidateError{
-			Err:  "dependency loop exist",
-			Path: getJsonPathOfWrongField(node.Name, spec),
-		})
-	}
-
-	return errs
-}
-
-func getJsonPathOfWrongField(name string, spec ApplicationSpec) string {
-	idx := idxOfComponent(name, spec)
-
-	return fmt.Sprintf(".components[%d].dependencies", idx)
-}
-
-func idxOfComponent(componentName string, spec ApplicationSpec) int {
-	for i := range spec.Components {
-		if componentName == spec.Components[i].Name {
-			return i
-		}
-	}
-
-	return -1
-}
+//func getJsonPathOfWrongField(name string, spec ApplicationSpec) string {
+//	idx := idxOfComponent(name, spec)
+//
+//	return fmt.Sprintf(".components[%d].dependencies", idx)
+//}
+//
+//func idxOfComponent(componentName string, spec ApplicationSpec) int {
+//	for i := range spec.Components {
+//		if componentName == spec.Components[i].Name {
+//			return i
+//		}
+//	}
+//
+//	return -1
+//}
 
 // componentName -> node
-func buildDependencyGraph(spec ApplicationSpec) map[string]*node {
+func buildDependencyGraph(component Component) map[string]*node {
 	var nodeMap = make(map[string]*node)
-	for _, component := range spec.Components {
+	//for _, component := range spec.Components {
 
-		if _, exist := nodeMap[component.Name]; !exist {
-			nodeMap[component.Name] = &node{
-				Name: component.Name,
-			}
+	if _, exist := nodeMap[component.Name]; !exist {
+		nodeMap[component.Name] = &node{
+			Name: component.Name,
 		}
-		curNode := nodeMap[component.Name]
-
-		for _, dep := range component.Dependencies {
-			if _, exist := nodeMap[dep]; !exist {
-				nodeMap[dep] = &node{
-					Name: dep,
-				}
-			}
-
-			nodeMap[dep].Refed = append(nodeMap[dep].Refed, curNode)
-			//fmt.Println("> node:", dep, "refedBy:", nodeMap[dep].Refed[0])
-		}
-
-		//fmt.Println("node in depGraph:", component.Name, "dependOn:", component.Dependencies)
 	}
+	curNode := nodeMap[component.Name]
+
+	for _, dep := range component.Spec.Dependencies {
+		if _, exist := nodeMap[dep]; !exist {
+			nodeMap[dep] = &node{
+				Name: dep,
+			}
+		}
+
+		nodeMap[dep].Refed = append(nodeMap[dep].Refed, curNode)
+		//fmt.Println("> node:", dep, "refedBy:", nodeMap[dep].Refed[0])
+	}
+
+	//fmt.Println("node in depGraph:", component.Name, "dependOn:", component.Dependencies)
+	//}
 
 	//fmt.Println("graph size:", len(nodeMap))
 	return nodeMap
