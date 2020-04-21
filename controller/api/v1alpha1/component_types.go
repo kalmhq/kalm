@@ -28,10 +28,6 @@ import (
 
 // ComponentSpec defines the desired state of Component
 type ComponentSpec struct {
-	// +kubebuilder:validation:Required
-	// +kubebuilder:validation:Pattern:=^[a-zA-Z-]+$
-	Name string `json:"name"`
-
 	Env []EnvVar `json:"env,omitempty"`
 
 	// +kubebuilder:validation:Required

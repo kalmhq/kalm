@@ -33,7 +33,6 @@ type PodAffinityType string
 // ApplicationSpec defines the desired state of Application
 type ApplicationSpec struct {
 	IsActive            bool                   `json:"isActive"`
-	Components          []ComponentSpec        `json:"components"`
 	SharedEnv           []EnvVar               `json:"sharedEnv,omitempty"`
 	PluginsNew          []runtime.RawExtension `json:"pluginsNew,omitempty"`
 	ImagePullSecretName string                 `json:"imagePullSecretName,omitempty"`
@@ -45,6 +44,7 @@ type ApplicationStatus struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:resource:scope=Cluster
 // +kubebuilder:subresource:status
 
 // Application is the Schema for the applications API
@@ -58,6 +58,7 @@ type Application struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:resource:scope=Cluster
 
 // ApplicationList contains a list of Application
 type ApplicationList struct {

@@ -12,9 +12,17 @@ rules:
   - '*'
   verbs:
   - '*'
-- apiGroups:
-  - ""
-  resources:
+- resources:
+  - configmaps
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- resources:
   - namespaces
   verbs:
   - create
