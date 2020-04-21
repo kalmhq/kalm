@@ -81,47 +81,48 @@ func (r *DependencyReconciler) reconcileKong(ctx context.Context, dep *corev1alp
 	r.Log.Info("kapps", "size:", len(kappList.Items))
 	// collect ingress info & update kong
 
-	ns2ingPluginsMap := make(map[string][]*corev1alpha1.PluginIngress)
-	for _, kapp := range kappList.Items {
-		ns := kapp.Namespace
+	//ns2ingPluginsMap := make(map[string][]*corev1alpha1.PluginIngress)
+	//for _, kapp := range kappList.Items {
+	//	ns := kapp.Namespace
+	//
+	//	if existPlugins, exist := ns2ingPluginsMap[ns]; !exist {
+	//		ns2ingPluginsMap[ns] = GetIngressPlugins(&kapp)
+	//	} else {
+	//		ns2ingPluginsMap[ns] = append(existPlugins, GetIngressPlugins(&kapp)...)
+	//	}
+	//}
 
-		if existPlugins, exist := ns2ingPluginsMap[ns]; !exist {
-			ns2ingPluginsMap[ns] = GetIngressPlugins(&kapp)
-		} else {
-			ns2ingPluginsMap[ns] = append(existPlugins, GetIngressPlugins(&kapp)...)
-		}
-	}
-
-	r.Log.Info("ns2ingPluginsMap", "size:", len(ns2ingPluginsMap))
+	//r.Log.Info("ns2ingPluginsMap", "size:", len(ns2ingPluginsMap))
 
 	// 1 ingress per namespace
-	for ns, ingPlugins := range ns2ingPluginsMap {
-		if len(ingPlugins) <= 0 {
-			continue
-		}
+	//for ns, ingPlugins := range ns2ingPluginsMap {
+	//	if len(ingPlugins) <= 0 {
+	//		continue
+	//	}
+	//
+	//	r.Log.Info("plugins",
+	//		"ns", ns,
+	//		"size:", len(ingPlugins),
+	//		"ingPlugins", ingPlugins)
+	//
+	//	ing, exist, err := r.getIngress(ctx, dep, ingPlugins)
+	//	if err != nil {
+	//		return err
+	//	}
+	//
+	//	if !exist {
+	//		r.Log.Info("creating ing")
+	//		if err := r.Create(ctx, ing); err != nil {
+	//			return err
+	//		}
+	//	} else {
+	//		r.Log.Info("updating ing")
+	//		if err := r.Update(ctx, ing); err != nil {
+	//			return err
+	//		}
+	//	}
 
-		r.Log.Info("plugins",
-			"ns", ns,
-			"size:", len(ingPlugins),
-			"ingPlugins", ingPlugins)
-
-		ing, exist, err := r.getIngress(ctx, dep, ingPlugins)
-		if err != nil {
-			return err
-		}
-
-		if !exist {
-			r.Log.Info("creating ing")
-			if err := r.Create(ctx, ing); err != nil {
-				return err
-			}
-		} else {
-			r.Log.Info("updating ing")
-			if err := r.Update(ctx, ing); err != nil {
-				return err
-			}
-		}
-	}
+	//}
 
 	return r.UpdateStatusIfNotMatch(ctx, dep, corev1alpha1.DependencyStatusRunning)
 }
@@ -166,7 +167,7 @@ func (r *DependencyReconciler) desiredIngress(
 	var rules []v1beta1.IngressRule
 	var hosts []string
 	for _, ingPlugin := range ingPlugins {
-		rules = append(rules, GenRulesOfIngressPlugin(ingPlugin)...)
+		//rules = append(rules, GenRulesOfIngressPlugin(ingPlugin)...)
 
 		hosts = append(hosts, ingPlugin.Hosts...)
 	}

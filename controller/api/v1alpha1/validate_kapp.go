@@ -49,32 +49,32 @@ func trimFieldPathPrefixForAPI(errList KappValidateErrorList) {
 
 func TryValidateApplication(appSpec ApplicationSpec, name, ns string) (rst KappValidateErrorList) {
 
-	rst = append(rst, tryValidateApplicationSpec(appSpec)...)
+	//rst = append(rst, tryValidateApplicationSpec(appSpec)...)
 	rst = append(rst, isValidateName(name)...)
 	rst = append(rst, isValidateNamespace(ns)...)
 
 	return
 }
 
-func tryValidateApplicationSpec(appSpec ApplicationSpec) (rst KappValidateErrorList) {
-	// for now check
-	//   - dependency
-	//   - probe
-	//   - cpu & memory
-	validateFuncs := []func(ApplicationSpec) KappValidateErrorList{
-		isValidateDependency,
-		isValidateProbe,
-		isValidateResource,
-	}
-
-	for _, validateFunc := range validateFuncs {
-		if errs := validateFunc(appSpec); errs != nil {
-			rst = append(rst, errs...)
-		}
-	}
-
-	return
-}
+//func tryValidateApplicationSpec(appSpec ApplicationSpec) (rst KappValidateErrorList) {
+//	// for now check
+//	//   - dependency
+//	//   - probe
+//	//   - cpu & memory
+//	validateFuncs := []func(ApplicationSpec) KappValidateErrorList{
+//		isValidateDependency,
+//		isValidateProbe,
+//		isValidateResource,
+//	}
+//
+//	for _, validateFunc := range validateFuncs {
+//		if errs := validateFunc(appSpec); errs != nil {
+//			rst = append(rst, errs...)
+//		}
+//	}
+//
+//	return
+//}
 
 //type IKappValidator interface {
 //	Validate(spec ApplicationSpec) KappValidateErrorList
