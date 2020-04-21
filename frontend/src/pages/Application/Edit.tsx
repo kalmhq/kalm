@@ -8,6 +8,7 @@ import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
 import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./ItemDataWrapper";
 import { Application } from "../../types/application";
+import { ApplicationLeft } from "../../widgets/ApplicationLeft";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -34,6 +35,7 @@ class ApplicationEditRaw extends React.PureComponent<Props> {
     return (
       <BasePage
         title={`Edit Application ${application && application.get("name")}`}
+        leftSection={<ApplicationLeft application={application} />}
         rightAction={<RemoteSubmitApplication />}>
         {isLoading ? <Loading /> : <ApplicationForm onSubmit={this.submit} initialValues={application} isEdit={true} />}
       </BasePage>

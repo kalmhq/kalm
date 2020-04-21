@@ -5,6 +5,8 @@ import { withStyles, createStyles, WithStyles } from "@material-ui/styles";
 import { Theme } from "pretty-format/build/types";
 import { DrawerComponent } from "../../layout/Drawer";
 
+export const LEFT_SECTION_WIDTH = 320;
+
 const styles = (_theme: Theme) =>
   createStyles({
     root: {

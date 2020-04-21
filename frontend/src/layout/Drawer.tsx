@@ -16,6 +16,7 @@ import { RootState } from "reducers";
 import { TDispatch } from "types";
 import AppsIcon from "@material-ui/icons/Apps";
 import { NavLink } from "react-router-dom";
+import { LEFT_SECTION_WIDTH } from "../pages/BasePage";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
@@ -28,16 +29,14 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-const drawerWidth = 320;
-
 const styles = (theme: Theme) =>
   createStyles({
     drawer: {
-      width: drawerWidth,
+      width: LEFT_SECTION_WIDTH,
       flexShrink: 0
     },
     drawerPaper: {
-      width: drawerWidth
+      width: LEFT_SECTION_WIDTH
     },
     drawerContainer: {
       overflow: "auto"
@@ -96,6 +95,8 @@ class DrawerComponentRaw extends React.PureComponent<Props, State> {
   render() {
     const { classes } = this.props;
     const menuData = this.getMenuData();
+    const pathname = window.location.pathname;
+
     return (
       <Drawer
         className={classes.drawer}
@@ -109,7 +110,12 @@ class DrawerComponentRaw extends React.PureComponent<Props, State> {
             {menuData
               .filter(item => !item.requireAdmin)
               .map((item, index) => (
-                <ListItem button component={NavLink} to={item.to} key={item.text}>
+                <ListItem
+                  button
+                  component={NavLink}
+                  to={item.to}
+                  key={item.text}
+                  selected={pathname.startsWith(item.to.split("?")[0])}>
                   <ListItemIcon>{<AppsIcon />}</ListItemIcon>
                   <ListItemText primary={item.text} />
                 </ListItem>
@@ -120,7 +126,12 @@ class DrawerComponentRaw extends React.PureComponent<Props, State> {
             {menuData
               .filter(item => item.requireAdmin)
               .map((item, index) => (
-                <ListItem button component={NavLink} to={item.to} key={item.text}>
+                <ListItem
+                  button
+                  component={NavLink}
+                  to={item.to}
+                  key={item.text}
+                  selected={pathname.startsWith(item.to.split("?")[0])}>
                   <ListItemIcon>{<AppsIcon />}</ListItemIcon>
                   <ListItemText primary={item.text} />
                 </ListItem>
