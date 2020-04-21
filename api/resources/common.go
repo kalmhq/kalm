@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	"github.com/sirupsen/logrus"
 	appV1 "k8s.io/api/apps/v1"
 	coreV1 "k8s.io/api/core/v1"
@@ -23,6 +24,7 @@ type ResourceChannels struct {
 	ServiceList     *ServiceListChannel
 	RoleBindingList *RoleBindingListChannel
 	NamespaceList   *NamespaceListChannel
+	ComponentList   *ComponentListChannel
 }
 
 type Resources struct {
@@ -34,6 +36,7 @@ type Resources struct {
 	ServiceList  *coreV1.ServiceList
 	RoleBindings []rbacV1.RoleBinding
 	Namespaces   []Namespace
+	Components   []v1alpha1.Component
 }
 
 var ListAll = metaV1.ListOptions{
@@ -100,6 +103,14 @@ func (c *ResourceChannels) ToResources() (r *Resources, err error) {
 			return nil, err
 		}
 		resources.Namespaces = <-c.NamespaceList.List
+	}
+
+	if c.ComponentList != nil {
+		err = <-c.ComponentList.Error
+		if err != nil {
+			return nil, err
+		}
+		resources.Components = <-c.ComponentList.List
 	}
 
 	//if c.PodMetricsList != nil {

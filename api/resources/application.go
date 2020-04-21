@@ -110,11 +110,11 @@ type CreateOrUpdateApplicationRequest struct {
 }
 
 type Application struct {
-	Name       string                   `json:"name"`
-	Namespace  string                   `json:"namespace"`
-	IsActive   bool                     `json:"isActive"`
-	SharedEnvs []v1alpha1.EnvVar        `json:"sharedEnvs"`
-	Components []v1alpha1.ComponentSpec `json:"components"`
+	Name       string            `json:"name"`
+	Namespace  string            `json:"namespace"`
+	IsActive   bool              `json:"isActive"`
+	SharedEnvs []v1alpha1.EnvVar `json:"sharedEnvs"`
+	Components []Component       `json:"components"`
 }
 
 func (builder *Builder) BuildApplicationDetails(application *v1alpha1.Application) (*ApplicationDetails, error) {
@@ -127,7 +127,8 @@ func (builder *Builder) BuildApplicationDetails(application *v1alpha1.Applicatio
 			LabelSelector: labels.Everything().String(),
 			FieldSelector: fields.Everything().String(),
 		}),
-		ServiceList: builder.GetServiceListChannel(ns, listOptions),
+		ServiceList:   builder.GetServiceListChannel(ns, listOptions),
+		ComponentList: builder.GetComponentListChannel(ns, listOptions),
 	}
 
 	resources, err := resourceChannels.ToResources()
@@ -137,10 +138,16 @@ func (builder *Builder) BuildApplicationDetails(application *v1alpha1.Applicatio
 		return nil, err
 	}
 
+	var componentSpecs = make([]Component, len(resources.Components))
+
+	for i, component := range resources.Components {
+		componentSpecs[i] = Component{component.Spec, component.Name}
+	}
+
 	componentsStatusList := builder.buildApplicationComponentStatus(application, resources)
 
 	formatEnvs(application.Spec.SharedEnv)
-	formatApplicationComponents(application.Spec.Components)
+	formatApplicationComponents(componentSpecs)
 
 	podNames := []string{}
 
@@ -163,7 +170,7 @@ func (builder *Builder) BuildApplicationDetails(application *v1alpha1.Applicatio
 			Namespace:  application.Namespace,
 			IsActive:   application.Spec.IsActive,
 			SharedEnvs: application.Spec.SharedEnv,
-			Components: application.Spec.Components,
+			Components: componentSpecs,
 		},
 		PodNames:         podNames,
 		ComponentsStatus: componentsStatusList,
@@ -183,7 +190,7 @@ func formatEnvs(envs []v1alpha1.EnvVar) {
 	}
 }
 
-func formatApplicationComponents(components []v1alpha1.ComponentSpec) {
+func formatApplicationComponents(components []Component) {
 	for i := range components {
 		formatEnvs(components[i].Env)
 
@@ -232,10 +239,10 @@ func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Ap
 
 	componentKey2MetricMap := getComponentKey2MetricMap()
 
-	for i := range application.Spec.Components {
-		component := application.Spec.Components[i]
+	for i := range resources.Components {
+		component := resources.Components[i]
 
-		workLoadType := component.WorkLoadType
+		workLoadType := component.Spec.WorkLoadType
 
 		// TODO remote default value
 		if workLoadType == "" {
@@ -266,7 +273,7 @@ func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Ap
 		}
 
 		// TODO fix the default value, there should be a empty string
-		if component.WorkLoadType == v1alpha1.WorkloadTypeServer || component.WorkLoadType == "" {
+		if component.Spec.WorkLoadType == v1alpha1.WorkloadTypeServer || component.Spec.WorkLoadType == "" {
 
 			//deploymentName := fmt.Sprintf("%s-%s", application.Name, component.Name)
 			//deployment := findDeploymentByName(resources.DeploymentList, deploymentName)
