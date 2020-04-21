@@ -214,9 +214,6 @@ spec:
               type: object
             memory:
               type: string
-            name:
-              pattern: ^[a-zA-Z-]+$
-              type: string
             nodeSelectorLabels:
               additionalProperties:
                 type: string
@@ -412,7 +409,6 @@ spec:
               type: string
           required:
           - image
-          - name
           type: object
         status:
           description: ComponentStatus defines the observed state of Component
