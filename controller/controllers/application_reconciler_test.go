@@ -2,24 +2,85 @@ package controllers
 
 import (
 	"context"
-	"crypto/rand"
-	"fmt"
 	"github.com/kapp-staging/kapp/api/v1alpha1"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	v1 "k8s.io/api/apps/v1"
+	"github.com/stretchr/testify/suite"
 	coreV1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-	"time"
+	"math/rand"
+	"testing"
 )
 
+type ApplicationControllerSuite struct {
+	BasicSuite
+}
+
+func (suite *ApplicationControllerSuite) SetupSuite() {
+	suite.BasicSuite.SetupSuite()
+}
+
+func (suite *ApplicationControllerSuite) TearDownSuite() {
+	suite.BasicSuite.TearDownSuite()
+}
+
+func TestApplicationControllerSuite(t *testing.T) {
+	suite.Run(t, new(ApplicationControllerSuite))
+}
+
+func (suite *ApplicationControllerSuite) TestBasicCRUD() {
+	// Create
+	application := generateEmptyApplication()
+	suite.createApplication(application)
+
+	// Ready
+	suite.Eventually(func() bool {
+		return suite.K8sClient.Get(context.Background(), getApplicationNamespacedName(application), application) == nil
+	})
+	// Update
+	application.Spec.SharedEnv = append(application.Spec.SharedEnv, v1alpha1.EnvVar{
+		Name:  "name",
+		Value: "value",
+		Type:  v1alpha1.EnvVarTypeStatic,
+	})
+
+	suite.updateApplication(application)
+	suite.Eventually(func() bool {
+		err := suite.K8sClient.Get(context.Background(), getApplicationNamespacedName(application), application)
+		if err != nil {
+			return false
+		}
+		return len(application.Spec.SharedEnv) == 1 && application.Spec.SharedEnv[0].Value == "value"
+	})
+
+	// Delete
+	suite.Eventually(func() bool {
+		suite.reloadApplication(application)
+		return suite.K8sClient.Delete(context.Background(), application) == nil
+	})
+
+	// Read after delete
+	suite.Eventually(func() bool {
+		f := &v1alpha1.Application{}
+		return errors.IsNotFound(suite.K8sClient.Get(context.Background(), getApplicationNamespacedName(application), f))
+	}, "application should not be fetched")
+
+	suite.Eventually(func() bool {
+		n := &coreV1.Namespace{}
+		// No matter how big the timeout is, the namespace still exists with a non-nil deletionTimestamp.
+		return errors.IsNotFound(suite.K8sClient.Get(context.Background(), types.NamespacedName{Name: application.Name}, n)) || n.DeletionTimestamp != nil
+	}, "namespace should not be fetched")
+}
+
+var letterRunes = []rune("abcdefghijklmnopqrstuvwxyz")
+
+//regex used for validation is '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*'
 func randomName() string {
-	b := make([]byte, 32)
-	_, _ = rand.Read(b)
-	return fmt.Sprintf("%x", b)
+	b := make([]rune, 12)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
 }
 
 func generateEmptyApplication() *v1alpha1.Application {
@@ -31,13 +92,11 @@ func generateEmptyApplication() *v1alpha1.Application {
 			APIVersion: "core.kapp.dev/v1alpha1",
 		},
 		ObjectMeta: metaV1.ObjectMeta{
-			Name:      name,
-			Namespace: TestNameSpaceName,
+			Name: name,
 		},
 		Spec: v1alpha1.ApplicationSpec{
-			IsActive:   true,
-			Components: []v1alpha1.ComponentSpec{},
-			SharedEnv:  []v1alpha1.EnvVar{},
+			IsActive:  true,
+			SharedEnv: []v1alpha1.EnvVar{},
 		},
 	}
 
@@ -45,23 +104,22 @@ func generateEmptyApplication() *v1alpha1.Application {
 }
 
 func getApplicationNamespacedName(app *v1alpha1.Application) types.NamespacedName {
-	return types.NamespacedName{Name: app.Name, Namespace: app.Namespace}
+	return types.NamespacedName{Name: app.Name, Namespace: ""}
 }
 
-func reloadApplication(application *v1alpha1.Application) {
-	Expect(k8sClient.Get(context.Background(), getApplicationNamespacedName(application), application)).Should(Succeed())
+func (suite *ApplicationControllerSuite) reloadApplication(application *v1alpha1.Application) {
+	suite.Nil(suite.K8sClient.Get(context.Background(), getApplicationNamespacedName(application), application))
 }
 
-func updateApplication(application *v1alpha1.Application) {
-	Expect(k8sClient.Update(context.Background(), application)).Should(Succeed())
+func (suite *ApplicationControllerSuite) updateApplication(application *v1alpha1.Application) {
+	suite.Nil(suite.K8sClient.Update(context.Background(), application))
 }
 
-func createApplication(application *v1alpha1.Application) {
-	Expect(k8sClient.Create(context.Background(), application)).Should(Succeed())
+func (suite *ApplicationControllerSuite) createApplication(application *v1alpha1.Application) {
+	suite.Nil(suite.K8sClient.Create(context.Background(), application))
 
-	// after the finalizer is set, the application won't auto change
-	Eventually(func() bool {
-		err := k8sClient.Get(context.Background(), getApplicationNamespacedName(application), application)
+	suite.Eventually(func() bool {
+		err := suite.K8sClient.Get(context.Background(), getApplicationNamespacedName(application), application)
 
 		if err != nil {
 			return false
@@ -72,404 +130,97 @@ func createApplication(application *v1alpha1.Application) {
 				return true
 			}
 		}
+
 		return false
-	}, timeout, interval).Should(Equal(true))
+	}, "Created application has no finalizer.")
 }
 
-func deleteApplication(application *v1alpha1.Application) {
-	Expect(k8sClient.Delete(context.Background(), application)).Should(Succeed())
-}
-
-func getApplicationDeployments(application *v1alpha1.Application) []v1.Deployment {
-	var deploymentList v1.DeploymentList
-	_ = k8sClient.List(context.Background(), &deploymentList, client.MatchingLabels{"kapp-application": application.Name})
-	return deploymentList.Items
-}
-
-func getApplicationServices(application *v1alpha1.Application) []coreV1.Service {
-	var serviceList coreV1.ServiceList
-	_ = k8sClient.List(context.Background(), &serviceList, client.MatchingLabels{"kapp-application": application.Name})
-	return serviceList.Items
-}
-
-func getApplicationPVCs(application *v1alpha1.Application) []coreV1.PersistentVolumeClaim {
-	var pvcList coreV1.PersistentVolumeClaimList
-	_ = k8sClient.List(context.Background(), &pvcList, client.MatchingLabels{"kapp-application": application.Name})
-	return pvcList.Items
-}
-
-const timeout = time.Second * 20
-const interval = time.Millisecond * 500
-
-var _ = Describe("Application basic CRUD", func() {
-	defer GinkgoRecover()
-
-	It("Should handle application correctly", func() {
-		By("Create")
-		application := generateEmptyApplication()
-		createApplication(application)
-
-		By("Ready")
-		fetched := &v1alpha1.Application{}
-		Eventually(func() error {
-			return k8sClient.Get(context.Background(), getApplicationNamespacedName(application), fetched)
-		}, timeout, interval).Should(Succeed())
-
-		By("Update")
-		fetched.Spec.SharedEnv = append(fetched.Spec.SharedEnv, v1alpha1.EnvVar{
-			Name:  "name",
-			Value: "value",
-			Type:  v1alpha1.EnvVarTypeStatic,
-		})
-
-		updateApplication(fetched)
-		fetchedUpdated := &v1alpha1.Application{}
-		Eventually(func() bool {
-			_ = k8sClient.Get(context.Background(), getApplicationNamespacedName(application), fetchedUpdated)
-			return len(fetchedUpdated.Spec.SharedEnv) == 1 && fetchedUpdated.Spec.SharedEnv[0].Value == "value"
-		}, timeout, interval).Should(Equal(true))
-
-		By("Delete")
-		Eventually(func() error {
-			reloadApplication(application)
-			return k8sClient.Delete(context.Background(), application)
-		}, timeout, interval).Should(Succeed())
-
-		By("Read after delete")
-		Eventually(func() error {
-			f := &v1alpha1.Application{}
-			return k8sClient.Get(context.Background(), getApplicationNamespacedName(application), f)
-		}, timeout, interval).ShouldNot(Succeed())
-		Eventually(func() bool {
-			deployments := getApplicationDeployments(application)
-			services := getApplicationServices(application)
-			return len(deployments) == 0 && len(services) == 0
-		}, timeout, interval).Should(Equal(true))
-	})
-
-})
-
-var _ = Describe("Application Envs", func() {
-	defer GinkgoRecover()
-
-	// generate an application with a single component
-	generateApplication := func() *v1alpha1.Application {
-		app := generateEmptyApplication()
-		app.Spec.Components = append(app.Spec.Components, v1alpha1.ComponentSpec{
-			Name:  "test",
-			Image: "nginx:latest",
-			Env: []v1alpha1.EnvVar{
-				{
-					Name:  "foo",
-					Value: "bar",
-					Type:  v1alpha1.EnvVarTypeStatic,
-				},
-			},
-			Ports: []v1alpha1.Port{
-				{
-					Name:          "test",
-					ContainerPort: 8080,
-					ServicePort:   80,
-					Protocol:      coreV1.ProtocolTCP,
-				},
-			},
-		})
-		return app
-	}
-
-	It("should delete related resources when isActive is false", func() {
-		application := generateApplication()
-		createApplication(application)
-
-		// will has a deployment
-		var deployments []v1.Deployment
-		var services []coreV1.Service
-		Eventually(func() bool {
-			deployments = getApplicationDeployments(application)
-			services = getApplicationServices(application)
-			return len(deployments) == 1 && len(services) == 1
-		}, timeout, interval).Should(Equal(true))
-
-		reloadApplication(application)
-		application.Spec.IsActive = false
-		updateApplication(application)
-
-		Eventually(func() bool {
-			deployments = getApplicationDeployments(application)
-			services = getApplicationServices(application)
-			return len(deployments) == 0 && len(services) == 0
-		}, timeout, interval).Should(Equal(true))
-
-		reloadApplication(application)
-		application.Spec.IsActive = true
-		updateApplication(application)
-
-		Eventually(func() bool {
-			deployments = getApplicationDeployments(application)
-			services = getApplicationServices(application)
-			return len(deployments) == 1 && len(services) == 1
-		}, timeout, interval).Should(Equal(true))
-	})
-
-	Context("Envs", func() {
-		It("Only Static", func() {
-			By("Create Application")
-			application := generateApplication()
-			createApplication(application)
-
-			var deployments []v1.Deployment
-			Eventually(func() bool {
-				deployments = getApplicationDeployments(application)
-				return len(deployments) == 1
-			}, timeout, interval).Should(Equal(true))
-
-			deployment := deployments[0]
-			Expect(deployment.Name).Should(Equal(getNameForKappWordLoad(application.Name, "test")))
-			Expect(*deployment.Spec.Replicas).Should(Equal(int32(1)))
-			containers := deployment.Spec.Template.Spec.Containers
-			Expect(len(containers)).Should(Equal(1))
-			Expect(len(containers[0].Env)).Should(Equal(1))
-			Expect(containers[0].Env[0].Value).Should(Equal("bar"))
-
-			By("Update Deployment manually should have no effects eventually")
-			deployment.Spec.Template.Spec.Containers[0].Env[0].Value = "new-value"
-			Expect(k8sClient.Update(context.Background(), &deployment)).Should(Succeed())
-			Eventually(func() bool {
-				deployments = getApplicationDeployments(application)
-				return len(deployments) == 1 &&
-					deployments[0].Spec.Template.Spec.Containers[0].Env[0].Value == "bar"
-			}, timeout, interval).Should(Equal(true))
-
-			By("Add env")
-			reloadApplication(application)
-			application.Spec.Components[0].Env = append(application.Spec.Components[0].Env, v1alpha1.EnvVar{
-				Name:  "newName",
-				Value: "newValue",
-				Type:  v1alpha1.EnvVarTypeStatic,
-			})
-			updateApplication(application)
-			Eventually(func() bool {
-				deployments = getApplicationDeployments(application)
-				if len(deployments) != 1 {
-					return false
-				}
-				mainContainer := deployments[0].Spec.Template.Spec.Containers[0]
-				return len(mainContainer.Env) == 2 &&
-					mainContainer.Env[1].Value == "newValue"
-			}, timeout, interval).Should(Equal(true))
-
-			By("Update env")
-			reloadApplication(application)
-			application.Spec.Components[0].Env[1].Value = "newValue2"
-			updateApplication(application)
-			Eventually(func() bool {
-				deployments = getApplicationDeployments(application)
-				return len(deployments) == 1 &&
-					deployments[0].Spec.Template.Spec.Containers[0].Env[1].Value == "newValue2"
-			}, timeout, interval).Should(Equal(true))
-
-			By("Delete envs")
-			reloadApplication(application)
-			application.Spec.Components[0].Env = application.Spec.Components[0].Env[:0]
-			updateApplication(application)
-			Eventually(func() bool {
-				deployments = getApplicationDeployments(application)
-				return len(deployments) == 1 &&
-					len(deployments[0].Spec.Template.Spec.Containers[0].Env) == 0
-			}, timeout, interval).Should(Equal(true))
-		})
-
-		It("External Static", func() {
-			By("Create Application")
-			application := generateApplication()
-			application.Spec.Components[0].Env = []v1alpha1.EnvVar{
-				{
-					Name:  "env1",
-					Value: "sharedEnv1",
-					Type:  v1alpha1.EnvVarTypeExternal,
-				},
-			}
-			application.Spec.SharedEnv = []v1alpha1.EnvVar{
-				{
-					Name:  "sharedEnv1",
-					Value: "value1",
-				},
-			}
-			Expect(k8sClient.Create(context.Background(), application)).Should(Succeed())
-
-			var deployments []v1.Deployment
-			Eventually(func() bool {
-				deployments = getApplicationDeployments(application)
-				return len(deployments) == 1
-			}, timeout, interval).Should(Equal(true))
-
-			deployment := deployments[0]
-			Expect(deployment.Name).Should(Equal(getNameForKappWordLoad(application.Name, "test")))
-			Expect(*deployment.Spec.Replicas).Should(Equal(int32(1)))
-			containers := deployment.Spec.Template.Spec.Containers
-			Expect(len(containers)).Should(Equal(1))
-			Expect(len(containers[0].Env)).Should(Equal(1))
-			Expect(containers[0].Env[0].Value).Should(Equal("value1"))
-
-			By("Update SharedEnv value should update deployment env value")
-			reloadApplication(application)
-			application.Spec.SharedEnv[0].Value = "value1-new"
-			updateApplication(application)
-			Eventually(func() bool {
-				deployments = getApplicationDeployments(application)
-				if len(deployments) != 1 {
-					return false
-				}
-				mainContainer := deployments[0].Spec.Template.Spec.Containers[0]
-				return len(mainContainer.Env) == 1 &&
-					mainContainer.Env[0].Value == "value1-new"
-			}, timeout, interval).Should(Equal(true))
-
-			By("non-exist external value will be ignore")
-			reloadApplication(application)
-			application.Spec.SharedEnv = application.Spec.SharedEnv[:0] // delete all sharedEnvs
-			updateApplication(application)
-			Eventually(func() bool {
-				deployments = getApplicationDeployments(application)
-				mainContainer := deployments[0].Spec.Template.Spec.Containers[0]
-				return len(mainContainer.Env) == 0
-			}, timeout, interval).Should(Equal(true))
-		})
-	})
-
-	Context("Ports", func() {
-		It("should create corresponding services", func() {
-			application := generateApplication()
-			createApplication(application)
-			var services []coreV1.Service
-			Eventually(func() bool {
-				services = getApplicationServices(application)
-				return len(services) == 1
-			}, timeout, interval).Should(Equal(true))
-			Expect(len(services[0].Spec.Ports)).Should(Equal(1))
-			applicationPortConfig := application.Spec.Components[0].Ports[0]
-			servicePort := services[0].Spec.Ports[0]
-			Expect(servicePort.Protocol).Should(Equal(applicationPortConfig.Protocol))
-			Expect(uint32(servicePort.TargetPort.IntValue())).Should(Equal(applicationPortConfig.ContainerPort))
-			Expect(uint32(servicePort.Port)).Should(Equal(applicationPortConfig.ServicePort))
-
-			By("Update application port")
-			reloadApplication(application)
-			application.Spec.Components[0].Ports[0].ContainerPort = 3322
-			updateApplication(application)
-			Eventually(func() bool {
-				services = getApplicationServices(application)
-				return len(services) == 1 && services[0].Spec.Ports[0].TargetPort.IntValue() == 3322
-			}, timeout, interval).Should(Equal(true))
-
-			By("Delete application port")
-			reloadApplication(application)
-			application.Spec.Components[0].Ports = application.Spec.Components[0].Ports[:0]
-			updateApplication(application)
-			Eventually(func() bool {
-				services = getApplicationServices(application)
-				return len(services) == 0
-			}, timeout, interval).Should(Equal(true))
-		})
-	})
-
-	Context("Volumes", func() {
-		Context("type pvc", func() {
-			It("pvc without storageClass", func() {
-				application := generateApplication()
-				application.Spec.Components[0].Volumes = []v1alpha1.Volume{
-					{
-						Type: v1alpha1.VolumeTypePersistentVolumeClaim,
-						Path: "/test/b",
-						Size: resource.MustParse("10m"),
-					},
-				}
-				createApplication(application)
-				var pvcs []coreV1.PersistentVolumeClaim
-				Eventually(func() bool {
-					pvcs = getApplicationPVCs(application)
-					return len(pvcs) == 1
-				}, timeout, interval).Should(Equal(true))
-
-				var deployments []v1.Deployment
-				Eventually(func() bool {
-					deployments = getApplicationDeployments(application)
-					return len(deployments) == 1
-				}, timeout, interval).Should(Equal(true))
-
-				mountPath := deployments[0].Spec.Template.Spec.Containers[0].VolumeMounts[0]
-				volume := deployments[0].Spec.Template.Spec.Volumes[0]
-
-				Expect(mountPath.Name).Should(Equal(pvcs[0].Name))
-				Expect(mountPath.MountPath).Should(Equal("/test/b"))
-				Expect(volume.Name).Should(Equal(pvcs[0].Name))
-				Expect(volume.PersistentVolumeClaim.ClaimName).Should(Equal(pvcs[0].Name))
-
-				Eventually(func() bool {
-					reloadApplication(application)
-					return application.Spec.Components[0].Volumes[0].PersistentVolumeClaimName == pvcs[0].Name
-				}, timeout, interval).Should(Equal(true))
-			})
-		})
-
-		It("temporary disk volume", func() {
-			application := generateApplication()
-			application.Spec.Components[0].Volumes = []v1alpha1.Volume{
-				{
-					Type: v1alpha1.VolumeTypeTemporaryDisk,
-					Path: "/test/b",
-					Size: resource.MustParse("10m"),
-				},
-			}
-			createApplication(application)
-
-			// will has a deployment
-			var deployments []v1.Deployment
-			Eventually(func() bool {
-				deployments = getApplicationDeployments(application)
-				return len(deployments) == 1
-			}, timeout, interval).Should(Equal(true))
-
-			mountPath := deployments[0].Spec.Template.Spec.Containers[0].VolumeMounts[0]
-			volume := deployments[0].Spec.Template.Spec.Volumes[0]
-			Expect(mountPath.MountPath).Should(Equal("/test/b"))
-			Expect(volume.EmptyDir.Medium).Should(Equal(coreV1.StorageMediumDefault))
-
-			// won't create pvc
-			Eventually(func() bool {
-				pvcs := getApplicationPVCs(application)
-				return len(pvcs) == 0
-			}, 2*time.Second, interval).Should(Equal(true))
-		})
-
-		It("temporary memory volume", func() {
-			application := generateApplication()
-			application.Spec.Components[0].Volumes = []v1alpha1.Volume{
-				{
-					Type: v1alpha1.VolumeTypeTemporaryMemory,
-					Path: "/test/b",
-					Size: resource.MustParse("10m"),
-				},
-			}
-			createApplication(application)
-
-			// will has a deployment
-			var deployments []v1.Deployment
-			Eventually(func() bool {
-				deployments = getApplicationDeployments(application)
-				return len(deployments) == 1
-			}, timeout, interval).Should(Equal(true))
-
-			mountPath := deployments[0].Spec.Template.Spec.Containers[0].VolumeMounts[0]
-			volume := deployments[0].Spec.Template.Spec.Volumes[0]
-			Expect(mountPath.MountPath).Should(Equal("/test/b"))
-			Expect(volume.EmptyDir.Medium).Should(Equal(coreV1.StorageMediumMemory))
-
-			// won't create pvc
-			Eventually(func() bool {
-				pvcs := getApplicationPVCs(application)
-				return len(pvcs) == 0
-			}, 2*time.Second, interval).Should(Equal(true))
-		})
-	})
-})
+//
+//func deleteApplication(application *v1alpha1.Application) {
+//	Expect(k8sClient.Delete(context.Background(), application)).Should(Succeed())
+//}
+//
+//func getApplicationDeployments(application *v1alpha1.Application) []v1.Deployment {
+//	var deploymentList v1.DeploymentList
+//	_ = k8sClient.List(context.Background(), &deploymentList, client.MatchingLabels{"kapp-application": application.Name})
+//	return deploymentList.Items
+//}
+//
+//func getApplicationServices(application *v1alpha1.Application) []coreV1.Service {
+//	var serviceList coreV1.ServiceList
+//	_ = k8sClient.List(context.Background(), &serviceList, client.MatchingLabels{"kapp-application": application.Name})
+//	return serviceList.Items
+//}
+//
+//func getApplicationPVCs(application *v1alpha1.Application) []coreV1.PersistentVolumeClaim {
+//	var pvcList coreV1.PersistentVolumeClaimList
+//	_ = k8sClient.List(context.Background(), &pvcList, client.MatchingLabels{"kapp-application": application.Name})
+//	return pvcList.Items
+//}
+//
+//const timeout = time.Second * 20
+//const interval = time.Millisecond * 500
+//
+//var _ = Describe("Application Envs", func() {
+//	defer GinkgoRecover()
+//
+//	// generate an application with a single component
+//	generateApplication := func() *v1alpha1.Application {
+//		app := generateEmptyApplication()
+//		app.Spec.Components = append(app.Spec.Components, v1alpha1.ComponentSpec{
+//			Name:  "test",
+//			Image: "nginx:latest",
+//			Env: []v1alpha1.EnvVar{
+//				{
+//					Name:  "foo",
+//					Value: "bar",
+//					Type:  v1alpha1.EnvVarTypeStatic,
+//				},
+//			},
+//			Ports: []v1alpha1.Port{
+//				{
+//					Name:          "test",
+//					ContainerPort: 8080,
+//					ServicePort:   80,
+//					Protocol:      coreV1.ProtocolTCP,
+//				},
+//			},
+//		})
+//		return app
+//	}
+//
+//	It("should delete related resources when isActive is false", func() {
+//		application := generateApplication()
+//		createApplication(application)
+//
+//		// will has a deployment
+//		var deployments []v1.Deployment
+//		var services []coreV1.Service
+//		Eventually(func() bool {
+//			deployments = getApplicationDeployments(application)
+//			services = getApplicationServices(application)
+//			return len(deployments) == 1 && len(services) == 1
+//		}, timeout, interval).Should(Equal(true))
+//
+//		reloadApplication(application)
+//		application.Spec.IsActive = false
+//		updateApplication(application)
+//
+//		Eventually(func() bool {
+//			deployments = getApplicationDeployments(application)
+//			services = getApplicationServices(application)
+//			return len(deployments) == 0 && len(services) == 0
+//		}, timeout, interval).Should(Equal(true))
+//
+//		reloadApplication(application)
+//		application.Spec.IsActive = true
+//		updateApplication(application)
+//
+//		Eventually(func() bool {
+//			deployments = getApplicationDeployments(application)
+//			services = getApplicationServices(application)
+//			return len(deployments) == 1 && len(services) == 1
+//		}, timeout, interval).Should(Equal(true))
+//	})
+//
+//})
