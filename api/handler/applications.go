@@ -208,9 +208,8 @@ func getApplicationFromContext(c echo.Context) (*v1alpha1.Application, error) {
 			Name:      req.Application.Name,
 		},
 		Spec: v1alpha1.ApplicationSpec{
-			IsActive:   req.Application.IsActive,
-			SharedEnv:  req.Application.SharedEnvs,
-			Components: req.Application.Components,
+			IsActive:  req.Application.IsActive,
+			SharedEnv: req.Application.SharedEnvs,
 		},
 	}
 

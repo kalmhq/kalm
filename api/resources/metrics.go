@@ -106,11 +106,20 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 
 				for _, app := range appList.Items {
 					metricsList, exist := ns2MetricsListMap[app.Namespace]
+
 					if !exist {
 						continue
 					}
 
-					cacheMetricsForAppIntoLocalDB(app, metricsList)
+					var componentList v1alpha1.ComponentList
+					err = k8sClient.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/" + app.Name + "/components").Do().Into(&componentList)
+
+					if err != nil {
+						fmt.Errorf("fail get components, err: %s", err)
+						continue
+					}
+
+					cacheMetricsForAppIntoLocalDB(componentList, metricsList)
 				}
 
 				// nodes metrics
@@ -163,10 +172,10 @@ func alignMetricsByMinute(metrics metricv1beta1.NodeMetrics) metricv1beta1.NodeM
 	return metrics
 }
 
-func cacheMetricsForAppIntoLocalDB(app v1alpha1.Application, metricsList *metricv1beta1.PodMetricsList) {
+func cacheMetricsForAppIntoLocalDB(componentList v1alpha1.ComponentList, metricsList *metricv1beta1.PodMetricsList) {
 
-	for _, component := range app.Spec.Components {
-		componentKey := fmt.Sprintf("%s-%s", app.Namespace, component.Name)
+	for _, component := range componentList.Items {
+		componentKey := fmt.Sprintf("%s-%s", component.Namespace, component.Name)
 
 		if _, exist := componentMetricDB[componentKey]; !exist {
 			// init map: pod -> metrics time serials
@@ -175,7 +184,7 @@ func cacheMetricsForAppIntoLocalDB(app v1alpha1.Application, metricsList *metric
 
 		for _, podMetrics := range metricsList.Items {
 
-			if podMetrics.Namespace != app.Namespace {
+			if podMetrics.Namespace != component.Namespace {
 				// ignore if is not pod of this app
 				continue
 			}
