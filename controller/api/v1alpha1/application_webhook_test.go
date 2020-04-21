@@ -1,7 +1,6 @@
 package v1alpha1
 
 import (
-	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -13,23 +12,14 @@ func TestRemoveFromSlice(t *testing.T) {
 		{Name: "3"},
 	}
 
-	fmt.Println(slice)
 	slice = removeFromSlice(slice, slice[2])
-	fmt.Println(slice)
+	assert.Len(t, slice, 2)
+	assert.Equal(t, "2", slice[0].Name)
+	assert.Equal(t, "1", slice[1].Name)
 
 	slice = removeFromSlice(slice, slice[0])
-	fmt.Println(slice)
-}
-
-func TestSlice(t *testing.T) {
-	slice := []int{1, 2, 3}
-	fmt.Println(slice)
-	change(slice)
-	fmt.Println(slice)
-}
-
-func change(slice []int) {
-	slice[0] = slice[1]
+	assert.Len(t, slice, 1)
+	assert.Equal(t, "1", slice[0].Name)
 }
 
 func TestCheckLoop(t *testing.T) {
