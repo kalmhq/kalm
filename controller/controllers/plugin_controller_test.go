@@ -3,27 +3,37 @@ package controllers
 import (
 	"context"
 	"github.com/kapp-staging/kapp/api/v1alpha1"
+	"github.com/stretchr/testify/suite"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-
-	//"crypto/rand"
-	//"fmt"
-	//"github.com/kapp-staging/kapp/api/v1alpha1"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	//v1 "k8s.io/api/apps/v1"
-	//coreV1 "k8s.io/api/core/v1"
-	//"k8s.io/apimachinery/pkg/api/resource"
-	//metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	//"k8s.io/apimachinery/pkg/types"
-	//"sigs.k8s.io/controller-runtime/pkg/client"
-	//"time"
+	"testing"
 )
 
+type PluginControllerSuite struct {
+	BasicSuite
+}
+
+func (suite *PluginControllerSuite) SetupSuite() {
+	suite.BasicSuite.SetupSuite()
+}
+
+func (suite *PluginControllerSuite) TearDownSuite() {
+	suite.BasicSuite.TearDownSuite()
+}
+
+func (suite *PluginControllerSuite) SetupTest() {
+}
+
+func TestPluginControllerSuite(t *testing.T) {
+	suite.Run(t, new(PluginControllerSuite))
+}
+
+//
 func generateEmptyPlugin() *v1alpha1.Plugin {
 	name := randomName()[:12]
 
-	application := &v1alpha1.Plugin{
+	plugin := &v1alpha1.Plugin{
 		TypeMeta: metaV1.TypeMeta{
 			Kind:       "Plugin",
 			APIVersion: "core.kapp.dev/v1alpha1",
@@ -37,28 +47,28 @@ func generateEmptyPlugin() *v1alpha1.Plugin {
 		},
 	}
 
-	return application
+	return plugin
 }
 
-func getPluginNamespacedName(app *v1alpha1.Plugin) types.NamespacedName {
+func getPluginNamespacedName(plugin *v1alpha1.Plugin) types.NamespacedName {
 	// cluster scope resource
-	return types.NamespacedName{Name: app.Name, Namespace: ""}
+	return types.NamespacedName{Name: plugin.Name, Namespace: ""}
 }
 
-func updatePlugin(plugin *v1alpha1.Plugin) {
-	Expect(k8sClient.Update(context.Background(), plugin)).Should(Succeed())
+func (suite *PluginControllerSuite) updatePlugin(plugin *v1alpha1.Plugin) {
+	suite.Nil(suite.K8sClient.Update(context.Background(), plugin))
 }
 
-func reloadPlugin(plugin *v1alpha1.Plugin) {
-	Expect(k8sClient.Get(context.Background(), getPluginNamespacedName(plugin), plugin)).Should(Succeed())
+func (suite *PluginControllerSuite) reloadPlugin(plugin *v1alpha1.Plugin) {
+	suite.Nil(suite.K8sClient.Get(context.Background(), getPluginNamespacedName(plugin), plugin))
 }
 
-func createPlugin(plugin *v1alpha1.Plugin) {
-	Expect(k8sClient.Create(context.Background(), plugin)).Should(Succeed())
+func (suite *PluginControllerSuite) createPlugin(plugin *v1alpha1.Plugin) {
+	suite.Nil(suite.K8sClient.Create(context.Background(), plugin))
 
 	// after the finalizer is set, the plugin won't auto change
-	Eventually(func() bool {
-		err := k8sClient.Get(context.Background(), getPluginNamespacedName(plugin), plugin)
+	suite.Eventually(func() bool {
+		err := suite.K8sClient.Get(context.Background(), getPluginNamespacedName(plugin), plugin)
 
 		if err != nil {
 			return false
@@ -69,51 +79,44 @@ func createPlugin(plugin *v1alpha1.Plugin) {
 				return true
 			}
 		}
+
 		return false
-	}, timeout, interval).Should(Equal(true))
+	})
 }
 
-var _ = Describe("Plugin basic CRUD", func() {
-	defer GinkgoRecover()
+func (suite *PluginControllerSuite) TestPluginBasicCRUD() {
+	// Create
+	plugin := generateEmptyPlugin()
+	suite.createPlugin(plugin)
 
-	It("Should handle plugin correctly", func() {
-		By("Create")
-		plugin := generateEmptyPlugin()
-		createPlugin(plugin)
+	// Get
+	suite.Eventually(func() bool {
+		return suite.K8sClient.Get(context.Background(), getPluginNamespacedName(plugin), plugin) == nil
+	})
+	suite.False(plugin.Status.CompiledSuccessfully)
 
-		By("Get")
-		Eventually(func() error {
-			return k8sClient.Get(context.Background(), getPluginNamespacedName(plugin), plugin)
-		}, timeout, interval).Should(Succeed())
-		Expect(plugin.Status.CompiledSuccessfully).Should(BeFalse())
-
-		By("Update")
-		plugin.Spec.Src = "console.log(\"hello world!\");"
-		updatePlugin(plugin)
-		Eventually(func() bool {
-			reloadPlugin(plugin)
-			return plugin.Status.CompiledSuccessfully
-		}, timeout, interval).Should(BeTrue())
-
-		By("Update to bad src")
-		plugin.Spec.Src = "wrong source"
-		updatePlugin(plugin)
-		Eventually(func() bool {
-			reloadPlugin(plugin)
-			return plugin.Status.CompiledSuccessfully
-		}, timeout, interval).Should(BeFalse())
-
-		By("Delete")
-		Eventually(func() error {
-			reloadPlugin(plugin)
-			return k8sClient.Delete(context.Background(), plugin)
-		}, timeout, interval).Should(Succeed())
-
-		By("Read after delete")
-		Eventually(func() error {
-			f := &v1alpha1.Plugin{}
-			return k8sClient.Get(context.Background(), getPluginNamespacedName(plugin), f)
-		}, timeout, interval).ShouldNot(Succeed())
+	// Update
+	plugin.Spec.Src = "console.log(\"hello world!\");"
+	suite.updatePlugin(plugin)
+	suite.Eventually(func() bool {
+		suite.reloadPlugin(plugin)
+		return plugin.Status.CompiledSuccessfully
 	})
 
-})
+	// Update to bad src
+	plugin.Spec.Src = "bad source! This source code won't pass compile stage."
+	suite.updatePlugin(plugin)
+	suite.Eventually(func() bool {
+		suite.reloadPlugin(plugin)
+		return !plugin.Status.CompiledSuccessfully
+	})
+
+	// Delete
+	suite.reloadPlugin(plugin)
+	suite.Nil(suite.K8sClient.Delete(context.Background(), plugin))
+
+	// Read after deletion
+	suite.Eventually(func() bool {
+		return errors.IsNotFound(suite.K8sClient.Get(context.Background(), getPluginNamespacedName(plugin), plugin))
+	})
+}
