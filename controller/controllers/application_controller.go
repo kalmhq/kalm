@@ -37,6 +37,11 @@ type ApplicationReconciler struct {
 	Reader client.Reader
 	Log    logr.Logger
 	Scheme *runtime.Scheme
+}
+
+type ApplicationReconcilerTask struct {
+	*ApplicationReconciler
+	Log logr.Logger
 
 	// The following fields will be filled by calling SetupAttributes() function
 	ctx         context.Context
@@ -56,51 +61,83 @@ var finalizerName = "storage.finalizers.kapp.dev"
 // +kubebuilder:rbac:groups=,resources=configmaps,verbs=get;list;watch;create;update;patch;delete
 
 func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	r.ctx = context.Background()
-	r.Log = r.Log.WithValues("application", req.NamespacedName)
-	r.Log.Info("=========== start reconciling ===========")
-	defer r.Log.Info("=========== reconciling done ===========")
+	task := &ApplicationReconcilerTask{
+		ApplicationReconciler: r,
+		ctx:                   context.Background(),
+		Log:                   r.Log.WithValues("application", req.NamespacedName),
+	}
+
+	task.Log.Info("=========== start reconciling ===========")
+	defer task.Log.Info("=========== reconciling done ===========")
+
+	return ctrl.Result{}, task.Run(req)
+}
+
+func (r *ApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	if err := mgr.GetFieldIndexer().IndexField(&coreV1.Namespace{}, ownerKey, func(rawObj runtime.Object) []string {
+		owner := metaV1.GetControllerOf(rawObj.(*coreV1.Namespace))
+
+		if owner == nil {
+			return nil
+		}
+
+		if owner.APIVersion != apiGVStr || owner.Kind != "Namespace" {
+			return nil
+		}
+
+		return []string{owner.Name}
+	}); err != nil {
+		return err
+	}
+
+	return ctrl.NewControllerManagedBy(mgr).
+		For(&corev1alpha1.Application{}).
+		Owns(&coreV1.Namespace{}).
+		Complete(r)
+}
+
+func (r *ApplicationReconcilerTask) Run(req ctrl.Request) error {
 
 	var application corev1alpha1.Application
 
 	if err := r.Reader.Get(r.ctx, req.NamespacedName, &application); err != nil {
-		return ctrl.Result{}, client.IgnoreNotFound(err)
+		return client.IgnoreNotFound(err)
 	}
 
 	r.application = &application
 
 	if err := r.SetupAttributes(req); err != nil {
-		return ctrl.Result{}, err
+		return err
 	}
 
 	if err := r.LoadResources(); err != nil {
-		return ctrl.Result{}, err
+		return err
 	}
 
 	if err := r.HandleDelete(); err != nil {
-		return ctrl.Result{}, err
+		return err
 	}
 
 	if !r.application.ObjectMeta.DeletionTimestamp.IsZero() {
-		return ctrl.Result{}, nil
+		return nil
 	}
 
 	if err := r.ReconcileNamespace(); err != nil {
-		return ctrl.Result{}, err
+		return err
 	}
 
 	if err := r.ReconcileComponents(); err != nil {
-		return ctrl.Result{}, err
+		return err
 	}
 
 	if err := r.ReconcileConfigMaps(); err != nil {
-		return ctrl.Result{}, err
+		return err
 	}
 
-	return ctrl.Result{}, nil
+	return nil
 }
 
-func (r *ApplicationReconciler) HandleDelete() (err error) {
+func (r *ApplicationReconcilerTask) HandleDelete() (err error) {
 	if r.application.ObjectMeta.DeletionTimestamp.IsZero() {
 		if !util.ContainsString(r.application.ObjectMeta.Finalizers, finalizerName) {
 			r.application.ObjectMeta.Finalizers = append(r.application.ObjectMeta.Finalizers, finalizerName)
@@ -129,7 +166,7 @@ func (r *ApplicationReconciler) HandleDelete() (err error) {
 	return nil
 }
 
-func (r *ApplicationReconciler) SetupAttributes(req ctrl.Request) (err error) {
+func (r *ApplicationReconcilerTask) SetupAttributes(req ctrl.Request) (err error) {
 	var application corev1alpha1.Application
 	err = r.Reader.Get(r.ctx, req.NamespacedName, &application)
 
@@ -147,7 +184,7 @@ func (r *ApplicationReconciler) SetupAttributes(req ctrl.Request) (err error) {
 	return nil
 }
 
-func (r *ApplicationReconciler) LoadResources() (err error) {
+func (r *ApplicationReconcilerTask) LoadResources() (err error) {
 	var ns coreV1.Namespace
 	if err := r.Reader.Get(r.ctx, types.NamespacedName{Name: r.application.Name}, &ns); err != nil {
 
@@ -162,7 +199,7 @@ func (r *ApplicationReconciler) LoadResources() (err error) {
 	return nil
 }
 
-func (r *ApplicationReconciler) ReconcileNamespace() (err error) {
+func (r *ApplicationReconcilerTask) ReconcileNamespace() (err error) {
 	if r.namespace == nil {
 		ns := &coreV1.Namespace{
 			ObjectMeta: metaV1.ObjectMeta{
@@ -205,7 +242,7 @@ func (r *ApplicationReconciler) ReconcileNamespace() (err error) {
 	return nil
 }
 
-func (r *ApplicationReconciler) ReconcileComponents() error {
+func (r *ApplicationReconcilerTask) ReconcileComponents() error {
 	var componentList corev1alpha1.ComponentList
 
 	if err := r.Reader.List(r.ctx, &componentList, client.InNamespace(r.namespace.Name)); err != nil {
@@ -229,7 +266,7 @@ func (r *ApplicationReconciler) ReconcileComponents() error {
 	return nil
 }
 
-func (r *ApplicationReconciler) ReconcileConfigMaps() error {
+func (r *ApplicationReconcilerTask) ReconcileConfigMaps() error {
 	var configMap coreV1.ConfigMap
 
 	if err := r.Reader.Get(r.ctx, types.NamespacedName{Namespace: r.namespace.Name, Name: files.KAPP_CONFIG_MAP_NAME}, &configMap); err != nil {
@@ -268,27 +305,4 @@ func (r *ApplicationReconciler) ReconcileConfigMaps() error {
 	}
 
 	return nil
-}
-
-func (r *ApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	if err := mgr.GetFieldIndexer().IndexField(&coreV1.Namespace{}, ownerKey, func(rawObj runtime.Object) []string {
-		owner := metaV1.GetControllerOf(rawObj.(*coreV1.Namespace))
-
-		if owner == nil {
-			return nil
-		}
-
-		if owner.APIVersion != apiGVStr || owner.Kind != "Namespace" {
-			return nil
-		}
-
-		return []string{owner.Name}
-	}); err != nil {
-		return err
-	}
-
-	return ctrl.NewControllerManagedBy(mgr).
-		For(&corev1alpha1.Application{}).
-		Owns(&coreV1.Namespace{}).
-		Complete(r)
 }

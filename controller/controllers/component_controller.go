@@ -47,6 +47,11 @@ type ComponentReconciler struct {
 	Reader client.Reader
 	Log    logr.Logger
 	Scheme *runtime.Scheme
+}
+
+type ComponentReconcilerTask struct {
+	*ComponentReconciler
+	Log logr.Logger
 
 	// The following fields will be filled by calling SetupAttributes() function
 	ctx         context.Context
@@ -69,6 +74,81 @@ type ComponentReconciler struct {
 // +kubebuilder:rbac:groups=batch,resources=cronjobs/status,verbs=get
 
 func (r *ComponentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+	task := &ComponentReconcilerTask{
+		ComponentReconciler: r,
+		ctx:                 context.Background(),
+		Log:                 r.Log.WithValues("application", req.NamespacedName),
+	}
+
+	task.Log.Info("=========== start reconciling ===========")
+	defer task.Log.Info("=========== reconciling done ===========")
+
+	return ctrl.Result{}, task.Run(req)
+}
+
+func (r *ComponentReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	if err := mgr.GetFieldIndexer().IndexField(&appsV1.Deployment{}, ownerKey, func(rawObj runtime.Object) []string {
+		deployment := rawObj.(*appsV1.Deployment)
+		owner := metaV1.GetControllerOf(deployment)
+
+		if owner == nil {
+			return nil
+		}
+
+		if owner.APIVersion != apiGVStr || owner.Kind != "Application" {
+			return nil
+		}
+
+		return []string{owner.Name}
+	}); err != nil {
+		return err
+	}
+
+	if err := mgr.GetFieldIndexer().IndexField(&batchV1Beta1.CronJob{}, ownerKey, func(rawObj runtime.Object) []string {
+		cronjob := rawObj.(*batchV1Beta1.CronJob)
+		owner := metaV1.GetControllerOf(cronjob)
+
+		if owner == nil {
+			return nil
+		}
+
+		if owner.APIVersion != apiGVStr || owner.Kind != "Application" {
+			return nil
+		}
+
+		return []string{owner.Name}
+	}); err != nil {
+		return err
+	}
+
+	if err := mgr.GetFieldIndexer().IndexField(&coreV1.Service{}, ownerKey, func(rawObj runtime.Object) []string {
+		// grab the job object, extract the owner...
+		service := rawObj.(*coreV1.Service)
+		owner := metaV1.GetControllerOf(service)
+
+		if owner == nil {
+			return nil
+		}
+
+		if owner.APIVersion != apiGVStr || owner.Kind != "Application" {
+			return nil
+		}
+
+		return []string{owner.Name}
+	}); err != nil {
+		return err
+	}
+
+	return ctrl.NewControllerManagedBy(mgr).
+		For(&corev1alpha1.Component{}).
+		Owns(&appsV1.Deployment{}).
+		Owns(&batchV1Beta1.CronJob{}).
+		Owns(&appsV1.DaemonSet{}).
+		Owns(&appsV1.StatefulSet{}).
+		Owns(&coreV1.Service{}).
+		Complete(r)
+}
+func (r *ComponentReconcilerTask) Run(req ctrl.Request) error {
 	r.ctx = context.Background()
 	r.Log = r.Log.WithValues("component", req.NamespacedName)
 
@@ -76,40 +156,80 @@ func (r *ComponentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	defer r.Log.Info("=========== reconciling done ===========")
 
 	if err := r.SetupAttributes(req); err != nil {
-		return ctrl.Result{}, client.IgnoreNotFound(err)
+		return client.IgnoreNotFound(err)
 	}
 
+	//if err := r.FixComponentDefaultValues(); err != nil {
+	//	r.Log.Error(err, "Fix component default values error.")
+	//	return ctrl.Result{}, err
+	//}
+
 	if err := r.LoadResources(); err != nil {
-		return ctrl.Result{}, err
+		return err
 	}
 
 	if err := r.HandleDelete(); err != nil {
-		return ctrl.Result{}, err
+		return err
 	}
 
 	if !r.component.ObjectMeta.DeletionTimestamp.IsZero() {
-		return ctrl.Result{}, nil
+		return nil
 	}
 
 	if err := r.ReconcileService(); err != nil {
-		return ctrl.Result{}, err
+		return err
 	}
 
 	if err := r.ReconcileWorkload(); err != nil {
-		return ctrl.Result{}, err
+		return err
 	}
 
-	return ctrl.Result{}, nil
+	return nil
 }
 
-func (r *ComponentReconciler) GetLabels() map[string]string {
+func (r *ComponentReconcilerTask) GetLabels() map[string]string {
 	return map[string]string{
 		"kapp-application": r.application.Name,
 		"kapp-component":   r.component.Name,
 	}
 }
 
-func (r *ComponentReconciler) ReconcileService() (err error) {
+func (r *ComponentReconcilerTask) FixComponentDefaultValues() (err error) {
+	if r.component == nil {
+		return nil
+	}
+
+	if r.component.Spec.WorkLoadType == "" {
+		r.component.Spec.WorkLoadType = corev1alpha1.WorkloadTypeServer
+	}
+
+	if r.component.Spec.DnsPolicy == "" {
+		r.component.Spec.DnsPolicy = coreV1.DNSClusterFirst
+	}
+
+	if r.component.Spec.RestartPolicy == "" {
+		r.component.Spec.RestartPolicy = coreV1.RestartPolicyAlways
+	}
+
+	if r.component.Spec.TerminationGracePeriodSeconds == nil {
+		x := int64(30)
+		r.component.Spec.TerminationGracePeriodSeconds = &x
+	}
+
+	if r.component.Spec.RestartStrategy == "" {
+		r.component.Spec.RestartStrategy = appsV1.RollingUpdateDeploymentStrategyType
+	}
+
+	for i := range r.component.Spec.Env {
+		if r.component.Spec.Env[i].Type == "" {
+			r.component.Spec.Env[i].Type = corev1alpha1.EnvVarTypeStatic
+		}
+	}
+
+	return r.Update(r.ctx, r.component)
+}
+
+func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 	labels := r.GetLabels()
 	if len(r.component.Spec.Ports) > 0 {
 		newService := false
@@ -177,7 +297,7 @@ func (r *ComponentReconciler) ReconcileService() (err error) {
 	return r.LoadService()
 }
 
-func (r *ComponentReconciler) ReconcileWorkload() (err error) {
+func (r *ComponentReconcilerTask) ReconcileWorkload() (err error) {
 	template, err := r.GetPodTemplate()
 
 	if err != nil {
@@ -198,7 +318,7 @@ func (r *ComponentReconciler) ReconcileWorkload() (err error) {
 	}
 }
 
-func (r *ComponentReconciler) ReconcileDeployment(podTemplateSpec *coreV1.PodTemplateSpec) (err error) {
+func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.PodTemplateSpec) (err error) {
 	app := r.application
 	component := r.component
 	log := r.Log
@@ -291,7 +411,7 @@ func (r *ComponentReconciler) ReconcileDeployment(podTemplateSpec *coreV1.PodTem
 
 	return r.runPlugins(PluginMethodBeforeDeploymentSave, component, deployment, deployment)
 }
-func (r *ComponentReconciler) ReconcileCronJob(podTemplateSpec *coreV1.PodTemplateSpec) (err error) {
+func (r *ComponentReconcilerTask) ReconcileCronJob(podTemplateSpec *coreV1.PodTemplateSpec) (err error) {
 	app := r.application
 	log := r.Log
 	ctx := r.ctx
@@ -361,15 +481,15 @@ func (r *ComponentReconciler) ReconcileCronJob(podTemplateSpec *coreV1.PodTempla
 	return nil
 }
 
-func (r *ComponentReconciler) ReconcileDaemonSet() (err error) {
+func (r *ComponentReconcilerTask) ReconcileDaemonSet() (err error) {
 	return fmt.Errorf("Not implement.")
 }
 
-func (r *ComponentReconciler) ReconcileStatefulSet() (err error) {
+func (r *ComponentReconcilerTask) ReconcileStatefulSet() (err error) {
 	return fmt.Errorf("Not implement.")
 }
 
-func (r *ComponentReconciler) GetPodTemplate() (template *coreV1.PodTemplateSpec, err error) {
+func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplateSpec, err error) {
 	component := r.component
 
 	template = &coreV1.PodTemplateSpec{
@@ -556,7 +676,7 @@ func getPVCName(componentName, diskPath string) string {
 	return fmt.Sprintf("%s-%x", componentName, md5.Sum([]byte(diskPath)))
 }
 
-func (r *ComponentReconciler) FindShareEnvValue(name string) (string, error) {
+func (r *ComponentReconcilerTask) FindShareEnvValue(name string) (string, error) {
 	for _, env := range r.application.Spec.SharedEnv {
 		if env.Name != name {
 			continue
@@ -574,7 +694,7 @@ func (r *ComponentReconciler) FindShareEnvValue(name string) (string, error) {
 	return "", fmt.Errorf("fail to find value for shareEnv: %s", name)
 }
 
-//func (r *ComponentReconciler) getValueOfLinkedEnv(env corev1alpha1.EnvVar) (string, error) {
+//func (r *ComponentReconcilerTask) getValueOfLinkedEnv(env corev1alpha1.EnvVar) (string, error) {
 //	if env.Value == "" {
 //		return env.Value, nil
 //	}
@@ -607,7 +727,7 @@ func (r *ComponentReconciler) FindShareEnvValue(name string) (string, error) {
 //return fmt.Sprintf("%s%s%s", env.Prefix, value, env.Suffix), nil
 //}
 
-func (r *ComponentReconciler) initPluginRuntime(component *corev1alpha1.Component) *js.Runtime {
+func (r *ComponentReconcilerTask) initPluginRuntime(component *corev1alpha1.Component) *js.Runtime {
 	rt := vm.InitRuntime()
 
 	rt.Set("getApplicationName", func(call js.FunctionCall) js.Value {
@@ -624,7 +744,7 @@ func (r *ComponentReconciler) initPluginRuntime(component *corev1alpha1.Componen
 	return rt
 }
 
-func (r *ComponentReconciler) runPlugins(methodName string, component *corev1alpha1.Component, desc interface{}, args ...interface{}) (err error) {
+func (r *ComponentReconcilerTask) runPlugins(methodName string, component *corev1alpha1.Component, desc interface{}, args ...interface{}) (err error) {
 	err = r.runApplicationPlugins(methodName, component, desc, args...)
 
 	if err != nil {
@@ -685,7 +805,7 @@ func findPluginAndValidateConfigNew(plugin runtime.RawExtension, methodName stri
 	return pluginProgram, tmp.Config, nil
 }
 
-func (r *ComponentReconciler) runComponentPlugins(methodName string, component *corev1alpha1.Component, desc interface{}, args ...interface{}) error {
+func (r *ComponentReconcilerTask) runComponentPlugins(methodName string, component *corev1alpha1.Component, desc interface{}, args ...interface{}) error {
 	for _, plugin := range component.Spec.PluginsNew {
 		pluginProgram, config, err := findPluginAndValidateConfigNew(plugin, methodName, component)
 
@@ -717,7 +837,7 @@ func (r *ComponentReconciler) runComponentPlugins(methodName string, component *
 	return nil
 }
 
-func (r *ComponentReconciler) runApplicationPlugins(methodName string, component *corev1alpha1.Component, desc interface{}, args ...interface{}) error {
+func (r *ComponentReconcilerTask) runApplicationPlugins(methodName string, component *corev1alpha1.Component, desc interface{}, args ...interface{}) error {
 	for _, plugin := range r.application.Spec.PluginsNew {
 		pluginProgram, config, err := findPluginAndValidateConfigNew(plugin, methodName, component)
 
@@ -770,7 +890,7 @@ func (r *ComponentReconciler) runApplicationPlugins(methodName string, component
 	return nil
 }
 
-func (r *ComponentReconciler) savePluginUsing(pluginProgram *PluginProgram) (err error) {
+func (r *ComponentReconcilerTask) savePluginUsing(pluginProgram *PluginProgram) (err error) {
 	usingName := types.NamespacedName{
 		Name:      r.component.Name,
 		Namespace: r.component.Namespace,
@@ -797,7 +917,7 @@ func (r *ComponentReconciler) savePluginUsing(pluginProgram *PluginProgram) (err
 	return r.Status().Patch(r.ctx, patchPlugin, client.MergeFrom(&plugin))
 }
 
-func (r *ComponentReconciler) removePluginUsings() (err error) {
+func (r *ComponentReconcilerTask) removePluginUsings() (err error) {
 	//for _, plugin := range r.application.Spec.PluginsNew {
 	//	r.removePluginUsing(plugin)
 	//}
@@ -810,7 +930,7 @@ func (r *ComponentReconciler) removePluginUsings() (err error) {
 	return nil
 }
 
-func (r *ComponentReconciler) removePluginUsing(plugin runtime.RawExtension) (err error) {
+func (r *ComponentReconcilerTask) removePluginUsing(plugin runtime.RawExtension) (err error) {
 	var tmp struct {
 		Name string `json:"name"`
 	}
@@ -855,7 +975,7 @@ func (r *ComponentReconciler) removePluginUsing(plugin runtime.RawExtension) (er
 	return r.Status().Patch(r.ctx, patchPlugin, client.MergeFrom(&pluginCRD))
 }
 
-func (r *ComponentReconciler) parseComponentConfigs(component *corev1alpha1.Component, volumes *[]coreV1.Volume, volumeMounts *[]coreV1.VolumeMount) {
+func (r *ComponentReconcilerTask) parseComponentConfigs(component *corev1alpha1.Component, volumes *[]coreV1.Volume, volumeMounts *[]coreV1.VolumeMount) {
 	var configMap coreV1.ConfigMap
 
 	err := r.Client.Get(r.ctx, types.NamespacedName{
@@ -920,7 +1040,7 @@ func (r *ComponentReconciler) parseComponentConfigs(component *corev1alpha1.Comp
 	}
 }
 
-func (r *ComponentReconciler) getPVC(pvcName string) (*coreV1.PersistentVolumeClaim, error) {
+func (r *ComponentReconcilerTask) getPVC(pvcName string) (*coreV1.PersistentVolumeClaim, error) {
 	pvcList := coreV1.PersistentVolumeClaimList{}
 
 	err := r.List(
@@ -941,7 +1061,7 @@ func (r *ComponentReconciler) getPVC(pvcName string) (*coreV1.PersistentVolumeCl
 	return nil, nil
 }
 
-func (r *ComponentReconciler) decideAffinity() (*coreV1.Affinity, bool) {
+func (r *ComponentReconcilerTask) decideAffinity() (*coreV1.Affinity, bool) {
 	component := &r.component.Spec
 
 	var nodeSelectorTerms []coreV1.NodeSelectorTerm
@@ -1014,7 +1134,7 @@ func (r *ComponentReconciler) decideAffinity() (*coreV1.Affinity, bool) {
 	}, true
 }
 
-func (r *ComponentReconciler) HandleDelete() (err error) {
+func (r *ComponentReconcilerTask) HandleDelete() (err error) {
 	if r.component.ObjectMeta.DeletionTimestamp.IsZero() {
 		if !util.ContainsString(r.component.ObjectMeta.Finalizers, finalizerName) {
 			r.component.ObjectMeta.Finalizers = append(r.component.ObjectMeta.Finalizers, finalizerName)
@@ -1040,7 +1160,7 @@ func (r *ComponentReconciler) HandleDelete() (err error) {
 	return nil
 }
 
-func (r *ComponentReconciler) SetupAttributes(req ctrl.Request) (err error) {
+func (r *ComponentReconcilerTask) SetupAttributes(req ctrl.Request) (err error) {
 	var component corev1alpha1.Component
 	err = r.Reader.Get(r.ctx, req.NamespacedName, &component)
 
@@ -1063,7 +1183,7 @@ func (r *ComponentReconciler) SetupAttributes(req ctrl.Request) (err error) {
 	return nil
 }
 
-func (r *ComponentReconciler) DeleteResources() (err error) {
+func (r *ComponentReconcilerTask) DeleteResources() (err error) {
 	if r.service != nil {
 		if err := r.Client.Delete(r.ctx, r.service); err != nil {
 			r.Log.Error(err, "Delete service error")
@@ -1098,7 +1218,7 @@ func (r *ComponentReconciler) DeleteResources() (err error) {
 	return nil
 }
 
-func (r *ComponentReconciler) DeleteItem(obj runtime.Object) (err error) {
+func (r *ComponentReconcilerTask) DeleteItem(obj runtime.Object) (err error) {
 	if err := r.Client.Delete(r.ctx, obj); err != nil {
 		gvk := obj.GetObjectKind().GroupVersionKind()
 		r.Log.Error(err, fmt.Sprintf(" delete item error. Group: %s, Version: %s, Kind: %s", gvk.Group, gvk.Version, gvk.Kind))
@@ -1108,7 +1228,7 @@ func (r *ComponentReconciler) DeleteItem(obj runtime.Object) (err error) {
 	return nil
 }
 
-func (r *ComponentReconciler) LoadResources() (err error) {
+func (r *ComponentReconcilerTask) LoadResources() (err error) {
 	if err := r.LoadService(); err != nil {
 		return err
 	}
@@ -1127,7 +1247,7 @@ func (r *ComponentReconciler) LoadResources() (err error) {
 	return nil
 }
 
-func (r *ComponentReconciler) LoadService() error {
+func (r *ComponentReconcilerTask) LoadService() error {
 	var service coreV1.Service
 
 	if err := r.Reader.Get(
@@ -1146,7 +1266,7 @@ func (r *ComponentReconciler) LoadService() error {
 	return nil
 }
 
-func (r *ComponentReconciler) LoadDeployment() error {
+func (r *ComponentReconcilerTask) LoadDeployment() error {
 	var deploy appsV1.Deployment
 	err := r.LoadItem(&deploy)
 	if err != nil {
@@ -1156,7 +1276,7 @@ func (r *ComponentReconciler) LoadDeployment() error {
 	return nil
 }
 
-func (r *ComponentReconciler) LoadCronJob() error {
+func (r *ComponentReconcilerTask) LoadCronJob() error {
 	var cornJob batchV1Beta1.CronJob
 	err := r.LoadItem(&cornJob)
 	if err != nil {
@@ -1166,7 +1286,7 @@ func (r *ComponentReconciler) LoadCronJob() error {
 	return nil
 }
 
-func (r *ComponentReconciler) LoadDaemonSet() error {
+func (r *ComponentReconcilerTask) LoadDaemonSet() error {
 	var daemonSet appsV1.DaemonSet
 	err := r.LoadItem(&daemonSet)
 	if err != nil {
@@ -1176,7 +1296,7 @@ func (r *ComponentReconciler) LoadDaemonSet() error {
 	return nil
 }
 
-func (r *ComponentReconciler) LoadStatefulSet() error {
+func (r *ComponentReconcilerTask) LoadStatefulSet() error {
 	var statefulSet appsV1.StatefulSet
 	err := r.LoadItem(&statefulSet)
 	if err != nil {
@@ -1186,7 +1306,7 @@ func (r *ComponentReconciler) LoadStatefulSet() error {
 	return nil
 }
 
-func (r *ComponentReconciler) LoadItem(dest runtime.Object) (err error) {
+func (r *ComponentReconcilerTask) LoadItem(dest runtime.Object) (err error) {
 	if err := r.Reader.Get(
 		r.ctx,
 		types.NamespacedName{
@@ -1199,68 +1319,4 @@ func (r *ComponentReconciler) LoadItem(dest runtime.Object) (err error) {
 	}
 
 	return nil
-}
-
-func (r *ComponentReconciler) SetupWithManager(mgr ctrl.Manager) error {
-
-	if err := mgr.GetFieldIndexer().IndexField(&appsV1.Deployment{}, ownerKey, func(rawObj runtime.Object) []string {
-		deployment := rawObj.(*appsV1.Deployment)
-		owner := metaV1.GetControllerOf(deployment)
-
-		if owner == nil {
-			return nil
-		}
-
-		if owner.APIVersion != apiGVStr || owner.Kind != "Application" {
-			return nil
-		}
-
-		return []string{owner.Name}
-	}); err != nil {
-		return err
-	}
-
-	if err := mgr.GetFieldIndexer().IndexField(&batchV1Beta1.CronJob{}, ownerKey, func(rawObj runtime.Object) []string {
-		cronjob := rawObj.(*batchV1Beta1.CronJob)
-		owner := metaV1.GetControllerOf(cronjob)
-
-		if owner == nil {
-			return nil
-		}
-
-		if owner.APIVersion != apiGVStr || owner.Kind != "Application" {
-			return nil
-		}
-
-		return []string{owner.Name}
-	}); err != nil {
-		return err
-	}
-
-	if err := mgr.GetFieldIndexer().IndexField(&coreV1.Service{}, ownerKey, func(rawObj runtime.Object) []string {
-		// grab the job object, extract the owner...
-		service := rawObj.(*coreV1.Service)
-		owner := metaV1.GetControllerOf(service)
-
-		if owner == nil {
-			return nil
-		}
-
-		if owner.APIVersion != apiGVStr || owner.Kind != "Application" {
-			return nil
-		}
-
-		return []string{owner.Name}
-	}); err != nil {
-		return err
-	}
-
-	return ctrl.NewControllerManagedBy(mgr).
-		For(&corev1alpha1.Component{}).
-		Owns(&appsV1.Deployment{}).
-		Owns(&batchV1Beta1.CronJob{}).
-		Owns(&appsV1.DaemonSet{}).
-		Owns(&appsV1.StatefulSet{}).
-		Owns(&coreV1.Service{}).
-		Complete(r)
 }
