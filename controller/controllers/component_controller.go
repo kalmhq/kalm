@@ -393,6 +393,11 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 		return err
 	}
 
+	if err := r.runPlugins(PluginMethodBeforeDeploymentSave, component, deployment, deployment); err != nil {
+		log.Error(err, "run before deployment save error.")
+		return err
+	}
+
 	if isNewDeployment {
 		if err := r.Create(ctx, deployment); err != nil {
 			log.Error(err, "unable to create Deployment for Application")
@@ -419,7 +424,7 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 	//	}
 	//}
 
-	return r.runPlugins(PluginMethodBeforeDeploymentSave, component, deployment, deployment)
+	return nil
 }
 func (r *ComponentReconcilerTask) ReconcileCronJob(podTemplateSpec *coreV1.PodTemplateSpec) (err error) {
 	app := r.application
@@ -811,6 +816,10 @@ func findPluginAndValidateConfigNew(plugin runtime.RawExtension, methodName stri
 	}
 
 	if pluginProgram.ConfigSchema != nil {
+		if tmp.Config == nil {
+			return nil, nil, fmt.Errorf("Plugin %s require configuration.", tmp.Name)
+		}
+
 		pluginConfig := gojsonschema.NewStringLoader(string(tmp.Config))
 		res, err := pluginProgram.ConfigSchema.Validate(pluginConfig)
 
