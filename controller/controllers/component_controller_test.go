@@ -227,7 +227,7 @@ func (suite *ComponentControllerSuite) TestExternalEnv() {
 		if err := suite.K8sClient.Get(context.Background(), key, &deployment); err != nil {
 			return false
 		}
-		return len(deployment.Spec.Template.Spec.Containers) == 0
+		return len(deployment.Spec.Template.Spec.Containers[0].Env) == 0
 	}, "missing external env value should be ignore")
 }
 
