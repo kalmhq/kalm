@@ -12,6 +12,7 @@ import { ApplicationDetails } from "../../types/application";
 import ExpandLessIcon from "@material-ui/icons/ExpandLess";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import { blue } from "@material-ui/core/colors";
+import TouchRipple from "@material-ui/core/ButtonBase/TouchRipple";
 
 type StyledTreeItemProps = TreeItemProps & {
   labelText: string;

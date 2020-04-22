@@ -17,6 +17,7 @@ import { TDispatch } from "types";
 import AppsIcon from "@material-ui/icons/Apps";
 import { NavLink } from "react-router-dom";
 import { LEFT_SECTION_WIDTH } from "../pages/BasePage";
+import { blue } from "@material-ui/core/colors";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
@@ -40,6 +41,13 @@ const styles = (theme: Theme) =>
     },
     drawerContainer: {
       overflow: "auto"
+    },
+    listItem: {
+      color: "#000000 !important"
+    },
+    listItemSeleted: {
+      backgroundColor: `${blue[50]} !important`,
+      borderRight: `4px solid ${blue[700]}`
     }
   });
 
@@ -111,6 +119,10 @@ class DrawerComponentRaw extends React.PureComponent<Props, State> {
               .filter(item => !item.requireAdmin)
               .map((item, index) => (
                 <ListItem
+                  className={classes.listItem}
+                  classes={{
+                    selected: classes.listItemSeleted
+                  }}
                   button
                   component={NavLink}
                   to={item.to}
