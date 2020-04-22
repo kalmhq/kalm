@@ -13,7 +13,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
-import { blue } from "@material-ui/core/colors";
+import { blue, grey } from "@material-ui/core/colors";
 import { BaseDrawer } from "../layout/BaseDrawer";
 import { ApplicationDetails, ApplicationComponent } from "../types/application";
 import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
@@ -124,7 +124,10 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
           }}
           button>
           <ListItemIcon>
-            <FiberManualRecordIcon style={{ fontSize: 15 }} htmlColor={blue[700]} />
+            <FiberManualRecordIcon
+              style={{ fontSize: 15 }}
+              htmlColor={this.state.selectedListItemKey === key ? blue[700] : grey[400]}
+            />
           </ListItemIcon>
           <ListItemText primary={field.text} />
         </ListItem>
@@ -141,7 +144,7 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
 
     return application.get("components").map((component, index) => {
       return (
-        <>
+        <React.Fragment key={index}>
           <ListItem
             className={classes.listItem}
             classes={{
@@ -152,7 +155,7 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
               this.handleClickComponent(index);
             }}>
             <ListItemIcon>
-              <FiberManualRecordIcon style={{ fontSize: 15 }} htmlColor={blue[700]} />
+              <FiberManualRecordIcon style={{ fontSize: 15 }} htmlColor={grey[400]} />
             </ListItemIcon>
             <ListItemText primary={component.get("name")} />
             {this.state.expandedComponentIndexes[`${index}`] ? <ExpandLess /> : <ExpandMore />}
@@ -162,7 +165,7 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
               {this.renderComponentFields(component, index)}
             </List>
           </Collapse>
-        </>
+        </React.Fragment>
       );
     });
   }
@@ -187,16 +190,23 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
             }}
             button>
             <ListItemIcon>
-              <FiberManualRecordIcon style={{ fontSize: 15 }} htmlColor={blue[700]} />
+              <FiberManualRecordIcon
+                style={{ fontSize: 15 }}
+                htmlColor={this.state.selectedListItemKey === "baisc" ? blue[700] : grey[400]}
+              />
             </ListItemIcon>
             <ListItemText primary={"Application Basic"} />
           </ListItem>
 
-          <ListSubheader className={classes.listSubHeader}>Components</ListSubheader>
+          <ListSubheader disableSticky={true} className={classes.listSubHeader}>
+            Components
+          </ListSubheader>
 
           {this.renderComponents()}
 
-          <ListSubheader className={classes.listSubHeader}>Shared Environments</ListSubheader>
+          <ListSubheader disableSticky={true} className={classes.listSubHeader}>
+            Shared Environments
+          </ListSubheader>
 
           <ListItem
             key={"sharedEnvs"}
@@ -208,7 +218,10 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
             }}
             button>
             <ListItemIcon>
-              <FiberManualRecordIcon style={{ fontSize: 15 }} htmlColor={blue[700]} />
+              <FiberManualRecordIcon
+                style={{ fontSize: 15 }}
+                htmlColor={this.state.selectedListItemKey === "sharedEnvs" ? blue[700] : grey[400]}
+              />
             </ListItemIcon>
             <ListItemText primary={"Shared Environments"} />
           </ListItem>
