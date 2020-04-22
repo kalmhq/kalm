@@ -1,57 +1,7 @@
 package controllers
 
-//
-//func (act *applicationReconcilerTask) FindShareEnvValue(name string) (string, error) {
-//	for _, env := range act.app.Spec.SharedEnv {
-//		if env.Name != name {
-//			continue
-//		}
-//
-//		if env.Type == kappV1Alpha1.EnvVarTypeLinked {
-//			return act.getValueOfLinkedEnv(env)
-//		} else if env.Type == "" || env.Type == kappV1Alpha1.EnvVarTypeStatic {
-//			return env.Value, nil
-//		}
-//
-//	}
-//
-//	return "", fmt.Errorf("fail to find value for shareEnv: %s", name)
-//}
-//
-//
-//func (act *applicationReconcilerTask) getValueOfLinkedEnv(env kappV1Alpha1.EnvVar) (string, error) {
-//	if env.Value == "" {
-//		return env.Value, nil
-//	}
-//
-//	parts := strings.Split(env.Value, "/")
-//	if len(parts) != 2 {
-//		return "", fmt.Errorf("wrong componentPort config %s, format error", env.Value)
-//	}
-//
-//	service := act.FindService(parts[0])
-//	if service == nil {
-//		return "", fmt.Errorf("wrong componentPort config %s, service not exist", env.Value)
-//	}
-//
-//	var port int32
-//	for _, servicePort := range service.Spec.Ports {
-//		if servicePort.Name == parts[1] {
-//			port = servicePort.Port
-//		}
-//	}
-//
-//	if port == 0 {
-//		return "", fmt.Errorf("wrong componentPort config %s, port not exist", env.Value)
-//	}
-//
-//	// svc.ns:port
-//	value := fmt.Sprintf("%s.%s:%d", service.Name, act.app.Namespace, port)
-//
-//	// <prefix>value<suffix>
-//	return fmt.Sprintf("%s%s%s", env.Prefix, value, env.Suffix), nil
-//}
-//
+// There will be a new Task instance for each reconciliation
+
 //func GenRulesOfIngressPlugin(plugin *kappV1Alpha1.PluginIngress) (rst []v1beta1.IngressRule) {
 //
 //	for _, host := range plugin.Hosts {
