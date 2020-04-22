@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"github.com/kapp-staging/kapp/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 	appsV1 "k8s.io/api/apps/v1"
@@ -231,6 +232,39 @@ func (suite *ComponentControllerSuite) TestExternalEnv() {
 	}, "missing external env value should be ignore")
 }
 
+func (suite *ComponentControllerSuite) TestLinkedEnv() {
+	// create
+	component := generateEmptyComponent(suite.application.Name)
+	component.Spec.Env = []v1alpha1.EnvVar{
+		{
+			Name:  "env1",
+			Value: fmt.Sprintf("%s/%s", component.Name, "forlink"),
+			Type:  v1alpha1.EnvVarTypeLinked,
+		},
+	}
+	component.Spec.Ports = []v1alpha1.Port{
+		{
+			Name:          "forlink",
+			ContainerPort: 3001,
+			ServicePort:   3002,
+			Protocol:      "TCP",
+		},
+	}
+	suite.createComponent(component)
+
+	key := types.NamespacedName{
+		Namespace: component.Namespace,
+		Name:      component.Name,
+	}
+
+	var deployment appsV1.Deployment
+	suite.Eventually(func() bool { return suite.K8sClient.Get(context.Background(), key, &deployment) == nil }, "can't get deployment")
+	suite.Equal(
+		fmt.Sprintf("%s.%s:%d", component.Name, component.Namespace, component.Spec.Ports[0].ServicePort),
+		deployment.Spec.Template.Spec.Containers[0].Env[0].Value,
+	)
+}
+
 func (suite *ComponentControllerSuite) TestVolumePVC() {
 	component := generateEmptyComponent(suite.application.Name)
 	component.Spec.Volumes = []v1alpha1.Volume{
@@ -329,6 +363,25 @@ func (suite *ComponentControllerSuite) TestVolumeTemporaryMemoryDisk() {
 		pvcs := suite.getComponentPVCs(component)
 		return len(pvcs) == 0
 	}, "temporary memory disk should not create pvc")
+}
+
+func (suite *ComponentControllerSuite) TestApplicationActive() {
+	// create
+	component := generateEmptyComponent(suite.application.Name)
+	suite.createComponent(component)
+
+	key := types.NamespacedName{
+		Namespace: component.Namespace,
+		Name:      component.Name,
+	}
+
+	var deployment appsV1.Deployment
+	suite.Eventually(func() bool { return suite.K8sClient.Get(context.Background(), key, &deployment) == nil }, "can't get deployment")
+
+	suite.application.Spec.IsActive = false
+	suite.updateApplication(suite.application)
+
+	suite.Eventually(func() bool { return errors.IsNotFound(suite.K8sClient.Get(context.Background(), key, &deployment)) }, "deployment should be delete when application is not active")
 }
 
 func (suite *ComponentControllerSuite) TestPorts() {

@@ -37,6 +37,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"strings"
 
 	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
 )
@@ -231,7 +232,7 @@ func (r *ComponentReconcilerTask) FixComponentDefaultValues() (err error) {
 
 func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 	labels := r.GetLabels()
-	if len(r.component.Spec.Ports) > 0 {
+	if len(r.component.Spec.Ports) > 0 && r.application.Spec.IsActive {
 		newService := false
 
 		if r.service == nil {
@@ -287,7 +288,9 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 				return err
 			}
 		}
-	} else if r.service != nil {
+	}
+
+	if r.service != nil && (!r.application.Spec.IsActive || len(r.component.Spec.Ports) == 0) {
 		if err := r.Delete(r.ctx, r.service); err != nil {
 			r.Log.Error(err, "unable to delete Service for Application Component")
 			return err
@@ -326,6 +329,13 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 	deployment := r.deployment
 	isNewDeployment := false
 	labelMap := r.GetLabels()
+
+	if !r.application.Spec.IsActive {
+		if deployment != nil {
+			return r.Delete(ctx, deployment)
+		}
+		return nil
+	}
 
 	if deployment == nil {
 		isNewDeployment = true
@@ -418,6 +428,13 @@ func (r *ComponentReconcilerTask) ReconcileCronJob(podTemplateSpec *coreV1.PodTe
 	cj := r.cronJob
 	component := r.component
 	labelMap := r.GetLabels()
+
+	if !r.application.Spec.IsActive {
+		if r.cronJob != nil {
+			return r.Delete(ctx, r.cronJob)
+		}
+		return nil
+	}
 
 	// restartPolicy
 	if podTemplateSpec.Spec.RestartPolicy == coreV1.RestartPolicyAlways ||
@@ -556,11 +573,11 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 				continue
 			}
 		} else if env.Type == corev1alpha1.EnvVarTypeLinked {
-			// TODO linked env
-			//value, err = r.getValueOfLinkedEnv(env)
-			//if err != nil {
-			//	return nil, err
-			//}
+			value, err = r.getValueOfLinkedEnv(env)
+
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		envs = append(envs, coreV1.EnvVar{
@@ -683,8 +700,7 @@ func (r *ComponentReconcilerTask) FindShareEnvValue(name string) (string, error)
 		}
 
 		if env.Type == corev1alpha1.EnvVarTypeLinked {
-			//return act.getValueOfLinkedEnv(env)
-			return "", fmt.Errorf("Not implement")
+			return r.getValueOfLinkedEnv(env)
 		} else if env.Type == "" || env.Type == corev1alpha1.EnvVarTypeStatic {
 			return env.Value, nil
 		}
@@ -694,38 +710,43 @@ func (r *ComponentReconcilerTask) FindShareEnvValue(name string) (string, error)
 	return "", fmt.Errorf("fail to find value for shareEnv: %s", name)
 }
 
-//func (r *ComponentReconcilerTask) getValueOfLinkedEnv(env corev1alpha1.EnvVar) (string, error) {
-//	if env.Value == "" {
-//		return env.Value, nil
-//	}
-//
-//	parts := strings.Split(env.Value, "/")
-//	if len(parts) != 2 {
-//		return "", fmt.Errorf("wrong componentPort config %s, format error", env.Value)
-//	}
-//
-//	service := r.FindService(parts[0])
-//	if service == nil {
-//		return "", fmt.Errorf("wrong componentPort config %s, service not exist", env.Value)
-//	}
-//
-//	var port int32
-//	for _, servicePort := range service.Spec.Ports {
-//		if servicePort.Name == parts[1] {
-//			port = servicePort.Port
-//		}
-//	}
-//
-//	if port == 0 {
-//		return "", fmt.Errorf("wrong componentPort config %s, port not exist", env.Value)
-//	}
-//
-//	svc.ns:port
-//value := fmt.Sprintf("%s.%s:%d", service.Name, r.app.Namespace, port)
-//
-//<prefix>value<suffix>
-//return fmt.Sprintf("%s%s%s", env.Prefix, value, env.Suffix), nil
-//}
+func (r *ComponentReconcilerTask) getValueOfLinkedEnv(env corev1alpha1.EnvVar) (string, error) {
+	if env.Value == "" {
+		return env.Value, nil
+	}
+
+	parts := strings.Split(env.Value, "/")
+	if len(parts) != 2 {
+		return "", fmt.Errorf("wrong componentPort config %s, format error", env.Value)
+	}
+
+	var service coreV1.Service
+	err := r.Reader.Get(r.ctx, types.NamespacedName{
+		Namespace: r.component.Namespace,
+		Name:      parts[0],
+	}, &service)
+
+	if err != nil {
+		return "", fmt.Errorf("wrong componentPort config %s, service not exist", env.Value)
+	}
+
+	var port int32
+	for _, p := range service.Spec.Ports {
+		if p.Name == parts[1] {
+			port = p.Port
+		}
+	}
+
+	if port == 0 {
+		return "", fmt.Errorf("wrong componentPort config %s, port not exist", env.Value)
+	}
+
+	//svc.ns:port
+	value := fmt.Sprintf("%s.%s:%d", service.Name, r.component.Namespace, port)
+
+	//<prefix>value<suffix>
+	return fmt.Sprintf("%s%s%s", env.Prefix, value, env.Suffix), nil
+}
 
 func (r *ComponentReconcilerTask) initPluginRuntime(component *corev1alpha1.Component) *js.Runtime {
 	rt := vm.InitRuntime()
