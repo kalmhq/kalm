@@ -1,4 +1,4 @@
-import { createStyles, Theme, List, ListItem, ListItemIcon, ListItemText } from "@material-ui/core";
+import { createStyles, Theme, List, ListItem, ListItemIcon, ListItemText, ListSubheader } from "@material-ui/core";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import React from "react";
 import { connect } from "react-redux";
@@ -24,18 +24,19 @@ const styles = (theme: Theme) =>
   createStyles({
     listItem: {
       color: "#000000 !important",
-      height: 40
+      height: 40,
+
+      "& > .MuiListItemIcon-root": {
+        minWidth: 40
+      }
     },
     listItemSeleted: {
       backgroundColor: `${blue[50]} !important`,
       borderRight: `4px solid ${blue[700]}`
     },
-    sectionHeader: {
-      fontWeight: 500,
+    listSubHeader: {
       textTransform: "uppercase",
-      height: 40,
-      width: "100%",
-      padding: "10px 32px"
+      color: "#000000 !important"
     }
   });
 
@@ -105,14 +106,15 @@ class DashboardDrawerRaw extends React.PureComponent<Props, State> {
                 to={item.to}
                 key={item.text}
                 selected={pathname.startsWith(item.to.split("?")[0])}>
-                <ListItemIcon>{<AppsIcon />}</ListItemIcon>
+                <ListItemIcon>
+                  <AppsIcon />
+                </ListItemIcon>
                 <ListItemText primary={item.text} />
               </ListItem>
             ))}
-        </List>
-        {/* <Divider /> */}
-        <div className={classes.sectionHeader}>admin</div>
-        <List>
+
+          <ListSubheader className={classes.listSubHeader}>Admin</ListSubheader>
+
           {menuData
             .filter(item => item.requireAdmin)
             .map((item, index) => (
@@ -126,7 +128,9 @@ class DashboardDrawerRaw extends React.PureComponent<Props, State> {
                 to={item.to}
                 key={item.text}
                 selected={pathname.startsWith(item.to.split("?")[0])}>
-                <ListItemIcon>{<AppsIcon />}</ListItemIcon>
+                <ListItemIcon>
+                  <AppsIcon />
+                </ListItemIcon>
                 <ListItemText primary={item.text} />
               </ListItem>
             ))}
