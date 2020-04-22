@@ -37,17 +37,26 @@ const styles = (theme: Theme) =>
       flexShrink: 0
     },
     drawerPaper: {
-      width: LEFT_SECTION_WIDTH
+      width: LEFT_SECTION_WIDTH,
+      paddingTop: 48
     },
     drawerContainer: {
       overflow: "auto"
     },
     listItem: {
-      color: "#000000 !important"
+      color: "#000000 !important",
+      height: 40
     },
     listItemSeleted: {
       backgroundColor: `${blue[50]} !important`,
       borderRight: `4px solid ${blue[700]}`
+    },
+    sectionHeader: {
+      fontWeight: 500,
+      textTransform: "uppercase",
+      height: 40,
+      width: "100%",
+      padding: "10px 32px"
     }
   });
 
@@ -112,7 +121,6 @@ class DrawerComponentRaw extends React.PureComponent<Props, State> {
         classes={{
           paper: classes.drawerPaper
         }}>
-        <Toolbar />
         <div className={classes.drawerContainer}>
           <List>
             {menuData
@@ -133,12 +141,17 @@ class DrawerComponentRaw extends React.PureComponent<Props, State> {
                 </ListItem>
               ))}
           </List>
-          <Divider />
+          {/* <Divider /> */}
+          <div className={classes.sectionHeader}>admin</div>
           <List>
             {menuData
               .filter(item => item.requireAdmin)
               .map((item, index) => (
                 <ListItem
+                  className={classes.listItem}
+                  classes={{
+                    selected: classes.listItemSeleted
+                  }}
                   button
                   component={NavLink}
                   to={item.to}
