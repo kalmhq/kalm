@@ -484,136 +484,222 @@ spec:
   selector:
     app: ingress-kong
 ---
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: core.kapp.dev/v1alpha1
+kind: Application
 metadata:
-  labels:
-    app: ingress-kong
-  name: ingress-kong
+  name: kapp-kong
   namespace: kapp-kong
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: ingress-kong
-  template:
-    metadata:
-      annotations:
-        prometheus.io/port: "9542"
-        prometheus.io/scrape: "true"
-        traffic.sidecar.istio.io/includeInboundPorts: ""
-      labels:
-        app: ingress-kong
-    spec:
-      containers:
-      - env:
-        - name: KONG_DATABASE
-          value: "off"
-        - name: KONG_NGINX_WORKER_PROCESSES
-          value: "1"
-        - name: KONG_NGINX_HTTP_INCLUDE
-          value: /kong/servers.conf
-        - name: KONG_ADMIN_ACCESS_LOG
-          value: /dev/stdout
-        - name: KONG_ADMIN_ERROR_LOG
-          value: /dev/stderr
-        - name: KONG_ADMIN_LISTEN
-          value: 127.0.0.1:8444 ssl
-        - name: KONG_PROXY_ACCESS_LOG
-          value: /dev/stdout
-        - name: KONG_PROXY_ERROR_LOG
-          value: /dev/stderr
-        - name: KONG_PROXY_LISTEN
-          value: 0.0.0.0:8000, 0.0.0.0:8443 ssl http2
-        image: kong:1.4
-        lifecycle:
-          preStop:
-            exec:
-              command:
-              - /bin/sh
-              - -c
-              - kong quit
-        livenessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /health
-            port: 9001
-            scheme: HTTP
-          initialDelaySeconds: 5
-          periodSeconds: 10
-          successThreshold: 1
-          timeoutSeconds: 1
-        name: proxy
-        ports:
-        - containerPort: 8000
-          name: proxy
-          protocol: TCP
-        - containerPort: 8443
-          name: proxy-ssl
-          protocol: TCP
-        - containerPort: 9542
-          name: metrics
-          protocol: TCP
-        readinessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /health
-            port: 9001
-            scheme: HTTP
-          initialDelaySeconds: 5
-          periodSeconds: 10
-          successThreshold: 1
-          timeoutSeconds: 1
-        securityContext:
-          runAsUser: 1000
-        volumeMounts:
-        - mountPath: /kong
-          name: kong-server-blocks
-      - args:
-        - /kong-ingress-controller
-        - --kong-url=https://localhost:8444
-        - --admin-tls-skip-verify
-        - --publish-service=kapp-kong/kong-proxy
-        env:
-        - name: POD_NAME
-          valueFrom:
-            fieldRef:
-              apiVersion: v1
-              fieldPath: metadata.name
-        - name: POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              apiVersion: v1
-              fieldPath: metadata.namespace
-        image: kong-docker-kubernetes-ingress-controller.bintray.io/kong-ingress-controller:0.7.1
-        imagePullPolicy: IfNotPresent
-        livenessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /healthz
-            port: 10254
-            scheme: HTTP
-          initialDelaySeconds: 5
-          periodSeconds: 10
-          successThreshold: 1
-          timeoutSeconds: 1
-        name: ingress-controller
-        ports:
-        - containerPort: 8080
-          name: webhook
-          protocol: TCP
-        readinessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /healthz
-            port: 10254
-            scheme: HTTP
-          initialDelaySeconds: 5
-          periodSeconds: 10
-          successThreshold: 1
-          timeoutSeconds: 1
-      serviceAccountName: kong-serviceaccount
-      volumes:
-      - configMap:
-          name: kong-server-blocks
-        name: kong-server-blocks
+  isActive: true
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: Component
+metadata:
+  name: proxy
+  namespace: kapp-kong
+spec:
+  workloadType: server
+  image: kong:1.4
+  ports:
+    - containerPort: 8000
+      name: proxy
+      protocol: TCP
+    - containerPort: 8443
+      name: proxy-ssl
+      protocol: TCP
+    - containerPort: 8444
+      name: proxy-admin-ssl
+      protocol: TCP
+    - containerPort: 9542
+      name: metrics
+      protocol: TCP
+    - name: http
+      containerPort: 80
+  livenessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /health
+      port: 9001
+      scheme: HTTP
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+  readinessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /health
+      port: 9001
+      scheme: HTTP
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+  env:
+    - name: KONG_DATABASE
+      value: "off"
+    - name: KONG_NGINX_WORKER_PROCESSES
+      value: "1"
+    - name: KONG_NGINX_HTTP_INCLUDE
+      value: /kong/servers.conf
+    - name: KONG_ADMIN_ACCESS_LOG
+      value: /dev/stdout
+    - name: KONG_ADMIN_ERROR_LOG
+      value: /dev/stderr
+    - name: KONG_ADMIN_LISTEN
+      value: 0.0.0.0:8444 ssl
+    - name: KONG_PROXY_ACCESS_LOG
+      value: /dev/stdout
+    - name: KONG_PROXY_ERROR_LOG
+      value: /dev/stderr
+    - name: KONG_PROXY_LISTEN
+      value: 0.0.0.0:8000, 0.0.0.0:8443 ssl http2
+  directConfigs:
+    - content: |
+        # Prometheus metrics server
+        server {
+            server_name kong_prometheus_exporter;
+            listen 0.0.0.0:9542; # can be any other port as well
+            access_log off;
+            location /metrics {
+                default_type text/plain;
+                content_by_lua_block {
+                     local prometheus = require "kong.plugins.prometheus.exporter"
+                     prometheus:collect()
+                }
+            }
+            location /nginx_status {
+                internal;
+                stub_status;
+            }
+        }
+        # Health check server
+        server {
+            server_name kong_health_check;
+            listen 0.0.0.0:9001; # can be any other port as well
+            access_log off;
+            location /health {
+              return 200;
+            }
+        }
+      mountFilePath: /kong/servers.conf
+  # todo lifecycle, securityContext
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: Component
+metadata:
+  name: ingress-controller
+  namespace: kapp-kong
+spec:
+  image: kong-docker-kubernetes-ingress-controller.bintray.io/kong-ingress-controller:0.7.1
+  args:
+    - /kong-ingress-controller
+    - --kong-url=https://proxy:8444
+    - --admin-tls-skip-verify
+    - --publish-service=kapp-kong/kong-proxy
+  env:
+    - name: POD_NAME
+      value: ingress-kong
+    - name: POD_NAMESPACE
+      value: kapp-kong
+  ports:
+    - containerPort: 8080
+      name: webhook
+      protocol: TCP
+  readinessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /healthz
+      port: 10254
+      scheme: HTTP
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+  livenessProbe:
+    failureThreshold: 3
+    httpGet:
+      path: /healthz
+      port: 10254
+      scheme: HTTP
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+  runnerPermission:
+    roleType: clusterRole
+    rules:
+      - apiGroups:
+          - ""
+        resources:
+          - endpoints
+          - nodes
+          - pods
+          - secrets
+        verbs:
+          - list
+          - watch
+      - apiGroups:
+          - ""
+        resources:
+          - nodes
+        verbs:
+          - get
+      - apiGroups:
+          - ""
+        resources:
+          - services
+        verbs:
+          - get
+          - list
+          - watch
+      - apiGroups:
+          - networking.k8s.io
+          - extensions
+        resources:
+          - ingresses
+        verbs:
+          - get
+          - list
+          - watch
+      - apiGroups:
+          - ""
+        resources:
+          - events
+        verbs:
+          - create
+          - patch
+      - apiGroups:
+          - networking.k8s.io
+          - extensions
+        resources:
+          - ingresses/status
+        verbs:
+          - update
+      - apiGroups:
+          - configuration.konghq.com
+        resources:
+          - kongplugins
+          - kongcredentials
+          - kongconsumers
+          - kongingresses
+        verbs:
+          - get
+          - list
+          - watch
+      - apiGroups:
+          - ""
+        resourceNames:
+          - ingress-controller-leader-kong
+        resources:
+          - configmaps
+        verbs:
+          - get
+          - update
+      - apiGroups:
+          - ""
+        resources:
+          - configmaps
+        verbs:
+          - create
+  #todo imagePullPolicy,

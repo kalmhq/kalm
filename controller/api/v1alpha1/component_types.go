@@ -82,7 +82,7 @@ type ComponentSpec struct {
 	RestartStrategy apps1.DeploymentStrategyType `json:"restartStrategy,omitempty"`
 
 	// +optional
-	Configs []Config `json:"configs,omitempty"`
+	Configs       []Config       `json:"configs,omitempty"`
 	DirectConfigs []DirectConfig `json:"directConfigs,omitempty"`
 
 	// +optional

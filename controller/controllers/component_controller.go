@@ -315,7 +315,7 @@ func (r *ComponentReconcilerTask) ReconcileWorkload() (err error) {
 	}
 
 	switch r.component.Spec.WorkloadType {
-	case corev1alpha1.WorkloadTypeServer:
+	case corev1alpha1.WorkloadTypeServer, "":
 		return r.ReconcileDeployment(template)
 	case corev1alpha1.WorkloadTypeCronjob:
 		return r.ReconcileCronJob(template)
@@ -324,7 +324,7 @@ func (r *ComponentReconcilerTask) ReconcileWorkload() (err error) {
 	case corev1alpha1.WorkloadTypeStatefulSet:
 		return r.ReconcileStatefulSet(template)
 	default:
-		return fmt.Errorf("unknown workload type %s", string(r.component.Spec.WorkloadType))
+		return fmt.Errorf("unknown workload type: %s", string(r.component.Spec.WorkloadType))
 	}
 }
 
