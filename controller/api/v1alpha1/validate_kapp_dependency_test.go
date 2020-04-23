@@ -6,11 +6,11 @@ package v1alpha1
 //		Components: []ComponentSpec{
 //			{
 //				Name:         "a",
-//				Dependencies: []string{"b"},
+//				StartAfterComponents: []string{"b"},
 //			},
 //			{
 //				Name:         "b",
-//				Dependencies: []string{"a"},
+//				StartAfterComponents: []string{"a"},
 //			},
 //		},
 //	}
