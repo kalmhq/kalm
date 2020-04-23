@@ -38,7 +38,7 @@ type ComponentSpec struct {
 	PodAffinityType    PodAffinityType   `json:"podAffinityType,omitempty"`
 	NodeSelectorLabels map[string]string `json:"nodeSelectorLabels,omitempty"`
 
-	Dependencies []string `json:"dependencies,omitempty"`
+	StartAfterComponents []string `json:"startAfterComponents,omitempty"`
 
 	Command []string `json:"command,omitempty"`
 
@@ -46,7 +46,7 @@ type ComponentSpec struct {
 
 	Ports []Port `json:"ports,omitempty"`
 
-	// +kubebuilder:validation:Enum=server;cronjob
+	// +kubebuilder:validation:Enum=server;cronjob;daemonset;statefulset
 	WorkLoadType WorkloadType `json:"workloadType,omitempty"`
 
 	Schedule string `json:"schedule,omitempty"`

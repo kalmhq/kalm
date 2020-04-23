@@ -204,8 +204,8 @@ func (in *ComponentSpec) DeepCopyInto(out *ComponentSpec) {
 			(*out)[key] = val
 		}
 	}
-	if in.Dependencies != nil {
-		in, out := &in.Dependencies, &out.Dependencies
+	if in.StartAfterComponents != nil {
+		in, out := &in.StartAfterComponents, &out.StartAfterComponents
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
