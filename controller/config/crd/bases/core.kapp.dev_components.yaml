@@ -406,6 +406,8 @@ spec:
               enum:
               - server
               - cronjob
+              - statefulset
+              - daemonset
               type: string
           required:
           - image

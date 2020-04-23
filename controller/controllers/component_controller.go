@@ -313,9 +313,9 @@ func (r *ComponentReconcilerTask) ReconcileWorkload() (err error) {
 	case corev1alpha1.WorkloadTypeCronjob:
 		return r.ReconcileCronJob(template)
 	case corev1alpha1.WorkloadTypeDaemonSet:
-		return r.ReconcileDaemonSet()
+		return r.ReconcileDaemonSet(template)
 	case corev1alpha1.WorkloadTypeStatefulSet:
-		return r.ReconcileStatefulSet()
+		return r.ReconcileStatefulSet(template)
 	default:
 		return fmt.Errorf("unknown workload type %s", string(r.component.Spec.WorkloadType))
 	}
@@ -426,6 +426,59 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 
 	return nil
 }
+
+func (r *ComponentReconcilerTask) ReconcileDaemonSet(podTemplateSpec *coreV1.PodTemplateSpec) error {
+	log := r.Log
+	labelMap := r.GetLabels()
+
+	daemonSet := r.daemonSet
+	isNewDs := false
+
+	if daemonSet == nil {
+		isNewDs = true
+
+		daemonSet = &appsV1.DaemonSet{
+			ObjectMeta: metaV1.ObjectMeta{
+				Labels:      labelMap,
+				Annotations: make(map[string]string),
+				Name:        r.component.Name,
+				Namespace:   r.component.Namespace,
+			},
+			Spec: appsV1.DaemonSetSpec{
+				Template: *podTemplateSpec,
+				Selector: &metaV1.LabelSelector{
+					MatchLabels: labelMap,
+				},
+			},
+		}
+	} else {
+		daemonSet.Spec.Template = *podTemplateSpec
+	}
+
+	if isNewDs {
+		if err := ctrl.SetControllerReference(r.component, daemonSet, r.Scheme); err != nil {
+			log.Error(err, "unable to set owner for daemonSet")
+			return err
+		}
+
+		if err := r.Create(r.ctx, daemonSet); err != nil {
+			log.Error(err, "unable to create daemonSet for Component")
+			return err
+		}
+
+		log.Info("create daemonSet " + daemonSet.Name)
+	} else {
+		if err := r.Update(r.ctx, daemonSet); err != nil {
+			log.Error(err, "unable to update daemonSet for Component")
+			return err
+		}
+
+		log.Info("update daemonSet " + daemonSet.Name)
+	}
+
+	return nil
+}
+
 func (r *ComponentReconcilerTask) ReconcileCronJob(podTemplateSpec *coreV1.PodTemplateSpec) (err error) {
 	app := r.application
 	log := r.Log
@@ -486,14 +539,14 @@ func (r *ComponentReconcilerTask) ReconcileCronJob(podTemplateSpec *coreV1.PodTe
 		}
 
 		if err := r.Create(ctx, cj); err != nil {
-			log.Error(err, "unable to create CronJob for Application")
+			log.Error(err, "unable to create CronJob for Component")
 			return err
 		}
 
 		log.Info("create CronJob " + cj.Name)
 	} else {
 		if err := r.Update(ctx, cj); err != nil {
-			log.Error(err, "unable to update CronJob for Application")
+			log.Error(err, "unable to update CronJob for Component")
 			return err
 		}
 
@@ -503,12 +556,57 @@ func (r *ComponentReconcilerTask) ReconcileCronJob(podTemplateSpec *coreV1.PodTe
 	return nil
 }
 
-func (r *ComponentReconcilerTask) ReconcileDaemonSet() (err error) {
-	return fmt.Errorf("Not implement.")
-}
+func (r *ComponentReconcilerTask) ReconcileStatefulSet(spec *coreV1.PodTemplateSpec) error {
 
-func (r *ComponentReconcilerTask) ReconcileStatefulSet() (err error) {
-	return fmt.Errorf("Not implement.")
+	log := r.Log
+	labelMap := r.GetLabels()
+
+	sts := r.statefulSet
+
+	isNewSts := false
+	if sts == nil {
+		isNewSts = true
+
+		sts = &appsV1.StatefulSet{
+			ObjectMeta: metaV1.ObjectMeta{
+				Labels:      labelMap,
+				Annotations: make(map[string]string),
+				Name:        r.component.Name,
+				Namespace:   r.component.Namespace,
+			},
+			Spec: appsV1.StatefulSetSpec{
+				Template: *spec,
+				Selector: &metaV1.LabelSelector{
+					MatchLabels: labelMap,
+				},
+			},
+		}
+	} else {
+		sts.Spec.Template = *spec
+	}
+
+	if isNewSts {
+		if err := ctrl.SetControllerReference(r.component, sts, r.Scheme); err != nil {
+			log.Error(err, "unable to set owner for sts")
+			return err
+		}
+
+		if err := r.Create(r.ctx, sts); err != nil {
+			log.Error(err, "unable to create sts for Component")
+			return err
+		}
+
+		log.Info("create sts " + sts.Name)
+	} else {
+		if err := r.Update(r.ctx, sts); err != nil {
+			log.Error(err, "unable to update sts for Component")
+			return err
+		}
+
+		log.Info("update sts " + sts.Name)
+	}
+
+	return nil
 }
 
 func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplateSpec, err error) {
