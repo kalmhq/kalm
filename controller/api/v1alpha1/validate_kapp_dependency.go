@@ -56,7 +56,7 @@ func buildDependencyGraph(component Component) map[string]*node {
 	}
 	curNode := nodeMap[component.Name]
 
-	for _, dep := range component.Spec.Dependencies {
+	for _, dep := range component.Spec.StartAfterComponents {
 		if _, exist := nodeMap[dep]; !exist {
 			nodeMap[dep] = &node{
 				Name: dep,
@@ -67,7 +67,7 @@ func buildDependencyGraph(component Component) map[string]*node {
 		//fmt.Println("> node:", dep, "refedBy:", nodeMap[dep].Refed[0])
 	}
 
-	//fmt.Println("node in depGraph:", component.Name, "dependOn:", component.Dependencies)
+	//fmt.Println("node in depGraph:", component.Name, "dependOn:", component.StartAfterComponents)
 	//}
 
 	//fmt.Println("graph size:", len(nodeMap))

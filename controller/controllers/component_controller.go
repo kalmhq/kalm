@@ -200,8 +200,8 @@ func (r *ComponentReconcilerTask) FixComponentDefaultValues() (err error) {
 		return nil
 	}
 
-	if r.component.Spec.WorkLoadType == "" {
-		r.component.Spec.WorkLoadType = corev1alpha1.WorkloadTypeServer
+	if r.component.Spec.WorkloadType == "" {
+		r.component.Spec.WorkloadType = corev1alpha1.WorkloadTypeServer
 	}
 
 	if r.component.Spec.DnsPolicy == "" {
@@ -307,7 +307,7 @@ func (r *ComponentReconcilerTask) ReconcileWorkload() (err error) {
 		return err
 	}
 
-	switch r.component.Spec.WorkLoadType {
+	switch r.component.Spec.WorkloadType {
 	case corev1alpha1.WorkloadTypeServer:
 		return r.ReconcileDeployment(template)
 	case corev1alpha1.WorkloadTypeCronjob:
@@ -317,7 +317,7 @@ func (r *ComponentReconcilerTask) ReconcileWorkload() (err error) {
 	case corev1alpha1.WorkloadTypeStatefulSet:
 		return r.ReconcileStatefulSet()
 	default:
-		return fmt.Errorf("unknown workload type %s", string(r.component.Spec.WorkLoadType))
+		return fmt.Errorf("unknown workload type %s", string(r.component.Spec.WorkloadType))
 	}
 }
 
@@ -804,7 +804,7 @@ func findPluginAndValidateConfigNew(plugin runtime.RawExtension, methodName stri
 		return nil, nil, nil
 	}
 
-	workloadType := component.Spec.WorkLoadType
+	workloadType := component.Spec.WorkloadType
 
 	if workloadType == "" {
 		// TODO are we safe to remove this fallback value?
@@ -1263,7 +1263,7 @@ func (r *ComponentReconcilerTask) LoadResources() (err error) {
 		return err
 	}
 
-	switch r.component.Spec.WorkLoadType {
+	switch r.component.Spec.WorkloadType {
 	case corev1alpha1.WorkloadTypeServer:
 		return r.LoadDeployment()
 	case corev1alpha1.WorkloadTypeCronjob:
