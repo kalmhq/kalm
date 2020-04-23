@@ -34,7 +34,7 @@ export const CustomizedButton = withStyles((theme: Theme) =>
 export const ButtonWhite = (props: ButtonProps) => {
   return (
     <Box boxShadow={3} m={0} p={0} style={{ width: "fit-content", borderRadius: 5 }}>
-      <Button size="small" style={{ paddingLeft: 20, paddingRight: 20 }} color="primary">
+      <Button size="small" style={{ paddingLeft: 20, paddingRight: 20 }} color="primary" {...props}>
         {props.children}
       </Button>
     </Box>
