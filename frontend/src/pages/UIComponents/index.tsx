@@ -8,6 +8,18 @@ import { RowItemBox } from "widgets/Box";
 import { H1, H2, H3, H4, H5, H6, Subtitle1, Subtitle2, Body, BoldBody, Caption } from "widgets/Label";
 import { CustomizedButton, RaisedButton } from "widgets/Button";
 import { InfoPaper, LightInfoPaper, NormalInfoPaper, DarkInfoPaper } from "widgets/Paper";
+import {
+  HelpIcon,
+  ArrowDropDownIcon,
+  CheckBoxIcon,
+  CheckBoxOutlineBlankIcon,
+  FilterListIcon,
+  ClearIcon,
+  DeleteIcon,
+  CheckCircleIcon,
+  ErrorIcon,
+  ArrowBackIcon
+} from "widgets/Icon";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -120,6 +132,18 @@ export class UIComponentsRaw extends React.Component<Props, States> {
               <DarkInfoPaper elevation={0} className={classes.demoPaper}>
                 <H3>DarkInfoPaper</H3>
               </DarkInfoPaper>
+            </RowItemBox>
+            <RowItemBox long>
+              <HelpIcon />
+              <ArrowDropDownIcon />
+              <CheckBoxIcon />
+              <CheckBoxOutlineBlankIcon />
+              <FilterListIcon />
+              <ClearIcon />
+              <DeleteIcon />
+              <CheckCircleIcon />
+              <ErrorIcon />
+              <ArrowBackIcon />
             </RowItemBox>
           </Box>
         </Box>

@@ -1,5 +1,5 @@
 import { createMuiTheme } from "@material-ui/core";
-import { blue, grey } from "@material-ui/core/colors";
+import { blue, grey, green, red } from "@material-ui/core/colors";
 let themeRaw = createMuiTheme({
   palette: {
     primary: {
@@ -12,6 +12,12 @@ let themeRaw = createMuiTheme({
       main: grey[500]
       // dark: will be calculated from palette.secondary.main,
       // contrastText: "#ffcc00"
+    },
+    success: {
+      main: green[700]
+    },
+    error: {
+      main: red[700]
     },
     text: {
       primary: grey[900],
