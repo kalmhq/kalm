@@ -20,6 +20,10 @@ const styles = (theme: Theme) =>
   createStyles({
     root: {
       padding: theme.spacing(3)
+    },
+    demoPaper: {
+      width: 200,
+      height: 200
     }
   });
 
@@ -106,15 +110,15 @@ export class UIComponentsRaw extends React.Component<Props, States> {
             <RowItemBox>
               <Typography variant="overline">overline</Typography>
             </RowItemBox>
-            <RowItemBox>
-              <LightInfoPaper elevation={2}>
-                <H1>InfoPaper</H1>
+            <RowItemBox long>
+              <LightInfoPaper elevation={2} className={classes.demoPaper}>
+                <H3>LightInfoPaper</H3>
               </LightInfoPaper>
-              <NormalInfoPaper elevation={1}>
-                <H1>InfoPaper</H1>
+              <NormalInfoPaper elevation={1} className={classes.demoPaper}>
+                <H3>NormalInfoPaper</H3>
               </NormalInfoPaper>
-              <DarkInfoPaper elevation={0}>
-                <H1>InfoPaper</H1>
+              <DarkInfoPaper elevation={0} className={classes.demoPaper}>
+                <H3>DarkInfoPaper</H3>
               </DarkInfoPaper>
             </RowItemBox>
           </Box>
