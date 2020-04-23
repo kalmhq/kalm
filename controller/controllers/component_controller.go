@@ -301,8 +301,15 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 }
 
 func (r *ComponentReconcilerTask) ReconcileWorkload() (err error) {
-	template, err := r.GetPodTemplate()
+	if err := r.reconcileDirectConfigs(); err != nil {
+		return err
+	}
 
+	if err := r.reconcilePermission(); err != nil {
+		return err
+	}
+
+	template, err := r.GetPodTemplate()
 	if err != nil {
 		return err
 	}
@@ -640,6 +647,10 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 		template.Spec.Affinity = affinity
 	}
 
+	if component.Spec.RunnerPermission != nil {
+		template.Spec.ServiceAccountName = r.getNameForPermission()
+	}
+
 	mainContainer := &template.Spec.Containers[0]
 
 	// resources
@@ -773,7 +784,7 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 		})
 	}
 
-	if component.Spec.Configs != nil {
+	if component.Spec.Configs != nil || component.Spec.DirectConfigs != nil {
 		r.parseComponentConfigs(component, &volumes, &volumeMounts)
 	}
 
@@ -1165,6 +1176,41 @@ func (r *ComponentReconcilerTask) parseComponentConfigs(component *corev1alpha1.
 
 		*volumes = append(*volumes, volume)
 		*volumeMounts = append(*volumeMounts, volumeMount)
+	}
+
+	// directConfigs
+	for i, directConfig := range component.Spec.DirectConfigs {
+		r.Log.Info("direct", "i:", i)
+
+		path := getPathOfDirectConfig(component.Name, i)
+
+		name := fmt.Sprintf("direct-config-%s-%d", component.Name, i)
+
+		vol := coreV1.Volume{
+			Name: name,
+			VolumeSource: coreV1.VolumeSource{
+				ConfigMap: &coreV1.ConfigMapVolumeSource{
+					LocalObjectReference: coreV1.LocalObjectReference{
+						Name: files.KAPP_CONFIG_MAP_NAME,
+					},
+					Items: []coreV1.KeyToPath{
+						{
+							Key:  files.EncodeFilePath(path),
+							Path: "adhoc-name",
+						},
+					},
+				},
+			},
+		}
+
+		volMount := coreV1.VolumeMount{
+			Name:      name,
+			MountPath: directConfig.MountFilePath,
+			SubPath:   "adhoc-name",
+		}
+
+		*volumes = append(*volumes, vol)
+		*volumeMounts = append(*volumeMounts, volMount)
 	}
 }
 

@@ -83,9 +83,12 @@ type ComponentSpec struct {
 
 	// +optional
 	Configs []Config `json:"configs,omitempty"`
+	DirectConfigs []DirectConfig `json:"directConfigs,omitempty"`
 
 	// +optional
 	Volumes []Volume `json:"volumes,omitempty"`
+
+	RunnerPermission *RunnerPermission `json:"runnerPermission,omitempty"`
 }
 
 // ComponentStatus defines the observed state of Component

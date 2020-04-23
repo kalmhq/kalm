@@ -2,6 +2,7 @@ package v1alpha1
 
 import (
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/api/rbac/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
@@ -74,4 +75,14 @@ type Volume struct {
 type Config struct {
 	Paths     []string `json:"paths"`
 	MountPath string   `json:"mountPath"`
+}
+
+type DirectConfig struct {
+	Content       string `json:"content"`
+	MountFilePath string `json:"mountFilePath"`
+}
+
+type RunnerPermission struct {
+	RoleType string               `json:"roleType"`
+	Rules    []v1beta1.PolicyRule `json:"rules"`
 }
