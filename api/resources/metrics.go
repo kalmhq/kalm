@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"github.com/influxdata/influxdb/pkg/slices"
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -47,6 +49,7 @@ import (
 // componentA -> {pod1 -> metric, metric, ...}
 //               {pod2 -> metric, metric, ...}
 var componentMetricDB = make(map[string]map[string][]metricv1beta1.PodMetrics)
+var podMetricDB = make(map[string][]metricv1beta1.PodMetrics)
 
 // nodeName1 -> {metricT1, metricT2, ...}
 // nodeName2 -> {metricT1, ...}
@@ -91,21 +94,62 @@ func StartMetricsScraper(ctx context.Context, config *rest.Config) error {
 				// get metrics under apps' ns
 				ns2MetricsListMap := make(map[string]*metricv1beta1.PodMetricsList)
 				for _, app := range appList.Items {
-					if _, exist := ns2MetricsListMap[app.Namespace]; exist {
+					if _, exist := ns2MetricsListMap[app.Name]; exist {
 						continue
 					}
 
-					metricsList, err := metricClient.PodMetricses(app.Namespace).List(metav1.ListOptions{})
+					metricsList, err := metricClient.PodMetricses(app.Name).List(metav1.ListOptions{})
 					if err != nil {
-						fmt.Printf("fail to list podMetrics for ns: %s, err: %s\n", app.Namespace, err)
+						fmt.Printf("fail to list podMetrics for ns: %s, err: %s\n", app.Name, err)
 					}
 
-					ns2MetricsListMap[app.Namespace] = metricsList
-					//fmt.Printf("metrics found under ns(%s): %d\n", app.Namespace, len(metricsList.Items))
+					for _, podMetric := range metricsList.Items {
+						if podMetricDB[podMetric.Name] == nil {
+							podMetricDB[podMetric.Name] = make([]metricv1beta1.PodMetrics, 0)
+						}
+
+						podMetricSlice := podMetricDB[podMetric.Name]
+
+						//podMetricDB[podMetric.Name] = append(
+						//	podMetricDB[podMetric.Name],
+						//	podMetric,
+						//)
+
+						if len(podMetricSlice) > 0 &&
+							podMetricSlice[len(podMetricSlice)-1].Timestamp.Unix() == podMetric.Timestamp.Unix() {
+							podMetricSlice[len(podMetricSlice)-1] = podMetric
+							continue
+						}
+
+						podMetricSlice = append(podMetricSlice, podMetric)
+
+						podMetricDB[podMetric.Name] = podMetricSlice
+					}
+
+					// purge old metrics
+					for podName, metricsSlice := range podMetricDB {
+						for len(metricsSlice) > 0 {
+							cutTs := time.Now().Add(-1 * metricDuration)
+							if metricsSlice[0].Timestamp.Time.After(cutTs) {
+								break
+							}
+
+							metricsSlice = metricsSlice[1:]
+						}
+
+						if len(metricsSlice) == 0 {
+							delete(podMetricDB, podName)
+						} else {
+							podMetricDB[podName] = metricsSlice
+						}
+					}
+
+					ns2MetricsListMap[app.Name] = metricsList
+					//fmt.Printf("metrics found under ns(%s): %d\n", app.Name, len(metricsList.Items))
 				}
 
 				for _, app := range appList.Items {
-					metricsList, exist := ns2MetricsListMap[app.Namespace]
+					metricsList, exist := ns2MetricsListMap[app.Name]
 
 					if !exist {
 						continue
@@ -285,6 +329,45 @@ func getNodeMetricHistories(name string, list []metricv1beta1.NodeMetrics) Metri
 		CPU:    cpuHistory,
 	}
 
+}
+
+// componentName -> componentMetricsSum
+func getPodMetrics(podName string) PodMetrics {
+	rst := PodMetrics{
+		Name: podName,
+	}
+
+	metricsSlice := podMetricDB[podName]
+
+	if metricsSlice == nil {
+		return rst
+	}
+
+	rst.MetricHistories = MetricHistories{
+		CPU:    make(MetricHistory, len(metricsSlice)),
+		Memory: make(MetricHistory, len(metricsSlice)),
+	}
+
+	for i, podMetrics := range metricsSlice {
+		sumCPU := resource.NewQuantity(0, "")
+		sumMemory := resource.NewQuantity(0, "")
+
+		for _, container := range podMetrics.Containers {
+			sumCPU.Add(container.Usage[v1.ResourceCPU])
+			sumMemory.Add(container.Usage[v1.ResourceMemory])
+		}
+
+		rst.MetricHistories.CPU[i] = MetricPoint{
+			Timestamp: podMetrics.Timestamp.Time,
+			Value:     uint64(sumCPU.Value()),
+		}
+		rst.MetricHistories.Memory[i] = MetricPoint{
+			Timestamp: podMetrics.Timestamp.Time,
+			Value:     uint64(sumMemory.Value()),
+		}
+	}
+
+	return rst
 }
 
 // componentName -> componentMetricsSum

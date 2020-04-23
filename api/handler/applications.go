@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/kapp-staging/kapp/api/resources"
@@ -49,7 +48,7 @@ func (h *ApiHandler) handleValidateApplications(c echo.Context) error {
 		return err
 	}
 
-	if err := v1alpha1.TryValidateApplicationFromAPI(crdApplication.Spec, crdApplication.Name, crdApplication.Namespace); err != nil {
+	if err := v1alpha1.TryValidateApplicationFromAPI(crdApplication.Spec, crdApplication.Name); err != nil {
 		return err
 	}
 
@@ -112,7 +111,7 @@ func createKappApplication(c echo.Context) (*v1alpha1.Application, error) {
 		return nil, err
 	}
 
-	if err := v1alpha1.TryValidateApplicationFromAPI(crdApplication.Spec, crdApplication.Name, crdApplication.Namespace); err != nil {
+	if err := v1alpha1.TryValidateApplicationFromAPI(crdApplication.Spec, crdApplication.Name); err != nil {
 		return nil, err
 	}
 
@@ -173,29 +172,20 @@ func getKappApplicationList(c echo.Context) (*v1alpha1.ApplicationList, error) {
 }
 
 func kappApplicationUrl(c echo.Context) string {
-	namespace := c.Param("namespace")
 	name := c.Param("name")
 
-	if namespace == "" && name == "" {
+	if name == "" {
 		return "/apis/core.kapp.dev/v1alpha1/applications"
 	}
 
-	if name == "" {
-		return "/apis/core.kapp.dev/v1alpha1/namespaces/" + namespace + "/applications"
-	}
-
-	return "/apis/core.kapp.dev/v1alpha1/namespaces/" + namespace + "/applications/" + name
+	return "/apis/core.kapp.dev/v1alpha1/applications/" + name
 }
 
 func getApplicationFromContext(c echo.Context) (*v1alpha1.Application, error) {
-	var req resources.CreateOrUpdateApplicationRequest
+	var application resources.Application
 
-	if err := c.Bind(&req); err != nil {
+	if err := c.Bind(&application); err != nil {
 		return nil, err
-	}
-
-	if req.Application == nil {
-		return nil, fmt.Errorf("not valid application spec")
 	}
 
 	crdApplication := &v1alpha1.Application{
@@ -204,12 +194,12 @@ func getApplicationFromContext(c echo.Context) (*v1alpha1.Application, error) {
 			APIVersion: "core.kapp.dev/v1alpha1",
 		},
 		ObjectMeta: metaV1.ObjectMeta{
-			Namespace: req.Application.Namespace,
-			Name:      req.Application.Name,
+			Name: application.Name,
 		},
 		Spec: v1alpha1.ApplicationSpec{
-			IsActive:  req.Application.IsActive,
-			SharedEnv: req.Application.SharedEnvs,
+			IsActive:   application.IsActive,
+			SharedEnv:  application.SharedEnvs,
+			PluginsNew: application.Plugins,
 		},
 	}
 

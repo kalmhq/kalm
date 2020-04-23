@@ -1,6 +1,7 @@
 package server
 
 import (
+	"flag"
 	"net/http"
 	"os"
 
@@ -12,6 +13,16 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
+func isTest() bool {
+	testFlag := flag.Lookup("test.v")
+
+	if testFlag == nil {
+		return false
+	}
+
+	return testFlag.Value.String() == "true"
+}
+
 func newEchoInstance() *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
@@ -20,7 +31,6 @@ func newEchoInstance() *echo.Echo {
 	}))
 
 	// TODO, only enabled cors on dev env
-
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     []string{"http://localhost:3000", "*"},
 		AllowMethods:     []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
@@ -28,10 +38,13 @@ func newEchoInstance() *echo.Echo {
 		MaxAge:           86400,
 	}))
 
-	e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
-		CookiePath:     "/",
-		CookieHTTPOnly: true,
-	}))
+	if !isTest() {
+		// TODO is our safe to ignore CSRF protection?
+		//e.Use(middleware.CSRFWithConfig(middleware.CSRFConfig{
+		//	CookiePath:     "/",
+		//	CookieHTTPOnly: true,
+		//}))
+	}
 
 	e.HTTPErrorHandler = errors.CustomHTTPErrorHandler
 
