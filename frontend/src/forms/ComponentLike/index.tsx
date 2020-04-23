@@ -33,7 +33,7 @@ import { getNodeLabels } from "../../selectors/node";
 import { red } from "@material-ui/core/colors";
 import { extractSummaryInfoFromMap, extractSummaryInfoFromList } from "forms/summarizer";
 import { loadConfigsAction } from "../../actions/config";
-import { SectionTitle } from "widgets/SectionTitle";
+import { SectionTitle } from "widgets/Label";
 import { Configs } from "./Configs";
 
 const mapStateToProps = (state: RootState) => {
