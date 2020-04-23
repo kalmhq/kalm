@@ -1408,7 +1408,7 @@ func (r *ComponentReconcilerTask) LoadResources() (err error) {
 	}
 
 	switch r.component.Spec.WorkloadType {
-	case corev1alpha1.WorkloadTypeServer:
+	case corev1alpha1.WorkloadTypeServer, "":
 		return r.LoadDeployment()
 	case corev1alpha1.WorkloadTypeCronjob:
 		return r.LoadCronJob()
@@ -1416,6 +1416,8 @@ func (r *ComponentReconcilerTask) LoadResources() (err error) {
 		return r.LoadDaemonSet()
 	case corev1alpha1.WorkloadTypeStatefulSet:
 		return r.LoadStatefulSet()
+	default:
+		r.Log.Info("see unknown workloadType:", "type:", r.component.Spec.WorkloadType)
 	}
 
 	return nil
