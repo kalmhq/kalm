@@ -67,10 +67,10 @@ func EncodeFilePath(path string) string {
 	return strings.ReplaceAll(path, "/", KAPP_SLASH_REPLACER)
 }
 
-func AddFile(configMap *coreV1.ConfigMap, file *File) error {
+func AddFile(configMap *coreV1.ConfigMap, file *File, replaceExistingOpt ...bool) error {
 	fileKey := EncodeFilePath(file.Path)
 
-	if _, exist := configMap.Data[fileKey]; exist {
+	if _, exist := configMap.Data[fileKey]; exist && (len(replaceExistingOpt) == 0 || replaceExistingOpt[0] == false) {
 		return fmt.Errorf("File or dir Exist")
 	}
 
