@@ -32,7 +32,7 @@ func returnRstForError(err error) (ctrl.Result, error) {
 // 1. check if dependency is installed
 // 2. collect components info and update kong config
 func (r *DependencyReconciler) reconcileKong(ctx context.Context, dep *corev1alpha1.Dependency) error {
-	status, err := r.getDependencyInstallStatus("kapp-kong", []string{"ingress-kong"}, nil)
+	status, err := r.getDependencyInstallStatus("kapp-kong", []string{"ingress-controller", "proxy"}, nil)
 	if err != nil {
 		return err
 	}
