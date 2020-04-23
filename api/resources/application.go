@@ -3,15 +3,14 @@ package resources
 import (
 	"encoding/json"
 	"fmt"
+	authorizationV1 "k8s.io/api/authorization/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"time"
 
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	appsV1 "k8s.io/api/apps/v1"
 	v1betav1 "k8s.io/api/batch/v1beta1"
 	coreV1 "k8s.io/api/core/v1"
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/fields"
-	"k8s.io/apimachinery/pkg/labels"
 )
 
 type ListMeta struct {
@@ -80,6 +79,11 @@ type ComponentMetrics struct {
 	Pods            map[string]MetricHistories `json:"pods"`
 }
 
+type PodMetrics struct {
+	Name            string `json:"-"`
+	MetricHistories `json:",inline,omitempty"`
+}
+
 // https://github.com/kubernetes/dashboard/blob/master/src/app/backend/integration/metric/api/types.go#L121
 type MetricPoint struct {
 	Timestamp time.Time
@@ -99,10 +103,9 @@ type MetricHistories struct {
 }
 
 type ApplicationDetails struct {
-	*Application     `json:",inline"`
-	ComponentsStatus []ComponentStatus `json:"componentsStatus"`
-	PodNames         []string          `json:"podNames"`
-	Metrics          MetricHistories   `json:"metrics"`
+	*Application `json:",inline"`
+	Metrics      MetricHistories `json:"metrics"`
+	Roles        []string        `json:"roles"`
 }
 
 type CreateOrUpdateApplicationRequest struct {
@@ -110,11 +113,11 @@ type CreateOrUpdateApplicationRequest struct {
 }
 
 type Application struct {
-	Name       string            `json:"name"`
-	Namespace  string            `json:"namespace"`
-	IsActive   bool              `json:"isActive"`
-	SharedEnvs []v1alpha1.EnvVar `json:"sharedEnvs"`
-	Components []Component       `json:"components"`
+	Name       string                 `json:"name"`
+	Namespace  string                 `json:"namespace"`
+	IsActive   bool                   `json:"isActive"`
+	SharedEnvs []v1alpha1.EnvVar      `json:"sharedEnvs,omitempty"`
+	Plugins    []runtime.RawExtension `json:"plugins"`
 }
 
 func (builder *Builder) BuildApplicationDetails(application *v1alpha1.Application) (*ApplicationDetails, error) {
@@ -123,12 +126,12 @@ func (builder *Builder) BuildApplicationDetails(application *v1alpha1.Applicatio
 
 	resourceChannels := &ResourceChannels{
 		PodList: builder.GetPodListChannel(ns, listOptions),
-		EventList: builder.GetEventListChannel(ns, metaV1.ListOptions{
-			LabelSelector: labels.Everything().String(),
-			FieldSelector: fields.Everything().String(),
-		}),
-		ServiceList:   builder.GetServiceListChannel(ns, listOptions),
-		ComponentList: builder.GetComponentListChannel(ns, listOptions),
+		//EventList: builder.GetEventListChannel(ns, metaV1.ListOptions{
+		//	LabelSelector: labels.Everything().String(),
+		//	FieldSelector: fields.Everything().String(),
+		//}),
+		//ServiceList:   builder.GetServiceListChannel(ns, listOptions),
+		//ComponentList: builder.GetComponentListChannel(ns, listOptions),
 	}
 
 	resources, err := resourceChannels.ToResources()
@@ -138,29 +141,71 @@ func (builder *Builder) BuildApplicationDetails(application *v1alpha1.Applicatio
 		return nil, err
 	}
 
-	var componentSpecs = make([]Component, len(resources.Components))
+	roles := make([]string, 0, 2)
 
-	for i, component := range resources.Components {
-		componentSpecs[i] = Component{component.Spec, component.Name}
+	// TODO Is there a better way?
+	// Infer user roles with some specific access review. This is not accurate but a trade off.
+	writerReview, err := builder.K8sClient.AuthorizationV1().SelfSubjectAccessReviews().Create(&authorizationV1.SelfSubjectAccessReview{
+		Spec: authorizationV1.SelfSubjectAccessReviewSpec{
+			ResourceAttributes: &authorizationV1.ResourceAttributes{
+				Namespace: application.Name,
+				Resource:  "applications",
+				Verb:      "create",
+				Group:     "core.kapp.dev",
+			},
+		},
+	})
+
+	if err != nil {
+		return nil, err
 	}
 
-	componentsStatusList := builder.buildApplicationComponentStatus(application, resources)
+	if writerReview.Status.Allowed {
+		roles = append(roles, "writer")
+	}
+
+	readerReview, err := builder.K8sClient.AuthorizationV1().SelfSubjectAccessReviews().Create(&authorizationV1.SelfSubjectAccessReview{
+		Spec: authorizationV1.SelfSubjectAccessReviewSpec{
+			ResourceAttributes: &authorizationV1.ResourceAttributes{
+				Namespace: application.Name,
+				Resource:  "applications",
+				Verb:      "get",
+				Group:     "core.kapp.dev",
+			},
+		},
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if readerReview.Status.Allowed {
+		roles = append(roles, "reader")
+	}
+
+	//var componentSpecs = make([]Component, len(resources.Components))
+	//
+	//for i, component := range resources.Components {
+	//	componentSpecs[i] = Component{component.Spec, component.Name}
+	//}
+
+	//componentsStatusList := builder.buildApplicationComponentStatus(application, resources)
 
 	formatEnvs(application.Spec.SharedEnv)
-	formatApplicationComponents(componentSpecs)
+	//formatApplicationComponents(componentSpecs)
 
 	podNames := []string{}
+	var cpuHistoryList []MetricHistory
+	var memHistoryList []MetricHistory
 
 	for _, pod := range resources.PodList.Items {
 		podNames = append(podNames, pod.Name)
+
+		podMetric := getPodMetrics(pod.Name)
+		cpuHistoryList = append(cpuHistoryList, podMetric.CPU)
+		memHistoryList = append(memHistoryList, podMetric.Memory)
 	}
 
-	var cpuHistoryList []MetricHistory
-	var memHistoryList []MetricHistory
-	for _, compStatus := range componentsStatusList {
-		cpuHistoryList = append(cpuHistoryList, compStatus.CPU)
-		memHistoryList = append(memHistoryList, compStatus.Memory)
-	}
 	appCpuHistory := aggregateHistoryList(cpuHistoryList)
 	appMemHistory := aggregateHistoryList(memHistoryList)
 
@@ -170,14 +215,16 @@ func (builder *Builder) BuildApplicationDetails(application *v1alpha1.Applicatio
 			Namespace:  application.Namespace,
 			IsActive:   application.Spec.IsActive,
 			SharedEnvs: application.Spec.SharedEnv,
-			Components: componentSpecs,
+			//Components: componentSpecs,
+			Plugins: application.Spec.PluginsNew,
 		},
-		PodNames:         podNames,
-		ComponentsStatus: componentsStatusList,
+		//PodNames:         podNames,
+		//ComponentsStatus: componentsStatusList,
 		Metrics: MetricHistories{
 			CPU:    appCpuHistory,
 			Memory: appMemHistory,
 		},
+		Roles: roles,
 	}, nil
 }
 
@@ -284,7 +331,7 @@ func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Ap
 			//} else {
 			//componentStatus.DeploymentStatus = deployment.Status
 
-			pods := findPods(resources.PodList, component.Name)
+			//pods := findPods(resources.PodList, component.Name)
 			//componentStatus.PodInfo = getPodsInfo(deployment.Status.Replicas, deployment.Spec.Replicas, pods)
 			//componentStatus.PodInfo.Warnings = filterPodWarningEvents(resources.EventList.Items, pods)
 
@@ -292,7 +339,7 @@ func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Ap
 			componentMetrics := componentKey2MetricMap[componentKey]
 			componentStatus.ComponentMetrics = componentMetrics
 
-			componentStatus.Pods = getPods(pods, resources.EventList.Items, componentMetrics)
+			//componentStatus.Pods = getPodStatus(pods, resources.EventList.Items)
 			//}
 		}
 
@@ -307,111 +354,104 @@ func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Ap
 	return res
 }
 
-func getPods(pods []coreV1.Pod, events []coreV1.Event, componentMetrics ComponentMetrics) []PodStatus {
-	res := []PodStatus{}
+func getPodStatus(pod coreV1.Pod, events []coreV1.Event) *PodStatus {
+	ips := []string{}
 
-	for _, pod := range pods {
-		ips := []string{}
-
-		for _, x := range pod.Status.PodIPs {
-			ips = append(ips, x.IP)
-		}
-
-		var startTimestamp int64
-
-		if pod.Status.StartTime != nil {
-			startTimestamp = pod.Status.StartTime.UnixNano() / int64(time.Millisecond)
-		}
-
-		statusText := string(pod.Status.Phase)
-		restarts := 0
-		initializing := false
-		//readyContainers := 0
-
-		for i := range pod.Status.InitContainerStatuses {
-			container := pod.Status.InitContainerStatuses[i]
-			restarts += int(container.RestartCount)
-			switch {
-			case container.State.Terminated != nil && container.State.Terminated.ExitCode == 0:
-				continue
-			case container.State.Terminated != nil:
-				// initialization is failed
-				if len(container.State.Terminated.Reason) == 0 {
-					if container.State.Terminated.Signal != 0 {
-						statusText = fmt.Sprintf("Init terminated: Signal:%d", container.State.Terminated.Signal)
-					} else {
-						statusText = fmt.Sprintf("Init terminated: ExitCode:%d", container.State.Terminated.ExitCode)
-					}
-				} else {
-					statusText = "Init terminated: " + container.State.Terminated.Reason
-				}
-				initializing = true
-			case container.State.Waiting != nil && len(container.State.Waiting.Reason) > 0 && container.State.Waiting.Reason != "PodInitializing":
-				statusText = "Init waiting: " + container.State.Waiting.Reason
-				initializing = true
-			default:
-				statusText = fmt.Sprintf("Init: %d/%d", i, len(pod.Spec.InitContainers))
-				initializing = true
-			}
-			break
-		}
-
-		containers := []ContainerStatus{}
-
-		if !initializing {
-			restarts = 0
-			for i := len(pod.Status.ContainerStatuses) - 1; i >= 0; i-- {
-				container := pod.Status.ContainerStatuses[i]
-
-				restarts += int(container.RestartCount)
-				if container.State.Waiting != nil && container.State.Waiting.Reason != "" {
-					statusText = fmt.Sprintf("Waiting: %s", container.State.Waiting.Reason)
-				} else if container.State.Terminated != nil && container.State.Terminated.Reason != "" {
-					statusText = fmt.Sprintf("Terminated: %s", container.State.Terminated.Reason)
-				} else if container.State.Terminated != nil && container.State.Terminated.Reason == "" {
-					if container.State.Terminated.Signal != 0 {
-						statusText = fmt.Sprintf("Terminated: Signal:%d", container.State.Terminated.Signal)
-					} else {
-						statusText = fmt.Sprintf("Terminated: ExitCode:%d", container.State.Terminated.ExitCode)
-					}
-				} else if container.Ready && container.State.Running != nil {
-					//readyContainers++
-				}
-
-				containers = append(containers, ContainerStatus{
-					Name:         container.Name,
-					RestartCount: container.RestartCount,
-					Ready:        container.Ready,
-					Started:      container.Started != nil && *container.Started == true,
-				})
-			}
-		}
-
-		warnings := []coreV1.Event{}
-
-		if !IsReadyOrSucceeded(pod) {
-			warnings = filterPodWarningEvents(events, []coreV1.Pod{pod})
-		}
-
-		res = append(res, PodStatus{
-			Name:              pod.Name,
-			Node:              pod.Spec.NodeName,
-			Status:            getPodStatusPhase(pod, warnings),
-			StatusText:        statusText,
-			Restarts:          restarts,
-			Phase:             pod.Status.Phase,
-			PodIPs:            ips, // TODO, when to use host ip??
-			HostIP:            pod.Status.HostIP,
-			IsTerminating:     pod.DeletionTimestamp != nil,
-			CreationTimestamp: pod.CreationTimestamp.UnixNano() / int64(time.Millisecond),
-			StartTimestamp:    startTimestamp,
-			Containers:        containers,
-			Metrics:           componentMetrics.Pods[pod.Name],
-			Warnings:          warnings,
-		})
+	for _, x := range pod.Status.PodIPs {
+		ips = append(ips, x.IP)
 	}
 
-	return res
+	var startTimestamp int64
+
+	if pod.Status.StartTime != nil {
+		startTimestamp = pod.Status.StartTime.UnixNano() / int64(time.Millisecond)
+	}
+
+	statusText := string(pod.Status.Phase)
+	restarts := 0
+	initializing := false
+	//readyContainers := 0
+
+	for i := range pod.Status.InitContainerStatuses {
+		container := pod.Status.InitContainerStatuses[i]
+		restarts += int(container.RestartCount)
+		switch {
+		case container.State.Terminated != nil && container.State.Terminated.ExitCode == 0:
+			continue
+		case container.State.Terminated != nil:
+			// initialization is failed
+			if len(container.State.Terminated.Reason) == 0 {
+				if container.State.Terminated.Signal != 0 {
+					statusText = fmt.Sprintf("Init terminated: Signal:%d", container.State.Terminated.Signal)
+				} else {
+					statusText = fmt.Sprintf("Init terminated: ExitCode:%d", container.State.Terminated.ExitCode)
+				}
+			} else {
+				statusText = "Init terminated: " + container.State.Terminated.Reason
+			}
+			initializing = true
+		case container.State.Waiting != nil && len(container.State.Waiting.Reason) > 0 && container.State.Waiting.Reason != "PodInitializing":
+			statusText = "Init waiting: " + container.State.Waiting.Reason
+			initializing = true
+		default:
+			statusText = fmt.Sprintf("Init: %d/%d", i, len(pod.Spec.InitContainers))
+			initializing = true
+		}
+		break
+	}
+
+	containers := []ContainerStatus{}
+
+	if !initializing {
+		restarts = 0
+		for i := len(pod.Status.ContainerStatuses) - 1; i >= 0; i-- {
+			container := pod.Status.ContainerStatuses[i]
+
+			restarts += int(container.RestartCount)
+			if container.State.Waiting != nil && container.State.Waiting.Reason != "" {
+				statusText = fmt.Sprintf("Waiting: %s", container.State.Waiting.Reason)
+			} else if container.State.Terminated != nil && container.State.Terminated.Reason != "" {
+				statusText = fmt.Sprintf("Terminated: %s", container.State.Terminated.Reason)
+			} else if container.State.Terminated != nil && container.State.Terminated.Reason == "" {
+				if container.State.Terminated.Signal != 0 {
+					statusText = fmt.Sprintf("Terminated: Signal:%d", container.State.Terminated.Signal)
+				} else {
+					statusText = fmt.Sprintf("Terminated: ExitCode:%d", container.State.Terminated.ExitCode)
+				}
+			} else if container.Ready && container.State.Running != nil {
+				//readyContainers++
+			}
+
+			containers = append(containers, ContainerStatus{
+				Name:         container.Name,
+				RestartCount: container.RestartCount,
+				Ready:        container.Ready,
+				Started:      container.Started != nil && *container.Started == true,
+			})
+		}
+	}
+
+	warnings := []coreV1.Event{}
+
+	if !IsReadyOrSucceeded(pod) {
+		warnings = filterPodWarningEvents(events, []coreV1.Pod{pod})
+	}
+
+	return &PodStatus{
+		Name:              pod.Name,
+		Node:              pod.Spec.NodeName,
+		Status:            getPodStatusPhase(pod, warnings),
+		StatusText:        statusText,
+		Restarts:          restarts,
+		Phase:             pod.Status.Phase,
+		PodIPs:            ips, // TODO, when to use host ip??
+		HostIP:            pod.Status.HostIP,
+		IsTerminating:     pod.DeletionTimestamp != nil,
+		CreationTimestamp: pod.CreationTimestamp.UnixNano() / int64(time.Millisecond),
+		StartTimestamp:    startTimestamp,
+		Containers:        containers,
+		Warnings:          warnings,
+	}
 }
 
 func findPods(list *coreV1.PodList, componentName string) []coreV1.Pod {
