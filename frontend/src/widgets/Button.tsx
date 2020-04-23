@@ -1,5 +1,5 @@
 import React from "react";
-import { withStyles, createStyles, Button, Theme, ButtonProps, CircularProgress } from "@material-ui/core";
+import { withStyles, createStyles, Button, Theme, ButtonProps, CircularProgress, Box } from "@material-ui/core";
 
 export const CustomizedButton = withStyles((theme: Theme) =>
   createStyles({
@@ -30,3 +30,13 @@ export const CustomizedButton = withStyles((theme: Theme) =>
     );
   }
 );
+
+export const ButtonWhite = (props: ButtonProps) => {
+  return (
+    <Box boxShadow={3} m={0} p={0} style={{ width: "fit-content", borderRadius: 5 }}>
+      <Button size="small" style={{ paddingLeft: 20, paddingRight: 20 }} color="primary">
+        {props.children}
+      </Button>
+    </Box>
+  );
+};

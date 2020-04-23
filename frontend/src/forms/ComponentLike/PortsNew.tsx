@@ -1,4 +1,4 @@
-import { Grid, MenuItem, Button, Box } from "@material-ui/core";
+import { Grid, MenuItem } from "@material-ui/core";
 import Immutable from "immutable";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
@@ -11,6 +11,7 @@ import { CustomTextField, RenderSelectField } from "../Basic";
 import { ValidatorRequired } from "../validator";
 import DeleteIcon from "@material-ui/icons/Delete";
 import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
+import { ButtonWhite } from "../../widgets/Button";
 
 interface FieldArrayComponentHackType {
   name: any;
@@ -76,15 +77,7 @@ class RenderPorts extends React.PureComponent<Props> {
         ))}
         <Grid container spacing={3}>
           <Grid item xs>
-            <Box boxShadow={3} m={0} p={0} style={{ width: "fit-content", borderRadius: 5 }}>
-              <Button
-                size="small"
-                style={{ paddingLeft: 20, paddingRight: 20 }}
-                color="primary"
-                onClick={() => fields.push(Immutable.Map({}))}>
-                Add Port
-              </Button>
-            </Box>
+            <ButtonWhite onClick={() => fields.push(Immutable.Map({}))}>Add Port</ButtonWhite>
             {submitFailed && error && <span>{error}</span>}
           </Grid>
         </Grid>
