@@ -12,6 +12,7 @@ import { ValidatorRequired } from "../validator";
 import DeleteIcon from "@material-ui/icons/Delete";
 import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
 import { ButtonWhite } from "../../widgets/Button";
+import { FieldArrayWrapper } from "../Basic/FieldArrayWrapper";
 
 interface FieldArrayComponentHackType {
   name: any;
@@ -23,65 +24,37 @@ interface FieldArrayProps extends DispatchProp {}
 interface Props extends WrappedFieldArrayProps<ComponentLikePort>, FieldArrayComponentHackType, FieldArrayProps {}
 
 class RenderPorts extends React.PureComponent<Props> {
-  public render() {
-    const {
-      fields,
-      meta: { error, submitFailed }
-    } = this.props;
+  public getFieldComponents(member: string) {
+    return [
+      <CustomTextField name={`${member}.name`} label="Name" margin validate={[ValidatorRequired]} />,
+      <Field name={`${member}.protocol`} component={RenderSelectField} label="Protocol" validate={[ValidatorRequired]}>
+        <MenuItem value={portTypeUDP}>{portTypeUDP}</MenuItem>
+        <MenuItem value={portTypeTCP}>{portTypeTCP}</MenuItem>
+      </Field>,
+      <CustomTextField
+        name={`${member}.containerPort`}
+        label="ContainerPort"
+        margin
+        validate={[ValidatorRequired]}
+        normalize={NormalizePort}
+      />,
+      <CustomTextField
+        name={`${member}.servicePort`}
+        label="ServicePort"
+        margin
+        validate={[ValidatorRequired]}
+        normalize={NormalizePort}
+      />
+    ];
+  }
 
+  public render() {
     return (
-      <div>
-        {fields.map((member, index) => (
-          <Grid container spacing={3}>
-            <Grid item xs>
-              <CustomTextField name={`${member}.name`} label="Name" margin validate={[ValidatorRequired]} />
-            </Grid>
-            <Grid item xs>
-              <Field
-                name={`${member}.protocol`}
-                component={RenderSelectField}
-                label="Protocol"
-                validate={[ValidatorRequired]}>
-                <MenuItem value={portTypeUDP}>{portTypeUDP}</MenuItem>
-                <MenuItem value={portTypeTCP}>{portTypeTCP}</MenuItem>
-              </Field>
-            </Grid>
-            <Grid item xs>
-              <CustomTextField
-                name={`${member}.containerPort`}
-                label="ContainerPort"
-                margin
-                validate={[ValidatorRequired]}
-                normalize={NormalizePort}
-              />
-            </Grid>
-            <Grid item xs>
-              <CustomTextField
-                name={`${member}.servicePort`}
-                label="ServicePort"
-                margin
-                validate={[ValidatorRequired]}
-                normalize={NormalizePort}
-              />
-            </Grid>
-            <Grid item xs style={{ paddingTop: 22 }}>
-              <IconButtonWithTooltip
-                tooltipPlacement="top"
-                tooltipTitle="Delete"
-                aria-label="delete"
-                onClick={() => fields.remove(index)}>
-                <DeleteIcon />
-              </IconButtonWithTooltip>
-            </Grid>
-          </Grid>
-        ))}
-        <Grid container spacing={3}>
-          <Grid item xs>
-            <ButtonWhite onClick={() => fields.push(Immutable.Map({}))}>Add Port</ButtonWhite>
-            {submitFailed && error && <span>{error}</span>}
-          </Grid>
-        </Grid>
-      </div>
+      <FieldArrayWrapper
+        getFieldComponents={(member: string) => this.getFieldComponents(member)}
+        // onAdd={() => this.props.fields.push(Immutable.Map({}))}
+        {...this.props}
+      />
     );
   }
 }
