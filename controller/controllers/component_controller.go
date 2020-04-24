@@ -441,6 +441,13 @@ func (r *ComponentReconcilerTask) ReconcileDaemonSet(podTemplateSpec *coreV1.Pod
 	daemonSet := r.daemonSet
 	isNewDs := false
 
+	if !r.application.Spec.IsActive {
+		if r.daemonSet != nil {
+			return r.Delete(r.ctx, r.daemonSet)
+		}
+		return nil
+	}
+
 	if daemonSet == nil {
 		isNewDs = true
 
@@ -569,6 +576,13 @@ func (r *ComponentReconcilerTask) ReconcileStatefulSet(spec *coreV1.PodTemplateS
 	labelMap := r.GetLabels()
 
 	sts := r.statefulSet
+
+	if !r.application.Spec.IsActive {
+		if r.statefulSet != nil {
+			return r.Delete(r.ctx, r.statefulSet)
+		}
+		return nil
+	}
 
 	isNewSts := false
 	if sts == nil {
