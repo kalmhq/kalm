@@ -22,6 +22,7 @@ import { Route, Switch } from "react-router";
 import { RequireNotAuthorizated, RequireAuthorizated } from "permission/Authorization";
 import { RequireAdmin } from "permission/Role";
 import { RequireNamespaceReader, RequireNamespaceWriter } from "permission/Namespace";
+import { UIComponentsPage } from "pages/UIComponents";
 
 const RequireAuthorizatedDashboard = RequireAuthorizated(Dashboard);
 
@@ -54,6 +55,7 @@ export const KappRoutes = (
           <Route exact path="/applications/:applicationName/logs" component={RequireNamespaceReader(Log)} />
           <Route exact path="/applications/:applicationName/shells" component={RequireNamespaceWriter(Log)} />
           <Route exact path="/configs" component={RequireNamespaceReader(ConfigListPage)}></Route>
+          <Route exact path="/ui-components" component={UIComponentsPage}></Route>
           <Route component={NoMatch} />
         </Switch>
       </RequireAuthorizatedDashboard>

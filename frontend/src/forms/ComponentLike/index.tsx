@@ -1,6 +1,5 @@
 import { Box, Divider, Grid, List as MList, ListItem, ListItemText, MenuItem, Paper } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
-import grey from "@material-ui/core/colors/grey";
 import clsx from "clsx";
 import Typography from "@material-ui/core/Typography";
 import React from "react";
@@ -30,10 +29,9 @@ import { loadNodesAction } from "../../actions/node";
 import { TDispatchProp } from "../../types";
 import { CustomLabels, AffinityType } from "./NodeSelector";
 import { getNodeLabels } from "../../selectors/node";
-import { red } from "@material-ui/core/colors";
 import { extractSummaryInfoFromMap, extractSummaryInfoFromList } from "forms/summarizer";
 import { loadConfigsAction } from "../../actions/config";
-import { SectionTitle } from "widgets/SectionTitle";
+import { SectionTitle } from "widgets/Label";
 import { Configs } from "./Configs";
 
 const mapStateToProps = (state: RootState) => {
@@ -72,7 +70,7 @@ const styles = (theme: Theme) =>
       display: "block"
     },
     summaryError: {
-      color: red[700]
+      color: theme.palette.error.main
     },
     summaryBold: {
       fontWeight: "bold"
@@ -92,17 +90,17 @@ const styles = (theme: Theme) =>
     summaryKey: {
       fontSize: 14,
       fontWeight: 400,
-      color: grey[700]
+      color: theme.palette.text.secondary
     },
     summaryValue: {
       padding: "0px  10px",
       fontSize: 14,
       fontWeight: 200,
-      color: grey[700]
+      color: theme.palette.text.secondary
     },
     summaryChanged: {
       fontWeight: 500,
-      color: grey[800]
+      color: theme.palette.text.primary
     },
     summaryItem: {
       display: "flex"

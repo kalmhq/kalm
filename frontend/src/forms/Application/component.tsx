@@ -16,7 +16,7 @@ import { ComponentLikeForm } from "../ComponentLike";
 import { CustomizedDialog } from "./ComponentModal";
 import { KappTooltip } from "./KappTooltip";
 import { TableTitle } from "widgets/TableTitle";
-import { grey, red } from "@material-ui/core/colors";
+import { grey } from "@material-ui/core/colors";
 import ErrorIcon from "@material-ui/icons/Error";
 
 const mapStateToProps = (state: RootState) => {
@@ -49,7 +49,7 @@ const styles = (theme: Theme) =>
       borderRadius: 3
     },
     rowError: {
-      color: red[700],
+      color: theme.palette.error.main,
       display: "flex",
       alignItems: "center"
     },

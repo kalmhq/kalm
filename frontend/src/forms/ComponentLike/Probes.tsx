@@ -8,7 +8,7 @@ import { HttpHeaders, HttpHeader } from "../../types/componentTemplate";
 import { CustomTextField, RenderSelectField } from "../Basic";
 import { ValidatorRequired, ValidatorHttpHeaders, ValidatorNumberOrAlphabet } from "../validator";
 import { NormalizeNumber, NormalizeNumberOrAlphabet } from "forms/normalizer";
-import { SectionTitle } from "widgets/SectionTitle";
+import { SectionTitle } from "widgets/Label";
 
 interface FieldComponentHackType {
   name: any;
