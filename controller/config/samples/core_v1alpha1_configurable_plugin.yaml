@@ -4,9 +4,16 @@ metadata:
   name: kapp-test
 ---
 apiVersion: core.kapp.dev/v1alpha1
+kind: Application
+metadata:
+  name: kapp-test
+spec:
+  isActive: false
+---
+apiVersion: core.kapp.dev/v1alpha1
 kind: Plugin
 metadata:
-  name: kapp-configurable-probes
+  name: configurable-probes
 spec:
   src: |
     function addProbesForContainer(container) {
@@ -267,36 +274,42 @@ spec:
         type: object
   availableWorkloadType:
     - server
+
 ---
 apiVersion: core.kapp.dev/v1alpha1
-kind: Application
+kind: Component
 metadata:
-  name: test-configurable-plugin-sample-application
+  name: test
   namespace: kapp-test
 spec:
-  components:
-    - image: nginx:alpine
-      name: nginx-double
-      workloadType: server
-      pluginsNew:
-        - name: kapp-configurable-probes
-          config:
-            readinessProbe:
-              httpGet:
-                path: /
-                port: 80
-              initialDelaySeconds: 5
-              timeoutSeconds: 20
-              periodSeconds: 5
-              successThreshold: 1
-              failureThreshold: 3
-            livenessProbe:
-              httpGet:
-                path: /
-                port: 80
-              initialDelaySeconds: 50
-              timeoutSeconds: 20
-              periodSeconds: 5
-              successThreshold: 1
-              failureThreshold: 3
-  isActive: true
+  image: nginx:alpine
+  workloadType: server
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: PluginBinding
+metadata:
+  name: test-configurable-probes
+  namespace: kapp-test
+spec:
+  pluginName: configurable-probes
+  componentName: test
+  scope: component
+  config:
+    readinessProbe:
+      httpGet:
+        path: /
+        port: 80
+      initialDelaySeconds: 5
+      timeoutSeconds: 20
+      periodSeconds: 5
+      successThreshold: 1
+      failureThreshold: 3
+    livenessProbe:
+      httpGet:
+        path: /
+        port: 80
+      initialDelaySeconds: 50
+      timeoutSeconds: 20
+      periodSeconds: 5
+      successThreshold: 1
+      failureThreshold: 3
