@@ -258,8 +258,8 @@ func formatApplicationComponents(components []Component) {
 			components[i].RestartStrategy = appsV1.RollingUpdateDeploymentStrategyType
 		}
 
-		if components[i].WorkLoadType == "" {
-			components[i].WorkLoadType = v1alpha1.WorkloadTypeServer
+		if components[i].WorkloadType == "" {
+			components[i].WorkloadType = v1alpha1.WorkloadTypeServer
 		}
 	}
 }
@@ -289,7 +289,7 @@ func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Ap
 	for i := range resources.Components {
 		component := resources.Components[i]
 
-		workLoadType := component.Spec.WorkLoadType
+		workLoadType := component.Spec.WorkloadType
 
 		// TODO remote default value
 		if workLoadType == "" {
@@ -320,7 +320,7 @@ func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Ap
 		}
 
 		// TODO fix the default value, there should be a empty string
-		if component.Spec.WorkLoadType == v1alpha1.WorkloadTypeServer || component.Spec.WorkLoadType == "" {
+		if component.Spec.WorkloadType == v1alpha1.WorkloadTypeServer || component.Spec.WorkloadType == "" {
 
 			//deploymentName := fmt.Sprintf("%s-%s", application.Name, component.Name)
 			//deployment := findDeploymentByName(resources.DeploymentList, deploymentName)
