@@ -309,7 +309,32 @@ func (r *ComponentReconcilerTask) ReconcileWorkload() (err error) {
 		return err
 	}
 
+	if !r.application.Spec.IsActive {
+		if r.deployment != nil {
+			if err := r.Delete(r.ctx, r.deployment); err != nil {
+				return err
+			}
+		}
+		if r.cronJob != nil {
+			if err := r.Delete(r.ctx, r.cronJob); err != nil {
+				return err
+			}
+		}
+		if r.daemonSet != nil {
+			if err := r.Delete(r.ctx, r.daemonSet); err != nil {
+				return err
+			}
+		}
+		if r.statefulSet != nil {
+			if err := r.Delete(r.ctx, r.statefulSet); err != nil {
+				return err
+			}
+		}
+		return r.removePluginUsers()
+	}
+
 	template, err := r.GetPodTemplate()
+
 	if err != nil {
 		return err
 	}
@@ -336,13 +361,6 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 	deployment := r.deployment
 	isNewDeployment := false
 	labelMap := r.GetLabels()
-
-	if !r.application.Spec.IsActive {
-		if deployment != nil {
-			return r.Delete(ctx, deployment)
-		}
-		return nil
-	}
 
 	if deployment == nil {
 		isNewDeployment = true
@@ -493,13 +511,6 @@ func (r *ComponentReconcilerTask) ReconcileCronJob(podTemplateSpec *coreV1.PodTe
 	cj := r.cronJob
 	component := r.component
 	labelMap := r.GetLabels()
-
-	if !r.application.Spec.IsActive {
-		if r.cronJob != nil {
-			return r.Delete(ctx, r.cronJob)
-		}
-		return nil
-	}
 
 	// restartPolicy
 	if podTemplateSpec.Spec.RestartPolicy == coreV1.RestartPolicyAlways ||
@@ -969,7 +980,7 @@ func (r *ComponentReconcilerTask) runComponentPlugins(methodName string, compone
 		)
 
 		if err == nil {
-			r.savePluginUsing(pluginProgram)
+			r.savePluginUser(pluginProgram)
 		}
 	}
 
@@ -1022,18 +1033,18 @@ func (r *ComponentReconcilerTask) runApplicationPlugins(methodName string, compo
 		)
 
 		if err == nil {
-			r.savePluginUsing(pluginProgram)
+			r.savePluginUser(pluginProgram)
 		}
 	}
 
 	return nil
 }
 
-func (r *ComponentReconcilerTask) savePluginUsing(pluginProgram *PluginProgram) (err error) {
-	usingName := types.NamespacedName{
-		Name:      r.component.Name,
-		Namespace: r.component.Namespace,
-	}.String()
+func (r *ComponentReconcilerTask) savePluginUser(pluginProgram *PluginProgram) (err error) {
+	newPluginUser := corev1alpha1.PluginUser{
+		ApplicationName: r.application.Name,
+		ComponentName:   r.component.Name,
+	}
 
 	var plugin corev1alpha1.Plugin
 	// TODO cache the plugin
@@ -1044,32 +1055,46 @@ func (r *ComponentReconcilerTask) savePluginUsing(pluginProgram *PluginProgram) 
 		return err
 	}
 
-	for _, name := range plugin.Status.UsingByApplications {
-		if name == usingName {
+	for _, pluginUser := range plugin.Status.Users {
+		if pluginUser.ApplicationName == newPluginUser.ApplicationName && pluginUser.ComponentName == newPluginUser.ComponentName {
 			return nil
 		}
 	}
 
 	patchPlugin := plugin.DeepCopy()
-	patchPlugin.Status.UsingByApplications = append(plugin.Status.UsingByApplications, usingName)
+	patchPlugin.Status.Users = append(plugin.Status.Users, newPluginUser)
 
 	return r.Status().Patch(r.ctx, patchPlugin, client.MergeFrom(&plugin))
 }
 
-func (r *ComponentReconcilerTask) removePluginUsings() (err error) {
-	//for _, plugin := range r.application.Spec.PluginsNew {
-	//	r.removePluginUsing(plugin)
-	//}
-	//
-	//for _, component := range r.application.Spec.Components {
-	//	for _, plugin := range component.PluginsNew {
-	//		r.removePluginUsing(plugin)
-	//	}
-	//}
+func (r *ComponentReconcilerTask) removePluginUsers() (err error) {
+	pluginsMap := make(map[string]*runtime.RawExtension)
+	tmp := struct {
+		Name string `json:"name"`
+	}{}
+
+	for _, plugin := range r.application.Spec.PluginsNew {
+		_ = json.Unmarshal(plugin.Raw, &tmp)
+		if pluginsMap[tmp.Name] == nil {
+			pluginsMap[tmp.Name] = &plugin
+		}
+	}
+
+	for _, plugin := range r.component.Spec.PluginsNew {
+		_ = json.Unmarshal(plugin.Raw, &tmp)
+		if pluginsMap[tmp.Name] == nil {
+			pluginsMap[tmp.Name] = &plugin
+		}
+	}
+
+	for _, plugin := range pluginsMap {
+		_ = r.removePluginUser(*plugin)
+	}
+
 	return nil
 }
 
-func (r *ComponentReconcilerTask) removePluginUsing(plugin runtime.RawExtension) (err error) {
+func (r *ComponentReconcilerTask) removePluginUser(plugin runtime.RawExtension) (err error) {
 	var tmp struct {
 		Name string `json:"name"`
 	}
@@ -1082,11 +1107,6 @@ func (r *ComponentReconcilerTask) removePluginUsing(plugin runtime.RawExtension)
 		return nil
 	}
 
-	usingName := types.NamespacedName{
-		Name:      r.application.Name,
-		Namespace: r.application.Namespace,
-	}.String()
-
 	var pluginCRD corev1alpha1.Plugin
 	// TODO cache the plugin
 	err = r.Reader.Get(r.ctx, types.NamespacedName{Name: pluginProgram.Name}, &pluginCRD)
@@ -1097,8 +1117,8 @@ func (r *ComponentReconcilerTask) removePluginUsing(plugin runtime.RawExtension)
 	}
 
 	index := -1
-	for i, name := range pluginCRD.Status.UsingByApplications {
-		if name == usingName {
+	for i, pluginUser := range pluginCRD.Status.Users {
+		if pluginUser.ComponentName == r.component.Name && pluginUser.ApplicationName == r.application.Name {
 			index = i
 			break
 		}
@@ -1109,7 +1129,7 @@ func (r *ComponentReconcilerTask) removePluginUsing(plugin runtime.RawExtension)
 	}
 
 	patchPlugin := pluginCRD.DeepCopy()
-	patchPlugin.Status.UsingByApplications = append(patchPlugin.Status.UsingByApplications[:index], patchPlugin.Status.UsingByApplications[index+1:]...)
+	patchPlugin.Status.Users = append(patchPlugin.Status.Users[:index], patchPlugin.Status.Users[index+1:]...)
 
 	return r.Status().Patch(r.ctx, patchPlugin, client.MergeFrom(&pluginCRD))
 }

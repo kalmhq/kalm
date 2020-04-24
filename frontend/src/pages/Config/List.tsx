@@ -29,7 +29,7 @@ import { FileTree } from "widgets/FileTree";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { BasePage } from "../BasePage";
 import { withNamespace, withNamespaceProps } from "permission/Namespace";
-import { grey } from "@material-ui/core/colors";
+import { NormalInfoPaper } from "widgets/Paper";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -74,8 +74,8 @@ const styles = (theme: Theme) =>
     fileTreeAction: {
       display: "flex",
       justifyContent: "flex-end",
-      backgroundColor: grey[100],
-      borderRadius: "4px"
+      borderRadius: "4px",
+      padding: 0
     }
   });
 
@@ -244,7 +244,7 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
     const { classes } = this.props;
 
     return (
-      <div className={classes.fileTreeAction}>
+      <NormalInfoPaper elevation={0} className={classes.fileTreeAction}>
         <IconButtonWithTooltip
           tooltipPlacement="top"
           tooltipTitle="Add file"
@@ -268,7 +268,7 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
           onClick={() => this.handleUpload()}>
           <PublishIcon />
         </IconButtonWithTooltip>
-      </div>
+      </NormalInfoPaper>
     );
   }
   public renderActions() {

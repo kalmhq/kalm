@@ -6,7 +6,6 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/kapp-staging/kapp/api/auth"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	authorizationV1 "k8s.io/api/authorization/v1"
 	"k8s.io/client-go/kubernetes"
 )
@@ -70,7 +69,7 @@ func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
 	entity := tryToParseEntityFromToken(auth.ExtractTokenFromHeader(c.Request().Header.Get(echo.HeaderAuthorization)))
 	res.IsAdmin = review.Status.Allowed
 	res.Entity = entity
-	res.CSRF = c.Get(middleware.DefaultCSRFConfig.ContextKey).(string)
+	//res.CSRF = c.Get(middleware.DefaultCSRFConfig.ContextKey).(string)
 
 	return c.JSON(http.StatusOK, res)
 }
