@@ -37,13 +37,13 @@ func (r *DependencyReconciler) reconcileKong(ctx context.Context, dep *corev1alp
 		return err
 	}
 
-	r.Log.Info("kong-ingress-controller install status",
+	r.Log.Info("dep kong install status",
 		"status", status)
 
 	switch status {
 	case NotInstalled:
 		// try installing kong first
-		if err := r.reconcileExternalController(ctx, "kong_1.0.0.yaml"); err != nil {
+		if err := r.reconcileExternalController(ctx, dep, "kong_1.0.0.yaml"); err != nil {
 			return err
 		}
 

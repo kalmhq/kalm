@@ -34,7 +34,7 @@ func (r *DependencyReconciler) reconcileCertManager(ctx context.Context, dep *co
 		//}
 
 		// try installing first
-		if err := r.reconcileExternalController(ctx, "cert-manager-1.0.0.yaml"); err != nil {
+		if err := r.reconcileExternalController(ctx, nil, "cert-manager-1.0.0.yaml"); err != nil {
 			return err
 		}
 
