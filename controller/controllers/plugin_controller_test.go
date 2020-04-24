@@ -42,7 +42,11 @@ func generateEmptyPlugin() *v1alpha1.Plugin {
 			Name: name,
 		},
 		Spec: v1alpha1.PluginSpec{
-			Src:                   "",
+			Src: `
+function BeforeDeploymentSave(deployment) {
+	console.log("test");
+    return deployment;
+}`,
 			AvailableWorkloadType: []v1alpha1.WorkloadType{},
 		},
 	}
@@ -63,30 +67,10 @@ func (suite *PluginControllerSuite) reloadPlugin(plugin *v1alpha1.Plugin) {
 	suite.Nil(suite.K8sClient.Get(context.Background(), getPluginNamespacedName(plugin), plugin))
 }
 
-func (suite *PluginControllerSuite) createPlugin(plugin *v1alpha1.Plugin) {
-	suite.Nil(suite.K8sClient.Create(context.Background(), plugin))
-
-	// after the finalizer is set, the plugin won't auto change
-	suite.Eventually(func() bool {
-		err := suite.K8sClient.Get(context.Background(), getPluginNamespacedName(plugin), plugin)
-
-		if err != nil {
-			return false
-		}
-
-		for i := range plugin.Finalizers {
-			if plugin.Finalizers[i] == finalizerName {
-				return true
-			}
-		}
-
-		return false
-	})
-}
-
 func (suite *PluginControllerSuite) TestPluginBasicCRUD() {
 	// Create
 	plugin := generateEmptyPlugin()
+	plugin.Spec.Src = ""
 	suite.createPlugin(plugin)
 
 	// Get

@@ -69,6 +69,8 @@ type ComponentReconcilerTask struct {
 
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=components,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=components/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=core.kapp.dev,resources=pluginbindings,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core.kapp.dev,resources=pluginbindings/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=extensions,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=extensions,resources=deployments/status,verbs=get
 // +kubebuilder:rbac:groups=batch,resources=cronjobs,verbs=get;list;watch;create;update;patch;delete
@@ -330,7 +332,7 @@ func (r *ComponentReconcilerTask) ReconcileWorkload() (err error) {
 				return err
 			}
 		}
-		return r.removePluginUsers()
+
 	}
 
 	template, err := r.GetPodTemplate()
@@ -383,13 +385,11 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 		deployment.Spec.Template = *podTemplateSpec
 	}
 
-	// replicas
 	// TODO consider to move to plugin
-	if component.Spec.Replicas == nil {
-		defaultComponentReplicas := int32(1)
-		deployment.Spec.Replicas = &defaultComponentReplicas
-	} else {
+	if component.Spec.Replicas != nil {
 		deployment.Spec.Replicas = component.Spec.Replicas
+	} else {
+		deployment.Spec.Replicas = nil
 	}
 
 	//if len(component.Ports) > 0 {
@@ -404,14 +404,14 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 	//}
 
 	// apply plugins
-	for _, pluginDef := range component.Spec.Plugins {
-		plugin := corev1alpha1.GetPlugin(pluginDef)
-
-		switch p := plugin.(type) {
-		case *corev1alpha1.PluginManualScaler:
-			p.Operate(deployment)
-		}
-	}
+	//for _, pluginDef := range component.Spec.Plugins {
+	//	plugin := corev1alpha1.GetPlugin(pluginDef)
+	//
+	//	switch p := plugin.(type) {
+	//	case *corev1alpha1.PluginManualScaler:
+	//		p.Operate(deployment)
+	//	}
+	//}
 
 	if err := ctrl.SetControllerReference(component, deployment, r.Scheme); err != nil {
 		log.Error(err, "unable to set owner for deployment")
@@ -906,18 +906,11 @@ func (r *ComponentReconcilerTask) runPlugins(methodName string, component *corev
 	return nil
 }
 
-func findPluginAndValidateConfigNew(plugin runtime.RawExtension, methodName string, component *corev1alpha1.Component) (*PluginProgram, []byte, error) {
-	var tmp struct {
-		Name   string          `json:"name"`
-		Config json.RawMessage `json:"config"`
-	}
-
-	_ = json.Unmarshal(plugin.Raw, &tmp)
-
-	pluginProgram := pluginsCache.Get(tmp.Name)
+func findPluginAndValidateConfigNew(pluginBinding *corev1alpha1.PluginBinding, methodName string, component *corev1alpha1.Component) (*PluginProgram, []byte, error) {
+	pluginProgram := pluginsCache.Get(pluginBinding.Spec.PluginName)
 
 	if pluginProgram == nil {
-		return nil, nil, fmt.Errorf("Can't find plugin %s in cache.", tmp.Name)
+		return nil, nil, fmt.Errorf("Can't find plugin %s in cache.", pluginBinding.Spec.PluginName)
 	}
 
 	if !pluginProgram.Methods[methodName] {
@@ -936,11 +929,11 @@ func findPluginAndValidateConfigNew(plugin runtime.RawExtension, methodName stri
 	}
 
 	if pluginProgram.ConfigSchema != nil {
-		if tmp.Config == nil {
-			return nil, nil, fmt.Errorf("Plugin %s require configuration.", tmp.Name)
+		if pluginBinding.Spec.Config == nil {
+			return nil, nil, fmt.Errorf("Plugin %s require configuration.", pluginBinding.Spec.PluginName)
 		}
 
-		pluginConfig := gojsonschema.NewStringLoader(string(tmp.Config))
+		pluginConfig := gojsonschema.NewStringLoader(string(pluginBinding.Spec.Config.Raw))
 		res, err := pluginProgram.ConfigSchema.Validate(pluginConfig)
 
 		if err != nil {
@@ -950,14 +943,29 @@ func findPluginAndValidateConfigNew(plugin runtime.RawExtension, methodName stri
 		if !res.Valid() {
 			return nil, nil, fmt.Errorf(res.Errors()[0].String())
 		}
+
+		return pluginProgram, pluginBinding.Spec.Config.Raw, nil
 	}
 
-	return pluginProgram, tmp.Config, nil
+	return pluginProgram, nil, nil
 }
 
 func (r *ComponentReconcilerTask) runComponentPlugins(methodName string, component *corev1alpha1.Component, desc interface{}, args ...interface{}) error {
-	for _, plugin := range component.Spec.PluginsNew {
-		pluginProgram, config, err := findPluginAndValidateConfigNew(plugin, methodName, component)
+	var bindings corev1alpha1.PluginBindingList
+	if err := r.Reader.List(r.ctx, &bindings, client.MatchingLabels{
+		"scope":          "component",
+		"kapp-component": r.component.Name,
+	}, client.InNamespace(r.component.Namespace)); err != nil {
+		r.Log.Error(err, "get component scope plugin bindings error")
+		return err
+	}
+
+	for _, binding := range bindings.Items {
+		if binding.DeletionTimestamp != nil {
+			continue
+		}
+
+		pluginProgram, config, err := findPluginAndValidateConfigNew(&binding, methodName, component)
 
 		if err != nil {
 			return err
@@ -988,8 +996,20 @@ func (r *ComponentReconcilerTask) runComponentPlugins(methodName string, compone
 }
 
 func (r *ComponentReconcilerTask) runApplicationPlugins(methodName string, component *corev1alpha1.Component, desc interface{}, args ...interface{}) error {
-	for _, plugin := range r.application.Spec.PluginsNew {
-		pluginProgram, config, err := findPluginAndValidateConfigNew(plugin, methodName, component)
+	var bindings corev1alpha1.PluginBindingList
+	if err := r.Reader.List(r.ctx, &bindings, client.MatchingLabels{
+		"scope": "application",
+	}, client.InNamespace(r.component.Namespace)); err != nil {
+		r.Log.Error(err, "get application scope plugin bindings error")
+		return err
+	}
+
+	for _, binding := range bindings.Items {
+		if binding.DeletionTimestamp != nil {
+			continue
+		}
+
+		pluginProgram, config, err := findPluginAndValidateConfigNew(&binding, methodName, component)
 
 		if err != nil {
 			return err
@@ -1065,73 +1085,6 @@ func (r *ComponentReconcilerTask) savePluginUser(pluginProgram *PluginProgram) (
 	patchPlugin.Status.Users = append(plugin.Status.Users, newPluginUser)
 
 	return r.Status().Patch(r.ctx, patchPlugin, client.MergeFrom(&plugin))
-}
-
-func (r *ComponentReconcilerTask) removePluginUsers() (err error) {
-	pluginsMap := make(map[string]*runtime.RawExtension)
-	tmp := struct {
-		Name string `json:"name"`
-	}{}
-
-	for _, plugin := range r.application.Spec.PluginsNew {
-		_ = json.Unmarshal(plugin.Raw, &tmp)
-		if pluginsMap[tmp.Name] == nil {
-			pluginsMap[tmp.Name] = &plugin
-		}
-	}
-
-	for _, plugin := range r.component.Spec.PluginsNew {
-		_ = json.Unmarshal(plugin.Raw, &tmp)
-		if pluginsMap[tmp.Name] == nil {
-			pluginsMap[tmp.Name] = &plugin
-		}
-	}
-
-	for _, plugin := range pluginsMap {
-		_ = r.removePluginUser(*plugin)
-	}
-
-	return nil
-}
-
-func (r *ComponentReconcilerTask) removePluginUser(plugin runtime.RawExtension) (err error) {
-	var tmp struct {
-		Name string `json:"name"`
-	}
-
-	_ = json.Unmarshal(plugin.Raw, &tmp)
-
-	pluginProgram := pluginsCache.Get(tmp.Name)
-
-	if pluginProgram == nil {
-		return nil
-	}
-
-	var pluginCRD corev1alpha1.Plugin
-	// TODO cache the plugin
-	err = r.Reader.Get(r.ctx, types.NamespacedName{Name: pluginProgram.Name}, &pluginCRD)
-
-	if err != nil {
-		r.Log.Error(err, "can't get plugin")
-		return err
-	}
-
-	index := -1
-	for i, pluginUser := range pluginCRD.Status.Users {
-		if pluginUser.ComponentName == r.component.Name && pluginUser.ApplicationName == r.application.Name {
-			index = i
-			break
-		}
-	}
-
-	if index < 0 {
-		return nil
-	}
-
-	patchPlugin := pluginCRD.DeepCopy()
-	patchPlugin.Status.Users = append(patchPlugin.Status.Users[:index], patchPlugin.Status.Users[index+1:]...)
-
-	return r.Status().Patch(r.ctx, patchPlugin, client.MergeFrom(&pluginCRD))
 }
 
 func (r *ComponentReconcilerTask) parseComponentConfigs(component *corev1alpha1.Component, volumes *[]coreV1.Volume, volumeMounts *[]coreV1.VolumeMount) {
@@ -1406,6 +1359,21 @@ func (r *ComponentReconcilerTask) DeleteResources() (err error) {
 	if r.statefulSet != nil {
 		if err := r.DeleteItem(r.statefulSet); err != nil {
 			return err
+		}
+	}
+
+	var bindingList corev1alpha1.PluginBindingList
+
+	if err := r.Reader.List(r.ctx, &bindingList, client.MatchingLabels{
+		"kapp-component": r.component.Name,
+	}); err != nil {
+		r.Log.Error(err, "get plugin binding list error.")
+		return err
+	}
+
+	for _, binding := range bindingList.Items {
+		if err := r.Delete(r.ctx, &binding); err != nil {
+			r.Log.Error(err, "Delete plugin binding error.")
 		}
 	}
 

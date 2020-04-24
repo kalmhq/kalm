@@ -3,10 +3,11 @@ package controllers
 import (
 	"context"
 	"fmt"
-	kappV1Alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
+	v1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
 	"github.com/onsi/ginkgo"
 	"github.com/stretchr/testify/suite"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"math/rand"
@@ -38,6 +39,47 @@ func (suite *BasicSuite) Eventually(condition func() bool, msgAndArgs ...interfa
 	return suite.Suite.Eventually(condition, waitFor, tick, msgAndArgs...)
 }
 
+func (suite *BasicSuite) createPlugin(plugin *v1alpha1.Plugin) {
+	suite.Nil(suite.K8sClient.Create(context.Background(), plugin))
+
+	// after the finalizer is set, the plugin won't auto change
+	suite.Eventually(func() bool {
+		err := suite.K8sClient.Get(context.Background(), getPluginNamespacedName(plugin), plugin)
+
+		if err != nil {
+			return false
+		}
+
+		for i := range plugin.Finalizers {
+			if plugin.Finalizers[i] == finalizerName {
+				return true
+			}
+		}
+
+		return false
+	})
+}
+
+func (suite *BasicSuite) createApplication(application *v1alpha1.Application) {
+	suite.Nil(suite.K8sClient.Create(context.Background(), application))
+
+	suite.Eventually(func() bool {
+		err := suite.K8sClient.Get(context.Background(), getApplicationNamespacedName(application), application)
+
+		if err != nil {
+			return false
+		}
+
+		for i := range application.Finalizers {
+			if application.Finalizers[i] == finalizerName {
+				return true
+			}
+		}
+
+		return false
+	}, "Created application has no finalizer.")
+}
+
 func (suite *BasicSuite) reloadObject(key client.ObjectKey, obj runtime.Object) {
 	suite.Nil(suite.K8sClient.Get(context.Background(), key, obj))
 }
@@ -48,6 +90,18 @@ func (suite *BasicSuite) updateObject(obj runtime.Object) {
 
 func (suite *BasicSuite) createObject(obj runtime.Object) {
 	suite.Nil(suite.K8sClient.Create(context.Background(), obj))
+}
+
+func (suite *BasicSuite) reloadComponent(component *v1alpha1.Component) {
+	suite.reloadObject(types.NamespacedName{Name: component.Name, Namespace: component.Namespace}, component)
+}
+
+func (suite *BasicSuite) updateComponent(component *v1alpha1.Component) {
+	suite.updateObject(component)
+}
+
+func (suite *BasicSuite) createComponent(component *v1alpha1.Component) {
+	suite.createObject(component)
 }
 
 func (suite *BasicSuite) SetupSuite() {
@@ -70,7 +124,7 @@ func (suite *BasicSuite) SetupSuite() {
 	err = scheme.AddToScheme(scheme.Scheme)
 	suite.Nil(err)
 
-	err = kappV1Alpha1.AddToScheme(scheme.Scheme)
+	err = v1alpha1.AddToScheme(scheme.Scheme)
 	suite.Nil(err)
 
 	// +kubebuilder:scaffold:scheme
@@ -110,6 +164,13 @@ func (suite *BasicSuite) SetupSuite() {
 		Reader: mgr.GetAPIReader(),
 	}).SetupWithManager(mgr)
 	suite.Nil(err)
+
+	suite.Nil((&PluginBindingReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("PluginBinding"),
+		Scheme: mgr.GetScheme(),
+		Reader: mgr.GetAPIReader(),
+	}).SetupWithManager(mgr))
 
 	mgrStopChannel := make(chan struct{})
 

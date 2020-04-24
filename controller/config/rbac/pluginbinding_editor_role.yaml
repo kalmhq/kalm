@@ -1,0 +1,26 @@
+# permissions to do edit pluginbindings.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: pluginbinding-editor-role
+rules:
+- apiGroups:
+  - core.kapp.dev
+  resources:
+  - pluginbindings
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kapp.dev
+  resources:
+  - pluginbindings/status
+  verbs:
+  - get
+  - patch
+  - update

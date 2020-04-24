@@ -108,6 +108,8 @@ type PluginReconciler struct {
 
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=plugins,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=plugins/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=core.kapp.dev,resources=pluginbindings,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core.kapp.dev,resources=pluginbindings/status,verbs=get;update;patch
 
 func (r *PluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("application", req.NamespacedName)
@@ -137,6 +139,11 @@ func (r *PluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		// The object is being deleted
 		if util.ContainsString(plugin.ObjectMeta.Finalizers, finalizerName) {
 			pluginsCache.Delete(plugin.Name)
+
+			if err := r.deletePluginBindings(ctx, &plugin, log); err != nil {
+				return ctrl.Result{}, err
+			}
+
 			// remove our finalizer from the list and update it.
 			plugin.ObjectMeta.Finalizers = util.RemoveString(plugin.ObjectMeta.Finalizers, finalizerName)
 			err := r.Update(ctx, &plugin)
@@ -213,6 +220,25 @@ func (r *PluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	})
 
 	return ctrl.Result{}, nil
+}
+
+func (r *PluginReconciler) deletePluginBindings(ctx context.Context, plugin *corev1alpha1.Plugin, log logr.Logger) error {
+	var bindingList corev1alpha1.PluginBindingList
+
+	if err := r.Reader.List(ctx, &bindingList, client.MatchingLabels{
+		"kapp-plugin": plugin.Name,
+	}); err != nil {
+		log.Error(err, "get plugin binding list error.")
+		return err
+	}
+
+	for _, binding := range bindingList.Items {
+		if err := r.Delete(ctx, &binding); err != nil {
+			log.Error(err, "Delete plugin binding error.")
+		}
+	}
+
+	return nil
 }
 
 func (r *PluginReconciler) SetupWithManager(mgr ctrl.Manager) error {

@@ -75,31 +75,61 @@ spec:
 apiVersion: core.kapp.dev/v1alpha1
 kind: Application
 metadata:
-  name: test-plugin-sample-application
+  name: test
 spec:
-
-  pluginsNew:
-    - name: kapp-scale-name-with-suffix-tiple
-    - name: kapp-customize-probes
-    - name: kapp-test-default-embedded-functions
   isActive: true
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: PluginBinding
+metadata:
+  name:  test-kapp-scale-name-with-suffix-tiple
+  namespace: test
+spec:
+  pluginName: kapp-scale-name-with-suffix-tiple
+  scope: application
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: PluginBinding
+metadata:
+  name:  test-kapp-customize-probes
+  namespace: test
+spec:
+  pluginName: kapp-customize-probes
+  scope: application
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: PluginBinding
+metadata:
+  name:  test-kapp-test-default-embedded-functions
+  namespace: test
+spec:
+  pluginName: kapp-test-default-embedded-functions
+  scope: application
 ---
 apiVersion: core.kapp.dev/v1alpha1
 kind: Component
 metadata:
   name: nginx-double
-  namespace: test-plugin-sample-application
+  namespace: test
 spec:
     image: nginx:alpine
     workloadType: server
-    pluginsNew:
-      - name: kapp-static-sacle-double
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: PluginBinding
+metadata:
+  name:  nginx-double-kapp-static-sacle-double
+  namespace: test
+spec:
+  pluginName: kapp-static-sacle-double
+  scope: component
+  componentName: nginx-double
 ---
 apiVersion: core.kapp.dev/v1alpha1
 kind: Component
 metadata:
   name: nginx-tiple
-  namespace: test-plugin-sample-application
+  namespace: test
 spec:
   image: nginx:alpine
   workloadType: server

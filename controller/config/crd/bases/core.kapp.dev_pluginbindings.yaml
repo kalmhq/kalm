@@ -6,20 +6,18 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.4
   creationTimestamp: null
-  name: applications.core.kapp.dev
+  name: pluginbindings.core.kapp.dev
 spec:
   group: core.kapp.dev
   names:
-    kind: Application
-    listKind: ApplicationList
-    plural: applications
-    singular: application
-  scope: Cluster
-  subresources:
-    status: {}
+    kind: PluginBinding
+    listKind: PluginBindingList
+    plural: pluginbindings
+    singular: pluginbinding
+  scope: Namespaced
   validation:
     openAPIV3Schema:
-      description: Application is the Schema for the applications API
+      description: PluginBinding is the Schema for the pluginbindings API
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -34,44 +32,39 @@ spec:
         metadata:
           type: object
         spec:
-          description: ApplicationSpec defines the desired state of Application
+          description: PluginBindingSpec defines the desired state of PluginBinding
           properties:
-            imagePullSecretName:
+            componentName:
+              description: If scope is application, this field will be empty
               type: string
-            isActive:
-              type: boolean
-            sharedEnv:
-              items:
-                description: EnvVar represents an environment variable present in
-                  a Container.
-                properties:
-                  name:
-                    description: Name of the environment variable. Must be a C_IDENTIFIER.
-                    type: string
-                  prefix:
-                    type: string
-                  suffix:
-                    type: string
-                  type:
-                    enum:
-                    - static
-                    - external
-                    - linked
-                    type: string
-                  value:
-                    type: string
-                required:
-                - name
-                type: object
-              type: array
+            config:
+              description: configuration of this binding
+              type: object
+            pluginName:
+              description: which plugin to use
+              type: string
+            scope:
+              enum:
+              - application
+              - component
+              type: string
           required:
-          - isActive
+          - pluginName
+          - scope
           type: object
         status:
-          description: ApplicationStatus defines the observed state of Application
+          description: PluginBindingStatus defines the observed state of PluginBinding
           properties:
-            isActive:
+            configError:
+              type: string
+            configValid:
+              description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
+                of cluster Important: Run "make" to regenerate code after modifying
+                this file'
               type: boolean
+          required:
+          - configError
+          - configValid
           type: object
       type: object
   version: v1alpha1

@@ -226,14 +226,6 @@ spec:
               additionalProperties:
                 type: string
               type: object
-            plugins:
-              items:
-                type: object
-              type: array
-            pluginsNew:
-              items:
-                type: object
-              type: array
             podAffinityType:
               type: string
             ports:

@@ -17,7 +17,6 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -32,10 +31,9 @@ type PodAffinityType string
 
 // ApplicationSpec defines the desired state of Application
 type ApplicationSpec struct {
-	IsActive            bool                   `json:"isActive"`
-	SharedEnv           []EnvVar               `json:"sharedEnv,omitempty"`
-	PluginsNew          []runtime.RawExtension `json:"pluginsNew,omitempty"`
-	ImagePullSecretName string                 `json:"imagePullSecretName,omitempty"`
+	IsActive            bool     `json:"isActive"`
+	SharedEnv           []EnvVar `json:"sharedEnv,omitempty"`
+	ImagePullSecretName string   `json:"imagePullSecretName,omitempty"`
 }
 
 // ApplicationStatus defines the observed state of Application
