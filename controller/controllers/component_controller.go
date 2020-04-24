@@ -234,7 +234,16 @@ func (r *ComponentReconcilerTask) FixComponentDefaultValues() (err error) {
 
 func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 	labels := r.GetLabels()
-	if len(r.component.Spec.Ports) > 0 && r.application.Spec.IsActive {
+
+	if !r.application.Spec.IsActive {
+		if r.service != nil {
+			return r.Delete(r.ctx, r.service)
+		}
+
+		return nil
+	}
+
+	if len(r.component.Spec.Ports) > 0 {
 		newService := false
 
 		if r.service == nil {
@@ -292,7 +301,7 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 		}
 	}
 
-	if r.service != nil && (!r.application.Spec.IsActive || len(r.component.Spec.Ports) == 0) {
+	if r.service != nil && len(r.component.Spec.Ports) == 0 {
 		if err := r.Delete(r.ctx, r.service); err != nil {
 			r.Log.Error(err, "unable to delete Service for Application Component")
 			return err
@@ -303,13 +312,6 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 }
 
 func (r *ComponentReconcilerTask) ReconcileWorkload() (err error) {
-	if err := r.reconcileDirectConfigs(); err != nil {
-		return err
-	}
-
-	if err := r.reconcilePermission(); err != nil {
-		return err
-	}
 
 	if !r.application.Spec.IsActive {
 		if r.deployment != nil {
@@ -333,6 +335,15 @@ func (r *ComponentReconcilerTask) ReconcileWorkload() (err error) {
 			}
 		}
 
+		return
+	}
+
+	if err := r.reconcileDirectConfigs(); err != nil {
+		return err
+	}
+
+	if err := r.reconcilePermission(); err != nil {
+		return err
 	}
 
 	template, err := r.GetPodTemplate()
