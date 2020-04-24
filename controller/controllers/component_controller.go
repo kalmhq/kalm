@@ -200,8 +200,8 @@ func (r *ComponentReconcilerTask) FixComponentDefaultValues() (err error) {
 		return nil
 	}
 
-	if r.component.Spec.WorkLoadType == "" {
-		r.component.Spec.WorkLoadType = corev1alpha1.WorkloadTypeServer
+	if r.component.Spec.WorkloadType == "" {
+		r.component.Spec.WorkloadType = corev1alpha1.WorkloadTypeServer
 	}
 
 	if r.component.Spec.DnsPolicy == "" {
@@ -301,23 +301,30 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 }
 
 func (r *ComponentReconcilerTask) ReconcileWorkload() (err error) {
-	template, err := r.GetPodTemplate()
+	if err := r.reconcileDirectConfigs(); err != nil {
+		return err
+	}
 
+	if err := r.reconcilePermission(); err != nil {
+		return err
+	}
+
+	template, err := r.GetPodTemplate()
 	if err != nil {
 		return err
 	}
 
-	switch r.component.Spec.WorkLoadType {
-	case corev1alpha1.WorkloadTypeServer:
+	switch r.component.Spec.WorkloadType {
+	case corev1alpha1.WorkloadTypeServer, "":
 		return r.ReconcileDeployment(template)
 	case corev1alpha1.WorkloadTypeCronjob:
 		return r.ReconcileCronJob(template)
 	case corev1alpha1.WorkloadTypeDaemonSet:
-		return r.ReconcileDaemonSet()
+		return r.ReconcileDaemonSet(template)
 	case corev1alpha1.WorkloadTypeStatefulSet:
-		return r.ReconcileStatefulSet()
+		return r.ReconcileStatefulSet(template)
 	default:
-		return fmt.Errorf("unknown workload type %s", string(r.component.Spec.WorkLoadType))
+		return fmt.Errorf("unknown workload type: %s", string(r.component.Spec.WorkloadType))
 	}
 }
 
@@ -426,6 +433,59 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 
 	return nil
 }
+
+func (r *ComponentReconcilerTask) ReconcileDaemonSet(podTemplateSpec *coreV1.PodTemplateSpec) error {
+	log := r.Log
+	labelMap := r.GetLabels()
+
+	daemonSet := r.daemonSet
+	isNewDs := false
+
+	if daemonSet == nil {
+		isNewDs = true
+
+		daemonSet = &appsV1.DaemonSet{
+			ObjectMeta: metaV1.ObjectMeta{
+				Labels:      labelMap,
+				Annotations: make(map[string]string),
+				Name:        r.component.Name,
+				Namespace:   r.component.Namespace,
+			},
+			Spec: appsV1.DaemonSetSpec{
+				Template: *podTemplateSpec,
+				Selector: &metaV1.LabelSelector{
+					MatchLabels: labelMap,
+				},
+			},
+		}
+	} else {
+		daemonSet.Spec.Template = *podTemplateSpec
+	}
+
+	if isNewDs {
+		if err := ctrl.SetControllerReference(r.component, daemonSet, r.Scheme); err != nil {
+			log.Error(err, "unable to set owner for daemonSet")
+			return err
+		}
+
+		if err := r.Create(r.ctx, daemonSet); err != nil {
+			log.Error(err, "unable to create daemonSet for Component")
+			return err
+		}
+
+		log.Info("create daemonSet " + daemonSet.Name)
+	} else {
+		if err := r.Update(r.ctx, daemonSet); err != nil {
+			log.Error(err, "unable to update daemonSet for Component")
+			return err
+		}
+
+		log.Info("update daemonSet " + daemonSet.Name)
+	}
+
+	return nil
+}
+
 func (r *ComponentReconcilerTask) ReconcileCronJob(podTemplateSpec *coreV1.PodTemplateSpec) (err error) {
 	app := r.application
 	log := r.Log
@@ -486,14 +546,14 @@ func (r *ComponentReconcilerTask) ReconcileCronJob(podTemplateSpec *coreV1.PodTe
 		}
 
 		if err := r.Create(ctx, cj); err != nil {
-			log.Error(err, "unable to create CronJob for Application")
+			log.Error(err, "unable to create CronJob for Component")
 			return err
 		}
 
 		log.Info("create CronJob " + cj.Name)
 	} else {
 		if err := r.Update(ctx, cj); err != nil {
-			log.Error(err, "unable to update CronJob for Application")
+			log.Error(err, "unable to update CronJob for Component")
 			return err
 		}
 
@@ -503,12 +563,57 @@ func (r *ComponentReconcilerTask) ReconcileCronJob(podTemplateSpec *coreV1.PodTe
 	return nil
 }
 
-func (r *ComponentReconcilerTask) ReconcileDaemonSet() (err error) {
-	return fmt.Errorf("Not implement.")
-}
+func (r *ComponentReconcilerTask) ReconcileStatefulSet(spec *coreV1.PodTemplateSpec) error {
 
-func (r *ComponentReconcilerTask) ReconcileStatefulSet() (err error) {
-	return fmt.Errorf("Not implement.")
+	log := r.Log
+	labelMap := r.GetLabels()
+
+	sts := r.statefulSet
+
+	isNewSts := false
+	if sts == nil {
+		isNewSts = true
+
+		sts = &appsV1.StatefulSet{
+			ObjectMeta: metaV1.ObjectMeta{
+				Labels:      labelMap,
+				Annotations: make(map[string]string),
+				Name:        r.component.Name,
+				Namespace:   r.component.Namespace,
+			},
+			Spec: appsV1.StatefulSetSpec{
+				Template: *spec,
+				Selector: &metaV1.LabelSelector{
+					MatchLabels: labelMap,
+				},
+			},
+		}
+	} else {
+		sts.Spec.Template = *spec
+	}
+
+	if isNewSts {
+		if err := ctrl.SetControllerReference(r.component, sts, r.Scheme); err != nil {
+			log.Error(err, "unable to set owner for sts")
+			return err
+		}
+
+		if err := r.Create(r.ctx, sts); err != nil {
+			log.Error(err, "unable to create sts for Component")
+			return err
+		}
+
+		log.Info("create sts " + sts.Name)
+	} else {
+		if err := r.Update(r.ctx, sts); err != nil {
+			log.Error(err, "unable to update sts for Component")
+			return err
+		}
+
+		log.Info("update sts " + sts.Name)
+	}
+
+	return nil
 }
 
 func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplateSpec, err error) {
@@ -540,6 +645,10 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 	//decide affinity
 	if affinity, exist := r.decideAffinity(); exist {
 		template.Spec.Affinity = affinity
+	}
+
+	if component.Spec.RunnerPermission != nil {
+		template.Spec.ServiceAccountName = r.getNameForPermission()
 	}
 
 	mainContainer := &template.Spec.Containers[0]
@@ -675,7 +784,7 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 		})
 	}
 
-	if component.Spec.Configs != nil {
+	if component.Spec.Configs != nil || component.Spec.DirectConfigs != nil {
 		r.parseComponentConfigs(component, &volumes, &volumeMounts)
 	}
 
@@ -804,7 +913,7 @@ func findPluginAndValidateConfigNew(plugin runtime.RawExtension, methodName stri
 		return nil, nil, nil
 	}
 
-	workloadType := component.Spec.WorkLoadType
+	workloadType := component.Spec.WorkloadType
 
 	if workloadType == "" {
 		// TODO are we safe to remove this fallback value?
@@ -1068,6 +1177,41 @@ func (r *ComponentReconcilerTask) parseComponentConfigs(component *corev1alpha1.
 		*volumes = append(*volumes, volume)
 		*volumeMounts = append(*volumeMounts, volumeMount)
 	}
+
+	// directConfigs
+	for i, directConfig := range component.Spec.DirectConfigs {
+		r.Log.Info("direct", "i:", i)
+
+		path := getPathOfDirectConfig(component.Name, i)
+
+		name := fmt.Sprintf("direct-config-%s-%d", component.Name, i)
+
+		vol := coreV1.Volume{
+			Name: name,
+			VolumeSource: coreV1.VolumeSource{
+				ConfigMap: &coreV1.ConfigMapVolumeSource{
+					LocalObjectReference: coreV1.LocalObjectReference{
+						Name: files.KAPP_CONFIG_MAP_NAME,
+					},
+					Items: []coreV1.KeyToPath{
+						{
+							Key:  files.EncodeFilePath(path),
+							Path: "adhoc-name",
+						},
+					},
+				},
+			},
+		}
+
+		volMount := coreV1.VolumeMount{
+			Name:      name,
+			MountPath: directConfig.MountFilePath,
+			SubPath:   "adhoc-name",
+		}
+
+		*volumes = append(*volumes, vol)
+		*volumeMounts = append(*volumeMounts, volMount)
+	}
 }
 
 func (r *ComponentReconcilerTask) getPVC(pvcName string) (*coreV1.PersistentVolumeClaim, error) {
@@ -1263,8 +1407,8 @@ func (r *ComponentReconcilerTask) LoadResources() (err error) {
 		return err
 	}
 
-	switch r.component.Spec.WorkLoadType {
-	case corev1alpha1.WorkloadTypeServer:
+	switch r.component.Spec.WorkloadType {
+	case corev1alpha1.WorkloadTypeServer, "":
 		return r.LoadDeployment()
 	case corev1alpha1.WorkloadTypeCronjob:
 		return r.LoadCronJob()
@@ -1272,6 +1416,8 @@ func (r *ComponentReconcilerTask) LoadResources() (err error) {
 		return r.LoadDaemonSet()
 	case corev1alpha1.WorkloadTypeStatefulSet:
 		return r.LoadStatefulSet()
+	default:
+		r.Log.Info("see unknown workloadType:", "type:", r.component.Spec.WorkloadType)
 	}
 
 	return nil

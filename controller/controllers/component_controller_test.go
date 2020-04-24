@@ -662,7 +662,7 @@ func generateEmptyComponent(namespace string) *v1alpha1.Component {
 			Namespace: namespace,
 		},
 		Spec: v1alpha1.ComponentSpec{
-			WorkLoadType: v1alpha1.WorkloadTypeServer, // TODo test default value
+			WorkloadType: v1alpha1.WorkloadTypeServer, // TODo test default value
 			Image:        "nginx:latest",
 			Env: []v1alpha1.EnvVar{
 				{

@@ -132,7 +132,7 @@ metadata: foobar`
 //		Spec: ApplicationSpec{
 //			Components: []ComponentSpec{
 //				{
-//					WorkLoadType: "not-exist-type",
+//					WorkloadType: "not-exist-type",
 //				},
 //			},
 //		},

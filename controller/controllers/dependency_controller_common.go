@@ -247,7 +247,7 @@ func parseK8sYaml(fileR []byte) []runtime.Object {
 	//	more
 	//}
 
-	acceptedK8sTypes := regexp.MustCompile(`(StatefulSet|Prometheus|DaemonSet|Alertmanager|Secret|ValidatingWebhookConfiguration|MutatingWebhookConfiguration|CustomResourceDefinition|ConfigMap|Service|Deployment|Namespace|Role|ClusterRole|RoleBinding|ClusterRoleBinding|ServiceAccount)`)
+	acceptedK8sTypes := regexp.MustCompile(`(Application|Component|StatefulSet|Prometheus|DaemonSet|Alertmanager|Secret|ValidatingWebhookConfiguration|MutatingWebhookConfiguration|CustomResourceDefinition|ConfigMap|Service|Deployment|Namespace|Role|ClusterRole|RoleBinding|ClusterRoleBinding|ServiceAccount)`)
 	fileAsString := string(fileR[:])
 	sepYamlFiles := strings.Split(fileAsString, "\n---\n")
 	retVal := make([]runtime.Object, 0, len(sepYamlFiles))

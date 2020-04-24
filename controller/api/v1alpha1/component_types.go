@@ -46,8 +46,8 @@ type ComponentSpec struct {
 
 	Ports []Port `json:"ports,omitempty"`
 
-	// +kubebuilder:validation:Enum=server;cronjob;daemonset;statefulset
-	WorkLoadType WorkloadType `json:"workloadType,omitempty"`
+	// +kubebuilder:validation:Enum=server;cronjob;statefulset;daemonset
+	WorkloadType WorkloadType `json:"workloadType,omitempty"`
 
 	Schedule string `json:"schedule,omitempty"`
 
@@ -82,10 +82,13 @@ type ComponentSpec struct {
 	RestartStrategy apps1.DeploymentStrategyType `json:"restartStrategy,omitempty"`
 
 	// +optional
-	Configs []Config `json:"configs,omitempty"`
+	Configs       []Config       `json:"configs,omitempty"`
+	DirectConfigs []DirectConfig `json:"directConfigs,omitempty"`
 
 	// +optional
 	Volumes []Volume `json:"volumes,omitempty"`
+
+	RunnerPermission *RunnerPermission `json:"runnerPermission,omitempty"`
 }
 
 // ComponentStatus defines the observed state of Component

@@ -243,6 +243,7 @@ func (r *ApplicationReconcilerTask) ReconcileNamespace() (err error) {
 }
 
 func (r *ApplicationReconcilerTask) ReconcileComponents() error {
+
 	var componentList corev1alpha1.ComponentList
 
 	if err := r.Reader.List(r.ctx, &componentList, client.InNamespace(r.namespace.Name)); err != nil {
