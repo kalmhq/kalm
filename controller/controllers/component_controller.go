@@ -309,7 +309,32 @@ func (r *ComponentReconcilerTask) ReconcileWorkload() (err error) {
 		return err
 	}
 
+	if !r.application.Spec.IsActive {
+		if r.deployment != nil {
+			if err := r.Delete(r.ctx, r.deployment); err != nil {
+				return err
+			}
+		}
+		if r.cronJob != nil {
+			if err := r.Delete(r.ctx, r.cronJob); err != nil {
+				return err
+			}
+		}
+		if r.daemonSet != nil {
+			if err := r.Delete(r.ctx, r.daemonSet); err != nil {
+				return err
+			}
+		}
+		if r.statefulSet != nil {
+			if err := r.Delete(r.ctx, r.statefulSet); err != nil {
+				return err
+			}
+		}
+		return r.removePluginUsers()
+	}
+
 	template, err := r.GetPodTemplate()
+
 	if err != nil {
 		return err
 	}
@@ -336,13 +361,6 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 	deployment := r.deployment
 	isNewDeployment := false
 	labelMap := r.GetLabels()
-
-	if !r.application.Spec.IsActive {
-		if deployment != nil {
-			return r.Delete(ctx, deployment)
-		}
-		return nil
-	}
 
 	if deployment == nil {
 		isNewDeployment = true
@@ -441,13 +459,6 @@ func (r *ComponentReconcilerTask) ReconcileDaemonSet(podTemplateSpec *coreV1.Pod
 	daemonSet := r.daemonSet
 	isNewDs := false
 
-	if !r.application.Spec.IsActive {
-		if r.daemonSet != nil {
-			return r.Delete(r.ctx, r.daemonSet)
-		}
-		return nil
-	}
-
 	if daemonSet == nil {
 		isNewDs = true
 
@@ -500,13 +511,6 @@ func (r *ComponentReconcilerTask) ReconcileCronJob(podTemplateSpec *coreV1.PodTe
 	cj := r.cronJob
 	component := r.component
 	labelMap := r.GetLabels()
-
-	if !r.application.Spec.IsActive {
-		if r.cronJob != nil {
-			return r.Delete(ctx, r.cronJob)
-		}
-		return nil
-	}
 
 	// restartPolicy
 	if podTemplateSpec.Spec.RestartPolicy == coreV1.RestartPolicyAlways ||
@@ -576,13 +580,6 @@ func (r *ComponentReconcilerTask) ReconcileStatefulSet(spec *coreV1.PodTemplateS
 	labelMap := r.GetLabels()
 
 	sts := r.statefulSet
-
-	if !r.application.Spec.IsActive {
-		if r.statefulSet != nil {
-			return r.Delete(r.ctx, r.statefulSet)
-		}
-		return nil
-	}
 
 	isNewSts := false
 	if sts == nil {
