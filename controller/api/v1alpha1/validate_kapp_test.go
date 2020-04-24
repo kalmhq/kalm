@@ -3,10 +3,8 @@ package v1alpha1
 import (
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
 	"k8s.io/apiextensions-apiserver/pkg/apiserver/validation"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/apimachinery/pkg/util/validation/field"
 	yaml2 "k8s.io/apimachinery/pkg/util/yaml"
 	"testing"
 )
@@ -146,55 +144,55 @@ metadata: foobar`
 //	assert.Equal(t, 2, len(errList))
 //	fmt.Println(errList)
 //}
-
-func TestUsingRealKappCRD(t *testing.T) {
-	realCrdDef, err := ioutil.ReadFile("../../config/crd/bases/core.kapp.dev_applications.yaml")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	validator, err := getValidatorForKappSpec(realCrdDef)
-	assert.NotNil(t, validator)
-	assert.Nil(t, err)
-
-	appSpecWithoutImage := `apiVersion: core.kapp.dev/v1alpha1
-kind: Application
-metadata:
-  name: socks
-  namespace: kapp-socks
-spec:
-  isActive: true
-  components:
-    - name: payment
-      dependencies: 
-        - shippingservice
-      #image: weaveworksdemos/payment:0.4.3
-      cpu: 100m
-      memory: 100Mi
-      ports:
-        - name: http
-          containerPort: 80
-      livenessProbe:
-        httpGet:
-          path: /health
-          port: 80
-        initialDelaySeconds: 300
-        periodSeconds: 3
-      readinessProbe:
-        httpGet:
-          path: /health
-          port: 80
-        initialDelaySeconds: 180
-        periodSeconds: 3`
-
-	jsonInBytes, err := yaml2.ToJSON([]byte(appSpecWithoutImage))
-	assert.Nil(t, err)
-
-	unstructured := make(map[string]interface{})
-	err = json.Unmarshal(jsonInBytes, &unstructured)
-	assert.Nil(t, err)
-
-	errs := validation.ValidateCustomResource(field.NewPath("spec", "components"), unstructured, validator)
-	assert.Equal(t, 1, len(errs))
-	assert.Equal(t, "spec.components.spec.components.image: Required value", errs[0].Error())
-}
+//
+//func TestUsingRealKappCRD(t *testing.T) {
+//	realCrdDef, err := ioutil.ReadFile("../../config/crd/bases/core.kapp.dev_applications.yaml")
+//	if err != nil {
+//		t.Fatal(err)
+//	}
+//
+//	validator, err := getValidatorForKappSpec(realCrdDef)
+//	assert.NotNil(t, validator)
+//	assert.Nil(t, err)
+//
+//	appSpecWithoutImage := `apiVersion: core.kapp.dev/v1alpha1
+//kind: Application
+//metadata:
+//  name: socks
+//  namespace: kapp-socks
+//spec:
+//  isActive: true
+//  components:
+//    - name: payment
+//      dependencies:
+//        - shippingservice
+//      #image: weaveworksdemos/payment:0.4.3
+//      cpu: 100m
+//      memory: 100Mi
+//      ports:
+//        - name: http
+//          containerPort: 80
+//      livenessProbe:
+//        httpGet:
+//          path: /health
+//          port: 80
+//        initialDelaySeconds: 300
+//        periodSeconds: 3
+//      readinessProbe:
+//        httpGet:
+//          path: /health
+//          port: 80
+//        initialDelaySeconds: 180
+//        periodSeconds: 3`
+//
+//	jsonInBytes, err := yaml2.ToJSON([]byte(appSpecWithoutImage))
+//	assert.Nil(t, err)
+//
+//	unstructured := make(map[string]interface{})
+//	err = json.Unmarshal(jsonInBytes, &unstructured)
+//	assert.Nil(t, err)
+//
+//	errs := validation.ValidateCustomResource(field.NewPath("spec", "components"), unstructured, validator)
+//	assert.Equal(t, 1, len(errs))
+//	assert.Equal(t, "spec.components.spec.components.image: Required value", errs[0].Error())
+//}
