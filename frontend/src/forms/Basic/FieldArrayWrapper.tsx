@@ -1,14 +1,9 @@
-import { Grid, MenuItem } from "@material-ui/core";
+import { Grid } from "@material-ui/core";
 import Immutable from "immutable";
 import React from "react";
-import { connect, DispatchProp } from "react-redux";
+import { DispatchProp } from "react-redux";
 import { WrappedFieldArrayProps } from "redux-form";
-import { FieldArray, Field } from "redux-form/immutable";
-import { NormalizePort } from "../normalizer";
 import { ComponentLikePort } from "../../types/componentTemplate";
-import { portTypeUDP, portTypeTCP } from "../../types/common";
-import { CustomTextField, RenderSelectField } from "../Basic";
-import { ValidatorRequired } from "../validator";
 import DeleteIcon from "@material-ui/icons/Delete";
 import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
 import { ButtonWhite } from "../../widgets/Button";
