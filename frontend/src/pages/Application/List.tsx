@@ -387,7 +387,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     let successCount = 0;
     let pendingCount = 0;
     let errorCount = 0;
-    applicationDetails.get("components").forEach(component => {
+    applicationDetails.get("components")?.forEach(component => {
       component.get("pods").forEach(podStatus => {
         podCount++;
         switch (podStatus.get("status")) {
@@ -448,7 +448,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   private renderInternalEndpoints = (applicationDetails: RowData) => {
     let count = 0;
 
-    applicationDetails.get("components").forEach(component => {
+    applicationDetails.get("components")?.forEach(component => {
       count += component.get("services").size;
     });
 
@@ -470,7 +470,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   private renderExternalEndpoints = (applicationDetails: RowData) => {
     let count = 0;
 
-    applicationDetails.get("components").forEach(component => {
+    applicationDetails.get("components")?.forEach(component => {
       if (!component.get("plugins")) {
         return;
       }
@@ -565,7 +565,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     }
 
     let urls: string[] = [];
-    applicationDetails.get("components").forEach(component => {
+    applicationDetails.get("components")?.forEach(component => {
       const plugins = component.get("plugins");
       if (!plugins) {
         return;

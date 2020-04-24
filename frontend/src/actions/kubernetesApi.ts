@@ -124,17 +124,16 @@ export const getKappApplication = async (name: string): Promise<ApplicationDetai
 };
 
 export const createKappApplication = async (application: Application): Promise<ApplicationDetails> => {
-  const res = await getAxiosClient().post(K8sApiPrefix + `/v1alpha1/applications`, {
-    application
-  });
+  const res = await getAxiosClient().post(K8sApiPrefix + `/v1alpha1/applications`, application);
 
   return Immutable.fromJS(res.data);
 };
 
 export const updateKappApplication = async (application: Application): Promise<ApplicationDetails> => {
-  const res = await getAxiosClient().put(K8sApiPrefix + `/v1alpha1/applications/${application.get("name")}`, {
+  const res = await getAxiosClient().put(
+    K8sApiPrefix + `/v1alpha1/applications/${application.get("name")}`,
     application
-  });
+  );
   return Immutable.fromJS(res.data);
 };
 
@@ -161,9 +160,10 @@ export const createKappApplicationComponent = async (
   applicationName: string,
   component: ApplicationComponent
 ): Promise<ApplicationComponentDetails> => {
-  const res = await getAxiosClient().post(K8sApiPrefix + `/v1alpha1/applications/${applicationName}/components`, {
+  const res = await getAxiosClient().post(
+    K8sApiPrefix + `/v1alpha1/applications/${applicationName}/components`,
     component
-  });
+  );
 
   return Immutable.fromJS(res.data);
 };
@@ -174,9 +174,8 @@ export const updateKappApplicationComponent = async (
 ): Promise<ApplicationComponentDetails> => {
   const res = await getAxiosClient().put(
     K8sApiPrefix + `/v1alpha1/applications/${applicationName}/components/${component.get("name")}`,
-    {
-      component
-    }
+
+    component
   );
   return Immutable.fromJS(res.data);
 };
