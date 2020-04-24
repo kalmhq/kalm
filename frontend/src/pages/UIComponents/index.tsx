@@ -134,6 +134,17 @@ export class UIComponentsRaw extends React.Component<Props, States> {
               </DarkInfoPaper>
             </RowItemBox>
             <RowItemBox long>
+              <LightInfoPaper variant="outlined" className={classes.demoPaper}>
+                <H3>LightInfoPaper</H3>
+              </LightInfoPaper>
+              <NormalInfoPaper variant="outlined" className={classes.demoPaper}>
+                <H3>NormalInfoPaper</H3>
+              </NormalInfoPaper>
+              <DarkInfoPaper variant="outlined" className={classes.demoPaper}>
+                <H3>DarkInfoPaper</H3>
+              </DarkInfoPaper>
+            </RowItemBox>
+            <RowItemBox long>
               <HelpIcon />
               <ArrowDropDownIcon />
               <CheckBoxIcon />
