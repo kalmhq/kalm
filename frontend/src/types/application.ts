@@ -25,19 +25,6 @@ export type SharedEnv = ImmutableMap<{
 export type EnvItem = SharedEnv;
 export type EnvItems = Immutable.List<EnvItem>;
 
-export interface ApplicationContent {
-  isActive: boolean;
-  name: string;
-  namespace: string;
-  sharedEnvs: Immutable.List<SharedEnv>;
-  components: Immutable.List<ApplicationComponent>;
-}
-
-export interface ApplicationComponentContent extends ComponentLikeContent {}
-
-export type ApplicationComponent = ImmutableMap<ApplicationComponentContent>;
-export type Application = ImmutableMap<ApplicationContent>;
-
 export type ListMeta = ImmutableMap<{
   totalCount: number;
   perPage: number;
@@ -55,14 +42,6 @@ export type ServiceStatus = ImmutableMap<{
       targetPort: number;
     }>
   >;
-}>;
-
-export type ComponentStatus = ImmutableMap<{
-  name: string;
-  workloadType: string;
-  metrics: Metrics;
-  pods: Immutable.List<PodStatus>;
-  services: Immutable.List<ServiceStatus>;
 }>;
 
 export type PodStatus = ImmutableMap<{
@@ -94,20 +73,37 @@ export type PodStatus = ImmutableMap<{
   metrics: Metrics;
 }>;
 
-export type ApplicationDetails = ImmutableMap<{
-  // application inline
+export interface ApplicationComponentContent extends ComponentLikeContent {}
+
+export interface ApplicationComponentDetailsContent extends ApplicationComponentContent {
+  metrics: Metrics;
+  pods: Immutable.List<PodStatus>;
+  services: Immutable.List<ServiceStatus>;
+}
+
+export type ApplicationComponent = ImmutableMap<ApplicationComponentContent>;
+export type ApplicationComponentDetails = ImmutableMap<ApplicationComponentDetailsContent>;
+export type ApplicationComponentDetailsList = Immutable.List<ApplicationComponentDetails>;
+
+export interface ApplicationContent {
   name: string;
   namespace: string;
-  createdAt: string;
   isActive: boolean;
   sharedEnvs: Immutable.List<SharedEnv>;
-  components: Immutable.List<ApplicationComponent>;
+  // TODO correct
+  plugins?: any;
 
-  // addition fields
-  componentsStatus: Immutable.List<ComponentStatus>;
-  podNames: Immutable.List<string>;
+  components: ApplicationComponentDetailsList;
+}
+
+export type Application = ImmutableMap<ApplicationContent>;
+
+export interface ApplicationDetailsContent extends ApplicationContent {
   metrics: Metrics;
-}>;
+  roles: Immutable.List<string>;
+}
+
+export type ApplicationDetails = ImmutableMap<ApplicationDetailsContent>;
 
 export type ApplicationDetailsList = Immutable.List<ApplicationDetails>;
 

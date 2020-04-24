@@ -13,6 +13,7 @@ import { Breadcrumb } from "../../widgets/Breadcrumbs";
 import { Loading } from "../../widgets/Loading";
 import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./ItemDataWrapper";
 import { Xterm, XtermRaw } from "./Xterm";
+import Immutable from "immutable";
 
 const logger = debug("ws");
 const detailedLogger = debug("ws:details");
@@ -148,7 +149,14 @@ export class LogStream extends React.PureComponent<Props, State> {
 
   componentDidUpdate(prevProps: Props, prevState: State) {
     const { application } = this.props;
-    const podNames = application!.get("podNames");
+    // const podNames = application!.get("podNames");
+    const podNames: Immutable.List<string> = Immutable.List([]);
+    application?.get("components").forEach(component => {
+      component.get("pods").forEach(pod => {
+        podNames.push(pod.get("name"));
+      });
+    });
+
     if (
       prevState.subscribedPodNames.size !== this.state.subscribedPodNames.size ||
       this.state.value !== prevState.value
@@ -345,7 +353,15 @@ export class LogStream extends React.PureComponent<Props, State> {
 
   private renderInput() {
     const { application } = this.props;
-    const podNames = application!.get("podNames");
+
+    // const podNames = application!.get("podNames");
+    const podNames: Immutable.List<string> = Immutable.List([]);
+    application?.get("components").forEach(component => {
+      component.get("pods").forEach(pod => {
+        podNames.push(pod.get("name"));
+      });
+    });
+
     const { value, subscribedPodNames } = this.state;
     const names = podNames!.toArray().filter(x => !subscribedPodNames.has(x));
 

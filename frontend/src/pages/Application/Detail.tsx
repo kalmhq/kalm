@@ -143,7 +143,6 @@ class DetailsRaw extends React.PureComponent<Props, State> {
 
   private renderComponent = (index: number) => {
     const { classes, application, dispatch, hasRole } = this.props;
-    const componentStatus = application.get("componentsStatus")!.get(index)!;
     const component = application.get("components").get(index)!;
     const hasWriterRole = hasRole("writer");
     const externalAccessPlugin =
@@ -155,7 +154,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
       <Paper className={classes.componentContainer} key={index}>
         <div className={clsx(classes.rowContainer, classes.componentRow)}>
           <div className="name">
-            <strong>{componentStatus.get("name")}</strong> ({componentStatus.get("workloadType")})
+            <strong>{component.get("name")}</strong> ({component.get("workloadType")})
           </div>
           {/* <div className="right-part">
             <div className={classes.chartTabelCell}>
@@ -169,7 +168,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
         <Box p={2}>
           <div>Internal Endpoints:</div>
           <Box ml={2}>
-            {componentStatus
+            {component
               .get("services")
               .map(serviceStatus => {
                 const dns = `${serviceStatus.get("name")}.${application.get("namespace")}`;
@@ -214,7 +213,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
           </Box>
         ) : null}
         <div className={classes.podContainer}>
-          {componentStatus.get("pods").size > 0 ? (
+          {component.get("pods").size > 0 ? (
             <div className={clsx(classes.rowContainer, classes.podHeaderRow, classes.podDataRow)}>
               <div className="headerCell">Pod Name</div>
               <div className="headerCell">Node</div>
@@ -229,7 +228,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
               </div>
             </div>
           ) : null}
-          {componentStatus
+          {component
             .get("pods")
             .map(x => {
               return (
@@ -286,7 +285,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                                 await deletePod(application.get("namespace"), x.get("name"));
                                 dispatch(setSuccessNotificationAction(`Delete pod ${x.get("name")} successfully`));
                                 // reload
-                                dispatch(loadApplicationAction(application.get("namespace"), application.get("name")));
+                                dispatch(loadApplicationAction(application.get("name")));
                               } catch (e) {
                                 dispatch(setErrorNotificationAction(e.response.data.message));
                               }

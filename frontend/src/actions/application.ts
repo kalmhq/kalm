@@ -137,10 +137,10 @@ export const duplicateApplicationAction = (duplicatedApplication: Application): 
   };
 };
 
-export const deleteApplicationAction = (namespace: string, name: string): ThunkResult<Promise<void>> => {
+export const deleteApplicationAction = (name: string): ThunkResult<Promise<void>> => {
   return async dispatch => {
     try {
-      await deleteKappApplication(namespace, name);
+      await deleteKappApplication(name);
     } catch (e) {
       if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
@@ -157,13 +157,13 @@ export const deleteApplicationAction = (namespace: string, name: string): ThunkR
   };
 };
 
-export const loadApplicationAction = (namespace: string, name: string): ThunkResult<Promise<void>> => {
+export const loadApplicationAction = (name: string): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({ type: LOAD_APPLICATION_PENDING });
 
     let application: ApplicationDetails;
     try {
-      application = await getKappApplication(namespace, name);
+      application = await getKappApplication(name);
     } catch (e) {
       if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
@@ -185,23 +185,11 @@ export const loadApplicationAction = (namespace: string, name: string): ThunkRes
 
 export const loadApplicationsAction = (): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
-    const activeNamespace = getState()
-      .get("namespaces")
-      .get("active");
     dispatch({ type: LOAD_APPLICATIONS_PENDING });
 
     let applicationList: ApplicationDetailsList;
     try {
-      applicationList = await getKappApplicationList(activeNamespace);
-
-      // if the namespace is changed, return
-      if (
-        getState()
-          .get("namespaces")
-          .get("active") !== activeNamespace
-      ) {
-        return;
-      }
+      applicationList = await getKappApplicationList();
     } catch (e) {
       if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
