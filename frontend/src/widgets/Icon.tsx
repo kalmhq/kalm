@@ -12,9 +12,8 @@ import {
   ArrowBack
 } from "@material-ui/icons";
 import { withStyles, createStyles, WithStyles } from "@material-ui/styles";
-import clsx from "clsx";
-import { grey, green } from "@material-ui/core/colors";
-import { IconProps, Theme, SvgIconProps } from "@material-ui/core";
+import { grey } from "@material-ui/core/colors";
+import { Theme, SvgIconProps } from "@material-ui/core";
 
 const styles = (theme: Theme) =>
   createStyles({

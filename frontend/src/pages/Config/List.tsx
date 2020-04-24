@@ -1,4 +1,4 @@
-import { Breadcrumbs, createStyles, Link, Theme, withStyles, WithStyles, Paper } from "@material-ui/core";
+import { Breadcrumbs, createStyles, Link, Theme, withStyles, WithStyles } from "@material-ui/core";
 import CreateNewFolderIcon from "@material-ui/icons/CreateNewFolder";
 import DeleteIcon from "@material-ui/icons/Delete";
 import EditIcon from "@material-ui/icons/Edit";
@@ -29,7 +29,6 @@ import { FileTree } from "widgets/FileTree";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { BasePage } from "../BasePage";
 import { withNamespace, withNamespaceProps } from "permission/Namespace";
-import { grey } from "@material-ui/core/colors";
 import { NormalInfoPaper } from "widgets/Paper";
 
 const styles = (theme: Theme) =>
