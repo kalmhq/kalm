@@ -41,13 +41,18 @@ type PluginSpec struct {
 	ConfigSchema *runtime.RawExtension `json:"configSchema,omitempty"`
 }
 
+type PluginUser struct {
+	ApplicationName string `json:"applicationName"`
+	ComponentName   string `json:"componentName"`
+}
+
 // PluginStatus defines the observed state of Plugin
 type PluginStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	CompiledSuccessfully bool `json:"compiledSuccessfully"`
 
-	UsingByApplications []string `json:"usingByApplications,omitempty"`
+	Users []PluginUser `json:"users,omitempty"`
 }
 
 // +kubebuilder:object:root=true
