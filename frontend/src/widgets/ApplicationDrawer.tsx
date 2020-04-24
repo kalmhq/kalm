@@ -142,7 +142,7 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
       return null;
     }
 
-    return application.get("components").map((component, index) => {
+    return application.get("components")?.map((component, index) => {
       return (
         <React.Fragment key={index}>
           <ListItem

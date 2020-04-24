@@ -11,14 +11,17 @@ import { Field, reduxForm, formValueSelector } from "redux-form/immutable";
 import { TDispatchProp } from "types";
 import { RoleBindingsRequestBody } from "types/user";
 import { ValidatorRequired } from "../validator";
-import { loadNamespacesAction } from "actions/namespaces";
+// import { loadNamespacesAction } from "actions/namespaces";
 
 const defaultFormID = "rolebinding";
 
 const mapStateToProps = (state: RootState, { form }: OwnProps) => {
   const selector = formValueSelector(form || defaultFormID);
   return {
-    namespaces: state.get("namespaces").get("namespaces"),
+    namespaces: state
+      .get("applications")
+      .get("applications")
+      .map(application => application.get("name")),
     kind: selector(state, "kind"),
     name: selector(state, "name")
   };
@@ -41,7 +44,7 @@ export interface Props
 
 class RoleBindingFormRaw extends React.PureComponent<Props> {
   public componentDidMount() {
-    this.props.dispatch(loadNamespacesAction());
+    // this.props.dispatch(loadNamespacesAction());
   }
 
   public render() {
@@ -55,10 +58,10 @@ class RoleBindingFormRaw extends React.PureComponent<Props> {
             autoFocus
             component={ReduxFormSelectField}
             validate={ValidatorRequired}>
-            {namespaces.map(x => {
+            {namespaces.map(namespace => {
               return (
-                <MenuItem key={x.get("name")} value={x.get("name")}>
-                  {x.get("name")}
+                <MenuItem key={namespace} value={namespace}>
+                  {namespace}
                 </MenuItem>
               );
             })}

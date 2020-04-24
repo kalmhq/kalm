@@ -45,7 +45,7 @@ export const getApplicationEnvStatus = (application: Application) => {
   const applicationSharedEnvNamesSet = getApplicationSharedEnvNamesSet(application);
   const applicationComponentExternalEnvsSet = new Set<string>();
 
-  application.get("components").forEach((applicationComponent, index) => {
+  application.get("components")?.forEach((applicationComponent, index) => {
     applicationComponent.get("env") &&
       applicationComponent
         .get("env")!

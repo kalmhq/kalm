@@ -7,31 +7,33 @@ import { Loading } from "widgets/Loading";
 import { getDisplayName } from "./utils";
 
 const mapStateToProps = (state: RootState) => {
-  const namespacesRoot = state.get("namespaces");
-  const namespaces = namespacesRoot.get("namespaces");
-  const activeNamespaceName = namespacesRoot.get("active");
-  const isNamespacesLoading = namespacesRoot.get("isListLoading");
-  const isNamespacesFirstLoaded = namespacesRoot.get("isFirstLoaded");
-  const activeNamespace = namespacesRoot.get("namespaces").find(ns => ns.get("name") === activeNamespaceName);
+  const applicationsRoot = state.get("applications");
+  const namespaces = applicationsRoot.get("applications").map(application => application.get("name"));
+  const activeNamespace = state.get("namespaces").get("active");
+  const isApplicationListLoading = applicationsRoot.get("isListLoading");
+  const isApplicationListFirstLoaded = applicationsRoot.get("isListFirstLoaded");
+  const activeApplication = applicationsRoot
+    .get("applications")
+    .find(application => application.get("name") === activeNamespace);
   const isAdmin = state.get("auth").get("isAdmin");
 
   return {
     isAdmin,
-    activeNamespaceName,
-    namespaces,
-    isNamespacesLoading,
-    isNamespacesFirstLoaded,
     activeNamespace,
+    namespaces,
+    isApplicationListLoading,
+    isApplicationListFirstLoaded,
+    activeApplication,
     hasRole: (role: string): boolean => {
       if (!role) {
         return true;
       }
 
-      if (isNamespacesLoading && !isNamespacesFirstLoaded) {
+      if (isApplicationListLoading && !isApplicationListFirstLoaded) {
         return false;
       }
 
-      if (!activeNamespace || (!isAdmin && !activeNamespace.get("roles").find(x => x === role))) {
+      if (!activeNamespace || (!isAdmin && !activeApplication!.get("roles").find(x => x === role))) {
         return false;
       }
 
@@ -55,13 +57,13 @@ interface Options {
 export const RequireRoleInNamespce = ({ requiredRole }: Options) => (WrappedComponent: React.ComponentType<any>) => {
   const wrapper: React.ComponentType<withNamespaceProps> = class extends React.Component<withNamespaceProps> {
     render() {
-      const { isAdmin, isNamespacesLoading, isNamespacesFirstLoaded, activeNamespace } = this.props;
+      const { isAdmin, isApplicationListLoading, isApplicationListFirstLoaded, activeApplication } = this.props;
 
-      if (isNamespacesLoading && !isNamespacesFirstLoaded) {
+      if (isApplicationListLoading && !isApplicationListFirstLoaded) {
         return <Loading />;
       }
 
-      if (!activeNamespace || (!isAdmin && !activeNamespace.get("roles").find(x => x === requiredRole))) {
+      if (!activeApplication || (!isAdmin && !activeApplication.get("roles").find(x => x === requiredRole))) {
         return "Please select a namespace first";
       }
 
