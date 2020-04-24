@@ -15,18 +15,17 @@ import (
 	"strings"
 )
 
-func TryValidateApplicationFromAPI(appSpec ApplicationSpec, name, ns string) (rst KappValidateErrorList) {
+func TryValidateApplicationFromAPI(appSpec ApplicationSpec, name string) (rst KappValidateErrorList) {
 	errAgainstOpenAPI := tryValidateUsingOpenAPIV3(Application{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: ns,
+			Name: name,
 		},
 		Spec: appSpec,
 	})
 	trimFieldPathPrefixForAPI(errAgainstOpenAPI)
 
 	rst = append(rst, errAgainstOpenAPI...)
-	rst = append(rst, TryValidateApplication(appSpec, name, ns)...)
+	rst = append(rst, TryValidateApplication(appSpec, name)...)
 
 	return rst
 }
@@ -47,34 +46,32 @@ func trimFieldPathPrefixForAPI(errList KappValidateErrorList) {
 	}
 }
 
-func TryValidateApplication(appSpec ApplicationSpec, name, ns string) (rst KappValidateErrorList) {
-
-	//rst = append(rst, tryValidateApplicationSpec(appSpec)...)
+func TryValidateApplication(appSpec ApplicationSpec, name string) (rst KappValidateErrorList) {
+	rst = append(rst, tryValidateApplicationSpec(appSpec)...)
 	rst = append(rst, isValidateName(name)...)
-	rst = append(rst, isValidateNamespace(ns)...)
 
 	return
 }
 
-//func tryValidateApplicationSpec(appSpec ApplicationSpec) (rst KappValidateErrorList) {
-//	// for now check
-//	//   - dependency
-//	//   - probe
-//	//   - cpu & memory
-//	validateFuncs := []func(ApplicationSpec) KappValidateErrorList{
-//		isValidateDependency,
-//		isValidateProbe,
-//		isValidateResource,
-//	}
-//
-//	for _, validateFunc := range validateFuncs {
-//		if errs := validateFunc(appSpec); errs != nil {
-//			rst = append(rst, errs...)
-//		}
-//	}
-//
-//	return
-//}
+func tryValidateApplicationSpec(appSpec ApplicationSpec) (rst KappValidateErrorList) {
+	// for now check
+	//   - dependency
+	//   - probe
+	//   - cpu & memory
+	validateFuncs := []func(ApplicationSpec) KappValidateErrorList{
+		//isValidateDependency,
+		//isValidateProbe,
+		//isValidateResource,
+	}
+
+	for _, validateFunc := range validateFuncs {
+		if errs := validateFunc(appSpec); errs != nil {
+			rst = append(rst, errs...)
+		}
+	}
+
+	return
+}
 
 //type IKappValidator interface {
 //	Validate(spec ApplicationSpec) KappValidateErrorList

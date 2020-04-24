@@ -44,12 +44,17 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 
 	gv1Alpha1WithAuth := gv1Alpha1.Group("", h.AuthClientMiddleware)
 	gv1Alpha1WithAuth.GET("/applications", h.handleGetApplications)
+	gv1Alpha1WithAuth.GET("/applications/:name", h.handleGetApplicationDetails)
 	gv1Alpha1WithAuth.POST("/applications/validate", h.handleValidateApplications)
-	gv1Alpha1WithAuth.GET("/applications/:namespace", h.handleGetApplications)
-	gv1Alpha1WithAuth.GET("/applications/:namespace/:name", h.handleGetApplicationDetails)
-	gv1Alpha1WithAuth.PUT("/applications/:namespace/:name", h.handleUpdateApplication)
-	gv1Alpha1WithAuth.DELETE("/applications/:namespace/:name", h.handleDeleteApplication)
-	gv1Alpha1WithAuth.POST("/applications/:namespace", h.handleCreateApplication)
+	gv1Alpha1WithAuth.PUT("/applications/:name", h.handleUpdateApplication)
+	gv1Alpha1WithAuth.DELETE("/applications/:name", h.handleDeleteApplication)
+	gv1Alpha1WithAuth.POST("/applications", h.handleCreateApplication)
+
+	gv1Alpha1WithAuth.GET("/applications/:applicationName/components", h.handleListComponents)
+	gv1Alpha1WithAuth.GET("/applications/:applicationName/components/:name", h.handleGetComponent)
+	gv1Alpha1WithAuth.PUT("/applications/:applicationName/components/:name", h.handleUpdateComponent)
+	gv1Alpha1WithAuth.DELETE("/applications/:applicationName/components/:name", h.handleDeleteComponent)
+	gv1Alpha1WithAuth.POST("/applications/:applicationName/components", h.handleCreateComponent)
 
 	gv1Alpha1WithAuth.GET("/componenttemplates", h.handleGetComponentTemplates)
 	gv1Alpha1WithAuth.POST("/componenttemplates", h.handleCreateComponentTemplate)
