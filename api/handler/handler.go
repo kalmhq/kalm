@@ -69,9 +69,9 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 
 	gv1Alpha1WithAuth.DELETE("/pods/:namespace/:name", h.handleDeletePod)
 
-	gv1Alpha1WithAuth.GET("/namespaces", h.handleListNamespaces)
-	gv1Alpha1WithAuth.POST("/namespaces/:name", h.handleCreateNamespace)
-	gv1Alpha1WithAuth.DELETE("/namespaces/:name", h.handleDeleteNamespace)
+	//gv1Alpha1WithAuth.GET("/namespaces", h.handleListNamespaces)
+	//gv1Alpha1WithAuth.POST("/namespaces/:name", h.handleCreateNamespace)
+	//gv1Alpha1WithAuth.DELETE("/namespaces/:name", h.handleDeleteNamespace)
 
 	gv1Alpha1WithAuth.GET("/rolebindings", h.handleListRoleBindings)
 	gv1Alpha1WithAuth.POST("/rolebindings", h.handleCreateRoleBinding)
