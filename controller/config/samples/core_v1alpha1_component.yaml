@@ -1,7 +1,0 @@
-apiVersion: core.kapp.dev/v1alpha1
-kind: Component
-metadata:
-  name: component-sample
-spec:
-  # Add fields here
-  foo: bar
