@@ -1,10 +1,12 @@
 package resources
 
 import (
+	"encoding/json"
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 type ComponentListChannel struct {
@@ -36,7 +38,8 @@ func (builder *Builder) GetComponentListChannel(namespaces string, listOptions m
 
 type Component struct {
 	v1alpha1.ComponentSpec `json:",inline"`
-	Name                   string `json:"name"`
+	Plugins                []runtime.RawExtension `json:"plugins,omitempty"`
+	Name                   string                 `json:"name"`
 }
 
 type ComponentDetails struct {
@@ -59,7 +62,8 @@ func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component) (*C
 			LabelSelector: labels.Everything().String(),
 			FieldSelector: fields.Everything().String(),
 		}),
-		ServiceList: builder.GetServiceListChannel(ns, listOptions),
+		ServiceList:       builder.GetServiceListChannel(ns, listOptions),
+		PluginBindingList: builder.GetPluginBindingListChannel(ns, matchLabel("kapp-component", component.Name)),
 	}
 
 	resources, err := resourceChannels.ToResources()
@@ -88,10 +92,29 @@ func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component) (*C
 	appCpuHistory := aggregateHistoryList(cpuHistoryList)
 	appMemHistory := aggregateHistoryList(memHistoryList)
 
+	plugins := make([]runtime.RawExtension, 0, len(resources.PluginBindings))
+
+	for _, binding := range resources.PluginBindings {
+		var tmp struct {
+			Name   string                `json:"name"`
+			Config *runtime.RawExtension `json:"config,omitempty"`
+		}
+
+		tmp.Name = binding.Spec.PluginName
+		tmp.Config = binding.Spec.Config
+
+		bts, _ := json.Marshal(tmp)
+
+		plugins = append(plugins, runtime.RawExtension{
+			Raw: bts,
+		})
+	}
+
 	return &ComponentDetails{
 		Component: &Component{
 			Name:          component.Name,
 			ComponentSpec: component.Spec,
+			Plugins:       plugins,
 		},
 		Metrics: MetricHistories{
 			CPU:    appCpuHistory,

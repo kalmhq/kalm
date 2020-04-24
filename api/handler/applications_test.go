@@ -63,9 +63,9 @@ func (suite *ApplicationsHandlerTestSuite) TestCreateEmptyAppliation() {
 	suite.Equal(v1alpha1.EnvVarTypeStatic, res.Application.SharedEnvs[0].Type)
 	suite.Equal(v1alpha1.EnvVarTypeExternal, res.Application.SharedEnvs[1].Type)
 
-	suite.Equal(1, len(res.Application.Components))
-	suite.Equal(v1alpha1.EnvVarTypeStatic, res.Application.Components[0].Env[0].Type)
-	suite.Equal(v1alpha1.EnvVarTypeExternal, res.Application.Components[0].Env[1].Type)
+	//suite.Equal(1, len(res.Application.Components))
+	//suite.Equal(v1alpha1.EnvVarTypeStatic, res.Application.Components[0].Env[0].Type)
+	//suite.Equal(v1alpha1.EnvVarTypeExternal, res.Application.Components[0].Env[1].Type)
 }
 
 func (suite *ApplicationsHandlerTestSuite) TestUpdateAppliation() {

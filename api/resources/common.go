@@ -9,9 +9,11 @@ import (
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 )
 
@@ -21,10 +23,11 @@ type ResourceChannels struct {
 	PodList        *PodListChannel
 	EventList      *EventListChannel
 	//PodMetricsList *PodMetricsListChannel
-	ServiceList     *ServiceListChannel
-	RoleBindingList *RoleBindingListChannel
-	NamespaceList   *NamespaceListChannel
-	ComponentList   *ComponentListChannel
+	ServiceList       *ServiceListChannel
+	RoleBindingList   *RoleBindingListChannel
+	NamespaceList     *NamespaceListChannel
+	ComponentList     *ComponentListChannel
+	PluginBindingList *PluginBindingListChannel
 }
 
 type Resources struct {
@@ -33,10 +36,11 @@ type Resources struct {
 	PodList        *coreV1.PodList
 	EventList      *coreV1.EventList
 	//PodMetricsList *metricv1beta1.PodMetricsList
-	ServiceList  *coreV1.ServiceList
-	RoleBindings []rbacV1.RoleBinding
-	Namespaces   []Namespace
-	Components   []v1alpha1.Component
+	ServiceList    *coreV1.ServiceList
+	RoleBindings   []rbacV1.RoleBinding
+	Namespaces     []Namespace
+	Components     []v1alpha1.Component
+	PluginBindings []v1alpha1.PluginBinding
 }
 
 var ListAll = metaV1.ListOptions{
@@ -111,6 +115,14 @@ func (c *ResourceChannels) ToResources() (r *Resources, err error) {
 			return nil, err
 		}
 		resources.Components = <-c.ComponentList.List
+	}
+
+	if c.PluginBindingList != nil {
+		err = <-c.PluginBindingList.Error
+		if err != nil {
+			return nil, err
+		}
+		resources.PluginBindings = <-c.PluginBindingList.List
 	}
 
 	//if c.PodMetricsList != nil {
@@ -188,4 +200,14 @@ type Builder struct {
 	K8sClient *kubernetes.Clientset
 	Logger    *logrus.Logger
 	Config    *rest.Config
+}
+
+func (builder *Builder) KappV1Alpha1() (*rest.RESTClient, error) {
+	// copy a cfg
+	cfg := rest.CopyConfig(builder.Config)
+	cfg.ContentConfig.GroupVersion = &v1alpha1.GroupVersion
+	cfg.APIPath = "/apis"
+	cfg.NegotiatedSerializer = serializer.NewCodecFactory(scheme.Scheme)
+	cfg.UserAgent = rest.DefaultKubernetesUserAgent()
+	return rest.UnversionedRESTClientFor(cfg)
 }

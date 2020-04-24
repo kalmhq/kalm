@@ -121,11 +121,13 @@ type Application struct {
 }
 
 func (builder *Builder) BuildApplicationDetails(application *v1alpha1.Application) (*ApplicationDetails, error) {
-	ns := application.Namespace
+	ns := application.Name
 	listOptions := labelsBelongsToApplication(application.Name)
 
 	resourceChannels := &ResourceChannels{
-		PodList: builder.GetPodListChannel(ns, listOptions),
+		PodList:           builder.GetPodListChannel(ns, listOptions),
+		PluginBindingList: builder.GetPluginBindingListChannel(ns, matchLabel("scope", "application")),
+
 		//EventList: builder.GetEventListChannel(ns, metaV1.ListOptions{
 		//	LabelSelector: labels.Everything().String(),
 		//	FieldSelector: fields.Everything().String(),
@@ -209,6 +211,24 @@ func (builder *Builder) BuildApplicationDetails(application *v1alpha1.Applicatio
 	appCpuHistory := aggregateHistoryList(cpuHistoryList)
 	appMemHistory := aggregateHistoryList(memHistoryList)
 
+	plugins := make([]runtime.RawExtension, 0, len(resources.PluginBindings))
+
+	for _, binding := range resources.PluginBindings {
+		var tmp struct {
+			Name   string                `json:"name"`
+			Config *runtime.RawExtension `json:"config,omitempty"`
+		}
+
+		tmp.Name = binding.Spec.PluginName
+		tmp.Config = binding.Spec.Config
+
+		bts, _ := json.Marshal(tmp)
+
+		plugins = append(plugins, runtime.RawExtension{
+			Raw: bts,
+		})
+	}
+
 	return &ApplicationDetails{
 		Application: &Application{
 			Name:       application.Name,
@@ -216,7 +236,7 @@ func (builder *Builder) BuildApplicationDetails(application *v1alpha1.Applicatio
 			IsActive:   application.Spec.IsActive,
 			SharedEnvs: application.Spec.SharedEnv,
 			//Components: componentSpecs,
-			Plugins: application.Spec.PluginsNew,
+			Plugins: plugins,
 		},
 		//PodNames:         podNames,
 		//ComponentsStatus: componentsStatusList,

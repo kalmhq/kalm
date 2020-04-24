@@ -197,9 +197,9 @@ func getApplicationFromContext(c echo.Context) (*v1alpha1.Application, error) {
 			Name: application.Name,
 		},
 		Spec: v1alpha1.ApplicationSpec{
-			IsActive:   application.IsActive,
-			SharedEnv:  application.SharedEnvs,
-			PluginsNew: application.Plugins,
+			IsActive:  application.IsActive,
+			SharedEnv: application.SharedEnvs,
+			//PluginsNew: application.Plugins,
 		},
 	}
 
