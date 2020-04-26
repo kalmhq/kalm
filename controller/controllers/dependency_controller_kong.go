@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
 	"k8s.io/api/extensions/v1beta1"
@@ -81,50 +82,114 @@ func (r *DependencyReconciler) reconcileKong(ctx context.Context, dep *corev1alp
 	r.Log.Info("kapps", "size:", len(kappList.Items))
 	// collect ingress info & update kong
 
-	//ns2ingPluginsMap := make(map[string][]*corev1alpha1.PluginIngress)
-	//for _, kapp := range kappList.Items {
-	//	ns := kapp.Namespace
-	//
-	//	if existPlugins, exist := ns2ingPluginsMap[ns]; !exist {
-	//		ns2ingPluginsMap[ns] = GetIngressPlugins(&kapp)
-	//	} else {
-	//		ns2ingPluginsMap[ns] = append(existPlugins, GetIngressPlugins(&kapp)...)
-	//	}
-	//}
+	ns2ingPluginsMap := make(map[string][]*corev1alpha1.PluginIngress)
+	for _, kapp := range kappList.Items {
+		ns := kapp.Namespace
 
-	//r.Log.Info("ns2ingPluginsMap", "size:", len(ns2ingPluginsMap))
+		if existPlugins, exist := ns2ingPluginsMap[ns]; !exist {
+			ns2ingPluginsMap[ns] = r.getIngressPlugins(&kapp)
+		} else {
+			ns2ingPluginsMap[ns] = append(existPlugins, r.getIngressPlugins(&kapp)...)
+		}
+	}
+
+	r.Log.Info("ns2ingPluginsMap", "size:", len(ns2ingPluginsMap))
 
 	// 1 ingress per namespace
-	//for ns, ingPlugins := range ns2ingPluginsMap {
-	//	if len(ingPlugins) <= 0 {
-	//		continue
-	//	}
-	//
-	//	r.Log.Info("plugins",
-	//		"ns", ns,
-	//		"size:", len(ingPlugins),
-	//		"ingPlugins", ingPlugins)
-	//
-	//	ing, exist, err := r.getIngress(ctx, dep, ingPlugins)
-	//	if err != nil {
-	//		return err
-	//	}
-	//
-	//	if !exist {
-	//		r.Log.Info("creating ing")
-	//		if err := r.Create(ctx, ing); err != nil {
-	//			return err
-	//		}
-	//	} else {
-	//		r.Log.Info("updating ing")
-	//		if err := r.Update(ctx, ing); err != nil {
-	//			return err
-	//		}
-	//	}
+	for ns, ingPlugins := range ns2ingPluginsMap {
+		if len(ingPlugins) <= 0 {
+			continue
+		}
 
-	//}
+		r.Log.Info("plugins",
+			"ns", ns,
+			"size:", len(ingPlugins),
+			"ingPlugins", ingPlugins)
+
+		ing, exist, err := r.getIngress(ctx, dep, ingPlugins)
+		if err != nil {
+			return err
+		}
+
+		if !exist {
+			r.Log.Info("creating ing")
+			if err := r.Create(ctx, ing); err != nil {
+				return err
+			}
+		} else {
+			r.Log.Info("updating ing")
+			if err := r.Update(ctx, ing); err != nil {
+				return err
+			}
+		}
+
+	}
 
 	return r.UpdateStatusIfNotMatch(ctx, dep, corev1alpha1.DependencyStatusRunning)
+}
+
+func (r *DependencyReconciler) getIngressPlugins(kapp *corev1alpha1.Application) (rst []*corev1alpha1.PluginIngress) {
+	plugins := r.getPlugins(kapp)
+
+	for _, plugin := range plugins {
+		v, yes := plugin.(*corev1alpha1.PluginIngress)
+
+		if !yes {
+			continue
+		}
+
+		rst = append(rst, v)
+	}
+
+	return
+}
+
+func (r *DependencyReconciler) getPlugins(kapp *corev1alpha1.Application) (plugins []interface{}) {
+	var componentList corev1alpha1.ComponentList
+	if err := r.Client.List(context.TODO(), &componentList, client.InNamespace(kapp.Namespace)); err != nil {
+		r.Log.Error(err, "get componentList error")
+		return nil
+	}
+
+	for _, component := range componentList.Items {
+		componentSpec := component.Spec
+		for _, raw := range componentSpec.Plugins {
+
+			var tmp struct {
+				Name string `json:"name"`
+				Type string `json:"type"`
+			}
+
+			_ = json.Unmarshal(raw.Raw, &tmp)
+
+			if tmp.Name == "manual-scaler" {
+				var p corev1alpha1.PluginManualScaler
+				_ = json.Unmarshal(raw.Raw, &p)
+				plugins = append(plugins, &p)
+				continue
+			}
+
+			switch tmp.Type {
+			case pluginIngress:
+				var ing corev1alpha1.PluginIngress
+				_ = json.Unmarshal(raw.Raw, &ing)
+
+				// todo what if not first ports
+				ing.ServicePort = int(componentSpec.Ports[0].ServicePort)
+				if ing.ServicePort == 0 {
+					ing.ServicePort = int(componentSpec.Ports[0].ContainerPort)
+				}
+
+				ing.ServiceName = component.Name
+				ing.Namespace = kapp.Namespace
+
+				plugins = append(plugins, &ing)
+				continue
+			}
+		}
+	}
+
+	return
 }
 
 func (r *DependencyReconciler) getIngress(
