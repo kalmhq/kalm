@@ -13,12 +13,14 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	apiregistration "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
 	"log"
 	"regexp"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strings"
 )
@@ -150,7 +152,7 @@ func (r *DependencyReconciler) getStsStatus(namespace, stsName string) (DepInsta
 	return NotInstalled, nil
 }
 
-func (r *DependencyReconciler) reconcileExternalController(ctx context.Context, fileOrDirName string) error {
+func (r *DependencyReconciler) reconcileExternalController(ctx context.Context, dep *corev1alpha1.Dependency, fileOrDirName string) error {
 	//load yaml for external-controller
 	files, fileNames := loadFiles(fileOrDirName)
 	for i, file := range files {
@@ -159,8 +161,7 @@ func (r *DependencyReconciler) reconcileExternalController(ctx context.Context, 
 		objs := parseK8sYaml(file)
 
 		// only create, no update yet
-		if err := r.createMany(ctx, objs...); err != nil {
-
+		if err := r.createMany(ctx, dep, objs...); err != nil {
 			return err
 		}
 	}
@@ -242,12 +243,31 @@ func loadFiles(fileOrDirName string) (files [][]byte, fileNames []string) {
 // ref: https://github.com/kubernetes/client-go/issues/193#issuecomment-363318588
 func parseK8sYaml(fileR []byte) []runtime.Object {
 
-	//kinds := []string{
-	//	"StatefulSet",
-	//	more
-	//}
+	kinds := []string{
+		"Application",
+		"Component",
+		"StatefulSet",
+		"Prometheus",
+		"DaemonSet",
+		"Alertmanager",
+		"Secret",
+		"ValidatingWebhookConfiguration",
+		"MutatingWebhookConfiguration",
+		"CustomResourceDefinition",
+		"ConfigMap",
+		"Service",
+		"Deployment",
+		"Namespace",
+		"Role",
+		"ClusterRole",
+		"RoleBinding",
+		"ClusterRoleBinding",
+		"ServiceAccount",
+	}
 
-	acceptedK8sTypes := regexp.MustCompile(`(Application|Component|StatefulSet|Prometheus|DaemonSet|Alertmanager|Secret|ValidatingWebhookConfiguration|MutatingWebhookConfiguration|CustomResourceDefinition|ConfigMap|Service|Deployment|Namespace|Role|ClusterRole|RoleBinding|ClusterRoleBinding|ServiceAccount)`)
+	join := strings.Join(kinds, "|")
+	acceptedK8sTypes := regexp.MustCompile(fmt.Sprintf(`(%s)`, join))
+
 	fileAsString := string(fileR[:])
 	sepYamlFiles := strings.Split(fileAsString, "\n---\n")
 	retVal := make([]runtime.Object, 0, len(sepYamlFiles))
@@ -272,8 +292,8 @@ func parseK8sYaml(fileR []byte) []runtime.Object {
 		apiregistration.AddToScheme(sch)
 		//elkv1.AddToScheme(sch)
 
-		decode := serializer.NewCodecFactory(sch).UniversalDeserializer().Decode
-		obj, groupVersionKind, err := decode([]byte(f), nil, nil)
+		decodeFunc := serializer.NewCodecFactory(sch).UniversalDeserializer().Decode
+		obj, groupVersionKind, err := decodeFunc([]byte(f), nil, nil)
 		if err != nil {
 			log.Println(fmt.Sprintf("Error while decoding YAML object(%d) Err was: %s, obj: %s", i, err, f))
 			continue
@@ -297,7 +317,7 @@ func parseK8sYaml(fileR []byte) []runtime.Object {
 			items, _ := m["items"]
 			for _, item := range items.([]interface{}) {
 				inYaml, _ := yaml.Marshal(item)
-				obj, groupVersionKind, err = decode(inYaml, nil, nil)
+				obj, groupVersionKind, err = decodeFunc(inYaml, nil, nil)
 				if err != nil {
 					log.Println(fmt.Sprintf("Error while decoding ***List YAML object(%d) Err was: %s, obj: %s", i, err, inYaml))
 					continue
@@ -328,8 +348,15 @@ func isCommentOnly(f string) bool {
 	return true
 }
 
-func (r *DependencyReconciler) createMany(ctx context.Context, objs ...runtime.Object) error {
-	for _, obj := range objs {
+func (r *DependencyReconciler) createMany(ctx context.Context, dep *corev1alpha1.Dependency, objs ...runtime.Object) error {
+	for i := range objs {
+		obj := objs[i]
+
+		if o, yes := obj.(metav1.Object); yes {
+			r.Log.Info("setup controllerRef", "owner", dep.Name, "dependent", o.GetName())
+			ctrl.SetControllerReference(dep, o, r.Scheme)
+		}
+
 		if err := r.Create(ctx, obj); err != nil {
 			if isAlreadyExistsErr(err) {
 				continue

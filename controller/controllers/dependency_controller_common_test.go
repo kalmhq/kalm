@@ -3,6 +3,7 @@ package controllers
 import (
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strings"
 	"testing"
 )
@@ -67,6 +68,10 @@ func TestYamlDecode(t *testing.T) {
 
 func TestParseK8sYaml2(t *testing.T) {
 	objs := parseK8sYaml([]byte(dat))
+	for _, obj := range objs {
+		_, yes := obj.(metav1.Object)
+		assert.True(t, yes)
+	}
 
 	assert.Equal(t, 2, len(objs))
 }

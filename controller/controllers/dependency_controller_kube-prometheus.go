@@ -25,7 +25,7 @@ func (r *DependencyReconciler) reconcileKubePrometheus(ctx context.Context, d *c
 		}
 
 		// try install Prometheus Operator
-		if err := r.reconcileExternalController(ctx, "/kube-prometheus/setup"); err != nil {
+		if err := r.reconcileExternalController(ctx, nil, "/kube-prometheus/setup"); err != nil {
 			return err
 		}
 
@@ -64,7 +64,7 @@ func (r *DependencyReconciler) reconcileKubePrometheus(ctx context.Context, d *c
 		//
 		// node-exporter
 
-		if err := r.reconcileExternalController(ctx, "/kube-prometheus"); err != nil {
+		if err := r.reconcileExternalController(ctx, nil, "/kube-prometheus"); err != nil {
 			return err
 		}
 
