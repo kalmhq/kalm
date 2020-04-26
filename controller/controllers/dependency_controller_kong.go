@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
 	"k8s.io/api/extensions/v1beta1"
@@ -151,43 +150,43 @@ func (r *DependencyReconciler) getPlugins(kapp *corev1alpha1.Application) (plugi
 		return nil
 	}
 
-	for _, component := range componentList.Items {
-		componentSpec := component.Spec
-		for _, raw := range componentSpec.Plugins {
-
-			var tmp struct {
-				Name string `json:"name"`
-				Type string `json:"type"`
-			}
-
-			_ = json.Unmarshal(raw.Raw, &tmp)
-
-			if tmp.Name == "manual-scaler" {
-				var p corev1alpha1.PluginManualScaler
-				_ = json.Unmarshal(raw.Raw, &p)
-				plugins = append(plugins, &p)
-				continue
-			}
-
-			switch tmp.Type {
-			case pluginIngress:
-				var ing corev1alpha1.PluginIngress
-				_ = json.Unmarshal(raw.Raw, &ing)
-
-				// todo what if not first ports
-				ing.ServicePort = int(componentSpec.Ports[0].ServicePort)
-				if ing.ServicePort == 0 {
-					ing.ServicePort = int(componentSpec.Ports[0].ContainerPort)
-				}
-
-				ing.ServiceName = component.Name
-				ing.Namespace = kapp.Namespace
-
-				plugins = append(plugins, &ing)
-				continue
-			}
-		}
-	}
+	//for _, component := range componentList.Items {
+	//	componentSpec := component.Spec
+	//	for _, raw := range componentSpec.Plugins {
+	//
+	//		var tmp struct {
+	//			Name string `json:"name"`
+	//			Type string `json:"type"`
+	//		}
+	//
+	//		_ = json.Unmarshal(raw.Raw, &tmp)
+	//
+	//		if tmp.Name == "manual-scaler" {
+	//			var p corev1alpha1.PluginManualScaler
+	//			_ = json.Unmarshal(raw.Raw, &p)
+	//			plugins = append(plugins, &p)
+	//			continue
+	//		}
+	//
+	//		switch tmp.Type {
+	//		case pluginIngress:
+	//			var ing corev1alpha1.PluginIngress
+	//			_ = json.Unmarshal(raw.Raw, &ing)
+	//
+	//			// todo what if not first ports
+	//			ing.ServicePort = int(componentSpec.Ports[0].ServicePort)
+	//			if ing.ServicePort == 0 {
+	//				ing.ServicePort = int(componentSpec.Ports[0].ContainerPort)
+	//			}
+	//
+	//			ing.ServiceName = component.Name
+	//			ing.Namespace = kapp.Namespace
+	//
+	//			plugins = append(plugins, &ing)
+	//			continue
+	//		}
+	//	}
+	//}
 
 	return
 }
