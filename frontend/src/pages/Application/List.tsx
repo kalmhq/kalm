@@ -1,19 +1,6 @@
-import {
-  Button,
-  Checkbox,
-  createStyles,
-  Switch,
-  TextField,
-  Theme,
-  Tooltip,
-  WithStyles,
-  withStyles
-} from "@material-ui/core";
+import { Button, createStyles, Switch, TextField, Theme, Tooltip, WithStyles, withStyles } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
-import ArchiveIcon from "@material-ui/icons/Archive";
 import HelpIcon from "@material-ui/icons/Help";
-import PowerSettingsNewIcon from "@material-ui/icons/PowerSettingsNew";
-import RefreshIcon from "@material-ui/icons/Refresh";
 import { closeDialogAction, openDialogAction } from "actions/dialog";
 import MaterialTable, { Components } from "material-table";
 import { withNamespace, withNamespaceProps } from "permission/Namespace";
@@ -141,9 +128,6 @@ interface State {
   deletingApplicationListItem?: ApplicationDetails;
   isDuplicateConfirmDialogOpen: boolean;
   duplicatingApplicationListItem?: ApplicationDetails;
-  checkedApplicationNames: {
-    [key: string]: boolean;
-  };
 }
 
 interface RowData extends ApplicationDetails {
@@ -161,8 +145,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     isDeleteConfirmDialogOpen: false,
     deletingApplicationListItem: undefined,
     isDuplicateConfirmDialogOpen: false,
-    duplicatingApplicationListItem: undefined,
-    checkedApplicationNames: {}
+    duplicatingApplicationListItem: undefined
   };
 
   constructor(props: Props) {
@@ -329,22 +312,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     } catch {
       dispatch(setErrorNotificationAction());
     }
-  };
-
-  private renderCheckbox = (applicationListItem: RowData) => {
-    return (
-      <Checkbox
-        onChange={() => {
-          // deep copy, new obj
-          const applicationNames = { ...this.state.checkedApplicationNames };
-          applicationNames[applicationListItem.get("name")] = !applicationNames[applicationListItem.get("name")];
-          this.setState({ checkedApplicationNames: applicationNames });
-        }}
-        value="secondary"
-        color="primary"
-        inputProps={{ "aria-label": "secondary checkbox" }}
-      />
-    );
   };
 
   private renderCPU = (applicationListItem: RowData) => {
@@ -692,7 +659,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
               }}
               columns={[
                 // @ts-ignore
-                { title: "", field: "checkbox", sorting: false, width: "20px", render: this.renderCheckbox },
                 {
                   title: "Name",
                   field: "name",
@@ -745,27 +711,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
               title={TableTitle("Applications")}
             />
           )}
-        </div>
-        <div className={classes.bottomBar}>
-          <div className={classes.bottomContent}>
-            <div className={classes.applicationSelected}>
-              <div className={classes.selectedNumber}>
-                {Object.values(this.state.checkedApplicationNames).filter(Boolean).length}
-              </div>{" "}
-              Applications Selected
-            </div>
-            <div className={classes.bottomActions}>
-              <div className={classes.bottomAction}>
-                <RefreshIcon /> <div className={classes.actionText}> Restart</div>
-              </div>
-              <div className={classes.bottomAction}>
-                <PowerSettingsNewIcon /> <div className={classes.actionText}> Power Off</div>
-              </div>
-              <div className={classes.bottomAction}>
-                <ArchiveIcon /> <div className={classes.actionText}>Archive</div>
-              </div>
-            </div>
-          </div>
         </div>
       </BasePage>
     );
