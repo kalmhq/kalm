@@ -36,7 +36,7 @@ type Resources struct {
 	PodList        *coreV1.PodList
 	EventList      *coreV1.EventList
 	//PodMetricsList *metricv1beta1.PodMetricsList
-	ServiceList    *coreV1.ServiceList
+	Services       []coreV1.Service
 	RoleBindings   []rbacV1.RoleBinding
 	Namespaces     []Namespace
 	Components     []v1alpha1.Component
@@ -90,7 +90,7 @@ func (c *ResourceChannels) ToResources() (r *Resources, err error) {
 		if err != nil {
 			return nil, err
 		}
-		resources.ServiceList = <-c.ServiceList.List
+		resources.Services = <-c.ServiceList.List
 	}
 
 	if c.RoleBindingList != nil {

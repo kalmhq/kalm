@@ -45,6 +45,7 @@ type Component struct {
 type ComponentDetails struct {
 	*Component `json:",inline"`
 	Metrics    MetricHistories `json:"metrics"`
+	Services   []ServiceStatus `json:"services"`
 	Pods       []PodStatus     `json:"pods"`
 }
 
@@ -114,18 +115,31 @@ func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component) (*C
 		})
 	}
 
-	return &ComponentDetails{
+	servicesStatus := make([]ServiceStatus, len(resources.Services))
+
+	for i, service := range resources.Services {
+		servicesStatus[i] = ServiceStatus{
+			Name:      service.Name,
+			ClusterIP: service.Spec.ClusterIP,
+			Ports:     service.Spec.Ports,
+		}
+	}
+
+	details := &ComponentDetails{
 		Component: &Component{
 			Name:          component.Name,
 			ComponentSpec: component.Spec,
 			Plugins:       plugins,
 		},
+		Services: servicesStatus,
 		Metrics: MetricHistories{
 			CPU:    appCpuHistory,
 			Memory: appMemHistory,
 		},
 		Pods: podsStatus,
-	}, nil
+	}
+
+	return details, nil
 }
 
 func (builder *Builder) BuildComponentDetailsResponse(components *v1alpha1.ComponentList) ([]ComponentDetails, error) {
