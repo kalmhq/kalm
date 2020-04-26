@@ -28,7 +28,7 @@ func (r *DependencyReconciler) reconcileELK(ctx context.Context, d *corev1alpha1
 	switch operatorStatus {
 	case NotInstalled:
 		// try install Prometheus Operator
-		if err := r.reconcileExternalController(ctx, "elk/ECK-all-in-one.yaml"); err != nil {
+		if err := r.reconcileExternalController(ctx, nil, "elk/ECK-all-in-one.yaml"); err != nil {
 			return err
 		}
 
