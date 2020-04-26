@@ -39,6 +39,9 @@ type PluginBindingSpec struct {
 
 	// configuration of this binding
 	Config *runtime.RawExtension `json:"config,omitempty"`
+
+	// disable this pluginbinding
+	IsDisabled bool `json:"isDisabled"`
 }
 
 // PluginBindingStatus defines the observed state of PluginBinding

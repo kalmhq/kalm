@@ -116,6 +116,28 @@ func TestPluginBindingControllerSuite(t *testing.T) {
 	suite.Run(t, new(PluginBindingControllerSuite))
 }
 
+func (suite *PluginBindingControllerSuite) TestPluginBindingDisabled() {
+	suite.reloadObject(types.NamespacedName{Name: suite.pluginBinding.Name, Namespace: suite.pluginBinding.Namespace}, suite.pluginBinding)
+	suite.pluginBinding.Spec.IsDisabled = true
+	suite.updateObject(suite.pluginBinding)
+
+	// check component status
+	suite.Eventually(func() bool {
+		var deployment appsV1.Deployment
+
+		err := suite.K8sClient.Get(context.Background(), types.NamespacedName{
+			Namespace: suite.component.Namespace,
+			Name:      suite.component.Name,
+		}, &deployment)
+
+		if err != nil {
+			return false
+		}
+
+		return *deployment.Spec.Replicas == int32(1)
+	}, "can't get deployment")
+}
+
 func (suite *PluginBindingControllerSuite) TestDeletePlugin() {
 	// Please see the initialization function to understand the test context
 	suite.Nil(suite.K8sClient.Delete(context.Background(), suite.plugin))

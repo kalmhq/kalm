@@ -972,7 +972,7 @@ func (r *ComponentReconcilerTask) runComponentPlugins(methodName string, compone
 	}
 
 	for _, binding := range bindings.Items {
-		if binding.DeletionTimestamp != nil {
+		if binding.DeletionTimestamp != nil || binding.Spec.IsDisabled {
 			continue
 		}
 
@@ -1016,7 +1016,7 @@ func (r *ComponentReconcilerTask) runApplicationPlugins(methodName string, compo
 	}
 
 	for _, binding := range bindings.Items {
-		if binding.DeletionTimestamp != nil {
+		if binding.DeletionTimestamp != nil || binding.Spec.IsDisabled {
 			continue
 		}
 
