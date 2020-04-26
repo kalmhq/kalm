@@ -13,7 +13,7 @@ import { DependencyListPage } from "pages/Dependency/List";
 import { Disks } from "pages/Disks";
 import DashboardPage from "pages/Dashboard";
 import InstallPage from "pages/Install";
-import { NamespacesPage } from "pages/Namespace";
+// import { NamespacesPage } from "pages/Namespace";
 import { NodeListPage } from "pages/NodeList";
 import { NoMatch, Page404 } from "pages/NoMatch";
 import { RolesPage } from "pages/Roles";
@@ -34,7 +34,7 @@ export const KappRoutes = (
       <RequireAuthorizatedDashboard>
         <Switch>
           <Route exact path="/" component={DashboardPage} />
-          <Route exact path="/namespaces" component={RequireAdmin(NamespacesPage)} />
+          {/* <Route exact path="/namespaces" component={RequireAdmin(NamespacesPage)} /> */}
           <Route exact path="/roles" component={RequireAdmin(RolesPage)} />
 
           {/* begin, TODO */}

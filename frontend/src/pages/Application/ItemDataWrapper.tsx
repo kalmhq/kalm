@@ -38,8 +38,8 @@ export const ApplicationItemDataWrapper = ({ reloadFrequency }: { reloadFrequenc
     private interval?: number;
 
     private loadData = () => {
-      const { activeNamespaceName, applicationName } = this.props;
-      this.props.dispatch(loadApplicationAction(activeNamespaceName, applicationName));
+      const { applicationName } = this.props;
+      this.props.dispatch(loadApplicationAction(applicationName));
 
       if (reloadFrequency > 0) {
         this.interval = window.setTimeout(this.loadData, reloadFrequency);

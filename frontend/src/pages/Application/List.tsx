@@ -214,12 +214,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     const { switchingIsActiveApplicationListItem } = this.state;
 
     if (switchingIsActiveApplicationListItem) {
-      await dispatch(
-        loadApplicationAction(
-          switchingIsActiveApplicationListItem?.get("namespace"),
-          switchingIsActiveApplicationListItem?.get("name")
-        )
-      );
+      await dispatch(loadApplicationAction(switchingIsActiveApplicationListItem?.get("name")));
       const application = getApplicationByName(switchingIsActiveApplicationListItem?.get("name"));
       await dispatch(updateApplicationAction(application.set("isActive", !application.get("isActive"))));
       dispatch(loadApplicationsAction());
@@ -283,12 +278,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     try {
       const { duplicatingApplicationListItem } = this.state;
       if (duplicatingApplicationListItem) {
-        await dispatch(
-          loadApplicationAction(
-            duplicatingApplicationListItem.get("namespace"),
-            duplicatingApplicationListItem.get("name")
-          )
-        );
+        await dispatch(loadApplicationAction(duplicatingApplicationListItem.get("name")));
 
         let newApplication = getApplicationByName(duplicatingApplicationListItem.get("name"));
 
@@ -333,9 +323,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     try {
       const { deletingApplicationListItem } = this.state;
       if (deletingApplicationListItem) {
-        await dispatch(
-          deleteApplicationAction(deletingApplicationListItem.get("namespace"), deletingApplicationListItem.get("name"))
-        );
+        await dispatch(deleteApplicationAction(deletingApplicationListItem.get("name")));
         await dispatch(setSuccessNotificationAction("Successfully delete an application"));
       }
     } catch {
@@ -399,8 +387,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     let successCount = 0;
     let pendingCount = 0;
     let errorCount = 0;
-    applicationDetails.get("componentsStatus").forEach(componentStatus => {
-      componentStatus.get("pods").forEach(podStatus => {
+    applicationDetails.get("components")?.forEach(component => {
+      component.get("pods").forEach(podStatus => {
         podCount++;
         switch (podStatus.get("status")) {
           case "Running": {
@@ -460,8 +448,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   private renderInternalEndpoints = (applicationDetails: RowData) => {
     let count = 0;
 
-    applicationDetails.get("componentsStatus").forEach(componentStatus => {
-      count += componentStatus.get("services").size;
+    applicationDetails.get("components")?.forEach(component => {
+      count += component.get("services").size;
     });
 
     if (count > 0) {
@@ -482,7 +470,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   private renderExternalEndpoints = (applicationDetails: RowData) => {
     let count = 0;
 
-    applicationDetails.get("components").forEach(component => {
+    applicationDetails.get("components")?.forEach(component => {
       if (!component.get("plugins")) {
         return;
       }
@@ -528,9 +516,9 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         }>
         {applicationDetails
           ? applicationDetails
-              .get("componentsStatus")
-              .map(componentStatus => {
-                return componentStatus.get("services").map(serviceStatus => {
+              .get("components")
+              .map(component => {
+                return component.get("services").map(serviceStatus => {
                   const dns = `${serviceStatus.get("name")}.${applicationDetails.get("namespace")}`;
                   return serviceStatus
                     .get("ports")
@@ -577,7 +565,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     }
 
     let urls: string[] = [];
-    applicationDetails.get("components").forEach(component => {
+    applicationDetails.get("components")?.forEach(component => {
       const plugins = component.get("plugins");
       if (!plugins) {
         return;

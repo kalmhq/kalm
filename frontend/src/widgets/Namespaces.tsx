@@ -14,8 +14,9 @@ import {
 import React from "react";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
-import { loadNamespacesAction, setCurrentNamespaceAction } from "actions/namespaces";
+import { setCurrentNamespaceAction } from "actions/namespaces";
 import { RootState } from "reducers";
+import { loadApplicationsAction } from "../actions/application";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -31,11 +32,11 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState) => {
-  const namespaces = state.get("namespaces");
+  const applicationsRoot = state.get("applications");
   return {
-    namespaces: namespaces.get("namespaces"),
-    isListFirstLoading: namespaces.get("isListLoading") && !namespaces.get("isFirstLoaded"),
-    active: namespaces.get("active")
+    applications: applicationsRoot.get("applications"),
+    isListFirstLoading: applicationsRoot.get("isListLoading") && !applicationsRoot.get("isListFirstLoaded"),
+    active: state.get("namespaces").get("active")
   };
 };
 
@@ -75,13 +76,13 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
   };
 
   componentDidMount() {
-    this.props.dispatch(loadNamespacesAction());
+    this.props.dispatch(loadApplicationsAction());
   }
 
   public render() {
-    const { classes, namespaces, active, dispatch, isListFirstLoading } = this.props;
+    const { classes, applications, active, dispatch, isListFirstLoading } = this.props;
     const { open } = this.state;
-    const activeNamespace = namespaces.find(x => x.get("name") === active);
+    const activeNamespace = applications.find(application => application.get("name") === active);
     return (
       <div className={classes.root}>
         <Button
@@ -102,15 +103,15 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
               <Paper>
                 <ClickAwayListener onClickAway={this.handleClose}>
                   <MenuList autoFocusItem={open} id="menu-list-grow" onKeyDown={this.handleListKeyDown}>
-                    {namespaces
-                      .map(ns => (
+                    {applications
+                      .map(application => (
                         <MenuItem
                           onClick={() => {
-                            dispatch(setCurrentNamespaceAction(ns.get("name")));
+                            dispatch(setCurrentNamespaceAction(application.get("name")));
                             this.handleClose();
                           }}
-                          key={ns.get("name")}>
-                          {ns.get("name")}
+                          key={application.get("name")}>
+                          {application.get("name")}
                         </MenuItem>
                       ))
                       .toArray()}

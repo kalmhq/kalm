@@ -3,7 +3,6 @@ import AddCircleIcon from "@material-ui/icons/AddCircle";
 import DeleteIcon from "@material-ui/icons/Delete";
 import VisibilityOffIcon from "@material-ui/icons/VisibilityOff";
 import { closeDialogAction, openDialogAction } from "actions/dialog";
-import { loadNamespacesAction } from "actions/namespaces";
 import { createRoleBindingsAction, deleteRoleBindingsAction, loadRoleBindingsAction } from "actions/user";
 import { RoleBindingForm } from "forms/RoleBinding";
 import Immutable from "immutable";
@@ -39,7 +38,10 @@ const styles = (theme: Theme) =>
 
 const mapStateToProps = (state: RootState) => {
   return {
-    namespaces: state.get("namespaces").get("namespaces"),
+    namespaces: state
+      .get("applications")
+      .get("applications")
+      .map(application => application.get("name")),
     roleBindings: state.get("roles").get("roleBindings"),
     isFirstLoaded: state.get("roles").get("roleBindingsFirstLoaded"),
     isLoading: state.get("roles").get("roleBindingsLoading"),
@@ -79,7 +81,7 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
 
   componentDidMount() {
     this.props.dispatch(loadRoleBindingsAction());
-    this.props.dispatch(loadNamespacesAction());
+    // this.props.dispatch(loadNamespacesAction());
   }
 
   private getData = (): RowData[] => {
@@ -304,9 +306,9 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
           ] as any).concat(
             namespaces
               .map(namespace => ({
-                title: namespace.get("name"),
-                field: namespace.get("name"),
-                render: this.columnRenderGeneator(namespace.get("name")),
+                title: namespace,
+                field: namespace,
+                render: this.columnRenderGeneator(namespace),
                 cellStyle: {
                   // backgroundColor: "white",
                   // color: "black"

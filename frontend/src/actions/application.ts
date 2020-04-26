@@ -23,12 +23,15 @@ import {
   deleteKappApplication,
   getKappApplication,
   getKappApplicationList,
-  updateKappApplication
+  updateKappApplication,
+  getKappApplicationComponentList,
+  createKappApplicationComponent
 } from "./kubernetesApi";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "./notification";
 import { SubmissionError } from "redux-form";
 import { push } from "connected-react-router";
 import { resErrorsToSubmitErrors } from "../utils";
+import Immutable from "immutable";
 
 export const createApplicationAction = (applicationValues: Application): ThunkResult<Promise<void>> => {
   return async dispatch => {
@@ -36,8 +39,19 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
     let application: ApplicationDetails;
 
     try {
+      applicationValues = applicationValues.set("namespace", applicationValues.get("name"));
       application = await createKappApplication(applicationValues);
+      const applicationComponents = Immutable.List(
+        await Promise.all(
+          applicationValues.get("components").map(async component => {
+            const applicationComponent = await createKappApplicationComponent(application.get("name"), component);
+            return applicationComponent;
+          })
+        )
+      );
+      application = application.set("components", applicationComponents);
     } catch (e) {
+      console.log(e);
       if (e.response && e.response.data.errors && e.response.data.errors.length > 0) {
         const submitErrors = resErrorsToSubmitErrors(e.response.data.errors);
         throw new SubmissionError(submitErrors);
@@ -137,10 +151,10 @@ export const duplicateApplicationAction = (duplicatedApplication: Application): 
   };
 };
 
-export const deleteApplicationAction = (namespace: string, name: string): ThunkResult<Promise<void>> => {
+export const deleteApplicationAction = (name: string): ThunkResult<Promise<void>> => {
   return async dispatch => {
     try {
-      await deleteKappApplication(namespace, name);
+      await deleteKappApplication(name);
     } catch (e) {
       if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
@@ -157,13 +171,15 @@ export const deleteApplicationAction = (namespace: string, name: string): ThunkR
   };
 };
 
-export const loadApplicationAction = (namespace: string, name: string): ThunkResult<Promise<void>> => {
+export const loadApplicationAction = (name: string): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch({ type: LOAD_APPLICATION_PENDING });
 
     let application: ApplicationDetails;
     try {
-      application = await getKappApplication(namespace, name);
+      application = await getKappApplication(name);
+      const applicationComponents = await getKappApplicationComponentList(application.get("name"));
+      application = application.set("components", applicationComponents);
     } catch (e) {
       if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
@@ -185,23 +201,21 @@ export const loadApplicationAction = (namespace: string, name: string): ThunkRes
 
 export const loadApplicationsAction = (): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
-    const activeNamespace = getState()
-      .get("namespaces")
-      .get("active");
     dispatch({ type: LOAD_APPLICATIONS_PENDING });
 
     let applicationList: ApplicationDetailsList;
     try {
-      applicationList = await getKappApplicationList(activeNamespace);
+      applicationList = await getKappApplicationList();
 
-      // if the namespace is changed, return
-      if (
-        getState()
-          .get("namespaces")
-          .get("active") !== activeNamespace
-      ) {
-        return;
-      }
+      applicationList = Immutable.List(
+        await Promise.all(
+          applicationList.map(async application => {
+            const components = await getKappApplicationComponentList(application.get("name"));
+            application = application.set("components", components);
+            return application;
+          })
+        )
+      );
     } catch (e) {
       if (e.response && e.response.data.status === StatusFailure) {
         dispatch(setErrorNotificationAction(e.response.data.message));
