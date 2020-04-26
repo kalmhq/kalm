@@ -30,7 +30,7 @@ export const getAxiosClient = () => {
 
   const instance = token
     ? axios.create({
-        timeout: 3000,
+        timeout: 10000,
         withCredentials: true,
         headers: {
           "X-CSRF-Token": store
