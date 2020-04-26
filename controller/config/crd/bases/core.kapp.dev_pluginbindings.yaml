@@ -40,6 +40,9 @@ spec:
             config:
               description: configuration of this binding
               type: object
+            isDisabled:
+              description: disable this pluginbinding
+              type: boolean
             pluginName:
               description: which plugin to use
               type: string
@@ -49,6 +52,7 @@ spec:
               - component
               type: string
           required:
+          - isDisabled
           - pluginName
           - scope
           type: object
