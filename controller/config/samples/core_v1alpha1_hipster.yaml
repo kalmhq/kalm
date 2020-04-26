@@ -136,7 +136,10 @@ spec:
   env:
     - name: PORT
       value: "50051"
-
+    - name: DISABLE_TRACING
+      value: "1"
+    - name: DISABLE_PROFILER
+      value: "1"
 ---
 apiVersion: core.kapp.dev/v1alpha1
 kind: PluginBinding
@@ -181,6 +184,10 @@ spec:
   env:
     - name: PORT
       value: "50051"
+    - name: DISABLE_TRACING
+      value: "1"
+    - name: DISABLE_PROFILER
+      value: "1"
 ---
 apiVersion: core.kapp.dev/v1alpha1
 kind: PluginBinding
@@ -213,6 +220,10 @@ spec:
   env:
     - name: PORT
       value: "7000"
+    - name: DISABLE_TRACING
+      value: "1"
+    - name: DISABLE_PROFILER
+      value: "1"
 ---
 apiVersion: core.kapp.dev/v1alpha1
 kind: PluginBinding
@@ -245,6 +256,10 @@ spec:
   env:
     - name: PORT
       value: "3550"
+    - name: DISABLE_TRACING
+      value: "1"
+    - name: DISABLE_PROFILER
+      value: "1"
 ---
 apiVersion: core.kapp.dev/v1alpha1
 kind: PluginBinding
@@ -268,8 +283,8 @@ spec:
   podAffinityType: prefer-fanout
   nodeSelectorLabels:
     kubernetes.io/os: linux
-  cpu: 150m
-  memory: 256Mi
+  -  cpu: 150m
+  - memory: 256Mi
   ports:
     - name: grpc
       containerPort: 9555
@@ -279,10 +294,12 @@ spec:
       value: "9555"
     - name: DISABLE_TRACING
       value: "1"
-    - name: DISABLE_PROFILER
+    - name: DISABLE_STATS
       value: "1"
-    - name: DISABLE_DEBUGGER
-      value: "1"
+    #- name: DISABLE_PROFILER
+    #  value: "1"
+    #- name: DISABLE_DEBUGGER
+    #  value: "1"
 ---
 apiVersion: core.kapp.dev/v1alpha1
 kind: PluginBinding
@@ -322,6 +339,10 @@ spec:
       value: "7070"
     - name: LISTEN_ADDR
       value: "0.0.0.0"
+    - name: DISABLE_TRACING
+      value: "1"
+    - name: DISABLE_PROFILER
+      value: "1"
 ---
 apiVersion: core.kapp.dev/v1alpha1
 kind: PluginBinding
@@ -410,6 +431,10 @@ spec:
     - name: CART_SERVICE_ADDR
       value: "cartservice/grpc"
       type: linked
+    - name: DISABLE_TRACING
+      value: "1"
+    - name: DISABLE_PROFILER
+      value: "1"
 ---
 apiVersion: core.kapp.dev/v1alpha1
 kind: PluginBinding
