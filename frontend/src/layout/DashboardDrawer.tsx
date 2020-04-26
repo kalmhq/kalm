@@ -57,11 +57,6 @@ class DashboardDrawerRaw extends React.PureComponent<Props, State> {
     const { activeNamespaceName } = this.props;
     return [
       {
-        text: "Namespaces",
-        to: "/namespaces",
-        requireAdmin: true
-      },
-      {
         text: "Roles & Permissions",
         to: "/roles",
         requireAdmin: true

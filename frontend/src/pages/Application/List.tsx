@@ -58,46 +58,6 @@ const styles = (theme: Theme) =>
     componentLine: {
       display: "inline-block"
     },
-    bottomBar: {
-      position: "fixed",
-      height: "48px",
-      bottom: "0",
-      left: "0",
-      right: "0",
-      background: "#FFFFFF",
-      boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.25)"
-    },
-    bottomContent: {
-      maxWidth: "1200px",
-      margin: "0 auto",
-      display: "flex",
-      justifyContent: "space-around",
-      height: "48px",
-      alignItems: "center"
-    },
-    applicationSelected: {
-      display: "flex"
-    },
-    selectedNumber: {
-      width: "20px",
-      height: "20px",
-      background: "#1976D2",
-      color: "#ffffff",
-      textAlign: "center",
-      marginRight: "8px"
-    },
-    bottomActions: {
-      width: "500px",
-      display: "flex",
-      justifyContent: "space-around"
-    },
-    bottomAction: {
-      cursor: "pointer",
-      display: "flex"
-    },
-    actionText: {
-      marginLeft: "8px"
-    },
     duplicateConfirmFileds: {
       marginTop: "20px",
       width: "100%",

@@ -3,7 +3,8 @@ import React from "react";
 import { RootState } from "reducers";
 import { connect } from "react-redux";
 import { RequireAuthorizated } from "permission/Authorization";
-import { AppBarComponent } from "./AppBar";
+import { AppBarComponent, APP_BAR_HEIGHT } from "./AppBar";
+import { SECOND_HEADER_HEIGHT } from "./SecondHeader";
 
 const styles = (theme: Theme) => {
   return createStyles({
@@ -13,7 +14,7 @@ const styles = (theme: Theme) => {
     },
     content: {
       flexGrow: 1,
-      paddingTop: "48px",
+      paddingTop: APP_BAR_HEIGHT + SECOND_HEADER_HEIGHT,
       height: "100%",
       // maxWidth: "1200px",
       margin: "0 auto"

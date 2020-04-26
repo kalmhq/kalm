@@ -1,15 +1,17 @@
-import { AppBar, createStyles, Theme, IconButton, Menu, MenuItem, Divider } from "@material-ui/core";
+import { AppBar, createStyles, Divider, IconButton, Menu, MenuItem, Theme } from "@material-ui/core";
 import blue from "@material-ui/core/colors/blue";
+import AccountCircle from "@material-ui/icons/AccountCircle";
 import { WithStyles, withStyles } from "@material-ui/styles";
+import { logoutAction } from "actions/auth";
 import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { FlexRowItemCenterBox } from "widgets/Box";
-import { Namespaces } from "widgets/Namespaces";
-import AccountCircle from "@material-ui/icons/AccountCircle";
-import { logoutAction } from "actions/auth";
+import { loadApplicationsAction } from "../actions/application";
+
+export const APP_BAR_HEIGHT = 48;
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
@@ -29,8 +31,8 @@ const styles = (theme: Theme) =>
       position: "fixed",
       top: "0px",
       transition: "0.2s",
-      height: "48px",
-      zIndex: 1201
+      height: APP_BAR_HEIGHT,
+      zIndex: 1202
     },
     barContainer: {
       height: "100%",
@@ -83,7 +85,9 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
     };
   }
 
-  public componentDidMount() {}
+  public componentDidMount() {
+    this.props.dispatch(loadApplicationsAction());
+  }
 
   renderAuthEntity() {
     const { entity } = this.props;
@@ -130,7 +134,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
   }
 
   render() {
-    const { classes, title, isAdmin } = this.props;
+    const { classes, title } = this.props;
 
     return (
       <AppBar ref={this.headerRef} id="header" position="relative" className={classes.appBar}>
@@ -139,7 +143,6 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
             <Link className={classes.barTitle} to="/">
               {title}
             </Link>
-            {isAdmin ? <Namespaces /> : null}
           </FlexRowItemCenterBox>
           <div className={classes.barRight}>
             <div className={classes.barAvatar}>{this.renderAuthEntity()}</div>

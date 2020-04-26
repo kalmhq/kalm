@@ -5,6 +5,8 @@ import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { LEFT_SECTION_WIDTH } from "../pages/BasePage";
+import { APP_BAR_HEIGHT } from "./AppBar";
+import { SECOND_HEADER_HEIGHT } from "./SecondHeader";
 
 const mapStateToProps = (state: RootState) => {
   return {};
@@ -18,7 +20,7 @@ const styles = (theme: Theme) =>
     },
     drawerPaper: {
       width: LEFT_SECTION_WIDTH,
-      paddingTop: 48
+      paddingTop: APP_BAR_HEIGHT + SECOND_HEADER_HEIGHT
     },
     drawerContainer: {
       overflow: "auto"
@@ -33,8 +35,6 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
 interface State {}
 
 class BaseDrawerRaw extends React.PureComponent<Props, State> {
-  private headerRef = React.createRef<React.ReactElement>();
-
   constructor(props: Props) {
     super(props);
 

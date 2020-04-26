@@ -32,6 +32,7 @@ import { SubmissionError } from "redux-form";
 import { push } from "connected-react-router";
 import { resErrorsToSubmitErrors } from "../utils";
 import Immutable from "immutable";
+import { setCurrentNamespaceAction } from "./namespaces";
 
 export const createApplicationAction = (applicationValues: Application): ThunkResult<Promise<void>> => {
   return async dispatch => {
@@ -226,7 +227,13 @@ export const loadApplicationsAction = (): ThunkResult<Promise<void>> => {
       return;
     }
 
-    // console.log("applicationList", JSON.stringify(applicationList.toJS()));
+    const activeNamespace = getState()
+      .get("namespaces")
+      .get("active");
+    if (!activeNamespace && applicationList.size > 0) {
+      dispatch(setCurrentNamespaceAction(applicationList.get(0)!.get("name")));
+    }
+
     dispatch({
       type: LOAD_APPLICATIONS_FULFILLED,
       payload: {
