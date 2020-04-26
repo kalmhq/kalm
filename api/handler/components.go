@@ -6,6 +6,7 @@ import (
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"net/http"
 )
 
@@ -125,7 +126,7 @@ func getComponentList(c echo.Context) (*v1alpha1.ComponentList, error) {
 func createComponent(c echo.Context) (*v1alpha1.Component, error) {
 	k8sClient := getK8sClient(c)
 
-	crdComponent, err := getComponentFromContext(c)
+	crdComponent, plugins, err := getComponentFromContext(c)
 	if err != nil {
 		return nil, err
 	}
@@ -142,13 +143,20 @@ func createComponent(c echo.Context) (*v1alpha1.Component, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	kappClient, _ := getKappV1Alpha1Client(c)
+	err = resources.UpdatePluginBindingsForObject(kappClient, component.Namespace, "component", component.Name, plugins)
+
+	if err != nil {
+		return nil, err
+	}
 	return &component, nil
 }
 
 func updateComponent(c echo.Context) (*v1alpha1.Component, error) {
 	k8sClient := getK8sClient(c)
 
-	crdComponent, err := getComponentFromContext(c)
+	crdComponent, plugins, err := getComponentFromContext(c)
 
 	if err != nil {
 		return nil, err
@@ -169,14 +177,20 @@ func updateComponent(c echo.Context) (*v1alpha1.Component, error) {
 		return nil, err
 	}
 
+	kappClient, _ := getKappV1Alpha1Client(c)
+	err = resources.UpdatePluginBindingsForObject(kappClient, component.Namespace, "component", component.Name, plugins)
+
+	if err != nil {
+		return nil, err
+	}
 	return &component, nil
 }
 
-func getComponentFromContext(c echo.Context) (*v1alpha1.Component, error) {
+func getComponentFromContext(c echo.Context) (*v1alpha1.Component, []runtime.RawExtension, error) {
 	var component resources.Component
 
 	if err := c.Bind(&component); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	name := c.Param("name")
@@ -197,7 +211,7 @@ func getComponentFromContext(c echo.Context) (*v1alpha1.Component, error) {
 		Spec: component.ComponentSpec,
 	}
 
-	return crdComponent, nil
+	return crdComponent, component.Plugins, nil
 }
 
 func (h *ApiHandler) componentResponse(c echo.Context, component *v1alpha1.Component) (*resources.ComponentDetails, error) {

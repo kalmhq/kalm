@@ -7,6 +7,8 @@ import (
 	"github.com/kapp-staging/kapp/api/handler"
 	"github.com/kapp-staging/kapp/api/resources"
 	"github.com/kapp-staging/kapp/api/server"
+	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"k8s.io/client-go/kubernetes/scheme"
 )
 
 import (
@@ -97,6 +99,8 @@ func main() {
 }
 
 func run(runningConfig *config.Config) {
+	v1alpha1.AddToScheme(scheme.Scheme)
+
 	e := server.NewEchoServer(runningConfig)
 
 	clientManager := client.NewClientManager(runningConfig)

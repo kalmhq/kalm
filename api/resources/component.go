@@ -95,6 +95,10 @@ func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component) (*C
 	plugins := make([]runtime.RawExtension, 0, len(resources.PluginBindings))
 
 	for _, binding := range resources.PluginBindings {
+		if binding.DeletionTimestamp != nil {
+			continue
+		}
+
 		var tmp struct {
 			Name   string                `json:"name"`
 			Config *runtime.RawExtension `json:"config,omitempty"`

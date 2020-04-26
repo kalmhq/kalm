@@ -2,12 +2,12 @@ package handler
 
 import (
 	"encoding/json"
-	"net/http"
-
 	"github.com/kapp-staging/kapp/api/resources"
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"net/http"
 )
 
 func (h *ApiHandler) handleGetApplications(c echo.Context) error {
@@ -43,7 +43,7 @@ func (h *ApiHandler) handleGetApplicationDetails(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleValidateApplications(c echo.Context) error {
-	crdApplication, err := getApplicationFromContext(c)
+	crdApplication, _, err := getApplicationFromContext(c)
 	if err != nil {
 		return err
 	}
@@ -106,7 +106,7 @@ func deleteKappApplication(c echo.Context) error {
 func createKappApplication(c echo.Context) (*v1alpha1.Application, error) {
 	k8sClient := getK8sClient(c)
 
-	crdApplication, err := getApplicationFromContext(c)
+	crdApplication, plugins, err := getApplicationFromContext(c)
 	if err != nil {
 		return nil, err
 	}
@@ -121,13 +121,21 @@ func createKappApplication(c echo.Context) (*v1alpha1.Application, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	kappClient, _ := getKappV1Alpha1Client(c)
+	err = resources.UpdatePluginBindingsForObject(kappClient, application.Name, "application", application.Name, plugins)
+
+	if err != nil {
+		return nil, err
+	}
+
 	return &application, nil
 }
 
 func updateKappApplication(c echo.Context) (*v1alpha1.Application, error) {
 	k8sClient := getK8sClient(c)
 
-	crdApplication, err := getApplicationFromContext(c)
+	crdApplication, plugins, err := getApplicationFromContext(c)
 
 	if err != nil {
 		return nil, err
@@ -143,6 +151,13 @@ func updateKappApplication(c echo.Context) (*v1alpha1.Application, error) {
 	bts, _ := json.Marshal(crdApplication)
 	var application v1alpha1.Application
 	err = k8sClient.RESTClient().Put().Body(bts).AbsPath(kappApplicationUrl(c)).Do().Into(&application)
+
+	if err != nil {
+		return nil, err
+	}
+
+	kappClient, _ := getKappV1Alpha1Client(c)
+	err = resources.UpdatePluginBindingsForObject(kappClient, application.Name, "application", application.Name, plugins)
 
 	if err != nil {
 		return nil, err
@@ -181,11 +196,11 @@ func kappApplicationUrl(c echo.Context) string {
 	return "/apis/core.kapp.dev/v1alpha1/applications/" + name
 }
 
-func getApplicationFromContext(c echo.Context) (*v1alpha1.Application, error) {
+func getApplicationFromContext(c echo.Context) (*v1alpha1.Application, []runtime.RawExtension, error) {
 	var application resources.Application
 
 	if err := c.Bind(&application); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	crdApplication := &v1alpha1.Application{
@@ -203,7 +218,7 @@ func getApplicationFromContext(c echo.Context) (*v1alpha1.Application, error) {
 		},
 	}
 
-	return crdApplication, nil
+	return crdApplication, application.Plugins, nil
 }
 
 func (h *ApiHandler) applicationResponse(c echo.Context, application *v1alpha1.Application) (*resources.ApplicationDetails, error) {
