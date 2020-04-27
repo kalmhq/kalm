@@ -1,4 +1,4 @@
-import { createStyles, Grid, Paper, WithStyles, withStyles } from "@material-ui/core";
+import { createStyles, Grid, Paper, WithStyles, withStyles, Button } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import Immutable from "immutable";
 import React from "react";
@@ -13,7 +13,6 @@ import { SwitchField } from "../Basic/switch";
 import { TextField } from "../Basic/text";
 import { NormalizeBoolean } from "../normalizer";
 import { ValidatorName, ValidatorRequired } from "../validator";
-import { Components } from "./component";
 import { SharedEnvs } from "./sharedEnv";
 
 const styles = (theme: Theme) =>
@@ -32,6 +31,12 @@ const styles = (theme: Theme) =>
     },
     formSectionItem: {
       padding: "0px !important"
+    },
+    displayNone: {
+      display: "none"
+    },
+    submitButton: {
+      marginLeft: 20
     }
   });
 
@@ -50,6 +55,7 @@ const mapStateToProps = (state: RootState) => {
 
 export interface Props {
   isEdit?: boolean;
+  currentTab: "basic" | "sharedEnvs";
 }
 
 class ApplicationFormRaw extends React.PureComponent<
@@ -63,9 +69,6 @@ class ApplicationFormRaw extends React.PureComponent<
     const { isEdit } = this.props;
     return (
       <>
-        {/* <HelperContainer>
-          <Typography>Basic information of this application</Typography>
-        </HelperContainer> */}
         {TableTitle("Basic Info")}
         <Grid container spacing={2}>
           <Grid item md={6}>
@@ -98,43 +101,47 @@ class ApplicationFormRaw extends React.PureComponent<
     );
   }
 
-  private renderComponent() {
-    return (
-      <>
-        {/* <HelperContainer>
-          <Typography>Select compoents you want to include into this application.</Typography>
-        </HelperContainer> */}
-        <Components />
-      </>
-    );
-  }
+  // private renderComponent() {
+  //   return (
+  //     <>
+  //       <Components />
+  //     </>
+  //   );
+  // }
 
   private renderSharedEnvs() {
     return (
       <>
-        {/* <HelperContainer>
-          <Typography>Shared environment variable is consistent amoung all components.</Typography>
-        </HelperContainer> */}
         <SharedEnvs />
       </>
     );
   }
 
   public render() {
-    const { handleSubmit, classes } = this.props;
+    const { handleSubmit, classes, currentTab } = this.props;
 
     return (
       <form onSubmit={handleSubmit} style={{ height: "100%", overflow: "hidden" }}>
-        <Grid container spacing={2} className={classes.formSectionContainer}>
+        <Grid
+          container
+          spacing={2}
+          className={`${classes.formSectionContainer} ${currentTab === "basic" ? "" : classes.displayNone}`}>
           <Grid className={classes.formSectionItem} item xs={12} sm={8} md={8}>
             <Paper className={classes.formSection}>{this.renderBasic()}</Paper>
           </Grid>
         </Grid>
-        <Paper className={classes.formSectionTable}>{this.renderComponent()}</Paper>
-        <Paper className={classes.formSectionTable}>{this.renderSharedEnvs()}</Paper>
-        {/* <Button variant="contained" color="primary" type="submit">
-          Submit
-        </Button> */}
+
+        <Paper className={`${classes.formSectionContainer} ${currentTab === "sharedEnvs" ? "" : classes.displayNone}`}>
+          {this.renderSharedEnvs()}
+        </Paper>
+
+        <Button
+          variant="contained"
+          color="primary"
+          type="submit"
+          className={`${currentTab === "basic" ? classes.submitButton : classes.displayNone}`}>
+          Create
+        </Button>
       </form>
     );
   }

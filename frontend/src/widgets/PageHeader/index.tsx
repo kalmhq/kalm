@@ -27,7 +27,6 @@ export interface PageHeaderProps {
   title: string;
   noBreadcrumb?: boolean;
   rightAction?: React.ReactNode;
-  leftSection?: React.ReactNode;
 }
 
 export class PageHeaderRaw extends React.PureComponent<PageHeaderProps & WithStyles<typeof styles>> {

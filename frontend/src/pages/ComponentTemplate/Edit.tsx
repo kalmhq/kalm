@@ -5,11 +5,10 @@ import { RouteChildrenProps } from "react-router";
 import { updateComponentTemplateAction } from "../../actions/componentTemplate";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "../../actions/notification";
 import { ComponentLikeForm } from "../../forms/ComponentLike";
+import { ComponentLike, ComponentTemplate } from "../../types/componentTemplate";
 import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
 import { ComponentTemplateDataWrapper, WithComponentTemplatesDataProps } from "./DataWrapper";
-import RemoteSubmitComponentLike from "../../forms/ComponentLike/remoteSubmitComponentLike";
-import { ComponentLike, ComponentTemplate } from "../../types/componentTemplate";
 
 const styles = (theme: Theme) => createStyles({});
 
@@ -54,15 +53,8 @@ class ComponentTemplateEditRaw extends React.PureComponent<Props> {
 
   public render() {
     const { isLoading, isFirstLoaded } = this.props;
-    const componentTemplate = this.getComponentTemplate();
 
-    return (
-      <BasePage
-        title={isLoading || !isFirstLoaded ? "" : `Edit ${componentTemplate.get("name")}`}
-        rightAction={<RemoteSubmitComponentLike />}>
-        {isLoading || !isFirstLoaded ? <Loading /> : this.renderFormContent()}
-      </BasePage>
-    );
+    return <BasePage>{isLoading || !isFirstLoaded ? <Loading /> : this.renderFormContent()}</BasePage>;
   }
 }
 

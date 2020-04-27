@@ -596,7 +596,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     }
 
     return (
-      <BasePage title="Applications">
+      <BasePage>
         {this.renderInternalEndpointsDialog()}
         {this.renderExternalEndpointsDialog()}
         {this.renderDeleteConfirmDialog()}

@@ -153,7 +153,7 @@ export default function InstallPage() {
   // };
 
   return (
-    <BasePage title="Install">
+    <BasePage>
       <Stepper activeStep={activeStep} orientation="vertical">
         {steps.map((step, index) => (
           <Step key={step.title}>

@@ -6,6 +6,7 @@ import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { LEFT_SECTION_WIDTH } from "../pages/BasePage";
 import { APP_BAR_HEIGHT } from "./AppBar";
+import { H4 } from "../widgets/Label";
 
 export const SECOND_HEADER_HEIGHT = 48;
 
@@ -28,6 +29,11 @@ const styles = (theme: Theme) =>
     left: {
       width: LEFT_SECTION_WIDTH,
       height: SECOND_HEADER_HEIGHT
+    },
+    leftTextContainer: {
+      display: "flex",
+      alignItems: "center",
+      paddingLeft: 32
     },
     right: {
       flex: 1,
@@ -55,7 +61,9 @@ class SecondHeaderRaw extends React.PureComponent<Props, State> {
 
     return (
       <div className={classes.root}>
-        <div className={classes.left}>{left}</div>
+        <div className={`${classes.left} ${typeof left === "string" ? classes.leftTextContainer : ""}`}>
+          {typeof left === "string" ? <H4>{left}</H4> : left}
+        </div>
         <div className={classes.right}>{right}</div>
       </div>
     );
