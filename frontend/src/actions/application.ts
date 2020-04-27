@@ -16,7 +16,12 @@ import {
   SetIsSubmittingApplicationComponent,
   SET_IS_SUBMITTING_APPLICATION,
   SET_IS_SUBMITTING_APPLICATION_COMPONENT,
-  UPDATE_APPLICATION
+  UPDATE_APPLICATION,
+  ApplicationComponent,
+  ApplicationComponentDetails,
+  CREATE_COMPONENT,
+  UPDATE_COMPONENT,
+  DELETE_COMPONENT
 } from "../types/application";
 import {
   createKappApplication,
@@ -25,7 +30,9 @@ import {
   getKappApplicationList,
   updateKappApplication,
   getKappApplicationComponentList,
-  createKappApplicationComponent
+  createKappApplicationComponent,
+  updateKappApplicationComponent,
+  deleteKappApplicationComponent
 } from "./kubernetesApi";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "./notification";
 import { SubmissionError } from "redux-form";
@@ -33,6 +40,94 @@ import { push } from "connected-react-router";
 import { resErrorsToSubmitErrors } from "../utils";
 import Immutable from "immutable";
 import { setCurrentNamespaceAction } from "./namespaces";
+
+export const createComponentAction = (
+  componentValues: ApplicationComponent,
+  applicationName?: string
+): ThunkResult<Promise<void>> => {
+  return async (dispatch, getState) => {
+    if (!applicationName) {
+      applicationName = getState()
+        .get("namespaces")
+        .get("active");
+    }
+
+    let component: ApplicationComponentDetails;
+    try {
+      component = await createKappApplicationComponent(applicationName, componentValues);
+    } catch (e) {
+      if (e.response && e.response.data.status === StatusFailure) {
+        dispatch(setErrorNotificationAction(e.response.data.message));
+      } else {
+        dispatch(setErrorNotificationAction());
+      }
+      return;
+    }
+
+    dispatch({
+      type: CREATE_COMPONENT,
+      payload: { applicationName, component }
+    });
+    dispatch(setSuccessNotificationAction("Create component successfully"));
+  };
+};
+
+export const updateComponentAction = (
+  componentValues: ApplicationComponent,
+  applicationName?: string
+): ThunkResult<Promise<void>> => {
+  return async (dispatch, getState) => {
+    if (!applicationName) {
+      applicationName = getState()
+        .get("namespaces")
+        .get("active");
+    }
+
+    let component: ApplicationComponentDetails;
+    try {
+      component = await updateKappApplicationComponent(applicationName, componentValues);
+    } catch (e) {
+      if (e.response && e.response.data.status === StatusFailure) {
+        dispatch(setErrorNotificationAction(e.response.data.message));
+      } else {
+        dispatch(setErrorNotificationAction());
+      }
+      return;
+    }
+
+    dispatch({
+      type: UPDATE_COMPONENT,
+      payload: { applicationName, component }
+    });
+    dispatch(setSuccessNotificationAction("Update component successfully"));
+  };
+};
+
+export const deleteComponentAction = (componentName: string, applicationName?: string): ThunkResult<Promise<void>> => {
+  return async (dispatch, getState) => {
+    if (!applicationName) {
+      applicationName = getState()
+        .get("namespaces")
+        .get("active");
+    }
+
+    try {
+      await deleteKappApplicationComponent(applicationName, componentName);
+    } catch (e) {
+      if (e.response && e.response.data.status === StatusFailure) {
+        dispatch(setErrorNotificationAction(e.response.data.message));
+      } else {
+        dispatch(setErrorNotificationAction());
+      }
+      return;
+    }
+
+    dispatch({
+      type: DELETE_COMPONENT,
+      payload: { applicationName, componentName }
+    });
+  };
+};
 
 export const createApplicationAction = (applicationValues: Application): ThunkResult<Promise<void>> => {
   return async dispatch => {

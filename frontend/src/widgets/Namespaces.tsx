@@ -16,7 +16,6 @@ import { connect } from "react-redux";
 import { TDispatchProp } from "types";
 import { setCurrentNamespaceAction } from "actions/namespaces";
 import { RootState } from "reducers";
-import { loadApplicationsAction } from "../actions/application";
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
 import { SECOND_HEADER_HEIGHT } from "../layout/SecondHeader";

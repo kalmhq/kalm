@@ -6,7 +6,7 @@ import { Alert } from "@material-ui/lab";
 import { push } from "connected-react-router";
 import MaterialTable from "material-table";
 import React from "react";
-import { deleteComponentAction, duplicateComponentAction } from "../../actions/componentTemplate";
+import { deleteComponentTemplateAction, duplicateComponentTemplateAction } from "../../actions/componentTemplate";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "../../actions/notification";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
 import {
@@ -65,7 +65,7 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
   private deleteComponent = async () => {
     const { dispatch } = this.props;
     try {
-      await dispatch(deleteComponentAction(this.state.deletingComponentTemplateName!));
+      await dispatch(deleteComponentTemplateAction(this.state.deletingComponentTemplateName!));
       await dispatch(setSuccessNotificationAction("Successfully delete a component"));
     } catch {
       dispatch(setErrorNotificationAction());
@@ -75,7 +75,7 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
   private duplicateComponent = async (newName: string) => {
     const { dispatch } = this.props;
     try {
-      await dispatch(duplicateComponentAction(this.state.duplicatingItemId!, newName));
+      await dispatch(duplicateComponentTemplateAction(this.state.duplicatingItemId!, newName));
       await dispatch(setSuccessNotificationAction("Successfully duplicate a component"));
     } catch {
       dispatch(setErrorNotificationAction());

@@ -6,12 +6,12 @@ import {
 } from "./kubernetesApi";
 import {
   ComponentTemplate,
-  CREATE_COMPONENT,
-  DUPLICATE_COMPONENT,
-  UPDATE_COMPONENT,
+  CREATE_COMPONENT_TEMPLATES,
+  DUPLICATE_COMPONENT_TEMPLATES,
+  UPDATE_COMPONENT_TEMPLATES,
   LOAD_COMPONENT_TEMPLATES_PENDING,
   LOAD_COMPONENT_TEMPLATES_FULFILLED,
-  DELETE_COMPONENT
+  DELETE_COMPONENT_TEMPLATES
 } from "../types/componentTemplate";
 import { ThunkResult, StatusFailure } from "../types";
 import { setErrorNotificationAction } from "./notification";
@@ -32,13 +32,13 @@ export const createComponentTemplateAction = (componentTemplateRaw: ComponentTem
     }
 
     dispatch({
-      type: CREATE_COMPONENT,
+      type: CREATE_COMPONENT_TEMPLATES,
       payload: { componentTemplate }
     });
   };
 };
 
-export const duplicateComponentAction = (
+export const duplicateComponentTemplateAction = (
   componentTemplateName: string,
   newName: string
 ): ThunkResult<Promise<void>> => {
@@ -64,13 +64,13 @@ export const duplicateComponentAction = (
     }
 
     dispatch({
-      type: DUPLICATE_COMPONENT,
+      type: DUPLICATE_COMPONENT_TEMPLATES,
       payload: { componentTemplate }
     });
   };
 };
 
-export const updateComponentAction = (componentTemplateRaw: ComponentTemplate): ThunkResult<Promise<void>> => {
+export const updateComponentTemplateAction = (componentTemplateRaw: ComponentTemplate): ThunkResult<Promise<void>> => {
   return async dispatch => {
     let componentTemplate: ComponentTemplate;
 
@@ -86,13 +86,13 @@ export const updateComponentAction = (componentTemplateRaw: ComponentTemplate): 
     }
 
     dispatch({
-      type: UPDATE_COMPONENT,
+      type: UPDATE_COMPONENT_TEMPLATES,
       payload: { componentTemplate }
     });
   };
 };
 
-export const deleteComponentAction = (componentTemplateName: string): ThunkResult<Promise<void>> => {
+export const deleteComponentTemplateAction = (componentTemplateName: string): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     const componentTemplate = getState()
       .get("componentTemplates")
@@ -113,7 +113,7 @@ export const deleteComponentAction = (componentTemplateName: string): ThunkResul
     }
 
     dispatch({
-      type: DELETE_COMPONENT,
+      type: DELETE_COMPONENT_TEMPLATES,
       payload: { componentTemplateName }
     });
   };

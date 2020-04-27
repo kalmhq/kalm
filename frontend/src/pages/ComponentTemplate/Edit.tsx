@@ -2,7 +2,7 @@ import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { push } from "connected-react-router";
 import React from "react";
 import { RouteChildrenProps } from "react-router";
-import { updateComponentAction } from "../../actions/componentTemplate";
+import { updateComponentTemplateAction } from "../../actions/componentTemplate";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "../../actions/notification";
 import { ComponentLikeForm } from "../../forms/ComponentLike";
 import { Loading } from "../../widgets/Loading";
@@ -24,7 +24,7 @@ class ComponentTemplateEditRaw extends React.PureComponent<Props> {
     const component = componentLike as ComponentTemplate;
 
     try {
-      await dispatch(updateComponentAction(component));
+      await dispatch(updateComponentTemplateAction(component));
       dispatch(setSuccessNotificationAction("Component update successful"));
       dispatch(push("/componenttemplates"));
     } catch (e) {
