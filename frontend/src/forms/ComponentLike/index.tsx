@@ -63,8 +63,8 @@ const styles = (theme: Theme) =>
       marginBottom: 16
     },
     formSection: {
-      padding: theme.spacing(2),
-      margin: theme.spacing(3)
+      padding: 20
+      // margin: theme.spacing(3)
     },
     displayBlock: {
       display: "block"
@@ -124,7 +124,6 @@ const styles = (theme: Theme) =>
   });
 
 interface RawProps {
-  isEdit?: boolean;
   showDataView?: boolean;
   showSubmitButton?: boolean;
   submitButtonText?: string;
@@ -168,26 +167,26 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     dispatch(loadConfigsAction());
   }
 
-  componentDidUpdate(prevProps: Props) {
-    // @ts-ignore
-    // if (prevProps.initialValues.get("name") !== this.props.initialValues.get("name")) {
-    //   console.log("componentDidUpdate init");
-    //   // @ts-ignore
-    //   console.log(this.props.initialValues.toJS());
-    //   // @ts-ignore
-    //   // this.props.dispatch(this.props.initialize(this.props.initialValues));
-    //   // this.props.dispatch(reset("componentLike"));
-    // this.props.initialize(this.props.initialValues);
-    //   // this.props.reset();
-    // }
-    // if (this.props.submitAppplicationErrors && this.props.submitAppplicationErrors.size > 0) {
-    //   const oldValues = prevProps.values.deleteIn(["livenessProbe", "type"]).deleteIn(["readinessProbe", "type"]);
-    //   const newVavlues = this.props.values.deleteIn(["livenessProbe", "type"]).deleteIn(["readinessProbe", "type"]);
-    //   if (oldValues.equals && !oldValues.equals(newVavlues)) {
-    //     this.props.dispatch(stopSubmit("application", {})); // clear application submitErrors
-    //   }
-    // }
-  }
+  // componentDidUpdate(prevProps: Props) {
+  // @ts-ignore
+  // if (prevProps.initialValues.get("name") !== this.props.initialValues.get("name")) {
+  //   console.log("componentDidUpdate init");
+  //   // @ts-ignore
+  //   console.log(this.props.initialValues.toJS());
+  //   // @ts-ignore
+  //   // this.props.dispatch(this.props.initialize(this.props.initialValues));
+  //   // this.props.dispatch(reset("componentLike"));
+  // this.props.initialize(this.props.initialValues);
+  //   // this.props.reset();
+  // }
+  // if (this.props.submitAppplicationErrors && this.props.submitAppplicationErrors.size > 0) {
+  //   const oldValues = prevProps.values.deleteIn(["livenessProbe", "type"]).deleteIn(["readinessProbe", "type"]);
+  //   const newVavlues = this.props.values.deleteIn(["livenessProbe", "type"]).deleteIn(["readinessProbe", "type"]);
+  //   if (oldValues.equals && !oldValues.equals(newVavlues)) {
+  //     this.props.dispatch(stopSubmit("application", {})); // clear application submitErrors
+  //   }
+  // }
+  // }
 
   private renderSchedule() {
     if (this.props.values.get("workloadType") !== workloadTypeCronjob) {
@@ -223,7 +222,12 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderBasic() {
-    const { isEdit, isFolded } = this.props;
+    const { isFolded, initialValues } = this.props;
+    let isEdit = false;
+    // @ts-ignore
+    if (initialValues && initialValues!.get("name")) {
+      isEdit = true;
+    }
     return (
       <Grid container spacing={2}>
         <Grid item xs={12} sm={12} md={12}>

@@ -137,24 +137,22 @@ export class DisksRaw extends React.Component<Props, States> {
             </Alert>
           ) : null}
 
-          <Box mt={3}>
-            <MaterialTable
-              options={{
-                padding: "dense",
-                pageSize: 20
-              }}
-              columns={[
-                { title: "Name", field: "name", sorting: false },
-                { title: "Size", field: "size", sorting: false },
-                { title: "AccessModes", field: "accessModes", sorting: false },
-                { title: "Status", field: "status", sorting: false },
-                { title: "Cost", field: "cost", sorting: false },
-                { title: "Ref", field: "ref", sorting: false }
-              ]}
-              data={this.getTableData()}
-              title=""
-            />
-          </Box>
+          <MaterialTable
+            options={{
+              padding: "dense",
+              pageSize: 20
+            }}
+            columns={[
+              { title: "Name", field: "name", sorting: false },
+              { title: "Size", field: "size", sorting: false },
+              { title: "AccessModes", field: "accessModes", sorting: false },
+              { title: "Status", field: "status", sorting: false },
+              { title: "Cost", field: "cost", sorting: false },
+              { title: "Ref", field: "ref", sorting: false }
+            ]}
+            data={this.getTableData()}
+            title=""
+          />
         </div>
       </BasePage>
     );

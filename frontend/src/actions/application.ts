@@ -64,6 +64,7 @@ export const createComponentAction = (
       return;
     }
 
+    dispatch(loadApplicationAction(applicationName));
     dispatch({
       type: CREATE_COMPONENT,
       payload: { applicationName, component }
@@ -95,6 +96,7 @@ export const updateComponentAction = (
       return;
     }
 
+    dispatch(loadApplicationAction(applicationName));
     dispatch({
       type: UPDATE_COMPONENT,
       payload: { applicationName, component }
@@ -122,10 +124,12 @@ export const deleteComponentAction = (componentName: string, applicationName?: s
       return;
     }
 
+    dispatch(loadApplicationAction(applicationName));
     dispatch({
       type: DELETE_COMPONENT,
       payload: { applicationName, componentName }
     });
+    dispatch(setSuccessNotificationAction("Delete component successfully"));
   };
 };
 
@@ -326,7 +330,7 @@ export const loadApplicationsAction = (): ThunkResult<Promise<void>> => {
       .get("namespaces")
       .get("active");
     if (!activeNamespace && applicationList.size > 0) {
-      dispatch(setCurrentNamespaceAction(applicationList.get(0)!.get("name")));
+      dispatch(setCurrentNamespaceAction(applicationList.get(0)!.get("name"), false));
     }
 
     dispatch({

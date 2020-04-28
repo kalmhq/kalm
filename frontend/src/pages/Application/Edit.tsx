@@ -9,7 +9,8 @@ import {
   setIsSubmittingApplicationComponent,
   updateApplicationAction,
   updateComponentAction,
-  createComponentAction
+  createComponentAction,
+  deleteComponentAction
 } from "../../actions/application";
 import ApplicationForm from "../../forms/Application";
 import { ComponentLikeForm } from "../../forms/ComponentLike";
@@ -37,8 +38,10 @@ const styles = (theme: Theme) =>
       height: "100%",
       width: "100%",
       display: "flex",
-      alignItems: "center",
-      paddingLeft: 20
+      alignItems: "center"
+    },
+    sencondHeaderRightItem: {
+      marginLeft: 20
     }
   });
 
@@ -70,9 +73,9 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
     };
   }
 
-  public componentDidMount() {
-    console.log(this.props.application?.get("components").size);
-  }
+  // public componentDidMount() {
+  //   console.log(this.props.application?.get("components").size);
+  // }
 
   public componentDidUpdate(prevProps: Props, prevState: State) {
     const prevComponentName = prevState.currentComponent?.get("name");
@@ -88,32 +91,55 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
   }
 
   private submitApplication = async (application: Application) => {
-    console.log("submitApplication", application.toJS());
+    // console.log("submitApplication", application.toJS());
     const { dispatch } = this.props;
 
     await dispatch(updateApplicationAction(application));
   };
 
   private submitComponent = async (component: ApplicationComponent) => {
-    console.log("submitComponent", component.toJS());
+    // console.log("currentComponent", console.log(this.state.currentComponent && this.state.currentComponent.toJS()));
+    // console.log("submitComponent", component.toJS());
     const { dispatch } = this.props;
+    const { currentComponent } = this.state;
 
-    await dispatch(createComponentAction(component));
-    // await dispatch(updateComponentAction(component));
+    if (!currentComponent || !currentComponent.get("name")) {
+      await dispatch(createComponentAction(component));
+    } else {
+      await dispatch(updateComponentAction(component));
+    }
   };
+
+  private handleDeleteComponent() {
+    const { application, dispatch } = this.props;
+    const { currentComponent } = this.state;
+
+    if (currentComponent) {
+      if (!currentComponent.get("name")) {
+        this.setState({
+          currentComponent: application?.get("components").get(0),
+          currentComponentTab: "basic"
+        });
+      } else {
+        dispatch(deleteComponentAction(currentComponent.get("name")));
+      }
+    }
+  }
 
   public renderApplicationDrawer() {
     const { application } = this.props;
+    const { currentComponent } = this.state;
 
     return (
       <ApplicationDrawer
         application={application}
-        handleClickBasic={() => {
-          this.setState({
-            currentFormType: "application",
-            currentApplicationTab: "basic"
-          });
-        }}
+        currentComponent={currentComponent}
+        // handleClickBasic={() => {
+        //   this.setState({
+        //     currentFormType: "application",
+        //     currentApplicationTab: "basic"
+        //   });
+        // }}
         handleClickSharedEnvs={() => {
           this.setState({
             currentFormType: "application",
@@ -121,7 +147,6 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
           });
         }}
         handleClickComponent={(component: ApplicationComponent) => {
-          console.log("component", component.toJS());
           this.setState({
             currentFormType: "component",
             currentComponent: component,
@@ -149,9 +174,25 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
         secondHeaderRight={
           <div className={classes.sencondHeaderRight}>
             {currentFormType === "application" ? (
-              <ButtonGrey onClick={() => dispatch(submit("application"))}>Save Application</ButtonGrey>
+              <>
+                <ButtonGrey className={classes.sencondHeaderRightItem} onClick={() => dispatch(submit("application"))}>
+                  Save Application
+                </ButtonGrey>
+              </>
             ) : (
-              <ButtonGrey onClick={() => dispatch(submit("componentLike"))}>Save Component</ButtonGrey>
+              <>
+                <ButtonGrey
+                  className={classes.sencondHeaderRightItem}
+                  onClick={() => dispatch(submit("componentLike"))}>
+                  Save Component
+                </ButtonGrey>
+                <ButtonGrey
+                  className={classes.sencondHeaderRightItem}
+                  disabled={this.props.application?.get("components").size === 0}
+                  onClick={() => this.handleDeleteComponent()}>
+                  Delete Component
+                </ButtonGrey>
+              </>
             )}
           </div>
         }
