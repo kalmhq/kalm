@@ -6,6 +6,8 @@ import React from "react";
 // @ts-ignore
 import { Chart, ChartData, Line } from "react-chartjs-2";
 import { MetricList } from "../types/common";
+import { WhitePaper } from "./Paper";
+import { Caption, CenterCaption } from "./Label";
 
 Chart.controllers.line = Chart.controllers.line.extend({
   draw: function(ease: any) {
@@ -292,10 +294,7 @@ const formatCPU = (value: number): string => {
 
 export const BigCPULineChart = (props: Pick<Props, "data">) => {
   return (
-    <Paper style={{ overflow: "hidden" }}>
-      <Box mt={2} ml={2}>
-        CPU
-      </Box>
+    <WhitePaper elevation={0} style={{ overflow: "hidden" }}>
       <LineChart
         {...props}
         formatValue={formatCPU}
@@ -304,16 +303,14 @@ export const BigCPULineChart = (props: Pick<Props, "data">) => {
         borderColor="rgba(33, 150, 243, 1)"
         backgroundColor="rgba(33, 150, 243, 0.5)"
       />
-    </Paper>
+      <CenterCaption>CPU</CenterCaption>
+    </WhitePaper>
   );
 };
 
 export const BigMemoryLineChart = (props: Pick<Props, "data">) => {
   return (
-    <Paper style={{ overflow: "hidden" }}>
-      <Box mt={2} ml={2}>
-        Memory
-      </Box>
+    <WhitePaper elevation={0} style={{ overflow: "hidden" }}>
       <LineChart
         {...props}
         formatValue={formatMemory}
@@ -322,7 +319,8 @@ export const BigMemoryLineChart = (props: Pick<Props, "data">) => {
         borderColor="rgba(75,192,192, 1)"
         backgroundColor="rgba(75,192,192,0.5)"
       />
-    </Paper>
+      <CenterCaption>Memory</CenterCaption>
+    </WhitePaper>
   );
 };
 

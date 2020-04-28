@@ -115,3 +115,11 @@ export const Caption = withStyles(styles)((props: LabelProps) => {
     </Label>
   );
 });
+
+export const CenterCaption = withStyles(styles)((props: LabelProps) => {
+  return (
+    <Box style={{ display: "flex", justifyContent: "center" }}>
+      <Caption>{props.children}</Caption>
+    </Box>
+  );
+});

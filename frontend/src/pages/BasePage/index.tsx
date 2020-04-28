@@ -13,7 +13,8 @@ const styles = (_theme: Theme) =>
     root: {
       display: "flex",
       height: "100%",
-      overflow: "hidden"
+      overflow: "hidden",
+      background: "white"
     },
     rightSection: {
       display: "flex",

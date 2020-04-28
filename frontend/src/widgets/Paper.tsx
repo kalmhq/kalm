@@ -9,6 +9,9 @@ const styles = (theme: Theme) =>
     root: {
       padding: theme.spacing(1)
     },
+    whitePaper: {
+      background: "white"
+    },
     grey1Paper: {
       background: grey[100]
     },
@@ -23,12 +26,15 @@ const styles = (theme: Theme) =>
 type InfoPaperProps = React.Props<any> &
   WithStyles<typeof styles> &
   PaperProps & {
-    type?: "light" | "normal" | "dark" | null;
+    type?: "light" | "normal" | "dark" | "white" | null;
   };
 const PaperRaw = (props: InfoPaperProps) => {
   const { classes, type } = props;
   let typeClass;
   switch (type) {
+    case "white":
+      typeClass = classes.whitePaper;
+      break;
     case "light":
       typeClass = classes.grey1Paper;
       break;
@@ -50,6 +56,14 @@ const PaperRaw = (props: InfoPaperProps) => {
 };
 
 export const InfoPaper = withStyles(styles)(PaperRaw);
+
+export const WhitePaper = withStyles(styles)((props: InfoPaperProps) => {
+  return (
+    <InfoPaper {...props} type="white">
+      {props.children}
+    </InfoPaper>
+  );
+});
 
 export const LightInfoPaper = withStyles(styles)((props: InfoPaperProps) => {
   return (
