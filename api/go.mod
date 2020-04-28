@@ -1,6 +1,6 @@
 module github.com/kapp-staging/kapp/api
 
-go 1.12
+go 1.13
 
 require (
 	github.com/aws/aws-sdk-go v1.25.48 // indirect

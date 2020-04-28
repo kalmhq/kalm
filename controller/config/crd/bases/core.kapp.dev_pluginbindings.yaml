@@ -52,7 +52,6 @@ spec:
               - component
               type: string
           required:
-          - isDisabled
           - pluginName
           - scope
           type: object
