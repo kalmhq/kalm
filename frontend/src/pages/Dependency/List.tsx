@@ -318,7 +318,7 @@ class DependencyListRaw extends React.PureComponent<Props, State> {
 
   public render() {
     return (
-      <BasePage title="Kapp dependencies" noBreadcrumb>
+      <BasePage>
         {this.renderDialog()}
         {this.renderDataTable()}
       </BasePage>

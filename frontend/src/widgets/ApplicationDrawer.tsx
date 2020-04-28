@@ -15,10 +15,14 @@ import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { blue, grey } from "@material-ui/core/colors";
 import { BaseDrawer } from "../layout/BaseDrawer";
-import { ApplicationDetails, ApplicationComponent } from "../types/application";
+import { ApplicationDetails, ApplicationComponent, ApplicationComponentDetails } from "../types/application";
 import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
+import { componentInitialValues } from "../forms/ComponentLike";
+import Immutable from "immutable";
+import AddIcon from "@material-ui/icons/Add";
+import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
@@ -47,17 +51,27 @@ const styles = (theme: Theme) =>
     },
     listSubHeader: {
       textTransform: "uppercase",
-      color: "#000000 !important"
+      color: "#000000 !important",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingRight: "4px"
     }
   });
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps> {
   dispatch: TDispatch;
   application?: ApplicationDetails;
+  currentComponent?: ApplicationComponent; // for add new component
+
+  // handleClickBasic: () => void;
+  handleClickSharedEnvs: () => void;
+  handleClickComponent: (component: ApplicationComponent) => void;
+  handleClickComponentTab: (component: ApplicationComponent, tab: string) => void;
 }
 
 interface State {
-  expandedComponentIndexes: { [key: string]: boolean };
+  expandedComponentIndex: number;
   selectedListItemKey: string;
 }
 
@@ -65,56 +79,95 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
 
-    this.state = { expandedComponentIndexes: {}, selectedListItemKey: "" };
+    this.state = {
+      expandedComponentIndex: 0,
+      selectedListItemKey: this.generateComponentKey(0, "basic")
+    };
   }
 
-  private handleClickComponent(index: number) {
-    const newIndexes = { ...this.state.expandedComponentIndexes };
-    newIndexes[`${index}`] = !newIndexes[`${index}`];
+  // private handleClickBasic() {
+  //   this.setState({ selectedListItemKey: "basic" });
+
+  //   const { handleClickBasic } = this.props;
+  //   handleClickBasic();
+  // }
+
+  private handleClickSharedEnvs() {
+    this.setState({ selectedListItemKey: "sharedEnvs" });
+
+    const { handleClickSharedEnvs } = this.props;
+    handleClickSharedEnvs();
+  }
+
+  private handleClickComponent(component: ApplicationComponent, index: number) {
     this.setState({
-      expandedComponentIndexes: newIndexes
+      expandedComponentIndex: index,
+      selectedListItemKey: this.generateComponentKey(index, "basic")
     });
+
+    const { handleClickComponent } = this.props;
+    handleClickComponent(component);
+  }
+
+  private handleClickComponentTab(component: ApplicationComponent, selectedListItemKey: string, tab: string) {
+    this.setState({ selectedListItemKey: selectedListItemKey });
+
+    const { handleClickComponentTab } = this.props;
+    handleClickComponentTab(component, tab);
+  }
+
+  private handleAdd() {
+    this.handleClickComponent(componentInitialValues, this.props.application?.get("components").size as number);
   }
 
   private getComponentFields() {
     return [
+      { tab: "basic", text: "Basic Info" },
       {
-        key: "envs",
+        tab: "envs",
         text: "Environment variables"
       },
       {
-        key: "ports",
+        tab: "ports",
         text: "Ports"
       },
       {
-        key: "resources",
+        tab: "resources",
         text: "Resources"
       },
       {
-        key: "plugins",
+        tab: "plugins",
         text: "Plugins"
       },
       {
-        key: "probes",
+        tab: "probes",
         text: "Probes"
       },
       {
-        key: "advanced",
+        tab: "advanced",
         text: "Advanced"
       }
     ];
   }
 
-  private renderComponentFields(component: ApplicationComponent, index: number) {
+  private generateComponentKey(index: number, tab: string): string {
+    return `components-${index}-${tab}`;
+  }
+
+  private renderComponentFields(component: ApplicationComponent, index: number, selectedListItemKey?: string) {
     const { classes } = this.props;
+    selectedListItemKey = selectedListItemKey || this.state.selectedListItemKey;
+
     const fields = this.getComponentFields();
     return fields.map(field => {
-      const key = `components-${index}-${field.key}`;
+      const key = this.generateComponentKey(index, field.tab);
       return (
         <ListItem
           key={key}
-          onClick={() => this.setState({ selectedListItemKey: key })}
-          selected={this.state.selectedListItemKey === key}
+          onClick={() => {
+            this.handleClickComponentTab(component, key, field.tab);
+          }}
+          selected={selectedListItemKey === key}
           className={classes.listItem}
           classes={{
             selected: classes.listItemSeleted
@@ -126,13 +179,32 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
           <ListItemIcon>
             <FiberManualRecordIcon
               style={{ fontSize: 15 }}
-              htmlColor={this.state.selectedListItemKey === key ? blue[700] : grey[400]}
+              htmlColor={selectedListItemKey === key ? blue[700] : grey[400]}
             />
           </ListItemIcon>
           <ListItemText primary={field.text} />
         </ListItem>
       );
     });
+  }
+
+  public componentDidMount() {
+    const { application, handleClickComponent } = this.props;
+    if (application && application.get("components").get(0)) {
+      handleClickComponent(application.get("components").get(0) as ApplicationComponent);
+    }
+  }
+
+  public componentDidUpdate(prevProps: Props) {
+    if (prevProps.application && this.props.application) {
+      // after create
+      if (this.props.application.get("components").size - prevProps.application.get("components").size === 1) {
+        // select new created item
+        this.props.handleClickComponent(
+          this.props.application.get("components").get(this.state.expandedComponentIndex) as ApplicationComponent
+        );
+      }
+    }
   }
 
   private renderComponents() {
@@ -142,7 +214,33 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
       return null;
     }
 
-    return application.get("components")?.map((component, index) => {
+    let components: Immutable.List<ApplicationComponent>;
+    if (application.get("components") && application.get("components").size > 0) {
+      if (this.props.currentComponent && !this.props.currentComponent.get("name")) {
+        components = application.get("components").push(this.props.currentComponent as ApplicationComponentDetails);
+      } else {
+        components = application.get("components");
+      }
+    } else {
+      components = Immutable.List([componentInitialValues as ApplicationComponent]);
+    }
+
+    let expandedComponentIndex = this.state.expandedComponentIndex;
+    let selectedListItemKey = this.state.selectedListItemKey;
+    if (application.get("components")) {
+      if (expandedComponentIndex > application.get("components").size) {
+        expandedComponentIndex = 0;
+        selectedListItemKey = this.generateComponentKey(0, "basic");
+      } else if (expandedComponentIndex === application.get("components").size) {
+        if (this.props.currentComponent && !this.props.currentComponent.get("name")) {
+        } else {
+          expandedComponentIndex = 0;
+          selectedListItemKey = this.generateComponentKey(0, "basic");
+        }
+      }
+    }
+
+    return components.map((component, index) => {
       return (
         <React.Fragment key={index}>
           <ListItem
@@ -152,17 +250,17 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
             }}
             button
             onClick={() => {
-              this.handleClickComponent(index);
+              this.handleClickComponent(component, index);
             }}>
             <ListItemIcon>
               <FiberManualRecordIcon style={{ fontSize: 15 }} htmlColor={grey[400]} />
             </ListItemIcon>
-            <ListItemText primary={component.get("name")} />
-            {this.state.expandedComponentIndexes[`${index}`] ? <ExpandLess /> : <ExpandMore />}
+            <ListItemText primary={component.get("name") || `Please type component name`} />
+            {expandedComponentIndex === index ? <ExpandLess /> : <ExpandMore />}
           </ListItem>
-          <Collapse in={this.state.expandedComponentIndexes[`${index}`]} timeout="auto" unmountOnExit>
+          <Collapse in={expandedComponentIndex === index} timeout="auto" unmountOnExit>
             <List component="div" disablePadding>
-              {this.renderComponentFields(component, index)}
+              {this.renderComponentFields(component, index, selectedListItemKey)}
             </List>
           </Collapse>
         </React.Fragment>
@@ -171,19 +269,21 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
   }
 
   render() {
-    const { classes, application } = this.props;
+    const { classes, application, currentComponent } = this.props;
 
     if (!application) {
       return null;
     }
 
+    const disableAdd = (currentComponent && !currentComponent.get("name")) || application.get("components").size === 0;
+
     return (
       <BaseDrawer>
         <List>
-          <ListItem
-            key={"baisc"}
-            onClick={() => this.setState({ selectedListItemKey: "baisc" })}
-            selected={this.state.selectedListItemKey === "baisc"}
+          {/* <ListItem
+            key={"basic"}
+            onClick={() => this.handleClickBasic()}
+            selected={this.state.selectedListItemKey === "basic"}
             className={classes.listItem}
             classes={{
               selected: classes.listItemSeleted
@@ -192,14 +292,21 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
             <ListItemIcon>
               <FiberManualRecordIcon
                 style={{ fontSize: 15 }}
-                htmlColor={this.state.selectedListItemKey === "baisc" ? blue[700] : grey[400]}
+                htmlColor={this.state.selectedListItemKey === "basic" ? blue[700] : grey[400]}
               />
             </ListItemIcon>
             <ListItemText primary={"Application Basic"} />
-          </ListItem>
+          </ListItem> */}
 
           <ListSubheader disableSticky={true} className={classes.listSubHeader}>
             Components
+            <IconButtonWithTooltip
+              tooltipTitle={"Add"}
+              aria-label="add"
+              disabled={disableAdd}
+              onClick={() => this.handleAdd()}>
+              <AddIcon />
+            </IconButtonWithTooltip>
           </ListSubheader>
 
           {this.renderComponents()}
@@ -210,7 +317,9 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
 
           <ListItem
             key={"sharedEnvs"}
-            onClick={() => this.setState({ selectedListItemKey: "sharedEnvs" })}
+            onClick={() => {
+              this.handleClickSharedEnvs();
+            }}
             selected={this.state.selectedListItemKey === "sharedEnvs"}
             className={classes.listItem}
             classes={{

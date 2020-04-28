@@ -1,13 +1,12 @@
-import { createStyles, Theme, withStyles, WithStyles, Button } from "@material-ui/core";
-import { Link } from "react-router-dom";
+import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { withNamespace, withNamespaceProps } from "permission/Namespace";
 import React from "react";
+import { connect } from "react-redux";
 import { RouteChildrenProps } from "react-router-dom";
+import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
 import { Details } from "./Detail";
-import { Loading } from "../../widgets/Loading";
-import { connect } from "react-redux";
 import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./ItemDataWrapper";
-import { withNamespace, withNamespaceProps } from "permission/Namespace";
 
 const mapStateToProps = (_: any, props: any) => {
   const { match } = props;
@@ -34,20 +33,10 @@ interface Props
 
 class ApplicationShowRaw extends React.PureComponent<Props> {
   public render() {
-    const { isLoading, application, applicationName, dispatch, hasRole } = this.props;
-    const hasWriterRole = hasRole("writer");
+    const { isLoading, application, applicationName, dispatch } = this.props;
+    // const hasWriterRole = hasRole("writer");
     return (
-      <BasePage
-        title={`Application ${application && application.get("name")}`}
-        rightAction={
-          hasWriterRole ? (
-            <Link to={`/applications/${application && application.get("name")}/edit`}>
-              <Button variant="outlined" color="primary">
-                Edit
-              </Button>
-            </Link>
-          ) : null
-        }>
+      <BasePage>
         {isLoading && !application ? (
           <Loading />
         ) : application ? (

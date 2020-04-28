@@ -2,7 +2,8 @@ import { Button, createStyles, Switch, TextField, Theme, Tooltip, WithStyles, wi
 import { grey } from "@material-ui/core/colors";
 import HelpIcon from "@material-ui/icons/Help";
 import { closeDialogAction, openDialogAction } from "actions/dialog";
-import MaterialTable, { Components } from "material-table";
+import { push } from "connected-react-router";
+import MaterialTable from "material-table";
 import { withNamespace, withNamespaceProps } from "permission/Namespace";
 import React from "react";
 import { connect } from "react-redux";
@@ -10,12 +11,10 @@ import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { ExternalAccessPlugin, EXTERNAL_ACCESS_PLUGIN_TYPE } from "types/plugin";
 import { ImmutableMap } from "typings";
-import { AddLink } from "widgets/AddButton";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
-import { CustomizedButton } from "widgets/Button";
+import { ButtonGrey, CustomizedButton } from "widgets/Button";
 import { ControlledDialog } from "widgets/ControlledDialog";
-import { TableTitle } from "widgets/TableTitle";
 import {
   deleteApplicationAction,
   duplicateApplicationAction,
@@ -29,6 +28,7 @@ import { ApplicationDetails } from "../../types/application";
 import { customSearchForImmutable } from "../../utils/tableSearch";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
 import { FoldButtonGroup } from "../../widgets/FoldButtonGroup";
+import { H4 } from "../../widgets/Label";
 import { Loading } from "../../widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "../../widgets/SmallLineChart";
 import { BasePage } from "../BasePage";
@@ -40,7 +40,7 @@ const internalEndpointsModalID = "internalEndpointsModalID";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      padding: theme.spacing(3),
+      // padding: theme.spacing(3),
       "& tr.MuiTableRow-root td": {
         verticalAlign: "middle"
       }
@@ -63,6 +63,15 @@ const styles = (theme: Theme) =>
       width: "100%",
       display: "flex",
       justifyContent: "space-between"
+    },
+    sencondHeaderRight: {
+      height: "100%",
+      width: "100%",
+      display: "flex",
+      alignItems: "center"
+    },
+    sencondHeaderRightItem: {
+      marginLeft: 20
     }
   });
 
@@ -284,11 +293,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   private renderName = (rowData: RowData) => {
-    return (
-      <Link to={`/applications/${rowData.get("name")}?namespace=${this.props.activeNamespaceName}`}>
-        {rowData.get("name")}
-      </Link>
-    );
+    return <Link to={`/applications/${rowData.get("name")}`}>{rowData.get("name")}</Link>;
   };
 
   private renderNamespace = (applicationListItem: RowData) => {
@@ -341,9 +346,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     const tooltipTitle = `Total ${podCount} pods are found. \n${successCount} ready, ${pendingCount} pending, ${errorCount} failed. Click to view details.`;
 
     return (
-      <Link
-        to={`/applications/${applicationDetails.get("name")}?namespace=${this.props.activeNamespaceName}`}
-        color="inherit">
+      <Link to={`/applications/${applicationDetails.get("name")}`} color="inherit">
         <Tooltip title={tooltipTitle} enterDelay={500}>
           <FlexRowItemCenterBox>
             {successCount > 0 ? (
@@ -530,12 +533,12 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         options={[
           {
             text: "Details",
-            to: `/applications/${rowData.get("name")}?namespace=${this.props.activeNamespaceName}`,
+            to: `/applications/${rowData.get("name")}`,
             icon: "fullscreen"
           },
           {
             text: "Edit",
-            to: `/applications/${rowData.get("name")}/edit?namespace=${this.props.activeNamespaceName}`,
+            to: `/applications/${rowData.get("name")}/edit`,
             icon: "edit",
             requiredRole: "writer"
           },
@@ -549,12 +552,12 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           },
           {
             text: "Logs",
-            to: `/applications/${rowData.get("name")}/logs?namespace=${this.props.activeNamespaceName}`,
+            to: `/applications/${rowData.get("name")}/logs`,
             icon: "view_headline"
           },
           {
             text: "Shell",
-            to: `/applications/${rowData.get("name")}/shells?namespace=${this.props.activeNamespaceName}`,
+            to: `/applications/${rowData.get("name")}/shells`,
             icon: "play_arrow",
             requiredRole: "writer"
           },
@@ -584,19 +587,28 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     return data;
   };
 
+  private renderSecondHeaderRight() {
+    const { classes, dispatch } = this.props;
+    return (
+      <div className={classes.sencondHeaderRight}>
+        <H4 className={classes.sencondHeaderRightItem}>Applications</H4>
+        <ButtonGrey
+          className={classes.sencondHeaderRightItem}
+          onClick={() => {
+            dispatch(push(`/applications/new`));
+          }}>
+          Add
+        </ButtonGrey>
+      </div>
+    );
+  }
+
   public render() {
     const { classes, isLoading, isFirstLoaded, hasRole } = this.props;
-    const components: Components = {};
     const hasWriterRole = hasRole("writer");
 
-    if (hasWriterRole) {
-      components.Actions = () => {
-        return <AddLink to={`/applications/new?namespace=${this.props.activeNamespaceName}`} />;
-      };
-    }
-
     return (
-      <BasePage title="Applications">
+      <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
         {this.renderInternalEndpointsDialog()}
         {this.renderExternalEndpointsDialog()}
         {this.renderDeleteConfirmDialog()}
@@ -608,7 +620,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           ) : (
             <MaterialTable
               tableRef={this.tableRef}
-              components={components}
               options={{
                 padding: "dense",
                 draggable: false,
@@ -668,7 +679,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
               //   console.log(_event);
               // }}
               data={this.getData()}
-              title={TableTitle("Applications")}
+              title=""
             />
           )}
         </div>

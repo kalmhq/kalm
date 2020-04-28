@@ -4,7 +4,7 @@ import clsx from "clsx";
 import Typography from "@material-ui/core/Typography";
 import React from "react";
 import { connect } from "react-redux";
-import { InjectedFormProps, stopSubmit } from "redux-form";
+import { InjectedFormProps } from "redux-form";
 import { Field, getFormValues, reduxForm, getFormSyncErrors } from "redux-form/immutable";
 import { RootState } from "../../reducers";
 import { HelperContainer } from "../../widgets/Helper";
@@ -63,8 +63,8 @@ const styles = (theme: Theme) =>
       marginBottom: 16
     },
     formSection: {
-      padding: theme.spacing(2),
-      margin: theme.spacing(3)
+      padding: 20
+      // margin: theme.spacing(3)
     },
     displayBlock: {
       display: "block"
@@ -117,17 +117,20 @@ const styles = (theme: Theme) =>
     },
     submitErrorValueGroup: {
       marginLeft: "6px"
+    },
+    displayNone: {
+      display: "none"
     }
   });
 
 interface RawProps {
-  isEdit?: boolean;
   showDataView?: boolean;
   showSubmitButton?: boolean;
   submitButtonText?: string;
   isFolded?: boolean;
   sharedEnv?: Immutable.List<SharedEnv>;
-  submitAppplicationErrors?: Immutable.Map<string, any>;
+  currentTab?: string;
+  // submitAppplicationErrors?: Immutable.Map<string, any>;
 }
 
 export interface Props
@@ -164,16 +167,26 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     dispatch(loadConfigsAction());
   }
 
-  componentDidUpdate(prevProps: Props) {
-    if (this.props.submitAppplicationErrors && this.props.submitAppplicationErrors.size > 0) {
-      const oldValues = prevProps.values.deleteIn(["livenessProbe", "type"]).deleteIn(["readinessProbe", "type"]);
-      const newVavlues = this.props.values.deleteIn(["livenessProbe", "type"]).deleteIn(["readinessProbe", "type"]);
-
-      if (oldValues.equals && !oldValues.equals(newVavlues)) {
-        this.props.dispatch(stopSubmit("application", {})); // clear application submitErrors
-      }
-    }
-  }
+  // componentDidUpdate(prevProps: Props) {
+  // @ts-ignore
+  // if (prevProps.initialValues.get("name") !== this.props.initialValues.get("name")) {
+  //   console.log("componentDidUpdate init");
+  //   // @ts-ignore
+  //   console.log(this.props.initialValues.toJS());
+  //   // @ts-ignore
+  //   // this.props.dispatch(this.props.initialize(this.props.initialValues));
+  //   // this.props.dispatch(reset("componentLike"));
+  // this.props.initialize(this.props.initialValues);
+  //   // this.props.reset();
+  // }
+  // if (this.props.submitAppplicationErrors && this.props.submitAppplicationErrors.size > 0) {
+  //   const oldValues = prevProps.values.deleteIn(["livenessProbe", "type"]).deleteIn(["readinessProbe", "type"]);
+  //   const newVavlues = this.props.values.deleteIn(["livenessProbe", "type"]).deleteIn(["readinessProbe", "type"]);
+  //   if (oldValues.equals && !oldValues.equals(newVavlues)) {
+  //     this.props.dispatch(stopSubmit("application", {})); // clear application submitErrors
+  //   }
+  // }
+  // }
 
   private renderSchedule() {
     if (this.props.values.get("workloadType") !== workloadTypeCronjob) {
@@ -209,7 +222,12 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderBasic() {
-    const { isEdit, isFolded } = this.props;
+    const { isFolded, initialValues } = this.props;
+    let isEdit = false;
+    // @ts-ignore
+    if (initialValues && initialValues!.get("name")) {
+      isEdit = true;
+    }
     return (
       <Grid container spacing={2}>
         <Grid item xs={12} sm={12} md={12}>
@@ -502,8 +520,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           <Field
             name="restartStrategy"
             component={RenderSelectField}
-            label="Restart Strategy"
-            validate={ValidatorRequired}>
+            // validate={ValidatorRequired}
+            label="Restart Strategy">
             <MenuItem value="RollingUpdate">Rolling Update</MenuItem>
             <MenuItem value="Recreate">Recreate</MenuItem>
           </Field>
@@ -531,7 +549,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           <CustomTextField
             name="terminationGracePeriodSeconds"
             label="Termination Grace Period Seconds"
-            validate={ValidatorRequired}
+            // validate={ValidatorRequired}
             normalize={NormalizeNumber}
           />
 
@@ -584,7 +602,12 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               content: <>It allows a Pod to ignore DNS settings from the Kubernetes environment.</>
             }
           ])}
-          <Field name="dnsPolicy" component={RenderSelectField} label="Dns Policy" validate={ValidatorRequired}>
+          <Field
+            name="dnsPolicy"
+            component={RenderSelectField}
+            label="Dns Policy"
+            // validate={ValidatorRequired}
+          >
             <MenuItem value="ClusterFirst">ClusterFirst</MenuItem>
             <MenuItem value="Default">Default</MenuItem>
             <MenuItem value="ClusterFirstWithHostNet">ClusterFirstWithHostNet</MenuItem>
@@ -762,24 +785,24 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return <>{listItems}</>;
   }
 
-  private composeSubmitErrorInfo(panelKey: string): { [key: string]: any } {
-    const { submitAppplicationErrors } = this.props;
-    const fieldNames = this.getPanelFieldNames(panelKey);
+  // private composeSubmitErrorInfo(panelKey: string): { [key: string]: any } {
+  //   const { submitAppplicationErrors } = this.props;
+  //   const fieldNames = this.getPanelFieldNames(panelKey);
 
-    const panelSubmitErrors: { [key: string]: any } = {};
+  //   const panelSubmitErrors: { [key: string]: any } = {};
 
-    if (submitAppplicationErrors?.get(panelKey)) {
-      panelSubmitErrors[panelKey] = submitAppplicationErrors.get(panelKey);
-    }
+  //   if (submitAppplicationErrors?.get(panelKey)) {
+  //     panelSubmitErrors[panelKey] = submitAppplicationErrors.get(panelKey);
+  //   }
 
-    fieldNames.forEach(name => {
-      if (submitAppplicationErrors?.get(name)) {
-        panelSubmitErrors[name] = submitAppplicationErrors.get(name);
-      }
-    });
+  //   fieldNames.forEach(name => {
+  //     if (submitAppplicationErrors?.get(name)) {
+  //       panelSubmitErrors[name] = submitAppplicationErrors.get(name);
+  //     }
+  //   });
 
-    return panelSubmitErrors;
-  }
+  //   return panelSubmitErrors;
+  // }
 
   private composeSyncErrorInfo(panelKey: string): boolean {
     const { syncErrors, anyTouched } = this.props;
@@ -910,8 +933,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private renderPanel(panelKey: string, title: string, content: any): React.ReactNode {
     const { classes } = this.props;
 
-    let panelSubmitErrors = this.composeSubmitErrorInfo(panelKey);
-    let hasError = this.composeSyncErrorInfo(panelKey) || Object.keys(panelSubmitErrors).length > 0;
+    // let panelSubmitErrors = this.composeSubmitErrorInfo(panelKey);
+    // let hasError = this.composeSyncErrorInfo(panelKey) || Object.keys(panelSubmitErrors).length > 0;
+    let hasError = this.composeSyncErrorInfo(panelKey);
     let isChanged = this.composeChangedState(panelKey);
     let summaryInfos = this.composeSummaryInfo(panelKey);
 
@@ -920,9 +944,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id="panel1a-header">
           <div className={hasError ? classes.summaryError : isChanged ? classes.summaryBold : ""}>
             {title} {hasError ? <ErrorIcon className={classes.summaryIcon} /> : null}
-            <div className={classes.panelSubmitErrors}>
+            {/* <div className={classes.panelSubmitErrors}>
               {Object.keys(panelSubmitErrors).length > 0 ? this.renderSubmitErrors(panelSubmitErrors) : null}
-            </div>
+            </div> */}
             <div className={panelKey === this.state.currentPanel ? classes.summaryHide : classes.summaryShow}>
               {this.renderSummary(summaryInfos)}
             </div>
@@ -934,48 +958,53 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { handleSubmit, classes, isFolded } = this.props;
-
-    if (isFolded) {
-      return (
-        <form onSubmit={handleSubmit} style={{ height: "100%", overflow: "hidden" }}>
-          {this.renderPanel("basic", "Basic Info", this.renderBasic())}
-          {this.renderPanel("envs", "Environment variables", this.renderEnvs())}
-          {this.renderPanel("ports", "Ports", this.renderPorts())}
-          {this.renderPanel("resources", "Resources", this.renderResources())}
-          {this.renderPanel("volumes", "Volumes", this.renderVolumes())}
-          {this.renderPanel("configs", "Configs", this.renderConfigs())}
-          {this.renderPanel("plugins", "Plugins", this.renderPlugins())}
-          {this.renderPanel("probes", "Probes", this.renderProbes())}
-          {this.renderPanel("nodeSelector", "Node Selector", this.renderNodeSelector())}
-          {this.renderPanel("advanced", "Advanced", this.renderAdvanced())}
-        </form>
-      );
-    }
+    const { handleSubmit, classes, currentTab } = this.props;
 
     return (
       <form onSubmit={handleSubmit} style={{ height: "100%", overflow: "hidden" }}>
-        <Paper className={classes.formSection}>{this.renderBasic()}</Paper>
-        <Paper className={classes.formSection}>{this.renderEnvs()}</Paper>
-        <Paper className={classes.formSection}>{this.renderPorts()}</Paper>
-        <Paper className={classes.formSection}>{this.renderResources()}</Paper>
-        <Paper className={classes.formSection}>{this.renderVolumes()}</Paper>
-        <Paper className={classes.formSection}>{this.renderConfigs()}</Paper>
-        <Paper className={classes.formSection}>{this.renderPlugins()}</Paper>
-        <Paper className={classes.formSection}>{this.renderProbes()}</Paper>
-        <Paper className={classes.formSection}>{this.renderNodeSelector()}</Paper>
-        <Paper className={classes.formSection}>{this.renderAdvanced()}</Paper>
+        <Paper className={`${classes.formSection} ${currentTab === "basic" ? "" : classes.displayNone}`}>
+          {this.renderBasic()}
+        </Paper>
+        <Paper className={`${classes.formSection} ${currentTab === "envs" ? "" : classes.displayNone}`}>
+          {this.renderEnvs()}
+        </Paper>
+        <Paper className={`${classes.formSection} ${currentTab === "ports" ? "" : classes.displayNone}`}>
+          {this.renderPorts()}
+        </Paper>
+        <Paper className={`${classes.formSection} ${currentTab === "resources" ? "" : classes.displayNone}`}>
+          {this.renderResources()}
+        </Paper>
+        <Paper className={`${classes.formSection} ${currentTab === "resources" ? "" : classes.displayNone}`}>
+          {this.renderVolumes()}
+        </Paper>
+        <Paper className={`${classes.formSection} ${currentTab === "resources" ? "" : classes.displayNone}`}>
+          {this.renderConfigs()}
+        </Paper>
+        <Paper className={`${classes.formSection} ${currentTab === "plugins" ? "" : classes.displayNone}`}>
+          {this.renderPlugins()}
+        </Paper>
+        <Paper className={`${classes.formSection} ${currentTab === "probes" ? "" : classes.displayNone}`}>
+          {this.renderProbes()}
+        </Paper>
+        <Paper className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}>
+          {this.renderNodeSelector()}
+        </Paper>
+        <Paper className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}>
+          {this.renderAdvanced()}
+        </Paper>
       </form>
     );
   }
 }
 
-const initialValues: ComponentLike = Immutable.fromJS({
+export const componentInitialValues: ComponentLike = Immutable.fromJS({
   command: Immutable.List([])
 });
 
 export const ComponentLikeForm = reduxForm<ComponentLike, RawProps>({
   form: "componentLike",
-  initialValues,
+  enableReinitialize: true, // seems don't work with redux-form/immutable
+  keepDirtyOnReinitialize: false,
+  initialValues: componentInitialValues,
   onSubmitFail: console.log
 })(connect(mapStateToProps)(withStyles(styles)(ComponentLikeFormRaw)));

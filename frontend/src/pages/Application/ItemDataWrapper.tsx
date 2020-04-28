@@ -6,7 +6,6 @@ import { Actions } from "../../types";
 import { loadApplicationAction } from "../../actions/application";
 import hoistNonReactStatics from "hoist-non-react-statics";
 import { Loading } from "widgets/Loading";
-import { push } from "connected-react-router";
 
 const mapStateToProps = (state: RootState, props: any) => {
   const applications = state.get("applications");
@@ -50,11 +49,11 @@ export const ApplicationItemDataWrapper = ({ reloadFrequency }: { reloadFrequenc
       this.loadData();
     }
 
-    componentDidUpdate(prevProps: WithApplicationItemDataProps) {
-      if (prevProps.activeNamespaceName !== this.props.activeNamespaceName) {
-        this.props.dispatch(push("/applications?namespace=" + this.props.activeNamespaceName));
-      }
-    }
+    // componentDidUpdate(prevProps: WithApplicationItemDataProps) {
+    //   if (prevProps.activeNamespaceName !== this.props.activeNamespaceName) {
+    //     this.props.dispatch(push("/applications"));
+    //   }
+    // }
 
     componentWillUnmount() {
       if (this.interval) {

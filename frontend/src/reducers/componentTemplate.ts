@@ -6,10 +6,10 @@ import {
   LOAD_COMPONENT_TEMPLATES_PENDING,
   LOAD_COMPONENT_TEMPLATES_FULFILLED,
   LOAD_COMPONENT_TEMPLATES_FAILED,
-  CREATE_COMPONENT,
-  UPDATE_COMPONENT,
-  DUPLICATE_COMPONENT,
-  DELETE_COMPONENT
+  CREATE_COMPONENT_TEMPLATES,
+  UPDATE_COMPONENT_TEMPLATES,
+  DUPLICATE_COMPONENT_TEMPLATES,
+  DELETE_COMPONENT_TEMPLATES
 } from "../types/componentTemplate";
 import { LOGOUT } from "types/common";
 
@@ -46,25 +46,25 @@ const reducer = (state: State = initialState, action: Actions): State => {
       state = state.set("isListFirstLoaded", true);
       break;
     }
-    case CREATE_COMPONENT: {
+    case CREATE_COMPONENT_TEMPLATES: {
       const components = state.get("componentTemplates");
       let componentTemplate = action.payload.componentTemplate;
       state = state.set("componentTemplates", components.set(componentTemplate.get("name"), componentTemplate));
       break;
     }
-    case UPDATE_COMPONENT: {
+    case UPDATE_COMPONENT_TEMPLATES: {
       const components = state.get("componentTemplates");
       let componentTemplate = action.payload.componentTemplate;
       state = state.set("componentTemplates", components.set(componentTemplate.get("name"), componentTemplate));
       break;
     }
-    case DUPLICATE_COMPONENT: {
+    case DUPLICATE_COMPONENT_TEMPLATES: {
       const components = state.get("componentTemplates");
       let componentTemplate = action.payload.componentTemplate;
       state = state.set("componentTemplates", components.set(componentTemplate.get("name"), componentTemplate));
       break;
     }
-    case DELETE_COMPONENT: {
+    case DELETE_COMPONENT_TEMPLATES: {
       state = state.deleteIn(["componentTemplates", action.payload.componentTemplateName]);
       break;
     }

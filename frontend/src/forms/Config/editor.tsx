@@ -3,10 +3,11 @@ import { FilledTextFieldProps } from "@material-ui/core/TextField";
 import { WrappedFieldProps } from "redux-form";
 import { Field } from "redux-form/immutable";
 import AceEditor from "react-ace";
-import "ace-builds/src-noconflict/theme-monokai";
+import "ace-builds/src-noconflict/theme-tomorrow";
 import "ace-builds/src-noconflict/mode-yaml";
 import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/mode-nginx";
+import { grey } from "@material-ui/core/colors";
 
 const aceOnBlur = (onBlur: any) => (_event: any, editor?: any) => {
   const value = editor.getValue();
@@ -29,10 +30,11 @@ const renderEditor = ({ input }: FilledTextFieldProps & WrappedFieldProps) => {
     <AceEditor
       placeholder="Input file content here."
       mode={detectMode(input.value)}
-      theme="monokai"
+      theme="tomorrow"
       name="editor"
       height="400px"
       width="100%"
+      style={{ border: `1px solid ${grey[400]}`, borderRadius: 4 }}
       //   onLoad={console.log}
       onBlur={aceOnBlur(input.onBlur)}
       onChange={input.onChange}
