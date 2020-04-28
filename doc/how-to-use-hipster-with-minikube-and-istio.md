@@ -2,7 +2,8 @@
 
 install minikube and start a cluster.
 
-```
+```bash
+# adjust memory and cpus based on your computes
 minikube start --memory 8192 --cpus 4  --kubernetes-version v1.15.0
 ```
 
@@ -21,13 +22,22 @@ export PATH=$PWD/bin:$PATH
 # install operator. operator is a k8s crd controller.
 istioctl operator init
 
-# check status by running the following command.
+# Outputs:
+#
+# Using operator Deployment image: docker.io/istio/operator:1.5.2
+# - Applying manifest for component Operator...
+# ✔ Finished applying manifest for component Operator.
+# Component Operator installed successfully.
+# *** Success. ***
+
+# check status by running the following command. Wait the pod to become ready.
+# This state may last for a few minutes based on your network.
 kubectl get pods -n istio-operator
 ```
 
 launch istio in our cluster
 
-```
+```bash
 # go to kapp root dir, install istio config. The operator will intall istio components for us.
 kubectl apply -f resources/istiocontrolplane.yaml
 
@@ -44,7 +54,7 @@ kubectl get pods -n istio-system
 
 # Install kapp controller
 
-```
+```bash
 # go to kapp controller dir
 make install
 make run
@@ -56,7 +66,7 @@ Start another terminal and continue.
 
 # Install hipster application
 
-```
+```bash
 # go to kapp controller dir
 kubectl apply -f config/samples/core_v1alpha1_hipster.yaml
 
@@ -79,7 +89,7 @@ istioctl x describe pod -n kapp-hipster $(kubectl get pods -n kapp-hipster -l ka
 ```bash
 # view istio sidecar iptable rules of a pod
 
-kubectl logs $(kubectl get pods -n kapp-hipster -l kapp-component=frontend -o jsonpath='{.items[0].metadata.name}') -c istio-init
+kubectl logs $(kubectl get pods -n kapp-hipster -l kapp-component=frontend -o jsonpath='{.items[0].metadata.name}') -n kapp-hipster -c istio-init
 ```
 
 ```bash
@@ -105,7 +115,7 @@ kubectl get destinationrules -A
 # Access hipster services from outside of the custer
 
 ```bash
-# start a minikube tunnel. Run the following command in a new terminal. The terminal will be blocked by tunnel process.
+# start a minikube tunnel. Run the following command in a new terminal. The terminal will be blocked by tunnel process. May require you to enter your password.
 
 minikube tunnel
 ```
