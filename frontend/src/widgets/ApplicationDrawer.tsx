@@ -15,12 +15,14 @@ import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { blue, grey } from "@material-ui/core/colors";
 import { BaseDrawer } from "../layout/BaseDrawer";
-import { ApplicationDetails, ApplicationComponent } from "../types/application";
+import { ApplicationDetails, ApplicationComponent, ApplicationComponentDetails } from "../types/application";
 import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
 import { componentInitialValues } from "../forms/ComponentLike";
 import Immutable from "immutable";
+import AddIcon from "@material-ui/icons/Add";
+import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
@@ -49,13 +51,18 @@ const styles = (theme: Theme) =>
     },
     listSubHeader: {
       textTransform: "uppercase",
-      color: "#000000 !important"
+      color: "#000000 !important",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingRight: "4px"
     }
   });
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps> {
   dispatch: TDispatch;
   application?: ApplicationDetails;
+  currentComponent?: ApplicationComponent; // for add new component
 
   // handleClickBasic: () => void;
   handleClickSharedEnvs: () => void;
@@ -109,6 +116,10 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
     handleClickComponentTab(component, tab);
   }
 
+  private handleAdd() {
+    this.handleClickComponent(componentInitialValues, this.props.application?.get("components").size as number);
+  }
+
   private getComponentFields() {
     return [
       { tab: "basic", text: "Basic Info" },
@@ -143,8 +154,10 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
     return `components-${index}-${tab}`;
   }
 
-  private renderComponentFields(component: ApplicationComponent, index: number) {
+  private renderComponentFields(component: ApplicationComponent, index: number, selectedListItemKey?: string) {
     const { classes } = this.props;
+    selectedListItemKey = selectedListItemKey || this.state.selectedListItemKey;
+
     const fields = this.getComponentFields();
     return fields.map(field => {
       const key = this.generateComponentKey(index, field.tab);
@@ -154,7 +167,7 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
           onClick={() => {
             this.handleClickComponentTab(component, key, field.tab);
           }}
-          selected={this.state.selectedListItemKey === key}
+          selected={selectedListItemKey === key}
           className={classes.listItem}
           classes={{
             selected: classes.listItemSeleted
@@ -166,7 +179,7 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
           <ListItemIcon>
             <FiberManualRecordIcon
               style={{ fontSize: 15 }}
-              htmlColor={this.state.selectedListItemKey === key ? blue[700] : grey[400]}
+              htmlColor={selectedListItemKey === key ? blue[700] : grey[400]}
             />
           </ListItemIcon>
           <ListItemText primary={field.text} />
@@ -186,6 +199,7 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
     if (prevProps.application && this.props.application) {
       // after create
       if (this.props.application.get("components").size - prevProps.application.get("components").size === 1) {
+        // select new created item
         this.props.handleClickComponent(
           this.props.application.get("components").get(this.state.expandedComponentIndex) as ApplicationComponent
         );
@@ -200,10 +214,33 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
       return null;
     }
 
-    return (application.get("components") && application.get("components").size > 0
-      ? application.get("components")
-      : Immutable.List([componentInitialValues as ApplicationComponent])
-    ).map((component, index) => {
+    let components: Immutable.List<ApplicationComponent>;
+    if (application.get("components") && application.get("components").size > 0) {
+      if (this.props.currentComponent && !this.props.currentComponent.get("name")) {
+        components = application.get("components").push(this.props.currentComponent as ApplicationComponentDetails);
+      } else {
+        components = application.get("components");
+      }
+    } else {
+      components = Immutable.List([componentInitialValues as ApplicationComponent]);
+    }
+
+    let expandedComponentIndex = this.state.expandedComponentIndex;
+    let selectedListItemKey = this.state.selectedListItemKey;
+    if (application.get("components")) {
+      if (expandedComponentIndex > application.get("components").size) {
+        expandedComponentIndex = 0;
+        selectedListItemKey = this.generateComponentKey(0, "basic");
+      } else if (expandedComponentIndex === application.get("components").size) {
+        if (this.props.currentComponent && !this.props.currentComponent.get("name")) {
+        } else {
+          expandedComponentIndex = 0;
+          selectedListItemKey = this.generateComponentKey(0, "basic");
+        }
+      }
+    }
+
+    return components.map((component, index) => {
       return (
         <React.Fragment key={index}>
           <ListItem
@@ -219,11 +256,11 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
               <FiberManualRecordIcon style={{ fontSize: 15 }} htmlColor={grey[400]} />
             </ListItemIcon>
             <ListItemText primary={component.get("name") || `Please type component name`} />
-            {this.state.expandedComponentIndex === index ? <ExpandLess /> : <ExpandMore />}
+            {expandedComponentIndex === index ? <ExpandLess /> : <ExpandMore />}
           </ListItem>
-          <Collapse in={this.state.expandedComponentIndex === index} timeout="auto" unmountOnExit>
+          <Collapse in={expandedComponentIndex === index} timeout="auto" unmountOnExit>
             <List component="div" disablePadding>
-              {this.renderComponentFields(component, index)}
+              {this.renderComponentFields(component, index, selectedListItemKey)}
             </List>
           </Collapse>
         </React.Fragment>
@@ -232,11 +269,13 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
   }
 
   render() {
-    const { classes, application } = this.props;
+    const { classes, application, currentComponent } = this.props;
 
     if (!application) {
       return null;
     }
+
+    const disableAdd = (currentComponent && !currentComponent.get("name")) || application.get("components").size === 0;
 
     return (
       <BaseDrawer>
@@ -261,6 +300,13 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
 
           <ListSubheader disableSticky={true} className={classes.listSubHeader}>
             Components
+            <IconButtonWithTooltip
+              tooltipTitle={"Add"}
+              aria-label="add"
+              disabled={disableAdd}
+              onClick={() => this.handleAdd()}>
+              <AddIcon />
+            </IconButtonWithTooltip>
           </ListSubheader>
 
           {this.renderComponents()}

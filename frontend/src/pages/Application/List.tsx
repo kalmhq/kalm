@@ -2,7 +2,8 @@ import { Button, createStyles, Switch, TextField, Theme, Tooltip, WithStyles, wi
 import { grey } from "@material-ui/core/colors";
 import HelpIcon from "@material-ui/icons/Help";
 import { closeDialogAction, openDialogAction } from "actions/dialog";
-import MaterialTable, { Components } from "material-table";
+import { push } from "connected-react-router";
+import MaterialTable from "material-table";
 import { withNamespace, withNamespaceProps } from "permission/Namespace";
 import React from "react";
 import { connect } from "react-redux";
@@ -10,12 +11,10 @@ import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { ExternalAccessPlugin, EXTERNAL_ACCESS_PLUGIN_TYPE } from "types/plugin";
 import { ImmutableMap } from "typings";
-import { AddLink } from "widgets/AddButton";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
-import { CustomizedButton } from "widgets/Button";
+import { ButtonGrey, CustomizedButton } from "widgets/Button";
 import { ControlledDialog } from "widgets/ControlledDialog";
-import { TableTitle } from "widgets/TableTitle";
 import {
   deleteApplicationAction,
   duplicateApplicationAction,
@@ -29,6 +28,7 @@ import { ApplicationDetails } from "../../types/application";
 import { customSearchForImmutable } from "../../utils/tableSearch";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
 import { FoldButtonGroup } from "../../widgets/FoldButtonGroup";
+import { H4 } from "../../widgets/Label";
 import { Loading } from "../../widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "../../widgets/SmallLineChart";
 import { BasePage } from "../BasePage";
@@ -63,6 +63,15 @@ const styles = (theme: Theme) =>
       width: "100%",
       display: "flex",
       justifyContent: "space-between"
+    },
+    sencondHeaderRight: {
+      height: "100%",
+      width: "100%",
+      display: "flex",
+      alignItems: "center"
+    },
+    sencondHeaderRightItem: {
+      marginLeft: 20
     }
   });
 
@@ -578,19 +587,28 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     return data;
   };
 
+  private renderSecondHeaderRight() {
+    const { classes, dispatch } = this.props;
+    return (
+      <div className={classes.sencondHeaderRight}>
+        <H4 className={classes.sencondHeaderRightItem}>Applications</H4>
+        <ButtonGrey
+          className={classes.sencondHeaderRightItem}
+          onClick={() => {
+            dispatch(push(`/applications/new`));
+          }}>
+          Add
+        </ButtonGrey>
+      </div>
+    );
+  }
+
   public render() {
     const { classes, isLoading, isFirstLoaded, hasRole } = this.props;
-    const components: Components = {};
     const hasWriterRole = hasRole("writer");
 
-    if (hasWriterRole) {
-      components.Actions = () => {
-        return <AddLink to={`/applications/new`} />;
-      };
-    }
-
     return (
-      <BasePage>
+      <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
         {this.renderInternalEndpointsDialog()}
         {this.renderExternalEndpointsDialog()}
         {this.renderDeleteConfirmDialog()}
@@ -602,7 +620,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           ) : (
             <MaterialTable
               tableRef={this.tableRef}
-              components={components}
               options={{
                 padding: "dense",
                 draggable: false,
@@ -662,7 +679,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
               //   console.log(_event);
               // }}
               data={this.getData()}
-              title={TableTitle("Applications")}
+              title=""
             />
           )}
         </div>

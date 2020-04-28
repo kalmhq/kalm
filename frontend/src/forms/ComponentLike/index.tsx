@@ -63,8 +63,8 @@ const styles = (theme: Theme) =>
       marginBottom: 16
     },
     formSection: {
-      padding: theme.spacing(2),
-      margin: theme.spacing(3)
+      padding: 20
+      // margin: theme.spacing(3)
     },
     displayBlock: {
       display: "block"
