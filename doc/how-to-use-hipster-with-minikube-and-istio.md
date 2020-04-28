@@ -135,24 +135,6 @@ echo "http://$(minikube ip):$ISTIO_GATEWAY_PORT"
 ```bash
 # Run this command in a new terminal.
 
-# create kiali username and password
-#   username: admin
-#   password: admin
-
-kubectl apply -f - <<EOF
-apiVersion: v1
-kind: Secret
-metadata:
-  name: kiali
-  namespace: istio-system
-  labels:
-    app: kiali
-type: Opaque
-data:
-  username: YWRtaW4=
-  passphrase: YWRtaW4=
-EOF
-
 istioctl dashboard kiali
 
 # go to graph page
