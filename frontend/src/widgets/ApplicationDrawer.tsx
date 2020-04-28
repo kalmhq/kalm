@@ -57,7 +57,7 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
   dispatch: TDispatch;
   application?: ApplicationDetails;
 
-  handleClickBasic: () => void;
+  // handleClickBasic: () => void;
   handleClickSharedEnvs: () => void;
   handleClickComponent: (component: ApplicationComponent) => void;
   handleClickComponentTab: (component: ApplicationComponent, tab: string) => void;
@@ -78,12 +78,12 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
     };
   }
 
-  private handleClickBasic() {
-    this.setState({ selectedListItemKey: "basic" });
+  // private handleClickBasic() {
+  //   this.setState({ selectedListItemKey: "basic" });
 
-    const { handleClickBasic } = this.props;
-    handleClickBasic();
-  }
+  //   const { handleClickBasic } = this.props;
+  //   handleClickBasic();
+  // }
 
   private handleClickSharedEnvs() {
     this.setState({ selectedListItemKey: "sharedEnvs" });
@@ -179,6 +179,17 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
     const { application, handleClickComponent } = this.props;
     if (application && application.get("components").get(0)) {
       handleClickComponent(application.get("components").get(0) as ApplicationComponent);
+    }
+  }
+
+  public componentDidUpdate(prevProps: Props) {
+    if (prevProps.application && this.props.application) {
+      // after create
+      if (this.props.application.get("components").size - prevProps.application.get("components").size === 1) {
+        this.props.handleClickComponent(
+          this.props.application.get("components").get(this.state.expandedComponentIndex) as ApplicationComponent
+        );
+      }
     }
   }
 

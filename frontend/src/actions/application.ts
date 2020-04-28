@@ -64,6 +64,7 @@ export const createComponentAction = (
       return;
     }
 
+    dispatch(loadApplicationAction(applicationName));
     dispatch({
       type: CREATE_COMPONENT,
       payload: { applicationName, component }
@@ -95,6 +96,7 @@ export const updateComponentAction = (
       return;
     }
 
+    dispatch(loadApplicationAction(applicationName));
     dispatch({
       type: UPDATE_COMPONENT,
       payload: { applicationName, component }
@@ -122,10 +124,12 @@ export const deleteComponentAction = (componentName: string, applicationName?: s
       return;
     }
 
+    dispatch(loadApplicationAction(applicationName));
     dispatch({
       type: DELETE_COMPONENT,
       payload: { applicationName, componentName }
     });
+    dispatch(setSuccessNotificationAction("Delete component successfully"));
   };
 };
 

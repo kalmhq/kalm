@@ -70,9 +70,9 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
     };
   }
 
-  public componentDidMount() {
-    console.log(this.props.application?.get("components").size);
-  }
+  // public componentDidMount() {
+  //   console.log(this.props.application?.get("components").size);
+  // }
 
   public componentDidUpdate(prevProps: Props, prevState: State) {
     const prevComponentName = prevState.currentComponent?.get("name");
@@ -95,11 +95,16 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
   };
 
   private submitComponent = async (component: ApplicationComponent) => {
+    console.log("currentComponent", console.log(this.state.currentComponent && this.state.currentComponent.toJS()));
     console.log("submitComponent", component.toJS());
     const { dispatch } = this.props;
+    const { currentComponent } = this.state;
 
-    await dispatch(createComponentAction(component));
-    // await dispatch(updateComponentAction(component));
+    if (!currentComponent || !currentComponent.get("name")) {
+      await dispatch(createComponentAction(component));
+    } else {
+      await dispatch(updateComponentAction(component));
+    }
   };
 
   public renderApplicationDrawer() {
@@ -108,12 +113,12 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
     return (
       <ApplicationDrawer
         application={application}
-        handleClickBasic={() => {
-          this.setState({
-            currentFormType: "application",
-            currentApplicationTab: "basic"
-          });
-        }}
+        // handleClickBasic={() => {
+        //   this.setState({
+        //     currentFormType: "application",
+        //     currentApplicationTab: "basic"
+        //   });
+        // }}
         handleClickSharedEnvs={() => {
           this.setState({
             currentFormType: "application",
