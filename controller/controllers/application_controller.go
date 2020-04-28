@@ -204,6 +204,9 @@ func (r *ApplicationReconcilerTask) ReconcileNamespace() (err error) {
 		ns := &coreV1.Namespace{
 			ObjectMeta: metaV1.ObjectMeta{
 				Name: r.application.Name,
+				Labels: map[string]string{
+					"istio-injection": "enabled",
+				},
 			},
 		}
 
@@ -224,6 +227,12 @@ func (r *ApplicationReconcilerTask) ReconcileNamespace() (err error) {
 			r.Log.Error(err, "SetControllerReference error when updating namespace.")
 			return err
 		}
+
+		if len(r.namespace.Labels) == 0 {
+			r.namespace.Labels = map[string]string{}
+		}
+
+		r.namespace.Labels["istio-injection"] = "enabled"
 
 		if r.namespace.DeletionTimestamp != nil {
 			r.namespace.DeletionTimestamp = nil
