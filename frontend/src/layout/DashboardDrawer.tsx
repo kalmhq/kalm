@@ -63,7 +63,7 @@ class DashboardDrawerRaw extends React.PureComponent<Props, State> {
       },
       {
         text: "Applications",
-        to: "/applications?namespace=" + activeNamespaceName
+        to: "/applications"
       },
       {
         text: "Configs",

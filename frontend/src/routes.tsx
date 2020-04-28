@@ -48,8 +48,8 @@ export const KappRoutes = (
           <Route exact path="/cluster/volumes" component={Disks}></Route>
           <Route exact path="/settings/dependencies" component={RequireAdmin(DependencyListPage)}></Route>
 
-          <Route exact path="/applications" component={RequireNamespaceReader(ApplicationListPage)} />
-          <Route exact path="/applications/new" component={RequireNamespaceWriter(ApplicationNew)} />
+          <Route exact path="/applications" component={RequireAdmin(ApplicationListPage)} />
+          <Route exact path="/applications/new" component={RequireAdmin(ApplicationNew)} />
           <Route exact path="/applications/:applicationName" component={RequireNamespaceReader(ApplicationShow)} />
           <Route exact path="/applications/:applicationName/edit" component={RequireNamespaceWriter(ApplicationEdit)} />
           <Route exact path="/applications/:applicationName/logs" component={RequireNamespaceReader(Log)} />

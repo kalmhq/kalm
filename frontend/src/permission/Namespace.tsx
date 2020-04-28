@@ -5,11 +5,15 @@ import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "types";
 import { Loading } from "widgets/Loading";
 import { getDisplayName } from "./utils";
+import { setCurrentNamespaceAction } from "../actions/namespaces";
 
-const mapStateToProps = (state: RootState) => {
+const mapStateToProps = (state: RootState, props: any) => {
   const applicationsRoot = state.get("applications");
   const namespaces = applicationsRoot.get("applications").map(application => application.get("name"));
-  const activeNamespace = state.get("namespaces").get("active");
+  const activeNamespace =
+    props.match && props.match.params && props.match.params.applicationName
+      ? props.match.params.applicationName
+      : state.get("namespaces").get("active");
   const isApplicationListLoading = applicationsRoot.get("isListLoading");
   const isApplicationListFirstLoaded = applicationsRoot.get("isListFirstLoaded");
   const activeApplication = applicationsRoot
@@ -56,6 +60,10 @@ interface Options {
 
 export const RequireRoleInNamespce = ({ requiredRole }: Options) => (WrappedComponent: React.ComponentType<any>) => {
   const wrapper: React.ComponentType<withNamespaceProps> = class extends React.Component<withNamespaceProps> {
+    public componentDidMount() {
+      this.props.dispatch(setCurrentNamespaceAction(this.props.activeNamespace, false));
+    }
+
     render() {
       const { isAdmin, isApplicationListLoading, isApplicationListFirstLoaded, activeApplication } = this.props;
 

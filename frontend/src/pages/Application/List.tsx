@@ -40,7 +40,7 @@ const internalEndpointsModalID = "internalEndpointsModalID";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      padding: theme.spacing(3),
+      // padding: theme.spacing(3),
       "& tr.MuiTableRow-root td": {
         verticalAlign: "middle"
       }
@@ -284,11 +284,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   private renderName = (rowData: RowData) => {
-    return (
-      <Link to={`/applications/${rowData.get("name")}?namespace=${this.props.activeNamespaceName}`}>
-        {rowData.get("name")}
-      </Link>
-    );
+    return <Link to={`/applications/${rowData.get("name")}`}>{rowData.get("name")}</Link>;
   };
 
   private renderNamespace = (applicationListItem: RowData) => {
@@ -341,9 +337,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     const tooltipTitle = `Total ${podCount} pods are found. \n${successCount} ready, ${pendingCount} pending, ${errorCount} failed. Click to view details.`;
 
     return (
-      <Link
-        to={`/applications/${applicationDetails.get("name")}?namespace=${this.props.activeNamespaceName}`}
-        color="inherit">
+      <Link to={`/applications/${applicationDetails.get("name")}`} color="inherit">
         <Tooltip title={tooltipTitle} enterDelay={500}>
           <FlexRowItemCenterBox>
             {successCount > 0 ? (
@@ -530,12 +524,12 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         options={[
           {
             text: "Details",
-            to: `/applications/${rowData.get("name")}?namespace=${this.props.activeNamespaceName}`,
+            to: `/applications/${rowData.get("name")}`,
             icon: "fullscreen"
           },
           {
             text: "Edit",
-            to: `/applications/${rowData.get("name")}/edit?namespace=${this.props.activeNamespaceName}`,
+            to: `/applications/${rowData.get("name")}/edit`,
             icon: "edit",
             requiredRole: "writer"
           },
@@ -549,12 +543,12 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           },
           {
             text: "Logs",
-            to: `/applications/${rowData.get("name")}/logs?namespace=${this.props.activeNamespaceName}`,
+            to: `/applications/${rowData.get("name")}/logs`,
             icon: "view_headline"
           },
           {
             text: "Shell",
-            to: `/applications/${rowData.get("name")}/shells?namespace=${this.props.activeNamespaceName}`,
+            to: `/applications/${rowData.get("name")}/shells`,
             icon: "play_arrow",
             requiredRole: "writer"
           },
@@ -591,7 +585,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
 
     if (hasWriterRole) {
       components.Actions = () => {
-        return <AddLink to={`/applications/new?namespace=${this.props.activeNamespaceName}`} />;
+        return <AddLink to={`/applications/new`} />;
       };
     }
 

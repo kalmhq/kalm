@@ -35,9 +35,7 @@ class ApplicationNewRaw extends React.PureComponent<Props> {
     const { dispatch } = this.props;
     await dispatch(createApplicationAction(applicationFormValue));
 
-    dispatch(
-      push(`/applications/${applicationFormValue.get("name")}/edit?namespace=${applicationFormValue.get("name")}`)
-    );
+    dispatch(push(`/applications/${applicationFormValue.get("name")}/edit`));
   };
 
   public render() {
