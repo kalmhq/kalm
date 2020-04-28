@@ -64,7 +64,7 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
 }
 
 interface State {
-  expandedComponentIndexes: { [key: string]: boolean };
+  expandedComponentIndex: number;
   selectedListItemKey: string;
 }
 
@@ -73,7 +73,7 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
     super(props);
 
     this.state = {
-      expandedComponentIndexes: { "0": true },
+      expandedComponentIndex: 0,
       selectedListItemKey: this.generateComponentKey(0, "basic")
     };
   }
@@ -93,10 +93,8 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
   }
 
   private handleClickComponent(component: ApplicationComponent, index: number) {
-    const newIndexes = { ...this.state.expandedComponentIndexes };
-    newIndexes[`${index}`] = !newIndexes[`${index}`];
     this.setState({
-      expandedComponentIndexes: newIndexes,
+      expandedComponentIndex: index,
       selectedListItemKey: this.generateComponentKey(index, "basic")
     });
 
@@ -177,6 +175,13 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
     });
   }
 
+  public componentDidMount() {
+    const { application, handleClickComponent } = this.props;
+    if (application && application.get("components").get(0)) {
+      handleClickComponent(application.get("components").get(0) as ApplicationComponent);
+    }
+  }
+
   private renderComponents() {
     const { application, classes } = this.props;
 
@@ -203,9 +208,9 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
               <FiberManualRecordIcon style={{ fontSize: 15 }} htmlColor={grey[400]} />
             </ListItemIcon>
             <ListItemText primary={component.get("name") || `Please type component name`} />
-            {this.state.expandedComponentIndexes[`${index}`] ? <ExpandLess /> : <ExpandMore />}
+            {this.state.expandedComponentIndex === index ? <ExpandLess /> : <ExpandMore />}
           </ListItem>
-          <Collapse in={this.state.expandedComponentIndexes[`${index}`]} timeout="auto" unmountOnExit>
+          <Collapse in={this.state.expandedComponentIndex === index} timeout="auto" unmountOnExit>
             <List component="div" disablePadding>
               {this.renderComponentFields(component, index)}
             </List>

@@ -88,7 +88,7 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
   }
 
   private submitApplication = async (application: Application) => {
-    console.log("submitApplication", application.toJS());
+    // console.log("submitApplication", application.toJS());
     const { dispatch } = this.props;
 
     await dispatch(updateApplicationAction(application));
@@ -121,7 +121,6 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
           });
         }}
         handleClickComponent={(component: ApplicationComponent) => {
-          console.log("component", component.toJS());
           this.setState({
             currentFormType: "component",
             currentComponent: component,
