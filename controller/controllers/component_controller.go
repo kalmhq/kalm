@@ -641,9 +641,13 @@ func (r *ComponentReconcilerTask) ReconcileStatefulSet(spec *coreV1.PodTemplateS
 func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplateSpec, err error) {
 	component := r.component
 
+	labels := r.GetLabels()
+	labels["app"] = component.Name
+	labels["version"] = "v1" // TODO
+
 	template = &coreV1.PodTemplateSpec{
 		ObjectMeta: metaV1.ObjectMeta{
-			Labels: r.GetLabels(),
+			Labels: labels,
 		},
 		Spec: coreV1.PodSpec{
 			Containers: []coreV1.Container{
