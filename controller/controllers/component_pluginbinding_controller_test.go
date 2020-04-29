@@ -18,8 +18,8 @@ type PluginBindingControllerSuite struct {
 
 	application   *v1alpha1.Application
 	component     *v1alpha1.Component
-	plugin        *v1alpha1.Plugin
-	pluginBinding *v1alpha1.PluginBinding
+	plugin        *v1alpha1.ComponentPlugin
+	pluginBinding *v1alpha1.ComponentPluginBinding
 }
 
 func (suite *PluginBindingControllerSuite) SetupSuite() {
@@ -57,16 +57,15 @@ function BeforeDeploymentSave(deployment) {
 	suite.createComponent(component)
 	suite.component = component
 
-	binding := &v1alpha1.PluginBinding{
+	binding := &v1alpha1.ComponentPluginBinding{
 		ObjectMeta: v1.ObjectMeta{
 			Namespace: suite.component.Namespace,
 			Name:      fmt.Sprintf("%s-%s", suite.component.Name, suite.plugin.Name),
 		},
-		Spec: v1alpha1.PluginBindingSpec{
+		Spec: v1alpha1.ComponentPluginBindingSpec{
 			PluginName:    suite.plugin.Name,
 			ComponentName: suite.component.Name,
 			Config:        &runtime.RawExtension{Raw: []byte(`{"replicas": 2}`)},
-			Scope:         "component",
 		},
 	}
 
@@ -88,7 +87,6 @@ function BeforeDeploymentSave(deployment) {
 
 		return binding.Labels["kapp-component"] == suite.component.Name &&
 			binding.Labels["kapp-plugin"] == suite.plugin.Name &&
-			binding.Labels["scope"] == binding.Spec.Scope &&
 			binding.Status.ConfigValid &&
 			binding.Status.ConfigError == ""
 

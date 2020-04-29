@@ -6,20 +6,20 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.4
   creationTimestamp: null
-  name: plugins.core.kapp.dev
+  name: componentplugins.core.kapp.dev
 spec:
   group: core.kapp.dev
   names:
-    kind: Plugin
-    listKind: PluginList
-    plural: plugins
-    singular: plugin
+    kind: ComponentPlugin
+    listKind: ComponentPluginList
+    plural: componentplugins
+    singular: componentplugin
   scope: Cluster
   subresources:
     status: {}
   validation:
     openAPIV3Schema:
-      description: Plugin is the Schema for the plugins API
+      description: ComponentPlugin is the Schema for the plugins API
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -34,12 +34,13 @@ spec:
         metadata:
           type: object
         spec:
-          description: PluginSpec defines the desired state of Plugin
+          description: ComponentPluginSpec defines the desired state of ComponentPlugin
           properties:
             availableWorkloadType:
-              description: If empty, means the plugin can be applied on all kinds
-                of component If Not empty, this plugin can only be used on components
-                with workload type exists in this array.
+              description: This array is only useful when subject is component. If
+                empty, means the plugin can be applied on all kinds of component.
+                If Not empty, this plugin can only be used on components with workload
+                type exists in this array.
               items:
                 type: string
               type: array
@@ -55,12 +56,9 @@ spec:
           - src
           type: object
         status:
-          description: PluginStatus defines the observed state of Plugin
+          description: ComponentPluginStatus defines the observed state of ComponentPlugin
           properties:
             compiledSuccessfully:
-              description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
-                of cluster Important: Run "make" to regenerate code after modifying
-                this file'
               type: boolean
           required:
           - compiledSuccessfully

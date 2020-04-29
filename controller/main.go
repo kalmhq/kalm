@@ -115,13 +115,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.PluginReconciler{
+	if err = (&controllers.ComponentPluginReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Plugin"),
+		Log:    ctrl.Log.WithName("controllers").WithName("ComponentPlugin"),
 		Scheme: mgr.GetScheme(),
 		Reader: mgr.GetAPIReader(),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Plugin")
+		setupLog.Error(err, "unable to create controller", "controller", "ComponentPlugin")
 		os.Exit(1)
 	}
 
@@ -137,11 +137,11 @@ func main() {
 
 	if err = (&controllers.PluginBindingReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("PluginBinding"),
+		Log:    ctrl.Log.WithName("controllers").WithName("ComponentPluginBinding"),
 		Scheme: mgr.GetScheme(),
 		Reader: mgr.GetAPIReader(),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "PluginBinding")
+		setupLog.Error(err, "unable to create controller", "controller", "ComponentPluginBinding")
 		os.Exit(1)
 	}
 

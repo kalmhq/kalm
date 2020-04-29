@@ -41,7 +41,7 @@ func (suite *BasicSuite) Eventually(condition func() bool, msgAndArgs ...interfa
 	return suite.Suite.Eventually(condition, waitFor, tick, msgAndArgs...)
 }
 
-func (suite *BasicSuite) createPlugin(plugin *v1alpha1.Plugin) {
+func (suite *BasicSuite) createPlugin(plugin *v1alpha1.ComponentPlugin) {
 	suite.Nil(suite.K8sClient.Create(context.Background(), plugin))
 
 	// after the finalizer is set, the plugin won't auto change
@@ -149,9 +149,9 @@ func (suite *BasicSuite) SetupSuite() {
 	}).SetupWithManager(mgr)
 	suite.Nil(err)
 
-	err = (&PluginReconciler{
+	err = (&ComponentPluginReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Plugin"),
+		Log:    ctrl.Log.WithName("controllers").WithName("ComponentPlugin"),
 		Scheme: mgr.GetScheme(),
 		Reader: mgr.GetAPIReader(),
 	}).SetupWithManager(mgr)
@@ -167,7 +167,7 @@ func (suite *BasicSuite) SetupSuite() {
 
 	suite.Nil((&PluginBindingReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("PluginBinding"),
+		Log:    ctrl.Log.WithName("controllers").WithName("ComponentPluginBinding"),
 		Scheme: mgr.GetScheme(),
 		Reader: mgr.GetAPIReader(),
 	}).SetupWithManager(mgr))

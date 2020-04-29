@@ -342,13 +342,14 @@ func (r *ApplicationReconcilerTask) ReconcileComponents() error {
 		return err
 	}
 
+	timeString := time.Now().String()
 	for _, item := range componentList.Items {
 		copiedComponent := item.DeepCopy()
 		if copiedComponent.Annotations == nil {
 			copiedComponent.Annotations = make(map[string]string)
 		}
 
-		copiedComponent.Annotations["lastTouchedByApplication"] = time.Now().String()
+		copiedComponent.Annotations["lastTouchedByApplication"] = timeString
 		if err := r.Patch(r.ctx, copiedComponent, client.MergeFrom(&item)); err != nil {
 			r.Log.Error(err, "patch component failed")
 			return err
@@ -378,6 +379,8 @@ func (r *ApplicationReconcilerTask) ReconcileConfigMaps() error {
 			if err := r.Create(r.ctx, &configMap); err != nil {
 				r.Log.Error(err, "create kapp default config map error")
 				return err
+			} else {
+				return nil
 			}
 		} else {
 			r.Log.Error(err, "get kapp default config map error")

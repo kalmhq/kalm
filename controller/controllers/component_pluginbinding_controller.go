@@ -30,7 +30,7 @@ import (
 	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
 )
 
-// PluginBindingReconciler reconciles a PluginBinding object
+// PluginBindingReconciler reconciles a ComponentPluginBinding object
 type PluginBindingReconciler struct {
 	client.Client
 	Log    logr.Logger
@@ -45,13 +45,13 @@ func (r *PluginBindingReconciler) Reconcile(req ctrl.Request) (ctrl.Result, erro
 	ctx := context.Background()
 	log := r.Log.WithValues("pluginbinding", req.NamespacedName)
 
-	var pluginBinding corev1alpha1.PluginBinding
+	var pluginBinding corev1alpha1.ComponentPluginBinding
 
 	if err := r.Get(ctx, req.NamespacedName, &pluginBinding); err != nil {
 		err = client.IgnoreNotFound(err)
 
 		if err != nil {
-			log.Error(err, "unable to fetch Plugin Binding")
+			log.Error(err, "unable to fetch ComponentPlugin Binding")
 		}
 
 		return ctrl.Result{}, err
@@ -65,7 +65,6 @@ func (r *PluginBindingReconciler) Reconcile(req ctrl.Request) (ctrl.Result, erro
 				pluginBinding.ObjectMeta.Labels = make(map[string]string)
 			}
 
-			pluginBinding.ObjectMeta.Labels["scope"] = pluginBinding.Spec.Scope
 			pluginBinding.ObjectMeta.Labels["kapp-plugin"] = pluginBinding.Spec.PluginName
 
 			if pluginBinding.Spec.ComponentName != "" {
@@ -105,8 +104,12 @@ func (r *PluginBindingReconciler) Reconcile(req ctrl.Request) (ctrl.Result, erro
 	}
 }
 
-func (r *PluginBindingReconciler) TouchComponents(ctx context.Context, pluginBinding *corev1alpha1.PluginBinding, log logr.Logger) error {
-	if pluginBinding.Spec.Scope == "application" {
+//func (r *PluginBindingReconciler) TouchSubject(ctx context.Context, pluginBinding *corev1alpha1.ComponentPluginBinding, log logr.Logger)error {
+//
+//}
+
+func (r *PluginBindingReconciler) TouchComponents(ctx context.Context, pluginBinding *corev1alpha1.ComponentPluginBinding, log logr.Logger) error {
+	if pluginBinding.Spec.ComponentName == "" {
 		var componentList corev1alpha1.ComponentList
 		err := r.Reader.List(ctx, &componentList, client.InNamespace(pluginBinding.Namespace))
 		if err != nil {
@@ -147,8 +150,8 @@ func (r *PluginBindingReconciler) TouchComponent(ctx context.Context, component 
 	return r.Patch(ctx, componentCopy, client.MergeFrom(component))
 }
 
-func (r *PluginBindingReconciler) UpdatePluginBinding(ctx context.Context, pluginBinding *corev1alpha1.PluginBinding, log logr.Logger) error {
-	pluginProgram := pluginsCache.Get(pluginBinding.Spec.PluginName)
+func (r *PluginBindingReconciler) UpdatePluginBinding(ctx context.Context, pluginBinding *corev1alpha1.ComponentPluginBinding, log logr.Logger) error {
+	pluginProgram := componentPluginsCache.Get(pluginBinding.Spec.PluginName)
 
 	if pluginProgram == nil {
 		return nil
@@ -191,6 +194,6 @@ func (r *PluginBindingReconciler) UpdatePluginBinding(ctx context.Context, plugi
 
 func (r *PluginBindingReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&corev1alpha1.PluginBinding{}).
+		For(&corev1alpha1.ComponentPluginBinding{}).
 		Complete(r)
 }

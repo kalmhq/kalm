@@ -13,7 +13,7 @@ spec:
   isActive: true
 ---
 apiVersion: core.kapp.dev/v1alpha1
-kind: Plugin
+kind: ComponentPlugin
 metadata:
   name: termination-grace
 spec:
@@ -39,7 +39,7 @@ spec:
 
 ---
 apiVersion: core.kapp.dev/v1alpha1
-kind: Plugin
+kind: ComponentPlugin
 metadata:
   name: manually-scale
 spec:
@@ -55,7 +55,7 @@ spec:
         type: number
 ---
 apiVersion: core.kapp.dev/v1alpha1
-kind: Plugin
+kind: ComponentPlugin
 metadata:
   name: grpc-health-probe
 spec:
@@ -114,12 +114,11 @@ spec:
         type: string
 ---
 apiVersion: core.kapp.dev/v1alpha1
-kind: PluginBinding
+kind: ComponentPluginBinding
 metadata:
   name: termination-grace
   namespace: kapp-hipster
 spec:
-  scope: application
   pluginName: termination-grace
   config:
     periodSeconds: 5
@@ -149,24 +148,22 @@ spec:
       value: "1"
 ---
 apiVersion: core.kapp.dev/v1alpha1
-kind: PluginBinding
+kind: ComponentPluginBinding
 metadata:
   name: paymentservice-manually-scale
   namespace: kapp-hipster
 spec:
-  scope: component
   pluginName:  manually-scale
   componentName: paymentservice
   config:
     replicas: 2
 ---
 apiVersion: core.kapp.dev/v1alpha1
-kind: PluginBinding
+kind: ComponentPluginBinding
 metadata:
   name: paymentservice-grpc-health-probe
   namespace: kapp-hipster
 spec:
-  scope: component
   pluginName:  grpc-health-probe
   componentName: paymentservice
   config:
@@ -197,12 +194,11 @@ spec:
       value: "1"
 ---
 apiVersion: core.kapp.dev/v1alpha1
-kind: PluginBinding
+kind: ComponentPluginBinding
 metadata:
   name: shippingservice-grpc-health-probe
   namespace: kapp-hipster
 spec:
-  scope: component
   pluginName:  grpc-health-probe
   componentName: shippingservice
   config:
@@ -233,12 +229,11 @@ spec:
       value: "1"
 ---
 apiVersion: core.kapp.dev/v1alpha1
-kind: PluginBinding
+kind: ComponentPluginBinding
 metadata:
   name: currencyservice-grpc-health-probe
   namespace: kapp-hipster
 spec:
-  scope: component
   pluginName:  grpc-health-probe
   componentName: currencyservice
   config:
@@ -269,12 +264,11 @@ spec:
       value: "1"
 ---
 apiVersion: core.kapp.dev/v1alpha1
-kind: PluginBinding
+kind: ComponentPluginBinding
 metadata:
   name: productcatalogservice-grpc-health-probe
   namespace: kapp-hipster
 spec:
-  scope: component
   pluginName:  grpc-health-probe
   componentName: productcatalogservice
   config:
@@ -309,12 +303,11 @@ spec:
     #  value: "1"
 ---
 apiVersion: core.kapp.dev/v1alpha1
-kind: PluginBinding
+kind: ComponentPluginBinding
 metadata:
   name: adservice-grpc-health-probe
   namespace: kapp-hipster
 spec:
-  scope: component
   pluginName:  grpc-health-probe
   componentName: adservice
   config:
@@ -352,12 +345,11 @@ spec:
       value: "1"
 ---
 apiVersion: core.kapp.dev/v1alpha1
-kind: PluginBinding
+kind: ComponentPluginBinding
 metadata:
   name: cartservice-grpc-health-probe
   namespace: kapp-hipster
 spec:
-  scope: component
   pluginName:  grpc-health-probe
   componentName: cartservice
   config:
@@ -444,12 +436,11 @@ spec:
       value: "1"
 ---
 apiVersion: core.kapp.dev/v1alpha1
-kind: PluginBinding
+kind: ComponentPluginBinding
 metadata:
   name: checkoutservice-grpc-health-probe
   namespace: kapp-hipster
 spec:
-  scope: component
   pluginName:  grpc-health-probe
   componentName: checkoutservice
   config:
@@ -553,12 +544,11 @@ spec:
       value: "1"
 ---
 apiVersion: core.kapp.dev/v1alpha1
-kind: PluginBinding
+kind: ComponentPluginBinding
 metadata:
   name: recommendationservice-grpc-health-probe
   namespace: kapp-hipster
 spec:
-  scope: component
   pluginName:  grpc-health-probe
   componentName: recommendationservice
   config:
@@ -590,12 +580,11 @@ spec:
       value: "1"
 ---
 apiVersion: core.kapp.dev/v1alpha1
-kind: PluginBinding
+kind: ComponentPluginBinding
 metadata:
   name: emailservice-grpc-health-probe
   namespace: kapp-hipster
 spec:
-  scope: component
   pluginName:  grpc-health-probe
   componentName: emailservice
   config:
@@ -603,22 +592,6 @@ spec:
     port: 8080
 
 # The following yaml should be integrated in kapp system somehow.
----
-apiVersion: networking.istio.io/v1alpha3
-kind: Gateway
-metadata:
-  name: gateway
-  namespace: kapp-hipster
-spec:
-  selector:
-    istio: ingressgateway # use istio default controller
-  servers:
-    - port:
-        number: 80
-        name: http
-        protocol: HTTP
-      hosts:
-        - "*"
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService

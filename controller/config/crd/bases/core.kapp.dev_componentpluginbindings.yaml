@@ -6,20 +6,18 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.4
   creationTimestamp: null
-  name: plugins.core.kapp.dev
+  name: componentpluginbindings.core.kapp.dev
 spec:
   group: core.kapp.dev
   names:
-    kind: Plugin
-    listKind: PluginList
-    plural: plugins
-    singular: plugin
-  scope: Cluster
-  subresources:
-    status: {}
+    kind: ComponentPluginBinding
+    listKind: ComponentPluginBindingList
+    plural: componentpluginbindings
+    singular: componentpluginbinding
+  scope: Namespaced
   validation:
     openAPIV3Schema:
-      description: Plugin is the Schema for the plugins API
+      description: ComponentPluginBinding is the Schema for the pluginbindings API
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -34,36 +32,38 @@ spec:
         metadata:
           type: object
         spec:
-          description: PluginSpec defines the desired state of Plugin
+          description: ComponentPluginBindingSpec defines the desired state of ComponentPluginBinding
           properties:
-            availableWorkloadType:
-              description: If empty, means the plugin can be applied on all kinds
-                of component If Not empty, this plugin can only be used on components
-                with workload type exists in this array.
-              items:
-                type: string
-              type: array
-            configSchema:
-              type: object
-            icon:
-              description: icon of this plugin
+            componentName:
+              description: If this field is empty, it will affect all components in
+                the application.
               type: string
-            src:
-              description: source code of the plugin
+            config:
+              description: configuration of this binding
+              type: object
+            isDisabled:
+              description: disable this pluginbinding
+              type: boolean
+            pluginName:
+              description: which plugin to use
               type: string
           required:
-          - src
+          - pluginName
           type: object
         status:
-          description: PluginStatus defines the observed state of Plugin
+          description: ComponentPluginBindingStatus defines the observed state of
+            ComponentPluginBinding
           properties:
-            compiledSuccessfully:
+            configError:
+              type: string
+            configValid:
               description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
                 of cluster Important: Run "make" to regenerate code after modifying
                 this file'
               type: boolean
           required:
-          - compiledSuccessfully
+          - configError
+          - configValid
           type: object
       type: object
   version: v1alpha1

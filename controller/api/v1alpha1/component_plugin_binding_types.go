@@ -23,65 +23,53 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-const (
-	KappNativePluginIngress = "kapp-native-plugin-ingress"
-)
-
-// PluginSpec defines the desired state of Plugin
-type PluginSpec struct {
+// ComponentPluginBindingSpec defines the desired state of ComponentPluginBinding
+type ComponentPluginBindingSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// source code of the plugin
-	Src string `json:"src"`
+	// If this field is empty, it will affect all components in the application.
+	ComponentName string `json:"componentName,omitempty"`
 
-	// If empty, means the plugin can be applied on all kinds of component
-	// If Not empty, this plugin can only be used on components with workload type exists in this array.
-	AvailableWorkloadType []WorkloadType `json:"availableWorkloadType,omitempty"`
+	// which plugin to use
+	PluginName string `json:"pluginName"`
 
-	// icon of this plugin
-	Icon string `json:"icon,omitempty"`
+	// configuration of this binding
+	Config *runtime.RawExtension `json:"config,omitempty"`
 
-	ConfigSchema *runtime.RawExtension `json:"configSchema,omitempty"`
+	// disable this pluginbinding
+	// +optional
+	IsDisabled bool `json:"isDisabled"`
 }
 
-type PluginUser struct {
-	ApplicationName string `json:"applicationName"`
-	ComponentName   string `json:"componentName"`
-}
-
-// PluginStatus defines the observed state of Plugin
-type PluginStatus struct {
+// ComponentPluginBindingStatus defines the observed state of ComponentPluginBinding
+type ComponentPluginBindingStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	CompiledSuccessfully bool `json:"compiledSuccessfully"`
-
-	Users []PluginUser `json:"users,omitempty"`
+	ConfigValid bool   `json:"configValid"`
+	ConfigError string `json:"configError"`
 }
 
 // +kubebuilder:object:root=true
-// +kubebuilder:resource:scope=Cluster
-// +kubebuilder:subresource:status
 
-// Plugin is the Schema for the plugins API
-type Plugin struct {
+// ComponentPluginBinding is the Schema for the pluginbindings API
+type ComponentPluginBinding struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   PluginSpec   `json:"spec,omitempty"`
-	Status PluginStatus `json:"status,omitempty"`
+	Spec   ComponentPluginBindingSpec   `json:"spec,omitempty"`
+	Status ComponentPluginBindingStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
-// +kubebuilder:resource:scope=Cluster
 
-// PluginList contains a list of Plugin
-type PluginList struct {
+// ComponentPluginBindingList contains a list of ComponentPluginBinding
+type ComponentPluginBindingList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Plugin `json:"items"`
+	Items           []ComponentPluginBinding `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&Plugin{}, &PluginList{})
+	SchemeBuilder.Register(&ComponentPluginBinding{}, &ComponentPluginBindingList{})
 }

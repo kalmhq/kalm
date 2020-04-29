@@ -11,7 +11,7 @@ spec:
   isActive: false
 ---
 apiVersion: core.kapp.dev/v1alpha1
-kind: Plugin
+kind: ComponentPlugin
 metadata:
   name: configurable-probes
 spec:
@@ -286,14 +286,13 @@ spec:
   workloadType: server
 ---
 apiVersion: core.kapp.dev/v1alpha1
-kind: PluginBinding
+kind: ComponentPluginBinding
 metadata:
   name: test-configurable-probes
   namespace: kapp-test
 spec:
   pluginName: configurable-probes
   componentName: test
-  scope: component
   config:
     readinessProbe:
       httpGet:

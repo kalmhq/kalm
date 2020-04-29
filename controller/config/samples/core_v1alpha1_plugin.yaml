@@ -1,5 +1,5 @@
 apiVersion: core.kapp.dev/v1alpha1
-kind: Plugin
+kind: ComponentPlugin
 metadata:
   name: kapp-native-plugin-ingress
 spec:
@@ -11,7 +11,7 @@ spec:
     - server
 ---
 apiVersion: core.kapp.dev/v1alpha1
-kind: Plugin
+kind: ComponentPlugin
 metadata:
   name: kapp-static-sacle-double
 spec:
@@ -24,7 +24,7 @@ spec:
     - server
 ---
 apiVersion: core.kapp.dev/v1alpha1
-kind: Plugin
+kind: ComponentPlugin
 metadata:
   name: kapp-scale-name-with-suffix-tiple
 spec:
@@ -41,7 +41,7 @@ spec:
     - server
 ---
 apiVersion: core.kapp.dev/v1alpha1
-kind: Plugin
+kind: ComponentPlugin
 metadata:
   name: kapp-test-default-embedded-functions
 spec:
@@ -54,7 +54,7 @@ spec:
     }
 ---
 apiVersion: core.kapp.dev/v1alpha1
-kind: Plugin
+kind: ComponentPlugin
 metadata:
   name: kapp-customize-probes
 spec:
@@ -92,31 +92,28 @@ spec:
   isActive: true
 ---
 apiVersion: core.kapp.dev/v1alpha1
-kind: PluginBinding
+kind: ComponentPluginBinding
 metadata:
   name:  test-kapp-scale-name-with-suffix-tiple
   namespace: test
 spec:
   pluginName: kapp-scale-name-with-suffix-tiple
-  scope: application
 ---
 apiVersion: core.kapp.dev/v1alpha1
-kind: PluginBinding
+kind: ComponentPluginBinding
 metadata:
   name:  test-kapp-customize-probes
   namespace: test
 spec:
   pluginName: kapp-customize-probes
-  scope: application
 ---
 apiVersion: core.kapp.dev/v1alpha1
-kind: PluginBinding
+kind: ComponentPluginBinding
 metadata:
   name:  test-kapp-test-default-embedded-functions
   namespace: test
 spec:
   pluginName: kapp-test-default-embedded-functions
-  scope: application
 ---
 apiVersion: core.kapp.dev/v1alpha1
 kind: Component
@@ -128,13 +125,12 @@ spec:
     workloadType: server
 ---
 apiVersion: core.kapp.dev/v1alpha1
-kind: PluginBinding
+kind: ComponentPluginBinding
 metadata:
   name:  nginx-double-kapp-static-sacle-double
   namespace: test
 spec:
   pluginName: kapp-static-sacle-double
-  scope: component
   componentName: nginx-double
 ---
 apiVersion: core.kapp.dev/v1alpha1

@@ -60,11 +60,12 @@ type ComponentReconcilerTask struct {
 	application *corev1alpha1.Application
 
 	// related resources
-	service     *coreV1.Service
-	cronJob     *batchV1Beta1.CronJob
-	deployment  *appsV1.Deployment
-	daemonSet   *appsV1.DaemonSet
-	statefulSet *appsV1.StatefulSet
+	service        *coreV1.Service
+	cronJob        *batchV1Beta1.CronJob
+	deployment     *appsV1.Deployment
+	daemonSet      *appsV1.DaemonSet
+	statefulSet    *appsV1.StatefulSet
+	pluginBindings *corev1alpha1.ComponentPluginBindingList
 }
 
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=components,verbs=get;list;watch;create;update;patch;delete
@@ -282,7 +283,7 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 
 		r.service.Spec.Ports = ps
 
-		// TODO service Plugin call
+		// TODO service ComponentPlugin call
 
 		if newService {
 			//if err := ctrl.SetControllerReference(app, service, r.Scheme); err != nil {
@@ -429,7 +430,7 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 		return err
 	}
 
-	if err := r.runPlugins(PluginMethodBeforeDeploymentSave, component, deployment, deployment); err != nil {
+	if err := r.runPlugins(ComponentPluginMethodBeforeDeploymentSave, component, deployment, deployment); err != nil {
 		log.Error(err, "run before deployment save error.")
 		return err
 	}
@@ -818,10 +819,10 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 		template.Spec.Volumes = volumes
 		mainContainer.VolumeMounts = volumeMounts
 	}
-	err = r.runPlugins(PluginMethodAfterPodTemplateGeneration, component, template, template)
+	err = r.runPlugins(ComponentPluginMethodAfterPodTemplateGeneration, component, template, template)
 
 	if err != nil {
-		r.Log.Error(err, "run "+PluginMethodAfterPodTemplateGeneration+" save plugin error")
+		r.Log.Error(err, "run "+ComponentPluginMethodAfterPodTemplateGeneration+" save plugin error")
 		return nil, err
 	}
 
@@ -906,77 +907,26 @@ func (r *ComponentReconcilerTask) initPluginRuntime(component *corev1alpha1.Comp
 }
 
 func (r *ComponentReconcilerTask) runPlugins(methodName string, component *corev1alpha1.Component, desc interface{}, args ...interface{}) (err error) {
-	err = r.runApplicationPlugins(methodName, component, desc, args...)
-
-	if err != nil {
-		return err
-	}
-
-	err = r.runComponentPlugins(methodName, component, desc, args...)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func findPluginAndValidateConfigNew(pluginBinding *corev1alpha1.PluginBinding, methodName string, component *corev1alpha1.Component) (*PluginProgram, []byte, error) {
-	pluginProgram := pluginsCache.Get(pluginBinding.Spec.PluginName)
-
-	if pluginProgram == nil {
-		return nil, nil, fmt.Errorf("Can't find plugin %s in cache.", pluginBinding.Spec.PluginName)
-	}
-
-	if !pluginProgram.Methods[methodName] {
-		return nil, nil, nil
-	}
-
-	workloadType := component.Spec.WorkloadType
-
-	if workloadType == "" {
-		// TODO are we safe to remove this fallback value?
-		workloadType = corev1alpha1.WorkloadTypeServer
-	}
-
-	if !pluginProgram.AvailableForAllWorkloadTypes && !pluginProgram.AvailableWorkloadTypes[workloadType] {
-		return nil, nil, nil
-	}
-
-	if pluginProgram.ConfigSchema != nil {
-		if pluginBinding.Spec.Config == nil {
-			return nil, nil, fmt.Errorf("Plugin %s require configuration.", pluginBinding.Spec.PluginName)
+	if r.pluginBindings == nil {
+		var bindings corev1alpha1.ComponentPluginBindingList
+		if err := r.Reader.List(r.ctx, &bindings, client.InNamespace(r.component.Namespace)); err != nil {
+			r.Log.Error(err, "get plugin bindings error")
+			return err
 		}
 
-		pluginConfig := gojsonschema.NewStringLoader(string(pluginBinding.Spec.Config.Raw))
-		res, err := pluginProgram.ConfigSchema.Validate(pluginConfig)
-
-		if err != nil {
-			return nil, nil, err
-		}
-
-		if !res.Valid() {
-			return nil, nil, fmt.Errorf(res.Errors()[0].String())
-		}
-
-		return pluginProgram, pluginBinding.Spec.Config.Raw, nil
+		r.pluginBindings = &bindings
 	}
 
-	return pluginProgram, nil, nil
-}
-
-func (r *ComponentReconcilerTask) runComponentPlugins(methodName string, component *corev1alpha1.Component, desc interface{}, args ...interface{}) error {
-	var bindings corev1alpha1.PluginBindingList
-	if err := r.Reader.List(r.ctx, &bindings, client.MatchingLabels{
-		"scope":          "component",
-		"kapp-component": r.component.Name,
-	}, client.InNamespace(r.component.Namespace)); err != nil {
-		r.Log.Error(err, "get component scope plugin bindings error")
-		return err
+	if r.pluginBindings == nil {
+		return nil
 	}
 
-	for _, binding := range bindings.Items {
+	for _, binding := range r.pluginBindings.Items {
 		if binding.DeletionTimestamp != nil || binding.Spec.IsDisabled {
+			continue
+		}
+
+		if binding.Spec.ComponentName != "" && binding.Spec.ComponentName != component.Name {
 			continue
 		}
 
@@ -991,63 +941,17 @@ func (r *ComponentReconcilerTask) runComponentPlugins(methodName string, compone
 		}
 
 		rt := r.initPluginRuntime(component)
-		rt.Set("scope", "component")
 
 		r.insertBuildInPluginImpls(rt, binding.Spec.PluginName, methodName, component, desc, args)
 
-		err = vm.RunMethod(
-			rt,
-			pluginProgram.Program,
-			methodName,
-			config,
-			desc,
-			args...,
-		)
-
-		//if err == nil {
-		//	r.savePluginUser(pluginProgram)
-		//}
-	}
-
-	return nil
-}
-
-func (r *ComponentReconcilerTask) runApplicationPlugins(methodName string, component *corev1alpha1.Component, desc interface{}, args ...interface{}) error {
-	var bindings corev1alpha1.PluginBindingList
-	if err := r.Reader.List(r.ctx, &bindings, client.MatchingLabels{
-		"scope": "application",
-	}, client.InNamespace(r.component.Namespace)); err != nil {
-		r.Log.Error(err, "get application scope plugin bindings error")
-		return err
-	}
-
-	for _, binding := range bindings.Items {
-		if binding.DeletionTimestamp != nil || binding.Spec.IsDisabled {
-			continue
-		}
-
-		pluginProgram, config, err := findPluginAndValidateConfigNew(&binding, methodName, component)
-
-		if err != nil {
-			return err
-		}
-
-		if pluginProgram == nil {
-			continue
-		}
-
-		rt := r.initPluginRuntime(component)
-		rt.Set("scope", "application")
-
-		r.insertBuildInPluginImpls(rt, binding.Spec.PluginName, methodName, component, desc, args)
-
-		if pluginProgram.Methods[PluginMethodComponentFilter] {
+		// TODO refactor this filter
+		if pluginProgram.Methods[ComponentPluginMethodComponentFilter] {
 			shouldExecute := new(bool)
 
 			err := vm.RunMethod(
 				rt,
 				pluginProgram.Program,
-				PluginMethodComponentFilter,
+				ComponentPluginMethodComponentFilter,
 				config,
 				shouldExecute,
 				component,
@@ -1071,39 +975,57 @@ func (r *ComponentReconcilerTask) runApplicationPlugins(methodName string, compo
 			args...,
 		)
 
-		if err == nil {
-			r.savePluginUser(pluginProgram)
+		if err != nil {
+			r.Log.Error(err, fmt.Sprintf("Run plugin error. methodName: %s, componentName: %s, pluginName: %s", methodName, component.Name, binding.Spec.PluginName))
+			return err
 		}
 	}
 
 	return nil
 }
 
-func (r *ComponentReconcilerTask) savePluginUser(pluginProgram *PluginProgram) (err error) {
-	newPluginUser := corev1alpha1.PluginUser{
-		ApplicationName: r.application.Name,
-		ComponentName:   r.component.Name,
+func findPluginAndValidateConfigNew(pluginBinding *corev1alpha1.ComponentPluginBinding, methodName string, component *corev1alpha1.Component) (*ComponentPluginProgram, []byte, error) {
+	pluginProgram := componentPluginsCache.Get(pluginBinding.Spec.PluginName)
+
+	if pluginProgram == nil {
+		return nil, nil, fmt.Errorf("Can't find plugin %s in cache.", pluginBinding.Spec.PluginName)
 	}
 
-	var plugin corev1alpha1.Plugin
-	// TODO cache the plugin
-	err = r.Reader.Get(r.ctx, types.NamespacedName{Name: pluginProgram.Name}, &plugin)
-
-	if err != nil {
-		r.Log.Error(err, "can't get plugin")
-		return err
+	if !pluginProgram.Methods[methodName] {
+		return nil, nil, nil
 	}
 
-	for _, pluginUser := range plugin.Status.Users {
-		if pluginUser.ApplicationName == newPluginUser.ApplicationName && pluginUser.ComponentName == newPluginUser.ComponentName {
-			return nil
+	workloadType := component.Spec.WorkloadType
+
+	if workloadType == "" {
+		// TODO are we safe to remove this fallback value?
+		workloadType = corev1alpha1.WorkloadTypeServer
+	}
+
+	if !pluginProgram.AvailableForAllWorkloadTypes && !pluginProgram.AvailableWorkloadTypes[workloadType] {
+		return nil, nil, nil
+	}
+
+	if pluginProgram.ConfigSchema != nil {
+		if pluginBinding.Spec.Config == nil {
+			return nil, nil, fmt.Errorf("ComponentPlugin %s require configuration.", pluginBinding.Spec.PluginName)
 		}
+
+		pluginConfig := gojsonschema.NewStringLoader(string(pluginBinding.Spec.Config.Raw))
+		res, err := pluginProgram.ConfigSchema.Validate(pluginConfig)
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		if !res.Valid() {
+			return nil, nil, fmt.Errorf(res.Errors()[0].String())
+		}
+
+		return pluginProgram, pluginBinding.Spec.Config.Raw, nil
 	}
 
-	patchPlugin := plugin.DeepCopy()
-	patchPlugin.Status.Users = append(plugin.Status.Users, newPluginUser)
-
-	return r.Status().Patch(r.ctx, patchPlugin, client.MergeFrom(&plugin))
+	return pluginProgram, nil, nil
 }
 
 func (r *ComponentReconcilerTask) parseComponentConfigs(component *corev1alpha1.Component, volumes *[]coreV1.Volume, volumeMounts *[]coreV1.VolumeMount) {
@@ -1381,7 +1303,7 @@ func (r *ComponentReconcilerTask) DeleteResources() (err error) {
 		}
 	}
 
-	var bindingList corev1alpha1.PluginBindingList
+	var bindingList corev1alpha1.ComponentPluginBindingList
 
 	if err := r.Reader.List(r.ctx, &bindingList, client.MatchingLabels{
 		"kapp-component": r.component.Name,
@@ -1506,9 +1428,9 @@ func (r *ComponentReconcilerTask) LoadItem(dest runtime.Object) (err error) {
 
 func (r *ComponentReconcilerTask) insertBuildInPluginImpls(rt *js.Runtime, pluginName, methodName string, component *corev1alpha1.Component, desc interface{}, args []interface{}) {
 	switch pluginName {
-	case corev1alpha1.KappNativePluginIngress:
+	case corev1alpha1.KappBuiltinComponentPluginIngress:
 
-		if methodName != PluginMethodBeforeDeploymentSave {
+		if methodName != ComponentPluginMethodBeforeDeploymentSave {
 			return
 		}
 
