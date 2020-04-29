@@ -84,6 +84,11 @@ spec:
   availableWorkloadType:
     - server
 ---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test
+---
 apiVersion: core.kapp.dev/v1alpha1
 kind: Application
 metadata:

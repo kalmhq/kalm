@@ -165,7 +165,7 @@ func (suite *BasicSuite) SetupSuite() {
 	}).SetupWithManager(mgr)
 	suite.Nil(err)
 
-	suite.Nil((&PluginBindingReconciler{
+	suite.Nil((&ComponentPluginBindingReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("ComponentPluginBinding"),
 		Scheme: mgr.GetScheme(),

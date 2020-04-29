@@ -135,7 +135,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.PluginBindingReconciler{
+	if err = (&controllers.ComponentPluginBindingReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("ComponentPluginBinding"),
 		Scheme: mgr.GetScheme(),

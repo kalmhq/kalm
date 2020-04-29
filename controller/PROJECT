@@ -11,12 +11,6 @@ resources:
   kind: Dependency
   version: v1alpha1
 - group: core
-  kind: Plugin
-  version: v1alpha1
-- group: core
   kind: Component
-  version: v1alpha1
-- group: core
-  kind: PluginBinding
   version: v1alpha1
 version: "2"
