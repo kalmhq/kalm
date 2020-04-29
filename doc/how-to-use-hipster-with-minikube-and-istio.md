@@ -93,6 +93,18 @@ kubectl logs $(kubectl get pods -n kapp-hipster -l kapp-component=frontend -o js
 ```
 
 ```bash
+# istio proxy status
+istioctl proxy-status
+```
+
+```bash
+# istio proxy-config of a pod
+istioctl proxy-config cluster -n kapp-hipster $(kubectl get pods -n kapp-hipster -l kapp-component=frontend -o jsonpath='{.items[0].metadata.name}')
+
+# istioctl proxy-config -h for more available commands
+```
+
+```bash
 # get minikube ip
 
 192.168.64.30
