@@ -621,6 +621,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
             <MaterialTable
               tableRef={this.tableRef}
               options={{
+                pageSize: 20,
                 padding: "dense",
                 draggable: false,
                 rowStyle: {

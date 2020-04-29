@@ -40,8 +40,8 @@ const styles = (theme: Theme) =>
       verticalAlign: "super"
     },
     root: {
-      display: "flex",
-      padding: "24px"
+      display: "flex"
+      // padding: "24px"
     },
     leftTree: {
       width: "400px",

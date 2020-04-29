@@ -10,14 +10,22 @@ import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { loadApplicationsAction } from "../actions/application";
+import SettingsIcon from "@material-ui/icons/Settings";
+import { NavLink } from "react-router-dom";
+import ViewHeadlineIcon from "@material-ui/icons/ViewHeadline";
+import KeyboardArrowRightIcon from "@material-ui/icons/KeyboardArrowRight";
+import { IconButtonWithTooltip } from "../widgets/IconButtonWithTooltip";
 
 export const APP_BAR_HEIGHT = 48;
 
 const mapStateToProps = (state: RootState) => {
+  const activeNamespace = state.get("namespaces").get("active");
+
   const auth = state.get("auth");
   const isAdmin = auth.get("isAdmin");
   const entity = auth.get("entity");
   return {
+    activeNamespace,
     isAdmin,
     entity
   };
@@ -41,7 +49,7 @@ const styles = (theme: Theme) =>
       position: "relative",
       padding: "0 20px",
       display: "flex",
-      alignItems: "baseline",
+      alignItems: "center",
       justifyContent: "space-between"
     },
     barTitle: {
@@ -57,7 +65,7 @@ const styles = (theme: Theme) =>
       display: "flex",
       alignItems: "center",
       "& > *": {
-        marginLeft: "8px"
+        marginLeft: "2px"
       }
     },
     barAvatar: {
@@ -134,7 +142,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
   }
 
   render() {
-    const { classes, title } = this.props;
+    const { classes, title, activeNamespace } = this.props;
 
     return (
       <AppBar ref={this.headerRef} id="header" position="relative" className={classes.appBar}>
@@ -145,6 +153,24 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
             </Link>
           </FlexRowItemCenterBox>
           <div className={classes.barRight}>
+            <IconButtonWithTooltip
+              tooltipTitle="Shell"
+              color="inherit"
+              component={NavLink}
+              to={`/applications/${activeNamespace}/shells`}>
+              <KeyboardArrowRightIcon />
+            </IconButtonWithTooltip>
+            <IconButtonWithTooltip
+              tooltipTitle="Logs"
+              color="inherit"
+              component={NavLink}
+              to={`/applications/${activeNamespace}/logs`}>
+              <ViewHeadlineIcon />
+            </IconButtonWithTooltip>
+            <IconButtonWithTooltip tooltipTitle="Settings" color="inherit" component={NavLink} to={"/roles"}>
+              <SettingsIcon />
+            </IconButtonWithTooltip>
+            <Divider orientation="vertical" flexItem color="inherit" />
             <div className={classes.barAvatar}>{this.renderAuthEntity()}</div>
           </div>
         </div>

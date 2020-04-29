@@ -5,6 +5,8 @@ import { Link } from "react-router-dom";
 export const IconButtonWithTooltip = (
   props: IconButtonProps & {
     tooltipTitle: string;
+    component?: any;
+    to?: any;
     tooltipPlacement?:
       | "bottom-end"
       | "bottom-start"
