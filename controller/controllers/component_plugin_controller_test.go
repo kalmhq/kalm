@@ -30,18 +30,18 @@ func TestPluginControllerSuite(t *testing.T) {
 }
 
 //
-func generateEmptyPlugin() *v1alpha1.Plugin {
+func generateEmptyPlugin() *v1alpha1.ComponentPlugin {
 	name := randomName()[:12]
 
-	plugin := &v1alpha1.Plugin{
+	plugin := &v1alpha1.ComponentPlugin{
 		TypeMeta: metaV1.TypeMeta{
-			Kind:       "Plugin",
+			Kind:       "ComponentPlugin",
 			APIVersion: "core.kapp.dev/v1alpha1",
 		},
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: name,
 		},
-		Spec: v1alpha1.PluginSpec{
+		Spec: v1alpha1.ComponentPluginSpec{
 			Src: `
 function BeforeDeploymentSave(deployment) {
 	console.log("test");
@@ -54,16 +54,16 @@ function BeforeDeploymentSave(deployment) {
 	return plugin
 }
 
-func getPluginNamespacedName(plugin *v1alpha1.Plugin) types.NamespacedName {
+func getPluginNamespacedName(plugin *v1alpha1.ComponentPlugin) types.NamespacedName {
 	// cluster scope resource
 	return types.NamespacedName{Name: plugin.Name, Namespace: ""}
 }
 
-func (suite *PluginControllerSuite) updatePlugin(plugin *v1alpha1.Plugin) {
+func (suite *PluginControllerSuite) updatePlugin(plugin *v1alpha1.ComponentPlugin) {
 	suite.Nil(suite.K8sClient.Update(context.Background(), plugin))
 }
 
-func (suite *PluginControllerSuite) reloadPlugin(plugin *v1alpha1.Plugin) {
+func (suite *PluginControllerSuite) reloadPlugin(plugin *v1alpha1.ComponentPlugin) {
 	suite.Nil(suite.K8sClient.Get(context.Background(), getPluginNamespacedName(plugin), plugin))
 }
 

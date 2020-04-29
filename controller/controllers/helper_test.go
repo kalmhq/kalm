@@ -6,6 +6,8 @@ import (
 	v1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
 	"github.com/onsi/ginkgo"
 	"github.com/stretchr/testify/suite"
+	istioScheme "istio.io/client-go/pkg/clientset/versioned/scheme"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -39,7 +41,7 @@ func (suite *BasicSuite) Eventually(condition func() bool, msgAndArgs ...interfa
 	return suite.Suite.Eventually(condition, waitFor, tick, msgAndArgs...)
 }
 
-func (suite *BasicSuite) createPlugin(plugin *v1alpha1.Plugin) {
+func (suite *BasicSuite) createPlugin(plugin *v1alpha1.ComponentPlugin) {
 	suite.Nil(suite.K8sClient.Create(context.Background(), plugin))
 
 	// after the finalizer is set, the plugin won't auto change
@@ -112,20 +114,18 @@ func (suite *BasicSuite) SetupSuite() {
 		CRDDirectoryPaths: []string{
 			filepath.Join("..", "config", "crd", "bases"),
 			filepath.Join("config", "crd", "bases"),
+			filepath.Join("..", "resources", "istio"),
+			filepath.Join("resources", "istio"),
 		},
 	}
 
 	var err error
 	cfg, err := testEnv.Start()
-
 	suite.Nil(err)
 	suite.NotNil(cfg)
-
-	err = scheme.AddToScheme(scheme.Scheme)
-	suite.Nil(err)
-
-	err = v1alpha1.AddToScheme(scheme.Scheme)
-	suite.Nil(err)
+	suite.Nil(scheme.AddToScheme(scheme.Scheme))
+	suite.Nil(istioScheme.AddToScheme(scheme.Scheme))
+	suite.Nil(v1alpha1.AddToScheme(scheme.Scheme))
 
 	// +kubebuilder:scaffold:scheme
 
@@ -149,9 +149,9 @@ func (suite *BasicSuite) SetupSuite() {
 	}).SetupWithManager(mgr)
 	suite.Nil(err)
 
-	err = (&PluginReconciler{
+	err = (&ComponentPluginReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Plugin"),
+		Log:    ctrl.Log.WithName("controllers").WithName("ComponentPlugin"),
 		Scheme: mgr.GetScheme(),
 		Reader: mgr.GetAPIReader(),
 	}).SetupWithManager(mgr)
@@ -165,9 +165,9 @@ func (suite *BasicSuite) SetupSuite() {
 	}).SetupWithManager(mgr)
 	suite.Nil(err)
 
-	suite.Nil((&PluginBindingReconciler{
+	suite.Nil((&ComponentPluginBindingReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("PluginBinding"),
+		Log:    ctrl.Log.WithName("controllers").WithName("ComponentPluginBinding"),
 		Scheme: mgr.GetScheme(),
 		Reader: mgr.GetAPIReader(),
 	}).SetupWithManager(mgr))

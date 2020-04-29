@@ -17,6 +17,7 @@ package main
 
 import (
 	"flag"
+	istioScheme "istio.io/client-go/pkg/clientset/versioned/scheme"
 	"os"
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
@@ -66,6 +67,7 @@ func init() {
 
 	elkv1.AddToScheme(scheme)
 	kibanav1.AddToScheme(scheme)
+	istioScheme.AddToScheme(scheme)
 
 	_ = corekappdevv1alpha1.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme
@@ -113,13 +115,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.PluginReconciler{
+	if err = (&controllers.ComponentPluginReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Plugin"),
+		Log:    ctrl.Log.WithName("controllers").WithName("ComponentPlugin"),
 		Scheme: mgr.GetScheme(),
 		Reader: mgr.GetAPIReader(),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Plugin")
+		setupLog.Error(err, "unable to create controller", "controller", "ComponentPlugin")
 		os.Exit(1)
 	}
 
@@ -133,13 +135,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.PluginBindingReconciler{
+	if err = (&controllers.ComponentPluginBindingReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("PluginBinding"),
+		Log:    ctrl.Log.WithName("controllers").WithName("ComponentPluginBinding"),
 		Scheme: mgr.GetScheme(),
 		Reader: mgr.GetAPIReader(),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "PluginBinding")
+		setupLog.Error(err, "unable to create controller", "controller", "ComponentPluginBinding")
 		os.Exit(1)
 	}
 

@@ -33,28 +33,28 @@ import (
 	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
 )
 
-type PluginMethod = string
+type ComponentPluginMethod = string
 
 const (
-	PluginMethodComponentFilter PluginMethod = "ComponentFilter"
+	ComponentPluginMethodComponentFilter ComponentPluginMethod = "ComponentFilter"
 
-	PluginMethodAfterPodTemplateGeneration PluginMethod = "AfterPodTemplateGeneration"
-	PluginMethodBeforeDeploymentSave       PluginMethod = "BeforeDeploymentSave"
-	PluginMethodBeforeServiceSave          PluginMethod = "BeforeServiceSave"
-	PluginMethodBeforeCronjobSave          PluginMethod = "BeforeCronjobSave"
+	ComponentPluginMethodAfterPodTemplateGeneration ComponentPluginMethod = "AfterPodTemplateGeneration"
+	ComponentPluginMethodBeforeDeploymentSave       ComponentPluginMethod = "BeforeDeploymentSave"
+	ComponentPluginMethodBeforeServiceSave          ComponentPluginMethod = "BeforeServiceSave"
+	ComponentPluginMethodBeforeCronjobSave          ComponentPluginMethod = "BeforeCronjobSave"
 )
 
-var ValidPluginMethods = []PluginMethod{
-	PluginMethodComponentFilter,
-	PluginMethodAfterPodTemplateGeneration,
-	PluginMethodBeforeDeploymentSave,
-	PluginMethodBeforeServiceSave,
-	PluginMethodBeforeCronjobSave,
+var ValidPluginMethods = []ComponentPluginMethod{
+	ComponentPluginMethodComponentFilter,
+	ComponentPluginMethodAfterPodTemplateGeneration,
+	ComponentPluginMethodBeforeDeploymentSave,
+	ComponentPluginMethodBeforeServiceSave,
+	ComponentPluginMethodBeforeCronjobSave,
 }
 
-var pluginsCache *PluginsCache
+var componentPluginsCache *ComponentPluginsCache
 
-type PluginProgram struct {
+type ComponentPluginProgram struct {
 	*js.Program
 
 	Name string
@@ -64,42 +64,43 @@ type PluginProgram struct {
 	// a map of defined hooks
 	Methods map[string]bool
 
+	Subject                      string
 	AvailableForAllWorkloadTypes bool
 	AvailableWorkloadTypes       map[corev1alpha1.WorkloadType]bool
 }
 
-type PluginsCache struct {
+type ComponentPluginsCache struct {
 	mut      sync.RWMutex
-	Programs map[string]*PluginProgram
+	Programs map[string]*ComponentPluginProgram
 }
 
-func (c *PluginsCache) Set(name string, program *PluginProgram) {
+func (c *ComponentPluginsCache) Set(name string, program *ComponentPluginProgram) {
 	c.mut.Lock()
 	defer c.mut.Unlock()
 	c.Programs[name] = program
 }
 
-func (c *PluginsCache) Get(name string) *PluginProgram {
+func (c *ComponentPluginsCache) Get(name string) *ComponentPluginProgram {
 	c.mut.RLock()
 	defer c.mut.RUnlock()
 	return c.Programs[name]
 }
 
-func (c *PluginsCache) Delete(name string) {
+func (c *ComponentPluginsCache) Delete(name string) {
 	c.mut.Lock()
 	defer c.mut.Unlock()
 	delete(c.Programs, name)
 }
 
 func init() {
-	pluginsCache = &PluginsCache{
+	componentPluginsCache = &ComponentPluginsCache{
 		mut:      sync.RWMutex{},
-		Programs: make(map[string]*PluginProgram),
+		Programs: make(map[string]*ComponentPluginProgram),
 	}
 }
 
-// PluginReconciler reconciles a Plugin object
-type PluginReconciler struct {
+// ComponentPluginReconciler reconciles a ComponentPlugin object
+type ComponentPluginReconciler struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
@@ -111,17 +112,17 @@ type PluginReconciler struct {
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=pluginbindings,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=pluginbindings/status,verbs=get;update;patch
 
-func (r *PluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+func (r *ComponentPluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	log := r.Log.WithValues("application", req.NamespacedName)
 	ctx := context.Background()
 
-	var plugin corev1alpha1.Plugin
+	var plugin corev1alpha1.ComponentPlugin
 
 	if err := r.Get(ctx, req.NamespacedName, &plugin); err != nil {
 		err = client.IgnoreNotFound(err)
 
 		if err != nil {
-			log.Error(err, "unable to fetch Plugin")
+			log.Error(err, "unable to fetch ComponentPlugin")
 		}
 
 		return ctrl.Result{}, err
@@ -138,7 +139,7 @@ func (r *PluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	} else {
 		// The object is being deleted
 		if util.ContainsString(plugin.ObjectMeta.Finalizers, finalizerName) {
-			pluginsCache.Delete(plugin.Name)
+			componentPluginsCache.Delete(plugin.Name)
 
 			if err := r.deletePluginBindings(ctx, &plugin, log); err != nil {
 				return ctrl.Result{}, err
@@ -210,7 +211,7 @@ func (r *PluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		}
 	}
 
-	pluginsCache.Set(plugin.Name, &PluginProgram{
+	componentPluginsCache.Set(plugin.Name, &ComponentPluginProgram{
 		Name:                         plugin.Name,
 		Program:                      program,
 		Methods:                      methods,
@@ -222,8 +223,8 @@ func (r *PluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	return ctrl.Result{}, nil
 }
 
-func (r *PluginReconciler) deletePluginBindings(ctx context.Context, plugin *corev1alpha1.Plugin, log logr.Logger) error {
-	var bindingList corev1alpha1.PluginBindingList
+func (r *ComponentPluginReconciler) deletePluginBindings(ctx context.Context, plugin *corev1alpha1.ComponentPlugin, log logr.Logger) error {
+	var bindingList corev1alpha1.ComponentPluginBindingList
 
 	if err := r.Reader.List(ctx, &bindingList, client.MatchingLabels{
 		"kapp-plugin": plugin.Name,
@@ -241,8 +242,8 @@ func (r *PluginReconciler) deletePluginBindings(ctx context.Context, plugin *cor
 	return nil
 }
 
-func (r *PluginReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *ComponentPluginReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&corev1alpha1.Plugin{}).
+		For(&corev1alpha1.ComponentPlugin{}).
 		Complete(r)
 }
