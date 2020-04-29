@@ -21,6 +21,7 @@ import { ButtonGrey } from "../../widgets/Button";
 import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
 import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./ItemDataWrapper";
+import queryString from "query-string";
 
 const mapStateToProps = (state: RootState) => {
   const selector = formValueSelector("application");
@@ -33,6 +34,7 @@ const styles = (theme: Theme) =>
   createStyles({
     root: {
       // padding: theme.spacing(3)
+      height: "100%"
     },
     sencondHeaderRight: {
       height: "100%",
@@ -73,9 +75,15 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
     };
   }
 
-  // public componentDidMount() {
-  //   console.log(this.props.application?.get("components").size);
-  // }
+  public componentDidMount() {
+    const { location } = this.props;
+    let search = queryString.parse(location.search);
+    if (search.component !== undefined) {
+      if (search.component === "") {
+      } else {
+      }
+    }
+  }
 
   public componentDidUpdate(prevProps: Props, prevState: State) {
     const prevComponentName = prevState.currentComponent?.get("name");

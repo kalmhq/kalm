@@ -23,6 +23,7 @@ import { RequireNotAuthorizated, RequireAuthorizated } from "permission/Authoriz
 import { RequireAdmin } from "permission/Role";
 import { RequireNamespaceReader, RequireNamespaceWriter } from "permission/Namespace";
 import { UIComponentsPage } from "pages/UIComponents";
+import { ApplicationComponentListPage } from "./pages/ApplicationComponent/List";
 
 const RequireAuthorizatedDashboard = RequireAuthorizated(Dashboard);
 
@@ -47,6 +48,8 @@ export const KappRoutes = (
           <Route exact path="/cluster/nodes" component={NodeListPage}></Route>
           <Route exact path="/cluster/volumes" component={Disks}></Route>
           <Route exact path="/settings/dependencies" component={RequireAdmin(DependencyListPage)}></Route>
+
+          <Route exact path="/components" component={RequireAdmin(ApplicationComponentListPage)} />
 
           <Route exact path="/applications" component={RequireAdmin(ApplicationListPage)} />
           <Route exact path="/applications/new" component={RequireAdmin(ApplicationNew)} />

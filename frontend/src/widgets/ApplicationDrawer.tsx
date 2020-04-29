@@ -23,6 +23,7 @@ import { componentInitialValues } from "../forms/ComponentLike";
 import Immutable from "immutable";
 import AddIcon from "@material-ui/icons/Add";
 import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
+import queryString from "query-string";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
@@ -190,6 +191,30 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
 
   public componentDidMount() {
     const { application, handleClickComponent } = this.props;
+    if (!application) {
+      return;
+    }
+
+    let search = queryString.parse(window.location.search);
+    if (search.component !== undefined) {
+      if (search.component === "") {
+        // new component form list
+        if (application.get("components").size !== 0) {
+          this.handleClickComponent(componentInitialValues as ApplicationComponent, application.get("components").size);
+          return;
+        }
+      } else {
+        // edit component form list
+        const component = application.get("components").find(c => c.get("name") === search.component);
+        const componentIndex = application.get("components").findIndex(c => c.get("name") === search.component);
+        if (component) {
+          this.handleClickComponent(component, componentIndex);
+          return;
+        }
+      }
+    }
+
+    // default select
     if (application && application.get("components").get(0)) {
       handleClickComponent(application.get("components").get(0) as ApplicationComponent);
     }

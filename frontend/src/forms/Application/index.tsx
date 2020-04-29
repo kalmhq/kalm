@@ -1,15 +1,16 @@
-import { createStyles, Grid, Paper, WithStyles, withStyles, Button } from "@material-ui/core";
+import { Button, createStyles, Grid, Paper, WithStyles, withStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
+import { goBack } from "connected-react-router";
 import Immutable from "immutable";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { InjectedFormProps } from "redux-form";
 import { Field, formValueSelector, getFormValues, reduxForm } from "redux-form/immutable";
-import { TableTitle } from "widgets/TableTitle";
 import { RootState } from "../../reducers";
 import { Application, SharedEnv } from "../../types/application";
 import { ComponentTemplate } from "../../types/componentTemplate";
-import { SwitchField } from "../Basic/switch";
+import { BoldBody } from "../../widgets/Label";
+import { CheckboxField } from "../Basic/checkbox";
 import { TextField } from "../Basic/text";
 import { NormalizeBoolean } from "../normalizer";
 import { ValidatorName, ValidatorRequired } from "../validator";
@@ -17,6 +18,12 @@ import { SharedEnvs } from "./sharedEnv";
 
 const styles = (theme: Theme) =>
   createStyles({
+    root: {
+      height: "100%",
+      overflow: "hidden",
+      background: "#fff",
+      padding: 20
+    },
     formSection: {
       padding: theme.spacing(2),
       margin: theme.spacing(3)
@@ -35,8 +42,11 @@ const styles = (theme: Theme) =>
     displayNone: {
       display: "none"
     },
+    buttons: {
+      margin: "20px 0 0"
+    },
     submitButton: {
-      marginLeft: 20
+      marginRight: 20
     }
   });
 
@@ -69,9 +79,8 @@ class ApplicationFormRaw extends React.PureComponent<
     const { isEdit } = this.props;
     return (
       <>
-        {TableTitle("Basic Info")}
         <Grid container spacing={2}>
-          <Grid item md={6}>
+          <Grid item md={12}>
             <Field
               name="name"
               label="Name"
@@ -86,13 +95,17 @@ class ApplicationFormRaw extends React.PureComponent<
               placeholder="Please type the component name"
             />
           </Grid>
-          <Grid item md={6}>
+        </Grid>
+        <Grid container spacing={2}>
+          <Grid item md={12}>
+            <BoldBody>Status</BoldBody>
+
             <Field
               name="isActive"
               formControlLabelProps={{
-                label: "Active"
+                label: "Active this application after creation"
               }}
-              component={SwitchField}
+              component={CheckboxField}
               normalizer={NormalizeBoolean}
             />
           </Grid>
@@ -118,16 +131,16 @@ class ApplicationFormRaw extends React.PureComponent<
   }
 
   public render() {
-    const { handleSubmit, classes, currentTab } = this.props;
+    const { handleSubmit, classes, currentTab, dispatch } = this.props;
 
     return (
-      <form onSubmit={handleSubmit} style={{ height: "100%", overflow: "hidden" }}>
+      <form onSubmit={handleSubmit} className={classes.root}>
         <Grid
-          container
+          // container
           spacing={2}
           className={`${classes.formSectionContainer} ${currentTab === "basic" ? "" : classes.displayNone}`}>
-          <Grid className={classes.formSectionItem} item xs={12} sm={8} md={8}>
-            <Paper className={classes.formSection}>{this.renderBasic()}</Paper>
+          <Grid className={classes.formSectionItem} item xs={12} sm={6} md={8}>
+            {this.renderBasic()}
           </Grid>
         </Grid>
 
@@ -135,13 +148,23 @@ class ApplicationFormRaw extends React.PureComponent<
           {this.renderSharedEnvs()}
         </Paper>
 
-        <Button
-          variant="contained"
-          color="primary"
-          type="submit"
-          className={`${currentTab === "basic" ? classes.submitButton : classes.displayNone}`}>
-          Create
-        </Button>
+        <div className={`${currentTab === "basic" ? classes.buttons : classes.displayNone}`}>
+          <Button
+            variant="contained"
+            color="primary"
+            type="submit"
+            className={`${currentTab === "basic" ? classes.submitButton : classes.displayNone}`}>
+            Create
+          </Button>
+          <Button
+            variant="contained"
+            className={`${currentTab === "basic" ? "" : classes.displayNone}`}
+            onClick={() => {
+              dispatch(goBack());
+            }}>
+            Cancel
+          </Button>
+        </div>
       </form>
     );
   }

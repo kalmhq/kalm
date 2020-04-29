@@ -390,31 +390,6 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
           data={this.getTableData()}
           title={TableTitle("Components")}
         />
-        {/* <Box mt={3}></Box>
-        <Grid container spacing={2}>
-          <Grid item xs={6}>
-            <Button
-              variant="outlined"
-              size="small"
-              color="primary"
-              fullWidth
-              startIcon={<AddIcon />}
-              onClick={() => this.openComponentFormDialog(-1)}>
-              Add Component
-            </Button>
-          </Grid>
-          <Grid item xs={6}>
-            <Button
-              variant="outlined"
-              size="small"
-              color="primary"
-              fullWidth
-              startIcon={<AddIcon />}
-              onClick={() => {}}>
-              Import from Component Template
-            </Button>
-          </Grid>
-        </Grid> */}
       </div>
     );
   }

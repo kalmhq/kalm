@@ -7,7 +7,8 @@ const styles = (theme: Theme) =>
   createStyles({
     scrollContainer: {
       height: "100%",
-      position: "relative"
+      position: "relative",
+      background: "#fff"
     }
   });
 
