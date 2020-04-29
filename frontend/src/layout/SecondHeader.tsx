@@ -28,12 +28,14 @@ const styles = (theme: Theme) =>
     },
     left: {
       width: LEFT_SECTION_WIDTH,
-      height: SECOND_HEADER_HEIGHT
+      height: SECOND_HEADER_HEIGHT,
+      borderRight: "1px solid #EEEEEE"
     },
     leftTextContainer: {
       display: "flex",
       alignItems: "center",
-      paddingLeft: 32
+      paddingLeft: 32,
+      borderRight: "1px solid #EEEEEE"
     },
     right: {
       flex: 1,

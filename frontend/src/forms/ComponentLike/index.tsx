@@ -31,7 +31,7 @@ import { CustomLabels, AffinityType } from "./NodeSelector";
 import { getNodeLabels } from "../../selectors/node";
 import { extractSummaryInfoFromMap, extractSummaryInfoFromList } from "forms/summarizer";
 import { loadConfigsAction } from "../../actions/config";
-import { SectionTitle } from "widgets/Label";
+import { SectionTitle, H3, Body } from "widgets/Label";
 import { Configs } from "./Configs";
 
 const mapStateToProps = (state: RootState) => {
@@ -310,6 +310,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             </Grid>
           </Grid>
         </Grid>
+        <Grid item xs={12} sm={6} md={6}></Grid>
       </Grid>
     );
   }

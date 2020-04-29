@@ -17,7 +17,7 @@ import { ComponentLikeForm } from "../../forms/ComponentLike";
 import { RootState } from "../../reducers";
 import { Application, ApplicationComponent, SharedEnv } from "../../types/application";
 import { ApplicationDrawer } from "../../widgets/ApplicationDrawer";
-import { ButtonGrey } from "../../widgets/Button";
+import { ButtonGrey, CustomizedButton } from "../../widgets/Button";
 import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
 import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./ItemDataWrapper";
@@ -189,17 +189,19 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
               </>
             ) : (
               <>
-                <ButtonGrey
+                <CustomizedButton
+                  color="primary"
                   className={classes.sencondHeaderRightItem}
                   onClick={() => dispatch(submit("componentLike"))}>
                   Save Component
-                </ButtonGrey>
-                <ButtonGrey
+                </CustomizedButton>
+                <CustomizedButton
+                  color="primary"
                   className={classes.sencondHeaderRightItem}
                   disabled={this.props.application?.get("components").size === 0}
                   onClick={() => this.handleDeleteComponent()}>
                   Delete Component
-                </ButtonGrey>
+                </CustomizedButton>
               </>
             )}
           </div>

@@ -1,6 +1,7 @@
 import React from "react";
 import { Typography, TypographyProps, Box } from "@material-ui/core";
 import { withStyles, createStyles, WithStyles } from "@material-ui/styles";
+import { theme } from "theme";
 
 export const SectionTitle = (title: string, className: string = "") => (
   <Typography variant="subtitle1" color="textPrimary">
@@ -13,7 +14,8 @@ export const SectionTitle = (title: string, className: string = "") => (
 const styles = () =>
   createStyles({
     root: {
-      overflow: "hidden"
+      overflow: "hidden",
+      paddingTop: theme.spacing(1)
     }
   });
 

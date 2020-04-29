@@ -81,10 +81,41 @@ let themeRaw = createMuiTheme({
   overrides: {
     MuiButton: {
       contained: {
-        boxShadow: "0 2px 3px 0px rgba(0,0,0, .25)"
+        boxShadow: "0 1px 3px 0px rgba(0,0,0, .2)"
       },
       containedPrimary: {
-        boxShadow: "0 2px 3px 0px rgba(0,0,0, .25)"
+        boxShadow: "0 1px 3px 0px rgba(0,0,0, .2)"
+      },
+      textPrimary: {
+        backgroundColor: "rgba(25, 118, 210, 0.04)",
+        "&:hover": {
+          backgroundColor: "rgba(25, 118, 210, 0.1)"
+        }
+      }
+    },
+    MuiSvgIcon: {
+      fontSizeSmall: {
+        fontSize: "1.0rem"
+      }
+    },
+    MuiTableCell: {
+      sizeSmall: {
+        paddingTop: 0,
+        paddingBottom: 0
+      }
+    },
+    MuiToolbar: {
+      regular: {
+        height: 20,
+        minHeight: 44,
+        "@media (min-width: 600px)": {
+          minHeight: 44
+        }
+      }
+    },
+    MuiFormControl: {
+      marginNormal: {
+        paddingBottom: 0
       }
     }
   }

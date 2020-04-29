@@ -28,11 +28,20 @@ const customizedButtonStyle = (theme: Theme) => {
       color: theme.palette.primary.main,
       "&:disabled": {
         background: "transparent"
+      },
+      "&:hover": {
+        background: "#fff"
       }
     },
     containedPrimary: {
       background: theme.palette.primary.main,
-      color: "#fff"
+      color: "#fff",
+      "&:disabled": {
+        background: "transparent"
+      },
+      "&:hover": {
+        background: theme.palette.primary.main
+      }
     }
   });
 };

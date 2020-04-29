@@ -1,9 +1,10 @@
-import { Button, createStyles, Grid, Theme, Typography, WithStyles, withStyles } from "@material-ui/core";
+import { createStyles, Grid, Theme, Typography, WithStyles, withStyles } from "@material-ui/core";
 import GithubIcon from "@material-ui/icons/GitHub";
 import MenuBookIcon from "@material-ui/icons/MenuBook";
 import SupervisorAccountIcon from "@material-ui/icons/SupervisorAccount";
 import React from "react";
 import { BasePage } from "../BasePage";
+import { RaisedButton } from "widgets/Button";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -49,9 +50,9 @@ class Dashboard extends React.PureComponent<Props> {
                 at the Kapp documentation.
               </Typography>
               <div>
-                <Button variant="contained" size="small" startIcon={<MenuBookIcon />}>
+                <RaisedButton size="small" startIcon={<MenuBookIcon />}>
                   Document
-                </Button>
+                </RaisedButton>
               </div>
             </Grid>
             <Grid item md={3}>
@@ -64,9 +65,9 @@ class Dashboard extends React.PureComponent<Props> {
                 you.
               </Typography>
               <div>
-                <Button variant="contained" size="small" startIcon={<SupervisorAccountIcon />}>
+                <RaisedButton size="small" startIcon={<SupervisorAccountIcon />}>
                   Get Start
-                </Button>
+                </RaisedButton>
               </div>
             </Grid>
             <Grid item md={3}>
@@ -78,9 +79,9 @@ class Dashboard extends React.PureComponent<Props> {
                 plans. Pull requests are welcomed.
               </Typography>
               <div>
-                <Button variant="contained" size="small" startIcon={<GithubIcon />}>
+                <RaisedButton variant="contained" size="small" startIcon={<GithubIcon />}>
                   Github
-                </Button>
+                </RaisedButton>
               </div>
             </Grid>
           </Grid>

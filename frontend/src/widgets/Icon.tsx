@@ -34,6 +34,9 @@ const styles = (theme: Theme) =>
     },
     hint: {
       color: grey[700]
+    },
+    small: {
+      fontSize: 12
     }
   });
 

@@ -1,4 +1,4 @@
-import { Theme, Paper, Box } from "@material-ui/core";
+import { Theme } from "@material-ui/core";
 import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import * as chartjs from "chart.js";
 import { format } from "date-fns";
@@ -7,7 +7,7 @@ import React from "react";
 import { Chart, ChartData, Line } from "react-chartjs-2";
 import { MetricList } from "../types/common";
 import { WhitePaper } from "./Paper";
-import { Caption, CenterCaption } from "./Label";
+import { CenterCaption } from "./Label";
 
 Chart.controllers.line = Chart.controllers.line.extend({
   draw: function(ease: any) {

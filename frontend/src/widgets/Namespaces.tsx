@@ -20,6 +20,7 @@ import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
 import { SECOND_HEADER_HEIGHT } from "../layout/SecondHeader";
 import { LEFT_SECTION_WIDTH } from "../pages/BasePage";
+import { H4 } from "./Label";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -98,7 +99,9 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
           aria-haspopup="true"
           className={classes.namespaceButton}
           onClick={this.handleToggle}>
-          {isListFirstLoading ? "Loading..." : activeNamespace ? activeNamespace.get("name") : "Select a namespace"}
+          <H4>
+            {isListFirstLoading ? "Loading..." : activeNamespace ? activeNamespace.get("name") : "Select a namespace"}
+          </H4>
           {open ? <ExpandLess /> : <ExpandMore />}
         </Button>
 
@@ -128,7 +131,7 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
                             this.handleClose();
                           }}
                           key={application.get("name")}>
-                          {application.get("name")}
+                          <H4>{application.get("name")}</H4>
                         </MenuItem>
                       ))
                       .toArray()}

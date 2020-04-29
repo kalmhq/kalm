@@ -1,6 +1,6 @@
 import { Button, createStyles, Switch, TextField, Theme, Tooltip, WithStyles, withStyles } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
-import HelpIcon from "@material-ui/icons/Help";
+import { HelpIcon } from "widgets/Icon";
 import { closeDialogAction, openDialogAction } from "actions/dialog";
 import { push } from "connected-react-router";
 import MaterialTable from "material-table";
@@ -13,7 +13,7 @@ import { ExternalAccessPlugin, EXTERNAL_ACCESS_PLUGIN_TYPE } from "types/plugin"
 import { ImmutableMap } from "typings";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
-import { ButtonGrey, CustomizedButton } from "widgets/Button";
+import { CustomizedButton } from "widgets/Button";
 import { ControlledDialog } from "widgets/ControlledDialog";
 import {
   deleteApplicationAction,
@@ -592,13 +592,15 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     return (
       <div className={classes.sencondHeaderRight}>
         <H4 className={classes.sencondHeaderRightItem}>Applications</H4>
-        <ButtonGrey
+        <CustomizedButton
+          color="primary"
+          size="large"
           className={classes.sencondHeaderRightItem}
           onClick={() => {
             dispatch(push(`/applications/new`));
           }}>
           Add
-        </ButtonGrey>
+        </CustomizedButton>
       </div>
     );
   }
@@ -627,7 +629,15 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                 rowStyle: {
                   verticalAlign: "baseline"
                 },
-                headerStyle: { color: grey[400] }
+                headerStyle: {
+                  color: "black",
+                  backgroundColor: grey[100],
+                  fontSize: 12,
+                  fontWeight: 400,
+                  height: 20,
+                  paddingTop: 0,
+                  paddingBottom: 0
+                }
               }}
               columns={[
                 // @ts-ignore
@@ -663,9 +673,29 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                   sorting: false,
                   render: this.renderExternalEndpoints
                 },
-                { title: "CPU", field: "cpu", render: this.renderCPU },
-                { title: "Memory", field: "memory", render: this.renderMemory },
-                { title: "Enable", field: "active", sorting: false, render: this.renderEnable, hidden: !hasWriterRole },
+                {
+                  title: "CPU",
+                  field: "cpu",
+                  render: this.renderCPU,
+                  headerStyle: {
+                    textAlign: "center"
+                  }
+                },
+                {
+                  title: "Memory",
+                  field: "memory",
+                  render: this.renderMemory,
+                  headerStyle: {
+                    textAlign: "center"
+                  }
+                },
+                {
+                  title: "Enable",
+                  field: "active",
+                  sorting: false,
+                  render: this.renderEnable,
+                  hidden: !hasWriterRole
+                },
                 {
                   title: "Action",
                   field: "action",
