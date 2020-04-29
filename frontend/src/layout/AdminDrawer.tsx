@@ -46,7 +46,7 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
 
 interface State {}
 
-class DashboardDrawerRaw extends React.PureComponent<Props, State> {
+class AdminDrawerRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
 
@@ -54,23 +54,11 @@ class DashboardDrawerRaw extends React.PureComponent<Props, State> {
   }
 
   private getMenuData() {
-    const { activeNamespaceName } = this.props;
     return [
       {
-        text: "Applications",
-        to: "/applications"
-      },
-      {
-        text: "Configs",
-        to: "/configs?namespace=" + activeNamespaceName
-      },
-      {
-        text: "Nodes",
-        to: "/cluster/nodes"
-      },
-      {
-        text: "Volumes",
-        to: "/cluster/volumes"
+        text: "Roles & Permissions",
+        to: "/roles",
+        requireAdmin: true
       }
     ];
   }
@@ -106,4 +94,4 @@ class DashboardDrawerRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const DashboardDrawer = connect(mapStateToProps)(withStyles(styles)(DashboardDrawerRaw));
+export const AdminDrawer = connect(mapStateToProps)(withStyles(styles)(AdminDrawerRaw));

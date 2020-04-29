@@ -24,6 +24,7 @@ let themeRaw = createMuiTheme({
       secondary: grey[500]
     },
     action: {
+      // TODO this causes all icons blue
       active: blue[700]
     },
     // Used by `getContrastText()` to maximize the contrast between

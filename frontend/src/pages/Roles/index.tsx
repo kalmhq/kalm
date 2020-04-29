@@ -17,6 +17,9 @@ import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
 import { ControlledDialog } from "widgets/ControlledDialog";
 import { ServiceAccountSecret } from "widgets/ServiceAccountSecret";
+import { H4 } from "../../widgets/Label";
+import { BasePage } from "../BasePage";
+import { AdminDrawer } from "../../layout/AdminDrawer";
 
 const dialogID = "rolebinding/add";
 const serviceAccountSecretDialogID = "serviceAccountSecretDialogID";
@@ -24,7 +27,7 @@ const serviceAccountSecretDialogID = "serviceAccountSecretDialogID";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      padding: theme.spacing(2)
+      // padding: theme.spacing(2)
     },
     roleChell: {
       "& .add-button": {
@@ -33,6 +36,15 @@ const styles = (theme: Theme) =>
       "&:hover .add-button": {
         display: "inline-block"
       }
+    },
+    sencondHeaderRight: {
+      height: "100%",
+      width: "100%",
+      display: "flex",
+      alignItems: "center"
+    },
+    sencondHeaderRightItem: {
+      marginLeft: 20
     }
   });
 
@@ -242,88 +254,102 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
     );
   }
 
+  private renderSecondHeaderRight() {
+    const { classes } = this.props;
+    return (
+      <div className={classes.sencondHeaderRight}>
+        <H4 className={classes.sencondHeaderRightItem}>Roles & Permissions</H4>
+      </div>
+    );
+  }
+
   public render() {
     const { classes, namespaces } = this.props;
 
     return (
-      <div className={classes.root}>
-        {this.renderAddForm()}
-        {this.renderShowServiceAccountSecretDialog()}
-        <MaterialTable
-          tableRef={this.tableRef}
-          icons={{
-            Delete: forwardRef((props, ref) => <DeleteIcon ref={ref} {...props} color="secondary" />)
-          }}
-          actions={[
-            {
-              isFreeAction: true,
-              icon: () => {
-                if (this.props.namespaces.size <= 0) {
-                  return (
-                    <Tooltip title="There is no KAPP namespaces in your cluster yet. Please create a namespace first.">
-                      <AddCircleIcon color="primary" />
-                    </Tooltip>
-                  );
-                } else {
-                  return <AddCircleIcon color="primary" />;
-                }
-              },
-              onClick: () => this.openAddModal()
-            }
-          ]}
-          localization={{
-            body: {
-              editRow: {
-                saveTooltip: "Save",
-                cancelTooltip: "Cancel",
-                deleteText: "Are you sure you want to revoke all roles for this user/group/service account?"
+      <BasePage
+        leftDrawer={<AdminDrawer />}
+        secondHeaderLeft={"Admin"}
+        secondHeaderRight={this.renderSecondHeaderRight()}>
+        <div className={classes.root}>
+          {this.renderAddForm()}
+          {this.renderShowServiceAccountSecretDialog()}
+          <MaterialTable
+            tableRef={this.tableRef}
+            icons={{
+              Delete: forwardRef((props, ref) => <DeleteIcon ref={ref} {...props} color="secondary" />)
+            }}
+            actions={[
+              {
+                isFreeAction: true,
+                icon: () => {
+                  if (this.props.namespaces.size <= 0) {
+                    return (
+                      <Tooltip title="There is no KAPP namespaces in your cluster yet. Please create a namespace first.">
+                        <AddCircleIcon color="primary" />
+                      </Tooltip>
+                    );
+                  } else {
+                    return <AddCircleIcon color="primary" />;
+                  }
+                },
+                onClick: () => this.openAddModal()
               }
-            }
-          }}
-          options={{
-            draggable: false,
-            search: true,
-            paging: false,
-            padding: "dense",
-            //   toolbar: false
-            actionsColumnIndex: -1,
-            addRowPosition: "first",
-            headerStyle: {
-              // backgroundColor: "#01579b",
-              // color: "#FFF"
-            }
-          }}
-          columns={([
-            {
-              title: "Entity",
-              field: "entity",
-              render: this.renderEntity,
-              cellStyle: {
-                // backgroundColor: "#039be5",
+            ]}
+            localization={{
+              body: {
+                editRow: {
+                  saveTooltip: "Save",
+                  cancelTooltip: "Cancel",
+                  deleteText: "Are you sure you want to revoke all roles for this user/group/service account?"
+                }
+              }
+            }}
+            options={{
+              draggable: false,
+              search: true,
+              paging: false,
+              padding: "dense",
+              //   toolbar: false
+              actionsColumnIndex: -1,
+              addRowPosition: "first",
+              headerStyle: {
+                // backgroundColor: "#01579b",
                 // color: "#FFF"
               }
-            }
-          ] as any).concat(
-            namespaces
-              .map(namespace => ({
-                title: namespace,
-                field: namespace,
-                render: this.columnRenderGeneator(namespace),
+            }}
+            columns={([
+              {
+                title: "Entity",
+                field: "entity",
+                render: this.renderEntity,
                 cellStyle: {
-                  // backgroundColor: "white",
-                  // color: "black"
-                  border: "1px solid rgba(224, 224, 224, 1)"
+                  // backgroundColor: "#039be5",
+                  // color: "#FFF"
                 }
-              }))
-              .toArray()
-          )}
-          data={this.getData()}
-          title="Roles & Permissions"
-          editable={{
-            onRowDelete: this.handleDelete
-          }}
-        />
-      </div>
+              }
+            ] as any).concat(
+              namespaces
+                .map(namespace => ({
+                  title: namespace,
+                  field: namespace,
+                  render: this.columnRenderGeneator(namespace),
+                  cellStyle: {
+                    // backgroundColor: "white",
+                    // color: "black"
+                    border: "1px solid rgba(224, 224, 224, 1)"
+                  }
+                }))
+                .toArray()
+            )}
+            data={this.getData()}
+            title=""
+            editable={{
+              onRowDelete: this.handleDelete
+            }}
+          />
+        </div>
+      </BasePage>
     );
   }
 }
