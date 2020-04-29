@@ -993,19 +993,7 @@ func (r *ComponentReconcilerTask) runComponentPlugins(methodName string, compone
 		rt := r.initPluginRuntime(component)
 		rt.Set("scope", "component")
 
-		// insert impl for build in plugin
-		if binding.Spec.PluginName == "kapp-ingress" {
-			rt.Set("__builtInImpl", func(_ js.FunctionCall) js.Value {
-				//todo
-				fmt.Println("__buildInImpl called")
-
-				dp := &appsV1.Deployment{}
-				r.Get(r.ctx, types.NamespacedName{Name: "nginx", Namespace: "test"}, dp)
-
-				fmt.Println("dp:", dp)
-				return rt.ToValue(desc)
-			})
-		}
+		r.insertBuildInPluginImpls(rt, binding.Spec.PluginName, methodName, component, desc, args)
 
 		err = vm.RunMethod(
 			rt,
@@ -1050,6 +1038,8 @@ func (r *ComponentReconcilerTask) runApplicationPlugins(methodName string, compo
 
 		rt := r.initPluginRuntime(component)
 		rt.Set("scope", "application")
+
+		r.insertBuildInPluginImpls(rt, binding.Spec.PluginName, methodName, component, desc, args)
 
 		if pluginProgram.Methods[PluginMethodComponentFilter] {
 			shouldExecute := new(bool)
@@ -1512,4 +1502,31 @@ func (r *ComponentReconcilerTask) LoadItem(dest runtime.Object) (err error) {
 	}
 
 	return nil
+}
+
+func (r *ComponentReconcilerTask) insertBuildInPluginImpls(rt *js.Runtime, pluginName, methodName string, component *corev1alpha1.Component, desc interface{}, args []interface{}) {
+	switch pluginName {
+	case corev1alpha1.KappNativePluginIngress:
+
+		if methodName != PluginMethodBeforeDeploymentSave {
+			return
+		}
+
+		// ingress plugin only works under compoent
+		if rt.Get("scope").String() != "component" {
+			return
+		}
+
+		rt.Set("__builtInImpl", func(_ js.FunctionCall) js.Value {
+			//todo
+			fmt.Println("__buildInImpl called")
+
+			//dp := &appsV1.Deployment{}
+			//r.Get(r.ctx, types.NamespacedName{Name: "nginx", Namespace: "test"}, dp)
+			//fmt.Println("dp:", dp)
+
+			return rt.ToValue(desc)
+		})
+	default:
+	}
 }
