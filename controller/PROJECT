@@ -13,4 +13,13 @@ resources:
 - group: core
   kind: Component
   version: v1alpha1
+- group: core
+  kind: ComponentPlugin
+  version: v1alpha1
+- group: core
+  kind: ComponentPluginBinding
+  version: v1alpha1
+- group: core
+  kind: ApplicationPlugin
+  version: v1alpha1
 version: "2"

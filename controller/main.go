@@ -17,8 +17,9 @@ package main
 
 import (
 	"flag"
-	istioScheme "istio.io/client-go/pkg/clientset/versioned/scheme"
 	"os"
+
+	istioScheme "istio.io/client-go/pkg/clientset/versioned/scheme"
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	elkv1 "github.com/elastic/cloud-on-k8s/pkg/apis/elasticsearch/v1"
@@ -96,6 +97,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	// +kubebuilder:scaffold:builder
+
 	if err = (&controllers.ApplicationReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("Application"),
@@ -145,6 +148,16 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err = (&controllers.ApplicationPluginReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("ApplicationPlugin"),
+		Scheme: mgr.GetScheme(),
+		Reader: mgr.GetAPIReader(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "ApplicationPlugin")
+		os.Exit(1)
+	}
+
 	// only run webhook if explicitly declared
 	if os.Getenv("ENABLE_WEBHOOKS") == "true" {
 		if err = (&corekappdevv1alpha1.Application{}).SetupWebhookWithManager(mgr); err != nil {
@@ -155,8 +168,6 @@ func main() {
 	} else {
 		setupLog.Info("WEBHOOK not enabled")
 	}
-
-	// +kubebuilder:scaffold:builder
 
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {

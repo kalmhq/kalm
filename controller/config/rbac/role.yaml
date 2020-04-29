@@ -95,6 +95,26 @@ rules:
 - apiGroups:
   - core.kapp.dev
   resources:
+  - applicationplugins
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kapp.dev
+  resources:
+  - applicationplugins/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - core.kapp.dev
+  resources:
   - applications
   verbs:
   - create
