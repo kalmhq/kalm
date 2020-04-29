@@ -19,7 +19,7 @@ const mapStateToProps = (state: RootState) => {
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      padding: theme.spacing(3)
+      // padding: theme.spacing(3)
     }
   });
 

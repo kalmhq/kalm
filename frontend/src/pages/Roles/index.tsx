@@ -1,5 +1,4 @@
-import { Box, Chip, createStyles, IconButton, Theme, Tooltip, withStyles, WithStyles } from "@material-ui/core";
-import AddCircleIcon from "@material-ui/icons/AddCircle";
+import { Box, Chip, createStyles, IconButton, Theme, withStyles, WithStyles } from "@material-ui/core";
 import DeleteIcon from "@material-ui/icons/Delete";
 import VisibilityOffIcon from "@material-ui/icons/VisibilityOff";
 import { closeDialogAction, openDialogAction } from "actions/dialog";
@@ -14,12 +13,12 @@ import { submit } from "redux-form";
 import { TDispatchProp } from "types";
 import { RoleBindingsRequestBody } from "types/user";
 import { FlexRowItemCenterBox } from "widgets/Box";
-import { CustomizedButton } from "widgets/Button";
+import { ButtonGrey, CustomizedButton } from "widgets/Button";
 import { ControlledDialog } from "widgets/ControlledDialog";
 import { ServiceAccountSecret } from "widgets/ServiceAccountSecret";
+import { AdminDrawer } from "../../layout/AdminDrawer";
 import { H4 } from "../../widgets/Label";
 import { BasePage } from "../BasePage";
-import { AdminDrawer } from "../../layout/AdminDrawer";
 
 const dialogID = "rolebinding/add";
 const serviceAccountSecretDialogID = "serviceAccountSecretDialogID";
@@ -259,6 +258,13 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
     return (
       <div className={classes.sencondHeaderRight}>
         <H4 className={classes.sencondHeaderRightItem}>Roles & Permissions</H4>
+        <ButtonGrey
+          className={classes.sencondHeaderRightItem}
+          onClick={() => {
+            this.openAddModal();
+          }}>
+          Add
+        </ButtonGrey>
       </div>
     );
   }
@@ -279,23 +285,6 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
             icons={{
               Delete: forwardRef((props, ref) => <DeleteIcon ref={ref} {...props} color="secondary" />)
             }}
-            actions={[
-              {
-                isFreeAction: true,
-                icon: () => {
-                  if (this.props.namespaces.size <= 0) {
-                    return (
-                      <Tooltip title="There is no KAPP namespaces in your cluster yet. Please create a namespace first.">
-                        <AddCircleIcon color="primary" />
-                      </Tooltip>
-                    );
-                  } else {
-                    return <AddCircleIcon color="primary" />;
-                  }
-                },
-                onClick: () => this.openAddModal()
-              }
-            ]}
             localization={{
               body: {
                 editRow: {
@@ -306,6 +295,7 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
               }
             }}
             options={{
+              pageSize: 20,
               draggable: false,
               search: true,
               paging: false,
