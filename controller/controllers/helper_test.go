@@ -6,6 +6,8 @@ import (
 	v1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
 	"github.com/onsi/ginkgo"
 	"github.com/stretchr/testify/suite"
+	istioScheme "istio.io/client-go/pkg/clientset/versioned/scheme"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -112,20 +114,18 @@ func (suite *BasicSuite) SetupSuite() {
 		CRDDirectoryPaths: []string{
 			filepath.Join("..", "config", "crd", "bases"),
 			filepath.Join("config", "crd", "bases"),
+			filepath.Join("..", "resources", "istio"),
+			filepath.Join("resources", "istio"),
 		},
 	}
 
 	var err error
 	cfg, err := testEnv.Start()
-
 	suite.Nil(err)
 	suite.NotNil(cfg)
-
-	err = scheme.AddToScheme(scheme.Scheme)
-	suite.Nil(err)
-
-	err = v1alpha1.AddToScheme(scheme.Scheme)
-	suite.Nil(err)
+	suite.Nil(scheme.AddToScheme(scheme.Scheme))
+	suite.Nil(istioScheme.AddToScheme(scheme.Scheme))
+	suite.Nil(v1alpha1.AddToScheme(scheme.Scheme))
 
 	// +kubebuilder:scaffold:scheme
 

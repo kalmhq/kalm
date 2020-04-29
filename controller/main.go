@@ -17,6 +17,7 @@ package main
 
 import (
 	"flag"
+	istioScheme "istio.io/client-go/pkg/clientset/versioned/scheme"
 	"os"
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
@@ -66,6 +67,7 @@ func init() {
 
 	elkv1.AddToScheme(scheme)
 	kibanav1.AddToScheme(scheme)
+	istioScheme.AddToScheme(scheme)
 
 	_ = corekappdevv1alpha1.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme

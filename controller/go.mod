@@ -30,6 +30,8 @@ require (
 	golang.org/x/sys v0.0.0-20191113165036-4c7a9d0fe056 // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
 	gopkg.in/yaml.v2 v2.2.8
+	istio.io/api v0.0.0-20200324230725-4b064f75ad8f
+	istio.io/client-go v0.0.0-20200324231647-289a91f51a8e
 	k8s.io/api v0.17.3
 	k8s.io/apiextensions-apiserver v0.17.3
 	k8s.io/apimachinery v0.17.3

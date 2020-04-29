@@ -21,6 +21,8 @@ import (
 	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
 	"github.com/kapp-staging/kapp/lib/files"
 	"github.com/kapp-staging/kapp/util"
+	istioNetworkingV1Beta1 "istio.io/api/networking/v1beta1"
+	istioV1Beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -49,6 +51,7 @@ type ApplicationReconcilerTask struct {
 
 	// resources
 	namespace *coreV1.Namespace
+	gateway   *istioV1Beta1.Gateway
 }
 
 var ownerKey = ".metadata.controller"
@@ -126,6 +129,10 @@ func (r *ApplicationReconcilerTask) Run(req ctrl.Request) error {
 		return err
 	}
 
+	if err := r.ReconcileGateway(); err != nil {
+		return err
+	}
+
 	if err := r.ReconcileComponents(); err != nil {
 		return err
 	}
@@ -151,6 +158,13 @@ func (r *ApplicationReconcilerTask) HandleDelete() (err error) {
 			if r.namespace != nil {
 				if err := r.Delete(r.ctx, r.namespace); err != nil {
 					r.Log.Error(err, "Delete Namespace error.")
+					return err
+				}
+			}
+
+			if r.gateway != nil {
+				if err := r.Delete(r.ctx, r.gateway); err != nil {
+					r.Log.Error(err, "Delete gateway error.")
 					return err
 				}
 			}
@@ -187,15 +201,24 @@ func (r *ApplicationReconcilerTask) SetupAttributes(req ctrl.Request) (err error
 func (r *ApplicationReconcilerTask) LoadResources() (err error) {
 	var ns coreV1.Namespace
 	if err := r.Reader.Get(r.ctx, types.NamespacedName{Name: r.application.Name}, &ns); err != nil {
-
-		if errors.IsNotFound(err) {
-			return nil
+		if !errors.IsNotFound(err) {
+			r.Log.Error(err, "Get Namespace error.")
+			return err
 		}
-
-		r.Log.Error(err, "Get Namespace for delete error.")
-		return err
+	} else {
+		r.namespace = &ns
 	}
-	r.namespace = &ns
+
+	var gateway istioV1Beta1.Gateway
+	if err := r.Reader.Get(r.ctx, types.NamespacedName{Namespace: r.application.Name, Name: "gateway"}, &gateway); err != nil {
+		if !errors.IsNotFound(err) {
+			r.Log.Error(err, "Get gateway error.")
+			return err
+		}
+	} else {
+		r.gateway = &gateway
+	}
+
 	return nil
 }
 
@@ -244,6 +267,65 @@ func (r *ApplicationReconcilerTask) ReconcileNamespace() (err error) {
 
 		if err := r.Update(r.ctx, r.namespace); err != nil {
 			r.Log.Error(err, "Update namespace error.")
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r *ApplicationReconcilerTask) ReconcileGateway() error {
+	if r.gateway == nil {
+		gw := &istioV1Beta1.Gateway{
+			ObjectMeta: metaV1.ObjectMeta{
+				Name:      "gateway",
+				Namespace: r.application.Name,
+			},
+			Spec: istioNetworkingV1Beta1.Gateway{
+				Selector: map[string]string{
+					"istio": "ingressgateway",
+				},
+				Servers: []*istioNetworkingV1Beta1.Server{
+					{
+						Hosts: []string{"*"},
+						Port: &istioNetworkingV1Beta1.Port{
+							Number:   80,
+							Protocol: "HTTP",
+							Name:     "http",
+						},
+					},
+				},
+			},
+		}
+
+		if err := ctrl.SetControllerReference(r.application, gw, r.Scheme); err != nil {
+			r.Log.Error(err, "SetControllerReference error when creating gateway.")
+			return err
+		}
+
+		if err := r.Create(r.ctx, gw); err != nil {
+			r.Log.Error(err, "create gateway failed")
+			return err
+		}
+
+		r.gateway = gw
+		r.Log.Info("gateway created.")
+	} else {
+		if err := ctrl.SetControllerReference(r.application, r.gateway, r.Scheme); err != nil {
+			r.Log.Error(err, "SetControllerReference error when updating gateway.")
+			return err
+		}
+
+		if r.gateway.DeletionTimestamp != nil {
+			r.gateway.DeletionTimestamp = nil
+			if err := r.Update(r.ctx, r.gateway); err != nil {
+				r.Log.Error(err, "Clear gateway deletion timestamp error.")
+				return err
+			}
+		}
+
+		if err := r.Update(r.ctx, r.gateway); err != nil {
+			r.Log.Error(err, "Update gateway error.")
 			return err
 		}
 	}
