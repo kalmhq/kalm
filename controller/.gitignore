@@ -28,3 +28,4 @@ bin
 tmp
 
 core_v1alpha1_application-dev.yaml
+core_v1alpha1_plugin-test.yaml
