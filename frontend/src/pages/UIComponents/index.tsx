@@ -57,7 +57,7 @@ export class UIComponentsRaw extends React.Component<Props, States> {
     const { classes } = this.props;
 
     return (
-      <BasePage title="Cluster Nodes">
+      <BasePage>
         <Box className={classes.root}>
           <Box display="flex" flexDirection="column" alignItems="start">
             <RowItemBox>

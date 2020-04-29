@@ -3,14 +3,13 @@ import { push } from "connected-react-router";
 import React from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
-import { Actions } from "../../types";
 import { createComponentTemplateAction } from "../../actions/componentTemplate";
 import { setSuccessNotificationAction } from "../../actions/notification";
 import { ComponentLikeForm } from "../../forms/ComponentLike";
 import { RootState } from "../../reducers";
+import { Actions } from "../../types";
+import { ComponentLike, ComponentTemplate, newEmptyComponentLike } from "../../types/componentTemplate";
 import { BasePage } from "../BasePage";
-import RemoteSubmitComponentLike from "../../forms/ComponentLike/remoteSubmitComponentLike";
-import { newEmptyComponentLike, ComponentLike, ComponentTemplate } from "../../types/componentTemplate";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -32,7 +31,7 @@ class ComponentTemplateNewRaw extends React.PureComponent<Props> {
 
   public render() {
     return (
-      <BasePage title="New Component" rightAction={<RemoteSubmitComponentLike />}>
+      <BasePage>
         <ComponentLikeForm
           onSubmit={this.submit}
           initialValues={newEmptyComponentLike()}

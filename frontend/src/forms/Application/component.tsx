@@ -331,7 +331,6 @@ class RenderComponentsRaw extends React.PureComponent<Props, State> {
             dispatch(setIsSubmittingApplicationComponent(false));
           }}
           initialValues={dialogFormComponentLikeInstance}
-          submitAppplicationErrors={submitErrors.get(`components[${dialogFormApplicationComponentIndex}]`)}
           showDataView
         />
       </CustomizedDialog>

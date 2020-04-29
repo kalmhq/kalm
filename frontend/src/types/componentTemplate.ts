@@ -2,10 +2,10 @@ import Immutable from "immutable";
 import { ImmutableMap } from "../typings";
 import { Status } from "./common";
 import { Plugin } from "./plugin";
-export const CREATE_COMPONENT = "CREATE_COMPONENT";
-export const UPDATE_COMPONENT = "UPDATE_COMPONENT";
-export const DELETE_COMPONENT = "DELETE_COMPONENT";
-export const DUPLICATE_COMPONENT = "DUPLICATE_COMPONENT";
+export const CREATE_COMPONENT_TEMPLATES = "CREATE_COMPONENT_TEMPLATES";
+export const UPDATE_COMPONENT_TEMPLATES = "UPDATE_COMPONENT_TEMPLATES";
+export const DELETE_COMPONENT_TEMPLATES = "DELETE_COMPONENT_TEMPLATES";
+export const DUPLICATE_COMPONENT_TEMPLATES = "DUPLICATE_COMPONENT_TEMPLATES";
 export const LOAD_COMPONENT_TEMPLATES_PENDING = "LOAD_COMPONENT_TEMPLATES_PENDING";
 export const LOAD_COMPONENT_TEMPLATES_FULFILLED = "LOAD_COMPONENT_TEMPLATES_FULFILLED";
 export const LOAD_COMPONENT_TEMPLATES_FAILED = "LOAD_COMPONENT_TEMPLATES_FAILED";
@@ -160,27 +160,27 @@ export type ComponentLike = ImmutableMap<ComponentLikeContent>;
 export type ComponentTemplate = ImmutableMap<ComponentTemplateContent>;
 
 export interface CreateComponentTemplateAction {
-  type: typeof CREATE_COMPONENT;
+  type: typeof CREATE_COMPONENT_TEMPLATES;
   payload: {
     componentTemplate: ComponentTemplate;
   };
 }
 
-export interface UpdateComponentAction {
-  type: typeof UPDATE_COMPONENT;
+export interface UpdateComponentTemplateAction {
+  type: typeof UPDATE_COMPONENT_TEMPLATES;
   payload: {
     componentTemplate: ComponentTemplate;
   };
 }
 
-export interface DeleteComponentAction {
-  type: typeof DELETE_COMPONENT;
+export interface DeleteComponentTemplateAction {
+  type: typeof DELETE_COMPONENT_TEMPLATES;
   payload: {
     componentTemplateName: string;
   };
 }
-export interface DuplicateComponentAction {
-  type: typeof DUPLICATE_COMPONENT;
+export interface DuplicateComponentTemplateAction {
+  type: typeof DUPLICATE_COMPONENT_TEMPLATES;
   payload: {
     componentTemplate: ComponentTemplate;
   };
@@ -203,9 +203,9 @@ export interface LoadComponentTemplatesFulfilledAction {
 
 export type ComponentTemplateActions =
   | CreateComponentTemplateAction
-  | DeleteComponentAction
-  | UpdateComponentAction
+  | DeleteComponentTemplateAction
+  | UpdateComponentTemplateAction
   | LoadComponentTemplatesFulfilledAction
   | LoadComponentTemplatesPendingAction
   | LoadComponentTemplatesFailedAction
-  | DuplicateComponentAction;
+  | DuplicateComponentTemplateAction;

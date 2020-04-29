@@ -30,7 +30,7 @@ class Dashboard extends React.PureComponent<Props> {
     const { classes } = this.props;
 
     return (
-      <BasePage title="Welcome to Kapp Dashboard" noBreadcrumb>
+      <BasePage>
         <div className={classes.container}>
           <Typography className={classes.description}>
             Kapp is a central hub for you to manage your devop tasks. It let you manage, monitoring{" "}

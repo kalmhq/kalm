@@ -3,7 +3,7 @@ import { Box } from "@material-ui/core";
 import CircularProgress from "@material-ui/core/CircularProgress";
 
 export const Loading = () => (
-  <Box display="flex" alignItems="center">
+  <Box display="flex" alignItems="center" padding={"20px"}>
     <CircularProgress size={24} /> <Box ml={1}>Loading</Box>
   </Box>
 );

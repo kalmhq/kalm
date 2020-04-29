@@ -1,5 +1,4 @@
 import React from "react";
-import { PageHeader, PageHeaderProps } from "../../widgets/PageHeader";
 import ScrollContainer from "../../widgets/ScrollContainer";
 import { withStyles, createStyles, WithStyles } from "@material-ui/styles";
 import { Theme } from "pretty-format/build/types";
@@ -29,22 +28,22 @@ const styles = (_theme: Theme) =>
     }
   });
 
-export interface BasePageProps
-  extends React.Props<any>,
-    WithStyles<typeof styles>,
-    Pick<PageHeaderProps, "title" | "noBreadcrumb" | "rightAction" | "leftSection"> {
+export interface BasePageProps extends React.Props<any>, WithStyles<typeof styles> {
   noScrollContainer?: boolean;
+  leftDrawer?: React.ReactNode;
+  secondHeaderLeft?: React.ReactNode;
+  secondHeaderRight?: React.ReactNode;
 }
 
 export class BasePageRaw extends React.PureComponent<BasePageProps> {
   public render() {
-    const { classes, children, title, rightAction, noBreadcrumb, noScrollContainer, leftSection } = this.props;
+    const { classes, children, noScrollContainer, leftDrawer, secondHeaderLeft, secondHeaderRight } = this.props;
     return (
       <div className={classes.root}>
-        <SecondHeader left={<Namespaces />} />
-        {leftSection || <DashboardDrawer />}
+        <SecondHeader left={secondHeaderLeft || <Namespaces />} right={secondHeaderRight} />
+        {leftDrawer || <DashboardDrawer />}
         <div className={classes.rightSection}>
-          <PageHeader title={title} noBreadcrumb={noBreadcrumb} rightAction={rightAction}></PageHeader>
+          {/* <PageHeader title={title} noBreadcrumb={noBreadcrumb} rightAction={rightAction}></PageHeader> */}
           <div className={classes.content}>
             {noScrollContainer ? children : <ScrollContainer>{children}</ScrollContainer>}
           </div>

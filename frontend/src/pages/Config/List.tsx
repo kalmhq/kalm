@@ -326,7 +326,7 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
     const { showConfigNewDialog, showConfigEditDialog, newConfigType } = this.state;
 
     return (
-      <BasePage title="Configs">
+      <BasePage>
         <div className={classes.root}>
           <div className={classes.leftTree}>
             {this.renderFileTreeActions()}
