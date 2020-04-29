@@ -6,18 +6,19 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.4
   creationTimestamp: null
-  name: componentpluginbindings.core.kapp.dev
+  name: applicationpluginbindings.core.kapp.dev
 spec:
   group: core.kapp.dev
   names:
-    kind: ComponentPluginBinding
-    listKind: ComponentPluginBindingList
-    plural: componentpluginbindings
-    singular: componentpluginbinding
+    kind: ApplicationPluginBinding
+    listKind: ApplicationPluginBindingList
+    plural: applicationpluginbindings
+    singular: applicationpluginbinding
   scope: Namespaced
   validation:
     openAPIV3Schema:
-      description: ComponentPluginBinding is the Schema for the pluginbindings API
+      description: ApplicationPluginBinding is the Schema for the applicationpluginbindings
+        API
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -32,17 +33,13 @@ spec:
         metadata:
           type: object
         spec:
-          description: ComponentPluginBindingSpec defines the desired state of ComponentPluginBinding
+          description: ApplicationPluginBindingSpec defines the desired state of ApplicationPluginBinding
           properties:
-            componentName:
-              description: If this field is empty, it will affect all components in
-                the application.
-              type: string
             config:
               description: configuration of this binding
               type: object
             isDisabled:
-              description: disable this pluginbinding
+              description: disable this binding
               type: boolean
             pluginName:
               description: which plugin to use
@@ -51,8 +48,8 @@ spec:
           - pluginName
           type: object
         status:
-          description: ComponentPluginBindingStatus defines the observed state of
-            ComponentPluginBinding
+          description: ApplicationPluginBindingStatus defines the observed state of
+            ApplicationPluginBinding
           properties:
             configError:
               type: string

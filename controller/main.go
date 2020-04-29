@@ -97,8 +97,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	// +kubebuilder:scaffold:builder
-
 	if err = (&controllers.ApplicationReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("Application"),
@@ -157,6 +155,18 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "ApplicationPlugin")
 		os.Exit(1)
 	}
+
+	if err = (&controllers.ApplicationPluginBindingReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("ApplicationPluginBinding"),
+		Scheme: mgr.GetScheme(),
+		Reader: mgr.GetAPIReader(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "ApplicationPluginBinding")
+		os.Exit(1)
+	}
+
+	// +kubebuilder:scaffold:builder
 
 	// only run webhook if explicitly declared
 	if os.Getenv("ENABLE_WEBHOOKS") == "true" {

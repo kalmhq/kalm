@@ -17,10 +17,14 @@ package controllers
 
 import (
 	"context"
+	"fmt"
+	js "github.com/dop251/goja"
 	"github.com/go-logr/logr"
 	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
 	"github.com/kapp-staging/kapp/lib/files"
 	"github.com/kapp-staging/kapp/util"
+	"github.com/kapp-staging/kapp/vm"
+	"github.com/xeipuuv/gojsonschema"
 	istioNetworkingV1Beta1 "istio.io/api/networking/v1beta1"
 	istioV1Beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
 	coreV1 "k8s.io/api/core/v1"
@@ -50,8 +54,9 @@ type ApplicationReconcilerTask struct {
 	application *corev1alpha1.Application
 
 	// resources
-	namespace *coreV1.Namespace
-	gateway   *istioV1Beta1.Gateway
+	namespace      *coreV1.Namespace
+	gateway        *istioV1Beta1.Gateway
+	pluginBindings *corev1alpha1.ApplicationPluginBindingList
 }
 
 var ownerKey = ".metadata.controller"
@@ -100,12 +105,15 @@ func (r *ApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 func (r *ApplicationReconcilerTask) Run(req ctrl.Request) error {
-
 	var application corev1alpha1.Application
 
 	if err := r.Reader.Get(r.ctx, req.NamespacedName, &application); err != nil {
 		return client.IgnoreNotFound(err)
 	}
+
+	// reset labels is for test purpose. If this breaks something. Feel free to modify this logic.
+	// Don't forget fix tests as well.
+	application.ObjectMeta.Labels = nil
 
 	r.application = &application
 
@@ -139,6 +147,18 @@ func (r *ApplicationReconcilerTask) Run(req ctrl.Request) error {
 
 	if err := r.ReconcileConfigMaps(); err != nil {
 		return err
+	}
+
+	if err := r.runPlugins(ApplicationPluginMethodBeforeApplicationSave, &application, &application); err != nil {
+		r.Log.Error(err, "run before save plugin error.")
+	}
+
+	if err := r.Update(r.ctx, &application); err != nil {
+		return err
+	}
+
+	if err := r.runPlugins(ApplicationPluginMethodAfterApplicationSaved, nil, nil); err != nil {
+		r.Log.Error(err, "run after save plugin error.")
 	}
 
 	return nil
@@ -400,4 +420,116 @@ func (r *ApplicationReconcilerTask) ReconcileConfigMaps() error {
 	}
 
 	return nil
+}
+
+func (r *ApplicationReconcilerTask) runPlugins(methodName string, desc interface{}, args ...interface{}) (err error) {
+	if r.pluginBindings == nil {
+		var bindings corev1alpha1.ApplicationPluginBindingList
+		if err := r.Reader.List(r.ctx, &bindings, client.InNamespace(r.application.Name)); err != nil {
+			r.Log.Error(err, "get plugin bindings error")
+			return err
+		}
+
+		r.pluginBindings = &bindings
+	}
+
+	if r.pluginBindings == nil {
+		return nil
+	}
+
+	for _, binding := range r.pluginBindings.Items {
+		if binding.DeletionTimestamp != nil || binding.Spec.IsDisabled {
+			continue
+		}
+
+		pluginProgram, config, err := r.findPluginAndValidateConfigNew(&binding, methodName)
+
+		if err != nil {
+			return err
+		}
+
+		if pluginProgram == nil {
+			continue
+		}
+
+		rt := vm.InitRuntime()
+
+		r.insertBuildInPluginImpls(rt, binding.Spec.PluginName, methodName, desc, args)
+
+		err = vm.RunMethod(
+			rt,
+			pluginProgram.Program,
+			methodName,
+			config,
+			desc,
+			args...,
+		)
+
+		if err != nil {
+			r.Log.Error(err, fmt.Sprintf("Run plugin error. methodName: %s,  pluginName: %s", methodName, binding.Spec.PluginName))
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r *ApplicationReconcilerTask) findPluginAndValidateConfigNew(pluginBinding *corev1alpha1.ApplicationPluginBinding, methodName string) (*ApplicationPluginProgram, []byte, error) {
+	pluginProgram := applicationPluginsCache.Get(pluginBinding.Spec.PluginName)
+
+	if pluginProgram == nil {
+		return nil, nil, fmt.Errorf("Can't find plugin %s in cache.", pluginBinding.Spec.PluginName)
+	}
+
+	if !pluginProgram.Methods[methodName] {
+		return nil, nil, nil
+	}
+
+	if pluginProgram.ConfigSchema != nil {
+		if pluginBinding.Spec.Config == nil {
+			return nil, nil, fmt.Errorf("ApplicationPlugin %s require configuration.", pluginBinding.Spec.PluginName)
+		}
+
+		pluginConfig := gojsonschema.NewStringLoader(string(pluginBinding.Spec.Config.Raw))
+		res, err := pluginProgram.ConfigSchema.Validate(pluginConfig)
+
+		if err != nil {
+			return nil, nil, err
+		}
+
+		if !res.Valid() {
+			return nil, nil, fmt.Errorf(res.Errors()[0].String())
+		}
+
+		return pluginProgram, pluginBinding.Spec.Config.Raw, nil
+	}
+
+	return pluginProgram, nil, nil
+}
+
+func (r *ApplicationReconcilerTask) insertBuildInPluginImpls(rt *js.Runtime, pluginName, methodName string, desc interface{}, args []interface{}) {
+	switch pluginName {
+	case corev1alpha1.KappBuiltinComponentPluginIngress:
+
+		if methodName != ComponentPluginMethodBeforeDeploymentSave {
+			return
+		}
+
+		// ingress plugin only works under compoent
+		if rt.Get("scope").String() != "component" {
+			return
+		}
+
+		rt.Set("__builtInImpl", func(_ js.FunctionCall) js.Value {
+			//todo
+			fmt.Println("__buildInImpl called")
+
+			//dp := &appsV1.Deployment{}
+			//r.Get(r.ctx, types.NamespacedName{Name: "nginx", Namespace: "test"}, dp)
+			//fmt.Println("dp:", dp)
+
+			return rt.ToValue(desc)
+		})
+	default:
+	}
 }

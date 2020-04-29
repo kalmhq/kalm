@@ -20,48 +20,45 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-// ComponentPluginBindingSpec defines the desired state of ComponentPluginBinding
-type ComponentPluginBindingSpec struct {
-	// If this field is empty, it will affect all components in the application.
-	ComponentName string `json:"componentName,omitempty"`
-
+// ApplicationPluginBindingSpec defines the desired state of ApplicationPluginBinding
+type ApplicationPluginBindingSpec struct {
 	// which plugin to use
 	PluginName string `json:"pluginName"`
 
 	// configuration of this binding
 	Config *runtime.RawExtension `json:"config,omitempty"`
 
-	// disable this pluginbinding
+	// disable this binding
 	// +optional
 	IsDisabled bool `json:"isDisabled"`
 }
 
-// ComponentPluginBindingStatus defines the observed state of ComponentPluginBinding
-type ComponentPluginBindingStatus struct {
+// ApplicationPluginBindingStatus defines the observed state of ApplicationPluginBinding
+type ApplicationPluginBindingStatus struct {
 	ConfigValid bool   `json:"configValid"`
 	ConfigError string `json:"configError"`
 }
 
 // +kubebuilder:object:root=true
 
-// ComponentPluginBinding is the Schema for the pluginbindings API
-type ComponentPluginBinding struct {
+// ApplicationPluginBinding is the Schema for the applicationpluginbindings API
+type ApplicationPluginBinding struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   ComponentPluginBindingSpec   `json:"spec,omitempty"`
-	Status ComponentPluginBindingStatus `json:"status,omitempty"`
+	Spec   ApplicationPluginBindingSpec   `json:"spec,omitempty"`
+	Status ApplicationPluginBindingStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// ComponentPluginBindingList contains a list of ComponentPluginBinding
-type ComponentPluginBindingList struct {
+// ApplicationPluginBindingList contains a list of ApplicationPluginBinding
+type ApplicationPluginBindingList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []ComponentPluginBinding `json:"items"`
+	Items           []ApplicationPluginBinding `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&ComponentPluginBinding{}, &ComponentPluginBindingList{})
+	SchemeBuilder.Register(&ApplicationPluginBinding{}, &ApplicationPluginBindingList{})
 }

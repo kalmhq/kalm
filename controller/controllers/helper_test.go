@@ -197,6 +197,13 @@ func (suite *BasicSuite) SetupSuite() {
 		Reader: mgr.GetAPIReader(),
 	}).SetupWithManager(mgr))
 
+	suite.Nil((&ApplicationPluginBindingReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("ApplicationPluginBinding"),
+		Scheme: mgr.GetScheme(),
+		Reader: mgr.GetAPIReader(),
+	}).SetupWithManager(mgr))
+
 	mgrStopChannel := make(chan struct{})
 
 	go func() {

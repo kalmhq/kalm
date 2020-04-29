@@ -161,6 +161,10 @@ func (r *ComponentPluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, er
 		program, err = vm.CompileProgram(plugin.Spec.Src)
 	}
 
+	if err != nil {
+		log.Error(err, "component plugin compile error.")
+	}
+
 	// TODO create some events to explain details
 	if plugin.Status.CompiledSuccessfully != (err == nil) {
 		plugin.Status.CompiledSuccessfully = err == nil

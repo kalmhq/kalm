@@ -35,7 +35,7 @@ func (suite *PluginBindingControllerSuite) SetupTest() {
 	suite.createApplication(application)
 	suite.application = application
 
-	plugin := generateEmptyPlugin()
+	plugin := generateEmptyComponentPlugin()
 	plugin.Spec.Src = `
 function BeforeDeploymentSave(deployment) {
     var config = getConfig();

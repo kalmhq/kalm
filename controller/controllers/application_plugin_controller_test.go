@@ -43,9 +43,8 @@ func generateEmptyApplicationPlugin() *v1alpha1.ApplicationPlugin {
 		},
 		Spec: v1alpha1.ApplicationPluginSpec{
 			Src: `
-function BeforeDeploymentSave(deployment) {
-	console.log("test");
-    return deployment;
+function BeforeApplicationSave(app) {
+    return app;
 }`,
 		},
 	}

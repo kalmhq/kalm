@@ -36,20 +36,13 @@ import (
 type ApplicationPluginMethod = string
 
 const (
-	ApplicationPluginMethodApplicationFilter ApplicationPluginMethod = "ApplicationFilter"
-
-	ApplicationPluginMethodAfterPodTemplateGeneration ApplicationPluginMethod = "AfterPodTemplateGeneration"
-	ApplicationPluginMethodBeforeDeploymentSave       ApplicationPluginMethod = "BeforeDeploymentSave"
-	ApplicationPluginMethodBeforeServiceSave          ApplicationPluginMethod = "BeforeServiceSave"
-	ApplicationPluginMethodBeforeCronjobSave          ApplicationPluginMethod = "BeforeCronjobSave"
+	ApplicationPluginMethodAfterApplicationSaved ApplicationPluginMethod = "AfterApplicationSaved"
+	ApplicationPluginMethodBeforeApplicationSave ApplicationPluginMethod = "BeforeApplicationSave"
 )
 
 var ValidApplicationPluginMethods = []ApplicationPluginMethod{
-	ApplicationPluginMethodApplicationFilter,
-	ApplicationPluginMethodAfterPodTemplateGeneration,
-	ApplicationPluginMethodBeforeDeploymentSave,
-	ApplicationPluginMethodBeforeServiceSave,
-	ApplicationPluginMethodBeforeCronjobSave,
+	ApplicationPluginMethodAfterApplicationSaved,
+	ApplicationPluginMethodBeforeApplicationSave,
 }
 
 var applicationPluginsCache *ApplicationPluginsCache
@@ -158,6 +151,10 @@ func (r *ApplicationPluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, 
 		program, err = vm.CompileProgram(plugin.Spec.Src)
 	}
 
+	if err != nil {
+		log.Error(err, "application plugin compile error.")
+	}
+
 	// TODO create some events to explain details
 	if plugin.Status.CompiledSuccessfully != (err == nil) {
 		plugin.Status.CompiledSuccessfully = err == nil
@@ -189,7 +186,7 @@ func (r *ApplicationPluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, 
 		return ctrl.Result{}, nil
 	}
 
-	methods, err := vm.GetDefinedMethods(plugin.Spec.Src, ValidPluginMethods)
+	methods, err := vm.GetDefinedMethods(plugin.Spec.Src, ValidApplicationPluginMethods)
 
 	if err != nil {
 		r.Log.Error(err, "Get Defined Methods error.")
@@ -207,20 +204,20 @@ func (r *ApplicationPluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, 
 }
 
 func (r *ApplicationPluginReconciler) deletePluginBindings(ctx context.Context, plugin *corev1alpha1.ApplicationPlugin, log logr.Logger) error {
-	//var bindingList corev1alpha1.ApplicationPluginBindingList
-	//
-	//if err := r.Reader.List(ctx, &bindingList, client.MatchingLabels{
-	//	"kapp-plugin": plugin.Name,
-	//}); err != nil {
-	//	log.Error(err, "get plugin binding list error.")
-	//	return err
-	//}
-	//
-	//for _, binding := range bindingList.Items {
-	//	if err := r.Delete(ctx, &binding); err != nil {
-	//		log.Error(err, "Delete plugin binding error.")
-	//	}
-	//}
+	var bindingList corev1alpha1.ApplicationPluginBindingList
+
+	if err := r.Reader.List(ctx, &bindingList, client.MatchingLabels{
+		"kapp-plugin": plugin.Name,
+	}); err != nil {
+		log.Error(err, "get plugin binding list error.")
+		return err
+	}
+
+	for _, binding := range bindingList.Items {
+		if err := r.Delete(ctx, &binding); err != nil {
+			log.Error(err, "Delete plugin binding error.")
+		}
+	}
 
 	return nil
 }

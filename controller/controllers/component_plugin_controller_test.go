@@ -30,7 +30,7 @@ func TestPluginControllerSuite(t *testing.T) {
 }
 
 //
-func generateEmptyPlugin() *v1alpha1.ComponentPlugin {
+func generateEmptyComponentPlugin() *v1alpha1.ComponentPlugin {
 	name := randomName()[:12]
 
 	plugin := &v1alpha1.ComponentPlugin{
@@ -69,7 +69,7 @@ func (suite *PluginControllerSuite) reloadPlugin(plugin *v1alpha1.ComponentPlugi
 
 func (suite *PluginControllerSuite) TestPluginBasicCRUD() {
 	// Create
-	plugin := generateEmptyPlugin()
+	plugin := generateEmptyComponentPlugin()
 	plugin.Spec.Src = ""
 	suite.createComponentPlugin(plugin)
 
