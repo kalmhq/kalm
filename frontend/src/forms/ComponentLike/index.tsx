@@ -1,4 +1,4 @@
-import { Box, Divider, Grid, List as MList, ListItem, ListItemText, MenuItem, Paper } from "@material-ui/core";
+import { Box, Divider, Grid, List as MList, ListItem, ListItemText, MenuItem } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import clsx from "clsx";
 import Typography from "@material-ui/core/Typography";
@@ -230,77 +230,85 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     }
     return (
       <Grid container spacing={2}>
-        <Grid item xs={12} sm={12} md={12}>
-          {!isFolded && SectionTitle("Basic Info")}
-          <HelperContainer>
-            <Typography>Describe how to launch this compoent.</Typography>
-          </HelperContainer>
-        </Grid>
-        <Grid item xs={12} sm={6} md={6}>
-          <CustomTextField
-            name="name"
-            label="Name"
-            margin
-            validate={[ValidatorRequired, ValidatorName]}
-            disabled={isEdit}
-            helperText={
-              isEdit
-                ? "Name can't be changed."
-                : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
-            }
-            placeholder="Please type the component name"
-          />
-          <Field name="workloadType" component={RenderSelectField} label="Workload Type" validate={[ValidatorRequired]}>
-            <MenuItem value={workloadTypeServer}>Server (continuous running)</MenuItem>
-            <MenuItem value={workloadTypeCronjob}>Cronjob (periodic running)</MenuItem>
-          </Field>
-          {this.renderSchedule()}
-        </Grid>
-        <Grid item xs={12} sm={6} md={6}>
-          <CustomTextField
-            name="image"
-            label="Image"
-            margin
-            validate={[ValidatorRequired]}
-            helperText='Eg: "nginx:latest", "registry.example.com/group/repo:tag"'
-          />
-          <CustomTextField
-            name="replicas"
-            margin
-            label="replicas"
-            helperText=""
-            formValueToEditValue={(value: any) => {
-              return value ? value : 1;
-            }}
-            editValueToFormValue={(value: any) => {
-              return value;
-            }}
-            normalize={NormalizeNumber}
-          />
-          <CustomTextField
-            name="command"
-            margin
-            label="Command (Optional)"
-            helperText='Eg: "/bin/app", "rails server".'
-            formValueToEditValue={(value: Immutable.List<string>) => {
-              return value && value.toArray().join(" ") ? value.toArray().join(" ") : "";
-            }}
-            editValueToFormValue={(value: any) => {
-              return value ? Immutable.List([value]) : Immutable.List([]);
-            }}
-          />
-          <CustomTextField
-            name="args"
-            margin
-            label="Arguments (Optional)"
-            helperText='Eg: "--port=80"'
-            formValueToEditValue={(value: Immutable.List<string>) => {
-              return value && value.toArray().join(" ") ? value.toArray().join(" ") : "";
-            }}
-            editValueToFormValue={(value: string) => {
-              return value ? Immutable.List(value.split(" ")) : Immutable.List([]);
-            }}
-          />
+        <Grid item xs={12} sm={6} md={8}>
+          <Grid container>
+            <Grid item xs={12} sm={12} md={12}>
+              {!isFolded && SectionTitle("Basic Info")}
+              <HelperContainer>
+                <Typography>Describe how to launch this compoent.</Typography>
+              </HelperContainer>
+            </Grid>
+            <Grid item xs={12} sm={12} md={12}>
+              <CustomTextField
+                name="name"
+                label="Name"
+                margin
+                validate={[ValidatorRequired, ValidatorName]}
+                disabled={isEdit}
+                helperText={
+                  isEdit
+                    ? "Name can't be changed."
+                    : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
+                }
+                placeholder="Please type the component name"
+              />
+              <Field
+                name="workloadType"
+                component={RenderSelectField}
+                label="Workload Type"
+                validate={[ValidatorRequired]}>
+                <MenuItem value={workloadTypeServer}>Server (continuous running)</MenuItem>
+                <MenuItem value={workloadTypeCronjob}>Cronjob (periodic running)</MenuItem>
+              </Field>
+              {this.renderSchedule()}
+            </Grid>
+            <Grid item xs={12} sm={12} md={12}>
+              <CustomTextField
+                name="image"
+                label="Image"
+                margin
+                validate={[ValidatorRequired]}
+                helperText='Eg: "nginx:latest", "registry.example.com/group/repo:tag"'
+              />
+              <CustomTextField
+                name="replicas"
+                margin
+                label="replicas"
+                helperText=""
+                formValueToEditValue={(value: any) => {
+                  return value ? value : 1;
+                }}
+                editValueToFormValue={(value: any) => {
+                  return value;
+                }}
+                normalize={NormalizeNumber}
+              />
+              <CustomTextField
+                name="command"
+                margin
+                label="Command (Optional)"
+                helperText='Eg: "/bin/app", "rails server".'
+                formValueToEditValue={(value: Immutable.List<string>) => {
+                  return value && value.toArray().join(" ") ? value.toArray().join(" ") : "";
+                }}
+                editValueToFormValue={(value: any) => {
+                  return value ? Immutable.List([value]) : Immutable.List([]);
+                }}
+              />
+              <CustomTextField
+                name="args"
+                margin
+                label="Arguments (Optional)"
+                helperText='Eg: "--port=80"'
+                formValueToEditValue={(value: Immutable.List<string>) => {
+                  return value && value.toArray().join(" ") ? value.toArray().join(" ") : "";
+                }}
+                editValueToFormValue={(value: string) => {
+                  return value ? Immutable.List(value.split(" ")) : Immutable.List([]);
+                }}
+              />
+            </Grid>
+          </Grid>
         </Grid>
       </Grid>
     );
@@ -961,37 +969,37 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     const { handleSubmit, classes, currentTab } = this.props;
 
     return (
-      <form onSubmit={handleSubmit} style={{ height: "100%", overflow: "hidden" }}>
-        <Paper className={`${classes.formSection} ${currentTab === "basic" ? "" : classes.displayNone}`}>
+      <form onSubmit={handleSubmit}>
+        <div className={`${classes.formSection} ${currentTab === "basic" ? "" : classes.displayNone}`}>
           {this.renderBasic()}
-        </Paper>
-        <Paper className={`${classes.formSection} ${currentTab === "envs" ? "" : classes.displayNone}`}>
+        </div>
+        <div className={`${classes.formSection} ${currentTab === "envs" ? "" : classes.displayNone}`}>
           {this.renderEnvs()}
-        </Paper>
-        <Paper className={`${classes.formSection} ${currentTab === "ports" ? "" : classes.displayNone}`}>
+        </div>
+        <div className={`${classes.formSection} ${currentTab === "ports" ? "" : classes.displayNone}`}>
           {this.renderPorts()}
-        </Paper>
-        <Paper className={`${classes.formSection} ${currentTab === "resources" ? "" : classes.displayNone}`}>
+        </div>
+        <div className={`${classes.formSection} ${currentTab === "resources" ? "" : classes.displayNone}`}>
           {this.renderResources()}
-        </Paper>
-        <Paper className={`${classes.formSection} ${currentTab === "resources" ? "" : classes.displayNone}`}>
+        </div>
+        <div className={`${classes.formSection} ${currentTab === "resources" ? "" : classes.displayNone}`}>
           {this.renderVolumes()}
-        </Paper>
-        <Paper className={`${classes.formSection} ${currentTab === "resources" ? "" : classes.displayNone}`}>
+        </div>
+        <div className={`${classes.formSection} ${currentTab === "resources" ? "" : classes.displayNone}`}>
           {this.renderConfigs()}
-        </Paper>
-        <Paper className={`${classes.formSection} ${currentTab === "plugins" ? "" : classes.displayNone}`}>
+        </div>
+        <div className={`${classes.formSection} ${currentTab === "plugins" ? "" : classes.displayNone}`}>
           {this.renderPlugins()}
-        </Paper>
-        <Paper className={`${classes.formSection} ${currentTab === "probes" ? "" : classes.displayNone}`}>
+        </div>
+        <div className={`${classes.formSection} ${currentTab === "probes" ? "" : classes.displayNone}`}>
           {this.renderProbes()}
-        </Paper>
-        <Paper className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}>
+        </div>
+        <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}>
           {this.renderNodeSelector()}
-        </Paper>
-        <Paper className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}>
+        </div>
+        <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}>
           {this.renderAdvanced()}
-        </Paper>
+        </div>
       </form>
     );
   }
