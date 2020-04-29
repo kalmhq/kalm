@@ -1,6 +1,18 @@
 apiVersion: core.kapp.dev/v1alpha1
 kind: Plugin
 metadata:
+  name: kapp-native-plugin-ingress
+spec:
+  src: |
+    function BeforeDeploymentSave(deployment) {
+      return __builtInImpl();
+    }
+  availableWorkloadType:
+    - server
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: Plugin
+metadata:
   name: kapp-static-sacle-double
 spec:
   src: |
