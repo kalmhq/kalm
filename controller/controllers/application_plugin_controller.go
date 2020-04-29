@@ -33,28 +33,28 @@ import (
 	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
 )
 
-type ComponentPluginMethod = string
+type ApplicationPluginMethod = string
 
 const (
-	ComponentPluginMethodComponentFilter ComponentPluginMethod = "ComponentFilter"
+	ApplicationPluginMethodApplicationFilter ApplicationPluginMethod = "ApplicationFilter"
 
-	ComponentPluginMethodAfterPodTemplateGeneration ComponentPluginMethod = "AfterPodTemplateGeneration"
-	ComponentPluginMethodBeforeDeploymentSave       ComponentPluginMethod = "BeforeDeploymentSave"
-	ComponentPluginMethodBeforeServiceSave          ComponentPluginMethod = "BeforeServiceSave"
-	ComponentPluginMethodBeforeCronjobSave          ComponentPluginMethod = "BeforeCronjobSave"
+	ApplicationPluginMethodAfterPodTemplateGeneration ApplicationPluginMethod = "AfterPodTemplateGeneration"
+	ApplicationPluginMethodBeforeDeploymentSave       ApplicationPluginMethod = "BeforeDeploymentSave"
+	ApplicationPluginMethodBeforeServiceSave          ApplicationPluginMethod = "BeforeServiceSave"
+	ApplicationPluginMethodBeforeCronjobSave          ApplicationPluginMethod = "BeforeCronjobSave"
 )
 
-var ValidPluginMethods = []ComponentPluginMethod{
-	ComponentPluginMethodComponentFilter,
-	ComponentPluginMethodAfterPodTemplateGeneration,
-	ComponentPluginMethodBeforeDeploymentSave,
-	ComponentPluginMethodBeforeServiceSave,
-	ComponentPluginMethodBeforeCronjobSave,
+var ValidApplicationPluginMethods = []ApplicationPluginMethod{
+	ApplicationPluginMethodApplicationFilter,
+	ApplicationPluginMethodAfterPodTemplateGeneration,
+	ApplicationPluginMethodBeforeDeploymentSave,
+	ApplicationPluginMethodBeforeServiceSave,
+	ApplicationPluginMethodBeforeCronjobSave,
 }
 
-var componentPluginsCache *ComponentPluginsCache
+var applicationPluginsCache *ApplicationPluginsCache
 
-type ComponentPluginProgram struct {
+type ApplicationPluginProgram struct {
 	*js.Program
 
 	Name string
@@ -63,65 +63,62 @@ type ComponentPluginProgram struct {
 
 	// a map of defined hooks
 	Methods map[string]bool
-
-	AvailableForAllWorkloadTypes bool
-	AvailableWorkloadTypes       map[corev1alpha1.WorkloadType]bool
 }
 
-type ComponentPluginsCache struct {
+type ApplicationPluginsCache struct {
 	mut      sync.RWMutex
-	Programs map[string]*ComponentPluginProgram
+	Programs map[string]*ApplicationPluginProgram
 }
 
-func (c *ComponentPluginsCache) Set(name string, program *ComponentPluginProgram) {
+func (c *ApplicationPluginsCache) Set(name string, program *ApplicationPluginProgram) {
 	c.mut.Lock()
 	defer c.mut.Unlock()
 	c.Programs[name] = program
 }
 
-func (c *ComponentPluginsCache) Get(name string) *ComponentPluginProgram {
+func (c *ApplicationPluginsCache) Get(name string) *ApplicationPluginProgram {
 	c.mut.RLock()
 	defer c.mut.RUnlock()
 	return c.Programs[name]
 }
 
-func (c *ComponentPluginsCache) Delete(name string) {
+func (c *ApplicationPluginsCache) Delete(name string) {
 	c.mut.Lock()
 	defer c.mut.Unlock()
 	delete(c.Programs, name)
 }
 
 func init() {
-	componentPluginsCache = &ComponentPluginsCache{
+	applicationPluginsCache = &ApplicationPluginsCache{
 		mut:      sync.RWMutex{},
-		Programs: make(map[string]*ComponentPluginProgram),
+		Programs: make(map[string]*ApplicationPluginProgram),
 	}
 }
 
-// ComponentPluginReconciler reconciles a ComponentPlugin object
-type ComponentPluginReconciler struct {
+// ApplicationPluginReconciler reconciles a ApplicationPlugin object
+type ApplicationPluginReconciler struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
 	Reader client.Reader
 }
 
-// +kubebuilder:rbac:groups=core.kapp.dev,resources=componentplugins,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=core.kapp.dev,resources=componentplugins/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=core.kapp.dev,resources=componentpluginbindings,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=core.kapp.dev,resources=componentpluginbindings/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=core.kapp.dev,resources=applicationplugins,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core.kapp.dev,resources=applicationplugins/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=core.kapp.dev,resources=applicationpluginbindings,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core.kapp.dev,resources=applicationpluginbindings/status,verbs=get;update;patch
 
-func (r *ComponentPluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	log := r.Log.WithValues("componentPlugin", req.NamespacedName)
+func (r *ApplicationPluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+	log := r.Log.WithValues("applicationPlugin", req.NamespacedName)
 	ctx := context.Background()
 
-	var plugin corev1alpha1.ComponentPlugin
+	var plugin corev1alpha1.ApplicationPlugin
 
 	if err := r.Get(ctx, req.NamespacedName, &plugin); err != nil {
 		err = client.IgnoreNotFound(err)
 
 		if err != nil {
-			log.Error(err, "unable to fetch ComponentPlugin")
+			log.Error(err, "unable to fetch ApplicationPlugin")
 		}
 
 		return ctrl.Result{}, err
@@ -138,7 +135,7 @@ func (r *ComponentPluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, er
 	} else {
 		// The object is being deleted
 		if util.ContainsString(plugin.ObjectMeta.Finalizers, finalizerName) {
-			componentPluginsCache.Delete(plugin.Name)
+			applicationPluginsCache.Delete(plugin.Name)
 
 			if err := r.deletePluginBindings(ctx, &plugin, log); err != nil {
 				return ctrl.Result{}, err
@@ -199,50 +196,37 @@ func (r *ComponentPluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, er
 		return ctrl.Result{}, nil
 	}
 
-	availableWorkloadTypes := make(map[corev1alpha1.WorkloadType]bool)
-	var availableForAllWorkloadTypes bool
-
-	if len(plugin.Spec.AvailableWorkloadType) == 0 {
-		availableForAllWorkloadTypes = true
-	} else {
-		for _, workloadType := range plugin.Spec.AvailableWorkloadType {
-			availableWorkloadTypes[workloadType] = true
-		}
-	}
-
-	componentPluginsCache.Set(plugin.Name, &ComponentPluginProgram{
-		Name:                         plugin.Name,
-		Program:                      program,
-		Methods:                      methods,
-		AvailableForAllWorkloadTypes: availableForAllWorkloadTypes,
-		AvailableWorkloadTypes:       availableWorkloadTypes,
-		ConfigSchema:                 configSchema,
+	applicationPluginsCache.Set(plugin.Name, &ApplicationPluginProgram{
+		Name:         plugin.Name,
+		Program:      program,
+		Methods:      methods,
+		ConfigSchema: configSchema,
 	})
 
 	return ctrl.Result{}, nil
 }
 
-func (r *ComponentPluginReconciler) deletePluginBindings(ctx context.Context, plugin *corev1alpha1.ComponentPlugin, log logr.Logger) error {
-	var bindingList corev1alpha1.ComponentPluginBindingList
-
-	if err := r.Reader.List(ctx, &bindingList, client.MatchingLabels{
-		"kapp-plugin": plugin.Name,
-	}); err != nil {
-		log.Error(err, "get plugin binding list error.")
-		return err
-	}
-
-	for _, binding := range bindingList.Items {
-		if err := r.Delete(ctx, &binding); err != nil {
-			log.Error(err, "Delete plugin binding error.")
-		}
-	}
+func (r *ApplicationPluginReconciler) deletePluginBindings(ctx context.Context, plugin *corev1alpha1.ApplicationPlugin, log logr.Logger) error {
+	//var bindingList corev1alpha1.ApplicationPluginBindingList
+	//
+	//if err := r.Reader.List(ctx, &bindingList, client.MatchingLabels{
+	//	"kapp-plugin": plugin.Name,
+	//}); err != nil {
+	//	log.Error(err, "get plugin binding list error.")
+	//	return err
+	//}
+	//
+	//for _, binding := range bindingList.Items {
+	//	if err := r.Delete(ctx, &binding); err != nil {
+	//		log.Error(err, "Delete plugin binding error.")
+	//	}
+	//}
 
 	return nil
 }
 
-func (r *ComponentPluginReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *ApplicationPluginReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&corev1alpha1.ComponentPlugin{}).
+		For(&corev1alpha1.ApplicationPlugin{}).
 		Complete(r)
 }

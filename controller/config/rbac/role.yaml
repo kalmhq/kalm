@@ -95,6 +95,26 @@ rules:
 - apiGroups:
   - core.kapp.dev
   resources:
+  - applicationpluginbindings
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kapp.dev
+  resources:
+  - applicationpluginbindings/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - core.kapp.dev
+  resources:
   - applicationplugins
   verbs:
   - create
@@ -128,6 +148,46 @@ rules:
   - core.kapp.dev
   resources:
   - applications/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - core.kapp.dev
+  resources:
+  - componentpluginbindings
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kapp.dev
+  resources:
+  - componentpluginbindings/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - core.kapp.dev
+  resources:
+  - componentplugins
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kapp.dev
+  resources:
+  - componentplugins/status
   verbs:
   - get
   - patch
@@ -188,26 +248,6 @@ rules:
   - core.kapp.dev
   resources:
   - pluginbindings/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - core.kapp.dev
-  resources:
-  - plugins
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - core.kapp.dev
-  resources:
-  - plugins/status
   verbs:
   - get
   - patch

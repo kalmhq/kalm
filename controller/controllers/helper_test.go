@@ -41,12 +41,33 @@ func (suite *BasicSuite) Eventually(condition func() bool, msgAndArgs ...interfa
 	return suite.Suite.Eventually(condition, waitFor, tick, msgAndArgs...)
 }
 
-func (suite *BasicSuite) createPlugin(plugin *v1alpha1.ComponentPlugin) {
+func (suite *BasicSuite) createComponentPlugin(plugin *v1alpha1.ComponentPlugin) {
 	suite.Nil(suite.K8sClient.Create(context.Background(), plugin))
 
 	// after the finalizer is set, the plugin won't auto change
 	suite.Eventually(func() bool {
-		err := suite.K8sClient.Get(context.Background(), getPluginNamespacedName(plugin), plugin)
+		err := suite.K8sClient.Get(context.Background(), getComponentPluginNamespacedName(plugin), plugin)
+
+		if err != nil {
+			return false
+		}
+
+		for i := range plugin.Finalizers {
+			if plugin.Finalizers[i] == finalizerName {
+				return true
+			}
+		}
+
+		return false
+	})
+}
+
+func (suite *BasicSuite) createApplicationPlugin(plugin *v1alpha1.ApplicationPlugin) {
+	suite.Nil(suite.K8sClient.Create(context.Background(), plugin))
+
+	// after the finalizer is set, the plugin won't auto change
+	suite.Eventually(func() bool {
+		err := suite.K8sClient.Get(context.Background(), getApplicationPluginNamespacedName(plugin), plugin)
 
 		if err != nil {
 			return false
@@ -141,29 +162,33 @@ func (suite *BasicSuite) SetupSuite() {
 	suite.NotNil(mgr)
 	suite.Nil(err)
 
-	err = (&ApplicationReconciler{
+	suite.Nil((&ApplicationReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("Application"),
 		Scheme: mgr.GetScheme(),
 		Reader: mgr.GetAPIReader(),
-	}).SetupWithManager(mgr)
-	suite.Nil(err)
+	}).SetupWithManager(mgr))
 
-	err = (&ComponentPluginReconciler{
+	suite.Nil((&ComponentPluginReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("ComponentPlugin"),
 		Scheme: mgr.GetScheme(),
 		Reader: mgr.GetAPIReader(),
-	}).SetupWithManager(mgr)
-	suite.Nil(err)
+	}).SetupWithManager(mgr))
 
-	err = (&ComponentReconciler{
+	suite.Nil((&ApplicationPluginReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("ApplicationPlugin"),
+		Scheme: mgr.GetScheme(),
+		Reader: mgr.GetAPIReader(),
+	}).SetupWithManager(mgr))
+
+	suite.Nil((&ComponentReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("Component"),
 		Scheme: mgr.GetScheme(),
 		Reader: mgr.GetAPIReader(),
-	}).SetupWithManager(mgr)
-	suite.Nil(err)
+	}).SetupWithManager(mgr))
 
 	suite.Nil((&ComponentPluginBindingReconciler{
 		Client: mgr.GetClient(),

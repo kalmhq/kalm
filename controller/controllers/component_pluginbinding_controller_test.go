@@ -50,7 +50,7 @@ function BeforeDeploymentSave(deployment) {
 	plugin.Spec.ConfigSchema = &runtime.RawExtension{
 		Raw: []byte(`{"type":"object","properties":{"replicas":{"type":"integer"}}}`),
 	}
-	suite.createPlugin(plugin)
+	suite.createComponentPlugin(plugin)
 	suite.plugin = plugin
 
 	component := generateEmptyComponent(suite.application.Name)

@@ -10,72 +10,71 @@ import (
 	"testing"
 )
 
-type PluginControllerSuite struct {
+type ApplicationPluginControllerSuite struct {
 	BasicSuite
 }
 
-func (suite *PluginControllerSuite) SetupSuite() {
+func (suite *ApplicationPluginControllerSuite) SetupSuite() {
 	suite.BasicSuite.SetupSuite()
 }
 
-func (suite *PluginControllerSuite) TearDownSuite() {
+func (suite *ApplicationPluginControllerSuite) TearDownSuite() {
 	suite.BasicSuite.TearDownSuite()
 }
 
-func (suite *PluginControllerSuite) SetupTest() {
+func (suite *ApplicationPluginControllerSuite) SetupTest() {
 }
 
-func TestPluginControllerSuite(t *testing.T) {
-	suite.Run(t, new(PluginControllerSuite))
+func TestApplicationPluginControllerSuite(t *testing.T) {
+	suite.Run(t, new(ApplicationPluginControllerSuite))
 }
 
 //
-func generateEmptyPlugin() *v1alpha1.ComponentPlugin {
+func generateEmptyApplicationPlugin() *v1alpha1.ApplicationPlugin {
 	name := randomName()[:12]
 
-	plugin := &v1alpha1.ComponentPlugin{
+	plugin := &v1alpha1.ApplicationPlugin{
 		TypeMeta: metaV1.TypeMeta{
-			Kind:       "ComponentPlugin",
+			Kind:       "ApplicationPlugin",
 			APIVersion: "core.kapp.dev/v1alpha1",
 		},
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: name,
 		},
-		Spec: v1alpha1.ComponentPluginSpec{
+		Spec: v1alpha1.ApplicationPluginSpec{
 			Src: `
 function BeforeDeploymentSave(deployment) {
 	console.log("test");
     return deployment;
 }`,
-			AvailableWorkloadType: []v1alpha1.WorkloadType{},
 		},
 	}
 
 	return plugin
 }
 
-func getComponentPluginNamespacedName(plugin *v1alpha1.ComponentPlugin) types.NamespacedName {
+func getApplicationPluginNamespacedName(plugin *v1alpha1.ApplicationPlugin) types.NamespacedName {
 	// cluster scope resource
 	return types.NamespacedName{Name: plugin.Name, Namespace: ""}
 }
 
-func (suite *PluginControllerSuite) updatePlugin(plugin *v1alpha1.ComponentPlugin) {
+func (suite *ApplicationPluginControllerSuite) updatePlugin(plugin *v1alpha1.ApplicationPlugin) {
 	suite.Nil(suite.K8sClient.Update(context.Background(), plugin))
 }
 
-func (suite *PluginControllerSuite) reloadPlugin(plugin *v1alpha1.ComponentPlugin) {
-	suite.Nil(suite.K8sClient.Get(context.Background(), getComponentPluginNamespacedName(plugin), plugin))
+func (suite *ApplicationPluginControllerSuite) reloadPlugin(plugin *v1alpha1.ApplicationPlugin) {
+	suite.Nil(suite.K8sClient.Get(context.Background(), getApplicationPluginNamespacedName(plugin), plugin))
 }
 
-func (suite *PluginControllerSuite) TestPluginBasicCRUD() {
+func (suite *ApplicationPluginControllerSuite) TestApplicationPluginBasicCRUD() {
 	// Create
-	plugin := generateEmptyPlugin()
+	plugin := generateEmptyApplicationPlugin()
 	plugin.Spec.Src = ""
-	suite.createComponentPlugin(plugin)
+	suite.createApplicationPlugin(plugin)
 
 	// Get
 	suite.Eventually(func() bool {
-		return suite.K8sClient.Get(context.Background(), getComponentPluginNamespacedName(plugin), plugin) == nil
+		return suite.K8sClient.Get(context.Background(), getApplicationPluginNamespacedName(plugin), plugin) == nil
 	})
 	suite.False(plugin.Status.CompiledSuccessfully)
 
@@ -101,6 +100,6 @@ func (suite *PluginControllerSuite) TestPluginBasicCRUD() {
 
 	// Read after deletion
 	suite.Eventually(func() bool {
-		return errors.IsNotFound(suite.K8sClient.Get(context.Background(), getComponentPluginNamespacedName(plugin), plugin))
+		return errors.IsNotFound(suite.K8sClient.Get(context.Background(), getApplicationPluginNamespacedName(plugin), plugin))
 	})
 }
