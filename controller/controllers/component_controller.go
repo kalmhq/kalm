@@ -993,6 +993,20 @@ func (r *ComponentReconcilerTask) runComponentPlugins(methodName string, compone
 		rt := r.initPluginRuntime(component)
 		rt.Set("scope", "component")
 
+		// insert impl for build in plugin
+		if binding.Spec.PluginName == "kapp-ingress" {
+			rt.Set("__builtInImpl", func(_ js.FunctionCall) js.Value {
+				//todo
+				fmt.Println("__buildInImpl called")
+
+				dp := &appsV1.Deployment{}
+				r.Get(r.ctx, types.NamespacedName{Name: "nginx", Namespace: "test"}, dp)
+
+				fmt.Println("dp:", dp)
+				return rt.ToValue(desc)
+			})
+		}
+
 		err = vm.RunMethod(
 			rt,
 			pluginProgram.Program,
@@ -1002,9 +1016,9 @@ func (r *ComponentReconcilerTask) runComponentPlugins(methodName string, compone
 			args...,
 		)
 
-		if err == nil {
-			r.savePluginUser(pluginProgram)
-		}
+		//if err == nil {
+		//	r.savePluginUser(pluginProgram)
+		//}
 	}
 
 	return nil
