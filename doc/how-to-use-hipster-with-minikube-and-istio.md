@@ -106,8 +106,9 @@ istioctl proxy-config cluster -n kapp-hipster $(kubectl get pods -n kapp-hipster
 
 ```bash
 # get minikube ip
+minikube ip
 
-192.168.64.30
+# 192.168.64.30
 ```
 
 ```bash
