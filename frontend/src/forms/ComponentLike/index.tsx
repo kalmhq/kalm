@@ -12,7 +12,7 @@ import { CustomTextField, RenderSelectField, RenderTextField } from "../Basic";
 import { NormalizeNumber } from "../normalizer";
 import { ValidatorRequired, ValidatorSchedule, ValidatorName } from "../validator";
 import { Envs } from "./Envs";
-import { Ports } from "./PortsNew";
+import { Ports } from "./Ports";
 import { ComponentResources } from "./resources";
 import { Plugins } from "./Plugins";
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
