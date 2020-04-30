@@ -16,6 +16,9 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"crypto/md5"
+	"encoding/json"
+	"fmt"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -34,6 +37,15 @@ type ComponentPluginBindingSpec struct {
 	// disable this pluginbinding
 	// +optional
 	IsDisabled bool `json:"isDisabled"`
+}
+
+func (spec *ComponentPluginBindingSpec) GetName() string {
+	bts, _ := json.Marshal(spec.Config)
+	if spec.ComponentName == "" {
+		return fmt.Sprintf("%s-%x", spec.PluginName, md5.Sum(bts))
+	} else {
+		return fmt.Sprintf("%s-%s-%x", spec.PluginName, spec.ComponentName, md5.Sum(bts))
+	}
 }
 
 // ComponentPluginBindingStatus defines the observed state of ComponentPluginBinding

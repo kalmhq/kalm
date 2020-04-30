@@ -16,6 +16,9 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"crypto/md5"
+	"encoding/json"
+	"fmt"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -31,6 +34,11 @@ type ApplicationPluginBindingSpec struct {
 	// disable this binding
 	// +optional
 	IsDisabled bool `json:"isDisabled"`
+}
+
+func (spec *ApplicationPluginBindingSpec) GetName() string {
+	bts, _ := json.Marshal(spec.Config)
+	return fmt.Sprintf("%s-%x", spec.PluginName, md5.Sum(bts))
 }
 
 // ApplicationPluginBindingStatus defines the observed state of ApplicationPluginBinding

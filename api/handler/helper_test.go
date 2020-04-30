@@ -6,14 +6,17 @@ import (
 	"github.com/kapp-staging/kapp/api/client"
 	"github.com/kapp-staging/kapp/api/config"
 	"github.com/kapp-staging/kapp/api/server"
+	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/suite"
 	"io"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/scheme"
 	"net/http/httptest"
 	"path/filepath"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	"strings"
+	"time"
 )
 
 type WithControllerTestSuite struct {
@@ -67,6 +70,9 @@ func (suite *WithControllerTestSuite) SetupSuite() {
 		KubernetesApiServerAddress: cfg.Host,
 	}
 
+	suite.Nil(scheme.AddToScheme(scheme.Scheme))
+	suite.Nil(v1alpha1.AddToScheme(scheme.Scheme))
+
 	e := server.NewEchoServer(runningConfig)
 	clientManager := client.NewClientManager(runningConfig)
 	apiHandler := NewApiHandler(clientManager)
@@ -76,6 +82,12 @@ func (suite *WithControllerTestSuite) SetupSuite() {
 }
 
 func (suite *WithControllerTestSuite) TearDownSuite() {
+}
+
+func (suite *WithControllerTestSuite) Eventually(condition func() bool, msgAndArgs ...interface{}) bool {
+	waitFor := time.Second * 20
+	tick := time.Millisecond * 500
+	return suite.Suite.Eventually(condition, waitFor, tick, msgAndArgs...)
 }
 
 func (suite *WithControllerTestSuite) NewRequest(method string, path string, body interface{}) *ResponseRecorder {

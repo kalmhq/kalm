@@ -5,6 +5,7 @@ import (
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 	"net/http"
+	"strings"
 	"testing"
 )
 
@@ -112,6 +113,116 @@ func (suite *ApplicationsHandlerTestSuite) TestDeleteApplication() {
 	// delete
 	rec = suite.NewRequest(http.MethodDelete, "/v1alpha1/applications/test3", body)
 	suite.Equal(http.StatusNoContent, rec.Code)
+}
+
+func (suite *ApplicationsHandlerTestSuite) TestUpdateApplicationPlugins() {
+	body := `{
+    "name": "test-update-plugins",
+    "namespace": "test-update-plugins",
+    "sharedEnvs": [{
+      "name": "env1",
+      "value": "value1"
+    }, {
+      "name": "env2",
+      "value": "value2",
+      "type": "external"
+    }]
+}`
+	// create first
+	var res resources.ApplicationDetails
+	rec := suite.NewRequest(http.MethodPost, "/v1alpha1/applications", body)
+	rec.BodyAsJSON(&res)
+
+	// add one plugin
+	body = `{
+    "name": "test-update-plugins",
+    "namespace": "test-update-plugins",
+    "sharedEnvs": [{
+      "name": "env1",
+      "value": "value1-new"
+    }],
+	"plugins": [{
+		"name": "test",
+        "config": {}
+	}]
+}`
+
+	rec = suite.NewRequest(http.MethodPut, "/v1alpha1/applications/test-update-plugins", body)
+	rec.BodyAsJSON(&res)
+	suite.NotNil(res.Application)
+	suite.Len(res.Application.Plugins, 1)
+
+	// add second plugin
+	body = `{
+    "name": "test-update-plugins",
+    "namespace": "test-update-plugins",
+    "sharedEnvs": [{
+      "name": "env1",
+      "value": "value1-new"
+    }],
+	"plugins": [{
+		"name": "test",
+        "config": {}
+	},{
+		"name": "test2",
+        "config": {
+			"a": 1
+		}
+	}]
+}`
+
+	rec = suite.NewRequest(http.MethodPut, "/v1alpha1/applications/test-update-plugins", body)
+	rec.BodyAsJSON(&res)
+	suite.NotNil(res.Application)
+	suite.Len(res.Application.Plugins, 2)
+	suite.True(strings.Contains(string(res.Application.Plugins[1].Raw), "a"))
+
+	// update second plugin
+	body = `{
+    "name": "test-update-plugins",
+    "namespace": "test-update-plugins",
+    "sharedEnvs": [{
+      "name": "env1",
+      "value": "value1-new"
+    }],
+	"plugins": [{
+		"name": "test",
+        "config": {}
+	},{
+		"name": "test2",
+        "config": {
+			"b": 1
+		}
+	}]
+}`
+
+	rec = suite.NewRequest(http.MethodPut, "/v1alpha1/applications/test-update-plugins", body)
+	rec.BodyAsJSON(&res)
+	suite.NotNil(res.Application)
+	suite.Len(res.Application.Plugins, 2)
+	suite.True(strings.Contains(string(res.Application.Plugins[1].Raw), "b"))
+
+	// delete plugin
+	body = `{
+    "name": "test-update-plugins",
+    "namespace": "test-update-plugins",
+    "sharedEnvs": [{
+      "name": "env1",
+      "value": "value1-new"
+    }],
+	"plugins": [{
+		"name": "test2",
+        "config": {
+			"b": 1
+		}
+	}]
+}`
+
+	rec = suite.NewRequest(http.MethodPut, "/v1alpha1/applications/test-update-plugins", body)
+	rec.BodyAsJSON(&res)
+	suite.NotNil(res.Application)
+	suite.Len(res.Application.Plugins, 1)
+	suite.True(strings.Contains(string(res.Application.Plugins[0].Raw), "b"))
 }
 
 func TestApplicationsHandlerTestSuite(t *testing.T) {
