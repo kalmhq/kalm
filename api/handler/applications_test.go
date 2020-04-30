@@ -21,11 +21,9 @@ func (suite *ApplicationsHandlerTestSuite) TestGetEmptyList() {
 	suite.Equal(200, rec.Code)
 }
 
-func (suite *ApplicationsHandlerTestSuite) TestCreateEmptyAppliation() {
+func (suite *ApplicationsHandlerTestSuite) TestCreateEmptyApplication() {
 	body := `{
-  "application": {
     "name": "test",
-    "namespace": "test",
     "sharedEnvs": [{
       "name": "env1",
       "value": "value1"
@@ -33,92 +31,63 @@ func (suite *ApplicationsHandlerTestSuite) TestCreateEmptyAppliation() {
       "name": "env2",
       "value": "value2",
       "type": "external"
-    }],
-    "components": [{
-      "name": "web",
-      "image": "busybox",
-      "env": [{
-      	"name": "componentEnv1",
-      	"value": "value1"
-      }, {
-      	"name": "componentEnv2",
-      	"value": "value2",
-      	"type": "external"
-      }]
     }]
-  }
 }`
 
 	var res resources.ApplicationDetails
-	rec := suite.NewRequest(http.MethodPost, "/v1alpha1/applications/test", body)
+	rec := suite.NewRequest(http.MethodPost, "/v1alpha1/applications", body)
 	rec.BodyAsJSON(&res)
 
 	suite.NotNil(res.Application)
 	suite.Equal("test", res.Application.Name)
-	suite.Equal("test", res.Application.Namespace)
-
 	suite.Equal(2, len(res.Application.SharedEnvs))
 
 	// empty type should be static
 	suite.Equal(v1alpha1.EnvVarTypeStatic, res.Application.SharedEnvs[0].Type)
 	suite.Equal(v1alpha1.EnvVarTypeExternal, res.Application.SharedEnvs[1].Type)
-
-	//suite.Equal(1, len(res.Application.Components))
-	//suite.Equal(v1alpha1.EnvVarTypeStatic, res.Application.Components[0].Env[0].Type)
-	//suite.Equal(v1alpha1.EnvVarTypeExternal, res.Application.Components[0].Env[1].Type)
 }
 
-func (suite *ApplicationsHandlerTestSuite) TestUpdateAppliation() {
+func (suite *ApplicationsHandlerTestSuite) TestUpdateApplication() {
 	body := `{
-  "application": {
-    "name": "test2",
-    "namespace": "test2",
-    "sharedEnvs": [{
-      "name": "env1",
-      "value": "value1"
-    }, {
-      "name": "env2",
-      "value": "value2",
-      "type": "external"
-    }],
-    "components": []
-  }
+"name": "test2",
+"sharedEnvs": [{
+  "name": "env1",
+  "value": "value1"
+}, {
+  "name": "env2",
+  "value": "value2",
+  "type": "external"
+}]
 }`
 	// create first
 	var res resources.ApplicationDetails
-	rec := suite.NewRequest(http.MethodPost, "/v1alpha1/applications/test2", body)
+	rec := suite.NewRequest(http.MethodPost, "/v1alpha1/applications", body)
 	rec.BodyAsJSON(&res)
 
 	suite.NotNil(res.Application)
 	suite.Equal("test2", res.Application.Name)
-	suite.Equal("test2", res.Application.Namespace)
 	suite.Equal(2, len(res.Application.SharedEnvs))
 	suite.Equal("value1", res.Application.SharedEnvs[0].Value)
 
 	// edit
 	body = `{
-  "application": {
     "name": "test2",
     "namespace": "test2",
     "sharedEnvs": [{
       "name": "env1",
       "value": "value1-new"
-    }],
-    "components": []
-  }
+    }]
 }`
-	rec = suite.NewRequest(http.MethodPut, "/v1alpha1/applications/test2/test2", body)
+	rec = suite.NewRequest(http.MethodPut, "/v1alpha1/applications/test2", body)
 	rec.BodyAsJSON(&res)
 	suite.NotNil(res.Application)
 	suite.Equal("test2", res.Application.Name)
-	suite.Equal("test2", res.Application.Namespace)
 	suite.Equal(1, len(res.Application.SharedEnvs))
 	suite.Equal("value1-new", res.Application.SharedEnvs[0].Value)
 }
 
-func (suite *ApplicationsHandlerTestSuite) TestDeleteAppliation() {
+func (suite *ApplicationsHandlerTestSuite) TestDeleteApplication() {
 	body := `{
-  "application": {
     "name": "test3",
     "namespace": "test3",
     "sharedEnvs": [{
@@ -128,26 +97,23 @@ func (suite *ApplicationsHandlerTestSuite) TestDeleteAppliation() {
       "name": "env2",
       "value": "value2",
       "type": "external"
-    }],
-    "components": []
-  }
+    }]
 }`
 	// create first
 	var res resources.ApplicationDetails
-	rec := suite.NewRequest(http.MethodPost, "/v1alpha1/applications/test3", body)
+	rec := suite.NewRequest(http.MethodPost, "/v1alpha1/applications", body)
 	rec.BodyAsJSON(&res)
 
 	suite.NotNil(res.Application)
 	suite.Equal("test3", res.Application.Name)
-	suite.Equal("test3", res.Application.Namespace)
 	suite.Equal(2, len(res.Application.SharedEnvs))
 	suite.Equal("value1", res.Application.SharedEnvs[0].Value)
 
 	// delete
-	rec = suite.NewRequest(http.MethodDelete, "/v1alpha1/applications/test3/test3", body)
+	rec = suite.NewRequest(http.MethodDelete, "/v1alpha1/applications/test3", body)
 	suite.Equal(http.StatusNoContent, rec.Code)
 }
 
-func TestApplicationsHanlderTestSuite(t *testing.T) {
+func TestApplicationsHandlerTestSuite(t *testing.T) {
 	suite.Run(t, new(ApplicationsHandlerTestSuite))
 }
