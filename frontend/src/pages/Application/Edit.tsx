@@ -17,7 +17,7 @@ import { ComponentLikeForm } from "../../forms/ComponentLike";
 import { RootState } from "../../reducers";
 import { Application, ApplicationComponent, SharedEnv } from "../../types/application";
 import { ApplicationDrawer } from "../../widgets/ApplicationDrawer";
-import { ButtonGrey, CustomizedButton } from "../../widgets/Button";
+import { CustomizedButton } from "../../widgets/Button";
 import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
 import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./ItemDataWrapper";
@@ -183,9 +183,12 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
           <div className={classes.sencondHeaderRight}>
             {currentFormType === "application" ? (
               <>
-                <ButtonGrey className={classes.sencondHeaderRightItem} onClick={() => dispatch(submit("application"))}>
+                <CustomizedButton
+                  color="primary"
+                  className={classes.sencondHeaderRightItem}
+                  onClick={() => dispatch(submit("application"))}>
                   Save Application
-                </ButtonGrey>
+                </CustomizedButton>
               </>
             ) : (
               <>

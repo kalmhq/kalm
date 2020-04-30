@@ -9,7 +9,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { formValueSelector } from "redux-form/immutable";
-import { ButtonGrey } from "widgets/Button";
+import { CustomizedButton } from "widgets/Button";
 import { KappTooltip } from "../../forms/Application/KappTooltip";
 import { ApplicationComponentDetails, SharedEnv } from "../../types/application";
 import { EnvTypeExternal } from "../../types/common";
@@ -205,7 +205,8 @@ class ApplicationComponentListRaw extends React.PureComponent<Props, State> {
     return (
       <div className={classes.sencondHeaderRight}>
         <H4 className={classes.sencondHeaderRightItem}>Components</H4>
-        <ButtonGrey
+        <CustomizedButton
+          color="primary"
           className={classes.sencondHeaderRightItem}
           onClick={() => {
             if (application) {
@@ -213,7 +214,7 @@ class ApplicationComponentListRaw extends React.PureComponent<Props, State> {
             }
           }}>
           Add
-        </ButtonGrey>
+        </CustomizedButton>
       </div>
     );
   }

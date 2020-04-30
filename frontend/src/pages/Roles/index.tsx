@@ -13,7 +13,7 @@ import { submit } from "redux-form";
 import { TDispatchProp } from "types";
 import { RoleBindingsRequestBody } from "types/user";
 import { FlexRowItemCenterBox } from "widgets/Box";
-import { ButtonGrey, CustomizedButton } from "widgets/Button";
+import { CustomizedButton } from "widgets/Button";
 import { ControlledDialog } from "widgets/ControlledDialog";
 import { ServiceAccountSecret } from "widgets/ServiceAccountSecret";
 import { AdminDrawer } from "../../layout/AdminDrawer";
@@ -258,13 +258,14 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
     return (
       <div className={classes.sencondHeaderRight}>
         <H4 className={classes.sencondHeaderRightItem}>Roles & Permissions</H4>
-        <ButtonGrey
+        <CustomizedButton
+          color="primary"
           className={classes.sencondHeaderRightItem}
           onClick={() => {
             this.openAddModal();
           }}>
           Add
-        </ButtonGrey>
+        </CustomizedButton>
       </div>
     );
   }
