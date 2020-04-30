@@ -3,6 +3,7 @@ package resources
 import (
 	"encoding/json"
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	coreV1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
@@ -53,26 +54,29 @@ func labelsBelongsToComponent(name string) metaV1.ListOptions {
 	return matchLabel("kapp-component", name)
 }
 
-func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component) (*ComponentDetails, error) {
-	ns := component.Namespace
-	listOptions := labelsBelongsToComponent(component.Name)
+func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component, resources *Resources) (details *ComponentDetails, err error) {
+	if resources == nil {
+		ns := component.Namespace
 
-	resourceChannels := &ResourceChannels{
-		PodList: builder.GetPodListChannel(ns, listOptions),
-		EventList: builder.GetEventListChannel(ns, metaV1.ListOptions{
-			LabelSelector: labels.Everything().String(),
-			FieldSelector: fields.Everything().String(),
-		}),
-		ServiceList:                builder.GetServiceListChannel(ns, listOptions),
-		ComponentPluginBindingList: builder.GetComponentPluginBindingListChannel(ns, matchLabel("kapp-component", component.Name)),
+		listOptions := labelsBelongsToComponent(component.Name)
+		resourceChannels := &ResourceChannels{
+			PodList: builder.GetPodListChannel(ns, listOptions),
+			EventList: builder.GetEventListChannel(ns, metaV1.ListOptions{
+				LabelSelector: labels.Everything().String(),
+				FieldSelector: fields.Everything().String(),
+			}),
+			ServiceList:                builder.GetServiceListChannel(ns, listOptions),
+			ComponentPluginBindingList: builder.GetComponentPluginBindingListChannel(ns, matchLabel("kapp-component", component.Name)),
+		}
+
+		resources, err = resourceChannels.ToResources()
+
+		if err != nil {
+			builder.Logger.Error(err)
+			return nil, err
+		}
 	}
 
-	resources, err := resourceChannels.ToResources()
-
-	if err != nil {
-		builder.Logger.Error(err)
-		return nil, err
-	}
 	pods := findPods(resources.PodList, component.Name)
 	podsStatus := make([]PodStatus, 0, len(pods))
 
@@ -93,9 +97,10 @@ func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component) (*C
 	appCpuHistory := aggregateHistoryList(cpuHistoryList)
 	appMemHistory := aggregateHistoryList(memHistoryList)
 
-	plugins := make([]runtime.RawExtension, 0, len(resources.ComponentPluginBindings))
+	componentPluginBindings := findComponentPluginBindings(resources.ComponentPluginBindings, component.Name)
+	plugins := make([]runtime.RawExtension, 0, len(componentPluginBindings))
 
-	for _, binding := range resources.ComponentPluginBindings {
+	for _, binding := range componentPluginBindings {
 		if binding.DeletionTimestamp != nil {
 			continue
 		}
@@ -115,9 +120,9 @@ func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component) (*C
 		})
 	}
 
-	servicesStatus := make([]ServiceStatus, len(resources.Services))
-
-	for i, service := range resources.Services {
+	services := findComponentServices(resources.Services, component.Name)
+	servicesStatus := make([]ServiceStatus, len(services))
+	for i, service := range services {
 		servicesStatus[i] = ServiceStatus{
 			Name:      service.Name,
 			ClusterIP: service.Spec.ClusterIP,
@@ -125,7 +130,7 @@ func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component) (*C
 		}
 	}
 
-	details := &ComponentDetails{
+	details = &ComponentDetails{
 		Component: &Component{
 			Name:          component.Name,
 			ComponentSpec: component.Spec,
@@ -143,18 +148,58 @@ func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component) (*C
 }
 
 func (builder *Builder) BuildComponentDetailsResponse(components *v1alpha1.ComponentList) ([]ComponentDetails, error) {
-	apps := []ComponentDetails{}
 
-	// TODO concurrent build response items
+	if len(components.Items) == 0 {
+		return nil, nil
+	}
+
+	ns := components.Items[0].Namespace
+	res := []ComponentDetails{}
+
+	resourceChannels := &ResourceChannels{
+		PodList:                    builder.GetPodListChannel(ns, ListAll),
+		EventList:                  builder.GetEventListChannel(ns, ListAll),
+		ServiceList:                builder.GetServiceListChannel(ns, ListAll),
+		ComponentPluginBindingList: builder.GetComponentPluginBindingListChannel(ns, ListAll),
+	}
+
+	resources, err := resourceChannels.ToResources()
+
+	if err != nil {
+		return nil, err
+	}
+
 	for i := range components.Items {
-		item, err := builder.BuildComponentDetails(&components.Items[i])
-
+		item, err := builder.BuildComponentDetails(&components.Items[i], resources)
 		if err != nil {
 			return nil, err
 		}
-
-		apps = append(apps, *item)
+		res = append(res, *item)
 	}
 
-	return apps, nil
+	return res, nil
+}
+
+func findComponentServices(list []coreV1.Service, componentName string) []coreV1.Service {
+	res := []coreV1.Service{}
+
+	for i := range list {
+		if list[i].Labels["kapp-component"] == componentName {
+			res = append(res, list[i])
+		}
+	}
+
+	return res
+}
+
+func findComponentPluginBindings(list []v1alpha1.ComponentPluginBinding, componentName string) []v1alpha1.ComponentPluginBinding {
+	res := []v1alpha1.ComponentPluginBinding{}
+
+	for i := range list {
+		if list[i].Labels["kapp-component"] == componentName {
+			res = append(res, list[i])
+		}
+	}
+
+	return res
 }

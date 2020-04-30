@@ -224,7 +224,7 @@ func (h *ApiHandler) componentResponse(c echo.Context, component *v1alpha1.Compo
 		Config:    k8sClientConfig,
 	}
 
-	return builder.BuildComponentDetails(component)
+	return builder.BuildComponentDetails(component, nil)
 }
 
 func (h *ApiHandler) componentListResponse(c echo.Context, componentList *v1alpha1.ComponentList) ([]resources.ComponentDetails, error) {
