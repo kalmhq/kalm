@@ -117,6 +117,11 @@ let themeRaw = createMuiTheme({
         }
       }
     },
+    MuiFormLabel: {
+      root: {
+        color: "black"
+      }
+    },
     MuiFormControl: {
       marginNormal: {
         paddingBottom: 0
