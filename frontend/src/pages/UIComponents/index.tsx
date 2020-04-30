@@ -18,7 +18,9 @@ import {
   DeleteIcon,
   CheckCircleIcon,
   ErrorIcon,
-  ArrowBackIcon
+  ArrowBackIcon,
+  ConsoleIcon,
+  LogIcon
 } from "widgets/Icon";
 
 const mapStateToProps = (state: RootState) => {
@@ -155,6 +157,8 @@ export class UIComponentsRaw extends React.Component<Props, States> {
               <CheckCircleIcon />
               <ErrorIcon />
               <ArrowBackIcon />
+              <ConsoleIcon />
+              <LogIcon />
             </RowItemBox>
           </Box>
         </Box>

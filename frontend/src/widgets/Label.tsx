@@ -14,7 +14,9 @@ export const SectionTitle = (title: string, className: string = "") => (
 const styles = () =>
   createStyles({
     root: {
-      overflow: "hidden",
+      overflow: "hidden"
+    },
+    body1: {
       paddingTop: theme.spacing(1)
     }
   });

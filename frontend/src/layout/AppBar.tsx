@@ -15,6 +15,7 @@ import { NavLink } from "react-router-dom";
 import ViewHeadlineIcon from "@material-ui/icons/ViewHeadline";
 import KeyboardArrowRightIcon from "@material-ui/icons/KeyboardArrowRight";
 import { IconButtonWithTooltip } from "../widgets/IconButtonWithTooltip";
+import { ConsoleIcon, LogIcon } from "widgets/Icon";
 
 export const APP_BAR_HEIGHT = 48;
 
@@ -158,14 +159,14 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
               color="inherit"
               component={NavLink}
               to={`/applications/${activeNamespace}/shells`}>
-              <KeyboardArrowRightIcon />
+              <ConsoleIcon />
             </IconButtonWithTooltip>
             <IconButtonWithTooltip
               tooltipTitle="Logs"
               color="inherit"
               component={NavLink}
               to={`/applications/${activeNamespace}/logs`}>
-              <ViewHeadlineIcon />
+              <LogIcon />
             </IconButtonWithTooltip>
             <IconButtonWithTooltip tooltipTitle="Settings" color="inherit" component={NavLink} to={"/roles"}>
               <SettingsIcon />

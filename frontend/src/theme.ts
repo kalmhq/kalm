@@ -91,6 +91,10 @@ let themeRaw = createMuiTheme({
         "&:hover": {
           backgroundColor: "rgba(25, 118, 210, 0.1)"
         }
+      },
+      textSizeLarge: {
+        paddingTop: 0,
+        paddingBottom: 0
       }
     },
     MuiSvgIcon: {

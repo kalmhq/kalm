@@ -40,6 +40,14 @@ export const newEmptyVolume = (): Volume => {
   return Immutable.Map({});
 };
 
+export const newEmptyComponentLikeEnv = (): ComponentLikeEnv => {
+  return Immutable.Map({
+    name: "",
+    type: "static",
+    value: ""
+  });
+};
+
 export const newEmptyComponentLikePort = (): ComponentLikePort => {
   return Immutable.Map({
     name: "",
@@ -53,6 +61,12 @@ export type ComponentStatus = {
   status: Status;
   deploymentStatus: any;
 };
+
+export type ComponentLikeEnv = ImmutableMap<{
+  name: string;
+  type: string;
+  value: string;
+}>;
 
 export type ComponentLikePort = ImmutableMap<{
   name: string;
@@ -137,13 +151,7 @@ export interface ComponentLikeContent {
   restartStrategy?: string;
   terminationGracePeriodSeconds?: number;
   dnsPolicy: string;
-  env?: Immutable.List<
-    ImmutableMap<{
-      name: string;
-      type: string;
-      value: string;
-    }>
-  >;
+  env?: Immutable.List<ComponentLikeEnv>;
   ports?: Immutable.List<ComponentLikePort>;
   volumes?: Immutable.List<Volume>;
   configs?: Immutable.List<ConfigMount>;
