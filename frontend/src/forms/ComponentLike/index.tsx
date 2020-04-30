@@ -12,16 +12,16 @@ import { CustomTextField, RenderSelectField, RenderTextField } from "../Basic";
 import { NormalizeNumber } from "../normalizer";
 import { ValidatorRequired, ValidatorSchedule, ValidatorName } from "../validator";
 import { Envs } from "./Envs";
-import { Ports } from "./PortsNew";
+import { Ports } from "./Ports";
 import { ComponentResources } from "./resources";
-import { Plugins } from "./Plugins";
+import { Plugins } from "./oldPlugins";
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import Immutable, { Map, List } from "immutable";
 import { ComponentLike, workloadTypeCronjob, workloadTypeServer } from "../../types/componentTemplate";
-import { Volumes } from "./volumes";
+import { Volumes } from "./Volumes";
 import ErrorIcon from "@material-ui/icons/Error";
 import { SharedEnv } from "../../types/application";
 import { ReadinessProbe, LivenessProbe } from "./Probes";
@@ -395,7 +395,16 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             </ListItem>
           </MList>
         </HelperContainer>
-        <ComponentResources cpu={values.get("cpu")} memory={values.get("memory")} dispatch={dispatch} formName={form} />
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6} md={8}>
+            <ComponentResources
+              cpu={values.get("cpu")}
+              memory={values.get("memory")}
+              dispatch={dispatch}
+              formName={form}
+            />
+          </Grid>
+        </Grid>
       </>
     );
   }

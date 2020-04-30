@@ -157,19 +157,38 @@ export const RenderSelectField = ({
   );
 };
 
-const AutoCompleteTypeSelect = "select";
-const AutoCompleteTypeFreeSolo = "freeSolo";
+interface AutoCompleteFreeSoloProps {
+  label?: string;
+  options: string[];
+}
 
-type AutoCompleteType = typeof AutoCompleteTypeSelect | typeof AutoCompleteTypeFreeSolo;
+export const RenderAutoCompleteFreeSolo = (props: WrappedFieldProps & AutoCompleteFreeSoloProps) => {
+  const { options, input, label } = props;
+  return (
+    <Autocomplete
+      freeSolo
+      disableClearable
+      options={options.map(option => option)}
+      defaultValue={input.value}
+      onChange={(event: React.ChangeEvent<{}>, value: string | null) => {
+        if (value) {
+          input.onChange(value);
+        }
+      }}
+      renderInput={params => (
+        <TextField {...params} label={label} margin="normal" variant="outlined" fullWidth size="small" />
+      )}
+    />
+  );
+};
 
-interface AutoCompleteProps {
+interface AutoCompleteSelectProps {
   label?: string;
   required?: boolean;
-  type?: AutoCompleteType;
   children: React.ReactElement<{ children: string; value: string }>[];
 }
 
-export const RenderAutoCompleteSelect = ({ input, label, type, children }: WrappedFieldProps & AutoCompleteProps) => {
+export const RenderAutoCompleteSelect = ({ input, label, children }: WrappedFieldProps & AutoCompleteSelectProps) => {
   children = React.Children.toArray(children);
 
   const options = children.map(item => ({
@@ -197,80 +216,6 @@ export const RenderAutoCompleteSelect = ({ input, label, type, children }: Wrapp
         }
       }}
       renderInput={params => <TextField {...params} label={label} variant="outlined" fullWidth size="small" />}
-    />
-  );
-};
-
-export const RenderAutoComplete = ({
-  input,
-  label,
-  children,
-  meta: { touched, invalid, error }
-}: WrappedFieldProps & AutoCompleteProps) => {
-  children = React.Children.toArray(children);
-
-  let options = children.map(item => ({
-    text: item.props.children,
-    value: item.props.value
-  }));
-
-  let selectedOption = options.find(x => x.value === input.value);
-
-  // add this value as an option if there is no such option in list
-  if (!selectedOption) {
-    selectedOption = {
-      text: input.value,
-      value: input.value
-    };
-  }
-
-  const helperText = "";
-
-  // const onInputChange = (event: React.ChangeEvent<{}>, value: string) => {
-  //   if (!event) return;
-  //   input.onChange(value);
-  // };
-
-  const onChange = (_event: React.ChangeEvent<{}>, selectOption: { text: string; value: string } | null) => {
-    if (selectOption) {
-      input.onChange(selectOption.value);
-    }
-  };
-
-  const [value, setValue] = React.useState(input.value);
-
-  const onInputChange = (event: React.ChangeEvent<{}>, value: string) => {
-    // fix a bug, that onInputChange is first called with an empty value
-    if (!!input.value && !value) return;
-    setValue(value);
-  };
-
-  return (
-    <Autocomplete
-      options={options}
-      getOptionLabel={option => option.text}
-      disableClearable
-      // value={selectedOption}
-      freeSolo
-      autoComplete
-      inputValue={value}
-      onInputChange={onInputChange}
-      onFocus={input.onFocus}
-      onChange={onChange}
-      renderInput={params => {
-        return (
-          <TextField
-            {...params}
-            error={touched && invalid}
-            helperText={(touched && error) || helperText}
-            onBlur={input.onChange}
-            label={label}
-            variant="outlined"
-            fullWidth
-            size="small"
-          />
-        );
-      }}
     />
   );
 };
