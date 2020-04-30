@@ -1,10 +1,4 @@
-import { Breadcrumbs, createStyles, Link, Theme, withStyles, WithStyles } from "@material-ui/core";
-import CreateNewFolderIcon from "@material-ui/icons/CreateNewFolder";
-import DeleteIcon from "@material-ui/icons/Delete";
-import EditIcon from "@material-ui/icons/Edit";
-import FileCopyIcon from "@material-ui/icons/FileCopy";
-import NoteAddIcon from "@material-ui/icons/NoteAdd";
-import PublishIcon from "@material-ui/icons/Publish";
+import { Breadcrumbs, Box, createStyles, Link, Theme, withStyles, WithStyles } from "@material-ui/core";
 import {
   deleteConfigAction,
   duplicateConfigAction,
@@ -30,6 +24,8 @@ import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { BasePage } from "../BasePage";
 import { withNamespace, withNamespaceProps } from "permission/Namespace";
 import { NormalInfoPaper } from "widgets/Paper";
+import { H4 } from "widgets/Label";
+import { AddFileIcon, UploadIcon, AddFolderIcon, EditIcon, CopyIcon, DeleteIcon, DeleteWhiteIcon } from "widgets/Icon";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -40,18 +36,21 @@ const styles = (theme: Theme) =>
       verticalAlign: "super"
     },
     root: {
-      display: "flex"
-      // padding: "24px"
+      display: "flex",
+      height: "100%"
     },
     leftTree: {
-      width: "400px",
-      padding: "15px"
+      width: "330px",
+      minWidth: "330px",
+      padding: "0",
+      backgroundColor: "#252526"
     },
     fileDetail: {
-      width: "100%",
       minHeight: "800px",
-      padding: "15px",
-      backgroundColor: "#fff"
+      padding: "0",
+      backgroundColor: "#272822",
+      flexGrow: 1,
+      width: "200px"
     },
     breadcrumbsAndAction: {
       display: "flex",
@@ -63,19 +62,29 @@ const styles = (theme: Theme) =>
       height: "300px",
       display: "flex",
       alignItems: "center",
-      justifyContent: "center"
+      justifyContent: "center",
+      color: "white"
     },
     fileViewer: {
-      maxWidth: "80vw",
-      minWidth: "70vw",
-      height: "75vh",
+      minWidth: "200px",
+      height: "85vh",
       overflow: "auto"
     },
     fileTreeAction: {
       display: "flex",
       justifyContent: "flex-end",
-      borderRadius: "4px",
+      borderRadius: "0px",
+      background: "#383838",
       padding: 0
+    },
+    secondHeaderRight: {
+      height: "100%",
+      width: "100%",
+      display: "flex",
+      alignItems: "center"
+    },
+    secondHeaderRightItem: {
+      marginLeft: 20
     }
   });
 
@@ -250,7 +259,7 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
           tooltipTitle="Add file"
           aria-label="add-file"
           onClick={() => this.handleAdd("file")}>
-          <NoteAddIcon />
+          <AddFileIcon />
         </IconButtonWithTooltip>
 
         <IconButtonWithTooltip
@@ -258,7 +267,7 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
           tooltipTitle="Add folder"
           aria-label="add-folder"
           onClick={() => this.handleAdd("folder")}>
-          <CreateNewFolderIcon />
+          <AddFolderIcon />
         </IconButtonWithTooltip>
 
         <IconButtonWithTooltip
@@ -266,7 +275,7 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
           tooltipTitle="Upload configs"
           aria-label="upload-configs"
           onClick={() => this.handleUpload()}>
-          <PublishIcon />
+          <UploadIcon />
         </IconButtonWithTooltip>
       </NormalInfoPaper>
     );
@@ -292,7 +301,7 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
             tooltipTitle="Duplicate"
             aria-label="duplicate"
             onClick={() => this.handleDuplicate()}>
-            <FileCopyIcon />
+            <CopyIcon />
           </IconButtonWithTooltip>
 
           <IconButtonWithTooltip
@@ -300,7 +309,7 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
             tooltipTitle="Delete"
             aria-label="delete"
             onClick={() => this.handleDelete()}>
-            <DeleteIcon />
+            <DeleteWhiteIcon />
           </IconButtonWithTooltip>
         </div>
       );
@@ -326,7 +335,12 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
     const { showConfigNewDialog, showConfigEditDialog, newConfigType } = this.state;
 
     return (
-      <BasePage>
+      <BasePage
+        secondHeaderRight={
+          <Box className={classes.secondHeaderRight}>
+            <H4 className={classes.secondHeaderRightItem}>Configs</H4>
+          </Box>
+        }>
         <div className={classes.root}>
           <div className={classes.leftTree}>
             {this.renderFileTreeActions()}

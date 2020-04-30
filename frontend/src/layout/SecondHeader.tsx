@@ -1,5 +1,6 @@
 import { createStyles, Theme } from "@material-ui/core";
 import { WithStyles, withStyles } from "@material-ui/styles";
+import { grey } from "@material-ui/core/colors";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
@@ -22,20 +23,20 @@ const styles = (theme: Theme) =>
       top: APP_BAR_HEIGHT,
       height: SECOND_HEADER_HEIGHT,
       width: "100%",
-      background: "#FFFFFF",
-      borderBottom: "1px solid #EEEEEE",
+      background: "white",
+      borderBottom: `1px solid ${grey[200]}`,
       display: "flex"
     },
     left: {
       width: LEFT_SECTION_WIDTH,
       height: SECOND_HEADER_HEIGHT,
-      borderRight: "1px solid #EEEEEE"
+      borderRight: `1px solid ${grey[200]}`
     },
     leftTextContainer: {
       display: "flex",
       alignItems: "center",
       paddingLeft: 32,
-      borderRight: "1px solid #EEEEEE"
+      borderRight: `1px solid ${grey[200]}`
     },
     right: {
       flex: 1,

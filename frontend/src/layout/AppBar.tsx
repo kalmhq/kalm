@@ -12,8 +12,6 @@ import { FlexRowItemCenterBox } from "widgets/Box";
 import { loadApplicationsAction } from "../actions/application";
 import SettingsIcon from "@material-ui/icons/Settings";
 import { NavLink } from "react-router-dom";
-import ViewHeadlineIcon from "@material-ui/icons/ViewHeadline";
-import KeyboardArrowRightIcon from "@material-ui/icons/KeyboardArrowRight";
 import { IconButtonWithTooltip } from "../widgets/IconButtonWithTooltip";
 import { ConsoleIcon, LogIcon } from "widgets/Icon";
 

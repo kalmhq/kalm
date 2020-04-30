@@ -18,7 +18,7 @@ const styles = (theme: Theme) =>
       // padding: theme.spacing(3)
       height: "100%"
     },
-    sencondHeaderRight: {
+    secondHeaderRight: {
       height: "100%",
       width: "100%",
       display: "flex",
@@ -44,7 +44,7 @@ class ApplicationNewRaw extends React.PureComponent<Props> {
     return (
       <BasePage
         secondHeaderRight={
-          <div className={classes.sencondHeaderRight}>
+          <div className={classes.secondHeaderRight}>
             <H4>New Application</H4>
           </div>
         }>

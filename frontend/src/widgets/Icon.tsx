@@ -9,7 +9,12 @@ import {
   FilterList,
   CheckCircle,
   Error,
-  ArrowBack
+  ArrowBack,
+  NoteAdd,
+  CreateNewFolder,
+  Publish,
+  Edit,
+  FileCopy
 } from "@material-ui/icons";
 import { withStyles, createStyles, WithStyles } from "@material-ui/styles";
 import { grey } from "@material-ui/core/colors";
@@ -37,6 +42,9 @@ const styles = (theme: Theme) =>
     },
     small: {
       fontSize: 12
+    },
+    white: {
+      color: "white"
     }
   });
 
@@ -93,7 +101,7 @@ export const ArrowBackIcon = withStyles(styles)((props: IconsProps) => {
 });
 
 export const ConsoleIcon = withStyles(styles)((props: IconsProps) => {
-  const { classes, color, fontSize } = props;
+  const { color, fontSize } = props;
   return (
     <SvgIcon color={color} fontSize={fontSize}>
       <path d="m20 19v-12h-16v12zm0-16c.5304 0 1.0391.21071 1.4142.58579.3751.37507.5858.88378.5858 1.41421v14c0 .5304-.2107 1.0391-.5858 1.4142s-.8838.5858-1.4142.5858h-16c-.53043 0-1.03914-.2107-1.41421-.5858-.37508-.3751-.58579-.8838-.58579-1.4142v-14c0-.53043.21071-1.03914.58579-1.41421.37507-.37508.88378-.58579 1.41421-.58579zm-7 14v-2h5v2zm-3.42-4-4.01-4h2.83l3.3 3.3c.39.39.39 1.03 0 1.42l-3.28 3.28h-2.83z" />
@@ -102,10 +110,36 @@ export const ConsoleIcon = withStyles(styles)((props: IconsProps) => {
 });
 
 export const LogIcon = withStyles(styles)((props: IconsProps) => {
-  const { classes, color, fontSize } = props;
+  const { color, fontSize } = props;
   return (
     <SvgIcon color={color} fontSize={fontSize}>
       <path d="M18 7C16.9 7 16 7.9 16 9V15C16 16.1 16.9 17 18 17H20C21.1 17 22 16.1 22 15V11H20V15H18V9H22V7H18ZM2 7V17H8V15H4V7H2ZM11 7C9.9 7 9 7.9 9 9V15C9 16.1 9.9 17 11 17H13C14.1 17 15 16.1 15 15V9C15 7.9 14.1 7 13 7H11ZM11 9H13V15H11V9Z" />
     </SvgIcon>
   );
+});
+
+export const AddFileIcon = withStyles(styles)((props: IconsProps) => {
+  const { classes, color, fontSize } = props;
+  return <NoteAdd className={classes.white} color={color} fontSize={fontSize} />;
+});
+
+export const AddFolderIcon = withStyles(styles)((props: IconsProps) => {
+  const { classes, color, fontSize } = props;
+  return <CreateNewFolder className={classes.white} color={color} fontSize={fontSize} />;
+});
+export const UploadIcon = withStyles(styles)((props: IconsProps) => {
+  const { classes, color, fontSize } = props;
+  return <Publish className={classes.white} color={color} fontSize={fontSize} />;
+});
+export const EditIcon = withStyles(styles)((props: IconsProps) => {
+  const { classes, color, fontSize } = props;
+  return <Edit className={classes.white} color={color} fontSize={fontSize} />;
+});
+export const CopyIcon = withStyles(styles)((props: IconsProps) => {
+  const { classes, color, fontSize } = props;
+  return <FileCopy className={classes.white} color={color} fontSize={fontSize} />;
+});
+export const DeleteWhiteIcon = withStyles(styles)((props: IconsProps) => {
+  const { classes, color, fontSize } = props;
+  return <Delete className={classes.white} color={color} fontSize={fontSize} />;
 });

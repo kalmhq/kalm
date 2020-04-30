@@ -36,13 +36,13 @@ const styles = (theme: Theme) =>
       // padding: theme.spacing(3)
       height: "100%"
     },
-    sencondHeaderRight: {
+    secondHeaderRight: {
       height: "100%",
       width: "100%",
       display: "flex",
       alignItems: "center"
     },
-    sencondHeaderRightItem: {
+    secondHeaderRightItem: {
       marginLeft: 20
     }
   });
@@ -180,12 +180,12 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
       <BasePage
         leftDrawer={this.renderApplicationDrawer()}
         secondHeaderRight={
-          <div className={classes.sencondHeaderRight}>
+          <div className={classes.secondHeaderRight}>
             {currentFormType === "application" ? (
               <>
                 <CustomizedButton
                   color="primary"
-                  className={classes.sencondHeaderRightItem}
+                  className={classes.secondHeaderRightItem}
                   onClick={() => dispatch(submit("application"))}>
                   Save Application
                 </CustomizedButton>
@@ -194,13 +194,13 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
               <>
                 <CustomizedButton
                   color="primary"
-                  className={classes.sencondHeaderRightItem}
+                  className={classes.secondHeaderRightItem}
                   onClick={() => dispatch(submit("componentLike"))}>
                   Save Component
                 </CustomizedButton>
                 <CustomizedButton
                   color="primary"
-                  className={classes.sencondHeaderRightItem}
+                  className={classes.secondHeaderRightItem}
                   disabled={this.props.application?.get("components").size === 0}
                   onClick={() => this.handleDeleteComponent()}>
                   Delete Component

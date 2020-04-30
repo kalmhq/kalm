@@ -25,13 +25,13 @@ const styles = (theme: Theme) =>
         verticalAlign: "middle"
       }
     },
-    sencondHeaderRight: {
+    secondHeaderRight: {
       height: "100%",
       width: "100%",
       display: "flex",
       alignItems: "center"
     },
-    sencondHeaderRightItem: {
+    secondHeaderRightItem: {
       marginLeft: 20
     }
   });
@@ -203,11 +203,11 @@ class ApplicationComponentListRaw extends React.PureComponent<Props, State> {
   private renderSecondHeaderRight() {
     const { classes, dispatch, application } = this.props;
     return (
-      <div className={classes.sencondHeaderRight}>
-        <H4 className={classes.sencondHeaderRightItem}>Components</H4>
+      <div className={classes.secondHeaderRight}>
+        <H4 className={classes.secondHeaderRightItem}>Components</H4>
         <CustomizedButton
           color="primary"
-          className={classes.sencondHeaderRightItem}
+          className={classes.secondHeaderRightItem}
           onClick={() => {
             if (application) {
               dispatch(push(`/applications/${application.get("name")}/edit?component=`));

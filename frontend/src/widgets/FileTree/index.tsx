@@ -54,7 +54,8 @@ const StyledTreeItem = withStyles((theme: any) => ({
     borderLeft: `1px dashed ${fade(theme.palette.text.primary, 0.4)}`
   },
   content: {
-    height: 30
+    height: 30,
+    color: "white"
   },
   label: {
     zIndex: -1
@@ -222,6 +223,9 @@ export const FileTree = (props: FileTreeProps) => {
 
   return (
     <TreeView
+      style={{
+        padding: "12px"
+      }}
       selected={getConfigPath(getCurrentConfig())}
       className={classes.root}
       defaultExpanded={[rootConfig.get("id")]}
