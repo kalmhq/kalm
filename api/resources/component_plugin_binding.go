@@ -12,9 +12,10 @@ import (
 	"time"
 )
 
-type Plugin struct {
-	Name   string                `json:"name"`
-	Config *runtime.RawExtension `json:"config"`
+type ComponentPlugin struct {
+	Name     string                `json:"name"`
+	Config   *runtime.RawExtension `json:"config"`
+	IsActive bool                  `json:"isActive"`
 }
 
 type ComponentPluginBindingListChannel struct {
@@ -90,9 +91,9 @@ func UpdateComponentPluginBindingsForObject(kappClient *rest.RESTClient, namespa
 	oldPlugins := map[string]*v1alpha1.ComponentPluginBinding{}
 	newPlugins := map[string]*v1alpha1.ComponentPluginBinding{}
 
-	for _, plugin := range plugins {
-		var tmp Plugin
-		_ = json.Unmarshal(plugin.Raw, &tmp)
+	for _, pluginRaw := range plugins {
+		var plugin ComponentPlugin
+		_ = json.Unmarshal(pluginRaw.Raw, &plugin)
 
 		binding := &v1alpha1.ComponentPluginBinding{
 			ObjectMeta: metaV1.ObjectMeta{
@@ -102,9 +103,10 @@ func UpdateComponentPluginBindingsForObject(kappClient *rest.RESTClient, namespa
 				},
 			},
 			Spec: v1alpha1.ComponentPluginBindingSpec{
-				Config:        tmp.Config,
+				Config:        plugin.Config,
 				ComponentName: componentName,
-				PluginName:    tmp.Name,
+				PluginName:    plugin.Name,
+				IsDisabled:    !plugin.IsActive,
 			},
 		}
 
