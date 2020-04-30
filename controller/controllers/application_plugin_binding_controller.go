@@ -19,6 +19,7 @@ import (
 	"context"
 	"github.com/kapp-staging/kapp/util"
 	"github.com/xeipuuv/gojsonschema"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"time"
 
@@ -86,8 +87,10 @@ func (r *ApplicationPluginBindingReconciler) Reconcile(req ctrl.Request) (ctrl.R
 		if util.ContainsString(pluginBinding.ObjectMeta.Finalizers, finalizerName) {
 
 			if err := r.TouchApplication(ctx, &pluginBinding, log); err != nil {
-				log.Error(err, "Touch applications error.")
-				return ctrl.Result{}, err
+				if !errors.IsNotFound(err) {
+					log.Error(err, "Touch applications error.")
+					return ctrl.Result{}, err
+				}
 			}
 
 			// remove our finalizer from the list and update it.
@@ -108,7 +111,6 @@ func (r *ApplicationPluginBindingReconciler) TouchApplication(ctx context.Contex
 	}, &application)
 
 	if err != nil {
-		log.Error(err, "get application error.")
 		return err
 	}
 

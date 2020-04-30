@@ -1264,7 +1264,6 @@ func (r *ComponentReconcilerTask) SetupAttributes(req ctrl.Request) (err error) 
 	}, &app)
 
 	if err != nil {
-		r.Log.Error(err, "Get application error")
 		return err
 	}
 	r.application = &app
@@ -1427,28 +1426,5 @@ func (r *ComponentReconcilerTask) LoadItem(dest runtime.Object) (err error) {
 }
 
 func (r *ComponentReconcilerTask) insertBuildInPluginImpls(rt *js.Runtime, pluginName, methodName string, component *corev1alpha1.Component, desc interface{}, args []interface{}) {
-	switch pluginName {
-	case corev1alpha1.KappBuiltinComponentPluginIngress:
-
-		if methodName != ComponentPluginMethodBeforeDeploymentSave {
-			return
-		}
-
-		// ingress plugin only works under compoent
-		if rt.Get("scope").String() != "component" {
-			return
-		}
-
-		rt.Set("__builtInImpl", func(_ js.FunctionCall) js.Value {
-			//todo
-			fmt.Println("__buildInImpl called")
-
-			//dp := &appsV1.Deployment{}
-			//r.Get(r.ctx, types.NamespacedName{Name: "nginx", Namespace: "test"}, dp)
-			//fmt.Println("dp:", dp)
-
-			return rt.ToValue(desc)
-		})
-	default:
-	}
+	// TODO
 }

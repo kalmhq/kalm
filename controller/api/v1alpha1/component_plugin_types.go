@@ -20,10 +20,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-const (
-	KappBuiltinComponentPluginIngress = "kapp-native-plugin-ingress"
-)
-
 // ComponentPluginSpec defines the desired state of ComponentPlugin
 type ComponentPluginSpec struct {
 	// source code of the plugin

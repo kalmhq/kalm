@@ -17,6 +17,7 @@ package controllers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	js "github.com/dop251/goja"
 	"github.com/go-logr/logr"
@@ -34,6 +35,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -454,7 +457,7 @@ func (r *ApplicationReconcilerTask) runPlugins(methodName string, desc interface
 
 		rt := vm.InitRuntime()
 
-		r.insertBuildInPluginImpls(rt, binding.Spec.PluginName, methodName, desc, args)
+		r.insertBuildInPluginImpls(rt, &binding, methodName, config, desc, args)
 
 		err = vm.RunMethod(
 			rt,
@@ -507,28 +510,128 @@ func (r *ApplicationReconcilerTask) findPluginAndValidateConfigNew(pluginBinding
 	return pluginProgram, nil, nil
 }
 
-func (r *ApplicationReconcilerTask) insertBuildInPluginImpls(rt *js.Runtime, pluginName, methodName string, desc interface{}, args []interface{}) {
-	switch pluginName {
-	case corev1alpha1.KappBuiltinComponentPluginIngress:
+type BuiltinApplicationPluginIngressConfig struct {
+	Hosts []string `json:"hosts"`
+	Paths []string `json:"paths"`
 
-		if methodName != ComponentPluginMethodBeforeDeploymentSave {
+	EnableHttps        bool `json:"enableHttps"`
+	StripPath          bool `json:"stripPath"`
+	UrlCaseInsensitive bool `json:"urlCaseInsensitive"`
+
+	Destinations []struct {
+		Destination string `json:"destination"`
+		Weight      int    `json:"weight"`
+	} `json:"destinations"`
+}
+
+func (r *ApplicationReconcilerTask) insertBuildInPluginImpls(rt *js.Runtime, binding *corev1alpha1.ApplicationPluginBinding, methodName string, configBytes []byte, desc interface{}, args []interface{}) {
+	switch binding.Spec.PluginName {
+	case corev1alpha1.KappBuiltinApplicationPluginIngress:
+		if methodName != ApplicationPluginMethodAfterApplicationSaved {
 			return
 		}
 
-		// ingress plugin only works under compoent
-		if rt.Get("scope").String() != "component" {
-			return
-		}
+		rt.Set("__builtinApplicationPluginIngress", func(_ js.FunctionCall) js.Value {
+			var config BuiltinApplicationPluginIngressConfig
 
-		rt.Set("__builtInImpl", func(_ js.FunctionCall) js.Value {
-			//todo
-			fmt.Println("__buildInImpl called")
+			_ = json.Unmarshal(configBytes, &config)
 
-			//dp := &appsV1.Deployment{}
-			//r.Get(r.ctx, types.NamespacedName{Name: "nginx", Namespace: "test"}, dp)
-			//fmt.Println("dp:", dp)
+			var vs istioV1Beta1.VirtualService
+			name := binding.Name
 
-			return rt.ToValue(desc)
+			err := r.Reader.Get(r.ctx, types.NamespacedName{
+				Name:      name,
+				Namespace: binding.Namespace,
+			}, &vs)
+
+			isCreate := false
+
+			if err != nil {
+				if !errors.IsNotFound(err) {
+					r.Log.Error(err, "__builtinApplicationPluginIngress error.")
+					// TODO pass error to js
+					return rt.ToValue(nil)
+				} else {
+					isCreate = true
+				}
+			}
+
+			var routes []*istioNetworkingV1Beta1.HTTPRoute
+
+			for _, path := range config.Paths {
+				match := &istioNetworkingV1Beta1.HTTPMatchRequest{
+					Uri: &istioNetworkingV1Beta1.StringMatch{
+						MatchType: &istioNetworkingV1Beta1.StringMatch_Prefix{
+							Prefix: path,
+						},
+					},
+				}
+
+				httpRoute := &istioNetworkingV1Beta1.HTTPRoute{
+					Match: []*istioNetworkingV1Beta1.HTTPMatchRequest{match},
+					Route: []*istioNetworkingV1Beta1.HTTPRouteDestination{},
+				}
+
+				if config.StripPath {
+					httpRoute.Rewrite = &istioNetworkingV1Beta1.HTTPRewrite{
+						Uri: "/",
+					}
+				}
+
+				for _, destination := range config.Destinations {
+					colon := strings.LastIndexByte(destination.Destination, ':')
+					var host, port string
+
+					if colon == -1 {
+						host = destination.Destination
+					} else {
+						host = destination.Destination[:colon]
+						port = destination.Destination[colon+1:]
+					}
+
+					desc := &istioNetworkingV1Beta1.HTTPRouteDestination{
+						Destination: &istioNetworkingV1Beta1.Destination{
+							Host: host,
+						},
+						Weight: int32(destination.Weight),
+					}
+
+					if port != "" {
+						p, _ := strconv.ParseUint(port, 0, 32)
+						desc.Destination.Port = &istioNetworkingV1Beta1.PortSelector{
+							Number: uint32(p),
+						}
+					}
+
+					httpRoute.Route = append(httpRoute.Route, desc)
+				}
+
+				routes = append(routes, httpRoute)
+			}
+
+			vs.Name = name
+			vs.Namespace = binding.Namespace
+			vs.Spec = istioNetworkingV1Beta1.VirtualService{
+				Gateways: []string{"gateway"},
+				Hosts:    config.Hosts,
+				Http:     routes,
+			}
+
+			if isCreate {
+				err := r.Create(r.ctx, &vs)
+				if err != nil {
+					r.Log.Error(err, "create vs error.")
+					return rt.ToValue(nil)
+				}
+			} else {
+				err := r.Update(r.ctx, &vs)
+				if err != nil {
+					r.Log.Error(err, "create vs error.")
+					return rt.ToValue(nil)
+				}
+			}
+
+			return rt.ToValue(nil)
 		})
 	default:
 	}

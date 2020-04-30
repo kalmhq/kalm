@@ -1,15 +1,4 @@
-apiVersion: core.kapp.dev/v1alpha1
-kind: ComponentPlugin
-metadata:
-  name: kapp-native-plugin-ingress
-spec:
-  src: |
-    function BeforeDeploymentSave(deployment) {
-      return __builtInImpl();
-    }
-  availableWorkloadType:
-    - server
----
+
 apiVersion: core.kapp.dev/v1alpha1
 kind: ComponentPlugin
 metadata:
