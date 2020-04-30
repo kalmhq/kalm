@@ -14,7 +14,7 @@ import { CheckboxField } from "../Basic/checkbox";
 import { TextField } from "../Basic/text";
 import { NormalizeBoolean } from "../normalizer";
 import { ValidatorName, ValidatorRequired } from "../validator";
-import { SharedEnvs } from "./sharedEnv";
+import { SharedEnvs } from "./SharedEnvs";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -144,9 +144,10 @@ class ApplicationFormRaw extends React.PureComponent<
           </Grid>
         </Grid>
 
-        <Paper className={`${classes.formSectionContainer} ${currentTab === "sharedEnvs" ? "" : classes.displayNone}`}>
+        <div className={`${classes.formSectionContainer} ${currentTab === "sharedEnvs" ? "" : classes.displayNone}`}>
+          <BoldBody>Shared Environments</BoldBody>
           {this.renderSharedEnvs()}
-        </Paper>
+        </div>
 
         <div className={`${currentTab === "basic" ? classes.buttons : classes.displayNone}`}>
           <Button

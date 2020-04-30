@@ -141,15 +141,15 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
     try {
       applicationValues = applicationValues.set("namespace", applicationValues.get("name"));
       application = await createKappApplication(applicationValues);
-      const applicationComponents = Immutable.List(
-        await Promise.all(
-          applicationValues.get("components").map(async component => {
-            const applicationComponent = await createKappApplicationComponent(application.get("name"), component);
-            return applicationComponent;
-          })
-        )
-      );
-      application = application.set("components", applicationComponents);
+      // const applicationComponents = Immutable.List(
+      //   await Promise.all(
+      //     applicationValues.get("components").map(async component => {
+      //       const applicationComponent = await createKappApplicationComponent(application.get("name"), component);
+      //       return applicationComponent;
+      //     })
+      //   )
+      // );
+      // application = application.set("components", applicationComponents);
     } catch (e) {
       console.log(e);
       if (e.response && e.response.data.errors && e.response.data.errors.length > 0) {
