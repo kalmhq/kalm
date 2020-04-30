@@ -124,8 +124,8 @@ func (builder *Builder) BuildApplicationDetails(application *v1alpha1.Applicatio
 	listOptions := labelsBelongsToApplication(application.Name)
 
 	resourceChannels := &ResourceChannels{
-		PodList:           builder.GetPodListChannel(ns, listOptions),
-		PluginBindingList: builder.GetPluginBindingListChannel(ns, matchLabel("scope", "application")),
+		PodList:                    builder.GetPodListChannel(ns, listOptions),
+		ComponentPluginBindingList: builder.GetComponentPluginBindingListChannel(ns, matchLabel("kapp-component", "")),
 
 		//EventList: builder.GetEventListChannel(ns, metaV1.ListOptions{
 		//	LabelSelector: labels.Everything().String(),
@@ -210,9 +210,9 @@ func (builder *Builder) BuildApplicationDetails(application *v1alpha1.Applicatio
 	appCpuHistory := aggregateHistoryList(cpuHistoryList)
 	appMemHistory := aggregateHistoryList(memHistoryList)
 
-	plugins := make([]runtime.RawExtension, 0, len(resources.PluginBindings))
+	plugins := make([]runtime.RawExtension, 0, len(resources.ComponentPluginBindings))
 
-	for _, binding := range resources.PluginBindings {
+	for _, binding := range resources.ComponentPluginBindings {
 		if binding.DeletionTimestamp != nil {
 			continue
 		}

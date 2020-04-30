@@ -145,7 +145,7 @@ func createComponent(c echo.Context) (*v1alpha1.Component, error) {
 	}
 
 	kappClient, _ := getKappV1Alpha1Client(c)
-	err = resources.UpdatePluginBindingsForObject(kappClient, component.Namespace, "component", component.Name, plugins)
+	err = resources.UpdateComponentPluginBindingsForObject(kappClient, component.Namespace, component.Name, plugins)
 
 	if err != nil {
 		return nil, err
@@ -178,7 +178,7 @@ func updateComponent(c echo.Context) (*v1alpha1.Component, error) {
 	}
 
 	kappClient, _ := getKappV1Alpha1Client(c)
-	err = resources.UpdatePluginBindingsForObject(kappClient, component.Namespace, "component", component.Name, plugins)
+	err = resources.UpdateComponentPluginBindingsForObject(kappClient, component.Namespace, component.Name, plugins)
 
 	if err != nil {
 		return nil, err

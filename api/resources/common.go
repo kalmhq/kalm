@@ -23,11 +23,11 @@ type ResourceChannels struct {
 	PodList        *PodListChannel
 	EventList      *EventListChannel
 	//PodMetricsList *PodMetricsListChannel
-	ServiceList       *ServiceListChannel
-	RoleBindingList   *RoleBindingListChannel
-	NamespaceList     *NamespaceListChannel
-	ComponentList     *ComponentListChannel
-	PluginBindingList *PluginBindingListChannel
+	ServiceList                *ServiceListChannel
+	RoleBindingList            *RoleBindingListChannel
+	NamespaceList              *NamespaceListChannel
+	ComponentList              *ComponentListChannel
+	ComponentPluginBindingList *ComponentPluginBindingListChannel
 }
 
 type Resources struct {
@@ -36,11 +36,11 @@ type Resources struct {
 	PodList        *coreV1.PodList
 	EventList      *coreV1.EventList
 	//PodMetricsList *metricv1beta1.PodMetricsList
-	Services       []coreV1.Service
-	RoleBindings   []rbacV1.RoleBinding
-	Namespaces     []Namespace
-	Components     []v1alpha1.Component
-	PluginBindings []v1alpha1.PluginBinding
+	Services                []coreV1.Service
+	RoleBindings            []rbacV1.RoleBinding
+	Namespaces              []Namespace
+	Components              []v1alpha1.Component
+	ComponentPluginBindings []v1alpha1.ComponentPluginBinding
 }
 
 var ListAll = metaV1.ListOptions{
@@ -117,12 +117,12 @@ func (c *ResourceChannels) ToResources() (r *Resources, err error) {
 		resources.Components = <-c.ComponentList.List
 	}
 
-	if c.PluginBindingList != nil {
-		err = <-c.PluginBindingList.Error
+	if c.ComponentPluginBindingList != nil {
+		err = <-c.ComponentPluginBindingList.Error
 		if err != nil {
 			return nil, err
 		}
-		resources.PluginBindings = <-c.PluginBindingList.List
+		resources.ComponentPluginBindings = <-c.ComponentPluginBindingList.List
 	}
 
 	//if c.PodMetricsList != nil {

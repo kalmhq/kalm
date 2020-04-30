@@ -63,8 +63,8 @@ func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component) (*C
 			LabelSelector: labels.Everything().String(),
 			FieldSelector: fields.Everything().String(),
 		}),
-		ServiceList:       builder.GetServiceListChannel(ns, listOptions),
-		PluginBindingList: builder.GetPluginBindingListChannel(ns, matchLabel("kapp-component", component.Name)),
+		ServiceList:                builder.GetServiceListChannel(ns, listOptions),
+		ComponentPluginBindingList: builder.GetComponentPluginBindingListChannel(ns, matchLabel("kapp-component", component.Name)),
 	}
 
 	resources, err := resourceChannels.ToResources()
@@ -93,9 +93,9 @@ func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component) (*C
 	appCpuHistory := aggregateHistoryList(cpuHistoryList)
 	appMemHistory := aggregateHistoryList(memHistoryList)
 
-	plugins := make([]runtime.RawExtension, 0, len(resources.PluginBindings))
+	plugins := make([]runtime.RawExtension, 0, len(resources.ComponentPluginBindings))
 
-	for _, binding := range resources.PluginBindings {
+	for _, binding := range resources.ComponentPluginBindings {
 		if binding.DeletionTimestamp != nil {
 			continue
 		}
