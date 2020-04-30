@@ -8,6 +8,7 @@ import TextField from "@material-ui/core/TextField";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@material-ui/icons/CheckBox";
+import { WrappedFieldProps } from "redux-form";
 
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
 const checkedIcon = <CheckBoxIcon fontSize="small" color="primary" />;
@@ -30,6 +31,35 @@ export const pathToCasCaderValue = (path: string): string[] => {
   return defaultValue;
 };
 
+export interface RenderConfigFieldProps {
+  label?: string;
+}
+
+export const RenderConfigField = (props: WrappedFieldProps & RenderConfigFieldProps) => {
+  const { label, input } = props;
+  return (
+    <Autocomplete
+      multiple
+      options={getConfigFilePaths()}
+      disableCloseOnSelect
+      getOptionLabel={option => option}
+      renderOption={(option, { selected }) => (
+        <React.Fragment>
+          <Checkbox icon={icon} checkedIcon={checkedIcon} style={{ marginRight: 8 }} checked={selected} />
+          {option}
+        </React.Fragment>
+      )}
+      renderInput={params => <TextField {...params} variant="outlined" label={label} size={"small"} margin="normal" />}
+      defaultValue={input.value}
+      onChange={(_, v: any) => {
+        const value = v as string[];
+
+        input.onChange(value);
+      }}
+    />
+  );
+};
+
 export const MaterialTableEditConfigField = ({ value, onChange }: EditComponentProps<{}>) => {
   return (
     <Autocomplete
@@ -44,13 +74,7 @@ export const MaterialTableEditConfigField = ({ value, onChange }: EditComponentP
         </React.Fragment>
       )}
       renderInput={params => (
-        <TextField
-          {...params}
-          variant="outlined"
-          label="Node Selector Labels"
-          placeholder="Select Node Selector Labels"
-          size={"small"}
-        />
+        <TextField {...params} variant="outlined" label="Configs" placeholder="Select Config Paths" size={"small"} />
       )}
       defaultValue={value}
       onChange={(_, v: any) => {

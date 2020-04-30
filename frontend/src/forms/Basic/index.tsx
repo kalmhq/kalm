@@ -163,7 +163,6 @@ interface AutoCompleteFreeSoloProps {
 }
 
 export const RenderAutoCompleteFreeSolo = (props: WrappedFieldProps & AutoCompleteFreeSoloProps) => {
-  console.log("props", props);
   const { options, input, label } = props;
   return (
     <Autocomplete

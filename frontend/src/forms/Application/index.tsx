@@ -1,4 +1,4 @@
-import { Button, createStyles, Grid, Paper, WithStyles, withStyles } from "@material-ui/core";
+import { Button, createStyles, Grid, WithStyles, withStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import { goBack } from "connected-react-router";
 import Immutable from "immutable";

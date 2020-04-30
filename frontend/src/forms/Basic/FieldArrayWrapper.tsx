@@ -57,7 +57,7 @@ export class FieldArrayWrapper extends React.PureComponent<Props> {
             </Grid>
           );
         })}
-        <Grid container spacing={3}>
+        <Grid container spacing={3} style={{ marginTop: 0 }}>
           <Grid item xs>
             <ButtonWhite onClick={() => (onAdd ? onAdd() : fields.push(Immutable.Map({})))}>Add</ButtonWhite>
             {submitFailed && error && <span>{error}</span>}
