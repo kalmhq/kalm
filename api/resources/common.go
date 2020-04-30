@@ -18,29 +18,31 @@ import (
 )
 
 type ResourceChannels struct {
-	//ReplicaSetList *ReplicaSetListChannel
-	DeploymentList *DeploymentListChannel
-	PodList        *PodListChannel
-	EventList      *EventListChannel
-	//PodMetricsList *PodMetricsListChannel
-	ServiceList                *ServiceListChannel
-	RoleBindingList            *RoleBindingListChannel
-	NamespaceList              *NamespaceListChannel
-	ComponentList              *ComponentListChannel
-	ComponentPluginBindingList *ComponentPluginBindingListChannel
+	DeploymentList               *DeploymentListChannel
+	PodList                      *PodListChannel
+	EventList                    *EventListChannel
+	ServiceList                  *ServiceListChannel
+	RoleBindingList              *RoleBindingListChannel
+	NamespaceList                *NamespaceListChannel
+	ComponentList                *ComponentListChannel
+	ComponentPluginList          *ComponentPluginListChannel
+	ComponentPluginBindingList   *ComponentPluginBindingListChannel
+	ApplicationPluginList        *ApplicationPluginListChannel
+	ApplicationPluginBindingList *ApplicationPluginBindingListChannel
 }
 
 type Resources struct {
-	//ReplicaSetList *appV1.ReplicaSetList
-	DeploymentList *appV1.DeploymentList
-	PodList        *coreV1.PodList
-	EventList      *coreV1.EventList
-	//PodMetricsList *metricv1beta1.PodMetricsList
-	Services                []coreV1.Service
-	RoleBindings            []rbacV1.RoleBinding
-	Namespaces              []Namespace
-	Components              []v1alpha1.Component
-	ComponentPluginBindings []v1alpha1.ComponentPluginBinding
+	DeploymentList            *appV1.DeploymentList
+	PodList                   *coreV1.PodList
+	EventList                 *coreV1.EventList
+	Services                  []coreV1.Service
+	RoleBindings              []rbacV1.RoleBinding
+	Namespaces                []Namespace
+	Components                []v1alpha1.Component
+	ComponentPlugins          []v1alpha1.ComponentPlugin
+	ComponentPluginBindings   []v1alpha1.ComponentPluginBinding
+	ApplicationPlugins        []v1alpha1.ApplicationPlugin
+	ApplicationPluginBindings []v1alpha1.ApplicationPluginBinding
 }
 
 var ListAll = metaV1.ListOptions{
@@ -52,14 +54,6 @@ var AllNamespaces = ""
 
 func (c *ResourceChannels) ToResources() (r *Resources, err error) {
 	resources := &Resources{}
-
-	//if c.ReplicaSetList != nil {
-	//	err = <-c.ReplicaSetList.Error
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//	resources.ReplicaSetList = <-c.ReplicaSetList.List
-	//}
 
 	if c.DeploymentList != nil {
 		err = <-c.DeploymentList.Error
@@ -117,6 +111,14 @@ func (c *ResourceChannels) ToResources() (r *Resources, err error) {
 		resources.Components = <-c.ComponentList.List
 	}
 
+	if c.ComponentPluginList != nil {
+		err = <-c.ComponentPluginList.Error
+		if err != nil {
+			return nil, err
+		}
+		resources.ComponentPlugins = <-c.ComponentPluginList.List
+	}
+
 	if c.ComponentPluginBindingList != nil {
 		err = <-c.ComponentPluginBindingList.Error
 		if err != nil {
@@ -125,13 +127,21 @@ func (c *ResourceChannels) ToResources() (r *Resources, err error) {
 		resources.ComponentPluginBindings = <-c.ComponentPluginBindingList.List
 	}
 
-	//if c.PodMetricsList != nil {
-	//	err = <-c.PodMetricsList.Error
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//	resources.PodMetricsList = <-c.PodMetricsList.List
-	//}
+	if c.ApplicationPluginList != nil {
+		err = <-c.ApplicationPluginList.Error
+		if err != nil {
+			return nil, err
+		}
+		resources.ApplicationPlugins = <-c.ApplicationPluginList.List
+	}
+
+	if c.ApplicationPluginBindingList != nil {
+		err = <-c.ApplicationPluginBindingList.Error
+		if err != nil {
+			return nil, err
+		}
+		resources.ApplicationPluginBindings = <-c.ApplicationPluginBindingList.List
+	}
 
 	return resources, nil
 }
