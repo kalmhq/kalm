@@ -103,10 +103,9 @@ func UpdateApplicationPluginBindingsForObject(kappClient *rest.RESTClient, names
 				},
 			},
 			Spec: v1alpha1.ApplicationPluginBindingSpec{
-				Config:          plugin.Config,
-				ApplicationName: applicationName,
-				PluginName:      plugin.Name,
-				IsDisabled:      !plugin.IsActive,
+				Config:     plugin.Config,
+				PluginName: plugin.Name,
+				IsDisabled: !plugin.IsActive,
 			},
 		}
 
