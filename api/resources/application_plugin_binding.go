@@ -12,20 +12,20 @@ import (
 	"time"
 )
 
-type ComponentPlugin struct {
+type ApplicationPlugin struct {
 	Name     string                `json:"name"`
 	Config   *runtime.RawExtension `json:"config"`
 	IsActive bool                  `json:"isActive"`
 }
 
-type ComponentPluginBindingListChannel struct {
-	List  chan []v1alpha1.ComponentPluginBinding
+type ApplicationPluginBindingListChannel struct {
+	List  chan []v1alpha1.ApplicationPluginBinding
 	Error chan error
 }
 
-func (builder *Builder) GetComponentPluginBindingListChannel(namespaces string, listOptions metaV1.ListOptions) *ComponentPluginBindingListChannel {
-	channel := &ComponentPluginBindingListChannel{
-		List:  make(chan []v1alpha1.ComponentPluginBinding, 1),
+func (builder *Builder) GetApplicationPluginBindingListChannel(namespaces string, listOptions metaV1.ListOptions) *ApplicationPluginBindingListChannel {
+	channel := &ApplicationPluginBindingListChannel{
+		List:  make(chan []v1alpha1.ApplicationPluginBinding, 1),
 		Error: make(chan error, 1),
 	}
 
@@ -44,17 +44,17 @@ func (builder *Builder) GetComponentPluginBindingListChannel(namespaces string, 
 			return
 		}
 
-		var fetched v1alpha1.ComponentPluginBindingList
+		var fetched v1alpha1.ApplicationPluginBindingList
 
 		err = client.Get().
 			Namespace(namespaces).
-			Resource("componentpluginbindings").
+			Resource("applicationpluginbindings").
 			VersionedParams(&listOptions, metaV1.ParameterCodec).
 			Timeout(timeout).
 			Do().
 			Into(&fetched)
 
-		res := make([]v1alpha1.ComponentPluginBinding, len(fetched.Items))
+		res := make([]v1alpha1.ApplicationPluginBinding, len(fetched.Items))
 
 		for i, binding := range fetched.Items {
 			res[i] = binding
@@ -67,10 +67,10 @@ func (builder *Builder) GetComponentPluginBindingListChannel(namespaces string, 
 	return channel
 }
 
-func UpdateComponentPluginBindingsForObject(kappClient *rest.RESTClient, namespace, componentName string, plugins []runtime.RawExtension) (err error) {
-	var oldPluginList v1alpha1.ComponentPluginBindingList
+func UpdateApplicationPluginBindingsForObject(kappClient *rest.RESTClient, namespace, applicationName string, plugins []runtime.RawExtension) (err error) {
+	var oldPluginList v1alpha1.ApplicationPluginBindingList
 	selector := labels.NewSelector()
-	requirement, _ := labels.NewRequirement("kapp-component", selection.Equals, []string{componentName})
+	requirement, _ := labels.NewRequirement("kapp-application", selection.Equals, []string{applicationName})
 	selector = selector.Add(*requirement)
 
 	options := metaV1.ListOptions{
@@ -79,7 +79,7 @@ func UpdateComponentPluginBindingsForObject(kappClient *rest.RESTClient, namespa
 
 	err = kappClient.Get().
 		Namespace(namespace).
-		Resource("componentpluginbindings").
+		Resource("applicationpluginbindings").
 		VersionedParams(&options, metaV1.ParameterCodec).
 		Do().
 		Into(&oldPluginList)
@@ -88,25 +88,24 @@ func UpdateComponentPluginBindingsForObject(kappClient *rest.RESTClient, namespa
 		return err
 	}
 
-	oldPlugins := map[string]*v1alpha1.ComponentPluginBinding{}
-	newPlugins := map[string]*v1alpha1.ComponentPluginBinding{}
+	oldPlugins := map[string]*v1alpha1.ApplicationPluginBinding{}
+	newPlugins := map[string]*v1alpha1.ApplicationPluginBinding{}
 
 	for _, pluginRaw := range plugins {
-		var plugin ComponentPlugin
+		var plugin ApplicationPlugin
 		_ = json.Unmarshal(pluginRaw.Raw, &plugin)
 
-		binding := &v1alpha1.ComponentPluginBinding{
+		binding := &v1alpha1.ApplicationPluginBinding{
 			ObjectMeta: metaV1.ObjectMeta{
 				Namespace: namespace,
 				Labels: map[string]string{
-					"kapp-component": componentName,
+					"kapp-application": applicationName,
 				},
 			},
-			Spec: v1alpha1.ComponentPluginBindingSpec{
-				Config:        plugin.Config,
-				ComponentName: componentName,
-				PluginName:    plugin.Name,
-				IsDisabled:    !plugin.IsActive,
+			Spec: v1alpha1.ApplicationPluginBindingSpec{
+				Config:     plugin.Config,
+				PluginName: plugin.Name,
+				IsDisabled: !plugin.IsActive,
 			},
 		}
 
@@ -118,8 +117,8 @@ func UpdateComponentPluginBindingsForObject(kappClient *rest.RESTClient, namespa
 		oldPlugins[binding.Name] = &binding
 	}
 
-	shouldCreate := map[string]*v1alpha1.ComponentPluginBinding{}
-	shouldDelete := map[string]*v1alpha1.ComponentPluginBinding{}
+	shouldCreate := map[string]*v1alpha1.ApplicationPluginBinding{}
+	shouldDelete := map[string]*v1alpha1.ApplicationPluginBinding{}
 
 	for name, np := range newPlugins {
 		if _, ok := oldPlugins[name]; !ok {
@@ -136,7 +135,7 @@ func UpdateComponentPluginBindingsForObject(kappClient *rest.RESTClient, namespa
 	for _, np := range shouldCreate {
 		err := kappClient.Post().
 			Namespace(namespace).
-			Resource("componentpluginbindings").
+			Resource("applicationpluginbindings").
 			Body(np).
 			Do().
 			Into(np)
@@ -153,7 +152,7 @@ func UpdateComponentPluginBindingsForObject(kappClient *rest.RESTClient, namespa
 	for name := range shouldDelete {
 		err := kappClient.Delete().
 			Namespace(namespace).
-			Resource("componentpluginbindings").
+			Resource("applicationpluginbindings").
 			Name(name).
 			Do().
 			Error()

@@ -8,7 +8,8 @@ jobs:
         - GO111MODULE=on # remove this when change to golang 1.13
         - KUBEBUILDER_ASSETS=$HOME/kubebuilder/bin
       go:
-        - 1.12
+        - 1.13
+        - 1.14
       stage: test
       name: api
       before_install:
@@ -33,7 +34,8 @@ jobs:
         - GO111MODULE=on # remove this when change to golang 1.13
         - KUBEBUILDER_ASSETS=$HOME/kubebuilder/bin
       go:
-        - 1.12
+        - 1.13
+        - 1.14
       stage: test
       name: controller
       before_install:

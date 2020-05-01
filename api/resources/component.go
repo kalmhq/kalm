@@ -105,15 +105,13 @@ func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component, res
 			continue
 		}
 
-		var tmp struct {
-			Name   string                `json:"name"`
-			Config *runtime.RawExtension `json:"config,omitempty"`
-		}
+		var plugin ComponentPlugin
 
-		tmp.Name = binding.Spec.PluginName
-		tmp.Config = binding.Spec.Config
+		plugin.Name = binding.Spec.PluginName
+		plugin.Config = binding.Spec.Config
+		plugin.IsActive = !binding.Spec.IsDisabled
 
-		bts, _ := json.Marshal(tmp)
+		bts, _ := json.Marshal(plugin)
 
 		plugins = append(plugins, runtime.RawExtension{
 			Raw: bts,

@@ -40,7 +40,7 @@ type ComponentPluginBindingSpec struct {
 }
 
 func (spec *ComponentPluginBindingSpec) GetName() string {
-	bts, _ := json.Marshal(spec.Config)
+	bts, _ := json.Marshal(spec)
 	if spec.ComponentName == "" {
 		return fmt.Sprintf("%s-%x", spec.PluginName, md5.Sum(bts))
 	} else {

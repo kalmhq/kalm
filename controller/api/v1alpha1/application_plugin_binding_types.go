@@ -37,7 +37,7 @@ type ApplicationPluginBindingSpec struct {
 }
 
 func (spec *ApplicationPluginBindingSpec) GetName() string {
-	bts, _ := json.Marshal(spec.Config)
+	bts, _ := json.Marshal(spec)
 	return fmt.Sprintf("%s-%x", spec.PluginName, md5.Sum(bts))
 }
 
