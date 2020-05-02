@@ -21,7 +21,7 @@ import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import Immutable, { Map, List } from "immutable";
 import { ComponentLike, workloadTypeCronjob, workloadTypeServer } from "../../types/componentTemplate";
-import { Volumes } from "./volumes";
+import { Volumes } from "./Volumes";
 import ErrorIcon from "@material-ui/icons/Error";
 import { SharedEnv } from "../../types/application";
 import { ReadinessProbe, LivenessProbe } from "./Probes";
