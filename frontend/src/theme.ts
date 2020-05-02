@@ -1,6 +1,12 @@
 import { createMuiTheme } from "@material-ui/core";
 import { blue, grey, green, red } from "@material-ui/core/colors";
 let themeRaw = createMuiTheme({
+  props: {
+    MuiTextField: {
+      variant: "outlined",
+      size: "small"
+    }
+  },
   palette: {
     primary: {
       // light: will be calculated from palette.primary.main,

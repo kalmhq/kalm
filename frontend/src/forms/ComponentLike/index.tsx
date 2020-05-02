@@ -1,38 +1,38 @@
 import { Box, Divider, Grid, List as MList, ListItem, ListItemText, MenuItem } from "@material-ui/core";
+import ExpansionPanel from "@material-ui/core/ExpansionPanel";
+import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
+import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
-import clsx from "clsx";
 import Typography from "@material-ui/core/Typography";
+import ErrorIcon from "@material-ui/icons/Error";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import clsx from "clsx";
+import { extractSummaryInfoFromList, extractSummaryInfoFromMap } from "forms/summarizer";
+import Immutable, { List, Map } from "immutable";
 import React from "react";
 import { connect } from "react-redux";
 import { InjectedFormProps } from "redux-form";
-import { Field, getFormValues, reduxForm, getFormSyncErrors } from "redux-form/immutable";
+import { Field, getFormSyncErrors, getFormValues, reduxForm } from "redux-form/immutable";
+import { Body, H3 } from "widgets/Label";
+import { loadConfigsAction } from "../../actions/config";
+import { loadNodesAction } from "../../actions/node";
 import { RootState } from "../../reducers";
+import { getNodeLabels } from "../../selectors/node";
+import { TDispatchProp } from "../../types";
+import { SharedEnv } from "../../types/application";
+import { ComponentLike, workloadTypeCronjob, workloadTypeServer } from "../../types/componentTemplate";
 import { HelperContainer } from "../../widgets/Helper";
 import { CustomTextField, RenderSelectField, RenderTextField } from "../Basic";
 import { NormalizeNumber } from "../normalizer";
-import { ValidatorRequired, ValidatorSchedule, ValidatorName } from "../validator";
-import { Envs } from "./Envs";
-import { Ports } from "./Ports";
-import { ComponentResources } from "./resources";
-import { Plugins } from "./oldPlugins";
-import ExpansionPanel from "@material-ui/core/ExpansionPanel";
-import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
-import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import Immutable, { Map, List } from "immutable";
-import { ComponentLike, workloadTypeCronjob, workloadTypeServer } from "../../types/componentTemplate";
-import { Volumes } from "./Volumes";
-import ErrorIcon from "@material-ui/icons/Error";
-import { SharedEnv } from "../../types/application";
-import { ReadinessProbe, LivenessProbe } from "./Probes";
-import { loadNodesAction } from "../../actions/node";
-import { TDispatchProp } from "../../types";
-import { CustomLabels, AffinityType } from "./NodeSelector";
-import { getNodeLabels } from "../../selectors/node";
-import { extractSummaryInfoFromMap, extractSummaryInfoFromList } from "forms/summarizer";
-import { loadConfigsAction } from "../../actions/config";
-import { SectionTitle, H3, Body } from "widgets/Label";
+import { ValidatorName, ValidatorRequired, ValidatorSchedule } from "../validator";
 import { Configs } from "./Configs";
+import { Envs } from "./Envs";
+import { AffinityType, CustomLabels } from "./NodeSelector";
+import { Plugins } from "./Plugins";
+import { Ports } from "./Ports";
+import { LivenessProbe, ReadinessProbe } from "./Probes";
+import { ComponentResources } from "./resources";
+import { Volumes } from "./Volumes";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
@@ -307,7 +307,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     const { isFolded, sharedEnv } = this.props;
     return (
       <>
-        {!isFolded && SectionTitle("Environment variables")}
+        {!isFolded && <H3>Environment variables</H3>}
         <HelperContainer>
           <Typography>
             Environment variables are variable whose values are set outside the program, typically through functionality
@@ -346,7 +346,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     const { isFolded } = this.props;
     return (
       <>
-        {!isFolded && SectionTitle("Ports")}
+        {!isFolded && <H3>Ports</H3>}
         <HelperContainer>
           <Typography>
             Port is the standard way to expose your program. If you want your component can be accessed by some other
@@ -362,7 +362,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     const { isFolded, values, dispatch, form } = this.props;
     return (
       <>
-        {!isFolded && SectionTitle("Resources")}
+        {!isFolded && <H3>Resources</H3>}
         <HelperContainer>
           <Typography>Cpu, Memory, Disk can be configured here.</Typography>
           <MList dense={true}>
@@ -402,7 +402,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     const { isFolded } = this.props;
     return (
       <>
-        {!isFolded && SectionTitle("Volumes")}
+        {!isFolded && <H3>Volumes</H3>}
         <HelperContainer>
           <Typography>Mount different kinds of volumes to this component.</Typography>
           <MList dense={true}>
@@ -447,7 +447,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     const { isFolded } = this.props;
     return (
       <>
-        {!isFolded && SectionTitle("Configs")}
+        {!isFolded && <H3>Configs</H3>}
         <HelperContainer>
           <Typography>Mount Configs</Typography>
         </HelperContainer>
@@ -478,7 +478,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return (
       <Grid container>
         <Grid item md={12}>
-          {!isFolded && SectionTitle("Advanced")}
+          {!isFolded && <H3>Advanced</H3>}
           <HelperContainer>
             <Typography>
               In most cases, the default values for the following options are appropriate for most programs. However,
@@ -648,7 +648,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     const { isFolded } = this.props;
     return (
       <>
-        {!isFolded && SectionTitle("Plugins")}
+        {!isFolded && <H3>Plugins</H3>}
         <HelperContainer>
           <Typography>
             Plugins can affect running state of a program, or provide extra functionality for the programs.
@@ -664,7 +664,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return (
       <Grid container spacing={2}>
         <Grid item md={12}>
-          {!isFolded && SectionTitle("Probes")}
+          {!isFolded && <H3>Probes</H3>}
         </Grid>
         <Grid item xs={12} sm={12} md={12}>
           <LivenessProbe />
@@ -681,7 +681,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return (
       <Grid container spacing={2}>
         <Grid item md={12}>
-          {!isFolded && SectionTitle("Node Selector")}
+          {!isFolded && <H3>Node Selector</H3>}
         </Grid>
         <Grid item xs={12} sm={12} md={12}>
           <CustomLabels nodeLabels={nodeLabels} />

@@ -9,7 +9,7 @@ import { Field, formValueSelector, getFormValues, reduxForm } from "redux-form/i
 import { RootState } from "../../reducers";
 import { Application, SharedEnv } from "../../types/application";
 import { ComponentTemplate } from "../../types/componentTemplate";
-import { BoldBody } from "../../widgets/Label";
+import { BoldBody, H3 } from "../../widgets/Label";
 import { CheckboxField } from "../Basic/checkbox";
 import { TextField } from "../Basic/text";
 import { NormalizeBoolean } from "../normalizer";
@@ -140,12 +140,13 @@ class ApplicationFormRaw extends React.PureComponent<
           spacing={2}
           className={`${classes.formSectionContainer} ${currentTab === "basic" ? "" : classes.displayNone}`}>
           <Grid className={classes.formSectionItem} item xs={12} sm={6} md={8}>
+            <H3>Application Basic</H3>
             {this.renderBasic()}
           </Grid>
         </Grid>
 
         <div className={`${classes.formSectionContainer} ${currentTab === "sharedEnvs" ? "" : classes.displayNone}`}>
-          <BoldBody>Shared Environments</BoldBody>
+          <H3>Shared Environments</H3>
           {this.renderSharedEnvs()}
         </div>
 
