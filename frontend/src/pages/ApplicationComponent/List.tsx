@@ -79,7 +79,7 @@ class ApplicationComponentListRaw extends React.PureComponent<Props, State> {
     const { application } = this.props;
     const data: RowData[] = [];
 
-    application?.get("components").forEach((component, index) => {
+    application?.get("components")?.forEach((component, index) => {
       const rowData = component as RowData;
       rowData.index = index;
       data.push(rowData);

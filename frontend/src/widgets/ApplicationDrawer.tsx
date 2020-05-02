@@ -215,7 +215,7 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
     }
 
     // default select
-    if (application && application.get("components").get(0)) {
+    if (application && application.get("components")?.get(0)) {
       handleClickComponent(application.get("components").get(0) as ApplicationComponent);
     }
   }
@@ -223,10 +223,10 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
   public componentDidUpdate(prevProps: Props) {
     if (prevProps.application && this.props.application) {
       // after create
-      if (this.props.application.get("components").size - prevProps.application.get("components").size === 1) {
+      if (this.props.application.get("components")?.size - prevProps.application.get("components")?.size === 1) {
         // select new created item
         this.props.handleClickComponent(
-          this.props.application.get("components").get(this.state.expandedComponentIndex) as ApplicationComponent
+          this.props.application.get("components")?.get(this.state.expandedComponentIndex) as ApplicationComponent
         );
       }
     }
@@ -300,7 +300,7 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
       return null;
     }
 
-    const disableAdd = (currentComponent && !currentComponent.get("name")) || application.get("components").size === 0;
+    const disableAdd = (currentComponent && !currentComponent.get("name")) || application.get("components")?.size === 0;
 
     return (
       <BaseDrawer>

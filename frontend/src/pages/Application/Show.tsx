@@ -7,6 +7,9 @@ import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
 import { Details } from "./Detail";
 import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./ItemDataWrapper";
+import { H4 } from "../../widgets/Label";
+import { CustomizedButton } from "widgets/Button";
+import { push } from "connected-react-router";
 
 const mapStateToProps = (_: any, props: any) => {
   const { match } = props;
@@ -21,6 +24,15 @@ const styles = (theme: Theme) =>
   createStyles({
     root: {
       // padding: theme.spacing(3)
+    },
+    secondHeaderRight: {
+      height: "100%",
+      width: "100%",
+      display: "flex",
+      alignItems: "center"
+    },
+    secondHeaderRightItem: {
+      marginLeft: 20
     }
   });
 
@@ -32,11 +44,29 @@ interface Props
     RouteChildrenProps<{ applicationName: string }> {}
 
 class ApplicationShowRaw extends React.PureComponent<Props> {
+  private renderSecondHeaderRight() {
+    const { classes, dispatch, applicationName } = this.props;
+    return (
+      <div className={classes.secondHeaderRight}>
+        <H4 className={classes.secondHeaderRightItem}>Application Details</H4>
+        <CustomizedButton
+          color="primary"
+          size="large"
+          className={classes.secondHeaderRightItem}
+          onClick={() => {
+            dispatch(push(`/applications/${applicationName}/edit`));
+          }}>
+          Edit
+        </CustomizedButton>
+      </div>
+    );
+  }
+
   public render() {
     const { isLoading, application, applicationName, dispatch } = this.props;
     // const hasWriterRole = hasRole("writer");
     return (
-      <BasePage>
+      <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
         {isLoading && !application ? (
           <Loading />
         ) : application ? (

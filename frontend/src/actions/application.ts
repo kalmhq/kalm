@@ -329,8 +329,9 @@ export const loadApplicationsAction = (): ThunkResult<Promise<void>> => {
     const activeNamespace = getState()
       .get("namespaces")
       .get("active");
-    if (!activeNamespace && applicationList.size > 0) {
-      dispatch(setCurrentNamespaceAction(applicationList.get(0)!.get("name"), false));
+    const firstNamespace = applicationList.get(0);
+    if (!activeNamespace && applicationList.size > 0 && firstNamespace != null) {
+      dispatch(setCurrentNamespaceAction(firstNamespace?.get("name"), false));
     }
 
     dispatch({
