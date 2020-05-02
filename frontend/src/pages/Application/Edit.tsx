@@ -201,7 +201,7 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
                 <CustomizedButton
                   color="primary"
                   className={classes.secondHeaderRightItem}
-                  disabled={this.props.application?.get("components").size === 0}
+                  disabled={this.props.application?.get("components")?.size === 0}
                   onClick={() => this.handleDeleteComponent()}>
                   Delete Component
                 </CustomizedButton>

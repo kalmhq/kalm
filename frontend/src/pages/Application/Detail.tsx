@@ -326,16 +326,14 @@ class DetailsRaw extends React.PureComponent<Props, State> {
       <div className={classes.root}>
         <Grid container spacing={2} className={classes.metrics}>
           <Grid item md={6}>
-            <BigCPULineChart data={application.get("metrics").get("cpu")} />
+            <BigCPULineChart data={application.get("metrics")?.get("cpu")} />
           </Grid>
           <Grid item md={6}>
-            <BigMemoryLineChart data={application.get("metrics").get("memory")} />
+            <BigMemoryLineChart data={application.get("metrics")?.get("memory")} />
           </Grid>
         </Grid>
         {application
-          .get("components")!
-          .map((_x, index) => this.renderComponent(index))
-          .toArray()}
+          .get("components")?.map((_x, index) => this.renderComponent(index))?.toArray()}
       </div>
     );
   }
