@@ -132,7 +132,7 @@ export const RenderSelectField = ({
   return (
     <FormControl
       classes={{ root: classes.root }}
-      error={touched && error}
+      error={touched === true && error!=null}
       variant="outlined"
       size="small"
       margin="normal">
