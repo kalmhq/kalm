@@ -13,16 +13,19 @@ endif
 
 all: manager
 
+bin-generate:
+	go generate ./...
+
 # Run tests
-test: generate fmt vet manifests
+test: bin-generate generate fmt vet manifests
 	go test ./... -coverprofile=coverage.txt -covermode=atomic -v
 
 # Build manager binary
-manager: generate fmt vet
+manager: bin-generate generate fmt vet
 	go build -o bin/manager main.go
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
-run: generate fmt vet manifests
+run: bin-generate generate fmt vet manifests
 	go run ./main.go
 
 # Install CRDs into a cluster
@@ -40,28 +43,20 @@ deploy: manifests
 	#kustomize build config/default > t1.yml
 
 # Generate manifests e.g. CRD, RBAC etc.
-manifests: controller-gen
+manifests: bin-generate controller-gen
 	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
 # Run go fmt against code
-fmt:
+fmt: bin-generate
 	go fmt ./...
 
 # Run go vet against code
-vet:
+vet: bin-generate
 	go vet ./...
 
 # Generate code
-generate: controller-gen
+generate: bin-generate controller-gen
 	$(CONTROLLER_GEN) object:headerFile=./hack/boilerplate.go.txt paths="./..."
-
-# Build the docker image
-docker-build: test
-	docker build . -t ${IMG}
-
-# Push the docker image
-docker-push:
-	docker push ${IMG}
 
 # find or download controller-gen
 # download controller-gen if necessary
@@ -79,9 +74,3 @@ CONTROLLER_GEN=$(GOBIN)/controller-gen
 else
 CONTROLLER_GEN=$(shell which controller-gen)
 endif
-
-samples:
-	kubectl apply -f ./config/samples/
-
-usamples:
-	kubectl delete -f ./config/samples/

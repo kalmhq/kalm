@@ -1,10 +1,19 @@
 package vm
 
+//go:generate go-bindata -pkg vm -nometadata ../resources/es6-shim.polyfill.js
+
+var polyfill string
+
+func init() {
+	// The \n is important. Otherwise the following code may be treated as comments.
+	polyfill = string(MustAsset("../resources/es6-shim.polyfill.js")) + "\n;"
+}
+
 func wrapScript(src string) string {
-	entrypoint := `
+	entryPoint := `
 ;
 function __entrypoint() {
-	console.debug("entrypoint begin. Calling method:", __targetMethodName);
+	console.debug("entryPoint begin. Calling method:", __targetMethodName);
 
 	var __targetMethod = global[__targetMethodName];
 
@@ -25,11 +34,11 @@ function __entrypoint() {
 // run
 __entrypoint();
 `
-	return polyfill + src + entrypoint
+	return polyfill + src + entryPoint
 }
 
 func getMethodsWrap(src string) string {
-	entrypoint := `
+	entryPoint := `
 ;
 function __getMethods() {
 	var res = {};
@@ -44,5 +53,5 @@ function __getMethods() {
 
 __getMethods();
 `
-	return polyfill + src + entrypoint
+	return polyfill + src + entryPoint
 }
