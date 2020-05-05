@@ -5,7 +5,6 @@ jobs:
   include:
     - language: go
       env:
-        - GO111MODULE=on # remove this when change to golang 1.13
         - KUBEBUILDER_ASSETS=$HOME/kubebuilder/bin
       go:
         - 1.13
@@ -31,7 +30,6 @@ jobs:
           - $HOME/gopath/pkg/mod
     - language: go
       env:
-        - GO111MODULE=on # remove this when change to golang 1.13
         - KUBEBUILDER_ASSETS=$HOME/kubebuilder/bin
       go:
         - 1.13
