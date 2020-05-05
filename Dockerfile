@@ -70,4 +70,6 @@ ENV STATIC_FILE_ROOT build
 COPY --from=api-builder /workspace/api/kapp-api-server .
 COPY --from=frontend-builder /workspace/build/ build/
 COPY --from=controller-builder /workspace/controller/kapp-controller .
+
+# this step will be removed when we migrate all resources into go-bindata
 COPY --from=controller-builder /workspace/controller/resources resources/
