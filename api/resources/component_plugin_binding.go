@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-type ComponentPlugin struct {
+type ComponentPluginBinding struct {
 	Name     string                `json:"name"`
 	Config   *runtime.RawExtension `json:"config"`
 	IsActive bool                  `json:"isActive"`
@@ -92,7 +92,7 @@ func UpdateComponentPluginBindingsForObject(kappClient *rest.RESTClient, namespa
 	newPlugins := map[string]*v1alpha1.ComponentPluginBinding{}
 
 	for _, pluginRaw := range plugins {
-		var plugin ComponentPlugin
+		var plugin ComponentPluginBinding
 		_ = json.Unmarshal(pluginRaw.Raw, &plugin)
 
 		binding := &v1alpha1.ComponentPluginBinding{

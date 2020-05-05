@@ -216,7 +216,7 @@ func (builder *Builder) BuildApplicationDetails(application *v1alpha1.Applicatio
 		if binding.DeletionTimestamp != nil {
 			continue
 		}
-		var plugin ComponentPlugin
+		var plugin ComponentPluginBinding
 
 		plugin.Name = binding.Spec.PluginName
 		plugin.Config = binding.Spec.Config

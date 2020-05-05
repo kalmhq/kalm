@@ -3,8 +3,16 @@ package resources
 import (
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"time"
 )
+
+type ComponentPlugin struct {
+	Name         string                `json:"name"`
+	Src          string                `json:"src"`
+	ConfigSchema *runtime.RawExtension `json:"configSchema"`
+	//Users        []string              `json:"users,omitempty"`
+}
 
 type ComponentPluginListChannel struct {
 	List  chan []v1alpha1.ComponentPlugin
@@ -59,4 +67,29 @@ func (builder *Builder) GetComponentPluginListChannel(listOptions metaV1.ListOpt
 	}()
 
 	return channel
+}
+
+func (builder *Builder) GetComponentPlugins() ([]ComponentPlugin, error) {
+	resourceChannels := &ResourceChannels{
+		ComponentPluginList: builder.GetComponentPluginListChannel(ListAll),
+	}
+
+	resources, err := resourceChannels.ToResources()
+
+	if err != nil {
+		builder.Logger.Error(err)
+		return nil, err
+	}
+
+	res := make([]ComponentPlugin, len(resources.ComponentPlugins))
+
+	for i, plugin := range resources.ComponentPlugins {
+		res[i] = ComponentPlugin{
+			Name:         plugin.Name,
+			Src:          plugin.Spec.Src,
+			ConfigSchema: plugin.Spec.ConfigSchema,
+		}
+	}
+
+	return res, nil
 }

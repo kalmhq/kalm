@@ -105,7 +105,7 @@ func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component, res
 			continue
 		}
 
-		var plugin ComponentPlugin
+		var plugin ComponentPluginBinding
 
 		plugin.Name = binding.Spec.PluginName
 		plugin.Config = binding.Spec.Config

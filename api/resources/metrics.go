@@ -28,7 +28,7 @@ import (
 //		Error: make(chan error, 1),
 //	}
 //
-//	client, err := mclientv1beta1.NewForConfig(builder.Config)
+//	client, err := mclientv1beta1.NewForConfig(builder.ConfigSchema)
 //	if err != nil {
 //		channel.List <- nil
 //		channel.Error <- err
