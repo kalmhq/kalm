@@ -25,11 +25,11 @@ test: bin-generate generate fmt vet manifests
 
 # Build manager binary
 manager: bin-generate generate fmt vet
-	go build -o bin/manager main.go
+	go build -o bin/manager ./cmd/controller
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
 run: bin-generate generate fmt vet manifests
-	go run ./main.go
+	go run ./cmd/controller
 
 # Install CRDs into a cluster
 install: manifests

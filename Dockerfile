@@ -50,14 +50,14 @@ COPY controller/go.sum go.sum
 RUN go mod download
 
 # Copy the go source
-COPY controller/main.go main.go
+COPY controller/cmd/ cmd/
 COPY controller/api/ api/
 COPY controller/controllers/ controllers/
 COPY controller/util/ util/
 COPY controller/resources/ resources/
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags '-s -w' -o kapp-controller main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags '-s -w' -o kapp-controller ./cmd/controller
 
 # ============== Finial ==============
 FROM alpine
