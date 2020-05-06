@@ -1,6 +1,5 @@
 import { Button, createStyles, Grid, WithStyles, withStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
-import { goBack } from "connected-react-router";
 import Immutable from "immutable";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
@@ -9,10 +8,8 @@ import { Field, formValueSelector, getFormValues, reduxForm } from "redux-form/i
 import { RootState } from "../../reducers";
 import { Application, SharedEnv } from "../../types/application";
 import { ComponentTemplate } from "../../types/componentTemplate";
-import { BoldBody, H3 } from "../../widgets/Label";
-import { CheckboxField } from "../Basic/checkbox";
+import { H3 } from "../../widgets/Label";
 import { TextField } from "../Basic/text";
-import { NormalizeBoolean } from "../normalizer";
 import { ValidatorName, ValidatorRequired } from "../validator";
 import { SharedEnvs } from "./SharedEnvs";
 
@@ -96,20 +93,20 @@ class ApplicationFormRaw extends React.PureComponent<
             />
           </Grid>
         </Grid>
-        <Grid container spacing={2}>
-          <Grid item md={12}>
-            <BoldBody>Status</BoldBody>
+        {/* <Grid container spacing={2}>
+            <Grid item md={12}>
+              <BoldBody>Status</BoldBody>
 
-            <Field
-              name="isActive"
-              formControlLabelProps={{
-                label: "Active this application after creation"
-              }}
-              component={CheckboxField}
-              normalizer={NormalizeBoolean}
-            />
-          </Grid>
-        </Grid>
+              <Field
+                name="isActive"
+                formControlLabelProps={{
+                  label: "Active this application after creation"
+                }}
+                component={CheckboxField}
+                normalizer={NormalizeBoolean}
+              />
+            </Grid>
+          </Grid> */}
       </>
     );
   }
@@ -131,12 +128,12 @@ class ApplicationFormRaw extends React.PureComponent<
   }
 
   public render() {
-    const { handleSubmit, classes, currentTab, dispatch } = this.props;
+    const { handleSubmit, change, classes, currentTab } = this.props;
 
     return (
       <form onSubmit={handleSubmit} className={classes.root}>
         <Grid
-          // container
+          container
           spacing={2}
           className={`${classes.formSectionContainer} ${currentTab === "basic" ? "" : classes.displayNone}`}>
           <Grid className={classes.formSectionItem} item xs={12} sm={6} md={8}>
@@ -154,17 +151,25 @@ class ApplicationFormRaw extends React.PureComponent<
           <Button
             variant="contained"
             color="primary"
-            type="submit"
-            className={`${currentTab === "basic" ? classes.submitButton : classes.displayNone}`}>
-            Create
+            className={`${currentTab === "basic" ? classes.submitButton : classes.displayNone}`}
+            onClick={event => {
+              change("isActive", true);
+              setTimeout(() => {
+                handleSubmit(event);
+              }, 300);
+            }}>
+            Publish
           </Button>
           <Button
             variant="contained"
             className={`${currentTab === "basic" ? "" : classes.displayNone}`}
-            onClick={() => {
-              dispatch(goBack());
+            onClick={event => {
+              change("isActive", false);
+              setTimeout(() => {
+                handleSubmit(event);
+              }, 300);
             }}>
-            Cancel
+            Save (publish later)
           </Button>
         </div>
       </form>
