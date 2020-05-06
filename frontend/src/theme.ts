@@ -3,7 +3,7 @@ import { blue, grey, green, red } from "@material-ui/core/colors";
 let themeRaw = createMuiTheme({
   props: {
     MuiTextField: {
-      variant: "outlined",
+      // variant: "outlined",
       size: "small"
     }
   },
