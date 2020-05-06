@@ -14,6 +14,9 @@ endif
 all: manager
 
 bin-generate:
+ifeq (, $(shell which go-bindata))
+	go get -u github.com/go-bindata/go-bindata/...
+endif
 	go generate ./...
 
 # Run tests
