@@ -18,7 +18,11 @@ import {
   CREATE_COMPONENT,
   UPDATE_COMPONENT,
   DELETE_COMPONENT,
-  ApplicationComponentDetails
+  ApplicationComponentDetails,
+  ComponentPlugin,
+  ApplicationPlugin,
+  LOAD_APPLICATION_PLUGINS_FULFILLED,
+  LOAD_COMPONENT_PLUGINS_FULFILLED
 } from "../types/application";
 import { ImmutableMap } from "../typings";
 import { LOGOUT } from "types/common";
@@ -30,6 +34,8 @@ export type State = ImmutableMap<{
   isItemLoading: boolean;
   isSubmittingApplication: boolean;
   isSubmittingApplicationComponent: boolean;
+  applicationPlugins: ApplicationPlugin[];
+  componentPlugins: ComponentPlugin[];
 }>;
 
 const initialState: State = Immutable.Map({
@@ -38,7 +44,9 @@ const initialState: State = Immutable.Map({
   isListFirstLoaded: false,
   isItemLoading: false,
   isSubmittingApplication: false,
-  isSubmittingApplicationComponent: false
+  isSubmittingApplicationComponent: false,
+  applicationPlugins: [],
+  componentPlugins: []
 });
 
 const putApplicationIntoState = (state: State, application: ApplicationDetails): State => {
@@ -161,6 +169,16 @@ const reducer = (state: State = initialState, action: Actions): State => {
       }
 
       state = state.deleteIn(["applications", applicationIndex, componentIndex]);
+      break;
+    }
+    case LOAD_APPLICATION_PLUGINS_FULFILLED: {
+      state = state.set("applicationPlugins", action.payload.applicationPlugins);
+
+      break;
+    }
+    case LOAD_COMPONENT_PLUGINS_FULFILLED: {
+      state = state.set("componentPlugins", action.payload.componentPlugins);
+
       break;
     }
   }

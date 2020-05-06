@@ -125,7 +125,7 @@ let themeRaw = createMuiTheme({
     },
     MuiFormLabel: {
       root: {
-        color: "black"
+        // color: "black"
       }
     },
     MuiFormControl: {

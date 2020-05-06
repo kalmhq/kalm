@@ -21,7 +21,9 @@ import {
   ApplicationComponentDetails,
   CREATE_COMPONENT,
   UPDATE_COMPONENT,
-  DELETE_COMPONENT
+  DELETE_COMPONENT,
+  LOAD_APPLICATION_PLUGINS_FULFILLED,
+  LOAD_COMPONENT_PLUGINS_FULFILLED
 } from "../types/application";
 import {
   createKappApplication,
@@ -32,7 +34,9 @@ import {
   getKappApplicationComponentList,
   createKappApplicationComponent,
   updateKappApplicationComponent,
-  deleteKappApplicationComponent
+  deleteKappApplicationComponent,
+  getKappApplicationPlugins,
+  getKappComponentPlugins
 } from "./kubernetesApi";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "./notification";
 import { SubmissionError } from "redux-form";
@@ -338,6 +342,52 @@ export const loadApplicationsAction = (): ThunkResult<Promise<void>> => {
       type: LOAD_APPLICATIONS_FULFILLED,
       payload: {
         applicationList
+      }
+    });
+  };
+};
+
+export const loadApplicationPluginsAction = (): ThunkResult<Promise<void>> => {
+  return async dispatch => {
+    let applicationPlugins;
+    try {
+      applicationPlugins = await getKappApplicationPlugins();
+    } catch (e) {
+      if (e.response && e.response.data.status === StatusFailure) {
+        dispatch(setErrorNotificationAction(e.response.data.message));
+      } else {
+        dispatch(setErrorNotificationAction());
+      }
+      return;
+    }
+
+    dispatch({
+      type: LOAD_APPLICATION_PLUGINS_FULFILLED,
+      payload: {
+        applicationPlugins
+      }
+    });
+  };
+};
+
+export const loadComponentPluginsAction = (): ThunkResult<Promise<void>> => {
+  return async dispatch => {
+    let componentPlugins;
+    try {
+      componentPlugins = await getKappComponentPlugins();
+    } catch (e) {
+      if (e.response && e.response.data.status === StatusFailure) {
+        dispatch(setErrorNotificationAction(e.response.data.message));
+      } else {
+        dispatch(setErrorNotificationAction());
+      }
+      return;
+    }
+
+    dispatch({
+      type: LOAD_COMPONENT_PLUGINS_FULFILLED,
+      payload: {
+        componentPlugins
       }
     });
   };
