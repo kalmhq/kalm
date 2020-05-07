@@ -13,22 +13,22 @@ endif
 
 all: manager
 
-bin-generate:
+go-generate:
 ifeq (, $(shell which go-bindata))
 	go get -u github.com/go-bindata/go-bindata/...
 endif
 	go generate ./...
 
 # Run tests
-test: bin-generate generate fmt vet manifests
+test: generate fmt vet manifests go-generate
 	go test ./... -coverprofile=coverage.txt -covermode=atomic -v
 
 # Build manager binary
-manager: bin-generate generate fmt vet
+manager: generate fmt vet go-generate
 	go build -o bin/manager main.go
 
 # Run against the configured Kubernetes cluster in ~/.kube/config
-run: bin-generate generate fmt vet manifests
+run: generate fmt vet manifests go-generate
 	go run main.go
 
 # Install CRDs into a cluster
@@ -40,25 +40,25 @@ uninstall: manifests
 	kustomize build config/crd | kubectl delete -f -
 
 # Deploy controller in the configured Kubernetes cluster in ~/.kube/config
-deploy: manifests
+deploy: manifests go-generate
 	cd config/manager && kustomize edit set image controller=${IMG}
 	kustomize build config/default | kubectl apply -f -
 	#kustomize build config/default > t1.yml
 
 # Generate manifests e.g. CRD, RBAC etc.
-manifests: bin-generate controller-gen
+manifests: controller-gen
 	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
 # Run go fmt against code
-fmt: bin-generate
+fmt:
 	go fmt ./...
 
 # Run go vet against code
-vet: bin-generate
+vet:
 	go vet ./...
 
 # Generate code
-generate: bin-generate controller-gen
+generate: controller-gen
 	$(CONTROLLER_GEN) object:headerFile=./hack/boilerplate.go.txt paths="./..."
 
 # find or download controller-gen
