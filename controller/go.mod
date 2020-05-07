@@ -18,7 +18,6 @@ require (
 	github.com/golang/groupcache v0.0.0-20191027212112-611e8accdfc9 // indirect
 	github.com/influxdata/influxdb v1.7.7
 	github.com/jetstack/cert-manager v0.13.1
-	github.com/kapp-staging/kapp/lib v0.0.0-00010101000000-000000000000
 	github.com/onsi/ginkgo v1.10.3
 	github.com/onsi/gomega v1.7.1
 	github.com/prometheus/client_golang v1.2.1 // indirect
@@ -41,5 +40,3 @@ require (
 	k8s.io/utils v0.0.0-20191114200735-6ca3b61696b6 // indirect
 	sigs.k8s.io/controller-runtime v0.4.0
 )
-
-replace github.com/kapp-staging/kapp/lib => ../lib

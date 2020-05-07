@@ -13,6 +13,7 @@ RUN go mod download
 COPY *.go ./
 COPY api/ api/
 COPY utils/ utils/
+COPY lib/ lib/
 COPY controllers/ controllers/
 
 # Build
