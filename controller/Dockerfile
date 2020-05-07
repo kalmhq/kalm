@@ -14,6 +14,7 @@ COPY *.go ./
 COPY api/ api/
 COPY utils/ utils/
 COPY lib/ lib/
+COPY vm/ vm/
 COPY controllers/ controllers/
 
 # Build
