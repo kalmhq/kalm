@@ -29,7 +29,7 @@ spec:
         - /manager
         args:
         - --enable-leader-election
-        image: controller:latest
+        image: kapp/controller:latest
         name: manager
         env:
           - name: ENABLE_WEBHOOKS
