@@ -10,12 +10,12 @@ import { SwitchField } from "../Basic/switch";
 import { NormalizeBoolean } from "../normalizer";
 import { ValidatorHosts, ValidatorRequired } from "../validator";
 import { PluginCard } from "./card";
-import { Plugin, EXTERNAL_ACCESS_PLUGIN_TYPE } from "../../types/plugin";
+import { PluginType, EXTERNAL_ACCESS_PLUGIN_TYPE } from "../../types/plugin";
 import { RenderTextField } from "forms/Basic";
 
 interface OwnProps {}
 
-const mapStateToProps = (state: RootState, ownProps: InjectedFormProps<Plugin, OwnProps>) => {
+const mapStateToProps = (state: RootState, ownProps: InjectedFormProps<PluginType, OwnProps>) => {
   const selector = formValueSelector(ownProps.form);
 
   return {
@@ -42,7 +42,7 @@ const styles = (theme: Theme) =>
   });
 
 export interface Props
-  extends InjectedFormProps<Plugin, OwnProps>,
+  extends InjectedFormProps<PluginType, OwnProps>,
     ReturnType<typeof mapStateToProps>,
     WithStyles<typeof styles>,
     DispatchProp,
@@ -181,6 +181,6 @@ class PluginRaw extends React.PureComponent<Props> {
   }
 }
 
-export const PluginForm = reduxForm<Plugin, OwnProps>({
+export const PluginForm = reduxForm<PluginType, OwnProps>({
   onSubmitFail: console.log
 })(connect(mapStateToProps)(withStyles(styles)(PluginRaw)));

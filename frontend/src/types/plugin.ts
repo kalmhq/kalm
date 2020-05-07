@@ -22,6 +22,11 @@ export interface AnotherPlugin {
   name: string;
 }
 
-export type PluginContent = ExternalAccessPlugin | AnotherPlugin;
+export interface PluginContent {
+  name: string;
+  isActive: boolean;
+  config: any;
+}
 
-export type Plugin = ImmutableMap<PluginContent>;
+// distinguish broswer Plugin type
+export type PluginType = ImmutableMap<PluginContent>;

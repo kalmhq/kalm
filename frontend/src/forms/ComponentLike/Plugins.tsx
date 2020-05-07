@@ -1,4 +1,5 @@
-import { Grid } from "@material-ui/core";
+import Immutable from "immutable";
+import { Grid, FormControl, TextField, MenuItem } from "@material-ui/core";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { WrappedFieldArrayProps } from "redux-form";
@@ -6,12 +7,15 @@ import { Field, FieldArray } from "redux-form/immutable";
 import { RootState } from "../../reducers";
 import { getComponentPluginName } from "../../selectors/component";
 import { ComponentPlugin } from "../../types/application";
-import { ComponentLikePort } from "../../types/componentTemplate";
 import { CustomTextField } from "../Basic";
 import { CheckboxField } from "../Basic/checkbox";
 import { NormalizeBoolean } from "../normalizer";
 import { ValidatorRequired } from "../validator";
 import { RenderPluginConfig } from "./PluginConfig";
+import { ButtonWhite, CustomizedButton } from "../../widgets/Button";
+import { ControlledDialog } from "../../widgets/ControlledDialog";
+import { openDialogAction, closeDialogAction } from "../../actions/dialog";
+import { PluginType } from "../../types/plugin";
 
 interface FieldArrayComponentHackType {
   name: any;
@@ -27,6 +31,7 @@ const mapStateToProps = (state: RootState) => {
   });
 
   return {
+    componentPlugins,
     componentPluginsMap
   };
 };
@@ -34,12 +39,90 @@ const mapStateToProps = (state: RootState) => {
 interface FieldArrayProps extends DispatchProp, ReturnType<typeof mapStateToProps> {}
 
 interface Props
-  extends WrappedFieldArrayProps<ComponentLikePort>,
+  extends WrappedFieldArrayProps<PluginType>,
     FieldArrayComponentHackType,
     FieldArrayProps,
     ReturnType<typeof mapStateToProps> {}
 
-class RenderPlugins extends React.PureComponent<Props> {
+interface State {
+  selectComponentPluginName: string;
+}
+
+const selectComponentPluginDialogId = "select-component-plugin-dialog-id";
+
+class RenderPlugins extends React.PureComponent<Props, State> {
+  constructor(props: Props) {
+    super(props);
+
+    this.state = {
+      selectComponentPluginName: ""
+    };
+  }
+
+  private renderSelectComponentPluginDialog() {
+    const { componentPlugins, fields } = this.props;
+
+    const existPluginNames: { [key: string]: boolean } = {};
+    fields.forEach((member, index) => {
+      const pluginName = getComponentPluginName(member);
+      existPluginNames[pluginName] = true;
+    });
+
+    return (
+      <ControlledDialog
+        dialogID={selectComponentPluginDialogId}
+        title={"Add Component Plugin"}
+        dialogProps={{
+          fullWidth: true,
+          maxWidth: "sm"
+        }}
+        actions={
+          <>
+            <CustomizedButton
+              onClick={() => {
+                fields.push(
+                  Immutable.fromJS({
+                    name: this.state.selectComponentPluginName,
+                    isActive: false,
+                    config: {}
+                  })
+                );
+
+                this.props.dispatch(closeDialogAction(selectComponentPluginDialogId));
+              }}
+              color="default"
+              variant="contained">
+              Add Plugin
+            </CustomizedButton>
+            <CustomizedButton
+              onClick={() => this.props.dispatch(closeDialogAction(selectComponentPluginDialogId))}
+              color="default"
+              variant="contained">
+              Cancel
+            </CustomizedButton>
+          </>
+        }>
+        <TextField
+          style={{ width: "100%" }}
+          id="outlined-select-plugin"
+          select
+          label="Select a plugin to add"
+          value={this.state.selectComponentPluginName}
+          onChange={event => {
+            this.setState({ selectComponentPluginName: event.target.value });
+          }}
+          // helperText="Please select your plugin"
+          variant="outlined">
+          {componentPlugins.map(option => (
+            <MenuItem key={option.name} value={option.name} disabled={!!existPluginNames[option.name]}>
+              {option.name}
+            </MenuItem>
+          ))}
+        </TextField>
+      </ControlledDialog>
+    );
+  }
+
   private renderBasic(member: string) {
     const { componentPluginsMap } = this.props;
     const pluginName = getComponentPluginName(member);
@@ -86,8 +169,9 @@ class RenderPlugins extends React.PureComponent<Props> {
 
   public render() {
     const {
-      fields
-      // meta: { error, submitFailed }
+      dispatch,
+      fields,
+      meta: { error, submitFailed }
     } = this.props;
 
     return (
@@ -95,6 +179,19 @@ class RenderPlugins extends React.PureComponent<Props> {
         {fields.map((member, index) => {
           return this.renderBasic(member);
         })}
+        <Grid container spacing={3} style={{ marginTop: 0 }}>
+          <Grid item xs>
+            {this.renderSelectComponentPluginDialog()}
+            <ButtonWhite
+              onClick={() => {
+                dispatch(openDialogAction(selectComponentPluginDialogId));
+                this.setState({ selectComponentPluginName: "" });
+              }}>
+              Add Plugin
+            </ButtonWhite>
+            {submitFailed && error && <span>{error}</span>}
+          </Grid>
+        </Grid>
       </div>
     );
   }

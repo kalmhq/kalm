@@ -1,6 +1,5 @@
 import { Button, createStyles, Switch, TextField, Theme, Tooltip, WithStyles, withStyles } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
-import { HelpIcon } from "widgets/Icon";
 import { closeDialogAction, openDialogAction } from "actions/dialog";
 import { push } from "connected-react-router";
 import MaterialTable from "material-table";
@@ -9,12 +8,11 @@ import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
-import { ExternalAccessPlugin, EXTERNAL_ACCESS_PLUGIN_TYPE } from "types/plugin";
-import { ImmutableMap } from "typings";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
 import { ControlledDialog } from "widgets/ControlledDialog";
+import { HelpIcon } from "widgets/Icon";
 import {
   deleteApplicationAction,
   duplicateApplicationAction,
@@ -405,11 +403,14 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         return;
       }
 
-      component.get("plugins")!.forEach(plugin => {
-        if (plugin.get("type") === EXTERNAL_ACCESS_PLUGIN_TYPE) {
-          count += 1;
-        }
-      });
+      // TODO
+      return;
+
+      // component.get("plugins")!.forEach(plugin => {
+      //   if (plugin.get("type") === EXTERNAL_ACCESS_PLUGIN_TYPE) {
+      //     count += 1;
+      //   }
+      // });
     });
     if (count > 0) {
       return (
@@ -501,23 +502,26 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         return;
       }
 
-      plugins.forEach(plugin => {
-        if (plugin.get("type") !== EXTERNAL_ACCESS_PLUGIN_TYPE) {
-          return;
-        }
+      // TODO
+      return;
 
-        const _plugin = plugin as ImmutableMap<ExternalAccessPlugin>;
+      // plugins.forEach(plugin => {
+      //   if (plugin.get("type") !== EXTERNAL_ACCESS_PLUGIN_TYPE) {
+      //     return;
+      //   }
 
-        const hosts: string[] = _plugin.get("hosts") ? _plugin.get("hosts")!.toArray() : [];
-        const paths: string[] = _plugin.get("paths") ? _plugin.get("paths")!.toArray() : ["/"];
-        const schema = _plugin.get("enableHttps") ? "https" : "http";
-        hosts.forEach(host => {
-          paths.forEach(path => {
-            const url = `${schema}://${host}${path}`;
-            urls.push(url);
-          });
-        });
-      });
+      //   const _plugin = plugin as ImmutableMap<ExternalAccessPlugin>;
+
+      //   const hosts: string[] = _plugin.get("hosts") ? _plugin.get("hosts")!.toArray() : [];
+      //   const paths: string[] = _plugin.get("paths") ? _plugin.get("paths")!.toArray() : ["/"];
+      //   const schema = _plugin.get("enableHttps") ? "https" : "http";
+      //   hosts.forEach(host => {
+      //     paths.forEach(path => {
+      //       const url = `${schema}://${host}${path}`;
+      //       urls.push(url);
+      //     });
+      //   });
+      // });
     });
 
     return urls.map(url => (
