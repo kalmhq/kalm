@@ -6,6 +6,7 @@ import { Actions } from "types";
 import { Loading } from "widgets/Loading";
 import { getDisplayName } from "./utils";
 import { setCurrentNamespaceAction } from "../actions/namespaces";
+import { BasePage } from "pages/BasePage";
 
 const mapStateToProps = (state: RootState, props: any) => {
   const applicationsRoot = state.get("applications");
@@ -72,7 +73,7 @@ export const RequireRoleInNamespce = ({ requiredRole }: Options) => (WrappedComp
       }
 
       if (!activeApplication || (!isAdmin && !activeApplication.get("roles").find(x => x === requiredRole))) {
-        return "Please select a namespace first";
+        return <BasePage>Please create a application first</BasePage>;
       }
 
       return <WrappedComponent {...this.props} />;

@@ -1,5 +1,6 @@
 import { Button, createStyles, Switch, TextField, Theme, Tooltip, WithStyles, withStyles } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
+import { HelpIcon, ConsoleIcon, LogIcon } from "widgets/Icon";
 import { closeDialogAction, openDialogAction } from "actions/dialog";
 import { push } from "connected-react-router";
 import MaterialTable from "material-table";
@@ -12,7 +13,6 @@ import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
 import { ControlledDialog } from "widgets/ControlledDialog";
-import { HelpIcon } from "widgets/Icon";
 import {
   deleteApplicationAction,
   duplicateApplicationAction,
@@ -538,12 +538,12 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           {
             text: "Details",
             to: `/applications/${rowData.get("name")}`,
-            icon: "fullscreen"
+            iconName: "fullscreen"
           },
           {
             text: "Edit",
             to: `/applications/${rowData.get("name")}/edit`,
-            icon: "edit",
+            iconName: "edit",
             requiredRole: "writer"
           },
           {
@@ -551,18 +551,18 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
             onClick: () => {
               this.showDuplicateConfirmDialog(rowData);
             },
-            icon: "file_copy",
+            iconName: "file_copy",
             requiredRole: "writer"
           },
           {
             text: "Logs",
             to: `/applications/${rowData.get("name")}/logs`,
-            icon: "view_headline"
+            icon: <LogIcon style={{ marginRight: "20px" }} />
           },
           {
             text: "Shell",
             to: `/applications/${rowData.get("name")}/shells`,
-            icon: "play_arrow",
+            icon: <ConsoleIcon style={{ marginRight: "20px" }} />,
             requiredRole: "writer"
           },
           {
@@ -570,7 +570,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
             onClick: () => {
               this.showDeleteConfirmDialog(rowData);
             },
-            icon: "delete",
+            iconName: "delete",
             requiredRole: "writer"
           }
         ]}

@@ -12,7 +12,8 @@ interface Option {
   text: string;
   onClick?: any;
   to?: string;
-  icon?: string;
+  icon?: React.ReactNode;
+  iconName?: string;
   requiredRole?: string;
 }
 
@@ -55,7 +56,8 @@ export const FoldButtonGroup = (props: Props) => {
               <MenuItem key={option.text} selected={false} style={{ padding: "6px 20px" }}>
                 {/* onClick={option.onClick}  */}
 
-                {option.icon ? <Icon style={{ marginRight: "20px" }}>{option.icon}</Icon> : null}
+                {option.iconName ? <Icon style={{ marginRight: "20px" }}>{option.iconName}</Icon> : null}
+                {option.icon ? option.icon : null}
                 {option.text}
               </MenuItem>
             </Link>
