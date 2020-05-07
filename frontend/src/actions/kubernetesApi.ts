@@ -12,7 +12,9 @@ import {
   ApplicationDetailsList,
   ApplicationComponentDetailsList,
   ApplicationComponentDetails,
-  ApplicationComponent
+  ApplicationComponent,
+  ApplicationPlugin,
+  ComponentPlugin
 } from "../types/application";
 import { ComponentTemplate } from "../types/componentTemplate";
 import { ConfigCreate, ConfigRes } from "../types/config";
@@ -182,6 +184,18 @@ export const updateKappApplicationComponent = async (
 
 export const deleteKappApplicationComponent = async (applicationName: string, name: string): Promise<void> => {
   await getAxiosClient().delete(K8sApiPrefix + `/v1alpha1/applications/${applicationName}/components/${name}`);
+};
+
+// plugins
+
+export const getKappApplicationPlugins = async (): Promise<ApplicationPlugin[]> => {
+  const res = await getAxiosClient().get(K8sApiPrefix + "/v1alpha1/applicationplugins");
+  return res.data;
+};
+
+export const getKappComponentPlugins = async (): Promise<ComponentPlugin[]> => {
+  const res = await getAxiosClient().get(K8sApiPrefix + "/v1alpha1/componentplugins");
+  return res.data;
 };
 
 // dependencies

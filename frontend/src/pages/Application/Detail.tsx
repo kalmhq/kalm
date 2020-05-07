@@ -3,6 +3,8 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import LaptopWindowsIcon from "@material-ui/icons/LaptopWindows";
 import ViewHeadlineIcon from "@material-ui/icons/ViewHeadline";
 import clsx from "clsx";
+import Immutable from "immutable";
+import { withNamespace, withNamespaceProps } from "permission/Namespace";
 import React from "react";
 import { ThunkDispatch } from "redux-thunk";
 import { loadApplicationAction } from "../../actions/application";
@@ -21,10 +23,6 @@ import {
   SmallMemoryLineChart
 } from "../../widgets/SmallLineChart";
 import { generateQueryForPods } from "./Log";
-import { withNamespace, withNamespaceProps } from "permission/Namespace";
-import { EXTERNAL_ACCESS_PLUGIN_TYPE, ExternalAccessPlugin } from "types/plugin";
-import Immutable from "immutable";
-import { ImmutableMap } from "typings";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
@@ -145,11 +143,11 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     const { classes, application, dispatch, hasRole } = this.props;
     const component = application.get("components").get(index)!;
     const hasWriterRole = hasRole("writer");
-    const externalAccessPlugin =
-      component.get("plugins") &&
-      (component.get("plugins")!.filter(p => p.get("type") === EXTERNAL_ACCESS_PLUGIN_TYPE) as
-        | Immutable.List<ImmutableMap<ExternalAccessPlugin>>
-        | undefined);
+    const externalAccessPlugin = Immutable.List([]);
+    // component.get("plugins") &&
+    // (component.get("plugins")!.filter(p => p.get("type") === EXTERNAL_ACCESS_PLUGIN_TYPE) as
+    //   | Immutable.List<ImmutableMap<ExternalAccessPlugin>>
+    //   | undefined);
     return (
       <Paper className={classes.componentContainer} key={index}>
         <div className={clsx(classes.rowContainer, classes.componentRow)}>
@@ -191,7 +189,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
           <Box p={2}>
             <div>External Endpoints:</div>
             <Box ml={2}>
-              {externalAccessPlugin
+              {/* {externalAccessPlugin
                 .map(plugin => {
                   const hosts: string[] = plugin.get("hosts") ? plugin.get("hosts")!.toArray() : [];
                   const paths: string[] = plugin.get("paths") ? plugin.get("paths")!.toArray() : ["/"];
@@ -208,7 +206,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                   });
                 })
                 .toArray()
-                .flat()}
+                .flat()} */}
             </Box>
           </Box>
         ) : null}
@@ -333,7 +331,9 @@ class DetailsRaw extends React.PureComponent<Props, State> {
           </Grid>
         </Grid>
         {application
-          .get("components")?.map((_x, index) => this.renderComponent(index))?.toArray()}
+          .get("components")
+          ?.map((_x, index) => this.renderComponent(index))
+          ?.toArray()}
       </div>
     );
   }

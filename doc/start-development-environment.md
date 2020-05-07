@@ -20,15 +20,58 @@ make run
 ```bash
 kubectl apply -f config/samples/___.yaml
 ```
+3. install istio
 
-3. Start Api Server
+```bash
+# go to a dir which you want to install istioctl in
+curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.5.2 sh -
+
+# enter istio dir
+cd istio-1.5.2
+
+# export binary path
+export PATH=$PWD/bin:$PATH
+
+# install operator. operator is a k8s crd controller.
+istioctl operator init
+
+# Outputs:
+#
+# Using operator Deployment image: docker.io/istio/operator:1.5.2
+# - Applying manifest for component Operator...
+# ✔ Finished applying manifest for component Operator.
+# Component Operator installed successfully.
+# *** Success. ***
+
+# check status by running the following command. Wait the pod to become ready.
+# This state may last for a few minutes based on your network.
+kubectl get pods -n istio-operator
+```
+
+launch istio in our cluster
+
+```bash
+# go to kapp root dir, install istio config. The operator will intall istio components for us.
+kubectl apply -f resources/istiocontrolplane.yaml
+
+# check istio components status
+kubectl get pods -n istio-system
+
+# You should be able see the following pods up and running.
+# NAME                                    READY   STATUS    RESTARTS   AGE
+# istio-ingressgateway-6d5cfb5dcb-n4xbz   1/1     Running   0          9h
+# istiod-768488f855-vt8d7                 1/1     Running   0          9h
+# kiali-7ff568c949-ql8dc                  1/1     Running   0          5h10m
+# prometheus-fd997976c-qzqr5              2/2     Running   0          9h
+```
+4. Start Api Server
 
 ```bash
 cd api
 go run .
 ```
 
-4. Start frontend
+5. Start frontend
 
 ```bash
 cd frontend
@@ -43,7 +86,7 @@ before you start, you need to apply a token for authorization. If you already ha
 
 You should login with this token on login page.
 
-5. test kapp hipster
+6. test kapp hipster
 
 ```bash
 

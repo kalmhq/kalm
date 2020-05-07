@@ -18,6 +18,20 @@ export const SET_IS_SUBMITTING_APPLICATION_COMPONENT = "SET_IS_SUBMITTING_APPLIC
 export const CREATE_COMPONENT = "CREATE_COMPONENT";
 export const UPDATE_COMPONENT = "UPDATE_COMPONENT";
 export const DELETE_COMPONENT = "DELETE_COMPONENT";
+export const LOAD_APPLICATION_PLUGINS_FULFILLED = "LOAD_APPLICATION_PLUGINS_FULFILLED";
+export const LOAD_COMPONENT_PLUGINS_FULFILLED = "LOAD_COMPONENT_PLUGINS_FULFILLED";
+
+export interface ComponentPlugin {
+  name: string;
+  src: string;
+  configSchema: any;
+}
+
+export interface ApplicationPlugin {
+  name: string;
+  src: string;
+  configSchema: any;
+}
 
 export type SharedEnv = ImmutableMap<{
   name: string;
@@ -206,6 +220,20 @@ export interface SetIsSubmittingApplicationComponent {
   };
 }
 
+export interface LoadApplicationPluginsFulfilledAction {
+  type: typeof LOAD_APPLICATION_PLUGINS_FULFILLED;
+  payload: {
+    applicationPlugins: ApplicationPlugin[];
+  };
+}
+
+export interface LoadComponentPluginsFulfilledAction {
+  type: typeof LOAD_COMPONENT_PLUGINS_FULFILLED;
+  payload: {
+    componentPlugins: ApplicationPlugin[];
+  };
+}
+
 export type ApplicationActions =
   | CreateApplicationAction
   | UpdateApplicationAction
@@ -221,4 +249,6 @@ export type ApplicationActions =
   | SetIsSubmittingApplicationComponent
   | CreateComponentAction
   | UpdateComponentAction
-  | DeleteComponentAction;
+  | DeleteComponentAction
+  | LoadApplicationPluginsFulfilledAction
+  | LoadComponentPluginsFulfilledAction;

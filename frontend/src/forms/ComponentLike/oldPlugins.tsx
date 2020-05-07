@@ -12,7 +12,7 @@ import SyntaxHighlighter from "react-syntax-highlighter/dist/cjs/default-highlig
 import { monokai } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import { newEmptyPlugin } from "../../types/componentTemplate";
 import { portTypeTCP } from "../../types/common";
-import { Plugin, EXTERNAL_ACCESS_PLUGIN_TYPE } from "types/plugin";
+import { PluginType, EXTERNAL_ACCESS_PLUGIN_TYPE } from "types/plugin";
 
 interface FieldArrayComponentHackType {
   name: any;
@@ -21,7 +21,7 @@ interface FieldArrayComponentHackType {
 
 interface FieldArrayProps extends DispatchProp, ReturnType<typeof mapStateToProps> {}
 
-interface Props extends WrappedFieldArrayProps<Plugin>, FieldArrayComponentHackType, FieldArrayProps {}
+interface Props extends WrappedFieldArrayProps<PluginType>, FieldArrayComponentHackType, FieldArrayProps {}
 
 interface RowData {
   name: string;
@@ -52,15 +52,15 @@ class RenderPlugins extends React.PureComponent<Props> {
     const { fields } = this.props;
     const data: RowData[] = [];
 
-    fields.forEach((_, index) => {
-      const plugin = fields.get(index);
-      data.push({
-        name: plugin.get("name"),
-        type: plugin.get("type"),
-        config: plugin.toJS(),
-        index
-      });
-    });
+    // fields.forEach((_, index) => {
+    //   const plugin = fields.get(index);
+    //   data.push({
+    //     name: plugin.get("name"),
+    //     type: plugin.get("type"),
+    //     config: plugin.toJS(),
+    //     index
+    //   });
+    // });
     return data;
   }
 
@@ -84,7 +84,7 @@ class RenderPlugins extends React.PureComponent<Props> {
     this.props.fields.remove(rowData.index);
   };
 
-  private addPlugins = (values: Plugin) => {
+  private addPlugins = (values: PluginType) => {
     const { fields, dispatch, dialogData, meta } = this.props;
     if (dialogData.isAdding) {
       fields.push(values);
@@ -98,7 +98,7 @@ class RenderPlugins extends React.PureComponent<Props> {
 
   private renderAddPluginControlledDialog() {
     const { dialogData, fields } = this.props;
-    let initialValues: Plugin;
+    let initialValues: PluginType;
 
     if (dialogData.isEditing) {
       initialValues = fields.get(dialogData.index);

@@ -39,6 +39,19 @@ func (h *ApiHandler) findOrCreateKappConfigMap(c echo.Context) (*coreV1.ConfigMa
 			return nil, err
 		}
 
+	} else if _, ok := configMap.Data[files.KAPP_SLASH_REPLACER]; !ok {
+		if err := files.AddFile(configMap, &files.File{
+			Path:    "/",
+			IsDir:   true,
+			Content: "",
+		}); err != nil {
+			return nil, err
+		}
+
+		if err := h.UpdateConfigMap(c, configMap); err != nil {
+			return nil, err
+		}
+
 	} else if err != nil {
 		log.Error("get kapp config map error", err)
 		return nil, err

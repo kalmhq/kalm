@@ -1,13 +1,12 @@
 import React from "react";
-import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import { Box, CircularProgress } from "@material-ui/core";
-import CancelIcon from "@material-ui/icons/Cancel";
 import HelpIcon from "@material-ui/icons/Help";
 import WarningIcon from "@material-ui/icons/Warning";
+import { CheckCircleIcon, ErrorIcon } from "./Icon";
 export const SuccessBadge = (props: { text?: string }) => {
   return (
     <Box display="inline-flex" alignItems="center">
-      <CheckCircleIcon style={{ marginRight: 6 }} color="primary" />
+      <CheckCircleIcon style={{ marginRight: 6 }} />
       {props.text}
     </Box>
   );
@@ -41,7 +40,7 @@ export const WarningBadge = (props: { text?: string }) => {
 export const ErrorBadge = (props: { text?: string }) => {
   return (
     <Box display="inline-flex" alignItems="center">
-      <CancelIcon style={{ marginRight: 6 }} color="secondary" />
+      <ErrorIcon style={{ marginRight: 6 }} />
       {props.text}
     </Box>
   );

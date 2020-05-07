@@ -12,7 +12,11 @@ const mapStateToProps = (state: RootState) => {
 class HelperContainerRaw extends React.PureComponent<ReturnType<typeof mapStateToProps> & DispatchProp> {
   public render() {
     const { open } = this.props;
-    return <Collapse in={open}>{this.props.children}</Collapse>;
+    return (
+      <Collapse in={open} style={{ paddingTop: 8 }}>
+        {this.props.children}
+      </Collapse>
+    );
   }
 }
 

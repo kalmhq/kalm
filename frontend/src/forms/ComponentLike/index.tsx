@@ -33,6 +33,7 @@ import { Ports } from "./Ports";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
 import { ComponentResources } from "./resources";
 import { Volumes } from "./Volumes";
+import { loadComponentPluginsAction } from "../../actions/application";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
@@ -161,6 +162,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
   public componentDidMount() {
     const { dispatch } = this.props;
+    // dispatch(loadApplicationPluginsAction())
+    // load component plugins schema
+    dispatch(loadComponentPluginsAction());
     // load node labels for node selectors
     dispatch(loadNodesAction());
     // load configs for volume
@@ -654,7 +658,12 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             Plugins can affect running state of a program, or provide extra functionality for the programs.
           </Typography>
         </HelperContainer>
-        <Plugins />
+
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6} md={8}>
+            <Plugins />
+          </Grid>
+        </Grid>
       </>
     );
   }

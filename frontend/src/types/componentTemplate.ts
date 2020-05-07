@@ -1,7 +1,7 @@
 import Immutable from "immutable";
 import { ImmutableMap } from "../typings";
 import { Status } from "./common";
-import { Plugin } from "./plugin";
+import { PluginType } from "./plugin";
 export const CREATE_COMPONENT_TEMPLATES = "CREATE_COMPONENT_TEMPLATES";
 export const UPDATE_COMPONENT_TEMPLATES = "UPDATE_COMPONENT_TEMPLATES";
 export const DELETE_COMPONENT_TEMPLATES = "DELETE_COMPONENT_TEMPLATES";
@@ -32,7 +32,7 @@ export const newEmptyComponentLike = (): ComponentLike => {
   });
 };
 
-export const newEmptyPlugin = (): Plugin => {
+export const newEmptyPlugin = (): PluginType => {
   return Immutable.Map({});
 };
 
@@ -155,7 +155,7 @@ export interface ComponentLikeContent {
   ports?: Immutable.List<ComponentLikePort>;
   volumes?: Immutable.List<Volume>;
   configs?: Immutable.List<ConfigMount>;
-  plugins?: Immutable.List<Plugin>;
+  plugins?: Immutable.List<PluginType>;
   livenessProbe?: Probe;
   ReadinessProbe?: Probe;
   nodeSelectorLabels?: NodeSelectorLabels;
