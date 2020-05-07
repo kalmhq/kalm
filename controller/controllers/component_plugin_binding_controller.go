@@ -17,7 +17,7 @@ package controllers
 
 import (
 	"context"
-	"github.com/kapp-staging/kapp/util"
+	"github.com/kapp-staging/kapp/utils"
 	"github.com/xeipuuv/gojsonschema"
 	"k8s.io/apimachinery/pkg/types"
 	"time"
@@ -59,7 +59,7 @@ func (r *ComponentPluginBindingReconciler) Reconcile(req ctrl.Request) (ctrl.Res
 
 	if pluginBinding.ObjectMeta.DeletionTimestamp.IsZero() {
 		// after create
-		if !util.ContainsString(pluginBinding.ObjectMeta.Finalizers, finalizerName) {
+		if !utils.ContainsString(pluginBinding.ObjectMeta.Finalizers, finalizerName) {
 			pluginBinding.ObjectMeta.Finalizers = append(pluginBinding.ObjectMeta.Finalizers, finalizerName)
 			if pluginBinding.ObjectMeta.Labels == nil {
 				pluginBinding.ObjectMeta.Labels = make(map[string]string)
@@ -87,7 +87,7 @@ func (r *ComponentPluginBindingReconciler) Reconcile(req ctrl.Request) (ctrl.Res
 		return ctrl.Result{}, r.UpdatePluginBinding(ctx, &pluginBinding, log)
 	} else {
 		// before delete
-		if util.ContainsString(pluginBinding.ObjectMeta.Finalizers, finalizerName) {
+		if utils.ContainsString(pluginBinding.ObjectMeta.Finalizers, finalizerName) {
 
 			if err := r.TouchComponents(ctx, &pluginBinding, log); err != nil {
 				log.Error(err, "Touch components error.")
@@ -95,7 +95,7 @@ func (r *ComponentPluginBindingReconciler) Reconcile(req ctrl.Request) (ctrl.Res
 			}
 
 			// remove our finalizer from the list and update it.
-			pluginBinding.ObjectMeta.Finalizers = util.RemoveString(pluginBinding.ObjectMeta.Finalizers, finalizerName)
+			pluginBinding.ObjectMeta.Finalizers = utils.RemoveString(pluginBinding.ObjectMeta.Finalizers, finalizerName)
 			err := r.Update(ctx, &pluginBinding)
 			return ctrl.Result{}, err
 		}

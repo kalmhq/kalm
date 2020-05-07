@@ -19,7 +19,7 @@ import (
 	"context"
 	"fmt"
 	js "github.com/dop251/goja"
-	"github.com/kapp-staging/kapp/util"
+	"github.com/kapp-staging/kapp/utils"
 	"github.com/kapp-staging/kapp/vm"
 	"github.com/xeipuuv/gojsonschema"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -130,14 +130,14 @@ func (r *ComponentPluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, er
 	// handle delete
 	if plugin.ObjectMeta.DeletionTimestamp.IsZero() {
 		// add finalizer
-		if !util.ContainsString(plugin.ObjectMeta.Finalizers, finalizerName) {
+		if !utils.ContainsString(plugin.ObjectMeta.Finalizers, finalizerName) {
 			plugin.ObjectMeta.Finalizers = append(plugin.ObjectMeta.Finalizers, finalizerName)
 			err := r.Update(context.Background(), &plugin)
 			return ctrl.Result{}, err
 		}
 	} else {
 		// The object is being deleted
-		if util.ContainsString(plugin.ObjectMeta.Finalizers, finalizerName) {
+		if utils.ContainsString(plugin.ObjectMeta.Finalizers, finalizerName) {
 			componentPluginsCache.Delete(plugin.Name)
 
 			if err := r.deletePluginBindings(ctx, &plugin, log); err != nil {
@@ -145,7 +145,7 @@ func (r *ComponentPluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, er
 			}
 
 			// remove our finalizer from the list and update it.
-			plugin.ObjectMeta.Finalizers = util.RemoveString(plugin.ObjectMeta.Finalizers, finalizerName)
+			plugin.ObjectMeta.Finalizers = utils.RemoveString(plugin.ObjectMeta.Finalizers, finalizerName)
 			err := r.Update(ctx, &plugin)
 			return ctrl.Result{}, err
 		}

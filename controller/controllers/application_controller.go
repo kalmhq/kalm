@@ -23,7 +23,7 @@ import (
 	"github.com/go-logr/logr"
 	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
 	"github.com/kapp-staging/kapp/lib/files"
-	"github.com/kapp-staging/kapp/util"
+	"github.com/kapp-staging/kapp/utils"
 	"github.com/kapp-staging/kapp/vm"
 	"github.com/xeipuuv/gojsonschema"
 	istioNetworkingV1Beta1 "istio.io/api/networking/v1beta1"
@@ -171,7 +171,7 @@ func (r *ApplicationReconcilerTask) Run(req ctrl.Request) error {
 
 func (r *ApplicationReconcilerTask) HandleDelete() (err error) {
 	if r.application.ObjectMeta.DeletionTimestamp.IsZero() {
-		if !util.ContainsString(r.application.ObjectMeta.Finalizers, finalizerName) {
+		if !utils.ContainsString(r.application.ObjectMeta.Finalizers, finalizerName) {
 			r.application.ObjectMeta.Finalizers = append(r.application.ObjectMeta.Finalizers, finalizerName)
 			if err := r.Update(r.ctx, r.application); err != nil {
 				return err
@@ -179,7 +179,7 @@ func (r *ApplicationReconcilerTask) HandleDelete() (err error) {
 			r.Log.Info("add finalizer", r.application.Namespace, r.application.Name)
 		}
 	} else {
-		if util.ContainsString(r.application.ObjectMeta.Finalizers, finalizerName) {
+		if utils.ContainsString(r.application.ObjectMeta.Finalizers, finalizerName) {
 			if r.namespace != nil {
 				if err := r.Delete(r.ctx, r.namespace); err != nil {
 					r.Log.Error(err, "Delete Namespace error.")
@@ -194,7 +194,7 @@ func (r *ApplicationReconcilerTask) HandleDelete() (err error) {
 				}
 			}
 
-			r.application.ObjectMeta.Finalizers = util.RemoveString(r.application.ObjectMeta.Finalizers, finalizerName)
+			r.application.ObjectMeta.Finalizers = utils.RemoveString(r.application.ObjectMeta.Finalizers, finalizerName)
 			if err := r.Update(r.ctx, r.application); err != nil {
 				r.Log.Error(err, "Remove application finalizer failed.")
 				return err

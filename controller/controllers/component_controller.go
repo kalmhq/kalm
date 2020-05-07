@@ -23,7 +23,7 @@ import (
 	js "github.com/dop251/goja"
 	"github.com/go-logr/logr"
 	"github.com/kapp-staging/kapp/lib/files"
-	"github.com/kapp-staging/kapp/util"
+	"github.com/kapp-staging/kapp/utils"
 	"github.com/kapp-staging/kapp/vm"
 	"github.com/xeipuuv/gojsonschema"
 	appsV1 "k8s.io/api/apps/v1"
@@ -1226,7 +1226,7 @@ func (r *ComponentReconcilerTask) decideAffinity() (*coreV1.Affinity, bool) {
 
 func (r *ComponentReconcilerTask) HandleDelete() (err error) {
 	if r.component.ObjectMeta.DeletionTimestamp.IsZero() {
-		if !util.ContainsString(r.component.ObjectMeta.Finalizers, finalizerName) {
+		if !utils.ContainsString(r.component.ObjectMeta.Finalizers, finalizerName) {
 			r.component.ObjectMeta.Finalizers = append(r.component.ObjectMeta.Finalizers, finalizerName)
 			if err := r.Update(context.Background(), r.component); err != nil {
 				return err
@@ -1234,13 +1234,13 @@ func (r *ComponentReconcilerTask) HandleDelete() (err error) {
 			r.Log.Info("add finalizer", r.component.Namespace, r.component.Name)
 		}
 	} else {
-		if util.ContainsString(r.component.ObjectMeta.Finalizers, finalizerName) {
+		if utils.ContainsString(r.component.ObjectMeta.Finalizers, finalizerName) {
 			// TODO remove resources
 			if err := r.DeleteResources(); err != nil {
 				return err
 			}
 
-			r.component.ObjectMeta.Finalizers = util.RemoveString(r.component.ObjectMeta.Finalizers, finalizerName)
+			r.component.ObjectMeta.Finalizers = utils.RemoveString(r.component.ObjectMeta.Finalizers, finalizerName)
 			if err := r.Update(r.ctx, r.component); err != nil {
 				return err
 			}
