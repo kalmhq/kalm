@@ -12,17 +12,9 @@ rules:
   - '*'
   verbs:
   - '*'
-- resources:
-  - configmaps
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- resources:
+- apiGroups:
+  - ""
+  resources:
   - namespaces
   verbs:
   - create
@@ -63,9 +55,21 @@ rules:
   verbs:
   - '*'
 - apiGroups:
-  - batch
+  - apps
   resources:
-  - cronjobs
+  - deployments
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - statefulsets
   verbs:
   - create
   - delete
@@ -77,9 +81,15 @@ rules:
 - apiGroups:
   - batch
   resources:
-  - cronjobs/status
+  - cronjobs
   verbs:
+  - create
+  - delete
   - get
+  - list
+  - patch
+  - update
+  - watch
 - apiGroups:
   - cert-manager.io
   resources:
@@ -233,9 +243,9 @@ rules:
   - patch
   - update
 - apiGroups:
-  - core.kapp.dev
+  - extensions
   resources:
-  - pluginbindings
+  - daemonsets
   verbs:
   - create
   - delete
@@ -244,14 +254,6 @@ rules:
   - patch
   - update
   - watch
-- apiGroups:
-  - core.kapp.dev
-  resources:
-  - pluginbindings/status
-  verbs:
-  - get
-  - patch
-  - update
 - apiGroups:
   - extensions
   resources:
@@ -264,12 +266,6 @@ rules:
   - patch
   - update
   - watch
-- apiGroups:
-  - extensions
-  resources:
-  - deployments/status
-  verbs:
-  - get
 - apiGroups:
   - extensions
   resources:
@@ -289,8 +285,56 @@ rules:
   verbs:
   - '*'
 - apiGroups:
+  - networking.istio.io
+  resources:
+  - gateways
+  verbs:
+  - '*'
+- apiGroups:
+  - networking.istio.io
+  resources:
+  - virtualservices
+  verbs:
+  - '*'
+- apiGroups:
   - rbac.authorization.k8s.io
   resources:
   - '*'
   verbs:
   - '*'
+- apiGroups:
+  - v1
+  resources:
+  - configmaps
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - v1
+  resources:
+  - namespaces
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - v1
+  resources:
+  - services
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
