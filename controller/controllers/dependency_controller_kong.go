@@ -3,7 +3,7 @@ package controllers
 import (
 	"context"
 	"fmt"
-	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
+	corev1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	"k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"

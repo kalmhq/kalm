@@ -19,7 +19,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-logr/logr"
-	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
+	corev1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	"k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"

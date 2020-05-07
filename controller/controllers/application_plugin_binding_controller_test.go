@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"context"
-	"github.com/kapp-staging/kapp/api/v1alpha1"
+	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"

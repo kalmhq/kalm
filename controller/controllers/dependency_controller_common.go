@@ -6,7 +6,7 @@ import (
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	"github.com/influxdata/influxdb/pkg/slices"
 	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
-	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
+	corev1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	appsv1 "k8s.io/api/apps/v1"

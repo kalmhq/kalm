@@ -1,5 +1,5 @@
 domain: kapp.dev
-repo: github.com/kapp-staging/kapp
+repo: github.com/kapp-staging/kapp/controller
 resources:
 - group: core
   kind: Application

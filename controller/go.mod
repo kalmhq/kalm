@@ -1,4 +1,4 @@
-module github.com/kapp-staging/kapp
+module github.com/kapp-staging/kapp/controller
 
 go 1.13
 

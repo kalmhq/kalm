@@ -17,7 +17,7 @@ package controllers
 
 import (
 	"context"
-	"github.com/kapp-staging/kapp/utils"
+	"github.com/kapp-staging/kapp/controller/utils"
 	"github.com/xeipuuv/gojsonschema"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -28,7 +28,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
+	corev1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
 )
 
 // ApplicationPluginBindingReconciler reconciles a ApplicationPluginBinding object

@@ -25,8 +25,8 @@ import (
 	elkv1 "github.com/elastic/cloud-on-k8s/pkg/apis/elasticsearch/v1"
 	kibanav1 "github.com/elastic/cloud-on-k8s/pkg/apis/kibana/v1"
 
-	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
-	"github.com/kapp-staging/kapp/controllers"
+	corev1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/kapp-staging/kapp/controller/controllers"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -38,7 +38,7 @@ import (
 	apiregistration "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
 
 	//cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
-	corekappdevv1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
+	corekappdevv1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	// +kubebuilder:scaffold:imports
 )
 

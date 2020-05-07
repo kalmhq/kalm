@@ -15,7 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 
-	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
+	corev1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
 )
 
 func (r *DependencyReconciler) reconcileELK(ctx context.Context, d *corev1alpha1.Dependency) error {

@@ -3,7 +3,7 @@ package controllers
 import (
 	"context"
 	"fmt"
-	v1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
+	v1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	"github.com/onsi/ginkgo"
 	"github.com/stretchr/testify/suite"
 	istioScheme "istio.io/client-go/pkg/clientset/versioned/scheme"

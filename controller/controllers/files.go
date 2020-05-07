@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"fmt"
-	"github.com/kapp-staging/kapp/lib/files"
+	"github.com/kapp-staging/kapp/controller/lib/files"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"

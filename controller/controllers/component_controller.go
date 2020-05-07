@@ -22,9 +22,9 @@ import (
 	"fmt"
 	js "github.com/dop251/goja"
 	"github.com/go-logr/logr"
-	"github.com/kapp-staging/kapp/lib/files"
-	"github.com/kapp-staging/kapp/utils"
-	"github.com/kapp-staging/kapp/vm"
+	"github.com/kapp-staging/kapp/controller/lib/files"
+	"github.com/kapp-staging/kapp/controller/utils"
+	"github.com/kapp-staging/kapp/controller/vm"
 	"github.com/xeipuuv/gojsonschema"
 	appsV1 "k8s.io/api/apps/v1"
 	batchV1 "k8s.io/api/batch/v1"
@@ -39,7 +39,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strings"
 
-	corev1alpha1 "github.com/kapp-staging/kapp/api/v1alpha1"
+	corev1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
 )
 
 // ComponentReconciler reconciles a Component object
