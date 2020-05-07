@@ -36,10 +36,10 @@ export class FieldArrayWrapper extends React.PureComponent<Props> {
           const fieldComponents = getFieldComponents(member);
 
           return (
-            <Grid container spacing={3}>
-              {fieldComponents.map(fieldComponent => {
+            <Grid container spacing={3} key={member}>
+              {fieldComponents.map((fieldComponent, fieldIndex) => {
                 return (
-                  <Grid item xs>
+                  <Grid item xs key={fieldIndex}>
                     {fieldComponent}
                   </Grid>
                 );

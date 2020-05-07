@@ -116,6 +116,9 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
     } else {
       await dispatch(updateComponentAction(component));
     }
+    this.setState({
+      currentComponent: component
+    });
   };
 
   private handleDeleteComponent() {
