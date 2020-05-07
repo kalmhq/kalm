@@ -1,0 +1,26 @@
+# permissions to do edit kappoperatorconfigs.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kappoperatorconfig-editor-role
+rules:
+- apiGroups:
+  - install.kapp.dev
+  resources:
+  - kappoperatorconfigs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - install.kapp.dev
+  resources:
+  - kappoperatorconfigs/status
+  verbs:
+  - get
+  - patch
+  - update

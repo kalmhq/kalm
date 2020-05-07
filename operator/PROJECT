@@ -1,0 +1,7 @@
+domain: kapp.dev
+repo: github.com/kapp-staging/kapp/operator
+resources:
+- group: install
+  kind: KappOperatorConfig
+  version: v1alpha1
+version: "2"

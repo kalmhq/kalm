@@ -1,0 +1,4 @@
+apiVersion: install.kapp.dev/v1alpha1
+kind: KappOperatorConfig
+metadata:
+  name: kappoperatorconfig-sample
