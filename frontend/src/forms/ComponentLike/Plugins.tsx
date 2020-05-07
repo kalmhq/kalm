@@ -1,21 +1,21 @@
+import { Grid, MenuItem, TextField } from "@material-ui/core";
 import Immutable from "immutable";
-import { Grid, FormControl, TextField, MenuItem } from "@material-ui/core";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { WrappedFieldArrayProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
+import { closeDialogAction, openDialogAction } from "../../actions/dialog";
 import { RootState } from "../../reducers";
 import { getComponentPluginName } from "../../selectors/component";
 import { ComponentPlugin } from "../../types/application";
+import { PluginType } from "../../types/plugin";
+import { ButtonWhite, CustomizedButton } from "../../widgets/Button";
+import { ControlledDialog } from "../../widgets/ControlledDialog";
 import { CustomTextField } from "../Basic";
 import { CheckboxField } from "../Basic/checkbox";
 import { NormalizeBoolean } from "../normalizer";
 import { ValidatorRequired } from "../validator";
 import { RenderPluginConfig } from "./PluginConfig";
-import { ButtonWhite, CustomizedButton } from "../../widgets/Button";
-import { ControlledDialog } from "../../widgets/ControlledDialog";
-import { openDialogAction, closeDialogAction } from "../../actions/dialog";
-import { PluginType } from "../../types/plugin";
 
 interface FieldArrayComponentHackType {
   name: any;
