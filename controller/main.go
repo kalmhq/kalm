@@ -107,15 +107,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.DependencyReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Dependency"),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Dependency")
-		os.Exit(1)
-	}
-
 	if err = (&controllers.ComponentPluginReconciler{
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("ComponentPlugin"),
