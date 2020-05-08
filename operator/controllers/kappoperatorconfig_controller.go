@@ -44,7 +44,7 @@ type KappOperatorConfigReconciler struct {
 //go:generate sh -c "kustomize build ../resources/istio > tmp/istio.yaml"
 //go:generate sh -c "cp ../resources/cert-manager/cert-manager.yaml tmp/cert-manager.yaml"
 //go:generate sh -c "cp ../resources/istiocontrolplane.yaml tmp/istiocontrolplane.yaml"
-//go:generate go-bindata -pkg controllers -prefix tmp -o resources.gen.go ./tmp
+//go:generate go-bindata -pkg controllers -nometadata -prefix tmp -o resources.gen.go ./tmp
 //go:generate rm -rf ./tmp
 
 // +kubebuilder:rbac:groups=install.kapp.dev,resources=kappoperatorconfigs,verbs=get;list;watch;create;update;patch;delete

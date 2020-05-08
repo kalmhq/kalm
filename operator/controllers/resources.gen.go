@@ -95,7 +95,7 @@ func certManagerYaml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "cert-manager.yaml", size: 423959, mode: os.FileMode(420), modTime: time.Unix(1588912186, 0)}
+	info := bindataFileInfo{name: "cert-manager.yaml", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -115,7 +115,7 @@ func istioYaml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "istio.yaml", size: 3747, mode: os.FileMode(420), modTime: time.Unix(1588912186, 0)}
+	info := bindataFileInfo{name: "istio.yaml", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -135,7 +135,7 @@ func istiocontrolplaneYaml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "istiocontrolplane.yaml", size: 211, mode: os.FileMode(420), modTime: time.Unix(1588912186, 0)}
+	info := bindataFileInfo{name: "istiocontrolplane.yaml", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -155,7 +155,7 @@ func kappYaml() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "kapp.yaml", size: 43467, mode: os.FileMode(420), modTime: time.Unix(1588912185, 0)}
+	info := bindataFileInfo{name: "kapp.yaml", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
