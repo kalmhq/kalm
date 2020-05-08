@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/kapp-staging/kapp/lib/files"
+	"github.com/kapp-staging/kapp/controller/lib/files"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 	coreV1 "k8s.io/api/core/v1"

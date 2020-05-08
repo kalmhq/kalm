@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/kapp-staging/kapp/lib/files"
+	"github.com/kapp-staging/kapp/controller/lib/files"
 	"github.com/stretchr/testify/suite"
 	"net/http"
 	"testing"

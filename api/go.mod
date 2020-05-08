@@ -15,7 +15,6 @@ require (
 	github.com/influxdata/influxdb v1.7.7
 	github.com/joho/godotenv v1.3.0
 	github.com/kapp-staging/kapp/controller v0.1.0
-	github.com/kapp-staging/kapp/lib v0.0.0-00010101000000-000000000000
 	github.com/labstack/echo/v4 v4.1.15
 	github.com/mattn/go-shellwords v1.0.10 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
@@ -38,5 +37,3 @@ require (
 )
 
 replace github.com/kapp-staging/kapp/controller => ../controller
-
-replace github.com/kapp-staging/kapp/lib => ../lib
