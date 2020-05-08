@@ -49,18 +49,26 @@ type KappOperatorConfigReconciler struct {
 
 // +kubebuilder:rbac:groups=install.kapp.dev,resources=kappoperatorconfigs,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=install.kapp.dev,resources=kappoperatorconfigs/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=install.istio.io,resources=istiooperators,verbs=create
-// +kubebuilder:rbac:groups=apiextensions.k8s.io,resources=customresourcedefinitions,verbs=create
-// +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=clusterroles,verbs=create
-// +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=clusterrolebindings,verbs=create
-// +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=roles,verbs=create
-// +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=rolebindings,verbs=create
-// +kubebuilder:rbac:groups=v1,resources=namespaces,verbs=create
-// +kubebuilder:rbac:groups=v1,resources=services,verbs=create
-// +kubebuilder:rbac:groups=v1,resources=serviceaccounts,verbs=create
-// +kubebuilder:rbac:groups=apps,resources=deployments,verbs=create
-// +kubebuilder:rbac:groups=admissionregistration.k8s.io,resources=mutatingwebhookconfigurations,verbs=create
-// +kubebuilder:rbac:groups=admissionregistration.k8s.io,resources=validatingwebhookconfigurations,verbs=create
+// +kubebuilder:rbac:groups=policy,resources=poddisruptionbudgets*,verbs=*
+// +kubebuilder:rbac:groups=monitoring.coreos.com,resources=servicemonitors,verbs=get;create
+// +kubebuilder:rbac:groups=apiextensions.k8s.io,resources=customresourcedefinitions;customresourcedefinitions.apiextensions.k8s.io,verbs=*
+// +kubebuilder:rbac:groups=apiregistration.k8s.io,resources=apiservices,verbs=get;list;watch;update
+// +kubebuilder:rbac:groups=auditregistration.k8s.io,resources=auditsinks,verbs=get;list;watch;update
+// +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=clusterroles;clusterrolebindings;roles;rolebindings,verbs=*
+// +kubebuilder:rbac:groups=apps,resources=deployments;daemonsets;deployments/finalizers;ingresses;replicasets;statefulsets,verbs=*
+// +kubebuilder:rbac:groups=extensions,resources=daemonsets;deployments;deployments/finalizers;replicasets;statefulsets;ingresses;ingresses/finalizers,verbs=*
+// +kubebuilder:rbac:groups=autoscaling,resources=horizontalpodautoscalers,verbs=*
+// +kubebuilder:rbac:groups=admissionregistration.k8s.io,resources=mutatingwebhookconfigurations;validatingwebhookconfigurations,verbs=*
+// +kubebuilder:rbac:groups="",resources=namespaces;persistentvolumeclaims;serviceaccounts;endpoints;events;secrets;pods;services;configmaps,verbs=*
+// +kubebuilder:rbac:groups=cert-manager.io,resources=*,verbs=*
+// +kubebuilder:rbac:groups=acme.cert-manager.io,resources=*,verbs=*
+// +kubebuilder:rbac:groups=route.openshift.io,resources=routes/custom-host,verbs=create
+// +kubebuilder:rbac:groups=install.istio.io,resources=*,verbs=*
+// +kubebuilder:rbac:groups=networking.istio.io,resources=*,verbs=*
+// +kubebuilder:rbac:groups=rbac.istio.io,resources=*,verbs=*
+// +kubebuilder:rbac:groups=security.istio.io,resources=*,verbs=*
+// +kubebuilder:rbac:groups=authentication.istio.io,resources=*,verbs=*
+// +kubebuilder:rbac:groups=config.istio.io,resources=*,verbs=*
 
 func (r *KappOperatorConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
