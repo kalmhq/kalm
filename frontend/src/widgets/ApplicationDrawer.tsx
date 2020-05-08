@@ -1,38 +1,47 @@
 import {
+  Collapse,
   createStyles,
-  Theme,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
   ListSubheader,
-  Collapse
+  Theme
 } from "@material-ui/core";
+import { blue, grey } from "@material-ui/core/colors";
+import AddIcon from "@material-ui/icons/Add";
+import ErrorIcon from "@material-ui/icons/Error";
+import ExpandLess from "@material-ui/icons/ExpandLess";
+import ExpandMore from "@material-ui/icons/ExpandMore";
+import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
 import { WithStyles, withStyles } from "@material-ui/styles";
+import Immutable from "immutable";
+import queryString from "query-string";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
+import { getFormSyncErrors, hasSubmitFailed } from "redux-form/immutable";
 import { TDispatch } from "types";
-import { blue, grey } from "@material-ui/core/colors";
-import { BaseDrawer } from "../layout/BaseDrawer";
-import { ApplicationDetails, ApplicationComponent, ApplicationComponentDetails } from "../types/application";
-import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
-import ExpandLess from "@material-ui/icons/ExpandLess";
-import ExpandMore from "@material-ui/icons/ExpandMore";
 import { componentInitialValues } from "../forms/ComponentLike";
-import Immutable from "immutable";
-import AddIcon from "@material-ui/icons/Add";
+import { BaseDrawer } from "../layout/BaseDrawer";
+import { ApplicationComponent, ApplicationComponentDetails, ApplicationDetails } from "../types/application";
 import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
-import queryString from "query-string";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
   const isAdmin = auth.get("isAdmin");
   const entity = auth.get("entity");
+  // const componentFormMeta = getFormMeta("componentLike")(state);
+  const componentSyncErrors = getFormSyncErrors("componentLike")(state);
+  const componentFormSubmitFailed = hasSubmitFailed("componentLike")(state);
+
   return {
     activeNamespaceName: state.get("namespaces").get("active"),
     isAdmin,
-    entity
+    entity,
+    // componentFormMeta,
+    componentSyncErrors,
+    componentFormSubmitFailed
   };
 };
 
@@ -121,6 +130,50 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
     this.handleClickComponent(componentInitialValues, this.props.application?.get("components").size as number);
   }
 
+  private showComponentError(panelKey: string): boolean {
+    const { componentSyncErrors, componentFormSubmitFailed } = this.props;
+    const fieldNames = this.getPanelFieldNames(panelKey);
+    const errors: { [key: string]: any } = componentSyncErrors;
+
+    let anyTouched = true;
+    let hasError = false;
+    if (anyTouched) {
+      fieldNames.forEach(name => {
+        if (errors[name]) {
+          hasError = true;
+        }
+      });
+    }
+    return hasError && componentFormSubmitFailed;
+  }
+
+  private getPanelFieldNames(panelKey: string): string[] {
+    switch (panelKey) {
+      case "basic":
+        return ["name", "image", "workloadType", "command", "args"];
+      case "envs":
+        return ["env"];
+      case "ports":
+        return ["ports"];
+      case "resources":
+        return ["cpu", "memory", "volumes", "configs"];
+      case "plugins":
+        return ["plugins"];
+      case "probes":
+        return ["livenessProbe", "readinessProbe"];
+      case "advanced":
+        return [
+          "restartStrategy",
+          "terminationGracePeriodSeconds",
+          "dnsPolicy",
+          "nodeSelectorLabels",
+          "podAffinityType"
+        ];
+      default:
+        return [];
+    }
+  }
+
   private getComponentFields() {
     return [
       { tab: "basic", text: "Basic Info" },
@@ -162,6 +215,7 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
     const fields = this.getComponentFields();
     return fields.map(field => {
       const key = this.generateComponentKey(index, field.tab);
+      const showComponentError = this.showComponentError(field.tab);
       return (
         <ListItem
           key={key}
@@ -178,12 +232,24 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
           }}
           button>
           <ListItemIcon>
-            <FiberManualRecordIcon
-              style={{ fontSize: 15 }}
-              htmlColor={selectedListItemKey === key ? blue[700] : grey[400]}
-            />
+            {showComponentError ? (
+              <ErrorIcon color="error" style={{ marginLeft: -4 }} />
+            ) : (
+              <FiberManualRecordIcon
+                style={{ fontSize: 15 }}
+                htmlColor={selectedListItemKey === key ? blue[700] : grey[400]}
+              />
+            )}
           </ListItemIcon>
-          <ListItemText primary={field.text} />
+          {showComponentError ? (
+            <ListItemText
+              primary={field.text}
+              secondary={"Some form fields are incorrect"}
+              secondaryTypographyProps={{ color: "error" }}
+            />
+          ) : (
+            <ListItemText primary={field.text} />
+          )}
         </ListItem>
       );
     });

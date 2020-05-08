@@ -1,19 +1,13 @@
 import { Box, Divider, Grid, List as MList, ListItem, ListItemText, MenuItem } from "@material-ui/core";
-import ExpansionPanel from "@material-ui/core/ExpansionPanel";
-import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelDetails";
-import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
-import ErrorIcon from "@material-ui/icons/Error";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import clsx from "clsx";
-import { extractSummaryInfoFromList, extractSummaryInfoFromMap } from "forms/summarizer";
-import Immutable, { List, Map } from "immutable";
+import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
 import { InjectedFormProps } from "redux-form";
 import { Field, getFormSyncErrors, getFormValues, reduxForm } from "redux-form/immutable";
 import { Body, H3 } from "widgets/Label";
+import { loadComponentPluginsAction } from "../../actions/application";
 import { loadConfigsAction } from "../../actions/config";
 import { loadNodesAction } from "../../actions/node";
 import { RootState } from "../../reducers";
@@ -33,7 +27,6 @@ import { Ports } from "./Ports";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
 import { ComponentResources } from "./resources";
 import { Volumes } from "./Volumes";
-import { loadComponentPluginsAction } from "../../actions/application";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
@@ -714,263 +707,263 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     this.setState({ currentPanel: key });
   }
 
-  private renderSubmitErrors(errors: { [key: string]: string }) {
-    const { classes } = this.props;
-    const listItems: any[] = [];
+  // private renderSubmitErrors(errors: { [key: string]: string }) {
+  //   const { classes } = this.props;
+  //   const listItems: any[] = [];
 
-    for (let key in errors) {
-      listItems.push(
-        <div key={key} className={classes.submitErrorItem}>
-          <div className={classes.submitErrorKey}>{key + " : "}</div>
-          <div className={classes.submitErrorValueGroup}>{errors[key]}</div>
-        </div>
-      );
-    }
-
-    return <>{listItems}</>;
-  }
-
-  private renderSummary(summaryInfos: Summary[]): React.ReactNode {
-    const { classes } = this.props;
-    const renderValues = (summary: Summary) => {
-      if (typeof summary.value === "string" || typeof summary.value === "number") {
-        return (
-          <Typography
-            variant="body2"
-            className={clsx(classes.summaryValue, summary.hasChanged ? classes.summaryChanged : null)}>
-            {summary.value}
-          </Typography>
-        );
-      } else {
-        const values = summary.value;
-        if (values.size && values.size > 0) {
-          if (List.isList(values)) {
-            return values.map((v: any, index: number) => {
-              return (
-                <Typography
-                  key={index}
-                  variant="body2"
-                  className={clsx(classes.summaryValue, summary.hasChanged ? classes.summaryChanged : null)}>
-                  {v}
-                </Typography>
-              );
-            });
-          } else if (Map.isMap(values)) {
-            let keys = values.keySeq().toArray();
-            return values.toList().map((value: any, index: number) => {
-              if (Map.isMap(value)) {
-                let subKeys = value.keySeq().toArray();
-                return value.toList().map((subValue: any, subIndex: number) => {
-                  return (
-                    <Typography
-                      key={subIndex}
-                      variant="body2"
-                      className={clsx(classes.summaryValue, summary.hasChanged ? classes.summaryChanged : null)}>
-                      {subKeys[subIndex]} : {subValue}
-                    </Typography>
-                  );
-                });
-              } else {
-                return (
-                  <Typography
-                    key={index}
-                    variant="body2"
-                    className={clsx(classes.summaryValue, summary.hasChanged ? classes.summaryChanged : null)}>
-                    {keys[index]} : {value}
-                  </Typography>
-                );
-              }
-            });
-          }
-        } else {
-          return null;
-        }
-      }
-    };
-    const listItems = summaryInfos.map((summary, index) => {
-      return (
-        <div key={index} className={classes.summaryItem}>
-          <Typography variant="body2" className={clsx(classes.summaryKey)}>
-            {summary.name + " : "}
-          </Typography>
-          <div className={classes.summaryValueGroup}>{renderValues(summary)}</div>
-        </div>
-      );
-    });
-    return <>{listItems}</>;
-  }
-
-  // private composeSubmitErrorInfo(panelKey: string): { [key: string]: any } {
-  //   const { submitAppplicationErrors } = this.props;
-  //   const fieldNames = this.getPanelFieldNames(panelKey);
-
-  //   const panelSubmitErrors: { [key: string]: any } = {};
-
-  //   if (submitAppplicationErrors?.get(panelKey)) {
-  //     panelSubmitErrors[panelKey] = submitAppplicationErrors.get(panelKey);
+  //   for (let key in errors) {
+  //     listItems.push(
+  //       <div key={key} className={classes.submitErrorItem}>
+  //         <div className={classes.submitErrorKey}>{key + " : "}</div>
+  //         <div className={classes.submitErrorValueGroup}>{errors[key]}</div>
+  //       </div>
+  //     );
   //   }
 
-  //   fieldNames.forEach(name => {
-  //     if (submitAppplicationErrors?.get(name)) {
-  //       panelSubmitErrors[name] = submitAppplicationErrors.get(name);
-  //     }
-  //   });
-
-  //   return panelSubmitErrors;
+  //   return <>{listItems}</>;
   // }
 
-  private composeSyncErrorInfo(panelKey: string): boolean {
-    const { syncErrors, anyTouched } = this.props;
-    const fieldNames = this.getPanelFieldNames(panelKey);
-    const errors: { [key: string]: any } = syncErrors;
+  // private renderSummary(summaryInfos: Summary[]): React.ReactNode {
+  //   const { classes } = this.props;
+  //   const renderValues = (summary: Summary) => {
+  //     if (typeof summary.value === "string" || typeof summary.value === "number") {
+  //       return (
+  //         <Typography
+  //           variant="body2"
+  //           className={clsx(classes.summaryValue, summary.hasChanged ? classes.summaryChanged : null)}>
+  //           {summary.value}
+  //         </Typography>
+  //       );
+  //     } else {
+  //       const values = summary.value;
+  //       if (values.size && values.size > 0) {
+  //         if (List.isList(values)) {
+  //           return values.map((v: any, index: number) => {
+  //             return (
+  //               <Typography
+  //                 key={index}
+  //                 variant="body2"
+  //                 className={clsx(classes.summaryValue, summary.hasChanged ? classes.summaryChanged : null)}>
+  //                 {v}
+  //               </Typography>
+  //             );
+  //           });
+  //         } else if (Map.isMap(values)) {
+  //           let keys = values.keySeq().toArray();
+  //           return values.toList().map((value: any, index: number) => {
+  //             if (Map.isMap(value)) {
+  //               let subKeys = value.keySeq().toArray();
+  //               return value.toList().map((subValue: any, subIndex: number) => {
+  //                 return (
+  //                   <Typography
+  //                     key={subIndex}
+  //                     variant="body2"
+  //                     className={clsx(classes.summaryValue, summary.hasChanged ? classes.summaryChanged : null)}>
+  //                     {subKeys[subIndex]} : {subValue}
+  //                   </Typography>
+  //                 );
+  //               });
+  //             } else {
+  //               return (
+  //                 <Typography
+  //                   key={index}
+  //                   variant="body2"
+  //                   className={clsx(classes.summaryValue, summary.hasChanged ? classes.summaryChanged : null)}>
+  //                   {keys[index]} : {value}
+  //                 </Typography>
+  //               );
+  //             }
+  //           });
+  //         }
+  //       } else {
+  //         return null;
+  //       }
+  //     }
+  //   };
+  //   const listItems = summaryInfos.map((summary, index) => {
+  //     return (
+  //       <div key={index} className={classes.summaryItem}>
+  //         <Typography variant="body2" className={clsx(classes.summaryKey)}>
+  //           {summary.name + " : "}
+  //         </Typography>
+  //         <div className={classes.summaryValueGroup}>{renderValues(summary)}</div>
+  //       </div>
+  //     );
+  //   });
+  //   return <>{listItems}</>;
+  // }
 
-    let hasError = false;
-    if (anyTouched) {
-      fieldNames.forEach(name => {
-        if (errors[name]) {
-          hasError = true;
-        }
-      });
-    }
-    return hasError;
-  }
+  // // private composeSubmitErrorInfo(panelKey: string): { [key: string]: any } {
+  // //   const { submitAppplicationErrors } = this.props;
+  // //   const fieldNames = this.getPanelFieldNames(panelKey);
 
-  private composeChangedState(panelKey: string): boolean {
-    const { values, initialValues } = this.props;
-    const fieldNames = this.getPanelFieldNames(panelKey);
+  // //   const panelSubmitErrors: { [key: string]: any } = {};
 
-    let isChanged = false;
-    fieldNames.forEach((name: any) => {
-      if (!values.get(name) || typeof values.get(name) === "string") {
-        if (values.get(name) !== initialValues.get!(name)) {
-          isChanged = true;
-        }
-        // immutable compare
-      } else if (!values.get(name) || typeof values.get(name) === "number") {
-        if (values.get(name) !== initialValues.get!(name)) {
-          isChanged = true;
-        }
-      } else if (values.get(name).equals) {
-        if (name === "livenessProbe" || name === "readinessProbe") {
-          // since auto set probe type
-          if (
-            !values
-              .get(name)
-              .delete("type")
-              .equals(initialValues.get!(name))
-          ) {
-            isChanged = true;
-          }
-        } else {
-          if (!values.get(name).equals(initialValues.get!(name))) {
-            isChanged = true;
-          }
-        }
-      }
-    });
-    return isChanged;
-  }
+  // //   if (submitAppplicationErrors?.get(panelKey)) {
+  // //     panelSubmitErrors[panelKey] = submitAppplicationErrors.get(panelKey);
+  // //   }
 
-  private composeSummaryInfo(panelKey: string): Summary[] {
-    const { values, initialValues } = this.props;
-    const fieldNames = this.getPanelFieldNames(panelKey);
-    let summaryInfos: Summary[] = [];
-    fieldNames.forEach((name: any) => {
-      let summaryInfo: Summary = {} as Summary;
-      summaryInfo.name = name;
-      if (!values.get(name) || typeof values.get(name) === "string" || typeof values.get(name) === "number") {
-        if (values.get(name) !== initialValues.get!(name)) {
-          summaryInfo.hasChanged = true;
-        }
-        summaryInfo.value = values.get(name);
-        // immutable compare
-      } else if (values.get(name).equals) {
-        if (name === "livenessProbe" || name === "readinessProbe") {
-          // since auto set probe type
-          if (
-            !values
-              .get(name)
-              .delete("type")
-              .equals(initialValues.get!(name))
-          ) {
-            summaryInfo.hasChanged = true;
-          }
-          if (values.get(name).size && values.get(name).size > 0) {
-            summaryInfo.value = extractSummaryInfoFromMap(values.get(name));
-          } else {
-            summaryInfo.value = values.get(name);
-          }
-        } else {
-          if (!values.get(name).equals(initialValues.get!(name))) {
-            summaryInfo.hasChanged = true;
-          }
-          if (Map.isMap(values.get(name))) {
-            summaryInfo.value = extractSummaryInfoFromMap(values.get(name));
-          } else if (List.isList(values.get(name))) {
-            if (values.get(name).size && values.get(name).size > 0) {
-              summaryInfo.value = extractSummaryInfoFromList(values.get(name));
-            }
-          }
-        }
-      }
-      summaryInfo.value && summaryInfos.push(summaryInfo);
-    });
-    return summaryInfos;
-  }
+  // //   fieldNames.forEach(name => {
+  // //     if (submitAppplicationErrors?.get(name)) {
+  // //       panelSubmitErrors[name] = submitAppplicationErrors.get(name);
+  // //     }
+  // //   });
 
-  private getPanelFieldNames(panelKey: string): string[] {
-    switch (panelKey) {
-      case "basic":
-        return ["name", "image", "workloadType", "command", "args"];
-      case "envs":
-        return ["env"];
-      case "ports":
-        return ["ports"];
-      case "resources":
-        return ["cpu", "memory"];
-      case "volumes":
-        return ["volumes"];
-      case "configs":
-        return ["configs"];
-      case "advanced":
-        return ["restartStrategy", "terminationGracePeriodSeconds", "dnsPolicy"];
-      case "plugins":
-        return ["plugins"];
-      case "nodeSelector":
-        return ["nodeSelectorLabels", "podAffinityType"];
-      case "probes":
-        return ["livenessProbe", "readinessProbe"];
-      default:
-        return [];
-    }
-  }
+  // //   return panelSubmitErrors;
+  // // }
 
-  private renderPanel(panelKey: string, title: string, content: any): React.ReactNode {
-    const { classes } = this.props;
+  // private composeSyncErrorInfo(panelKey: string): boolean {
+  //   const { syncErrors, anyTouched } = this.props;
+  //   const fieldNames = this.getPanelFieldNames(panelKey);
+  //   const errors: { [key: string]: any } = syncErrors;
 
-    // let panelSubmitErrors = this.composeSubmitErrorInfo(panelKey);
-    // let hasError = this.composeSyncErrorInfo(panelKey) || Object.keys(panelSubmitErrors).length > 0;
-    let hasError = this.composeSyncErrorInfo(panelKey);
-    let isChanged = this.composeChangedState(panelKey);
-    let summaryInfos = this.composeSummaryInfo(panelKey);
+  //   let hasError = false;
+  //   if (anyTouched) {
+  //     fieldNames.forEach(name => {
+  //       if (errors[name]) {
+  //         hasError = true;
+  //       }
+  //     });
+  //   }
+  //   return hasError;
+  // }
 
-    return (
-      <ExpansionPanel expanded={panelKey === this.state.currentPanel} onChange={() => this.handleChangePanel(panelKey)}>
-        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id="panel1a-header">
-          <div className={hasError ? classes.summaryError : isChanged ? classes.summaryBold : ""}>
-            {title} {hasError ? <ErrorIcon className={classes.summaryIcon} /> : null}
-            {/* <div className={classes.panelSubmitErrors}>
-              {Object.keys(panelSubmitErrors).length > 0 ? this.renderSubmitErrors(panelSubmitErrors) : null}
-            </div> */}
-            <div className={panelKey === this.state.currentPanel ? classes.summaryHide : classes.summaryShow}>
-              {this.renderSummary(summaryInfos)}
-            </div>
-          </div>
-        </ExpansionPanelSummary>
-        <ExpansionPanelDetails className={classes.displayBlock}>{content}</ExpansionPanelDetails>
-      </ExpansionPanel>
-    );
-  }
+  // private composeChangedState(panelKey: string): boolean {
+  //   const { values, initialValues } = this.props;
+  //   const fieldNames = this.getPanelFieldNames(panelKey);
+
+  //   let isChanged = false;
+  //   fieldNames.forEach((name: any) => {
+  //     if (!values.get(name) || typeof values.get(name) === "string") {
+  //       if (values.get(name) !== initialValues.get!(name)) {
+  //         isChanged = true;
+  //       }
+  //       // immutable compare
+  //     } else if (!values.get(name) || typeof values.get(name) === "number") {
+  //       if (values.get(name) !== initialValues.get!(name)) {
+  //         isChanged = true;
+  //       }
+  //     } else if (values.get(name).equals) {
+  //       if (name === "livenessProbe" || name === "readinessProbe") {
+  //         // since auto set probe type
+  //         if (
+  //           !values
+  //             .get(name)
+  //             .delete("type")
+  //             .equals(initialValues.get!(name))
+  //         ) {
+  //           isChanged = true;
+  //         }
+  //       } else {
+  //         if (!values.get(name).equals(initialValues.get!(name))) {
+  //           isChanged = true;
+  //         }
+  //       }
+  //     }
+  //   });
+  //   return isChanged;
+  // }
+
+  // private composeSummaryInfo(panelKey: string): Summary[] {
+  //   const { values, initialValues } = this.props;
+  //   const fieldNames = this.getPanelFieldNames(panelKey);
+  //   let summaryInfos: Summary[] = [];
+  //   fieldNames.forEach((name: any) => {
+  //     let summaryInfo: Summary = {} as Summary;
+  //     summaryInfo.name = name;
+  //     if (!values.get(name) || typeof values.get(name) === "string" || typeof values.get(name) === "number") {
+  //       if (values.get(name) !== initialValues.get!(name)) {
+  //         summaryInfo.hasChanged = true;
+  //       }
+  //       summaryInfo.value = values.get(name);
+  //       // immutable compare
+  //     } else if (values.get(name).equals) {
+  //       if (name === "livenessProbe" || name === "readinessProbe") {
+  //         // since auto set probe type
+  //         if (
+  //           !values
+  //             .get(name)
+  //             .delete("type")
+  //             .equals(initialValues.get!(name))
+  //         ) {
+  //           summaryInfo.hasChanged = true;
+  //         }
+  //         if (values.get(name).size && values.get(name).size > 0) {
+  //           summaryInfo.value = extractSummaryInfoFromMap(values.get(name));
+  //         } else {
+  //           summaryInfo.value = values.get(name);
+  //         }
+  //       } else {
+  //         if (!values.get(name).equals(initialValues.get!(name))) {
+  //           summaryInfo.hasChanged = true;
+  //         }
+  //         if (Map.isMap(values.get(name))) {
+  //           summaryInfo.value = extractSummaryInfoFromMap(values.get(name));
+  //         } else if (List.isList(values.get(name))) {
+  //           if (values.get(name).size && values.get(name).size > 0) {
+  //             summaryInfo.value = extractSummaryInfoFromList(values.get(name));
+  //           }
+  //         }
+  //       }
+  //     }
+  //     summaryInfo.value && summaryInfos.push(summaryInfo);
+  //   });
+  //   return summaryInfos;
+  // }
+
+  // private getPanelFieldNames(panelKey: string): string[] {
+  //   switch (panelKey) {
+  //     case "basic":
+  //       return ["name", "image", "workloadType", "command", "args"];
+  //     case "envs":
+  //       return ["env"];
+  //     case "ports":
+  //       return ["ports"];
+  //     case "resources":
+  //       return ["cpu", "memory"];
+  //     case "volumes":
+  //       return ["volumes"];
+  //     case "configs":
+  //       return ["configs"];
+  //     case "advanced":
+  //       return ["restartStrategy", "terminationGracePeriodSeconds", "dnsPolicy"];
+  //     case "plugins":
+  //       return ["plugins"];
+  //     case "nodeSelector":
+  //       return ["nodeSelectorLabels", "podAffinityType"];
+  //     case "probes":
+  //       return ["livenessProbe", "readinessProbe"];
+  //     default:
+  //       return [];
+  //   }
+  // }
+
+  // private renderPanel(panelKey: string, title: string, content: any): React.ReactNode {
+  //   const { classes } = this.props;
+
+  //   // let panelSubmitErrors = this.composeSubmitErrorInfo(panelKey);
+  //   // let hasError = this.composeSyncErrorInfo(panelKey) || Object.keys(panelSubmitErrors).length > 0;
+  //   let hasError = this.composeSyncErrorInfo(panelKey);
+  //   let isChanged = this.composeChangedState(panelKey);
+  //   let summaryInfos = this.composeSummaryInfo(panelKey);
+
+  //   return (
+  //     <ExpansionPanel expanded={panelKey === this.state.currentPanel} onChange={() => this.handleChangePanel(panelKey)}>
+  //       <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content" id="panel1a-header">
+  //         <div className={hasError ? classes.summaryError : isChanged ? classes.summaryBold : ""}>
+  //           {title} {hasError ? <ErrorIcon className={classes.summaryIcon} /> : null}
+  //           {/* <div className={classes.panelSubmitErrors}>
+  //             {Object.keys(panelSubmitErrors).length > 0 ? this.renderSubmitErrors(panelSubmitErrors) : null}
+  //           </div> */}
+  //           <div className={panelKey === this.state.currentPanel ? classes.summaryHide : classes.summaryShow}>
+  //             {this.renderSummary(summaryInfos)}
+  //           </div>
+  //         </div>
+  //       </ExpansionPanelSummary>
+  //       <ExpansionPanelDetails className={classes.displayBlock}>{content}</ExpansionPanelDetails>
+  //     </ExpansionPanel>
+  //   );
+  // }
 
   public render() {
     const { handleSubmit, classes, currentTab } = this.props;

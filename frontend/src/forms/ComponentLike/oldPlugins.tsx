@@ -2,17 +2,17 @@ import { Button } from "@material-ui/core";
 import MaterialTable from "material-table";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
-import { change, submit, WrappedFieldArrayProps } from "redux-form";
-import { FieldArray } from "redux-form/immutable";
-import { closeDialogAction, openDialogAction } from "../../actions/dialog";
-import { RootState } from "../../reducers";
-import { ControlledDialog } from "../../widgets/ControlledDialog";
-import { PluginForm } from "../Plugin";
 import SyntaxHighlighter from "react-syntax-highlighter/dist/cjs/default-highlight";
 import { monokai } from "react-syntax-highlighter/dist/esm/styles/hljs";
-import { newEmptyPlugin } from "../../types/componentTemplate";
+import { change, submit, WrappedFieldArrayProps } from "redux-form";
+import { FieldArray } from "redux-form/immutable";
+import { EXTERNAL_ACCESS_PLUGIN_TYPE, PluginType } from "types/plugin";
+import { closeDialogAction, openDialogAction } from "../../actions/dialog";
+import { RootState } from "../../reducers";
 import { portTypeTCP } from "../../types/common";
-import { PluginType, EXTERNAL_ACCESS_PLUGIN_TYPE } from "types/plugin";
+import { newEmptyPlugin } from "../../types/componentTemplate";
+import { ControlledDialog } from "../../widgets/ControlledDialog";
+import { PluginForm } from "../Plugin";
 
 interface FieldArrayComponentHackType {
   name: any;

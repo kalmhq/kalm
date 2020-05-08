@@ -51,17 +51,17 @@ export const RenderTextField = ({
       variant="outlined"
       // {...input}
       // onChange={input.onChange}
-      onChange={(event: any) =>
+      onChange={(event: any) => {
         editValueToFormValue
           ? input.onChange(editValueToFormValue(event.target.value))
-          : input.onChange(event.target.value)
-      }
-      // onFocus={input.onChange}
-      onBlur={(event: any) => {
-        editValueToFormValue
-          ? input.onBlur(editValueToFormValue(event.target.value))
-          : input.onBlur(event.target.value);
+          : input.onChange(event.target.value);
       }}
+      // onFocus={input.onChange}
+      // onBlur={(event: any) => {
+      //   editValueToFormValue
+      //     ? input.onBlur(editValueToFormValue(event.target.value))
+      //     : input.onBlur(event.target.value);
+      // }}
       // value={input.value}
       defaultValue={formValueToEditValue ? formValueToEditValue(input.value) : input.value}
       {...custom}
@@ -132,7 +132,7 @@ export const RenderSelectField = ({
   return (
     <FormControl
       classes={{ root: classes.root }}
-      error={touched === true && error!=null}
+      error={touched === true && error != null}
       variant="outlined"
       size="small"
       margin="normal">
@@ -163,20 +163,39 @@ interface AutoCompleteFreeSoloProps {
 }
 
 export const RenderAutoCompleteFreeSolo = (props: WrappedFieldProps & AutoCompleteFreeSoloProps) => {
-  const { options, input, label } = props;
+  const {
+    options,
+    input,
+    label,
+    // helperText,
+    meta: { touched, invalid, error }
+  } = props;
   return (
     <Autocomplete
       freeSolo
       disableClearable
       options={options.map(option => option)}
-      defaultValue={input.value}
+      defaultValue={input.value || ""}
       onChange={(event: React.ChangeEvent<{}>, value: string | null) => {
         if (value) {
           input.onChange(value);
         }
       }}
       renderInput={params => (
-        <TextField {...params} label={label} margin="normal" variant="outlined" fullWidth size="small" />
+        <TextField
+          {...params}
+          label={label}
+          margin="normal"
+          variant="outlined"
+          fullWidth
+          size="small"
+          error={touched && invalid}
+          helperText={touched && error}
+          // defaultValue={input.value || ""}
+          onChange={(event: any) => {
+            input.onChange(event.target.value);
+          }}
+        />
       )}
     />
   );
