@@ -4,4 +4,4 @@ metadata:
   name: httpscertissuer-sample
 spec:
   # Add fields here
-  foo: bar
+  caForTest: {}

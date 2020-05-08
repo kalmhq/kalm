@@ -27,17 +27,29 @@ type HttpsCertIssuerSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of HttpsCertIssuer. Edit HttpsCertIssuer_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	// +optional
+	CAForTest *CAForTestIssuer `json:"caForTest"`
+	// +optional
+	ACMECloudFlare *ACMECloudFlareIssuer `json:"acmeCloudFlare"`
+}
+
+type CAForTestIssuer struct{}
+
+type ACMECloudFlareIssuer struct {
+	Email  string `json:"email"`
+	APIKey string `json:"apiKey"`
 }
 
 // HttpsCertIssuerStatus defines the observed state of HttpsCertIssuer
 type HttpsCertIssuerStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	OK bool `json:"ok"`
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:resource:scope=Cluster
+// +kubebuilder:subresource:status
 
 // HttpsCertIssuer is the Schema for the httpscertissuers API
 type HttpsCertIssuer struct {
@@ -49,6 +61,8 @@ type HttpsCertIssuer struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:resource:scope=Cluster
+// +kubebuilder:subresource:status
 
 // HttpsCertIssuerList contains a list of HttpsCertIssuer
 type HttpsCertIssuerList struct {

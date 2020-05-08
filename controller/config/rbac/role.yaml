@@ -163,6 +163,26 @@ rules:
   - patch
   - update
 - apiGroups:
+  - core.kapp.dev
+  resources:
+  - httpscertissuers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kapp.dev
+  resources:
+  - httpscertissuers/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
   - extensions
   resources:
   - daemonsets
