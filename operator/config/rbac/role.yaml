@@ -4,38 +4,113 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   creationTimestamp: null
-  name: manager-role
+  name: operator
 rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  - endpoints
+  - events
+  - namespaces
+  - persistentvolumeclaims
+  - pods
+  - secrets
+  - serviceaccounts
+  - services
+  verbs:
+  - '*'
+- apiGroups:
+  - acme.cert-manager.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
 - apiGroups:
   - admissionregistration.k8s.io
   resources:
   - mutatingwebhookconfigurations
-  verbs:
-  - create
-- apiGroups:
-  - admissionregistration.k8s.io
-  resources:
   - validatingwebhookconfigurations
   verbs:
-  - create
+  - '*'
 - apiGroups:
   - apiextensions.k8s.io
   resources:
   - customresourcedefinitions
+  - customresourcedefinitions.apiextensions.k8s.io
   verbs:
-  - create
+  - '*'
+- apiGroups:
+  - apiregistration.k8s.io
+  resources:
+  - apiservices
+  verbs:
+  - get
+  - list
+  - update
+  - watch
 - apiGroups:
   - apps
   resources:
+  - daemonsets
   - deployments
+  - deployments/finalizers
+  - ingresses
+  - replicasets
+  - statefulsets
   verbs:
-  - create
+  - '*'
+- apiGroups:
+  - auditregistration.k8s.io
+  resources:
+  - auditsinks
+  verbs:
+  - get
+  - list
+  - update
+  - watch
+- apiGroups:
+  - authentication.istio.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - autoscaling
+  resources:
+  - horizontalpodautoscalers
+  verbs:
+  - '*'
+- apiGroups:
+  - cert-manager.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - config.istio.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - extensions
+  resources:
+  - daemonsets
+  - deployments
+  - deployments/finalizers
+  - ingresses
+  - ingresses/finalizers
+  - replicasets
+  - statefulsets
+  verbs:
+  - '*'
 - apiGroups:
   - install.istio.io
   resources:
-  - istiooperators
+  - '*'
   verbs:
-  - create
+  - '*'
 - apiGroups:
   - install.kapp.dev
   resources:
@@ -57,44 +132,48 @@ rules:
   - patch
   - update
 - apiGroups:
+  - monitoring.coreos.com
+  resources:
+  - servicemonitors
+  verbs:
+  - create
+  - get
+- apiGroups:
+  - networking.istio.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - policy
+  resources:
+  - poddisruptionbudgets*
+  verbs:
+  - '*'
+- apiGroups:
   - rbac.authorization.k8s.io
   resources:
   - clusterrolebindings
-  verbs:
-  - create
-- apiGroups:
-  - rbac.authorization.k8s.io
-  resources:
   - clusterroles
-  verbs:
-  - create
-- apiGroups:
-  - rbac.authorization.k8s.io
-  resources:
   - rolebindings
-  verbs:
-  - create
-- apiGroups:
-  - rbac.authorization.k8s.io
-  resources:
   - roles
   verbs:
-  - create
+  - '*'
 - apiGroups:
-  - v1
+  - rbac.istio.io
   resources:
-  - namespaces
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - route.openshift.io
+  resources:
+  - routes/custom-host
   verbs:
   - create
 - apiGroups:
-  - v1
+  - security.istio.io
   resources:
-  - serviceaccounts
+  - '*'
   verbs:
-  - create
-- apiGroups:
-  - v1
-  resources:
-  - services
-  verbs:
-  - create
+  - '*'
