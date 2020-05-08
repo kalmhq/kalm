@@ -32,7 +32,7 @@ The following resources will be also installed. They are kapp dependencies.
 
 #### How is this `kapp-install` file generated?
 
-You can view the operator project under root kapp dir. It is based on the kubebuilder framework. `Kustomize build config / default` in the root directory of the project can almost do the job. The only remaining problem is that you have to ensure that the images(kapp controller and kapp operator) in yaml have been uploaded correctly.
+You can view the operator project under root kapp dir. It is based on the kubebuilder framework. `Kustomize build config / default` in the root directory of the project can almost do the job. The only remaining problem is that you have to ensure that the images(kapp controller and kapp operator) in yaml have been uploaded to docker hub correctly.
 
 # Using Kapp operator in development env
 
@@ -40,9 +40,13 @@ This part is useful for developers who won't make change for controller and oper
 
 Assuming you have a fresh minikube cluster.
 
-#### Prepare controller image
+#### About controller
 
-Open a terminal and go to kapp controller dir
+If you want operator to install the controller, you need to make the controller docker image first.
+
+But if not, you can still manually run controller on your localhost and tell operator not to install it for you. It will be helpful if you modify controller source often. You can skip the controller image build step.
+
+##### step to build controller image
 
 ```bash
 cd controller
@@ -96,6 +100,10 @@ open a new terminal
 cd operator
 
 # apply a kapp operator config
+
+# If you are running controller manually, please use
+kubectl apply -f config/samples/install_v1alpha1_kappoperatorconfig_ignore_kapp_controller.yaml
+# otherwize
 kubectl apply -f config/samples/install_v1alpha1_kappoperatorconfig.yaml
 ```
 
@@ -113,6 +121,9 @@ kubectl get pods -n istio-system
 
 # Kapp Controller should be running in kapp-system namespace
 kubectl get pods -n kapp-system
+
+# Kapp Operator should be running in kapp-operator namespace
+kubectl get pods -n kapp-operator
 
 # View kapp controller and operator logs
 kubectl logs -f -n kapp-system -c manager kapp-controller-xxxxx
