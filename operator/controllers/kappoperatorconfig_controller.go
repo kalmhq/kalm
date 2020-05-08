@@ -172,9 +172,11 @@ func (r *KappOperatorConfigReconciler) reconcileResources(config *installv1alpha
 		}
 	}
 
-	if err := r.installFromYaml(ctx, "kapp.yaml"); err != nil {
-		log.Error(err, "install kapp error.")
-		return err
+	if !config.Spec.SkipKappControllerInstallation {
+		if err := r.installFromYaml(ctx, "kapp.yaml"); err != nil {
+			log.Error(err, "install kapp error.")
+			return err
+		}
 	}
 
 	return nil

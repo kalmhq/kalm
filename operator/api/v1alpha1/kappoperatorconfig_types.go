@@ -22,8 +22,9 @@ import (
 
 // KappOperatorConfigSpec defines the desired state of KappOperatorConfig
 type KappOperatorConfigSpec struct {
-	SkipIstioInstallation       bool `json:"skipIstioInstallation"`
-	SkipCertManagerInstallation bool `json:"skipCertManagerInstallation"`
+	SkipIstioInstallation          bool `json:"skipIstioInstallation,omitempty"`
+	SkipCertManagerInstallation    bool `json:"skipCertManagerInstallation,omitempty"`
+	SkipKappControllerInstallation bool `json:"skipKappControllerInstallation,omitempty"`
 }
 
 // KappOperatorConfigStatus defines the observed state of KappOperatorConfig

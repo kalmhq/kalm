@@ -38,9 +38,8 @@ spec:
               type: boolean
             skipIstioInstallation:
               type: boolean
-          required:
-          - skipCertManagerInstallation
-          - skipIstioInstallation
+            skipKappControllerInstallation:
+              type: boolean
           type: object
         status:
           description: KappOperatorConfigStatus defines the observed state of KappOperatorConfig
