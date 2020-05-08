@@ -8,3 +8,5 @@ kind: KappOperatorConfig
 metadata:
   namespace: kapp-operator
   name: kappoperatorconfig-sample
+spec:
+  skipKappControllerInstallation: true
