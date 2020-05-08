@@ -658,7 +658,12 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             Plugins can affect running state of a program, or provide extra functionality for the programs.
           </Typography>
         </HelperContainer>
-        <Plugins />
+
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6} md={8}>
+            <Plugins />
+          </Grid>
+        </Grid>
       </>
     );
   }

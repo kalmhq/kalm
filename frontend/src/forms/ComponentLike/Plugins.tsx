@@ -11,10 +11,11 @@ import { ComponentPlugin } from "../../types/application";
 import { PluginType } from "../../types/plugin";
 import { ButtonWhite, CustomizedButton } from "../../widgets/Button";
 import { ControlledDialog } from "../../widgets/ControlledDialog";
-import { CustomTextField } from "../Basic";
+import { DeleteIcon } from "../../widgets/Icon";
+import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
+import { H5 } from "../../widgets/Label";
 import { CheckboxField } from "../Basic/checkbox";
 import { NormalizeBoolean } from "../normalizer";
-import { ValidatorRequired } from "../validator";
 import { RenderPluginConfig } from "./PluginConfig";
 
 interface FieldArrayComponentHackType {
@@ -123,8 +124,8 @@ class RenderPlugins extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderBasic(member: string) {
-    const { componentPluginsMap } = this.props;
+  private renderBasic(member: string, index: number) {
+    const { componentPluginsMap, fields } = this.props;
     const pluginName = getComponentPluginName(member);
     const schema =
       componentPluginsMap[pluginName] && componentPluginsMap[pluginName].configSchema
@@ -132,8 +133,8 @@ class RenderPlugins extends React.PureComponent<Props, State> {
         : {};
 
     return (
-      <>
-        <Grid container spacing={2}>
+      <React.Fragment key={member}>
+        {/* <Grid container spacing={2}>
           <Grid item md={12}>
             <CustomTextField
               name={`${member}.name`}
@@ -143,10 +144,24 @@ class RenderPlugins extends React.PureComponent<Props, State> {
               validate={[ValidatorRequired]}
             />
           </Grid>
-        </Grid>
+        </Grid> */}
         <Grid container spacing={2}>
           <Grid item md={12}>
-            {/* <BoldBody>{pluginName}</BoldBody> */}
+            <Grid container spacing={3}>
+              <Grid item xs md={4} style={{ alignItems: "center", display: "flex" }}>
+                <H5>{pluginName}</H5>
+              </Grid>
+
+              <Grid item xs>
+                <IconButtonWithTooltip
+                  tooltipPlacement="top"
+                  tooltipTitle="Delete"
+                  aria-label="delete"
+                  onClick={() => fields.remove(index)}>
+                  <DeleteIcon />
+                </IconButtonWithTooltip>
+              </Grid>
+            </Grid>
 
             <Field
               name={`${member}.isActive`}
@@ -163,7 +178,7 @@ class RenderPlugins extends React.PureComponent<Props, State> {
             <Field name={`${member}.config`} component={RenderPluginConfig} schema={schema} />
           </Grid>
         </Grid>
-      </>
+      </React.Fragment>
     );
   }
 
@@ -177,7 +192,7 @@ class RenderPlugins extends React.PureComponent<Props, State> {
     return (
       <div>
         {fields.map((member, index) => {
-          return this.renderBasic(member);
+          return this.renderBasic(member, index);
         })}
         <Grid container spacing={3} style={{ marginTop: 0 }}>
           <Grid item xs>
