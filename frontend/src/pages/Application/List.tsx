@@ -26,7 +26,8 @@ import { ApplicationDetails } from "../../types/application";
 import { customSearchForImmutable } from "../../utils/tableSearch";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
 import { FoldButtonGroup } from "../../widgets/FoldButtonGroup";
-import { H4 } from "../../widgets/Label";
+import {  H4,Body } from "../../widgets/Label";
+import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
 import { Loading } from "../../widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "../../widgets/SmallLineChart";
 import { BasePage } from "../BasePage";
@@ -312,6 +313,27 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     );
   };
 
+  private renderCreatedTime = (applicationDetails: RowData) => {
+    let createdAt = new Date(0);
+
+    applicationDetails.get("components")?.forEach(component => {
+      component.get("pods").forEach(podStatus => {
+        const ts = podStatus.get("createTimestamp"); 
+        const tsDate = new Date(ts);
+        if (createdAt <= new Date(0)){
+          createdAt = tsDate;
+        }else{
+          createdAt = createdAt < tsDate ? createdAt : tsDate;
+        }
+        
+      });
+    });
+    const createdAtString = createdAt <= new Date(0) ? "-" :createdAt.toISOString();
+    return (
+    <Body>{createdAtString}</Body>
+    );
+  };
+
   private renderStatus = (applicationDetails: RowData) => {
     let podCount = 0;
     let successCount = 0;
@@ -533,47 +555,74 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
 
   private renderActions = (rowData: RowData) => {
     return (
+      <>
+        <IconButtonWithTooltip
+          tooltipTitle="Shell"
+          color="primary"
+          component={Link}
+          to={`/applications/${rowData.get("name")}/shells`}>
+          <ConsoleIcon />
+        </IconButtonWithTooltip>
+        <IconButtonWithTooltip
+          tooltipTitle="Logs"
+          color="primary"
+          component={Link}
+          to={`/applications/${rowData.get("name")}/logs`}>
+          <LogIcon />
+        </IconButtonWithTooltip>
+      </>
+    );
+  };
+
+  private renderMoreActions = (rowData: RowData) => {
+    let options = [
+      {
+        text: "Details",
+        to: `/applications/${rowData.get("name")}`,
+        iconName: "fullscreen"
+      },
+      {
+        text: "Edit",
+        to: `/applications/${rowData.get("name")}/edit`,
+        iconName: "edit",
+        requiredRole: "writer"
+      },
+      {
+        text: "Duplicate",
+        onClick: () => {
+          this.showDuplicateConfirmDialog(rowData);
+        },
+        iconName: "file_copy",
+        requiredRole: "writer"
+      },
+      {
+        text: "Delete",
+        onClick: () => {
+          this.showDeleteConfirmDialog(rowData);
+        },
+        iconName: "delete",
+        requiredRole: "writer"
+      }
+    ];
+    let publishItem = {
+      text: "",
+      onClick: () => {
+        this.showSwitchingIsActiveConfirmDialog(rowData);
+      },
+      iconName: "delete",
+      requiredRole: "writer"
+    };
+    if(rowData.get("isActive")){
+      publishItem.text = "Uninstall";
+      publishItem.iconName = "workoff";
+    }else{
+      publishItem.text = "Install";
+      publishItem.iconName = "work";
+    }
+    options.push(publishItem);
+    return (
       <FoldButtonGroup
-        options={[
-          {
-            text: "Details",
-            to: `/applications/${rowData.get("name")}`,
-            iconName: "fullscreen"
-          },
-          {
-            text: "Edit",
-            to: `/applications/${rowData.get("name")}/edit`,
-            iconName: "edit",
-            requiredRole: "writer"
-          },
-          {
-            text: "Duplicate",
-            onClick: () => {
-              this.showDuplicateConfirmDialog(rowData);
-            },
-            iconName: "file_copy",
-            requiredRole: "writer"
-          },
-          {
-            text: "Logs",
-            to: `/applications/${rowData.get("name")}/logs`,
-            icon: <LogIcon style={{ marginRight: "20px" }} />
-          },
-          {
-            text: "Shell",
-            to: `/applications/${rowData.get("name")}/shells`,
-            icon: <ConsoleIcon style={{ marginRight: "20px" }} />,
-            requiredRole: "writer"
-          },
-          {
-            text: "Delete",
-            onClick: () => {
-              this.showDeleteConfirmDialog(rowData);
-            },
-            iconName: "delete",
-            requiredRole: "writer"
-          }
-        ]}
+        options={options}
       />
     );
   };
@@ -652,19 +701,19 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                   render: this.renderName,
                   customFilterAndSearch: customSearchForImmutable
                 },
-                { title: "Status", field: "status", sorting: false, render: this.renderStatus },
-                {
-                  title: (
-                    <Tooltip title="Addresses can be used to access components in each application. Only visible inside the cluster.">
-                      <FlexRowItemCenterBox width="auto">
-                        Internal Endpoints <HelpIcon fontSize="small" />
-                      </FlexRowItemCenterBox>
-                    </Tooltip>
-                  ),
-                  field: "internalEndpoints",
-                  sorting: false,
-                  render: this.renderInternalEndpoints
-                },
+                { title: "Pods Status", field: "status", sorting: false, render: this.renderStatus },
+                // {
+                //   title: (
+                //     <Tooltip title="Addresses can be used to access components in each application. Only visible inside the cluster.">
+                //       <FlexRowItemCenterBox width="auto">
+                //         Internal Endpoints <HelpIcon fontSize="small" />
+                //       </FlexRowItemCenterBox>
+                //     </Tooltip>
+                //   ),
+                //   field: "internalEndpoints",
+                //   sorting: false,
+                //   render: this.renderInternalEndpoints
+                // },
                 {
                   title: (
                     <Tooltip title="Addresses can be used to access your services publicly.">
@@ -693,19 +742,33 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                     textAlign: "center"
                   }
                 },
+                // {
+                //   title: "Enable",
+                //   field: "active",
+                //   sorting: false,
+                //   render: this.renderEnable,
+                //   hidden: !hasWriterRole
+                // },
                 {
-                  title: "Enable",
+                  title: "Created On",
                   field: "active",
                   sorting: false,
-                  render: this.renderEnable,
+                  render: this.renderCreatedTime,
                   hidden: !hasWriterRole
                 },
                 {
-                  title: "Action",
+                  title: "Actions",
                   field: "action",
                   sorting: false,
                   searchable: false,
                   render: this.renderActions
+                },
+                {
+                  title: "",
+                  field: "moreAction",
+                  sorting: false,
+                  searchable: false,
+                  render: this.renderMoreActions
                 }
               ]}
               // detailPanel={this.renderDetails}

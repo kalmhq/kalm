@@ -106,19 +106,20 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
   };
 
   private submitComponent = async (component: ApplicationComponent) => {
-    // console.log("currentComponent", console.log(this.state.currentComponent && this.state.currentComponent.toJS()));
     // console.log("submitComponent", component.toJS());
+
     const { dispatch } = this.props;
     const { currentComponent } = this.state;
+
+    this.setState({
+      currentComponent: component
+    });
 
     if (!currentComponent || !currentComponent.get("name")) {
       await dispatch(createComponentAction(component));
     } else {
       await dispatch(updateComponentAction(component));
     }
-    this.setState({
-      currentComponent: component
-    });
   };
 
   private handleDeleteComponent() {
@@ -133,6 +134,19 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
         });
       } else {
         dispatch(deleteComponentAction(currentComponent.get("name")));
+      }
+
+      if (
+        currentComponent.get("name") ===
+        application
+          ?.get("components")
+          .get(0)
+          ?.get("name")
+      ) {
+        this.setState({
+          currentComponent: undefined,
+          currentComponentTab: "basic"
+        });
       }
     }
   }
@@ -178,6 +192,7 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
   public render() {
     const { isLoading, application, dispatch, classes } = this.props;
     const { currentFormType } = this.state;
+    // console.log("render", this.state.currentComponent);
 
     return (
       <BasePage
