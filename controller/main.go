@@ -157,6 +157,14 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err = (&controllers.HttpsCertIssuerReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("HttpsCertIssuer"),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "HttpsCertIssuer")
+		os.Exit(1)
+	}
 	// +kubebuilder:scaffold:builder
 
 	// only run webhook if explicitly declared
