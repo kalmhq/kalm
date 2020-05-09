@@ -3,5 +3,6 @@ kind: HttpsCert
 metadata:
   name: httpscert-sample
 spec:
-  # Add fields here
-  foo: bar
+  httpsCertIssuer: httpscertissuer-sample
+  domains:
+    - x.demo.com

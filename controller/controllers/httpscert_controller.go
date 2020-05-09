@@ -17,12 +17,16 @@ package controllers
 
 import (
 	"context"
-
 	"github.com/go-logr/logr"
+	cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	corev1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
 )
 
@@ -37,12 +41,66 @@ type HttpsCertReconciler struct {
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=httpscerts/status,verbs=get;update;patch
 
 func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	_ = context.Background()
-	_ = r.Log.WithValues("httpscert", req.NamespacedName)
+	ctx := context.Background()
+	log := r.Log.WithValues("httpscert", req.NamespacedName)
 
-	// your logic here
+	var httpsCert corev1alpha1.HttpsCert
+	if err := r.Get(ctx, req.NamespacedName, &httpsCert); err != nil {
+		err = client.IgnoreNotFound(err)
+		if err != nil {
+			log.Error(err, "fail to get HttpsCert")
+		}
 
-	return ctrl.Result{}, nil
+		return ctrl.Result{}, err
+	}
+
+	nsIstioSys := "istio-system"
+
+	desiredCert := cmv1alpha2.Certificate{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      httpsCert.Name,
+			Namespace: nsIstioSys,
+		},
+		Spec: cmv1alpha2.CertificateSpec{
+			SecretName: httpsCert.Name,
+			DNSNames:   httpsCert.Spec.Domains,
+			IssuerRef: cmmeta.ObjectReference{
+				Name: httpsCert.Spec.HttpsCertIssuer,
+				Kind: "ClusterIssuer",
+			},
+		},
+	}
+
+	// reconcile cert
+	var cert cmv1alpha2.Certificate
+	var isNew bool
+	err := r.Get(ctx, types.NamespacedName{
+		Namespace: "istio-system",
+		Name:      httpsCert.Name,
+	}, &httpsCert)
+
+	if err != nil {
+		if !errors.IsNotFound(err) {
+			return ctrl.Result{}, err
+		}
+
+		isNew = true
+		cert = desiredCert
+	} else {
+		cert.Spec = desiredCert.Spec
+	}
+
+	if isNew {
+		if err := ctrl.SetControllerReference(&httpsCert, &cert, r.Scheme); err != nil {
+			return ctrl.Result{}, err
+		}
+
+		err = r.Create(ctx, &cert)
+	} else {
+		err = r.Update(ctx, &cert)
+	}
+
+	return ctrl.Result{}, err
 }
 
 func (r *HttpsCertReconciler) SetupWithManager(mgr ctrl.Manager) error {
