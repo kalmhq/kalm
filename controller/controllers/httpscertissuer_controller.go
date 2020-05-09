@@ -20,7 +20,6 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"crypto/ed25519"
-	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -282,9 +281,13 @@ func getPrvKeyNameForClusterIssuer(issuer corev1alpha1.HttpsCertIssuer) string {
 }
 
 func (r *HttpsCertIssuerReconciler) generateRandomPrvKeyAndCrtForCA() (prvKey []byte, crt []byte, err error) {
-	priv, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	//priv, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	//if err != nil {
+	//	log.Fatalf("Failed to generate private key: %v", err)
+	//	return nil, nil, err
+	//}
+	caPrivKey, err := rsa.GenerateKey(rand.Reader, 4096)
 	if err != nil {
-		log.Fatalf("Failed to generate private key: %v", err)
 		return nil, nil, err
 	}
 
@@ -301,14 +304,14 @@ func (r *HttpsCertIssuerReconciler) generateRandomPrvKeyAndCrtForCA() (prvKey []
 		Subject: pkix.Name{
 			Organization: []string{"Kapp CA for Test Co"},
 		},
-		KeyUsage:              x509.KeyUsageCertSign | x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
-		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+		KeyUsage:              x509.KeyUsageCertSign | x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment,
+		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
 		BasicConstraintsValid: true,
 		NotBefore:             time.Now(),
-		NotAfter:              time.Unix(time.Now().Unix()+60*60*24, 0),
+		NotAfter:              time.Now().AddDate(0, 0, 1),
 	}
 
-	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, publicKey(priv), priv)
+	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, caPrivKey.Public(), caPrivKey)
 	if err != nil {
 		log.Fatalf("Failed to create certificate: %v", err)
 		return nil, nil, err
@@ -336,12 +339,8 @@ func (r *HttpsCertIssuerReconciler) generateRandomPrvKeyAndCrtForCA() (prvKey []
 	//}
 
 	var keyOutBuf bytes.Buffer
-	privBytes, err := x509.MarshalPKCS8PrivateKey(priv)
-	if err != nil {
-		log.Fatalf("Unable to marshal private key: %v", err)
-		return nil, nil, err
-	}
-	if err := pem.Encode(&keyOutBuf, &pem.Block{Type: "PRIVATE KEY", Bytes: privBytes}); err != nil {
+	privBytes := x509.MarshalPKCS1PrivateKey(caPrivKey)
+	if err := pem.Encode(&keyOutBuf, &pem.Block{Type: "RSA PRIVATE KEY", Bytes: privBytes}); err != nil {
 		log.Fatalf("Failed to write data to key.pem: %v", err)
 		return nil, nil, err
 	}

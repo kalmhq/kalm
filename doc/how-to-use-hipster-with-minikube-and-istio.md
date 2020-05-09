@@ -161,9 +161,9 @@ INGRESS_HOST=$(minikube ip)
 # 2. curl svc with `--insecure`
 curl -v --insecure -HHost:hipster.demo.com --resolve hipster.demo.com:$SECURE_INGRESS_PORT:$INGRESS_HOST \
 https://hipster.demo.com:$SECURE_INGRESS_PORT/
-
 # 3. get root crt of our CA
 kubectl get secret -n cert-manager https-cert-issuer-hipster -o jsonpath='{.data.tls\.crt}' | base64 -D > ca.crt
-
-
+# 4. curl with `--cacrt ca.crt` to trust our CA, you should see the HTTPS request succeed now
+curl -v -HHost:hipster.demo.com --resolve hipster.demo.com:$SECURE_INGRESS_PORT:$INGRESS_HOST \
+--cacrt ca.crt https://hipster.demo.com:$SECURE_INGRESS_PORT/
 ```
