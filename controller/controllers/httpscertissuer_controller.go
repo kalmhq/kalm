@@ -26,7 +26,10 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
+	"fmt"
 	"github.com/go-logr/logr"
+	"github.com/jetstack/cert-manager/pkg/apis/acme/v1alpha2"
+	cmmetav1 "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -71,7 +74,7 @@ func (r *HttpsCertIssuerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, er
 	}
 
 	if httpsCertIssuer.Spec.ACMECloudFlare != nil {
-		return r.ReconcileACMECloudFlare(httpsCertIssuer)
+		return r.ReconcileACMECloudFlare(ctx, httpsCertIssuer)
 	}
 
 	return ctrl.Result{}, nil
@@ -160,10 +163,104 @@ func (r *HttpsCertIssuerReconciler) ReconcileCAForTest(ctx context.Context, issu
 	return ctrl.Result{}, nil
 }
 
-func (r *HttpsCertIssuerReconciler) ReconcileACMECloudFlare(issuer corev1alpha1.HttpsCertIssuer) (ctrl.Result, error) {
-	// todo config ACME cloudflare
+// config ACME cloudflare
+func (r *HttpsCertIssuerReconciler) ReconcileACMECloudFlare(ctx context.Context, issuer corev1alpha1.HttpsCertIssuer) (ctrl.Result, error) {
+
+	acmeSpec := issuer.Spec.ACMECloudFlare
+	email := acmeSpec.Email
+	plainSecret := acmeSpec.APIKey
+
+	secName := issuer.Name
+	secKey := "sec-content"
+
+	sec := corev1.Secret{}
+	if err := r.Get(ctx, types.NamespacedName{Namespace: "cert-manager", Name: secName}, &sec); err != nil {
+		if !errors.IsNotFound(err) {
+			return ctrl.Result{}, err
+		}
+
+		sec := corev1.Secret{
+			ObjectMeta: v1.ObjectMeta{
+				Namespace: "cert-manager",
+				Name:      secName,
+			},
+			StringData: map[string]string{
+				secKey: plainSecret,
+			},
+			Type: "Opaque",
+		}
+
+		if err := ctrl.SetControllerReference(&issuer, &sec, r.Scheme); err != nil {
+			return ctrl.Result{}, err
+		}
+
+		if err := r.Create(ctx, &sec); err != nil {
+			return ctrl.Result{}, err
+		}
+
+		r.Log.Info("secret created")
+	}
+
+	// todo update
+
+	// ref: https://cert-manager.io/docs/configuration/acme/dns01/cloudflare/
+	clusterIssuer := cmv1alpha2.ClusterIssuer{}
+	if err := r.Get(ctx, client.ObjectKey{Name: issuer.Name}, &clusterIssuer); err != nil {
+		if !errors.IsNotFound(err) {
+			return ctrl.Result{}, err
+		}
+
+		clusterIssuer := cmv1alpha2.ClusterIssuer{
+			ObjectMeta: v1.ObjectMeta{
+				Name: issuer.Name,
+			},
+			Spec: cmv1alpha2.IssuerSpec{
+				IssuerConfig: cmv1alpha2.IssuerConfig{
+					ACME: &v1alpha2.ACMEIssuer{
+						Email:  email,
+						Server: "https://acme-staging-v02.api.letsencrypt.org/directory",
+						//Server: "https://acme-v02.api.letsencrypt.org/directory",
+						PrivateKey: cmmetav1.SecretKeySelector{ // what is this prvKey used for?
+							LocalObjectReference: cmmetav1.LocalObjectReference{
+								Name: getPrvKeyNameForClusterIssuer(issuer),
+							},
+						},
+						Solvers: []v1alpha2.ACMEChallengeSolver{
+							{
+								DNS01: &v1alpha2.ACMEChallengeSolverDNS01{
+									Cloudflare: &v1alpha2.ACMEIssuerDNS01ProviderCloudflare{
+										Email: email,
+										APIKey: &cmmetav1.SecretKeySelector{
+											LocalObjectReference: cmmetav1.LocalObjectReference{
+												Name: secName,
+											},
+											Key: secKey,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		if err := ctrl.SetControllerReference(&issuer, &clusterIssuer, r.Scheme); err != nil {
+			return ctrl.Result{}, err
+		}
+
+		r.Log.Info("creating clusterIssuer")
+		if err := r.Create(ctx, &clusterIssuer); err != nil {
+			r.Log.Error(err, "fail create clusterIssuer")
+			return ctrl.Result{}, err
+		}
+	}
 
 	return ctrl.Result{}, nil
+}
+
+func getPrvKeyNameForClusterIssuer(issuer corev1alpha1.HttpsCertIssuer) string {
+	return fmt.Sprintf("prvkey-%s", issuer.Name)
 }
 
 func (r *HttpsCertIssuerReconciler) generateRandomPrvKeyAndCrtForCA() (prvKey []byte, crt []byte, err error) {

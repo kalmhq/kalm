@@ -3,5 +3,13 @@ kind: HttpsCertIssuer
 metadata:
   name: httpscertissuer-sample
 spec:
-  # Add fields here
   caForTest: {}
+---
+# apiVersion: core.kapp.dev/v1alpha1
+# kind: HttpsCertIssuer
+# metadata:
+#   name: httpscertissuer-acme-sample
+# spec:
+#   acmeCloudFlare:
+#     email: foo@bar.com
+#     apiKey: abcd
