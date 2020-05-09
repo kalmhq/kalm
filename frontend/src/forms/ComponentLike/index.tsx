@@ -7,7 +7,7 @@ import { connect } from "react-redux";
 import { InjectedFormProps } from "redux-form";
 import { Field, getFormSyncErrors, getFormValues, reduxForm } from "redux-form/immutable";
 import { Body, H3 } from "widgets/Label";
-import { loadComponentPluginsAction } from "../../actions/application";
+import { loadComponentPluginsAction, loadApplicationPluginsAction } from "../../actions/application";
 import { loadConfigsAction } from "../../actions/config";
 import { loadNodesAction } from "../../actions/node";
 import { RootState } from "../../reducers";
@@ -155,7 +155,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
   public componentDidMount() {
     const { dispatch } = this.props;
-    // dispatch(loadApplicationPluginsAction())
+    // load application plugins schema
+    dispatch(loadApplicationPluginsAction());
     // load component plugins schema
     dispatch(loadComponentPluginsAction());
     // load node labels for node selectors

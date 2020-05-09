@@ -16,7 +16,7 @@ import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
 import { H5 } from "../../widgets/Label";
 import { CheckboxField } from "../Basic/checkbox";
 import { NormalizeBoolean } from "../normalizer";
-import { RenderPluginConfig } from "./PluginConfig";
+import { RenderDynamicForm } from "../Basic/dynamicForm";
 
 interface FieldArrayComponentHackType {
   name: any;
@@ -175,7 +175,7 @@ class RenderPlugins extends React.PureComponent<Props, State> {
         </Grid>
         <Grid container spacing={2}>
           <Grid item md={12}>
-            <Field name={`${member}.config`} component={RenderPluginConfig} schema={schema} />
+            <Field name={`${member}.config`} component={RenderDynamicForm} schema={schema} />
           </Grid>
         </Grid>
       </React.Fragment>
