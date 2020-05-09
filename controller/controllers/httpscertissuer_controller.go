@@ -201,41 +201,32 @@ func (r *HttpsCertIssuerReconciler) ReconcileACMECloudFlare(ctx context.Context,
 		r.Log.Info("secret created")
 	}
 
-	// todo update
-
 	// ref: https://cert-manager.io/docs/configuration/acme/dns01/cloudflare/
-	clusterIssuer := cmv1alpha2.ClusterIssuer{}
-	if err := r.Get(ctx, client.ObjectKey{Name: issuer.Name}, &clusterIssuer); err != nil {
-		if !errors.IsNotFound(err) {
-			return ctrl.Result{}, err
-		}
-
-		clusterIssuer := cmv1alpha2.ClusterIssuer{
-			ObjectMeta: v1.ObjectMeta{
-				Name: issuer.Name,
-			},
-			Spec: cmv1alpha2.IssuerSpec{
-				IssuerConfig: cmv1alpha2.IssuerConfig{
-					ACME: &v1alpha2.ACMEIssuer{
-						Email:  email,
-						Server: "https://acme-staging-v02.api.letsencrypt.org/directory",
-						//Server: "https://acme-v02.api.letsencrypt.org/directory",
-						PrivateKey: cmmetav1.SecretKeySelector{ // what is this prvKey used for?
-							LocalObjectReference: cmmetav1.LocalObjectReference{
-								Name: getPrvKeyNameForClusterIssuer(issuer),
-							},
+	expectedClusterIssuer := cmv1alpha2.ClusterIssuer{
+		ObjectMeta: v1.ObjectMeta{
+			Name: issuer.Name,
+		},
+		Spec: cmv1alpha2.IssuerSpec{
+			IssuerConfig: cmv1alpha2.IssuerConfig{
+				ACME: &v1alpha2.ACMEIssuer{
+					Email:  email,
+					Server: "https://acme-staging-v02.api.letsencrypt.org/directory",
+					//Server: "https://acme-v02.api.letsencrypt.org/directory",
+					PrivateKey: cmmetav1.SecretKeySelector{ // what is this prvKey used for?
+						LocalObjectReference: cmmetav1.LocalObjectReference{
+							Name: getPrvKeyNameForClusterIssuer(issuer),
 						},
-						Solvers: []v1alpha2.ACMEChallengeSolver{
-							{
-								DNS01: &v1alpha2.ACMEChallengeSolverDNS01{
-									Cloudflare: &v1alpha2.ACMEIssuerDNS01ProviderCloudflare{
-										Email: email,
-										APIKey: &cmmetav1.SecretKeySelector{
-											LocalObjectReference: cmmetav1.LocalObjectReference{
-												Name: secName,
-											},
-											Key: secKey,
+					},
+					Solvers: []v1alpha2.ACMEChallengeSolver{
+						{
+							DNS01: &v1alpha2.ACMEChallengeSolverDNS01{
+								Cloudflare: &v1alpha2.ACMEIssuerDNS01ProviderCloudflare{
+									Email: email,
+									APIKey: &cmmetav1.SecretKeySelector{
+										LocalObjectReference: cmmetav1.LocalObjectReference{
+											Name: secName,
 										},
+										Key: secKey,
 									},
 								},
 							},
@@ -243,8 +234,21 @@ func (r *HttpsCertIssuerReconciler) ReconcileACMECloudFlare(ctx context.Context,
 					},
 				},
 			},
+		},
+	}
+
+	clusterIssuer := cmv1alpha2.ClusterIssuer{}
+	var isNew bool
+	if err := r.Get(ctx, client.ObjectKey{Name: issuer.Name}, &clusterIssuer); err != nil {
+		if !errors.IsNotFound(err) {
+			return ctrl.Result{}, err
 		}
 
+		clusterIssuer = expectedClusterIssuer
+		isNew = true
+	}
+
+	if isNew {
 		if err := ctrl.SetControllerReference(&issuer, &clusterIssuer, r.Scheme); err != nil {
 			return ctrl.Result{}, err
 		}
@@ -252,6 +256,13 @@ func (r *HttpsCertIssuerReconciler) ReconcileACMECloudFlare(ctx context.Context,
 		r.Log.Info("creating clusterIssuer")
 		if err := r.Create(ctx, &clusterIssuer); err != nil {
 			r.Log.Error(err, "fail create clusterIssuer")
+			return ctrl.Result{}, err
+		}
+	} else {
+		clusterIssuer.Spec = expectedClusterIssuer.Spec
+
+		if err := r.Update(ctx, &clusterIssuer); err != nil {
+			r.Log.Error(err, "fail update clusterIssuer")
 			return ctrl.Result{}, err
 		}
 	}
