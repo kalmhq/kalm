@@ -28,9 +28,9 @@ type HttpsCertIssuerSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// +optional
-	CAForTest *CAForTestIssuer `json:"caForTest"`
+	CAForTest *CAForTestIssuer `json:"caForTest,omitempty"`
 	// +optional
-	ACMECloudFlare *ACMECloudFlareIssuer `json:"acmeCloudFlare"`
+	ACMECloudFlare *ACMECloudFlareIssuer `json:"acmeCloudFlare,omitempty"`
 }
 
 type CAForTestIssuer struct{}

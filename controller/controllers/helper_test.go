@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	v1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	"github.com/onsi/ginkgo"
 	"github.com/stretchr/testify/suite"
@@ -103,6 +104,10 @@ func (suite *BasicSuite) createApplication(application *v1alpha1.Application) {
 	}, "Created application has no finalizer.")
 }
 
+func (suite *HttpsCertIssuerControllerSuite) createHttpsCertIssuer(issuer v1alpha1.HttpsCertIssuer) {
+	suite.Nil(suite.K8sClient.Create(context.Background(), &issuer))
+}
+
 func (suite *BasicSuite) reloadObject(key client.ObjectKey, obj runtime.Object) {
 	suite.Nil(suite.K8sClient.Get(context.Background(), key, obj))
 }
@@ -137,6 +142,8 @@ func (suite *BasicSuite) SetupSuite() {
 			filepath.Join("config", "crd", "bases"),
 			filepath.Join("..", "resources", "istio"),
 			filepath.Join("resources", "istio"),
+			filepath.Join("resources"),
+			filepath.Join("..", "resources"),
 		},
 	}
 
@@ -147,6 +154,7 @@ func (suite *BasicSuite) SetupSuite() {
 	suite.Nil(scheme.AddToScheme(scheme.Scheme))
 	suite.Nil(istioScheme.AddToScheme(scheme.Scheme))
 	suite.Nil(v1alpha1.AddToScheme(scheme.Scheme))
+	suite.Nil(v1alpha2.AddToScheme(scheme.Scheme))
 
 	// +kubebuilder:scaffold:scheme
 
@@ -202,6 +210,18 @@ func (suite *BasicSuite) SetupSuite() {
 		Log:    ctrl.Log.WithName("controllers").WithName("ApplicationPluginBinding"),
 		Scheme: mgr.GetScheme(),
 		Reader: mgr.GetAPIReader(),
+	}).SetupWithManager(mgr))
+
+	suite.Nil((&HttpsCertIssuerReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("HttpsCertIssuer"),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr))
+
+	suite.Nil((&HttpsCertReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("HttpsCert"),
+		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr))
 
 	mgrStopChannel := make(chan struct{})

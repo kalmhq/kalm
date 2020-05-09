@@ -267,6 +267,12 @@ func (r *HttpsCertIssuerReconciler) ReconcileACMECloudFlare(ctx context.Context,
 		}
 	}
 
+	//todo
+	//conditions := clusterIssuer.Status.Conditions
+	//latestCondition := conditions[len(conditions) - 1]
+	//latestCondition.Type
+	//if issuer.Status.OK !=
+
 	return ctrl.Result{}, nil
 }
 
