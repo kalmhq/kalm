@@ -18,6 +18,8 @@ spec:
         type: array
         items:
           type: string
+      httpsCert:
+        type: string
       paths:
         type: array
         items:
@@ -56,7 +58,8 @@ spec:
   pluginName: kapp-builtin-application-plugin-ingress
   config:
     hosts:
-      - "*"
+      - "demo.com"
+    httpsCert: httpscert-sample
     paths:
       - "/abc"
       - "/"

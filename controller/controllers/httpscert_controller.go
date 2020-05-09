@@ -75,9 +75,9 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	var cert cmv1alpha2.Certificate
 	var isNew bool
 	err := r.Get(ctx, types.NamespacedName{
-		Namespace: "istio-system",
+		Namespace: nsIstioSys,
 		Name:      httpsCert.Name,
-	}, &httpsCert)
+	}, &cert)
 
 	if err != nil {
 		if !errors.IsNotFound(err) {
