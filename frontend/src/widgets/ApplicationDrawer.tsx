@@ -76,6 +76,7 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
 
   // handleClickBasic: () => void;
   handleClickSharedEnvs: () => void;
+  handleClickApplicationPlugins: () => void;
   handleClickComponent: (component: ApplicationComponent) => void;
   handleClickComponentTab: (component: ApplicationComponent, tab: string) => void;
 }
@@ -107,6 +108,13 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
 
     const { handleClickSharedEnvs } = this.props;
     handleClickSharedEnvs();
+  }
+
+  private handleClickApplicationPlugins() {
+    this.setState({ selectedListItemKey: "applicationPlugins" });
+
+    const { handleClickApplicationPlugins } = this.props;
+    handleClickApplicationPlugins();
   }
 
   private handleClickComponent(component: ApplicationComponent, index: number) {
@@ -424,6 +432,30 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
               />
             </ListItemIcon>
             <ListItemText primary={"Shared Environments"} />
+          </ListItem>
+
+          <ListSubheader disableSticky={true} className={classes.listSubHeader}>
+            Application Plugins
+          </ListSubheader>
+
+          <ListItem
+            key={"applicationPlugins"}
+            onClick={() => {
+              this.handleClickApplicationPlugins();
+            }}
+            selected={this.state.selectedListItemKey === "applicationPlugins"}
+            className={classes.listItem}
+            classes={{
+              selected: classes.listItemSeleted
+            }}
+            button>
+            <ListItemIcon>
+              <FiberManualRecordIcon
+                style={{ fontSize: 15 }}
+                htmlColor={this.state.selectedListItemKey === "applicationPlugins" ? blue[700] : grey[400]}
+              />
+            </ListItemIcon>
+            <ListItemText primary={"Application Plugins"} />
           </ListItem>
         </List>
       </BaseDrawer>

@@ -49,7 +49,7 @@ const styles = (theme: Theme) =>
 
 interface State {
   currentFormType: "application" | "component";
-  currentApplicationTab: "basic" | "sharedEnvs";
+  currentApplicationTab: "basic" | "sharedEnvs" | "applicationPlugins";
   currentComponent?: ApplicationComponent;
   // currentComponentTab?: "envs" | "ports" | "resources" | "plugins" | "probes" | "advanced";
   currentComponentTab?: string;
@@ -169,6 +169,12 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
           this.setState({
             currentFormType: "application",
             currentApplicationTab: "sharedEnvs"
+          });
+        }}
+        handleClickApplicationPlugins={() => {
+          this.setState({
+            currentFormType: "application",
+            currentApplicationTab: "applicationPlugins"
           });
         }}
         handleClickComponent={(component: ApplicationComponent) => {

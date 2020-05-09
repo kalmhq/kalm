@@ -43,17 +43,18 @@ export const RenderConfigField = (props: WrappedFieldProps & RenderConfigFieldPr
       options={getConfigFilePaths()}
       disableCloseOnSelect
       getOptionLabel={option => option}
-      renderOption={(option, { selected }) => (
-        <React.Fragment>
-          <Checkbox icon={icon} checkedIcon={checkedIcon} style={{ marginRight: 8 }} checked={selected} />
-          {option}
-        </React.Fragment>
-      )}
+      renderOption={(option, { selected }) => {
+        return (
+          <React.Fragment>
+            <Checkbox icon={icon} checkedIcon={checkedIcon} style={{ marginRight: 8 }} checked={selected} />
+            {option}
+          </React.Fragment>
+        );
+      }}
       renderInput={params => <TextField {...params} variant="outlined" label={label} size={"small"} margin="normal" />}
-      defaultValue={input.value}
+      defaultValue={input.value ? input.value : []}
       onChange={(_, v: any) => {
         const value = v as string[];
-
         input.onChange(value);
       }}
     />
