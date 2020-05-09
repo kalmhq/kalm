@@ -153,4 +153,17 @@ istioctl dashboard kiali
 # go to graph page
 # select kapp-hipster namespace
 # make kapp-hipster requests from browser and view graph changes
+
+# test HTTPS certificate at localhost using kapp CA issuer
+# 1. prepare env
+SECURE_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
+INGRESS_HOST=$(minikube ip)
+# 2. curl svc with `--insecure`
+curl -v --insecure -HHost:hipster.demo.com --resolve hipster.demo.com:$SECURE_INGRESS_PORT:$INGRESS_HOST \
+https://hipster.demo.com:$SECURE_INGRESS_PORT/
+
+# 3. get root crt of our CA
+kubectl get secret -n cert-manager https-cert-issuer-hipster -o jsonpath='{.data.tls\.crt}' | base64 -D > ca.crt
+
+
 ```
