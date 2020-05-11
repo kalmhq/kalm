@@ -65,8 +65,9 @@ jobs:
       stage: build
       name: controller
       language: go
-      script:
-        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+      install:
         - cd controller
+        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+      script:
         - make docker-build
         - make docker-push
