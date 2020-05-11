@@ -17,6 +17,9 @@ go-generate:
 ifeq (, $(shell which go-bindata))
 	go get -u github.com/go-bindata/go-bindata/...
 endif
+ifeq (, $(shell which kustomize))
+	go install sigs.k8s.io/kustomize/kustomize/v3
+endif
 	go generate ./...
 
 # Run tests
