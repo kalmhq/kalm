@@ -1,4 +1,4 @@
-import { Breadcrumbs, Box, createStyles, Link, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { Breadcrumbs, createStyles, Link, Theme, withStyles, WithStyles } from "@material-ui/core";
 import {
   deleteConfigAction,
   duplicateConfigAction,
@@ -6,6 +6,7 @@ import {
   setCurrentConfigIdChainAction
 } from "actions/config";
 import { setErrorNotificationAction } from "actions/notification";
+import { withNamespace, withNamespaceProps } from "permission/Namespace";
 import React from "react";
 import { connect } from "react-redux";
 import SyntaxHighlighter from "react-syntax-highlighter";
@@ -20,12 +21,12 @@ import { ConfigNewDialog } from "widgets/ConfigNewDialog";
 import { ConfigUploadDialog } from "widgets/ConfigUploadDialog";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { FileTree } from "widgets/FileTree";
+import { AddFileIcon, AddFolderIcon, CopyIcon, DeleteIcon, DeleteWhiteIcon, EditIcon, UploadIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { BasePage } from "../BasePage";
-import { withNamespace, withNamespaceProps } from "permission/Namespace";
 import { NormalInfoPaper } from "widgets/Paper";
-import { H4 } from "widgets/Label";
-import { AddFileIcon, UploadIcon, AddFolderIcon, EditIcon, CopyIcon, DeleteIcon, DeleteWhiteIcon } from "widgets/Icon";
+import { ApplicationViewDrawer } from "../../widgets/ApplicationViewDrawer";
+import { Namespaces } from "../../widgets/Namespaces";
+import { BasePage } from "../BasePage";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -76,15 +77,6 @@ const styles = (theme: Theme) =>
       borderRadius: "0px",
       background: "#383838",
       padding: 0
-    },
-    secondHeaderRight: {
-      height: "100%",
-      width: "100%",
-      display: "flex",
-      alignItems: "center"
-    },
-    secondHeaderRightItem: {
-      marginLeft: 20
     }
   });
 
@@ -335,12 +327,7 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
     const { showConfigNewDialog, showConfigEditDialog, newConfigType } = this.state;
 
     return (
-      <BasePage
-        secondHeaderRight={
-          <Box className={classes.secondHeaderRight}>
-            <H4 className={classes.secondHeaderRightItem}>Configs</H4>
-          </Box>
-        }>
+      <BasePage secondHeaderLeft={<Namespaces />} secondHeaderRight={"Configs"} leftDrawer={<ApplicationViewDrawer />}>
         <div className={classes.root}>
           <div className={classes.leftTree}>
             {this.renderFileTreeActions()}

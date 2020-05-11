@@ -1,0 +1,26 @@
+# permissions to do edit httpscerts.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: httpscert-editor-role
+rules:
+- apiGroups:
+  - core.kapp.dev
+  resources:
+  - httpscerts
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kapp.dev
+  resources:
+  - httpscerts/status
+  verbs:
+  - get
+  - patch
+  - update

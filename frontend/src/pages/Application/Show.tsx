@@ -1,15 +1,17 @@
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { push } from "connected-react-router";
 import { withNamespace, withNamespaceProps } from "permission/Namespace";
 import React from "react";
 import { connect } from "react-redux";
 import { RouteChildrenProps } from "react-router-dom";
+import { CustomizedButton } from "widgets/Button";
+import { ApplicationViewDrawer } from "../../widgets/ApplicationViewDrawer";
+import { H4 } from "../../widgets/Label";
 import { Loading } from "../../widgets/Loading";
+import { Namespaces } from "../../widgets/Namespaces";
 import { BasePage } from "../BasePage";
 import { Details } from "./Detail";
 import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./ItemDataWrapper";
-import { H4 } from "../../widgets/Label";
-import { CustomizedButton } from "widgets/Button";
-import { push } from "connected-react-router";
 
 const mapStateToProps = (_: any, props: any) => {
   const { match } = props;
@@ -66,7 +68,10 @@ class ApplicationShowRaw extends React.PureComponent<Props> {
     const { isLoading, application, applicationName, dispatch } = this.props;
     // const hasWriterRole = hasRole("writer");
     return (
-      <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
+      <BasePage
+        secondHeaderLeft={<Namespaces />}
+        secondHeaderRight={this.renderSecondHeaderRight()}
+        leftDrawer={<ApplicationViewDrawer />}>
         {isLoading && !application ? (
           <Loading />
         ) : application ? (

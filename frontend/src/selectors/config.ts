@@ -5,6 +5,12 @@ import Immutable from "immutable";
 
 export const getConfigFilePaths = (): string[] => {
   const state = store.getState();
+  // console.log(
+  //   state
+  //     .get("configs")
+  //     .get("configFilePaths")
+  //     .toArray()
+  // );
   return state
     .get("configs")
     .get("configFilePaths")

@@ -1,0 +1,20 @@
+# permissions to do viewer httpscerts.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: httpscert-viewer-role
+rules:
+- apiGroups:
+  - core.kapp.dev
+  resources:
+  - httpscerts
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - core.kapp.dev
+  resources:
+  - httpscerts/status
+  verbs:
+  - get

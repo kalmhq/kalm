@@ -6,11 +6,11 @@ import React, { forwardRef } from "react";
 import { connect, DispatchProp } from "react-redux";
 import { arrayUnshift, change, WrappedFieldArrayProps } from "redux-form";
 import { FieldArray } from "redux-form/immutable";
-import { MaterialTableEditTextField } from "../Basic/text";
-import { EnvTypeStatic, EnvTypeExternal, EnvTypeLinked } from "../../types/common";
-import { MaterialTableEditSelectField } from "../Basic/select";
 import { SharedEnv } from "../../types/application";
+import { EnvTypeExternal, EnvTypeLinked, EnvTypeStatic } from "../../types/common";
 import { MaterialTableEditAutoComplete } from "../Basic/autoComplete";
+import { MaterialTableEditSelectField } from "../Basic/select";
+import { MaterialTableEditTextField } from "../Basic/text";
 interface FieldArrayComponentHackType {
   name: any;
   component: any;

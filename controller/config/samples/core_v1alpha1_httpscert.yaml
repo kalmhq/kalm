@@ -1,0 +1,8 @@
+apiVersion: core.kapp.dev/v1alpha1
+kind: HttpsCert
+metadata:
+  name: httpscert-sample
+spec:
+  httpsCertIssuer: httpscertissuer-sample
+  domains:
+    - x.demo.com

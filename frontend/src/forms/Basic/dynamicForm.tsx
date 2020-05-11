@@ -14,7 +14,7 @@ interface Props extends TDispatchProp {
 
 interface State {}
 
-export class RenderPluginConfig extends React.PureComponent<Props & WrappedFieldProps, State> {
+export class RenderDynamicForm extends React.PureComponent<Props & WrappedFieldProps, State> {
   constructor(props: Props & WrappedFieldProps) {
     super(props);
     this.state = {};
@@ -27,11 +27,11 @@ export class RenderPluginConfig extends React.PureComponent<Props & WrappedField
         <Form
           schema={schema}
           formData={isImmutable(input.value) ? input.value.toJS() : input.value}
+          // onSubmit={() => console.log("RenderPluginConfig onSubmit")}
+          // onError={() => console.log("RenderPluginConfig onError")}
           onChange={v => {
             input.onChange(Immutable.fromJS(v.formData));
-          }}
-          onSubmit={() => console.log("RenderPluginConfig onSubmit")}
-          onError={() => console.log("RenderPluginConfig onError")}>
+          }}>
           <Button variant="contained" color="primary" type="submit" style={{ display: "none" }}>
             hidden
           </Button>

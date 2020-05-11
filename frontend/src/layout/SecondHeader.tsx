@@ -40,7 +40,9 @@ const styles = (theme: Theme) =>
     },
     right: {
       flex: 1,
-      height: SECOND_HEADER_HEIGHT
+      height: SECOND_HEADER_HEIGHT,
+      display: "flex",
+      alignItems: "center"
     }
   });
 
@@ -67,7 +69,9 @@ class SecondHeaderRaw extends React.PureComponent<Props, State> {
         <div className={`${classes.left} ${typeof left === "string" ? classes.leftTextContainer : ""}`}>
           {typeof left === "string" ? <H4>{left}</H4> : left}
         </div>
-        <div className={classes.right}>{right}</div>
+        <div className={classes.right}>
+          {typeof right === "string" ? <H4 style={{ marginLeft: 20 }}>{right}</H4> : right}
+        </div>
       </div>
     );
   }

@@ -6,8 +6,8 @@ import { WrappedFieldArrayProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
 import { closeDialogAction, openDialogAction } from "../../actions/dialog";
 import { RootState } from "../../reducers";
-import { getComponentPluginName } from "../../selectors/component";
-import { ComponentPlugin } from "../../types/application";
+import { getApplicationPluginName } from "../../selectors/component";
+import { ApplicationPlugin } from "../../types/application";
 import { PluginType } from "../../types/plugin";
 import { ButtonWhite, CustomizedButton } from "../../widgets/Button";
 import { ControlledDialog } from "../../widgets/ControlledDialog";
@@ -24,16 +24,16 @@ interface FieldArrayComponentHackType {
 }
 
 const mapStateToProps = (state: RootState) => {
-  const componentPlugins = state.get("applications").get("componentPlugins");
+  const applicationPlugins = state.get("applications").get("applicationPlugins");
 
-  const componentPluginsMap: { [key: string]: ComponentPlugin } = {};
-  componentPlugins.forEach(plugin => {
-    componentPluginsMap[plugin.name] = plugin;
+  const applicationPluginsMap: { [key: string]: ApplicationPlugin } = {};
+  applicationPlugins.forEach(plugin => {
+    applicationPluginsMap[plugin.name] = plugin;
   });
 
   return {
-    componentPlugins,
-    componentPluginsMap
+    applicationPlugins,
+    applicationPluginsMap
   };
 };
 
@@ -46,33 +46,33 @@ interface Props
     ReturnType<typeof mapStateToProps> {}
 
 interface State {
-  selectComponentPluginName: string;
+  selectApplicationPluginName: string;
 }
 
-const selectComponentPluginDialogId = "select-component-plugin-dialog-id";
+const selectApplicationPluginDialogId = "select-component-plugin-dialog-id";
 
 class RenderPlugins extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
 
     this.state = {
-      selectComponentPluginName: ""
+      selectApplicationPluginName: ""
     };
   }
 
-  private renderSelectComponentPluginDialog() {
-    const { componentPlugins, fields } = this.props;
+  private renderSelectApplicationPluginDialog() {
+    const { applicationPlugins, fields } = this.props;
 
     const existPluginNames: { [key: string]: boolean } = {};
     fields.forEach((member, index) => {
-      const pluginName = getComponentPluginName(member);
+      const pluginName = getApplicationPluginName(member);
       existPluginNames[pluginName] = true;
     });
 
     return (
       <ControlledDialog
-        dialogID={selectComponentPluginDialogId}
-        title={"Add Component Plugin"}
+        dialogID={selectApplicationPluginDialogId}
+        title={"Add Application Plugin"}
         dialogProps={{
           fullWidth: true,
           maxWidth: "sm"
@@ -83,20 +83,20 @@ class RenderPlugins extends React.PureComponent<Props, State> {
               onClick={() => {
                 fields.push(
                   Immutable.fromJS({
-                    name: this.state.selectComponentPluginName,
+                    name: this.state.selectApplicationPluginName,
                     isActive: false,
                     config: {}
                   })
                 );
 
-                this.props.dispatch(closeDialogAction(selectComponentPluginDialogId));
+                this.props.dispatch(closeDialogAction(selectApplicationPluginDialogId));
               }}
               color="default"
               variant="contained">
               Add Plugin
             </CustomizedButton>
             {/* <CustomizedButton
-              onClick={() => this.props.dispatch(closeDialogAction(selectComponentPluginDialogId))}
+              onClick={() => this.props.dispatch(closeDialogAction(selectApplicationPluginDialogId))}
               color="default"
               variant="contained">
               Cancel
@@ -108,13 +108,13 @@ class RenderPlugins extends React.PureComponent<Props, State> {
           id="outlined-select-plugin"
           select
           label="Select a plugin to add"
-          value={this.state.selectComponentPluginName}
+          value={this.state.selectApplicationPluginName}
           onChange={event => {
-            this.setState({ selectComponentPluginName: event.target.value });
+            this.setState({ selectApplicationPluginName: event.target.value });
           }}
           // helperText="Please select your plugin"
           variant="outlined">
-          {componentPlugins.map(option => (
+          {applicationPlugins.map(option => (
             <MenuItem key={option.name} value={option.name} disabled={!!existPluginNames[option.name]}>
               {option.name}
             </MenuItem>
@@ -125,11 +125,11 @@ class RenderPlugins extends React.PureComponent<Props, State> {
   }
 
   private renderBasic(member: string, index: number) {
-    const { componentPluginsMap, fields } = this.props;
-    const pluginName = getComponentPluginName(member);
+    const { applicationPluginsMap, fields } = this.props;
+    const pluginName = getApplicationPluginName(member);
     const schema =
-      componentPluginsMap[pluginName] && componentPluginsMap[pluginName].configSchema
-        ? componentPluginsMap[pluginName].configSchema
+      applicationPluginsMap[pluginName] && applicationPluginsMap[pluginName].configSchema
+        ? applicationPluginsMap[pluginName].configSchema
         : {};
 
     return (
@@ -192,11 +192,11 @@ class RenderPlugins extends React.PureComponent<Props, State> {
         })}
         <Grid container spacing={3} style={{ marginTop: 0 }}>
           <Grid item xs>
-            {this.renderSelectComponentPluginDialog()}
+            {this.renderSelectApplicationPluginDialog()}
             <ButtonWhite
               onClick={() => {
-                dispatch(openDialogAction(selectComponentPluginDialogId));
-                this.setState({ selectComponentPluginName: "" });
+                dispatch(openDialogAction(selectApplicationPluginDialogId));
+                this.setState({ selectApplicationPluginName: "" });
               }}>
               Add Plugin
             </ButtonWhite>

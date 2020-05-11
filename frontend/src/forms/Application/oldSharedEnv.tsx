@@ -191,7 +191,7 @@ class RenderSharedEnvs extends React.PureComponent<Props> {
     );
   }
 }
-
+// TODO remove old files
 export const SharedEnvs = connect(mapStateToProps)((props: FieldArrayProps) => {
   return <FieldArray name="sharedEnvs" component={RenderSharedEnvs} {...props} />;
 });

@@ -16,7 +16,7 @@ import ApplicationForm from "../../forms/Application";
 import { ComponentLikeForm } from "../../forms/ComponentLike";
 import { RootState } from "../../reducers";
 import { Application, ApplicationComponent, SharedEnv } from "../../types/application";
-import { ApplicationDrawer } from "../../widgets/ApplicationDrawer";
+import { ApplicationEditDrawer } from "../../widgets/ApplicationEditDrawer";
 import { CustomizedButton } from "../../widgets/Button";
 import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
@@ -49,7 +49,7 @@ const styles = (theme: Theme) =>
 
 interface State {
   currentFormType: "application" | "component";
-  currentApplicationTab: "basic" | "sharedEnvs";
+  currentApplicationTab: "basic" | "sharedEnvs" | "applicationPlugins";
   currentComponent?: ApplicationComponent;
   // currentComponentTab?: "envs" | "ports" | "resources" | "plugins" | "probes" | "advanced";
   currentComponentTab?: string;
@@ -151,12 +151,12 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
     }
   }
 
-  public renderApplicationDrawer() {
+  public renderApplicationEditDrawer() {
     const { application } = this.props;
     const { currentComponent } = this.state;
 
     return (
-      <ApplicationDrawer
+      <ApplicationEditDrawer
         application={application}
         currentComponent={currentComponent}
         // handleClickBasic={() => {
@@ -169,6 +169,12 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
           this.setState({
             currentFormType: "application",
             currentApplicationTab: "sharedEnvs"
+          });
+        }}
+        handleClickApplicationPlugins={() => {
+          this.setState({
+            currentFormType: "application",
+            currentApplicationTab: "applicationPlugins"
           });
         }}
         handleClickComponent={(component: ApplicationComponent) => {
@@ -196,7 +202,7 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
 
     return (
       <BasePage
-        leftDrawer={this.renderApplicationDrawer()}
+        leftDrawer={this.renderApplicationEditDrawer()}
         secondHeaderRight={
           <div className={classes.secondHeaderRight}>
             {currentFormType === "application" ? (
