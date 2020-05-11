@@ -18,7 +18,7 @@ ifeq (, $(shell which go-bindata))
 	go get -u github.com/go-bindata/go-bindata/...
 endif
 ifeq (, $(shell which kustomize))
-	go install sigs.k8s.io/kustomize/kustomize/v3
+	curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
 endif
 	go generate ./...
 
