@@ -17,6 +17,8 @@ before_install:
 jobs:
   include:
     # - language: go
+    # go:
+    # - 1.13
     #   env:
     #     - KUBEBUILDER_ASSETS=$HOME/kubebuilder/bin
     #   stage: test
@@ -39,6 +41,8 @@ jobs:
     #       - $HOME/.cache/go-build
     #       - $HOME/gopath/pkg/mod
     # - language: go
+    # go:
+    # - 1.13
     #   env:
     #     - KUBEBUILDER_ASSETS=$HOME/kubebuilder/bin
     #   stage: test
@@ -65,6 +69,8 @@ jobs:
       stage: build
       name: controller
       language: go
+      go:
+        - 1.13
       install:
         - cd controller
         - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
