@@ -12,6 +12,7 @@ import { H3 } from "../../widgets/Label";
 import { TextField } from "../Basic/text";
 import { ValidatorName, ValidatorRequired } from "../validator";
 import { SharedEnvs } from "./SharedEnvs";
+import { Plugins } from "./Plugins";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -62,7 +63,7 @@ const mapStateToProps = (state: RootState) => {
 
 export interface Props {
   isEdit?: boolean;
-  currentTab: "basic" | "sharedEnvs";
+  currentTab: "basic" | "sharedEnvs" | "applicationPlugins";
 }
 
 class ApplicationFormRaw extends React.PureComponent<
@@ -127,6 +128,14 @@ class ApplicationFormRaw extends React.PureComponent<
     );
   }
 
+  private renderPlugins() {
+    return (
+      <>
+        <Plugins />
+      </>
+    );
+  }
+
   public render() {
     const { handleSubmit, change, classes, currentTab } = this.props;
 
@@ -145,6 +154,14 @@ class ApplicationFormRaw extends React.PureComponent<
         <div className={`${classes.formSectionContainer} ${currentTab === "sharedEnvs" ? "" : classes.displayNone}`}>
           <H3>Shared Environments</H3>
           {this.renderSharedEnvs()}
+        </div>
+
+        <div
+          className={`${classes.formSectionContainer} ${
+            currentTab === "applicationPlugins" ? "" : classes.displayNone
+          }`}>
+          <H3>Application Plugins</H3>
+          {this.renderPlugins()}
         </div>
 
         <div className={`${currentTab === "basic" ? classes.buttons : classes.displayNone}`}>
