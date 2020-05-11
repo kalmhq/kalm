@@ -142,6 +142,7 @@ func (r *ApplicationReconcilerTask) Run(req ctrl.Request) error {
 		return err
 	}
 
+	// ?
 	if err := r.ReconcileGateway(); err != nil {
 		return err
 	}
@@ -516,9 +517,10 @@ type BuiltinApplicationPluginIngressConfig struct {
 	Hosts []string `json:"hosts"`
 	Paths []string `json:"paths"`
 
-	EnableHttps        bool `json:"enableHttps"`
-	StripPath          bool `json:"stripPath"`
-	UrlCaseInsensitive bool `json:"urlCaseInsensitive"`
+	HttpsCert          string `json:"httpsCert"`
+	EnableHttps        bool   `json:"enableHttps"`
+	StripPath          bool   `json:"stripPath"`
+	UrlCaseInsensitive bool   `json:"urlCaseInsensitive"`
 
 	Destinations []struct {
 		Destination string `json:"destination"`
@@ -537,6 +539,25 @@ func (r *ApplicationReconcilerTask) insertBuildInPluginImpls(rt *js.Runtime, bin
 			var config BuiltinApplicationPluginIngressConfig
 
 			_ = json.Unmarshal(configBytes, &config)
+
+			if config.HttpsCert != "" {
+				var gw istioV1Beta1.Gateway
+				err := r.Reader.Get(r.ctx, types.NamespacedName{
+					Name:      "gateway",
+					Namespace: binding.Namespace,
+				}, &gw)
+
+				if err != nil {
+					r.Log.Error(err, "gateway should exist")
+					return rt.ToValue(nil)
+				}
+
+				r.Log.Info("ensureGatewayForHttps")
+				if err := r.ensureGatewayForHttps(&gw, config); err != nil {
+					r.Log.Error(err, "fail to ensureGatewayForHttps")
+					return rt.ToValue(nil)
+				}
+			}
 
 			var vs istioV1Beta1.VirtualService
 			name := binding.Name
@@ -637,4 +658,50 @@ func (r *ApplicationReconcilerTask) insertBuildInPluginImpls(rt *js.Runtime, bin
 		})
 	default:
 	}
+}
+
+func (r *ApplicationReconcilerTask) ensureGatewayForHttps(gw *istioV1Beta1.Gateway, ingressConfig BuiltinApplicationPluginIngressConfig) error {
+	existServers := gw.Spec.Servers
+
+	expectedServer := istioNetworkingV1Beta1.Server{
+		Hosts: ingressConfig.Hosts,
+		Port: &istioNetworkingV1Beta1.Port{
+			Number:   443,
+			Protocol: "HTTPS",
+			Name:     "https",
+		},
+		Tls: &istioNetworkingV1Beta1.Server_TLSOptions{
+			Mode:           istioNetworkingV1Beta1.Server_TLSOptions_SIMPLE,
+			CredentialName: ingressConfig.HttpsCert,
+		},
+	}
+
+	var exist bool
+	for _, existServer := range existServers {
+		joinExistServers := strings.Join(existServer.Hosts, ",")
+		joinExpected := strings.Join(ingressConfig.Hosts, ",")
+
+		if joinExistServers != joinExpected {
+			continue
+		}
+
+		exist = true
+
+		//ensure
+		existServer.Hosts = expectedServer.Hosts
+		existServer.Port = expectedServer.Port
+		existServer.Tls = expectedServer.Tls
+	}
+
+	if !exist {
+		r.Log.Info("config TLS for:" + strings.Join(ingressConfig.Hosts, ","))
+
+		existServers = append(existServers, &expectedServer)
+		gw.Spec.Servers = existServers
+	} else {
+		r.Log.Info("config TLS already exist for:" + strings.Join(ingressConfig.Hosts, ","))
+	}
+
+	err := r.Update(r.ctx, gw)
+	return err
 }

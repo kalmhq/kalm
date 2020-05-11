@@ -285,7 +285,7 @@ spec:
   nodeSelectorLabels:
     kubernetes.io/os: linux
   cpu: 150m
-  memory: 256Mi
+  memory: 128Mi
   ports:
     - name: grpc
       containerPort: 9555
@@ -592,20 +592,91 @@ spec:
     port: 8080
 
 # The following yaml should be integrated in kapp system somehow.
+
+# apiVersion: networking.istio.io/v1alpha3
+# kind: VirtualService
+# metadata:
+#   name: frontend
+#   namespace: kapp-hipster
+# spec:
+#   hosts:
+#     - "*"
+#   gateways:
+#     - gateway
+#   http:
+#     - route:
+#         - destination:
+#             host: frontend
+#             port:
+#               number: 8080
 ---
-apiVersion: networking.istio.io/v1alpha3
-kind: VirtualService
+apiVersion: core.kapp.dev/v1alpha1
+kind: ApplicationPlugin
 metadata:
-  name: frontend
-  namespace: kapp-hipster
+  name: kapp-builtin-application-plugin-ingress
 spec:
-  hosts:
-    - "*"
-  gateways:
-    - gateway
-  http:
-    - route:
-        - destination:
-            host: frontend
-            port:
-              number: 8080
+  src: |
+    function AfterApplicationSaved() {
+      __builtinApplicationPluginIngress();
+    }
+  configSchema:
+    title: Ingress rules
+    type: object
+    required:
+      - hosts
+      - paths
+    properties:
+      hosts:
+        type: array
+        items:
+          type: string
+      httpsCert:
+        type: string
+      paths:
+        type: array
+        items:
+          type: string
+      stripPath:
+        type: boolean
+      destinations:
+        type: array
+        items:
+          type: object
+          properties:
+            destination:
+              type: string
+            weight:
+              type: number
+---
+  apiVersion: core.kapp.dev/v1alpha1
+  kind: ApplicationPluginBinding
+  metadata:
+    name: kapp-builtin-application-plugin-ingress
+    namespace: kapp-hipster
+  spec:
+    pluginName: kapp-builtin-application-plugin-ingress
+    config:
+      hosts:
+        - "hipster.demo.com"
+      httpsCert: https-cert-hipster
+      paths:
+        - "/"
+      stripPath: true
+      destinations:
+        - destination: frontend:8080
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: HttpsCertIssuer
+metadata:
+  name: https-cert-issuer-hipster
+spec:
+  caForTest: {}
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: HttpsCert
+metadata:
+  name: https-cert-hipster
+spec:
+  httpsCertIssuer: https-cert-issuer-hipster
+  domains:
+    - hipster.demo.com
