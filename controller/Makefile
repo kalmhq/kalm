@@ -15,9 +15,7 @@ all: manager
 
 go-generate:
 ifeq (, $(shell which go-bindata))
-	{
 	go get -u github.com/go-bindata/go-bindata/...
-	}
 endif
 	go generate ./...
 
