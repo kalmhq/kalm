@@ -3,8 +3,9 @@ git:
 
 stages:
   - test
-  - name: build
-    if: branch = master
+  - build
+  # - name: build
+  # if: branch = master
 
 jobs:
   include:
