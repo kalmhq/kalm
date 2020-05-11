@@ -121,7 +121,7 @@ export class NodeListRaw extends React.Component<Props, States> {
     const { classes, metrics } = this.props;
 
     return (
-      <BasePage>
+      <BasePage secondHeaderRight="Nodes">
         <div className={classes.root}>
           <Grid container spacing={2}>
             <Grid item md={6}>

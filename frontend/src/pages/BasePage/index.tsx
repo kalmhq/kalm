@@ -1,10 +1,9 @@
-import React from "react";
-import ScrollContainer from "../../widgets/ScrollContainer";
-import { withStyles, createStyles, WithStyles } from "@material-ui/styles";
+import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import { Theme } from "pretty-format/build/types";
+import React from "react";
 import { DashboardDrawer } from "../../layout/DashboardDrawer";
 import { SecondHeader } from "../../layout/SecondHeader";
-import { Namespaces } from "../../widgets/Namespaces";
+import ScrollContainer from "../../widgets/ScrollContainer";
 
 export const LEFT_SECTION_WIDTH = 320;
 
@@ -41,7 +40,7 @@ export class BasePageRaw extends React.PureComponent<BasePageProps> {
     const { classes, children, noScrollContainer, leftDrawer, secondHeaderLeft, secondHeaderRight } = this.props;
     return (
       <div className={classes.root}>
-        <SecondHeader left={secondHeaderLeft || <Namespaces />} right={secondHeaderRight} />
+        <SecondHeader left={secondHeaderLeft} right={secondHeaderRight} />
         {leftDrawer || <DashboardDrawer />}
         <div className={classes.rightSection}>
           {/* <PageHeader title={title} noBreadcrumb={noBreadcrumb} rightAction={rightAction}></PageHeader> */}

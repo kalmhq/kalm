@@ -23,6 +23,7 @@ import {
   SmallMemoryLineChart
 } from "../../widgets/SmallLineChart";
 import { generateQueryForPods } from "./Log";
+
 const styles = (theme: Theme) =>
   createStyles({
     root: {

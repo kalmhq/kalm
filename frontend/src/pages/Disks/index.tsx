@@ -126,7 +126,7 @@ export class DisksRaw extends React.Component<Props, States> {
     const { loadNodesError } = this.state;
 
     return (
-      <BasePage>
+      <BasePage secondHeaderRight="Volumes">
         <div className={classes.root}>
           {loadNodesError ? (
             <Alert severity="error">

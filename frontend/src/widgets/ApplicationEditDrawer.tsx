@@ -86,7 +86,7 @@ interface State {
   selectedListItemKey: string;
 }
 
-class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
+class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
 
@@ -463,4 +463,4 @@ class ApplicationDrawerRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const ApplicationDrawer = connect(mapStateToProps)(withStyles(styles)(ApplicationDrawerRaw));
+export const ApplicationEditDrawer = connect(mapStateToProps)(withStyles(styles)(ApplicationEditDrawerRaw));
