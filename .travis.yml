@@ -77,3 +77,16 @@ jobs:
       script:
         - make docker-build
         - make docker-push
+    - service:
+        - docker
+      stage: build
+      name: operator
+      language: go
+      go:
+        - 1.13
+      install:
+        - cd operator
+        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+      script:
+        - make docker-build
+        - make docker-push
