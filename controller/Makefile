@@ -15,7 +15,9 @@ all: manager
 
 go-generate:
 ifeq (, $(shell which go-bindata))
+	{
 	go get -u github.com/go-bindata/go-bindata/...
+	}
 endif
 	go generate ./...
 
@@ -62,7 +64,7 @@ generate: controller-gen
 	$(CONTROLLER_GEN) object:headerFile=./hack/boilerplate.go.txt paths="./..."
 
 # Build the docker image
-docker-build: go-generate
+docker-build: generate fmt vet manifests go-generate
 	docker build . -t ${IMG}
 
 # Push the docker image
