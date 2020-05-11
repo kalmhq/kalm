@@ -3,9 +3,8 @@ git:
 
 stages:
   - test
-  - build
-  # - name: build
-  # if: branch = master
+  - name: build
+    if: branch = master
 
 before_install:
   - os=$(go env GOOS)
@@ -16,54 +15,54 @@ before_install:
 
 jobs:
   include:
-    # - language: go
-    # go:
-    # - 1.13
-    #   env:
-    #     - KUBEBUILDER_ASSETS=$HOME/kubebuilder/bin
-    #   stage: test
-    #   name: api
-    #   before_install:
-    #     - os=$(go env GOOS)
-    #     - arch=$(go env GOARCH)
-    #     - curl -L https://go.kubebuilder.io/dl/2.3.1/${os}/${arch} | tar -xz -C /tmp/
-    #     - sudo mv /tmp/kubebuilder_2.3.1_${os}_${arch} $HOME/kubebuilder
-    #     - export PATH=$PATH:$HOME/kubebuilder/bin
-    #   install:
-    #     - cd api
-    #     - go get ./...
-    #   script:
-    #     - go test -race -coverprofile=coverage.txt -covermode=atomic ./...
-    #   after_success:
-    #     - bash <(curl -s https://codecov.io/bash)
-    #   cache:
-    #     directories:
-    #       - $HOME/.cache/go-build
-    #       - $HOME/gopath/pkg/mod
-    # - language: go
-    # go:
-    # - 1.13
-    #   env:
-    #     - KUBEBUILDER_ASSETS=$HOME/kubebuilder/bin
-    #   stage: test
-    #   name: controller
-    #   before_install:
-    #     - os=$(go env GOOS)
-    #     - arch=$(go env GOARCH)
-    #     - curl -L https://go.kubebuilder.io/dl/2.3.1/${os}/${arch} | tar -xz -C /tmp/
-    #     - sudo mv /tmp/kubebuilder_2.3.1_${os}_${arch} $HOME/kubebuilder
-    #     - export PATH=$PATH:$HOME/kubebuilder/bin
-    #   install:
-    #     - cd controller
-    #     - go get ./...
-    #   script:
-    #     - make test
-    #   after_success:
-    #     - bash <(curl -s https://codecov.io/bash)
-    #   cache:
-    #     directories:
-    #       - $HOME/.cache/go-build
-    #       - $HOME/gopath/pkg/mod
+    - language: go
+      go:
+        - 1.13
+      env:
+        - KUBEBUILDER_ASSETS=$HOME/kubebuilder/bin
+      stage: test
+      name: api
+      before_install:
+        - os=$(go env GOOS)
+        - arch=$(go env GOARCH)
+        - curl -L https://go.kubebuilder.io/dl/2.3.1/${os}/${arch} | tar -xz -C /tmp/
+        - sudo mv /tmp/kubebuilder_2.3.1_${os}_${arch} $HOME/kubebuilder
+        - export PATH=$PATH:$HOME/kubebuilder/bin
+      install:
+        - cd api
+        - go get ./...
+      script:
+        - go test -race -coverprofile=coverage.txt -covermode=atomic ./...
+      after_success:
+        - bash <(curl -s https://codecov.io/bash)
+      cache:
+        directories:
+          - $HOME/.cache/go-build
+          - $HOME/gopath/pkg/mod
+    - language: go
+      go:
+        - 1.13
+      env:
+        - KUBEBUILDER_ASSETS=$HOME/kubebuilder/bin
+      stage: test
+      name: controller
+      before_install:
+        - os=$(go env GOOS)
+        - arch=$(go env GOARCH)
+        - curl -L https://go.kubebuilder.io/dl/2.3.1/${os}/${arch} | tar -xz -C /tmp/
+        - sudo mv /tmp/kubebuilder_2.3.1_${os}_${arch} $HOME/kubebuilder
+        - export PATH=$PATH:$HOME/kubebuilder/bin
+      install:
+        - cd controller
+        - go get ./...
+      script:
+        - make test
+      after_success:
+        - bash <(curl -s https://codecov.io/bash)
+      cache:
+        directories:
+          - $HOME/.cache/go-build
+          - $HOME/gopath/pkg/mod
     - service:
         - docker
       stage: build
