@@ -25,21 +25,21 @@ spec:
       imagePullSecrets:
         - name: docker-registry-secret
       containers:
-      - command:
-        - /manager
-        args:
-        - --enable-leader-election
-        image: kapp/controller:latest
-        imagePullPolicy: IfNotPresent
-        name: manager
-        env:
-          - name: ENABLE_WEBHOOKS
-            value: "true"
-        resources:
-          limits:
-            cpu: 100m
-            memory: 256Mi
-          requests:
-            cpu: 100m
-            memory: 128Mi
+        - command:
+            - /manager
+          args:
+            - --enable-leader-election
+          image: kappstaging/controller:latest
+          imagePullPolicy: IfNotPresent
+          name: manager
+          env:
+            - name: ENABLE_WEBHOOKS
+              value: "true"
+          resources:
+            limits:
+              cpu: 100m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
       terminationGracePeriodSeconds: 10

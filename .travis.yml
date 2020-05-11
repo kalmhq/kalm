@@ -1,14 +1,16 @@
 git:
   depth: false
 
+stages:
+  - test
+  - name: build
+    if: branch = master
+
 jobs:
   include:
     - language: go
       env:
         - KUBEBUILDER_ASSETS=$HOME/kubebuilder/bin
-      go:
-        - 1.13
-        - 1.14
       stage: test
       name: api
       before_install:
@@ -31,9 +33,6 @@ jobs:
     - language: go
       env:
         - KUBEBUILDER_ASSETS=$HOME/kubebuilder/bin
-      go:
-        - 1.13
-        - 1.14
       stage: test
       name: controller
       before_install:
@@ -53,3 +52,18 @@ jobs:
         directories:
           - $HOME/.cache/go-build
           - $HOME/gopath/pkg/mod
+    - service:
+        - docker
+      stage: build
+      name: controller
+      before_install:
+        - os=$(go env GOOS)
+        - arch=$(go env GOARCH)
+        - curl -L https://go.kubebuilder.io/dl/2.3.1/${os}/${arch} | tar -xz -C /tmp/
+        - sudo mv /tmp/kubebuilder_2.3.1_${os}_${arch} $HOME/kubebuilder
+        - export PATH=$PATH:$HOME/kubebuilder/bin
+        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+      script:
+        - cd controller
+        - make docker-build
+        - make docker-push
