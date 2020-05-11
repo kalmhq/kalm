@@ -92,7 +92,7 @@ jobs:
     - service:
         - docker
       stage: build
-      name: operator
+      name: dashboard
       install:
         - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
       script:
