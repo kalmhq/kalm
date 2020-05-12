@@ -11,9 +11,15 @@ After the hello-world demo, let's see a more real life one: bookinfo, it's an on
 
 
 
-you can find the Kapp yaml file [here](https://github.com/Kapp-staging/Kapp/blob/doc-hello-world/controller/config/samples/core_v1alpha1_bookinfo.yaml)
+you can find the Kapp yaml file [here](https://github.com/Kapp-staging/Kapp/blob/doc-hello-world/controller/config/samples/core_v1alpha1_bookinfo.yaml).
 
-it has  serveral yaml files in it, after the walk-through of our first hello-world demo, most parts in this file should be familiar to you.
+To apply the config, go to directory of Kapp project, and run:
+
+```shell
+kubectl apply -f controller/config/samples/core_v1alpha1_bookinfo.yaml
+```
+
+The file has serveral yaml configs within, after the walk-through of our previous hello-world demo, most parts in this file should be familiar to you.
 
 The namesapce and Kapp Application definition:
 
