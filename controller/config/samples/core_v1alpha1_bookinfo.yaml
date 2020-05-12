@@ -1,0 +1,322 @@
+##################################################################################################
+# This file defines the services, service accounts, and deployments for the Bookinfo sample.
+#
+# To apply all 4 Bookinfo services, their corresponding service accounts, and deployments:
+#
+#   kubectl apply -f samples/bookinfo/platform/kube/bookinfo.yaml
+#
+##################################################################################################
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kapp-bookinfo
+  labels:
+    istio-injection: enabled
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: Application
+metadata:
+  name: kapp-bookinfo
+spec:
+  isActive: true
+---
+##################################################################################################
+# Details service
+##################################################################################################
+apiVersion: core.kapp.dev/v1alpha1
+kind: Component
+metadata:
+    name: details
+    namespace: kapp-bookinfo
+spec:
+    image: docker.io/istio/examples-bookinfo-details-v1:1.15.0
+    podAffinityType: prefer-fanout
+    nodeSelectorLabels:
+      kubernetes.io/os: linux
+    cpu: 50m
+    memory: 64Mi
+    ports:
+        - name: http
+          containerPort: 9080
+          servicePort: 9080
+---
+##################################################################################################
+# Ratings service
+##################################################################################################
+apiVersion: core.kapp.dev/v1alpha1
+kind: Component
+metadata:
+    name: ratings
+    namespace: kapp-bookinfo
+spec:
+    image: docker.io/istio/examples-bookinfo-ratings-v1:1.15.0
+    podAffinityType: prefer-fanout
+    nodeSelectorLabels:
+      kubernetes.io/os: linux
+    cpu: 50m
+    memory: 64Mi
+    ports:
+        - name: http
+          containerPort: 9080
+          servicePort: 9080
+---
+##################################################################################################
+# Reviews service
+##################################################################################################
+apiVersion: core.kapp.dev/v1alpha1
+kind: Component
+metadata:
+    name: reviews
+    namespace: kapp-bookinfo
+spec:
+    image: docker.io/istio/examples-bookinfo-reviews-v1:1.15.0
+    podAffinityType: prefer-fanout
+    nodeSelectorLabels:
+      kubernetes.io/os: linux
+    # cpu: 50m
+    # memory: 128Mi
+    ports:
+        - name: http
+          containerPort: 9080
+          servicePort: 9080
+    env:
+        - name: LOG_DIR
+          value: "/tmp/logs"
+    volumes:
+        - path: /tmp
+          type: emptyDir
+          size: 32Mi
+        - path: /opt/ibm/wlp/output
+          type: emptyDir
+          size: 32Mi
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: Component
+metadata:
+    name: reviews-v2
+    namespace: kapp-bookinfo
+spec:
+    image: docker.io/istio/examples-bookinfo-reviews-v2:1.15.0
+    podAffinityType: prefer-fanout
+    nodeSelectorLabels:
+      kubernetes.io/os: linux
+    # cpu: 50m
+    # memory: 64Mi
+    ports:
+        - name: http
+          containerPort: 9080
+          servicePort: 9080
+    env:
+        - name: LOG_DIR
+          value: "/tmp/logs"
+    volumes:
+        - path: /tmp
+          type: emptyDir
+          size: 32Mi
+        - path: /opt/ibm/wlp/output
+          type: emptyDir
+          size: 32Mi
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: Component
+metadata:
+    name: reviews-v3
+    namespace: kapp-bookinfo
+spec:
+    image: docker.io/istio/examples-bookinfo-reviews-v3:1.15.0
+    podAffinityType: prefer-fanout
+    nodeSelectorLabels:
+      kubernetes.io/os: linux
+    # cpu: 50m
+    # memory: 64Mi
+    ports:
+        - name: http
+          containerPort: 9080
+          servicePort: 9080
+    env:
+        - name: LOG_DIR
+          value: "/tmp/logs"
+    volumes:
+        - path: /tmp
+          type: emptyDir
+          size: 32Mi
+        - path: /opt/ibm/wlp/output
+          type: emptyDir
+          size: 32Mi
+---
+##################################################################################################
+# Productpage services
+##################################################################################################
+apiVersion: core.kapp.dev/v1alpha1
+kind: Component
+metadata:
+    name: productpage
+    namespace: kapp-bookinfo
+spec:
+    image: docker.io/istio/examples-bookinfo-productpage-v1:1.15.0
+    replicas: 2
+    podAffinityType: prefer-fanout
+    nodeSelectorLabels:
+      kubernetes.io/os: linux
+    cpu: 50m
+    memory: 64Mi
+    ports:
+        - name: http
+          containerPort: 9080
+          servicePort: 9080
+    volumes:
+        - path: /tmp
+          type: emptyDir
+          size: 32Mi
+---
+# part2 - plugin
+apiVersion: core.kapp.dev/v1alpha1
+kind: ComponentPlugin
+metadata:
+  name: termination-grace
+spec:
+  src: |
+    function AfterPodTemplateGeneration(pod) {
+      var config = getConfig();
+
+      if (!config) {
+        return;
+      }
+
+      if (config.periodSeconds) {
+        pod.spec.terminationGracePeriodSeconds = config.periodSeconds;
+      }
+
+      return pod;
+    }
+  configSchema:
+    type: object
+    properties:
+      periodSeconds:
+        type: number
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: ComponentPluginBinding
+metadata:
+  name: termination-grace
+  namespace: kapp-bookinfo
+spec:
+  pluginName: termination-grace
+  componentName: productpage
+  config:
+    periodSeconds: 5
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: ComponentPlugin
+metadata:
+  name: http-health-probe
+spec:
+  src: |
+    function addProbesForContainer(container) {
+      var config = getConfig();
+
+      if (!config) {
+        return
+      }
+
+      var probe = {
+        httpGet: {
+          path: "/",
+          port: config.port
+        }
+      }
+
+      container.readinessProbe = probe;
+      container.livenessProbe = probe;
+
+      if (config.initialDelaySeconds) {
+        container.readinessProbe.initialDelaySeconds = config.initialDelaySeconds;
+        container.livenessProbe.initialDelaySeconds = config.initialDelaySeconds;
+      }
+
+      if (config.periodSeconds) {
+        container.readinessProbe.periodSeconds = config.periodSeconds;
+        container.livenessProbe.periodSeconds = config.periodSeconds;
+      }
+    }
+
+    function AfterPodTemplateGeneration(pod) {
+      var containers = pod.spec.containers;
+      containers.forEach(addProbesForContainer)
+      return pod;
+    }
+  configSchema:
+    type: object
+    properties:
+      port:
+        type: number
+      initialDelaySeconds:
+        type: number
+      periodSeconds:
+        type: number
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: ComponentPluginBinding
+metadata:
+  name: productpage-http-health-probe
+  namespace: kapp-bookinfo
+spec:
+  pluginName:  http-health-probe
+  componentName: productpage
+  config:
+    port: 9080
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: ApplicationPlugin
+metadata:
+  name: kapp-builtin-application-plugin-ingress
+spec:
+  src: |
+    function AfterApplicationSaved() {
+      __builtinApplicationPluginIngress();
+    }
+  configSchema:
+    title: Ingress rules
+    type: object
+    required:
+      - hosts
+      - paths
+    properties:
+      hosts:
+        type: array
+        items:
+          type: string
+      httpsCert:
+        type: string
+      paths:
+        type: array
+        items:
+          type: string
+      stripPath:
+        type: boolean
+      destinations:
+        type: array
+        items:
+          type: object
+          properties:
+            destination:
+              type: string
+            weight:
+              type: number
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: ApplicationPluginBinding
+metadata:
+  name: kapp-builtin-application-plugin-ingress
+  namespace: kapp-bookinfo
+spec:
+  pluginName:  kapp-builtin-application-plugin-ingress
+  config:
+    hosts:
+      - "bookinfo.demo.com"
+    paths:
+      - "/"
+    stripPath: true
+    destinations:
+      - destination: productpage:9080
