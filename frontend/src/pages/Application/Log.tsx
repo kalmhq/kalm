@@ -4,16 +4,18 @@ import Typography from "@material-ui/core/Typography";
 import { Autocomplete, AutocompleteProps, UseAutocompleteProps } from "@material-ui/lab";
 import { replace } from "connected-react-router";
 import debug from "debug";
+import Immutable from "immutable";
 import queryString from "query-string";
 import React from "react";
 import ReconnectingWebSocket from "reconnecting-websocket";
 import "xterm/css/xterm.css";
 import { k8sWsPrefix } from "../../actions/kubernetesApi";
-import { Breadcrumb } from "../../widgets/Breadcrumbs";
 import { Loading } from "../../widgets/Loading";
+import { Namespaces } from "../../widgets/Namespaces";
+import { BasePage } from "../BasePage";
 import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./ItemDataWrapper";
 import { Xterm, XtermRaw } from "./Xterm";
-import Immutable from "immutable";
+import { ApplicationViewDrawer } from "../../widgets/ApplicationViewDrawer";
 
 const logger = debug("ws");
 const detailedLogger = debug("ws:details");
@@ -468,28 +470,32 @@ export class LogStream extends React.PureComponent<Props, State> {
     const { value, subscribedPodNames } = this.state;
 
     return (
-      <Paper elevation={2} classes={{ root: classes.paper }}>
-        <Breadcrumb />
-        {isLoading || !application ? (
-          <Loading />
-        ) : (
-          <>
-            {this.renderInput()}
-            <div>
-              <TabPanel value={value} key={"empty"} index={""}>
-                {this.isLog ? this.renderLogTerminal("", logDocs) : this.renderLogTerminal("", shellDocs)}
-              </TabPanel>
-              {Array.from(subscribedPodNames).map(x => {
-                return (
-                  <TabPanel value={value} key={x} index={x}>
-                    {this.isLog ? this.renderLogTerminal(x) : this.renderExecTerminal(x)}
-                  </TabPanel>
-                );
-              })}
-            </div>
-          </>
-        )}
-      </Paper>
+      <BasePage
+        secondHeaderLeft={<Namespaces />}
+        secondHeaderRight={this.isLog ? "Log" : "Shell"}
+        leftDrawer={<ApplicationViewDrawer />}>
+        <Paper elevation={2} classes={{ root: classes.paper }}>
+          {isLoading || !application ? (
+            <Loading />
+          ) : (
+            <>
+              {this.renderInput()}
+              <div>
+                <TabPanel value={value} key={"empty"} index={""}>
+                  {this.isLog ? this.renderLogTerminal("", logDocs) : this.renderLogTerminal("", shellDocs)}
+                </TabPanel>
+                {Array.from(subscribedPodNames).map(x => {
+                  return (
+                    <TabPanel value={value} key={x} index={x}>
+                      {this.isLog ? this.renderLogTerminal(x) : this.renderExecTerminal(x)}
+                    </TabPanel>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </Paper>
+      </BasePage>
     );
   }
 }
