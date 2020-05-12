@@ -111,13 +111,18 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
     const { dispatch } = this.props;
     const { currentComponent } = this.state;
 
-    this.setState({
-      currentComponent: component
-    });
-
     if (!currentComponent || !currentComponent.get("name")) {
+      this.setState({
+        currentComponent: component,
+        currentComponentTab: "basic"
+      });
+
       await dispatch(createComponentAction(component));
     } else {
+      this.setState({
+        currentComponent: component
+      });
+
       await dispatch(updateComponentAction(component));
     }
   };
