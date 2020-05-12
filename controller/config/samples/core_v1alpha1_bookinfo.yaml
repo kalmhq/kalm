@@ -155,6 +155,7 @@ metadata:
     namespace: kapp-bookinfo
 spec:
     image: docker.io/istio/examples-bookinfo-productpage-v1:1.15.0
+    replicas: 2
     podAffinityType: prefer-fanout
     nodeSelectorLabels:
       kubernetes.io/os: linux
@@ -170,6 +171,42 @@ spec:
           size: 32Mi
 ---
 # part2 - plugin
+apiVersion: core.kapp.dev/v1alpha1
+kind: ComponentPlugin
+metadata:
+  name: termination-grace
+spec:
+  src: |
+    function AfterPodTemplateGeneration(pod) {
+      var config = getConfig();
+
+      if (!config) {
+        return;
+      }
+
+      if (config.periodSeconds) {
+        pod.spec.terminationGracePeriodSeconds = config.periodSeconds;
+      }
+
+      return pod;
+    }
+  configSchema:
+    type: object
+    properties:
+      periodSeconds:
+        type: number
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: ComponentPluginBinding
+metadata:
+  name: termination-grace
+  namespace: kapp-bookinfo
+spec:
+  pluginName: termination-grace
+  componentName: productpage
+  config:
+    periodSeconds: 5
+---
 apiVersion: core.kapp.dev/v1alpha1
 kind: ApplicationPlugin
 metadata:

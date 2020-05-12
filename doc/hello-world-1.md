@@ -1,6 +1,6 @@
 # hello world kapp
 
-a sample kapp config help you understand concepts(CRD) in Kapp
+a sample kapp config helps you understand concepts(CRD) in Kapp
 
 ```yaml
 apiVersion: v1
