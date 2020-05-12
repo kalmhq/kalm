@@ -95,7 +95,7 @@ spec:
 
 our hello-world Kapp config contains 5 yaml files.
 
-
+  
 
 **first one is simple:**
 
@@ -110,7 +110,7 @@ metadata:
 
 It defines a namespace for your app, notice the label we set here: `istio-injection: enabled`, we use this to ensure `Istio` works in this namespace, `Istio` is a tool which makes the network of our microservices more powerful.
 
-
+  
 
 **The second yaml file defines a Kapp Application:**
 
@@ -132,7 +132,7 @@ spec:
 
 `isActive` is a switch to control whether the workloads under the namespace should be running or not.
 
-
+  
 
 **The third yaml file defines the workload in our application using Component**
 
@@ -179,17 +179,17 @@ spec:
 
 we set the image of our `Component`, and then defined the port. It's very similar to definition in Dockerfile.
 
-
+  
 
 With the 3 yaml files above, if we apply it using kubectl, our first Kapp application can be up and running, but how can we make sure that everything is ok, wouldn't it be nice if we can access our hello-world demo from browser? Yes and that's why the following 2 yamls configs exist: they help enable the external access of our service.
 
-
+  
 
 **The fouth yaml file is a definition of our buildin plugin.**
 
 (when Kapp is installed in future, all our buildin plugins should have been installed too, in that case, we don't need to show the definition here in our tutorial, I include it here to make the process smoother in current stage, the explain of buildin Kapp plugin is omitted here)
 
-
+  
 
 **The fifth yaml file** defines an `ApplicationPluginBinding` which bind our component to a Kapp buildin plugin,  Kapp plugin is a way to add more capbilities to our workloads, for example, the `Kapp-builtin-application-plugin-ingress` plugin we use here makes our hello-world service exposed to external network, which makes accessing the service from browser possible.
 
