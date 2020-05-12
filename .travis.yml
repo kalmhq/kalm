@@ -1,22 +1,27 @@
 git:
   depth: false
 
+stages:
+  - test
+  - name: build
+    if: branch = master
+
+before_install:
+  - os=$(go env GOOS)
+  - arch=$(go env GOARCH)
+  - curl -L https://go.kubebuilder.io/dl/2.3.1/${os}/${arch} | tar -xz -C /tmp/
+  - sudo mv /tmp/kubebuilder_2.3.1_${os}_${arch} $HOME/kubebuilder
+  - export PATH=$PATH:$HOME/kubebuilder/bin
+
 jobs:
   include:
     - language: go
-      env:
-        - KUBEBUILDER_ASSETS=$HOME/kubebuilder/bin
       go:
         - 1.13
-        - 1.14
+      env:
+        - KUBEBUILDER_ASSETS=$HOME/kubebuilder/bin
       stage: test
       name: api
-      before_install:
-        - os=$(go env GOOS)
-        - arch=$(go env GOARCH)
-        - curl -L https://go.kubebuilder.io/dl/2.3.1/${os}/${arch} | tar -xz -C /tmp/
-        - sudo mv /tmp/kubebuilder_2.3.1_${os}_${arch} $HOME/kubebuilder
-        - export PATH=$PATH:$HOME/kubebuilder/bin
       install:
         - cd api
         - go get ./...
@@ -29,19 +34,12 @@ jobs:
           - $HOME/.cache/go-build
           - $HOME/gopath/pkg/mod
     - language: go
-      env:
-        - KUBEBUILDER_ASSETS=$HOME/kubebuilder/bin
       go:
         - 1.13
-        - 1.14
+      env:
+        - KUBEBUILDER_ASSETS=$HOME/kubebuilder/bin
       stage: test
       name: controller
-      before_install:
-        - os=$(go env GOOS)
-        - arch=$(go env GOARCH)
-        - curl -L https://go.kubebuilder.io/dl/2.3.1/${os}/${arch} | tar -xz -C /tmp/
-        - sudo mv /tmp/kubebuilder_2.3.1_${os}_${arch} $HOME/kubebuilder
-        - export PATH=$PATH:$HOME/kubebuilder/bin
       install:
         - cd controller
         - go get ./...
@@ -53,3 +51,38 @@ jobs:
         directories:
           - $HOME/.cache/go-build
           - $HOME/gopath/pkg/mod
+    - service:
+        - docker
+      stage: build
+      name: controller
+      language: go
+      go:
+        - 1.13
+      install:
+        - cd controller
+        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+      script:
+        - make docker-build
+        - make docker-push
+    - service:
+        - docker
+      stage: build
+      name: operator
+      language: go
+      go:
+        - 1.13
+      install:
+        - cd operator
+        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+      script:
+        - make docker-build
+        - make docker-push
+    - service:
+        - docker
+      stage: build
+      name: dashboard
+      install:
+        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+      script:
+        - docker build . -t kappstaging/dashboard:latest
+        - docker push kappstaging/dashboard:latest

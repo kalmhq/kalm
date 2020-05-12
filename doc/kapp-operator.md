@@ -16,12 +16,14 @@ kubectl apply -f https://github.com/kapp-staging/kapp/deploy/kapp-install.yaml
 ```
 
 This command runs the operator by creating the following resources in the cluster.
+
 - The kapp operator config custom resource definition
 - Necessary kapp operator RBAC rules, roles and bindings
 - The kapp operator controller deployment
 - A service to access operator metrics
 
 The following resources will be also installed. They are kapp dependencies.
+
 - Cert Manager custom resource definitions
 - Cert Manager RBAC rules, roles and bindings
 - Cert Manager Deployment and services.
@@ -60,7 +62,7 @@ make docker-build
 # wait the build process finished
 docker images
 
-# You should see a image called kapp/controller:latest
+# You should see a image called kappstaging/controller:latest
 # This step won't happen in production because we will publish a controller image on docker hub.
 ```
 

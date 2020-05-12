@@ -51,6 +51,7 @@ export const KappRoutes = (
 
           <Route exact path="/components" component={RequireAdmin(ApplicationComponentListPage)} />
 
+          <Route exact path="/templates" component={RequireAdmin(ApplicationListPage)} />
           <Route exact path="/applications" component={RequireAdmin(ApplicationListPage)} />
           <Route exact path="/applications/new" component={RequireAdmin(ApplicationNew)} />
           <Route exact path="/applications/:applicationName" component={RequireNamespaceReader(ApplicationShow)} />

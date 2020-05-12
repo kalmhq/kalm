@@ -1,6 +1,6 @@
 
 # Image URL to use all building/pushing image targets
-IMG ?= kapp/operator:latest
+IMG ?= kappstaging/operator:latest
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true"
 
@@ -16,6 +16,9 @@ all: manager
 go-generate:
 ifeq (, $(shell which go-bindata))
 	go get -u github.com/go-bindata/go-bindata/...
+endif
+ifeq (, $(shell which kustomize))
+	GO111MODULE=on go install sigs.k8s.io/kustomize/kustomize/v3
 endif
 	go generate ./...
 
@@ -61,7 +64,7 @@ generate: controller-gen
 	$(CONTROLLER_GEN) object:headerFile=./hack/boilerplate.go.txt paths="./..."
 
 # Build the docker image
-docker-build: go-generate test
+docker-build: generate fmt vet manifests go-generate
 	docker build . -t ${IMG}
 
 # Push the docker image
