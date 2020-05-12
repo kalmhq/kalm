@@ -134,7 +134,7 @@ spec:
 
   
 
-**The third yaml file defines the workload in our application using Component**
+**The third yaml file defines the workload in our application using Component**:
 
 ```yaml
 apiVersion: core.Kapp.dev/v1alpha1
@@ -191,14 +191,39 @@ With the 3 yaml files above, if we apply it using kubectl, our first Kapp applic
 
   
 
-**The fifth yaml file** defines an `ApplicationPluginBinding` which bind our component to a Kapp buildin plugin,  Kapp plugin is a way to add more capbilities to our workloads, for example, the `Kapp-builtin-application-plugin-ingress` plugin we use here makes our hello-world service exposed to external network, which makes accessing the service from browser possible.
+**The fifth yaml file** defines an `ApplicationPluginBinding` which bind our component to a Kapp buildin plugin:
+
+```yaml
+apiVersion: core.Kapp.dev/v1alpha1
+kind: ApplicationPluginBinding
+metadata:
+  name: Kapp-builtin-application-plugin-ingress
+  namespace: Kapp-bookinfo
+spec:
+  pluginName:  Kapp-builtin-application-plugin-ingress
+  config:
+    hosts:
+      - "*"
+    paths:
+      - "/"
+    destinations:
+      - destination: hello-world:80
+```
+
+Kapp plugin is a way to add more capbilities to our workloads, for example, the `Kapp-builtin-application-plugin-ingress` plugin we use here makes our hello-world service exposed to external network, which makes accessing the service from browser possible.
+
+`pluginName` defines the plugin we want to use:
 
 ```yaml
 spec:
   pluginName:  Kapp-builtin-application-plugin-ingress
 ```
 
-`pluginName` defines the plugin we want to use, Kapp provides serveral buildin plugins, `Kapp-builtin-application-plugin-ingress` is one of them.
+Kapp provides serveral buildin plugins, `Kapp-builtin-application-plugin-ingress` is one of them.
+
+
+
+`config` defines the configuration for the plugin:
 
 ```yaml
 spec:
@@ -212,15 +237,13 @@ spec:
       - destination: productpage:80	
 ```
 
-`config` defines the configuration for the plugin.
-
 - for `hosts`, we don't have a specific host name for our service yet, so let's use a wildcard here: `*`.
 
 - `paths` defines the url paths we want to intercept, we use `/` to receive all requests here.
 
 - `destinations` defines where we want to direct these requests to, we want to welcome our user with our hello-world service, so we set `destination: hello-world:80`
 
-now you should be able to access our hello-world service using the commands below:
+Now you should be able to access our hello-world service using the commands below:
 
 ```shell
 INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
@@ -230,7 +253,7 @@ echo http://$INGRESS_HOST:$INGRESS_PORT
 curl $INGRESS_HOST:$INGRESS_PORT
 ```
 
-if everything is ok, you should see something like this for the above `curl` command:
+If everything is ok, you should see something like this for the above `curl` command:
 
 ```shell
 # should see
@@ -239,4 +262,4 @@ if everything is ok, you should see something like this for the above `curl` com
 
 ## what is next 
 
-the hello-world demo is simple enough to introduce some basic but important concepts in Kapp, for a more real life demo, read [tutorial-2-bookinfo.md](todo)
+The hello-world demo is simple enough to introduce some basic but important concepts in Kapp, for a more real life demo, read [tutorial-2-bookinfo.md](tutorial-2-bookinfo.md)
