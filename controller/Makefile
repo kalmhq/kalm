@@ -17,6 +17,9 @@ go-generate:
 ifeq (, $(shell which go-bindata))
 	go get -u github.com/go-bindata/go-bindata/...
 endif
+ifeq (, $(shell which kustomize))
+	GO111MODULE=on go install sigs.k8s.io/kustomize/kustomize/v3
+endif
 	go generate ./...
 
 # Run tests
@@ -43,7 +46,6 @@ uninstall: manifests
 deploy: manifests go-generate
 	cd config/manager && kustomize edit set image controller=${IMG}
 	kustomize build config/default | kubectl apply -f -
-	#kustomize build config/default > t1.yml
 
 # Generate manifests e.g. CRD, RBAC etc.
 manifests: controller-gen

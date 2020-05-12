@@ -5,6 +5,8 @@ stages:
   - test
   - name: build
     if: branch = master
+  - name: deploy
+    if: branch = master
 
 before_install:
   - os=$(go env GOOS)
@@ -86,3 +88,47 @@ jobs:
       script:
         - docker build . -t kappstaging/dashboard:latest
         - docker push kappstaging/dashboard:latest
+    - language: go
+      go:
+        - 1.13
+      stage: deploy
+      name: controller
+      install:
+        - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.15.9/bin/linux/amd64/kubectl
+        - chmod +x ./kubectl
+        - sudo mv ./kubectl /usr/local/bin/kubectl
+        - mkdir ${HOME}/.kube
+        - echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
+      script:
+        - cd controller
+        - make deploy
+        - kubectl -n kapp-system patch deployment kapp-controller -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"date\":\"`date +'%s'`\"}}}}}"
+    - language: go
+      go:
+        - 1.13
+      stage: deploy
+      name: operator
+      install:
+        - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.15.9/bin/linux/amd64/kubectl
+        - chmod +x ./kubectl
+        - sudo mv ./kubectl /usr/local/bin/kubectl
+        - mkdir ${HOME}/.kube
+        - echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
+      script:
+        - cd operator
+        - make deploy
+        - kubectl -n kapp-operator patch deployment kapp-operator -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"date\":\"`date +'%s'`\"}}}}}"
+    - language: go
+      go:
+        - 1.13
+      stage: deploy
+      name: dashboard
+      install:
+        - curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.15.9/bin/linux/amd64/kubectl
+        - chmod +x ./kubectl
+        - sudo mv ./kubectl /usr/local/bin/kubectl
+        - mkdir ${HOME}/.kube
+        - echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
+      script:
+        - kubectl apply -f controller/config/samples/core_v1alpha1_application_kapp_dashboard.yaml
+        - kubectl -n kapp-system patch deployment kapp-dashboard -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"date\":\"`date +'%s'`\"}}}}}"
