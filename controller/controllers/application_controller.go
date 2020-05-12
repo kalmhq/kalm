@@ -142,7 +142,6 @@ func (r *ApplicationReconcilerTask) Run(req ctrl.Request) error {
 		return err
 	}
 
-	// ?
 	if err := r.ReconcileGateway(); err != nil {
 		return err
 	}
@@ -324,6 +323,11 @@ func (r *ApplicationReconcilerTask) ReconcileGateway() error {
 			},
 		}
 
+		// todo how to get noticed when ingressPluginBinding changed?
+		if err := r.ensureHttpsConfigOfGateway(gw); err != nil {
+			return err
+		}
+
 		if err := ctrl.SetControllerReference(r.application, gw, r.Scheme); err != nil {
 			r.Log.Error(err, "SetControllerReference error when creating gateway.")
 			return err
@@ -337,6 +341,10 @@ func (r *ApplicationReconcilerTask) ReconcileGateway() error {
 		r.gateway = gw
 		r.Log.Info("gateway created.")
 	} else {
+		if err := r.ensureHttpsConfigOfGateway(r.gateway); err != nil {
+			return err
+		}
+
 		if err := ctrl.SetControllerReference(r.application, r.gateway, r.Scheme); err != nil {
 			r.Log.Error(err, "SetControllerReference error when updating gateway.")
 			return err
@@ -540,24 +548,24 @@ func (r *ApplicationReconcilerTask) insertBuildInPluginImpls(rt *js.Runtime, bin
 
 			_ = json.Unmarshal(configBytes, &config)
 
-			if config.HttpsCert != "" {
-				var gw istioV1Beta1.Gateway
-				err := r.Reader.Get(r.ctx, types.NamespacedName{
-					Name:      "gateway",
-					Namespace: binding.Namespace,
-				}, &gw)
-
-				if err != nil {
-					r.Log.Error(err, "gateway should exist")
-					return rt.ToValue(nil)
-				}
-
-				r.Log.Info("ensureGatewayForHttps")
-				if err := r.ensureGatewayForHttps(&gw, config); err != nil {
-					r.Log.Error(err, "fail to ensureGatewayForHttps")
-					return rt.ToValue(nil)
-				}
-			}
+			//if config.HttpsCert != "" {
+			//	var gw istioV1Beta1.Gateway
+			//	err := r.Reader.Get(r.ctx, types.NamespacedName{
+			//		Name:      "gateway",
+			//		Namespace: binding.Namespace,
+			//	}, &gw)
+			//
+			//	if err != nil {
+			//		r.Log.Error(err, "gateway should exist")
+			//		return rt.ToValue(nil)
+			//	}
+			//
+			//	r.Log.Info("ensureGatewayForHttps")
+			//	if err := r.ensureGatewayForHttps(&gw, config); err != nil {
+			//		r.Log.Error(err, "fail to ensureGatewayForHttps")
+			//		return rt.ToValue(nil)
+			//	}
+			//}
 
 			var vs istioV1Beta1.VirtualService
 			name := binding.Name
@@ -660,48 +668,68 @@ func (r *ApplicationReconcilerTask) insertBuildInPluginImpls(rt *js.Runtime, bin
 	}
 }
 
-func (r *ApplicationReconcilerTask) ensureGatewayForHttps(gw *istioV1Beta1.Gateway, ingressConfig BuiltinApplicationPluginIngressConfig) error {
-	existServers := gw.Spec.Servers
+func (r *ApplicationReconcilerTask) ensureHttpsConfigOfGateway(gw *istioV1Beta1.Gateway) error {
 
-	expectedServer := istioNetworkingV1Beta1.Server{
-		Hosts: ingressConfig.Hosts,
-		Port: &istioNetworkingV1Beta1.Port{
-			Number:   443,
-			Protocol: "HTTPS",
-			Name:     "https",
-		},
-		Tls: &istioNetworkingV1Beta1.Server_TLSOptions{
-			Mode:           istioNetworkingV1Beta1.Server_TLSOptions_SIMPLE,
-			CredentialName: ingressConfig.HttpsCert,
-		},
+	var appPluginBindingList corev1alpha1.ApplicationPluginBindingList
+	if err := r.List(r.ctx, &appPluginBindingList, client.InNamespace(gw.Namespace)); err != nil {
+		return client.IgnoreNotFound(err)
 	}
 
-	var exist bool
-	for _, existServer := range existServers {
-		joinExistServers := strings.Join(existServer.Hosts, ",")
-		joinExpected := strings.Join(ingressConfig.Hosts, ",")
-
-		if joinExistServers != joinExpected {
+	for _, appPluginBinding := range appPluginBindingList.Items {
+		if appPluginBinding.Spec.PluginName != corev1alpha1.KappBuiltinApplicationPluginIngress {
 			continue
 		}
 
-		exist = true
+		var ingressConfig BuiltinApplicationPluginIngressConfig
+		if err := json.Unmarshal(appPluginBinding.Spec.Config.Raw, &ingressConfig); err != nil {
+			continue
+		}
 
-		//ensure
-		existServer.Hosts = expectedServer.Hosts
-		existServer.Port = expectedServer.Port
-		existServer.Tls = expectedServer.Tls
+		if ingressConfig.HttpsCert == "" {
+			continue
+		}
+
+		existServers := gw.Spec.Servers
+
+		expectedServer := istioNetworkingV1Beta1.Server{
+			Hosts: ingressConfig.Hosts,
+			Port: &istioNetworkingV1Beta1.Port{
+				Number:   443,
+				Protocol: "HTTPS",
+				Name:     "https",
+			},
+			Tls: &istioNetworkingV1Beta1.Server_TLSOptions{
+				Mode:           istioNetworkingV1Beta1.Server_TLSOptions_SIMPLE,
+				CredentialName: ingressConfig.HttpsCert,
+			},
+		}
+
+		var expectedServerExist bool
+		for _, existServer := range existServers {
+			joinExistServers := strings.Join(existServer.Hosts, ",")
+			joinExpected := strings.Join(ingressConfig.Hosts, ",")
+
+			if joinExistServers != joinExpected {
+				continue
+			}
+
+			expectedServerExist = true
+
+			//ensure
+			existServer.Hosts = expectedServer.Hosts
+			existServer.Port = expectedServer.Port
+			existServer.Tls = expectedServer.Tls
+		}
+
+		if !expectedServerExist {
+			r.Log.Info("config TLS for:" + strings.Join(ingressConfig.Hosts, ","))
+
+			existServers = append(existServers, &expectedServer)
+			gw.Spec.Servers = existServers
+		} else {
+			r.Log.Info("config TLS already exist for:" + strings.Join(ingressConfig.Hosts, ","))
+		}
 	}
 
-	if !exist {
-		r.Log.Info("config TLS for:" + strings.Join(ingressConfig.Hosts, ","))
-
-		existServers = append(existServers, &expectedServer)
-		gw.Spec.Servers = existServers
-	} else {
-		r.Log.Info("config TLS already exist for:" + strings.Join(ingressConfig.Hosts, ","))
-	}
-
-	err := r.Update(r.ctx, gw)
-	return err
+	return nil
 }
