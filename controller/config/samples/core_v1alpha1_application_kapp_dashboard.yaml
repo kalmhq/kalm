@@ -1,0 +1,84 @@
+#---
+#apiVersion: v1
+#kind: Secret
+#metadata:
+#  name: cloudflare-api-token-secret
+#  namespace: cert-manager
+#type: Opaque
+#stringData:
+#  api-token: <---hide--->
+#---
+#apiVersion: cert-manager.io/v1alpha2
+#kind: ClusterIssuer
+#metadata:
+#  name: letsencrypt
+#spec:
+#  acme:
+#    email: <---hide--->
+#    server: https://acme-v02.api.letsencrypt.org/directory
+#    privateKeySecretRef:
+#      name: letsencrypt-account
+#    solvers:
+#      - dns01:
+#          cloudflare:
+#            email: <---hide--->
+#            apiTokenSecretRef:
+#              name: cloudflare-api-token-secret
+#              key: api-token
+---
+kind: Certificate
+apiVersion: cert-manager.io/v1alpha2
+metadata:
+  name: wildcard-kapp-live
+  namespace: istio-system
+spec:
+  dnsNames:
+    - '*.kapp.live'
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt
+  secretName: wildcard-kapp-live
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kapp-system
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: Application
+metadata:
+  name: kapp-system
+spec:
+  isActive: true
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: Component
+metadata:
+  name: kapp-dashboard
+  namespace: kapp-system
+spec:
+  image: kappstaging/dashboard:latest
+  workloadType: server
+  command:
+    - ./kapp-api-server
+  ports:
+    - name: http
+      containerPort: 3001
+      servicePort: 80
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: ApplicationPluginBinding
+metadata:
+  name: kapp-dashboard-ingress
+  namespace: kapp-system
+spec:
+  pluginName: kapp-builtin-application-plugin-ingress
+  config:
+    hosts:
+      - dashboard.kapp.live
+    httpsCert: wildcard-kapp-live
+    paths:
+      - /
+    stripPath: true
+    destinations:
+      - destination: kapp-dashboard
