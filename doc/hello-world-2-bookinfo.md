@@ -211,9 +211,68 @@ spec:
     periodSeconds: 5
 ```
 
-in the binding, we bind the plugin: `termination-grace` to component `productpage`, we want the `terminationGracePeriodSeconds` to be 5 seconds, so we pass config as:
+in the binding, we bind the plugin: `termination-grace` to component `productpage`, we want the `terminationGracePeriodSeconds` to be 5 seconds, so we pass config as: `periodSeconds: 5`
 
- `periodSeconds: 5`
+next we see another user-defined plugin: 
+
+```yaml
+apiVersion: core.kapp.dev/v1alpha1
+kind: ComponentPlugin
+metadata:
+  name: http-health-probe
+spec:
+  src: |
+    function addProbesForContainer(container) {
+      ...
+    }
+
+    function AfterPodTemplateGeneration(pod) {
+      var containers = pod.spec.containers;
+      containers.forEach(addProbesForContainer)
+      return pod;
+    }
+  configSchema:
+    type: object
+    properties:
+      port:
+        type: number
+      initialDelaySeconds:
+        type: number
+      periodSeconds:
+        type: number
+```
+
+it's used to add `readinessProbe` and `livenessProbe` to our container, the code of this plugin is longer but the structure is quite similiar, we implement the hook: `AfterPodTemplateGeneration`, and for each pod, we call `addProbesForContainer` to add probes to our containers.
+
+the binding is also similiar: 
+
+```yaml
+apiVersion: core.kapp.dev/v1alpha1
+kind: ComponentPluginBinding
+metadata:
+  name: productpage-http-health-probe
+  namespace: kapp-bookinfo
+spec:
+  pluginName:  http-health-probe
+  componentName: productpage
+  config:
+    port: 9080
+```
+
+we bind component: `productpage` to our plugin: `http-health-probe`, and we given the port number to probe in our config.
+
+finally, it's the buildin plugin: `kapp-builtin-application-plugin-ingress`, we saw it in our hello-world demo, we use this to enable external access of our service.
+
+this time we assign a host name to our frontend page : `bookinfo.demo.com`, we can try access it using commands:
+
+```
+INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
+INGRESS_HOST=$(minikube ip)
+
+curl -H"Host: bookinfo.demo.com" http://$INGRESS_HOST:$INGRESS_PORT
+```
+
+
 
 
 
