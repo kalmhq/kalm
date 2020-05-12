@@ -299,8 +299,9 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
       // after create
       if (this.props.application.get("components")?.size - prevProps.application.get("components")?.size === 1) {
         // select new created item
-        this.props.handleClickComponent(
-          this.props.application.get("components")?.get(this.state.expandedComponentIndex) as ApplicationComponent
+        this.handleClickComponent(
+          this.props.application.get("components")?.get(this.state.expandedComponentIndex) as ApplicationComponent,
+          this.props.application.get("components")!.size - 1
         );
       }
     }

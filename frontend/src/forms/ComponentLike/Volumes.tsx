@@ -75,6 +75,10 @@ class RenderVolumes extends React.PureComponent<Props> {
           <MenuItem value={"standard"}>Storage Class 3</MenuItem>
         </Field>
       );
+    } else {
+      fieldComponents.push(
+        <CustomTextField name={`${member}.size`} label="Size" margin validate={[ValidatorRequired]} />
+      );
     }
 
     return fieldComponents;
