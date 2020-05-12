@@ -152,7 +152,6 @@ export class LogStream extends React.PureComponent<Props, State> {
   componentDidUpdate(prevProps: Props, prevState: State) {
     const { application } = this.props;
 
-    // const podNames = application!.get("podNames");
     let podNames: Immutable.List<string> = Immutable.List([]);
     application?.get("components")?.forEach(component => {
       component.get("pods").forEach(pod => {
@@ -357,11 +356,10 @@ export class LogStream extends React.PureComponent<Props, State> {
   private renderInput() {
     const { application } = this.props;
 
-    // const podNames = application!.get("podNames");
-    const podNames: Immutable.List<string> = Immutable.List([]);
+    let podNames: Immutable.List<string> = Immutable.List([]);
     application?.get("components")?.forEach(component => {
       component.get("pods").forEach(pod => {
-        podNames.push(pod.get("name"));
+        podNames = podNames.push(pod.get("name"));
       });
     });
 

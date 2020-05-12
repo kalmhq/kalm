@@ -65,6 +65,8 @@ class ApplicationShowRaw extends React.PureComponent<Props> {
   }
 
   public render() {
+    // console.log(window.location.pathname);
+
     const { isLoading, application, applicationName, dispatch } = this.props;
     // const hasWriterRole = hasRole("writer");
     return (
