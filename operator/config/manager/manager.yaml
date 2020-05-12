@@ -28,7 +28,7 @@ spec:
           args:
             - --enable-leader-election
           image: kappstaging/operator:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           name: manager
           resources:
             limits:
