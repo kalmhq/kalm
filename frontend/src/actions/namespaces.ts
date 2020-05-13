@@ -6,8 +6,19 @@ import { SET_CURRENT_NAMESPACE } from "../types/namespace";
 export const setCurrentNamespaceAction = (namespace: string, redirect: boolean = true): ThunkResult<Promise<void>> => {
   return async dispatch => {
     if (redirect) {
-      const query = queryString.stringify({ ...queryString.parse(window.location.search), namespace });
-      dispatch(push(window.location.pathname + "?" + query + window.location.hash));
+      const pathname = window.location.pathname;
+      console.log(window.location.pathname);
+
+      // eg. /applications/kapp-hipster or /applications/kapp-hipster/log
+      // ["", "applications", "kapp-hipster"]
+      const pathnameSplits = pathname.split("/");
+      if (pathnameSplits[1] && pathnameSplits[2] && pathnameSplits[1] === "applications") {
+        pathnameSplits[2] = namespace;
+        dispatch(push(pathnameSplits.join("/")));
+      } else {
+        const query = queryString.stringify({ ...queryString.parse(window.location.search), namespace });
+        dispatch(push(pathname + "?" + query + window.location.hash));
+      }
     }
 
     dispatch({
