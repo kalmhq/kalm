@@ -992,9 +992,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <div className={`${classes.formSection} ${currentTab === "plugins" ? "" : classes.displayNone}`}>
           {this.renderPlugins()}
         </div>
-        <div className={`${classes.formSection} ${currentTab === "probes" ? "" : classes.displayNone}`}>
+        {/* <div className={`${classes.formSection} ${currentTab === "probes" ? "" : classes.displayNone}`}>
           {this.renderProbes()}
-        </div>
+        </div> */}
         <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}>
           {this.renderNodeSelector()}
         </div>
