@@ -549,25 +549,6 @@ func (r *ApplicationReconcilerTask) insertBuildInPluginImpls(rt *js.Runtime, bin
 
 			_ = json.Unmarshal(configBytes, &config)
 
-			//if config.HttpsCert != "" {
-			//	var gw istioV1Beta1.Gateway
-			//	err := r.Reader.Get(r.ctx, types.NamespacedName{
-			//		Name:      "gateway",
-			//		Namespace: binding.Namespace,
-			//	}, &gw)
-			//
-			//	if err != nil {
-			//		r.Log.Error(err, "gateway should exist")
-			//		return rt.ToValue(nil)
-			//	}
-			//
-			//	r.Log.Info("ensureGatewayForHttps")
-			//	if err := r.ensureGatewayForHttps(&gw, config); err != nil {
-			//		r.Log.Error(err, "fail to ensureGatewayForHttps")
-			//		return rt.ToValue(nil)
-			//	}
-			//}
-
 			var vs istioV1Beta1.VirtualService
 			name := binding.Name
 
