@@ -16,7 +16,7 @@ import { EnvTypeExternal } from "../../types/common";
 import { H4 } from "../../widgets/Label";
 import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
-
+// TODO delete this file
 const styles = (theme: Theme) =>
   createStyles({
     root: {
