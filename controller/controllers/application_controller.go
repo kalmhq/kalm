@@ -94,7 +94,7 @@ func (r *ApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			return nil
 		}
 
-		if owner.APIVersion != apiGVStr || owner.Kind != "Namespace" {
+		if owner.APIVersion != apiGVStr || owner.Kind != "Application" {
 			return nil
 		}
 
@@ -106,6 +106,7 @@ func (r *ApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1alpha1.Application{}).
 		Owns(&coreV1.Namespace{}).
+		Owns(&istioV1Beta1.Gateway{}).
 		Complete(r)
 }
 
@@ -675,6 +676,7 @@ func (r *ApplicationReconcilerTask) ensureHttpsConfigOfGateway(gw *istioV1Beta1.
 		return client.IgnoreNotFound(err)
 	}
 
+	var expectedHttpsServer []*istioNetworkingV1Beta1.Server
 	for _, appPluginBinding := range appPluginBindingList.Items {
 		if appPluginBinding.Spec.PluginName != corev1alpha1.KappBuiltinApplicationPluginIngress {
 			continue
@@ -689,9 +691,7 @@ func (r *ApplicationReconcilerTask) ensureHttpsConfigOfGateway(gw *istioV1Beta1.
 			continue
 		}
 
-		existServers := gw.Spec.Servers
-
-		expectedServer := istioNetworkingV1Beta1.Server{
+		curServer := istioNetworkingV1Beta1.Server{
 			Hosts: ingressConfig.Hosts,
 			Port: &istioNetworkingV1Beta1.Port{
 				Number:   443,
@@ -704,32 +704,20 @@ func (r *ApplicationReconcilerTask) ensureHttpsConfigOfGateway(gw *istioV1Beta1.
 			},
 		}
 
-		var expectedServerExist bool
-		for _, existServer := range existServers {
-			joinExistServers := strings.Join(existServer.Hosts, ",")
-			joinExpected := strings.Join(ingressConfig.Hosts, ",")
-
-			if joinExistServers != joinExpected {
-				continue
-			}
-
-			expectedServerExist = true
-
-			//ensure
-			existServer.Hosts = expectedServer.Hosts
-			existServer.Port = expectedServer.Port
-			existServer.Tls = expectedServer.Tls
-		}
-
-		if !expectedServerExist {
-			r.Log.Info("config TLS for:" + strings.Join(ingressConfig.Hosts, ","))
-
-			existServers = append(existServers, &expectedServer)
-			gw.Spec.Servers = existServers
-		} else {
-			r.Log.Info("config TLS already exist for:" + strings.Join(ingressConfig.Hosts, ","))
-		}
+		expectedHttpsServer = append(expectedHttpsServer, &curServer)
 	}
+
+	var existServersExceptHttps []*istioNetworkingV1Beta1.Server
+	for _, s := range gw.Spec.Servers {
+		if s.Port != nil && s.Port.Number == 443 {
+			continue
+		}
+
+		existServersExceptHttps = append(existServersExceptHttps, s)
+	}
+
+	serverConfigInWhole := append(existServersExceptHttps, expectedHttpsServer...)
+	gw.Spec.Servers = serverConfigInWhole
 
 	return nil
 }

@@ -120,7 +120,7 @@ func (r *ApplicationPluginBindingReconciler) TouchApplication(ctx context.Contex
 		applicationCopy.ObjectMeta.Annotations = make(map[string]string)
 	}
 
-	applicationCopy.ObjectMeta.Annotations["touchedByPluginBinding"] = time.Now().String()
+	applicationCopy.ObjectMeta.Annotations["touchedByApplicationPluginBinding"] = time.Now().String()
 
 	return r.Patch(ctx, applicationCopy, client.MergeFrom(&application))
 }
