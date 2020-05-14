@@ -8,6 +8,9 @@ require (
 	github.com/coreos/prometheus-operator v0.29.0
 	github.com/davecgh/go-spew v1.1.1
 	github.com/dlclark/regexp2 v1.2.0 // indirect
+	github.com/docker/distribution v2.7.1+incompatible // indirect
+	github.com/docker/go-connections v0.4.0 // indirect
+	github.com/docker/go-metrics v0.0.1 // indirect
 	github.com/dop251/goja v0.0.0-20200414142002-77e84ffb8c65
 	github.com/elastic/cloud-on-k8s v0.0.0-20200204083752-bcb7468838a8
 	github.com/evanphx/json-patch v4.5.0+incompatible
@@ -18,8 +21,12 @@ require (
 	github.com/golang/groupcache v0.0.0-20191027212112-611e8accdfc9 // indirect
 	github.com/influxdata/influxdb v1.7.7
 	github.com/jetstack/cert-manager v0.13.1
+	github.com/joho/godotenv v1.3.0
+	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/onsi/ginkgo v1.10.3
 	github.com/onsi/gomega v1.7.1
+	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
+	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/prometheus/client_golang v1.2.1 // indirect
 	github.com/prometheus/common v0.7.0
 	github.com/prometheus/procfs v0.0.6 // indirect

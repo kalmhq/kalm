@@ -33,6 +33,18 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - secrets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
   - services
   verbs:
   - create
@@ -194,6 +206,26 @@ rules:
   - core.kapp.dev
   resources:
   - components/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - core.kapp.dev
+  resources:
+  - dockerregistries
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kapp.dev
+  resources:
+  - dockerregistries/status
   verbs:
   - get
   - patch

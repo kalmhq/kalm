@@ -104,6 +104,30 @@ func (suite *BasicSuite) createApplication(application *v1alpha1.Application) {
 	}, "Created application has no finalizer.")
 }
 
+func getDockerRegistryNamespacedName(registry *v1alpha1.DockerRegistry) types.NamespacedName {
+	return types.NamespacedName{Name: registry.Name, Namespace: registry.Namespace}
+}
+
+func (suite *BasicSuite) createDockerRegistry(registry *v1alpha1.DockerRegistry) {
+	suite.Nil(suite.K8sClient.Create(context.Background(), registry))
+
+	suite.Eventually(func() bool {
+		err := suite.K8sClient.Get(context.Background(), getDockerRegistryNamespacedName(registry), registry)
+
+		if err != nil {
+			return false
+		}
+
+		for i := range registry.Finalizers {
+			if registry.Finalizers[i] == finalizerName {
+				return true
+			}
+		}
+
+		return false
+	}, "Created Docker registry has no finalizer.")
+}
+
 func (suite *HttpsCertIssuerControllerSuite) createHttpsCertIssuer(issuer v1alpha1.HttpsCertIssuer) {
 	suite.Nil(suite.K8sClient.Create(context.Background(), &issuer))
 }
@@ -222,6 +246,13 @@ func (suite *BasicSuite) SetupSuite() {
 		Client: mgr.GetClient(),
 		Log:    ctrl.Log.WithName("controllers").WithName("HttpsCert"),
 		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr))
+
+	suite.Nil((&DockerRegistryReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("DockerRegistry"),
+		Scheme: mgr.GetScheme(),
+		Reader: mgr.GetAPIReader(),
 	}).SetupWithManager(mgr))
 
 	mgrStopChannel := make(chan struct{})
