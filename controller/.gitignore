@@ -1,5 +1,6 @@
 kapp
 playground_test.go
+.env
 
 # Binaries for programs and plugins
 *.exe
