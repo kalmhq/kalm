@@ -48,7 +48,6 @@ type HttpsCertIssuerStatus struct {
 }
 
 // +kubebuilder:object:root=true
-// +kubebuilder:resource:scope=Cluster
 // +kubebuilder:subresource:status
 
 // HttpsCertIssuer is the Schema for the httpscertissuers API
@@ -61,7 +60,6 @@ type HttpsCertIssuer struct {
 }
 
 // +kubebuilder:object:root=true
-// +kubebuilder:resource:scope=Cluster
 // +kubebuilder:subresource:status
 
 // HttpsCertIssuerList contains a list of HttpsCertIssuer

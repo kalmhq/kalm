@@ -14,7 +14,7 @@ spec:
     listKind: HttpsCertIssuerList
     plural: httpscertissuers
     singular: httpscertissuer
-  scope: Cluster
+  scope: Namespaced
   subresources:
     status: {}
   validation:

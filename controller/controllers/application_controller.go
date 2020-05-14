@@ -385,6 +385,10 @@ func (r *ApplicationReconcilerTask) ReconcileComponents() error {
 		}
 
 		copiedComponent.Annotations["lastTouchedByApplication"] = timeString
+
+		//?
+		ctrl.SetControllerReference(r.application, copiedComponent, r.Scheme)
+
 		if err := r.Patch(r.ctx, copiedComponent, client.MergeFrom(&item)); err != nil {
 			r.Log.Error(err, "patch component failed")
 			return err

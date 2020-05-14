@@ -669,6 +669,7 @@ apiVersion: core.kapp.dev/v1alpha1
 kind: HttpsCertIssuer
 metadata:
   name: https-cert-issuer-hipster
+  namespace: kapp-hipster
 spec:
   caForTest: {}
 ---

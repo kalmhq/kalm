@@ -68,7 +68,7 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			DNSNames:   httpsCert.Spec.Domains,
 			IssuerRef: cmmeta.ObjectReference{
 				Name: httpsCert.Spec.HttpsCertIssuer,
-				Kind: "ClusterIssuer",
+				Kind: "Issuer",
 			},
 		},
 	}
@@ -108,5 +108,6 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 func (r *HttpsCertReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1alpha1.HttpsCert{}).
+		Owns(&cmv1alpha2.Certificate{}).
 		Complete(r)
 }
