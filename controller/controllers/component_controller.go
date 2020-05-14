@@ -83,7 +83,7 @@ func (r *ComponentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	task := &ComponentReconcilerTask{
 		ComponentReconciler: r,
 		ctx:                 context.Background(),
-		Log:                 r.Log.WithValues("application", req.NamespacedName),
+		Log:                 r.Log.WithValues("component", req.NamespacedName),
 	}
 
 	task.Log.Info("=========== start reconciling ===========")
@@ -155,12 +155,6 @@ func (r *ComponentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 func (r *ComponentReconcilerTask) Run(req ctrl.Request) error {
-	r.ctx = context.Background()
-	r.Log = r.Log.WithValues("component", req.NamespacedName)
-
-	r.Log.Info("=========== start reconciling ===========")
-	defer r.Log.Info("=========== reconciling done ===========")
-
 	if err := r.SetupAttributes(req); err != nil {
 		return client.IgnoreNotFound(err)
 	}
