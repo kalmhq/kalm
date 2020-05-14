@@ -27,7 +27,6 @@ import (
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	types "k8s.io/apimachinery/pkg/types"
-	"math/rand"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -274,9 +273,8 @@ func (r *DockerRegistryReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 		ctx:                      context.Background(),
 		Log:                      r.Log.WithValues("dockerregistry", req.NamespacedName),
 	}
-	xx := rand.ExpFloat64()
-	task.Log.Info("=========== start reconciling ===========", "xx", xx)
-	defer task.Log.Info("=========== reconciling done ===========", "xx", xx)
+	task.Log.Info("=========== start reconciling ===========")
+	defer task.Log.Info("=========== reconciling done ===========")
 
 	return ctrl.Result{}, task.Run(req)
 }
