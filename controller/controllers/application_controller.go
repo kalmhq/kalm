@@ -19,6 +19,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
 	js "github.com/dop251/goja"
 	"github.com/go-logr/logr"
 	corev1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
@@ -35,9 +39,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"strconv"
-	"strings"
-	"time"
 )
 
 // ApplicationReconciler reconciles a Application object
@@ -72,6 +73,9 @@ var finalizerName = "storage.finalizers.kapp.dev"
 // +kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=networking.istio.io,resources=gateways,verbs=*
 // +kubebuilder:rbac:groups=networking.istio.io,resources=virtualservices,verbs=*
+
+// This is for dashboard. We will run dashboard in kube-system namespace too.
+// +kubebuilder:rbac:groups=metrics.k8s.io,resources=*,verbs=*
 
 func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	task := &ApplicationReconcilerTask{

@@ -1,7 +1,6 @@
 import { Box, createStyles, Grid, Paper, Theme, withStyles, WithStyles } from "@material-ui/core";
 import DeleteIcon from "@material-ui/icons/Delete";
-import LaptopWindowsIcon from "@material-ui/icons/LaptopWindows";
-import ViewHeadlineIcon from "@material-ui/icons/ViewHeadline";
+import { ConsoleIcon, LogIcon } from "widgets/Icon";
 import clsx from "clsx";
 import Immutable from "immutable";
 import { withNamespace, withNamespaceProps } from "permission/Namespace";
@@ -23,6 +22,9 @@ import {
   SmallMemoryLineChart
 } from "../../widgets/SmallLineChart";
 import { generateQueryForPods } from "./Log";
+import { PieChart } from "../../widgets/PieChart";
+import { CustomizedButton } from "../../widgets/Button";
+import { push } from "connected-react-router";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -33,7 +35,9 @@ const styles = (theme: Theme) =>
       paddingTop: theme.spacing(1.5),
       paddingBottom: theme.spacing(1.5),
       "& .name": {
-        fontSize: 14
+        fontSize: 14,
+        display: "flex",
+        alignItems: "center"
       }
     },
     componentContainer: {
@@ -154,7 +158,37 @@ class DetailsRaw extends React.PureComponent<Props, State> {
         <div className={clsx(classes.rowContainer, classes.componentRow)}>
           <div className="name">
             <strong>{component.get("name")}</strong> ({component.get("workloadType")})
+            <div className="right-part">
+              <CustomizedButton
+                style={{ marginLeft: 20 }}
+                color="primary"
+                size="large"
+                onClick={() => {
+                  dispatch(push(`/applications/${application.get("name")}/edit?component=${component.get("name")}`));
+                }}>
+                Edit
+              </CustomizedButton>
+              <CustomizedButton
+                style={{ marginLeft: 20 }}
+                color="primary"
+                size="large"
+                onClick={() => {
+                  dispatch(push(`/applications/${application.get("name")}/edit?component=${component.get("name")}`));
+                }}>
+                Scale
+              </CustomizedButton>
+              <CustomizedButton
+                style={{ marginLeft: 20 }}
+                color="primary"
+                size="large"
+                onClick={() => {
+                  dispatch(push(`/applications/${application.get("name")}/components/${component.get("name")}`));
+                }}>
+                Detail
+              </CustomizedButton>
+            </div>
           </div>
+
           {/* <div className="right-part">
             <div className={classes.chartTabelCell}>
               <SmallCPULineChart data={component.get("metrics").get("cpu")!} />
@@ -164,6 +198,21 @@ class DetailsRaw extends React.PureComponent<Props, State> {
             </div>
           </div> */}
         </div>
+
+        <Box p={2}>
+          <Grid container spacing={2}>
+            <Grid item md={2}>
+              <div>CPU: {component.get("cpu")}</div>
+            </Grid>
+            <Grid item md={2}>
+              <div>Memory: {component.get("memory")}</div>
+            </Grid>
+            <Grid item md={2}>
+              <div>Pods: {component.get("pods") ? component.get("pods").size : "-"}</div>
+            </Grid>
+          </Grid>
+        </Box>
+
         <Box p={2}>
           <div>Internal Endpoints:</div>
           <Box ml={2}>
@@ -260,7 +309,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                             `/applications/${application.get("name")}/logs?` +
                             generateQueryForPods(this.props.activeNamespaceName, [x.get("name")], x.get("name"))
                           }>
-                          <ViewHeadlineIcon />
+                          <LogIcon />
                         </IconLinkWithToolTip>
                         {hasWriterRole ? (
                           <IconLinkWithToolTip
@@ -271,7 +320,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                               `/applications/${application.get("name")}/shells?` +
                               generateQueryForPods(this.props.activeNamespaceName, [x.get("name")], x.get("name"))
                             }>
-                            <LaptopWindowsIcon />
+                            <ConsoleIcon />
                           </IconLinkWithToolTip>
                         ) : null}
                         {hasWriterRole ? (
@@ -319,15 +368,76 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     );
   };
 
+  private getPieChartData() {
+    const { application } = this.props;
+
+    let componentSuccess = 0;
+    let componentPending = 0;
+    let componentError = 0;
+    let podSuccess = 0;
+    let podPending = 0;
+    let podError = 0;
+
+    application.get("components").forEach(component => {
+      let hasError = false;
+      let hasPending = false;
+      component.get("pods").forEach(pod => {
+        if (pod.get("status") === "Succeeded" || pod.get("status") === "Running") {
+          podSuccess = podSuccess + 1;
+        } else if (pod.get("status") === "Failed") {
+          podError = podError + 1;
+          hasError = true;
+        } else {
+          podPending = podPending + 1;
+          hasPending = true;
+        }
+      });
+
+      if (hasError) {
+        componentError = componentError + 1;
+      } else if (hasPending) {
+        componentPending = componentPending + 1;
+      } else {
+        componentSuccess = componentSuccess + 1;
+      }
+    });
+
+    return {
+      componentSuccess,
+      componentPending,
+      componentError,
+      podSuccess,
+      podPending,
+      podError
+    };
+  }
+
   public render() {
     const { application, classes } = this.props;
+
+    const pieChartData = this.getPieChartData();
+
     return (
       <div className={classes.root}>
         <Grid container spacing={2} className={classes.metrics}>
-          <Grid item md={6}>
+          <Grid item md={2}>
+            <PieChart
+              title="Components"
+              labels={["Running", "Pending", "Error"]}
+              data={[pieChartData.componentSuccess, pieChartData.componentPending, pieChartData.componentError]}
+            />
+          </Grid>
+          <Grid item md={2}>
+            <PieChart
+              title="Pods"
+              labels={["Running", "Pending", "Error"]}
+              data={[pieChartData.podSuccess, pieChartData.podPending, pieChartData.podError]}
+            />
+          </Grid>
+          <Grid item md={4}>
             <BigCPULineChart data={application.get("metrics")?.get("cpu")} />
           </Grid>
-          <Grid item md={6}>
+          <Grid item md={4}>
             <BigMemoryLineChart data={application.get("metrics")?.get("memory")} />
           </Grid>
         </Grid>
