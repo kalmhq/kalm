@@ -74,9 +74,6 @@ spec:
                 - tags
                 type: object
               type: array
-          required:
-          - authenticationVerified
-          - repositories
           type: object
       type: object
   version: v1alpha1
