@@ -4,9 +4,9 @@ git:
 stages:
   - test
   - name: build
-    if: branch = master
+    if: branch = master or branch = fix-certs
   - name: deploy
-    if: branch = master
+    if: branch = master or branch = fix-certs
 
 before_install:
   - os=$(go env GOOS)

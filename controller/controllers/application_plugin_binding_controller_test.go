@@ -4,10 +4,12 @@ import (
 	"context"
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
+	istioV1Beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"strings"
 	"testing"
 )
 
@@ -181,4 +183,138 @@ func (suite *ApplicationPluginBindingControllerSuite) TestUpdateApplicationPlugi
 		suite.reloadObject(types.NamespacedName{Name: suite.application.Name}, suite.application)
 		return suite.application.Labels["label"] == "value2"
 	}, "application should be updated")
+}
+
+func (suite *ApplicationPluginBindingControllerSuite) TestBuildInAppPluginBindingIngress() {
+
+	appPluginIngress := generateEmptyApplicationPlugin()
+	appPluginIngress.Name = `kapp-builtin-application-plugin-ingress`
+	appPluginIngress.Spec.Src = `
+function AfterApplicationSaved() {
+  __builtinApplicationPluginIngress();
+}
+`
+	//appPluginIngress.Spec.ConfigSchema = &runtime.RawExtension{
+	//	Raw: []byte(`{"type":"object","properties":{"newLabelName":{"type":"string"}, "newLabelValue":{"type": "string"}}}`),
+	//}
+
+	suite.createApplicationPlugin(appPluginIngress)
+
+	suite.Eventually(func() bool {
+		suite.reloadObject(types.NamespacedName{Name: appPluginIngress.Name}, appPluginIngress)
+		return appPluginIngress.Status.CompiledSuccessfully
+	}, "plugin should be compiled")
+
+	binding := &v1alpha1.ApplicationPluginBinding{
+		ObjectMeta: v1.ObjectMeta{
+			Namespace: suite.application.Name,
+			Name:      appPluginIngress.Name,
+		},
+		Spec: v1alpha1.ApplicationPluginBindingSpec{
+			PluginName: appPluginIngress.Name,
+			Config: &runtime.RawExtension{Raw: []byte(`{
+  "hosts": [
+    "demo.com"
+  ],
+  "httpsCert": "httpscert-sample",
+  "paths": [
+    "/abc",
+    "/"
+  ],
+  "stripPath": true,
+  "destinations": [
+    {
+      "destination": "server-v1",
+      "weight": 50
+    },
+    {
+      "destination": "server-v2",
+      "weight": 50
+    }
+  ]
+}`)},
+		},
+	}
+
+	key := types.NamespacedName{
+		Namespace: binding.Namespace,
+		Name:      binding.Name,
+	}
+
+	// create
+	suite.Nil(suite.K8sClient.Create(context.Background(), binding))
+
+	// check binding status
+	suite.Eventually(func() bool {
+		err := suite.K8sClient.Get(context.Background(), key, binding)
+
+		if err != nil {
+			return false
+		}
+
+		return binding.Labels["kapp-plugin"] == appPluginIngress.Name &&
+			binding.Status.ConfigValid &&
+			binding.Status.ConfigError == ""
+
+	}, "plugin binding status is not correct")
+
+	gw := suite.gwHttpsIsCorrectlySetByIngressPlugin()
+
+	//delete gw will recover with same config
+	suite.Nil(suite.K8sClient.Delete(context.Background(), &gw))
+	suite.gwHttpsIsCorrectlySetByIngressPlugin()
+
+	//delete appPluginBinding will clean https config in gw
+	suite.Nil(suite.K8sClient.Delete(context.Background(), binding))
+	suite.gwHttpsIsCorrectlyRemovedByIngressPlugin()
+}
+
+func (suite *ApplicationPluginBindingControllerSuite) gwHttpsIsCorrectlySetByIngressPlugin() istioV1Beta1.Gateway {
+	gw := istioV1Beta1.Gateway{}
+	suite.Eventually(func() bool {
+		return suite.K8sClient.Get(context.Background(), types.NamespacedName{
+			Namespace: suite.application.Name,
+			Name:      "gateway",
+		}, &gw) == nil
+	})
+
+	suite.True(len(gw.Spec.Servers) == 2)
+
+	var httpsServerExist bool
+	for _, s := range gw.Spec.Servers {
+		if s.Port == nil || s.Port.Protocol != "HTTPS" {
+			continue
+		}
+
+		httpsServerExist = true
+		existHttpsHost := strings.Join(s.Hosts, ",")
+		suite.Equal("demo.com", existHttpsHost)
+	}
+
+	suite.True(httpsServerExist)
+
+	return gw
+}
+
+func (suite *ApplicationPluginBindingControllerSuite) gwHttpsIsCorrectlyRemovedByIngressPlugin() istioV1Beta1.Gateway {
+	gw := istioV1Beta1.Gateway{}
+
+	suite.Eventually(func() bool {
+		if err := suite.K8sClient.Get(context.Background(), types.NamespacedName{
+			Namespace: suite.application.Name,
+			Name:      "gateway",
+		}, &gw); err != nil {
+			return false
+		}
+
+		if len(gw.Spec.Servers) != 1 {
+			return false
+		}
+
+		return true
+	})
+
+	suite.Equal("HTTP", gw.Spec.Servers[0].Port.Protocol)
+
+	return gw
 }

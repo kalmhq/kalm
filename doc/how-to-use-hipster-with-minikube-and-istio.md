@@ -171,6 +171,6 @@ kubectl get secret -n cert-manager https-cert-issuer-hipster -o jsonpath='{.data
 
 # 4. curl with `--cacrt ca.crt` to trust our CA, you should see the HTTPS request succeed now
 curl -v -HHost:hipster.demo.com --resolve hipster.demo.com:$SECURE_INGRESS_PORT:$INGRESS_HOST \
---cacrt ca.crt https://hipster.demo.com:$SECURE_INGRESS_PORT/
+--cacert ca.crt https://hipster.demo.com:$SECURE_INGRESS_PORT/
 ```
 
