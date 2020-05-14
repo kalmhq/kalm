@@ -682,3 +682,23 @@ spec:
   httpsCertIssuer: https-cert-issuer-hipster
   domains:
     - hipster.demo.com
+#---
+#apiVersion: core.kapp.dev/v1alpha1
+#kind: HttpsCertIssuer
+#metadata:
+#  name: https-cert-issuer-hipster-cloudflare
+#  namespace: kapp-hipster
+#spec:
+#  acmeCloudFlare:
+#    email: your-email@demo.com
+#    apiKeySecretName: https-cert-issuer-hipster-cloudflare
+#---
+#apiVersion: core.kapp.dev/v1alpha1
+#kind: HttpsCert
+#metadata:
+#  name: https-cert-hipster-acme-cloudflare
+#  namespace: kapp-hipster
+#spec:
+#  httpsCertIssuer: https-cert-issuer-hipster-cloudflare
+#  domains:
+#    - hipster.demo.com

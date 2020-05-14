@@ -36,8 +36,8 @@ type HttpsCertIssuerSpec struct {
 type CAForTestIssuer struct{}
 
 type ACMECloudFlareIssuer struct {
-	Email  string `json:"email"`
-	APIKey string `json:"apiKey"`
+	Email            string `json:"email"`
+	APIKeySecretName string `json:"apiKeySecretName"`
 }
 
 // HttpsCertIssuerStatus defines the observed state of HttpsCertIssuer

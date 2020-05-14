@@ -178,51 +178,45 @@ func (r *HttpsCertIssuerReconciler) ReconcileACMECloudFlare(ctx context.Context,
 
 	acmeSpec := certIssuer.Spec.ACMECloudFlare
 	email := acmeSpec.Email
-	plainSecret := acmeSpec.APIKey
+	secName := acmeSpec.APIKeySecretName
 
-	secName := certIssuer.Name
-	secKey := "sec-content"
+	issuerName := certIssuer.Name
+	curNs := certIssuer.Namespace
 
 	sec := corev1.Secret{}
-	if err := r.Get(ctx, types.NamespacedName{Namespace: certIssuer.Namespace, Name: secName}, &sec); err != nil {
-		if !errors.IsNotFound(err) {
-			return ctrl.Result{}, err
+	if err := r.Get(ctx, types.NamespacedName{Namespace: curNs, Name: secName}, &sec); err != nil {
+		r.Log.Error(err, fmt.Sprintf("fail to get secret %s", secName))
+		return ctrl.Result{}, err
+	}
+
+	var secKey string
+	for k, v := range sec.Data {
+		if v == nil {
+			continue
 		}
 
-		sec := corev1.Secret{
-			ObjectMeta: v1.ObjectMeta{
-				Namespace: certIssuer.Namespace,
-				Name:      secName,
-			},
-			StringData: map[string]string{
-				secKey: plainSecret,
-			},
-			Type: "Opaque",
-		}
+		secKey = k
+	}
 
-		if err := ctrl.SetControllerReference(&certIssuer, &sec, r.Scheme); err != nil {
-			return ctrl.Result{}, err
-		}
+	if secKey == "" {
+		err := fmt.Errorf("secret %s has no key", secName)
+		r.Log.Error(err, "")
 
-		if err := r.Create(ctx, &sec); err != nil {
-			return ctrl.Result{}, err
-		}
-
-		r.Log.Info("secret created")
+		return ctrl.Result{}, err
 	}
 
 	// ref: https://cert-manager.io/docs/configuration/acme/dns01/cloudflare/
 	expectedIssuer := cmv1alpha2.Issuer{
 		ObjectMeta: v1.ObjectMeta{
-			Name:      certIssuer.Name,
-			Namespace: certIssuer.Namespace,
+			Name:      issuerName,
+			Namespace: curNs,
 		},
 		Spec: cmv1alpha2.IssuerSpec{
 			IssuerConfig: cmv1alpha2.IssuerConfig{
 				ACME: &v1alpha2.ACMEIssuer{
-					Email:  email,
-					Server: "https://acme-staging-v02.api.letsencrypt.org/directory",
-					//Server: "https://acme-v02.api.letsencrypt.org/directory",
+					Email: email,
+					//Server: "https://acme-staging-v02.api.letsencrypt.org/directory",
+					Server: "https://acme-v02.api.letsencrypt.org/directory",
 					PrivateKey: cmmetav1.SecretKeySelector{ // what is this prvKey used for?
 						LocalObjectReference: cmmetav1.LocalObjectReference{
 							Name: getPrvKeyNameForIssuer(certIssuer),
@@ -250,7 +244,10 @@ func (r *HttpsCertIssuerReconciler) ReconcileACMECloudFlare(ctx context.Context,
 
 	issuer := cmv1alpha2.Issuer{}
 	var isNew bool
-	if err := r.Get(ctx, client.ObjectKey{Name: issuer.Name}, &issuer); err != nil {
+	if err := r.Get(ctx, types.NamespacedName{
+		Name:      issuerName,
+		Namespace: curNs,
+	}, &issuer); err != nil {
 		if !errors.IsNotFound(err) {
 			return ctrl.Result{}, err
 		}
@@ -276,6 +273,11 @@ func (r *HttpsCertIssuerReconciler) ReconcileACMECloudFlare(ctx context.Context,
 			r.Log.Error(err, "fail update issuer")
 			return ctrl.Result{}, err
 		}
+	}
+
+	certIssuer.Status.OK = true
+	if err := r.Status().Update(ctx, &certIssuer); err != nil {
+		return ctrl.Result{}, err
 	}
 
 	//todo

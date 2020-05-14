@@ -38,12 +38,12 @@ spec:
           properties:
             acmeCloudFlare:
               properties:
-                apiKey:
+                apiKeySecretName:
                   type: string
                 email:
                   type: string
               required:
-              - apiKey
+              - apiKeySecretName
               - email
               type: object
             caForTest:
