@@ -21,6 +21,7 @@ import (
 	"github.com/kapp-staging/kapp/controller/registry"
 	"github.com/kapp-staging/kapp/controller/utils"
 	v1 "k8s.io/api/core/v1"
+	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 
 	"github.com/go-logr/logr"
@@ -63,12 +64,9 @@ func (r *DockerRegistryReconcileTask) Run(req ctrl.Request) error {
 	if !r.registry.ObjectMeta.DeletionTimestamp.IsZero() {
 		return nil
 	}
-
 	registryInstance := registry.NewRegistry(r.registry.Spec.Host, string(r.secret.Data["username"]), string(r.secret.Data["password"]))
 
 	if err := registryInstance.Ping(); err != nil {
-		r.registry.Status.AuthenticationVerified = false
-
 		// todo save & exit
 
 		registryCopy := r.registry.DeepCopy()
@@ -118,6 +116,17 @@ func (r *DockerRegistryReconcileTask) LoadResources(req ctrl.Request) (err error
 	// TODO if can't find, emit a warning event
 
 	if err != nil {
+		return err
+	}
+
+	secretCopy := secret.DeepCopy()
+	if err := ctrl.SetControllerReference(r.registry, secretCopy, r.Scheme); err != nil {
+		r.Log.Error(err, "unable to set owner for secret")
+		return err
+	}
+
+	if err := r.Patch(r.ctx, secretCopy, client.MergeFrom(&secret)); err != nil {
+		r.Log.Error(err, "Patch secret owner ref error.")
 		return err
 	}
 
@@ -175,7 +184,23 @@ func (r *DockerRegistryReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 }
 
 func (r *DockerRegistryReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	if err := mgr.GetFieldIndexer().IndexField(&v1.Secret{}, ownerKey, func(rawObj runtime.Object) []string {
+		// grab the job object, extract the owner...
+		secret := rawObj.(*v1.Secret)
+		owner := metaV1.GetControllerOf(secret)
+		if owner == nil {
+			return nil
+		}
+		if owner.APIVersion != apiGVStr || owner.Kind != "DockerRegistry" {
+			return nil
+		}
+		return []string{owner.Name}
+	}); err != nil {
+		return err
+	}
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1alpha1.DockerRegistry{}).
+		Owns(&v1.Secret{}).
 		Complete(r)
 }

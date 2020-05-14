@@ -26,7 +26,6 @@ type Transport struct {
 
 func (t *Transport) RoundTrip(req *http.Request) (res *http.Response, err error) {
 	res, err = t.Next.RoundTrip(req)
-
 	if err != nil || res == nil {
 		return
 	}
@@ -61,18 +60,19 @@ func (t *Transport) authThenRetry(req *http.Request, authProvider *AuthProvider)
 	authRes, err := c.Do(authReq)
 
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	if authRes.StatusCode != http.StatusOK {
-		return
+		return nil, fmt.Errorf("auth request failed.")
 	}
+
 	defer authRes.Body.Close()
 
 	bodyBytes, err := ioutil.ReadAll(authRes.Body)
 
 	if err != nil {
-		return
+		return nil, err
 	}
 	var dest struct {
 		Token string `json:"token"`
@@ -81,7 +81,7 @@ func (t *Transport) authThenRetry(req *http.Request, authProvider *AuthProvider)
 	err = json.Unmarshal(bodyBytes, &dest)
 
 	if err != nil || dest.Token == "" {
-		return
+		return nil, err
 	}
 
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", dest.Token))

@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	types "k8s.io/apimachinery/pkg/types"
 	"os"
 	"testing"
 )
@@ -14,6 +15,7 @@ import (
 type DockerRegistryControllerSuite struct {
 	BasicSuite
 	registry *v1alpha1.DockerRegistry
+	secret   *v1.Secret
 }
 
 func (suite *DockerRegistryControllerSuite) SetupSuite() {
@@ -60,9 +62,39 @@ func (suite *DockerRegistryControllerSuite) SetupTest() {
 	suite.Nil(suite.K8sClient.Create(context.Background(), &secret))
 	suite.createDockerRegistry(registry)
 	suite.registry = registry
+	suite.secret = &secret
 }
 
-func (suite *DockerRegistryControllerSuite) TestDockerRegistryBasicCRUD() {
+func (suite *DockerRegistryControllerSuite) TestDockerRegistrySecret() {
+	suite.Eventually(func() bool {
+		suite.reloadObject(getDockerRegistryNamespacedName(suite.registry), suite.registry)
+		return suite.registry.Status.AuthenticationVerified
+	})
+
+	suite.Eventually(func() bool {
+		suite.reloadObject(types.NamespacedName{
+			Namespace: suite.secret.Namespace,
+			Name:      suite.secret.Name,
+		}, suite.secret)
+
+		return len(suite.secret.OwnerReferences) == 1
+	})
+
+	// make secret invalid
+	suite.reloadObject(getDockerRegistryNamespacedName(suite.registry), suite.registry)
+	suite.secret.Data["username"] = []byte("wrong_name")
+	suite.updateObject(suite.secret)
+
+	suite.Eventually(func() bool {
+		suite.reloadObject(getDockerRegistryNamespacedName(suite.registry), suite.registry)
+		return !suite.registry.Status.AuthenticationVerified
+	})
+
+	// make the secret valid again
+	suite.reloadObject(getDockerRegistryNamespacedName(suite.registry), suite.registry)
+	suite.secret.Data["username"] = []byte("_json_key")
+	suite.updateObject(suite.secret)
+
 	suite.Eventually(func() bool {
 		suite.reloadObject(getDockerRegistryNamespacedName(suite.registry), suite.registry)
 		return suite.registry.Status.AuthenticationVerified
