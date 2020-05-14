@@ -6,6 +6,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
+	appsV1 "k8s.io/api/apps/v1"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -140,6 +141,23 @@ func (suite *DockerRegistryControllerSuite) TestSecretDistribution() {
 
 		return err == nil
 	})
+
+	// the image secret should also exist in deployment pod template
+	component := generateEmptyComponent(application.Name)
+	suite.createComponent(component)
+	suite.Eventually(func() bool {
+		var deployment appsV1.Deployment
+
+		if err := suite.K8sClient.Get(context.Background(), types.NamespacedName{
+			Name:      component.Name,
+			Namespace: component.Namespace,
+		}, &deployment); err != nil {
+			return false
+		}
+
+		return len(deployment.Spec.Template.Spec.ImagePullSecrets) == 1 &&
+			deployment.Spec.Template.Spec.ImagePullSecrets[0].Name == getImagePullSecretName(suite.registry.Name)
+	}, "can't get deployment")
 
 	// delete the registry
 	suite.Nil(suite.K8sClient.Delete(context.Background(), suite.registry))

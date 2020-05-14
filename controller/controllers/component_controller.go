@@ -665,6 +665,28 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 		},
 	}
 
+	var pullImageSecrets coreV1.SecretList
+	if err := r.Client.List(
+		r.ctx,
+		&pullImageSecrets,
+		client.MatchingLabels{"kapp-docker-registry-image-pull-secret": "true"},
+		client.InNamespace(component.Namespace),
+	); err != nil {
+		r.Log.Error(err, "get pull image secrets failed")
+		return nil, err
+	}
+
+	pullImageSecretRefs := make([]coreV1.LocalObjectReference, len(pullImageSecrets.Items))
+	for i, secret := range pullImageSecrets.Items {
+		pullImageSecretRefs[i] = coreV1.LocalObjectReference{
+			Name: secret.Name,
+		}
+	}
+
+	if len(pullImageSecretRefs) > 0 {
+		template.Spec.ImagePullSecrets = pullImageSecretRefs
+	}
+
 	//decide affinity
 	if affinity, exist := r.decideAffinity(); exist {
 		template.Spec.Affinity = affinity

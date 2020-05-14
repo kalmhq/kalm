@@ -176,6 +176,7 @@ func (r *DockerRegistryReconcileTask) DistributeSecrets() (err error) {
 		}
 
 		secret.Labels["kapp-docker-registry"] = r.registry.Name
+		secret.Labels["kapp-docker-registry-image-pull-secret"] = "true"
 
 		data := map[string]struct {
 			Username string `json:"username"`

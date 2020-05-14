@@ -137,7 +137,9 @@ func (t *Transport) getAuthRequest(authProvider *AuthProvider) (*http.Request, e
 		return nil, err
 	}
 
-	authRequest.SetBasicAuth(t.Username, t.Password)
+	if t.Username != "" && t.Password != "" {
+		authRequest.SetBasicAuth(t.Username, t.Password)
+	}
 
 	return authRequest, nil
 }
