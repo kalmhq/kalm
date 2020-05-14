@@ -39,7 +39,6 @@ type HttpsCertStatus struct {
 }
 
 // +kubebuilder:object:root=true
-// +kubebuilder:resource:scope=Cluster
 // +kubebuilder:subresource:status
 
 // HttpsCert is the Schema for the httpscerts API
@@ -52,7 +51,6 @@ type HttpsCert struct {
 }
 
 // +kubebuilder:object:root=true
-// +kubebuilder:resource:scope=Cluster
 // +kubebuilder:subresource:status
 
 // HttpsCertList contains a list of HttpsCert

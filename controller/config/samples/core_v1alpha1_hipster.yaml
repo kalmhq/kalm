@@ -676,6 +676,7 @@ apiVersion: core.kapp.dev/v1alpha1
 kind: HttpsCert
 metadata:
   name: https-cert-hipster
+  namespace: kapp-hipster
 spec:
   httpsCertIssuer: https-cert-issuer-hipster
   domains:

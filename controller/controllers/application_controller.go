@@ -680,7 +680,8 @@ func (r *ApplicationReconcilerTask) ensureHttpsConfigOfGateway(gw *istioV1Beta1.
 				Name:     "https",
 			},
 			Tls: &istioNetworkingV1Beta1.Server_TLSOptions{
-				Mode:           istioNetworkingV1Beta1.Server_TLSOptions_SIMPLE,
+				Mode: istioNetworkingV1Beta1.Server_TLSOptions_SIMPLE,
+				//CredentialName: ingressConfig.HttpsCert + "-cacert",
 				CredentialName: ingressConfig.HttpsCert,
 			},
 		}
