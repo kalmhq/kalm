@@ -14,7 +14,7 @@ spec:
     listKind: DockerRegistryList
     plural: dockerregistries
     singular: dockerregistry
-  scope: Namespaced
+  scope: Cluster
   validation:
     openAPIV3Schema:
       description: DockerRegistry is the Schema for the dockerregistries API

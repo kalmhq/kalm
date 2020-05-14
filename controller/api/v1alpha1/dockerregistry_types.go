@@ -44,6 +44,7 @@ type DockerRegistryStatus struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:resource:scope=Cluster
 
 // DockerRegistry is the Schema for the dockerregistries API
 type DockerRegistry struct {
@@ -55,6 +56,7 @@ type DockerRegistry struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:resource:scope=Cluster
 
 // DockerRegistryList contains a list of DockerRegistry
 type DockerRegistryList struct {
