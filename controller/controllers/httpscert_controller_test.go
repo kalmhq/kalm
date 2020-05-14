@@ -111,7 +111,7 @@ func (suite *HttpsCertControllerSuite) createHttpsCertIssuer(issuer v1alpha1.Htt
 	suite.Eventually(func() bool {
 		err := suite.K8sClient.Get(
 			context.Background(),
-			types.NamespacedName{Name: issuer.Name},
+			types.NamespacedName{Name: issuer.Name, Namespace: issuer.Namespace},
 			&issuer,
 		)
 
