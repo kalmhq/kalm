@@ -101,6 +101,7 @@ func (r *DockerRegistryReconcileTask) UpdateStatus() (err error) {
 			return err
 		}
 
+		r.Log.Error(err, "ping registry error.")
 		return nil
 	}
 
