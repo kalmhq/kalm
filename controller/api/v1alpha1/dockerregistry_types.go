@@ -39,8 +39,8 @@ type Repository struct {
 
 // DockerRegistryStatus defines the observed state of DockerRegistry
 type DockerRegistryStatus struct {
-	AuthenticationVerified bool          `json:"authenticationVerified"`
-	Repositories           []*Repository `json:"repositories"`
+	AuthenticationVerified bool          `json:"authenticationVerified,omitempty"`
+	Repositories           []*Repository `json:"repositories,omitempty"`
 }
 
 // +kubebuilder:object:root=true

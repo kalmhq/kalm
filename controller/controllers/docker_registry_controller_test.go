@@ -52,10 +52,6 @@ func (suite *DockerRegistryControllerSuite) SetupTest() {
 		Spec: v1alpha1.DockerRegistrySpec{
 			Host: "https://gcr.io",
 		},
-		Status: v1alpha1.DockerRegistryStatus{
-			AuthenticationVerified: false,
-			Repositories:           []*v1alpha1.Repository{},
-		},
 	}
 
 	secret := v1.Secret{

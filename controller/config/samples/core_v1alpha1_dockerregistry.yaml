@@ -1,7 +1,6 @@
 apiVersion: core.kapp.dev/v1alpha1
 kind: DockerRegistry
 metadata:
-  name: dockerregistry-sample
+  name: gcr
 spec:
-  # Add fields here
-  foo: bar
+  host: https://gcr.io
