@@ -320,7 +320,7 @@ func (m *TouchAllRegistriesMapper) Map(object handler.MapObject) []reconcile.Req
 
 	for i, r := range rsList.Items {
 		res[i] = reconcile.Request{
-			types.NamespacedName{
+			NamespacedName: types.NamespacedName{
 				Name: r.Name,
 			},
 		}
