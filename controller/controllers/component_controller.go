@@ -1241,6 +1241,8 @@ func (r *ComponentReconcilerTask) decideAffinity() (*coreV1.Affinity, bool) {
 }
 
 func (r *ComponentReconcilerTask) HandleDelete() (err error) {
+	r.Log.Info("handleDelete for component")
+
 	if r.component.ObjectMeta.DeletionTimestamp.IsZero() {
 		if !utils.ContainsString(r.component.ObjectMeta.Finalizers, finalizerName) {
 			r.component.ObjectMeta.Finalizers = append(r.component.ObjectMeta.Finalizers, finalizerName)
@@ -1251,13 +1253,18 @@ func (r *ComponentReconcilerTask) HandleDelete() (err error) {
 		}
 	} else {
 		if utils.ContainsString(r.component.ObjectMeta.Finalizers, finalizerName) {
+			r.Log.Info("has finalizer", r.component.Namespace, r.component.Name)
+
 			// TODO remove resources
 			if err := r.DeleteResources(); err != nil {
+				r.Log.Error(err, "fail when DeleteResources")
 				return err
 			}
 
+			r.Log.Info("rm finalizer for component...")
 			r.component.ObjectMeta.Finalizers = utils.RemoveString(r.component.ObjectMeta.Finalizers, finalizerName)
 			if err := r.Update(r.ctx, r.component); err != nil {
+				r.Log.Error(err, "fail when update component")
 				return err
 			}
 		}

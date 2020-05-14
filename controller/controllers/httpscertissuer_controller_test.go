@@ -36,19 +36,19 @@ func (suite *HttpsCertIssuerControllerSuite) TestBasicCRUD() {
 	suite.Eventually(func() bool {
 		err := suite.K8sClient.Get(
 			context.Background(),
-			types.NamespacedName{Name: caHttpsCertIssuer.Name},
+			types.NamespacedName{Name: caHttpsCertIssuer.Name, Namespace: caHttpsCertIssuer.Namespace},
 			&caHttpsCertIssuer,
 		)
 
 		return err == nil
 	})
-	// corresponding ClusterIssuer should be created too
-	var clusterIssuer v1alpha2.ClusterIssuer
+	// corresponding Issuer should be created too
+	var issuer v1alpha2.Issuer
 	suite.Eventually(func() bool {
 		err := suite.K8sClient.Get(
 			context.Background(),
-			types.NamespacedName{Name: caHttpsCertIssuer.Name},
-			&clusterIssuer,
+			types.NamespacedName{Name: caHttpsCertIssuer.Name, Namespace: caHttpsCertIssuer.Namespace},
+			&issuer,
 		)
 
 		return err == nil
@@ -70,7 +70,7 @@ func (suite *HttpsCertIssuerControllerSuite) TestBasicCRUD() {
 		return errors.IsNotFound(
 			suite.K8sClient.Get(
 				context.Background(),
-				types.NamespacedName{Name: caHttpsCertIssuer.Name},
+				types.NamespacedName{Name: caHttpsCertIssuer.Name, Namespace: caHttpsCertIssuer.Namespace},
 				&caHttpsCertIssuer,
 			),
 		)
@@ -80,8 +80,8 @@ func (suite *HttpsCertIssuerControllerSuite) TestBasicCRUD() {
 	//	return errors.IsNotFound(
 	//		suite.K8sClient.Get(
 	//			context.Background(),
-	//			types.NamespacedName{Name: clusterIssuer.Name},
-	//			&clusterIssuer,
+	//			types.NamespacedName{Name: issuer.Name},
+	//			&issuer,
 	//		),
 	//	)
 	//})
@@ -90,7 +90,10 @@ func (suite *HttpsCertIssuerControllerSuite) TestBasicCRUD() {
 func (suite *HttpsCertIssuerControllerSuite) reloadHttpsCertIssuer(issuer *v1alpha1.HttpsCertIssuer) {
 	err := suite.K8sClient.Get(
 		context.Background(),
-		types.NamespacedName{Name: issuer.Name},
+		types.NamespacedName{
+			Name:      issuer.Name,
+			Namespace: issuer.Namespace,
+		},
 		issuer,
 	)
 
@@ -100,7 +103,8 @@ func (suite *HttpsCertIssuerControllerSuite) reloadHttpsCertIssuer(issuer *v1alp
 func genEmptyCAHttpsCertIssuer() v1alpha1.HttpsCertIssuer {
 	return v1alpha1.HttpsCertIssuer{
 		ObjectMeta: v1.ObjectMeta{
-			Name: randomName()[:12],
+			Name:      randomName()[:12],
+			Namespace: randomName()[:12],
 		},
 		Spec: v1alpha1.HttpsCertIssuerSpec{
 			CAForTest: &v1alpha1.CAForTestIssuer{},

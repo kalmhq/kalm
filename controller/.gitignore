@@ -31,3 +31,7 @@ tmp
 core_v1alpha1_application-dev.yaml
 core_v1alpha1_plugin-test.yaml
 ca.crt
+core_v1alpha1_hello-world-kapp-live.yaml
+
+*.pem
+*.crt
