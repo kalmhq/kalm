@@ -59,10 +59,12 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	//secName := httpsCert.Name + "-cacert"
 	secName := httpsCert.Name
 
+	cmCertNS := "istio-system"
+
 	desiredCert := cmv1alpha2.Certificate{
 		ObjectMeta: metav1.ObjectMeta{
+			Namespace: cmCertNS,
 			Name:      certName,
-			Namespace: httpsCert.Namespace,
 		},
 		Spec: cmv1alpha2.CertificateSpec{
 			SecretName: secName,
@@ -78,7 +80,7 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	var cert cmv1alpha2.Certificate
 	var isNew bool
 	err := r.Get(ctx, types.NamespacedName{
-		Namespace: httpsCert.Namespace,
+		Namespace: cmCertNS,
 		Name:      certName,
 	}, &cert)
 
