@@ -53,6 +53,7 @@ type HttpsCertIssuerReconciler struct {
 
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=httpscertissuers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=httpscertissuers/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=cert-manager.io,resources=issuers,verbs=get;list;watch;create;update;patch;delete
 
 func (r *HttpsCertIssuerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
@@ -227,7 +228,7 @@ func (r *HttpsCertIssuerReconciler) ReconcileACMECloudFlare(ctx context.Context,
 							DNS01: &v1alpha2.ACMEChallengeSolverDNS01{
 								Cloudflare: &v1alpha2.ACMEIssuerDNS01ProviderCloudflare{
 									Email: email,
-									APIKey: &cmmetav1.SecretKeySelector{
+									APIToken: &cmmetav1.SecretKeySelector{
 										LocalObjectReference: cmmetav1.LocalObjectReference{
 											Name: secName,
 										},
