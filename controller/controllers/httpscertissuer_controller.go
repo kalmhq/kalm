@@ -228,7 +228,7 @@ func (r *HttpsCertIssuerReconciler) ReconcileACMECloudFlare(ctx context.Context,
 							DNS01: &v1alpha2.ACMEChallengeSolverDNS01{
 								Cloudflare: &v1alpha2.ACMEIssuerDNS01ProviderCloudflare{
 									Email: email,
-									APIKey: &cmmetav1.SecretKeySelector{
+									APIToken: &cmmetav1.SecretKeySelector{
 										LocalObjectReference: cmmetav1.LocalObjectReference{
 											Name: secName,
 										},
