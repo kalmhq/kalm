@@ -81,7 +81,14 @@ func (r *DockerRegistryReconcileTask) Run(req ctrl.Request) error {
 }
 
 func (r *DockerRegistryReconcileTask) UpdateStatus() (err error) {
-	registryInstance := registry.NewRegistry(r.registry.Spec.Host, string(r.secret.Data["username"]), string(r.secret.Data["password"]))
+	var username, password string
+
+	if r.secret != nil {
+		username = string(r.secret.Data["username"])
+		password = string(r.secret.Data["password"])
+	}
+
+	registryInstance := registry.NewRegistry(r.registry.Spec.Host, username, password)
 
 	if err := registryInstance.Ping(); err != nil {
 		// todo save & exit
@@ -141,6 +148,10 @@ func (r *DockerRegistryReconcileTask) DeleteSecrets() (err error) {
 }
 
 func (r *DockerRegistryReconcileTask) DistributeSecrets() (err error) {
+	if r.secret == nil {
+		return nil
+	}
+
 	var applicationList corev1alpha1.ApplicationList
 	if err := r.Reader.List(r.ctx, &applicationList); err != nil {
 		return err
@@ -234,7 +245,7 @@ func (r *DockerRegistryReconcileTask) LoadResources(req ctrl.Request) (err error
 	// TODO if can't find, emit a warning event
 
 	if err != nil {
-		return err
+		return client.IgnoreNotFound(err)
 	}
 
 	secretCopy := secret.DeepCopy()
