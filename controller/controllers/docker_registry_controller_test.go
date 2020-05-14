@@ -7,6 +7,7 @@ import (
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 	"k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	"os"
@@ -138,6 +139,19 @@ func (suite *DockerRegistryControllerSuite) TestSecretDistribution() {
 		}, &imagePullSecret)
 
 		return err == nil
+	})
+
+	// delete the registry
+	suite.Nil(suite.K8sClient.Delete(context.Background(), suite.registry))
+
+	// generated image pull secret should also be deleted
+	suite.Eventually(func() bool {
+		err := suite.K8sClient.Get(context.Background(), types.NamespacedName{
+			Name:      getImagePullSecretName(suite.registry.Name),
+			Namespace: application.Name,
+		}, &imagePullSecret)
+
+		return errors.IsNotFound(err)
 	})
 }
 

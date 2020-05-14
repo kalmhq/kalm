@@ -123,6 +123,23 @@ func (r *DockerRegistryReconcileTask) UpdateStatus() (err error) {
 	return nil
 }
 
+func (r *DockerRegistryReconcileTask) DeleteSecrets() (err error) {
+	var secretList v1.SecretList
+	if err := r.Reader.List(r.ctx, &secretList, client.MatchingLabels{"kapp-docker-registry": r.registry.Name}); err != nil {
+		r.Log.Error(err, "get secrets error when deleting docker registry.")
+		return err
+	}
+
+	for _, secret := range secretList.Items {
+		if err := r.Client.Delete(r.ctx, &secret); err != nil {
+			r.Log.Error(err, "delete secret error.")
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (r *DockerRegistryReconcileTask) DistributeSecrets() (err error) {
 	var applicationList corev1alpha1.ApplicationList
 	if err := r.Reader.List(r.ctx, &applicationList); err != nil {
@@ -153,6 +170,12 @@ func (r *DockerRegistryReconcileTask) DistributeSecrets() (err error) {
 		if secret.Data == nil {
 			secret.Data = make(map[string][]byte)
 		}
+
+		if secret.Labels == nil {
+			secret.Labels = make(map[string]string)
+		}
+
+		secret.Labels["kapp-docker-registry"] = r.registry.Name
 
 		data := map[string]struct {
 			Username string `json:"username"`
@@ -238,9 +261,9 @@ func (r *DockerRegistryReconcileTask) HandleDelete() (err error) {
 		}
 	} else {
 		if utils.ContainsString(r.registry.ObjectMeta.Finalizers, finalizerName) {
-			//if err := r.DeleteResources(); err != nil {
-			//	return err
-			//}
+			if err := r.DeleteSecrets(); err != nil {
+				return err
+			}
 
 			r.registry.ObjectMeta.Finalizers = utils.RemoveString(r.registry.ObjectMeta.Finalizers, finalizerName)
 			if err := r.Update(r.ctx, r.registry); err != nil {
@@ -265,6 +288,7 @@ func (r *DockerRegistryReconcileTask) SetupAttributes(req ctrl.Request) (err err
 
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=dockerregistries,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=dockerregistries/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=core.kapp.dev,resources=applications,verbs=get;list
 // +kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
 
 func (r *DockerRegistryReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
