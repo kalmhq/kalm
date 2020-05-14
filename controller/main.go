@@ -173,6 +173,15 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "HttpsCert")
 		os.Exit(1)
 	}
+	if err = (&controllers.DockerRegistryReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("DockerRegistry"),
+		Scheme: mgr.GetScheme(),
+		Reader: mgr.GetAPIReader(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "DockerRegistry")
+		os.Exit(1)
+	}
 	// +kubebuilder:scaffold:builder
 
 	// only run webhook if explicitly declared

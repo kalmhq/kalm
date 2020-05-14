@@ -83,7 +83,7 @@ func (r *ComponentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	task := &ComponentReconcilerTask{
 		ComponentReconciler: r,
 		ctx:                 context.Background(),
-		Log:                 r.Log.WithValues("application", req.NamespacedName),
+		Log:                 r.Log.WithValues("component", req.NamespacedName),
 	}
 
 	task.Log.Info("=========== start reconciling ===========")
@@ -155,12 +155,6 @@ func (r *ComponentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 func (r *ComponentReconcilerTask) Run(req ctrl.Request) error {
-	r.ctx = context.Background()
-	r.Log = r.Log.WithValues("component", req.NamespacedName)
-
-	r.Log.Info("=========== start reconciling ===========")
-	defer r.Log.Info("=========== reconciling done ===========")
-
 	if err := r.SetupAttributes(req); err != nil {
 		return client.IgnoreNotFound(err)
 	}
@@ -669,6 +663,28 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 				},
 			},
 		},
+	}
+
+	var pullImageSecrets coreV1.SecretList
+	if err := r.Client.List(
+		r.ctx,
+		&pullImageSecrets,
+		client.MatchingLabels{"kapp-docker-registry-image-pull-secret": "true"},
+		client.InNamespace(component.Namespace),
+	); err != nil {
+		r.Log.Error(err, "get pull image secrets failed")
+		return nil, err
+	}
+
+	pullImageSecretRefs := make([]coreV1.LocalObjectReference, len(pullImageSecrets.Items))
+	for i, secret := range pullImageSecrets.Items {
+		pullImageSecretRefs[i] = coreV1.LocalObjectReference{
+			Name: secret.Name,
+		}
+	}
+
+	if len(pullImageSecretRefs) > 0 {
+		template.Spec.ImagePullSecrets = pullImageSecretRefs
 	}
 
 	//decide affinity
