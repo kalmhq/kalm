@@ -15,6 +15,7 @@ COPY api/ api/
 COPY utils/ utils/
 COPY lib/ lib/
 COPY vm/ vm/
+COPY registry/ registry/
 COPY controllers/ controllers/
 
 # Build
