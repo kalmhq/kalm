@@ -8,6 +8,13 @@ metadata:
   creationTimestamp: null
   name: applicationplugins.core.kapp.dev
 spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.compiledSuccessfully
+    name: Compiled
+    type: boolean
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
   group: core.kapp.dev
   names:
     kind: ApplicationPlugin

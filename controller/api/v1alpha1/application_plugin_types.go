@@ -43,6 +43,8 @@ type ApplicationPluginStatus struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:scope=Cluster
 // +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Compiled",type="boolean",JSONPath=".spec.compiledSuccessfully"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
 // ApplicationPlugin is the Schema for the applicationplugins API
 type ApplicationPlugin struct {

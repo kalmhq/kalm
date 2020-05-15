@@ -45,6 +45,10 @@ type DockerRegistryStatus struct {
 
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:scope=Cluster
+// +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Host",type="string",JSONPath=".spec.host",description="Host of the registry"
+// +kubebuilder:printcolumn:name="Verified",type="boolean",JSONPath=".status.authenticationVerified"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
 // DockerRegistry is the Schema for the dockerregistries API
 type DockerRegistry struct {
