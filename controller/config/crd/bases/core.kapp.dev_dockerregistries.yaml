@@ -8,6 +8,17 @@ metadata:
   creationTimestamp: null
   name: dockerregistries.core.kapp.dev
 spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.host
+    description: Host of the registry
+    name: Host
+    type: string
+  - JSONPath: .status.authenticationVerified
+    name: Verified
+    type: boolean
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
   group: core.kapp.dev
   names:
     kind: DockerRegistry
@@ -15,6 +26,8 @@ spec:
     plural: dockerregistries
     singular: dockerregistry
   scope: Cluster
+  subresources:
+    status: {}
   validation:
     openAPIV3Schema:
       description: DockerRegistry is the Schema for the dockerregistries API
