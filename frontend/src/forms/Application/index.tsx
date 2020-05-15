@@ -17,8 +17,8 @@ import { Plugins } from "./Plugins";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      height: "100%",
-      overflow: "hidden",
+      // height: "100%",
+      // overflow: "hidden",
       background: "#fff",
       padding: 20
     },
