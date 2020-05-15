@@ -108,6 +108,7 @@ func (r *DockerRegistryReconcileTask) UpdateStatus() (err error) {
 	repos, err := registryInstance.Repositories()
 
 	if err != nil {
+		r.Log.Error(err, "Read registry repositories failed.")
 		return err
 	}
 
