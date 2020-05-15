@@ -10,14 +10,17 @@ import { Loading } from "widgets/Loading";
 const mapStateToProps = (state: RootState, props: any) => {
   const applications = state.get("applications");
   const { match } = props;
-  const { applicationName } = match!.params;
+  const { applicationName, componentName } = match!.params;
+  const application = applications.get("applications").find(x => x.get("name") === applicationName);
+  const component = application && application.get("components").find(x => x.get("name") === componentName);
 
   const activeNamespaceName = state.get("namespaces").get("active");
 
   return {
     applicationName,
     activeNamespaceName,
-    application: applications.get("applications").find(x => x.get("name") === applicationName),
+    application,
+    component,
     isLoading: applications.get("isItemLoading")
   };
 };
