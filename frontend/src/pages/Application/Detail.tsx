@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   createStyles,
   ExpansionPanel,
   ExpansionPanelDetails,
@@ -10,11 +11,11 @@ import {
   withStyles,
   WithStyles
 } from "@material-ui/core";
+import { grey } from "@material-ui/core/colors";
 import DeleteIcon from "@material-ui/icons/Delete";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import clsx from "clsx";
 import { push } from "connected-react-router";
-import Immutable from "immutable";
 import { withNamespace, withNamespaceProps } from "permission/Namespace";
 import React from "react";
 import { ThunkDispatch } from "redux-thunk";
@@ -27,7 +28,6 @@ import { Actions } from "../../types";
 import { ApplicationComponentDetails, ApplicationDetails, PodStatus } from "../../types/application";
 import { formatTimeDistance } from "../../utils";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "../../widgets/Badge";
-import { CustomizedButton } from "../../widgets/Button";
 import { IconButtonWithTooltip, IconLinkWithToolTip } from "../../widgets/IconButtonWithTooltip";
 import { H5 } from "../../widgets/Label";
 import { PieChart } from "../../widgets/PieChart";
@@ -38,7 +38,6 @@ import {
   SmallMemoryLineChart
 } from "../../widgets/SmallLineChart";
 import { generateQueryForPods } from "./Log";
-import { grey } from "@material-ui/core/colors";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -215,7 +214,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
   };
 
   private renderComponentPanel = (index: number) => {
-    const { classes, application, dispatch, hasRole } = this.props;
+    const { classes, application } = this.props;
     const component = application.get("components").get(index)!;
 
     return (
@@ -248,7 +247,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     const { classes, application, dispatch, hasRole } = this.props;
     const component = application.get("components").get(index)!;
     const hasWriterRole = hasRole("writer");
-    const externalAccessPlugin = Immutable.List([]);
+    // const externalAccessPlugin = Immutable.List([]);
     // component.get("plugins") &&
     // (component.get("plugins")!.filter(p => p.get("type") === EXTERNAL_ACCESS_PLUGIN_TYPE) as
     //   | Immutable.List<ImmutableMap<ExternalAccessPlugin>>
@@ -286,7 +285,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
         </Box>
 
         <Box p={2} className={classes.componentActions}>
-          <CustomizedButton
+          <Button
             style={{ marginRight: 20 }}
             color="primary"
             size="large"
@@ -294,8 +293,8 @@ class DetailsRaw extends React.PureComponent<Props, State> {
               dispatch(push(`/applications/${application.get("name")}/edit?component=${component.get("name")}`));
             }}>
             Edit
-          </CustomizedButton>
-          <CustomizedButton
+          </Button>
+          <Button
             style={{ marginRight: 20 }}
             color="primary"
             size="large"
@@ -303,8 +302,8 @@ class DetailsRaw extends React.PureComponent<Props, State> {
               dispatch(push(`/applications/${application.get("name")}/edit?component=${component.get("name")}`));
             }}>
             Scale
-          </CustomizedButton>
-          <CustomizedButton
+          </Button>
+          <Button
             style={{ marginRight: 20 }}
             color="primary"
             size="large"
@@ -312,7 +311,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
               dispatch(push(`/applications/${application.get("name")}/components/${component.get("name")}`));
             }}>
             Detail
-          </CustomizedButton>
+          </Button>
         </Box>
 
         {/* <Box p={2}>
