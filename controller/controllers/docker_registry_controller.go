@@ -58,10 +58,12 @@ func (r *DockerRegistryReconcileTask) Run(req ctrl.Request) error {
 	}
 
 	if err := r.LoadResources(req); err != nil {
+		r.Log.Error(err, "LoadResources error.")
 		return err
 	}
 
 	if err := r.HandleDelete(); err != nil {
+		r.Log.Error(err, "HandleDelete error.")
 		return err
 	}
 
@@ -70,10 +72,12 @@ func (r *DockerRegistryReconcileTask) Run(req ctrl.Request) error {
 	}
 
 	if err := r.UpdateStatus(); err != nil {
+		r.Log.Error(err, "UpdateStatus error.")
 		return err
 	}
 
 	if err := r.DistributeSecrets(); err != nil {
+		r.Log.Error(err, "DistributeSecrets error.")
 		return err
 	}
 
@@ -91,8 +95,6 @@ func (r *DockerRegistryReconcileTask) UpdateStatus() (err error) {
 	registryInstance := registry.NewRegistry(r.registry.Spec.Host, username, password)
 
 	if err := registryInstance.Ping(); err != nil {
-		// todo save & exit
-
 		registryCopy := r.registry.DeepCopy()
 		registryCopy.Status.AuthenticationVerified = false
 
@@ -233,7 +235,7 @@ func getImagePullSecretName(registryName string) string {
 	return fmt.Sprintf("%s-image-pull-secret", registryName)
 }
 
-func getRegistryAuthenticationName(registryName string) string {
+func GetRegistryAuthenticationName(registryName string) string {
 	return fmt.Sprintf("%s-authentication", registryName)
 }
 
@@ -241,7 +243,7 @@ func (r *DockerRegistryReconcileTask) LoadResources(req ctrl.Request) (err error
 	var secret v1.Secret
 	err = r.Reader.Get(r.ctx, types.NamespacedName{
 		Namespace: "kapp-system",
-		Name:      getRegistryAuthenticationName(req.Name),
+		Name:      GetRegistryAuthenticationName(req.Name),
 	}, &secret)
 
 	// TODO if can't find, emit a warning event
@@ -251,6 +253,13 @@ func (r *DockerRegistryReconcileTask) LoadResources(req ctrl.Request) (err error
 	}
 
 	secretCopy := secret.DeepCopy()
+
+	if secretCopy.Labels == nil {
+		secretCopy.Labels = make(map[string]string)
+	}
+
+	secretCopy.Labels["kapp-docker-registry-authentication"] = "true"
+
 	if err := ctrl.SetControllerReference(r.registry, secretCopy, r.Scheme); err != nil {
 		r.Log.Error(err, "unable to set owner for secret")
 		return err

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/kapp-staging/kapp/api/client"
+	"github.com/kapp-staging/kapp/api/resources"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -59,6 +60,12 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gv1Alpha1WithAuth.DELETE("/applications/:applicationName/components/:name", h.handleDeleteComponent)
 	gv1Alpha1WithAuth.POST("/applications/:applicationName/components", h.handleCreateComponent)
 
+	gv1Alpha1WithAuth.GET("/registries", h.handleListRegistries)
+	gv1Alpha1WithAuth.GET("/registries/:name", h.handleGetRegistry)
+	gv1Alpha1WithAuth.PUT("/registries/:name", h.handleUpdateRegistry)
+	gv1Alpha1WithAuth.POST("/registries", h.handleCreateRegistry)
+	gv1Alpha1WithAuth.DELETE("/registries/:name", h.handleDeleteRegistry)
+
 	gv1Alpha1WithAuth.GET("/componenttemplates", h.handleGetComponentTemplates)
 	gv1Alpha1WithAuth.POST("/componenttemplates", h.handleCreateComponentTemplate)
 	gv1Alpha1WithAuth.PUT("/componenttemplates/:name", h.handleUpdateComponentTemplate)
@@ -83,6 +90,12 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gv1Alpha1WithAuth.GET("/serviceaccounts/:name", h.handleGetServiceAccount)
 
 	gv1Alpha1WithAuth.GET("/nodes", h.handleListNodes)
+}
+
+func (h *ApiHandler) Builder(c echo.Context) *resources.Builder {
+	k8sClient := getK8sClient(c)
+	k8sClientConfig := getK8sClientConfig(c)
+	return resources.NewBuilder(k8sClient, k8sClientConfig, h.logger)
 }
 
 func NewApiHandler(clientManager *client.ClientManager) *ApiHandler {
