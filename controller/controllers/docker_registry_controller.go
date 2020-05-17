@@ -113,7 +113,6 @@ func (r *DockerRegistryReconcileTask) UpdateStatus() (err error) {
 		r.Log.Error(err, "Read registry repositories failed.")
 		return err
 	}
-
 	var repositories []*corev1alpha1.Repository
 	for _, repo := range repos {
 		repositories = append(repositories, &corev1alpha1.Repository{
@@ -126,7 +125,7 @@ func (r *DockerRegistryReconcileTask) UpdateStatus() (err error) {
 	registryCopy.Status.AuthenticationVerified = true
 	registryCopy.Status.Repositories = repositories
 
-	if err := r.Patch(r.ctx, registryCopy, client.MergeFrom(r.registry)); err != nil {
+	if err := r.Status().Patch(r.ctx, registryCopy, client.MergeFrom(r.registry)); err != nil {
 		r.Log.Error(err, "Patch docker registry status error.")
 		return err
 	}
