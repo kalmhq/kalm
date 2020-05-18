@@ -123,6 +123,17 @@ func (r *DockerRegistryReconcileTask) UpdateStatus() (err error) {
 			r.Log.Error(err, "Patch docker registry status error.")
 			return err
 		}
+		message := ""
+
+		if r.secret == nil {
+			message = fmt.Sprintf(
+				"Registry Secret \"%s\" is not found in %s namespace. ",
+				GetRegistryAuthenticationName(r.registry.Name),
+				"kapp-system",
+			)
+		}
+
+		message = message + err.Error()
 
 		r.Recorder.Event(r.registry, v1.EventTypeWarning, "AuthFailed", err.Error())
 		return nil
@@ -131,7 +142,7 @@ func (r *DockerRegistryReconcileTask) UpdateStatus() (err error) {
 	repos, err := registryInstance.Repositories()
 
 	if err != nil {
-		r.Log.Error(err, "Read registry repositories failed.")
+		r.Recorder.Event(r.registry, v1.EventTypeWarning, "ReadRepositoriesFailed", err.Error())
 		return err
 	}
 	var repositories []*corev1alpha1.Repository
@@ -266,8 +277,6 @@ func (r *DockerRegistryReconcileTask) LoadResources(req ctrl.Request) (err error
 		Namespace: "kapp-system",
 		Name:      GetRegistryAuthenticationName(req.Name),
 	}, &secret)
-
-	// TODO if can't find, emit a warning event
 
 	if err != nil {
 		return client.IgnoreNotFound(err)
