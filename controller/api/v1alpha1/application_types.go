@@ -44,6 +44,8 @@ type ApplicationStatus struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:scope=Cluster
 // +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="IsActive",type="boolean",JSONPath=".spec.isActive"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 
 // Application is the Schema for the applications API
 type Application struct {

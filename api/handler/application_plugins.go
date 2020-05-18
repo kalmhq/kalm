@@ -18,12 +18,6 @@ func (h *ApiHandler) handleListApplicationPlugins(c echo.Context) error {
 func (h *ApiHandler) listApplicationPluginsResponse(c echo.Context) ([]resources.ApplicationPlugin, error) {
 	k8sClient := getK8sClient(c)
 	k8sClientConfig := getK8sClientConfig(c)
-
-	builder := resources.Builder{
-		K8sClient: k8sClient,
-		Logger:    h.logger,
-		Config:    k8sClientConfig,
-	}
-
+	builder := resources.NewBuilder(k8sClient, k8sClientConfig, h.logger)
 	return builder.GetApplicationPlugins()
 }

@@ -1,20 +1,36 @@
-import { Box, createStyles, Grid, Paper, Theme, withStyles, WithStyles } from "@material-ui/core";
+import {
+  Box,
+  Button,
+  createStyles,
+  ExpansionPanel,
+  ExpansionPanelDetails,
+  ExpansionPanelSummary,
+  Grid,
+  Paper,
+  Theme,
+  withStyles,
+  WithStyles
+} from "@material-ui/core";
+import { grey } from "@material-ui/core/colors";
 import DeleteIcon from "@material-ui/icons/Delete";
-import { ConsoleIcon, LogIcon } from "widgets/Icon";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import clsx from "clsx";
-import Immutable from "immutable";
+import { push } from "connected-react-router";
 import { withNamespace, withNamespaceProps } from "permission/Namespace";
 import React from "react";
 import { ThunkDispatch } from "redux-thunk";
+import { ConsoleIcon, LogIcon } from "widgets/Icon";
 import { loadApplicationAction } from "../../actions/application";
 import { deletePod } from "../../actions/kubernetesApi";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "../../actions/notification";
 import { RootState } from "../../reducers";
 import { Actions } from "../../types";
-import { ApplicationDetails, PodStatus } from "../../types/application";
+import { ApplicationComponentDetails, ApplicationDetails, PodStatus } from "../../types/application";
 import { formatTimeDistance } from "../../utils";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "../../widgets/Badge";
 import { IconButtonWithTooltip, IconLinkWithToolTip } from "../../widgets/IconButtonWithTooltip";
+import { H5 } from "../../widgets/Label";
+import { PieChart } from "../../widgets/PieChart";
 import {
   BigCPULineChart,
   BigMemoryLineChart,
@@ -22,9 +38,6 @@ import {
   SmallMemoryLineChart
 } from "../../widgets/SmallLineChart";
 import { generateQueryForPods } from "./Log";
-import { PieChart } from "../../widgets/PieChart";
-import { CustomizedButton } from "../../widgets/Button";
-import { push } from "connected-react-router";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -41,11 +54,11 @@ const styles = (theme: Theme) =>
       }
     },
     componentContainer: {
-      marginTop: theme.spacing(2),
-      background: "#f5f5f5"
+      // background: "#f5f5f5",
+      width: "100%"
     },
     podContainer: {
-      background: "#eaeaea"
+      background: grey[50]
     },
     chartTabelCell: {
       width: 130,
@@ -106,7 +119,21 @@ const styles = (theme: Theme) =>
     podActionButton: {
       background: "white"
     },
-    metrics: {}
+    metrics: {},
+    componentActions: {
+      display: "flex",
+      alignItems: "center"
+    },
+    summaryWrapper: {
+      height: "100%",
+      width: "100%",
+      display: "flex",
+      alignItems: "center"
+    },
+    flexWrapper: {
+      display: "flex",
+      alignItems: "center"
+    }
   });
 
 interface Props extends WithStyles<typeof styles>, withNamespaceProps {
@@ -144,76 +171,150 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private renderComponent = (index: number) => {
+  private renderComponentStatus = (component: ApplicationComponentDetails) => {
+    let isError = false;
+    let isPending = false;
+
+    component.get("pods").forEach(pod => {
+      if (pod.get("isTerminating")) {
+        isPending = true;
+      } else {
+        switch (pod.get("status")) {
+          case "Pending": {
+            isPending = true;
+            break;
+          }
+          case "Failed": {
+            isError = true;
+            break;
+          }
+        }
+      }
+    });
+
+    if (isError) {
+      return <ErrorBadge />;
+    } else if (isPending) {
+      return <PendingBadge />;
+    } else {
+      return <SuccessBadge />;
+    }
+  };
+
+  private getPodsNumber = (component: ApplicationComponentDetails): string => {
+    let runningCount = 0;
+
+    component.get("pods").forEach(pod => {
+      if (pod.get("status") === "Succeeded" || pod.get("status") === "Running") {
+        runningCount = runningCount + 1;
+      }
+    });
+
+    return `${runningCount}/${component.get("pods").size}`;
+  };
+
+  private renderComponentPanel = (index: number) => {
+    const { classes, application } = this.props;
+    const component = application.get("components").get(index)!;
+
+    return (
+      <ExpansionPanel>
+        <ExpansionPanelSummary
+          style={{ padding: "0px 16px" }}
+          expandIcon={<ExpandMoreIcon />}
+          aria-controls="panel1a-content"
+          id={`applicationComponent-${index}`}>
+          <div className={classes.summaryWrapper}>
+            <div className={classes.flexWrapper} style={{ width: "20%" }}>
+              {this.renderComponentStatus(component)} <H5>{component.get("name")}</H5>
+              <div style={{ marginLeft: 8 }}>({component.get("workloadType") || "Server"})</div>
+            </div>
+            <div className={classes.flexWrapper} style={{ width: "40%" }}>
+              {component.get("image")}
+            </div>
+            <div className={classes.flexWrapper} style={{ width: "20%" }}>
+              <H5>Pods:</H5>
+              <div style={{ marginLeft: 8 }}>{this.getPodsNumber(component)}</div>
+            </div>
+          </div>
+        </ExpansionPanelSummary>
+        <ExpansionPanelDetails style={{ padding: 0 }}>{this.renderComponentDetail(index)}</ExpansionPanelDetails>
+      </ExpansionPanel>
+    );
+  };
+
+  private renderComponentDetail = (index: number) => {
     const { classes, application, dispatch, hasRole } = this.props;
     const component = application.get("components").get(index)!;
     const hasWriterRole = hasRole("writer");
-    const externalAccessPlugin = Immutable.List([]);
+    // const externalAccessPlugin = Immutable.List([]);
     // component.get("plugins") &&
     // (component.get("plugins")!.filter(p => p.get("type") === EXTERNAL_ACCESS_PLUGIN_TYPE) as
     //   | Immutable.List<ImmutableMap<ExternalAccessPlugin>>
     //   | undefined);
     return (
       <Paper className={classes.componentContainer} key={index}>
-        <div className={clsx(classes.rowContainer, classes.componentRow)}>
+        {/* <div className={clsx(classes.rowContainer, classes.componentRow)}>
           <div className="name">
             <strong>{component.get("name")}</strong> ({component.get("workloadType")})
-            <div className="right-part">
-              <CustomizedButton
-                style={{ marginLeft: 20 }}
-                color="primary"
-                size="large"
-                onClick={() => {
-                  dispatch(push(`/applications/${application.get("name")}/edit?component=${component.get("name")}`));
-                }}>
-                Edit
-              </CustomizedButton>
-              <CustomizedButton
-                style={{ marginLeft: 20 }}
-                color="primary"
-                size="large"
-                onClick={() => {
-                  dispatch(push(`/applications/${application.get("name")}/edit?component=${component.get("name")}`));
-                }}>
-                Scale
-              </CustomizedButton>
-              <CustomizedButton
-                style={{ marginLeft: 20 }}
-                color="primary"
-                size="large"
-                onClick={() => {
-                  dispatch(push(`/applications/${application.get("name")}/components/${component.get("name")}`));
-                }}>
-                Detail
-              </CustomizedButton>
-            </div>
           </div>
 
-          {/* <div className="right-part">
+          <div className="right-part">
             <div className={classes.chartTabelCell}>
               <SmallCPULineChart data={component.get("metrics").get("cpu")!} />
             </div>
             <div className={classes.chartTabelCell}>
               <SmallMemoryLineChart data={component.get("metrics").get("memory")!} />
             </div>
-          </div> */}
-        </div>
+          </div>
+        </div> */}
 
         <Box p={2}>
-          <Grid container spacing={2}>
-            <Grid item md={2}>
-              <div>CPU: {component.get("cpu")}</div>
-            </Grid>
-            <Grid item md={2}>
-              <div>Memory: {component.get("memory")}</div>
-            </Grid>
-            <Grid item md={2}>
-              <div>Pods: {component.get("pods") ? component.get("pods").size : "-"}</div>
-            </Grid>
-          </Grid>
+          <div className={classes.flexWrapper}>
+            <H5>CPU:</H5> <div style={{ marginLeft: 8 }}>{component.get("cpu")}</div>
+          </div>
+
+          <div className={classes.flexWrapper}>
+            <H5>Memory:</H5> <div style={{ marginLeft: 8 }}>{component.get("memory")}</div>
+          </div>
+
+          <div className={classes.flexWrapper}>
+            <H5>Pods:</H5>{" "}
+            <div style={{ marginLeft: 8 }}>{component.get("pods") ? component.get("pods").size : "-"}</div>
+          </div>
         </Box>
 
-        <Box p={2}>
+        <Box p={2} className={classes.componentActions}>
+          <Button
+            style={{ marginRight: 20 }}
+            color="primary"
+            size="large"
+            onClick={() => {
+              dispatch(push(`/applications/${application.get("name")}/edit?component=${component.get("name")}`));
+            }}>
+            Edit
+          </Button>
+          <Button
+            style={{ marginRight: 20 }}
+            color="primary"
+            size="large"
+            onClick={() => {
+              dispatch(push(`/applications/${application.get("name")}/edit?component=${component.get("name")}`));
+            }}>
+            Scale
+          </Button>
+          <Button
+            style={{ marginRight: 20 }}
+            color="primary"
+            size="large"
+            onClick={() => {
+              dispatch(push(`/applications/${application.get("name")}/components/${component.get("name")}`));
+            }}>
+            Detail
+          </Button>
+        </Box>
+
+        {/* <Box p={2}>
           <div>Internal Endpoints:</div>
           <Box ml={2}>
             {component
@@ -234,32 +335,8 @@ class DetailsRaw extends React.PureComponent<Props, State> {
               .toArray()
               .flat()}
           </Box>
-        </Box>
-        {externalAccessPlugin ? (
-          <Box p={2}>
-            <div>External Endpoints:</div>
-            <Box ml={2}>
-              {/* {externalAccessPlugin
-                .map(plugin => {
-                  const hosts: string[] = plugin.get("hosts") ? plugin.get("hosts")!.toArray() : [];
-                  const paths: string[] = plugin.get("paths") ? plugin.get("paths")!.toArray() : ["/"];
-                  const schema = plugin.get("enableHttps") ? "https" : "http";
-                  return hosts.map(host => {
-                    return paths.map(path => {
-                      const url = `${schema}://${host}${path}`;
-                      return (
-                        <a href={url} key={url} target="_blank" rel="noopener noreferrer">
-                          {url}
-                        </a>
-                      );
-                    });
-                  });
-                })
-                .toArray()
-                .flat()} */}
-            </Box>
-          </Box>
-        ) : null}
+        </Box> */}
+
         <div className={classes.podContainer}>
           {component.get("pods").size > 0 ? (
             <div className={clsx(classes.rowContainer, classes.podHeaderRow, classes.podDataRow)}>
@@ -443,7 +520,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
         </Grid>
         {application
           .get("components")
-          ?.map((_x, index) => this.renderComponent(index))
+          ?.map((_x, index) => this.renderComponentPanel(index))
           ?.toArray()}
       </div>
     );

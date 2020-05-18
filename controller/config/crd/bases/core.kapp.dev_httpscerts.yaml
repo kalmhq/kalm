@@ -14,7 +14,7 @@ spec:
     listKind: HttpsCertList
     plural: httpscerts
     singular: httpscert
-  scope: Cluster
+  scope: Namespaced
   subresources:
     status: {}
   validation:

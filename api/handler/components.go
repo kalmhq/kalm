@@ -217,25 +217,13 @@ func getComponentFromContext(c echo.Context) (*v1alpha1.Component, []runtime.Raw
 func (h *ApiHandler) componentResponse(c echo.Context, component *v1alpha1.Component) (*resources.ComponentDetails, error) {
 	k8sClient := getK8sClient(c)
 	k8sClientConfig := getK8sClientConfig(c)
-
-	builder := resources.Builder{
-		K8sClient: k8sClient,
-		Logger:    h.logger,
-		Config:    k8sClientConfig,
-	}
-
+	builder := resources.NewBuilder(k8sClient, k8sClientConfig, h.logger)
 	return builder.BuildComponentDetails(component, nil)
 }
 
 func (h *ApiHandler) componentListResponse(c echo.Context, componentList *v1alpha1.ComponentList) ([]resources.ComponentDetails, error) {
 	k8sClient := getK8sClient(c)
 	k8sClientConfig := getK8sClientConfig(c)
-
-	builder := resources.Builder{
-		K8sClient: k8sClient,
-		Logger:    h.logger,
-		Config:    k8sClientConfig,
-	}
-
+	builder := resources.NewBuilder(k8sClient, k8sClientConfig, h.logger)
 	return builder.BuildComponentDetailsResponse(componentList)
 }

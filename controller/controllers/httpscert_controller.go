@@ -39,6 +39,7 @@ type HttpsCertReconciler struct {
 
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=httpscerts,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=httpscerts/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=cert-manager.io,resources=certificates,verbs=get;list;watch;create;update;patch;delete
 
 func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
@@ -54,19 +55,23 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, err
 	}
 
-	nsIstioSys := "istio-system"
+	certName := httpsCert.Name
+	//secName := httpsCert.Name + "-cacert"
+	secName := httpsCert.Name
+
+	cmCertNS := "istio-system"
 
 	desiredCert := cmv1alpha2.Certificate{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      httpsCert.Name,
-			Namespace: nsIstioSys,
+			Namespace: cmCertNS,
+			Name:      certName,
 		},
 		Spec: cmv1alpha2.CertificateSpec{
-			SecretName: httpsCert.Name,
+			SecretName: secName,
 			DNSNames:   httpsCert.Spec.Domains,
 			IssuerRef: cmmeta.ObjectReference{
 				Name: httpsCert.Spec.HttpsCertIssuer,
-				Kind: "ClusterIssuer",
+				Kind: "Issuer",
 			},
 		},
 	}
@@ -75,8 +80,8 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	var cert cmv1alpha2.Certificate
 	var isNew bool
 	err := r.Get(ctx, types.NamespacedName{
-		Namespace: nsIstioSys,
-		Name:      httpsCert.Name,
+		Namespace: cmCertNS,
+		Name:      certName,
 	}, &cert)
 
 	if err != nil {
@@ -106,5 +111,6 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 func (r *HttpsCertReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1alpha1.HttpsCert{}).
+		Owns(&cmv1alpha2.Certificate{}).
 		Complete(r)
 }

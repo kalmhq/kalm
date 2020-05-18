@@ -179,8 +179,8 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
         return ["cpu", "memory", "volumes", "configs"];
       case "plugins":
         return ["plugins"];
-      case "probes":
-        return ["livenessProbe", "readinessProbe"];
+      // case "probes":
+      //   return ["livenessProbe", "readinessProbe"];
       case "advanced":
         return [
           "restartStrategy",
@@ -213,10 +213,10 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
         tab: "plugins",
         text: "Plugins"
       },
-      {
-        tab: "probes",
-        text: "Probes"
-      },
+      // {
+      //   tab: "probes",
+      //   text: "Probes"
+      // },
       {
         tab: "advanced",
         text: "Advanced"

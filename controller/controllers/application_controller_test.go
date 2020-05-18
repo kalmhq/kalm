@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
+	istioV1Beta1 "istio.io/client-go/pkg/apis/networking/v1beta1"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -70,6 +71,38 @@ func (suite *ApplicationControllerSuite) TestBasicCRUD() {
 		// No matter how big the timeout is, the namespace still exists with a non-nil deletionTimestamp.
 		return errors.IsNotFound(suite.K8sClient.Get(context.Background(), types.NamespacedName{Name: application.Name}, n)) || n.DeletionTimestamp != nil
 	}, "namespace should not be fetched")
+}
+
+func (suite *ApplicationControllerSuite) TestGatewayExistForEachApplication() {
+
+	// Create Application
+	application := generateEmptyApplication()
+	suite.createApplication(application)
+
+	// Ready
+	suite.Eventually(func() bool {
+		return suite.K8sClient.Get(context.Background(), getApplicationNamespacedName(application), application) == nil
+	})
+
+	// gateway exist
+	gw := istioV1Beta1.Gateway{}
+	suite.Eventually(func() bool {
+		return suite.K8sClient.Get(context.Background(), types.NamespacedName{
+			Namespace: application.Name,
+			Name:      "gateway",
+		}, &gw) == nil
+	})
+
+	// delete gateway
+	suite.Nil(suite.K8sClient.Delete(context.Background(), &gw))
+
+	// gateway should be recovered
+	suite.Eventually(func() bool {
+		return suite.K8sClient.Get(context.Background(), types.NamespacedName{
+			Namespace: application.Name,
+			Name:      "gateway",
+		}, &gw) == nil
+	})
 }
 
 var letterRunes = []rune("abcdefghijklmnopqrstuvwxyz")

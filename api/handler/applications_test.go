@@ -13,6 +13,27 @@ type ApplicationsHandlerTestSuite struct {
 	WithControllerTestSuite
 }
 
+func (suite *ApplicationsHandlerTestSuite) SetupSuite() {
+	suite.WithControllerTestSuite.SetupSuite()
+	//	plugin := &v1alpha1.ApplicationPlugin{
+	//		TypeMeta: metaV1.TypeMeta{
+	//			Kind:       "ApplicationPlugin",
+	//			APIVersion: "core.kapp.dev/v1alpha1",
+	//		},
+	//		ObjectMeta: metaV1.ObjectMeta{
+	//			Name: "test",
+	//		},
+	//		Spec: v1alpha1.ApplicationPluginSpec{
+	//			Src: `
+	//function BeforeApplicationSave(app) {
+	//    return app;
+	//}`,
+	//		},
+	//	}
+	//	bts, _ := json.Marshal(plugin)
+	//	suite.k8sClinet.RESTClient().Post().Body(bts).AbsPath("/apis/core.kapp.dev/v1alpha1/applicationplugins").DoRaw()
+}
+
 func (suite *ApplicationsHandlerTestSuite) TestGetEmptyList() {
 	rec := suite.NewRequest(http.MethodGet, "/v1alpha1/applications", nil)
 

@@ -40,7 +40,7 @@ func (suite *HttpsCertControllerSuite) TestBasicCRUD() {
 	suite.Eventually(func() bool {
 		err := suite.K8sClient.Get(
 			context.Background(),
-			types.NamespacedName{Name: httpsCert.Name},
+			types.NamespacedName{Name: httpsCert.Name, Namespace: httpsCert.Namespace},
 			&httpsCert,
 		)
 
@@ -75,7 +75,7 @@ func (suite *HttpsCertControllerSuite) TestBasicCRUD() {
 		return errors.IsNotFound(
 			suite.K8sClient.Get(
 				context.Background(),
-				types.NamespacedName{Name: httpsCert.Name},
+				types.NamespacedName{Name: httpsCert.Name, Namespace: httpsCert.Namespace},
 				&httpsCert,
 			),
 		)
@@ -85,7 +85,7 @@ func (suite *HttpsCertControllerSuite) TestBasicCRUD() {
 func (suite *HttpsCertControllerSuite) reloadHttpsCert(httpsCert *v1alpha1.HttpsCert) {
 	err := suite.K8sClient.Get(
 		context.Background(),
-		types.NamespacedName{Name: httpsCert.Name},
+		types.NamespacedName{Name: httpsCert.Name, Namespace: httpsCert.Namespace},
 		httpsCert,
 	)
 
@@ -95,7 +95,8 @@ func (suite *HttpsCertControllerSuite) reloadHttpsCert(httpsCert *v1alpha1.Https
 func genHttpsCert(issuer string) v1alpha1.HttpsCert {
 	return v1alpha1.HttpsCert{
 		ObjectMeta: v1.ObjectMeta{
-			Name: randomName()[:12],
+			Name:      randomName()[:12],
+			Namespace: randomName()[:12],
 		},
 		Spec: v1alpha1.HttpsCertSpec{
 			HttpsCertIssuer: issuer,
@@ -110,7 +111,7 @@ func (suite *HttpsCertControllerSuite) createHttpsCertIssuer(issuer v1alpha1.Htt
 	suite.Eventually(func() bool {
 		err := suite.K8sClient.Get(
 			context.Background(),
-			types.NamespacedName{Name: issuer.Name},
+			types.NamespacedName{Name: issuer.Name, Namespace: issuer.Namespace},
 			&issuer,
 		)
 
@@ -124,7 +125,7 @@ func (suite *HttpsCertControllerSuite) createHttpsCert(cert v1alpha1.HttpsCert) 
 	suite.Eventually(func() bool {
 		err := suite.K8sClient.Get(
 			context.Background(),
-			types.NamespacedName{Name: cert.Name},
+			types.NamespacedName{Name: cert.Name, Namespace: cert.Namespace},
 			&cert,
 		)
 
