@@ -110,7 +110,7 @@ func (r *ComponentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			return nil
 		}
 
-		if owner.APIVersion != apiGVStr || owner.Kind != "Application" {
+		if owner.APIVersion != apiGVStr || owner.Kind != "Component" {
 			return nil
 		}
 
@@ -127,7 +127,7 @@ func (r *ComponentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			return nil
 		}
 
-		if owner.APIVersion != apiGVStr || owner.Kind != "Application" {
+		if owner.APIVersion != apiGVStr || owner.Kind != "Component" {
 			return nil
 		}
 
@@ -145,7 +145,7 @@ func (r *ComponentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			return nil
 		}
 
-		if owner.APIVersion != apiGVStr || owner.Kind != "Application" {
+		if owner.APIVersion != apiGVStr || owner.Kind != "Component" {
 			return nil
 		}
 

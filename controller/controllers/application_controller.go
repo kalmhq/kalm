@@ -24,7 +24,6 @@ import (
 	"time"
 
 	js "github.com/dop251/goja"
-	"github.com/go-logr/logr"
 	corev1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	"github.com/kapp-staging/kapp/controller/lib/files"
 	"github.com/kapp-staging/kapp/controller/utils"
@@ -43,15 +42,11 @@ import (
 
 // ApplicationReconciler reconciles a Application object
 type ApplicationReconciler struct {
-	client.Client
-	Reader client.Reader
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	*BaseReconciler
 }
 
 type ApplicationReconcilerTask struct {
 	*ApplicationReconciler
-	Log logr.Logger
 
 	// The following fields will be filled by calling SetupAttributes() function
 	ctx         context.Context
@@ -62,10 +57,6 @@ type ApplicationReconcilerTask struct {
 	gateway        *istioV1Beta1.Gateway
 	pluginBindings *corev1alpha1.ApplicationPluginBindingList
 }
-
-var ownerKey = ".metadata.controller"
-var apiGVStr = corev1alpha1.GroupVersion.String()
-var finalizerName = "storage.finalizers.kapp.dev"
 
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=applications,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=applications/status,verbs=get;update;patch
@@ -81,22 +72,13 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	task := &ApplicationReconcilerTask{
 		ApplicationReconciler: r,
 		ctx:                   context.Background(),
-		Log:                   r.Log.WithValues("application", req.NamespacedName),
 	}
-
-	task.Log.Info("=========== start reconciling ===========")
-	defer task.Log.Info("=========== reconciling done ===========")
 
 	return ctrl.Result{}, task.Run(req)
 }
 
 func NewApplicationReconciler(mgr ctrl.Manager) *ApplicationReconciler {
-	return &ApplicationReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Application"),
-		Scheme: mgr.GetScheme(),
-		Reader: mgr.GetAPIReader(),
-	}
+	return &ApplicationReconciler{NewBaseReconciler(mgr, "application")}
 }
 
 func (r *ApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
@@ -121,6 +103,14 @@ func (r *ApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&coreV1.Namespace{}).
 		Owns(&istioV1Beta1.Gateway{}).
 		Complete(r)
+}
+
+func (r *ApplicationReconcilerTask) WarningEvent(err error, msg string, args ...interface{}) {
+	r.EmitWarningEvent(r.application, err, msg, args...)
+}
+
+func (r *ApplicationReconcilerTask) NormalEvent(reason, msg string, args ...interface{}) {
+	r.EmitNormalEvent(r.application, reason, msg, args...)
 }
 
 func (r *ApplicationReconcilerTask) Run(req ctrl.Request) error {
@@ -169,7 +159,7 @@ func (r *ApplicationReconcilerTask) Run(req ctrl.Request) error {
 	}
 
 	if err := r.runPlugins(ApplicationPluginMethodBeforeApplicationSave, &application, &application); err != nil {
-		r.Log.Error(err, "run before save plugin error.")
+		r.WarningEvent(err, "run before save plugin error.")
 	}
 
 	if err := r.Update(r.ctx, &application); err != nil {
@@ -177,7 +167,7 @@ func (r *ApplicationReconcilerTask) Run(req ctrl.Request) error {
 	}
 
 	if err := r.runPlugins(ApplicationPluginMethodAfterApplicationSaved, nil, nil); err != nil {
-		r.Log.Error(err, "run after save plugin error.")
+		r.WarningEvent(err, "run after save plugin error.")
 	}
 
 	return nil
@@ -195,21 +185,21 @@ func (r *ApplicationReconcilerTask) HandleDelete() (err error) {
 		if utils.ContainsString(r.application.ObjectMeta.Finalizers, finalizerName) {
 			if r.namespace != nil {
 				if err := r.Delete(r.ctx, r.namespace); err != nil {
-					r.Log.Error(err, "Delete Namespace error.")
+					r.WarningEvent(err, "Delete Namespace error.")
 					return err
 				}
 			}
 
 			if r.gateway != nil {
 				if err := r.Delete(r.ctx, r.gateway); err != nil {
-					r.Log.Error(err, "Delete gateway error.")
+					r.WarningEvent(err, "Delete gateway error.")
 					return err
 				}
 			}
 
 			r.application.ObjectMeta.Finalizers = utils.RemoveString(r.application.ObjectMeta.Finalizers, finalizerName)
 			if err := r.Update(r.ctx, r.application); err != nil {
-				r.Log.Error(err, "Remove application finalizer failed.")
+				r.WarningEvent(err, "Remove application finalizer failed.")
 				return err
 			}
 		}
@@ -226,7 +216,7 @@ func (r *ApplicationReconcilerTask) SetupAttributes(req ctrl.Request) (err error
 		err := client.IgnoreNotFound(err)
 
 		if err != nil {
-			r.Log.Error(err, "Get application error")
+			r.WarningEvent(err, "Get application error")
 		}
 
 		return err
@@ -240,7 +230,7 @@ func (r *ApplicationReconcilerTask) LoadResources() (err error) {
 	var ns coreV1.Namespace
 	if err := r.Reader.Get(r.ctx, types.NamespacedName{Name: r.application.Name}, &ns); err != nil {
 		if !errors.IsNotFound(err) {
-			r.Log.Error(err, "Get Namespace error.")
+			r.WarningEvent(err, "Get Namespace error.")
 			return err
 		}
 	} else {
@@ -250,7 +240,7 @@ func (r *ApplicationReconcilerTask) LoadResources() (err error) {
 	var gateway istioV1Beta1.Gateway
 	if err := r.Reader.Get(r.ctx, types.NamespacedName{Namespace: r.application.Name, Name: "gateway"}, &gateway); err != nil {
 		if !errors.IsNotFound(err) {
-			r.Log.Error(err, "Get gateway error.")
+			r.WarningEvent(err, "Get gateway error.")
 			return err
 		}
 	} else {
@@ -272,20 +262,20 @@ func (r *ApplicationReconcilerTask) ReconcileNamespace() (err error) {
 		}
 
 		if err := ctrl.SetControllerReference(r.application, ns, r.Scheme); err != nil {
-			r.Log.Error(err, "SetControllerReference error when creating namespace.")
+			r.WarningEvent(err, "SetControllerReference error when creating namespace.")
 			return err
 		}
 
 		if err := r.Create(r.ctx, ns); err != nil {
-			r.Log.Error(err, "create namespace failed")
+			r.WarningEvent(err, "create namespace failed")
 			return err
 		}
 
 		r.namespace = ns
-		r.Log.Info("namespace created.")
+		r.NormalEvent("NamespaceCreated", "Namespace %s is successfully created.", ns.Name)
 	} else {
 		if err := ctrl.SetControllerReference(r.application, r.namespace, r.Scheme); err != nil {
-			r.Log.Error(err, "SetControllerReference error when updating namespace.")
+			r.WarningEvent(err, "SetControllerReference error when updating namespace.")
 			return err
 		}
 
@@ -298,13 +288,13 @@ func (r *ApplicationReconcilerTask) ReconcileNamespace() (err error) {
 		if r.namespace.DeletionTimestamp != nil {
 			r.namespace.DeletionTimestamp = nil
 			if err := r.Update(r.ctx, r.namespace); err != nil {
-				r.Log.Error(err, "Clear namespace deletion timestamp error.")
+				r.WarningEvent(err, "Clear namespace deletion timestamp error.")
 				return err
 			}
 		}
 
 		if err := r.Update(r.ctx, r.namespace); err != nil {
-			r.Log.Error(err, "Update namespace error.")
+			r.WarningEvent(err, "Update namespace error.")
 			return err
 		}
 	}
@@ -342,37 +332,37 @@ func (r *ApplicationReconcilerTask) ReconcileGateway() error {
 		}
 
 		if err := ctrl.SetControllerReference(r.application, gw, r.Scheme); err != nil {
-			r.Log.Error(err, "SetControllerReference error when creating gateway.")
+			r.WarningEvent(err, "SetControllerReference error when creating gateway.")
 			return err
 		}
 
 		if err := r.Create(r.ctx, gw); err != nil {
-			r.Log.Error(err, "create gateway failed")
+			r.WarningEvent(err, "create gateway failed")
 			return err
 		}
 
 		r.gateway = gw
-		r.Log.Info("gateway created.")
+		r.NormalEvent("GatewayCreated", "Gateway is successfully created in namespace %s.", r.application.Name)
 	} else {
 		if err := r.ensureHttpsConfigOfGateway(r.gateway); err != nil {
 			return err
 		}
 
 		if err := ctrl.SetControllerReference(r.application, r.gateway, r.Scheme); err != nil {
-			r.Log.Error(err, "SetControllerReference error when updating gateway.")
+			r.WarningEvent(err, "SetControllerReference error when updating gateway.")
 			return err
 		}
 
 		if r.gateway.DeletionTimestamp != nil {
 			r.gateway.DeletionTimestamp = nil
 			if err := r.Update(r.ctx, r.gateway); err != nil {
-				r.Log.Error(err, "Clear gateway deletion timestamp error.")
+				r.WarningEvent(err, "Clear gateway deletion timestamp error.")
 				return err
 			}
 		}
 
 		if err := r.Update(r.ctx, r.gateway); err != nil {
-			r.Log.Error(err, "Update gateway error.")
+			r.WarningEvent(err, "Update gateway error.")
 			return err
 		}
 	}
@@ -385,7 +375,7 @@ func (r *ApplicationReconcilerTask) ReconcileComponents() error {
 	var componentList corev1alpha1.ComponentList
 
 	if err := r.Reader.List(r.ctx, &componentList, client.InNamespace(r.namespace.Name)); err != nil {
-		r.Log.Error(err, "get componentList error")
+		r.WarningEvent(err, "get componentList error")
 		return err
 	}
 
@@ -402,7 +392,7 @@ func (r *ApplicationReconcilerTask) ReconcileComponents() error {
 		ctrl.SetControllerReference(r.application, copiedComponent, r.Scheme)
 
 		if err := r.Patch(r.ctx, copiedComponent, client.MergeFrom(&item)); err != nil {
-			r.Log.Error(err, "patch component failed")
+			r.WarningEvent(err, "patch component failed")
 			return err
 		}
 	}
@@ -423,30 +413,30 @@ func (r *ApplicationReconcilerTask) ReconcileConfigMaps() error {
 			}
 
 			if err := ctrl.SetControllerReference(r.application, &configMap, r.Scheme); err != nil {
-				r.Log.Error(err, "SetControllerReference error when creating configmap.")
+				r.WarningEvent(err, "SetControllerReference error when creating configmap.")
 				return err
 			}
 
 			if err := r.Create(r.ctx, &configMap); err != nil {
-				r.Log.Error(err, "create kapp default config map error")
+				r.WarningEvent(err, "create kapp default config map error")
 				return err
 			} else {
 				return nil
 			}
 		} else {
-			r.Log.Error(err, "get kapp default config map error")
+			r.WarningEvent(err, "get kapp default config map error")
 			return err
 		}
 	}
 
 	if err := ctrl.SetControllerReference(r.application, &configMap, r.Scheme); err != nil {
-		r.Log.Error(err, "SetControllerReference error when creating configmap.")
+		r.WarningEvent(err, "SetControllerReference error when creating configmap.")
 		return err
 	}
 
 	// TODO should we use patch here to avoid conflict
 	if err := r.Update(r.ctx, &configMap); err != nil {
-		r.Log.Error(err, "update configmap error")
+		r.WarningEvent(err, "update configmap error")
 		return err
 	}
 
@@ -457,7 +447,7 @@ func (r *ApplicationReconcilerTask) runPlugins(methodName string, desc interface
 	if r.pluginBindings == nil {
 		var bindings corev1alpha1.ApplicationPluginBindingList
 		if err := r.Reader.List(r.ctx, &bindings, client.InNamespace(r.application.Name)); err != nil {
-			r.Log.Error(err, "get plugin bindings error")
+			r.WarningEvent(err, "get plugin bindings error")
 			return err
 		}
 
@@ -497,7 +487,7 @@ func (r *ApplicationReconcilerTask) runPlugins(methodName string, desc interface
 		)
 
 		if err != nil {
-			r.Log.Error(err, fmt.Sprintf("Run plugin error. methodName: %s,  pluginName: %s", methodName, binding.Spec.PluginName))
+			r.WarningEvent(err, fmt.Sprintf("Run plugin error. methodName: %s,  pluginName: %s", methodName, binding.Spec.PluginName))
 			return err
 		}
 	}
@@ -577,7 +567,7 @@ func (r *ApplicationReconcilerTask) insertBuildInPluginImpls(rt *js.Runtime, bin
 
 			if err != nil {
 				if !errors.IsNotFound(err) {
-					r.Log.Error(err, "__builtinApplicationPluginIngress error.")
+					r.WarningEvent(err, "__builtinApplicationPluginIngress error.")
 					// TODO pass error to js
 					return rt.ToValue(nil)
 				} else {
@@ -649,13 +639,13 @@ func (r *ApplicationReconcilerTask) insertBuildInPluginImpls(rt *js.Runtime, bin
 			if isCreate {
 				err := r.Create(r.ctx, &vs)
 				if err != nil {
-					r.Log.Error(err, "create vs error.")
+					r.WarningEvent(err, "create vs error.")
 					return rt.ToValue(nil)
 				}
 			} else {
 				err := r.Update(r.ctx, &vs)
 				if err != nil {
-					r.Log.Error(err, "create vs error.")
+					r.WarningEvent(err, "create vs error.")
 					return rt.ToValue(nil)
 				}
 			}
@@ -696,8 +686,7 @@ func (r *ApplicationReconcilerTask) ensureHttpsConfigOfGateway(gw *istioV1Beta1.
 				Name:     "https",
 			},
 			Tls: &istioNetworkingV1Beta1.Server_TLSOptions{
-				Mode: istioNetworkingV1Beta1.Server_TLSOptions_SIMPLE,
-				//CredentialName: ingressConfig.HttpsCert + "-cacert",
+				Mode:           istioNetworkingV1Beta1.Server_TLSOptions_SIMPLE,
 				CredentialName: ingressConfig.HttpsCert,
 			},
 		}
