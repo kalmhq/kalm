@@ -27,6 +27,7 @@ import (
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	types "k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -39,9 +40,10 @@ import (
 // DockerRegistryReconciler reconciles a DockerRegistry object
 type DockerRegistryReconciler struct {
 	client.Client
-	Reader client.Reader
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	Reader   client.Reader
+	Log      logr.Logger
+	Scheme   *runtime.Scheme
+	Recorder record.EventRecorder
 }
 
 type DockerRegistryReconcileTask struct {
@@ -98,12 +100,13 @@ func (r *DockerRegistryReconcileTask) UpdateStatus() (err error) {
 		registryCopy := r.registry.DeepCopy()
 		registryCopy.Status.AuthenticationVerified = false
 
-		if err := r.Patch(r.ctx, registryCopy, client.MergeFrom(r.registry)); err != nil {
+		if err := r.Status().Patch(r.ctx, registryCopy, client.MergeFrom(r.registry)); err != nil {
 			r.Log.Error(err, "Patch docker registry status error.")
 			return err
 		}
 
 		r.Log.Error(err, "ping registry error.")
+		r.Recorder.Event(r.registry, v1.EventTypeWarning, "AuthFailed", err.Error())
 		return nil
 	}
 
@@ -130,6 +133,7 @@ func (r *DockerRegistryReconcileTask) UpdateStatus() (err error) {
 		return err
 	}
 
+	r.Recorder.Eventf(r.registry, v1.EventTypeNormal, "AuthSucceed", "Fetch repositories successfully. %d images found.", len(repos))
 	return nil
 }
 

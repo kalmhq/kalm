@@ -174,10 +174,11 @@ func main() {
 		os.Exit(1)
 	}
 	if err = (&controllers.DockerRegistryReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("DockerRegistry"),
-		Scheme: mgr.GetScheme(),
-		Reader: mgr.GetAPIReader(),
+		Client:   mgr.GetClient(),
+		Log:      ctrl.Log.WithName("controllers").WithName("DockerRegistry"),
+		Scheme:   mgr.GetScheme(),
+		Reader:   mgr.GetAPIReader(),
+		Recorder: mgr.GetEventRecorderFor("docker-registry"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "DockerRegistry")
 		os.Exit(1)

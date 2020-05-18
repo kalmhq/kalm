@@ -36,10 +36,10 @@ type BasicSuite struct {
 	MgrStopChannel chan struct{}
 }
 
-func (suite *BasicSuite) Eventually(condition func() bool, msgAndArgs ...interface{}) bool {
+func (suite *BasicSuite) Eventually(condition func() bool, msgAndArgs ...interface{}) {
 	waitFor := time.Second * 20
 	tick := time.Millisecond * 500
-	return suite.Suite.Eventually(condition, waitFor, tick, msgAndArgs...)
+	suite.True(suite.Suite.Eventually(condition, waitFor, tick, msgAndArgs...))
 }
 
 func (suite *BasicSuite) createComponentPlugin(plugin *v1alpha1.ComponentPlugin) {
@@ -249,10 +249,11 @@ func (suite *BasicSuite) SetupSuite() {
 	}).SetupWithManager(mgr))
 
 	suite.Nil((&DockerRegistryReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("DockerRegistry"),
-		Scheme: mgr.GetScheme(),
-		Reader: mgr.GetAPIReader(),
+		Client:   mgr.GetClient(),
+		Log:      ctrl.Log.WithName("controllers").WithName("DockerRegistry"),
+		Scheme:   mgr.GetScheme(),
+		Reader:   mgr.GetAPIReader(),
+		Recorder: mgr.GetEventRecorderFor("docker-registry"),
 	}).SetupWithManager(mgr))
 
 	mgrStopChannel := make(chan struct{})
