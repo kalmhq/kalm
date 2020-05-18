@@ -36,18 +36,22 @@ func (suite *HttpsCertIssuerControllerSuite) TestBasicCRUD() {
 	suite.Eventually(func() bool {
 		err := suite.K8sClient.Get(
 			context.Background(),
-			types.NamespacedName{Name: caHttpsCertIssuer.Name, Namespace: caHttpsCertIssuer.Namespace},
+			types.NamespacedName{
+				Name: caHttpsCertIssuer.Name,
+			},
 			&caHttpsCertIssuer,
 		)
 
 		return err == nil
 	})
 	// corresponding Issuer should be created too
-	var issuer v1alpha2.Issuer
+	var issuer v1alpha2.ClusterIssuer
 	suite.Eventually(func() bool {
 		err := suite.K8sClient.Get(
 			context.Background(),
-			types.NamespacedName{Name: caHttpsCertIssuer.Name, Namespace: caHttpsCertIssuer.Namespace},
+			types.NamespacedName{
+				Name: caHttpsCertIssuer.Name,
+			},
 			&issuer,
 		)
 
@@ -92,7 +96,6 @@ func (suite *HttpsCertIssuerControllerSuite) reloadHttpsCertIssuer(issuer *v1alp
 		context.Background(),
 		types.NamespacedName{
 			Name:      issuer.Name,
-			Namespace: issuer.Namespace,
 		},
 		issuer,
 	)
