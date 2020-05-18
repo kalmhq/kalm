@@ -43,16 +43,25 @@ func (suite *DockerRegistryControllerSuite) SetupTest() {
 	application := generateEmptyApplication()
 	suite.createApplication(application)
 	suite.application = application
+
+	// create registry without authentication secret
 	name := randomName()
 	registry := &v1alpha1.DockerRegistry{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: name,
-			//Namespace: "kapp-system",
 		},
 		Spec: v1alpha1.DockerRegistrySpec{
 			Host: "https://gcr.io",
 		},
 	}
+
+	suite.createDockerRegistry(registry)
+	suite.Eventually(func() bool {
+		suite.reloadObject(getDockerRegistryNamespacedName(registry), registry)
+		return !registry.Status.AuthenticationVerified
+	})
+
+	time.Sleep(5 * time.Second)
 
 	secret := v1.Secret{
 		ObjectMeta: metaV1.ObjectMeta{
@@ -65,17 +74,16 @@ func (suite *DockerRegistryControllerSuite) SetupTest() {
 		},
 	}
 	suite.Nil(suite.K8sClient.Create(context.Background(), &secret))
-	suite.createDockerRegistry(registry)
+	suite.Eventually(func() bool {
+		suite.reloadObject(getDockerRegistryNamespacedName(registry), registry)
+		return registry.Status.AuthenticationVerified
+	})
+
 	suite.registry = registry
 	suite.secret = &secret
 }
 
 func (suite *DockerRegistryControllerSuite) TestDockerRegistrySecret() {
-	suite.Eventually(func() bool {
-		suite.reloadObject(getDockerRegistryNamespacedName(suite.registry), suite.registry)
-		return suite.registry.Status.AuthenticationVerified
-	})
-
 	suite.Eventually(func() bool {
 		suite.reloadObject(types.NamespacedName{
 			Namespace: suite.secret.Namespace,

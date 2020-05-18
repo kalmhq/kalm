@@ -39,7 +39,7 @@ type BasicSuite struct {
 func (suite *BasicSuite) Eventually(condition func() bool, msgAndArgs ...interface{}) {
 	waitFor := time.Second * 20
 	tick := time.Millisecond * 500
-	suite.True(suite.Suite.Eventually(condition, waitFor, tick, msgAndArgs...))
+	suite.Suite.Require().Eventually(condition, waitFor, tick, msgAndArgs...)
 }
 
 func (suite *BasicSuite) createComponentPlugin(plugin *v1alpha1.ComponentPlugin) {
@@ -248,13 +248,7 @@ func (suite *BasicSuite) SetupSuite() {
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr))
 
-	suite.Nil((&DockerRegistryReconciler{
-		Client:   mgr.GetClient(),
-		Log:      ctrl.Log.WithName("controllers").WithName("DockerRegistry"),
-		Scheme:   mgr.GetScheme(),
-		Reader:   mgr.GetAPIReader(),
-		Recorder: mgr.GetEventRecorderFor("docker-registry"),
-	}).SetupWithManager(mgr))
+	suite.Nil((NewDockerRegistryReconciler(mgr)).SetupWithManager(mgr))
 
 	mgrStopChannel := make(chan struct{})
 

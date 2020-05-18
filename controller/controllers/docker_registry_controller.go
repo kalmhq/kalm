@@ -19,6 +19,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/elastic/cloud-on-k8s/pkg/controller/common/watches"
 	"github.com/go-logr/logr"
 	"github.com/kapp-staging/kapp/controller/registry"
 	"github.com/kapp-staging/kapp/controller/utils"
@@ -44,6 +45,9 @@ type DockerRegistryReconciler struct {
 	Log      logr.Logger
 	Scheme   *runtime.Scheme
 	Recorder record.EventRecorder
+
+	// Watch registry authentication secret even the secret is not exist
+	AuthenticationSecretWatchers *watches.DynamicEnqueueRequest
 }
 
 type DockerRegistryReconcileTask struct {
@@ -69,6 +73,8 @@ func (r *DockerRegistryReconcileTask) Run(req ctrl.Request) error {
 		return err
 	}
 
+	r.UpdateAuthenticationSecretWatcher()
+
 	if !r.registry.ObjectMeta.DeletionTimestamp.IsZero() {
 		return nil
 	}
@@ -84,6 +90,19 @@ func (r *DockerRegistryReconcileTask) Run(req ctrl.Request) error {
 	}
 
 	return nil
+}
+
+func (r *DockerRegistryReconcileTask) UpdateAuthenticationSecretWatcher() {
+	if !r.registry.ObjectMeta.DeletionTimestamp.IsZero() {
+		r.AuthenticationSecretWatchers.RemoveHandlerForKey(r.registry.Name)
+	} else {
+		r.AuthenticationSecretWatchers.AddHandler(watches.NamedWatch{
+			Name:    r.registry.Name,
+			Watched: []types.NamespacedName{{Name: GetRegistryAuthenticationName(r.registry.Name), Namespace: "kapp-system"}},
+			Watcher: types.NamespacedName{Name: r.registry.Name},
+		})
+
+	}
 }
 
 func (r *DockerRegistryReconcileTask) UpdateStatus() (err error) {
@@ -105,7 +124,6 @@ func (r *DockerRegistryReconcileTask) UpdateStatus() (err error) {
 			return err
 		}
 
-		r.Log.Error(err, "ping registry error.")
 		r.Recorder.Event(r.registry, v1.EventTypeWarning, "AuthFailed", err.Error())
 		return nil
 	}
@@ -354,6 +372,17 @@ func (m *TouchAllRegistriesMapper) Map(object handler.MapObject) []reconcile.Req
 	return res
 }
 
+func NewDockerRegistryReconciler(mgr ctrl.Manager) *DockerRegistryReconciler {
+	return &DockerRegistryReconciler{
+		Client:                       mgr.GetClient(),
+		Log:                          ctrl.Log.WithName("controllers").WithName("DockerRegistry"),
+		Scheme:                       mgr.GetScheme(),
+		Reader:                       mgr.GetAPIReader(),
+		Recorder:                     mgr.GetEventRecorderFor("docker-registry"),
+		AuthenticationSecretWatchers: watches.NewDynamicEnqueueRequest(),
+	}
+}
+
 func (r *DockerRegistryReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	if err := mgr.GetFieldIndexer().IndexField(&v1.Secret{}, ownerKey, func(rawObj runtime.Object) []string {
 		// grab the job object, extract the owner...
@@ -372,6 +401,7 @@ func (r *DockerRegistryReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1alpha1.DockerRegistry{}).
+		Watches(&source.Kind{Type: &v1.Secret{}}, r.AuthenticationSecretWatchers).
 		Watches(
 			&source.Kind{Type: &corev1alpha1.Application{}},
 			&handler.EnqueueRequestsFromMapFunc{
