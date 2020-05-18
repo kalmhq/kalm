@@ -6,8 +6,7 @@ import { RootState } from "../../reducers";
 import { Actions } from "../../types";
 import { ApplicationDetails, PodStatus, ApplicationComponentDetails } from "../../types/application";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "../../widgets/Badge";
-import { CheckCircleIcon } from "widgets/Icon";
-import { Paper, Tab, Fade } from "@material-ui/core";
+import { Paper, Tab } from "@material-ui/core";
 import { BigCPULineChart, BigMemoryLineChart } from "../../widgets/SmallLineChart";
 import Typography from "@material-ui/core/Typography";
 import { grey } from "@material-ui/core/colors";
@@ -21,23 +20,21 @@ const styles = (theme: Theme) =>
     },
     topStatus: {
       display: "flex",
-      alignItems: "center",
-      "& > span": {
-        marginLeft: 12
-      }
+      alignItems: "center"
     },
     paper: {
       boxShadow: "none",
       marginTop: 12
     },
-    overview: {
+    info: {
       fontSize: 18,
       color: grey[600]
     },
-    overviewLabel: {
+    infoLabel: {
       fontWeight: "bold"
     },
     label: {
+      minWidth: 290,
       marginRight: 12
     },
     tableList: {
@@ -49,6 +46,13 @@ const styles = (theme: Theme) =>
     },
     table: {
       boxShadow: "none"
+    },
+    flexColumn: {
+      display: "flex",
+      flexDirection: "column"
+    },
+    flexRow: {
+      display: "flex"
     }
   });
 
@@ -103,6 +107,37 @@ class DetailsRaw extends React.PureComponent<Props, State> {
       activeTab: 0
     };
   }
+
+  private renderComponentStatus = (component: ApplicationComponentDetails) => {
+    let isError = false;
+    let isPending = false;
+
+    component.get("pods").forEach(pod => {
+      if (pod.get("isTerminating")) {
+        isPending = true;
+      } else {
+        switch (pod.get("status")) {
+          case "Pending": {
+            isPending = true;
+            break;
+          }
+          case "Failed": {
+            isError = true;
+            break;
+          }
+        }
+      }
+    });
+
+    if (isError) {
+      return <ErrorBadge />;
+    } else if (isPending) {
+      return <PendingBadge />;
+    } else {
+      return <SuccessBadge />;
+    }
+  };
+
   private renderName = (rowData: RowData) => {
     return <Link to={`/applications/${rowData.get("name")}`}>{rowData.get("name")}</Link>;
   };
@@ -117,7 +152,6 @@ class DetailsRaw extends React.PureComponent<Props, State> {
       }
       case "Succeeded": {
         return <SuccessBadge />;
-        break;
       }
       case "Failed": {
         return <ErrorBadge />;
@@ -157,8 +191,8 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     return (
       <div className={classes.root}>
         <div className={classes.topStatus}>
-          <CheckCircleIcon />
-          <span>paymentservice</span>
+          {this.renderComponentStatus(component)}
+          <span>{component.get("name")}</span>
         </div>
         <Paper square className={classes.paper}>
           <Tabs
@@ -172,53 +206,173 @@ class DetailsRaw extends React.PureComponent<Props, State> {
             <Tab label="Events" disabled {...a11yProps(3)} />
           </Tabs>
         </Paper>
-        <Fade in={activeTab === 0}>
-          <TabPanel value={0} index={0}>
-            <Paper className={classes.paper}>
-              <Grid container spacing={2}>
-                <Grid item md={4}>
-                  <BigCPULineChart data={component.get("metrics")?.get("cpu")} />
-                </Grid>
-                <Grid item md={4}>
-                  <BigMemoryLineChart data={component.get("metrics")?.get("memory")} />
-                </Grid>
+        <TabPanel value={activeTab} index={0}>
+          <Paper className={classes.paper}>
+            <Grid container spacing={2}>
+              <Grid item md={6}>
+                <BigCPULineChart data={component.get("metrics")?.get("cpu")} />
               </Grid>
-            </Paper>
-            <div className={classes.overview}>
-              <div className={classes.overviewLabel}>Overview</div>
-              <div>
-                <span className={classes.label}>Image: </span>
-                <span>{component.get("name")}</span>
-              </div>
+              <Grid item md={6}>
+                <BigMemoryLineChart data={component.get("metrics")?.get("memory")} />
+              </Grid>
+            </Grid>
+          </Paper>
+          <div className={classes.info}>
+            <div className={classes.infoLabel}>Overview</div>
+            <div className={classes.flexRow}>
+              <span className={classes.label}>Image: </span>
+              <span>{component.get("image")}</span>
             </div>
-            <div className={classes.tableList}>
-              <div className={classes.tableLabel}>Pods</div>
-              <MaterialTable
-                options={{
-                  padding: "dense",
-                  draggable: false,
-                  toolbar: false,
-                  paging: false,
-                  rowStyle: {
-                    verticalAlign: "baseline"
-                  },
-                  headerStyle: {
-                    color: "black",
-                    backgroundColor: grey[100],
-                    fontSize: 12,
-                    fontWeight: 400,
-                    height: 20,
-                    paddingTop: 0,
-                    paddingBottom: 0
-                  }
-                }}
-                columns={this.getColumns()}
-                data={this.getData()}
-                title=""
-              />
+            <div className={classes.flexRow}>
+              <span className={classes.label}>Resources: </span>
+              <span>
+                CPU {component.get("cpu")} Memory {component.get("memory")}
+              </span>
             </div>
-          </TabPanel>
-        </Fade>
+            <div className={classes.flexRow}>
+              <span className={classes.label}>Restart Policy: </span>
+              <span>{component.get("restartStrategy")}</span>
+            </div>
+            <div className={classes.flexRow}>
+              <span className={classes.label}>DNS Policy: </span>
+              <span>{component.get("dnsPolicy")}</span>
+            </div>
+            <div className={classes.flexRow}>
+              <span className={classes.label}>Ports: </span>
+              <span className={classes.flexColumn}>
+                {component.get("ports")?.map((port, index) => {
+                  return (
+                    <span key={index}>
+                      {port.get("name")} TCP {port.get("containerPort")}:{port.get("servicePort")}
+                    </span>
+                  );
+                })}
+              </span>
+            </div>
+            <div className={classes.flexRow}>
+              <span className={classes.label}>Volumns: </span>
+              <span className={classes.flexColumn}>
+                {component.get("volumes")?.map((volume, index) => {
+                  return (
+                    <span key={index}>
+                      Disk {volume.get("size")} {volume.get("type")} {volume.get("path")}
+                    </span>
+                  );
+                })}
+              </span>
+            </div>
+          </div>
+          <div className={classes.tableList}>
+            <div className={classes.tableLabel}>Pods</div>
+            <MaterialTable
+              options={{
+                padding: "dense",
+                draggable: false,
+                toolbar: false,
+                paging: false,
+                rowStyle: {
+                  verticalAlign: "baseline"
+                },
+                headerStyle: {
+                  color: "black",
+                  backgroundColor: grey[100],
+                  fontSize: 12,
+                  fontWeight: 400,
+                  height: 20,
+                  paddingTop: 0,
+                  paddingBottom: 0
+                }
+              }}
+              columns={this.getColumns()}
+              data={this.getData()}
+              title=""
+            />
+          </div>
+        </TabPanel>
+
+        <TabPanel value={activeTab} index={1}>
+          <div className={classes.info}>
+            <div className={classes.infoLabel}>Basic Info</div>
+            <div className={classes.flexRow}>
+              <span className={classes.label}>Workload Type: </span>
+              <span>{component.get("workloadType")}</span>
+            </div>
+            <div className={classes.flexRow}>
+              <span className={classes.label}>Image: </span>
+              <span>{component.get("image")}</span>
+            </div>
+            <div className={classes.flexRow}>
+              <span className={classes.label}>Command: </span>
+              <span>
+                {component.get("command")?.map((c, index) => {
+                  return <span key={index}>{c}</span>;
+                })}
+              </span>
+            </div>
+            <div className={classes.flexRow}>
+              <span className={classes.label}>Arguments: </span>
+              <span>
+                {component.get("args")?.map((arg, index) => {
+                  return <span key={index}>{arg}</span>;
+                })}
+              </span>
+            </div>
+            <div className={classes.flexRow}>
+              <span className={classes.label}>Environment Variables: </span>
+              <span className={classes.flexColumn}>
+                {component.get("env")?.map((e, index) => {
+                  return (
+                    <span key={index}>
+                      {e.get("name")}:{e.get("value")}
+                    </span>
+                  );
+                })}
+              </span>
+            </div>
+            <div className={classes.flexRow}>
+              <span className={classes.label}>Resources: </span>
+              <span>
+                CPU {component.get("cpu")} Memory {component.get("memory")}
+              </span>
+            </div>
+            <div className={classes.flexRow}>
+              <span className={classes.label}>Restart Policy: </span>
+              <span>{component.get("restartStrategy")}</span>
+            </div>
+            <div className={classes.flexRow}>
+              <span className={classes.label}>DNS Policy: </span>
+              <span>{component.get("dnsPolicy")}</span>
+            </div>
+            <div className={classes.flexRow}>
+              <span className={classes.label}>Termination Grace Period Seconds: </span>
+              <span className={classes.flexColumn}>{component.get("terminationGracePeriodSeconds")}</span>
+            </div>
+            <div className={classes.flexRow}>
+              <span className={classes.label}>Ports: </span>
+              <span className={classes.flexColumn}>
+                {component.get("ports")?.map((port, index) => {
+                  return (
+                    <span key={index}>
+                      {port.get("name")} TCP {port.get("containerPort")}:{port.get("servicePort")}
+                    </span>
+                  );
+                })}
+              </span>
+            </div>
+            <div className={classes.flexRow}>
+              <span className={classes.label}>Volumns: </span>
+              <span className={classes.flexColumn}>
+                {component.get("volumes")?.map((volume, index) => {
+                  return (
+                    <span key={index}>
+                      Disk {volume.get("size")} {volume.get("type")} {volume.get("path")}
+                    </span>
+                  );
+                })}
+              </span>
+            </div>
+          </div>
+        </TabPanel>
       </div>
     );
   }
