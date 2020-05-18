@@ -95,7 +95,7 @@ func (r *HttpsCertIssuerReconciler) ReconcileCAForTest(ctx context.Context, cert
 	// auto generate tls secret for our CA
 	sec := corev1.Secret{}
 	if err := r.Get(ctx, types.NamespacedName{
-		Namespace: certIssuer.Namespace,
+		Namespace: certManagerNamespace,
 		Name:      caSecretName,
 	}, &sec); err != nil {
 		if !errors.IsNotFound(err) {
@@ -109,7 +109,7 @@ func (r *HttpsCertIssuerReconciler) ReconcileCAForTest(ctx context.Context, cert
 
 		sec := corev1.Secret{
 			ObjectMeta: v1.ObjectMeta{
-				Namespace: certIssuer.Namespace,
+				Namespace: certManagerNamespace,
 				Name:      caSecretName,
 			},
 			StringData: map[string]string{
@@ -130,10 +130,9 @@ func (r *HttpsCertIssuerReconciler) ReconcileCAForTest(ctx context.Context, cert
 		r.Log.Info("secret created")
 	}
 
-	expectedIssuer := cmv1alpha2.Issuer{
+	expectedClusterIssuer := cmv1alpha2.ClusterIssuer{
 		ObjectMeta: v1.ObjectMeta{
-			Name:      certIssuer.Name,
-			Namespace: certIssuer.Namespace,
+			Name: certIssuer.Name,
 		},
 		Spec: cmv1alpha2.IssuerSpec{
 			IssuerConfig: cmv1alpha2.IssuerConfig{
@@ -145,27 +144,31 @@ func (r *HttpsCertIssuerReconciler) ReconcileCAForTest(ctx context.Context, cert
 	}
 
 	// start our CA using secret
-	issuer := cmv1alpha2.Issuer{}
-	err := r.Get(ctx, types.NamespacedName{Name: certIssuer.Name, Namespace: certIssuer.Namespace}, &issuer)
+	clusterIssuer := cmv1alpha2.ClusterIssuer{}
+
+	err := r.Get(ctx, types.NamespacedName{
+		Name: certIssuer.Name,
+	}, &clusterIssuer)
+
 	if err != nil {
 		if errors.IsNotFound(err) {
-			issuer = expectedIssuer
+			clusterIssuer = expectedClusterIssuer
 
-			if err := ctrl.SetControllerReference(&certIssuer, &expectedIssuer, r.Scheme); err != nil {
+			if err := ctrl.SetControllerReference(&certIssuer, &expectedClusterIssuer, r.Scheme); err != nil {
 				return ctrl.Result{}, err
 			}
 
-			r.Log.Info("creating issuer")
-			if err := r.Create(ctx, &expectedIssuer); err != nil {
-				r.Log.Error(err, "fail create issuer")
+			r.Log.Info("creating clusterIssuer")
+			if err := r.Create(ctx, &expectedClusterIssuer); err != nil {
+				r.Log.Error(err, "fail create clusterIssuer")
 				return ctrl.Result{}, err
 			}
 		} else {
-			issuer.Spec = expectedIssuer.Spec
+			clusterIssuer.Spec = expectedClusterIssuer.Spec
 
-			r.Log.Info("updating issuer")
-			if err := r.Update(ctx, &expectedIssuer); err != nil {
-				r.Log.Error(err, "fail update issuer")
+			r.Log.Info("updating clusterIssuer")
+			if err := r.Update(ctx, &expectedClusterIssuer); err != nil {
+				r.Log.Error(err, "fail update clusterIssuer")
 				return ctrl.Result{}, err
 			}
 		}
@@ -174,24 +177,38 @@ func (r *HttpsCertIssuerReconciler) ReconcileCAForTest(ctx context.Context, cert
 	return ctrl.Result{}, nil
 }
 
+const certManagerNamespace = "cert-manager"
+
 // config ACME cloudflare
 func (r *HttpsCertIssuerReconciler) ReconcileACMECloudFlare(ctx context.Context, certIssuer corev1alpha1.HttpsCertIssuer) (ctrl.Result, error) {
 
 	acmeSpec := certIssuer.Spec.ACMECloudFlare
 	email := acmeSpec.Email
-	secName := acmeSpec.APIKeySecretName
+
+	apiTokenSecretName := acmeSpec.APITokenSecretName
+	// for clusterIssuer, secret has to be in ns: cert-manager to be found by cert-mgr
+	apiTokenSecretNamespace := certManagerNamespace
 
 	issuerName := certIssuer.Name
-	curNs := certIssuer.Namespace
+	//curNs := certIssuer.Namespace
 
-	sec := corev1.Secret{}
-	if err := r.Get(ctx, types.NamespacedName{Namespace: curNs, Name: secName}, &sec); err != nil {
-		r.Log.Error(err, fmt.Sprintf("fail to get secret %s", secName))
+	apiTokenSecret := corev1.Secret{}
+	if err := r.Get(ctx, types.NamespacedName{
+		Namespace: apiTokenSecretNamespace,
+		Name:      apiTokenSecretName,
+	}, &apiTokenSecret); err != nil {
+		r.Log.Error(err, fmt.Sprintf("fail to get secret %s", apiTokenSecretName))
+
+		if certIssuer.Status.OK {
+			certIssuer.Status.OK = false
+			r.Status().Update(ctx, &certIssuer)
+		}
+
 		return ctrl.Result{}, err
 	}
 
 	var secKey string
-	for k, v := range sec.Data {
+	for k, v := range apiTokenSecret.Data {
 		if v == nil {
 			continue
 		}
@@ -200,17 +217,21 @@ func (r *HttpsCertIssuerReconciler) ReconcileACMECloudFlare(ctx context.Context,
 	}
 
 	if secKey == "" {
-		err := fmt.Errorf("secret %s has no key", secName)
+		err := fmt.Errorf("secret %s has no key", apiTokenSecretName)
 		r.Log.Error(err, "")
+
+		if certIssuer.Status.OK {
+			certIssuer.Status.OK = false
+			r.Status().Update(ctx, &certIssuer)
+		}
 
 		return ctrl.Result{}, err
 	}
 
 	// ref: https://cert-manager.io/docs/configuration/acme/dns01/cloudflare/
-	expectedIssuer := cmv1alpha2.Issuer{
+	expectedClusterIssuer := cmv1alpha2.ClusterIssuer{
 		ObjectMeta: v1.ObjectMeta{
-			Name:      issuerName,
-			Namespace: curNs,
+			Name: issuerName,
 		},
 		Spec: cmv1alpha2.IssuerSpec{
 			IssuerConfig: cmv1alpha2.IssuerConfig{
@@ -230,7 +251,7 @@ func (r *HttpsCertIssuerReconciler) ReconcileACMECloudFlare(ctx context.Context,
 									Email: email,
 									APIToken: &cmmetav1.SecretKeySelector{
 										LocalObjectReference: cmmetav1.LocalObjectReference{
-											Name: secName,
+											Name: apiTokenSecretName,
 										},
 										Key: secKey,
 									},
@@ -243,35 +264,34 @@ func (r *HttpsCertIssuerReconciler) ReconcileACMECloudFlare(ctx context.Context,
 		},
 	}
 
-	issuer := cmv1alpha2.Issuer{}
+	clusterIssuer := cmv1alpha2.ClusterIssuer{}
 	var isNew bool
 	if err := r.Get(ctx, types.NamespacedName{
-		Name:      issuerName,
-		Namespace: curNs,
-	}, &issuer); err != nil {
+		Name: issuerName,
+	}, &clusterIssuer); err != nil {
 		if !errors.IsNotFound(err) {
 			return ctrl.Result{}, err
 		}
 
-		issuer = expectedIssuer
+		clusterIssuer = expectedClusterIssuer
 		isNew = true
 	}
 
 	if isNew {
-		if err := ctrl.SetControllerReference(&certIssuer, &issuer, r.Scheme); err != nil {
+		if err := ctrl.SetControllerReference(&certIssuer, &clusterIssuer, r.Scheme); err != nil {
 			return ctrl.Result{}, err
 		}
 
-		r.Log.Info("creating issuer")
-		if err := r.Create(ctx, &issuer); err != nil {
-			r.Log.Error(err, "fail create issuer")
+		r.Log.Info("creating clusterIssuer")
+		if err := r.Create(ctx, &clusterIssuer); err != nil {
+			r.Log.Error(err, "fail create clusterIssuer")
 			return ctrl.Result{}, err
 		}
 	} else {
-		issuer.Spec = expectedIssuer.Spec
+		clusterIssuer.Spec = expectedClusterIssuer.Spec
 
-		if err := r.Update(ctx, &issuer); err != nil {
-			r.Log.Error(err, "fail update issuer")
+		if err := r.Update(ctx, &clusterIssuer); err != nil {
+			r.Log.Error(err, "fail update clusterIssuer")
 			return ctrl.Result{}, err
 		}
 	}
@@ -285,13 +305,13 @@ func (r *HttpsCertIssuerReconciler) ReconcileACMECloudFlare(ctx context.Context,
 	//conditions := clusterIssuer.Status.Conditions
 	//latestCondition := conditions[len(conditions) - 1]
 	//latestCondition.Type
-	//if issuer.Status.OK !=
+	//if clusterIssuer.Status.OK !=
 
 	return ctrl.Result{}, nil
 }
 
 func getPrvKeyNameForIssuer(issuer corev1alpha1.HttpsCertIssuer) string {
-	return fmt.Sprintf("prvkey-%s", issuer.Name)
+	return fmt.Sprintf("kapp-prvkey-%s", issuer.Name)
 }
 
 func (r *HttpsCertIssuerReconciler) generateRandomPrvKeyAndCrtForCA() (prvKey []byte, crt []byte, err error) {

@@ -676,9 +676,22 @@ func (r *ApplicationReconcilerTask) ensureHttpsConfigOfGateway(gw *istioV1Beta1.
 			continue
 		}
 
+		var httpsCert corev1alpha1.HttpsCert
 		if ingressConfig.HttpsCert == "" {
+			// todo check if suitable cert already exists
 			continue
+		} else {
+			if err := r.Get(r.ctx, types.NamespacedName{
+				Namespace: gw.Namespace,
+				Name:      ingressConfig.HttpsCert,
+			}, &httpsCert); err != nil {
+				// todo fail to find given httpsCert
+				// should emit event log to warn user
+				continue
+			}
 		}
+
+		_, certSecretName := getNamespacedCertAndCertSecretName(httpsCert)
 
 		curServer := istioNetworkingV1Beta1.Server{
 			Hosts: ingressConfig.Hosts,
@@ -688,9 +701,8 @@ func (r *ApplicationReconcilerTask) ensureHttpsConfigOfGateway(gw *istioV1Beta1.
 				Name:     "https",
 			},
 			Tls: &istioNetworkingV1Beta1.Server_TLSOptions{
-				Mode: istioNetworkingV1Beta1.Server_TLSOptions_SIMPLE,
-				//CredentialName: ingressConfig.HttpsCert + "-cacert",
-				CredentialName: ingressConfig.HttpsCert,
+				Mode:           istioNetworkingV1Beta1.Server_TLSOptions_SIMPLE,
+				CredentialName: certSecretName,
 			},
 		}
 
