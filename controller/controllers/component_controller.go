@@ -44,10 +44,7 @@ import (
 
 // ComponentReconciler reconciles a Component object
 type ComponentReconciler struct {
-	client.Client
-	Reader client.Reader
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	*BaseReconciler
 }
 
 type ComponentReconcilerTask struct {
@@ -94,10 +91,7 @@ func (r *ComponentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 func NewComponentReconciler(mgr ctrl.Manager) *ComponentReconciler {
 	return &ComponentReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Component"),
-		Scheme: mgr.GetScheme(),
-		Reader: mgr.GetAPIReader(),
+		NewBaseReconciler(mgr, "Component"),
 	}
 }
 

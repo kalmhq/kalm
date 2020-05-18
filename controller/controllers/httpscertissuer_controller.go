@@ -26,13 +26,11 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"fmt"
-	"github.com/go-logr/logr"
 	"github.com/jetstack/cert-manager/pkg/apis/acme/v1alpha2"
 	cmmetav1 "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"log"
 	"math/big"
@@ -46,9 +44,7 @@ import (
 
 // HttpsCertIssuerReconciler reconciles a HttpsCertIssuer object
 type HttpsCertIssuerReconciler struct {
-	client.Client
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	*BaseReconciler
 }
 
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=httpscertissuers,verbs=get;list;watch;create;update;patch;delete
@@ -83,9 +79,7 @@ func (r *HttpsCertIssuerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, er
 
 func NewHttpsCertIssuerReconciler(mgr ctrl.Manager) *HttpsCertIssuerReconciler {
 	return &HttpsCertIssuerReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("HttpsCertIssuer"),
-		Scheme: mgr.GetScheme(),
+		BaseReconciler: NewBaseReconciler(mgr, "HttpsCertIssuer"),
 	}
 }
 

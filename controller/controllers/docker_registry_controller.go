@@ -28,7 +28,6 @@ import (
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	types "k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -40,11 +39,7 @@ import (
 
 // DockerRegistryReconciler reconciles a DockerRegistry object
 type DockerRegistryReconciler struct {
-	client.Client
-	Reader   client.Reader
-	Log      logr.Logger
-	Scheme   *runtime.Scheme
-	Recorder record.EventRecorder
+	*BaseReconciler
 
 	// Watch registry authentication secret even the secret is not exist
 	AuthenticationSecretWatchers *watches.DynamicEnqueueRequest
@@ -384,11 +379,7 @@ func (m *TouchAllRegistriesMapper) Map(object handler.MapObject) []reconcile.Req
 
 func NewDockerRegistryReconciler(mgr ctrl.Manager) *DockerRegistryReconciler {
 	return &DockerRegistryReconciler{
-		Client:                       mgr.GetClient(),
-		Log:                          ctrl.Log.WithName("controllers").WithName("DockerRegistry"),
-		Scheme:                       mgr.GetScheme(),
-		Reader:                       mgr.GetAPIReader(),
-		Recorder:                     mgr.GetEventRecorderFor("docker-registry"),
+		BaseReconciler:               NewBaseReconciler(mgr, "DockerRegistry"),
 		AuthenticationSecretWatchers: watches.NewDynamicEnqueueRequest(),
 	}
 }

@@ -17,11 +17,9 @@ package controllers
 
 import (
 	"context"
-	"github.com/go-logr/logr"
 	cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -32,9 +30,7 @@ import (
 
 // HttpsCertReconciler reconciles a HttpsCert object
 type HttpsCertReconciler struct {
-	client.Client
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	*BaseReconciler
 }
 
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=httpscerts,verbs=get;list;watch;create;update;patch;delete
@@ -110,9 +106,7 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 func NewHttpsCertReconciler(mgr ctrl.Manager) *HttpsCertReconciler {
 	return &HttpsCertReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("HttpsCert"),
-		Scheme: mgr.GetScheme(),
+		BaseReconciler: NewBaseReconciler(mgr, "HttpsCert"),
 	}
 }
 

@@ -26,7 +26,6 @@ import (
 	"sync"
 
 	"github.com/go-logr/logr"
-	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -100,10 +99,7 @@ func init() {
 
 // ComponentPluginReconciler reconciles a ComponentPlugin object
 type ComponentPluginReconciler struct {
-	client.Client
-	Log    logr.Logger
-	Scheme *runtime.Scheme
-	Reader client.Reader
+	*BaseReconciler
 }
 
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=componentplugins,verbs=get;list;watch;create;update;patch;delete
@@ -247,10 +243,7 @@ func (r *ComponentPluginReconciler) deletePluginBindings(ctx context.Context, pl
 
 func NewComponentPluginReconciler(mgr ctrl.Manager) *ComponentPluginReconciler {
 	return &ComponentPluginReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("ComponentPlugin"),
-		Scheme: mgr.GetScheme(),
-		Reader: mgr.GetAPIReader(),
+		NewBaseReconciler(mgr, "ComponentPlugin"),
 	}
 }
 

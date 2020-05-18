@@ -78,7 +78,7 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 }
 
 func NewApplicationReconciler(mgr ctrl.Manager) *ApplicationReconciler {
-	return &ApplicationReconciler{NewBaseReconciler(mgr, "application")}
+	return &ApplicationReconciler{NewBaseReconciler(mgr, "Application")}
 }
 
 func (r *ApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
