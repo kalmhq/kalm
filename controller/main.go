@@ -97,12 +97,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.ApplicationReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Application"),
-		Scheme: mgr.GetScheme(),
-		Reader: mgr.GetAPIReader(),
-	}).SetupWithManager(mgr); err != nil {
+	if err = controllers.NewApplicationReconciler(mgr).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Application")
 		os.Exit(1)
 	}
@@ -173,7 +168,7 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "HttpsCert")
 		os.Exit(1)
 	}
-	if err = (controllers.NewDockerRegistryReconciler(mgr)).SetupWithManager(mgr); err != nil {
+	if err = controllers.NewDockerRegistryReconciler(mgr).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "DockerRegistry")
 		os.Exit(1)
 	}

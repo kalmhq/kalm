@@ -194,12 +194,7 @@ func (suite *BasicSuite) SetupSuite() {
 	suite.NotNil(mgr)
 	suite.Nil(err)
 
-	suite.Nil((&ApplicationReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Application"),
-		Scheme: mgr.GetScheme(),
-		Reader: mgr.GetAPIReader(),
-	}).SetupWithManager(mgr))
+	suite.Nil(NewApplicationReconciler(mgr).SetupWithManager(mgr))
 
 	suite.Nil((&ComponentPluginReconciler{
 		Client: mgr.GetClient(),
@@ -248,7 +243,7 @@ func (suite *BasicSuite) SetupSuite() {
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr))
 
-	suite.Nil((NewDockerRegistryReconciler(mgr)).SetupWithManager(mgr))
+	suite.Nil(NewDockerRegistryReconciler(mgr).SetupWithManager(mgr))
 
 	mgrStopChannel := make(chan struct{})
 

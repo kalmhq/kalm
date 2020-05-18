@@ -90,6 +90,15 @@ func (r *ApplicationReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error)
 	return ctrl.Result{}, task.Run(req)
 }
 
+func NewApplicationReconciler(mgr ctrl.Manager) *ApplicationReconciler {
+	return &ApplicationReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("Application"),
+		Scheme: mgr.GetScheme(),
+		Reader: mgr.GetAPIReader(),
+	}
+}
+
 func (r *ApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	if err := mgr.GetFieldIndexer().IndexField(&coreV1.Namespace{}, ownerKey, func(rawObj runtime.Object) []string {
 		owner := metaV1.GetControllerOf(rawObj.(*coreV1.Namespace))
