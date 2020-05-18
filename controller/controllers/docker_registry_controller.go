@@ -343,6 +343,7 @@ func (r *DockerRegistryReconcileTask) SetupAttributes(req ctrl.Request) (err err
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=dockerregistries/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=applications,verbs=get;list
 // +kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=events,verbs=create;patch
 
 func (r *DockerRegistryReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	task := &DockerRegistryReconcileTask{

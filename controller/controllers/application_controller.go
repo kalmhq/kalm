@@ -190,7 +190,6 @@ func (r *ApplicationReconcilerTask) HandleDelete() (err error) {
 			if err := r.Update(r.ctx, r.application); err != nil {
 				return err
 			}
-			r.Log.Info("add finalizer", r.application.Namespace, r.application.Name)
 		}
 	} else {
 		if utils.ContainsString(r.application.ObjectMeta.Finalizers, finalizerName) {
