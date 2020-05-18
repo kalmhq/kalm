@@ -20,7 +20,7 @@ import { withNamespace, withNamespaceProps } from "permission/Namespace";
 import React from "react";
 import { ThunkDispatch } from "redux-thunk";
 import { ConsoleIcon, LogIcon } from "widgets/Icon";
-import { loadApplicationAction } from "../../actions/application";
+import { loadApplicationAction, deleteComponentAction } from "../../actions/application";
 import { deletePod } from "../../actions/kubernetesApi";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "../../actions/notification";
 import { RootState } from "../../reducers";
@@ -109,6 +109,11 @@ const styles = (theme: Theme) =>
       "& > :nth-child(2)": {
         flex: 1
       }
+    },
+    viewMoreWrapper: {
+      display: "flex",
+      justifyContent: "center",
+      padding: "10px"
     },
     actionCell: {
       width: 100,
@@ -214,7 +219,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
   };
 
   private renderComponentPanel = (index: number) => {
-    const { classes, application } = this.props;
+    const { classes, application, dispatch } = this.props;
     const component = application.get("components").get(index)!;
 
     return (
@@ -225,7 +230,12 @@ class DetailsRaw extends React.PureComponent<Props, State> {
           aria-controls="panel1a-content"
           id={`applicationComponent-${index}`}>
           <div className={classes.summaryWrapper}>
-            <div className={classes.flexWrapper} style={{ width: "20%" }}>
+            <div
+              className={classes.flexWrapper}
+              style={{ width: "20%", cursor: "pointer" }}
+              onClick={() => {
+                dispatch(push(`/applications/${application.get("name")}/components/${component.get("name")}`));
+              }}>
               {this.renderComponentStatus(component)} <H5>{component.get("name")}</H5>
               <div style={{ marginLeft: 8 }}>({component.get("workloadType") || "Server"})</div>
             </div>
@@ -292,7 +302,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
             onClick={() => {
               dispatch(push(`/applications/${application.get("name")}/edit?component=${component.get("name")}`));
             }}>
-            Edit
+            Scale
           </Button>
           <Button
             style={{ marginRight: 20 }}
@@ -301,16 +311,16 @@ class DetailsRaw extends React.PureComponent<Props, State> {
             onClick={() => {
               dispatch(push(`/applications/${application.get("name")}/edit?component=${component.get("name")}`));
             }}>
-            Scale
+            Edit
           </Button>
           <Button
             style={{ marginRight: 20 }}
             color="primary"
             size="large"
             onClick={() => {
-              dispatch(push(`/applications/${application.get("name")}/components/${component.get("name")}`));
+              dispatch(deleteComponentAction(component.get("name"), application.get("name")));
             }}>
-            Detail
+            Delete
           </Button>
         </Box>
 
@@ -436,6 +446,17 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                           })
                           .toArray()}
                   </Box>
+                  <div key={x.get("name")} className={clsx(classes.rowContainer, classes.viewMoreWrapper)}>
+                    <Button
+                      style={{ marginRight: 20 }}
+                      color="primary"
+                      size="large"
+                      onClick={() => {
+                        dispatch(push(`/applications/${application.get("name")}/components/${component.get("name")}`));
+                      }}>
+                      View More
+                    </Button>
+                  </div>
                 </div>
               );
             })

@@ -7,7 +7,7 @@ import { connect } from "react-redux";
 import { InjectedFormProps } from "redux-form";
 import { Field, getFormSyncErrors, getFormValues, reduxForm } from "redux-form/immutable";
 import { Body, H3 } from "widgets/Label";
-import { loadComponentPluginsAction, loadApplicationPluginsAction } from "../../actions/application";
+import { loadApplicationPluginsAction, loadComponentPluginsAction } from "../../actions/application";
 import { loadConfigsAction } from "../../actions/config";
 import { loadNodesAction } from "../../actions/node";
 import { RootState } from "../../reducers";
@@ -689,12 +689,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Grid item xs={12} sm={12} md={12}>
           <CustomLabels nodeLabels={nodeLabels} />
         </Grid>
-        <Grid item xs={12} sm={6} md={6}>
+        <Grid item xs={12} sm={12} md={12}>
           <AffinityType />
-        </Grid>
-        <Grid item xs={12} sm={6} md={6}>
-          {/* TODO */}
-          <Typography variant="body2">description for fanout and gather.</Typography>
         </Grid>
       </Grid>
     );
@@ -974,27 +970,24 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <div className={`${classes.formSection} ${currentTab === "basic" ? "" : classes.displayNone}`}>
           {this.renderBasic()}
         </div>
-        <div className={`${classes.formSection} ${currentTab === "envs" ? "" : classes.displayNone}`}>
-          {this.renderEnvs()}
-        </div>
-        <div className={`${classes.formSection} ${currentTab === "ports" ? "" : classes.displayNone}`}>
-          {this.renderPorts()}
-        </div>
-        <div className={`${classes.formSection} ${currentTab === "resources" ? "" : classes.displayNone}`}>
+        <div className={`${classes.formSection} ${currentTab === "basic" ? "" : classes.displayNone}`}>
           {this.renderResources()}
         </div>
-        <div className={`${classes.formSection} ${currentTab === "resources" ? "" : classes.displayNone}`}>
+        <div className={`${classes.formSection} ${currentTab === "basic" ? "" : classes.displayNone}`}>
+          {this.renderEnvs()}
+        </div>
+        <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}>
+          {this.renderPorts()}
+        </div>
+        <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}>
           {this.renderVolumes()}
         </div>
-        <div className={`${classes.formSection} ${currentTab === "resources" ? "" : classes.displayNone}`}>
+        <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}>
           {this.renderConfigs()}
         </div>
-        <div className={`${classes.formSection} ${currentTab === "plugins" ? "" : classes.displayNone}`}>
+        <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}>
           {this.renderPlugins()}
         </div>
-        {/* <div className={`${classes.formSection} ${currentTab === "probes" ? "" : classes.displayNone}`}>
-          {this.renderProbes()}
-        </div> */}
         <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}>
           {this.renderNodeSelector()}
         </div>
