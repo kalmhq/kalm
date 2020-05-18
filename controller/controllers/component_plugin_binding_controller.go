@@ -192,6 +192,15 @@ func (r *ComponentPluginBindingReconciler) UpdatePluginBinding(ctx context.Conte
 	return r.TouchComponents(ctx, pluginBinding, log)
 }
 
+func NewComponentPluginBindingReconciler(mgr ctrl.Manager) *ComponentPluginBindingReconciler {
+	return &ComponentPluginBindingReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("ComponentPluginBinding"),
+		Scheme: mgr.GetScheme(),
+		Reader: mgr.GetAPIReader(),
+	}
+}
+
 func (r *ComponentPluginBindingReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1alpha1.ComponentPluginBinding{}).

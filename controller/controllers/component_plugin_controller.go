@@ -245,6 +245,15 @@ func (r *ComponentPluginReconciler) deletePluginBindings(ctx context.Context, pl
 	return nil
 }
 
+func NewComponentPluginReconciler(mgr ctrl.Manager) *ComponentPluginReconciler {
+	return &ComponentPluginReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("ComponentPlugin"),
+		Scheme: mgr.GetScheme(),
+		Reader: mgr.GetAPIReader(),
+	}
+}
+
 func (r *ComponentPluginReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1alpha1.ComponentPlugin{}).

@@ -92,6 +92,15 @@ func (r *ComponentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	return ctrl.Result{}, task.Run(req)
 }
 
+func NewComponentReconciler(mgr ctrl.Manager) *ComponentReconciler {
+	return &ComponentReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("Component"),
+		Scheme: mgr.GetScheme(),
+		Reader: mgr.GetAPIReader(),
+	}
+}
+
 func (r *ComponentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	if err := mgr.GetFieldIndexer().IndexField(&appsV1.Deployment{}, ownerKey, func(rawObj runtime.Object) []string {
 		deployment := rawObj.(*appsV1.Deployment)

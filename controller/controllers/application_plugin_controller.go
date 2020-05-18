@@ -222,6 +222,15 @@ func (r *ApplicationPluginReconciler) deletePluginBindings(ctx context.Context, 
 	return nil
 }
 
+func NewApplicationPluginReconciler(mgr ctrl.Manager) *ApplicationPluginReconciler {
+	return &ApplicationPluginReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("ApplicationPlugin"),
+		Scheme: mgr.GetScheme(),
+		Reader: mgr.GetAPIReader(),
+	}
+}
+
 func (r *ApplicationPluginReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1alpha1.ApplicationPlugin{}).

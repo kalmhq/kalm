@@ -81,6 +81,14 @@ func (r *HttpsCertIssuerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, er
 	return ctrl.Result{}, nil
 }
 
+func NewHttpsCertIssuerReconciler(mgr ctrl.Manager) *HttpsCertIssuerReconciler {
+	return &HttpsCertIssuerReconciler{
+		Client: mgr.GetClient(),
+		Log:    ctrl.Log.WithName("controllers").WithName("HttpsCertIssuer"),
+		Scheme: mgr.GetScheme(),
+	}
+}
+
 func (r *HttpsCertIssuerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1alpha1.HttpsCertIssuer{}).

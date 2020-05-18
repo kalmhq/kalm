@@ -195,53 +195,15 @@ func (suite *BasicSuite) SetupSuite() {
 	suite.Nil(err)
 
 	suite.Nil(NewApplicationReconciler(mgr).SetupWithManager(mgr))
+	suite.Nil(NewApplicationPluginReconciler(mgr).SetupWithManager(mgr))
+	suite.Nil(NewApplicationPluginBindingReconciler(mgr).SetupWithManager(mgr))
 
-	suite.Nil((&ComponentPluginReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("ComponentPlugin"),
-		Scheme: mgr.GetScheme(),
-		Reader: mgr.GetAPIReader(),
-	}).SetupWithManager(mgr))
+	suite.Nil(NewComponentReconciler(mgr).SetupWithManager(mgr))
+	suite.Nil(NewComponentPluginReconciler(mgr).SetupWithManager(mgr))
+	suite.Nil(NewComponentPluginBindingReconciler(mgr).SetupWithManager(mgr))
 
-	suite.Nil((&ApplicationPluginReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("ApplicationPlugin"),
-		Scheme: mgr.GetScheme(),
-		Reader: mgr.GetAPIReader(),
-	}).SetupWithManager(mgr))
-
-	suite.Nil((&ComponentReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Component"),
-		Scheme: mgr.GetScheme(),
-		Reader: mgr.GetAPIReader(),
-	}).SetupWithManager(mgr))
-
-	suite.Nil((&ComponentPluginBindingReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("ComponentPluginBinding"),
-		Scheme: mgr.GetScheme(),
-		Reader: mgr.GetAPIReader(),
-	}).SetupWithManager(mgr))
-
-	suite.Nil((&ApplicationPluginBindingReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("ApplicationPluginBinding"),
-		Scheme: mgr.GetScheme(),
-		Reader: mgr.GetAPIReader(),
-	}).SetupWithManager(mgr))
-
-	suite.Nil((&HttpsCertIssuerReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("HttpsCertIssuer"),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr))
-
-	suite.Nil((&HttpsCertReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("HttpsCert"),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr))
+	suite.Nil(NewHttpsCertIssuerReconciler(mgr).SetupWithManager(mgr))
+	suite.Nil(NewHttpsCertReconciler(mgr).SetupWithManager(mgr))
 
 	suite.Nil(NewDockerRegistryReconciler(mgr).SetupWithManager(mgr))
 
