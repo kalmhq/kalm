@@ -20,6 +20,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+func init() {
+	_ = v1alpha1.AddToScheme(scheme.Scheme)
+}
+
 type ResourceChannels struct {
 	DeploymentList               *DeploymentListChannel
 	PodList                      *PodListChannel
@@ -248,7 +252,6 @@ func (builder *Builder) KappV1Alpha1() (*rest.RESTClient, error) {
 }
 
 func NewBuilder(k8sClient *kubernetes.Clientset, cfg *rest.Config, logger *logrus.Logger) *Builder {
-	_ = v1alpha1.AddToScheme(scheme.Scheme)
 	c, _ := client.New(cfg, client.Options{Scheme: scheme.Scheme})
 
 	return &Builder{
