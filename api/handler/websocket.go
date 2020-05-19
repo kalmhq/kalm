@@ -71,6 +71,7 @@ type WSClientAuthRequest struct {
 type WSPodResourceRequest struct {
 	WSRequest `json:",inline"`
 	PodName   string `json:"podName"`
+	Container string `json:"container"`
 	Namespace string `json:"namespace"`
 	Data      string `json:"data"`
 }
@@ -315,6 +316,7 @@ func handleLogRequests(conn *WSConn) {
 				lines := int64(300)
 
 				podLogOpts := coreV1.PodLogOptions{
+					Container: m.Container,
 					Follow:    true,
 					TailLines: &lines,
 				}
@@ -415,7 +417,7 @@ func copyPodLogStreamToWS(ctx context.Context, namespace, podName string, conn *
 	}
 }
 
-func startExecTerminalSession(conn *WSConn, shell string, terminalSession *TerminalSession, ns, podName string) error {
+func startExecTerminalSession(conn *WSConn, shell string, terminalSession *TerminalSession, ns, podName, container string) error {
 	req := conn.K8sClient.CoreV1().RESTClient().Post().
 		Resource("pods").
 		Name(podName).
@@ -423,11 +425,12 @@ func startExecTerminalSession(conn *WSConn, shell string, terminalSession *Termi
 		SubResource("exec")
 
 	req = req.VersionedParams(&coreV1.PodExecOptions{
-		Command: []string{shell},
-		Stdin:   true,
-		Stdout:  true,
-		Stderr:  true,
-		TTY:     true,
+		Command:   []string{shell},
+		Stdin:     true,
+		Stdout:    true,
+		Stderr:    true,
+		TTY:       true,
+		Container: container,
 	}, scheme.ParameterCodec)
 
 	exec, err := remotecommand.NewSPDYExecutor(conn.K8sConfig, "POST", req.URL())
@@ -489,9 +492,9 @@ func handleExecRequests(conn *WSConn) {
 					}()
 
 					var err error
-					validShells := []string{"bash", "sh"}
+					validShells := []string{"bash", "ash", "sh"}
 					for _, shell := range validShells {
-						err = startExecTerminalSession(conn, shell, session, m.Namespace, m.PodName)
+						err = startExecTerminalSession(conn, shell, session, m.Namespace, m.PodName, m.Container)
 
 						if err == nil {
 							break
