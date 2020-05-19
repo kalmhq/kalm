@@ -21,7 +21,6 @@ import (
 	"encoding/json"
 	"fmt"
 	js "github.com/dop251/goja"
-	"github.com/go-logr/logr"
 	"github.com/kapp-staging/kapp/controller/lib/files"
 	"github.com/kapp-staging/kapp/controller/utils"
 	"github.com/kapp-staging/kapp/controller/vm"
@@ -37,6 +36,9 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 	"strings"
 
 	corev1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
@@ -49,7 +51,6 @@ type ComponentReconciler struct {
 
 type ComponentReconcilerTask struct {
 	*ComponentReconciler
-	Log logr.Logger
 
 	// The following fields will be filled by calling SetupAttributes() function
 	ctx         context.Context
@@ -80,18 +81,58 @@ func (r *ComponentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	task := &ComponentReconcilerTask{
 		ComponentReconciler: r,
 		ctx:                 context.Background(),
-		Log:                 r.Log.WithValues("component", req.NamespacedName),
 	}
 
-	task.Log.Info("=========== start reconciling ===========")
-	defer task.Log.Info("=========== reconciling done ===========")
-
 	return ctrl.Result{}, task.Run(req)
+}
+
+func (r *ComponentReconcilerTask) WarningEvent(err error, msg string, args ...interface{}) {
+	r.EmitWarningEvent(r.component, err, msg, args...)
+}
+
+func (r *ComponentReconcilerTask) NormalEvent(reason, msg string, args ...interface{}) {
+	r.EmitNormalEvent(r.component, reason, msg, args...)
 }
 
 func NewComponentReconciler(mgr ctrl.Manager) *ComponentReconciler {
 	return &ComponentReconciler{
 		NewBaseReconciler(mgr, "Component"),
+	}
+}
+
+type ComponentPluginBindingsMapper struct {
+	*BaseReconciler
+}
+
+func (r *ComponentPluginBindingsMapper) Map(object handler.MapObject) []reconcile.Request {
+	if binding, ok := object.Object.(*corev1alpha1.ComponentPluginBinding); ok {
+		if binding.Spec.ComponentName == "" {
+			var componentList corev1alpha1.ComponentList
+			err := r.Reader.List(context.Background(), &componentList, client.InNamespace(binding.Namespace))
+			if err != nil {
+				r.Log.Error(err, "Can't list components in mapper.")
+				return nil
+			}
+
+			res := make([]reconcile.Request, len(componentList.Items))
+
+			for i := range componentList.Items {
+				res[i] = reconcile.Request{
+					NamespacedName: types.NamespacedName{
+						Name:      componentList.Items[i].Name,
+						Namespace: binding.Namespace,
+					},
+				}
+			}
+
+			return res
+		} else {
+			return []reconcile.Request{
+				{NamespacedName: types.NamespacedName{Name: binding.Spec.ComponentName, Namespace: binding.Namespace}},
+			}
+		}
+	} else {
+		return nil
 	}
 }
 
@@ -150,6 +191,9 @@ func (r *ComponentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1alpha1.Component{}).
+		Watches(&source.Kind{Type: &corev1alpha1.ComponentPluginBinding{}}, &handler.EnqueueRequestsFromMapFunc{
+			ToRequests: &ComponentPluginBindingsMapper{r.BaseReconciler},
+		}).
 		Owns(&appsV1.Deployment{}).
 		Owns(&batchV1Beta1.CronJob{}).
 		Owns(&appsV1.DaemonSet{}).
@@ -163,7 +207,7 @@ func (r *ComponentReconcilerTask) Run(req ctrl.Request) error {
 	}
 
 	//if err := r.FixComponentDefaultValues(); err != nil {
-	//	r.Log.Error(err, "Fix component default values error.")
+	//	r.WarningEvent()(err, "Fix component default values error.")
 	//	return ctrl.Result{}, err
 	//}
 
@@ -290,12 +334,12 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 			//}
 
 			if err := r.Create(r.ctx, r.service); err != nil {
-				r.Log.Error(err, "unable to create Service for Component")
+				r.WarningEvent(err, "unable to create Service for Component")
 				return err
 			}
 		} else {
 			if err := r.Update(r.ctx, r.service); err != nil {
-				r.Log.Error(err, "unable to update Service for Component")
+				r.WarningEvent(err, "unable to update Service for Component")
 				return err
 			}
 		}
@@ -303,7 +347,7 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 
 	if r.service != nil && len(r.component.Spec.Ports) == 0 {
 		if err := r.Delete(r.ctx, r.service); err != nil {
-			r.Log.Error(err, "unable to delete Service for Application Component")
+			r.WarningEvent(err, "unable to delete Service for Application Component")
 			return err
 		}
 	}
@@ -369,7 +413,6 @@ func (r *ComponentReconcilerTask) ReconcileWorkload() (err error) {
 func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.PodTemplateSpec) (err error) {
 	app := r.application
 	component := r.component
-	log := r.Log
 	ctx := r.ctx
 	deployment := r.deployment
 	isNewDeployment := false
@@ -425,29 +468,29 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 	//}
 
 	if err := ctrl.SetControllerReference(component, deployment, r.Scheme); err != nil {
-		log.Error(err, "unable to set owner for deployment")
+		r.WarningEvent(err, "unable to set owner for deployment")
 		return err
 	}
 
 	if err := r.runPlugins(ComponentPluginMethodBeforeDeploymentSave, component, deployment, deployment); err != nil {
-		log.Error(err, "run before deployment save error.")
+		r.WarningEvent(err, "run before deployment save error.")
 		return err
 	}
 
 	if isNewDeployment {
 		if err := r.Create(ctx, deployment); err != nil {
-			log.Error(err, "unable to create Deployment for Application")
+			r.WarningEvent(err, "unable to create Deployment for Application")
 			return err
 		}
 
-		log.Info("create Deployment " + deployment.Name)
+		r.NormalEvent("DeploymentCreated", deployment.Name+" is created.")
 	} else {
 		if err := r.Update(ctx, deployment); err != nil {
-			log.Error(err, "unable to update Deployment for Application")
+			r.WarningEvent(err, "unable to update Deployment for Application")
 			return err
 		}
 
-		log.Info("update Deployment " + deployment.Name)
+		r.NormalEvent("DeploymentUpdated", deployment.Name+" is updated.")
 	}
 
 	// apply plugins
@@ -464,7 +507,6 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 }
 
 func (r *ComponentReconcilerTask) ReconcileDaemonSet(podTemplateSpec *coreV1.PodTemplateSpec) error {
-	log := r.Log
 	labelMap := r.GetLabels()
 
 	daemonSet := r.daemonSet
@@ -493,23 +535,23 @@ func (r *ComponentReconcilerTask) ReconcileDaemonSet(podTemplateSpec *coreV1.Pod
 
 	if isNewDs {
 		if err := ctrl.SetControllerReference(r.component, daemonSet, r.Scheme); err != nil {
-			log.Error(err, "unable to set owner for daemonSet")
+			r.WarningEvent(err, "unable to set owner for daemonSet")
 			return err
 		}
 
 		if err := r.Create(r.ctx, daemonSet); err != nil {
-			log.Error(err, "unable to create daemonSet for Component")
+			r.WarningEvent(err, "unable to create daemonSet for Component")
 			return err
 		}
 
-		log.Info("create daemonSet " + daemonSet.Name)
+		r.NormalEvent("DaemonSetCreated", daemonSet.Name+" is created.")
 	} else {
 		if err := r.Update(r.ctx, daemonSet); err != nil {
-			log.Error(err, "unable to update daemonSet for Component")
+			r.WarningEvent(err, "unable to update daemonSet for Component")
 			return err
 		}
 
-		log.Info("update daemonSet " + daemonSet.Name)
+		r.NormalEvent("DaemonSetUpdated", daemonSet.Name+" is updated.")
 	}
 
 	return nil
@@ -563,7 +605,7 @@ func (r *ComponentReconcilerTask) ReconcileCronJob(podTemplateSpec *coreV1.PodTe
 
 	if isNewCJ {
 		if err := ctrl.SetControllerReference(component, cj, r.Scheme); err != nil {
-			log.Error(err, "unable to set owner for cronJob")
+			r.WarningEvent(err, "unable to set owner for cronJob")
 			return err
 		}
 
@@ -572,14 +614,14 @@ func (r *ComponentReconcilerTask) ReconcileCronJob(podTemplateSpec *coreV1.PodTe
 			return err
 		}
 
-		log.Info("create CronJob " + cj.Name)
+		r.NormalEvent("CronJobCreated", cj.Name+" is created.")
 	} else {
 		if err := r.Update(ctx, cj); err != nil {
 			log.Error(err, "unable to update CronJob for Component")
 			return err
 		}
 
-		log.Info("update CronJob:" + cj.Name)
+		r.NormalEvent("CronJobUpdated", cj.Name+" is updated.")
 	}
 
 	return nil
@@ -625,14 +667,14 @@ func (r *ComponentReconcilerTask) ReconcileStatefulSet(spec *coreV1.PodTemplateS
 			return err
 		}
 
-		log.Info("create sts " + sts.Name)
+		r.NormalEvent("StatefulSetCreated", sts.Name+" is created.")
 	} else {
 		if err := r.Update(r.ctx, sts); err != nil {
 			log.Error(err, "unable to update sts for Component")
 			return err
 		}
 
-		log.Info("update sts " + sts.Name)
+		r.NormalEvent("StatefulSetUpdated", sts.Name+" is updated.")
 	}
 
 	return nil
@@ -675,7 +717,7 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 		client.MatchingLabels{"kapp-docker-registry-image-pull-secret": "true"},
 		client.InNamespace(component.Namespace),
 	); err != nil {
-		r.Log.Error(err, "get pull image secrets failed")
+		r.WarningEvent(err, "get pull image secrets failed")
 		return nil, err
 	}
 
@@ -843,7 +885,7 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 	err = r.runPlugins(ComponentPluginMethodAfterPodTemplateGeneration, component, template, template)
 
 	if err != nil {
-		r.Log.Error(err, "run "+ComponentPluginMethodAfterPodTemplateGeneration+" save plugin error")
+		r.WarningEvent(err, "run "+ComponentPluginMethodAfterPodTemplateGeneration+" save plugin error")
 		return nil, err
 	}
 
@@ -931,7 +973,7 @@ func (r *ComponentReconcilerTask) runPlugins(methodName string, component *corev
 	if r.pluginBindings == nil {
 		var bindings corev1alpha1.ComponentPluginBindingList
 		if err := r.Reader.List(r.ctx, &bindings, client.InNamespace(r.component.Namespace)); err != nil {
-			r.Log.Error(err, "get plugin bindings error")
+			r.WarningEvent(err, "get plugin bindings error")
 			return err
 		}
 
@@ -997,7 +1039,7 @@ func (r *ComponentReconcilerTask) runPlugins(methodName string, component *corev
 		)
 
 		if err != nil {
-			r.Log.Error(err, fmt.Sprintf("Run plugin error. methodName: %s, componentName: %s, pluginName: %s", methodName, component.Name, binding.Spec.PluginName))
+			r.WarningEvent(err, fmt.Sprintf("Run plugin error. methodName: %s, componentName: %s, pluginName: %s", methodName, component.Name, binding.Spec.PluginName))
 			return err
 		}
 	}
@@ -1058,7 +1100,7 @@ func (r *ComponentReconcilerTask) parseComponentConfigs(component *corev1alpha1.
 	}, &configMap)
 
 	if err != nil {
-		r.Log.Error(err, "can't get files config-map. Skip configs.")
+		r.WarningEvent(err, "can't get files config-map. Skip configs.")
 		return
 	}
 
@@ -1072,7 +1114,7 @@ func (r *ComponentReconcilerTask) parseComponentConfigs(component *corev1alpha1.
 			root, err := files.GetFileItemTree(&configMap, path)
 
 			if err != nil {
-				r.Log.Error(err, fmt.Sprintf("can't find file item at %s", path))
+				r.WarningEvent(err, fmt.Sprintf("can't find file item at %s", path))
 				continue
 			}
 
@@ -1115,8 +1157,6 @@ func (r *ComponentReconcilerTask) parseComponentConfigs(component *corev1alpha1.
 
 	// directConfigs
 	for i, directConfig := range component.Spec.DirectConfigs {
-		r.Log.Info("direct", "i:", i)
-
 		path := getPathOfDirectConfig(component.Name, i)
 
 		name := fmt.Sprintf("direct-config-%s-%d", component.Name, i)
@@ -1244,7 +1284,6 @@ func (r *ComponentReconcilerTask) decideAffinity() (*coreV1.Affinity, bool) {
 }
 
 func (r *ComponentReconcilerTask) HandleDelete() (err error) {
-	r.Log.Info("handleDelete for component")
 
 	if r.component.ObjectMeta.DeletionTimestamp.IsZero() {
 		if !utils.ContainsString(r.component.ObjectMeta.Finalizers, finalizerName) {
@@ -1252,22 +1291,18 @@ func (r *ComponentReconcilerTask) HandleDelete() (err error) {
 			if err := r.Update(context.Background(), r.component); err != nil {
 				return err
 			}
-			r.Log.Info("add finalizer", r.component.Namespace, r.component.Name)
 		}
 	} else {
 		if utils.ContainsString(r.component.ObjectMeta.Finalizers, finalizerName) {
-			r.Log.Info("has finalizer", r.component.Namespace, r.component.Name)
-
 			// TODO remove resources
 			if err := r.DeleteResources(); err != nil {
-				r.Log.Error(err, "fail when DeleteResources")
+				r.WarningEvent(err, "fail when DeleteResources")
 				return err
 			}
 
-			r.Log.Info("rm finalizer for component...")
 			r.component.ObjectMeta.Finalizers = utils.RemoveString(r.component.ObjectMeta.Finalizers, finalizerName)
 			if err := r.Update(r.ctx, r.component); err != nil {
-				r.Log.Error(err, "fail when update component")
+				r.WarningEvent(err, "fail when update component")
 				return err
 			}
 		}
@@ -1301,7 +1336,7 @@ func (r *ComponentReconcilerTask) SetupAttributes(req ctrl.Request) (err error) 
 func (r *ComponentReconcilerTask) DeleteResources() (err error) {
 	if r.service != nil {
 		if err := r.Client.Delete(r.ctx, r.service); err != nil {
-			r.Log.Error(err, "Delete service error")
+			r.WarningEvent(err, "Delete service error")
 			return err
 		}
 	}
@@ -1335,13 +1370,13 @@ func (r *ComponentReconcilerTask) DeleteResources() (err error) {
 	if err := r.Reader.List(r.ctx, &bindingList, client.MatchingLabels{
 		"kapp-component": r.component.Name,
 	}); err != nil {
-		r.Log.Error(err, "get plugin binding list error.")
+		r.WarningEvent(err, "get plugin binding list error.")
 		return err
 	}
 
 	for _, binding := range bindingList.Items {
 		if err := r.Delete(r.ctx, &binding); err != nil {
-			r.Log.Error(err, "Delete plugin binding error.")
+			r.WarningEvent(err, "Delete plugin binding error.")
 		}
 	}
 
@@ -1351,7 +1386,7 @@ func (r *ComponentReconcilerTask) DeleteResources() (err error) {
 func (r *ComponentReconcilerTask) DeleteItem(obj runtime.Object) (err error) {
 	if err := r.Client.Delete(r.ctx, obj); err != nil {
 		gvk := obj.GetObjectKind().GroupVersionKind()
-		r.Log.Error(err, fmt.Sprintf(" delete item error. Group: %s, Version: %s, Kind: %s", gvk.Group, gvk.Version, gvk.Kind))
+		r.WarningEvent(err, fmt.Sprintf(" delete item error. Group: %s, Version: %s, Kind: %s", gvk.Group, gvk.Version, gvk.Kind))
 		return err
 	}
 
@@ -1372,8 +1407,6 @@ func (r *ComponentReconcilerTask) LoadResources() (err error) {
 		return r.LoadDaemonSet()
 	case corev1alpha1.WorkloadTypeStatefulSet:
 		return r.LoadStatefulSet()
-	default:
-		r.Log.Info("see unknown workloadType:", "type:", r.component.Spec.WorkloadType)
 	}
 
 	return nil

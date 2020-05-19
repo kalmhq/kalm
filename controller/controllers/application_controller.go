@@ -19,6 +19,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 	"strconv"
 	"strings"
 	"time"
@@ -81,6 +84,14 @@ func NewApplicationReconciler(mgr ctrl.Manager) *ApplicationReconciler {
 	return &ApplicationReconciler{NewBaseReconciler(mgr, "Application")}
 }
 
+type AllApplicationBindingsMapper struct {
+	*BaseReconciler
+}
+
+func (r *AllApplicationBindingsMapper) Map(object handler.MapObject) []reconcile.Request {
+	return []reconcile.Request{{NamespacedName: types.NamespacedName{Name: object.Meta.GetNamespace()}}}
+}
+
 func (r *ApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	if err := mgr.GetFieldIndexer().IndexField(&coreV1.Namespace{}, ownerKey, func(rawObj runtime.Object) []string {
 		owner := metaV1.GetControllerOf(rawObj.(*coreV1.Namespace))
@@ -100,6 +111,9 @@ func (r *ApplicationReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1alpha1.Application{}).
+		Watches(&source.Kind{Type: &corev1alpha1.ApplicationPluginBinding{}}, &handler.EnqueueRequestsFromMapFunc{
+			ToRequests: &AllApplicationBindingsMapper{r.BaseReconciler},
+		}).
 		Owns(&coreV1.Namespace{}).
 		Owns(&istioV1Beta1.Gateway{}).
 		Complete(r)

@@ -17,13 +17,7 @@ package controllers
 
 import (
 	"context"
-	"github.com/kapp-staging/kapp/controller/utils"
 	"github.com/xeipuuv/gojsonschema"
-	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/types"
-	"time"
-
-	"github.com/go-logr/logr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -39,90 +33,22 @@ type ApplicationPluginBindingReconciler struct {
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=applicationpluginbindings/status,verbs=get;update;patch
 
 func (r *ApplicationPluginBindingReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	ctx := context.Background()
-	log := r.Log.WithValues("applicationPluginBinding", req.NamespacedName)
-
-	var pluginBinding corev1alpha1.ApplicationPluginBinding
-
-	if err := r.Get(ctx, req.NamespacedName, &pluginBinding); err != nil {
-		err = client.IgnoreNotFound(err)
-
-		if err != nil {
-			log.Error(err, "unable to fetch ApplicationPlugin Binding")
-		}
-
-		return ctrl.Result{}, err
+	task := &ApplicationPluginBindingReconcilerTask{
+		ApplicationPluginBindingReconciler: r,
+		ctx:                                context.Background(),
 	}
 
-	if pluginBinding.ObjectMeta.DeletionTimestamp.IsZero() {
-		// after create
-		if !utils.ContainsString(pluginBinding.ObjectMeta.Finalizers, finalizerName) {
-			pluginBinding.ObjectMeta.Finalizers = append(pluginBinding.ObjectMeta.Finalizers, finalizerName)
-			if pluginBinding.ObjectMeta.Labels == nil {
-				pluginBinding.ObjectMeta.Labels = make(map[string]string)
-			}
-
-			pluginBinding.ObjectMeta.Labels["kapp-plugin"] = pluginBinding.Spec.PluginName
-
-			if err := r.Update(ctx, &pluginBinding); err != nil {
-				log.Error(err, "update plugin binding error.")
-				return ctrl.Result{}, err
-			}
-
-			if err := r.TouchApplication(ctx, &pluginBinding, log); err != nil {
-				log.Error(err, "Touch applications error.")
-				return ctrl.Result{}, err
-			}
-
-			return ctrl.Result{}, nil
-		}
-
-		return ctrl.Result{}, r.UpdatePluginBinding(ctx, &pluginBinding, log)
-	} else {
-		// before delete
-		if utils.ContainsString(pluginBinding.ObjectMeta.Finalizers, finalizerName) {
-
-			if err := r.TouchApplication(ctx, &pluginBinding, log); err != nil {
-				if !errors.IsNotFound(err) {
-					log.Error(err, "Touch applications error.")
-					return ctrl.Result{}, err
-				}
-			}
-
-			// remove our finalizer from the list and update it.
-			pluginBinding.ObjectMeta.Finalizers = utils.RemoveString(pluginBinding.ObjectMeta.Finalizers, finalizerName)
-			err := r.Update(ctx, &pluginBinding)
-			return ctrl.Result{}, err
-		}
-
-		return ctrl.Result{}, nil
-	}
+	return ctrl.Result{}, task.Run(req)
 }
 
-func (r *ApplicationPluginBindingReconciler) TouchApplication(ctx context.Context, pluginBinding *corev1alpha1.ApplicationPluginBinding, log logr.Logger) error {
-	var application corev1alpha1.Application
-
-	err := r.Reader.Get(ctx, types.NamespacedName{
-		Name: pluginBinding.Namespace,
-	}, &application)
-
-	if err != nil {
-		return err
-	}
-
-	applicationCopy := application.DeepCopy()
-
-	if applicationCopy.Annotations == nil {
-		applicationCopy.ObjectMeta.Annotations = make(map[string]string)
-	}
-
-	applicationCopy.ObjectMeta.Annotations["touchedByApplicationPluginBinding"] = time.Now().String()
-
-	return r.Patch(ctx, applicationCopy, client.MergeFrom(&application))
+type ApplicationPluginBindingReconcilerTask struct {
+	*ApplicationPluginBindingReconciler
+	ctx     context.Context
+	binding *corev1alpha1.ApplicationPluginBinding
 }
 
-func (r *ApplicationPluginBindingReconciler) UpdatePluginBinding(ctx context.Context, pluginBinding *corev1alpha1.ApplicationPluginBinding, log logr.Logger) error {
-	pluginProgram := applicationPluginsCache.Get(pluginBinding.Spec.PluginName)
+func (r *ApplicationPluginBindingReconcilerTask) UpdatePluginBindingStatus() error {
+	pluginProgram := applicationPluginsCache.Get(r.binding.Spec.PluginName)
 
 	if pluginProgram == nil {
 		return nil
@@ -132,11 +58,11 @@ func (r *ApplicationPluginBindingReconciler) UpdatePluginBinding(ctx context.Con
 	var configError string
 
 	if pluginProgram.ConfigSchema != nil {
-		if pluginBinding.Spec.Config == nil {
+		if r.binding.Spec.Config == nil {
 			isConfigValid = false
 			configError = "Configuration is required."
 		} else {
-			pluginConfig := gojsonschema.NewStringLoader(string(pluginBinding.Spec.Config.Raw))
+			pluginConfig := gojsonschema.NewStringLoader(string(r.binding.Spec.Config.Raw))
 			res, err := pluginProgram.ConfigSchema.Validate(pluginConfig)
 
 			if err != nil {
@@ -151,16 +77,47 @@ func (r *ApplicationPluginBindingReconciler) UpdatePluginBinding(ctx context.Con
 		}
 	}
 
-	pluginBindingCopy := pluginBinding.DeepCopy()
+	pluginBindingCopy := r.binding.DeepCopy()
 	pluginBindingCopy.Status.ConfigError = configError
 	pluginBindingCopy.Status.ConfigValid = isConfigValid
 
-	if err := r.Patch(ctx, pluginBindingCopy, client.MergeFrom(pluginBinding)); err != nil {
-		log.Error(err, "Patch plugin binding status error.")
+	if err := r.Status().Patch(r.ctx, pluginBindingCopy, client.MergeFrom(r.binding)); err != nil {
+		r.WarningEvent(err, "Patch plugin binding status error.")
 		return err
 	}
 
-	return r.TouchApplication(ctx, pluginBinding, log)
+	return nil
+}
+
+func (r *ApplicationPluginBindingReconcilerTask) Run(req ctrl.Request) error {
+	var pluginBinding corev1alpha1.ApplicationPluginBinding
+
+	if err := r.Get(r.ctx, req.NamespacedName, &pluginBinding); err != nil {
+		return client.IgnoreNotFound(err)
+	}
+
+	r.binding = &pluginBinding
+
+	if r.binding.ObjectMeta.Labels == nil {
+		r.binding.ObjectMeta.Labels = make(map[string]string)
+	}
+
+	r.binding.ObjectMeta.Labels["kapp-plugin"] = r.binding.Spec.PluginName
+
+	if err := r.Update(r.ctx, r.binding); err != nil {
+		r.WarningEvent(err, "update plugin binding error.")
+		return err
+	}
+
+	return r.UpdatePluginBindingStatus()
+}
+
+func (r *ApplicationPluginBindingReconcilerTask) WarningEvent(err error, msg string, args ...interface{}) {
+	r.EmitWarningEvent(r.binding, err, msg, args...)
+}
+
+func (r *ApplicationPluginBindingReconcilerTask) NormalEvent(reason, msg string, args ...interface{}) {
+	r.EmitNormalEvent(r.binding, reason, msg, args...)
 }
 
 func NewApplicationPluginBindingReconciler(mgr ctrl.Manager) *ApplicationPluginBindingReconciler {

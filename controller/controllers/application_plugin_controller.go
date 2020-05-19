@@ -25,7 +25,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"sync"
 
-	"github.com/go-logr/logr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -98,124 +97,138 @@ type ApplicationPluginReconciler struct {
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=applicationpluginbindings/status,verbs=get;update;patch
 
 func (r *ApplicationPluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	log := r.Log.WithValues("applicationPlugin", req.NamespacedName)
-	ctx := context.Background()
-
-	var plugin corev1alpha1.ApplicationPlugin
-
-	if err := r.Get(ctx, req.NamespacedName, &plugin); err != nil {
-		err = client.IgnoreNotFound(err)
-
-		if err != nil {
-			log.Error(err, "unable to fetch ApplicationPlugin")
-		}
-
-		return ctrl.Result{}, err
+	task := &ApplicationPluginReconcilerTask{
+		ApplicationPluginReconciler: r,
+		ctx:                         context.Background(),
 	}
 
+	return ctrl.Result{}, task.Run(req)
+}
+
+type ApplicationPluginReconcilerTask struct {
+	*ApplicationPluginReconciler
+	ctx    context.Context
+	plugin *corev1alpha1.ApplicationPlugin
+}
+
+func (r *ApplicationPluginReconcilerTask) Run(req ctrl.Request) error {
+	var plugin corev1alpha1.ApplicationPlugin
+
+	if err := r.Get(r.ctx, req.NamespacedName, &plugin); err != nil {
+		return client.IgnoreNotFound(err)
+	}
+
+	r.plugin = &plugin
+
 	// handle delete
-	if plugin.ObjectMeta.DeletionTimestamp.IsZero() {
+	if r.plugin.ObjectMeta.DeletionTimestamp.IsZero() {
 		// add finalizer
-		if !utils.ContainsString(plugin.ObjectMeta.Finalizers, finalizerName) {
-			plugin.ObjectMeta.Finalizers = append(plugin.ObjectMeta.Finalizers, finalizerName)
-			err := r.Update(context.Background(), &plugin)
-			return ctrl.Result{}, err
+		if !utils.ContainsString(r.plugin.ObjectMeta.Finalizers, finalizerName) {
+			r.plugin.ObjectMeta.Finalizers = append(r.plugin.ObjectMeta.Finalizers, finalizerName)
+			err := r.Update(context.Background(), r.plugin)
+			return err
 		}
 	} else {
 		// The object is being deleted
-		if utils.ContainsString(plugin.ObjectMeta.Finalizers, finalizerName) {
-			applicationPluginsCache.Delete(plugin.Name)
+		if utils.ContainsString(r.plugin.ObjectMeta.Finalizers, finalizerName) {
+			applicationPluginsCache.Delete(r.plugin.Name)
 
-			if err := r.deletePluginBindings(ctx, &plugin, log); err != nil {
-				return ctrl.Result{}, err
+			if err := r.deletePluginBindings(); err != nil {
+				return err
 			}
 
 			// remove our finalizer from the list and update it.
-			plugin.ObjectMeta.Finalizers = utils.RemoveString(plugin.ObjectMeta.Finalizers, finalizerName)
-			err := r.Update(ctx, &plugin)
-			return ctrl.Result{}, err
+			r.plugin.ObjectMeta.Finalizers = utils.RemoveString(r.plugin.ObjectMeta.Finalizers, finalizerName)
+			err := r.Update(r.ctx, r.plugin)
+			return err
 		}
 
-		return ctrl.Result{}, nil
+		return nil
 	}
 
 	var err error
 	var program *js.Program
-	if plugin.Spec.Src == "" {
+	if r.plugin.Spec.Src == "" {
 		err = fmt.Errorf("Empty source")
 	} else {
-		program, err = vm.CompileProgram(plugin.Spec.Src)
+		program, err = vm.CompileProgram(r.plugin.Spec.Src)
 	}
 
 	if err != nil {
-		log.Error(err, "application plugin compile error.")
+		r.WarningEvent(err, "application plugin compile error.")
 	}
 
-	// TODO create some events to explain details
-	if plugin.Status.CompiledSuccessfully != (err == nil) {
-		plugin.Status.CompiledSuccessfully = err == nil
+	if r.plugin.Status.CompiledSuccessfully != (err == nil) {
+		r.plugin.Status.CompiledSuccessfully = err == nil
 
-		if err := r.Status().Update(ctx, &plugin); err != nil {
+		if err := r.Status().Update(r.ctx, r.plugin); err != nil {
 			if errors.IsConflict(err) {
-				r.Log.Info("errors.IsConflict, retry later", "err", err)
-				return ctrl.Result{}, nil
+				r.NormalEvent("Conflict", "errors.IsConflict, retry later")
+				return nil
 			}
 
-			r.Log.Error(err, "fail to update plugin status")
-			return ctrl.Result{}, err
+			r.WarningEvent(err, "fail to update plugin status")
+			return err
 		}
 	}
 
 	var configSchema *gojsonschema.Schema
-	if plugin.Spec.ConfigSchema != nil {
-		schemaLoader := gojsonschema.NewStringLoader(string(plugin.Spec.ConfigSchema.Raw))
+	if r.plugin.Spec.ConfigSchema != nil {
+		schemaLoader := gojsonschema.NewStringLoader(string(r.plugin.Spec.ConfigSchema.Raw))
 		configSchema, err = gojsonschema.NewSchema(schemaLoader)
 
 		if err != nil {
-			log.Error(err, "compile plugin config schema error")
-			return ctrl.Result{}, nil
+			r.WarningEvent(err, "compile plugin config schema error")
+			return nil
 		}
 	}
 
-	// The plugin must be compilable before move on
-	if !plugin.Status.CompiledSuccessfully {
-		return ctrl.Result{}, nil
+	if !r.plugin.Status.CompiledSuccessfully {
+		return nil
 	}
 
-	methods, err := vm.GetDefinedMethods(plugin.Spec.Src, ValidApplicationPluginMethods)
+	methods, err := vm.GetDefinedMethods(r.plugin.Spec.Src, ValidApplicationPluginMethods)
 
 	if err != nil {
-		r.Log.Error(err, "Get Defined Methods error.")
-		return ctrl.Result{}, nil
+		r.WarningEvent(err, "Get Defined Methods error.")
+		return nil
 	}
 
-	applicationPluginsCache.Set(plugin.Name, &ApplicationPluginProgram{
-		Name:         plugin.Name,
+	applicationPluginsCache.Set(r.plugin.Name, &ApplicationPluginProgram{
+		Name:         r.plugin.Name,
 		Program:      program,
 		Methods:      methods,
 		ConfigSchema: configSchema,
 	})
 
-	return ctrl.Result{}, nil
+	return nil
 }
 
-func (r *ApplicationPluginReconciler) deletePluginBindings(ctx context.Context, plugin *corev1alpha1.ApplicationPlugin, log logr.Logger) error {
+func (r *ApplicationPluginReconcilerTask) deletePluginBindings() error {
 	var bindingList corev1alpha1.ApplicationPluginBindingList
 
-	if err := r.Reader.List(ctx, &bindingList, client.MatchingLabels{
-		"kapp-plugin": plugin.Name,
+	if err := r.Reader.List(r.ctx, &bindingList, client.MatchingLabels{
+		"kapp-plugin": r.plugin.Name,
 	}); err != nil {
-		log.Error(err, "get plugin binding list error.")
+		r.WarningEvent(err, "get plugin binding list error.")
 		return err
 	}
 
 	for _, binding := range bindingList.Items {
-		if err := r.Delete(ctx, &binding); err != nil {
-			log.Error(err, "Delete plugin binding error.")
+		if err := r.Delete(r.ctx, &binding); err != nil {
+			r.WarningEvent(err, "Delete plugin binding error.")
 		}
 	}
 
 	return nil
+}
+
+func (r *ApplicationPluginReconcilerTask) WarningEvent(err error, msg string, args ...interface{}) {
+	r.EmitWarningEvent(r.plugin, err, msg, args...)
+}
+
+func (r *ApplicationPluginReconcilerTask) NormalEvent(reason, msg string, args ...interface{}) {
+	r.EmitNormalEvent(r.plugin, reason, msg, args...)
 }
 
 func NewApplicationPluginReconciler(mgr ctrl.Manager) *ApplicationPluginReconciler {

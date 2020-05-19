@@ -19,8 +19,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/elastic/cloud-on-k8s/pkg/controller/common/watches"
-	"github.com/go-logr/logr"
 	"github.com/kapp-staging/kapp/controller/registry"
 	"github.com/kapp-staging/kapp/controller/utils"
 	v1 "k8s.io/api/core/v1"
@@ -28,11 +26,13 @@ import (
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	types "k8s.io/apimachinery/pkg/types"
+	"regexp"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+	"strings"
 
 	corev1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
 )
@@ -40,17 +40,21 @@ import (
 // DockerRegistryReconciler reconciles a DockerRegistry object
 type DockerRegistryReconciler struct {
 	*BaseReconciler
-
-	// Watch registry authentication secret even the secret is not exist
-	AuthenticationSecretWatchers *watches.DynamicEnqueueRequest
 }
 
 type DockerRegistryReconcileTask struct {
 	*DockerRegistryReconciler
-	Log      logr.Logger
 	ctx      context.Context
 	registry *corev1alpha1.DockerRegistry
 	secret   *v1.Secret
+}
+
+func (r *DockerRegistryReconcileTask) WarningEvent(err error, msg string, args ...interface{}) {
+	r.EmitWarningEvent(r.registry, err, msg, args...)
+}
+
+func (r *DockerRegistryReconcileTask) NormalEvent(reason, msg string, args ...interface{}) {
+	r.EmitNormalEvent(r.registry, reason, msg, args...)
 }
 
 func (r *DockerRegistryReconcileTask) Run(req ctrl.Request) error {
@@ -59,45 +63,30 @@ func (r *DockerRegistryReconcileTask) Run(req ctrl.Request) error {
 	}
 
 	if err := r.LoadResources(req); err != nil {
-		r.Log.Error(err, "LoadResources error.")
+		r.WarningEvent(err, "LoadResources error.")
 		return err
 	}
 
 	if err := r.HandleDelete(); err != nil {
-		r.Log.Error(err, "HandleDelete error.")
+		r.WarningEvent(err, "HandleDelete error.")
 		return err
 	}
-
-	r.UpdateAuthenticationSecretWatcher()
 
 	if !r.registry.ObjectMeta.DeletionTimestamp.IsZero() {
 		return nil
 	}
 
 	if err := r.UpdateStatus(); err != nil {
-		r.Log.Error(err, "UpdateStatus error.")
+		r.WarningEvent(err, "UpdateStatus error.")
 		return err
 	}
 
 	if err := r.DistributeSecrets(); err != nil {
-		r.Log.Error(err, "DistributeSecrets error.")
+		r.WarningEvent(err, "DistributeSecrets error.")
 		return err
 	}
 
 	return nil
-}
-
-func (r *DockerRegistryReconcileTask) UpdateAuthenticationSecretWatcher() {
-	if !r.registry.ObjectMeta.DeletionTimestamp.IsZero() {
-		r.AuthenticationSecretWatchers.RemoveHandlerForKey(r.registry.Name)
-	} else {
-		r.AuthenticationSecretWatchers.AddHandler(watches.NamedWatch{
-			Name:    r.registry.Name,
-			Watched: []types.NamespacedName{{Name: GetRegistryAuthenticationName(r.registry.Name), Namespace: "kapp-system"}},
-			Watcher: types.NamespacedName{Name: r.registry.Name},
-		})
-
-	}
 }
 
 func (r *DockerRegistryReconcileTask) UpdateStatus() (err error) {
@@ -115,7 +104,7 @@ func (r *DockerRegistryReconcileTask) UpdateStatus() (err error) {
 		registryCopy.Status.AuthenticationVerified = false
 
 		if err := r.Status().Patch(r.ctx, registryCopy, client.MergeFrom(r.registry)); err != nil {
-			r.Log.Error(err, "Patch docker registry status error.")
+			r.WarningEvent(err, "Patch docker registry status error.")
 			return err
 		}
 		message := ""
@@ -153,7 +142,7 @@ func (r *DockerRegistryReconcileTask) UpdateStatus() (err error) {
 	registryCopy.Status.Repositories = repositories
 
 	if err := r.Status().Patch(r.ctx, registryCopy, client.MergeFrom(r.registry)); err != nil {
-		r.Log.Error(err, "Patch docker registry status error.")
+		r.WarningEvent(err, "Patch docker registry status error.")
 		return err
 	}
 
@@ -164,13 +153,13 @@ func (r *DockerRegistryReconcileTask) UpdateStatus() (err error) {
 func (r *DockerRegistryReconcileTask) DeleteSecrets() (err error) {
 	var secretList v1.SecretList
 	if err := r.Reader.List(r.ctx, &secretList, client.MatchingLabels{"kapp-docker-registry": r.registry.Name}); err != nil {
-		r.Log.Error(err, "get secrets error when deleting docker registry.")
+		r.WarningEvent(err, "get secrets error when deleting docker registry.")
 		return err
 	}
 
 	for _, secret := range secretList.Items {
 		if err := r.Client.Delete(r.ctx, &secret); err != nil {
-			r.Log.Error(err, "delete secret error.")
+			r.WarningEvent(err, "delete secret error.")
 			return err
 		}
 	}
@@ -201,7 +190,7 @@ func (r *DockerRegistryReconcileTask) DistributeSecrets() (err error) {
 		}, &secret)
 
 		if err != nil && !errors.IsNotFound(err) {
-			r.Log.Error(err, fmt.Sprintf("Get image pull secret error. Namespace: %s, registry: %s", app.Name, r.registry.Name))
+			r.WarningEvent(err, fmt.Sprintf("Get image pull secret error. Namespace: %s, registry: %s", app.Name, r.registry.Name))
 			return err
 		}
 
@@ -236,13 +225,13 @@ func (r *DockerRegistryReconcileTask) DistributeSecrets() (err error) {
 		secret.Data[".dockercfg"] = bts
 
 		if err := ctrl.SetControllerReference(r.registry, &secret, r.Scheme); err != nil {
-			r.Log.Error(err, "unable to set owner for secret")
+			r.WarningEvent(err, "unable to set owner for secret")
 			return err
 		}
 
 		if err != nil {
 			if err := r.Client.Create(r.ctx, &secret); err != nil {
-				r.Log.Error(err, "Create secret failed. [distribute registry secret]")
+				r.WarningEvent(err, "Create secret failed. [distribute registry secret]")
 				return err
 			}
 
@@ -250,7 +239,7 @@ func (r *DockerRegistryReconcileTask) DistributeSecrets() (err error) {
 		}
 
 		if err := r.Client.Update(r.ctx, &secret); err != nil {
-			r.Log.Error(err, "Update secret failed. [distribute registry secret]")
+			r.WarningEvent(err, "Update secret failed. [distribute registry secret]")
 			return err
 		}
 	}
@@ -264,6 +253,15 @@ func getImagePullSecretName(registryName string) string {
 
 func GetRegistryAuthenticationName(registryName string) string {
 	return fmt.Sprintf("%s-authentication", registryName)
+}
+
+func GetRegistryNameFromAuthenticationName(secretName string) string {
+	re := regexp.MustCompile(`-authentication$`)
+	return re.ReplaceAllString(secretName, "")
+}
+
+func IsRegistryAuthenticationSecret(secret *v1.Secret) bool {
+	return secret.Namespace == "kapp-system" && strings.HasSuffix(secret.Name, "-authentication")
 }
 
 func (r *DockerRegistryReconcileTask) LoadResources(req ctrl.Request) (err error) {
@@ -286,12 +284,12 @@ func (r *DockerRegistryReconcileTask) LoadResources(req ctrl.Request) (err error
 	secretCopy.Labels["kapp-docker-registry-authentication"] = "true"
 
 	if err := ctrl.SetControllerReference(r.registry, secretCopy, r.Scheme); err != nil {
-		r.Log.Error(err, "unable to set owner for secret")
+		r.WarningEvent(err, "unable to set owner for secret")
 		return err
 	}
 
 	if err := r.Patch(r.ctx, secretCopy, client.MergeFrom(&secret)); err != nil {
-		r.Log.Error(err, "Patch secret owner ref error.")
+		r.WarningEvent(err, "Patch secret owner ref error.")
 		return err
 	}
 
@@ -344,17 +342,13 @@ func (r *DockerRegistryReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 	task := &DockerRegistryReconcileTask{
 		DockerRegistryReconciler: r,
 		ctx:                      context.Background(),
-		Log:                      r.Log.WithValues("dockerregistry", req.NamespacedName),
 	}
-	task.Log.Info("=========== start reconciling ===========")
-	defer task.Log.Info("=========== reconciling done ===========")
 
 	return ctrl.Result{}, task.Run(req)
 }
 
 type TouchAllRegistriesMapper struct {
-	client.Client
-	Reader client.Reader
+	*BaseReconciler
 }
 
 func (m *TouchAllRegistriesMapper) Map(object handler.MapObject) []reconcile.Request {
@@ -377,10 +371,23 @@ func (m *TouchAllRegistriesMapper) Map(object handler.MapObject) []reconcile.Req
 	return res
 }
 
+type DockerRegistryAuthenticationSecretMapper struct {
+	*BaseReconciler
+}
+
+func (m *DockerRegistryAuthenticationSecretMapper) Map(object handler.MapObject) []reconcile.Request {
+	if secret, ok := object.Object.(*v1.Secret); ok && IsRegistryAuthenticationSecret(secret) {
+		return []reconcile.Request{
+			{NamespacedName: types.NamespacedName{Name: GetRegistryNameFromAuthenticationName(secret.Name)}},
+		}
+	} else {
+		return nil
+	}
+}
+
 func NewDockerRegistryReconciler(mgr ctrl.Manager) *DockerRegistryReconciler {
 	return &DockerRegistryReconciler{
-		BaseReconciler:               NewBaseReconciler(mgr, "DockerRegistry"),
-		AuthenticationSecretWatchers: watches.NewDynamicEnqueueRequest(),
+		BaseReconciler: NewBaseReconciler(mgr, "DockerRegistry"),
 	}
 }
 
@@ -402,14 +409,13 @@ func (r *DockerRegistryReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1alpha1.DockerRegistry{}).
-		Watches(&source.Kind{Type: &v1.Secret{}}, r.AuthenticationSecretWatchers).
+		Watches(&source.Kind{Type: &v1.Secret{}}, &handler.EnqueueRequestsFromMapFunc{
+			ToRequests: &DockerRegistryAuthenticationSecretMapper{r.BaseReconciler},
+		}).
 		Watches(
 			&source.Kind{Type: &corev1alpha1.Application{}},
 			&handler.EnqueueRequestsFromMapFunc{
-				ToRequests: &TouchAllRegistriesMapper{
-					Client: r.Client,
-					Reader: r.Reader,
-				},
+				ToRequests: &TouchAllRegistriesMapper{r.BaseReconciler},
 			},
 		).
 		Owns(&v1.Secret{}).

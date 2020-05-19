@@ -43,11 +43,14 @@ func (spec *ApplicationPluginBindingSpec) GetName() string {
 
 // ApplicationPluginBindingStatus defines the observed state of ApplicationPluginBinding
 type ApplicationPluginBindingStatus struct {
-	ConfigValid bool   `json:"configValid"`
+	// +optional
+	ConfigValid bool `json:"configValid"`
+	// +optional
 	ConfigError string `json:"configError"`
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="Disabled",type="boolean",JSONPath=".spec.isDisabled"
 // +kubebuilder:printcolumn:name="Plugin",type="string",JSONPath=".spec.pluginName"
 // +kubebuilder:printcolumn:name="ConfigValid",type="boolean",JSONPath=".status.configValid"

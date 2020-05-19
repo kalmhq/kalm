@@ -107,6 +107,12 @@ function BeforeDeploymentSave(deployment) {
 
 		return *deployment.Spec.Replicas == int32(2)
 	}, "can't get deployment")
+
+	suite.reloadObject(types.NamespacedName{
+		Namespace: binding.Namespace,
+		Name:      binding.Name,
+	}, binding)
+
 	suite.pluginBinding = binding
 }
 
@@ -240,6 +246,7 @@ func (suite *PluginBindingControllerSuite) TestDeleteComponent() {
 
 func (suite *PluginBindingControllerSuite) TestUpdateBindingConfig() {
 	// Please see the initialization function to understand the test context
+
 	suite.pluginBinding.Spec.Config = &runtime.RawExtension{
 		Raw: []byte(`{"replicas": 3}`),
 	}

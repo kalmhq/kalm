@@ -39,16 +39,10 @@ type HttpsCertReconciler struct {
 
 func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
-	log := r.Log.WithValues("httpscert", req.NamespacedName)
 
 	var httpsCert corev1alpha1.HttpsCert
 	if err := r.Get(ctx, req.NamespacedName, &httpsCert); err != nil {
-		err = client.IgnoreNotFound(err)
-		if err != nil {
-			log.Error(err, "fail to get HttpsCert")
-		}
-
-		return ctrl.Result{}, err
+		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
 	certName := httpsCert.Name
@@ -95,7 +89,6 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		if err := ctrl.SetControllerReference(&httpsCert, &cert, r.Scheme); err != nil {
 			return ctrl.Result{}, err
 		}
-
 		err = r.Create(ctx, &cert)
 	} else {
 		err = r.Update(ctx, &cert)

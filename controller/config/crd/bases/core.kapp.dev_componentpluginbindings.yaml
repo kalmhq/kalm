@@ -34,7 +34,8 @@ spec:
     plural: componentpluginbindings
     singular: componentpluginbinding
   scope: Namespaced
-  subresources: {}
+  subresources:
+    status: {}
   validation:
     openAPIV3Schema:
       description: ComponentPluginBinding is the Schema for the pluginbindings API
@@ -78,9 +79,6 @@ spec:
               type: string
             configValid:
               type: boolean
-          required:
-          - configError
-          - configValid
           type: object
       type: object
   version: v1alpha1

@@ -28,10 +28,6 @@ type BaseReconciler struct {
 	Recorder record.EventRecorder
 }
 
-type ReconcilerTask interface {
-	Run(req ctrl.Request) error
-}
-
 func NewBaseReconciler(mgr ctrl.Manager, name string) *BaseReconciler {
 	return &BaseReconciler{
 		Client:   mgr.GetClient(),

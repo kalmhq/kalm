@@ -50,11 +50,14 @@ func (spec *ComponentPluginBindingSpec) GetName() string {
 
 // ComponentPluginBindingStatus defines the observed state of ComponentPluginBinding
 type ComponentPluginBindingStatus struct {
-	ConfigValid bool   `json:"configValid"`
+	// +optional
+	ConfigValid bool `json:"configValid"`
+	// +optional
 	ConfigError string `json:"configError"`
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="Disabled",type="boolean",JSONPath=".spec.isDisabled"
 // +kubebuilder:printcolumn:name="Plugin",type="string",JSONPath=".spec.pluginName"
 // +kubebuilder:printcolumn:name="Component",type="string",JSONPath=".spec.componentName"
