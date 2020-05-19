@@ -144,6 +144,7 @@ export interface ComponentLikeContent {
   image: string;
   replicas: number;
   command: Immutable.List<string>;
+  args: Immutable.List<string>;
   cpu: string | null;
   memory: string | null;
   workloadType?: WorkloadType;
