@@ -60,18 +60,6 @@ type ServiceStatus struct {
 	Ports     []coreV1.ServicePort `json:"ports"`
 }
 
-//type ComponentStatus struct {
-//	Name         string                `json:"name"`
-//	WorkloadType v1alpha1.WorkloadType `json:"workloadType"`
-//
-//	DeploymentStatus appsV1.DeploymentStatus `json:"deploymentStatus,omitempty"`
-//	CronjobStatus    v1betav1.CronJobStatus  `json:"cronjobStatus,omitempty"`
-//	Pods             []PodStatus             `json:"pods"`
-//	Services         []ServiceStatus         `json:"services"`
-//
-//	ComponentMetrics `json:"metrics"`
-//}
-
 type ComponentMetrics struct {
 	Name            string `json:"-"`
 	MetricHistories `json:",inline,omitempty"`
@@ -126,13 +114,6 @@ func (builder *Builder) BuildApplicationDetails(application *v1alpha1.Applicatio
 	resourceChannels := &ResourceChannels{
 		PodList:                      builder.GetPodListChannel(ns, listOptions),
 		ApplicationPluginBindingList: builder.GetApplicationPluginBindingListChannel(ns, ListAll),
-
-		//EventList: builder.GetEventListChannel(ns, metaV1.ListOptions{
-		//	LabelSelector: labels.Everything().String(),
-		//	FieldSelector: fields.Everything().String(),
-		//}),
-		//Services:   builder.GetServiceListChannel(ns, listOptions),
-		//ComponentList: builder.GetComponentListChannel(ns, listOptions),
 	}
 
 	resources, err := resourceChannels.ToResources()
@@ -184,16 +165,7 @@ func (builder *Builder) BuildApplicationDetails(application *v1alpha1.Applicatio
 		roles = append(roles, "reader")
 	}
 
-	//var componentSpecs = make([]Component, len(resources.Components))
-	//
-	//for i, component := range resources.Components {
-	//	componentSpecs[i] = Component{component.Spec, component.Name}
-	//}
-
-	//componentsStatusList := builder.buildApplicationComponentStatus(application, resources)
-
 	formatEnvs(application.Spec.SharedEnv)
-	//formatApplicationComponents(componentSpecs)
 
 	podNames := []string{}
 	var cpuHistoryList []MetricHistory
@@ -235,11 +207,8 @@ func (builder *Builder) BuildApplicationDetails(application *v1alpha1.Applicatio
 			Namespace:  application.Namespace,
 			IsActive:   application.Spec.IsActive,
 			SharedEnvs: application.Spec.SharedEnv,
-			//Components: componentSpecs,
-			Plugins: plugins,
+			Plugins:    plugins,
 		},
-		//PodNames:         podNames,
-		//ComponentsStatus: componentsStatusList,
 		Metrics: MetricHistories{
 			CPU:    appCpuHistory,
 			Memory: appMemHistory,
@@ -300,79 +269,6 @@ func (builder *Builder) BuildApplicationListResponse(applications *v1alpha1.Appl
 
 	return apps, nil
 }
-
-//func (builder *Builder) buildApplicationComponentStatus(application *v1alpha1.Application, resources *Resources) []ComponentStatus {
-//	res := []ComponentStatus{}
-//
-//	componentKey2MetricMap := getComponentKey2MetricMap()
-//
-//	for i := range resources.Components {
-//		component := resources.Components[i]
-//
-//		workLoadType := component.Spec.WorkloadType
-//
-//		// TODO remote default value
-//		if workLoadType == "" {
-//			workLoadType = v1alpha1.WorkloadTypeServer
-//		}
-//
-//		serviceStatus := []ServiceStatus{}
-//
-//		for _, item := range resources.Services.Items {
-//			if item.Labels["kapp-component"] != component.Name {
-//				continue
-//			}
-//
-//			serviceStatus = append(serviceStatus, ServiceStatus{
-//				Name:      item.Name,
-//				ClusterIP: item.Spec.ClusterIP,
-//				Ports:     item.Spec.Ports,
-//			})
-//		}
-//
-//		componentStatus := ComponentStatus{
-//			Name:             component.Name,
-//			WorkloadType:     workLoadType,
-//			DeploymentStatus: appsV1.DeploymentStatus{},
-//			CronjobStatus:    v1betav1.CronJobStatus{},
-//			Pods:             []PodStatus{},
-//			Services:         serviceStatus,
-//		}
-//
-//		// TODO fix the default value, there should be a empty string
-//		if component.Spec.WorkloadType == v1alpha1.WorkloadTypeServer || component.Spec.WorkloadType == "" {
-//
-//			//deploymentName := fmt.Sprintf("%s-%s", application.Name, component.Name)
-//			//deployment := findDeploymentByName(resources.DeploymentList, deploymentName)
-//
-//			//if deployment == nil {
-//			// this is not an error, for example if an application is not active, we can't find the deployment
-//			//builder.Logger.Infof("Can't find deployment with name %s", deploymentName)
-//			//} else {
-//			//componentStatus.DeploymentStatus = deployment.Status
-//
-//			//pods := findPods(resources.PodList, component.Name)
-//			//componentStatus.PodInfo = getPodsInfo(deployment.Status.Replicas, deployment.Spec.Replicas, pods)
-//			//componentStatus.PodInfo.Warnings = filterPodWarningEvents(resources.EventList.Items, pods)
-//
-//			componentKey := fmt.Sprintf("%s-%s", application.Namespace, component.Name)
-//			componentMetrics := componentKey2MetricMap[componentKey]
-//			componentStatus.ComponentMetrics = componentMetrics
-//
-//			//componentStatus.Pods = getPodStatus(pods, resources.EventList.Items)
-//			//}
-//		}
-//
-//		// TODO
-//		//if component.WorkLoadType == v1alpha1.WorkLoadTypeCronjob {
-//		//	componentStatus.CronjobStatus = v1betav1.CronJobStatus{}
-//		//}
-//
-//		res = append(res, componentStatus)
-//	}
-//
-//	return res
-//}
 
 func getPodStatus(pod coreV1.Pod, events []coreV1.Event) *PodStatus {
 	ips := []string{}
