@@ -2,7 +2,7 @@ package resources
 
 import (
 	coreV1 "k8s.io/api/core/v1"
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type EventListChannel struct {
@@ -10,15 +10,17 @@ type EventListChannel struct {
 	Error chan error
 }
 
-func (builder *Builder) GetEventListChannel(namespaces string, listOptions metaV1.ListOptions) *EventListChannel {
+func (builder *Builder) GetEventListChannel(opts ...client.ListOption) *EventListChannel {
 	channel := &EventListChannel{
 		List:  make(chan *coreV1.EventList, 1),
 		Error: make(chan error, 1),
 	}
 
 	go func() {
-		list, err := builder.K8sClient.CoreV1().Events(namespaces).List(listOptions)
-		channel.List <- list
+		var list coreV1.EventList
+		err := builder.List(&list, opts...)
+
+		channel.List <- &list
 		channel.Error <- err
 	}()
 

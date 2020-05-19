@@ -5,6 +5,7 @@ import (
 	"fmt"
 	authorizationV1 "k8s.io/api/authorization/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"time"
 
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
@@ -109,11 +110,10 @@ type Application struct {
 
 func (builder *Builder) BuildApplicationDetails(application *v1alpha1.Application) (*ApplicationDetails, error) {
 	ns := application.Name
-	listOptions := labelsBelongsToApplication(application.Name)
 
 	resourceChannels := &ResourceChannels{
-		PodList:                      builder.GetPodListChannel(ns, listOptions),
-		ApplicationPluginBindingList: builder.GetApplicationPluginBindingListChannel(ns, ListAll),
+		PodList:                      builder.GetPodListChannel(client.InNamespace(ns), client.MatchingLabels{"kapp-application": application.Name}),
+		ApplicationPluginBindingList: builder.GetApplicationPluginBindingListChannel(client.InNamespace(ns)),
 	}
 
 	resources, err := resourceChannels.ToResources()
