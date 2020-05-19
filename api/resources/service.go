@@ -2,7 +2,7 @@ package resources
 
 import (
 	coreV1 "k8s.io/api/core/v1"
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type ServiceListChannel struct {
@@ -10,14 +10,15 @@ type ServiceListChannel struct {
 	Error chan error
 }
 
-func (builder *Builder) GetServiceListChannel(namespaces string, listOptions metaV1.ListOptions) *ServiceListChannel {
+func (builder *Builder) GetServiceListChannel(opts ...client.ListOption) *ServiceListChannel {
 	channel := &ServiceListChannel{
 		List:  make(chan []coreV1.Service, 1),
 		Error: make(chan error, 1),
 	}
 
 	go func() {
-		list, err := builder.K8sClient.CoreV1().Services(namespaces).List(listOptions)
+		var list coreV1.ServiceList
+		err := builder.List(&list, opts...)
 
 		if err != nil {
 			channel.List <- nil

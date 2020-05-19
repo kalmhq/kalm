@@ -9,7 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/client-go/rest"
-	"time"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type ComponentPluginBinding struct {
@@ -23,40 +23,18 @@ type ComponentPluginBindingListChannel struct {
 	Error chan error
 }
 
-func (builder *Builder) GetComponentPluginBindingListChannel(namespaces string, listOptions metaV1.ListOptions) *ComponentPluginBindingListChannel {
+func (builder *Builder) GetComponentPluginBindingListChannel(opts ...client.ListOption) *ComponentPluginBindingListChannel {
 	channel := &ComponentPluginBindingListChannel{
 		List:  make(chan []v1alpha1.ComponentPluginBinding, 1),
 		Error: make(chan error, 1),
 	}
 
 	go func() {
-		var timeout time.Duration
+		var list v1alpha1.ComponentPluginBindingList
+		err := builder.List(&list, opts...)
+		res := make([]v1alpha1.ComponentPluginBinding, len(list.Items))
 
-		if listOptions.TimeoutSeconds != nil {
-			timeout = time.Duration(*listOptions.TimeoutSeconds) * time.Second
-		}
-
-		client, err := builder.KappV1Alpha1()
-
-		if err != nil {
-			channel.List <- nil
-			channel.Error <- err
-			return
-		}
-
-		var fetched v1alpha1.ComponentPluginBindingList
-
-		err = client.Get().
-			Namespace(namespaces).
-			Resource("componentpluginbindings").
-			VersionedParams(&listOptions, metaV1.ParameterCodec).
-			Timeout(timeout).
-			Do().
-			Into(&fetched)
-
-		res := make([]v1alpha1.ComponentPluginBinding, len(fetched.Items))
-
-		for i, binding := range fetched.Items {
+		for i, binding := range list.Items {
 			res[i] = binding
 		}
 
