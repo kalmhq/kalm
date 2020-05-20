@@ -75,6 +75,10 @@ class DashboardDrawerRaw extends React.PureComponent<Props, State> {
       {
         text: "Volumes",
         to: "/cluster/volumes"
+      },
+      {
+        text: "Registries",
+        to: "/cluster/registries"
       }
     ];
   }

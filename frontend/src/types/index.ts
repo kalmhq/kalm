@@ -8,6 +8,7 @@ import { UserActions } from "./user";
 import { DependencyActions } from "./dependency";
 import { NamespaceActions } from "./namespace";
 import { NodeActions } from "./node";
+import { RegistriesActions } from "./registry";
 
 export type Actions =
   | CommonActions
@@ -17,7 +18,8 @@ export type Actions =
   | UserActions
   | DependencyActions
   | NamespaceActions
-  | NodeActions;
+  | NodeActions
+  | RegistriesActions;
 
 export type ThunkResult<R> = ThunkAction<R, RootState, undefined, Actions>;
 export type TDispatch = ThunkDispatch<RootState, undefined, Actions>;

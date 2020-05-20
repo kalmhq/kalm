@@ -13,6 +13,7 @@ import dependencies, { State as DependencyState } from "./dependency";
 import dialogs, { State as DialogState } from "./dialog";
 import namespaces, { State as NamespacesState } from "./namespaces";
 import nodes, { State as NodesState } from "./node";
+import registries, { State as RegistriesState } from "./registry";
 import notification, { State as NotificationState } from "./notification";
 import persistentVolumns, { State as PersistentVolumnsState } from "./persistentVolumn";
 import settings, { State as SettingsState } from "./settings";
@@ -30,6 +31,7 @@ export type RootState = ImmutableMap<{
   dialogs: DialogState;
   form: FormState;
   nodes: NodesState;
+  registries: RegistriesState;
   persistentVolumns: PersistentVolumnsState;
   settings: SettingsState;
   users: UserState;
@@ -45,6 +47,7 @@ export default (history: History<LocationState>) =>
     form: formReducer,
     namespaces,
     nodes,
+    registries,
     auth,
     dialogs,
     dependencies,

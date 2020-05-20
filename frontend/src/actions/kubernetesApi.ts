@@ -18,6 +18,7 @@ import {
 } from "../types/application";
 import { ComponentTemplate } from "../types/componentTemplate";
 import { ConfigCreate, ConfigRes } from "../types/config";
+import { RegistryType } from "types/registry";
 
 export const K8sApiPrefix = process.env.REACT_APP_K8S_API_PERFIX;
 export const k8sWsPrefix = !K8sApiPrefix
@@ -111,6 +112,13 @@ export const deleteKappComonentTemplate = async (component: ComponentTemplate): 
   await getAxiosClient().delete(K8sApiPrefix + `/v1alpha1/componenttemplates/${component.get("name")}`);
 
   // return convertFromCRDComponentTemplate(res.data);
+};
+
+// registry
+
+export const getRegistries = async (): Promise<Immutable.List<RegistryType>> => {
+  const res = await getAxiosClient().get(K8sApiPrefix + "/v1alpha1/registries");
+  return Immutable.fromJS(res.data);
 };
 
 // applications
