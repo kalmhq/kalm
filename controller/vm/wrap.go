@@ -1,6 +1,6 @@
 package vm
 
-//go:generate go-bindata -pkg vm -nometadata ../resources/es6-shim.polyfill.js
+//go:generate go-bindata -pkg vm -nometadata -o resources.gen.go ../resources/es6-shim.polyfill.js
 
 var polyfill string
 
