@@ -112,7 +112,7 @@ rules:
 - apiGroups:
   - cert-manager.io
   resources:
-  - issuers
+  - clusterissuers
   verbs:
   - create
   - delete
