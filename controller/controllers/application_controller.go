@@ -691,7 +691,7 @@ func (r *ApplicationReconcilerTask) ensureHttpsConfigOfGateway(gw *istioV1Beta1.
 			}
 		}
 
-		_, certSecretName := getNamespacedCertAndCertSecretName(httpsCert)
+		_, certSecretName := getCertAndCertSecretName(httpsCert)
 
 		curServer := istioNetworkingV1Beta1.Server{
 			Hosts: ingressConfig.Hosts,

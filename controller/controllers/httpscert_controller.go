@@ -17,7 +17,6 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 	"github.com/go-logr/logr"
 	cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -38,8 +37,8 @@ type HttpsCertReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-func getNamespacedCertAndCertSecretName(httpsCert corev1alpha1.HttpsCert) (certName string, certSecretName string) {
-	name := fmt.Sprintf("%s--%s", httpsCert.Namespace, httpsCert.Name)
+func getCertAndCertSecretName(httpsCert corev1alpha1.HttpsCert) (certName string, certSecretName string) {
+	name := httpsCert.Name
 
 	return name, name
 }
@@ -64,7 +63,7 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, err
 	}
 
-	certName, certSecretName := getNamespacedCertAndCertSecretName(httpsCert)
+	certName, certSecretName := getCertAndCertSecretName(httpsCert)
 
 	// cert & it's certSecret have to be in namespace:istio-system to be found by istio
 	certNS := istioNamespace
@@ -105,9 +104,9 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	if isNew {
 		// todo different ns obj can't not be owner
-		//if err := ctrl.SetControllerReference(&httpsCert, &cert, r.Scheme); err != nil {
-		//	return ctrl.Result{}, err
-		//}
+		if err := ctrl.SetControllerReference(&httpsCert, &cert, r.Scheme); err != nil {
+			return ctrl.Result{}, err
+		}
 
 		err = r.Create(ctx, &cert)
 	} else {
