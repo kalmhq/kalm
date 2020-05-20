@@ -38,6 +38,7 @@ type ResourceChannels struct {
 	ApplicationPluginBindingList *ApplicationPluginBindingListChannel
 	DockerRegistryList           *DockerRegistryListChannel
 	SecretList                   *SecretListChannel
+	HttpsCertIssuerList          *HttpsCertIssuerListChannel
 }
 
 type Resources struct {
@@ -54,6 +55,7 @@ type Resources struct {
 	ApplicationPluginBindings []v1alpha1.ApplicationPluginBinding
 	DockerRegistries          []*v1alpha1.DockerRegistry
 	Secrets                   []*coreV1.Secret
+	HttpsCertIssuers          []v1alpha1.HttpsCertIssuer
 }
 
 var ListAll = metaV1.ListOptions{
@@ -168,6 +170,14 @@ func (c *ResourceChannels) ToResources() (r *Resources, err error) {
 			return nil, err
 		}
 		resources.Secrets = <-c.SecretList.List
+	}
+
+	if c.HttpsCertIssuerList != nil {
+		err = <-c.HttpsCertIssuerList.Error
+		if err != nil {
+			return nil, err
+		}
+		resources.HttpsCertIssuers = <-c.HttpsCertIssuerList.List
 	}
 
 	return resources, nil
