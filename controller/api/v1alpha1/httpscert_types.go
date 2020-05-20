@@ -27,8 +27,10 @@ type HttpsCertSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	HttpsCertIssuer string   `json:"httpsCertIssuer"`
-	Domains         []string `json:"domains"`
+	IsSelfManaged             bool     `json:"isSelfManaged"`
+	SelfManagedCertSecretName string   `json:"selfManagedCertSecretName,omitempty"`
+	HttpsCertIssuer           string   `json:"httpsCertIssuer"`
+	Domains                   []string `json:"domains"`
 }
 
 // HttpsCertStatus defines the observed state of HttpsCert
