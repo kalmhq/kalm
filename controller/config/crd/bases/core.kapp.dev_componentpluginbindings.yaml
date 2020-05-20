@@ -8,6 +8,25 @@ metadata:
   creationTimestamp: null
   name: componentpluginbindings.core.kapp.dev
 spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.isDisabled
+    name: Disabled
+    type: boolean
+  - JSONPath: .spec.pluginName
+    name: Plugin
+    type: string
+  - JSONPath: .spec.componentName
+    name: Component
+    type: string
+  - JSONPath: .status.configValid
+    name: ConfigValid
+    type: boolean
+  - JSONPath: .status.configError
+    name: ConfigError
+    type: string
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
   group: core.kapp.dev
   names:
     kind: ComponentPluginBinding
@@ -15,6 +34,8 @@ spec:
     plural: componentpluginbindings
     singular: componentpluginbinding
   scope: Namespaced
+  subresources:
+    status: {}
   validation:
     openAPIV3Schema:
       description: ComponentPluginBinding is the Schema for the pluginbindings API
@@ -58,9 +79,6 @@ spec:
               type: string
             configValid:
               type: boolean
-          required:
-          - configError
-          - configValid
           type: object
       type: object
   version: v1alpha1

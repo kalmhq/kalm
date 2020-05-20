@@ -100,13 +100,6 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
     };
   }
 
-  // private handleClickBasic() {
-  //   this.setState({ selectedListItemKey: "basic" });
-
-  //   const { handleClickBasic } = this.props;
-  //   handleClickBasic();
-  // }
-
   private handleClickSharedEnvs() {
     this.setState({ selectedListItemKey: "sharedEnvs" });
 
@@ -170,19 +163,13 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
   private getPanelFieldNames(panelKey: string): string[] {
     switch (panelKey) {
       case "basic":
-        return ["name", "image", "workloadType", "command", "args"];
-      case "envs":
-        return ["env"];
-      case "ports":
-        return ["ports"];
-      case "resources":
-        return ["cpu", "memory", "volumes", "configs"];
-      case "plugins":
-        return ["plugins"];
-      case "probes":
-        return ["livenessProbe", "readinessProbe"];
+        return ["name", "image", "workloadType", "command", "args", "cpu", "memory", "env"];
       case "advanced":
         return [
+          "ports",
+          "volumes",
+          "configs",
+          "plugins",
           "restartStrategy",
           "terminationGracePeriodSeconds",
           "dnsPolicy",
@@ -197,26 +184,22 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
   private getComponentFields() {
     return [
       { tab: "basic", text: "Basic Info" },
-      {
-        tab: "envs",
-        text: "Environment variables"
-      },
-      {
-        tab: "ports",
-        text: "Ports"
-      },
-      {
-        tab: "resources",
-        text: "Resources"
-      },
-      {
-        tab: "plugins",
-        text: "Plugins"
-      },
-      {
-        tab: "probes",
-        text: "Probes"
-      },
+      // {
+      //   tab: "envs",
+      //   text: "Environment variables"
+      // },
+      // {
+      //   tab: "ports",
+      //   text: "Ports"
+      // },
+      // {
+      //   tab: "resources",
+      //   text: "Resources"
+      // },
+      // {
+      //   tab: "plugins",
+      //   text: "Plugins"
+      // },
       {
         tab: "advanced",
         text: "Advanced"

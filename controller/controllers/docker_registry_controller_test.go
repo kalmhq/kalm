@@ -44,19 +44,28 @@ func (suite *DockerRegistryControllerSuite) SetupTest() {
 	suite.createApplication(application)
 	suite.application = application
 
+	// create registry without authentication secret
+	name := randomName()
 	registry := &v1alpha1.DockerRegistry{
 		ObjectMeta: metaV1.ObjectMeta{
-			Name: "gke-registry",
-			//Namespace: "kapp-system",
+			Name: name,
 		},
 		Spec: v1alpha1.DockerRegistrySpec{
 			Host: "https://gcr.io",
 		},
 	}
 
+	suite.createDockerRegistry(registry)
+	suite.Eventually(func() bool {
+		suite.reloadObject(getDockerRegistryNamespacedName(registry), registry)
+		return !registry.Status.AuthenticationVerified
+	})
+
+	time.Sleep(5 * time.Second)
+
 	secret := v1.Secret{
 		ObjectMeta: metaV1.ObjectMeta{
-			Name:      "gke-registry-authentication",
+			Name:      GetRegistryAuthenticationName(name),
 			Namespace: "kapp-system",
 		},
 		Data: map[string][]byte{
@@ -65,17 +74,16 @@ func (suite *DockerRegistryControllerSuite) SetupTest() {
 		},
 	}
 	suite.Nil(suite.K8sClient.Create(context.Background(), &secret))
-	suite.createDockerRegistry(registry)
+	suite.Eventually(func() bool {
+		suite.reloadObject(getDockerRegistryNamespacedName(registry), registry)
+		return registry.Status.AuthenticationVerified
+	})
+
 	suite.registry = registry
 	suite.secret = &secret
 }
 
 func (suite *DockerRegistryControllerSuite) TestDockerRegistrySecret() {
-	suite.Eventually(func() bool {
-		suite.reloadObject(getDockerRegistryNamespacedName(suite.registry), suite.registry)
-		return suite.registry.Status.AuthenticationVerified
-	})
-
 	suite.Eventually(func() bool {
 		suite.reloadObject(types.NamespacedName{
 			Namespace: suite.secret.Namespace,
@@ -151,8 +159,7 @@ func (suite *DockerRegistryControllerSuite) TestSecretDistribution() {
 			return false
 		}
 
-		return len(deployment.Spec.Template.Spec.ImagePullSecrets) == 1 &&
-			deployment.Spec.Template.Spec.ImagePullSecrets[0].Name == getImagePullSecretName(suite.registry.Name)
+		return len(deployment.Spec.Template.Spec.ImagePullSecrets) > 0
 	}, "can't get deployment")
 
 	// delete the registry

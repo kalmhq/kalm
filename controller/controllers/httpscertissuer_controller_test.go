@@ -95,7 +95,7 @@ func (suite *HttpsCertIssuerControllerSuite) reloadHttpsCertIssuer(issuer *v1alp
 	err := suite.K8sClient.Get(
 		context.Background(),
 		types.NamespacedName{
-			Name:      issuer.Name,
+			Name: issuer.Name,
 		},
 		issuer,
 	)
@@ -106,8 +106,7 @@ func (suite *HttpsCertIssuerControllerSuite) reloadHttpsCertIssuer(issuer *v1alp
 func genEmptyCAHttpsCertIssuer() v1alpha1.HttpsCertIssuer {
 	return v1alpha1.HttpsCertIssuer{
 		ObjectMeta: v1.ObjectMeta{
-			Name:      randomName()[:12],
-			Namespace: randomName()[:12],
+			Name: randomName()[:12],
 		},
 		Spec: v1alpha1.HttpsCertIssuerSpec{
 			CAForTest: &v1alpha1.CAForTestIssuer{},

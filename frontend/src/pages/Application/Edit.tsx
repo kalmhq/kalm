@@ -1,4 +1,4 @@
-import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { createStyles, Theme, withStyles, WithStyles, Grid } from "@material-ui/core";
 import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
@@ -270,16 +270,23 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
     }
 
     return (
-      <ComponentLikeForm
-        sharedEnv={sharedEnv}
-        onSubmit={this.submitComponent}
-        onSubmitFail={() => {
-          dispatch(setIsSubmittingApplicationComponent(false));
-        }}
-        initialValues={currentComponent}
-        currentTab={currentComponentTab}
-        showDataView
-      />
+      <Grid container spacing={2}>
+        <Grid item xs={12} sm={6} md={6}>
+          <ComponentLikeForm
+            sharedEnv={sharedEnv}
+            onSubmit={this.submitComponent}
+            onSubmitFail={() => {
+              dispatch(setIsSubmittingApplicationComponent(false));
+            }}
+            initialValues={currentComponent}
+            currentTab={currentComponentTab}
+            showDataView
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={6}>
+          Pods TODO
+        </Grid>
+      </Grid>
     );
   }
 }

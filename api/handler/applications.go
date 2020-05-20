@@ -224,25 +224,14 @@ func getApplicationFromContext(c echo.Context) (*v1alpha1.Application, []runtime
 func (h *ApiHandler) applicationResponse(c echo.Context, application *v1alpha1.Application) (*resources.ApplicationDetails, error) {
 	k8sClient := getK8sClient(c)
 	k8sClientConfig := getK8sClientConfig(c)
-
-	builder := resources.Builder{
-		K8sClient: k8sClient,
-		Logger:    h.logger,
-		Config:    k8sClientConfig,
-	}
-
+	builder := resources.NewBuilder(k8sClient, k8sClientConfig, h.logger)
 	return builder.BuildApplicationDetails(application)
 }
 
 func (h *ApiHandler) applicationListResponse(c echo.Context, applicationList *v1alpha1.ApplicationList) ([]resources.ApplicationDetails, error) {
 	k8sClient := getK8sClient(c)
 	k8sClientConfig := getK8sClientConfig(c)
-
-	builder := resources.Builder{
-		K8sClient: k8sClient,
-		Logger:    h.logger,
-		Config:    k8sClientConfig,
-	}
+	builder := resources.NewBuilder(k8sClient, k8sClientConfig, h.logger)
 
 	return builder.BuildApplicationListResponse(applicationList)
 }

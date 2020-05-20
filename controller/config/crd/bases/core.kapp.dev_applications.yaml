@@ -8,6 +8,13 @@ metadata:
   creationTimestamp: null
   name: applications.core.kapp.dev
 spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.isActive
+    name: IsActive
+    type: boolean
+  - JSONPath: .metadata.creationTimestamp
+    name: Age
+    type: date
   group: core.kapp.dev
   names:
     kind: Application

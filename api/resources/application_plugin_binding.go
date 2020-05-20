@@ -9,7 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/client-go/rest"
-	"time"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type ApplicationPluginBinding struct {
@@ -23,20 +23,15 @@ type ApplicationPluginBindingListChannel struct {
 	Error chan error
 }
 
-func (builder *Builder) GetApplicationPluginBindingListChannel(namespaces string, listOptions metaV1.ListOptions) *ApplicationPluginBindingListChannel {
+func (builder *Builder) GetApplicationPluginBindingListChannel(opts ...client.ListOption) *ApplicationPluginBindingListChannel {
 	channel := &ApplicationPluginBindingListChannel{
 		List:  make(chan []v1alpha1.ApplicationPluginBinding, 1),
 		Error: make(chan error, 1),
 	}
 
 	go func() {
-		var timeout time.Duration
-
-		if listOptions.TimeoutSeconds != nil {
-			timeout = time.Duration(*listOptions.TimeoutSeconds) * time.Second
-		}
-
-		client, err := builder.KappV1Alpha1()
+		var list v1alpha1.ApplicationPluginBindingList
+		err := builder.List(&list, opts...)
 
 		if err != nil {
 			channel.List <- nil
@@ -44,19 +39,9 @@ func (builder *Builder) GetApplicationPluginBindingListChannel(namespaces string
 			return
 		}
 
-		var fetched v1alpha1.ApplicationPluginBindingList
+		res := make([]v1alpha1.ApplicationPluginBinding, len(list.Items))
 
-		err = client.Get().
-			Namespace(namespaces).
-			Resource("applicationpluginbindings").
-			VersionedParams(&listOptions, metaV1.ParameterCodec).
-			Timeout(timeout).
-			Do().
-			Into(&fetched)
-
-		res := make([]v1alpha1.ApplicationPluginBinding, len(fetched.Items))
-
-		for i, binding := range fetched.Items {
+		for i, binding := range list.Items {
 			res[i] = binding
 		}
 

@@ -97,88 +97,46 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.ApplicationReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Application"),
-		Scheme: mgr.GetScheme(),
-		Reader: mgr.GetAPIReader(),
-	}).SetupWithManager(mgr); err != nil {
+	if err = controllers.NewApplicationReconciler(mgr).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Application")
 		os.Exit(1)
 	}
 
-	if err = (&controllers.ComponentPluginReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("ComponentPlugin"),
-		Scheme: mgr.GetScheme(),
-		Reader: mgr.GetAPIReader(),
-	}).SetupWithManager(mgr); err != nil {
+	if err = controllers.NewComponentPluginReconciler(mgr).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ComponentPlugin")
 		os.Exit(1)
 	}
 
-	if err = (&controllers.ComponentReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Component"),
-		Scheme: mgr.GetScheme(),
-		Reader: mgr.GetAPIReader(),
-	}).SetupWithManager(mgr); err != nil {
+	if err = controllers.NewComponentReconciler(mgr).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Component")
 		os.Exit(1)
 	}
 
-	if err = (&controllers.ComponentPluginBindingReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("ComponentPluginBinding"),
-		Scheme: mgr.GetScheme(),
-		Reader: mgr.GetAPIReader(),
-	}).SetupWithManager(mgr); err != nil {
+	if err = controllers.NewComponentPluginBindingReconciler(mgr).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ComponentPluginBinding")
 		os.Exit(1)
 	}
 
-	if err = (&controllers.ApplicationPluginReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("ApplicationPlugin"),
-		Scheme: mgr.GetScheme(),
-		Reader: mgr.GetAPIReader(),
-	}).SetupWithManager(mgr); err != nil {
+	if err = controllers.NewApplicationPluginReconciler(mgr).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ApplicationPlugin")
 		os.Exit(1)
 	}
 
-	if err = (&controllers.ApplicationPluginBindingReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("ApplicationPluginBinding"),
-		Scheme: mgr.GetScheme(),
-		Reader: mgr.GetAPIReader(),
-	}).SetupWithManager(mgr); err != nil {
+	if err = controllers.NewApplicationPluginBindingReconciler(mgr).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ApplicationPluginBinding")
 		os.Exit(1)
 	}
 
-	if err = (&controllers.HttpsCertIssuerReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("HttpsCertIssuer"),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
+	if err = controllers.NewHttpsCertIssuerReconciler(mgr).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "HttpsCertIssuer")
 		os.Exit(1)
 	}
-	if err = (&controllers.HttpsCertReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("HttpsCert"),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
+	if err = controllers.NewHttpsCertReconciler(mgr).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "HttpsCert")
 		os.Exit(1)
 	}
-	if err = (&controllers.DockerRegistryReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("DockerRegistry"),
-		Scheme: mgr.GetScheme(),
-		Reader: mgr.GetAPIReader(),
-	}).SetupWithManager(mgr); err != nil {
+
+	if err = controllers.NewDockerRegistryReconciler(mgr).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "DockerRegistry")
 		os.Exit(1)
 	}

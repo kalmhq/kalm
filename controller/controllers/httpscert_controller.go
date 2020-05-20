@@ -17,11 +17,9 @@ package controllers
 
 import (
 	"context"
-	"github.com/go-logr/logr"
 	cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -32,9 +30,7 @@ import (
 
 // HttpsCertReconciler reconciles a HttpsCert object
 type HttpsCertReconciler struct {
-	client.Client
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	*BaseReconciler
 }
 
 func getCertAndCertSecretName(httpsCert corev1alpha1.HttpsCert) (certName string, certSecretName string) {
@@ -51,16 +47,10 @@ const istioNamespace = "istio-system"
 
 func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
-	log := r.Log.WithValues("httpscert", req.NamespacedName)
 
 	var httpsCert corev1alpha1.HttpsCert
 	if err := r.Get(ctx, req.NamespacedName, &httpsCert); err != nil {
-		err = client.IgnoreNotFound(err)
-		if err != nil {
-			log.Error(err, "fail to get HttpsCert")
-		}
-
-		return ctrl.Result{}, err
+		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
 	certName, certSecretName := getCertAndCertSecretName(httpsCert)
@@ -107,13 +97,18 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		if err := ctrl.SetControllerReference(&httpsCert, &cert, r.Scheme); err != nil {
 			return ctrl.Result{}, err
 		}
-
 		err = r.Create(ctx, &cert)
 	} else {
 		err = r.Update(ctx, &cert)
 	}
 
 	return ctrl.Result{}, err
+}
+
+func NewHttpsCertReconciler(mgr ctrl.Manager) *HttpsCertReconciler {
+	return &HttpsCertReconciler{
+		BaseReconciler: NewBaseReconciler(mgr, "HttpsCert"),
+	}
 }
 
 func (r *HttpsCertReconciler) SetupWithManager(mgr ctrl.Manager) error {

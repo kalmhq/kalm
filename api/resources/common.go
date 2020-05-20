@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"context"
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	"github.com/sirupsen/logrus"
 	appV1 "k8s.io/api/apps/v1"
@@ -9,13 +10,19 @@ import (
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
+
+func init() {
+	_ = v1alpha1.AddToScheme(scheme.Scheme)
+}
 
 type ResourceChannels struct {
 	DeploymentList               *DeploymentListChannel
@@ -29,6 +36,8 @@ type ResourceChannels struct {
 	ComponentPluginBindingList   *ComponentPluginBindingListChannel
 	ApplicationPluginList        *ApplicationPluginListChannel
 	ApplicationPluginBindingList *ApplicationPluginBindingListChannel
+	DockerRegistryList           *DockerRegistryListChannel
+	SecretList                   *SecretListChannel
 }
 
 type Resources struct {
@@ -43,6 +52,8 @@ type Resources struct {
 	ComponentPluginBindings   []v1alpha1.ComponentPluginBinding
 	ApplicationPlugins        []v1alpha1.ApplicationPlugin
 	ApplicationPluginBindings []v1alpha1.ApplicationPluginBinding
+	DockerRegistries          []*v1alpha1.DockerRegistry
+	Secrets                   []*coreV1.Secret
 }
 
 var ListAll = metaV1.ListOptions{
@@ -143,6 +154,22 @@ func (c *ResourceChannels) ToResources() (r *Resources, err error) {
 		resources.ApplicationPluginBindings = <-c.ApplicationPluginBindingList.List
 	}
 
+	if c.DockerRegistryList != nil {
+		err = <-c.DockerRegistryList.Error
+		if err != nil {
+			return nil, err
+		}
+		resources.DockerRegistries = <-c.DockerRegistryList.List
+	}
+
+	if c.SecretList != nil {
+		err = <-c.SecretList.Error
+		if err != nil {
+			return nil, err
+		}
+		resources.Secrets = <-c.SecretList.List
+	}
+
 	return resources, nil
 }
 
@@ -207,7 +234,9 @@ func labelsBelongsToApplication(name string) metaV1.ListOptions {
 }
 
 type Builder struct {
+	ctx       context.Context
 	K8sClient *kubernetes.Clientset
+	Client    client.Client
 	Logger    *logrus.Logger
 	Config    *rest.Config
 }
@@ -220,4 +249,36 @@ func (builder *Builder) KappV1Alpha1() (*rest.RESTClient, error) {
 	cfg.NegotiatedSerializer = serializer.NewCodecFactory(scheme.Scheme)
 	cfg.UserAgent = rest.DefaultKubernetesUserAgent()
 	return rest.UnversionedRESTClientFor(cfg)
+}
+
+func NewBuilder(k8sClient *kubernetes.Clientset, cfg *rest.Config, logger *logrus.Logger) *Builder {
+	c, _ := client.New(cfg, client.Options{Scheme: scheme.Scheme})
+
+	return &Builder{
+		ctx:       context.Background(), // TODO
+		K8sClient: k8sClient,
+		Client:    c,
+		Config:    cfg,
+		Logger:    logger,
+	}
+}
+
+func (builder *Builder) Get(namespace, name string, obj runtime.Object) error {
+	return builder.Client.Get(builder.ctx, types.NamespacedName{namespace, name}, obj)
+}
+
+func (builder *Builder) List(obj runtime.Object, opts ...client.ListOption) error {
+	return builder.Client.List(builder.ctx, obj, opts...)
+}
+
+func (builder *Builder) Create(obj runtime.Object, opts ...client.CreateOption) error {
+	return builder.Client.Create(builder.ctx, obj, opts...)
+}
+
+func (builder *Builder) Delete(obj runtime.Object, opts ...client.DeleteOption) error {
+	return builder.Client.Delete(builder.ctx, obj, opts...)
+}
+
+func (builder *Builder) Update(obj runtime.Object, opts ...client.UpdateOption) error {
+	return builder.Client.Update(builder.ctx, obj, opts...)
 }

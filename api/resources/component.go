@@ -5,9 +5,8 @@ import (
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	coreV1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/fields"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type ComponentListChannel struct {
@@ -56,17 +55,16 @@ func labelsBelongsToComponent(name string) metaV1.ListOptions {
 
 func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component, resources *Resources) (details *ComponentDetails, err error) {
 	if resources == nil {
-		ns := component.Namespace
+		ns := client.InNamespace(component.Namespace)
+		belongsToComponent := client.MatchingLabels{"kapp-component": component.Name}
 
-		listOptions := labelsBelongsToComponent(component.Name)
 		resourceChannels := &ResourceChannels{
-			PodList: builder.GetPodListChannel(ns, listOptions),
-			EventList: builder.GetEventListChannel(ns, metaV1.ListOptions{
-				LabelSelector: labels.Everything().String(),
-				FieldSelector: fields.Everything().String(),
-			}),
-			ServiceList:                builder.GetServiceListChannel(ns, listOptions),
-			ComponentPluginBindingList: builder.GetComponentPluginBindingListChannel(ns, matchLabel("kapp-component", component.Name)),
+			PodList: builder.GetPodListChannel(
+				ns, belongsToComponent,
+			),
+			EventList:                  builder.GetEventListChannel(ns),
+			ServiceList:                builder.GetServiceListChannel(ns, belongsToComponent),
+			ComponentPluginBindingList: builder.GetComponentPluginBindingListChannel(ns, belongsToComponent),
 		}
 
 		resources, err = resourceChannels.ToResources()
@@ -151,14 +149,14 @@ func (builder *Builder) BuildComponentDetailsResponse(components *v1alpha1.Compo
 		return nil, nil
 	}
 
-	ns := components.Items[0].Namespace
 	res := []ComponentDetails{}
+	ns := client.InNamespace(components.Items[0].Namespace)
 
 	resourceChannels := &ResourceChannels{
-		PodList:                    builder.GetPodListChannel(ns, ListAll),
-		EventList:                  builder.GetEventListChannel(ns, ListAll),
-		ServiceList:                builder.GetServiceListChannel(ns, ListAll),
-		ComponentPluginBindingList: builder.GetComponentPluginBindingListChannel(ns, ListAll),
+		PodList:                    builder.GetPodListChannel(ns),
+		EventList:                  builder.GetEventListChannel(ns),
+		ServiceList:                builder.GetServiceListChannel(ns),
+		ComponentPluginBindingList: builder.GetComponentPluginBindingListChannel(ns),
 	}
 
 	resources, err := resourceChannels.ToResources()

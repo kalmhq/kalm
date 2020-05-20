@@ -55,6 +55,11 @@ export const KappRoutes = (
           <Route exact path="/applications/:applicationName/edit" component={RequireNamespaceWriter(ApplicationEdit)} />
           <Route exact path="/applications/:applicationName/logs" component={RequireNamespaceReader(Log)} />
           <Route exact path="/applications/:applicationName/shells" component={RequireNamespaceWriter(Log)} />
+          <Route
+            exact
+            path="/applications/:applicationName/components/:componentName"
+            component={RequireNamespaceReader(ApplicationShow)}
+          />
           <Route exact path="/configs" component={RequireNamespaceReader(ConfigListPage)}></Route>
           <Route exact path="/ui-components" component={UIComponentsPage}></Route>
           <Route component={NoMatch} />

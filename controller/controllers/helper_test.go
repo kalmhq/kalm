@@ -36,10 +36,10 @@ type BasicSuite struct {
 	MgrStopChannel chan struct{}
 }
 
-func (suite *BasicSuite) Eventually(condition func() bool, msgAndArgs ...interface{}) bool {
+func (suite *BasicSuite) Eventually(condition func() bool, msgAndArgs ...interface{}) {
 	waitFor := time.Second * 20
 	tick := time.Millisecond * 500
-	return suite.Suite.Eventually(condition, waitFor, tick, msgAndArgs...)
+	suite.Suite.Require().Eventually(condition, waitFor, tick, msgAndArgs...)
 }
 
 func (suite *BasicSuite) createComponentPlugin(plugin *v1alpha1.ComponentPlugin) {
@@ -194,66 +194,18 @@ func (suite *BasicSuite) SetupSuite() {
 	suite.NotNil(mgr)
 	suite.Nil(err)
 
-	suite.Nil((&ApplicationReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Application"),
-		Scheme: mgr.GetScheme(),
-		Reader: mgr.GetAPIReader(),
-	}).SetupWithManager(mgr))
+	suite.Nil(NewApplicationReconciler(mgr).SetupWithManager(mgr))
+	suite.Nil(NewApplicationPluginReconciler(mgr).SetupWithManager(mgr))
+	suite.Nil(NewApplicationPluginBindingReconciler(mgr).SetupWithManager(mgr))
 
-	suite.Nil((&ComponentPluginReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("ComponentPlugin"),
-		Scheme: mgr.GetScheme(),
-		Reader: mgr.GetAPIReader(),
-	}).SetupWithManager(mgr))
+	suite.Nil(NewComponentReconciler(mgr).SetupWithManager(mgr))
+	suite.Nil(NewComponentPluginReconciler(mgr).SetupWithManager(mgr))
+	suite.Nil(NewComponentPluginBindingReconciler(mgr).SetupWithManager(mgr))
 
-	suite.Nil((&ApplicationPluginReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("ApplicationPlugin"),
-		Scheme: mgr.GetScheme(),
-		Reader: mgr.GetAPIReader(),
-	}).SetupWithManager(mgr))
+	suite.Nil(NewHttpsCertIssuerReconciler(mgr).SetupWithManager(mgr))
+	suite.Nil(NewHttpsCertReconciler(mgr).SetupWithManager(mgr))
 
-	suite.Nil((&ComponentReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("Component"),
-		Scheme: mgr.GetScheme(),
-		Reader: mgr.GetAPIReader(),
-	}).SetupWithManager(mgr))
-
-	suite.Nil((&ComponentPluginBindingReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("ComponentPluginBinding"),
-		Scheme: mgr.GetScheme(),
-		Reader: mgr.GetAPIReader(),
-	}).SetupWithManager(mgr))
-
-	suite.Nil((&ApplicationPluginBindingReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("ApplicationPluginBinding"),
-		Scheme: mgr.GetScheme(),
-		Reader: mgr.GetAPIReader(),
-	}).SetupWithManager(mgr))
-
-	suite.Nil((&HttpsCertIssuerReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("HttpsCertIssuer"),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr))
-
-	suite.Nil((&HttpsCertReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("HttpsCert"),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr))
-
-	suite.Nil((&DockerRegistryReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("DockerRegistry"),
-		Scheme: mgr.GetScheme(),
-		Reader: mgr.GetAPIReader(),
-	}).SetupWithManager(mgr))
+	suite.Nil(NewDockerRegistryReconciler(mgr).SetupWithManager(mgr))
 
 	mgrStopChannel := make(chan struct{})
 
@@ -274,4 +226,34 @@ func (suite *BasicSuite) SetupSuite() {
 func (suite *BasicSuite) TearDownSuite() {
 	suite.MgrStopChannel <- struct{}{}
 	suite.Nil(suite.TestEnv.Stop())
+}
+
+func (suite *BasicSuite) createHttpsCert(cert v1alpha1.HttpsCert) {
+	suite.Nil(suite.K8sClient.Create(context.Background(), &cert))
+
+	suite.Eventually(func() bool {
+		err := suite.K8sClient.Get(
+			context.Background(),
+			types.NamespacedName{Name: cert.Name},
+			&cert,
+		)
+
+		return err == nil
+	})
+}
+
+func (suite *BasicSuite) createHttpsCertIssuer(issuer v1alpha1.HttpsCertIssuer) {
+	suite.Nil(suite.K8sClient.Create(context.Background(), &issuer))
+
+	suite.Eventually(func() bool {
+		err := suite.K8sClient.Get(
+			context.Background(),
+			types.NamespacedName{
+				Name: issuer.Name,
+			},
+			&issuer,
+		)
+
+		return err == nil
+	})
 }

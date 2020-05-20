@@ -1,4 +1,4 @@
-import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { createStyles, Theme, withStyles, WithStyles, IconButton } from "@material-ui/core";
 import { push } from "connected-react-router";
 import { withNamespace, withNamespaceProps } from "permission/Namespace";
 import React from "react";
@@ -12,13 +12,16 @@ import { Namespaces } from "../../widgets/Namespaces";
 import { BasePage } from "../BasePage";
 import { Details } from "./Detail";
 import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./ItemDataWrapper";
+import ComponentDetail from "./ComponentDetail";
+import { ArrowBackIcon } from "widgets/Icon";
 
 const mapStateToProps = (_: any, props: any) => {
   const { match } = props;
-  const { namespace, applicationName } = match!.params;
+  const { namespace, applicationName, componentName } = match!.params;
   return {
     namespace,
-    applicationName
+    applicationName,
+    componentName
   };
 };
 
@@ -43,20 +46,31 @@ interface Props
     withNamespaceProps,
     WithStyles<typeof styles>,
     ReturnType<typeof mapStateToProps>,
-    RouteChildrenProps<{ applicationName: string }> {}
+    RouteChildrenProps<{ applicationName: string; componentName: string }> {}
 
 class ApplicationShowRaw extends React.PureComponent<Props> {
   private renderSecondHeaderRight() {
-    const { classes, dispatch, applicationName } = this.props;
+    const { classes, dispatch, applicationName, componentName } = this.props;
     return (
       <div className={classes.secondHeaderRight}>
-        <H4 className={classes.secondHeaderRightItem}>Application Details</H4>
+        {componentName && (
+          <IconButton
+            color="primary"
+            onClick={() => {
+              dispatch(push(`/applications/${applicationName}`));
+            }}>
+            <ArrowBackIcon />
+          </IconButton>
+        )}
+        <H4 className={classes.secondHeaderRightItem}>{componentName ? "Component Details" : "Application Details"}</H4>
         <CustomizedButton
           color="primary"
           size="large"
           className={classes.secondHeaderRightItem}
           onClick={() => {
-            dispatch(push(`/applications/${applicationName}/edit`));
+            dispatch(
+              push(`/applications/${applicationName}${componentName ? `/components/${componentName}` : ""}/edit`)
+            );
           }}>
           Edit
         </CustomizedButton>
@@ -65,10 +79,8 @@ class ApplicationShowRaw extends React.PureComponent<Props> {
   }
 
   public render() {
-    // console.log(window.location.pathname);
+    const { isLoading, application, applicationName, dispatch, component } = this.props;
 
-    const { isLoading, application, applicationName, dispatch } = this.props;
-    // const hasWriterRole = hasRole("writer");
     return (
       <BasePage
         secondHeaderLeft={<Namespaces />}
@@ -76,6 +88,13 @@ class ApplicationShowRaw extends React.PureComponent<Props> {
         leftDrawer={<ApplicationViewDrawer />}>
         {isLoading && !application ? (
           <Loading />
+        ) : component ? (
+          <ComponentDetail
+            application={application}
+            dispatch={dispatch}
+            component={component}
+            activeNamespaceName={this.props.activeNamespaceName}
+          />
         ) : application ? (
           <Details application={application} dispatch={dispatch} activeNamespaceName={this.props.activeNamespaceName} />
         ) : (

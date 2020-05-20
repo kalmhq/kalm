@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   createStyles,
   ExpansionPanel,
   ExpansionPanelDetails,
@@ -10,16 +11,16 @@ import {
   withStyles,
   WithStyles
 } from "@material-ui/core";
+import { grey } from "@material-ui/core/colors";
 import DeleteIcon from "@material-ui/icons/Delete";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import clsx from "clsx";
 import { push } from "connected-react-router";
-import Immutable from "immutable";
 import { withNamespace, withNamespaceProps } from "permission/Namespace";
 import React from "react";
 import { ThunkDispatch } from "redux-thunk";
 import { ConsoleIcon, LogIcon } from "widgets/Icon";
-import { loadApplicationAction } from "../../actions/application";
+import { loadApplicationAction, deleteComponentAction } from "../../actions/application";
 import { deletePod } from "../../actions/kubernetesApi";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "../../actions/notification";
 import { RootState } from "../../reducers";
@@ -27,7 +28,6 @@ import { Actions } from "../../types";
 import { ApplicationComponentDetails, ApplicationDetails, PodStatus } from "../../types/application";
 import { formatTimeDistance } from "../../utils";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "../../widgets/Badge";
-import { CustomizedButton } from "../../widgets/Button";
 import { IconButtonWithTooltip, IconLinkWithToolTip } from "../../widgets/IconButtonWithTooltip";
 import { H5 } from "../../widgets/Label";
 import { PieChart } from "../../widgets/PieChart";
@@ -38,7 +38,6 @@ import {
   SmallMemoryLineChart
 } from "../../widgets/SmallLineChart";
 import { generateQueryForPods } from "./Log";
-import { grey } from "@material-ui/core/colors";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -110,6 +109,11 @@ const styles = (theme: Theme) =>
       "& > :nth-child(2)": {
         flex: 1
       }
+    },
+    viewMoreWrapper: {
+      display: "flex",
+      justifyContent: "center",
+      padding: "10px"
     },
     actionCell: {
       width: 100,
@@ -215,7 +219,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
   };
 
   private renderComponentPanel = (index: number) => {
-    const { classes, application, dispatch, hasRole } = this.props;
+    const { classes, application, dispatch } = this.props;
     const component = application.get("components").get(index)!;
 
     return (
@@ -226,7 +230,12 @@ class DetailsRaw extends React.PureComponent<Props, State> {
           aria-controls="panel1a-content"
           id={`applicationComponent-${index}`}>
           <div className={classes.summaryWrapper}>
-            <div className={classes.flexWrapper} style={{ width: "20%" }}>
+            <div
+              className={classes.flexWrapper}
+              style={{ width: "20%", cursor: "pointer" }}
+              onClick={() => {
+                dispatch(push(`/applications/${application.get("name")}/components/${component.get("name")}`));
+              }}>
               {this.renderComponentStatus(component)} <H5>{component.get("name")}</H5>
               <div style={{ marginLeft: 8 }}>({component.get("workloadType") || "Server"})</div>
             </div>
@@ -248,7 +257,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     const { classes, application, dispatch, hasRole } = this.props;
     const component = application.get("components").get(index)!;
     const hasWriterRole = hasRole("writer");
-    const externalAccessPlugin = Immutable.List([]);
+    // const externalAccessPlugin = Immutable.List([]);
     // component.get("plugins") &&
     // (component.get("plugins")!.filter(p => p.get("type") === EXTERNAL_ACCESS_PLUGIN_TYPE) as
     //   | Immutable.List<ImmutableMap<ExternalAccessPlugin>>
@@ -286,16 +295,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
         </Box>
 
         <Box p={2} className={classes.componentActions}>
-          <CustomizedButton
-            style={{ marginRight: 20 }}
-            color="primary"
-            size="large"
-            onClick={() => {
-              dispatch(push(`/applications/${application.get("name")}/edit?component=${component.get("name")}`));
-            }}>
-            Edit
-          </CustomizedButton>
-          <CustomizedButton
+          <Button
             style={{ marginRight: 20 }}
             color="primary"
             size="large"
@@ -303,16 +303,25 @@ class DetailsRaw extends React.PureComponent<Props, State> {
               dispatch(push(`/applications/${application.get("name")}/edit?component=${component.get("name")}`));
             }}>
             Scale
-          </CustomizedButton>
-          <CustomizedButton
+          </Button>
+          <Button
             style={{ marginRight: 20 }}
             color="primary"
             size="large"
             onClick={() => {
-              dispatch(push(`/applications/${application.get("name")}/components/${component.get("name")}`));
+              dispatch(push(`/applications/${application.get("name")}/edit?component=${component.get("name")}`));
             }}>
-            Detail
-          </CustomizedButton>
+            Edit
+          </Button>
+          <Button
+            style={{ marginRight: 20 }}
+            color="primary"
+            size="large"
+            onClick={() => {
+              dispatch(deleteComponentAction(component.get("name"), application.get("name")));
+            }}>
+            Delete
+          </Button>
         </Box>
 
         {/* <Box p={2}>
@@ -437,6 +446,17 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                           })
                           .toArray()}
                   </Box>
+                  <div key={x.get("name")} className={clsx(classes.rowContainer, classes.viewMoreWrapper)}>
+                    <Button
+                      style={{ marginRight: 20 }}
+                      color="primary"
+                      size="large"
+                      onClick={() => {
+                        dispatch(push(`/applications/${application.get("name")}/components/${component.get("name")}`));
+                      }}>
+                      View More
+                    </Button>
+                  </div>
                 </div>
               );
             })

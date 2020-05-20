@@ -26,13 +26,11 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"fmt"
-	"github.com/go-logr/logr"
 	"github.com/jetstack/cert-manager/pkg/apis/acme/v1alpha2"
 	cmmetav1 "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"log"
 	"math/big"
@@ -46,9 +44,7 @@ import (
 
 // HttpsCertIssuerReconciler reconciles a HttpsCertIssuer object
 type HttpsCertIssuerReconciler struct {
-	client.Client
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	*BaseReconciler
 }
 
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=httpscertissuers,verbs=get;list;watch;create;update;patch;delete
@@ -57,17 +53,11 @@ type HttpsCertIssuerReconciler struct {
 
 func (r *HttpsCertIssuerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
-	log := r.Log.WithValues("httpscertissuer", req.NamespacedName)
 
 	// your logic here
 	var httpsCertIssuer corev1alpha1.HttpsCertIssuer
 	if err := r.Get(ctx, req.NamespacedName, &httpsCertIssuer); err != nil {
-		err = client.IgnoreNotFound(err)
-		if err != nil {
-			log.Error(err, "fail to get HttpsCertIssuer")
-		}
-
-		return ctrl.Result{}, err
+		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
 	if httpsCertIssuer.Spec.CAForTest != nil {
@@ -79,6 +69,12 @@ func (r *HttpsCertIssuerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, er
 	}
 
 	return ctrl.Result{}, nil
+}
+
+func NewHttpsCertIssuerReconciler(mgr ctrl.Manager) *HttpsCertIssuerReconciler {
+	return &HttpsCertIssuerReconciler{
+		BaseReconciler: NewBaseReconciler(mgr, "HttpsCertIssuer"),
+	}
 }
 
 func (r *HttpsCertIssuerReconciler) SetupWithManager(mgr ctrl.Manager) error {
@@ -127,7 +123,7 @@ func (r *HttpsCertIssuerReconciler) ReconcileCAForTest(ctx context.Context, cert
 			return ctrl.Result{}, err
 		}
 
-		r.Log.Info("secret created")
+		r.EmitNormalEvent(&certIssuer, "SecretCreated", "secret is created.")
 	}
 
 	expectedClusterIssuer := cmv1alpha2.ClusterIssuer{
@@ -158,19 +154,22 @@ func (r *HttpsCertIssuerReconciler) ReconcileCAForTest(ctx context.Context, cert
 				return ctrl.Result{}, err
 			}
 
-			r.Log.Info("creating clusterIssuer")
-			if err := r.Create(ctx, &expectedClusterIssuer); err != nil {
-				r.Log.Error(err, "fail create clusterIssuer")
+			if err := r.Create(ctx, &clusterIssuer); err != nil {
+				r.EmitWarningEvent(&certIssuer, err, "fail create issuer")
 				return ctrl.Result{}, err
 			}
+
+			r.EmitNormalEvent(&certIssuer, "IssuerCreated", "Cert manager issuer is created")
 		} else {
 			clusterIssuer.Spec = expectedClusterIssuer.Spec
 
 			r.Log.Info("updating clusterIssuer")
 			if err := r.Update(ctx, &expectedClusterIssuer); err != nil {
-				r.Log.Error(err, "fail update clusterIssuer")
+				r.EmitWarningEvent(&certIssuer, err, "fail update issuer")
 				return ctrl.Result{}, err
 			}
+
+			r.EmitNormalEvent(&certIssuer, "IssuerUpdated", "Cert manager issuer is Updated.")
 		}
 	}
 
@@ -197,13 +196,13 @@ func (r *HttpsCertIssuerReconciler) ReconcileACMECloudFlare(ctx context.Context,
 		Namespace: apiTokenSecretNamespace,
 		Name:      apiTokenSecretName,
 	}, &apiTokenSecret); err != nil {
-		r.Log.Error(err, fmt.Sprintf("fail to get secret %s", apiTokenSecretName))
+		//r.Log.Error(err, fmt.Sprintf("fail to get secret %s", apiTokenSecretName))
+		r.EmitWarningEvent(&certIssuer, err, fmt.Sprintf("fail to get secret %s", apiTokenSecretName))
 
 		if certIssuer.Status.OK {
 			certIssuer.Status.OK = false
 			r.Status().Update(ctx, &certIssuer)
 		}
-
 		return ctrl.Result{}, err
 	}
 
@@ -218,7 +217,7 @@ func (r *HttpsCertIssuerReconciler) ReconcileACMECloudFlare(ctx context.Context,
 
 	if secKey == "" {
 		err := fmt.Errorf("secret %s has no key", apiTokenSecretName)
-		r.Log.Error(err, "")
+		r.EmitWarningEvent(&certIssuer, err, "Secret has no keys.")
 
 		if certIssuer.Status.OK {
 			certIssuer.Status.OK = false
@@ -284,16 +283,21 @@ func (r *HttpsCertIssuerReconciler) ReconcileACMECloudFlare(ctx context.Context,
 
 		r.Log.Info("creating clusterIssuer")
 		if err := r.Create(ctx, &clusterIssuer); err != nil {
-			r.Log.Error(err, "fail create clusterIssuer")
+			//r.Log.Error(err, "fail create clusterIssuer")
+			r.EmitWarningEvent(&certIssuer, err, "fail create issuer")
 			return ctrl.Result{}, err
 		}
+
+		r.EmitNormalEvent(&certIssuer, "IssuerCreated", "Cert manager issuer is created")
 	} else {
 		clusterIssuer.Spec = expectedClusterIssuer.Spec
 
 		if err := r.Update(ctx, &clusterIssuer); err != nil {
-			r.Log.Error(err, "fail update clusterIssuer")
+			r.EmitWarningEvent(&certIssuer, err, "fail update issuer")
 			return ctrl.Result{}, err
 		}
+
+		r.EmitNormalEvent(&certIssuer, "IssuerUpdated", "Cert manager issuer is Updated.")
 	}
 
 	certIssuer.Status.OK = true
