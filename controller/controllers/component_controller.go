@@ -29,6 +29,7 @@ import (
 	batchV1 "k8s.io/api/batch/v1"
 	batchV1Beta1 "k8s.io/api/batch/v1beta1"
 	coreV1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -210,12 +211,11 @@ func (r *ComponentReconcilerTask) Run(req ctrl.Request) error {
 	//	r.WarningEvent()(err, "Fix component default values error.")
 	//	return ctrl.Result{}, err
 	//}
-
-	if err := r.LoadResources(); err != nil {
+	if err := r.HandleDelete(); err != nil {
 		return err
 	}
 
-	if err := r.HandleDelete(); err != nil {
+	if err := r.LoadResources(); err != nil {
 		return err
 	}
 
@@ -1327,6 +1327,10 @@ func (r *ComponentReconcilerTask) SetupAttributes(req ctrl.Request) (err error) 
 	}, &app)
 
 	if err != nil {
+		if errors.IsNotFound(err) && !r.component.DeletionTimestamp.IsZero() {
+			return nil
+		}
+
 		return err
 	}
 	r.application = &app
