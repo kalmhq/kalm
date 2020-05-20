@@ -16,6 +16,10 @@ func TestHttpsCertIssuerTestSuite(t *testing.T) {
 	suite.Run(t, new(HttpsCertIssuerTestSuite))
 }
 
+func (suite *HttpsCertIssuerTestSuite) TearDownTest() {
+	suite.k8sClinet.RESTClient().Delete().AbsPath("/apis/core.kapp.dev/v1alpha1/httpscertissuers/my-foobar-issuer").Do().Error()
+}
+
 func (suite *HttpsCertIssuerTestSuite) TestGetEmptyHCIssuerList() {
 	rec := suite.NewRequest(http.MethodGet, "/v1alpha1/httpscertissuers", nil)
 
@@ -25,9 +29,9 @@ func (suite *HttpsCertIssuerTestSuite) TestGetEmptyHCIssuerList() {
 	suite.Equal(200, rec.Code)
 }
 
-func (suite *ComponentTemplateTestSuite) TestCreateHttpsCertIssuer() {
+func (suite *HttpsCertIssuerTestSuite) TestCreateHttpsCertIssuer() {
 	body := `{
-  "name": "my-issuer",
+  "name": "my-foobar-issuer",
   "caForTest": {}
 }`
 
@@ -37,19 +41,19 @@ func (suite *ComponentTemplateTestSuite) TestCreateHttpsCertIssuer() {
 	rec.BodyAsJSON(&issuer)
 
 	suite.Equal(201, rec.Code)
-	suite.Equal("my-issuer", issuer.Name)
+	suite.Equal("my-foobar-issuer", issuer.Name)
 
 	var res v1alpha1.HttpsCertIssuerList
 	err := suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/httpscertissuers").Do().Into(&res)
 	suite.Nil(err)
 
 	suite.Equal(1, len(res.Items))
-	suite.Equal("my-issuer", res.Items[0].Name)
+	suite.Equal("my-foobar-issuer", res.Items[0].Name)
 	suite.NotNil(res.Items[0].Spec.CAForTest)
 	suite.Nil(res.Items[0].Spec.ACMECloudFlare)
 }
 
-func (suite *ComponentTemplateTestSuite) TestUpdateHttpsCertIssuer() {
+func (suite *HttpsCertIssuerTestSuite) TestUpdateHttpsCertIssuer() {
 	body := `{
   "name": "my-foobar-issuer",
   "acmeCloudFlare": {
@@ -103,7 +107,7 @@ func (suite *ComponentTemplateTestSuite) TestUpdateHttpsCertIssuer() {
 	suite.Equal("foobar2", res.Items[0].Spec.ACMECloudFlare.APITokenSecretName)
 }
 
-func (suite *ComponentTemplateTestSuite) TestDeleteHttpsCertIssuer() {
+func (suite *HttpsCertIssuerTestSuite) TestDeleteHttpsCertIssuer() {
 	body := `{
   "name": "my-foobar-issuer",
   "acmeCloudFlare": {
