@@ -1,10 +1,9 @@
-import { Grid } from "@material-ui/core";
+import { Button, Grid } from "@material-ui/core";
 import DeleteIcon from "@material-ui/icons/Delete";
 import Immutable from "immutable";
 import React from "react";
 import { DispatchProp } from "react-redux";
 import { WrappedFieldArrayProps } from "redux-form";
-import { ButtonWhite } from "../../widgets/Button";
 import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
 
 interface FieldArrayComponentHackType {
@@ -26,12 +25,19 @@ export class FieldArrayWrapper extends React.PureComponent<Props> {
     const {
       fields,
       getFieldComponents,
-      onAdd,
-      meta: { error, submitFailed }
+      onAdd
+      // meta: { error, submitFailed }
     } = this.props;
 
     return (
-      <div>
+      <div style={{ width: "100%", position: "relative" }}>
+        <Button
+          color="primary"
+          size="large"
+          style={{ position: "absolute", right: 0, top: fields.length === 0 ? -22 : -10 }}
+          onClick={() => (onAdd ? onAdd() : fields.push(Immutable.Map({})))}>
+          Add
+        </Button>
         {fields.map((member, index) => {
           const fieldComponents = getFieldComponents(member);
 
@@ -57,11 +63,11 @@ export class FieldArrayWrapper extends React.PureComponent<Props> {
             </Grid>
           );
         })}
-        <Grid container spacing={3} style={{ marginTop: 0 }}>
-          <Grid item xs>
+        <Grid container spacing={3} style={{ marginTop: 0, marginBottom: 10 }}>
+          {/* <Grid item xs>
             <ButtonWhite onClick={() => (onAdd ? onAdd() : fields.push(Immutable.Map({})))}>Add</ButtonWhite>
             {submitFailed && error && <span>{error}</span>}
-          </Grid>
+          </Grid> */}
         </Grid>
       </div>
     );

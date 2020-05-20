@@ -22,6 +22,7 @@ import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
 import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./ItemDataWrapper";
 import queryString from "query-string";
+import { ComponentStatus } from "../../widgets/ComponentStatus";
 
 const mapStateToProps = (state: RootState) => {
   const selector = formValueSelector("application");
@@ -239,7 +240,7 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
           </div>
         }
         secondHeaderLeft={application && application.get("name")}>
-        {isLoading ? <Loading /> : this.renderForm()}
+        {isLoading && !application ? <Loading /> : this.renderForm()}
       </BasePage>
     );
   }
@@ -284,7 +285,9 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
           />
         </Grid>
         <Grid item xs={12} sm={6} md={6}>
-          Pods TODO
+          <ComponentStatus
+            component={application?.get("components")?.find(x => x.get("name") === currentComponent?.get("name"))}
+          />
         </Grid>
       </Grid>
     );
@@ -292,5 +295,5 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
 }
 
 export const ApplicationEdit = connect(mapStateToProps)(
-  withStyles(styles)(ApplicationItemDataWrapper({ reloadFrequency: 0 })(ApplicationEditRaw))
+  withStyles(styles)(ApplicationItemDataWrapper({ reloadFrequency: 3000 })(ApplicationEditRaw))
 );
