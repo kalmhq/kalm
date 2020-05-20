@@ -63,6 +63,10 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
       {
         text: "Configs",
         to: "/configs?namespace=" + activeNamespaceName
+      },
+      {
+        text: "Routes",
+        to: "/routes?namespace=" + activeNamespaceName
       }
     ];
   }

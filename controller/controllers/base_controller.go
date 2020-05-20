@@ -31,7 +31,7 @@ type BaseReconciler struct {
 func NewBaseReconciler(mgr ctrl.Manager, name string) *BaseReconciler {
 	return &BaseReconciler{
 		Client:   mgr.GetClient(),
-		Log:      ctrl.Log.WithName("controllers").WithName("Application"),
+		Log:      ctrl.Log.WithName("controllers").WithName(name),
 		Scheme:   mgr.GetScheme(),
 		Reader:   mgr.GetAPIReader(),
 		Recorder: mgr.GetEventRecorderFor("application"),

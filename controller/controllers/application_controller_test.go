@@ -38,6 +38,7 @@ func (suite *ApplicationControllerSuite) TestBasicCRUD() {
 	suite.Eventually(func() bool {
 		return suite.K8sClient.Get(context.Background(), getApplicationNamespacedName(application), application) == nil
 	})
+
 	// Update
 	application.Spec.SharedEnv = append(application.Spec.SharedEnv, v1alpha1.EnvVar{
 		Name:  "name",

@@ -23,6 +23,7 @@ import { RequireAdmin } from "permission/Role";
 import { RequireNamespaceReader, RequireNamespaceWriter } from "permission/Namespace";
 import { UIComponentsPage } from "pages/UIComponents";
 import { RegistryListPage } from "pages/Registry/List";
+import { RouteListPage } from "pages/Route/List";
 
 const RequireAuthorizatedDashboard = RequireAuthorizated(Dashboard);
 
@@ -63,6 +64,7 @@ export const KappRoutes = (
             component={RequireNamespaceReader(ApplicationShow)}
           />
           <Route exact path="/configs" component={RequireNamespaceReader(ConfigListPage)}></Route>
+          <Route exact path="/routes" component={RequireNamespaceReader(RouteListPage)}></Route>
           <Route exact path="/ui-components" component={UIComponentsPage}></Route>
           <Route component={NoMatch} />
         </Switch>

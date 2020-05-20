@@ -59,7 +59,7 @@ spec:
   config:
     hosts:
       - "demo.com"
-    httpsCert: httpscert-sample
+#    httpsCert: httpscert-sample
     paths:
       - "/abc"
       - "/"
