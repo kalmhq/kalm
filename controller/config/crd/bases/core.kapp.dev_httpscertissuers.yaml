@@ -14,7 +14,7 @@ spec:
     listKind: HttpsCertIssuerList
     plural: httpscertissuers
     singular: httpscertissuer
-  scope: Namespaced
+  scope: Cluster
   subresources:
     status: {}
   validation:
@@ -38,12 +38,12 @@ spec:
           properties:
             acmeCloudFlare:
               properties:
-                apiKeySecretName:
+                apiTokenSecretName:
                   type: string
                 email:
                   type: string
               required:
-              - apiKeySecretName
+              - apiTokenSecretName
               - email
               type: object
             caForTest:

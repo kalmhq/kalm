@@ -227,3 +227,33 @@ func (suite *BasicSuite) TearDownSuite() {
 	suite.MgrStopChannel <- struct{}{}
 	suite.Nil(suite.TestEnv.Stop())
 }
+
+func (suite *BasicSuite) createHttpsCert(cert v1alpha1.HttpsCert) {
+	suite.Nil(suite.K8sClient.Create(context.Background(), &cert))
+
+	suite.Eventually(func() bool {
+		err := suite.K8sClient.Get(
+			context.Background(),
+			types.NamespacedName{Name: cert.Name},
+			&cert,
+		)
+
+		return err == nil
+	})
+}
+
+func (suite *BasicSuite) createHttpsCertIssuer(issuer v1alpha1.HttpsCertIssuer) {
+	suite.Nil(suite.K8sClient.Create(context.Background(), &issuer))
+
+	suite.Eventually(func() bool {
+		err := suite.K8sClient.Get(
+			context.Background(),
+			types.NamespacedName{
+				Name: issuer.Name,
+			},
+			&issuer,
+		)
+
+		return err == nil
+	})
+}

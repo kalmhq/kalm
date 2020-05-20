@@ -688,8 +688,17 @@ func (r *ApplicationReconcilerTask) ensureHttpsConfigOfGateway(gw *istioV1Beta1.
 			continue
 		}
 
+		var httpsCert corev1alpha1.HttpsCert
 		if ingressConfig.HttpsCert == "" {
+			// todo check if suitable cert already exists
 			continue
+		} else {
+			if err := r.Get(r.ctx, types.NamespacedName{
+				Name: ingressConfig.HttpsCert,
+			}, &httpsCert); err != nil {
+				r.EmitWarningEvent(&appPluginBinding, err, "fail to find given httpsCert:"+ingressConfig.HttpsCert)
+				continue
+			}
 		}
 
 		curServer := istioNetworkingV1Beta1.Server{

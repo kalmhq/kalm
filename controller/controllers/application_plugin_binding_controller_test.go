@@ -198,6 +198,11 @@ function AfterApplicationSaved() {
 	//	Raw: []byte(`{"type":"object","properties":{"newLabelName":{"type":"string"}, "newLabelValue":{"type": "string"}}}`),
 	//}
 
+	issuer := genEmptyCAHttpsCertIssuer()
+	suite.createHttpsCertIssuer(issuer)
+	cert := genHttpsCert(issuer.Name, "httpscert-sample")
+	suite.createHttpsCert(cert)
+
 	suite.createApplicationPlugin(appPluginIngress)
 
 	suite.Eventually(func() bool {

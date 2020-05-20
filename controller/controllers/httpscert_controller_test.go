@@ -40,7 +40,9 @@ func (suite *HttpsCertControllerSuite) TestBasicCRUD() {
 	suite.Eventually(func() bool {
 		err := suite.K8sClient.Get(
 			context.Background(),
-			types.NamespacedName{Name: httpsCert.Name, Namespace: httpsCert.Namespace},
+			types.NamespacedName{
+				Name: httpsCert.Name,
+			},
 			&httpsCert,
 		)
 
@@ -75,7 +77,9 @@ func (suite *HttpsCertControllerSuite) TestBasicCRUD() {
 		return errors.IsNotFound(
 			suite.K8sClient.Get(
 				context.Background(),
-				types.NamespacedName{Name: httpsCert.Name, Namespace: httpsCert.Namespace},
+				types.NamespacedName{
+					Name: httpsCert.Name,
+				},
 				&httpsCert,
 			),
 		)
@@ -85,18 +89,26 @@ func (suite *HttpsCertControllerSuite) TestBasicCRUD() {
 func (suite *HttpsCertControllerSuite) reloadHttpsCert(httpsCert *v1alpha1.HttpsCert) {
 	err := suite.K8sClient.Get(
 		context.Background(),
-		types.NamespacedName{Name: httpsCert.Name, Namespace: httpsCert.Namespace},
+		types.NamespacedName{
+			Name: httpsCert.Name,
+		},
 		httpsCert,
 	)
 
 	suite.Nil(err)
 }
 
-func genHttpsCert(issuer string) v1alpha1.HttpsCert {
+func genHttpsCert(issuer string, certNameOpt ...string) v1alpha1.HttpsCert {
+	var certName string
+	if len(certNameOpt) > 0 {
+		certName = certNameOpt[0]
+	} else {
+		certName = randomName()[:12]
+	}
+
 	return v1alpha1.HttpsCert{
 		ObjectMeta: v1.ObjectMeta{
-			Name:      randomName()[:12],
-			Namespace: randomName()[:12],
+			Name: certName,
 		},
 		Spec: v1alpha1.HttpsCertSpec{
 			HttpsCertIssuer: issuer,
@@ -105,30 +117,32 @@ func genHttpsCert(issuer string) v1alpha1.HttpsCert {
 	}
 }
 
-func (suite *HttpsCertControllerSuite) createHttpsCertIssuer(issuer v1alpha1.HttpsCertIssuer) {
-	suite.Nil(suite.K8sClient.Create(context.Background(), &issuer))
-
-	suite.Eventually(func() bool {
-		err := suite.K8sClient.Get(
-			context.Background(),
-			types.NamespacedName{Name: issuer.Name, Namespace: issuer.Namespace},
-			&issuer,
-		)
-
-		return err == nil
-	})
-}
-
-func (suite *HttpsCertControllerSuite) createHttpsCert(cert v1alpha1.HttpsCert) {
-	suite.Nil(suite.K8sClient.Create(context.Background(), &cert))
-
-	suite.Eventually(func() bool {
-		err := suite.K8sClient.Get(
-			context.Background(),
-			types.NamespacedName{Name: cert.Name, Namespace: cert.Namespace},
-			&cert,
-		)
-
-		return err == nil
-	})
-}
+//func (suite *HttpsCertControllerSuite) createHttpsCertIssuer(issuer v1alpha1.HttpsCertIssuer) {
+//	suite.Nil(suite.K8sClient.Create(context.Background(), &issuer))
+//
+//	suite.Eventually(func() bool {
+//		err := suite.K8sClient.Get(
+//			context.Background(),
+//			types.NamespacedName{
+//				Name: issuer.Name,
+//			},
+//			&issuer,
+//		)
+//
+//		return err == nil
+//	})
+//}
+//
+//func (suite *HttpsCertControllerSuite) createHttpsCert(cert v1alpha1.HttpsCert) {
+//	suite.Nil(suite.K8sClient.Create(context.Background(), &cert))
+//
+//	suite.Eventually(func() bool {
+//		err := suite.K8sClient.Get(
+//			context.Background(),
+//			types.NamespacedName{Name: cert.Name},
+//			&cert,
+//		)
+//
+//		return err == nil
+//	})
+//}

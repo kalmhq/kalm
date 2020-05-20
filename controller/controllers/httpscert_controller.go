@@ -33,6 +33,14 @@ type HttpsCertReconciler struct {
 	*BaseReconciler
 }
 
+func getCertAndCertSecretName(httpsCert corev1alpha1.HttpsCert) (certName string, certSecretName string) {
+	name := httpsCert.Name
+
+	return name, name
+}
+
+const istioNamespace = "istio-system"
+
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=httpscerts,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=httpscerts/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=cert-manager.io,resources=certificates,verbs=get;list;watch;create;update;patch;delete
@@ -45,23 +53,22 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	certName := httpsCert.Name
-	//secName := httpsCert.Name + "-cacert"
-	secName := httpsCert.Name
+	certName, certSecretName := getCertAndCertSecretName(httpsCert)
 
-	cmCertNS := "istio-system"
+	// cert & it's certSecret have to be in namespace:istio-system to be found by istio
+	certNS := istioNamespace
 
 	desiredCert := cmv1alpha2.Certificate{
 		ObjectMeta: metav1.ObjectMeta{
-			Namespace: cmCertNS,
+			Namespace: certNS,
 			Name:      certName,
 		},
 		Spec: cmv1alpha2.CertificateSpec{
-			SecretName: secName,
+			SecretName: certSecretName,
 			DNSNames:   httpsCert.Spec.Domains,
 			IssuerRef: cmmeta.ObjectReference{
 				Name: httpsCert.Spec.HttpsCertIssuer,
-				Kind: "Issuer",
+				Kind: "ClusterIssuer",
 			},
 		},
 	}
@@ -70,7 +77,7 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	var cert cmv1alpha2.Certificate
 	var isNew bool
 	err := r.Get(ctx, types.NamespacedName{
-		Namespace: cmCertNS,
+		Namespace: certNS,
 		Name:      certName,
 	}, &cert)
 
@@ -86,6 +93,7 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	if isNew {
+		// todo different ns obj can't not be owner
 		if err := ctrl.SetControllerReference(&httpsCert, &cert, r.Scheme); err != nil {
 			return ctrl.Result{}, err
 		}

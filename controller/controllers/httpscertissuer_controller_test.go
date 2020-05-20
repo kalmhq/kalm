@@ -36,18 +36,22 @@ func (suite *HttpsCertIssuerControllerSuite) TestBasicCRUD() {
 	suite.Eventually(func() bool {
 		err := suite.K8sClient.Get(
 			context.Background(),
-			types.NamespacedName{Name: caHttpsCertIssuer.Name, Namespace: caHttpsCertIssuer.Namespace},
+			types.NamespacedName{
+				Name: caHttpsCertIssuer.Name,
+			},
 			&caHttpsCertIssuer,
 		)
 
 		return err == nil
 	})
 	// corresponding Issuer should be created too
-	var issuer v1alpha2.Issuer
+	var issuer v1alpha2.ClusterIssuer
 	suite.Eventually(func() bool {
 		err := suite.K8sClient.Get(
 			context.Background(),
-			types.NamespacedName{Name: caHttpsCertIssuer.Name, Namespace: caHttpsCertIssuer.Namespace},
+			types.NamespacedName{
+				Name: caHttpsCertIssuer.Name,
+			},
 			&issuer,
 		)
 
@@ -91,8 +95,7 @@ func (suite *HttpsCertIssuerControllerSuite) reloadHttpsCertIssuer(issuer *v1alp
 	err := suite.K8sClient.Get(
 		context.Background(),
 		types.NamespacedName{
-			Name:      issuer.Name,
-			Namespace: issuer.Namespace,
+			Name: issuer.Name,
 		},
 		issuer,
 	)
@@ -103,8 +106,7 @@ func (suite *HttpsCertIssuerControllerSuite) reloadHttpsCertIssuer(issuer *v1alp
 func genEmptyCAHttpsCertIssuer() v1alpha1.HttpsCertIssuer {
 	return v1alpha1.HttpsCertIssuer{
 		ObjectMeta: v1.ObjectMeta{
-			Name:      randomName()[:12],
-			Namespace: randomName()[:12],
+			Name: randomName()[:12],
 		},
 		Spec: v1alpha1.HttpsCertIssuerSpec{
 			CAForTest: &v1alpha1.CAForTestIssuer{},
