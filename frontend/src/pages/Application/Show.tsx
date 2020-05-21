@@ -68,7 +68,9 @@ class ApplicationShowRaw extends React.PureComponent<Props> {
           size="large"
           className={classes.secondHeaderRightItem}
           onClick={() => {
-            dispatch(push(`/applications/${applicationName}/edit?component=${componentName}`));
+            dispatch(
+              push(`/applications/${applicationName}/edit${componentName ? `?component=${componentName}` : ""}`)
+            );
           }}>
           Edit
         </CustomizedButton>
