@@ -220,7 +220,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
 
   private renderComponentPanel = (index: number) => {
     const { classes, application, dispatch } = this.props;
-    const component = application.get("components").get(index)!;
+    const component = application.get("components")?.get(index)!;
 
     return (
       <ExpansionPanel>
@@ -255,7 +255,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
 
   private renderComponentDetail = (index: number) => {
     const { classes, application, dispatch, hasRole } = this.props;
-    const component = application.get("components").get(index)!;
+    const component = application.get("components")?.get(index)!;
     const hasWriterRole = hasRole("writer");
     // const externalAccessPlugin = Immutable.List([]);
     // component.get("plugins") &&
@@ -366,6 +366,10 @@ class DetailsRaw extends React.PureComponent<Props, State> {
           {component
             .get("pods")
             .map(x => {
+              const containerNames = x
+                .get("containers")
+                .map(container => container.get("name"))
+                .toArray();
               return (
                 <div key={x.get("name")}>
                   <div key={x.get("name")} className={clsx(classes.rowContainer, classes.podDataRow)}>
@@ -394,7 +398,11 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                           tooltipTitle="Log"
                           to={
                             `/applications/${application.get("name")}/logs?` +
-                            generateQueryForPods(this.props.activeNamespaceName, [x.get("name")], x.get("name"))
+                            generateQueryForPods(
+                              this.props.activeNamespaceName,
+                              [[x.get("name"), containerNames[0]]],
+                              [x.get("name"), containerNames[0]]
+                            )
                           }>
                           <LogIcon />
                         </IconLinkWithToolTip>
@@ -405,7 +413,11 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                             className={classes.podActionButton}
                             to={
                               `/applications/${application.get("name")}/shells?` +
-                              generateQueryForPods(this.props.activeNamespaceName, [x.get("name")], x.get("name"))
+                              generateQueryForPods(
+                                this.props.activeNamespaceName,
+                                [[x.get("name"), containerNames[0]]],
+                                [x.get("name"), containerNames[0]]
+                              )
                             }>
                             <ConsoleIcon />
                           </IconLinkWithToolTip>
@@ -476,7 +488,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     let podPending = 0;
     let podError = 0;
 
-    application.get("components").forEach(component => {
+    application.get("components")?.forEach(component => {
       let hasError = false;
       let hasPending = false;
       component.get("pods").forEach(pod => {

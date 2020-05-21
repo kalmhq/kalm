@@ -1,4 +1,4 @@
-import { Chip, createStyles, Paper, TextField, Theme, withStyles } from "@material-ui/core";
+import { Chip, createStyles, Paper, TextField, Theme, withStyles, Grid } from "@material-ui/core";
 import { WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import { Autocomplete, AutocompleteProps, UseAutocompleteProps } from "@material-ui/lab";
@@ -16,6 +16,7 @@ import { BasePage } from "../BasePage";
 import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./ItemDataWrapper";
 import { Xterm, XtermRaw } from "./Xterm";
 import { ApplicationViewDrawer } from "../../widgets/ApplicationViewDrawer";
+import { PodStatus } from "types/application";
 
 const logger = debug("ws");
 const detailedLogger = debug("ws:details");
@@ -94,8 +95,8 @@ const MyAutocomplete = withStyles(autocompleteStyles)(
 interface Props extends WithApplicationItemDataProps, WithStyles<typeof styles> {}
 
 interface State {
-  value: any;
-  subscribedPodNames: Set<string>;
+  value: [string, string];
+  subscribedPods: Immutable.List<[string, string]>;
 }
 
 const styles = (theme: Theme) =>
@@ -106,9 +107,9 @@ const styles = (theme: Theme) =>
     }
   });
 
-export const generateQueryForPods = (namespace: string, podNames: string[], active?: string) => {
+export const generateQueryForPods = (namespace: string, podNames: [string, string][], active?: [string, string]) => {
   const search = {
-    pods: podNames.length > 0 ? podNames : undefined,
+    pods: podNames.length > 0 ? JSON.stringify(podNames) : undefined,
     active: active || undefined,
     namespace
   };
@@ -126,8 +127,8 @@ export class LogStream extends React.PureComponent<Props, State> {
     super(props);
 
     this.state = {
-      value: "",
-      subscribedPodNames: new Set()
+      value: ["", ""],
+      subscribedPods: Immutable.List()
     };
 
     this.isLog = window.location.pathname.includes("logs");
@@ -152,22 +153,19 @@ export class LogStream extends React.PureComponent<Props, State> {
   componentDidUpdate(prevProps: Props, prevState: State) {
     const { application } = this.props;
 
-    let podNames: Immutable.List<string> = Immutable.List([]);
+    let pods: Immutable.List<string> = Immutable.List();
     application?.get("components")?.forEach(component => {
       component.get("pods").forEach(pod => {
-        podNames = podNames.push(pod.get("name"));
+        pods = pods.push(pod.get("name"));
       });
     });
 
-    if (
-      prevState.subscribedPodNames.size !== this.state.subscribedPodNames.size ||
-      this.state.value !== prevState.value
-    ) {
+    if (prevState.subscribedPods.size !== this.state.subscribedPods.size || this.state.value !== prevState.value) {
       // save selected pods in query
       const search = {
         ...queryString.parse(window.location.search, { arrayFormat: "comma" }),
-        pods: this.state.subscribedPodNames.size > 0 ? Array.from(this.state.subscribedPodNames) : undefined,
-        active: !!this.state.value ? this.state.value : undefined
+        pods: this.state.subscribedPods.size > 0 ? JSON.stringify(this.state.subscribedPods) : undefined,
+        active: !!this.state.value[0] ? this.state.value : undefined
       };
 
       this.props.dispatch(
@@ -177,25 +175,26 @@ export class LogStream extends React.PureComponent<Props, State> {
       );
     }
 
-    if (podNames && !this.initalizedFromQuery) {
+    if (pods && !this.initalizedFromQuery) {
       // load selected pods from query, this is useful when first loaded.
       const queries = queryString.parse(window.location.search, { arrayFormat: "comma" }) as {
-        pods: string[] | string | undefined;
-        active: string | undefined;
+        pods: [string, string][] | string | undefined;
+        active: [string, string] | undefined;
       };
-      let validPods: string[] = [];
-      let validValue: string = "";
+      let validPods: [string, string][] = [];
+      let validValue: [string, string] = ["", ""];
 
       if (queries.pods) {
+        if (typeof queries.pods === "string") {
+          queries.pods = JSON.parse(queries.pods);
+        }
         if (typeof queries.pods === "object") {
-          validPods = queries.pods.filter(x => podNames.includes(x));
-        } else {
-          validPods = [queries.pods];
+          validPods = queries.pods.filter(x => pods.includes(x[0]));
         }
       }
 
       if (queries.active) {
-        validValue = podNames.includes(queries.active) ? queries.active : "";
+        validValue = pods.includes(queries.active[0]) ? queries.active : ["", ""];
       }
 
       if (this.state.value !== validValue) {
@@ -204,9 +203,9 @@ export class LogStream extends React.PureComponent<Props, State> {
         });
       }
 
-      if (this.state.subscribedPodNames.size !== validPods.length) {
+      if (this.state.subscribedPods.size !== validPods.length) {
         this.setState({
-          subscribedPodNames: new Set(validPods)
+          subscribedPods: Immutable.List(validPods)
         });
       }
 
@@ -227,10 +226,10 @@ export class LogStream extends React.PureComponent<Props, State> {
     };
 
     const afterWsAuthSuccess = () => {
-      const { subscribedPodNames } = this.state;
+      const { subscribedPods } = this.state;
 
-      if (subscribedPodNames.size > 0) {
-        Array.from(subscribedPodNames).forEach(this.subscribe);
+      if (subscribedPods.size > 0) {
+        Array.from(subscribedPods).forEach(([podName, containerName]) => this.subscribe(podName, containerName));
       }
 
       while (this.wsQueueMessages.length > 0) {
@@ -292,26 +291,28 @@ export class LogStream extends React.PureComponent<Props, State> {
     return ws;
   };
 
-  subscribe = (podName: string) => {
-    logger("subscribe", podName);
+  subscribe = (podName: string, containerName: string) => {
+    logger("subscribe", podName, containerName);
     const { activeNamespaceName } = this.props;
 
     this.sendOrQueueMessage(
       JSON.stringify({
         type: this.isLog ? "subscribePodLog" : "execStartSession",
-        podName: podName,
+        podName,
+        container: containerName,
         namespace: activeNamespaceName
       })
     );
   };
 
-  unsubscribe = (podName: string) => {
+  unsubscribe = (podName: string, containerName: string) => {
     const { activeNamespaceName } = this.props;
-    logger("unsubscribe", podName);
+    logger("unsubscribe", podName, containerName);
     this.sendOrQueueMessage(
       JSON.stringify({
         type: this.isLog ? "unsubscribePodLog" : "execEndSession",
-        podName: podName,
+        podName,
+        container: containerName,
         namespace: activeNamespaceName
       })
     );
@@ -325,35 +326,87 @@ export class LogStream extends React.PureComponent<Props, State> {
     }
   };
 
-  onInputChange = (_event: React.ChangeEvent<{}>, x: string[]) => {
-    const currentSet = new Set(x);
-    const needSub = Array.from(currentSet).filter(x => !this.state.subscribedPodNames.has(x));
-    const needUnsub = Array.from(this.state.subscribedPodNames).filter(x => !currentSet.has(x));
-    const intersection = Array.from(currentSet).filter(x => this.state.subscribedPodNames.has(x));
+  getAllPods = (): Immutable.List<PodStatus> => {
+    const { application } = this.props;
 
-    needSub.forEach(this.subscribe);
-    needUnsub.forEach(this.unsubscribe);
+    let pods: Immutable.List<PodStatus> = Immutable.List();
+    application?.get("components")?.forEach(component => {
+      component.get("pods").forEach(pod => {
+        pods = pods.push(pod);
+      });
+    });
 
-    const { value } = this.state;
-    let newValue = value;
-    if (needUnsub.includes(value)) {
-      if (needSub.length > 0) {
-        newValue = needSub[0];
-      } else if (intersection.length > 0) {
-        newValue = intersection[0];
-      } else {
-        newValue = "";
-      }
-    } else if (value === "" && needSub.length > 0) {
-      newValue = needSub[0];
-    } else if (needSub.length === 1 && needUnsub.length === 0) {
-      newValue = needSub[0];
-    }
-
-    this.setState({ subscribedPodNames: currentSet, value: newValue });
+    return pods;
   };
 
-  private renderInput() {
+  onInputChange = (_event: React.ChangeEvent<{}>, x: string[]) => {
+    const { subscribedPods } = this.state;
+    const { value } = this.state;
+    const subscribedPodNames = subscribedPods.map(x => x[0]);
+    const currentPodNames = Immutable.List(x);
+    const pods = this.getAllPods();
+    let newValue = value;
+
+    const currentPods: Immutable.List<[string, string]> = currentPodNames.map(podName => {
+      const subscribedPod = subscribedPods.find(x => x[0] === podName);
+      if (subscribedPod) {
+        return subscribedPod;
+      } else {
+        const pod = pods.find(x => x.get("name") === podName)!;
+        const containerNames = pod
+          .get("containers")
+          .map(x => x.get("name"))
+          .toArray();
+        return [podName, containerNames[0]];
+      }
+    });
+
+    subscribedPods.forEach(([podName, containerName]) => {
+      if (!currentPodNames.includes(podName)) {
+        this.unsubscribe(podName, containerName);
+        if (podName === value[0]) {
+          newValue = ["", ""];
+        }
+      }
+    });
+
+    currentPodNames.forEach(podName => {
+      const pod = pods.find(x => x.get("name") === podName)!;
+      const containerNames = pod
+        .get("containers")
+        .map(x => x.get("name"))
+        .toArray();
+      if (!subscribedPodNames.includes(podName)) {
+        this.subscribe(podName, containerNames[0]);
+      }
+      if (!newValue[0]) {
+        newValue = [podName, containerNames[0]];
+      }
+    });
+
+    this.setState({ subscribedPods: currentPods, value: newValue });
+  };
+
+  onInputContainerChange = (_event: React.ChangeEvent<{}>, x: string | null) => {
+    if (!x) {
+      return null;
+    }
+
+    const { subscribedPods, value } = this.state;
+    let newSubscribedPods = Immutable.List();
+    subscribedPods.forEach(([podName, containerName]) => {
+      if (podName === value[0]) {
+        newSubscribedPods = newSubscribedPods.push([podName, x]);
+        this.unsubscribe(podName, containerName);
+        this.subscribe(podName, x);
+      } else {
+        newSubscribedPods = newSubscribedPods.push([podName, containerName]);
+      }
+    });
+    this.setState({ subscribedPods: newSubscribedPods, value: [value[0], x] });
+  };
+
+  private renderInputPod() {
     const { application } = this.props;
 
     let podNames: Immutable.List<string> = Immutable.List([]);
@@ -363,8 +416,9 @@ export class LogStream extends React.PureComponent<Props, State> {
       });
     });
 
-    const { value, subscribedPodNames } = this.state;
-    const names = podNames!.toArray().filter(x => !subscribedPodNames.has(x));
+    const { value, subscribedPods } = this.state;
+    const subscribedPodNames = subscribedPods.map(p => p[0]);
+    const names = podNames!.toArray().filter(x => !subscribedPodNames.includes(x));
 
     return (
       <MyAutocomplete
@@ -381,10 +435,11 @@ export class LogStream extends React.PureComponent<Props, State> {
                 label={option}
                 size="small"
                 onClick={event => {
-                  this.setState({ value: option });
+                  const value = subscribedPods.find(x => x[0] === option)!;
+                  this.setState({ value });
                   event.stopPropagation();
                 }}
-                color={option === value ? "primary" : "default"}
+                color={option === value[0] ? "primary" : "default"}
                 {...getTagProps({ index })}
               />
             );
@@ -397,12 +452,37 @@ export class LogStream extends React.PureComponent<Props, State> {
     );
   }
 
+  private renderInputContainer() {
+    const { value } = this.state;
+    const pods = this.getAllPods();
+    const pod = pods.find(x => value[0] === x.get("name"))!;
+    const containerNames = pod ? pod.get("containers").map(container => container.get("name")) : Immutable.List();
+
+    return (
+      <MyAutocomplete
+        multiple={false}
+        id="tags-filled"
+        options={containerNames.toArray()}
+        onChange={this.onInputContainerChange}
+        value={value[1]}
+        renderInput={params => (
+          <TextField
+            {...params}
+            variant="outlined"
+            size="small"
+            placeholder="Select the container you want to view logs"
+          />
+        )}
+      />
+    );
+  }
+
   private renderLogTerminal = (podName: string, initializedContent?: string) => {
     const { value } = this.state;
     return (
       <Xterm
         innerRef={el => this.saveTerminal(podName, el)}
-        show={value === podName}
+        show={value[0] === podName}
         initializedContent={initializedContent}
         terminalOptions={{
           cursorBlink: false,
@@ -422,7 +502,7 @@ export class LogStream extends React.PureComponent<Props, State> {
     return (
       <Xterm
         innerRef={el => this.saveTerminal(podName, el)}
-        show={value === podName}
+        show={value[0] === podName}
         initializedContent={initializedContent}
         termianlOnData={(data: any) => {
           this.sendOrQueueMessage(
@@ -465,7 +545,7 @@ export class LogStream extends React.PureComponent<Props, State> {
 
   public render() {
     const { isLoading, application, classes } = this.props;
-    const { value, subscribedPodNames } = this.state;
+    const { value, subscribedPods } = this.state;
 
     return (
       <BasePage
@@ -477,15 +557,22 @@ export class LogStream extends React.PureComponent<Props, State> {
             <Loading />
           ) : (
             <>
-              {this.renderInput()}
+              <Grid container spacing={2}>
+                <Grid item md={8}>
+                  {this.renderInputPod()}
+                </Grid>
+                <Grid item md={4}>
+                  {this.renderInputContainer()}
+                </Grid>
+              </Grid>
               <div>
-                <TabPanel value={value} key={"empty"} index={""}>
+                <TabPanel value={value[0]} key={"empty"} index={""}>
                   {this.isLog ? this.renderLogTerminal("", logDocs) : this.renderLogTerminal("", shellDocs)}
                 </TabPanel>
-                {Array.from(subscribedPodNames).map(x => {
+                {Array.from(subscribedPods).map(([podName]) => {
                   return (
-                    <TabPanel value={value} key={x} index={x}>
-                      {this.isLog ? this.renderLogTerminal(x) : this.renderExecTerminal(x)}
+                    <TabPanel value={value[0]} key={podName} index={podName}>
+                      {this.isLog ? this.renderLogTerminal(podName) : this.renderExecTerminal(podName)}
                     </TabPanel>
                   );
                 })}
