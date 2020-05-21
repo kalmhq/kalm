@@ -3,7 +3,6 @@ package handler
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"github.com/kapp-staging/kapp/api/client"
 	"github.com/kapp-staging/kapp/api/config"
 	"github.com/kapp-staging/kapp/api/server"
@@ -41,7 +40,7 @@ func (r *ResponseRecorder) BodyAsString() string {
 }
 
 func (r *ResponseRecorder) BodyAsJSON(obj interface{}) {
-	fmt.Println("body:", string(r.bytes))
+	//fmt.Println("body:", string(r.bytes))
 
 	_ = json.Unmarshal(r.bytes, obj)
 }

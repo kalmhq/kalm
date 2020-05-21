@@ -30,7 +30,7 @@ func (suite *HttpsCertTestSuite) TestGetEmptyHttpsCertList() {
 	suite.Equal(200, rec.Code)
 }
 
-func (suite *HttpsCertIssuerTestSuite) TestCreateHttpsCert() {
+func (suite *HttpsCertTestSuite) TestCreateHttpsCert() {
 	body := `{
   "name":    "foobar-cert",
   "httpsCertIssuer":  "foobar-issuer",
@@ -56,7 +56,7 @@ func (suite *HttpsCertIssuerTestSuite) TestCreateHttpsCert() {
 	suite.Equal("example.com", strings.Join(res.Items[0].Spec.Domains, ""))
 }
 
-func (suite *HttpsCertIssuerTestSuite) TestUpdateHttpsCert() {
+func (suite *HttpsCertTestSuite) TestUpdateHttpsCert() {
 	body := `{
   "name":    "foobar-cert",
   "httpsCertIssuer":  "foobar-issuer",
@@ -101,7 +101,7 @@ func (suite *HttpsCertIssuerTestSuite) TestUpdateHttpsCert() {
 	suite.Equal("example.com2", strings.Join(res.Items[0].Spec.Domains, ""))
 }
 
-func (suite *HttpsCertIssuerTestSuite) TestDeleteHttpsCert() {
+func (suite *HttpsCertTestSuite) TestDeleteHttpsCert() {
 	body := `{
   "name":    "foobar-cert",
   "httpsCertIssuer":  "foobar-issuer",
