@@ -81,7 +81,10 @@ const autocompleteStyles = (_theme: Theme) =>
       width: "100%",
       "& .MuiFormControl-root": {
         width: "100%",
-        margin: "12px 0"
+        margin: "12px 0",
+        "& input": {
+          height: 24
+        }
       }
     }
   });
