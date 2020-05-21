@@ -1,7 +1,11 @@
 package resources
 
 import (
+	"crypto/x509"
+	"encoding/pem"
+	"fmt"
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	coreV1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -14,7 +18,7 @@ type HttpsCert struct {
 	SelfManagedCertPrvKey  string `json:"selfManagedCertPrivateKey,omitempty"`
 
 	HttpsCertIssuer string   `json:"httpsCertIssuer,omitempty"`
-	Domains         []string `json:"domains"`
+	Domains         []string `json:"domains,omitempty"`
 }
 
 type HttpsCertListChannel struct {
@@ -106,6 +110,89 @@ func (builder *Builder) UpdateAutoManagedCert(cert HttpsCert) (HttpsCert, error)
 	return cert, nil
 }
 
+func (builder *Builder) CreateSelfManagedHttpsCert(cert HttpsCert) (HttpsCert, error) {
+	x509Cert, err := parseCert(cert.SelfManagedCertContent)
+	if err != nil {
+		builder.Logger.WithError(err).Errorf("fail to parse SelfManagedCertContent as cert")
+		return HttpsCert{}, err
+	}
+
+	ok := checkPrivateKey(x509Cert, cert.SelfManagedCertPrvKey)
+	if !ok {
+		return HttpsCert{}, fmt.Errorf("privateKey and cert not match")
+	}
+
+	// create secret in istio-system
+	certSecretName, err := builder.createCertSecretInNSIstioSystem(cert)
+	if err != nil {
+		return HttpsCert{}, err
+	}
+
+	res := v1alpha1.HttpsCert{
+		ObjectMeta: v1.ObjectMeta{
+			Name: cert.Name,
+		},
+		Spec: v1alpha1.HttpsCertSpec{
+			IsSelfManaged:             true,
+			SelfManagedCertSecretName: certSecretName,
+			Domains:                   x509Cert.DNSNames,
+		},
+	}
+
+	err = builder.Create(&res)
+	if err != nil {
+		return HttpsCert{}, err
+	}
+
+	return cert, nil
+}
+
+func checkPrivateKey(cert *x509.Certificate, prvKey string) bool {
+	//todo check if cert & prvKey matches
+	return true
+}
+
+func parseCert(certPEM string) (*x509.Certificate, error) {
+	block, _ := pem.Decode([]byte(certPEM))
+	if block == nil {
+		panic("failed to parse certificate PEM")
+	}
+	cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return nil, err
+	}
+
+	return cert, nil
+}
+
 func (builder *Builder) DeleteHttpsCert(name string) error {
 	return builder.Delete(&v1alpha1.HttpsCert{ObjectMeta: v1.ObjectMeta{Name: name}})
+}
+
+func (builder *Builder) createCertSecretInNSIstioSystem(cert HttpsCert) (string, error) {
+	nsIstioSystem := "istio-system"
+
+	certSecName := "kapp-self-managed-" + cert.Name
+
+	tlsCert := cert.SelfManagedCertContent
+	tlsKey := cert.SelfManagedCertPrvKey
+
+	certSec := coreV1.Secret{
+		ObjectMeta: v1.ObjectMeta{
+			//todo avoid conflict here
+			Name:      certSecName,
+			Namespace: nsIstioSystem,
+		},
+		Data: map[string][]byte{
+			"tls.crt": []byte(tlsCert),
+			"tls.key": []byte(tlsKey),
+		},
+	}
+
+	err := builder.Create(&certSec)
+	if err != nil {
+		return "", err
+	}
+
+	return certSecName, nil
 }

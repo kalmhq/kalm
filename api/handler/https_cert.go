@@ -34,8 +34,21 @@ func (h *ApiHandler) handleCreateHttpsCert(context echo.Context) error {
 }
 
 func (h *ApiHandler) handleUploadHttpsCert(context echo.Context) error {
-	//todo
-	return fmt.Errorf("no impled yet")
+	httpsCert, err := getHttpsCertFromContext(context)
+	if err != nil {
+		return err
+	}
+
+	if !httpsCert.IsSelfManaged {
+		return fmt.Errorf("can only upload selfManaged certs")
+	}
+
+	httpsCert, err = h.Builder(context).CreateSelfManagedHttpsCert(httpsCert)
+	if err != nil {
+		return err
+	}
+
+	return context.JSON(201, httpsCert)
 }
 
 func (h *ApiHandler) handleUpdateHttpsCert(context echo.Context) error {
@@ -67,6 +80,7 @@ func (h *ApiHandler) handleDeleteHttpsCert(c echo.Context) error {
 
 func getHttpsCertFromContext(c echo.Context) (resources.HttpsCert, error) {
 	var httpsCert resources.HttpsCert
+
 	if err := c.Bind(&httpsCert); err != nil {
 		return resources.HttpsCert{}, err
 	}
