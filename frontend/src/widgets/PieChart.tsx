@@ -17,8 +17,8 @@ const styles = (theme: Theme) =>
     pieChartWrapper: {
       flex: 1,
       display: "flex",
-      alignItems: "center",
-      padding: 20
+      alignItems: "center"
+      // padding: 20
     },
     text: {
       display: "flex",
@@ -69,7 +69,7 @@ class PieChartRaw extends React.PureComponent<Props, State> {
             }}
           />
         </div>
-        <CenterCaption>{title}</CenterCaption>
+        {title && <CenterCaption>{title}</CenterCaption>}
       </div>
     );
   }

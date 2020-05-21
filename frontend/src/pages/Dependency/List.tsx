@@ -1,14 +1,13 @@
-import { Box, Button, Grid, LinearProgress, Tooltip, Typography } from "@material-ui/core";
+import { Box, LinearProgress, Tooltip } from "@material-ui/core";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import WarningIcon from "@material-ui/icons/Warning";
 import MaterialTable from "material-table";
 import React from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
-import { Actions } from "../../types";
 import { loadDependenciesAction } from "../../actions/dependency";
-import { CustomizedDialog } from "../../forms/Application/ComponentModal";
 import { RootState } from "../../reducers";
+import { Actions } from "../../types";
 import { KappDependencyContent, KappDependencyStatus, KappDependencyStatusText } from "../../types/dependency";
 import { FlexRowItemCenterBox } from "../../widgets/Box";
 import { CustomizedButton } from "../../widgets/Button";
@@ -275,51 +274,51 @@ class DependencyListRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private renderDialog() {
-    const { isDialogOpen, dialogDependency } = this.state;
+  // private renderDialog() {
+  //   const { isDialogOpen, dialogDependency } = this.state;
 
-    if (!dialogDependency) {
-      return null;
-    }
+  //   if (!dialogDependency) {
+  //     return null;
+  //   }
 
-    return (
-      <CustomizedDialog
-        title={dialogDependency.name}
-        open={isDialogOpen}
-        handleClose={this.handleDialogClose}
-        dialogProps={{ maxWidth: "sm" }}
-        actions={
-          <>
-            <Button onClick={this.handleDialogClose} color="default" variant="contained">
-              Close
-            </Button>
-            {this.renderDialogMainButton()}
-          </>
-        }>
-        <Grid container spacing={2}>
-          <Grid item xs={3}>
-            <Box display="flex" flexDirection="column" alignItems="center">
-              <img src={dialogDependency.imageLink} width="100px" alt="" />
-              <Box mt={2}>{this.renderStatus(dialogDependency)}</Box>
-            </Box>
-          </Grid>
-          <Grid item xs={9}>
-            {
-              <Typography
-                dangerouslySetInnerHTML={{
-                  __html: dialogDependency.description.replace(/\n/g, "<br />")
-                }}></Typography>
-            }
-          </Grid>
-        </Grid>
-      </CustomizedDialog>
-    );
-  }
+  //   return (
+  //     <CustomizedDialog
+  //       title={dialogDependency.name}
+  //       open={isDialogOpen}
+  //       handleClose={this.handleDialogClose}
+  //       dialogProps={{ maxWidth: "sm" }}
+  //       actions={
+  //         <>
+  //           <Button onClick={this.handleDialogClose} color="default" variant="contained">
+  //             Close
+  //           </Button>
+  //           {this.renderDialogMainButton()}
+  //         </>
+  //       }>
+  //       <Grid container spacing={2}>
+  //         <Grid item xs={3}>
+  //           <Box display="flex" flexDirection="column" alignItems="center">
+  //             <img src={dialogDependency.imageLink} width="100px" alt="" />
+  //             <Box mt={2}>{this.renderStatus(dialogDependency)}</Box>
+  //           </Box>
+  //         </Grid>
+  //         <Grid item xs={9}>
+  //           {
+  //             <Typography
+  //               dangerouslySetInnerHTML={{
+  //                 __html: dialogDependency.description.replace(/\n/g, "<br />")
+  //               }}></Typography>
+  //           }
+  //         </Grid>
+  //       </Grid>
+  //     </CustomizedDialog>
+  //   );
+  // }
 
   public render() {
     return (
       <BasePage>
-        {this.renderDialog()}
+        {/* {this.renderDialog()} */}
         {this.renderDataTable()}
       </BasePage>
     );

@@ -1,4 +1,4 @@
-import { Grid, MenuItem, TextField } from "@material-ui/core";
+import { Button, Grid, MenuItem, TextField } from "@material-ui/core";
 import Immutable from "immutable";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
@@ -9,14 +9,14 @@ import { RootState } from "../../reducers";
 import { getComponentPluginName } from "../../selectors/component";
 import { ComponentPlugin } from "../../types/application";
 import { PluginType } from "../../types/plugin";
-import { ButtonWhite, CustomizedButton } from "../../widgets/Button";
+import { CustomizedButton } from "../../widgets/Button";
 import { ControlledDialog } from "../../widgets/ControlledDialog";
 import { DeleteIcon } from "../../widgets/Icon";
 import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
-import { H5 } from "../../widgets/Label";
+import { Body } from "../../widgets/Label";
 import { CheckboxField } from "../Basic/checkbox";
-import { NormalizeBoolean } from "../normalizer";
 import { RenderDynamicForm } from "../Basic/dynamicForm";
+import { NormalizeBoolean } from "../normalizer";
 
 interface FieldArrayComponentHackType {
   name: any;
@@ -148,7 +148,7 @@ class RenderPlugins extends React.PureComponent<Props, State> {
         <Grid container spacing={2}>
           <Grid item md={12}>
             <div style={{ display: "flex", alignItems: "center", padding: "8px 0" }}>
-              <H5>{pluginName}</H5>
+              <Body>{pluginName}</Body>
 
               <IconButtonWithTooltip
                 tooltipPlacement="top"
@@ -186,20 +186,30 @@ class RenderPlugins extends React.PureComponent<Props, State> {
     } = this.props;
 
     return (
-      <div>
+      <div style={{ width: "100%", position: "relative" }}>
+        <Button
+          color="primary"
+          size="large"
+          style={{ position: "absolute", right: 0, top: fields.length === 0 ? -22 : -10 }}
+          onClick={() => {
+            dispatch(openDialogAction(selectComponentPluginDialogId));
+            this.setState({ selectComponentPluginName: "" });
+          }}>
+          Add
+        </Button>
         {fields.map((member, index) => {
           return this.renderBasic(member, index);
         })}
         <Grid container spacing={3} style={{ marginTop: 0 }}>
           <Grid item xs>
             {this.renderSelectComponentPluginDialog()}
-            <ButtonWhite
+            {/* <ButtonWhite
               onClick={() => {
                 dispatch(openDialogAction(selectComponentPluginDialogId));
                 this.setState({ selectComponentPluginName: "" });
               }}>
-              Add Plugin
-            </ButtonWhite>
+              Add
+            </ButtonWhite> */}
             {submitFailed && error && <span>{error}</span>}
           </Grid>
         </Grid>

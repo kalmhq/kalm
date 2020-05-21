@@ -1,4 +1,5 @@
-import { Box, Divider, Grid, List as MList, ListItem, ListItemText, MenuItem, Tooltip } from "@material-ui/core";
+import { Box, Grid, List as MList, ListItem, ListItemText, MenuItem, Tooltip } from "@material-ui/core";
+import { grey } from "@material-ui/core/colors";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import HelpIcon from "@material-ui/icons/Help";
@@ -7,7 +8,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { InjectedFormProps } from "redux-form";
 import { Field, getFormSyncErrors, getFormValues, reduxForm } from "redux-form/immutable";
-import { H3 } from "widgets/Label";
+import { H5 } from "widgets/Label";
 import { loadApplicationPluginsAction, loadComponentPluginsAction } from "../../actions/application";
 import { loadConfigsAction } from "../../actions/config";
 import { loadNodesAction } from "../../actions/node";
@@ -43,7 +44,8 @@ const styles = (theme: Theme) =>
   createStyles({
     root: {
       flexGrow: 1,
-      width: "100%"
+      width: "100%",
+      padding: 20
       // backgroundColor: theme.palette.background.paper
     },
     paper: {
@@ -56,8 +58,8 @@ const styles = (theme: Theme) =>
       marginBottom: 16
     },
     formSection: {
-      padding: 20
-      // margin: theme.spacing(3)
+      // padding: "0 20px"
+      // margin: "0 0 10px 0"
     },
     displayBlock: {
       display: "block"
@@ -117,6 +119,28 @@ const styles = (theme: Theme) =>
     sectionTitle: {
       display: "flex",
       alignItems: "center"
+    },
+    helperField: {
+      position: "relative"
+    },
+    helperFieldIcon: {
+      color: grey[700],
+      cursor: "pointer",
+      position: "absolute",
+      right: 10,
+      top: 26
+    },
+    helperSelectIcon: {
+      color: grey[700],
+      cursor: "pointer",
+      position: "absolute",
+      right: 30,
+      top: 10
+    },
+    helperTextIcon: {
+      color: grey[700],
+      cursor: "pointer",
+      marginLeft: "8px"
     }
   });
 
@@ -124,7 +148,6 @@ interface RawProps {
   showDataView?: boolean;
   showSubmitButton?: boolean;
   submitButtonText?: string;
-  isFolded?: boolean;
   sharedEnv?: Immutable.List<SharedEnv>;
   currentTab?: string;
   // submitAppplicationErrors?: Immutable.Map<string, any>;
@@ -192,7 +215,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderBasic() {
-    const { initialValues } = this.props;
+    const { initialValues, classes } = this.props;
     let isEdit = false;
     // @ts-ignore
     if (initialValues && initialValues!.get("name")) {
@@ -201,7 +224,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return (
       <Grid container spacing={1}>
         <Grid item xs={12} sm={12} md={12}>
-          <H3>Basic Info</H3>
+          <H5>Basic</H5>
         </Grid>
         <Grid item xs={12} sm={12} md={12}>
           <CustomTextField
@@ -254,24 +277,32 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             <MenuItem value={workloadTypeCronjob}>Cronjob (periodic running)</MenuItem>
           </Field>
           {this.renderSchedule()}
-          <CustomTextField
-            // className={classes.input}
-            name="cpu"
-            label="CPU"
-            margin
-            validate={[ValidatorCPU]}
-            // normalize={NormalizeCPU}
-            placeholder="Please type the component name"
-          />
-          <CustomTextField
-            // className={classes.input}
-            name="memory"
-            label="Memory"
-            margin
-            validate={[ValidatorMemory]}
-            // normalize={NormalizeMemory}
-            placeholder="Please type the component name"
-          />
+          <div className={classes.helperField}>
+            <CustomTextField
+              name="cpu"
+              label="CPU"
+              margin
+              validate={[ValidatorCPU]}
+              // normalize={NormalizeCPU}
+              placeholder="Please type the component name"
+            />
+            <Tooltip title={this.getCPUHelper()}>
+              <HelpIcon fontSize="small" className={classes.helperFieldIcon} />
+            </Tooltip>
+          </div>
+          <div className={classes.helperField}>
+            <CustomTextField
+              name="memory"
+              label="Memory"
+              margin
+              validate={[ValidatorMemory]}
+              // normalize={NormalizeMemory}
+              placeholder="Please type the component name"
+            />
+            <Tooltip title={this.getMemoryHelper()}>
+              <HelpIcon fontSize="small" className={classes.helperFieldIcon} />
+            </Tooltip>
+          </div>
           <CustomTextField
             name="replicas"
             margin
@@ -288,6 +319,42 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
         <Grid item xs={12} sm={12} md={12}></Grid>
       </Grid>
+    );
+  }
+
+  private getCPUHelper() {
+    return (
+      <HelperContainer>
+        <MList dense={true}>
+          <ListItem>
+            <ListItemText
+              primary="CPU"
+              secondary={
+                "Fractional values are allowed. A Container that requests 0.5 CPU is guaranteed half as much CPU as a Container that requests 1 CPU. You can use the suffix m to mean milli. For example 100m CPU, 100 milliCPU, and 0.1 CPU are all the same. Precision finer than 1m is not allowed. CPU is always requested as an absolute quantity, never as a relative quantity; 0.1 is the same amount of CPU on a single-core, dual-core, or 48-core machine."
+              }
+              secondaryTypographyProps={{ color: "inherit" }}
+            />
+          </ListItem>
+        </MList>
+      </HelperContainer>
+    );
+  }
+
+  private getMemoryHelper() {
+    return (
+      <HelperContainer>
+        <MList dense={true}>
+          <ListItem>
+            <ListItemText
+              primary="Memory"
+              secondary={
+                "The memory resource is measured in bytes. You can express memory as a plain integer or a fixed-point integer with one of these suffixes: E, P, T, G, M, K, Ei, Pi, Ti, Gi, Mi, Ki. For example, the following represent approximately the same value:"
+              }
+              secondaryTypographyProps={{ color: "inherit" }}
+            />
+          </ListItem>
+        </MList>
+      </HelperContainer>
     );
   }
 
@@ -333,9 +400,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return (
       <>
         <div className={classes.sectionTitle}>
-          <H3>Environment variables</H3>
+          <H5>Environment variables</H5>
           <Tooltip title={helperContainer}>
-            <HelpIcon fontSize="small" style={{ marginLeft: 8 }} />
+            <HelpIcon fontSize="small" className={classes.helperTextIcon} />
           </Tooltip>
         </div>
 
@@ -348,68 +415,28 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   public renderPorts() {
     const { classes } = this.props;
 
-    const helperContainer = (
-      <HelperContainer>
-        <Typography>
-          Port is the standard way to expose your program. If you want your component can be accessed by some other
-          parts, you need to define a port.
-        </Typography>
-      </HelperContainer>
-    );
+    // const helperContainer = (
+    //   <HelperContainer>
+    //     <Typography>
+    //       Port is the standard way to expose your program. If you want your component can be accessed by some other
+    //       parts, you need to define a port.
+    //     </Typography>
+    //   </HelperContainer>
+    // );
 
     return (
       <>
         <div className={classes.sectionTitle}>
-          <H3>Ports</H3>
-          <Tooltip title={helperContainer}>
-            <HelpIcon fontSize="small" style={{ marginLeft: 8 }} />
-          </Tooltip>
+          <H5>Ports</H5>
+          {/* <Tooltip title={helperContainer}>
+            <HelpIcon fontSize="small" className={classes.helperTextIcon} />
+          </Tooltip> */}
         </div>
 
         <Ports />
       </>
     );
   }
-
-  // private renderResources() {
-  //   const { isFolded, values, dispatch, form } = this.props;
-  //   return (
-  //     <>
-  //       {!isFolded && <H3>Resources</H3>}
-  //       <HelperContainer>
-  //         <Typography>Cpu, Memory, Disk can be configured here.</Typography>
-  //         <MList dense={true}>
-  //           <ListItem>
-  //             <ListItemText
-  //               primary="CPU"
-  //               secondary={
-  //                 "Fractional values are allowed. A Container that requests 0.5 CPU is guaranteed half as much CPU as a Container that requests 1 CPU. You can use the suffix m to mean milli. For example 100m CPU, 100 milliCPU, and 0.1 CPU are all the same. Precision finer than 1m is not allowed. CPU is always requested as an absolute quantity, never as a relative quantity; 0.1 is the same amount of CPU on a single-core, dual-core, or 48-core machine."
-  //               }
-  //             />
-  //           </ListItem>
-  //           <ListItem>
-  //             <ListItemText
-  //               primary="Memory"
-  //               secondary={
-  //                 "The memory resource is measured in bytes. You can express memory as a plain integer or a fixed-point integer with one of these suffixes: E, P, T, G, M, K, Ei, Pi, Ti, Gi, Mi, Ki. For example, the following represent approximately the same value:"
-  //               }
-  //             />
-  //           </ListItem>
-  //         </MList>
-  //       </HelperContainer>
-  //       <Grid container spacing={2}>
-  //         <Grid item xs={12} sm={6} md={8}>
-  //           <ComponentResources
-  //             cpu={values.get("cpu")}
-  //             memory={values.get("memory")}
-  //             dispatch={dispatch}
-  //             formName={form}
-  //           />
-  //         </Grid>
-  //       </Grid>
-  //     </>
-  //   );
-  // }
 
   private renderVolumes() {
     const { classes } = this.props;
@@ -422,6 +449,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             <ListItemText
               primary="New Disk"
               secondary={"Create a disk according to the storageClass definition you selected."}
+              secondaryTypographyProps={{ color: "inherit" }}
             />
           </ListItem>
           <ListItem>
@@ -430,6 +458,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               secondary={
                 "This sort of volumes are stored on whatever medium is backing the node, which might be disk or SSD or network storage, depending on your environment."
               }
+              secondaryTypographyProps={{ color: "inherit" }}
             />
           </ListItem>
           <ListItem>
@@ -438,6 +467,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               secondary={
                 "It will mount a tmpfs (RAM-backed filesystem) for you. While tmpfs is very fast, be aware that unlike disks, tmpfs is cleared on node reboot and any files you write will count against your Container’s memory limit."
               }
+              secondaryTypographyProps={{ color: "inherit" }}
             />
           </ListItem>
           <ListItem>
@@ -446,6 +476,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               secondary={
                 "PersistentVolumeClaim and PersistentVolume are a kubernetes original resources. A persistentVolumeClaim volume is used to mount a PersistentVolume into a Pod. PersistentVolumes are a way for users to “claim” durable storage (such as a GCE PersistentDisk or an iSCSI volume) without knowing the details of the particular cloud environment."
               }
+              secondaryTypographyProps={{ color: "inherit" }}
             />
           </ListItem>
         </MList>
@@ -455,9 +486,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return (
       <>
         <div className={classes.sectionTitle}>
-          <H3>Volumes</H3>
+          <H5>Volumes</H5>
           <Tooltip title={helperContainer}>
-            <HelpIcon fontSize="small" style={{ marginLeft: 8 }} />
+            <HelpIcon fontSize="small" className={classes.helperTextIcon} />
           </Tooltip>
         </div>
 
@@ -469,19 +500,19 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private renderConfigs() {
     const { classes } = this.props;
 
-    const helperContainer = (
-      <HelperContainer>
-        <Typography>Mount Configs</Typography>
-      </HelperContainer>
-    );
+    // const helperContainer = (
+    //   <HelperContainer>
+    //     <Typography>Mount Configs</Typography>
+    //   </HelperContainer>
+    // );
 
     return (
       <>
         <div className={classes.sectionTitle}>
-          <H3>Configs</H3>
-          <Tooltip title={helperContainer}>
-            <HelpIcon fontSize="small" style={{ marginLeft: 8 }} />
-          </Tooltip>
+          <H5>Configs</H5>
+          {/* <Tooltip title={helperContainer}>
+            <HelpIcon fontSize="small" className={classes.helperTextIcon} />
+          </Tooltip> */}
         </div>
 
         <Configs />
@@ -489,84 +520,24 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderAdvanced() {
-    const { classes } = this.props;
-
-    // TODO
-    const helperContainer = "";
-
+  private getRestartStrategyHelper() {
     return (
-      <Grid container>
-        <Grid item md={12}>
-          <div className={classes.sectionTitle}>
-            <H3>Advanced</H3>
-            <Tooltip title={helperContainer}>
-              <HelpIcon fontSize="small" style={{ marginLeft: 8 }} />
-            </Tooltip>
-          </div>
-
-          <HelperContainer>
-            <Typography>
-              In most cases, the default values for the following options are appropriate for most programs. However,
-              you can modify them as required. Before you do so, make sure you understand what these options do.
-            </Typography>
-          </HelperContainer>
-          <Box mt={3}></Box>
-          <MList dense={true}>
-            <ListItem>
-              <ListItemText
-                primary="Rolling Update"
-                secondary={
-                  <>
-                    This component updates in a rolling update fashion when strategy is RollingUpdate. You can specify
-                    maxUnavailable and maxSurge to control the rolling update process.
-                    <a
-                      target="_blank"
-                      href="https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-update-deployment"
-                      rel="noopener noreferrer">
-                      Read More
-                    </a>
-                    .
-                  </>
-                }
-              />
-            </ListItem>
-            <ListItem>
-              <ListItemText
-                primary="Memory"
-                secondary={
-                  <>
-                    All existing components are killed before new ones are created.
-                    <a
-                      target="_blank"
-                      href="https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#recreate-deployment"
-                      rel="noopener noreferrer">
-                      Read More
-                    </a>
-                    .
-                  </>
-                }
-              />
-            </ListItem>
-          </MList>
-          <Field
-            name="restartStrategy"
-            component={RenderSelectField}
-            // validate={ValidatorRequired}
-            label="Restart Strategy">
-            <MenuItem value="RollingUpdate">Rolling Update</MenuItem>
-            <MenuItem value="Recreate">Recreate</MenuItem>
-          </Field>
-
-          {/* terminationGracePeriodSeconds */}
-          {this.renderAdvancedDivider()}
-          {this.renderAdvancedHelper([
-            {
-              title: "Termination Grace Period Seconds",
-              content: (
+      <>
+        <HelperContainer>
+          <Typography>
+            In most cases, the default values for the following options are appropriate for most programs. However, you
+            can modify them as required. Before you do so, make sure you understand what these options do.
+          </Typography>
+        </HelperContainer>
+        <Box mt={3}></Box>
+        <MList dense={true}>
+          <ListItem>
+            <ListItemText
+              primary="Rolling Update"
+              secondary={
                 <>
-                  Kubernetes waits for a specified time called the termination grace period. By default, this is 30
-                  seconds.
+                  This component updates in a rolling update fashion when strategy is RollingUpdate. You can specify
+                  maxUnavailable and maxSurge to control the rolling update process.
                   <a
                     target="_blank"
                     href="https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-update-deployment"
@@ -575,95 +546,183 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
                   </a>
                   .
                 </>
-              )
-            }
-          ])}
-          <CustomTextField
-            name="terminationGracePeriodSeconds"
-            label="Termination Grace Period Seconds"
-            // validate={ValidatorRequired}
-            normalize={NormalizeNumber}
-          />
+              }
+              secondaryTypographyProps={{ color: "inherit" }}
+            />
+          </ListItem>
+          <ListItem>
+            <ListItemText
+              primary="Memory"
+              secondary={
+                <>
+                  All existing components are killed before new ones are created.
+                  <a
+                    target="_blank"
+                    href="https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#recreate-deployment"
+                    rel="noopener noreferrer">
+                    Read More
+                  </a>
+                  .
+                </>
+              }
+              secondaryTypographyProps={{ color: "inherit" }}
+            />
+          </ListItem>
+        </MList>
+      </>
+    );
+  }
 
-          {/* dnsPolicy */}
-          {this.renderAdvancedDivider()}
-          <Typography>DNS policies can be set on a component.</Typography>
-          {this.renderAdvancedHelper([
-            {
-              title: "Default",
-              content: (
-                <>
-                  The Pod inherits the name resolution configuration from the node that the pods run on. See{" "}
-                  <a
-                    target="_blank"
-                    href="https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/#inheriting-dns-from-the-node"
-                    rel="noopener noreferrer">
-                    related discussion
-                  </a>{" "}
-                  for more details. .
-                </>
-              )
-            },
-            {
-              title: "ClusterFirst",
-              content: (
-                <>
-                  Any DNS query that does not match the configured cluster domain suffix, such as “www.kubernetes.io”,
-                  is forwarded to the upstream nameserver inherited from the node. Cluster administrators may have extra
-                  stub-domain and upstream DNS servers configured. See{" "}
-                  <a
-                    target="_blank"
-                    href="https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/#impacts-on-pods"
-                    rel="noopener noreferrer">
-                    related discussion
-                  </a>{" "}
-                  for details on how DNS queries are handled in those cases.
-                </>
-              )
-            },
-            {
-              title: "ClusterFirstWithHostNet",
-              content: (
-                <>
-                  For Pods running with hostNetwork, you should explicitly set its DNS policy “ClusterFirstWithHostNet”.
-                </>
-              )
-            },
-            {
-              title: "None",
-              content: <>It allows a Pod to ignore DNS settings from the Kubernetes environment.</>
-            }
-          ])}
-          <Field
-            name="dnsPolicy"
-            component={RenderSelectField}
-            label="Dns Policy"
-            // validate={ValidatorRequired}
-          >
-            <MenuItem value="ClusterFirst">ClusterFirst</MenuItem>
-            <MenuItem value="Default">Default</MenuItem>
-            <MenuItem value="ClusterFirstWithHostNet">ClusterFirstWithHostNet</MenuItem>
-            <MenuItem value="None">None</MenuItem>
-          </Field>
+  private getTerminationGracePeriodSecondsHelper() {
+    return this.renderAdvancedHelper([
+      {
+        title: "Termination Grace Period Seconds",
+        content: (
+          <>
+            Kubernetes waits for a specified time called the termination grace period. By default, this is 30 seconds.
+            <a
+              target="_blank"
+              href="https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-update-deployment"
+              rel="noopener noreferrer">
+              Read More
+            </a>
+            .
+          </>
+        )
+      }
+    ]);
+  }
+
+  private getDnsPolicyHelper() {
+    return (
+      <>
+        <Typography>DNS policies can be set on a component.</Typography>
+        {this.renderAdvancedHelper([
+          {
+            title: "Default",
+            content: (
+              <>
+                The Pod inherits the name resolution configuration from the node that the pods run on. See{" "}
+                <a
+                  target="_blank"
+                  href="https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/#inheriting-dns-from-the-node"
+                  rel="noopener noreferrer">
+                  related discussion
+                </a>{" "}
+                for more details. .
+              </>
+            )
+          },
+          {
+            title: "ClusterFirst",
+            content: (
+              <>
+                Any DNS query that does not match the configured cluster domain suffix, such as “www.kubernetes.io”, is
+                forwarded to the upstream nameserver inherited from the node. Cluster administrators may have extra
+                stub-domain and upstream DNS servers configured. See{" "}
+                <a
+                  target="_blank"
+                  href="https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/#impacts-on-pods"
+                  rel="noopener noreferrer">
+                  related discussion
+                </a>{" "}
+                for details on how DNS queries are handled in those cases.
+              </>
+            )
+          },
+          {
+            title: "ClusterFirstWithHostNet",
+            content: (
+              <>
+                For Pods running with hostNetwork, you should explicitly set its DNS policy “ClusterFirstWithHostNet”.
+              </>
+            )
+          },
+          {
+            title: "None",
+            content: <>It allows a Pod to ignore DNS settings from the Kubernetes environment.</>
+          }
+        ])}
+      </>
+    );
+  }
+
+  private renderAdvanced() {
+    const { classes, nodeLabels } = this.props;
+
+    return (
+      <Grid container spacing={1}>
+        <Grid item xs={12} sm={12} md={12}>
+          <CustomLabels nodeLabels={nodeLabels} />
+
+          <AffinityType />
+
+          {/* <div className={classes.sectionTitle}>
+            <H5>Advanced</H5>
+            <Tooltip title={helperContainer}>
+              <HelpIcon fontSize="small" className={classes.helperTextIcon} />
+            </Tooltip>
+          </div> */}
+
+          <div className={classes.helperField}>
+            <Field
+              name="restartStrategy"
+              component={RenderSelectField}
+              // validate={ValidatorRequired}
+              label="Restart Strategy">
+              <MenuItem value="RollingUpdate">Rolling Update</MenuItem>
+              <MenuItem value="Recreate">Recreate</MenuItem>
+            </Field>
+            <Tooltip title={this.getRestartStrategyHelper()}>
+              <HelpIcon fontSize="small" className={classes.helperSelectIcon} />
+            </Tooltip>
+          </div>
+
+          <div className={classes.helperField}>
+            <Field
+              name="dnsPolicy"
+              component={RenderSelectField}
+              label="Dns Policy"
+              // validate={ValidatorRequired}
+            >
+              <MenuItem value="ClusterFirst">ClusterFirst</MenuItem>
+              <MenuItem value="Default">Default</MenuItem>
+              <MenuItem value="ClusterFirstWithHostNet">ClusterFirstWithHostNet</MenuItem>
+              <MenuItem value="None">None</MenuItem>
+            </Field>
+            <Tooltip title={this.getDnsPolicyHelper()}>
+              <HelpIcon fontSize="small" className={classes.helperSelectIcon} />
+            </Tooltip>
+          </div>
+
+          <div className={classes.helperField}>
+            <CustomTextField
+              name="terminationGracePeriodSeconds"
+              label="Termination Grace Period Seconds"
+              // validate={ValidatorRequired}
+              normalize={NormalizeNumber}
+              margin
+            />
+            <Tooltip title={this.getTerminationGracePeriodSecondsHelper()}>
+              <HelpIcon fontSize="small" className={classes.helperFieldIcon} />
+            </Tooltip>
+          </div>
         </Grid>
       </Grid>
     );
   }
-
-  private renderAdvancedDivider = () => {
-    return (
-      <Box pt={4} pb={3}>
-        <Divider />
-      </Box>
-    );
-  };
 
   private renderAdvancedHelper = (options: { title: string; content: React.ReactNode }[]) => {
     return (
       <MList dense={true}>
         {options.map((x, index) => (
           <ListItem key={index}>
-            <ListItemText primary={x.title} key={index} secondary={x.content} />
+            <ListItemText
+              primary={x.title}
+              key={index}
+              secondary={x.content}
+              secondaryTypographyProps={{ color: "inherit" }}
+            />
           </ListItem>
         ))}
       </MList>
@@ -684,14 +743,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return (
       <>
         <div className={classes.sectionTitle}>
-          <H3>Plugins</H3>
+          <H5>Plugins</H5>
           <Tooltip title={helperContainer}>
-            <HelpIcon fontSize="small" style={{ marginLeft: 8 }} />
+            <HelpIcon fontSize="small" className={classes.helperTextIcon} />
           </Tooltip>
         </div>
 
         <Grid container spacing={2}>
-          <Grid item xs={12} sm={6} md={8}>
+          <Grid item xs={12} sm={12} md={12}>
             <Plugins />
           </Grid>
         </Grid>
@@ -699,50 +758,35 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderNodeSelector() {
-    const { nodeLabels } = this.props;
-    return (
-      <Grid container spacing={2}>
-        <Grid item md={12}>
-          <H3>Node Selector</H3>
-        </Grid>
-        <Grid item xs={12} sm={12} md={12}>
-          <CustomLabels nodeLabels={nodeLabels} />
-        </Grid>
-        <Grid item xs={12} sm={12} md={12}>
-          <AffinityType />
-        </Grid>
-      </Grid>
-    );
-  }
-
   public render() {
     const { handleSubmit, classes, currentTab } = this.props;
 
     return (
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className={classes.root}>
         <div className={`${classes.formSection} ${currentTab === "basic" ? "" : classes.displayNone}`}>
           {this.renderBasic()}
         </div>
-        {/* <div className={`${classes.formSection} ${currentTab === "basic" ? "" : classes.displayNone}`}>
-          {this.renderResources()}
-        </div> */}
         <div className={`${classes.formSection} ${currentTab === "basic" ? "" : classes.displayNone}`}>
           {this.renderEnvs()}
         </div>
-        <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}>
+        <div
+          className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}
+          style={{ margin: "0 0 16px" }}>
           {this.renderPorts()}
         </div>
-        <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}>
+        <div
+          className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}
+          style={{ margin: "0 0 16px" }}>
           {this.renderVolumes()}
         </div>
-        <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}>
+        <div
+          className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}
+          style={{ margin: "0 0 24px" }}>
           {this.renderConfigs()}
         </div>
-        <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}>
-          {this.renderNodeSelector()}
-        </div>
-        <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}>
+        <div
+          className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}
+          style={{ margin: "0 0 16px" }}>
           {this.renderAdvanced()}
         </div>
         <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}>

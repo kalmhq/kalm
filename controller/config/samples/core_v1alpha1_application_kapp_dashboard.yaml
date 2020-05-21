@@ -26,18 +26,14 @@
 #              name: cloudflare-api-token-secret
 #              key: api-token
 ---
-kind: Certificate
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: core.kapp.dev/v1alpha1
+kind: HttpsCert
 metadata:
-  name: wildcard-kapp-live
-  namespace: istio-system
+  name: https-cert-wildcard
 spec:
-  dnsNames:
+  httpsCertIssuer: https-cert-issuer-hello
+  domains:
     - '*.kapp.live'
-  issuerRef:
-    kind: ClusterIssuer
-    name: letsencrypt
-  secretName: wildcard-kapp-live
 ---
 apiVersion: v1
 kind: Namespace
@@ -76,7 +72,7 @@ spec:
   config:
     hosts:
       - dashboard.kapp.live
-    httpsCert: wildcard-kapp-live
+    httpsCert: https-cert-wildcard
     paths:
       - /
     stripPath: true

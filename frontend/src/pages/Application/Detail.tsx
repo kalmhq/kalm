@@ -365,31 +365,31 @@ class DetailsRaw extends React.PureComponent<Props, State> {
           ) : null}
           {component
             .get("pods")
-            .map(x => {
-              const containerNames = x
+            .map(pod => {
+              const containerNames = pod
                 .get("containers")
                 .map(container => container.get("name"))
                 .toArray();
               return (
-                <div key={x.get("name")}>
-                  <div key={x.get("name")} className={clsx(classes.rowContainer, classes.podDataRow)}>
-                    {/* <div className={classes.podContainer} key={x.get("name")}> */}
+                <div key={pod.get("name")}>
+                  <div key={pod.get("name")} className={clsx(classes.rowContainer, classes.podDataRow)}>
+                    {/* <div className={classes.podContainer} key={pod.get("name")}> */}
 
                     <div style={{ display: "flex", alignItems: "center" }}>
-                      {this.renderPodStatus(x)}
-                      {x.get("name")}
+                      {this.renderPodStatus(pod)}
+                      {pod.get("name")}
                     </div>
-                    <div>{x.get("node")}</div>
+                    <div>{pod.get("node")}</div>
                     <div className="right-part">
-                      <div className={classes.restartsCountCell}>{x.get("restarts")}</div>
-                      <div className={classes.statusCell}>{x.get("statusText")}</div>
-                      <div className={classes.timeCell}>{formatTimeDistance(x.get("createTimestamp"))}</div>
-                      {/* <div className={classes.timeCell}>{differenceInMinutes(x.get("startTimestamp"), new Date())}</div> */}
+                      <div className={classes.restartsCountCell}>{pod.get("restarts")}</div>
+                      <div className={classes.statusCell}>{pod.get("statusText")}</div>
+                      <div className={classes.timeCell}>{formatTimeDistance(pod.get("createTimestamp"))}</div>
+                      {/* <div className={classes.timeCell}>{differenceInMinutes(pod.get("startTimestamp"), new Date())}</div> */}
                       <div className={classes.chartTabelCell}>
-                        <SmallCPULineChart data={x.get("metrics").get("cpu")!} />
+                        <SmallCPULineChart data={pod.get("metrics").get("cpu")!} />
                       </div>
                       <div className={classes.chartTabelCell}>
-                        <SmallMemoryLineChart data={x.get("metrics").get("memory")!} />
+                        <SmallMemoryLineChart data={pod.get("metrics").get("memory")!} />
                       </div>
                       <div className={classes.actionCell}>
                         <IconLinkWithToolTip
@@ -400,8 +400,8 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                             `/applications/${application.get("name")}/logs?` +
                             generateQueryForPods(
                               this.props.activeNamespaceName,
-                              [[x.get("name"), containerNames[0]]],
-                              [x.get("name"), containerNames[0]]
+                              [[pod.get("name"), containerNames[0]]],
+                              [pod.get("name"), containerNames[0]]
                             )
                           }>
                           <LogIcon />
@@ -415,8 +415,8 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                               `/applications/${application.get("name")}/shells?` +
                               generateQueryForPods(
                                 this.props.activeNamespaceName,
-                                [[x.get("name"), containerNames[0]]],
-                                [x.get("name"), containerNames[0]]
+                                [[pod.get("name"), containerNames[0]]],
+                                [pod.get("name"), containerNames[0]]
                               )
                             }>
                             <ConsoleIcon />
@@ -429,8 +429,8 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                             className={classes.podActionButton}
                             onClick={async () => {
                               try {
-                                await deletePod(application.get("namespace"), x.get("name"));
-                                dispatch(setSuccessNotificationAction(`Delete pod ${x.get("name")} successfully`));
+                                await deletePod(application.get("namespace"), pod.get("name"));
+                                dispatch(setSuccessNotificationAction(`Delete pod ${pod.get("name")} successfully`));
                                 // reload
                                 dispatch(loadApplicationAction(application.get("name")));
                               } catch (e) {
@@ -445,9 +445,9 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                   </div>
                   <Box pl={2} pr={2}>
                     {/* Do not show errors when pod is terminating */}
-                    {x.get("isTerminating")
+                    {pod.get("isTerminating")
                       ? null
-                      : x
+                      : pod
                           .get("warnings")
                           .map((w, index) => {
                             return (
@@ -458,7 +458,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                           })
                           .toArray()}
                   </Box>
-                  <div key={x.get("name")} className={clsx(classes.rowContainer, classes.viewMoreWrapper)}>
+                  <div key={pod.get("name")} className={clsx(classes.rowContainer, classes.viewMoreWrapper)}>
                     <Button
                       style={{ marginRight: 20 }}
                       color="primary"
@@ -530,14 +530,14 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     return (
       <div className={classes.root}>
         <Grid container spacing={2} className={classes.metrics}>
-          <Grid item md={2}>
+          <Grid item md={2} style={{ padding: 20 }}>
             <PieChart
               title="Components"
               labels={["Running", "Pending", "Error"]}
               data={[pieChartData.componentSuccess, pieChartData.componentPending, pieChartData.componentError]}
             />
           </Grid>
-          <Grid item md={2}>
+          <Grid item md={2} style={{ padding: 20 }}>
             <PieChart
               title="Pods"
               labels={["Running", "Pending", "Error"]}

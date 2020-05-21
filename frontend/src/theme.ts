@@ -93,7 +93,7 @@ let themeRaw = createMuiTheme({
         boxShadow: "0 1px 3px 0px rgba(0,0,0, .2)"
       },
       textPrimary: {
-        backgroundColor: "rgba(25, 118, 210, 0.04)",
+        // backgroundColor: "rgba(25, 118, 210, 0.04)",
         "&:hover": {
           backgroundColor: "rgba(25, 118, 210, 0.1)"
         }
