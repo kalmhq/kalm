@@ -138,5 +138,4 @@ func (suite *HttpsCertIssuerTestSuite) TestDeleteHttpsCertIssuer() {
 	err = suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/httpscertissuers").Do().Into(&res)
 	suite.Nil(err)
 	suite.Equal(0, len(res.Items))
-
 }

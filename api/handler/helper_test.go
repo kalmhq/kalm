@@ -40,6 +40,8 @@ func (r *ResponseRecorder) BodyAsString() string {
 }
 
 func (r *ResponseRecorder) BodyAsJSON(obj interface{}) {
+	//fmt.Println("body:", string(r.bytes))
+
 	_ = json.Unmarshal(r.bytes, obj)
 }
 
