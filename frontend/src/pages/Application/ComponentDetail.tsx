@@ -159,6 +159,10 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     }
   };
 
+  private renderRestarts = (rowData: RowData) => {
+    return <span>{rowData.get("restarts")}</span>;
+  };
+
   private getColumns() {
     return [
       {
@@ -167,7 +171,8 @@ class DetailsRaw extends React.PureComponent<Props, State> {
         sorting: false,
         render: this.renderName
       },
-      { title: "Pods Status", field: "status", sorting: false, render: this.renderStatus }
+      { title: "Pods Status", field: "status", sorting: false, render: this.renderStatus },
+      { title: "Restarts", name: "restarts", sorting: false, render: this.renderRestarts }
     ];
   }
 
