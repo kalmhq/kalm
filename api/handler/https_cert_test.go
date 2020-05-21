@@ -21,6 +21,7 @@ func TestHttpsCertTestSuite(t *testing.T) {
 
 func (suite *HttpsCertTestSuite) TearDownTest() {
 	suite.k8sClinet.RESTClient().Delete().AbsPath("/apis/core.kapp.dev/v1alpha1/httpscerts/foobar-cert").Do().Error()
+	suite.k8sClinet.RESTClient().Delete().AbsPath("/api/v1/namespaces/istio-system/secrets/kapp-self-managed-foobar-cert").Do().Error()
 }
 
 func (suite *HttpsCertTestSuite) TestGetEmptyHttpsCertList() {
