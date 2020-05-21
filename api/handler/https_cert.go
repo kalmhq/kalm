@@ -58,13 +58,15 @@ func (h *ApiHandler) handleUpdateHttpsCert(context echo.Context) error {
 	}
 
 	if httpsCert.IsSelfManaged {
-		//todo
-		return fmt.Errorf("not impled yet")
-	}
-
-	httpsCert, err = h.Builder(context).UpdateAutoManagedCert(httpsCert)
-	if err != nil {
-		return err
+		httpsCert, err = h.Builder(context).UpdateSelfManagedCert(httpsCert)
+		if err != nil {
+			return err
+		}
+	} else {
+		httpsCert, err = h.Builder(context).UpdateAutoManagedCert(httpsCert)
+		if err != nil {
+			return err
+		}
 	}
 
 	return context.JSON(200, httpsCert)

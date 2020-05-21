@@ -7,6 +7,8 @@ import (
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	coreV1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"strings"
+	"sync"
 )
 
 type HttpsCert struct {
@@ -110,6 +112,66 @@ func (builder *Builder) UpdateAutoManagedCert(cert HttpsCert) (HttpsCert, error)
 	return cert, nil
 }
 
+func (builder *Builder) UpdateSelfManagedCert(cert HttpsCert) (HttpsCert, error) {
+	x509Cert, err := parseCert(cert.SelfManagedCertContent)
+	if err != nil {
+		builder.Logger.WithError(err).Errorf("fail to parse SelfManagedCertContent as cert")
+		return HttpsCert{}, err
+	}
+
+	var err1 error
+	wg1 := sync.WaitGroup{}
+	wg1.Add(1)
+	go func() {
+		defer wg1.Done()
+
+		// update sec
+		var sec coreV1.Secret
+		if err := builder.Get(nsIstioSystem, getSecNameForSelfManagedCert(cert), &sec); err != nil {
+			err1 = err
+			return
+		}
+
+		// ensure secret content updated
+		sec.Data["tls.crt"] = []byte(cert.SelfManagedCertContent)
+		sec.Data["tls.key"] = []byte(cert.SelfManagedCertPrvKey)
+
+		err1 = builder.Update(&sec)
+	}()
+
+	var err2 error
+	wg2 := sync.WaitGroup{}
+	wg2.Add(1)
+	go func() {
+		defer wg2.Done()
+
+		// update domains
+		var res v1alpha1.HttpsCert
+		if err2 = builder.Get("", cert.Name, &res); err2 != nil {
+			return
+		}
+
+		if strings.Join(res.Spec.Domains, ",") == strings.Join(x509Cert.DNSNames, ",") {
+			return
+		}
+
+		// ensure domains updated
+		res.Spec.Domains = x509Cert.DNSNames
+		err2 = builder.Update(&res)
+	}()
+
+	wg1.Wait()
+	wg2.Wait()
+
+	if err1 != nil {
+		return HttpsCert{}, err1
+	} else if err2 != nil {
+		return HttpsCert{}, err2
+	}
+
+	return cert, nil
+}
+
 func (builder *Builder) CreateSelfManagedHttpsCert(cert HttpsCert) (HttpsCert, error) {
 	x509Cert, err := parseCert(cert.SelfManagedCertContent)
 	if err != nil {
@@ -169,10 +231,16 @@ func (builder *Builder) DeleteHttpsCert(name string) error {
 	return builder.Delete(&v1alpha1.HttpsCert{ObjectMeta: v1.ObjectMeta{Name: name}})
 }
 
-func (builder *Builder) createCertSecretInNSIstioSystem(cert HttpsCert) (string, error) {
-	nsIstioSystem := "istio-system"
+const nsIstioSystem = "istio-system"
 
+func getSecNameForSelfManagedCert(cert HttpsCert) string {
 	certSecName := "kapp-self-managed-" + cert.Name
+	return certSecName
+}
+
+func (builder *Builder) createCertSecretInNSIstioSystem(cert HttpsCert) (string, error) {
+
+	certSecName := getSecNameForSelfManagedCert(cert)
 
 	tlsCert := cert.SelfManagedCertContent
 	tlsKey := cert.SelfManagedCertPrvKey
