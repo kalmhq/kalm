@@ -132,6 +132,10 @@ func (builder *Builder) UpdateSelfManagedCert(cert HttpsCert) (HttpsCert, error)
 			return
 		}
 
+		if sec.Data == nil {
+			sec.Data = make(map[string][]byte)
+		}
+
 		// ensure secret content updated
 		sec.Data["tls.crt"] = []byte(cert.SelfManagedCertContent)
 		sec.Data["tls.key"] = []byte(cert.SelfManagedCertPrvKey)

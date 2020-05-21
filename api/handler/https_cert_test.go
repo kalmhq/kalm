@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"github.com/kapp-staging/kapp/api/resources"
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	coreV1 "k8s.io/api/core/v1"
 	"net/http"
 	"strings"
 	"testing"
@@ -58,9 +58,7 @@ func (suite *HttpsCertTestSuite) TestCreateHttpsCert() {
 	suite.Equal("example.com", strings.Join(res.Items[0].Spec.Domains, ""))
 }
 
-func (suite *HttpsCertTestSuite) TestUploadHttpsCert() {
-
-	caCert := `-----BEGIN CERTIFICATE-----
+const tlsCert = `-----BEGIN CERTIFICATE-----
 MIIFVjCCBD6gAwIBAgISBPNCxpUJsb9iD+AX7DviehGrMA0GCSqGSIb3DQEBCwUA
 MEoxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MSMwIQYDVQQD
 ExpMZXQncyBFbmNyeXB0IEF1dGhvcml0eSBYMzAeFw0yMDA1MjAwMzI5MzNaFw0y
@@ -119,10 +117,12 @@ PfZ+G6Z6h7mjem0Y+iWlkYcV4PIWL1iwBi8saCbGS5jN2p8M+X+Q7UNKEkROb3N6
 KOqkqm57TH2H3eDJAkSnh6/DNFu0Qg==
 -----END CERTIFICATE-----`
 
+func (suite *HttpsCertTestSuite) TestUploadHttpsCert() {
+
 	bodyMap := map[string]interface{}{
 		"name":                      "foobar-cert",
 		"isSelfManaged":             true,
-		"selfManagedCertContent":    caCert,
+		"selfManagedCertContent":    tlsCert,
 		"selfManagedCertPrivateKey": "",
 	}
 
@@ -148,9 +148,56 @@ KOqkqm57TH2H3eDJAkSnh6/DNFu0Qg==
 	suite.Equal("", res.Items[0].Spec.HttpsCertIssuer)
 	suite.Equal("hello.kapp.live", strings.Join(res.Items[0].Spec.Domains, ""))
 	suite.Equal("kapp-self-managed-foobar-cert", res.Items[0].Spec.SelfManagedCertSecretName)
+
+	// sec
+	var sec coreV1.Secret
+	err = suite.k8sClinet.RESTClient().Get().AbsPath("/api/v1/namespaces/istio-system/secrets/kapp-self-managed-foobar-cert").Do().Into(&sec)
+	suite.Nil(err)
+	suite.Equal(sec.Data["tls.key"], []byte(""))
+	suite.Equal(sec.Data["tls.crt"], []byte(tlsCert))
 }
 
-func (suite *HttpsCertTestSuite) TestUpdateHttpsCert() {
+func (suite *HttpsCertTestSuite) TestUpdateSelfManagedHttpsCert() {
+
+	// upload
+	bodyBytes, _ := json.Marshal(map[string]interface{}{
+		"name":                      "foobar-cert",
+		"isSelfManaged":             true,
+		"selfManagedCertContent":    tlsCert,
+		"selfManagedCertPrivateKey": "",
+	})
+	rec := suite.NewRequest(http.MethodPost, "/v1alpha1/httpscerts/upload", string(bodyBytes))
+	suite.Equal(201, rec.Code)
+
+	// update
+	updateBodyBytes, _ := json.Marshal(map[string]interface{}{
+		"name":                      "foobar-cert",
+		"isSelfManaged":             true,
+		"selfManagedCertContent":    tlsCert,
+		"selfManagedCertPrivateKey": "updatedPrvKey",
+	})
+	rec = suite.NewRequest(http.MethodPut, "/v1alpha1/httpscerts/foobar-cert", string(updateBodyBytes))
+	suite.Equal(200, rec.Code)
+
+	var res v1alpha1.HttpsCertList
+	err := suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/httpscerts").Do().Into(&res)
+	suite.Nil(err)
+
+	suite.Equal(1, len(res.Items))
+	suite.Equal("foobar-cert", res.Items[0].Name)
+	suite.Equal(true, res.Items[0].Spec.IsSelfManaged)
+	suite.Equal("", res.Items[0].Spec.HttpsCertIssuer)
+	suite.Equal("hello.kapp.live", strings.Join(res.Items[0].Spec.Domains, ""))
+	suite.Equal("kapp-self-managed-foobar-cert", res.Items[0].Spec.SelfManagedCertSecretName)
+
+	// sec
+	var sec coreV1.Secret
+	err = suite.k8sClinet.RESTClient().Get().AbsPath("/api/v1/namespaces/istio-system/secrets/kapp-self-managed-foobar-cert").Do().Into(&sec)
+	suite.Nil(err)
+	suite.Equal(sec.Data["tls.key"], []byte("updatedPrvKey"))
+}
+
+func (suite *HttpsCertTestSuite) TestUpdateAutoManagedHttpsCert() {
 	body := `{
   "name":    "foobar-cert",
   "httpsCertIssuer":  "foobar-issuer",
@@ -227,13 +274,4 @@ func (suite *HttpsCertTestSuite) TestDeleteHttpsCert() {
 	err = suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/httpscerts").Do().Into(&res)
 	suite.Nil(err)
 	suite.Equal(0, len(res.Items))
-}
-
-func TestJsonUnmarshal(t *testing.T) {
-
-	res := resources.HttpsCert{}
-	str := `{"isSelfManaged":true,"name":"foobar-cert","selfManagedCertContent":"\n-----BEGIN CERTIFICATE-----\nMIIE+jCCAuKgAwIBAgICB+QwDQYJKoZIhvcNAQELBQAwHjEcMBoGA1UEChMTS2Fw\ncCBDQSBmb3IgVGVzdCBDbzAeFw0yMDA1MTMwOTU0MjdaFw0yMDA1MTQwOTU0Mjda\nMB4xHDAaBgNVBAoTE0thcHAgQ0EgZm9yIFRlc3QgQ28wggIiMA0GCSqGSIb3DQEB\nAQUAA4ICDwAwggIKAoICAQDhKWRRuOTLSiB4L3noTZyt5tkfohwMg79VyNfVSWlz\nLscVh6STBVGysJ37l2NWlZrJwuyyDPrFKSbkfS76IX1OSkw+Nr4scvrc0TT3YuXO\nzCudyT/5mFbLXvtl3RO8qh7MdACWwQuTzjx9w64DOFbZbde/AmzpsYMqaN6XuN5q\nz3llAF0rJ2dJM16g+yQP+c4eO+9+yzSaOA9A5qir/BZy2/io4MtSCA1dO1UPr1bT\nYAmXy/kc8nmnoQQKDMuKNoH9V3iCnwbNd6tJ/hfhY50NOm77ki03VcoQMt3GJsmM\nhi62llUVsCBvYRcmREw/23umAKHW3j92DJSbJZ5vbU1lNTsEAwPUAz5ebhMTiV8u\nmlnfdQDaFXeoN9TceUNn6VigRVFJwSKFSZWwSJ2lZUPVMvVWuCyvo4FU3ajvyMhO\nlq3uxVSxll9A+40Y82wVWTfDmzBEmiKx29OMTtciGaBdDbCAGOKbKQYUSwwjmFJI\nvU/J0RUHugxSsApd326AfoZZa7voDUfEanx09zsHvwETnHlkp0ThCEnOA8NJz5CC\nu+6OB4f5ffZYZQgQQ5GvDwmg43ssIpKhrKfBbo1wP7z8LxJLbcq84RSiTpfuvSZ2\n288ilLbNhDe+S8z8QZwyD8zqtz0oqes0v9JWGwKBESkaHiE1rCYOlq7X19DWj2FO\ngQIDAQABo0IwQDAOBgNVHQ8BAf8EBAMCAoQwHQYDVR0lBBYwFAYIKwYBBQUHAwIG\nCCsGAQUFBwMBMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggIBAN5W\nCFe7005X31jJCACONP4aJAeyWA+zF653XKrmgq85tB2TrAJAmqFEAYEckIhUvksX\nc7c3GSXjh8/nSCnFtYmbtmUlK5ZEvSEtwcd/ADkEtaqdwdDmnQRGeZjUhhM5WaqV\nJYNBbxQD0Xlxr1QeH8GAKhmGAD/nz51efiJXb0Iw94Mx1Y0IbUkshRbmQZPV4C+b\nOqTbl6ySoqXQd/KX2MAtcS6CMCri7HV3eApXon2BBHLqNFe7/IszDND65iFuvuqv\n8fJX1i9O6KjqRoiFeHKA5ITSK+oRPEghYgMpcs2Se90JVebbXQb2RVdtuy3ggY1T\nu0Xrv3iQkqrN34a8Mqb7ntUKmTTTTOUtonexg5x1GbUKcPZzfl5yDk/EN3XbYdij\nrYMZD+XE2Bib3XTAGIa53tJ1bLOVO7N8kABkcXwqq4NBp8AaHqHkFPwbdMNsRP5h\nyxWCs8kBpIcgFWQgw+m75lbc/+9ygEb37fwYES2MWnmmrvWwk7X8CPuBYZs8S61h\n+qkm/Qb07WLnGtnJKW3nMFi3Q+sVEEE4zfClLiGZ3jInGVVNKbNFVkxBz/WuRNxa\nIaXRr3c4sXLz4FvcUU43SFkbpsqcPBVTWq+hIK5OKidcH+0b9UkVGIdC5K0j2cNZ\nnF/6snHZL3gZ/YJNQLMsbOaPcoLW9HkEUOOJLgSR\n-----END CERTIFICATE-----","selfManagedCertPrivateKey":""}`
-
-	err := json.Unmarshal([]byte(str), &res)
-	assert.Nil(t, err)
 }
