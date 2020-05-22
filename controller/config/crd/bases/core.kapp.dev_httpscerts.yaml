@@ -44,7 +44,7 @@ spec:
               type: string
             isSelfManaged:
               type: boolean
-            selfManagedSecretName:
+            selfManagedCertSecretName:
               type: string
           required:
           - domains

@@ -52,7 +52,7 @@ func (suite *HttpsCertControllerSuite) TestSelfManagedCertWithSecret() {
 	suite.createObject(&corev1.Secret{
 		ObjectMeta: v1.ObjectMeta{
 			Namespace: istioNamespace,
-			Name: httpsCert.Spec.SelfManagedCertSecretName,
+			Name:      httpsCert.Spec.SelfManagedCertSecretName,
 		},
 	})
 
@@ -157,9 +157,9 @@ func genSelfManagedHttpsCert(certNameOpt ...string) v1alpha1.HttpsCert {
 			Name: certName,
 		},
 		Spec: v1alpha1.HttpsCertSpec{
-			IsSelfManaged: true,
+			IsSelfManaged:             true,
 			SelfManagedCertSecretName: "self-managed-sec-name1",
-			Domains:       []string{"a.demo.com", "b.demo.com"},
+			Domains:                   []string{"a.demo.com", "b.demo.com"},
 		},
 	}
 }
