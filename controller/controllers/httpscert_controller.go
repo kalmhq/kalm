@@ -61,74 +61,26 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	certName, certSecretName := getCertAndCertSecretName(httpsCert)
+	_, certSecretName := getCertAndCertSecretName(httpsCert)
 
-	// cert & it's certSecret have to be in namespace:istio-system to be found by istio
-	certNS := istioNamespace
-
+	var err error
 	// self-managed httpsCert has only secret, no corresponding cmv1alpha2.Certificate
 	if httpsCert.Spec.IsSelfManaged {
 		// check if secret present
 		var certSec corev1.Secret
-		if err := r.Get(ctx, types.NamespacedName{
+		if err = r.Get(ctx, types.NamespacedName{
 			Name:      certSecretName,
 			Namespace: istioNamespace,
 		}, &certSec); err != nil {
 			r.Recorder.Event(&httpsCert, corev1.EventTypeWarning, "Fail to get CertSecret", err.Error())
-
-			if httpsCert.Status.OK {
-				httpsCert.Status.OK = false
-				r.Status().Update(ctx, &httpsCert)
-			}
-
-			return ctrl.Result{}, err
 		}
-
-		return ctrl.Result{}, nil
-	}
-
-	desiredCert := cmv1alpha2.Certificate{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: certNS,
-			Name:      certName,
-		},
-		Spec: cmv1alpha2.CertificateSpec{
-			SecretName: certSecretName,
-			DNSNames:   httpsCert.Spec.Domains,
-			IssuerRef: cmmeta.ObjectReference{
-				Name: httpsCert.Spec.HttpsCertIssuer,
-				Kind: "ClusterIssuer",
-			},
-		},
-	}
-
-	// reconcile cert
-	var cert cmv1alpha2.Certificate
-	var isNew bool
-	err := r.Get(ctx, types.NamespacedName{
-		Namespace: certNS,
-		Name:      certName,
-	}, &cert)
-
-	if err != nil {
-		if !errors.IsNotFound(err) {
-			return ctrl.Result{}, err
-		}
-
-		isNew = true
-		cert = desiredCert
 	} else {
-		cert.Spec = desiredCert.Spec
+		err = r.reconcileForAutoManagedHttpsCert(ctx, httpsCert)
 	}
 
-	if isNew {
-		if err := ctrl.SetControllerReference(&httpsCert, &cert, r.Scheme); err != nil {
-			return ctrl.Result{}, err
-		}
-
-		err = r.Create(ctx, &cert)
-	} else {
-		err = r.Update(ctx, &cert)
+	if (err == nil) != httpsCert.Status.OK {
+		httpsCert.Status.OK = err == nil
+		r.Status().Update(ctx, &httpsCert)
 	}
 
 	return ctrl.Result{}, err
@@ -145,4 +97,54 @@ func (r *HttpsCertReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&corev1alpha1.HttpsCert{}).
 		Owns(&cmv1alpha2.Certificate{}).
 		Complete(r)
+}
+
+func (r *HttpsCertReconciler) reconcileForAutoManagedHttpsCert(ctx context.Context, httpsCert corev1alpha1.HttpsCert) error {
+	certName, certSecretName := getCertAndCertSecretName(httpsCert)
+
+	desiredCert := cmv1alpha2.Certificate{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: istioNamespace,
+			Name:      certName,
+		},
+		Spec: cmv1alpha2.CertificateSpec{
+			SecretName: certSecretName,
+			DNSNames:   httpsCert.Spec.Domains,
+			IssuerRef: cmmeta.ObjectReference{
+				Name: httpsCert.Spec.HttpsCertIssuer,
+				Kind: "ClusterIssuer",
+			},
+		},
+	}
+
+	// reconcile cert
+	var cert cmv1alpha2.Certificate
+	var isNew bool
+	err := r.Get(ctx, types.NamespacedName{
+		Namespace: istioNamespace,
+		Name:      certName,
+	}, &cert)
+
+	if err != nil {
+		if !errors.IsNotFound(err) {
+			return err
+		}
+
+		isNew = true
+		cert = desiredCert
+	} else {
+		cert.Spec = desiredCert.Spec
+	}
+
+	if isNew {
+		if err := ctrl.SetControllerReference(&httpsCert, &cert, r.Scheme); err != nil {
+			return err
+		}
+
+		err = r.Create(ctx, &cert)
+	} else {
+		err = r.Update(ctx, &cert)
+	}
+
+	return err
 }

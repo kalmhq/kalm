@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -24,6 +25,51 @@ func (suite *HttpsCertControllerSuite) SetupSuite() {
 
 func (suite *HttpsCertControllerSuite) TearDownSuite() {
 	suite.BasicSuite.TearDownSuite()
+}
+
+func (suite *HttpsCertControllerSuite) TestSelfManagedCertWithAbsentSecret() {
+	httpsCert := genSelfManagedHttpsCert()
+	suite.createHttpsCert(httpsCert)
+
+	//get
+	suite.Eventually(func() bool {
+		err := suite.K8sClient.Get(
+			context.Background(),
+			types.NamespacedName{
+				Name: httpsCert.Name,
+			},
+			&httpsCert,
+		)
+
+		return err == nil && !httpsCert.Status.OK
+	})
+}
+
+func (suite *HttpsCertControllerSuite) TestSelfManagedCertWithSecret() {
+	httpsCert := genSelfManagedHttpsCert()
+
+	//prepare secret for httpsCert first
+	suite.createObject(&corev1.Secret{
+		ObjectMeta: v1.ObjectMeta{
+			Namespace: istioNamespace,
+			Name: httpsCert.Spec.SelfManagedCertSecretName,
+		},
+	})
+
+	suite.createHttpsCert(httpsCert)
+
+	//get
+	suite.Eventually(func() bool {
+		err := suite.K8sClient.Get(
+			context.Background(),
+			types.NamespacedName{
+				Name: httpsCert.Name,
+			},
+			&httpsCert,
+		)
+
+		return err == nil && httpsCert.Status.OK
+	})
 }
 
 func (suite *HttpsCertControllerSuite) TestBasicCRUD() {
@@ -98,6 +144,25 @@ func (suite *HttpsCertControllerSuite) reloadHttpsCert(httpsCert *v1alpha1.Https
 	suite.Nil(err)
 }
 
+func genSelfManagedHttpsCert(certNameOpt ...string) v1alpha1.HttpsCert {
+	var certName string
+	if len(certNameOpt) > 0 {
+		certName = certNameOpt[0]
+	} else {
+		certName = randomName()[:12]
+	}
+
+	return v1alpha1.HttpsCert{
+		ObjectMeta: v1.ObjectMeta{
+			Name: certName,
+		},
+		Spec: v1alpha1.HttpsCertSpec{
+			IsSelfManaged: true,
+			SelfManagedCertSecretName: "self-managed-sec-name1",
+			Domains:       []string{"a.demo.com", "b.demo.com"},
+		},
+	}
+}
 func genHttpsCert(issuer string, certNameOpt ...string) v1alpha1.HttpsCert {
 	var certName string
 	if len(certNameOpt) > 0 {
