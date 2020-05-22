@@ -18,6 +18,7 @@ package controllers
 import (
 	"context"
 	cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -34,9 +35,16 @@ type HttpsCertReconciler struct {
 }
 
 func getCertAndCertSecretName(httpsCert corev1alpha1.HttpsCert) (certName string, certSecretName string) {
+
 	name := httpsCert.Name
 
-	return name, name
+	if httpsCert.Spec.IsSelfManaged {
+		certSecretName = httpsCert.Spec.SelfManagedCertSecretName
+	} else {
+		certSecretName = httpsCert.Name
+	}
+
+	return name, certSecretName
 }
 
 const istioNamespace = "istio-system"
@@ -57,6 +65,27 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	// cert & it's certSecret have to be in namespace:istio-system to be found by istio
 	certNS := istioNamespace
+
+	// self-managed httpsCert has only secret, no corresponding cmv1alpha2.Certificate
+	if httpsCert.Spec.IsSelfManaged {
+		// check if secret present
+		var certSec corev1.Secret
+		if err := r.Get(ctx, types.NamespacedName{
+			Name:      certSecretName,
+			Namespace: istioNamespace,
+		}, &certSec); err != nil {
+			r.Recorder.Event(&httpsCert, corev1.EventTypeWarning, "Fail to get CertSecret", err.Error())
+
+			if httpsCert.Status.OK {
+				httpsCert.Status.OK = false
+				r.Status().Update(ctx, &httpsCert)
+			}
+
+			return ctrl.Result{}, err
+		}
+
+		return ctrl.Result{}, nil
+	}
 
 	desiredCert := cmv1alpha2.Certificate{
 		ObjectMeta: metav1.ObjectMeta{
@@ -93,10 +122,10 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	if isNew {
-		// todo different ns obj can't not be owner
 		if err := ctrl.SetControllerReference(&httpsCert, &cert, r.Scheme); err != nil {
 			return ctrl.Result{}, err
 		}
+
 		err = r.Create(ctx, &cert)
 	} else {
 		err = r.Update(ctx, &cert)

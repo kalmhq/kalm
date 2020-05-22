@@ -701,6 +701,8 @@ func (r *ApplicationReconcilerTask) ensureHttpsConfigOfGateway(gw *istioV1Beta1.
 			}
 		}
 
+		_, certSecName := getCertAndCertSecretName(httpsCert)
+
 		curServer := istioNetworkingV1Beta1.Server{
 			Hosts: ingressConfig.Hosts,
 			Port: &istioNetworkingV1Beta1.Port{
@@ -710,7 +712,7 @@ func (r *ApplicationReconcilerTask) ensureHttpsConfigOfGateway(gw *istioV1Beta1.
 			},
 			Tls: &istioNetworkingV1Beta1.Server_TLSOptions{
 				Mode:           istioNetworkingV1Beta1.Server_TLSOptions_SIMPLE,
-				CredentialName: ingressConfig.HttpsCert,
+				CredentialName: certSecName,
 			},
 		}
 
