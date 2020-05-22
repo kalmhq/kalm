@@ -1,0 +1,141 @@
+apiVersion: core.kapp.dev/v1alpha1
+kind: HttpsCertIssuer
+metadata:
+  name: default-cert-issuer
+spec:
+  caForTest: {}
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: HttpsCert
+metadata:
+  name: default-https-cert
+spec:
+  httpsCertIssuer: default-cert-issuer
+  domains:
+    - "*"
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: HttpsCert
+metadata:
+  name: xip-io-cert
+spec:
+  httpsCertIssuer: default-cert-issuer
+  domains:
+    - "xip.io"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-http-route
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: Application
+metadata:
+  name:  test-http-route
+spec:
+  isActive: true
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: Component
+metadata:
+  name: server-v1
+  namespace: test-http-route
+spec:
+  image: strm/helloworld-http
+  ports:
+    - name: http
+      containerPort: 80
+      servicePort: 80
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: Component
+metadata:
+  name: server-v2
+  namespace: test-http-route
+spec:
+  image: strm/helloworld-http
+  ports:
+    - name: http
+      containerPort: 80
+      servicePort: 80
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: HttpRoute
+metadata:
+  name: v1-only-route
+  namespace: test-http-route
+spec:
+  hosts:
+    - xip.io
+  methods:
+    - GET
+    - POST
+  schemes:
+    - http
+    - https
+  conditions:
+    - type: header
+      name: version
+      value: v1
+      operator: equal
+  paths:
+    - /
+  destinations:
+    - host: server-v1
+      weight: 100
+  httpRedirectToHttps: true
+  stripPath: true
+  certification: Auto
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: HttpRoute
+metadata:
+  name: v2-only-route
+  namespace: test-http-route
+spec:
+  hosts:
+    - xip.io
+  methods:
+    - GET
+    - POST
+  schemes:
+    - http
+    - https
+  conditions:
+    - type: header
+      name: version
+      operator: equal
+      value: v2
+  paths:
+    - /
+  destinations:
+    - host: server-v2
+      weight: 100
+  httpRedirectToHttps: true
+  stripPath: true
+  certification: Auto
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: HttpRoute
+metadata:
+  name: first-route
+  namespace: test-http-route
+spec:
+  hosts:
+    - xip.io
+  methods:
+    - GET
+    - POST
+  schemes:
+    - http
+    - https
+  paths:
+    - /
+  destinations:
+    - host: server-v2
+      weight: 50
+    - host: server-v1
+      weight: 50
+  httpRedirectToHttps: true
+  stripPath: true
+  certification: Auto
