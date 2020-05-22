@@ -42,6 +42,26 @@ func (suite *BasicSuite) Eventually(condition func() bool, msgAndArgs ...interfa
 	suite.Suite.Require().Eventually(condition, waitFor, tick, msgAndArgs...)
 }
 
+func (suite *BasicSuite) True(value bool, msgAndArgs ...interface{}) {
+	suite.Suite.Require().True(value, msgAndArgs...)
+}
+
+func (suite *BasicSuite) False(value bool, msgAndArgs ...interface{}) {
+	suite.Suite.Require().False(value, msgAndArgs...)
+}
+
+func (suite *BasicSuite) Nil(object interface{}, msgAndArgs ...interface{}) {
+	suite.Suite.Require().Nil(object, msgAndArgs...)
+}
+
+func (suite *BasicSuite) Len(object interface{}, length int, msgAndArgs ...interface{}) {
+	suite.Suite.Require().Len(object, length, msgAndArgs...)
+}
+
+func (suite *BasicSuite) Equal(expected interface{}, actual interface{}, msgAndArgs ...interface{}) {
+	suite.Suite.Require().Equal(expected, actual, msgAndArgs...)
+}
+
 func (suite *BasicSuite) createComponentPlugin(plugin *v1alpha1.ComponentPlugin) {
 	suite.Nil(suite.K8sClient.Create(context.Background(), plugin))
 
@@ -136,6 +156,19 @@ func (suite *BasicSuite) reloadObject(key client.ObjectKey, obj runtime.Object) 
 	suite.Nil(suite.K8sClient.Get(context.Background(), key, obj))
 }
 
+type singleObject interface {
+	runtime.Object
+	GetName() string
+	GetNamespace() string
+}
+
+func (suite *BasicSuite) reloadSingleObject(obj singleObject) {
+	suite.Nil(suite.K8sClient.Get(context.Background(), types.NamespacedName{
+		Name:      obj.GetName(),
+		Namespace: obj.GetNamespace(),
+	}, obj))
+}
+
 func (suite *BasicSuite) updateObject(obj runtime.Object) {
 	suite.Nil(suite.K8sClient.Update(context.Background(), obj))
 }
@@ -206,8 +239,11 @@ func (suite *BasicSuite) SetupSuite() {
 	suite.Nil(NewHttpsCertReconciler(mgr).SetupWithManager(mgr))
 
 	suite.Nil(NewDockerRegistryReconciler(mgr).SetupWithManager(mgr))
+	suite.Nil(NewHttpRouteReconciler(mgr).SetupWithManager(mgr))
+	suite.Nil(NewGatewayReconciler(mgr).SetupWithManager(mgr))
 
 	mgrStopChannel := make(chan struct{})
+	suite.MgrStopChannel = mgrStopChannel
 
 	go func() {
 		err = mgr.Start(mgrStopChannel)
@@ -220,12 +256,16 @@ func (suite *BasicSuite) SetupSuite() {
 	suite.TestEnv = testEnv
 	suite.K8sClient = k8sClient
 	suite.Cfg = cfg
-	suite.MgrStopChannel = mgrStopChannel
 }
 
 func (suite *BasicSuite) TearDownSuite() {
-	suite.MgrStopChannel <- struct{}{}
-	suite.Nil(suite.TestEnv.Stop())
+	if suite.MgrStopChannel != nil {
+		suite.MgrStopChannel <- struct{}{}
+	}
+
+	if suite.TestEnv != nil {
+		suite.Nil(suite.TestEnv.Stop())
+	}
 }
 
 func (suite *BasicSuite) createHttpsCert(cert v1alpha1.HttpsCert) {

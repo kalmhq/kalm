@@ -160,9 +160,9 @@ func (r *ApplicationReconcilerTask) Run(req ctrl.Request) error {
 		return err
 	}
 
-	if err := r.ReconcileGateway(); err != nil {
-		return err
-	}
+	//if err := r.ReconcileGateway(); err != nil {
+	//	return err
+	//}
 
 	if err := r.ReconcileComponents(); err != nil {
 		return err
