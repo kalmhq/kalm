@@ -185,94 +185,94 @@ func (suite *ApplicationPluginBindingControllerSuite) TestUpdateApplicationPlugi
 	}, "application should be updated")
 }
 
-func (suite *ApplicationPluginBindingControllerSuite) TestBuildInAppPluginBindingIngress() {
-
-	appPluginIngress := generateEmptyApplicationPlugin()
-	appPluginIngress.Name = `kapp-builtin-application-plugin-ingress`
-	appPluginIngress.Spec.Src = `
-function AfterApplicationSaved() {
-  __builtinApplicationPluginIngress();
-}
-`
-	//appPluginIngress.Spec.ConfigSchema = &runtime.RawExtension{
-	//	Raw: []byte(`{"type":"object","properties":{"newLabelName":{"type":"string"}, "newLabelValue":{"type": "string"}}}`),
-	//}
-
-	issuer := genEmptyCAHttpsCertIssuer()
-	suite.createHttpsCertIssuer(issuer)
-	cert := genHttpsCert(issuer.Name, "httpscert-sample")
-	suite.createHttpsCert(cert)
-
-	suite.createApplicationPlugin(appPluginIngress)
-
-	suite.Eventually(func() bool {
-		suite.reloadObject(types.NamespacedName{Name: appPluginIngress.Name}, appPluginIngress)
-		return appPluginIngress.Status.CompiledSuccessfully
-	}, "plugin should be compiled")
-
-	binding := &v1alpha1.ApplicationPluginBinding{
-		ObjectMeta: v1.ObjectMeta{
-			Namespace: suite.application.Name,
-			Name:      appPluginIngress.Name,
-		},
-		Spec: v1alpha1.ApplicationPluginBindingSpec{
-			PluginName: appPluginIngress.Name,
-			Config: &runtime.RawExtension{Raw: []byte(`{
-  "hosts": [
-    "demo.com"
-  ],
-  "httpsCert": "httpscert-sample",
-  "paths": [
-    "/abc",
-    "/"
-  ],
-  "stripPath": true,
-  "destinations": [
-    {
-      "destination": "server-v1",
-      "weight": 50
-    },
-    {
-      "destination": "server-v2",
-      "weight": 50
-    }
-  ]
-}`)},
-		},
-	}
-
-	key := types.NamespacedName{
-		Namespace: binding.Namespace,
-		Name:      binding.Name,
-	}
-
-	// create
-	suite.Nil(suite.K8sClient.Create(context.Background(), binding))
-
-	// check binding status
-	suite.Eventually(func() bool {
-		err := suite.K8sClient.Get(context.Background(), key, binding)
-
-		if err != nil {
-			return false
-		}
-
-		return binding.Labels["kapp-plugin"] == appPluginIngress.Name &&
-			binding.Status.ConfigValid &&
-			binding.Status.ConfigError == ""
-
-	}, "plugin binding status is not correct")
-
-	gw := suite.gwHttpsIsCorrectlySetByIngressPlugin()
-
-	//delete gw will recover with same config
-	suite.Nil(suite.K8sClient.Delete(context.Background(), &gw))
-	suite.gwHttpsIsCorrectlySetByIngressPlugin()
-
-	//delete appPluginBinding will clean https config in gw
-	suite.Nil(suite.K8sClient.Delete(context.Background(), binding))
-	suite.gwHttpsIsCorrectlyRemovedByIngressPlugin()
-}
+//func (suite *ApplicationPluginBindingControllerSuite) TestBuildInAppPluginBindingIngress() {
+//
+//	appPluginIngress := generateEmptyApplicationPlugin()
+//	appPluginIngress.Name = `kapp-builtin-application-plugin-ingress`
+//	appPluginIngress.Spec.Src = `
+//function AfterApplicationSaved() {
+//  __builtinApplicationPluginIngress();
+//}
+//`
+//	//appPluginIngress.Spec.ConfigSchema = &runtime.RawExtension{
+//	//	Raw: []byte(`{"type":"object","properties":{"newLabelName":{"type":"string"}, "newLabelValue":{"type": "string"}}}`),
+//	//}
+//
+//	issuer := genEmptyCAHttpsCertIssuer()
+//	suite.createHttpsCertIssuer(issuer)
+//	cert := genHttpsCert(issuer.Name, "httpscert-sample")
+//	suite.createHttpsCert(cert)
+//
+//	suite.createApplicationPlugin(appPluginIngress)
+//
+//	suite.Eventually(func() bool {
+//		suite.reloadObject(types.NamespacedName{Name: appPluginIngress.Name}, appPluginIngress)
+//		return appPluginIngress.Status.CompiledSuccessfully
+//	}, "plugin should be compiled")
+//
+//	binding := &v1alpha1.ApplicationPluginBinding{
+//		ObjectMeta: v1.ObjectMeta{
+//			Namespace: suite.application.Name,
+//			Name:      appPluginIngress.Name,
+//		},
+//		Spec: v1alpha1.ApplicationPluginBindingSpec{
+//			PluginName: appPluginIngress.Name,
+//			Config: &runtime.RawExtension{Raw: []byte(`{
+//  "hosts": [
+//    "demo.com"
+//  ],
+//  "httpsCert": "httpscert-sample",
+//  "paths": [
+//    "/abc",
+//    "/"
+//  ],
+//  "stripPath": true,
+//  "destinations": [
+//    {
+//      "destination": "server-v1",
+//      "weight": 50
+//    },
+//    {
+//      "destination": "server-v2",
+//      "weight": 50
+//    }
+//  ]
+//}`)},
+//		},
+//	}
+//
+//	key := types.NamespacedName{
+//		Namespace: binding.Namespace,
+//		Name:      binding.Name,
+//	}
+//
+//	// create
+//	suite.Nil(suite.K8sClient.Create(context.Background(), binding))
+//
+//	// check binding status
+//	suite.Eventually(func() bool {
+//		err := suite.K8sClient.Get(context.Background(), key, binding)
+//
+//		if err != nil {
+//			return false
+//		}
+//
+//		return binding.Labels["kapp-plugin"] == appPluginIngress.Name &&
+//			binding.Status.ConfigValid &&
+//			binding.Status.ConfigError == ""
+//
+//	}, "plugin binding status is not correct")
+//
+//	gw := suite.gwHttpsIsCorrectlySetByIngressPlugin()
+//
+//	//delete gw will recover with same config
+//	suite.Nil(suite.K8sClient.Delete(context.Background(), &gw))
+//	suite.gwHttpsIsCorrectlySetByIngressPlugin()
+//
+//	//delete appPluginBinding will clean https config in gw
+//	suite.Nil(suite.K8sClient.Delete(context.Background(), binding))
+//	suite.gwHttpsIsCorrectlyRemovedByIngressPlugin()
+//}
 
 func (suite *ApplicationPluginBindingControllerSuite) gwHttpsIsCorrectlySetByIngressPlugin() istioV1Beta1.Gateway {
 	gw := istioV1Beta1.Gateway{}
