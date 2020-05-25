@@ -1329,7 +1329,7 @@ func (r *ComponentReconcilerTask) SetupAttributes(req ctrl.Request) (err error) 
 
 	var ns coreV1.Namespace
 	err = r.Reader.Get(r.ctx, types.NamespacedName{
-		Name:      component.Namespace,
+		Name: component.Namespace,
 	}, &ns)
 
 	if err != nil {

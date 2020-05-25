@@ -83,46 +83,46 @@ func (suite *BasicSuite) createComponentPlugin(plugin *v1alpha1.ComponentPlugin)
 	})
 }
 
-func (suite *BasicSuite) createApplicationPlugin(plugin *v1alpha1.ApplicationPlugin) {
-	suite.Nil(suite.K8sClient.Create(context.Background(), plugin))
+//func (suite *BasicSuite) createApplicationPlugin(plugin *v1alpha1.ApplicationPlugin) {
+//	suite.Nil(suite.K8sClient.Create(context.Background(), plugin))
+//
+//	// after the finalizer is set, the plugin won't auto change
+//	suite.Eventually(func() bool {
+//		err := suite.K8sClient.Get(context.Background(), getApplicationPluginNamespacedName(plugin), plugin)
+//
+//		if err != nil {
+//			return false
+//		}
+//
+//		for i := range plugin.Finalizers {
+//			if plugin.Finalizers[i] == finalizerName {
+//				return true
+//			}
+//		}
+//
+//		return false
+//	})
+//}
 
-	// after the finalizer is set, the plugin won't auto change
-	suite.Eventually(func() bool {
-		err := suite.K8sClient.Get(context.Background(), getApplicationPluginNamespacedName(plugin), plugin)
-
-		if err != nil {
-			return false
-		}
-
-		for i := range plugin.Finalizers {
-			if plugin.Finalizers[i] == finalizerName {
-				return true
-			}
-		}
-
-		return false
-	})
-}
-
-func (suite *BasicSuite) createApplication(application *v1alpha1.Application) {
-	suite.Nil(suite.K8sClient.Create(context.Background(), application))
-
-	suite.Eventually(func() bool {
-		err := suite.K8sClient.Get(context.Background(), getApplicationNamespacedName(application), application)
-
-		if err != nil {
-			return false
-		}
-
-		for i := range application.Finalizers {
-			if application.Finalizers[i] == finalizerName {
-				return true
-			}
-		}
-
-		return false
-	}, "Created application has no finalizer.")
-}
+//func (suite *BasicSuite) createApplication(application *v1alpha1.Application) {
+//	suite.Nil(suite.K8sClient.Create(context.Background(), application))
+//
+//	suite.Eventually(func() bool {
+//		err := suite.K8sClient.Get(context.Background(), getApplicationNamespacedName(application), application)
+//
+//		if err != nil {
+//			return false
+//		}
+//
+//		for i := range application.Finalizers {
+//			if application.Finalizers[i] == finalizerName {
+//				return true
+//			}
+//		}
+//
+//		return false
+//	}, "Created application has no finalizer.")
+//}
 
 func getDockerRegistryNamespacedName(registry *v1alpha1.DockerRegistry) types.NamespacedName {
 	return types.NamespacedName{Name: registry.Name, Namespace: registry.Namespace}
@@ -227,9 +227,9 @@ func (suite *BasicSuite) SetupSuite() {
 	suite.NotNil(mgr)
 	suite.Nil(err)
 
-	suite.Nil(NewApplicationReconciler(mgr).SetupWithManager(mgr))
-	suite.Nil(NewApplicationPluginReconciler(mgr).SetupWithManager(mgr))
-	suite.Nil(NewApplicationPluginBindingReconciler(mgr).SetupWithManager(mgr))
+	//suite.Nil(NewApplicationReconciler(mgr).SetupWithManager(mgr))
+	//suite.Nil(NewApplicationPluginReconciler(mgr).SetupWithManager(mgr))
+	//suite.Nil(NewApplicationPluginBindingReconciler(mgr).SetupWithManager(mgr))
 
 	suite.Nil(NewComponentReconciler(mgr).SetupWithManager(mgr))
 	suite.Nil(NewComponentPluginReconciler(mgr).SetupWithManager(mgr))
