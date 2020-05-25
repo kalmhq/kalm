@@ -9,7 +9,7 @@ import {
   WithStyles,
   Box
 } from "@material-ui/core";
-import { blue } from "@material-ui/core/colors";
+import { primaryColor } from "../theme";
 
 const customizedButtonStyle = (theme: Theme) => {
   return createStyles({
@@ -58,7 +58,11 @@ export const ButtonWhite = (props: ButtonProps) => {
 
 export const ButtonGrey = (props: ButtonProps) => {
   return (
-    <Button variant="contained" size="small" style={{ paddingLeft: 20, paddingRight: 20, color: blue[700] }} {...props}>
+    <Button
+      variant="contained"
+      size="small"
+      style={{ paddingLeft: 20, paddingRight: 20, color: primaryColor }}
+      {...props}>
       {props.children}
     </Button>
   );

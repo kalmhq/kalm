@@ -1,6 +1,16 @@
 import { createMuiTheme } from "@material-ui/core";
-import { blue, grey, green, red } from "@material-ui/core/colors";
+import { grey, green, red, indigo, amber } from "@material-ui/core/colors";
+
+export const primaryBackgroud = indigo[50];
+export const primaryColor = indigo[700];
+
 let themeRaw = createMuiTheme({
+  // @ts-ignore
+  "@global": {
+    a: {
+      color: indigo[700]
+    }
+  },
   props: {
     MuiTextField: {
       // variant: "outlined",
@@ -8,17 +18,8 @@ let themeRaw = createMuiTheme({
     }
   },
   palette: {
-    primary: {
-      // light: will be calculated from palette.primary.main,
-      main: blue[700]
-      // dark: will be calculated from palette.primary.main,
-      // contrastText: will be calculated to contrast with palette.primary.main
-    },
-    secondary: {
-      main: grey[500]
-      // dark: will be calculated from palette.secondary.main,
-      // contrastText: "#ffcc00"
-    },
+    primary: indigo,
+    secondary: amber,
     success: {
       main: green[700]
     },
@@ -29,10 +30,9 @@ let themeRaw = createMuiTheme({
       primary: grey[900],
       secondary: grey[500]
     },
-    action: {
-      // TODO this causes all icons blue
-      active: blue[700]
-    },
+    // action: {
+    //   active: indigo[700]
+    // },
     // Used by `getContrastText()` to maximize the contrast between
     // the background and the text.
     contrastThreshold: 3,
@@ -92,12 +92,12 @@ let themeRaw = createMuiTheme({
       containedPrimary: {
         boxShadow: "0 1px 3px 0px rgba(0,0,0, .2)"
       },
-      textPrimary: {
-        // backgroundColor: "rgba(25, 118, 210, 0.04)",
-        "&:hover": {
-          backgroundColor: "rgba(25, 118, 210, 0.1)"
-        }
-      },
+      // textPrimary: {
+      //   // backgroundColor: "rgba(25, 118, 210, 0.04)",
+      //   "&:hover": {
+      //     backgroundColor: "rgba(25, 118, 210, 0.1)"
+      //   }
+      // },
       textSizeLarge: {
         paddingTop: 0,
         paddingBottom: 0

@@ -1,12 +1,13 @@
-import { createStyles, List, ListItem, ListItemIcon, ListItemText, Theme, ListSubheader } from "@material-ui/core";
-import { blue } from "@material-ui/core/colors";
-import AppsIcon from "@material-ui/icons/Apps";
+import { createStyles, List, ListItem, ListItemIcon, ListItemText, ListSubheader, Theme } from "@material-ui/core";
+import AssignmentReturnedIcon from "@material-ui/icons/AssignmentReturned";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import React from "react";
 import { connect } from "react-redux";
 import { NavLink } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
+import { primaryBackgroud, primaryColor } from "../theme";
+import { KappApplicationIcon, KappNodeIcon, KappTemplateIcon, KappVolumeIcon } from "../widgets/Icon";
 import { BaseDrawer } from "./BaseDrawer";
 
 const mapStateToProps = (state: RootState) => {
@@ -31,8 +32,8 @@ const styles = (theme: Theme) =>
       }
     },
     listItemSeleted: {
-      backgroundColor: `${blue[50]} !important`,
-      borderRight: `4px solid ${blue[700]}`
+      backgroundColor: `${primaryBackgroud} !important`,
+      borderRight: `4px solid ${primaryColor}`
     },
     listSubHeader: {
       textTransform: "uppercase",
@@ -55,11 +56,9 @@ class DashboardDrawerRaw extends React.PureComponent<Props, State> {
 
   private getMenuDataApplication() {
     return [
+      { icon: KappApplicationIcon, text: "Applications", to: "/applications" },
       {
-        text: "Applications",
-        to: "/applications"
-      },
-      {
+        icon: KappTemplateIcon,
         text: "Templates",
         to: "/templates"
       }
@@ -69,14 +68,17 @@ class DashboardDrawerRaw extends React.PureComponent<Props, State> {
   private getMenuDataCluster() {
     return [
       {
+        icon: KappNodeIcon,
         text: "Nodes",
         to: "/cluster/nodes"
       },
       {
+        icon: KappVolumeIcon,
         text: "Volumes",
         to: "/cluster/volumes"
       },
       {
+        icon: AssignmentReturnedIcon,
         text: "Registries",
         to: "/cluster/registries"
       }
@@ -105,7 +107,7 @@ class DashboardDrawerRaw extends React.PureComponent<Props, State> {
               key={item.text}
               selected={pathname.startsWith(item.to.split("?")[0])}>
               <ListItemIcon>
-                <AppsIcon />
+                <item.icon />
               </ListItemIcon>
               <ListItemText primary={item.text} />
             </ListItem>
@@ -126,7 +128,7 @@ class DashboardDrawerRaw extends React.PureComponent<Props, State> {
               key={item.text}
               selected={pathname.startsWith(item.to.split("?")[0])}>
               <ListItemIcon>
-                <AppsIcon />
+                <item.icon />
               </ListItemIcon>
               <ListItemText primary={item.text} />
             </ListItem>
