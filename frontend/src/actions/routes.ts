@@ -10,7 +10,7 @@ export const loadRoutes = (): ThunkResult<Promise<void>> => {
       const res: Immutable.List<HttpRoute> = Immutable.fromJS([
         {
           hosts: ["test.kapp.live", "test2.kapp.live"],
-          urls: ["/", "/test"],
+          paths: ["/", "/test"],
           conditions: [
             {
               type: "header",

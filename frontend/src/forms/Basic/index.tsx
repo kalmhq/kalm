@@ -135,7 +135,7 @@ export const RenderSelectField = ({
       error={touched === true && error != null}
       variant="outlined"
       size="small"
-      margin="normal">
+      margin="dense">
       <InputLabel ref={inputLabel} htmlFor={id} id={labelId}>
         {label}
       </InputLabel>

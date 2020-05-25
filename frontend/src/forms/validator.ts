@@ -1,12 +1,59 @@
+import Immutable from "immutable";
+import { HttpRouteDestination } from "types/route";
+
 export const validator = () => {
   const errors = {};
 
   return errors;
 };
 
+export const ValidatorListNotEmpty = (value: Immutable.List<any>, _allValues?: any, _props?: any, _name?: any) => {
+  if (!value || value.size <= 0) {
+    return "Select at least one option";
+  }
+
+  return undefined;
+};
+
+export const ValidatorAtLeastOneHttpRouteDestination = (
+  value: Immutable.List<HttpRouteDestination>,
+  _allValues?: any,
+  _props?: any,
+  _name?: any
+) => {
+  if (!value || value.size <= 0) {
+    return "Please define at least one target.";
+  }
+
+  if (value.size === 1) {
+    return undefined;
+  }
+
+  let valid = false;
+
+  for (let i = 0; i < value.size; i++) {
+    const target = value.get(i)!;
+
+    if (target.get("weight") > 0) {
+      valid = true;
+      break;
+    }
+  }
+
+  if (!valid) {
+    return "Please define at least one target with non-zero weight.";
+  }
+
+  return undefined;
+};
+
 export const ValidatorRequired = (value: any, _allValues?: any, _props?: any, _name?: any) => {
   if (Array.isArray(value)) {
     return value.length > 0 ? undefined : "Required";
+  }
+
+  if (Immutable.isList(value)) {
+    return value.size > 0 ? undefined : "Required";
   }
 
   return !!value ? undefined : `Required`;
@@ -113,6 +160,36 @@ export const ValidatorHosts = (values: string[]): (string | undefined)[] | strin
     // console.log("ValidatorHost", x, res);
     return res;
   });
+
+  return errors.filter(x => !!x).length > 0 ? errors : undefined;
+};
+
+export const KValidatorHosts = (
+  values: Immutable.List<string>,
+  _allValues?: any,
+  _props?: any,
+  _name?: any
+): (undefined | string)[] | undefined => {
+  if (!values || values.size === 0) {
+    return undefined;
+  }
+
+  const errors = values.map(validateHost).toArray();
+
+  return errors.filter(x => !!x).length > 0 ? errors : undefined;
+};
+
+export const KValidatorPaths = (
+  values: Immutable.List<string>,
+  _allValues?: any,
+  _props?: any,
+  _name?: any
+): (undefined | string)[] | undefined => {
+  if (!values) {
+    return undefined;
+  }
+
+  const errors = values.map(x => (x.startsWith("/") ? undefined : 'path should start with a "/"')).toArray();
 
   return errors.filter(x => !!x).length > 0 ? errors : undefined;
 };

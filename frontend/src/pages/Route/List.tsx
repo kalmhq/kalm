@@ -60,7 +60,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderUrls(row: RowData) {
-    return row.get("urls").join(",");
+    return row.get("paths").join(",");
   }
 
   private renderConditions(row: RowData) {

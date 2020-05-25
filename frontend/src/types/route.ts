@@ -5,6 +5,25 @@ export const LOAD_ROUTES_FULLFILLED = "LOAD_ROUTES_FULLFILLED";
 export const LOAD_ROUTES_PENDING = "LOAD_ROUTES_PENDING";
 export const LOAD_ROUTES_FAILED = "LOAD_ROUTES_FAILED";
 
+export const newEmptyRouteForm = (): HttpRouteForm => {
+  return Immutable.fromJS({
+    hosts: [],
+    paths: ["/"],
+    conditions: [],
+    destinations: [],
+    httpRedirectToHttps: false,
+    schemes: ["http"],
+    methods: ["GET"],
+    timeout: 5,
+    retries: {
+      attempts: 3,
+      perTtyTimeoutSeconds: 2,
+      retryOn: ["gateway-error", "connect-failure", "refused-stream"]
+    },
+    methodsMode: methodsModeAll
+  });
+};
+
 export type HttpRouteCondition = ImmutableMap<{
   type: string;
   key: string;
@@ -46,18 +65,33 @@ export type HttpRouteCORS = ImmutableMap<{
   maxAge: string;
 }>;
 
-export type HttpRoute = ImmutableMap<{
+interface HttpRouteContent {
   hosts: Immutable.List<string>;
-  urls: Immutable.List<string>;
+  paths: Immutable.List<string>;
+  methods: Immutable.List<string>;
+  schemes: Immutable.List<string>;
+  stripPath: boolean;
   conditions: Immutable.List<HttpRouteCondition>;
   destinations: Immutable.List<HttpRouteDestination>;
+  httpRedirectToHttps: boolean;
   timeout: number;
   retries: HttpRouteRetry;
   mirror: HttpRouteMirror;
   fault: HttpRouteFault;
   delay: HttpRouteDelay;
   cors: HttpRouteCORS;
-}>;
+}
+
+export type HttpRoute = ImmutableMap<HttpRouteContent>;
+
+export const methodsModeAll = "all";
+export const methodsModeSpecific = "specific";
+
+export interface HttpRouteFormContent extends HttpRouteContent {
+  methodsMode: string;
+}
+
+export type HttpRouteForm = ImmutableMap<HttpRouteFormContent>;
 
 export interface LoadHttpRoutesAction {
   type: typeof LOAD_ROUTES_FULLFILLED;

@@ -13,7 +13,7 @@ interface FieldArrayComponentHackType {
   onAdd?: () => any;
 }
 
-interface FieldArrayProps extends DispatchProp {}
+interface FieldArrayProps {}
 
 interface Props
   extends WrappedFieldArrayProps<Immutable.Map<string, any>>,
