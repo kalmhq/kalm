@@ -1,6 +1,6 @@
 import { Button, createStyles, Switch, TextField, Theme, Tooltip, WithStyles, withStyles } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
-import { HelpIcon, ConsoleIcon, LogIcon } from "widgets/Icon";
+import { HelpIcon, KappConsoleIcon, KappLogIcon } from "widgets/Icon";
 import { closeDialogAction, openDialogAction } from "actions/dialog";
 import { push } from "connected-react-router";
 import MaterialTable from "material-table";
@@ -544,14 +544,14 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           style={{ color: primaryColor }}
           component={Link}
           to={`/applications/${rowData.get("name")}/shells`}>
-          <ConsoleIcon />
+          <KappConsoleIcon />
         </IconButtonWithTooltip>
         <IconButtonWithTooltip
           tooltipTitle="Logs"
           style={{ color: primaryColor }}
           component={Link}
           to={`/applications/${rowData.get("name")}/logs`}>
-          <LogIcon />
+          <KappLogIcon />
         </IconButtonWithTooltip>
       </>
     );

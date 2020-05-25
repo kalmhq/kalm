@@ -19,7 +19,7 @@ import { push } from "connected-react-router";
 import { withNamespace, withNamespaceProps } from "permission/Namespace";
 import React from "react";
 import { ThunkDispatch } from "redux-thunk";
-import { ConsoleIcon, LogIcon } from "widgets/Icon";
+import { KappConsoleIcon, KappLogIcon } from "widgets/Icon";
 import { loadApplicationAction, deleteComponentAction } from "../../actions/application";
 import { deletePod } from "../../actions/kubernetesApi";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "../../actions/notification";
@@ -404,7 +404,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                               [pod.get("name"), containerNames[0]]
                             )
                           }>
-                          <LogIcon />
+                          <KappLogIcon />
                         </IconLinkWithToolTip>
                         {hasWriterRole ? (
                           <IconLinkWithToolTip
@@ -419,7 +419,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                                 [pod.get("name"), containerNames[0]]
                               )
                             }>
-                            <ConsoleIcon />
+                            <KappConsoleIcon />
                           </IconLinkWithToolTip>
                         ) : null}
                         {hasWriterRole ? (
