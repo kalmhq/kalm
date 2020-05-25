@@ -1,19 +1,18 @@
+import { Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { grey } from "@material-ui/core/colors";
+import { deleteRoute, loadRoutes } from "actions/routes";
+import { push } from "connected-react-router";
+import MaterialTable from "material-table";
+import { BasePage } from "pages/BasePage";
 import React from "react";
-import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { TDispatchProp } from "types";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
-import { loadRoutes } from "actions/routes";
-import { BasePage } from "pages/BasePage";
-import { Loading } from "widgets/Loading";
-import MaterialTable from "material-table";
-import { grey } from "@material-ui/core/colors";
+import { TDispatchProp } from "types";
 import { HttpRoute } from "types/route";
-import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { Link } from "react-router-dom";
+import { ApplicationViewDrawer } from "widgets/ApplicationViewDrawer";
 import { CustomizedButton } from "widgets/Button";
-import { push } from "connected-react-router";
 import { H4 } from "widgets/Label";
+import { Loading } from "widgets/Loading";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -52,7 +51,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   componentDidMount() {
-    this.props.dispatch(loadRoutes());
+    this.props.dispatch(loadRoutes(""));
   }
 
   private renderHosts(row: RowData) {
@@ -100,23 +99,20 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     return data;
   }
 
-  private renderActions(row: RowData) {
+  private renderActions = (row: RowData) => {
     return (
       <>
-        <IconButtonWithTooltip tooltipTitle="Shell" color="primary" component={Link} to={`/`}>
-          Edit
-        </IconButtonWithTooltip>
-        <IconButtonWithTooltip tooltipTitle="Logs" color="primary" component={Link} to={`/`}>
-          Delete
-        </IconButtonWithTooltip>
+        <Button onClick={() => this.props.dispatch(push(`/routes/${row.get("name")}/edit`))}>Edit</Button>
+        <Button onClick={() => this.props.dispatch(deleteRoute(row.get("name"), row.get("namespace")))}>Delete</Button>
       </>
     );
-  }
+  };
 
   public render() {
     const { classes, dispatch, isFirstLoaded, isLoading } = this.props;
     return (
       <BasePage
+        leftDrawer={<ApplicationViewDrawer />}
         secondHeaderRight={
           <div className={classes.secondHeaderRight}>
             <H4 className={classes.secondHeaderRightItem}>Routes</H4>

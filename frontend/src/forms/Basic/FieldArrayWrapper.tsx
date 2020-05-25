@@ -2,7 +2,6 @@ import { Button, Grid } from "@material-ui/core";
 import DeleteIcon from "@material-ui/icons/Delete";
 import Immutable from "immutable";
 import React from "react";
-import { DispatchProp } from "react-redux";
 import { WrappedFieldArrayProps } from "redux-form";
 import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
 

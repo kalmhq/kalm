@@ -1,9 +1,14 @@
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { updateRoute } from "actions/routes";
+import { push } from "connected-react-router";
 import { RouteForm } from "forms/Route";
 import React from "react";
 import { connect } from "react-redux";
+import { match } from "react-router";
 import { ThunkDispatch } from "redux-thunk";
-import { HttpRouteForm, newEmptyRouteForm } from "types/route";
+import { HttpRouteForm, methodsModeAll, methodsModeSpecific } from "types/route";
+import { ApplicationViewDrawer } from "widgets/ApplicationViewDrawer";
+import { Loading } from "widgets/Loading";
 import { RootState } from "../../reducers";
 import { Actions } from "../../types";
 import { BasePage } from "../BasePage";
@@ -15,24 +20,56 @@ const styles = (theme: Theme) =>
     }
   });
 
-interface Props extends WithStyles<typeof styles> {
+const mapStateToProps = (state: RootState, ownProps: any) => {
+  const match = ownProps.match as match<{ name: string }>;
+  const routes = state.get("routes");
+
+  return {
+    isFirstLoaded: routes.get("isFirstLoaded"),
+    isLoading: routes.get("isLoading"),
+    route: routes.get("httpRoutes").find(x => x.get("name") === match.params.name),
+    routeName: match.params.name
+  };
+};
+
+interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps> {
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
 }
 
 class RouteEditRaw extends React.PureComponent<Props> {
   private submit = async (route: HttpRouteForm) => {
-    console.log(route);
+    try {
+      this.props.dispatch(updateRoute(route.get("name"), route.get("namespace"), route));
+      this.props.dispatch(push("/routes"));
+    } catch (e) {
+      console.log(e);
+    }
   };
+
+  private renderContent() {
+    const { isFirstLoaded, isLoading, route } = this.props;
+
+    if (isLoading && !isFirstLoaded) {
+      return <Loading />;
+    }
+
+    if (!route) {
+      return "No route found";
+    }
+
+    let routeForm = route as HttpRouteForm;
+    routeForm = routeForm.set("methodsMode", route.get("methods").size >= 7 ? methodsModeAll : methodsModeSpecific);
+
+    return <RouteForm onSubmit={this.submit} initialValues={routeForm} />;
+  }
 
   public render() {
     return (
-      <BasePage>
-        <div className={this.props.classes.root}>
-          <RouteForm onSubmit={this.submit} initialValues={newEmptyRouteForm()} />
-        </div>
+      <BasePage leftDrawer={<ApplicationViewDrawer />}>
+        <div className={this.props.classes.root}>{this.renderContent()}</div>
       </BasePage>
     );
   }
 }
 
-export const RouteEdit = withStyles(styles)(connect()(RouteEditRaw));
+export const RouteEdit = withStyles(styles)(connect(mapStateToProps)(RouteEditRaw));

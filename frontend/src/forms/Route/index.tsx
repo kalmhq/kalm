@@ -1,14 +1,14 @@
-import { Button, Collapse, FormControl, FormLabel, Icon, Typography, Link, Box } from "@material-ui/core";
+import { Box, Button, Collapse, FormControl, FormLabel, Icon, Link, Typography } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { Alert, AlertTitle } from "@material-ui/lab";
-import { ReduxFormMultiTagsFreeSoloAutoComplete, KFreeSoloAutoCompleteMultiValues } from "forms/Basic/autoComplete";
+import { KFreeSoloAutoCompleteMultiValues } from "forms/Basic/autoComplete";
 import { KBoolCheckboxRender, KCheckboxGroupRender } from "forms/Basic/checkbox";
 import { KRadioGroupRender } from "forms/Basic/radio";
 import {
-  ValidatorAtLeastOneHttpRouteDestination,
-  ValidatorListNotEmpty,
   KValidatorHosts,
   KValidatorPaths,
+  ValidatorAtLeastOneHttpRouteDestination,
+  ValidatorListNotEmpty,
   ValidatorRequired
 } from "forms/validator";
 import Immutable from "immutable";
@@ -16,14 +16,14 @@ import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { arrayPush, InjectedFormProps } from "redux-form";
-import { Field, FieldArray, formValueSelector, reduxForm, getFormSyncErrors } from "redux-form/immutable";
+import { Field, FieldArray, formValueSelector, getFormSyncErrors, reduxForm } from "redux-form/immutable";
 import { TDispatchProp } from "types";
+import { HttpsCertification } from "types/httpsCertification";
 import { HttpRouteDestination, HttpRouteForm, methodsModeAll, methodsModeSpecific } from "types/route";
+import { arraysMatch } from "utils";
 import { RenderHttpRouteConditions } from "./conditions";
 import { RenderHttpRouteDestinations } from "./destinations";
 import { Expansion } from "./expansion";
-import { HttpsCertification } from "types/httpsCertification";
-import { arraysMatch } from "utils";
 
 const defaultFormID = "route";
 
@@ -492,8 +492,8 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
             </FormControl>
           </div>
         </Expansion>
-        <Button type="submit" onClick={handleSubmit}>
-          Submit
+        <Button type="submit" onClick={handleSubmit} color="primary" variant="contained">
+          Submit Form
         </Button>
       </div>
     );

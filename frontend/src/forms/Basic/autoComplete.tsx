@@ -6,16 +6,15 @@ import {
   TextField,
   TextFieldProps,
   Theme,
-  withStyles,
-  Box
+  withStyles
 } from "@material-ui/core";
-import { Autocomplete, UseAutocompleteSingleProps, UseAutocompleteMultipleProps } from "@material-ui/lab";
+import { Autocomplete, UseAutocompleteMultipleProps, UseAutocompleteSingleProps } from "@material-ui/lab";
 import { WithStyles } from "@material-ui/styles";
+import clsx from "clsx";
 import Immutable from "immutable";
 import React from "react";
 import { WrappedFieldProps } from "redux-form";
 import { ID } from "../../utils";
-import clsx from "clsx";
 
 interface Props {
   value: string;
@@ -351,7 +350,7 @@ function KFreeSoloAutoCompleteSingleValueRaw<T>(
             error={touched && invalid}
             label={label}
             placeholder={placeholder}
-            helperText={touched && invalid && error}
+            helperText={(touched && invalid && error) || helperText}
           />
         );
       }}
