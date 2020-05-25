@@ -1,0 +1,20 @@
+# permissions to do viewer httproutes.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: httproute-viewer-role
+rules:
+- apiGroups:
+  - core.kapp.dev
+  resources:
+  - httproutes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - core.kapp.dev
+  resources:
+  - httproutes/status
+  verbs:
+  - get

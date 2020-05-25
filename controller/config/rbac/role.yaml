@@ -187,6 +187,26 @@ rules:
 - apiGroups:
   - core.kapp.dev
   resources:
+  - httproutes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kapp.dev
+  resources:
+  - httproutes/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - core.kapp.dev
+  resources:
   - httpscertissuers
   verbs:
   - create
