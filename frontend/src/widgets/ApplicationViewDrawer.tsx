@@ -1,5 +1,4 @@
 import { createStyles, List, ListItem, ListItemIcon, ListItemText, Theme } from "@material-ui/core";
-import { blue } from "@material-ui/core/colors";
 import AppsIcon from "@material-ui/icons/Apps";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import React from "react";
@@ -8,6 +7,7 @@ import { NavLink } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { BaseDrawer } from "../layout/BaseDrawer";
+import { primaryBackgroud, primaryColor } from "../theme";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
@@ -31,8 +31,8 @@ const styles = (theme: Theme) =>
       }
     },
     listItemSeleted: {
-      backgroundColor: `${blue[50]} !important`,
-      borderRight: `4px solid ${blue[700]}`
+      backgroundColor: `${primaryBackgroud} !important`,
+      borderRight: `4px solid ${primaryColor}`
     },
     listSubHeader: {
       textTransform: "uppercase",

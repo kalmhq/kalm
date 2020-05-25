@@ -32,6 +32,7 @@ import { Loading } from "../../widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "../../widgets/SmallLineChart";
 import { BasePage } from "../BasePage";
 import { ApplicationListDataWrapper, WithApplicationsListDataProps } from "./ListDataWrapper";
+import { primaryColor } from "../../theme";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -295,7 +296,11 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   private renderName = (rowData: RowData) => {
-    return <Link to={`/applications/${rowData.get("name")}`}>{rowData.get("name")}</Link>;
+    return (
+      <Link style={{ color: primaryColor }} to={`/applications/${rowData.get("name")}`}>
+        {rowData.get("name")}
+      </Link>
+    );
   };
 
   private renderNamespace = (applicationListItem: RowData) => {
@@ -366,7 +371,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     const tooltipTitle = `Total ${podCount} pods are found. \n${successCount} ready, ${pendingCount} pending, ${errorCount} failed. Click to view details.`;
 
     return (
-      <Link to={`/applications/${applicationDetails.get("name")}`} color="inherit">
+      <Link to={`/applications/${applicationDetails.get("name")}`} style={{ color: primaryColor }}>
         <Tooltip title={tooltipTitle} enterDelay={500}>
           <FlexRowItemCenterBox>
             {successCount > 0 ? (
@@ -393,28 +398,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         </Tooltip>
       </Link>
     );
-  };
-
-  private renderInternalEndpoints = (applicationDetails: RowData) => {
-    let count = 0;
-
-    applicationDetails.get("components")?.forEach(component => {
-      count += component.get("services").size;
-    });
-
-    if (count > 0) {
-      return (
-        <div>
-          <Button
-            onClick={() => this.props.dispatch(openDialogAction(internalEndpointsModalID, { applicationDetails }))}
-            color="primary">
-            {count} Endpoints
-          </Button>
-        </div>
-      );
-    } else {
-      return "No Endpoints";
-    }
   };
 
   private renderExternalEndpoints = (applicationDetails: RowData) => {
@@ -558,14 +541,14 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
       <>
         <IconButtonWithTooltip
           tooltipTitle="Shell"
-          color="primary"
+          style={{ color: primaryColor }}
           component={Link}
           to={`/applications/${rowData.get("name")}/shells`}>
           <ConsoleIcon />
         </IconButtonWithTooltip>
         <IconButtonWithTooltip
           tooltipTitle="Logs"
-          color="primary"
+          style={{ color: primaryColor }}
           component={Link}
           to={`/applications/${rowData.get("name")}/logs`}>
           <LogIcon />

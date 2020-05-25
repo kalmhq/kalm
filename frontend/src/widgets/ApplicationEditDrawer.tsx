@@ -8,7 +8,7 @@ import {
   ListSubheader,
   Theme
 } from "@material-ui/core";
-import { blue, grey } from "@material-ui/core/colors";
+import { grey } from "@material-ui/core/colors";
 import AddIcon from "@material-ui/icons/Add";
 import ErrorIcon from "@material-ui/icons/Error";
 import ExpandLess from "@material-ui/icons/ExpandLess";
@@ -26,6 +26,7 @@ import { componentInitialValues } from "../forms/ComponentLike";
 import { BaseDrawer } from "../layout/BaseDrawer";
 import { ApplicationComponent, ApplicationComponentDetails, ApplicationDetails } from "../types/application";
 import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
+import { primaryBackgroud, primaryColor } from "../theme";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
@@ -60,8 +61,8 @@ const styles = (theme: Theme) =>
       }
     },
     listItemSeleted: {
-      backgroundColor: `${blue[50]} !important`,
-      borderRight: `4px solid ${blue[700]}`
+      backgroundColor: `${primaryBackgroud} !important`,
+      borderRight: `4px solid ${primaryColor}`
     },
     listSubHeader: {
       textTransform: "uppercase",
@@ -240,7 +241,7 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
             ) : (
               <FiberManualRecordIcon
                 style={{ fontSize: 15 }}
-                htmlColor={selectedListItemKey === key ? blue[700] : grey[400]}
+                htmlColor={selectedListItemKey === key ? primaryColor : grey[400]}
               />
             )}
           </ListItemIcon>
@@ -390,7 +391,7 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
             ) : (
               <FiberManualRecordIcon
                 style={{ fontSize: 15 }}
-                htmlColor={this.state.selectedListItemKey === tabItemKey ? blue[700] : grey[400]}
+                htmlColor={this.state.selectedListItemKey === tabItemKey ? primaryColor : grey[400]}
               />
             )}
           </ListItemIcon>
@@ -437,7 +438,7 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
             ) : (
               <FiberManualRecordIcon
                 style={{ fontSize: 15 }}
-                htmlColor={this.state.selectedListItemKey === tabItemKey ? blue[700] : grey[400]}
+                htmlColor={this.state.selectedListItemKey === tabItemKey ? primaryColor : grey[400]}
               />
             )}
           </ListItemIcon>

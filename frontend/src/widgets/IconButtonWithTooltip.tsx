@@ -7,6 +7,7 @@ export const IconButtonWithTooltip = (
     tooltipTitle: string;
     component?: any;
     to?: any;
+    href?: any;
     tooltipPlacement?:
       | "bottom-end"
       | "bottom-start"
