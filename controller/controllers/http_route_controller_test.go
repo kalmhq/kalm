@@ -70,7 +70,7 @@ func (suite *HttpRouteControllerSuite) TestBasicHttpRoute() {
 					Type:     v1alpha1.HttpRouteConditionTypeHeader,
 					Name:     "accept",
 					Operator: v1alpha1.HRCOMatchRegexp,
-					Value:    "application/json",
+					Value:    "ns/json",
 				},
 			},
 			StripPath:           true,

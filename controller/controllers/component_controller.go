@@ -56,7 +56,7 @@ type ComponentReconcilerTask struct {
 	ctx       context.Context
 	component *corev1alpha1.Component
 	namespace coreV1.Namespace
-	//application *corev1alpha1.Application
+	//ns *corev1alpha1.Application
 
 	// related resources
 	service        *coreV1.Service
@@ -79,6 +79,8 @@ type ComponentReconcilerTask struct {
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 
 func (r *ComponentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+	fmt.Println("reconciling component", req)
+
 	task := &ComponentReconcilerTask{
 		ComponentReconciler: r,
 		ctx:                 context.Background(),
@@ -276,8 +278,8 @@ func (r *ComponentReconcilerTask) FixComponentDefaultValues() (err error) {
 	return r.Update(r.ctx, r.component)
 }
 
-func (r *ComponentReconcilerTask) IsNamespaceActive() bool {
-	if v, exist := r.namespace.Labels["kapp-enabled"]; !exist || v != "true" {
+func (r *ComponentReconcilerTask) IsNamespaceKappEnabled() bool {
+	if v, exist := r.namespace.Labels[KappEnableLabelName]; !exist || v != KappEnableLabelValue {
 		return false
 	}
 
@@ -287,7 +289,7 @@ func (r *ComponentReconcilerTask) IsNamespaceActive() bool {
 func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 	labels := r.GetLabels()
 
-	if v, exist := r.namespace.Labels["kapp-enabled"]; !exist || v != "true" {
+	if !r.IsNamespaceKappEnabled() {
 		if r.service != nil {
 			return r.Delete(r.ctx, r.service)
 		}
@@ -365,7 +367,7 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 
 func (r *ComponentReconcilerTask) ReconcileWorkload() (err error) {
 
-	if !r.IsNamespaceActive() {
+	if !r.IsNamespaceKappEnabled() {
 		if r.deployment != nil {
 			if err := r.Delete(r.ctx, r.deployment); err != nil {
 				return err
@@ -762,9 +764,9 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 
 	// set image secret
 	// todo put into secret for kapp?
-	//if r.application.Spec.ImagePullSecretName != "" {
+	//if r.ns.Spec.ImagePullSecretName != "" {
 	//	secs := []coreV1.LocalObjectReference{
-	//		{Name: r.application.Spec.ImagePullSecretName},
+	//		{Name: r.ns.Spec.ImagePullSecretName},
 	//	}
 	//	template.Spec.ImagePullSecrets = secs
 	//}
@@ -905,7 +907,7 @@ func getPVCName(componentName, diskPath string) string {
 }
 
 //func (r *ComponentReconcilerTask) FindShareEnvValue(name string) (string, error) {
-//	for _, env := range r.application.Spec.SharedEnv {
+//	for _, env := range r.ns.Spec.SharedEnv {
 //		if env.Name != name {
 //			continue
 //		}

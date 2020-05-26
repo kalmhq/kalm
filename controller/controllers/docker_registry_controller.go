@@ -187,7 +187,7 @@ func (r *DockerRegistryReconcileTask) DistributeSecrets() (err error) {
 			continue
 		}
 
-		if v, exist := ns.Labels["kapp-enabled"]; !exist || v != "true" {
+		if v, exist := ns.Labels[KappEnableLabelName]; !exist || v != "true" {
 			//todo clean secret if exist
 			continue
 		}

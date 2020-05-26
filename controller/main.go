@@ -102,6 +102,22 @@ func main() {
 	//	os.Exit(1)
 	//}
 
+	if err = (controllers.NewKappNSReconciler(mgr)).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "KappNS")
+		os.Exit(1)
+	}
+
+	//if err = (&controllers.KappNamespacesReconciler{
+	//	BaseReconciler: &controllers.BaseReconciler{
+	//		Client: mgr.GetClient(),
+	//		Log:    ctrl.Log.WithName("controllers").WithName("KappNamespace"),
+	//		Scheme: mgr.GetScheme(),
+	//	},
+	//}).SetupWithManager(mgr); err != nil {
+	//	setupLog.Error(err, "unable to create controller", "controller", "KappNamespaces")
+	//	os.Exit(1)
+	//}
+
 	if err = controllers.NewComponentPluginReconciler(mgr).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ComponentPlugin")
 		os.Exit(1)

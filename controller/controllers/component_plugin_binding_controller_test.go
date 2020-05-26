@@ -17,7 +17,7 @@ import (
 type PluginBindingControllerSuite struct {
 	BasicSuite
 
-	//application   *v1alpha1.Application
+	//ns   *v1alpha1.Application
 	namespace     *corev1.Namespace
 	component     *v1alpha1.Component
 	plugin        *v1alpha1.ComponentPlugin
@@ -33,9 +33,9 @@ func (suite *PluginBindingControllerSuite) TearDownSuite() {
 }
 
 func (suite *PluginBindingControllerSuite) SetupTest() {
-	//application := generateEmptyApplication()
-	//suite.createApplication(application)
-	//suite.application = application
+	//ns := generateEmptyApplication()
+	//suite.createApplication(ns)
+	//suite.ns = ns
 
 	plugin := generateEmptyComponentPlugin()
 	plugin.Spec.Src = `
