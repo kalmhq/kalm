@@ -6,6 +6,7 @@ import (
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 	appsV1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -16,7 +17,8 @@ import (
 type PluginBindingControllerSuite struct {
 	BasicSuite
 
-	application   *v1alpha1.Application
+	//application   *v1alpha1.Application
+	namespace     *corev1.Namespace
 	component     *v1alpha1.Component
 	plugin        *v1alpha1.ComponentPlugin
 	pluginBinding *v1alpha1.ComponentPluginBinding
@@ -31,9 +33,9 @@ func (suite *PluginBindingControllerSuite) TearDownSuite() {
 }
 
 func (suite *PluginBindingControllerSuite) SetupTest() {
-	application := generateEmptyApplication()
-	suite.createApplication(application)
-	suite.application = application
+	//application := generateEmptyApplication()
+	//suite.createApplication(application)
+	//suite.application = application
 
 	plugin := generateEmptyComponentPlugin()
 	plugin.Spec.Src = `
@@ -53,7 +55,7 @@ function BeforeDeploymentSave(deployment) {
 	suite.createComponentPlugin(plugin)
 	suite.plugin = plugin
 
-	component := generateEmptyComponent(suite.application.Name)
+	component := generateEmptyComponent(suite.namespace.Name)
 	suite.createComponent(component)
 	suite.component = component
 

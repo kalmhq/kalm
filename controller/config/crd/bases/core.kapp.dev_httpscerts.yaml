@@ -48,8 +48,6 @@ spec:
               type: string
           required:
           - domains
-          - httpsCertIssuer
-          - isSelfManaged
           type: object
         status:
           description: HttpsCertStatus defines the observed state of HttpsCert

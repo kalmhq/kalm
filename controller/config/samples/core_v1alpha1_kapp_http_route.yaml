@@ -27,13 +27,8 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: test-http-route
----
-apiVersion: core.kapp.dev/v1alpha1
-kind: Application
-metadata:
-  name:  test-http-route
-spec:
-  isActive: true
+  labels:
+    kapp-enabled: "true"
 ---
 apiVersion: core.kapp.dev/v1alpha1
 kind: Component

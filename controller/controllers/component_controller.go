@@ -1302,7 +1302,7 @@ func (r *ComponentReconcilerTask) HandleDelete() (err error) {
 	} else {
 		if utils.ContainsString(r.component.ObjectMeta.Finalizers, finalizerName) {
 			// TODO remove resources
-			if err := r.DeleteResources(); err != nil {
+			if err := r.DeleteResources(); client.IgnoreNotFound(err) != nil {
 				r.WarningEvent(err, "fail when DeleteResources")
 				return err
 			}
@@ -1345,32 +1345,32 @@ func (r *ComponentReconcilerTask) SetupAttributes(req ctrl.Request) (err error) 
 
 func (r *ComponentReconcilerTask) DeleteResources() (err error) {
 	if r.service != nil {
-		if err := r.Client.Delete(r.ctx, r.service); err != nil {
+		if err := r.Client.Delete(r.ctx, r.service); client.IgnoreNotFound(err) != nil {
 			r.WarningEvent(err, "Delete service error")
 			return err
 		}
 	}
 
 	if r.deployment != nil {
-		if err := r.DeleteItem(r.deployment); err != nil {
+		if err := r.DeleteItem(r.deployment); client.IgnoreNotFound(err) != nil {
 			return err
 		}
 	}
 
 	if r.daemonSet != nil {
-		if err := r.DeleteItem(r.daemonSet); err != nil {
+		if err := r.DeleteItem(r.daemonSet); client.IgnoreNotFound(err) != nil {
 			return err
 		}
 	}
 
 	if r.cronJob != nil {
-		if err := r.DeleteItem(r.cronJob); err != nil {
+		if err := r.DeleteItem(r.cronJob); client.IgnoreNotFound(err) != nil {
 			return err
 		}
 	}
 
 	if r.statefulSet != nil {
-		if err := r.DeleteItem(r.statefulSet); err != nil {
+		if err := r.DeleteItem(r.statefulSet); client.IgnoreNotFound(err) != nil {
 			return err
 		}
 	}
@@ -1379,13 +1379,13 @@ func (r *ComponentReconcilerTask) DeleteResources() (err error) {
 
 	if err := r.Reader.List(r.ctx, &bindingList, client.MatchingLabels{
 		"kapp-component": r.component.Name,
-	}); err != nil {
+	}); client.IgnoreNotFound(err) != nil {
 		r.WarningEvent(err, "get plugin binding list error.")
 		return err
 	}
 
 	for _, binding := range bindingList.Items {
-		if err := r.Delete(r.ctx, &binding); err != nil {
+		if err := r.Delete(r.ctx, &binding); client.IgnoreNotFound(err) != nil {
 			r.WarningEvent(err, "Delete plugin binding error.")
 		}
 	}
