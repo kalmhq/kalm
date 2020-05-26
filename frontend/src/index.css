@@ -12,6 +12,10 @@ body {
     height: 100%;
 }
 
+.ps__rail-y {
+    z-index: 99999;
+}
+
 code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }

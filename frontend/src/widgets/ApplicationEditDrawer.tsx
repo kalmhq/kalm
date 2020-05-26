@@ -1,18 +1,7 @@
-import {
-  Collapse,
-  createStyles,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListSubheader,
-  Theme
-} from "@material-ui/core";
+import { createStyles, List, ListItem, ListItemIcon, ListItemText, ListSubheader, Theme } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import AddIcon from "@material-ui/icons/Add";
 import ErrorIcon from "@material-ui/icons/Error";
-import ExpandLess from "@material-ui/icons/ExpandLess";
-import ExpandMore from "@material-ui/icons/ExpandMore";
 import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import Immutable from "immutable";
@@ -24,9 +13,9 @@ import { getFormSyncErrors, hasSubmitFailed } from "redux-form/immutable";
 import { TDispatch } from "types";
 import { componentInitialValues } from "../forms/ComponentLike";
 import { BaseDrawer } from "../layout/BaseDrawer";
+import { primaryBackgroud, primaryColor } from "../theme";
 import { ApplicationComponent, ApplicationComponentDetails, ApplicationDetails } from "../types/application";
 import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
-import { primaryBackgroud, primaryColor } from "../theme";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
@@ -83,7 +72,7 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
   handleClickSharedEnvs: () => void;
   handleClickApplicationPlugins: () => void;
   handleClickComponent: (component: ApplicationComponent) => void;
-  handleClickComponentTab: (component: ApplicationComponent, tab: string) => void;
+  // handleClickComponentTab: (component: ApplicationComponent, tab: string) => void;
 }
 
 interface State {
@@ -97,7 +86,7 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
 
     this.state = {
       expandedComponentIndex: 0,
-      selectedListItemKey: this.generateComponentKey(0, "basic")
+      selectedListItemKey: this.generateComponentKey(0)
     };
   }
 
@@ -118,40 +107,40 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
   private handleClickComponent(component: ApplicationComponent, index: number) {
     this.setState({
       expandedComponentIndex: index,
-      selectedListItemKey: this.generateComponentKey(index, "basic")
+      selectedListItemKey: this.generateComponentKey(index)
     });
 
     const { handleClickComponent } = this.props;
     handleClickComponent(component);
   }
 
-  private handleClickComponentTab(component: ApplicationComponent, selectedListItemKey: string, tab: string) {
-    this.setState({ selectedListItemKey: selectedListItemKey });
+  // private handleClickComponentTab(component: ApplicationComponent, selectedListItemKey: string, tab: string) {
+  //   this.setState({ selectedListItemKey: selectedListItemKey });
 
-    const { handleClickComponentTab } = this.props;
-    handleClickComponentTab(component, tab);
-  }
+  //   const { handleClickComponentTab } = this.props;
+  //   handleClickComponentTab(component, tab);
+  // }
 
   private handleAdd() {
     this.handleClickComponent(componentInitialValues, this.props.application?.get("components").size as number);
   }
 
-  private showComponentError(panelKey: string): boolean {
-    const { componentSyncErrors, componentFormSubmitFailed } = this.props;
-    const fieldNames = this.getPanelFieldNames(panelKey);
-    const errors: { [key: string]: any } = componentSyncErrors;
+  // private showComponentError(panelKey: string): boolean {
+  //   const { componentSyncErrors, componentFormSubmitFailed } = this.props;
+  //   const fieldNames = this.getPanelFieldNames(panelKey);
+  //   const errors: { [key: string]: any } = componentSyncErrors;
 
-    let anyTouched = true;
-    let hasError = false;
-    if (anyTouched) {
-      fieldNames.forEach(name => {
-        if (errors[name]) {
-          hasError = true;
-        }
-      });
-    }
-    return hasError && componentFormSubmitFailed;
-  }
+  //   let anyTouched = true;
+  //   let hasError = false;
+  //   if (anyTouched) {
+  //     fieldNames.forEach(name => {
+  //       if (errors[name]) {
+  //         hasError = true;
+  //       }
+  //     });
+  //   }
+  //   return hasError && componentFormSubmitFailed;
+  // }
 
   private showAppliationError(tab: string): boolean {
     const { applicationSyncErrors, applicationFormSubmitFailed } = this.props;
@@ -161,103 +150,103 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
     return errors[tab] && applicationFormSubmitFailed;
   }
 
-  private getPanelFieldNames(panelKey: string): string[] {
-    switch (panelKey) {
-      case "basic":
-        return ["name", "image", "workloadType", "command", "args", "cpu", "memory", "env"];
-      case "advanced":
-        return [
-          "ports",
-          "volumes",
-          "configs",
-          "plugins",
-          "restartStrategy",
-          "terminationGracePeriodSeconds",
-          "dnsPolicy",
-          "nodeSelectorLabels",
-          "podAffinityType"
-        ];
-      default:
-        return [];
-    }
+  // private getPanelFieldNames(panelKey: string): string[] {
+  //   switch (panelKey) {
+  //     case "basic":
+  //       return ["name", "image", "workloadType", "command", "args", "cpu", "memory", "env"];
+  //     case "advanced":
+  //       return [
+  //         "ports",
+  //         "volumes",
+  //         "configs",
+  //         "plugins",
+  //         "restartStrategy",
+  //         "terminationGracePeriodSeconds",
+  //         "dnsPolicy",
+  //         "nodeSelectorLabels",
+  //         "podAffinityType"
+  //       ];
+  //     default:
+  //       return [];
+  //   }
+  // }
+
+  // private getComponentFields() {
+  //   return [
+  //     { tab: "basic", text: "Basic Info" },
+  //     // {
+  //     //   tab: "envs",
+  //     //   text: "Environment variables"
+  //     // },
+  //     // {
+  //     //   tab: "ports",
+  //     //   text: "Ports"
+  //     // },
+  //     // {
+  //     //   tab: "resources",
+  //     //   text: "Resources"
+  //     // },
+  //     // {
+  //     //   tab: "plugins",
+  //     //   text: "Plugins"
+  //     // },
+  //     {
+  //       tab: "advanced",
+  //       text: "Advanced"
+  //     }
+  //   ];
+  // }
+
+  private generateComponentKey(index: number): string {
+    return `components-${index}`;
   }
 
-  private getComponentFields() {
-    return [
-      { tab: "basic", text: "Basic Info" },
-      // {
-      //   tab: "envs",
-      //   text: "Environment variables"
-      // },
-      // {
-      //   tab: "ports",
-      //   text: "Ports"
-      // },
-      // {
-      //   tab: "resources",
-      //   text: "Resources"
-      // },
-      // {
-      //   tab: "plugins",
-      //   text: "Plugins"
-      // },
-      {
-        tab: "advanced",
-        text: "Advanced"
-      }
-    ];
-  }
+  // private renderComponentFields(component: ApplicationComponent, index: number, selectedListItemKey?: string) {
+  //   const { classes } = this.props;
+  //   selectedListItemKey = selectedListItemKey || this.state.selectedListItemKey;
 
-  private generateComponentKey(index: number, tab: string): string {
-    return `components-${index}-${tab}`;
-  }
-
-  private renderComponentFields(component: ApplicationComponent, index: number, selectedListItemKey?: string) {
-    const { classes } = this.props;
-    selectedListItemKey = selectedListItemKey || this.state.selectedListItemKey;
-
-    const fields = this.getComponentFields();
-    return fields.map(field => {
-      const key = this.generateComponentKey(index, field.tab);
-      const showComponentError = this.showComponentError(field.tab);
-      return (
-        <ListItem
-          key={key}
-          onClick={() => {
-            this.handleClickComponentTab(component, key, field.tab);
-          }}
-          selected={selectedListItemKey === key}
-          className={classes.listItem}
-          classes={{
-            selected: classes.listItemSeleted
-          }}
-          style={{
-            paddingLeft: 48
-          }}
-          button>
-          <ListItemIcon>
-            {showComponentError ? (
-              <ErrorIcon color="error" style={{ marginLeft: -4 }} />
-            ) : (
-              <FiberManualRecordIcon
-                style={{ fontSize: 15 }}
-                htmlColor={selectedListItemKey === key ? primaryColor : grey[400]}
-              />
-            )}
-          </ListItemIcon>
-          {showComponentError ? (
-            <ListItemText
-              primary={field.text}
-              secondary={"Some form fields are incorrect"}
-              secondaryTypographyProps={{ color: "error" }}
-            />
-          ) : (
-            <ListItemText primary={field.text} />
-          )}
-        </ListItem>
-      );
-    });
-  }
+  //   const fields = this.getComponentFields();
+  //   return fields.map(field => {
+  //     const key = this.generateComponentKey(index, field.tab);
+  //     const showComponentError = this.showComponentError(field.tab);
+  //     return (
+  //       <ListItem
+  //         key={key}
+  //         onClick={() => {
+  //           this.handleClickComponentTab(component, key, field.tab);
+  //         }}
+  //         selected={selectedListItemKey === key}
+  //         className={classes.listItem}
+  //         classes={{
+  //           selected: classes.listItemSeleted
+  //         }}
+  //         style={{
+  //           paddingLeft: 48
+  //         }}
+  //         button>
+  //         <ListItemIcon>
+  //           {showComponentError ? (
+  //             <ErrorIcon color="error" style={{ marginLeft: -4 }} />
+  //           ) : (
+  //             <FiberManualRecordIcon
+  //               style={{ fontSize: 15 }}
+  //               htmlColor={selectedListItemKey === key ? primaryColor : grey[400]}
+  //             />
+  //           )}
+  //         </ListItemIcon>
+  //         {showComponentError ? (
+  //           <ListItemText
+  //             primary={field.text}
+  //             secondary={"Some form fields are incorrect"}
+  //             secondaryTypographyProps={{ color: "error" }}
+  //           />
+  //         ) : (
+  //           <ListItemText primary={field.text} />
+  //         )}
+  //       </ListItem>
+  //     );
+  //   });
+  // }
 
   public componentDidMount() {
     const { application, handleClickComponent } = this.props;
@@ -322,16 +311,16 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
     }
 
     let expandedComponentIndex = this.state.expandedComponentIndex;
-    let selectedListItemKey = this.state.selectedListItemKey;
+    // let selectedListItemKey = this.state.selectedListItemKey;
     if (application.get("components")) {
       if (expandedComponentIndex > application.get("components").size) {
         expandedComponentIndex = 0;
-        selectedListItemKey = this.generateComponentKey(0, "basic");
+        // selectedListItemKey = this.generateComponentKey(0);
       } else if (expandedComponentIndex === application.get("components").size) {
         if (this.props.currentComponent && !this.props.currentComponent.get("name")) {
         } else {
           expandedComponentIndex = 0;
-          selectedListItemKey = this.generateComponentKey(0, "basic");
+          // selectedListItemKey = this.generateComponentKey(0);
         }
       }
     }
@@ -340,6 +329,7 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
       return (
         <React.Fragment key={index}>
           <ListItem
+            selected={expandedComponentIndex === index}
             className={classes.listItem}
             classes={{
               selected: classes.listItemSeleted
@@ -352,13 +342,13 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
               <FiberManualRecordIcon style={{ fontSize: 15 }} htmlColor={grey[400]} />
             </ListItemIcon>
             <ListItemText primary={component.get("name") || `Please type component name`} />
-            {expandedComponentIndex === index ? <ExpandLess /> : <ExpandMore />}
+            {/* {expandedComponentIndex === index ? <ExpandLess /> : <ExpandMore />} */}
           </ListItem>
-          <Collapse in={expandedComponentIndex === index} timeout="auto" unmountOnExit>
+          {/* <Collapse in={expandedComponentIndex === index} timeout="auto" unmountOnExit>
             <List component="div" disablePadding>
               {this.renderComponentFields(component, index, selectedListItemKey)}
             </List>
-          </Collapse>
+          </Collapse> */}
         </React.Fragment>
       );
     });

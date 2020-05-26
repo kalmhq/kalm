@@ -48,7 +48,7 @@ const styles = (theme: Theme) =>
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps> {
   dispatch: TDispatch;
-  left: any;
+  left?: any;
   right?: any;
 }
 
@@ -66,9 +66,12 @@ class SecondHeaderRaw extends React.PureComponent<Props, State> {
 
     return (
       <div className={classes.root}>
-        <div className={`${classes.left} ${typeof left === "string" ? classes.leftTextContainer : ""}`}>
-          {typeof left === "string" ? <H4>{left}</H4> : left}
-        </div>
+        {left ? (
+          <div className={`${classes.left} ${typeof left === "string" ? classes.leftTextContainer : ""}`}>
+            {typeof left === "string" ? <H4>{left}</H4> : left}
+          </div>
+        ) : null}
+
         <div className={classes.right}>
           {typeof right === "string" ? <H4 style={{ marginLeft: 20 }}>{right}</H4> : right}
         </div>

@@ -42,7 +42,6 @@ export class BasePageRaw extends React.PureComponent<BasePageProps> {
         <SecondHeader left={secondHeaderLeft} right={secondHeaderRight} />
         {leftDrawer}
         <div className={classes.rightSection}>
-          {/* <PageHeader title={title} noBreadcrumb={noBreadcrumb} rightAction={rightAction}></PageHeader> */}
           <div className={classes.content}>
             {noScrollContainer ? children : <ScrollContainer>{children}</ScrollContainer>}
           </div>

@@ -763,35 +763,21 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
     return (
       <form onSubmit={handleSubmit} className={classes.root}>
-        <div className={`${classes.formSection} ${currentTab === "basic" ? "" : classes.displayNone}`}>
-          {this.renderBasic()}
-        </div>
-        <div className={`${classes.formSection} ${currentTab === "basic" ? "" : classes.displayNone}`}>
-          {this.renderEnvs()}
-        </div>
-        <div
-          className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}
-          style={{ margin: "0 0 16px" }}>
+        <div className={`${classes.formSection} ${currentTab === "basic" ? "" : ""}`}>{this.renderBasic()}</div>
+        <div className={`${classes.formSection} ${currentTab === "basic" ? "" : ""}`}>{this.renderEnvs()}</div>
+        <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : ""}`} style={{ margin: "0 0 16px" }}>
           {this.renderPorts()}
         </div>
-        <div
-          className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}
-          style={{ margin: "0 0 16px" }}>
+        <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : ""}`} style={{ margin: "0 0 16px" }}>
           {this.renderVolumes()}
         </div>
-        <div
-          className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}
-          style={{ margin: "0 0 24px" }}>
+        <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : ""}`} style={{ margin: "0 0 24px" }}>
           {this.renderConfigs()}
         </div>
-        <div
-          className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}
-          style={{ margin: "0 0 16px" }}>
+        <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : ""}`} style={{ margin: "0 0 16px" }}>
           {this.renderAdvanced()}
         </div>
-        <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}>
-          {this.renderPlugins()}
-        </div>
+        <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : ""}`}>{this.renderPlugins()}</div>
       </form>
     );
   }

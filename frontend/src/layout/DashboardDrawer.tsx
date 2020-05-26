@@ -30,6 +30,7 @@ const mapStateToProps = (state: RootState) => {
   const isAdmin = auth.get("isAdmin");
   const entity = auth.get("entity");
   return {
+    pathname: window.location.pathname,
     isOpenRootDrawer: state.get("settings").get("isOpenRootDrawer"),
     activeNamespaceName: state.get("namespaces").get("active"),
     isAdmin,
@@ -143,9 +144,7 @@ class DashboardDrawerRaw extends React.PureComponent<Props, State> {
   }
 
   render() {
-    const { classes, isOpenRootDrawer: open, dispatch } = this.props;
-    const pathname = window.location.pathname;
-
+    const { classes, pathname, dispatch, isOpenRootDrawer: open } = this.props;
     return (
       <Drawer
         variant="permanent"
