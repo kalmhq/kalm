@@ -1,36 +1,36 @@
 import {
   createStyles,
+  Drawer,
+  IconButton,
   List,
   ListItem,
   ListItemIcon,
   ListItemText,
   ListSubheader,
-  Theme,
-  Drawer,
-  IconButton
+  Theme
 } from "@material-ui/core";
 import AssignmentReturnedIcon from "@material-ui/icons/AssignmentReturned";
+import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
+import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import { WithStyles, withStyles } from "@material-ui/styles";
+import clsx from "clsx";
 import React from "react";
 import { connect } from "react-redux";
 import { NavLink } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
+import { setSettingsAction } from "../actions/settings";
+import { LEFT_SECTION_WIDTH } from "../pages/BasePage";
 import { primaryBackgroud, primaryColor } from "../theme";
 import { KappApplicationIcon, KappNodeIcon, KappTemplateIcon, KappVolumeIcon } from "../widgets/Icon";
-import { BaseDrawer } from "./BaseDrawer";
-import { LEFT_SECTION_WIDTH } from "../pages/BasePage";
-import clsx from "clsx";
 import { APP_BAR_HEIGHT } from "./AppBar";
-import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
-import ChevronRightIcon from "@material-ui/icons/ChevronRight";
-import { SECOND_HEADER_HEIGHT } from "./SecondHeader";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
   const isAdmin = auth.get("isAdmin");
   const entity = auth.get("entity");
   return {
+    isOpenRootDrawer: state.get("settings").get("isOpenRootDrawer"),
     activeNamespaceName: state.get("namespaces").get("active"),
     isAdmin,
     entity
@@ -71,7 +71,7 @@ const styles = (theme: Theme) =>
     },
     drawerPaper: {
       width: LEFT_SECTION_WIDTH,
-      paddingTop: APP_BAR_HEIGHT + SECOND_HEADER_HEIGHT
+      paddingTop: APP_BAR_HEIGHT
     },
     // material-ui official
     drawerOpen: {
@@ -102,17 +102,13 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
   dispatch: TDispatch;
 }
 
-interface State {
-  open: boolean;
-}
+interface State {}
 
 class DashboardDrawerRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
 
-    this.state = {
-      open: false
-    };
+    this.state = {};
   }
 
   private getMenuDataApplication() {
@@ -147,8 +143,7 @@ class DashboardDrawerRaw extends React.PureComponent<Props, State> {
   }
 
   render() {
-    const { classes } = this.props;
-    const { open } = this.state;
+    const { classes, isOpenRootDrawer: open, dispatch } = this.props;
     const pathname = window.location.pathname;
 
     return (
@@ -165,7 +160,7 @@ class DashboardDrawerRaw extends React.PureComponent<Props, State> {
           })
         }}>
         <div className={clsx(classes.openBtnWrapper, { [classes.itemBorder]: !open })}>
-          <IconButton onClick={() => this.setState({ open: !open })} size={"small"}>
+          <IconButton onClick={() => dispatch(setSettingsAction({ isOpenRootDrawer: !open }))} size={"small"}>
             {open ? <ChevronLeftIcon /> : <ChevronRightIcon />}
           </IconButton>
         </div>

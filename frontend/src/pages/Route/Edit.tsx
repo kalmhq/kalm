@@ -21,14 +21,14 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState, ownProps: any) => {
-  const match = ownProps.match as match<{ name: string }>;
+  const matchResult = ownProps.match as match<{ name: string }>;
   const routes = state.get("routes");
 
   return {
     isFirstLoaded: routes.get("isFirstLoaded"),
     isLoading: routes.get("isLoading"),
-    route: routes.get("httpRoutes").find(x => x.get("name") === match.params.name),
-    routeName: match.params.name
+    route: routes.get("httpRoutes").find(x => x.get("name") === matchResult.params.name),
+    routeName: matchResult.params.name
   };
 };
 
