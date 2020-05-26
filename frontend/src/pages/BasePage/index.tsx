@@ -5,7 +5,7 @@ import { DashboardDrawer } from "../../layout/DashboardDrawer";
 import { SecondHeader } from "../../layout/SecondHeader";
 import ScrollContainer from "../../widgets/ScrollContainer";
 
-export const LEFT_SECTION_WIDTH = 320;
+export const LEFT_SECTION_WIDTH = 300;
 
 const styles = (_theme: Theme) =>
   createStyles({

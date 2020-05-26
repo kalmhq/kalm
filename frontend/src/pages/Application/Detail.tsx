@@ -219,7 +219,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
   };
 
   private renderComponentPanel = (index: number) => {
-    const { classes, application, dispatch } = this.props;
+    const { classes, application } = this.props;
     const component = application.get("components")?.get(index)!;
 
     return (
@@ -233,9 +233,10 @@ class DetailsRaw extends React.PureComponent<Props, State> {
             <div
               className={classes.flexWrapper}
               style={{ width: "20%", cursor: "pointer" }}
-              onClick={() => {
-                dispatch(push(`/applications/${application.get("name")}/components/${component.get("name")}`));
-              }}>
+              // onClick={() => {
+              //   dispatch(push(`/applications/${application.get("name")}/components/${component.get("name")}`));
+              // }}
+            >
               {this.renderComponentStatus(component)} <H5>{component.get("name")}</H5>
               <div style={{ marginLeft: 8 }}>({component.get("workloadType") || "Server"})</div>
             </div>
