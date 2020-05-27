@@ -468,7 +468,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
           <FieldArray name="conditions" component={RenderHttpRouteConditions} />
         </Expansion>
 
-        <Expansion title="Advanced" subTitle="more powerful settings">
+        {/* <Expansion title="Advanced" subTitle="more powerful settings">
           <h1>TODO</h1>
           <div className={classes.box}>
             <FormControl component="fieldset">
@@ -493,7 +493,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
               <FormLabel component="legend">Need more features?</FormLabel>
             </FormControl>
           </div>
-        </Expansion>
+        </Expansion> */}
         <Button type="submit" onClick={handleSubmit} color="primary" variant="contained">
           Submit Form
         </Button>

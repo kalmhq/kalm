@@ -53,7 +53,7 @@ export const newEmptyRouteForm = (): HttpRouteForm => {
 
 export type HttpRouteCondition = ImmutableMap<{
   type: string;
-  key: string;
+  name: string;
   operator: string;
   value: string;
 }>;
