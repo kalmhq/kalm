@@ -92,7 +92,7 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gv1Alpha1WithAuth.GET("/nodes", h.handleListNodes)
 
 	gv1Alpha1WithAuth.GET("/httproutes/:namespace", h.handleListRoutes)
-	gv1Alpha1WithAuth.POST("/httproutes/namespace", h.handleCreateRoute)
+	gv1Alpha1WithAuth.POST("/httproutes/:namespace", h.handleCreateRoute)
 	gv1Alpha1WithAuth.PUT("/httproutes/:namespace/:name", h.handleUpdateRoute)
 	gv1Alpha1WithAuth.DELETE("/httproutes/:namespace/:name", h.handleDeleteRoute)
 
