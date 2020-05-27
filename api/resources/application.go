@@ -102,10 +102,7 @@ type CreateOrUpdateApplicationRequest struct {
 
 type Application struct {
 	Name      string `json:"name"`
-	//Namespace string `json:"namespace"`
 	IsActive  bool   `json:"isActive"`
-	//SharedEnvs []v1alpha1.EnvVar      `json:"sharedEnvs,omitempty"`
-	//Plugins    []runtime.RawExtension `json:"plugins"`
 }
 
 func (builder *Builder) BuildApplicationDetails(namespace coreV1.Namespace) (*ApplicationDetails, error) {
