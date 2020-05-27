@@ -20,7 +20,8 @@ const styles = (theme: Theme) =>
     },
     drawerPaper: {
       width: LEFT_SECTION_WIDTH,
-      paddingTop: APP_BAR_HEIGHT + SECOND_HEADER_HEIGHT
+      paddingTop: APP_BAR_HEIGHT + SECOND_HEADER_HEIGHT,
+      left: "auto"
     },
     drawerContainer: {
       overflow: "auto"

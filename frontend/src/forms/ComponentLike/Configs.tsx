@@ -3,7 +3,7 @@ import { connect, DispatchProp } from "react-redux";
 import { WrappedFieldArrayProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
 import { ConfigMount } from "../../types/componentTemplate";
-import { CustomTextField } from "../Basic";
+import { RenderTextField } from "../Basic";
 import { FieldArrayWrapper } from "../Basic/FieldArrayWrapper";
 import { NormalizePort } from "../normalizer";
 import { ValidatorRequired } from "../validator";
@@ -22,12 +22,13 @@ class RenderConfigs extends React.PureComponent<Props> {
   public getFieldComponents(member: string) {
     return [
       <Field name={`${member}.paths`} component={RenderConfigField} label="Paths" validate={[ValidatorRequired]} />,
-      <CustomTextField
+      <Field
         name={`${member}.mountPath`}
         label="Mount Path"
         margin
         validate={[ValidatorRequired]}
         normalize={NormalizePort}
+        component={RenderTextField}
       />
     ];
   }

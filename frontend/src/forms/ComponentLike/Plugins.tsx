@@ -136,7 +136,7 @@ class RenderPlugins extends React.PureComponent<Props, State> {
       <React.Fragment key={member}>
         {/* <Grid container spacing={2}>
           <Grid item md={12}>
-            <CustomTextField
+            <Field component={RenderTextField}
               name={`${member}.name`}
               label="Name"
               disabled={true}

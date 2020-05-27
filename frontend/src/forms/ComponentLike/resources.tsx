@@ -1,9 +1,10 @@
 import { createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import React from "react";
-import { CustomTextField } from "../Basic";
+import { RenderTextField } from "../Basic";
 import { ValidatorCPU, ValidatorMemory } from "../validator";
 import { DispatchProp } from "react-redux";
 import { change } from "redux-form";
+import { Field } from "redux-form/immutable";
 
 const styles = (_: Theme) =>
   createStyles({
@@ -38,7 +39,8 @@ class ComponentResourcesRaw extends React.PureComponent<ComponentResourcesProps>
     return (
       <Grid container spacing={2}>
         <Grid item xs={12} sm={6} md={6}>
-          <CustomTextField
+          <Field
+            component={RenderTextField}
             // className={classes.input}
             name="cpu"
             label="CPU"
@@ -49,7 +51,8 @@ class ComponentResourcesRaw extends React.PureComponent<ComponentResourcesProps>
           />
         </Grid>
         <Grid item xs={12} sm={6} md={6}>
-          <CustomTextField
+          <Field
+            component={RenderTextField}
             // className={classes.input}
             name="memory"
             label="Memory"

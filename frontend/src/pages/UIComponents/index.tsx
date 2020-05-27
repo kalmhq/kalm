@@ -19,8 +19,8 @@ import {
   CheckCircleIcon,
   ErrorIcon,
   ArrowBackIcon,
-  ConsoleIcon,
-  LogIcon
+  KappConsoleIcon,
+  KappLogIcon
 } from "widgets/Icon";
 
 const mapStateToProps = (state: RootState) => {
@@ -157,8 +157,8 @@ export class UIComponentsRaw extends React.Component<Props, States> {
               <CheckCircleIcon />
               <ErrorIcon />
               <ArrowBackIcon />
-              <ConsoleIcon />
-              <LogIcon />
+              <KappConsoleIcon />
+              <KappLogIcon />
             </RowItemBox>
           </Box>
         </Box>

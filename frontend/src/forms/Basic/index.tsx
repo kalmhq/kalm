@@ -5,9 +5,23 @@ import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
 import { Autocomplete } from "@material-ui/lab";
 import clsx from "clsx";
 import React from "react";
-import { BaseFieldProps, WrappedFieldMetaProps, WrappedFieldProps } from "redux-form";
-import { Field } from "redux-form/immutable";
+import { WrappedFieldMetaProps, WrappedFieldProps } from "redux-form";
 import { ID } from "../../utils";
+
+interface RenderTextField {
+  label?: string;
+  helperText?: string;
+  placeholder?: string;
+  required?: boolean;
+  className?: string;
+  margin?: boolean;
+  multiline?: boolean;
+  rows?: number;
+  rowsMax?: number;
+  disabled?: boolean;
+  formValueToEditValue?: (value: any) => string;
+  editValueToFormValue?: (value: string) => any;
+}
 
 export const RenderTextField = ({
   label,
@@ -21,19 +35,12 @@ export const RenderTextField = ({
   editValueToFormValue,
   meta: { touched, invalid, error },
   ...custom
-}: FilledTextFieldProps & WrappedFieldProps & Props) => {
+}: FilledTextFieldProps & WrappedFieldProps & RenderTextField) => {
   const classes = makeStyles(theme => ({
     noMargin: {
       margin: 0
     }
   }))();
-
-  // useEffect(() => {
-  //   if (editValueToFormValue) {
-  //     input.onChange(editValueToFormValue(input.value));
-  //   }
-  //   // eslint-disable-next-line
-  // }, []);
 
   return (
     <TextField
@@ -49,43 +56,15 @@ export const RenderTextField = ({
       size="small"
       margin="normal"
       variant="outlined"
-      // {...input}
-      // onChange={input.onChange}
       onChange={(event: any) => {
         editValueToFormValue
           ? input.onChange(editValueToFormValue(event.target.value))
           : input.onChange(event.target.value);
       }}
-      // onFocus={input.onChange}
-      // onBlur={(event: any) => {
-      //   editValueToFormValue
-      //     ? input.onBlur(editValueToFormValue(event.target.value))
-      //     : input.onBlur(event.target.value);
-      // }}
-      // value={input.value}
       defaultValue={formValueToEditValue ? formValueToEditValue(input.value) : input.value}
       {...custom}
     />
   );
-};
-
-interface Props {
-  label?: string;
-  helperText?: string;
-  placeholder?: string;
-  required?: boolean;
-  className?: string;
-  margin?: boolean;
-  multiline?: boolean;
-  rows?: number;
-  rowsMax?: number;
-  disabled?: boolean;
-  formValueToEditValue?: (value: any) => string;
-  editValueToFormValue?: (value: string) => any;
-}
-
-export const CustomTextField = (props: BaseFieldProps & Props) => {
-  return <Field {...props} component={RenderTextField} />;
 };
 
 const renderFormHelper = ({ touched, error }: Pick<WrappedFieldMetaProps, "touched" | "error">) => {
@@ -135,7 +114,7 @@ export const RenderSelectField = ({
       error={touched === true && error != null}
       variant="outlined"
       size="small"
-      margin="normal">
+      margin="dense">
       <InputLabel ref={inputLabel} htmlFor={id} id={labelId}>
         {label}
       </InputLabel>

@@ -1,6 +1,19 @@
+import {
+  Box,
+  Checkbox,
+  FormControl,
+  FormControlLabel,
+  FormControlLabelProps,
+  FormGroup,
+  FormHelperText,
+  FormLabel,
+  Icon,
+  Tooltip,
+  TooltipProps
+} from "@material-ui/core";
+import Immutable from "immutable";
 import React from "react";
 import { WrappedFieldProps } from "redux-form";
-import { Box, FormControlLabel, FormControlLabelProps, Icon, Checkbox, Tooltip, TooltipProps } from "@material-ui/core";
 
 export const CheckboxField = ({
   input,
@@ -39,4 +52,76 @@ export const CheckboxField = ({
   } else {
     return content;
   }
+};
+
+interface KBoolCheckboxRenderProps extends WrappedFieldProps {
+  label: React.ReactNode;
+  title?: string;
+  helperText?: string;
+}
+
+// For bool
+export const KBoolCheckboxRender = ({ input, meta, title, helperText, label }: KBoolCheckboxRenderProps) => {
+  const checked: boolean = !!input.value;
+  const { error, touched } = meta;
+  const showError = !!error && touched;
+
+  return (
+    <FormControl fullWidth error={showError}>
+      {title ? <FormLabel component="legend">{title}</FormLabel> : null}
+      <FormGroup row>
+        <FormControlLabel control={<Checkbox checked={checked} onChange={input.onChange} />} label={label} />
+      </FormGroup>
+      {showError ? (
+        <FormHelperText>{error}</FormHelperText>
+      ) : helperText ? (
+        <FormHelperText>{helperText}</FormHelperText>
+      ) : null}
+    </FormControl>
+  );
+};
+
+interface KCheckboxGroupRenderOption {
+  value: string;
+  label: string;
+}
+
+interface KCheckboxGroupRenderProps extends WrappedFieldProps {
+  title?: string;
+  helperText?: string;
+  options: KCheckboxGroupRenderOption[];
+}
+
+// For value type is Immutable.List<string>
+export const KCheckboxGroupRender = ({ input, meta, title, options, helperText }: KCheckboxGroupRenderProps) => {
+  const value: Immutable.List<string> = input.value;
+  const { error, touched } = meta;
+  const showError = !!error && touched;
+
+  return (
+    <FormControl fullWidth error={showError}>
+      {title ? <FormLabel component="legend">{title}</FormLabel> : null}
+      {showError ? <FormHelperText>{error}</FormHelperText> : null}
+      <FormGroup row>
+        {options.map(x => {
+          const onChange = (_: any, checked: boolean) => {
+            if (checked) {
+              input.onChange(value.push(x.value));
+            } else {
+              input.onChange(value.remove(value.indexOf(x.value)));
+            }
+          };
+
+          return (
+            <FormControlLabel
+              key={x.value}
+              control={<Checkbox checked={value.includes(x.value)} onChange={onChange} name={x.value} />}
+              label={x.label}
+            />
+          );
+        })}
+      </FormGroup>
+      {helperText ? <FormHelperText>{helperText}</FormHelperText> : null}
+    </FormControl>
+  );
 };

@@ -1,19 +1,16 @@
 import { AppBar, createStyles, Divider, IconButton, Menu, MenuItem, Theme } from "@material-ui/core";
-import blue from "@material-ui/core/colors/blue";
 import AccountCircle from "@material-ui/icons/AccountCircle";
+import SettingsIcon from "@material-ui/icons/Settings";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import { logoutAction } from "actions/auth";
 import React from "react";
 import { connect } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { loadApplicationsAction } from "../actions/application";
-import SettingsIcon from "@material-ui/icons/Settings";
-import { NavLink } from "react-router-dom";
 import { IconButtonWithTooltip } from "../widgets/IconButtonWithTooltip";
-import { ConsoleIcon, LogIcon } from "widgets/Icon";
 
 export const APP_BAR_HEIGHT = 48;
 
@@ -34,7 +31,7 @@ const styles = (theme: Theme) =>
   createStyles({
     appBar: {
       color: "white",
-      backgroundColor: blue[500],
+      backgroundColor: theme.palette.primary.main,
       position: "fixed",
       top: "0px",
       transition: "0.2s",
@@ -141,7 +138,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
   }
 
   render() {
-    const { classes, title, activeNamespace } = this.props;
+    const { classes, title } = this.props;
 
     return (
       <AppBar ref={this.headerRef} id="header" position="relative" className={classes.appBar}>
@@ -152,21 +149,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
             </Link>
           </FlexRowItemCenterBox>
           <div className={classes.barRight}>
-            <IconButtonWithTooltip
-              tooltipTitle="Shell"
-              color="inherit"
-              component={NavLink}
-              to={`/applications/${activeNamespace}/shells`}>
-              <ConsoleIcon />
-            </IconButtonWithTooltip>
-            <IconButtonWithTooltip
-              tooltipTitle="Logs"
-              color="inherit"
-              component={NavLink}
-              to={`/applications/${activeNamespace}/logs`}>
-              <LogIcon />
-            </IconButtonWithTooltip>
-            <IconButtonWithTooltip tooltipTitle="Settings" color="inherit" component={NavLink} to={"/roles"}>
+            <IconButtonWithTooltip tooltipTitle="Settings" style={{ color: "#fff" }} component={NavLink} to={"/roles"}>
               <SettingsIcon />
             </IconButtonWithTooltip>
             <Divider orientation="vertical" flexItem color="inherit" />
