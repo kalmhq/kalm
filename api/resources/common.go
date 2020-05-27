@@ -34,8 +34,8 @@ type ResourceChannels struct {
 	ComponentList                *ComponentListChannel
 	ComponentPluginList          *ComponentPluginListChannel
 	ComponentPluginBindingList   *ComponentPluginBindingListChannel
-	ApplicationPluginList        *ApplicationPluginListChannel
-	ApplicationPluginBindingList *ApplicationPluginBindingListChannel
+	//ApplicationPluginList        *ApplicationPluginListChannel
+	//ApplicationPluginBindingList *ApplicationPluginBindingListChannel
 	DockerRegistryList           *DockerRegistryListChannel
 	SecretList                   *SecretListChannel
 	HttpsCertIssuerList          *HttpsCertIssuerListChannel
@@ -51,8 +51,8 @@ type Resources struct {
 	Components                []v1alpha1.Component
 	ComponentPlugins          []v1alpha1.ComponentPlugin
 	ComponentPluginBindings   []v1alpha1.ComponentPluginBinding
-	ApplicationPlugins        []v1alpha1.ApplicationPlugin
-	ApplicationPluginBindings []v1alpha1.ApplicationPluginBinding
+	//ApplicationPlugins        []v1alpha1.ApplicationPlugin
+	//ApplicationPluginBindings []v1alpha1.ApplicationPluginBinding
 	DockerRegistries          []*v1alpha1.DockerRegistry
 	Secrets                   []*coreV1.Secret
 	HttpsCertIssuers          []v1alpha1.HttpsCertIssuer
@@ -140,21 +140,21 @@ func (c *ResourceChannels) ToResources() (r *Resources, err error) {
 		resources.ComponentPluginBindings = <-c.ComponentPluginBindingList.List
 	}
 
-	if c.ApplicationPluginList != nil {
-		err = <-c.ApplicationPluginList.Error
-		if err != nil {
-			return nil, err
-		}
-		resources.ApplicationPlugins = <-c.ApplicationPluginList.List
-	}
-
-	if c.ApplicationPluginBindingList != nil {
-		err = <-c.ApplicationPluginBindingList.Error
-		if err != nil {
-			return nil, err
-		}
-		resources.ApplicationPluginBindings = <-c.ApplicationPluginBindingList.List
-	}
+	//if c.ApplicationPluginList != nil {
+	//	err = <-c.ApplicationPluginList.Error
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//	resources.ApplicationPlugins = <-c.ApplicationPluginList.List
+	//}
+	//
+	//if c.ApplicationPluginBindingList != nil {
+	//	err = <-c.ApplicationPluginBindingList.Error
+	//	if err != nil {
+	//		return nil, err
+	//	}
+	//	resources.ApplicationPluginBindings = <-c.ApplicationPluginBindingList.List
+	//}
 
 	if c.DockerRegistryList != nil {
 		err = <-c.DockerRegistryList.Error
@@ -274,7 +274,7 @@ func NewBuilder(k8sClient *kubernetes.Clientset, cfg *rest.Config, logger *logru
 }
 
 func (builder *Builder) Get(namespace, name string, obj runtime.Object) error {
-	return builder.Client.Get(builder.ctx, types.NamespacedName{namespace, name}, obj)
+	return builder.Client.Get(builder.ctx, types.NamespacedName{Namespace: namespace, Name: name}, obj)
 }
 
 func (builder *Builder) List(obj runtime.Object, opts ...client.ListOption) error {

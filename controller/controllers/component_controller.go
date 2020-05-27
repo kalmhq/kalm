@@ -278,8 +278,8 @@ func (r *ComponentReconcilerTask) FixComponentDefaultValues() (err error) {
 	return r.Update(r.ctx, r.component)
 }
 
-func (r *ComponentReconcilerTask) IsNamespaceKappEnabled() bool {
-	if v, exist := r.namespace.Labels[KappEnableLabelName]; !exist || v != KappEnableLabelValue {
+func IsNamespaceKappEnabled(namespace coreV1.Namespace) bool {
+	if v, exist := namespace.Labels[KappEnableLabelName]; !exist || v != KappEnableLabelValue {
 		return false
 	}
 
@@ -289,7 +289,7 @@ func (r *ComponentReconcilerTask) IsNamespaceKappEnabled() bool {
 func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 	labels := r.GetLabels()
 
-	if !r.IsNamespaceKappEnabled() {
+	if !IsNamespaceKappEnabled(r.namespace) {
 		if r.service != nil {
 			return r.Delete(r.ctx, r.service)
 		}
@@ -367,7 +367,7 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 
 func (r *ComponentReconcilerTask) ReconcileWorkload() (err error) {
 
-	if !r.IsNamespaceKappEnabled() {
+	if !IsNamespaceKappEnabled(r.namespace) {
 		if r.deployment != nil {
 			if err := r.Delete(r.ctx, r.deployment); err != nil {
 				return err
