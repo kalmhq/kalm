@@ -6,7 +6,7 @@ import { FieldArray, Field } from "redux-form/immutable";
 import { NormalizePort } from "../normalizer";
 import { ComponentLikePort } from "../../types/componentTemplate";
 import { portTypeUDP, portTypeTCP } from "../../types/common";
-import { CustomTextField, RenderSelectField } from "../Basic";
+import { RenderTextField, RenderSelectField } from "../Basic";
 import { ValidatorRequired } from "../validator";
 import { FieldArrayWrapper } from "../Basic/FieldArrayWrapper";
 
@@ -22,19 +22,21 @@ interface Props extends WrappedFieldArrayProps<ComponentLikePort>, FieldArrayCom
 class RenderPorts extends React.PureComponent<Props> {
   public getFieldComponents(member: string) {
     return [
-      <CustomTextField name={`${member}.name`} label="Name" margin validate={[ValidatorRequired]} />,
+      <Field component={RenderTextField} name={`${member}.name`} label="Name" margin validate={[ValidatorRequired]} />,
       <Field name={`${member}.protocol`} component={RenderSelectField} label="Protocol" validate={[ValidatorRequired]}>
         <MenuItem value={portTypeUDP}>{portTypeUDP}</MenuItem>
         <MenuItem value={portTypeTCP}>{portTypeTCP}</MenuItem>
       </Field>,
-      <CustomTextField
+      <Field
+        component={RenderTextField}
         name={`${member}.containerPort`}
         label="ContainerPort"
         margin
         validate={[ValidatorRequired]}
         normalize={NormalizePort}
       />,
-      <CustomTextField
+      <Field
+        component={RenderTextField}
         name={`${member}.servicePort`}
         label="ServicePort"
         margin

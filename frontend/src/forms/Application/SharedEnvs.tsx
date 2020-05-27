@@ -4,7 +4,7 @@ import { WrappedFieldArrayProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
 import { getApplicationEnvStatus, getCurrentFormApplication } from "../../selectors/application";
 import { SharedEnv } from "../../types/application";
-import { CustomTextField, RenderAutoCompleteFreeSolo } from "../Basic";
+import { RenderTextField, RenderAutoCompleteFreeSolo } from "../Basic";
 import { FieldArrayWrapper } from "../Basic/FieldArrayWrapper";
 import { ValidatorRequired } from "../validator";
 
@@ -50,7 +50,7 @@ class RenderSharedEnvs extends React.PureComponent<Props> {
         margin
         validate={[ValidatorRequired]}
       />,
-      <CustomTextField name={`${member}.value`} label="Value" margin validate={[ValidatorRequired]} />
+      <Field name={`${member}.value`} label="Value" margin validate={[ValidatorRequired]} component={RenderTextField} />
     ];
   }
 
