@@ -33,9 +33,8 @@ func (suite *PluginBindingControllerSuite) TearDownSuite() {
 }
 
 func (suite *PluginBindingControllerSuite) SetupTest() {
-	//ns := generateEmptyApplication()
-	//suite.createApplication(ns)
-	//suite.ns = ns
+	namespace := suite.SetupKappEnabledNs()
+	suite.namespace = &namespace
 
 	plugin := generateEmptyComponentPlugin()
 	plugin.Spec.Src = `
