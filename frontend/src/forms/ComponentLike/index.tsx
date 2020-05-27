@@ -18,7 +18,7 @@ import { TDispatchProp } from "../../types";
 import { SharedEnv } from "../../types/application";
 import { ComponentLike, workloadTypeCronjob, workloadTypeServer } from "../../types/componentTemplate";
 import { HelperContainer } from "../../widgets/Helper";
-import { CustomTextField, RenderSelectField, RenderTextField } from "../Basic";
+import { RenderTextField, RenderSelectField } from "../Basic";
 import { NormalizeNumber } from "../normalizer";
 import { ValidatorCPU, ValidatorMemory, ValidatorName, ValidatorRequired, ValidatorSchedule } from "../validator";
 import { Configs } from "./Configs";
@@ -227,7 +227,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           <H5>Basic</H5>
         </Grid>
         <Grid item xs={12} sm={12} md={12}>
-          <CustomTextField
+          <Field
+            component={RenderTextField}
             name="name"
             label="Name"
             margin
@@ -240,7 +241,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             }
             placeholder="Please type the component name"
           />
-          <CustomTextField
+          <Field
+            component={RenderTextField}
             name="image"
             label="Image"
             margin
@@ -248,7 +250,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             helperText='Eg: "nginx:latest", "registry.example.com/group/repo:tag"'
           />
 
-          <CustomTextField
+          <Field
+            component={RenderTextField}
             name="command"
             margin
             label="Command (Optional)"
@@ -260,7 +263,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               return value ? Immutable.List([value]) : Immutable.List([]);
             }}
           />
-          <CustomTextField
+          <Field
+            component={RenderTextField}
             name="args"
             margin
             label="Arguments (Optional)"
@@ -278,7 +282,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </Field>
           {this.renderSchedule()}
           <div className={classes.helperField}>
-            <CustomTextField
+            <Field
+              component={RenderTextField}
               name="cpu"
               label="CPU"
               margin
@@ -291,7 +296,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             </Tooltip>
           </div>
           <div className={classes.helperField}>
-            <CustomTextField
+            <Field
+              component={RenderTextField}
               name="memory"
               label="Memory"
               margin
@@ -303,7 +309,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               <HelpIcon fontSize="small" className={classes.helperFieldIcon} />
             </Tooltip>
           </div>
-          <CustomTextField
+          <Field
+            component={RenderTextField}
             name="replicas"
             margin
             label="replicas"
@@ -696,7 +703,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </div>
 
           <div className={classes.helperField}>
-            <CustomTextField
+            <Field
+              component={RenderTextField}
               name="terminationGracePeriodSeconds"
               label="Termination Grace Period Seconds"
               // validate={ValidatorRequired}
@@ -763,35 +771,21 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
     return (
       <form onSubmit={handleSubmit} className={classes.root}>
-        <div className={`${classes.formSection} ${currentTab === "basic" ? "" : classes.displayNone}`}>
-          {this.renderBasic()}
-        </div>
-        <div className={`${classes.formSection} ${currentTab === "basic" ? "" : classes.displayNone}`}>
-          {this.renderEnvs()}
-        </div>
-        <div
-          className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}
-          style={{ margin: "0 0 16px" }}>
+        <div className={`${classes.formSection} ${currentTab === "basic" ? "" : ""}`}>{this.renderBasic()}</div>
+        <div className={`${classes.formSection} ${currentTab === "basic" ? "" : ""}`}>{this.renderEnvs()}</div>
+        <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : ""}`} style={{ margin: "0 0 16px" }}>
           {this.renderPorts()}
         </div>
-        <div
-          className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}
-          style={{ margin: "0 0 16px" }}>
+        <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : ""}`} style={{ margin: "0 0 16px" }}>
           {this.renderVolumes()}
         </div>
-        <div
-          className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}
-          style={{ margin: "0 0 24px" }}>
+        <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : ""}`} style={{ margin: "0 0 24px" }}>
           {this.renderConfigs()}
         </div>
-        <div
-          className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}
-          style={{ margin: "0 0 16px" }}>
+        <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : ""}`} style={{ margin: "0 0 16px" }}>
           {this.renderAdvanced()}
         </div>
-        <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : classes.displayNone}`}>
-          {this.renderPlugins()}
-        </div>
+        <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : ""}`}>{this.renderPlugins()}</div>
       </form>
     );
   }

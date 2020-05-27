@@ -6,12 +6,14 @@ import { SET_SETTINGS } from "../types/common";
 export interface SettingObject {
   isDisplayingHelpers: boolean;
   isSubmittingApplication: boolean;
+  isOpenRootDrawer: boolean;
 }
 
 export type State = ImmutableMap<SettingObject>;
 
 const initialState: State = Immutable.Map({
-  isDisplayingHelpers: window.localStorage.getItem("isDisplayingHelpers") === "true"
+  isDisplayingHelpers: window.localStorage.getItem("isDisplayingHelpers") === "true",
+  isOpenRootDrawer: window.localStorage.getItem("isOpenRootDrawer") === "true"
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {
@@ -24,6 +26,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
   }
 
   window.localStorage.setItem("isDisplayingHelpers", state.get("isDisplayingHelpers").toString());
+  window.localStorage.setItem("isOpenRootDrawer", state.get("isOpenRootDrawer").toString());
 
   return state;
 };

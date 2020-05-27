@@ -134,17 +134,6 @@ class RenderPlugins extends React.PureComponent<Props, State> {
 
     return (
       <React.Fragment key={member}>
-        {/* <Grid container spacing={2}>
-          <Grid item md={12}>
-            <CustomTextField
-              name={`${member}.name`}
-              label="Name"
-              disabled={true}
-              margin
-              validate={[ValidatorRequired]}
-            />
-          </Grid>
-        </Grid> */}
         <Grid container spacing={2}>
           <Grid item md={12}>
             <div style={{ display: "flex", alignItems: "center", padding: "8px 0" }}>

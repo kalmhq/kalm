@@ -1,11 +1,10 @@
 import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import { Theme } from "pretty-format/build/types";
 import React from "react";
-import { DashboardDrawer } from "../../layout/DashboardDrawer";
 import { SecondHeader } from "../../layout/SecondHeader";
 import ScrollContainer from "../../widgets/ScrollContainer";
 
-export const LEFT_SECTION_WIDTH = 320;
+export const LEFT_SECTION_WIDTH = 300;
 
 const styles = (_theme: Theme) =>
   createStyles({
@@ -41,9 +40,8 @@ export class BasePageRaw extends React.PureComponent<BasePageProps> {
     return (
       <div className={classes.root}>
         <SecondHeader left={secondHeaderLeft} right={secondHeaderRight} />
-        {leftDrawer || <DashboardDrawer />}
+        {leftDrawer}
         <div className={classes.rightSection}>
-          {/* <PageHeader title={title} noBreadcrumb={noBreadcrumb} rightAction={rightAction}></PageHeader> */}
           <div className={classes.content}>
             {noScrollContainer ? children : <ScrollContainer>{children}</ScrollContainer>}
           </div>

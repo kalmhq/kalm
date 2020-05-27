@@ -52,8 +52,7 @@ interface State {
   currentFormType: "application" | "component";
   currentApplicationTab: "basic" | "sharedEnvs" | "applicationPlugins";
   currentComponent?: ApplicationComponent;
-  // currentComponentTab?: "envs" | "ports" | "resources" | "plugins" | "probes" | "advanced";
-  currentComponentTab?: string;
+  // currentComponentTab?: string;
   changingComponent: boolean; // for form componentLike enableReinitialize
 }
 
@@ -71,7 +70,7 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
       currentFormType: "component",
       currentApplicationTab: "basic",
       currentComponent: undefined,
-      currentComponentTab: "basic",
+      // currentComponentTab: "basic",
       changingComponent: false
     };
   }
@@ -114,8 +113,8 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
 
     if (!currentComponent || !currentComponent.get("name")) {
       this.setState({
-        currentComponent: component,
-        currentComponentTab: "basic"
+        currentComponent: component
+        // currentComponentTab: "basic"
       });
 
       await dispatch(createComponentAction(component));
@@ -135,8 +134,8 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
     if (currentComponent) {
       if (!currentComponent.get("name")) {
         this.setState({
-          currentComponent: application?.get("components").get(0),
-          currentComponentTab: "basic"
+          currentComponent: application?.get("components").get(0)
+          // currentComponentTab: "basic"
         });
       } else {
         dispatch(deleteComponentAction(currentComponent.get("name")));
@@ -150,8 +149,8 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
           ?.get("name")
       ) {
         this.setState({
-          currentComponent: undefined,
-          currentComponentTab: "basic"
+          currentComponent: undefined
+          // currentComponentTab: "basic"
         });
       }
     }
@@ -165,12 +164,6 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
       <ApplicationEditDrawer
         application={application}
         currentComponent={currentComponent}
-        // handleClickBasic={() => {
-        //   this.setState({
-        //     currentFormType: "application",
-        //     currentApplicationTab: "basic"
-        //   });
-        // }}
         handleClickSharedEnvs={() => {
           this.setState({
             currentFormType: "application",
@@ -186,17 +179,17 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
         handleClickComponent={(component: ApplicationComponent) => {
           this.setState({
             currentFormType: "component",
-            currentComponent: component,
-            currentComponentTab: "basic"
+            currentComponent: component
+            // currentComponentTab: "basic"
           });
         }}
-        handleClickComponentTab={(component: ApplicationComponent, tab: string) => {
-          this.setState({
-            currentFormType: "component",
-            currentComponent: component,
-            currentComponentTab: tab
-          });
-        }}
+        // handleClickComponentTab={(component: ApplicationComponent, tab: string) => {
+        //   this.setState({
+        //     currentFormType: "component",
+        //     currentComponent: component,
+        //     currentComponentTab: tab
+        //   });
+        // }}
       />
     );
   }
@@ -251,18 +244,22 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
       currentFormType,
       currentComponent,
       currentApplicationTab,
-      currentComponentTab,
+      // currentComponentTab,
       changingComponent
     } = this.state;
 
     if (currentFormType === "application") {
       return (
-        <ApplicationForm
-          onSubmit={this.submitApplication}
-          initialValues={application}
-          isEdit={true}
-          currentTab={currentApplicationTab}
-        />
+        <Grid container spacing={2}>
+          <Grid item xs={8} sm={8} md={8}>
+            <ApplicationForm
+              onSubmit={this.submitApplication}
+              initialValues={application}
+              isEdit={true}
+              currentTab={currentApplicationTab}
+            />
+          </Grid>
+        </Grid>
       );
     }
 
@@ -272,7 +269,7 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
 
     return (
       <Grid container spacing={2}>
-        <Grid item xs={12} sm={6} md={6}>
+        <Grid item xs={8} sm={8} md={8}>
           <ComponentLikeForm
             sharedEnv={sharedEnv}
             onSubmit={this.submitComponent}
@@ -280,11 +277,11 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
               dispatch(setIsSubmittingApplicationComponent(false));
             }}
             initialValues={currentComponent}
-            currentTab={currentComponentTab}
+            // currentTab={currentComponentTab}
             showDataView
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={6}>
+        <Grid item xs={4} sm={4} md={4}>
           <ComponentStatus
             component={application?.get("components")?.find(x => x.get("name") === currentComponent?.get("name"))}
           />

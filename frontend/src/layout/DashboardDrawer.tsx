@@ -1,20 +1,37 @@
-import { createStyles, List, ListItem, ListItemIcon, ListItemText, ListSubheader, Theme } from "@material-ui/core";
+import {
+  createStyles,
+  Drawer,
+  IconButton,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  ListSubheader,
+  Theme
+} from "@material-ui/core";
 import AssignmentReturnedIcon from "@material-ui/icons/AssignmentReturned";
+import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
+import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import { WithStyles, withStyles } from "@material-ui/styles";
+import clsx from "clsx";
 import React from "react";
 import { connect } from "react-redux";
 import { NavLink } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
+import { setSettingsAction } from "../actions/settings";
+import { LEFT_SECTION_WIDTH } from "../pages/BasePage";
 import { primaryBackgroud, primaryColor } from "../theme";
 import { KappApplicationIcon, KappNodeIcon, KappTemplateIcon, KappVolumeIcon } from "../widgets/Icon";
-import { BaseDrawer } from "./BaseDrawer";
+import { APP_BAR_HEIGHT } from "./AppBar";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
   const isAdmin = auth.get("isAdmin");
   const entity = auth.get("entity");
   return {
+    pathname: window.location.pathname,
+    isOpenRootDrawer: state.get("settings").get("isOpenRootDrawer"),
     activeNamespaceName: state.get("namespaces").get("active"),
     isAdmin,
     entity
@@ -38,6 +55,47 @@ const styles = (theme: Theme) =>
     listSubHeader: {
       textTransform: "uppercase",
       color: "#000000 !important"
+    },
+    openBtnWrapper: {
+      width: "100%",
+      display: "flex",
+      justifyContent: "flex-end",
+      padding: "15px 16px"
+    },
+    hide: {
+      display: "none"
+    },
+    drawer: {
+      width: LEFT_SECTION_WIDTH,
+      flexShrink: 0,
+      whiteSpace: "nowrap"
+    },
+    drawerPaper: {
+      width: LEFT_SECTION_WIDTH,
+      paddingTop: APP_BAR_HEIGHT
+    },
+    // material-ui official
+    drawerOpen: {
+      width: LEFT_SECTION_WIDTH,
+      transition: theme.transitions.create("width", {
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.enteringScreen
+      })
+    },
+    drawerClose: {
+      transition: theme.transitions.create("width", {
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.leavingScreen
+      }),
+      overflowX: "hidden",
+      width: 60 + 1,
+      [theme.breakpoints.up("sm")]: {
+        width: 60 + 1
+      }
+    },
+    itemBorder: {
+      borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+      height: 60
     }
   });
 
@@ -86,18 +144,38 @@ class DashboardDrawerRaw extends React.PureComponent<Props, State> {
   }
 
   render() {
-    const { classes } = this.props;
-    const pathname = window.location.pathname;
-
+    const { classes, pathname, dispatch, isOpenRootDrawer: open } = this.props;
     return (
-      <BaseDrawer>
-        <List>
-          <ListSubheader disableSticky={true} className={classes.listSubHeader}>
-            Application
-          </ListSubheader>
+      <Drawer
+        variant="permanent"
+        className={clsx(classes.drawer, {
+          [classes.drawerOpen]: open,
+          [classes.drawerClose]: !open
+        })}
+        classes={{
+          paper: clsx(classes.drawerPaper, {
+            [classes.drawerOpen]: open,
+            [classes.drawerClose]: !open
+          })
+        }}>
+        <div className={clsx(classes.openBtnWrapper, { [classes.itemBorder]: !open })}>
+          <IconButton onClick={() => dispatch(setSettingsAction({ isOpenRootDrawer: !open }))} size={"small"}>
+            {open ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+          </IconButton>
+        </div>
+
+        <List style={{ paddingTop: open ? 8 : 0 }}>
+          {open ? (
+            <ListSubheader disableSticky={true} className={classes.listSubHeader}>
+              Application
+            </ListSubheader>
+          ) : null}
+
           {this.getMenuDataApplication().map((item, index) => (
             <ListItem
-              className={classes.listItem}
+              className={clsx(classes.listItem, {
+                [classes.itemBorder]: !open
+              })}
               classes={{
                 selected: classes.listItemSeleted
               }}
@@ -109,16 +187,21 @@ class DashboardDrawerRaw extends React.PureComponent<Props, State> {
               <ListItemIcon>
                 <item.icon />
               </ListItemIcon>
-              <ListItemText primary={item.text} />
+              {open ? <ListItemText primary={item.text} /> : null}
             </ListItem>
           ))}
 
-          <ListSubheader disableSticky={true} className={classes.listSubHeader}>
-            Cluster
-          </ListSubheader>
+          {open ? (
+            <ListSubheader disableSticky={true} className={classes.listSubHeader}>
+              Cluster
+            </ListSubheader>
+          ) : null}
+
           {this.getMenuDataCluster().map((item, index) => (
             <ListItem
-              className={classes.listItem}
+              className={clsx(classes.listItem, {
+                [classes.itemBorder]: !open
+              })}
               classes={{
                 selected: classes.listItemSeleted
               }}
@@ -130,11 +213,11 @@ class DashboardDrawerRaw extends React.PureComponent<Props, State> {
               <ListItemIcon>
                 <item.icon />
               </ListItemIcon>
-              <ListItemText primary={item.text} />
+              {open ? <ListItemText primary={item.text} /> : null}
             </ListItem>
           ))}
         </List>
-      </BaseDrawer>
+      </Drawer>
     );
   }
 }
