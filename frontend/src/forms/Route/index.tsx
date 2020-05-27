@@ -355,7 +355,8 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
             ]}
           />
 
-          <Collapse in={schemes.includes("http")}>
+          {/* TODO: wait backend fix this. */}
+          {/* <Collapse in={schemes.includes("http")}>
             <div>
               <Field
                 component={KBoolCheckboxRender}
@@ -367,7 +368,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                 }
               />
             </div>
-          </Collapse>
+          </Collapse> */}
 
           <Collapse in={schemes.includes("https")}>
             <Alert className="alert" severity="info">
@@ -376,6 +377,44 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
             </Alert>
             {this.renderCertificationStatus()}
           </Collapse>
+        </Expansion>
+
+        <Expansion
+          title="Targets"
+          subTitle="Choose targets that will receive requets."
+          hasError={submitFailed && syncErrors.destinations}>
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<Icon>add</Icon>}
+            size="small"
+            onClick={() =>
+              dispatch(
+                arrayPush(
+                  form,
+                  "destinations",
+                  Immutable.Map({
+                    host: "",
+                    weight: 1
+                  })
+                )
+              )
+            }
+            className={classes.buttonMargin}>
+            Add a target
+          </Button>
+          <Collapse in={destinations.size > 1}>
+            <Alert className="alert" severity="info">
+              There are more than one target, traffic will be forwarded to each target by weight. Read more about canary
+              rollout.
+            </Alert>
+          </Collapse>
+          <FieldArray
+            name="destinations"
+            component={RenderHttpRouteDestinations}
+            rerenderOnEveryChange
+            validate={ValidatorAtLeastOneHttpRouteDestination}
+          />
         </Expansion>
 
         <Expansion
@@ -429,43 +468,6 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
           <FieldArray name="conditions" component={RenderHttpRouteConditions} />
         </Expansion>
 
-        <Expansion
-          title="Targets"
-          subTitle="Choose targets that will receive requets."
-          hasError={submitFailed && syncErrors.destinations}>
-          <Button
-            variant="outlined"
-            color="primary"
-            startIcon={<Icon>add</Icon>}
-            size="small"
-            onClick={() =>
-              dispatch(
-                arrayPush(
-                  form,
-                  "destinations",
-                  Immutable.Map({
-                    host: "",
-                    weight: 1
-                  })
-                )
-              )
-            }
-            className={classes.buttonMargin}>
-            Add a target
-          </Button>
-          <Collapse in={destinations.size > 1}>
-            <Alert className="alert" severity="info">
-              There are more than one target, traffic will be forwarded to each target by weight. Read more about canary
-              rollout.
-            </Alert>
-          </Collapse>
-          <FieldArray
-            name="destinations"
-            component={RenderHttpRouteDestinations}
-            rerenderOnEveryChange
-            validate={ValidatorAtLeastOneHttpRouteDestination}
-          />
-        </Expansion>
         <Expansion title="Advanced" subTitle="more powerful settings">
           <h1>TODO</h1>
           <div className={classes.box}>

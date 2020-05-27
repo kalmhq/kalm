@@ -6,12 +6,13 @@ import React from "react";
 import { connect } from "react-redux";
 import { match } from "react-router";
 import { ThunkDispatch } from "redux-thunk";
-import { HttpRouteForm, methodsModeAll, methodsModeSpecific } from "types/route";
+import { HttpRouteForm, methodsModeAll, methodsModeSpecific, AllHttpMethods } from "types/route";
 import { ApplicationViewDrawer } from "widgets/ApplicationViewDrawer";
 import { Loading } from "widgets/Loading";
 import { RootState } from "../../reducers";
 import { Actions } from "../../types";
 import { BasePage } from "../BasePage";
+import { Namespaces } from "widgets/Namespaces";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -39,6 +40,9 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
 class RouteEditRaw extends React.PureComponent<Props> {
   private submit = async (route: HttpRouteForm) => {
     try {
+      if (route.get("methodsMode") === methodsModeAll) {
+        route = route.set("methods", AllHttpMethods);
+      }
       this.props.dispatch(updateRoute(route.get("name"), route.get("namespace"), route));
       this.props.dispatch(push("/routes"));
     } catch (e) {
@@ -65,7 +69,7 @@ class RouteEditRaw extends React.PureComponent<Props> {
 
   public render() {
     return (
-      <BasePage leftDrawer={<ApplicationViewDrawer />}>
+      <BasePage leftDrawer={<ApplicationViewDrawer />} secondHeaderLeft={<Namespaces />}>
         <div className={this.props.classes.root}>{this.renderContent()}</div>
       </BasePage>
     );
