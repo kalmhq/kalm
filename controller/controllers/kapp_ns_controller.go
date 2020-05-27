@@ -27,11 +27,13 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
-// KappNSReconciler reconciles a KappNS object
+const (
+	KappEnableLabelName  = "kapp-enabled"
+	KappEnableLabelValue = "true"
+)
+
+// KappNSReconciler watches all namespaces
 type KappNSReconciler struct {
-	//client.Client
-	//Log    logr.Logger
-	//Scheme *runtime.Scheme
 	*BaseReconciler
 }
 
@@ -41,6 +43,7 @@ func NewKappNSReconciler(mgr ctrl.Manager) *KappNSReconciler {
 	}
 }
 
+// +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;create;update;patch;delete
 func (r *KappNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	_ = r.Log.WithValues("kappns", req.NamespacedName)
@@ -67,13 +70,23 @@ func (r *KappNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			return ctrl.Result{}, err
 		}
 
+		isActive := IsNamespaceKappEnabled(ns)
+
 		for _, item := range compList.Items {
 			component := item.DeepCopy()
 			if component.Labels == nil {
 				component.Labels = map[string]string{}
 			}
 
-			component.Labels["kapp-namespace-updated-at"] = strconv.Itoa(int(now.Unix()))
+			var suffix string
+			if isActive {
+				suffix = "enabled"
+			} else {
+				suffix = "disabled"
+			}
+
+			component.Labels["kapp-namespace-updated-at"] = strconv.Itoa(int(now.Unix())) + "-" + suffix
+
 			if err := r.Update(ctx, component); err != nil {
 				return ctrl.Result{}, err
 			}
