@@ -250,12 +250,16 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
 
     if (currentFormType === "application") {
       return (
-        <ApplicationForm
-          onSubmit={this.submitApplication}
-          initialValues={application}
-          isEdit={true}
-          currentTab={currentApplicationTab}
-        />
+        <Grid container spacing={2}>
+          <Grid item xs={8} sm={8} md={8}>
+            <ApplicationForm
+              onSubmit={this.submitApplication}
+              initialValues={application}
+              isEdit={true}
+              currentTab={currentApplicationTab}
+            />
+          </Grid>
+        </Grid>
       );
     }
 

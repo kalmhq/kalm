@@ -311,16 +311,16 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
     }
 
     let expandedComponentIndex = this.state.expandedComponentIndex;
-    // let selectedListItemKey = this.state.selectedListItemKey;
+    let selectedListItemKey = this.state.selectedListItemKey;
     if (application.get("components")) {
       if (expandedComponentIndex > application.get("components").size) {
         expandedComponentIndex = 0;
-        // selectedListItemKey = this.generateComponentKey(0);
+        selectedListItemKey = this.generateComponentKey(0);
       } else if (expandedComponentIndex === application.get("components").size) {
         if (this.props.currentComponent && !this.props.currentComponent.get("name")) {
         } else {
           expandedComponentIndex = 0;
-          // selectedListItemKey = this.generateComponentKey(0);
+          selectedListItemKey = this.generateComponentKey(0);
         }
       }
     }
@@ -329,7 +329,7 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
       return (
         <React.Fragment key={index}>
           <ListItem
-            selected={expandedComponentIndex === index}
+            selected={selectedListItemKey === this.generateComponentKey(index)}
             className={classes.listItem}
             classes={{
               selected: classes.listItemSeleted
@@ -339,7 +339,10 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
               this.handleClickComponent(component, index);
             }}>
             <ListItemIcon>
-              <FiberManualRecordIcon style={{ fontSize: 15 }} htmlColor={grey[400]} />
+              <FiberManualRecordIcon
+                style={{ fontSize: 15 }}
+                htmlColor={selectedListItemKey === this.generateComponentKey(index) ? primaryColor : grey[400]}
+              />
             </ListItemIcon>
             <ListItemText primary={component.get("name") || `Please type component name`} />
             {/* {expandedComponentIndex === index ? <ExpandLess /> : <ExpandMore />} */}
