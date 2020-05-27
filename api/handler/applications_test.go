@@ -2,10 +2,8 @@ package handler
 
 import (
 	"github.com/kapp-staging/kapp/api/resources"
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 	"net/http"
-	"strings"
 	"testing"
 )
 
@@ -62,11 +60,6 @@ func (suite *ApplicationsHandlerTestSuite) TestCreateEmptyApplication() {
 
 	suite.NotNil(res.Application)
 	suite.Equal("test", res.Application.Name)
-	suite.Equal(2, len(res.Application.SharedEnvs))
-
-	// empty type should be static
-	suite.Equal(v1alpha1.EnvVarTypeStatic, res.Application.SharedEnvs[0].Type)
-	suite.Equal(v1alpha1.EnvVarTypeExternal, res.Application.SharedEnvs[1].Type)
 }
 
 func (suite *ApplicationsHandlerTestSuite) TestUpdateApplication() {
@@ -88,8 +81,6 @@ func (suite *ApplicationsHandlerTestSuite) TestUpdateApplication() {
 
 	suite.NotNil(res.Application)
 	suite.Equal("test2", res.Application.Name)
-	suite.Equal(2, len(res.Application.SharedEnvs))
-	suite.Equal("value1", res.Application.SharedEnvs[0].Value)
 
 	// edit
 	body = `{
@@ -104,8 +95,6 @@ func (suite *ApplicationsHandlerTestSuite) TestUpdateApplication() {
 	rec.BodyAsJSON(&res)
 	suite.NotNil(res.Application)
 	suite.Equal("test2", res.Application.Name)
-	suite.Equal(1, len(res.Application.SharedEnvs))
-	suite.Equal("value1-new", res.Application.SharedEnvs[0].Value)
 }
 
 func (suite *ApplicationsHandlerTestSuite) TestDeleteApplication() {
@@ -128,8 +117,6 @@ func (suite *ApplicationsHandlerTestSuite) TestDeleteApplication() {
 
 	suite.NotNil(res.Application)
 	suite.Equal("test3", res.Application.Name)
-	suite.Equal(2, len(res.Application.SharedEnvs))
-	suite.Equal("value1", res.Application.SharedEnvs[0].Value)
 
 	// delete
 	rec = suite.NewRequest(http.MethodDelete, "/v1alpha1/applications/test3", body)
@@ -171,7 +158,6 @@ func (suite *ApplicationsHandlerTestSuite) TestUpdateApplicationPlugins() {
 	rec = suite.NewRequest(http.MethodPut, "/v1alpha1/applications/test-update-plugins", body)
 	rec.BodyAsJSON(&res)
 	suite.NotNil(res.Application)
-	suite.Len(res.Application.Plugins, 1)
 
 	// add second plugin
 	body = `{
@@ -195,8 +181,6 @@ func (suite *ApplicationsHandlerTestSuite) TestUpdateApplicationPlugins() {
 	rec = suite.NewRequest(http.MethodPut, "/v1alpha1/applications/test-update-plugins", body)
 	rec.BodyAsJSON(&res)
 	suite.NotNil(res.Application)
-	suite.Len(res.Application.Plugins, 2)
-	suite.True(strings.Contains(string(res.Application.Plugins[1].Raw), "a"))
 
 	// update second plugin
 	body = `{
@@ -220,8 +204,6 @@ func (suite *ApplicationsHandlerTestSuite) TestUpdateApplicationPlugins() {
 	rec = suite.NewRequest(http.MethodPut, "/v1alpha1/applications/test-update-plugins", body)
 	rec.BodyAsJSON(&res)
 	suite.NotNil(res.Application)
-	suite.Len(res.Application.Plugins, 2)
-	suite.True(strings.Contains(string(res.Application.Plugins[1].Raw), "b"))
 
 	// delete plugin
 	body = `{
@@ -242,8 +224,6 @@ func (suite *ApplicationsHandlerTestSuite) TestUpdateApplicationPlugins() {
 	rec = suite.NewRequest(http.MethodPut, "/v1alpha1/applications/test-update-plugins", body)
 	rec.BodyAsJSON(&res)
 	suite.NotNil(res.Application)
-	suite.Len(res.Application.Plugins, 1)
-	suite.True(strings.Contains(string(res.Application.Plugins[0].Raw), "b"))
 }
 
 func TestApplicationsHandlerTestSuite(t *testing.T) {
