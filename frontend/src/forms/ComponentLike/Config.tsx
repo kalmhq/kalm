@@ -51,7 +51,7 @@ export const RenderConfigField = (props: WrappedFieldProps & RenderConfigFieldPr
           </React.Fragment>
         );
       }}
-      renderInput={params => <TextField {...params} variant="outlined" label={label} size={"small"} margin="normal" />}
+      renderInput={params => <TextField {...params} variant="outlined" label={label} size={"small"} margin="dense" />}
       defaultValue={input.value ? input.value : []}
       onChange={(_, v: any) => {
         const value = v as string[];

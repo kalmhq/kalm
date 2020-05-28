@@ -1,4 +1,15 @@
-import { Box, Grid, List as MList, ListItem, ListItemText, MenuItem, Tooltip } from "@material-ui/core";
+import {
+  Box,
+  Grid,
+  List as MList,
+  ListItem,
+  ListItemText,
+  MenuItem,
+  Tooltip,
+  Paper,
+  Tabs,
+  Tab
+} from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
@@ -49,13 +60,8 @@ const styles = (theme: Theme) =>
       // backgroundColor: theme.palette.background.paper
     },
     paper: {
-      padding: theme.spacing(3),
-      marginBottom: theme.spacing(5)
-    },
-    sectionHeader: {
-      fontSize: 24,
-      fontWeight: 400,
-      marginBottom: 16
+      padding: theme.spacing(2),
+      marginBottom: theme.spacing(2)
     },
     formSection: {
       // padding: "0 20px"
@@ -63,55 +69,6 @@ const styles = (theme: Theme) =>
     },
     displayBlock: {
       display: "block"
-    },
-    summaryError: {
-      color: theme.palette.error.main
-    },
-    summaryBold: {
-      fontWeight: "bold"
-    },
-    summaryIcon: {
-      marginLeft: "8px",
-      position: "absolute"
-    },
-    panelSubmitErrors: {},
-    summaryShow: {
-      display: "block",
-      padding: "8px 4px 0px 0px"
-    },
-    summaryHide: {
-      display: "none"
-    },
-    summaryKey: {
-      fontSize: 14,
-      fontWeight: 400,
-      color: theme.palette.text.secondary
-    },
-    summaryValue: {
-      padding: "0px  10px",
-      fontSize: 14,
-      fontWeight: 200,
-      color: theme.palette.text.secondary
-    },
-    summaryChanged: {
-      fontWeight: 500,
-      color: theme.palette.text.primary
-    },
-    summaryItem: {
-      display: "flex"
-    },
-    summaryValueGroup: {
-      display: "flex",
-      flexDirection: "column"
-    },
-    submitErrorItem: {
-      display: "flex"
-    },
-    submitErrorKey: {
-      fontWeight: "bold"
-    },
-    submitErrorValueGroup: {
-      marginLeft: "6px"
     },
     displayNone: {
       display: "none"
@@ -128,7 +85,7 @@ const styles = (theme: Theme) =>
       cursor: "pointer",
       position: "absolute",
       right: 10,
-      top: 26
+      top: 18
     },
     helperSelectIcon: {
       color: grey[700],
@@ -141,6 +98,9 @@ const styles = (theme: Theme) =>
       color: grey[700],
       cursor: "pointer",
       marginLeft: "8px"
+    },
+    tabs: {
+      margin: `16px -16px -16px`
     }
   });
 
@@ -160,13 +120,25 @@ export interface Props
     TDispatchProp,
     RawProps {}
 
-interface State {}
+interface State {
+  currentTab: number;
+}
+
+const Resources = "Resources";
+const Health = "Health";
+const Networking = "Networking";
+const NodeScheduling = "Node Scheduling";
+const UpgradePolicy = "Upgrade Policy";
 
 class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
+  private tabs = [Resources, Health, Networking, NodeScheduling, UpgradePolicy];
+
   constructor(props: Props) {
     super(props);
 
-    this.state = {};
+    this.state = {
+      currentTab: 0
+    };
   }
 
   public componentDidMount() {
@@ -181,14 +153,28 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     dispatch(loadConfigsAction());
   }
 
-  private renderSchedule() {
+  private renderReplicasOrSchedule() {
     if (this.props.values.get("workloadType") !== workloadTypeCronjob) {
-      return null;
+      return (
+        <Field
+          component={RenderTextField}
+          name="replicas"
+          margin
+          label="Replicas"
+          helperText=""
+          formValueToEditValue={(value: any) => {
+            return value ? value : 1;
+          }}
+          editValueToFormValue={(value: any) => {
+            return value;
+          }}
+          normalize={NormalizeNumber}
+        />
+      );
     }
 
     return (
       <>
-        <Box mt={3}></Box>
         <Field
           name="schedule"
           component={RenderTextField}
@@ -280,7 +266,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             <MenuItem value={workloadTypeServer}>Server (continuous running)</MenuItem>
             <MenuItem value={workloadTypeCronjob}>Cronjob (periodic running)</MenuItem>
           </Field>
-          {this.renderSchedule()}
+          {this.renderReplicasOrSchedule()}
           <div className={classes.helperField}>
             <Field
               component={RenderTextField}
@@ -766,11 +752,119 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
+  private renderResources() {
+    return null;
+  }
+
+  private renderTabDetails() {
+    switch (this.tabs[this.state.currentTab]) {
+      case Resources: {
+        return this.renderResources();
+      }
+      case Health: {
+        return this.renderResources();
+      }
+      case Networking: {
+        return this.renderResources();
+      }
+      case NodeScheduling: {
+        return this.renderResources();
+      }
+      case UpgradePolicy: {
+        return this.renderResources();
+      }
+    }
+  }
+
+  private renderTabs() {
+    const { classes } = this.props;
+    return (
+      <Tabs
+        className={classes.tabs}
+        value={this.state.currentTab}
+        variant="scrollable"
+        scrollButtons="auto"
+        indicatorColor="primary"
+        textColor="primary"
+        onChange={(event: React.ChangeEvent<{}>, value: number) => {
+          this.setState({ currentTab: value });
+        }}
+        aria-label="component form tabs">
+        {this.tabs.map(tab => {
+          return <Tab label={tab} />;
+        })}
+      </Tabs>
+    );
+  }
+
+  private renderMainPaper() {
+    const { initialValues, classes } = this.props;
+    let isEdit = false;
+    // @ts-ignore
+    if (initialValues && initialValues!.get("name")) {
+      isEdit = true;
+    }
+
+    return (
+      <Paper className={classes.paper}>
+        <Grid container spacing={2}>
+          <Grid item xs={6} sm={6} md={6}>
+            <Field
+              component={RenderTextField}
+              name="name"
+              label="Name"
+              margin
+              validate={[ValidatorRequired, ValidatorName]}
+              disabled={isEdit}
+              helperText={
+                isEdit
+                  ? "Name can't be changed."
+                  : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
+              }
+              placeholder="Please type the component name"
+            />
+          </Grid>
+          <Grid item xs={6} sm={6} md={6}>
+            <Field
+              component={RenderTextField}
+              name="image"
+              label="Image"
+              margin
+              validate={[ValidatorRequired]}
+              helperText='Eg: "nginx:latest", "registry.example.com/group/repo:tag"'
+            />
+          </Grid>
+
+          <Grid item xs={6} sm={6} md={6}>
+            <Field
+              name="workloadType"
+              component={RenderSelectField}
+              label="Workload Type"
+              validate={[ValidatorRequired]}>
+              <MenuItem value={workloadTypeServer}>Server (continuous running)</MenuItem>
+              <MenuItem value={workloadTypeCronjob}>Cronjob (periodic running)</MenuItem>
+            </Field>
+          </Grid>
+          <Grid item xs={6} sm={6} md={6}>
+            {this.renderReplicasOrSchedule()}
+          </Grid>
+        </Grid>
+
+        {this.renderTabs()}
+      </Paper>
+    );
+  }
+
   public render() {
     const { handleSubmit, classes, currentTab } = this.props;
 
     return (
       <form onSubmit={handleSubmit} className={classes.root}>
+        {this.renderMainPaper()}
+
+        {this.renderTabDetails()}
+
+        {/* TODO remove following */}
         <div className={`${classes.formSection} ${currentTab === "basic" ? "" : ""}`}>{this.renderBasic()}</div>
         <div className={`${classes.formSection} ${currentTab === "basic" ? "" : ""}`}>{this.renderEnvs()}</div>
         <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : ""}`} style={{ margin: "0 0 16px" }}>

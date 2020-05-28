@@ -50,7 +50,7 @@ export class FieldArrayWrapper extends React.PureComponent<Props> {
                 );
               })}
 
-              <Grid item xs style={{ paddingTop: 22 }}>
+              <Grid item xs>
                 <IconButtonWithTooltip
                   tooltipPlacement="top"
                   tooltipTitle="Delete"

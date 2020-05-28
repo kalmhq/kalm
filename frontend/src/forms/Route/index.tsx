@@ -262,7 +262,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
             label="Hosts"
             component={KFreeSoloAutoCompleteMultiValues}
             name="hosts"
-            margin="normal"
+            margin="dense"
             validate={[ValidatorRequired, KValidatorHosts]}
             placeholder="Type a host"
             options={domains}
@@ -271,7 +271,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
             label="Paths"
             component={KFreeSoloAutoCompleteMultiValues}
             name="paths"
-            margin="normal"
+            margin="dense"
             validate={[ValidatorRequired, KValidatorPaths]}
             placeholder="Type a path"
             helperText='Allow to configure multiple paths. Each path must begin with "\".'

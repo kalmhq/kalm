@@ -142,7 +142,7 @@ class ConfigUploadFormRaw extends React.PureComponent<Props & InjectedFormProps<
     return (
       <div className={classes.root}>
         <form onSubmit={handleSubmit(values => this.handleSubmit(values))}>
-          <FormControl margin="normal" className={classes.cascaderWrapper}>
+          <FormControl margin="dense" className={classes.cascaderWrapper}>
             <AncestorIds />
             <FormHelperText className="MuiFormHelperText-contained MuiFormHelperText-marginDense">
               Select a folder to upload configs

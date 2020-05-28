@@ -168,7 +168,7 @@ export const renderDisk = ({
     helperText={(touched && error) || helperText}
     placeholder={placeholder}
     fullWidth
-    margin="normal"
+    margin="dense"
     variant="filled"
     {...input}
     {...custom}

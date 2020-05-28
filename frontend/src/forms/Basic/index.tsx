@@ -54,7 +54,7 @@ export const RenderTextField = ({
       placeholder={placeholder}
       fullWidth
       size="small"
-      margin="normal"
+      margin="dense"
       variant="outlined"
       onChange={(event: any) => {
         editValueToFormValue
@@ -164,7 +164,7 @@ export const RenderAutoCompleteFreeSolo = (props: WrappedFieldProps & AutoComple
         <TextField
           {...params}
           label={label}
-          margin="normal"
+          margin="dense"
           variant="outlined"
           fullWidth
           size="small"

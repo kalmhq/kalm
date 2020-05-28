@@ -104,7 +104,7 @@ export const ReduxFormSelectField = ({
       error={touched && error}
       variant="outlined"
       size="small"
-      margin="normal">
+      margin="dense">
       <InputLabel ref={inputLabel} htmlFor={id} id={labelId}>
         {label}
       </InputLabel>
@@ -169,7 +169,7 @@ export const ReduxFormMutipleSelectField = ({
       error={touched && error}
       variant="outlined"
       size="small"
-      margin="normal">
+      margin="dense">
       <InputLabel ref={inputLabel} htmlFor={id} id={labelId}>
         {label}
       </InputLabel>

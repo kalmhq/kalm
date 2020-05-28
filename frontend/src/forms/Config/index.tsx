@@ -101,7 +101,7 @@ const ConfigFormRaw = (props: Props & InjectedFormProps<ConfigNode, Props>) => {
     <div className={classes.root}>
       <form onSubmit={handleSubmit}>
         <div className={classes.pathAndName}>
-          <FormControl className={classes.pathWrapper} margin="normal">
+          <FormControl className={classes.pathWrapper} margin="dense">
             <AncestorIds />
             <FormHelperText className="MuiFormHelperText-contained MuiFormHelperText-marginDense">
               Select a folder to add config
@@ -124,7 +124,7 @@ const ConfigFormRaw = (props: Props & InjectedFormProps<ConfigNode, Props>) => {
         {/* {formType === "new" && <CustomRadioGroup name="type" label="Type" options={["file", "folder"]} />} */}
 
         {configType === "file" && (
-          <FormControl margin="normal" className={classes.editorWarpper}>
+          <FormControl margin="dense" className={classes.editorWarpper}>
             <CustomEditor />
           </FormControl>
         )}

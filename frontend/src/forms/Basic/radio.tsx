@@ -21,7 +21,7 @@ export const KRadioGroupRender = ({ input, meta, title, options, formControlProp
   const { error } = meta;
 
   return (
-    <FormControl component="fieldset" fullWidth margin="normal" error={error}>
+    <FormControl component="fieldset" fullWidth margin="dense" error={error}>
       {title ? <FormLabel component="legend">{title}</FormLabel> : null}
       <RadioGroup aria-label="gender" name="gender1" value={input.value} onChange={input.onChange}>
         {options.map(option => (
@@ -40,7 +40,7 @@ interface Props {
 
 export const CustomRadioGroup = (props: BaseFieldProps & Props) => {
   return (
-    <FormControl component="fieldset" margin="normal">
+    <FormControl component="fieldset" margin="dense">
       {/* <FormLabel component="legend" style={{ marginBottom: "8px" }}>
         {props.label}
       </FormLabel> */}

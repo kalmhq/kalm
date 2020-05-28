@@ -149,7 +149,7 @@ const ReduxFormMultiTagsFreeSoloAutoCompleteRaw = (props: ReduxFormMultiTagsFree
         return (
           <TextField
             {...params}
-            margin="normal"
+            margin="dense"
             variant="outlined"
             error={touched && invalid}
             label={capitalize(input.name)}
@@ -250,7 +250,7 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
         return (
           <TextField
             {...params}
-            margin="normal"
+            margin="dense"
             variant="outlined"
             error={touched && invalid}
             label={label}
