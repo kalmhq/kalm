@@ -18,6 +18,18 @@ export const DELETE_ROUTE_PENDING = "DELETE_ROUTE_PENDING";
 export const DELETE_ROUTE_FULFILLED = "DELETE_ROUTE_FULFILLED";
 export const DELETE_ROUTE_FAILED = "DELETE_ROUTE_FAILED";
 
+export const AllHttpMethods = Immutable.List<string>([
+  "GET",
+  "POST",
+  "PUT",
+  "PATCH",
+  "DELETE",
+  "HEAD",
+  "OPTIONS",
+  "CONNECT",
+  "TRACE"
+]);
+
 export const newEmptyRouteForm = (): HttpRouteForm => {
   return Immutable.fromJS({
     namespace: "default",
@@ -41,7 +53,7 @@ export const newEmptyRouteForm = (): HttpRouteForm => {
 
 export type HttpRouteCondition = ImmutableMap<{
   type: string;
-  key: string;
+  name: string;
   operator: string;
   value: string;
 }>;
@@ -87,16 +99,16 @@ interface HttpRouteContent {
   paths: Immutable.List<string>;
   methods: Immutable.List<string>;
   schemes: Immutable.List<string>;
-  stripPath: boolean;
-  conditions: Immutable.List<HttpRouteCondition>;
+  stripPath?: boolean;
+  conditions?: Immutable.List<HttpRouteCondition>;
   destinations: Immutable.List<HttpRouteDestination>;
-  httpRedirectToHttps: boolean;
-  timeout: number;
-  retries: HttpRouteRetry;
-  mirror: HttpRouteMirror;
-  fault: HttpRouteFault;
-  delay: HttpRouteDelay;
-  cors: HttpRouteCORS;
+  httpRedirectToHttps?: boolean;
+  timeout?: number;
+  retries?: HttpRouteRetry;
+  mirror?: HttpRouteMirror;
+  fault?: HttpRouteFault;
+  delay?: HttpRouteDelay;
+  cors?: HttpRouteCORS;
 }
 
 export type HttpRoute = ImmutableMap<HttpRouteContent>;

@@ -79,7 +79,7 @@ type HttpRouteCORS struct {
 	MaxAgeSeconds    int                  `json:"maxAgeSeconds"`
 }
 
-// +kubebuilder:validation:Enum=GET;POST;PUT;PATCH;DELETE;OPTIONS;HEAD
+// +kubebuilder:validation:Enum=GET;HEAD;POST;PUT;PATCH;DELETE;OPTIONS;TRACE;CONNECT
 type HttpRouteMethod string
 
 // +kubebuilder:validation:Enum=http;https
@@ -105,9 +105,10 @@ type HttpRouteSpec struct {
 	Conditions []HttpRouteCondition `json:"conditions,omitempty"`
 
 	// +kubebuilder:validation:MinItems=1
-	Destinations        []HttpRouteDestination `json:"destinations"`
-	Certification       HttpRouteCertValue     `json:"certification,omitempty"`
-	HttpRedirectToHttps bool                   `json:"httpRedirectToHttps,omitempty"`
+	Destinations []HttpRouteDestination `json:"destinations"`
+
+	// This field has no effect for now
+	HttpRedirectToHttps bool `json:"httpRedirectToHttps,omitempty"`
 
 	Timeout *int              `json:"timeout,omitempty"`
 	Retries *HttpRouteRetries `json:"retries,omitempty"`

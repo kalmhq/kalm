@@ -45,11 +45,11 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 
 	gv1Alpha1WithAuth := gv1Alpha1.Group("", h.AuthClientMiddleware)
 	gv1Alpha1WithAuth.GET("/applications", h.handleGetApplications)
+	gv1Alpha1WithAuth.POST("/applications", h.handleCreateApplication)
 	gv1Alpha1WithAuth.GET("/applications/:name", h.handleGetApplicationDetails)
 	gv1Alpha1WithAuth.POST("/applications/validate", h.handleValidateApplications)
 	gv1Alpha1WithAuth.PUT("/applications/:name", h.handleUpdateApplication)
 	gv1Alpha1WithAuth.DELETE("/applications/:name", h.handleDeleteApplication)
-	gv1Alpha1WithAuth.POST("/applications", h.handleCreateApplication)
 
 	gv1Alpha1WithAuth.GET("/componentplugins", h.handleListComponentPlugins)
 	gv1Alpha1WithAuth.GET("/applicationplugins", h.handleListApplicationPlugins)
@@ -90,6 +90,11 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gv1Alpha1WithAuth.GET("/serviceaccounts/:name", h.handleGetServiceAccount)
 
 	gv1Alpha1WithAuth.GET("/nodes", h.handleListNodes)
+
+	gv1Alpha1WithAuth.GET("/httproutes/:namespace", h.handleListRoutes)
+	gv1Alpha1WithAuth.POST("/httproutes/:namespace", h.handleCreateRoute)
+	gv1Alpha1WithAuth.PUT("/httproutes/:namespace/:name", h.handleUpdateRoute)
+	gv1Alpha1WithAuth.DELETE("/httproutes/:namespace/:name", h.handleDeleteRoute)
 
 	gv1Alpha1WithAuth.GET("/httpscertissuers", h.handleGetHttpsCertIssuer)
 	gv1Alpha1WithAuth.POST("/httpscertissuers", h.handleCreateHttpsCertIssuer)

@@ -33,7 +33,7 @@ metadata:
 spec:
   httpsCertIssuer: https-cert-issuer-hello
   domains:
-    - '*.kapp.live'
+    - "*.kapp.live"
 ---
 apiVersion: v1
 kind: Namespace
@@ -63,18 +63,29 @@ spec:
       servicePort: 80
 ---
 apiVersion: core.kapp.dev/v1alpha1
-kind: ApplicationPluginBinding
+kind: HttpRoute
 metadata:
-  name: kapp-dashboard-ingress
+  name: v1-only-route
   namespace: kapp-system
 spec:
-  pluginName: kapp-builtin-application-plugin-ingress
-  config:
-    hosts:
-      - dashboard.kapp.live
-    httpsCert: https-cert-wildcard
-    paths:
-      - /
-    stripPath: true
-    destinations:
-      - destination: kapp-dashboard
+  hosts:
+    - dashboard.kapp.live
+  methods:
+    - GET
+    - POST
+    - PUT
+    - PATCH
+    - DELETE
+    - OPTIONS
+    - CONNECT
+    - TRACE
+    - HEAD
+  schemes:
+    - http
+    - https
+  paths:
+    - /
+  destinations:
+    - host: kapp-dashboard
+      weight: 1
+  stripPath: true

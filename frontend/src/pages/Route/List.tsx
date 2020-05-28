@@ -4,15 +4,19 @@ import { deleteRoute, loadRoutes } from "actions/routes";
 import { push } from "connected-react-router";
 import MaterialTable from "material-table";
 import { BasePage } from "pages/BasePage";
+import queryString from "query-string";
 import React from "react";
 import { connect } from "react-redux";
+import { RouteComponentProps } from "react-router";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { HttpRoute } from "types/route";
 import { ApplicationViewDrawer } from "widgets/ApplicationViewDrawer";
+import { SuccessBadge } from "widgets/Badge";
 import { CustomizedButton } from "widgets/Button";
 import { H4 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
+import { Namespaces } from "widgets/Namespaces";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -28,8 +32,11 @@ const styles = (theme: Theme) =>
     }
   });
 
-const mapStateToProps = (state: RootState) => {
+const mapStateToProps = (state: RootState, ownProps: RouteComponentProps) => {
+  const query = queryString.parse(ownProps.location.search);
+  const activeNamespace = state.get("namespaces").get("active");
   return {
+    namespace: (query.namespace as string) || activeNamespace,
     isLoading: state.get("routes").get("isLoading"),
     isFirstLoaded: state.get("routes").get("isFirstLoaded"),
     httpRoutes: state.get("routes").get("httpRoutes")
@@ -51,7 +58,8 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   componentDidMount() {
-    this.props.dispatch(loadRoutes(""));
+    const { dispatch, namespace } = this.props;
+    dispatch(loadRoutes(namespace));
   }
 
   private renderHosts(row: RowData) {
@@ -62,8 +70,45 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     return row.get("paths").join(",");
   }
 
-  private renderConditions(row: RowData) {
-    return row.get("conditions").size + " Conditions";
+  private renderRules(row: RowData) {
+    if (!row.get("conditions")) {
+      return null;
+    }
+
+    return row.get("conditions")!.map(x => {
+      return (
+        <div>
+          {x.get("type")} {x.get("name")} {x.get("operator")} {x.get("value")}{" "}
+        </div>
+      );
+    });
+  }
+
+  private renderMethods(row: RowData) {
+    return row.get("methods").join(",");
+  }
+
+  private renderSupportHttp(row: RowData) {
+    if (row.get("schemes").find(x => x === "http")) {
+      return <SuccessBadge />;
+    }
+  }
+
+  private renderSupportHttps(row: RowData) {
+    if (row.get("schemes").find(x => x === "https")) {
+      return <SuccessBadge />;
+    }
+  }
+
+  private renderTargets(row: RowData) {
+    let sum = 0;
+    row.get("destinations").forEach(x => (sum += x.get("weight")));
+
+    return row.get("destinations").map(x => (
+      <div>
+        {x.get("host")}({Math.floor((x.get("weight") / sum) * 1000 + 0.5) / 10}%)
+      </div>
+    ));
   }
 
   private renderAdvanced(row: RowData) {
@@ -100,10 +145,11 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderActions = (row: RowData) => {
+    const { namespace, dispatch } = this.props;
     return (
       <>
-        <Button onClick={() => this.props.dispatch(push(`/routes/${row.get("name")}/edit`))}>Edit</Button>
-        <Button onClick={() => this.props.dispatch(deleteRoute(row.get("name"), row.get("namespace")))}>Delete</Button>
+        <Button onClick={() => dispatch(push(`/routes/${row.get("name")}/edit?namespace=${namespace}`))}>Edit</Button>
+        <Button onClick={() => dispatch(deleteRoute(row.get("name"), row.get("namespace")))}>Delete</Button>
       </>
     );
   };
@@ -113,6 +159,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     return (
       <BasePage
         leftDrawer={<ApplicationViewDrawer />}
+        secondHeaderLeft={<Namespaces />}
         secondHeaderRight={
           <div className={classes.secondHeaderRight}>
             <H4 className={classes.secondHeaderRightItem}>Routes</H4>
@@ -156,6 +203,25 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
                   sorting: false,
                   render: this.renderHosts
                 },
+
+                {
+                  title: "Http",
+                  field: "http",
+                  sorting: false,
+                  render: this.renderSupportHttp
+                },
+                {
+                  title: "Https",
+                  field: "https",
+                  sorting: false,
+                  render: this.renderSupportHttps
+                },
+                {
+                  title: "Methods",
+                  field: "methods",
+                  sorting: false,
+                  render: this.renderMethods
+                },
                 {
                   title: "Urls",
                   field: "urls",
@@ -163,17 +229,23 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
                   render: this.renderUrls
                 },
                 {
-                  title: "Conditions",
-                  field: "conditions",
+                  title: "Targets",
+                  field: "targets",
                   sorting: false,
-                  render: this.renderConditions
+                  render: this.renderTargets
                 },
                 {
-                  title: "Advanced Settings",
-                  field: "advanced",
+                  title: "Rules",
+                  field: "rules",
                   sorting: false,
-                  render: this.renderAdvanced
+                  render: this.renderRules
                 },
+                // {
+                //   title: "Advanced Settings",
+                //   field: "advanced",
+                //   sorting: false,
+                //   render: this.renderAdvanced
+                // },
                 {
                   title: "Actions",
                   field: "action",

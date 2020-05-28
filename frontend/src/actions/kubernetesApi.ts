@@ -20,6 +20,7 @@ import { ComponentTemplate } from "../types/componentTemplate";
 import { ConfigCreate, ConfigRes } from "../types/config";
 import { RegistryType } from "types/registry";
 import { CertficateList } from "types/certficate";
+import { HttpRoute } from "types/route";
 
 export const K8sApiPrefix = process.env.REACT_APP_K8S_API_PERFIX;
 export const k8sWsPrefix = !K8sApiPrefix
@@ -205,6 +206,33 @@ export const getKappApplicationPlugins = async (): Promise<ApplicationPlugin[]> 
 export const getKappComponentPlugins = async (): Promise<ComponentPlugin[]> => {
   const res = await getAxiosClient().get(K8sApiPrefix + "/v1alpha1/componentplugins");
   return res.data;
+};
+
+// routes
+
+export const getHttpRoutes = async (namespace: string): Promise<Immutable.List<HttpRoute>> => {
+  const res = await getAxiosClient().get(K8sApiPrefix + `/v1alpha1/httproutes/${namespace}`);
+  return Immutable.fromJS(res.data);
+};
+
+// export const getHttpRoute = async (namespace: string, name: string): Promise<HttpRoute> => {
+//   const res = await getAxiosClient().get(K8sApiPrefix + `/v1alpha1/httproutes/${namespace}/${name}`);
+//   return Immutable.fromJS(res.data);
+// };
+
+export const updateHttpRoute = async (namespace: string, name: string, httpRoute: HttpRoute): Promise<HttpRoute> => {
+  const res = await getAxiosClient().put(K8sApiPrefix + `/v1alpha1/httproutes/${namespace}/${name}`, httpRoute);
+  return Immutable.fromJS(res.data);
+};
+
+export const createHttpRoute = async (namespace: string, httpRoute: HttpRoute): Promise<HttpRoute> => {
+  const res = await getAxiosClient().post(K8sApiPrefix + `/v1alpha1/httproutes/${namespace}`, httpRoute);
+  return Immutable.fromJS(res.data);
+};
+
+export const deleteHttpRoute = async (namespace: string, name: string): Promise<boolean> => {
+  const res = await getAxiosClient().delete(K8sApiPrefix + `/v1alpha1/httproutes/${namespace}/${name}`);
+  return res.status === 200;
 };
 
 // dependencies

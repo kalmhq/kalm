@@ -120,9 +120,16 @@ func (r *GatewayReconcilerTask) Run(req ctrl.Request) error {
 			return err
 		}
 	} else {
-		if err := r.Update(r.ctx, gw); err != nil {
-			r.WarningEvent(err, "update gateway error.")
-			return err
+		if len(gw.Spec.Servers) == 0 {
+			if err := r.Delete(r.ctx, gw); err != nil {
+				r.WarningEvent(err, "delete gateway error.")
+				return err
+			}
+		} else {
+			if err := r.Update(r.ctx, gw); err != nil {
+				r.WarningEvent(err, "update gateway error.")
+				return err
+			}
 		}
 	}
 
