@@ -36,8 +36,6 @@ spec:
         spec:
           description: HttpRouteSpec defines the desired state of HttpRoute
           properties:
-            certification:
-              type: string
             conditions:
               items:
                 properties:
@@ -134,17 +132,20 @@ spec:
               minItems: 1
               type: array
             httpRedirectToHttps:
+              description: This field has no effect for now
               type: boolean
             methods:
               items:
                 enum:
                 - GET
+                - HEAD
                 - POST
                 - PUT
                 - PATCH
                 - DELETE
                 - OPTIONS
-                - HEAD
+                - TRACE
+                - CONNECT
                 type: string
               minItems: 1
               type: array
