@@ -26,7 +26,7 @@ import { RegistryListPage } from "pages/Registry/List";
 import { RouteListPage } from "pages/Route/List";
 import { RouteNew } from "pages/Route/New";
 import { RouteEdit } from "pages/Route/Edit";
-import { CertficateListPage } from "pages/Certficate/List";
+import { CertificateListPage } from "pages/Certificate/List";
 
 const RequireAuthorizatedDashboard = RequireAuthorizated(Dashboard);
 
@@ -71,7 +71,7 @@ export const KappRoutes = (
           <Route exact path="/routes/new" component={RequireNamespaceReader(RouteNew)}></Route>
           <Route exact path="/routes/:name/edit" component={RequireNamespaceReader(RouteEdit)}></Route>
           <Route exact path="/ui-components" component={UIComponentsPage}></Route>
-          <Route exact path="/certficates" component={RequireNamespaceReader(CertficateListPage)}></Route>
+          <Route exact path="/certificates" component={RequireNamespaceReader(CertificateListPage)}></Route>
           <Route component={NoMatch} />
         </Switch>
       </RequireAuthorizatedDashboard>

@@ -9,7 +9,7 @@ import { ApplicationViewDrawer } from "widgets/ApplicationViewDrawer";
 import { CustomizedButton } from "widgets/Button";
 import { H4 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
-import { loadCertficates } from "actions/certficate";
+import { loadCertificates } from "actions/certificate";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -27,9 +27,9 @@ const styles = (theme: Theme) =>
 
 const mapStateToProps = (state: RootState) => {
   return {
-    isLoading: state.get("certficates").get("isLoading"),
-    isFirstLoaded: state.get("certficates").get("isFirstLoaded"),
-    certficates: state.get("certficates").get("list")
+    isLoading: state.get("certificates").get("isLoading"),
+    isFirstLoaded: state.get("certificates").get("isFirstLoaded"),
+    certificates: state.get("certificates").get("certificates")
   };
 };
 
@@ -37,14 +37,14 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
 
 interface State {}
 
-class CertficateListPageRaw extends React.PureComponent<Props, State> {
+class CertificateListPageRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {};
   }
 
   componentDidMount() {
-    this.props.dispatch(loadCertficates());
+    this.props.dispatch(loadCertificates());
   }
 
   public render() {
@@ -60,7 +60,7 @@ class CertficateListPageRaw extends React.PureComponent<Props, State> {
               size="large"
               className={classes.secondHeaderRightItem}
               onClick={() => {
-                dispatch(push(`/routes/new`));
+                dispatch(push(`/certificate/new`));
               }}>
               Add
             </CustomizedButton>
@@ -72,4 +72,4 @@ class CertficateListPageRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const CertficateListPage = withStyles(styles)(connect(mapStateToProps)(CertficateListPageRaw));
+export const CertificateListPage = withStyles(styles)(connect(mapStateToProps)(CertificateListPageRaw));
