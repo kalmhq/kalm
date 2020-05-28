@@ -49,7 +49,7 @@ func (suite *KappNSControllerSuite) TestUpdateOfNSWillAffectComponentWithin() {
 		return errors.IsNotFound(suite.K8sClient.Get(context.Background(), key, &deployment))
 	}, "deployment should be delete when ns is not active")
 
-	<-time.After(1* time.Second)
+	<-time.After(1 * time.Second)
 
 	// make ns active again
 	suite.reloadObject(types.NamespacedName{Name: ns.Name}, &ns)
