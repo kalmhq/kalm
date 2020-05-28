@@ -6,7 +6,8 @@ import {
   LOAD_CERTIFICATES_PENDING,
   CertificateList,
   SET_IS_SUBMITTING_CERTIFICATE,
-  LOAD_CERTIFICATES_FULFILLED
+  LOAD_CERTIFICATES_FULFILLED,
+  DELETE_CERTIFICATE
 } from "types/certificate";
 
 export type State = ImmutableMap<{
@@ -20,15 +21,7 @@ const initialState: State = Immutable.Map({
   isLoading: false,
   isFirstLoaded: false,
   isSubmittingCreateCertificate: false,
-  certificates: Immutable.List([
-    {
-      name: "ddex-1",
-      isSelfManaged: true,
-      selfManagedCertContent: "crt",
-      selfManagedCertPrivateKey: "pk",
-      domains: ["ddex.io"]
-    }
-  ])
+  certificates: Immutable.List()
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {
@@ -40,7 +33,19 @@ const reducer = (state: State = initialState, action: Actions): State => {
       return state.set("isLoading", false);
     }
     case LOAD_CERTIFICATES_FULFILLED: {
-      return state.set("certificates", action.payload.certificates);
+      state = state.set("isFirstLoaded", true);
+      state = state.set("certificates", action.payload.certificates);
+      break;
+    }
+    case DELETE_CERTIFICATE: {
+      const certificates = state.get("certificates");
+      const index = certificates.findIndex(cert => cert.get("name") === action.payload.name);
+
+      if (index >= 0) {
+        state = state.deleteIn(["certificates", index]);
+      }
+
+      break;
     }
     case SET_IS_SUBMITTING_CERTIFICATE: {
       return state.set("isSubmittingCreateCertificate", action.payload.isSubmittingCertificate);

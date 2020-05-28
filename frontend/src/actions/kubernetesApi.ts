@@ -334,3 +334,7 @@ export const createCertificate = async (certificate: Certificate): Promise<Appli
 
   return Immutable.fromJS(res.data);
 };
+
+export const deleteCertificate = async (name: string): Promise<void> => {
+  await getAxiosClient().delete(K8sApiPrefix + `/v1alpha1/httpscerts/${name}`);
+};

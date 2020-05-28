@@ -4,14 +4,35 @@ import {
   LOAD_CERTIFICATES_FAILED,
   Certificate,
   SET_IS_SUBMITTING_CERTIFICATE,
-  SetIsSubmittingCertificate
+  SetIsSubmittingCertificate,
+  DELETE_CERTIFICATE
 } from "types/certificate";
 import { StatusFailure, ThunkResult } from "../types";
 import { setErrorNotificationAction } from "./notification";
-import { getCertificateList, createCertificate } from "./kubernetesApi";
+import { getCertificateList, createCertificate, deleteCertificate } from "./kubernetesApi";
 import { resErrorsToSubmitErrors } from "utils";
 import { SubmissionError } from "redux-form";
 import Immutable from "immutable";
+
+export const deleteCertificateAction = (name: string): ThunkResult<Promise<void>> => {
+  return async dispatch => {
+    try {
+      await deleteCertificate(name);
+    } catch (e) {
+      if (e.response && e.response.data.status === StatusFailure) {
+        dispatch(setErrorNotificationAction(e.response.data.message));
+      } else {
+        dispatch(setErrorNotificationAction());
+      }
+      return;
+    }
+
+    dispatch({
+      type: DELETE_CERTIFICATE,
+      payload: { name }
+    });
+  };
+};
 
 export const loadCertificates = (): ThunkResult<Promise<void>> => {
   return async dispatch => {
