@@ -23,7 +23,7 @@ interface Props {
   nodeLabels: Immutable.List<string>;
 }
 
-const renderSelectLabels = ({ input, nodeLabels }: FilledTextFieldProps & WrappedFieldProps & Props) => {
+const RenderSelectLabels = ({ input, nodeLabels }: FilledTextFieldProps & WrappedFieldProps & Props) => {
   const defaultValue: string[] = [];
   const inputValue = input.value as NodeSelectorLabels;
 
@@ -75,10 +75,10 @@ const renderSelectLabels = ({ input, nodeLabels }: FilledTextFieldProps & Wrappe
 };
 
 export const CustomLabels = (props: Props) => {
-  return <Field name="nodeSelectorLabels" component={renderSelectLabels} nodeLabels={props.nodeLabels} />;
+  return <Field name="nodeSelectorLabels" component={RenderSelectLabels} nodeLabels={props.nodeLabels} />;
 };
 
-const renderAffinityType = (props: FilledTextFieldProps & WrappedFieldProps) => {
+const RenderAffinityType = (props: FilledTextFieldProps & WrappedFieldProps) => {
   const inputLabel = "Assign Node Policy";
   const { input } = props;
   return (
@@ -90,5 +90,5 @@ const renderAffinityType = (props: FilledTextFieldProps & WrappedFieldProps) => 
 };
 
 export const AffinityType = (props: any) => {
-  return <Field name="podAffinityType" component={renderAffinityType} {...props} />;
+  return <Field name="podAffinityType" component={RenderAffinityType} {...props} />;
 };

@@ -1,8 +1,8 @@
-import { Box, Button, Collapse, FormControl, FormLabel, Icon, Link, Typography } from "@material-ui/core";
+import { Box, Button, Collapse, Icon, Link, Typography } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { Alert, AlertTitle } from "@material-ui/lab";
 import { KFreeSoloAutoCompleteMultiValues } from "forms/Basic/autoComplete";
-import { KBoolCheckboxRender, KCheckboxGroupRender } from "forms/Basic/checkbox";
+import { KCheckboxGroupRender } from "forms/Basic/checkbox";
 import { KRadioGroupRender } from "forms/Basic/radio";
 import {
   KValidatorHosts,

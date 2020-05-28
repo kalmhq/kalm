@@ -38,6 +38,7 @@ import { AffinityType, CustomLabels } from "./NodeSelector";
 import { Plugins } from "./Plugins";
 import { Ports } from "./Ports";
 import { Volumes } from "./Volumes";
+import { LivenessProbe, ReadinessProbe } from "./Probes";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
@@ -200,121 +201,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderBasic() {
-    const { initialValues, classes } = this.props;
-    let isEdit = false;
-    // @ts-ignore
-    if (initialValues && initialValues!.get("name")) {
-      isEdit = true;
-    }
-    return (
-      <Grid container spacing={1}>
-        <Grid item xs={12} sm={12} md={12}>
-          <H5>Basic</H5>
-        </Grid>
-        <Grid item xs={12} sm={12} md={12}>
-          <Field
-            component={RenderTextField}
-            name="name"
-            label="Name"
-            margin
-            validate={[ValidatorRequired, ValidatorName]}
-            disabled={isEdit}
-            helperText={
-              isEdit
-                ? "Name can't be changed."
-                : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
-            }
-            placeholder="Please type the component name"
-          />
-          <Field
-            component={RenderTextField}
-            name="image"
-            label="Image"
-            margin
-            validate={[ValidatorRequired]}
-            helperText='Eg: "nginx:latest", "registry.example.com/group/repo:tag"'
-          />
-
-          <Field
-            component={RenderTextField}
-            name="command"
-            margin
-            label="Command (Optional)"
-            helperText='Eg: "/bin/app", "rails server".'
-            formValueToEditValue={(value: Immutable.List<string>) => {
-              return value && value.toArray().join(" ") ? value.toArray().join(" ") : "";
-            }}
-            editValueToFormValue={(value: any) => {
-              return value ? Immutable.List([value]) : Immutable.List([]);
-            }}
-          />
-          <Field
-            component={RenderTextField}
-            name="args"
-            margin
-            label="Arguments (Optional)"
-            helperText='Eg: "--port=80"'
-            formValueToEditValue={(value: Immutable.List<string>) => {
-              return value && value.toArray().join(" ") ? value.toArray().join(" ") : "";
-            }}
-            editValueToFormValue={(value: string) => {
-              return value ? Immutable.List(value.split(" ")) : Immutable.List([]);
-            }}
-          />
-          <Field name="workloadType" component={RenderSelectField} label="Workload Type" validate={[ValidatorRequired]}>
-            <MenuItem value={workloadTypeServer}>Server (continuous running)</MenuItem>
-            <MenuItem value={workloadTypeCronjob}>Cronjob (periodic running)</MenuItem>
-          </Field>
-          {this.renderReplicasOrSchedule()}
-          <div className={classes.helperField}>
-            <Field
-              component={RenderTextField}
-              name="cpu"
-              label="CPU"
-              margin
-              validate={[ValidatorCPU]}
-              // normalize={NormalizeCPU}
-              placeholder="Please type the component name"
-            />
-            <Tooltip title={this.getCPUHelper()}>
-              <HelpIcon fontSize="small" className={classes.helperFieldIcon} />
-            </Tooltip>
-          </div>
-          <div className={classes.helperField}>
-            <Field
-              component={RenderTextField}
-              name="memory"
-              label="Memory"
-              margin
-              validate={[ValidatorMemory]}
-              // normalize={NormalizeMemory}
-              placeholder="Please type the component name"
-            />
-            <Tooltip title={this.getMemoryHelper()}>
-              <HelpIcon fontSize="small" className={classes.helperFieldIcon} />
-            </Tooltip>
-          </div>
-          <Field
-            component={RenderTextField}
-            name="replicas"
-            margin
-            label="replicas"
-            helperText=""
-            formValueToEditValue={(value: any) => {
-              return value ? value : 1;
-            }}
-            editValueToFormValue={(value: any) => {
-              return value;
-            }}
-            normalize={NormalizeNumber}
-          />
-        </Grid>
-        <Grid item xs={12} sm={12} md={12}></Grid>
-      </Grid>
-    );
-  }
-
   private getCPUHelper() {
     return (
       <HelperContainer>
@@ -392,15 +278,17 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
     return (
       <>
-        <div className={classes.sectionTitle}>
-          <H5>Environment variables</H5>
-          <Tooltip title={helperContainer}>
-            <HelpIcon fontSize="small" className={classes.helperTextIcon} />
-          </Tooltip>
-        </div>
-
-        {/* <CustomEnvs /> */}
-        <Envs sharedEnv={sharedEnv} />
+        <Grid item xs={12} sm={12} md={12}>
+          <div className={classes.sectionTitle}>
+            <H5>Environment variables</H5>
+            <Tooltip title={helperContainer}>
+              <HelpIcon fontSize="small" className={classes.helperTextIcon} />
+            </Tooltip>
+          </div>
+        </Grid>{" "}
+        <Grid item xs={12} sm={12} md={12}>
+          <Envs sharedEnv={sharedEnv} />
+        </Grid>
       </>
     );
   }
@@ -419,14 +307,17 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
     return (
       <>
-        <div className={classes.sectionTitle}>
-          <H5>Ports</H5>
-          {/* <Tooltip title={helperContainer}>
+        <Grid item xs={12} sm={12} md={12}>
+          <div className={classes.sectionTitle}>
+            <H5>Ports</H5>
+            {/* <Tooltip title={helperContainer}>
             <HelpIcon fontSize="small" className={classes.helperTextIcon} />
           </Tooltip> */}
-        </div>
-
-        <Ports />
+          </div>
+        </Grid>
+        <Grid item xs={12} sm={12} md={12}>
+          <Ports />
+        </Grid>
       </>
     );
   }
@@ -478,14 +369,17 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
     return (
       <>
-        <div className={classes.sectionTitle}>
-          <H5>Volumes</H5>
-          <Tooltip title={helperContainer}>
-            <HelpIcon fontSize="small" className={classes.helperTextIcon} />
-          </Tooltip>
-        </div>
-
-        <Volumes />
+        <Grid item xs={12} sm={12} md={12}>
+          <div className={classes.sectionTitle}>
+            <H5>Volumes</H5>
+            <Tooltip title={helperContainer}>
+              <HelpIcon fontSize="small" className={classes.helperTextIcon} />
+            </Tooltip>
+          </div>
+        </Grid>
+        <Grid item xs={12} sm={12} md={12}>
+          <Volumes />
+        </Grid>
       </>
     );
   }
@@ -501,14 +395,17 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
     return (
       <>
-        <div className={classes.sectionTitle}>
-          <H5>Configs</H5>
-          {/* <Tooltip title={helperContainer}>
+        <Grid item xs={12} sm={12} md={12}>
+          <div className={classes.sectionTitle}>
+            <H5>Configs</H5>
+            {/* <Tooltip title={helperContainer}>
             <HelpIcon fontSize="small" className={classes.helperTextIcon} />
           </Tooltip> */}
-        </div>
-
-        <Configs />
+          </div>
+        </Grid>{" "}
+        <Grid item xs={12} sm={12} md={12}>
+          <Configs />
+        </Grid>
       </>
     );
   }
@@ -640,37 +537,15 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderAdvanced() {
-    const { classes, nodeLabels } = this.props;
+  private renderDnsPolicy() {
+    const { classes } = this.props;
 
     return (
-      <Grid container spacing={1}>
+      <>
         <Grid item xs={12} sm={12} md={12}>
-          <CustomLabels nodeLabels={nodeLabels} />
-
-          <AffinityType />
-
-          {/* <div className={classes.sectionTitle}>
-            <H5>Advanced</H5>
-            <Tooltip title={helperContainer}>
-              <HelpIcon fontSize="small" className={classes.helperTextIcon} />
-            </Tooltip>
-          </div> */}
-
-          <div className={classes.helperField}>
-            <Field
-              name="restartStrategy"
-              component={RenderSelectField}
-              // validate={ValidatorRequired}
-              label="Restart Strategy">
-              <MenuItem value="RollingUpdate">Rolling Update</MenuItem>
-              <MenuItem value="Recreate">Recreate</MenuItem>
-            </Field>
-            <Tooltip title={this.getRestartStrategyHelper()}>
-              <HelpIcon fontSize="small" className={classes.helperSelectIcon} />
-            </Tooltip>
-          </div>
-
+          <H5>DNS Policy</H5>
+        </Grid>
+        <Grid item xs={6} sm={6} md={6}>
           <div className={classes.helperField}>
             <Field
               name="dnsPolicy"
@@ -687,22 +562,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               <HelpIcon fontSize="small" className={classes.helperSelectIcon} />
             </Tooltip>
           </div>
-
-          <div className={classes.helperField}>
-            <Field
-              component={RenderTextField}
-              name="terminationGracePeriodSeconds"
-              label="Termination Grace Period Seconds"
-              // validate={ValidatorRequired}
-              normalize={NormalizeNumber}
-              margin
-            />
-            <Tooltip title={this.getTerminationGracePeriodSecondsHelper()}>
-              <HelpIcon fontSize="small" className={classes.helperFieldIcon} />
-            </Tooltip>
-          </div>
         </Grid>
-      </Grid>
+      </>
     );
   }
 
@@ -752,28 +613,212 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
+  private renderLaunchItems() {
+    return (
+      <>
+        <Grid item xs={12} sm={12} md={12}>
+          <H5>Launch Items</H5>
+        </Grid>
+
+        <Grid item xs={6} sm={6} md={6}>
+          <Field
+            component={RenderTextField}
+            name="command"
+            margin
+            label="Command (Optional)"
+            helperText='Eg: "/bin/app", "rails server".'
+            formValueToEditValue={(value: Immutable.List<string>) => {
+              return value && value.toArray().join(" ") ? value.toArray().join(" ") : "";
+            }}
+            editValueToFormValue={(value: any) => {
+              return value ? Immutable.List([value]) : Immutable.List([]);
+            }}
+          />
+        </Grid>
+
+        <Grid item xs={6} sm={6} md={6}>
+          <Field
+            component={RenderTextField}
+            name="args"
+            margin
+            label="Arguments (Optional)"
+            helperText='Eg: "--port=80"'
+            formValueToEditValue={(value: Immutable.List<string>) => {
+              return value && value.toArray().join(" ") ? value.toArray().join(" ") : "";
+            }}
+            editValueToFormValue={(value: string) => {
+              return value ? Immutable.List(value.split(" ")) : Immutable.List([]);
+            }}
+          />
+        </Grid>
+      </>
+    );
+  }
+
   private renderResources() {
-    return null;
+    const { classes } = this.props;
+    return (
+      <>
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={12} md={12}>
+            <H5>Resources</H5>
+          </Grid>
+
+          <Grid item xs={6} sm={6} md={6}>
+            <div className={classes.helperField}>
+              <Field
+                component={RenderTextField}
+                name="cpu"
+                label="CPU"
+                margin
+                validate={[ValidatorCPU]}
+                // normalize={NormalizeCPU}
+                placeholder="Please type the component name"
+              />
+              <Tooltip title={this.getCPUHelper()}>
+                <HelpIcon fontSize="small" className={classes.helperFieldIcon} />
+              </Tooltip>
+            </div>
+          </Grid>
+
+          <Grid item xs={6} sm={6} md={6}>
+            <div className={classes.helperField}>
+              <Field
+                component={RenderTextField}
+                name="memory"
+                label="Memory"
+                margin
+                validate={[ValidatorMemory]}
+                // normalize={NormalizeMemory}
+                placeholder="Please type the component name"
+              />
+              <Tooltip title={this.getMemoryHelper()}>
+                <HelpIcon fontSize="small" className={classes.helperFieldIcon} />
+              </Tooltip>
+            </div>
+          </Grid>
+
+          {this.renderLaunchItems()}
+          {this.renderEnvs()}
+          {this.renderVolumes()}
+          {this.renderConfigs()}
+        </Grid>
+      </>
+    );
+  }
+
+  private renderHealth() {
+    return (
+      <Grid container spacing={2}>
+        {/* <Grid item xs={12} sm={12} md={12}>
+          <H5>Health</H5>
+        </Grid> */}
+        <Grid item xs={6} sm={6} md={6}>
+          <LivenessProbe />
+        </Grid>
+        <Grid item xs={6} sm={6} md={6}>
+          <ReadinessProbe />
+        </Grid>
+      </Grid>
+    );
+  }
+
+  private renderNetworking() {
+    return (
+      <Grid container spacing={2}>
+        {/* <Grid item xs={12} sm={12} md={12}>
+          <H5>Networking</H5>
+        </Grid> */}
+        {this.renderPorts()}
+        {this.renderDnsPolicy()}
+      </Grid>
+    );
+  }
+
+  private renderNodeScheduling() {
+    const { nodeLabels } = this.props;
+    return (
+      <Grid container spacing={2}>
+        <Grid item xs={12} sm={12} md={12}>
+          <H5>Node Labels</H5>
+        </Grid>
+        <Grid item xs={6} sm={6} md={6}>
+          <CustomLabels nodeLabels={nodeLabels} />
+        </Grid>
+        <Grid item xs={12} sm={12} md={12}>
+          <H5>Node Affinity Policy</H5>
+        </Grid>
+        <Grid item xs={6} sm={6} md={6}>
+          <AffinityType />
+        </Grid>
+      </Grid>
+    );
+  }
+
+  private renderUpgradePolicy() {
+    const { classes } = this.props;
+    return (
+      <Grid container spacing={2}>
+        <Grid item xs={12} sm={12} md={12}>
+          <H5>UpgradePolicy</H5>
+        </Grid>
+        <Grid item xs={6} sm={6} md={6}>
+          <div className={classes.helperField}>
+            <Field
+              name="restartStrategy"
+              component={RenderSelectField}
+              // validate={ValidatorRequired}
+              label="Restart Strategy">
+              <MenuItem value="RollingUpdate">Rolling Update</MenuItem>
+              <MenuItem value="Recreate">Recreate</MenuItem>
+            </Field>
+            <Tooltip title={this.getRestartStrategyHelper()}>
+              <HelpIcon fontSize="small" className={classes.helperSelectIcon} />
+            </Tooltip>
+          </div>
+        </Grid>
+        <Grid item xs={6} sm={6} md={6}></Grid>
+        <Grid item xs={6} sm={6} md={6}>
+          <div className={classes.helperField}>
+            <Field
+              component={RenderTextField}
+              name="terminationGracePeriodSeconds"
+              label="Termination Grace Period Seconds"
+              // validate={ValidatorRequired}
+              normalize={NormalizeNumber}
+              margin
+            />
+            <Tooltip title={this.getTerminationGracePeriodSecondsHelper()}>
+              <HelpIcon fontSize="small" className={classes.helperFieldIcon} />
+            </Tooltip>
+          </div>
+        </Grid>
+      </Grid>
+    );
   }
 
   private renderTabDetails() {
-    switch (this.tabs[this.state.currentTab]) {
-      case Resources: {
-        return this.renderResources();
-      }
-      case Health: {
-        return this.renderResources();
-      }
-      case Networking: {
-        return this.renderResources();
-      }
-      case NodeScheduling: {
-        return this.renderResources();
-      }
-      case UpgradePolicy: {
-        return this.renderResources();
-      }
-    }
+    const { classes } = this.props;
+
+    return (
+      <>
+        <div className={`${this.tabs[this.state.currentTab] === Resources ? "" : classes.displayNone}`}>
+          {this.renderResources()}
+        </div>
+        <div className={`${this.tabs[this.state.currentTab] === Health ? "" : classes.displayNone}`}>
+          {this.renderHealth()}
+        </div>
+        <div className={`${this.tabs[this.state.currentTab] === Networking ? "" : classes.displayNone}`}>
+          {this.renderNetworking()}
+        </div>
+        <div className={`${this.tabs[this.state.currentTab] === NodeScheduling ? "" : classes.displayNone}`}>
+          {this.renderNodeScheduling()}
+        </div>
+        <div className={`${this.tabs[this.state.currentTab] === UpgradePolicy ? "" : classes.displayNone}`}>
+          {this.renderUpgradePolicy()}
+        </div>
+      </>
+    );
   }
 
   private renderTabs() {
@@ -856,30 +901,13 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { handleSubmit, classes, currentTab } = this.props;
+    const { handleSubmit, classes } = this.props;
 
     return (
       <form onSubmit={handleSubmit} className={classes.root}>
         {this.renderMainPaper()}
-
         {this.renderTabDetails()}
-
-        {/* TODO remove following */}
-        <div className={`${classes.formSection} ${currentTab === "basic" ? "" : ""}`}>{this.renderBasic()}</div>
-        <div className={`${classes.formSection} ${currentTab === "basic" ? "" : ""}`}>{this.renderEnvs()}</div>
-        <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : ""}`} style={{ margin: "0 0 16px" }}>
-          {this.renderPorts()}
-        </div>
-        <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : ""}`} style={{ margin: "0 0 16px" }}>
-          {this.renderVolumes()}
-        </div>
-        <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : ""}`} style={{ margin: "0 0 24px" }}>
-          {this.renderConfigs()}
-        </div>
-        <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : ""}`} style={{ margin: "0 0 16px" }}>
-          {this.renderAdvanced()}
-        </div>
-        <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : ""}`}>{this.renderPlugins()}</div>
+        {/* <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : ""}`}>{this.renderPlugins()}</div> */}
       </form>
     );
   }
