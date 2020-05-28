@@ -8,6 +8,13 @@ metadata:
   creationTimestamp: null
   name: httpscerts.core.kapp.dev
 spec:
+  additionalPrinterColumns:
+  - JSONPath: .status.conditions[0].status
+    name: Ready
+    type: string
+  - JSONPath: .status.conditions[0].message
+    name: Message
+    type: string
   group: core.kapp.dev
   names:
     kind: HttpsCert
