@@ -20,13 +20,16 @@ import (
 	"fmt"
 	pbTypes "github.com/gogo/protobuf/types"
 	"github.com/influxdata/influxdb/pkg/slices"
-	"github.com/kapp-staging/kapp/controller/utils"
 	istioNetworkingV1Beta1 "istio.io/api/networking/v1beta1"
 	"istio.io/client-go/pkg/apis/networking/v1beta1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
+	"math"
 	"net/http"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -36,72 +39,259 @@ import (
 
 const (
 	DEFAULT_HTTPS_CERT_NAME = "default-https-cert"
+	KAPP_ROUTE_LABEL        = "kapp-route"
+
+	HTTP_GATEWAY_NAME = "istio-system/istio-ingressgateway"
+)
+
+var (
+	HTTPS_GATEWAY_NAME = fmt.Sprintf("%s/%s", KAPP_GATEWAY_NAMESPACE, KAPP_GATEWAY_NAME)
 )
 
 type HttpRouteReconcilerTask struct {
 	*HttpRouteReconciler
-	ctx   context.Context
-	route *corev1alpha1.HttpRoute
-	gw    *v1beta1.Gateway
-	vs    *v1beta1.VirtualService
+	ctx             context.Context
+	routes          []corev1alpha1.HttpRoute
+	gateways        []v1beta1.Gateway
+	virtualServices []v1beta1.VirtualService
 }
 
-func (r *HttpRouteReconcilerTask) WarningEvent(err error, msg string, args ...interface{}) {
-	r.EmitWarningEvent(r.route, err, msg, args...)
-}
-
-func (r *HttpRouteReconcilerTask) NormalEvent(reason, msg string, args ...interface{}) {
-	r.EmitNormalEvent(r.route, reason, msg, args...)
-}
-
-func (r *HttpRouteReconcilerTask) Run(req ctrl.Request) error {
-	if err := r.Reader.Get(r.ctx, req.NamespacedName, r.route); err != nil {
-		return client.IgnoreNotFound(err)
+// will not care about match
+func (r *HttpRouteReconcilerTask) buildIstioHttpRoute(route *corev1alpha1.HttpRoute) *istioNetworkingV1Beta1.HTTPRoute {
+	spec := &route.Spec
+	httpRoute := &istioNetworkingV1Beta1.HTTPRoute{
+		Route: r.BuildDestinations(route),
 	}
 
-	if err := r.ReconcileGateway(req); err != nil {
-		r.WarningEvent(err, "reconcile gateways error.")
+	if spec.StripPath {
+		httpRoute.Rewrite = &istioNetworkingV1Beta1.HTTPRewrite{
+			Uri: "/",
+		}
+	}
+
+	if spec.Timeout != nil {
+		httpRoute.Timeout = &pbTypes.Duration{
+			Seconds: int64(*spec.Timeout),
+		}
+	}
+
+	if spec.Retries != nil {
+		httpRoute.Retries = &istioNetworkingV1Beta1.HTTPRetry{
+			Attempts: int32(spec.Retries.Attempts),
+			PerTryTimeout: &pbTypes.Duration{
+				Seconds: int64(spec.Retries.PerTtyTimeoutSeconds),
+			},
+			RetryOn: strings.Join(spec.Retries.RetryOn, ","),
+		}
+	}
+
+	if spec.Mirror != nil {
+		dest := toHttpRouteDestination(spec.Mirror.Destination, 100, route.Namespace)
+		httpRoute.Mirror = dest.Destination
+		httpRoute.MirrorPercentage = &istioNetworkingV1Beta1.Percent{
+			Value: float64(spec.Mirror.Percentage),
+		}
+	}
+
+	if spec.Fault != nil {
+		if httpRoute.Fault == nil {
+			httpRoute.Fault = &istioNetworkingV1Beta1.HTTPFaultInjection{}
+		}
+
+		httpRoute.Fault.Abort = &istioNetworkingV1Beta1.HTTPFaultInjection_Abort{
+			ErrorType: &istioNetworkingV1Beta1.HTTPFaultInjection_Abort_HttpStatus{
+				HttpStatus: int32(spec.Fault.ErrorStatus),
+			},
+			Percentage: &istioNetworkingV1Beta1.Percent{
+				Value: float64(spec.Fault.Percentage),
+			},
+		}
+	}
+
+	if spec.Delay != nil {
+		if httpRoute.Fault == nil {
+			httpRoute.Fault = &istioNetworkingV1Beta1.HTTPFaultInjection{}
+		}
+
+		httpRoute.Fault.Delay = &istioNetworkingV1Beta1.HTTPFaultInjection_Delay{
+			Percentage: &istioNetworkingV1Beta1.Percent{
+				Value: float64(spec.Delay.Percentage),
+			},
+			HttpDelayType: &istioNetworkingV1Beta1.HTTPFaultInjection_Delay_FixedDelay{
+				FixedDelay: &pbTypes.Duration{
+					Seconds: int64(spec.Delay.DelaySeconds),
+				},
+			},
+		}
+	}
+
+	if spec.CORS != nil {
+		httpRoute.CorsPolicy = &istioNetworkingV1Beta1.CorsPolicy{
+			AllowOrigins: make([]*istioNetworkingV1Beta1.StringMatch, 0, len(spec.CORS.AllowOrigins)),
+			AllowMethods: spec.CORS.AllowMethods,
+			AllowHeaders: spec.CORS.AllowHeaders,
+			MaxAge: &pbTypes.Duration{
+				Seconds: int64(spec.CORS.MaxAgeSeconds),
+			},
+		}
+
+		for _, condition := range spec.CORS.AllowOrigins {
+			httpRoute.CorsPolicy.AllowOrigins = append(httpRoute.CorsPolicy.AllowOrigins, conditionToStringMatch(condition))
+		}
+	}
+	return httpRoute
+}
+
+func (r *HttpRouteReconcilerTask) buildIstioHttpRoutes(route *corev1alpha1.HttpRoute) []*istioNetworkingV1Beta1.HTTPRoute {
+	matches := r.BuildMatches(route)
+	res := make([]*istioNetworkingV1Beta1.HTTPRoute, 0)
+
+	for _, match := range matches {
+		httpRoute := r.buildIstioHttpRoute(route)
+		httpRoute.Match = []*istioNetworkingV1Beta1.HTTPMatchRequest{match}
+		res = append(res, httpRoute)
+	}
+
+	return res
+}
+
+// return should "a" sort before "b"
+func sortRoutes(a, b *istioNetworkingV1Beta1.HTTPRoute) bool {
+	aUri := a.Match[0].Uri
+	bUri := b.Match[0].Uri
+
+	aUriIsNil := aUri == nil
+	bUriIsNil := bUri == nil
+
+	if aUriIsNil {
+		return false
+	}
+
+	if bUriIsNil {
+		return true
+	}
+
+	aRegexp, aUriIsRegexp := aUri.MatchType.(*istioNetworkingV1Beta1.StringMatch_Regex)
+	bRegexp, bUriIsRegexp := bUri.MatchType.(*istioNetworkingV1Beta1.StringMatch_Regex)
+
+	if aUriIsRegexp && !bUriIsRegexp {
+		return true
+	}
+
+	if !aUriIsRegexp && bUriIsRegexp {
+		return false
+	}
+
+	if aUriIsRegexp && bUriIsRegexp {
+		// TODO this is temporary solution
+		// will use regexp priority later
+		return aRegexp.Regex > bRegexp.Regex
+	}
+
+	aPrefix, aUriIsPrefix := aUri.MatchType.(*istioNetworkingV1Beta1.StringMatch_Prefix)
+	bPrefix, bUriIsPrefix := bUri.MatchType.(*istioNetworkingV1Beta1.StringMatch_Prefix)
+
+	if !aUriIsPrefix || !bUriIsPrefix {
+		panic("uri is neither a regexp or a prefix")
+	}
+
+	// Long prefix should be nearer to the front
+	return aPrefix.Prefix > bPrefix.Prefix
+}
+
+func (r *HttpRouteReconcilerTask) Run(ctrl.Request) error {
+	var routes corev1alpha1.HttpRouteList
+	if err := r.Reader.List(r.ctx, &routes); err != nil {
 		return err
 	}
+	r.routes = routes.Items
 
-	if err := r.ReconcileVirtualService(req); err != nil {
-		r.WarningEvent(err, "reconcile virtual service error.")
+	var virtualServices v1beta1.VirtualServiceList
+	if err := r.Reader.List(r.ctx, &virtualServices, client.MatchingLabels{KAPP_ROUTE_LABEL: "true"}); err != nil {
 		return err
 	}
+	r.virtualServices = virtualServices.Items
 
-	//if err := r.UpdateStatus(); err != nil {
-	//	r.WarningEvent(err, "update Status error.")
-	//	return err
-	//}
+	// Each host will has a virtual service
+	// Kapp will order http route rules, and set them in the virtual service http field.
+	hostVirtualService := make(map[string][]*istioNetworkingV1Beta1.HTTPRoute)
+
+	for _, route := range r.routes {
+		for _, host := range route.Spec.Hosts {
+			if _, ok := hostVirtualService[host]; ok {
+				hostVirtualService[host] = append(hostVirtualService[host], r.buildIstioHttpRoutes(&route)...)
+			} else {
+				hostVirtualService[host] = r.buildIstioHttpRoutes(&route)
+			}
+		}
+	}
+
+	for host, routes := range hostVirtualService {
+		// Less reports whether the element with
+		// index i should sort before the element with index j.
+		sort.Slice(routes, func(i, j int) bool { return sortRoutes(routes[i], routes[j]) })
+
+		if err := r.SaveVirtualService(host, routes); err != nil {
+			return err
+		}
+	}
+
+	// delete old virtual Service
+	for _, vs := range r.virtualServices {
+		if hostVirtualService[vs.Spec.Hosts[0]] == nil {
+			if err := r.Delete(r.ctx, &vs); err != nil {
+				return err
+			}
+		}
+	}
 
 	return nil
 }
 
-//func (r *HttpRouteReconcilerTask) UpdateStatus() error {
-//	copyedRoute := r.route.DeepCopy()
-//	copyedRoute.Status.HostCertifications = make(map[string]string)
-//
-//	for _, server := range r.gw.Spec.Servers {
-//		if server.Tls == nil {
-//			continue
-//		}
-//
-//		if server.Tls.CredentialName == "" {
-//			continue
-//		}
-//
-//		for _, host := range server.Hosts {
-//			copyedRoute.Status.HostCertifications[host] = server.Tls.CredentialName
-//		}
-//	}
-//
-//	if err := r.Status().Patch(r.ctx, copyedRoute, client.MergeFrom(r.route)); err != nil {
-//		r.WarningEvent(err, "Patch http route status error.")
-//		return err
-//	}
-//
-//	return nil
-//}
+func (r *HttpRouteReconcilerTask) SaveVirtualService(host string, routes []*istioNetworkingV1Beta1.HTTPRoute) error {
+	virtualServiceName := fmt.Sprintf("vs-%s", strings.ReplaceAll(strings.ReplaceAll(host, "*", "wildcard"), ".", "-"))
+	virtualServiceNamespace := "kapp-system"
+
+	var virtualService v1beta1.VirtualService
+
+	found := false
+	for _, vs := range r.virtualServices {
+		if vs.Namespace == virtualServiceNamespace && vs.Name == virtualServiceName {
+			virtualService = vs
+			found = true
+			break
+		}
+	}
+
+	virtualService.Name = virtualServiceName
+	virtualService.Namespace = virtualServiceNamespace
+
+	if virtualService.Labels == nil {
+		virtualService.Labels = make(map[string]string)
+	}
+
+	virtualService.Labels[KAPP_ROUTE_LABEL] = "true"
+	virtualService.Spec.Hosts = []string{host}
+	virtualService.Spec.Http = routes
+	virtualService.Spec.ExportTo = []string{"*"}
+	virtualService.Spec.Gateways = []string{
+		HTTP_GATEWAY_NAME, HTTPS_GATEWAY_NAME,
+	}
+
+	if !found {
+		if err := r.Create(r.ctx, &virtualService); err != nil {
+			r.Log.Error(err, "create virtual service error.")
+			return err
+		}
+	} else {
+		if err := r.Update(r.ctx, &virtualService); err != nil {
+			r.Log.Error(err, "update virtual service error.")
+			return err
+		}
+	}
+
+	return nil
+}
 
 func certCanBeUsedOnDomain(domains []string, host string) bool {
 	for _, domain := range domains {
@@ -126,79 +316,6 @@ func certCanBeUsedOnDomain(domains []string, host string) bool {
 
 func getHttpRouteHttpGatewayName(name string) string {
 	return fmt.Sprintf("%s-http-gateway", name)
-}
-
-func (r *HttpRouteReconcilerTask) ReconcileGateway(req ctrl.Request) error {
-	gwName := getHttpRouteHttpGatewayName(req.Name)
-	var isGatewayMissing bool
-	if err := r.Reader.Get(r.ctx, types.NamespacedName{
-		Name:      gwName,
-		Namespace: req.Namespace,
-	}, r.gw); err != nil {
-		if errors.IsNotFound(err) {
-			isGatewayMissing = true
-		} else {
-			r.WarningEvent(err, "get gateway error.")
-		}
-	}
-
-	gw := r.gw
-	gw.Name = gwName
-	gw.Namespace = req.Namespace
-
-	if gw.Spec.Selector == nil {
-		gw.Spec.Selector = make(map[string]string)
-	}
-
-	gw.Spec.Selector["istio"] = "ingressgateway"
-	gw.Spec.Servers = []*istioNetworkingV1Beta1.Server{}
-
-	if utils.ContainsString(r.route.Spec.Schemes, "http") {
-		server := &istioNetworkingV1Beta1.Server{
-			Hosts: r.route.Spec.Hosts,
-			Port: &istioNetworkingV1Beta1.Port{
-				Number:   80,
-				Protocol: "HTTP",
-				Name:     "http",
-			},
-		}
-
-		if utils.ContainsString(r.route.Spec.Schemes, "https") && r.route.Spec.HttpRedirectToHttps {
-			server.Tls = &istioNetworkingV1Beta1.Server_TLSOptions{
-				HttpsRedirect: true,
-			}
-		}
-
-		gw.Spec.Servers = append(gw.Spec.Servers, server)
-	} else {
-		if !isGatewayMissing {
-			if err := r.Delete(r.ctx, gw); err != nil {
-				r.WarningEvent(err, "delete gateway error.")
-				return err
-			}
-		}
-
-		r.gw = nil
-		return nil
-	}
-
-	if err := ctrl.SetControllerReference(r.route, gw, r.Scheme); err != nil {
-		return err
-	}
-
-	if isGatewayMissing {
-		if err := r.Create(r.ctx, gw); err != nil {
-			r.WarningEvent(err, "create virtual service error.")
-			return err
-		}
-	} else {
-		if err := r.Update(r.ctx, gw); err != nil {
-			r.WarningEvent(err, "update virtual service error.")
-			return err
-		}
-	}
-
-	return nil
 }
 
 func conditionToStringMatch(condition corev1alpha1.HttpRouteCondition) *istioNetworkingV1Beta1.StringMatch {
@@ -226,8 +343,8 @@ func conditionToStringMatch(condition corev1alpha1.HttpRouteCondition) *istioNet
 	return nil
 }
 
-func (r *HttpRouteReconcilerTask) PatchConditionsToHttpMatch(match *istioNetworkingV1Beta1.HTTPMatchRequest) {
-	for _, condition := range r.route.Spec.Conditions {
+func (r *HttpRouteReconcilerTask) PatchConditionsToHttpMatch(match *istioNetworkingV1Beta1.HTTPMatchRequest, route *corev1alpha1.HttpRouteSpec) {
+	for _, condition := range route.Conditions {
 		switch condition.Type {
 		case corev1alpha1.HttpRouteConditionTypeHeader:
 			if match.Headers == nil {
@@ -246,20 +363,31 @@ func (r *HttpRouteReconcilerTask) PatchConditionsToHttpMatch(match *istioNetwork
 	}
 }
 
-func (r *HttpRouteReconcilerTask) BuildMatches() []*istioNetworkingV1Beta1.HTTPMatchRequest {
+func isAllowAllMethods(methods []corev1alpha1.HttpRouteMethod) bool {
+	if len(methods) < 9 {
+		return false
+	}
+
+	set := make(map[string]bool, len(methods))
+
+	for _, m := range methods {
+		set[string(m)] = true
+	}
+
+	return set["GET"] && set["HEAD"] && set["POST"] && set["PUT"] && set["PATCH"] && set["DELETE"] && set["OPTIONS"] && set["TRACE"] && set["CONNECT"]
+}
+
+func (r *HttpRouteReconcilerTask) BuildMatches(route *corev1alpha1.HttpRoute) []*istioNetworkingV1Beta1.HTTPMatchRequest {
+	spec := &route.Spec
 	res := make(
 		[]*istioNetworkingV1Beta1.HTTPMatchRequest, 0,
-		len(r.route.Spec.Paths)*len(r.route.Spec.Methods),
+		len(spec.Paths)*len(spec.Methods),
 	)
 
-	for _, path := range r.route.Spec.Paths {
-		for _, method := range r.route.Spec.Methods {
+	for _, path := range spec.Paths {
+		for _, method := range spec.Methods {
+
 			match := &istioNetworkingV1Beta1.HTTPMatchRequest{
-				Uri: &istioNetworkingV1Beta1.StringMatch{
-					MatchType: &istioNetworkingV1Beta1.StringMatch_Prefix{
-						Prefix: path,
-					},
-				},
 				Method: &istioNetworkingV1Beta1.StringMatch{
 					MatchType: &istioNetworkingV1Beta1.StringMatch_Exact{
 						Exact: string(method),
@@ -267,7 +395,34 @@ func (r *HttpRouteReconcilerTask) BuildMatches() []*istioNetworkingV1Beta1.HTTPM
 				},
 			}
 
-			r.PatchConditionsToHttpMatch(match)
+			// only support one scheme, control the gateway
+			if len(spec.Schemes) < 2 {
+				if spec.Schemes[0] == "http" {
+					match.Gateways = []string{
+						HTTP_GATEWAY_NAME,
+					}
+				} else {
+					match.Gateways = []string{
+						HTTPS_GATEWAY_NAME,
+					}
+				}
+			}
+
+			// TODO check the path is a regexp or not.
+
+			// https://github.com/istio/istio/blob/6d6a23d1a644a19cec87d7641c4747135d35692b/pilot/pkg/networking/core/v1alpha3/route/route.go#L1026
+			// This is a hack of istio route translation logic, which I think is wrong.
+			// The isCacheAllMatch doesn't consider about m.Methods and will ignore all match cases behind.
+			// If the path is prefix "/", leave the Uri nil to bypass this logic.
+			if path != "/" {
+				match.Uri = &istioNetworkingV1Beta1.StringMatch{
+					MatchType: &istioNetworkingV1Beta1.StringMatch_Prefix{
+						Prefix: path,
+					},
+				}
+			}
+
+			r.PatchConditionsToHttpMatch(match, spec)
 			res = append(res, match)
 		}
 	}
@@ -275,7 +430,7 @@ func (r *HttpRouteReconcilerTask) BuildMatches() []*istioNetworkingV1Beta1.HTTPM
 	return res
 }
 
-func toHttpRouteDestination(destination corev1alpha1.HttpRouteDestination) *istioNetworkingV1Beta1.HTTPRouteDestination {
+func toHttpRouteDestination(destination corev1alpha1.HttpRouteDestination, weight int32, namespace string) *istioNetworkingV1Beta1.HTTPRouteDestination {
 	colon := strings.LastIndexByte(destination.Host, ':')
 	var host, port string
 
@@ -286,11 +441,15 @@ func toHttpRouteDestination(destination corev1alpha1.HttpRouteDestination) *isti
 		port = destination.Host[colon+1:]
 	}
 
+	if !strings.Contains(host, ".") {
+		host = fmt.Sprintf("%s.%s.svc.cluster.local", host, namespace)
+	}
+
 	dest := &istioNetworkingV1Beta1.HTTPRouteDestination{
 		Destination: &istioNetworkingV1Beta1.Destination{
 			Host: host,
 		},
-		Weight: int32(destination.Weight),
+		Weight: weight,
 	}
 
 	if port != "" {
@@ -303,150 +462,20 @@ func toHttpRouteDestination(destination corev1alpha1.HttpRouteDestination) *isti
 	return dest
 }
 
-func (r *HttpRouteReconcilerTask) BuildDestinations() []*istioNetworkingV1Beta1.HTTPRouteDestination {
+func (r *HttpRouteReconcilerTask) BuildDestinations(route *corev1alpha1.HttpRoute) []*istioNetworkingV1Beta1.HTTPRouteDestination {
 	res := make([]*istioNetworkingV1Beta1.HTTPRouteDestination, 0)
+	weightSum := 0
 
-	for _, destination := range r.route.Spec.Destinations {
-		res = append(res, toHttpRouteDestination(destination))
+	for _, destination := range route.Spec.Destinations {
+		weightSum = weightSum + destination.Weight
+	}
+
+	for _, destination := range route.Spec.Destinations {
+		weight := int32(math.Floor(float64(destination.Weight)/float64(weightSum)*100 + 0.5))
+		res = append(res, toHttpRouteDestination(destination, weight, route.Namespace))
 	}
 
 	return res
-}
-
-func (r *HttpRouteReconcilerTask) ReconcileVirtualService(req ctrl.Request) error {
-	var isCreate bool
-	if err := r.Reader.Get(r.ctx, req.NamespacedName, r.vs); err != nil {
-		if !errors.IsNotFound(err) {
-			r.WarningEvent(err, "get virtual service error.")
-			return err
-		}
-
-		isCreate = true
-	}
-
-	httpRoute := &istioNetworkingV1Beta1.HTTPRoute{
-
-		Match: r.BuildMatches(),
-		Route: r.BuildDestinations(),
-	}
-
-	if r.route.Spec.StripPath {
-		httpRoute.Rewrite = &istioNetworkingV1Beta1.HTTPRewrite{
-			Uri: "/",
-		}
-	}
-
-	if r.route.Spec.Timeout != nil {
-		httpRoute.Timeout = &pbTypes.Duration{
-			Seconds: int64(*r.route.Spec.Timeout),
-		}
-	}
-
-	if r.route.Spec.Retries != nil {
-		httpRoute.Retries = &istioNetworkingV1Beta1.HTTPRetry{
-			Attempts: int32(r.route.Spec.Retries.Attempts),
-			PerTryTimeout: &pbTypes.Duration{
-				Seconds: int64(r.route.Spec.Retries.PerTtyTimeoutSeconds),
-			},
-			RetryOn: strings.Join(r.route.Spec.Retries.RetryOn, ","),
-		}
-	}
-
-	if r.route.Spec.Mirror != nil {
-		dest := toHttpRouteDestination(r.route.Spec.Mirror.Destination)
-		httpRoute.Mirror = dest.Destination
-		httpRoute.MirrorPercentage = &istioNetworkingV1Beta1.Percent{
-			Value: float64(r.route.Spec.Mirror.Percentage),
-		}
-	}
-
-	if r.route.Spec.Fault != nil {
-		if httpRoute.Fault == nil {
-			httpRoute.Fault = &istioNetworkingV1Beta1.HTTPFaultInjection{}
-		}
-
-		httpRoute.Fault.Abort = &istioNetworkingV1Beta1.HTTPFaultInjection_Abort{
-			ErrorType: &istioNetworkingV1Beta1.HTTPFaultInjection_Abort_HttpStatus{
-				HttpStatus: int32(r.route.Spec.Fault.ErrorStatus),
-			},
-			Percentage: &istioNetworkingV1Beta1.Percent{
-				Value: float64(r.route.Spec.Fault.Percentage),
-			},
-		}
-	}
-
-	if r.route.Spec.Delay != nil {
-		if httpRoute.Fault == nil {
-			httpRoute.Fault = &istioNetworkingV1Beta1.HTTPFaultInjection{}
-		}
-
-		httpRoute.Fault.Delay = &istioNetworkingV1Beta1.HTTPFaultInjection_Delay{
-			Percentage: &istioNetworkingV1Beta1.Percent{
-				Value: float64(r.route.Spec.Delay.Percentage),
-			},
-			HttpDelayType: &istioNetworkingV1Beta1.HTTPFaultInjection_Delay_FixedDelay{
-				FixedDelay: &pbTypes.Duration{
-					Seconds: int64(r.route.Spec.Delay.DelaySeconds),
-				},
-			},
-		}
-	}
-
-	if r.route.Spec.CORS != nil {
-		httpRoute.CorsPolicy = &istioNetworkingV1Beta1.CorsPolicy{
-			AllowOrigins: make([]*istioNetworkingV1Beta1.StringMatch, 0, len(r.route.Spec.CORS.AllowOrigins)),
-			AllowMethods: r.route.Spec.CORS.AllowMethods,
-			AllowHeaders: r.route.Spec.CORS.AllowHeaders,
-			MaxAge: &pbTypes.Duration{
-				Seconds: int64(r.route.Spec.CORS.MaxAgeSeconds),
-			},
-		}
-
-		for _, condition := range r.route.Spec.CORS.AllowOrigins {
-			httpRoute.CorsPolicy.AllowOrigins = append(httpRoute.CorsPolicy.AllowOrigins, conditionToStringMatch(condition))
-		}
-	}
-
-	r.vs.Name = r.route.Name
-	r.vs.Namespace = r.route.Namespace
-
-	r.vs.Spec = istioNetworkingV1Beta1.VirtualService{
-		Gateways: []string{},
-		Hosts:    r.route.Spec.Hosts,
-		Http:     []*istioNetworkingV1Beta1.HTTPRoute{httpRoute},
-		ExportTo: []string{"*"},
-	}
-
-	// allow http
-	if r.gw != nil {
-		r.vs.Spec.Gateways = append(r.vs.Spec.Gateways, r.gw.Name)
-	}
-
-	// allow https
-	if utils.ContainsString(r.route.Spec.Schemes, "https") {
-		r.vs.Spec.Gateways = append(
-			r.vs.Spec.Gateways,
-			fmt.Sprintf("%s/%s", KAPP_GATEWAY_NAMESPACE, KAPP_GATEWAY_NAME),
-		)
-	}
-
-	if err := ctrl.SetControllerReference(r.route, r.vs, r.Scheme); err != nil {
-		return err
-	}
-
-	if isCreate {
-		if err := r.Create(r.ctx, r.vs); err != nil {
-			r.WarningEvent(err, "create virtual service error.")
-			return err
-		}
-	} else {
-		if err := r.Update(r.ctx, r.vs); err != nil {
-			r.WarningEvent(err, "update virtual service error.")
-			return err
-		}
-	}
-
-	return nil
 }
 
 // HttpRouteReconciler reconciles a HttpRoute object
@@ -463,9 +492,6 @@ func (r *HttpRouteReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	task := &HttpRouteReconcilerTask{
 		HttpRouteReconciler: r,
 		ctx:                 context.Background(),
-		route:               &corev1alpha1.HttpRoute{},
-		gw:                  &v1beta1.Gateway{},
-		vs:                  &v1beta1.VirtualService{},
 	}
 
 	return ctrl.Result{}, task.Run(req)
@@ -475,10 +501,42 @@ func NewHttpRouteReconciler(mgr ctrl.Manager) *HttpRouteReconciler {
 	return &HttpRouteReconciler{NewBaseReconciler(mgr, "HttpRoute")}
 }
 
+type WatchAllKappGateway struct{}
+type WatchAllKappVirtualService struct{}
+
+func (*WatchAllKappGateway) Map(object handler.MapObject) []reconcile.Request {
+	gateway, ok := object.Object.(*v1beta1.Gateway)
+
+	if !ok || gateway.Labels == nil || gateway.Labels[KAPP_ROUTE_LABEL] != "true" {
+		return nil
+	}
+
+	return []reconcile.Request{{NamespacedName: types.NamespacedName{}}}
+}
+func (*WatchAllKappVirtualService) Map(object handler.MapObject) []reconcile.Request {
+	vs, ok := object.Object.(*v1beta1.VirtualService)
+
+	if !ok || vs.Labels == nil || vs.Labels[KAPP_ROUTE_LABEL] != "true" {
+		return nil
+	}
+
+	return []reconcile.Request{{NamespacedName: types.NamespacedName{}}}
+}
+
 func (r *HttpRouteReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1alpha1.HttpRoute{}).
-		Owns(&v1beta1.Gateway{}).
-		Owns(&v1beta1.VirtualService{}).
+		Watches(
+			&source.Kind{Type: &v1beta1.Gateway{}},
+			&handler.EnqueueRequestsFromMapFunc{
+				ToRequests: &WatchAllKappGateway{},
+			},
+		).
+		Watches(
+			&source.Kind{Type: &v1beta1.VirtualService{}},
+			&handler.EnqueueRequestsFromMapFunc{
+				ToRequests: &WatchAllKappVirtualService{},
+			},
+		).
 		Complete(r)
 }

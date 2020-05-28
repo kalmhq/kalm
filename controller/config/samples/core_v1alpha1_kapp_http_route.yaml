@@ -11,6 +11,7 @@ metadata:
   name: default-https-cert
 spec:
   httpsCertIssuer: default-cert-issuer
+  isSelfManaged: false
   domains:
     - "*"
 ---
@@ -20,6 +21,7 @@ metadata:
   name: xip-io-cert
 spec:
   httpsCertIssuer: default-cert-issuer
+  isSelfManaged: false
   domains:
     - "xip.io"
 ---
@@ -36,10 +38,10 @@ metadata:
   name: server-v1
   namespace: test-http-route
 spec:
-  image: strm/helloworld-http
+  image: k8s.gcr.io/echoserver:1.10
   ports:
     - name: http
-      containerPort: 80
+      containerPort: 8080
       servicePort: 80
 ---
 apiVersion: core.kapp.dev/v1alpha1
@@ -48,10 +50,10 @@ metadata:
   name: server-v2
   namespace: test-http-route
 spec:
-  image: strm/helloworld-http
+  image: k8s.gcr.io/echoserver:1.10
   ports:
     - name: http
-      containerPort: 80
+      containerPort: 8080
       servicePort: 80
 ---
 apiVersion: core.kapp.dev/v1alpha1
@@ -68,19 +70,12 @@ spec:
   schemes:
     - http
     - https
-  conditions:
-    - type: header
-      name: version
-      value: v1
-      operator: equal
   paths:
-    - /
+    - /v1
   destinations:
     - host: server-v1
-      weight: 100
-  httpRedirectToHttps: true
+      weight: 1
   stripPath: true
-  certification: Auto
 ---
 apiVersion: core.kapp.dev/v1alpha1
 kind: HttpRoute
@@ -96,31 +91,26 @@ spec:
   schemes:
     - http
     - https
-  conditions:
-    - type: header
-      name: version
-      operator: equal
-      value: v2
   paths:
-    - /
+    - /v2
   destinations:
     - host: server-v2
-      weight: 100
-  httpRedirectToHttps: true
+      weight: 1
   stripPath: true
-  certification: Auto
 ---
 apiVersion: core.kapp.dev/v1alpha1
 kind: HttpRoute
 metadata:
-  name: first-route
+  name: v1-v2-canary
   namespace: test-http-route
 spec:
   hosts:
+    - "*.xip.io"
     - xip.io
   methods:
     - GET
     - POST
+    - PUT
   schemes:
     - http
     - https
@@ -128,9 +118,8 @@ spec:
     - /
   destinations:
     - host: server-v2
-      weight: 50
+      weight: 1
     - host: server-v1
-      weight: 50
-  httpRedirectToHttps: true
+      weight: 1
   stripPath: true
-  certification: Auto
+

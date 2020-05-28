@@ -131,4 +131,4 @@ jobs:
         - echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
       script:
         - kubectl apply -f controller/config/samples/core_v1alpha1_application_kapp_dashboard.yaml
-        - kubectl -n kapp-system patch deployment kapp-dashboard -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"date\":\"`date +'%s'`\"}}}}}"
+        - kubectl delete pod -n kapp-system $(kubectl get pods -n kapp-system -l app=kapp-dashboard -o jsonpath="{.items[].metadata.name}")
