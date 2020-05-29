@@ -12,7 +12,6 @@ import (
 )
 
 type HttpsCert struct {
-	//v1alpha1.HttpsCertSpec `json:",inline"`
 	Name          string `json:"name"`
 	IsSelfManaged bool   `json:"isSelfManaged"`
 
@@ -23,39 +22,14 @@ type HttpsCert struct {
 	Domains         []string `json:"domains,omitempty"`
 }
 
-type HttpsCertListChannel struct {
-	List  chan []v1alpha1.HttpsCert
-	Error chan error
-}
-
 func (builder *Builder) GetHttpsCerts() ([]HttpsCert, error) {
-	rst := HttpsCertListChannel{
-		List:  make(chan []v1alpha1.HttpsCert, 1),
-		Error: make(chan error, 1),
-	}
-
-	go func() {
-		var fetched v1alpha1.HttpsCertList
-		err := builder.K8sClient.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/httpscerts").Do().Into(&fetched)
-		res := make([]v1alpha1.HttpsCert, len(fetched.Items))
-
-		for _, item := range fetched.Items {
-			res = append(res, item)
-		}
-
-		rst.List <- res
-		rst.Error <- err
-	}()
-
-	err := <-rst.Error
-	if err != nil {
+	var fetched v1alpha1.HttpsCertList
+	if err := builder.List(&fetched); err != nil {
 		return nil, err
 	}
 
-	list := <-rst.List
-
 	var httpsCerts []HttpsCert
-	for _, ele := range list {
+	for _, ele := range fetched.Items {
 		cur := HttpsCert{
 			Name:          ele.Name,
 			IsSelfManaged: ele.Spec.IsSelfManaged,
@@ -209,6 +183,8 @@ func (builder *Builder) CreateSelfManagedHttpsCert(cert HttpsCert) (HttpsCert, e
 	if err != nil {
 		return HttpsCert{}, err
 	}
+
+	cert.Domains = x509Cert.DNSNames
 
 	return cert, nil
 }
