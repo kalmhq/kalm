@@ -37,7 +37,7 @@ func (builder *Builder) GetHttpsCerts() ([]HttpsCert, error) {
 	go func() {
 		var fetched v1alpha1.HttpsCertList
 		err := builder.K8sClient.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/httpscerts").Do().Into(&fetched)
-		res := make([]v1alpha1.HttpsCert, len(fetched.Items))
+		res := make([]v1alpha1.HttpsCert, 0, len(fetched.Items))
 
 		for _, item := range fetched.Items {
 			res = append(res, item)
