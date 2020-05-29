@@ -58,14 +58,16 @@ func (suite *HttpsCertTestSuite) TestCreateHttpsCert() {
 	suite.Equal("foobar-issuer", res.Items[0].Spec.HttpsCertIssuer)
 	suite.Equal("example.com", strings.Join(res.Items[0].Spec.Domains, ""))
 
-	// check size of cert list
+	// check size & content of cert list
 	rec = suite.NewRequest(http.MethodGet, "/v1alpha1/httpscerts", nil)
 
-	var resList []resources.HttpsCert
+	var resList []resources.HttpsCertResp
 	rec.BodyAsJSON(&resList)
 
 	suite.Equal(200, rec.Code)
 	suite.Equal(1, len(resList))
+	suite.Equal(string(coreV1.ConditionUnknown), resList[0].Ready)
+	suite.Equal(resources.ReasonForNoReadyConditions, resList[0].Reason)
 }
 
 const tlsCert = `-----BEGIN CERTIFICATE-----
