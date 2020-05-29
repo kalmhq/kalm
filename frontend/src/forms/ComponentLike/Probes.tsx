@@ -7,9 +7,10 @@ import { WrappedFieldProps } from "redux-form";
 import { Field } from "redux-form/immutable";
 import { HttpHeader, HttpHeaders } from "../../types/componentTemplate";
 import { H5 } from "../../widgets/Label";
-import { RenderTextField } from "../Basic";
+import { KRenderTextField } from "../Basic/textfield";
 import { ValidatorHttpHeaders, ValidatorNumberOrAlphabet, ValidatorRequired } from "../validator";
 import { RenderSelectField } from "../Basic/select";
+import { RenderComplexValueTextField } from "../Basic/textfield";
 
 interface FieldComponentHackType {
   name: any;
@@ -84,7 +85,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
       <>
         <Grid item md={12}>
           <Field
-            component={RenderTextField}
+            component={KRenderTextField}
             name={`${name}.httpGet.host`}
             label="Host (Optional)"
             margin
@@ -93,7 +94,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
         </Grid>
         <Grid item md={12}>
           <Field
-            component={RenderTextField}
+            component={KRenderTextField}
             name={`${name}.httpGet.port`}
             label="Port"
             margin
@@ -104,7 +105,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
         </Grid>
         <Grid item md={12}>
           <Field
-            component={RenderTextField}
+            component={KRenderTextField}
             name={`${name}.httpGet.path`}
             label="Path (Optional)"
             margin
@@ -113,7 +114,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
         </Grid>
         <Grid item md={12}>
           <Field
-            component={RenderTextField}
+            component={KRenderTextField}
             name={`${name}.httpGet.scheme`}
             label="Scheme (Optional)"
             margin
@@ -122,7 +123,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
         </Grid>
         <Grid item md={12}>
           <Field
-            component={RenderTextField}
+            component={RenderComplexValueTextField}
             name={`${name}.httpGet.httpHeaders`}
             label="httpHeaders (Optional)"
             margin
@@ -179,7 +180,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
     return (
       <Grid item xs={12} sm={12} md={12}>
         <Field
-          component={RenderTextField}
+          component={RenderComplexValueTextField}
           name={`${name}.exec.command`}
           label="Command (Optional)"
           margin
@@ -201,7 +202,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
       <>
         <Grid item md={12}>
           <Field
-            component={RenderTextField}
+            component={KRenderTextField}
             name={`${name}.tcpSocket.host`}
             label="Host (Optional)"
             margin
@@ -210,7 +211,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
         </Grid>
         <Grid item md={12}>
           <Field
-            component={RenderTextField}
+            component={KRenderTextField}
             name={`${name}.tcpSocket.port`}
             label="Port"
             margin
@@ -230,7 +231,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
       <>
         <Grid item xs={6} sm={6} md={6}>
           <Field
-            component={RenderTextField}
+            component={KRenderTextField}
             name={`${name}.initialDelaySeconds`}
             label="InitialDelaySeconds (Optional)"
             normalize={NormalizeNumber}
@@ -240,7 +241,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
         </Grid>
         <Grid item xs={6} sm={6} md={6}>
           <Field
-            component={RenderTextField}
+            component={KRenderTextField}
             name={`${name}.timeoutSeconds`}
             label="TimeoutSeconds (Optional)"
             normalize={NormalizeNumber}
@@ -250,7 +251,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
         </Grid>
         <Grid item xs={4} sm={4} md={4}>
           <Field
-            component={RenderTextField}
+            component={KRenderTextField}
             name={`${name}.periodSeconds`}
             label="PeriodSeconds (Optional)"
             normalize={NormalizeNumber}
@@ -260,7 +261,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
         </Grid>
         <Grid item xs={4} sm={4} md={4}>
           <Field
-            component={RenderTextField}
+            component={KRenderTextField}
             name={`${name}.successThreshold`}
             label="SuccessThreshold (Optional)"
             normalize={NormalizeNumber}
@@ -270,7 +271,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
         </Grid>
         <Grid item xs={4} sm={4} md={4}>
           <Field
-            component={RenderTextField}
+            component={KRenderTextField}
             name={`${name}.failureThreshold`}
             label="FailureThreshold (Optional)"
             normalize={NormalizeNumber}

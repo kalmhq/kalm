@@ -1,7 +1,7 @@
 import React from "react";
 import { InjectedFormProps } from "redux-form";
 import { reduxForm, getFormValues, Field } from "redux-form/immutable";
-import { RenderTextField } from "../Basic";
+import { KRenderTextField } from "../Basic/textfield";
 import { makeStyles, Theme } from "@material-ui/core/styles";
 import { Button, FormControl } from "@material-ui/core";
 import { ValidatorRequired, ValidatorName } from "../validator";
@@ -110,7 +110,7 @@ const ConfigFormRaw = (props: Props & InjectedFormProps<ConfigNode, Props>) => {
 
           <div className={classes.nameWrapper}>
             <Field
-              component={RenderTextField}
+              component={KRenderTextField}
               name="name"
               label="Name"
               margin

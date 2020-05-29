@@ -29,7 +29,6 @@ import { TDispatchProp } from "../../types";
 import { SharedEnv } from "../../types/application";
 import { ComponentLike, workloadTypeCronjob, workloadTypeServer } from "../../types/componentTemplate";
 import { HelperContainer } from "../../widgets/Helper";
-import { RenderTextField } from "../Basic";
 import { NormalizeNumber } from "../normalizer";
 import { ValidatorCPU, ValidatorMemory, ValidatorName, ValidatorRequired, ValidatorSchedule } from "../validator";
 import { Configs } from "./Configs";
@@ -40,6 +39,7 @@ import { Ports } from "./Ports";
 import { Volumes } from "./Volumes";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
 import { RenderSelectField } from "../Basic/select";
+import { RenderComplexValueTextField, KRenderTextField } from "../Basic/textfield";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
@@ -159,7 +159,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     if (this.props.values.get("workloadType") !== workloadTypeCronjob) {
       return (
         <Field
-          component={RenderTextField}
+          component={RenderComplexValueTextField}
           name="replicas"
           margin
           label="Replicas"
@@ -179,7 +179,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       <>
         <Field
           name="schedule"
-          component={RenderTextField}
+          component={KRenderTextField}
           placeholder="* * * * * *"
           label="Cronjob Schedule"
           required
@@ -623,7 +623,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
         <Grid item xs={6} sm={6} md={6}>
           <Field
-            component={RenderTextField}
+            component={RenderComplexValueTextField}
             name="command"
             margin
             label="Command (Optional)"
@@ -639,7 +639,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
         <Grid item xs={6} sm={6} md={6}>
           <Field
-            component={RenderTextField}
+            component={RenderComplexValueTextField}
             name="args"
             margin
             label="Arguments (Optional)"
@@ -668,7 +668,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           <Grid item xs={6} sm={6} md={6}>
             <div className={classes.helperField}>
               <Field
-                component={RenderTextField}
+                component={KRenderTextField}
                 name="cpu"
                 label="CPU"
                 margin
@@ -685,7 +685,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           <Grid item xs={6} sm={6} md={6}>
             <div className={classes.helperField}>
               <Field
-                component={RenderTextField}
+                component={KRenderTextField}
                 name="memory"
                 label="Memory"
                 margin
@@ -782,7 +782,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Grid item xs={6} sm={6} md={6}>
           <div className={classes.helperField}>
             <Field
-              component={RenderTextField}
+              component={KRenderTextField}
               name="terminationGracePeriodSeconds"
               label="Termination Grace Period Seconds"
               // validate={ValidatorRequired}
@@ -837,7 +837,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         }}
         aria-label="component form tabs">
         {this.tabs.map(tab => {
-          return <Tab label={tab} />;
+          return <Tab key={tab} label={tab} />;
         })}
       </Tabs>
     );
@@ -856,7 +856,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Grid container spacing={2}>
           <Grid item xs={6} sm={6} md={6}>
             <Field
-              component={RenderTextField}
+              component={KRenderTextField}
               name="name"
               label="Name"
               margin
@@ -872,7 +872,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </Grid>
           <Grid item xs={6} sm={6} md={6}>
             <Field
-              component={RenderTextField}
+              component={KRenderTextField}
               name="image"
               label="Image"
               margin

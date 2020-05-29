@@ -138,7 +138,7 @@ class ComponentStatusRaw extends React.PureComponent<Props, State> {
     const { classes } = this.props;
 
     return (
-      <div className={classes.podItem}>
+      <div className={classes.podItem} key={pod.get("name")}>
         <div className={classes.podName}>
           {this.renderPodStatus(pod)}
           {pod.get("name")}

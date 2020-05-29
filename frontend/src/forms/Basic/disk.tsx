@@ -3,7 +3,7 @@ import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
 import { WrappedFieldProps, WrappedFieldArrayProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
 import DeleteIcon from "@material-ui/icons/Delete";
-import { RenderTextField, RenderAutoCompleteSelect } from ".";
+import { RenderAutoCompleteSelect } from ".";
 import { Grid, Button, MenuItem, Divider } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { ValidatorRequired } from "../validator";
@@ -12,6 +12,7 @@ import Immutable from "immutable";
 import AddIcon from "@material-ui/icons/Add";
 import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
 import { RenderSelectField } from "./select";
+import { KRenderTextField } from "./textfield";
 
 export const DiskTypeNew = "new";
 export const DiskTypeExisting = "existing";
@@ -73,7 +74,7 @@ const renderDisks = ({ fields, meta: { error, submitFailed } }: WrappedFieldArra
                         <Field
                           name={`${field}.name`}
                           validate={isNewDisk ? ValidatorRequired : []}
-                          component={RenderTextField}
+                          component={KRenderTextField}
                           label="Name"
                         />
                       </Grid>
@@ -107,7 +108,7 @@ const renderDisks = ({ fields, meta: { error, submitFailed } }: WrappedFieldArra
                   <Grid item xs={isNewDisk ? 6 : 12}>
                     <Field
                       name={`${field}.path`}
-                      component={RenderTextField}
+                      component={KRenderTextField}
                       validate={ValidatorRequired}
                       label="Path"
                     />
@@ -116,7 +117,7 @@ const renderDisks = ({ fields, meta: { error, submitFailed } }: WrappedFieldArra
                     <Grid item xs={6}>
                       <Field
                         name={`${field}.size`}
-                        component={RenderTextField}
+                        component={KRenderTextField}
                         validate={isNewDisk ? ValidatorRequired : []}
                         type="number"
                         label="Size (Megabeta, M)"></Field>

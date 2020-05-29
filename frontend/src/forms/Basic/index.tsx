@@ -5,64 +5,64 @@ import clsx from "clsx";
 import React from "react";
 import { WrappedFieldProps } from "redux-form";
 
-interface RenderTextField {
-  label?: string;
-  helperText?: string;
-  placeholder?: string;
-  required?: boolean;
-  className?: string;
-  margin?: boolean;
-  multiline?: boolean;
-  rows?: number;
-  rowsMax?: number;
-  disabled?: boolean;
-  formValueToEditValue?: (value: any) => string;
-  editValueToFormValue?: (value: string) => any;
-}
+// interface RenderTextField {
+//   label?: string;
+//   helperText?: string;
+//   placeholder?: string;
+//   required?: boolean;
+//   className?: string;
+//   margin?: boolean;
+//   multiline?: boolean;
+//   rows?: number;
+//   rowsMax?: number;
+//   disabled?: boolean;
+//   formValueToEditValue?: (value: any) => string;
+//   editValueToFormValue?: (value: string) => any;
+// }
 
-export const RenderTextField = ({
-  label,
-  input,
-  placeholder,
-  helperText,
-  required,
-  disabled,
-  margin,
-  formValueToEditValue,
-  editValueToFormValue,
-  meta: { touched, invalid, error },
-  ...custom
-}: FilledTextFieldProps & WrappedFieldProps & RenderTextField) => {
-  const classes = makeStyles(theme => ({
-    noMargin: {
-      margin: 0
-    }
-  }))();
+// export const RenderTextField = ({
+//   label,
+//   input,
+//   placeholder,
+//   helperText,
+//   required,
+//   disabled,
+//   margin,
+//   formValueToEditValue,
+//   editValueToFormValue,
+//   meta: { touched, invalid, error },
+//   ...custom
+// }: FilledTextFieldProps & WrappedFieldProps & RenderTextField) => {
+//   const classes = makeStyles(theme => ({
+//     noMargin: {
+//       margin: 0
+//     }
+//   }))();
 
-  return (
-    <TextField
-      classes={{ root: clsx({ [classes.noMargin]: !margin }) }}
-      label={label}
-      autoComplete="off"
-      disabled={disabled}
-      required={required}
-      error={touched && invalid}
-      helperText={(touched && error) || helperText}
-      placeholder={placeholder}
-      fullWidth
-      size="small"
-      margin="dense"
-      variant="outlined"
-      onChange={(event: any) => {
-        editValueToFormValue
-          ? input.onChange(editValueToFormValue(event.target.value))
-          : input.onChange(event.target.value);
-      }}
-      defaultValue={formValueToEditValue ? formValueToEditValue(input.value) : input.value}
-      {...custom}
-    />
-  );
-};
+//   return (
+//     <TextField
+//       classes={{ root: clsx({ [classes.noMargin]: !margin }) }}
+//       label={label}
+//       autoComplete="off"
+//       disabled={disabled}
+//       required={required}
+//       error={touched && invalid}
+//       helperText={(touched && error) || helperText}
+//       placeholder={placeholder}
+//       fullWidth
+//       size="small"
+//       margin="dense"
+//       variant="outlined"
+//       onChange={(event: any) => {
+//         editValueToFormValue
+//           ? input.onChange(editValueToFormValue(event.target.value))
+//           : input.onChange(event.target.value);
+//       }}
+//       defaultValue={formValueToEditValue ? formValueToEditValue(input.value) : input.value}
+//       {...custom}
+//     />
+//   );
+// };
 
 interface AutoCompleteFreeSoloProps {
   label?: string;

@@ -12,7 +12,7 @@ import {
   VolumeTypeTemporaryDisk,
   VolumeTypeTemporaryMemory
 } from "../../types/componentTemplate";
-import { RenderTextField } from "../Basic";
+import { KRenderTextField } from "../Basic/textfield";
 import { FieldArrayWrapper } from "../Basic/FieldArrayWrapper";
 import { ValidatorRequired } from "../validator";
 import { RenderSelectField } from "../Basic/select";
@@ -47,7 +47,7 @@ class RenderVolumes extends React.PureComponent<Props> {
         <MenuItem value={VolumeTypeTemporaryMemory}>Mount a temporary memory Disk</MenuItem>
       </Field>,
       <Field
-        component={RenderTextField}
+        component={KRenderTextField}
         name={`${member}.path`}
         label="Mount Path"
         margin
@@ -68,7 +68,13 @@ class RenderVolumes extends React.PureComponent<Props> {
         </Field>
       );
       fieldComponents.push(
-        <Field component={RenderTextField} name={`${member}.size`} label="Size" margin validate={[ValidatorRequired]} />
+        <Field
+          component={KRenderTextField}
+          name={`${member}.size`}
+          label="Size"
+          margin
+          validate={[ValidatorRequired]}
+        />
       );
     } else if (volumeType === VolumeTypePersistentVolumeClaimExisting) {
       fieldComponents.push(
@@ -84,7 +90,13 @@ class RenderVolumes extends React.PureComponent<Props> {
       );
     } else {
       fieldComponents.push(
-        <Field component={RenderTextField} name={`${member}.size`} label="Size" margin validate={[ValidatorRequired]} />
+        <Field
+          component={KRenderTextField}
+          name={`${member}.size`}
+          label="Size"
+          margin
+          validate={[ValidatorRequired]}
+        />
       );
     }
 
