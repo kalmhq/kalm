@@ -5,55 +5,23 @@ import (
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type HttpsCertIssuerListChannel struct {
-	List  chan []v1alpha1.HttpsCertIssuer
-	Error chan error
-}
-
-func (builder *Builder) GetHttpsCertIssuerListChan() *HttpsCertIssuerListChannel {
-	rst := HttpsCertIssuerListChannel{
-		List:  make(chan []v1alpha1.HttpsCertIssuer, 1),
-		Error: make(chan error, 1),
-	}
-
-	go func() {
-		var fetched v1alpha1.HttpsCertIssuerList
-		err := builder.K8sClient.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/httpscertissuers").Do().Into(&fetched)
-		res := make([]v1alpha1.HttpsCertIssuer, len(fetched.Items))
-
-		for _, item := range fetched.Items {
-			res = append(res, item)
-		}
-
-		rst.List <- res
-		rst.Error <- err
-	}()
-
-	return &rst
-}
-
 type HttpsCertIssuer struct {
 	v1alpha1.HttpsCertIssuerSpec `json:",inline"`
 	Name                         string `json:"name"`
 }
 
 func (builder *Builder) GetHttpsCertIssuerList() ([]HttpsCertIssuer, error) {
-	resourceChannels := &ResourceChannels{
-		HttpsCertIssuerList: builder.GetHttpsCertIssuerListChan(),
-	}
-
-	resources, err := resourceChannels.ToResources()
-	if err != nil {
-		builder.Logger.Error(err)
+	var fetched v1alpha1.HttpsCertIssuerList
+	if err := builder.List(&fetched); err != nil {
 		return nil, err
 	}
 
-	var rst []HttpsCertIssuer
-	for _, ele := range resources.HttpsCertIssuers {
-		rst = append(rst, HttpsCertIssuer{
+	rst := make([]HttpsCertIssuer, len(fetched.Items))
+	for i, ele := range fetched.Items {
+		rst[i] = HttpsCertIssuer{
 			HttpsCertIssuerSpec: ele.Spec,
 			Name:                ele.Name,
-		})
+		}
 	}
 
 	return rst, nil
