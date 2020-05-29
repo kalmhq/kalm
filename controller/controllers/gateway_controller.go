@@ -34,21 +34,20 @@ import (
 const (
 	KAPP_GATEWAY_NAMESPACE = "istio-system"
 	KAPP_GATEWAY_NAME      = "kapp-gateway"
+
+	HTTPS_GATEWAY_NAME = "kapp-https-gateway"
+	HTTP_GATEWAY_NAME  = "kapp-http-gateway"
+)
+
+var (
+	HTTPS_GATEWAY_NAMESPACED_NAME = types.NamespacedName{Namespace: KAPP_GATEWAY_NAMESPACE, Name: HTTPS_GATEWAY_NAME}
+	HTTP_GATEWAY_NAMESPACED_NAME  = types.NamespacedName{Namespace: KAPP_GATEWAY_NAMESPACE, Name: HTTP_GATEWAY_NAME}
 )
 
 type GatewayReconcilerTask struct {
 	*GatewayReconciler
 	ctx   context.Context
-	gw    *v1beta1.Gateway
 	certs []*corev1alpha1.HttpsCert
-}
-
-func (r *GatewayReconcilerTask) WarningEvent(err error, msg string, args ...interface{}) {
-	r.EmitWarningEvent(r.gw, err, msg, args...)
-}
-
-func (r *GatewayReconcilerTask) NormalEvent(reason, msg string, args ...interface{}) {
-	r.EmitNormalEvent(r.gw, reason, msg, args...)
 }
 
 func (r *GatewayReconcilerTask) ReconcileNamespace() error {
@@ -66,13 +65,11 @@ func (r *GatewayReconcilerTask) ReconcileNamespace() error {
 	return nil
 }
 
-func (r *GatewayReconcilerTask) Run(req ctrl.Request) error {
-	if err := r.ReconcileNamespace(); err != nil {
-		return err
-	}
-
+func (r *GatewayReconcilerTask) HttpsGateway() error {
 	isCreate := false
-	if err := r.Reader.Get(r.ctx, req.NamespacedName, r.gw); err != nil {
+
+	gw := &v1beta1.Gateway{}
+	if err := r.Reader.Get(r.ctx, HTTPS_GATEWAY_NAMESPACED_NAME, gw); err != nil {
 		if !errors.IsNotFound(err) {
 			return err
 		}
@@ -80,9 +77,8 @@ func (r *GatewayReconcilerTask) Run(req ctrl.Request) error {
 		isCreate = true
 	}
 
-	gw := r.gw
-	gw.Name = KAPP_GATEWAY_NAME
-	gw.Namespace = KAPP_GATEWAY_NAMESPACE
+	gw.Name = HTTPS_GATEWAY_NAMESPACED_NAME.Name
+	gw.Namespace = HTTPS_GATEWAY_NAMESPACED_NAME.Namespace
 
 	var certs corev1alpha1.HttpsCertList
 	if err := r.Reader.List(context.Background(), &certs); err != nil {
@@ -114,23 +110,77 @@ func (r *GatewayReconcilerTask) Run(req ctrl.Request) error {
 		gw.Spec.Servers = append(gw.Spec.Servers, server)
 	}
 
+	return r.updateGateway(isCreate, gw)
+}
+
+func (r *GatewayReconcilerTask) HttpGateway() error {
+	isCreate := false
+
+	gw := &v1beta1.Gateway{}
+	if err := r.Reader.Get(r.ctx, HTTP_GATEWAY_NAMESPACED_NAME, gw); err != nil {
+		if !errors.IsNotFound(err) {
+			return err
+		}
+
+		isCreate = true
+	}
+
+	gw.Name = HTTP_GATEWAY_NAMESPACED_NAME.Name
+	gw.Namespace = HTTP_GATEWAY_NAMESPACED_NAME.Namespace
+
+	if gw.Spec.Selector == nil {
+		gw.Spec.Selector = make(map[string]string)
+	}
+
+	gw.Spec.Selector["istio"] = "ingressgateway"
+	gw.Spec.Servers = []*istioNetworkingV1Beta1.Server{
+		{
+			Hosts: []string{"*"},
+			Port: &istioNetworkingV1Beta1.Port{
+				Number:   80,
+				Protocol: "http",
+				Name:     "kapp-http",
+			},
+		},
+	}
+
+	return r.updateGateway(isCreate, gw)
+}
+
+func (r *GatewayReconcilerTask) updateGateway(isCreate bool, gw *v1beta1.Gateway) error {
 	if isCreate {
 		if err := r.Create(r.ctx, gw); err != nil {
-			r.WarningEvent(err, "create gateway error.")
+			r.Log.Error(err, fmt.Sprintf("Create gateway %s error.", gw.Name))
 			return err
 		}
 	} else {
 		if len(gw.Spec.Servers) == 0 {
 			if err := r.Delete(r.ctx, gw); err != nil {
-				r.WarningEvent(err, "delete gateway error.")
+				r.Log.Error(err, fmt.Sprintf("Delete gateway %s error.", gw.Name))
 				return err
 			}
 		} else {
 			if err := r.Update(r.ctx, gw); err != nil {
-				r.WarningEvent(err, "update gateway error.")
+				r.Log.Error(err, fmt.Sprintf("Update gateway %s error.", gw.Name))
 				return err
 			}
 		}
+	}
+
+	return nil
+}
+
+func (r *GatewayReconcilerTask) Run(req ctrl.Request) error {
+	if err := r.ReconcileNamespace(); err != nil {
+		return err
+	}
+
+	if err := r.HttpsGateway(); err != nil {
+		return err
+	}
+
+	if err := r.HttpGateway(); err != nil {
+		return err
 	}
 
 	return nil
@@ -151,7 +201,6 @@ func (r *GatewayReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	task := &GatewayReconcilerTask{
 		GatewayReconciler: r,
 		ctx:               context.Background(),
-		gw:                &v1beta1.Gateway{},
 	}
 
 	return ctrl.Result{}, task.Run(req)
