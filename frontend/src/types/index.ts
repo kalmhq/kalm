@@ -10,6 +10,8 @@ import { NamespaceActions } from "./namespace";
 import { NodeActions } from "./node";
 import { RegistriesActions } from "./registry";
 import { RouteActions } from "./route";
+import { CertificateActions } from "./certificate";
+import { ServiceActions } from "./service";
 
 export type Actions =
   | CommonActions
@@ -21,7 +23,9 @@ export type Actions =
   | NamespaceActions
   | NodeActions
   | RegistriesActions
-  | RouteActions;
+  | RouteActions
+  | CertificateActions
+  | ServiceActions;
 
 export type ThunkResult<R> = ThunkAction<R, RootState, undefined, Actions>;
 export type TDispatch = ThunkDispatch<RootState, undefined, Actions>;

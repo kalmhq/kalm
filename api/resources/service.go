@@ -10,6 +10,12 @@ type ServiceListChannel struct {
 	Error chan error
 }
 
+type Service struct {
+	Name               string `json:"name"`
+	Namespace          string `json:"namespace"`
+	coreV1.ServiceSpec `json:",inline"`
+}
+
 func (builder *Builder) GetServiceListChannel(opts ...client.ListOption) *ServiceListChannel {
 	channel := &ServiceListChannel{
 		List:  make(chan []coreV1.Service, 1),
@@ -37,4 +43,24 @@ func (builder *Builder) GetServiceListChannel(opts ...client.ListOption) *Servic
 	}()
 
 	return channel
+}
+
+func (builder *Builder) GetServices(namespace string) ([]*Service, error) {
+	var services coreV1.ServiceList
+
+	if err := builder.List(&services, client.InNamespace(namespace)); err != nil {
+		return nil, err
+	}
+
+	res := make([]*Service, len(services.Items))
+
+	for i := range services.Items {
+		res[i] = &Service{
+			Name:        services.Items[i].Name,
+			Namespace:   services.Items[i].Namespace,
+			ServiceSpec: services.Items[i].Spec,
+		}
+	}
+
+	return res, nil
 }

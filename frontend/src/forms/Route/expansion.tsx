@@ -11,7 +11,7 @@ const styles = (theme: Theme) =>
       margin: "16px 0"
     },
     details: {
-      padding: theme.spacing(2),
+      padding: theme.spacing(1),
       background: "white"
     },
     heading: {
