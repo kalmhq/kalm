@@ -5,12 +5,13 @@ import { RouteForm } from "forms/Route";
 import React from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
-import { HttpRouteForm, newEmptyRouteForm, methodsModeAll, AllHttpMethods } from "types/route";
+import { AllHttpMethods, HttpRouteForm, methodsModeAll, newEmptyRouteForm } from "types/route";
 import { ApplicationViewDrawer } from "widgets/ApplicationViewDrawer";
 import { RootState } from "../../reducers";
 import { Actions } from "../../types";
 import { BasePage } from "../BasePage";
 import { Namespaces } from "widgets/Namespaces";
+import Container from "@material-ui/core/Container";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -39,9 +40,9 @@ class RouteNewRaw extends React.PureComponent<Props> {
   public render() {
     return (
       <BasePage leftDrawer={<ApplicationViewDrawer />} secondHeaderLeft={<Namespaces />}>
-        <div className={this.props.classes.root}>
+        <Container className={this.props.classes.root} maxWidth="lg">
           <RouteForm onSubmit={this.submit} initialValues={newEmptyRouteForm()} />
-        </div>
+        </Container>
       </BasePage>
     );
   }
