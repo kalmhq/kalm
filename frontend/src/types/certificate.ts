@@ -48,7 +48,7 @@ export interface CertificateContent {
   selfManagedCertContent: string;
   selfManagedCertPrivateKey: string;
   httpsCertIssuer: string;
-  domains: string[];
+  domains: Immutable.List<string>;
 }
 
 export type CertificateActions =

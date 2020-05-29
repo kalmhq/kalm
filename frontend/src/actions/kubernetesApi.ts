@@ -21,6 +21,7 @@ import { ConfigCreate, ConfigRes } from "../types/config";
 import { RegistryType } from "types/registry";
 import { CertificateList, Certificate } from "types/certificate";
 import { HttpRoute } from "types/route";
+import { Service } from "types/service";
 
 export const K8sApiPrefix = process.env.REACT_APP_K8S_API_PERFIX;
 export const k8sWsPrefix = !K8sApiPrefix
@@ -337,4 +338,11 @@ export const createCertificate = async (certificate: Certificate): Promise<Appli
 
 export const deleteCertificate = async (name: string): Promise<void> => {
   await getAxiosClient().delete(K8sApiPrefix + `/v1alpha1/httpscerts/${name}`);
+};
+
+// services
+
+export const loadServices = async (name: string): Promise<Immutable.List<Service>> => {
+  const res = await getAxiosClient().get(K8sApiPrefix + `/v1alpha1/services`);
+  return Immutable.fromJS(res.data);
 };
