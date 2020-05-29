@@ -68,11 +68,9 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
   application?: ApplicationDetails;
   currentComponent?: ApplicationComponent; // for add new component
 
-  // handleClickBasic: () => void;
   handleClickSharedEnvs: () => void;
   handleClickApplicationPlugins: () => void;
   handleClickComponent: (component: ApplicationComponent) => void;
-  // handleClickComponentTab: (component: ApplicationComponent, tab: string) => void;
 }
 
 interface State {
@@ -114,33 +112,9 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
     handleClickComponent(component);
   }
 
-  // private handleClickComponentTab(component: ApplicationComponent, selectedListItemKey: string, tab: string) {
-  //   this.setState({ selectedListItemKey: selectedListItemKey });
-
-  //   const { handleClickComponentTab } = this.props;
-  //   handleClickComponentTab(component, tab);
-  // }
-
   private handleAdd() {
     this.handleClickComponent(componentInitialValues, this.props.application?.get("components").size as number);
   }
-
-  // private showComponentError(panelKey: string): boolean {
-  //   const { componentSyncErrors, componentFormSubmitFailed } = this.props;
-  //   const fieldNames = this.getPanelFieldNames(panelKey);
-  //   const errors: { [key: string]: any } = componentSyncErrors;
-
-  //   let anyTouched = true;
-  //   let hasError = false;
-  //   if (anyTouched) {
-  //     fieldNames.forEach(name => {
-  //       if (errors[name]) {
-  //         hasError = true;
-  //       }
-  //     });
-  //   }
-  //   return hasError && componentFormSubmitFailed;
-  // }
 
   private showAppliationError(tab: string): boolean {
     const { applicationSyncErrors, applicationFormSubmitFailed } = this.props;
@@ -150,103 +124,9 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
     return errors[tab] && applicationFormSubmitFailed;
   }
 
-  // private getPanelFieldNames(panelKey: string): string[] {
-  //   switch (panelKey) {
-  //     case "basic":
-  //       return ["name", "image", "workloadType", "command", "args", "cpu", "memory", "env"];
-  //     case "advanced":
-  //       return [
-  //         "ports",
-  //         "volumes",
-  //         "configs",
-  //         "plugins",
-  //         "restartStrategy",
-  //         "terminationGracePeriodSeconds",
-  //         "dnsPolicy",
-  //         "nodeSelectorLabels",
-  //         "podAffinityType"
-  //       ];
-  //     default:
-  //       return [];
-  //   }
-  // }
-
-  // private getComponentFields() {
-  //   return [
-  //     { tab: "basic", text: "Basic Info" },
-  //     // {
-  //     //   tab: "envs",
-  //     //   text: "Environment variables"
-  //     // },
-  //     // {
-  //     //   tab: "ports",
-  //     //   text: "Ports"
-  //     // },
-  //     // {
-  //     //   tab: "resources",
-  //     //   text: "Resources"
-  //     // },
-  //     // {
-  //     //   tab: "plugins",
-  //     //   text: "Plugins"
-  //     // },
-  //     {
-  //       tab: "advanced",
-  //       text: "Advanced"
-  //     }
-  //   ];
-  // }
-
   private generateComponentKey(index: number): string {
     return `components-${index}`;
   }
-
-  // private renderComponentFields(component: ApplicationComponent, index: number, selectedListItemKey?: string) {
-  //   const { classes } = this.props;
-  //   selectedListItemKey = selectedListItemKey || this.state.selectedListItemKey;
-
-  //   const fields = this.getComponentFields();
-  //   return fields.map(field => {
-  //     const key = this.generateComponentKey(index, field.tab);
-  //     const showComponentError = this.showComponentError(field.tab);
-  //     return (
-  //       <ListItem
-  //         key={key}
-  //         onClick={() => {
-  //           this.handleClickComponentTab(component, key, field.tab);
-  //         }}
-  //         selected={selectedListItemKey === key}
-  //         className={classes.listItem}
-  //         classes={{
-  //           selected: classes.listItemSeleted
-  //         }}
-  //         style={{
-  //           paddingLeft: 48
-  //         }}
-  //         button>
-  //         <ListItemIcon>
-  //           {showComponentError ? (
-  //             <ErrorIcon color="error" style={{ marginLeft: -4 }} />
-  //           ) : (
-  //             <FiberManualRecordIcon
-  //               style={{ fontSize: 15 }}
-  //               htmlColor={selectedListItemKey === key ? primaryColor : grey[400]}
-  //             />
-  //           )}
-  //         </ListItemIcon>
-  //         {showComponentError ? (
-  //           <ListItemText
-  //             primary={field.text}
-  //             secondary={"Some form fields are incorrect"}
-  //             secondaryTypographyProps={{ color: "error" }}
-  //           />
-  //         ) : (
-  //           <ListItemText primary={field.text} />
-  //         )}
-  //       </ListItem>
-  //     );
-  //   });
-  // }
 
   public componentDidMount() {
     const { application, handleClickComponent } = this.props;
@@ -475,9 +355,9 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
 
           {this.renderComponents()}
 
-          {this.renderSharedEnvs()}
+          {/* {this.renderSharedEnvs()} */}
 
-          {this.renderApplicationPlugins()}
+          {/* {this.renderApplicationPlugins()} */}
         </List>
       </BaseDrawer>
     );
