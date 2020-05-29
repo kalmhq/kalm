@@ -100,16 +100,21 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     }
   }
 
-  private renderTargets(row: RowData) {
+  private renderTargets = (row: RowData) => {
+    const { namespace } = this.props;
     let sum = 0;
     row.get("destinations").forEach(x => (sum += x.get("weight")));
 
     return row.get("destinations").map(x => (
-      <div>
-        {x.get("host")}({Math.floor((x.get("weight") / sum) * 1000 + 0.5) / 10}%)
+      <div key={x.get("host")}>
+        {x
+          .get("host")
+          .replace(`.${namespace}.svc.cluster.local`, "")
+          .replace(`.svc.cluster.local`, "")}
+        ({Math.floor((x.get("weight") / sum) * 1000 + 0.5) / 10}%)
       </div>
     ));
-  }
+  };
 
   private renderAdvanced(row: RowData) {
     let res: string[] = [];
@@ -174,7 +179,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
             </CustomizedButton>
           </div>
         }>
-        <div className={classes.root}>
+        <div>
           {isLoading && !isFirstLoaded ? (
             <Loading />
           ) : (

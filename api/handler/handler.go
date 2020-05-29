@@ -51,6 +51,8 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gv1Alpha1WithAuth.PUT("/applications/:name", h.handleUpdateApplication)
 	gv1Alpha1WithAuth.DELETE("/applications/:name", h.handleDeleteApplication)
 
+	gv1Alpha1WithAuth.GET("/services", h.handleListClusterServices)
+
 	gv1Alpha1WithAuth.GET("/componentplugins", h.handleListComponentPlugins)
 	//gv1Alpha1WithAuth.GET("/applicationplugins", h.handleListApplicationPlugins)
 

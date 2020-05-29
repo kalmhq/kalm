@@ -1,11 +1,17 @@
 import { Chip, createStyles, OutlinedTextFieldProps, PropTypes, TextField, Theme, withStyles } from "@material-ui/core";
-import { Autocomplete, UseAutocompleteMultipleProps, UseAutocompleteSingleProps } from "@material-ui/lab";
+import {
+  Autocomplete,
+  createFilterOptions,
+  UseAutocompleteMultipleProps,
+  UseAutocompleteSingleProps
+} from "@material-ui/lab";
 import { WithStyles } from "@material-ui/styles";
 import clsx from "clsx";
 import Immutable from "immutable";
 import React from "react";
 import { WrappedFieldProps } from "redux-form";
 import { ID } from "../../utils";
+import { AutocompleteProps } from "@material-ui/lab/Autocomplete/Autocomplete";
 
 export interface ReduxFormMultiTagsFreeSoloAutoCompleteProps
   extends WrappedFieldProps,
@@ -151,7 +157,6 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
 
   return (
     <Autocomplete
-      classes={classes}
       multiple
       autoSelect
       clearOnEscape
@@ -210,25 +215,26 @@ export const KFreeSoloAutoCompleteMultiValues = withStyles(KFreeSoloAutoComplete
   KFreeSoloAutoCompleteMultiValuesRaw
 );
 
-export interface KFreeSoloAutoCompleteSingleValueProps<T>
+export interface KAutoCompleteSingleValueProps<T>
   extends WrappedFieldProps,
-    WithStyles<typeof KFreeSoloAutoCompleteSingleValueStyles>,
+    WithStyles<typeof KAutoCompleteSingleValueStyles>,
     Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText">,
+    Pick<AutocompleteProps<T>, "noOptionsText">,
     UseAutocompleteSingleProps<T> {}
 
-const KFreeSoloAutoCompleteSingleValueStyles = (_theme: Theme) =>
+const KAutoCompleteSingleValueStyles = (_theme: Theme) =>
   createStyles({
     root: {}
   });
 
-interface KAutoCompleteOption {
+export interface KAutoCompleteOption {
   value: string;
   label: string;
   group: string;
 }
 
 function KFreeSoloAutoCompleteSingleValueRaw<T>(
-  props: KFreeSoloAutoCompleteSingleValueProps<KAutoCompleteOption>
+  props: KAutoCompleteSingleValueProps<KAutoCompleteOption>
 ): JSX.Element {
   const {
     input,
@@ -240,16 +246,18 @@ function KFreeSoloAutoCompleteSingleValueRaw<T>(
     placeholder
   } = props;
 
-  const id = ID();
-
   return (
     <Autocomplete
       classes={classes}
       freeSolo
-      id={id}
+      openOnFocus
       groupBy={option => option.group}
       // size="small"
       options={options}
+      filterOptions={createFilterOptions({
+        matchFrom: "any",
+        stringify: option => option.value
+      })}
       getOptionLabel={(option: any) => {
         if (option.label) {
           return option.label;
@@ -268,8 +276,8 @@ function KFreeSoloAutoCompleteSingleValueRaw<T>(
       //   // As a result, Field that is using this component mush not set a normalizer.
       //   (input.onBlur as any)();
       // }}
-      // it the value is a Immutable.List, change it to an array
-      value={input.value}
+      // value={input.value}
+      forcePopupIcon={true}
       onInputChange={(_event: any, value: string) => {
         input.onChange(value);
       }}
@@ -301,6 +309,146 @@ function KFreeSoloAutoCompleteSingleValueRaw<T>(
   );
 }
 
-export const KFreeSoloAutoCompleteSingleValue = withStyles(KFreeSoloAutoCompleteSingleValueStyles)(
+export const KFreeSoloAutoCompleteSingleValue = withStyles(KAutoCompleteSingleValueStyles)(
   KFreeSoloAutoCompleteSingleValueRaw
 );
+
+function KAutoCompleteSingleValueRaw<T>(props: KAutoCompleteSingleValueProps<KAutoCompleteOption>): JSX.Element {
+  const {
+    input,
+    label,
+    helperText,
+    meta: { touched, invalid, error },
+    classes,
+    options,
+    placeholder,
+    noOptionsText
+  } = props;
+
+  const value = options.find(x => x.value === input.value) || null;
+
+  return (
+    <Autocomplete
+      classes={classes}
+      openOnFocus
+      noOptionsText={noOptionsText}
+      groupBy={option => option.group}
+      options={options}
+      filterOptions={createFilterOptions({
+        matchFrom: "any",
+        stringify: option => option.value
+      })}
+      value={value}
+      getOptionLabel={(option: KAutoCompleteOption) => option.label}
+      onFocus={input.onFocus}
+      onBlur={() => {
+        (input.onBlur as any)();
+      }}
+      forcePopupIcon={true}
+      onChange={(_event: any, value: KAutoCompleteOption | null) => {
+        if (value) {
+          input.onChange(value.value);
+        } else {
+          input.onChange("");
+        }
+      }}
+      renderInput={params => {
+        return (
+          <TextField
+            {...params}
+            fullWidth
+            variant="outlined"
+            error={touched && invalid}
+            label={label}
+            placeholder={placeholder}
+            helperText={(touched && invalid && error) || helperText}
+          />
+        );
+      }}
+    />
+  );
+}
+
+export const KAutoCompleteSingleValue = withStyles(KAutoCompleteSingleValueStyles)(KAutoCompleteSingleValueRaw);
+
+// Envs
+interface AutoCompleteFreeSoloProps {
+  label?: string;
+  options: string[];
+}
+
+export const RenderAutoCompleteFreeSolo = (props: WrappedFieldProps & AutoCompleteFreeSoloProps) => {
+  const {
+    options,
+    input,
+    label,
+    // helperText,
+    meta: { touched, invalid, error }
+  } = props;
+  return (
+    <Autocomplete
+      freeSolo
+      disableClearable
+      options={options.map(option => option)}
+      defaultValue={input.value || ""}
+      onChange={(event: React.ChangeEvent<{}>, value: string | null) => {
+        if (value) {
+          input.onChange(value);
+        }
+      }}
+      renderInput={params => (
+        <TextField
+          {...params}
+          label={label}
+          margin="dense"
+          variant="outlined"
+          fullWidth
+          size="small"
+          error={touched && invalid}
+          helperText={touched && error}
+          // defaultValue={input.value || ""}
+          onChange={(event: any) => {
+            input.onChange(event.target.value);
+          }}
+        />
+      )}
+    />
+  );
+};
+
+// Disks
+interface AutoCompleteSelectProps {
+  label?: string;
+  required?: boolean;
+  children: React.ReactElement<{ children: string; value: string }>[];
+}
+
+export const RenderAutoCompleteSelect = ({ input, label, children }: WrappedFieldProps & AutoCompleteSelectProps) => {
+  children = React.Children.toArray(children);
+
+  const options = children.map(item => ({
+    text: item.props.children,
+    value: item.props.value
+  }));
+
+  let selectedOption = options.find(x => x.value === input.value);
+
+  if (!selectedOption) {
+    selectedOption = options[0];
+  }
+
+  return (
+    <Autocomplete
+      options={options}
+      getOptionLabel={option => option.text}
+      value={selectedOption}
+      disableClearable
+      onChange={(event: React.ChangeEvent<{}>, value: { text: string; value: string } | null) => {
+        if (value) {
+          input.onChange(value.value);
+        }
+      }}
+      renderInput={params => <TextField {...params} label={label} variant="outlined" fullWidth size="small" />}
+    />
+  );
+};

@@ -121,8 +121,6 @@ const ConfigFormRaw = (props: Props & InjectedFormProps<ConfigNode, Props>) => {
           </div>
         </div>
 
-        {/* {formType === "new" && <CustomRadioGroup name="type" label="Type" options={["file", "folder"]} />} */}
-
         {configType === "file" && (
           <FormControl margin="dense" className={classes.editorWarpper}>
             <CustomEditor />

@@ -5,7 +5,7 @@ import { connect, DispatchProp } from "react-redux";
 import { WrappedFieldArrayProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
 import { EnvTypeExternal, EnvTypeLinked, EnvTypeStatic } from "../../types/common";
-import { RenderAutoCompleteFreeSolo } from "../Basic";
+import { RenderAutoCompleteFreeSolo } from "../Basic/autoComplete";
 import { FieldArrayWrapper } from "../Basic/FieldArrayWrapper";
 import { ValidatorRequired } from "../validator";
 import { SharedEnv } from "../../types/application";

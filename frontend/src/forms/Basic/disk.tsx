@@ -3,7 +3,7 @@ import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
 import { WrappedFieldProps, WrappedFieldArrayProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
 import DeleteIcon from "@material-ui/icons/Delete";
-import { RenderAutoCompleteSelect } from ".";
+import { RenderAutoCompleteSelect } from "./autoComplete";
 import { Grid, Button, MenuItem, Divider } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { ValidatorRequired } from "../validator";

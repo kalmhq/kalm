@@ -1,20 +1,18 @@
-import React from "react";
-import { FilledTextFieldProps } from "@material-ui/core/TextField";
-import { WrappedFieldProps } from "redux-form";
-import { Field } from "redux-form/immutable";
-import Immutable from "immutable";
 import { MenuItem } from "@material-ui/core";
+import Checkbox from "@material-ui/core/Checkbox";
+import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
+import CheckBoxIcon from "@material-ui/icons/CheckBox";
+import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
+import Autocomplete from "@material-ui/lab/Autocomplete";
+import Immutable from "immutable";
+import React from "react";
+import { WrappedFieldProps } from "redux-form";
 import {
   NodeSelectorLabels,
   PodAffinityTypePreferFanout,
   PodAffinityTypePreferGather
 } from "../../types/componentTemplate";
 import { RenderSelectField } from "../Basic/select";
-import Checkbox from "@material-ui/core/Checkbox";
-import TextField from "@material-ui/core/TextField";
-import Autocomplete from "@material-ui/lab/Autocomplete";
-import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
-import CheckBoxIcon from "@material-ui/icons/CheckBox";
 
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
 const checkedIcon = <CheckBoxIcon fontSize="small" color="primary" />;
@@ -23,7 +21,7 @@ interface Props {
   nodeLabels: Immutable.List<string>;
 }
 
-const RenderSelectLabels = ({ input, nodeLabels }: FilledTextFieldProps & WrappedFieldProps & Props) => {
+export const RenderSelectLabels = ({ input, nodeLabels }: FilledTextFieldProps & WrappedFieldProps & Props) => {
   const defaultValue: string[] = [];
   const inputValue = input.value as NodeSelectorLabels;
 
@@ -74,11 +72,7 @@ const RenderSelectLabels = ({ input, nodeLabels }: FilledTextFieldProps & Wrappe
   );
 };
 
-export const CustomLabels = (props: Props) => {
-  return <Field name="nodeSelectorLabels" component={RenderSelectLabels} nodeLabels={props.nodeLabels} />;
-};
-
-const RenderAffinityType = (props: FilledTextFieldProps & WrappedFieldProps) => {
+export const RenderAffinityType = (props: FilledTextFieldProps & WrappedFieldProps) => {
   const inputLabel = "Assign Node Policy";
   const { input } = props;
   return (
@@ -87,8 +81,4 @@ const RenderAffinityType = (props: FilledTextFieldProps & WrappedFieldProps) => 
       <MenuItem value={PodAffinityTypePreferGather}>Prefer Gather</MenuItem>
     </RenderSelectField>
   );
-};
-
-export const AffinityType = (props: any) => {
-  return <Field name="podAffinityType" component={RenderAffinityType} {...props} />;
 };
