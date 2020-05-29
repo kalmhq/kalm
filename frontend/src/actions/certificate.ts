@@ -60,7 +60,7 @@ export const createCertificateAction = (certificateContent: Certificate): ThunkR
   return async dispatch => {
     dispatch(setIsSubmittingCertificate(true));
     try {
-      const certificate = await createCertificate(certificateContent);
+      await createCertificate(certificateContent);
     } catch (e) {
       console.log(e);
       if (e.response && e.response.data.errors && e.response.data.errors.length > 0) {
