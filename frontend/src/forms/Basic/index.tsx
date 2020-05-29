@@ -1,7 +1,5 @@
-import { makeStyles } from "@material-ui/core/styles";
-import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
+import TextField from "@material-ui/core/TextField";
 import { Autocomplete } from "@material-ui/lab";
-import clsx from "clsx";
 import React from "react";
 import { WrappedFieldProps } from "redux-form";
 
