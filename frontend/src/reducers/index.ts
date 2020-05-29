@@ -19,6 +19,7 @@ import persistentVolumns, { State as PersistentVolumnsState } from "./persistent
 import settings, { State as SettingsState } from "./settings";
 import users, { State as UserState } from "./user";
 import routes, { State as RouteState } from "./route";
+import certificates, { State as CertificateState } from "./certificate";
 
 export type RootState = ImmutableMap<{
   componentTemplates: ComponentTemplateState;
@@ -38,6 +39,7 @@ export type RootState = ImmutableMap<{
   users: UserState;
   roles: RolesState;
   routes: RouteState;
+  certificates: CertificateState;
 }>;
 
 // combineReducers returns immutable map, but the type is not working correctly
@@ -62,5 +64,6 @@ export default (history: History<LocationState>) =>
     settings,
     users,
     roles,
-    routes
+    routes,
+    certificates
   });
