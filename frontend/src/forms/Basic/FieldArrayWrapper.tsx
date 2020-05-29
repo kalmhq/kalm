@@ -33,7 +33,7 @@ export class FieldArrayWrapper extends React.PureComponent<Props> {
         <Button
           color="primary"
           size="large"
-          style={{ position: "absolute", right: 0, top: fields.length === 0 ? -38 : -10 }}
+          style={{ position: "absolute", right: 0, top: fields.length === 0 ? -40 : -32 }}
           onClick={() => (onAdd ? onAdd() : fields.push(Immutable.Map({})))}>
           Add
         </Button>

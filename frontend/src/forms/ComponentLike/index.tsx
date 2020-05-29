@@ -5,10 +5,10 @@ import {
   ListItem,
   ListItemText,
   MenuItem,
-  Tooltip,
   Paper,
+  Tab,
   Tabs,
-  Tab
+  Tooltip
 } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
@@ -19,7 +19,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { InjectedFormProps } from "redux-form";
 import { Field, getFormSyncErrors, getFormValues, reduxForm } from "redux-form/immutable";
-import { H5 } from "widgets/Label";
+import { H5, SectionTitle } from "widgets/Label";
 import { loadApplicationPluginsAction, loadComponentPluginsAction } from "../../actions/application";
 import { loadConfigsAction } from "../../actions/config";
 import { loadNodesAction } from "../../actions/node";
@@ -29,17 +29,18 @@ import { TDispatchProp } from "../../types";
 import { SharedEnv } from "../../types/application";
 import { ComponentLike, workloadTypeCronjob, workloadTypeServer } from "../../types/componentTemplate";
 import { HelperContainer } from "../../widgets/Helper";
+import { KRadioGroupRender } from "../Basic/radio";
+import { RenderSelectField } from "../Basic/select";
+import { KRenderTextField, RenderComplexValueTextField } from "../Basic/textfield";
 import { NormalizeNumber } from "../normalizer";
 import { ValidatorCPU, ValidatorMemory, ValidatorName, ValidatorRequired, ValidatorSchedule } from "../validator";
 import { Configs } from "./Configs";
 import { Envs } from "./Envs";
-import { AffinityType, CustomLabels } from "./NodeSelector";
+import { RenderSelectLabels } from "./NodeSelector";
 import { Plugins } from "./Plugins";
 import { Ports } from "./Ports";
-import { Volumes } from "./Volumes";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
-import { RenderSelectField } from "../Basic/select";
-import { RenderComplexValueTextField, KRenderTextField } from "../Basic/textfield";
+import { Volumes } from "./Volumes";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
@@ -280,12 +281,12 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return (
       <>
         <Grid item xs={12} sm={12} md={12}>
-          <div className={classes.sectionTitle}>
+          <SectionTitle>
             <H5>Environment variables</H5>
             <Tooltip title={helperContainer}>
               <HelpIcon fontSize="small" className={classes.helperTextIcon} />
             </Tooltip>
-          </div>
+          </SectionTitle>
         </Grid>{" "}
         <Grid item xs={12} sm={12} md={12}>
           <Envs sharedEnv={sharedEnv} />
@@ -297,24 +298,24 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   public renderPorts() {
     const { classes } = this.props;
 
-    // const helperContainer = (
-    //   <HelperContainer>
-    //     <Typography>
-    //       Port is the standard way to expose your program. If you want your component can be accessed by some other
-    //       parts, you need to define a port.
-    //     </Typography>
-    //   </HelperContainer>
-    // );
+    const helperContainer = (
+      <HelperContainer>
+        <Typography>
+          Port is the standard way to expose your program. If you want your component can be accessed by some other
+          parts, you need to define a port.
+        </Typography>
+      </HelperContainer>
+    );
 
     return (
       <>
         <Grid item xs={12} sm={12} md={12}>
-          <div className={classes.sectionTitle}>
+          <SectionTitle>
             <H5>Ports</H5>
-            {/* <Tooltip title={helperContainer}>
-            <HelpIcon fontSize="small" className={classes.helperTextIcon} />
-          </Tooltip> */}
-          </div>
+            <Tooltip title={helperContainer}>
+              <HelpIcon fontSize="small" className={classes.helperTextIcon} />
+            </Tooltip>
+          </SectionTitle>
         </Grid>
         <Grid item xs={12} sm={12} md={12}>
           <Ports />
@@ -371,12 +372,12 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return (
       <>
         <Grid item xs={12} sm={12} md={12}>
-          <div className={classes.sectionTitle}>
+          <SectionTitle>
             <H5>Volumes</H5>
             <Tooltip title={helperContainer}>
               <HelpIcon fontSize="small" className={classes.helperTextIcon} />
             </Tooltip>
-          </div>
+          </SectionTitle>
         </Grid>
         <Grid item xs={12} sm={12} md={12}>
           <Volumes />
@@ -386,7 +387,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderConfigs() {
-    const { classes } = this.props;
+    // const { classes } = this.props;
 
     // const helperContainer = (
     //   <HelperContainer>
@@ -397,12 +398,12 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return (
       <>
         <Grid item xs={12} sm={12} md={12}>
-          <div className={classes.sectionTitle}>
+          <SectionTitle>
             <H5>Configs</H5>
             {/* <Tooltip title={helperContainer}>
             <HelpIcon fontSize="small" className={classes.helperTextIcon} />
           </Tooltip> */}
-          </div>
+          </SectionTitle>
         </Grid>{" "}
         <Grid item xs={12} sm={12} md={12}>
           <Configs />
@@ -500,7 +501,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
                   rel="noopener noreferrer">
                   related discussion
                 </a>{" "}
-                for more details. .
+                for more details.
               </>
             )
           },
@@ -538,15 +539,66 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderDnsPolicy() {
-    const { classes } = this.props;
+  private getDnsPolicyOptions() {
+    return [
+      {
+        value: "Default",
+        label: "Default",
+        explain: (
+          <>
+            The Pod inherits the name resolution configuration from the node that the pods run on. See{" "}
+            <a
+              target="_blank"
+              href="https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/#inheriting-dns-from-the-node"
+              rel="noopener noreferrer">
+              related discussion
+            </a>{" "}
+            for more details.
+          </>
+        )
+      },
+      {
+        value: "ClusterFirst",
+        label: "ClusterFirst",
+        explain: (
+          <>
+            Any DNS query that does not match the configured cluster domain suffix, such as “www.kubernetes.io”, is
+            forwarded to the upstream nameserver inherited from the node. Cluster administrators may have extra
+            stub-domain and upstream DNS servers configured. See{" "}
+            <a
+              target="_blank"
+              href="https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/#impacts-on-pods"
+              rel="noopener noreferrer">
+              related discussion
+            </a>{" "}
+            for details on how DNS queries are handled in those cases.
+          </>
+        )
+      },
+      {
+        value: "ClusterFirstWithHostNet",
+        label: "ClusterFirstWithHostNet",
+        explain: (
+          <>For Pods running with hostNetwork, you should explicitly set its DNS policy “ClusterFirstWithHostNet”.</>
+        )
+      },
+      {
+        value: "None",
+        label: "None",
+        explain: <>It allows a Pod to ignore DNS settings from the Kubernetes environment.</>
+      }
+    ];
+  }
 
+  private renderDnsPolicy() {
     return (
       <>
         <Grid item xs={12} sm={12} md={12}>
-          <H5>DNS Policy</H5>
+          <SectionTitle>
+            <H5>DNS Policy</H5>
+          </SectionTitle>
         </Grid>
-        <Grid item xs={6} sm={6} md={6}>
+        {/* <Grid item xs={6} sm={6} md={6}>
           <div className={classes.helperField}>
             <Field
               name="dnsPolicy"
@@ -563,6 +615,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               <HelpIcon fontSize="small" className={classes.helperSelectIcon} />
             </Tooltip>
           </div>
+        </Grid> */}
+        <Grid item xs={12} sm={12} md={12}>
+          <Field component={KRadioGroupRender} name="dnsPolicy" options={this.getDnsPolicyOptions()} />
         </Grid>
       </>
     );
@@ -598,12 +653,12 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
     return (
       <>
-        <div className={classes.sectionTitle}>
+        <SectionTitle>
           <H5>Plugins</H5>
           <Tooltip title={helperContainer}>
             <HelpIcon fontSize="small" className={classes.helperTextIcon} />
           </Tooltip>
-        </div>
+        </SectionTitle>
 
         <Grid container spacing={2}>
           <Grid item xs={12} sm={12} md={12}>
@@ -618,7 +673,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return (
       <>
         <Grid item xs={12} sm={12} md={12}>
-          <H5>Launch Items</H5>
+          <SectionTitle>
+            <H5>Launch Items</H5>
+          </SectionTitle>
         </Grid>
 
         <Grid item xs={6} sm={6} md={6}>
@@ -662,7 +719,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       <>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={12} md={12}>
-            <H5>Resources</H5>
+            <SectionTitle>
+              <H5>Resources</H5>
+            </SectionTitle>
           </Grid>
 
           <Grid item xs={6} sm={6} md={6}>
@@ -712,7 +771,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return (
       <Grid container spacing={2}>
         {/* <Grid item xs={12} sm={12} md={12}>
-          <H5>Health</H5>
+          <SectionTitle>
+            <H5>Health</H5>
+          </SectionTitle>
         </Grid> */}
         <Grid item xs={6} sm={6} md={6}>
           <LivenessProbe />
@@ -728,7 +789,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return (
       <Grid container spacing={2}>
         {/* <Grid item xs={12} sm={12} md={12}>
+          <SectionTitle>
           <H5>Networking</H5>
+          </SectionTitle>
         </Grid> */}
         {this.renderPorts()}
         {this.renderDnsPolicy()}
@@ -736,21 +799,40 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
+  private getPodAffinityOptions() {
+    return [
+      {
+        value: "PodAffinityTypePreferFanout",
+        label: "Prefer Fanout",
+        explain: "Deploy Pod average to Nodes."
+      },
+      {
+        value: "PodAffinityTypePreferGather",
+        label: "Prefer Gather",
+        explain: "Prefer deployment to Node that is already in use."
+      }
+    ];
+  }
+
   private renderNodeScheduling() {
     const { nodeLabels } = this.props;
     return (
       <Grid container spacing={2}>
         <Grid item xs={12} sm={12} md={12}>
-          <H5>Node Labels</H5>
+          <SectionTitle>
+            <H5>Node Labels</H5>
+          </SectionTitle>
         </Grid>
         <Grid item xs={6} sm={6} md={6}>
-          <CustomLabels nodeLabels={nodeLabels} />
+          <Field name="nodeSelectorLabels" component={RenderSelectLabels} nodeLabels={nodeLabels} />
         </Grid>
         <Grid item xs={12} sm={12} md={12}>
-          <H5>Node Affinity Policy</H5>
+          <SectionTitle>
+            <H5>Node Affinity Policy</H5>
+          </SectionTitle>
         </Grid>
         <Grid item xs={6} sm={6} md={6}>
-          <AffinityType />
+          <Field name="podAffinityType" component={KRadioGroupRender} options={this.getPodAffinityOptions()} />
         </Grid>
       </Grid>
     );
@@ -761,7 +843,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return (
       <Grid container spacing={2}>
         <Grid item xs={12} sm={12} md={12}>
-          <H5>UpgradePolicy</H5>
+          <SectionTitle>
+            <H5>UpgradePolicy</H5>
+          </SectionTitle>
         </Grid>
         <Grid item xs={6} sm={6} md={6}>
           <div className={classes.helperField}>

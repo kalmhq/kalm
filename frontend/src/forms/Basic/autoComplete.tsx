@@ -304,3 +304,85 @@ function KFreeSoloAutoCompleteSingleValueRaw<T>(
 export const KFreeSoloAutoCompleteSingleValue = withStyles(KFreeSoloAutoCompleteSingleValueStyles)(
   KFreeSoloAutoCompleteSingleValueRaw
 );
+
+interface AutoCompleteFreeSoloProps {
+  label?: string;
+  options: string[];
+}
+
+export const RenderAutoCompleteFreeSolo = (props: WrappedFieldProps & AutoCompleteFreeSoloProps) => {
+  const {
+    options,
+    input,
+    label,
+    // helperText,
+    meta: { touched, invalid, error }
+  } = props;
+  return (
+    <Autocomplete
+      freeSolo
+      disableClearable
+      options={options.map(option => option)}
+      defaultValue={input.value || ""}
+      onChange={(event: React.ChangeEvent<{}>, value: string | null) => {
+        if (value) {
+          input.onChange(value);
+        }
+      }}
+      renderInput={params => (
+        <TextField
+          {...params}
+          label={label}
+          margin="dense"
+          variant="outlined"
+          fullWidth
+          size="small"
+          error={touched && invalid}
+          helperText={touched && error}
+          // defaultValue={input.value || ""}
+          onChange={(event: any) => {
+            input.onChange(event.target.value);
+          }}
+        />
+      )}
+    />
+  );
+};
+
+interface AutoCompleteSelectProps {
+  label?: string;
+  required?: boolean;
+  children: React.ReactElement<{ children: string; value: string }>[];
+}
+
+export const RenderAutoCompleteSelect = ({ input, label, children }: WrappedFieldProps & AutoCompleteSelectProps) => {
+  children = React.Children.toArray(children);
+
+  const options = children.map(item => ({
+    text: item.props.children,
+    value: item.props.value
+  }));
+
+  let selectedOption = options.find(x => x.value === input.value);
+
+  if (!selectedOption) {
+    selectedOption = options[0];
+  }
+
+  // TODO, if there is no options, we should disabled the add existing disk
+
+  return (
+    <Autocomplete
+      options={options}
+      getOptionLabel={option => option.text}
+      value={selectedOption}
+      disableClearable
+      onChange={(event: React.ChangeEvent<{}>, value: { text: string; value: string } | null) => {
+        if (value) {
+          input.onChange(value.value);
+        }
+      }}
+      renderInput={params => <TextField {...params} label={label} variant="outlined" fullWidth size="small" />}
+    />
+  );
+};
