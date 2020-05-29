@@ -118,19 +118,28 @@ func (r *KappNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 func (r *KappNSReconciler) reconcileDefaultCAIssuerAndCert() error {
 	defaultCAIssuerName := "default-cert-issuer"
 
-	caIssuer := v1alpha1.HttpsCertIssuer{}
-	err := r.Get(r.ctx, types.NamespacedName{Name: defaultCAIssuerName}, &caIssuer)
-	if errors.IsNotFound(err) {
-		caIssuer = v1alpha1.HttpsCertIssuer{
-			ObjectMeta: metav1.ObjectMeta{
-				Name: defaultCAIssuerName,
-			},
-			Spec: v1alpha1.HttpsCertIssuerSpec{
-				CAForTest: &v1alpha1.CAForTestIssuer{},
-			},
+	expectedCAIssuer := v1alpha1.HttpsCertIssuer{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: defaultCAIssuerName,
+		},
+		Spec: v1alpha1.HttpsCertIssuerSpec{
+			CAForTest: &v1alpha1.CAForTestIssuer{},
+		},
+	}
+
+	currentCAIssuer := v1alpha1.HttpsCertIssuer{}
+	err := r.Get(r.ctx, types.NamespacedName{Name: defaultCAIssuerName}, &currentCAIssuer)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return err
 		}
 
-		if err := r.Create(r.ctx, &caIssuer); err != nil {
+		if err := r.Create(r.ctx, &expectedCAIssuer); err != nil {
+			return err
+		}
+	} else {
+		currentCAIssuer.Spec = expectedCAIssuer.Spec
+		if err := r.Update(r.ctx, &currentCAIssuer); err != nil {
 			return err
 		}
 	}
