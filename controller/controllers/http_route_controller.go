@@ -38,14 +38,7 @@ import (
 )
 
 const (
-	DEFAULT_HTTPS_CERT_NAME = "default-https-cert"
-	KAPP_ROUTE_LABEL        = "kapp-route"
-
-	HTTP_GATEWAY_NAME = "istio-system/istio-ingressgateway"
-)
-
-var (
-	HTTPS_GATEWAY_NAME = fmt.Sprintf("%s/%s", KAPP_GATEWAY_NAMESPACE, KAPP_GATEWAY_NAME)
+	KAPP_ROUTE_LABEL = "kapp-route"
 )
 
 type HttpRouteReconcilerTask struct {
@@ -275,7 +268,8 @@ func (r *HttpRouteReconcilerTask) SaveVirtualService(host string, routes []*isti
 	virtualService.Spec.Http = routes
 	virtualService.Spec.ExportTo = []string{"*"}
 	virtualService.Spec.Gateways = []string{
-		HTTP_GATEWAY_NAME, HTTPS_GATEWAY_NAME,
+		HTTP_GATEWAY_NAMESPACED_NAME.String(),
+		HTTPS_GATEWAY_NAMESPACED_NAME.String(),
 	}
 
 	if !found {
@@ -395,16 +389,26 @@ func (r *HttpRouteReconcilerTask) BuildMatches(route *corev1alpha1.HttpRoute) []
 				},
 			}
 
-			// only support one scheme, control the gateway
-			if len(spec.Schemes) < 2 {
-				if spec.Schemes[0] == "http" {
-					match.Gateways = []string{
-						HTTP_GATEWAY_NAME,
-					}
+			match.Gateways = make([]string, 0, 2)
+
+			for _, scheme := range spec.Schemes {
+				if scheme == "http" {
+					//if spec.HttpRedirectToHttps {
+					//	match.Gateways = append(
+					//		match.Gateways,
+					//		HTTP_REDIRECT_GATEWAY_NAMESPACED_NAME.String(),
+					//	)
+					//} else {
+					match.Gateways = append(
+						match.Gateways,
+						HTTP_GATEWAY_NAMESPACED_NAME.String(),
+					)
+					//}
 				} else {
-					match.Gateways = []string{
-						HTTPS_GATEWAY_NAME,
-					}
+					match.Gateways = append(
+						match.Gateways,
+						HTTPS_GATEWAY_NAMESPACED_NAME.String(),
+					)
 				}
 			}
 

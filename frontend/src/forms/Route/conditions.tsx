@@ -5,7 +5,7 @@ import { Field } from "redux-form/immutable";
 import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { HttpRouteCondition } from "../../types/route";
-import { RenderSelectField } from "../Basic";
+import { RenderSelectField } from "../Basic/select";
 import { KRenderTextField } from "../Basic/textfield";
 import { ValidatorRequired } from "../validator";
 

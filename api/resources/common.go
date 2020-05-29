@@ -38,7 +38,6 @@ type ResourceChannels struct {
 	//ApplicationPluginBindingList *ApplicationPluginBindingListChannel
 	DockerRegistryList           *DockerRegistryListChannel
 	SecretList                   *SecretListChannel
-	HttpsCertIssuerList          *HttpsCertIssuerListChannel
 }
 
 type Resources struct {
@@ -170,14 +169,6 @@ func (c *ResourceChannels) ToResources() (r *Resources, err error) {
 			return nil, err
 		}
 		resources.Secrets = <-c.SecretList.List
-	}
-
-	if c.HttpsCertIssuerList != nil {
-		err = <-c.HttpsCertIssuerList.Error
-		if err != nil {
-			return nil, err
-		}
-		resources.HttpsCertIssuers = <-c.HttpsCertIssuerList.List
 	}
 
 	return resources, nil

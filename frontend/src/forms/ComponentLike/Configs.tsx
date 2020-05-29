@@ -3,7 +3,7 @@ import { connect, DispatchProp } from "react-redux";
 import { WrappedFieldArrayProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
 import { ConfigMount } from "../../types/componentTemplate";
-import { RenderTextField } from "../Basic";
+import { KRenderTextField } from "../Basic/textfield";
 import { FieldArrayWrapper } from "../Basic/FieldArrayWrapper";
 import { NormalizePort } from "../normalizer";
 import { ValidatorRequired } from "../validator";
@@ -28,7 +28,7 @@ class RenderConfigs extends React.PureComponent<Props> {
         margin
         validate={[ValidatorRequired]}
         normalize={NormalizePort}
-        component={RenderTextField}
+        component={KRenderTextField}
       />
     ];
   }

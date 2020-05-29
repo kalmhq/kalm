@@ -17,7 +17,7 @@ export const TextField = ({
       helperText={(touched && error) || textFieldProps.helperText}
       fullWidth
       size="small"
-      margin="normal"
+      margin="dense"
       variant="outlined"
       onChange={(event: any) => input.onChange(event.target.value)}
       value={input.value}
@@ -50,7 +50,7 @@ export const TextFieldChangeOnBlur = ({
       helperText={(touched && error) || textFieldProps.helperText}
       fullWidth
       size="small"
-      margin="normal"
+      margin="dense"
       variant="outlined"
       onChange={handleChange}
       value={value}
@@ -77,7 +77,7 @@ export const MaterialTableEditTextField = ({
       autoComplete="off"
       fullWidth
       size="small"
-      margin="normal"
+      margin="dense"
       variant="outlined"
       onChange={handleChange}
       value={value || ""}

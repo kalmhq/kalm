@@ -1,6 +1,6 @@
 import { createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import React from "react";
-import { RenderTextField } from "../Basic";
+import { KRenderTextField } from "../Basic/textfield";
 import { ValidatorCPU, ValidatorMemory } from "../validator";
 import { DispatchProp } from "react-redux";
 import { change } from "redux-form";
@@ -40,7 +40,7 @@ class ComponentResourcesRaw extends React.PureComponent<ComponentResourcesProps>
       <Grid container spacing={2}>
         <Grid item xs={12} sm={6} md={6}>
           <Field
-            component={RenderTextField}
+            component={KRenderTextField}
             // className={classes.input}
             name="cpu"
             label="CPU"
@@ -52,7 +52,7 @@ class ComponentResourcesRaw extends React.PureComponent<ComponentResourcesProps>
         </Grid>
         <Grid item xs={12} sm={6} md={6}>
           <Field
-            component={RenderTextField}
+            component={KRenderTextField}
             // className={classes.input}
             name="memory"
             label="Memory"

@@ -3,14 +3,6 @@ import { Typography, TypographyProps, Box } from "@material-ui/core";
 import { withStyles, createStyles, WithStyles } from "@material-ui/styles";
 import { theme } from "theme";
 
-export const SectionTitle = (title: string, className: string = "") => (
-  <Typography variant="subtitle1" color="textPrimary">
-    <Box fontWeight="300" m={1}>
-      {title}
-    </Box>
-  </Typography>
-);
-
 const styles = () =>
   createStyles({
     root: {

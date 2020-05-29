@@ -33,7 +33,7 @@ export class FieldArrayWrapper extends React.PureComponent<Props> {
         <Button
           color="primary"
           size="large"
-          style={{ position: "absolute", right: 0, top: fields.length === 0 ? -22 : -10 }}
+          style={{ position: "absolute", right: 0, top: fields.length === 0 ? -38 : -10 }}
           onClick={() => (onAdd ? onAdd() : fields.push(Immutable.Map({})))}>
           Add
         </Button>
@@ -41,7 +41,7 @@ export class FieldArrayWrapper extends React.PureComponent<Props> {
           const fieldComponents = getFieldComponents(member);
 
           return (
-            <Grid container spacing={3} key={member}>
+            <Grid container spacing={2} key={member}>
               {fieldComponents.map((fieldComponent, fieldIndex) => {
                 return (
                   <Grid item xs key={fieldIndex}>
@@ -50,7 +50,7 @@ export class FieldArrayWrapper extends React.PureComponent<Props> {
                 );
               })}
 
-              <Grid item xs style={{ paddingTop: 22 }}>
+              <Grid item xs>
                 <IconButtonWithTooltip
                   tooltipPlacement="top"
                   tooltipTitle="Delete"
