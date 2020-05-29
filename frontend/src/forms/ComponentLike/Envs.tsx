@@ -5,10 +5,11 @@ import { connect, DispatchProp } from "react-redux";
 import { WrappedFieldArrayProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
 import { EnvTypeExternal, EnvTypeLinked, EnvTypeStatic } from "../../types/common";
-import { RenderTextField, RenderAutoCompleteFreeSolo, RenderSelectField } from "../Basic";
+import { RenderTextField, RenderAutoCompleteFreeSolo } from "../Basic";
 import { FieldArrayWrapper } from "../Basic/FieldArrayWrapper";
 import { ValidatorRequired } from "../validator";
 import { SharedEnv } from "../../types/application";
+import { RenderSelectField } from "../Basic/select";
 
 interface FieldArrayComponentHackType {
   name: any;

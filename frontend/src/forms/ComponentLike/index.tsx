@@ -29,7 +29,7 @@ import { TDispatchProp } from "../../types";
 import { SharedEnv } from "../../types/application";
 import { ComponentLike, workloadTypeCronjob, workloadTypeServer } from "../../types/componentTemplate";
 import { HelperContainer } from "../../widgets/Helper";
-import { RenderTextField, RenderSelectField } from "../Basic";
+import { RenderTextField } from "../Basic";
 import { NormalizeNumber } from "../normalizer";
 import { ValidatorCPU, ValidatorMemory, ValidatorName, ValidatorRequired, ValidatorSchedule } from "../validator";
 import { Configs } from "./Configs";
@@ -39,6 +39,7 @@ import { Plugins } from "./Plugins";
 import { Ports } from "./Ports";
 import { Volumes } from "./Volumes";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
+import { RenderSelectField } from "../Basic/select";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;

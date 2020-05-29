@@ -6,9 +6,10 @@ import { FieldArray, Field } from "redux-form/immutable";
 import { NormalizePort } from "../normalizer";
 import { ComponentLikePort } from "../../types/componentTemplate";
 import { portTypeUDP, portTypeTCP } from "../../types/common";
-import { RenderTextField, RenderSelectField } from "../Basic";
+import { RenderTextField } from "../Basic";
 import { ValidatorRequired } from "../validator";
 import { FieldArrayWrapper } from "../Basic/FieldArrayWrapper";
+import { RenderSelectField } from "../Basic/select";
 
 interface FieldArrayComponentHackType {
   name: any;

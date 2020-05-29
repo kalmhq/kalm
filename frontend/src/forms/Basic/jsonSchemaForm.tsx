@@ -14,7 +14,7 @@ interface Props extends TDispatchProp {
 
 interface State {}
 
-export class RenderDynamicForm extends React.PureComponent<Props & WrappedFieldProps, State> {
+export class RenderJsonSchemaForm extends React.PureComponent<Props & WrappedFieldProps, State> {
   constructor(props: Props & WrappedFieldProps) {
     super(props);
     this.state = {};

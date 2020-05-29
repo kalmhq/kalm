@@ -12,9 +12,10 @@ import {
   VolumeTypeTemporaryDisk,
   VolumeTypeTemporaryMemory
 } from "../../types/componentTemplate";
-import { RenderTextField, RenderSelectField } from "../Basic";
+import { RenderTextField } from "../Basic";
 import { FieldArrayWrapper } from "../Basic/FieldArrayWrapper";
 import { ValidatorRequired } from "../validator";
+import { RenderSelectField } from "../Basic/select";
 
 const mapStateToProps = (state: RootState) => {
   return {};

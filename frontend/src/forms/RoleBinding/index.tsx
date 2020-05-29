@@ -1,6 +1,6 @@
 import { MenuItem, Grid } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
-import { ReduxFormMutipleSelectField, ReduxFormSelectField } from "forms/Basic/select";
+import { RenderMutipleSelectField, RenderSelectField } from "forms/Basic/select";
 import { TextField } from "forms/Basic/text";
 import Immutable from "immutable";
 import React from "react";
@@ -56,7 +56,7 @@ class RoleBindingFormRaw extends React.PureComponent<Props> {
             name="namespace"
             label="Namespace"
             autoFocus
-            component={ReduxFormSelectField}
+            component={RenderSelectField}
             validate={ValidatorRequired}>
             {namespaces.map(namespace => {
               return (
@@ -68,7 +68,7 @@ class RoleBindingFormRaw extends React.PureComponent<Props> {
           </Field>
         </Grid>
         <Grid item md={6}>
-          <Field name={`kind`} component={ReduxFormSelectField} label="Kind">
+          <Field name={`kind`} component={RenderSelectField} label="Kind">
             <MenuItem value="Group">Group</MenuItem>
             <MenuItem value="User">User</MenuItem>
             <MenuItem value="ServiceAccount">ServiceAccount</MenuItem>
@@ -86,7 +86,7 @@ class RoleBindingFormRaw extends React.PureComponent<Props> {
         <Grid item md={12}>
           <Field
             name="roles"
-            component={ReduxFormMutipleSelectField}
+            component={RenderMutipleSelectField}
             label="Roles"
             validate={ValidatorRequired}
             options={[

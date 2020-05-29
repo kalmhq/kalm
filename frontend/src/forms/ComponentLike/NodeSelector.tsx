@@ -9,7 +9,7 @@ import {
   PodAffinityTypePreferFanout,
   PodAffinityTypePreferGather
 } from "../../types/componentTemplate";
-import { RenderSelectField } from "../Basic";
+import { RenderSelectField } from "../Basic/select";
 import Checkbox from "@material-ui/core/Checkbox";
 import TextField from "@material-ui/core/TextField";
 import Autocomplete from "@material-ui/lab/Autocomplete";

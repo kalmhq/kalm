@@ -7,8 +7,9 @@ import { WrappedFieldProps } from "redux-form";
 import { Field } from "redux-form/immutable";
 import { HttpHeader, HttpHeaders } from "../../types/componentTemplate";
 import { H5 } from "../../widgets/Label";
-import { RenderSelectField, RenderTextField } from "../Basic";
+import { RenderTextField } from "../Basic";
 import { ValidatorHttpHeaders, ValidatorNumberOrAlphabet, ValidatorRequired } from "../validator";
+import { RenderSelectField } from "../Basic/select";
 
 interface FieldComponentHackType {
   name: any;
