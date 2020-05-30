@@ -191,6 +191,15 @@ func (builder *Builder) CreateSelfManagedHttpsCert(cert HttpsCert) (HttpsCert, e
 		return HttpsCert{}, err
 	}
 
+	var domains []string
+	if len(x509Cert.DNSNames) > 0 {
+		domains = x509Cert.DNSNames
+	} else if x509Cert.Subject.CommonName != "" {
+		domains = []string{x509Cert.Subject.CommonName}
+	} else {
+		return HttpsCert{}, fmt.Errorf("fail to find domain name in cert")
+	}
+
 	ok := checkPrivateKey(x509Cert, cert.SelfManagedCertPrvKey)
 	if !ok {
 		return HttpsCert{}, fmt.Errorf("privateKey and cert not match")
@@ -209,7 +218,7 @@ func (builder *Builder) CreateSelfManagedHttpsCert(cert HttpsCert) (HttpsCert, e
 		Spec: v1alpha1.HttpsCertSpec{
 			IsSelfManaged:             true,
 			SelfManagedCertSecretName: certSecretName,
-			Domains:                   x509Cert.DNSNames,
+			Domains:                   domains,
 		},
 	}
 
