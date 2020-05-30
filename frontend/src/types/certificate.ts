@@ -5,6 +5,7 @@ export const LOAD_CERTIFICATES_FULFILLED = "LOAD_CERTIFICATES_FULFILLED";
 export const LOAD_CERTIFICATES_PENDING = "LOAD_CERTIFICATES_PENDING";
 export const LOAD_CERTIFICATES_FAILED = "LOAD_CERTIFICATES_FAILED";
 export const SET_IS_SUBMITTING_CERTIFICATE = "SET_IS_SUBMITTING_CERTIFICATE";
+export const SET_IS_SHOW_ADD_CERTIFICATE_MODAL = "SET_IS_SHOW_ADD_CERTIFICATE_MODAL";
 export const DELETE_CERTIFICATE = "DELETE_CERTIFICATE";
 
 export interface LoadCertificatesPendingAction {
@@ -36,11 +37,36 @@ export interface DeleteCertificate {
   };
 }
 
+export interface SetIsShowAddCertificateModal {
+  type: typeof SET_IS_SHOW_ADD_CERTIFICATE_MODAL;
+  payload: {
+    isShowAddCertificateModal: boolean;
+  };
+}
+
 export type CertificateList = Immutable.List<Certificate>;
 
-export type CertificateForm = ImmutableMap<Certificate>;
+export interface CertificateFormTypeContent extends CertificateContent {
+  managedType: typeof selfManaged | typeof issuerManaged;
+}
+
+export const selfManaged = "selfManaged";
+export const issuerManaged = "issuerManaged";
+
+export type CertificateFormType = ImmutableMap<CertificateFormTypeContent>;
 
 export type Certificate = ImmutableMap<CertificateContent>;
+
+export const newEmptyCertificateForm = (): CertificateFormType => {
+  return Immutable.fromJS({
+    name: "",
+    managedType: selfManaged,
+    selfManagedCertContent: "",
+    selfManagedCertPrivateKey: "",
+    httpsCertIssuer: "",
+    domains: null
+  });
+};
 
 export interface CertificateContent {
   name: string;
@@ -48,7 +74,7 @@ export interface CertificateContent {
   selfManagedCertContent: string;
   selfManagedCertPrivateKey: string;
   httpsCertIssuer: string;
-  domains: string[];
+  domains: Immutable.List<string> | null;
 }
 
 export type CertificateActions =
@@ -56,4 +82,5 @@ export type CertificateActions =
   | LoadCertificatesFailedAction
   | LoadCertificatesAction
   | SetIsSubmittingCertificate
-  | DeleteCertificate;
+  | DeleteCertificate
+  | SetIsShowAddCertificateModal;

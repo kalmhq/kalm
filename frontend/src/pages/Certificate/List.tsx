@@ -5,11 +5,11 @@ import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { ApplicationViewDrawer } from "widgets/ApplicationViewDrawer";
+import { NewModal } from "./New";
 import { CustomizedButton } from "widgets/Button";
 import { H4 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
-import { loadCertificates, deleteCertificateAction } from "actions/certificate";
+import { loadCertificates, deleteCertificateAction, setIsShowAddCertificateModal } from "actions/certificate";
 import { grey } from "@material-ui/core/colors";
 import MaterialTable from "material-table";
 import { customSearchForImmutable } from "../../utils/tableSearch";
@@ -178,21 +178,21 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     const { classes, dispatch, isFirstLoaded, isLoading } = this.props;
     return (
       <BasePage
-        leftDrawer={<ApplicationViewDrawer />}
         secondHeaderRight={
           <div className={classes.secondHeaderRight}>
-            <H4 className={classes.secondHeaderRightItem}>Routes</H4>
+            <H4 className={classes.secondHeaderRightItem}>Certificates</H4>
             <CustomizedButton
               color="primary"
               size="large"
               className={classes.secondHeaderRightItem}
               onClick={() => {
-                dispatch(push(`/certificate/new`));
+                dispatch(setIsShowAddCertificateModal(true));
               }}>
               Add
             </CustomizedButton>
           </div>
         }>
+        <NewModal />
         {this.renderDeleteConfirmDialog()}
         <div className={classes.root}>
           {isLoading && !isFirstLoaded ? (

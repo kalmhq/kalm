@@ -10,6 +10,7 @@ import {
   Theme
 } from "@material-ui/core";
 import AssignmentReturnedIcon from "@material-ui/icons/AssignmentReturned";
+import VerifiedUser from "@material-ui/icons/VerifiedUser";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import { WithStyles, withStyles } from "@material-ui/styles";
@@ -119,6 +120,11 @@ class DashboardDrawerRaw extends React.PureComponent<Props, State> {
         icon: KappTemplateIcon,
         text: "Templates",
         to: "/templates"
+      },
+      {
+        icon: VerifiedUser,
+        text: "Certificates",
+        to: "/certificates"
       }
     ];
   }

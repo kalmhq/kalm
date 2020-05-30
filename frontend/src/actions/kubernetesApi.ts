@@ -19,7 +19,7 @@ import {
 import { ComponentTemplate } from "../types/componentTemplate";
 import { ConfigCreate, ConfigRes } from "../types/config";
 import { RegistryType } from "types/registry";
-import { CertificateList, Certificate } from "types/certificate";
+import { CertificateList, Certificate, CertificateFormType } from "types/certificate";
 import { HttpRoute } from "types/route";
 
 export const K8sApiPrefix = process.env.REACT_APP_K8S_API_PERFIX;
@@ -329,7 +329,7 @@ export const getCertificateList = async (): Promise<CertificateList> => {
   return Immutable.fromJS(res.data);
 };
 
-export const createCertificate = async (certificate: Certificate): Promise<ApplicationDetails> => {
+export const createCertificate = async (certificate: CertificateFormType): Promise<ApplicationDetails> => {
   const res = await getAxiosClient().post(K8sApiPrefix + `/v1alpha1/httpscerts/upload`, certificate);
 
   return Immutable.fromJS(res.data);

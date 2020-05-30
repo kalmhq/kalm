@@ -7,13 +7,15 @@ import {
   CertificateList,
   SET_IS_SUBMITTING_CERTIFICATE,
   LOAD_CERTIFICATES_FULFILLED,
-  DELETE_CERTIFICATE
+  DELETE_CERTIFICATE,
+  SET_IS_SHOW_ADD_CERTIFICATE_MODAL
 } from "types/certificate";
 
 export type State = ImmutableMap<{
   isLoading: boolean;
   isFirstLoaded: boolean;
   isSubmittingCreateCertificate: boolean;
+  isShowAddCertificateModal: boolean;
   certificates: CertificateList;
 }>;
 
@@ -21,6 +23,7 @@ const initialState: State = Immutable.Map({
   isLoading: false,
   isFirstLoaded: false,
   isSubmittingCreateCertificate: false,
+  isShowAddCertificateModal: false,
   certificates: Immutable.List()
 });
 
@@ -34,8 +37,11 @@ const reducer = (state: State = initialState, action: Actions): State => {
     }
     case LOAD_CERTIFICATES_FULFILLED: {
       state = state.set("isFirstLoaded", true);
-      state = state.set("certificates", action.payload.certificates);
+      state = state.set("certificates", action.payload.certificates || Immutable.List());
       break;
+    }
+    case SET_IS_SHOW_ADD_CERTIFICATE_MODAL: {
+      return state.set("isShowAddCertificateModal", action.payload.isShowAddCertificateModal);
     }
     case DELETE_CERTIFICATE: {
       const certificates = state.get("certificates");

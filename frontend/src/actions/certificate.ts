@@ -5,7 +5,11 @@ import {
   Certificate,
   SET_IS_SUBMITTING_CERTIFICATE,
   SetIsSubmittingCertificate,
-  DELETE_CERTIFICATE
+  DELETE_CERTIFICATE,
+  SET_IS_SHOW_ADD_CERTIFICATE_MODAL,
+  SetIsShowAddCertificateModal,
+  CertificateFormType,
+  selfManaged
 } from "types/certificate";
 import { StatusFailure, ThunkResult } from "../types";
 import { setErrorNotificationAction } from "./notification";
@@ -13,6 +17,15 @@ import { getCertificateList, createCertificate, deleteCertificate } from "./kube
 import { resErrorsToSubmitErrors } from "utils";
 import { SubmissionError } from "redux-form";
 import Immutable from "immutable";
+
+export const setIsShowAddCertificateModal = (isShowAddCertificateModal: boolean): SetIsShowAddCertificateModal => {
+  return {
+    type: SET_IS_SHOW_ADD_CERTIFICATE_MODAL,
+    payload: {
+      isShowAddCertificateModal
+    }
+  };
+};
 
 export const deleteCertificateAction = (name: string): ThunkResult<Promise<void>> => {
   return async dispatch => {
@@ -56,11 +69,13 @@ export const loadCertificates = (): ThunkResult<Promise<void>> => {
   };
 };
 
-export const createCertificateAction = (certificateContent: Certificate): ThunkResult<Promise<void>> => {
+export const createCertificateAction = (certificateContent: CertificateFormType): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch(setIsSubmittingCertificate(true));
     try {
-      const certificate = await createCertificate(certificateContent);
+      await createCertificate(
+        certificateContent.set("isSelfManaged", certificateContent.get("managedType") === selfManaged)
+      );
     } catch (e) {
       console.log(e);
       if (e.response && e.response.data.errors && e.response.data.errors.length > 0) {
