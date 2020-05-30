@@ -1,8 +1,8 @@
-import { Box, Button, Collapse, FormControl, FormLabel, Icon, Link, Typography } from "@material-ui/core";
+import { Box, Button, Collapse, Icon, Link, Typography } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { Alert, AlertTitle } from "@material-ui/lab";
 import { KFreeSoloAutoCompleteMultiValues } from "forms/Basic/autoComplete";
-import { KBoolCheckboxRender, KCheckboxGroupRender } from "forms/Basic/checkbox";
+import { KCheckboxGroupRender } from "forms/Basic/checkbox";
 import { KRadioGroupRender } from "forms/Basic/radio";
 import {
   KValidatorHosts,
@@ -18,18 +18,27 @@ import { RootState } from "reducers";
 import { arrayPush, InjectedFormProps } from "redux-form";
 import { Field, FieldArray, formValueSelector, getFormSyncErrors, reduxForm } from "redux-form/immutable";
 import { TDispatchProp } from "types";
-import { HttpsCertification } from "types/httpsCertification";
 import { HttpRouteDestination, HttpRouteForm, methodsModeAll, methodsModeSpecific } from "types/route";
 import { arraysMatch } from "utils";
 import { RenderHttpRouteConditions } from "./conditions";
 import { RenderHttpRouteDestinations } from "./destinations";
 import { Expansion } from "./expansion";
+import { loadCertificates } from "actions/certificate";
+import { loadServicesAction } from "../../actions/service";
 
 const defaultFormID = "route";
 
 const mapStateToProps = (state: RootState, { form }: OwnProps) => {
   const selector = formValueSelector(form || defaultFormID);
   const syncErrors = getFormSyncErrors(form || defaultFormID)(state) as { [key: string]: any };
+  const certifications = state.get("certificates").get("certificates");
+  const domains: Set<string> = new Set();
+
+  certifications.forEach(x => {
+    x.get("domains")
+      .filter(x => x !== "*")
+      .forEach(domain => domains.add(domain));
+  });
 
   return {
     syncErrors,
@@ -37,21 +46,8 @@ const mapStateToProps = (state: RootState, { form }: OwnProps) => {
     schemes: selector(state, "schemes") as Immutable.List<string>,
     hosts: selector(state, "hosts") as Immutable.List<string>,
     destinations: selector(state, "destinations") as Immutable.List<HttpRouteDestination>,
-    domains: ["www.example.com", "www.example.io"],
-    certifications: Immutable.fromJS([
-      {
-        name: "example-production",
-        domains: ["example.io", "www.example.io"]
-      },
-      {
-        name: "example-wildcard",
-        domains: ["*.example.io", "*.example.io"]
-      },
-      {
-        name: "example-staging",
-        domains: ["*.staging.example.io"]
-      }
-    ]) as Immutable.List<HttpsCertification>
+    domains: Array.from(domains),
+    certifications
   };
 };
 
@@ -105,13 +101,20 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
       isValidCertificationUnfolded: false
     };
   }
+
   public componentDidMount() {
-    // this.props.dispatch(loadNamespacesAction());
+    const { dispatch } = this.props;
+    dispatch(loadCertificates());
+    dispatch(loadServicesAction(""));
   }
 
   private canCertDomainsSuiteForHost = (domains: Immutable.List<string>, host: string) => {
     for (let i = 0; i < domains.size; i++) {
       const domain = domains.get(i)!;
+      if (domain === "*") {
+        return false;
+      }
+
       if (domain.toLowerCase() === host.toLowerCase()) {
         return true;
       }
@@ -262,7 +265,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
             label="Hosts"
             component={KFreeSoloAutoCompleteMultiValues}
             name="hosts"
-            margin="normal"
+            margin="dense"
             validate={[ValidatorRequired, KValidatorHosts]}
             placeholder="Type a host"
             options={domains}
@@ -271,7 +274,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
             label="Paths"
             component={KFreeSoloAutoCompleteMultiValues}
             name="paths"
-            margin="normal"
+            margin="dense"
             validate={[ValidatorRequired, KValidatorPaths]}
             placeholder="Type a path"
             helperText='Allow to configure multiple paths. Each path must begin with "\".'
@@ -332,6 +335,14 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                   {
                     value: "HEAD",
                     label: "HEAD"
+                  },
+                  {
+                    value: "TRACE",
+                    label: "TRACE"
+                  },
+                  {
+                    value: "CONNECT",
+                    label: "CONNECT"
                   }
                 ]}
               />

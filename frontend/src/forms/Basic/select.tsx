@@ -1,67 +1,18 @@
-import React from "react";
 import {
+  Checkbox,
   FormControl,
   InputLabel,
-  Select,
-  SelectProps,
+  ListItemText,
   makeStyles,
   MenuItem,
-  Checkbox,
-  ListItemText,
+  Select,
+  SelectProps,
   Tooltip
 } from "@material-ui/core";
-import { EditComponentProps } from "material-table";
-import { ID } from "../../utils";
-import { WrappedFieldProps, WrappedFieldMetaProps } from "redux-form";
 import FormHelperText from "@material-ui/core/FormHelperText";
-
-export const MaterialTableEditSelectField = ({
-  value,
-  onChange,
-  selectProps,
-  children
-}: EditComponentProps<{}> & { selectProps: SelectProps; children?: React.ReactNode }) => {
-  const id = ID();
-  const labelId = ID();
-
-  const classes = makeStyles(_theme => ({
-    root: {
-      display: "flex"
-    }
-  }))();
-
-  const [labelWidth, setLabelWidth] = React.useState(0);
-
-  React.useEffect(() => {
-    setLabelWidth(inputLabel.current!.offsetWidth);
-  }, []);
-
-  const inputLabel = React.useRef<HTMLLabelElement>(null);
-
-  const handleOnChange = (event: React.ChangeEvent<{ name?: string; value: unknown }>, child: React.ReactNode) => {
-    onChange(event.target.value);
-  };
-
-  return (
-    <FormControl classes={{ root: classes.root }} variant="outlined" size="small">
-      <InputLabel ref={inputLabel} htmlFor={id} id={labelId}>
-        {selectProps.label}
-      </InputLabel>
-      <Select
-        labelWidth={labelWidth}
-        autoFocus={false}
-        labelId={labelId}
-        defaultValue={value}
-        value={value}
-        onChange={handleOnChange}
-        inputProps={{
-          id: id
-        }}>
-        {children}
-      </Select>
-    </FormControl>
-  );
-};
+import React from "react";
+import { WrappedFieldMetaProps, WrappedFieldProps } from "redux-form";
+import { ID } from "../../utils";
 
 const renderFormHelper = ({ touched, error }: Pick<WrappedFieldMetaProps, "touched" | "error">) => {
   if (!(touched && error)) {
@@ -71,7 +22,7 @@ const renderFormHelper = ({ touched, error }: Pick<WrappedFieldMetaProps, "touch
   }
 };
 
-export const ReduxFormSelectField = ({
+export const RenderSelectField = ({
   input,
   label,
   autoFocus,
@@ -104,7 +55,7 @@ export const ReduxFormSelectField = ({
       error={touched && error}
       variant="outlined"
       size="small"
-      margin="normal">
+      margin="dense">
       <InputLabel ref={inputLabel} htmlFor={id} id={labelId}>
         {label}
       </InputLabel>
@@ -136,7 +87,7 @@ const MenuProps = {
   }
 };
 
-export const ReduxFormMutipleSelectField = ({
+export const RenderMutipleSelectField = ({
   input,
   label,
   options,
@@ -169,7 +120,7 @@ export const ReduxFormMutipleSelectField = ({
       error={touched && error}
       variant="outlined"
       size="small"
-      margin="normal">
+      margin="dense">
       <InputLabel ref={inputLabel} htmlFor={id} id={labelId}>
         {label}
       </InputLabel>

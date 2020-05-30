@@ -1,16 +1,10 @@
 import { createMuiTheme } from "@material-ui/core";
-import { grey, green, red, indigo, amber } from "@material-ui/core/colors";
+import { grey, green, red, indigo } from "@material-ui/core/colors";
 
 export const primaryBackgroud = indigo[50];
 export const primaryColor = indigo[700];
 
 let themeRaw = createMuiTheme({
-  // @ts-ignore
-  "@global": {
-    a: {
-      color: indigo[700]
-    }
-  },
   props: {
     MuiTextField: {
       // variant: "outlined",
@@ -19,7 +13,7 @@ let themeRaw = createMuiTheme({
   },
   palette: {
     primary: indigo,
-    secondary: amber,
+    secondary: grey,
     success: {
       main: green[700]
     },

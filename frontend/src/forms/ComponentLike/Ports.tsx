@@ -6,9 +6,10 @@ import { FieldArray, Field } from "redux-form/immutable";
 import { NormalizePort } from "../normalizer";
 import { ComponentLikePort } from "../../types/componentTemplate";
 import { portTypeUDP, portTypeTCP } from "../../types/common";
-import { RenderTextField, RenderSelectField } from "../Basic";
+import { KRenderTextField } from "../Basic/textfield";
 import { ValidatorRequired } from "../validator";
 import { FieldArrayWrapper } from "../Basic/FieldArrayWrapper";
+import { RenderSelectField } from "../Basic/select";
 
 interface FieldArrayComponentHackType {
   name: any;
@@ -22,13 +23,13 @@ interface Props extends WrappedFieldArrayProps<ComponentLikePort>, FieldArrayCom
 class RenderPorts extends React.PureComponent<Props> {
   public getFieldComponents(member: string) {
     return [
-      <Field component={RenderTextField} name={`${member}.name`} label="Name" margin validate={[ValidatorRequired]} />,
+      <Field component={KRenderTextField} name={`${member}.name`} label="Name" margin validate={[ValidatorRequired]} />,
       <Field name={`${member}.protocol`} component={RenderSelectField} label="Protocol" validate={[ValidatorRequired]}>
         <MenuItem value={portTypeUDP}>{portTypeUDP}</MenuItem>
         <MenuItem value={portTypeTCP}>{portTypeTCP}</MenuItem>
       </Field>,
       <Field
-        component={RenderTextField}
+        component={KRenderTextField}
         name={`${member}.containerPort`}
         label="ContainerPort"
         margin
@@ -36,7 +37,7 @@ class RenderPorts extends React.PureComponent<Props> {
         normalize={NormalizePort}
       />,
       <Field
-        component={RenderTextField}
+        component={KRenderTextField}
         name={`${member}.servicePort`}
         label="ServicePort"
         margin

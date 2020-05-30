@@ -430,7 +430,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                             className={classes.podActionButton}
                             onClick={async () => {
                               try {
-                                await deletePod(application.get("namespace"), pod.get("name"));
+                                await deletePod(application.get("name"), pod.get("name"));
                                 dispatch(setSuccessNotificationAction(`Delete pod ${pod.get("name")} successfully`));
                                 // reload
                                 dispatch(loadApplicationAction(application.get("name")));

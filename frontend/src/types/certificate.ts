@@ -62,9 +62,7 @@ export const newEmptyCertificateForm = (): CertificateFormType => {
     name: "",
     managedType: selfManaged,
     selfManagedCertContent: "",
-    selfManagedCertPrivateKey: "",
-    httpsCertIssuer: "",
-    domains: null
+    selfManagedCertPrivateKey: ""
   });
 };
 
@@ -74,7 +72,7 @@ export interface CertificateContent {
   selfManagedCertContent: string;
   selfManagedCertPrivateKey: string;
   httpsCertIssuer: string;
-  domains: Immutable.List<string> | null;
+  domains: Immutable.List<string>;
 }
 
 export type CertificateActions =

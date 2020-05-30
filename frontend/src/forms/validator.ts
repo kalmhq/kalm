@@ -140,8 +140,8 @@ const validateHost = (value: string) => {
   );
   var regResultIp = regExpIp.exec(value);
   var regExpHostname = new RegExp(
-    /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/
-  ); // RFC 1123
+    /^(\*\.)?(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/
+  ); // RFC 1123 but allow "*." prefix
 
   var regResultHostname = regExpHostname.exec(value);
   if (regResultIp === null && regResultHostname === null) {

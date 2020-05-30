@@ -41,7 +41,9 @@ func (suite *HttpsCertControllerSuite) TestSelfManagedCertWithAbsentSecret() {
 			&httpsCert,
 		)
 
-		return err == nil && !httpsCert.Status.OK
+		return err == nil &&
+			httpsCert.Status.Conditions[0].Type == v1alpha1.HttpsCertConditionReady &&
+			httpsCert.Status.Conditions[0].Status == corev1.ConditionFalse
 	})
 }
 
@@ -68,7 +70,9 @@ func (suite *HttpsCertControllerSuite) TestSelfManagedCertWithSecret() {
 			&httpsCert,
 		)
 
-		return err == nil && httpsCert.Status.OK
+		return err == nil &&
+			httpsCert.Status.Conditions[0].Type == v1alpha1.HttpsCertConditionReady &&
+			httpsCert.Status.Conditions[0].Status == corev1.ConditionTrue
 	})
 }
 

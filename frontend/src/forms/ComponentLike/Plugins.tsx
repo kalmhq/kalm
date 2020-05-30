@@ -15,7 +15,7 @@ import { DeleteIcon } from "../../widgets/Icon";
 import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
 import { Body } from "../../widgets/Label";
 import { CheckboxField } from "../Basic/checkbox";
-import { RenderDynamicForm } from "../Basic/dynamicForm";
+import { RenderJsonSchemaForm } from "../Basic/jsonSchemaForm";
 import { NormalizeBoolean } from "../normalizer";
 
 interface FieldArrayComponentHackType {
@@ -171,7 +171,7 @@ class RenderPlugins extends React.PureComponent<Props, State> {
         </Grid>
         <Grid container spacing={2}>
           <Grid item md={12}>
-            <Field name={`${member}.config`} component={RenderDynamicForm} schema={schema} />
+            <Field name={`${member}.config`} component={RenderJsonSchemaForm} schema={schema} />
           </Grid>
         </Grid>
       </React.Fragment>

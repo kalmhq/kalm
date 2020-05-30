@@ -1,8 +1,15 @@
 import Immutable from "immutable";
+import { LOGOUT } from "types/common";
 import { Actions } from "../types";
 import {
+  ApplicationComponentDetails,
+  ApplicationDetails,
+  ApplicationDetailsList,
+  ComponentPlugin,
   CREATE_APPLICATION,
+  CREATE_COMPONENT,
   DELETE_APPLICATION,
+  DELETE_COMPONENT,
   DUPLICATE_APPLICATION,
   LOAD_APPLICATIONS_FAILED,
   LOAD_APPLICATIONS_FULFILLED,
@@ -10,22 +17,13 @@ import {
   LOAD_APPLICATION_FAILED,
   LOAD_APPLICATION_FULFILLED,
   LOAD_APPLICATION_PENDING,
+  LOAD_COMPONENT_PLUGINS_FULFILLED,
   SET_IS_SUBMITTING_APPLICATION,
   SET_IS_SUBMITTING_APPLICATION_COMPONENT,
   UPDATE_APPLICATION,
-  ApplicationDetailsList,
-  ApplicationDetails,
-  CREATE_COMPONENT,
-  UPDATE_COMPONENT,
-  DELETE_COMPONENT,
-  ApplicationComponentDetails,
-  ComponentPlugin,
-  ApplicationPlugin,
-  LOAD_APPLICATION_PLUGINS_FULFILLED,
-  LOAD_COMPONENT_PLUGINS_FULFILLED
+  UPDATE_COMPONENT
 } from "../types/application";
 import { ImmutableMap } from "../typings";
-import { LOGOUT } from "types/common";
 
 export type State = ImmutableMap<{
   applications: ApplicationDetailsList;
@@ -34,7 +32,7 @@ export type State = ImmutableMap<{
   isItemLoading: boolean;
   isSubmittingApplication: boolean;
   isSubmittingApplicationComponent: boolean;
-  applicationPlugins: ApplicationPlugin[];
+  // applicationPlugins: ApplicationPlugin[];
   componentPlugins: ComponentPlugin[];
 }>;
 
@@ -45,7 +43,7 @@ const initialState: State = Immutable.Map({
   isItemLoading: false,
   isSubmittingApplication: false,
   isSubmittingApplicationComponent: false,
-  applicationPlugins: [],
+  // applicationPlugins: [],
   componentPlugins: []
 });
 
@@ -171,11 +169,11 @@ const reducer = (state: State = initialState, action: Actions): State => {
       state = state.deleteIn(["applications", applicationIndex, componentIndex]);
       break;
     }
-    case LOAD_APPLICATION_PLUGINS_FULFILLED: {
-      state = state.set("applicationPlugins", action.payload.applicationPlugins);
+    // case LOAD_APPLICATION_PLUGINS_FULFILLED: {
+    //   state = state.set("applicationPlugins", action.payload.applicationPlugins);
 
-      break;
-    }
+    //   break;
+    // }
     case LOAD_COMPONENT_PLUGINS_FULFILLED: {
       state = state.set("componentPlugins", action.payload.componentPlugins);
 

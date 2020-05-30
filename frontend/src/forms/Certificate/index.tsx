@@ -87,7 +87,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
           <Grid item md={12}>
             <Field
               label="Certificate name"
-              component={KFreeSoloAutoCompleteSingleValue}
+              component={TextField}
               name="name"
               margin="normal"
               validate={[ValidatorRequired]}

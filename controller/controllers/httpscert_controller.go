@@ -74,13 +74,21 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		}, &certSec); err != nil {
 			r.Recorder.Event(&httpsCert, corev1.EventTypeWarning, "Fail to get CertSecret", err.Error())
 		}
+
+		if err != nil {
+			httpsCert.Status.Conditions = []corev1alpha1.HttpsCertCondition{genConditionWithErr(err)}
+		} else {
+			httpsCert.Status.Conditions = []corev1alpha1.HttpsCertCondition{
+				{
+					Type:   corev1alpha1.HttpsCertConditionReady,
+					Status: corev1.ConditionTrue,
+				},
+			}
+		}
+
+		r.Status().Update(ctx, &httpsCert)
 	} else {
 		err = r.reconcileForAutoManagedHttpsCert(ctx, httpsCert)
-	}
-
-	if (err == nil) != httpsCert.Status.OK {
-		httpsCert.Status.OK = err == nil
-		r.Status().Update(ctx, &httpsCert)
 	}
 
 	return ctrl.Result{}, err
@@ -146,5 +154,47 @@ func (r *HttpsCertReconciler) reconcileForAutoManagedHttpsCert(ctx context.Conte
 		err = r.Update(ctx, &cert)
 	}
 
+	if err != nil {
+		httpsCert.Status.Conditions = []corev1alpha1.HttpsCertCondition{
+			genConditionWithErr(err),
+		}
+	} else {
+		// check status of underlining cert
+		if err := r.Get(ctx, types.NamespacedName{Namespace: istioNamespace, Name: certName}, &cert); err != nil {
+			httpsCert.Status.Conditions = []corev1alpha1.HttpsCertCondition{
+				genConditionWithErr(err),
+			}
+		} else {
+			for _, cond := range cert.Status.Conditions {
+				if cond.Type != cmv1alpha2.CertificateConditionReady {
+					continue
+				}
+
+				httpsCert.Status.Conditions = []corev1alpha1.HttpsCertCondition{transCertCondition(cond)}
+				break
+			}
+		}
+	}
+
+	r.Status().Update(ctx, &httpsCert)
+
 	return err
+}
+
+func genConditionWithErr(err error) corev1alpha1.HttpsCertCondition {
+	return corev1alpha1.HttpsCertCondition{
+		Type:    corev1alpha1.HttpsCertConditionReady,
+		Status:  corev1.ConditionFalse,
+		Reason:  "APIFail",
+		Message: err.Error(),
+	}
+}
+
+func transCertCondition(cond cmv1alpha2.CertificateCondition) corev1alpha1.HttpsCertCondition {
+	return corev1alpha1.HttpsCertCondition{
+		Type:    corev1alpha1.HttpsCertConditionReady,
+		Status:  corev1.ConditionStatus(cond.Status),
+		Reason:  cond.Reason,
+		Message: cond.Message,
+	}
 }

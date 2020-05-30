@@ -1,7 +1,7 @@
 import React from "react";
 import { InjectedFormProps } from "redux-form";
 import { reduxForm, getFormValues, Field } from "redux-form/immutable";
-import { RenderTextField } from "../Basic";
+import { KRenderTextField } from "../Basic/textfield";
 import { makeStyles, Theme } from "@material-ui/core/styles";
 import { Button, FormControl } from "@material-ui/core";
 import { ValidatorRequired, ValidatorName } from "../validator";
@@ -101,7 +101,7 @@ const ConfigFormRaw = (props: Props & InjectedFormProps<ConfigNode, Props>) => {
     <div className={classes.root}>
       <form onSubmit={handleSubmit}>
         <div className={classes.pathAndName}>
-          <FormControl className={classes.pathWrapper} margin="normal">
+          <FormControl className={classes.pathWrapper} margin="dense">
             <AncestorIds />
             <FormHelperText className="MuiFormHelperText-contained MuiFormHelperText-marginDense">
               Select a folder to add config
@@ -110,7 +110,7 @@ const ConfigFormRaw = (props: Props & InjectedFormProps<ConfigNode, Props>) => {
 
           <div className={classes.nameWrapper}>
             <Field
-              component={RenderTextField}
+              component={KRenderTextField}
               name="name"
               label="Name"
               margin
@@ -121,10 +121,8 @@ const ConfigFormRaw = (props: Props & InjectedFormProps<ConfigNode, Props>) => {
           </div>
         </div>
 
-        {/* {formType === "new" && <CustomRadioGroup name="type" label="Type" options={["file", "folder"]} />} */}
-
         {configType === "file" && (
-          <FormControl margin="normal" className={classes.editorWarpper}>
+          <FormControl margin="dense" className={classes.editorWarpper}>
             <CustomEditor />
           </FormControl>
         )}

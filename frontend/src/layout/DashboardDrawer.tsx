@@ -23,7 +23,7 @@ import { TDispatch } from "types";
 import { setSettingsAction } from "../actions/settings";
 import { LEFT_SECTION_WIDTH } from "../pages/BasePage";
 import { primaryBackgroud, primaryColor } from "../theme";
-import { KappApplicationIcon, KappNodeIcon, KappTemplateIcon, KappVolumeIcon } from "../widgets/Icon";
+import { KappApplicationIcon, KappNodeIcon, KappVolumeIcon } from "../widgets/Icon";
 import { APP_BAR_HEIGHT } from "./AppBar";
 
 const mapStateToProps = (state: RootState) => {
@@ -117,15 +117,15 @@ class DashboardDrawerRaw extends React.PureComponent<Props, State> {
     return [
       { icon: KappApplicationIcon, text: "Applications", to: "/applications" },
       {
-        icon: KappTemplateIcon,
-        text: "Templates",
-        to: "/templates"
-      },
-      {
         icon: VerifiedUser,
         text: "Certificates",
         to: "/certificates"
       }
+      // {
+      //   icon: KappTemplateIcon,
+      //   text: "Templates",
+      //   to: "/templates"
+      // }
     ];
   }
 

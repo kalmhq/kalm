@@ -16,7 +16,7 @@ import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
 import { H5 } from "../../widgets/Label";
 import { CheckboxField } from "../Basic/checkbox";
 import { NormalizeBoolean } from "../normalizer";
-import { RenderDynamicForm } from "../Basic/dynamicForm";
+import { RenderJsonSchemaForm } from "../Basic/jsonSchemaForm";
 
 interface FieldArrayComponentHackType {
   name: any;
@@ -24,7 +24,8 @@ interface FieldArrayComponentHackType {
 }
 
 const mapStateToProps = (state: RootState) => {
-  const applicationPlugins = state.get("applications").get("applicationPlugins");
+  // const applicationPlugins = state.get("applications").get("applicationPlugins");
+  const applicationPlugins = [] as ApplicationPlugin[];
 
   const applicationPluginsMap: { [key: string]: ApplicationPlugin } = {};
   applicationPlugins.forEach(plugin => {
@@ -160,7 +161,7 @@ class RenderPlugins extends React.PureComponent<Props, State> {
         </Grid>
         <Grid container spacing={2}>
           <Grid item md={12}>
-            <Field name={`${member}.config`} component={RenderDynamicForm} schema={schema} />
+            <Field name={`${member}.config`} component={RenderJsonSchemaForm} schema={schema} />
           </Grid>
         </Grid>
       </React.Fragment>

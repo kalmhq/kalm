@@ -57,6 +57,17 @@ func (suite *HttpsCertTestSuite) TestCreateHttpsCert() {
 	//fmt.Println("item:", res.Items[0])
 	suite.Equal("foobar-issuer", res.Items[0].Spec.HttpsCertIssuer)
 	suite.Equal("example.com", strings.Join(res.Items[0].Spec.Domains, ""))
+
+	// check size & content of cert list
+	rec = suite.NewRequest(http.MethodGet, "/v1alpha1/httpscerts", nil)
+
+	var resList []resources.HttpsCertResp
+	rec.BodyAsJSON(&resList)
+
+	suite.Equal(200, rec.Code)
+	suite.Equal(1, len(resList))
+	suite.Equal(string(coreV1.ConditionUnknown), resList[0].Ready)
+	suite.Equal(resources.ReasonForNoReadyConditions, resList[0].Reason)
 }
 
 const tlsCert = `-----BEGIN CERTIFICATE-----
@@ -156,6 +167,13 @@ func (suite *HttpsCertTestSuite) TestUploadHttpsCert() {
 	suite.Nil(err)
 	suite.Equal(sec.Data["tls.key"], []byte(""))
 	suite.Equal(sec.Data["tls.crt"], []byte(tlsCert))
+
+	rec = suite.NewRequest(http.MethodGet, "/v1alpha1/httpscerts", nil)
+	var resList []resources.HttpsCert
+	rec.BodyAsJSON(&resList)
+	suite.Equal(200, rec.Code)
+	suite.Equal(1, len(resList))
+	suite.Equal("hello.kapp.live", strings.Join(resList[0].Domains, ""))
 }
 
 func (suite *HttpsCertTestSuite) TestUpdateSelfManagedHttpsCert() {

@@ -12,7 +12,6 @@ import (
 )
 
 type HttpsCert struct {
-	//v1alpha1.HttpsCertSpec `json:",inline"`
 	Name          string `json:"name"`
 	IsSelfManaged bool   `json:"isSelfManaged"`
 
@@ -23,43 +22,52 @@ type HttpsCert struct {
 	Domains         []string `json:"domains,omitempty"`
 }
 
-type HttpsCertListChannel struct {
-	List  chan []v1alpha1.HttpsCert
-	Error chan error
+type HttpsCertResp struct {
+	HttpsCert `json:",inline"`
+	Ready     string `json:"ready"`
+	Reason    string `json:"reason"`
 }
 
-func (builder *Builder) GetHttpsCerts() ([]HttpsCert, error) {
-	rst := HttpsCertListChannel{
-		List:  make(chan []v1alpha1.HttpsCert, 1),
-		Error: make(chan error, 1),
-	}
+var ReasonForNoReadyConditions = "no feedback on cert status yet"
 
-	go func() {
-		var fetched v1alpha1.HttpsCertList
-		err := builder.K8sClient.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/httpscerts").Do().Into(&fetched)
-		res := make([]v1alpha1.HttpsCert, len(fetched.Items))
-
-		for _, item := range fetched.Items {
-			res = append(res, item)
-		}
-
-		rst.List <- res
-		rst.Error <- err
-	}()
-
-	err := <-rst.Error
-	if err != nil {
+func (builder *Builder) GetHttpsCerts() ([]HttpsCertResp, error) {
+	var fetched v1alpha1.HttpsCertList
+	if err := builder.List(&fetched); err != nil {
 		return nil, err
 	}
 
-	list := <-rst.List
+	var httpsCerts []HttpsCertResp
+	for _, ele := range fetched.Items {
 
-	var httpsCerts []HttpsCert
-	for _, ele := range list {
-		cur := HttpsCert{
-			Name:          ele.Name,
-			IsSelfManaged: ele.Spec.IsSelfManaged,
-			Domains:       ele.Spec.Domains,
+		var readyCond *v1alpha1.HttpsCertCondition
+		for i := range ele.Status.Conditions {
+			cond := ele.Status.Conditions[i]
+
+			if cond.Type != v1alpha1.HttpsCertConditionReady {
+				continue
+			}
+
+			readyCond = &cond
+			break
+		}
+
+		var ready, reason string
+		if readyCond == nil {
+			ready = string(v1.ConditionUnknown)
+			reason = ReasonForNoReadyConditions
+		} else {
+			ready = string(readyCond.Status)
+			reason = readyCond.Message
+		}
+
+		cur := HttpsCertResp{
+			HttpsCert: HttpsCert{
+				Name:          ele.Name,
+				IsSelfManaged: ele.Spec.IsSelfManaged,
+				Domains:       ele.Spec.Domains,
+			},
+			Ready:  ready,
+			Reason: reason,
 		}
 
 		if !cur.IsSelfManaged {
@@ -209,6 +217,8 @@ func (builder *Builder) CreateSelfManagedHttpsCert(cert HttpsCert) (HttpsCert, e
 	if err != nil {
 		return HttpsCert{}, err
 	}
+
+	cert.Domains = x509Cert.DNSNames
 
 	return cert, nil
 }

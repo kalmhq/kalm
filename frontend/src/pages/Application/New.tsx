@@ -1,11 +1,10 @@
-import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { createStyles, Theme, withStyles, WithStyles, Grid } from "@material-ui/core";
 import React from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
 import { createApplicationAction } from "../../actions/application";
 import ApplicationForm, { applicationInitialValues } from "../../forms/Application";
 import { RootState } from "../../reducers";
-import { getCurrentNamespace } from "../../selectors/namespace";
 import { Actions } from "../../types";
 import { Application } from "../../types/application";
 import { BasePage } from "../BasePage";
@@ -49,12 +48,16 @@ class ApplicationNewRaw extends React.PureComponent<Props> {
           </div>
         }>
         <div className={classes.root}>
-          <ApplicationForm
-            onSubmit={this.submit}
-            isEdit={false}
-            initialValues={applicationInitialValues.set("namespace", getCurrentNamespace())}
-            currentTab={"basic"}
-          />
+          <Grid container spacing={2}>
+            <Grid item xs={8} sm={8} md={8}>
+              <ApplicationForm
+                onSubmit={this.submit}
+                isEdit={false}
+                initialValues={applicationInitialValues}
+                currentTab={"basic"}
+              />
+            </Grid>
+          </Grid>
         </div>
       </BasePage>
     );

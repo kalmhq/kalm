@@ -31,14 +31,13 @@ export const getCurrentFormApplication = (): Application => {
 };
 
 export const getApplicationSharedEnvNamesSet = (application: Application): Set<string> => {
-  return new Set(
-    application.get("sharedEnvs")
-      ? application
-          .get("sharedEnvs")
-          .map(x => x.get("name"))
-          .toArray()
-      : []
-  );
+  return new Set();
+  // application.get("sharedEnvs")
+  //   ? application
+  //       .get("sharedEnvs")
+  //       .map(x => x.get("name"))
+  //       .toArray()
+  //   : []
 };
 
 export const getApplicationEnvStatus = (application: Application) => {

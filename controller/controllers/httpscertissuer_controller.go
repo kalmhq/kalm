@@ -54,7 +54,6 @@ type HttpsCertIssuerReconciler struct {
 func (r *HttpsCertIssuerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 
-	// your logic here
 	var httpsCertIssuer corev1alpha1.HttpsCertIssuer
 	if err := r.Get(ctx, req.NamespacedName, &httpsCertIssuer); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)

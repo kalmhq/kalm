@@ -8,7 +8,7 @@ import { Field, formValueSelector, getFormValues, reduxForm } from "redux-form/i
 import { RootState } from "../../reducers";
 import { Application, SharedEnv } from "../../types/application";
 import { ComponentTemplate } from "../../types/componentTemplate";
-import { H3 } from "../../widgets/Label";
+import { H5, SectionTitle } from "../../widgets/Label";
 import { TextField } from "../Basic/text";
 import { ValidatorName, ValidatorRequired } from "../validator";
 import { SharedEnvs } from "./SharedEnvs";
@@ -33,9 +33,6 @@ const styles = (theme: Theme) =>
     formSectionContainer: {
       margin: "0",
       width: "auto"
-    },
-    formSectionItem: {
-      padding: "0px !important"
     },
     displayNone: {
       display: "none"
@@ -77,61 +74,21 @@ class ApplicationFormRaw extends React.PureComponent<
     const { isEdit } = this.props;
     return (
       <>
-        <Grid container spacing={2}>
-          <Grid item md={12}>
-            <Field
-              name="name"
-              label="Name"
-              disabled={isEdit}
-              component={TextField}
-              validate={[ValidatorRequired, ValidatorName]}
-              helperText={
-                isEdit
-                  ? "Can't modify name"
-                  : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
-              }
-              placeholder="Please type the component name"
-            />
-          </Grid>
+        <Grid item xs={12} sm={12} md={12}>
+          <Field
+            name="name"
+            label="Name"
+            disabled={isEdit}
+            component={TextField}
+            validate={[ValidatorRequired, ValidatorName]}
+            helperText={
+              isEdit
+                ? "Can't modify name"
+                : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
+            }
+            placeholder="Please type the component name"
+          />
         </Grid>
-        {/* <Grid container spacing={2}>
-            <Grid item md={12}>
-              <BoldBody>Status</BoldBody>
-
-              <Field
-                name="isActive"
-                formControlLabelProps={{
-                  label: "Active this application after creation"
-                }}
-                component={CheckboxField}
-                normalizer={NormalizeBoolean}
-              />
-            </Grid>
-          </Grid> */}
-      </>
-    );
-  }
-
-  // private renderComponent() {
-  //   return (
-  //     <>
-  //       <Components />
-  //     </>
-  //   );
-  // }
-
-  private renderSharedEnvs() {
-    return (
-      <>
-        <SharedEnvs />
-      </>
-    );
-  }
-
-  private renderPlugins() {
-    return (
-      <>
-        <Plugins />
       </>
     );
   }
@@ -145,50 +102,71 @@ class ApplicationFormRaw extends React.PureComponent<
           container
           spacing={2}
           className={`${classes.formSectionContainer} ${currentTab === "basic" ? "" : classes.displayNone}`}>
-          <Grid className={classes.formSectionItem} item xs={12} sm={6} md={8}>
-            <H3>Application Basic</H3>
-            {this.renderBasic()}
+          <Grid item xs={12} sm={12} md={12}>
+            <SectionTitle>
+              <H5>Application Basic</H5>
+            </SectionTitle>
+          </Grid>
+          {this.renderBasic()}
+        </Grid>
+
+        <Grid
+          container
+          spacing={2}
+          className={`${classes.formSectionContainer} ${currentTab === "sharedEnvs" ? "" : classes.displayNone}`}>
+          <Grid item xs={12} sm={12} md={12}>
+            <SectionTitle>
+              <H5>Shared Environments</H5>
+            </SectionTitle>
+          </Grid>
+          <Grid item xs={12} sm={12} md={12}>
+            <SharedEnvs />
           </Grid>
         </Grid>
 
-        <div className={`${classes.formSectionContainer} ${currentTab === "sharedEnvs" ? "" : classes.displayNone}`}>
-          <H3>Shared Environments</H3>
-          {this.renderSharedEnvs()}
-        </div>
-
-        <div
+        <Grid
+          container
+          spacing={2}
           className={`${classes.formSectionContainer} ${
             currentTab === "applicationPlugins" ? "" : classes.displayNone
           }`}>
-          <H3>Application Plugins</H3>
-          {this.renderPlugins()}
-        </div>
+          <Grid item xs={12} sm={12} md={12}>
+            <SectionTitle>
+              <H5>Application Plugins</H5>
+            </SectionTitle>
+          </Grid>
+          <Grid item xs={12} sm={12} md={12}>
+            <Plugins />
+          </Grid>
+        </Grid>
 
-        <div className={`${currentTab === "basic" ? classes.buttons : classes.displayNone}`}>
-          <Button
-            variant="contained"
-            color="primary"
-            className={`${currentTab === "basic" ? classes.submitButton : classes.displayNone}`}
-            onClick={event => {
-              change("isActive", true);
-              setTimeout(() => {
-                handleSubmit(event);
-              }, 300);
-            }}>
-            Publish
-          </Button>
-          <Button
-            variant="contained"
-            className={`${currentTab === "basic" ? "" : classes.displayNone}`}
-            onClick={event => {
-              change("isActive", false);
-              setTimeout(() => {
-                handleSubmit(event);
-              }, 300);
-            }}>
-            Save (publish later)
-          </Button>
-        </div>
+        <Grid container spacing={2} className={`${currentTab === "basic" ? classes.buttons : classes.displayNone}`}>
+          <Grid item xs={12} sm={12} md={12}>
+            <Button
+              variant="contained"
+              color="primary"
+              className={`${currentTab === "basic" ? classes.submitButton : classes.displayNone}`}
+              onClick={event => {
+                change("isActive", true);
+                setTimeout(() => {
+                  handleSubmit(event);
+                }, 300);
+              }}>
+              Publish
+            </Button>
+            <Button
+              variant="contained"
+              className={`${currentTab === "basic" ? "" : classes.displayNone}`}
+              onClick={event => {
+                change("isActive", false);
+                setTimeout(() => {
+                  handleSubmit(event);
+                }, 300);
+              }}>
+              Save (publish later)
+            </Button>
+          </Grid>
+        </Grid>
       </form>
     );
   }
