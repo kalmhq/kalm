@@ -133,6 +133,20 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     }
   };
 
+  private renderStatus = (rowData: RowData) => {
+    // TODO no column
+    return "Normal";
+  };
+
+  private renderType = (rowData: RowData) => {
+    return rowData.get("isSelfManaged") ? "SELF MANAGED" : "KAPP ISSUED";
+  };
+
+  private renderInUse = (rowData: RowData) => {
+    // TODO no column
+    return "Yes";
+  };
+
   private getColumns() {
     const columns = [
       // @ts-ignore
@@ -150,7 +164,25 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
         render: this.renderDomains
       },
       {
-        title: "",
+        title: "Status",
+        field: "status",
+        sorting: false,
+        render: this.renderStatus
+      },
+      {
+        title: "Type",
+        field: "isSelfManaged",
+        sorting: false,
+        render: this.renderType
+      },
+      {
+        title: "In Use?",
+        field: "inUse",
+        sorting: false,
+        render: this.renderInUse
+      },
+      {
+        title: "Actions",
         field: "moreAction",
         sorting: false,
         searchable: false,
