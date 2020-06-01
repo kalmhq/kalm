@@ -1,5 +1,4 @@
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { push } from "connected-react-router";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { connect } from "react-redux";

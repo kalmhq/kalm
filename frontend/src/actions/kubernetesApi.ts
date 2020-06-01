@@ -19,7 +19,7 @@ import {
 import { ComponentTemplate } from "../types/componentTemplate";
 import { ConfigCreate, ConfigRes } from "../types/config";
 import { RegistryType } from "types/registry";
-import { CertificateList, Certificate, CertificateFormType, CertificateIssuerList } from "types/certificate";
+import { CertificateList, CertificateFormType, CertificateIssuerList } from "types/certificate";
 import { HttpRoute } from "types/route";
 import { Service } from "types/service";
 

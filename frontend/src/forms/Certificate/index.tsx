@@ -1,6 +1,6 @@
 import { Button, Grid } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
-import { KFreeSoloAutoCompleteSingleValue, KFreeSoloAutoCompleteMultiValues } from "forms/Basic/autoComplete";
+import { KFreeSoloAutoCompleteMultiValues } from "forms/Basic/autoComplete";
 import { TextField } from "forms/Basic/text";
 import { KRadioGroupRender } from "forms/Basic/radio";
 import { ValidatorRequired } from "forms/validator";
@@ -8,11 +8,10 @@ import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
-import { arrayPush, InjectedFormProps } from "redux-form";
-import { Field, FieldArray, formValueSelector, getFormSyncErrors, reduxForm } from "redux-form/immutable";
+import { InjectedFormProps } from "redux-form";
+import { Field, formValueSelector, getFormSyncErrors, reduxForm } from "redux-form/immutable";
 import { TDispatchProp } from "types";
-import { HttpsCertification } from "types/httpsCertification";
-import { Certificate, CertificateFormType, issuerManaged, selfManaged, CertificateIssuerList } from "types/certificate";
+import { CertificateFormType, issuerManaged, selfManaged, CertificateIssuerList } from "types/certificate";
 import { setIsShowAddCertificateModal } from "actions/certificate";
 import { RenderSelectField } from "forms/Basic/select";
 
