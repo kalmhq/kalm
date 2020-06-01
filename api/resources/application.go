@@ -184,7 +184,6 @@ func (builder *Builder) BuildApplicationDetails(namespace coreV1.Namespace) (*Ap
 	return &ApplicationDetails{
 		Application: &Application{
 			Name:      nsName,
-			//Namespace: nsName,
 			IsActive:  isActive,
 		},
 		Metrics: MetricHistories{
@@ -236,7 +235,13 @@ func (builder *Builder) BuildApplicationListResponse(namespaceList coreV1.Namesp
 
 	// TODO concurrent build response items
 	for i := range namespaceList.Items {
-		item, err := builder.BuildApplicationDetails(namespaceList.Items[i])
+		ns := namespaceList.Items[i]
+
+		if _, exist := ns.Labels[controllers.KappEnableLabelName]; !exist {
+			continue
+		}
+
+		item, err := builder.BuildApplicationDetails(ns)
 
 		if err != nil {
 			return nil, err
