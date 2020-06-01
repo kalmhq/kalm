@@ -1,19 +1,20 @@
 import React from "react";
-import { createStyles, Theme, withStyles, WithStyles, Box } from "@material-ui/core";
+import { createStyles, Theme, withStyles, WithStyles, Box, Paper } from "@material-ui/core";
 import { TDispatchProp } from "types";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { ApplicationComponentDetails, PodStatus } from "../../types/application";
-import { PieChart } from "../PieChart";
+import { PieChartComponent } from "../PieChart";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "../Badge";
-import { H5 } from "../Label";
+import { H5, SectionTitle } from "../Label";
 import { grey } from "@material-ui/core/colors";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {
       padding: 20,
-      width: "100%"
+      width: "100%",
+      height: "100%"
     },
     componentTitle: {
       display: "flex",
@@ -168,19 +169,21 @@ class ComponentStatusRaw extends React.PureComponent<Props, State> {
     }
 
     return (
-      <div className={classes.root}>
+      <Paper className={classes.root}>
         <div className={classes.componentTitle}>
           {this.renderComponentStatus(component)} <H5>{component.get("name")}</H5>
         </div>
         <div className={classes.chartWrapper}>
-          <PieChart
+          <PieChartComponent
             title={""}
             labels={["Running", "Pending", "Error"]}
             data={[pieChartData.podSuccess, pieChartData.podPending, pieChartData.podError]}
           />
         </div>
         <div className={classes.podsTitle}>
-          <H5>Pods</H5>
+          <SectionTitle>
+            <H5>Pods</H5>
+          </SectionTitle>
         </div>
         {component.get("pods").size > 0 ? (
           <>
@@ -213,7 +216,7 @@ class ComponentStatusRaw extends React.PureComponent<Props, State> {
               })}
           </>
         ) : null}
-      </div>
+      </Paper>
     );
   }
 }

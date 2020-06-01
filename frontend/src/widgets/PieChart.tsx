@@ -64,6 +64,7 @@ class PieChartRaw extends React.PureComponent<Props, State> {
                 labels: {
                   render: "value",
                   position: "outside"
+                  // arc: true
                 }
               }
             }}
@@ -75,4 +76,4 @@ class PieChartRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const PieChart = withStyles(styles)(PieChartRaw);
+export const PieChartComponent = withStyles(styles)(PieChartRaw);

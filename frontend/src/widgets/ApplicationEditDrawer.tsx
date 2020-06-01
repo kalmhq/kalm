@@ -1,6 +1,7 @@
 import { createStyles, List, ListItem, ListItemIcon, ListItemText, ListSubheader, Theme } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import AddIcon from "@material-ui/icons/Add";
+import RemoveIcon from "@material-ui/icons/Remove";
 import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import Immutable from "immutable";
@@ -15,6 +16,8 @@ import { BaseDrawer } from "../layout/BaseDrawer";
 import { primaryBackgroud, primaryColor } from "../theme";
 import { ApplicationComponent, ApplicationComponentDetails, ApplicationDetails } from "../types/application";
 import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
+import { deleteComponentAction } from "../actions/application";
+import { ConfirmDialog } from "./ConfirmDialog";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
@@ -65,12 +68,13 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
 
   // handleClickSharedEnvs: () => void;
   // handleClickApplicationPlugins: () => void;
-  handleClickComponent: (component: ApplicationComponent) => void;
+  handleClickComponent: (component?: ApplicationComponent) => void;
 }
 
 interface State {
   expandedComponentIndex: number;
   selectedListItemKey: string;
+  isDeleteConfirmDialogOpen: boolean;
 }
 
 class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
@@ -79,7 +83,8 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
 
     this.state = {
       expandedComponentIndex: 0,
-      selectedListItemKey: this.generateComponentKey(0)
+      selectedListItemKey: this.generateComponentKey(0),
+      isDeleteConfirmDialogOpen: false
     };
   }
 
@@ -110,6 +115,56 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
   private handleAdd() {
     this.handleClickComponent(componentInitialValues, this.props.application?.get("components").size as number);
   }
+
+  private confirmDelete() {
+    const { application, dispatch } = this.props;
+
+    const { currentComponent, handleClickComponent } = this.props;
+
+    if (currentComponent) {
+      if (!currentComponent.get("name")) {
+        handleClickComponent(application?.get("components").get(0));
+      } else {
+        dispatch(deleteComponentAction(currentComponent.get("name")));
+      }
+
+      if (
+        currentComponent.get("name") ===
+        application
+          ?.get("components")
+          .get(0)
+          ?.get("name")
+      ) {
+        handleClickComponent(undefined);
+      }
+    }
+  }
+
+  private showDeleteConfirmDialog = () => {
+    this.setState({
+      isDeleteConfirmDialogOpen: true
+    });
+  };
+
+  private closeDeleteConfirmDialog = () => {
+    this.setState({
+      isDeleteConfirmDialogOpen: false
+    });
+  };
+
+  private renderDeleteConfirmDialog = () => {
+    const { isDeleteConfirmDialogOpen } = this.state;
+
+    return (
+      <ConfirmDialog
+        open={isDeleteConfirmDialogOpen}
+        onClose={this.closeDeleteConfirmDialog}
+        title="Are you sure to delete this component?"
+        content="You will lost this component config, and this action is irrevocable."
+        onAgree={this.confirmDelete}
+      />
+    );
+  };
 
   // private showAppliationError(tab: string): boolean {
   //   const { applicationSyncErrors, applicationFormSubmitFailed } = this.props;
@@ -333,19 +388,32 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
     }
 
     const disableAdd = (currentComponent && !currentComponent.get("name")) || application.get("components")?.size === 0;
+    const disableDelete = !currentComponent || !currentComponent.get("name");
 
     return (
       <BaseDrawer>
+        {this.renderDeleteConfirmDialog()}
         <List>
           <ListSubheader disableSticky={true} className={classes.listSubHeader}>
             Components
-            <IconButtonWithTooltip
-              tooltipTitle={"Add"}
-              aria-label="add"
-              disabled={disableAdd}
-              onClick={() => this.handleAdd()}>
-              <AddIcon />
-            </IconButtonWithTooltip>
+            <div>
+              <IconButtonWithTooltip
+                size="small"
+                tooltipTitle={"Add"}
+                aria-label="add component"
+                disabled={disableAdd}
+                onClick={() => this.handleAdd()}>
+                <AddIcon />
+              </IconButtonWithTooltip>
+              <IconButtonWithTooltip
+                size="small"
+                tooltipTitle={"Delete"}
+                aria-label="delete component"
+                disabled={disableDelete}
+                onClick={() => this.showDeleteConfirmDialog()}>
+                <RemoveIcon />
+              </IconButtonWithTooltip>
+            </div>
           </ListSubheader>
 
           {this.renderComponents()}

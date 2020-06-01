@@ -1,11 +1,11 @@
 import {
   Box,
+  Button,
   Grid,
   List as MList,
   ListItem,
   ListItemText,
   MenuItem,
-  Paper,
   Tab,
   Tabs,
   Tooltip
@@ -37,7 +37,6 @@ import { ValidatorCPU, ValidatorMemory, ValidatorName, ValidatorRequired, Valida
 import { Configs } from "./Configs";
 import { Envs } from "./Envs";
 import { RenderSelectLabels } from "./NodeSelector";
-import { Plugins } from "./Plugins";
 import { Ports } from "./Ports";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
 import { Volumes } from "./Volumes";
@@ -59,12 +58,13 @@ const styles = (theme: Theme) =>
     root: {
       flexGrow: 1,
       width: "100%",
-      padding: 20
+      padding: 20,
+      // since deploy button is fixed
+      paddingBottom: 100
       // backgroundColor: theme.palette.background.paper
     },
-    paper: {
-      padding: theme.spacing(2),
-      marginBottom: theme.spacing(2)
+    main: {
+      padding: "20px 0 20px 0"
     },
     formSection: {
       // padding: "0 20px"
@@ -103,7 +103,13 @@ const styles = (theme: Theme) =>
       marginLeft: "8px"
     },
     tabs: {
-      margin: `16px -16px -16px`
+      marginBottom: theme.spacing(2)
+    },
+    deployBtn: {
+      width: 360,
+      position: "fixed",
+      zIndex: 99,
+      bottom: theme.spacing(3)
     }
   });
 
@@ -640,34 +646,34 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderPlugins() {
-    const { classes } = this.props;
+  // private renderPlugins() {
+  //   const { classes } = this.props;
 
-    const helperContainer = (
-      <HelperContainer>
-        <Typography>
-          Plugins can affect running state of a program, or provide extra functionality for the programs.
-        </Typography>
-      </HelperContainer>
-    );
+  //   const helperContainer = (
+  //     <HelperContainer>
+  //       <Typography>
+  //         Plugins can affect running state of a program, or provide extra functionality for the programs.
+  //       </Typography>
+  //     </HelperContainer>
+  //   );
 
-    return (
-      <>
-        <SectionTitle>
-          <H5>Plugins</H5>
-          <Tooltip title={helperContainer}>
-            <HelpIcon fontSize="small" className={classes.helperTextIcon} />
-          </Tooltip>
-        </SectionTitle>
+  //   return (
+  //     <>
+  //       <SectionTitle>
+  //         <H5>Plugins</H5>
+  //         <Tooltip title={helperContainer}>
+  //           <HelpIcon fontSize="small" className={classes.helperTextIcon} />
+  //         </Tooltip>
+  //       </SectionTitle>
 
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={12} md={12}>
-            <Plugins />
-          </Grid>
-        </Grid>
-      </>
-    );
-  }
+  //       <Grid container spacing={2}>
+  //         <Grid item xs={12} sm={12} md={12}>
+  //           <Plugins />
+  //         </Grid>
+  //       </Grid>
+  //     </>
+  //   );
+  // }
 
   private renderLaunchItems() {
     return (
@@ -927,7 +933,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderMainPaper() {
+  private renderMain() {
     const { initialValues, classes } = this.props;
     let isEdit = false;
     // @ts-ignore
@@ -936,7 +942,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     }
 
     return (
-      <Paper className={classes.paper}>
+      <div className={classes.main}>
         <Grid container spacing={2}>
           <Grid item xs={6} sm={6} md={6}>
             <Field
@@ -979,9 +985,21 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             {this.renderReplicasOrSchedule()}
           </Grid>
         </Grid>
+      </div>
+    );
+  }
 
-        {this.renderTabs()}
-      </Paper>
+  private renderDeployButton() {
+    const { classes } = this.props;
+
+    return (
+      <Grid container spacing={2}>
+        <Grid item xs={6} sm={6} md={6}>
+          <Button variant="contained" color="primary" type="submit" className={classes.deployBtn}>
+            Deploy
+          </Button>
+        </Grid>
+      </Grid>
     );
   }
 
@@ -990,9 +1008,11 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
     return (
       <form onSubmit={handleSubmit} className={classes.root}>
-        {this.renderMainPaper()}
+        {this.renderMain()}
+        {this.renderTabs()}
         {this.renderTabDetails()}
         {/* <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : ""}`}>{this.renderPlugins()}</div> */}
+        {this.renderDeployButton()}
       </form>
     );
   }

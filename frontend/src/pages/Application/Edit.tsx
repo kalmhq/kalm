@@ -4,7 +4,6 @@ import queryString from "query-string";
 import React from "react";
 import { connect } from "react-redux";
 import { RouteChildrenProps } from "react-router-dom";
-import { submit } from "redux-form";
 import { formValueSelector } from "redux-form/immutable";
 import {
   createComponentAction,
@@ -17,7 +16,6 @@ import { ComponentLikeForm } from "../../forms/ComponentLike";
 import { RootState } from "../../reducers";
 import { Application, ApplicationComponent, SharedEnv } from "../../types/application";
 import { ApplicationEditDrawer } from "../../widgets/ApplicationEditDrawer";
-import { CustomizedButton } from "../../widgets/Button";
 import { ComponentStatus } from "../../widgets/ComponentStatus";
 import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
@@ -157,7 +155,7 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
       <ApplicationEditDrawer
         application={application}
         currentComponent={currentComponent}
-        handleClickComponent={(component: ApplicationComponent) => {
+        handleClickComponent={(component?: ApplicationComponent) => {
           this.setState({
             currentComponent: component
           });
@@ -167,29 +165,30 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { isLoading, application, dispatch, classes } = this.props;
+    const { isLoading, application } = this.props;
 
     return (
       <BasePage
         leftDrawer={this.renderApplicationEditDrawer()}
         secondHeaderRight={
-          <div className={classes.secondHeaderRight}>
-            <>
-              <CustomizedButton
-                color="primary"
-                className={classes.secondHeaderRightItem}
-                onClick={() => dispatch(submit("componentLike"))}>
-                Save Component
-              </CustomizedButton>
-              <CustomizedButton
-                color="primary"
-                className={classes.secondHeaderRightItem}
-                disabled={this.props.application?.get("components")?.size === 0}
-                onClick={() => this.handleDeleteComponent()}>
-                Delete Component
-              </CustomizedButton>
-            </>
-          </div>
+          "Component"
+          // <div className={classes.secondHeaderRight}>
+          //   <>
+          //     <CustomizedButton
+          //       color="primary"
+          //       className={classes.secondHeaderRightItem}
+          //       onClick={() => dispatch(submit("componentLike"))}>
+          //       Save Component
+          //     </CustomizedButton>
+          //     <CustomizedButton
+          //       color="primary"
+          //       className={classes.secondHeaderRightItem}
+          //       disabled={this.props.application?.get("components")?.size === 0}
+          //       onClick={() => this.handleDeleteComponent()}>
+          //       Delete Component
+          //     </CustomizedButton>
+          //   </>
+          // </div>
         }
         secondHeaderLeft={application && application.get("name")}>
         {isLoading && !application ? <Loading /> : this.renderForm()}
