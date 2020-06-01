@@ -24,7 +24,8 @@ interface FieldArrayComponentHackType {
 }
 
 const mapStateToProps = (state: RootState) => {
-  const applicationPlugins = state.get("applications").get("applicationPlugins");
+  // const applicationPlugins = state.get("applications").get("applicationPlugins");
+  const applicationPlugins = [] as ApplicationPlugin[];
 
   const applicationPluginsMap: { [key: string]: ApplicationPlugin } = {};
   applicationPlugins.forEach(plugin => {

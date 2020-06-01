@@ -5,7 +5,6 @@ import { ThunkDispatch } from "redux-thunk";
 import { createApplicationAction } from "../../actions/application";
 import ApplicationForm, { applicationInitialValues } from "../../forms/Application";
 import { RootState } from "../../reducers";
-import { getCurrentNamespace } from "../../selectors/namespace";
 import { Actions } from "../../types";
 import { Application } from "../../types/application";
 import { BasePage } from "../BasePage";
@@ -54,7 +53,7 @@ class ApplicationNewRaw extends React.PureComponent<Props> {
               <ApplicationForm
                 onSubmit={this.submit}
                 isEdit={false}
-                initialValues={applicationInitialValues.set("namespace", getCurrentNamespace())}
+                initialValues={applicationInitialValues}
                 currentTab={"basic"}
               />
             </Grid>

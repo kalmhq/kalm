@@ -85,6 +85,14 @@ func (r *GatewayReconcilerTask) HttpsGateway() error {
 		return err
 	}
 
+	if len(certs.Items) == 0 {
+		if !isCreate {
+			return r.Delete(r.ctx, gw)
+		}
+
+		return nil
+	}
+
 	if gw.Spec.Selector == nil {
 		gw.Spec.Selector = make(map[string]string)
 	}

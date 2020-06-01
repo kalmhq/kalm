@@ -35,3 +35,5 @@ core_v1alpha1_hello-world-kapp-live.yaml
 
 *.pem
 *.crt
+
+controller

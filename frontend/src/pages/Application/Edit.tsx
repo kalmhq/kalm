@@ -1,28 +1,27 @@
-import { createStyles, Theme, withStyles, WithStyles, Grid } from "@material-ui/core";
+import { createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import Immutable from "immutable";
+import queryString from "query-string";
 import React from "react";
 import { connect } from "react-redux";
 import { RouteChildrenProps } from "react-router-dom";
 import { submit } from "redux-form";
 import { formValueSelector } from "redux-form/immutable";
 import {
+  createComponentAction,
+  deleteComponentAction,
   setIsSubmittingApplicationComponent,
   updateApplicationAction,
-  updateComponentAction,
-  createComponentAction,
-  deleteComponentAction
+  updateComponentAction
 } from "../../actions/application";
-import ApplicationForm from "../../forms/Application";
 import { ComponentLikeForm } from "../../forms/ComponentLike";
 import { RootState } from "../../reducers";
 import { Application, ApplicationComponent, SharedEnv } from "../../types/application";
 import { ApplicationEditDrawer } from "../../widgets/ApplicationEditDrawer";
 import { CustomizedButton } from "../../widgets/Button";
+import { ComponentStatus } from "../../widgets/ComponentStatus";
 import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
 import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./ItemDataWrapper";
-import queryString from "query-string";
-import { ComponentStatus } from "../../widgets/ComponentStatus";
 
 const mapStateToProps = (state: RootState) => {
   const selector = formValueSelector("application");
@@ -49,10 +48,7 @@ const styles = (theme: Theme) =>
   });
 
 interface State {
-  currentFormType: "application" | "component";
-  currentApplicationTab: "basic" | "sharedEnvs" | "applicationPlugins";
   currentComponent?: ApplicationComponent;
-  // currentComponentTab?: string;
   changingComponent: boolean; // for form componentLike enableReinitialize
 }
 
@@ -67,10 +63,7 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
     super(props);
 
     this.state = {
-      currentFormType: "component",
-      currentApplicationTab: "basic",
       currentComponent: undefined,
-      // currentComponentTab: "basic",
       changingComponent: false
     };
   }
@@ -164,72 +157,38 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
       <ApplicationEditDrawer
         application={application}
         currentComponent={currentComponent}
-        handleClickSharedEnvs={() => {
-          this.setState({
-            currentFormType: "application",
-            currentApplicationTab: "sharedEnvs"
-          });
-        }}
-        handleClickApplicationPlugins={() => {
-          this.setState({
-            currentFormType: "application",
-            currentApplicationTab: "applicationPlugins"
-          });
-        }}
         handleClickComponent={(component: ApplicationComponent) => {
           this.setState({
-            currentFormType: "component",
             currentComponent: component
-            // currentComponentTab: "basic"
           });
         }}
-        // handleClickComponentTab={(component: ApplicationComponent, tab: string) => {
-        //   this.setState({
-        //     currentFormType: "component",
-        //     currentComponent: component,
-        //     currentComponentTab: tab
-        //   });
-        // }}
       />
     );
   }
 
   public render() {
     const { isLoading, application, dispatch, classes } = this.props;
-    const { currentFormType } = this.state;
-    // console.log("render", this.state.currentComponent);
 
     return (
       <BasePage
         leftDrawer={this.renderApplicationEditDrawer()}
         secondHeaderRight={
           <div className={classes.secondHeaderRight}>
-            {currentFormType === "application" ? (
-              <>
-                <CustomizedButton
-                  color="primary"
-                  className={classes.secondHeaderRightItem}
-                  onClick={() => dispatch(submit("application"))}>
-                  Save Application
-                </CustomizedButton>
-              </>
-            ) : (
-              <>
-                <CustomizedButton
-                  color="primary"
-                  className={classes.secondHeaderRightItem}
-                  onClick={() => dispatch(submit("componentLike"))}>
-                  Save Component
-                </CustomizedButton>
-                <CustomizedButton
-                  color="primary"
-                  className={classes.secondHeaderRightItem}
-                  disabled={this.props.application?.get("components")?.size === 0}
-                  onClick={() => this.handleDeleteComponent()}>
-                  Delete Component
-                </CustomizedButton>
-              </>
-            )}
+            <>
+              <CustomizedButton
+                color="primary"
+                className={classes.secondHeaderRightItem}
+                onClick={() => dispatch(submit("componentLike"))}>
+                Save Component
+              </CustomizedButton>
+              <CustomizedButton
+                color="primary"
+                className={classes.secondHeaderRightItem}
+                disabled={this.props.application?.get("components")?.size === 0}
+                onClick={() => this.handleDeleteComponent()}>
+                Delete Component
+              </CustomizedButton>
+            </>
           </div>
         }
         secondHeaderLeft={application && application.get("name")}>
@@ -240,28 +199,7 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
 
   public renderForm() {
     const { application, sharedEnv, dispatch } = this.props;
-    const {
-      currentFormType,
-      currentComponent,
-      currentApplicationTab,
-      // currentComponentTab,
-      changingComponent
-    } = this.state;
-
-    if (currentFormType === "application") {
-      return (
-        <Grid container spacing={2}>
-          <Grid item xs={8} sm={8} md={8}>
-            <ApplicationForm
-              onSubmit={this.submitApplication}
-              initialValues={application}
-              isEdit={true}
-              currentTab={currentApplicationTab}
-            />
-          </Grid>
-        </Grid>
-      );
-    }
+    const { currentComponent, changingComponent } = this.state;
 
     if (changingComponent) {
       return null;

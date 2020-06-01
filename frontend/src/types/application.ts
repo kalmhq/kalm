@@ -18,7 +18,7 @@ export const SET_IS_SUBMITTING_APPLICATION_COMPONENT = "SET_IS_SUBMITTING_APPLIC
 export const CREATE_COMPONENT = "CREATE_COMPONENT";
 export const UPDATE_COMPONENT = "UPDATE_COMPONENT";
 export const DELETE_COMPONENT = "DELETE_COMPONENT";
-export const LOAD_APPLICATION_PLUGINS_FULFILLED = "LOAD_APPLICATION_PLUGINS_FULFILLED";
+// export const LOAD_APPLICATION_PLUGINS_FULFILLED = "LOAD_APPLICATION_PLUGINS_FULFILLED";
 export const LOAD_COMPONENT_PLUGINS_FULFILLED = "LOAD_COMPONENT_PLUGINS_FULFILLED";
 
 export interface ComponentPlugin {
@@ -104,11 +104,9 @@ export type ApplicationComponentDetailsList = Immutable.List<ApplicationComponen
 
 export interface ApplicationContent {
   name: string;
-  namespace: string;
   isActive: boolean;
-  sharedEnvs: Immutable.List<SharedEnv>;
-  // TODO correct
-  plugins?: any;
+  // sharedEnvs: Immutable.List<SharedEnv>;
+  // plugins?: any;
 
   components: ApplicationComponentDetailsList;
 }
@@ -220,12 +218,12 @@ export interface SetIsSubmittingApplicationComponent {
   };
 }
 
-export interface LoadApplicationPluginsFulfilledAction {
-  type: typeof LOAD_APPLICATION_PLUGINS_FULFILLED;
-  payload: {
-    applicationPlugins: ApplicationPlugin[];
-  };
-}
+// export interface LoadApplicationPluginsFulfilledAction {
+//   type: typeof LOAD_APPLICATION_PLUGINS_FULFILLED;
+//   payload: {
+//     applicationPlugins: ApplicationPlugin[];
+//   };
+// }
 
 export interface LoadComponentPluginsFulfilledAction {
   type: typeof LOAD_COMPONENT_PLUGINS_FULFILLED;
@@ -250,5 +248,5 @@ export type ApplicationActions =
   | CreateComponentAction
   | UpdateComponentAction
   | DeleteComponentAction
-  | LoadApplicationPluginsFulfilledAction
+  // | LoadApplicationPluginsFulfilledAction
   | LoadComponentPluginsFulfilledAction;
