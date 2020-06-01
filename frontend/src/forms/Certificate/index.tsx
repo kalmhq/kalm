@@ -1,6 +1,6 @@
 import { Button, Grid } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
-import { KFreeSoloAutoCompleteSingleValue } from "forms/Basic/autoComplete";
+import { KFreeSoloAutoCompleteSingleValue, KFreeSoloAutoCompleteMultiValues } from "forms/Basic/autoComplete";
 import { TextField } from "forms/Basic/text";
 import { KRadioGroupRender } from "forms/Basic/radio";
 import { ValidatorRequired } from "forms/validator";
@@ -12,8 +12,9 @@ import { arrayPush, InjectedFormProps } from "redux-form";
 import { Field, FieldArray, formValueSelector, getFormSyncErrors, reduxForm } from "redux-form/immutable";
 import { TDispatchProp } from "types";
 import { HttpsCertification } from "types/httpsCertification";
-import { Certificate, CertificateFormType, issuerManaged, selfManaged } from "types/certificate";
+import { Certificate, CertificateFormType, issuerManaged, selfManaged, CertificateIssuerList } from "types/certificate";
 import { setIsShowAddCertificateModal } from "actions/certificate";
+import { RenderSelectField } from "forms/Basic/select";
 
 const defaultFormID = "certificate";
 
@@ -27,6 +28,7 @@ const mapStateToProps = (state: RootState, { form }: OwnProps) => {
     selfManagedCertContent: selector(state, "selfManagedCertContent") as string,
     selfManagedCertPrivateKey: selector(state, "selfManagedCertPrivateKey") as string,
     httpsCertIssuer: selector(state, "httpsCertIssuer") as string,
+    certificateIssuers: state.get("certificates").get("certificateIssuer") as CertificateIssuerList,
     domains: selector(state, "domains") as Immutable.List<string>
   };
 };
@@ -60,8 +62,76 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
     this.state = {};
   }
 
+  private renderSelfManagedFields = () => {
+    const { classes } = this.props;
+    return (
+      <>
+        <Grid item md={12}>
+          <Field
+            label="Certificate file"
+            multiline={true}
+            className={classes.fileInput}
+            component={TextField}
+            rows={12}
+            name="selfManagedCertContent"
+            margin="normal"
+            validate={[ValidatorRequired]}
+            options={[]}
+          />
+        </Grid>
+        <Grid item md={12}>
+          <Field
+            label="Private key"
+            multiline={true}
+            className={classes.fileInput}
+            component={TextField}
+            rows={12}
+            name="selfManagedCertPrivateKey"
+            margin="normal"
+            validate={[ValidatorRequired]}
+            options={[]}
+          />
+        </Grid>
+      </>
+    );
+  };
+
+  private renderIssuerManagedFields = () => {
+    const { classes, certificateIssuers } = this.props;
+    return (
+      <>
+        <Grid item md={12}>
+          <Field
+            label="Domains"
+            multiline={true}
+            className={classes.fileInput}
+            component={KFreeSoloAutoCompleteMultiValues}
+            rows={12}
+            name="domains"
+            margin="normal"
+            validate={[ValidatorRequired]}
+            options={[]}
+          />
+        </Grid>
+        <Grid item md={12}>
+          <Field
+            label="Certificate issuser"
+            multiline={true}
+            className={classes.fileInput}
+            component={RenderSelectField}
+            rows={12}
+            name="httpsCertIssuer"
+            margin="normal"
+            validate={[ValidatorRequired]}
+            options={Array.from(certificateIssuers)}
+          />
+        </Grid>
+      </>
+    );
+  };
+
   public render() {
-    const { classes, dispatch, handleSubmit } = this.props;
+    const { classes, dispatch, handleSubmit, managedType } = this.props;
 
     return (
       <div className={classes.root}>
@@ -94,32 +164,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
               options={[]}
             />
           </Grid>
-          <Grid item md={12}>
-            <Field
-              label="Certificate file"
-              multiline={true}
-              className={classes.fileInput}
-              component={TextField}
-              rows={12}
-              name="selfManagedCertContent"
-              margin="normal"
-              validate={[ValidatorRequired]}
-              options={[]}
-            />
-          </Grid>
-          <Grid item md={12}>
-            <Field
-              label="Private name"
-              multiline={true}
-              className={classes.fileInput}
-              component={TextField}
-              rows={12}
-              name="selfManagedCertPrivateKey"
-              margin="normal"
-              validate={[ValidatorRequired]}
-              options={[]}
-            />
-          </Grid>
+          {managedType === selfManaged ? this.renderSelfManagedFields() : this.renderIssuerManagedFields()}
           <Grid container spacing={2}>
             <Grid item md={8}></Grid>
             <Grid item md={2}>

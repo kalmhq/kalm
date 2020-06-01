@@ -9,7 +9,12 @@ import { NewModal } from "./New";
 import { CustomizedButton } from "widgets/Button";
 import { H4 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
-import { loadCertificates, deleteCertificateAction, setIsShowAddCertificateModal } from "actions/certificate";
+import {
+  loadCertificates,
+  deleteCertificateAction,
+  setIsShowAddCertificateModal,
+  loadCertificateIssuers
+} from "actions/certificate";
 import { grey } from "@material-ui/core/colors";
 import MaterialTable from "material-table";
 import { customSearchForImmutable } from "../../utils/tableSearch";
@@ -62,6 +67,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
 
   componentDidMount() {
     this.props.dispatch(loadCertificates());
+    this.props.dispatch(loadCertificateIssuers());
   }
 
   private renderName = (rowData: RowData) => {

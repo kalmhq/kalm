@@ -2,7 +2,8 @@ import {
   LOAD_CERTIFICATES_FULFILLED,
   LOAD_CERTIFICATES_PENDING,
   LOAD_CERTIFICATES_FAILED,
-  Certificate,
+  LOAD_CERTIFICATE_ISSUERS_PENDING,
+  LOAD_CERTIFICATE_ISSUERS_FULFILLED,
   SET_IS_SUBMITTING_CERTIFICATE,
   SetIsSubmittingCertificate,
   DELETE_CERTIFICATE,
@@ -13,7 +14,7 @@ import {
 } from "types/certificate";
 import { StatusFailure, ThunkResult } from "../types";
 import { setErrorNotificationAction } from "./notification";
-import { getCertificateList, createCertificate, deleteCertificate } from "./kubernetesApi";
+import { getCertificateList, createCertificate, deleteCertificate, getCertificateIssuerList } from "./kubernetesApi";
 import { resErrorsToSubmitErrors } from "utils";
 import { SubmissionError } from "redux-form";
 import Immutable from "immutable";
@@ -56,6 +57,28 @@ export const loadCertificates = (): ThunkResult<Promise<void>> => {
         type: LOAD_CERTIFICATES_FULFILLED,
         payload: {
           certificates
+        }
+      });
+    } catch (e) {
+      if (e.response && e.response.data.status === StatusFailure) {
+        dispatch(setErrorNotificationAction(e.response.data.message));
+      } else {
+        dispatch(setErrorNotificationAction());
+      }
+      dispatch({ type: LOAD_CERTIFICATES_FAILED });
+    }
+  };
+};
+
+export const loadCertificateIssuers = (): ThunkResult<Promise<void>> => {
+  return async dispatch => {
+    dispatch({ type: LOAD_CERTIFICATE_ISSUERS_PENDING });
+    try {
+      const certificateIssuers = await getCertificateIssuerList();
+      dispatch({
+        type: LOAD_CERTIFICATE_ISSUERS_FULFILLED,
+        payload: {
+          certificateIssuers
         }
       });
     } catch (e) {

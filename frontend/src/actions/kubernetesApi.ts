@@ -19,7 +19,7 @@ import {
 import { ComponentTemplate } from "../types/componentTemplate";
 import { ConfigCreate, ConfigRes } from "../types/config";
 import { RegistryType } from "types/registry";
-import { CertificateList, Certificate, CertificateFormType } from "types/certificate";
+import { CertificateList, Certificate, CertificateFormType, CertificateIssuerList } from "types/certificate";
 import { HttpRoute } from "types/route";
 import { Service } from "types/service";
 
@@ -327,6 +327,11 @@ export const getServiceAccountSecret = async (name: string) => {
 
 export const getCertificateList = async (): Promise<CertificateList> => {
   const res = await getAxiosClient().get(K8sApiPrefix + "/v1alpha1/httpscerts");
+  return Immutable.fromJS(res.data);
+};
+
+export const getCertificateIssuerList = async (): Promise<CertificateIssuerList> => {
+  const res = await getAxiosClient().get(K8sApiPrefix + "/v1alpha1/httpscertissuers");
   return Immutable.fromJS(res.data);
 };
 
