@@ -16,6 +16,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -27,9 +28,9 @@ type HttpsCertSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	IsSelfManaged             bool     `json:"isSelfManaged"`
+	IsSelfManaged             bool     `json:"isSelfManaged,omitempty"`
 	SelfManagedCertSecretName string   `json:"selfManagedCertSecretName,omitempty"`
-	HttpsCertIssuer           string   `json:"httpsCertIssuer"`
+	HttpsCertIssuer           string   `json:"httpsCertIssuer,omitempty"`
 	Domains                   []string `json:"domains"`
 }
 
@@ -37,12 +38,40 @@ type HttpsCertSpec struct {
 type HttpsCertStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	OK bool `json:"ok"`
+
+	// +optional
+	Conditions []HttpsCertCondition `json:"conditions,omitempty"`
+}
+
+type HttpsCertConditionType string
+
+const (
+	HttpsCertConditionReady HttpsCertConditionType = "Ready"
+)
+
+type HttpsCertCondition struct {
+	// Type of the condition, currently ('Ready').
+	Type HttpsCertConditionType `json:"type"`
+
+	// Status of the condition, one of ('True', 'False', 'Unknown').
+	Status corev1.ConditionStatus `json:"status"`
+
+	// Reason is a brief machine readable explanation for the condition's last
+	// transition.
+	// +optional
+	Reason string `json:"reason,omitempty"`
+
+	// Message is a human readable description of the details of the last
+	// transition, complementing reason.
+	// +optional
+	Message string `json:"message,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:scope=Cluster
 // +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Ready",type=string,JSONPath=`.status.conditions[0].status`
+// +kubebuilder:printcolumn:name="Message",type=string,JSONPath=`.status.conditions[0].message`
 
 // HttpsCert is the Schema for the httpscerts API
 type HttpsCert struct {

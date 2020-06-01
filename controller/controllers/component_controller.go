@@ -53,9 +53,10 @@ type ComponentReconcilerTask struct {
 	*ComponentReconciler
 
 	// The following fields will be filled by calling SetupAttributes() function
-	ctx         context.Context
-	component   *corev1alpha1.Component
-	application *corev1alpha1.Application
+	ctx       context.Context
+	component *corev1alpha1.Component
+	namespace coreV1.Namespace
+	//ns *corev1alpha1.Application
 
 	// related resources
 	service        *coreV1.Service
@@ -78,6 +79,8 @@ type ComponentReconcilerTask struct {
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 
 func (r *ComponentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+	fmt.Println("reconciling component", req)
+
 	task := &ComponentReconcilerTask{
 		ComponentReconciler: r,
 		ctx:                 context.Background(),
@@ -235,8 +238,8 @@ func (r *ComponentReconcilerTask) Run(req ctrl.Request) error {
 
 func (r *ComponentReconcilerTask) GetLabels() map[string]string {
 	return map[string]string{
-		"kapp-application": r.application.Name,
-		"kapp-component":   r.component.Name,
+		"kapp-namespace": r.namespace.Name,
+		"kapp-component": r.component.Name,
 	}
 }
 
@@ -275,10 +278,18 @@ func (r *ComponentReconcilerTask) FixComponentDefaultValues() (err error) {
 	return r.Update(r.ctx, r.component)
 }
 
+func IsNamespaceKappEnabled(namespace coreV1.Namespace) bool {
+	if v, exist := namespace.Labels[KappEnableLabelName]; !exist || v != KappEnableLabelValue {
+		return false
+	}
+
+	return true
+}
+
 func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 	labels := r.GetLabels()
 
-	if !r.application.Spec.IsActive {
+	if !IsNamespaceKappEnabled(r.namespace) {
 		if r.service != nil {
 			return r.Delete(r.ctx, r.service)
 		}
@@ -356,7 +367,7 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 
 func (r *ComponentReconcilerTask) ReconcileWorkload() (err error) {
 
-	if !r.application.Spec.IsActive {
+	if !IsNamespaceKappEnabled(r.namespace) {
 		if r.deployment != nil {
 			if err := r.Delete(r.ctx, r.deployment); err != nil {
 				return err
@@ -410,7 +421,6 @@ func (r *ComponentReconcilerTask) ReconcileWorkload() (err error) {
 }
 
 func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.PodTemplateSpec) (err error) {
-	app := r.application
 	component := r.component
 	ctx := r.ctx
 	deployment := r.deployment
@@ -425,7 +435,7 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 				Labels:      labelMap,
 				Annotations: make(map[string]string),
 				Name:        component.Name,
-				Namespace:   app.Name,
+				Namespace:   r.namespace.Name,
 			},
 			Spec: appsV1.DeploymentSpec{
 				Template: *podTemplateSpec,
@@ -557,7 +567,6 @@ func (r *ComponentReconcilerTask) ReconcileDaemonSet(podTemplateSpec *coreV1.Pod
 }
 
 func (r *ComponentReconcilerTask) ReconcileCronJob(podTemplateSpec *coreV1.PodTemplateSpec) (err error) {
-	app := r.application
 	log := r.Log
 	ctx := r.ctx
 	cj := r.cronJob
@@ -593,7 +602,7 @@ func (r *ComponentReconcilerTask) ReconcileCronJob(podTemplateSpec *coreV1.PodTe
 		cj = &batchV1Beta1.CronJob{
 			ObjectMeta: metaV1.ObjectMeta{
 				Name:      component.Name,
-				Namespace: app.Name,
+				Namespace: r.namespace.Name,
 				Labels:    labelMap,
 			},
 			Spec: desiredCJSpec,
@@ -754,12 +763,13 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 	}
 
 	// set image secret
-	if r.application.Spec.ImagePullSecretName != "" {
-		secs := []coreV1.LocalObjectReference{
-			{Name: r.application.Spec.ImagePullSecretName},
-		}
-		template.Spec.ImagePullSecrets = secs
-	}
+	// todo put into secret for kapp?
+	//if r.ns.Spec.ImagePullSecretName != "" {
+	//	secs := []coreV1.LocalObjectReference{
+	//		{Name: r.ns.Spec.ImagePullSecretName},
+	//	}
+	//	template.Spec.ImagePullSecrets = secs
+	//}
 
 	// apply envs
 	var envs []coreV1.EnvVar
@@ -769,12 +779,12 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 		if env.Type == "" || env.Type == corev1alpha1.EnvVarTypeStatic {
 			value = env.Value
 		} else if env.Type == corev1alpha1.EnvVarTypeExternal {
-			value, err = r.FindShareEnvValue(env.Value)
-
-			//  if the env can't be found in sharedEnv, ignore it
-			if err != nil {
-				continue
-			}
+			//value, err = r.FindShareEnvValue(env.Value)
+			//
+			////  if the env can't be found in sharedEnv, ignore it
+			//if err != nil {
+			//	continue
+			//}
 		} else if env.Type == corev1alpha1.EnvVarTypeLinked {
 			value, err = r.getValueOfLinkedEnv(env)
 
@@ -896,22 +906,22 @@ func getPVCName(componentName, diskPath string) string {
 	return fmt.Sprintf("%s-%x", componentName, md5.Sum([]byte(diskPath)))
 }
 
-func (r *ComponentReconcilerTask) FindShareEnvValue(name string) (string, error) {
-	for _, env := range r.application.Spec.SharedEnv {
-		if env.Name != name {
-			continue
-		}
-
-		if env.Type == corev1alpha1.EnvVarTypeLinked {
-			return r.getValueOfLinkedEnv(env)
-		} else if env.Type == "" || env.Type == corev1alpha1.EnvVarTypeStatic {
-			return env.Value, nil
-		}
-
-	}
-
-	return "", fmt.Errorf("fail to find value for shareEnv: %s", name)
-}
+//func (r *ComponentReconcilerTask) FindShareEnvValue(name string) (string, error) {
+//	for _, env := range r.ns.Spec.SharedEnv {
+//		if env.Name != name {
+//			continue
+//		}
+//
+//		if env.Type == corev1alpha1.EnvVarTypeLinked {
+//			return r.getValueOfLinkedEnv(env)
+//		} else if env.Type == "" || env.Type == corev1alpha1.EnvVarTypeStatic {
+//			return env.Value, nil
+//		}
+//
+//	}
+//
+//	return "", fmt.Errorf("fail to find value for shareEnv: %s", name)
+//}
 
 func (r *ComponentReconcilerTask) getValueOfLinkedEnv(env corev1alpha1.EnvVar) (string, error) {
 	if env.Value == "" {
@@ -955,7 +965,7 @@ func (r *ComponentReconcilerTask) initPluginRuntime(component *corev1alpha1.Comp
 	rt := vm.InitRuntime()
 
 	rt.Set("getApplicationName", func(call js.FunctionCall) js.Value {
-		return rt.ToValue(r.application.Name)
+		return rt.ToValue(r.namespace.Name)
 	})
 
 	rt.Set("getCurrentComponent", func(call js.FunctionCall) js.Value {
@@ -1294,7 +1304,7 @@ func (r *ComponentReconcilerTask) HandleDelete() (err error) {
 	} else {
 		if utils.ContainsString(r.component.ObjectMeta.Finalizers, finalizerName) {
 			// TODO remove resources
-			if err := r.DeleteResources(); err != nil {
+			if err := r.DeleteResources(); client.IgnoreNotFound(err) != nil {
 				r.WarningEvent(err, "fail when DeleteResources")
 				return err
 			}
@@ -1319,11 +1329,10 @@ func (r *ComponentReconcilerTask) SetupAttributes(req ctrl.Request) (err error) 
 	}
 	r.component = &component
 
-	var app corev1alpha1.Application
+	var ns coreV1.Namespace
 	err = r.Reader.Get(r.ctx, types.NamespacedName{
-		Namespace: "",
-		Name:      component.Namespace,
-	}, &app)
+		Name: component.Namespace,
+	}, &ns)
 
 	if err != nil {
 		//if errors.IsNotFound(err) && !r.component.DeletionTimestamp.IsZero() {
@@ -1332,38 +1341,38 @@ func (r *ComponentReconcilerTask) SetupAttributes(req ctrl.Request) (err error) 
 
 		return err
 	}
-	r.application = &app
+	r.namespace = ns
 	return nil
 }
 
 func (r *ComponentReconcilerTask) DeleteResources() (err error) {
 	if r.service != nil {
-		if err := r.Client.Delete(r.ctx, r.service); err != nil {
+		if err := r.Client.Delete(r.ctx, r.service); client.IgnoreNotFound(err) != nil {
 			r.WarningEvent(err, "Delete service error")
 			return err
 		}
 	}
 
 	if r.deployment != nil {
-		if err := r.DeleteItem(r.deployment); err != nil {
+		if err := r.DeleteItem(r.deployment); client.IgnoreNotFound(err) != nil {
 			return err
 		}
 	}
 
 	if r.daemonSet != nil {
-		if err := r.DeleteItem(r.daemonSet); err != nil {
+		if err := r.DeleteItem(r.daemonSet); client.IgnoreNotFound(err) != nil {
 			return err
 		}
 	}
 
 	if r.cronJob != nil {
-		if err := r.DeleteItem(r.cronJob); err != nil {
+		if err := r.DeleteItem(r.cronJob); client.IgnoreNotFound(err) != nil {
 			return err
 		}
 	}
 
 	if r.statefulSet != nil {
-		if err := r.DeleteItem(r.statefulSet); err != nil {
+		if err := r.DeleteItem(r.statefulSet); client.IgnoreNotFound(err) != nil {
 			return err
 		}
 	}
@@ -1372,13 +1381,13 @@ func (r *ComponentReconcilerTask) DeleteResources() (err error) {
 
 	if err := r.Reader.List(r.ctx, &bindingList, client.MatchingLabels{
 		"kapp-component": r.component.Name,
-	}); err != nil {
+	}); client.IgnoreNotFound(err) != nil {
 		r.WarningEvent(err, "get plugin binding list error.")
 		return err
 	}
 
 	for _, binding := range bindingList.Items {
-		if err := r.Delete(r.ctx, &binding); err != nil {
+		if err := r.Delete(r.ctx, &binding); client.IgnoreNotFound(err) != nil {
 			r.WarningEvent(err, "Delete plugin binding error.")
 		}
 	}

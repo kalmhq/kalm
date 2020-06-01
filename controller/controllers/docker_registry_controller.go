@@ -172,13 +172,23 @@ func (r *DockerRegistryReconcileTask) DistributeSecrets() (err error) {
 		return nil
 	}
 
-	var applicationList corev1alpha1.ApplicationList
-	if err := r.Reader.List(r.ctx, &applicationList); err != nil {
+	//var applicationList corev1alpha1.ApplicationList
+	//if err := r.Reader.List(r.ctx, &applicationList); err != nil {
+	//	return err
+	//}
+
+	var nsList v1.NamespaceList
+	if err := r.Reader.List(r.ctx, &nsList); err != nil {
 		return err
 	}
 
-	for _, app := range applicationList.Items {
-		if app.DeletionTimestamp != nil {
+	for _, ns := range nsList.Items {
+		if ns.DeletionTimestamp != nil {
+			continue
+		}
+
+		if v, exist := ns.Labels[KappEnableLabelName]; !exist || v != "true" {
+			//todo clean secret if exist
 			continue
 		}
 
@@ -186,15 +196,15 @@ func (r *DockerRegistryReconcileTask) DistributeSecrets() (err error) {
 
 		err := r.Reader.Get(r.ctx, types.NamespacedName{
 			Name:      getImagePullSecretName(r.registry.Name),
-			Namespace: app.Name,
+			Namespace: ns.Name,
 		}, &secret)
 
 		if err != nil && !errors.IsNotFound(err) {
-			r.WarningEvent(err, fmt.Sprintf("Get image pull secret error. Namespace: %s, registry: %s", app.Name, r.registry.Name))
+			r.WarningEvent(err, fmt.Sprintf("Get image pull secret error. Namespace: %s, registry: %s", ns.Name, r.registry.Name))
 			return err
 		}
 
-		secret.Namespace = app.Name
+		secret.Namespace = ns.Name
 		secret.Name = getImagePullSecretName(r.registry.Name)
 		secret.Type = v1.SecretTypeDockercfg
 
@@ -413,7 +423,7 @@ func (r *DockerRegistryReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			ToRequests: &DockerRegistryAuthenticationSecretMapper{r.BaseReconciler},
 		}).
 		Watches(
-			&source.Kind{Type: &corev1alpha1.Application{}},
+			&source.Kind{Type: &v1.Namespace{}},
 			&handler.EnqueueRequestsFromMapFunc{
 				ToRequests: &TouchAllRegistriesMapper{r.BaseReconciler},
 			},

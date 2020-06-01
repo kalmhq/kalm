@@ -8,6 +8,8 @@ import (
 	"github.com/onsi/ginkgo"
 	"github.com/stretchr/testify/suite"
 	istioScheme "istio.io/client-go/pkg/clientset/versioned/scheme"
+	v1 "k8s.io/api/core/v1"
+	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -83,46 +85,46 @@ func (suite *BasicSuite) createComponentPlugin(plugin *v1alpha1.ComponentPlugin)
 	})
 }
 
-func (suite *BasicSuite) createApplicationPlugin(plugin *v1alpha1.ApplicationPlugin) {
-	suite.Nil(suite.K8sClient.Create(context.Background(), plugin))
+//func (suite *BasicSuite) createApplicationPlugin(plugin *v1alpha1.ApplicationPlugin) {
+//	suite.Nil(suite.K8sClient.Create(context.Background(), plugin))
+//
+//	// after the finalizer is set, the plugin won't auto change
+//	suite.Eventually(func() bool {
+//		err := suite.K8sClient.Get(context.Background(), getApplicationPluginNamespacedName(plugin), plugin)
+//
+//		if err != nil {
+//			return false
+//		}
+//
+//		for i := range plugin.Finalizers {
+//			if plugin.Finalizers[i] == finalizerName {
+//				return true
+//			}
+//		}
+//
+//		return false
+//	})
+//}
 
-	// after the finalizer is set, the plugin won't auto change
-	suite.Eventually(func() bool {
-		err := suite.K8sClient.Get(context.Background(), getApplicationPluginNamespacedName(plugin), plugin)
-
-		if err != nil {
-			return false
-		}
-
-		for i := range plugin.Finalizers {
-			if plugin.Finalizers[i] == finalizerName {
-				return true
-			}
-		}
-
-		return false
-	})
-}
-
-func (suite *BasicSuite) createApplication(application *v1alpha1.Application) {
-	suite.Nil(suite.K8sClient.Create(context.Background(), application))
-
-	suite.Eventually(func() bool {
-		err := suite.K8sClient.Get(context.Background(), getApplicationNamespacedName(application), application)
-
-		if err != nil {
-			return false
-		}
-
-		for i := range application.Finalizers {
-			if application.Finalizers[i] == finalizerName {
-				return true
-			}
-		}
-
-		return false
-	}, "Created application has no finalizer.")
-}
+//func (suite *BasicSuite) createApplication(ns *v1alpha1.Application) {
+//	suite.Nil(suite.K8sClient.Create(context.Background(), ns))
+//
+//	suite.Eventually(func() bool {
+//		err := suite.K8sClient.Get(context.Background(), getApplicationNamespacedName(ns), ns)
+//
+//		if err != nil {
+//			return false
+//		}
+//
+//		for i := range ns.Finalizers {
+//			if ns.Finalizers[i] == finalizerName {
+//				return true
+//			}
+//		}
+//
+//		return false
+//	}, "Created ns has no finalizer.")
+//}
 
 func getDockerRegistryNamespacedName(registry *v1alpha1.DockerRegistry) types.NamespacedName {
 	return types.NamespacedName{Name: registry.Name, Namespace: registry.Namespace}
@@ -227,9 +229,11 @@ func (suite *BasicSuite) SetupSuite() {
 	suite.NotNil(mgr)
 	suite.Nil(err)
 
-	suite.Nil(NewApplicationReconciler(mgr).SetupWithManager(mgr))
-	suite.Nil(NewApplicationPluginReconciler(mgr).SetupWithManager(mgr))
-	suite.Nil(NewApplicationPluginBindingReconciler(mgr).SetupWithManager(mgr))
+	//suite.Nil(NewApplicationReconciler(mgr).SetupWithManager(mgr))
+	//suite.Nil(NewApplicationPluginReconciler(mgr).SetupWithManager(mgr))
+	//suite.Nil(NewApplicationPluginBindingReconciler(mgr).SetupWithManager(mgr))
+	//suite.Nil(NewKappNamespacesReconciler(mgr).SetupWithManager(mgr))
+	suite.Nil(NewKappNSReconciler(mgr).SetupWithManager(mgr))
 
 	suite.Nil(NewComponentReconciler(mgr).SetupWithManager(mgr))
 	suite.Nil(NewComponentPluginReconciler(mgr).SetupWithManager(mgr))
@@ -296,4 +300,32 @@ func (suite *BasicSuite) createHttpsCertIssuer(issuer v1alpha1.HttpsCertIssuer) 
 
 		return err == nil
 	})
+}
+
+var letterRunes = []rune("abcdefghijklmnopqrstuvwxyz")
+
+func randomName() string {
+	b := make([]rune, 12)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
+}
+
+func (suite *BasicSuite) SetupKappEnabledNs() v1.Namespace {
+	ns := v1.Namespace{
+		ObjectMeta: metaV1.ObjectMeta{
+			Name: randomName(),
+			Labels: map[string]string{
+				KappEnableLabelName: "true",
+			},
+		},
+	}
+	suite.Nil(suite.K8sClient.Create(context.Background(), &ns))
+	suite.Eventually(func() bool {
+		err := suite.K8sClient.Get(context.Background(), types.NamespacedName{Name: ns.Name}, &ns)
+		return err == nil
+	})
+
+	return ns
 }

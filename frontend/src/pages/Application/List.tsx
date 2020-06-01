@@ -78,11 +78,8 @@ const styles = (theme: Theme) =>
 const mapStateToProps = (state: RootState) => {
   const internalEndpointsDialog = state.get("dialogs").get(internalEndpointsModalID);
   const externalEndpointsDialog = state.get("dialogs").get(externalEndpointsModalID);
-  const pathname = window.location.pathname;
-  const isActiveList = pathname.startsWith("/applications");
 
   return {
-    isActiveList,
     internalEndpointsDialogData: internalEndpointsDialog ? internalEndpointsDialog.get("data") : {},
     externalEndpointsDialogData: externalEndpointsDialog ? externalEndpointsDialog.get("data") : {}
   };
@@ -198,14 +195,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         Please confirm the namespace and name of new application.
         <div className={classes.duplicateConfirmFileds}>
           <TextField
-            inputRef={this.duplicateApplicationNamespaceRef}
-            label="Namespace"
-            size="small"
-            variant="outlined"
-            defaultValue={duplicatingApplicationListItem?.get("namespace")}
-            required
-          />
-          <TextField
             inputRef={this.duplicateApplicationNameRef}
             label="Name"
             size="small"
@@ -237,7 +226,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
 
         let newApplication = getApplicationByName(duplicatingApplicationListItem.get("name"));
 
-        newApplication = newApplication.set("namespace", this.duplicateApplicationNamespaceRef.current.value);
         newApplication = newApplication.set("name", this.duplicateApplicationNameRef.current.value);
         newApplication = newApplication.set("isActive", false);
 
@@ -301,10 +289,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         {rowData.get("name")}
       </Link>
     );
-  };
-
-  private renderNamespace = (applicationListItem: RowData) => {
-    return applicationListItem.get("namespace"); // ["default", "production", "ropsten"][index] || "default",
   };
 
   private renderEnable = (applicationListItem: RowData) => {
@@ -455,7 +439,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
               .get("components")
               .map(component => {
                 return component.get("services").map(serviceStatus => {
-                  const dns = `${serviceStatus.get("name")}.${applicationDetails.get("namespace")}`;
+                  const dns = `${serviceStatus.get("name")}.${applicationDetails.get("name")}`;
                   return serviceStatus
                     .get("ports")
                     .map(port => {
@@ -607,16 +591,14 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   private getData = () => {
-    const { applications, isActiveList } = this.props;
+    const { applications } = this.props;
     const data: RowData[] = [];
 
-    applications
-      .filter(application => application.get("isActive") === isActiveList)
-      .forEach((application, index) => {
-        const rowData = application as RowData;
-        rowData.index = index;
-        data.push(rowData);
-      });
+    applications.forEach((application, index) => {
+      const rowData = application as RowData;
+      rowData.index = index;
+      data.push(rowData);
+    });
 
     return data;
   };
@@ -640,152 +622,88 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   }
 
   private getColumns() {
-    const { hasRole, isActiveList } = this.props;
+    const { hasRole } = this.props;
     const hasWriterRole = hasRole("writer");
 
-    const columns = isActiveList
-      ? [
-          // @ts-ignore
-          {
-            title: "Name",
-            field: "name",
-            sorting: false,
-            render: this.renderName,
-            customFilterAndSearch: customSearchForImmutable
-          },
-          { title: "Pods Status", field: "status", sorting: false, render: this.renderStatus },
-          // {
-          //   title: (
-          //     <Tooltip title="Addresses can be used to access components in each application. Only visible inside the cluster.">
-          //       <FlexRowItemCenterBox width="auto">
-          //         Internal Endpoints <HelpIcon fontSize="small" />
-          //       </FlexRowItemCenterBox>
-          //     </Tooltip>
-          //   ),
-          //   field: "internalEndpoints",
-          //   sorting: false,
-          //   render: this.renderInternalEndpoints
-          // },
-          {
-            title: (
-              <Tooltip title="Addresses can be used to access your services publicly.">
-                <FlexRowItemCenterBox width="auto">
-                  External Endpoints <HelpIcon fontSize="small" />
-                </FlexRowItemCenterBox>
-              </Tooltip>
-            ),
-            field: "internalEndpoints",
-            sorting: false,
-            render: this.renderExternalEndpoints
-          },
-          {
-            title: "CPU",
-            field: "cpu",
-            render: this.renderCPU,
-            headerStyle: {
-              textAlign: "center"
-            }
-          },
-          {
-            title: "Memory",
-            field: "memory",
-            render: this.renderMemory,
-            headerStyle: {
-              textAlign: "center"
-            }
-          },
-          // {
-          //   title: "Enable",
-          //   field: "active",
-          //   sorting: false,
-          //   render: this.renderEnable,
-          //   hidden: !hasWriterRole
-          // },
-          {
-            title: "Created On",
-            field: "active",
-            sorting: false,
-            render: this.renderCreatedTime,
-            hidden: !hasWriterRole
-          },
-          {
-            title: "Actions",
-            field: "action",
-            sorting: false,
-            searchable: false,
-            render: this.renderActions
-          },
-          {
-            title: "",
-            field: "moreAction",
-            sorting: false,
-            searchable: false,
-            render: this.renderMoreActions
-          }
-        ]
-      : [
-          // @ts-ignore
-          {
-            title: "Name",
-            field: "name",
-            sorting: false,
-            render: this.renderName,
-            customFilterAndSearch: customSearchForImmutable
-          },
-          { title: "Pods Status", field: "status", sorting: false, render: this.renderStatus },
-          // {
-          //   title: (
-          //     <Tooltip title="Addresses can be used to access components in each application. Only visible inside the cluster.">
-          //       <FlexRowItemCenterBox width="auto">
-          //         Internal Endpoints <HelpIcon fontSize="small" />
-          //       </FlexRowItemCenterBox>
-          //     </Tooltip>
-          //   ),
-          //   field: "internalEndpoints",
-          //   sorting: false,
-          //   render: this.renderInternalEndpoints
-          // },
-          {
-            title: (
-              <Tooltip title="Addresses can be used to access your services publicly.">
-                <FlexRowItemCenterBox width="auto">
-                  External Endpoints <HelpIcon fontSize="small" />
-                </FlexRowItemCenterBox>
-              </Tooltip>
-            ),
-            field: "internalEndpoints",
-            sorting: false,
-            render: this.renderExternalEndpoints
-          },
-          {
-            title: "Install",
-            field: "active",
-            sorting: false,
-            render: this.renderEnable,
-            hidden: !hasWriterRole
-          },
-          {
-            title: "Created On",
-            field: "active",
-            sorting: false,
-            render: this.renderCreatedTime,
-            hidden: !hasWriterRole
-          },
-          {
-            title: "Actions",
-            field: "action",
-            sorting: false,
-            searchable: false,
-            render: this.renderActions
-          },
-          {
-            title: "",
-            field: "moreAction",
-            sorting: false,
-            searchable: false,
-            render: this.renderMoreActions
-          }
-        ];
+    const columns = [
+      // @ts-ignore
+      {
+        title: "Name",
+        field: "name",
+        sorting: false,
+        render: this.renderName,
+        customFilterAndSearch: customSearchForImmutable
+      },
+      { title: "Pods Status", field: "status", sorting: false, render: this.renderStatus },
+      // {
+      //   title: (
+      //     <Tooltip title="Addresses can be used to access components in each application. Only visible inside the cluster.">
+      //       <FlexRowItemCenterBox width="auto">
+      //         Internal Endpoints <HelpIcon fontSize="small" />
+      //       </FlexRowItemCenterBox>
+      //     </Tooltip>
+      //   ),
+      //   field: "internalEndpoints",
+      //   sorting: false,
+      //   render: this.renderInternalEndpoints
+      // },
+      {
+        title: (
+          <Tooltip title="Addresses can be used to access your services publicly.">
+            <FlexRowItemCenterBox width="auto">
+              External Endpoints <HelpIcon fontSize="small" />
+            </FlexRowItemCenterBox>
+          </Tooltip>
+        ),
+        field: "internalEndpoints",
+        sorting: false,
+        render: this.renderExternalEndpoints
+      },
+      {
+        title: "CPU",
+        field: "cpu",
+        render: this.renderCPU,
+        headerStyle: {
+          textAlign: "center"
+        }
+      },
+      {
+        title: "Memory",
+        field: "memory",
+        render: this.renderMemory,
+        headerStyle: {
+          textAlign: "center"
+        }
+      },
+      // {
+      //   title: "Enable",
+      //   field: "active",
+      //   sorting: false,
+      //   render: this.renderEnable,
+      //   hidden: !hasWriterRole
+      // },
+      {
+        title: "Created On",
+        field: "active",
+        sorting: false,
+        render: this.renderCreatedTime,
+        hidden: !hasWriterRole
+      },
+      {
+        title: "Actions",
+        field: "action",
+        sorting: false,
+        searchable: false,
+        render: this.renderActions
+      },
+      {
+        title: "",
+        field: "moreAction",
+        sorting: false,
+        searchable: false,
+        render: this.renderMoreActions
+      }
+    ];
 
     return columns;
   }

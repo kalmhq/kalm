@@ -18,9 +18,9 @@ import (
 
 type DockerRegistryControllerSuite struct {
 	BasicSuite
-	registry    *v1alpha1.DockerRegistry
-	secret      *v1.Secret
-	application *v1alpha1.Application
+	registry  *v1alpha1.DockerRegistry
+	secret    *v1.Secret
+	namespace *v1.Namespace
 }
 
 func (suite *DockerRegistryControllerSuite) SetupSuite() {
@@ -40,10 +40,6 @@ func (suite *DockerRegistryControllerSuite) TearDownSuite() {
 }
 
 func (suite *DockerRegistryControllerSuite) SetupTest() {
-	application := generateEmptyApplication()
-	suite.createApplication(application)
-	suite.application = application
-
 	// create registry without authentication secret
 	name := randomName()
 	registry := &v1alpha1.DockerRegistry{
@@ -81,6 +77,9 @@ func (suite *DockerRegistryControllerSuite) SetupTest() {
 
 	suite.registry = registry
 	suite.secret = &secret
+
+	ns := suite.SetupKappEnabledNs()
+	suite.namespace = &ns
 }
 
 func (suite *DockerRegistryControllerSuite) TestDockerRegistrySecret() {
@@ -115,12 +114,12 @@ func (suite *DockerRegistryControllerSuite) TestDockerRegistrySecret() {
 }
 
 func (suite *DockerRegistryControllerSuite) TestSecretDistribution() {
-	// old application should has the image pull secret
+	// old ns should has the image pull secret
 	var imagePullSecret v1.Secret
 	suite.Eventually(func() bool {
 		err := suite.K8sClient.Get(context.Background(), types.NamespacedName{
 			Name:      getImagePullSecretName(suite.registry.Name),
-			Namespace: suite.application.Name,
+			Namespace: suite.namespace.Name,
 		}, &imagePullSecret)
 
 		return err == nil
@@ -133,21 +132,21 @@ func (suite *DockerRegistryControllerSuite) TestSecretDistribution() {
 	// wait cluster to be stable
 	time.Sleep(5 * time.Second)
 
-	// create a new application, the image should also exist in this application
-	application := generateEmptyApplication()
-	suite.createApplication(application)
+	// create a new ns, the image should also exist in this ns
+	//ns := generateEmptyApplication()
+	//suite.createApplication(ns)
 
 	suite.Eventually(func() bool {
 		err := suite.K8sClient.Get(context.Background(), types.NamespacedName{
 			Name:      getImagePullSecretName(suite.registry.Name),
-			Namespace: application.Name,
+			Namespace: suite.namespace.Name,
 		}, &imagePullSecret)
 
 		return err == nil
 	})
 
 	// the image secret should also exist in deployment pod template
-	component := generateEmptyComponent(application.Name)
+	component := generateEmptyComponent(suite.namespace.Name)
 	suite.createComponent(component)
 	suite.Eventually(func() bool {
 		var deployment appsV1.Deployment
@@ -169,7 +168,7 @@ func (suite *DockerRegistryControllerSuite) TestSecretDistribution() {
 	suite.Eventually(func() bool {
 		err := suite.K8sClient.Get(context.Background(), types.NamespacedName{
 			Name:      getImagePullSecretName(suite.registry.Name),
-			Namespace: application.Name,
+			Namespace: suite.namespace.Name,
 		}, &imagePullSecret)
 
 		return errors.IsNotFound(err)

@@ -18,7 +18,7 @@ import (
 type ComponentControllerSuite struct {
 	BasicSuite
 
-	application *v1alpha1.Application
+	ns *coreV1.Namespace
 }
 
 func (suite *ComponentControllerSuite) SetupSuite() {
@@ -30,9 +30,8 @@ func (suite *ComponentControllerSuite) TearDownSuite() {
 }
 
 func (suite *ComponentControllerSuite) SetupTest() {
-	application := generateEmptyApplication()
-	suite.createApplication(application)
-	suite.application = application
+	ns := suite.SetupKappEnabledNs()
+	suite.ns = &ns
 }
 
 func TestComponentControllerSuite(t *testing.T) {
@@ -41,7 +40,7 @@ func TestComponentControllerSuite(t *testing.T) {
 
 func (suite *ComponentControllerSuite) TestComponentBasicCRUD() {
 	// create
-	component := generateEmptyComponent(suite.application.Name)
+	component := generateEmptyComponent(suite.ns.Name)
 	suite.createComponent(component)
 
 	key := types.NamespacedName{
@@ -112,7 +111,7 @@ func (suite *ComponentControllerSuite) TestComponentBasicCRUD() {
 }
 
 func (suite *ComponentControllerSuite) TestOnlyStaticEnvs() {
-	component := generateEmptyComponent(suite.application.Name)
+	component := generateEmptyComponent(suite.ns.Name)
 	suite.createComponent(component)
 
 	key := types.NamespacedName{
@@ -173,68 +172,68 @@ func (suite *ComponentControllerSuite) TestOnlyStaticEnvs() {
 	}, "the second value should be updated")
 }
 
-func (suite *ComponentControllerSuite) TestExternalEnv() {
-	// create
-	suite.application.Spec.SharedEnv = []v1alpha1.EnvVar{
-		{
-			Name:  "sharedEnv1",
-			Value: "value1",
-		},
-	}
-	suite.Nil(suite.K8sClient.Update(context.Background(), suite.application))
-
-	component := generateEmptyComponent(suite.application.Name)
-	component.Spec.Env = []v1alpha1.EnvVar{
-		{
-			Name:  "env1",
-			Value: "sharedEnv1",
-			Type:  v1alpha1.EnvVarTypeExternal,
-		},
-	}
-	suite.createComponent(component)
-
-	key := types.NamespacedName{
-		Namespace: component.Namespace,
-		Name:      component.Name,
-	}
-
-	var deployment appsV1.Deployment
-	suite.Eventually(func() bool { return suite.K8sClient.Get(context.Background(), key, &deployment) == nil }, "can't get deployment")
-	suite.Equal(int32(1), *deployment.Spec.Replicas)
-	suite.Len(deployment.Spec.Template.Spec.Containers, 1)
-	suite.Len(deployment.Spec.Template.Spec.Containers[0].Env, 1)
-	suite.Equal(deployment.Spec.Template.Spec.Containers[0].Env[0].Value, "value1")
-
-	// update SharedEnv value should update deployment env value
-
-	suite.reloadApplication(suite.application)
-	suite.application.Spec.SharedEnv[0].Value = "value1-new"
-	suite.updateApplication(suite.application)
-	suite.Eventually(func() bool {
-		err := suite.K8sClient.Get(context.Background(), key, &deployment)
-		if err != nil {
-			return false
-		}
-		mainContainer := deployment.Spec.Template.Spec.Containers[0]
-		return len(mainContainer.Env) == 1 &&
-			mainContainer.Env[0].Value == "value1-new"
-	}, "deployment env is not updated as application env")
-
-	// non-exist external value will be ignore
-	suite.reloadApplication(suite.application)
-	suite.application.Spec.SharedEnv = suite.application.Spec.SharedEnv[:0] // delete all sharedEnvs
-	suite.updateApplication(suite.application)
-	suite.Eventually(func() bool {
-		if err := suite.K8sClient.Get(context.Background(), key, &deployment); err != nil {
-			return false
-		}
-		return len(deployment.Spec.Template.Spec.Containers[0].Env) == 0
-	}, "missing external env value should be ignore")
-}
+//func (suite *ComponentControllerSuite) TestExternalEnv() {
+//	// create
+//	suite.ns.Spec.SharedEnv = []v1alpha1.EnvVar{
+//		{
+//			Name:  "sharedEnv1",
+//			Value: "value1",
+//		},
+//	}
+//	suite.Nil(suite.K8sClient.Update(context.Background(), suite.ns))
+//
+//	component := generateEmptyComponent(suite.ns.Name)
+//	component.Spec.Env = []v1alpha1.EnvVar{
+//		{
+//			Name:  "env1",
+//			Value: "sharedEnv1",
+//			Type:  v1alpha1.EnvVarTypeExternal,
+//		},
+//	}
+//	suite.createComponent(component)
+//
+//	key := types.NamespacedName{
+//		Namespace: component.Namespace,
+//		Name:      component.Name,
+//	}
+//
+//	var deployment appsV1.Deployment
+//	suite.Eventually(func() bool { return suite.K8sClient.Get(context.Background(), key, &deployment) == nil }, "can't get deployment")
+//	suite.Equal(int32(1), *deployment.Spec.Replicas)
+//	suite.Len(deployment.Spec.Template.Spec.Containers, 1)
+//	suite.Len(deployment.Spec.Template.Spec.Containers[0].Env, 1)
+//	suite.Equal(deployment.Spec.Template.Spec.Containers[0].Env[0].Value, "value1")
+//
+//	// update SharedEnv value should update deployment env value
+//
+//	suite.reloadApplication(suite.ns)
+//	suite.ns.Spec.SharedEnv[0].Value = "value1-new"
+//	suite.updateApplication(suite.ns)
+//	suite.Eventually(func() bool {
+//		err := suite.K8sClient.Get(context.Background(), key, &deployment)
+//		if err != nil {
+//			return false
+//		}
+//		mainContainer := deployment.Spec.Template.Spec.Containers[0]
+//		return len(mainContainer.Env) == 1 &&
+//			mainContainer.Env[0].Value == "value1-new"
+//	}, "deployment env is not updated as ns env")
+//
+//	// non-exist external value will be ignore
+//	suite.reloadApplication(suite.ns)
+//	suite.ns.Spec.SharedEnv = suite.ns.Spec.SharedEnv[:0] // delete all sharedEnvs
+//	suite.updateApplication(suite.ns)
+//	suite.Eventually(func() bool {
+//		if err := suite.K8sClient.Get(context.Background(), key, &deployment); err != nil {
+//			return false
+//		}
+//		return len(deployment.Spec.Template.Spec.Containers[0].Env) == 0
+//	}, "missing external env value should be ignore")
+//}
 
 func (suite *ComponentControllerSuite) TestLinkedEnv() {
 	// create
-	component := generateEmptyComponent(suite.application.Name)
+	component := generateEmptyComponent(suite.ns.Name)
 	component.Spec.Env = []v1alpha1.EnvVar{
 		{
 			Name:  "env1",
@@ -266,7 +265,7 @@ func (suite *ComponentControllerSuite) TestLinkedEnv() {
 }
 
 func (suite *ComponentControllerSuite) TestVolumePVC() {
-	component := generateEmptyComponent(suite.application.Name)
+	component := generateEmptyComponent(suite.ns.Name)
 	component.Spec.Volumes = []v1alpha1.Volume{
 		{
 			Type: v1alpha1.VolumeTypePersistentVolumeClaim,
@@ -306,7 +305,7 @@ func (suite *ComponentControllerSuite) TestVolumePVC() {
 }
 
 func (suite *ComponentControllerSuite) TestVolumeTemporaryDisk() {
-	component := generateEmptyComponent(suite.application.Name)
+	component := generateEmptyComponent(suite.ns.Name)
 	component.Spec.Volumes = []v1alpha1.Volume{
 		{
 			Type: v1alpha1.VolumeTypeTemporaryDisk,
@@ -336,7 +335,7 @@ func (suite *ComponentControllerSuite) TestVolumeTemporaryDisk() {
 }
 
 func (suite *ComponentControllerSuite) TestVolumeTemporaryMemoryDisk() {
-	component := generateEmptyComponent(suite.application.Name)
+	component := generateEmptyComponent(suite.ns.Name)
 	component.Spec.Volumes = []v1alpha1.Volume{
 		{
 			Type: v1alpha1.VolumeTypeTemporaryMemory,
@@ -365,9 +364,9 @@ func (suite *ComponentControllerSuite) TestVolumeTemporaryMemoryDisk() {
 	}, "temporary memory disk should not create pvc")
 }
 
-func (suite *ComponentControllerSuite) TestApplicationActive() {
+func (suite *ComponentControllerSuite) TestKappEnabled() {
 	// create
-	component := generateEmptyComponent(suite.application.Name)
+	component := generateEmptyComponent(suite.ns.Name)
 	suite.createComponent(component)
 
 	key := types.NamespacedName{
@@ -376,16 +375,20 @@ func (suite *ComponentControllerSuite) TestApplicationActive() {
 	}
 
 	var deployment appsV1.Deployment
-	suite.Eventually(func() bool { return suite.K8sClient.Get(context.Background(), key, &deployment) == nil }, "can't get deployment")
+	suite.Eventually(func() bool {
+		return suite.K8sClient.Get(context.Background(), key, &deployment) == nil
+	}, "can't get deployment")
 
-	suite.application.Spec.IsActive = false
-	suite.updateApplication(suite.application)
+	suite.ns.Labels[KappEnableLabelName] = "false"
+	suite.updateObject(suite.ns)
 
-	suite.Eventually(func() bool { return errors.IsNotFound(suite.K8sClient.Get(context.Background(), key, &deployment)) }, "deployment should be delete when application is not active")
+	suite.Eventually(func() bool {
+		return errors.IsNotFound(suite.K8sClient.Get(context.Background(), key, &deployment))
+	}, "deployment should be delete when ns is not active")
 }
 
 func (suite *ComponentControllerSuite) TestPorts() {
-	component := generateEmptyComponent(suite.application.Name)
+	component := generateEmptyComponent(suite.ns.Name)
 	suite.createComponent(component)
 	key := types.NamespacedName{
 		Namespace: component.Namespace,
@@ -418,13 +421,13 @@ func (suite *ComponentControllerSuite) TestPorts() {
 	}, "service should be deleted")
 }
 
-func (suite *ComponentControllerSuite) reloadApplication(application *v1alpha1.Application) {
-	suite.Nil(suite.K8sClient.Get(context.Background(), types.NamespacedName{Name: application.Name}, application))
-}
-
-func (suite *ComponentControllerSuite) updateApplication(application *v1alpha1.Application) {
-	suite.Nil(suite.K8sClient.Update(context.Background(), application))
-}
+//func (suite *ComponentControllerSuite) reloadApplication(ns *v1alpha1.Application) {
+//	suite.Nil(suite.K8sClient.Get(context.Background(), types.NamespacedName{Name: ns.Name}, ns))
+//}
+//
+//func (suite *ComponentControllerSuite) updateApplication(ns *v1alpha1.Application) {
+//	suite.Nil(suite.K8sClient.Update(context.Background(), ns))
+//}
 
 func (suite *ComponentControllerSuite) getComponentPVCs(component *v1alpha1.Component) []coreV1.PersistentVolumeClaim {
 	var pvcList coreV1.PersistentVolumeClaimList

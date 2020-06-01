@@ -22,18 +22,52 @@ type HttpsCert struct {
 	Domains         []string `json:"domains,omitempty"`
 }
 
-func (builder *Builder) GetHttpsCerts() ([]HttpsCert, error) {
+type HttpsCertResp struct {
+	HttpsCert `json:",inline"`
+	Ready     string `json:"ready"`
+	Reason    string `json:"reason"`
+}
+
+var ReasonForNoReadyConditions = "no feedback on cert status yet"
+
+func (builder *Builder) GetHttpsCerts() ([]HttpsCertResp, error) {
 	var fetched v1alpha1.HttpsCertList
 	if err := builder.List(&fetched); err != nil {
 		return nil, err
 	}
 
-	var httpsCerts []HttpsCert
+	var httpsCerts []HttpsCertResp
 	for _, ele := range fetched.Items {
-		cur := HttpsCert{
-			Name:          ele.Name,
-			IsSelfManaged: ele.Spec.IsSelfManaged,
-			Domains:       ele.Spec.Domains,
+
+		var readyCond *v1alpha1.HttpsCertCondition
+		for i := range ele.Status.Conditions {
+			cond := ele.Status.Conditions[i]
+
+			if cond.Type != v1alpha1.HttpsCertConditionReady {
+				continue
+			}
+
+			readyCond = &cond
+			break
+		}
+
+		var ready, reason string
+		if readyCond == nil {
+			ready = string(v1.ConditionUnknown)
+			reason = ReasonForNoReadyConditions
+		} else {
+			ready = string(readyCond.Status)
+			reason = readyCond.Message
+		}
+
+		cur := HttpsCertResp{
+			HttpsCert: HttpsCert{
+				Name:          ele.Name,
+				IsSelfManaged: ele.Spec.IsSelfManaged,
+				Domains:       ele.Spec.Domains,
+			},
+			Ready:  ready,
+			Reason: reason,
 		}
 
 		if !cur.IsSelfManaged {
@@ -157,6 +191,15 @@ func (builder *Builder) CreateSelfManagedHttpsCert(cert HttpsCert) (HttpsCert, e
 		return HttpsCert{}, err
 	}
 
+	var domains []string
+	if len(x509Cert.DNSNames) > 0 {
+		domains = x509Cert.DNSNames
+	} else if x509Cert.Subject.CommonName != "" {
+		domains = []string{x509Cert.Subject.CommonName}
+	} else {
+		return HttpsCert{}, fmt.Errorf("fail to find domain name in cert")
+	}
+
 	ok := checkPrivateKey(x509Cert, cert.SelfManagedCertPrvKey)
 	if !ok {
 		return HttpsCert{}, fmt.Errorf("privateKey and cert not match")
@@ -175,7 +218,7 @@ func (builder *Builder) CreateSelfManagedHttpsCert(cert HttpsCert) (HttpsCert, e
 		Spec: v1alpha1.HttpsCertSpec{
 			IsSelfManaged:             true,
 			SelfManagedCertSecretName: certSecretName,
-			Domains:                   x509Cert.DNSNames,
+			Domains:                   domains,
 		},
 	}
 

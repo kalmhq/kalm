@@ -34,7 +34,7 @@ func NewBaseReconciler(mgr ctrl.Manager, name string) *BaseReconciler {
 		Log:      ctrl.Log.WithName("controllers").WithName(name),
 		Scheme:   mgr.GetScheme(),
 		Reader:   mgr.GetAPIReader(),
-		Recorder: mgr.GetEventRecorderFor("application"),
+		Recorder: mgr.GetEventRecorderFor("ns"),
 	}
 }
 

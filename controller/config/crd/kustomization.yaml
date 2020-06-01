@@ -2,9 +2,6 @@
 # since it depends on service name and namespace that are out of this kustomize package.
 # It should be run by config/default
 resources:
-- bases/core.kapp.dev_applications.yaml
-- bases/core.kapp.dev_applicationplugins.yaml
-- bases/core.kapp.dev_applicationpluginbindings.yaml
 - bases/core.kapp.dev_components.yaml
 - bases/core.kapp.dev_componentplugins.yaml
 - bases/core.kapp.dev_componentpluginbindings.yaml

@@ -3,8 +3,8 @@ package resources
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/kapp-staging/kapp/controller/controllers"
 	authorizationV1 "k8s.io/api/authorization/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"time"
 
@@ -101,19 +101,18 @@ type CreateOrUpdateApplicationRequest struct {
 }
 
 type Application struct {
-	Name       string                 `json:"name"`
-	Namespace  string                 `json:"namespace"`
-	IsActive   bool                   `json:"isActive"`
-	SharedEnvs []v1alpha1.EnvVar      `json:"sharedEnvs,omitempty"`
-	Plugins    []runtime.RawExtension `json:"plugins"`
+	Name      string `json:"name"`
+	IsActive  bool   `json:"isActive"`
 }
 
-func (builder *Builder) BuildApplicationDetails(application *v1alpha1.Application) (*ApplicationDetails, error) {
-	ns := application.Name
+func (builder *Builder) BuildApplicationDetails(namespace coreV1.Namespace) (*ApplicationDetails, error) {
+	nsName := namespace.Name
 
 	resourceChannels := &ResourceChannels{
-		PodList:                      builder.GetPodListChannel(client.InNamespace(ns), client.MatchingLabels{"kapp-application": application.Name}),
-		ApplicationPluginBindingList: builder.GetApplicationPluginBindingListChannel(client.InNamespace(ns)),
+		PodList: builder.GetPodListChannel(
+			client.InNamespace(nsName),
+			client.MatchingLabels{"kapp-application": nsName},
+		),
 	}
 
 	resources, err := resourceChannels.ToResources()
@@ -130,7 +129,7 @@ func (builder *Builder) BuildApplicationDetails(application *v1alpha1.Applicatio
 	writerReview, err := builder.K8sClient.AuthorizationV1().SelfSubjectAccessReviews().Create(&authorizationV1.SelfSubjectAccessReview{
 		Spec: authorizationV1.SelfSubjectAccessReviewSpec{
 			ResourceAttributes: &authorizationV1.ResourceAttributes{
-				Namespace: application.Name,
+				Namespace: nsName,
 				Resource:  "applications",
 				Verb:      "create",
 				Group:     "core.kapp.dev",
@@ -149,7 +148,7 @@ func (builder *Builder) BuildApplicationDetails(application *v1alpha1.Applicatio
 	readerReview, err := builder.K8sClient.AuthorizationV1().SelfSubjectAccessReviews().Create(&authorizationV1.SelfSubjectAccessReview{
 		Spec: authorizationV1.SelfSubjectAccessReviewSpec{
 			ResourceAttributes: &authorizationV1.ResourceAttributes{
-				Namespace: application.Name,
+				Namespace: nsName,
 				Resource:  "applications",
 				Verb:      "get",
 				Group:     "core.kapp.dev",
@@ -165,9 +164,7 @@ func (builder *Builder) BuildApplicationDetails(application *v1alpha1.Applicatio
 		roles = append(roles, "reader")
 	}
 
-	formatEnvs(application.Spec.SharedEnv)
-
-	podNames := []string{}
+	var podNames []string
 	var cpuHistoryList []MetricHistory
 	var memHistoryList []MetricHistory
 
@@ -182,32 +179,13 @@ func (builder *Builder) BuildApplicationDetails(application *v1alpha1.Applicatio
 	appCpuHistory := aggregateHistoryList(cpuHistoryList)
 	appMemHistory := aggregateHistoryList(memHistoryList)
 
-	plugins := make([]runtime.RawExtension, 0, len(resources.ApplicationPluginBindings))
-
-	for _, binding := range resources.ApplicationPluginBindings {
-		if binding.DeletionTimestamp != nil {
-			continue
-		}
-		var plugin ApplicationPluginBinding
-
-		plugin.Name = binding.Spec.PluginName
-		plugin.Config = binding.Spec.Config
-		plugin.IsActive = !binding.Spec.IsDisabled
-
-		bts, _ := json.Marshal(plugin)
-
-		plugins = append(plugins, runtime.RawExtension{
-			Raw: bts,
-		})
-	}
+	isActive := controllers.IsNamespaceKappEnabled(namespace)
 
 	return &ApplicationDetails{
 		Application: &Application{
-			Name:       application.Name,
-			Namespace:  application.Namespace,
-			IsActive:   application.Spec.IsActive,
-			SharedEnvs: application.Spec.SharedEnv,
-			Plugins:    plugins,
+			Name:      nsName,
+			//Namespace: nsName,
+			IsActive:  isActive,
 		},
 		Metrics: MetricHistories{
 			CPU:    appCpuHistory,
@@ -253,12 +231,12 @@ func formatApplicationComponents(components []Component) {
 	}
 }
 
-func (builder *Builder) BuildApplicationListResponse(applications *v1alpha1.ApplicationList) ([]ApplicationDetails, error) {
-	apps := []ApplicationDetails{}
+func (builder *Builder) BuildApplicationListResponse(namespaceList coreV1.NamespaceList) ([]ApplicationDetails, error) {
+	var apps []ApplicationDetails
 
 	// TODO concurrent build response items
-	for i := range applications.Items {
-		item, err := builder.BuildApplicationDetails(&applications.Items[i])
+	for i := range namespaceList.Items {
+		item, err := builder.BuildApplicationDetails(namespaceList.Items[i])
 
 		if err != nil {
 			return nil, err
@@ -271,7 +249,7 @@ func (builder *Builder) BuildApplicationListResponse(applications *v1alpha1.Appl
 }
 
 func getPodStatus(pod coreV1.Pod, events []coreV1.Event) *PodStatus {
-	ips := []string{}
+	var ips []string
 
 	for _, x := range pod.Status.PodIPs {
 		ips = append(ips, x.IP)
@@ -371,7 +349,7 @@ func getPodStatus(pod coreV1.Pod, events []coreV1.Event) *PodStatus {
 }
 
 func findPods(list *coreV1.PodList, componentName string) []coreV1.Pod {
-	res := []coreV1.Pod{}
+	var res []coreV1.Pod
 
 	for i := range list.Items {
 		if list.Items[i].Labels["kapp-component"] == componentName {

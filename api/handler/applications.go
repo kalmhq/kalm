@@ -3,15 +3,15 @@ package handler
 import (
 	"encoding/json"
 	"github.com/kapp-staging/kapp/api/resources"
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/kapp-staging/kapp/controller/controllers"
 	"github.com/labstack/echo/v4"
+	coreV1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"net/http"
 )
 
 func (h *ApiHandler) handleGetApplications(c echo.Context) error {
-	applicationList, err := getKappApplicationList(c)
+	applicationList, err := getKappNamespaceList(c)
 
 	if err != nil {
 		return err
@@ -42,21 +42,21 @@ func (h *ApiHandler) handleGetApplicationDetails(c echo.Context) error {
 	return c.JSON(200, res)
 }
 
-func (h *ApiHandler) handleValidateApplications(c echo.Context) error {
-	crdApplication, _, err := getApplicationFromContext(c)
-	if err != nil {
-		return err
-	}
-
-	if err := v1alpha1.TryValidateApplicationFromAPI(crdApplication.Spec, crdApplication.Name); err != nil {
-		return err
-	}
-
-	return nil
-}
+//func (h *ApiHandler) handleValidateApplications(c echo.Context) error {
+//	crdApplication, _, err := getKappNamespaceFromContext(c)
+//	if err != nil {
+//		return err
+//	}
+//
+//	if err := v1alpha1.TryValidateApplicationFromAPI(crdApplication.Spec, crdApplication.Name); err != nil {
+//		return err
+//	}
+//
+//	return nil
+//}
 
 func (h *ApiHandler) handleCreateApplication(c echo.Context) error {
-	application, err := createKappApplication(c)
+	application, err := createKappNamespace(c)
 
 	if err != nil {
 		return err
@@ -99,139 +99,131 @@ func (h *ApiHandler) handleDeleteApplication(c echo.Context) error {
 
 func deleteKappApplication(c echo.Context) error {
 	k8sClient := getK8sClient(c)
-	_, err := k8sClient.RESTClient().Delete().Body(c.Request().Body).AbsPath(kappApplicationUrl(c)).DoRaw()
+	_, err := k8sClient.RESTClient().Delete().Body(c.Request().Body).AbsPath(kappNamespaceUrl(c)).DoRaw()
 	return err
 }
 
-func createKappApplication(c echo.Context) (*v1alpha1.Application, error) {
+func createKappNamespace(c echo.Context) (coreV1.Namespace, error) {
 	k8sClient := getK8sClient(c)
 
-	crdApplication, plugins, err := getApplicationFromContext(c)
+	kappNamespace, err := getKappNamespaceFromContext(c)
 	if err != nil {
-		return nil, err
+		return coreV1.Namespace{}, err
 	}
 
-	if err := v1alpha1.TryValidateApplicationFromAPI(crdApplication.Spec, crdApplication.Name); err != nil {
-		return nil, err
-	}
-
-	bts, _ := json.Marshal(crdApplication)
-	var application v1alpha1.Application
-	err = k8sClient.RESTClient().Post().Body(bts).AbsPath(kappApplicationUrl(c)).Do().Into(&application)
+	bts, _ := json.Marshal(kappNamespace)
+	var application coreV1.Namespace
+	err = k8sClient.RESTClient().Post().Body(bts).AbsPath(kappNamespaceUrl(c)).Do().Into(&application)
 	if err != nil {
-		return nil, err
+		return coreV1.Namespace{}, err
 	}
 
-	kappClient, _ := getKappV1Alpha1Client(c)
-	err = resources.UpdateApplicationPluginBindingsForObject(kappClient, application.Name, "", plugins)
+	//kappClient, _ := getKappV1Alpha1Client(c)
+	//err = resources.UpdateApplicationPluginBindingsForObject(kappClient, application.Name, "", plugins)
+	//if err != nil {
+	//	return nil, err
+	//}
 
-	if err != nil {
-		return nil, err
-	}
-
-	return &application, nil
+	return application, nil
 }
 
-func updateKappApplication(c echo.Context) (*v1alpha1.Application, error) {
+func updateKappApplication(c echo.Context) (coreV1.Namespace, error) {
 	k8sClient := getK8sClient(c)
 
-	crdApplication, plugins, err := getApplicationFromContext(c)
+	crdApplication, err := getKappNamespaceFromContext(c)
 
 	if err != nil {
-		return nil, err
+		return coreV1.Namespace{}, err
 	}
 
 	fetched, err := getKappApplication(c)
-
 	if err != nil {
-		return nil, err
+		return coreV1.Namespace{}, err
 	}
+
 	crdApplication.ResourceVersion = fetched.ResourceVersion
 
 	bts, _ := json.Marshal(crdApplication)
-	var application v1alpha1.Application
-	err = k8sClient.RESTClient().Put().Body(bts).AbsPath(kappApplicationUrl(c)).Do().Into(&application)
-
+	var kappNS coreV1.Namespace
+	err = k8sClient.RESTClient().Put().Body(bts).AbsPath(kappNamespaceUrl(c)).Do().Into(&kappNS)
 	if err != nil {
-		return nil, err
+		return coreV1.Namespace{}, err
 	}
 
-	kappClient, _ := getKappV1Alpha1Client(c)
-	err = resources.UpdateApplicationPluginBindingsForObject(kappClient, application.Name, "", plugins)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &application, nil
+	return kappNS, nil
 }
 
-func getKappApplication(c echo.Context) (*v1alpha1.Application, error) {
+func getKappApplication(c echo.Context) (coreV1.Namespace, error) {
 	k8sClient := getK8sClient(c)
-	var fetched v1alpha1.Application
-	err := k8sClient.RESTClient().Get().AbsPath(kappApplicationUrl(c)).Do().Into(&fetched)
+	var fetched coreV1.Namespace
+	err := k8sClient.RESTClient().Get().AbsPath(kappNamespaceUrl(c)).Do().Into(&fetched)
 	if err != nil {
-		return nil, err
+		return coreV1.Namespace{}, err
 	}
-	return &fetched, nil
+	return fetched, nil
 }
 
-func getKappApplicationList(c echo.Context) (*v1alpha1.ApplicationList, error) {
+func getKappNamespaceList(c echo.Context) (coreV1.NamespaceList, error) {
 	k8sClient := getK8sClient(c)
-	var fetched v1alpha1.ApplicationList
-	err := k8sClient.RESTClient().Get().AbsPath(kappApplicationUrl(c)).Do().Into(&fetched)
+	var fetched coreV1.NamespaceList
+	err := k8sClient.RESTClient().Get().AbsPath(kappNamespaceUrl(c)).Do().Into(&fetched)
 	if err != nil {
-		return nil, err
+		return coreV1.NamespaceList{}, err
 	}
-	return &fetched, nil
+	return fetched, nil
 }
 
-func kappApplicationUrl(c echo.Context) string {
+func kappNamespaceUrl(c echo.Context) string {
 	name := c.Param("name")
 
 	if name == "" {
-		return "/apis/core.kapp.dev/v1alpha1/applications"
+		return "/api/v1/namespaces"
 	}
 
-	return "/apis/core.kapp.dev/v1alpha1/applications/" + name
+	return "/api/v1/namespaces/" + name
 }
 
-func getApplicationFromContext(c echo.Context) (*v1alpha1.Application, []runtime.RawExtension, error) {
+func getKappNamespaceFromContext(c echo.Context) (coreV1.Namespace, error) {
 	var application resources.Application
 
 	if err := c.Bind(&application); err != nil {
-		return nil, nil, err
+		return coreV1.Namespace{}, err
 	}
 
-	crdApplication := &v1alpha1.Application{
-		TypeMeta: metaV1.TypeMeta{
-			Kind:       "Application",
-			APIVersion: "core.kapp.dev/v1alpha1",
-		},
+	var kappEnabledVal string
+	if application.IsActive {
+		kappEnabledVal = controllers.KappEnableLabelValue
+	} else {
+		kappEnabledVal = "false"
+	}
+
+	crdApplication := coreV1.Namespace{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: application.Name,
-		},
-		Spec: v1alpha1.ApplicationSpec{
-			IsActive:  application.IsActive,
-			SharedEnv: application.SharedEnvs,
-			//PluginsNew: application.Plugins,
+			Labels: map[string]string{
+				controllers.KappEnableLabelName: kappEnabledVal,
+			},
 		},
 	}
 
-	return crdApplication, application.Plugins, nil
+	return crdApplication, nil
 }
 
-func (h *ApiHandler) applicationResponse(c echo.Context, application *v1alpha1.Application) (*resources.ApplicationDetails, error) {
+func (h *ApiHandler) applicationResponse(c echo.Context, ns coreV1.Namespace) (*resources.ApplicationDetails, error) {
 	k8sClient := getK8sClient(c)
 	k8sClientConfig := getK8sClientConfig(c)
 	builder := resources.NewBuilder(k8sClient, k8sClientConfig, h.logger)
-	return builder.BuildApplicationDetails(application)
+	return builder.BuildApplicationDetails(ns)
 }
 
-func (h *ApiHandler) applicationListResponse(c echo.Context, applicationList *v1alpha1.ApplicationList) ([]resources.ApplicationDetails, error) {
+func (h *ApiHandler) applicationListResponse(
+	c echo.Context,
+	namespaceList coreV1.NamespaceList,
+) ([]resources.ApplicationDetails, error) {
+
 	k8sClient := getK8sClient(c)
 	k8sClientConfig := getK8sClientConfig(c)
 	builder := resources.NewBuilder(k8sClient, k8sClientConfig, h.logger)
 
-	return builder.BuildApplicationListResponse(applicationList)
+	return builder.BuildApplicationListResponse(namespaceList)
 }

@@ -97,10 +97,26 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = controllers.NewApplicationReconciler(mgr).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Application")
+	//if err = controllers.NewApplicationReconciler(mgr).SetupWithManager(mgr); err != nil {
+	//	setupLog.Error(err, "unable to create controller", "controller", "Application")
+	//	os.Exit(1)
+	//}
+
+	if err = (controllers.NewKappNSReconciler(mgr)).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "KappNS")
 		os.Exit(1)
 	}
+
+	//if err = (&controllers.KappNamespacesReconciler{
+	//	BaseReconciler: &controllers.BaseReconciler{
+	//		Client: mgr.GetClient(),
+	//		Log:    ctrl.Log.WithName("controllers").WithName("KappNamespace"),
+	//		Scheme: mgr.GetScheme(),
+	//	},
+	//}).SetupWithManager(mgr); err != nil {
+	//	setupLog.Error(err, "unable to create controller", "controller", "KappNamespaces")
+	//	os.Exit(1)
+	//}
 
 	if err = controllers.NewComponentPluginReconciler(mgr).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ComponentPlugin")
@@ -117,15 +133,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = controllers.NewApplicationPluginReconciler(mgr).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "ApplicationPlugin")
-		os.Exit(1)
-	}
-
-	if err = controllers.NewApplicationPluginBindingReconciler(mgr).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "ApplicationPluginBinding")
-		os.Exit(1)
-	}
+	//if err = controllers.NewApplicationPluginReconciler(mgr).SetupWithManager(mgr); err != nil {
+	//	setupLog.Error(err, "unable to create controller", "controller", "ApplicationPlugin")
+	//	os.Exit(1)
+	//}
+	//
+	//if err = controllers.NewApplicationPluginBindingReconciler(mgr).SetupWithManager(mgr); err != nil {
+	//	setupLog.Error(err, "unable to create controller", "controller", "ApplicationPluginBinding")
+	//	os.Exit(1)
+	//}
 
 	if err = controllers.NewHttpsCertIssuerReconciler(mgr).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "HttpsCertIssuer")
@@ -153,15 +169,15 @@ func main() {
 	// +kubebuilder:scaffold:builder
 
 	// only run webhook if explicitly declared
-	if os.Getenv("ENABLE_WEBHOOKS") == "true" {
-		if err = (&corekappdevv1alpha1.Application{}).SetupWebhookWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create webhook", "webhook", "Application")
-			os.Exit(1)
-		}
-		setupLog.Info("WEBHOOK enabled")
-	} else {
-		setupLog.Info("WEBHOOK not enabled")
-	}
+	//if os.Getenv("ENABLE_WEBHOOKS") == "true" {
+	//	if err = (&corekappdevv1alpha1.Application{}).SetupWebhookWithManager(mgr); err != nil {
+	//		setupLog.Error(err, "unable to create webhook", "webhook", "Application")
+	//		os.Exit(1)
+	//	}
+	//	setupLog.Info("WEBHOOK enabled")
+	//} else {
+	//	setupLog.Info("WEBHOOK not enabled")
+	//}
 
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {

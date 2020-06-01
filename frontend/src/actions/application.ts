@@ -1,10 +1,17 @@
+import { push } from "connected-react-router";
+import Immutable from "immutable";
+import { SubmissionError } from "redux-form";
 import { StatusFailure, ThunkResult } from "../types";
 import {
   Application,
+  ApplicationComponent,
+  ApplicationComponentDetails,
   ApplicationDetails,
   ApplicationDetailsList,
   CREATE_APPLICATION,
+  CREATE_COMPONENT,
   DELETE_APPLICATION,
+  DELETE_COMPONENT,
   DUPLICATE_APPLICATION,
   LOAD_APPLICATIONS_FAILED,
   LOAD_APPLICATIONS_FULFILLED,
@@ -12,38 +19,29 @@ import {
   LOAD_APPLICATION_FAILED,
   LOAD_APPLICATION_FULFILLED,
   LOAD_APPLICATION_PENDING,
+  LOAD_COMPONENT_PLUGINS_FULFILLED,
   SetIsSubmittingApplication,
   SetIsSubmittingApplicationComponent,
   SET_IS_SUBMITTING_APPLICATION,
   SET_IS_SUBMITTING_APPLICATION_COMPONENT,
   UPDATE_APPLICATION,
-  ApplicationComponent,
-  ApplicationComponentDetails,
-  CREATE_COMPONENT,
-  UPDATE_COMPONENT,
-  DELETE_COMPONENT,
-  LOAD_APPLICATION_PLUGINS_FULFILLED,
-  LOAD_COMPONENT_PLUGINS_FULFILLED
+  UPDATE_COMPONENT
 } from "../types/application";
+import { resErrorsToSubmitErrors } from "../utils";
 import {
   createKappApplication,
-  deleteKappApplication,
-  getKappApplication,
-  getKappApplicationList,
-  updateKappApplication,
-  getKappApplicationComponentList,
   createKappApplicationComponent,
-  updateKappApplicationComponent,
+  deleteKappApplication,
   deleteKappApplicationComponent,
-  getKappApplicationPlugins,
-  getKappComponentPlugins
+  getKappApplication,
+  getKappApplicationComponentList,
+  getKappApplicationList,
+  getKappComponentPlugins,
+  updateKappApplication,
+  updateKappApplicationComponent
 } from "./kubernetesApi";
-import { setErrorNotificationAction, setSuccessNotificationAction } from "./notification";
-import { SubmissionError } from "redux-form";
-import { push } from "connected-react-router";
-import { resErrorsToSubmitErrors } from "../utils";
-import Immutable from "immutable";
 import { setCurrentNamespaceAction } from "./namespaces";
+import { setErrorNotificationAction, setSuccessNotificationAction } from "./notification";
 
 export const createComponentAction = (
   componentValues: ApplicationComponent,
@@ -143,7 +141,6 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
     let application: ApplicationDetails;
 
     try {
-      applicationValues = applicationValues.set("namespace", applicationValues.get("name"));
       application = await createKappApplication(applicationValues);
       // const applicationComponents = Immutable.List(
       //   await Promise.all(
@@ -347,28 +344,28 @@ export const loadApplicationsAction = (): ThunkResult<Promise<void>> => {
   };
 };
 
-export const loadApplicationPluginsAction = (): ThunkResult<Promise<void>> => {
-  return async dispatch => {
-    let applicationPlugins;
-    try {
-      applicationPlugins = await getKappApplicationPlugins();
-    } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
-      return;
-    }
+// export const loadApplicationPluginsAction = (): ThunkResult<Promise<void>> => {
+//   return async dispatch => {
+//     let applicationPlugins;
+//     try {
+//       applicationPlugins = await getKappApplicationPlugins();
+//     } catch (e) {
+//       if (e.response && e.response.data.status === StatusFailure) {
+//         dispatch(setErrorNotificationAction(e.response.data.message));
+//       } else {
+//         dispatch(setErrorNotificationAction());
+//       }
+//       return;
+//     }
 
-    dispatch({
-      type: LOAD_APPLICATION_PLUGINS_FULFILLED,
-      payload: {
-        applicationPlugins
-      }
-    });
-  };
-};
+//     dispatch({
+//       type: LOAD_APPLICATION_PLUGINS_FULFILLED,
+//       payload: {
+//         applicationPlugins
+//       }
+//     });
+//   };
+// };
 
 export const loadComponentPluginsAction = (): ThunkResult<Promise<void>> => {
   return async dispatch => {
