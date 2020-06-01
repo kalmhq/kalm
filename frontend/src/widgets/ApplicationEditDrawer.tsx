@@ -1,7 +1,6 @@
 import { createStyles, List, ListItem, ListItemIcon, ListItemText, ListSubheader, Theme } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import AddIcon from "@material-ui/icons/Add";
-import ErrorIcon from "@material-ui/icons/Error";
 import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import Immutable from "immutable";
@@ -24,8 +23,6 @@ const mapStateToProps = (state: RootState) => {
   // const componentFormMeta = getFormMeta("componentLike")(state);
   const componentSyncErrors = getFormSyncErrors("componentLike")(state);
   const componentFormSubmitFailed = hasSubmitFailed("componentLike")(state);
-  const applicationSyncErrors = getFormSyncErrors("application")(state);
-  const applicationFormSubmitFailed = hasSubmitFailed("application")(state);
 
   return {
     activeNamespaceName: state.get("namespaces").get("active"),
@@ -33,9 +30,7 @@ const mapStateToProps = (state: RootState) => {
     entity,
     // componentFormMeta,
     componentSyncErrors,
-    componentFormSubmitFailed,
-    applicationSyncErrors,
-    applicationFormSubmitFailed
+    componentFormSubmitFailed
   };
 };
 
@@ -68,8 +63,8 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
   application?: ApplicationDetails;
   currentComponent?: ApplicationComponent; // for add new component
 
-  handleClickSharedEnvs: () => void;
-  handleClickApplicationPlugins: () => void;
+  // handleClickSharedEnvs: () => void;
+  // handleClickApplicationPlugins: () => void;
   handleClickComponent: (component: ApplicationComponent) => void;
 }
 
@@ -88,19 +83,19 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
     };
   }
 
-  private handleClickSharedEnvs() {
-    this.setState({ selectedListItemKey: "sharedEnvs" });
+  // private handleClickSharedEnvs() {
+  //   this.setState({ selectedListItemKey: "sharedEnvs" });
 
-    const { handleClickSharedEnvs } = this.props;
-    handleClickSharedEnvs();
-  }
+  //   const { handleClickSharedEnvs } = this.props;
+  //   handleClickSharedEnvs();
+  // }
 
-  private handleClickApplicationPlugins() {
-    this.setState({ selectedListItemKey: "applicationPlugins" });
+  // private handleClickApplicationPlugins() {
+  //   this.setState({ selectedListItemKey: "applicationPlugins" });
 
-    const { handleClickApplicationPlugins } = this.props;
-    handleClickApplicationPlugins();
-  }
+  //   const { handleClickApplicationPlugins } = this.props;
+  //   handleClickApplicationPlugins();
+  // }
 
   private handleClickComponent(component: ApplicationComponent, index: number) {
     this.setState({
@@ -116,13 +111,13 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
     this.handleClickComponent(componentInitialValues, this.props.application?.get("components").size as number);
   }
 
-  private showAppliationError(tab: string): boolean {
-    const { applicationSyncErrors, applicationFormSubmitFailed } = this.props;
+  // private showAppliationError(tab: string): boolean {
+  //   const { applicationSyncErrors, applicationFormSubmitFailed } = this.props;
 
-    const errors: { [key: string]: any } = applicationSyncErrors;
+  //   const errors: { [key: string]: any } = applicationSyncErrors;
 
-    return errors[tab] && applicationFormSubmitFailed;
-  }
+  //   return errors[tab] && applicationFormSubmitFailed;
+  // }
 
   private generateComponentKey(index: number): string {
     return `components-${index}`;
@@ -237,98 +232,98 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
     });
   }
 
-  private renderSharedEnvs() {
-    const { classes } = this.props;
+  // private renderSharedEnvs() {
+  //   const { classes } = this.props;
 
-    const tabItemKey = "sharedEnvs";
-    return (
-      <>
-        <ListSubheader disableSticky={true} className={classes.listSubHeader}>
-          Shared Environments
-        </ListSubheader>
+  //   const tabItemKey = "sharedEnvs";
+  //   return (
+  //     <>
+  //       <ListSubheader disableSticky={true} className={classes.listSubHeader}>
+  //         Shared Environments
+  //       </ListSubheader>
 
-        <ListItem
-          key={tabItemKey}
-          onClick={() => {
-            this.handleClickSharedEnvs();
-          }}
-          selected={this.state.selectedListItemKey === tabItemKey}
-          className={classes.listItem}
-          classes={{
-            selected: classes.listItemSeleted
-          }}
-          button>
-          <ListItemIcon>
-            {this.showAppliationError("sharedEnvs") ? (
-              <ErrorIcon color="error" style={{ marginLeft: -4 }} />
-            ) : (
-              <FiberManualRecordIcon
-                style={{ fontSize: 15 }}
-                htmlColor={this.state.selectedListItemKey === tabItemKey ? primaryColor : grey[400]}
-              />
-            )}
-          </ListItemIcon>
+  //       <ListItem
+  //         key={tabItemKey}
+  //         onClick={() => {
+  //           this.handleClickSharedEnvs();
+  //         }}
+  //         selected={this.state.selectedListItemKey === tabItemKey}
+  //         className={classes.listItem}
+  //         classes={{
+  //           selected: classes.listItemSeleted
+  //         }}
+  //         button>
+  //         <ListItemIcon>
+  //           {this.showAppliationError("sharedEnvs") ? (
+  //             <ErrorIcon color="error" style={{ marginLeft: -4 }} />
+  //           ) : (
+  //             <FiberManualRecordIcon
+  //               style={{ fontSize: 15 }}
+  //               htmlColor={this.state.selectedListItemKey === tabItemKey ? primaryColor : grey[400]}
+  //             />
+  //           )}
+  //         </ListItemIcon>
 
-          {this.showAppliationError("sharedEnvs") ? (
-            <ListItemText
-              primary={"Shared Environments"}
-              secondary={"Some form fields are incorrect"}
-              secondaryTypographyProps={{ color: "error" }}
-            />
-          ) : (
-            <ListItemText primary={"Shared Environments"} />
-          )}
-        </ListItem>
-      </>
-    );
-  }
+  //         {this.showAppliationError("sharedEnvs") ? (
+  //           <ListItemText
+  //             primary={"Shared Environments"}
+  //             secondary={"Some form fields are incorrect"}
+  //             secondaryTypographyProps={{ color: "error" }}
+  //           />
+  //         ) : (
+  //           <ListItemText primary={"Shared Environments"} />
+  //         )}
+  //       </ListItem>
+  //     </>
+  //   );
+  // }
 
-  private renderApplicationPlugins() {
-    const { classes } = this.props;
+  // private renderApplicationPlugins() {
+  //   const { classes } = this.props;
 
-    const tabItemKey = "applicationPlugins";
+  //   const tabItemKey = "applicationPlugins";
 
-    return (
-      <>
-        <ListSubheader disableSticky={true} className={classes.listSubHeader}>
-          Application Plugins
-        </ListSubheader>
+  //   return (
+  //     <>
+  //       <ListSubheader disableSticky={true} className={classes.listSubHeader}>
+  //         Application Plugins
+  //       </ListSubheader>
 
-        <ListItem
-          key={tabItemKey}
-          onClick={() => {
-            this.handleClickApplicationPlugins();
-          }}
-          selected={this.state.selectedListItemKey === tabItemKey}
-          className={classes.listItem}
-          classes={{
-            selected: classes.listItemSeleted
-          }}
-          button>
-          <ListItemIcon>
-            {this.showAppliationError("plugins") ? (
-              <ErrorIcon color="error" style={{ marginLeft: -4 }} />
-            ) : (
-              <FiberManualRecordIcon
-                style={{ fontSize: 15 }}
-                htmlColor={this.state.selectedListItemKey === tabItemKey ? primaryColor : grey[400]}
-              />
-            )}
-          </ListItemIcon>
+  //       <ListItem
+  //         key={tabItemKey}
+  //         onClick={() => {
+  //           this.handleClickApplicationPlugins();
+  //         }}
+  //         selected={this.state.selectedListItemKey === tabItemKey}
+  //         className={classes.listItem}
+  //         classes={{
+  //           selected: classes.listItemSeleted
+  //         }}
+  //         button>
+  //         <ListItemIcon>
+  //           {this.showAppliationError("plugins") ? (
+  //             <ErrorIcon color="error" style={{ marginLeft: -4 }} />
+  //           ) : (
+  //             <FiberManualRecordIcon
+  //               style={{ fontSize: 15 }}
+  //               htmlColor={this.state.selectedListItemKey === tabItemKey ? primaryColor : grey[400]}
+  //             />
+  //           )}
+  //         </ListItemIcon>
 
-          {this.showAppliationError("plugins") ? (
-            <ListItemText
-              primary={"Application Plugins"}
-              secondary={"Some form fields are incorrect"}
-              secondaryTypographyProps={{ color: "error" }}
-            />
-          ) : (
-            <ListItemText primary={"Application Plugins"} />
-          )}
-        </ListItem>
-      </>
-    );
-  }
+  //         {this.showAppliationError("plugins") ? (
+  //           <ListItemText
+  //             primary={"Application Plugins"}
+  //             secondary={"Some form fields are incorrect"}
+  //             secondaryTypographyProps={{ color: "error" }}
+  //           />
+  //         ) : (
+  //           <ListItemText primary={"Application Plugins"} />
+  //         )}
+  //       </ListItem>
+  //     </>
+  //   );
+  // }
 
   render() {
     const { classes, application, currentComponent } = this.props;
