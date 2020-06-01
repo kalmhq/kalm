@@ -11,7 +11,6 @@ import { BigCPULineChart, BigMemoryLineChart } from "../../widgets/SmallLineChar
 import Typography from "@material-ui/core/Typography";
 import { grey } from "@material-ui/core/colors";
 import MaterialTable from "material-table";
-import { Link } from "react-router-dom";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -139,7 +138,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
   };
 
   private renderName = (rowData: RowData) => {
-    return <Link to={`/applications/${rowData.get("name")}`}>{rowData.get("name")}</Link>;
+    return rowData.get("name");
   };
 
   private renderStatus = (rowData: RowData) => {
