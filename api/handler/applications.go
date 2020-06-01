@@ -170,6 +170,7 @@ func getKappNamespaceList(c echo.Context) (coreV1.NamespaceList, error) {
 	if err != nil {
 		return coreV1.NamespaceList{}, err
 	}
+
 	return fetched, nil
 }
 
