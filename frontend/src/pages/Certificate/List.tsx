@@ -139,8 +139,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderStatus = (rowData: RowData) => {
-    // TODO no column
-    return "Normal";
+    return rowData.get("ready") === "True" ? "Normal" : rowData.get("reason");
   };
 
   private renderType = (rowData: RowData) => {
@@ -148,7 +147,6 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderInUse = (rowData: RowData) => {
-    // TODO no column
     return "Yes";
   };
 

@@ -1,4 +1,4 @@
-import { Button, Grid } from "@material-ui/core";
+import { Button, Grid, MenuItem } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { KFreeSoloAutoCompleteMultiValues } from "forms/Basic/autoComplete";
 import { TextField } from "forms/Basic/text";
@@ -8,14 +8,23 @@ import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
-import { InjectedFormProps } from "redux-form";
+import { InjectedFormProps, change } from "redux-form";
 import { Field, formValueSelector, getFormSyncErrors, reduxForm } from "redux-form/immutable";
 import { TDispatchProp } from "types";
-import { CertificateFormType, issuerManaged, selfManaged, CertificateIssuerList } from "types/certificate";
-import { setIsShowAddCertificateModal } from "actions/certificate";
+import {
+  CertificateFormType,
+  issuerManaged,
+  selfManaged,
+  CertificateIssuerList,
+  CertificateIssuerFormType,
+  newEmptyCertificateIssuerForm
+} from "types/certificate";
+import { setIsShowAddCertificateModal, createCertificateIssuerAction } from "actions/certificate";
 import { RenderSelectField } from "forms/Basic/select";
+import { CertificateIssuerForm } from "./issuerForm";
 
 const defaultFormID = "certificate";
+const createIssuer = "createIssuer";
 
 const mapStateToProps = (state: RootState, { form }: OwnProps) => {
   const selector = formValueSelector(form || defaultFormID);
@@ -27,7 +36,7 @@ const mapStateToProps = (state: RootState, { form }: OwnProps) => {
     selfManagedCertContent: selector(state, "selfManagedCertContent") as string,
     selfManagedCertPrivateKey: selector(state, "selfManagedCertPrivateKey") as string,
     httpsCertIssuer: selector(state, "httpsCertIssuer") as string,
-    certificateIssuers: state.get("certificates").get("certificateIssuer") as CertificateIssuerList,
+    certificateIssuers: state.get("certificates").get("certificateIssuers") as CertificateIssuerList,
     domains: selector(state, "domains") as Immutable.List<string>
   };
 };
@@ -61,6 +70,15 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
     this.state = {};
   }
 
+  private submitCreateIssuer = async (certificateIssuer: CertificateIssuerFormType) => {
+    try {
+      await this.props.dispatch(createCertificateIssuerAction(certificateIssuer));
+      this.props.change("httpsCertIssuer", certificateIssuer.get("name"));
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   private renderSelfManagedFields = () => {
     const { classes } = this.props;
     return (
@@ -75,7 +93,6 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
             name="selfManagedCertContent"
             margin="normal"
             validate={[ValidatorRequired]}
-            options={[]}
           />
         </Grid>
         <Grid item md={12}>
@@ -88,7 +105,6 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
             name="selfManagedCertPrivateKey"
             margin="normal"
             validate={[ValidatorRequired]}
-            options={[]}
           />
         </Grid>
       </>
@@ -96,7 +112,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
   };
 
   private renderIssuerManagedFields = () => {
-    const { classes, certificateIssuers } = this.props;
+    const { classes, certificateIssuers, httpsCertIssuer } = this.props;
     return (
       <>
         <Grid item md={12}>
@@ -109,7 +125,6 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
             name="domains"
             margin="normal"
             validate={[ValidatorRequired]}
-            options={[]}
           />
         </Grid>
         <Grid item md={12}>
@@ -121,10 +136,21 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
             rows={12}
             name="httpsCertIssuer"
             margin="normal"
-            validate={[ValidatorRequired]}
-            options={Array.from(certificateIssuers)}
-          />
+            validate={[ValidatorRequired]}>
+            <MenuItem value={createIssuer}>Add new certificate issuer</MenuItem>
+            {certificateIssuers.map(certificateIssuer => {
+              const name = certificateIssuer.get("name");
+              return (
+                <MenuItem key={name} value={name}>
+                  {name}
+                </MenuItem>
+              );
+            })}
+          </Field>
         </Grid>
+        {httpsCertIssuer === createIssuer ? (
+          <CertificateIssuerForm onSubmit={this.submitCreateIssuer} initialValues={newEmptyCertificateIssuerForm()} />
+        ) : null}
       </>
     );
   };
@@ -144,11 +170,14 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
               options={[
                 {
                   value: selfManaged,
-                  label: "Upload an existing certificate"
+                  label: "Upload an existing certificate",
+                  explain:
+                    "If you have got a ssl certificate from your ssl certificate provider, you can upload and use this."
                 },
                 {
                   value: issuerManaged,
-                  label: "Apply a new certificate with certificate issuer"
+                  label: "Apply a new certificate with certificate issuer",
+                  explain: "If you wanna create new cerificate, you can select this."
                 }
               ]}
             />
@@ -160,23 +189,18 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
               name="name"
               margin="normal"
               validate={[ValidatorRequired]}
-              options={[]}
             />
           </Grid>
           {managedType === selfManaged ? this.renderSelfManagedFields() : this.renderIssuerManagedFields()}
           <Grid container spacing={2}>
             <Grid item md={8}></Grid>
             <Grid item md={2}>
-              <Button
-                type="submit"
-                onClick={() => dispatch(setIsShowAddCertificateModal(false))}
-                color="primary"
-                variant="contained">
+              <Button type="submit" onClick={() => dispatch(setIsShowAddCertificateModal(false))} color="primary">
                 Cancel
               </Button>
             </Grid>
             <Grid item md={2}>
-              <Button type="submit" onClick={handleSubmit} color="primary" variant="contained">
+              <Button type="submit" onClick={handleSubmit} color="primary">
                 Save
               </Button>
             </Grid>

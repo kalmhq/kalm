@@ -10,7 +10,9 @@ import {
   DELETE_CERTIFICATE,
   SET_IS_SHOW_ADD_CERTIFICATE_MODAL,
   CertificateIssuerList,
-  LOAD_CERTIFICATE_ISSUERS_FULFILLED
+  LOAD_CERTIFICATE_ISSUERS_FULFILLED,
+  CREATE_CERTIFICATE,
+  CREATE_CERTIFICATE_ISSUER
 } from "types/certificate";
 
 export type State = ImmutableMap<{
@@ -19,7 +21,7 @@ export type State = ImmutableMap<{
   isSubmittingCreateCertificate: boolean;
   isShowAddCertificateModal: boolean;
   certificates: CertificateList;
-  certificateIssuer: CertificateIssuerList;
+  certificateIssuers: CertificateIssuerList;
 }>;
 
 const initialState: State = Immutable.Map({
@@ -28,7 +30,7 @@ const initialState: State = Immutable.Map({
   isSubmittingCreateCertificate: false,
   isShowAddCertificateModal: false,
   certificates: Immutable.List(),
-  certificateIssuer: Immutable.List()
+  certificateIssuers: Immutable.List()
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {
@@ -45,7 +47,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
       break;
     }
     case LOAD_CERTIFICATE_ISSUERS_FULFILLED: {
-      return state.set("certificateIssuer", action.payload.certificateIssuers || Immutable.List());
+      return state.set("certificateIssuers", action.payload.certificateIssuers || Immutable.List());
     }
     case SET_IS_SHOW_ADD_CERTIFICATE_MODAL: {
       return state.set("isShowAddCertificateModal", action.payload.isShowAddCertificateModal);
@@ -59,6 +61,14 @@ const reducer = (state: State = initialState, action: Actions): State => {
       }
 
       break;
+    }
+    case CREATE_CERTIFICATE: {
+      return state.update("certificates", certificates => certificates.push(action.payload.certificate));
+    }
+    case CREATE_CERTIFICATE_ISSUER: {
+      return state.update("certificateIssuers", certificateIssuers =>
+        certificateIssuers.push(action.payload.certificateIssuer)
+      );
     }
     case SET_IS_SUBMITTING_CERTIFICATE: {
       return state.set("isSubmittingCreateCertificate", action.payload.isSubmittingCertificate);

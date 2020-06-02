@@ -10,11 +10,20 @@ import {
   SET_IS_SHOW_ADD_CERTIFICATE_MODAL,
   SetIsShowAddCertificateModal,
   CertificateFormType,
-  selfManaged
+  selfManaged,
+  CertificateIssuerFormType,
+  CREATE_CERTIFICATE,
+  CREATE_CERTIFICATE_ISSUER
 } from "types/certificate";
 import { StatusFailure, ThunkResult } from "../types";
 import { setErrorNotificationAction } from "./notification";
-import { getCertificateList, createCertificate, deleteCertificate, getCertificateIssuerList } from "./kubernetesApi";
+import {
+  getCertificateList,
+  createCertificate,
+  deleteCertificate,
+  getCertificateIssuerList,
+  createCertificateIssuer
+} from "./kubernetesApi";
 import { resErrorsToSubmitErrors } from "utils";
 import { SubmissionError } from "redux-form";
 import Immutable from "immutable";
@@ -96,9 +105,37 @@ export const createCertificateAction = (certificateContent: CertificateFormType)
   return async dispatch => {
     dispatch(setIsSubmittingCertificate(true));
     try {
-      await createCertificate(
+      const certificate = await createCertificate(
         certificateContent.set("isSelfManaged", certificateContent.get("managedType") === selfManaged)
       );
+      dispatch({ type: CREATE_CERTIFICATE, payload: { certificate } });
+    } catch (e) {
+      console.log(e);
+      if (e.response && e.response.data.errors && e.response.data.errors.length > 0) {
+        const submitErrors = resErrorsToSubmitErrors(e.response.data.errors);
+        throw new SubmissionError(submitErrors);
+      } else if (e.response && e.response.data.status === StatusFailure) {
+        dispatch(setErrorNotificationAction(e.response.data.message));
+      } else {
+        dispatch(setErrorNotificationAction());
+      }
+      return;
+    } finally {
+      setTimeout(() => {
+        dispatch(setIsSubmittingCertificate(false));
+      }, 2000);
+    }
+  };
+};
+
+export const createCertificateIssuerAction = (
+  certificateIssuerContent: CertificateIssuerFormType
+): ThunkResult<Promise<void>> => {
+  return async dispatch => {
+    dispatch(setIsSubmittingCertificate(true));
+    try {
+      const certificateIssuer = await createCertificateIssuer(certificateIssuerContent);
+      dispatch({ type: CREATE_CERTIFICATE_ISSUER, payload: { certificateIssuer } });
     } catch (e) {
       console.log(e);
       if (e.response && e.response.data.errors && e.response.data.errors.length > 0) {
