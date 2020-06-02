@@ -1,26 +1,14 @@
 import { Button, Grid, MenuItem, Paper } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
-import { KFreeSoloAutoCompleteMultiValues } from "forms/Basic/autoComplete";
 import { TextField } from "forms/Basic/text";
-import { KRadioGroupRender } from "forms/Basic/radio";
 import { ValidatorRequired } from "forms/validator";
-import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { InjectedFormProps } from "redux-form";
 import { Field, formValueSelector, getFormSyncErrors, reduxForm } from "redux-form/immutable";
 import { TDispatchProp } from "types";
-import {
-  CertificateIssuerFormType,
-  issuerManaged,
-  selfManaged,
-  AcmeCloudFlare,
-  newEmptyCertificateIssuerForm,
-  cloudFlare,
-  caForTest
-} from "types/certificate";
-import { setIsShowAddCertificateModal } from "actions/certificate";
+import { CertificateIssuerFormType, AcmeCloudFlare, cloudFlare, caForTest } from "types/certificate";
 import { RenderSelectField } from "forms/Basic/select";
 import { grey } from "@material-ui/core/colors";
 
@@ -93,7 +81,7 @@ class CertificateIssuerFormRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { classes, dispatch, handleSubmit, issuerType } = this.props;
+    const { classes, handleSubmit, issuerType } = this.props;
 
     return (
       <Paper square className={classes.paper} elevation={0}>

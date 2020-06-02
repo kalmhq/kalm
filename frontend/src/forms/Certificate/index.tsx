@@ -8,7 +8,7 @@ import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
-import { InjectedFormProps, change } from "redux-form";
+import { InjectedFormProps } from "redux-form";
 import { Field, formValueSelector, getFormSyncErrors, reduxForm } from "redux-form/immutable";
 import { TDispatchProp } from "types";
 import {
