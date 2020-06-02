@@ -1,4 +1,5 @@
-import { createStyles, Theme, withStyles, WithStyles, Grid } from "@material-ui/core";
+import { createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { push } from "connected-react-router";
 import React from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
@@ -7,9 +8,8 @@ import ApplicationForm, { applicationInitialValues } from "../../forms/Applicati
 import { RootState } from "../../reducers";
 import { Actions } from "../../types";
 import { Application } from "../../types/application";
-import { BasePage } from "../BasePage";
 import { H4 } from "../../widgets/Label";
-import { push } from "connected-react-router";
+import { BasePage } from "../BasePage";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -35,7 +35,11 @@ class ApplicationNewRaw extends React.PureComponent<Props> {
     const { dispatch } = this.props;
     await dispatch(createApplicationAction(applicationFormValue));
 
-    dispatch(push(`/applications/${applicationFormValue.get("name")}/edit`));
+    if (applicationFormValue.get("nextAddComponent")) {
+      dispatch(push(`/applications/${applicationFormValue.get("name")}/edit`));
+    } else {
+      dispatch(push(`/applications`));
+    }
   };
 
   public render() {
