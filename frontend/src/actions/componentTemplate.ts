@@ -1,35 +1,24 @@
-import {
-  getKappComponentTemplates,
-  updateKappComonentTemplate,
-  createKappComonentTemplate,
-  deleteKappComonentTemplate
-} from "./kubernetesApi";
+import { ThunkResult } from "../types";
 import {
   ComponentTemplate,
   CREATE_COMPONENT_TEMPLATES,
+  DELETE_COMPONENT_TEMPLATES,
   DUPLICATE_COMPONENT_TEMPLATES,
-  UPDATE_COMPONENT_TEMPLATES,
-  LOAD_COMPONENT_TEMPLATES_PENDING,
   LOAD_COMPONENT_TEMPLATES_FULFILLED,
-  DELETE_COMPONENT_TEMPLATES
+  LOAD_COMPONENT_TEMPLATES_PENDING,
+  UPDATE_COMPONENT_TEMPLATES
 } from "../types/componentTemplate";
-import { ThunkResult, StatusFailure } from "../types";
-import { setErrorNotificationAction } from "./notification";
+import {
+  createKappComonentTemplate,
+  deleteKappComonentTemplate,
+  getKappComponentTemplates,
+  updateKappComonentTemplate
+} from "./kubernetesApi";
 
 export const createComponentTemplateAction = (componentTemplateRaw: ComponentTemplate): ThunkResult<Promise<void>> => {
   return async dispatch => {
     let componentTemplate: ComponentTemplate;
-
-    try {
-      componentTemplate = await createKappComonentTemplate(componentTemplateRaw);
-    } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
-      return;
-    }
+    componentTemplate = await createKappComonentTemplate(componentTemplateRaw);
 
     dispatch({
       type: CREATE_COMPONENT_TEMPLATES,
@@ -51,17 +40,7 @@ export const duplicateComponentTemplateAction = (
     componentTemplateCopy = componentTemplateCopy.set("name", newName);
 
     let componentTemplate: ComponentTemplate;
-
-    try {
-      componentTemplate = await createKappComonentTemplate(componentTemplateCopy);
-    } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
-      return;
-    }
+    componentTemplate = await createKappComonentTemplate(componentTemplateCopy);
 
     dispatch({
       type: DUPLICATE_COMPONENT_TEMPLATES,
@@ -73,17 +52,7 @@ export const duplicateComponentTemplateAction = (
 export const updateComponentTemplateAction = (componentTemplateRaw: ComponentTemplate): ThunkResult<Promise<void>> => {
   return async dispatch => {
     let componentTemplate: ComponentTemplate;
-
-    try {
-      componentTemplate = await updateKappComonentTemplate(componentTemplateRaw);
-    } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
-      return;
-    }
+    componentTemplate = await updateKappComonentTemplate(componentTemplateRaw);
 
     dispatch({
       type: UPDATE_COMPONENT_TEMPLATES,
@@ -101,17 +70,6 @@ export const deleteComponentTemplateAction = (componentTemplateName: string): Th
 
     await deleteKappComonentTemplate(componentTemplate);
 
-    try {
-      await deleteKappComonentTemplate(componentTemplate);
-    } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
-      return;
-    }
-
     dispatch({
       type: DELETE_COMPONENT_TEMPLATES,
       payload: { componentTemplateName }
@@ -127,13 +85,8 @@ export const loadComponentTemplatesAction = (): ThunkResult<Promise<void>> => {
     try {
       componentTemplates = await getKappComponentTemplates();
     } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
       dispatch({ type: LOAD_COMPONENT_TEMPLATES_PENDING });
-      return;
+      throw e;
     }
 
     dispatch({

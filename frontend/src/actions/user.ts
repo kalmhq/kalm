@@ -1,4 +1,4 @@
-import { StatusFailure, ThunkResult } from "../types";
+import { ThunkResult } from "../types";
 import {
   CREATE_ROLE_BINDINGS_FAILED,
   CREATE_ROLE_BINDINGS_FULFILLED,
@@ -9,7 +9,6 @@ import {
   RoleBindingsRequestBody
 } from "../types/user";
 import { createRoleBindings, deleteRoleBindings, loadRolebindings } from "./kubernetesApi";
-import { setErrorNotificationAction } from "./notification";
 
 export const loadRoleBindingsAction = (): ThunkResult<Promise<void>> => {
   return async dispatch => {
@@ -26,11 +25,7 @@ export const loadRoleBindingsAction = (): ThunkResult<Promise<void>> => {
       });
     } catch (e) {
       dispatch({ type: LOAD_ROLE_BINDINGS_FAILED });
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
+      throw e;
     }
   };
 };
@@ -45,11 +40,7 @@ export const createRoleBindingsAction = (roleBindingsBody: RoleBindingsRequestBo
       dispatch(loadRoleBindingsAction());
     } catch (e) {
       dispatch({ type: CREATE_ROLE_BINDINGS_FAILED });
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
+      throw e;
     }
   };
 };
@@ -64,11 +55,7 @@ export const deleteRoleBindingsAction = (namespace: string, bindingName: string)
       dispatch(loadRoleBindingsAction());
     } catch (e) {
       dispatch({ type: CREATE_ROLE_BINDINGS_FAILED });
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
+      throw e;
     }
   };
 };

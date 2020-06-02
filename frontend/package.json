@@ -54,6 +54,7 @@
     "redux-immutable": "^4.0.0",
     "redux-promise-middleware": "^6.1.2",
     "redux-thunk": "^2.3.0",
+    "redux-thunk-error-handler": "^1.1.4",
     "typescript": "^3.7.4",
     "xterm": "^4.4.0",
     "xterm-addon-fit": "^0.3.0",

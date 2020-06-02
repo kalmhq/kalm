@@ -1,58 +1,48 @@
 import Immutable from "immutable";
+import { ThunkResult } from "../types";
 import {
-  getKappFilesV1alpha1,
-  createKappFilesV1alpha1,
-  updateKappFileV1alpha1,
-  moveKappFileV1alpha1,
-  deleteKappFileV1alpha1
-} from "./kubernetesApi";
-import {
+  ConfigCreate,
   ConfigNode,
+  ConfigRes,
   CREATE_CONFIG,
-  UPDATE_CONFIG,
-  DUPLICATE_CONFIG,
   DELETE_CONFIG,
-  SET_CURRENT_CONFIG_ID_CHAIN,
-  LOAD_CONFIGS_PENDING,
-  LOAD_CONFIGS_FULFILLED,
+  DUPLICATE_CONFIG,
+  FilesUpload,
   initialRootConfigNode,
   LOAD_CONFIGS_FAILED,
-  ConfigRes,
-  FilesUpload,
-  ConfigCreate,
+  LOAD_CONFIGS_FULFILLED,
+  LOAD_CONFIGS_PENDING,
+  SetIsSubmittingConfig,
+  SET_CURRENT_CONFIG_ID_CHAIN,
   SET_IS_SUBMITTING_CONFIG,
-  SetIsSubmittingConfig
+  UPDATE_CONFIG
 } from "../types/config";
-import { ThunkResult, StatusFailure } from "../types";
-import { setSuccessNotificationAction, setErrorNotificationAction } from "./notification";
+import {
+  createKappFilesV1alpha1,
+  deleteKappFileV1alpha1,
+  getKappFilesV1alpha1,
+  moveKappFileV1alpha1,
+  updateKappFileV1alpha1
+} from "./kubernetesApi";
+import { setSuccessNotificationAction } from "./notification";
 
 export const uploadConfigsAction = (ancestorIds: string[], filesUpload: FilesUpload): ThunkResult<Promise<void>> => {
   return async dispatch => {
     // console.log("files", filesUpload.toJS());
     dispatch(setIsSubmittingConfig(true));
+    setTimeout(() => {
+      dispatch(setIsSubmittingConfig(false));
+    }, 3000);
 
-    try {
-      const files: ConfigCreate[] = [];
-      filesUpload.forEach((content, name) => {
-        files.push({
-          path: ancestorIdsToPath(ancestorIds, name),
-          isDir: false,
-          content
-        });
+    const files: ConfigCreate[] = [];
+    filesUpload.forEach((content, name) => {
+      files.push({
+        path: ancestorIdsToPath(ancestorIds, name),
+        isDir: false,
+        content
       });
-      await createKappFilesV1alpha1(files);
-    } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
-      return;
-    } finally {
-      setTimeout(() => {
-        dispatch(setIsSubmittingConfig(false));
-      }, 2000);
-    }
+    });
+    await createKappFilesV1alpha1(files);
 
     dispatch(loadConfigsAction());
     dispatch(setSuccessNotificationAction("Upload configs successful."));
@@ -63,29 +53,20 @@ export const uploadConfigsAction = (ancestorIds: string[], filesUpload: FilesUpl
 export const createConfigAction = (config: ConfigNode): ThunkResult<Promise<void>> => {
   return async dispatch => {
     config = config.set("id", config.get("name"));
-    dispatch(setIsSubmittingConfig(true));
 
-    try {
-      const files = [
-        {
-          path: getConfigPath(config),
-          isDir: config.get("type") === "folder",
-          content: config.get("content")
-        }
-      ];
-      await createKappFilesV1alpha1(files);
-    } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
+    dispatch(setIsSubmittingConfig(true));
+    setTimeout(() => {
+      dispatch(setIsSubmittingConfig(false));
+    }, 2000);
+
+    const files = [
+      {
+        path: getConfigPath(config),
+        isDir: config.get("type") === "folder",
+        content: config.get("content")
       }
-      return;
-    } finally {
-      setTimeout(() => {
-        dispatch(setIsSubmittingConfig(false));
-      }, 2000);
-    }
+    ];
+    await createKappFilesV1alpha1(files);
 
     dispatch(setSuccessNotificationAction("Create config successful."));
 
@@ -112,23 +93,14 @@ export const duplicateConfigAction = (config: ConfigNode): ThunkResult<Promise<v
     });
     config = config.set("oldPath", getConfigPath(config));
 
-    try {
-      const files = [
-        {
-          path: getConfigPath(config),
-          isDir: config.get("type") === "folder",
-          content: config.get("content")
-        }
-      ];
-      await createKappFilesV1alpha1(files);
-    } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
+    const files = [
+      {
+        path: getConfigPath(config),
+        isDir: config.get("type") === "folder",
+        content: config.get("content")
       }
-      return;
-    }
+    ];
+    await createKappFilesV1alpha1(files);
 
     dispatch(setSuccessNotificationAction("Create config successful."));
 
@@ -147,25 +119,16 @@ export const updateConfigAction = (config: ConfigNode): ThunkResult<Promise<void
   return async dispatch => {
     config = config.set("id", config.get("name"));
     const newPath = getConfigPath(config);
-    dispatch(setIsSubmittingConfig(true));
 
-    try {
-      await updateKappFileV1alpha1(config.get("oldPath"), config.get("content"));
-      if (newPath !== config.get("oldPath")) {
-        await moveKappFileV1alpha1(config.get("oldPath"), newPath);
-        config = config.set("oldPath", newPath);
-      }
-    } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
-      return;
-    } finally {
-      setTimeout(() => {
-        dispatch(setIsSubmittingConfig(false));
-      }, 2000);
+    dispatch(setIsSubmittingConfig(true));
+    setTimeout(() => {
+      dispatch(setIsSubmittingConfig(false));
+    }, 2000);
+
+    await updateKappFileV1alpha1(config.get("oldPath"), config.get("content"));
+    if (newPath !== config.get("oldPath")) {
+      await moveKappFileV1alpha1(config.get("oldPath"), newPath);
+      config = config.set("oldPath", newPath);
     }
 
     dispatch(setSuccessNotificationAction("Update config successful."));
@@ -185,16 +148,7 @@ export const updateConfigAction = (config: ConfigNode): ThunkResult<Promise<void
 
 export const deleteConfigAction = (config: ConfigNode): ThunkResult<Promise<void>> => {
   return async dispatch => {
-    try {
-      await deleteKappFileV1alpha1(getConfigPath(config));
-    } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
-      return;
-    }
+    await deleteKappFileV1alpha1(getConfigPath(config));
 
     dispatch(setSuccessNotificationAction("Delete config successful."));
 
@@ -225,13 +179,8 @@ export const loadConfigsAction = (namespace?: string): ThunkResult<Promise<void>
     try {
       configRes = await getKappFilesV1alpha1(namespace);
     } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
       dispatch({ type: LOAD_CONFIGS_FAILED });
-      return;
+      throw e;
     }
 
     const configNode = configResToConfigNode(configRes);
