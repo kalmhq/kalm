@@ -584,25 +584,6 @@ spec:
   config:
     periodSeconds: 5
     port: 8080
-
-# The following yaml should be integrated in kapp system somehow.
-
-# apiVersion: networking.istio.io/v1alpha3
-# kind: VirtualService
-# metadata:
-#   name: frontend
-#   namespace: kapp-hipster
-# spec:
-#   hosts:
-#     - "*"
-#   gateways:
-#     - gateway
-#   http:
-#     - route:
-#         - destination:
-#             host: frontend
-#             port:
-#               number: 8080
 ---
 apiVersion: core.kapp.dev/v1alpha1
 kind: HttpsCertIssuer
@@ -621,6 +602,27 @@ spec:
   httpsCertIssuer: https-cert-issuer-hipster
   domains:
     - hipster.demo.com
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: HttpRoute
+metadata:
+  name: hipster
+  namespace: kapp-hipster
+spec:
+  hosts:
+    - "hipster.demo.com"
+  methods:
+    - GET
+    - POST
+  schemes:
+    - http
+    - https
+  paths:
+    - /
+  destinations:
+    - host: frontend
+      weight: 1
+  stripPath: true
 #---
 #apiVersion: core.kapp.dev/v1alpha1
 #kind: HttpsCertIssuer
