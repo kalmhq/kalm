@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kapp-hello-world
+  labels:
+    istio-injection: enabled
+    kapp-enabled: "true"
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: Component
+metadata:
+    name: hello-world
+    namespace: kapp-hello-world
+spec:
+    image: strm/helloworld-http:latest
+    ports:
+        - name: http
+          containerPort: 80
+          servicePort: 80
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: HttpRoute
+metadata:
+  name: hello-world
+  namespace: kapp-hello-world
+spec:
+  hosts:
+    - "*"
+  methods:
+    - GET
+    - POST
+  schemes:
+    - http
+  paths:
+    - /
+  destinations:
+    - host: hello-world
+      weight: 1
+  stripPath: true

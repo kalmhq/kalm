@@ -5,31 +5,25 @@ In this tutorial we use a hello-world Kapp config helps you to understand concep
 To apply the config, go to directory of Kapp project, and run:
 
 ```shell
-kubectl apply -f controller/config/samples/core_v1alpha1_hello-world.yaml
+kubectl apply -f controller/config/samples/core_v1alpha1_tutorial_1_hello-world.yaml
 ```
 
-Content of `core_v1alpha1_hello-world.yaml` is:
+Content of `core_v1alpha1_tutorial_1_hello-world.yaml` is:
 
 ```yaml
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: Kapp-hello-world
+  name: kapp-hello-world
   labels:
     istio-injection: enabled
+    kapp-enabled: "true"
 ---
-apiVersion: core.Kapp.dev/v1alpha1
-kind: Application
-metadata:
-  name: Kapp-hello-world
-spec:
-  isActive: true
----
-apiVersion: core.Kapp.dev/v1alpha1
+apiVersion: core.kapp.dev/v1alpha1
 kind: Component
 metadata:
     name: hello-world
-    namespace: Kapp-hello-world
+    namespace: kapp-hello-world
 spec:
     image: strm/helloworld-http:latest
     ports:
@@ -37,63 +31,30 @@ spec:
           containerPort: 80
           servicePort: 80
 ---
-apiVersion: core.Kapp.dev/v1alpha1
-kind: ApplicationPlugin
+apiVersion: core.kapp.dev/v1alpha1
+kind: HttpRoute
 metadata:
-  name: Kapp-builtin-application-plugin-ingress
+  name: hello-world
+  namespace: kapp-hello-world
 spec:
-  src: |
-    function AfterApplicationSaved() {
-      __builtinApplicationPluginIngress();
-    }
-  configSchema:
-    title: Ingress rules
-    type: object
-    required:
-      - hosts
-      - paths
-    properties:
-      hosts:
-        type: array
-        items:
-          type: string
-      httpsCert:
-        type: string
-      paths:
-        type: array
-        items:
-          type: string
-      stripPath:
-        type: boolean
-      destinations:
-        type: array
-        items:
-          type: object
-          properties:
-            destination:
-              type: string
-            weight:
-              type: number
----
-apiVersion: core.Kapp.dev/v1alpha1
-kind: ApplicationPluginBinding
-metadata:
-  name: Kapp-builtin-application-plugin-ingress
-  namespace: Kapp-bookinfo
-spec:
-  pluginName:  Kapp-builtin-application-plugin-ingress
-  config:
-    hosts:
-      - "*"
-    paths:
-      - "/"
-    destinations:
-      - destination: hello-world:80
+  hosts:
+    - "*"
+  methods:
+    - GET
+    - POST
+  schemes:
+    - http
+  paths:
+    - /
+  destinations:
+    - host: hello-world
+      weight: 1
+  stripPath: true
 ```
 
 ## config walkthrough
 
-our hello-world Kapp config contains 5 yaml files.
+our hello-world Kapp config contains 3 yaml files.
 
   
 
@@ -103,38 +64,20 @@ our hello-world Kapp config contains 5 yaml files.
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: Kapp-hello-world
+  name: kapp-hello-world
   labels:
     istio-injection: enabled
+    kapp-enabled: "true"
 ```
 
-It defines a namespace for your app, notice the label we set here: `istio-injection: enabled`, we use this to ensure `Istio` works in this namespace, `Istio` is a tool which makes the network of our microservices more powerful.
+It defines a namespace for your app, notice the two labels we set here:
+
+-  `istio-injection: enabled`, we use this to ensure `Istio` works in this namespace, `Istio` is a tool which makes the network of our microservices more powerful.
+- `kapp-enabled: "true"`, we use this label to tell that this domain should be managed by our kapp system.
 
   
 
-**The second yaml file defines a Kapp Application:**
-
-```yaml
-apiVersion: core.Kapp.dev/v1alpha1
-kind: Application
-metadata:
-  name: Kapp-hello-world
-spec:
-  isActive: true
-```
-
-one Kapp `Application` governs one namespace, the relationship is 1:1，here they share the same name: `Kapp-hello-world`, and notice the spec of our application:
-
-```yaml
-spec:
-  isActive: true
-```
-
-`isActive` is a switch to control whether the workloads under the namespace should be running or not.
-
-  
-
-**The third yaml file defines the workload in our application using Component**:
+**The second yaml file defines the workload in our application using Component**:
 
 ```yaml
 apiVersion: core.Kapp.dev/v1alpha1
@@ -181,67 +124,35 @@ we set the image of our `Component`, and then defined the port. It's very simila
 
   
 
-With the 3 yaml files above, if we apply it using kubectl, our first Kapp application can be up and running, but how can we make sure that everything is ok, wouldn't it be nice if we can access our hello-world demo from browser? Yes and that's why the following 2 yamls configs exist: they help enable the external access of our service.
+With the 2 yaml files above, if we apply it using kubectl, our first Kapp application can be up and running, but how can we make sure that everything is ok, wouldn't it be nice if we can access our hello-world demo from browser? Yes and that's why the following yamls config exist: it helps enable the external access of our service.
 
   
 
-**The fouth yaml file is a definition of our buildin plugin.**
-
-(when Kapp is installed in future, all our buildin plugins should have been installed too, in that case, we don't need to show the definition here in our tutorial, I include it here to make the process smoother in current stage, the explain of buildin Kapp plugin is omitted here)
-
-  
-
-**The fifth yaml file** defines an `ApplicationPluginBinding` which bind our component to a Kapp buildin plugin:
+**The third yaml file** defines a route to our Component `hello-world` :
 
 ```yaml
-apiVersion: core.Kapp.dev/v1alpha1
-kind: ApplicationPluginBinding
+apiVersion: core.kapp.dev/v1alpha1
+kind: HttpRoute
 metadata:
-  name: Kapp-builtin-application-plugin-ingress
-  namespace: Kapp-bookinfo
+  name: hello-world
+  namespace: kapp-hello-world
 spec:
-  pluginName:  Kapp-builtin-application-plugin-ingress
-  config:
-    hosts:
-      - "*"
-    paths:
-      - "/"
-    destinations:
-      - destination: hello-world:80
+  hosts:
+    - "*"
+  methods:
+    - GET
+    - POST
+  schemes:
+    - http
+  paths:
+    - /
+  destinations:
+    - host: hello-world
+      weight: 1
+  stripPath: true
 ```
 
-Kapp plugin is a way to add more capbilities to our workloads, for example, the `Kapp-builtin-application-plugin-ingress` plugin we use here makes our hello-world service exposed to external network, which makes accessing the service from browser possible.
-
-`pluginName` defines the plugin we want to use:
-
-```yaml
-spec:
-  pluginName:  Kapp-builtin-application-plugin-ingress
-```
-
-Kapp provides serveral buildin plugins, `Kapp-builtin-application-plugin-ingress` is one of them.
-
-
-
-`config` defines the configuration for the plugin:
-
-```yaml
-spec:
-  ...
-  config:
-    hosts:
-      - "*"
-    paths:
-      - "/"
-    destinations:
-      - destination: productpage:80	
-```
-
-- for `hosts`, we don't have a specific host name for our service yet, so let's use a wildcard here: `*`.
-
-- `paths` defines the url paths we want to intercept, we use `/` to receive all requests here.
-
-- `destinations` defines where we want to direct these requests to, we want to welcome our user with our hello-world service, so we set `destination: hello-world:80`
+If you have worked with Nginx before, the spec of `HttpRoute` should be quite familiar for you, basically, we defined a wildcard route which will direct all GET and POST reqeusts to our Component: `hello-world`.
 
 Now you should be able to access our hello-world service using the commands below:
 
