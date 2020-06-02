@@ -261,4 +261,22 @@ spec:
   config:
     port: 9080
 ---
-# todo routes
+apiVersion: core.kapp.dev/v1alpha1
+kind: HttpRoute
+metadata:
+  name: bookinfo
+  namespace: kapp-bookinfo
+spec:
+  hosts:
+    - "bookinfo.demo.com"
+  methods:
+    - GET
+    - POST
+  schemes:
+    - http
+  paths:
+    - /
+  destinations:
+    - host: productpage
+      weight: 1
+  stripPath: true
