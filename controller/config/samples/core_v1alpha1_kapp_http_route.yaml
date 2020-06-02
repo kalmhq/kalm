@@ -1,20 +1,20 @@
-apiVersion: core.kapp.dev/v1alpha1
-kind: HttpsCertIssuer
-metadata:
-  name: default-cert-issuer
-spec:
-  caForTest: {}
----
-apiVersion: core.kapp.dev/v1alpha1
-kind: HttpsCert
-metadata:
-  name: default-https-cert
-spec:
-  httpsCertIssuer: default-cert-issuer
-  isSelfManaged: false
-  domains:
-    - "*"
----
+#apiVersion: core.kapp.dev/v1alpha1
+#kind: HttpsCertIssuer
+#metadata:
+#  name: default-cert-issuer
+#spec:
+#  caForTest: {}
+#---
+#apiVersion: core.kapp.dev/v1alpha1
+#kind: HttpsCert
+#metadata:
+#  name: default-https-cert
+#spec:
+#  httpsCertIssuer: default-cert-issuer
+#  isSelfManaged: false
+#  domains:
+#    - "*"
+#---
 apiVersion: core.kapp.dev/v1alpha1
 kind: HttpsCert
 metadata:
@@ -122,4 +122,3 @@ spec:
     - host: server-v1
       weight: 1
   stripPath: true
-

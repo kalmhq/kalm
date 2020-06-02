@@ -4,13 +4,7 @@ metadata:
   name: kapp-hipster
   labels:
     istio-injection: enabled
----
-apiVersion: core.kapp.dev/v1alpha1
-kind: Application
-metadata:
-  name: kapp-hipster
-spec:
-  isActive: true
+    kapp-enabled: "true"
 ---
 apiVersion: core.kapp.dev/v1alpha1
 kind: ComponentPlugin
@@ -609,61 +603,6 @@ spec:
 #             host: frontend
 #             port:
 #               number: 8080
----
-apiVersion: core.kapp.dev/v1alpha1
-kind: ApplicationPlugin
-metadata:
-  name: kapp-builtin-application-plugin-ingress
-spec:
-  src: |
-    function AfterApplicationSaved() {
-      __builtinApplicationPluginIngress();
-    }
-  configSchema:
-    title: Ingress rules
-    type: object
-    required:
-      - hosts
-      - paths
-    properties:
-      hosts:
-        type: array
-        items:
-          type: string
-      httpsCert:
-        type: string
-      paths:
-        type: array
-        items:
-          type: string
-      stripPath:
-        type: boolean
-      destinations:
-        type: array
-        items:
-          type: object
-          properties:
-            destination:
-              type: string
-            weight:
-              type: number
----
-  apiVersion: core.kapp.dev/v1alpha1
-  kind: ApplicationPluginBinding
-  metadata:
-    name: kapp-builtin-application-plugin-ingress
-    namespace: kapp-hipster
-  spec:
-    pluginName: kapp-builtin-application-plugin-ingress
-    config:
-      hosts:
-        - "hipster.demo.com"
-      httpsCert: https-cert-hipster
-      paths:
-        - "/"
-      stripPath: true
-      destinations:
-        - destination: frontend:8080
 ---
 apiVersion: core.kapp.dev/v1alpha1
 kind: HttpsCertIssuer
