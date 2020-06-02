@@ -30,7 +30,7 @@ import { formatTimeDistance } from "../../utils";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "../../widgets/Badge";
 import { IconButtonWithTooltip, IconLinkWithToolTip } from "../../widgets/IconButtonWithTooltip";
 import { H5 } from "../../widgets/Label";
-import { PieChart } from "../../widgets/PieChart";
+import { PieChartComponent } from "../../widgets/PieChart";
 import {
   BigCPULineChart,
   BigMemoryLineChart,
@@ -532,14 +532,14 @@ class DetailsRaw extends React.PureComponent<Props, State> {
       <div className={classes.root}>
         <Grid container spacing={2} className={classes.metrics}>
           <Grid item md={2} style={{ padding: 20 }}>
-            <PieChart
+            <PieChartComponent
               title="Components"
               labels={["Running", "Pending", "Error"]}
               data={[pieChartData.componentSuccess, pieChartData.componentPending, pieChartData.componentError]}
             />
           </Grid>
           <Grid item md={2} style={{ padding: 20 }}>
-            <PieChart
+            <PieChartComponent
               title="Pods"
               labels={["Running", "Pending", "Error"]}
               data={[pieChartData.podSuccess, pieChartData.podPending, pieChartData.podError]}

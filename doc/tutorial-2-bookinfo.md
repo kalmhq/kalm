@@ -2,7 +2,7 @@
 
 After the hello-world demo, let's see a more real life one: bookinfo, it's an online book store composed by 4 micro services:
 
-1. Product page, the frontend of our bookstore
+1. product page, the frontend of our bookstore
 2. reviews, show the reviews of books
 3. details, show the details of books
 4. ratings, show the ratings of books
@@ -11,32 +11,26 @@ After the hello-world demo, let's see a more real life one: bookinfo, it's an on
 
 
 
-you can find the Kapp yaml file [here](https://github.com/Kapp-staging/Kapp/blob/doc-hello-world/controller/config/samples/core_v1alpha1_bookinfo.yaml).
+you can find the Kapp yaml file [here](https://github.com/Kapp-staging/Kapp/blob/doc-hello-world/controller/config/samples/core_v1alpha1_tutorial_2_bookinfo.yaml).
 
 To apply the config, go to directory of Kapp project, and run:
 
 ```shell
-kubectl apply -f controller/config/samples/core_v1alpha1_bookinfo.yaml
+kubectl apply -f controller/config/samples/core_v1alpha1_tutorial_2_bookinfo.yaml
 ```
 
 The file has serveral yaml configs within, after the walk-through of our previous hello-world demo, most parts in this file should be familiar to you.
 
-The namesapce and Kapp Application definition:
+The kapp-enabled namesapce:
 
 ```yaml
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: Kapp-bookinfo
+  name: kapp-bookinfo
   labels:
     istio-injection: enabled
----
-apiVersion: core.Kapp.dev/v1alpha1
-kind: Application
-metadata:
-  name: Kapp-bookinfo
-spec:
-  isActive: true
+    kapp-enabled: "true"
 ```
 
 
@@ -138,9 +132,7 @@ Kapp support 3 volumes types:
 
 
 
-Kapp tries to simplify the use of kubernetes, one way to do this is to hide the complex but not so often used concepts, and only expose the more common used concepts to our user, but when you want to use the less-common-used features in k8s, it's possible too, and this is done by plugins.
-
-in our previous hello-world demo, we see a Kapp buildin plugin, and you can implement your own plugins too:
+Kapp tries to simplify the use of kubernetes, one way to do this is to hide the complex but not so often used concepts, and only expose the more common used concepts to our user, but when you want to use the less-common-used features in k8s, it's possible too, and this is done by plugins:
 
 ```yaml
 apiVersion: core.Kapp.dev/v1alpha1
@@ -306,39 +298,33 @@ we bind component: `productpage` to our plugin: `http-health-probe`, and we set 
 
 
 
-Finally, it's the buildin plugin: `Kapp-builtin-application-plugin-ingress`:
+Finally, it's the `HttpRoute`:
 
 ```yaml
 apiVersion: core.kapp.dev/v1alpha1
-kind: ApplicationPlugin
+kind: HttpRoute
 metadata:
-  name: kapp-builtin-application-plugin-ingress
+  name: bookinfo
+  namespace: kapp-bookinfo
 spec:
-  src: |
-    function AfterApplicationSaved() {
-      __builtinApplicationPluginIngress();
-    }
-    ...
-  ...
+  hosts:
+    - "bookinfo.demo.com"
+  methods:
+    - GET
+    - POST
+  schemes:
+    - http
+  paths:
+    - /
+  destinations:
+    - host: productpage
+      weight: 1
+  stripPath: true
 ```
 
 We saw it in our hello-world demo, we use this to enable external access of our service.
 
-This time we assign a host name to our frontend page: `bookinfo.demo.com` in our bind
-
-```yaml
-apiVersion: core.kapp.dev/v1alpha1
-kind: ApplicationPluginBinding
-metadata:
-  name: kapp-builtin-application-plugin-ingress
-  namespace: kapp-bookinfo
-spec:
-  pluginName:  kapp-builtin-application-plugin-ingress
-  config:
-    hosts:
-      - "bookinfo.demo.com"
-    ...
-```
+This time we assign a host name to our frontend page: `bookinfo.demo.com`.
 
 We can try access our bookinfo fronend using commands:
 
