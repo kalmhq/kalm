@@ -223,7 +223,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     const component = application.get("components")?.get(index)!;
 
     return (
-      <ExpansionPanel>
+      <ExpansionPanel key={index}>
         <ExpansionPanelSummary
           style={{ padding: "0px 16px" }}
           expandIcon={<ExpandMoreIcon />}
