@@ -9,12 +9,11 @@ import {
   createComponentAction,
   deleteComponentAction,
   setIsSubmittingApplicationComponent,
-  updateApplicationAction,
   updateComponentAction
 } from "../../actions/application";
 import { ComponentLikeForm } from "../../forms/ComponentLike";
 import { RootState } from "../../reducers";
-import { Application, ApplicationComponent, SharedEnv } from "../../types/application";
+import { ApplicationComponent, SharedEnv } from "../../types/application";
 import { ApplicationEditDrawer } from "../../widgets/ApplicationEditDrawer";
 import { ComponentStatus } from "../../widgets/ComponentStatus";
 import { Loading } from "../../widgets/Loading";
@@ -88,13 +87,6 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
       this.setState({ changingComponent: false });
     }
   }
-
-  private submitApplication = async (application: Application) => {
-    // console.log("submitApplication", application.toJS());
-    const { dispatch } = this.props;
-
-    await dispatch(updateApplicationAction(application));
-  };
 
   private submitComponent = async (component: ApplicationComponent) => {
     // console.log("submitComponent", component.toJS());

@@ -20,7 +20,7 @@ import { withNamespace, withNamespaceProps } from "permission/Namespace";
 import React from "react";
 import { ThunkDispatch } from "redux-thunk";
 import { KappConsoleIcon, KappLogIcon } from "widgets/Icon";
-import { loadApplicationAction, deleteComponentAction } from "../../actions/application";
+import { deleteComponentAction, loadApplicationAction } from "../../actions/application";
 import { deletePod } from "../../actions/kubernetesApi";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "../../actions/notification";
 import { RootState } from "../../reducers";
@@ -42,7 +42,7 @@ import { generateQueryForPods } from "./Log";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      padding: theme.spacing(2)
+      // padding: theme.spacing(2)
     },
     componentRow: {
       paddingTop: theme.spacing(1.5),
@@ -552,6 +552,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
             <BigMemoryLineChart data={application.get("metrics")?.get("memory")} />
           </Grid>
         </Grid>
+
         {application
           .get("components")
           ?.map((_x, index) => this.renderComponentPanel(index))
