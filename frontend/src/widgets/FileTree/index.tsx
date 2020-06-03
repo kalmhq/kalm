@@ -58,7 +58,7 @@ const StyledTreeItem = withStyles((theme: any) => ({
     color: "white"
   },
   label: {
-    zIndex: -1
+    // zIndex: -1
   }
 }))((props: StyledTreeItemProps) => {
   const { dispatch, config, idChain, handleAdd, handleEdit, handleDuplicate, handleDelete } = props;

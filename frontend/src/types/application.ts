@@ -104,9 +104,12 @@ export type ApplicationComponentDetailsList = Immutable.List<ApplicationComponen
 
 export interface ApplicationContent {
   name: string;
-  isActive: boolean;
+  // isActive: boolean;
   // sharedEnvs: Immutable.List<SharedEnv>;
   // plugins?: any;
+
+  // for applciation form submit buttons
+  nextAddComponent?: boolean;
 
   components: ApplicationComponentDetailsList;
 }

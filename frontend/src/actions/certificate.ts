@@ -1,32 +1,29 @@
+import Immutable from "immutable";
 import {
-  LOAD_CERTIFICATES_FULFILLED,
-  LOAD_CERTIFICATES_PENDING,
-  LOAD_CERTIFICATES_FAILED,
-  LOAD_CERTIFICATE_ISSUERS_PENDING,
-  LOAD_CERTIFICATE_ISSUERS_FULFILLED,
-  SET_IS_SUBMITTING_CERTIFICATE,
-  SetIsSubmittingCertificate,
-  DELETE_CERTIFICATE,
-  SET_IS_SHOW_ADD_CERTIFICATE_MODAL,
-  SetIsShowAddCertificateModal,
   CertificateFormType,
-  selfManaged,
   CertificateIssuerFormType,
   CREATE_CERTIFICATE,
-  CREATE_CERTIFICATE_ISSUER
+  CREATE_CERTIFICATE_ISSUER,
+  DELETE_CERTIFICATE,
+  LOAD_CERTIFICATES_FAILED,
+  LOAD_CERTIFICATES_FULFILLED,
+  LOAD_CERTIFICATES_PENDING,
+  LOAD_CERTIFICATE_ISSUERS_FULFILLED,
+  LOAD_CERTIFICATE_ISSUERS_PENDING,
+  selfManaged,
+  SetIsShowAddCertificateModal,
+  SetIsSubmittingCertificate,
+  SET_IS_SHOW_ADD_CERTIFICATE_MODAL,
+  SET_IS_SUBMITTING_CERTIFICATE
 } from "types/certificate";
-import { StatusFailure, ThunkResult } from "../types";
-import { setErrorNotificationAction } from "./notification";
+import { ThunkResult } from "../types";
 import {
-  getCertificateList,
   createCertificate,
+  createCertificateIssuer,
   deleteCertificate,
   getCertificateIssuerList,
-  createCertificateIssuer
+  getCertificateList
 } from "./kubernetesApi";
-import { resErrorsToSubmitErrors } from "utils";
-import { SubmissionError } from "redux-form";
-import Immutable from "immutable";
 
 export const setIsShowAddCertificateModal = (isShowAddCertificateModal: boolean): SetIsShowAddCertificateModal => {
   return {
@@ -39,16 +36,7 @@ export const setIsShowAddCertificateModal = (isShowAddCertificateModal: boolean)
 
 export const deleteCertificateAction = (name: string): ThunkResult<Promise<void>> => {
   return async dispatch => {
-    try {
-      await deleteCertificate(name);
-    } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
-      return;
-    }
+    await deleteCertificate(name);
 
     dispatch({
       type: DELETE_CERTIFICATE,
@@ -69,12 +57,8 @@ export const loadCertificates = (): ThunkResult<Promise<void>> => {
         }
       });
     } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
       dispatch({ type: LOAD_CERTIFICATES_FAILED });
+      throw e;
     }
   };
 };
@@ -91,12 +75,8 @@ export const loadCertificateIssuers = (): ThunkResult<Promise<void>> => {
         }
       });
     } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
       dispatch({ type: LOAD_CERTIFICATES_FAILED });
+      throw e;
     }
   };
 };
@@ -104,27 +84,13 @@ export const loadCertificateIssuers = (): ThunkResult<Promise<void>> => {
 export const createCertificateAction = (certificateContent: CertificateFormType): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch(setIsSubmittingCertificate(true));
-    try {
-      const certificate = await createCertificate(
-        certificateContent.set("isSelfManaged", certificateContent.get("managedType") === selfManaged)
-      );
-      dispatch({ type: CREATE_CERTIFICATE, payload: { certificate } });
-    } catch (e) {
-      console.log(e);
-      if (e.response && e.response.data.errors && e.response.data.errors.length > 0) {
-        const submitErrors = resErrorsToSubmitErrors(e.response.data.errors);
-        throw new SubmissionError(submitErrors);
-      } else if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
-      return;
-    } finally {
-      setTimeout(() => {
-        dispatch(setIsSubmittingCertificate(false));
-      }, 2000);
-    }
+    setTimeout(() => {
+      dispatch(setIsSubmittingCertificate(false));
+    }, 2000);
+    const certificate = await createCertificate(
+      certificateContent.set("isSelfManaged", certificateContent.get("managedType") === selfManaged)
+    );
+    dispatch({ type: CREATE_CERTIFICATE, payload: { certificate } });
   };
 };
 
@@ -133,25 +99,12 @@ export const createCertificateIssuerAction = (
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch(setIsSubmittingCertificate(true));
-    try {
-      const certificateIssuer = await createCertificateIssuer(certificateIssuerContent);
-      dispatch({ type: CREATE_CERTIFICATE_ISSUER, payload: { certificateIssuer } });
-    } catch (e) {
-      console.log(e);
-      if (e.response && e.response.data.errors && e.response.data.errors.length > 0) {
-        const submitErrors = resErrorsToSubmitErrors(e.response.data.errors);
-        throw new SubmissionError(submitErrors);
-      } else if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
-      return;
-    } finally {
-      setTimeout(() => {
-        dispatch(setIsSubmittingCertificate(false));
-      }, 2000);
-    }
+    setTimeout(() => {
+      dispatch(setIsSubmittingCertificate(false));
+    }, 2000);
+
+    const certificateIssuer = await createCertificateIssuer(certificateIssuerContent);
+    dispatch({ type: CREATE_CERTIFICATE_ISSUER, payload: { certificateIssuer } });
   };
 };
 

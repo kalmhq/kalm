@@ -1,6 +1,5 @@
-import { Button, createStyles, Switch, TextField, Theme, Tooltip, WithStyles, withStyles } from "@material-ui/core";
+import { Button, createStyles, TextField, Theme, Tooltip, WithStyles, withStyles } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
-import { HelpIcon, KappConsoleIcon, KappLogIcon } from "widgets/Icon";
 import { closeDialogAction, openDialogAction } from "actions/dialog";
 import { push } from "connected-react-router";
 import MaterialTable from "material-table";
@@ -13,26 +12,22 @@ import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
 import { ControlledDialog } from "widgets/ControlledDialog";
-import {
-  deleteApplicationAction,
-  duplicateApplicationAction,
-  loadApplicationAction,
-  loadApplicationsAction,
-  updateApplicationAction
-} from "../../actions/application";
+import { HelpIcon, KappConsoleIcon, KappLogIcon } from "widgets/Icon";
+import { deleteApplicationAction, duplicateApplicationAction, loadApplicationAction } from "../../actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "../../actions/notification";
 import { duplicateApplicationName, getApplicationByName } from "../../selectors/application";
+import { primaryColor } from "../../theme";
 import { ApplicationDetails } from "../../types/application";
 import { customSearchForImmutable } from "../../utils/tableSearch";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
 import { FoldButtonGroup } from "../../widgets/FoldButtonGroup";
-import { H4, Body } from "../../widgets/Label";
 import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
+import { Body, H4 } from "../../widgets/Label";
 import { Loading } from "../../widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "../../widgets/SmallLineChart";
 import { BasePage } from "../BasePage";
 import { ApplicationListDataWrapper, WithApplicationsListDataProps } from "./ListDataWrapper";
-import { primaryColor } from "../../theme";
+import { formatDate } from "../../utils";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -44,13 +39,6 @@ const styles = (theme: Theme) =>
       "& tr.MuiTableRow-root td": {
         verticalAlign: "middle"
       }
-    },
-    expansionPanel: {
-      boxShadow: "none"
-    },
-    panelSummary: {
-      height: "48px !important",
-      minHeight: "48px !important"
     },
     componentWrapper: {
       minWidth: "120px"
@@ -72,6 +60,12 @@ const styles = (theme: Theme) =>
     },
     secondHeaderRightItem: {
       marginLeft: 20
+    },
+    emptyWrapper: {
+      width: "100%",
+      display: "flex",
+      justifyContent: "center",
+      paddingTop: "110px"
     }
   });
 
@@ -91,8 +85,8 @@ interface Props
     ReturnType<typeof mapStateToProps> {}
 
 interface State {
-  isActiveConfirmDialogOpen: boolean;
-  switchingIsActiveApplicationListItem?: ApplicationDetails;
+  // isActiveConfirmDialogOpen: boolean;
+  // switchingIsActiveApplicationListItem?: ApplicationDetails;
   isDeleteConfirmDialogOpen: boolean;
   deletingApplicationListItem?: ApplicationDetails;
   isDuplicateConfirmDialogOpen: boolean;
@@ -109,8 +103,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   private tableRef: React.RefObject<MaterialTable<ApplicationDetails>> = React.createRef();
 
   private defaultState = {
-    isActiveConfirmDialogOpen: false,
-    switchingIsActiveApplicationListItem: undefined,
+    // isActiveConfirmDialogOpen: false,
+    // switchingIsActiveApplicationListItem: undefined,
     isDeleteConfirmDialogOpen: false,
     deletingApplicationListItem: undefined,
     isDuplicateConfirmDialogOpen: false,
@@ -125,53 +119,53 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     this.duplicateApplicationNamespaceRef = React.createRef();
   }
 
-  private showSwitchingIsActiveConfirmDialog = (applicationListItem: ApplicationDetails) => {
-    this.setState({
-      isActiveConfirmDialogOpen: true,
-      switchingIsActiveApplicationListItem: applicationListItem
-    });
-  };
+  // private showSwitchingIsActiveConfirmDialog = (applicationListItem: ApplicationDetails) => {
+  //   this.setState({
+  //     isActiveConfirmDialogOpen: true,
+  //     switchingIsActiveApplicationListItem: applicationListItem
+  //   });
+  // };
 
-  private closeSwitchingIsActiveConfirmDialog = () => {
-    this.setState(this.defaultState);
-  };
+  // private closeSwitchingIsActiveConfirmDialog = () => {
+  //   this.setState(this.defaultState);
+  // };
 
-  private renderSwitchingIsActiveConfirmDialog = () => {
-    const { isActiveConfirmDialogOpen, switchingIsActiveApplicationListItem } = this.state;
+  // private renderSwitchingIsActiveConfirmDialog = () => {
+  //   const { isActiveConfirmDialogOpen, switchingIsActiveApplicationListItem } = this.state;
 
-    let title, content;
+  //   let title, content;
 
-    if (switchingIsActiveApplicationListItem && switchingIsActiveApplicationListItem.get("isActive")) {
-      title = "Are you sure to disabled this application?";
-      content =
-        "Disabling this application will delete all running resources in your cluster. TODO: (will disk be deleted? will xxx deleted?)";
-    } else {
-      title = "Are you sure to active this application?";
-      content = "Enabling this application will create xxxx resources. They will spend xxx CPU, xxx Memory. ";
-    }
+  //   if (switchingIsActiveApplicationListItem && switchingIsActiveApplicationListItem.get("isActive")) {
+  //     title = "Are you sure to disabled this application?";
+  //     content =
+  //       "Disabling this application will delete all running resources in your cluster. TODO: (will disk be deleted? will xxx deleted?)";
+  //   } else {
+  //     title = "Are you sure to active this application?";
+  //     content = "Enabling this application will create xxxx resources. They will spend xxx CPU, xxx Memory. ";
+  //   }
 
-    return (
-      <ConfirmDialog
-        open={isActiveConfirmDialogOpen}
-        onClose={this.closeSwitchingIsActiveConfirmDialog}
-        title={title}
-        content={content}
-        onAgree={this.confirmSwitchIsActive}
-      />
-    );
-  };
+  //   return (
+  //     <ConfirmDialog
+  //       open={isActiveConfirmDialogOpen}
+  //       onClose={this.closeSwitchingIsActiveConfirmDialog}
+  //       title={title}
+  //       content={content}
+  //       onAgree={this.confirmSwitchIsActive}
+  //     />
+  //   );
+  // };
 
-  private confirmSwitchIsActive = async () => {
-    const { dispatch } = this.props;
-    const { switchingIsActiveApplicationListItem } = this.state;
+  // private confirmSwitchIsActive = async () => {
+  //   const { dispatch } = this.props;
+  //   const { switchingIsActiveApplicationListItem } = this.state;
 
-    if (switchingIsActiveApplicationListItem) {
-      await dispatch(loadApplicationAction(switchingIsActiveApplicationListItem?.get("name")));
-      const application = getApplicationByName(switchingIsActiveApplicationListItem?.get("name"));
-      await dispatch(updateApplicationAction(application.set("isActive", !application.get("isActive"))));
-      dispatch(loadApplicationsAction());
-    }
-  };
+  //   if (switchingIsActiveApplicationListItem) {
+  //     await dispatch(loadApplicationAction(switchingIsActiveApplicationListItem?.get("name")));
+  //     const application = getApplicationByName(switchingIsActiveApplicationListItem?.get("name"));
+  //     await dispatch(updateApplicationAction(application.set("isActive", !application.get("isActive"))));
+  //     dispatch(loadApplicationsAction());
+  //   }
+  // };
 
   private showDuplicateConfirmDialog = (duplicatingApplicationListItem: ApplicationDetails) => {
     this.setState({
@@ -227,7 +221,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         let newApplication = getApplicationByName(duplicatingApplicationListItem.get("name"));
 
         newApplication = newApplication.set("name", this.duplicateApplicationNameRef.current.value);
-        newApplication = newApplication.set("isActive", false);
 
         dispatch(duplicateApplicationAction(newApplication));
       }
@@ -291,19 +284,19 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderEnable = (applicationListItem: RowData) => {
-    return (
-      <Switch
-        checked={applicationListItem.get("isActive")}
-        onChange={() => {
-          this.showSwitchingIsActiveConfirmDialog(applicationListItem);
-        }}
-        value="checkedB"
-        color="primary"
-        inputProps={{ "aria-label": "active app.ication" }}
-      />
-    );
-  };
+  // private renderEnable = (applicationListItem: RowData) => {
+  //   return (
+  //     <Switch
+  //       checked={applicationListItem.get("isActive")}
+  //       onChange={() => {
+  //         this.showSwitchingIsActiveConfirmDialog(applicationListItem);
+  //       }}
+  //       value="checkedB"
+  //       color="primary"
+  //       inputProps={{ "aria-label": "active app.ication" }}
+  //     />
+  //   );
+  // };
 
   private renderCreatedTime = (applicationDetails: RowData) => {
     let createdAt = new Date(0);
@@ -319,7 +312,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         }
       });
     });
-    const createdAtString = createdAt <= new Date(0) ? "-" : createdAt.toISOString();
+    const createdAtString = createdAt <= new Date(0) ? "-" : formatDate(createdAt);
     return <Body>{createdAtString}</Body>;
   };
 
@@ -554,14 +547,14 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         iconName: "edit",
         requiredRole: "writer"
       },
-      {
-        text: "Duplicate",
-        onClick: () => {
-          this.showDuplicateConfirmDialog(rowData);
-        },
-        iconName: "file_copy",
-        requiredRole: "writer"
-      },
+      // {
+      //   text: "Duplicate",
+      //   onClick: () => {
+      //     this.showDuplicateConfirmDialog(rowData);
+      //   },
+      //   iconName: "file_copy",
+      //   requiredRole: "writer"
+      // },
       {
         text: "Delete",
         onClick: () => {
@@ -571,22 +564,22 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         requiredRole: "writer"
       }
     ];
-    let publishItem = {
-      text: "",
-      onClick: () => {
-        this.showSwitchingIsActiveConfirmDialog(rowData);
-      },
-      iconName: "delete",
-      requiredRole: "writer"
-    };
-    if (rowData.get("isActive")) {
-      publishItem.text = "Uninstall";
-      publishItem.iconName = "workoff";
-    } else {
-      publishItem.text = "Install";
-      publishItem.iconName = "work";
-    }
-    options.push(publishItem);
+    // let publishItem = {
+    //   text: "",
+    //   onClick: () => {
+    //     this.showSwitchingIsActiveConfirmDialog(rowData);
+    //   },
+    //   iconName: "delete",
+    //   requiredRole: "writer"
+    // };
+    // if (rowData.get("isActive")) {
+    //   publishItem.text = "Uninstall";
+    //   publishItem.iconName = "workoff";
+    // } else {
+    //   publishItem.text = "Install";
+    //   publishItem.iconName = "work";
+    // }
+    // options.push(publishItem);
     return <FoldButtonGroup options={options} />;
   };
 
@@ -708,8 +701,25 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     return columns;
   }
 
+  private renderEmpty() {
+    const { dispatch, classes } = this.props;
+
+    return (
+      <div className={classes.emptyWrapper}>
+        <CustomizedButton
+          color="primary"
+          size="large"
+          onClick={() => {
+            dispatch(push(`/applications/new`));
+          }}>
+          Create your first application
+        </CustomizedButton>
+      </div>
+    );
+  }
+
   public render() {
-    const { classes, isLoading, isFirstLoaded } = this.props;
+    const { classes, isLoading, isFirstLoaded, applications } = this.props;
 
     return (
       <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
@@ -717,10 +727,12 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         {this.renderExternalEndpointsDialog()}
         {this.renderDeleteConfirmDialog()}
         {this.renderDuplicateConfirmDialog()}
-        {this.renderSwitchingIsActiveConfirmDialog()}
+        {/* {this.renderSwitchingIsActiveConfirmDialog()} */}
         <div className={classes.root}>
           {isLoading && !isFirstLoaded ? (
             <Loading />
+          ) : applications.size === 0 ? (
+            this.renderEmpty()
           ) : (
             <MaterialTable
               tableRef={this.tableRef}
