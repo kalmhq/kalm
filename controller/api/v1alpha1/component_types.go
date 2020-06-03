@@ -29,8 +29,18 @@ const (
 
 type PodAffinityType string
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
+type PreInjectFile struct {
+	// the content of the file
+	Content string `json:"content"`
+
+	// To support binary content, it allows set base64 encoded data into `Content` field
+	// and set this flag to `true`. Binary data will be restored instead of plain string in `Content`.
+	Base64 bool `json:"base64,omitempty"`
+
+	MountPath string `json:"mountPath"`
+
+	Readonly bool `json:"readonly,omitempty"`
+}
 
 // ComponentSpec defines the desired state of Component
 type ComponentSpec struct {
@@ -87,6 +97,8 @@ type ComponentSpec struct {
 	Volumes []Volume `json:"volumes,omitempty"`
 
 	RunnerPermission *RunnerPermission `json:"runnerPermission,omitempty"`
+
+	PreInjectedFiles []PreInjectFile `json:"preInjectedFiles,omitempty"`
 
 	// +optional
 	// Deprecated
