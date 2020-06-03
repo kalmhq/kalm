@@ -2,7 +2,6 @@ import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import { Theme } from "pretty-format/build/types";
 import React from "react";
 import { SecondHeader } from "../../layout/SecondHeader";
-import ScrollContainer from "../../widgets/ScrollContainer";
 
 export const LEFT_SECTION_WIDTH = 300;
 
@@ -43,7 +42,8 @@ export class BasePageRaw extends React.PureComponent<BasePageProps> {
         {leftDrawer}
         <div className={classes.rightSection}>
           <div className={classes.content}>
-            {noScrollContainer ? children : <ScrollContainer>{children}</ScrollContainer>}
+            {/*{noScrollContainer ? children : <ScrollContainer>{children}</ScrollContainer>}*/}
+            {children}
           </div>
         </div>
       </div>

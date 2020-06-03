@@ -100,6 +100,13 @@ export interface VolumeContent {
   persistentVolumeClaimName: string;
 }
 
+export type PreInjectedFile = ImmutableMap<{
+  content: string;
+  mountPath: string;
+  base64?: boolean;
+  readonly?: boolean;
+}>;
+
 export type Volume = ImmutableMap<VolumeContent>;
 
 export type ConfigMount = ImmutableMap<{
@@ -157,6 +164,7 @@ export interface ComponentLikeContent {
   volumes?: Immutable.List<Volume>;
   configs?: Immutable.List<ConfigMount>;
   plugins?: Immutable.List<PluginType>;
+  preInjectedFiles?: Immutable.List<PreInjectedFile>;
   livenessProbe?: Probe;
   ReadinessProbe?: Probe;
   nodeSelectorLabels?: NodeSelectorLabels;

@@ -1,6 +1,8 @@
 import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
 import React, { ChangeEvent } from "react";
 import { WrappedFieldProps } from "redux-form";
+import { InputAdornment } from "@material-ui/core";
+import { KappConsoleIcon } from "../../widgets/Icon";
 
 interface Props {}
 
@@ -25,6 +27,39 @@ export const KRenderTextField = ({
       disabled={disabled}
       required={required}
       error={showError}
+      helperText={showError ? error : helperText ? helperText : ""}
+      margin="dense"
+      variant="outlined"
+      value={input.value}
+      onChange={(event: ChangeEvent<HTMLInputElement>) => input.onChange(event.target.value)}
+    />
+  );
+};
+
+export const KRenderTextareaField = ({
+  input,
+  label,
+  helperText,
+  placeholder,
+  required,
+  disabled,
+  meta: { touched, invalid, error },
+  ...custom
+}: FilledTextFieldProps & WrappedFieldProps & Props) => {
+  const showError = !!error && touched;
+
+  return (
+    <TextField
+      fullWidth
+      multiline
+      label={label}
+      placeholder={placeholder}
+      disabled={disabled}
+      required={required}
+      error={showError}
+      InputProps={{
+        rows: 4
+      }}
       helperText={showError ? error : helperText ? helperText : ""}
       margin="dense"
       variant="outlined"
@@ -62,6 +97,9 @@ export const RenderComplexValueTextField = ({
       required={required}
       error={showError}
       helperText={showError ? error : helperText ? helperText : ""}
+      InputLabelProps={{
+        shrink: true
+      }}
       margin="dense"
       variant="outlined"
       onChange={(event: any) => {
@@ -70,6 +108,48 @@ export const RenderComplexValueTextField = ({
           : input.onChange(event.target.value);
       }}
       defaultValue={formValueToEditValue ? formValueToEditValue(input.value) : input.value}
+      // {...custom}
+    />
+  );
+};
+
+export const KRenderCommandTextField = ({
+  input,
+  label,
+  helperText,
+  placeholder,
+  required,
+  disabled,
+  meta: { touched, invalid, error },
+  ...custom
+}: FilledTextFieldProps & WrappedFieldProps & ComplexValueTextFieldProps) => {
+  const showError = !!error && touched;
+
+  return (
+    <TextField
+      fullWidth
+      label={label}
+      placeholder={placeholder}
+      disabled={disabled}
+      required={required}
+      error={showError}
+      helperText={showError ? error : helperText ? helperText : ""}
+      InputLabelProps={{
+        shrink: true
+      }}
+      InputProps={{
+        startAdornment: (
+          <InputAdornment position="start">
+            <KappConsoleIcon />
+          </InputAdornment>
+        )
+      }}
+      margin="dense"
+      variant="outlined"
+      onChange={(event: any) => {
+        input.onChange(event.target.value);
+      }}
+      value={input.value}
       // {...custom}
     />
   );

@@ -4,14 +4,15 @@ import { push } from "connected-react-router";
 import { RouteForm } from "forms/Route";
 import React from "react";
 import { connect } from "react-redux";
-import { ThunkDispatch } from "redux-thunk";
 import { AllHttpMethods, HttpRouteForm, methodsModeAll, newEmptyRouteForm } from "types/route";
 import { ApplicationViewDrawer } from "widgets/ApplicationViewDrawer";
 import { RootState } from "../../reducers";
-import { Actions } from "../../types";
+import { TDispatchProp } from "../../types";
 import { BasePage } from "../BasePage";
 import { Namespaces } from "widgets/Namespaces";
 import Container from "@material-ui/core/Container";
+import queryString from "query-string";
+import { RouteComponentProps } from "react-router";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -20,18 +21,28 @@ const styles = (theme: Theme) =>
     }
   });
 
-interface Props extends WithStyles<typeof styles> {
-  dispatch: ThunkDispatch<RootState, undefined, Actions>;
-}
+const mapStateToProps = (state: RootState, ownProps: RouteComponentProps) => {
+  const query = queryString.parse(ownProps.location.search);
+  const activeNamespace = state.get("namespaces").get("active");
+
+  return {
+    namespace: (query.namespace as string) || activeNamespace
+  };
+};
+
+interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
 class RouteNewRaw extends React.PureComponent<Props> {
   private submit = async (route: HttpRouteForm) => {
+    const { namespace, dispatch } = this.props;
+
     try {
       if (route.get("methodsMode") === methodsModeAll) {
         route = route.set("methods", AllHttpMethods);
       }
-      await this.props.dispatch(createRoute(route.get("name"), route.get("namespace"), route));
-      this.props.dispatch(push("/routes"));
+      route = route.set("namespace", namespace);
+      await dispatch(createRoute(route.get("name"), route.get("namespace"), route));
+      dispatch(push("/routes"));
     } catch (e) {
       console.log(e);
     }
@@ -48,4 +59,4 @@ class RouteNewRaw extends React.PureComponent<Props> {
   }
 }
 
-export const RouteNew = withStyles(styles)(connect()(RouteNewRaw));
+export const RouteNew = withStyles(styles)(connect(mapStateToProps)(RouteNewRaw));

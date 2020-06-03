@@ -31,7 +31,7 @@ import { ComponentLike, workloadTypeCronjob, workloadTypeServer } from "../../ty
 import { HelperContainer } from "../../widgets/Helper";
 import { KRadioGroupRender } from "../Basic/radio";
 import { RenderSelectField } from "../Basic/select";
-import { KRenderTextField, RenderComplexValueTextField } from "../Basic/textfield";
+import { KRenderCommandTextField, KRenderTextField, RenderComplexValueTextField } from "../Basic/textfield";
 import { NormalizeNumber } from "../normalizer";
 import { ValidatorCPU, ValidatorMemory, ValidatorName, ValidatorRequired, ValidatorSchedule } from "../validator";
 // import { Configs } from "./Configs";
@@ -40,6 +40,7 @@ import { RenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
 import { Volumes } from "./Volumes";
+import { PreInjectedFiles } from "./preInjectedFiles";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
@@ -133,6 +134,7 @@ interface State {
   currentTab: number;
 }
 
+const Configurations = "Configurations";
 const Resources = "Resources";
 const Health = "Health";
 const Networking = "Networking";
@@ -140,7 +142,7 @@ const NodeScheduling = "Node Scheduling";
 const UpgradePolicy = "Upgrade Policy";
 
 class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
-  private tabs = [Resources, Health, Networking, NodeScheduling, UpgradePolicy];
+  private tabs = [Configurations, Resources, Health, Networking, NodeScheduling, UpgradePolicy];
 
   constructor(props: Props) {
     super(props);
@@ -245,6 +247,35 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
+  private preInjectedFiles = () => {
+    const { classes } = this.props;
+
+    const helperContainer = (
+      <HelperContainer>
+        <Typography>
+          You can inject some files on customized paths before the process is running. This is helpful when the program
+          need configuration files.
+        </Typography>
+      </HelperContainer>
+    );
+
+    return (
+      <>
+        <Grid item xs={12} sm={12} md={12}>
+          <SectionTitle>
+            <H5>Inject Configuration Files</H5>
+            <Tooltip title={helperContainer}>
+              <HelpIcon fontSize="small" className={classes.helperTextIcon} />
+            </Tooltip>
+          </SectionTitle>
+        </Grid>
+        <Grid item xs={12} sm={12} md={12}>
+          <PreInjectedFiles />
+        </Grid>
+      </>
+    );
+  };
+
   private renderEnvs() {
     const { classes, sharedEnv } = this.props;
     const helperContainer = (
@@ -254,6 +285,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           built into the component. An environment variable is made up of a name/value pair, it also support combine a
           dynamic value associated with other component later in a real running application. Learn More.
         </Typography>
+
         <MList dense={true}>
           <ListItem>
             <ListItemText
@@ -675,47 +707,32 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   //   );
   // }
 
-  private renderLaunchItems() {
+  private renderCommandAndArgs() {
     return (
       <>
-        <Grid item xs={12} sm={12} md={12}>
-          <SectionTitle>
-            <H5>Launch Items</H5>
-          </SectionTitle>
-        </Grid>
+        <Typography variant="subtitle2">Command</Typography>
 
-        <Grid item xs={6} sm={6} md={6}>
-          <Field
-            component={RenderComplexValueTextField}
-            name="command"
-            margin
-            label="Command (Optional)"
-            helperText='Eg: "/bin/app", "rails server".'
-            formValueToEditValue={(value: Immutable.List<string>) => {
-              return value && value.toArray().join(" ") ? value.toArray().join(" ") : "";
-            }}
-            editValueToFormValue={(value: any) => {
-              return value ? Immutable.List([value]) : Immutable.List([]);
-            }}
-          />
-        </Grid>
-
-        <Grid item xs={6} sm={6} md={6}>
-          <Field
-            component={RenderComplexValueTextField}
-            name="args"
-            margin
-            label="Arguments (Optional)"
-            helperText='Eg: "--port=80"'
-            formValueToEditValue={(value: Immutable.List<string>) => {
-              return value && value.toArray().join(" ") ? value.toArray().join(" ") : "";
-            }}
-            editValueToFormValue={(value: string) => {
-              return value ? Immutable.List(value.split(" ")) : Immutable.List([]);
-            }}
-          />
-        </Grid>
+        <Field
+          component={KRenderCommandTextField}
+          name="command"
+          label="Command"
+          placeholder="eg: `npm run start` or `bundle exec rails server`"
+          helperText="If the image's default command and entrypoint works. You can leave this field blank."
+        />
       </>
+    );
+  }
+
+  private renderConfigurations() {
+    return (
+      <div>
+        <Typography variant="body1" component="p">
+          Customize the start-up process of this component.
+        </Typography>
+        {this.renderCommandAndArgs()}
+        {this.renderEnvs()}
+        {this.preInjectedFiles()}
+      </div>
     );
   }
 
@@ -764,8 +781,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             </div>
           </Grid>
 
-          {this.renderLaunchItems()}
-          {this.renderEnvs()}
           {this.renderVolumes()}
           {/* {this.renderConfigs()} */}
         </Grid>
@@ -893,6 +908,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
     return (
       <>
+        <div className={`${this.tabs[this.state.currentTab] === Configurations ? "" : classes.displayNone}`}>
+          {this.renderConfigurations()}
+        </div>
         <div className={`${this.tabs[this.state.currentTab] === Resources ? "" : classes.displayNone}`}>
           {this.renderResources()}
         </div>
@@ -991,7 +1009,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
   private renderDeployButton() {
     const { classes } = this.props;
-
     return (
       <Grid container spacing={2}>
         <Grid item xs={6} sm={6} md={6}>
