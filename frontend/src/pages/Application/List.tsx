@@ -85,8 +85,6 @@ interface Props
     ReturnType<typeof mapStateToProps> {}
 
 interface State {
-  // isActiveConfirmDialogOpen: boolean;
-  // switchingIsActiveApplicationListItem?: ApplicationDetails;
   isDeleteConfirmDialogOpen: boolean;
   deletingApplicationListItem?: ApplicationDetails;
   isDuplicateConfirmDialogOpen: boolean;
@@ -103,8 +101,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   private tableRef: React.RefObject<MaterialTable<ApplicationDetails>> = React.createRef();
 
   private defaultState = {
-    // isActiveConfirmDialogOpen: false,
-    // switchingIsActiveApplicationListItem: undefined,
     isDeleteConfirmDialogOpen: false,
     deletingApplicationListItem: undefined,
     isDuplicateConfirmDialogOpen: false,
@@ -118,54 +114,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     this.duplicateApplicationNameRef = React.createRef();
     this.duplicateApplicationNamespaceRef = React.createRef();
   }
-
-  // private showSwitchingIsActiveConfirmDialog = (applicationListItem: ApplicationDetails) => {
-  //   this.setState({
-  //     isActiveConfirmDialogOpen: true,
-  //     switchingIsActiveApplicationListItem: applicationListItem
-  //   });
-  // };
-
-  // private closeSwitchingIsActiveConfirmDialog = () => {
-  //   this.setState(this.defaultState);
-  // };
-
-  // private renderSwitchingIsActiveConfirmDialog = () => {
-  //   const { isActiveConfirmDialogOpen, switchingIsActiveApplicationListItem } = this.state;
-
-  //   let title, content;
-
-  //   if (switchingIsActiveApplicationListItem && switchingIsActiveApplicationListItem.get("isActive")) {
-  //     title = "Are you sure to disabled this application?";
-  //     content =
-  //       "Disabling this application will delete all running resources in your cluster. TODO: (will disk be deleted? will xxx deleted?)";
-  //   } else {
-  //     title = "Are you sure to active this application?";
-  //     content = "Enabling this application will create xxxx resources. They will spend xxx CPU, xxx Memory. ";
-  //   }
-
-  //   return (
-  //     <ConfirmDialog
-  //       open={isActiveConfirmDialogOpen}
-  //       onClose={this.closeSwitchingIsActiveConfirmDialog}
-  //       title={title}
-  //       content={content}
-  //       onAgree={this.confirmSwitchIsActive}
-  //     />
-  //   );
-  // };
-
-  // private confirmSwitchIsActive = async () => {
-  //   const { dispatch } = this.props;
-  //   const { switchingIsActiveApplicationListItem } = this.state;
-
-  //   if (switchingIsActiveApplicationListItem) {
-  //     await dispatch(loadApplicationAction(switchingIsActiveApplicationListItem?.get("name")));
-  //     const application = getApplicationByName(switchingIsActiveApplicationListItem?.get("name"));
-  //     await dispatch(updateApplicationAction(application.set("isActive", !application.get("isActive"))));
-  //     dispatch(loadApplicationsAction());
-  //   }
-  // };
 
   private showDuplicateConfirmDialog = (duplicatingApplicationListItem: ApplicationDetails) => {
     this.setState({
@@ -283,20 +231,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
       </Link>
     );
   };
-
-  // private renderEnable = (applicationListItem: RowData) => {
-  //   return (
-  //     <Switch
-  //       checked={applicationListItem.get("isActive")}
-  //       onChange={() => {
-  //         this.showSwitchingIsActiveConfirmDialog(applicationListItem);
-  //       }}
-  //       value="checkedB"
-  //       color="primary"
-  //       inputProps={{ "aria-label": "active app.ication" }}
-  //     />
-  //   );
-  // };
 
   private renderCreatedTime = (applicationDetails: RowData) => {
     let createdAt = new Date(0);
@@ -564,22 +498,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         requiredRole: "writer"
       }
     ];
-    // let publishItem = {
-    //   text: "",
-    //   onClick: () => {
-    //     this.showSwitchingIsActiveConfirmDialog(rowData);
-    //   },
-    //   iconName: "delete",
-    //   requiredRole: "writer"
-    // };
-    // if (rowData.get("isActive")) {
-    //   publishItem.text = "Uninstall";
-    //   publishItem.iconName = "workoff";
-    // } else {
-    //   publishItem.text = "Install";
-    //   publishItem.iconName = "work";
-    // }
-    // options.push(publishItem);
     return <FoldButtonGroup options={options} />;
   };
 
@@ -628,18 +546,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         customFilterAndSearch: customSearchForImmutable
       },
       { title: "Pods Status", field: "status", sorting: false, render: this.renderStatus },
-      // {
-      //   title: (
-      //     <Tooltip title="Addresses can be used to access components in each application. Only visible inside the cluster.">
-      //       <FlexRowItemCenterBox width="auto">
-      //         Internal Endpoints <HelpIcon fontSize="small" />
-      //       </FlexRowItemCenterBox>
-      //     </Tooltip>
-      //   ),
-      //   field: "internalEndpoints",
-      //   sorting: false,
-      //   render: this.renderInternalEndpoints
-      // },
       {
         title: (
           <Tooltip title="Addresses can be used to access your services publicly.">
@@ -668,13 +574,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           textAlign: "center"
         }
       },
-      // {
-      //   title: "Enable",
-      //   field: "active",
-      //   sorting: false,
-      //   render: this.renderEnable,
-      //   hidden: !hasWriterRole
-      // },
       {
         title: "Created On",
         field: "active",
