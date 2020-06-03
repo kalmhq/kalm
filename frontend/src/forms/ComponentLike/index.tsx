@@ -118,7 +118,7 @@ interface RawProps {
   showSubmitButton?: boolean;
   submitButtonText?: string;
   sharedEnv?: Immutable.List<SharedEnv>;
-  currentTab?: string;
+  currentTabIndex?: string;
   // submitAppplicationErrors?: Immutable.Map<string, any>;
 }
 
@@ -130,7 +130,7 @@ export interface Props
     RawProps {}
 
 interface State {
-  currentTab: number;
+  currentTabIndex: number;
 }
 
 const Resources = "Resources";
@@ -146,7 +146,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     super(props);
 
     this.state = {
-      currentTab: 0
+      currentTabIndex: 0
     };
   }
 
@@ -893,19 +893,19 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
     return (
       <>
-        <div className={`${this.tabs[this.state.currentTab] === Resources ? "" : classes.displayNone}`}>
+        <div className={`${this.tabs[this.state.currentTabIndex] === Resources ? "" : classes.displayNone}`}>
           {this.renderResources()}
         </div>
-        <div className={`${this.tabs[this.state.currentTab] === Health ? "" : classes.displayNone}`}>
+        <div className={`${this.tabs[this.state.currentTabIndex] === Health ? "" : classes.displayNone}`}>
           {this.renderHealth()}
         </div>
-        <div className={`${this.tabs[this.state.currentTab] === Networking ? "" : classes.displayNone}`}>
+        <div className={`${this.tabs[this.state.currentTabIndex] === Networking ? "" : classes.displayNone}`}>
           {this.renderNetworking()}
         </div>
-        <div className={`${this.tabs[this.state.currentTab] === NodeScheduling ? "" : classes.displayNone}`}>
+        <div className={`${this.tabs[this.state.currentTabIndex] === NodeScheduling ? "" : classes.displayNone}`}>
           {this.renderNodeScheduling()}
         </div>
-        <div className={`${this.tabs[this.state.currentTab] === UpgradePolicy ? "" : classes.displayNone}`}>
+        <div className={`${this.tabs[this.state.currentTabIndex] === UpgradePolicy ? "" : classes.displayNone}`}>
           {this.renderUpgradePolicy()}
         </div>
       </>
@@ -917,13 +917,13 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return (
       <Tabs
         className={classes.tabs}
-        value={this.state.currentTab}
+        value={this.state.currentTabIndex}
         variant="scrollable"
         scrollButtons="auto"
         indicatorColor="primary"
         textColor="primary"
         onChange={(event: React.ChangeEvent<{}>, value: number) => {
-          this.setState({ currentTab: value });
+          this.setState({ currentTabIndex: value });
         }}
         aria-label="component form tabs">
         {this.tabs.map(tab => {
@@ -1011,7 +1011,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         {this.renderMain()}
         {this.renderTabs()}
         {this.renderTabDetails()}
-        {/* <div className={`${classes.formSection} ${currentTab === "advanced" ? "" : ""}`}>{this.renderPlugins()}</div> */}
+        {/* <div className={`${classes.formSection} ${currentTabIndex === "advanced" ? "" : ""}`}>{this.renderPlugins()}</div> */}
         {this.renderDeployButton()}
       </form>
     );
