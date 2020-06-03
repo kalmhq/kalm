@@ -10,6 +10,7 @@ import {
   Theme
 } from "@material-ui/core";
 import AssignmentReturnedIcon from "@material-ui/icons/AssignmentReturned";
+import VerifiedUser from "@material-ui/icons/VerifiedUser";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import { WithStyles, withStyles } from "@material-ui/styles";
@@ -114,7 +115,12 @@ class DashboardDrawerRaw extends React.PureComponent<Props, State> {
 
   private getMenuDataApplication() {
     return [
-      { icon: KappApplicationIcon, text: "Applications", to: "/applications" }
+      { icon: KappApplicationIcon, text: "Applications", to: "/applications" },
+      {
+        icon: VerifiedUser,
+        text: "Certificates",
+        to: "/certificates"
+      }
       // {
       //   icon: KappTemplateIcon,
       //   text: "Templates",

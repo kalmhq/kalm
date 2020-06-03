@@ -1,15 +1,19 @@
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { push } from "connected-react-router";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { ApplicationViewDrawer } from "widgets/ApplicationViewDrawer";
+import { NewModal } from "./New";
 import { CustomizedButton } from "widgets/Button";
 import { H4 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
-import { loadCertificates, deleteCertificateAction } from "actions/certificate";
+import {
+  loadCertificates,
+  deleteCertificateAction,
+  setIsShowAddCertificateModal,
+  loadCertificateIssuers
+} from "actions/certificate";
 import { grey } from "@material-ui/core/colors";
 import MaterialTable from "material-table";
 import { customSearchForImmutable } from "../../utils/tableSearch";
@@ -62,6 +66,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
 
   componentDidMount() {
     this.props.dispatch(loadCertificates());
+    this.props.dispatch(loadCertificateIssuers());
   }
 
   private renderName = (rowData: RowData) => {
@@ -133,6 +138,18 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     }
   };
 
+  private renderStatus = (rowData: RowData) => {
+    return rowData.get("ready") === "True" ? "Normal" : rowData.get("reason");
+  };
+
+  private renderType = (rowData: RowData) => {
+    return rowData.get("isSelfManaged") ? "SELF MANAGED" : "KAPP ISSUED";
+  };
+
+  private renderInUse = (rowData: RowData) => {
+    return "Yes";
+  };
+
   private getColumns() {
     const columns = [
       // @ts-ignore
@@ -150,7 +167,25 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
         render: this.renderDomains
       },
       {
-        title: "",
+        title: "Status",
+        field: "status",
+        sorting: false,
+        render: this.renderStatus
+      },
+      {
+        title: "Type",
+        field: "isSelfManaged",
+        sorting: false,
+        render: this.renderType
+      },
+      {
+        title: "In Use?",
+        field: "inUse",
+        sorting: false,
+        render: this.renderInUse
+      },
+      {
+        title: "Actions",
         field: "moreAction",
         sorting: false,
         searchable: false,
@@ -178,21 +213,21 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     const { classes, dispatch, isFirstLoaded, isLoading } = this.props;
     return (
       <BasePage
-        leftDrawer={<ApplicationViewDrawer />}
         secondHeaderRight={
           <div className={classes.secondHeaderRight}>
-            <H4 className={classes.secondHeaderRightItem}>Routes</H4>
+            <H4 className={classes.secondHeaderRightItem}>Certificates</H4>
             <CustomizedButton
               color="primary"
               size="large"
               className={classes.secondHeaderRightItem}
               onClick={() => {
-                dispatch(push(`/certificate/new`));
+                dispatch(setIsShowAddCertificateModal(true));
               }}>
               Add
             </CustomizedButton>
           </div>
         }>
+        <NewModal />
         {this.renderDeleteConfirmDialog()}
         <div className={classes.root}>
           {isLoading && !isFirstLoaded ? (

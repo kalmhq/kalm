@@ -1,6 +1,5 @@
-import { StatusFailure, ThunkResult } from "../types";
+import { ThunkResult } from "../types";
 import { LOAD_SERVICES_FAILED, LOAD_SERVICES_FULFILLED, LOAD_SERVICES_PENDING } from "../types/service";
-import { setErrorNotificationAction } from "./notification";
 import { loadServices } from "./kubernetesApi";
 
 export const loadServicesAction = (namespace: string): ThunkResult<Promise<void>> => {
@@ -17,12 +16,8 @@ export const loadServicesAction = (namespace: string): ThunkResult<Promise<void>
         }
       });
     } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
       dispatch({ type: LOAD_SERVICES_FAILED });
+      throw e;
     }
   };
 };

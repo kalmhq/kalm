@@ -19,7 +19,14 @@ import {
 import { ComponentTemplate } from "../types/componentTemplate";
 import { ConfigCreate, ConfigRes } from "../types/config";
 import { RegistryType } from "types/registry";
-import { CertificateList, Certificate } from "types/certificate";
+import {
+  CertificateList,
+  CertificateFormType,
+  CertificateIssuerList,
+  CertificateIssuerFormType,
+  Certificate,
+  CertificateIssuer
+} from "types/certificate";
 import { HttpRoute } from "types/route";
 import { Service } from "types/service";
 
@@ -330,9 +337,26 @@ export const getCertificateList = async (): Promise<CertificateList> => {
   return Immutable.fromJS(res.data);
 };
 
-export const createCertificate = async (certificate: Certificate): Promise<ApplicationDetails> => {
-  const res = await getAxiosClient().post(K8sApiPrefix + `/v1alpha1/httpscerts/upload`, certificate);
+export const getCertificateIssuerList = async (): Promise<CertificateIssuerList> => {
+  const res = await getAxiosClient().get(K8sApiPrefix + "/v1alpha1/httpscertissuers");
+  return Immutable.fromJS(res.data);
+};
 
+export const createCertificate = async (certificate: CertificateFormType): Promise<Certificate> => {
+  let res;
+  if (certificate.get("isSelfManaged")) {
+    res = await getAxiosClient().post(K8sApiPrefix + `/v1alpha1/httpscerts/upload`, certificate);
+  } else {
+    res = await getAxiosClient().post(K8sApiPrefix + `/v1alpha1/httpscerts`, certificate);
+  }
+
+  return Immutable.fromJS(res.data);
+};
+
+export const createCertificateIssuer = async (
+  certificateIssuer: CertificateIssuerFormType
+): Promise<CertificateIssuer> => {
+  const res = await getAxiosClient().post(K8sApiPrefix + `/v1alpha1/httpscertissuers`, certificateIssuer);
   return Immutable.fromJS(res.data);
 };
 

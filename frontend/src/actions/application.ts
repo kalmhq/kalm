@@ -1,7 +1,7 @@
 import { push } from "connected-react-router";
 import Immutable from "immutable";
 import { SubmissionError } from "redux-form";
-import { StatusFailure, ThunkResult } from "../types";
+import { ThunkResult } from "../types";
 import {
   Application,
   ApplicationComponent,
@@ -41,7 +41,7 @@ import {
   updateKappApplicationComponent
 } from "./kubernetesApi";
 import { setCurrentNamespaceAction } from "./namespaces";
-import { setErrorNotificationAction, setSuccessNotificationAction } from "./notification";
+import { setSuccessNotificationAction } from "./notification";
 
 export const createComponentAction = (
   componentValues: ApplicationComponent,
@@ -55,16 +55,7 @@ export const createComponentAction = (
     }
 
     let component: ApplicationComponentDetails;
-    try {
-      component = await createKappApplicationComponent(applicationName, componentValues);
-    } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
-      return;
-    }
+    component = await createKappApplicationComponent(applicationName, componentValues);
 
     dispatch(loadApplicationAction(applicationName));
     dispatch({
@@ -87,16 +78,7 @@ export const updateComponentAction = (
     }
 
     let component: ApplicationComponentDetails;
-    try {
-      component = await updateKappApplicationComponent(applicationName, componentValues);
-    } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
-      return;
-    }
+    component = await updateKappApplicationComponent(applicationName, componentValues);
 
     dispatch(loadApplicationAction(applicationName));
     dispatch({
@@ -115,16 +97,7 @@ export const deleteComponentAction = (componentName: string, applicationName?: s
         .get("active");
     }
 
-    try {
-      await deleteKappApplicationComponent(applicationName, componentName);
-    } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
-      return;
-    }
+    await deleteKappApplicationComponent(applicationName, componentName);
 
     dispatch(loadApplicationAction(applicationName));
     dispatch({
@@ -138,34 +111,20 @@ export const deleteComponentAction = (componentName: string, applicationName?: s
 export const createApplicationAction = (applicationValues: Application): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch(setIsSubmittingApplication(true));
+    setTimeout(() => {
+      dispatch(setIsSubmittingApplication(false));
+    }, 2000);
+
     let application: ApplicationDetails;
 
     try {
       application = await createKappApplication(applicationValues);
-      // const applicationComponents = Immutable.List(
-      //   await Promise.all(
-      //     applicationValues.get("components").map(async component => {
-      //       const applicationComponent = await createKappApplicationComponent(application.get("name"), component);
-      //       return applicationComponent;
-      //     })
-      //   )
-      // );
-      // application = application.set("components", applicationComponents);
     } catch (e) {
-      console.log(e);
       if (e.response && e.response.data.errors && e.response.data.errors.length > 0) {
         const submitErrors = resErrorsToSubmitErrors(e.response.data.errors);
         throw new SubmissionError(submitErrors);
-      } else if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
       }
-      return;
-    } finally {
-      setTimeout(() => {
-        dispatch(setIsSubmittingApplication(false));
-      }, 2000);
+      throw e;
     }
 
     dispatch(loadApplicationsAction());
@@ -199,6 +158,10 @@ export const updateApplicationAction = (applicationRaw: Application): ThunkResul
     // throw new SubmissionError(submitErrors);
 
     dispatch(setIsSubmittingApplication(true));
+    setTimeout(() => {
+      dispatch(setIsSubmittingApplication(false));
+    }, 2000);
+
     let application: ApplicationDetails;
 
     try {
@@ -207,17 +170,8 @@ export const updateApplicationAction = (applicationRaw: Application): ThunkResul
       if (e.response && e.response.data.errors && e.response.data.errors.length > 0) {
         const submitErrors = resErrorsToSubmitErrors(e.response.data.errors);
         throw new SubmissionError(submitErrors);
-      } else if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
       }
-
-      return;
-    } finally {
-      setTimeout(() => {
-        dispatch(setIsSubmittingApplication(false));
-      }, 2000);
+      throw e;
     }
 
     dispatch(loadApplicationsAction());
@@ -233,16 +187,7 @@ export const updateApplicationAction = (applicationRaw: Application): ThunkResul
 export const duplicateApplicationAction = (duplicatedApplication: Application): ThunkResult<Promise<void>> => {
   return async dispatch => {
     let application: ApplicationDetails;
-    try {
-      application = await createKappApplication(duplicatedApplication);
-    } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
-      return;
-    }
+    application = await createKappApplication(duplicatedApplication);
 
     dispatch(loadApplicationsAction());
     dispatch({
@@ -254,16 +199,7 @@ export const duplicateApplicationAction = (duplicatedApplication: Application): 
 
 export const deleteApplicationAction = (name: string): ThunkResult<Promise<void>> => {
   return async dispatch => {
-    try {
-      await deleteKappApplication(name);
-    } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
-      return;
-    }
+    await deleteKappApplication(name);
 
     dispatch({
       type: DELETE_APPLICATION,
@@ -282,13 +218,8 @@ export const loadApplicationAction = (name: string): ThunkResult<Promise<void>> 
       const applicationComponents = await getKappApplicationComponentList(application.get("name"));
       application = application.set("components", applicationComponents);
     } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
       dispatch({ type: LOAD_APPLICATION_FAILED });
-      return;
+      throw e;
     }
 
     dispatch({
@@ -318,13 +249,8 @@ export const loadApplicationsAction = (): ThunkResult<Promise<void>> => {
         )
       );
     } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
       dispatch({ type: LOAD_APPLICATIONS_FAILED });
-      return;
+      throw e;
     }
 
     const activeNamespace = getState()
@@ -369,17 +295,7 @@ export const loadApplicationsAction = (): ThunkResult<Promise<void>> => {
 
 export const loadComponentPluginsAction = (): ThunkResult<Promise<void>> => {
   return async dispatch => {
-    let componentPlugins;
-    try {
-      componentPlugins = await getKappComponentPlugins();
-    } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
-      return;
-    }
+    let componentPlugins = await getKappComponentPlugins();
 
     dispatch({
       type: LOAD_COMPONENT_PLUGINS_FULFILLED,
