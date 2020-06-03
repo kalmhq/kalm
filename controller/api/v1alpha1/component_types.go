@@ -84,13 +84,16 @@ type ComponentSpec struct {
 	RestartStrategy apps1.DeploymentStrategyType `json:"restartStrategy,omitempty"`
 
 	// +optional
-	Configs       []Config       `json:"configs,omitempty"`
-	DirectConfigs []DirectConfig `json:"directConfigs,omitempty"`
-
-	// +optional
 	Volumes []Volume `json:"volumes,omitempty"`
 
 	RunnerPermission *RunnerPermission `json:"runnerPermission,omitempty"`
+
+	// +optional
+	// Deprecated
+	Configs []Config `json:"configs,omitempty"`
+
+	// Deprecated
+	DirectConfigs []DirectConfig `json:"directConfigs,omitempty"`
 }
 
 // ComponentStatus defines the observed state of Component
