@@ -34,7 +34,7 @@ import { RenderSelectField } from "../Basic/select";
 import { KRenderTextField, RenderComplexValueTextField } from "../Basic/textfield";
 import { NormalizeNumber } from "../normalizer";
 import { ValidatorCPU, ValidatorMemory, ValidatorName, ValidatorRequired, ValidatorSchedule } from "../validator";
-import { Configs } from "./Configs";
+// import { Configs } from "./Configs";
 import { Envs } from "./Envs";
 import { RenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
@@ -392,31 +392,31 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderConfigs() {
-    // const { classes } = this.props;
+  // private renderConfigs() {
+  //   // const { classes } = this.props;
 
-    // const helperContainer = (
-    //   <HelperContainer>
-    //     <Typography>Mount Configs</Typography>
-    //   </HelperContainer>
-    // );
+  //   // const helperContainer = (
+  //   //   <HelperContainer>
+  //   //     <Typography>Mount Configs</Typography>
+  //   //   </HelperContainer>
+  //   // );
 
-    return (
-      <>
-        <Grid item xs={12} sm={12} md={12}>
-          <SectionTitle>
-            <H5>Configs</H5>
-            {/* <Tooltip title={helperContainer}>
-            <HelpIcon fontSize="small" className={classes.helperTextIcon} />
-          </Tooltip> */}
-          </SectionTitle>
-        </Grid>{" "}
-        <Grid item xs={12} sm={12} md={12}>
-          <Configs />
-        </Grid>
-      </>
-    );
-  }
+  //   return (
+  //     <>
+  //       <Grid item xs={12} sm={12} md={12}>
+  //         <SectionTitle>
+  //           <H5>Configs</H5>
+  //           {/* <Tooltip title={helperContainer}>
+  //           <HelpIcon fontSize="small" className={classes.helperTextIcon} />
+  //         </Tooltip> */}
+  //         </SectionTitle>
+  //       </Grid>{" "}
+  //       <Grid item xs={12} sm={12} md={12}>
+  //         {/* <Configs /> */}
+  //       </Grid>
+  //     </>
+  //   );
+  // }
 
   private getRestartStrategyHelper() {
     return (
@@ -767,7 +767,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           {this.renderLaunchItems()}
           {this.renderEnvs()}
           {this.renderVolumes()}
-          {this.renderConfigs()}
+          {/* {this.renderConfigs()} */}
         </Grid>
       </>
     );
