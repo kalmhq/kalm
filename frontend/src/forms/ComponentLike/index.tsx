@@ -20,7 +20,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { InjectedFormProps } from "redux-form";
 import { Field, getFormSyncErrors, getFormValues, reduxForm } from "redux-form/immutable";
-import { H5, SectionTitle } from "widgets/Label";
+import { H5, SectionTitle, Body, H4 } from "widgets/Label";
 import { loadComponentPluginsAction } from "../../actions/application";
 import { loadConfigsAction } from "../../actions/config";
 import { loadNodesAction } from "../../actions/node";
@@ -709,41 +709,38 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
     return (
       <>
-        <Typography variant="subtitle2">
-          Command{" "}
-          <Tooltip title="This filed is used to overwrite `entrypoint` and `commands` in image. Leave it blank to use image default settings.">
-            <HelpIcon fontSize="small" className={classes.helperFieldIcon} />
-          </Tooltip>
-        </Typography>
+        <Grid item xs={12} sm={12} md={12}>
+          <SectionTitle>
+            <H5>Command</H5>
+            <Tooltip title="This filed is used to overwrite `entrypoint` and `commands` in image. Leave it blank to use image default settings.">
+              <HelpIcon fontSize="small" className={classes.helperFieldIcon} />
+            </Tooltip>
+          </SectionTitle>
+        </Grid>
 
-        <Field
-          component={KRenderCommandTextField}
-          name="command"
-          label="Command"
-          placeholder="eg: `npm run start` or `bundle exec rails server`"
-        />
+        <Grid item xs={12} sm={12} md={12}>
+          <Field
+            component={KRenderCommandTextField}
+            name="command"
+            label="Command"
+            placeholder="eg: `npm run start` or `bundle exec rails server`"
+            helperText="If the image's default command and entrypoint works. You can leave this field blank."
+          />
+        </Grid>
       </>
     );
   }
 
   private renderConfigurations() {
     return (
-      <>
-        <Box p={2} pb={0}>
-          <Typography variant="body2" component="p">
-            Customize the start-up process of this component.
-          </Typography>
-        </Box>
-        <Box p={2} pb={0}>
-          {this.renderCommandAndArgs()}
-        </Box>
-        <Box p={2} pb={0}>
-          {this.renderEnvs()}
-        </Box>
-        <Box p={2} pb={0}>
-          {this.preInjectedFiles()}
-        </Box>
-      </>
+      <Grid container spacing={2}>
+        <Grid item xs={12} sm={12} md={12}>
+          <Body>Customize the start-up process of this component.</Body>
+        </Grid>
+        {this.renderCommandAndArgs()}
+        {this.renderEnvs()}
+        {this.preInjectedFiles()}
+      </Grid>
     );
   }
 
@@ -963,7 +960,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderMain() {
-    const { initialValues, classes } = this.props;
+    const { initialValues } = this.props;
     let isEdit = false;
     // @ts-ignore
     if (initialValues && initialValues!.get("name")) {
@@ -971,55 +968,44 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     }
 
     return (
-      <Paper square>
-        <Box p={2} className={classes.borderBottom}>
-          <Typography variant="h4">Basic Information</Typography>
-        </Box>
-        <Box p={2}>
-          <Grid container spacing={2}>
-            <Grid item xs={6}>
-              <Field
-                component={KRenderTextField}
-                name="name"
-                label="Name"
-                margin
-                validate={[ValidatorRequired, ValidatorName]}
-                disabled={isEdit}
-                helperText={
-                  isEdit
-                    ? "Name can't be changed."
-                    : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
-                }
-                placeholder="Please type the component name"
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <Field
-                component={KRenderTextField}
-                name="image"
-                label="Image"
-                margin
-                validate={[ValidatorRequired]}
-                helperText='Eg: "nginx:latest", "registry.example.com/group/repo:tag"'
-              />
-            </Grid>
+      <Grid container spacing={2}>
+        <Grid item xs={6}>
+          <Field
+            component={KRenderTextField}
+            name="name"
+            label="Name"
+            margin
+            validate={[ValidatorRequired, ValidatorName]}
+            disabled={isEdit}
+            helperText={
+              isEdit
+                ? "Name can't be changed."
+                : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
+            }
+            placeholder="Please type the component name"
+          />
+        </Grid>
+        <Grid item xs={6}>
+          <Field
+            component={KRenderTextField}
+            name="image"
+            label="Image"
+            margin
+            validate={[ValidatorRequired]}
+            helperText='Eg: "nginx:latest", "registry.example.com/group/repo:tag"'
+          />
+        </Grid>
 
-            <Grid item xs={6}>
-              <Field
-                name="workloadType"
-                component={RenderSelectField}
-                label="Workload Type"
-                validate={[ValidatorRequired]}>
-                <MenuItem value={workloadTypeServer}>Server (continuous running)</MenuItem>
-                <MenuItem value={workloadTypeCronjob}>Cronjob (periodic running)</MenuItem>
-              </Field>
-            </Grid>
-            <Grid item xs={6}>
-              {this.renderReplicasOrSchedule()}
-            </Grid>
-          </Grid>
-        </Box>
-      </Paper>
+        <Grid item xs={6}>
+          <Field name="workloadType" component={RenderSelectField} label="Workload Type" validate={[ValidatorRequired]}>
+            <MenuItem value={workloadTypeServer}>Server (continuous running)</MenuItem>
+            <MenuItem value={workloadTypeCronjob}>Cronjob (periodic running)</MenuItem>
+          </Field>
+        </Grid>
+        <Grid item xs={6}>
+          {this.renderReplicasOrSchedule()}
+        </Grid>
+      </Grid>
     );
   }
 
@@ -1041,17 +1027,22 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
     return (
       <form onSubmit={handleSubmit} className={classes.root}>
-        {this.renderMain()}
-        <Box pt={2}>
+        <Paper square>
+          <Box p={2} className={classes.borderBottom}>
+            <H4>Basic Information</H4>
+          </Box>
+          <Box p={2}>{this.renderMain()}</Box>
+        </Paper>
+        <Box mt={2}>
           <Paper square>
             <Box p={2} className={classes.borderBottom}>
-              <Typography variant="h4">Advanced Settings</Typography>
+              <H4>Advanced Settings</H4>
             </Box>
             {this.renderTabs()}
-            {this.renderTabDetails()}
-            {/* <div className={`${classes.formSection} ${currentTabIndex === "advanced" ? "" : ""}`}>{this.renderPlugins()}</div> */}
+            <Box p={2}>{this.renderTabDetails()}</Box>
           </Paper>
         </Box>
+        {/* <div className={`${classes.formSection} ${currentTabIndex === "advanced" ? "" : ""}`}>{this.renderPlugins()}</div> */}
         {this.renderDeployButton()}
       </form>
     );

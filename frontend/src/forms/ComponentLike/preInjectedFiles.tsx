@@ -22,13 +22,8 @@ interface FieldArrayProps extends DispatchProp {}
 interface Props extends WrappedFieldArrayProps<PreInjectedFile>, FieldArrayComponentHackType, FieldArrayProps {}
 
 class RenderPreInjectedFile extends React.PureComponent<Props> {
-  constructor(props: Props) {
-    super(props);
-  }
-
   public getFieldComponents(member: string) {
     return [
-      ,
       <Field
         name={`${member}.mountPath`}
         label="Mount Path"
@@ -76,7 +71,7 @@ class RenderPreInjectedFile extends React.PureComponent<Props> {
           Add
         </Button>
         {fields.map((member, index) => {
-          const injectedFile = fields.get(index);
+          // const injectedFile = fields.get(index);
           return (
             <Grid container spacing={1}>
               <Grid item md={2}>
