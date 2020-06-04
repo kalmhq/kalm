@@ -1,4 +1,4 @@
-import { Button, Icon } from "@material-ui/core";
+import { Button, Icon, Box } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 import Immutable from "immutable";
 import React from "react";
@@ -50,26 +50,28 @@ class RenderPreInjectedFile extends React.PureComponent<Props> {
 
     return (
       <>
-        <Button
-          variant="outlined"
-          color="primary"
-          startIcon={<Icon>add</Icon>}
-          size="small"
-          onClick={() =>
-            dispatch(
-              arrayPush(
-                form,
-                "preInjectedFiles",
-                Immutable.Map({
-                  readonly: true,
-                  content: "",
-                  mountPath: ""
-                })
+        <Box mb={2}>
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<Icon>add</Icon>}
+            size="small"
+            onClick={() =>
+              dispatch(
+                arrayPush(
+                  form,
+                  "preInjectedFiles",
+                  Immutable.Map({
+                    readonly: true,
+                    content: "",
+                    mountPath: ""
+                  })
+                )
               )
-            )
-          }>
-          Add
-        </Button>
+            }>
+            Add
+          </Button>
+        </Box>
         {fields.map((member, index) => {
           // const injectedFile = fields.get(index);
           return (
