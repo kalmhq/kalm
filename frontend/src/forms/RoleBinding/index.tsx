@@ -57,15 +57,13 @@ class RoleBindingFormRaw extends React.PureComponent<Props> {
             label="Namespace"
             autoFocus
             component={RenderSelectField}
-            validate={ValidatorRequired}>
-            {namespaces.map(namespace => {
-              return (
-                <MenuItem key={namespace} value={namespace}>
-                  {namespace}
-                </MenuItem>
-              );
-            })}
-          </Field>
+            validate={ValidatorRequired}
+            options={namespaces.map(namespace => {
+              return {
+                value: namespace,
+                text: namespace
+              };
+            })}></Field>
         </Grid>
         <Grid item md={6}>
           <Field
