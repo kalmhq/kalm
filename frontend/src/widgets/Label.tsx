@@ -1,8 +1,7 @@
+import { Box, Typography, TypographyProps } from "@material-ui/core";
+import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import React from "react";
-import { Typography, TypographyProps, Box } from "@material-ui/core";
-import { withStyles, createStyles, WithStyles } from "@material-ui/styles";
 import { theme } from "theme";
-import { grey } from "@material-ui/core/colors";
 
 const styles = () =>
   createStyles({
@@ -16,7 +15,7 @@ const styles = () =>
       width: "100%",
       height: 26,
       lineHeight: 26,
-      background: grey[50],
+      // background: grey[50],
       display: "flex",
       alignItems: "center"
     }

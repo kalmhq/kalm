@@ -19,7 +19,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { InjectedFormProps } from "redux-form";
 import { Field, getFormSyncErrors, getFormValues, reduxForm } from "redux-form/immutable";
-import { H5, SectionTitle } from "widgets/Label";
+import { H5, SectionTitle, Body } from "widgets/Label";
 import { loadComponentPluginsAction } from "../../actions/application";
 import { loadConfigsAction } from "../../actions/config";
 import { loadNodesAction } from "../../actions/node";
@@ -710,29 +710,35 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private renderCommandAndArgs() {
     return (
       <>
-        <Typography variant="subtitle2">Command</Typography>
+        <Grid item xs={12} sm={12} md={12}>
+          <SectionTitle>
+            <H5>Command</H5>
+          </SectionTitle>
+        </Grid>
 
-        <Field
-          component={KRenderCommandTextField}
-          name="command"
-          label="Command"
-          placeholder="eg: `npm run start` or `bundle exec rails server`"
-          helperText="If the image's default command and entrypoint works. You can leave this field blank."
-        />
+        <Grid item xs={12} sm={12} md={12}>
+          <Field
+            component={KRenderCommandTextField}
+            name="command"
+            label="Command"
+            placeholder="eg: `npm run start` or `bundle exec rails server`"
+            helperText="If the image's default command and entrypoint works. You can leave this field blank."
+          />
+        </Grid>
       </>
     );
   }
 
   private renderConfigurations() {
     return (
-      <div>
-        <Typography variant="body1" component="p">
-          Customize the start-up process of this component.
-        </Typography>
+      <Grid container spacing={2}>
+        <Grid item xs={12} sm={12} md={12}>
+          <Body>Customize the start-up process of this component.</Body>
+        </Grid>
         {this.renderCommandAndArgs()}
         {this.renderEnvs()}
         {this.preInjectedFiles()}
-      </div>
+      </Grid>
     );
   }
 
