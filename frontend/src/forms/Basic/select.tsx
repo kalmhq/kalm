@@ -124,6 +124,10 @@ export const RenderMutipleSelectField = ({
   const classes = makeStyles(theme => ({
     root: {
       display: "flex"
+    },
+    inputLabel: {
+      fontWeight: 500,
+      fontSize: 13
     }
   }))();
 
@@ -146,7 +150,8 @@ export const RenderMutipleSelectField = ({
       variant="outlined"
       size="small"
       margin="dense">
-      <InputLabel ref={inputLabel} htmlFor={id} id={labelId}>
+      {/* https://material-ui.com/zh/api/input-label/#css */}
+      <InputLabel ref={inputLabel} htmlFor={id} id={labelId} classes={{ root: classes.inputLabel }}>
         {label}
       </InputLabel>
       <Select
