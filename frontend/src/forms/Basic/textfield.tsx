@@ -30,12 +30,12 @@ export const KRenderTextField = ({
       disabled={disabled}
       required={required}
       error={showError}
-      helperText={showError ? error : helperText ? helperText : ""}
-      margin="dense"
-      variant="outlined"
       InputLabelProps={{
         shrink: true
       }}
+      helperText={showError ? error : helperText ? helperText : ""}
+      margin="dense"
+      variant="outlined"
       InputProps={{
         endAdornment: <InputAdornment position="end">{endAdornment}</InputAdornment>
       }}
