@@ -66,6 +66,7 @@ spec:
                 type: string
               type: array
             configs:
+              description: Deprecated
               items:
                 properties:
                   mountPath:
@@ -82,6 +83,7 @@ spec:
             cpu:
               type: string
             directConfigs:
+              description: Deprecated
               items:
                 properties:
                   content:
@@ -262,6 +264,26 @@ spec:
                 required:
                 - containerPort
                 - name
+                type: object
+              type: array
+            preInjectedFiles:
+              items:
+                properties:
+                  base64:
+                    description: To support binary content, it allows set base64 encoded
+                      data into `Content` field and set this flag to `true`. Binary
+                      data will be restored instead of plain string in `Content`.
+                    type: boolean
+                  content:
+                    description: the content of the file
+                    type: string
+                  mountPath:
+                    type: string
+                  readonly:
+                    type: boolean
+                required:
+                - content
+                - mountPath
                 type: object
               type: array
             readinessProbe:

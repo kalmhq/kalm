@@ -10,7 +10,7 @@ import { Button, TextField, Theme, withStyles, Paper, WithStyles, createStyles }
 const styles = (theme: Theme) =>
   createStyles({
     loginPaper: {
-      backgroundColor: "#2196F3",
+      backgroundColor: theme.palette.primary.main,
       height: "286px",
       width: "100%",
       position: "fixed",

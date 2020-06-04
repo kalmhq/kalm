@@ -1,7 +1,6 @@
+import { ThunkResult } from "../types";
+import { LOAD_DEPENDENCIES_FAILED, LOAD_DEPENDENCIES_FULFILLED, LOAD_DEPENDENCIES_PENDING } from "../types/dependency";
 import { getDependencies } from "./kubernetesApi";
-import { ThunkResult, StatusFailure } from "../types";
-import { LOAD_DEPENDENCIES_PENDING, LOAD_DEPENDENCIES_FULFILLED, LOAD_DEPENDENCIES_FAILED } from "../types/dependency";
-import { setErrorNotificationAction } from "./notification";
 
 export const loadDependenciesAction = (): ThunkResult<Promise<void>> => {
   return async dispatch => {
@@ -11,13 +10,8 @@ export const loadDependenciesAction = (): ThunkResult<Promise<void>> => {
     try {
       dependencies = await getDependencies();
     } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
       dispatch({ type: LOAD_DEPENDENCIES_FAILED });
-      return;
+      throw e;
     }
 
     dispatch({

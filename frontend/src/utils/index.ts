@@ -1,15 +1,12 @@
-import { differenceInMinutes } from "date-fns";
+import { differenceInMinutes, format } from "date-fns";
 
 export const ID = (): string => {
   // Math.random should be unique because of its seeding algorithm.
   // Convert it to base 36 (numbers + letters), and grab the first 9 characters
   // after the decimal.
-  return (
-    "_" +
-    Math.random()
-      .toString(36)
-      .substr(2, 9)
-  );
+  return Math.random()
+    .toString(36)
+    .substr(2, 9);
 };
 
 export const randomName = (): string => {
@@ -19,6 +16,10 @@ export const randomName = (): string => {
   return Math.random()
     .toString(36)
     .substr(2, 9);
+};
+
+export const formatDate = (date: Date): string => {
+  return format(date, "yyyy-MM-dd HH:mm:ss");
 };
 
 export const formatTimeDistance = (t: any) => {

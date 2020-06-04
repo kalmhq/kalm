@@ -9,7 +9,9 @@ import {
   Paper,
   Theme,
   withStyles,
-  WithStyles
+  WithStyles,
+  Tabs,
+  Tab
 } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import DeleteIcon from "@material-ui/icons/Delete";
@@ -20,7 +22,7 @@ import { withNamespace, withNamespaceProps } from "permission/Namespace";
 import React from "react";
 import { ThunkDispatch } from "redux-thunk";
 import { KappConsoleIcon, KappLogIcon } from "widgets/Icon";
-import { loadApplicationAction, deleteComponentAction } from "../../actions/application";
+import { deleteComponentAction, loadApplicationAction } from "../../actions/application";
 import { deletePod } from "../../actions/kubernetesApi";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "../../actions/notification";
 import { RootState } from "../../reducers";
@@ -42,7 +44,7 @@ import { generateQueryForPods } from "./Log";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      padding: theme.spacing(2)
+      // padding: theme.spacing(2)
     },
     componentRow: {
       paddingTop: theme.spacing(1.5),
@@ -138,6 +140,16 @@ const styles = (theme: Theme) =>
     flexWrapper: {
       display: "flex",
       alignItems: "center"
+    },
+    tabsWrapper: {
+      padding: `0 ${theme.spacing(2)}px`
+    },
+    tabs: {},
+    resources: {
+      padding: theme.spacing(2)
+    },
+    volumeWrapper: {
+      padding: `0 ${theme.spacing(2)}px`
     }
   });
 
@@ -147,12 +159,21 @@ interface Props extends WithStyles<typeof styles>, withNamespaceProps {
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
 }
 
-interface State {}
+interface State {
+  currentTabIndex: number;
+}
+
+const Status = "Status";
+const Resources = "Resources";
 
 class DetailsRaw extends React.PureComponent<Props, State> {
+  private tabs = [Status, Resources];
+
   constructor(props: Props) {
     super(props);
-    this.state = {};
+    this.state = {
+      currentTabIndex: 0
+    };
   }
 
   private renderPodStatus = (pod: PodStatus) => {
@@ -218,12 +239,28 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     return `${runningCount}/${component.get("pods").size}`;
   };
 
+  private renderVolumes = (index: number) => {
+    const { classes, application } = this.props;
+    const component = application.get("components")?.get(index)!;
+
+    return component?.get("volumes")?.map(v => {
+      return (
+        <Grid container spacing={2} className={classes.volumeWrapper}>
+          <Grid item>{v.get("type")}</Grid>
+          <Grid item>{v.get("size")}</Grid>
+          <Grid item>Mounted</Grid>
+          <Grid item>{v.get("path")}</Grid>
+        </Grid>
+      );
+    });
+  };
+
   private renderComponentPanel = (index: number) => {
     const { classes, application } = this.props;
     const component = application.get("components")?.get(index)!;
 
     return (
-      <ExpansionPanel>
+      <ExpansionPanel key={index}>
         <ExpansionPanelSummary
           style={{ padding: "0px 16px" }}
           expandIcon={<ExpandMoreIcon />}
@@ -523,13 +560,13 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     };
   }
 
-  public render() {
+  private renderStatus() {
     const { application, classes } = this.props;
 
     const pieChartData = this.getPieChartData();
 
     return (
-      <div className={classes.root}>
+      <>
         <Grid container spacing={2} className={classes.metrics}>
           <Grid item md={2} style={{ padding: 20 }}>
             <PieChartComponent
@@ -552,10 +589,75 @@ class DetailsRaw extends React.PureComponent<Props, State> {
             <BigMemoryLineChart data={application.get("metrics")?.get("memory")} />
           </Grid>
         </Grid>
+
         {application
           .get("components")
           ?.map((_x, index) => this.renderComponentPanel(index))
           ?.toArray()}
+      </>
+    );
+  }
+
+  private renderResources() {
+    const { classes, application } = this.props;
+
+    return (
+      <div className={classes.resources}>
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={12} md={12}>
+            <H5>Volumes</H5>
+          </Grid>
+        </Grid>
+        {application
+          .get("components")
+          ?.map((_x, index) => this.renderVolumes(index))
+          ?.toArray()}
+      </div>
+    );
+  }
+
+  private renderTabDetails() {
+    switch (this.tabs[this.state.currentTabIndex]) {
+      case Status: {
+        return this.renderStatus();
+      }
+      case Resources: {
+        return this.renderResources();
+      }
+    }
+
+    return this.renderStatus();
+  }
+
+  private renderTabs() {
+    const { classes } = this.props;
+    return (
+      <Tabs
+        className={classes.tabs}
+        value={this.state.currentTabIndex}
+        variant="scrollable"
+        scrollButtons="auto"
+        indicatorColor="primary"
+        textColor="primary"
+        onChange={(event: React.ChangeEvent<{}>, value: number) => {
+          this.setState({ currentTabIndex: value });
+        }}
+        aria-label="component form tabs">
+        {this.tabs.map(tab => {
+          return <Tab key={tab} label={tab} />;
+        })}
+      </Tabs>
+    );
+  }
+
+  public render() {
+    const { classes } = this.props;
+
+    return (
+      <div className={classes.root}>
+        <div className={classes.tabsWrapper}>{this.renderTabs()}</div>
+
+        {this.renderTabDetails()}
       </div>
     );
   }

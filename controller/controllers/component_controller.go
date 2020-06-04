@@ -18,6 +18,7 @@ package controllers
 import (
 	"context"
 	"crypto/md5"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	js "github.com/dop251/goja"
@@ -34,6 +35,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"path"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -805,6 +807,51 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 	// add volumes & volumesMounts
 	var volumes []coreV1.Volume
 	var volumeMounts []coreV1.VolumeMount
+
+	if len(component.Spec.PreInjectedFiles) > 0 {
+		volumes = append(volumes, coreV1.Volume{
+			Name: "pre-injected-files-volume",
+			VolumeSource: coreV1.VolumeSource{
+				EmptyDir: &coreV1.EmptyDirVolumeSource{},
+			},
+		})
+
+		if len(template.Spec.InitContainers) == 0 {
+			template.Spec.InitContainers = []coreV1.Container{}
+		}
+
+		injectCommands := []string{}
+
+		for _, file := range component.Spec.PreInjectedFiles {
+			content := file.Content
+
+			if !file.Base64 {
+				content = base64.StdEncoding.EncodeToString([]byte(content))
+			}
+
+			baseName := fmt.Sprintf("%s.%x", path.Base(file.MountPath), md5.Sum([]byte(content)))
+
+			injectCommands = append(
+				injectCommands,
+				fmt.Sprintf("echo \"%s\" | base64 -d > /files/%s && echo \"File %s created.\"", content, baseName, baseName),
+			)
+
+			volumeMounts = append(volumeMounts, coreV1.VolumeMount{
+				Name:      "pre-injected-files-volume",
+				MountPath: file.MountPath,
+				SubPath:   baseName,
+				ReadOnly:  file.Readonly,
+			})
+		}
+
+		template.Spec.InitContainers = append(template.Spec.InitContainers, coreV1.Container{
+			Name:         "inject-files",
+			Image:        "busybox",
+			Command:      []string{"sh", "-c", fmt.Sprintf("%s", strings.Join(injectCommands, " && "))},
+			VolumeMounts: []coreV1.VolumeMount{{MountPath: "/files", Name: "pre-injected-files-volume"}},
+		})
+	}
+
 	for i, disk := range component.Spec.Volumes {
 		volumeSource := coreV1.VolumeSource{}
 

@@ -1,0 +1,94 @@
+apiVersion: core.kapp.dev/v1alpha1
+kind: HttpsCertIssuer
+metadata:
+  name: default-cert-issuer
+spec:
+  caForTest: {}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kapp-system
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-inject-files
+  labels:
+    istio-injection: enabled
+    kapp-enabled: "true"
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: Component
+metadata:
+  name: test
+  namespace: test-inject-files
+spec:
+  image: nginx:alpine
+  ports:
+    - name: http
+      containerPort: 80
+      servicePort: 80
+  preInjectedFiles:
+    - mountPath: /etc/nginx/nginx.conf
+      readonly: true
+      content: |
+        user  nginx;
+        worker_processes  auto;
+
+        error_log  /var/log/nginx/error.log warn;
+        pid        /var/run/nginx.pid;
+
+
+        events {
+            worker_connections  1024;
+        }
+
+        http {
+            include       /etc/nginx/mime.types;
+            default_type  application/octet-stream;
+
+            log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                              '$status $body_bytes_sent "$http_referer" '
+                              '"$http_user_agent" "$http_x_forwarded_for"';
+
+            access_log  /var/log/nginx/access.log  main;
+
+            sendfile        on;
+            #tcp_nopush     on;
+
+            keepalive_timeout  65;
+
+            include /etc/nginx/my-configs/*.conf;
+        }
+    - mountPath: /etc/nginx/my-configs/test.conf
+      readonly: true
+      content: |
+        server {
+            listen       80;
+            server_name  localhost;
+
+            location / {
+               return 200 'Yeah!!!';
+            }
+        }
+---
+apiVersion: core.kapp.dev/v1alpha1
+kind: HttpRoute
+metadata:
+  name: hello-world
+  namespace: test-inject-files
+spec:
+  hosts:
+    - "*"
+  methods:
+    - GET
+    - POST
+  schemes:
+    - http
+  paths:
+    - /
+  destinations:
+    - host: test
+      weight: 1
+  stripPath: true

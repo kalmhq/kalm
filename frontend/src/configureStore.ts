@@ -6,17 +6,15 @@ import { routerMiddleware } from "connected-react-router/immutable";
 // import logger from "redux-logger";
 
 import createRootReducer from "./reducers";
+import { errorHandlerMiddleware } from "./errorHandler";
 
-const composeEnhancers =
-  (window["__REDUX_DEVTOOLS_EXTENSION_COMPOSE__"] as typeof compose) || compose;
+const composeEnhancers = (window["__REDUX_DEVTOOLS_EXTENSION_COMPOSE__"] as typeof compose) || compose;
 
 const configureStore = (history: History<LocationState>) =>
   createStore(
     createRootReducer(history),
     undefined,
-    composeEnhancers(
-      applyMiddleware(routerMiddleware(history), thunkMiddleware)
-    )
+    composeEnhancers(applyMiddleware(routerMiddleware(history), errorHandlerMiddleware, thunkMiddleware))
   );
 
 export default configureStore;

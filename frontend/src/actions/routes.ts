@@ -7,15 +7,15 @@ import {
   DELETE_ROUTE_PENDING,
   HttpRoute,
   LOAD_ROUTES_FAILED,
+  LOAD_ROUTES_FULFILLED,
+  LOAD_ROUTES_PENDING,
   UPDATE_ROUTE_FAILED,
   UPDATE_ROUTE_FULFILLED,
-  UPDATE_ROUTE_PENDING,
-  LOAD_ROUTES_PENDING,
-  LOAD_ROUTES_FULFILLED
+  UPDATE_ROUTE_PENDING
 } from "types/route";
 import { StatusFailure, ThunkResult } from "../types";
 import { setErrorNotificationAction } from "./notification";
-import { getHttpRoutes, createHttpRoute, updateHttpRoute, deleteHttpRoute } from "./kubernetesApi";
+import { createHttpRoute, deleteHttpRoute, getHttpRoutes, updateHttpRoute } from "./kubernetesApi";
 
 export const loadRoutes = (namespace: string): ThunkResult<Promise<void>> => {
   return async dispatch => {

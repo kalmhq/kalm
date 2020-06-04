@@ -65,7 +65,7 @@ export const KappRoutes = (
             path="/applications/:applicationName/components/:componentName"
             component={RequireNamespaceReader(ApplicationShow)}
           />
-          <Route exact path="/configs" component={RequireNamespaceReader(ConfigListPage)}></Route>
+          {/* <Route exact path="/configs" component={RequireNamespaceReader(ConfigListPage)}></Route> */}
           <Route exact path="/routes" component={RequireNamespaceReader(RouteListPage)}></Route>
           <Route exact path="/routes/new" component={RequireNamespaceReader(RouteNew)}></Route>
           <Route exact path="/routes/:name/edit" component={RequireNamespaceReader(RouteEdit)}></Route>

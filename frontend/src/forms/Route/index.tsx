@@ -277,7 +277,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
             margin="dense"
             validate={[ValidatorRequired, KValidatorPaths]}
             placeholder="Type a path"
-            helperText='Allow to configure multiple paths. Each path must begin with "\".'
+            helperText='Allow to configure multiple paths. Each path must begin with "/".'
           />
         </Expansion>
 

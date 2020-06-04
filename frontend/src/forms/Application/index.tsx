@@ -1,4 +1,4 @@
-import { Button, createStyles, Grid, WithStyles, withStyles } from "@material-ui/core";
+import { createStyles, Grid, WithStyles, withStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import Immutable from "immutable";
 import React from "react";
@@ -8,11 +8,12 @@ import { Field, formValueSelector, getFormValues, reduxForm } from "redux-form/i
 import { RootState } from "../../reducers";
 import { Application, SharedEnv } from "../../types/application";
 import { ComponentTemplate } from "../../types/componentTemplate";
+import { CustomizedButton } from "../../widgets/Button";
 import { H5, SectionTitle } from "../../widgets/Label";
 import { TextField } from "../Basic/text";
 import { ValidatorName, ValidatorRequired } from "../validator";
-import { SharedEnvs } from "./SharedEnvs";
 import { Plugins } from "./Plugins";
+import { SharedEnvs } from "./SharedEnvs";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -52,6 +53,7 @@ const mapStateToProps = (state: RootState) => {
   const values = getFormValues("application")(state) as Application;
 
   return {
+    isSubmittingApplication: state.get("applications").get("isSubmittingApplication"),
     sharedEnvs,
     formComponents,
     values
@@ -94,7 +96,7 @@ class ApplicationFormRaw extends React.PureComponent<
   }
 
   public render() {
-    const { handleSubmit, change, classes, currentTab } = this.props;
+    const { handleSubmit, change, classes, currentTab, isSubmittingApplication, values } = this.props;
 
     return (
       <form onSubmit={handleSubmit} className={classes.root}>
@@ -142,29 +144,35 @@ class ApplicationFormRaw extends React.PureComponent<
 
         <Grid container spacing={2} className={`${currentTab === "basic" ? classes.buttons : classes.displayNone}`}>
           <Grid item xs={12} sm={12} md={12}>
-            <Button
+            <CustomizedButton
+              pending={isSubmittingApplication && values.get("nextAddComponent")}
+              disabled={isSubmittingApplication && !values.get("nextAddComponent")}
               variant="contained"
               color="primary"
               className={`${currentTab === "basic" ? classes.submitButton : classes.displayNone}`}
               onClick={event => {
-                change("isActive", true);
+                change("nextAddComponent", true);
                 setTimeout(() => {
                   handleSubmit(event);
-                }, 300);
+                }, 200);
               }}>
-              Publish
-            </Button>
-            <Button
+              Save And Add Components
+            </CustomizedButton>
+          </Grid>
+          <Grid item xs={12} sm={12} md={12}>
+            <CustomizedButton
+              pending={isSubmittingApplication && !values.get("nextAddComponent")}
+              disabled={isSubmittingApplication && values.get("nextAddComponent")}
               variant="contained"
               className={`${currentTab === "basic" ? "" : classes.displayNone}`}
               onClick={event => {
-                change("isActive", false);
+                change("nextAddComponent", false);
                 setTimeout(() => {
                   handleSubmit(event);
-                }, 300);
+                }, 200);
               }}>
-              Save (publish later)
-            </Button>
+              Save And Back
+            </CustomizedButton>
           </Grid>
         </Grid>
       </form>
