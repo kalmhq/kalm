@@ -10,6 +10,7 @@ import {
   Tabs,
   Tooltip
 } from "@material-ui/core";
+import clsx from "clsx";
 import { grey } from "@material-ui/core/colors";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
@@ -41,6 +42,7 @@ import { Ports } from "./Ports";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
 import { Volumes } from "./Volumes";
 import { PreInjectedFiles } from "./preInjectedFiles";
+import Paper from "@material-ui/core/Paper";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
@@ -61,11 +63,11 @@ const styles = (theme: Theme) =>
       width: "100%",
       padding: 20,
       // since deploy button is fixed
-      paddingBottom: 100
-      // backgroundColor: theme.palette.background.paper
+      paddingBottom: 100,
+      backgroundColor: "#F4F5F7"
     },
-    main: {
-      padding: "20px 0 20px 0"
+    borderBottom: {
+      borderBottom: "1px solid rgba(0, 0, 0, 0.12)"
     },
     formSection: {
       // padding: "0 20px"
@@ -86,10 +88,8 @@ const styles = (theme: Theme) =>
     },
     helperFieldIcon: {
       color: grey[700],
-      cursor: "pointer",
-      position: "absolute",
-      right: 10,
-      top: 18
+      verticalAlign: "middle",
+      cursor: "pointer"
     },
     helperSelectIcon: {
       color: grey[700],
@@ -102,9 +102,6 @@ const styles = (theme: Theme) =>
       color: grey[700],
       cursor: "pointer",
       marginLeft: "8px"
-    },
-    tabs: {
-      marginBottom: theme.spacing(2)
     },
     deployBtn: {
       width: 360,
@@ -708,16 +705,22 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   // }
 
   private renderCommandAndArgs() {
+    const { classes } = this.props;
+
     return (
       <>
-        <Typography variant="subtitle2">Command</Typography>
+        <Typography variant="subtitle2">
+          Command{" "}
+          <Tooltip title="This filed is used to overwrite `entrypoint` and `commands` in image. Leave it blank to use image default settings.">
+            <HelpIcon fontSize="small" className={classes.helperFieldIcon} />
+          </Tooltip>
+        </Typography>
 
         <Field
           component={KRenderCommandTextField}
           name="command"
           label="Command"
           placeholder="eg: `npm run start` or `bundle exec rails server`"
-          helperText="If the image's default command and entrypoint works. You can leave this field blank."
         />
       </>
     );
@@ -725,14 +728,22 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
   private renderConfigurations() {
     return (
-      <div>
-        <Typography variant="body1" component="p">
-          Customize the start-up process of this component.
-        </Typography>
-        {this.renderCommandAndArgs()}
-        {this.renderEnvs()}
-        {this.preInjectedFiles()}
-      </div>
+      <>
+        <Box p={2} pb={0}>
+          <Typography variant="body2" component="p">
+            Customize the start-up process of this component.
+          </Typography>
+        </Box>
+        <Box p={2} pb={0}>
+          {this.renderCommandAndArgs()}
+        </Box>
+        <Box p={2} pb={0}>
+          {this.renderEnvs()}
+        </Box>
+        <Box p={2} pb={0}>
+          {this.preInjectedFiles()}
+        </Box>
+      </>
     );
   }
 
@@ -934,7 +945,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     const { classes } = this.props;
     return (
       <Tabs
-        className={classes.tabs}
+        className={clsx(classes.borderBottom)}
         value={this.state.currentTabIndex}
         variant="scrollable"
         scrollButtons="auto"
@@ -960,50 +971,55 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     }
 
     return (
-      <div className={classes.main}>
-        <Grid container spacing={2}>
-          <Grid item xs={6} sm={6} md={6}>
-            <Field
-              component={KRenderTextField}
-              name="name"
-              label="Name"
-              margin
-              validate={[ValidatorRequired, ValidatorName]}
-              disabled={isEdit}
-              helperText={
-                isEdit
-                  ? "Name can't be changed."
-                  : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
-              }
-              placeholder="Please type the component name"
-            />
-          </Grid>
-          <Grid item xs={6} sm={6} md={6}>
-            <Field
-              component={KRenderTextField}
-              name="image"
-              label="Image"
-              margin
-              validate={[ValidatorRequired]}
-              helperText='Eg: "nginx:latest", "registry.example.com/group/repo:tag"'
-            />
-          </Grid>
+      <Paper square>
+        <Box p={2} className={classes.borderBottom}>
+          <Typography variant="h4">Basic Information</Typography>
+        </Box>
+        <Box p={2}>
+          <Grid container spacing={2}>
+            <Grid item xs={6}>
+              <Field
+                component={KRenderTextField}
+                name="name"
+                label="Name"
+                margin
+                validate={[ValidatorRequired, ValidatorName]}
+                disabled={isEdit}
+                helperText={
+                  isEdit
+                    ? "Name can't be changed."
+                    : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
+                }
+                placeholder="Please type the component name"
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <Field
+                component={KRenderTextField}
+                name="image"
+                label="Image"
+                margin
+                validate={[ValidatorRequired]}
+                helperText='Eg: "nginx:latest", "registry.example.com/group/repo:tag"'
+              />
+            </Grid>
 
-          <Grid item xs={6} sm={6} md={6}>
-            <Field
-              name="workloadType"
-              component={RenderSelectField}
-              label="Workload Type"
-              validate={[ValidatorRequired]}>
-              <MenuItem value={workloadTypeServer}>Server (continuous running)</MenuItem>
-              <MenuItem value={workloadTypeCronjob}>Cronjob (periodic running)</MenuItem>
-            </Field>
+            <Grid item xs={6}>
+              <Field
+                name="workloadType"
+                component={RenderSelectField}
+                label="Workload Type"
+                validate={[ValidatorRequired]}>
+                <MenuItem value={workloadTypeServer}>Server (continuous running)</MenuItem>
+                <MenuItem value={workloadTypeCronjob}>Cronjob (periodic running)</MenuItem>
+              </Field>
+            </Grid>
+            <Grid item xs={6}>
+              {this.renderReplicasOrSchedule()}
+            </Grid>
           </Grid>
-          <Grid item xs={6} sm={6} md={6}>
-            {this.renderReplicasOrSchedule()}
-          </Grid>
-        </Grid>
-      </div>
+        </Box>
+      </Paper>
     );
   }
 
@@ -1026,9 +1042,16 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return (
       <form onSubmit={handleSubmit} className={classes.root}>
         {this.renderMain()}
-        {this.renderTabs()}
-        {this.renderTabDetails()}
-        {/* <div className={`${classes.formSection} ${currentTabIndex === "advanced" ? "" : ""}`}>{this.renderPlugins()}</div> */}
+        <Box pt={2}>
+          <Paper square>
+            <Box p={2} className={classes.borderBottom}>
+              <Typography variant="h4">Advanced Settings</Typography>
+            </Box>
+            {this.renderTabs()}
+            {this.renderTabDetails()}
+            {/* <div className={`${classes.formSection} ${currentTabIndex === "advanced" ? "" : ""}`}>{this.renderPlugins()}</div> */}
+          </Paper>
+        </Box>
         {this.renderDeployButton()}
       </form>
     );
