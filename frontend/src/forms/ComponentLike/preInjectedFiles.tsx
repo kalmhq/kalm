@@ -153,26 +153,28 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
     return (
       <>
         {this.renderEditContentDialog()}
-        <Button
-          variant="outlined"
-          color="primary"
-          startIcon={<Icon>add</Icon>}
-          size="small"
-          onClick={() =>
-            dispatch(
-              arrayPush(
-                form,
-                "preInjectedFiles",
-                Immutable.Map({
-                  readonly: true,
-                  content: "",
-                  mountPath: ""
-                })
+        <Box mb={2}>
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<Icon>add</Icon>}
+            size="small"
+            onClick={() =>
+              dispatch(
+                arrayPush(
+                  form,
+                  "preInjectedFiles",
+                  Immutable.Map({
+                    readonly: true,
+                    content: "",
+                    mountPath: ""
+                  })
+                )
               )
-            )
-          }>
-          Add
-        </Button>
+            }>
+            Add
+          </Button>
+        </Box>
         {fields.map((member, index) => {
           const injectedFile = fields.get(index);
 

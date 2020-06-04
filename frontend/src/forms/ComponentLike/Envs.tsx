@@ -1,4 +1,4 @@
-import { Button, Grid, Icon } from "@material-ui/core";
+import { Button, Grid, Icon, Box } from "@material-ui/core";
 import Immutable from "immutable";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
@@ -57,26 +57,28 @@ class RenderEnvs extends React.PureComponent<Props> {
       dispatch
     } = this.props;
     return (
-      <Button
-        variant="outlined"
-        color="primary"
-        startIcon={<Icon>add</Icon>}
-        size="small"
-        onClick={() =>
-          dispatch(
-            arrayPush(
-              form,
-              "env",
-              Immutable.Map({
-                type: "static",
-                name: "",
-                value: ""
-              })
+      <Box mb={2}>
+        <Button
+          variant="outlined"
+          color="primary"
+          startIcon={<Icon>add</Icon>}
+          size="small"
+          onClick={() =>
+            dispatch(
+              arrayPush(
+                form,
+                "env",
+                Immutable.Map({
+                  type: "static",
+                  name: "",
+                  value: ""
+                })
+              )
             )
-          )
-        }>
-        Add
-      </Button>
+          }>
+          Add
+        </Button>
+      </Box>
     );
   };
 
