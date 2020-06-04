@@ -1,29 +1,44 @@
+import { Button, Icon, TextField, Box } from "@material-ui/core";
+import Grid from "@material-ui/core/Grid";
+import EditIcon from "@material-ui/icons/Edit";
+import { KBoolCheckboxRender } from "forms/Basic/checkbox";
+import Immutable from "immutable";
+import { formatBytes } from "permission/utils";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
+import { arrayPush, WrappedFieldArrayProps, change, WrappedFieldProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
-import { Button, Icon, MenuItem } from "@material-ui/core";
-import { KRenderTextField } from "../Basic/textfield";
-import { ValidatorRequired } from "../validator";
-import { RenderSelectField } from "../Basic/select";
 import { PreInjectedFile } from "../../types/componentTemplate";
-import { arrayPush, WrappedFieldArrayProps } from "redux-form";
-import Grid from "@material-ui/core/Grid";
 import { DeleteIcon } from "../../widgets/Icon";
 import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
-import Immutable from "immutable";
+import { KRenderTextField } from "../Basic/textfield";
+import { ValidatorRequired, KValidatorPath } from "../validator";
+import { ControlledDialog } from "widgets/ControlledDialog";
+import { closeDialogAction, openDialogAction } from "actions/dialog";
 
 interface FieldArrayComponentHackType {
   name: any;
   component: any;
 }
 
+interface State {
+  editingFileIndex: number;
+  fileContentValue: string;
+}
+
 interface FieldArrayProps extends DispatchProp {}
 
 interface Props extends WrappedFieldArrayProps<PreInjectedFile>, FieldArrayComponentHackType, FieldArrayProps {}
 
-class RenderPreInjectedFile extends React.PureComponent<Props> {
+const updateContentDialogID = "update-content-dialog";
+
+class RenderPreInjectedFile extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
+    this.state = {
+      editingFileIndex: -1,
+      fileContentValue: ""
+    };
   }
 
   public getFieldComponents(member: string) {
@@ -46,15 +61,99 @@ class RenderPreInjectedFile extends React.PureComponent<Props> {
     ];
   }
 
+  private privateOpenEditDialog = (file: PreInjectedFile, index: number) => {
+    const {
+      dispatch,
+      meta: { form }
+    } = this.props;
+    this.setState({ editingFileIndex: index, fileContentValue: file.get("content") });
+    dispatch(openDialogAction(updateContentDialogID));
+  };
+
+  private renderEditContentDialog = () => {
+    const {
+      dispatch,
+      fields,
+      meta: { form }
+    } = this.props;
+    const file = fields.get(this.state.editingFileIndex);
+    return (
+      <ControlledDialog
+        dialogID={updateContentDialogID}
+        title="Edit file content"
+        dialogProps={{
+          fullWidth: true,
+          maxWidth: "sm"
+        }}
+        actions={
+          <>
+            <Button
+              onClick={() => {
+                dispatch(
+                  change(
+                    form,
+                    "preInjectedFiles[" + this.state.editingFileIndex + "]",
+                    file.set("content", this.state.fileContentValue)
+                  )
+                );
+                dispatch(closeDialogAction(updateContentDialogID));
+              }}
+              color="default"
+              variant="contained">
+              OK
+            </Button>
+            <Button
+              onClick={() => dispatch(closeDialogAction(updateContentDialogID))}
+              color="default"
+              variant="contained">
+              Close
+            </Button>
+          </>
+        }>
+        {file ? (
+          <TextField
+            multiline
+            onChange={event => this.setState({ fileContentValue: event.target.value })}
+            variant="outlined"
+            fullWidth
+            rows={20}
+            value={this.state.fileContentValue}></TextField>
+        ) : null}
+      </ControlledDialog>
+    );
+  };
+
+  private renderContent = ({
+    meta: { touched, invalid, error },
+    file,
+    index
+  }: WrappedFieldProps & { file: PreInjectedFile; index: number }) => {
+    if (file.get("content") === "") {
+      return (
+        <Box color={touched && invalid ? "error.main" : undefined}>
+          <Button
+            variant={touched && invalid ? "outlined" : "text"}
+            size="small"
+            onClick={() => this.privateOpenEditDialog(file, index)}
+            color="inherit">
+            {touched && invalid ? "Content required" : "Add Content"}
+          </Button>
+        </Box>
+      );
+    } else {
+      return formatBytes(Buffer.byteLength(file.get("content"), "utf8"));
+    }
+  };
+
   public render() {
     const {
       meta: { form },
       fields,
       dispatch
     } = this.props;
-
     return (
       <>
+        {this.renderEditContentDialog()}
         <Button
           variant="outlined"
           color="primary"
@@ -77,37 +176,42 @@ class RenderPreInjectedFile extends React.PureComponent<Props> {
         </Button>
         {fields.map((member, index) => {
           const injectedFile = fields.get(index);
+
           return (
-            <Grid container spacing={1}>
-              <Grid item md={2}>
-                <Field
-                  name={`${member}.readonly`}
-                  component={RenderSelectField}
-                  label="Mode"
-                  validate={[ValidatorRequired]}>
-                  <MenuItem value={"true"}>Read Only</MenuItem>
-                  <MenuItem value={"false"}>Read & Write</MenuItem>
-                </Field>
-              </Grid>
+            <Grid container spacing={1} alignItems="center">
               <Grid item md={3}>
                 <Field
                   name={`${member}.mountPath`}
                   label="Mount Path"
                   component={KRenderTextField}
                   margin
-                  validate={[ValidatorRequired]}
+                  validate={[ValidatorRequired, KValidatorPath]}
                 />
               </Grid>
-              <Grid item md={3}>
+              <Grid item md={2}>
+                <Field
+                  name={`${member}.readonly`}
+                  component={KBoolCheckboxRender}
+                  label="Read Only"
+                  validate={[ValidatorRequired]}></Field>
+              </Grid>
+              <Grid item md={2}>
                 <Field
                   name={`${member}.content`}
-                  label="File Content"
-                  component={KRenderTextField}
-                  margin
+                  component={this.renderContent}
                   validate={[ValidatorRequired]}
+                  file={injectedFile}
+                  index={index}
                 />
               </Grid>
               <Grid item md={3}>
+                <IconButtonWithTooltip
+                  tooltipPlacement="top"
+                  tooltipTitle="Edit"
+                  aria-label="edit"
+                  onClick={() => this.privateOpenEditDialog(injectedFile, index)}>
+                  <EditIcon />
+                </IconButtonWithTooltip>
                 <IconButtonWithTooltip
                   tooltipPlacement="top"
                   tooltipTitle="Delete"
