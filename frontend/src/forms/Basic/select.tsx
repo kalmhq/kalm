@@ -42,6 +42,10 @@ export const RenderSelectField = ({
   const classes = makeStyles(theme => ({
     root: {
       display: "flex"
+    },
+    inputLabel: {
+      fontWeight: 500,
+      fontSize: 13
     }
   }))();
 
@@ -73,7 +77,7 @@ export const RenderSelectField = ({
       size="small"
       style={{ pointerEvents: "auto" }}
       margin="dense">
-      <InputLabel ref={inputLabel} htmlFor={id} id={labelId}>
+      <InputLabel ref={inputLabel} htmlFor={id} id={labelId} classes={{ root: classes.inputLabel }}>
         {label}
       </InputLabel>
       <Select
