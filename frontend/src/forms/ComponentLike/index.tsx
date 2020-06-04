@@ -1,6 +1,5 @@
 import { Box, Button, Grid, List as MList, ListItem, ListItemText, Tab, Tabs, Tooltip } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
-import Paper from "@material-ui/core/Paper";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import HelpIcon from "@material-ui/icons/Help";
@@ -10,7 +9,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { InjectedFormProps } from "redux-form";
 import { Field, getFormSyncErrors, getFormValues, reduxForm } from "redux-form/immutable";
-import { Body, H4, H5, SectionTitle } from "widgets/Label";
+import { Body, H5, SectionTitle } from "widgets/Label";
 import { loadComponentPluginsAction } from "../../actions/application";
 import { loadConfigsAction } from "../../actions/config";
 import { loadNodesAction } from "../../actions/node";
@@ -20,6 +19,7 @@ import { TDispatchProp } from "../../types";
 import { SharedEnv } from "../../types/application";
 import { ComponentLike, workloadTypeCronjob, workloadTypeServer } from "../../types/componentTemplate";
 import { HelperContainer } from "../../widgets/Helper";
+import { KPanel } from "../../widgets/KPanel";
 import { KRadioGroupRender } from "../Basic/radio";
 import { RenderSelectField } from "../Basic/select";
 import { KRenderCommandTextField, KRenderTextField, RenderComplexValueTextField } from "../Basic/textfield";
@@ -1007,21 +1007,20 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
     return (
       <form onSubmit={handleSubmit} className={classes.root}>
-        <Paper square>
-          <Box p={2} className={classes.borderBottom}>
-            <H4>Basic Information</H4>
-          </Box>
-          <Box p={2}>{this.renderMain()}</Box>
-        </Paper>
+        <KPanel title={"Basic Information"} content={<Box p={2}>{this.renderMain()}</Box>} />
+
         <Box mt={2}>
-          <Paper square>
-            <Box p={2} className={classes.borderBottom}>
-              <H4>Advanced Settings</H4>
-            </Box>
-            {this.renderTabs()}
-            <Box p={2}>{this.renderTabDetails()}</Box>
-          </Paper>
+          <KPanel
+            title={"Advanced Settings"}
+            content={
+              <>
+                {this.renderTabs()}
+                <Box p={2}>{this.renderTabDetails()}</Box>
+              </>
+            }
+          />
         </Box>
+
         {/* <div className={`${classes.formSection} ${currentTabIndex === "advanced" ? "" : ""}`}>{this.renderPlugins()}</div> */}
         {this.renderDeployButton()}
       </form>
