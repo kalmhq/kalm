@@ -4,7 +4,9 @@ import { WrappedFieldProps } from "redux-form";
 import { InputAdornment } from "@material-ui/core";
 import { KappConsoleIcon } from "../../widgets/Icon";
 
-interface Props {}
+interface Props {
+  endAdornment?: React.ReactNode;
+}
 
 // value type is string
 export const KRenderTextField = ({
@@ -14,6 +16,7 @@ export const KRenderTextField = ({
   placeholder,
   required,
   disabled,
+  endAdornment,
   meta: { touched, invalid, error },
   ...custom
 }: FilledTextFieldProps & WrappedFieldProps & Props) => {
@@ -30,6 +33,9 @@ export const KRenderTextField = ({
       helperText={showError ? error : helperText ? helperText : ""}
       margin="dense"
       variant="outlined"
+      InputProps={{
+        endAdornment: <InputAdornment position="end">{endAdornment}</InputAdornment>
+      }}
       value={input.value}
       onChange={(event: ChangeEvent<HTMLInputElement>) => input.onChange(event.target.value)}
     />

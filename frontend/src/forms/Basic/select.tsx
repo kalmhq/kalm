@@ -22,13 +22,15 @@ const renderFormHelper = ({ touched, error }: Pick<WrappedFieldMetaProps, "touch
   }
 };
 
+interface Props {}
+
 export const RenderSelectField = ({
   input,
   label,
   autoFocus,
   meta: { touched, error },
   children
-}: WrappedFieldProps & SelectProps) => {
+}: WrappedFieldProps & SelectProps & Props) => {
   const id = ID();
   const labelId = ID();
   const classes = makeStyles(theme => ({
@@ -49,14 +51,18 @@ export const RenderSelectField = ({
     input.onChange(event.target.value);
   };
 
+  // select doesn't support endAdornment
+  // tooltip doesn't work in FormControl
+  // https://stackoverflow.com/questions/60384230/tooltip-inside-textinput-label-is-not-working-material-ui-react
   return (
     <FormControl
       classes={{ root: classes.root }}
       error={touched && error}
       variant="outlined"
       size="small"
+      style={{ pointerEvents: "auto" }}
       margin="dense">
-      <InputLabel ref={inputLabel} htmlFor={id} id={labelId}>
+      <InputLabel ref={inputLabel} htmlFor={id} id={labelId} style={{ pointerEvents: "auto" }}>
         {label}
       </InputLabel>
       <Select
@@ -72,6 +78,7 @@ export const RenderSelectField = ({
         }}>
         {children}
       </Select>
+
       {renderFormHelper({ touched, error })}
     </FormControl>
   );

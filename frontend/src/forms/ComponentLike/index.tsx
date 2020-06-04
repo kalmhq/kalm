@@ -63,8 +63,8 @@ const styles = (theme: Theme) =>
       width: "100%",
       padding: 20,
       // since deploy button is fixed
-      paddingBottom: 100,
-      backgroundColor: "#F4F5F7"
+      paddingBottom: 100
+      // backgroundColor: "#F4F5F7"
     },
     borderBottom: {
       borderBottom: "1px solid rgba(0, 0, 0, 0.12)"
@@ -86,22 +86,25 @@ const styles = (theme: Theme) =>
     helperField: {
       position: "relative"
     },
-    helperFieldIcon: {
+    textFieldHelperIcon: {
       color: grey[700],
-      verticalAlign: "middle",
       cursor: "pointer"
     },
-    helperSelectIcon: {
+    // Select doesn't support endAdornment
+    // and tooltip doesn't work in FormControl
+    // https://stackoverflow.com/questions/60384230/tooltip-inside-textinput-label-is-not-working-material-ui-react
+    // only way to show helper in Select is using absolute
+    selectHelperIcon: {
       color: grey[700],
       cursor: "pointer",
       position: "absolute",
       right: 30,
       top: 10
     },
-    helperTextIcon: {
+    sectionTitleHelperIcon: {
       color: grey[700],
       cursor: "pointer",
-      marginLeft: "8px"
+      marginLeft: theme.spacing(1)
     },
     deployBtn: {
       width: 360,
@@ -262,7 +265,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           <SectionTitle>
             <H5>Inject Configuration Files</H5>
             <Tooltip title={helperContainer}>
-              <HelpIcon fontSize="small" className={classes.helperTextIcon} />
+              <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
             </Tooltip>
           </SectionTitle>
         </Grid>
@@ -319,7 +322,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           <SectionTitle>
             <H5>Environment variables</H5>
             <Tooltip title={helperContainer}>
-              <HelpIcon fontSize="small" className={classes.helperTextIcon} />
+              <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
             </Tooltip>
           </SectionTitle>
         </Grid>{" "}
@@ -348,7 +351,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           <SectionTitle>
             <H5>Ports</H5>
             <Tooltip title={helperContainer}>
-              <HelpIcon fontSize="small" className={classes.helperTextIcon} />
+              <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
             </Tooltip>
           </SectionTitle>
         </Grid>
@@ -410,7 +413,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           <SectionTitle>
             <H5>Volumes</H5>
             <Tooltip title={helperContainer}>
-              <HelpIcon fontSize="small" className={classes.helperTextIcon} />
+              <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
             </Tooltip>
           </SectionTitle>
         </Grid>
@@ -436,7 +439,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   //         <SectionTitle>
   //           <H5>Configs</H5>
   //           {/* <Tooltip title={helperContainer}>
-  //           <HelpIcon fontSize="small" className={classes.helperTextIcon} />
+  //           <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
   //         </Tooltip> */}
   //         </SectionTitle>
   //       </Grid>{" "}
@@ -647,7 +650,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               <MenuItem value="None">None</MenuItem>
             </Field>
             <Tooltip title={this.getDnsPolicyHelper()}>
-              <HelpIcon fontSize="small" className={classes.helperSelectIcon} />
+              <HelpIcon fontSize="small" className={classes.selectHelperIcon} />
             </Tooltip>
           </div>
         </Grid> */}
@@ -691,7 +694,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   //       <SectionTitle>
   //         <H5>Plugins</H5>
   //         <Tooltip title={helperContainer}>
-  //           <HelpIcon fontSize="small" className={classes.helperTextIcon} />
+  //           <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
   //         </Tooltip>
   //       </SectionTitle>
 
@@ -713,7 +716,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           <SectionTitle>
             <H5>Command</H5>
             <Tooltip title="This filed is used to overwrite `entrypoint` and `commands` in image. Leave it blank to use image default settings.">
-              <HelpIcon fontSize="small" className={classes.helperFieldIcon} />
+              <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
             </Tooltip>
           </SectionTitle>
         </Grid>
@@ -756,37 +759,37 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </Grid>
 
           <Grid item xs={6} sm={6} md={6}>
-            <div className={classes.helperField}>
-              <Field
-                component={KRenderTextField}
-                name="cpu"
-                label="CPU"
-                margin
-                validate={[ValidatorCPU]}
-                // normalize={NormalizeCPU}
-                placeholder="Please type the component name"
-              />
-              <Tooltip title={this.getCPUHelper()}>
-                <HelpIcon fontSize="small" className={classes.helperFieldIcon} />
-              </Tooltip>
-            </div>
+            <Field
+              component={KRenderTextField}
+              name="cpu"
+              label="CPU"
+              margin
+              validate={[ValidatorCPU]}
+              // normalize={NormalizeCPU}
+              placeholder="Please type the component name"
+              endAdornment={
+                <Tooltip title={this.getCPUHelper()}>
+                  <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
+                </Tooltip>
+              }
+            />
           </Grid>
 
           <Grid item xs={6} sm={6} md={6}>
-            <div className={classes.helperField}>
-              <Field
-                component={KRenderTextField}
-                name="memory"
-                label="Memory"
-                margin
-                validate={[ValidatorMemory]}
-                // normalize={NormalizeMemory}
-                placeholder="Please type the component name"
-              />
-              <Tooltip title={this.getMemoryHelper()}>
-                <HelpIcon fontSize="small" className={classes.helperFieldIcon} />
-              </Tooltip>
-            </div>
+            <Field
+              component={KRenderTextField}
+              name="memory"
+              label="Memory"
+              margin
+              validate={[ValidatorMemory]}
+              // normalize={NormalizeMemory}
+              placeholder="Please type the component name"
+              endAdornment={
+                <Tooltip title={this.getMemoryHelper()}>
+                  <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
+                </Tooltip>
+              }
+            />
           </Grid>
 
           {this.renderVolumes()}
@@ -887,25 +890,25 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               <MenuItem value="Recreate">Recreate</MenuItem>
             </Field>
             <Tooltip title={this.getRestartStrategyHelper()}>
-              <HelpIcon fontSize="small" className={classes.helperSelectIcon} />
+              <HelpIcon fontSize="small" className={classes.selectHelperIcon} />
             </Tooltip>
           </div>
         </Grid>
         <Grid item xs={6} sm={6} md={6}></Grid>
         <Grid item xs={6} sm={6} md={6}>
-          <div className={classes.helperField}>
-            <Field
-              component={KRenderTextField}
-              name="terminationGracePeriodSeconds"
-              label="Termination Grace Period Seconds"
-              // validate={ValidatorRequired}
-              normalize={NormalizeNumber}
-              margin
-            />
-            <Tooltip title={this.getTerminationGracePeriodSecondsHelper()}>
-              <HelpIcon fontSize="small" className={classes.helperFieldIcon} />
-            </Tooltip>
-          </div>
+          <Field
+            component={KRenderTextField}
+            name="terminationGracePeriodSeconds"
+            label="Termination Grace Period Seconds"
+            // validate={ValidatorRequired}
+            normalize={NormalizeNumber}
+            margin
+            endAdornment={
+              <Tooltip title={this.getTerminationGracePeriodSecondsHelper()}>
+                <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
+              </Tooltip>
+            }
+          />
         </Grid>
       </Grid>
     );
