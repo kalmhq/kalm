@@ -22,9 +22,15 @@ const renderFormHelper = ({ touched, error }: Pick<WrappedFieldMetaProps, "touch
   }
 };
 
-interface Props {}
+interface Props {
+  options: { text: string; value: string }[];
+  // default select first value as default if input.value is undefined
+  notSelectFirstIfValueIsUndefined?: boolean;
+}
 
 export const RenderSelectField = ({
+  options,
+  notSelectFirstIfValueIsUndefined,
   input,
   label,
   autoFocus,
@@ -51,6 +57,11 @@ export const RenderSelectField = ({
     input.onChange(event.target.value);
   };
 
+  let value = input.value;
+  if (!notSelectFirstIfValueIsUndefined && options && options[0]) {
+    value = options[0].value;
+  }
+
   // select doesn't support endAdornment
   // tooltip doesn't work in FormControl
   // https://stackoverflow.com/questions/60384230/tooltip-inside-textinput-label-is-not-working-material-ui-react
@@ -62,7 +73,7 @@ export const RenderSelectField = ({
       size="small"
       style={{ pointerEvents: "auto" }}
       margin="dense">
-      <InputLabel ref={inputLabel} htmlFor={id} id={labelId} style={{ pointerEvents: "auto" }}>
+      <InputLabel ref={inputLabel} htmlFor={id} id={labelId}>
         {label}
       </InputLabel>
       <Select
@@ -70,13 +81,20 @@ export const RenderSelectField = ({
         labelWidth={labelWidth}
         autoFocus={autoFocus}
         labelId={labelId}
-        value={input.value}
+        value={value}
         onChange={onChange}
         onBlur={input.onBlur}
         inputProps={{
           id: id
         }}>
-        {children}
+        {options &&
+          options.map(option => {
+            return (
+              <MenuItem value={option.value} key={option.value}>
+                {option.text}
+              </MenuItem>
+            );
+          })}
       </Select>
 
       {renderFormHelper({ touched, error })}

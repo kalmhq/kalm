@@ -2,14 +2,14 @@ import { MenuItem } from "@material-ui/core";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { WrappedFieldArrayProps } from "redux-form";
-import { FieldArray, Field } from "redux-form/immutable";
-import { NormalizePort } from "../normalizer";
+import { Field, FieldArray } from "redux-form/immutable";
+import { portTypeTCP, portTypeUDP } from "../../types/common";
 import { ComponentLikePort } from "../../types/componentTemplate";
-import { portTypeUDP, portTypeTCP } from "../../types/common";
-import { KRenderTextField } from "../Basic/textfield";
-import { ValidatorRequired } from "../validator";
 import { FieldArrayWrapper } from "../Basic/FieldArrayWrapper";
 import { RenderSelectField } from "../Basic/select";
+import { KRenderTextField } from "../Basic/textfield";
+import { NormalizePort } from "../normalizer";
+import { ValidatorRequired } from "../validator";
 
 interface FieldArrayComponentHackType {
   name: any;
@@ -24,7 +24,15 @@ class RenderPorts extends React.PureComponent<Props> {
   public getFieldComponents(member: string) {
     return [
       <Field component={KRenderTextField} name={`${member}.name`} label="Name" margin validate={[ValidatorRequired]} />,
-      <Field name={`${member}.protocol`} component={RenderSelectField} label="Protocol" validate={[ValidatorRequired]}>
+      <Field
+        name={`${member}.protocol`}
+        component={RenderSelectField}
+        label="Protocol"
+        validate={[ValidatorRequired]}
+        options={[
+          { value: portTypeTCP, text: portTypeTCP },
+          { value: portTypeUDP, text: portTypeUDP }
+        ]}>
         <MenuItem value={portTypeUDP}>{portTypeUDP}</MenuItem>
         <MenuItem value={portTypeTCP}>{portTypeTCP}</MenuItem>
       </Field>,

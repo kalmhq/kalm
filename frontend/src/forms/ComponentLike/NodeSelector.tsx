@@ -1,4 +1,3 @@
-import { MenuItem } from "@material-ui/core";
 import Checkbox from "@material-ui/core/Checkbox";
 import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
 import CheckBoxIcon from "@material-ui/icons/CheckBox";
@@ -76,9 +75,14 @@ export const RenderAffinityType = (props: FilledTextFieldProps & WrappedFieldPro
   const inputLabel = "Assign Node Policy";
   const { input } = props;
   return (
-    <RenderSelectField input={input} label={inputLabel} value={input.value} meta={props.meta}>
-      <MenuItem value={PodAffinityTypePreferFanout}>Prefer Fanout</MenuItem>
-      <MenuItem value={PodAffinityTypePreferGather}>Prefer Gather</MenuItem>
-    </RenderSelectField>
+    <RenderSelectField
+      input={input}
+      label={inputLabel}
+      value={input.value}
+      meta={props.meta}
+      options={[
+        { value: PodAffinityTypePreferFanout, text: "Prefer Fanout" },
+        { value: PodAffinityTypePreferGather, text: "Prefer Gather" }
+      ]}></RenderSelectField>
   );
 };

@@ -1,7 +1,7 @@
+import { InputAdornment } from "@material-ui/core";
 import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
 import React, { ChangeEvent } from "react";
 import { WrappedFieldProps } from "redux-form";
-import { InputAdornment } from "@material-ui/core";
 import { KappConsoleIcon } from "../../widgets/Icon";
 
 interface Props {
@@ -33,6 +33,9 @@ export const KRenderTextField = ({
       helperText={showError ? error : helperText ? helperText : ""}
       margin="dense"
       variant="outlined"
+      InputLabelProps={{
+        shrink: true
+      }}
       InputProps={{
         endAdornment: <InputAdornment position="end">{endAdornment}</InputAdornment>
       }}
@@ -63,6 +66,9 @@ export const KRenderTextareaField = ({
       disabled={disabled}
       required={required}
       error={showError}
+      InputLabelProps={{
+        shrink: true
+      }}
       InputProps={{
         rows: 4
       }}

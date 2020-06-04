@@ -1,26 +1,16 @@
-import {
-  Box,
-  Button,
-  Grid,
-  List as MList,
-  ListItem,
-  ListItemText,
-  MenuItem,
-  Tab,
-  Tabs,
-  Tooltip
-} from "@material-ui/core";
-import clsx from "clsx";
+import { Box, Button, Grid, List as MList, ListItem, ListItemText, Tab, Tabs, Tooltip } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
+import Paper from "@material-ui/core/Paper";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import HelpIcon from "@material-ui/icons/Help";
+import clsx from "clsx";
 import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
 import { InjectedFormProps } from "redux-form";
 import { Field, getFormSyncErrors, getFormValues, reduxForm } from "redux-form/immutable";
-import { H5, SectionTitle, Body, H4 } from "widgets/Label";
+import { Body, H4, H5, SectionTitle } from "widgets/Label";
 import { loadComponentPluginsAction } from "../../actions/application";
 import { loadConfigsAction } from "../../actions/config";
 import { loadNodesAction } from "../../actions/node";
@@ -39,10 +29,9 @@ import { ValidatorCPU, ValidatorMemory, ValidatorName, ValidatorRequired, Valida
 import { Envs } from "./Envs";
 import { RenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
+import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
 import { Volumes } from "./Volumes";
-import { PreInjectedFiles } from "./preInjectedFiles";
-import Paper from "@material-ui/core/Paper";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
@@ -636,24 +625,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             <H5>DNS Policy</H5>
           </SectionTitle>
         </Grid>
-        {/* <Grid item xs={6} sm={6} md={6}>
-          <div className={classes.helperField}>
-            <Field
-              name="dnsPolicy"
-              component={RenderSelectField}
-              label="Dns Policy"
-              // validate={ValidatorRequired}
-            >
-              <MenuItem value="ClusterFirst">ClusterFirst</MenuItem>
-              <MenuItem value="Default">Default</MenuItem>
-              <MenuItem value="ClusterFirstWithHostNet">ClusterFirstWithHostNet</MenuItem>
-              <MenuItem value="None">None</MenuItem>
-            </Field>
-            <Tooltip title={this.getDnsPolicyHelper()}>
-              <HelpIcon fontSize="small" className={classes.selectHelperIcon} />
-            </Tooltip>
-          </div>
-        </Grid> */}
         <Grid item xs={12} sm={12} md={12}>
           <Field component={KRadioGroupRender} name="dnsPolicy" options={this.getDnsPolicyOptions()} />
         </Grid>
@@ -885,10 +856,11 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               name="restartStrategy"
               component={RenderSelectField}
               // validate={ValidatorRequired}
-              label="Restart Strategy">
-              <MenuItem value="RollingUpdate">Rolling Update</MenuItem>
-              <MenuItem value="Recreate">Recreate</MenuItem>
-            </Field>
+              label="Restart Strategy"
+              options={[
+                { value: "RollingUpdate", text: "Rolling Update" },
+                { value: "Recreate", text: "Recreate" }
+              ]}></Field>
             <Tooltip title={this.getRestartStrategyHelper()}>
               <HelpIcon fontSize="small" className={classes.selectHelperIcon} />
             </Tooltip>
@@ -1000,10 +972,15 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
 
         <Grid item xs={6}>
-          <Field name="workloadType" component={RenderSelectField} label="Workload Type" validate={[ValidatorRequired]}>
-            <MenuItem value={workloadTypeServer}>Server (continuous running)</MenuItem>
-            <MenuItem value={workloadTypeCronjob}>Cronjob (periodic running)</MenuItem>
-          </Field>
+          <Field
+            name="workloadType"
+            component={RenderSelectField}
+            label="Workload Type"
+            validate={[ValidatorRequired]}
+            options={[
+              { value: workloadTypeServer, text: "Server (continuous running)" },
+              { value: workloadTypeCronjob, text: "Cronjob (periodic running)" }
+            ]}></Field>
         </Grid>
         <Grid item xs={6}>
           {this.renderReplicasOrSchedule()}

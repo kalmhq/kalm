@@ -1,16 +1,15 @@
-import { MenuItem } from "@material-ui/core";
 import Immutable from "immutable";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { WrappedFieldArrayProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
+import { SharedEnv } from "../../types/application";
 import { EnvTypeExternal, EnvTypeLinked, EnvTypeStatic } from "../../types/common";
 import { RenderAutoCompleteFreeSolo } from "../Basic/autoComplete";
 import { FieldArrayWrapper } from "../Basic/FieldArrayWrapper";
-import { ValidatorRequired } from "../validator";
-import { SharedEnv } from "../../types/application";
 import { RenderSelectField } from "../Basic/select";
 import { KRenderTextField } from "../Basic/textfield";
+import { ValidatorRequired } from "../validator";
 
 interface FieldArrayComponentHackType {
   name: any;
@@ -54,11 +53,16 @@ class RenderEnvs extends React.PureComponent<Props> {
 
   public getFieldComponents(member: string) {
     return [
-      <Field name={`${member}.type`} component={RenderSelectField} label="Type" validate={[ValidatorRequired]}>
-        <MenuItem value={EnvTypeStatic}>Static</MenuItem>
-        <MenuItem value={EnvTypeExternal}>External</MenuItem>
-        <MenuItem value={EnvTypeLinked}>Linked</MenuItem>
-      </Field>,
+      <Field
+        name={`${member}.type`}
+        component={RenderSelectField}
+        label="Type"
+        validate={[ValidatorRequired]}
+        options={[
+          { value: EnvTypeStatic, text: "Static" },
+          { value: EnvTypeExternal, text: "External" },
+          { value: EnvTypeLinked, text: "Linked" }
+        ]}></Field>,
       <Field
         options={this.nameAutoCompleteOptions}
         name={`${member}.name`}

@@ -1,4 +1,4 @@
-import { Grid, MenuItem } from "@material-ui/core";
+import { Grid } from "@material-ui/core";
 import { NormalizeNumber, NormalizeNumberOrAlphabet } from "forms/normalizer";
 import Immutable from "immutable";
 import React from "react";
@@ -7,10 +7,9 @@ import { WrappedFieldProps } from "redux-form";
 import { Field } from "redux-form/immutable";
 import { HttpHeader, HttpHeaders } from "../../types/componentTemplate";
 import { H5 } from "../../widgets/Label";
-import { KRenderTextField } from "../Basic/textfield";
-import { ValidatorHttpHeaders, ValidatorNumberOrAlphabet, ValidatorRequired } from "../validator";
 import { RenderSelectField } from "../Basic/select";
-import { RenderComplexValueTextField } from "../Basic/textfield";
+import { KRenderTextField, RenderComplexValueTextField } from "../Basic/textfield";
+import { ValidatorHttpHeaders, ValidatorNumberOrAlphabet, ValidatorRequired } from "../validator";
 
 interface FieldComponentHackType {
   name: any;
@@ -303,12 +302,13 @@ class RenderProbe extends React.PureComponent<Props, State> {
             value={type}
             onChange={(value: any) => {
               this.handleChangeType(value);
-            }}>
-            <MenuItem value={""}>none</MenuItem>
-            <MenuItem value={"httpGet"}>httpGet</MenuItem>
-            <MenuItem value={"exec"}>exec</MenuItem>
-            <MenuItem value={"tcpSocket"}>tcpSocket</MenuItem>
-          </Field>
+            }}
+            options={[
+              { value: "", text: "none" },
+              { value: "httpGet", text: "httpGet" },
+              { value: "exec", text: "exec" },
+              { value: "tcpSocket", text: "tcpSocket" }
+            ]}></Field>
         </Grid>
 
         {type === "httpGet" && this.renderHttpGet()}

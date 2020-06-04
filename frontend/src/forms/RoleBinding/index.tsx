@@ -1,4 +1,4 @@
-import { MenuItem, Grid } from "@material-ui/core";
+import { Grid, MenuItem } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { RenderMutipleSelectField, RenderSelectField } from "forms/Basic/select";
 import { TextField } from "forms/Basic/text";
@@ -7,7 +7,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { InjectedFormProps } from "redux-form";
-import { Field, reduxForm, formValueSelector } from "redux-form/immutable";
+import { Field, formValueSelector, reduxForm } from "redux-form/immutable";
 import { TDispatchProp } from "types";
 import { RoleBindingsRequestBody } from "types/user";
 import { ValidatorRequired } from "../validator";
@@ -68,11 +68,15 @@ class RoleBindingFormRaw extends React.PureComponent<Props> {
           </Field>
         </Grid>
         <Grid item md={6}>
-          <Field name={`kind`} component={RenderSelectField} label="Kind">
-            <MenuItem value="Group">Group</MenuItem>
-            <MenuItem value="User">User</MenuItem>
-            <MenuItem value="ServiceAccount">ServiceAccount</MenuItem>
-          </Field>
+          <Field
+            name={`kind`}
+            component={RenderSelectField}
+            label="Kind"
+            options={[
+              { value: "Group", text: "Group" },
+              { value: "User", text: "User" },
+              { value: "ServiceAccount", text: "ServiceAccount" }
+            ]}></Field>
         </Grid>
         <Grid item md={12}>
           <Field

@@ -1,16 +1,16 @@
+import { Button, Icon } from "@material-ui/core";
+import Grid from "@material-ui/core/Grid";
+import Immutable from "immutable";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
-import { Field, FieldArray } from "redux-form/immutable";
-import { Button, Icon, MenuItem } from "@material-ui/core";
-import { KRenderTextField } from "../Basic/textfield";
-import { ValidatorRequired } from "../validator";
-import { RenderSelectField } from "../Basic/select";
-import { PreInjectedFile } from "../../types/componentTemplate";
 import { arrayPush, WrappedFieldArrayProps } from "redux-form";
-import Grid from "@material-ui/core/Grid";
+import { Field, FieldArray } from "redux-form/immutable";
+import { PreInjectedFile } from "../../types/componentTemplate";
 import { DeleteIcon } from "../../widgets/Icon";
 import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
-import Immutable from "immutable";
+import { RenderSelectField } from "../Basic/select";
+import { KRenderTextField } from "../Basic/textfield";
+import { ValidatorRequired } from "../validator";
 
 interface FieldArrayComponentHackType {
   name: any;
@@ -79,10 +79,11 @@ class RenderPreInjectedFile extends React.PureComponent<Props> {
                   name={`${member}.readonly`}
                   component={RenderSelectField}
                   label="Mode"
-                  validate={[ValidatorRequired]}>
-                  <MenuItem value={"true"}>Read Only</MenuItem>
-                  <MenuItem value={"false"}>Read & Write</MenuItem>
-                </Field>
+                  validate={[ValidatorRequired]}
+                  options={[
+                    { value: "true", text: "Read Only" },
+                    { value: "false", text: "Read & Write" }
+                  ]}></Field>
               </Grid>
               <Grid item md={3}>
                 <Field
