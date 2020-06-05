@@ -1,10 +1,12 @@
+import { InputAdornment, makeStyles } from "@material-ui/core";
 import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
 import React, { ChangeEvent } from "react";
 import { WrappedFieldProps } from "redux-form";
-import { InputAdornment } from "@material-ui/core";
 import { KappConsoleIcon } from "../../widgets/Icon";
 
-interface Props {}
+interface Props {
+  endAdornment?: React.ReactNode;
+}
 
 // value type is string
 export const KRenderTextField = ({
@@ -14,10 +16,20 @@ export const KRenderTextField = ({
   placeholder,
   required,
   disabled,
+  endAdornment,
+  multiline,
+  rows,
   meta: { touched, invalid, error },
   ...custom
 }: FilledTextFieldProps & WrappedFieldProps & Props) => {
   const showError = !!error && touched;
+
+  const classes = makeStyles(theme => ({
+    inputLabel: {
+      fontWeight: 500,
+      fontSize: 13
+    }
+  }))();
 
   return (
     <TextField
@@ -27,9 +39,20 @@ export const KRenderTextField = ({
       disabled={disabled}
       required={required}
       error={showError}
+      multiline={multiline}
+      rows={rows}
+      InputLabelProps={{
+        shrink: true,
+        classes: {
+          root: classes.inputLabel
+        }
+      }}
       helperText={showError ? error : helperText ? helperText : ""}
       margin="dense"
       variant="outlined"
+      InputProps={{
+        endAdornment: <InputAdornment position="end">{endAdornment}</InputAdornment>
+      }}
       value={input.value}
       onChange={(event: ChangeEvent<HTMLInputElement>) => input.onChange(event.target.value)}
     />
@@ -57,6 +80,9 @@ export const KRenderTextareaField = ({
       disabled={disabled}
       required={required}
       error={showError}
+      InputLabelProps={{
+        shrink: true
+      }}
       InputProps={{
         rows: 4
       }}

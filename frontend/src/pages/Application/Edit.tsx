@@ -31,7 +31,8 @@ const styles = (theme: Theme) =>
   createStyles({
     root: {
       // padding: theme.spacing(3)
-      height: "100%"
+      height: "100%",
+      backgroundColor: "#F4F5F7"
     },
     secondHeaderRight: {
       height: "100%",
@@ -189,7 +190,7 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
   }
 
   public renderForm() {
-    const { application, sharedEnv, dispatch } = this.props;
+    const { application, sharedEnv, dispatch, classes } = this.props;
     const { currentComponent, changingComponent } = this.state;
 
     if (changingComponent) {
@@ -197,7 +198,7 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
     }
 
     return (
-      <Grid container spacing={2}>
+      <Grid container spacing={2} className={classes.root}>
         <Grid item xs={8} sm={8} md={8}>
           <ComponentLikeForm
             sharedEnv={sharedEnv}

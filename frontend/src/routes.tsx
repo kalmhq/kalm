@@ -8,7 +8,7 @@ import { ApplicationShow } from "pages/Application/Show";
 import { ComponentTemplateEdit } from "pages/ComponentTemplate/Edit";
 import { ComponentTemplateListPage } from "pages/ComponentTemplate/List";
 import { ComponentTemplateNew } from "pages/ComponentTemplate/New";
-import { ConfigListPage } from "pages/Config/List";
+// import { ConfigListPage } from "pages/Config/List";
 import { DependencyListPage } from "pages/Dependency/List";
 import { Disks } from "pages/Disks";
 import DashboardPage from "pages/Dashboard";

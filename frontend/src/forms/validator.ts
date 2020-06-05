@@ -179,6 +179,14 @@ export const KValidatorHosts = (
   return errors.filter(x => !!x).length > 0 ? errors : undefined;
 };
 
+export const KValidatorPath = (value: string, _allValues?: any, _props?: any, _name?: any) => {
+  if (!value) {
+    return undefined;
+  }
+
+  return value.startsWith("/") ? undefined : 'path should start with a "/"';
+};
+
 export const KValidatorPaths = (
   values: Immutable.List<string>,
   _allValues?: any,

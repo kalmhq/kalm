@@ -1,4 +1,3 @@
-import { MenuItem } from "@material-ui/core";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { WrappedFieldArrayProps } from "redux-form";
@@ -12,10 +11,10 @@ import {
   VolumeTypeTemporaryDisk,
   VolumeTypeTemporaryMemory
 } from "../../types/componentTemplate";
-import { KRenderTextField } from "../Basic/textfield";
 import { FieldArrayWrapper } from "../Basic/FieldArrayWrapper";
-import { ValidatorRequired } from "../validator";
 import { RenderSelectField } from "../Basic/select";
+import { KRenderTextField } from "../Basic/textfield";
+import { ValidatorRequired } from "../validator";
 
 const mapStateToProps = (state: RootState) => {
   return {};
@@ -40,12 +39,13 @@ class RenderVolumes extends React.PureComponent<Props> {
         component={RenderSelectField}
         label="Type"
         validate={[ValidatorRequired]}
-        placeholder="Select a volume type">
-        <MenuItem value={VolumeTypePersistentVolumeClaimNew}>Create and mount disk</MenuItem>
-        <MenuItem value={VolumeTypePersistentVolumeClaimExisting}>Mount an existing disk</MenuItem>
-        <MenuItem value={VolumeTypeTemporaryDisk}>Mount a temporary Disk</MenuItem>
-        <MenuItem value={VolumeTypeTemporaryMemory}>Mount a temporary memory Disk</MenuItem>
-      </Field>,
+        placeholder="Select a volume type"
+        options={[
+          { value: VolumeTypePersistentVolumeClaimNew, text: "Create and mount disk" },
+          { value: VolumeTypePersistentVolumeClaimExisting, text: "Mount an existing disk" },
+          { value: VolumeTypeTemporaryDisk, text: "Mount a temporary Disk" },
+          { value: VolumeTypeTemporaryMemory, text: "Mount a temporary memory Disk" }
+        ]}></Field>,
       <Field
         component={KRenderTextField}
         name={`${member}.path`}
@@ -61,11 +61,12 @@ class RenderVolumes extends React.PureComponent<Props> {
           label="Storage Class"
           name={`${member}.storageClassName`}
           component={RenderSelectField}
-          placeholder="Select the type of your disk">
-          <MenuItem value={"standard"}>Storage Class 1</MenuItem>
-          <MenuItem value={"standard"}>Storage Class 2</MenuItem>
-          <MenuItem value={"standard"}>Storage Class 3</MenuItem>
-        </Field>
+          placeholder="Select the type of your disk"
+          options={[
+            { value: "standard", text: "Storage Class 1" },
+            { value: "standard", text: "Storage Class 2" },
+            { value: "standard", text: "Storage Class 3" }
+          ]}></Field>
       );
       fieldComponents.push(
         <Field
@@ -82,11 +83,12 @@ class RenderVolumes extends React.PureComponent<Props> {
           label="Storage Class"
           name={`${member}.storageClassName`}
           component={RenderSelectField}
-          placeholder="Select the type of your disk">
-          <MenuItem value={"standard"}>Storage Class 1</MenuItem>
-          <MenuItem value={"standard"}>Storage Class 2</MenuItem>
-          <MenuItem value={"standard"}>Storage Class 3</MenuItem>
-        </Field>
+          placeholder="Select the type of your disk"
+          options={[
+            { value: "standard", text: "Storage Class 1" },
+            { value: "standard", text: "Storage Class 2" },
+            { value: "standard", text: "Storage Class 3" }
+          ]}></Field>
       );
     } else {
       fieldComponents.push(

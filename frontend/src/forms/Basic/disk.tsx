@@ -1,16 +1,16 @@
-import React from "react";
-import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
-import { WrappedFieldProps, WrappedFieldArrayProps } from "redux-form";
-import { Field, FieldArray } from "redux-form/immutable";
-import DeleteIcon from "@material-ui/icons/Delete";
-import { RenderAutoCompleteSelect } from "./autoComplete";
-import { Grid, Button, MenuItem, Divider } from "@material-ui/core";
+import { Button, Divider, Grid } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
-import { ValidatorRequired } from "../validator";
-import { ImmutableMap } from "../../typings";
-import Immutable from "immutable";
+import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
 import AddIcon from "@material-ui/icons/Add";
+import DeleteIcon from "@material-ui/icons/Delete";
+import Immutable from "immutable";
+import React from "react";
+import { WrappedFieldArrayProps, WrappedFieldProps } from "redux-form";
+import { Field, FieldArray } from "redux-form/immutable";
+import { ImmutableMap } from "../../typings";
 import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
+import { ValidatorRequired } from "../validator";
+import { RenderAutoCompleteSelect } from "./autoComplete";
 import { RenderSelectField } from "./select";
 import { KRenderTextField } from "./textfield";
 
@@ -83,10 +83,11 @@ const renderDisks = ({ fields, meta: { error, submitFailed } }: WrappedFieldArra
                           name={`${field}.storageClass`}
                           validate={isNewDisk ? ValidatorRequired : []}
                           component={RenderSelectField}
-                          label="StorageClass">
-                          <MenuItem value="gcp-classtic">gcp-classtic (FAKE, TODO)</MenuItem>
-                          <MenuItem value="gcp-ssd">gcp-ssd (FAKE, TODO)</MenuItem>
-                        </Field>
+                          label="StorageClass"
+                          options={[
+                            { value: "gcp-classtic", text: "gcp-classtic (FAKE, TODO)" },
+                            { value: "gcp-ssd", text: "gcp-ssd (FAKE, TODO)" }
+                          ]}></Field>
                       </Grid>
                     </>
                   ) : (

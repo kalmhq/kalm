@@ -1,5 +1,5 @@
 import { createMuiTheme } from "@material-ui/core";
-import { grey, green, red, indigo } from "@material-ui/core/colors";
+import { green, grey, indigo, red } from "@material-ui/core/colors";
 
 export const primaryBackgroud = indigo[50];
 export const primaryColor = indigo[700];
@@ -66,7 +66,8 @@ let themeRaw = createMuiTheme({
     },
     body2: {
       fontSize: 13,
-      fontWeight: 500
+      fontWeight: 500,
+      color: "rgba(0, 0, 0, 0.6);"
     },
     button: {
       fontSize: 13,
@@ -79,6 +80,18 @@ let themeRaw = createMuiTheme({
     }
   },
   overrides: {
+    MuiInputLabel: {
+      root: {
+        fontWeight: 500,
+        fontSize: 13,
+        color: "#000"
+      }
+    },
+    MuiPaper: {
+      root: {
+        backgroundColor: "#FAFAFA"
+      }
+    },
     MuiButton: {
       contained: {
         boxShadow: "0 1px 3px 0px rgba(0,0,0, .2)"

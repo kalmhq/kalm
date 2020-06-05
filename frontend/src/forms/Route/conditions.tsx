@@ -1,4 +1,4 @@
-import { Grid, MenuItem } from "@material-ui/core";
+import { Grid } from "@material-ui/core";
 import React from "react";
 import { WrappedFieldArrayProps } from "redux-form";
 import { Field } from "redux-form/immutable";
@@ -35,11 +35,12 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
               name={`${member}.operator`}
               component={RenderSelectField}
               label="operator"
-              validate={[ValidatorRequired]}>
-              <MenuItem value={"equal"}>{"Equal"}</MenuItem>
-              <MenuItem value={"withPrifix"}>{"With Prifix"}</MenuItem>
-              <MenuItem value={"matchRegexp"}>{"Match Regexp"}</MenuItem>
-            </Field>
+              validate={[ValidatorRequired]}
+              options={[
+                { value: "equal", text: "Equal" },
+                { value: "withPrifix", text: "With Prifix" },
+                { value: "matchRegexp", text: "Match Regexp" }
+              ]}></Field>
           </Grid>
           <Grid item md={2}>
             <Field name={`${member}.value`} component={KRenderTextField} label="Value" validate={[ValidatorRequired]} />

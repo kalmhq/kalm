@@ -1,16 +1,15 @@
-import { MenuItem } from "@material-ui/core";
+import { Button, Grid, Icon, Box } from "@material-ui/core";
 import Immutable from "immutable";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
-import { WrappedFieldArrayProps } from "redux-form";
+import { arrayPush, WrappedFieldArrayProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
-import { EnvTypeExternal, EnvTypeLinked, EnvTypeStatic } from "../../types/common";
-import { RenderAutoCompleteFreeSolo } from "../Basic/autoComplete";
-import { FieldArrayWrapper } from "../Basic/FieldArrayWrapper";
-import { ValidatorRequired } from "../validator";
+import { DeleteIcon } from "widgets/Icon";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { SharedEnv } from "../../types/application";
-import { RenderSelectField } from "../Basic/select";
+import { RenderAutoCompleteFreeSolo } from "../Basic/autoComplete";
 import { KRenderTextField } from "../Basic/textfield";
+import { ValidatorRequired } from "../validator";
 
 interface FieldArrayComponentHackType {
   name: any;
@@ -52,34 +51,77 @@ class RenderEnvs extends React.PureComponent<Props> {
     this.nameAutoCompleteOptions = this.generateNameAutoCompleteOptionsFromProps(this.props);
   }
 
-  public getFieldComponents(member: string) {
-    return [
-      <Field name={`${member}.type`} component={RenderSelectField} label="Type" validate={[ValidatorRequired]}>
-        <MenuItem value={EnvTypeStatic}>Static</MenuItem>
-        <MenuItem value={EnvTypeExternal}>External</MenuItem>
-        <MenuItem value={EnvTypeLinked}>Linked</MenuItem>
-      </Field>,
-      <Field
-        options={this.nameAutoCompleteOptions}
-        name={`${member}.name`}
-        label="Name"
-        component={RenderAutoCompleteFreeSolo}
-        margin
-        validate={[ValidatorRequired]}
-      />,
-      <Field
-        name={`${member}.value`}
-        label="Value"
-        margin
-        validate={[ValidatorRequired]}
-        component={KRenderTextField}
-      />
-    ];
-  }
+  private renderAddButton = () => {
+    const {
+      meta: { form },
+      dispatch
+    } = this.props;
+    return (
+      <Box mb={2}>
+        <Button
+          variant="outlined"
+          color="primary"
+          startIcon={<Icon>add</Icon>}
+          size="small"
+          onClick={() =>
+            dispatch(
+              arrayPush(
+                form,
+                "env",
+                Immutable.Map({
+                  type: "static",
+                  name: "",
+                  value: ""
+                })
+              )
+            )
+          }>
+          Add
+        </Button>
+      </Box>
+    );
+  };
 
   public render() {
+    const { fields } = this.props;
     return (
-      <FieldArrayWrapper getFieldComponents={(member: string) => this.getFieldComponents(member)} {...this.props} />
+      <>
+        {this.renderAddButton()}
+        {fields.map((field, index) => {
+          return (
+            <Grid container spacing={2}>
+              <Grid item xs={3}>
+                <Field
+                  options={this.nameAutoCompleteOptions}
+                  name={`${field}.name`}
+                  label="Name"
+                  component={RenderAutoCompleteFreeSolo}
+                  margin
+                  validate={[ValidatorRequired]}
+                />
+              </Grid>
+              <Grid item xs={3}>
+                <Field
+                  name={`${field}.value`}
+                  label="Value"
+                  margin
+                  validate={[ValidatorRequired]}
+                  component={KRenderTextField}
+                />
+              </Grid>
+              <Grid item xs={3}>
+                <IconButtonWithTooltip
+                  tooltipPlacement="top"
+                  tooltipTitle="Delete"
+                  aria-label="delete"
+                  onClick={() => fields.remove(index)}>
+                  <DeleteIcon />
+                </IconButtonWithTooltip>
+              </Grid>
+            </Grid>
+          );
+        })}
+      </>
     );
   }
 }
