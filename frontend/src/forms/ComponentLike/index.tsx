@@ -144,7 +144,7 @@ const NodeScheduling = "Node Scheduling";
 const UpgradePolicy = "Upgrade Policy";
 
 class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
-  private tabs = [Configurations, Resources, Health, Networking, NodeScheduling, UpgradePolicy];
+  private tabs = [Configurations, Networking, Resources, Health, NodeScheduling, UpgradePolicy];
 
   constructor(props: Props) {
     super(props);
@@ -767,16 +767,17 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private renderHealth() {
     return (
       <Grid container spacing={2}>
-        {/* <Grid item xs={12} sm={12} md={12}>
-          <SectionTitle>
-            <H5>Health</H5>
-          </SectionTitle>
-        </Grid> */}
-        <Grid item xs={6} sm={6} md={6}>
-          <LivenessProbe />
+        <Grid item xs={12} sm={12} md={12}>
+          <Body>
+            Readiness probe is used to decide when a component is ready to accepting traffice. Liveness probe is used to
+            know if the component is running into an unexpected state and a restart is required.
+          </Body>
         </Grid>
         <Grid item xs={6} sm={6} md={6}>
           <ReadinessProbe />
+        </Grid>
+        <Grid item xs={6} sm={6} md={6}>
+          <LivenessProbe />
         </Grid>
       </Grid>
     );
@@ -888,14 +889,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <div className={`${this.tabs[this.state.currentTabIndex] === Configurations ? "" : classes.displayNone}`}>
           {this.renderConfigurations()}
         </div>
+        <div className={`${this.tabs[this.state.currentTabIndex] === Networking ? "" : classes.displayNone}`}>
+          {this.renderNetworking()}
+        </div>
         <div className={`${this.tabs[this.state.currentTabIndex] === Resources ? "" : classes.displayNone}`}>
           {this.renderResources()}
         </div>
         <div className={`${this.tabs[this.state.currentTabIndex] === Health ? "" : classes.displayNone}`}>
           {this.renderHealth()}
-        </div>
-        <div className={`${this.tabs[this.state.currentTabIndex] === Networking ? "" : classes.displayNone}`}>
-          {this.renderNetworking()}
         </div>
         <div className={`${this.tabs[this.state.currentTabIndex] === NodeScheduling ? "" : classes.displayNone}`}>
           {this.renderNodeScheduling()}
@@ -922,13 +923,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         }}
         aria-label="component form tabs">
         {this.tabs.map(tab => {
-          console.log(
-            tab === Configurations && (syncErrors.preInjectedFiles || syncErrors.env || syncErrors.command),
-            syncErrors,
-            syncErrors.preInjectedFiles,
-            syncErrors.env,
-            syncErrors.command
-          );
           if (
             submitFailed &&
             ((tab === Configurations && (syncErrors.preInjectedFiles || syncErrors.env || syncErrors.command)) ||

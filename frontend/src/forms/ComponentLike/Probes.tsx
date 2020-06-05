@@ -1,4 +1,4 @@
-import { Grid } from "@material-ui/core";
+import { Grid, Typography, Box } from "@material-ui/core";
 import { NormalizeNumber, NormalizeNumberOrAlphabet } from "forms/normalizer";
 import Immutable from "immutable";
 import React from "react";
@@ -83,13 +83,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
     return (
       <>
         <Grid item md={12}>
-          <Field
-            component={KRenderTextField}
-            name={`${name}.httpGet.host`}
-            label="Host (Optional)"
-            margin
-            helperText=""
-          />
+          <Field component={KRenderTextField} name={`${name}.httpGet.host`} label="Host" margin helperText="" />
         </Grid>
         <Grid item md={12}>
           <Field
@@ -103,28 +97,16 @@ class RenderProbe extends React.PureComponent<Props, State> {
           />
         </Grid>
         <Grid item md={12}>
-          <Field
-            component={KRenderTextField}
-            name={`${name}.httpGet.path`}
-            label="Path (Optional)"
-            margin
-            helperText=""
-          />
+          <Field component={KRenderTextField} name={`${name}.httpGet.path`} label="Path" margin helperText="" />
         </Grid>
         <Grid item md={12}>
-          <Field
-            component={KRenderTextField}
-            name={`${name}.httpGet.scheme`}
-            label="Scheme (Optional)"
-            margin
-            helperText=""
-          />
+          <Field component={KRenderTextField} name={`${name}.httpGet.scheme`} label="Scheme" margin helperText="" />
         </Grid>
         <Grid item md={12}>
           <Field
             component={RenderComplexValueTextField}
             name={`${name}.httpGet.httpHeaders`}
-            label="httpHeaders (Optional)"
+            label="httpHeaders"
             margin
             helperText='Eg: {"name1": "value1", "name2": "value2"}'
             validate={[ValidatorHttpHeaders]}
@@ -181,7 +163,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
         <Field
           component={RenderComplexValueTextField}
           name={`${name}.exec.command`}
-          label="Command (Optional)"
+          label="Command"
           margin
           helperText='Eg: "/bin/app", "rails server".'
           formValueToEditValue={(value: Immutable.List<string>) => {
@@ -200,13 +182,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
     return (
       <>
         <Grid item md={12}>
-          <Field
-            component={KRenderTextField}
-            name={`${name}.tcpSocket.host`}
-            label="Host (Optional)"
-            margin
-            helperText=""
-          />
+          <Field component={KRenderTextField} name={`${name}.tcpSocket.host`} label="Host" margin helperText="" />
         </Grid>
         <Grid item md={12}>
           <Field
@@ -232,7 +208,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
           <Field
             component={KRenderTextField}
             name={`${name}.initialDelaySeconds`}
-            label="InitialDelaySeconds (Optional)"
+            label="InitialDelaySeconds"
             normalize={NormalizeNumber}
             margin
             helperText=""
@@ -242,7 +218,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
           <Field
             component={KRenderTextField}
             name={`${name}.timeoutSeconds`}
-            label="TimeoutSeconds (Optional)"
+            label="TimeoutSeconds"
             normalize={NormalizeNumber}
             margin
             helperText=""
@@ -252,7 +228,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
           <Field
             component={KRenderTextField}
             name={`${name}.periodSeconds`}
-            label="PeriodSeconds (Optional)"
+            label="PeriodSeconds"
             normalize={NormalizeNumber}
             margin
             helperText=""
@@ -262,7 +238,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
           <Field
             component={KRenderTextField}
             name={`${name}.successThreshold`}
-            label="SuccessThreshold (Optional)"
+            label="SuccessThreshold"
             normalize={NormalizeNumber}
             margin
             helperText=""
@@ -272,7 +248,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
           <Field
             component={KRenderTextField}
             name={`${name}.failureThreshold`}
-            label="FailureThreshold (Optional)"
+            label="FailureThreshold"
             normalize={NormalizeNumber}
             margin
             helperText=""
@@ -304,10 +280,39 @@ class RenderProbe extends React.PureComponent<Props, State> {
               this.handleChangeType(value);
             }}
             options={[
-              { value: "", text: "none" },
-              { value: "httpGet", text: "httpGet" },
-              { value: "exec", text: "exec" },
-              { value: "tcpSocket", text: "tcpSocket" }
+              { value: "", text: "None" },
+              {
+                value: "httpGet",
+                selectedText: "Http Get Request",
+                text: (
+                  <Box pt={1} pb={1}>
+                    <Typography variant="h6">Http Get Request</Typography>
+                    <Typography variant="caption">
+                      Http get request returns successful response (status {">="} 200 and {"<"} 400).
+                    </Typography>
+                  </Box>
+                )
+              },
+              {
+                value: "exec",
+                selectedText: "Command",
+                text: (
+                  <Box pt={1} pb={1}>
+                    <Typography variant="h6">Command</Typography>
+                    <Typography variant="caption">Execute command returns 0 exit code.</Typography>
+                  </Box>
+                )
+              },
+              {
+                value: "tcpSocket",
+                selectedText: "TCP",
+                text: (
+                  <Box pt={1} pb={1}>
+                    <Typography variant="h6">TCP</Typography>
+                    <Typography variant="caption">Establish a TCP connection Successfully.</Typography>
+                  </Box>
+                )
+              }
             ]}></Field>
         </Grid>
 

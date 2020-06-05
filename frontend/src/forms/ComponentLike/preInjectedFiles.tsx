@@ -160,7 +160,7 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
           const injectedFile = fields.get(index);
 
           return (
-            <Grid container spacing={1} alignItems="center">
+            <Grid container spacing={1} alignItems="center" key={member}>
               <Grid item md={3}>
                 <Field
                   name={`${member}.mountPath`}

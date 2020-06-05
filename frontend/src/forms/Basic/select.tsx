@@ -23,14 +23,11 @@ const renderFormHelper = ({ touched, error }: Pick<WrappedFieldMetaProps, "touch
 };
 
 interface Props {
-  options: { text: string; value: string }[];
-  // default select first value as default if input.value is undefined
-  notSelectFirstIfValueIsUndefined?: boolean;
+  options: { text: React.ReactNode; value: string; selectedText?: string }[];
 }
 
 export const RenderSelectField = ({
   options,
-  notSelectFirstIfValueIsUndefined,
   input,
   label,
   autoFocus,
@@ -62,9 +59,6 @@ export const RenderSelectField = ({
   };
 
   let value = input.value;
-  if (!notSelectFirstIfValueIsUndefined && options && options[0]) {
-    value = options[0].value;
-  }
 
   // select doesn't support endAdornment
   // tooltip doesn't work in FormControl
@@ -88,6 +82,19 @@ export const RenderSelectField = ({
         value={value}
         onChange={onChange}
         onBlur={input.onBlur}
+        renderValue={(value: any) => {
+          const option = options.find(x => x.value === value);
+
+          if (!option) {
+            return value;
+          }
+
+          if (option.selectedText) {
+            return option.selectedText;
+          }
+
+          return option.text;
+        }}
         inputProps={{
           id: id
         }}>
