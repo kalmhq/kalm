@@ -20,7 +20,7 @@ var metricDb *sql.DB
 var metricResolution = 5 * time.Second
 var metricDuration = 15 * time.Minute
 
-func StartMetricServer(ctx context.Context, manager *client.ClientManager) error {
+func StartMetricScraper(ctx context.Context, manager *client.ClientManager) error {
 	metricClient, err := mclientv1beta1.NewForConfig(manager.ClusterConfig)
 	if err != nil {
 		log.Errorf("Init metric client error: %s", err)
@@ -32,7 +32,7 @@ func StartMetricServer(ctx context.Context, manager *client.ClientManager) error
 		return err
 	}
 
-	metricDb, err = sql.Open("sqlite3", "/tmp/metric_server.db")
+	metricDb, err = sql.Open("sqlite3", "/tmp/metric_scraper.db")
 	if err != nil {
 		log.Fatalf("Unable to open Sqlite database: %s", err)
 	}

@@ -16,7 +16,7 @@ func TestStartMetricServer(t *testing.T) {
 	runningConfig := &config.Config{}
 	runningConfig.Install()
 	clientManager := client.NewClientManager(runningConfig)
-	err := StartMetricServer(context.Background(), clientManager)
+	err := StartMetricScraper(context.Background(), clientManager)
 	if err != nil {
 		log.Fatal(err)
 	}
