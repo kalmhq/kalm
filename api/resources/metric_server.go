@@ -44,6 +44,8 @@ func StartMetricServer(ctx context.Context, manager *client.ClientManager) error
 		log.Fatalf("Unable to initialize database tables: %s", err)
 	}
 
+	log.Info("Metric scraper started")
+
 	// Start the machine. Scrape every metricResolution
 	ticker := time.NewTicker(metricResolution)
 
@@ -56,7 +58,7 @@ func StartMetricServer(ctx context.Context, manager *client.ClientManager) error
 		case <-ticker.C:
 			err = update(metricClient, restClient, metricDb, &metricDuration)
 			if err != nil {
-				break
+				log.Errorf("Error updating metrics: %s", err)
 			}
 		}
 	}
@@ -158,7 +160,7 @@ func getMetricHistories(sql string, args ...interface{}) MetricHistories {
 
 	rows, err := metricDb.Query(sql, args...)
 	if err != nil {
-		log.Errorf("Error getting pod metrics: %v", err)
+		log.Errorf("Error getting metrics: %v", err)
 		return metricHistories
 	}
 
