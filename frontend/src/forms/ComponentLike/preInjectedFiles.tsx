@@ -190,11 +190,7 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
                 />
               </Grid>
               <Grid item md={2}>
-                <Field
-                  name={`${member}.readonly`}
-                  component={KBoolCheckboxRender}
-                  label="Read Only"
-                  validate={[ValidatorRequired]}></Field>
+                <Field name={`${member}.readonly`} component={KBoolCheckboxRender} label="Read Only"></Field>
               </Grid>
               <Grid item md={2}>
                 <Field
