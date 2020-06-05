@@ -1,4 +1,4 @@
-import { Button, Grid, Icon, Box } from "@material-ui/core";
+import { Button, Grid, Icon, Box, Fade } from "@material-ui/core";
 import Immutable from "immutable";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
@@ -89,36 +89,38 @@ class RenderEnvs extends React.PureComponent<Props> {
         {this.renderAddButton()}
         {fields.map((field, index) => {
           return (
-            <Grid container spacing={2}>
-              <Grid item xs={3}>
-                <Field
-                  options={this.nameAutoCompleteOptions}
-                  name={`${field}.name`}
-                  label="Name"
-                  component={RenderAutoCompleteFreeSolo}
-                  margin
-                  validate={[ValidatorRequired]}
-                />
+            <Fade in>
+              <Grid container spacing={2}>
+                <Grid item xs={3}>
+                  <Field
+                    options={this.nameAutoCompleteOptions}
+                    name={`${field}.name`}
+                    label="Name"
+                    component={RenderAutoCompleteFreeSolo}
+                    margin
+                    validate={[ValidatorRequired]}
+                  />
+                </Grid>
+                <Grid item xs={3}>
+                  <Field
+                    name={`${field}.value`}
+                    label="Value"
+                    margin
+                    validate={[ValidatorRequired]}
+                    component={KRenderTextField}
+                  />
+                </Grid>
+                <Grid item xs={3}>
+                  <IconButtonWithTooltip
+                    tooltipPlacement="top"
+                    tooltipTitle="Delete"
+                    aria-label="delete"
+                    onClick={() => fields.remove(index)}>
+                    <DeleteIcon />
+                  </IconButtonWithTooltip>
+                </Grid>
               </Grid>
-              <Grid item xs={3}>
-                <Field
-                  name={`${field}.value`}
-                  label="Value"
-                  margin
-                  validate={[ValidatorRequired]}
-                  component={KRenderTextField}
-                />
-              </Grid>
-              <Grid item xs={3}>
-                <IconButtonWithTooltip
-                  tooltipPlacement="top"
-                  tooltipTitle="Delete"
-                  aria-label="delete"
-                  onClick={() => fields.remove(index)}>
-                  <DeleteIcon />
-                </IconButtonWithTooltip>
-              </Grid>
-            </Grid>
+            </Fade>
           );
         })}
       </>
