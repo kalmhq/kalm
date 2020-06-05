@@ -12,7 +12,7 @@ import { grey } from "@material-ui/core/colors";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      padding: 20,
+      padding: theme.spacing(2),
       width: "100%",
       height: "100%"
     },
