@@ -33,7 +33,7 @@ RUN go mod download
 COPY api/ .
 
 # Build
-RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -ldflags '-s -w' -o kapp-api-server main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags '-s -w' -o kapp-api-server main.go
 
 # ============== Finial ==============
 FROM alpine
