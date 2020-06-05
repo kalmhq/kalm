@@ -4,7 +4,7 @@ import { createCertificateIssuerAction, setIsShowAddCertificateModal } from "act
 import { KFreeSoloAutoCompleteMultiValues } from "forms/Basic/autoComplete";
 import { KRadioGroupRender } from "forms/Basic/radio";
 import { RenderSelectField } from "forms/Basic/select";
-import { TextField } from "forms/Basic/text";
+import { KRenderTextField } from "forms/Basic/textfield";
 import { ValidatorRequired } from "forms/validator";
 import Immutable from "immutable";
 import React from "react";
@@ -88,7 +88,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
             label="Certificate file"
             multiline={true}
             className={classes.fileInput}
-            component={TextField}
+            component={KRenderTextField}
             rows={12}
             name="selfManagedCertContent"
             margin="normal"
@@ -100,7 +100,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
             label="Private key"
             multiline={true}
             className={classes.fileInput}
-            component={TextField}
+            component={KRenderTextField}
             rows={12}
             name="selfManagedCertPrivateKey"
             margin="normal"
@@ -191,7 +191,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
           <Grid item md={12}>
             <Field
               label="Certificate name"
-              component={TextField}
+              component={KRenderTextField}
               name="name"
               margin="normal"
               validate={[ValidatorRequired]}
