@@ -1,5 +1,6 @@
 import Immutable from "immutable";
 import { HttpRouteDestination } from "types/route";
+import { isUndefined } from "util";
 
 export const validator = () => {
   const errors = {};
@@ -48,6 +49,12 @@ export const ValidatorAtLeastOneHttpRouteDestination = (
 };
 
 export const ValidatorRequired = (value: any, _allValues?: any, _props?: any, _name?: any) => {
+  // After delete an item of an array, the validator is still invoked.
+  // The value is undefined.
+  if (value === undefined) {
+    return undefined;
+  }
+
   if (Array.isArray(value)) {
     return value.length > 0 ? undefined : "Required";
   }

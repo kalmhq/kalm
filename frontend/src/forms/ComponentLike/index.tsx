@@ -17,7 +17,12 @@ import { RootState } from "../../reducers";
 import { getNodeLabels } from "../../selectors/node";
 import { TDispatchProp } from "../../types";
 import { SharedEnv } from "../../types/application";
-import { ComponentLike, workloadTypeCronjob, workloadTypeServer } from "../../types/componentTemplate";
+import {
+  ComponentLike,
+  ComponentLikeContent,
+  workloadTypeCronjob,
+  workloadTypeServer
+} from "../../types/componentTemplate";
 import { HelperContainer } from "../../widgets/Helper";
 import { KPanel } from "../../widgets/KPanel";
 import { KRadioGroupRender } from "../Basic/radio";
@@ -35,7 +40,7 @@ import { Volumes } from "./Volumes";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
-  const syncErrors = getFormSyncErrors("componentLike")(state);
+  const syncErrors = getFormSyncErrors("componentLike")(state) as { [x in keyof ComponentLikeContent]: any };
   const nodeLabels = getNodeLabels();
 
   return {
@@ -54,6 +59,9 @@ const styles = (theme: Theme) =>
       // since deploy button is fixed
       paddingBottom: 100
       // backgroundColor: "#F4F5F7"
+    },
+    hasError: {
+      color: `${theme.palette.error.main} !important`
     },
     tabsRoot: {
       "& .MuiButtonBase-root": {
@@ -417,33 +425,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       </>
     );
   }
-
-  // private renderConfigs() {
-  //   // const { classes } = this.props;
-
-  //   // const helperContainer = (
-  //   //   <HelperContainer>
-  //   //     <Typography>Mount Configs</Typography>
-  //   //   </HelperContainer>
-  //   // );
-
-  //   return (
-  //     <>
-  //       <Grid item xs={12} sm={12} md={12}>
-  //         <SectionTitle>
-  //           <H5>Configs</H5>
-  //           {/* <Tooltip title={helperContainer}>
-  //           <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
-  //         </Tooltip> */}
-  //         </SectionTitle>
-  //       </Grid>{" "}
-  //       <Grid item xs={12} sm={12} md={12}>
-  //         {/* <Configs /> */}
-  //       </Grid>
-  //     </>
-  //   );
-  // }
-
   private getRestartStrategyHelper() {
     return (
       <>
@@ -709,7 +690,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             name="command"
             label="Command"
             placeholder="eg: `npm run start` or `bundle exec rails server`"
-            helperText="If the image's default command and entrypoint works. You can leave this field blank."
           />
         </Grid>
       </>
@@ -928,7 +908,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderTabs() {
-    const { classes } = this.props;
+    const { classes, syncErrors, submitFailed } = this.props;
     return (
       <Tabs
         className={clsx(classes.borderBottom, classes.tabsRoot)}
@@ -942,6 +922,24 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         }}
         aria-label="component form tabs">
         {this.tabs.map(tab => {
+          console.log(
+            tab === Configurations && (syncErrors.preInjectedFiles || syncErrors.env || syncErrors.command),
+            syncErrors,
+            syncErrors.preInjectedFiles,
+            syncErrors.env,
+            syncErrors.command
+          );
+          if (
+            submitFailed &&
+            ((tab === Configurations && (syncErrors.preInjectedFiles || syncErrors.env || syncErrors.command)) ||
+              (tab === Resources && (syncErrors.cpu || syncErrors.memory || syncErrors.volumes)) ||
+              (tab === Health && (syncErrors.livenessProbe || syncErrors.ReadinessProbe)) ||
+              (tab === Networking && syncErrors.ports) ||
+              (tab === NodeScheduling && syncErrors.nodeSelectorLabels))
+          ) {
+            return <Tab key={tab} label={tab} className={classes.hasError} />;
+          }
+
           return <Tab key={tab} label={tab} />;
         })}
       </Tabs>
