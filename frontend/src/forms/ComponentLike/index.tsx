@@ -55,6 +55,11 @@ const styles = (theme: Theme) =>
       paddingBottom: 100
       // backgroundColor: "#F4F5F7"
     },
+    tabsRoot: {
+      "& .MuiButtonBase-root": {
+        minWidth: "auto"
+      }
+    },
     borderBottom: {
       borderBottom: "1px solid rgba(0, 0, 0, 0.12)"
     },
@@ -252,7 +257,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       <>
         <Grid item xs={12} sm={12} md={12}>
           <SectionTitle>
-            <H5>Inject Configuration Files</H5>
+            <H5>Configuration Files</H5>
             <Tooltip title={helperContainer}>
               <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
             </Tooltip>
@@ -275,7 +280,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           dynamic value associated with other component later in a real running application. Learn More.
         </Typography>
 
-        <MList dense={true}>
+        {/* <MList dense={true}>
           <ListItem>
             <ListItemText
               primary="Static"
@@ -301,7 +306,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               secondaryTypographyProps={{ color: "inherit" }}
             />
           </ListItem>
-        </MList>
+        </MList> */}
       </HelperContainer>
     );
 
@@ -686,7 +691,13 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Grid item xs={12} sm={12} md={12}>
           <SectionTitle>
             <H5>Command</H5>
-            <Tooltip title="This filed is used to overwrite `entrypoint` and `commands` in image. Leave it blank to use image default settings.">
+            <Tooltip
+              title={
+                <span>
+                  This filed is used to overwrite <strong>entrypoint</strong> and <strong>commands</strong> in image.
+                  Leave it blank to use image default settings.
+                </span>
+              }>
               <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
             </Tooltip>
           </SectionTitle>
@@ -709,7 +720,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return (
       <Grid container spacing={2}>
         <Grid item xs={12} sm={12} md={12}>
-          <Body>Customize the start-up process of this component.</Body>
+          <Body>
+            Tell kapp more about how to run the project. Customize the <strong>command</strong>,{" "}
+            <strong>environment variables</strong> and <strong>configuration files</strong> of this component.
+          </Body>
         </Grid>
         {this.renderCommandAndArgs()}
         {this.renderEnvs()}
@@ -917,7 +931,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     const { classes } = this.props;
     return (
       <Tabs
-        className={clsx(classes.borderBottom)}
+        className={clsx(classes.borderBottom, classes.tabsRoot)}
         value={this.state.currentTabIndex}
         variant="scrollable"
         scrollButtons="auto"
