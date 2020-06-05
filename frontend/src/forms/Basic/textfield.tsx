@@ -8,14 +8,6 @@ interface Props {
   endAdornment?: React.ReactNode;
 }
 
-const useStyles = makeStyles(theme => ({
-  inputLabel: {
-    fontWeight: 500,
-    fontSize: 13,
-    color: "#000"
-  }
-}));
-
 // value type is string
 export const KRenderTextField = ({
   input,
@@ -30,7 +22,12 @@ export const KRenderTextField = ({
 }: FilledTextFieldProps & WrappedFieldProps & Props) => {
   const showError = !!error && touched;
 
-  const classes = useStyles();
+  const classes = makeStyles(theme => ({
+    inputLabel: {
+      fontWeight: 500,
+      fontSize: 13
+    }
+  }))();
 
   return (
     <TextField
@@ -70,8 +67,6 @@ export const KRenderTextareaField = ({
 }: FilledTextFieldProps & WrappedFieldProps & Props) => {
   const showError = !!error && touched;
 
-  const classes = useStyles();
-
   return (
     <TextField
       fullWidth
@@ -82,10 +77,7 @@ export const KRenderTextareaField = ({
       required={required}
       error={showError}
       InputLabelProps={{
-        shrink: true,
-        classes: {
-          root: classes.inputLabel
-        }
+        shrink: true
       }}
       InputProps={{
         rows: 4
@@ -118,8 +110,6 @@ export const RenderComplexValueTextField = ({
 }: FilledTextFieldProps & WrappedFieldProps & ComplexValueTextFieldProps) => {
   const showError = !!error && touched;
 
-  const classes = useStyles();
-
   return (
     <TextField
       fullWidth
@@ -130,10 +120,7 @@ export const RenderComplexValueTextField = ({
       error={showError}
       helperText={showError ? error : helperText ? helperText : ""}
       InputLabelProps={{
-        shrink: true,
-        classes: {
-          root: classes.inputLabel
-        }
+        shrink: true
       }}
       margin="dense"
       variant="outlined"
@@ -160,8 +147,6 @@ export const KRenderCommandTextField = ({
 }: FilledTextFieldProps & WrappedFieldProps & ComplexValueTextFieldProps) => {
   const showError = !!error && touched;
 
-  const classes = useStyles();
-
   return (
     <TextField
       fullWidth
@@ -172,10 +157,7 @@ export const KRenderCommandTextField = ({
       error={showError}
       helperText={showError ? error : helperText ? helperText : ""}
       InputLabelProps={{
-        shrink: true,
-        classes: {
-          root: classes.inputLabel
-        }
+        shrink: true
       }}
       InputProps={{
         startAdornment: (
