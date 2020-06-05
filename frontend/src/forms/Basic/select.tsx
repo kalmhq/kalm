@@ -22,18 +22,30 @@ const renderFormHelper = ({ touched, error }: Pick<WrappedFieldMetaProps, "touch
   }
 };
 
+interface Props {
+  options: { text: string; value: string }[];
+  // default select first value as default if input.value is undefined
+  notSelectFirstIfValueIsUndefined?: boolean;
+}
+
 export const RenderSelectField = ({
+  options,
+  notSelectFirstIfValueIsUndefined,
   input,
   label,
   autoFocus,
   meta: { touched, error },
   children
-}: WrappedFieldProps & SelectProps) => {
+}: WrappedFieldProps & SelectProps & Props) => {
   const id = ID();
   const labelId = ID();
   const classes = makeStyles(theme => ({
     root: {
       display: "flex"
+    },
+    inputLabel: {
+      fontWeight: 500,
+      fontSize: 13
     }
   }))();
 
@@ -49,14 +61,23 @@ export const RenderSelectField = ({
     input.onChange(event.target.value);
   };
 
+  let value = input.value;
+  if (!notSelectFirstIfValueIsUndefined && options && options[0]) {
+    value = options[0].value;
+  }
+
+  // select doesn't support endAdornment
+  // tooltip doesn't work in FormControl
+  // https://stackoverflow.com/questions/60384230/tooltip-inside-textinput-label-is-not-working-material-ui-react
   return (
     <FormControl
       classes={{ root: classes.root }}
       error={touched && error}
       variant="outlined"
       size="small"
+      style={{ pointerEvents: "auto" }}
       margin="dense">
-      <InputLabel ref={inputLabel} htmlFor={id} id={labelId}>
+      <InputLabel ref={inputLabel} htmlFor={id} id={labelId} classes={{ root: classes.inputLabel }}>
         {label}
       </InputLabel>
       <Select
@@ -64,14 +85,22 @@ export const RenderSelectField = ({
         labelWidth={labelWidth}
         autoFocus={autoFocus}
         labelId={labelId}
-        value={input.value}
+        value={value}
         onChange={onChange}
         onBlur={input.onBlur}
         inputProps={{
           id: id
         }}>
-        {children}
+        {options &&
+          options.map(option => {
+            return (
+              <MenuItem value={option.value} key={option.value}>
+                {option.text}
+              </MenuItem>
+            );
+          })}
       </Select>
+
       {renderFormHelper({ touched, error })}
     </FormControl>
   );
@@ -99,6 +128,10 @@ export const RenderMutipleSelectField = ({
   const classes = makeStyles(theme => ({
     root: {
       display: "flex"
+    },
+    inputLabel: {
+      fontWeight: 500,
+      fontSize: 13
     }
   }))();
 
@@ -121,7 +154,8 @@ export const RenderMutipleSelectField = ({
       variant="outlined"
       size="small"
       margin="dense">
-      <InputLabel ref={inputLabel} htmlFor={id} id={labelId}>
+      {/* https://material-ui.com/zh/api/input-label/#css */}
+      <InputLabel ref={inputLabel} htmlFor={id} id={labelId} classes={{ root: classes.inputLabel }}>
         {label}
       </InputLabel>
       <Select

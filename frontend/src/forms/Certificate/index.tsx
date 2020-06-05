@@ -1,8 +1,10 @@
-import { Button, Grid, MenuItem } from "@material-ui/core";
+import { Button, Grid } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
+import { createCertificateIssuerAction, setIsShowAddCertificateModal } from "actions/certificate";
 import { KFreeSoloAutoCompleteMultiValues } from "forms/Basic/autoComplete";
-import { TextField } from "forms/Basic/text";
 import { KRadioGroupRender } from "forms/Basic/radio";
+import { RenderSelectField } from "forms/Basic/select";
+import { TextField } from "forms/Basic/text";
 import { ValidatorRequired } from "forms/validator";
 import Immutable from "immutable";
 import React from "react";
@@ -13,14 +15,12 @@ import { Field, formValueSelector, getFormSyncErrors, reduxForm } from "redux-fo
 import { TDispatchProp } from "types";
 import {
   CertificateFormType,
-  issuerManaged,
-  selfManaged,
-  CertificateIssuerList,
   CertificateIssuerFormType,
-  newEmptyCertificateIssuerForm
+  CertificateIssuerList,
+  issuerManaged,
+  newEmptyCertificateIssuerForm,
+  selfManaged
 } from "types/certificate";
-import { setIsShowAddCertificateModal, createCertificateIssuerAction } from "actions/certificate";
-import { RenderSelectField } from "forms/Basic/select";
 import { CertificateIssuerForm } from "./issuerForm";
 
 const defaultFormID = "certificate";
@@ -113,6 +113,21 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
 
   private renderIssuerManagedFields = () => {
     const { classes, certificateIssuers, httpsCertIssuer } = this.props;
+
+    const httpsCertIssuerOptions = [
+      {
+        value: createIssuer,
+        text: "Add new certificate issuer"
+      }
+    ];
+    certificateIssuers.forEach(certificateIssuer => {
+      const name = certificateIssuer.get("name");
+      httpsCertIssuerOptions.push({
+        value: name,
+        text: name
+      });
+    });
+
     return (
       <>
         <Grid item md={12}>
@@ -136,17 +151,8 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
             rows={12}
             name="httpsCertIssuer"
             margin="normal"
-            validate={[ValidatorRequired]}>
-            <MenuItem value={createIssuer}>Add new certificate issuer</MenuItem>
-            {certificateIssuers.map(certificateIssuer => {
-              const name = certificateIssuer.get("name");
-              return (
-                <MenuItem key={name} value={name}>
-                  {name}
-                </MenuItem>
-              );
-            })}
-          </Field>
+            validate={[ValidatorRequired]}
+            options={httpsCertIssuerOptions}></Field>
         </Grid>
         {httpsCertIssuer === createIssuer ? (
           <CertificateIssuerForm onSubmit={this.submitCreateIssuer} initialValues={newEmptyCertificateIssuerForm()} />

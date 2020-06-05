@@ -1,25 +1,15 @@
-import {
-  Box,
-  Button,
-  Grid,
-  List as MList,
-  ListItem,
-  ListItemText,
-  MenuItem,
-  Tab,
-  Tabs,
-  Tooltip
-} from "@material-ui/core";
+import { Box, Button, Grid, List as MList, ListItem, ListItemText, Tab, Tabs, Tooltip } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import HelpIcon from "@material-ui/icons/Help";
+import clsx from "clsx";
 import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
 import { InjectedFormProps } from "redux-form";
 import { Field, getFormSyncErrors, getFormValues, reduxForm } from "redux-form/immutable";
-import { H5, SectionTitle } from "widgets/Label";
+import { Body, H5, SectionTitle } from "widgets/Label";
 import { loadComponentPluginsAction } from "../../actions/application";
 import { loadConfigsAction } from "../../actions/config";
 import { loadNodesAction } from "../../actions/node";
@@ -29,6 +19,7 @@ import { TDispatchProp } from "../../types";
 import { SharedEnv } from "../../types/application";
 import { ComponentLike, workloadTypeCronjob, workloadTypeServer } from "../../types/componentTemplate";
 import { HelperContainer } from "../../widgets/Helper";
+import { KPanel } from "../../widgets/KPanel";
 import { KRadioGroupRender } from "../Basic/radio";
 import { RenderSelectField } from "../Basic/select";
 import { KRenderCommandTextField, KRenderTextField, RenderComplexValueTextField } from "../Basic/textfield";
@@ -38,9 +29,9 @@ import { ValidatorCPU, ValidatorMemory, ValidatorName, ValidatorRequired, Valida
 import { Envs } from "./Envs";
 import { RenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
+import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
 import { Volumes } from "./Volumes";
-import { PreInjectedFiles } from "./preInjectedFiles";
 
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
@@ -62,10 +53,10 @@ const styles = (theme: Theme) =>
       padding: 20,
       // since deploy button is fixed
       paddingBottom: 100
-      // backgroundColor: theme.palette.background.paper
+      // backgroundColor: "#F4F5F7"
     },
-    main: {
-      padding: "20px 0 20px 0"
+    borderBottom: {
+      borderBottom: "1px solid rgba(0, 0, 0, 0.12)"
     },
     formSection: {
       // padding: "0 20px"
@@ -84,27 +75,25 @@ const styles = (theme: Theme) =>
     helperField: {
       position: "relative"
     },
-    helperFieldIcon: {
+    textFieldHelperIcon: {
       color: grey[700],
-      cursor: "pointer",
-      position: "absolute",
-      right: 10,
-      top: 18
+      cursor: "pointer"
     },
-    helperSelectIcon: {
+    // Select doesn't support endAdornment
+    // and tooltip doesn't work in FormControl
+    // https://stackoverflow.com/questions/60384230/tooltip-inside-textinput-label-is-not-working-material-ui-react
+    // only way to show helper in Select is using absolute
+    selectHelperIcon: {
       color: grey[700],
       cursor: "pointer",
       position: "absolute",
       right: 30,
       top: 10
     },
-    helperTextIcon: {
+    sectionTitleHelperIcon: {
       color: grey[700],
       cursor: "pointer",
-      marginLeft: "8px"
-    },
-    tabs: {
-      marginBottom: theme.spacing(2)
+      marginLeft: theme.spacing(1)
     },
     deployBtn: {
       width: 360,
@@ -265,7 +254,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           <SectionTitle>
             <H5>Inject Configuration Files</H5>
             <Tooltip title={helperContainer}>
-              <HelpIcon fontSize="small" className={classes.helperTextIcon} />
+              <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
             </Tooltip>
           </SectionTitle>
         </Grid>
@@ -322,7 +311,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           <SectionTitle>
             <H5>Environment variables</H5>
             <Tooltip title={helperContainer}>
-              <HelpIcon fontSize="small" className={classes.helperTextIcon} />
+              <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
             </Tooltip>
           </SectionTitle>
         </Grid>{" "}
@@ -351,7 +340,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           <SectionTitle>
             <H5>Ports</H5>
             <Tooltip title={helperContainer}>
-              <HelpIcon fontSize="small" className={classes.helperTextIcon} />
+              <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
             </Tooltip>
           </SectionTitle>
         </Grid>
@@ -413,7 +402,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           <SectionTitle>
             <H5>Volumes</H5>
             <Tooltip title={helperContainer}>
-              <HelpIcon fontSize="small" className={classes.helperTextIcon} />
+              <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
             </Tooltip>
           </SectionTitle>
         </Grid>
@@ -439,7 +428,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   //         <SectionTitle>
   //           <H5>Configs</H5>
   //           {/* <Tooltip title={helperContainer}>
-  //           <HelpIcon fontSize="small" className={classes.helperTextIcon} />
+  //           <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
   //         </Tooltip> */}
   //         </SectionTitle>
   //       </Grid>{" "}
@@ -636,24 +625,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             <H5>DNS Policy</H5>
           </SectionTitle>
         </Grid>
-        {/* <Grid item xs={6} sm={6} md={6}>
-          <div className={classes.helperField}>
-            <Field
-              name="dnsPolicy"
-              component={RenderSelectField}
-              label="Dns Policy"
-              // validate={ValidatorRequired}
-            >
-              <MenuItem value="ClusterFirst">ClusterFirst</MenuItem>
-              <MenuItem value="Default">Default</MenuItem>
-              <MenuItem value="ClusterFirstWithHostNet">ClusterFirstWithHostNet</MenuItem>
-              <MenuItem value="None">None</MenuItem>
-            </Field>
-            <Tooltip title={this.getDnsPolicyHelper()}>
-              <HelpIcon fontSize="small" className={classes.helperSelectIcon} />
-            </Tooltip>
-          </div>
-        </Grid> */}
         <Grid item xs={12} sm={12} md={12}>
           <Field component={KRadioGroupRender} name="dnsPolicy" options={this.getDnsPolicyOptions()} />
         </Grid>
@@ -694,7 +665,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   //       <SectionTitle>
   //         <H5>Plugins</H5>
   //         <Tooltip title={helperContainer}>
-  //           <HelpIcon fontSize="small" className={classes.helperTextIcon} />
+  //           <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
   //         </Tooltip>
   //       </SectionTitle>
 
@@ -708,31 +679,42 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   // }
 
   private renderCommandAndArgs() {
+    const { classes } = this.props;
+
     return (
       <>
-        <Typography variant="subtitle2">Command</Typography>
+        <Grid item xs={12} sm={12} md={12}>
+          <SectionTitle>
+            <H5>Command</H5>
+            <Tooltip title="This filed is used to overwrite `entrypoint` and `commands` in image. Leave it blank to use image default settings.">
+              <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
+            </Tooltip>
+          </SectionTitle>
+        </Grid>
 
-        <Field
-          component={KRenderCommandTextField}
-          name="command"
-          label="Command"
-          placeholder="eg: `npm run start` or `bundle exec rails server`"
-          helperText="If the image's default command and entrypoint works. You can leave this field blank."
-        />
+        <Grid item xs={12} sm={12} md={12}>
+          <Field
+            component={KRenderCommandTextField}
+            name="command"
+            label="Command"
+            placeholder="eg: `npm run start` or `bundle exec rails server`"
+            helperText="If the image's default command and entrypoint works. You can leave this field blank."
+          />
+        </Grid>
       </>
     );
   }
 
   private renderConfigurations() {
     return (
-      <div>
-        <Typography variant="body1" component="p">
-          Customize the start-up process of this component.
-        </Typography>
+      <Grid container spacing={2}>
+        <Grid item xs={12} sm={12} md={12}>
+          <Body>Customize the start-up process of this component.</Body>
+        </Grid>
         {this.renderCommandAndArgs()}
         {this.renderEnvs()}
         {this.preInjectedFiles()}
-      </div>
+      </Grid>
     );
   }
 
@@ -748,37 +730,37 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </Grid>
 
           <Grid item xs={6} sm={6} md={6}>
-            <div className={classes.helperField}>
-              <Field
-                component={KRenderTextField}
-                name="cpu"
-                label="CPU"
-                margin
-                validate={[ValidatorCPU]}
-                // normalize={NormalizeCPU}
-                placeholder="Please type the component name"
-              />
-              <Tooltip title={this.getCPUHelper()}>
-                <HelpIcon fontSize="small" className={classes.helperFieldIcon} />
-              </Tooltip>
-            </div>
+            <Field
+              component={KRenderTextField}
+              name="cpu"
+              label="CPU"
+              margin
+              validate={[ValidatorCPU]}
+              // normalize={NormalizeCPU}
+              placeholder="Please type the component name"
+              endAdornment={
+                <Tooltip title={this.getCPUHelper()}>
+                  <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
+                </Tooltip>
+              }
+            />
           </Grid>
 
           <Grid item xs={6} sm={6} md={6}>
-            <div className={classes.helperField}>
-              <Field
-                component={KRenderTextField}
-                name="memory"
-                label="Memory"
-                margin
-                validate={[ValidatorMemory]}
-                // normalize={NormalizeMemory}
-                placeholder="Please type the component name"
-              />
-              <Tooltip title={this.getMemoryHelper()}>
-                <HelpIcon fontSize="small" className={classes.helperFieldIcon} />
-              </Tooltip>
-            </div>
+            <Field
+              component={KRenderTextField}
+              name="memory"
+              label="Memory"
+              margin
+              validate={[ValidatorMemory]}
+              // normalize={NormalizeMemory}
+              placeholder="Please type the component name"
+              endAdornment={
+                <Tooltip title={this.getMemoryHelper()}>
+                  <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
+                </Tooltip>
+              }
+            />
           </Grid>
 
           {this.renderVolumes()}
@@ -874,30 +856,31 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               name="restartStrategy"
               component={RenderSelectField}
               // validate={ValidatorRequired}
-              label="Restart Strategy">
-              <MenuItem value="RollingUpdate">Rolling Update</MenuItem>
-              <MenuItem value="Recreate">Recreate</MenuItem>
-            </Field>
+              label="Restart Strategy"
+              options={[
+                { value: "RollingUpdate", text: "Rolling Update" },
+                { value: "Recreate", text: "Recreate" }
+              ]}></Field>
             <Tooltip title={this.getRestartStrategyHelper()}>
-              <HelpIcon fontSize="small" className={classes.helperSelectIcon} />
+              <HelpIcon fontSize="small" className={classes.selectHelperIcon} />
             </Tooltip>
           </div>
         </Grid>
         <Grid item xs={6} sm={6} md={6}></Grid>
         <Grid item xs={6} sm={6} md={6}>
-          <div className={classes.helperField}>
-            <Field
-              component={KRenderTextField}
-              name="terminationGracePeriodSeconds"
-              label="Termination Grace Period Seconds"
-              // validate={ValidatorRequired}
-              normalize={NormalizeNumber}
-              margin
-            />
-            <Tooltip title={this.getTerminationGracePeriodSecondsHelper()}>
-              <HelpIcon fontSize="small" className={classes.helperFieldIcon} />
-            </Tooltip>
-          </div>
+          <Field
+            component={KRenderTextField}
+            name="terminationGracePeriodSeconds"
+            label="Termination Grace Period Seconds"
+            // validate={ValidatorRequired}
+            normalize={NormalizeNumber}
+            margin
+            endAdornment={
+              <Tooltip title={this.getTerminationGracePeriodSecondsHelper()}>
+                <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
+              </Tooltip>
+            }
+          />
         </Grid>
       </Grid>
     );
@@ -934,7 +917,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     const { classes } = this.props;
     return (
       <Tabs
-        className={classes.tabs}
+        className={clsx(classes.borderBottom)}
         value={this.state.currentTabIndex}
         variant="scrollable"
         scrollButtons="auto"
@@ -952,7 +935,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderMain() {
-    const { initialValues, classes } = this.props;
+    const { initialValues } = this.props;
     let isEdit = false;
     // @ts-ignore
     if (initialValues && initialValues!.get("name")) {
@@ -960,50 +943,49 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     }
 
     return (
-      <div className={classes.main}>
-        <Grid container spacing={2}>
-          <Grid item xs={6} sm={6} md={6}>
-            <Field
-              component={KRenderTextField}
-              name="name"
-              label="Name"
-              margin
-              validate={[ValidatorRequired, ValidatorName]}
-              disabled={isEdit}
-              helperText={
-                isEdit
-                  ? "Name can't be changed."
-                  : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
-              }
-              placeholder="Please type the component name"
-            />
-          </Grid>
-          <Grid item xs={6} sm={6} md={6}>
-            <Field
-              component={KRenderTextField}
-              name="image"
-              label="Image"
-              margin
-              validate={[ValidatorRequired]}
-              helperText='Eg: "nginx:latest", "registry.example.com/group/repo:tag"'
-            />
-          </Grid>
-
-          <Grid item xs={6} sm={6} md={6}>
-            <Field
-              name="workloadType"
-              component={RenderSelectField}
-              label="Workload Type"
-              validate={[ValidatorRequired]}>
-              <MenuItem value={workloadTypeServer}>Server (continuous running)</MenuItem>
-              <MenuItem value={workloadTypeCronjob}>Cronjob (periodic running)</MenuItem>
-            </Field>
-          </Grid>
-          <Grid item xs={6} sm={6} md={6}>
-            {this.renderReplicasOrSchedule()}
-          </Grid>
+      <Grid container spacing={2}>
+        <Grid item xs={6}>
+          <Field
+            component={KRenderTextField}
+            name="name"
+            label="Name"
+            margin
+            validate={[ValidatorRequired, ValidatorName]}
+            disabled={isEdit}
+            helperText={
+              isEdit
+                ? "Name can't be changed."
+                : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
+            }
+            placeholder="Please type the component name"
+          />
         </Grid>
-      </div>
+        <Grid item xs={6}>
+          <Field
+            component={KRenderTextField}
+            name="image"
+            label="Image"
+            margin
+            validate={[ValidatorRequired]}
+            helperText='Eg: "nginx:latest", "registry.example.com/group/repo:tag"'
+          />
+        </Grid>
+
+        <Grid item xs={6}>
+          <Field
+            name="workloadType"
+            component={RenderSelectField}
+            label="Workload Type"
+            validate={[ValidatorRequired]}
+            options={[
+              { value: workloadTypeServer, text: "Server (continuous running)" },
+              { value: workloadTypeCronjob, text: "Cronjob (periodic running)" }
+            ]}></Field>
+        </Grid>
+        <Grid item xs={6}>
+          {this.renderReplicasOrSchedule()}
+        </Grid>
+      </Grid>
     );
   }
 
@@ -1025,9 +1007,20 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
     return (
       <form onSubmit={handleSubmit} className={classes.root}>
-        {this.renderMain()}
-        {this.renderTabs()}
-        {this.renderTabDetails()}
+        <KPanel title={"Basic Information"} content={<Box p={2}>{this.renderMain()}</Box>} />
+
+        <Box mt={2}>
+          <KPanel
+            title={"Advanced Settings"}
+            content={
+              <>
+                {this.renderTabs()}
+                <Box p={2}>{this.renderTabDetails()}</Box>
+              </>
+            }
+          />
+        </Box>
+
         {/* <div className={`${classes.formSection} ${currentTabIndex === "advanced" ? "" : ""}`}>{this.renderPlugins()}</div> */}
         {this.renderDeployButton()}
       </form>

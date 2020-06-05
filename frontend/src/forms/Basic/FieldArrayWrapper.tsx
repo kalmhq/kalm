@@ -1,4 +1,4 @@
-import { Button, Grid } from "@material-ui/core";
+import { Button, Grid, Icon, Box } from "@material-ui/core";
 import DeleteIcon from "@material-ui/icons/Delete";
 import Immutable from "immutable";
 import React from "react";
@@ -24,19 +24,33 @@ export class FieldArrayWrapper extends React.PureComponent<Props> {
     const {
       fields,
       getFieldComponents,
-      onAdd
-      // meta: { error, submitFailed }
+      onAdd,
+      meta: { error, submitFailed }
     } = this.props;
 
     return (
       <div style={{ width: "100%", position: "relative" }}>
-        <Button
+        {/* <Button
           color="primary"
           size="large"
           style={{ position: "absolute", right: 0, top: fields.length === 0 ? -40 : -32 }}
           onClick={() => (onAdd ? onAdd() : fields.push(Immutable.Map({})))}>
           Add
-        </Button>
+        </Button> */}
+        <Box mb={2}>
+          <Grid item xs>
+            <Button
+              variant="outlined"
+              color="primary"
+              startIcon={<Icon>add</Icon>}
+              size="small"
+              onClick={() => (onAdd ? onAdd() : fields.push(Immutable.Map({})))}>
+              Add
+            </Button>
+            {submitFailed && error && <span>{error}</span>}
+          </Grid>
+        </Box>
+
         {fields.map((member, index) => {
           const fieldComponents = getFieldComponents(member);
 
@@ -62,12 +76,6 @@ export class FieldArrayWrapper extends React.PureComponent<Props> {
             </Grid>
           );
         })}
-        <Grid container spacing={3} style={{ marginTop: 0, marginBottom: 10 }}>
-          {/* <Grid item xs>
-            <ButtonWhite onClick={() => (onAdd ? onAdd() : fields.push(Immutable.Map({})))}>Add</ButtonWhite>
-            {submitFailed && error && <span>{error}</span>}
-          </Grid> */}
-        </Grid>
       </div>
     );
   }

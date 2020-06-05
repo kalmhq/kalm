@@ -374,6 +374,7 @@ export const KAutoCompleteSingleValue = withStyles(KAutoCompleteSingleValueStyle
 // Envs
 interface AutoCompleteFreeSoloProps {
   label?: string;
+  placeholder?: string;
   options: string[];
 }
 
@@ -382,6 +383,7 @@ export const RenderAutoCompleteFreeSolo = (props: WrappedFieldProps & AutoComple
     options,
     input,
     label,
+    placeholder,
     // helperText,
     meta: { touched, invalid, error }
   } = props;
@@ -404,6 +406,10 @@ export const RenderAutoCompleteFreeSolo = (props: WrappedFieldProps & AutoComple
           variant="outlined"
           fullWidth
           size="small"
+          InputLabelProps={{
+            shrink: true
+          }}
+          placeholder={placeholder}
           error={touched && invalid}
           helperText={touched && error}
           // defaultValue={input.value || ""}

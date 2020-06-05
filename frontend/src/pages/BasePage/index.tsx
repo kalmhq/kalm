@@ -35,7 +35,7 @@ export interface BasePageProps extends React.Props<any>, WithStyles<typeof style
 
 export class BasePageRaw extends React.PureComponent<BasePageProps> {
   public render() {
-    const { classes, children, noScrollContainer, leftDrawer, secondHeaderLeft, secondHeaderRight } = this.props;
+    const { classes, children, leftDrawer, secondHeaderLeft, secondHeaderRight } = this.props;
     return (
       <div className={classes.root}>
         <SecondHeader left={secondHeaderLeft} right={secondHeaderRight} />
