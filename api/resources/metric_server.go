@@ -23,12 +23,12 @@ var metricDuration = 15 * time.Minute
 func StartMetricServer(ctx context.Context, manager *client.ClientManager) error {
 	metricClient, err := mclientv1beta1.NewForConfig(manager.ClusterConfig)
 	if err != nil {
-		log.Errorf("Error scraping pod metrics: %s", err)
+		log.Errorf("Init metric client error: %s", err)
 		return err
 	}
 	restClient, err := kubernetes.NewForConfig(manager.ClusterConfig)
 	if err != nil {
-		log.Errorf("Error scraping pod metrics: %s", err)
+		log.Errorf("Init rest client error: %s", err)
 		return err
 	}
 
@@ -71,7 +71,7 @@ func update(client *mclientv1beta1.MetricsV1beta1Client, restClient *kubernetes.
 
 	podDetails, err := restClient.CoreV1().Pods("").List(v1.ListOptions{})
 	if err != nil {
-		log.Errorf("Error scraping pod metrics: %s", err)
+		log.Errorf("Error scraping pod details: %s", err)
 		return err
 	}
 	completePodMetrics(podMetrics, podDetails)
@@ -96,7 +96,7 @@ func update(client *mclientv1beta1.MetricsV1beta1Client, restClient *kubernetes.
 		return err
 	}
 
-	log.Infof("Database updated: %d nodes, %d pods", len(nodeMetrics.Items), len(podMetrics.Items))
+	log.Debugf("Database updated: %d nodes, %d pods", len(nodeMetrics.Items), len(podMetrics.Items))
 	return nil
 }
 
@@ -122,8 +122,8 @@ const ApplicationMetricSql = "select time, sum(cpu) as cpu, sum(memory) as memor
 const NodeMetricSql = "select time, sum(cpu) as cpu, sum(memory) as memory from nodes where name = ? group by time order by time asc;"
 const NodesMetricSql = "select time, sum(cpu) as cpu, sum(memory) as memory from nodes group by time order by time asc;"
 
-func GetApplactionMetric(namespace string) MetricHistories {
-	return getMetricHistories(ComponentMetricSql, namespace)
+func GetApplicationMetric(namespace string) MetricHistories {
+	return getMetricHistories(ApplicationMetricSql, namespace)
 }
 
 func GetPodMetric(podName, namespace string) PodMetrics {

@@ -148,7 +148,7 @@ func (builder *Builder) BuildApplicationDetails(namespace coreV1.Namespace) (*Ap
 		roles = append(roles, "reader")
 	}
 
-	applicationMetric := GetApplactionMetric(nsName)
+	applicationMetric := GetApplicationMetric(nsName)
 	isActive := controllers.IsNamespaceKappEnabled(namespace)
 
 	return &ApplicationDetails{
