@@ -34,14 +34,16 @@ func StartMetricScraper(ctx context.Context, manager *client.ClientManager) erro
 
 	metricDb, err = sql.Open("sqlite3", "/tmp/metric_scraper.db")
 	if err != nil {
-		log.Fatalf("Unable to open Sqlite database: %s", err)
+		log.Errorf("Unable to open Sqlite database: %s", err)
+		return  err
 	}
 	defer metricDb.Close()
 
 	// Populate tables
 	err = CreateDatabase(metricDb)
 	if err != nil {
-		log.Fatalf("Unable to initialize database tables: %s", err)
+		log.Errorf("Unable to initialize database tables: %s", err)
+		return  err
 	}
 
 	log.Info("Metric scraper started")
