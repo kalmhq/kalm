@@ -4,16 +4,11 @@ import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { NewModal } from "./New";
+import { NewModal, addCertificateDialogId } from "./New";
 import { CustomizedButton } from "widgets/Button";
 import { H4 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
-import {
-  loadCertificates,
-  deleteCertificateAction,
-  setIsShowAddCertificateModal,
-  loadCertificateIssuers
-} from "actions/certificate";
+import { loadCertificates, deleteCertificateAction, loadCertificateIssuers } from "actions/certificate";
 import { grey } from "@material-ui/core/colors";
 import MaterialTable from "material-table";
 import { customSearchForImmutable } from "../../utils/tableSearch";
@@ -21,6 +16,7 @@ import { Certificate } from "types/certificate";
 import { FoldButtonGroup } from "widgets/FoldButtonGroup";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
+import { openDialogAction } from "actions/dialog";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -150,6 +146,10 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     return "Yes";
   };
 
+  private renderRenewal = (rowData: RowData) => {
+    return "ineligible";
+  };
+
   private getColumns() {
     const columns = [
       // @ts-ignore
@@ -183,6 +183,12 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
         field: "inUse",
         sorting: false,
         render: this.renderInUse
+      },
+      {
+        title: "Renewal Eligibility",
+        field: "Renewal",
+        sorting: false,
+        render: this.renderRenewal
       },
       {
         title: "Actions",
@@ -221,7 +227,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
               size="large"
               className={classes.secondHeaderRightItem}
               onClick={() => {
-                dispatch(setIsShowAddCertificateModal(true));
+                dispatch(openDialogAction(addCertificateDialogId));
               }}>
               Add
             </CustomizedButton>

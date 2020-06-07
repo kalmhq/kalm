@@ -1,35 +1,20 @@
 import React from "react";
-import { Modal, withStyles, createStyles, Theme, WithStyles } from "@material-ui/core";
-import { RootState } from "reducers";
+import { withStyles, createStyles, Theme, WithStyles } from "@material-ui/core";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
 import { newEmptyCertificateForm, CertificateFormType } from "types/certificate";
 import { createCertificateAction, setIsShowAddCertificateModal } from "actions/certificate";
 import { CertificateForm } from "forms/Certificate";
+import { ControlledDialog } from "widgets/ControlledDialog";
 
-const mapStateToProps = (state: RootState) => {
-  return {
-    isShowAddCertificateModal: state.get("certificates").get("isShowAddCertificateModal")
-  };
-};
+export const addCertificateDialogId = "certificate-dialog-id";
 
 const styles = (theme: Theme) =>
   createStyles({
-    root: {},
-    paper: {
-      position: "absolute",
-      width: 700,
-      left: 0,
-      right: 0,
-      margin: "auto",
-      backgroundColor: theme.palette.background.paper,
-      border: "2px solid #000",
-      boxShadow: theme.shadows[5],
-      padding: theme.spacing(2, 4, 3)
-    }
+    root: {}
   });
 
-interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {}
+interface Props extends WithStyles<typeof styles>, TDispatchProp {}
 
 class CertificateNewRaw extends React.PureComponent<Props> {
   private submit = async (certificate: CertificateFormType) => {
@@ -41,28 +26,20 @@ class CertificateNewRaw extends React.PureComponent<Props> {
     }
   };
 
-  private handleClose = () => {
-    this.props.dispatch(setIsShowAddCertificateModal(false));
-  };
-
   public render() {
-    const { isShowAddCertificateModal, classes } = this.props;
+    const { classes } = this.props;
     return (
-      <Modal
-        aria-labelledby="spring-modal-title"
-        aria-describedby="spring-modal-description"
-        open={isShowAddCertificateModal}
-        onClose={this.handleClose}
-        closeAfterTransition
-        BackdropProps={{
-          invisible: true
+      <ControlledDialog
+        dialogID={addCertificateDialogId}
+        title={"Add Certificate"}
+        dialogProps={{
+          fullWidth: true,
+          maxWidth: "sm"
         }}>
-        <div className={classes.paper}>
-          <CertificateForm onSubmit={this.submit} initialValues={newEmptyCertificateForm()} />
-        </div>
-      </Modal>
+        <CertificateForm onSubmit={this.submit} initialValues={newEmptyCertificateForm()} />
+      </ControlledDialog>
     );
   }
 }
 
-export const NewModal = withStyles(styles)(connect(mapStateToProps)(CertificateNewRaw));
+export const NewModal = withStyles(styles)(connect()(CertificateNewRaw));

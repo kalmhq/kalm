@@ -22,6 +22,7 @@ import {
   selfManaged
 } from "types/certificate";
 import { CertificateIssuerForm } from "./issuerForm";
+import { Uploader } from "forms/Basic/uploader";
 
 const defaultFormID = "certificate";
 const createIssuer = "createIssuer";
@@ -47,12 +48,7 @@ interface OwnProps {
 
 const styles = (theme: Theme) =>
   createStyles({
-    root: {
-      "& .alert": {
-        marginTop: theme.spacing(1),
-        marginBottom: theme.spacing(1)
-      }
-    },
+    root: {},
     fileInput: {}
   });
 
@@ -71,9 +67,11 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
   }
 
   private submitCreateIssuer = async (certificateIssuer: CertificateIssuerFormType) => {
+    const { dispatch, change } = this.props;
     try {
-      await this.props.dispatch(createCertificateIssuerAction(certificateIssuer));
-      this.props.change("httpsCertIssuer", certificateIssuer.get("name"));
+      await dispatch(createCertificateIssuerAction(certificateIssuer));
+      change("httpsCertIssuer", certificateIssuer.get("name"));
+      dispatch(setIsShowAddCertificateModal(false));
     } catch (e) {
       console.log(e);
     }
@@ -85,10 +83,11 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
       <>
         <Grid item md={12}>
           <Field
-            label="Certificate file"
+            inputlabel="Certificate file"
+            inputid="upload-certificate"
             multiline={true}
             className={classes.fileInput}
-            component={KRenderTextField}
+            component={Uploader}
             rows={12}
             name="selfManagedCertContent"
             margin="normal"
@@ -97,10 +96,11 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
         </Grid>
         <Grid item md={12}>
           <Field
-            label="Private key"
+            inputlabel="Private Key"
+            inputid="upload-private-key"
             multiline={true}
             className={classes.fileInput}
-            component={KRenderTextField}
+            component={Uploader}
             rows={12}
             name="selfManagedCertPrivateKey"
             margin="normal"
@@ -166,7 +166,6 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
 
     return (
       <div className={classes.root}>
-        <h2>Add Certificate</h2>
         <Grid container spacing={2}>
           <Grid item md={12}>
             <Field
