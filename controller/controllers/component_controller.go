@@ -242,6 +242,7 @@ func (r *ComponentReconcilerTask) GetLabels() map[string]string {
 	return map[string]string{
 		"kapp-namespace": r.namespace.Name,
 		"kapp-component": r.component.Name,
+		"kapp-managed":   "true",
 	}
 }
 
@@ -889,6 +890,13 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 						},
 						StorageClassName: disk.StorageClassName,
 					},
+				}
+
+				// re-use existing PersistentVolume
+				if disk.PersistentVolumeNamePVCToMatch != "" {
+					pvc.Spec.Selector.MatchLabels = map[string]string{
+						KappPVLabelName: disk.PersistentVolumeNamePVCToMatch,
+					}
 				}
 
 				if err := r.Create(r.ctx, pvc); err != nil {

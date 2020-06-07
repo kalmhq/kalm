@@ -67,6 +67,10 @@ type Volume struct {
 	// Identify the StorageClass to create the pvc
 	StorageClassName *string `json:"storageClassName,omitempty"`
 
+	// instead of auto-provision new PV using StorageClass
+	// we try to re-use existing PV
+	PersistentVolumeNamePVCToMatch string `json:"persistentVolumeNamePVCToMatch,omitempty"`
+
 	// use to store pvc name, so the disk won't be recreate during restart
 	// This field also can be used with existing pvc
 	PersistentVolumeClaimName string `json:"persistentVolumeClaimName,omitempty"`
