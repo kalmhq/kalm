@@ -19,8 +19,10 @@ import (
 	"context"
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"strings"
 
 	ctrl "sigs.k8s.io/controller-runtime"
 )
@@ -35,8 +37,8 @@ type KappPVCReconciler struct {
 	ctx context.Context
 }
 
-func NewKappPVCReconciler(mgr ctrl.Manager) KappPVCReconciler {
-	return KappPVCReconciler{
+func NewKappPVCReconciler(mgr ctrl.Manager) *KappPVCReconciler {
+	return &KappPVCReconciler{
 		BaseReconciler: NewBaseReconciler(mgr, "KappPVC"),
 		ctx:            context.Background(),
 	}
@@ -46,7 +48,7 @@ func NewKappPVCReconciler(mgr ctrl.Manager) KappPVCReconciler {
 
 func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
-	_ = r.Log.WithValues("kapppvc", req.NamespacedName)
+	log := r.Log.WithValues("kapppvc", req.NamespacedName)
 
 	var pvcList corev1.PersistentVolumeClaimList
 	err := r.List(ctx, &pvcList, client.MatchingLabels{"kapp-managed": "true"})
@@ -100,6 +102,18 @@ func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		}
 	}
 
+	// 3. prepare storage class
+	cloudProvider, ok := r.tryFindCurrentCloudProvider()
+	if !ok {
+		log.Info("fail to find current cloudProvier")
+		return ctrl.Result{}, nil
+	}
+
+	err = r.reconcileDefaultStorageClass(cloudProvider)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
 	return ctrl.Result{}, nil
 }
 
@@ -123,4 +137,130 @@ func (r *KappPVCReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1.PersistentVolumeClaim{}).
 		Complete(r)
+}
+
+func (r *KappPVCReconciler) tryFindCurrentCloudProvider() (string, bool) {
+	var nodeList corev1.NodeList
+	err := r.List(r.ctx, &nodeList)
+	if err != nil {
+		return "", false
+	}
+
+	for _, node := range nodeList.Items {
+		if isGoogleNode(node) {
+			return "gcp", true
+		}
+
+		// todo, more for minikube & aws & azure
+	}
+
+	return "", false
+}
+
+func isGoogleNode(node corev1.Node) bool {
+	if strings.Contains(node.Name, "gke") {
+		return true
+	}
+
+	gkeLabels := []string{
+		"cloud.google.com/gke-nodepool",
+		"cloud.google.com/gke-os-distribution",
+	}
+
+	for _, gkeLabel := range gkeLabels {
+		if _, exist := node.Labels[gkeLabel]; exist {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (r *KappPVCReconciler) reconcileDefaultStorageClass(cloudProvider string) error {
+	var expectedStorageClasses []v1.StorageClass
+
+	reclaimPolicy := corev1.PersistentVolumeReclaimRetain
+	switch cloudProvider {
+	//todo case "minikube":
+	case "aws":
+		hdd := v1.StorageClass{
+			ObjectMeta: ctrl.ObjectMeta{
+				Name: "kapp-hdd",
+			},
+			Provisioner:   "kubernetes.io/aws-ebs",
+			ReclaimPolicy: &reclaimPolicy,
+			Parameters: map[string]string{
+				"type":   "gp2",
+				"fstype": "ext4",
+			},
+		}
+
+		//todo ssd
+
+		expectedStorageClasses = []v1.StorageClass{hdd}
+	case "azure":
+
+		//todo
+
+	case "gcp":
+		hdd := v1.StorageClass{
+			ObjectMeta: ctrl.ObjectMeta{
+				Name: "kapp-hdd",
+			},
+			Provisioner:   "kubernetes.io/gce-pd",
+			ReclaimPolicy: &reclaimPolicy,
+			Parameters: map[string]string{
+				"type":             "pd-standard",
+				"fstype":           "ext4",
+				"replication-type": "none",
+			},
+		}
+		ssd := v1.StorageClass{
+			ObjectMeta: ctrl.ObjectMeta{
+				Name: "kapp-ssd",
+			},
+			Provisioner:   "kubernetes.io/gce-pd",
+			ReclaimPolicy: &reclaimPolicy,
+			Parameters: map[string]string{
+				"type":             "pd-ssd",
+				"fstype":           "ext4",
+				"replication-type": "none",
+			},
+		}
+
+		expectedStorageClasses = []v1.StorageClass{hdd, ssd}
+	default:
+		r.Log.Info("unknown cloudProvider", "cloudProvider:", cloudProvider)
+		return nil
+	}
+
+	for _, expectedSC := range expectedStorageClasses {
+		var sc v1.StorageClass
+		isNew := false
+
+		err := r.Get(r.ctx, client.ObjectKey{Name: expectedSC.Name}, &sc)
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				return err
+			}
+
+			isNew = true
+		}
+
+		if isNew {
+			if err := r.Create(r.ctx, &expectedSC); err != nil {
+				return err
+			}
+		} else {
+			sc.Parameters = expectedSC.Parameters
+			sc.Provisioner = expectedSC.Provisioner
+			sc.ReclaimPolicy = expectedSC.ReclaimPolicy
+
+			if err := r.Update(r.ctx, &expectedSC); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }

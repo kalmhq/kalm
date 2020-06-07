@@ -165,11 +165,8 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Gateway")
 		os.Exit(1)
 	}
-	if err = (&controllers.KappPVCReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("KappPVC"),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
+
+	if err = (controllers.NewKappPVCReconciler(mgr)).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "KappPVC")
 		os.Exit(1)
 	}

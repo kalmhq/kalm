@@ -484,6 +484,8 @@ spec:
                       during restart This field also can be used with existing pvc
                     type: string
                   persistentVolumeNamePVCToMatch:
+                    description: instead of auto-provision new PV using StorageClass
+                      we try to re-use existing PV
                     type: string
                   size:
                     description: If we need to create this volume first, the size
