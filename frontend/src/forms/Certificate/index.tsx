@@ -1,6 +1,6 @@
 import { Button, Grid } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
-import { createCertificateIssuerAction, setIsShowAddCertificateModal } from "actions/certificate";
+import { createCertificateIssuerAction } from "actions/certificate";
 import { KFreeSoloAutoCompleteMultiValues } from "forms/Basic/autoComplete";
 import { KRadioGroupRender } from "forms/Basic/radio";
 import { RenderSelectField } from "forms/Basic/select";
@@ -19,10 +19,13 @@ import {
   CertificateIssuerList,
   issuerManaged,
   newEmptyCertificateIssuerForm,
-  selfManaged
+  selfManaged,
+  CertificateIssuer
 } from "types/certificate";
 import { CertificateIssuerForm } from "./issuerForm";
 import { Uploader } from "forms/Basic/uploader";
+import { addCertificateDialogId } from "pages/Certificate/New";
+import { closeDialogAction } from "actions/dialog";
 
 const defaultFormID = "certificate";
 const createIssuer = "createIssuer";
@@ -71,7 +74,6 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
     try {
       await dispatch(createCertificateIssuerAction(certificateIssuer));
       change("httpsCertIssuer", certificateIssuer.get("name"));
-      dispatch(setIsShowAddCertificateModal(false));
     } catch (e) {
       console.log(e);
     }
@@ -111,9 +113,8 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderIssuerManagedFields = () => {
-    const { classes, certificateIssuers, httpsCertIssuer } = this.props;
-
+  private generateHttpsCertIssuerOptions = () => {
+    const { certificateIssuers } = this.props;
     const httpsCertIssuerOptions = [
       {
         value: createIssuer,
@@ -127,6 +128,27 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
         text: name
       });
     });
+
+    if (certificateIssuers.size === 0) {
+      this.setDefaultHttpsCertIssuer(createIssuer);
+    } else {
+      const certificateIssuer = certificateIssuers.first() as CertificateIssuer;
+      this.setDefaultHttpsCertIssuer(certificateIssuer.get("name"));
+    }
+
+    return httpsCertIssuerOptions;
+  };
+
+  private setDefaultHttpsCertIssuer = (value: string) => {
+    const { httpsCertIssuer, change } = this.props;
+    if (!httpsCertIssuer) {
+      change("httpsCertIssuer", value);
+    }
+  };
+
+  private renderIssuerManagedFields = () => {
+    const { classes, httpsCertIssuer } = this.props;
+    const httpsCertIssuerOptions = this.generateHttpsCertIssuerOptions();
 
     return (
       <>
@@ -144,6 +166,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
         </Grid>
         <Grid item md={12}>
           <Field
+            notSelectFirstIfValueIsUndefined
             label="Certificate issuser"
             multiline={true}
             className={classes.fileInput}
@@ -200,7 +223,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
           <Grid container spacing={2}>
             <Grid item md={8}></Grid>
             <Grid item md={2}>
-              <Button type="submit" onClick={() => dispatch(setIsShowAddCertificateModal(false))} color="primary">
+              <Button onClick={() => dispatch(closeDialogAction(addCertificateDialogId))} color="primary">
                 Cancel
               </Button>
             </Grid>

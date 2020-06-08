@@ -17,6 +17,7 @@ import { FoldButtonGroup } from "widgets/FoldButtonGroup";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { openDialogAction } from "actions/dialog";
+import { SuccessBadge, ErrorBadge } from "widgets/Badge";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -29,6 +30,11 @@ const styles = (theme: Theme) =>
     },
     secondHeaderRightItem: {
       marginLeft: 20
+    },
+    statusWrapper: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
     }
   });
 
@@ -135,7 +141,18 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderStatus = (rowData: RowData) => {
-    return rowData.get("ready") === "True" ? "Normal" : rowData.get("reason");
+    const { classes } = this.props;
+    return rowData.get("ready") === "True" ? (
+      <div className={classes.statusWrapper}>
+        <SuccessBadge />
+        <p>Normal</p>
+      </div>
+    ) : (
+      <div className={classes.statusWrapper}>
+        <ErrorBadge />
+        <p>{rowData.get("reason")}</p>
+      </div>
+    );
   };
 
   private renderType = (rowData: RowData) => {
@@ -144,10 +161,6 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
 
   private renderInUse = (rowData: RowData) => {
     return "Yes";
-  };
-
-  private renderRenewal = (rowData: RowData) => {
-    return "ineligible";
   };
 
   private getColumns() {
@@ -183,12 +196,6 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
         field: "inUse",
         sorting: false,
         render: this.renderInUse
-      },
-      {
-        title: "Renewal Eligibility",
-        field: "Renewal",
-        sorting: false,
-        render: this.renderRenewal
       },
       {
         title: "Actions",
