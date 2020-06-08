@@ -62,7 +62,7 @@ export const RenderSelectField = ({
   };
 
   let value = input.value;
-  if (!notSelectFirstIfValueIsUndefined && options && options[0]) {
+  if (!notSelectFirstIfValueIsUndefined && !value && options && options[0]) {
     value = options[0].value;
   }
 

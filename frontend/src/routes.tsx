@@ -70,7 +70,7 @@ export const KappRoutes = (
           <Route exact path="/routes/new" component={RequireNamespaceReader(RouteNew)}></Route>
           <Route exact path="/routes/:name/edit" component={RequireNamespaceReader(RouteEdit)}></Route>
           <Route exact path="/ui-components" component={UIComponentsPage}></Route>
-          <Route exact path="/certificates" component={RequireNamespaceReader(CertificateListPage)}></Route>
+          <Route exact path="/certificates" component={CertificateListPage}></Route>
           <Route component={NoMatch} />
         </Switch>
       </RequireAuthorizatedDashboard>

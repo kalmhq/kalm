@@ -10,7 +10,7 @@ import { Application, SharedEnv } from "../../types/application";
 import { ComponentTemplate } from "../../types/componentTemplate";
 import { CustomizedButton } from "../../widgets/Button";
 import { H5, SectionTitle } from "../../widgets/Label";
-import { TextField } from "../Basic/text";
+import { KRenderTextField } from "../Basic/textfield";
 import { ValidatorName, ValidatorRequired } from "../validator";
 import { Plugins } from "./Plugins";
 import { SharedEnvs } from "./SharedEnvs";
@@ -81,7 +81,7 @@ class ApplicationFormRaw extends React.PureComponent<
             name="name"
             label="Name"
             disabled={isEdit}
-            component={TextField}
+            component={KRenderTextField}
             validate={[ValidatorRequired, ValidatorName]}
             helperText={
               isEdit

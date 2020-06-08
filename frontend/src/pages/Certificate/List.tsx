@@ -4,16 +4,11 @@ import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { NewModal } from "./New";
+import { NewModal, addCertificateDialogId } from "./New";
 import { CustomizedButton } from "widgets/Button";
 import { H4 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
-import {
-  loadCertificates,
-  deleteCertificateAction,
-  setIsShowAddCertificateModal,
-  loadCertificateIssuers
-} from "actions/certificate";
+import { loadCertificates, deleteCertificateAction, loadCertificateIssuers } from "actions/certificate";
 import { grey } from "@material-ui/core/colors";
 import MaterialTable from "material-table";
 import { customSearchForImmutable } from "../../utils/tableSearch";
@@ -21,6 +16,8 @@ import { Certificate } from "types/certificate";
 import { FoldButtonGroup } from "widgets/FoldButtonGroup";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
+import { openDialogAction } from "actions/dialog";
+import { SuccessBadge, ErrorBadge } from "widgets/Badge";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -33,6 +30,11 @@ const styles = (theme: Theme) =>
     },
     secondHeaderRightItem: {
       marginLeft: 20
+    },
+    statusWrapper: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
     }
   });
 
@@ -139,7 +141,18 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderStatus = (rowData: RowData) => {
-    return rowData.get("ready") === "True" ? "Normal" : rowData.get("reason");
+    const { classes } = this.props;
+    return rowData.get("ready") === "True" ? (
+      <div className={classes.statusWrapper}>
+        <SuccessBadge />
+        <p>Normal</p>
+      </div>
+    ) : (
+      <div className={classes.statusWrapper}>
+        <ErrorBadge />
+        <p>{rowData.get("reason")}</p>
+      </div>
+    );
   };
 
   private renderType = (rowData: RowData) => {
@@ -221,7 +234,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
               size="large"
               className={classes.secondHeaderRightItem}
               onClick={() => {
-                dispatch(setIsShowAddCertificateModal(true));
+                dispatch(openDialogAction(addCertificateDialogId));
               }}>
               Add
             </CustomizedButton>

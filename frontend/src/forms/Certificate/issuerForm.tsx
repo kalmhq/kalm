@@ -2,7 +2,7 @@ import { Button, Grid, Paper } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { RenderSelectField } from "forms/Basic/select";
-import { TextField } from "forms/Basic/text";
+import { KRenderTextField } from "forms/Basic/textfield";
 import { ValidatorRequired } from "forms/validator";
 import React from "react";
 import { connect } from "react-redux";
@@ -61,7 +61,7 @@ class CertificateIssuerFormRaw extends React.PureComponent<Props, State> {
         <Grid item md={12}>
           <Field
             label="Email"
-            component={TextField}
+            component={KRenderTextField}
             name="acmeCloudFlare.email"
             margin="normal"
             validate={[ValidatorRequired]}
@@ -70,7 +70,7 @@ class CertificateIssuerFormRaw extends React.PureComponent<Props, State> {
         <Grid item md={12}>
           <Field
             label="Token Secret"
-            component={TextField}
+            component={KRenderTextField}
             name="acmeCloudFlare.apiTokenSecretName"
             margin="normal"
             validate={[ValidatorRequired]}
@@ -101,7 +101,7 @@ class CertificateIssuerFormRaw extends React.PureComponent<Props, State> {
           <Grid item md={12}>
             <Field
               label="Issuer name"
-              component={TextField}
+              component={KRenderTextField}
               name="name"
               margin="normal"
               validate={[ValidatorRequired]}

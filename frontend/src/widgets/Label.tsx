@@ -12,10 +12,12 @@ const styles = () =>
       paddingTop: theme.spacing(1)
     },
     sectionTitle: {
-      width: "100%",
+      // width: "100%",
+      margin: `0 -${theme.spacing(2)}px`,
+      padding: `0 ${theme.spacing(2)}px`,
       height: 26,
       lineHeight: 26,
-      // background: grey[50],
+      background: "rgba(0, 0, 0, 0.04)",
       display: "flex",
       alignItems: "center"
     }

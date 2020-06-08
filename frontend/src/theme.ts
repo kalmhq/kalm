@@ -80,6 +80,13 @@ let themeRaw = createMuiTheme({
     }
   },
   overrides: {
+    MuiInputLabel: {
+      root: {
+        fontWeight: 500,
+        fontSize: 13,
+        color: "#000"
+      }
+    },
     MuiPaper: {
       root: {
         backgroundColor: "#FAFAFA"
