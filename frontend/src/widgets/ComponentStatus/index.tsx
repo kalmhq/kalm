@@ -1,24 +1,36 @@
+import { Box, createStyles, Drawer, IconButton, Paper, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { grey } from "@material-ui/core/colors";
+import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
+import ChevronRightIcon from "@material-ui/icons/ChevronRight";
+import clsx from "clsx";
 import React from "react";
-import { createStyles, Theme, withStyles, WithStyles, Box, Paper } from "@material-ui/core";
-import { TDispatchProp } from "types";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
+import { TDispatchProp } from "types";
 import { ApplicationComponentDetails, PodStatus } from "../../types/application";
-import { PieChartComponent } from "../PieChart";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "../Badge";
 import { H5, SectionTitle } from "../Label";
-import { grey } from "@material-ui/core/colors";
+import { PieChartComponent } from "../PieChart";
+import { APP_BAR_HEIGHT } from "../../layout/AppBar";
+import { setSettingsAction } from "../../actions/settings";
+
+const RIGHT_DRAWER_WIDTH = 340;
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      padding: theme.spacing(2),
+      padding: `0 ${theme.spacing(2)}px`,
       width: "100%",
       height: "100%"
     },
     componentTitle: {
       display: "flex",
-      alignItems: "center"
+      alignItems: "center",
+      margin: `0 -${theme.spacing(2)}px`,
+      // padding: `0 ${theme.spacing(2)}px`,
+      height: 35,
+      lineHeight: 35,
+      background: "rgba(0, 0, 0, 0.04)"
     },
     chartWrapper: {
       height: 120,
@@ -41,11 +53,42 @@ const styles = (theme: Theme) =>
       top: 12,
       right: 0
     },
-    podMessage: {}
+    podMessage: {},
+    drawer: {
+      width: RIGHT_DRAWER_WIDTH,
+      flexShrink: 0,
+      whiteSpace: "nowrap"
+    },
+    drawerPaper: {
+      width: RIGHT_DRAWER_WIDTH,
+      paddingTop: APP_BAR_HEIGHT,
+      zIndex: 1201
+    },
+    // material-ui official
+    drawerOpen: {
+      width: RIGHT_DRAWER_WIDTH,
+      transition: theme.transitions.create("width", {
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.enteringScreen
+      })
+    },
+    drawerClose: {
+      transition: theme.transitions.create("width", {
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.leavingScreen
+      }),
+      overflowX: "hidden",
+      width: 70 + 1,
+      [theme.breakpoints.up("sm")]: {
+        width: 70 + 1
+      }
+    }
   });
 
 const mapStateToProps = (state: RootState) => {
-  return {};
+  return {
+    isOpenComponentStatusDrawer: true || state.get("settings").get("isOpenComponentStatusDrawer")
+  };
 };
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {
@@ -162,61 +205,80 @@ class ComponentStatusRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { classes, component } = this.props;
+    const { classes, component, isOpenComponentStatusDrawer: open, dispatch } = this.props;
     const pieChartData = this.getPieChartData();
     if (!component) {
       return null;
     }
 
     return (
-      <Paper className={classes.root}>
-        <div className={classes.componentTitle}>
-          {this.renderComponentStatus(component)} <H5>{component.get("name")}</H5>
-        </div>
-        <div className={classes.chartWrapper}>
-          <PieChartComponent
-            title={""}
-            labels={["Running", "Pending", "Error"]}
-            data={[pieChartData.podSuccess, pieChartData.podPending, pieChartData.podError]}
-          />
-        </div>
-        <div className={classes.podsTitle}>
-          <SectionTitle>
-            <H5>Pods</H5>
-          </SectionTitle>
-        </div>
-        {component.get("pods").size > 0 ? (
-          <>
-            {component
-              .get("pods")
-              .filter(pod => pod.get("status") === "Failed")
-              .map(pod => {
-                return this.renderPodItem(pod);
-              })}
+      <Drawer
+        anchor="right"
+        variant="permanent"
+        className={clsx(classes.drawer, {
+          [classes.drawerOpen]: open,
+          [classes.drawerClose]: !open
+        })}
+        classes={{
+          paper: clsx(classes.drawerPaper, {
+            [classes.drawerOpen]: open,
+            [classes.drawerClose]: !open
+          })
+        }}>
+        <Paper className={classes.root} square>
+          <div className={classes.componentTitle}>
+            <IconButton
+              onClick={() => dispatch(setSettingsAction({ isOpenComponentStatusDrawer: !open }))}
+              size={"small"}>
+              {open ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+            </IconButton>{" "}
+            {this.renderComponentStatus(component)} <H5>{component.get("name")}</H5>
+          </div>
+          <div className={classes.chartWrapper}>
+            <PieChartComponent
+              title={""}
+              labels={["Running", "Pending", "Error"]}
+              data={[pieChartData.podSuccess, pieChartData.podPending, pieChartData.podError]}
+            />
+          </div>
+          <div className={classes.podsTitle}>
+            <SectionTitle>
+              <H5>Pods</H5>
+            </SectionTitle>
+          </div>
+          {component.get("pods").size > 0 ? (
+            <>
+              {component
+                .get("pods")
+                .filter(pod => pod.get("status") === "Failed")
+                .map(pod => {
+                  return this.renderPodItem(pod);
+                })}
 
-            {component
-              .get("pods")
-              .filter(pod => pod.get("status") === "Pending")
-              .map(pod => {
-                return this.renderPodItem(pod);
-              })}
+              {component
+                .get("pods")
+                .filter(pod => pod.get("status") === "Pending")
+                .map(pod => {
+                  return this.renderPodItem(pod);
+                })}
 
-            {component
-              .get("pods")
-              .filter(pod => pod.get("status") === "Running")
-              .map(pod => {
-                return this.renderPodItem(pod);
-              })}
+              {component
+                .get("pods")
+                .filter(pod => pod.get("status") === "Running")
+                .map(pod => {
+                  return this.renderPodItem(pod);
+                })}
 
-            {component
-              .get("pods")
-              .filter(pod => pod.get("status") === "Succeeded")
-              .map(pod => {
-                return this.renderPodItem(pod);
-              })}
-          </>
-        ) : null}
-      </Paper>
+              {component
+                .get("pods")
+                .filter(pod => pod.get("status") === "Succeeded")
+                .map(pod => {
+                  return this.renderPodItem(pod);
+                })}
+            </>
+          ) : null}
+        </Paper>
+      </Drawer>
     );
   }
 }
