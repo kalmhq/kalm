@@ -28,6 +28,7 @@ import { CertificateIssuerForm } from "./issuerForm";
 import { Uploader } from "forms/Basic/uploader";
 import { addCertificateDialogId } from "pages/Certificate/New";
 import { closeDialogAction } from "actions/dialog";
+import { extractDomainsFromCertificateContent } from "permission/utils";
 
 const defaultFormID = "certificate";
 const createIssuer = "createIssuer";
@@ -85,6 +86,14 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
       isEditCertificateIssuer: false
     };
   }
+
+  public componentDidUpdate = (prevProps: Props) => {
+    const { selfManagedCertContent, change } = this.props;
+    if (selfManagedCertContent && selfManagedCertContent !== prevProps.selfManagedCertContent) {
+      const domains = extractDomainsFromCertificateContent(selfManagedCertContent);
+      change("domains", domains);
+    }
+  };
 
   private submitCreateIssuer = async (certificateIssuer: CertificateIssuerFormType) => {
     const { dispatch, change } = this.props;
@@ -175,22 +184,6 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
 
     return (
       <>
-        <Grid item md={12}>
-          <Field
-            InputLabelProps={{
-              shrink: true
-            }}
-            placeholder="Please type domains"
-            label="Domains"
-            multiline={true}
-            className={classes.fileInput}
-            component={KFreeSoloAutoCompleteMultiValues}
-            rows={12}
-            name="domains"
-            margin="normal"
-            validate={[ValidatorRequired]}
-          />
-        </Grid>
         <Grid item md={12}>
           <label className={classes.label}>
             We are doing DNS01 challenge for you, please select your DNS Provider API and token.
@@ -283,6 +276,23 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
               label="Certificate name"
               component={TextField}
               name="name"
+              margin="normal"
+              validate={[ValidatorRequired]}
+            />
+          </Grid>
+          <Grid item md={12}>
+            <Field
+              disabled={managedType === selfManaged}
+              InputLabelProps={{
+                shrink: true
+              }}
+              placeholder="Please type domains"
+              label="Domains"
+              multiline={true}
+              className={classes.fileInput}
+              component={KFreeSoloAutoCompleteMultiValues}
+              rows={12}
+              name="domains"
               margin="normal"
               validate={[ValidatorRequired]}
             />

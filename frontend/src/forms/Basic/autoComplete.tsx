@@ -118,7 +118,8 @@ export interface KFreeSoloAutoCompleteMultiValuesProps<T>
     WithStyles<typeof KFreeSoloAutoCompleteMultiValuesStyles>,
     UseAutocompleteMultipleProps<T>,
     Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText"> {
-  InputLabelProps: {};
+  InputLabelProps?: {};
+  disabled?: boolean;
 }
 
 const KFreeSoloAutoCompleteMultiValuesStyles = (theme: Theme) =>
@@ -140,7 +141,8 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
     meta: { touched, invalid, error },
     classes,
     placeholder,
-    InputLabelProps
+    InputLabelProps,
+    disabled
   } = props;
 
   const errors = error as (string | undefined)[] | undefined | string;
@@ -160,6 +162,7 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
 
   return (
     <Autocomplete
+      disabled={disabled}
       multiple
       autoSelect
       clearOnEscape
