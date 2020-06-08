@@ -8,18 +8,19 @@ import {
   SET_IS_SUBMITTING_CERTIFICATE,
   LOAD_CERTIFICATES_FULFILLED,
   DELETE_CERTIFICATE,
-  SET_IS_SHOW_ADD_CERTIFICATE_MODAL,
+  SET_EDIT_CERTIFICATE_MODAL,
   CertificateIssuerList,
   LOAD_CERTIFICATE_ISSUERS_FULFILLED,
   CREATE_CERTIFICATE,
-  CREATE_CERTIFICATE_ISSUER
+  CREATE_CERTIFICATE_ISSUER,
+  Certificate
 } from "types/certificate";
 
 export type State = ImmutableMap<{
   isLoading: boolean;
   isFirstLoaded: boolean;
   isSubmittingCreateCertificate: boolean;
-  isShowAddCertificateModal: boolean;
+  editingCertificate?: Certificate;
   certificates: CertificateList;
   certificateIssuers: CertificateIssuerList;
 }>;
@@ -28,7 +29,6 @@ const initialState: State = Immutable.Map({
   isLoading: false,
   isFirstLoaded: false,
   isSubmittingCreateCertificate: false,
-  isShowAddCertificateModal: false,
   certificates: Immutable.List(),
   certificateIssuers: Immutable.List()
 });
@@ -49,8 +49,8 @@ const reducer = (state: State = initialState, action: Actions): State => {
     case LOAD_CERTIFICATE_ISSUERS_FULFILLED: {
       return state.set("certificateIssuers", action.payload.certificateIssuers || Immutable.List());
     }
-    case SET_IS_SHOW_ADD_CERTIFICATE_MODAL: {
-      return state.set("isShowAddCertificateModal", action.payload.isShowAddCertificateModal);
+    case SET_EDIT_CERTIFICATE_MODAL: {
+      return state.set("editingCertificate", action.payload.certificate);
     }
     case DELETE_CERTIFICATE: {
       const certificates = state.get("certificates");
@@ -63,12 +63,28 @@ const reducer = (state: State = initialState, action: Actions): State => {
       break;
     }
     case CREATE_CERTIFICATE: {
-      return state.update("certificates", certificates => certificates.push(action.payload.certificate));
+      const index = state
+        .get("certificates")
+        .findIndex(certificate => certificate.get("name") === action.payload.certificate.get("name"));
+      if (index >= 0) {
+        state = state.setIn(["certificates", index], action.payload.certificate);
+      } else {
+        state = state.update("certificates", certificates => certificates.push(action.payload.certificate));
+      }
+      break;
     }
     case CREATE_CERTIFICATE_ISSUER: {
-      return state.update("certificateIssuers", certificateIssuers =>
-        certificateIssuers.push(action.payload.certificateIssuer)
-      );
+      const index = state
+        .get("certificateIssuers")
+        .findIndex(certificateIssuer => certificateIssuer.get("name") === action.payload.certificateIssuer.get("name"));
+      if (index >= 0) {
+        state = state.setIn(["certificateIssuers", index], action.payload.certificateIssuer);
+      } else {
+        state = state.update("certificateIssuers", certificateIssuers =>
+          certificateIssuers.push(action.payload.certificateIssuer)
+        );
+      }
+      break;
     }
     case SET_IS_SUBMITTING_CERTIFICATE: {
       return state.set("isSubmittingCreateCertificate", action.payload.isSubmittingCertificate);

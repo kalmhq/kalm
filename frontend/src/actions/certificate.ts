@@ -11,10 +11,11 @@ import {
   LOAD_CERTIFICATE_ISSUERS_FULFILLED,
   LOAD_CERTIFICATE_ISSUERS_PENDING,
   selfManaged,
-  SetIsShowAddCertificateModal,
+  SetEditCertificateModal,
   SetIsSubmittingCertificate,
-  SET_IS_SHOW_ADD_CERTIFICATE_MODAL,
-  SET_IS_SUBMITTING_CERTIFICATE
+  SET_EDIT_CERTIFICATE_MODAL,
+  SET_IS_SUBMITTING_CERTIFICATE,
+  Certificate
 } from "types/certificate";
 import { ThunkResult } from "../types";
 import {
@@ -25,11 +26,11 @@ import {
   getCertificateList
 } from "./kubernetesApi";
 
-export const setIsShowAddCertificateModal = (isShowAddCertificateModal: boolean): SetIsShowAddCertificateModal => {
+export const setEditCertificateModal = (certificate: Certificate | null): SetEditCertificateModal => {
   return {
-    type: SET_IS_SHOW_ADD_CERTIFICATE_MODAL,
+    type: SET_EDIT_CERTIFICATE_MODAL,
     payload: {
-      isShowAddCertificateModal
+      certificate
     }
   };
 };
@@ -81,21 +82,26 @@ export const loadCertificateIssuers = (): ThunkResult<Promise<void>> => {
   };
 };
 
-export const createCertificateAction = (certificateContent: CertificateFormType): ThunkResult<Promise<void>> => {
+export const createCertificateAction = (
+  certificateContent: CertificateFormType,
+  isEdit?: boolean
+): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch(setIsSubmittingCertificate(true));
     setTimeout(() => {
       dispatch(setIsSubmittingCertificate(false));
     }, 2000);
     const certificate = await createCertificate(
-      certificateContent.set("isSelfManaged", certificateContent.get("managedType") === selfManaged)
+      certificateContent.set("isSelfManaged", certificateContent.get("managedType") === selfManaged),
+      isEdit
     );
     dispatch({ type: CREATE_CERTIFICATE, payload: { certificate } });
   };
 };
 
 export const createCertificateIssuerAction = (
-  certificateIssuerContent: CertificateIssuerFormType
+  certificateIssuerContent: CertificateIssuerFormType,
+  isEdit?: boolean
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch(setIsSubmittingCertificate(true));
@@ -103,7 +109,7 @@ export const createCertificateIssuerAction = (
       dispatch(setIsSubmittingCertificate(false));
     }, 2000);
 
-    const certificateIssuer = await createCertificateIssuer(certificateIssuerContent);
+    const certificateIssuer = await createCertificateIssuer(certificateIssuerContent, isEdit);
     dispatch({ type: CREATE_CERTIFICATE_ISSUER, payload: { certificateIssuer } });
   };
 };
