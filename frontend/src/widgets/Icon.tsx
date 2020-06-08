@@ -195,6 +195,10 @@ export const EditIcon = withStyles(styles)((props: IconsProps) => {
   const { classes, color, fontSize, style } = props;
   return <Edit className={classes.white} color={color} fontSize={fontSize} style={style} />;
 });
+export const EditHintIcon = withStyles(styles)((props: IconsProps) => {
+  const { classes, color, fontSize, style } = props;
+  return <Edit className={classes.hint} color={color} fontSize={fontSize} style={style} />;
+});
 export const CopyIcon = withStyles(styles)((props: IconsProps) => {
   const { classes, color, fontSize, style } = props;
   return <FileCopy className={classes.white} color={color} fontSize={fontSize} style={style} />;

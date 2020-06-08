@@ -342,9 +342,11 @@ export const getCertificateIssuerList = async (): Promise<CertificateIssuerList>
   return Immutable.fromJS(res.data);
 };
 
-export const createCertificate = async (certificate: CertificateFormType): Promise<Certificate> => {
+export const createCertificate = async (certificate: CertificateFormType, isEdit?: boolean): Promise<Certificate> => {
   let res;
-  if (certificate.get("isSelfManaged")) {
+  if (isEdit) {
+    res = await getAxiosClient().put(K8sApiPrefix + `/v1alpha1/httpscerts/${certificate.get("name")}`, certificate);
+  } else if (certificate.get("isSelfManaged")) {
     res = await getAxiosClient().post(K8sApiPrefix + `/v1alpha1/httpscerts/upload`, certificate);
   } else {
     res = await getAxiosClient().post(K8sApiPrefix + `/v1alpha1/httpscerts`, certificate);
@@ -354,9 +356,18 @@ export const createCertificate = async (certificate: CertificateFormType): Promi
 };
 
 export const createCertificateIssuer = async (
-  certificateIssuer: CertificateIssuerFormType
+  certificateIssuer: CertificateIssuerFormType,
+  isEdit?: boolean
 ): Promise<CertificateIssuer> => {
-  const res = await getAxiosClient().post(K8sApiPrefix + `/v1alpha1/httpscertissuers`, certificateIssuer);
+  let res;
+  if (isEdit) {
+    res = await getAxiosClient().put(
+      K8sApiPrefix + `/v1alpha1/httpscertissuers/${certificateIssuer.get("name")}`,
+      certificateIssuer
+    );
+  } else {
+    res = await getAxiosClient().post(K8sApiPrefix + `/v1alpha1/httpscertissuers`, certificateIssuer);
+  }
   return Immutable.fromJS(res.data);
 };
 
