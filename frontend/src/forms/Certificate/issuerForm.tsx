@@ -107,7 +107,7 @@ class CertificateIssuerFormRaw extends React.PureComponent<Props, State> {
             <Grid item md={12}>
               <Field
                 label="Issuer name"
-                component={TextField}
+                component={KRenderTextField}
                 name="name"
                 margin="normal"
                 validate={[ValidatorRequired]}
