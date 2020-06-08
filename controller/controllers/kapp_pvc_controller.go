@@ -47,6 +47,8 @@ func NewKappPVCReconciler(mgr ctrl.Manager) *KappPVCReconciler {
 // +kubebuilder:rbac:groups="",resources=persistentvolumeclaims,verbs=get;list;watch;create;update;patch;delete
 
 func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+	r.Log.Info("reconciling pvc volumes")
+
 	ctx := context.Background()
 	log := r.Log.WithValues("kapppvc", req.NamespacedName)
 
@@ -57,7 +59,7 @@ func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	// 1. check if any Component is using this pvc, if not delete it
-
+	// todo skip delete if reclaim policy of pv is not Retain
 	var componentList v1alpha1.ComponentList
 	if err = r.List(ctx, &componentList, client.InNamespace(req.Namespace)); err != nil {
 		if !errors.IsNotFound(err) {
@@ -73,6 +75,7 @@ func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		}
 
 		// delete this pvc
+		r.Log.Info("deleting un-used pvc", "pvc", pvc.Name, "comps", componentList.Items)
 		if err := r.Delete(ctx, &pvc); err != nil {
 			return ctrl.Result{}, nil
 		}
@@ -103,7 +106,7 @@ func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	// 3. prepare storage class
-	cloudProvider, ok := r.tryFindCurrentCloudProvider()
+	cloudProvider, ok := r.guessCurrentCloudProvider()
 	if !ok {
 		log.Info("fail to find current cloudProvier")
 		return ctrl.Result{}, nil
@@ -136,10 +139,21 @@ func isAnyComponentUsingPVC(pvc corev1.PersistentVolumeClaim, compList v1alpha1.
 func (r *KappPVCReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1.PersistentVolumeClaim{}).
+		For(&corev1.PersistentVolume{}).
+		For(&v1alpha1.Component{}).
+		For(&v1.StorageClass{}).
+		//Watches(
+		//	&source.Kind{Type: &v1.StorageClass{}},
+		//	&handler.EnqueueRequestForObject{},
+		//).
+		//Watches(
+		//	&source.Kind{Type: &corev1.PersistentVolume{}},
+		//	&handler.EnqueueRequestForObject{},
+		//).
 		Complete(r)
 }
 
-func (r *KappPVCReconciler) tryFindCurrentCloudProvider() (string, bool) {
+func (r *KappPVCReconciler) guessCurrentCloudProvider() (string, bool) {
 	var nodeList corev1.NodeList
 	err := r.List(r.ctx, &nodeList)
 	if err != nil {
@@ -151,6 +165,9 @@ func (r *KappPVCReconciler) tryFindCurrentCloudProvider() (string, bool) {
 			return "gcp", true
 		}
 
+		if isMinikube(node) {
+			return "minikube", true
+		}
 		// todo, more for minikube & aws & azure
 	}
 
@@ -171,6 +188,14 @@ func isGoogleNode(node corev1.Node) bool {
 		if _, exist := node.Labels[gkeLabel]; exist {
 			return true
 		}
+	}
+
+	return false
+}
+
+func isMinikube(node corev1.Node) bool {
+	if node.Name == "minikube" {
+		return true
 	}
 
 	return false
@@ -229,6 +254,16 @@ func (r *KappPVCReconciler) reconcileDefaultStorageClass(cloudProvider string) e
 		}
 
 		expectedStorageClasses = []v1.StorageClass{hdd, ssd}
+	case "minikube":
+		std := v1.StorageClass{
+			ObjectMeta: ctrl.ObjectMeta{
+				Name: "kapp-standard",
+			},
+			Provisioner:   "k8s.io/minikube-hostpath",
+			ReclaimPolicy: &reclaimPolicy,
+		}
+
+		expectedStorageClasses = []v1.StorageClass{std}
 	default:
 		r.Log.Info("unknown cloudProvider", "cloudProvider:", cloudProvider)
 		return nil

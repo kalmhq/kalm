@@ -859,15 +859,11 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 		volumeSource := coreV1.VolumeSource{}
 
 		// TODO generate this name at api level
-		pvcName := getPVCName(component.Name, disk.Path)
 
 		if disk.Type == corev1alpha1.VolumeTypePersistentVolumeClaim {
 			var pvc *coreV1.PersistentVolumeClaim
 
-			if disk.PersistentVolumeClaimName != "" {
-				pvcName = disk.PersistentVolumeClaimName
-			}
-
+			pvcName := disk.PersistentVolumeClaimName
 			pvcFetched, err := r.getPVC(pvcName)
 
 			if err != nil {
@@ -890,7 +886,6 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 								coreV1.ResourceStorage: disk.Size,
 							},
 						},
-						StorageClassName: disk.StorageClassName,
 					},
 				}
 
@@ -899,6 +894,9 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 					pvc.Spec.Selector.MatchLabels = map[string]string{
 						KappPVLabelName: disk.PersistentVolumeNamePVCToMatch,
 					}
+				} else {
+					// generate new volume
+					pvc.Spec.StorageClassName = disk.StorageClassName
 				}
 
 				if err := r.Create(r.ctx, pvc); err != nil {
@@ -924,18 +922,20 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 			// TODO wrong disk type
 		}
 
+		volName := getVolName(component.Name, disk.Path)
+
 		// save pvc name into applications
 		if err := r.Update(r.ctx, r.component); err != nil {
-			return nil, fmt.Errorf("fail to save PVC name: %s, %s", pvcName, err)
+			return nil, fmt.Errorf("fail to save vol, name: %s, %s", volName, err)
 		}
 
 		volumes = append(volumes, coreV1.Volume{
-			Name:         pvcName,
+			Name:         volName,
 			VolumeSource: volumeSource,
 		})
 
 		volumeMounts = append(volumeMounts, coreV1.VolumeMount{
-			Name:      pvcName,
+			Name:      volName,
 			MountPath: disk.Path,
 		})
 	}
@@ -959,7 +959,7 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 
 }
 
-func getPVCName(componentName, diskPath string) string {
+func getVolName(componentName, diskPath string) string {
 	return fmt.Sprintf("%s-%x", componentName, md5.Sum([]byte(diskPath)))
 }
 

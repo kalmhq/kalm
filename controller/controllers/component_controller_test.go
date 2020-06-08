@@ -281,7 +281,7 @@ func (suite *ComponentControllerSuite) TestVolumePVC() {
 	var pvc coreV1.PersistentVolumeClaim
 	suite.Eventually(func() bool {
 		return suite.K8sClient.Get(context.Background(), types.NamespacedName{
-			Name:      getPVCName(component.Name, component.Spec.Volumes[0].Path),
+			Name:      getVolName(component.Name, component.Spec.Volumes[0].Path),
 			Namespace: component.Namespace,
 		}, &pvc) == nil
 	}, "can't get pvc")

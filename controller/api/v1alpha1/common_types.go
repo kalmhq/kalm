@@ -73,6 +73,8 @@ type Volume struct {
 
 	// use to store pvc name, so the disk won't be recreate during restart
 	// This field also can be used with existing pvc
+	//
+	// for Type: pvc, required, todo validate this in webhook?
 	PersistentVolumeClaimName string `json:"persistentVolumeClaimName,omitempty"`
 }
 
