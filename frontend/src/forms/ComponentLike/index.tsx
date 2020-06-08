@@ -92,6 +92,7 @@ const styles = (theme: Theme) =>
       color: grey[700],
       cursor: "pointer"
     },
+
     // Select doesn't support endAdornment
     // and tooltip doesn't work in FormControl
     // https://stackoverflow.com/questions/60384230/tooltip-inside-textinput-label-is-not-working-material-ui-react
@@ -773,11 +774,13 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             know if the component is running into an unexpected state and a restart is required.
           </Body>
         </Grid>
-        <Grid item xs={6} sm={6} md={6}>
-          <ReadinessProbe />
-        </Grid>
-        <Grid item xs={6} sm={6} md={6}>
-          <LivenessProbe />
+        <Grid item xs={12}>
+          <Box pt={4}>
+            <ReadinessProbe />
+          </Box>
+          <Box pt={4}>
+            <LivenessProbe />
+          </Box>
         </Grid>
       </Grid>
     );

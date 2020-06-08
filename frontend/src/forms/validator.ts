@@ -1,6 +1,5 @@
 import Immutable from "immutable";
 import { HttpRouteDestination } from "types/route";
-import { isUndefined } from "util";
 
 export const validator = () => {
   const errors = {};

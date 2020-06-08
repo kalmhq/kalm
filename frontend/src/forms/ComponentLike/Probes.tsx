@@ -1,15 +1,23 @@
-import { Grid, Typography, Box } from "@material-ui/core";
+import {
+  Box,
+  createStyles,
+  Grid,
+  StandardTextFieldProps,
+  TextField,
+  Theme,
+  Typography,
+  withStyles
+} from "@material-ui/core";
+import { WithStyles } from "@material-ui/styles";
 import { NormalizeNumber, NormalizeNumberOrAlphabet } from "forms/normalizer";
-import Immutable from "immutable";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { WrappedFieldProps } from "redux-form";
 import { Field } from "redux-form/immutable";
-import { HttpHeader, HttpHeaders } from "../../types/componentTemplate";
 import { H5 } from "../../widgets/Label";
 import { RenderSelectField } from "../Basic/select";
-import { KRenderTextField, RenderComplexValueTextField } from "../Basic/textfield";
-import { ValidatorHttpHeaders, ValidatorNumberOrAlphabet, ValidatorRequired } from "../validator";
+import { KRenderCommandTextField, KRenderTextField } from "../Basic/textfield";
+import { ValidatorNumberOrAlphabet, ValidatorRequired } from "../validator";
 
 interface FieldComponentHackType {
   name: any;
@@ -19,11 +27,29 @@ interface FieldComponentHackType {
 
 interface FieldProps extends DispatchProp {}
 
-interface Props extends WrappedFieldProps, FieldComponentHackType, FieldProps {}
+interface Props extends WrappedFieldProps, FieldComponentHackType, FieldProps, WithStyles<typeof styles> {}
 
 interface State {
   type: string;
 }
+
+const styles = (theme: Theme) =>
+  createStyles({
+    input: {
+      padding: 2,
+      textAlign: "center",
+      width: 60,
+      "&::placeholder": {
+        textAlign: "center"
+      }
+    },
+    code: {
+      fontFamily: "Hack, monospace",
+      "& input": {
+        fontFamily: "Hack, monospace"
+      }
+    }
+  });
 
 class RenderProbe extends React.PureComponent<Props, State> {
   constructor(props: Props) {
@@ -78,183 +104,221 @@ class RenderProbe extends React.PureComponent<Props, State> {
     }
   }
 
+  private renderNestedTextfield = ({
+    input,
+    placeholder,
+    style,
+    type
+  }: WrappedFieldProps & StandardTextFieldProps & { style?: any; type?: string }) => {
+    const { classes } = this.props;
+    return (
+      <TextField
+        InputProps={{ classes: { input: classes.input } }}
+        onChange={input.onChange}
+        value={input.value}
+        size="small"
+        type={type}
+        placeholder={placeholder}
+        inputProps={{ style }}
+      />
+    );
+  };
+
   private renderHttpGet() {
     const name = this.props.input.name;
+    const { classes } = this.props;
     return (
-      <>
-        <Grid item md={12}>
-          <Field component={KRenderTextField} name={`${name}.httpGet.host`} label="Host" margin helperText="" />
-        </Grid>
-        <Grid item md={12}>
+      <Box p={1}>
+        <Typography>
+          After initial
           <Field
-            component={KRenderTextField}
-            name={`${name}.httpGet.port`}
-            label="Port"
-            margin
-            helperText=""
-            validate={[ValidatorRequired]}
-            normalize={NormalizeNumber}
+            name={`${name}.initialDelaySeconds`}
+            component={this.renderNestedTextfield}
+            placeholder="5"
+            type="number"
+            min="1"
+            style={{ width: 60 }}
           />
-        </Grid>
-        <Grid item md={12}>
-          <Field component={KRenderTextField} name={`${name}.httpGet.path`} label="Path" margin helperText="" />
-        </Grid>
-        <Grid item md={12}>
-          <Field component={KRenderTextField} name={`${name}.httpGet.scheme`} label="Scheme" margin helperText="" />
-        </Grid>
-        <Grid item md={12}>
+          seconds delay, Request{" "}
+          <Box className={classes.code} display="inline-block">
+            <Field
+              name={`${name}.httpGet.scheme`}
+              component={this.renderNestedTextfield}
+              placeholder="http"
+              style={{ width: 60 }}
+            />
+            ://
+            <Field
+              name={`${name}.httpGet.host`}
+              component={this.renderNestedTextfield}
+              placeholder="0.0.0.0"
+              style={{ width: 80 }}
+            />
+            :
+            <Field
+              name={`${name}.httpGet.port`}
+              component={this.renderNestedTextfield}
+              placeholder="8080"
+              style={{ width: 60 }}
+            />
+            <Field
+              name={`${name}.httpGet.path`}
+              component={this.renderNestedTextfield}
+              placeholder="/healthy"
+              style={{ width: 80, textAlign: "left" }}
+            />
+          </Box>{" "}
+          will be triggered every{" "}
           <Field
-            component={RenderComplexValueTextField}
-            name={`${name}.httpGet.httpHeaders`}
-            label="httpHeaders"
-            margin
-            helperText='Eg: {"name1": "value1", "name2": "value2"}'
-            validate={[ValidatorHttpHeaders]}
-            formValueToEditValue={(value: HttpHeaders) => {
-              if (!value) {
-                return "";
-              }
-
-              if (typeof value === "string") {
-                return value;
-              }
-
-              const json: { [key: string]: string } = {};
-              value.forEach(httpHeader => {
-                json[httpHeader.get("name")] = httpHeader.get("value");
-              });
-
-              return JSON.stringify(json);
-            }}
-            editValueToFormValue={(value: any) => {
-              if (!value) {
-                // Optional field
-                return undefined;
-              }
-
-              const httpHeaders: HttpHeader[] = [];
-              let json;
-              try {
-                json = JSON.parse(value);
-              } catch (e) {
-                // for validate
-                return value;
-              }
-              for (const key in json) {
-                httpHeaders.push(
-                  Immutable.Map({
-                    name: key,
-                    value: json[key]
-                  })
-                );
-              }
-
-              return Immutable.List(httpHeaders);
-            }}
-          />
-        </Grid>
-      </>
+            name={`${name}.periodSeconds`}
+            component={this.renderNestedTextfield}
+            placeholder="5"
+            type="number"
+            min="1"
+            style={{ width: 60 }}
+          />{" "}
+          seconds.
+        </Typography>
+      </Box>
     );
   }
   private renderExec() {
     const name = this.props.input.name;
+    const { classes } = this.props;
     return (
-      <Grid item xs={12} sm={12} md={12}>
-        <Field
-          component={RenderComplexValueTextField}
-          name={`${name}.exec.command`}
-          label="Command"
-          margin
-          helperText='Eg: "/bin/app", "rails server".'
-          formValueToEditValue={(value: Immutable.List<string>) => {
-            return value && value.toArray && value.toArray().join(" ") ? value.toArray().join(" ") : "";
-          }}
-          editValueToFormValue={(value: any) => {
-            return value ? Immutable.List([value]) : Immutable.List([]);
-          }}
-        />
-      </Grid>
+      <Box p={1}>
+        <Typography>
+          After initial
+          <Field
+            name={`${name}.initialDelaySeconds`}
+            component={this.renderNestedTextfield}
+            placeholder="5"
+            type="number"
+            min="1"
+            style={{ width: 60 }}
+          />
+          seconds delay, Command{" "}
+          <Box className={classes.code} display="inline-block">
+            <Field
+              name={`${name}.exec.command`}
+              component={this.renderNestedTextfield}
+              placeholder="command"
+              style={{ width: 200 }}
+            />
+          </Box>{" "}
+          will be executed every{" "}
+          <Field
+            name={`${name}.periodSeconds`}
+            component={this.renderNestedTextfield}
+            placeholder="5"
+            type="number"
+            min="1"
+            style={{ width: 60 }}
+          />{" "}
+          seconds.
+        </Typography>
+      </Box>
     );
   }
 
   private renderTcpSocket() {
     const name = this.props.input.name;
+    const { classes } = this.props;
     return (
-      <>
-        <Grid item md={12}>
-          <Field component={KRenderTextField} name={`${name}.tcpSocket.host`} label="Host" margin helperText="" />
-        </Grid>
-        <Grid item md={12}>
+      <Box p={1}>
+        <Typography>
+          After initial
           <Field
-            component={KRenderTextField}
-            name={`${name}.tcpSocket.port`}
-            label="Port"
-            margin
-            helperText=""
-            validate={[ValidatorRequired, ValidatorNumberOrAlphabet]}
-            normalize={NormalizeNumberOrAlphabet}
+            name={`${name}.initialDelaySeconds`}
+            component={this.renderNestedTextfield}
+            placeholder="5"
+            type="number"
+            min="1"
+            style={{ width: 60 }}
           />
-        </Grid>
-      </>
+          seconds delay, TCP socket connection to{" "}
+          <Box className={classes.code} display="inline-block">
+            <Field
+              name={`${name}.tcpSocket.host`}
+              component={this.renderNestedTextfield}
+              placeholder="0.0.0.0"
+              style={{ width: 200 }}
+            />
+            :
+            <Field
+              name={`${name}.tcpSocket.port`}
+              component={this.renderNestedTextfield}
+              placeholder="8080"
+              style={{ width: 60 }}
+            />
+          </Box>{" "}
+          will be established every{" "}
+          <Field
+            name={`${name}.periodSeconds`}
+            component={this.renderNestedTextfield}
+            placeholder="5"
+            type="number"
+            min="1"
+            style={{ width: 60 }}
+          />{" "}
+          seconds.
+        </Typography>
+      </Box>
     );
   }
 
   private renderCommon() {
     const name = this.props.input.name;
-
+    const { type } = this.state;
     return (
-      <>
-        <Grid item xs={6} sm={6} md={6}>
+      <Box p={1}>
+        <Typography>
+          If there is no response within{" "}
           <Field
-            component={KRenderTextField}
-            name={`${name}.initialDelaySeconds`}
-            label="InitialDelaySeconds"
-            normalize={NormalizeNumber}
-            margin
-            helperText=""
-          />
-        </Grid>
-        <Grid item xs={6} sm={6} md={6}>
-          <Field
-            component={KRenderTextField}
             name={`${name}.timeoutSeconds`}
-            label="TimeoutSeconds"
-            normalize={NormalizeNumber}
-            margin
-            helperText=""
-          />
-        </Grid>
-        <Grid item xs={4} sm={4} md={4}>
+            component={this.renderNestedTextfield}
+            placeholder="5"
+            style={{ width: 60 }}
+            type="number"
+            min="1"
+          />{" "}
+          seconds or{" "}
+          {type === "httpGet"
+            ? "an error response (http status code >= 400) is returned"
+            : type === "exec"
+            ? "the command exits with a non-zero code"
+            : "the TCP connection is failed"}
+          , the current round of testing is considered to have failed. Otherwise, the it is considered successful.
+        </Typography>
+        <br />
+        <Typography>
+          {name === "livenessProbe" ? (
+            "One successful testing"
+          ) : (
+            <>
+              <Field
+                name={`${name}.successThreshold`}
+                component={this.renderNestedTextfield}
+                placeholder="5"
+                style={{ width: 60 }}
+                type="number"
+                min="1"
+              />
+              consecutive successful tesings
+            </>
+          )}{" "}
+          will make the probe ready.{" "}
           <Field
-            component={KRenderTextField}
-            name={`${name}.periodSeconds`}
-            label="PeriodSeconds"
-            normalize={NormalizeNumber}
-            margin
-            helperText=""
-          />
-        </Grid>
-        <Grid item xs={4} sm={4} md={4}>
-          <Field
-            component={KRenderTextField}
-            name={`${name}.successThreshold`}
-            label="SuccessThreshold"
-            normalize={NormalizeNumber}
-            margin
-            helperText=""
-          />
-        </Grid>
-        <Grid item xs={4} sm={4} md={4}>
-          <Field
-            component={KRenderTextField}
             name={`${name}.failureThreshold`}
-            label="FailureThreshold"
-            normalize={NormalizeNumber}
-            margin
-            helperText=""
-          />
-        </Grid>
-      </>
+            component={this.renderNestedTextfield}
+            placeholder="5"
+            type="number"
+            min="1"
+            style={{ width: 60 }}
+          />{" "}
+          consecutive failed tesings will make the probe faild.
+        </Typography>
+      </Box>
     );
   }
 
@@ -270,7 +334,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
           <H5>{label}</H5>
         </Grid>
 
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={6}>
           <Field
             name={`${name}.type`}
             component={RenderSelectField}
@@ -327,9 +391,9 @@ class RenderProbe extends React.PureComponent<Props, State> {
 }
 
 export const LivenessProbe = connect()((props: FieldProps) => {
-  return <Field name="livenessProbe" label="LivenessProbe" component={RenderProbe} {...props} />;
+  return <Field name="livenessProbe" label="LivenessProbe" component={withStyles(styles)(RenderProbe)} {...props} />;
 });
 
 export const ReadinessProbe = connect()((props: FieldProps) => {
-  return <Field name="readinessProbe" label="ReadinessProbe" component={RenderProbe} {...props} />;
+  return <Field name="readinessProbe" label="ReadinessProbe" component={withStyles(styles)(RenderProbe)} {...props} />;
 });
