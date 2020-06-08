@@ -1,4 +1,16 @@
-import { Box, Button, Grid, List as MList, ListItem, ListItemText, Tab, Tabs, Tooltip } from "@material-ui/core";
+import {
+  Box,
+  Button,
+  Grid,
+  List as MList,
+  ListItem,
+  ListItemText,
+  Tab,
+  Tabs,
+  Tooltip,
+  Collapse,
+  Link
+} from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
@@ -38,6 +50,23 @@ import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
 import { Volumes } from "./Volumes";
 
+const IngressHint = () => {
+  const [open, setOpen] = React.useState(false);
+
+  return (
+    <>
+      <Link style={{ cursor: "pointer" }} onClick={() => setOpen(!open)}>
+        How can I expose my component to the public Internet?
+      </Link>
+      <Box pt={1}>
+        <Collapse in={open}>
+          After you have successfully configured this component, you can go to the routing interface and create a
+          suitable routing rule to direct external traffic to this component.
+        </Collapse>
+      </Box>
+    </>
+  );
+};
 const mapStateToProps = (state: RootState) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
   const syncErrors = getFormSyncErrors("componentLike")(state) as { [x in keyof ComponentLikeContent]: any };
@@ -264,7 +293,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
     return (
       <>
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <SectionTitle>
             <H5>Configuration Files</H5>
             <Tooltip title={helperContainer}>
@@ -272,7 +301,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             </Tooltip>
           </SectionTitle>
         </Grid>
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <PreInjectedFiles />
         </Grid>
       </>
@@ -321,7 +350,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
     return (
       <>
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <SectionTitle>
             <H5>Environment variables</H5>
             <Tooltip title={helperContainer}>
@@ -329,7 +358,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             </Tooltip>
           </SectionTitle>
         </Grid>{" "}
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <Envs sharedEnv={sharedEnv} />
         </Grid>
       </>
@@ -350,16 +379,19 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
     return (
       <>
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <SectionTitle>
-            <H5>Ports</H5>
+            <H5>Expose ports to cluster</H5>
             <Tooltip title={helperContainer}>
               <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
             </Tooltip>
           </SectionTitle>
         </Grid>
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <Ports />
+        </Grid>
+        <Grid item xs={12}>
+          <IngressHint />
         </Grid>
       </>
     );
@@ -412,7 +444,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
     return (
       <>
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <SectionTitle>
             <H5>Volumes</H5>
             <Tooltip title={helperContainer}>
@@ -420,7 +452,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             </Tooltip>
           </SectionTitle>
         </Grid>
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <Volumes />
         </Grid>
       </>
@@ -607,12 +639,12 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private renderDnsPolicy() {
     return (
       <>
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <SectionTitle>
             <H5>DNS Policy</H5>
           </SectionTitle>
         </Grid>
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <Field component={KRadioGroupRender} name="dnsPolicy" options={this.getDnsPolicyOptions()} />
         </Grid>
       </>
@@ -657,7 +689,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   //       </SectionTitle>
 
   //       <Grid container spacing={2}>
-  //         <Grid item xs={12} sm={12} md={12}>
+  //         <Grid item xs={12}>
   //           <Plugins />
   //         </Grid>
   //       </Grid>
@@ -670,7 +702,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
     return (
       <>
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <SectionTitle>
             <H5>Command</H5>
             <Tooltip
@@ -685,7 +717,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </SectionTitle>
         </Grid>
 
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <Field
             component={KRenderCommandTextField}
             name="command"
@@ -700,7 +732,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private renderConfigurations() {
     return (
       <Grid container spacing={2}>
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <Body>
             Tell kapp more about how to run the project. Customize the <strong>command</strong>,{" "}
             <strong>environment variables</strong> and <strong>configuration files</strong> of this component.
@@ -718,7 +750,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return (
       <>
         <Grid container spacing={2}>
-          <Grid item xs={12} sm={12} md={12}>
+          <Grid item xs={12}>
             <SectionTitle>
               <H5>Resources</H5>
             </SectionTitle>
@@ -768,7 +800,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private renderHealth() {
     return (
       <Grid container spacing={2}>
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <Body>
             Readiness probe is used to decide when a component is ready to accepting traffice. Liveness probe is used to
             know if the component is running into an unexpected state and a restart is required.
@@ -789,13 +821,13 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private renderNetworking() {
     return (
       <Grid container spacing={2}>
-        {/* <Grid item xs={12} sm={12} md={12}>
+        {/* <Grid item xs={12}>
           <SectionTitle>
           <H5>Networking</H5>
           </SectionTitle>
         </Grid> */}
         {this.renderPorts()}
-        {this.renderDnsPolicy()}
+        {/* {this.renderDnsPolicy()} */}
       </Grid>
     );
   }
@@ -819,7 +851,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     const { nodeLabels } = this.props;
     return (
       <Grid container spacing={2}>
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <SectionTitle>
             <H5>Node Labels</H5>
           </SectionTitle>
@@ -827,7 +859,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Grid item xs={6} sm={6} md={6}>
           <Field name="nodeSelectorLabels" component={RenderSelectLabels} nodeLabels={nodeLabels} />
         </Grid>
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <SectionTitle>
             <H5>Node Affinity Policy</H5>
           </SectionTitle>
@@ -843,7 +875,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     const { classes } = this.props;
     return (
       <Grid container spacing={2}>
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <SectionTitle>
             <H5>UpgradePolicy</H5>
           </SectionTitle>
@@ -1017,7 +1049,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return (
       <form onSubmit={handleSubmit} className={classes.root}>
         <KPanel title={"Basic Information"} content={<Box p={2}>{this.renderMain()}</Box>} />
-
         <Box mt={2}>
           <KPanel
             title={"Advanced Settings"}
@@ -1029,7 +1060,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             }
           />
         </Box>
-
+        <pre style={{ maxWidth: 1500, background: "#eee" }}>{JSON.stringify(this.props.values, undefined, 2)}</pre>
         {/* <div className={`${classes.formSection} ${currentTabIndex === "advanced" ? "" : ""}`}>{this.renderPlugins()}</div> */}
         {this.renderDeployButton()}
       </form>

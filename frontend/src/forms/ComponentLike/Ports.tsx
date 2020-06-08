@@ -23,7 +23,13 @@ interface Props extends WrappedFieldArrayProps<ComponentLikePort>, FieldArrayCom
 class RenderPorts extends React.PureComponent<Props> {
   public getFieldComponents(member: string) {
     return [
-      <Field component={KRenderTextField} name={`${member}.name`} label="Name" margin validate={[ValidatorRequired]} />,
+      <Field
+        component={KRenderTextField}
+        name={`${member}.name`}
+        label="Name"
+        validate={[ValidatorRequired]}
+        required
+      />,
       <Field
         name={`${member}.protocol`}
         component={RenderSelectField}
@@ -39,16 +45,16 @@ class RenderPorts extends React.PureComponent<Props> {
       <Field
         component={KRenderTextField}
         name={`${member}.containerPort`}
-        label="ContainerPort"
-        margin
+        label="Publish port"
+        required
         validate={[ValidatorRequired]}
         normalize={NormalizePort}
       />,
       <Field
         component={KRenderTextField}
         name={`${member}.servicePort`}
-        label="ServicePort"
-        margin
+        required
+        label="On listening port"
         validate={[ValidatorRequired]}
         normalize={NormalizePort}
       />
