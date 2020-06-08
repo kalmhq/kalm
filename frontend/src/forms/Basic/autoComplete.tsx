@@ -117,7 +117,9 @@ export interface KFreeSoloAutoCompleteMultiValuesProps<T>
   extends WrappedFieldProps,
     WithStyles<typeof KFreeSoloAutoCompleteMultiValuesStyles>,
     UseAutocompleteMultipleProps<T>,
-    Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText"> {}
+    Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText"> {
+  InputLabelProps: {};
+}
 
 const KFreeSoloAutoCompleteMultiValuesStyles = (theme: Theme) =>
   createStyles({
@@ -137,7 +139,8 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
     helperText,
     meta: { touched, invalid, error },
     classes,
-    placeholder
+    placeholder,
+    InputLabelProps
   } = props;
 
   const errors = error as (string | undefined)[] | undefined | string;
@@ -202,6 +205,7 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
             variant="outlined"
             error={touched && invalid}
             label={label}
+            InputLabelProps={InputLabelProps}
             placeholder={placeholder}
             helperText={(touched && invalid && errorText) || helperText}
           />

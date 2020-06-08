@@ -20,7 +20,9 @@ import {
   issuerManaged,
   newEmptyCertificateIssuerForm,
   selfManaged,
-  CertificateIssuer
+  CertificateIssuer,
+  caForTest,
+  cloudFlare
 } from "types/certificate";
 import { CertificateIssuerForm } from "./issuerForm";
 import { Uploader } from "forms/Basic/uploader";
@@ -47,33 +49,52 @@ const mapStateToProps = (state: RootState, { form }: OwnProps) => {
 
 interface OwnProps {
   form?: string;
+  isEdit?: boolean;
 }
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
-    fileInput: {}
+    fileInput: {},
+    label: {
+      fontSize: 12,
+      marginBottom: 18,
+      display: "block"
+    },
+    editBtn: {
+      marginLeft: 8
+    }
   });
 
 export interface Props
   extends WithStyles<typeof styles>,
     ReturnType<typeof mapStateToProps>,
     TDispatchProp,
-    InjectedFormProps<CertificateFormType> {}
+    InjectedFormProps<CertificateFormType> {
+  isEdit?: boolean;
+}
 
-interface State {}
+interface State {
+  isEditCertificateIssuer: boolean;
+}
 
 class CertificateFormRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = {};
+    this.state = {
+      isEditCertificateIssuer: false
+    };
   }
 
   private submitCreateIssuer = async (certificateIssuer: CertificateIssuerFormType) => {
     const { dispatch, change } = this.props;
+    const { isEditCertificateIssuer } = this.state;
     try {
-      await dispatch(createCertificateIssuerAction(certificateIssuer));
+      await dispatch(createCertificateIssuerAction(certificateIssuer, isEditCertificateIssuer));
       change("httpsCertIssuer", certificateIssuer.get("name"));
+      if (isEditCertificateIssuer) {
+        this.setState({ isEditCertificateIssuer: false });
+      }
     } catch (e) {
       console.log(e);
     }
@@ -148,12 +169,18 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
 
   private renderIssuerManagedFields = () => {
     const { classes, httpsCertIssuer } = this.props;
+    const { isEditCertificateIssuer } = this.state;
     const httpsCertIssuerOptions = this.generateHttpsCertIssuerOptions();
+    const certificateIssuer = this.getActiveCertificateIssuer();
 
     return (
       <>
         <Grid item md={12}>
           <Field
+            InputLabelProps={{
+              shrink: true
+            }}
+            placeholder="Please type domains"
             label="Domains"
             multiline={true}
             className={classes.fileInput}
@@ -165,6 +192,9 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
           />
         </Grid>
         <Grid item md={12}>
+          <label className={classes.label}>
+            We are doing DNS01 challenge for you, please select your DNS Provider API and token.
+          </label>
           <Field
             notSelectFirstIfValueIsUndefined
             label="Certificate issuser"
@@ -177,15 +207,48 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
             validate={[ValidatorRequired]}
             options={httpsCertIssuerOptions}></Field>
         </Grid>
-        {httpsCertIssuer === createIssuer ? (
-          <CertificateIssuerForm onSubmit={this.submitCreateIssuer} initialValues={newEmptyCertificateIssuerForm()} />
+        {certificateIssuer && certificateIssuer.get("acmeCloudFlare") && (
+          <Button
+            className={classes.editBtn}
+            onClick={() => this.setState({ isEditCertificateIssuer: true })}
+            color="primary"
+            disabled={isEditCertificateIssuer}
+            variant={isEditCertificateIssuer ? "contained" : undefined}>
+            Edit cloudflare issuser config
+          </Button>
+        )}
+        {httpsCertIssuer === createIssuer || isEditCertificateIssuer ? (
+          <CertificateIssuerForm
+            isEdit={isEditCertificateIssuer}
+            onSubmit={this.submitCreateIssuer}
+            initialValues={this.generateCertificateIssuerForm()}
+          />
         ) : null}
       </>
     );
   };
 
+  private getActiveCertificateIssuer = () => {
+    const { httpsCertIssuer, certificateIssuers } = this.props;
+    return certificateIssuers.find(certificate => certificate.get("name") === httpsCertIssuer);
+  };
+
+  private generateCertificateIssuerForm = () => {
+    const { isEditCertificateIssuer } = this.state;
+    const certificateIssuer = this.getActiveCertificateIssuer();
+    if (isEditCertificateIssuer && certificateIssuer) {
+      return Immutable.fromJS({
+        name: certificateIssuer.get("name"),
+        issuerType: certificateIssuer.get("acmeCloudFlare") ? cloudFlare : caForTest,
+        acmeCloudFlare: certificateIssuer.get("acmeCloudFlare")
+      });
+    } else {
+      return newEmptyCertificateIssuerForm();
+    }
+  };
+
   public render() {
-    const { classes, dispatch, handleSubmit, managedType } = this.props;
+    const { classes, dispatch, handleSubmit, managedType, isEdit } = this.props;
 
     return (
       <div className={classes.root}>
@@ -212,6 +275,11 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
           </Grid>
           <Grid item md={12}>
             <Field
+              InputLabelProps={{
+                shrink: true
+              }}
+              disabled={isEdit}
+              placeholder="Please type a certificate name"
               label="Certificate name"
               component={TextField}
               name="name"
