@@ -74,6 +74,11 @@ const styles = (theme: Theme) =>
       alignItems: "center",
       justifyContent: "center"
     },
+    // <Box boxShadow={3}> doesn't work here, so use style boxShadow
+    drawerShadow: {
+      boxShadow:
+        "rgba(0, 0, 0, 0.2) 0px 3px 3px -2px, rgba(0, 0, 0, 0.14) 0px 3px 4px 0px, rgba(0, 0, 0, 0.12) 0px 1px 8px 0px"
+    },
     // material-ui official
     drawerOpen: {
       width: RIGHT_DRAWER_WIDTH,
@@ -232,7 +237,7 @@ class ComponentStatusRaw extends React.PureComponent<Props, State> {
           [classes.drawerClose]: !open
         })}
         classes={{
-          paper: clsx(classes.drawerPaper, {
+          paper: clsx(classes.drawerPaper, classes.drawerShadow, {
             [classes.drawerOpen]: open,
             [classes.drawerClose]: !open
           })
@@ -246,6 +251,11 @@ class ComponentStatusRaw extends React.PureComponent<Props, State> {
             </IconButton>{" "}
             {open && this.renderComponentStatus(component)} {open && <H5>{component.get("name")}</H5>}
           </div>
+          {!open && (
+            <div className={`${classes.componentTitle} ${open ? "" : classes.flexCenter}`}>
+              <H5>Status</H5>
+            </div>
+          )}
           {!open && (
             <div className={classes.flexCenter} style={{ marginRight: "-6px", padding: "10px" }}>
               {this.renderComponentStatus(component)}
