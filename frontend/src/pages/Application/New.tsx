@@ -48,7 +48,7 @@ class ApplicationNewRaw extends React.PureComponent<Props> {
       <BasePage
         secondHeaderRight={
           <div className={classes.secondHeaderRight}>
-            <H4>New Application</H4>
+            <H4>Create New Application</H4>
           </div>
         }>
         <div className={classes.root}>

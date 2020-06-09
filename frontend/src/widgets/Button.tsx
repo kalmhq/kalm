@@ -16,33 +16,33 @@ const customizedButtonStyle = (theme: Theme) => {
     root: {
       display: "flex",
       alignItems: "center"
-    },
-    text: {
-      color: theme.palette.text.primary
-    },
-    textPrimary: {
-      color: theme.palette.primary.main
-    },
-    contained: {
-      background: "#fff",
-      color: theme.palette.primary.main,
-      "&:disabled": {
-        background: "transparent"
-      },
-      "&:hover": {
-        background: "#fff"
-      }
-    },
-    containedPrimary: {
-      background: theme.palette.primary.main,
-      color: "#fff",
-      "&:disabled": {
-        background: "transparent"
-      },
-      "&:hover": {
-        background: theme.palette.primary.main
-      }
     }
+    // text: {
+    //   color: theme.palette.text.primary
+    // },
+    // textPrimary: {
+    //   color: theme.palette.primary.main
+    // },
+    // contained: {
+    //   background: "#fff",
+    //   color: theme.palette.primary.main,
+    //   "&:disabled": {
+    //     background: "transparent"
+    //   },
+    //   "&:hover": {
+    //     background: "#fff"
+    //   }
+    // },
+    // containedPrimary: {
+    //   background: theme.palette.primary.main,
+    //   color: "#fff",
+    //   "&:disabled": {
+    //     background: "transparent"
+    //   },
+    //   "&:hover": {
+    //     background: theme.palette.primary.main
+    //   }
+    // }
   });
 };
 
