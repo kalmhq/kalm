@@ -34,7 +34,9 @@ export const Uploader = ({
       fontWeight: 500
     },
     textfield: {
-      background: "#212121"
+      "& > div": {
+        background: "#212121"
+      }
     },
     fileInput: {
       color: "#fff"

@@ -21,10 +21,11 @@ import { Certificate } from "types/certificate";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { openDialogAction } from "actions/dialog";
-import { SuccessBadge, ErrorBadge } from "widgets/Badge";
+import { SuccessBadge, PendingBadge } from "widgets/Badge";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { DeleteIcon, EditHintIcon } from "widgets/Icon";
 import { FlexRowItemCenterBox } from "widgets/Box";
+import { CertificateDataWrapper, WithCertificatesDataProps } from "./DataWrapper";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -48,7 +49,11 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {}
+interface Props
+  extends WithCertificatesDataProps,
+    WithStyles<typeof styles>,
+    ReturnType<typeof mapStateToProps>,
+    TDispatchProp {}
 
 interface State {
   isDeleteConfirmDialogOpen: boolean;
@@ -158,25 +163,29 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderStatus = (rowData: RowData) => {
-    return (
-      <span>
-        {rowData.get("ready") === "True" ? (
-          <FlexRowItemCenterBox>
-            <FlexRowItemCenterBox mr={1}>
-              <SuccessBadge />
-            </FlexRowItemCenterBox>
-            <FlexRowItemCenterBox>Normal</FlexRowItemCenterBox>
+    const ready = rowData.get("ready");
+
+    if (ready === "True") {
+      return (
+        <FlexRowItemCenterBox>
+          <FlexRowItemCenterBox mr={1}>
+            <SuccessBadge />
           </FlexRowItemCenterBox>
-        ) : (
-          <FlexRowItemCenterBox>
-            <FlexRowItemCenterBox mr={1}>
-              <ErrorBadge />
-            </FlexRowItemCenterBox>
-            <FlexRowItemCenterBox>{rowData.get("reason")}</FlexRowItemCenterBox>
+          <FlexRowItemCenterBox>Normal</FlexRowItemCenterBox>
+        </FlexRowItemCenterBox>
+      );
+    } else if (!!rowData.get("reason")) {
+      return (
+        <FlexRowItemCenterBox>
+          <FlexRowItemCenterBox mr={1}>
+            <PendingBadge />
           </FlexRowItemCenterBox>
-        )}
-      </span>
-    );
+          <FlexRowItemCenterBox>{rowData.get("reason")}</FlexRowItemCenterBox>
+        </FlexRowItemCenterBox>
+      );
+    } else {
+      return <PendingBadge />;
+    }
   };
 
   private renderType = (rowData: RowData) => {
@@ -259,6 +268,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
               className={classes.secondHeaderRightItem}
               onClick={() => {
                 dispatch(openDialogAction(addCertificateDialogId));
+                dispatch(setEditCertificateModal(null));
               }}>
               Add
             </CustomizedButton>
@@ -296,4 +306,6 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const CertificateListPage = withStyles(styles)(connect(mapStateToProps)(CertificateListPageRaw));
+export const CertificateListPage = withStyles(styles)(
+  connect(mapStateToProps)(CertificateDataWrapper(CertificateListPageRaw))
+);
