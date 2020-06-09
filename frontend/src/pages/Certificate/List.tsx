@@ -1,4 +1,4 @@
-import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { createStyles, Theme, withStyles, WithStyles, Grid } from "@material-ui/core";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { connect } from "react-redux";
@@ -8,16 +8,23 @@ import { NewModal, addCertificateDialogId } from "./New";
 import { CustomizedButton } from "widgets/Button";
 import { H4 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
-import { loadCertificates, deleteCertificateAction, loadCertificateIssuers } from "actions/certificate";
+import {
+  loadCertificates,
+  deleteCertificateAction,
+  loadCertificateIssuers,
+  setEditCertificateModal
+} from "actions/certificate";
 import { grey } from "@material-ui/core/colors";
 import MaterialTable from "material-table";
 import { customSearchForImmutable } from "../../utils/tableSearch";
 import { Certificate } from "types/certificate";
-import { FoldButtonGroup } from "widgets/FoldButtonGroup";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { openDialogAction } from "actions/dialog";
 import { SuccessBadge, ErrorBadge } from "widgets/Badge";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import { DeleteIcon, EditHintIcon } from "widgets/Icon";
+import { FlexRowItemCenterBox } from "widgets/Box";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -30,11 +37,6 @@ const styles = (theme: Theme) =>
     },
     secondHeaderRightItem: {
       marginLeft: 20
-    },
-    statusWrapper: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center"
     }
   });
 
@@ -86,17 +88,32 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderMoreActions = (rowData: RowData) => {
-    let options = [
-      {
-        text: "Delete",
-        onClick: () => {
-          this.showDeleteConfirmDialog(rowData);
-        },
-        iconName: "delete",
-        requiredRole: "writer"
-      }
-    ];
-    return <FoldButtonGroup options={options} />;
+    const { dispatch } = this.props;
+    return (
+      <Grid container spacing={2}>
+        <Grid item md={6}>
+          {rowData.get("isSelfManaged") && (
+            <IconButtonWithTooltip
+              tooltipTitle="Edit"
+              aria-label="edit"
+              onClick={() => {
+                dispatch(openDialogAction(addCertificateDialogId));
+                dispatch(setEditCertificateModal(rowData));
+              }}>
+              <EditHintIcon />
+            </IconButtonWithTooltip>
+          )}
+        </Grid>
+        <Grid item md={6}>
+          <IconButtonWithTooltip
+            tooltipTitle="Delete"
+            aria-label="delete"
+            onClick={() => this.showDeleteConfirmDialog(rowData)}>
+            <DeleteIcon />
+          </IconButtonWithTooltip>
+        </Grid>
+      </Grid>
+    );
   };
 
   private renderDeleteConfirmDialog = () => {
@@ -141,22 +158,29 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderStatus = (rowData: RowData) => {
-    const { classes } = this.props;
-    return rowData.get("ready") === "True" ? (
-      <div className={classes.statusWrapper}>
-        <SuccessBadge />
-        <p>Normal</p>
-      </div>
-    ) : (
-      <div className={classes.statusWrapper}>
-        <ErrorBadge />
-        <p>{rowData.get("reason")}</p>
-      </div>
+    return (
+      <span>
+        {rowData.get("ready") === "True" ? (
+          <FlexRowItemCenterBox>
+            <FlexRowItemCenterBox mr={1}>
+              <SuccessBadge />
+            </FlexRowItemCenterBox>
+            <FlexRowItemCenterBox>Normal</FlexRowItemCenterBox>
+          </FlexRowItemCenterBox>
+        ) : (
+          <FlexRowItemCenterBox>
+            <FlexRowItemCenterBox mr={1}>
+              <ErrorBadge />
+            </FlexRowItemCenterBox>
+            <FlexRowItemCenterBox>{rowData.get("reason")}</FlexRowItemCenterBox>
+          </FlexRowItemCenterBox>
+        )}
+      </span>
     );
   };
 
   private renderType = (rowData: RowData) => {
-    return rowData.get("isSelfManaged") ? "SELF MANAGED" : "KAPP ISSUED";
+    return rowData.get("isSelfManaged") ? "SELF UPLOADED" : "KAPP ISSUED";
   };
 
   private renderInUse = (rowData: RowData) => {
@@ -251,9 +275,6 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
                 pageSize: 20,
                 padding: "dense",
                 draggable: false,
-                rowStyle: {
-                  verticalAlign: "baseline"
-                },
                 headerStyle: {
                   color: "black",
                   backgroundColor: grey[100],
