@@ -9,11 +9,11 @@ import (
 
 type PV struct {
 	Name               string `json:"name"`
-	IsAvailable        bool   `json:"isAvailable"`
-	ComponentNamespace string `json:"componentNamespace,omitempty"`
-	ComponentName      string `json:"componentName,omitempty"`
-	Phase              string `json:"phase"`
-	Capacity           string `json:"capacity"`
+	IsAvailable        bool   `json:"isAvailable"`                  // can be reused or not
+	ComponentNamespace string `json:"componentNamespace,omitempty"` // ns of latest component using this PV
+	ComponentName      string `json:"componentName,omitempty"`      // name of latest component using this PV
+	Phase              string `json:"phase"`                        // Available, Bound, Released
+	Capacity           string `json:"capacity"`                     // size, e.g. 1Gi
 }
 
 func (h *ApiHandler) handleListVolumes(c echo.Context) error {

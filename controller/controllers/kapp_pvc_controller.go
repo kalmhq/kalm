@@ -70,12 +70,12 @@ func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	var activePVCs []corev1.PersistentVolumeClaim
-	var ownerCompoents []v1alpha1.Component
+	var ownerComponents []v1alpha1.Component
 
 	for _, pvc := range pvcList.Items {
 		if comp, exist := findComponentUsingPVC(pvc, componentList); exist {
 			activePVCs = append(activePVCs, pvc)
-			ownerCompoents = append(ownerCompoents, comp)
+			ownerComponents = append(ownerComponents, comp)
 
 			continue
 		}
@@ -104,7 +104,7 @@ func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 				pv.Labels = make(map[string]string)
 			}
 
-			ownerComp := ownerCompoents[i]
+			ownerComp := ownerComponents[i]
 
 			pv.Labels[KappLabelPV] = pv.Name
 			pv.Labels[KappLabelComponent] = ownerComp.Name
