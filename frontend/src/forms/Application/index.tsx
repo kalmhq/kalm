@@ -1,4 +1,4 @@
-import { createStyles, Grid, WithStyles, withStyles } from "@material-ui/core";
+import { Box, createStyles, WithStyles, withStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
 import Immutable from "immutable";
 import React from "react";
@@ -9,11 +9,9 @@ import { RootState } from "../../reducers";
 import { Application, SharedEnv } from "../../types/application";
 import { ComponentTemplate } from "../../types/componentTemplate";
 import { CustomizedButton } from "../../widgets/Button";
-import { H5, SectionTitle } from "../../widgets/Label";
+import { KPanel } from "../../widgets/KPanel";
 import { KRenderTextField } from "../Basic/textfield";
 import { ValidatorName, ValidatorRequired } from "../validator";
-import { Plugins } from "./Plugins";
-import { SharedEnvs } from "./SharedEnvs";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -23,26 +21,29 @@ const styles = (theme: Theme) =>
       background: "#fff",
       padding: 20
     },
-    formSection: {
-      padding: theme.spacing(2),
-      margin: theme.spacing(3)
-    },
-    formSectionTable: {
-      padding: theme.spacing(0),
-      margin: theme.spacing(3)
-    },
-    formSectionContainer: {
-      margin: "0",
-      width: "auto"
-    },
+    // formSection: {
+    //   padding: theme.spacing(2),
+    //   margin: theme.spacing(3)
+    // },
+    // formSectionTable: {
+    //   padding: theme.spacing(0),
+    //   margin: theme.spacing(3)
+    // },
+    // formSectionContainer: {
+    //   margin: "0",
+    //   width: "auto"
+    // },
     displayNone: {
       display: "none"
+    },
+    displayFlex: {
+      display: "flex"
     },
     buttons: {
       margin: "20px 0 0"
     },
     submitButton: {
-      marginRight: 20
+      marginRight: theme.spacing(4)
     }
   });
 
@@ -75,43 +76,70 @@ class ApplicationFormRaw extends React.PureComponent<
   private renderBasic() {
     const { isEdit } = this.props;
     return (
+      <Field
+        name="name"
+        label="Name"
+        disabled={isEdit}
+        component={KRenderTextField}
+        validate={[ValidatorRequired, ValidatorName]}
+        helperText={
+          isEdit
+            ? "Can't modify name"
+            : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
+        }
+        placeholder="Please type the component name"
+      />
+    );
+  }
+
+  private renderButtons() {
+    const { handleSubmit, change, classes, currentTab, isSubmittingApplication, values } = this.props;
+
+    return (
       <>
-        <Grid item xs={12} sm={12} md={12}>
-          <Field
-            name="name"
-            label="Name"
-            disabled={isEdit}
-            component={KRenderTextField}
-            validate={[ValidatorRequired, ValidatorName]}
-            helperText={
-              isEdit
-                ? "Can't modify name"
-                : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
-            }
-            placeholder="Please type the component name"
-          />
-        </Grid>
+        <CustomizedButton
+          pending={isSubmittingApplication && values.get("nextAddComponent")}
+          disabled={isSubmittingApplication && !values.get("nextAddComponent")}
+          variant="contained"
+          color="primary"
+          className={`${currentTab === "basic" ? classes.submitButton : classes.displayNone}`}
+          onClick={event => {
+            change("nextAddComponent", true);
+            setTimeout(() => {
+              handleSubmit(event);
+            }, 200);
+          }}>
+          Save And Add Components
+        </CustomizedButton>
+        <CustomizedButton
+          pending={isSubmittingApplication && !values.get("nextAddComponent")}
+          disabled={isSubmittingApplication && values.get("nextAddComponent")}
+          variant="contained"
+          className={`${currentTab === "basic" ? "" : classes.displayNone}`}
+          onClick={event => {
+            change("nextAddComponent", false);
+            setTimeout(() => {
+              handleSubmit(event);
+            }, 200);
+          }}>
+          Save And Back
+        </CustomizedButton>
       </>
     );
   }
 
   public render() {
-    const { handleSubmit, change, classes, currentTab, isSubmittingApplication, values } = this.props;
+    const { handleSubmit, classes } = this.props;
 
     return (
       <form onSubmit={handleSubmit} className={classes.root}>
-        <Grid
-          container
-          spacing={2}
-          className={`${classes.formSectionContainer} ${currentTab === "basic" ? "" : classes.displayNone}`}>
-          <Grid item xs={12} sm={12} md={12}>
-            <SectionTitle>
-              <H5>Application Basic</H5>
-            </SectionTitle>
-          </Grid>
-          {this.renderBasic()}
-        </Grid>
+        <KPanel title={"Application Basic"} content={<Box p={2}>{this.renderBasic()}</Box>} />
 
+        <Box pt={3} className={classes.displayFlex}>
+          {this.renderButtons()}
+        </Box>
+
+        {/* 
         <Grid
           container
           spacing={2}
@@ -140,41 +168,7 @@ class ApplicationFormRaw extends React.PureComponent<
           <Grid item xs={12} sm={12} md={12}>
             <Plugins />
           </Grid>
-        </Grid>
-
-        <Grid container spacing={2} className={`${currentTab === "basic" ? classes.buttons : classes.displayNone}`}>
-          <Grid item xs={12} sm={12} md={12}>
-            <CustomizedButton
-              pending={isSubmittingApplication && values.get("nextAddComponent")}
-              disabled={isSubmittingApplication && !values.get("nextAddComponent")}
-              variant="contained"
-              color="primary"
-              className={`${currentTab === "basic" ? classes.submitButton : classes.displayNone}`}
-              onClick={event => {
-                change("nextAddComponent", true);
-                setTimeout(() => {
-                  handleSubmit(event);
-                }, 200);
-              }}>
-              Save And Add Components
-            </CustomizedButton>
-          </Grid>
-          <Grid item xs={12} sm={12} md={12}>
-            <CustomizedButton
-              pending={isSubmittingApplication && !values.get("nextAddComponent")}
-              disabled={isSubmittingApplication && values.get("nextAddComponent")}
-              variant="contained"
-              className={`${currentTab === "basic" ? "" : classes.displayNone}`}
-              onClick={event => {
-                change("nextAddComponent", false);
-                setTimeout(() => {
-                  handleSubmit(event);
-                }, 200);
-              }}>
-              Save And Back
-            </CustomizedButton>
-          </Grid>
-        </Grid>
+        </Grid> */}
       </form>
     );
   }

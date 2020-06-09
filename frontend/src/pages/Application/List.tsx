@@ -606,8 +606,9 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     return (
       <div className={classes.emptyWrapper}>
         <CustomizedButton
+          variant="contained"
           color="primary"
-          size="large"
+          // size="large"
           onClick={() => {
             dispatch(push(`/applications/new`));
           }}>
@@ -625,8 +626,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         {this.renderInternalEndpointsDialog()}
         {this.renderExternalEndpointsDialog()}
         {this.renderDeleteConfirmDialog()}
-        {this.renderDuplicateConfirmDialog()}
-        {/* {this.renderSwitchingIsActiveConfirmDialog()} */}
+        {/* {this.renderDuplicateConfirmDialog()} */}
         <div className={classes.root}>
           {isLoading && !isFirstLoaded ? (
             <Loading />
