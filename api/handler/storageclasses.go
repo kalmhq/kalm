@@ -5,6 +5,8 @@ import (
 	"github.com/labstack/echo/v4"
 	v1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"sort"
+	"strings"
 )
 
 type StorageClass struct {
@@ -30,11 +32,24 @@ func (h *ApiHandler) handleListStorageClasses(c echo.Context) error {
 		})
 	}
 
+	sort.Slice(scList, func(i, j int) bool {
+		a := scList[i]
+		b := scList[j]
+
+		if a.IsKappManaged && b.IsKappManaged {
+			return strings.Compare(a.Name, b.Name) <= 0
+		} else if a.IsKappManaged{
+			return false
+		} else {
+			return true
+		}
+	})
+
 	return c.JSON(200, scList)
 }
 
 func isKappManagedStorageClass(sc v1.StorageClass) bool {
-	if _, exist := sc.Labels[controllers.KappManagedLabelName]; exist {
+	if _, exist := sc.Labels[controllers.KappLabelManaged]; exist {
 		return true
 	}
 

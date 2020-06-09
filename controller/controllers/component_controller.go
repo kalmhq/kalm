@@ -240,11 +240,16 @@ func (r *ComponentReconcilerTask) Run(req ctrl.Request) error {
 	return nil
 }
 
+const (
+	KappLabelComponent = "kapp-component"
+	KappLabelNamespace = "kapp-namespace"
+)
+
 func (r *ComponentReconcilerTask) GetLabels() map[string]string {
 	return map[string]string{
-		"kapp-namespace": r.namespace.Name,
-		"kapp-component": r.component.Name,
-		"kapp-managed":   "true",
+		KappLabelNamespace: r.namespace.Name,
+		KappLabelComponent: r.component.Name,
+		KappLabelManaged:   "true",
 	}
 }
 
@@ -892,7 +897,7 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 				// re-use existing PersistentVolume
 				if disk.PersistentVolumeNamePVCToMatch != "" {
 					pvc.Spec.Selector.MatchLabels = map[string]string{
-						KappPVLabelName: disk.PersistentVolumeNamePVCToMatch,
+						KappLabelPV: disk.PersistentVolumeNamePVCToMatch,
 					}
 				} else {
 					// generate new volume
@@ -1437,7 +1442,7 @@ func (r *ComponentReconcilerTask) DeleteResources() (err error) {
 	var bindingList corev1alpha1.ComponentPluginBindingList
 
 	if err := r.Reader.List(r.ctx, &bindingList, client.MatchingLabels{
-		"kapp-component": r.component.Name,
+		KappLabelComponent: r.component.Name,
 	}); client.IgnoreNotFound(err) != nil {
 		r.WarningEvent(err, "get plugin binding list error.")
 		return err

@@ -8,9 +8,12 @@ import (
 )
 
 type PV struct {
-	Name        string
-	IsAvailable bool
-	Phase       string
+	Name               string `json:"name"`
+	IsAvailable        bool   `json:"isAvailable"`
+	ComponentNamespace string `json:"componentNamespace,omitempty"`
+	ComponentName      string `json:"componentName,omitempty"`
+	Phase              string `json:"phase"`
+	Capacity           string `json:"capacity"`
 }
 
 func (h *ApiHandler) handleListVolumes(c echo.Context) error {
@@ -25,24 +28,40 @@ func (h *ApiHandler) handleListVolumes(c echo.Context) error {
 
 	var kappPVList []v1.PersistentVolume
 	for _, pv := range pvList.Items {
-		if _, exist := pv.Labels[controllers.KappPVLabelName]; !exist {
+		if _, exist := pv.Labels[controllers.KappLabelPV]; !exist {
 			continue
 		}
 
 		kappPVList = append(kappPVList, pv)
 	}
 
-	var respPVs []PV
+	respPVs := []PV{}
 	for _, kappPV := range kappPVList {
 		var isAvailable bool
 		if kappPV.Status.Phase == v1.VolumeAvailable {
 			isAvailable = true
 		}
 
+		var capInStr string
+		if cap, exist := kappPV.Spec.Capacity[v1.ResourceStorage]; exist {
+			capInStr = cap.String()
+		}
+
+		var compName, compNamespace string
+		if v, exist := kappPV.Labels[controllers.KappLabelComponent]; exist {
+			compName = v
+		}
+		if v, exist := kappPV.Labels[controllers.KappLabelNamespace]; exist {
+			compNamespace = v
+		}
+
 		respPVs = append(respPVs, PV{
-			Name:        kappPV.Name,
-			IsAvailable: isAvailable,
-			Phase:       string(kappPV.Status.Phase),
+			Name:               kappPV.Name,
+			ComponentName:      compName,
+			ComponentNamespace: compNamespace,
+			IsAvailable:        isAvailable,
+			Phase:              string(kappPV.Status.Phase),
+			Capacity:           capInStr,
 		})
 	}
 

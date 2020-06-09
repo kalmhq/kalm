@@ -28,8 +28,8 @@ import (
 )
 
 const (
-	KappPVLabelName      = "kapp-pv"
-	KappManagedLabelName = "kapp-managed"
+	KappLabelPV      = "kapp-pv"
+	KappLabelManaged = "kapp-managed"
 )
 
 // KappPVCReconciler reconciles a KappPVC object
@@ -61,6 +61,7 @@ func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	// 1. check if any Component is using this pvc, if not delete it
 	// todo skip delete if reclaim policy of pv is not Retain
+	//      or if storage class of PV is not Kapp-Managed
 	var componentList v1alpha1.ComponentList
 	if err = r.List(ctx, &componentList, client.InNamespace(req.Namespace)); err != nil {
 		if !errors.IsNotFound(err) {
@@ -69,13 +70,17 @@ func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	}
 
 	var activePVCs []corev1.PersistentVolumeClaim
+	var ownerCompoents []v1alpha1.Component
+
 	for _, pvc := range pvcList.Items {
-		if isAnyComponentUsingPVC(pvc, componentList) {
+		if comp, exist := findComponentUsingPVC(pvc, componentList); exist {
 			activePVCs = append(activePVCs, pvc)
+			ownerCompoents = append(ownerCompoents, comp)
+
 			continue
 		}
 
-		// delete this pvc
+		// todo more careful deleting this pvc
 		r.Log.Info("deleting un-used pvc", "pvc", pvc.Name, "comps", componentList.Items)
 		if err := r.Delete(ctx, &pvc); err != nil {
 			return ctrl.Result{}, nil
@@ -89,7 +94,7 @@ func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	for _, activePVC := range activePVCs {
+	for i, activePVC := range activePVCs {
 		for _, pv := range pvList.Items {
 			if pv.Name != activePVC.Spec.VolumeName {
 				continue
@@ -99,7 +104,12 @@ func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 				pv.Labels = make(map[string]string)
 			}
 
-			pv.Labels[KappPVLabelName] = pv.Name
+			ownerComp := ownerCompoents[i]
+
+			pv.Labels[KappLabelPV] = pv.Name
+			pv.Labels[KappLabelComponent] = ownerComp.Name
+			pv.Labels[KappLabelNamespace] = ownerComp.Namespace
+
 			if err := r.Update(ctx, &pv); err != nil {
 				return ctrl.Result{}, err
 			}
@@ -121,7 +131,7 @@ func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	return ctrl.Result{}, nil
 }
 
-func isAnyComponentUsingPVC(pvc corev1.PersistentVolumeClaim, compList v1alpha1.ComponentList) bool {
+func findComponentUsingPVC(pvc corev1.PersistentVolumeClaim, compList v1alpha1.ComponentList) (v1alpha1.Component, bool) {
 	for _, comp := range compList.Items {
 		for _, vol := range comp.Spec.Volumes {
 			if vol.Type != v1alpha1.VolumeTypePersistentVolumeClaim {
@@ -129,12 +139,12 @@ func isAnyComponentUsingPVC(pvc corev1.PersistentVolumeClaim, compList v1alpha1.
 			}
 
 			if vol.PersistentVolumeClaimName == pvc.Name {
-				return true
+				return comp, true
 			}
 		}
 	}
 
-	return false
+	return v1alpha1.Component{}, false
 }
 
 func (r *KappPVCReconciler) SetupWithManager(mgr ctrl.Manager) error {
@@ -278,7 +288,7 @@ func (r *KappPVCReconciler) reconcileDefaultStorageClass(cloudProvider string) e
 			sc.Labels = make(map[string]string)
 		}
 
-		sc.Labels[KappManagedLabelName] = "true"
+		sc.Labels[KappLabelManaged] = "true"
 	}
 
 	for _, expectedSC := range expectedStorageClasses {
