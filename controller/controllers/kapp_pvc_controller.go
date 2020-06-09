@@ -28,7 +28,8 @@ import (
 )
 
 const (
-	KappPVLabelName = "kapp-pv"
+	KappPVLabelName      = "kapp-pv"
+	KappManagedLabelName = "kapp-managed"
 )
 
 // KappPVCReconciler reconciles a KappPVC object
@@ -267,6 +268,17 @@ func (r *KappPVCReconciler) reconcileDefaultStorageClass(cloudProvider string) e
 	default:
 		r.Log.Info("unknown cloudProvider", "cloudProvider:", cloudProvider)
 		return nil
+	}
+
+	for i := 0; i < len(expectedStorageClasses); i++ {
+		sc := &expectedStorageClasses[i]
+
+		if sc.Labels == nil {
+			sc.Labels = make(map[string]string)
+		}
+
+		// set labels for kapp managed storage class
+		sc.Labels[KappManagedLabelName] = "true"
 	}
 
 	for _, expectedSC := range expectedStorageClasses {
