@@ -270,6 +270,7 @@ func (r *KappPVCReconciler) reconcileDefaultStorageClass(cloudProvider string) e
 		return nil
 	}
 
+	// set labels for kapp managed storage class
 	for i := 0; i < len(expectedStorageClasses); i++ {
 		sc := &expectedStorageClasses[i]
 
@@ -277,7 +278,6 @@ func (r *KappPVCReconciler) reconcileDefaultStorageClass(cloudProvider string) e
 			sc.Labels = make(map[string]string)
 		}
 
-		// set labels for kapp managed storage class
 		sc.Labels[KappManagedLabelName] = "true"
 	}
 

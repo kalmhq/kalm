@@ -112,7 +112,7 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gv1Alpha1WithAuth.GET("/storageclasses", h.handleListStorageClasses)
 
 	gv1Alpha1WithAuth.GET("/volumes", h.handleListVolumes)
-	gv1Alpha1WithAuth.PUT("/volumes/:name", h.handleReleasedPV)
+	gv1Alpha1WithAuth.DELETE("/volumes/:name", h.handleDeletePV)
 }
 
 func (h *ApiHandler) Builder(c echo.Context) *resources.Builder {
