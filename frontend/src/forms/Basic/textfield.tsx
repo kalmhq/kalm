@@ -17,6 +17,8 @@ export const KRenderTextField = ({
   required,
   disabled,
   endAdornment,
+  multiline,
+  rows,
   meta: { touched, invalid, error },
   ...custom
 }: FilledTextFieldProps & WrappedFieldProps & Props) => {
@@ -37,6 +39,8 @@ export const KRenderTextField = ({
       disabled={disabled}
       required={required}
       error={showError}
+      multiline={multiline}
+      rows={rows}
       InputLabelProps={{
         shrink: true,
         classes: {

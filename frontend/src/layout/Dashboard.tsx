@@ -5,7 +5,7 @@ import { connect } from "react-redux";
 import { RequireAuthorizated } from "permission/Authorization";
 import { AppBarComponent, APP_BAR_HEIGHT } from "./AppBar";
 import { SECOND_HEADER_HEIGHT } from "./SecondHeader";
-import { DashboardDrawer } from "./DashboardDrawer";
+import { RootDrawer } from "./RootDrawer";
 
 const styles = (theme: Theme) => {
   return createStyles({
@@ -37,7 +37,7 @@ class DashboardRaw extends React.PureComponent<Props> {
     return (
       <div className={classes.root}>
         <AppBarComponent title="KApp Dashboard" key={activeNamespaceName} />
-        <DashboardDrawer />
+        <RootDrawer />
         <main className={classes.content}>{children}</main>
       </div>
     );

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/kapp-staging/kapp/controller/controllers"
 	authorizationV1 "k8s.io/api/authorization/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"time"
 
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
@@ -107,21 +106,6 @@ type Application struct {
 
 func (builder *Builder) BuildApplicationDetails(namespace coreV1.Namespace) (*ApplicationDetails, error) {
 	nsName := namespace.Name
-
-	resourceChannels := &ResourceChannels{
-		PodList: builder.GetPodListChannel(
-			client.InNamespace(nsName),
-			client.MatchingLabels{"kapp-application": nsName},
-		),
-	}
-
-	resources, err := resourceChannels.ToResources()
-
-	if err != nil {
-		builder.Logger.Error(err)
-		return nil, err
-	}
-
 	roles := make([]string, 0, 2)
 
 	// TODO Is there a better way?
@@ -164,21 +148,7 @@ func (builder *Builder) BuildApplicationDetails(namespace coreV1.Namespace) (*Ap
 		roles = append(roles, "reader")
 	}
 
-	var podNames []string
-	var cpuHistoryList []MetricHistory
-	var memHistoryList []MetricHistory
-
-	for _, pod := range resources.PodList.Items {
-		podNames = append(podNames, pod.Name)
-
-		podMetric := getPodMetrics(pod.Name)
-		cpuHistoryList = append(cpuHistoryList, podMetric.CPU)
-		memHistoryList = append(memHistoryList, podMetric.Memory)
-	}
-
-	appCpuHistory := aggregateHistoryList(cpuHistoryList)
-	appMemHistory := aggregateHistoryList(memHistoryList)
-
+	applicationMetric := GetApplicationMetric(nsName)
 	isActive := controllers.IsNamespaceKappEnabled(namespace)
 
 	return &ApplicationDetails{
@@ -187,8 +157,8 @@ func (builder *Builder) BuildApplicationDetails(namespace coreV1.Namespace) (*Ap
 			IsActive:  isActive,
 		},
 		Metrics: MetricHistories{
-			CPU:    appCpuHistory,
-			Memory: appMemHistory,
+			CPU:    applicationMetric.CPU,
+			Memory: applicationMetric.Memory,
 		},
 		Roles: roles,
 	}, nil

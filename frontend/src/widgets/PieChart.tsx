@@ -8,11 +8,10 @@ import "chartjs-plugin-labels";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      height: "100%",
-      width: "100%",
-      display: "flex",
-      flexDirection: "column",
-      padding: "8px"
+      // height: "100%",
+      // width: "100%",
+      // display: "flex",
+      // flexDirection: "column"
     },
     pieChartWrapper: {
       flex: 1,
@@ -30,6 +29,7 @@ interface Props extends WithStyles<typeof styles> {
   title: string;
   labels: string[];
   data: number[];
+  insideLabel?: boolean;
 }
 
 interface State {}
@@ -50,7 +50,7 @@ class PieChartRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { classes, title } = this.props;
+    const { classes, title, insideLabel } = this.props;
     return (
       <div className={classes.root}>
         <div className={classes.pieChartWrapper}>
@@ -63,7 +63,8 @@ class PieChartRaw extends React.PureComponent<Props, State> {
               plugins: {
                 labels: {
                   render: "value",
-                  position: "outside"
+                  position: insideLabel ? "inside" : "outside",
+                  fontColor: insideLabel ? "#FFFFFF" : "#7E7E7E"
                   // arc: true
                 }
               }

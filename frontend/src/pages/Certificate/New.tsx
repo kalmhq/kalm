@@ -1,66 +1,77 @@
 import React from "react";
-import { Modal, withStyles, createStyles, Theme, WithStyles } from "@material-ui/core";
-import { RootState } from "reducers";
+import { withStyles, createStyles, Theme, WithStyles } from "@material-ui/core";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
-import { newEmptyCertificateForm, CertificateFormType } from "types/certificate";
-import { createCertificateAction, setIsShowAddCertificateModal } from "actions/certificate";
+import { newEmptyCertificateForm, CertificateFormType, selfManaged } from "types/certificate";
+import { createCertificateAction, setEditCertificateModal } from "actions/certificate";
 import { CertificateForm } from "forms/Certificate";
+import { ControlledDialog } from "widgets/ControlledDialog";
+import { closeDialogAction } from "actions/dialog";
+import { RootState } from "reducers";
+import Immutable from "immutable";
 
+export const addCertificateDialogId = "certificate-dialog-id";
 const mapStateToProps = (state: RootState) => {
+  const editingCertificate = state.get("certificates").get("editingCertificate");
+  const isEdit = !!editingCertificate;
   return {
-    isShowAddCertificateModal: state.get("certificates").get("isShowAddCertificateModal")
+    isEdit,
+    editingCertificate
   };
 };
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
-    paper: {
-      position: "absolute",
-      width: 700,
-      left: 0,
-      right: 0,
-      margin: "auto",
-      backgroundColor: theme.palette.background.paper,
-      border: "2px solid #000",
-      boxShadow: theme.shadows[5],
-      padding: theme.spacing(2, 4, 3)
+    fileInput: {},
+    label: {
+      fontSize: 12,
+      marginBottom: 18,
+      display: "block"
+    },
+    editBtn: {
+      marginLeft: 8
     }
   });
 
-interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {}
+export interface Props extends WithStyles<typeof styles>, TDispatchProp, ReturnType<typeof mapStateToProps> {}
 
 class CertificateNewRaw extends React.PureComponent<Props> {
   private submit = async (certificate: CertificateFormType) => {
     try {
-      await this.props.dispatch(createCertificateAction(certificate));
-      this.props.dispatch(setIsShowAddCertificateModal(false));
+      const { isEdit, dispatch } = this.props;
+      await dispatch(createCertificateAction(certificate, isEdit));
+      dispatch(closeDialogAction(addCertificateDialogId));
+      dispatch(setEditCertificateModal(null));
     } catch (e) {
       console.log(e);
     }
   };
 
-  private handleClose = () => {
-    this.props.dispatch(setIsShowAddCertificateModal(false));
+  private generateCertificateForm = () => {
+    const { editingCertificate } = this.props;
+    if (editingCertificate) {
+      return Immutable.fromJS({
+        name: editingCertificate.get("name"),
+        managedType: selfManaged
+      });
+    } else {
+      return newEmptyCertificateForm();
+    }
   };
 
   public render() {
-    const { isShowAddCertificateModal, classes } = this.props;
+    const { isEdit } = this.props;
     return (
-      <Modal
-        aria-labelledby="spring-modal-title"
-        aria-describedby="spring-modal-description"
-        open={isShowAddCertificateModal}
-        onClose={this.handleClose}
-        closeAfterTransition
-        BackdropProps={{
-          invisible: true
+      <ControlledDialog
+        dialogID={addCertificateDialogId}
+        title={isEdit ? "Edit Certificate" : "Add Certificate"}
+        dialogProps={{
+          fullWidth: true,
+          maxWidth: "sm"
         }}>
-        <div className={classes.paper}>
-          <CertificateForm onSubmit={this.submit} initialValues={newEmptyCertificateForm()} />
-        </div>
-      </Modal>
+        <CertificateForm isEdit={isEdit} onSubmit={this.submit} initialValues={this.generateCertificateForm()} />
+      </ControlledDialog>
     );
   }
 }

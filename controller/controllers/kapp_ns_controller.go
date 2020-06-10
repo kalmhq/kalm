@@ -130,7 +130,7 @@ func (r *KappNSReconciler) reconcileDefaultCAIssuerAndCert() error {
 	currentCAIssuer := v1alpha1.HttpsCertIssuer{}
 	err := r.Get(r.ctx, types.NamespacedName{Name: defaultCAIssuerName}, &currentCAIssuer)
 	if err != nil {
-		if errors.IsNotFound(err) {
+		if !errors.IsNotFound(err) {
 			return err
 		}
 

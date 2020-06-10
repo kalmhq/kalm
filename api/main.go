@@ -107,7 +107,6 @@ func run(runningConfig *config.Config) {
 	apiHandler := handler.NewApiHandler(clientManager)
 	apiHandler.Install(e)
 
-	resources.StartMetricsScraper(context.Background(), clientManager.ClusterConfig)
-
+	go resources.StartMetricScraper(context.Background(), clientManager)
 	e.Logger.Fatal(e.Start(runningConfig.GetServerAddress()))
 }

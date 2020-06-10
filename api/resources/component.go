@@ -78,22 +78,15 @@ func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component, res
 	pods := findPods(resources.PodList, component.Name)
 	podsStatus := make([]PodStatus, 0, len(pods))
 
-	var cpuHistoryList []MetricHistory
-	var memHistoryList []MetricHistory
-
 	for _, pod := range pods {
 		podStatus := getPodStatus(pod, resources.EventList.Items)
-		podMetric := getPodMetrics(pod.Name)
+		podMetric := GetPodMetric(pod.Name, pod.Namespace)
 
 		podStatus.Metrics = podMetric.MetricHistories
-		cpuHistoryList = append(cpuHistoryList, podMetric.CPU)
-		memHistoryList = append(memHistoryList, podMetric.Memory)
-
 		podsStatus = append(podsStatus, *podStatus)
 	}
 
-	appCpuHistory := aggregateHistoryList(cpuHistoryList)
-	appMemHistory := aggregateHistoryList(memHistoryList)
+	componentMetric := GetComponentMetric(component.Name, component.Namespace)
 
 	componentPluginBindings := findComponentPluginBindings(resources.ComponentPluginBindings, component.Name)
 	plugins := make([]runtime.RawExtension, 0, len(componentPluginBindings))
@@ -134,8 +127,8 @@ func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component, res
 		},
 		Services: servicesStatus,
 		Metrics: MetricHistories{
-			CPU:    appCpuHistory,
-			Memory: appMemHistory,
+			CPU:    componentMetric.CPU,
+			Memory: componentMetric.Memory,
 		},
 		Pods: podsStatus,
 	}

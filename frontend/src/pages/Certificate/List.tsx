@@ -1,26 +1,31 @@
-import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { createStyles, Theme, withStyles, WithStyles, Grid } from "@material-ui/core";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { NewModal } from "./New";
+import { NewModal, addCertificateDialogId } from "./New";
 import { CustomizedButton } from "widgets/Button";
 import { H4 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import {
   loadCertificates,
   deleteCertificateAction,
-  setIsShowAddCertificateModal,
-  loadCertificateIssuers
+  loadCertificateIssuers,
+  setEditCertificateModal
 } from "actions/certificate";
 import { grey } from "@material-ui/core/colors";
 import MaterialTable from "material-table";
 import { customSearchForImmutable } from "../../utils/tableSearch";
 import { Certificate } from "types/certificate";
-import { FoldButtonGroup } from "widgets/FoldButtonGroup";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
+import { openDialogAction } from "actions/dialog";
+import { SuccessBadge, PendingBadge } from "widgets/Badge";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import { DeleteIcon, EditHintIcon } from "widgets/Icon";
+import { FlexRowItemCenterBox } from "widgets/Box";
+import { CertificateDataWrapper, WithCertificatesDataProps } from "./DataWrapper";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -44,7 +49,11 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {}
+interface Props
+  extends WithCertificatesDataProps,
+    WithStyles<typeof styles>,
+    ReturnType<typeof mapStateToProps>,
+    TDispatchProp {}
 
 interface State {
   isDeleteConfirmDialogOpen: boolean;
@@ -84,17 +93,32 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderMoreActions = (rowData: RowData) => {
-    let options = [
-      {
-        text: "Delete",
-        onClick: () => {
-          this.showDeleteConfirmDialog(rowData);
-        },
-        iconName: "delete",
-        requiredRole: "writer"
-      }
-    ];
-    return <FoldButtonGroup options={options} />;
+    const { dispatch } = this.props;
+    return (
+      <Grid container spacing={2}>
+        <Grid item md={6}>
+          {rowData.get("isSelfManaged") && (
+            <IconButtonWithTooltip
+              tooltipTitle="Edit"
+              aria-label="edit"
+              onClick={() => {
+                dispatch(openDialogAction(addCertificateDialogId));
+                dispatch(setEditCertificateModal(rowData));
+              }}>
+              <EditHintIcon />
+            </IconButtonWithTooltip>
+          )}
+        </Grid>
+        <Grid item md={6}>
+          <IconButtonWithTooltip
+            tooltipTitle="Delete"
+            aria-label="delete"
+            onClick={() => this.showDeleteConfirmDialog(rowData)}>
+            <DeleteIcon />
+          </IconButtonWithTooltip>
+        </Grid>
+      </Grid>
+    );
   };
 
   private renderDeleteConfirmDialog = () => {
@@ -139,11 +163,33 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderStatus = (rowData: RowData) => {
-    return rowData.get("ready") === "True" ? "Normal" : rowData.get("reason");
+    const ready = rowData.get("ready");
+
+    if (ready === "True") {
+      return (
+        <FlexRowItemCenterBox>
+          <FlexRowItemCenterBox mr={1}>
+            <SuccessBadge />
+          </FlexRowItemCenterBox>
+          <FlexRowItemCenterBox>Normal</FlexRowItemCenterBox>
+        </FlexRowItemCenterBox>
+      );
+    } else if (!!rowData.get("reason")) {
+      return (
+        <FlexRowItemCenterBox>
+          <FlexRowItemCenterBox mr={1}>
+            <PendingBadge />
+          </FlexRowItemCenterBox>
+          <FlexRowItemCenterBox>{rowData.get("reason")}</FlexRowItemCenterBox>
+        </FlexRowItemCenterBox>
+      );
+    } else {
+      return <PendingBadge />;
+    }
   };
 
   private renderType = (rowData: RowData) => {
-    return rowData.get("isSelfManaged") ? "SELF MANAGED" : "KAPP ISSUED";
+    return rowData.get("isSelfManaged") ? "SELF UPLOADED" : "KAPP ISSUED";
   };
 
   private renderInUse = (rowData: RowData) => {
@@ -221,7 +267,8 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
               size="large"
               className={classes.secondHeaderRightItem}
               onClick={() => {
-                dispatch(setIsShowAddCertificateModal(true));
+                dispatch(openDialogAction(addCertificateDialogId));
+                dispatch(setEditCertificateModal(null));
               }}>
               Add
             </CustomizedButton>
@@ -238,9 +285,6 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
                 pageSize: 20,
                 padding: "dense",
                 draggable: false,
-                rowStyle: {
-                  verticalAlign: "baseline"
-                },
                 headerStyle: {
                   color: "black",
                   backgroundColor: grey[100],
@@ -262,4 +306,6 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const CertificateListPage = withStyles(styles)(connect(mapStateToProps)(CertificateListPageRaw));
+export const CertificateListPage = withStyles(styles)(
+  connect(mapStateToProps)(CertificateDataWrapper(CertificateListPageRaw))
+);

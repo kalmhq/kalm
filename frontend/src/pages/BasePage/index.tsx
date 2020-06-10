@@ -16,9 +16,10 @@ const styles = (_theme: Theme) =>
     rightSection: {
       display: "flex",
       flexDirection: "column",
-      height: "100%",
+      // height: "100%",
       flexGrow: 1,
-      overflow: "hidden"
+      overflow: "hidden",
+      minHeight: `calc( 100vh - 96px )`
     },
     content: {
       flex: 1,
