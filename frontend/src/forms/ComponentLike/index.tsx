@@ -12,7 +12,7 @@ import { Field, getFormSyncErrors, getFormValues, reduxForm } from "redux-form/i
 import { Body, H5, SectionTitle } from "widgets/Label";
 import { loadComponentPluginsAction } from "../../actions/application";
 import { loadNodesAction } from "../../actions/node";
-import { loadStorageClasses } from "../../actions/persistentVolume";
+import { loadStorageClassesAction } from "../../actions/persistentVolume";
 import { RootState } from "../../reducers";
 import { getNodeLabels } from "../../selectors/node";
 import { TDispatchProp } from "../../types";
@@ -151,7 +151,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     dispatch(loadNodesAction());
     // load configs for volume
     // dispatch(loadConfigsAction());
-    dispatch(loadStorageClasses());
+    dispatch(loadStorageClassesAction());
   }
 
   private renderReplicasOrSchedule() {

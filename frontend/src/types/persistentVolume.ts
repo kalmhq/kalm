@@ -1,7 +1,8 @@
 import { ImmutableMap } from "typings";
 import Immutable from "immutable";
 
-export const LOAD_PERSISTENT_VOLUMNS = "LOAD_PERSISTENT_VOLUMNS";
+export const LOAD_PERSISTENT_VOLUMES = "LOAD_PERSISTENT_VOLUMES";
+export const DELETE_PERSISTENT_VOLUME = "DELETE_PERSISTENT_VOLUME";
 export const LOAD_STORAGE_CLASSES = "LOAD_STORAGE_CLASSES";
 
 export interface PersistentVolumeContent {
@@ -25,9 +26,16 @@ export type StorageClass = ImmutableMap<StorageClassContent>;
 export type StorageClasses = Immutable.List<StorageClass>;
 
 export interface LoadPersistentVolumesAction {
-  type: typeof LOAD_PERSISTENT_VOLUMNS;
+  type: typeof LOAD_PERSISTENT_VOLUMES;
   payload: {
     persistentVolumes: PersistentVolumes;
+  };
+}
+
+export interface DeletePersistentVolumeAction {
+  type: typeof DELETE_PERSISTENT_VOLUME;
+  payload: {
+    name: string;
   };
 }
 
@@ -38,4 +46,4 @@ export interface LoadStorageClassesAction {
   };
 }
 
-export type VolumeActions = LoadPersistentVolumesAction | LoadStorageClassesAction;
+export type VolumeActions = LoadPersistentVolumesAction | DeletePersistentVolumeAction | LoadStorageClassesAction;

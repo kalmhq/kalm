@@ -1,19 +1,30 @@
-import { getPersistentVolumes, getStorageClasses } from "./kubernetesApi";
+import { getPersistentVolumes, getStorageClasses, deletePersistentVolume } from "./kubernetesApi";
 import { ThunkResult } from "../types";
-import { LOAD_PERSISTENT_VOLUMNS, LOAD_STORAGE_CLASSES } from "../types/persistentVolume";
+import { LOAD_PERSISTENT_VOLUMES, LOAD_STORAGE_CLASSES, DELETE_PERSISTENT_VOLUME } from "../types/persistentVolume";
 
-export const loadPersistentVolumes = (): ThunkResult<Promise<void>> => {
+export const loadPersistentVolumesAction = (): ThunkResult<Promise<void>> => {
   return async dispatch => {
     const persistentVolumes = await getPersistentVolumes();
 
     dispatch({
-      type: LOAD_PERSISTENT_VOLUMNS,
+      type: LOAD_PERSISTENT_VOLUMES,
       payload: { persistentVolumes }
     });
   };
 };
 
-export const loadStorageClasses = (): ThunkResult<Promise<void>> => {
+export const deletePersistentVolumeAction = (name: string): ThunkResult<Promise<void>> => {
+  return async dispatch => {
+    await deletePersistentVolume(name);
+
+    dispatch({
+      type: DELETE_PERSISTENT_VOLUME,
+      payload: { name }
+    });
+  };
+};
+
+export const loadStorageClassesAction = (): ThunkResult<Promise<void>> => {
   return async dispatch => {
     const storageClasses = await getStorageClasses();
 

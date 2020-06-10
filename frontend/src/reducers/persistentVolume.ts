@@ -3,7 +3,7 @@ import { Actions } from "../types";
 import { ImmutableMap } from "../typings";
 import { LOGOUT } from "../types/common";
 import {
-  LOAD_PERSISTENT_VOLUMNS,
+  LOAD_PERSISTENT_VOLUMES,
   LOAD_STORAGE_CLASSES,
   PersistentVolumes,
   StorageClasses
@@ -24,7 +24,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
     case LOGOUT: {
       return initialState;
     }
-    case LOAD_PERSISTENT_VOLUMNS: {
+    case LOAD_PERSISTENT_VOLUMES: {
       return state.set("persistentVolumes", action.payload.persistentVolumes);
     }
     case LOAD_STORAGE_CLASSES: {
