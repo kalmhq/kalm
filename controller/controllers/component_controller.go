@@ -704,15 +704,19 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 			Labels: labels,
 
 			// The following is for set sidecar resources.
+			Annotations: map[string]string{
+				//"sidecar.istio.io/proxyCPU":         "100m",
+				//"sidecar.istio.io/proxyMemory":      "50Mi",
+				//"sidecar.istio.io/proxyCPULimit":    "100m",
+				//"sidecar.istio.io/proxyMemoryLimit": "50Mi",
+			},
 		},
 		Spec: coreV1.PodSpec{
 			Containers: []coreV1.Container{
 				{
-					Name:    component.Name,
-					Image:   component.Spec.Image,
-					Env:     []coreV1.EnvVar{},
-					Command: component.Spec.Command,
-					Args:    component.Spec.Args,
+					Name:  component.Name,
+					Image: component.Spec.Image,
+					Env:   []coreV1.EnvVar{},
 					Resources: coreV1.ResourceRequirements{
 						Requests: make(map[coreV1.ResourceName]resource.Quantity),
 						Limits:   make(map[coreV1.ResourceName]resource.Quantity),
@@ -722,6 +726,17 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 				},
 			},
 		},
+	}
+
+	mainContainer := &template.Spec.Containers[0]
+
+	if component.Spec.Command != "" {
+		if strings.Contains(component.Spec.Command, " ") {
+			mainContainer.Command = []string{"sh"}
+			mainContainer.Args = []string{"-c", component.Spec.Command}
+		} else {
+			mainContainer.Command = []string{component.Spec.Command}
+		}
 	}
 
 	var pullImageSecrets coreV1.SecretList
@@ -754,8 +769,6 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 	if component.Spec.RunnerPermission != nil {
 		template.Spec.ServiceAccountName = r.getNameForPermission()
 	}
-
-	mainContainer := &template.Spec.Containers[0]
 
 	var ports []coreV1.ContainerPort
 	for _, p := range component.Spec.Ports {
