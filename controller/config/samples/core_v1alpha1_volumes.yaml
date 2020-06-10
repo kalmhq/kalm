@@ -41,3 +41,4 @@ spec:
       type: pvc
       storageClassName: kapp-ssd
       persistentVolumeNamePVCToMatch: pvc-2a488de4-14c6-49ab-8483-dd505afe4241
+      persistentVolumeClaimName: pvc-foobar2

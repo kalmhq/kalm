@@ -891,6 +891,7 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 								coreV1.ResourceStorage: disk.Size,
 							},
 						},
+						StorageClassName: disk.StorageClassName,
 					},
 				}
 
@@ -904,9 +905,6 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 					pvc.Spec.Selector.MatchLabels = map[string]string{
 						KappLabelPV: disk.PersistentVolumeNamePVCToMatch,
 					}
-				} else {
-					// generate new volume
-					pvc.Spec.StorageClassName = disk.StorageClassName
 				}
 
 				if err := r.Create(r.ctx, pvc); err != nil {
