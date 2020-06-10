@@ -896,6 +896,11 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 
 				// re-use existing PersistentVolume
 				if disk.PersistentVolumeNamePVCToMatch != "" {
+					if pvc.Spec.Selector == nil {
+						pvc.Spec.Selector = &metaV1.LabelSelector{
+						}
+					}
+
 					pvc.Spec.Selector.MatchLabels = map[string]string{
 						KappLabelPV: disk.PersistentVolumeNamePVCToMatch,
 					}

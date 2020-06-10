@@ -5,6 +5,24 @@ metadata:
   labels:
     istio-injection: enabled
     kapp-enabled: "true"
+#---
+#apiVersion: core.kapp.dev/v1alpha1
+#kind: Component
+#metadata:
+#  name: hello-world
+#  namespace: kapp-vols
+#spec:
+#  image: strm/helloworld-http:latest
+#  ports:
+#    - name: http
+#      containerPort: 80
+#      servicePort: 80
+#  volumes:
+#    - path: /tmp/foobar
+#      size: 1Gi
+#      type: pvc
+#      storageClassName: kapp-ssd
+#      persistentVolumeClaimName: pvc-foobar
 ---
 apiVersion: core.kapp.dev/v1alpha1
 kind: Component
@@ -21,5 +39,5 @@ spec:
     - path: /tmp/foobar
       size: 1Gi
       type: pvc
-      storageClassName: kapp-standard
-      persistentVolumeClaimName: pvc-foobar
+      storageClassName: kapp-ssd
+      persistentVolumeNamePVCToMatch: pvc-2a488de4-14c6-49ab-8483-dd505afe4241
