@@ -11,7 +11,7 @@ import { ComponentLikePort } from "../../types/componentTemplate";
 import { RenderSelectField } from "../Basic/select";
 import { KRenderTextField } from "../Basic/textfield";
 import { NormalizePort } from "../normalizer";
-import { ValidatorRequired } from "../validator";
+import { ValidatorRequired, ValidatorServiceName } from "../validator";
 import { CodeGenerator } from "@babel/generator";
 import { Alert } from "@material-ui/lab";
 interface FieldArrayComponentHackType {
@@ -32,24 +32,24 @@ const ValidatorPorts = (values: Immutable.List<ComponentLikePort>, _allValues?: 
     const port = values.get(i)!;
     const name = port.get("name");
 
-    if (!names.has(name)) {
-      names.add(name);
-    } else {
-      return "Port names should be unique.  " + name + "";
+    if (name !== "") {
+      if (!names.has(name)) {
+        names.add(name);
+      } else {
+        return "Port names should be unique.  " + name + "";
+      }
     }
 
-    if (!port.get("servicePort")) {
-      continue;
-    }
+    const servicePort = port.get("servicePort") || port.get("containerPort");
+    if (servicePort) {
+      const protocol = port.get("protocol");
+      const protocolServicePort = protocol + "-" + servicePort;
 
-    const protocol = port.get("protocol");
-    const servicePort = port.get("servicePort");
-    const protocolServicePort = protocol + "-" + servicePort;
-
-    if (!protocolServicePorts.has(protocolServicePort)) {
-      protocolServicePorts.add(protocolServicePort);
-    } else {
-      return "Listening port on a protocol should be unique.  " + protocol + " - " + servicePort;
+      if (!protocolServicePorts.has(protocolServicePort)) {
+        protocolServicePorts.add(protocolServicePort);
+      } else {
+        return "Listening port on a protocol should be unique.  " + protocol + " - " + servicePort;
+      }
     }
   }
 };
@@ -78,7 +78,7 @@ class RenderPorts extends React.PureComponent<Props> {
                     Immutable.Map({
                       name: "",
                       protocol: portTypeTCP,
-                      containerPort: ""
+                      containerPort: null
                     })
                   )
                 )
@@ -103,7 +103,8 @@ class RenderPorts extends React.PureComponent<Props> {
                   component={KRenderTextField}
                   name={`${field}.name`}
                   label="Name"
-                  validate={[ValidatorRequired]}
+                  placeholder="Port Name"
+                  validate={[ValidatorRequired, ValidatorServiceName]}
                   required
                 />
               </Grid>
@@ -126,6 +127,7 @@ class RenderPorts extends React.PureComponent<Props> {
                   component={KRenderTextField}
                   name={`${field}.containerPort`}
                   label="Publish port"
+                  placeholder="Port number between 1-65535"
                   required
                   validate={[ValidatorRequired]}
                   normalize={NormalizePort}
@@ -135,13 +137,13 @@ class RenderPorts extends React.PureComponent<Props> {
                 <Field
                   component={KRenderTextField}
                   name={`${field}.servicePort`}
-                  required
-                  label="On listening port"
+                  label="listening on port"
+                  placeholder="Default to equal publish port"
                   validate={[ValidatorRequired]}
                   normalize={NormalizePort}
                 />
               </Grid>
-              <Grid item xs>
+              <Grid item xs={1}>
                 <IconButtonWithTooltip
                   tooltipPlacement="top"
                   tooltipTitle="Delete"

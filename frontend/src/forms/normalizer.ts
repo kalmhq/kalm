@@ -2,7 +2,7 @@ export const NormalizePort = (value: string, _previousValue?: any, _allValues?: 
   const portInteger = parseInt(value, 10);
 
   if (isNaN(portInteger)) {
-    return "";
+    return null;
   }
 
   if (portInteger < 0) {

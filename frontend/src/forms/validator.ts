@@ -221,3 +221,13 @@ export const ValidatorEnvName = (value: string) => {
 
   return undefined;
 };
+
+export const ValidatorServiceName = (value: string) => {
+  if (value === undefined) return undefined;
+
+  if (!value.match(/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/)) {
+    return `Port name must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character. (e.g. 'my-name',  or '123-abc', regex used for validation is '[a-z0-9]([-a-z0-9]*[a-z0-9])?')`;
+  }
+
+  return undefined;
+};

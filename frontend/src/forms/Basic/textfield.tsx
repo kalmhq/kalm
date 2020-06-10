@@ -53,6 +53,9 @@ export const KRenderTextField = ({
       InputProps={{
         endAdornment: <InputAdornment position="end">{endAdornment}</InputAdornment>
       }}
+      inputProps={{
+        required: false // bypass html5 required feature
+      }}
       value={input.value}
       onChange={(event: ChangeEvent<HTMLInputElement>) => input.onChange(event.target.value)}
     />
