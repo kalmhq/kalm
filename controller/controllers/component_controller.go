@@ -240,10 +240,16 @@ func (r *ComponentReconcilerTask) Run(req ctrl.Request) error {
 	return nil
 }
 
+const (
+	KappLabelComponent = "kapp-component"
+	KappLabelNamespace = "kapp-namespace"
+)
+
 func (r *ComponentReconcilerTask) GetLabels() map[string]string {
 	return map[string]string{
-		"kapp-namespace": r.namespace.Name,
-		"kapp-component": r.component.Name,
+		KappLabelNamespace: r.namespace.Name,
+		KappLabelComponent: r.component.Name,
+		KappLabelManaged:   "true",
 	}
 }
 
@@ -858,15 +864,11 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 		volumeSource := coreV1.VolumeSource{}
 
 		// TODO generate this name at api level
-		pvcName := getPVCName(component.Name, disk.Path)
 
 		if disk.Type == corev1alpha1.VolumeTypePersistentVolumeClaim {
 			var pvc *coreV1.PersistentVolumeClaim
 
-			if disk.PersistentVolumeClaimName != "" {
-				pvcName = disk.PersistentVolumeClaimName
-			}
-
+			pvcName := disk.PersistentVolumeClaimName
 			pvcFetched, err := r.getPVC(pvcName)
 
 			if err != nil {
@@ -889,8 +891,17 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 								coreV1.ResourceStorage: disk.Size,
 							},
 						},
-						StorageClassName: disk.StorageClassName,
 					},
+				}
+
+				// re-use existing PersistentVolume
+				if disk.PersistentVolumeNamePVCToMatch != "" {
+					pvc.Spec.Selector.MatchLabels = map[string]string{
+						KappLabelPV: disk.PersistentVolumeNamePVCToMatch,
+					}
+				} else {
+					// generate new volume
+					pvc.Spec.StorageClassName = disk.StorageClassName
 				}
 
 				if err := r.Create(r.ctx, pvc); err != nil {
@@ -916,18 +927,20 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 			// TODO wrong disk type
 		}
 
+		volName := getVolName(component.Name, disk.Path)
+
 		// save pvc name into applications
 		if err := r.Update(r.ctx, r.component); err != nil {
-			return nil, fmt.Errorf("fail to save PVC name: %s, %s", pvcName, err)
+			return nil, fmt.Errorf("fail to save vol, name: %s, %s", volName, err)
 		}
 
 		volumes = append(volumes, coreV1.Volume{
-			Name:         pvcName,
+			Name:         volName,
 			VolumeSource: volumeSource,
 		})
 
 		volumeMounts = append(volumeMounts, coreV1.VolumeMount{
-			Name:      pvcName,
+			Name:      volName,
 			MountPath: disk.Path,
 		})
 	}
@@ -951,7 +964,7 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 
 }
 
-func getPVCName(componentName, diskPath string) string {
+func getVolName(componentName, diskPath string) string {
 	return fmt.Sprintf("%s-%x", componentName, md5.Sum([]byte(diskPath)))
 }
 
@@ -1429,7 +1442,7 @@ func (r *ComponentReconcilerTask) DeleteResources() (err error) {
 	var bindingList corev1alpha1.ComponentPluginBindingList
 
 	if err := r.Reader.List(r.ctx, &bindingList, client.MatchingLabels{
-		"kapp-component": r.component.Name,
+		KappLabelComponent: r.component.Name,
 	}); client.IgnoreNotFound(err) != nil {
 		r.WarningEvent(err, "get plugin binding list error.")
 		return err

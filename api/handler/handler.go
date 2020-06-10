@@ -108,6 +108,11 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gv1Alpha1WithAuth.POST("/httpscerts/upload", h.handleUploadHttpsCert)
 	gv1Alpha1WithAuth.PUT("/httpscerts/:name", h.handleUpdateHttpsCert)
 	gv1Alpha1WithAuth.DELETE("/httpscerts/:name", h.handleDeleteHttpsCert)
+
+	gv1Alpha1WithAuth.GET("/storageclasses", h.handleListStorageClasses)
+
+	gv1Alpha1WithAuth.GET("/volumes", h.handleListVolumes)
+	gv1Alpha1WithAuth.DELETE("/volumes/:name", h.handleDeletePV)
 }
 
 func (h *ApiHandler) Builder(c echo.Context) *resources.Builder {

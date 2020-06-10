@@ -265,12 +265,15 @@ func (suite *ComponentControllerSuite) TestLinkedEnv() {
 }
 
 func (suite *ComponentControllerSuite) TestVolumePVC() {
+	pvcName := "pvc-foobar"
+
 	component := generateEmptyComponent(suite.ns.Name)
 	component.Spec.Volumes = []v1alpha1.Volume{
 		{
-			Type: v1alpha1.VolumeTypePersistentVolumeClaim,
-			Path: "/test/b",
-			Size: resource.MustParse("10m"),
+			Type:                      v1alpha1.VolumeTypePersistentVolumeClaim,
+			Path:                      "/test/b",
+			Size:                      resource.MustParse("10m"),
+			PersistentVolumeClaimName: pvcName,
 		},
 	}
 	key := types.NamespacedName{
@@ -281,7 +284,7 @@ func (suite *ComponentControllerSuite) TestVolumePVC() {
 	var pvc coreV1.PersistentVolumeClaim
 	suite.Eventually(func() bool {
 		return suite.K8sClient.Get(context.Background(), types.NamespacedName{
-			Name:      getPVCName(component.Name, component.Spec.Volumes[0].Path),
+			Name:      pvcName,
 			Namespace: component.Namespace,
 		}, &pvc) == nil
 	}, "can't get pvc")
@@ -291,11 +294,11 @@ func (suite *ComponentControllerSuite) TestVolumePVC() {
 		return suite.K8sClient.Get(context.Background(), key, &deployment) == nil
 	}, "can't get deployment")
 
-	mountPath := deployment.Spec.Template.Spec.Containers[0].VolumeMounts[0]
+	volMount := deployment.Spec.Template.Spec.Containers[0].VolumeMounts[0]
 	volume := deployment.Spec.Template.Spec.Volumes[0]
-	suite.Equal(mountPath.Name, pvc.Name)
-	suite.Equal(mountPath.MountPath, "/test/b")
-	suite.Equal(volume.Name, pvc.Name)
+	suite.Equal(volMount.Name, volume.Name)
+	suite.Equal(volMount.MountPath, "/test/b")
+	suite.Equal(pvcName, pvc.Name)
 	suite.Equal(volume.PersistentVolumeClaim.ClaimName, pvc.Name)
 
 	suite.Eventually(func() bool {
