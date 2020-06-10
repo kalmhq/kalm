@@ -1,7 +1,6 @@
 import {
   createStyles,
   Drawer,
-  IconButton,
   List,
   ListItem,
   ListItemIcon,
@@ -10,9 +9,8 @@ import {
   Theme
 } from "@material-ui/core";
 import AssignmentReturnedIcon from "@material-ui/icons/AssignmentReturned";
+import SettingsIcon from "@material-ui/icons/Settings";
 import VerifiedUser from "@material-ui/icons/VerifiedUser";
-import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
-import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import clsx from "clsx";
 import React from "react";
@@ -20,7 +18,6 @@ import { connect } from "react-redux";
 import { NavLink } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
-import { setSettingsAction } from "../actions/settings";
 import { LEFT_SECTION_WIDTH } from "../pages/BasePage";
 import { primaryBackgroud, primaryColor } from "../theme";
 import { KappApplicationIcon, KappNodeIcon, KappVolumeIcon } from "../widgets/Icon";
@@ -57,12 +54,12 @@ const styles = (theme: Theme) =>
       textTransform: "uppercase",
       color: "#000000 !important"
     },
-    openBtnWrapper: {
-      width: "100%",
-      display: "flex",
-      justifyContent: "flex-end",
-      padding: "15px 16px"
-    },
+    // openBtnWrapper: {
+    //   width: "100%",
+    //   display: "flex",
+    //   justifyContent: "flex-end",
+    //   padding: "15px 16px"
+    // },
     hide: {
       display: "none"
     },
@@ -106,7 +103,7 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
 
 interface State {}
 
-class DashboardDrawerRaw extends React.PureComponent<Props, State> {
+class RootDrawerRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
 
@@ -145,12 +142,17 @@ class DashboardDrawerRaw extends React.PureComponent<Props, State> {
         icon: AssignmentReturnedIcon,
         text: "Registries",
         to: "/cluster/registries"
+      },
+      {
+        icon: SettingsIcon,
+        text: "Settings",
+        to: "/roles"
       }
     ];
   }
 
   render() {
-    const { classes, pathname, dispatch, isOpenRootDrawer: open } = this.props;
+    const { classes, pathname, isOpenRootDrawer: open } = this.props;
     return (
       <Drawer
         variant="permanent"
@@ -164,11 +166,11 @@ class DashboardDrawerRaw extends React.PureComponent<Props, State> {
             [classes.drawerClose]: !open
           })
         }}>
-        <div className={clsx(classes.openBtnWrapper, { [classes.itemBorder]: !open })}>
+        {/* <div className={clsx(classes.openBtnWrapper, { [classes.itemBorder]: !open })}>
           <IconButton onClick={() => dispatch(setSettingsAction({ isOpenRootDrawer: !open }))} size={"small"}>
             {open ? <ChevronLeftIcon /> : <ChevronRightIcon />}
           </IconButton>
-        </div>
+        </div> */}
 
         <List style={{ paddingTop: open ? 8 : 0 }}>
           {open ? (
@@ -228,4 +230,4 @@ class DashboardDrawerRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const DashboardDrawer = connect(mapStateToProps)(withStyles(styles)(DashboardDrawerRaw));
+export const RootDrawer = connect(mapStateToProps)(withStyles(styles)(RootDrawerRaw));

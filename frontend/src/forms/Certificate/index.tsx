@@ -123,7 +123,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
             rows={12}
             name="selfManagedCertContent"
             margin="normal"
-            validate={[ValidatorRequired]}
+            validate={[ValidatorRequired, ValidatorCertificateValid]}
           />
         </Grid>
         <Grid item md={12}>
@@ -246,26 +246,28 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
     return (
       <div className={classes.root}>
         <Grid container spacing={2}>
-          <Grid item md={12}>
-            <Field
-              title=""
-              component={KRadioGroupRender}
-              name="managedType"
-              options={[
-                {
-                  value: selfManaged,
-                  label: "Upload an existing certificate",
-                  explain:
-                    "If you have got a ssl certificate from your ssl certificate provider, you can upload and use this."
-                },
-                {
-                  value: issuerManaged,
-                  label: "Apply a new certificate with certificate issuer",
-                  explain: "If you wanna create new cerificate, you can select this."
-                }
-              ]}
-            />
-          </Grid>
+          {isEdit ? null : (
+            <Grid item md={12}>
+              <Field
+                title=""
+                component={KRadioGroupRender}
+                name="managedType"
+                options={[
+                  {
+                    value: selfManaged,
+                    label: "Upload an existing certificate",
+                    explain:
+                      "If you have got a ssl certificate from your ssl certificate provider, you can upload and use this."
+                  },
+                  {
+                    value: issuerManaged,
+                    label: "Apply a new certificate with certificate issuer",
+                    explain: "If you wanna create new cerificate, you can select this."
+                  }
+                ]}
+              />
+            </Grid>
+          )}
           <Grid item md={12}>
             <Field
               InputLabelProps={{
@@ -286,7 +288,11 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
               InputLabelProps={{
                 shrink: true
               }}
-              placeholder="Please type domains"
+              placeholder={
+                managedType === selfManaged
+                  ? "Extract domains information when you upload a certificate file"
+                  : "Please type domains"
+              }
               label="Domains"
               multiline={true}
               className={classes.fileInput}
@@ -294,7 +300,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
               rows={12}
               name="domains"
               margin="normal"
-              validate={[ValidatorRequired]}
+              validate={managedType === selfManaged ? [] : [ValidatorRequired]}
             />
           </Grid>
           {managedType === selfManaged ? this.renderSelfManagedFields() : this.renderIssuerManagedFields()}
@@ -316,6 +322,13 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
     );
   }
 }
+
+const ValidatorCertificateValid = (value: any, _allValues?: any, _props?: any, _name?: any) => {
+  const domains = _props.values.get("domains");
+  if (!domains || domains.size < 1) {
+    return "Invalid Certificate";
+  }
+};
 
 export const CertificateForm = reduxForm<CertificateFormType, OwnProps>({
   onSubmitFail: console.log,

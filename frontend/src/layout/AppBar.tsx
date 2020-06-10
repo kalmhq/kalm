@@ -1,16 +1,17 @@
 import { AppBar, createStyles, Divider, IconButton, Menu, MenuItem, Theme } from "@material-ui/core";
 import AccountCircle from "@material-ui/icons/AccountCircle";
-import SettingsIcon from "@material-ui/icons/Settings";
+import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
+import MenuIcon from "@material-ui/icons/Menu";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import { logoutAction } from "actions/auth";
 import React from "react";
 import { connect } from "react-redux";
-import { Link, NavLink } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { loadApplicationsAction } from "../actions/application";
-import { IconButtonWithTooltip } from "../widgets/IconButtonWithTooltip";
+import { setSettingsAction } from "../actions/settings";
 
 export const APP_BAR_HEIGHT = 48;
 
@@ -21,6 +22,7 @@ const mapStateToProps = (state: RootState) => {
   const isAdmin = auth.get("isAdmin");
   const entity = auth.get("entity");
   return {
+    isOpenRootDrawer: state.get("settings").get("isOpenRootDrawer"),
     activeNamespace,
     isAdmin,
     entity
@@ -43,10 +45,17 @@ const styles = (theme: Theme) =>
       width: "100%",
       margin: "0 auto",
       position: "relative",
-      padding: "0 20px",
+      // padding: "0 20px",
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between"
+    },
+    barLeft: {
+      display: "flex",
+      alignItems: "center"
+    },
+    shrinkButton: {
+      // margin: `0 10px`
     },
     barTitle: {
       color: "inherit",
@@ -138,20 +147,30 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
   }
 
   render() {
-    const { classes, title } = this.props;
+    const { classes, title, dispatch, isOpenRootDrawer } = this.props;
 
     return (
       <AppBar ref={this.headerRef} id="header" position="relative" className={classes.appBar}>
         <div className={classes.barContainer}>
-          <FlexRowItemCenterBox>
-            <Link className={classes.barTitle} to="/">
-              {title}
-            </Link>
-          </FlexRowItemCenterBox>
+          <div className={classes.barLeft}>
+            <IconButton
+              className={classes.shrinkButton}
+              onClick={() => dispatch(setSettingsAction({ isOpenRootDrawer: !isOpenRootDrawer }))}
+              // size={"small"}
+            >
+              {isOpenRootDrawer ? <ChevronLeftIcon htmlColor={"#fff"} /> : <MenuIcon htmlColor={"#fff"} />}
+            </IconButton>
+            <FlexRowItemCenterBox>
+              <Link className={classes.barTitle} to="/">
+                {title}
+              </Link>
+            </FlexRowItemCenterBox>
+          </div>
+
           <div className={classes.barRight}>
-            <IconButtonWithTooltip tooltipTitle="Settings" style={{ color: "#fff" }} component={NavLink} to={"/roles"}>
+            {/* <IconButtonWithTooltip tooltipTitle="Settings" style={{ color: "#fff" }} component={NavLink} to={"/roles"}>
               <SettingsIcon />
-            </IconButtonWithTooltip>
+            </IconButtonWithTooltip> */}
             <Divider orientation="vertical" flexItem color="inherit" />
             <div className={classes.barAvatar}>{this.renderAuthEntity()}</div>
           </div>
