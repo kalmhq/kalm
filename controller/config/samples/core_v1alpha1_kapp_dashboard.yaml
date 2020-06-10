@@ -50,8 +50,7 @@ metadata:
 spec:
   image: kappstaging/dashboard:latest
   workloadType: server
-  command:
-    - ./kapp-api-server
+  command: ./kapp-api-server
   ports:
     - name: http
       containerPort: 3001

@@ -702,6 +702,8 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 	template = &coreV1.PodTemplateSpec{
 		ObjectMeta: metaV1.ObjectMeta{
 			Labels: labels,
+
+			// The following is for set sidecar resources.
 		},
 		Spec: coreV1.PodSpec{
 			Containers: []coreV1.Container{

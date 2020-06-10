@@ -15,10 +15,12 @@ import { DeleteIcon } from "../../widgets/Icon";
 import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
 import { KRenderTextField } from "../Basic/textfield";
 import { KValidatorPath, ValidatorRequired } from "../validator";
+import { Alert } from "@material-ui/lab";
 
 interface FieldArrayComponentHackType {
   name: any;
   component: any;
+  validate: any;
 }
 
 interface State {
@@ -127,7 +129,7 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
 
   public render() {
     const {
-      meta: { form },
+      meta: { form, error },
       fields,
       dispatch
     } = this.props;
@@ -155,6 +157,11 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
             }>
             Add
           </Button>
+          {error ? (
+            <Box mb={2}>
+              <Alert severity="error">{error}</Alert>
+            </Box>
+          ) : null}
         </Box>
         {fields.map((member, index) => {
           const injectedFile = fields.get(index);
@@ -206,6 +213,34 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
   }
 }
 
+const ValidatorInjectedFiles = (
+  values: Immutable.List<PreInjectedFile>,
+  _allValues?: any,
+  _props?: any,
+  _name?: any
+) => {
+  if (!values) return undefined;
+  const mountPaths = new Set<string>();
+
+  for (let i = 0; i < values.size; i++) {
+    const path = values.get(i)!;
+    const mountPath = path.get("mountPath");
+
+    if (!mountPaths.has(mountPath)) {
+      mountPaths.add(mountPath);
+    } else {
+      return "Files paths should be unique.  " + mountPath + "";
+    }
+  }
+};
+
 export const PreInjectedFiles = connect()((props: FieldArrayProps) => {
-  return <FieldArray name="preInjectedFiles" component={RenderPreInjectedFile} {...props} />;
+  return (
+    <FieldArray
+      name="preInjectedFiles"
+      component={RenderPreInjectedFile}
+      validate={ValidatorInjectedFiles}
+      {...props}
+    />
+  );
 });

@@ -36,7 +36,7 @@ class KPanelRaw extends React.PureComponent<Props, State> {
   public render() {
     const { classes, title, content, maxWidth } = this.props;
     return (
-      <Paper square style={{ maxWidth: maxWidth ? maxWidth : PANEL_DEFAULT_MAX_WITDTH }}>
+      <Paper square>
         <Box p={2} className={classes.borderBottom}>
           <H4>{title}</H4>
         </Box>

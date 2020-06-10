@@ -49,10 +49,6 @@ spec:
               items:
                 type: string
               type: array
-            args:
-              items:
-                type: string
-              type: array
             beforeDestroy:
               items:
                 type: string
@@ -62,9 +58,7 @@ spec:
                 type: string
               type: array
             command:
-              items:
-                type: string
-              type: array
+              type: string
             configs:
               description: Deprecated
               items:

@@ -56,9 +56,7 @@ type ComponentSpec struct {
 
 	StartAfterComponents []string `json:"startAfterComponents,omitempty"`
 
-	Command []string `json:"command,omitempty"`
-
-	Args []string `json:"args,omitempty"`
+	Command string `json:"command,omitempty"`
 
 	Ports []Port `json:"ports,omitempty"`
 

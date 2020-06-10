@@ -19,20 +19,21 @@ import { RenderSelectField, SelectField } from "../Basic/select";
 import { KRenderCommandTextField, KRenderTextField } from "../Basic/textfield";
 import { ValidatorNumberOrAlphabet, ValidatorRequired } from "../validator";
 import { RootState } from "reducers";
-import { Probe } from "types/componentTemplate";
+import { Probe, ComponentLikePort } from "types/componentTemplate";
 import Immutable from "immutable";
+import { portTypeTCP } from "types/common";
 
 interface FieldComponentHackType {
   name: any;
   component: any;
-  label: any;
 }
 
 const mapStateToProps = (state: RootState, { meta: { form } }: WrappedFieldArrayProps) => {
   const selector = formValueSelector(form);
   const readinessProbe = selector(state, "readinessProbe") as Probe | undefined;
   const livenessProbe = selector(state, "livenessProbe") as Probe | undefined;
-  return { readinessProbe, livenessProbe };
+  const ports = selector(state, "ports") as Immutable.List<ComponentLikePort> | undefined;
+  return { readinessProbe, livenessProbe, ports };
 };
 
 interface FieldProps extends DispatchProp {}
@@ -43,10 +44,6 @@ interface Props
     FieldProps,
     WithStyles<typeof styles>,
     ReturnType<typeof mapStateToProps> {}
-
-interface State {
-  type: string;
-}
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -66,13 +63,9 @@ const styles = (theme: Theme) =>
     }
   });
 
-class RenderProbe extends React.PureComponent<Props, State> {
+class RenderProbe extends React.PureComponent<Props> {
   constructor(props: Props) {
     super(props);
-
-    this.state = {
-      type: ""
-    };
   }
 
   private renderNestedTextfield = ({
@@ -182,6 +175,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
             <Field
               name={`${name}.exec.command`}
               component={this.renderNestedTextfield}
+              validate={ValidatorRequired}
               placeholder="command"
               style={{ width: 200 }}
             />
@@ -230,6 +224,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
             <Field
               name={`${name}.tcpSocket.port`}
               component={this.renderNestedTextfield}
+              validate={ValidatorRequired}
               normalize={NormalizeNumber}
               placeholder="8080"
               style={{ width: 60 }}
@@ -253,7 +248,8 @@ class RenderProbe extends React.PureComponent<Props, State> {
 
   private renderCommon() {
     const name = this.props.input.name;
-    const { type } = this.state;
+    const type = this.getProbeType();
+
     return (
       <Box p={1}>
         <Typography>
@@ -275,6 +271,7 @@ class RenderProbe extends React.PureComponent<Props, State> {
             : "the TCP connection is failed"}
           , the current round of testing is considered to have failed. Otherwise, the it is considered successful.
         </Typography>
+        <br />
         <Typography>
           {name === "livenessProbe" ? (
             "One successful testing"
@@ -322,22 +319,25 @@ class RenderProbe extends React.PureComponent<Props, State> {
   };
 
   private handleChangeType(type: string) {
-    const value = this.props.input.value;
     const {
+      ports,
       dispatch,
       meta: { form },
       input
     } = this.props;
 
     if (type === "httpGet") {
+      const potentialPort = ports
+        ? ports.find(x => x.get("protocol") === portTypeTCP && !!x.get("containerPort"))
+        : null;
       dispatch(
         change(
           form,
           input.name,
           Immutable.Map({
             httpGet: Immutable.Map({
-              path: "",
-              port: ""
+              path: "/health",
+              port: potentialPort ? potentialPort.get("containerPort") : ""
             })
           })
         )
@@ -355,13 +355,16 @@ class RenderProbe extends React.PureComponent<Props, State> {
         )
       );
     } else if (type === "tcpSocket") {
+      const potentialPort = ports
+        ? ports.find(x => x.get("protocol") === portTypeTCP && !!x.get("containerPort"))
+        : null;
       dispatch(
         change(
           form,
           input.name,
           Immutable.Map({
             tcpSocket: Immutable.Map({
-              port: ""
+              port: potentialPort ? potentialPort.get("containerPort") : ""
             })
           })
         )
@@ -371,10 +374,10 @@ class RenderProbe extends React.PureComponent<Props, State> {
     }
   }
 
-  public render() {
-    const { label } = this.props;
+  private getProbeType = () => {
     const probe = this.getProbeObject();
-    const type = !probe
+
+    return !probe
       ? "none"
       : !!probe.get("httpGet")
       ? "httpGet"
@@ -383,13 +386,12 @@ class RenderProbe extends React.PureComponent<Props, State> {
       : !!probe.get("tcpSocket")
       ? "tcpSocket"
       : "none";
+  };
 
+  public render() {
+    const type = this.getProbeType();
     return (
       <Grid container spacing={2}>
-        <Grid item xs={12} sm={12} md={12}>
-          <H5>{label}</H5>
-        </Grid>
-
         <Grid item xs={6}>
           <SelectField
             label="Type"
@@ -450,22 +452,12 @@ class RenderProbe extends React.PureComponent<Props, State> {
 
 export const LivenessProbe = connect()((props: FieldProps) => {
   return (
-    <Field
-      name="livenessProbe"
-      label="LivenessProbe"
-      component={withStyles(styles)(connect(mapStateToProps)(RenderProbe))}
-      {...props}
-    />
+    <Field name="livenessProbe" component={withStyles(styles)(connect(mapStateToProps)(RenderProbe))} {...props} />
   );
 });
 
 export const ReadinessProbe = connect()((props: FieldProps) => {
   return (
-    <Field
-      name="readinessProbe"
-      label="ReadinessProbe"
-      component={withStyles(styles)(connect(mapStateToProps)(RenderProbe))}
-      {...props}
-    />
+    <Field name="readinessProbe" component={withStyles(styles)(connect(mapStateToProps)(RenderProbe))} {...props} />
   );
 });
