@@ -1,5 +1,6 @@
 import Immutable from "immutable";
 import { HttpRouteDestination } from "types/route";
+import { ComponentLikePort } from "types/componentTemplate";
 
 export const validator = () => {
   const errors = {};
@@ -206,4 +207,14 @@ export const KValidatorPaths = (
   const errors = values.map(x => (x.startsWith("/") ? undefined : 'path should start with a "/"')).toArray();
 
   return errors.filter(x => !!x).length > 0 ? errors : undefined;
+};
+
+export const ValidatorEnvName = (value: string) => {
+  if (value === undefined) return undefined;
+
+  if (!value.match(/^[-._a-zA-Z][-._a-zA-Z0-9]*$/)) {
+    return "Env name is invalid. regex used for validation is '[-._a-zA-Z][-._a-zA-Z0-9]*'";
+  }
+
+  return undefined;
 };

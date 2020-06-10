@@ -6,14 +6,16 @@ import { arrayPush, WrappedFieldArrayProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
 import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { SharedEnv } from "../../types/application";
+import { SharedEnv, EnvItem } from "../../types/application";
 import { RenderAutoCompleteFreeSolo } from "../Basic/autoComplete";
 import { KRenderTextField } from "../Basic/textfield";
-import { ValidatorRequired } from "../validator";
+import { ValidatorRequired, ValidatorEnvName } from "../validator";
+import { Alert } from "@material-ui/lab";
 
 interface FieldArrayComponentHackType {
   name: any;
   component: any;
+  validate: any;
 }
 
 interface FieldArrayProps extends DispatchProp {
@@ -83,10 +85,18 @@ class RenderEnvs extends React.PureComponent<Props> {
   };
 
   public render() {
-    const { fields } = this.props;
+    const {
+      fields,
+      meta: { error }
+    } = this.props;
     return (
       <>
         {this.renderAddButton()}
+        {error ? (
+          <Box mb={2}>
+            <Alert severity="error">{error}</Alert>
+          </Box>
+        ) : null}
         {fields.map((field, index) => {
           return (
             <Fade in>
@@ -98,7 +108,7 @@ class RenderEnvs extends React.PureComponent<Props> {
                     label="Name"
                     component={RenderAutoCompleteFreeSolo}
                     margin
-                    validate={[ValidatorRequired]}
+                    validate={[ValidatorRequired, ValidatorEnvName]}
                   />
                 </Grid>
                 <Grid item xs={3}>
@@ -128,6 +138,22 @@ class RenderEnvs extends React.PureComponent<Props> {
   }
 }
 
+const ValidatorEnvs = (values: Immutable.List<EnvItem>, _allValues?: any, _props?: any, _name?: any) => {
+  if (!values) return undefined;
+  const names = new Set<string>();
+
+  for (let i = 0; i < values.size; i++) {
+    const env = values.get(i)!;
+    const name = env.get("name");
+
+    if (!names.has(name)) {
+      names.add(name);
+    } else {
+      return "Env names should be unique.  " + name + "";
+    }
+  }
+};
+
 export const Envs = connect()((props: FieldArrayProps) => {
-  return <FieldArray name="env" component={RenderEnvs} {...props} />;
+  return <FieldArray name="env" component={RenderEnvs} validate={ValidatorEnvs} {...props} />;
 });

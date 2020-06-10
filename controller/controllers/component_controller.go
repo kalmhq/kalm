@@ -753,6 +753,23 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 
 	mainContainer := &template.Spec.Containers[0]
 
+	var ports []coreV1.ContainerPort
+	for _, p := range component.Spec.Ports {
+		port := coreV1.ContainerPort{
+			Name:          p.Name,
+			ContainerPort: int32(p.ContainerPort),
+			Protocol:      p.Protocol,
+		}
+
+		if p.Protocol != "" {
+			port.Protocol = p.Protocol
+		}
+
+		ports = append(ports, port)
+	}
+
+	mainContainer.Ports = ports
+
 	// resources
 	if component.Spec.CPU != nil && !component.Spec.CPU.IsZero() {
 		mainContainer.Resources.Requests[coreV1.ResourceCPU] = *component.Spec.CPU
