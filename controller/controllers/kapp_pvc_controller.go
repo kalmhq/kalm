@@ -22,6 +22,8 @@ import (
 	v1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 	"strings"
 
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -45,6 +47,7 @@ func NewKappPVCReconciler(mgr ctrl.Manager) *KappPVCReconciler {
 	}
 }
 
+// +kubebuilder:rbac:groups=core.kapp.dev,resources=components,verbs=get;list;watch
 // +kubebuilder:rbac:groups="",resources=persistentvolumeclaims,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="",resources=persistentvolumes,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="",resources=nodes,verbs=get;list;watch
@@ -174,18 +177,18 @@ func findComponentUsingPVC(pvc corev1.PersistentVolumeClaim, compList v1alpha1.C
 
 func (r *KappPVCReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&corev1.PersistentVolumeClaim{}).
 		For(&corev1.PersistentVolume{}).
-		For(&v1alpha1.Component{}).
 		For(&v1.StorageClass{}).
-		//Watches(
-		//	&source.Kind{Type: &v1.StorageClass{}},
-		//	&handler.EnqueueRequestForObject{},
-		//).
-		//Watches(
-		//	&source.Kind{Type: &corev1.PersistentVolume{}},
-		//	&handler.EnqueueRequestForObject{},
-		//).
+		//For(&corev1.PersistentVolumeClaim{}).
+		Watches(
+			&source.Kind{Type: &corev1.PersistentVolumeClaim{}},
+			&handler.EnqueueRequestForObject{},
+		).
+		//For(&v1alpha1.Component{}).
+		Watches(
+			&source.Kind{Type: &v1alpha1.Component{}},
+			&handler.EnqueueRequestForObject{},
+		).
 		Complete(r)
 }
 

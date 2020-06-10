@@ -83,7 +83,7 @@ type ComponentReconcilerTask struct {
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 
 func (r *ComponentReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	fmt.Println("reconciling component", req)
+	r.Log.Info("reconciling component", "req", req)
 
 	task := &ComponentReconcilerTask{
 		ComponentReconciler: r,
@@ -898,8 +898,7 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 				// re-use existing PersistentVolume
 				if disk.PersistentVolumeNamePVCToMatch != "" {
 					if pvc.Spec.Selector == nil {
-						pvc.Spec.Selector = &metaV1.LabelSelector{
-						}
+						pvc.Spec.Selector = &metaV1.LabelSelector{}
 					}
 
 					pvc.Spec.Selector.MatchLabels = map[string]string{
