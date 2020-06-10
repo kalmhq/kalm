@@ -87,13 +87,34 @@ func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		}
 	}
 
-	// 2. make sure for each active pvc, underlying pv is labeled with its name
-	//    (to be selected using selector)
+	// 2. PV
+
 	var pvList corev1.PersistentVolumeList
 	if err := r.List(ctx, &pvList); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
+	// for all kapp PV in Released stats, clean claimRef to make it
+	for _, pv := range pvList.Items {
+		if _, exist := pv.Labels[KappLabelManaged]; !exist {
+			continue
+		}
+
+		if pv.Status.Phase != corev1.VolumeReleased {
+			continue
+		}
+
+		if pv.Spec.ClaimRef != nil {
+			pv.Spec.ClaimRef = nil
+
+			if err := r.Update(ctx, &pv); err != nil {
+				return ctrl.Result{}, nil
+			}
+		}
+	}
+
+	// make sure for each active pvc, underlying pv is labeled with its name
+	// (to be selected using selector)
 	for i, activePVC := range activePVCs {
 		for _, pv := range pvList.Items {
 			if pv.Name != activePVC.Spec.VolumeName {
@@ -106,6 +127,7 @@ func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 			ownerComp := ownerComponents[i]
 
+			pv.Labels[KappLabelManaged] = "true"
 			pv.Labels[KappLabelPV] = pv.Name
 			pv.Labels[KappLabelComponent] = ownerComp.Name
 			pv.Labels[KappLabelNamespace] = ownerComp.Namespace
