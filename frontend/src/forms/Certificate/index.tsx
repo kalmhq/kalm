@@ -1,7 +1,7 @@
 import { Button, Grid } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { createCertificateIssuerAction } from "actions/certificate";
-import { KFreeSoloAutoCompleteMultiValues } from "forms/Basic/autoComplete";
+import { KFreeSoloAutoCompleteMultiValues, KAutoCompleteSingleValue } from "forms/Basic/autoComplete";
 import { KRadioGroupRender } from "forms/Basic/radio";
 import { RenderSelectField } from "forms/Basic/select";
 import { KRenderTextField } from "forms/Basic/textfield";
@@ -145,17 +145,19 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
 
   private generateHttpsCertIssuerOptions = () => {
     const { certificateIssuers } = this.props;
-    const httpsCertIssuerOptions = [
+    const httpsCertIssuerOptions: any = [
       {
         value: createIssuer,
-        text: "Add new certificate issuer"
+        label: "Add new certificate issuer"
       }
     ];
     certificateIssuers.forEach(certificateIssuer => {
+      console.log(certificateIssuer.toJS());
       const name = certificateIssuer.get("name");
       httpsCertIssuerOptions.push({
         value: name,
-        text: name
+        label: name,
+        group: !certificateIssuer.get("acmeCloudFlare") ? "CA for Test" : "Cloudflare"
       });
     });
 
@@ -193,7 +195,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
             label="Certificate issuser"
             multiline={true}
             className={classes.fileInput}
-            component={RenderSelectField}
+            component={KAutoCompleteSingleValue}
             rows={12}
             name="httpsCertIssuer"
             margin="normal"
@@ -254,15 +256,15 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                 name="managedType"
                 options={[
                   {
+                    value: issuerManaged,
+                    label: "Apply a new certificate with certificate issuer",
+                    explain: "If you wanna create new cerificate, you can select this."
+                  },
+                  {
                     value: selfManaged,
                     label: "Upload an existing certificate",
                     explain:
                       "If you have got a ssl certificate from your ssl certificate provider, you can upload and use this."
-                  },
-                  {
-                    value: issuerManaged,
-                    label: "Apply a new certificate with certificate issuer",
-                    explain: "If you wanna create new cerificate, you can select this."
                   }
                 ]}
               />
