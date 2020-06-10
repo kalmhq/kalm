@@ -186,12 +186,15 @@ export const KValidatorHosts = (
   return errors.filter(x => !!x).length > 0 ? errors : undefined;
 };
 
-export const KValidatorPath = (value: string, _allValues?: any, _props?: any, _name?: any) => {
+export const KValidatorInjectedFilePath = (value: string, _allValues?: any, _props?: any, _name?: any) => {
   if (!value) {
     return undefined;
   }
 
-  return value.startsWith("/") ? undefined : 'path should start with a "/"';
+  if (!value.startsWith("/")) return 'Must be an absolute path, which starts with a "/"';
+  if (value.endsWith("/")) return 'File name mush not end with "/"';
+
+  return undefined;
 };
 
 export const KValidatorPaths = (

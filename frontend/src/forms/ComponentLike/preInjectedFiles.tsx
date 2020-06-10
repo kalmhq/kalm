@@ -14,7 +14,7 @@ import { PreInjectedFile } from "../../types/componentTemplate";
 import { DeleteIcon } from "../../widgets/Icon";
 import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
 import { KRenderTextField } from "../Basic/textfield";
-import { KValidatorPath, ValidatorRequired } from "../validator";
+import { KValidatorInjectedFilePath, ValidatorRequired } from "../validator";
 import { Alert } from "@material-ui/lab";
 
 interface FieldArrayComponentHackType {
@@ -33,7 +33,7 @@ interface FieldArrayProps extends DispatchProp {}
 interface Props extends WrappedFieldArrayProps<PreInjectedFile>, FieldArrayComponentHackType, FieldArrayProps {}
 
 const updateContentDialogID = "update-content-dialog";
-const validateMountPath = [ValidatorRequired, KValidatorPath];
+const validateMountPath = [ValidatorRequired, KValidatorInjectedFilePath];
 class RenderPreInjectedFile extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
