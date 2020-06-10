@@ -1,4 +1,4 @@
-import { InputAdornment, makeStyles } from "@material-ui/core";
+import { InputAdornment } from "@material-ui/core";
 import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
 import React, { ChangeEvent } from "react";
 import { WrappedFieldProps } from "redux-form";
@@ -24,13 +24,6 @@ export const KRenderTextField = ({
 }: FilledTextFieldProps & WrappedFieldProps & Props) => {
   const showError = !!error && touched;
 
-  const classes = makeStyles(theme => ({
-    inputLabel: {
-      fontWeight: 500,
-      fontSize: 13
-    }
-  }))();
-
   return (
     <TextField
       fullWidth
@@ -42,10 +35,7 @@ export const KRenderTextField = ({
       multiline={multiline}
       rows={rows}
       InputLabelProps={{
-        shrink: true,
-        classes: {
-          root: classes.inputLabel
-        }
+        shrink: true
       }}
       helperText={showError ? error : helperText ? helperText : ""}
       margin="dense"

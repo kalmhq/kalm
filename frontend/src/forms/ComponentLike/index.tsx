@@ -11,8 +11,8 @@ import { InjectedFormProps } from "redux-form";
 import { Field, getFormSyncErrors, getFormValues, reduxForm } from "redux-form/immutable";
 import { Body, H5, SectionTitle } from "widgets/Label";
 import { loadComponentPluginsAction } from "../../actions/application";
-import { loadConfigsAction } from "../../actions/config";
 import { loadNodesAction } from "../../actions/node";
+import { loadStorageClasses } from "../../actions/persistentVolume";
 import { RootState } from "../../reducers";
 import { getNodeLabels } from "../../selectors/node";
 import { TDispatchProp } from "../../types";
@@ -150,7 +150,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     // load node labels for node selectors
     dispatch(loadNodesAction());
     // load configs for volume
-    dispatch(loadConfigsAction());
+    // dispatch(loadConfigsAction());
+    dispatch(loadStorageClasses());
   }
 
   private renderReplicasOrSchedule() {

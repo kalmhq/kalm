@@ -17,7 +17,9 @@ import { KRenderTextField } from "../Basic/textfield";
 import { ValidatorRequired } from "../validator";
 
 const mapStateToProps = (state: RootState) => {
-  return {};
+  return {
+    storageClasses: state.get("persistentVolumes").get("storageClasses")
+  };
 };
 
 interface FieldArrayComponentHackType {
@@ -30,6 +32,24 @@ interface FieldArrayProps extends DispatchProp, ReturnType<typeof mapStateToProp
 interface Props extends WrappedFieldArrayProps<Volume>, FieldArrayComponentHackType, FieldArrayProps {}
 
 class RenderVolumes extends React.PureComponent<Props> {
+  private getStorageClassesOptions() {
+    const { storageClasses } = this.props;
+
+    const options: {
+      value: string;
+      text: string;
+    }[] = [];
+
+    storageClasses.forEach(sc => {
+      options.push({
+        value: sc.get("name"),
+        text: sc.get("name")
+      });
+    });
+
+    return options;
+  }
+
   public getFieldComponents(member: string) {
     const volumeType = getComponentVolumeType(member);
 
@@ -62,11 +82,7 @@ class RenderVolumes extends React.PureComponent<Props> {
           name={`${member}.storageClassName`}
           component={RenderSelectField}
           placeholder="Select the type of your disk"
-          options={[
-            { value: "standard", text: "Storage Class 1" },
-            { value: "standard", text: "Storage Class 2" },
-            { value: "standard", text: "Storage Class 3" }
-          ]}></Field>
+          options={this.getStorageClassesOptions()}></Field>
       );
       fieldComponents.push(
         <Field
@@ -84,11 +100,7 @@ class RenderVolumes extends React.PureComponent<Props> {
           name={`${member}.storageClassName`}
           component={RenderSelectField}
           placeholder="Select the type of your disk"
-          options={[
-            { value: "standard", text: "Storage Class 1" },
-            { value: "standard", text: "Storage Class 2" },
-            { value: "standard", text: "Storage Class 3" }
-          ]}></Field>
+          options={this.getStorageClassesOptions()}></Field>
       );
     } else {
       fieldComponents.push(
