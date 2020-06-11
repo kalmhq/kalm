@@ -53,38 +53,6 @@ interface Props
     ReturnType<typeof mapStateToProps> {}
 
 class ApplicationEditRaw extends React.PureComponent<Props, State> {
-  // constructor(props: Props) {
-  //   super(props);
-
-  //   this.state = {
-  //     // currentComponent: undefined,
-  //     changingComponent: false
-  //   };
-  // }
-
-  // public componentDidMount() {
-  //   const { location } = this.props;
-  //   let search = queryString.parse(location.search);
-  //   if (search.component !== undefined) {
-  //     if (search.component === "") {
-  //     } else {
-  //     }
-  //   }
-  // }
-
-  // public componentDidUpdate(prevProps: Props, prevState: State) {
-  //   const prevComponentName = prevProps.component?.get("name");
-  //   const thisComponentName = this.props.component?.get("name");
-
-  //   if (prevComponentName !== thisComponentName) {
-  //     this.setState({ changingComponent: true });
-  //   }
-
-  //   if (prevComponentName === thisComponentName && this.state.changingComponent) {
-  //     this.setState({ changingComponent: false });
-  //   }
-  // }
-
   private submitComponent = async (component: ApplicationComponent) => {
     // console.log("submitComponent", component.toJS());
 
@@ -143,6 +111,7 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
       <Grid container spacing={2} className={classes.root}>
         <Grid item xs={8} sm={8} md={8}>
           <ComponentLikeForm
+            application={application}
             sharedEnv={sharedEnv}
             onSubmit={this.submitComponent}
             onSubmitFail={() => {

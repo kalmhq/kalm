@@ -15,7 +15,7 @@ const mapStateToProps = (state: RootState, props: any) => {
 
   const { match, location } = props;
   let { applicationName, componentName } = match!.params;
-  let search = queryString.parse(location.search);
+  const search = queryString.parse(location.search);
   componentName = componentName || search.component;
 
   const application = applications.get("applications").find(x => x.get("name") === applicationName);

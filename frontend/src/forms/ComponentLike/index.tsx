@@ -28,7 +28,7 @@ import { loadStorageClassesAction } from "../../actions/persistentVolume";
 import { RootState } from "../../reducers";
 import { getNodeLabels } from "../../selectors/node";
 import { TDispatchProp } from "../../types";
-import { SharedEnv } from "../../types/application";
+import { SharedEnv, ApplicationDetails } from "../../types/application";
 import {
   ComponentLike,
   ComponentLikeContent,
@@ -43,13 +43,14 @@ import { RenderSelectField } from "../Basic/select";
 import { KRenderCommandTextField, KRenderTextField, RenderComplexValueTextField } from "../Basic/textfield";
 import { NormalizeCPU, NormalizeNumber } from "../normalizer";
 import { ValidatorCPU, ValidatorMemory, ValidatorName, ValidatorRequired, ValidatorSchedule } from "../validator";
-// import { Configs } from "./Configs";
 import { Envs } from "./Envs";
 import { RenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
 import { Volumes } from "./Volumes";
+import queryString from "query-string";
+import { push } from "connected-react-router";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -68,16 +69,35 @@ const IngressHint = () => {
     </>
   );
 };
-const mapStateToProps = (state: RootState) => {
+
+const Configurations = "Configurations";
+const Disks = "Disks";
+const Health = "Health";
+const Networking = "Networking";
+const Scheduling = "Scheduling";
+const UpgradePolicy = "Upgrade Policy";
+const tabs = [Configurations, Networking, Disks, Health, Scheduling, UpgradePolicy];
+
+const mapStateToProps = (state: RootState, props: any) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
   const syncErrors = getFormSyncErrors("componentLike")(state) as { [x in keyof ComponentLikeContent]: any };
   const nodeLabels = getNodeLabels();
 
+  const search = queryString.parse(window.location.search);
+  const hash = window.location.hash;
+  const anchor = hash.replace("#", "");
+  let currentTabIndex = tabs.indexOf(`${anchor}`);
+  if (currentTabIndex < 0) {
+    currentTabIndex = 0;
+  }
+
   return {
+    search,
     isSubmittingApplicationComponent: state.get("applications").get("isSubmittingApplicationComponent"),
     values,
     syncErrors,
-    nodeLabels
+    nodeLabels,
+    currentTabIndex
   };
 };
 
@@ -101,10 +121,6 @@ const styles = (theme: Theme) =>
     },
     borderBottom: {
       borderBottom: "1px solid rgba(0, 0, 0, 0.12)"
-    },
-    formSection: {
-      // padding: "0 20px"
-      // margin: "0 0 10px 0"
     },
     displayBlock: {
       display: "block"
@@ -153,7 +169,7 @@ interface RawProps {
   showSubmitButton?: boolean;
   submitButtonText?: string;
   sharedEnv?: Immutable.List<SharedEnv>;
-  currentTabIndex?: string;
+  application?: ApplicationDetails;
   // submitAppplicationErrors?: Immutable.Map<string, any>;
 }
 
@@ -164,27 +180,10 @@ export interface Props
     TDispatchProp,
     RawProps {}
 
-interface State {
-  currentTabIndex: number;
-}
-
-const Configurations = "Configurations";
-const Disks = "Disks";
-const Health = "Health";
-const Networking = "Networking";
-const Scheduling = "Scheduling";
-const UpgradePolicy = "Upgrade Policy";
+interface State {}
 
 class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
-  private tabs = [Configurations, Networking, Disks, Health, Scheduling, UpgradePolicy];
-
-  constructor(props: Props) {
-    super(props);
-
-    this.state = {
-      currentTabIndex: 0
-    };
-  }
+  private tabs = tabs;
 
   public componentDidMount() {
     const { dispatch } = this.props;
@@ -975,44 +974,50 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderTabDetails() {
-    const { classes } = this.props;
+    const { classes, currentTabIndex } = this.props;
 
     return (
       <>
-        <div className={`${this.tabs[this.state.currentTabIndex] === Configurations ? "" : classes.displayNone}`}>
+        <div className={`${this.tabs[currentTabIndex] === Configurations ? "" : classes.displayNone}`}>
           {this.renderConfigurations()}
         </div>
-        <div className={`${this.tabs[this.state.currentTabIndex] === Networking ? "" : classes.displayNone}`}>
+        <div className={`${this.tabs[currentTabIndex] === Networking ? "" : classes.displayNone}`}>
           {this.renderNetworking()}
         </div>
-        <div className={`${this.tabs[this.state.currentTabIndex] === Disks ? "" : classes.displayNone}`}>
-          {this.renderDisks()}
-        </div>
-        <div className={`${this.tabs[this.state.currentTabIndex] === Health ? "" : classes.displayNone}`}>
+        <div className={`${this.tabs[currentTabIndex] === Disks ? "" : classes.displayNone}`}>{this.renderDisks()}</div>
+        <div className={`${this.tabs[currentTabIndex] === Health ? "" : classes.displayNone}`}>
           {this.renderHealth()}
         </div>
-        <div className={`${this.tabs[this.state.currentTabIndex] === Scheduling ? "" : classes.displayNone}`}>
+        <div className={`${this.tabs[currentTabIndex] === Scheduling ? "" : classes.displayNone}`}>
           {this.renderScheduling()}
         </div>
-        <div className={`${this.tabs[this.state.currentTabIndex] === UpgradePolicy ? "" : classes.displayNone}`}>
+        <div className={`${this.tabs[currentTabIndex] === UpgradePolicy ? "" : classes.displayNone}`}>
           {this.renderUpgradePolicy()}
         </div>
       </>
     );
   }
 
+  private pushToTab(tabIndex: number) {
+    const tab = this.tabs[tabIndex];
+    const { application, dispatch, search } = this.props;
+
+    dispatch(push(`/applications/${application?.get("name")}/edit?component=${search.component || ""}#${tab || ""}`));
+  }
+
   private renderTabs() {
-    const { classes, syncErrors, submitFailed } = this.props;
+    const { classes, syncErrors, submitFailed, currentTabIndex } = this.props;
     return (
       <Tabs
         className={clsx(classes.borderBottom, classes.tabsRoot)}
-        value={this.state.currentTabIndex}
+        value={currentTabIndex}
         variant="scrollable"
         scrollButtons="auto"
         indicatorColor="primary"
         textColor="primary"
         onChange={(event: React.ChangeEvent<{}>, value: number) => {
-          this.setState({ currentTabIndex: value });
+          this.pushToTab(value);
+          // this.setState({ currentTabIndex: value });
         }}
         aria-label="component form tabs">
         {this.tabs.map(tab => {
