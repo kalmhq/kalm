@@ -234,6 +234,7 @@ func (suite *BasicSuite) SetupSuite() {
 	//suite.Nil(NewApplicationPluginBindingReconciler(mgr).SetupWithManager(mgr))
 	//suite.Nil(NewKappNamespacesReconciler(mgr).SetupWithManager(mgr))
 	suite.Nil(NewKappNSReconciler(mgr).SetupWithManager(mgr))
+	suite.Nil(NewKappPVCReconciler(mgr).SetupWithManager(mgr))
 
 	suite.Nil(NewComponentReconciler(mgr).SetupWithManager(mgr))
 	suite.Nil(NewComponentPluginReconciler(mgr).SetupWithManager(mgr))
