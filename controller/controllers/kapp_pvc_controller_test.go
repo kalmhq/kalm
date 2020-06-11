@@ -145,13 +145,15 @@ func (suite *KappVolumeControllerSuite) TestPVIsLabeledForKapp() {
 	err := suite.K8sClient.Update(suite.ctx, &pvc)
 	suite.Nil(err)
 
-	err = suite.K8sClient.Get(suite.ctx, client.ObjectKey{
-		Namespace: suite.ns.Name,
-		Name:      pvcName,
-	}, &pvc)
-	suite.Nil(err)
+	suite.Eventually(func() bool {
+		err = suite.K8sClient.Get(suite.ctx, client.ObjectKey{
+			Namespace: suite.ns.Name,
+			Name:      pvcName,
+		}, &pvc)
+		suite.Nil(err)
 
-	suite.NotEqual("", pvc.Spec.VolumeName)
+		return pvc.Spec.VolumeName != ""
+	})
 
 	// create pv
 	hostPath := coreV1.HostPathVolumeSource{
