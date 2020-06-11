@@ -99,13 +99,13 @@ func (suite *ComponentTestSuite) TestCreateComponentWithPVCAsVolume() {
 	expectedPVCName := res.Volumes[0].PersistentVolumeClaimName
 	suite.Equal(expectedPVCName, comp.Spec.Volumes[0].PersistentVolumeClaimName)
 
-	suite.Equal(sc, comp.Spec.Volumes[0].StorageClassName)
+	suite.Equal(sc, *comp.Spec.Volumes[0].StorageClassName)
 	suite.Equal("", comp.Spec.Volumes[0].PersistentVolumeNamePVCToMatch)
 }
 
 func (suite *ComponentTestSuite) TestCreateComponentWithReUsingPVCAsVolume() {
 	scName := "kapp-standard"
-	pvNameToReuse := "existAvailablePV"
+	pvNameToReuse := "exist-available-pv"
 
 	// prepare PV & scName
 	//sc := storagev1.StorageClass{
@@ -118,13 +118,22 @@ func (suite *ComponentTestSuite) TestCreateComponentWithReUsingPVCAsVolume() {
 	//_, err := suite.k8sClinet.StorageV1().StorageClasses().Create(&sc)
 	//suite.Nil(err)
 
+	hostPath := coreV1.HostPathVolumeSource{
+		Path: "/data",
+	}
 	// prepare pv
 	pv := coreV1.PersistentVolume{
 		ObjectMeta: v1.ObjectMeta{
 			Name: pvNameToReuse,
 		},
 		Spec: coreV1.PersistentVolumeSpec{
+			PersistentVolumeReclaimPolicy: coreV1.PersistentVolumeReclaimRetain,
+			Capacity: coreV1.ResourceList(map[coreV1.ResourceName]resource.Quantity{
+				coreV1.ResourceStorage: resource.MustParse("1Mi"),
+			}),
+			AccessModes: []coreV1.PersistentVolumeAccessMode{coreV1.ReadWriteOnce},
 			PersistentVolumeSource: coreV1.PersistentVolumeSource{
+				HostPath: &hostPath,
 			},
 		},
 	}
@@ -141,7 +150,7 @@ func (suite *ComponentTestSuite) TestCreateComponentWithReUsingPVCAsVolume() {
 					Size:                           resource.MustParse("1Mi"),
 					Type:                           v1alpha1.VolumeTypePersistentVolumeClaim,
 					StorageClassName:               &scName,
-					PersistentVolumeNamePVCToMatch: "existAvailablePV",
+					PersistentVolumeNamePVCToMatch: pvNameToReuse,
 				},
 			},
 		},
@@ -160,19 +169,14 @@ func (suite *ComponentTestSuite) TestCreateComponentWithReUsingPVCAsVolume() {
 	suite.Equal(201, rec.Code)
 
 	// check if volume in Comp is as expected
-	compList, err := suite.getComponentList(nsName)
+	comp, err := suite.getComponent(nsName, reqComp.Name)
 	suite.Nil(err)
-	suite.Equal(1, len(compList.Items))
-
-	comp := compList.Items[0]
-	suite.Equal(1, len(comp.Spec.Volumes))
 
 	expectedPVCName := res.Volumes[0].PersistentVolumeClaimName
 	suite.Equal(expectedPVCName, comp.Spec.Volumes[0].PersistentVolumeClaimName)
 
 	suite.Equal(scName, *comp.Spec.Volumes[0].StorageClassName)
 	suite.Equal(reqComp.Volumes[0].PersistentVolumeNamePVCToMatch, comp.Spec.Volumes[0].PersistentVolumeNamePVCToMatch)
-
 }
 
 func (suite *ComponentTestSuite) TestCreateComponentWithReusePVInvalid() {

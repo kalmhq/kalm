@@ -147,3 +147,12 @@ func (suite *WithControllerTestSuite) getComponentList(ns string) (v1alpha1.Comp
 
 	return compList, err
 }
+
+func (suite *WithControllerTestSuite) getComponent(ns, compName string) (v1alpha1.Component, error) {
+	compAPIURL := fmt.Sprintf("/apis/core.kapp.dev/v1alpha1/namespaces/%s/components/%s", ns, compName)
+
+	var comp v1alpha1.Component
+	err := suite.k8sClinet.RESTClient().Get().AbsPath(compAPIURL).Do().Into(&comp)
+
+	return comp, err
+}
