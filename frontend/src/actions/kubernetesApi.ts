@@ -29,6 +29,7 @@ import {
 } from "types/certificate";
 import { HttpRoute } from "types/route";
 import { Service } from "types/service";
+import { PersistentVolumes, StorageClasses } from "../types/persistentVolume";
 
 export const K8sApiPrefix = process.env.REACT_APP_K8S_API_PERFIX;
 export const k8sWsPrefix = !K8sApiPrefix
@@ -86,10 +87,18 @@ export const getNodes = async (): Promise<NodesListResponse> => {
   return Immutable.fromJS(res.data);
 };
 
-export const getPersistentVolumes = async (): Promise<any[]> => {
-  // const res = await getAxiosClient().get<V1PersistentVolumeList>(K8sApiPrefix + "/v1/persistentvolumes");
-  // return res.data.items;
-  return [];
+export const getPersistentVolumes = async (): Promise<PersistentVolumes> => {
+  const res = await getAxiosClient().get(K8sApiPrefix + "/v1alpha1/volumes");
+  return Immutable.fromJS(res.data);
+};
+
+export const deletePersistentVolume = async (name: string): Promise<void> => {
+  await getAxiosClient().delete(K8sApiPrefix + `/v1alpha1/volumes/${name}`);
+};
+
+export const getStorageClasses = async (): Promise<StorageClasses> => {
+  const res = await getAxiosClient().get(K8sApiPrefix + "/v1alpha1/storageclasses");
+  return Immutable.fromJS(res.data);
 };
 
 export const getKappComponentTemplates = async (): Promise<Array<ComponentTemplate>> => {

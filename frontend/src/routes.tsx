@@ -10,7 +10,7 @@ import { ComponentTemplateListPage } from "pages/ComponentTemplate/List";
 import { ComponentTemplateNew } from "pages/ComponentTemplate/New";
 // import { ConfigListPage } from "pages/Config/List";
 import { DependencyListPage } from "pages/Dependency/List";
-import { Disks } from "pages/Disks";
+import { Volumes } from "pages/PersistentVolumes";
 import DashboardPage from "pages/Dashboard";
 import InstallPage from "pages/Install";
 import { NodeListPage } from "pages/NodeList";
@@ -48,7 +48,7 @@ export const KappRoutes = (
           {/* end */}
 
           <Route exact path="/cluster/nodes" component={NodeListPage}></Route>
-          <Route exact path="/cluster/volumes" component={Disks}></Route>
+          <Route exact path="/cluster/volumes" component={Volumes}></Route>
           <Route exact path="/cluster/registries" component={RegistryListPage}></Route>
           <Route exact path="/settings/dependencies" component={RequireAdmin(DependencyListPage)}></Route>
 

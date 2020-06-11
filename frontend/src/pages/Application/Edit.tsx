@@ -31,7 +31,7 @@ const styles = (theme: Theme) =>
   createStyles({
     root: {
       // padding: theme.spacing(3)
-      height: "100%",
+      // height: "100%",
       backgroundColor: "#F4F5F7"
     },
     secondHeaderRight: {

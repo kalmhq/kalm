@@ -64,7 +64,7 @@ func (r *ComponentPluginBindingReconcilerTask) Run(req ctrl.Request) error {
 	r.binding.ObjectMeta.Labels["kapp-plugin"] = r.binding.Spec.PluginName
 
 	if r.binding.Spec.ComponentName != "" {
-		r.binding.ObjectMeta.Labels["kapp-component"] = r.binding.Spec.ComponentName
+		r.binding.ObjectMeta.Labels[KappLabelComponent] = r.binding.Spec.ComponentName
 	}
 
 	if err := r.Update(context.Background(), r.binding); err != nil {

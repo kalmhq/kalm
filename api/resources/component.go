@@ -142,7 +142,7 @@ func (builder *Builder) BuildComponentDetailsResponse(components *v1alpha1.Compo
 		return nil, nil
 	}
 
-	res := []ComponentDetails{}
+	var res []ComponentDetails
 	ns := client.InNamespace(components.Items[0].Namespace)
 
 	resourceChannels := &ResourceChannels{

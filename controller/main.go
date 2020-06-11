@@ -37,7 +37,6 @@ import (
 	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	apiregistration "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
 
-	//cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
 	corekappdevv1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	// +kubebuilder:scaffold:imports
 )
@@ -164,6 +163,11 @@ func main() {
 
 	if err = controllers.NewGatewayReconciler(mgr).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Gateway")
+		os.Exit(1)
+	}
+
+	if err = (controllers.NewKappPVCReconciler(mgr)).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "KappPVC")
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder

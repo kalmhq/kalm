@@ -2,12 +2,15 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/kapp-staging/kapp/api/resources"
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"math/rand"
 	"net/http"
+	"time"
 )
 
 func (h *ApiHandler) handleListComponents(c echo.Context) error {
@@ -209,6 +212,21 @@ func getComponentFromContext(c echo.Context) (*v1alpha1.Component, []runtime.Raw
 			Namespace: c.Param("applicationName"),
 		},
 		Spec: component.ComponentSpec,
+	}
+
+	// for pvc volumes, check if pvcName is set
+	for i, vol := range crdComponent.Spec.Volumes {
+
+		if vol.Type != v1alpha1.VolumeTypePersistentVolumeClaim {
+			continue
+		}
+
+		if vol.PersistentVolumeClaimName == "" {
+			genPVCName := fmt.Sprintf("pvc-%s-%d-%d", crdComponent.Name, time.Now().Unix(), rand.Intn(10000))
+			vol.PersistentVolumeClaimName = genPVCName
+		}
+
+		crdComponent.Spec.Volumes[i] = vol
 	}
 
 	return crdComponent, component.Plugins, nil
