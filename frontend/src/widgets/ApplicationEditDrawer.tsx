@@ -18,6 +18,7 @@ import { ApplicationComponent, ApplicationComponentDetails, ApplicationDetails }
 import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
 import { deleteComponentAction } from "../actions/application";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { push } from "connected-react-router";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
@@ -63,13 +64,10 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
   dispatch: TDispatch;
   application?: ApplicationDetails;
   currentComponent?: ApplicationComponent; // for add new component
-
-  handleClickComponent: (component?: ApplicationComponent) => void;
 }
 
 interface State {
-  expandedComponentIndex: number;
-  selectedListItemKey: string;
+  selectededComponentIndex: number;
   isDeleteConfirmDialogOpen: boolean;
 }
 
@@ -78,20 +76,19 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
     super(props);
 
     this.state = {
-      expandedComponentIndex: 0,
-      selectedListItemKey: this.generateComponentKey(0),
+      selectededComponentIndex: 0,
       isDeleteConfirmDialogOpen: false
     };
   }
 
   private handleClickComponent(component: ApplicationComponent, index: number) {
     this.setState({
-      expandedComponentIndex: index,
-      selectedListItemKey: this.generateComponentKey(index)
+      selectededComponentIndex: index
     });
 
-    const { handleClickComponent } = this.props;
-    handleClickComponent(component);
+    const { dispatch, application } = this.props;
+
+    dispatch(push(`/applications/${application?.get("name")}/edit?component=${component.get("name") || ""}`));
   }
 
   private handleAdd() {
@@ -99,13 +96,16 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
   }
 
   private confirmDelete() {
-    const { application, dispatch } = this.props;
-
-    const { currentComponent, handleClickComponent } = this.props;
+    const { application, dispatch, currentComponent } = this.props;
 
     if (currentComponent) {
       if (!currentComponent.get("name")) {
-        handleClickComponent(application?.get("components").get(0));
+        const { dispatch, application } = this.props;
+        dispatch(
+          push(
+            `/applications/${application?.get("name")}/edit?component=${application?.get("components").get(0) || ""}`
+          )
+        );
       } else {
         dispatch(deleteComponentAction(currentComponent.get("name")));
       }
@@ -117,7 +117,8 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
           .get(0)
           ?.get("name")
       ) {
-        handleClickComponent(undefined);
+        const { dispatch, application } = this.props;
+        dispatch(push(`/applications/${application?.get("name")}/edit?component=${""}`));
       }
     }
   }
@@ -142,8 +143,8 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
         open={isDeleteConfirmDialogOpen}
         onClose={this.closeDeleteConfirmDialog}
         title="Are you sure to delete this component?"
-        content="You will lost this component config, and this action is irrevocable."
-        onAgree={this.confirmDelete}
+        content="You will lost this component, and this action is irrevocable."
+        onAgree={() => this.confirmDelete()}
       />
     );
   };
@@ -153,13 +154,18 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
   }
 
   public componentDidMount() {
-    const { application, handleClickComponent } = this.props;
+    const { application } = this.props;
     if (!application) {
       return;
     }
 
     let search = queryString.parse(window.location.search);
-    if (search.component !== undefined) {
+    if (search.component === undefined) {
+      // default select
+      if (application && application.get("components")?.get(0)) {
+        this.handleClickComponent(application.get("components").get(0) as ApplicationComponent, 0);
+      }
+    } else if (search.component !== undefined) {
       if (search.component === "") {
         // new component form list
         if (application.get("components").size !== 0) {
@@ -176,11 +182,6 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
         }
       }
     }
-
-    // default select
-    if (application && application.get("components")?.get(0)) {
-      handleClickComponent(application.get("components").get(0) as ApplicationComponent);
-    }
   }
 
   public componentDidUpdate(prevProps: Props) {
@@ -189,7 +190,7 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
       if (this.props.application.get("components")?.size - prevProps.application.get("components")?.size === 1) {
         // select new created item
         this.handleClickComponent(
-          this.props.application.get("components")?.get(this.state.expandedComponentIndex) as ApplicationComponent,
+          this.props.application.get("components")?.get(this.state.selectededComponentIndex) as ApplicationComponent,
           this.props.application.get("components")!.size - 1
         );
       }
@@ -197,34 +198,34 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
   }
 
   private renderComponents() {
-    const { application, classes } = this.props;
+    const { application, currentComponent, classes } = this.props;
 
     if (!application) {
       return null;
     }
 
     let components: Immutable.List<ApplicationComponent>;
+    // has components
     if (application.get("components") && application.get("components").size > 0) {
-      if (this.props.currentComponent && !this.props.currentComponent.get("name")) {
-        components = application.get("components").push(this.props.currentComponent as ApplicationComponentDetails);
+      // create new
+      if (currentComponent && !currentComponent.get("name")) {
+        components = application.get("components").push(currentComponent as ApplicationComponentDetails);
       } else {
         components = application.get("components");
       }
     } else {
+      // not create component yet
       components = Immutable.List([componentInitialValues as ApplicationComponent]);
     }
 
-    let expandedComponentIndex = this.state.expandedComponentIndex;
-    let selectedListItemKey = this.state.selectedListItemKey;
+    let selectededComponentIndex = this.state.selectededComponentIndex;
+    // correct selected index
     if (application.get("components")) {
-      if (expandedComponentIndex > application.get("components").size) {
-        expandedComponentIndex = 0;
-        selectedListItemKey = this.generateComponentKey(0);
-      } else if (expandedComponentIndex === application.get("components").size) {
-        if (this.props.currentComponent && !this.props.currentComponent.get("name")) {
-        } else {
-          expandedComponentIndex = 0;
-          selectedListItemKey = this.generateComponentKey(0);
+      if (selectededComponentIndex > application.get("components").size) {
+        selectededComponentIndex = 0;
+      } else if (selectededComponentIndex === application.get("components").size) {
+        if (!(currentComponent && !currentComponent.get("name"))) {
+          selectededComponentIndex = 0;
         }
       }
     }
@@ -233,7 +234,7 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
       return (
         <React.Fragment key={index}>
           <ListItem
-            selected={selectedListItemKey === this.generateComponentKey(index)}
+            selected={selectededComponentIndex === index}
             className={classes.listItem}
             classes={{
               selected: classes.listItemSeleted
@@ -245,7 +246,7 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
             <ListItemIcon>
               <FiberManualRecordIcon
                 style={{ fontSize: 15 }}
-                htmlColor={selectedListItemKey === this.generateComponentKey(index) ? primaryColor : grey[400]}
+                htmlColor={selectededComponentIndex === index ? primaryColor : grey[400]}
               />
             </ListItemIcon>
             <ListItemText primary={component.get("name") || `Please type component name`} />
