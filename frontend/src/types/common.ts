@@ -12,8 +12,6 @@ export const LOAD_LOGIN_STATUS_FAILED = "LOAD_LOGIN_STATUS_FAILED";
 export const SET_AUTH_TOKEN = "SET_AUTH_TOKEN";
 export const LOGOUT = "LOGOUT";
 
-export const LOAD_PERSISTENT_VOLUMNS = "LOAD_PERSISTENT_VOLUMNS";
-
 export const SET_NOTIFICATION_MESSAGE = "SET_NOTIFICATION_MESSAGE";
 export const SET_SETTINGS = "SET_SETTINGS";
 
@@ -63,12 +61,6 @@ export interface SetNotificationMessageAction {
   payload: {
     message: string;
     variant: VariantType;
-  };
-}
-export interface LoadPersistentVolumnsAction {
-  type: typeof LOAD_PERSISTENT_VOLUMNS;
-  payload: {
-    persistentVolumns: any[];
   };
 }
 
@@ -140,7 +132,6 @@ export type CommonActions =
   | LoadLoginStatusAction
   | SetNotificationMessageAction
   | CallHistoryMethodAction
-  | LoadPersistentVolumnsAction
   | SetSettingsAction
   | InitControlledDialogAction
   | DestroyControlledDialogAction

@@ -89,8 +89,8 @@ export const VolumeTypeTemporaryDisk: VolumeType = "emptyDir";
 export const VolumeTypePersistentVolumeClaim: VolumeType = "pvc";
 
 // derivative
-export const VolumeTypePersistentVolumeClaimNew: VolumeType = "pvc-new";
-export const VolumeTypePersistentVolumeClaimExisting: VolumeType = "pvc-existing";
+// export const VolumeTypePersistentVolumeClaimNew: VolumeType = "pvc-new";
+// export const VolumeTypePersistentVolumeClaimExisting: VolumeType = "pvc-existing";
 
 export interface VolumeContent {
   type: VolumeType;

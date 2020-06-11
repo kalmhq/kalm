@@ -62,9 +62,9 @@ export const RenderSelectField = ({
   };
 
   let value = input.value;
-  if (!notSelectFirstIfValueIsUndefined && !value && options && options[0]) {
-    value = options[0].value;
-  }
+  // if (!notSelectFirstIfValueIsUndefined && !value && options && options[0]) {
+  //   value = options[0].value;
+  // }
 
   // select doesn't support endAdornment
   // tooltip doesn't work in FormControl

@@ -6,8 +6,9 @@ import { RootState } from "../../reducers";
 import { getComponentVolumeType } from "../../selectors/component";
 import {
   Volume,
-  VolumeTypePersistentVolumeClaimExisting,
-  VolumeTypePersistentVolumeClaimNew,
+  VolumeTypePersistentVolumeClaim,
+  // VolumeTypePersistentVolumeClaimExisting,
+  // VolumeTypePersistentVolumeClaimNew,
   VolumeTypeTemporaryDisk,
   VolumeTypeTemporaryMemory
 } from "../../types/componentTemplate";
@@ -17,7 +18,9 @@ import { KRenderTextField } from "../Basic/textfield";
 import { ValidatorRequired } from "../validator";
 
 const mapStateToProps = (state: RootState) => {
-  return {};
+  return {
+    storageClasses: state.get("persistentVolumes").get("storageClasses")
+  };
 };
 
 interface FieldArrayComponentHackType {
@@ -30,6 +33,24 @@ interface FieldArrayProps extends DispatchProp, ReturnType<typeof mapStateToProp
 interface Props extends WrappedFieldArrayProps<Volume>, FieldArrayComponentHackType, FieldArrayProps {}
 
 class RenderVolumes extends React.PureComponent<Props> {
+  private getStorageClassesOptions() {
+    const { storageClasses } = this.props;
+
+    const options: {
+      value: string;
+      text: string;
+    }[] = [];
+
+    storageClasses.forEach(sc => {
+      options.push({
+        value: sc.get("name"),
+        text: sc.get("name")
+      });
+    });
+
+    return options;
+  }
+
   public getFieldComponents(member: string) {
     const volumeType = getComponentVolumeType(member);
 
@@ -41,8 +62,9 @@ class RenderVolumes extends React.PureComponent<Props> {
         validate={[ValidatorRequired]}
         placeholder="Select a volume type"
         options={[
-          { value: VolumeTypePersistentVolumeClaimNew, text: "Create and mount disk" },
-          { value: VolumeTypePersistentVolumeClaimExisting, text: "Mount an existing disk" },
+          { value: VolumeTypePersistentVolumeClaim, text: "Create and mount disk" },
+          // { value: VolumeTypePersistentVolumeClaimNew, text: "Create and mount disk" },
+          // { value: VolumeTypePersistentVolumeClaimExisting, text: "Mount an existing disk" },
           { value: VolumeTypeTemporaryDisk, text: "Mount a temporary Disk" },
           { value: VolumeTypeTemporaryMemory, text: "Mount a temporary memory Disk" }
         ]}></Field>,
@@ -55,18 +77,15 @@ class RenderVolumes extends React.PureComponent<Props> {
       />
     ];
 
-    if (volumeType === VolumeTypePersistentVolumeClaimNew) {
+    if (volumeType === VolumeTypePersistentVolumeClaim) {
+      // if (volumeType === VolumeTypePersistentVolumeClaimNew) {
       fieldComponents.push(
         <Field
           label="Storage Class"
           name={`${member}.storageClassName`}
           component={RenderSelectField}
           placeholder="Select the type of your disk"
-          options={[
-            { value: "standard", text: "Storage Class 1" },
-            { value: "standard", text: "Storage Class 2" },
-            { value: "standard", text: "Storage Class 3" }
-          ]}></Field>
+          options={this.getStorageClassesOptions()}></Field>
       );
       fieldComponents.push(
         <Field
@@ -77,19 +96,15 @@ class RenderVolumes extends React.PureComponent<Props> {
           validate={[ValidatorRequired]}
         />
       );
-    } else if (volumeType === VolumeTypePersistentVolumeClaimExisting) {
-      fieldComponents.push(
-        <Field
-          label="Storage Class"
-          name={`${member}.storageClassName`}
-          component={RenderSelectField}
-          placeholder="Select the type of your disk"
-          options={[
-            { value: "standard", text: "Storage Class 1" },
-            { value: "standard", text: "Storage Class 2" },
-            { value: "standard", text: "Storage Class 3" }
-          ]}></Field>
-      );
+      // } else if (volumeType === VolumeTypePersistentVolumeClaimExisting) {
+      //   fieldComponents.push(
+      //     <Field
+      //       label="Storage Class"
+      //       name={`${member}.storageClassName`}
+      //       component={RenderSelectField}
+      //       placeholder="Select the type of your disk"
+      //       options={this.getStorageClassesOptions()}></Field>
+      //   );
     } else {
       fieldComponents.push(
         <Field
