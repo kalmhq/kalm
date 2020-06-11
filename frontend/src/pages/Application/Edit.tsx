@@ -1,4 +1,5 @@
 import { createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { push } from "connected-react-router";
 import Immutable from "immutable";
 import queryString from "query-string";
 import React from "react";
@@ -7,7 +8,6 @@ import { RouteChildrenProps } from "react-router-dom";
 import { formValueSelector } from "redux-form/immutable";
 import {
   createComponentAction,
-  deleteComponentAction,
   setIsSubmittingApplicationComponent,
   updateComponentAction
 } from "../../actions/application";
@@ -19,7 +19,6 @@ import { ComponentStatus } from "../../widgets/ComponentStatus";
 import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
 import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./ItemDataWrapper";
-import { push } from "connected-react-router";
 
 const mapStateToProps = (state: RootState, props: any) => {
   const selector = formValueSelector("application");
