@@ -30,7 +30,7 @@ const styles = (theme: Theme) =>
   createStyles({
     root: {
       // padding: theme.spacing(3)
-      // height: "100%",
+      minHeight: "100%",
       backgroundColor: "#F4F5F7"
     },
     secondHeaderRight: {
@@ -44,10 +44,7 @@ const styles = (theme: Theme) =>
     }
   });
 
-interface State {
-  // currentComponent?: ApplicationComponent;
-  // changingComponent: boolean; // for form componentLike enableReinitialize
-}
+interface State {}
 
 interface Props
   extends WithApplicationItemDataProps,
@@ -91,48 +88,20 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
   private submitComponent = async (component: ApplicationComponent) => {
     // console.log("submitComponent", component.toJS());
 
-    const { dispatch, application, component: currentComponent } = this.props;
+    const { dispatch, application, currentComponent } = this.props;
 
     if (!currentComponent || !currentComponent.get("name")) {
-      // this.setState({
-      //   currentComponent: component
-      //   // currentComponentTab: "basic"
-      // });
-
       await dispatch(createComponentAction(component));
-      dispatch(push(`/applications/${application?.get("name")}/edit?component=${component.get("name")}`));
     } else {
-      // this.setState({
-      //   currentComponent: component
-      // });
-
       await dispatch(updateComponentAction(component));
-      dispatch(push(`/applications/${application?.get("name")}/edit?component=${component.get("name")}`));
     }
+    dispatch(push(`/applications/${application?.get("name")}/edit?component=${component.get("name")}`));
   };
 
   public renderApplicationEditDrawer() {
-    const { application, dispatch, component: currentComponent } = this.props;
-    // const { currentComponent } = this.state;
+    const { application, currentComponent } = this.props;
 
-    return (
-      <ApplicationEditDrawer
-        application={application}
-        currentComponent={currentComponent}
-        handleClickComponent={(component?: ApplicationComponent) => {
-          dispatch(
-            push(
-              `/applications/${application?.get("name")}/edit?component=${
-                component ? (component.get("name") ? component.get("name") : "") : ""
-              }`
-            )
-          );
-          // this.setState({
-          //   currentComponent: component
-          // });
-        }}
-      />
-    );
+    return <ApplicationEditDrawer application={application} currentComponent={currentComponent} />;
   }
 
   public render() {
@@ -168,12 +137,7 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
   }
 
   public renderForm() {
-    const { application, sharedEnv, dispatch, classes, component: currentComponent } = this.props;
-    // const { changingComponent } = this.state;
-
-    // if (changingComponent) {
-    //   return null;
-    // }
+    const { application, sharedEnv, dispatch, classes, currentComponent } = this.props;
 
     return (
       <Grid container spacing={2} className={classes.root}>
@@ -185,7 +149,6 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
               dispatch(setIsSubmittingApplicationComponent(false));
             }}
             initialValues={currentComponent}
-            // currentTab={currentComponentTab}
             showDataView
           />
         </Grid>

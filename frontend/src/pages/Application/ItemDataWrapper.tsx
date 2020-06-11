@@ -22,7 +22,7 @@ const mapStateToProps = (state: RootState, props: any) => {
   // for detail
   const component = application && application.get("components")?.find(x => x.get("name") === componentName);
   // for edit
-  const currentComponet = component || (componentInitialValues as ApplicationComponentDetails);
+  const currentComponent = component || (componentInitialValues as ApplicationComponentDetails);
 
   const activeNamespaceName = state.get("namespaces").get("active");
 
@@ -31,7 +31,7 @@ const mapStateToProps = (state: RootState, props: any) => {
     activeNamespaceName,
     application,
     component,
-    currentComponet,
+    currentComponent,
     isLoading: applications.get("isItemLoading")
   };
 };
