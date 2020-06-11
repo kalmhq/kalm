@@ -175,7 +175,8 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
           ]}
           options={{
             padding: "dense",
-            pageSize: 20
+            pageSize: 20,
+            paging: data.size > 20
           }}
           columns={[
             {

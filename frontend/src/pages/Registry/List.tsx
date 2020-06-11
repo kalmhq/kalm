@@ -93,10 +93,12 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
+    const tableData = this.getData();
     return (
       <MaterialTable
         options={{
           pageSize: 20,
+          paging: tableData.length > 20,
           padding: "dense",
           draggable: false,
           rowStyle: {
@@ -162,7 +164,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
         //   togglePanel!();
         //   console.log(_event);
         // }}
-        data={this.getData()}
+        data={tableData}
         title=""
       />
     );

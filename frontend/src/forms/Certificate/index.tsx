@@ -151,7 +151,6 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
       }
     ];
     certificateIssuers.forEach(certificateIssuer => {
-      console.log(certificateIssuer.toJS());
       const name = certificateIssuer.get("name");
       httpsCertIssuerOptions.push({
         value: name,
