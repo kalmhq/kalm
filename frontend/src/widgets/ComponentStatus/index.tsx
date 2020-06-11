@@ -58,7 +58,10 @@ const styles = (theme: Theme) =>
       top: 12,
       right: 0
     },
-    podMessage: {},
+    podMessage: {
+      maxWidth: "100%",
+      whiteSpace: "break-spaces"
+    },
     drawer: {
       width: RIGHT_DRAWER_WIDTH,
       flexShrink: 0,
