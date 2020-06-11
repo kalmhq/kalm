@@ -19,16 +19,8 @@ export const newEmptyComponentLike = (): ComponentLike => {
     name: "",
     image: "",
     replicas: 1,
-    command: Immutable.List([]),
-    env: Immutable.List([]),
-    ports: Immutable.List([]),
-    disks: Immutable.List([]),
-    cpu: null,
-    memory: null,
     workloadType: "server",
-    restartStrategy: "RollingUpdate",
-    dnsPolicy: "ClusterFirst",
-    terminationGracePeriodSeconds: 30
+    dnsPolicy: "ClusterFirst"
   });
 };
 
@@ -150,10 +142,9 @@ export interface ComponentLikeContent {
   name: string;
   image: string;
   replicas: number;
-  command: Immutable.List<string>;
-  args: Immutable.List<string>;
-  cpu: string | null;
-  memory: string | null;
+  command?: string;
+  cpu?: string;
+  memory?: string;
   workloadType?: WorkloadType;
   schedule?: string;
   restartStrategy?: string;
