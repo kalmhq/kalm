@@ -69,7 +69,7 @@ func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	// todo skip delete if reclaim policy of pv is not Retain
 	//      or if storage class of PV is not Kapp-Managed
 	var componentList v1alpha1.ComponentList
-	if err = r.List(ctx, &componentList, client.InNamespace(req.Namespace)); err != nil {
+	if err = r.List(ctx, &componentList); err != nil {
 		if !errors.IsNotFound(err) {
 			return ctrl.Result{}, err
 		}
@@ -161,6 +161,11 @@ func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 func findComponentUsingPVC(pvc corev1.PersistentVolumeClaim, compList v1alpha1.ComponentList) (v1alpha1.Component, bool) {
 	for _, comp := range compList.Items {
+
+		if pvc.Namespace != comp.Namespace {
+			continue
+		}
+
 		for _, vol := range comp.Spec.Volumes {
 			if vol.Type != v1alpha1.VolumeTypePersistentVolumeClaim {
 				continue
