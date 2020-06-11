@@ -100,7 +100,7 @@ func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	// for all kapp PV in Released stats, clean claimRef to make it
+	// 2.1 for all kapp PV in Released stats, clean claimRef to make it
 	for _, pv := range pvList.Items {
 		if _, exist := pv.Labels[KappLabelManaged]; !exist {
 			continue
@@ -119,8 +119,8 @@ func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		}
 	}
 
-	// make sure for each active pvc, underlying pv is labeled with its name
-	// (to be selected using selector)
+	// 2.2 make sure for each active pvc, underlying pv is labeled with its name
+	//     (to be selected using selector)
 	for i, activePVC := range activePVCs {
 		for _, pv := range pvList.Items {
 			if pv.Name != activePVC.Spec.VolumeName {

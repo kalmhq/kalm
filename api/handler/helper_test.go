@@ -3,6 +3,7 @@ package handler
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/kapp-staging/kapp/api/client"
 	"github.com/kapp-staging/kapp/api/config"
 	"github.com/kapp-staging/kapp/api/server"
@@ -10,6 +11,8 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/suite"
 	"io"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"net/http/httptest"
@@ -129,4 +132,18 @@ func (suite *WithControllerTestSuite) NewRequestWithHeaders(method string, path 
 func toReader(obj interface{}) io.Reader {
 	bts, _ := json.Marshal(obj)
 	return bytes.NewBuffer(bts)
+}
+
+func (suite *WithControllerTestSuite) getPVCList(ns string) (*v1.PersistentVolumeClaimList, error) {
+	pvsList, err := suite.k8sClinet.CoreV1().PersistentVolumeClaims(ns).List(metav1.ListOptions{})
+	return pvsList, err
+}
+
+func (suite *WithControllerTestSuite) getComponentList(ns string) (v1alpha1.ComponentList, error) {
+	compListAPIURL := fmt.Sprintf("/apis/core.kapp.dev/v1alpha1/namespaces/%s/components", ns)
+
+	var compList v1alpha1.ComponentList
+	err := suite.k8sClinet.RESTClient().Get().AbsPath(compListAPIURL).Do().Into(&compList)
+
+	return compList, err
 }
