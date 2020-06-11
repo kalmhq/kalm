@@ -1,7 +1,6 @@
 import { createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { push } from "connected-react-router";
 import Immutable from "immutable";
-import queryString from "query-string";
 import React from "react";
 import { connect } from "react-redux";
 import { RouteChildrenProps } from "react-router-dom";
@@ -23,12 +22,6 @@ import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./Item
 const mapStateToProps = (state: RootState, props: any) => {
   const selector = formValueSelector("application");
   const sharedEnv: Immutable.List<SharedEnv> = selector(state, "sharedEnvs");
-
-  const { location, application } = props;
-  console.log("hash", location.hash);
-  let search = queryString.parse(location.search);
-  console.log("search", search);
-  console.log("application", application);
 
   return { sharedEnv };
 };
@@ -98,7 +91,7 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
   private submitComponent = async (component: ApplicationComponent) => {
     // console.log("submitComponent", component.toJS());
 
-    const { dispatch, component: currentComponent } = this.props;
+    const { dispatch, application, component: currentComponent } = this.props;
 
     if (!currentComponent || !currentComponent.get("name")) {
       // this.setState({
@@ -107,14 +100,14 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
       // });
 
       await dispatch(createComponentAction(component));
-      dispatch(push(`/applications/edit?component=${component.get("name")}`));
+      dispatch(push(`/applications/${application?.get("name")}/edit?component=${component.get("name")}`));
     } else {
       // this.setState({
       //   currentComponent: component
       // });
 
       await dispatch(updateComponentAction(component));
-      dispatch(push(`/applications/edit?component=${component.get("name")}`));
+      dispatch(push(`/applications/${application?.get("name")}/edit?component=${component.get("name")}`));
     }
   };
 
@@ -129,7 +122,7 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
         handleClickComponent={(component?: ApplicationComponent) => {
           dispatch(
             push(
-              `/applications/kapp-hello-world/edit?component=${
+              `/applications/${application?.get("name")}/edit?component=${
                 component ? (component.get("name") ? component.get("name") : "") : ""
               }`
             )
