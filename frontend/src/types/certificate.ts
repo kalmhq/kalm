@@ -107,7 +107,7 @@ export type CertificateIssuer = ImmutableMap<CertificateIssuerContent>;
 export const newEmptyCertificateForm = (): CertificateFormType => {
   return Immutable.fromJS({
     name: "",
-    managedType: selfManaged,
+    managedType: issuerManaged,
     selfManagedCertContent: "",
     selfManagedCertPrivateKey: ""
   });
