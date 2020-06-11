@@ -23,10 +23,10 @@ export const NormalizeNumber = (
   _previousAllValues?: any
 ): number | any => {
   const integerValue = parseInt(value, 10);
-  return isNaN(integerValue) ? "" : integerValue;
+  return isNaN(integerValue) ? null : integerValue;
 };
 
-export const NormalizeCPU = (value: string): string | null => {
+export const NormalizeCPU = (value: string) => {
   if (!value || value === "") {
     return null;
   }
@@ -34,13 +34,17 @@ export const NormalizeCPU = (value: string): string | null => {
   return value;
 };
 
-export const NormalizeMemory = (value: string): string => {
-  if (!value || value === "0") {
-    return "0";
+export const NormalizeMemory = (value: string) => {
+  if (!value || value === "") {
+    return null;
   }
 
   while (value.length > 0 && value[0] === "0") {
     value = value.slice(1);
+  }
+
+  if (!value || value === "") {
+    return null;
   }
 
   return value;

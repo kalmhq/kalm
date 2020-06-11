@@ -16,15 +16,23 @@ interface KRadioGroupRenderProps extends WrappedFieldProps {
   options: KRadioGroupRenderOption[];
   title?: string;
   formControlProps?: FormControlProps;
+  defaultValue?: string;
 }
 
-export const KRadioGroupRender = ({ input, meta, title, options, formControlProps }: KRadioGroupRenderProps) => {
+export const KRadioGroupRender = ({
+  input,
+  meta,
+  title,
+  options,
+  formControlProps,
+  defaultValue
+}: KRadioGroupRenderProps) => {
   const { error } = meta;
-
+  console.log("defaultValue", defaultValue);
   return (
     <FormControl component="fieldset" fullWidth margin="dense" error={error}>
       {title ? <FormLabel component="legend">{title}</FormLabel> : null}
-      <RadioGroup aria-label="gender" name="gender1" value={input.value} onChange={input.onChange}>
+      <RadioGroup aria-label="gender" name="gender1" value={input.value || defaultValue} onChange={input.onChange}>
         {options.map(option => {
           return (
             <>

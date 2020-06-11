@@ -6,7 +6,8 @@ import {
   TextField,
   Theme,
   Typography,
-  withStyles
+  withStyles,
+  MenuItem
 } from "@material-ui/core";
 import { WithStyles } from "@material-ui/styles";
 import { NormalizeNumber, NormalizeNumberOrAlphabet } from "forms/normalizer";
@@ -17,7 +18,7 @@ import { Field, formValueSelector } from "redux-form/immutable";
 import { H5 } from "../../widgets/Label";
 import { RenderSelectField, SelectField } from "../Basic/select";
 import { KRenderCommandTextField, KRenderTextField } from "../Basic/textfield";
-import { ValidatorNumberOrAlphabet, ValidatorRequired } from "../validator";
+import { ValidatorNumberOrAlphabet, ValidatorRequired, ValidatorOneof } from "../validator";
 import { RootState } from "reducers";
 import { Probe, ComponentLikePort } from "types/componentTemplate";
 import Immutable from "immutable";
@@ -27,6 +28,8 @@ interface FieldComponentHackType {
   name: any;
   component: any;
 }
+
+const ValidatorScheme = ValidatorOneof(/^https?$/i);
 
 const mapStateToProps = (state: RootState, { meta: { form } }: WrappedFieldArrayProps) => {
   const selector = formValueSelector(form);
@@ -73,6 +76,8 @@ class RenderProbe extends React.PureComponent<Props> {
     meta: { error, touched },
     placeholder,
     style,
+    select,
+    children,
     type
   }: WrappedFieldProps & StandardTextFieldProps & { style?: any; type?: string }) => {
     const { classes } = this.props;
@@ -85,9 +90,11 @@ class RenderProbe extends React.PureComponent<Props> {
         value={input.value}
         size="small"
         type={type}
+        select={select}
         placeholder={placeholder}
-        inputProps={{ style }}
-      />
+        inputProps={{ style }}>
+        {children}
+      </TextField>
     );
   };
 
@@ -102,7 +109,7 @@ class RenderProbe extends React.PureComponent<Props> {
             name={`${name}.initialDelaySeconds`}
             component={this.renderNestedTextfield}
             normalize={NormalizeNumber}
-            placeholder="5"
+            placeholder="10"
             type="number"
             min="1"
             style={{ width: 60 }}
@@ -112,9 +119,17 @@ class RenderProbe extends React.PureComponent<Props> {
             <Field
               name={`${name}.httpGet.scheme`}
               component={this.renderNestedTextfield}
+              validate={ValidatorScheme}
               placeholder="http"
-              style={{ width: 60 }}
-            />
+              select
+              style={{ width: 60 }}>
+              <MenuItem key={"http"} value={"HTTP"}>
+                http
+              </MenuItem>
+              <MenuItem key={"http"} value={"HTTPS"}>
+                https
+              </MenuItem>
+            </Field>
             ://
             <Field
               name={`${name}.httpGet.host`}
@@ -144,7 +159,7 @@ class RenderProbe extends React.PureComponent<Props> {
             name={`${name}.periodSeconds`}
             component={this.renderNestedTextfield}
             normalize={NormalizeNumber}
-            placeholder="5"
+            placeholder="10"
             type="number"
             min="1"
             style={{ width: 60 }}
@@ -164,7 +179,7 @@ class RenderProbe extends React.PureComponent<Props> {
           <Field
             name={`${name}.initialDelaySeconds`}
             component={this.renderNestedTextfield}
-            placeholder="5"
+            placeholder="10"
             normalize={NormalizeNumber}
             type="number"
             min="1"
@@ -173,11 +188,11 @@ class RenderProbe extends React.PureComponent<Props> {
           seconds delay, Command{" "}
           <Box className={classes.code} display="inline-block">
             <Field
-              name={`${name}.exec.command`}
+              name={`${name}.exec.command[0]`}
               component={this.renderNestedTextfield}
               validate={ValidatorRequired}
               placeholder="command"
-              style={{ width: 200 }}
+              style={{ width: 300 }}
             />
           </Box>{" "}
           will be executed every{" "}
@@ -185,7 +200,7 @@ class RenderProbe extends React.PureComponent<Props> {
             name={`${name}.periodSeconds`}
             component={this.renderNestedTextfield}
             normalize={NormalizeNumber}
-            placeholder="5"
+            placeholder="10"
             type="number"
             min="1"
             style={{ width: 60 }}
@@ -207,7 +222,7 @@ class RenderProbe extends React.PureComponent<Props> {
             name={`${name}.initialDelaySeconds`}
             component={this.renderNestedTextfield}
             normalize={NormalizeNumber}
-            placeholder="5"
+            placeholder="10"
             type="number"
             min="1"
             style={{ width: 60 }}
@@ -235,7 +250,7 @@ class RenderProbe extends React.PureComponent<Props> {
             name={`${name}.periodSeconds`}
             component={this.renderNestedTextfield}
             normalize={NormalizeNumber}
-            placeholder="5"
+            placeholder="10"
             type="number"
             min="1"
             style={{ width: 60 }}
@@ -257,7 +272,7 @@ class RenderProbe extends React.PureComponent<Props> {
           <Field
             name={`${name}.timeoutSeconds`}
             component={this.renderNestedTextfield}
-            placeholder="5"
+            placeholder="1"
             normalize={NormalizeNumber}
             style={{ width: 60 }}
             type="number"
@@ -280,7 +295,7 @@ class RenderProbe extends React.PureComponent<Props> {
               <Field
                 name={`${name}.successThreshold`}
                 component={this.renderNestedTextfield}
-                placeholder="5"
+                placeholder="1"
                 normalize={NormalizeNumber}
                 style={{ width: 60 }}
                 type="number"
@@ -293,7 +308,7 @@ class RenderProbe extends React.PureComponent<Props> {
           <Field
             name={`${name}.failureThreshold`}
             component={this.renderNestedTextfield}
-            placeholder="5"
+            placeholder="3"
             normalize={NormalizeNumber}
             type="number"
             min="1"
@@ -336,6 +351,7 @@ class RenderProbe extends React.PureComponent<Props> {
           input.name,
           Immutable.Map({
             httpGet: Immutable.Map({
+              scheme: "HTTP",
               path: "/health",
               port: potentialPort ? potentialPort.get("containerPort") : ""
             })
@@ -349,7 +365,7 @@ class RenderProbe extends React.PureComponent<Props> {
           input.name,
           Immutable.Map({
             exec: Immutable.Map({
-              command: ""
+              command: Immutable.List([""])
             })
           })
         )

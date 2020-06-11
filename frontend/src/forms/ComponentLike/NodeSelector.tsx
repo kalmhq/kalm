@@ -53,7 +53,7 @@ export const RenderSelectLabels = ({ input, nodeLabels }: FilledTextFieldProps &
           variant="outlined"
           label="Node Selector"
           placeholder="Select node labels. Leave blank to schedule on all available nodes."
-          helperText="The semantics between labels is OR. As long as any label is matched, the node is a candidate"
+          helperText="The semantics between labels is AND. A node is a candidate if it match all the labels."
           size={"small"}
         />
       )}

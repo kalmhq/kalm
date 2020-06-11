@@ -22,13 +22,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const (
-	PodAffinityTypePreferFanout PodAffinityType = "prefer-fanout" // multi host
-	PodAffinityTypePreferGather PodAffinityType = "prefer-gather" //same host
-)
-
-type PodAffinityType string
-
 type PreInjectFile struct {
 	// the content of the file
 	Content string `json:"content"`
@@ -51,8 +44,8 @@ type ComponentSpec struct {
 
 	Replicas *int32 `json:"replicas,omitempty"`
 
-	PodAffinityType    PodAffinityType   `json:"podAffinityType,omitempty"`
 	NodeSelectorLabels map[string]string `json:"nodeSelectorLabels,omitempty"`
+	PreferNotCoLocated bool              `json:"preferNotCoLocated,omitempty"`
 
 	StartAfterComponents []string `json:"startAfterComponents,omitempty"`
 
@@ -81,6 +74,8 @@ type ComponentSpec struct {
 	CPU *resource.Quantity `json:"cpu,omitempty"`
 
 	Memory *resource.Quantity `json:"memory,omitempty"`
+
+	EnableResourcesRequests bool `json:"enableResourcesRequests,omitempty"`
 
 	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty"`
 

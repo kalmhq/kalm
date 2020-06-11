@@ -124,7 +124,7 @@ metadata:
   namespace: kapp-hipster
 spec:
   image: diveinto/paymentservice:v0.1.4-4-g997b5e8
-  podAffinityType: prefer-fanout
+  preferNotCoLocated: true
   nodeSelectorLabels:
     kubernetes.io/os: linux
   cpu: 50m
@@ -170,7 +170,7 @@ metadata:
   namespace: kapp-hipster
 spec:
   image: diveinto/shippingservice:v0.1.4-4-g997b5e8
-  podAffinityType: prefer-fanout
+  preferNotCoLocated: true
   nodeSelectorLabels:
     kubernetes.io/os: linux
   cpu: 50m
@@ -205,7 +205,7 @@ metadata:
   namespace: kapp-hipster
 spec:
   image: diveinto/currencyservice:v0.1.4-4-g997b5e8
-  podAffinityType: prefer-fanout
+  preferNotCoLocated: true
   nodeSelectorLabels:
     kubernetes.io/os: linux
   cpu: 50m
@@ -240,7 +240,7 @@ metadata:
   namespace: kapp-hipster
 spec:
   image: diveinto/productcatalogservice:v0.1.4-4-g997b5e8
-  podAffinityType: prefer-fanout
+  preferNotCoLocated: true
   nodeSelectorLabels:
     kubernetes.io/os: linux
   cpu: 50m
@@ -275,7 +275,7 @@ metadata:
   namespace: kapp-hipster
 spec:
   image: diveinto/adservice:v0.1.4-4-g997b5e8
-  podAffinityType: prefer-fanout
+  preferNotCoLocated: true
   nodeSelectorLabels:
     kubernetes.io/os: linux
   cpu: 150m
@@ -316,7 +316,7 @@ metadata:
   namespace: kapp-hipster
 spec:
   image: diveinto/cartservice:v0.1.4-4-g997b5e8
-  podAffinityType: prefer-fanout
+  preferNotCoLocated: true
   nodeSelectorLabels:
     kubernetes.io/os: linux
   cpu: 50m
@@ -359,7 +359,7 @@ metadata:
   namespace: kapp-hipster
 spec:
   image: redis:alpine
-  podAffinityType: prefer-fanout
+  preferNotCoLocated: true
   nodeSelectorLabels:
     kubernetes.io/os: linux
   cpu: 50m
@@ -394,7 +394,7 @@ metadata:
   namespace: kapp-hipster
 spec:
   image: diveinto/checkoutservice:v0.1.4-4-g997b5e8
-  podAffinityType: prefer-fanout
+  preferNotCoLocated: true
   nodeSelectorLabels:
     kubernetes.io/os: linux
   cpu: 50m
@@ -447,7 +447,7 @@ metadata:
   namespace: kapp-hipster
 spec:
   image: diveinto/frontend:v0.1.4-4-g997b5e8
-  podAffinityType: prefer-fanout
+  preferNotCoLocated: true
   nodeSelectorLabels:
     kubernetes.io/os: linux
   cpu: 50m
@@ -515,7 +515,7 @@ metadata:
   namespace: kapp-hipster
 spec:
   image: diveinto/recommendationservice:v0.1.4-4-g997b5e8
-  podAffinityType: prefer-fanout
+  preferNotCoLocated: true
   nodeSelectorLabels:
     kubernetes.io/os: linux
   cpu: 50m
@@ -556,7 +556,7 @@ metadata:
   namespace: kapp-hipster
 spec:
   image: diveinto/emailservice:v0.1.4-4-g997b5e8
-  podAffinityType: prefer-fanout
+  preferNotCoLocated: true
   nodeSelectorLabels:
     kubernetes.io/os: linux
   cpu: 50m

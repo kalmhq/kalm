@@ -81,6 +81,26 @@ export const ValidatorNumberOrAlphabet = (value: any, _allValues?: any, _props?:
   return "Not a valid port value";
 };
 
+export const ValidatorOneof = (...options: (string | RegExp)[]) => {
+  return (value: string) => {
+    if (!value) return undefined;
+
+    for (let i = 0; i < options.length; i++) {
+      if (typeof options[i] === "string" && value === options[i]) {
+        return undefined;
+      } else if (
+        typeof options[i] === "object" &&
+        options[i].constructor.name === "RegExp" &&
+        value.match(options[i])
+      ) {
+        return undefined;
+      }
+    }
+
+    return `Must be one of ${options.map(x => x.toString()).join(", ")}`;
+  };
+};
+
 export const ValidatorName = (value: string) => {
   if (!value) return undefined;
 

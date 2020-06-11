@@ -41,7 +41,7 @@ import { KPanel } from "../../widgets/KPanel";
 import { KRadioGroupRender } from "../Basic/radio";
 import { RenderSelectField } from "../Basic/select";
 import { KRenderCommandTextField, KRenderTextField, RenderComplexValueTextField } from "../Basic/textfield";
-import { NormalizeNumber } from "../normalizer";
+import { NormalizeNumber, NormalizeCPU } from "../normalizer";
 import { ValidatorCPU, ValidatorMemory, ValidatorName, ValidatorRequired, ValidatorSchedule } from "../validator";
 // import { Configs } from "./Configs";
 import { Envs } from "./Envs";
@@ -845,7 +845,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             name="cpu"
             label="CPU Limit"
             validate={[ValidatorCPU]}
-            // normalize={NormalizeCPU}
+            normalize={NormalizeCPU}
             placeholder="Please type CPU limit"
             helperText="Eg. 1 = 1Core; 0.1 = 100m = 0.1Core"
             endAdornment={
@@ -874,7 +874,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
         <Grid item xs={12}>
           <Field
-            name="guaranteedQOS"
+            name="enableResourcesRequests"
             component={KBoolCheckboxRender}
             label="Only schedule on nodes that meet the above resources"
           />
@@ -889,7 +889,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
         <Grid item xs={12}>
           <Field
-            name="podAffinityType"
+            name="preferNotCoLocated"
             component={KBoolCheckboxRender}
             label="Prefer to schedule replicas to different nodes. (Recommand for high availablity)"
           />
@@ -912,6 +912,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
         <Grid item xs={12}>
           <Field
+            defaultValue="RollingUpdate"
             component={KRadioGroupRender}
             name="restartStrategy"
             options={[
@@ -1116,7 +1117,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             }
           />
         </Box>
-        <pre style={{ maxWidth: 1500, background: "#eee" }}>
+        {/* <pre style={{ maxWidth: 1500, background: "#eee" }}>
           {JSON.stringify(
             (this.props.values as any)
               .delete("metrics")
@@ -1125,7 +1126,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             undefined,
             2
           )}
-        </pre>
+        </pre> */}
         {/* <div className={`${classes.formSection} ${currentTabIndex === "advanced" ? "" : ""}`}>{this.renderPlugins()}</div> */}
         {this.renderDeployButton()}
       </form>

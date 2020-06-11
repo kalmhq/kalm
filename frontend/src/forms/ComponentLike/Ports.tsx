@@ -139,7 +139,7 @@ class RenderPorts extends React.PureComponent<Props> {
                   name={`${field}.servicePort`}
                   label="listening on port"
                   placeholder="Default to equal publish port"
-                  validate={[ValidatorRequired]}
+                  // validate={[ValidatorRequired]}
                   normalize={NormalizePort}
                 />
               </Grid>
