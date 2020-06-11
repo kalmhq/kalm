@@ -1,4 +1,5 @@
 import { Box, Button, Grid, Icon, MenuItem } from "@material-ui/core";
+import { Alert } from "@material-ui/lab";
 import Immutable from "immutable";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
@@ -12,8 +13,6 @@ import { RenderSelectField } from "../Basic/select";
 import { KRenderTextField } from "../Basic/textfield";
 import { NormalizePort } from "../normalizer";
 import { ValidatorRequired, ValidatorServiceName } from "../validator";
-import { CodeGenerator } from "@babel/generator";
-import { Alert } from "@material-ui/lab";
 interface FieldArrayComponentHackType {
   name: any;
   component: any;
@@ -59,7 +58,7 @@ class RenderPorts extends React.PureComponent<Props> {
     const {
       fields,
       dispatch,
-      meta: { submitFailed, error, form }
+      meta: { error, form }
     } = this.props;
     return (
       <>

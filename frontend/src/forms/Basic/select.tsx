@@ -137,9 +137,9 @@ export const RenderSelectField = ({
 
   const inputLabel = React.useRef<HTMLLabelElement>(null);
 
-  const onChange = (event: React.ChangeEvent<{ name?: string; value: unknown }>, child: React.ReactNode) => {
-    input.onChange(event.target.value);
-  };
+  // const onChange = (event: React.ChangeEvent<{ name?: string; value: unknown }>, child: React.ReactNode) => {
+  //   input.onChange(event.target.value);
+  // };
 
   let value = input.value;
 

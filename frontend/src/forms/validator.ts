@@ -1,6 +1,5 @@
 import Immutable from "immutable";
 import { HttpRouteDestination } from "types/route";
-import { ComponentLikePort } from "types/componentTemplate";
 
 export const validator = () => {
   const errors = {};

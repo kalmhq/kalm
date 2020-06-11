@@ -2,27 +2,25 @@ import {
   Box,
   createStyles,
   Grid,
+  MenuItem,
   StandardTextFieldProps,
   TextField,
   Theme,
   Typography,
-  withStyles,
-  MenuItem
+  withStyles
 } from "@material-ui/core";
 import { WithStyles } from "@material-ui/styles";
-import { NormalizeNumber, NormalizeNumberOrAlphabet } from "forms/normalizer";
+import { NormalizeNumber } from "forms/normalizer";
+import Immutable from "immutable";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
-import { WrappedFieldProps, WrappedFieldArrayProps, change, unregisterField, clearFields } from "redux-form";
-import { Field, formValueSelector } from "redux-form/immutable";
-import { H5 } from "../../widgets/Label";
-import { RenderSelectField, SelectField } from "../Basic/select";
-import { KRenderCommandTextField, KRenderTextField } from "../Basic/textfield";
-import { ValidatorNumberOrAlphabet, ValidatorRequired, ValidatorOneof } from "../validator";
 import { RootState } from "reducers";
-import { Probe, ComponentLikePort } from "types/componentTemplate";
-import Immutable from "immutable";
+import { change, WrappedFieldArrayProps, WrappedFieldProps } from "redux-form";
+import { Field, formValueSelector } from "redux-form/immutable";
 import { portTypeTCP } from "types/common";
+import { ComponentLikePort, Probe } from "types/componentTemplate";
+import { SelectField } from "../Basic/select";
+import { ValidatorOneof, ValidatorRequired } from "../validator";
 
 interface FieldComponentHackType {
   name: any;
@@ -67,10 +65,6 @@ const styles = (theme: Theme) =>
   });
 
 class RenderProbe extends React.PureComponent<Props> {
-  constructor(props: Props) {
-    super(props);
-  }
-
   private renderNestedTextfield = ({
     input,
     meta: { error, touched },
