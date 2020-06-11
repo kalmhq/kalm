@@ -1,4 +1,4 @@
-import { Box, Button, Grid, List as MList, ListItem, ListItemText, Tab, Tabs, Tooltip } from "@material-ui/core";
+import { Box, Grid, List as MList, ListItem, ListItemText, Tab, Tabs, Tooltip } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
@@ -18,6 +18,7 @@ import { getNodeLabels } from "../../selectors/node";
 import { TDispatchProp } from "../../types";
 import { SharedEnv } from "../../types/application";
 import { ComponentLike, workloadTypeCronjob, workloadTypeServer } from "../../types/componentTemplate";
+import { CustomizedButton } from "../../widgets/Button";
 import { HelperContainer } from "../../widgets/Helper";
 import { KPanel } from "../../widgets/KPanel";
 import { KRadioGroupRender } from "../Basic/radio";
@@ -39,6 +40,7 @@ const mapStateToProps = (state: RootState) => {
   const nodeLabels = getNodeLabels();
 
   return {
+    isSubmittingApplicationComponent: state.get("applications").get("isSubmittingApplicationComponent"),
     values,
     syncErrors,
     nodeLabels
@@ -991,13 +993,25 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderDeployButton() {
-    const { classes } = this.props;
+    const { classes, handleSubmit, isSubmittingApplicationComponent } = this.props;
     return (
       <Grid container spacing={2}>
         <Grid item xs={6} sm={6} md={6}>
-          <Button variant="contained" color="primary" type="submit" className={classes.deployBtn}>
+          <CustomizedButton
+            pending={isSubmittingApplicationComponent}
+            disabled={isSubmittingApplicationComponent}
+            variant="contained"
+            color="primary"
+            className={classes.deployBtn}
+            onClick={event => {
+              handleSubmit(event);
+            }}>
             Deploy
-          </Button>
+          </CustomizedButton>
+
+          {/* <Button variant="contained" color="primary" type="submit" className={classes.deployBtn}>
+            Deploy
+          </Button> */}
         </Grid>
       </Grid>
     );

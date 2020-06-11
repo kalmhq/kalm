@@ -30,9 +30,6 @@ export const uploadConfigsAction = (ancestorIds: string[], filesUpload: FilesUpl
   return async dispatch => {
     // console.log("files", filesUpload.toJS());
     dispatch(setIsSubmittingConfig(true));
-    setTimeout(() => {
-      dispatch(setIsSubmittingConfig(false));
-    }, 3000);
 
     const files: ConfigCreate[] = [];
     filesUpload.forEach((content, name) => {
@@ -42,7 +39,14 @@ export const uploadConfigsAction = (ancestorIds: string[], filesUpload: FilesUpl
         content
       });
     });
-    await createKappFilesV1alpha1(files);
+
+    try {
+      await createKappFilesV1alpha1(files);
+    } catch (e) {
+      dispatch(setIsSubmittingConfig(false));
+      throw e;
+    }
+    dispatch(setIsSubmittingConfig(false));
 
     dispatch(loadConfigsAction());
     dispatch(setSuccessNotificationAction("Upload configs successful."));
@@ -55,9 +59,6 @@ export const createConfigAction = (config: ConfigNode): ThunkResult<Promise<void
     config = config.set("id", config.get("name"));
 
     dispatch(setIsSubmittingConfig(true));
-    setTimeout(() => {
-      dispatch(setIsSubmittingConfig(false));
-    }, 2000);
 
     const files = [
       {
@@ -66,7 +67,14 @@ export const createConfigAction = (config: ConfigNode): ThunkResult<Promise<void
         content: config.get("content")
       }
     ];
-    await createKappFilesV1alpha1(files);
+
+    try {
+      await createKappFilesV1alpha1(files);
+    } catch (e) {
+      dispatch(setIsSubmittingConfig(false));
+      throw e;
+    }
+    dispatch(setIsSubmittingConfig(false));
 
     dispatch(setSuccessNotificationAction("Create config successful."));
 
@@ -121,15 +129,18 @@ export const updateConfigAction = (config: ConfigNode): ThunkResult<Promise<void
     const newPath = getConfigPath(config);
 
     dispatch(setIsSubmittingConfig(true));
-    setTimeout(() => {
-      dispatch(setIsSubmittingConfig(false));
-    }, 2000);
 
-    await updateKappFileV1alpha1(config.get("oldPath"), config.get("content"));
-    if (newPath !== config.get("oldPath")) {
-      await moveKappFileV1alpha1(config.get("oldPath"), newPath);
-      config = config.set("oldPath", newPath);
+    try {
+      await updateKappFileV1alpha1(config.get("oldPath"), config.get("content"));
+      if (newPath !== config.get("oldPath")) {
+        await moveKappFileV1alpha1(config.get("oldPath"), newPath);
+        config = config.set("oldPath", newPath);
+      }
+    } catch (e) {
+      dispatch(setIsSubmittingConfig(false));
+      throw e;
     }
+    dispatch(setIsSubmittingConfig(false));
 
     dispatch(setSuccessNotificationAction("Update config successful."));
 
