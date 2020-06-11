@@ -152,9 +152,10 @@ func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			ownerComp := ownerComponents[i]
 
 			pv.Labels[KappLabelManaged] = "true"
-			pv.Labels[KappLabelPV] = pv.Name
 			pv.Labels[KappLabelComponent] = ownerComp.Name
 			pv.Labels[KappLabelNamespace] = ownerComp.Namespace
+			// to be selectable by PVC
+			pv.Labels[KappLabelPV] = pv.Name
 
 			if err := r.Update(ctx, &pv); err != nil {
 				return ctrl.Result{}, err
