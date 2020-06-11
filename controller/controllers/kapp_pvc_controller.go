@@ -25,6 +25,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 	"strings"
+	"time"
 
 	ctrl "sigs.k8s.io/controller-runtime"
 )
@@ -59,15 +60,27 @@ func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("kapppvc", req.NamespacedName)
 
-	var pvcList corev1.PersistentVolumeClaimList
-	err := r.List(ctx, &pvcList, client.MatchingLabels{"kapp-managed": "true"})
+	// 0. prepare storage class
+	cloudProvider, ok := r.guessCurrentCloudProvider()
+	if !ok {
+		log.Info("fail to find current cloudProvier")
+		return ctrl.Result{}, nil
+	}
+
+	err := r.reconcileDefaultStorageClass(cloudProvider)
 	if err != nil {
-		return ctrl.Result{}, client.IgnoreNotFound(err)
+		return ctrl.Result{}, err
 	}
 
 	// 1. check if any Component is using this pvc, if not delete it
 	// todo skip delete if reclaim policy of pv is not Retain
 	//      or if storage class of PV is not Kapp-Managed
+	var pvcList corev1.PersistentVolumeClaimList
+	err = r.List(ctx, &pvcList, client.MatchingLabels{"kapp-managed": "true"})
+	if err != nil {
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
 	var componentList v1alpha1.ComponentList
 	if err = r.List(ctx, &componentList); err != nil {
 		if !errors.IsNotFound(err) {
@@ -100,7 +113,7 @@ func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	// 2.1 for all kapp PV in Released stats, clean claimRef to make it
+	// 2.1 for all kapp PV in Released stats, clean claimRef to make it available again
 	for _, pv := range pvList.Items {
 		if _, exist := pv.Labels[KappLabelManaged]; !exist {
 			continue
@@ -122,10 +135,15 @@ func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	// 2.2 make sure for each active pvc, underlying pv is labeled with its name
 	//     (to be selected using selector)
 	for i, activePVC := range activePVCs {
+
+		hasFoundPV := false
+
 		for _, pv := range pvList.Items {
 			if pv.Name != activePVC.Spec.VolumeName {
 				continue
 			}
+
+			hasFoundPV = true
 
 			if pv.Labels == nil {
 				pv.Labels = make(map[string]string)
@@ -142,18 +160,11 @@ func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 				return ctrl.Result{}, err
 			}
 		}
-	}
 
-	// 3. prepare storage class
-	cloudProvider, ok := r.guessCurrentCloudProvider()
-	if !ok {
-		log.Info("fail to find current cloudProvier")
-		return ctrl.Result{}, nil
-	}
-
-	err = r.reconcileDefaultStorageClass(cloudProvider)
-	if err != nil {
-		return ctrl.Result{}, err
+		if !hasFoundPV {
+			r.Log.Info("fail to find PV for PVC, requeue to try later", "pvc", activePVC.Name)
+			return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
+		}
 	}
 
 	return ctrl.Result{}, nil
