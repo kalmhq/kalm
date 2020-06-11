@@ -19,10 +19,17 @@ import { ComponentStatus } from "../../widgets/ComponentStatus";
 import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
 import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./ItemDataWrapper";
+import { push } from "connected-react-router";
 
-const mapStateToProps = (state: RootState) => {
+const mapStateToProps = (state: RootState, props: any) => {
   const selector = formValueSelector("application");
   const sharedEnv: Immutable.List<SharedEnv> = selector(state, "sharedEnvs");
+
+  const { location, application } = props;
+  console.log("hash", location.hash);
+  let search = queryString.parse(location.search);
+  console.log("search", search);
+  console.log("application", application);
 
   return { sharedEnv };
 };
@@ -46,8 +53,8 @@ const styles = (theme: Theme) =>
   });
 
 interface State {
-  currentComponent?: ApplicationComponent;
-  changingComponent: boolean; // for form componentLike enableReinitialize
+  // currentComponent?: ApplicationComponent;
+  // changingComponent: boolean; // for form componentLike enableReinitialize
 }
 
 interface Props
@@ -57,101 +64,80 @@ interface Props
     ReturnType<typeof mapStateToProps> {}
 
 class ApplicationEditRaw extends React.PureComponent<Props, State> {
-  constructor(props: Props) {
-    super(props);
+  // constructor(props: Props) {
+  //   super(props);
 
-    this.state = {
-      currentComponent: undefined,
-      changingComponent: false
-    };
-  }
+  //   this.state = {
+  //     // currentComponent: undefined,
+  //     changingComponent: false
+  //   };
+  // }
 
-  public componentDidMount() {
-    const { location } = this.props;
-    let search = queryString.parse(location.search);
-    if (search.component !== undefined) {
-      if (search.component === "") {
-      } else {
-      }
-    }
-  }
+  // public componentDidMount() {
+  //   const { location } = this.props;
+  //   let search = queryString.parse(location.search);
+  //   if (search.component !== undefined) {
+  //     if (search.component === "") {
+  //     } else {
+  //     }
+  //   }
+  // }
 
-  public componentDidUpdate(prevProps: Props, prevState: State) {
-    const prevComponentName = prevState.currentComponent?.get("name");
-    const thisComponentName = this.state.currentComponent?.get("name");
+  // public componentDidUpdate(prevProps: Props, prevState: State) {
+  //   const prevComponentName = prevProps.component?.get("name");
+  //   const thisComponentName = this.props.component?.get("name");
 
-    if (prevComponentName !== thisComponentName) {
-      this.setState({ changingComponent: true });
-    }
+  //   if (prevComponentName !== thisComponentName) {
+  //     this.setState({ changingComponent: true });
+  //   }
 
-    if (prevComponentName === thisComponentName && this.state.changingComponent) {
-      this.setState({ changingComponent: false });
-    }
-  }
+  //   if (prevComponentName === thisComponentName && this.state.changingComponent) {
+  //     this.setState({ changingComponent: false });
+  //   }
+  // }
 
   private submitComponent = async (component: ApplicationComponent) => {
     // console.log("submitComponent", component.toJS());
 
-    const { dispatch } = this.props;
-    const { currentComponent } = this.state;
+    const { dispatch, component: currentComponent } = this.props;
 
     if (!currentComponent || !currentComponent.get("name")) {
-      this.setState({
-        currentComponent: component
-        // currentComponentTab: "basic"
-      });
+      // this.setState({
+      //   currentComponent: component
+      //   // currentComponentTab: "basic"
+      // });
 
       await dispatch(createComponentAction(component));
+      dispatch(push(`/applications/edit?component=${component.get("name")}`));
     } else {
-      this.setState({
-        currentComponent: component
-      });
+      // this.setState({
+      //   currentComponent: component
+      // });
 
       await dispatch(updateComponentAction(component));
+      dispatch(push(`/applications/edit?component=${component.get("name")}`));
     }
   };
 
-  private handleDeleteComponent() {
-    const { application, dispatch } = this.props;
-    const { currentComponent } = this.state;
-
-    if (currentComponent) {
-      if (!currentComponent.get("name")) {
-        this.setState({
-          currentComponent: application?.get("components").get(0)
-          // currentComponentTab: "basic"
-        });
-      } else {
-        dispatch(deleteComponentAction(currentComponent.get("name")));
-      }
-
-      if (
-        currentComponent.get("name") ===
-        application
-          ?.get("components")
-          .get(0)
-          ?.get("name")
-      ) {
-        this.setState({
-          currentComponent: undefined
-          // currentComponentTab: "basic"
-        });
-      }
-    }
-  }
-
   public renderApplicationEditDrawer() {
-    const { application } = this.props;
-    const { currentComponent } = this.state;
+    const { application, dispatch, component: currentComponent } = this.props;
+    // const { currentComponent } = this.state;
 
     return (
       <ApplicationEditDrawer
         application={application}
         currentComponent={currentComponent}
         handleClickComponent={(component?: ApplicationComponent) => {
-          this.setState({
-            currentComponent: component
-          });
+          dispatch(
+            push(
+              `/applications/kapp-hello-world/edit?component=${
+                component ? (component.get("name") ? component.get("name") : "") : ""
+              }`
+            )
+          );
+          // this.setState({
+          //   currentComponent: component
+          // });
         }}
       />
     );
@@ -190,12 +176,12 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
   }
 
   public renderForm() {
-    const { application, sharedEnv, dispatch, classes } = this.props;
-    const { currentComponent, changingComponent } = this.state;
+    const { application, sharedEnv, dispatch, classes, component: currentComponent } = this.props;
+    // const { changingComponent } = this.state;
 
-    if (changingComponent) {
-      return null;
-    }
+    // if (changingComponent) {
+    //   return null;
+    // }
 
     return (
       <Grid container spacing={2} className={classes.root}>

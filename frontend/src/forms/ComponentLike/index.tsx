@@ -1153,7 +1153,7 @@ export const componentInitialValues: ComponentLike = Immutable.fromJS({
 
 export const ComponentLikeForm = reduxForm<ComponentLike, RawProps>({
   form: "componentLike",
-  enableReinitialize: true, // seems don't work with redux-form/immutable
+  enableReinitialize: true,
   keepDirtyOnReinitialize: false,
   initialValues: componentInitialValues,
   onSubmitFail: console.log
