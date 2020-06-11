@@ -1,13 +1,12 @@
-export const NormalizePort = (
-  value: string,
-  _previousValue?: any,
-  _allValues?: any,
-  _previousAllValues?: any
-): number => {
+export const NormalizePort = (value: string, _previousValue?: any, _allValues?: any, _previousAllValues?: any) => {
   const portInteger = parseInt(value, 10);
 
-  if (portInteger < 1) {
-    return 1;
+  if (isNaN(portInteger)) {
+    return null;
+  }
+
+  if (portInteger < 0) {
+    return 0;
   }
 
   if (portInteger > 65535) {
@@ -23,14 +22,11 @@ export const NormalizeNumber = (
   _allValues?: any,
   _previousAllValues?: any
 ): number | any => {
-  if (value.toString().length > 0) {
-    return parseInt(value, 10);
-  } else {
-    return "";
-  }
+  const integerValue = parseInt(value, 10);
+  return isNaN(integerValue) ? null : integerValue;
 };
 
-export const NormalizeCPU = (value: string): string | null => {
+export const NormalizeCPU = (value: string) => {
   if (!value || value === "") {
     return null;
   }
@@ -38,13 +34,17 @@ export const NormalizeCPU = (value: string): string | null => {
   return value;
 };
 
-export const NormalizeMemory = (value: string): string => {
-  if (!value || value === "0") {
-    return "0";
+export const NormalizeMemory = (value: string) => {
+  if (!value || value === "") {
+    return null;
   }
 
   while (value.length > 0 && value[0] === "0") {
     value = value.slice(1);
+  }
+
+  if (!value || value === "") {
+    return null;
   }
 
   return value;

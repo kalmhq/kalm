@@ -17,7 +17,7 @@ const mapStateToProps = (state: RootState) => {
   return {};
 };
 
-const PANEL_DEFAULT_MAX_WITDTH = 800;
+// const PANEL_DEFAULT_MAX_WITDTH = 800;
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {
   title: string;
@@ -34,9 +34,9 @@ class KPanelRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { classes, title, content, maxWidth } = this.props;
+    const { classes, title, content } = this.props;
     return (
-      <Paper square style={{ maxWidth: maxWidth ? maxWidth : PANEL_DEFAULT_MAX_WITDTH }}>
+      <Paper square>
         <Box p={2} className={classes.borderBottom}>
           <H4>{title}</H4>
         </Box>

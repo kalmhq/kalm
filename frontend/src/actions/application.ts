@@ -53,9 +53,17 @@ export const createComponentAction = (
         .get("namespaces")
         .get("active");
     }
+    dispatch(setIsSubmittingApplicationComponent(true));
 
     let component: ApplicationComponentDetails;
-    component = await createKappApplicationComponent(applicationName, componentValues);
+    try {
+      component = await createKappApplicationComponent(applicationName, componentValues);
+    } catch (e) {
+      dispatch(setIsSubmittingApplicationComponent(false));
+      throw e;
+    }
+
+    dispatch(setIsSubmittingApplicationComponent(false));
 
     dispatch(loadApplicationAction(applicationName));
     dispatch({
@@ -77,8 +85,16 @@ export const updateComponentAction = (
         .get("active");
     }
 
+    dispatch(setIsSubmittingApplicationComponent(true));
+
     let component: ApplicationComponentDetails;
-    component = await updateKappApplicationComponent(applicationName, componentValues);
+    try {
+      component = await updateKappApplicationComponent(applicationName, componentValues);
+    } catch (e) {
+      dispatch(setIsSubmittingApplicationComponent(false));
+      throw e;
+    }
+    dispatch(setIsSubmittingApplicationComponent(false));
 
     dispatch(loadApplicationAction(applicationName));
     dispatch({
@@ -111,21 +127,22 @@ export const deleteComponentAction = (componentName: string, applicationName?: s
 export const createApplicationAction = (applicationValues: Application): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch(setIsSubmittingApplication(true));
-    setTimeout(() => {
-      dispatch(setIsSubmittingApplication(false));
-    }, 2000);
 
     let application: ApplicationDetails;
 
     try {
       application = await createKappApplication(applicationValues);
     } catch (e) {
+      dispatch(setIsSubmittingApplication(false));
+
       if (e.response && e.response.data.errors && e.response.data.errors.length > 0) {
         const submitErrors = resErrorsToSubmitErrors(e.response.data.errors);
         throw new SubmissionError(submitErrors);
       }
       throw e;
     }
+
+    dispatch(setIsSubmittingApplication(false));
 
     dispatch(loadApplicationsAction());
     dispatch({
@@ -158,21 +175,21 @@ export const updateApplicationAction = (applicationRaw: Application): ThunkResul
     // throw new SubmissionError(submitErrors);
 
     dispatch(setIsSubmittingApplication(true));
-    setTimeout(() => {
-      dispatch(setIsSubmittingApplication(false));
-    }, 2000);
 
     let application: ApplicationDetails;
 
     try {
       application = await updateKappApplication(applicationRaw);
     } catch (e) {
+      dispatch(setIsSubmittingApplication(false));
       if (e.response && e.response.data.errors && e.response.data.errors.length > 0) {
         const submitErrors = resErrorsToSubmitErrors(e.response.data.errors);
         throw new SubmissionError(submitErrors);
       }
       throw e;
     }
+
+    dispatch(setIsSubmittingApplication(false));
 
     dispatch(loadApplicationsAction());
     dispatch({

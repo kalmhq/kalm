@@ -49,10 +49,6 @@ spec:
               items:
                 type: string
               type: array
-            args:
-              items:
-                type: string
-              type: array
             beforeDestroy:
               items:
                 type: string
@@ -62,9 +58,7 @@ spec:
                 type: string
               type: array
             command:
-              items:
-                type: string
-              type: array
+              type: string
             configs:
               description: Deprecated
               items:
@@ -98,6 +92,8 @@ spec:
             dnsPolicy:
               description: DNSPolicy defines how a pod's DNS will be configured.
               type: string
+            enableResourcesRequests:
+              type: boolean
             env:
               items:
                 description: EnvVar represents an environment variable present in
@@ -239,8 +235,6 @@ spec:
               additionalProperties:
                 type: string
               type: object
-            podAffinityType:
-              type: string
             ports:
               items:
                 properties:
@@ -286,6 +280,8 @@ spec:
                 - mountPath
                 type: object
               type: array
+            preferNotCoLocated:
+              type: boolean
             readinessProbe:
               description: Probe describes a health check to be performed against
                 a container to determine whether it is alive or ready to receive traffic.

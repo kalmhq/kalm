@@ -458,6 +458,16 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 		deployment.Spec.Template = *podTemplateSpec
 	}
 
+	if component.Spec.RestartStrategy != "" {
+		deployment.Spec.Strategy = appsV1.DeploymentStrategy{
+			Type: component.Spec.RestartStrategy,
+		}
+	} else {
+		deployment.Spec.Strategy = appsV1.DeploymentStrategy{
+			Type: appsV1.RollingUpdateDeploymentStrategyType,
+		}
+	}
+
 	// TODO consider to move to plugin
 	if component.Spec.Replicas != nil {
 		deployment.Spec.Replicas = component.Spec.Replicas
@@ -698,6 +708,20 @@ func (r *ComponentReconcilerTask) ReconcileStatefulSet(spec *coreV1.PodTemplateS
 	return nil
 }
 
+func (r *ComponentReconcilerTask) FixProbe(probe *coreV1.Probe) *coreV1.Probe {
+	if probe == nil {
+		return nil
+	}
+
+	if probe.Exec != nil {
+		if len(probe.Exec.Command) == 1 && strings.Contains(probe.Exec.Command[0], " ") {
+			probe.Exec.Command = []string{"sh", "-c", probe.Exec.Command[0]}
+		}
+	}
+
+	return probe
+}
+
 func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplateSpec, err error) {
 	component := r.component
 
@@ -708,24 +732,54 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 	template = &coreV1.PodTemplateSpec{
 		ObjectMeta: metaV1.ObjectMeta{
 			Labels: labels,
+
+			// The following is for set sidecar resources.
+			Annotations: map[string]string{
+				//"sidecar.istio.io/proxyCPU":         "100m",
+				//"sidecar.istio.io/proxyMemory":      "50Mi",
+				//"sidecar.istio.io/proxyCPULimit":    "100m",
+				//"sidecar.istio.io/proxyMemoryLimit": "50Mi",
+			},
 		},
 		Spec: coreV1.PodSpec{
 			Containers: []coreV1.Container{
 				{
-					Name:    component.Name,
-					Image:   component.Spec.Image,
-					Env:     []coreV1.EnvVar{},
-					Command: component.Spec.Command,
-					Args:    component.Spec.Args,
+					Name:  component.Name,
+					Image: component.Spec.Image,
+					Env:   []coreV1.EnvVar{},
 					Resources: coreV1.ResourceRequirements{
 						Requests: make(map[coreV1.ResourceName]resource.Quantity),
 						Limits:   make(map[coreV1.ResourceName]resource.Quantity),
 					},
-					ReadinessProbe: component.Spec.ReadinessProbe,
-					LivenessProbe:  component.Spec.LivenessProbe,
+					ReadinessProbe: r.FixProbe(component.Spec.ReadinessProbe),
+					LivenessProbe:  r.FixProbe(component.Spec.LivenessProbe),
 				},
 			},
 		},
+	}
+
+	// TODO are these values reasonable?
+	template.ObjectMeta.Annotations["sidecar.istio.io/proxyCPULimit"] = "100m"
+	template.ObjectMeta.Annotations["sidecar.istio.io/proxyMemoryLimit"] = "50Mi"
+
+	if component.Spec.EnableResourcesRequests {
+		template.ObjectMeta.Annotations["sidecar.istio.io/proxyCPU"] = "100m"
+		template.ObjectMeta.Annotations["sidecar.istio.io/proxyMemory"] = "50Mi"
+	}
+
+	mainContainer := &template.Spec.Containers[0]
+
+	if component.Spec.TerminationGracePeriodSeconds != nil {
+		template.Spec.TerminationGracePeriodSeconds = component.Spec.TerminationGracePeriodSeconds
+	}
+
+	if component.Spec.Command != "" {
+		if strings.Contains(component.Spec.Command, " ") {
+			mainContainer.Command = []string{"sh"}
+			mainContainer.Args = []string{"-c", component.Spec.Command}
+		} else {
+			mainContainer.Command = []string{component.Spec.Command}
+		}
 	}
 
 	var pullImageSecrets coreV1.SecretList
@@ -759,16 +813,35 @@ func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplate
 		template.Spec.ServiceAccountName = r.getNameForPermission()
 	}
 
-	mainContainer := &template.Spec.Containers[0]
+	var ports []coreV1.ContainerPort
+	for _, p := range component.Spec.Ports {
+		port := coreV1.ContainerPort{
+			Name:          p.Name,
+			ContainerPort: int32(p.ContainerPort),
+			Protocol:      p.Protocol,
+		}
+
+		if p.Protocol != "" {
+			port.Protocol = p.Protocol
+		}
+
+		ports = append(ports, port)
+	}
+
+	mainContainer.Ports = ports
 
 	// resources
 	if component.Spec.CPU != nil && !component.Spec.CPU.IsZero() {
-		mainContainer.Resources.Requests[coreV1.ResourceCPU] = *component.Spec.CPU
+		if component.Spec.EnableResourcesRequests {
+			mainContainer.Resources.Requests[coreV1.ResourceCPU] = *component.Spec.CPU
+		}
 		mainContainer.Resources.Limits[coreV1.ResourceCPU] = *component.Spec.CPU
 	}
 
 	if component.Spec.Memory != nil && !component.Spec.Memory.IsZero() {
-		mainContainer.Resources.Limits[coreV1.ResourceMemory] = *component.Spec.Memory
+		if component.Spec.EnableResourcesRequests {
+			mainContainer.Resources.Requests[coreV1.ResourceMemory] = *component.Spec.Memory
+		}
 		mainContainer.Resources.Limits[coreV1.ResourceMemory] = *component.Spec.Memory
 	}
 
@@ -1310,26 +1383,8 @@ func (r *ComponentReconcilerTask) decideAffinity() (*coreV1.Affinity, bool) {
 
 	labelsOfThisComponent := r.GetLabels()
 
-	var podAffinity *coreV1.PodAffinity
-	if component.PodAffinityType == corev1alpha1.PodAffinityTypePreferGather {
-		// same
-		podAffinity = &coreV1.PodAffinity{
-			PreferredDuringSchedulingIgnoredDuringExecution: []coreV1.WeightedPodAffinityTerm{
-				{
-					Weight: 1,
-					PodAffinityTerm: coreV1.PodAffinityTerm{
-						TopologyKey: "kubernetes.io/hostname",
-						LabelSelector: &metaV1.LabelSelector{
-							MatchLabels: labelsOfThisComponent,
-						},
-					},
-				},
-			},
-		}
-	}
-
 	var podAntiAffinity *coreV1.PodAntiAffinity
-	if component.PodAffinityType == corev1alpha1.PodAffinityTypePreferFanout {
+	if component.PreferNotCoLocated {
 		podAntiAffinity = &coreV1.PodAntiAffinity{
 			PreferredDuringSchedulingIgnoredDuringExecution: []coreV1.WeightedPodAffinityTerm{
 				{
@@ -1345,13 +1400,12 @@ func (r *ComponentReconcilerTask) decideAffinity() (*coreV1.Affinity, bool) {
 		}
 	}
 
-	if nodeAffinity == nil && podAffinity == nil && podAntiAffinity == nil {
+	if nodeAffinity == nil && podAntiAffinity == nil {
 		return nil, false
 	}
 
 	return &coreV1.Affinity{
 		NodeAffinity:    nodeAffinity,
-		PodAffinity:     podAffinity,
 		PodAntiAffinity: podAntiAffinity,
 	}, true
 }

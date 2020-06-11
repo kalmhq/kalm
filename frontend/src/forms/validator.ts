@@ -48,6 +48,12 @@ export const ValidatorAtLeastOneHttpRouteDestination = (
 };
 
 export const ValidatorRequired = (value: any, _allValues?: any, _props?: any, _name?: any) => {
+  // After delete an item of an array, the validator is still invoked.
+  // The value is undefined.
+  if (value === undefined) {
+    return undefined;
+  }
+
   if (Array.isArray(value)) {
     return value.length > 0 ? undefined : "Required";
   }
@@ -72,6 +78,26 @@ export const ValidatorNumberOrAlphabet = (value: any, _allValues?: any, _props?:
     }
   }
   return "Not a valid port value";
+};
+
+export const ValidatorOneof = (...options: (string | RegExp)[]) => {
+  return (value: string) => {
+    if (!value) return undefined;
+
+    for (let i = 0; i < options.length; i++) {
+      if (typeof options[i] === "string" && value === options[i]) {
+        return undefined;
+      } else if (
+        typeof options[i] === "object" &&
+        options[i].constructor.name === "RegExp" &&
+        value.match(options[i])
+      ) {
+        return undefined;
+      }
+    }
+
+    return `Must be one of ${options.map(x => x.toString()).join(", ")}`;
+  };
 };
 
 export const ValidatorName = (value: string) => {
@@ -179,12 +205,15 @@ export const KValidatorHosts = (
   return errors.filter(x => !!x).length > 0 ? errors : undefined;
 };
 
-export const KValidatorPath = (value: string, _allValues?: any, _props?: any, _name?: any) => {
+export const KValidatorInjectedFilePath = (value: string, _allValues?: any, _props?: any, _name?: any) => {
   if (!value) {
     return undefined;
   }
 
-  return value.startsWith("/") ? undefined : 'path should start with a "/"';
+  if (!value.startsWith("/")) return 'Must be an absolute path, which starts with a "/"';
+  if (value.endsWith("/")) return 'File name mush not end with "/"';
+
+  return undefined;
 };
 
 export const KValidatorPaths = (
@@ -200,4 +229,24 @@ export const KValidatorPaths = (
   const errors = values.map(x => (x.startsWith("/") ? undefined : 'path should start with a "/"')).toArray();
 
   return errors.filter(x => !!x).length > 0 ? errors : undefined;
+};
+
+export const ValidatorEnvName = (value: string) => {
+  if (value === undefined) return undefined;
+
+  if (!value.match(/^[-._a-zA-Z][-._a-zA-Z0-9]*$/)) {
+    return "Env name is invalid. regex used for validation is '[-._a-zA-Z][-._a-zA-Z0-9]*'";
+  }
+
+  return undefined;
+};
+
+export const ValidatorServiceName = (value: string) => {
+  if (value === undefined) return undefined;
+
+  if (!value.match(/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/)) {
+    return `Port name must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character. (e.g. 'my-name',  or '123-abc', regex used for validation is '[a-z0-9]([-a-z0-9]*[a-z0-9])?')`;
+  }
+
+  return undefined;
 };

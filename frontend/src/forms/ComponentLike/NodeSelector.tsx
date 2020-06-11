@@ -47,9 +47,13 @@ export const RenderSelectLabels = ({ input, nodeLabels }: FilledTextFieldProps &
       renderInput={params => (
         <TextField
           {...params}
+          InputLabelProps={{
+            shrink: true
+          }}
           variant="outlined"
-          label="Node Selector Labels"
-          placeholder="Select Node Selector Labels"
+          label="Node Selector"
+          placeholder="Select node labels. Leave blank to schedule on all available nodes."
+          helperText="The semantics between labels is AND. A node is a candidate if it match all the labels."
           size={"small"}
         />
       )}

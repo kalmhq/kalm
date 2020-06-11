@@ -15,7 +15,8 @@ import {
   SetIsSubmittingCertificate,
   SET_EDIT_CERTIFICATE_MODAL,
   SET_IS_SUBMITTING_CERTIFICATE,
-  Certificate
+  Certificate,
+  CertificateIssuer
 } from "types/certificate";
 import { ThunkResult } from "../types";
 import {
@@ -88,13 +89,19 @@ export const createCertificateAction = (
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch(setIsSubmittingCertificate(true));
-    setTimeout(() => {
+
+    let certificate: Certificate;
+    try {
+      certificate = await createCertificate(
+        certificateContent.set("isSelfManaged", certificateContent.get("managedType") === selfManaged),
+        isEdit
+      );
+    } catch (e) {
       dispatch(setIsSubmittingCertificate(false));
-    }, 2000);
-    const certificate = await createCertificate(
-      certificateContent.set("isSelfManaged", certificateContent.get("managedType") === selfManaged),
-      isEdit
-    );
+      throw e;
+    }
+    dispatch(setIsSubmittingCertificate(false));
+
     dispatch({ type: CREATE_CERTIFICATE, payload: { certificate } });
   };
 };
@@ -105,11 +112,16 @@ export const createCertificateIssuerAction = (
 ): ThunkResult<Promise<void>> => {
   return async dispatch => {
     dispatch(setIsSubmittingCertificate(true));
-    setTimeout(() => {
-      dispatch(setIsSubmittingCertificate(false));
-    }, 2000);
 
-    const certificateIssuer = await createCertificateIssuer(certificateIssuerContent, isEdit);
+    let certificateIssuer: CertificateIssuer;
+    try {
+      certificateIssuer = await createCertificateIssuer(certificateIssuerContent, isEdit);
+    } catch (e) {
+      dispatch(setIsSubmittingCertificate(false));
+      throw e;
+    }
+    dispatch(setIsSubmittingCertificate(false));
+
     dispatch({ type: CREATE_CERTIFICATE_ISSUER, payload: { certificateIssuer } });
   };
 };

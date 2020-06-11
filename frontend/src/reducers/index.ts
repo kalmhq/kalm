@@ -15,7 +15,7 @@ import namespaces, { State as NamespacesState } from "./namespaces";
 import nodes, { State as NodesState } from "./node";
 import registries, { State as RegistriesState } from "./registry";
 import notification, { State as NotificationState } from "./notification";
-import persistentVolumns, { State as PersistentVolumnsState } from "./persistentVolumn";
+import persistentVolumes, { State as PersistentVolumesState } from "./persistentVolume";
 import settings, { State as SettingsState } from "./settings";
 import users, { State as UserState } from "./user";
 import routes, { State as RouteState } from "./route";
@@ -35,7 +35,7 @@ export type RootState = ImmutableMap<{
   form: FormState;
   nodes: NodesState;
   registries: RegistriesState;
-  persistentVolumns: PersistentVolumnsState;
+  persistentVolumes: PersistentVolumesState;
   settings: SettingsState;
   users: UserState;
   roles: RolesState;
@@ -59,7 +59,7 @@ export default (history: History<LocationState>) =>
     dependencies,
     router: connectRouter(history),
     componentTemplates,
-    persistentVolumns,
+    persistentVolumes,
     applications,
     configs,
     notification,

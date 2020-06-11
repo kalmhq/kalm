@@ -1,9 +1,21 @@
-import { Box, Button, Grid, List as MList, ListItem, ListItemText, Tab, Tabs, Tooltip } from "@material-ui/core";
+import {
+  Box,
+  Collapse,
+  Grid,
+  Link,
+  List as MList,
+  ListItem,
+  ListItemText,
+  Tab,
+  Tabs,
+  Tooltip
+} from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import HelpIcon from "@material-ui/icons/Help";
 import clsx from "clsx";
+import { KBoolCheckboxRender } from "forms/Basic/checkbox";
 import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
@@ -11,37 +23,81 @@ import { InjectedFormProps } from "redux-form";
 import { Field, getFormSyncErrors, getFormValues, reduxForm } from "redux-form/immutable";
 import { Body, H5, SectionTitle } from "widgets/Label";
 import { loadComponentPluginsAction } from "../../actions/application";
-import { loadConfigsAction } from "../../actions/config";
 import { loadNodesAction } from "../../actions/node";
+import { loadStorageClassesAction } from "../../actions/persistentVolume";
 import { RootState } from "../../reducers";
 import { getNodeLabels } from "../../selectors/node";
 import { TDispatchProp } from "../../types";
-import { SharedEnv } from "../../types/application";
-import { ComponentLike, workloadTypeCronjob, workloadTypeServer } from "../../types/componentTemplate";
+import { SharedEnv, ApplicationDetails } from "../../types/application";
+import {
+  ComponentLike,
+  ComponentLikeContent,
+  workloadTypeCronjob,
+  workloadTypeServer
+} from "../../types/componentTemplate";
+import { CustomizedButton } from "../../widgets/Button";
 import { HelperContainer } from "../../widgets/Helper";
 import { KPanel } from "../../widgets/KPanel";
 import { KRadioGroupRender } from "../Basic/radio";
 import { RenderSelectField } from "../Basic/select";
 import { KRenderCommandTextField, KRenderTextField, RenderComplexValueTextField } from "../Basic/textfield";
-import { NormalizeNumber } from "../normalizer";
+import { NormalizeCPU, NormalizeNumber } from "../normalizer";
 import { ValidatorCPU, ValidatorMemory, ValidatorName, ValidatorRequired, ValidatorSchedule } from "../validator";
-// import { Configs } from "./Configs";
 import { Envs } from "./Envs";
 import { RenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
 import { Volumes } from "./Volumes";
+import queryString from "query-string";
+import { push } from "connected-react-router";
 
-const mapStateToProps = (state: RootState) => {
+const IngressHint = () => {
+  const [open, setOpen] = React.useState(false);
+
+  return (
+    <>
+      <Link style={{ cursor: "pointer" }} onClick={() => setOpen(!open)}>
+        How can I expose my component to the public Internet?
+      </Link>
+      <Box pt={1}>
+        <Collapse in={open}>
+          After you have successfully configured this component, you can go to the routing interface and create a
+          suitable routing rule to direct external traffic to this component.
+        </Collapse>
+      </Box>
+    </>
+  );
+};
+
+const Configurations = "Configurations";
+const Disks = "Disks";
+const Health = "Health";
+const Networking = "Networking";
+const Scheduling = "Scheduling";
+const UpgradePolicy = "Upgrade Policy";
+const tabs = [Configurations, Networking, Disks, Health, Scheduling, UpgradePolicy];
+
+const mapStateToProps = (state: RootState, props: any) => {
   const values = getFormValues("componentLike")(state) as ComponentLike;
-  const syncErrors = getFormSyncErrors("componentLike")(state);
+  const syncErrors = getFormSyncErrors("componentLike")(state) as { [x in keyof ComponentLikeContent]: any };
   const nodeLabels = getNodeLabels();
 
+  const search = queryString.parse(window.location.search);
+  const hash = window.location.hash;
+  const anchor = hash.replace("#", "");
+  let currentTabIndex = tabs.indexOf(`${anchor}`);
+  if (currentTabIndex < 0) {
+    currentTabIndex = 0;
+  }
+
   return {
+    search,
+    isSubmittingApplicationComponent: state.get("applications").get("isSubmittingApplicationComponent"),
     values,
     syncErrors,
-    nodeLabels
+    nodeLabels,
+    currentTabIndex
   };
 };
 
@@ -55,12 +111,16 @@ const styles = (theme: Theme) =>
       paddingBottom: 100
       // backgroundColor: "#F4F5F7"
     },
+    hasError: {
+      color: `${theme.palette.error.main} !important`
+    },
+    tabsRoot: {
+      "& .MuiButtonBase-root": {
+        minWidth: "auto"
+      }
+    },
     borderBottom: {
       borderBottom: "1px solid rgba(0, 0, 0, 0.12)"
-    },
-    formSection: {
-      // padding: "0 20px"
-      // margin: "0 0 10px 0"
     },
     displayBlock: {
       display: "block"
@@ -79,6 +139,7 @@ const styles = (theme: Theme) =>
       color: grey[700],
       cursor: "pointer"
     },
+
     // Select doesn't support endAdornment
     // and tooltip doesn't work in FormControl
     // https://stackoverflow.com/questions/60384230/tooltip-inside-textinput-label-is-not-working-material-ui-react
@@ -108,7 +169,7 @@ interface RawProps {
   showSubmitButton?: boolean;
   submitButtonText?: string;
   sharedEnv?: Immutable.List<SharedEnv>;
-  currentTabIndex?: string;
+  application?: ApplicationDetails;
   // submitAppplicationErrors?: Immutable.Map<string, any>;
 }
 
@@ -119,27 +180,10 @@ export interface Props
     TDispatchProp,
     RawProps {}
 
-interface State {
-  currentTabIndex: number;
-}
-
-const Configurations = "Configurations";
-const Resources = "Resources";
-const Health = "Health";
-const Networking = "Networking";
-const NodeScheduling = "Node Scheduling";
-const UpgradePolicy = "Upgrade Policy";
+interface State {}
 
 class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
-  private tabs = [Configurations, Resources, Health, Networking, NodeScheduling, UpgradePolicy];
-
-  constructor(props: Props) {
-    super(props);
-
-    this.state = {
-      currentTabIndex: 0
-    };
-  }
+  private tabs = tabs;
 
   public componentDidMount() {
     const { dispatch } = this.props;
@@ -150,7 +194,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     // load node labels for node selectors
     dispatch(loadNodesAction());
     // load configs for volume
-    dispatch(loadConfigsAction());
+    // dispatch(loadConfigsAction());
+    dispatch(loadStorageClassesAction());
   }
 
   private renderReplicasOrSchedule() {
@@ -226,7 +271,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             <ListItemText
               primary="Memory"
               secondary={
-                "The memory resource is measured in bytes. You can express memory as a plain integer or a fixed-point integer with one of these suffixes: E, P, T, G, M, K, Ei, Pi, Ti, Gi, Mi, Ki. For example, the following represent approximately the same value:"
+                "The memory resource is measured in bytes. You can express memory as a plain integer or a fixed-point integer with one of these suffixes: E, P, T, G, M, K, Ei, Pi, Ti, Gi, Mi, Ki."
               }
               secondaryTypographyProps={{ color: "inherit" }}
             />
@@ -250,15 +295,15 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
     return (
       <>
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <SectionTitle>
-            <H5>Inject Configuration Files</H5>
+            <H5>Configuration Files</H5>
             <Tooltip title={helperContainer}>
               <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
             </Tooltip>
           </SectionTitle>
         </Grid>
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <PreInjectedFiles />
         </Grid>
       </>
@@ -275,7 +320,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           dynamic value associated with other component later in a real running application. Learn More.
         </Typography>
 
-        <MList dense={true}>
+        {/* <MList dense={true}>
           <ListItem>
             <ListItemText
               primary="Static"
@@ -301,13 +346,13 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               secondaryTypographyProps={{ color: "inherit" }}
             />
           </ListItem>
-        </MList>
+        </MList> */}
       </HelperContainer>
     );
 
     return (
       <>
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <SectionTitle>
             <H5>Environment variables</H5>
             <Tooltip title={helperContainer}>
@@ -315,7 +360,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             </Tooltip>
           </SectionTitle>
         </Grid>{" "}
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <Envs sharedEnv={sharedEnv} />
         </Grid>
       </>
@@ -336,16 +381,19 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
     return (
       <>
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <SectionTitle>
-            <H5>Ports</H5>
+            <H5>Expose ports to cluster</H5>
             <Tooltip title={helperContainer}>
               <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
             </Tooltip>
           </SectionTitle>
         </Grid>
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <Ports />
+        </Grid>
+        <Grid item xs={12}>
+          <IngressHint />
         </Grid>
       </>
     );
@@ -398,47 +446,20 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
     return (
       <>
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <SectionTitle>
-            <H5>Volumes</H5>
+            <H5>Disks</H5>
             <Tooltip title={helperContainer}>
               <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
             </Tooltip>
           </SectionTitle>
         </Grid>
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <Volumes />
         </Grid>
       </>
     );
   }
-
-  // private renderConfigs() {
-  //   // const { classes } = this.props;
-
-  //   // const helperContainer = (
-  //   //   <HelperContainer>
-  //   //     <Typography>Mount Configs</Typography>
-  //   //   </HelperContainer>
-  //   // );
-
-  //   return (
-  //     <>
-  //       <Grid item xs={12} sm={12} md={12}>
-  //         <SectionTitle>
-  //           <H5>Configs</H5>
-  //           {/* <Tooltip title={helperContainer}>
-  //           <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
-  //         </Tooltip> */}
-  //         </SectionTitle>
-  //       </Grid>{" "}
-  //       <Grid item xs={12} sm={12} md={12}>
-  //         {/* <Configs /> */}
-  //       </Grid>
-  //     </>
-  //   );
-  // }
-
   private getRestartStrategyHelper() {
     return (
       <>
@@ -620,12 +641,12 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private renderDnsPolicy() {
     return (
       <>
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <SectionTitle>
             <H5>DNS Policy</H5>
           </SectionTitle>
         </Grid>
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <Field component={KRadioGroupRender} name="dnsPolicy" options={this.getDnsPolicyOptions()} />
         </Grid>
       </>
@@ -670,7 +691,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   //       </SectionTitle>
 
   //       <Grid container spacing={2}>
-  //         <Grid item xs={12} sm={12} md={12}>
+  //         <Grid item xs={12}>
   //           <Plugins />
   //         </Grid>
   //       </Grid>
@@ -683,22 +704,27 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
     return (
       <>
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <SectionTitle>
             <H5>Command</H5>
-            <Tooltip title="This filed is used to overwrite `entrypoint` and `commands` in image. Leave it blank to use image default settings.">
+            <Tooltip
+              title={
+                <span>
+                  This filed is used to overwrite <strong>entrypoint</strong> and <strong>commands</strong> in image.
+                  Leave it blank to use image default settings.
+                </span>
+              }>
               <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
             </Tooltip>
           </SectionTitle>
         </Grid>
 
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <Field
             component={KRenderCommandTextField}
             name="command"
             label="Command"
             placeholder="eg: `npm run start` or `bundle exec rails server`"
-            helperText="If the image's default command and entrypoint works. You can leave this field blank."
           />
         </Grid>
       </>
@@ -708,8 +734,11 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private renderConfigurations() {
     return (
       <Grid container spacing={2}>
-        <Grid item xs={12} sm={12} md={12}>
-          <Body>Customize the start-up process of this component.</Body>
+        <Grid item xs={12}>
+          <Body>
+            Tell kapp more about how to run the project. Customize the <strong>command</strong>,{" "}
+            <strong>environment variables</strong> and <strong>configuration files</strong> of this component.
+          </Body>
         </Grid>
         {this.renderCommandAndArgs()}
         {this.renderEnvs()}
@@ -718,71 +747,47 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderResources() {
-    const { classes } = this.props;
+  private renderDisks() {
     return (
       <>
         <Grid container spacing={2}>
-          <Grid item xs={12} sm={12} md={12}>
-            <SectionTitle>
-              <H5>Resources</H5>
-            </SectionTitle>
+          <Grid item xs={12}>
+            <Body>Mount various type of disks into your component.</Body>
           </Grid>
-
-          <Grid item xs={6} sm={6} md={6}>
-            <Field
-              component={KRenderTextField}
-              name="cpu"
-              label="CPU"
-              margin
-              validate={[ValidatorCPU]}
-              // normalize={NormalizeCPU}
-              placeholder="Please type the component name"
-              endAdornment={
-                <Tooltip title={this.getCPUHelper()}>
-                  <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
-                </Tooltip>
-              }
-            />
-          </Grid>
-
-          <Grid item xs={6} sm={6} md={6}>
-            <Field
-              component={KRenderTextField}
-              name="memory"
-              label="Memory"
-              margin
-              validate={[ValidatorMemory]}
-              // normalize={NormalizeMemory}
-              placeholder="Please type the component name"
-              endAdornment={
-                <Tooltip title={this.getMemoryHelper()}>
-                  <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
-                </Tooltip>
-              }
-            />
-          </Grid>
-
           {this.renderVolumes()}
-          {/* {this.renderConfigs()} */}
         </Grid>
       </>
     );
   }
 
   private renderHealth() {
+    const { classes } = this.props;
     return (
       <Grid container spacing={2}>
-        {/* <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <SectionTitle>
-            <H5>Health</H5>
+            <H5>Readiness Probe</H5>
+            <Tooltip title={"Readiness probe is used to decide when a component is ready to accepting traffic."}>
+              <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
+            </Tooltip>
           </SectionTitle>
-        </Grid> */}
-        <Grid item xs={6} sm={6} md={6}>
-          <LivenessProbe />
         </Grid>
-        <Grid item xs={6} sm={6} md={6}>
+        <Grid item xs={12}>
           <ReadinessProbe />
+        </Grid>
+        <Grid item xs={12}>
+          <SectionTitle>
+            <H5>Liveness Probe</H5>
+            <Tooltip
+              title={
+                "Liveness probe is used to know if the component is running into an unexpected state and a restart is required."
+              }>
+              <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
+            </Tooltip>
+          </SectionTitle>
+        </Grid>
+        <Grid item xs={12}>
+          <LivenessProbe />
         </Grid>
       </Grid>
     );
@@ -791,13 +796,13 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private renderNetworking() {
     return (
       <Grid container spacing={2}>
-        {/* <Grid item xs={12} sm={12} md={12}>
+        {/* <Grid item xs={12}>
           <SectionTitle>
           <H5>Networking</H5>
           </SectionTitle>
         </Grid> */}
         {this.renderPorts()}
-        {this.renderDnsPolicy()}
+        {/* {this.renderDnsPolicy()} */}
       </Grid>
     );
   }
@@ -817,26 +822,81 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     ];
   }
 
-  private renderNodeScheduling() {
-    const { nodeLabels } = this.props;
+  private renderScheduling() {
+    const { nodeLabels, classes } = this.props;
     return (
       <Grid container spacing={2}>
-        <Grid item xs={12} sm={12} md={12}>
+        {/* <Grid item xs={12}>
+          <Body>
+            Tell kapp more about how to schedule this component. Now there are <Chip size="small" label={"10"} /> nodes
+            in this cluster. Base on the following settings, <Chip size="small" label={"10"} /> are available for
+            running this component.
+          </Body>
+        </Grid> */}
+        <Grid item xs={12}>
           <SectionTitle>
-            <H5>Node Labels</H5>
+            <H5>Resources</H5>
           </SectionTitle>
         </Grid>
-        <Grid item xs={6} sm={6} md={6}>
+
+        <Grid item xs={6}>
+          <Field
+            component={KRenderTextField}
+            name="cpu"
+            label="CPU Limit"
+            validate={[ValidatorCPU]}
+            normalize={NormalizeCPU}
+            placeholder="Please type CPU limit"
+            helperText="Eg. 1 = 1Core; 0.1 = 100m = 0.1Core"
+            endAdornment={
+              <Tooltip title={this.getCPUHelper()}>
+                <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
+              </Tooltip>
+            }
+          />
+        </Grid>
+
+        <Grid item xs={6}>
+          <Field
+            component={KRenderTextField}
+            name="memory"
+            label="Memory Limit"
+            margin
+            validate={[ValidatorMemory]}
+            // normalize={NormalizeMemory}
+            placeholder="Please type memory limit"
+            endAdornment={
+              <Tooltip title={this.getMemoryHelper()}>
+                <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
+              </Tooltip>
+            }
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <Field
+            name="enableResourcesRequests"
+            component={KBoolCheckboxRender}
+            label="Only schedule on nodes that meet the above resources"
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <SectionTitle>
+            <H5>Nodes</H5>
+          </SectionTitle>
+        </Grid>
+        <Grid item xs={12}>
           <Field name="nodeSelectorLabels" component={RenderSelectLabels} nodeLabels={nodeLabels} />
         </Grid>
-        <Grid item xs={12} sm={12} md={12}>
-          <SectionTitle>
-            <H5>Node Affinity Policy</H5>
-          </SectionTitle>
+        <Grid item xs={12}>
+          <Field
+            name="preferNotCoLocated"
+            component={KBoolCheckboxRender}
+            label="Prefer to schedule replicas to different nodes. (Recommand for high availablity)"
+          />
         </Grid>
-        <Grid item xs={6} sm={6} md={6}>
+        {/* <Grid item xs={6}>
           <Field name="podAffinityType" component={KRadioGroupRender} options={this.getPodAffinityOptions()} />
-        </Grid>
+        </Grid> */}
       </Grid>
     );
   }
@@ -845,13 +905,29 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     const { classes } = this.props;
     return (
       <Grid container spacing={2}>
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <SectionTitle>
-            <H5>UpgradePolicy</H5>
+            <H5>Restart Strategy</H5>
           </SectionTitle>
         </Grid>
-        <Grid item xs={6} sm={6} md={6}>
-          <div className={classes.helperField}>
+        <Grid item xs={12}>
+          <Field
+            defaultValue="RollingUpdate"
+            component={KRadioGroupRender}
+            name="restartStrategy"
+            options={[
+              {
+                value: "RollingUpdate",
+                label:
+                  "Rolling update. The new and old instances exist at the same time. The old ones will be gradually replaced by the new ones."
+              },
+              {
+                value: "Recreate",
+                label: "Stop all existing instances before creating new ones."
+              }
+            ]}
+          />
+          {/* <div className={classes.helperField}>
             <Field
               name="restartStrategy"
               component={RenderSelectField}
@@ -864,17 +940,28 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             <Tooltip title={this.getRestartStrategyHelper()}>
               <HelpIcon fontSize="small" className={classes.selectHelperIcon} />
             </Tooltip>
-          </div>
+          </div> */}
         </Grid>
-        <Grid item xs={6} sm={6} md={6}></Grid>
-        <Grid item xs={6} sm={6} md={6}>
+        <Grid item xs={12}>
+          <SectionTitle>
+            <H5>Graceful termination</H5>
+          </SectionTitle>
+        </Grid>
+        <Grid item xs={12}>
+          <Body>
+            Old instances will be terminated when an upgrade/delete is proformed. Kapp will wait for a while (called
+            Termination Grace Period Seconds) for the program to exit properly. When the grace period expires, any
+            processes still running are killed with SIGKILL.
+          </Body>
+        </Grid>
+        <Grid item xs={12}>
           <Field
             component={KRenderTextField}
             name="terminationGracePeriodSeconds"
             label="Termination Grace Period Seconds"
             // validate={ValidatorRequired}
             normalize={NormalizeNumber}
-            margin
+            placeholder="Default 30s"
             endAdornment={
               <Tooltip title={this.getTerminationGracePeriodSecondsHelper()}>
                 <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
@@ -887,47 +974,64 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderTabDetails() {
-    const { classes } = this.props;
+    const { classes, currentTabIndex } = this.props;
 
     return (
       <>
-        <div className={`${this.tabs[this.state.currentTabIndex] === Configurations ? "" : classes.displayNone}`}>
+        <div className={`${this.tabs[currentTabIndex] === Configurations ? "" : classes.displayNone}`}>
           {this.renderConfigurations()}
         </div>
-        <div className={`${this.tabs[this.state.currentTabIndex] === Resources ? "" : classes.displayNone}`}>
-          {this.renderResources()}
-        </div>
-        <div className={`${this.tabs[this.state.currentTabIndex] === Health ? "" : classes.displayNone}`}>
-          {this.renderHealth()}
-        </div>
-        <div className={`${this.tabs[this.state.currentTabIndex] === Networking ? "" : classes.displayNone}`}>
+        <div className={`${this.tabs[currentTabIndex] === Networking ? "" : classes.displayNone}`}>
           {this.renderNetworking()}
         </div>
-        <div className={`${this.tabs[this.state.currentTabIndex] === NodeScheduling ? "" : classes.displayNone}`}>
-          {this.renderNodeScheduling()}
+        <div className={`${this.tabs[currentTabIndex] === Disks ? "" : classes.displayNone}`}>{this.renderDisks()}</div>
+        <div className={`${this.tabs[currentTabIndex] === Health ? "" : classes.displayNone}`}>
+          {this.renderHealth()}
         </div>
-        <div className={`${this.tabs[this.state.currentTabIndex] === UpgradePolicy ? "" : classes.displayNone}`}>
+        <div className={`${this.tabs[currentTabIndex] === Scheduling ? "" : classes.displayNone}`}>
+          {this.renderScheduling()}
+        </div>
+        <div className={`${this.tabs[currentTabIndex] === UpgradePolicy ? "" : classes.displayNone}`}>
           {this.renderUpgradePolicy()}
         </div>
       </>
     );
   }
 
+  private pushToTab(tabIndex: number) {
+    const tab = this.tabs[tabIndex];
+    const { application, dispatch, search } = this.props;
+
+    dispatch(push(`/applications/${application?.get("name")}/edit?component=${search.component || ""}#${tab || ""}`));
+  }
+
   private renderTabs() {
-    const { classes } = this.props;
+    const { classes, syncErrors, submitFailed, currentTabIndex } = this.props;
     return (
       <Tabs
-        className={clsx(classes.borderBottom)}
-        value={this.state.currentTabIndex}
+        className={clsx(classes.borderBottom, classes.tabsRoot)}
+        value={currentTabIndex}
         variant="scrollable"
         scrollButtons="auto"
         indicatorColor="primary"
         textColor="primary"
         onChange={(event: React.ChangeEvent<{}>, value: number) => {
-          this.setState({ currentTabIndex: value });
+          this.pushToTab(value);
+          // this.setState({ currentTabIndex: value });
         }}
         aria-label="component form tabs">
         {this.tabs.map(tab => {
+          if (
+            submitFailed &&
+            ((tab === Configurations && (syncErrors.preInjectedFiles || syncErrors.env || syncErrors.command)) ||
+              (tab === Disks && (syncErrors.cpu || syncErrors.memory || syncErrors.volumes)) ||
+              (tab === Health && (syncErrors.livenessProbe || syncErrors.ReadinessProbe)) ||
+              (tab === Networking && syncErrors.ports) ||
+              (tab === Scheduling && syncErrors.nodeSelectorLabels))
+          ) {
+            return <Tab key={tab} label={tab} className={classes.hasError} />;
+          }
+
           return <Tab key={tab} label={tab} />;
         })}
       </Tabs>
@@ -990,13 +1094,25 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderDeployButton() {
-    const { classes } = this.props;
+    const { classes, handleSubmit, isSubmittingApplicationComponent } = this.props;
     return (
       <Grid container spacing={2}>
         <Grid item xs={6} sm={6} md={6}>
-          <Button variant="contained" color="primary" type="submit" className={classes.deployBtn}>
+          <CustomizedButton
+            pending={isSubmittingApplicationComponent}
+            disabled={isSubmittingApplicationComponent}
+            variant="contained"
+            color="primary"
+            className={classes.deployBtn}
+            onClick={event => {
+              handleSubmit(event);
+            }}>
             Deploy
-          </Button>
+          </CustomizedButton>
+
+          {/* <Button variant="contained" color="primary" type="submit" className={classes.deployBtn}>
+            Deploy
+          </Button> */}
         </Grid>
       </Grid>
     );
@@ -1008,7 +1124,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     return (
       <form onSubmit={handleSubmit} className={classes.root}>
         <KPanel title={"Basic Information"} content={<Box p={2}>{this.renderMain()}</Box>} />
-
         <Box mt={2}>
           <KPanel
             title={"Advanced Settings"}
@@ -1020,7 +1135,16 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             }
           />
         </Box>
-
+        {/* <pre style={{ maxWidth: 1500, background: "#eee" }}>
+          {JSON.stringify(
+            (this.props.values as any)
+              .delete("metrics")
+              .delete("pods")
+              .delete("services"),
+            undefined,
+            2
+          )}
+        </pre> */}
         {/* <div className={`${classes.formSection} ${currentTabIndex === "advanced" ? "" : ""}`}>{this.renderPlugins()}</div> */}
         {this.renderDeployButton()}
       </form>
@@ -1034,7 +1158,7 @@ export const componentInitialValues: ComponentLike = Immutable.fromJS({
 
 export const ComponentLikeForm = reduxForm<ComponentLike, RawProps>({
   form: "componentLike",
-  enableReinitialize: true, // seems don't work with redux-form/immutable
+  enableReinitialize: true,
   keepDirtyOnReinitialize: false,
   initialValues: componentInitialValues,
   onSubmitFail: console.log

@@ -7,18 +7,20 @@ import Immutable from "immutable";
 import { formatBytes } from "permission/utils";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
-import { arrayPush, change, WrappedFieldArrayProps, WrappedFieldProps } from "redux-form";
+import { arrayPush, change, WrappedFieldArrayProps, WrappedFieldProps, arrayRemove } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
 import { ControlledDialog } from "widgets/ControlledDialog";
 import { PreInjectedFile } from "../../types/componentTemplate";
 import { DeleteIcon } from "../../widgets/Icon";
 import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
 import { KRenderTextField } from "../Basic/textfield";
-import { KValidatorPath, ValidatorRequired } from "../validator";
+import { KValidatorInjectedFilePath, ValidatorRequired } from "../validator";
+import { Alert } from "@material-ui/lab";
 
 interface FieldArrayComponentHackType {
   name: any;
   component: any;
+  validate: any;
 }
 
 interface State {
@@ -31,7 +33,7 @@ interface FieldArrayProps extends DispatchProp {}
 interface Props extends WrappedFieldArrayProps<PreInjectedFile>, FieldArrayComponentHackType, FieldArrayProps {}
 
 const updateContentDialogID = "update-content-dialog";
-
+const validateMountPath = [ValidatorRequired, KValidatorInjectedFilePath];
 class RenderPreInjectedFile extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -39,25 +41,6 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
       editingFileIndex: -1,
       fileContentValue: ""
     };
-  }
-
-  public getFieldComponents(member: string) {
-    return [
-      <Field
-        name={`${member}.mountPath`}
-        label="Mount Path"
-        component={KRenderTextField}
-        margin
-        validate={[ValidatorRequired]}
-      />,
-      <Field
-        name={`${member}.content`}
-        label="Content"
-        margin
-        validate={[ValidatorRequired]}
-        component={KRenderTextField}
-      />
-    ];
   }
 
   private privateOpenEditDialog = (file: PreInjectedFile, index: number) => {
@@ -146,7 +129,7 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
 
   public render() {
     const {
-      meta: { form },
+      meta: { form, error },
       fields,
       dispatch
     } = this.props;
@@ -174,34 +157,35 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
             }>
             Add
           </Button>
+          {error ? (
+            <Box mb={2}>
+              <Alert severity="error">{error}</Alert>
+            </Box>
+          ) : null}
         </Box>
         {fields.map((member, index) => {
           const injectedFile = fields.get(index);
 
           return (
-            <Grid container spacing={1} alignItems="center">
+            <Grid container spacing={1} alignItems="center" key={member}>
               <Grid item md={3}>
                 <Field
                   name={`${member}.mountPath`}
                   label="Mount Path"
                   component={KRenderTextField}
                   margin
-                  validate={[ValidatorRequired, KValidatorPath]}
+                  validate={validateMountPath}
                 />
               </Grid>
               <Grid item md={2}>
-                <Field
-                  name={`${member}.readonly`}
-                  component={KBoolCheckboxRender}
-                  label="Read Only"
-                  validate={[ValidatorRequired]}></Field>
+                <Field name={`${member}.readonly`} component={KBoolCheckboxRender} label="Read Only"></Field>
               </Grid>
               <Grid item md={2}>
                 <Field
                   name={`${member}.content`}
                   component={this.renderContent}
-                  validate={[ValidatorRequired]}
                   file={injectedFile}
+                  validate={ValidatorRequired}
                   index={index}
                 />
               </Grid>
@@ -217,7 +201,7 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
                   tooltipPlacement="top"
                   tooltipTitle="Delete"
                   aria-label="delete"
-                  onClick={() => fields.remove(index)}>
+                  onClick={() => dispatch(arrayRemove(form, "preInjectedFiles", index))}>
                   <DeleteIcon />
                 </IconButtonWithTooltip>
               </Grid>
@@ -229,6 +213,34 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
   }
 }
 
+const ValidatorInjectedFiles = (
+  values: Immutable.List<PreInjectedFile>,
+  _allValues?: any,
+  _props?: any,
+  _name?: any
+) => {
+  if (!values) return undefined;
+  const mountPaths = new Set<string>();
+
+  for (let i = 0; i < values.size; i++) {
+    const path = values.get(i)!;
+    const mountPath = path.get("mountPath");
+
+    if (!mountPaths.has(mountPath)) {
+      mountPaths.add(mountPath);
+    } else {
+      return "Files paths should be unique.  " + mountPath + "";
+    }
+  }
+};
+
 export const PreInjectedFiles = connect()((props: FieldArrayProps) => {
-  return <FieldArray name="preInjectedFiles" component={RenderPreInjectedFile} {...props} />;
+  return (
+    <FieldArray
+      name="preInjectedFiles"
+      component={RenderPreInjectedFile}
+      validate={ValidatorInjectedFiles}
+      {...props}
+    />
+  );
 });

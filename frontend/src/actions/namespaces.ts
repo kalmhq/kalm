@@ -7,7 +7,6 @@ export const setCurrentNamespaceAction = (namespace: string, redirect: boolean =
   return async dispatch => {
     if (redirect) {
       const pathname = window.location.pathname;
-      console.log(window.location.pathname);
 
       // eg. /applications/kapp-hipster or /applications/kapp-hipster/log
       // ["", "applications", "kapp-hipster"]

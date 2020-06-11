@@ -6,13 +6,23 @@ import { Actions } from "../../types";
 import { loadApplicationAction } from "../../actions/application";
 import hoistNonReactStatics from "hoist-non-react-statics";
 import { Loading } from "widgets/Loading";
+import queryString from "query-string";
+import { ApplicationComponentDetails } from "../../types/application";
+import { componentInitialValues } from "../../forms/ComponentLike";
 
 const mapStateToProps = (state: RootState, props: any) => {
   const applications = state.get("applications");
-  const { match } = props;
-  const { applicationName, componentName } = match!.params;
+
+  const { match, location } = props;
+  let { applicationName, componentName } = match!.params;
+  const search = queryString.parse(location.search);
+  componentName = componentName || search.component;
+
   const application = applications.get("applications").find(x => x.get("name") === applicationName);
+  // for detail
   const component = application && application.get("components")?.find(x => x.get("name") === componentName);
+  // for edit
+  const currentComponent = component || (componentInitialValues as ApplicationComponentDetails);
 
   const activeNamespaceName = state.get("namespaces").get("active");
 
@@ -21,6 +31,7 @@ const mapStateToProps = (state: RootState, props: any) => {
     activeNamespaceName,
     application,
     component,
+    currentComponent,
     isLoading: applications.get("isItemLoading")
   };
 };
