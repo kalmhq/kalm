@@ -128,7 +128,7 @@ func (suite *ComponentTestSuite) TestCreateComponentWithReUsingPVCAsVolume() {
 			},
 		},
 	}
-	_, err = suite.k8sClinet.CoreV1().PersistentVolumes().Create(&pv)
+	_, err := suite.k8sClinet.CoreV1().PersistentVolumes().Create(&pv)
 	suite.Nil(err)
 
 	reqComp := resources.Component{
