@@ -44,7 +44,9 @@ const styles = (theme: Theme) =>
     }
   });
 
-interface State {}
+interface State {
+  changingComponent: boolean;
+}
 
 interface Props
   extends WithApplicationItemDataProps,
@@ -53,6 +55,27 @@ interface Props
     ReturnType<typeof mapStateToProps> {}
 
 class ApplicationEditRaw extends React.PureComponent<Props, State> {
+  constructor(props: Props) {
+    super(props);
+
+    this.state = {
+      changingComponent: false
+    };
+  }
+
+  public componentDidUpdate(prevProps: Props, prevState: State) {
+    const prevComponentName = prevProps.component?.get("name");
+    const thisComponentName = this.props.component?.get("name");
+
+    if (prevComponentName !== thisComponentName) {
+      this.setState({ changingComponent: true });
+    }
+
+    if (prevComponentName === thisComponentName && this.state.changingComponent) {
+      this.setState({ changingComponent: false });
+    }
+  }
+
   private submitComponent = async (component: ApplicationComponent) => {
     // console.log("submitComponent", component.toJS());
 
@@ -106,6 +129,11 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
 
   public renderForm() {
     const { application, dispatch, classes, currentComponent } = this.props;
+    const { changingComponent } = this.state;
+
+    if (changingComponent) {
+      return null;
+    }
 
     return (
       <Grid container spacing={2} className={classes.root}>

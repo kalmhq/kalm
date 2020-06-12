@@ -1164,7 +1164,7 @@ export const componentInitialValues: ComponentLike = newEmptyComponentLike();
 
 export const ComponentLikeForm = reduxForm<ComponentLike, RawProps>({
   form: "componentLike",
-  enableReinitialize: true,
+  enableReinitialize: false,
   keepDirtyOnReinitialize: false,
   initialValues: componentInitialValues,
   onSubmitFail: console.log
