@@ -25,15 +25,15 @@
 #            apiTokenSecretRef:
 #              name: cloudflare-api-token-secret
 #              key: api-token
----
-apiVersion: core.kapp.dev/v1alpha1
-kind: HttpsCert
-metadata:
-  name: https-cert-wildcard
-spec:
-  httpsCertIssuer: https-cert-issuer-hello
-  domains:
-    - "*.kapp.live"
+#---
+#apiVersion: core.kapp.dev/v1alpha1
+#kind: HttpsCert
+#metadata:
+#  name: https-cert-wildcard
+#spec:
+#  httpsCertIssuer: https-cert-issuer-hello
+#  domains:
+#    - "*.kapp.live"
 ---
 apiVersion: v1
 kind: Namespace
