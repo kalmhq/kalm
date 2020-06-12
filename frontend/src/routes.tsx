@@ -11,7 +11,7 @@ import { ComponentTemplateNew } from "pages/ComponentTemplate/New";
 // import { ConfigListPage } from "pages/Config/List";
 import { DependencyListPage } from "pages/Dependency/List";
 import { Volumes } from "pages/PersistentVolumes";
-import DashboardPage from "pages/Dashboard";
+// import DashboardPage from "pages/Dashboard";
 import InstallPage from "pages/Install";
 import { NodeListPage } from "pages/NodeList";
 import { NoMatch, Page404 } from "pages/NoMatch";
@@ -37,7 +37,7 @@ export const KappRoutes = (
     <Route path="/">
       <RequireAuthorizatedDashboard>
         <Switch>
-          <Route exact path="/" component={DashboardPage} />
+          <Route exact path="/" component={RequireAdmin(ApplicationListPage)} />
           <Route exact path="/roles" component={RequireAdmin(RolesPage)} />
 
           {/* begin, TODO */}

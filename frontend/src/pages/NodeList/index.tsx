@@ -119,7 +119,7 @@ export class NodeListRaw extends React.Component<Props, States> {
 
   render() {
     const { classes, metrics } = this.props;
-
+    const tableData = this.getTableData();
     return (
       <BasePage secondHeaderRight="Nodes">
         <div className={classes.root}>
@@ -135,7 +135,8 @@ export class NodeListRaw extends React.Component<Props, States> {
             <MaterialTable
               options={{
                 padding: "dense",
-                pageSize: 20
+                pageSize: 20,
+                paging: tableData.length > 20
               }}
               columns={[
                 { title: "Name", field: "name", sorting: false },
@@ -146,7 +147,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                 { title: "Memory", field: "memory", sorting: false },
                 { title: "Alerts", field: "components", sorting: false }
               ]}
-              data={this.getTableData()}
+              data={tableData}
               title=""
             />
           </Box>

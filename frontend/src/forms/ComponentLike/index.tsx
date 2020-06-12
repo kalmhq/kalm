@@ -21,7 +21,8 @@ import React from "react";
 import { connect } from "react-redux";
 import { InjectedFormProps } from "redux-form";
 import { Field, getFormSyncErrors, getFormValues, reduxForm } from "redux-form/immutable";
-import { Body, H5, SectionTitle } from "widgets/Label";
+import { Body, H5 } from "widgets/Label";
+import { SectionTitle } from "widgets/SectionTitle";
 import { loadComponentPluginsAction } from "../../actions/application";
 import { loadNodesAction } from "../../actions/node";
 import { loadStorageClassesAction } from "../../actions/persistentVolume";
@@ -87,7 +88,7 @@ const mapStateToProps = (state: RootState, props: any) => {
   const search = queryString.parse(window.location.search);
   const hash = window.location.hash;
   const anchor = hash.replace("#", "");
-  let currentTabIndex = tabs.indexOf(`${anchor}`);
+  let currentTabIndex = tabs.map(t => t.replace(/\s/g, "")).indexOf(`${anchor}`);
   if (currentTabIndex < 0) {
     currentTabIndex = 0;
   }
@@ -1003,7 +1004,13 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     const tab = this.tabs[tabIndex];
     const { application, dispatch, search } = this.props;
 
-    dispatch(push(`/applications/${application?.get("name")}/edit?component=${search.component || ""}#${tab || ""}`));
+    dispatch(
+      push(
+        `/applications/${application?.get("name")}/edit?component=${search.component || ""}#${
+          tab ? tab.replace(/\s/g, "") : ""
+        }`
+      )
+    );
   }
 
   private renderTabs() {
