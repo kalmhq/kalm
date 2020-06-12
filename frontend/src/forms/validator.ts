@@ -177,19 +177,6 @@ const validateHost = (value: string) => {
   return undefined;
 };
 
-export const ValidatorHosts = (values: string[]): (string | undefined)[] | string | undefined => {
-  // console.log("ValidatorHosts", values);
-  if (!values || (Array.isArray(values) && values.length === 0)) return "Required";
-  // console.log("ValidatorHosts2", values);
-  const errors = values.map(x => {
-    const res = validateHost(x);
-    // console.log("ValidatorHost", x, res);
-    return res;
-  });
-
-  return errors.filter(x => !!x).length > 0 ? errors : undefined;
-};
-
 export const KValidatorHosts = (
   values: Immutable.List<string>,
   _allValues?: any,
@@ -200,7 +187,7 @@ export const KValidatorHosts = (
     return undefined;
   }
 
-  const errors = values.map(validateHost).toArray();
+  const errors = values.map(host => (host === "*" ? undefined : validateHost(host))).toArray();
 
   return errors.filter(x => !!x).length > 0 ? errors : undefined;
 };

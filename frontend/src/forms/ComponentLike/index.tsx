@@ -1032,10 +1032,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           if (
             submitFailed &&
             ((tab === Configurations && (syncErrors.preInjectedFiles || syncErrors.env || syncErrors.command)) ||
-              (tab === Disks && (syncErrors.cpu || syncErrors.memory || syncErrors.volumes)) ||
+              (tab === Disks && syncErrors.volumes) ||
               (tab === Health && (syncErrors.livenessProbe || syncErrors.ReadinessProbe)) ||
               (tab === Networking && syncErrors.ports) ||
-              (tab === Scheduling && syncErrors.nodeSelectorLabels))
+              (tab === Scheduling && (syncErrors.cpu || syncErrors.memory || syncErrors.nodeSelectorLabels)))
           ) {
             return <Tab key={tab} label={tab} className={classes.hasError} />;
           }
@@ -1143,16 +1143,18 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             }
           />
         </Box>
-        {/* <pre style={{ maxWidth: 1500, background: "#eee" }}>
-          {JSON.stringify(
-            (this.props.values as any)
-              .delete("metrics")
-              .delete("pods")
-              .delete("services"),
-            undefined,
-            2
-          )}
-        </pre> */}
+        {process.env.REACT_APP_DEBUG ? (
+          <pre style={{ maxWidth: 1500, background: "#eee" }}>
+            {JSON.stringify(
+              (this.props.values as any)
+                .delete("metrics")
+                .delete("pods")
+                .delete("services"),
+              undefined,
+              2
+            )}
+          </pre>
+        ) : null}
         {/* <div className={`${classes.formSection} ${currentTabIndex === "advanced" ? "" : ""}`}>{this.renderPlugins()}</div> */}
         {this.renderDeployButton()}
       </form>
@@ -1164,7 +1166,7 @@ export const componentInitialValues: ComponentLike = newEmptyComponentLike();
 
 export const ComponentLikeForm = reduxForm<ComponentLike, RawProps>({
   form: "componentLike",
-  enableReinitialize: true,
+  enableReinitialize: false,
   keepDirtyOnReinitialize: false,
   initialValues: componentInitialValues,
   onSubmitFail: console.log

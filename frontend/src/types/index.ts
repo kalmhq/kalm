@@ -13,6 +13,7 @@ import { RouteActions } from "./route";
 import { CertificateActions } from "./certificate";
 import { ServiceActions } from "./service";
 import { VolumeActions } from "./persistentVolume";
+import { ClusterActions } from "./cluster";
 
 export type Actions =
   | CommonActions
@@ -27,7 +28,8 @@ export type Actions =
   | RouteActions
   | CertificateActions
   | ServiceActions
-  | VolumeActions;
+  | VolumeActions
+  | ClusterActions;
 
 export type ThunkResult<R> = ThunkAction<R, RootState, undefined, Actions>;
 export type TDispatch = ThunkDispatch<RootState, undefined, Actions>;

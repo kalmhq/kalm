@@ -8,6 +8,15 @@ export const LOAD_SERVICES_FAILED = "LOAD_SERVICES_FAILED";
 export interface ServiceContent {
   name: string;
   namespace: string;
+  ports: Immutable.List<
+    ImmutableMap<{
+      name: string;
+      protocol: string;
+      port: number;
+      targetPort?: string | number;
+      nodePort?: number;
+    }>
+  >;
 }
 
 export type Service = ImmutableMap<ServiceContent>;
