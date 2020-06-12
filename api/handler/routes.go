@@ -5,6 +5,16 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+func (h *ApiHandler) handleListAllRoutes(c echo.Context) error {
+	list, err := h.Builder(c).GetHttpRoutes("")
+
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(200, list)
+}
+
 func (h *ApiHandler) handleListRoutes(c echo.Context) error {
 	list, err := h.Builder(c).GetHttpRoutes(c.Param("namespace"))
 

@@ -44,6 +44,7 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gv1Alpha1.GET("/exec", h.execWebsocketHandler)
 
 	gv1Alpha1WithAuth := gv1Alpha1.Group("", h.AuthClientMiddleware)
+	gv1Alpha1WithAuth.GET("/cluster", h.handleClusterInfo)
 	gv1Alpha1WithAuth.GET("/applications", h.handleGetApplications)
 	gv1Alpha1WithAuth.POST("/applications", h.handleCreateApplication)
 	gv1Alpha1WithAuth.GET("/applications/:name", h.handleGetApplicationDetails)
@@ -93,6 +94,7 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 
 	gv1Alpha1WithAuth.GET("/nodes", h.handleListNodes)
 
+	gv1Alpha1WithAuth.GET("/httproutes", h.handleListAllRoutes)
 	gv1Alpha1WithAuth.GET("/httproutes/:namespace", h.handleListRoutes)
 	gv1Alpha1WithAuth.POST("/httproutes/:namespace", h.handleCreateRoute)
 	gv1Alpha1WithAuth.PUT("/httproutes/:namespace/:name", h.handleUpdateRoute)
