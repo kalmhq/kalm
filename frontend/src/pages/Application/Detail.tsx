@@ -40,6 +40,7 @@ import {
   SmallMemoryLineChart
 } from "../../widgets/SmallLineChart";
 import { generateQueryForPods } from "./Log";
+import { blinkTopProgressAction } from "../../actions/settings";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -356,6 +357,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
             color="primary"
             size="large"
             onClick={() => {
+              blinkTopProgressAction();
               dispatch(deleteComponentAction(component.get("name"), application.get("name")));
             }}>
             Delete
@@ -403,14 +405,14 @@ class DetailsRaw extends React.PureComponent<Props, State> {
           ) : null}
           {component
             .get("pods")
-            .map(pod => {
+            .map((pod, index) => {
               const containerNames = pod
                 .get("containers")
                 .map(container => container.get("name"))
                 .toArray();
               return (
-                <div key={pod.get("name")}>
-                  <div key={pod.get("name")} className={clsx(classes.rowContainer, classes.podDataRow)}>
+                <div key={index}>
+                  <div key={index} className={clsx(classes.rowContainer, classes.podDataRow)}>
                     {/* <div className={classes.podContainer} key={pod.get("name")}> */}
 
                     <div style={{ display: "flex", alignItems: "center" }}>
@@ -431,6 +433,9 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                       </div>
                       <div className={classes.actionCell}>
                         <IconLinkWithToolTip
+                          onClick={() => {
+                            blinkTopProgressAction();
+                          }}
                           className={classes.podActionButton}
                           size="small"
                           tooltipTitle="Log"
@@ -446,6 +451,9 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                         </IconLinkWithToolTip>
                         {hasWriterRole ? (
                           <IconLinkWithToolTip
+                            onClick={() => {
+                              blinkTopProgressAction();
+                            }}
                             tooltipTitle="Shell"
                             size="small"
                             className={classes.podActionButton}
@@ -466,6 +474,8 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                             size="small"
                             className={classes.podActionButton}
                             onClick={async () => {
+                              blinkTopProgressAction();
+
                               try {
                                 await deletePod(application.get("name"), pod.get("name"));
                                 dispatch(setSuccessNotificationAction(`Delete pod ${pod.get("name")} successfully`));
@@ -502,6 +512,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                       color="primary"
                       size="large"
                       onClick={() => {
+                        blinkTopProgressAction();
                         dispatch(push(`/applications/${application.get("name")}/components/${component.get("name")}`));
                       }}>
                       View More

@@ -26,6 +26,7 @@ import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { DeleteIcon, EditHintIcon } from "widgets/Icon";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { CertificateDataWrapper, WithCertificatesDataProps } from "./DataWrapper";
+import { blinkTopProgressAction } from "../../actions/settings";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -102,6 +103,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
               tooltipTitle="Edit"
               aria-label="edit"
               onClick={() => {
+                blinkTopProgressAction();
                 dispatch(openDialogAction(addCertificateDialogId));
                 dispatch(setEditCertificateModal(rowData));
               }}>
@@ -113,7 +115,10 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
           <IconButtonWithTooltip
             tooltipTitle="Delete"
             aria-label="delete"
-            onClick={() => this.showDeleteConfirmDialog(rowData)}>
+            onClick={() => {
+              blinkTopProgressAction();
+              this.showDeleteConfirmDialog(rowData);
+            }}>
             <DeleteIcon />
           </IconButtonWithTooltip>
         </Grid>
@@ -268,6 +273,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
               size="large"
               className={classes.secondHeaderRightItem}
               onClick={() => {
+                blinkTopProgressAction();
                 dispatch(openDialogAction(addCertificateDialogId));
                 dispatch(setEditCertificateModal(null));
               }}>

@@ -11,7 +11,7 @@ import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { loadApplicationsAction } from "../actions/application";
-import { setSettingsAction } from "../actions/settings";
+import { setSettingsAction, blinkTopProgressAction } from "../actions/settings";
 
 export const APP_BAR_HEIGHT = 48;
 
@@ -80,7 +80,6 @@ const styles = (theme: Theme) =>
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps> {
   dispatch: TDispatch;
-  title: string;
 }
 
 interface State {
@@ -147,7 +146,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
   }
 
   render() {
-    const { classes, title, dispatch, isOpenRootDrawer } = this.props;
+    const { classes, dispatch, isOpenRootDrawer } = this.props;
 
     return (
       <AppBar ref={this.headerRef} id="header" position="relative" className={classes.appBar}>
@@ -161,8 +160,8 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
               {isOpenRootDrawer ? <ChevronLeftIcon htmlColor={"#fff"} /> : <MenuIcon htmlColor={"#fff"} />}
             </IconButton>
             <FlexRowItemCenterBox>
-              <Link className={classes.barTitle} to="/">
-                {title}
+              <Link className={classes.barTitle} to="/" onClick={() => blinkTopProgressAction()}>
+                KApp Dashboard
               </Link>
             </FlexRowItemCenterBox>
           </div>

@@ -1,4 +1,4 @@
-import { Dashboard } from "layout/Dashboard";
+import { DashboardLayout } from "layout/DashboardLayout";
 import { Login } from "layout/Login";
 import { ApplicationEdit } from "pages/Application/Edit";
 import { ApplicationListPage } from "pages/Application/List";
@@ -28,7 +28,7 @@ import { RouteNew } from "pages/Route/New";
 import { RouteEdit } from "pages/Route/Edit";
 import { CertificateListPage } from "pages/Certificate/List";
 
-const RequireAuthorizatedDashboard = RequireAuthorizated(Dashboard);
+const RequireAuthorizatedDashboard = RequireAuthorizated(DashboardLayout);
 
 export const KappRoutes = (
   <Switch>

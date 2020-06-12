@@ -17,6 +17,7 @@ import { CustomizedButton } from "widgets/Button";
 import { H4 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { Namespaces } from "widgets/Namespaces";
+import { blinkTopProgressAction } from "../../actions/settings";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -153,8 +154,20 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     const { namespace, dispatch } = this.props;
     return (
       <>
-        <Button onClick={() => dispatch(push(`/routes/${row.get("name")}/edit?namespace=${namespace}`))}>Edit</Button>
-        <Button onClick={() => dispatch(deleteRoute(row.get("name"), row.get("namespace")))}>Delete</Button>
+        <Button
+          onClick={() => {
+            blinkTopProgressAction();
+            dispatch(push(`/routes/${row.get("name")}/edit?namespace=${namespace}`));
+          }}>
+          Edit
+        </Button>
+        <Button
+          onClick={() => {
+            blinkTopProgressAction();
+            dispatch(deleteRoute(row.get("name"), row.get("namespace")));
+          }}>
+          Delete
+        </Button>
       </>
     );
   };
@@ -173,6 +186,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
               size="large"
               className={classes.secondHeaderRightItem}
               onClick={() => {
+                blinkTopProgressAction();
                 dispatch(push(`/routes/new`));
               }}>
               Add
