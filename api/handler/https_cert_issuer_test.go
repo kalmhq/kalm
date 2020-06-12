@@ -3,7 +3,9 @@ package handler
 import (
 	"github.com/kapp-staging/kapp/api/resources"
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/kapp-staging/kapp/controller/controllers"
 	"github.com/stretchr/testify/suite"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/http"
 	"testing"
 )
@@ -57,8 +59,8 @@ func (suite *HttpsCertIssuerTestSuite) TestUpdateHttpsCertIssuer() {
 	body := `{
   "name": "my-foobar-issuer",
   "acmeCloudFlare": {
-    "email": "foo@bar.com",
-    "apiTokenSecretName": "foobar"
+    "account": "foo@bar.com",
+    "secret": "foobar"
   }
 }`
 
@@ -74,19 +76,27 @@ func (suite *HttpsCertIssuerTestSuite) TestUpdateHttpsCertIssuer() {
 	err := suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/httpscertissuers").Do().Into(&res)
 	suite.Nil(err)
 
+	secName := resources.GenerateSecretNameForACME(issuer)
+	secNs := controllers.CertManagerNamespace
+
 	suite.Equal(1, len(res.Items))
 	suite.Equal("my-foobar-issuer", res.Items[0].Name)
 	suite.Nil(res.Items[0].Spec.CAForTest)
 	suite.NotNil(res.Items[0].Spec.ACMECloudFlare)
 	suite.Equal("foo@bar.com", res.Items[0].Spec.ACMECloudFlare.Email)
-	suite.Equal("foobar", res.Items[0].Spec.ACMECloudFlare.APITokenSecretName)
+	suite.Equal(secName, res.Items[0].Spec.ACMECloudFlare.APITokenSecretName)
+
+	// check content of secret
+	sec, err := suite.k8sClinet.CoreV1().Secrets(secNs).Get(secName, metav1.GetOptions{})
+	suite.Nil(err)
+	suite.Equal("foobar", string(sec.Data["content"]))
 
 	// update
 	body = `{
   "name": "my-foobar-issuer",
   "acmeCloudFlare": {
-    "email": "foo@bar2.com",
-    "apiTokenSecretName": "foobar2"
+    "account": "foo@bar2.com",
+    "secret": "foobar2"
   }
 }`
 	rec = suite.NewRequest(http.MethodPut, "/v1alpha1/httpscertissuers/my-foobar-issuer", body)
@@ -104,7 +114,11 @@ func (suite *HttpsCertIssuerTestSuite) TestUpdateHttpsCertIssuer() {
 	suite.Nil(res.Items[0].Spec.CAForTest)
 	suite.NotNil(res.Items[0].Spec.ACMECloudFlare)
 	suite.Equal("foo@bar2.com", res.Items[0].Spec.ACMECloudFlare.Email)
-	suite.Equal("foobar2", res.Items[0].Spec.ACMECloudFlare.APITokenSecretName)
+	suite.Equal(resources.GenerateSecretNameForACME(issuer), res.Items[0].Spec.ACMECloudFlare.APITokenSecretName)
+
+	sec, err = suite.k8sClinet.CoreV1().Secrets(secNs).Get(secName, metav1.GetOptions{})
+	suite.Nil(err)
+	suite.Equal("foobar2", string(sec.Data["content"]))
 }
 
 func (suite *HttpsCertIssuerTestSuite) TestDeleteHttpsCertIssuer() {
