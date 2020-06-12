@@ -101,7 +101,6 @@ type CreateOrUpdateApplicationRequest struct {
 
 type Application struct {
 	Name      string `json:"name"`
-	IsActive  bool   `json:"isActive"`
 }
 
 func (builder *Builder) BuildApplicationDetails(namespace coreV1.Namespace) (*ApplicationDetails, error) {
@@ -149,12 +148,12 @@ func (builder *Builder) BuildApplicationDetails(namespace coreV1.Namespace) (*Ap
 	}
 
 	applicationMetric := GetApplicationMetric(nsName)
-	isActive := controllers.IsNamespaceKappEnabled(namespace)
+	//isActive := controllers.IsNamespaceKappEnabled(namespace)
 
 	return &ApplicationDetails{
 		Application: &Application{
 			Name:      nsName,
-			IsActive:  isActive,
+			//IsActive:  isActive,
 		},
 		Metrics: MetricHistories{
 			CPU:    applicationMetric.CPU,

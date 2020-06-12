@@ -191,13 +191,6 @@ func getKappNamespaceFromContext(c echo.Context) (coreV1.Namespace, error) {
 		return coreV1.Namespace{}, err
 	}
 
-	//var kappEnabledVal string
-	//if application.IsActive {
-	//	kappEnabledVal = controllers.KappEnableLabelValue
-	//} else {
-	//	kappEnabledVal = "false"
-	//}
-
 	crdApplication := coreV1.Namespace{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: application.Name,
