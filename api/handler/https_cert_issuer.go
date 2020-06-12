@@ -44,7 +44,7 @@ func (h *ApiHandler) handleCreateHttpsCertIssuer(c echo.Context) (err error) {
 		k8sClientConfig := getK8sClientConfig(c)
 		builder := resources.NewBuilder(k8sClient, k8sClientConfig, h.logger)
 
-		acmeSecretName := resources.GetACMESecretName(httpsCertIssuer)
+		acmeSecretName := resources.GenerateSecretNameForACME(httpsCertIssuer)
 		err := builder.ReconcileSecretForIssuer(
 			controllers.CertManagerNamespace,
 			acmeSecretName,

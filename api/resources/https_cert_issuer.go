@@ -49,7 +49,7 @@ func (builder *Builder) GetHttpsCertIssuerList() ([]HttpsCertIssuer, error) {
 	return rst, nil
 }
 
-func GetACMESecretName(issuer HttpsCertIssuer) string {
+func GenerateSecretNameForACME(issuer HttpsCertIssuer) string {
 	return "kapp-sec-acme-" + issuer.Name
 }
 
