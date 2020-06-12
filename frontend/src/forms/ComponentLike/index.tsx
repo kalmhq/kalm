@@ -33,7 +33,8 @@ import {
   ComponentLike,
   ComponentLikeContent,
   workloadTypeCronjob,
-  workloadTypeServer
+  workloadTypeServer,
+  newEmptyComponentLike
 } from "../../types/componentTemplate";
 import { CustomizedButton } from "../../widgets/Button";
 import { HelperContainer } from "../../widgets/Helper";
@@ -1158,9 +1159,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const componentInitialValues: ComponentLike = Immutable.fromJS({
-  command: Immutable.List([])
-});
+export const componentInitialValues: ComponentLike = newEmptyComponentLike();
 
 export const ComponentLikeForm = reduxForm<ComponentLike, RawProps>({
   form: "componentLike",

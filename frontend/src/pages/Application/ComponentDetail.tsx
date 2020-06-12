@@ -307,19 +307,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
             </div>
             <div className={classes.flexRow}>
               <span className={classes.label}>Command: </span>
-              <span>
-                {component.get("command")?.map((c, index) => {
-                  return <span key={index}>{c}</span>;
-                })}
-              </span>
-            </div>
-            <div className={classes.flexRow}>
-              <span className={classes.label}>Arguments: </span>
-              <span>
-                {component.get("args")?.map((arg, index) => {
-                  return <span key={index}>{arg}</span>;
-                })}
-              </span>
+              <span>{component.get("command")}</span>
             </div>
             <div className={classes.flexRow}>
               <span className={classes.label}>Environment Variables: </span>

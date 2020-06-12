@@ -642,6 +642,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                 rowStyle: {
                   verticalAlign: "baseline"
                 },
+                paging: applications.size > 20,
                 headerStyle: {
                   color: "black",
                   backgroundColor: grey[100],
