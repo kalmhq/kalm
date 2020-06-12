@@ -65,7 +65,7 @@ class CertificateIssuerFormRaw extends React.PureComponent<Props, State> {
           <Field
             label="Email"
             component={KRenderTextField}
-            name="acmeCloudFlare.email"
+            name="acmeCloudFlare.account"
             margin="normal"
             validate={[ValidatorRequired]}
           />
@@ -74,7 +74,7 @@ class CertificateIssuerFormRaw extends React.PureComponent<Props, State> {
           <Field
             label="Token Secret"
             component={KRenderTextField}
-            name="acmeCloudFlare.apiTokenSecretName"
+            name="acmeCloudFlare.secret"
             margin="normal"
             validate={[ValidatorRequired]}
           />

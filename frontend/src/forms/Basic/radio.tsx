@@ -35,10 +35,10 @@ export const KRadioGroupRender = ({
       <RadioGroup aria-label="gender" name="gender1" value={input.value || defaultValue} onChange={input.onChange}>
         {options.map(option => {
           return (
-            <>
+            <React.Fragment key={option.value}>
               <FormControlLabel key={option.value} value={option.value} control={<Radio />} label={option.label} />
               {option.explain ? <Caption style={{ padding: "0 16px 0 32px" }}>{option.explain}</Caption> : null}
-            </>
+            </React.Fragment>
           );
         })}
       </RadioGroup>

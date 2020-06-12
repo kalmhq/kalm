@@ -21,7 +21,8 @@ import React from "react";
 import { connect } from "react-redux";
 import { InjectedFormProps } from "redux-form";
 import { Field, getFormSyncErrors, getFormValues, reduxForm } from "redux-form/immutable";
-import { Body, H5, SectionTitle } from "widgets/Label";
+import { Body, H5 } from "widgets/Label";
+import { SectionTitle } from "widgets/SectionTitle";
 import { loadComponentPluginsAction } from "../../actions/application";
 import { loadNodesAction } from "../../actions/node";
 import { loadStorageClassesAction } from "../../actions/persistentVolume";
@@ -1165,7 +1166,7 @@ export const componentInitialValues: ComponentLike = newEmptyComponentLike();
 
 export const ComponentLikeForm = reduxForm<ComponentLike, RawProps>({
   form: "componentLike",
-  enableReinitialize: true,
+  enableReinitialize: false,
   keepDirtyOnReinitialize: false,
   initialValues: componentInitialValues,
   onSubmitFail: console.log

@@ -10,16 +10,6 @@ const styles = () =>
     },
     body1: {
       paddingTop: theme.spacing(1)
-    },
-    sectionTitle: {
-      // width: "100%",
-      margin: `0 -${theme.spacing(2)}px`,
-      padding: `0 ${theme.spacing(2)}px`,
-      height: 26,
-      lineHeight: 26,
-      background: "rgba(0, 0, 0, 0.04)",
-      display: "flex",
-      alignItems: "center"
     }
   });
 
@@ -128,8 +118,4 @@ export const CenterCaption = withStyles(styles)((props: LabelProps) => {
       <Caption>{props.children}</Caption>
     </Box>
   );
-});
-
-export const SectionTitle = withStyles(styles)((props: LabelProps) => {
-  return <div className={props.classes.sectionTitle}>{props.children}</div>;
 });

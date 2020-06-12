@@ -7,8 +7,9 @@ import { loadApplicationAction } from "../../actions/application";
 import hoistNonReactStatics from "hoist-non-react-statics";
 import { Loading } from "widgets/Loading";
 import queryString from "query-string";
-import { ApplicationComponentDetails } from "../../types/application";
+import { ApplicationComponent } from "../../types/application";
 import { componentInitialValues } from "../../forms/ComponentLike";
+import { componentDetailsToComponent } from "../../utils/application";
 
 const mapStateToProps = (state: RootState, props: any) => {
   const applications = state.get("applications");
@@ -22,7 +23,9 @@ const mapStateToProps = (state: RootState, props: any) => {
   // for detail
   const component = application && application.get("components")?.find(x => x.get("name") === componentName);
   // for edit
-  const currentComponent = component || (componentInitialValues as ApplicationComponentDetails);
+  const currentComponent = component
+    ? componentDetailsToComponent(component)
+    : (componentInitialValues as ApplicationComponent);
 
   const activeNamespaceName = state.get("namespaces").get("active");
 

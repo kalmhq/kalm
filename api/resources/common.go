@@ -283,3 +283,4 @@ func (builder *Builder) Delete(obj runtime.Object, opts ...client.DeleteOption) 
 func (builder *Builder) Update(obj runtime.Object, opts ...client.UpdateOption) error {
 	return builder.Client.Update(builder.ctx, obj, opts...)
 }
+

@@ -1,4 +1,4 @@
-import { InputAdornment } from "@material-ui/core";
+import { InputAdornment, OutlinedInputProps } from "@material-ui/core";
 import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
 import React, { ChangeEvent } from "react";
 import { WrappedFieldProps } from "redux-form";
@@ -24,6 +24,11 @@ export const KRenderTextField = ({
 }: FilledTextFieldProps & WrappedFieldProps & Props) => {
   const showError = !!error && touched;
 
+  const inputProps: Partial<OutlinedInputProps> = {};
+  if (endAdornment) {
+    inputProps.endAdornment = <InputAdornment position="end">{endAdornment}</InputAdornment>;
+  }
+
   return (
     <TextField
       fullWidth
@@ -40,9 +45,7 @@ export const KRenderTextField = ({
       helperText={showError ? error : helperText ? helperText : ""}
       margin="dense"
       variant="outlined"
-      InputProps={{
-        endAdornment: <InputAdornment position="end">{endAdornment}</InputAdornment>
-      }}
+      InputProps={inputProps}
       inputProps={{
         required: false // bypass html5 required feature
       }}
