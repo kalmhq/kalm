@@ -3,9 +3,9 @@ package handler
 import (
 	"github.com/kapp-staging/kapp/api/resources"
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/kapp-staging/kapp/controller/controllers"
 	"github.com/labstack/echo/v4"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sync"
 )
 
 func (h *ApiHandler) handleGetHttpsCertIssuer(c echo.Context) error {
@@ -31,28 +31,44 @@ func (h *ApiHandler) handleCreateHttpsCertIssuer(c echo.Context) (err error) {
 		ObjectMeta: v1.ObjectMeta{
 			Name: httpsCertIssuer.Name,
 		},
-		Spec: v1alpha1.HttpsCertIssuerSpec{
-			CAForTest:      httpsCertIssuer.CAForTest,
-			ACMECloudFlare: httpsCertIssuer.ACMECloudFlare,
-		},
+		Spec: v1alpha1.HttpsCertIssuerSpec{},
 	}
 
-	wg := sync.WaitGroup{}
-	wg.Add(1)
+	if httpsCertIssuer.CAForTest != nil {
+		resource.Spec.CAForTest = httpsCertIssuer.CAForTest
+	}
 
-	// make sense?
-	go func() {
-		defer wg.Done()
-		err = h.Builder(c).Create(&resource)
-	}()
+	if httpsCertIssuer.ACMECloudFlare != nil {
+		// reconcile secret for this issuer
+		k8sClient := getK8sClient(c)
+		k8sClientConfig := getK8sClientConfig(c)
+		builder := resources.NewBuilder(k8sClient, k8sClientConfig, h.logger)
 
-	wg.Wait()
+		acmeSecretName := resources.GetACMESecretName(httpsCertIssuer)
+		err := builder.ReconcileSecretForIssuer(
+			controllers.CertManagerNamespace,
+			acmeSecretName,
+			httpsCertIssuer.ACMECloudFlare.Secret,
+		)
+
+		if err != nil {
+			return err
+		}
+
+		resource.Spec.ACMECloudFlare = &v1alpha1.ACMECloudFlareIssuer{
+			Email:              httpsCertIssuer.ACMECloudFlare.Account,
+			APITokenSecretName: acmeSecretName,
+		}
+	}
+
+	err = h.Builder(c).Create(&resource)
 	if err != nil {
 		return err
 	}
 
 	return c.JSON(201, httpsCertIssuer)
 }
+
 
 func (h *ApiHandler) handleUpdateHttpsCertIssuer(c echo.Context) error {
 	httpsCertIssuer, err := getHttpsCertIssuerFromContext(c)

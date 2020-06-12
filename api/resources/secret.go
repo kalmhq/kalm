@@ -38,3 +38,12 @@ func (builder *Builder) GetSecretListChannel(namespace string, opts ...client.Li
 
 	return channel
 }
+
+func (builder *Builder) GetSecret(ns, secName string) (coreV1.Secret, error) {
+	sec := coreV1.Secret{}
+	if err := builder.Get(ns, secName, &sec); err != nil {
+		return coreV1.Secret{}, err
+	}
+
+	return sec, nil
+}

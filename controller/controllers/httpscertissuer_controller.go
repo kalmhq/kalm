@@ -90,7 +90,7 @@ func (r *HttpsCertIssuerReconciler) ReconcileCAForTest(ctx context.Context, cert
 	// auto generate tls secret for our CA
 	sec := corev1.Secret{}
 	if err := r.Get(ctx, types.NamespacedName{
-		Namespace: certManagerNamespace,
+		Namespace: CertManagerNamespace,
 		Name:      caSecretName,
 	}, &sec); err != nil {
 		if !errors.IsNotFound(err) {
@@ -104,7 +104,7 @@ func (r *HttpsCertIssuerReconciler) ReconcileCAForTest(ctx context.Context, cert
 
 		sec := corev1.Secret{
 			ObjectMeta: v1.ObjectMeta{
-				Namespace: certManagerNamespace,
+				Namespace: CertManagerNamespace,
 				Name:      caSecretName,
 			},
 			StringData: map[string]string{
@@ -175,7 +175,7 @@ func (r *HttpsCertIssuerReconciler) ReconcileCAForTest(ctx context.Context, cert
 	return ctrl.Result{}, nil
 }
 
-const certManagerNamespace = "cert-manager"
+const CertManagerNamespace = "cert-manager"
 
 // config ACME cloudflare
 func (r *HttpsCertIssuerReconciler) ReconcileACMECloudFlare(ctx context.Context, certIssuer corev1alpha1.HttpsCertIssuer) (ctrl.Result, error) {
@@ -185,7 +185,7 @@ func (r *HttpsCertIssuerReconciler) ReconcileACMECloudFlare(ctx context.Context,
 
 	apiTokenSecretName := acmeSpec.APITokenSecretName
 	// for clusterIssuer, secret has to be in ns: cert-manager to be found by cert-mgr
-	apiTokenSecretNamespace := certManagerNamespace
+	apiTokenSecretNamespace := CertManagerNamespace
 
 	issuerName := certIssuer.Name
 	//curNs := certIssuer.Namespace
