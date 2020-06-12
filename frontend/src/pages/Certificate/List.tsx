@@ -257,6 +257,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
 
   public render() {
     const { classes, dispatch, isFirstLoaded, isLoading } = this.props;
+    const tableData = this.getData();
     return (
       <BasePage
         secondHeaderRight={
@@ -285,6 +286,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
                 pageSize: 20,
                 padding: "dense",
                 draggable: false,
+                paging: tableData.length > 20,
                 headerStyle: {
                   color: "black",
                   backgroundColor: grey[100],
@@ -296,7 +298,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
                 }
               }}
               columns={this.getColumns()}
-              data={this.getData()}
+              data={tableData}
               title=""
             />
           )}

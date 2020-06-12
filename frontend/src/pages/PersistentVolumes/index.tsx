@@ -148,6 +148,7 @@ export class VolumesRaw extends React.Component<Props, States> {
   render() {
     const { classes } = this.props;
     const { loadPersistentVolumesError } = this.state;
+    const tableData = this.getTableData();
 
     return (
       <BasePage secondHeaderRight="Volumes">
@@ -164,7 +165,8 @@ export class VolumesRaw extends React.Component<Props, States> {
           <MaterialTable
             options={{
               padding: "dense",
-              pageSize: 20
+              pageSize: 20,
+              paging: tableData.length > 20
             }}
             columns={[
               { title: "Name", field: "name", sorting: false },
@@ -181,7 +183,7 @@ export class VolumesRaw extends React.Component<Props, States> {
                 render: this.renderActions
               }
             ]}
-            data={this.getTableData()}
+            data={tableData}
             title=""
           />
         </div>
