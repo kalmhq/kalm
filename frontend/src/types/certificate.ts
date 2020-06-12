@@ -140,8 +140,8 @@ export interface CertificateIssuerContent {
 export type AcmeCloudFlare = ImmutableMap<AcmeCloudFlareContent>;
 
 export interface AcmeCloudFlareContent {
-  email: string;
-  apiTokenSecretName: string;
+  account: string;
+  secret: string;
 }
 
 export type CertificateActions =
