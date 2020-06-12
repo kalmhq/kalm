@@ -22,6 +22,7 @@ import { LEFT_SECTION_WIDTH } from "../pages/BasePage";
 import { primaryBackgroud, primaryColor } from "../theme";
 import { KappApplicationIcon, KappNodeIcon, KappVolumeIcon } from "../widgets/Icon";
 import { APP_BAR_HEIGHT } from "./AppBar";
+import { blinkTopProgressAction } from "../actions/settings";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
@@ -181,6 +182,7 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
 
           {this.getMenuDataApplication().map((item, index) => (
             <ListItem
+              onClick={() => blinkTopProgressAction()}
               className={clsx(classes.listItem, {
                 [classes.itemBorder]: !open
               })}
@@ -207,6 +209,7 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
 
           {this.getMenuDataCluster().map((item, index) => (
             <ListItem
+              onClick={() => blinkTopProgressAction()}
               className={clsx(classes.listItem, {
                 [classes.itemBorder]: !open
               })}

@@ -23,15 +23,17 @@ export const IconButtonWithTooltip = (
       | "top";
   }
 ) => {
-  const { tooltipTitle, tooltipPlacement } = props;
+  const { tooltipTitle, tooltipPlacement, ...iconButtonProps } = props;
 
-  const copiedProps = { ...props };
-  delete copiedProps.tooltipTitle;
-  delete copiedProps.tooltipPlacement;
+  const tooltipChild = <IconButton {...iconButtonProps}>{props.children}</IconButton>;
+
+  if (props.disabled) {
+    return tooltipChild;
+  }
 
   return (
     <Tooltip title={tooltipTitle} placement={tooltipPlacement}>
-      <IconButton {...copiedProps}>{props.children}</IconButton>
+      {tooltipChild}
     </Tooltip>
   );
 };
@@ -55,17 +57,21 @@ export const IconLinkWithToolTip = (
       | "top";
   }
 ) => {
-  const { tooltipTitle, tooltipPlacement, to } = props;
+  const { tooltipTitle, tooltipPlacement, to, ...iconButtonProps } = props;
 
-  const copiedProps = { ...props };
-  delete copiedProps.tooltipTitle;
-  delete copiedProps.tooltipPlacement;
+  const tooltipChild = (
+    <Link to={to} style={{ color: "inherit" }}>
+      <IconButton {...iconButtonProps}>{props.children}</IconButton>
+    </Link>
+  );
+
+  if (props.disabled) {
+    return tooltipChild;
+  }
 
   return (
     <Tooltip title={tooltipTitle} placement={tooltipPlacement}>
-      <Link to={to} style={{ color: "inherit" }}>
-        <IconButton {...copiedProps}>{props.children}</IconButton>
-      </Link>
+      {tooltipChild}
     </Tooltip>
   );
 };

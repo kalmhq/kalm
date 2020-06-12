@@ -8,6 +8,7 @@ import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { BaseDrawer } from "./BaseDrawer";
 import { primaryBackgroud, primaryColor } from "../theme";
+import { blinkTopProgressAction } from "../actions/settings";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
@@ -73,6 +74,7 @@ class AdminDrawerRaw extends React.PureComponent<Props, State> {
         <List>
           {menuData.map((item, index) => (
             <ListItem
+              onClick={() => blinkTopProgressAction()}
               className={classes.listItem}
               classes={{
                 selected: classes.listItemSeleted

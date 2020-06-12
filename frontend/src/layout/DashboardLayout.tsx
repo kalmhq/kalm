@@ -1,11 +1,12 @@
+import { LinearProgress } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
-import React from "react";
-import { RootState } from "reducers";
-import { connect } from "react-redux";
 import { RequireAuthorizated } from "permission/Authorization";
+import React from "react";
+import { connect } from "react-redux";
+import { RootState } from "reducers";
 import { AppBarComponent, APP_BAR_HEIGHT } from "./AppBar";
-import { SECOND_HEADER_HEIGHT } from "./SecondHeader";
 import { RootDrawer } from "./RootDrawer";
+import { SECOND_HEADER_HEIGHT } from "./SecondHeader";
 
 const styles = (theme: Theme) => {
   return createStyles({
@@ -19,24 +20,32 @@ const styles = (theme: Theme) => {
       height: "100%",
       // maxWidth: "1200px",
       margin: "0 auto"
+    },
+    progress: {
+      position: "fixed",
+      top: "0",
+      zIndex: 9999,
+      width: "100%",
+      height: "2px"
     }
   });
 };
 
 const mapStateToProps = (state: RootState) => {
   return {
-    activeNamespaceName: state.get("namespaces").get("active")
+    isShowTopProgress: state.get("settings").get("isShowTopProgress")
   };
 };
 
 interface Props extends WithStyles<typeof styles>, React.Props<any>, ReturnType<typeof mapStateToProps> {}
 
-class DashboardRaw extends React.PureComponent<Props> {
+class DashboardLayoutRaw extends React.PureComponent<Props> {
   render() {
-    const { classes, children, activeNamespaceName } = this.props;
+    const { classes, children, isShowTopProgress } = this.props;
     return (
       <div className={classes.root}>
-        <AppBarComponent title="KApp Dashboard" key={activeNamespaceName} />
+        {isShowTopProgress ? <LinearProgress className={classes.progress} /> : null}
+        <AppBarComponent />
         <RootDrawer />
         <main className={classes.content}>{children}</main>
       </div>
@@ -44,4 +53,4 @@ class DashboardRaw extends React.PureComponent<Props> {
   }
 }
 
-export const Dashboard = withStyles(styles)(RequireAuthorizated(connect(mapStateToProps)(DashboardRaw)));
+export const DashboardLayout = withStyles(styles)(RequireAuthorizated(connect(mapStateToProps)(DashboardLayoutRaw)));

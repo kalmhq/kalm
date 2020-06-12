@@ -19,6 +19,7 @@ import { ServiceAccountSecret } from "widgets/ServiceAccountSecret";
 import { AdminDrawer } from "../../layout/AdminDrawer";
 import { H4 } from "../../widgets/Label";
 import { BasePage } from "../BasePage";
+import { blinkTopProgressAction } from "../../actions/settings";
 
 const dialogID = "rolebinding/add";
 const serviceAccountSecretDialogID = "serviceAccountSecretDialogID";
@@ -262,6 +263,7 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
           color="primary"
           className={classes.secondHeaderRightItem}
           onClick={() => {
+            blinkTopProgressAction();
             this.openAddModal();
           }}>
           Add

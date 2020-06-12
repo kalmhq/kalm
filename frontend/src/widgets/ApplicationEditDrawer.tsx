@@ -19,6 +19,7 @@ import { primaryBackgroud, primaryColor } from "../theme";
 import { ApplicationComponent, ApplicationComponentDetails, ApplicationDetails } from "../types/application";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
+import { blinkTopProgressAction } from "../actions/settings";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
@@ -91,6 +92,8 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
   }
 
   private handleClickComponent(component: ApplicationComponent, index: number) {
+    blinkTopProgressAction();
+
     this.setState({
       selectededComponentIndex: index
     });

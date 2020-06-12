@@ -6,6 +6,7 @@ import MoreVertIcon from "@material-ui/icons/MoreVert";
 import Icon from "@material-ui/core/Icon";
 import { Link } from "react-router-dom";
 import { NamespaceVisibleContainer } from "permission/Namespace";
+import { blinkTopProgressAction } from "../actions/settings";
 const ITEM_HEIGHT = 48;
 
 interface Option {
@@ -52,7 +53,14 @@ export const FoldButtonGroup = (props: Props) => {
         }}>
         {props.options.map((option, index) => (
           <NamespaceVisibleContainer key={index} requiredRole={option.requiredRole}>
-            <Link to={option.to || "#"} onClick={option.onClick} style={{ color: "inherit" }} key={index}>
+            <Link
+              onClick={() => {
+                blinkTopProgressAction();
+                option.onClick && option.onClick();
+              }}
+              to={option.to || "#"}
+              style={{ color: "inherit" }}
+              key={index}>
               <MenuItem key={option.text} selected={false} style={{ padding: "6px 20px" }}>
                 {/* onClick={option.onClick}  */}
 

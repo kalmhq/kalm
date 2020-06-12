@@ -28,6 +28,7 @@ import { SmallCPULineChart, SmallMemoryLineChart } from "../../widgets/SmallLine
 import { BasePage } from "../BasePage";
 import { ApplicationListDataWrapper, WithApplicationsListDataProps } from "./ListDataWrapper";
 import { formatDate } from "../../utils";
+import { blinkTopProgressAction } from "../../actions/settings";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -226,7 +227,10 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
 
   private renderName = (rowData: RowData) => {
     return (
-      <Link style={{ color: primaryColor }} to={`/applications/${rowData.get("name")}`}>
+      <Link
+        style={{ color: primaryColor }}
+        to={`/applications/${rowData.get("name")}`}
+        onClick={() => blinkTopProgressAction()}>
         {rowData.get("name")}
       </Link>
     );
@@ -282,7 +286,10 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     const tooltipTitle = `Total ${podCount} pods are found. \n${successCount} ready, ${pendingCount} pending, ${errorCount} failed. Click to view details.`;
 
     return (
-      <Link to={`/applications/${applicationDetails.get("name")}`} style={{ color: primaryColor }}>
+      <Link
+        to={`/applications/${applicationDetails.get("name")}`}
+        style={{ color: primaryColor }}
+        onClick={() => blinkTopProgressAction()}>
         <Tooltip title={tooltipTitle} enterDelay={500}>
           <FlexRowItemCenterBox>
             {successCount > 0 ? (
@@ -451,6 +458,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     return (
       <>
         <IconButtonWithTooltip
+          onClick={() => blinkTopProgressAction()}
           tooltipTitle="Shell"
           style={{ color: primaryColor }}
           component={Link}
@@ -458,6 +466,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           <KappConsoleIcon />
         </IconButtonWithTooltip>
         <IconButtonWithTooltip
+          onClick={() => blinkTopProgressAction()}
           tooltipTitle="Logs"
           style={{ color: primaryColor }}
           component={Link}
@@ -524,6 +533,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           size="large"
           className={classes.secondHeaderRightItem}
           onClick={() => {
+            blinkTopProgressAction();
             dispatch(push(`/applications/new`));
           }}>
           Add
@@ -610,6 +620,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           color="primary"
           // size="large"
           onClick={() => {
+            blinkTopProgressAction();
             dispatch(push(`/applications/new`));
           }}>
           Create your first application
