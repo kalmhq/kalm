@@ -37,7 +37,8 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
   private renderRows() {
     const { fields, services, activeNamespace } = this.props;
 
-    const options: KAutoCompleteOption[] = services
+    const options: KAutoCompleteOption[] = [];
+    services
       .filter(x => {
         const ns = x.get("namespace");
 
@@ -67,16 +68,19 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
           return aNamespace.localeCompare(bNamespace);
         }
       })
-      .map(x => {
-        const option: KAutoCompleteOption = {
-          value: x.get("name") + `.${x.get("namespace")}.svc.cluster.local`,
-          label: x.get("name"),
-          group: x.get("namespace") === activeNamespace ? `${x.get("namespace")} (Current)` : x.get("namespace")
-        };
-
-        return option;
-      })
-      .toArray();
+      .forEach(svc => {
+        svc
+          .get("ports")
+          .filter(p => p.get("protocol") === "TCP")
+          .forEach(port => {
+            options.push({
+              value: svc.get("name") + `.${svc.get("namespace")}.svc.cluster.local` + ":" + port.get("port"),
+              label: svc.get("name") + ":" + port.get("port"),
+              group:
+                svc.get("namespace") === activeNamespace ? `${svc.get("namespace")} (Current)` : svc.get("namespace")
+            });
+          });
+      });
 
     return fields.map((member, index) => {
       const target = fields.get(index);

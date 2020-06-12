@@ -30,6 +30,7 @@ import {
 import { HttpRoute } from "types/route";
 import { Service } from "types/service";
 import { PersistentVolumes, StorageClasses } from "../types/persistentVolume";
+import { ClusterInfo } from "types/cluster";
 
 export const K8sApiPrefix = process.env.REACT_APP_K8S_API_PERFIX;
 export const k8sWsPrefix = !K8sApiPrefix
@@ -70,6 +71,11 @@ export const getAxiosClient = () => {
   );
 
   return instance;
+};
+
+export const getClusterInfo = async (): Promise<ClusterInfo> => {
+  const res = await getAxiosClient().get(K8sApiPrefix + "/v1alpha1/cluster");
+  return Immutable.fromJS(res.data);
 };
 
 export const getLoginStatus = async (): Promise<LoginStatus> => {
@@ -228,7 +234,9 @@ export const getKappComponentPlugins = async (): Promise<ComponentPlugin[]> => {
 // routes
 
 export const getHttpRoutes = async (namespace: string): Promise<Immutable.List<HttpRoute>> => {
-  const res = await getAxiosClient().get(K8sApiPrefix + `/v1alpha1/httproutes/${namespace}`);
+  const res = await getAxiosClient().get(
+    K8sApiPrefix + (!!namespace ? `/v1alpha1/httproutes/${namespace}` : `/v1alpha1/httproutes`)
+  );
   return Immutable.fromJS(res.data);
 };
 

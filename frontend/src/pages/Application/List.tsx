@@ -1,8 +1,28 @@
-import { Button, createStyles, TextField, Theme, Tooltip, WithStyles, withStyles } from "@material-ui/core";
+import {
+  Box,
+  Button,
+  createStyles,
+  Divider,
+  Link as MLink,
+  List,
+  ListItem,
+  ListItemProps,
+  ListItemText,
+  ListSubheader,
+  Popover,
+  TextField,
+  Theme,
+  Tooltip,
+  WithStyles,
+  withStyles
+} from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
-import { closeDialogAction, openDialogAction } from "actions/dialog";
+import { loadClusterInfoAction } from "actions/cluster";
+import { closeDialogAction } from "actions/dialog";
+import { loadRoutes } from "actions/routes";
 import { push } from "connected-react-router";
 import MaterialTable from "material-table";
+import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 import { withNamespace, withNamespaceProps } from "permission/Namespace";
 import React from "react";
 import { connect } from "react-redux";
@@ -12,12 +32,14 @@ import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
 import { ControlledDialog } from "widgets/ControlledDialog";
-import { HelpIcon, KappConsoleIcon, KappLogIcon } from "widgets/Icon";
+import { KappConsoleIcon, KappLogIcon } from "widgets/Icon";
 import { deleteApplicationAction, duplicateApplicationAction, loadApplicationAction } from "../../actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "../../actions/notification";
+import { blinkTopProgressAction } from "../../actions/settings";
 import { duplicateApplicationName, getApplicationByName } from "../../selectors/application";
 import { primaryColor } from "../../theme";
 import { ApplicationDetails } from "../../types/application";
+import { formatDate } from "../../utils";
 import { customSearchForImmutable } from "../../utils/tableSearch";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
 import { FoldButtonGroup } from "../../widgets/FoldButtonGroup";
@@ -27,11 +49,13 @@ import { Loading } from "../../widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "../../widgets/SmallLineChart";
 import { BasePage } from "../BasePage";
 import { ApplicationListDataWrapper, WithApplicationsListDataProps } from "./ListDataWrapper";
-import { formatDate } from "../../utils";
-import { blinkTopProgressAction } from "../../actions/settings";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
+
+function ListItemLink(props: ListItemProps<"a", { button?: true }>) {
+  return <ListItem button component="a" {...props} />;
+}
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -73,10 +97,13 @@ const styles = (theme: Theme) =>
 const mapStateToProps = (state: RootState) => {
   const internalEndpointsDialog = state.get("dialogs").get(internalEndpointsModalID);
   const externalEndpointsDialog = state.get("dialogs").get(externalEndpointsModalID);
-
+  const routes = state.get("routes").get("httpRoutes");
+  const clusterInfo = state.get("cluster").get("info");
   return {
+    clusterInfo,
     internalEndpointsDialogData: internalEndpointsDialog ? internalEndpointsDialog.get("data") : {},
-    externalEndpointsDialogData: externalEndpointsDialog ? externalEndpointsDialog.get("data") : {}
+    externalEndpointsDialogData: externalEndpointsDialog ? externalEndpointsDialog.get("data") : {},
+    routes
   };
 };
 interface Props
@@ -122,6 +149,12 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
       duplicatingApplicationListItem
     });
   };
+
+  public componentDidMount() {
+    const { dispatch } = this.props;
+    dispatch(loadRoutes(""));
+    dispatch(loadClusterInfoAction());
+  }
 
   private closeDuplicateConfirmDialog = () => {
     this.setState(this.defaultState);
@@ -318,35 +351,153 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderExternalEndpoints = (applicationDetails: RowData) => {
-    let count = 0;
+  private buildCurlCommand = (scheme: string, host: string, path: string, method: string) => {
+    const { clusterInfo } = this.props;
+    let extraArgs: string[] = [];
 
-    applicationDetails.get("components")?.forEach(component => {
-      if (!component.get("plugins")) {
-        return;
+    // test env
+    if (clusterInfo.get("ingressIP").includes("192.168")) {
+      if (scheme === "https") {
+        if (!host.includes(":")) {
+          host = host + ":" + clusterInfo.get("httpsPort");
+        }
+        extraArgs.push(`-k`);
+      } else {
+        if (!host.includes(":")) {
+          extraArgs.push(`-H "Host: ${host}"`);
+          host = host + ":" + clusterInfo.get("httpPort");
+        }
       }
+      extraArgs.push(`--resolve ${host}:${clusterInfo.get("ingressIP")}`);
+    }
 
-      // TODO
-      return;
+    const url = `${scheme}://${host}${path}`;
 
-      // component.get("plugins")!.forEach(plugin => {
-      //   if (plugin.get("type") === EXTERNAL_ACCESS_PLUGIN_TYPE) {
-      //     count += 1;
-      //   }
-      // });
-    });
-    if (count > 0) {
+    return `curl -v -X ${method}${extraArgs.map(x => " " + x).join("")} ${url}`;
+  };
+
+  private renderExternalAccesses = (applicationDetails: RowData) => {
+    const { routes, clusterInfo, activeNamespaceName, dispatch } = this.props;
+
+    const applicationRoutes = routes.filter(x => x.get("namespace") === applicationDetails.get("name"));
+    if (applicationRoutes.size > 0) {
       return (
-        <div>
-          <Button
-            onClick={() => this.props.dispatch(openDialogAction(externalEndpointsModalID, { applicationDetails }))}
-            color="primary">
-            {count} Endpoints
-          </Button>
-        </div>
+        <PopupState variant="popover" popupId={applicationDetails.get("name")}>
+          {popupState => (
+            <>
+              <MLink component="button" variant="body2" {...bindTrigger(popupState)}>
+                {applicationRoutes.size === 1 ? "1 route" : `${applicationRoutes.size} routes`}
+              </MLink>
+              <Popover
+                {...bindPopover(popupState)}
+                anchorOrigin={{
+                  vertical: "bottom",
+                  horizontal: "center"
+                }}
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "center"
+                }}>
+                {applicationRoutes
+                  .map((route, index) => {
+                    let items: React.ReactNode[] = [];
+                    route.get("schemes").forEach(scheme => {
+                      // route.get("hosts").forEach(host => {
+                      // route.get("paths").forEach(path => {
+                      let host = route.get("hosts").first("*");
+                      const path = route.get("paths").first("/");
+
+                      if (host === "*") {
+                        host =
+                          (clusterInfo.get("ingressIP") || clusterInfo.get("ingressHostname")) +
+                          ":" +
+                          clusterInfo.get(scheme === "https" ? "httpsPort" : "httpPort");
+                      }
+
+                      if (host.includes("*")) {
+                        host = host.replace("*", "wildcard");
+                      }
+
+                      const url = scheme + "://" + host + path;
+
+                      items.push(
+                        <ListItem>
+                          <ListItemText primary={url} />
+                          <Box ml={2}>
+                            <Button
+                              variant="text"
+                              size="small"
+                              color="primary"
+                              href={url}
+                              target="_blank"
+                              rel="noreferer"
+                              disabled={!route.get("methods").includes("GET")}>
+                              Open
+                            </Button>
+                          </Box>
+                          <Box ml={1}>
+                            <Button
+                              variant="text"
+                              size="small"
+                              color="primary"
+                              onClick={() => {
+                                navigator.clipboard
+                                  .writeText(
+                                    this.buildCurlCommand(scheme, host, path, route.get("methods").first("GET"))
+                                  )
+                                  .then(
+                                    function() {
+                                      dispatch(setSuccessNotificationAction("Copied successful!"));
+                                    },
+                                    function(err) {
+                                      dispatch(setErrorNotificationAction("Copied failed!"));
+                                    }
+                                  );
+                              }}>
+                              Copy as curl
+                            </Button>
+                          </Box>
+                        </ListItem>
+                      );
+                    });
+
+                    const targetDetails = route
+                      .get("destinations")
+                      .map(destination =>
+                        destination
+                          .get("host")
+                          .replace(".svc.cluster.local", "")
+                          .replace(`.${activeNamespaceName}`, "")
+                      )
+                      .join(", ");
+
+                    return (
+                      <>
+                        <List
+                          component="nav"
+                          dense
+                          subheader={
+                            <ListSubheader component="div" id="nested-list-subheader">
+                              #{index} (
+                              {route.get("methods").size === 9 ? "ALL methods" : route.get("methods").join(",")}) (
+                              {targetDetails})
+                            </ListSubheader>
+                          }>
+                          {items}
+                        </List>
+                        {index < applicationRoutes.size - 1 ? <Divider /> : null}
+                      </>
+                    );
+                  })
+                  .toArray()}
+              </Popover>
+            </>
+          )}
+        </PopupState>
       );
     } else {
-      return "No Endpoints";
+      // return <Link to={applicationRouteUrl(applicationDetails.get("name"))}>Add route</Link>;
+      return "-";
     }
   };
 
@@ -390,7 +541,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderExternalEndpointsDialog = () => {
+  private renderExternalAccessesDialog = () => {
     const applicationDetails: RowData = this.props.externalEndpointsDialogData.applicationDetails;
     return (
       <ControlledDialog
@@ -408,12 +559,12 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
             Close
           </CustomizedButton>
         }>
-        {this.renderExternalEndpointsDialogContent(applicationDetails)}
+        {this.renderExternalAccessesDialogContent(applicationDetails)}
       </ControlledDialog>
     );
   };
 
-  private renderExternalEndpointsDialogContent = (applicationDetails: RowData) => {
+  private renderExternalAccessesDialogContent = (applicationDetails: RowData) => {
     if (!applicationDetails) {
       return null;
     }
@@ -557,18 +708,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
       },
       { title: "Pods Status", field: "status", sorting: false, render: this.renderStatus },
       {
-        title: (
-          <Tooltip title="Addresses can be used to access your services publicly.">
-            <FlexRowItemCenterBox width="auto">
-              External Endpoints <HelpIcon fontSize="small" />
-            </FlexRowItemCenterBox>
-          </Tooltip>
-        ),
-        field: "internalEndpoints",
-        sorting: false,
-        render: this.renderExternalEndpoints
-      },
-      {
         title: "CPU",
         field: "cpu",
         render: this.renderCPU,
@@ -590,6 +729,11 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         sorting: false,
         render: this.renderCreatedTime,
         hidden: !hasWriterRole
+      },
+      {
+        title: "Routes",
+        sorting: false,
+        render: this.renderExternalAccesses
       },
       {
         title: "Actions",
@@ -635,7 +779,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     return (
       <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
         {this.renderInternalEndpointsDialog()}
-        {this.renderExternalEndpointsDialog()}
+        {this.renderExternalAccessesDialog()}
         {this.renderDeleteConfirmDialog()}
         {/* {this.renderDuplicateConfirmDialog()} */}
         <div className={classes.root}>
