@@ -1,10 +1,8 @@
 import { createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { push } from "connected-react-router";
-import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
 import { RouteChildrenProps } from "react-router-dom";
-import { formValueSelector } from "redux-form/immutable";
 import {
   createComponentAction,
   setIsSubmittingApplicationComponent,
@@ -12,7 +10,7 @@ import {
 } from "../../actions/application";
 import { ComponentLikeForm } from "../../forms/ComponentLike";
 import { RootState } from "../../reducers";
-import { ApplicationComponent, SharedEnv } from "../../types/application";
+import { ApplicationComponent } from "../../types/application";
 import { ApplicationEditDrawer } from "../../widgets/ApplicationEditDrawer";
 import { ComponentStatus } from "../../widgets/ComponentStatus";
 import { Loading } from "../../widgets/Loading";
@@ -20,10 +18,12 @@ import { BasePage } from "../BasePage";
 import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./ItemDataWrapper";
 
 const mapStateToProps = (state: RootState, props: any) => {
-  const selector = formValueSelector("application");
-  const sharedEnv: Immutable.List<SharedEnv> = selector(state, "sharedEnvs");
+  // const selector = formValueSelector("application");
+  // const sharedEnv: Immutable.List<SharedEnv> = selector(state, "sharedEnvs");
+  const hash = window.location.hash;
+  const anchor = hash.replace("#", "");
 
-  return { sharedEnv };
+  return { anchor };
 };
 
 const styles = (theme: Theme) =>
@@ -56,14 +56,14 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
   private submitComponent = async (component: ApplicationComponent) => {
     // console.log("submitComponent", component.toJS());
 
-    const { dispatch, application, currentComponent } = this.props;
+    const { dispatch, application, currentComponent, anchor } = this.props;
 
     if (!currentComponent || !currentComponent.get("name")) {
       await dispatch(createComponentAction(component));
     } else {
       await dispatch(updateComponentAction(component));
     }
-    dispatch(push(`/applications/${application?.get("name")}/edit?component=${component.get("name")}`));
+    dispatch(push(`/applications/${application?.get("name")}/edit?component=${component.get("name")}#${anchor}`));
   };
 
   public renderApplicationEditDrawer() {
@@ -105,14 +105,14 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
   }
 
   public renderForm() {
-    const { application, sharedEnv, dispatch, classes, currentComponent } = this.props;
+    const { application, dispatch, classes, currentComponent } = this.props;
 
     return (
       <Grid container spacing={2} className={classes.root}>
         <Grid item xs={8} sm={8} md={8}>
           <ComponentLikeForm
             application={application}
-            sharedEnv={sharedEnv}
+            // sharedEnv={sharedEnv}
             onSubmit={this.submitComponent}
             onSubmitFail={() => {
               dispatch(setIsSubmittingApplicationComponent(false));

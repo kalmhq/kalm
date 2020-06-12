@@ -87,7 +87,7 @@ const mapStateToProps = (state: RootState, props: any) => {
   const search = queryString.parse(window.location.search);
   const hash = window.location.hash;
   const anchor = hash.replace("#", "");
-  let currentTabIndex = tabs.indexOf(`${anchor}`);
+  let currentTabIndex = tabs.map(t => t.replace(/\s/g, "")).indexOf(`${anchor}`);
   if (currentTabIndex < 0) {
     currentTabIndex = 0;
   }
@@ -1003,7 +1003,13 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     const tab = this.tabs[tabIndex];
     const { application, dispatch, search } = this.props;
 
-    dispatch(push(`/applications/${application?.get("name")}/edit?component=${search.component || ""}#${tab || ""}`));
+    dispatch(
+      push(
+        `/applications/${application?.get("name")}/edit?component=${search.component || ""}#${
+          tab ? tab.replace(/\s/g, "") : ""
+        }`
+      )
+    );
   }
 
   private renderTabs() {

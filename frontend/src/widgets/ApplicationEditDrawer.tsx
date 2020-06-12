@@ -1,9 +1,10 @@
 import { createStyles, List, ListItem, ListItemIcon, ListItemText, ListSubheader, Theme } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import AddIcon from "@material-ui/icons/Add";
-import RemoveIcon from "@material-ui/icons/Remove";
 import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
+import RemoveIcon from "@material-ui/icons/Remove";
 import { WithStyles, withStyles } from "@material-ui/styles";
+import { push } from "connected-react-router";
 import Immutable from "immutable";
 import queryString from "query-string";
 import React from "react";
@@ -11,14 +12,13 @@ import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { getFormSyncErrors, hasSubmitFailed } from "redux-form/immutable";
 import { TDispatch } from "types";
+import { deleteComponentAction } from "../actions/application";
 import { componentInitialValues } from "../forms/ComponentLike";
 import { BaseDrawer } from "../layout/BaseDrawer";
 import { primaryBackgroud, primaryColor } from "../theme";
 import { ApplicationComponent, ApplicationComponentDetails, ApplicationDetails } from "../types/application";
-import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
-import { deleteComponentAction } from "../actions/application";
 import { ConfirmDialog } from "./ConfirmDialog";
-import { push } from "connected-react-router";
+import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
@@ -26,8 +26,11 @@ const mapStateToProps = (state: RootState) => {
   const entity = auth.get("entity");
   const componentSyncErrors = getFormSyncErrors("componentLike")(state);
   const componentFormSubmitFailed = hasSubmitFailed("componentLike")(state);
+  const hash = window.location.hash;
+  const anchor = hash.replace("#", "");
 
   return {
+    anchor,
     activeNamespaceName: state.get("namespaces").get("active"),
     isAdmin,
     entity,
@@ -81,14 +84,18 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
     };
   }
 
+  private pushRedirect(componentName?: string) {
+    const { application, dispatch, anchor } = this.props;
+
+    dispatch(push(`/applications/${application?.get("name")}/edit?component=${componentName || ""}#${anchor}`));
+  }
+
   private handleClickComponent(component: ApplicationComponent, index: number) {
     this.setState({
       selectededComponentIndex: index
     });
 
-    const { dispatch, application } = this.props;
-
-    dispatch(push(`/applications/${application?.get("name")}/edit?component=${component.get("name") || ""}`));
+    this.pushRedirect(component.get("name"));
   }
 
   private handleAdd() {
@@ -100,11 +107,13 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
 
     if (currentComponent) {
       if (!currentComponent.get("name")) {
-        const { dispatch, application } = this.props;
-        dispatch(
-          push(
-            `/applications/${application?.get("name")}/edit?component=${application?.get("components").get(0) || ""}`
-          )
+        const { application } = this.props;
+
+        this.pushRedirect(
+          application
+            ?.get("components")
+            ?.get(0)
+            ?.get("name")
         );
       } else {
         dispatch(deleteComponentAction(currentComponent.get("name")));
@@ -117,8 +126,7 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
           .get(0)
           ?.get("name")
       ) {
-        const { dispatch, application } = this.props;
-        dispatch(push(`/applications/${application?.get("name")}/edit?component=${""}`));
+        this.pushRedirect("");
       }
     }
   }
@@ -148,10 +156,6 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
       />
     );
   };
-
-  private generateComponentKey(index: number): string {
-    return `components-${index}`;
-  }
 
   public componentDidMount() {
     const { application } = this.props;
