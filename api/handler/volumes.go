@@ -10,6 +10,7 @@ import (
 type PV struct {
 	Name               string `json:"name"`
 	IsAvailable        bool   `json:"isAvailable"`                  // can be reused or not
+	IsInUse            bool   `json:"isInUse"`                      // can be reused or not
 	ComponentNamespace string `json:"componentNamespace,omitempty"` // ns of latest component using this PV
 	ComponentName      string `json:"componentName,omitempty"`      // name of latest component using this PV
 	Phase              string `json:"phase"`                        // Available, Bound, Released
@@ -60,6 +61,7 @@ func (h *ApiHandler) handleListVolumes(c echo.Context) error {
 			ComponentName:      compName,
 			ComponentNamespace: compNamespace,
 			IsAvailable:        isAvailable,
+			IsInUse:            !isAvailable,
 			Phase:              string(kappPV.Status.Phase),
 			Capacity:           capInStr,
 		})
