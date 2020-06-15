@@ -225,7 +225,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Field
           name="schedule"
           component={KRenderTextField}
-          placeholder="* * * * * *"
+          placeholder="* * * * *"
           label="Cronjob Schedule"
           required
           validate={[ValidatorSchedule]}
