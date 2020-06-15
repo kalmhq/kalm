@@ -7,7 +7,7 @@ export const LOAD_STORAGE_CLASSES = "LOAD_STORAGE_CLASSES";
 
 export interface PersistentVolumeContent {
   name: string;
-  isAvailable: boolean;
+  isInUse: boolean;
   componentNamespace?: string;
   componentName?: string;
   phase: string;

@@ -115,7 +115,7 @@ export class VolumesRaw extends React.Component<Props, States> {
       data.push({
         index: index,
         name: pv.get("name"),
-        isAvailable: pv.get("isAvailable"),
+        isInUse: pv.get("isInUse"),
         componentNamespace: pv.get("componentNamespace"),
         componentName: pv.get("componentName"),
         phase: pv.get("phase"),
@@ -130,15 +130,12 @@ export class VolumesRaw extends React.Component<Props, States> {
     return (
       <>
         <IconButtonWithTooltip
-          disabled={rowData.isAvailable}
-          tooltipTitle={rowData.isAvailable ? "This Persistent Volume can't be removed" : "Delete"}
+          disabled={rowData.isInUse}
+          tooltipTitle={rowData.isInUse ? "This Persistent Volume can't be removed" : "Delete"}
           style={{ color: primaryColor }}
-          onClick={() =>
-            this.setState({
-              isDeleteConfirmDialogOpen: true,
-              deletingPersistentVolumeName: rowData.name
-            })
-          }>
+          onClick={() => {
+            this.showDeleteConfirmDialog(rowData.name);
+          }}>
           <DeleteIcon />
         </IconButtonWithTooltip>
       </>
@@ -152,6 +149,7 @@ export class VolumesRaw extends React.Component<Props, States> {
 
     return (
       <BasePage secondHeaderRight="Volumes">
+        {this.renderDeleteConfirmDialog()}
         <div className={classes.root}>
           {loadPersistentVolumesError ? (
             <Alert severity="error">
@@ -170,7 +168,7 @@ export class VolumesRaw extends React.Component<Props, States> {
             }}
             columns={[
               { title: "Name", field: "name", sorting: false },
-              { title: "IsAvailable", field: "isAvailable", sorting: false },
+              { title: "Is In Use", field: "isInUse", sorting: false },
               { title: "ComponentNamespace", field: "componentNamespace", sorting: false },
               { title: "ComponentName", field: "componentName", sorting: false },
               { title: "Phase", field: "phase", sorting: false },

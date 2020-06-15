@@ -6,7 +6,8 @@ import {
   LOAD_PERSISTENT_VOLUMES,
   LOAD_STORAGE_CLASSES,
   PersistentVolumes,
-  StorageClasses
+  StorageClasses,
+  DELETE_PERSISTENT_VOLUME
 } from "../types/persistentVolume";
 
 export type State = ImmutableMap<{
@@ -29,6 +30,15 @@ const reducer = (state: State = initialState, action: Actions): State => {
     }
     case LOAD_STORAGE_CLASSES: {
       return state.set("storageClasses", action.payload.storageClasses);
+    }
+    case DELETE_PERSISTENT_VOLUME: {
+      const persistentVolumes = state.get("persistentVolumes");
+      const index = persistentVolumes.findIndex(v => v.get("name") === action.payload.name);
+
+      if (index >= 0) {
+        state = state.deleteIn(["persistentVolumes", index]);
+      }
+      return state;
     }
   }
 
