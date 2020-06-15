@@ -67,13 +67,13 @@ export class VolumesRaw extends React.Component<Props, States> {
   };
 
   private renderDeleteConfirmDialog = () => {
-    const { isDeleteConfirmDialogOpen } = this.state;
+    const { isDeleteConfirmDialogOpen, deletingPersistentVolumeName } = this.state;
 
     return (
       <ConfirmDialog
         open={isDeleteConfirmDialogOpen}
         onClose={this.closeDeleteConfirmDialog}
-        title="Are you sure to delete this Persistent Volume?"
+        title={`Are you sure to delete this Persistent Volume(${deletingPersistentVolumeName})?`}
         content="You will lost this Persistent Volume, and this action is irrevocable."
         onAgree={this.confirmDelete}
       />

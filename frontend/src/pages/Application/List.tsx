@@ -222,13 +222,13 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   private renderDeleteConfirmDialog = () => {
-    const { isDeleteConfirmDialogOpen } = this.state;
+    const { isDeleteConfirmDialogOpen, deletingApplicationListItem } = this.state;
 
     return (
       <ConfirmDialog
         open={isDeleteConfirmDialogOpen}
         onClose={this.closeDeleteConfirmDialog}
-        title="Are you sure to delete this Application?"
+        title={`Are you sure to delete this Application(${deletingApplicationListItem?.get("name")})?`}
         content="This application is already disabled. You will lost this application config, and this action is irrevocable."
         onAgree={this.confirmDelete}
       />
