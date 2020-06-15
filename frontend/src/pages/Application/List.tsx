@@ -6,7 +6,6 @@ import {
   Link as MLink,
   List,
   ListItem,
-  ListItemProps,
   ListItemText,
   ListSubheader,
   Popover,
@@ -53,9 +52,9 @@ import { ApplicationListDataWrapper, WithApplicationsListDataProps } from "./Lis
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
 
-function ListItemLink(props: ListItemProps<"a", { button?: true }>) {
-  return <ListItem button component="a" {...props} />;
-}
+// function ListItemLink(props: ListItemProps<"a", { button?: true }>) {
+//   return <ListItem button component="a" {...props} />;
+// }
 
 const styles = (theme: Theme) =>
   createStyles({
