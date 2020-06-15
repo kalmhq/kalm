@@ -25,7 +25,7 @@ import { Body, H5 } from "widgets/Label";
 import { SectionTitle } from "widgets/SectionTitle";
 import { loadComponentPluginsAction } from "../../actions/application";
 import { loadNodesAction } from "../../actions/node";
-import { loadStorageClassesAction } from "../../actions/persistentVolume";
+import { loadStorageClassesAction, loadPersistentVolumesAction } from "../../actions/persistentVolume";
 import { RootState } from "../../reducers";
 import { getNodeLabels } from "../../selectors/node";
 import { TDispatchProp } from "../../types";
@@ -198,6 +198,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     // load configs for volume
     // dispatch(loadConfigsAction());
     dispatch(loadStorageClassesAction());
+    dispatch(loadPersistentVolumesAction());
   }
 
   private renderReplicasOrSchedule() {
