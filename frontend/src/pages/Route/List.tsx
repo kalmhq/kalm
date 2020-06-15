@@ -174,6 +174,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
 
   public render() {
     const { classes, dispatch, isFirstLoaded, isLoading } = this.props;
+    const tableData = this.getData();
     return (
       <BasePage
         leftDrawer={<ApplicationViewDrawer />}
@@ -200,6 +201,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
             <MaterialTable
               options={{
                 pageSize: 20,
+                paging: tableData.length > 20,
                 padding: "dense",
                 draggable: false,
                 rowStyle: {
@@ -273,7 +275,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
                   render: this.renderActions
                 }
               ]}
-              data={this.getData()}
+              data={tableData}
               title=""
             />
           )}
