@@ -1,4 +1,5 @@
 import { ThunkDispatch, ThunkAction } from "redux-thunk";
+import { ActionTypes, actionTypes } from "redux-form/lib/actionTypes";
 import { RootState } from "../reducers";
 import { CommonActions } from "./common";
 import { ApplicationActions } from "./application";
@@ -14,9 +15,17 @@ import { CertificateActions } from "./certificate";
 import { ServiceActions } from "./service";
 import { VolumeActions } from "./persistentVolume";
 import { ClusterActions } from "./cluster";
+import { RouterAction } from "connected-react-router";
 import { TutorialActions } from "./tutorial";
+import { FormAction } from "redux-form";
+
+interface ReduxFormAction extends FormAction {
+  type: keyof ActionTypes;
+}
 
 export type Actions =
+  | ReduxFormAction
+  | RouterAction
   | CommonActions
   | ApplicationActions
   | ComponentTemplateActions
