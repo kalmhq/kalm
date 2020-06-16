@@ -6,7 +6,6 @@ import {
   Link as MLink,
   List,
   ListItem,
-  ListItemProps,
   ListItemText,
   ListSubheader,
   Popover,
@@ -49,13 +48,15 @@ import { Loading } from "../../widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "../../widgets/SmallLineChart";
 import { BasePage } from "../BasePage";
 import { ApplicationListDataWrapper, WithApplicationsListDataProps } from "./ListDataWrapper";
+import { HttpRoute } from "../../types/route";
+import Immutable from "immutable";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
 
-function ListItemLink(props: ListItemProps<"a", { button?: true }>) {
-  return <ListItem button component="a" {...props} />;
-}
+// function ListItemLink(props: ListItemProps<"a", { button?: true }>) {
+//   return <ListItem button component="a" {...props} />;
+// }
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -97,13 +98,13 @@ const styles = (theme: Theme) =>
 const mapStateToProps = (state: RootState) => {
   const internalEndpointsDialog = state.get("dialogs").get(internalEndpointsModalID);
   const externalEndpointsDialog = state.get("dialogs").get(externalEndpointsModalID);
-  const routes = state.get("routes").get("httpRoutes");
+  const routesMap = state.get("routes").get("httpRoutes");
   const clusterInfo = state.get("cluster").get("info");
   return {
     clusterInfo,
     internalEndpointsDialogData: internalEndpointsDialog ? internalEndpointsDialog.get("data") : {},
     externalEndpointsDialogData: externalEndpointsDialog ? externalEndpointsDialog.get("data") : {},
-    routes
+    routesMap
   };
 };
 interface Props
@@ -223,13 +224,13 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   private renderDeleteConfirmDialog = () => {
-    const { isDeleteConfirmDialogOpen } = this.state;
+    const { isDeleteConfirmDialogOpen, deletingApplicationListItem } = this.state;
 
     return (
       <ConfirmDialog
         open={isDeleteConfirmDialogOpen}
         onClose={this.closeDeleteConfirmDialog}
-        title="Are you sure to delete this Application?"
+        title={`Are you sure to delete this Application(${deletingApplicationListItem?.get("name")})?`}
         content="This application is already disabled. You will lost this application config, and this action is irrevocable."
         onAgree={this.confirmDelete}
       />
@@ -377,10 +378,10 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   private renderExternalAccesses = (applicationDetails: RowData) => {
-    const { routes, clusterInfo, activeNamespaceName, dispatch } = this.props;
+    const { routesMap, clusterInfo, activeNamespaceName, dispatch } = this.props;
 
-    const applicationRoutes = routes.filter(x => x.get("namespace") === applicationDetails.get("name"));
-    if (applicationRoutes.size > 0) {
+    const applicationRoutes: Immutable.List<HttpRoute> | undefined = routesMap.get(applicationDetails.get("name"));
+    if (applicationRoutes && applicationRoutes.size > 0) {
       return (
         <PopupState variant="popover" popupId={applicationDetails.get("name")}>
           {popupState => (

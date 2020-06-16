@@ -13,9 +13,9 @@ import {
   UPDATE_ROUTE_FULFILLED,
   UPDATE_ROUTE_PENDING
 } from "types/route";
-import { StatusFailure, ThunkResult } from "../types";
-import { setErrorNotificationAction } from "./notification";
+import { ThunkResult } from "../types";
 import { createHttpRoute, deleteHttpRoute, getHttpRoutes, updateHttpRoute } from "./kubernetesApi";
+import { setErrorNotificationAction } from "./notification";
 
 export const loadRoutes = (namespace: string): ThunkResult<Promise<void>> => {
   return async dispatch => {
@@ -30,12 +30,8 @@ export const loadRoutes = (namespace: string): ThunkResult<Promise<void>> => {
         }
       });
     } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
       dispatch({ type: LOAD_ROUTES_FAILED });
+      throw e;
     }
   };
 };
@@ -64,12 +60,8 @@ export const createRoute = (name: string, namespace: string, route: HttpRoute): 
         }
       });
     } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
       dispatch({ type: CREATE_ROUTE_FAILED });
+      throw e;
     }
   };
 };
@@ -98,12 +90,8 @@ export const updateRoute = (name: string, namespace: string, route: HttpRoute): 
         }
       });
     } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
       dispatch({ type: UPDATE_ROUTE_FAILED });
+      throw e;
     }
   };
 };
@@ -136,12 +124,8 @@ export const deleteRoute = (name: string, namespace: string): ThunkResult<Promis
         }
       });
     } catch (e) {
-      if (e.response && e.response.data.status === StatusFailure) {
-        dispatch(setErrorNotificationAction(e.response.data.message));
-      } else {
-        dispatch(setErrorNotificationAction());
-      }
       dispatch({ type: DELETE_ROUTE_FAILED });
+      throw e;
     }
   };
 };

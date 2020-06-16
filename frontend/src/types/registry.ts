@@ -1,9 +1,13 @@
 import { ImmutableMap } from "typings";
 import Immutable from "immutable";
 
+export const SET_IS_SUBMITTING_REGISTRY = "SET_IS_SUBMITTING_REGISTRY";
 export const LOAD_REGISTRIES_PENDING = "LOAD_REGISTRIES_PENDING";
-export const LOAD_REGISTRIES_FULFILlED = "LOAD_REGISTRIES_FULFILlED";
+export const LOAD_REGISTRIES_FULFILLED = "LOAD_REGISTRIES_FULFILLED";
 export const LOAD_REGISTRIES_FAILED = "LOAD_REGISTRIES_FAILED";
+export const CREATE_REGISTRY = "CREATE_REGISTRY";
+export const UPDATE_REGISTRY = "UPDATE_REGISTRY";
+export const DELETE_REGISTRY = "DELETE_REGISTRY";
 
 export interface RepositoryTagContent {
   name: string;
@@ -34,12 +38,48 @@ export interface Registry {
 export type RegistryType = ImmutableMap<Registry>;
 
 export interface LoadRegistriesAction {
-  type: typeof LOAD_REGISTRIES_FULFILlED;
-  payload: Immutable.List<RegistryType>;
+  type: typeof LOAD_REGISTRIES_FULFILLED;
+  payload: {
+    registries: Immutable.List<RegistryType>;
+  };
+}
+
+export interface CreateRegistryAction {
+  type: typeof CREATE_REGISTRY;
+  payload: {
+    registry: RegistryType;
+  };
+}
+
+export interface UpdateRegistryAction {
+  type: typeof UPDATE_REGISTRY;
+  payload: {
+    registry: RegistryType;
+  };
+}
+
+export interface DeleteRegistryAction {
+  type: typeof DELETE_REGISTRY;
+  payload: {
+    name: string;
+  };
+}
+
+export interface SetIsSubmittingRegistry {
+  type: typeof SET_IS_SUBMITTING_REGISTRY;
+  payload: {
+    isSubmittingRegistry: boolean;
+  };
 }
 
 export interface RegistriesStateAction {
   type: typeof LOAD_REGISTRIES_PENDING | typeof LOAD_REGISTRIES_FAILED;
 }
 
-export type RegistriesActions = LoadRegistriesAction | RegistriesStateAction;
+export type RegistriesActions =
+  | LoadRegistriesAction
+  | RegistriesStateAction
+  | CreateRegistryAction
+  | UpdateRegistryAction
+  | DeleteRegistryAction
+  | SetIsSubmittingRegistry;

@@ -148,12 +148,15 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
 
   private renderDeleteConfirmDialog = () => {
     const { isDeleteConfirmDialogOpen } = this.state;
+    const { currentComponent } = this.props;
 
     return (
       <ConfirmDialog
         open={isDeleteConfirmDialogOpen}
         onClose={this.closeDeleteConfirmDialog}
-        title="Are you sure to delete this component?"
+        title={`Are you sure to delete this component${
+          currentComponent && currentComponent.get("name") ? currentComponent.get("name") : ""
+        }?`}
         content="You will lost this component, and this action is irrevocable."
         onAgree={() => this.confirmDelete()}
       />

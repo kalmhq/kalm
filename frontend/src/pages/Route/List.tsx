@@ -18,6 +18,7 @@ import { H4 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { Namespaces } from "widgets/Namespaces";
 import { blinkTopProgressAction } from "../../actions/settings";
+import Immutable from "immutable";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -40,7 +41,10 @@ const mapStateToProps = (state: RootState, ownProps: RouteComponentProps) => {
     namespace: (query.namespace as string) || activeNamespace,
     isLoading: state.get("routes").get("isLoading"),
     isFirstLoaded: state.get("routes").get("isFirstLoaded"),
-    httpRoutes: state.get("routes").get("httpRoutes")
+    httpRoutes: state
+      .get("routes")
+      .get("httpRoutes")
+      .get(activeNamespace) as Immutable.List<HttpRoute> | undefined
   };
 };
 
@@ -141,11 +145,12 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     const { httpRoutes } = this.props;
     const data: RowData[] = [];
 
-    httpRoutes.forEach((httpRoute, index) => {
-      const rowData = httpRoute as RowData;
-      rowData.index = index;
-      data.push(rowData);
-    });
+    httpRoutes &&
+      httpRoutes.forEach((httpRoute, index) => {
+        const rowData = httpRoute as RowData;
+        rowData.index = index;
+        data.push(rowData);
+      });
 
     return data;
   }
@@ -174,6 +179,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
 
   public render() {
     const { classes, dispatch, isFirstLoaded, isLoading } = this.props;
+    const tableData = this.getData();
     return (
       <BasePage
         leftDrawer={<ApplicationViewDrawer />}
@@ -200,6 +206,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
             <MaterialTable
               options={{
                 pageSize: 20,
+                paging: tableData.length > 20,
                 padding: "dense",
                 draggable: false,
                 rowStyle: {
@@ -273,7 +280,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
                   render: this.renderActions
                 }
               ]}
-              data={this.getData()}
+              data={tableData}
               title=""
             />
           )}
