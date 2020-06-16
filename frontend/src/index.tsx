@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import "driver.js/dist/driver.min.css";
 import "./index.css";
 import "./antd.css";
 import "perfect-scrollbar/css/perfect-scrollbar.css";
