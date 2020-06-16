@@ -186,7 +186,11 @@ func findComponentUsingPVC(pvc corev1.PersistentVolumeClaim, compList v1alpha1.C
 				continue
 			}
 
-			if vol.PersistentVolumeClaimName == pvc.Name {
+			if !isStatefulSet(&comp) && vol.PersistentVolumeClaimName == pvc.Name {
+				return comp, true
+			}
+
+			if isStatefulSet(&comp) && strings.HasPrefix(pvc.Name, vol.PersistentVolumeClaimName) {
 				return comp, true
 			}
 		}
