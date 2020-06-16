@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	"github.com/sirupsen/logrus"
 	appV1 "k8s.io/api/apps/v1"
@@ -25,36 +26,36 @@ func init() {
 }
 
 type ResourceChannels struct {
-	DeploymentList               *DeploymentListChannel
-	PodList                      *PodListChannel
-	EventList                    *EventListChannel
-	ServiceList                  *ServiceListChannel
-	RoleBindingList              *RoleBindingListChannel
-	NamespaceList                *NamespaceListChannel
-	ComponentList                *ComponentListChannel
-	ComponentPluginList          *ComponentPluginListChannel
-	ComponentPluginBindingList   *ComponentPluginBindingListChannel
+	DeploymentList             *DeploymentListChannel
+	PodList                    *PodListChannel
+	EventList                  *EventListChannel
+	ServiceList                *ServiceListChannel
+	RoleBindingList            *RoleBindingListChannel
+	NamespaceList              *NamespaceListChannel
+	ComponentList              *ComponentListChannel
+	ComponentPluginList        *ComponentPluginListChannel
+	ComponentPluginBindingList *ComponentPluginBindingListChannel
 	//ApplicationPluginList        *ApplicationPluginListChannel
 	//ApplicationPluginBindingList *ApplicationPluginBindingListChannel
-	DockerRegistryList           *DockerRegistryListChannel
-	SecretList                   *SecretListChannel
+	DockerRegistryList *DockerRegistryListChannel
+	SecretList         *SecretListChannel
 }
 
 type Resources struct {
-	DeploymentList            *appV1.DeploymentList
-	PodList                   *coreV1.PodList
-	EventList                 *coreV1.EventList
-	Services                  []coreV1.Service
-	RoleBindings              []rbacV1.RoleBinding
-	Namespaces                []Namespace
-	Components                []v1alpha1.Component
-	ComponentPlugins          []v1alpha1.ComponentPlugin
-	ComponentPluginBindings   []v1alpha1.ComponentPluginBinding
+	DeploymentList          *appV1.DeploymentList
+	PodList                 *coreV1.PodList
+	EventList               *coreV1.EventList
+	Services                []coreV1.Service
+	RoleBindings            []rbacV1.RoleBinding
+	Namespaces              []Namespace
+	Components              []v1alpha1.Component
+	ComponentPlugins        []v1alpha1.ComponentPlugin
+	ComponentPluginBindings []v1alpha1.ComponentPluginBinding
 	//ApplicationPlugins        []v1alpha1.ApplicationPlugin
 	//ApplicationPluginBindings []v1alpha1.ApplicationPluginBinding
-	DockerRegistries          []*v1alpha1.DockerRegistry
-	Secrets                   []*coreV1.Secret
-	HttpsCertIssuers          []v1alpha1.HttpsCertIssuer
+	DockerRegistries []v1alpha1.DockerRegistry
+	Secrets          []coreV1.Secret
+	HttpsCertIssuers []v1alpha1.HttpsCertIssuer
 }
 
 var ListAll = metaV1.ListOptions{
@@ -283,4 +284,3 @@ func (builder *Builder) Delete(obj runtime.Object, opts ...client.DeleteOption) 
 func (builder *Builder) Update(obj runtime.Object, opts ...client.UpdateOption) error {
 	return builder.Client.Update(builder.ctx, obj, opts...)
 }
-
