@@ -16,6 +16,7 @@ export const KRenderTextField = ({
   placeholder,
   required,
   disabled,
+  type,
   endAdornment,
   multiline,
   rows,
@@ -37,6 +38,7 @@ export const KRenderTextField = ({
       disabled={disabled}
       required={required}
       error={showError}
+      type={type}
       multiline={multiline}
       rows={rows}
       InputLabelProps={{

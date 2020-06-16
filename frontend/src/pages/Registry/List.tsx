@@ -15,7 +15,7 @@ import { blinkTopProgressAction } from "../../actions/settings";
 import { primaryColor } from "../../theme";
 import { CustomizedButton } from "../../widgets/Button";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
-import { DeleteIcon } from "../../widgets/Icon";
+import { DeleteIcon, EditIcon } from "../../widgets/Icon";
 import { H4 } from "../../widgets/Label";
 import { BasePage } from "../BasePage";
 import { RegistryNewModal, RegistryNewModalID } from "./New";
@@ -49,6 +49,7 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
 interface State {
   isDeleteConfirmDialogOpen: boolean;
   deletingItemName?: string;
+  editingRegistry?: RegistryType;
 }
 
 interface RowData extends RegistryType {
@@ -60,7 +61,8 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
     super(props);
     this.state = {
       isDeleteConfirmDialogOpen: false,
-      deletingItemName: undefined
+      deletingItemName: undefined,
+      editingRegistry: undefined
     };
   }
 
@@ -140,8 +142,21 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderActions(row: RowData) {
+    const { registries, dispatch } = this.props;
     return (
       <>
+        <IconButtonWithTooltip
+          tooltipTitle={"Edit"}
+          style={{ color: primaryColor }}
+          onClick={() => {
+            const registry = registries.find(r => r.get("name") === row.get("name"));
+            this.setState({
+              editingRegistry: registry
+            });
+            dispatch(openDialogAction(RegistryNewModalID));
+          }}>
+          <EditIcon />
+        </IconButtonWithTooltip>
         <IconButtonWithTooltip
           tooltipTitle={"Delete"}
           style={{ color: primaryColor }}
@@ -177,6 +192,9 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
           size="large"
           className={classes.secondHeaderRightItem}
           onClick={() => {
+            this.setState({
+              editingRegistry: undefined
+            });
             blinkTopProgressAction();
             dispatch(openDialogAction(RegistryNewModalID));
           }}>
@@ -188,12 +206,13 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
 
   public render() {
     const { isLoading, isFirstLoaded } = this.props;
+    const { editingRegistry } = this.state;
     const tableData = this.getData();
-
+    console.log("isEdit", !!editingRegistry);
     return (
       <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
         {this.renderDeleteConfirmDialog()}
-        <RegistryNewModal isEdit={false} />
+        <RegistryNewModal isEdit={!!editingRegistry} registry={editingRegistry} />
         {isLoading && !isFirstLoaded ? (
           <Loading />
         ) : (
@@ -258,7 +277,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
                 field: "action",
                 sorting: false,
                 searchable: false,
-                render: this.renderActions
+                render: row => this.renderActions(row)
               }
             ]}
             // detailPanel={this.renderDetails}

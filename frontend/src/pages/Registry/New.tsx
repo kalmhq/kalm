@@ -26,6 +26,7 @@ const mapStateToProps = (state: RootState) => {
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {
   isEdit: boolean;
+  registry?: RegistryType;
 }
 
 interface State {}
@@ -64,7 +65,7 @@ class RegistryNewModalRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { isEdit } = this.props;
+    const { isEdit, registry } = this.props;
     return (
       <ControlledDialog
         dialogID={RegistryNewModalID}
@@ -74,7 +75,7 @@ class RegistryNewModalRaw extends React.PureComponent<Props, State> {
           fullWidth: true,
           maxWidth: "sm"
         }}>
-        <RegistryForm isEdit={isEdit} onSubmit={this.submit} initialValues={registryInitialValues} />
+        <RegistryForm isEdit={isEdit} onSubmit={this.submit} initialValues={registry || registryInitialValues} />
       </ControlledDialog>
     );
   }

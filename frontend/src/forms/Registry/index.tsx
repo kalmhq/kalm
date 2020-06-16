@@ -71,6 +71,7 @@ class RegistryFormRaw extends React.PureComponent<
           </Grid>{" "}
           <Grid item md={12}>
             <Field
+              type="password"
               name="password"
               label="Password"
               component={KRenderTextField}
@@ -90,6 +91,8 @@ export const registryInitialValues: RegistryType = Immutable.fromJS({
 
 export const RegistryForm = reduxForm<RegistryType, Props>({
   form: "registry",
+  enableReinitialize: true,
+  keepDirtyOnReinitialize: false,
   initialValues: registryInitialValues,
   onSubmitFail: (...args) => {
     console.log("submit failed", args);
