@@ -4,7 +4,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
-import { LEFT_SECTION_WIDTH } from "../pages/BasePage";
+import { LEFT_SECTION_OPEN_WIDTH } from "../pages/BasePage";
 import { APP_BAR_HEIGHT } from "./AppBar";
 import { SECOND_HEADER_HEIGHT } from "./SecondHeader";
 
@@ -15,11 +15,11 @@ const mapStateToProps = (state: RootState) => {
 const styles = (theme: Theme) =>
   createStyles({
     drawer: {
-      width: LEFT_SECTION_WIDTH,
+      width: LEFT_SECTION_OPEN_WIDTH,
       flexShrink: 0
     },
     drawerPaper: {
-      width: LEFT_SECTION_WIDTH,
+      width: LEFT_SECTION_OPEN_WIDTH,
       paddingTop: APP_BAR_HEIGHT + SECOND_HEADER_HEIGHT,
       left: "auto"
     },

@@ -20,7 +20,7 @@ import { RootState } from "reducers";
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
 import { SECOND_HEADER_HEIGHT } from "../layout/SecondHeader";
-import { LEFT_SECTION_WIDTH } from "../pages/BasePage";
+import { LEFT_SECTION_OPEN_WIDTH } from "../pages/BasePage";
 import { H4 } from "./Label";
 
 const styles = (theme: Theme) =>
@@ -36,7 +36,7 @@ const styles = (theme: Theme) =>
       border: "0"
     },
     menuList: {
-      width: LEFT_SECTION_WIDTH
+      width: LEFT_SECTION_OPEN_WIDTH
     }
   });
 

@@ -5,7 +5,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
-import { LEFT_SECTION_WIDTH } from "../pages/BasePage";
+import { LEFT_SECTION_OPEN_WIDTH } from "../pages/BasePage";
 import { APP_BAR_HEIGHT } from "./AppBar";
 import { H4 } from "../widgets/Label";
 
@@ -18,9 +18,8 @@ const mapStateToProps = (state: RootState) => {
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      position: "fixed",
+      position: "sticky",
       zIndex: 1201,
-      top: APP_BAR_HEIGHT,
       height: SECOND_HEADER_HEIGHT,
       width: "100%",
       background: "white",
@@ -28,7 +27,7 @@ const styles = (theme: Theme) =>
       display: "flex"
     },
     left: {
-      width: LEFT_SECTION_WIDTH,
+      width: LEFT_SECTION_OPEN_WIDTH,
       height: SECOND_HEADER_HEIGHT,
       borderRight: `1px solid ${grey[200]}`
     },

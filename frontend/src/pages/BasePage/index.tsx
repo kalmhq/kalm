@@ -2,29 +2,14 @@ import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import { Theme } from "pretty-format/build/types";
 import React from "react";
 import { SecondHeader } from "../../layout/SecondHeader";
+import { Box } from "@material-ui/core";
 
-export const LEFT_SECTION_WIDTH = 300;
+export const LEFT_SECTION_OPEN_WIDTH = 220;
+export const LEFT_SECTION_CLOSE_WIDTH = 61;
 
 const styles = (_theme: Theme) =>
   createStyles({
-    root: {
-      display: "flex",
-      height: "100%",
-      overflow: "hidden",
-      background: "white"
-    },
-    rightSection: {
-      display: "flex",
-      flexDirection: "column",
-      // height: "100%",
-      flexGrow: 1,
-      overflow: "hidden",
-      minHeight: `calc( 100vh - 96px )`
-    },
-    content: {
-      flex: 1,
-      overflow: "hidden"
-    }
+    root: {}
   });
 
 export interface BasePageProps extends React.Props<any>, WithStyles<typeof styles> {
@@ -38,16 +23,17 @@ export class BasePageRaw extends React.PureComponent<BasePageProps> {
   public render() {
     const { classes, children, leftDrawer, secondHeaderLeft, secondHeaderRight } = this.props;
     return (
-      <div className={classes.root}>
+      <Box display="flex" flexDirection="column">
         <SecondHeader left={secondHeaderLeft} right={secondHeaderRight} />
-        {leftDrawer}
-        <div className={classes.rightSection}>
-          <div className={classes.content}>
+        <Box flex="1" display="flex">
+          {leftDrawer}
+          <Box flex="1">
+            {/* <div className={classes.rightSection}> */}
             {/*{noScrollContainer ? children : <ScrollContainer>{children}</ScrollContainer>}*/}
             {children}
-          </div>
-        </div>
-      </div>
+          </Box>
+        </Box>
+      </Box>
     );
   }
 }

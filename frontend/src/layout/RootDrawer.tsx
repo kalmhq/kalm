@@ -18,7 +18,7 @@ import { connect } from "react-redux";
 import { NavLink } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
-import { LEFT_SECTION_WIDTH } from "../pages/BasePage";
+import { LEFT_SECTION_OPEN_WIDTH, LEFT_SECTION_CLOSE_WIDTH } from "../pages/BasePage";
 import { primaryBackgroud, primaryColor } from "../theme";
 import { KappApplicationIcon, KappNodeIcon, KappVolumeIcon } from "../widgets/Icon";
 import { APP_BAR_HEIGHT } from "./AppBar";
@@ -55,27 +55,19 @@ const styles = (theme: Theme) =>
       textTransform: "uppercase",
       color: "#000000 !important"
     },
-    // openBtnWrapper: {
-    //   width: "100%",
-    //   display: "flex",
-    //   justifyContent: "flex-end",
-    //   padding: "15px 16px"
-    // },
-    hide: {
-      display: "none"
-    },
     drawer: {
-      width: LEFT_SECTION_WIDTH,
+      width: LEFT_SECTION_OPEN_WIDTH,
       flexShrink: 0,
       whiteSpace: "nowrap"
     },
     drawerPaper: {
-      width: LEFT_SECTION_WIDTH,
+      width: LEFT_SECTION_OPEN_WIDTH,
       paddingTop: APP_BAR_HEIGHT
     },
+
     // material-ui official
     drawerOpen: {
-      width: LEFT_SECTION_WIDTH,
+      width: LEFT_SECTION_OPEN_WIDTH,
       transition: theme.transitions.create("width", {
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.enteringScreen
@@ -87,9 +79,9 @@ const styles = (theme: Theme) =>
         duration: theme.transitions.duration.leavingScreen
       }),
       overflowX: "hidden",
-      width: 60 + 1,
+      width: LEFT_SECTION_CLOSE_WIDTH,
       [theme.breakpoints.up("sm")]: {
-        width: 60 + 1
+        width: LEFT_SECTION_CLOSE_WIDTH
       }
     },
     itemBorder: {
@@ -193,6 +185,7 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
               component={NavLink}
               to={item.to}
               key={item.text}
+              tutorial-anchor-id={"first-level-sidebar-item-" + item.text.toLocaleLowerCase()}
               selected={pathname.startsWith(item.to.split("?")[0])}>
               <ListItemIcon>
                 <item.icon />
