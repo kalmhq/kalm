@@ -48,6 +48,8 @@ import { Loading } from "../../widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "../../widgets/SmallLineChart";
 import { BasePage } from "../BasePage";
 import { ApplicationListDataWrapper, WithApplicationsListDataProps } from "./ListDataWrapper";
+import { HttpRoute } from "../../types/route";
+import Immutable from "immutable";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -96,13 +98,13 @@ const styles = (theme: Theme) =>
 const mapStateToProps = (state: RootState) => {
   const internalEndpointsDialog = state.get("dialogs").get(internalEndpointsModalID);
   const externalEndpointsDialog = state.get("dialogs").get(externalEndpointsModalID);
-  const routes = state.get("routes").get("httpRoutes");
+  const routesMap = state.get("routes").get("httpRoutes");
   const clusterInfo = state.get("cluster").get("info");
   return {
     clusterInfo,
     internalEndpointsDialogData: internalEndpointsDialog ? internalEndpointsDialog.get("data") : {},
     externalEndpointsDialogData: externalEndpointsDialog ? externalEndpointsDialog.get("data") : {},
-    routes
+    routesMap
   };
 };
 interface Props
@@ -376,10 +378,10 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   private renderExternalAccesses = (applicationDetails: RowData) => {
-    const { routes, clusterInfo, activeNamespaceName, dispatch } = this.props;
+    const { routesMap, clusterInfo, activeNamespaceName, dispatch } = this.props;
 
-    const applicationRoutes = routes.filter(x => x.get("namespace") === applicationDetails.get("name"));
-    if (applicationRoutes.size > 0) {
+    const applicationRoutes: Immutable.List<HttpRoute> | undefined = routesMap.get(applicationDetails.get("name"));
+    if (applicationRoutes && applicationRoutes.size > 0) {
       return (
         <PopupState variant="popover" popupId={applicationDetails.get("name")}>
           {popupState => (
