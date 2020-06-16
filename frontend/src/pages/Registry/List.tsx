@@ -19,6 +19,7 @@ import { DeleteIcon } from "../../widgets/Icon";
 import { H4 } from "../../widgets/Label";
 import { BasePage } from "../BasePage";
 import { RegistryNewModal, RegistryNewModalID } from "./New";
+import { Loading } from "../../widgets/Loading";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -186,83 +187,89 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
+    const { isLoading, isFirstLoaded } = this.props;
     const tableData = this.getData();
+
     return (
       <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
         {this.renderDeleteConfirmDialog()}
         <RegistryNewModal isEdit={false} />
-        <MaterialTable
-          options={{
-            pageSize: 20,
-            paging: tableData.length > 20,
-            padding: "dense",
-            draggable: false,
-            rowStyle: {
-              verticalAlign: "baseline"
-            },
-            headerStyle: {
-              color: "black",
-              backgroundColor: grey[100],
-              fontSize: 12,
-              fontWeight: 400,
-              height: 20,
-              paddingTop: 0,
-              paddingBottom: 0
-            }
-          }}
-          columns={[
-            {
-              title: "Name",
-              field: "name",
-              sorting: false,
-              render: this.renderName
-            },
-            {
-              title: "Host",
-              field: "host",
-              sorting: false,
-              render: this.renderHost
-            },
-            {
-              title: "Username",
-              field: "username",
-              sorting: false,
-              render: this.renderUsername
-            },
-            {
-              title: "Password",
-              field: "password",
-              sorting: false,
-              render: this.renderPassword
-            },
-            // {
-            //   title: "Verified",
-            //   field: "verified",
-            //   sorting: false,
-            //   render: this.renderVerified
-            // },
-            // {
-            //   title: "Repositories",
-            //   field: "repositories",
-            //   sorting: false,
-            //   render: this.renderRepositories
-            // },
-            {
-              title: "Actions",
-              field: "action",
-              sorting: false,
-              searchable: false,
-              render: this.renderActions
-            }
-          ]}
-          // detailPanel={this.renderDetails}
-          // onRowClick={(_event, _rowData, togglePanel) => {
-          //   togglePanel!();
-          //   console.log(_event);
-          // }}
-          data={tableData}
-          title=""
-        />
+        {isLoading && !isFirstLoaded ? (
+          <Loading />
+        ) : (
+          <MaterialTable
+            options={{
+              pageSize: 20,
+              paging: tableData.length > 20,
+              padding: "dense",
+              draggable: false,
+              rowStyle: {
+                verticalAlign: "baseline"
+              },
+              headerStyle: {
+                color: "black",
+                backgroundColor: grey[100],
+                fontSize: 12,
+                fontWeight: 400,
+                height: 20,
+                paddingTop: 0,
+                paddingBottom: 0
+              }
+            }}
+            columns={[
+              {
+                title: "Name",
+                field: "name",
+                sorting: false,
+                render: this.renderName
+              },
+              {
+                title: "Host",
+                field: "host",
+                sorting: false,
+                render: this.renderHost
+              },
+              {
+                title: "Username",
+                field: "username",
+                sorting: false,
+                render: this.renderUsername
+              },
+              {
+                title: "Password",
+                field: "password",
+                sorting: false,
+                render: this.renderPassword
+              },
+              // {
+              //   title: "Verified",
+              //   field: "verified",
+              //   sorting: false,
+              //   render: this.renderVerified
+              // },
+              // {
+              //   title: "Repositories",
+              //   field: "repositories",
+              //   sorting: false,
+              //   render: this.renderRepositories
+              // },
+              {
+                title: "Actions",
+                field: "action",
+                sorting: false,
+                searchable: false,
+                render: this.renderActions
+              }
+            ]}
+            // detailPanel={this.renderDetails}
+            // onRowClick={(_event, _rowData, togglePanel) => {
+            //   togglePanel!();
+            //   console.log(_event);
+            // }}
+            data={tableData}
+            title=""
+          />
+        )}
       </BasePage>
     );
   }
