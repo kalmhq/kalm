@@ -693,6 +693,7 @@ func (r *ComponentReconcilerTask) ReconcileStatefulSet(
 		}
 	} else {
 		sts.Spec.Template = *spec
+		sts.Spec.VolumeClaimTemplates = volClaimTemplates
 	}
 
 	if r.component.Spec.Replicas != nil {
