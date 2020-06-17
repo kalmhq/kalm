@@ -4,7 +4,6 @@ import { Actions } from "../types";
 import {
   ApplicationComponentDetails,
   ApplicationDetails,
-  ApplicationDetailsList,
   ComponentPlugin,
   CREATE_APPLICATION,
   CREATE_COMPONENT,
@@ -26,7 +25,7 @@ import {
 import { ImmutableMap } from "../typings";
 
 export type State = ImmutableMap<{
-  applications: ApplicationDetailsList;
+  applications: Immutable.List<ApplicationDetails>;
   isListLoading: boolean;
   isListFirstLoaded: boolean;
   isItemLoading: boolean;

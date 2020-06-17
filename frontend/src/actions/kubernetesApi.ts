@@ -9,8 +9,6 @@ import { store } from "../store";
 import {
   Application,
   ApplicationDetails,
-  ApplicationDetailsList,
-  ApplicationComponentDetailsList,
   ApplicationComponentDetails,
   ApplicationComponent,
   ApplicationPlugin,
@@ -168,7 +166,7 @@ export const deleteRegistry = async (name: string): Promise<void> => {
 
 // applications
 
-export const getKappApplicationList = async (): Promise<ApplicationDetailsList> => {
+export const getKappApplicationList = async (): Promise<Immutable.List<ApplicationDetails>> => {
   const res = await getAxiosClient().get(K8sApiPrefix + "/v1alpha1/applications");
   return Immutable.fromJS(res.data);
 };
@@ -198,7 +196,7 @@ export const deleteKappApplication = async (name: string): Promise<void> => {
 
 export const getKappApplicationComponentList = async (
   applicationName: string
-): Promise<ApplicationComponentDetailsList> => {
+): Promise<Immutable.List<ApplicationComponentDetails>> => {
   const res = await getAxiosClient().get(K8sApiPrefix + `/v1alpha1/applications/${applicationName}/components`);
   return Immutable.fromJS(res.data);
 };

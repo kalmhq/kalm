@@ -7,7 +7,6 @@ import {
   ApplicationComponent,
   ApplicationComponentDetails,
   ApplicationDetails,
-  ApplicationDetailsList,
   CREATE_APPLICATION,
   CREATE_COMPONENT,
   DELETE_APPLICATION,
@@ -252,7 +251,7 @@ export const loadApplicationsAction = (): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     dispatch({ type: LOAD_APPLICATIONS_PENDING });
 
-    let applicationList: ApplicationDetailsList;
+    let applicationList: Immutable.List<ApplicationDetails>;
     try {
       applicationList = await getKappApplicationList();
 

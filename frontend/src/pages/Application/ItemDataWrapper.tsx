@@ -9,7 +9,7 @@ import { Loading } from "widgets/Loading";
 import queryString from "query-string";
 import { ApplicationComponent } from "../../types/application";
 import { componentInitialValues } from "../../forms/ComponentLike";
-import { componentDetailsToComponent } from "../../utils/application";
+import { applicationComponentDetailsToApplicationComponent } from "../../utils/application";
 
 const mapStateToProps = (state: RootState, props: any) => {
   const applications = state.get("applications");
@@ -24,7 +24,7 @@ const mapStateToProps = (state: RootState, props: any) => {
   const component = application && application.get("components")?.find(x => x.get("name") === componentName);
   // for edit
   const currentComponent = component
-    ? componentDetailsToComponent(component)
+    ? applicationComponentDetailsToApplicationComponent(component)
     : (componentInitialValues as ApplicationComponent);
 
   const activeNamespaceName = state.get("namespaces").get("active");

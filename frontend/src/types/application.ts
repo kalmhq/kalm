@@ -100,7 +100,6 @@ export interface ApplicationComponentDetailsContent extends ApplicationComponent
 
 export type ApplicationComponent = ImmutableMap<ApplicationComponentContent>;
 export type ApplicationComponentDetails = ImmutableMap<ApplicationComponentDetailsContent>;
-export type ApplicationComponentDetailsList = Immutable.List<ApplicationComponentDetails>;
 
 export interface ApplicationContent {
   name: string;
@@ -110,20 +109,17 @@ export interface ApplicationContent {
 
   // for applciation form submit buttons
   nextAddComponent?: boolean;
-
-  components: ApplicationComponentDetailsList;
 }
 
 export type Application = ImmutableMap<ApplicationContent>;
 
 export interface ApplicationDetailsContent extends ApplicationContent {
+  components: Immutable.List<ApplicationComponentDetails>;
   metrics: Metrics;
   roles: Immutable.List<string>;
 }
 
 export type ApplicationDetails = ImmutableMap<ApplicationDetailsContent>;
-
-export type ApplicationDetailsList = Immutable.List<ApplicationDetails>;
 
 export interface CreateApplicationAction {
   type: typeof CREATE_APPLICATION;
@@ -188,7 +184,7 @@ export interface LoadApplicationsFailedAction {
 export interface LoadApplicationsFulfilledAction {
   type: typeof LOAD_APPLICATIONS_FULFILLED;
   payload: {
-    applicationList: ApplicationDetailsList;
+    applicationList: Immutable.List<ApplicationDetails>;
   };
 }
 
