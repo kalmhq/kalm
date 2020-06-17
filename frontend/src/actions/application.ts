@@ -221,6 +221,13 @@ export const deleteApplicationAction = (name: string): ThunkResult<Promise<void>
       type: DELETE_APPLICATION,
       payload: { applicationName: name }
     });
+    // api deleting delay,for deletingApplicationNames
+    setTimeout(() => {
+      dispatch({
+        type: DELETE_APPLICATION,
+        payload: { applicationName: name }
+      });
+    }, 10000);
   };
 };
 

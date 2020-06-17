@@ -114,6 +114,7 @@ export interface ApplicationContent {
 export type Application = ImmutableMap<ApplicationContent>;
 
 export interface ApplicationDetailsContent extends ApplicationContent {
+  status: string; // Active or Terminating
   components: Immutable.List<ApplicationComponentDetails>;
   metrics: Metrics;
   roles: Immutable.List<string>;
