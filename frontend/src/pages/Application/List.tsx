@@ -9,7 +9,6 @@ import {
   ListItemText,
   ListSubheader,
   Popover,
-  TextField,
   Theme,
   Tooltip,
   WithStyles,
@@ -20,6 +19,7 @@ import { loadClusterInfoAction } from "actions/cluster";
 import { closeDialogAction } from "actions/dialog";
 import { loadRoutes } from "actions/routes";
 import { push } from "connected-react-router";
+import Immutable from "immutable";
 import MaterialTable from "material-table";
 import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 import { withNamespace, withNamespaceProps } from "permission/Namespace";
@@ -32,12 +32,12 @@ import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
 import { ControlledDialog } from "widgets/ControlledDialog";
 import { KappConsoleIcon, KappLogIcon } from "widgets/Icon";
-import { deleteApplicationAction, duplicateApplicationAction, loadApplicationAction } from "../../actions/application";
+import { deleteApplicationAction } from "../../actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "../../actions/notification";
 import { blinkTopProgressAction } from "../../actions/settings";
-import { duplicateApplicationName, getApplicationByName } from "../../selectors/application";
 import { primaryColor } from "../../theme";
 import { ApplicationDetails } from "../../types/application";
+import { HttpRoute } from "../../types/route";
 import { formatDate } from "../../utils";
 import { customSearchForImmutable } from "../../utils/tableSearch";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
@@ -48,8 +48,6 @@ import { Loading } from "../../widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "../../widgets/SmallLineChart";
 import { BasePage } from "../BasePage";
 import { ApplicationListDataWrapper, WithApplicationsListDataProps } from "./ListDataWrapper";
-import { HttpRoute } from "../../types/route";
-import Immutable from "immutable";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -116,8 +114,8 @@ interface Props
 interface State {
   isDeleteConfirmDialogOpen: boolean;
   deletingApplicationListItem?: ApplicationDetails;
-  isDuplicateConfirmDialogOpen: boolean;
-  duplicatingApplicationListItem?: ApplicationDetails;
+  // isDuplicateConfirmDialogOpen: boolean;
+  // duplicatingApplicationListItem?: ApplicationDetails;
 }
 
 interface RowData extends ApplicationDetails {
@@ -125,31 +123,24 @@ interface RowData extends ApplicationDetails {
 }
 
 class ApplicationListRaw extends React.PureComponent<Props, State> {
-  private duplicateApplicationNameRef: React.RefObject<any>;
-  private duplicateApplicationNamespaceRef: React.RefObject<any>;
+  // private duplicateApplicationNameRef: React.RefObject<any>;
+  // private duplicateApplicationNamespaceRef: React.RefObject<any>;
   private tableRef: React.RefObject<MaterialTable<ApplicationDetails>> = React.createRef();
 
   private defaultState = {
     isDeleteConfirmDialogOpen: false,
-    deletingApplicationListItem: undefined,
-    isDuplicateConfirmDialogOpen: false,
-    duplicatingApplicationListItem: undefined
+    deletingApplicationListItem: undefined
+    // isDuplicateConfirmDialogOpen: false,
+    // duplicatingApplicationListItem: undefined
   };
 
   constructor(props: Props) {
     super(props);
     this.state = this.defaultState;
 
-    this.duplicateApplicationNameRef = React.createRef();
-    this.duplicateApplicationNamespaceRef = React.createRef();
+    // this.duplicateApplicationNameRef = React.createRef();
+    // this.duplicateApplicationNamespaceRef = React.createRef();
   }
-
-  private showDuplicateConfirmDialog = (duplicatingApplicationListItem: ApplicationDetails) => {
-    this.setState({
-      isDuplicateConfirmDialogOpen: true,
-      duplicatingApplicationListItem
-    });
-  };
 
   public componentDidMount() {
     const { dispatch } = this.props;
@@ -157,60 +148,67 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     dispatch(loadClusterInfoAction());
   }
 
-  private closeDuplicateConfirmDialog = () => {
-    this.setState(this.defaultState);
-  };
+  // private showDuplicateConfirmDialog = (duplicatingApplicationListItem: ApplicationDetails) => {
+  //   this.setState({
+  //     isDuplicateConfirmDialogOpen: true,
+  //     duplicatingApplicationListItem
+  //   });
+  // };
 
-  private renderDuplicateConfirmDialog = () => {
-    const { classes } = this.props;
-    const { isDuplicateConfirmDialogOpen, duplicatingApplicationListItem } = this.state;
+  // private closeDuplicateConfirmDialog = () => {
+  //   this.setState(this.defaultState);
+  // };
 
-    let title, content;
-    title = "Duplicate Application";
-    content = (
-      <div>
-        Please confirm the namespace and name of new application.
-        <div className={classes.duplicateConfirmFileds}>
-          <TextField
-            inputRef={this.duplicateApplicationNameRef}
-            label="Name"
-            size="small"
-            variant="outlined"
-            defaultValue={duplicateApplicationName(duplicatingApplicationListItem?.get("name") as string)}
-            required
-          />
-        </div>
-      </div>
-    );
+  // private renderDuplicateConfirmDialog = () => {
+  //   const { classes } = this.props;
+  //   const { isDuplicateConfirmDialogOpen, duplicatingApplicationListItem } = this.state;
 
-    return (
-      <ConfirmDialog
-        open={isDuplicateConfirmDialogOpen}
-        onClose={this.closeDuplicateConfirmDialog}
-        title={title}
-        content={content}
-        onAgree={this.confirmDuplicate}
-      />
-    );
-  };
+  //   let title, content;
+  //   title = "Duplicate Application";
+  //   content = (
+  //     <div>
+  //       Please confirm the namespace and name of new application.
+  //       <div className={classes.duplicateConfirmFileds}>
+  //         <TextField
+  //           inputRef={this.duplicateApplicationNameRef}
+  //           label="Name"
+  //           size="small"
+  //           variant="outlined"
+  //           defaultValue={duplicateApplicationName(duplicatingApplicationListItem?.get("name") as string)}
+  //           required
+  //         />
+  //       </div>
+  //     </div>
+  //   );
 
-  private confirmDuplicate = async () => {
-    const { dispatch } = this.props;
-    try {
-      const { duplicatingApplicationListItem } = this.state;
-      if (duplicatingApplicationListItem) {
-        await dispatch(loadApplicationAction(duplicatingApplicationListItem.get("name")));
+  //   return (
+  //     <ConfirmDialog
+  //       open={isDuplicateConfirmDialogOpen}
+  //       onClose={this.closeDuplicateConfirmDialog}
+  //       title={title}
+  //       content={content}
+  //       onAgree={this.confirmDuplicate}
+  //     />
+  //   );
+  // };
 
-        let newApplication = getApplicationByName(duplicatingApplicationListItem.get("name"));
+  // private confirmDuplicate = async () => {
+  //   const { dispatch } = this.props;
+  //   try {
+  //     const { duplicatingApplicationListItem } = this.state;
+  //     if (duplicatingApplicationListItem) {
+  //       await dispatch(loadApplicationAction(duplicatingApplicationListItem.get("name")));
 
-        newApplication = newApplication.set("name", this.duplicateApplicationNameRef.current.value);
+  //       let newApplication = getApplicationByName(duplicatingApplicationListItem.get("name"));
 
-        dispatch(duplicateApplicationAction(newApplication));
-      }
-    } catch {
-      dispatch(setErrorNotificationAction());
-    }
-  };
+  //       newApplication = newApplication.set("name", this.duplicateApplicationNameRef.current.value);
+
+  //       dispatch(duplicateApplicationAction(newApplication));
+  //     }
+  //   } catch {
+  //     dispatch(setErrorNotificationAction());
+  //   }
+  // };
 
   private showDeleteConfirmDialog = (deletingApplicationListItem: ApplicationDetails) => {
     this.setState({
