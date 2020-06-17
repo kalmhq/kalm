@@ -47,11 +47,11 @@ func (suite *KappVolumeControllerSuite) TestPVCIsLabeled() {
 	component := generateEmptyComponent(suite.ns.Name)
 	component.Spec.Volumes = []v1alpha1.Volume{
 		{
-			Path:                      "/data",
-			Size:                      resource.MustParse("1Mi"),
-			Type:                      v1alpha1.VolumeTypePersistentVolumeClaim,
-			PersistentVolumeClaimName: pvcName,
-			StorageClassName:          &sc,
+			Path:             "/data",
+			Size:             resource.MustParse("1Mi"),
+			Type:             v1alpha1.VolumeTypePersistentVolumeClaim,
+			PVC:              pvcName,
+			StorageClassName: &sc,
 		},
 	}
 	suite.createComponent(component)
@@ -120,11 +120,11 @@ func (suite *KappVolumeControllerSuite) TestPVIsLabeledForKapp() {
 	component := generateEmptyComponent(suite.ns.Name)
 	component.Spec.Volumes = []v1alpha1.Volume{
 		{
-			Path:                      "/data",
-			Size:                      resource.MustParse("1Mi"),
-			Type:                      v1alpha1.VolumeTypePersistentVolumeClaim,
-			PersistentVolumeClaimName: pvcName,
-			StorageClassName:          &sc,
+			Path:             "/data",
+			Size:             resource.MustParse("1Mi"),
+			Type:             v1alpha1.VolumeTypePersistentVolumeClaim,
+			PVC:              pvcName,
+			StorageClassName: &sc,
 		},
 	}
 	suite.createComponent(component)

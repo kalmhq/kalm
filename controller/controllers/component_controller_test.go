@@ -270,10 +270,10 @@ func (suite *ComponentControllerSuite) TestVolumePVC() {
 	component := generateEmptyComponent(suite.ns.Name)
 	component.Spec.Volumes = []v1alpha1.Volume{
 		{
-			Type:                      v1alpha1.VolumeTypePersistentVolumeClaim,
-			Path:                      "/test/b",
-			Size:                      resource.MustParse("10m"),
-			PersistentVolumeClaimName: pvcName,
+			Type: v1alpha1.VolumeTypePersistentVolumeClaim,
+			Path: "/test/b",
+			Size: resource.MustParse("10m"),
+			PVC:  pvcName,
 		},
 	}
 	key := types.NamespacedName{
@@ -303,7 +303,7 @@ func (suite *ComponentControllerSuite) TestVolumePVC() {
 
 	suite.Eventually(func() bool {
 		suite.reloadComponent(component)
-		return component.Spec.Volumes[0].PersistentVolumeClaimName == pvc.Name
+		return component.Spec.Volumes[0].PVC == pvc.Name
 	}, "pvc name not matched")
 }
 

@@ -411,25 +411,35 @@ func (r *ComponentReconcilerTask) ReconcileWorkload() (err error) {
 		return err
 	}
 
-	template, err := r.GetPodTemplate()
-	if err != nil {
-		return err
-	}
-
-	volClaimTemplates, err := r.prepareVolumesForPodTemplate(template)
+	template, err := r.GetPodTemplateWithoutVols()
 	if err != nil {
 		return err
 	}
 
 	switch r.component.Spec.WorkloadType {
 	case corev1alpha1.WorkloadTypeServer, "":
+		if err := r.prepareVolsForSimpleWorkload(template); err != nil {
+			return err
+		}
+
 		return r.ReconcileDeployment(template)
 	case corev1alpha1.WorkloadTypeCronjob:
+		if err := r.prepareVolsForSimpleWorkload(template); err != nil {
+			return err
+		}
+
 		return r.ReconcileCronJob(template)
 	case corev1alpha1.WorkloadTypeDaemonSet:
+		if err := r.prepareVolsForSimpleWorkload(template); err != nil {
+			return err
+		}
+
 		return r.ReconcileDaemonSet(template)
 	case corev1alpha1.WorkloadTypeStatefulSet:
-		// check if sts has volumeClaimTemplate
+		volClaimTemplates, err := r.prepareVolsForSTS(template)
+		if err != nil {
+			return err
+		}
 
 		return r.ReconcileStatefulSet(template, volClaimTemplates)
 	default:
@@ -692,8 +702,9 @@ func (r *ComponentReconcilerTask) ReconcileStatefulSet(
 			},
 		}
 	} else {
+		// for sts, only 'replicas', 'template', and 'updateStrategy' are mutable
+		// so no update for volClaimTemplate here
 		sts.Spec.Template = *spec
-		sts.Spec.VolumeClaimTemplates = volClaimTemplates
 	}
 
 	if r.component.Spec.Replicas != nil {
@@ -738,7 +749,7 @@ func (r *ComponentReconcilerTask) FixProbe(probe *coreV1.Probe) *coreV1.Probe {
 	return probe
 }
 
-func (r *ComponentReconcilerTask) GetPodTemplate() (template *coreV1.PodTemplateSpec, err error) {
+func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.PodTemplateSpec, err error) {
 	component := r.component
 
 	labels := r.GetLabels()
@@ -1476,65 +1487,196 @@ func isStatefulSet(component *corev1alpha1.Component) bool {
 	return component.Spec.WorkloadType == corev1alpha1.WorkloadTypeStatefulSet
 }
 
-func (r *ComponentReconcilerTask) prepareVolumesForPodTemplate(template *coreV1.PodTemplateSpec) ([]coreV1.PersistentVolumeClaim, error) {
+func (r *ComponentReconcilerTask) preparePreInjectedFiles(
+	template *coreV1.PodTemplateSpec,
+	volumes *[]coreV1.Volume,
+	volumeMounts *[]coreV1.VolumeMount,
+) error {
+	component := r.component
+
+	if len(component.Spec.PreInjectedFiles) <= 0 {
+		return nil
+	}
+
+	*volumes = append(*volumes, coreV1.Volume{
+		Name: "pre-injected-files-volume",
+		VolumeSource: coreV1.VolumeSource{
+			EmptyDir: &coreV1.EmptyDirVolumeSource{},
+		},
+	})
+
+	if len(template.Spec.InitContainers) == 0 {
+		template.Spec.InitContainers = []coreV1.Container{}
+	}
+
+	var injectCommands []string
+	for _, file := range component.Spec.PreInjectedFiles {
+		content := file.Content
+
+		if !file.Base64 {
+			content = base64.StdEncoding.EncodeToString([]byte(content))
+		}
+
+		baseName := fmt.Sprintf("%s.%x", path.Base(file.MountPath), md5.Sum([]byte(content)))
+
+		injectCommands = append(
+			injectCommands,
+			fmt.Sprintf("echo \"%s\" | base64 -d > /files/%s && echo \"File %s created.\"", content, baseName, baseName),
+		)
+
+		*volumeMounts = append(*volumeMounts, coreV1.VolumeMount{
+			Name:      "pre-injected-files-volume",
+			MountPath: file.MountPath,
+			SubPath:   baseName,
+			ReadOnly:  file.Readonly,
+		})
+	}
+
+	template.Spec.InitContainers = append(template.Spec.InitContainers, coreV1.Container{
+		Name:         "inject-files",
+		Image:        "busybox",
+		Command:      []string{"sh", "-c", fmt.Sprintf("%s", strings.Join(injectCommands, " && "))},
+		VolumeMounts: []coreV1.VolumeMount{{MountPath: "/files", Name: "pre-injected-files-volume"}},
+	})
+
+	return nil
+}
+
+// STS has 2 kinds of volumes:
+//
+// - temp vol as podTemplate.volumes
+// - persistent vol as volClaimTemplate
+func (r *ComponentReconcilerTask) prepareVolsForSTS(template *coreV1.PodTemplateSpec) ([]coreV1.PersistentVolumeClaim, error) {
 	component := r.component
 
 	var volumes []coreV1.Volume
 	var volumeMounts []coreV1.VolumeMount
 	var volClaimTemplates []coreV1.PersistentVolumeClaim
 
-	if len(component.Spec.PreInjectedFiles) > 0 {
+	if err := r.preparePreInjectedFiles(template, &volumes, &volumeMounts); err != nil {
+		return nil, err
+	}
 
-		volumes = append(volumes, coreV1.Volume{
-			Name: "pre-injected-files-volume",
-			VolumeSource: coreV1.VolumeSource{
-				EmptyDir: &coreV1.EmptyDirVolumeSource{},
-			},
-		})
+	for _, disk := range component.Spec.Volumes {
+		// used in volumeMount, correspond to volume's name or volClaimTemplate's name
+		volName := getVolName(component.Name, disk.Path)
 
-		if len(template.Spec.InitContainers) == 0 {
-			template.Spec.InitContainers = []coreV1.Container{}
-		}
+		if disk.Type == corev1alpha1.VolumeTypeTemporaryDisk {
+			volumes = append(volumes, coreV1.Volume{
+				Name: volName,
+				VolumeSource: coreV1.VolumeSource{
+					EmptyDir: &coreV1.EmptyDirVolumeSource{
+						Medium: coreV1.StorageMediumDefault,
+					},
+				},
+			})
+		} else if disk.Type == corev1alpha1.VolumeTypeTemporaryMemory {
+			volumes = append(volumes, coreV1.Volume{
+				Name: volName,
+				VolumeSource: coreV1.VolumeSource{
+					EmptyDir: &coreV1.EmptyDirVolumeSource{
+						Medium: coreV1.StorageMediumMemory,
+					},
+				},
+			})
+		} else if disk.Type == corev1alpha1.VolumeTypePersistentVolumeClaim {
 
-		injectCommands := []string{}
+			pvcName := disk.PVC
 
-		for _, file := range component.Spec.PreInjectedFiles {
-			content := file.Content
+			// for volClaimTemplate, volName == pvcName
+			volName = pvcName
 
-			if !file.Base64 {
-				content = base64.StdEncoding.EncodeToString([]byte(content))
+			var pvc *coreV1.PersistentVolumeClaim
+
+			pvcFetched, err := r.getPVC(pvcName)
+			if err != nil {
+				return nil, err
 			}
 
-			baseName := fmt.Sprintf("%s.%x", path.Base(file.MountPath), md5.Sum([]byte(content)))
+			if pvcFetched != nil {
+				pvc = pvcFetched
+			} else {
+				expectedPVC := &coreV1.PersistentVolumeClaim{
+					ObjectMeta: metaV1.ObjectMeta{
+						Name:      pvcName,
+						Namespace: r.component.Namespace,
+						Labels:    r.GetLabels(),
+					},
+					Spec: coreV1.PersistentVolumeClaimSpec{
+						AccessModes: []coreV1.PersistentVolumeAccessMode{coreV1.ReadWriteOnce},
+						Resources: coreV1.ResourceRequirements{
+							Requests: coreV1.ResourceList{
+								coreV1.ResourceStorage: disk.Size,
+							},
+						},
+						StorageClassName: disk.StorageClassName,
+					},
+				}
 
-			injectCommands = append(
-				injectCommands,
-				fmt.Sprintf("echo \"%s\" | base64 -d > /files/%s && echo \"File %s created.\"", content, baseName, baseName),
-			)
+				pvc = expectedPVC
+			}
 
-			volumeMounts = append(volumeMounts, coreV1.VolumeMount{
-				Name:      "pre-injected-files-volume",
-				MountPath: file.MountPath,
-				SubPath:   baseName,
-				ReadOnly:  file.Readonly,
-			})
+			// claimTemplate for PVC
+			volClaimTemplates = append(volClaimTemplates, *pvc)
+		} else {
+			return nil, fmt.Errorf("unknown disk type: %s", disk.Type)
 		}
 
-		template.Spec.InitContainers = append(template.Spec.InitContainers, coreV1.Container{
-			Name:         "inject-files",
-			Image:        "busybox",
-			Command:      []string{"sh", "-c", fmt.Sprintf("%s", strings.Join(injectCommands, " && "))},
-			VolumeMounts: []coreV1.VolumeMount{{MountPath: "/files", Name: "pre-injected-files-volume"}},
+		// all mounted into container
+		volumeMounts = append(volumeMounts, coreV1.VolumeMount{
+			Name:      volName,
+			MountPath: disk.Path,
 		})
+	}
+
+	// set volumes & volMounts for podTemplate of STS
+	template.Spec.Volumes = volumes
+
+	mainContainer := &template.Spec.Containers[0]
+	mainContainer.VolumeMounts = volumeMounts
+
+	// for STS, pvc is not in podTemplate but in volumeClaimTemplate
+	return volClaimTemplates, nil
+}
+
+// StatefulSet is very different when using PVC
+// so all other workloads are simple except for STS
+func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *coreV1.PodTemplateSpec) error {
+	component := r.component
+
+	var volumes []coreV1.Volume
+	var volumeMounts []coreV1.VolumeMount
+
+	if err := r.preparePreInjectedFiles(template, &volumes, &volumeMounts); err != nil {
+		return err
 	}
 
 	for _, disk := range component.Spec.Volumes {
 
+		// used in volumeMount, correspond to volume's name or volClaimTemplate's name
 		volName := getVolName(component.Name, disk.Path)
 
-		if disk.Type == corev1alpha1.VolumeTypePersistentVolumeClaim {
+		if disk.Type == corev1alpha1.VolumeTypeTemporaryDisk {
+			volumes = append(volumes, coreV1.Volume{
+				Name: volName,
+				VolumeSource: coreV1.VolumeSource{
+					EmptyDir: &coreV1.EmptyDirVolumeSource{
+						Medium: coreV1.StorageMediumDefault,
+					},
+				},
+			})
+		} else if disk.Type == corev1alpha1.VolumeTypeTemporaryMemory {
+			volumes = append(volumes, coreV1.Volume{
+				Name: volName,
+				VolumeSource: coreV1.VolumeSource{
+					EmptyDir: &coreV1.EmptyDirVolumeSource{
+						Medium: coreV1.StorageMediumMemory,
+					},
+				},
+			})
+		} else if disk.Type == corev1alpha1.VolumeTypePersistentVolumeClaim {
 
-			pvcName := disk.PersistentVolumeClaimName
+			pvcName := disk.PVC
 			volName = pvcName
 
 			var pvc *coreV1.PersistentVolumeClaim
@@ -1542,7 +1684,7 @@ func (r *ComponentReconcilerTask) prepareVolumesForPodTemplate(template *coreV1.
 
 			pvcFetched, err := r.getPVC(pvcName)
 			if err != nil {
-				return nil, err
+				return err
 			}
 
 			if pvcFetched != nil {
@@ -1567,61 +1709,44 @@ func (r *ComponentReconcilerTask) prepareVolumesForPodTemplate(template *coreV1.
 				}
 
 				// re-use existing PersistentVolume
-				if disk.PersistentVolumeNamePVCToMatch != "" {
+				if disk.PVToMatch != "" {
 					if expectedPVC.Spec.Selector == nil {
 						expectedPVC.Spec.Selector = &metaV1.LabelSelector{}
 					}
 
 					expectedPVC.Spec.Selector.MatchLabels = map[string]string{
-						KappLabelPV: disk.PersistentVolumeNamePVCToMatch,
+						KappLabelPV: disk.PVToMatch,
+					}
+
+					// expectation: PVToMatch only need to be set when try to re-use pv from other ns,
+					//   and pv's claimPolicy should be Retain (to make deletion of PVC safe)
+					if err := r.reconcilePVForReUse(r.ctx, *expectedPVC, disk.PVToMatch); err != nil {
+						return err
 					}
 				}
 
 				pvc = expectedPVC
 			}
 
-			if isStatefulSet(component) {
-				// claimTemplate for PVC
-				volClaimTemplates = append(volClaimTemplates, *pvc)
-			} else {
-				// create PVC if not exist yet
-				if !pvcExist {
-					err := r.Create(r.ctx, pvc)
-					if err != nil {
-						return nil, fmt.Errorf("fail to create PVC: %s, %s", pvc.Name, err)
-					}
+			// create PVC if not exist yet
+			if !pvcExist {
+				err := r.Create(r.ctx, pvc)
+				if err != nil {
+					return fmt.Errorf("fail to create PVC: %s, %s", pvc.Name, err)
 				}
-
-				// volume(use pvc as volume)
-				volumes = append(volumes, coreV1.Volume{
-					Name: volName,
-					VolumeSource: coreV1.VolumeSource{
-						PersistentVolumeClaim: &coreV1.PersistentVolumeClaimVolumeSource{
-							ClaimName: pvcName,
-						},
-					},
-				})
 			}
-		} else if disk.Type == corev1alpha1.VolumeTypeTemporaryDisk {
+
+			// pvc as volume
 			volumes = append(volumes, coreV1.Volume{
 				Name: volName,
 				VolumeSource: coreV1.VolumeSource{
-					EmptyDir: &coreV1.EmptyDirVolumeSource{
-						Medium: coreV1.StorageMediumDefault,
-					},
-				},
-			})
-		} else if disk.Type == corev1alpha1.VolumeTypeTemporaryMemory {
-			volumes = append(volumes, coreV1.Volume{
-				Name: volName,
-				VolumeSource: coreV1.VolumeSource{
-					EmptyDir: &coreV1.EmptyDirVolumeSource{
-						Medium: coreV1.StorageMediumMemory,
+					PersistentVolumeClaim: &coreV1.PersistentVolumeClaimVolumeSource{
+						ClaimName: pvcName,
 					},
 				},
 			})
 		} else {
-			return nil, fmt.Errorf("unknown disk type: %s", disk.Type)
+			return fmt.Errorf("unknown disk type: %s", disk.Type)
 		}
 
 		volumeMounts = append(volumeMounts, coreV1.VolumeMount{
@@ -1630,11 +1755,17 @@ func (r *ComponentReconcilerTask) prepareVolumesForPodTemplate(template *coreV1.
 		})
 	}
 
-	// for STS, pvc is not in podTemplate but in volumeClaimTemplate
 	template.Spec.Volumes = volumes
 
 	mainContainer := &template.Spec.Containers[0]
 	mainContainer.VolumeMounts = volumeMounts
 
-	return volClaimTemplates, nil
+	return nil
+}
+
+// 1. same ns pv reuse, pvc name should be same
+// 2. diff ns pv reuse, remove old pvc, clean ref in pv
+func (r *ComponentReconcilerTask) reconcilePVForReUse(ctx context.Context, pvc coreV1.PersistentVolumeClaim, pvName string) error {
+	//todo
+	return nil
 }
