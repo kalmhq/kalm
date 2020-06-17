@@ -11,6 +11,7 @@ stages:
 before_install:
   - os=$(go env GOOS)
   - arch=$(go env GOARCH)
+  - echo $os $arch
   - echo https://go.kubebuilder.io/dl/2.3.1/${os}/${arch}
   - curl -L https://go.kubebuilder.io/dl/2.3.1/${os}/${arch} | tar -xz -C /tmp/
   - sudo mv /tmp/kubebuilder_2.3.1_${os}_${arch} $HOME/kubebuilder
