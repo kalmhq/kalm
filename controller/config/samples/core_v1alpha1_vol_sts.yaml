@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: kapp-sts
+  name: kapp-vols
   labels:
     istio-injection: enabled
     kapp-enabled: "true"
@@ -10,7 +10,7 @@ apiVersion: core.kapp.dev/v1alpha1
 kind: Component
 metadata:
     name: hello-sts
-    namespace: kapp-sts
+    namespace: kapp-vols
 spec:
     image: strm/helloworld-http:latest
     workloadType: statefulset
