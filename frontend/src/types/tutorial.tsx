@@ -333,7 +333,7 @@ export const CreateApplicationTutorialFactory = (applicationName: string): Tutor
         {
           title: (
             <span>
-              Add an exposed port in advanced <strong>networking tab</strong>
+              Add an port in advanced <strong>networking tab</strong>
             </span>
           ),
           // highlight: {
