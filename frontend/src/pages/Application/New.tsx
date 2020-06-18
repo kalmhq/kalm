@@ -10,20 +10,22 @@ import { Actions } from "../../types";
 import { Application } from "../../types/application";
 import { H4 } from "../../widgets/Label";
 import { BasePage } from "../BasePage";
+import { Dispatch } from "redux";
+import { InjectedFormProps } from "redux-form";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {
       // padding: theme.spacing(3)
-      height: "100%"
+      height: "100%",
     },
     secondHeaderRight: {
       height: "100%",
       width: "100%",
       display: "flex",
       alignItems: "center",
-      paddingLeft: 20
-    }
+      paddingLeft: 20,
+    },
   });
 
 interface Props extends WithStyles<typeof styles> {
@@ -34,12 +36,10 @@ class ApplicationNewRaw extends React.PureComponent<Props> {
   private submit = async (applicationFormValue: Application) => {
     const { dispatch } = this.props;
     await dispatch(createApplicationAction(applicationFormValue));
+  };
 
-    if (applicationFormValue.get("nextAddComponent")) {
-      dispatch(push(`/applications/${applicationFormValue.get("name")}/edit`));
-    } else {
-      dispatch(push(`/applications`));
-    }
+  private onSubmitSuccess = (_result: any, dispatch: Dispatch<any>, { values }: { values: Application }) => {
+    dispatch(push(`/applications/${values.get("name")}/edit`));
   };
 
   public render() {
@@ -55,10 +55,11 @@ class ApplicationNewRaw extends React.PureComponent<Props> {
           <Grid container spacing={2}>
             <Grid item xs={8} sm={8} md={8}>
               <ApplicationForm
-                onSubmit={this.submit}
+                currentTab={"basic"}
                 isEdit={false}
                 initialValues={applicationInitialValues}
-                currentTab={"basic"}
+                onSubmit={this.submit}
+                onSubmitSuccess={this.onSubmitSuccess}
               />
             </Grid>
           </Grid>
