@@ -10,11 +10,10 @@ import { ConnectedRouter } from "connected-react-router/immutable";
 import configureStore from "./configureStore";
 import { createBrowserHistory } from "history";
 import { ThemeProvider, CssBaseline } from "@material-ui/core";
-import { SnackbarProvider } from "notistack";
 import { ScrollToTop } from "./widgets/ScrollToTop";
 import { setStore } from "./store";
 import { KappRoutes } from "./routes";
-import { NotificationComponent } from "./widgets/Notification";
+import { Snackbar } from "./widgets/Notification";
 import { theme } from "theme";
 
 export const history = createBrowserHistory();
@@ -29,20 +28,13 @@ ReactDOM.render(
       <CssBaseline />
       <ScrollToTop>
         <ThemeProvider theme={theme}>
-          <SnackbarProvider
-            maxSnack={3}
-            anchorOrigin={{
-              horizontal: "right",
-              vertical: "bottom"
-            }}>
-            <NotificationComponent />
-            {KappRoutes}
-          </SnackbarProvider>
+          <Snackbar />
+          {KappRoutes}
         </ThemeProvider>
       </ScrollToTop>
     </ConnectedRouter>
   </Provider>,
-  document.getElementById("root")
+  document.getElementById("root"),
 );
 
 // If you want your app to work offline and load faster, you can change
