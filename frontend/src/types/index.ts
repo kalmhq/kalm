@@ -1,23 +1,23 @@
-import { ThunkDispatch, ThunkAction } from "redux-thunk";
-import { ActionTypes, actionTypes } from "redux-form/lib/actionTypes";
+import { RouterAction } from "connected-react-router";
+import { FormAction } from "redux-form";
+import { ActionTypes } from "redux-form/lib/actionTypes";
+import { ThunkAction, ThunkDispatch } from "redux-thunk";
 import { RootState } from "../reducers";
-import { CommonActions } from "./common";
 import { ApplicationActions } from "./application";
+import { CertificateActions } from "./certificate";
+import { ClusterActions } from "./cluster";
+import { CommonActions } from "./common";
 import { ComponentTemplateActions } from "./componentTemplate";
 import { ConfigActions } from "./config";
-import { UserActions } from "./user";
 import { DependencyActions } from "./dependency";
 import { NamespaceActions } from "./namespace";
 import { NodeActions } from "./node";
+import { VolumeActions } from "./persistentVolume";
 import { RegistriesActions } from "./registry";
 import { RouteActions } from "./route";
-import { CertificateActions } from "./certificate";
 import { ServiceActions } from "./service";
-import { VolumeActions } from "./persistentVolume";
-import { ClusterActions } from "./cluster";
-import { RouterAction } from "connected-react-router";
 import { TutorialActions } from "./tutorial";
-import { FormAction } from "redux-form";
+import { UserActions } from "./user";
 
 interface ReduxFormAction extends FormAction {
   type: keyof ActionTypes;

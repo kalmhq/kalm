@@ -6,22 +6,21 @@ import { RequireAuthorizated } from "permission/Authorization";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
-import { AppBarComponent, APP_BAR_HEIGHT } from "./AppBar";
+import { AppBarComponent } from "./AppBar";
 import { RootDrawer } from "./RootDrawer";
-import { SECOND_HEADER_HEIGHT } from "./SecondHeader";
 
 const styles = (theme: Theme) => {
   return createStyles({
     root: {
       display: "flex",
-      height: "100%"
+      height: "100%",
     },
     progress: {
       position: "fixed",
       top: "0",
       zIndex: 9999,
       width: "100%",
-      height: "2px"
+      height: "2px",
     },
     mainContent: {
       flexGrow: 1,
@@ -32,24 +31,23 @@ const styles = (theme: Theme) => {
 
       transition: theme.transitions.create("margin", {
         easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.leavingScreen
-      })
+        duration: theme.transitions.duration.leavingScreen,
+      }),
     },
     mainContentShift: {
       transition: theme.transitions.create("margin", {
         easing: theme.transitions.easing.easeOut,
-        duration: theme.transitions.duration.enteringScreen
+        duration: theme.transitions.duration.enteringScreen,
       }),
-      marginRight: 0
-    }
+      marginRight: 0,
+    },
   });
 };
 
 const mapStateToProps = (state: RootState) => {
   return {
     isShowTopProgress: state.get("settings").get("isShowTopProgress"),
-    isOpenRootDrawer: state.get("settings").get("isOpenRootDrawer"),
-    showTutorialDrawer: state.get("tutorial").get("drawerOpen")
+    showTutorialDrawer: state.get("tutorial").get("drawerOpen"),
   };
 };
 
@@ -57,12 +55,12 @@ interface Props extends WithStyles<typeof styles>, React.Props<any>, ReturnType<
 
 class DashboardLayoutRaw extends React.PureComponent<Props> {
   render() {
-    const { classes, children, isShowTopProgress, showTutorialDrawer, isOpenRootDrawer } = this.props;
+    const { classes, children, isShowTopProgress, showTutorialDrawer } = this.props;
     return (
       <div className={classes.root}>
         <div
           className={clsx(classes.mainContent, {
-            [classes.mainContentShift]: showTutorialDrawer
+            [classes.mainContentShift]: showTutorialDrawer,
           })}>
           {isShowTopProgress ? <LinearProgress className={classes.progress} /> : null}
 

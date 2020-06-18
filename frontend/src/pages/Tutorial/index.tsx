@@ -1,5 +1,6 @@
 import {
   Box,
+  Collapse,
   createStyles,
   Drawer,
   IconButton,
@@ -8,24 +9,21 @@ import {
   Typography,
   withStyles,
   WithStyles,
-  Fade,
-  Collapse,
-  Slide,
 } from "@material-ui/core";
 import CloseIcon from "@material-ui/icons/Close";
 import KeyboardBackspaceIcon from "@material-ui/icons/KeyboardBackspace";
+import { loadApplicationsAction } from "actions/application";
 import { closeTutorialDrawerAction, resetTutorialAction, setTutorialAction } from "actions/tutorial";
 import clsx from "clsx";
+import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
+import { ApplicationDetails } from "types/application";
 import { CreateApplicationTutorialFactory } from "types/tutorial";
 import { Body } from "widgets/Label";
 import { CommonTutorial } from "./CommonTutorial";
-import { loadApplicationsAction } from "actions/application";
-import Immutable from "immutable";
-import { ApplicationDetails } from "types/application";
 
 export const tutorialDrawerWidth: number = 400;
 
@@ -76,6 +74,8 @@ class TutorialRaw extends React.PureComponent<Props, State> {
     const sampleNameTemplate = "hello-world-";
     let i = 0;
     let sampleName = "hello-world";
+
+    // eslint-disable-next-line
     while (apps.find(app => app.get("name") === sampleName)) {
       i += 1;
       sampleName = sampleNameTemplate + i;

@@ -1,30 +1,16 @@
-import {
-  Box,
-  createStyles,
-  Drawer,
-  IconButton,
-  Paper,
-  Theme,
-  withStyles,
-  WithStyles,
-  Collapse,
-} from "@material-ui/core";
+import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
-import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
-import ChevronRightIcon from "@material-ui/icons/ChevronRight";
-import clsx from "clsx";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
+import { KPanel } from "widgets/KPanel";
+import { APP_BAR_HEIGHT } from "../../layout/AppBar";
 import { ApplicationComponentDetails, PodStatus } from "../../types/application";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "../Badge";
 import { H5 } from "../Label";
-import { SectionTitle } from "../SectionTitle";
 import { PieChartComponent } from "../PieChart";
-import { APP_BAR_HEIGHT } from "../../layout/AppBar";
-import { setSettingsAction } from "../../actions/settings";
-import { KPanel } from "widgets/KPanel";
+import { SectionTitle } from "../SectionTitle";
 
 const RIGHT_DRAWER_WIDTH = 340;
 
@@ -237,7 +223,7 @@ class ComponentStatusRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { classes, component, isOpenComponentStatusDrawer: open, dispatch } = this.props;
+    const { classes, component, isOpenComponentStatusDrawer: open } = this.props;
     const pieChartData = this.getPieChartData();
     if (!component) {
       return null;

@@ -92,7 +92,7 @@ class ApplicationFormRaw extends React.PureComponent<
   }
 
   private renderButtons() {
-    const { handleSubmit, change, classes, currentTab, isSubmittingApplication, values } = this.props;
+    const { handleSubmit, classes, currentTab, isSubmittingApplication } = this.props;
 
     return (
       <>

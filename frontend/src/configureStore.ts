@@ -1,10 +1,10 @@
-import { createStore, applyMiddleware, compose } from "redux";
-import thunkMiddleware from "redux-thunk";
-import { History, LocationState } from "history";
 import { routerMiddleware } from "connected-react-router/immutable";
+import { History, LocationState } from "history";
+import { applyMiddleware, createStore } from "redux";
 import { createLogger } from "redux-logger";
-import createRootReducer from "./reducers";
+import thunkMiddleware from "redux-thunk";
 import { errorHandlerMiddleware } from "./errorHandler";
+import createRootReducer from "./reducers";
 
 const configureStore = (history: History<LocationState>) => {
   const middlewares: any = [routerMiddleware(history), errorHandlerMiddleware, thunkMiddleware];

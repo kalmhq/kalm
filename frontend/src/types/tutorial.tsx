@@ -1,10 +1,9 @@
-import { Actions } from "types";
-import React from "react";
 import Immutable from "immutable";
-import { LOCATION_CHANGE } from "connected-react-router";
+import React from "react";
+import { RootState } from "reducers";
 import { actionTypes, ActionTypes } from "redux-form";
 import { formValueSelector } from "redux-form/immutable";
-import { RootState } from "reducers";
+import { Actions } from "types";
 import { State as TutorialState } from "../reducers/tutorial";
 import { ComponentLikePort } from "./componentTemplate";
 
@@ -117,18 +116,6 @@ const isUnderPath = (state: RootState, ...paths: string[]) => {
 
   return paths.includes(pathname);
 };
-
-const pathnameHasPerfix = (state: RootState, prefix: string) => {
-  const pathname = state
-    .get("router")
-    .get("location")
-    .get("pathname") as string;
-
-  return pathname.startsWith(prefix);
-};
-
-const visitedPathname = (action: Actions, pathname: string) =>
-  action.type === LOCATION_CHANGE && action.payload.location.pathname === pathname && action.payload.action === "PUSH";
 
 export const formValidatorNotBlockByTutorial = (
   values: Immutable.Map<string, any>,

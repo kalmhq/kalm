@@ -8,7 +8,7 @@ import {
   ListItemText,
   Tab,
   Tabs,
-  Tooltip,
+  Tooltip
 } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
@@ -36,9 +36,9 @@ import { ApplicationDetails, SharedEnv } from "../../types/application";
 import {
   ComponentLike,
   ComponentLikeContent,
-  newEmptyComponentLike,
+
   workloadTypeCronjob,
-  workloadTypeServer,
+  workloadTypeServer
 } from "../../types/componentTemplate";
 import { CustomizedButton } from "../../widgets/Button";
 import { HelperContainer } from "../../widgets/Helper";

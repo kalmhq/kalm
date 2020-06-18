@@ -21,7 +21,7 @@ export interface BasePageProps extends React.Props<any>, WithStyles<typeof style
 
 export class BasePageRaw extends React.PureComponent<BasePageProps> {
   public render() {
-    const { classes, children, leftDrawer, secondHeaderLeft, secondHeaderRight } = this.props;
+    const { children, leftDrawer, secondHeaderLeft, secondHeaderRight } = this.props;
     return (
       <Box display="flex" flexDirection="column">
         <SecondHeader left={secondHeaderLeft} right={secondHeaderRight} />
