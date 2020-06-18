@@ -162,5 +162,5 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
 }
 
 export const ApplicationEdit = connect(mapStateToProps)(
-  withStyles(styles)(ApplicationItemDataWrapper({ reloadFrequency: 300000 })(ApplicationEditRaw)),
+  withStyles(styles)(ApplicationItemDataWrapper({ reloadFrequency: 5000 })(ApplicationEditRaw)),
 );
