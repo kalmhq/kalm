@@ -23,7 +23,7 @@ import { setErrorNotificationAction, setSuccessNotificationAction } from "action
 import { openDialogAction } from "actions/dialog";
 import { SuccessBadge, PendingBadge } from "widgets/Badge";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { DeleteIcon, EditHintIcon } from "widgets/Icon";
+import { DeleteIcon, EditIcon } from "widgets/Icon";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { CertificateDataWrapper, WithCertificatesDataProps } from "./DataWrapper";
 import { blinkTopProgressAction } from "../../actions/settings";
@@ -107,7 +107,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
                 dispatch(openDialogAction(addCertificateDialogId));
                 dispatch(setEditCertificateModal(rowData));
               }}>
-              <EditHintIcon />
+              <EditIcon />
             </IconButtonWithTooltip>
           )}
         </Grid>

@@ -1,15 +1,15 @@
+import hoistNonReactStatics from "hoist-non-react-statics";
+import queryString from "query-string";
 import React from "react";
-import { RootState } from "../../reducers";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
-import { Actions } from "../../types";
-import { loadApplicationAction } from "../../actions/application";
-import hoistNonReactStatics from "hoist-non-react-statics";
-import { Loading } from "widgets/Loading";
-import queryString from "query-string";
-import { ApplicationComponent } from "../../types/application";
-import { componentDetailsToComponent } from "../../utils/application";
 import { newEmptyComponentLike } from "types/componentTemplate";
+import { Loading } from "widgets/Loading";
+import { loadApplicationAction } from "actions/application";
+import { RootState } from "reducers";
+import { Actions } from "types";
+import { ApplicationComponent } from "types/application";
+import { applicationComponentDetailsToApplicationComponent } from "utils/application";
 
 const mapStateToProps = (state: RootState, props: any) => {
   const applications = state.get("applications");
@@ -24,7 +24,7 @@ const mapStateToProps = (state: RootState, props: any) => {
   const component = application && application.get("components")?.find(x => x.get("name") === componentName);
   // for edit
   const currentComponent = component
-    ? componentDetailsToComponent(component)
+    ? applicationComponentDetailsToApplicationComponent(component)
     : (newEmptyComponentLike() as ApplicationComponent);
 
   const activeNamespaceName = state.get("namespaces").get("active");

@@ -9,8 +9,6 @@ import { store } from "../store";
 import {
   Application,
   ApplicationDetails,
-  ApplicationDetailsList,
-  ApplicationComponentDetailsList,
   ApplicationComponentDetails,
   ApplicationComponent,
   ApplicationPlugin,
@@ -146,9 +144,29 @@ export const getRegistries = async (): Promise<Immutable.List<RegistryType>> => 
   return Immutable.fromJS(res.data);
 };
 
+export const getRegistry = async (name: string): Promise<RegistryType> => {
+  const res = await getAxiosClient().get(K8sApiPrefix + `/v1alpha1/registries/${name}`);
+  return Immutable.fromJS(res.data);
+};
+
+export const createRegistry = async (registry: RegistryType): Promise<RegistryType> => {
+  const res = await getAxiosClient().post(K8sApiPrefix + `/v1alpha1/registries`, registry);
+
+  return Immutable.fromJS(res.data);
+};
+
+export const updateRegistry = async (registry: RegistryType): Promise<RegistryType> => {
+  const res = await getAxiosClient().put(K8sApiPrefix + `/v1alpha1/registries/${registry.get("name")}`, registry);
+  return Immutable.fromJS(res.data);
+};
+
+export const deleteRegistry = async (name: string): Promise<void> => {
+  await getAxiosClient().delete(K8sApiPrefix + `/v1alpha1/registries/${name}`);
+};
+
 // applications
 
-export const getKappApplicationList = async (): Promise<ApplicationDetailsList> => {
+export const getKappApplicationList = async (): Promise<Immutable.List<ApplicationDetails>> => {
   const res = await getAxiosClient().get(K8sApiPrefix + "/v1alpha1/applications");
   return Immutable.fromJS(res.data);
 };
@@ -178,7 +196,7 @@ export const deleteKappApplication = async (name: string): Promise<void> => {
 
 export const getKappApplicationComponentList = async (
   applicationName: string
-): Promise<ApplicationComponentDetailsList> => {
+): Promise<Immutable.List<ApplicationComponentDetails>> => {
   const res = await getAxiosClient().get(K8sApiPrefix + `/v1alpha1/applications/${applicationName}/components`);
   return Immutable.fromJS(res.data);
 };

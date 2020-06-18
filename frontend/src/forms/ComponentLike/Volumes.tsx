@@ -77,8 +77,8 @@ class RenderVolumes extends React.PureComponent<Props> {
 
   public getFieldComponents(member: string) {
     const volumeType = getComponentVolumeType(member);
-    console.log("volumeType", volumeType);
-    console.log("isDirtyField", member, isDirtyField(member + "type"));
+    // console.log("volumeType", volumeType);
+    // console.log("isDirtyField", member, isDirtyField(member + "type"));
 
     const isOld = volumeType !== undefined && !isDirtyField(member + "type");
 

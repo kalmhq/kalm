@@ -4,7 +4,6 @@ import { Actions } from "../types";
 import {
   ApplicationComponentDetails,
   ApplicationDetails,
-  ApplicationDetailsList,
   ComponentPlugin,
   CREATE_APPLICATION,
   CREATE_COMPONENT,
@@ -26,7 +25,9 @@ import {
 import { ImmutableMap } from "../typings";
 
 export type State = ImmutableMap<{
-  applications: ApplicationDetailsList;
+  applications: Immutable.List<ApplicationDetails>;
+  // api deleting delay
+  deletingApplicationNames: ImmutableMap<{ [key: string]: boolean }>;
   isListLoading: boolean;
   isListFirstLoaded: boolean;
   isItemLoading: boolean;
@@ -38,6 +39,7 @@ export type State = ImmutableMap<{
 
 const initialState: State = Immutable.Map({
   applications: Immutable.List(),
+  deletingApplicationNames: Immutable.Map({}),
   isListLoading: false,
   isListFirstLoaded: false,
   isItemLoading: false,
@@ -154,9 +156,12 @@ const reducer = (state: State = initialState, action: Actions): State => {
     case DELETE_COMPONENT: {
       const applications = state.get("applications");
       const applicationIndex = applications.findIndex(app => app.get("name") === action.payload.applicationName);
+
       if (applicationIndex < 0) {
+        state = state.setIn(["deletingApplicationNames", action.payload.applicationName], false);
         break;
       }
+      state = state.setIn(["deletingApplicationNames", action.payload.applicationName], true);
 
       const application = applications.find(app => app.get("name") === action.payload.applicationName);
       const componentIndex = application!

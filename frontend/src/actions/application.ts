@@ -7,7 +7,6 @@ import {
   ApplicationComponent,
   ApplicationComponentDetails,
   ApplicationDetails,
-  ApplicationDetailsList,
   CREATE_APPLICATION,
   CREATE_COMPONENT,
   DELETE_APPLICATION,
@@ -221,6 +220,13 @@ export const deleteApplicationAction = (name: string): ThunkResult<Promise<void>
       type: DELETE_APPLICATION,
       payload: { applicationName: name },
     });
+    // api deleting delay,for deletingApplicationNames
+    setTimeout(() => {
+      dispatch({
+        type: DELETE_APPLICATION,
+        payload: { applicationName: name },
+      });
+    }, 10000);
   };
 };
 
@@ -247,11 +253,11 @@ export const loadApplicationAction = (name: string): ThunkResult<Promise<void>> 
   };
 };
 
-export const loadApplicationsAction = (): ThunkResult<Promise<ApplicationDetailsList>> => {
+export const loadApplicationsAction = (): ThunkResult<Promise<Immutable.List<ApplicationDetails>>> => {
   return async (dispatch, getState) => {
     dispatch({ type: LOAD_APPLICATIONS_PENDING });
 
-    let applicationList: ApplicationDetailsList;
+    let applicationList: Immutable.List<ApplicationDetails>;
     try {
       applicationList = await getKappApplicationList();
 

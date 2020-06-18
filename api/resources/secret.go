@@ -6,13 +6,13 @@ import (
 )
 
 type SecretListChannel struct {
-	List  chan []*coreV1.Secret
+	List  chan []coreV1.Secret
 	Error chan error
 }
 
 func (builder *Builder) GetSecretListChannel(namespace string, opts ...client.ListOption) *SecretListChannel {
 	channel := &SecretListChannel{
-		List:  make(chan []*coreV1.Secret, 1),
+		List:  make(chan []coreV1.Secret, 1),
 		Error: make(chan error, 1),
 	}
 
@@ -26,10 +26,10 @@ func (builder *Builder) GetSecretListChannel(namespace string, opts ...client.Li
 			return
 		}
 
-		res := make([]*coreV1.Secret, len(secretList.Items))
+		res := make([]coreV1.Secret, len(secretList.Items))
 
-		for i, registry := range secretList.Items {
-			res[i] = &registry
+		for i, secret := range secretList.Items {
+			res[i] = secret
 		}
 
 		channel.List <- res
