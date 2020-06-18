@@ -195,6 +195,19 @@ export default connect(mapStateToProps)(
     form: "application",
     initialValues: applicationInitialValues,
     validate: formValidatorNotBlockByTutorial,
+    shouldError: (pp: any): boolean => {
+      const { values, nextProps, props, initialRender, lastFieldValidatorKeys, fieldValidatorKeys, structure } = pp;
+
+      if (initialRender) {
+        return true;
+      }
+
+      return (
+        !structure.deepEqual(props, nextProps) ||
+        !structure.deepEqual(values, nextProps && nextProps.values) ||
+        !structure.deepEqual(lastFieldValidatorKeys, fieldValidatorKeys)
+      );
+    },
     onSubmitFail: (...args) => {
       console.log("submit failed", args);
     },
