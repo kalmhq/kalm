@@ -12,6 +12,8 @@ import { CustomizedButton } from "../../widgets/Button";
 import { KPanel } from "../../widgets/KPanel";
 import { KRenderTextField } from "../Basic/textfield";
 import { ValidatorName, ValidatorRequired } from "../validator";
+import { formValidatorNotBlockByTutorial } from "types/tutorial";
+import { Alert } from "@material-ui/lab";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -19,7 +21,7 @@ const styles = (theme: Theme) =>
       // height: "100%",
       // overflow: "hidden",
       background: "#fff",
-      padding: 20
+      padding: 20,
     },
     // formSection: {
     //   padding: theme.spacing(2),
@@ -34,17 +36,17 @@ const styles = (theme: Theme) =>
     //   width: "auto"
     // },
     displayNone: {
-      display: "none"
+      display: "none",
     },
     displayFlex: {
-      display: "flex"
+      display: "flex",
     },
     buttons: {
-      margin: "20px 0 0"
+      margin: "20px 0 0",
     },
     submitButton: {
-      marginRight: theme.spacing(4)
-    }
+      marginRight: theme.spacing(4),
+    },
   });
 
 const mapStateToProps = (state: RootState) => {
@@ -54,24 +56,21 @@ const mapStateToProps = (state: RootState) => {
   const values = getFormValues("application")(state) as Application;
 
   return {
+    tutorialState: state.get("tutorial"),
     isSubmittingApplication: state.get("applications").get("isSubmittingApplication"),
     sharedEnvs,
     formComponents,
-    values
+    values,
   };
 };
 
-export interface Props {
+export interface Props extends ReturnType<typeof mapStateToProps>, DispatchProp {
   isEdit?: boolean;
   currentTab: "basic" | "sharedEnvs" | "applicationPlugins";
 }
 
 class ApplicationFormRaw extends React.PureComponent<
-  Props &
-    InjectedFormProps<Application, Props> &
-    ReturnType<typeof mapStateToProps> &
-    WithStyles<typeof styles> &
-    DispatchProp
+  Props & InjectedFormProps<Application, Props> & WithStyles<typeof styles>
 > {
   private renderBasic() {
     const { isEdit } = this.props;
@@ -98,20 +97,18 @@ class ApplicationFormRaw extends React.PureComponent<
     return (
       <>
         <CustomizedButton
-          pending={isSubmittingApplication && values.get("nextAddComponent")}
-          disabled={isSubmittingApplication && !values.get("nextAddComponent")}
+          pending={isSubmittingApplication}
+          disabled={isSubmittingApplication}
+          tutorial-anchor-id="application-form-submit-button"
           variant="contained"
           color="primary"
           className={`${currentTab === "basic" ? classes.submitButton : classes.displayNone}`}
           onClick={event => {
-            change("nextAddComponent", true);
-            setTimeout(() => {
-              handleSubmit(event);
-            }, 200);
+            handleSubmit(event);
           }}>
-          Save And Add Components
+          Submit
         </CustomizedButton>
-        <CustomizedButton
+        {/* <CustomizedButton
           pending={isSubmittingApplication && !values.get("nextAddComponent")}
           disabled={isSubmittingApplication && values.get("nextAddComponent")}
           variant="contained"
@@ -123,23 +120,36 @@ class ApplicationFormRaw extends React.PureComponent<
             }, 200);
           }}>
           Save And Back
-        </CustomizedButton>
+        </CustomizedButton> */}
       </>
     );
   }
 
   public render() {
-    const { handleSubmit, classes } = this.props;
+    const { handleSubmit, classes, submitFailed, error } = this.props;
 
     return (
-      <form onSubmit={handleSubmit} className={classes.root}>
-        <KPanel title={"Application Basic"} content={<Box p={2}>{this.renderBasic()}</Box>} />
+      <form onSubmit={handleSubmit} className={classes.root} tutorial-anchor-id="application-form">
+        <KPanel
+          title={"Application Basic"}
+          content={
+            <Box p={2} tutorial-anchor-id="application-form-name-field">
+              {this.renderBasic()}
+            </Box>
+          }
+        />
+
+        {error && submitFailed ? (
+          <Box pt={2}>
+            <Alert severity="error">{error}</Alert>
+          </Box>
+        ) : null}
 
         <Box pt={3} className={classes.displayFlex}>
           {this.renderButtons()}
         </Box>
 
-        {/* 
+        {/*
         <Grid
           container
           spacing={2}
@@ -177,13 +187,16 @@ class ApplicationFormRaw extends React.PureComponent<
 export const applicationInitialValues: Application = Immutable.fromJS({
   name: "",
   sharedEnvs: [],
-  components: []
+  components: [],
 });
 
-export default reduxForm<Application, Props>({
-  form: "application",
-  initialValues: applicationInitialValues,
-  onSubmitFail: (...args) => {
-    console.log("submit failed", args);
-  }
-})(connect(mapStateToProps)(withStyles(styles)(ApplicationFormRaw)));
+export default connect(mapStateToProps)(
+  reduxForm<Application, Props>({
+    form: "application",
+    initialValues: applicationInitialValues,
+    validate: formValidatorNotBlockByTutorial,
+    onSubmitFail: (...args) => {
+      console.log("submit failed", args);
+    },
+  })(withStyles(styles)(ApplicationFormRaw)),
+);
