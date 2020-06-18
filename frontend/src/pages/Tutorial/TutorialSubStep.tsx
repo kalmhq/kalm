@@ -59,9 +59,21 @@ class TutorialSubStepCompoentRaw extends React.PureComponent<Props, State> {
   }
 
   updateCompletionStatus = () => {
-    const { completionByState, definedCompletionByState, isCompleted, dispatch, stepIndex, subStepIndex } = this.props;
+    const {
+      completionByState,
+      definedCompletionByState,
+      isCompleted,
+      dispatch,
+      stepIndex,
+      subStepIndex,
+      subStep,
+    } = this.props;
 
     if (!definedCompletionByState) {
+      return;
+    }
+
+    if (isCompleted && subStep.irrevocable) {
       return;
     }
 

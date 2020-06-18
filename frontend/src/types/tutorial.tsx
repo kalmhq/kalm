@@ -27,7 +27,7 @@ export interface TutorialSubStep {
     position?: string;
     anchor: string;
   };
-  exitWhenPathnameChangeAndNotCompleted?: boolean;
+  irrevocable?: boolean;
   formValidator?: { form: string; field: string; validate: (value: any) => string | undefined }[];
   shouldCompleteByAction?(action: Actions): boolean;
   shouldCompleteByState?(state: RootState): boolean;
@@ -231,7 +231,8 @@ export const CreateApplicationTutorialFactory = (applicationName: string): Tutor
           //   position: "right",
           // },
           // shouldCompleteByState: (state: RootState) => pathnameHasPerfix(state, "/applications"),
-          shouldCompleteByAction: (action: Actions) => visitedPathname(action, "/applications"),
+          irrevocable: true,
+          shouldCompleteByState: (state: RootState) => isUnderPath(state, "/applications", "/applications/new"),
         },
         {
           title: (
@@ -245,7 +246,8 @@ export const CreateApplicationTutorialFactory = (applicationName: string): Tutor
           //   requirePathname: "/applications",
           //   anchor: "[tutorial-anchor-id=add-application]",
           // },
-          shouldCompleteByAction: (action: Actions) => visitedPathname(action, "/applications/new"),
+          irrevocable: true,
+          shouldCompleteByState: (state: RootState) => isUnderPath(state, "/applications/new"),
         },
         {
           title: (
