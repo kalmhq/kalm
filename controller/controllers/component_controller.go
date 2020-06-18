@@ -30,6 +30,7 @@ import (
 	batchV1 "k8s.io/api/batch/v1"
 	batchV1Beta1 "k8s.io/api/batch/v1beta1"
 	coreV1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -1763,9 +1764,103 @@ func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *coreV1.
 	return nil
 }
 
-// 1. same ns pv reuse, pvc name should be same
 // 2. diff ns pv reuse, remove old pvc, clean ref in pv
 func (r *ComponentReconcilerTask) reconcilePVForReUse(ctx context.Context, pvc coreV1.PersistentVolumeClaim, pvName string) error {
-	//todo
+	// 1. same ns pv reuse, pvc name should be same
+	if pvc.Spec.VolumeName == pvName {
+		return nil
+	}
+
+	var pv coreV1.PersistentVolume
+	if err := r.Get(ctx, types.NamespacedName{Name: pvName}, &pv); err != nil {
+		return err
+	}
+
+	// find which pvc is bound to this pv
+
+	if pv.Spec.ClaimRef == nil {
+		// pv is not bound, ready to be re-used
+		return nil
+	}
+
+	ownerNs := pv.Spec.ClaimRef.Namespace
+	ownerName := pv.Spec.ClaimRef.Name
+
+	var ownerPVC coreV1.PersistentVolumeClaim
+	err := r.Get(ctx, types.NamespacedName{Name: ownerName, Namespace: ownerNs}, &ownerPVC)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			// clean claimRef for this pv
+			pv.Spec.ClaimRef = nil
+			if err := r.Update(ctx, &pv); err != nil {
+				return nil
+			}
+		} else {
+			return err
+		}
+	} else {
+		if pv.Spec.PersistentVolumeReclaimPolicy != coreV1.PersistentVolumeReclaimRetain {
+			// pvc not safe to delete, nothing we can do but warning the user
+			r.WarningEvent(
+				fmt.Errorf("cannotBoundPV"),
+				fmt.Sprintf("pv(%s) is bound by pvc(%s/%s), and reclaimPolicy is: %s",
+					pv.Name, ownerPVC.Namespace, ownerPVC.Name, pv.Spec.PersistentVolumeReclaimPolicy,
+				),
+			)
+		} else {
+			// check if ownerPVC is being used
+			if isInUse, err := r.pvcIsInUsed(ctx, ownerPVC); err != nil {
+				return err
+			} else if isInUse {
+				// pvc in use, nothing we can do but warning the user
+				r.WarningEvent(
+					fmt.Errorf("cannotBoundPV"),
+					fmt.Sprintf("pv(%s)'s bound pvc(%s/%s) is in use",
+						pv.Name, ownerPVC.Namespace, ownerPVC.Name,
+					),
+				)
+			} else {
+				// delete ownerPVC
+				if err := r.Delete(ctx, &ownerPVC); err != nil {
+					return err
+				}
+
+				// clean claimRef on PV
+				pv.Spec.ClaimRef = nil
+				if err := r.Update(ctx, &pv); err != nil {
+					return nil
+				}
+			}
+		}
+	}
+
 	return nil
+}
+
+func (r *ComponentReconcilerTask) pvcIsInUsed(ctx context.Context, pvc coreV1.PersistentVolumeClaim) (bool, error) {
+	var podList coreV1.PodList
+	err := r.List(ctx, &podList, client.InNamespace(pvc.Namespace))
+	if errors.IsNotFound(err) {
+		return false, err
+	}
+
+	isInUse := false
+	for _, pod := range podList.Items {
+		for _, vol := range pod.Spec.Volumes {
+			if vol.PersistentVolumeClaim == nil {
+				continue
+			}
+
+			if vol.PersistentVolumeClaim.ClaimName == pvc.Name {
+				isInUse = true
+				break
+			}
+		}
+
+		if isInUse {
+			break
+		}
+	}
+
+	return isInUse, nil
 }

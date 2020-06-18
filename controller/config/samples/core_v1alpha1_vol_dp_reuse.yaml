@@ -19,8 +19,8 @@ spec:
       servicePort: 80
   volumes:
     - path: /tmp/foobar
-      size: 1Gi
+      size: 1Mi
       type: pvc
-      storageClassName: kapp-ssd
-      persistentVolumeNamePVCToMatch: pvc-2a488de4-14c6-49ab-8483-dd505afe4241
-      persistentVolumeClaimName: pvc-foobar2
+      storageClassName: kapp-standard
+      persistentVolumeNamePVCToMatch: pvc-a9849600-24bc-4f0e-8bb1-c023e62c7bdd
+      persistentVolumeClaimName: pvc-data
