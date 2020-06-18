@@ -8,8 +8,8 @@ import hoistNonReactStatics from "hoist-non-react-statics";
 import { Loading } from "widgets/Loading";
 import queryString from "query-string";
 import { ApplicationComponent } from "../../types/application";
-import { componentInitialValues } from "../../forms/ComponentLike";
 import { componentDetailsToComponent } from "../../utils/application";
+import { newEmptyComponentLike } from "types/componentTemplate";
 
 const mapStateToProps = (state: RootState, props: any) => {
   const applications = state.get("applications");
@@ -25,7 +25,7 @@ const mapStateToProps = (state: RootState, props: any) => {
   // for edit
   const currentComponent = component
     ? componentDetailsToComponent(component)
-    : (componentInitialValues as ApplicationComponent);
+    : (newEmptyComponentLike() as ApplicationComponent);
 
   const activeNamespaceName = state.get("namespaces").get("active");
 
@@ -35,7 +35,7 @@ const mapStateToProps = (state: RootState, props: any) => {
     application,
     component,
     currentComponent,
-    isLoading: applications.get("isItemLoading")
+    isLoading: applications.get("isItemLoading"),
   };
 };
 
@@ -46,7 +46,7 @@ export interface WithApplicationItemDataProps extends ReturnType<typeof mapState
 // if reloadFrequency > 0, will keep reload the item
 // otherwize, will only load the item once
 export const ApplicationItemDataWrapper = ({ reloadFrequency }: { reloadFrequency: number }) => (
-  WrappedComponent: React.ComponentType<any>
+  WrappedComponent: React.ComponentType<any>,
 ) => {
   const WithdApplicationsData: React.ComponentType<WithApplicationItemDataProps> = class extends React.Component<
     WithApplicationItemDataProps
