@@ -152,6 +152,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
     ];
     certificateIssuers.forEach(certificateIssuer => {
       const name = certificateIssuer.get("name");
+
       httpsCertIssuerOptions.push({
         value: name,
         label: name,
@@ -278,6 +279,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
               label="Certificate name"
               component={KRenderTextField}
               name="name"
+              id="certificate-name"
               margin="normal"
               validate={[ValidatorRequired]}
             />
@@ -312,7 +314,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
               </Button>
             </Grid>
             <Grid item md={2}>
-              <Button type="submit" onClick={handleSubmit} color="primary">
+              <Button id="save-certificate-button" type="submit" onClick={handleSubmit} color="primary">
                 Save
               </Button>
             </Grid>
@@ -328,6 +330,7 @@ const ValidatorCertificateValid = (value: any, _allValues?: any, _props?: any, _
   if (!domains || domains.size < 1) {
     return "Invalid Certificate";
   }
+  return undefined;
 };
 
 export const CertificateForm = reduxForm<CertificateFormType, OwnProps>({

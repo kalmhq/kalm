@@ -109,7 +109,8 @@ export const newEmptyCertificateForm = (): CertificateFormType => {
     name: "",
     managedType: issuerManaged,
     selfManagedCertContent: "",
-    selfManagedCertPrivateKey: ""
+    selfManagedCertPrivateKey: "",
+    domains: Immutable.List()
   });
 };
 

@@ -31,6 +31,7 @@ import { HttpRoute } from "types/route";
 import { Service } from "types/service";
 import { PersistentVolumes, StorageClasses } from "../types/persistentVolume";
 import { ClusterInfo } from "types/cluster";
+import { certificateListData } from "./mockApiData";
 
 export const K8sApiPrefix = process.env.REACT_APP_K8S_API_PERFIX;
 export const k8sWsPrefix = !K8sApiPrefix
@@ -350,6 +351,9 @@ export const getServiceAccountSecret = async (name: string) => {
 // certificate
 
 export const getCertificateList = async (): Promise<CertificateList> => {
+  if (process.env.NODE_ENV === "test") {
+    return Immutable.fromJS(certificateListData.data);
+  }
   const res = await getAxiosClient().get(K8sApiPrefix + "/v1alpha1/httpscerts");
   return Immutable.fromJS(res.data);
 };

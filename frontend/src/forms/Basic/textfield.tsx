@@ -19,6 +19,7 @@ export const KRenderTextField = ({
   endAdornment,
   multiline,
   rows,
+  id,
   meta: { touched, invalid, error },
   ...custom
 }: FilledTextFieldProps & WrappedFieldProps & Props) => {
@@ -31,6 +32,7 @@ export const KRenderTextField = ({
 
   return (
     <TextField
+      id={id}
       fullWidth
       label={label}
       placeholder={placeholder}

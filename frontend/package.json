@@ -13,6 +13,8 @@
     "@testing-library/user-event": "^7.2.1",
     "@types/chart.js": "^2.9.16",
     "@types/debug": "^4.1.5",
+    "@types/enzyme": "^3.10.5",
+    "@types/enzyme-adapter-react-16": "^1.0.6",
     "@types/jest": "^24.0.25",
     "@types/node": "^12.12.24",
     "@types/node-forge": "^0.9.4",
@@ -84,6 +86,10 @@
     ]
   },
   "devDependencies": {
-    "husky": "^4.2.1"
+    "@types/react-test-renderer": "^16.9.2",
+    "enzyme": "^3.11.0",
+    "enzyme-adapter-react-16": "^1.15.2",
+    "husky": "^4.2.1",
+    "react-test-renderer": "^16.13.1"
   }
 }
