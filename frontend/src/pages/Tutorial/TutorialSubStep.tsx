@@ -94,7 +94,19 @@ class TutorialSubStepCompoentRaw extends React.PureComponent<Props, State> {
           [classes.completedStep]: isCompleted,
         })}
         control={
-          <Checkbox size="small" color="primary" classes={{ root: classes.checkboxRoot }} checked={isCompleted} />
+          <Checkbox
+            style={{
+              cursor: "auto",
+            }}
+            disableRipple
+            disableTouchRipple
+            disableFocusRipple
+            tabIndex={-1}
+            size="small"
+            color="primary"
+            classes={{ root: classes.checkboxRoot }}
+            checked={isCompleted}
+          />
         }
         label={subStep.title}
       />
