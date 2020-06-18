@@ -19,8 +19,10 @@ export type State = ImmutableMap<{
   currentStepIndex: number;
 }>;
 
+const DISABLE_TUTORIAL_AUTO_OPEN = "DISABLE_TUTORIAL_AUTO_OPEN";
+
 const initialState: State = Immutable.Map({
-  drawerOpen: false,
+  drawerOpen: !window.localStorage.getItem(DISABLE_TUTORIAL_AUTO_OPEN),
   tutorialID: "",
   tutorial: null,
   tutorialStepStatus: Immutable.Map(),
@@ -45,6 +47,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
   }
 
   if (action.type === CLOSE_TUTORIAL_DRAWER) {
+    window.localStorage.setItem(DISABLE_TUTORIAL_AUTO_OPEN, "true");
     return state.set("drawerOpen", false);
   }
 
