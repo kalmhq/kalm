@@ -24,6 +24,8 @@ import { CreateApplicationTutorialFactory } from "types/tutorial";
 import { Body } from "widgets/Label";
 import { CommonTutorial } from "./CommonTutorial";
 import { loadApplicationsAction } from "actions/application";
+import Immutable from "immutable";
+import { ApplicationDetails } from "types/application";
 
 export const tutorialDrawerWidth: number = 400;
 
@@ -49,6 +51,7 @@ const styles = (theme: Theme) => {
 
 const mapStateToProps = (state: RootState) => {
   return {
+    applications: state.get("applications"),
     toturialID: state.get("tutorial").get("tutorialID"),
     drawerOpen: state.get("tutorial").get("drawerOpen"),
   };
@@ -60,13 +63,20 @@ interface State {}
 
 class TutorialRaw extends React.PureComponent<Props, State> {
   private handleChooseCreateApplicationTutorial = async () => {
-    const { dispatch } = this.props;
-    const applications = await dispatch(loadApplicationsAction());
+    const { dispatch, applications } = this.props;
+
+    let apps: Immutable.List<ApplicationDetails>;
+
+    if (applications.get("isListFirstLoaded")) {
+      apps = applications.get("applications");
+    } else {
+      apps = await dispatch(loadApplicationsAction());
+    }
 
     const sampleNameTemplate = "hello-world-";
     let i = 0;
     let sampleName = "hello-world";
-    while (applications.find(app => app.get("name") === sampleName)) {
+    while (apps.find(app => app.get("name") === sampleName)) {
       i += 1;
       sampleName = sampleNameTemplate + i;
     }
