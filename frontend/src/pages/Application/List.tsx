@@ -679,6 +679,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
       <div className={classes.secondHeaderRight}>
         <H4 className={classes.secondHeaderRightItem}>Applications</H4>
         <CustomizedButton
+          tutorial-anchor-id="add-application"
           color="primary"
           size="large"
           className={classes.secondHeaderRightItem}
