@@ -1,16 +1,14 @@
 import {
-  SetTutorialAction,
-  StartTutorialAction,
-  SET_TUTORIAL_ACTION,
-  START_TUTORIAL_ACTION,
-  RESET_TUTORIAL_ACTION,
-  ResetTutorialAction,
-  OPEN_TUTORIAL_DRAWER,
-  TutorialDrawerAction,
   CLOSE_TUTORIAL_DRAWER,
-  Tutorial,
-  SET_TUTORIAL_STEP_COMPLETION_STATUS,
+  OPEN_TUTORIAL_DRAWER,
+  ResetTutorialAction,
+  RESET_TUTORIAL_ACTION,
+  SetTutorialAction,
   SetTutorialStepCompletionStatusAction,
+  SET_TUTORIAL_ACTION,
+  SET_TUTORIAL_STEP_COMPLETION_STATUS,
+  Tutorial,
+  TutorialDrawerAction,
 } from "types/tutorial";
 
 export const setTutorialAction = (id: string, tutorial: Tutorial): SetTutorialAction => {
@@ -20,12 +18,6 @@ export const setTutorialAction = (id: string, tutorial: Tutorial): SetTutorialAc
       id,
       tutorial,
     },
-  };
-};
-
-export const startTutorialAction = (): StartTutorialAction => {
-  return {
-    type: START_TUTORIAL_ACTION,
   };
 };
 

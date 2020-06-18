@@ -2,6 +2,7 @@ import {
   Box,
   createStyles,
   FormGroup,
+  Link,
   Step,
   StepContent,
   StepLabel,
@@ -10,9 +11,8 @@ import {
   Typography,
   withStyles,
   WithStyles,
-  Link,
+  StepConnector,
 } from "@material-ui/core";
-import { startTutorialAction } from "actions/tutorial";
 import Driver from "driver.js";
 import React from "react";
 import { connect } from "react-redux";
@@ -49,6 +49,11 @@ const styles = (theme: Theme) =>
     },
     commingStep: {
       color: theme.palette.text.secondary,
+    },
+
+    // for steper connector
+    connectorLineVertical: {
+      minHeight: 10,
     },
   });
 
@@ -127,10 +132,6 @@ class CommonTutorialRaw extends React.PureComponent<Props, State> {
     // }
   }
 
-  componentDidMount() {
-    this.props.dispatch(startTutorialAction());
-  }
-
   componentWillUnmount() {
     if (this.driver) {
       this.driver.reset();
@@ -149,7 +150,11 @@ class CommonTutorialRaw extends React.PureComponent<Props, State> {
         <Box mb={2}>
           <Typography variant="h2">{tutorial.id}</Typography>
         </Box>
-        <Stepper activeStep={currentStepIndex} orientation="vertical" style={{ padding: 0 }}>
+        <Stepper
+          activeStep={currentStepIndex}
+          orientation="vertical"
+          style={{ padding: 0 }}
+          connector={<StepConnector classes={{ lineVertical: classes.connectorLineVertical }} />}>
           {tutorial.steps.map((step, index) => (
             <Step key={step.name}>
               <StepLabel>{step.name}</StepLabel>

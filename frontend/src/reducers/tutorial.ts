@@ -5,7 +5,6 @@ import {
   RESET_TUTORIAL_ACTION,
   SET_TUTORIAL_ACTION,
   SET_TUTORIAL_STEP_COMPLETION_STATUS,
-  START_TUTORIAL_ACTION,
   Tutorial,
 } from "types/tutorial";
 import { Actions } from "../types";
@@ -64,10 +63,6 @@ const reducer = (state: State = initialState, action: Actions): State => {
 
   if (!state.get("tutorialID")) {
     return state;
-  }
-
-  if (action.type === START_TUTORIAL_ACTION) {
-    return state.set("currentStepIndex", 0);
   }
 
   const tutorial = state.get("tutorial");

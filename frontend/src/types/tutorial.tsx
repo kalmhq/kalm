@@ -12,7 +12,6 @@ export const OPEN_TUTORIAL_DRAWER = "OPEN_TUTORIAL_DRAWER";
 export const CLOSE_TUTORIAL_DRAWER = "CLOSE_TUTORIAL_DRAWER";
 
 export const SET_TUTORIAL_ACTION = "SET_TUTORIAL_ACTION";
-export const START_TUTORIAL_ACTION = "START_TUTORIAL_ACTION";
 export const RESET_TUTORIAL_ACTION = "RESET_TUTORIAL_ACTION";
 
 export const SET_TUTORIAL_STEP_COMPLETION_STATUS = "SET_TUTORIAL_STEP_COMPLETION_STATUS";
@@ -79,10 +78,6 @@ export interface SetTutorialStepCompletionStatusAction {
   };
 }
 
-export interface StartTutorialAction {
-  type: typeof START_TUTORIAL_ACTION;
-}
-
 export interface ResetTutorialAction {
   type: typeof RESET_TUTORIAL_ACTION;
 }
@@ -94,7 +89,6 @@ export interface TutorialDrawerAction {
 export type TutorialActions =
   | SetTutorialAction
   | SetTutorialStepCompletionStatusAction
-  | StartTutorialAction
   | TutorialDrawerAction
   | ResetTutorialAction;
 
