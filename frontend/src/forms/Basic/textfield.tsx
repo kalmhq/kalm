@@ -31,6 +31,7 @@ export const KRenderTextField = ({
 
   return (
     <TextField
+      {...custom}
       fullWidth
       label={label}
       placeholder={placeholder}
