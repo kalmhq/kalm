@@ -107,7 +107,7 @@ func (suite *ComponentTestSuite) TestCreateComponentWithReUsingPVCAsVolume() {
 	scName := "kapp-standard"
 	pvNameToReuse := "exist-available-pv"
 
-	// prepare PV & scName
+	// prepare Volume & scName
 	//sc := storagev1.StorageClass{
 	//	ObjectMeta: v1.ObjectMeta{
 	//		Name: scName,
