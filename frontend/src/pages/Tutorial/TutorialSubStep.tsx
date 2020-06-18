@@ -74,6 +74,9 @@ class TutorialSubStepCompoentRaw extends React.PureComponent<Props, State> {
     const { classes, isCompleted, subStep } = this.props;
     return (
       <FormControlLabel
+        style={{
+          cursor: "auto",
+        }}
         className={clsx({
           [classes.uncompletedStep]: !isCompleted,
           [classes.completedStep]: isCompleted,

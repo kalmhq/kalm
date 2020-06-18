@@ -1,4 +1,5 @@
 import { Actions } from "types";
+import React from "react";
 import Immutable from "immutable";
 import { LOCATION_CHANGE } from "connected-react-router";
 import { actionTypes, ActionTypes } from "redux-form";
@@ -17,7 +18,7 @@ export const RESET_TUTORIAL_ACTION = "RESET_TUTORIAL_ACTION";
 export const SET_TUTORIAL_STEP_COMPLETION_STATUS = "SET_TUTORIAL_STEP_COMPLETION_STATUS";
 
 export interface TutorialSubStep {
-  title: string;
+  title: React.ReactNode;
   highlight?: {
     title: string;
     description: string;
@@ -35,9 +36,9 @@ export interface TutorialSubStep {
 export interface TutorialHighlight {
   title: string;
   description: string;
-  position?: string;
   anchor: string;
 
+  position?: string;
   requirePathnamePrefix?: string;
   requirePathname?: string;
 
@@ -233,7 +234,11 @@ export const CreateApplicationTutorialFactory = (applicationName: string): Tutor
           shouldCompleteByAction: (action: Actions) => visitedPathname(action, "/applications"),
         },
         {
-          title: "Click add button",
+          title: (
+            <span>
+              Click the <strong>Add</strong> button
+            </span>
+          ),
           // highlight: {
           //   title: "Click Here",
           //   description: "Go to new application page",
@@ -243,7 +248,11 @@ export const CreateApplicationTutorialFactory = (applicationName: string): Tutor
           shouldCompleteByAction: (action: Actions) => visitedPathname(action, "/applications/new"),
         },
         {
-          title: `Type ${applicationName} in name field`,
+          title: (
+            <span>
+              Type <strong>{applicationName}</strong> in name field
+            </span>
+          ),
           // highlight: {
           //   title: "Fill field",
           //   description: `type <strong>${applicationName}</strong> in name field.`,
@@ -262,7 +271,7 @@ export const CreateApplicationTutorialFactory = (applicationName: string): Tutor
             isApplicationFormFieldValueEqualTo(state, "name", applicationName),
         },
         {
-          title: "Submit add application form",
+          title: "Submit form",
           // highlight: {
           //   title: "Complete the form",
           //   description: "Create an application",
@@ -282,18 +291,26 @@ export const CreateApplicationTutorialFactory = (applicationName: string): Tutor
       highlights: [],
       subSteps: [
         {
-          title: 'Use "echo-server" as name',
+          title: (
+            <span>
+              Use <strong>echoserver</strong> as name
+            </span>
+          ),
           formValidator: [
             {
               form: "componentLike",
               field: "name",
-              validate: value => (value === "echo-server" ? undefined : `Please use "echo-server"`),
+              validate: value => (value === "echoserver" ? undefined : `Please use "echoserver"`),
             },
           ],
-          shouldCompleteByState: (state: RootState) => isComponentFormFieldValueEqualTo(state, "name", "echo-server"),
+          shouldCompleteByState: (state: RootState) => isComponentFormFieldValueEqualTo(state, "name", "echoserver"),
         },
         {
-          title: 'Use "k8s.gcr.io/echoserver:1.10" image',
+          title: (
+            <span>
+              Use <strong>k8s.gcr.io/echoserver:1.10</strong> image
+            </span>
+          ),
           // highlight: {
           //   title: "Fill form",
           //   description:
@@ -314,7 +331,11 @@ export const CreateApplicationTutorialFactory = (applicationName: string): Tutor
             isComponentFormFieldValueEqualTo(state, "image", "k8s.gcr.io/echoserver:1.10"),
         },
         {
-          title: "Add an exposed port in advanced networking tab.",
+          title: (
+            <span>
+              Add an exposed port in advanced <strong>networking tab</strong>
+            </span>
+          ),
           // highlight: {
           //   title: "Fill form",
           //   description:
@@ -337,7 +358,11 @@ export const CreateApplicationTutorialFactory = (applicationName: string): Tutor
           },
         },
         {
-          title: 'Name the port "http"',
+          title: (
+            <span>
+              Name the port <strong>http</strong>
+            </span>
+          ),
           formValidator: [
             {
               form: "componentLike",
@@ -353,7 +378,11 @@ export const CreateApplicationTutorialFactory = (applicationName: string): Tutor
           },
         },
         {
-          title: "Publish port 80",
+          title: (
+            <span>
+              Set <strong>publish port</strong> to <strong>80</strong>
+            </span>
+          ),
           formValidator: [
             {
               form: "componentLike",
@@ -369,7 +398,11 @@ export const CreateApplicationTutorialFactory = (applicationName: string): Tutor
           },
         },
         {
-          title: 'Set listening on port to "80" or leave it blank.',
+          title: (
+            <span>
+              Set <strong>listening on port</strong> to <strong>80</strong> or leave it blank
+            </span>
+          ),
           formValidator: [
             {
               form: "componentLike",
@@ -426,7 +459,7 @@ export const CreateApplicationTutorialFactory = (applicationName: string): Tutor
     },
   ],
   nextStep: {
-    text: "Add external access for echo-server",
+    text: "Add external access for your application.",
     onClick: () => {},
   },
 });

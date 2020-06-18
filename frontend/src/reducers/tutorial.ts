@@ -17,16 +17,14 @@ export type State = ImmutableMap<{
   tutorial?: Tutorial;
   tutorialStepStatus: Immutable.Map<string, boolean>;
   currentStepIndex: number;
-  currentSubStepIndex: number;
 }>;
 
 const initialState: State = Immutable.Map({
-  drawerOpen: true,
+  drawerOpen: false,
   tutorialID: "",
   tutorial: null,
   tutorialStepStatus: Immutable.Map(),
   currentStepIndex: -1,
-  currentSubStepIndex: -1,
 });
 
 const tryMoveToNextStep = (state: State): State => {
@@ -55,7 +53,10 @@ const reducer = (state: State = initialState, action: Actions): State => {
   }
 
   if (action.type === SET_TUTORIAL_ACTION) {
-    return state.set("tutorialID", action.payload.id).set("tutorial", action.payload.tutorial);
+    return state
+      .set("tutorialID", action.payload.id)
+      .set("tutorial", action.payload.tutorial)
+      .set("currentStepIndex", 0);
   }
 
   if (!state.get("tutorialID")) {
@@ -63,7 +64,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
   }
 
   if (action.type === START_TUTORIAL_ACTION) {
-    return state.set("currentStepIndex", 0).set("currentSubStepIndex", 0);
+    return state.set("currentStepIndex", 0);
   }
 
   const tutorial = state.get("tutorial");

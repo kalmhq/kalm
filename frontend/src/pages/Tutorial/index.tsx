@@ -8,6 +8,9 @@ import {
   Typography,
   withStyles,
   WithStyles,
+  Fade,
+  Collapse,
+  Slide,
 } from "@material-ui/core";
 import CloseIcon from "@material-ui/icons/Close";
 import KeyboardBackspaceIcon from "@material-ui/icons/KeyboardBackspace";
@@ -74,11 +77,6 @@ class TutorialRaw extends React.PureComponent<Props, State> {
   private renderOptions = () => {
     return (
       <div>
-        {/* <Box mb={2}>
-          <Typography variant="h3">Congratulations! </Typography>
-          <Body>You have successfully installed Kapp on your cluster.</Body>
-          <Body>Choose a tutorial you are interested in, learn how to use kapp dashboard.</Body>
-        </Box> */}
         <Box mb={2}>
           <Typography variant="h3">Tutorials</Typography>
           <Body>Here are some live tutorials that walk you throught some common tasks step by step. </Body>
@@ -97,7 +95,7 @@ class TutorialRaw extends React.PureComponent<Props, State> {
             onClick={() => {
               console.info("I'm a button.");
             }}>
-            Access an application from public internet.
+            Access an application from public internet. (Todo)
           </Link>
           <br />
         </Box>
@@ -111,7 +109,7 @@ class TutorialRaw extends React.PureComponent<Props, State> {
             onClick={() => {
               console.info("I'm a button.");
             }}>
-            Configure https certifate.
+            Configure https certifate. (Todo)
           </Link>
           <br />
           <Link
@@ -120,7 +118,7 @@ class TutorialRaw extends React.PureComponent<Props, State> {
             onClick={() => {
               console.info("I'm a button.");
             }}>
-            Connect to private docker image registry.
+            Connect to private docker image registry. (Todo)
           </Link>
           <br />
           <Link
@@ -129,7 +127,7 @@ class TutorialRaw extends React.PureComponent<Props, State> {
             onClick={() => {
               console.info("I'm a button.");
             }}>
-            Use disks in your applications.
+            Use disks in your applications. (Todo)
           </Link>
           <br />
           <Link
@@ -138,7 +136,7 @@ class TutorialRaw extends React.PureComponent<Props, State> {
             onClick={() => {
               console.info("I'm a button.");
             }}>
-            Integration with your CI pipeline.
+            Integration with your CI pipeline. (Todo)
           </Link>
           <br />
           <Link
@@ -147,7 +145,7 @@ class TutorialRaw extends React.PureComponent<Props, State> {
             onClick={() => {
               console.info("I'm a button.");
             }}>
-            I'm an Kubernetes expert.
+            I'm an Kubernetes expert. (Todo)
           </Link>
           <br />
         </Box>
@@ -158,7 +156,7 @@ class TutorialRaw extends React.PureComponent<Props, State> {
             href="https://github.com/kapp-staging/kapp/issues/new"
             target="_blank"
             rel="noreferer">
-            Still have questions? Tell us!
+            Still have questions? Tell us! (Todo)
           </Link>
         </Box>
         {/* This tutorial will walk you through kapp dashboard */}
@@ -204,7 +202,12 @@ class TutorialRaw extends React.PureComponent<Props, State> {
           </IconButton>
         </Box>
 
-        {toturialID === "" ? this.renderOptions() : <CommonTutorial />}
+        {/* {toturialID === "" ? this.renderOptions() : <CommonTutorial />} */}
+
+        <Collapse in={toturialID === ""}>{this.renderOptions()}</Collapse>
+        <Collapse in={toturialID !== ""}>
+          <CommonTutorial />
+        </Collapse>
       </Drawer>
     );
   }
