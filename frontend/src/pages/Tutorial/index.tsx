@@ -52,7 +52,7 @@ const styles = (theme: Theme) => {
 const mapStateToProps = (state: RootState) => {
   return {
     applications: state.get("applications"),
-    toturialID: state.get("tutorial").get("tutorialID"),
+    tutorialID: state.get("tutorial").get("tutorialID"),
     drawerOpen: state.get("tutorial").get("drawerOpen"),
   };
 };
@@ -190,7 +190,7 @@ class TutorialRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { classes, toturialID, drawerOpen } = this.props;
+    const { classes, tutorialID, drawerOpen } = this.props;
 
     return (
       <Drawer
@@ -202,7 +202,7 @@ class TutorialRaw extends React.PureComponent<Props, State> {
           paper: classes.drawerPaper,
         }}>
         <Box textAlign="right">
-          {toturialID ? (
+          {tutorialID ? (
             <IconButton aria-label="close" onClick={this.handleBack}>
               <KeyboardBackspaceIcon />
             </IconButton>
@@ -212,10 +212,10 @@ class TutorialRaw extends React.PureComponent<Props, State> {
           </IconButton>
         </Box>
 
-        {/* {toturialID === "" ? this.renderOptions() : <CommonTutorial />} */}
+        {/* {tutorialID === "" ? this.renderOptions() : <CommonTutorial />} */}
 
-        <Collapse in={toturialID === ""}>{this.renderOptions()}</Collapse>
-        <Collapse in={toturialID !== ""}>
+        <Collapse in={tutorialID === ""}>{this.renderOptions()}</Collapse>
+        <Collapse in={tutorialID !== ""}>
           <CommonTutorial />
         </Collapse>
       </Drawer>

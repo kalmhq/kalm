@@ -98,24 +98,6 @@ export type TutorialActions =
   | TutorialDrawerAction
   | ResetTutorialAction;
 
-const isChangeReduxFormFieldTo = (action: Actions, form: string, field: string, value: string) => {
-  return (
-    action.type === (actionTypes.CHANGE as keyof ActionTypes) &&
-    !!action.meta &&
-    action.meta.form === form &&
-    action.meta.field === field &&
-    action.payload === value
-  );
-};
-
-const isChangeApplicationFromFieldTo = (action: Actions, field: string, value: string) => {
-  return isChangeReduxFormFieldTo(action, "application", field, value);
-};
-
-const isChangeComponentFromFieldTo = (action: Actions, field: string, value: string) => {
-  return isChangeReduxFormFieldTo(action, "componentLike", field, value);
-};
-
 const getFormValue = (rootState: RootState, form: string, field: string) => {
   const selector = formValueSelector(form);
   return selector(rootState, field);
@@ -158,7 +140,6 @@ export const formValidatorNotBlockByTutorial = (
   values: Immutable.Map<string, any>,
   props: { tutorialState: TutorialState; form: string },
 ) => {
-  // { tutorialState: TutorialState; form: string }
   const { tutorialState, form } = props;
   const errors: { [key: string]: any } = {};
   const state = tutorialState;
