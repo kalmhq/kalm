@@ -2,14 +2,14 @@ import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import { Theme } from "pretty-format/build/types";
 import React from "react";
 import { SecondHeader } from "../../layout/SecondHeader";
-import { Box } from "@material-ui/core";
+import { Box, Container } from "@material-ui/core";
 
 export const LEFT_SECTION_OPEN_WIDTH = 220;
 export const LEFT_SECTION_CLOSE_WIDTH = 61;
 
 const styles = (_theme: Theme) =>
   createStyles({
-    root: {}
+    root: {},
   });
 
 export interface BasePageProps extends React.Props<any>, WithStyles<typeof styles> {
@@ -30,7 +30,9 @@ export class BasePageRaw extends React.PureComponent<BasePageProps> {
           <Box flex="1">
             {/* <div className={classes.rightSection}> */}
             {/*{noScrollContainer ? children : <ScrollContainer>{children}</ScrollContainer>}*/}
-            {children}
+            <Container maxWidth="lg" disableGutters style={{ margin: 0 }}>
+              {children}
+            </Container>
           </Box>
         </Box>
       </Box>
