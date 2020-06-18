@@ -202,7 +202,7 @@ func formatApplicationComponents(components []Component) {
 }
 
 func (builder *Builder) BuildApplicationListResponse(namespaceList coreV1.NamespaceList) ([]ApplicationDetails, error) {
-	var apps []ApplicationDetails
+	apps := []ApplicationDetails{}
 
 	// TODO concurrent build response items
 	for i := range namespaceList.Items {
