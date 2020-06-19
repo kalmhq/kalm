@@ -117,7 +117,7 @@ const isUnderPath = (state: RootState, ...paths: string[]) => {
   return paths.includes(pathname);
 };
 
-export const formValidatorNotBlockByTutorial = (
+export const formValidatOrNotBlockByTutorial = (
   values: Immutable.Map<string, any>,
   props: { tutorialState: TutorialState; form: string },
 ) => {

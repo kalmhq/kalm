@@ -23,7 +23,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { InjectedFormProps } from "redux-form";
 import { Field, getFormSyncErrors, getFormValues, reduxForm } from "redux-form/immutable";
-import { formValidatorNotBlockByTutorial } from "types/tutorial";
+import { formValidatOrNotBlockByTutorial } from "types/tutorial";
 import { Body, H5 } from "widgets/Label";
 import { SectionTitle } from "widgets/SectionTitle";
 import { loadComponentPluginsAction } from "../../actions/application";
@@ -53,6 +53,7 @@ import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
 import { Volumes } from "./Volumes";
+import { shouldError } from "forms/common";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -1173,7 +1174,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
 const form = reduxForm<ComponentLike, RawProps & ConnectedProps>({
   form: "componentLike",
-  validate: formValidatorNotBlockByTutorial,
+  validate: formValidatOrNotBlockByTutorial,
+  shouldError: shouldError,
   onSubmitFail: console.log,
 })(withStyles(styles)(ComponentLikeFormRaw));
 

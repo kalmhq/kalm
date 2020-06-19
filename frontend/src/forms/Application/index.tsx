@@ -12,8 +12,9 @@ import { CustomizedButton } from "../../widgets/Button";
 import { KPanel } from "../../widgets/KPanel";
 import { KRenderTextField } from "../Basic/textfield";
 import { ValidatorName, ValidatorRequired } from "../validator";
-import { formValidatorNotBlockByTutorial } from "types/tutorial";
+import { formValidatOrNotBlockByTutorial } from "types/tutorial";
 import { Alert } from "@material-ui/lab";
+import { shouldError } from "forms/common";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -194,20 +195,8 @@ export default connect(mapStateToProps)(
   reduxForm<Application, Props>({
     form: "application",
     initialValues: applicationInitialValues,
-    validate: formValidatorNotBlockByTutorial,
-    shouldError: (pp: any): boolean => {
-      const { values, nextProps, props, initialRender, lastFieldValidatorKeys, fieldValidatorKeys, structure } = pp;
-
-      if (initialRender) {
-        return true;
-      }
-
-      return (
-        !structure.deepEqual(props, nextProps) ||
-        !structure.deepEqual(values, nextProps && nextProps.values) ||
-        !structure.deepEqual(lastFieldValidatorKeys, fieldValidatorKeys)
-      );
-    },
+    validate: formValidatOrNotBlockByTutorial,
+    shouldError: shouldError,
     onSubmitFail: (...args) => {
       console.log("submit failed", args);
     },
