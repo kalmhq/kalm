@@ -7,6 +7,7 @@ import { RootState } from "reducers";
 import { AppBarComponent, APP_BAR_HEIGHT } from "./AppBar";
 import { RootDrawer } from "./RootDrawer";
 import { SECOND_HEADER_HEIGHT } from "./SecondHeader";
+import { WebsocketConnector } from "./WebsocketConnector";
 
 const styles = (theme: Theme) => {
   return createStyles({
@@ -48,6 +49,7 @@ class DashboardLayoutRaw extends React.PureComponent<Props> {
         <AppBarComponent />
         <RootDrawer />
         <main className={classes.content}>{children}</main>
+        <WebsocketConnector />
       </div>
     );
   }
