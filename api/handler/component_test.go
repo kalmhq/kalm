@@ -96,11 +96,11 @@ func (suite *ComponentTestSuite) TestCreateComponentWithPVCAsVolume() {
 	comp := compList.Items[0]
 	suite.Equal(1, len(comp.Spec.Volumes))
 
-	expectedPVCName := res.Volumes[0].PersistentVolumeClaimName
-	suite.Equal(expectedPVCName, comp.Spec.Volumes[0].PersistentVolumeClaimName)
+	expectedPVCName := res.Volumes[0].PVC
+	suite.Equal(expectedPVCName, comp.Spec.Volumes[0].PVC)
 
 	suite.Equal(sc, *comp.Spec.Volumes[0].StorageClassName)
-	suite.Equal("", comp.Spec.Volumes[0].PersistentVolumeNamePVCToMatch)
+	suite.Equal("", comp.Spec.Volumes[0].PVToMatch)
 }
 
 func (suite *ComponentTestSuite) TestCreateComponentWithReUsingPVCAsVolume() {
@@ -146,11 +146,11 @@ func (suite *ComponentTestSuite) TestCreateComponentWithReUsingPVCAsVolume() {
 			Image: "foo",
 			Volumes: []v1alpha1.Volume{
 				{
-					Path:                           "/data",
-					Size:                           resource.MustParse("1Mi"),
-					Type:                           v1alpha1.VolumeTypePersistentVolumeClaim,
-					StorageClassName:               &scName,
-					PersistentVolumeNamePVCToMatch: pvNameToReuse,
+					Path:             "/data",
+					Size:             resource.MustParse("1Mi"),
+					Type:             v1alpha1.VolumeTypePersistentVolumeClaim,
+					StorageClassName: &scName,
+					PVToMatch:        pvNameToReuse,
 				},
 			},
 		},
@@ -172,11 +172,11 @@ func (suite *ComponentTestSuite) TestCreateComponentWithReUsingPVCAsVolume() {
 	comp, err := suite.getComponent(nsName, reqComp.Name)
 	suite.Nil(err)
 
-	expectedPVCName := res.Volumes[0].PersistentVolumeClaimName
-	suite.Equal(expectedPVCName, comp.Spec.Volumes[0].PersistentVolumeClaimName)
+	expectedPVCName := res.Volumes[0].PVC
+	suite.Equal(expectedPVCName, comp.Spec.Volumes[0].PVC)
 
 	suite.Equal(scName, *comp.Spec.Volumes[0].StorageClassName)
-	suite.Equal(reqComp.Volumes[0].PersistentVolumeNamePVCToMatch, comp.Spec.Volumes[0].PersistentVolumeNamePVCToMatch)
+	suite.Equal(reqComp.Volumes[0].PVToMatch, comp.Spec.Volumes[0].PVToMatch)
 }
 
 func (suite *ComponentTestSuite) TestCreateComponentWithReusePVInvalid() {
