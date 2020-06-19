@@ -74,5 +74,5 @@ export default (history: History<LocationState>) =>
     tutorial,
     cluster,
     services,
-    certificates
+    certificates,
   });

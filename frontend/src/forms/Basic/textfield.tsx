@@ -43,14 +43,14 @@ export const KRenderTextField = ({
       multiline={multiline}
       rows={rows}
       InputLabelProps={{
-        shrink: true
+        shrink: true,
       }}
       helperText={showError ? error : helperText ? helperText : ""}
       margin="dense"
       variant="outlined"
       InputProps={inputProps}
       inputProps={{
-        required: false // bypass html5 required feature
+        required: false, // bypass html5 required feature
       }}
       value={input.value}
       onChange={(event: ChangeEvent<HTMLInputElement>) => input.onChange(event.target.value)}
@@ -80,10 +80,10 @@ export const KRenderTextareaField = ({
       required={required}
       error={showError}
       InputLabelProps={{
-        shrink: true
+        shrink: true,
       }}
       InputProps={{
-        rows: 4
+        rows: 4,
       }}
       helperText={showError ? error : helperText ? helperText : ""}
       margin="dense"
@@ -123,7 +123,7 @@ export const RenderComplexValueTextField = ({
       error={showError}
       helperText={showError ? error : helperText ? helperText : ""}
       InputLabelProps={{
-        shrink: true
+        shrink: true,
       }}
       margin="dense"
       variant="outlined"
@@ -160,14 +160,14 @@ export const KRenderCommandTextField = ({
       error={showError}
       helperText={showError ? error : helperText ? helperText : ""}
       InputLabelProps={{
-        shrink: true
+        shrink: true,
       }}
       InputProps={{
         startAdornment: (
           <InputAdornment position="start">
             <KappConsoleIcon />
           </InputAdornment>
-        )
+        ),
       }}
       margin="dense"
       variant="outlined"

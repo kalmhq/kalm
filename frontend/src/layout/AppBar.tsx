@@ -28,7 +28,7 @@ const mapStateToProps = (state: RootState) => {
     tutorialDrawerOpen: state.get("tutorial").get("drawerOpen"),
     activeNamespace,
     isAdmin,
-    entity
+    entity,
   };
 };
 
@@ -41,7 +41,7 @@ const styles = (theme: Theme) =>
       top: "0px",
       transition: "0.2s",
       height: APP_BAR_HEIGHT,
-      zIndex: 1203
+      zIndex: 1203,
     },
     barContainer: {
       height: "100%",
@@ -51,11 +51,11 @@ const styles = (theme: Theme) =>
       // padding: "0 20px",
       display: "flex",
       alignItems: "center",
-      justifyContent: "space-between"
+      justifyContent: "space-between",
     },
     barLeft: {
       display: "flex",
-      alignItems: "center"
+      alignItems: "center",
     },
     shrinkButton: {
       // margin: `0 10px`
@@ -66,19 +66,19 @@ const styles = (theme: Theme) =>
       fontWeight: "normal",
       padding: "10px 0",
       "&:hover": {
-        color: "inherit"
-      }
+        color: "inherit",
+      },
     },
     barRight: {
       display: "flex",
       alignItems: "center",
       "& > *": {
-        marginLeft: "2px"
-      }
+        marginLeft: "2px",
+      },
     },
     barAvatar: {
-      cursor: "pointer"
-    }
+      cursor: "pointer",
+    },
   });
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps> {
@@ -96,7 +96,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
     super(props);
 
     this.state = {
-      authMenuAnchorElement: null
+      authMenuAnchorElement: null,
     };
   }
 
@@ -124,12 +124,12 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
           anchorEl={authMenuAnchorElement}
           anchorOrigin={{
             vertical: "top",
-            horizontal: "right"
+            horizontal: "right",
           }}
           keepMounted
           transformOrigin={{
             vertical: "top",
-            horizontal: "right"
+            horizontal: "right",
           }}
           open={Boolean(authMenuAnchorElement)}
           onClose={() => {
