@@ -9,7 +9,7 @@ import {
   Popper,
   Theme,
   withStyles,
-  WithStyles
+  WithStyles,
 } from "@material-ui/core";
 import React from "react";
 import { connect } from "react-redux";
@@ -20,24 +20,24 @@ import { RootState } from "reducers";
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
 import { SECOND_HEADER_HEIGHT } from "../layout/SecondHeader";
-import { LEFT_SECTION_WIDTH } from "../pages/BasePage";
+import { LEFT_SECTION_OPEN_WIDTH } from "../pages/BasePage";
 import { H4 } from "./Label";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      zIndex: 10
+      zIndex: 10,
     },
     namespaceButton: {
       height: SECOND_HEADER_HEIGHT,
       width: "100%",
       justifyContent: "space-between",
       paddingLeft: "32px",
-      border: "0"
+      border: "0",
     },
     menuList: {
-      width: LEFT_SECTION_WIDTH
-    }
+      width: LEFT_SECTION_OPEN_WIDTH,
+    },
   });
 
 const mapStateToProps = (state: RootState) => {
@@ -45,7 +45,7 @@ const mapStateToProps = (state: RootState) => {
   return {
     applications: applicationsRoot.get("applications"),
     isListFirstLoading: applicationsRoot.get("isListLoading") && !applicationsRoot.get("isListFirstLoaded"),
-    active: state.get("namespaces").get("active")
+    active: state.get("namespaces").get("active"),
   };
 };
 
@@ -61,19 +61,19 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      open: false
+      open: false,
     };
   }
 
   private handleToggle = () => {
     this.setState({
-      open: !this.state.open
+      open: !this.state.open,
     });
   };
 
   private handleClose = () => {
     this.setState({
-      open: false
+      open: false,
     });
   };
 

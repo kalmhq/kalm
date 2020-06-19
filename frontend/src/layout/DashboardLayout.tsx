@@ -1,40 +1,54 @@
-import { LinearProgress } from "@material-ui/core";
+import { Box, LinearProgress } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
+import clsx from "clsx";
+import { Tutorial, tutorialDrawerWidth } from "pages/Tutorial";
 import { RequireAuthorizated } from "permission/Authorization";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
-import { AppBarComponent, APP_BAR_HEIGHT } from "./AppBar";
+import { AppBarComponent } from "./AppBar";
 import { RootDrawer } from "./RootDrawer";
-import { SECOND_HEADER_HEIGHT } from "./SecondHeader";
 import { WebsocketConnector } from "./WebsocketConnector";
 
 const styles = (theme: Theme) => {
   return createStyles({
     root: {
       display: "flex",
-      height: "100%"
-    },
-    content: {
-      flexGrow: 1,
-      paddingTop: APP_BAR_HEIGHT + SECOND_HEADER_HEIGHT,
       height: "100%",
-      // maxWidth: "1200px",
-      margin: "0 auto"
     },
     progress: {
       position: "fixed",
       top: "0",
       zIndex: 9999,
       width: "100%",
-      height: "2px"
-    }
+      height: "2px",
+    },
+    mainContent: {
+      flexGrow: 1,
+      display: "flex",
+      flexDirection: "column",
+      position: "relative",
+      marginRight: -1 * tutorialDrawerWidth,
+
+      transition: theme.transitions.create("margin", {
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.leavingScreen,
+      }),
+    },
+    mainContentShift: {
+      transition: theme.transitions.create("margin", {
+        easing: theme.transitions.easing.easeOut,
+        duration: theme.transitions.duration.enteringScreen,
+      }),
+      marginRight: 0,
+    },
   });
 };
 
 const mapStateToProps = (state: RootState) => {
   return {
-    isShowTopProgress: state.get("settings").get("isShowTopProgress")
+    isShowTopProgress: state.get("settings").get("isShowTopProgress"),
+    showTutorialDrawer: state.get("tutorial").get("drawerOpen"),
   };
 };
 
@@ -42,13 +56,25 @@ interface Props extends WithStyles<typeof styles>, React.Props<any>, ReturnType<
 
 class DashboardLayoutRaw extends React.PureComponent<Props> {
   render() {
-    const { classes, children, isShowTopProgress } = this.props;
+    const { classes, children, isShowTopProgress, showTutorialDrawer } = this.props;
     return (
       <div className={classes.root}>
-        {isShowTopProgress ? <LinearProgress className={classes.progress} /> : null}
-        <AppBarComponent />
-        <RootDrawer />
-        <main className={classes.content}>{children}</main>
+        <div
+          className={clsx(classes.mainContent, {
+            [classes.mainContentShift]: showTutorialDrawer,
+          })}>
+          {isShowTopProgress ? <LinearProgress className={classes.progress} /> : null}
+
+          <AppBarComponent />
+
+          <Box display="flex">
+            <RootDrawer />
+            <Box flex="1">{children}</Box>
+          </Box>
+        </div>
+
+        <Tutorial />
+
         <WebsocketConnector />
       </div>
     );

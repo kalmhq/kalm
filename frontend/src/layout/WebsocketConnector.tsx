@@ -7,7 +7,7 @@ import { getWebsocketInstance } from "../actions/websocket";
 
 const styles = (theme: Theme) =>
   createStyles({
-    root: {}
+    root: {},
   });
 
 const mapStateToProps = (state: RootState) => {

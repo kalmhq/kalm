@@ -12,7 +12,7 @@ import {
   Theme,
   Tooltip,
   WithStyles,
-  withStyles
+  withStyles,
 } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import { loadClusterInfoAction } from "actions/cluster";
@@ -61,36 +61,36 @@ const styles = (theme: Theme) =>
     root: {
       // padding: theme.spacing(3),
       "& tr.MuiTableRow-root td": {
-        verticalAlign: "middle"
-      }
+        verticalAlign: "middle",
+      },
     },
     componentWrapper: {
-      minWidth: "120px"
+      minWidth: "120px",
     },
     componentLine: {
-      display: "inline-block"
+      display: "inline-block",
     },
     duplicateConfirmFileds: {
       marginTop: "20px",
       width: "100%",
       display: "flex",
-      justifyContent: "space-between"
+      justifyContent: "space-between",
     },
     secondHeaderRight: {
       height: "100%",
       width: "100%",
       display: "flex",
-      alignItems: "center"
+      alignItems: "center",
     },
     secondHeaderRightItem: {
-      marginLeft: 20
+      marginLeft: 20,
     },
     emptyWrapper: {
       width: "100%",
       display: "flex",
       justifyContent: "center",
-      paddingTop: "110px"
-    }
+      paddingTop: "110px",
+    },
   });
 
 const mapStateToProps = (state: RootState) => {
@@ -102,7 +102,7 @@ const mapStateToProps = (state: RootState) => {
     clusterInfo,
     internalEndpointsDialogData: internalEndpointsDialog ? internalEndpointsDialog.get("data") : {},
     externalEndpointsDialogData: externalEndpointsDialog ? externalEndpointsDialog.get("data") : {},
-    routesMap
+    routesMap,
   };
 };
 interface Props
@@ -129,7 +129,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
 
   private defaultState = {
     isDeleteConfirmDialogOpen: false,
-    deletingApplicationListItem: undefined
+    deletingApplicationListItem: undefined,
     // isDuplicateConfirmDialogOpen: false,
     // duplicatingApplicationListItem: undefined
   };
@@ -213,7 +213,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   private showDeleteConfirmDialog = (deletingApplicationListItem: ApplicationDetails) => {
     this.setState({
       isDeleteConfirmDialogOpen: true,
-      deletingApplicationListItem
+      deletingApplicationListItem,
     });
   };
 
@@ -391,11 +391,11 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                 {...bindPopover(popupState)}
                 anchorOrigin={{
                   vertical: "bottom",
-                  horizontal: "center"
+                  horizontal: "center",
                 }}
                 transformOrigin={{
                   vertical: "top",
-                  horizontal: "center"
+                  horizontal: "center",
                 }}>
                 {applicationRoutes
                   .map((route, index) => {
@@ -442,7 +442,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                               onClick={() => {
                                 navigator.clipboard
                                   .writeText(
-                                    this.buildCurlCommand(scheme, host, path, route.get("methods").first("GET"))
+                                    this.buildCurlCommand(scheme, host, path, route.get("methods").first("GET")),
                                   )
                                   .then(
                                     function() {
@@ -450,13 +450,13 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                                     },
                                     function(err) {
                                       dispatch(setErrorNotificationAction("Copied failed!"));
-                                    }
+                                    },
                                   );
                               }}>
                               Copy as curl
                             </Button>
                           </Box>
-                        </ListItem>
+                        </ListItem>,
                       );
                     });
 
@@ -466,7 +466,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                         destination
                           .get("host")
                           .replace(".svc.cluster.local", "")
-                          .replace(`.${activeNamespaceName}`, "")
+                          .replace(`.${activeNamespaceName}`, ""),
                       )
                       .join(", ");
 
@@ -508,7 +508,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         title="Internal Endpoints"
         dialogProps={{
           fullWidth: true,
-          maxWidth: "sm"
+          maxWidth: "sm",
         }}
         actions={
           <CustomizedButton
@@ -548,7 +548,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         title="External Endpoints"
         dialogProps={{
           fullWidth: true,
-          maxWidth: "sm"
+          maxWidth: "sm",
         }}
         actions={
           <CustomizedButton
@@ -632,13 +632,13 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
       {
         text: "Details",
         to: `/applications/${rowData.get("name")}`,
-        iconName: "fullscreen"
+        iconName: "fullscreen",
       },
       {
         text: "Edit",
         to: `/applications/${rowData.get("name")}/edit`,
         iconName: "edit",
-        requiredRole: "writer"
+        requiredRole: "writer",
       },
       // {
       //   text: "Duplicate",
@@ -654,8 +654,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           this.showDeleteConfirmDialog(rowData);
         },
         iconName: "delete",
-        requiredRole: "writer"
-      }
+        requiredRole: "writer",
+      },
     ];
     return <FoldButtonGroup options={options} />;
   };
@@ -679,6 +679,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
       <div className={classes.secondHeaderRight}>
         <H4 className={classes.secondHeaderRightItem}>Applications</H4>
         <CustomizedButton
+          tutorial-anchor-id="add-application"
           color="primary"
           size="large"
           className={classes.secondHeaderRightItem}
@@ -703,7 +704,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         field: "name",
         sorting: false,
         render: this.renderName,
-        customFilterAndSearch: customSearchForImmutable
+        customFilterAndSearch: customSearchForImmutable,
       },
       { title: "Pods Status", field: "status", sorting: false, render: this.renderStatus },
       {
@@ -711,43 +712,43 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         field: "cpu",
         render: this.renderCPU,
         headerStyle: {
-          textAlign: "center"
-        }
+          textAlign: "center",
+        },
       },
       {
         title: "Memory",
         field: "memory",
         render: this.renderMemory,
         headerStyle: {
-          textAlign: "center"
-        }
+          textAlign: "center",
+        },
       },
       {
         title: "Created On",
         field: "active",
         sorting: false,
         render: this.renderCreatedTime,
-        hidden: !hasWriterRole
+        hidden: !hasWriterRole,
       },
       {
         title: "Routes",
         sorting: false,
-        render: this.renderExternalAccesses
+        render: this.renderExternalAccesses,
       },
       {
         title: "Actions",
         field: "action",
         sorting: false,
         searchable: false,
-        render: this.renderActions
+        render: this.renderActions,
       },
       {
         title: "",
         field: "moreAction",
         sorting: false,
         searchable: false,
-        render: this.renderMoreActions
-      }
+        render: this.renderMoreActions,
+      },
     ];
 
     return columns;
@@ -794,7 +795,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                 padding: "dense",
                 draggable: false,
                 rowStyle: {
-                  verticalAlign: "baseline"
+                  verticalAlign: "baseline",
                 },
                 paging: applications.size > 20,
                 headerStyle: {
@@ -804,8 +805,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                   fontWeight: 400,
                   height: 20,
                   paddingTop: 0,
-                  paddingBottom: 0
-                }
+                  paddingBottom: 0,
+                },
               }}
               // @ts-ignore
               columns={this.getColumns()}
@@ -825,5 +826,5 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
 }
 
 export const ApplicationListPage = withStyles(styles)(
-  withNamespace(ApplicationListDataWrapper(connect(mapStateToProps)(ApplicationListRaw)))
+  withNamespace(ApplicationListDataWrapper(connect(mapStateToProps)(ApplicationListRaw))),
 );

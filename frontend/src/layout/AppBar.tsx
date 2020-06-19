@@ -1,5 +1,6 @@
 import { AppBar, createStyles, Divider, IconButton, Menu, MenuItem, Theme } from "@material-ui/core";
 import AccountCircle from "@material-ui/icons/AccountCircle";
+import Info from "@material-ui/icons/Info";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import MenuIcon from "@material-ui/icons/Menu";
 import { WithStyles, withStyles } from "@material-ui/styles";
@@ -12,6 +13,7 @@ import { TDispatch } from "types";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { loadApplicationsAction } from "../actions/application";
 import { setSettingsAction, blinkTopProgressAction } from "../actions/settings";
+import { openTutorialDrawerAction, closeTutorialDrawerAction } from "actions/tutorial";
 
 export const APP_BAR_HEIGHT = 48;
 
@@ -23,9 +25,10 @@ const mapStateToProps = (state: RootState) => {
   const entity = auth.get("entity");
   return {
     isOpenRootDrawer: state.get("settings").get("isOpenRootDrawer"),
+    tutorialDrawerOpen: state.get("tutorial").get("drawerOpen"),
     activeNamespace,
     isAdmin,
-    entity
+    entity,
   };
 };
 
@@ -34,11 +37,11 @@ const styles = (theme: Theme) =>
     appBar: {
       color: "white",
       backgroundColor: theme.palette.primary.main,
-      position: "fixed",
+      position: "sticky",
       top: "0px",
       transition: "0.2s",
       height: APP_BAR_HEIGHT,
-      zIndex: 1202
+      zIndex: 1203,
     },
     barContainer: {
       height: "100%",
@@ -48,11 +51,11 @@ const styles = (theme: Theme) =>
       // padding: "0 20px",
       display: "flex",
       alignItems: "center",
-      justifyContent: "space-between"
+      justifyContent: "space-between",
     },
     barLeft: {
       display: "flex",
-      alignItems: "center"
+      alignItems: "center",
     },
     shrinkButton: {
       // margin: `0 10px`
@@ -63,19 +66,19 @@ const styles = (theme: Theme) =>
       fontWeight: "normal",
       padding: "10px 0",
       "&:hover": {
-        color: "inherit"
-      }
+        color: "inherit",
+      },
     },
     barRight: {
       display: "flex",
       alignItems: "center",
       "& > *": {
-        marginLeft: "2px"
-      }
+        marginLeft: "2px",
+      },
     },
     barAvatar: {
-      cursor: "pointer"
-    }
+      cursor: "pointer",
+    },
   });
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps> {
@@ -93,7 +96,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
     super(props);
 
     this.state = {
-      authMenuAnchorElement: null
+      authMenuAnchorElement: null,
     };
   }
 
@@ -121,12 +124,12 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
           anchorEl={authMenuAnchorElement}
           anchorOrigin={{
             vertical: "top",
-            horizontal: "right"
+            horizontal: "right",
           }}
           keepMounted
           transformOrigin={{
             vertical: "top",
-            horizontal: "right"
+            horizontal: "right",
           }}
           open={Boolean(authMenuAnchorElement)}
           onClose={() => {
@@ -144,6 +147,21 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
       </div>
     );
   }
+
+  renderTutorialIcon = () => {
+    const { tutorialDrawerOpen, dispatch } = this.props;
+    return (
+      <IconButton
+        aria-label="Switch Tutorial"
+        aria-haspopup="true"
+        onClick={(event: React.MouseEvent<HTMLElement>) => {
+          tutorialDrawerOpen ? dispatch(closeTutorialDrawerAction()) : dispatch(openTutorialDrawerAction());
+        }}
+        color="inherit">
+        <Info />
+      </IconButton>
+    );
+  };
 
   render() {
     const { classes, dispatch, isOpenRootDrawer } = this.props;
@@ -170,6 +188,8 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
             {/* <IconButtonWithTooltip tooltipTitle="Settings" style={{ color: "#fff" }} component={NavLink} to={"/roles"}>
               <SettingsIcon />
             </IconButtonWithTooltip> */}
+            <Divider orientation="vertical" flexItem color="inherit" />
+            <div className={classes.barAvatar}>{this.renderTutorialIcon()}</div>
             <Divider orientation="vertical" flexItem color="inherit" />
             <div className={classes.barAvatar}>{this.renderAuthEntity()}</div>
           </div>

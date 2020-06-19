@@ -1,4 +1,5 @@
-import React from "react";
+export default {};
+// import React from "react";
 // import { connect, DispatchProp } from "react-redux";
 // import { WrappedFieldArrayProps } from "redux-form";
 // import { Field, FieldArray } from "redux-form/immutable";
