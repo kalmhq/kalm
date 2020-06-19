@@ -65,7 +65,7 @@ export const createComponentAction = (
     dispatch(setIsSubmittingApplicationComponent(false));
 
     dispatch(loadApplicationAction(applicationName));
-    dispatch({
+    await dispatch({
       type: CREATE_COMPONENT,
       payload: { applicationName, component },
     });
@@ -96,7 +96,7 @@ export const updateComponentAction = (
     dispatch(setIsSubmittingApplicationComponent(false));
 
     dispatch(loadApplicationAction(applicationName));
-    dispatch({
+    await dispatch({
       type: UPDATE_COMPONENT,
       payload: { applicationName, component },
     });
@@ -144,7 +144,7 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
     dispatch(setIsSubmittingApplication(false));
 
     dispatch(loadApplicationsAction());
-    dispatch({
+    await dispatch({
       type: CREATE_APPLICATION,
       payload: { application },
     });

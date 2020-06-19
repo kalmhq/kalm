@@ -1,4 +1,4 @@
-import { createStyles, Grid, Theme, withStyles, WithStyles, Box } from "@material-ui/core";
+import { Box, createStyles, Grid, Theme, WithStyles, withStyles } from "@material-ui/core";
 import { push } from "connected-react-router";
 import React from "react";
 import { connect } from "react-redux";
@@ -77,16 +77,25 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
   }
 
   private submitComponent = async (component: ApplicationComponent) => {
-    // console.log("submitComponent", component.toJS());
-
-    const { dispatch, application, currentComponent, anchor } = this.props;
+    const { dispatch, currentComponent } = this.props;
 
     if (!currentComponent || !currentComponent.get("name")) {
       await dispatch(createComponentAction(component));
     } else {
       await dispatch(updateComponentAction(component));
     }
-    dispatch(push(`/applications/${application?.get("name")}/edit?component=${component.get("name")}#${anchor}`));
+  };
+
+  private onSubmitComponentSuccess = (_result: any) => {
+    const { dispatch, application, currentComponent, anchor } = this.props;
+
+    // the form will reinitialize very quick, and make the dirty flag to false.
+    // When dirty flag is false, the route change prompt won't exist.
+    window.setTimeout(() => {
+      dispatch(
+        push(`/applications/${application?.get("name")}/edit?component=${currentComponent.get("name")}#${anchor}`),
+      );
+    }, 100);
   };
 
   public renderApplicationEditDrawer() {
@@ -146,6 +155,7 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
               onSubmitFail={() => {
                 dispatch(setIsSubmittingApplicationComponent(false));
               }}
+              onSubmitSuccess={this.onSubmitComponentSuccess}
               initialValues={currentComponent}
               showDataView
             />

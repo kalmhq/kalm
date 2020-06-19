@@ -10,6 +10,7 @@ import {
   Tabs,
   Tooltip,
 } from "@material-ui/core";
+import { Prompt } from "react-router-dom";
 import { grey } from "@material-ui/core/colors";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
@@ -1129,11 +1130,17 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
+  public renderDirtyPrompt = () => {
+    const { dirty } = this.props;
+    return <Prompt when={dirty} message="Are you sure to leave without saving changes?" />;
+  };
+
   public render() {
     const { handleSubmit, classes } = this.props;
 
     return (
       <form onSubmit={handleSubmit} className={classes.root}>
+        {this.renderDirtyPrompt()}
         <KPanel
           title={"Basic Information"}
           content={
@@ -1174,6 +1181,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
 const form = reduxForm<ComponentLike, RawProps & ConnectedProps>({
   form: "componentLike",
+  enableReinitialize: true,
   validate: formValidatOrNotBlockByTutorial,
   shouldError: shouldError,
   onSubmitFail: console.log,
