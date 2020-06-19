@@ -9,15 +9,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// actual aggregation info of PVC & PV
-type Volume struct {
-	Name               string `json:"name"`
-	IsInUse            bool   `json:"isInUse"`                      // can be reused or not
-	ComponentNamespace string `json:"componentNamespace,omitempty"` // ns of latest component using this Volume
-	ComponentName      string `json:"componentName,omitempty"`      // name of latest component using this Volume
-	Capacity           string `json:"capacity"`                     // size, e.g. 1Gi
-}
-
 // actually list pvc-pv pairs
 // if pvc is not used by any pod, it can be deleted
 func (h *ApiHandler) handleListVolumes(c echo.Context) error {
@@ -42,7 +33,7 @@ func (h *ApiHandler) handleListVolumes(c echo.Context) error {
 		kappPVMap[kappPV.Name] = kappPV
 	}
 
-	respVolumes := []Volume{}
+	respVolumes := []resources.Volume{}
 	for _, kappPVC := range kappPVCList.Items {
 
 		isInUse, err := isPVCInUsed(builder, kappPVC)
@@ -65,7 +56,7 @@ func (h *ApiHandler) handleListVolumes(c echo.Context) error {
 			}
 		}
 
-		respVolumes = append(respVolumes, Volume{
+		respVolumes = append(respVolumes, resources.Volume{
 			Name:               kappPVC.Name,
 			ComponentName:      compName,
 			ComponentNamespace: compNamespace,
@@ -125,16 +116,27 @@ func isPVCInUsed(builder *resources.Builder, pvc v1.PersistentVolumeClaim) (bool
 	return isInUse, nil
 }
 
-func (h *ApiHandler) handleAvailableVolsForSimpleWorkload(context echo.Context) error {
-	// 1. list all kapp pvcs
-	// 2. filter all available kappPVCs
-	// 3. separate into 2 groups: same-ns pvc & diff-ns pvc (pv reclaimType must be Retain)
-	// 4. resp: same-ns pvc: pvcName, diff-ns pvc: pvName
-	//todo
-	return nil
+func (h *ApiHandler) handleAvailableVolsForSimpleWorkload(c echo.Context) error {
+	ns := c.Param("ns")
+
+	builder := h.Builder(c)
+	vols, err := builder.FindAvailableVolsForSimpleWorkload(ns)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(200, vols)
 }
 
-func (h *ApiHandler) handleAvailableVolsForSts(context echo.Context) error {
-	//todo
-	return nil
+func (h *ApiHandler) handleAvailableVolsForSts(c echo.Context) error {
+	ns := c.Param("ns")
+	compName := c.Param("componentName")
+
+	builder := h.Builder(c)
+	vols, err := builder.FindAvailableVolsForSts(ns, compName)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(200, vols)
 }
