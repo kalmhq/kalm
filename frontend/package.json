@@ -86,10 +86,8 @@
     ]
   },
   "devDependencies": {
-    "@types/react-test-renderer": "^16.9.2",
     "enzyme": "^3.11.0",
     "enzyme-adapter-react-16": "^1.15.2",
-    "husky": "^4.2.1",
-    "react-test-renderer": "^16.13.1"
+    "husky": "^4.2.1"
   }
 }
