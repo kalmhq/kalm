@@ -20,7 +20,7 @@ export const NormalizeNumber = (
   value: string,
   _previousValue?: any,
   _allValues?: any,
-  _previousAllValues?: any
+  _previousAllValues?: any,
 ): number | any => {
   const integerValue = parseInt(value, 10);
   return isNaN(integerValue) ? null : integerValue;
@@ -55,7 +55,6 @@ export const NormalizeBoolean = (value: string): boolean => {
 };
 
 export const NormalizeHosts = (values: string[] | string, previousValue: string[]): string[] => {
-  console.log("NormalizeHosts", values, "isArray", Array.isArray(values), previousValue);
   // only if no tags in autocomplete but unsubmit text in input field
 
   let res;

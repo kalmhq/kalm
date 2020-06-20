@@ -10,7 +10,7 @@ import {
   Tabs,
   Tooltip,
 } from "@material-ui/core";
-import { Prompt } from "react-router-dom";
+import { Prompt } from "widgets/Prompt";
 import { grey } from "@material-ui/core/colors";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
@@ -1046,7 +1046,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             return <Tab key={tab} label={tab} className={classes.hasError} />;
           }
 
-          return <Tab key={tab} label={tab} />;
+          return <Tab key={tab} label={tab} tutorial-anchor-id={tab} />;
         })}
       </Tabs>
     );

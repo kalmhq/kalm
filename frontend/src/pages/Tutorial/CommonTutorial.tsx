@@ -20,6 +20,7 @@ import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { Loading } from "widgets/Loading";
 import { TutorialSubStepCompoent } from "./TutorialSubStep";
+import { Highlight } from "./Highlight";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -155,21 +156,33 @@ class CommonTutorialRaw extends React.PureComponent<Props, State> {
           orientation="vertical"
           style={{ padding: 0 }}
           connector={<StepConnector classes={{ lineVertical: classes.connectorLineVertical }} />}>
-          {tutorial.steps.map((step, index) => (
+          {tutorial.steps.map((step, stepIndex) => (
             <Step key={step.name}>
               <StepLabel>{step.name}</StepLabel>
               <StepContent>
                 <Typography>{step.description}</Typography>
                 <Box ml={2} mt={1}>
                   <FormGroup>
-                    {step.subSteps.map((subStep, subStepIndex) => {
-                      return (
-                        <TutorialSubStepCompoent subStep={subStep} stepIndex={index} subStepIndex={subStepIndex} />
-                      );
-                    })}
+                    {step.subSteps.map((subStep, subStepIndex) => (
+                      <TutorialSubStepCompoent
+                        key={`${stepIndex}-${subStepIndex}`}
+                        subStep={subStep}
+                        stepIndex={stepIndex}
+                        subStepIndex={subStepIndex}
+                      />
+                    ))}
                   </FormGroup>
                 </Box>
               </StepContent>
+              {step.highlights.map((highlight, highlightIndex) => (
+                <Highlight
+                  key={`${stepIndex}-${highlightIndex}`}
+                  highlight={highlight}
+                  highlightIndex={highlightIndex}
+                  stepIndex={stepIndex}
+                  driverOwner={this}
+                />
+              ))}
             </Step>
           ))}
         </Stepper>

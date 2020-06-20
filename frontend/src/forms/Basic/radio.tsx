@@ -25,10 +25,9 @@ export const KRadioGroupRender = ({
   title,
   options,
   formControlProps,
-  defaultValue
+  defaultValue,
 }: KRadioGroupRenderProps) => {
   const { error } = meta;
-  console.log("defaultValue", defaultValue);
   return (
     <FormControl component="fieldset" fullWidth margin="dense" error={error}>
       {title ? <FormLabel component="legend">{title}</FormLabel> : null}

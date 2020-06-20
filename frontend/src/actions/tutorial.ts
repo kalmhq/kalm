@@ -9,6 +9,8 @@ import {
   SET_TUTORIAL_STEP_COMPLETION_STATUS,
   Tutorial,
   TutorialDrawerAction,
+  SET_TUTORIAL_HIGHLIGHT_STATUS,
+  SetTutorialHighlightStatusAction,
 } from "types/tutorial";
 
 export const setTutorialAction = (id: string, tutorial: Tutorial): SetTutorialAction => {
@@ -36,6 +38,19 @@ export const openTutorialDrawerAction = (): TutorialDrawerAction => {
 export const closeTutorialDrawerAction = (): TutorialDrawerAction => {
   return {
     type: CLOSE_TUTORIAL_DRAWER,
+  };
+};
+
+export const setTutorialHighlightStatusAction = (
+  stepIndex: number,
+  highlightIndex: number,
+): SetTutorialHighlightStatusAction => {
+  return {
+    type: SET_TUTORIAL_HIGHLIGHT_STATUS,
+    payload: {
+      stepIndex,
+      highlightIndex,
+    },
   };
 };
 

@@ -233,7 +233,7 @@ class ComponentStatusRaw extends React.PureComponent<Props, State> {
       <KPanel
         title={"Component Status"}
         content={
-          <Box p={2} tutorial-anchor-id="component-from-basic">
+          <Box p={2} tutorial-anchor-id="component-from-pods-status">
             {/* <Paper className={classes.root} square>*/}
             {/* <div className={`${classes.componentTitle} ${open ? "" : classes.flexCenter}`}>
               <IconButton
