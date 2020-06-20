@@ -1,20 +1,25 @@
-import { createStore, applyMiddleware, compose } from "redux";
-import thunkMiddleware from "redux-thunk";
-import { History, LocationState } from "history";
 import { routerMiddleware } from "connected-react-router/immutable";
-// Logger with default options
-// import logger from "redux-logger";
-
-import createRootReducer from "./reducers";
+import { History, LocationState } from "history";
+import { applyMiddleware, createStore } from "redux";
+import { createLogger } from "redux-logger";
+import thunkMiddleware from "redux-thunk";
 import { errorHandlerMiddleware } from "./errorHandler";
+import createRootReducer from "./reducers";
 
-const composeEnhancers = (window["__REDUX_DEVTOOLS_EXTENSION_COMPOSE__"] as typeof compose) || compose;
+const configureStore = (history: History<LocationState>) => {
+  const middlewares: any = [routerMiddleware(history), errorHandlerMiddleware, thunkMiddleware];
 
-const configureStore = (history: History<LocationState>) =>
-  createStore(
-    createRootReducer(history),
-    undefined,
-    composeEnhancers(applyMiddleware(routerMiddleware(history), errorHandlerMiddleware, thunkMiddleware))
-  );
+  if (process.env.REACT_APP_DEBUG) {
+    const logger = createLogger({
+      diff: true,
+      collapsed: true,
+      stateTransformer: state => state.toJS(),
+    });
+
+    middlewares.push(logger);
+  }
+
+  return createStore(createRootReducer(history), undefined, applyMiddleware(...middlewares));
+};
 
 export default configureStore;

@@ -274,7 +274,7 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
 
   public render() {
     const { classes, namespaces } = this.props;
-
+    const tableData = this.getData();
     return (
       <BasePage
         leftDrawer={<AdminDrawer />}
@@ -335,7 +335,7 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
                 }))
                 .toArray()
             )}
-            data={this.getData()}
+            data={tableData}
             title=""
             editable={{
               onRowDelete: this.handleDelete

@@ -1,0 +1,117 @@
+import React from "react";
+import { createStyles, Theme, withStyles, WithStyles, FormControlLabel, Checkbox } from "@material-ui/core";
+import { TDispatchProp } from "types";
+import { connect } from "react-redux";
+import { RootState } from "reducers";
+import clsx from "clsx";
+import { TutorialSubStep } from "types/tutorial";
+import { setTutorialStepCompletionStatus } from "actions/tutorial";
+
+const styles = (theme: Theme) =>
+  createStyles({
+    uncompletedStep: {
+      color: theme.palette.primary.main,
+    },
+    completedStep: {
+      color: theme.palette.text.secondary,
+      textDecoration: "line-through",
+      fontStyle: "italic",
+    },
+    checkboxRoot: {
+      padding: theme.spacing(0.75),
+    },
+  });
+
+const mapStateToProps = (state: RootState, { subStep, stepIndex, subStepIndex }: OwnProps) => {
+  let completionByState = subStep.shouldCompleteByState ? subStep.shouldCompleteByState(state) : false;
+
+  return {
+    definedCompletionByState: !!subStep.shouldCompleteByState,
+    completionByState,
+    isCompleted: !!state
+      .get("tutorial")
+      .get("tutorialStepStatus")
+      .get(`${stepIndex}-${subStepIndex}`),
+  };
+};
+
+interface OwnProps {
+  subStep: TutorialSubStep;
+  stepIndex: number;
+  subStepIndex: number;
+}
+
+interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp, OwnProps {}
+interface State {}
+
+class TutorialSubStepCompoentRaw extends React.PureComponent<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = {};
+  }
+
+  componentDidUpdate() {
+    this.updateCompletionStatus();
+  }
+
+  componentDidMount() {
+    this.updateCompletionStatus();
+  }
+
+  updateCompletionStatus = () => {
+    const {
+      completionByState,
+      definedCompletionByState,
+      isCompleted,
+      dispatch,
+      stepIndex,
+      subStepIndex,
+      subStep,
+    } = this.props;
+
+    if (!definedCompletionByState) {
+      return;
+    }
+
+    if (isCompleted && subStep.irrevocable) {
+      return;
+    }
+
+    if (completionByState !== isCompleted) {
+      dispatch(setTutorialStepCompletionStatus(stepIndex, subStepIndex, completionByState));
+    }
+  };
+
+  public render() {
+    const { classes, isCompleted, subStep } = this.props;
+    return (
+      <FormControlLabel
+        style={{
+          cursor: "auto",
+        }}
+        className={clsx({
+          [classes.uncompletedStep]: !isCompleted,
+          [classes.completedStep]: isCompleted,
+        })}
+        control={
+          <Checkbox
+            style={{
+              cursor: "auto",
+            }}
+            disableRipple
+            disableTouchRipple
+            disableFocusRipple
+            tabIndex={-1}
+            size="small"
+            color="primary"
+            classes={{ root: classes.checkboxRoot }}
+            checked={isCompleted}
+          />
+        }
+        label={subStep.title}
+      />
+    );
+  }
+}
+
+export const TutorialSubStepCompoent = withStyles(styles)(connect(mapStateToProps)(TutorialSubStepCompoentRaw));

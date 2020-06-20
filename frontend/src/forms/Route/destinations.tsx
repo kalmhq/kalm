@@ -74,7 +74,7 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
           .filter(p => p.get("protocol") === "TCP")
           .forEach(port => {
             options.push({
-              value: svc.get("name") + `.${svc.get("namespace")}.svc.cluster.local` + ":" + port.get("port"),
+              value: `${svc.get("name")}.${svc.get("namespace")}.svc.cluster.local:${port.get("port")}`,
               label: svc.get("name") + ":" + port.get("port"),
               group:
                 svc.get("namespace") === activeNamespace ? `${svc.get("namespace")} (Current)` : svc.get("namespace")

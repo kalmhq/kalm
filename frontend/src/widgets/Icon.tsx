@@ -85,6 +85,11 @@ export const DeleteIcon = withStyles(styles)((props: IconsProps) => {
   return <Delete className={classes.hint} color={color} fontSize={fontSize} style={style} />;
 });
 
+export const EditIcon = withStyles(styles)((props: IconsProps) => {
+  const { classes, color, fontSize, style } = props;
+  return <Edit className={classes.hint} color={color} fontSize={fontSize} style={style} />;
+});
+
 export const CheckCircleIcon = withStyles(styles)((props: IconsProps) => {
   const { classes, color, fontSize, style } = props;
   return <CheckCircle className={classes.success} color={color} fontSize={fontSize} style={style} />;
@@ -191,13 +196,9 @@ export const UploadIcon = withStyles(styles)((props: IconsProps) => {
   const { classes, color, fontSize, style } = props;
   return <Publish className={classes.white} color={color} fontSize={fontSize} style={style} />;
 });
-export const EditIcon = withStyles(styles)((props: IconsProps) => {
+export const EditWhiteIcon = withStyles(styles)((props: IconsProps) => {
   const { classes, color, fontSize, style } = props;
   return <Edit className={classes.white} color={color} fontSize={fontSize} style={style} />;
-});
-export const EditHintIcon = withStyles(styles)((props: IconsProps) => {
-  const { classes, color, fontSize, style } = props;
-  return <Edit className={classes.hint} color={color} fontSize={fontSize} style={style} />;
 });
 export const CopyIcon = withStyles(styles)((props: IconsProps) => {
   const { classes, color, fontSize, style } = props;

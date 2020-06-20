@@ -21,7 +21,15 @@ import { ConfigNewDialog } from "widgets/ConfigNewDialog";
 import { ConfigUploadDialog } from "widgets/ConfigUploadDialog";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { FileTree } from "widgets/FileTree";
-import { AddFileIcon, AddFolderIcon, CopyIcon, DeleteIcon, DeleteWhiteIcon, EditIcon, UploadIcon } from "widgets/Icon";
+import {
+  AddFileIcon,
+  AddFolderIcon,
+  CopyIcon,
+  DeleteIcon,
+  DeleteWhiteIcon,
+  EditWhiteIcon,
+  UploadIcon
+} from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { NormalInfoPaper } from "widgets/Paper";
 import { ApplicationViewDrawer } from "../../widgets/ApplicationViewDrawer";
@@ -285,7 +293,7 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
             tooltipTitle="Edit"
             aria-label="edit"
             onClick={() => this.handleEdit()}>
-            <EditIcon />
+            <EditWhiteIcon />
           </IconButtonWithTooltip>
 
           <IconButtonWithTooltip

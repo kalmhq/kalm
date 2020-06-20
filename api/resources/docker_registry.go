@@ -1,22 +1,23 @@
 package resources
 
 import (
+	"sync"
+
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	"github.com/kapp-staging/kapp/controller/controllers"
 	coreV1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sync"
 )
 
 type DockerRegistryListChannel struct {
-	List  chan []*v1alpha1.DockerRegistry
+	List  chan []v1alpha1.DockerRegistry
 	Error chan error
 }
 
 func (builder *Builder) GetDockerRegistryListChannel(listOptions metaV1.ListOptions) *DockerRegistryListChannel {
 	channel := &DockerRegistryListChannel{
-		List:  make(chan []*v1alpha1.DockerRegistry, 1),
+		List:  make(chan []v1alpha1.DockerRegistry, 1),
 		Error: make(chan error, 1),
 	}
 
@@ -31,10 +32,10 @@ func (builder *Builder) GetDockerRegistryListChannel(listOptions metaV1.ListOpti
 			return
 		}
 
-		res := make([]*v1alpha1.DockerRegistry, len(fetched.Items))
+		res := make([]v1alpha1.DockerRegistry, len(fetched.Items))
 
 		for i, registry := range fetched.Items {
-			res[i] = &registry
+			res[i] = registry
 		}
 
 		channel.List <- res
@@ -93,7 +94,7 @@ func (builder *Builder) GetDockerRegistries() ([]*DockerRegistry, error) {
 	}
 
 	res := make([]*DockerRegistry, len(resources.DockerRegistries))
-	secretMap := make(map[string]*coreV1.Secret)
+	secretMap := make(map[string]coreV1.Secret)
 
 	for i := range resources.Secrets {
 		secret := resources.Secrets[i]
@@ -102,8 +103,9 @@ func (builder *Builder) GetDockerRegistries() ([]*DockerRegistry, error) {
 
 	for i := range resources.DockerRegistries {
 		registry := resources.DockerRegistries[i]
+
 		secret := secretMap[controllers.GetRegistryAuthenticationName(registry.Name)]
-		res[i] = buildDockerRegistryFromResource(registry, secret)
+		res[i] = buildDockerRegistryFromResource(&registry, &secret)
 	}
 
 	return res, nil

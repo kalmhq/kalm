@@ -6,7 +6,7 @@ import {
   ListItemIcon,
   ListItemText,
   ListSubheader,
-  Theme
+  Theme,
 } from "@material-ui/core";
 import AssignmentReturnedIcon from "@material-ui/icons/AssignmentReturned";
 import SettingsIcon from "@material-ui/icons/Settings";
@@ -18,7 +18,7 @@ import { connect } from "react-redux";
 import { NavLink } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
-import { LEFT_SECTION_WIDTH } from "../pages/BasePage";
+import { LEFT_SECTION_OPEN_WIDTH, LEFT_SECTION_CLOSE_WIDTH } from "../pages/BasePage";
 import { primaryBackgroud, primaryColor } from "../theme";
 import { KappApplicationIcon, KappNodeIcon, KappVolumeIcon } from "../widgets/Icon";
 import { APP_BAR_HEIGHT } from "./AppBar";
@@ -33,7 +33,7 @@ const mapStateToProps = (state: RootState) => {
     isOpenRootDrawer: state.get("settings").get("isOpenRootDrawer"),
     activeNamespaceName: state.get("namespaces").get("active"),
     isAdmin,
-    entity
+    entity,
   };
 };
 
@@ -44,58 +44,50 @@ const styles = (theme: Theme) =>
       height: 40,
 
       "& > .MuiListItemIcon-root": {
-        minWidth: 40
-      }
+        minWidth: 40,
+      },
     },
     listItemSeleted: {
       backgroundColor: `${primaryBackgroud} !important`,
-      borderRight: `4px solid ${primaryColor}`
+      borderRight: `4px solid ${primaryColor}`,
     },
     listSubHeader: {
       textTransform: "uppercase",
-      color: "#000000 !important"
-    },
-    // openBtnWrapper: {
-    //   width: "100%",
-    //   display: "flex",
-    //   justifyContent: "flex-end",
-    //   padding: "15px 16px"
-    // },
-    hide: {
-      display: "none"
+      color: "#000000 !important",
     },
     drawer: {
-      width: LEFT_SECTION_WIDTH,
+      width: LEFT_SECTION_OPEN_WIDTH,
       flexShrink: 0,
-      whiteSpace: "nowrap"
+      whiteSpace: "nowrap",
     },
     drawerPaper: {
-      width: LEFT_SECTION_WIDTH,
-      paddingTop: APP_BAR_HEIGHT
+      width: LEFT_SECTION_OPEN_WIDTH,
+      paddingTop: APP_BAR_HEIGHT,
     },
+
     // material-ui official
     drawerOpen: {
-      width: LEFT_SECTION_WIDTH,
+      width: LEFT_SECTION_OPEN_WIDTH,
       transition: theme.transitions.create("width", {
         easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.enteringScreen
-      })
+        duration: theme.transitions.duration.enteringScreen,
+      }),
     },
     drawerClose: {
       transition: theme.transitions.create("width", {
         easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.leavingScreen
+        duration: theme.transitions.duration.leavingScreen,
       }),
       overflowX: "hidden",
-      width: 60 + 1,
+      width: LEFT_SECTION_CLOSE_WIDTH,
       [theme.breakpoints.up("sm")]: {
-        width: 60 + 1
-      }
+        width: LEFT_SECTION_CLOSE_WIDTH,
+      },
     },
     itemBorder: {
       borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
-      height: 60
-    }
+      height: 60,
+    },
   });
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps> {
@@ -117,8 +109,8 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
       {
         icon: VerifiedUser,
         text: "Certificates",
-        to: "/certificates"
-      }
+        to: "/certificates",
+      },
       // {
       //   icon: KappTemplateIcon,
       //   text: "Templates",
@@ -132,23 +124,23 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
       {
         icon: KappNodeIcon,
         text: "Nodes",
-        to: "/cluster/nodes"
+        to: "/cluster/nodes",
       },
       {
         icon: KappVolumeIcon,
         text: "Volumes",
-        to: "/cluster/volumes"
+        to: "/cluster/volumes",
       },
       {
         icon: AssignmentReturnedIcon,
         text: "Registries",
-        to: "/cluster/registries"
+        to: "/cluster/registries",
       },
       {
         icon: SettingsIcon,
         text: "Settings",
-        to: "/roles"
-      }
+        to: "/roles",
+      },
     ];
   }
 
@@ -159,13 +151,13 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
         variant="permanent"
         className={clsx(classes.drawer, {
           [classes.drawerOpen]: open,
-          [classes.drawerClose]: !open
+          [classes.drawerClose]: !open,
         })}
         classes={{
           paper: clsx(classes.drawerPaper, {
             [classes.drawerOpen]: open,
-            [classes.drawerClose]: !open
-          })
+            [classes.drawerClose]: !open,
+          }),
         }}>
         {/* <div className={clsx(classes.openBtnWrapper, { [classes.itemBorder]: !open })}>
           <IconButton onClick={() => dispatch(setSettingsAction({ isOpenRootDrawer: !open }))} size={"small"}>
@@ -184,15 +176,16 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
             <ListItem
               onClick={() => blinkTopProgressAction()}
               className={clsx(classes.listItem, {
-                [classes.itemBorder]: !open
+                [classes.itemBorder]: !open,
               })}
               classes={{
-                selected: classes.listItemSeleted
+                selected: classes.listItemSeleted,
               }}
               button
               component={NavLink}
               to={item.to}
               key={item.text}
+              tutorial-anchor-id={"first-level-sidebar-item-" + item.text.toLocaleLowerCase()}
               selected={pathname.startsWith(item.to.split("?")[0])}>
               <ListItemIcon>
                 <item.icon />
@@ -211,10 +204,10 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
             <ListItem
               onClick={() => blinkTopProgressAction()}
               className={clsx(classes.listItem, {
-                [classes.itemBorder]: !open
+                [classes.itemBorder]: !open,
               })}
               classes={{
-                selected: classes.listItemSeleted
+                selected: classes.listItemSeleted,
               }}
               button
               component={NavLink}

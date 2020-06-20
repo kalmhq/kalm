@@ -13,13 +13,15 @@ import { RootState } from "reducers";
 import { getFormSyncErrors, hasSubmitFailed } from "redux-form/immutable";
 import { TDispatch } from "types";
 import { deleteComponentAction } from "../actions/application";
-import { componentInitialValues } from "../forms/ComponentLike";
 import { BaseDrawer } from "../layout/BaseDrawer";
 import { primaryBackgroud, primaryColor } from "../theme";
 import { ApplicationComponent, ApplicationComponentDetails, ApplicationDetails } from "../types/application";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
 import { blinkTopProgressAction } from "../actions/settings";
+import { newEmptyComponentLike } from "types/componentTemplate";
+
+const componentInitialValues = newEmptyComponentLike();
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
@@ -36,7 +38,7 @@ const mapStateToProps = (state: RootState) => {
     isAdmin,
     entity,
     componentSyncErrors,
-    componentFormSubmitFailed
+    componentFormSubmitFailed,
   };
 };
 
@@ -47,12 +49,12 @@ const styles = (theme: Theme) =>
       height: 40,
 
       "& > .MuiListItemIcon-root": {
-        minWidth: 32
-      }
+        minWidth: 32,
+      },
     },
     listItemSeleted: {
       backgroundColor: `${primaryBackgroud} !important`,
-      borderRight: `4px solid ${primaryColor}`
+      borderRight: `4px solid ${primaryColor}`,
     },
     listSubHeader: {
       textTransform: "uppercase",
@@ -60,8 +62,8 @@ const styles = (theme: Theme) =>
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
-      paddingRight: "4px"
-    }
+      paddingRight: "4px",
+    },
   });
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps> {
@@ -81,7 +83,7 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
 
     this.state = {
       selectededComponentIndex: 0,
-      isDeleteConfirmDialogOpen: false
+      isDeleteConfirmDialogOpen: false,
     };
   }
 
@@ -95,7 +97,7 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
     blinkTopProgressAction();
 
     this.setState({
-      selectededComponentIndex: index
+      selectededComponentIndex: index,
     });
 
     this.pushRedirect(component.get("name"));
@@ -116,7 +118,7 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
           application
             ?.get("components")
             ?.get(0)
-            ?.get("name")
+            ?.get("name"),
         );
       } else {
         dispatch(deleteComponentAction(currentComponent.get("name")));
@@ -136,24 +138,27 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
 
   private showDeleteConfirmDialog = () => {
     this.setState({
-      isDeleteConfirmDialogOpen: true
+      isDeleteConfirmDialogOpen: true,
     });
   };
 
   private closeDeleteConfirmDialog = () => {
     this.setState({
-      isDeleteConfirmDialogOpen: false
+      isDeleteConfirmDialogOpen: false,
     });
   };
 
   private renderDeleteConfirmDialog = () => {
     const { isDeleteConfirmDialogOpen } = this.state;
+    const { currentComponent } = this.props;
 
     return (
       <ConfirmDialog
         open={isDeleteConfirmDialogOpen}
         onClose={this.closeDeleteConfirmDialog}
-        title="Are you sure to delete this component?"
+        title={`Are you sure to delete this component${
+          currentComponent && currentComponent.get("name") ? currentComponent.get("name") : ""
+        }?`}
         content="You will lost this component, and this action is irrevocable."
         onAgree={() => this.confirmDelete()}
       />
@@ -198,7 +203,7 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
         // select new created item
         this.handleClickComponent(
           this.props.application.get("components")?.get(this.state.selectededComponentIndex) as ApplicationComponent,
-          this.props.application.get("components")!.size - 1
+          this.props.application.get("components")!.size - 1,
         );
       }
     }
@@ -244,7 +249,7 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
             selected={selectededComponentIndex === index}
             className={classes.listItem}
             classes={{
-              selected: classes.listItemSeleted
+              selected: classes.listItemSeleted,
             }}
             button
             onClick={() => {

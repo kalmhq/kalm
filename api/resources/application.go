@@ -93,6 +93,7 @@ type ApplicationDetails struct {
 	*Application `json:",inline"`
 	Metrics      MetricHistories `json:"metrics"`
 	Roles        []string        `json:"roles"`
+	Status       string          `json:"status"` // Active or Terminating
 }
 
 type CreateOrUpdateApplicationRequest struct {
@@ -100,7 +101,7 @@ type CreateOrUpdateApplicationRequest struct {
 }
 
 type Application struct {
-	Name      string `json:"name"`
+	Name string `json:"name"`
 }
 
 func (builder *Builder) BuildApplicationDetails(namespace coreV1.Namespace) (*ApplicationDetails, error) {
@@ -152,14 +153,15 @@ func (builder *Builder) BuildApplicationDetails(namespace coreV1.Namespace) (*Ap
 
 	return &ApplicationDetails{
 		Application: &Application{
-			Name:      nsName,
+			Name: nsName,
 			//IsActive:  isActive,
 		},
 		Metrics: MetricHistories{
 			CPU:    applicationMetric.CPU,
 			Memory: applicationMetric.Memory,
 		},
-		Roles: roles,
+		Roles:  roles,
+		Status: string(namespace.Status.Phase),
 	}, nil
 }
 
@@ -200,7 +202,7 @@ func formatApplicationComponents(components []Component) {
 }
 
 func (builder *Builder) BuildApplicationListResponse(namespaceList coreV1.NamespaceList) ([]ApplicationDetails, error) {
-	var apps []ApplicationDetails
+	apps := []ApplicationDetails{}
 
 	// TODO concurrent build response items
 	for i := range namespaceList.Items {
