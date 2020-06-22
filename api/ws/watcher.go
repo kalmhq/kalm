@@ -75,9 +75,23 @@ func StartWatchingComponents(c *Client) {
 			},
 			DeleteFunc: func(obj interface{}) {
 				fmt.Printf("component deleted: %s \n", obj)
+				bts, err := json.Marshal(obj)
+				if err != nil {
+					panic(err)
+				}
+
+				// TODO TYPE ADD DELETE MODIFY
+				c.Send <- bts
 			},
 			UpdateFunc: func(oldObj, newObj interface{}) {
-				fmt.Printf("component changed \n")
+				fmt.Printf("component changed: %s n", newObj)
+				bts, err := json.Marshal(newObj)
+				if err != nil {
+					panic(err)
+				}
+
+				// TODO TYPE ADD DELETE MODIFY
+				c.Send <- bts
 			},
 		},
 	)
