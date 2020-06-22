@@ -13,6 +13,8 @@
     "@testing-library/user-event": "^7.2.1",
     "@types/chart.js": "^2.9.16",
     "@types/debug": "^4.1.5",
+    "@types/enzyme": "^3.10.5",
+    "@types/enzyme-adapter-react-16": "^1.0.6",
     "@types/jest": "^24.0.25",
     "@types/node": "^12.12.24",
     "@types/node-forge": "^0.9.4",
@@ -65,7 +67,9 @@
     "xterm": "^4.4.0",
     "xterm-addon-fit": "^0.3.0",
     "xterm-addon-search": "^0.5.0",
-    "yaml": "^1.7.2"
+    "yaml": "^1.7.2",
+    "enzyme": "^3.11.0",
+    "enzyme-adapter-react-16": "^1.15.2"
   },
   "scripts": {
     "start": "react-scripts start",

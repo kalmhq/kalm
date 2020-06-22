@@ -14,6 +14,7 @@ export const SET_TUTORIAL_ACTION = "SET_TUTORIAL_ACTION";
 export const RESET_TUTORIAL_ACTION = "RESET_TUTORIAL_ACTION";
 
 export const SET_TUTORIAL_STEP_COMPLETION_STATUS = "SET_TUTORIAL_STEP_COMPLETION_STATUS";
+export const SET_TUTORIAL_HIGHLIGHT_STATUS = "SET_TUTORIAL_HIGHLIGHT_STATUS";
 
 export interface TutorialSubStep {
   title: React.ReactNode;
@@ -77,6 +78,14 @@ export interface SetTutorialStepCompletionStatusAction {
   };
 }
 
+export interface SetTutorialHighlightStatusAction {
+  type: typeof SET_TUTORIAL_HIGHLIGHT_STATUS;
+  payload: {
+    stepIndex: number;
+    highlightIndex: number;
+  };
+}
+
 export interface ResetTutorialAction {
   type: typeof RESET_TUTORIAL_ACTION;
 }
@@ -88,6 +97,7 @@ export interface TutorialDrawerAction {
 export type TutorialActions =
   | SetTutorialAction
   | SetTutorialStepCompletionStatusAction
+  | SetTutorialHighlightStatusAction
   | TutorialDrawerAction
   | ResetTutorialAction;
 
@@ -174,6 +184,52 @@ const setValueInPath = (obj: { [key: string]: any }, attrPaths: string[], value:
   }
 };
 
+export const requireSubStepNotCompleted = (state: RootState, ...subStepIndexes: number[]) => {
+  const tutorialState = state.get("tutorial");
+
+  const tutorial = tutorialState.get("tutorial");
+  if (!tutorial) return false;
+
+  const currentStep = tutorial.steps[tutorialState.get("currentStepIndex")];
+  if (!currentStep) return false;
+
+  for (let i = 0; i < subStepIndexes.length; i++) {
+    if (tutorialState.get("tutorialStepStatus").get(`${tutorialState.get("currentStepIndex")}-${subStepIndexes[i]}`)) {
+      return false;
+    }
+
+    const subStep = currentStep.subSteps[subStepIndexes[i]];
+    if (subStep && subStep.shouldCompleteByState && subStep.shouldCompleteByState(state)) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
+export const requireSubStepCompleted = (state: RootState, ...subStepIndexes: number[]) => {
+  const tutorialState = state.get("tutorial");
+
+  const tutorial = tutorialState.get("tutorial");
+  if (!tutorial) return false;
+
+  const currentStep = tutorial.steps[tutorialState.get("currentStepIndex")];
+  if (!currentStep) return false;
+
+  for (let i = 0; i < subStepIndexes.length; i++) {
+    if (!tutorialState.get("tutorialStepStatus").get(`${tutorialState.get("currentStepIndex")}-${subStepIndexes[i]}`)) {
+      return false;
+    }
+
+    const subStep = currentStep.subSteps[subStepIndexes[i]];
+    if (subStep && subStep.shouldCompleteByState && !subStep.shouldCompleteByState(state)) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
 export const CreateApplicationTutorialFactory = (applicationName: string): Tutorial => ({
   id: "Deploy an Application",
   steps: [
@@ -181,18 +237,24 @@ export const CreateApplicationTutorialFactory = (applicationName: string): Tutor
       name: "Create an application",
       description:
         "Application is a virtual group of other resources or configurations. It help to organize different deployment environment. For example, production, staging, testing environments can be treated as three applications.",
-      highlights: [],
+      highlights: [
+        {
+          title: "Chick Here",
+          description: "Go to applications page",
+          anchor: "[tutorial-anchor-id=first-level-sidebar-item-applications]",
+          triggeredByState: (state: RootState) => requireSubStepNotCompleted(state, 0),
+        },
+        {
+          title: "Chick Here",
+          description: "Go to new application page",
+          anchor: "[tutorial-anchor-id=add-application]",
+          triggeredByState: (state: RootState) =>
+            requireSubStepNotCompleted(state, 1) && requireSubStepCompleted(state, 0),
+        },
+      ],
       subSteps: [
         {
           title: "Go to applications page",
-          // highlight: {
-          //   title: "Click Here",
-          //   description: "Go to applications page",
-          //   requirePathnamePrefix: "/",
-          //   anchor: "[tutorial-anchor-id=first-level-sidebar-item-applications]",
-          //   position: "right",
-          // },
-          // shouldCompleteByState: (state: RootState) => pathnameHasPerfix(state, "/applications"),
           irrevocable: true,
           shouldCompleteByState: (state: RootState) => isUnderPath(state, "/applications", "/applications/new"),
         },
@@ -202,12 +264,6 @@ export const CreateApplicationTutorialFactory = (applicationName: string): Tutor
               Click the <strong>Add</strong> button
             </span>
           ),
-          // highlight: {
-          //   title: "Click Here",
-          //   description: "Go to new application page",
-          //   requirePathname: "/applications",
-          //   anchor: "[tutorial-anchor-id=add-application]",
-          // },
           irrevocable: true,
           shouldCompleteByState: (state: RootState) => isUnderPath(state, "/applications/new"),
         },
@@ -217,12 +273,6 @@ export const CreateApplicationTutorialFactory = (applicationName: string): Tutor
               Type <strong>{applicationName}</strong> in name field
             </span>
           ),
-          // highlight: {
-          //   title: "Fill field",
-          //   description: `type <strong>${applicationName}</strong> in name field.`,
-          //   requirePathname: "/applications/new",
-          //   anchor: "[tutorial-anchor-id=application-form-name-field]",
-          // },
           formValidator: [
             {
               form: "application",
@@ -236,12 +286,6 @@ export const CreateApplicationTutorialFactory = (applicationName: string): Tutor
         },
         {
           title: "Submit form",
-          // highlight: {
-          //   title: "Complete the form",
-          //   description: "Create an application",
-          //   requirePathname: "/applications/new",
-          //   anchor: "[tutorial-anchor-id=application-form-submit-button]",
-          // },
           shouldCompleteByAction: (action: Actions) =>
             action.type === (actionTypes.SET_SUBMIT_SUCCEEDED as keyof ActionTypes) &&
             action.meta!.form === "application",
@@ -252,7 +296,15 @@ export const CreateApplicationTutorialFactory = (applicationName: string): Tutor
       name: "Add a component",
       description:
         "Component describes how a program is running, includes start, scheduling, update and termination. Also, you can configure disks, health checker and resources limit for it.",
-      highlights: [],
+      highlights: [
+        {
+          title: "Chick Here",
+          description: "Go to networking tab",
+          anchor: "[tutorial-anchor-id=Networking]",
+          triggeredByState: (state: RootState) =>
+            requireSubStepNotCompleted(state, 2) && requireSubStepCompleted(state, 0, 1),
+        },
+      ],
       subSteps: [
         {
           title: (
@@ -275,14 +327,6 @@ export const CreateApplicationTutorialFactory = (applicationName: string): Tutor
               Use <strong>k8s.gcr.io/echoserver:1.10</strong> image
             </span>
           ),
-          // highlight: {
-          //   title: "Fill form",
-          //   description:
-          //     'Test with "k8s.gcr.io/echoserver:1.10" image, which is simple http server handles any http request, returns request and pod details as response.',
-          //   requirePathname: `/applications/${applicationName}/edit`,
-          //   anchor: "[tutorial-anchor-id=component-from-basic]",
-          //   position: "right",
-          // },
           formValidator: [
             {
               form: "componentLike",
@@ -300,22 +344,6 @@ export const CreateApplicationTutorialFactory = (applicationName: string): Tutor
               Add an port in advanced <strong>networking tab</strong>
             </span>
           ),
-          // highlight: {
-          //   title: "Fill form",
-          //   description:
-          //     'Test with "k8s.gcr.io/echoserver:1.10" image, which is simple http server handles any http request, returns request and pod details as response.',
-          //   requirePathname: `/applications/${applicationName}/edit`,
-          //   anchor: "[tutorial-anchor-id=component-from-basic]",
-          //   position: "right",
-          // },
-          // formValidator: [
-          //   {
-          //     form: "componentLike",
-          //     field: "image",
-          //     validate: value =>
-          //       value === "k8s.gcr.io/echoserver:1.10" ? undefined : `Please use "k8s.gcr.io/echoserver:1.10"`,
-          //   },
-          // ],
           shouldCompleteByState: (state: RootState) => {
             const ports = getFormValue(state, "componentLike", "ports");
             return ports && ports.size > 0;

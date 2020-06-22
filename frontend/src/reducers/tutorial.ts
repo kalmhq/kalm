@@ -4,6 +4,7 @@ import {
   OPEN_TUTORIAL_DRAWER,
   RESET_TUTORIAL_ACTION,
   SET_TUTORIAL_ACTION,
+  SET_TUTORIAL_HIGHLIGHT_STATUS,
   SET_TUTORIAL_STEP_COMPLETION_STATUS,
   Tutorial,
 } from "types/tutorial";
@@ -15,6 +16,7 @@ export type State = ImmutableMap<{
   tutorialID: string;
   tutorial?: Tutorial;
   tutorialStepStatus: Immutable.Map<string, boolean>;
+  latestHighlight?: string;
   currentStepIndex: number;
 }>;
 
@@ -84,6 +86,11 @@ const reducer = (state: State = initialState, action: Actions): State => {
     );
 
     return tryMoveToNextStep(state);
+  }
+
+  if (action.type === SET_TUTORIAL_HIGHLIGHT_STATUS) {
+    state = state.set("latestHighlight", `${action.payload.stepIndex}-${action.payload.highlightIndex}`);
+    return state;
   }
 
   currentStep.subSteps.forEach((subStep, subStepIndex) => {
