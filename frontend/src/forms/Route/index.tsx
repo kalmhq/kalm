@@ -9,7 +9,7 @@ import {
   KValidatorPaths,
   ValidatorAtLeastOneHttpRouteDestination,
   ValidatorListNotEmpty,
-  ValidatorRequired
+  ValidatorRequired,
 } from "forms/validator";
 import Immutable from "immutable";
 import React from "react";
@@ -25,6 +25,7 @@ import { RenderHttpRouteDestinations } from "./destinations";
 import { Expansion } from "./expansion";
 import { loadCertificates } from "actions/certificate";
 import { loadServicesAction } from "../../actions/service";
+import { Prompt } from "widgets/Prompt";
 
 const defaultFormID = "route";
 
@@ -47,7 +48,7 @@ const mapStateToProps = (state: RootState, { form }: OwnProps) => {
     hosts: selector(state, "hosts") as Immutable.List<string>,
     destinations: selector(state, "destinations") as Immutable.List<HttpRouteDestination>,
     domains: Array.from(domains),
-    certifications
+    certifications,
   };
 };
 
@@ -60,26 +61,26 @@ const styles = (theme: Theme) =>
     root: {
       "& .alert": {
         marginTop: theme.spacing(1),
-        marginBottom: theme.spacing(1)
-      }
+        marginBottom: theme.spacing(1),
+      },
     },
     box: {
       padding: theme.spacing(2),
       border: "1px solid black",
-      marginBottom: theme.spacing(2)
+      marginBottom: theme.spacing(2),
     },
     buttonMargin: {
-      margin: theme.spacing(1)
+      margin: theme.spacing(1),
     },
     heading: {
       fontSize: theme.typography.pxToRem(15),
       flexBasis: "20%",
-      flexShrink: 0
+      flexShrink: 0,
     },
     secondaryHeading: {
       fontSize: theme.typography.pxToRem(15),
-      color: theme.palette.text.secondary
-    }
+      color: theme.palette.text.secondary,
+    },
   });
 
 export interface Props
@@ -98,7 +99,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
     super(props);
     this.state = {
       isAdvancedPartUnfolded: false,
-      isValidCertificationUnfolded: false
+      isValidCertificationUnfolded: false,
     };
   }
 
@@ -149,7 +150,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
 
       hostCertResults.push({
         host,
-        cert
+        cert,
       });
     });
 
@@ -250,11 +251,13 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
       form,
       handleSubmit,
       submitFailed,
-      syncErrors
+      syncErrors,
+      dirty,
     } = this.props;
 
     return (
       <div className={classes.root}>
+        <Prompt when={dirty} message="Are you sure to leave without saving changes?" />
         <h2>Add route</h2>
 
         <Expansion
@@ -292,12 +295,12 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
             options={[
               {
                 value: methodsModeAll,
-                label: "All http methods are allowed in this route."
+                label: "All http methods are allowed in this route.",
               },
               {
                 value: methodsModeSpecific,
-                label: "Choose allowed methods manually."
-              }
+                label: "Choose allowed methods manually.",
+              },
             ]}
           />
           <Collapse in={methodsMode === methodsModeSpecific}>
@@ -310,40 +313,40 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                 options={[
                   {
                     value: "GET",
-                    label: "GET"
+                    label: "GET",
                   },
                   {
                     value: "POST",
-                    label: "POST"
+                    label: "POST",
                   },
                   {
                     value: "PUT",
-                    label: "PUT"
+                    label: "PUT",
                   },
                   {
                     value: "PATCH",
-                    label: "PATCH"
+                    label: "PATCH",
                   },
                   {
                     value: "DELETE",
-                    label: "DELETE"
+                    label: "DELETE",
                   },
                   {
                     value: "OPTIONS",
-                    label: "OPTIONS"
+                    label: "OPTIONS",
                   },
                   {
                     value: "HEAD",
-                    label: "HEAD"
+                    label: "HEAD",
                   },
                   {
                     value: "TRACE",
-                    label: "TRACE"
+                    label: "TRACE",
                   },
                   {
                     value: "CONNECT",
-                    label: "CONNECT"
-                  }
+                    label: "CONNECT",
+                  },
                 ]}
               />
             </div>
@@ -357,12 +360,12 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
             options={[
               {
                 value: "http",
-                label: "http"
+                label: "http",
               },
               {
                 value: "https",
-                label: "https"
-              }
+                label: "https",
+              },
             ]}
           />
 
@@ -407,9 +410,9 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                     "destinations",
                     Immutable.Map({
                       host: "",
-                      weight: 1
-                    })
-                  )
+                      weight: 1,
+                    }),
+                  ),
                 )
               }
               className={classes.buttonMargin}>
@@ -449,9 +452,9 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       type: "header",
                       operator: "equal",
                       name: "",
-                      value: ""
-                    })
-                  )
+                      value: "",
+                    }),
+                  ),
                 )
               }
               className={classes.buttonMargin}>
@@ -471,9 +474,9 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       type: "query",
                       operator: "equal",
                       name: "",
-                      value: ""
-                    })
-                  )
+                      value: "",
+                    }),
+                  ),
                 )
               }
               className={classes.buttonMargin}>
@@ -520,5 +523,5 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
 export const RouteForm = reduxForm<HttpRouteForm, OwnProps>({
   onSubmitFail: console.log,
   form: defaultFormID,
-  touchOnChange: true
+  touchOnChange: true,
 })(connect(mapStateToProps)(withStyles(styles)(RouteFormRaw)));

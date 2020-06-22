@@ -28,6 +28,7 @@ import { Uploader } from "forms/Basic/uploader";
 import { addCertificateDialogId } from "pages/Certificate/New";
 import { closeDialogAction } from "actions/dialog";
 import { extractDomainsFromCertificateContent } from "permission/utils";
+import { Prompt } from "widgets/Prompt";
 
 const defaultFormID = "certificate";
 const createIssuer = "createIssuer";
@@ -242,10 +243,11 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { classes, dispatch, handleSubmit, managedType, isEdit } = this.props;
+    const { classes, dispatch, handleSubmit, managedType, isEdit, dirty } = this.props;
 
     return (
       <div className={classes.root}>
+        <Prompt when={dirty} message="Are you sure to leave without saving changes?" />
         <Grid container spacing={2}>
           {isEdit ? null : (
             <Grid item md={12}>
