@@ -8,7 +8,7 @@ import {
   Theme,
   Typography,
   withStyles,
-  WithStyles,
+  WithStyles
 } from "@material-ui/core";
 import CloseIcon from "@material-ui/icons/Close";
 import KeyboardBackspaceIcon from "@material-ui/icons/KeyboardBackspace";
@@ -21,9 +21,9 @@ import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { ApplicationDetails } from "types/application";
-import { CreateApplicationTutorialFactory } from "types/tutorial";
 import { Body } from "widgets/Label";
 import { CommonTutorial } from "./CommonTutorial";
+import { BasicApplicationCreationTutorialFactory } from "tutorials/basicApplicationCreation";
 
 export const tutorialDrawerWidth: number = 400;
 
@@ -81,7 +81,7 @@ class TutorialRaw extends React.PureComponent<Props, State> {
       sampleName = sampleNameTemplate + i;
     }
     // sampleName = "hello-world";
-    dispatch(setTutorialAction("CreateApplicationTutorial", CreateApplicationTutorialFactory(sampleName)));
+    dispatch(setTutorialAction("CreateApplicationTutorial", BasicApplicationCreationTutorialFactory(sampleName)));
   };
 
   private renderOptions = () => {

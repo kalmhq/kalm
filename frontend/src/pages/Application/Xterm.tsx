@@ -23,7 +23,6 @@ interface XtermState {
   isSearchFocused: boolean;
 }
 
-window.debug = Terminal;
 const xtermStyles = (theme: Theme) =>
   createStyles({
     root: {

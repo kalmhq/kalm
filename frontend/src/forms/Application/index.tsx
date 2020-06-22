@@ -5,16 +5,16 @@ import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { InjectedFormProps } from "redux-form";
 import { Field, formValueSelector, getFormValues, reduxForm } from "redux-form/immutable";
-import { RootState } from "../../reducers";
-import { Application, SharedEnv } from "../../types/application";
-import { ComponentTemplate } from "../../types/componentTemplate";
-import { CustomizedButton } from "../../widgets/Button";
-import { KPanel } from "../../widgets/KPanel";
+import { RootState } from "reducers";
+import { Application, SharedEnv } from "types/application";
+import { ComponentTemplate } from "types/componentTemplate";
+import { CustomizedButton } from "widgets/Button";
+import { KPanel } from "widgets/KPanel";
 import { KRenderTextField } from "../Basic/textfield";
 import { ValidatorName, ValidatorRequired } from "../validator";
-import { formValidatOrNotBlockByTutorial } from "types/tutorial";
 import { Alert } from "@material-ui/lab";
 import { shouldError } from "forms/common";
+import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -196,7 +196,7 @@ export default connect(mapStateToProps)(
   reduxForm<Application, Props>({
     form: "application",
     initialValues: applicationInitialValues,
-    validate: formValidatOrNotBlockByTutorial,
+    validate: formValidateOrNotBlockByTutorial,
     shouldError: shouldError,
     onSubmitFail: (...args) => {
       console.log("submit failed", args);

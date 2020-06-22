@@ -24,25 +24,19 @@ import React from "react";
 import { connect } from "react-redux";
 import { InjectedFormProps } from "redux-form";
 import { Field, getFormSyncErrors, getFormValues, reduxForm } from "redux-form/immutable";
-import { formValidatOrNotBlockByTutorial } from "types/tutorial";
 import { Body, H5 } from "widgets/Label";
 import { SectionTitle } from "widgets/SectionTitle";
-import { loadComponentPluginsAction } from "../../actions/application";
-import { loadNodesAction } from "../../actions/node";
-import { loadPersistentVolumesAction, loadStorageClassesAction } from "../../actions/persistentVolume";
-import { RootState } from "../../reducers";
-import { getNodeLabels } from "../../selectors/node";
-import { TDispatchProp } from "../../types";
-import { ApplicationDetails, SharedEnv } from "../../types/application";
-import {
-  ComponentLike,
-  ComponentLikeContent,
-  workloadTypeCronjob,
-  workloadTypeServer,
-} from "../../types/componentTemplate";
-import { CustomizedButton } from "../../widgets/Button";
-import { HelperContainer } from "../../widgets/Helper";
-import { KPanel } from "../../widgets/KPanel";
+import { loadComponentPluginsAction } from "actions/application";
+import { loadNodesAction } from "actions/node";
+import { loadPersistentVolumesAction, loadStorageClassesAction } from "actions/persistentVolume";
+import { RootState } from "reducers";
+import { getNodeLabels } from "selectors/node";
+import { TDispatchProp } from "types";
+import { ApplicationDetails, SharedEnv } from "types/application";
+import { ComponentLike, ComponentLikeContent, workloadTypeCronjob, workloadTypeServer } from "types/componentTemplate";
+import { CustomizedButton } from "widgets/Button";
+import { HelperContainer } from "widgets/Helper";
+import { KPanel } from "widgets/KPanel";
 import { KRadioGroupRender } from "../Basic/radio";
 import { RenderSelectField } from "../Basic/select";
 import { KRenderCommandTextField, KRenderTextField, RenderComplexValueTextField } from "../Basic/textfield";
@@ -55,6 +49,7 @@ import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
 import { Volumes } from "./Volumes";
 import { shouldError } from "forms/common";
+import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -1193,7 +1188,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 const form = reduxForm<ComponentLike, RawProps & ConnectedProps>({
   form: "componentLike",
   enableReinitialize: true,
-  validate: formValidatOrNotBlockByTutorial,
+  validate: formValidateOrNotBlockByTutorial,
   shouldError: shouldError,
   onSubmitFail: console.log,
 })(withStyles(styles)(ComponentLikeFormRaw));
