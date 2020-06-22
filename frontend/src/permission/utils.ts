@@ -21,9 +21,9 @@ export const extractDomainsFromCertificateContent = (certificateContent: string)
   try {
     const cert = pki.certificateFromPem(certificateContent);
     return Immutable.List(
-      cert.subject.attributes.map(attribute => {
+      cert.subject.attributes.map((attribute) => {
         return attribute.value;
-      })
+      }),
     );
   } catch (e) {
     console.log(e);

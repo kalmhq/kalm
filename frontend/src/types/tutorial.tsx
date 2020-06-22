@@ -28,7 +28,9 @@ export interface TutorialSubStep {
   };
   irrevocable?: boolean;
   formValidator?: { form: string; field: string; validate: (value: any) => string | undefined }[];
+
   shouldCompleteByAction?(action: Actions): boolean;
+
   shouldCompleteByState?(state: RootState): boolean;
 }
 
@@ -42,6 +44,7 @@ export interface TutorialHighlight {
   requirePathname?: string;
 
   triggeredByAction?(action: Actions): boolean;
+
   triggeredByState?(state: RootState): boolean;
 }
 
@@ -119,10 +122,7 @@ const isComponentFormFieldValueEqualTo = (rootState: RootState, field: string, v
 };
 
 const isUnderPath = (state: RootState, ...paths: string[]) => {
-  const pathname = state
-    .get("router")
-    .get("location")
-    .get("pathname") as string;
+  const pathname = state.get("router").get("location").get("pathname") as string;
 
   return paths.includes(pathname);
 };
@@ -277,7 +277,7 @@ export const CreateApplicationTutorialFactory = (applicationName: string): Tutor
             {
               form: "application",
               field: "name",
-              validate: name =>
+              validate: (name) =>
                 name === applicationName ? undefined : `Please follow the tutorial, use ${applicationName}.`,
             },
           ],
@@ -316,7 +316,7 @@ export const CreateApplicationTutorialFactory = (applicationName: string): Tutor
             {
               form: "componentLike",
               field: "name",
-              validate: value => (value === "echoserver" ? undefined : `Please use "echoserver"`),
+              validate: (value) => (value === "echoserver" ? undefined : `Please use "echoserver"`),
             },
           ],
           shouldCompleteByState: (state: RootState) => isComponentFormFieldValueEqualTo(state, "name", "echoserver"),
@@ -331,7 +331,7 @@ export const CreateApplicationTutorialFactory = (applicationName: string): Tutor
             {
               form: "componentLike",
               field: "image",
-              validate: value =>
+              validate: (value) =>
                 value === "k8s.gcr.io/echoserver:1.10" ? undefined : `Please use "k8s.gcr.io/echoserver:1.10"`,
             },
           ],
@@ -359,7 +359,7 @@ export const CreateApplicationTutorialFactory = (applicationName: string): Tutor
             {
               form: "componentLike",
               field: "ports[0].name",
-              validate: value => (value === "http" ? undefined : `Please use "http"`),
+              validate: (value) => (value === "http" ? undefined : `Please use "http"`),
             },
           ],
           shouldCompleteByState: (state: RootState) => {
@@ -379,7 +379,7 @@ export const CreateApplicationTutorialFactory = (applicationName: string): Tutor
             {
               form: "componentLike",
               field: "ports[0].containerPort",
-              validate: value => (value === 80 ? undefined : `Please use "80"`),
+              validate: (value) => (value === 80 ? undefined : `Please use "80"`),
             },
           ],
           shouldCompleteByState: (state: RootState) => {
@@ -399,7 +399,7 @@ export const CreateApplicationTutorialFactory = (applicationName: string): Tutor
             {
               form: "componentLike",
               field: "ports[0].servicePort",
-              validate: value => (value === 80 || !value ? undefined : `Please use "80"`),
+              validate: (value) => (value === 80 || !value ? undefined : `Please use "80"`),
             },
           ],
           shouldCompleteByState: (state: RootState) => {
@@ -431,7 +431,7 @@ export const CreateApplicationTutorialFactory = (applicationName: string): Tutor
             const application = state
               .get("applications")
               .get("applications")
-              .find(x => x.get("name") === applicationName);
+              .find((x) => x.get("name") === applicationName);
 
             if (!application) {
               return false;

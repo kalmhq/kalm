@@ -6,30 +6,30 @@ import {
   DUPLICATE_COMPONENT_TEMPLATES,
   LOAD_COMPONENT_TEMPLATES_FULFILLED,
   LOAD_COMPONENT_TEMPLATES_PENDING,
-  UPDATE_COMPONENT_TEMPLATES
+  UPDATE_COMPONENT_TEMPLATES,
 } from "../types/componentTemplate";
 import {
   createKappComonentTemplate,
   deleteKappComonentTemplate,
   getKappComponentTemplates,
-  updateKappComonentTemplate
+  updateKappComonentTemplate,
 } from "./kubernetesApi";
 
 export const createComponentTemplateAction = (componentTemplateRaw: ComponentTemplate): ThunkResult<Promise<void>> => {
-  return async dispatch => {
+  return async (dispatch) => {
     let componentTemplate: ComponentTemplate;
     componentTemplate = await createKappComonentTemplate(componentTemplateRaw);
 
     dispatch({
       type: CREATE_COMPONENT_TEMPLATES,
-      payload: { componentTemplate }
+      payload: { componentTemplate },
     });
   };
 };
 
 export const duplicateComponentTemplateAction = (
   componentTemplateName: string,
-  newName: string
+  newName: string,
 ): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     let componentTemplateCopy = getState()
@@ -44,19 +44,19 @@ export const duplicateComponentTemplateAction = (
 
     dispatch({
       type: DUPLICATE_COMPONENT_TEMPLATES,
-      payload: { componentTemplate }
+      payload: { componentTemplate },
     });
   };
 };
 
 export const updateComponentTemplateAction = (componentTemplateRaw: ComponentTemplate): ThunkResult<Promise<void>> => {
-  return async dispatch => {
+  return async (dispatch) => {
     let componentTemplate: ComponentTemplate;
     componentTemplate = await updateKappComonentTemplate(componentTemplateRaw);
 
     dispatch({
       type: UPDATE_COMPONENT_TEMPLATES,
-      payload: { componentTemplate }
+      payload: { componentTemplate },
     });
   };
 };
@@ -72,13 +72,13 @@ export const deleteComponentTemplateAction = (componentTemplateName: string): Th
 
     dispatch({
       type: DELETE_COMPONENT_TEMPLATES,
-      payload: { componentTemplateName }
+      payload: { componentTemplateName },
     });
   };
 };
 
 export const loadComponentTemplatesAction = (): ThunkResult<Promise<void>> => {
-  return async dispatch => {
+  return async (dispatch) => {
     dispatch({ type: LOAD_COMPONENT_TEMPLATES_PENDING });
 
     let componentTemplates;
@@ -92,8 +92,8 @@ export const loadComponentTemplatesAction = (): ThunkResult<Promise<void>> => {
     dispatch({
       type: LOAD_COMPONENT_TEMPLATES_FULFILLED,
       payload: {
-        componentTemplates
-      }
+        componentTemplates,
+      },
     });
   };
 };

@@ -7,11 +7,11 @@ import {
   ExpansionPanelSummary,
   Grid,
   Paper,
+  Tab,
+  Tabs,
   Theme,
   withStyles,
   WithStyles,
-  Tabs,
-  Tab
 } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import DeleteIcon from "@material-ui/icons/Delete";
@@ -37,7 +37,7 @@ import {
   BigCPULineChart,
   BigMemoryLineChart,
   SmallCPULineChart,
-  SmallMemoryLineChart
+  SmallMemoryLineChart,
 } from "../../widgets/SmallLineChart";
 import { generateQueryForPods } from "./Log";
 import { blinkTopProgressAction } from "../../actions/settings";
@@ -53,31 +53,31 @@ const styles = (theme: Theme) =>
       "& .name": {
         fontSize: 14,
         display: "flex",
-        alignItems: "center"
-      }
+        alignItems: "center",
+      },
     },
     componentContainer: {
       // background: "#f5f5f5",
-      width: "100%"
+      width: "100%",
     },
     podContainer: {
-      background: grey[50]
+      background: grey[50],
     },
     chartTabelCell: {
       width: 130,
-      textAlign: "center"
+      textAlign: "center",
     },
     timeCell: {
       width: 100,
-      textAlign: "center"
+      textAlign: "center",
     },
     statusCell: {
       width: 200,
-      textAlign: "center"
+      textAlign: "center",
     },
     restartsCountCell: {
       width: 90,
-      textAlign: "center"
+      textAlign: "center",
     },
     rowContainer: {
       display: "flex",
@@ -88,8 +88,8 @@ const styles = (theme: Theme) =>
       "& .right-part": {
         display: "flex",
         alignItems: "center",
-        justifyContent: "space-between"
-      }
+        justifyContent: "space-between",
+      },
     },
     podHeaderRow: {
       color: "rgba(0, 0, 0, 0.87)",
@@ -98,60 +98,60 @@ const styles = (theme: Theme) =>
       "& .headerCell": {
         padding: "6px 16px 6px 16px",
         "&:last-child": {
-          paddingRight: 0
-        }
+          paddingRight: 0,
+        },
       },
       "& > .headerCell:first-child": {
-        paddingLeft: 0
-      }
+        paddingLeft: 0,
+      },
     },
     podDataRow: {
       "& > :nth-child(1)": {
-        flex: 1
+        flex: 1,
       },
       "& > :nth-child(2)": {
-        flex: 1
-      }
+        flex: 1,
+      },
     },
     viewMoreWrapper: {
       display: "flex",
       justifyContent: "center",
-      padding: "10px"
+      padding: "10px",
     },
     actionCell: {
       width: 100,
       display: "flex",
       alignItems: "center",
-      justifyContent: "space-around"
+      justifyContent: "space-around",
     },
     podActionButton: {
-      background: "white"
+      background: "white",
     },
     metrics: {},
     componentActions: {
       display: "flex",
-      alignItems: "center"
+      alignItems: "center",
     },
     summaryWrapper: {
       height: "100%",
       width: "100%",
       display: "flex",
-      alignItems: "center"
+      alignItems: "center",
     },
     flexWrapper: {
       display: "flex",
-      alignItems: "center"
+      alignItems: "center",
     },
     tabsWrapper: {
-      padding: `0 ${theme.spacing(2)}px`
+      padding: `0 ${theme.spacing(2)}px`,
     },
     tabs: {},
     resources: {
-      padding: theme.spacing(2)
+      padding: theme.spacing(2),
     },
     volumeWrapper: {
-      padding: `0 ${theme.spacing(2)}px`
-    }
+      padding: `0 ${theme.spacing(2)}px`,
+    },
   });
 
 interface Props extends WithStyles<typeof styles>, withNamespaceProps {
@@ -173,7 +173,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      currentTabIndex: 0
+      currentTabIndex: 0,
     };
   }
 
@@ -202,7 +202,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     let isError = false;
     let isPending = false;
 
-    component.get("pods").forEach(pod => {
+    component.get("pods").forEach((pod) => {
       if (pod.get("isTerminating")) {
         isPending = true;
       } else {
@@ -231,7 +231,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
   private getPodsNumber = (component: ApplicationComponentDetails): string => {
     let runningCount = 0;
 
-    component.get("pods").forEach(pod => {
+    component.get("pods").forEach((pod) => {
       if (pod.get("status") === "Succeeded" || pod.get("status") === "Running") {
         runningCount = runningCount + 1;
       }
@@ -244,7 +244,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     const { classes, application } = this.props;
     const component = application.get("components")?.get(index)!;
 
-    return component?.get("volumes")?.map(v => {
+    return component?.get("volumes")?.map((v) => {
       return (
         <Grid container spacing={2} className={classes.volumeWrapper}>
           <Grid item>{v.get("type")}</Grid>
@@ -266,7 +266,8 @@ class DetailsRaw extends React.PureComponent<Props, State> {
           style={{ padding: "0px 16px" }}
           expandIcon={<ExpandMoreIcon />}
           aria-controls="panel1a-content"
-          id={`applicationComponent-${index}`}>
+          id={`applicationComponent-${index}`}
+        >
           <div className={classes.summaryWrapper}>
             <div
               className={classes.flexWrapper}
@@ -320,11 +321,13 @@ class DetailsRaw extends React.PureComponent<Props, State> {
 
         <Box p={2}>
           <div className={classes.flexWrapper}>
-            <H5>CPU:</H5> <div style={{ marginLeft: 8 }}>{component.get("cpu")}</div>
+            <H5>CPU:</H5>
+            <div style={{ marginLeft: 8 }}>{component.get("cpu")}</div>
           </div>
 
           <div className={classes.flexWrapper}>
-            <H5>Memory:</H5> <div style={{ marginLeft: 8 }}>{component.get("memory")}</div>
+            <H5>Memory:</H5>
+            <div style={{ marginLeft: 8 }}>{component.get("memory")}</div>
           </div>
 
           <div className={classes.flexWrapper}>
@@ -340,7 +343,8 @@ class DetailsRaw extends React.PureComponent<Props, State> {
             size="large"
             onClick={() => {
               dispatch(push(`/applications/${application.get("name")}/edit?component=${component.get("name")}`));
-            }}>
+            }}
+          >
             Scale
           </Button>
           <Button
@@ -349,7 +353,8 @@ class DetailsRaw extends React.PureComponent<Props, State> {
             size="large"
             onClick={() => {
               dispatch(push(`/applications/${application.get("name")}/edit?component=${component.get("name")}`));
-            }}>
+            }}
+          >
             Edit
           </Button>
           <Button
@@ -359,7 +364,8 @@ class DetailsRaw extends React.PureComponent<Props, State> {
             onClick={() => {
               blinkTopProgressAction();
               dispatch(deleteComponentAction(component.get("name"), application.get("name")));
-            }}>
+            }}
+          >
             Delete
           </Button>
         </Box>
@@ -408,7 +414,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
             .map((pod, index) => {
               const containerNames = pod
                 .get("containers")
-                .map(container => container.get("name"))
+                .map((container) => container.get("name"))
                 .toArray();
               return (
                 <div key={index}>
@@ -444,9 +450,10 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                             generateQueryForPods(
                               this.props.activeNamespaceName,
                               [[pod.get("name"), containerNames[0]]],
-                              [pod.get("name"), containerNames[0]]
+                              [pod.get("name"), containerNames[0]],
                             )
-                          }>
+                          }
+                        >
                           <KappLogIcon />
                         </IconLinkWithToolTip>
                         {hasWriterRole ? (
@@ -462,9 +469,10 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                               generateQueryForPods(
                                 this.props.activeNamespaceName,
                                 [[pod.get("name"), containerNames[0]]],
-                                [pod.get("name"), containerNames[0]]
+                                [pod.get("name"), containerNames[0]],
                               )
-                            }>
+                            }
+                          >
                             <KappConsoleIcon />
                           </IconLinkWithToolTip>
                         ) : null}
@@ -484,7 +492,8 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                               } catch (e) {
                                 dispatch(setErrorNotificationAction(e.response.data.message));
                               }
-                            }}>
+                            }}
+                          >
                             <DeleteIcon />
                           </IconButtonWithTooltip>
                         ) : null}
@@ -514,7 +523,8 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                       onClick={() => {
                         blinkTopProgressAction();
                         dispatch(push(`/applications/${application.get("name")}/components/${component.get("name")}`));
-                      }}>
+                      }}
+                    >
                       View More
                     </Button>
                   </div>
@@ -537,10 +547,10 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     let podPending = 0;
     let podError = 0;
 
-    application.get("components")?.forEach(component => {
+    application.get("components")?.forEach((component) => {
       let hasError = false;
       let hasPending = false;
-      component.get("pods").forEach(pod => {
+      component.get("pods").forEach((pod) => {
         if (pod.get("status") === "Succeeded" || pod.get("status") === "Running") {
           podSuccess = podSuccess + 1;
         } else if (pod.get("status") === "Failed") {
@@ -567,7 +577,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
       componentError,
       podSuccess,
       podPending,
-      podError
+      podError,
     };
   }
 
@@ -653,8 +663,9 @@ class DetailsRaw extends React.PureComponent<Props, State> {
         onChange={(event: React.ChangeEvent<{}>, value: number) => {
           this.setState({ currentTabIndex: value });
         }}
-        aria-label="component form tabs">
-        {this.tabs.map(tab => {
+        aria-label="component form tabs"
+      >
+        {this.tabs.map((tab) => {
           return <Tab key={tab} label={tab} />;
         })}
       </Tabs>

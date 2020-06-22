@@ -8,9 +8,9 @@ import { getCurrentNamespace } from "../selectors/namespace";
 import { store } from "../store";
 import {
   Application,
-  ApplicationDetails,
-  ApplicationComponentDetails,
   ApplicationComponent,
+  ApplicationComponentDetails,
+  ApplicationDetails,
   ApplicationPlugin,
   ComponentPlugin,
 } from "../types/application";
@@ -18,12 +18,12 @@ import { ComponentTemplate } from "../types/componentTemplate";
 import { ConfigCreate, ConfigRes } from "../types/config";
 import { RegistryType } from "types/registry";
 import {
-  CertificateList,
-  CertificateFormType,
-  CertificateIssuerList,
-  CertificateIssuerFormType,
   Certificate,
+  CertificateFormType,
   CertificateIssuer,
+  CertificateIssuerFormType,
+  CertificateIssuerList,
+  CertificateList,
 } from "types/certificate";
 import { HttpRoute } from "types/route";
 import { Service } from "types/service";
@@ -37,33 +37,24 @@ export const k8sWsPrefix = !K8sApiPrefix
   : K8sApiPrefix.replace(/^http/, "ws");
 
 export const getAxiosClient = () => {
-  const token = store
-    .getState()
-    .get("auth")
-    .get("token");
+  const token = store.getState().get("auth").get("token");
 
   const instance = token
     ? axios.create({
         timeout: 10000,
         withCredentials: true,
         headers: {
-          "X-CSRF-Token": store
-            .getState()
-            .get("auth")
-            .get("csrf"),
-          Authorization: `Bearer ${store
-            .getState()
-            .get("auth")
-            .get("token")}`,
+          "X-CSRF-Token": store.getState().get("auth").get("csrf"),
+          Authorization: `Bearer ${store.getState().get("auth").get("token")}`,
         },
       })
     : axios;
 
   instance.interceptors.response.use(
-    response => {
+    (response) => {
       return response;
     },
-    error => {
+    (error) => {
       // console.log("error", error.response.status);
       return Promise.reject(error);
     },

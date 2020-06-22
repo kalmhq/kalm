@@ -20,7 +20,8 @@ function TabPanel(props: TabPanelProps) {
       hidden={value !== index}
       id={`scrollable-prevent-tabpanel-${index}`}
       aria-labelledby={`scrollable-prevent-tab-${index}`}
-      {...other}>
+      {...other}
+    >
       {value === index && <Box>{children}</Box>}
     </Typography>
   );
@@ -38,9 +39,9 @@ const StyledTabs = withStyles({
     backgroundColor: "transparent",
     "& > div": {
       width: "100%",
-      backgroundColor: "#635ee7"
-    }
-  }
+      backgroundColor: "#635ee7",
+    },
+  },
 })((props: StyledTabsProps) => <Tabs {...props} TabIndicatorProps={{ children: <div /> }} />);
 
 interface StyledTabProps {
@@ -55,10 +56,10 @@ const StyledTab = withStyles((theme: Theme) =>
       fontSize: theme.typography.pxToRem(15),
       marginRight: theme.spacing(1),
       "&:focus": {
-        opacity: 1
-      }
-    }
-  })
+        opacity: 1,
+      },
+    },
+  }),
 )((props: StyledTabProps) => <Tab disableRipple {...props} />);
 
 interface TabOption {
@@ -79,7 +80,7 @@ export class TabDataView extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      tabIndex: 0
+      tabIndex: 0,
     };
   }
 
@@ -94,7 +95,7 @@ export class TabDataView extends React.PureComponent<Props, State> {
     return (
       <div>
         <StyledTabs value={tabIndex} onChange={this.handleChangeTab} aria-label="styled tabs example">
-          {tabOptions.map(x => {
+          {tabOptions.map((x) => {
             return <StyledTab label={x.title} key={x.title} />;
           })}
         </StyledTabs>

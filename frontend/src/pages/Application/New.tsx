@@ -49,7 +49,8 @@ class ApplicationNewRaw extends React.PureComponent<Props> {
           <div className={classes.secondHeaderRight}>
             <H4>Create New Application</H4>
           </div>
-        }>
+        }
+      >
         <div className={classes.root}>
           <Grid container spacing={2}>
             <Grid item xs={8} sm={8} md={8}>

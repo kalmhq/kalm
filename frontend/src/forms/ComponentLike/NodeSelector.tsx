@@ -9,7 +9,7 @@ import { WrappedFieldProps } from "redux-form";
 import {
   NodeSelectorLabels,
   PodAffinityTypePreferFanout,
-  PodAffinityTypePreferGather
+  PodAffinityTypePreferGather,
 } from "../../types/componentTemplate";
 import { RenderSelectField } from "../Basic/select";
 
@@ -37,18 +37,18 @@ export const RenderSelectLabels = ({ input, nodeLabels }: FilledTextFieldProps &
       multiple
       options={options}
       disableCloseOnSelect
-      getOptionLabel={option => option}
+      getOptionLabel={(option) => option}
       renderOption={(option, { selected }) => (
         <React.Fragment>
           <Checkbox icon={icon} checkedIcon={checkedIcon} style={{ marginRight: 8 }} checked={selected} />
           {option}
         </React.Fragment>
       )}
-      renderInput={params => (
+      renderInput={(params) => (
         <TextField
           {...params}
           InputLabelProps={{
-            shrink: true
+            shrink: true,
           }}
           variant="outlined"
           label="Node Selector"
@@ -63,7 +63,7 @@ export const RenderSelectLabels = ({ input, nodeLabels }: FilledTextFieldProps &
 
         let nodeSelectorLabels = Immutable.OrderedMap({});
 
-        value.forEach(nodeLabel => {
+        value.forEach((nodeLabel) => {
           const kv = nodeLabel.split(":");
 
           nodeSelectorLabels = nodeSelectorLabels.set(kv[0], kv[1]);
@@ -86,7 +86,8 @@ export const RenderAffinityType = (props: FilledTextFieldProps & WrappedFieldPro
       meta={props.meta}
       options={[
         { value: PodAffinityTypePreferFanout, text: "Prefer Fanout" },
-        { value: PodAffinityTypePreferGather, text: "Prefer Gather" }
-      ]}></RenderSelectField>
+        { value: PodAffinityTypePreferGather, text: "Prefer Gather" },
+      ]}
+    ></RenderSelectField>
   );
 };

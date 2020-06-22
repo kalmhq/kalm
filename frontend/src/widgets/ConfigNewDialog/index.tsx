@@ -35,7 +35,8 @@ export const ConfigNewDialog = (props: Props) => {
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
         maxWidth={"md"}
-        fullWidth={true}>
+        fullWidth={true}
+      >
         <DialogTitle id="alert-dialog-title">{`New ${configType}`}</DialogTitle>
         <DialogContent>
           <ConfigForm onSubmit={handleSubmit} onClose={handleClose} formType="new" configType={configType} />

@@ -2,7 +2,7 @@ import React from "react";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { Pie } from "react-chartjs-2";
 import { CenterCaption } from "./Label";
-import { green, red, grey } from "@material-ui/core/colors";
+import { green, grey, red } from "@material-ui/core/colors";
 import "chartjs-plugin-labels";
 
 const styles = (theme: Theme) =>
@@ -16,13 +16,13 @@ const styles = (theme: Theme) =>
     pieChartWrapper: {
       flex: 1,
       display: "flex",
-      alignItems: "center"
+      alignItems: "center",
       // padding: 20
     },
     text: {
       display: "flex",
-      justifyContent: "center"
-    }
+      justifyContent: "center",
+    },
   });
 
 interface Props extends WithStyles<typeof styles> {
@@ -43,9 +43,9 @@ class PieChartRaw extends React.PureComponent<Props, State> {
         {
           data,
           backgroundColor: [green[700], grey[700], red[700]],
-          hoverBackgroundColor: [green[700], grey[700], red[700]]
-        }
-      ]
+          hoverBackgroundColor: [green[700], grey[700], red[700]],
+        },
+      ],
     };
   }
 
@@ -64,10 +64,10 @@ class PieChartRaw extends React.PureComponent<Props, State> {
                 labels: {
                   render: "value",
                   position: insideLabel ? "inside" : "outside",
-                  fontColor: insideLabel ? "#FFFFFF" : "#7E7E7E"
+                  fontColor: insideLabel ? "#FFFFFF" : "#7E7E7E",
                   // arc: true
-                }
-              }
+                },
+              },
             }}
           />
         </div>

@@ -31,7 +31,7 @@ class PromptRaw extends React.PureComponent<Props> {
 
     window.addEventListener("beforeunload", this.beforeunload);
 
-    this.unregister = history.block(nextLocation => {
+    this.unregister = history.block((nextLocation) => {
       // return value meanings:
       //   void: allow to change
       //   false: prevent the change

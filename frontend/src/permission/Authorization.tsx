@@ -17,7 +17,7 @@ const mapStateToProps = (state: RootState) => {
   return {
     isLoading,
     authorized,
-    firstLoaded
+    firstLoaded,
   };
 };
 
@@ -31,7 +31,7 @@ interface Options {
 }
 
 export const Authorizated = ({ mustAuthorized, mustNotAuthorized }: Options) => (
-  WrappedComponent: React.ComponentType<any>
+  WrappedComponent: React.ComponentType<any>,
 ) => {
   const wrapper: React.ComponentType<Props> = class extends React.Component<Props> {
     componentDidMount() {

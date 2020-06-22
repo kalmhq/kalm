@@ -3,6 +3,7 @@ import { Box, CircularProgress } from "@material-ui/core";
 import HelpIcon from "@material-ui/icons/Help";
 import WarningIcon from "@material-ui/icons/Warning";
 import { CheckCircleIcon, ErrorIcon } from "./Icon";
+
 export const SuccessBadge = (props: { text?: string }) => {
   return (
     <Box display="inline-flex" alignItems="center">

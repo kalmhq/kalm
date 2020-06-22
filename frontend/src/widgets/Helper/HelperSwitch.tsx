@@ -1,25 +1,23 @@
 import React from "react";
-import { Switch, FormControlLabel } from "@material-ui/core";
+import { FormControlLabel, Switch } from "@material-ui/core";
 import { RootState } from "../../reducers";
-import { DispatchProp, connect } from "react-redux";
+import { connect, DispatchProp } from "react-redux";
 import { setSettingsAction } from "../../actions/settings";
 
 const mapStateToProps = (state: RootState) => {
   return {
-    open: state.get("settings").get("isDisplayingHelpers")
+    open: state.get("settings").get("isDisplayingHelpers"),
   };
 };
 
-class HelperSwitchRaw extends React.PureComponent<
-  ReturnType<typeof mapStateToProps> & DispatchProp
-> {
+class HelperSwitchRaw extends React.PureComponent<ReturnType<typeof mapStateToProps> & DispatchProp> {
   private handleChange = () => {
     const { open } = this.props;
 
     this.props.dispatch(
       setSettingsAction({
-        isDisplayingHelpers: !open
-      })
+        isDisplayingHelpers: !open,
+      }),
     );
   };
 
@@ -29,9 +27,7 @@ class HelperSwitchRaw extends React.PureComponent<
       <FormControlLabel
         label={open ? "Detail Mode" : "Concise Mode"}
         labelPlacement="start"
-        control={
-          <Switch checked={open} onChange={this.handleChange} color="primary" />
-        }
+        control={<Switch checked={open} onChange={this.handleChange} color="primary" />}
       />
     );
   }

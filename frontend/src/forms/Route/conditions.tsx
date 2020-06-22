@@ -39,8 +39,9 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
               options={[
                 { value: "equal", text: "Equal" },
                 { value: "withPrifix", text: "With Prifix" },
-                { value: "matchRegexp", text: "Match Regexp" }
-              ]}></Field>
+                { value: "matchRegexp", text: "Match Regexp" },
+              ]}
+            ></Field>
           </Grid>
           <Grid item md={2}>
             <Field name={`${member}.value`} component={KRenderTextField} label="Value" validate={[ValidatorRequired]} />
@@ -50,7 +51,8 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
               tooltipPlacement="top"
               tooltipTitle="Delete"
               aria-label="delete"
-              onClick={() => fields.remove(index)}>
+              onClick={() => fields.remove(index)}
+            >
               <DeleteIcon />
             </IconButtonWithTooltip>
           </Grid>

@@ -9,19 +9,19 @@ import { RaisedButton } from "widgets/Button";
 const styles = (theme: Theme) =>
   createStyles({
     container: {
-      padding: theme.spacing(3)
+      padding: theme.spacing(3),
     },
     description: {
       fontSize: 18,
-      marginBottom: 18
+      marginBottom: 18,
     },
     cardTitle: {
-      marginBottom: 18
+      marginBottom: 18,
     },
     cardDescription: {
       marginBottom: 18,
-      minHeight: 140
-    }
+      minHeight: 140,
+    },
   });
 
 interface Props extends WithStyles<typeof styles> {}

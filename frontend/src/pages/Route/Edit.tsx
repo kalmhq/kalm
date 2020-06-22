@@ -6,7 +6,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { match } from "react-router";
 import { ThunkDispatch } from "redux-thunk";
-import { HttpRouteForm, methodsModeAll, methodsModeSpecific, AllHttpMethods } from "types/route";
+import { AllHttpMethods, HttpRouteForm, methodsModeAll, methodsModeSpecific } from "types/route";
 import { ApplicationViewDrawer } from "widgets/ApplicationViewDrawer";
 import { Loading } from "widgets/Loading";
 import { RootState } from "../../reducers";
@@ -17,8 +17,8 @@ import { Namespaces } from "widgets/Namespaces";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      margin: theme.spacing(2)
-    }
+      margin: theme.spacing(2),
+    },
   });
 
 const mapStateToProps = (state: RootState, ownProps: any) => {
@@ -28,8 +28,8 @@ const mapStateToProps = (state: RootState, ownProps: any) => {
   return {
     isFirstLoaded: routes.get("isFirstLoaded"),
     isLoading: routes.get("isLoading"),
-    route: routes.get("httpRoutes").find(x => x.get("name") === matchResult.params.name),
-    routeName: matchResult.params.name
+    route: routes.get("httpRoutes").find((x) => x.get("name") === matchResult.params.name),
+    routeName: matchResult.params.name,
   };
 };
 

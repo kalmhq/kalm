@@ -76,7 +76,7 @@ class TutorialRaw extends React.PureComponent<Props, State> {
     let sampleName = "hello-world";
 
     // eslint-disable-next-line
-    while (apps.find(app => app.get("name") === sampleName)) {
+    while (apps.find((app) => app.get("name") === sampleName)) {
       i += 1;
       sampleName = sampleNameTemplate + i;
     }
@@ -104,7 +104,8 @@ class TutorialRaw extends React.PureComponent<Props, State> {
             variant="body2"
             onClick={() => {
               console.info("I'm a button.");
-            }}>
+            }}
+          >
             Access an application from public internet. (Todo)
           </Link>
           <br />
@@ -118,7 +119,8 @@ class TutorialRaw extends React.PureComponent<Props, State> {
             variant="body2"
             onClick={() => {
               console.info("I'm a button.");
-            }}>
+            }}
+          >
             Configure https certifate. (Todo)
           </Link>
           <br />
@@ -127,7 +129,8 @@ class TutorialRaw extends React.PureComponent<Props, State> {
             variant="body2"
             onClick={() => {
               console.info("I'm a button.");
-            }}>
+            }}
+          >
             Connect to private docker image registry. (Todo)
           </Link>
           <br />
@@ -136,7 +139,8 @@ class TutorialRaw extends React.PureComponent<Props, State> {
             variant="body2"
             onClick={() => {
               console.info("I'm a button.");
-            }}>
+            }}
+          >
             Use disks in your applications. (Todo)
           </Link>
           <br />
@@ -145,7 +149,8 @@ class TutorialRaw extends React.PureComponent<Props, State> {
             variant="body2"
             onClick={() => {
               console.info("I'm a button.");
-            }}>
+            }}
+          >
             Integration with your CI pipeline. (Todo)
           </Link>
           <br />
@@ -154,7 +159,8 @@ class TutorialRaw extends React.PureComponent<Props, State> {
             variant="body2"
             onClick={() => {
               console.info("I'm a button.");
-            }}>
+            }}
+          >
             I'm an Kubernetes expert. (Todo)
           </Link>
           <br />
@@ -165,7 +171,8 @@ class TutorialRaw extends React.PureComponent<Props, State> {
             color="textSecondary"
             href="https://github.com/kapp-staging/kapp/issues/new"
             target="_blank"
-            rel="noreferer">
+            rel="noreferer"
+          >
             Still have questions? Tell us! (Todo)
           </Link>
         </Box>
@@ -200,7 +207,8 @@ class TutorialRaw extends React.PureComponent<Props, State> {
         className={clsx(classes.drawer, { [classes.drawerHighZIndex]: drawerOpen })}
         classes={{
           paper: classes.drawerPaper,
-        }}>
+        }}
+      >
         <Box textAlign="right">
           {tutorialID ? (
             <IconButton aria-label="close" onClick={this.handleBack}>

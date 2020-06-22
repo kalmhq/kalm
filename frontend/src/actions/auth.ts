@@ -1,18 +1,18 @@
 import { getLoginStatus, validateToken } from "./kubernetesApi";
-import { ThunkResult, SomethingWrong } from "../types";
+import { SomethingWrong, ThunkResult } from "../types";
 import {
+  LOAD_LOGIN_STATUS_FAILED,
   LOAD_LOGIN_STATUS_FULFILLED,
-  SET_AUTH_TOKEN,
+  LOAD_LOGIN_STATUS_PENDING,
   LOGOUT,
   LogoutAction,
-  LOAD_LOGIN_STATUS_PENDING,
-  LOAD_LOGIN_STATUS_FAILED
+  SET_AUTH_TOKEN,
 } from "../types/common";
 import { setErrorNotificationAction } from "./notification";
 import { LoginStatus } from "types/authorization";
 
 export const loadLoginStatus = (): ThunkResult<Promise<void>> => {
-  return async dispatch => {
+  return async (dispatch) => {
     let loginStatus: LoginStatus;
 
     dispatch({ type: LOAD_LOGIN_STATUS_PENDING });
@@ -20,7 +20,7 @@ export const loadLoginStatus = (): ThunkResult<Promise<void>> => {
       loginStatus = await getLoginStatus();
       dispatch({
         type: LOAD_LOGIN_STATUS_FULFILLED,
-        payload: { loginStatus }
+        payload: { loginStatus },
       });
     } catch (e) {
       dispatch(setErrorNotificationAction(SomethingWrong));
@@ -30,13 +30,13 @@ export const loadLoginStatus = (): ThunkResult<Promise<void>> => {
 };
 
 export const validateTokenAction = (token: string): ThunkResult<Promise<boolean>> => {
-  return async dispatch => {
+  return async (dispatch) => {
     try {
       await validateToken(token);
 
       dispatch({
         type: SET_AUTH_TOKEN,
-        payload: { token }
+        payload: { token },
       });
 
       dispatch(loadLoginStatus());
@@ -51,6 +51,6 @@ export const validateTokenAction = (token: string): ThunkResult<Promise<boolean>
 
 export const logoutAction = (): LogoutAction => {
   return {
-    type: LOGOUT
+    type: LOGOUT,
   };
 };

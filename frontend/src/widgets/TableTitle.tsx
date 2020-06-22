@@ -1,5 +1,5 @@
 import React from "react";
-import { Typography, Box } from "@material-ui/core";
+import { Box, Typography } from "@material-ui/core";
 
 export const TableTitle = (title: string) => (
   <Typography variant="h6" color="primary">

@@ -6,11 +6,11 @@ import { theme } from "theme";
 const styles = () =>
   createStyles({
     root: {
-      overflow: "hidden"
+      overflow: "hidden",
     },
     body1: {
-      paddingTop: theme.spacing(1)
-    }
+      paddingTop: theme.spacing(1),
+    },
   });
 
 type LabelProps = React.Props<any> & WithStyles<typeof styles> & TypographyProps;

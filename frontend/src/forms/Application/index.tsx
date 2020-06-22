@@ -104,9 +104,10 @@ class ApplicationFormRaw extends React.PureComponent<
           variant="contained"
           color="primary"
           className={`${currentTab === "basic" ? classes.submitButton : classes.displayNone}`}
-          onClick={event => {
+          onClick={(event) => {
             handleSubmit(event);
-          }}>
+          }}
+        >
           Submit
         </CustomizedButton>
         {/* <CustomizedButton

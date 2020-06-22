@@ -1,4 +1,4 @@
-import { Theme, Tooltip, withStyles, TooltipProps } from "@material-ui/core";
+import { Theme, Tooltip, TooltipProps, withStyles } from "@material-ui/core";
 import React from "react";
 
 interface Props extends TooltipProps {}

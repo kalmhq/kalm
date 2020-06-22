@@ -8,24 +8,24 @@ const styles = (theme: Theme) =>
   createStyles({
     root: {
       background: "#f2f5f5",
-      margin: "16px 0"
+      margin: "16px 0",
     },
     details: {
       padding: theme.spacing(1),
-      background: "white"
+      background: "white",
     },
     heading: {
       fontSize: theme.typography.pxToRem(15),
       flexBasis: "20%",
-      flexShrink: 0
+      flexShrink: 0,
     },
     secondaryHeading: {
       fontSize: theme.typography.pxToRem(15),
-      color: theme.palette.text.secondary
+      color: theme.palette.text.secondary,
     },
     error: {
-      color: theme.palette.error.main
-    }
+      color: theme.palette.error.main,
+    },
   });
 
 interface Props extends WithStyles<typeof styles> {
@@ -44,9 +44,10 @@ class ExpansionRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      isUnfolded: !!props.defauldUnfolded
+      isUnfolded: !!props.defauldUnfolded,
     };
   }
+
   public render() {
     const { isUnfolded } = this.state;
     const { classes, title, subTitle, children, hasError } = this.props;
@@ -54,12 +55,14 @@ class ExpansionRaw extends React.PureComponent<Props, State> {
       <ExpansionPanel
         className={clsx(classes.root)}
         expanded={isUnfolded}
-        onChange={() => this.setState({ isUnfolded: !isUnfolded })}>
+        onChange={() => this.setState({ isUnfolded: !isUnfolded })}
+      >
         <ExpansionPanelSummary
           expandIcon={<ExpandMoreIcon />}
           aria-controls="panel1bh-content"
           id="panel1bh-header"
-          className={clsx({ [classes.error]: hasError })}>
+          className={clsx({ [classes.error]: hasError })}
+        >
           <Typography className={classes.heading}>{title}</Typography>
           {subTitle ? <Typography className={classes.secondaryHeading}>{subTitle}</Typography> : null}
         </ExpansionPanelSummary>
@@ -68,4 +71,5 @@ class ExpansionRaw extends React.PureComponent<Props, State> {
     );
   }
 }
+
 export const Expansion = withStyles(styles)(ExpansionRaw);

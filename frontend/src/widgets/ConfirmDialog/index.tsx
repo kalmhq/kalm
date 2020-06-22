@@ -48,7 +48,8 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
         onEntered={props.onEntered}
         onExit={props.onExit}
         onExiting={props.onExiting}
-        onExited={props.onExited}>
+        onExited={props.onExited}
+      >
         <DialogTitle id="alert-dialog-title">{title}</DialogTitle>
         <DialogContent>{content}</DialogContent>
         <DialogActions>

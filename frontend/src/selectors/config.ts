@@ -11,10 +11,7 @@ export const getConfigFilePaths = (): string[] => {
   //     .get("configFilePaths")
   //     .toArray()
   // );
-  return state
-    .get("configs")
-    .get("configFilePaths")
-    .toArray();
+  return state.get("configs").get("configFilePaths").toArray();
 };
 
 export const getCurrentConfig = (): ConfigNode => {
@@ -88,13 +85,13 @@ const configToCascaderOption = (config: ConfigNode, isSelectFolder: boolean = tr
     return {
       value: config.get("id"),
       label: "/",
-      children: cascaderOptionChildren
+      children: cascaderOptionChildren,
     } as CascaderOptionType;
   }
 
   return {
     value: config.get("id"),
     label: config.get("name"),
-    children: cascaderOptionChildren
+    children: cascaderOptionChildren,
   } as CascaderOptionType;
 };

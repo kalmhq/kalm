@@ -73,7 +73,7 @@ export const allClusterRoleNames = [
   "file_editor_role",
   "file_viewer_role",
   "dependency_editor_role",
-  "dependency_viewer_role"
+  "dependency_viewer_role",
 ];
 
 export type ClusterRoleName =

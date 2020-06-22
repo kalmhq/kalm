@@ -13,7 +13,7 @@ const search = queryString.parse(window.location.search);
 const LAST_SELECTED_NAMESPACE_CACHE_KEY = "LAST_SELECTED_NAMESPACE_CACHE_KEY";
 
 const initialState: State = Immutable.Map({
-  active: search.namespace || window.localStorage.getItem(LAST_SELECTED_NAMESPACE_CACHE_KEY) || ""
+  active: search.namespace || window.localStorage.getItem(LAST_SELECTED_NAMESPACE_CACHE_KEY) || "",
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {

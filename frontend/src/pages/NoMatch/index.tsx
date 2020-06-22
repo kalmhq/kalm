@@ -23,14 +23,14 @@ const styles = (theme: Theme) =>
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      flexDirection: "column"
+      flexDirection: "column",
     },
     title: {
-      fontSize: 124
+      fontSize: 124,
     },
     subTitle: {
-      fontSize: 24
-    }
+      fontSize: 24,
+    },
   });
 
 class Page404Raw extends Component<WithStyles<typeof styles> & DispatchProp> {

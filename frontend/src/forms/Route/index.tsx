@@ -35,10 +35,10 @@ const mapStateToProps = (state: RootState, { form }: OwnProps) => {
   const certifications = state.get("certificates").get("certificates");
   const domains: Set<string> = new Set();
 
-  certifications.forEach(x => {
+  certifications.forEach((x) => {
     x.get("domains")
-      .filter(x => x !== "*")
-      .forEach(domain => domains.add(domain));
+      .filter((x) => x !== "*")
+      .forEach((domain) => domains.add(domain));
   });
 
   return {
@@ -145,8 +145,8 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
 
     let hostCertResults: any[] = [];
 
-    hosts.forEach(host => {
-      const cert = certifications.find(c => this.canCertDomainsSuiteForHost(c.get("domains"), host));
+    hosts.forEach((host) => {
+      const cert = certifications.find((c) => this.canCertDomainsSuiteForHost(c.get("domains"), host));
 
       hostCertResults.push({
         host,
@@ -154,10 +154,10 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
       });
     });
 
-    const missingCertsCount = hostCertResults.filter(x => !x.cert).length;
+    const missingCertsCount = hostCertResults.filter((x) => !x.cert).length;
 
-    const missingCertsHosts = hostCertResults.filter(x => !x.cert);
-    const validHosts = hostCertResults.filter(x => !!x.cert);
+    const missingCertsHosts = hostCertResults.filter((x) => !x.cert);
+    const validHosts = hostCertResults.filter((x) => !!x.cert);
 
     return (
       <Alert severity={missingCertsCount === 0 ? "success" : "warning"}>
@@ -218,7 +218,8 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
             <Link
               component="button"
               variant="body2"
-              onClick={() => this.setState({ isValidCertificationUnfolded: !isValidCertificationUnfolded })}>
+              onClick={() => this.setState({ isValidCertificationUnfolded: !isValidCertificationUnfolded })}
+            >
               >> View hosts that have valid certificaions.
             </Link>
           </Box>
@@ -263,7 +264,8 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
         <Expansion
           title="Hosts and paths"
           defauldUnfolded
-          hasError={submitFailed && (syncErrors.paths || syncErrors.hosts)}>
+          hasError={submitFailed && (syncErrors.paths || syncErrors.hosts)}
+        >
           <Field
             label="Hosts"
             component={KFreeSoloAutoCompleteMultiValues}
@@ -287,7 +289,8 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
         <Expansion
           title="Schemes and methods"
           subTitle="Define acceptable schemes and methods for incoming requests."
-          hasError={submitFailed && (syncErrors.methods || syncErrors.schemes)}>
+          hasError={submitFailed && (syncErrors.methods || syncErrors.schemes)}
+        >
           <Field
             title="Http methods"
             component={KRadioGroupRender}
@@ -396,7 +399,8 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
         <Expansion
           title="Targets"
           subTitle="Choose targets that will receive requets."
-          hasError={submitFailed && syncErrors.destinations}>
+          hasError={submitFailed && syncErrors.destinations}
+        >
           <Box mb={2}>
             <Button
               variant="outlined"
@@ -415,7 +419,8 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                   ),
                 )
               }
-              className={classes.buttonMargin}>
+              className={classes.buttonMargin}
+            >
               Add a target
             </Button>
           </Box>
@@ -436,7 +441,8 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
         <Expansion
           title="Rules"
           subTitle="Set specific rules for this ingress. Only requests that match these conditions will be accepted."
-          hasError={submitFailed && syncErrors.conditions}>
+          hasError={submitFailed && syncErrors.conditions}
+        >
           <Box mb={2}>
             <Button
               variant="outlined"
@@ -457,7 +463,8 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                   ),
                 )
               }
-              className={classes.buttonMargin}>
+              className={classes.buttonMargin}
+            >
               Add Header Rule
             </Button>
             <Button
@@ -479,7 +486,8 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                   ),
                 )
               }
-              className={classes.buttonMargin}>
+              className={classes.buttonMargin}
+            >
               Add Query Rule
             </Button>
           </Box>

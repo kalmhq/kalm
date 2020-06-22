@@ -42,7 +42,7 @@ export const RenderConfigField = (props: WrappedFieldProps & RenderConfigFieldPr
       multiple
       options={getConfigFilePaths()}
       disableCloseOnSelect
-      getOptionLabel={option => option}
+      getOptionLabel={(option) => option}
       renderOption={(option, { selected }) => {
         return (
           <React.Fragment>
@@ -51,7 +51,7 @@ export const RenderConfigField = (props: WrappedFieldProps & RenderConfigFieldPr
           </React.Fragment>
         );
       }}
-      renderInput={params => <TextField {...params} variant="outlined" label={label} size={"small"} margin="dense" />}
+      renderInput={(params) => <TextField {...params} variant="outlined" label={label} size={"small"} margin="dense" />}
       defaultValue={input.value ? input.value : []}
       onChange={(_, v: any) => {
         const value = v as string[];
@@ -67,14 +67,14 @@ export const MaterialTableEditConfigField = ({ value, onChange }: EditComponentP
       multiple
       options={getConfigFilePaths()}
       disableCloseOnSelect
-      getOptionLabel={option => option}
+      getOptionLabel={(option) => option}
       renderOption={(option, { selected }) => (
         <React.Fragment>
           <Checkbox icon={icon} checkedIcon={checkedIcon} style={{ marginRight: 8 }} checked={selected} />
           {option}
         </React.Fragment>
       )}
-      renderInput={params => (
+      renderInput={(params) => (
         <TextField {...params} variant="outlined" label="Configs" placeholder="Select Config Paths" size={"small"} />
       )}
       defaultValue={value}

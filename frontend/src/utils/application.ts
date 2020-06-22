@@ -1,9 +1,9 @@
 import Immutable from "immutable";
 
-import { ApplicationComponentDetails, ApplicationComponent } from "../types/application";
+import { ApplicationComponent, ApplicationComponentDetails } from "../types/application";
 
 export const applicationComponentDetailsToApplicationComponent = (
-  applicationComponentDetails: ApplicationComponentDetails
+  applicationComponentDetails: ApplicationComponentDetails,
 ): ApplicationComponent => {
   const applicationComponentDetailsContent: any = applicationComponentDetails.toJS();
   delete applicationComponentDetailsContent.pods;

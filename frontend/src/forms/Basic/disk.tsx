@@ -35,22 +35,22 @@ const generateDisk = (type: DiskType): DiskValue =>
     path: "",
     existDisk: "",
     size: "",
-    storageClass: ""
+    storageClass: "",
   });
 
 const renderDisks = ({ fields, meta: { error, submitFailed } }: WrappedFieldArrayProps<DiskValue>) => {
-  const classes = makeStyles(theme => ({
+  const classes = makeStyles((theme) => ({
     delete: {
       display: "flex",
       alignItems: "center",
-      justifyContent: "center"
+      justifyContent: "center",
     },
     firstButton: {
-      margin: "0 16px 0 0"
+      margin: "0 16px 0 0",
     },
     divider: {
-      marginBottom: theme.spacing(3)
-    }
+      marginBottom: theme.spacing(3),
+    },
   }))();
 
   return (
@@ -86,8 +86,9 @@ const renderDisks = ({ fields, meta: { error, submitFailed } }: WrappedFieldArra
                           label="StorageClass"
                           options={[
                             { value: "gcp-classtic", text: "gcp-classtic (FAKE, TODO)" },
-                            { value: "gcp-ssd", text: "gcp-ssd (FAKE, TODO)" }
-                          ]}></Field>
+                            { value: "gcp-ssd", text: "gcp-ssd (FAKE, TODO)" },
+                          ]}
+                        ></Field>
                       </Grid>
                     </>
                   ) : (
@@ -96,7 +97,8 @@ const renderDisks = ({ fields, meta: { error, submitFailed } }: WrappedFieldArra
                         name={`${field}.existDisk`}
                         component={RenderAutoCompleteSelect}
                         validate={!isNewDisk ? ValidatorRequired : []}
-                        label="ExistDisk">
+                        label="ExistDisk"
+                      >
                         <option value={"1"}>PVC/random-name-disk-1 (1G)</option>
                         <option value={"2"}>PVC/fake-disk-placeholder (1G)</option>
                         <option value={"3"}>PVC/test-disk-placeholder (3G)</option>
@@ -121,7 +123,8 @@ const renderDisks = ({ fields, meta: { error, submitFailed } }: WrappedFieldArra
                         component={KRenderTextField}
                         validate={isNewDisk ? ValidatorRequired : []}
                         type="number"
-                        label="Size (Megabeta, M)"></Field>
+                        label="Size (Megabeta, M)"
+                      ></Field>
                     </Grid>
                   ) : null}
                 </Grid>
@@ -142,7 +145,8 @@ const renderDisks = ({ fields, meta: { error, submitFailed } }: WrappedFieldArra
         color="primary"
         onClick={() => fields.push(generateDisk(DiskTypeNew))}
         classes={{ root: classes.firstButton }}
-        startIcon={<AddIcon />}>
+        startIcon={<AddIcon />}
+      >
         Add New Disk
       </Button>
       {/* <Button

@@ -144,7 +144,7 @@ class ComponentStatusRaw extends React.PureComponent<Props, State> {
     let isError = false;
     let isPending = false;
 
-    component.get("pods").forEach(pod => {
+    component.get("pods").forEach((pod) => {
       if (pod.get("isTerminating")) {
         isPending = true;
       } else {
@@ -177,7 +177,7 @@ class ComponentStatusRaw extends React.PureComponent<Props, State> {
     let podPending = 0;
     let podError = 0;
 
-    component?.get("pods").forEach(pod => {
+    component?.get("pods").forEach((pod) => {
       if (pod.get("status") === "Succeeded" || pod.get("status") === "Running") {
         podSuccess = podSuccess + 1;
       } else if (pod.get("status") === "Failed") {
@@ -281,29 +281,29 @@ class ComponentStatusRaw extends React.PureComponent<Props, State> {
               <>
                 {component
                   .get("pods")
-                  .filter(pod => pod.get("status") === "Failed")
-                  .map(pod => {
+                  .filter((pod) => pod.get("status") === "Failed")
+                  .map((pod) => {
                     return this.renderPodItem(pod);
                   })}
 
                 {component
                   .get("pods")
-                  .filter(pod => pod.get("status") === "Pending")
-                  .map(pod => {
+                  .filter((pod) => pod.get("status") === "Pending")
+                  .map((pod) => {
                     return this.renderPodItem(pod);
                   })}
 
                 {component
                   .get("pods")
-                  .filter(pod => pod.get("status") === "Running")
-                  .map(pod => {
+                  .filter((pod) => pod.get("status") === "Running")
+                  .map((pod) => {
                     return this.renderPodItem(pod);
                   })}
 
                 {component
                   .get("pods")
-                  .filter(pod => pod.get("status") === "Succeeded")
-                  .map(pod => {
+                  .filter((pod) => pod.get("status") === "Succeeded")
+                  .map((pod) => {
                     return this.renderPodItem(pod);
                   })}
               </>

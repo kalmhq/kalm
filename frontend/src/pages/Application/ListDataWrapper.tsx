@@ -10,13 +10,13 @@ const mapStateToProps = (state: RootState) => {
   const deletingApplicationNames = state.get("applications").get("deletingApplicationNames");
   const applications = applicationsState
     .get("applications")
-    .filter(app => app.get("status") === "Active" && !deletingApplicationNames.get(app.get("name")));
+    .filter((app) => app.get("status") === "Active" && !deletingApplicationNames.get(app.get("name")));
 
   return {
     applications,
     activeNamespaceName: state.get("namespaces").get("active"),
     isLoading: applicationsState.get("isListLoading"),
-    isFirstLoaded: applicationsState.get("isListFirstLoaded")
+    isFirstLoaded: applicationsState.get("isListFirstLoaded"),
   };
 };
 

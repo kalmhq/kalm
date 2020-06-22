@@ -1,4 +1,4 @@
-import { Chip, createStyles, Paper, TextField, Theme, withStyles, Grid } from "@material-ui/core";
+import { Chip, createStyles, Grid, Paper, TextField, Theme, withStyles } from "@material-ui/core";
 import { WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import { Autocomplete, AutocompleteProps, UseAutocompleteProps } from "@material-ui/lab";
@@ -69,7 +69,8 @@ function TabPanel(props: TabPanelProps) {
       hidden={value !== index}
       id={`simple-tabpanel-${index}`}
       aria-labelledby={`simple-tab-${index}`}
-      {...other}>
+      {...other}
+    >
       {children}
     </Typography>
   );
@@ -83,16 +84,16 @@ const autocompleteStyles = (_theme: Theme) =>
         width: "100%",
         margin: "12px 0",
         "& input": {
-          height: 24
-        }
-      }
-    }
+          height: 24,
+        },
+      },
+    },
   });
 
 const MyAutocomplete = withStyles(autocompleteStyles)(
   (props: AutocompleteProps<string> & UseAutocompleteProps<string>) => {
     return <Autocomplete {...props} />;
-  }
+  },
 );
 
 interface Props extends WithApplicationItemDataProps, WithStyles<typeof styles> {}
@@ -106,15 +107,15 @@ const styles = (theme: Theme) =>
   createStyles({
     root: {},
     paper: {
-      padding: theme.spacing(2)
-    }
+      padding: theme.spacing(2),
+    },
   });
 
 export const generateQueryForPods = (namespace: string, podNames: [string, string][], active?: [string, string]) => {
   const search = {
     pods: podNames.length > 0 ? JSON.stringify(podNames) : undefined,
     active: active || undefined,
-    namespace
+    namespace,
   };
 
   return queryString.stringify(search, { arrayFormat: "comma" });
@@ -131,7 +132,7 @@ export class LogStream extends React.PureComponent<Props, State> {
 
     this.state = {
       value: ["", ""],
-      subscribedPods: Immutable.List()
+      subscribedPods: Immutable.List(),
     };
 
     this.isLog = window.location.pathname.includes("logs");
@@ -157,8 +158,8 @@ export class LogStream extends React.PureComponent<Props, State> {
     const { application } = this.props;
 
     let pods: Immutable.List<string> = Immutable.List();
-    application?.get("components")?.forEach(component => {
-      component.get("pods").forEach(pod => {
+    application?.get("components")?.forEach((component) => {
+      component.get("pods").forEach((pod) => {
         pods = pods.push(pod.get("name"));
       });
     });
@@ -168,13 +169,13 @@ export class LogStream extends React.PureComponent<Props, State> {
       const search = {
         ...queryString.parse(window.location.search, { arrayFormat: "comma" }),
         pods: this.state.subscribedPods.size > 0 ? JSON.stringify(this.state.subscribedPods) : undefined,
-        active: !!this.state.value[0] ? this.state.value : undefined
+        active: !!this.state.value[0] ? this.state.value : undefined,
       };
 
       this.props.dispatch(
         replace({
-          search: queryString.stringify(search, { arrayFormat: "comma" })
-        })
+          search: queryString.stringify(search, { arrayFormat: "comma" }),
+        }),
       );
     }
 
@@ -192,7 +193,7 @@ export class LogStream extends React.PureComponent<Props, State> {
           queries.pods = JSON.parse(queries.pods);
         }
         if (typeof queries.pods === "object") {
-          validPods = queries.pods.filter(x => pods.includes(x[0]));
+          validPods = queries.pods.filter((x) => pods.includes(x[0]));
         }
       }
 
@@ -202,13 +203,13 @@ export class LogStream extends React.PureComponent<Props, State> {
 
       if (this.state.value !== validValue) {
         this.setState({
-          value: validValue
+          value: validValue,
         });
       }
 
       if (this.state.subscribedPods.size !== validPods.length) {
         this.setState({
-          subscribedPods: Immutable.List(validPods)
+          subscribedPods: Immutable.List(validPods),
         });
       }
 
@@ -219,12 +220,12 @@ export class LogStream extends React.PureComponent<Props, State> {
   connectWs = () => {
     const ws = new ReconnectingWebSocket(`${k8sWsPrefix}/v1alpha1/${this.isLog ? "logs" : "exec"}`);
 
-    ws.onopen = evt => {
+    ws.onopen = (evt) => {
       logger("WS Connection connected.");
       ws.send(
         JSON.stringify({
-          type: "authStatus"
-        })
+          type: "authStatus",
+        }),
       );
     };
 
@@ -240,7 +241,7 @@ export class LogStream extends React.PureComponent<Props, State> {
       }
     };
 
-    ws.onmessage = evt => {
+    ws.onmessage = (evt) => {
       detailedLogger("Received Message: " + evt.data);
       const data = JSON.parse(evt.data);
 
@@ -280,14 +281,14 @@ export class LogStream extends React.PureComponent<Props, State> {
         ws.send(
           JSON.stringify({
             type: "auth",
-            authToken: window.localStorage.AUTHORIZED_TOKEN_KEY
-          })
+            authToken: window.localStorage.AUTHORIZED_TOKEN_KEY,
+          }),
         );
         return;
       }
     };
 
-    ws.onclose = evt => {
+    ws.onclose = (evt) => {
       logger("WS Connection closed.");
     };
 
@@ -303,8 +304,8 @@ export class LogStream extends React.PureComponent<Props, State> {
         type: this.isLog ? "subscribePodLog" : "execStartSession",
         podName,
         container: containerName,
-        namespace: activeNamespaceName
-      })
+        namespace: activeNamespaceName,
+      }),
     );
   };
 
@@ -316,8 +317,8 @@ export class LogStream extends React.PureComponent<Props, State> {
         type: this.isLog ? "unsubscribePodLog" : "execEndSession",
         podName,
         container: containerName,
-        namespace: activeNamespaceName
-      })
+        namespace: activeNamespaceName,
+      }),
     );
   };
 
@@ -333,8 +334,8 @@ export class LogStream extends React.PureComponent<Props, State> {
     const { application } = this.props;
 
     let pods: Immutable.List<PodStatus> = Immutable.List();
-    application?.get("components")?.forEach(component => {
-      component.get("pods").forEach(pod => {
+    application?.get("components")?.forEach((component) => {
+      component.get("pods").forEach((pod) => {
         pods = pods.push(pod);
       });
     });
@@ -345,20 +346,20 @@ export class LogStream extends React.PureComponent<Props, State> {
   onInputChange = (_event: React.ChangeEvent<{}>, x: string[]) => {
     const { subscribedPods } = this.state;
     const { value } = this.state;
-    const subscribedPodNames = subscribedPods.map(x => x[0]);
+    const subscribedPodNames = subscribedPods.map((x) => x[0]);
     const currentPodNames = Immutable.List(x);
     const pods = this.getAllPods();
     let newValue = value;
 
-    const currentPods: Immutable.List<[string, string]> = currentPodNames.map(podName => {
-      const subscribedPod = subscribedPods.find(x => x[0] === podName);
+    const currentPods: Immutable.List<[string, string]> = currentPodNames.map((podName) => {
+      const subscribedPod = subscribedPods.find((x) => x[0] === podName);
       if (subscribedPod) {
         return subscribedPod;
       } else {
-        const pod = pods.find(x => x.get("name") === podName)!;
+        const pod = pods.find((x) => x.get("name") === podName)!;
         const containerNames = pod
           .get("containers")
-          .map(x => x.get("name"))
+          .map((x) => x.get("name"))
           .toArray();
         return [podName, containerNames[0]];
       }
@@ -373,11 +374,11 @@ export class LogStream extends React.PureComponent<Props, State> {
       }
     });
 
-    currentPodNames.forEach(podName => {
-      const pod = pods.find(x => x.get("name") === podName)!;
+    currentPodNames.forEach((podName) => {
+      const pod = pods.find((x) => x.get("name") === podName)!;
       const containerNames = pod
         .get("containers")
-        .map(x => x.get("name"))
+        .map((x) => x.get("name"))
         .toArray();
       if (!subscribedPodNames.includes(podName)) {
         this.subscribe(podName, containerNames[0]);
@@ -413,15 +414,15 @@ export class LogStream extends React.PureComponent<Props, State> {
     const { application } = this.props;
 
     let podNames: Immutable.List<string> = Immutable.List([]);
-    application?.get("components")?.forEach(component => {
-      component.get("pods").forEach(pod => {
+    application?.get("components")?.forEach((component) => {
+      component.get("pods").forEach((pod) => {
         podNames = podNames.push(pod.get("name"));
       });
     });
 
     const { value, subscribedPods } = this.state;
-    const subscribedPodNames = subscribedPods.map(p => p[0]);
-    const names = podNames!.toArray().filter(x => !subscribedPodNames.includes(x));
+    const subscribedPodNames = subscribedPods.map((p) => p[0]);
+    const names = podNames!.toArray().filter((x) => !subscribedPodNames.includes(x));
 
     return (
       <MyAutocomplete
@@ -437,8 +438,8 @@ export class LogStream extends React.PureComponent<Props, State> {
                 variant="outlined"
                 label={option}
                 size="small"
-                onClick={event => {
-                  const value = subscribedPods.find(x => x[0] === option)!;
+                onClick={(event) => {
+                  const value = subscribedPods.find((x) => x[0] === option)!;
                   this.setState({ value });
                   event.stopPropagation();
                 }}
@@ -448,7 +449,7 @@ export class LogStream extends React.PureComponent<Props, State> {
             );
           })
         }
-        renderInput={params => (
+        renderInput={(params) => (
           <TextField {...params} variant="outlined" size="small" placeholder="Select the pod you want to view logs" />
         )}
       />
@@ -458,8 +459,8 @@ export class LogStream extends React.PureComponent<Props, State> {
   private renderInputContainer() {
     const { value } = this.state;
     const pods = this.getAllPods();
-    const pod = pods.find(x => value[0] === x.get("name"))!;
-    const containerNames = pod ? pod.get("containers").map(container => container.get("name")) : Immutable.List();
+    const pod = pods.find((x) => value[0] === x.get("name"))!;
+    const containerNames = pod ? pod.get("containers").map((container) => container.get("name")) : Immutable.List();
 
     return (
       <MyAutocomplete
@@ -468,7 +469,7 @@ export class LogStream extends React.PureComponent<Props, State> {
         options={containerNames.toArray()}
         onChange={this.onInputContainerChange}
         value={value[1]}
-        renderInput={params => (
+        renderInput={(params) => (
           <TextField
             {...params}
             variant="outlined"
@@ -484,7 +485,7 @@ export class LogStream extends React.PureComponent<Props, State> {
     const { value } = this.state;
     return (
       <Xterm
-        innerRef={el => this.saveTerminal(podName, el)}
+        innerRef={(el) => this.saveTerminal(podName, el)}
         show={value[0] === podName}
         initializedContent={initializedContent}
         terminalOptions={{
@@ -494,7 +495,7 @@ export class LogStream extends React.PureComponent<Props, State> {
           disableStdin: true,
           convertEol: true,
           // fontSize: 12,
-          theme: { selection: "rgba(255, 255, 72, 0.5)" }
+          theme: { selection: "rgba(255, 255, 72, 0.5)" },
         }}
       />
     );
@@ -504,7 +505,7 @@ export class LogStream extends React.PureComponent<Props, State> {
     const { value } = this.state;
     return (
       <Xterm
-        innerRef={el => this.saveTerminal(podName, el)}
+        innerRef={(el) => this.saveTerminal(podName, el)}
         show={value[0] === podName}
         initializedContent={initializedContent}
         termianlOnData={(data: any) => {
@@ -513,8 +514,8 @@ export class LogStream extends React.PureComponent<Props, State> {
               type: "stdin",
               podName: podName,
               namespace: this.props.activeNamespaceName,
-              data: data
-            })
+              data: data,
+            }),
           );
         }}
         termianlOnBinary={(data: any) => {
@@ -523,8 +524,8 @@ export class LogStream extends React.PureComponent<Props, State> {
               type: "stdin",
               podName: podName,
               namespace: this.props.activeNamespaceName,
-              data: data
-            })
+              data: data,
+            }),
           );
         }}
         terminalOnResize={(size: { cols: number; rows: number }) => {
@@ -533,14 +534,14 @@ export class LogStream extends React.PureComponent<Props, State> {
               type: "resize",
               podName: podName,
               namespace: this.props.activeNamespaceName,
-              data: `${size.cols},${size.rows}`
-            })
+              data: `${size.cols},${size.rows}`,
+            }),
           );
         }}
         terminalOptions={{
           // convertEol: true,
           // fontSize: 12,
-          theme: { selection: "rgba(255, 255, 72, 0.5)" }
+          theme: { selection: "rgba(255, 255, 72, 0.5)" },
         }}
       />
     );
@@ -554,7 +555,8 @@ export class LogStream extends React.PureComponent<Props, State> {
       <BasePage
         secondHeaderLeft={<Namespaces />}
         secondHeaderRight={this.isLog ? "Log" : "Shell"}
-        leftDrawer={<ApplicationViewDrawer />}>
+        leftDrawer={<ApplicationViewDrawer />}
+      >
         <Paper elevation={2} classes={{ root: classes.paper }}>
           {isLoading || !application ? (
             <Loading />

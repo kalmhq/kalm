@@ -10,7 +10,7 @@ const mapStateToProps = (state: RootState) => {
   return {
     componentTemplates: componentTemplatesState.get("componentTemplates").toList(),
     isLoading: componentTemplatesState.get("isListLoading"),
-    isFirstLoaded: componentTemplatesState.get("isListFirstLoaded")
+    isFirstLoaded: componentTemplatesState.get("isListFirstLoaded"),
   };
 };
 

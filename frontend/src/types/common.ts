@@ -75,12 +75,14 @@ export interface InitControlledDialogAction {
     dialogID: string;
   };
 }
+
 export interface DestroyControlledDialogAction {
   type: typeof DESTROY_CONTROLLED_DIALOG;
   payload: {
     dialogID: string;
   };
 }
+
 export interface OpenControlledDialogAction {
   type: typeof OPEN_CONTROLLED_DIALOG;
   payload: {

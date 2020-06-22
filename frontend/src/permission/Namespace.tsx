@@ -10,7 +10,7 @@ import { BasePage } from "pages/BasePage";
 
 const mapStateToProps = (state: RootState, props: any) => {
   const applicationsRoot = state.get("applications");
-  const namespaces = applicationsRoot.get("applications").map(application => application.get("name"));
+  const namespaces = applicationsRoot.get("applications").map((application) => application.get("name"));
   const activeNamespace =
     props.match && props.match.params && props.match.params.applicationName
       ? props.match.params.applicationName
@@ -19,7 +19,7 @@ const mapStateToProps = (state: RootState, props: any) => {
   const isApplicationListFirstLoaded = applicationsRoot.get("isListFirstLoaded");
   const activeApplication = applicationsRoot
     .get("applications")
-    .find(application => application.get("name") === activeNamespace);
+    .find((application) => application.get("name") === activeNamespace);
   const isAdmin = state.get("auth").get("isAdmin");
 
   return {
@@ -38,12 +38,12 @@ const mapStateToProps = (state: RootState, props: any) => {
         return false;
       }
 
-      if (!activeNamespace || (!isAdmin && !activeApplication!.get("roles").find(x => x === role))) {
+      if (!activeNamespace || (!isAdmin && !activeApplication!.get("roles").find((x) => x === role))) {
         return false;
       }
 
       return true;
-    }
+    },
   };
 };
 
@@ -72,7 +72,7 @@ export const RequireRoleInNamespce = ({ requiredRole }: Options) => (WrappedComp
         return <Loading />;
       }
 
-      if (!activeApplication || (!isAdmin && !activeApplication.get("roles").find(x => x === requiredRole))) {
+      if (!activeApplication || (!isAdmin && !activeApplication.get("roles").find((x) => x === requiredRole))) {
         return <BasePage>Please create a application first</BasePage>;
       }
 
@@ -101,5 +101,5 @@ class NamespaceVisibleContainerRaw extends React.Component<
 }
 
 export const NamespaceVisibleContainer = connect(mapStateToProps, null, null, { forwardRef: true })(
-  NamespaceVisibleContainerRaw
+  NamespaceVisibleContainerRaw,
 );

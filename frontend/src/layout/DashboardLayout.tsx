@@ -61,7 +61,8 @@ class DashboardLayoutRaw extends React.PureComponent<Props> {
         <div
           className={clsx(classes.mainContent, {
             [classes.mainContentShift]: showTutorialDrawer,
-          })}>
+          })}
+        >
           {isShowTopProgress ? <LinearProgress className={classes.progress} /> : null}
 
           <AppBarComponent />

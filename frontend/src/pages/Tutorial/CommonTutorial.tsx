@@ -4,6 +4,7 @@ import {
   FormGroup,
   Link,
   Step,
+  StepConnector,
   StepContent,
   StepLabel,
   Stepper,
@@ -11,7 +12,6 @@ import {
   Typography,
   withStyles,
   WithStyles,
-  StepConnector,
 } from "@material-ui/core";
 import Driver from "driver.js";
 import React from "react";
@@ -63,10 +63,7 @@ const mapStateToProps = (state: RootState) => {
   return {
     currentStepIndex: tutorial.get("currentStepIndex"),
     tutorial: tutorial.get("tutorial")!,
-    pathname: state
-      .get("router")
-      .get("location")
-      .get("pathname") as string,
+    pathname: state.get("router").get("location").get("pathname") as string,
   };
 };
 
@@ -155,7 +152,8 @@ class CommonTutorialRaw extends React.PureComponent<Props, State> {
           activeStep={currentStepIndex}
           orientation="vertical"
           style={{ padding: 0 }}
-          connector={<StepConnector classes={{ lineVertical: classes.connectorLineVertical }} />}>
+          connector={<StepConnector classes={{ lineVertical: classes.connectorLineVertical }} />}
+        >
           {tutorial.steps.map((step, stepIndex) => (
             <Step key={step.name}>
               <StepLabel>{step.name}</StepLabel>

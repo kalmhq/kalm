@@ -1,12 +1,12 @@
 import { VariantType } from "notistack";
 import { SET_NOTIFICATION_MESSAGE } from "../types/common";
-import { ThunkResult, SomethingWrong } from "../types";
+import { SomethingWrong, ThunkResult } from "../types";
 
 export const setNotificationMessageAction = (message: string, variant: VariantType): ThunkResult<Promise<void>> => {
-  return async dispatch => {
+  return async (dispatch) => {
     dispatch({
       type: SET_NOTIFICATION_MESSAGE,
-      payload: { message, variant }
+      payload: { message, variant },
     });
   };
 };

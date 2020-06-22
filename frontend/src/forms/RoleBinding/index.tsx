@@ -22,7 +22,7 @@ const mapStateToProps = (state: RootState, { form }: OwnProps) => {
     namespaces: state
       .get("applications")
       .get("applications")
-      .map(application => application.get("name")),
+      .map((application) => application.get("name")),
     kind: selector(state, "kind"),
     name: selector(state, "name"),
   };
@@ -60,12 +60,13 @@ class RoleBindingFormRaw extends React.PureComponent<Props> {
             autoFocus
             component={RenderSelectField}
             validate={ValidatorRequired}
-            options={namespaces.map(namespace => {
+            options={namespaces.map((namespace) => {
               return {
                 value: namespace,
                 text: namespace,
               };
-            })}></Field>
+            })}
+          ></Field>
         </Grid>
         <Grid item md={6}>
           <Field
@@ -76,7 +77,8 @@ class RoleBindingFormRaw extends React.PureComponent<Props> {
               { value: "Group", text: "Group" },
               { value: "User", text: "User" },
               { value: "ServiceAccount", text: "ServiceAccount" },
-            ]}></Field>
+            ]}
+          ></Field>
         </Grid>
         <Grid item md={12}>
           <Field

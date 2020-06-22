@@ -1,13 +1,13 @@
 import React from "react";
 import {
-  withStyles,
-  createStyles,
+  Box,
   Button,
-  Theme,
   ButtonProps,
   CircularProgress,
+  createStyles,
+  Theme,
   WithStyles,
-  Box
+  withStyles,
 } from "@material-ui/core";
 import { primaryColor } from "../theme";
 
@@ -15,8 +15,8 @@ const customizedButtonStyle = (theme: Theme) => {
   return createStyles({
     root: {
       display: "flex",
-      alignItems: "center"
-    }
+      alignItems: "center",
+    },
     // text: {
     //   color: theme.palette.text.primary
     // },
@@ -62,7 +62,8 @@ export const ButtonGrey = (props: ButtonProps) => {
       variant="contained"
       size="small"
       style={{ paddingLeft: 20, paddingRight: 20, color: primaryColor }}
-      {...props}>
+      {...props}
+    >
       {props.children}
     </Button>
   );

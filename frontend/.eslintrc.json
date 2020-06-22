@@ -1,7 +1,9 @@
 {
-  "extends": "react-app",
+  "extends": ["react-app", "prettier"],
+  "plugins": ["prettier"],
   "rules": {
     "@typescript-eslint/no-unused-vars": "warn",
-    "no-loop-func": "off"
+    "no-loop-func": "off",
+    "prettier/prettier": "warn"
   }
 }

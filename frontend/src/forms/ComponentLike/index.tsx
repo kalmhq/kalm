@@ -90,7 +90,7 @@ const mapStateToProps = (state: RootState) => {
   const search = queryString.parse(window.location.search);
   const hash = window.location.hash;
   const anchor = hash.replace("#", "");
-  let currentTabIndex = tabs.map(t => t.replace(/\s/g, "")).indexOf(`${anchor}`);
+  let currentTabIndex = tabs.map((t) => t.replace(/\s/g, "")).indexOf(`${anchor}`);
   if (currentTabIndex < 0) {
     currentTabIndex = 0;
   }
@@ -175,6 +175,7 @@ interface RawProps {
   sharedEnv?: Immutable.List<SharedEnv>;
   application?: ApplicationDetails;
 }
+
 interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {
   // submitAppplicationErrors?: Immutable.Map<string, any>;
 }
@@ -466,6 +467,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       </>
     );
   }
+
   private getRestartStrategyHelper() {
     return (
       <>
@@ -487,7 +489,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
                   <a
                     target="_blank"
                     href="https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-update-deployment"
-                    rel="noopener noreferrer">
+                    rel="noopener noreferrer"
+                  >
                     Read More
                   </a>
                   .
@@ -505,7 +508,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
                   <a
                     target="_blank"
                     href="https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#recreate-deployment"
-                    rel="noopener noreferrer">
+                    rel="noopener noreferrer"
+                  >
                     Read More
                   </a>
                   .
@@ -529,7 +533,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             <a
               target="_blank"
               href="https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-update-deployment"
-              rel="noopener noreferrer">
+              rel="noopener noreferrer"
+            >
               Read More
             </a>
             .
@@ -552,7 +557,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
                 <a
                   target="_blank"
                   href="https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/#inheriting-dns-from-the-node"
-                  rel="noopener noreferrer">
+                  rel="noopener noreferrer"
+                >
                   related discussion
                 </a>{" "}
                 for more details.
@@ -569,7 +575,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
                 <a
                   target="_blank"
                   href="https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/#impacts-on-pods"
-                  rel="noopener noreferrer">
+                  rel="noopener noreferrer"
+                >
                   related discussion
                 </a>{" "}
                 for details on how DNS queries are handled in those cases.
@@ -604,7 +611,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             <a
               target="_blank"
               href="https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/#inheriting-dns-from-the-node"
-              rel="noopener noreferrer">
+              rel="noopener noreferrer"
+            >
               related discussion
             </a>{" "}
             for more details.
@@ -622,7 +630,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             <a
               target="_blank"
               href="https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/#impacts-on-pods"
-              rel="noopener noreferrer">
+              rel="noopener noreferrer"
+            >
               related discussion
             </a>{" "}
             for details on how DNS queries are handled in those cases.
@@ -719,7 +728,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
                   This filed is used to overwrite <strong>entrypoint</strong> and <strong>commands</strong> in image.
                   Leave it blank to use image default settings.
                 </span>
-              }>
+              }
+            >
               <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
             </Tooltip>
           </SectionTitle>
@@ -787,7 +797,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             <Tooltip
               title={
                 "Liveness probe is used to know if the component is running into an unexpected state and a restart is required."
-              }>
+              }
+            >
               <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
             </Tooltip>
           </SectionTitle>
@@ -1031,8 +1042,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           this.pushToTab(value);
           // this.setState({ currentTabIndex: value });
         }}
-        aria-label="component form tabs">
-        {this.tabs.map(tab => {
+        aria-label="component form tabs"
+      >
+        {this.tabs.map((tab) => {
           if (
             submitFailed &&
             ((tab === Configurations &&
@@ -1098,7 +1110,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             options={[
               { value: workloadTypeServer, text: "Server (continuous running)" },
               { value: workloadTypeCronjob, text: "Cronjob (periodic running)" },
-            ]}></Field>
+            ]}
+          ></Field>
         </Grid>
         <Grid item xs={6}>
           {this.renderReplicasOrSchedule()}
@@ -1118,7 +1131,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             variant="contained"
             color="primary"
             className={classes.deployBtn}
-            onClick={handleSubmit}>
+            onClick={handleSubmit}
+          >
             Deploy
           </CustomizedButton>
 
@@ -1163,10 +1177,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         {process.env.REACT_APP_DEBUG ? (
           <pre style={{ maxWidth: 1500, background: "#eee" }}>
             {JSON.stringify(
-              (this.props.fieldValues as any)
-                .delete("metrics")
-                .delete("pods")
-                .delete("services"),
+              (this.props.fieldValues as any).delete("metrics").delete("pods").delete("services"),
               undefined,
               2,
             )}

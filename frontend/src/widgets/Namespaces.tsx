@@ -92,7 +92,7 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
     const { classes, applications, active, dispatch, isListFirstLoading } = this.props;
     const { open } = this.state;
     const hasApplication = applications.count() > 0;
-    const activeNamespace = applications.find(application => application.get("name") === active);
+    const activeNamespace = applications.find((application) => application.get("name") === active);
 
     if (isListFirstLoading) {
       return (
@@ -111,7 +111,8 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
             aria-controls={open ? "menu-list-grow" : undefined}
             aria-haspopup="true"
             className={classes.namespaceButton}
-            onClick={this.handleToggle}>
+            onClick={this.handleToggle}
+          >
             <H4>
               {isListFirstLoading
                 ? "Loading..."
@@ -128,26 +129,30 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
             role={undefined}
             placement="bottom-start"
             transition
-            disablePortal>
+            disablePortal
+          >
             {({ TransitionProps, placement }) => (
               <Grow
                 {...TransitionProps}
-                style={{ transformOrigin: placement === "bottom" ? "center top" : "center bottom" }}>
+                style={{ transformOrigin: placement === "bottom" ? "center top" : "center bottom" }}
+              >
                 <Paper>
                   <ClickAwayListener onClickAway={this.handleClose}>
                     <MenuList
                       autoFocusItem={open}
                       id="menu-list-grow"
                       onKeyDown={this.handleListKeyDown}
-                      classes={{ root: classes.menuList }}>
+                      classes={{ root: classes.menuList }}
+                    >
                       {applications
-                        .map(application => (
+                        .map((application) => (
                           <MenuItem
                             onClick={() => {
                               dispatch(setCurrentNamespaceAction(application.get("name")));
                               this.handleClose();
                             }}
-                            key={application.get("name")}>
+                            key={application.get("name")}
+                          >
                             <H4>{application.get("name")}</H4>
                           </MenuItem>
                         ))
@@ -167,7 +172,8 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
             className={classes.namespaceButton}
             onClick={() => {
               dispatch(push(`/applications/new`));
-            }}>
+            }}
+          >
             <H4>Create Your First Application</H4>
           </Button>
         </div>

@@ -17,7 +17,7 @@ const initialState: State = Immutable.Map({
   isDisplayingHelpers: window.localStorage.getItem("isDisplayingHelpers") === "true",
   isOpenRootDrawer: window.localStorage.getItem("isOpenRootDrawer") === "true",
   isOpenComponentStatusDrawer: window.localStorage.getItem("isOpenComponentStatusDrawer") === "true",
-  isShowTopProgress: false
+  isShowTopProgress: false,
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {

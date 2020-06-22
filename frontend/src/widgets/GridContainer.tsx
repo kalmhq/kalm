@@ -1,11 +1,11 @@
 import React from "react";
-import { withStyles, createStyles, WithStyles } from "@material-ui/styles";
+import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 
 const styles = () =>
   createStyles({
     root: {
-      overflow: "hidden"
-    }
+      overflow: "hidden",
+    },
   });
 
 const raw = (props: React.Props<any> & WithStyles<typeof styles>) => {

@@ -12,7 +12,7 @@ import { newEmptyCertificateForm, selfManaged } from "../types/certificate";
 import { change } from "redux-form";
 import { getTestFormSyncErrors } from "../utils/testUtils";
 import { readFileSync } from "fs";
-import { mount, configure, shallow } from "enzyme";
+import { configure, mount } from "enzyme";
 import Adapter from "enzyme-adapter-react-16";
 
 configure({ adapter: new Adapter() });
@@ -27,12 +27,7 @@ beforeAll(() => {
 
 test("load certificate list", async () => {
   await store.dispatch(loadCertificates());
-  expect(
-    store
-      .getState()
-      .get("certificates")
-      .get("certificates"),
-  ).toEqual(Immutable.fromJS(certificateListData.data));
+  expect(store.getState().get("certificates").get("certificates")).toEqual(Immutable.fromJS(certificateListData.data));
 });
 
 test("add certificate", () => {
@@ -51,10 +46,7 @@ test("add certificate", () => {
   };
 
   // domains没有输入时，提交时validate未通过，onSubmit不会被执行
-  component
-    .find("input#certificate-name")
-    .getDOMNode()
-    .setAttribute("value", "123");
+  component.find("input#certificate-name").getDOMNode().setAttribute("value", "123");
   component.find("input#certificate-name").simulate("change");
   clickSubmitButton();
   expect(getTestFormSyncErrors(store, formID).domains).toBe(requiredError);

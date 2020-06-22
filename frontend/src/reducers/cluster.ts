@@ -3,7 +3,7 @@ import {
   ClusterInfo,
   LOAD_CLUSTER_INFO_FAILED,
   LOAD_CLUSTER_INFO_FULFILlED,
-  LOAD_CLUSTER_INFO_PENDING
+  LOAD_CLUSTER_INFO_PENDING,
 } from "types/cluster";
 import { LOGOUT } from "types/common";
 import { Actions } from "../types";
@@ -20,7 +20,7 @@ export type State = ImmutableMap<DependencyStateContent>;
 const initialState: State = Immutable.Map({
   info: Immutable.Map(),
   isListLoading: false,
-  isListFirstLoaded: false
+  isListFirstLoaded: false,
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {

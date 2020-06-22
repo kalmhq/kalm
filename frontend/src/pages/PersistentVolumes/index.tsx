@@ -4,7 +4,7 @@ import MaterialTable from "material-table";
 import React from "react";
 import { connect } from "react-redux";
 import { K8sApiPrefix } from "../../actions/kubernetesApi";
-import { loadPersistentVolumesAction, deletePersistentVolumeAction } from "../../actions/persistentVolume";
+import { deletePersistentVolumeAction, loadPersistentVolumesAction } from "../../actions/persistentVolume";
 import { RootState } from "../../reducers";
 import { TDispatchProp } from "../../types";
 import { PersistentVolumeContent } from "../../types/persistentVolume";
@@ -17,7 +17,7 @@ import { DeleteIcon } from "../../widgets/Icon";
 
 const mapStateToProps = (state: RootState) => {
   return {
-    persistentVolumes: state.get("persistentVolumes").get("persistentVolumes")
+    persistentVolumes: state.get("persistentVolumes").get("persistentVolumes"),
   };
 };
 
@@ -25,7 +25,7 @@ const styles = (theme: Theme) =>
   createStyles({
     root: {
       // padding: theme.spacing(3)
-    }
+    },
   });
 
 interface States {
@@ -48,21 +48,21 @@ export class VolumesRaw extends React.Component<Props, States> {
       loadPersistentVolumesError: false,
       loadingPersistentVolumes: true,
       isDeleteConfirmDialogOpen: false,
-      deletingPersistentVolumeName: undefined
+      deletingPersistentVolumeName: undefined,
     };
   }
 
   private showDeleteConfirmDialog = (deletingPersistentVolumeName: string) => {
     this.setState({
       isDeleteConfirmDialogOpen: true,
-      deletingPersistentVolumeName
+      deletingPersistentVolumeName,
     });
   };
 
   private closeDeleteConfirmDialog = () => {
     this.setState({
       isDeleteConfirmDialogOpen: false,
-      deletingPersistentVolumeName: undefined
+      deletingPersistentVolumeName: undefined,
     });
   };
 
@@ -95,14 +95,14 @@ export class VolumesRaw extends React.Component<Props, States> {
   componentDidMount() {
     this.props
       .dispatch(loadPersistentVolumesAction())
-      .catch(e => {
+      .catch((e) => {
         if (e.isAxiosError) {
           this.setState({ loadPersistentVolumesError: true });
         }
       })
       .finally(() => {
         this.setState({
-          loadingPersistentVolumes: false
+          loadingPersistentVolumes: false,
         });
       });
   }
@@ -119,7 +119,7 @@ export class VolumesRaw extends React.Component<Props, States> {
         componentNamespace: pv.get("componentNamespace"),
         componentName: pv.get("componentName"),
         phase: pv.get("phase"),
-        capacity: pv.get("capacity")
+        capacity: pv.get("capacity"),
       });
     });
 
@@ -135,7 +135,8 @@ export class VolumesRaw extends React.Component<Props, States> {
           style={{ color: primaryColor }}
           onClick={() => {
             this.showDeleteConfirmDialog(rowData.name);
-          }}>
+          }}
+        >
           <DeleteIcon />
         </IconButtonWithTooltip>
       </>
@@ -164,7 +165,7 @@ export class VolumesRaw extends React.Component<Props, States> {
             options={{
               padding: "dense",
               pageSize: 20,
-              paging: tableData.length > 20
+              paging: tableData.length > 20,
             }}
             columns={[
               { title: "Name", field: "name", sorting: false },
@@ -178,8 +179,8 @@ export class VolumesRaw extends React.Component<Props, States> {
                 field: "action",
                 sorting: false,
                 searchable: false,
-                render: this.renderActions
-              }
+                render: this.renderActions,
+              },
             ]}
             data={tableData}
             title=""

@@ -19,7 +19,7 @@ export const ValidatorAtLeastOneHttpRouteDestination = (
   value: Immutable.List<HttpRouteDestination>,
   _allValues?: any,
   _props?: any,
-  _name?: any
+  _name?: any,
 ) => {
   if (!value || value.size <= 0) {
     return "Please define at least one target.";
@@ -96,7 +96,7 @@ export const ValidatorOneof = (...options: (string | RegExp)[]) => {
       }
     }
 
-    return `Must be one of ${options.map(x => x.toString()).join(", ")}`;
+    return `Must be one of ${options.map((x) => x.toString()).join(", ")}`;
   };
 };
 
@@ -145,7 +145,7 @@ export const ValidatorSchedule = (value: string) => {
   if (
     !value ||
     !value.match(
-      /^(\*|((\*\/)?[1-5]?[0-9])) (\*|((\*\/)?[1-5]?[0-9])) (\*|((\*\/)?(1?[0-9]|2[0-3]))) (\*|((\*\/)?([1-9]|[12][0-9]|3[0-1]))) (\*|((\*\/)?([1-9]|1[0-2]))) (\*|((\*\/)?[0-6]))$/
+      /^(\*|((\*\/)?[1-5]?[0-9])) (\*|((\*\/)?[1-5]?[0-9])) (\*|((\*\/)?(1?[0-9]|2[0-3]))) (\*|((\*\/)?([1-9]|[12][0-9]|3[0-1]))) (\*|((\*\/)?([1-9]|1[0-2]))) (\*|((\*\/)?[0-6]))$/,
     )
   ) {
     return "Invalid Schedule Rule";
@@ -162,11 +162,11 @@ const validateHost = (value: string) => {
   }
 
   var regExpIp = new RegExp(
-    "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+    "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
   );
   var regResultIp = regExpIp.exec(value);
   var regExpHostname = new RegExp(
-    /^(\*\.)?(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/
+    /^(\*\.)?(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/,
   ); // RFC 1123 but allow "*." prefix
 
   var regResultHostname = regExpHostname.exec(value);
@@ -181,15 +181,15 @@ export const KValidatorHosts = (
   values: Immutable.List<string>,
   _allValues?: any,
   _props?: any,
-  _name?: any
+  _name?: any,
 ): (undefined | string)[] | undefined => {
   if (!values || values.size === 0) {
     return undefined;
   }
 
-  const errors = values.map(host => (host === "*" ? undefined : validateHost(host))).toArray();
+  const errors = values.map((host) => (host === "*" ? undefined : validateHost(host))).toArray();
 
-  return errors.filter(x => !!x).length > 0 ? errors : undefined;
+  return errors.filter((x) => !!x).length > 0 ? errors : undefined;
 };
 
 export const KValidatorInjectedFilePath = (value: string, _allValues?: any, _props?: any, _name?: any) => {
@@ -207,15 +207,15 @@ export const KValidatorPaths = (
   values: Immutable.List<string>,
   _allValues?: any,
   _props?: any,
-  _name?: any
+  _name?: any,
 ): (undefined | string)[] | undefined => {
   if (!values) {
     return undefined;
   }
 
-  const errors = values.map(x => (x.startsWith("/") ? undefined : 'path should start with a "/"')).toArray();
+  const errors = values.map((x) => (x.startsWith("/") ? undefined : 'path should start with a "/"')).toArray();
 
-  return errors.filter(x => !!x).length > 0 ? errors : undefined;
+  return errors.filter((x) => !!x).length > 0 ? errors : undefined;
 };
 
 export const ValidatorEnvName = (value: string) => {

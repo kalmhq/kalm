@@ -1,12 +1,11 @@
-import { createStyles, Theme, Grid, withStyles, WithStyles, Tabs } from "@material-ui/core";
+import { createStyles, Grid, Paper, Tab, Tabs, Theme, WithStyles, withStyles } from "@material-ui/core";
 import { withNamespace, withNamespaceProps } from "permission/Namespace";
 import React from "react";
 import { ThunkDispatch } from "redux-thunk";
 import { RootState } from "../../reducers";
 import { Actions } from "../../types";
-import { ApplicationDetails, PodStatus, ApplicationComponentDetails } from "../../types/application";
+import { ApplicationComponentDetails, ApplicationDetails, PodStatus } from "../../types/application";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "../../widgets/Badge";
-import { Paper, Tab } from "@material-ui/core";
 import { BigCPULineChart, BigMemoryLineChart } from "../../widgets/SmallLineChart";
 import Typography from "@material-ui/core/Typography";
 import { grey } from "@material-ui/core/colors";
@@ -15,44 +14,44 @@ import MaterialTable from "material-table";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      padding: theme.spacing(2)
+      padding: theme.spacing(2),
     },
     topStatus: {
       display: "flex",
-      alignItems: "center"
+      alignItems: "center",
     },
     paper: {
       boxShadow: "none",
-      marginTop: 12
+      marginTop: 12,
     },
     info: {
       fontSize: 18,
-      color: grey[600]
+      color: grey[600],
     },
     infoLabel: {
-      fontWeight: "bold"
+      fontWeight: "bold",
     },
     label: {
       minWidth: 290,
-      marginRight: 12
+      marginRight: 12,
     },
     tableList: {
-      marginTop: 12
+      marginTop: 12,
     },
     tableLabel: {
       fontSize: 18,
-      fontWeight: "bold"
+      fontWeight: "bold",
     },
     table: {
-      boxShadow: "none"
+      boxShadow: "none",
     },
     flexColumn: {
       display: "flex",
-      flexDirection: "column"
+      flexDirection: "column",
     },
     flexRow: {
-      display: "flex"
-    }
+      display: "flex",
+    },
   });
 
 interface Props extends WithStyles<typeof styles>, withNamespaceProps {
@@ -95,7 +94,7 @@ function TabPanel(props: TabPanelProps) {
 function a11yProps(index: any) {
   return {
     id: `vertical-tab-${index}`,
-    "aria-controls": `vertical-tabpanel-${index}`
+    "aria-controls": `vertical-tabpanel-${index}`,
   };
 }
 
@@ -103,7 +102,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      activeTab: 0
+      activeTab: 0,
     };
   }
 
@@ -111,7 +110,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     let isError = false;
     let isPending = false;
 
-    component.get("pods").forEach(pod => {
+    component.get("pods").forEach((pod) => {
       if (pod.get("isTerminating")) {
         isPending = true;
       } else {
@@ -168,10 +167,10 @@ class DetailsRaw extends React.PureComponent<Props, State> {
         title: "Name",
         field: "name",
         sorting: false,
-        render: this.renderName
+        render: this.renderName,
       },
       { title: "Pods Status", field: "status", sorting: false, render: this.renderStatus },
-      { title: "Restarts", name: "restarts", sorting: false, render: this.renderRestarts }
+      { title: "Restarts", name: "restarts", sorting: false, render: this.renderRestarts },
     ];
   }
 
@@ -203,7 +202,8 @@ class DetailsRaw extends React.PureComponent<Props, State> {
             value={activeTab}
             indicatorColor="primary"
             textColor="primary"
-            onChange={(_, index) => this.setState({ activeTab: index })}>
+            onChange={(_, index) => this.setState({ activeTab: index })}
+          >
             <Tab label="Overview" {...a11yProps(0)} />
             <Tab label="Details" {...a11yProps(1)} />
             <Tab label="Revision History" disabled {...a11yProps(2)} />
@@ -275,7 +275,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                 toolbar: false,
                 paging: false,
                 rowStyle: {
-                  verticalAlign: "baseline"
+                  verticalAlign: "baseline",
                 },
                 headerStyle: {
                   color: "black",
@@ -284,8 +284,8 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                   fontWeight: 400,
                   height: 20,
                   paddingTop: 0,
-                  paddingBottom: 0
-                }
+                  paddingBottom: 0,
+                },
               }}
               columns={this.getColumns()}
               data={this.getData()}

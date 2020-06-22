@@ -17,8 +17,8 @@ import { RouteComponentProps } from "react-router";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      margin: theme.spacing(2)
-    }
+      margin: theme.spacing(2),
+    },
   });
 
 const mapStateToProps = (state: RootState, ownProps: RouteComponentProps) => {
@@ -26,7 +26,7 @@ const mapStateToProps = (state: RootState, ownProps: RouteComponentProps) => {
   const activeNamespace = state.get("namespaces").get("active");
 
   return {
-    namespace: (query.namespace as string) || activeNamespace
+    namespace: (query.namespace as string) || activeNamespace,
   };
 };
 

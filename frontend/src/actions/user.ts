@@ -6,12 +6,12 @@ import {
   LOAD_ROLE_BINDINGS_FAILED,
   LOAD_ROLE_BINDINGS_FULFILLED,
   LOAD_ROLE_BINDINGS_PENDING,
-  RoleBindingsRequestBody
+  RoleBindingsRequestBody,
 } from "../types/user";
 import { createRoleBindings, deleteRoleBindings, loadRolebindings } from "./kubernetesApi";
 
 export const loadRoleBindingsAction = (): ThunkResult<Promise<void>> => {
-  return async dispatch => {
+  return async (dispatch) => {
     dispatch({ type: LOAD_ROLE_BINDINGS_PENDING });
 
     try {
@@ -20,8 +20,8 @@ export const loadRoleBindingsAction = (): ThunkResult<Promise<void>> => {
       dispatch({
         type: LOAD_ROLE_BINDINGS_FULFILLED,
         payload: {
-          roleBindings
-        }
+          roleBindings,
+        },
       });
     } catch (e) {
       dispatch({ type: LOAD_ROLE_BINDINGS_FAILED });
@@ -31,7 +31,7 @@ export const loadRoleBindingsAction = (): ThunkResult<Promise<void>> => {
 };
 
 export const createRoleBindingsAction = (roleBindingsBody: RoleBindingsRequestBody): ThunkResult<Promise<void>> => {
-  return async dispatch => {
+  return async (dispatch) => {
     dispatch({ type: CREATE_ROLE_BINDINGS_PENDING });
 
     try {
@@ -46,7 +46,7 @@ export const createRoleBindingsAction = (roleBindingsBody: RoleBindingsRequestBo
 };
 
 export const deleteRoleBindingsAction = (namespace: string, bindingName: string): ThunkResult<Promise<void>> => {
-  return async dispatch => {
+  return async (dispatch) => {
     dispatch({ type: CREATE_ROLE_BINDINGS_PENDING });
 
     try {

@@ -1,4 +1,4 @@
-import { OutlinedTextFieldProps, TextField, Button, makeStyles } from "@material-ui/core";
+import { Button, makeStyles, OutlinedTextFieldProps, TextField } from "@material-ui/core";
 import React from "react";
 import { WrappedFieldProps } from "redux-form";
 import { grey } from "@material-ui/core/colors";
@@ -13,34 +13,34 @@ export const Uploader = ({
     if (file) {
       const reader = new FileReader();
       reader.readAsText(file, "UTF-8");
-      reader.onload = function(evt) {
+      reader.onload = function (evt) {
         if (evt.target) {
           input.onChange(evt.target.result);
         }
       };
-      reader.onerror = function(evt) {
+      reader.onerror = function (evt) {
         input.onChange("error reading file");
       };
     }
   };
 
-  const classes = makeStyles(theme => ({
+  const classes = makeStyles((theme) => ({
     inputLabel: {
       display: "flex",
       justifyContent: "space-between",
       background: grey[100],
       alignItems: "center",
       padding: "0 12px",
-      fontWeight: 500
+      fontWeight: 500,
     },
     textfield: {
       "& > div": {
-        background: "#212121"
-      }
+        background: "#212121",
+      },
     },
     fileInput: {
-      color: "#fff"
-    }
+      color: "#fff",
+    },
   }))();
 
   return (
@@ -63,7 +63,7 @@ export const Uploader = ({
         {...textFieldProps}
         className={classes.textfield}
         inputProps={{
-          className: classes.fileInput
+          className: classes.fileInput,
         }}
         autoComplete="off"
         error={touched && invalid}

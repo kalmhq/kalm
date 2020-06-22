@@ -1,4 +1,4 @@
-import { Button, Grid, Icon, Box } from "@material-ui/core";
+import { Box, Button, Grid, Icon } from "@material-ui/core";
 import DeleteIcon from "@material-ui/icons/Delete";
 import Immutable from "immutable";
 import React from "react";
@@ -25,7 +25,7 @@ export class FieldArrayWrapper extends React.PureComponent<Props> {
       fields,
       getFieldComponents,
       onAdd,
-      meta: { error, submitFailed }
+      meta: { error, submitFailed },
     } = this.props;
 
     return (
@@ -44,7 +44,8 @@ export class FieldArrayWrapper extends React.PureComponent<Props> {
               color="primary"
               startIcon={<Icon>add</Icon>}
               size="small"
-              onClick={() => (onAdd ? onAdd() : fields.push(Immutable.Map({})))}>
+              onClick={() => (onAdd ? onAdd() : fields.push(Immutable.Map({})))}
+            >
               Add
             </Button>
             {submitFailed && error && <span>{error}</span>}
@@ -69,7 +70,8 @@ export class FieldArrayWrapper extends React.PureComponent<Props> {
                   tooltipPlacement="top"
                   tooltipTitle="Delete"
                   aria-label="delete"
-                  onClick={() => fields.remove(index)}>
+                  onClick={() => fields.remove(index)}
+                >
                   <DeleteIcon />
                 </IconButtonWithTooltip>
               </Grid>

@@ -7,7 +7,7 @@ import Immutable from "immutable";
 import { formatBytes } from "permission/utils";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
-import { arrayPush, change, WrappedFieldArrayProps, WrappedFieldProps, arrayRemove } from "redux-form";
+import { arrayPush, arrayRemove, change, WrappedFieldArrayProps, WrappedFieldProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
 import { ControlledDialog } from "widgets/ControlledDialog";
 import { PreInjectedFile } from "../../types/componentTemplate";
@@ -34,18 +34,19 @@ interface Props extends WrappedFieldArrayProps<PreInjectedFile>, FieldArrayCompo
 
 const updateContentDialogID = "update-content-dialog";
 const validateMountPath = [ValidatorRequired, KValidatorInjectedFilePath];
+
 class RenderPreInjectedFile extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
       editingFileIndex: -1,
-      fileContentValue: ""
+      fileContentValue: "",
     };
   }
 
   private privateOpenEditDialog = (file: PreInjectedFile, index: number) => {
     const {
-      dispatch
+      dispatch,
       // meta: { form }
     } = this.props;
     this.setState({ editingFileIndex: index, fileContentValue: file.get("content") });
@@ -56,7 +57,7 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
     const {
       dispatch,
       fields,
-      meta: { form }
+      meta: { form },
     } = this.props;
     const file = fields.get(this.state.editingFileIndex);
     return (
@@ -65,7 +66,7 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
         title="Edit file content"
         dialogProps={{
           fullWidth: true,
-          maxWidth: "sm"
+          maxWidth: "sm",
         }}
         actions={
           <>
@@ -75,31 +76,35 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
                   change(
                     form,
                     "preInjectedFiles[" + this.state.editingFileIndex + "]",
-                    file.set("content", this.state.fileContentValue)
-                  )
+                    file.set("content", this.state.fileContentValue),
+                  ),
                 );
                 dispatch(closeDialogAction(updateContentDialogID));
               }}
               color="default"
-              variant="contained">
+              variant="contained"
+            >
               OK
             </Button>
             <Button
               onClick={() => dispatch(closeDialogAction(updateContentDialogID))}
               color="default"
-              variant="contained">
+              variant="contained"
+            >
               Close
             </Button>
           </>
-        }>
+        }
+      >
         {file ? (
           <TextField
             multiline
-            onChange={event => this.setState({ fileContentValue: event.target.value })}
+            onChange={(event) => this.setState({ fileContentValue: event.target.value })}
             variant="outlined"
             fullWidth
             rows={20}
-            value={this.state.fileContentValue}></TextField>
+            value={this.state.fileContentValue}
+          ></TextField>
         ) : null}
       </ControlledDialog>
     );
@@ -108,7 +113,7 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
   private renderContent = ({
     meta: { touched, invalid, error },
     file,
-    index
+    index,
   }: WrappedFieldProps & { file: PreInjectedFile; index: number }) => {
     if (file.get("content") === "") {
       return (
@@ -117,7 +122,8 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
             variant={touched && invalid ? "outlined" : "text"}
             size="small"
             onClick={() => this.privateOpenEditDialog(file, index)}
-            color="inherit">
+            color="inherit"
+          >
             {touched && invalid ? "Content required" : "Add Content"}
           </Button>
         </Box>
@@ -131,7 +137,7 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
     const {
       meta: { form, error },
       fields,
-      dispatch
+      dispatch,
     } = this.props;
     return (
       <>
@@ -150,11 +156,12 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
                   Immutable.Map({
                     readonly: true,
                     content: "",
-                    mountPath: ""
-                  })
-                )
+                    mountPath: "",
+                  }),
+                ),
               )
-            }>
+            }
+          >
             Add
           </Button>
           {error ? (
@@ -194,14 +201,16 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
                   tooltipPlacement="top"
                   tooltipTitle="Edit"
                   aria-label="edit"
-                  onClick={() => this.privateOpenEditDialog(injectedFile, index)}>
+                  onClick={() => this.privateOpenEditDialog(injectedFile, index)}
+                >
                   <EditIcon />
                 </IconButtonWithTooltip>
                 <IconButtonWithTooltip
                   tooltipPlacement="top"
                   tooltipTitle="Delete"
                   aria-label="delete"
-                  onClick={() => dispatch(arrayRemove(form, "preInjectedFiles", index))}>
+                  onClick={() => dispatch(arrayRemove(form, "preInjectedFiles", index))}
+                >
                   <DeleteIcon />
                 </IconButtonWithTooltip>
               </Grid>
@@ -217,7 +226,7 @@ const ValidatorInjectedFiles = (
   values: Immutable.List<PreInjectedFile>,
   _allValues?: any,
   _props?: any,
-  _name?: any
+  _name?: any,
 ) => {
   if (!values) return undefined;
   const mountPaths = new Set<string>();

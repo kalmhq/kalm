@@ -13,7 +13,7 @@ import { BasePage } from "../BasePage";
 
 const styles = (theme: Theme) =>
   createStyles({
-    root: {}
+    root: {},
   });
 
 interface Props extends WithStyles<typeof styles> {

@@ -12,8 +12,8 @@ import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { loadApplicationsAction } from "../actions/application";
-import { setSettingsAction, blinkTopProgressAction } from "../actions/settings";
-import { openTutorialDrawerAction, closeTutorialDrawerAction } from "actions/tutorial";
+import { blinkTopProgressAction, setSettingsAction } from "../actions/settings";
+import { closeTutorialDrawerAction, openTutorialDrawerAction } from "actions/tutorial";
 
 export const APP_BAR_HEIGHT = 48;
 
@@ -116,7 +116,8 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
           onClick={(event: React.MouseEvent<HTMLElement>) => {
             this.setState({ authMenuAnchorElement: event.currentTarget });
           }}
-          color="inherit">
+          color="inherit"
+        >
           <AccountCircle />
         </IconButton>
         <Menu
@@ -134,13 +135,15 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
           open={Boolean(authMenuAnchorElement)}
           onClose={() => {
             this.setState({ authMenuAnchorElement: null });
-          }}>
+          }}
+        >
           <MenuItem disabled>Auth as {entity}</MenuItem>
           <Divider />
           <MenuItem
             onClick={() => {
               this.props.dispatch(logoutAction());
-            }}>
+            }}
+          >
             Logout
           </MenuItem>
         </Menu>
@@ -157,7 +160,8 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
         onClick={(event: React.MouseEvent<HTMLElement>) => {
           tutorialDrawerOpen ? dispatch(closeTutorialDrawerAction()) : dispatch(openTutorialDrawerAction());
         }}
-        color="inherit">
+        color="inherit"
+      >
         <Info />
       </IconButton>
     );

@@ -34,7 +34,7 @@ class ComponentTemplateEditRaw extends React.PureComponent<Props> {
   private getComponentTemplate() {
     const { componentTemplates, match } = this.props;
     const { componentTemplateName } = match!.params;
-    return componentTemplates.find(x => x.get("name") === componentTemplateName)!;
+    return componentTemplates.find((x) => x.get("name") === componentTemplateName)!;
   }
 
   private renderFormContent() {

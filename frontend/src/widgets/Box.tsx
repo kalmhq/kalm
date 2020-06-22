@@ -1,14 +1,14 @@
 import React from "react";
-import { withStyles, createStyles, Box, Theme, BoxProps, WithStyles } from "@material-ui/core";
+import { Box, BoxProps, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import clsx from "clsx";
 
 export const FlexRowItemCenterBox = withStyles((theme: Theme) =>
   createStyles({
     root: {
       display: "flex",
-      alignItems: "center"
-    }
-  })
+      alignItems: "center",
+    },
+  }),
 )(Box);
 
 const rowItemBoxStyle = (theme: Theme) => {
@@ -19,12 +19,12 @@ const rowItemBoxStyle = (theme: Theme) => {
       paddingBottom: theme.spacing(1),
       minWidth: 512,
       maxWidth: 512,
-      justifyContent: "space-between"
+      justifyContent: "space-between",
     },
     long: {
       maxWidth: 900,
-      width: 900
-    }
+      width: 900,
+    },
   });
 };
 

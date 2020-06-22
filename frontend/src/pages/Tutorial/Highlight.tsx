@@ -18,7 +18,7 @@ const mapStateToProps = (state: RootState, { highlight, highlightIndex, stepInde
   if (!latestHighlight) {
     notTriggered = true;
   } else {
-    const [prevStepIndex, prevHighlightIndex] = latestHighlight.split("-").map(x => parseInt(x, 10));
+    const [prevStepIndex, prevHighlightIndex] = latestHighlight.split("-").map((x) => parseInt(x, 10));
     notTriggered = prevStepIndex < stepIndex || (prevStepIndex === stepIndex && prevHighlightIndex < highlightIndex);
   }
 

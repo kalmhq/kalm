@@ -3,7 +3,7 @@ import {
   deleteConfigAction,
   duplicateConfigAction,
   loadConfigsAction,
-  setCurrentConfigIdChainAction
+  setCurrentConfigIdChainAction,
 } from "actions/config";
 import { setErrorNotificationAction } from "actions/notification";
 import { withNamespace, withNamespaceProps } from "permission/Namespace";
@@ -28,7 +28,7 @@ import {
   DeleteIcon,
   DeleteWhiteIcon,
   EditWhiteIcon,
-  UploadIcon
+  UploadIcon,
 } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { NormalInfoPaper } from "widgets/Paper";
@@ -39,32 +39,32 @@ import { BasePage } from "../BasePage";
 const styles = (theme: Theme) =>
   createStyles({
     fileIcon: {
-      marginRight: "15px"
+      marginRight: "15px",
     },
     fileName: {
-      verticalAlign: "super"
+      verticalAlign: "super",
     },
     root: {
       display: "flex",
-      height: "100%"
+      height: "100%",
     },
     leftTree: {
       width: "330px",
       minWidth: "330px",
       padding: "0",
-      backgroundColor: "#252526"
+      backgroundColor: "#252526",
     },
     fileDetail: {
       minHeight: "800px",
       padding: "0",
       backgroundColor: "#272822",
       flexGrow: 1,
-      width: "200px"
+      width: "200px",
     },
     breadcrumbsAndAction: {
       display: "flex",
       alignItems: "center",
-      justifyContent: "space-between"
+      justifyContent: "space-between",
     },
     noSelectedFile: {
       width: "100%",
@@ -72,20 +72,20 @@ const styles = (theme: Theme) =>
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      color: "white"
+      color: "white",
     },
     fileViewer: {
       minWidth: "200px",
       height: "85vh",
-      overflow: "auto"
+      overflow: "auto",
     },
     fileTreeAction: {
       display: "flex",
       justifyContent: "flex-end",
       borderRadius: "0px",
       background: "#383838",
-      padding: 0
-    }
+      padding: 0,
+    },
   });
 
 const mapStateToProps = (state: RootState, ownProps: any) => {
@@ -93,7 +93,7 @@ const mapStateToProps = (state: RootState, ownProps: any) => {
     currentConfig: getCurrentConfig(),
     rootConfig: state.get("configs").get("rootConfig"),
     currentConfigIdChain: state.get("configs").get("currentConfigIdChain"),
-    currentNamespace: state.get("namespaces").get("active")
+    currentNamespace: state.get("namespaces").get("active"),
   };
 };
 
@@ -118,7 +118,7 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
     newConfigType: "file",
     showConfigEditDialog: false,
     showConfigDeleteDialog: false,
-    showConfigUploadDialog: false
+    showConfigUploadDialog: false,
   };
 
   constructor(props: Props) {
@@ -142,13 +142,13 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
 
   private showDeleteConfirmDialog = () => {
     this.setState({
-      showConfigDeleteDialog: true
+      showConfigDeleteDialog: true,
     });
   };
 
   private closeDeleteConfirmDialog = () => {
     this.setState({
-      showConfigDeleteDialog: false
+      showConfigDeleteDialog: false,
     });
   };
 
@@ -177,13 +177,13 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
 
   private showUploadConfirmDialog = () => {
     this.setState({
-      showConfigUploadDialog: true
+      showConfigUploadDialog: true,
     });
   };
 
   private closeUploadConfirmDialog = () => {
     this.setState({
-      showConfigUploadDialog: false
+      showConfigUploadDialog: false,
     });
   };
 
@@ -199,7 +199,7 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
   public handleAdd = (configType: ConfigNodeType) => {
     this.setState({
       showConfigNewDialog: true,
-      newConfigType: configType
+      newConfigType: configType,
     });
   };
 
@@ -235,7 +235,7 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
         links.push(
           <Link key={configId} color="inherit" onClick={() => console.log("link", configId)}>
             {""}
-          </Link>
+          </Link>,
         );
         return;
       }
@@ -243,12 +243,13 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
       links.push(
         <Link key={configId} color="inherit" onClick={() => console.log("link", configId)}>
           {tmpConfig.get("name")}
-        </Link>
+        </Link>,
       );
     });
 
     return <Breadcrumbs aria-label="breadcrumb">{links}</Breadcrumbs>;
   }
+
   public renderFileTreeActions() {
     const { classes } = this.props;
 
@@ -258,7 +259,8 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
           tooltipPlacement="top"
           tooltipTitle="Add file"
           aria-label="add-file"
-          onClick={() => this.handleAdd("file")}>
+          onClick={() => this.handleAdd("file")}
+        >
           <AddFileIcon />
         </IconButtonWithTooltip>
 
@@ -266,7 +268,8 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
           tooltipPlacement="top"
           tooltipTitle="Add folder"
           aria-label="add-folder"
-          onClick={() => this.handleAdd("folder")}>
+          onClick={() => this.handleAdd("folder")}
+        >
           <AddFolderIcon />
         </IconButtonWithTooltip>
 
@@ -274,12 +277,14 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
           tooltipPlacement="top"
           tooltipTitle="Upload configs"
           aria-label="upload-configs"
-          onClick={() => this.handleUpload()}>
+          onClick={() => this.handleUpload()}
+        >
           <UploadIcon />
         </IconButtonWithTooltip>
       </NormalInfoPaper>
     );
   }
+
   public renderActions() {
     const { currentConfig, hasRole } = this.props;
     if (!hasRole("writer")) {
@@ -292,7 +297,8 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
             tooltipPlacement="top"
             tooltipTitle="Edit"
             aria-label="edit"
-            onClick={() => this.handleEdit()}>
+            onClick={() => this.handleEdit()}
+          >
             <EditWhiteIcon />
           </IconButtonWithTooltip>
 
@@ -300,7 +306,8 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
             tooltipPlacement="top"
             tooltipTitle="Duplicate"
             aria-label="duplicate"
-            onClick={() => this.handleDuplicate()}>
+            onClick={() => this.handleDuplicate()}
+          >
             <CopyIcon />
           </IconButtonWithTooltip>
 
@@ -308,7 +315,8 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
             tooltipPlacement="top"
             tooltipTitle="Delete"
             aria-label="delete"
-            onClick={() => this.handleDelete()}>
+            onClick={() => this.handleDelete()}
+          >
             <DeleteWhiteIcon />
           </IconButtonWithTooltip>
         </div>
@@ -321,7 +329,8 @@ class ConfigListRaw extends React.PureComponent<Props, State> {
               tooltipPlacement="top"
               tooltipTitle="Delete"
               aria-label="delete"
-              onClick={() => this.handleDelete()}>
+              onClick={() => this.handleDelete()}
+            >
               <DeleteIcon />
             </IconButtonWithTooltip>
           )}

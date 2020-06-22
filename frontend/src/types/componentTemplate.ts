@@ -2,6 +2,7 @@ import Immutable from "immutable";
 import { ImmutableMap } from "../typings";
 import { Status } from "./common";
 import { PluginType } from "./plugin";
+
 export const CREATE_COMPONENT_TEMPLATES = "CREATE_COMPONENT_TEMPLATES";
 export const UPDATE_COMPONENT_TEMPLATES = "UPDATE_COMPONENT_TEMPLATES";
 export const DELETE_COMPONENT_TEMPLATES = "DELETE_COMPONENT_TEMPLATES";
@@ -20,7 +21,7 @@ export const newEmptyComponentLike = (): ComponentLike => {
     image: "",
     replicas: 1,
     workloadType: "server",
-    dnsPolicy: "ClusterFirst"
+    dnsPolicy: "ClusterFirst",
   });
 };
 
@@ -36,7 +37,7 @@ export const newEmptyComponentLikeEnv = (): ComponentLikeEnv => {
   return Immutable.Map({
     name: "",
     type: "static",
-    value: ""
+    value: "",
   });
 };
 
@@ -45,7 +46,7 @@ export const newEmptyComponentLikePort = (): ComponentLikePort => {
     name: "",
     protocol: "TCP",
     containerPort: 3000,
-    servicePort: 80
+    servicePort: 80,
   });
 };
 
@@ -187,6 +188,7 @@ export interface DeleteComponentTemplateAction {
     componentTemplateName: string;
   };
 }
+
 export interface DuplicateComponentTemplateAction {
   type: typeof DUPLICATE_COMPONENT_TEMPLATES;
   payload: {

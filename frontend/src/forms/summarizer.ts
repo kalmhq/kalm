@@ -1,4 +1,4 @@
-import { Map, List } from "immutable";
+import { List, Map } from "immutable";
 
 export const extractSummaryInfoFromMap = (fieldValue: Map<string, any>): any => {
   return fieldValue.map((value: any, key: string) => {
