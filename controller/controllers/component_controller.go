@@ -1520,10 +1520,13 @@ func (r *ComponentReconcilerTask) preparePreInjectedFiles(
 
 		baseName := fmt.Sprintf("%s.%x", path.Base(file.MountPath), md5.Sum([]byte(content)))
 
-		injectCommands = append(
-			injectCommands,
-			fmt.Sprintf("echo \"%s\" | base64 -d > /files/%s && echo \"File %s created.\"", content, baseName, baseName),
-		)
+		cmd := fmt.Sprintf("echo \"%s\" | base64 -d > /files/%s && echo \"File %s created.\"", content, baseName, baseName)
+
+		if file.Runnable {
+			cmd += fmt.Sprintf(" && chmod +x /files/%s", baseName)
+		}
+
+		injectCommands = append(injectCommands, cmd)
 
 		*volumeMounts = append(*volumeMounts, coreV1.VolumeMount{
 			Name:      "pre-injected-files-volume",
