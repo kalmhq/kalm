@@ -11,7 +11,7 @@ import {
   Theme,
   Typography,
   withStyles,
-  WithStyles,
+  WithStyles
 } from "@material-ui/core";
 import Driver from "driver.js";
 import React from "react";
@@ -146,7 +146,7 @@ class CommonTutorialRaw extends React.PureComponent<Props, State> {
     return (
       <>
         <Box mb={2}>
-          <Typography variant="h2">{tutorial.id}</Typography>
+          <Typography variant="h2">{tutorial.title}</Typography>
         </Box>
         <Stepper
           activeStep={currentStepIndex}

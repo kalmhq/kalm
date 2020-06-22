@@ -1,0 +1,42 @@
+import { BasicApplicationCreationTutorialFactory } from "./basicApplicationCreation";
+
+export const tutorialConfigs = [
+  {
+    name: "Basic",
+    items: [
+      {
+        name: "Deployment an application",
+        factory: BasicApplicationCreationTutorialFactory,
+      },
+      {
+        name: "Access your application",
+        factory: BasicApplicationCreationTutorialFactory,
+      },
+    ],
+  },
+  {
+    name: "Advanced",
+    items: [
+      {
+        name: "Configure https certs",
+        factory: BasicApplicationCreationTutorialFactory,
+      },
+      {
+        name: "Connect to private image registry",
+        factory: BasicApplicationCreationTutorialFactory,
+      },
+      {
+        name: "Use disks",
+        factory: BasicApplicationCreationTutorialFactory,
+      },
+      {
+        name: "Integration with CI pipeline",
+        factory: BasicApplicationCreationTutorialFactory,
+      },
+      {
+        name: "I'm an kubernetes expert",
+        factory: BasicApplicationCreationTutorialFactory,
+      },
+    ],
+  },
+];

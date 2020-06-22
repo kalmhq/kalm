@@ -1,7 +1,7 @@
 import { Box, LinearProgress } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import clsx from "clsx";
-import { Tutorial, tutorialDrawerWidth } from "pages/Tutorial";
+import { TutorialDrawer, tutorialDrawerWidth } from "pages/Tutorial";
 import { RequireAuthorizated } from "permission/Authorization";
 import React from "react";
 import { connect } from "react-redux";
@@ -73,7 +73,7 @@ class DashboardLayoutRaw extends React.PureComponent<Props> {
           </Box>
         </div>
 
-        <Tutorial />
+        <TutorialDrawer />
       </div>
     );
   }

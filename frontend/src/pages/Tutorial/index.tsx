@@ -8,22 +8,42 @@ import {
   Theme,
   Typography,
   withStyles,
-  WithStyles
+  WithStyles,
 } from "@material-ui/core";
 import CloseIcon from "@material-ui/icons/Close";
 import KeyboardBackspaceIcon from "@material-ui/icons/KeyboardBackspace";
-import { loadApplicationsAction } from "actions/application";
 import { closeTutorialDrawerAction, resetTutorialAction, setTutorialAction } from "actions/tutorial";
 import clsx from "clsx";
-import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
+import { tutorialConfigs } from "tutorials";
 import { TDispatchProp } from "types";
-import { ApplicationDetails } from "types/application";
+import { Tutorial, TutorialFactory } from "types/tutorial";
 import { Body } from "widgets/Label";
 import { CommonTutorial } from "./CommonTutorial";
-import { BasicApplicationCreationTutorialFactory } from "tutorials/basicApplicationCreation";
+
+class TutorialItem extends React.PureComponent<{
+  title: string;
+  factory: TutorialFactory;
+  onClick: any;
+}> {
+  private handleClick = () => {
+    const tutorial = this.props.factory(this.props.title);
+    this.props.onClick(tutorial);
+  };
+
+  public render() {
+    return (
+      <>
+        <Link component="button" variant="body2" onClick={this.handleClick}>
+          {this.props.title}
+        </Link>
+        <br />
+      </>
+    );
+  }
+}
 
 export const tutorialDrawerWidth: number = 400;
 
@@ -60,28 +80,8 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
 interface State {}
 
 class TutorialRaw extends React.PureComponent<Props, State> {
-  private handleChooseCreateApplicationTutorial = async () => {
-    const { dispatch, applications } = this.props;
-
-    let apps: Immutable.List<ApplicationDetails>;
-
-    if (applications.get("isListFirstLoaded")) {
-      apps = applications.get("applications");
-    } else {
-      apps = await dispatch(loadApplicationsAction());
-    }
-
-    const sampleNameTemplate = "hello-world-";
-    let i = 0;
-    let sampleName = "hello-world";
-
-    // eslint-disable-next-line
-    while (apps.find((app) => app.get("name") === sampleName)) {
-      i += 1;
-      sampleName = sampleNameTemplate + i;
-    }
-    // sampleName = "hello-world";
-    dispatch(setTutorialAction("CreateApplicationTutorial", BasicApplicationCreationTutorialFactory(sampleName)));
+  private handleChoice = (tutorial: Tutorial) => {
+    this.props.dispatch(setTutorialAction("CreateApplicationTutorial", tutorial));
   };
 
   private renderOptions = () => {
@@ -91,80 +91,20 @@ class TutorialRaw extends React.PureComponent<Props, State> {
           <Typography variant="h3">Tutorials</Typography>
           <Body>Here are some live tutorials that walk you throught some common tasks step by step. </Body>
         </Box>
-        <Box mb={2}>
-          <Typography variant="h5">Basic</Typography>
-        </Box>
-        <Box mb={2}>
-          <Link component="button" variant="body2" onClick={this.handleChooseCreateApplicationTutorial}>
-            Deploy an application.
-          </Link>
-          <br />
-          <Link
-            component="button"
-            variant="body2"
-            onClick={() => {
-              console.info("I'm a button.");
-            }}
-          >
-            Access an application from public internet. (Todo)
-          </Link>
-          <br />
-        </Box>
-        <Box mb={1}>
-          <Typography variant="h5">Advanced</Typography>
-        </Box>
-        <Box mb={2}>
-          <Link
-            component="button"
-            variant="body2"
-            onClick={() => {
-              console.info("I'm a button.");
-            }}
-          >
-            Configure https certifate. (Todo)
-          </Link>
-          <br />
-          <Link
-            component="button"
-            variant="body2"
-            onClick={() => {
-              console.info("I'm a button.");
-            }}
-          >
-            Connect to private docker image registry. (Todo)
-          </Link>
-          <br />
-          <Link
-            component="button"
-            variant="body2"
-            onClick={() => {
-              console.info("I'm a button.");
-            }}
-          >
-            Use disks in your applications. (Todo)
-          </Link>
-          <br />
-          <Link
-            component="button"
-            variant="body2"
-            onClick={() => {
-              console.info("I'm a button.");
-            }}
-          >
-            Integration with your CI pipeline. (Todo)
-          </Link>
-          <br />
-          <Link
-            component="button"
-            variant="body2"
-            onClick={() => {
-              console.info("I'm a button.");
-            }}
-          >
-            I'm an Kubernetes expert. (Todo)
-          </Link>
-          <br />
-        </Box>
+        {tutorialConfigs.map((group) => (
+          <React.Fragment key={group.name}>
+            <Box mb={2}>
+              <Typography variant="h5">{group.name}</Typography>
+            </Box>
+            <Box mb={2}>
+              {group.items.map((item) => {
+                return (
+                  <TutorialItem title={item.name} factory={item.factory} onClick={this.handleChoice} key={item.name} />
+                );
+              })}
+            </Box>
+          </React.Fragment>
+        ))}
 
         <Box mt={2}>
           <Link
@@ -210,11 +150,11 @@ class TutorialRaw extends React.PureComponent<Props, State> {
         }}
       >
         <Box textAlign="right">
-          {tutorialID ? (
+          {tutorialID && (
             <IconButton aria-label="close" onClick={this.handleBack}>
               <KeyboardBackspaceIcon />
             </IconButton>
-          ) : null}
+          )}
           <IconButton aria-label="close" onClick={this.handlerClose}>
             <CloseIcon />
           </IconButton>
@@ -231,4 +171,4 @@ class TutorialRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const Tutorial = withStyles(styles)(connect(mapStateToProps)(TutorialRaw));
+export const TutorialDrawer = withStyles(styles)(connect(mapStateToProps)(TutorialRaw));

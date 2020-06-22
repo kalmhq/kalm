@@ -11,6 +11,18 @@ export const RESET_TUTORIAL_ACTION = "RESET_TUTORIAL_ACTION";
 export const SET_TUTORIAL_STEP_COMPLETION_STATUS = "SET_TUTORIAL_STEP_COMPLETION_STATUS";
 export const SET_TUTORIAL_HIGHLIGHT_STATUS = "SET_TUTORIAL_HIGHLIGHT_STATUS";
 
+export type TutorialFactory = (title: string) => Tutorial;
+
+interface TutorialConfigItem {
+  name: string;
+  factory: TutorialFactory;
+}
+
+export interface TutorialConfig {
+  name: string;
+  items: TutorialConfigItem[];
+}
+
 export interface TutorialSubStep {
   title: React.ReactNode;
   highlight?: {
@@ -51,7 +63,7 @@ export interface TutorialStep {
 }
 
 export interface Tutorial {
-  id: string;
+  title: string;
   steps: TutorialStep[];
   nextStep?: {
     text: string;
