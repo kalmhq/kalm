@@ -1,5 +1,7 @@
 import Immutable from "immutable";
 import { State as TutorialState } from "../reducers/tutorial";
+import { RootState } from "reducers";
+import { formValueSelector } from "redux-form/immutable";
 
 export const formValidateOrNotBlockByTutorial = (
   values: Immutable.Map<string, any>,
@@ -57,3 +59,73 @@ const setValueInPath = (obj: { [key: string]: any }, attrPaths: string[], value:
     }
   }
 };
+
+export const requireSubStepNotCompleted = (state: RootState, ...subStepIndexes: number[]) => {
+  const tutorialState = state.get("tutorial");
+
+  const tutorial = tutorialState.get("tutorial");
+  if (!tutorial) return false;
+
+  const currentStep = tutorial.steps[tutorialState.get("currentStepIndex")];
+  if (!currentStep) return false;
+
+  for (let i = 0; i < subStepIndexes.length; i++) {
+    if (tutorialState.get("tutorialStepStatus").get(`${tutorialState.get("currentStepIndex")}-${subStepIndexes[i]}`)) {
+      return false;
+    }
+
+    const subStep = currentStep.subSteps[subStepIndexes[i]];
+    if (subStep && subStep.shouldCompleteByState && subStep.shouldCompleteByState(state)) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
+export const requireSubStepCompleted = (state: RootState, ...subStepIndexes: number[]) => {
+  const tutorialState = state.get("tutorial");
+
+  const tutorial = tutorialState.get("tutorial");
+  if (!tutorial) return false;
+
+  const currentStep = tutorial.steps[tutorialState.get("currentStepIndex")];
+  if (!currentStep) return false;
+
+  for (let i = 0; i < subStepIndexes.length; i++) {
+    if (!tutorialState.get("tutorialStepStatus").get(`${tutorialState.get("currentStepIndex")}-${subStepIndexes[i]}`)) {
+      return false;
+    }
+
+    const subStep = currentStep.subSteps[subStepIndexes[i]];
+    if (subStep && subStep.shouldCompleteByState && !subStep.shouldCompleteByState(state)) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
+export const getFormValue = (rootState: RootState, form: string, field: string) => {
+  const selector = formValueSelector(form);
+  return selector(rootState, field);
+};
+
+export const isFormFieldValueEqualTo = (rootState: RootState, form: string, field: string, value: string) => {
+  return getFormValue(rootState, form, field) === value;
+};
+
+export const isApplicationFormFieldValueEqualTo = (rootState: RootState, field: string, value: string) => {
+  return isFormFieldValueEqualTo(rootState, "application", field, value);
+};
+
+export const isComponentFormFieldValueEqualTo = (rootState: RootState, field: string, value: string) => {
+  return isFormFieldValueEqualTo(rootState, "componentLike", field, value);
+};
+
+export const isUnderPath = (state: RootState, ...paths: string[]) => {
+  const pathname = state.get("router").get("location").get("pathname") as string;
+
+  return paths.includes(pathname);
+};
+

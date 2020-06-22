@@ -1,4 +1,5 @@
 import { BasicApplicationCreationTutorialFactory } from "./basicApplicationCreation";
+import { AccessYourApplicationTutorialFactory } from "tutorials/accessYourApplication";
 
 export const tutorialConfigs = [
   {
@@ -10,7 +11,7 @@ export const tutorialConfigs = [
       },
       {
         name: "Access your application",
-        factory: BasicApplicationCreationTutorialFactory,
+        factory: AccessYourApplicationTutorialFactory,
       },
     ],
   },

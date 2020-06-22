@@ -5,78 +5,16 @@ import Immutable from "immutable";
 import { ComponentLikePort } from "../types/componentTemplate";
 import React from "react";
 import { Tutorial, TutorialFactory } from "../types/tutorial";
-import { formValueSelector } from "redux-form/immutable";
 import { ApplicationDetails } from "types/application";
 import { store } from "store";
-
-export const requireSubStepNotCompleted = (state: RootState, ...subStepIndexes: number[]) => {
-  const tutorialState = state.get("tutorial");
-
-  const tutorial = tutorialState.get("tutorial");
-  if (!tutorial) return false;
-
-  const currentStep = tutorial.steps[tutorialState.get("currentStepIndex")];
-  if (!currentStep) return false;
-
-  for (let i = 0; i < subStepIndexes.length; i++) {
-    if (tutorialState.get("tutorialStepStatus").get(`${tutorialState.get("currentStepIndex")}-${subStepIndexes[i]}`)) {
-      return false;
-    }
-
-    const subStep = currentStep.subSteps[subStepIndexes[i]];
-    if (subStep && subStep.shouldCompleteByState && subStep.shouldCompleteByState(state)) {
-      return false;
-    }
-  }
-
-  return true;
-};
-
-export const requireSubStepCompleted = (state: RootState, ...subStepIndexes: number[]) => {
-  const tutorialState = state.get("tutorial");
-
-  const tutorial = tutorialState.get("tutorial");
-  if (!tutorial) return false;
-
-  const currentStep = tutorial.steps[tutorialState.get("currentStepIndex")];
-  if (!currentStep) return false;
-
-  for (let i = 0; i < subStepIndexes.length; i++) {
-    if (!tutorialState.get("tutorialStepStatus").get(`${tutorialState.get("currentStepIndex")}-${subStepIndexes[i]}`)) {
-      return false;
-    }
-
-    const subStep = currentStep.subSteps[subStepIndexes[i]];
-    if (subStep && subStep.shouldCompleteByState && !subStep.shouldCompleteByState(state)) {
-      return false;
-    }
-  }
-
-  return true;
-};
-
-const getFormValue = (rootState: RootState, form: string, field: string) => {
-  const selector = formValueSelector(form);
-  return selector(rootState, field);
-};
-
-const isFormFieldValueEqualTo = (rootState: RootState, form: string, field: string, value: string) => {
-  return getFormValue(rootState, form, field) === value;
-};
-
-const isApplicationFormFieldValueEqualTo = (rootState: RootState, field: string, value: string) => {
-  return isFormFieldValueEqualTo(rootState, "application", field, value);
-};
-
-const isComponentFormFieldValueEqualTo = (rootState: RootState, field: string, value: string) => {
-  return isFormFieldValueEqualTo(rootState, "componentLike", field, value);
-};
-
-const isUnderPath = (state: RootState, ...paths: string[]) => {
-  const pathname = state.get("router").get("location").get("pathname") as string;
-
-  return paths.includes(pathname);
-};
+import {
+  getFormValue,
+  isApplicationFormFieldValueEqualTo,
+  isComponentFormFieldValueEqualTo,
+  isUnderPath,
+  requireSubStepCompleted,
+  requireSubStepNotCompleted,
+} from "tutorials/utils";
 
 export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title): Tutorial => {
   let apps: Immutable.List<ApplicationDetails> = store.getState().get("applications").get("applications");

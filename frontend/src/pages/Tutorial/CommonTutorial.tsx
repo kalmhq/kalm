@@ -101,7 +101,7 @@ class CommonTutorialRaw extends React.PureComponent<Props, State> {
         >
           {tutorial.steps.map((step, stepIndex) => (
             <Step key={step.name}>
-              <StepLabel>{step.name}</StepLabel>
+              <StepLabel error={!!step.error}>{step.name}</StepLabel>
               <StepContent>
                 <Typography>{step.description}</Typography>
                 <Box ml={2} mt={1}>

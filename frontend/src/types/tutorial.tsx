@@ -57,7 +57,8 @@ export interface TutorialHighlight {
 
 export interface TutorialStep {
   name: string;
-  description: string;
+  description: React.ReactNode;
+  error?: boolean;
   subSteps: TutorialSubStep[];
   highlights: TutorialHighlight[];
 }

@@ -12,7 +12,6 @@ import {
   Theme,
   Tooltip,
   WithStyles,
-  withStyles,
 } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import { loadClusterInfoAction } from "actions/cluster";
@@ -20,11 +19,10 @@ import { closeDialogAction } from "actions/dialog";
 import { loadRoutes } from "actions/routes";
 import { push } from "connected-react-router";
 import Immutable from "immutable";
-import MaterialTable from "material-table";
+import MaterialTable, { MTableBodyRow } from "material-table";
 import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 import { withNamespace, withNamespaceProps } from "permission/Namespace";
 import React from "react";
-import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
@@ -32,22 +30,24 @@ import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
 import { ControlledDialog } from "widgets/ControlledDialog";
 import { KappConsoleIcon, KappLogIcon } from "widgets/Icon";
-import { deleteApplicationAction } from "../../actions/application";
-import { setErrorNotificationAction, setSuccessNotificationAction } from "../../actions/notification";
-import { blinkTopProgressAction } from "../../actions/settings";
-import { primaryColor } from "../../theme";
-import { ApplicationDetails } from "../../types/application";
-import { HttpRoute } from "../../types/route";
-import { formatDate } from "../../utils";
-import { customSearchForImmutable } from "../../utils/tableSearch";
-import { ConfirmDialog } from "../../widgets/ConfirmDialog";
-import { FoldButtonGroup } from "../../widgets/FoldButtonGroup";
-import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
-import { Body, H4 } from "../../widgets/Label";
-import { Loading } from "../../widgets/Loading";
-import { SmallCPULineChart, SmallMemoryLineChart } from "../../widgets/SmallLineChart";
+import { deleteApplicationAction } from "actions/application";
+import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
+import { blinkTopProgressAction } from "actions/settings";
+import { primaryColor } from "theme";
+import { ApplicationDetails } from "types/application";
+import { HttpRoute } from "types/route";
+import { formatDate } from "utils";
+import { customSearchForImmutable } from "utils/tableSearch";
+import { ConfirmDialog } from "widgets/ConfirmDialog";
+import { FoldButtonGroup } from "widgets/FoldButtonGroup";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import { Body, H4 } from "widgets/Label";
+import { Loading } from "widgets/Loading";
+import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { BasePage } from "../BasePage";
 import { ApplicationListDataWrapper, WithApplicationsListDataProps } from "./ListDataWrapper";
+import withStyles from "@material-ui/core/styles/withStyles";
+import { connect } from "react-redux";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -822,6 +822,11 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                   paddingTop: 0,
                   paddingBottom: 0,
                 },
+              }}
+              components={{
+                Row: (props: any) => (
+                  <MTableBodyRow tutorial-anchor-id={"applications-list-item-" + props.data.get("name")} {...props} />
+                ),
               }}
               // @ts-ignore
               columns={this.getColumns()}

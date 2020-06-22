@@ -32,6 +32,10 @@ const tryMoveToNextStep = (state: State): State => {
   const currentStepIndex = state.get("currentStepIndex");
   const currentStep = state.get("tutorial")!.steps[currentStepIndex];
 
+  if(currentStep.subSteps.length === 0) {
+    return state
+  }
+
   const notCompletedSubSteps = currentStep.subSteps.filter((_subStep, subStepIndex) => {
     const statusKey = `${currentStepIndex}-${subStepIndex}`;
     return !state.get("tutorialStepStatus").get(statusKey);
