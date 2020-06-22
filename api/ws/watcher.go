@@ -32,10 +32,19 @@ func StartWatchingComponents(c *Client) {
 
 	listFunc := func(options metav1.ListOptions) (runtime.Object, error) {
 		optionsModifier(&options)
-		return c.K8sClientset.RESTClient().Get().
+
+		var fetched v1alpha1.ComponentList
+
+		err := c.K8sClientset.RESTClient().Get().
 			AbsPath("/apis/core.kapp.dev/v1alpha1/namespaces/" + namespace + "/components").
 			Do().
-			Get()
+			Into(&fetched)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return fetched.DeepCopyObject(), nil
 	}
 	watchFunc := func(options metav1.ListOptions) (watch.Interface, error) {
 		options.Watch = true
