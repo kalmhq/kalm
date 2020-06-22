@@ -11,7 +11,7 @@ import {
   Theme,
   Typography,
   withStyles,
-  WithStyles
+  WithStyles,
 } from "@material-ui/core";
 import Driver from "driver.js";
 import React from "react";
@@ -72,63 +72,8 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
 interface State {}
 
 class CommonTutorialRaw extends React.PureComponent<Props, State> {
+  // used as a store of children highlight elements
   driver?: Driver;
-
-  componentDidUpdate(prevProps: Props) {
-    // if (!(this.props.currentStepIndex === prevProps.currentStepIndex)) {
-    //   if (this.driver) {
-    //     this.driver.hasHighlightedElement();
-    //     this.driver.reset();
-    //     delete this.driver;
-    //   }
-    //   const currentStep = this.props.tutorial.steps[this.props.currentStepIndex];
-    //   if (!currentStep) {
-    //     return;
-    //   }
-    //   const currentSubStep = currentStep.subSteps[this.props.currentSubStepIndex];
-    //   if (!currentSubStep || !currentSubStep.highlight) {
-    //     return;
-    //   }
-    //   if (
-    //     currentSubStep.highlight.requirePathname &&
-    //     currentSubStep.highlight.requirePathname !== this.props.pathname
-    //   ) {
-    //     return;
-    //   }
-    //   if (
-    //     currentSubStep.highlight.requirePathnamePrefix &&
-    //     !this.props.pathname.startsWith(currentSubStep.highlight.requirePathnamePrefix)
-    //   ) {
-    //     return;
-    //   }
-    //   this.driver = new Driver({
-    //     padding: 0,
-    //     showButtons: false,
-    //   });
-    //   const startedAt = new Date().getTime();
-    //   let interval = window.setInterval(() => {
-    //     if (new Date().getTime() - startedAt > 3110 || !this.driver) {
-    //       window.clearInterval(interval);
-    //       return;
-    //     }
-    //     let node = window.document.querySelector(currentSubStep!.highlight!.anchor);
-    //     if (!node) {
-    //       return;
-    //     } else {
-    //       window.clearInterval(interval);
-    //       this.driver!.highlight({
-    //         element: currentSubStep!.highlight!.anchor,
-    //         popover: {
-    //           title: currentSubStep!.highlight!.title,
-    //           description: currentSubStep.highlight!.description,
-    //           position: currentSubStep!.highlight!.position,
-    //         },
-    //       });
-    //       return;
-    //     }
-    //   }, 200);
-    // }
-  }
 
   componentWillUnmount() {
     if (this.driver) {
