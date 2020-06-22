@@ -10,9 +10,15 @@ import (
 	"k8s.io/client-go/tools/clientcmd/api"
 )
 
-type MessageData struct {
-	Token  string `json:"token"`
+type ReqMessage struct {
 	Method string `json:"method"`
+	Token  string `json:"token"`
+}
+
+type ResMessage struct {
+	Method string `json:"method"`
+	Type   string `json:"type"`
+	Data   string `json:"data"`
 }
 
 type Client struct {
@@ -43,6 +49,20 @@ func NewClientPool() *ClientPool {
 	}
 }
 
+func (h *ClientPool) run() {
+	for {
+		select {
+		case client := <-h.register:
+			h.clients[client] = true
+		case client := <-h.unregister:
+			if _, ok := h.clients[client]; ok {
+				delete(h.clients, client)
+				close(client.Send)
+			}
+		}
+	}
+}
+
 func (c *Client) read() {
 	defer func() {
 		c.clientPool.unregister <- c
@@ -54,12 +74,14 @@ func (c *Client) read() {
 		if err != nil {
 			log.Error(err)
 		}
-		log.Info(messageBytes)
-		var messageData MessageData
-		_ = json.Unmarshal(messageBytes, &messageData)
+
+		var reqMessage ReqMessage
+		_ = json.Unmarshal(messageBytes, &reqMessage)
+		log.Info("-------------reqMessage")
+		log.Info(reqMessage)
 
 		if c.K8sClientset == nil {
-			authInfo := &api.AuthInfo{Token: messageData.Token}
+			authInfo := &api.AuthInfo{Token: reqMessage.Token}
 			k8sClientConfig, err := c.K8sClientManager.GetClientConfigWithAuthInfo(authInfo)
 			if err != nil {
 				log.Error(err)
@@ -74,8 +96,8 @@ func (c *Client) read() {
 		}
 
 		// TODO more metheds
-		if messageData.Method == "ServiceList" {
-			StartWatching(c)
+		if reqMessage.Method == "ComponentsList" {
+			StartWatchingComponents(c)
 		}
 
 	}

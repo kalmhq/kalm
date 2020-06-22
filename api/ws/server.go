@@ -22,9 +22,12 @@ type WsHandler struct {
 }
 
 func NewWsHandler(k8sClientManager *client.ClientManager) *WsHandler {
+	clientPool := NewClientPool()
+	go clientPool.run()
+
 	return &WsHandler{
 		k8sClientManager: k8sClientManager,
-		clientPool:       NewClientPool(),
+		clientPool:       clientPool,
 	}
 }
 
