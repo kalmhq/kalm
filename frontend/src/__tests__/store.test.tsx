@@ -31,7 +31,7 @@ test("load certificate list", async () => {
     store
       .getState()
       .get("certificates")
-      .get("certificates")
+      .get("certificates"),
   ).toEqual(Immutable.fromJS(certificateListData.data));
 });
 
@@ -43,7 +43,7 @@ test("add certificate", () => {
   const component = mount(
     <Provider store={store}>
       <CertificateForm isEdit={false} onSubmit={onSubmit} initialValues={initialValues} />
-    </Provider>
+    </Provider>,
   );
 
   const clickSubmitButton = () => {

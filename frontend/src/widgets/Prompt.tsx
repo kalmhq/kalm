@@ -29,6 +29,8 @@ class PromptRaw extends React.PureComponent<Props> {
   componentDidMount(): void {
     const { history, message, location } = this.props;
 
+    window.addEventListener("beforeunload", this.beforeunload);
+
     this.unregister = history.block(nextLocation => {
       // return value meanings:
       //   void: allow to change
@@ -50,7 +52,18 @@ class PromptRaw extends React.PureComponent<Props> {
 
   componentWillUnmount() {
     this.unregister && this.unregister();
+    window.removeEventListener("beforeunload", this.beforeunload);
   }
+
+  private beforeunload = (e: any) => {
+    if (!this.props.when) {
+      return;
+    }
+
+    e.preventDefault();
+    e.returnValue = "Are your sure to leave without saving changes?";
+    return "Are your sure to leave without saving changes?";
+  };
 
   public render() {
     return null;
