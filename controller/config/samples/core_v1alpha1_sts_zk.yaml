@@ -3,7 +3,7 @@ kind: Namespace
 metadata:
   name: kapp-zk
   labels:
-    istio-injection: enabled
+#    istio-injection: enabled
     kapp-enabled: "true"
 ---
 apiVersion: core.kapp.dev/v1alpha1
@@ -16,6 +16,7 @@ spec:
     image: zookeeper:3.5.5
     command: "/bin/bash -xec /config-scripts/run"
     replicas: 3
+    enableHeadlessService: true
     env:
       - name: ZK_REPLICAS
         value: "3"

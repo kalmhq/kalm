@@ -930,6 +930,7 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 	var envs []coreV1.EnvVar
 	for _, env := range component.Spec.Env {
 		var value string
+		var valueFrom *coreV1.EnvVarSource
 
 		if env.Type == "" || env.Type == corev1alpha1.EnvVarTypeStatic {
 			value = env.Value
@@ -942,15 +943,21 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 			//}
 		} else if env.Type == corev1alpha1.EnvVarTypeLinked {
 			value, err = r.getValueOfLinkedEnv(env)
-
 			if err != nil {
 				return nil, err
+			}
+		} else if env.Type == corev1alpha1.EnvVarTypeFieldRef {
+			valueFrom = &coreV1.EnvVarSource{
+				FieldRef: &coreV1.ObjectFieldSelector{
+					FieldPath: env.Value,
+				},
 			}
 		}
 
 		envs = append(envs, coreV1.EnvVar{
-			Name:  env.Name,
-			Value: value,
+			Name:      env.Name,
+			Value:     value,
+			ValueFrom: valueFrom,
 		})
 	}
 	mainContainer.Env = envs
