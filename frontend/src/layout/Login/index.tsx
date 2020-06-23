@@ -5,7 +5,7 @@ import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "../../types";
 import { validateTokenAction } from "../../actions/auth";
 import { RootState } from "../../reducers";
-import { Button, TextField, Theme, withStyles, Paper, WithStyles, createStyles } from "@material-ui/core";
+import { Button, createStyles, Paper, TextField, Theme, WithStyles, withStyles } from "@material-ui/core";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -14,13 +14,13 @@ const styles = (theme: Theme) =>
       height: "286px",
       width: "100%",
       position: "fixed",
-      top: "calc( 50vh - 183px )"
+      top: "calc( 50vh - 183px )",
     },
     paperContainer: {
       maxWidth: "850px",
       height: "100%",
       margin: "0 auto",
-      position: "relative"
+      position: "relative",
     },
     portalText: {
       color: "#fff",
@@ -28,7 +28,7 @@ const styles = (theme: Theme) =>
       fontSize: "18px",
       position: "absolute",
       top: "133px",
-      left: "8px"
+      left: "8px",
     },
     loginTriangle: {
       width: 0,
@@ -38,7 +38,7 @@ const styles = (theme: Theme) =>
       position: "absolute",
       right: "415px",
       top: "61px",
-      boxShadow: "4px 4px 4px rgba(0, 0, 0, 0.2)"
+      boxShadow: "4px 4px 4px rgba(0, 0, 0, 0.2)",
     },
     loginArea: {
       width: "415px",
@@ -53,12 +53,12 @@ const styles = (theme: Theme) =>
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
-      padding: "20px"
+      padding: "20px",
     },
     input: {
       width: "280px",
-      marginTop: "20px"
-    }
+      marginTop: "20px",
+    },
   });
 
 interface State {
@@ -75,7 +75,7 @@ export class LoginRaw extends React.PureComponent<Props, State> {
     super(props);
     this.state = {
       value: "",
-      error: undefined
+      error: undefined,
     };
   }
 

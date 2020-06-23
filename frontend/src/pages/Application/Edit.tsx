@@ -130,7 +130,8 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
           //   </>
           // </div>
         }
-        secondHeaderLeft={application && application.get("name")}>
+        secondHeaderLeft={application && application.get("name")}
+      >
         {isLoading && !application ? <Loading /> : this.renderForm()}
       </BasePage>
     );
@@ -162,7 +163,7 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
           </Grid>
           <Grid item md={4}>
             <ComponentStatus
-              component={application?.get("components")?.find(x => x.get("name") === currentComponent?.get("name"))}
+              component={application?.get("components")?.find((x) => x.get("name") === currentComponent?.get("name"))}
             />
           </Grid>
         </Grid>

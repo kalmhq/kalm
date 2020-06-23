@@ -1,5 +1,5 @@
 import React from "react";
-import { createStyles, Theme, withStyles, WithStyles, FormControlLabel, Checkbox } from "@material-ui/core";
+import { Checkbox, createStyles, FormControlLabel, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { TDispatchProp } from "types";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
@@ -23,15 +23,14 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState, { subStep, stepIndex, subStepIndex }: OwnProps) => {
-  let completionByState = subStep.shouldCompleteByState ? subStep.shouldCompleteByState(state) : false;
+  const currentStepIndex = state.get("tutorial").get("currentStepIndex");
+  let completionByState =
+    subStep.shouldCompleteByState && currentStepIndex === stepIndex ? subStep.shouldCompleteByState(state) : false;
 
   return {
     definedCompletionByState: !!subStep.shouldCompleteByState,
     completionByState,
-    isCompleted: !!state
-      .get("tutorial")
-      .get("tutorialStepStatus")
-      .get(`${stepIndex}-${subStepIndex}`),
+    isCompleted: !!state.get("tutorial").get("tutorialStepStatus").get(`${stepIndex}-${subStepIndex}`),
   };
 };
 
@@ -42,6 +41,7 @@ interface OwnProps {
 }
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp, OwnProps {}
+
 interface State {}
 
 class TutorialSubStepCompoentRaw extends React.PureComponent<Props, State> {

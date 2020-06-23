@@ -10,7 +10,7 @@ import { WhitePaper } from "./Paper";
 import { CenterCaption } from "./Label";
 
 Chart.controllers.line = Chart.controllers.line.extend({
-  draw: function(ease: any) {
+  draw: function (ease: any) {
     if (this.chart.tooltip._active && this.chart.tooltip._active.length) {
       var activePoint = this.chart.tooltip._active[0],
         ctx = this.chart.ctx,
@@ -28,7 +28,7 @@ Chart.controllers.line = Chart.controllers.line.extend({
       ctx.stroke();
       ctx.restore();
     }
-  }
+  },
 });
 
 const smallLineChartStyles = (theme: Theme) =>
@@ -37,7 +37,7 @@ const smallLineChartStyles = (theme: Theme) =>
       border: "1px solid #DDD",
       position: "relative",
       background: "white",
-      display: "inline-block"
+      display: "inline-block",
     },
     text: {
       left: 0,
@@ -47,8 +47,8 @@ const smallLineChartStyles = (theme: Theme) =>
       position: "absolute",
       display: "flex",
       alignItems: "center",
-      justifyContent: "space-around"
-    }
+      justifyContent: "space-around",
+    },
   });
 
 interface Props extends WithStyles<typeof smallLineChartStyles> {
@@ -65,7 +65,7 @@ class SmallLineChartRaw extends React.PureComponent<Props> {
     const { data, borderColor, backgroundColor } = this.props;
 
     return {
-      labels: data.map(n => n.get("x")).toArray(),
+      labels: data.map((n) => n.get("x")).toArray(),
       datasets: [
         {
           lineTension: 0.1,
@@ -75,9 +75,9 @@ class SmallLineChartRaw extends React.PureComponent<Props> {
           pointHoverRadius: 0,
           pointRadius: 0,
           pointHitRadius: 0,
-          data: data.map(n => n.get("y")).toArray()
-        }
-      ]
+          data: data.map((n) => n.get("y")).toArray(),
+        },
+      ],
     };
   };
 
@@ -117,29 +117,29 @@ class SmallLineChartRaw extends React.PureComponent<Props> {
               responsive: true,
               maintainAspectRatio: false,
               tooltips: {
-                enabled: false
+                enabled: false,
               },
               scales: {
                 yAxes: [
                   {
                     display: false,
                     gridLines: {
-                      display: false
+                      display: false,
                     },
                     ticks: {
-                      beginAtZero: true
-                    }
-                  }
+                      beginAtZero: true,
+                    },
+                  },
                 ],
                 xAxes: [
                   {
                     display: false,
                     gridLines: {
-                      display: false
-                    }
-                  }
-                ]
-              }
+                      display: false,
+                    },
+                  },
+                ],
+              },
             }}
             data={this.generateData()}
           />
@@ -157,7 +157,7 @@ const lineChartStyles = (theme: Theme) =>
       position: "relative",
       background: "white",
       display: "inline-block",
-      paddingTop: theme.spacing(2)
+      paddingTop: theme.spacing(2),
     },
     text: {
       left: 0,
@@ -167,8 +167,8 @@ const lineChartStyles = (theme: Theme) =>
       position: "absolute",
       display: "flex",
       alignItems: "center",
-      justifyContent: "space-around"
-    }
+      justifyContent: "space-around",
+    },
   });
 
 interface LineChartProps extends WithStyles<typeof lineChartStyles> {
@@ -185,7 +185,7 @@ class LineChartRaw extends React.PureComponent<LineChartProps> {
     const { data, borderColor, backgroundColor } = this.props;
 
     return {
-      labels: data ? data.map(n => n.get("x")).toArray() : [],
+      labels: data ? data.map((n) => n.get("x")).toArray() : [],
       datasets: [
         {
           //   fill: false,
@@ -206,9 +206,9 @@ class LineChartRaw extends React.PureComponent<LineChartProps> {
           pointHoverBorderWidth: 2,
           pointRadius: 1,
           pointHitRadius: 1,
-          data: data ? data.map(n => n.get("y")).toArray() : []
-        }
-      ]
+          data: data ? data.map((n) => n.get("y")).toArray() : [],
+        },
+      ],
     };
   };
 
@@ -224,8 +224,8 @@ class LineChartRaw extends React.PureComponent<LineChartProps> {
             layout: {
               padding: {
                 top: 10,
-                right: 10
-              }
+                right: 10,
+              },
             },
             tooltips: {
               intersect: false,
@@ -239,8 +239,8 @@ class LineChartRaw extends React.PureComponent<LineChartProps> {
                 title: (tooltipItem: chartjs.ChartTooltipItem[], data: chartjs.ChartData): string => {
                   // @ts-ignore
                   return format(tooltipItem[0].xLabel, "yyyy-MM-dd HH:mm");
-                }
-              }
+                },
+              },
             },
             scales: {
               yAxes: [
@@ -248,20 +248,20 @@ class LineChartRaw extends React.PureComponent<LineChartProps> {
                   ticks: {
                     maxTicksLimit: 5,
                     beginAtZero: true,
-                    callback: formatValue
-                  }
-                }
+                    callback: formatValue,
+                  },
+                },
               ],
               xAxes: [
                 {
                   ticks: {
-                    callback: value => {
+                    callback: (value) => {
                       return format(value, "HH:mm");
-                    }
-                  }
-                }
-              ]
-            }
+                    },
+                  },
+                },
+              ],
+            },
           }}
           data={this.generateData()}
         />

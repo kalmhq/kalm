@@ -1,4 +1,4 @@
-import { createStyles, Theme, withStyles, WithStyles, IconButton } from "@material-ui/core";
+import { createStyles, IconButton, Theme, WithStyles, withStyles } from "@material-ui/core";
 import { push } from "connected-react-router";
 import { withNamespace, withNamespaceProps } from "permission/Namespace";
 import React from "react";
@@ -21,7 +21,7 @@ const mapStateToProps = (_: any, props: any) => {
   return {
     namespace,
     applicationName,
-    componentName
+    componentName,
   };
 };
 
@@ -34,11 +34,11 @@ const styles = (theme: Theme) =>
       height: "100%",
       width: "100%",
       display: "flex",
-      alignItems: "center"
+      alignItems: "center",
     },
     secondHeaderRightItem: {
-      marginLeft: 20
-    }
+      marginLeft: 20,
+    },
   });
 
 interface Props
@@ -58,7 +58,8 @@ class ApplicationShowRaw extends React.PureComponent<Props> {
             color="primary"
             onClick={() => {
               dispatch(push(`/applications/${applicationName}`));
-            }}>
+            }}
+          >
             <ArrowBackIcon />
           </IconButton>
         )}
@@ -69,9 +70,10 @@ class ApplicationShowRaw extends React.PureComponent<Props> {
           className={classes.secondHeaderRightItem}
           onClick={() => {
             dispatch(
-              push(`/applications/${applicationName}/edit${componentName ? `?component=${componentName}` : ""}`)
+              push(`/applications/${applicationName}/edit${componentName ? `?component=${componentName}` : ""}`),
             );
-          }}>
+          }}
+        >
           Edit
         </CustomizedButton>
       </div>
@@ -85,7 +87,8 @@ class ApplicationShowRaw extends React.PureComponent<Props> {
       <BasePage
         secondHeaderLeft={<Namespaces />}
         secondHeaderRight={this.renderSecondHeaderRight()}
-        leftDrawer={<ApplicationViewDrawer />}>
+        leftDrawer={<ApplicationViewDrawer />}
+      >
         {isLoading && !application ? (
           <Loading />
         ) : component ? (
@@ -106,5 +109,5 @@ class ApplicationShowRaw extends React.PureComponent<Props> {
 }
 
 export const ApplicationShow = withStyles(styles)(
-  connect(mapStateToProps)(ApplicationItemDataWrapper({ reloadFrequency: 5000 })(withNamespace(ApplicationShowRaw)))
+  connect(mapStateToProps)(ApplicationItemDataWrapper({ reloadFrequency: 5000 })(withNamespace(ApplicationShowRaw))),
 );

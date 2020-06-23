@@ -3,11 +3,11 @@ import { Actions } from "../types";
 import { ImmutableMap } from "../typings";
 import { LOGOUT } from "../types/common";
 import {
+  DELETE_PERSISTENT_VOLUME,
   LOAD_PERSISTENT_VOLUMES,
   LOAD_STORAGE_CLASSES,
   PersistentVolumes,
   StorageClasses,
-  DELETE_PERSISTENT_VOLUME
 } from "../types/persistentVolume";
 
 export type State = ImmutableMap<{
@@ -17,7 +17,7 @@ export type State = ImmutableMap<{
 
 const initialState: State = Immutable.Map({
   persistentVolumes: [],
-  storageClasses: []
+  storageClasses: [],
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {
@@ -33,7 +33,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
     }
     case DELETE_PERSISTENT_VOLUME: {
       const persistentVolumes = state.get("persistentVolumes");
-      const index = persistentVolumes.findIndex(v => v.get("name") === action.payload.name);
+      const index = persistentVolumes.findIndex((v) => v.get("name") === action.payload.name);
 
       if (index >= 0) {
         state = state.deleteIn(["persistentVolumes", index]);

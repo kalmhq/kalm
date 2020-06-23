@@ -24,7 +24,7 @@ interface FieldArrayComponentHackType {
 const mapStateToProps = (state: RootState) => {
   return {
     activeNamespace: state.get("namespaces").get("active"),
-    services: state.get("services").get("services")
+    services: state.get("services").get("services"),
   };
 };
 
@@ -39,7 +39,7 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
 
     const options: KAutoCompleteOption[] = [];
     services
-      .filter(x => {
+      .filter((x) => {
         const ns = x.get("namespace");
 
         // TODO should we ignore the system namespaces??
@@ -68,16 +68,16 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
           return aNamespace.localeCompare(bNamespace);
         }
       })
-      .forEach(svc => {
+      .forEach((svc) => {
         svc
           .get("ports")
-          .filter(p => p.get("protocol") === "TCP")
-          .forEach(port => {
+          .filter((p) => p.get("protocol") === "TCP")
+          .forEach((port) => {
             options.push({
               value: `${svc.get("name")}.${svc.get("namespace")}.svc.cluster.local:${port.get("port")}`,
               label: svc.get("name") + ":" + port.get("port"),
               group:
-                svc.get("namespace") === activeNamespace ? `${svc.get("namespace")} (Current)` : svc.get("namespace")
+                svc.get("namespace") === activeNamespace ? `${svc.get("namespace")} (Current)` : svc.get("namespace"),
             });
           });
       });
@@ -122,7 +122,8 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
               tooltipPlacement="top"
               tooltipTitle="Delete"
               aria-label="delete"
-              onClick={() => fields.remove(index)}>
+              onClick={() => fields.remove(index)}
+            >
               <DeleteIcon />
             </IconButtonWithTooltip>
           </Grid>
@@ -138,7 +139,7 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
 
   public render() {
     const {
-      meta: { error, dirty, submitFailed }
+      meta: { error, dirty, submitFailed },
     } = this.props;
 
     return (
@@ -153,4 +154,5 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
     );
   }
 }
+
 export const RenderHttpRouteDestinations = connect(mapStateToProps)(RenderHttpRouteDestinationsRaw);

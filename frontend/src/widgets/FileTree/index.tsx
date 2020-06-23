@@ -4,13 +4,13 @@ import { fade, makeStyles, withStyles } from "@material-ui/core/styles";
 import TreeView from "@material-ui/lab/TreeView";
 import TreeItem, { TreeItemProps } from "@material-ui/lab/TreeItem";
 import Collapse from "@material-ui/core/Collapse";
-import { useSpring, animated } from "react-spring/web.cjs"; // web.cjs is required for IE 11 support
+import { animated, useSpring } from "react-spring/web.cjs"; // web.cjs is required for IE 11 support
 import FolderIcon from "@material-ui/icons/Folder";
 import FolderOpenIcon from "@material-ui/icons/FolderOpen";
 import InsertDriveFileOutlinedIcon from "@material-ui/icons/InsertDriveFileOutlined";
 import { ConfigNode, ConfigNodeType } from "../../types/config";
-import { setCurrentConfigIdChainAction, getConfigPath } from "../../actions/config";
-import { MenuItem, Popper, Grow, Paper, MenuList, ClickAwayListener } from "@material-ui/core";
+import { getConfigPath, setCurrentConfigIdChainAction } from "../../actions/config";
+import { ClickAwayListener, Grow, MenuItem, MenuList, Paper, Popper } from "@material-ui/core";
 import { TDispatch } from "../../types";
 import { getCurrentConfig } from "../../selectors/config";
 
@@ -19,8 +19,8 @@ function TransitionComponent(props: any) {
     from: { opacity: 0, transform: "translate3d(30px,0,0)" },
     to: {
       opacity: props.in ? 1 : 0,
-      transform: `translate3d(${props.in ? 0 : 30}px,0,0)`
-    }
+      transform: `translate3d(${props.in ? 0 : 30}px,0,0)`,
+    },
   });
 
   return (
@@ -34,7 +34,7 @@ TransitionComponent.propTypes = {
   /**
    * Show the component; triggers the enter or exit states
    */
-  in: PropTypes.bool
+  in: PropTypes.bool,
 };
 
 interface StyledTreeItemProps extends TreeItemProps {
@@ -51,15 +51,15 @@ const StyledTreeItem = withStyles((theme: any) => ({
   group: {
     marginLeft: 12,
     paddingLeft: 12,
-    borderLeft: `1px dashed ${fade(theme.palette.text.primary, 0.4)}`
+    borderLeft: `1px dashed ${fade(theme.palette.text.primary, 0.4)}`,
   },
   content: {
     height: 30,
-    color: "white"
+    color: "white",
   },
   label: {
     // zIndex: -1
-  }
+  },
 }))((props: StyledTreeItemProps) => {
   const { dispatch, config, idChain, handleAdd, handleEdit, handleDuplicate, handleDelete } = props;
 
@@ -110,11 +110,13 @@ const StyledTreeItem = withStyles((theme: any) => ({
         anchorEl={anchorEl}
         role={undefined}
         transition
-        disablePortal>
+        disablePortal
+      >
         {({ TransitionProps, placement }) => (
           <Grow
             {...TransitionProps}
-            style={{ transformOrigin: placement === "bottom" ? "center top" : "center bottom" }}>
+            style={{ transformOrigin: placement === "bottom" ? "center top" : "center bottom" }}
+          >
             <Paper>
               <ClickAwayListener onClickAway={handleClose}>
                 <MenuList autoFocusItem={Boolean(anchorEl)} id="menu-list-grow" onKeyDown={handleListKeyDown}>
@@ -125,7 +127,7 @@ const StyledTreeItem = withStyles((theme: any) => ({
                         </MenuItem>,
                         <MenuItem key="add-folder" onClick={() => handleAdd("folder")}>
                           Add folder
-                        </MenuItem>
+                        </MenuItem>,
                       ]
                     : [
                         <MenuItem key="edit" onClick={handleEdit}>
@@ -136,7 +138,7 @@ const StyledTreeItem = withStyles((theme: any) => ({
                         </MenuItem>,
                         <MenuItem key="delete" onClick={handleDelete}>
                           Delete
-                        </MenuItem>
+                        </MenuItem>,
                       ]}
                 </MenuList>
               </ClickAwayListener>
@@ -152,8 +154,8 @@ const useStyles = makeStyles({
   root: {
     height: 400,
     flexGrow: 1,
-    maxWidth: 400
-  }
+    maxWidth: 400,
+  },
 });
 
 export interface FileTreeProps {
@@ -215,7 +217,8 @@ export const FileTree = (props: FileTreeProps) => {
         }
         key={getConfigPath(config)}
         nodeId={getConfigPath(config)}
-        label={config.get("name")}>
+        label={config.get("name")}
+      >
         {childrenItems}
       </StyledTreeItem>
     );
@@ -224,14 +227,15 @@ export const FileTree = (props: FileTreeProps) => {
   return (
     <TreeView
       style={{
-        padding: "12px"
+        padding: "12px",
       }}
       selected={getConfigPath(getCurrentConfig())}
       className={classes.root}
       defaultExpanded={[rootConfig.get("id")]}
       defaultCollapseIcon={<FolderOpenIcon htmlColor="#f9a825" />}
       defaultExpandIcon={<FolderIcon htmlColor="#f9a825" />}
-      defaultEndIcon={<InsertDriveFileOutlinedIcon htmlColor="#0277bd" />}>
+      defaultEndIcon={<InsertDriveFileOutlinedIcon htmlColor="#0277bd" />}
+    >
       {renderStyledTreeItem(rootConfig, [])}
     </TreeView>
   );

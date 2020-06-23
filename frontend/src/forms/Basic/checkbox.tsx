@@ -9,7 +9,7 @@ import {
   FormLabel,
   Icon,
   Tooltip,
-  TooltipProps
+  TooltipProps,
 } from "@material-ui/core";
 import Immutable from "immutable";
 import React from "react";
@@ -25,7 +25,7 @@ export const CheckboxField = ({
   tooltipProps: TooltipProps;
   disabled?: boolean;
 }) => {
-  const handleChange: (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => void = event => {
+  const handleChange: (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => void = (event) => {
     input.onChange(!input.value);
   };
   let label = formControlLabelProps.label;
@@ -103,7 +103,7 @@ export const KCheckboxGroupRender = ({ input, meta, title, options, helperText }
       {title ? <FormLabel component="legend">{title}</FormLabel> : null}
       {showError ? <FormHelperText>{error}</FormHelperText> : null}
       <FormGroup row>
-        {options.map(x => {
+        {options.map((x) => {
           const onChange = (_: any, checked: boolean) => {
             if (checked) {
               input.onChange(value.push(x.value));

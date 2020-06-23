@@ -1,4 +1,4 @@
-import { Button, Grid, Icon, Box, Fade } from "@material-ui/core";
+import { Box, Button, Fade, Grid, Icon } from "@material-ui/core";
 import Immutable from "immutable";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
@@ -6,10 +6,10 @@ import { arrayPush, WrappedFieldArrayProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
 import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { SharedEnv, EnvItem } from "../../types/application";
+import { EnvItem, SharedEnv } from "../../types/application";
 import { RenderAutoCompleteFreeSolo } from "../Basic/autoComplete";
 import { KRenderTextField } from "../Basic/textfield";
-import { ValidatorRequired, ValidatorEnvName } from "../validator";
+import { ValidatorEnvName, ValidatorRequired } from "../validator";
 import { Alert } from "@material-ui/lab";
 
 interface FieldArrayComponentHackType {
@@ -38,7 +38,7 @@ class RenderEnvs extends React.PureComponent<Props> {
       return [];
     }
 
-    const sharedEnvNamesSet = new Set(sharedEnv ? sharedEnv.map(x => x.get("name")).toArray() : []);
+    const sharedEnvNamesSet = new Set(sharedEnv ? sharedEnv.map((x) => x.get("name")).toArray() : []);
     const fieldsEnvNamesSet = new Set<string>();
 
     fields.forEach((_, index) => {
@@ -46,7 +46,7 @@ class RenderEnvs extends React.PureComponent<Props> {
       fieldsEnvNamesSet.add(env.get("name"));
     });
 
-    return Array.from(sharedEnvNamesSet).filter(x => !fieldsEnvNamesSet.has(x));
+    return Array.from(sharedEnvNamesSet).filter((x) => !fieldsEnvNamesSet.has(x));
   };
 
   public componentDidUpdate() {
@@ -56,7 +56,7 @@ class RenderEnvs extends React.PureComponent<Props> {
   private renderAddButton = () => {
     const {
       meta: { form },
-      dispatch
+      dispatch,
     } = this.props;
     return (
       <Box mb={2}>
@@ -73,11 +73,12 @@ class RenderEnvs extends React.PureComponent<Props> {
                 Immutable.Map({
                   type: "static",
                   name: "",
-                  value: ""
-                })
-              )
+                  value: "",
+                }),
+              ),
             )
-          }>
+          }
+        >
           Add
         </Button>
       </Box>
@@ -87,7 +88,7 @@ class RenderEnvs extends React.PureComponent<Props> {
   public render() {
     const {
       fields,
-      meta: { error }
+      meta: { error },
     } = this.props;
     return (
       <>
@@ -125,7 +126,8 @@ class RenderEnvs extends React.PureComponent<Props> {
                     tooltipPlacement="top"
                     tooltipTitle="Delete"
                     aria-label="delete"
-                    onClick={() => fields.remove(index)}>
+                    onClick={() => fields.remove(index)}
+                  >
                     <DeleteIcon />
                   </IconButtonWithTooltip>
                 </Grid>

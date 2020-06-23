@@ -1,4 +1,4 @@
-import { Drawer, createStyles, Theme } from "@material-ui/core";
+import { createStyles, Drawer, Theme } from "@material-ui/core";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import React from "react";
 import { connect } from "react-redux";
@@ -51,7 +51,8 @@ class BaseDrawerRaw extends React.PureComponent<Props, State> {
         variant="permanent"
         classes={{
           paper: classes.drawerPaper,
-        }}>
+        }}
+      >
         <div className={classes.drawerContainer}>{children}</div>
       </Drawer>
     );

@@ -7,7 +7,7 @@ import {
   MenuItem,
   Select,
   SelectProps,
-  Tooltip
+  Tooltip,
 } from "@material-ui/core";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import React from "react";
@@ -29,19 +29,19 @@ export const SelectField = ({
   value,
   onChange,
   onBlur,
-  meta: { touched, error }
+  meta: { touched, error },
 }: SelectProps & Props & { meta: { touched: boolean; error: any } }) => {
   const id = ID();
   const labelId = ID();
 
-  const classes = makeStyles(theme => ({
+  const classes = makeStyles((theme) => ({
     root: {
-      display: "flex"
+      display: "flex",
     },
     inputLabel: {
       fontWeight: 500,
-      fontSize: 13
-    }
+      fontSize: 13,
+    },
   }))();
 
   const [labelWidth, setLabelWidth] = React.useState(0);
@@ -62,7 +62,8 @@ export const SelectField = ({
       variant="outlined"
       size="small"
       style={{ pointerEvents: "auto" }}
-      margin="dense">
+      margin="dense"
+    >
       <InputLabel ref={inputLabel} htmlFor={id} id={labelId} classes={{ root: classes.inputLabel }}>
         {label}
       </InputLabel>
@@ -75,7 +76,7 @@ export const SelectField = ({
         onChange={onChange}
         onBlur={onBlur}
         renderValue={(value: any) => {
-          const option = options.find(x => x.value === value);
+          const option = options.find((x) => x.value === value);
 
           if (!option) {
             return value;
@@ -88,10 +89,11 @@ export const SelectField = ({
           return option.text;
         }}
         inputProps={{
-          id: id
-        }}>
+          id: id,
+        }}
+      >
         {options &&
-          options.map(option => {
+          options.map((option) => {
             return (
               <MenuItem value={option.value} key={option.value}>
                 {option.text}
@@ -116,18 +118,18 @@ export const RenderSelectField = ({
   autoFocus,
   disabled,
   meta: { touched, error },
-  children
+  children,
 }: WrappedFieldProps & SelectProps & Props) => {
   const id = ID();
   const labelId = ID();
-  const classes = makeStyles(theme => ({
+  const classes = makeStyles((theme) => ({
     root: {
-      display: "flex"
+      display: "flex",
     },
     inputLabel: {
       fontWeight: 500,
-      fontSize: 13
-    }
+      fontSize: 13,
+    },
   }))();
 
   const [labelWidth, setLabelWidth] = React.useState(0);
@@ -157,7 +159,8 @@ export const RenderSelectField = ({
       variant="outlined"
       size="small"
       style={{ pointerEvents: "auto" }}
-      margin="dense">
+      margin="dense"
+    >
       <InputLabel ref={inputLabel} htmlFor={id} id={labelId} classes={{ root: classes.inputLabel }}>
         {label}
       </InputLabel>
@@ -168,12 +171,12 @@ export const RenderSelectField = ({
         autoFocus={autoFocus}
         labelId={labelId}
         value={value === "" ? EMPTY : value}
-        onChange={e => input.onChange(e.target.value === EMPTY ? "" : e.target.value)}
+        onChange={(e) => input.onChange(e.target.value === EMPTY ? "" : e.target.value)}
         renderValue={(value: any) => {
           if (value === EMPTY) {
             value = "";
           }
-          const option = options.find(x => x.value === value);
+          const option = options.find((x) => x.value === value);
 
           if (!option) {
             return value;
@@ -186,10 +189,11 @@ export const RenderSelectField = ({
           return option.text;
         }}
         inputProps={{
-          id: id
-        }}>
+          id: id,
+        }}
+      >
         {options &&
-          options.map(option => {
+          options.map((option) => {
             return (
               <MenuItem value={option.value} key={option.value}>
                 {option.text}
@@ -208,9 +212,9 @@ const MenuProps = {
   PaperProps: {
     style: {
       maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-      width: 250
-    }
-  }
+      width: 250,
+    },
+  },
 };
 
 export const RenderMutipleSelectField = ({
@@ -218,18 +222,18 @@ export const RenderMutipleSelectField = ({
   label,
   options,
   autoFocus,
-  meta: { touched, error }
+  meta: { touched, error },
 }: WrappedFieldProps & SelectProps & { options: { text: string; value: string; tooltipTitle?: string }[] }) => {
   const id = ID();
   const labelId = ID();
-  const classes = makeStyles(theme => ({
+  const classes = makeStyles((theme) => ({
     root: {
-      display: "flex"
+      display: "flex",
     },
     inputLabel: {
       fontWeight: 500,
-      fontSize: 13
-    }
+      fontSize: 13,
+    },
   }))();
 
   const [labelWidth, setLabelWidth] = React.useState(0);
@@ -250,7 +254,8 @@ export const RenderMutipleSelectField = ({
       error={touched && error}
       variant="outlined"
       size="small"
-      margin="dense">
+      margin="dense"
+    >
       {/* https://material-ui.com/zh/api/input-label/#css */}
       <InputLabel ref={inputLabel} htmlFor={id} id={labelId} classes={{ root: classes.inputLabel }}>
         {label}
@@ -263,9 +268,10 @@ export const RenderMutipleSelectField = ({
         onChange={onChange}
         autoFocus={autoFocus}
         onBlur={input.onBlur}
-        renderValue={selected => (selected as string[]).join(", ")}
-        MenuProps={MenuProps}>
-        {options.map(option => {
+        renderValue={(selected) => (selected as string[]).join(", ")}
+        MenuProps={MenuProps}
+      >
+        {options.map((option) => {
           return (
             <MenuItem key={option.value} value={option.value}>
               <Checkbox checked={input.value.indexOf(option.value) > -1} />

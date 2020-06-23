@@ -1,13 +1,15 @@
 import { Box, LinearProgress } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import clsx from "clsx";
-import { Tutorial, tutorialDrawerWidth } from "pages/Tutorial";
+import { TutorialDrawer, tutorialDrawerWidth } from "pages/Tutorial";
 import { RequireAuthorizated } from "permission/Authorization";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { AppBarComponent } from "./AppBar";
 import { RootDrawer } from "./RootDrawer";
+import { TDispatchProp } from "types";
+import { loadClusterInfoAction } from "actions/cluster";
 
 const styles = (theme: Theme) => {
   return createStyles({
@@ -51,9 +53,17 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-interface Props extends WithStyles<typeof styles>, React.Props<any>, ReturnType<typeof mapStateToProps> {}
+interface Props
+  extends WithStyles<typeof styles>,
+    React.Props<any>,
+    ReturnType<typeof mapStateToProps>,
+    TDispatchProp {}
 
 class DashboardLayoutRaw extends React.PureComponent<Props> {
+  componentDidMount(): void {
+    this.props.dispatch(loadClusterInfoAction());
+  }
+
   render() {
     const { classes, children, isShowTopProgress, showTutorialDrawer } = this.props;
     return (
@@ -61,7 +71,8 @@ class DashboardLayoutRaw extends React.PureComponent<Props> {
         <div
           className={clsx(classes.mainContent, {
             [classes.mainContentShift]: showTutorialDrawer,
-          })}>
+          })}
+        >
           {isShowTopProgress ? <LinearProgress className={classes.progress} /> : null}
 
           <AppBarComponent />
@@ -72,7 +83,7 @@ class DashboardLayoutRaw extends React.PureComponent<Props> {
           </Box>
         </div>
 
-        <Tutorial />
+        <TutorialDrawer />
       </div>
     );
   }

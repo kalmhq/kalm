@@ -29,7 +29,7 @@ class RenderConfigs extends React.PureComponent<Props> {
         validate={[ValidatorRequired]}
         normalize={NormalizePort}
         component={KRenderTextField}
-      />
+      />,
     ];
   }
 

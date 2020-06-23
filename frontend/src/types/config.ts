@@ -47,7 +47,7 @@ export const initialRootConfigNode: ConfigNode = Immutable.fromJS({
   name: "/",
   content: "",
   children: {},
-  ancestorIds: []
+  ancestorIds: [],
 });
 
 export interface LoadConfigsPendingAction {

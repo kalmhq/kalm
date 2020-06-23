@@ -5,7 +5,7 @@ import { RootState } from "../../reducers";
 
 const mapStateToProps = (state: RootState) => {
   return {
-    open: state.get("settings").get("isDisplayingHelpers")
+    open: state.get("settings").get("isDisplayingHelpers"),
   };
 };
 

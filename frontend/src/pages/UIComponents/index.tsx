@@ -1,44 +1,44 @@
-import { Box, createStyles, Theme, WithStyles, withStyles, Typography, Link } from "@material-ui/core";
+import { Box, createStyles, Link, Theme, Typography, WithStyles, withStyles } from "@material-ui/core";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "../../reducers";
 import { TDispatchProp } from "../../types";
 import { BasePage } from "../BasePage";
 import { RowItemBox } from "widgets/Box";
-import { H1, H2, H3, H4, H5, H6, Subtitle1, Subtitle2, Body, BoldBody, Caption } from "widgets/Label";
+import { Body, BoldBody, Caption, H1, H2, H3, H4, H5, H6, Subtitle1, Subtitle2 } from "widgets/Label";
 import { CustomizedButton, RaisedButton } from "widgets/Button";
-import { LightInfoPaper, NormalInfoPaper, DarkInfoPaper } from "widgets/Paper";
+import { DarkInfoPaper, LightInfoPaper, NormalInfoPaper } from "widgets/Paper";
 import {
-  HelpIcon,
+  ArrowBackIcon,
   ArrowDropDownIcon,
   CheckBoxIcon,
   CheckBoxOutlineBlankIcon,
-  FilterListIcon,
+  CheckCircleIcon,
   ClearIcon,
   DeleteIcon,
-  CheckCircleIcon,
   ErrorIcon,
-  ArrowBackIcon,
+  FilterListIcon,
+  HelpIcon,
   KappConsoleIcon,
-  KappLogIcon
+  KappLogIcon,
 } from "widgets/Icon";
 
 const mapStateToProps = (state: RootState) => {
   return {
     nodes: state.get("nodes").get("nodes"),
-    metrics: state.get("nodes").get("metrics")
+    metrics: state.get("nodes").get("metrics"),
   };
 };
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      padding: theme.spacing(3)
+      padding: theme.spacing(3),
     },
     demoPaper: {
       width: 200,
-      height: 200
-    }
+      height: 200,
+    },
   });
 
 interface States {}

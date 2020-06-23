@@ -1,22 +1,22 @@
 import Immutable from "immutable";
 import {
+  Certificate,
   CertificateFormType,
+  CertificateIssuer,
   CertificateIssuerFormType,
   CREATE_CERTIFICATE,
   CREATE_CERTIFICATE_ISSUER,
   DELETE_CERTIFICATE,
+  LOAD_CERTIFICATE_ISSUERS_FULFILLED,
+  LOAD_CERTIFICATE_ISSUERS_PENDING,
   LOAD_CERTIFICATES_FAILED,
   LOAD_CERTIFICATES_FULFILLED,
   LOAD_CERTIFICATES_PENDING,
-  LOAD_CERTIFICATE_ISSUERS_FULFILLED,
-  LOAD_CERTIFICATE_ISSUERS_PENDING,
   selfManaged,
-  SetEditCertificateModal,
-  SetIsSubmittingCertificate,
   SET_EDIT_CERTIFICATE_MODAL,
   SET_IS_SUBMITTING_CERTIFICATE,
-  Certificate,
-  CertificateIssuer
+  SetEditCertificateModal,
+  SetIsSubmittingCertificate,
 } from "types/certificate";
 import { ThunkResult } from "../types";
 import {
@@ -24,39 +24,39 @@ import {
   createCertificateIssuer,
   deleteCertificate,
   getCertificateIssuerList,
-  getCertificateList
+  getCertificateList,
 } from "./kubernetesApi";
 
 export const setEditCertificateModal = (certificate: Certificate | null): SetEditCertificateModal => {
   return {
     type: SET_EDIT_CERTIFICATE_MODAL,
     payload: {
-      certificate
-    }
+      certificate,
+    },
   };
 };
 
 export const deleteCertificateAction = (name: string): ThunkResult<Promise<void>> => {
-  return async dispatch => {
+  return async (dispatch) => {
     await deleteCertificate(name);
 
     dispatch({
       type: DELETE_CERTIFICATE,
-      payload: { name }
+      payload: { name },
     });
   };
 };
 
 export const loadCertificates = (): ThunkResult<Promise<void>> => {
-  return async dispatch => {
+  return async (dispatch) => {
     dispatch({ type: LOAD_CERTIFICATES_PENDING });
     try {
       const certificates = await getCertificateList();
       dispatch({
         type: LOAD_CERTIFICATES_FULFILLED,
         payload: {
-          certificates
-        }
+          certificates,
+        },
       });
     } catch (e) {
       dispatch({ type: LOAD_CERTIFICATES_FAILED });
@@ -66,15 +66,15 @@ export const loadCertificates = (): ThunkResult<Promise<void>> => {
 };
 
 export const loadCertificateIssuers = (): ThunkResult<Promise<void>> => {
-  return async dispatch => {
+  return async (dispatch) => {
     dispatch({ type: LOAD_CERTIFICATE_ISSUERS_PENDING });
     try {
       const certificateIssuers = await getCertificateIssuerList();
       dispatch({
         type: LOAD_CERTIFICATE_ISSUERS_FULFILLED,
         payload: {
-          certificateIssuers
-        }
+          certificateIssuers,
+        },
       });
     } catch (e) {
       dispatch({ type: LOAD_CERTIFICATES_FAILED });
@@ -85,16 +85,16 @@ export const loadCertificateIssuers = (): ThunkResult<Promise<void>> => {
 
 export const createCertificateAction = (
   certificateContent: CertificateFormType,
-  isEdit?: boolean
+  isEdit?: boolean,
 ): ThunkResult<Promise<void>> => {
-  return async dispatch => {
+  return async (dispatch) => {
     dispatch(setIsSubmittingCertificate(true));
 
     let certificate: Certificate;
     try {
       certificate = await createCertificate(
         certificateContent.set("isSelfManaged", certificateContent.get("managedType") === selfManaged),
-        isEdit
+        isEdit,
       );
     } catch (e) {
       dispatch(setIsSubmittingCertificate(false));
@@ -108,9 +108,9 @@ export const createCertificateAction = (
 
 export const createCertificateIssuerAction = (
   certificateIssuerContent: CertificateIssuerFormType,
-  isEdit?: boolean
+  isEdit?: boolean,
 ): ThunkResult<Promise<void>> => {
-  return async dispatch => {
+  return async (dispatch) => {
     dispatch(setIsSubmittingCertificate(true));
 
     let certificateIssuer: CertificateIssuer;
@@ -130,8 +130,8 @@ export const setIsSubmittingCertificate = (isSubmittingCertificate: boolean): Se
   return {
     type: SET_IS_SUBMITTING_CERTIFICATE,
     payload: {
-      isSubmittingCertificate
-    }
+      isSubmittingCertificate,
+    },
   };
 };
 
@@ -146,8 +146,8 @@ export const createDefaultTestCert = async (dispatch: any) => {
         name: "ddex-1",
         isSelfManaged: true,
         selfManagedCertContent: crt,
-        selfManagedCertPrivateKey: pk
-      })
-    )
+        selfManagedCertPrivateKey: pk,
+      }),
+    ),
   );
 };

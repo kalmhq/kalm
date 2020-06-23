@@ -6,7 +6,7 @@ export const certificateListData = {
       httpsCertIssuer: "ca2",
       domains: ["dd.lo", "ec.op"],
       ready: "False",
-      reason: 'Waiting for CertificateRequest "cert-3429837659" to complete'
+      reason: 'Waiting for CertificateRequest "cert-3429837659" to complete',
     },
     { name: "dadada", isSelfManaged: true, domains: ["hydro.io"], ready: "True", reason: "" },
     {
@@ -15,7 +15,7 @@ export const certificateListData = {
       httpsCertIssuer: "cloudflare",
       domains: ["ss.ff"],
       ready: "False",
-      reason: 'Waiting for CertificateRequest "dd-2325188776" to complete'
+      reason: 'Waiting for CertificateRequest "dd-2325188776" to complete',
     },
     {
       name: "default-https-cert",
@@ -23,7 +23,7 @@ export const certificateListData = {
       httpsCertIssuer: "default-cert-issuer",
       domains: ["*"],
       ready: "True",
-      reason: "Certificate is up to date and has not expired"
+      reason: "Certificate is up to date and has not expired",
     },
     { name: "hydro3", isSelfManaged: true, domains: ["hyo.io"], ready: "True", reason: "" },
     {
@@ -32,8 +32,8 @@ export const certificateListData = {
       httpsCertIssuer: "ca",
       domains: ["dde.ll"],
       ready: "False",
-      reason: 'Waiting for CertificateRequest "kalata-1118927936" to complete'
+      reason: 'Waiting for CertificateRequest "kalata-1118927936" to complete',
     },
-    { name: "tte", isSelfManaged: true, domains: ["hydro.io"], ready: "True", reason: "" }
-  ]
+    { name: "tte", isSelfManaged: true, domains: ["hydro.io"], ready: "True", reason: "" },
+  ],
 };

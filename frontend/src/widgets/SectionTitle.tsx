@@ -1,5 +1,5 @@
 import React from "react";
-import { withStyles, createStyles, WithStyles } from "@material-ui/styles";
+import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import { theme } from "theme";
 
 const styles = () =>
@@ -12,8 +12,8 @@ const styles = () =>
       lineHeight: 26,
       background: "rgba(0, 0, 0, 0.04)",
       display: "flex",
-      alignItems: "center"
-    }
+      alignItems: "center",
+    },
   });
 
 const raw = (props: React.Props<any> & WithStyles<typeof styles>) => {

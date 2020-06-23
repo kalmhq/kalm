@@ -11,14 +11,14 @@ import {
   LOAD_ROUTES_PENDING,
   UPDATE_ROUTE_FAILED,
   UPDATE_ROUTE_FULFILLED,
-  UPDATE_ROUTE_PENDING
+  UPDATE_ROUTE_PENDING,
 } from "types/route";
 import { ThunkResult } from "../types";
 import { createHttpRoute, deleteHttpRoute, getHttpRoutes, updateHttpRoute } from "./kubernetesApi";
 import { setErrorNotificationAction } from "./notification";
 
 export const loadRoutes = (namespace: string): ThunkResult<Promise<void>> => {
-  return async dispatch => {
+  return async (dispatch) => {
     dispatch({ type: LOAD_ROUTES_PENDING });
     try {
       const routes = await getHttpRoutes(namespace);
@@ -26,8 +26,8 @@ export const loadRoutes = (namespace: string): ThunkResult<Promise<void>> => {
         type: LOAD_ROUTES_FULFILLED,
         payload: {
           httpRoutes: routes,
-          namespace
-        }
+          namespace,
+        },
       });
     } catch (e) {
       dispatch({ type: LOAD_ROUTES_FAILED });
@@ -47,17 +47,8 @@ export const createRoute = (name: string, namespace: string, route: HttpRoute): 
         payload: {
           name,
           namespace,
-          route: routeRes
-        }
-      });
-
-      dispatch({
-        type: CREATE_ROUTE_FULFILLED,
-        payload: {
-          name,
-          namespace,
-          route
-        }
+          route: routeRes,
+        },
       });
     } catch (e) {
       dispatch({ type: CREATE_ROUTE_FAILED });
@@ -66,7 +57,7 @@ export const createRoute = (name: string, namespace: string, route: HttpRoute): 
   };
 };
 
-export const updateRoute = (name: string, namespace: string, route: HttpRoute): ThunkResult<Promise<void>> => {
+export const updateRoute = (name: string, namespace: string, route: HttpRoute): ThunkResult<Promise<HttpRoute>> => {
   return async (dispatch, getState) => {
     try {
       dispatch({ type: UPDATE_ROUTE_PENDING });
@@ -77,18 +68,11 @@ export const updateRoute = (name: string, namespace: string, route: HttpRoute): 
         payload: {
           name,
           namespace,
-          route: routeRes
-        }
+          route: routeRes,
+        },
       });
 
-      dispatch({
-        type: UPDATE_ROUTE_FULFILLED,
-        payload: {
-          name,
-          namespace,
-          route
-        }
-      });
+      return route;
     } catch (e) {
       dispatch({ type: UPDATE_ROUTE_FAILED });
       throw e;
@@ -112,16 +96,8 @@ export const deleteRoute = (name: string, namespace: string): ThunkResult<Promis
         type: DELETE_ROUTE_FULFILLED,
         payload: {
           name,
-          namespace
-        }
-      });
-
-      dispatch({
-        type: DELETE_ROUTE_FULFILLED,
-        payload: {
-          name,
-          namespace
-        }
+          namespace,
+        },
       });
     } catch (e) {
       dispatch({ type: DELETE_ROUTE_FAILED });

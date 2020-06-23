@@ -19,9 +19,9 @@ const mapStateToProps = (state: RootState, props: any) => {
   const search = queryString.parse(location.search);
   componentName = componentName || search.component;
 
-  const application = applications.get("applications").find(x => x.get("name") === applicationName);
+  const application = applications.get("applications").find((x) => x.get("name") === applicationName);
   // for detail
-  const component = application && application.get("components")?.find(x => x.get("name") === componentName);
+  const component = application && application.get("components")?.find((x) => x.get("name") === componentName);
   // for edit
   const currentComponent = component
     ? applicationComponentDetailsToApplicationComponent(component)

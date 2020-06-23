@@ -7,10 +7,8 @@ import { getComponentVolumeType, isDirtyField } from "../../selectors/component"
 import {
   Volume,
   VolumeTypePersistentVolumeClaim,
-  // VolumeTypePersistentVolumeClaimExisting,
-  // VolumeTypePersistentVolumeClaimNew,
   VolumeTypeTemporaryDisk,
-  VolumeTypeTemporaryMemory
+  VolumeTypeTemporaryMemory,
 } from "../../types/componentTemplate";
 import { FieldArrayWrapper } from "../Basic/FieldArrayWrapper";
 import { RenderSelectField } from "../Basic/select";
@@ -20,7 +18,7 @@ import { ValidatorRequired } from "../validator";
 const mapStateToProps = (state: RootState) => {
   return {
     storageClasses: state.get("persistentVolumes").get("storageClasses"),
-    persistentVolumes: state.get("persistentVolumes").get("persistentVolumes")
+    persistentVolumes: state.get("persistentVolumes").get("persistentVolumes"),
   };
 };
 
@@ -44,13 +42,13 @@ class RenderVolumes extends React.PureComponent<Props> {
 
     options.push({
       value: "",
-      text: "Create a new disk"
+      text: "Create a new disk",
     });
 
-    persistentVolumes.forEach(pv => {
+    persistentVolumes.forEach((pv) => {
       options.push({
         value: pv.get("name"),
-        text: pv.get("name")
+        text: pv.get("name"),
       });
     });
 
@@ -65,10 +63,10 @@ class RenderVolumes extends React.PureComponent<Props> {
       text: string;
     }[] = [];
 
-    storageClasses.forEach(sc => {
+    storageClasses.forEach((sc) => {
       options.push({
         value: sc.get("name"),
-        text: sc.get("name")
+        text: sc.get("name"),
       });
     });
 
@@ -95,8 +93,9 @@ class RenderVolumes extends React.PureComponent<Props> {
           // { value: VolumeTypePersistentVolumeClaimNew, text: "Create and mount disk" },
           // { value: VolumeTypePersistentVolumeClaimExisting, text: "Mount an existing disk" },
           { value: VolumeTypeTemporaryDisk, text: "Mount a temporary disk" },
-          { value: VolumeTypeTemporaryMemory, text: "Mount a temporary memory disk" }
-        ]}></Field>
+          { value: VolumeTypeTemporaryMemory, text: "Mount a temporary memory disk" },
+        ]}
+      ></Field>,
     ];
 
     if (volumeType === VolumeTypePersistentVolumeClaim) {
@@ -109,7 +108,8 @@ class RenderVolumes extends React.PureComponent<Props> {
           label="Claim Name"
           // validate={[ValidatorRequired]}
           placeholder="Select a Claim Name"
-          options={this.getClaimNameOptions()}></Field>
+          options={this.getClaimNameOptions()}
+        ></Field>,
       );
       fieldComponents.push(
         <Field
@@ -118,7 +118,8 @@ class RenderVolumes extends React.PureComponent<Props> {
           name={`${member}.storageClassName`}
           component={RenderSelectField}
           placeholder="Select the type of your disk"
-          options={this.getStorageClassesOptions()}></Field>
+          options={this.getStorageClassesOptions()}
+        ></Field>,
       );
       // } else if (volumeType === VolumeTypePersistentVolumeClaimExisting) {
       //   fieldComponents.push(
@@ -139,7 +140,7 @@ class RenderVolumes extends React.PureComponent<Props> {
         label="Mount Path"
         margin
         validate={[ValidatorRequired]}
-      />
+      />,
     );
     fieldComponents.push(
       <Field
@@ -149,7 +150,7 @@ class RenderVolumes extends React.PureComponent<Props> {
         label="Size"
         margin
         validate={[ValidatorRequired]}
-      />
+      />,
     );
 
     return fieldComponents;

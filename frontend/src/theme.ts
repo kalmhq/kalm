@@ -8,21 +8,21 @@ let themeRaw = createMuiTheme({
   props: {
     MuiTextField: {
       // variant: "outlined",
-      size: "small"
-    }
+      size: "small",
+    },
   },
   palette: {
     primary: indigo,
     secondary: grey,
     success: {
-      main: green[700]
+      main: green[700],
     },
     error: {
-      main: red[700]
+      main: red[700],
     },
     text: {
       primary: grey[900],
-      secondary: grey[500]
+      secondary: grey[500],
     },
     // action: {
     //   active: indigo[700]
@@ -33,71 +33,71 @@ let themeRaw = createMuiTheme({
     // Used by the functions below to shift a color's luminance by approximately
     // two indexes within its tonal palette.
     // E.g., shift from Red 500 to Red 300 or Red 700.
-    tonalOffset: 0.2
+    tonalOffset: 0.2,
   },
   typography: {
     h1: {
       fontSize: 28,
-      fontWeight: 500
+      fontWeight: 500,
     },
     h2: {
       fontSize: 20,
-      fontWeight: 400
+      fontWeight: 400,
     },
     h3: {
       fontSize: 18,
-      fontWeight: 500
+      fontWeight: 500,
     },
     h4: {
       fontSize: 18,
-      fontWeight: 400
+      fontWeight: 400,
     },
     h5: {
       fontSize: 15,
-      fontWeight: 500
+      fontWeight: 500,
     },
     h6: {
       fontSize: 15,
-      fontWeight: 400
+      fontWeight: 400,
     },
     body1: {
       fontSize: 13,
-      fontWeight: 400
+      fontWeight: 400,
     },
     body2: {
       fontSize: 13,
       fontWeight: 500,
-      color: "rgba(0, 0, 0, 0.6);"
+      color: "rgba(0, 0, 0, 0.6);",
     },
     button: {
       fontSize: 13,
       fontWeight: 500,
-      textTransform: "capitalize"
+      textTransform: "capitalize",
     },
     caption: {
       fontSize: 12,
-      fontWeight: 400
-    }
+      fontWeight: 400,
+    },
   },
   overrides: {
     MuiInputLabel: {
       root: {
         fontWeight: 500,
         fontSize: 13,
-        color: "#000"
-      }
+        color: "#000",
+      },
     },
     MuiPaper: {
       root: {
-        backgroundColor: "#FAFAFA"
-      }
+        backgroundColor: "#FAFAFA",
+      },
     },
     MuiButton: {
       contained: {
-        boxShadow: "0 1px 3px 0px rgba(0,0,0, .2)"
+        boxShadow: "0 1px 3px 0px rgba(0,0,0, .2)",
       },
       containedPrimary: {
-        boxShadow: "0 1px 3px 0px rgba(0,0,0, .2)"
+        boxShadow: "0 1px 3px 0px rgba(0,0,0, .2)",
       },
       // textPrimary: {
       //   // backgroundColor: "rgba(25, 118, 210, 0.04)",
@@ -107,40 +107,40 @@ let themeRaw = createMuiTheme({
       // },
       textSizeLarge: {
         paddingTop: 0,
-        paddingBottom: 0
-      }
+        paddingBottom: 0,
+      },
     },
     MuiSvgIcon: {
       fontSizeSmall: {
-        fontSize: "1.0rem"
-      }
+        fontSize: "1.0rem",
+      },
     },
     MuiTableCell: {
       sizeSmall: {
         paddingTop: 0,
-        paddingBottom: 0
-      }
+        paddingBottom: 0,
+      },
     },
     MuiToolbar: {
       regular: {
         height: 20,
         minHeight: 44,
         "@media (min-width: 600px)": {
-          minHeight: 44
-        }
-      }
+          minHeight: 44,
+        },
+      },
     },
     MuiFormLabel: {
       root: {
         // color: "black"
-      }
+      },
     },
     MuiFormControl: {
       marginNormal: {
-        paddingBottom: 0
-      }
-    }
-  }
+        paddingBottom: 0,
+      },
+    },
+  },
 });
 
 // export const theme = responsiveFontSizes(themeRaw);

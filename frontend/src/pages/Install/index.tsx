@@ -1,5 +1,5 @@
 import React from "react";
-import { makeStyles, Theme, createStyles } from "@material-ui/core/styles";
+import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import Stepper from "@material-ui/core/Stepper";
 import Step from "@material-ui/core/Step";
 import StepLabel from "@material-ui/core/StepLabel";
@@ -13,19 +13,19 @@ import { BasePage } from "../BasePage";
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
-      width: "100%"
+      width: "100%",
     },
     button: {
       marginTop: theme.spacing(1),
-      marginRight: theme.spacing(1)
+      marginRight: theme.spacing(1),
     },
     actionsContainer: {
-      marginBottom: theme.spacing(2)
+      marginBottom: theme.spacing(2),
     },
     resetContainer: {
-      padding: theme.spacing(3)
-    }
-  })
+      padding: theme.spacing(3),
+    },
+  }),
 );
 
 // function getSteps() {
@@ -50,31 +50,31 @@ const IntallDaeContent: React.FunctionComponent<any> = () => {
 };
 
 const ConfigureImageRegistry: React.FunctionComponent = () => {
-  const classes = makeStyles(theme => ({
+  const classes = makeStyles((theme) => ({
     root: {
-      height: 180
+      height: 180,
     },
     container: {
-      display: "flex"
+      display: "flex",
     },
     paper: {
-      margin: theme.spacing(1)
+      margin: theme.spacing(1),
     },
     svg: {
       width: 100,
-      height: 100
+      height: 100,
     },
     polygon: {
       fill: theme.palette.common.white,
       stroke: theme.palette.divider,
-      strokeWidth: 1
-    }
+      strokeWidth: 1,
+    },
   }))();
 
   const [checked, setChecked] = React.useState(false);
 
   const handleChange = () => {
-    setChecked(prev => !prev);
+    setChecked((prev) => !prev);
   };
 
   return (
@@ -99,22 +99,22 @@ const fullSteps: Step[] = [
     content: <IntallDaeContent />,
     hasNext: true,
     hasPrivate: false,
-    isOptional: true
+    isOptional: true,
   },
   {
     title: "Configure Image Registry",
     content: <ConfigureImageRegistry />,
     hasNext: true,
     hasPrivate: false,
-    isOptional: true
+    isOptional: true,
   },
   {
     title: "Finished!",
     content: `You are good to go.`,
     hasNext: true,
     hasPrivate: false,
-    isOptional: true
-  }
+    isOptional: true,
+  },
 ];
 
 // function getStepContent(step: number) {
@@ -141,11 +141,11 @@ export default function InstallPage() {
   const steps = fullSteps;
 
   const handleNext = () => {
-    setActiveStep(prevActiveStep => prevActiveStep + 1);
+    setActiveStep((prevActiveStep) => prevActiveStep + 1);
   };
 
   const handleBack = () => {
-    setActiveStep(prevActiveStep => prevActiveStep - 1);
+    setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
 
   // const handleReset = () => {

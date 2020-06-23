@@ -2,18 +2,18 @@ import Immutable from "immutable";
 import { Actions } from "../types";
 import { ImmutableMap } from "../typings";
 import {
-  LOAD_CERTIFICATES_FAILED,
-  LOAD_CERTIFICATES_PENDING,
-  CertificateList,
-  SET_IS_SUBMITTING_CERTIFICATE,
-  LOAD_CERTIFICATES_FULFILLED,
-  DELETE_CERTIFICATE,
-  SET_EDIT_CERTIFICATE_MODAL,
+  Certificate,
   CertificateIssuerList,
-  LOAD_CERTIFICATE_ISSUERS_FULFILLED,
+  CertificateList,
   CREATE_CERTIFICATE,
   CREATE_CERTIFICATE_ISSUER,
-  Certificate
+  DELETE_CERTIFICATE,
+  LOAD_CERTIFICATE_ISSUERS_FULFILLED,
+  LOAD_CERTIFICATES_FAILED,
+  LOAD_CERTIFICATES_FULFILLED,
+  LOAD_CERTIFICATES_PENDING,
+  SET_EDIT_CERTIFICATE_MODAL,
+  SET_IS_SUBMITTING_CERTIFICATE,
 } from "types/certificate";
 
 export type State = ImmutableMap<{
@@ -30,7 +30,7 @@ const initialState: State = Immutable.Map({
   isFirstLoaded: false,
   isSubmittingCreateCertificate: false,
   certificates: Immutable.List(),
-  certificateIssuers: Immutable.List()
+  certificateIssuers: Immutable.List(),
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {
@@ -54,7 +54,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
     }
     case DELETE_CERTIFICATE: {
       const certificates = state.get("certificates");
-      const index = certificates.findIndex(cert => cert.get("name") === action.payload.name);
+      const index = certificates.findIndex((cert) => cert.get("name") === action.payload.name);
 
       if (index >= 0) {
         state = state.deleteIn(["certificates", index]);
@@ -65,23 +65,25 @@ const reducer = (state: State = initialState, action: Actions): State => {
     case CREATE_CERTIFICATE: {
       const index = state
         .get("certificates")
-        .findIndex(certificate => certificate.get("name") === action.payload.certificate.get("name"));
+        .findIndex((certificate) => certificate.get("name") === action.payload.certificate.get("name"));
       if (index >= 0) {
         state = state.setIn(["certificates", index], action.payload.certificate);
       } else {
-        state = state.update("certificates", certificates => certificates.push(action.payload.certificate));
+        state = state.update("certificates", (certificates) => certificates.push(action.payload.certificate));
       }
       break;
     }
     case CREATE_CERTIFICATE_ISSUER: {
       const index = state
         .get("certificateIssuers")
-        .findIndex(certificateIssuer => certificateIssuer.get("name") === action.payload.certificateIssuer.get("name"));
+        .findIndex(
+          (certificateIssuer) => certificateIssuer.get("name") === action.payload.certificateIssuer.get("name"),
+        );
       if (index >= 0) {
         state = state.setIn(["certificateIssuers", index], action.payload.certificateIssuer);
       } else {
-        state = state.update("certificateIssuers", certificateIssuers =>
-          certificateIssuers.push(action.payload.certificateIssuer)
+        state = state.update("certificateIssuers", (certificateIssuers) =>
+          certificateIssuers.push(action.payload.certificateIssuer),
         );
       }
       break;

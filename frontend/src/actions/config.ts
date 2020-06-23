@@ -12,22 +12,22 @@ import {
   LOAD_CONFIGS_FAILED,
   LOAD_CONFIGS_FULFILLED,
   LOAD_CONFIGS_PENDING,
-  SetIsSubmittingConfig,
   SET_CURRENT_CONFIG_ID_CHAIN,
   SET_IS_SUBMITTING_CONFIG,
-  UPDATE_CONFIG
+  SetIsSubmittingConfig,
+  UPDATE_CONFIG,
 } from "../types/config";
 import {
   createKappFilesV1alpha1,
   deleteKappFileV1alpha1,
   getKappFilesV1alpha1,
   moveKappFileV1alpha1,
-  updateKappFileV1alpha1
+  updateKappFileV1alpha1,
 } from "./kubernetesApi";
 import { setSuccessNotificationAction } from "./notification";
 
 export const uploadConfigsAction = (ancestorIds: string[], filesUpload: FilesUpload): ThunkResult<Promise<void>> => {
-  return async dispatch => {
+  return async (dispatch) => {
     // console.log("files", filesUpload.toJS());
     dispatch(setIsSubmittingConfig(true));
 
@@ -36,7 +36,7 @@ export const uploadConfigsAction = (ancestorIds: string[], filesUpload: FilesUpl
       files.push({
         path: ancestorIdsToPath(ancestorIds, name),
         isDir: false,
-        content
+        content,
       });
     });
 
@@ -55,7 +55,7 @@ export const uploadConfigsAction = (ancestorIds: string[], filesUpload: FilesUpl
 };
 
 export const createConfigAction = (config: ConfigNode): ThunkResult<Promise<void>> => {
-  return async dispatch => {
+  return async (dispatch) => {
     config = config.set("id", config.get("name"));
 
     dispatch(setIsSubmittingConfig(true));
@@ -64,8 +64,8 @@ export const createConfigAction = (config: ConfigNode): ThunkResult<Promise<void
       {
         path: getConfigPath(config),
         isDir: config.get("type") === "folder",
-        content: config.get("content")
-      }
+        content: config.get("content"),
+      },
     ];
 
     try {
@@ -80,7 +80,7 @@ export const createConfigAction = (config: ConfigNode): ThunkResult<Promise<void
 
     dispatch({
       type: CREATE_CONFIG,
-      payload: { config }
+      payload: { config },
     });
 
     const newIdChain = config.get("ancestorIds").toArray() || [];
@@ -90,14 +90,14 @@ export const createConfigAction = (config: ConfigNode): ThunkResult<Promise<void
 };
 
 export const duplicateConfigAction = (config: ConfigNode): ThunkResult<Promise<void>> => {
-  return async dispatch => {
+  return async (dispatch) => {
     config = Immutable.fromJS({
       id: config.get("name") + "-duplicate",
       name: config.get("name") + "-duplicate",
       type: config.get("type"),
       oldPath: "",
       content: config.get("content"),
-      ancestorIds: config.get("ancestorIds")
+      ancestorIds: config.get("ancestorIds"),
     });
     config = config.set("oldPath", getConfigPath(config));
 
@@ -105,8 +105,8 @@ export const duplicateConfigAction = (config: ConfigNode): ThunkResult<Promise<v
       {
         path: getConfigPath(config),
         isDir: config.get("type") === "folder",
-        content: config.get("content")
-      }
+        content: config.get("content"),
+      },
     ];
     await createKappFilesV1alpha1(files);
 
@@ -114,7 +114,7 @@ export const duplicateConfigAction = (config: ConfigNode): ThunkResult<Promise<v
 
     dispatch({
       type: DUPLICATE_CONFIG,
-      payload: { config }
+      payload: { config },
     });
 
     const newIdChain = config.get("ancestorIds").toArray() || [];
@@ -124,7 +124,7 @@ export const duplicateConfigAction = (config: ConfigNode): ThunkResult<Promise<v
 };
 
 export const updateConfigAction = (config: ConfigNode): ThunkResult<Promise<void>> => {
-  return async dispatch => {
+  return async (dispatch) => {
     config = config.set("id", config.get("name"));
     const newPath = getConfigPath(config);
 
@@ -146,7 +146,7 @@ export const updateConfigAction = (config: ConfigNode): ThunkResult<Promise<void
 
     dispatch({
       type: UPDATE_CONFIG,
-      payload: { config }
+      payload: { config },
     });
 
     const newIdChain = config.get("ancestorIds")!.toArray() || [];
@@ -158,7 +158,7 @@ export const updateConfigAction = (config: ConfigNode): ThunkResult<Promise<void
 };
 
 export const deleteConfigAction = (config: ConfigNode): ThunkResult<Promise<void>> => {
-  return async dispatch => {
+  return async (dispatch) => {
     await deleteKappFileV1alpha1(getConfigPath(config));
 
     dispatch(setSuccessNotificationAction("Delete config successful."));
@@ -166,7 +166,7 @@ export const deleteConfigAction = (config: ConfigNode): ThunkResult<Promise<void
     dispatch(setCurrentConfigIdChainAction([initialRootConfigNode.get("id")]));
     dispatch({
       type: DELETE_CONFIG,
-      payload: { config }
+      payload: { config },
     });
 
     dispatch(loadConfigsAction());
@@ -174,16 +174,16 @@ export const deleteConfigAction = (config: ConfigNode): ThunkResult<Promise<void
 };
 
 export const setCurrentConfigIdChainAction = (idChain: string[]): ThunkResult<Promise<void>> => {
-  return async dispatch => {
+  return async (dispatch) => {
     dispatch({
       type: SET_CURRENT_CONFIG_ID_CHAIN,
-      payload: { idChain }
+      payload: { idChain },
     });
   };
 };
 
 export const loadConfigsAction = (namespace?: string): ThunkResult<Promise<void>> => {
-  return async dispatch => {
+  return async (dispatch) => {
     dispatch({ type: LOAD_CONFIGS_PENDING });
 
     let configRes;
@@ -198,8 +198,8 @@ export const loadConfigsAction = (namespace?: string): ThunkResult<Promise<void>
     dispatch({
       type: LOAD_CONFIGS_FULFILLED,
       payload: {
-        configNode
-      }
+        configNode,
+      },
     });
   };
 };
@@ -249,7 +249,7 @@ export const pathToAncestorIds = (path: string): string[] => {
 export const configResToConfigNode = (configRes: ConfigRes): ConfigNode => {
   let children = Immutable.OrderedMap({});
   if (configRes.children) {
-    configRes.children.forEach(child => {
+    configRes.children.forEach((child) => {
       // recursive convert children
       children = children.set(child.name, configResToConfigNode(child));
     });
@@ -262,7 +262,7 @@ export const configResToConfigNode = (configRes: ConfigRes): ConfigNode => {
     oldPath: configRes.path,
     content: configRes.content,
     children,
-    ancestorIds: pathToAncestorIds(configRes.path)
+    ancestorIds: pathToAncestorIds(configRes.path),
   });
 };
 
@@ -270,7 +270,7 @@ export const setIsSubmittingConfig = (isSubmittingConfig: boolean): SetIsSubmitt
   return {
     type: SET_IS_SUBMITTING_CONFIG,
     payload: {
-      isSubmittingConfig
-    }
+      isSubmittingConfig,
+    },
   };
 };

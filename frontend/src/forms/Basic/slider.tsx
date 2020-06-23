@@ -19,7 +19,7 @@ export const KRenderSlider = ({
   max,
   step,
   disabled,
-  meta: { touched, invalid, error }
+  meta: { touched, invalid, error },
 }: SliderProps & WrappedFieldProps & Props) => {
   const id = ID();
 

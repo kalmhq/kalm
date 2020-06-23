@@ -31,21 +31,21 @@ const styles = (theme: Theme) =>
     },
     roleChell: {
       "& .add-button": {
-        display: "none"
+        display: "none",
       },
       "&:hover .add-button": {
-        display: "inline-block"
-      }
+        display: "inline-block",
+      },
     },
     secondHeaderRight: {
       height: "100%",
       width: "100%",
       display: "flex",
-      alignItems: "center"
+      alignItems: "center",
     },
     secondHeaderRightItem: {
-      marginLeft: 20
-    }
+      marginLeft: 20,
+    },
   });
 
 const mapStateToProps = (state: RootState) => {
@@ -53,19 +53,13 @@ const mapStateToProps = (state: RootState) => {
     namespaces: state
       .get("applications")
       .get("applications")
-      .map(application => application.get("name")),
+      .map((application) => application.get("name")),
     roleBindings: state.get("roles").get("roleBindings"),
     isFirstLoaded: state.get("roles").get("roleBindingsFirstLoaded"),
     isLoading: state.get("roles").get("roleBindingsLoading"),
     isCreating: state.get("roles").get("isRoleBindingCreating"),
-    serviceAccountDialogData: state
-      .get("dialogs")
-      .get(serviceAccountSecretDialogID)
-      ?.get("data"),
-    dialogData: state
-      .get("dialogs")
-      .get(dialogID)
-      ?.get("data")
+    serviceAccountDialogData: state.get("dialogs").get(serviceAccountSecretDialogID)?.get("data"),
+    dialogData: state.get("dialogs").get(dialogID)?.get("data"),
   };
 };
 
@@ -97,8 +91,8 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
   }
 
   private getData = (): RowData[] => {
-    return (this.props.roleBindings.map(x => x.toJS()).toArray() as RowData[]).sort((a, b) =>
-      a.kind > b.kind ? 1 : a.kind === b.kind ? (a.name > b.name ? 1 : -1) : -1
+    return (this.props.roleBindings.map((x) => x.toJS()).toArray() as RowData[]).sort((a, b) =>
+      a.kind > b.kind ? 1 : a.kind === b.kind ? (a.name > b.name ? 1 : -1) : -1,
     );
   };
 
@@ -114,7 +108,8 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
             size="small"
             onClick={() =>
               this.props.dispatch(openDialogAction(serviceAccountSecretDialogID, { serviceAccountName: rowData.name }))
-            }>
+            }
+          >
             <VisibilityOffIcon />
           </IconButton>
         ) : null}
@@ -124,9 +119,9 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
 
   private handleDelete = async (rowData: RowData) => {
     await Promise.all(
-      rowData.bindings.map(binding => {
+      rowData.bindings.map((binding) => {
         return this.props.dispatch(deleteRoleBindingsAction(binding.namespace, binding.name));
-      })
+      }),
     );
   };
 
@@ -137,7 +132,7 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
       kind: dialogData ? dialogData.kind : "User",
       name: dialogData ? dialogData.name : "",
       namespace: dialogData ? dialogData.namespace : "",
-      roles: []
+      roles: [],
     });
 
     return (
@@ -146,14 +141,15 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
         title="Create Role Binding"
         dialogProps={{
           fullWidth: true,
-          maxWidth: "sm"
+          maxWidth: "sm",
         }}
         actions={
           <>
             <CustomizedButton
               onClick={() => this.props.dispatch(closeDialogAction(dialogID))}
               color="default"
-              variant="contained">
+              variant="contained"
+            >
               Cancel
             </CustomizedButton>
             <CustomizedButton
@@ -161,11 +157,13 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
               color="primary"
               variant="contained"
               pending={isCreating}
-              disabled={isCreating}>
+              disabled={isCreating}
+            >
               {isCreating ? "Creating" : "Create"}
             </CustomizedButton>
           </>
-        }>
+        }
+      >
         <RoleBindingForm
           form={formID}
           onSubmit={async (attributes: RoleBindingsRequestBody) => {
@@ -187,10 +185,10 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
 
   private columnRenderGeneator = (namespace: string) => {
     return (rowData: RowData) => {
-      const bindings = rowData.bindings.filter(binding => binding.namespace === namespace);
+      const bindings = rowData.bindings.filter((binding) => binding.namespace === namespace);
       return (
         <div className={this.props.classes.roleChell}>
-          {bindings.map(binding => {
+          {bindings.map((binding) => {
             return (
               <Box mr={1} display="inline-block" key={binding.name}>
                 <Chip
@@ -217,7 +215,7 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
                 this.openAddModal({
                   kind: rowData.kind,
                   name: rowData.name,
-                  namespace: namespace
+                  namespace: namespace,
                 });
               }}
             />
@@ -237,18 +235,20 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
         title={"ServiceAccount " + serviceAccountName + " Secret"}
         dialogProps={{
           fullWidth: true,
-          maxWidth: "sm"
+          maxWidth: "sm",
         }}
         actions={
           <>
             <CustomizedButton
               onClick={() => this.props.dispatch(closeDialogAction(serviceAccountSecretDialogID))}
               color="default"
-              variant="contained">
+              variant="contained"
+            >
               Cancel
             </CustomizedButton>
           </>
-        }>
+        }
+      >
         <ServiceAccountSecret serviceAccountName={serviceAccountName} />
       </ControlledDialog>
     );
@@ -265,7 +265,8 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
           onClick={() => {
             blinkTopProgressAction();
             this.openAddModal();
-          }}>
+          }}
+        >
           Add
         </CustomizedButton>
       </div>
@@ -279,23 +280,24 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
       <BasePage
         leftDrawer={<AdminDrawer />}
         secondHeaderLeft={"Admin"}
-        secondHeaderRight={this.renderSecondHeaderRight()}>
+        secondHeaderRight={this.renderSecondHeaderRight()}
+      >
         <div className={classes.root}>
           {this.renderAddForm()}
           {this.renderShowServiceAccountSecretDialog()}
           <MaterialTable
             tableRef={this.tableRef}
             icons={{
-              Delete: forwardRef((props, ref) => <DeleteIcon ref={ref} {...props} color="secondary" />)
+              Delete: forwardRef((props, ref) => <DeleteIcon ref={ref} {...props} color="secondary" />),
             }}
             localization={{
               body: {
                 editRow: {
                   saveTooltip: "Save",
                   cancelTooltip: "Cancel",
-                  deleteText: "Are you sure you want to revoke all roles for this user/group/service account?"
-                }
-              }
+                  deleteText: "Are you sure you want to revoke all roles for this user/group/service account?",
+                },
+              },
             }}
             options={{
               pageSize: 20,
@@ -309,7 +311,7 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
               headerStyle: {
                 // backgroundColor: "#01579b",
                 // color: "#FFF"
-              }
+              },
             }}
             columns={([
               {
@@ -319,26 +321,26 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
                 cellStyle: {
                   // backgroundColor: "#039be5",
                   // color: "#FFF"
-                }
-              }
+                },
+              },
             ] as any).concat(
               namespaces
-                .map(namespace => ({
+                .map((namespace) => ({
                   title: namespace,
                   field: namespace,
                   render: this.columnRenderGeneator(namespace),
                   cellStyle: {
                     // backgroundColor: "white",
                     // color: "black"
-                    border: "1px solid rgba(224, 224, 224, 1)"
-                  }
+                    border: "1px solid rgba(224, 224, 224, 1)",
+                  },
                 }))
-                .toArray()
+                .toArray(),
             )}
             data={tableData}
             title=""
             editable={{
-              onRowDelete: this.handleDelete
+              onRowDelete: this.handleDelete,
             }}
           />
         </div>

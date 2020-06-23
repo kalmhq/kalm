@@ -34,7 +34,8 @@ const ConfirmDialog = ({
       open={open}
       onClose={() => handleCloseWithResult(false)}
       onExited={unmount}
-      aria-labelledby="responsive-dialog-title">
+      aria-labelledby="responsive-dialog-title"
+    >
       <DialogTitle id="responsive-dialog-title">{title}</DialogTitle>
       {!!content && (
         <DialogContent>

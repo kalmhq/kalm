@@ -1,7 +1,7 @@
 import React from "react";
 import { InjectedFormProps } from "redux-form";
 import { reduxForm } from "redux-form/immutable";
-import { Theme, WithStyles, createStyles, withStyles } from "@material-ui/core/styles";
+import { createStyles, Theme, WithStyles, withStyles } from "@material-ui/core/styles";
 import { Button, FormControl } from "@material-ui/core";
 import { FilesUpload } from "../../types/config";
 import Immutable from "immutable";
@@ -23,44 +23,44 @@ const styles = (theme: Theme) =>
       flexGrow: 1,
       width: "100%",
       backgroundColor: theme.palette.background.paper,
-      padding: 0
+      padding: 0,
     },
     cascaderWrapper: {
-      width: "100%"
+      width: "100%",
     },
     buttons: {
       padding: "30px 0 20px",
-      display: "flex"
+      display: "flex",
     },
     cancelButton: {
-      marginLeft: 15
+      marginLeft: 15,
     },
     dropzoneWrapper: {
-      outline: "none !important"
+      outline: "none !important",
     },
     dropzoneArea: {
       minHeight: "300px",
       border: "2px dashed #d0d0d0",
       borderRadius: "4px",
-      outline: "none !important"
+      outline: "none !important",
     },
     dropzoneTitle: {
       padding: "24px",
-      textAlign: "center"
+      textAlign: "center",
     },
     preveiwArea: {
       display: "flex",
-      flexWrap: "wrap"
+      flexWrap: "wrap",
     },
     previewItem: {
       padding: "5px 30px",
       minWidth: "33%",
       display: "flex",
-      alignItems: "center"
+      alignItems: "center",
     },
     previewName: {
-      marginRight: "20px"
-    }
+      marginRight: "20px",
+    },
   });
 
 interface Props extends WithStyles<typeof styles> {
@@ -75,7 +75,7 @@ interface State {
 
 const mapStateToProps = (state: RootState, props: Props) => {
   const initialValues = Immutable.fromJS({
-    ancestorIds: getAncestorIdsDefaultValue()
+    ancestorIds: getAncestorIdsDefaultValue(),
   });
   return { initialValues, isSubmittingConfig: state.get("configs").get("isSubmittingConfig") };
 };
@@ -84,14 +84,14 @@ class ConfigUploadFormRaw extends React.PureComponent<Props & InjectedFormProps<
   constructor(props: Props & InjectedFormProps<any, Props>) {
     super(props);
     this.state = {
-      files: Immutable.OrderedMap({})
+      files: Immutable.OrderedMap({}),
     };
   }
 
   private handleDrop(files: any[]) {
-    files.forEach(file => {
+    files.forEach((file) => {
       const reader = new FileReader();
-      reader.onload = event => {
+      reader.onload = (event) => {
         if (event.target) {
           // console.log("File name", file.name);
           // console.log("File content:", event.target.result);
@@ -132,16 +132,17 @@ class ConfigUploadFormRaw extends React.PureComponent<Props & InjectedFormProps<
           <IconButtonWithTooltip
             tooltipTitle="Delete"
             aria-label="delete"
-            onClick={event => this.handleDelete(event, name)}>
+            onClick={(event) => this.handleDelete(event, name)}
+          >
             <DeleteIcon />
           </IconButtonWithTooltip>
-        </div>
+        </div>,
       );
     });
 
     return (
       <div className={classes.root}>
-        <form onSubmit={handleSubmit(values => this.handleSubmit(values))}>
+        <form onSubmit={handleSubmit((values) => this.handleSubmit(values))}>
           <FormControl margin="dense" className={classes.cascaderWrapper}>
             <AncestorIds />
             <FormHelperText className="MuiFormHelperText-contained MuiFormHelperText-marginDense">
@@ -151,7 +152,7 @@ class ConfigUploadFormRaw extends React.PureComponent<Props & InjectedFormProps<
 
           {/* accept issues  */}
           {/* https://github.com/react-dropzone/react-dropzone/issues/276 */}
-          <Dropzone maxSize={1000000} onDrop={files => this.handleDrop(files)}>
+          <Dropzone maxSize={1000000} onDrop={(files) => this.handleDrop(files)}>
             {({ getRootProps, getInputProps }: { getRootProps: any; getInputProps: any }) => (
               <section>
                 <div {...getRootProps()} className={classes.dropzoneWrapper}>
@@ -183,7 +184,7 @@ export default withStyles(styles)(
   connect(mapStateToProps)(
     reduxForm<any, Props>({
       form: "configUpload",
-      onSubmitFail: console.log
-    })(ConfigUploadFormRaw)
-  )
+      onSubmitFail: console.log,
+    })(ConfigUploadFormRaw),
+  ),
 );

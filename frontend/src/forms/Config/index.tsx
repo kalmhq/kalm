@@ -1,10 +1,10 @@
 import React from "react";
 import { InjectedFormProps } from "redux-form";
-import { reduxForm, getFormValues, Field } from "redux-form/immutable";
+import { Field, getFormValues, reduxForm } from "redux-form/immutable";
 import { KRenderTextField } from "../Basic/textfield";
 import { makeStyles, Theme } from "@material-ui/core/styles";
 import { Button, FormControl } from "@material-ui/core";
-import { ValidatorRequired, ValidatorName } from "../validator";
+import { ValidatorName, ValidatorRequired } from "../validator";
 import { ConfigNode, ConfigNodeType } from "../../types/config";
 import Immutable from "immutable";
 import { CustomEditor } from "./editor";
@@ -34,7 +34,7 @@ const mapStateToProps = (state: RootState, props: Props) => {
       type: props.configType,
       oldPath: "",
       content: "",
-      children: Immutable.fromJS({})
+      children: Immutable.fromJS({}),
     });
   } else {
     const config = getCurrentConfig();
@@ -47,14 +47,14 @@ const mapStateToProps = (state: RootState, props: Props) => {
       name: config.get("name"),
       oldPath: config.get("oldPath"),
       type: "file",
-      content: config.get("content")
+      content: config.get("content"),
     });
   }
 
   return {
     formValues,
     initialValues,
-    isSubmittingConfig: state.get("configs").get("isSubmittingConfig")
+    isSubmittingConfig: state.get("configs").get("isSubmittingConfig"),
   };
 };
 
@@ -63,35 +63,35 @@ const useStyles = makeStyles((theme: Theme) => ({
     flexGrow: 1,
     width: "100%",
     backgroundColor: theme.palette.background.paper,
-    padding: 0
+    padding: 0,
   },
   paper: {
     padding: theme.spacing(3),
-    marginBottom: theme.spacing(5)
+    marginBottom: theme.spacing(5),
   },
   buttons: {
     padding: "30px 0 20px",
-    display: "flex"
+    display: "flex",
   },
   cancelButton: {
-    marginLeft: 15
+    marginLeft: 15,
   },
   pathAndName: {
     width: "100%",
     display: "flex",
     alignItems: "center",
-    justifyContent: "space-between"
+    justifyContent: "space-between",
   },
   pathWrapper: {
     width: "100%",
-    marginRight: "20px"
+    marginRight: "20px",
   },
   nameWrapper: {
-    width: "100%"
+    width: "100%",
   },
   editorWarpper: {
-    width: "100%"
-  }
+    width: "100%",
+  },
 }));
 
 const ConfigFormRaw = (props: Props & InjectedFormProps<ConfigNode, Props>) => {
@@ -143,6 +143,6 @@ const ConfigFormRaw = (props: Props & InjectedFormProps<ConfigNode, Props>) => {
 export default connect(mapStateToProps)(
   reduxForm<ConfigNode, Props>({
     form: "config",
-    onSubmitFail: console.log
-  })(ConfigFormRaw)
+    onSubmitFail: console.log,
+  })(ConfigFormRaw),
 );

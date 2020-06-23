@@ -1,17 +1,17 @@
 import Immutable from "immutable";
 import { ImmutableMap } from "../typings";
 import {
-  CREATE_CONFIG,
   ConfigNode,
-  UPDATE_CONFIG,
+  CREATE_CONFIG,
   DELETE_CONFIG,
-  SET_CURRENT_CONFIG_ID_CHAIN,
   DUPLICATE_CONFIG,
+  initialRootConfigNode,
+  LOAD_CONFIGS_FAILED,
   LOAD_CONFIGS_FULFILLED,
   LOAD_CONFIGS_PENDING,
-  LOAD_CONFIGS_FAILED,
-  initialRootConfigNode,
-  SET_IS_SUBMITTING_CONFIG
+  SET_CURRENT_CONFIG_ID_CHAIN,
+  SET_IS_SUBMITTING_CONFIG,
+  UPDATE_CONFIG,
 } from "../types/config";
 import { Actions } from "../types";
 import { LOGOUT } from "types/common";
@@ -31,7 +31,7 @@ const initialState: State = Immutable.Map({
   configFilePaths: Immutable.List([]),
   isListLoading: false,
   isListFirstLoaded: false,
-  isSubmittingConfig: false
+  isSubmittingConfig: false,
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {
@@ -59,7 +59,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
 
       const pushToPaths = (node: ConfigNode) => {
         if (node.get("type") === "folder") {
-          node.get("children").forEach(childNode => {
+          node.get("children").forEach((childNode) => {
             pushToPaths(childNode);
           });
           return;
@@ -96,7 +96,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
         name: configForm.get("name"),
         content: configForm.get("content"),
         children: configForm.get("children"),
-        ancestorIds
+        ancestorIds,
       });
 
       immutablePath.push(config.get("id"));
@@ -121,7 +121,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
         type: configForm.get("type"),
         name: configForm.get("name"),
         content: configForm.get("content"),
-        ancestorIds
+        ancestorIds,
       });
 
       immutablePath.push(config.get("id"));
@@ -146,7 +146,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
         type: configForm.get("type"),
         name: configForm.get("name"),
         content: configForm.get("content"),
-        ancestorIds
+        ancestorIds,
       });
 
       immutablePath.push(config.get("id"));

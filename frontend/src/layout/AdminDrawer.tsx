@@ -17,7 +17,7 @@ const mapStateToProps = (state: RootState) => {
   return {
     activeNamespaceName: state.get("namespaces").get("active"),
     isAdmin,
-    entity
+    entity,
   };
 };
 
@@ -28,17 +28,17 @@ const styles = (theme: Theme) =>
       height: 40,
 
       "& > .MuiListItemIcon-root": {
-        minWidth: 40
-      }
+        minWidth: 40,
+      },
     },
     listItemSeleted: {
       backgroundColor: `${primaryBackgroud} !important`,
-      borderRight: `4px solid ${primaryColor}`
+      borderRight: `4px solid ${primaryColor}`,
     },
     listSubHeader: {
       textTransform: "uppercase",
-      color: "#000000 !important"
-    }
+      color: "#000000 !important",
+    },
   });
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps> {
@@ -59,8 +59,8 @@ class AdminDrawerRaw extends React.PureComponent<Props, State> {
       {
         text: "Roles & Permissions",
         to: "/roles",
-        requireAdmin: true
-      }
+        requireAdmin: true,
+      },
     ];
   }
 
@@ -77,13 +77,14 @@ class AdminDrawerRaw extends React.PureComponent<Props, State> {
               onClick={() => blinkTopProgressAction()}
               className={classes.listItem}
               classes={{
-                selected: classes.listItemSeleted
+                selected: classes.listItemSeleted,
               }}
               button
               component={NavLink}
               to={item.to}
               key={item.text}
-              selected={pathname.startsWith(item.to.split("?")[0])}>
+              selected={pathname.startsWith(item.to.split("?")[0])}
+            >
               <ListItemIcon>
                 <AppsIcon />
               </ListItemIcon>

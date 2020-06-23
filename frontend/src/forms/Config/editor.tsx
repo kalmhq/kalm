@@ -52,7 +52,7 @@ const renderEditor = ({ input }: FilledTextFieldProps & WrappedFieldProps) => {
         enableLiveAutocompletion: false,
         enableSnippets: false,
         showLineNumbers: true,
-        tabSize: 1
+        tabSize: 1,
       }}
     />
   );

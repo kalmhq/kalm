@@ -3,18 +3,18 @@ import Dialog from "@material-ui/core/Dialog";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import { TDispatch } from "../../types";
-import { Theme, createStyles, WithStyles, withStyles } from "@material-ui/core";
+import { createStyles, Theme, WithStyles, withStyles } from "@material-ui/core";
 import ConfigUploadForm from "../../forms/Config/upload";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
     buttons: {
-      padding: "30px 0 20px"
+      padding: "30px 0 20px",
     },
     cancelButton: {
-      marginLeft: 15
-    }
+      marginLeft: 15,
+    },
   });
 
 interface Props extends WithStyles<typeof styles> {
@@ -45,7 +45,8 @@ class ConfigUploadDialogRaw extends React.PureComponent<Props, State> {
           aria-labelledby="alert-dialog-title"
           aria-describedby="alert-dialog-description"
           maxWidth={"md"}
-          fullWidth={true}>
+          fullWidth={true}
+        >
           <DialogTitle id="alert-dialog-title">Upload Configs</DialogTitle>
           <DialogContent>
             <ConfigUploadForm onSubmit={handleSubmit} onClose={handleClose} dispatch={dispatch} />

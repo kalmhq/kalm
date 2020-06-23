@@ -4,18 +4,14 @@ export const ID = (): string => {
   // Math.random should be unique because of its seeding algorithm.
   // Convert it to base 36 (numbers + letters), and grab the first 9 characters
   // after the decimal.
-  return Math.random()
-    .toString(36)
-    .substr(2, 9);
+  return Math.random().toString(36).substr(2, 9);
 };
 
 export const randomName = (): string => {
   // Math.random should be unique because of its seeding algorithm.
   // Convert it to base 36 (numbers + letters), and grab the first 9 characters
   // after the decimal.
-  return Math.random()
-    .toString(36)
-    .substr(2, 9);
+  return Math.random().toString(36).substr(2, 9);
 };
 
 export const formatDate = (date: Date): string => {
@@ -59,7 +55,7 @@ export const resErrorsToSubmitErrors = (errors: ResError[]) => {
   //   }
   // ]
   const submitErrors: { [key: string]: any } = {};
-  errors.forEach(error => {
+  errors.forEach((error) => {
     // ".components[1].dependencies".split(".")
     // => ["", "components[1]", "dependencies"]
     const keySplits = error.key.split(".");

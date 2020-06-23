@@ -9,7 +9,7 @@ export enum KappDependencyStatus {
   InstallFailed,
   Installing,
   Uninstalling,
-  Running
+  Running,
 }
 
 export const KappDependencyStatusText = ["Not Installed", "Install Failed", "Installing", "Uninstalling", "Running"];

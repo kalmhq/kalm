@@ -12,7 +12,7 @@ export type State = ImmutableMap<{
 const initialState: State = Immutable.Map({
   isLoading: false,
   isFirstLoaded: false,
-  services: Immutable.List([])
+  services: Immutable.List([]),
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {

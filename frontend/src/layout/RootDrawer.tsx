@@ -18,7 +18,7 @@ import { connect } from "react-redux";
 import { NavLink } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
-import { LEFT_SECTION_OPEN_WIDTH, LEFT_SECTION_CLOSE_WIDTH } from "../pages/BasePage";
+import { LEFT_SECTION_CLOSE_WIDTH, LEFT_SECTION_OPEN_WIDTH } from "../pages/BasePage";
 import { primaryBackgroud, primaryColor } from "../theme";
 import { KappApplicationIcon, KappNodeIcon, KappVolumeIcon } from "../widgets/Icon";
 import { APP_BAR_HEIGHT } from "./AppBar";
@@ -158,7 +158,8 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
             [classes.drawerOpen]: open,
             [classes.drawerClose]: !open,
           }),
-        }}>
+        }}
+      >
         {/* <div className={clsx(classes.openBtnWrapper, { [classes.itemBorder]: !open })}>
           <IconButton onClick={() => dispatch(setSettingsAction({ isOpenRootDrawer: !open }))} size={"small"}>
             {open ? <ChevronLeftIcon /> : <ChevronRightIcon />}
@@ -186,7 +187,8 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
               to={item.to}
               key={item.text}
               tutorial-anchor-id={"first-level-sidebar-item-" + item.text.toLocaleLowerCase()}
-              selected={pathname.startsWith(item.to.split("?")[0])}>
+              selected={pathname.startsWith(item.to.split("?")[0])}
+            >
               <ListItemIcon>
                 <item.icon />
               </ListItemIcon>
@@ -213,7 +215,8 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
               component={NavLink}
               to={item.to}
               key={item.text}
-              selected={pathname.startsWith(item.to.split("?")[0])}>
+              selected={pathname.startsWith(item.to.split("?")[0])}
+            >
               <ListItemIcon>
                 <item.icon />
               </ListItemIcon>

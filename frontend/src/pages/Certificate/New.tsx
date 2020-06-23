@@ -1,8 +1,8 @@
 import React from "react";
-import { withStyles, createStyles, Theme, WithStyles } from "@material-ui/core";
+import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
-import { newEmptyCertificateForm, CertificateFormType, selfManaged } from "types/certificate";
+import { CertificateFormType, newEmptyCertificateForm, selfManaged } from "types/certificate";
 import { createCertificateAction, setEditCertificateModal } from "actions/certificate";
 import { CertificateForm } from "forms/Certificate";
 import { ControlledDialog } from "widgets/ControlledDialog";
@@ -16,7 +16,7 @@ const mapStateToProps = (state: RootState) => {
   const isEdit = !!editingCertificate;
   return {
     isEdit,
-    editingCertificate
+    editingCertificate,
   };
 };
 
@@ -27,11 +27,11 @@ const styles = (theme: Theme) =>
     label: {
       fontSize: 12,
       marginBottom: 18,
-      display: "block"
+      display: "block",
     },
     editBtn: {
-      marginLeft: 8
-    }
+      marginLeft: 8,
+    },
   });
 
 export interface Props extends WithStyles<typeof styles>, TDispatchProp, ReturnType<typeof mapStateToProps> {}
@@ -53,7 +53,7 @@ class CertificateNewRaw extends React.PureComponent<Props> {
     if (editingCertificate) {
       return Immutable.fromJS({
         name: editingCertificate.get("name"),
-        managedType: selfManaged
+        managedType: selfManaged,
       });
     } else {
       return newEmptyCertificateForm();
@@ -68,8 +68,9 @@ class CertificateNewRaw extends React.PureComponent<Props> {
         title={isEdit ? "Edit Certificate" : "Add Certificate"}
         dialogProps={{
           fullWidth: true,
-          maxWidth: "sm"
-        }}>
+          maxWidth: "sm",
+        }}
+      >
         <CertificateForm isEdit={isEdit} onSubmit={this.submit} initialValues={this.generateCertificateForm()} />
       </ControlledDialog>
     );

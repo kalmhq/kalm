@@ -1,8 +1,8 @@
-import { useSnackbar, SnackbarProvider } from "notistack";
+import { SnackbarProvider, useSnackbar } from "notistack";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "../../reducers";
-import { withStyles, Theme, createStyles, WithStyles } from "@material-ui/core";
+import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { tutorialDrawerWidth } from "pages/Tutorial";
 
 const getMessageFromState = (state: RootState) => ({
@@ -64,7 +64,8 @@ export const Snackbar = connect(mapStateToProps)(
             anchorOrigin={{
               horizontal: "right",
               vertical: "bottom",
-            }}>
+            }}
+          >
             <NotificationComponent />
           </SnackbarProvider>
         );

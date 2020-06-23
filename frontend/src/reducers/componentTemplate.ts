@@ -3,13 +3,13 @@ import { ImmutableMap } from "../typings";
 import { Actions } from "../types";
 import {
   ComponentTemplate,
-  LOAD_COMPONENT_TEMPLATES_PENDING,
-  LOAD_COMPONENT_TEMPLATES_FULFILLED,
-  LOAD_COMPONENT_TEMPLATES_FAILED,
   CREATE_COMPONENT_TEMPLATES,
-  UPDATE_COMPONENT_TEMPLATES,
+  DELETE_COMPONENT_TEMPLATES,
   DUPLICATE_COMPONENT_TEMPLATES,
-  DELETE_COMPONENT_TEMPLATES
+  LOAD_COMPONENT_TEMPLATES_FAILED,
+  LOAD_COMPONENT_TEMPLATES_FULFILLED,
+  LOAD_COMPONENT_TEMPLATES_PENDING,
+  UPDATE_COMPONENT_TEMPLATES,
 } from "../types/componentTemplate";
 import { LOGOUT } from "types/common";
 
@@ -22,7 +22,7 @@ export type State = ImmutableMap<{
 const initialState: State = Immutable.Map({
   componentTemplates: Immutable.OrderedMap(),
   isListLoading: false,
-  isListFirstLoaded: false
+  isListFirstLoaded: false,
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {
@@ -37,7 +37,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
     case LOAD_COMPONENT_TEMPLATES_FULFILLED: {
       let om = Immutable.OrderedMap<string, ComponentTemplate>();
 
-      action.payload.componentTemplates.forEach(x => {
+      action.payload.componentTemplates.forEach((x) => {
         om = om.set(x.get("name"), x);
       });
 

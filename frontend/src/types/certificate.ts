@@ -110,14 +110,14 @@ export const newEmptyCertificateForm = (): CertificateFormType => {
     managedType: issuerManaged,
     selfManagedCertContent: "",
     selfManagedCertPrivateKey: "",
-    domains: Immutable.List()
+    domains: Immutable.List(),
   });
 };
 
 export const newEmptyCertificateIssuerForm = (): CertificateIssuerFormType => {
   return Immutable.fromJS({
     name: "",
-    issuerType: cloudFlare
+    issuerType: cloudFlare,
   });
 };
 

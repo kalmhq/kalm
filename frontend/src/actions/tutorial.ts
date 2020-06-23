@@ -1,16 +1,16 @@
 import {
   CLOSE_TUTORIAL_DRAWER,
   OPEN_TUTORIAL_DRAWER,
-  ResetTutorialAction,
   RESET_TUTORIAL_ACTION,
-  SetTutorialAction,
-  SetTutorialStepCompletionStatusAction,
+  ResetTutorialAction,
   SET_TUTORIAL_ACTION,
+  SET_TUTORIAL_HIGHLIGHT_STATUS,
   SET_TUTORIAL_STEP_COMPLETION_STATUS,
+  SetTutorialAction,
+  SetTutorialHighlightStatusAction,
+  SetTutorialStepCompletionStatusAction,
   Tutorial,
   TutorialDrawerAction,
-  SET_TUTORIAL_HIGHLIGHT_STATUS,
-  SetTutorialHighlightStatusAction,
 } from "types/tutorial";
 
 export const setTutorialAction = (id: string, tutorial: Tutorial): SetTutorialAction => {

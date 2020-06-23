@@ -27,7 +27,7 @@ const mapStateToProps = (state: RootState) => {
   return {
     dependencies: dependenciesState.get("dependencies").toList(),
     isLoading: dependenciesState.get("isListLoading"),
-    isFirstLoaded: dependenciesState.get("isListFirstLoaded")
+    isFirstLoaded: dependenciesState.get("isListFirstLoaded"),
   };
 };
 
@@ -35,7 +35,7 @@ class DependencyListRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      isDialogOpen: false
+      isDialogOpen: false,
     };
   }
 
@@ -48,7 +48,7 @@ class DependencyListRaw extends React.PureComponent<Props, State> {
     const { dependencies } = this.props;
 
     const res: KappDependencyContent[] = [];
-    dependencies.forEach(x => {
+    dependencies.forEach((x) => {
       res.push({
         name: x.get("name"),
         type: x.get("type"),
@@ -60,7 +60,7 @@ class DependencyListRaw extends React.PureComponent<Props, State> {
           "Kapp use Kong as a kuberntes ingress. With this dependency intalled, you are able to configure external access, bind domain and certification for your applications.",
         provider: "official",
         status: x.get("status"),
-        projectHomepageLink: "https://www.kongcompany.com/"
+        projectHomepageLink: "https://www.kongcompany.com/",
       });
     });
 
@@ -189,7 +189,7 @@ class DependencyListRaw extends React.PureComponent<Props, State> {
           search: false,
           toolbar: false,
           paging: false,
-          draggable: false
+          draggable: false,
         }}
         // components={{ Container: props => props.children }}
         onRowClick={this.openDialog}
@@ -198,12 +198,12 @@ class DependencyListRaw extends React.PureComponent<Props, State> {
             title: "Name",
             field: "name",
             sorting: false,
-            render: this.renderName
+            render: this.renderName,
           },
           { title: "Version", field: "version", sorting: false },
           { title: "Type", field: "type", sorting: false },
           { title: "Provider", field: "provider", sorting: false },
-          { title: "Status", field: "status", sorting: false, render: this.renderStatus }
+          { title: "Status", field: "status", sorting: false, render: this.renderStatus },
         ]}
         data={this.getTableData()}
         title=""
@@ -213,7 +213,7 @@ class DependencyListRaw extends React.PureComponent<Props, State> {
 
   private handleDialogClose = () => {
     this.setState({
-      isDialogOpen: false
+      isDialogOpen: false,
       //   dialogDependency: undefined
     });
   };
@@ -221,7 +221,7 @@ class DependencyListRaw extends React.PureComponent<Props, State> {
   private openDialog = (_event?: React.MouseEvent, rowData?: KappDependencyContent) => {
     this.setState({
       isDialogOpen: true,
-      dialogDependency: rowData!
+      dialogDependency: rowData!,
     });
   };
 

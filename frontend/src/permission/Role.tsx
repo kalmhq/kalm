@@ -11,7 +11,7 @@ const mapStateToProps = (state: RootState) => {
   const isAdmin = auth.get("isAdmin");
 
   return {
-    isAdmin
+    isAdmin,
   };
 };
 
@@ -25,7 +25,7 @@ interface Options {
 }
 
 export const Roles = ({ requireAdmin, redirectOnUnauthorized }: Options) => (
-  WrappedComponent: React.ComponentType<any>
+  WrappedComponent: React.ComponentType<any>,
 ) => {
   const wrapper: React.ComponentType<Props> = class extends React.Component<Props> {
     componentDidMount() {

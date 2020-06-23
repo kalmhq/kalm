@@ -27,7 +27,7 @@ export const AllHttpMethods = Immutable.List<string>([
   "HEAD",
   "OPTIONS",
   "CONNECT",
-  "TRACE"
+  "TRACE",
 ]);
 
 export const newEmptyRouteForm = (): HttpRouteForm => {
@@ -45,9 +45,9 @@ export const newEmptyRouteForm = (): HttpRouteForm => {
     retries: {
       attempts: 3,
       perTtyTimeoutSeconds: 2,
-      retryOn: ["gateway-error", "connect-failure", "refused-stream"]
+      retryOn: ["gateway-error", "connect-failure", "refused-stream"],
     },
-    methodsMode: methodsModeAll
+    methodsMode: methodsModeAll,
   });
 };
 

@@ -1,14 +1,13 @@
 import { getFormValues } from "redux-form/immutable";
 import { store } from "../store";
 import { Application } from "../types/application";
-import { EnvTypeExternal } from "../types/common";
 
 export const getApplicationByName = (applicationName: string): Application => {
   const state = store.getState();
   return state
     .get("applications")
     .get("applications")
-    .find(x => x.get("name") === applicationName) as Application;
+    .find((x) => x.get("name") === applicationName) as Application;
 };
 
 // export const duplicateApplicationName = (applicationName: string): string => {

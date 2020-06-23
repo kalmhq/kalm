@@ -14,7 +14,7 @@ export interface DuplicateDialogHostState {
 
 export const defaultDuplicateDialogHostStateValue: DuplicateDialogHostState = {
   isDuplicateDialogShow: false,
-  duplicatingItemId: ""
+  duplicatingItemId: "",
 };
 
 export function DuplicateDialog(props: Props) {
@@ -46,12 +46,5 @@ export function DuplicateDialog(props: Props) {
     props.onAgree(value);
   };
 
-  return (
-    <ConfirmDialog
-      {...props}
-      content={content}
-      onAgree={onAgree}
-      onExited={resetValue}
-    />
-  );
+  return <ConfirmDialog {...props} content={content} onAgree={onAgree} onExited={resetValue} />;
 }

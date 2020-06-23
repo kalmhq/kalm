@@ -4,12 +4,7 @@ import { deleteRoute, loadRoutes } from "actions/routes";
 import { push } from "connected-react-router";
 import MaterialTable from "material-table";
 import { BasePage } from "pages/BasePage";
-import queryString from "query-string";
 import React from "react";
-import { connect } from "react-redux";
-import { RouteComponentProps } from "react-router";
-import { RootState } from "reducers";
-import { TDispatchProp } from "types";
 import { HttpRoute } from "types/route";
 import { ApplicationViewDrawer } from "widgets/ApplicationViewDrawer";
 import { SuccessBadge } from "widgets/Badge";
@@ -18,7 +13,7 @@ import { H4 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { Namespaces } from "widgets/Namespaces";
 import { blinkTopProgressAction } from "../../actions/settings";
-import Immutable from "immutable";
+import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -27,28 +22,14 @@ const styles = (theme: Theme) =>
       height: "100%",
       width: "100%",
       display: "flex",
-      alignItems: "center"
+      alignItems: "center",
     },
     secondHeaderRightItem: {
-      marginLeft: 20
-    }
+      marginLeft: 20,
+    },
   });
 
-const mapStateToProps = (state: RootState, ownProps: RouteComponentProps) => {
-  const query = queryString.parse(ownProps.location.search);
-  const activeNamespace = state.get("namespaces").get("active");
-  return {
-    namespace: (query.namespace as string) || activeNamespace,
-    isLoading: state.get("routes").get("isLoading"),
-    isFirstLoaded: state.get("routes").get("isFirstLoaded"),
-    httpRoutes: state
-      .get("routes")
-      .get("httpRoutes")
-      .get(activeNamespace) as Immutable.List<HttpRoute> | undefined
-  };
-};
-
-interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {}
+interface Props extends WithStyles<typeof styles>, WithRoutesDataProps {}
 
 interface State {}
 
@@ -63,8 +44,16 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   componentDidMount() {
-    const { dispatch, namespace } = this.props;
-    dispatch(loadRoutes(namespace));
+    const { dispatch, activeNamespaceName } = this.props;
+    dispatch(loadRoutes(activeNamespaceName));
+  }
+
+  componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any): void {
+    const { dispatch, activeNamespaceName } = this.props;
+
+    if (prevProps.activeNamespaceName !== activeNamespaceName) {
+      dispatch(loadRoutes(activeNamespaceName));
+    }
   }
 
   private renderHosts(row: RowData) {
@@ -80,7 +69,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
       return null;
     }
 
-    return row.get("conditions")!.map(x => {
+    return row.get("conditions")!.map((x) => {
       return (
         <div>
           {x.get("type")} {x.get("name")} {x.get("operator")} {x.get("value")}{" "}
@@ -94,29 +83,26 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderSupportHttp(row: RowData) {
-    if (row.get("schemes").find(x => x === "http")) {
+    if (row.get("schemes").find((x) => x === "http")) {
       return <SuccessBadge />;
     }
   }
 
   private renderSupportHttps(row: RowData) {
-    if (row.get("schemes").find(x => x === "https")) {
+    if (row.get("schemes").find((x) => x === "https")) {
       return <SuccessBadge />;
     }
   }
 
   private renderTargets = (row: RowData) => {
-    const { namespace } = this.props;
+    const { activeNamespaceName } = this.props;
     let sum = 0;
-    row.get("destinations").forEach(x => (sum += x.get("weight")));
+    row.get("destinations").forEach((x) => (sum += x.get("weight")));
 
-    return row.get("destinations").map(x => (
+    return row.get("destinations").map((x) => (
       <div key={x.get("host")}>
-        {x
-          .get("host")
-          .replace(`.${namespace}.svc.cluster.local`, "")
-          .replace(`.svc.cluster.local`, "")}
-        ({Math.floor((x.get("weight") / sum) * 1000 + 0.5) / 10}%)
+        {x.get("host").replace(`.${activeNamespaceName}.svc.cluster.local`, "").replace(`.svc.cluster.local`, "")}(
+        {Math.floor((x.get("weight") / sum) * 1000 + 0.5) / 10}%)
       </div>
     ));
   };
@@ -156,21 +142,23 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderActions = (row: RowData) => {
-    const { namespace, dispatch } = this.props;
+    const { activeNamespaceName, dispatch } = this.props;
     return (
       <>
         <Button
           onClick={() => {
             blinkTopProgressAction();
-            dispatch(push(`/routes/${row.get("name")}/edit?namespace=${namespace}`));
-          }}>
+            dispatch(push(`/applications/${activeNamespaceName}/routes/${row.get("name")}/edit`));
+          }}
+        >
           Edit
         </Button>
         <Button
           onClick={() => {
             blinkTopProgressAction();
             dispatch(deleteRoute(row.get("name"), row.get("namespace")));
-          }}>
+          }}
+        >
           Delete
         </Button>
       </>
@@ -178,7 +166,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { classes, dispatch, isFirstLoaded, isLoading } = this.props;
+    const { classes, dispatch, isRoutesFirstLoaded, isRoutesLoading, activeNamespaceName } = this.props;
     const tableData = this.getData();
     return (
       <BasePage
@@ -190,17 +178,20 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
             <CustomizedButton
               color="primary"
               size="large"
+              tutorial-anchor-id="add-route"
               className={classes.secondHeaderRightItem}
               onClick={() => {
                 blinkTopProgressAction();
-                dispatch(push(`/routes/new`));
-              }}>
+                dispatch(push(`/applications/${activeNamespaceName}/routes/new`));
+              }}
+            >
               Add
             </CustomizedButton>
           </div>
-        }>
+        }
+      >
         <div>
-          {isLoading && !isFirstLoaded ? (
+          {isRoutesLoading && !isRoutesFirstLoaded ? (
             <Loading />
           ) : (
             <MaterialTable
@@ -210,7 +201,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
                 padding: "dense",
                 draggable: false,
                 rowStyle: {
-                  verticalAlign: "baseline"
+                  verticalAlign: "baseline",
                 },
                 headerStyle: {
                   color: "black",
@@ -219,52 +210,52 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
                   fontWeight: 400,
                   height: 20,
                   paddingTop: 0,
-                  paddingBottom: 0
-                }
+                  paddingBottom: 0,
+                },
               }}
               columns={[
                 {
                   title: "Host",
                   field: "host",
                   sorting: false,
-                  render: this.renderHosts
+                  render: this.renderHosts,
                 },
 
                 {
                   title: "Http",
                   field: "http",
                   sorting: false,
-                  render: this.renderSupportHttp
+                  render: this.renderSupportHttp,
                 },
                 {
                   title: "Https",
                   field: "https",
                   sorting: false,
-                  render: this.renderSupportHttps
+                  render: this.renderSupportHttps,
                 },
                 {
                   title: "Methods",
                   field: "methods",
                   sorting: false,
-                  render: this.renderMethods
+                  render: this.renderMethods,
                 },
                 {
                   title: "Urls",
                   field: "urls",
                   sorting: false,
-                  render: this.renderUrls
+                  render: this.renderUrls,
                 },
                 {
                   title: "Targets",
                   field: "targets",
                   sorting: false,
-                  render: this.renderTargets
+                  render: this.renderTargets,
                 },
                 {
                   title: "Rules",
                   field: "rules",
                   sorting: false,
-                  render: this.renderRules
+                  render: this.renderRules,
                 },
                 // {
                 //   title: "Advanced Settings",
@@ -277,8 +268,8 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
                   field: "action",
                   sorting: false,
                   searchable: false,
-                  render: this.renderActions
-                }
+                  render: this.renderActions,
+                },
               ]}
               data={tableData}
               title=""
@@ -290,4 +281,4 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const RouteListPage = withStyles(styles)(connect(mapStateToProps)(RouteListPageRaw));
+export const RouteListPage = withRoutesData(withStyles(styles)(RouteListPageRaw));

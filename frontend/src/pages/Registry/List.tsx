@@ -28,11 +28,11 @@ const styles = (theme: Theme) =>
       height: "100%",
       width: "100%",
       display: "flex",
-      alignItems: "center"
+      alignItems: "center",
     },
     secondHeaderRightItem: {
-      marginLeft: 20
-    }
+      marginLeft: 20,
+    },
   });
 
 const mapStateToProps = (state: RootState) => {
@@ -40,7 +40,7 @@ const mapStateToProps = (state: RootState) => {
   return {
     isFirstLoaded: registriesState.get("isFirstLoaded"),
     isLoading: registriesState.get("isLoading"),
-    registries: registriesState.get("registries")
+    registries: registriesState.get("registries"),
   };
 };
 
@@ -62,21 +62,21 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
     this.state = {
       isDeleteConfirmDialogOpen: false,
       deletingItemName: undefined,
-      editingRegistry: undefined
+      editingRegistry: undefined,
     };
   }
 
   private showDeleteConfirmDialog = (deletingItemName: string) => {
     this.setState({
       isDeleteConfirmDialogOpen: true,
-      deletingItemName
+      deletingItemName,
     });
   };
 
   private closeDeleteConfirmDialog = () => {
     this.setState({
       isDeleteConfirmDialogOpen: false,
-      deletingItemName: undefined
+      deletingItemName: undefined,
     });
   };
 
@@ -137,7 +137,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
   private renderRepositories(row: RowData) {
     return row
       .get("repositories")
-      ?.map(x => x.get("name"))
+      ?.map((x) => x.get("name"))
       .join(",");
   }
 
@@ -149,12 +149,13 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
           tooltipTitle={"Edit"}
           style={{ color: primaryColor }}
           onClick={() => {
-            const registry = registries.find(r => r.get("name") === row.get("name"));
+            const registry = registries.find((r) => r.get("name") === row.get("name"));
             this.setState({
-              editingRegistry: registry
+              editingRegistry: registry,
             });
             dispatch(openDialogAction(RegistryNewModalID));
-          }}>
+          }}
+        >
           <EditIcon />
         </IconButtonWithTooltip>
         <IconButtonWithTooltip
@@ -162,7 +163,8 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
           style={{ color: primaryColor }}
           onClick={() => {
             this.showDeleteConfirmDialog(row.get("name"));
-          }}>
+          }}
+        >
           <DeleteIcon />
         </IconButtonWithTooltip>
       </>
@@ -193,11 +195,12 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
           className={classes.secondHeaderRightItem}
           onClick={() => {
             this.setState({
-              editingRegistry: undefined
+              editingRegistry: undefined,
             });
             blinkTopProgressAction();
             dispatch(openDialogAction(RegistryNewModalID));
-          }}>
+          }}
+        >
           Add
         </CustomizedButton>
       </div>
@@ -223,7 +226,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
               padding: "dense",
               draggable: false,
               rowStyle: {
-                verticalAlign: "baseline"
+                verticalAlign: "baseline",
               },
               headerStyle: {
                 color: "black",
@@ -232,33 +235,33 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
                 fontWeight: 400,
                 height: 20,
                 paddingTop: 0,
-                paddingBottom: 0
-              }
+                paddingBottom: 0,
+              },
             }}
             columns={[
               {
                 title: "Name",
                 field: "name",
                 sorting: false,
-                render: this.renderName
+                render: this.renderName,
               },
               {
                 title: "Host",
                 field: "host",
                 sorting: false,
-                render: this.renderHost
+                render: this.renderHost,
               },
               {
                 title: "Username",
                 field: "username",
                 sorting: false,
-                render: this.renderUsername
+                render: this.renderUsername,
               },
               {
                 title: "Password",
                 field: "password",
                 sorting: false,
-                render: this.renderPassword
+                render: this.renderPassword,
               },
               // {
               //   title: "Verified",
@@ -277,8 +280,8 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
                 field: "action",
                 sorting: false,
                 searchable: false,
-                render: row => this.renderActions(row)
-              }
+                render: (row) => this.renderActions(row),
+              },
             ]}
             // detailPanel={this.renderDetails}
             // onRowClick={(_event, _rowData, togglePanel) => {

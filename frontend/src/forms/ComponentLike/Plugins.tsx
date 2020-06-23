@@ -27,13 +27,13 @@ const mapStateToProps = (state: RootState) => {
   const componentPlugins = state.get("applications").get("componentPlugins");
 
   const componentPluginsMap: { [key: string]: ComponentPlugin } = {};
-  componentPlugins.forEach(plugin => {
+  componentPlugins.forEach((plugin) => {
     componentPluginsMap[plugin.name] = plugin;
   });
 
   return {
     componentPlugins,
-    componentPluginsMap
+    componentPluginsMap,
   };
 };
 
@@ -56,7 +56,7 @@ class RenderPlugins extends React.PureComponent<Props, State> {
     super(props);
 
     this.state = {
-      selectComponentPluginName: ""
+      selectComponentPluginName: "",
     };
   }
 
@@ -75,7 +75,7 @@ class RenderPlugins extends React.PureComponent<Props, State> {
         title={"Add Component Plugin"}
         dialogProps={{
           fullWidth: true,
-          maxWidth: "sm"
+          maxWidth: "sm",
         }}
         actions={
           <>
@@ -85,14 +85,15 @@ class RenderPlugins extends React.PureComponent<Props, State> {
                   Immutable.fromJS({
                     name: this.state.selectComponentPluginName,
                     isActive: false,
-                    config: {}
-                  })
+                    config: {},
+                  }),
                 );
 
                 this.props.dispatch(closeDialogAction(selectComponentPluginDialogId));
               }}
               color="default"
-              variant="contained">
+              variant="contained"
+            >
               Add Plugin
             </CustomizedButton>
             {/* <CustomizedButton
@@ -102,19 +103,21 @@ class RenderPlugins extends React.PureComponent<Props, State> {
               Cancel
             </CustomizedButton> */}
           </>
-        }>
+        }
+      >
         <TextField
           style={{ width: "100%" }}
           id="outlined-select-plugin"
           select
           label="Select a plugin to add"
           value={this.state.selectComponentPluginName}
-          onChange={event => {
+          onChange={(event) => {
             this.setState({ selectComponentPluginName: event.target.value });
           }}
           // helperText="Please select your plugin"
-          variant="outlined">
-          {componentPlugins.map(option => (
+          variant="outlined"
+        >
+          {componentPlugins.map((option) => (
             <MenuItem key={option.name} value={option.name} disabled={!!existPluginNames[option.name]}>
               {option.name}
             </MenuItem>
@@ -154,7 +157,8 @@ class RenderPlugins extends React.PureComponent<Props, State> {
                 tooltipPlacement="top"
                 tooltipTitle="Delete"
                 aria-label="delete"
-                onClick={() => fields.remove(index)}>
+                onClick={() => fields.remove(index)}
+              >
                 <DeleteIcon />
               </IconButtonWithTooltip>
             </div>
@@ -162,7 +166,7 @@ class RenderPlugins extends React.PureComponent<Props, State> {
             <Field
               name={`${member}.isActive`}
               formControlLabelProps={{
-                label: "isActive"
+                label: "isActive",
               }}
               component={CheckboxField}
               normalizer={NormalizeBoolean}
@@ -182,7 +186,7 @@ class RenderPlugins extends React.PureComponent<Props, State> {
     const {
       dispatch,
       fields,
-      meta: { error, submitFailed }
+      meta: { error, submitFailed },
     } = this.props;
 
     return (
@@ -194,7 +198,8 @@ class RenderPlugins extends React.PureComponent<Props, State> {
           onClick={() => {
             dispatch(openDialogAction(selectComponentPluginDialogId));
             this.setState({ selectComponentPluginName: "" });
-          }}>
+          }}
+        >
           Add
         </Button>
         {fields.map((member, index) => {

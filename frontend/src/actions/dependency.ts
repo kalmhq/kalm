@@ -3,7 +3,7 @@ import { LOAD_DEPENDENCIES_FAILED, LOAD_DEPENDENCIES_FULFILLED, LOAD_DEPENDENCIE
 import { getDependencies } from "./kubernetesApi";
 
 export const loadDependenciesAction = (): ThunkResult<Promise<void>> => {
-  return async dispatch => {
+  return async (dispatch) => {
     dispatch({ type: LOAD_DEPENDENCIES_PENDING });
 
     let dependencies;
@@ -17,8 +17,8 @@ export const loadDependenciesAction = (): ThunkResult<Promise<void>> => {
     dispatch({
       type: LOAD_DEPENDENCIES_FULFILLED,
       payload: {
-        dependencies
-      }
+        dependencies,
+      },
     });
   };
 };

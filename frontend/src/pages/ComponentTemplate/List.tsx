@@ -12,7 +12,7 @@ import { ConfirmDialog } from "../../widgets/ConfirmDialog";
 import {
   defaultDuplicateDialogHostStateValue,
   DuplicateDialog,
-  DuplicateDialogHostState
+  DuplicateDialogHostState,
 } from "../../widgets/DuplicateDialog";
 import { HelperContainer } from "../../widgets/Helper";
 import { Loading } from "../../widgets/Loading";
@@ -23,8 +23,8 @@ import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      padding: theme.spacing(3)
-    }
+      padding: theme.spacing(3),
+    },
   });
 
 interface Props extends WithComponentTemplatesDataProps, WithStyles<typeof styles> {}
@@ -40,7 +40,7 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
 
     this.state = {
       isDeleteConfirmDialogOpen: false,
-      ...defaultDuplicateDialogHostStateValue
+      ...defaultDuplicateDialogHostStateValue,
     };
   }
 
@@ -51,14 +51,14 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
   private closeConfirmDialog = () => {
     this.setState({
       isDeleteConfirmDialogOpen: false,
-      deletingComponentTemplateName: undefined
+      deletingComponentTemplateName: undefined,
     });
   };
 
   private closeDuplicateDialog = () => {
     this.setState({
       isDuplicateDialogShow: false,
-      duplicatingItemId: ""
+      duplicatingItemId: "",
     });
   };
 
@@ -85,20 +85,20 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
   private setDeletingIdAndConfirm = (componentTemplateName: string) => {
     this.setState({
       isDeleteConfirmDialogOpen: true,
-      deletingComponentTemplateName: componentTemplateName
+      deletingComponentTemplateName: componentTemplateName,
     });
   };
 
   private setDuplicatingIdAndConfrim = (componentTemplateName: string) => {
     this.setState({
       isDuplicateDialogShow: true,
-      duplicatingItemId: componentTemplateName
+      duplicatingItemId: componentTemplateName,
     });
   };
 
   private renderDataContent() {
     const { dispatch, componentTemplates } = this.props;
-    const data = componentTemplates.map(componentTemplate => {
+    const data = componentTemplates.map((componentTemplate) => {
       const onDeleteClick = () => {
         this.setDeletingIdAndConfirm(componentTemplate.get("name"));
       };
@@ -110,7 +110,8 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
               aria-label="edit"
               onClick={() => {
                 dispatch(push(`/componenttemplates/${componentTemplate.get("name")}/edit`));
-              }}>
+              }}
+            >
               <EditIcon />
             </IconButtonWithTooltip>
 
@@ -119,7 +120,8 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
               aria-label="edit"
               onClick={() => {
                 this.setDuplicatingIdAndConfrim(componentTemplate.get("name"));
-              }}>
+              }}
+            >
               <FileCopyIcon />
             </IconButtonWithTooltip>
 
@@ -137,7 +139,7 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
             {componentTemplate.get("ports")
               ? componentTemplate
                   .get("ports")!
-                  .map(port => {
+                  .map((port) => {
                     return (
                       <span key={port.get("name")}>
                         {port.get("containerPort")} -> {port.get("servicePort")}
@@ -159,7 +161,7 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
                 );
               })
               .toArray()
-          : []
+          : [],
       };
     });
     return (
@@ -170,19 +172,19 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
               isFreeAction: true,
               icon: "add",
               tooltip: "Add",
-              onClick: this.onCreate
-            }
+              onClick: this.onCreate,
+            },
           ]}
           options={{
             padding: "dense",
             pageSize: 20,
-            paging: data.size > 20
+            paging: data.size > 20,
           }}
           columns={[
             {
               title: "Name",
               field: "name",
-              sorting: false
+              sorting: false,
             },
             { title: "Image", field: "image", sorting: false },
             { title: "CPU", field: "cpu", searchable: false },
@@ -193,14 +195,14 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
               field: "port",
 
               sorting: false,
-              searchable: false
+              searchable: false,
             },
             {
               title: "Action",
               field: "action",
               sorting: false,
-              searchable: false
-            }
+              searchable: false,
+            },
           ]}
           data={data.toArray()}
           title="Component Templates"
@@ -238,7 +240,7 @@ class ComponentTemplateListRaw extends React.PureComponent<Props, States> {
             label: "Name",
             placeholder: "Name of your new Component Template",
             variant: "outlined",
-            helperText: 'Allowed characters are: digits (0-9), lower case letters (a-z), "-", and "."'
+            helperText: 'Allowed characters are: digits (0-9), lower case letters (a-z), "-", and "."',
           }}
           onAgree={this.duplicateComponent}
         />
