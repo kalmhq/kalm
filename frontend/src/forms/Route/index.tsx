@@ -24,12 +24,16 @@ import { RenderHttpRouteConditions } from "./conditions";
 import { RenderHttpRouteDestinations } from "./destinations";
 import { Expansion } from "./expansion";
 import { loadCertificates } from "actions/certificate";
-import { loadServicesAction } from "../../actions/service";
+import { loadServicesAction } from "actions/service";
 import { Prompt } from "widgets/Prompt";
+import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
+import { shouldError } from "forms/common";
+import { State as TutorialState } from "reducers/tutorial";
 
 const defaultFormID = "route";
 
-const mapStateToProps = (state: RootState, { form }: OwnProps) => {
+const mapStateToProps = (state: RootState) => {
+  const form = defaultFormID;
   const selector = formValueSelector(form || defaultFormID);
   const syncErrors = getFormSyncErrors(form || defaultFormID)(state) as { [key: string]: any };
   const certifications = state.get("certificates").get("certificates");
@@ -42,19 +46,16 @@ const mapStateToProps = (state: RootState, { form }: OwnProps) => {
   });
 
   return {
+    tutorialState: state.get("tutorial"),
     syncErrors,
-    methodsMode: selector(state, "methodsMode") as string,
     schemes: selector(state, "schemes") as Immutable.List<string>,
+    methodsMode: selector(state, "methodsMode") as string,
     hosts: selector(state, "hosts") as Immutable.List<string>,
     destinations: selector(state, "destinations") as Immutable.List<HttpRouteDestination>,
     domains: Array.from(domains),
     certifications,
   };
 };
-
-interface OwnProps {
-  form?: string;
-}
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -83,11 +84,16 @@ const styles = (theme: Theme) =>
     },
   });
 
+export interface TutorialStateProps {
+  tutorialState: TutorialState;
+}
+
+export interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
+
 export interface Props
-  extends WithStyles<typeof styles>,
-    ReturnType<typeof mapStateToProps>,
-    TDispatchProp,
-    InjectedFormProps<HttpRouteForm> {}
+  extends InjectedFormProps<HttpRouteForm, TutorialStateProps>,
+    ConnectedProps,
+    WithStyles<typeof styles> {}
 
 interface State {
   isAdvancedPartUnfolded: boolean;
@@ -246,10 +252,10 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
       methodsMode,
       classes,
       domains,
-      schemes,
       dispatch,
       destinations,
       form,
+      schemes,
       handleSubmit,
       submitFailed,
       syncErrors,
@@ -528,8 +534,18 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const RouteForm = reduxForm<HttpRouteForm, OwnProps>({
+// use connect twice
+// The one inside reduxForm is normal usage
+// The one outside of reduxForm is to set tutorialState props for the form
+
+const form = reduxForm<HttpRouteForm, TutorialStateProps>({
   onSubmitFail: console.log,
   form: defaultFormID,
   touchOnChange: true,
+  shouldError: shouldError,
+  validate: formValidateOrNotBlockByTutorial,
 })(connect(mapStateToProps)(withStyles(styles)(RouteFormRaw)));
+
+export const RouteForm = connect((state: RootState) => ({
+  tutorialState: state.get("tutorial"),
+}))(form);

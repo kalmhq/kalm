@@ -6,7 +6,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { match } from "react-router";
 import { ThunkDispatch } from "redux-thunk";
-import { AllHttpMethods, HttpRouteForm, methodsModeAll, methodsModeSpecific } from "types/route";
+import { AllHttpMethods, HttpRoute, HttpRouteForm, methodsModeAll, methodsModeSpecific } from "types/route";
 import { ApplicationViewDrawer } from "widgets/ApplicationViewDrawer";
 import { Loading } from "widgets/Loading";
 import { RootState } from "../../reducers";
@@ -22,13 +22,18 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState, ownProps: any) => {
+  const namespace = state.get("namespaces").get("active");
   const matchResult = ownProps.match as match<{ name: string }>;
   const routes = state.get("routes");
 
   return {
+    namespace: state.get("namespaces").get("active"),
     isFirstLoaded: routes.get("isFirstLoaded"),
     isLoading: routes.get("isLoading"),
-    route: routes.get("httpRoutes").find((x) => x.get("name") === matchResult.params.name),
+    route: routes
+      .get("httpRoutes")
+      .get(namespace)
+      .find((x) => x.get("name") === matchResult.params.name),
     routeName: matchResult.params.name,
   };
 };
@@ -43,11 +48,15 @@ class RouteEditRaw extends React.PureComponent<Props> {
       if (route.get("methodsMode") === methodsModeAll) {
         route = route.set("methods", AllHttpMethods);
       }
-      this.props.dispatch(updateRoute(route.get("name"), route.get("namespace"), route));
-      this.props.dispatch(push("/routes"));
+
+      await this.props.dispatch(updateRoute(route.get("name"), route.get("namespace"), route));
     } catch (e) {
       console.log(e);
     }
+  };
+
+  private onSubmitSuccess = async (route: HttpRoute) => {
+    this.props.dispatch(push("/applications/" + this.props.namespace + "/routes"));
   };
 
   private renderContent() {
@@ -64,7 +73,7 @@ class RouteEditRaw extends React.PureComponent<Props> {
     let routeForm = route as HttpRouteForm;
     routeForm = routeForm.set("methodsMode", route.get("methods").size >= 7 ? methodsModeAll : methodsModeSpecific);
 
-    return <RouteForm onSubmit={this.submit} initialValues={routeForm} />;
+    return <RouteForm onSubmit={this.submit} onSubmitSuccess={this.onSubmitSuccess} initialValues={routeForm} />;
   }
 
   public render() {

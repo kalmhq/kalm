@@ -11,8 +11,11 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	cache2 "k8s.io/client-go/tools/cache"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"testing"
+	"time"
 )
 
 type ComponentControllerSuite struct {
@@ -365,6 +368,45 @@ func (suite *ComponentControllerSuite) TestVolumeTemporaryMemoryDisk() {
 		pvcs := suite.getComponentPVCs(component)
 		return len(pvcs) == 0
 	}, "temporary memory disk should not create pvc")
+}
+
+func (suite *ComponentControllerSuite) TestKappXXXXXX() {
+	// create
+
+	go func() {
+		for {
+			component := generateEmptyComponent(suite.ns.Name)
+			suite.createComponent(component)
+			time.Sleep(5 * time.Second)
+		}
+	}()
+
+	cache, err := cache.New(suite.Cfg, cache.Options{})
+
+	if err != nil {
+		panic(err)
+	}
+
+	i, err := cache.GetInformer(&v1alpha1.Component{})
+
+	if err != nil {
+		panic(err)
+	}
+
+	i.AddEventHandler(cache2.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			fmt.Printf("component added: %s \n", obj)
+		},
+		DeleteFunc: func(obj interface{}) {
+			fmt.Printf("component deleted: %s \n", obj)
+		},
+		UpdateFunc: func(oldObj, newObj interface{}) {
+			fmt.Printf("component changed: %s \n", newObj)
+		},
+	})
+
+	stop := make(chan struct{})
+	cache.Start(stop)
 }
 
 func (suite *ComponentControllerSuite) TestKappEnabled() {

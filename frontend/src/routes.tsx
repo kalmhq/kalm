@@ -43,20 +43,23 @@ export const KappRoutes = (
           {/* begin, TODO */}
           <Route exact path="/install" component={InstallPage} />
           <Route exact path="/componenttemplates/new" component={ComponentTemplateNew} />
-          <Route exact path="/componenttemplates/:componentTemplateName/edit" component={ComponentTemplateEdit}></Route>
-          <Route exact path="/componenttemplates" component={ComponentTemplateListPage}></Route>
+          <Route exact path="/componenttemplates/:componentTemplateName/edit" component={ComponentTemplateEdit} />
+          <Route exact path="/componenttemplates" component={ComponentTemplateListPage} />
           {/* end */}
 
-          <Route exact path="/cluster/nodes" component={NodeListPage}></Route>
-          <Route exact path="/cluster/volumes" component={Volumes}></Route>
-          <Route exact path="/cluster/registries" component={RegistryListPage}></Route>
-          <Route exact path="/settings/dependencies" component={RequireAdmin(DependencyListPage)}></Route>
+          <Route exact path="/cluster/nodes" component={NodeListPage} />
+          <Route exact path="/cluster/volumes" component={Volumes} />
+          <Route exact path="/cluster/registries" component={RegistryListPage} />
+          <Route exact path="/settings/dependencies" component={RequireAdmin(DependencyListPage)} />
 
           {/* <Route exact path="/applications/:applicationName/components/:name" component={RequireNamespaceWriter(ApplicationComponentShow)} /> */}
 
           <Route exact path="/applications" component={RequireAdmin(ApplicationListPage)} />
           <Route exact path="/applications/new" component={RequireAdmin(ApplicationNew)} />
           <Route exact path="/applications/:applicationName" component={RequireNamespaceReader(ApplicationShow)} />
+          <Route exact path="/applications/:applicationName/routes" component={RequireNamespaceReader(RouteListPage)} />
+          <Route exact path="/applications/:applicationName/routes/new" component={RequireNamespaceReader(RouteNew)} />
+          <Route exact path="/applications/:applicationName/routes/:name/edit" component={RequireNamespaceReader(RouteEdit)} />
           <Route exact path="/applications/:applicationName/edit" component={RequireNamespaceWriter(ApplicationEdit)} />
           <Route exact path="/applications/:applicationName/logs" component={RequireNamespaceReader(Log)} />
           <Route exact path="/applications/:applicationName/shells" component={RequireNamespaceWriter(Log)} />
@@ -65,12 +68,9 @@ export const KappRoutes = (
             path="/applications/:applicationName/components/:componentName"
             component={RequireNamespaceReader(ApplicationShow)}
           />
-          {/* <Route exact path="/configs" component={RequireNamespaceReader(ConfigListPage)}></Route> */}
-          <Route exact path="/routes" component={RequireNamespaceReader(RouteListPage)}></Route>
-          <Route exact path="/routes/new" component={RequireNamespaceReader(RouteNew)}></Route>
-          <Route exact path="/routes/:name/edit" component={RequireNamespaceReader(RouteEdit)}></Route>
-          <Route exact path="/ui-components" component={UIComponentsPage}></Route>
-          <Route exact path="/certificates" component={CertificateListPage}></Route>
+          {/* <Route exact path="/configs" component={RequireNamespaceReader(ConfigListPage)} /> */}
+          <Route exact path="/ui-components" component={UIComponentsPage} />
+          <Route exact path="/certificates" component={CertificateListPage} />
           <Route component={NoMatch} />
         </Switch>
       </RequireAuthorizatedDashboard>

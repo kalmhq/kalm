@@ -156,7 +156,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
         <Button
           onClick={() => {
             blinkTopProgressAction();
-            dispatch(push(`/routes/${row.get("name")}/edit?namespace=${namespace}`));
+            dispatch(push(`/applications/${namespace}/routes/${row.get("name")}/edit`));
           }}
         >
           Edit
@@ -174,7 +174,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { classes, dispatch, isFirstLoaded, isLoading } = this.props;
+    const { classes, dispatch, isFirstLoaded, isLoading, namespace } = this.props;
     const tableData = this.getData();
     return (
       <BasePage
@@ -186,10 +186,11 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
             <CustomizedButton
               color="primary"
               size="large"
+              tutorial-anchor-id="add-route"
               className={classes.secondHeaderRightItem}
               onClick={() => {
                 blinkTopProgressAction();
-                dispatch(push(`/routes/new`));
+                dispatch(push(`/applications/${namespace}/routes/new`));
               }}
             >
               Add

@@ -6,7 +6,16 @@ import { store } from "store";
 import { Link } from "@material-ui/core";
 import { resetTutorialAction } from "actions/tutorial";
 import { RootState } from "reducers";
-import { isUnderPath, requireSubStepCompleted, requireSubStepNotCompleted } from "tutorials/utils";
+import {
+  isFormFieldMeet,
+  isFormFieldValueEqualTo,
+  isUnderPath,
+  requireSubStepCompleted,
+  requireSubStepNotCompleted,
+} from "tutorials/utils";
+import { Actions } from "types";
+import { ActionTypes, actionTypes } from "redux-form";
+import { HttpRouteDestination } from "types/route";
 
 const resetTutorial = () => {
   store.dispatch(resetTutorialAction());
@@ -40,10 +49,11 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
     };
   }
 
-  const applicationName = application.get("name")
-  const applicationsPath = "/applications"
-  const applicationDetailPath = "/applications/" + applicationName
-  const applicationRoutesPath = "/applications/" + applicationName + "/routes"
+  const applicationName = application.get("name");
+  const applicationsPath = "/applications";
+  const applicationDetailPath = "/applications/" + applicationName;
+  const applicationRoutesPath = "/applications/" + applicationName + "/routes";
+  const applicationNewRoutePath = "/applications/" + applicationName + "/routes/new";
 
   return {
     title,
@@ -54,7 +64,7 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
           "Route is a rule that describes how to introduce external traffic into the cluster. Route is a sub-resource under an application. Let's find out how to navigate to routes page.",
         highlights: [
           {
-            title: "Chick Here",
+            title: "Chick here",
             description: "Go to applications page",
             anchor: "[tutorial-anchor-id=first-level-sidebar-item-applications]",
             triggeredByState: (state: RootState) => requireSubStepNotCompleted(state, 0),
@@ -66,12 +76,33 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
             triggeredByState: (state: RootState) =>
               requireSubStepCompleted(state, 0) && requireSubStepNotCompleted(state, 1),
           },
+          {
+            title: "Chick here",
+            description: "Go to routes page",
+            anchor: `[href="/applications/${applicationName}/routes"]`,
+            triggeredByState: (state: RootState) =>
+              requireSubStepCompleted(state, 0, 1) && requireSubStepNotCompleted(state, 2),
+          },
+          {
+            title: "Chick here",
+            description: "Go to add route page",
+            anchor: "[tutorial-anchor-id=add-route]",
+            triggeredByState: (state: RootState) =>
+              requireSubStepCompleted(state, 0, 1, 2) && requireSubStepNotCompleted(state, 3),
+          },
         ],
         subSteps: [
           {
             title: "Go to applications page",
             irrevocable: true,
-            shouldCompleteByState: (state: RootState) => isUnderPath(state, applicationsPath, applicationDetailPath, applicationRoutesPath),
+            shouldCompleteByState: (state: RootState) =>
+              isUnderPath(
+                state,
+                applicationsPath,
+                applicationDetailPath,
+                applicationRoutesPath,
+                applicationNewRoutePath,
+              ),
           },
           {
             title: (
@@ -80,18 +111,111 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
               </span>
             ),
             irrevocable: true,
-            shouldCompleteByState: (state: RootState) => isUnderPath(state, applicationDetailPath, applicationRoutesPath),
+            shouldCompleteByState: (state: RootState) =>
+              isUnderPath(state, applicationDetailPath, applicationRoutesPath, applicationNewRoutePath),
+          },
+          {
+            title: <span>Go to routes page</span>,
+            irrevocable: true,
+            shouldCompleteByState: (state: RootState) =>
+              isUnderPath(state, applicationRoutesPath, applicationNewRoutePath),
+          },
+          {
+            title: "Go to add route page",
+            irrevocable: true,
+            shouldCompleteByState: (state: RootState) => isUnderPath(state, applicationNewRoutePath),
+          },
+        ],
+      },
+      {
+        name: "Add a route",
+        description: `Complete the form to add first route for ${applicationName} application`,
+        subSteps: [
+          {
+            title: (
+              <span>
+                Use <strong>example.com</strong> as hosts
+              </span>
+            ),
+            formValidator: [
+              {
+                form: "route",
+                field: "hosts",
+                validate: (hosts) =>
+                  hosts.size === 1 && hosts.get(0) === "example.com" ? undefined : `Please use "example.com"`,
+              },
+            ],
+            shouldCompleteByState: (state: RootState) =>
+              isFormFieldValueEqualTo(state, "route", "hosts[0]", "example.com"),
           },
           {
             title: (
               <span>
-                Go to routes page
+                Allow <strong>GET</strong> method
               </span>
             ),
-            irrevocable: true,
-            shouldCompleteByState: (state: RootState) => isUnderPath(state, applicationRoutesPath),
+            formValidator: [
+              {
+                form: "route",
+                field: "methods",
+                validate: (hosts: Immutable.List<string>) =>
+                  hosts.includes("GET") ? undefined : `Please allow GET method`,
+              },
+            ],
+            shouldCompleteByState: (state: RootState) =>
+              isFormFieldMeet(state, "route", "methods", (schemes: Immutable.List<string>) => schemes.includes("GET")),
+          },
+          {
+            title: (
+              <span>
+                Allow <strong>http</strong> scheme
+              </span>
+            ),
+            formValidator: [
+              {
+                form: "route",
+                field: "schemes",
+                validate: (hosts: Immutable.List<string>) =>
+                  hosts.includes("http") ? undefined : `Please allow http scheme`,
+              },
+            ],
+            shouldCompleteByState: (state: RootState) =>
+              isFormFieldMeet(state, "route", "schemes", (schemes: Immutable.List<string>) => schemes.includes("http")),
+          },
+          {
+            title: <span>Add echoserver in hello-world application as the only target</span>,
+            formValidator: [
+              {
+                form: "route",
+                field: "destinations",
+                validate: (destinations: Immutable.List<HttpRouteDestination>) =>
+                  destinations.size === 1 &&
+                  destinations.find(
+                    (destination) => destination.get("host") === "echoserver.hello-world.svc.cluster.local:80",
+                  )
+                    ? undefined
+                    : `Please use echoserver as the only target`,
+              },
+            ],
+            shouldCompleteByState: (state: RootState) =>
+              isFormFieldMeet(
+                state,
+                "route",
+                "destinations",
+                (destinations: Immutable.List<HttpRouteDestination>) =>
+                  destinations.size === 1 &&
+                  !!destinations.find(
+                    (destination) => destination.get("host") === "echoserver.hello-world.svc.cluster.local:80",
+                  ),
+              ),
+          },
+          {
+            title: "Submit form",
+            shouldCompleteByAction: (action: Actions) =>
+              action.type === (actionTypes.SET_SUBMIT_SUCCEEDED as keyof ActionTypes) && action.meta!.form === "route",
           },
         ],
+        highlights: [],
       },
     ],
   };

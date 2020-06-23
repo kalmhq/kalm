@@ -25,14 +25,6 @@ export interface TutorialConfig {
 
 export interface TutorialSubStep {
   title: React.ReactNode;
-  highlight?: {
-    title: string;
-    description: string;
-    requirePathnamePrefix?: string;
-    requirePathname?: string;
-    position?: string;
-    anchor: string;
-  };
   irrevocable?: boolean;
   formValidator?: { form: string; field: string; validate: (value: any) => string | undefined }[];
 

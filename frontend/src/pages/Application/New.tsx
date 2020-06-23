@@ -1,8 +1,6 @@
 import { createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { push } from "connected-react-router";
 import React from "react";
 import { connect } from "react-redux";
-import { Dispatch } from "redux";
 import { ThunkDispatch } from "redux-thunk";
 import { createApplicationAction } from "../../actions/application";
 import ApplicationForm, { applicationInitialValues } from "../../forms/Application";
@@ -11,6 +9,7 @@ import { Actions } from "../../types";
 import { Application } from "../../types/application";
 import { H4 } from "../../widgets/Label";
 import { BasePage } from "../BasePage";
+import { push } from "connected-react-router";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -34,11 +33,11 @@ interface Props extends WithStyles<typeof styles> {
 class ApplicationNewRaw extends React.PureComponent<Props> {
   private submit = async (applicationFormValue: Application) => {
     const { dispatch } = this.props;
-    await dispatch(createApplicationAction(applicationFormValue));
+    return await dispatch(createApplicationAction(applicationFormValue));
   };
 
-  private onSubmitSuccess = (_result: any, dispatch: Dispatch<any>, { values }: { values: Application }) => {
-    dispatch(push(`/applications/${values.get("name")}/edit`));
+  private onSubmitSuccess = (app: Application) => {
+    this.props.dispatch(push(`/applications/${app.get("name")}/edit`));
   };
 
   public render() {

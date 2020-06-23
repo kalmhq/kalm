@@ -66,7 +66,7 @@ export const createRoute = (name: string, namespace: string, route: HttpRoute): 
   };
 };
 
-export const updateRoute = (name: string, namespace: string, route: HttpRoute): ThunkResult<Promise<void>> => {
+export const updateRoute = (name: string, namespace: string, route: HttpRoute): ThunkResult<Promise<HttpRoute>> => {
   return async (dispatch, getState) => {
     try {
       dispatch({ type: UPDATE_ROUTE_PENDING });
@@ -89,6 +89,8 @@ export const updateRoute = (name: string, namespace: string, route: HttpRoute): 
           route,
         },
       });
+
+      return route;
     } catch (e) {
       dispatch({ type: UPDATE_ROUTE_FAILED });
       throw e;

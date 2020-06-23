@@ -111,8 +111,12 @@ export const getFormValue = (rootState: RootState, form: string, field: string) 
   return selector(rootState, field);
 };
 
-export const isFormFieldValueEqualTo = (rootState: RootState, form: string, field: string, value: string) => {
+export const isFormFieldValueEqualTo = (rootState: RootState, form: string, field: string, value: any) => {
   return getFormValue(rootState, form, field) === value;
+};
+
+export const isFormFieldMeet = (rootState: RootState, form: string, field: string, cb: (value: any) => boolean) => {
+  return cb(getFormValue(rootState, form, field));
 };
 
 export const isApplicationFormFieldValueEqualTo = (rootState: RootState, field: string, value: string) => {
@@ -128,4 +132,3 @@ export const isUnderPath = (state: RootState, ...paths: string[]) => {
 
   return paths.includes(pathname);
 };
-

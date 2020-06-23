@@ -117,7 +117,7 @@ export const deleteComponentAction = (componentName: string, applicationName?: s
   };
 };
 
-export const createApplicationAction = (applicationValues: Application): ThunkResult<Promise<void>> => {
+export const createApplicationAction = (applicationValues: Application): ThunkResult<Promise<Application>> => {
   return async (dispatch) => {
     dispatch(setIsSubmittingApplication(true));
 
@@ -143,6 +143,7 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
       payload: { application },
     });
     dispatch(setSuccessNotificationAction("Create application successfully"));
+    return application
   };
 };
 
