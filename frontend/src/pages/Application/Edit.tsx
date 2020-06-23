@@ -1,4 +1,4 @@
-import { createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { Box, createStyles, Grid, Theme, WithStyles, withStyles } from "@material-ui/core";
 import { push } from "connected-react-router";
 import React from "react";
 import { connect } from "react-redux";
@@ -6,7 +6,7 @@ import { RouteChildrenProps } from "react-router-dom";
 import {
   createComponentAction,
   setIsSubmittingApplicationComponent,
-  updateComponentAction
+  updateComponentAction,
 } from "../../actions/application";
 import { ComponentLikeForm } from "../../forms/ComponentLike";
 import { RootState } from "../../reducers";
@@ -31,17 +31,17 @@ const styles = (theme: Theme) =>
     root: {
       // padding: theme.spacing(3)
       minHeight: "100%",
-      backgroundColor: "#F4F5F7"
+      backgroundColor: "#F4F5F7",
     },
     secondHeaderRight: {
       height: "100%",
       width: "100%",
       display: "flex",
-      alignItems: "center"
+      alignItems: "center",
     },
     secondHeaderRightItem: {
-      marginLeft: 20
-    }
+      marginLeft: 20,
+    },
   });
 
 interface State {
@@ -59,7 +59,7 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
     super(props);
 
     this.state = {
-      changingComponent: false
+      changingComponent: false,
     };
   }
 
@@ -77,16 +77,25 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
   }
 
   private submitComponent = async (component: ApplicationComponent) => {
-    // console.log("submitComponent", component.toJS());
-
-    const { dispatch, application, currentComponent, anchor } = this.props;
+    const { dispatch, currentComponent } = this.props;
 
     if (!currentComponent || !currentComponent.get("name")) {
       await dispatch(createComponentAction(component));
     } else {
       await dispatch(updateComponentAction(component));
     }
-    dispatch(push(`/applications/${application?.get("name")}/edit?component=${component.get("name")}#${anchor}`));
+  };
+
+  private onSubmitComponentSuccess = (_result: any) => {
+    const { dispatch, application, currentComponent, anchor } = this.props;
+
+    // the form will reinitialize very quick, and make the dirty flag to false.
+    // When dirty flag is false, the route change prompt won't exist.
+    window.setTimeout(() => {
+      dispatch(
+        push(`/applications/${application?.get("name")}/edit?component=${currentComponent.get("name")}#${anchor}`),
+      );
+    }, 100);
   };
 
   public renderApplicationEditDrawer() {
@@ -136,29 +145,32 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
     }
 
     return (
-      <Grid container spacing={2} className={classes.root}>
-        <Grid item xs={8} sm={8} md={8}>
-          <ComponentLikeForm
-            application={application}
-            // sharedEnv={sharedEnv}
-            onSubmit={this.submitComponent}
-            onSubmitFail={() => {
-              dispatch(setIsSubmittingApplicationComponent(false));
-            }}
-            initialValues={currentComponent}
-            showDataView
-          />
+      <Box p={2}>
+        <Grid container spacing={2} className={classes.root}>
+          <Grid item md={8}>
+            <ComponentLikeForm
+              application={application}
+              // sharedEnv={sharedEnv}
+              onSubmit={this.submitComponent}
+              onSubmitFail={() => {
+                dispatch(setIsSubmittingApplicationComponent(false));
+              }}
+              onSubmitSuccess={this.onSubmitComponentSuccess}
+              initialValues={currentComponent}
+              showDataView
+            />
+          </Grid>
+          <Grid item md={4}>
+            <ComponentStatus
+              component={application?.get("components")?.find(x => x.get("name") === currentComponent?.get("name"))}
+            />
+          </Grid>
         </Grid>
-        <Grid item xs={4} sm={4} md={4}>
-          <ComponentStatus
-            component={application?.get("components")?.find(x => x.get("name") === currentComponent?.get("name"))}
-          />
-        </Grid>
-      </Grid>
+      </Box>
     );
   }
 }
 
 export const ApplicationEdit = connect(mapStateToProps)(
-  withStyles(styles)(ApplicationItemDataWrapper({ reloadFrequency: 3000 })(ApplicationEditRaw))
+  withStyles(styles)(ApplicationItemDataWrapper({ reloadFrequency: 5000 })(ApplicationEditRaw)),
 );

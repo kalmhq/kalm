@@ -6,13 +6,17 @@ import { Actions } from "../../types";
 import { loadApplicationsAction } from "../../actions/application";
 
 const mapStateToProps = (state: RootState) => {
-  const applications = state.get("applications");
+  const applicationsState = state.get("applications");
+  const deletingApplicationNames = state.get("applications").get("deletingApplicationNames");
+  const applications = applicationsState
+    .get("applications")
+    .filter(app => app.get("status") === "Active" && !deletingApplicationNames.get(app.get("name")));
 
   return {
+    applications,
     activeNamespaceName: state.get("namespaces").get("active"),
-    applications: applications.get("applications"),
-    isLoading: applications.get("isListLoading"),
-    isFirstLoaded: applications.get("isListFirstLoaded")
+    isLoading: applicationsState.get("isListLoading"),
+    isFirstLoaded: applicationsState.get("isListFirstLoaded")
   };
 };
 

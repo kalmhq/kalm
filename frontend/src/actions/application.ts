@@ -7,7 +7,6 @@ import {
   ApplicationComponent,
   ApplicationComponentDetails,
   ApplicationDetails,
-  ApplicationDetailsList,
   CREATE_APPLICATION,
   CREATE_COMPONENT,
   DELETE_APPLICATION,
@@ -25,7 +24,7 @@ import {
   SET_IS_SUBMITTING_APPLICATION,
   SET_IS_SUBMITTING_APPLICATION_COMPONENT,
   UPDATE_APPLICATION,
-  UPDATE_COMPONENT
+  UPDATE_COMPONENT,
 } from "../types/application";
 import { resErrorsToSubmitErrors } from "../utils";
 import {
@@ -38,14 +37,14 @@ import {
   getKappApplicationList,
   getKappComponentPlugins,
   updateKappApplication,
-  updateKappApplicationComponent
+  updateKappApplicationComponent,
 } from "./kubernetesApi";
 import { setCurrentNamespaceAction } from "./namespaces";
 import { setSuccessNotificationAction } from "./notification";
 
 export const createComponentAction = (
   componentValues: ApplicationComponent,
-  applicationName?: string
+  applicationName?: string,
 ): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     if (!applicationName) {
@@ -66,9 +65,9 @@ export const createComponentAction = (
     dispatch(setIsSubmittingApplicationComponent(false));
 
     dispatch(loadApplicationAction(applicationName));
-    dispatch({
+    await dispatch({
       type: CREATE_COMPONENT,
-      payload: { applicationName, component }
+      payload: { applicationName, component },
     });
     dispatch(setSuccessNotificationAction("Create component successfully"));
   };
@@ -76,7 +75,7 @@ export const createComponentAction = (
 
 export const updateComponentAction = (
   componentValues: ApplicationComponent,
-  applicationName?: string
+  applicationName?: string,
 ): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     if (!applicationName) {
@@ -97,9 +96,9 @@ export const updateComponentAction = (
     dispatch(setIsSubmittingApplicationComponent(false));
 
     dispatch(loadApplicationAction(applicationName));
-    dispatch({
+    await dispatch({
       type: UPDATE_COMPONENT,
-      payload: { applicationName, component }
+      payload: { applicationName, component },
     });
     dispatch(setSuccessNotificationAction("Update component successfully"));
   };
@@ -118,7 +117,7 @@ export const deleteComponentAction = (componentName: string, applicationName?: s
     dispatch(loadApplicationAction(applicationName));
     dispatch({
       type: DELETE_COMPONENT,
-      payload: { applicationName, componentName }
+      payload: { applicationName, componentName },
     });
     dispatch(setSuccessNotificationAction("Delete component successfully"));
   };
@@ -145,12 +144,11 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
     dispatch(setIsSubmittingApplication(false));
 
     dispatch(loadApplicationsAction());
-    dispatch({
+    await dispatch({
       type: CREATE_APPLICATION,
-      payload: { application }
+      payload: { application },
     });
     dispatch(setSuccessNotificationAction("Create application successfully"));
-    dispatch(push("/applications"));
   };
 };
 
@@ -194,7 +192,7 @@ export const updateApplicationAction = (applicationRaw: Application): ThunkResul
     dispatch(loadApplicationsAction());
     dispatch({
       type: UPDATE_APPLICATION,
-      payload: { application }
+      payload: { application },
     });
     dispatch(setSuccessNotificationAction("Edit application successfully"));
     dispatch(push("/applications"));
@@ -209,7 +207,7 @@ export const duplicateApplicationAction = (duplicatedApplication: Application): 
     dispatch(loadApplicationsAction());
     dispatch({
       type: DUPLICATE_APPLICATION,
-      payload: { application }
+      payload: { application },
     });
   };
 };
@@ -220,8 +218,15 @@ export const deleteApplicationAction = (name: string): ThunkResult<Promise<void>
 
     dispatch({
       type: DELETE_APPLICATION,
-      payload: { applicationName: name }
+      payload: { applicationName: name },
     });
+    // api deleting delay,for deletingApplicationNames
+    setTimeout(() => {
+      dispatch({
+        type: DELETE_APPLICATION,
+        payload: { applicationName: name },
+      });
+    }, 10000);
   };
 };
 
@@ -242,17 +247,17 @@ export const loadApplicationAction = (name: string): ThunkResult<Promise<void>> 
     dispatch({
       type: LOAD_APPLICATION_FULFILLED,
       payload: {
-        application
-      }
+        application,
+      },
     });
   };
 };
 
-export const loadApplicationsAction = (): ThunkResult<Promise<void>> => {
+export const loadApplicationsAction = (): ThunkResult<Promise<Immutable.List<ApplicationDetails>>> => {
   return async (dispatch, getState) => {
     dispatch({ type: LOAD_APPLICATIONS_PENDING });
 
-    let applicationList: ApplicationDetailsList;
+    let applicationList: Immutable.List<ApplicationDetails>;
     try {
       applicationList = await getKappApplicationList();
 
@@ -262,8 +267,8 @@ export const loadApplicationsAction = (): ThunkResult<Promise<void>> => {
             const components = await getKappApplicationComponentList(application.get("name"));
             application = application.set("components", components);
             return application;
-          })
-        )
+          }),
+        ),
       );
     } catch (e) {
       dispatch({ type: LOAD_APPLICATIONS_FAILED });
@@ -281,9 +286,11 @@ export const loadApplicationsAction = (): ThunkResult<Promise<void>> => {
     dispatch({
       type: LOAD_APPLICATIONS_FULFILLED,
       payload: {
-        applicationList
-      }
+        applicationList,
+      },
     });
+
+    return applicationList;
   };
 };
 
@@ -317,8 +324,8 @@ export const loadComponentPluginsAction = (): ThunkResult<Promise<void>> => {
     dispatch({
       type: LOAD_COMPONENT_PLUGINS_FULFILLED,
       payload: {
-        componentPlugins
-      }
+        componentPlugins,
+      },
     });
   };
 };
@@ -327,18 +334,18 @@ export const setIsSubmittingApplication = (isSubmittingApplication: boolean): Se
   return {
     type: SET_IS_SUBMITTING_APPLICATION,
     payload: {
-      isSubmittingApplication
-    }
+      isSubmittingApplication,
+    },
   };
 };
 
 export const setIsSubmittingApplicationComponent = (
-  isSubmittingApplicationComponent: boolean
+  isSubmittingApplicationComponent: boolean,
 ): SetIsSubmittingApplicationComponent => {
   return {
     type: SET_IS_SUBMITTING_APPLICATION_COMPONENT,
     payload: {
-      isSubmittingApplicationComponent
-    }
+      isSubmittingApplicationComponent,
+    },
   };
 };

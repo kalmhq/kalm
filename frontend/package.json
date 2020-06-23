@@ -13,6 +13,8 @@
     "@testing-library/user-event": "^7.2.1",
     "@types/chart.js": "^2.9.16",
     "@types/debug": "^4.1.5",
+    "@types/enzyme": "^3.10.5",
+    "@types/enzyme-adapter-react-16": "^1.0.6",
     "@types/jest": "^24.0.25",
     "@types/node": "^12.12.24",
     "@types/node-forge": "^0.9.4",
@@ -23,14 +25,16 @@
     "@types/react-syntax-highlighter": "^11.0.4",
     "@types/redux-form": "^8.2.0",
     "@types/redux-immutable": "^4.0.1",
+    "@types/redux-logger": "^3.0.8",
     "ace-builds": "^1.4.8",
     "antd": "^3.26.11",
     "axios": "^0.19.2",
     "chart.js": "^2.9.3",
     "chartjs-plugin-labels": "^1.1.0",
-    "connected-react-router": "^6.6.1",
+    "connected-react-router": "^6.8.0",
     "date-fns": "^2.11.1",
     "debug": "^4.1.1",
+    "driver.js": "^0.9.8",
     "hoist-non-react-statics": "^3.3.2",
     "immutable": "^4.0.0-rc.12",
     "install": "^0.13.0",
@@ -55,6 +59,7 @@
     "reconnecting-websocket": "^4.4.0",
     "redux-form": "^8.2.6",
     "redux-immutable": "^4.0.0",
+    "redux-logger": "^3.0.6",
     "redux-promise-middleware": "^6.1.2",
     "redux-thunk": "^2.3.0",
     "redux-thunk-error-handler": "^1.1.4",
@@ -62,14 +67,16 @@
     "xterm": "^4.4.0",
     "xterm-addon-fit": "^0.3.0",
     "xterm-addon-search": "^0.5.0",
-    "yaml": "^1.7.2"
+    "yaml": "^1.7.2",
+    "enzyme": "^3.11.0",
+    "enzyme-adapter-react-16": "^1.15.2"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "lint": "./node_modules/.bin/eslint --ext ts,tsx src --max-warnings=0"
+    "lint": "eslint -c .eslintrc.json --ext tx,tsx src"
   },
   "browserslist": {
     "production": [
@@ -85,5 +92,10 @@
   },
   "devDependencies": {
     "husky": "^4.2.1"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint"
+    }
   }
 }

@@ -1,22 +1,25 @@
+import { CssBaseline, ThemeProvider } from "@material-ui/core";
+import { ConnectedRouter } from "connected-react-router/immutable";
+import "driver.js/dist/driver.min.css";
+import { createBrowserHistory } from "history";
+import "perfect-scrollbar/css/perfect-scrollbar.css";
 import React from "react";
 import ReactDOM from "react-dom";
-import "./index.css";
-import "./antd.css";
-import "perfect-scrollbar/css/perfect-scrollbar.css";
-import * as serviceWorker from "./serviceWorker";
 import { Provider } from "react-redux";
-import { ConnectedRouter } from "connected-react-router/immutable";
-import configureStore from "./configureStore";
-import { createBrowserHistory } from "history";
-import { ThemeProvider, CssBaseline } from "@material-ui/core";
-import { SnackbarProvider } from "notistack";
-import { ScrollToTop } from "./widgets/ScrollToTop";
-import { setStore } from "./store";
-import { KappRoutes } from "./routes";
-import { NotificationComponent } from "./widgets/Notification";
 import { theme } from "theme";
+import { HistoryUserConfirmation } from "widgets/History";
+import "./antd.css";
+import configureStore from "./configureStore";
+import "./index.css";
+import { KappRoutes } from "./routes";
+import * as serviceWorker from "./serviceWorker";
+import { setStore } from "./store";
+import { Snackbar } from "./widgets/Notification";
+import { ScrollToTop } from "./widgets/ScrollToTop";
 
-export const history = createBrowserHistory();
+export const history = createBrowserHistory({
+  getUserConfirmation: HistoryUserConfirmation,
+});
 
 const store = configureStore(history);
 
@@ -25,23 +28,17 @@ setStore(store);
 ReactDOM.render(
   <Provider store={store}>
     <ConnectedRouter history={history}>
+      <div id="history-prompt-anchor" />
       <CssBaseline />
       <ScrollToTop>
         <ThemeProvider theme={theme}>
-          <SnackbarProvider
-            maxSnack={3}
-            anchorOrigin={{
-              horizontal: "right",
-              vertical: "bottom"
-            }}>
-            <NotificationComponent />
-            {KappRoutes}
-          </SnackbarProvider>
+          <Snackbar />
+          {KappRoutes}
         </ThemeProvider>
       </ScrollToTop>
     </ConnectedRouter>
   </Provider>,
-  document.getElementById("root")
+  document.getElementById("root"),
 );
 
 // If you want your app to work offline and load faster, you can change

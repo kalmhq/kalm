@@ -11,18 +11,18 @@ export const getApplicationByName = (applicationName: string): Application => {
     .find(x => x.get("name") === applicationName) as Application;
 };
 
-export const duplicateApplicationName = (applicationName: string): string => {
-  const state = store.getState();
-  const applications = state.get("applications").get("applications");
-  let i = 0;
-  let name = "";
-  do {
-    i += 1;
-    name = `${applicationName}-duplicate-${i}`;
-  } while (applications.find(x => x.get("name") === name));
+// export const duplicateApplicationName = (applicationName: string): string => {
+//   const state = store.getState();
+//   const applications = state.get("applications").get("applications");
+//   let i = 0;
+//   let name = "";
+//   do {
+//     i += 1;
+//     name = `${applicationName}-duplicate-${i}`;
+//   } while (applications.find(x => x.get("name") === name));
 
-  return name;
-};
+//   return name;
+// };
 
 export const getCurrentFormApplication = (): Application => {
   const state = store.getState();
@@ -40,31 +40,31 @@ export const getApplicationSharedEnvNamesSet = (application: Application): Set<s
   //   : []
 };
 
-export const getApplicationEnvStatus = (application: Application) => {
-  const applicationSharedEnvNamesSet = getApplicationSharedEnvNamesSet(application);
-  const applicationComponentExternalEnvsSet = new Set<string>();
+// export const getApplicationEnvStatus = (application: Application) => {
+//   const applicationSharedEnvNamesSet = getApplicationSharedEnvNamesSet(application);
+//   const applicationComponentExternalEnvsSet = new Set<string>();
 
-  application.get("components")?.forEach((applicationComponent, index) => {
-    applicationComponent.get("env") &&
-      applicationComponent
-        .get("env")!
-        .filter(x => x.get("type") === EnvTypeExternal)
-        .map(x => x.get("name"))
-        .forEach(envName => {
-          applicationComponentExternalEnvsSet.add(envName);
-        });
-  });
+//   application.get("components")?.forEach((applicationComponent, index) => {
+//     applicationComponent.get("env") &&
+//       applicationComponent
+//         .get("env")!
+//         .filter(x => x.get("type") === EnvTypeExternal)
+//         .map(x => x.get("name"))
+//         .forEach(envName => {
+//           applicationComponentExternalEnvsSet.add(envName);
+//         });
+//   });
 
-  const notUsedSharedEnvsSet = new Set(
-    Array.from(applicationSharedEnvNamesSet).filter(x => !applicationComponentExternalEnvsSet.has(x))
-  );
+//   const notUsedSharedEnvsSet = new Set(
+//     Array.from(applicationSharedEnvNamesSet).filter(x => !applicationComponentExternalEnvsSet.has(x))
+//   );
 
-  const notDefinedSharedEnvsSet = new Set(
-    Array.from(applicationComponentExternalEnvsSet).filter(x => !applicationSharedEnvNamesSet.has(x))
-  );
+//   const notDefinedSharedEnvsSet = new Set(
+//     Array.from(applicationComponentExternalEnvsSet).filter(x => !applicationSharedEnvNamesSet.has(x))
+//   );
 
-  return {
-    notUsedSharedEnvsSet,
-    notDefinedSharedEnvsSet
-  };
-};
+//   return {
+//     notUsedSharedEnvsSet,
+//     notDefinedSharedEnvsSet
+//   };
+// };

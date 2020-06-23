@@ -1,21 +1,31 @@
-import { ThunkDispatch, ThunkAction } from "redux-thunk";
+import { RouterAction } from "connected-react-router";
+import { FormAction } from "redux-form";
+import { ActionTypes } from "redux-form/lib/actionTypes";
+import { ThunkAction, ThunkDispatch } from "redux-thunk";
 import { RootState } from "../reducers";
-import { CommonActions } from "./common";
 import { ApplicationActions } from "./application";
+import { CertificateActions } from "./certificate";
+import { ClusterActions } from "./cluster";
+import { CommonActions } from "./common";
 import { ComponentTemplateActions } from "./componentTemplate";
 import { ConfigActions } from "./config";
-import { UserActions } from "./user";
 import { DependencyActions } from "./dependency";
 import { NamespaceActions } from "./namespace";
 import { NodeActions } from "./node";
+import { VolumeActions } from "./persistentVolume";
 import { RegistriesActions } from "./registry";
 import { RouteActions } from "./route";
-import { CertificateActions } from "./certificate";
 import { ServiceActions } from "./service";
-import { VolumeActions } from "./persistentVolume";
-import { ClusterActions } from "./cluster";
+import { TutorialActions } from "./tutorial";
+import { UserActions } from "./user";
+
+interface ReduxFormAction extends FormAction {
+  type: keyof ActionTypes;
+}
 
 export type Actions =
+  | ReduxFormAction
+  | RouterAction
   | CommonActions
   | ApplicationActions
   | ComponentTemplateActions
@@ -29,7 +39,8 @@ export type Actions =
   | CertificateActions
   | ServiceActions
   | VolumeActions
-  | ClusterActions;
+  | ClusterActions
+  | TutorialActions;
 
 export type ThunkResult<R> = ThunkAction<R, RootState, undefined, Actions>;
 export type TDispatch = ThunkDispatch<RootState, undefined, Actions>;

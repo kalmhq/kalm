@@ -20,6 +20,7 @@ import settings, { State as SettingsState } from "./settings";
 import users, { State as UserState } from "./user";
 import routes, { State as RouteState } from "./route";
 import cluster, { State as ClusterState } from "./cluster";
+import tutorial, { State as TutorialState } from "./tutorial";
 import services, { State as ServiceState } from "./service";
 import certificates, { State as CertificateState } from "./certificate";
 
@@ -42,6 +43,7 @@ export type RootState = ImmutableMap<{
   roles: RolesState;
   routes: RouteState;
   cluster: ClusterState;
+  tutorial: TutorialState;
   services: ServiceState;
   certificates: CertificateState;
 }>;
@@ -69,7 +71,8 @@ export default (history: History<LocationState>) =>
     users,
     roles,
     routes,
+    tutorial,
     cluster,
     services,
-    certificates
+    certificates,
   });

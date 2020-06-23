@@ -8,34 +8,37 @@ import {
   ListItemText,
   Tab,
   Tabs,
-  Tooltip
+  Tooltip,
 } from "@material-ui/core";
+import { Prompt } from "widgets/Prompt";
 import { grey } from "@material-ui/core/colors";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import HelpIcon from "@material-ui/icons/Help";
 import clsx from "clsx";
+import { push } from "connected-react-router";
 import { KBoolCheckboxRender } from "forms/Basic/checkbox";
 import Immutable from "immutable";
+import queryString from "query-string";
 import React from "react";
 import { connect } from "react-redux";
 import { InjectedFormProps } from "redux-form";
 import { Field, getFormSyncErrors, getFormValues, reduxForm } from "redux-form/immutable";
+import { formValidatOrNotBlockByTutorial } from "types/tutorial";
 import { Body, H5 } from "widgets/Label";
 import { SectionTitle } from "widgets/SectionTitle";
 import { loadComponentPluginsAction } from "../../actions/application";
 import { loadNodesAction } from "../../actions/node";
-import { loadStorageClassesAction, loadPersistentVolumesAction } from "../../actions/persistentVolume";
+import { loadPersistentVolumesAction, loadStorageClassesAction } from "../../actions/persistentVolume";
 import { RootState } from "../../reducers";
 import { getNodeLabels } from "../../selectors/node";
 import { TDispatchProp } from "../../types";
-import { SharedEnv, ApplicationDetails } from "../../types/application";
+import { ApplicationDetails, SharedEnv } from "../../types/application";
 import {
   ComponentLike,
   ComponentLikeContent,
   workloadTypeCronjob,
   workloadTypeServer,
-  newEmptyComponentLike
 } from "../../types/componentTemplate";
 import { CustomizedButton } from "../../widgets/Button";
 import { HelperContainer } from "../../widgets/Helper";
@@ -51,8 +54,7 @@ import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
 import { Volumes } from "./Volumes";
-import queryString from "query-string";
-import { push } from "connected-react-router";
+import { shouldError } from "forms/common";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -80,9 +82,9 @@ const Scheduling = "Scheduling";
 const UpgradePolicy = "Upgrade Policy";
 const tabs = [Configurations, Networking, Disks, Health, Scheduling, UpgradePolicy];
 
-const mapStateToProps = (state: RootState, props: any) => {
-  const values = getFormValues("componentLike")(state) as ComponentLike;
-  const syncErrors = getFormSyncErrors("componentLike")(state) as { [x in keyof ComponentLikeContent]: any };
+const mapStateToProps = (state: RootState) => {
+  const fieldValues = (getFormValues("componentLike")(state) as ComponentLike) || (Immutable.Map() as ComponentLike);
+  const syncValidationErrors = getFormSyncErrors("componentLike")(state) as { [x in keyof ComponentLikeContent]: any };
   const nodeLabels = getNodeLabels();
 
   const search = queryString.parse(window.location.search);
@@ -94,12 +96,13 @@ const mapStateToProps = (state: RootState, props: any) => {
   }
 
   return {
+    tutorialState: state.get("tutorial"),
     search,
+    fieldValues,
     isSubmittingApplicationComponent: state.get("applications").get("isSubmittingApplicationComponent"),
-    values,
-    syncErrors,
+    syncValidationErrors,
     nodeLabels,
-    currentTabIndex
+    currentTabIndex,
   };
 };
 
@@ -108,38 +111,37 @@ const styles = (theme: Theme) =>
     root: {
       flexGrow: 1,
       width: "100%",
-      padding: 20,
       // since deploy button is fixed
-      paddingBottom: 100
+      paddingBottom: 100,
       // backgroundColor: "#F4F5F7"
     },
     hasError: {
-      color: `${theme.palette.error.main} !important`
+      color: `${theme.palette.error.main} !important`,
     },
     tabsRoot: {
       "& .MuiButtonBase-root": {
-        minWidth: "auto"
-      }
+        minWidth: "auto",
+      },
     },
     borderBottom: {
-      borderBottom: "1px solid rgba(0, 0, 0, 0.12)"
+      borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
     },
     displayBlock: {
-      display: "block"
+      display: "block",
     },
     displayNone: {
-      display: "none"
+      display: "none",
     },
     sectionTitle: {
       display: "flex",
-      alignItems: "center"
+      alignItems: "center",
     },
     helperField: {
-      position: "relative"
+      position: "relative",
     },
     textFieldHelperIcon: {
       color: grey[700],
-      cursor: "pointer"
+      cursor: "pointer",
     },
 
     // Select doesn't support endAdornment
@@ -151,19 +153,19 @@ const styles = (theme: Theme) =>
       cursor: "pointer",
       position: "absolute",
       right: 30,
-      top: 10
+      top: 10,
     },
     sectionTitleHelperIcon: {
       color: grey[700],
       cursor: "pointer",
-      marginLeft: theme.spacing(1)
+      marginLeft: theme.spacing(1),
     },
     deployBtn: {
       width: 360,
       position: "fixed",
       zIndex: 99,
-      bottom: theme.spacing(3)
-    }
+      bottom: theme.spacing(3),
+    },
   });
 
 interface RawProps {
@@ -172,14 +174,15 @@ interface RawProps {
   submitButtonText?: string;
   sharedEnv?: Immutable.List<SharedEnv>;
   application?: ApplicationDetails;
+}
+interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {
   // submitAppplicationErrors?: Immutable.Map<string, any>;
 }
 
 export interface Props
-  extends InjectedFormProps<ComponentLike, RawProps>,
-    ReturnType<typeof mapStateToProps>,
+  extends InjectedFormProps<ComponentLike, ConnectedProps>,
     WithStyles<typeof styles>,
-    TDispatchProp,
+    ConnectedProps,
     RawProps {}
 
 interface State {}
@@ -201,8 +204,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     dispatch(loadPersistentVolumesAction());
   }
 
-  private renderReplicasOrSchedule() {
-    if (this.props.values.get("workloadType") !== workloadTypeCronjob) {
+  private renderReplicasOrSchedule = () => {
+    if (this.props.fieldValues.get("workloadType") !== workloadTypeCronjob) {
       return (
         <Field
           component={RenderComplexValueTextField}
@@ -246,7 +249,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         />
       </>
     );
-  }
+  };
 
   private getCPUHelper() {
     return (
@@ -531,8 +534,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             </a>
             .
           </>
-        )
-      }
+        ),
+      },
     ]);
   }
 
@@ -554,7 +557,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
                 </a>{" "}
                 for more details.
               </>
-            )
+            ),
           },
           {
             title: "ClusterFirst",
@@ -571,7 +574,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
                 </a>{" "}
                 for details on how DNS queries are handled in those cases.
               </>
-            )
+            ),
           },
           {
             title: "ClusterFirstWithHostNet",
@@ -579,12 +582,12 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               <>
                 For Pods running with hostNetwork, you should explicitly set its DNS policy “ClusterFirstWithHostNet”.
               </>
-            )
+            ),
           },
           {
             title: "None",
-            content: <>It allows a Pod to ignore DNS settings from the Kubernetes environment.</>
-          }
+            content: <>It allows a Pod to ignore DNS settings from the Kubernetes environment.</>,
+          },
         ])}
       </>
     );
@@ -606,7 +609,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             </a>{" "}
             for more details.
           </>
-        )
+        ),
       },
       {
         value: "ClusterFirst",
@@ -624,20 +627,20 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             </a>{" "}
             for details on how DNS queries are handled in those cases.
           </>
-        )
+        ),
       },
       {
         value: "ClusterFirstWithHostNet",
         label: "ClusterFirstWithHostNet",
         explain: (
           <>For Pods running with hostNetwork, you should explicitly set its DNS policy “ClusterFirstWithHostNet”.</>
-        )
+        ),
       },
       {
         value: "None",
         label: "None",
-        explain: <>It allows a Pod to ignore DNS settings from the Kubernetes environment.</>
-      }
+        explain: <>It allows a Pod to ignore DNS settings from the Kubernetes environment.</>,
+      },
     ];
   }
 
@@ -815,13 +818,13 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       {
         value: "PodAffinityTypePreferFanout",
         label: "Prefer Fanout",
-        explain: "Deploy Pod average to Nodes."
+        explain: "Deploy Pod average to Nodes.",
       },
       {
         value: "PodAffinityTypePreferGather",
         label: "Prefer Gather",
-        explain: "Prefer deployment to Node that is already in use."
-      }
+        explain: "Prefer deployment to Node that is already in use.",
+      },
     ];
   }
 
@@ -922,12 +925,12 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               {
                 value: "RollingUpdate",
                 label:
-                  "Rolling update. The new and old instances exist at the same time. The old ones will be gradually replaced by the new ones."
+                  "Rolling update. The new and old instances exist at the same time. The old ones will be gradually replaced by the new ones.",
               },
               {
                 value: "Recreate",
-                label: "Stop all existing instances before creating new ones."
-              }
+                label: "Stop all existing instances before creating new ones.",
+              },
             ]}
           />
           {/* <div className={classes.helperField}>
@@ -1009,13 +1012,13 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       push(
         `/applications/${application?.get("name")}/edit?component=${search.component || ""}#${
           tab ? tab.replace(/\s/g, "") : ""
-        }`
-      )
+        }`,
+      ),
     );
   }
 
   private renderTabs() {
-    const { classes, syncErrors, submitFailed, currentTabIndex } = this.props;
+    const { classes, syncValidationErrors, submitFailed, currentTabIndex } = this.props;
     return (
       <Tabs
         className={clsx(classes.borderBottom, classes.tabsRoot)}
@@ -1032,16 +1035,18 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         {this.tabs.map(tab => {
           if (
             submitFailed &&
-            ((tab === Configurations && (syncErrors.preInjectedFiles || syncErrors.env || syncErrors.command)) ||
-              (tab === Disks && syncErrors.volumes) ||
-              (tab === Health && (syncErrors.livenessProbe || syncErrors.ReadinessProbe)) ||
-              (tab === Networking && syncErrors.ports) ||
-              (tab === Scheduling && (syncErrors.cpu || syncErrors.memory || syncErrors.nodeSelectorLabels)))
+            ((tab === Configurations &&
+              (syncValidationErrors.preInjectedFiles || syncValidationErrors.env || syncValidationErrors.command)) ||
+              (tab === Disks && syncValidationErrors.volumes) ||
+              (tab === Health && (syncValidationErrors.livenessProbe || syncValidationErrors.ReadinessProbe)) ||
+              (tab === Networking && syncValidationErrors.ports) ||
+              (tab === Scheduling &&
+                (syncValidationErrors.cpu || syncValidationErrors.memory || syncValidationErrors.nodeSelectorLabels)))
           ) {
             return <Tab key={tab} label={tab} className={classes.hasError} />;
           }
 
-          return <Tab key={tab} label={tab} />;
+          return <Tab key={tab} label={tab} tutorial-anchor-id={tab} />;
         })}
       </Tabs>
     );
@@ -1092,7 +1097,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             validate={[ValidatorRequired]}
             options={[
               { value: workloadTypeServer, text: "Server (continuous running)" },
-              { value: workloadTypeCronjob, text: "Cronjob (periodic running)" }
+              { value: workloadTypeCronjob, text: "Cronjob (periodic running)" },
             ]}></Field>
         </Grid>
         <Grid item xs={6}>
@@ -1113,9 +1118,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             variant="contained"
             color="primary"
             className={classes.deployBtn}
-            onClick={event => {
-              handleSubmit(event);
-            }}>
+            onClick={handleSubmit}>
             Deploy
           </CustomizedButton>
 
@@ -1127,12 +1130,25 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
+  public renderDirtyPrompt = () => {
+    const { dirty } = this.props;
+    return <Prompt when={dirty} message="Are you sure to leave without saving changes?" />;
+  };
+
   public render() {
     const { handleSubmit, classes } = this.props;
 
     return (
       <form onSubmit={handleSubmit} className={classes.root}>
-        <KPanel title={"Basic Information"} content={<Box p={2}>{this.renderMain()}</Box>} />
+        {this.renderDirtyPrompt()}
+        <KPanel
+          title={"Basic Information"}
+          content={
+            <Box p={2} tutorial-anchor-id="component-from-basic">
+              {this.renderMain()}
+            </Box>
+          }
+        />
         <Box mt={2}>
           <KPanel
             title={"Advanced Settings"}
@@ -1147,12 +1163,12 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         {process.env.REACT_APP_DEBUG ? (
           <pre style={{ maxWidth: 1500, background: "#eee" }}>
             {JSON.stringify(
-              (this.props.values as any)
+              (this.props.fieldValues as any)
                 .delete("metrics")
                 .delete("pods")
                 .delete("services"),
               undefined,
-              2
+              2,
             )}
           </pre>
         ) : null}
@@ -1163,12 +1179,12 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const componentInitialValues: ComponentLike = newEmptyComponentLike();
-
-export const ComponentLikeForm = reduxForm<ComponentLike, RawProps>({
+const form = reduxForm<ComponentLike, RawProps & ConnectedProps>({
   form: "componentLike",
-  enableReinitialize: false,
-  keepDirtyOnReinitialize: false,
-  initialValues: componentInitialValues,
-  onSubmitFail: console.log
-})(connect(mapStateToProps)(withStyles(styles)(ComponentLikeFormRaw)));
+  enableReinitialize: true,
+  validate: formValidatOrNotBlockByTutorial,
+  shouldError: shouldError,
+  onSubmitFail: console.log,
+})(withStyles(styles)(ComponentLikeFormRaw));
+
+export const ComponentLikeForm = connect(mapStateToProps)(form);
