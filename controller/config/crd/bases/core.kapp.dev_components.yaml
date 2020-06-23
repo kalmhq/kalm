@@ -92,6 +92,8 @@ spec:
             dnsPolicy:
               description: DNSPolicy defines how a pod's DNS will be configured.
               type: string
+            enableHeadlessService:
+              type: boolean
             enableResourcesRequests:
               type: boolean
             env:
@@ -510,6 +512,7 @@ spec:
               - daemonset
               type: string
           required:
+          - enableHeadlessService
           - image
           type: object
         status:
