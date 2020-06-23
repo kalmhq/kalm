@@ -362,10 +362,8 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 			ps = append(ps, sp)
 		}
 
-		r.service.Spec.Ports = ps
-
 		// TODO service ComponentPlugin call
-
+		r.service.Spec.Ports = ps
 		if newService {
 			if err := r.Create(r.ctx, r.service); err != nil {
 				r.WarningEvent(err, "unable to create Service for Component")
@@ -1462,7 +1460,11 @@ func (r *ComponentReconcilerTask) LoadService() error {
 		},
 		&service,
 	); err != nil {
-		return client.IgnoreNotFound(err)
+		if !errors.IsNotFound(err) {
+			return err
+		}
+	} else {
+		r.service = &service
 	}
 
 	var headlessService coreV1.Service
@@ -1474,11 +1476,12 @@ func (r *ComponentReconcilerTask) LoadService() error {
 		},
 		&headlessService,
 	); err != nil {
-		return client.IgnoreNotFound(err)
+		if !errors.IsNotFound(err) {
+			return err
+		}
+	} else {
+		r.headlessService = &headlessService
 	}
-
-	r.service = &service
-	r.headlessService = &headlessService
 
 	return nil
 }
