@@ -33,6 +33,8 @@ type PreInjectFile struct {
 	MountPath string `json:"mountPath"`
 
 	Readonly bool `json:"readonly,omitempty"`
+
+	Runnable bool `json:"runnable"`
 }
 
 // ComponentSpec defines the desired state of Component

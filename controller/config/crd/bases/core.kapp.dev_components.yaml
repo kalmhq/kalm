@@ -275,9 +275,12 @@ spec:
                     type: string
                   readonly:
                     type: boolean
+                  runnable:
+                    type: boolean
                 required:
                 - content
                 - mountPath
+                - runnable
                 type: object
               type: array
             preferNotCoLocated:

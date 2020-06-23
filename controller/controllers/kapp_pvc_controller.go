@@ -17,6 +17,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/storage/v1"
@@ -77,21 +78,21 @@ func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		}
 	}
 
-	var activePVCs []corev1.PersistentVolumeClaim
-
-	for _, kappPvc := range kappPvcList.Items {
-		if _, exist := findComponentUsingPVC(kappPvc, componentList); exist {
-			activePVCs = append(activePVCs, kappPvc)
-
-			continue
-		}
-
-		// todo more careful deleting this kappPvc
-		r.Log.Info("deleting un-used kappPvc", "kappPvc", kappPvc.Name, "comps", componentList.Items)
-		if err := r.Delete(ctx, &kappPvc); err != nil {
-			return ctrl.Result{}, nil
-		}
-	}
+	//var activePVCs []corev1.PersistentVolumeClaim
+	//
+	//for _, kappPvc := range kappPvcList.Items {
+	//	if _, exist := findComponentUsingPVC(kappPvc, componentList); exist {
+	//		activePVCs = append(activePVCs, kappPvc)
+	//
+	//		continue
+	//	}
+	//
+	//	// todo more careful deleting this kappPvc
+	//	r.Log.Info("deleting un-used kappPvc", "kappPvc", kappPvc.Name, "comps", componentList.Items)
+	//	if err := r.Delete(ctx, &kappPvc); err != nil {
+	//		return ctrl.Result{}, nil
+	//	}
+	//}
 
 	// 2. PV
 
@@ -186,7 +187,12 @@ func findComponentUsingPVC(pvc corev1.PersistentVolumeClaim, compList v1alpha1.C
 				continue
 			}
 
-			if vol.PersistentVolumeClaimName == pvc.Name {
+			if !isStatefulSet(&comp) && vol.PVC == pvc.Name {
+				return comp, true
+			}
+
+			pvcNamePrefix := fmt.Sprintf("%s-%s-", vol.PVC, comp.Name)
+			if isStatefulSet(&comp) && strings.HasPrefix(pvc.Name, pvcNamePrefix) {
 				return comp, true
 			}
 		}
