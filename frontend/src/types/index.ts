@@ -7,8 +7,6 @@ import { ApplicationActions } from "./application";
 import { CertificateActions } from "./certificate";
 import { ClusterActions } from "./cluster";
 import { CommonActions } from "./common";
-import { ComponentTemplateActions } from "./componentTemplate";
-import { ConfigActions } from "./config";
 import { DependencyActions } from "./dependency";
 import { NamespaceActions } from "./namespace";
 import { NodeActions } from "./node";
@@ -28,8 +26,6 @@ export type Actions =
   | RouterAction
   | CommonActions
   | ApplicationActions
-  | ComponentTemplateActions
-  | ConfigActions
   | UserActions
   | DependencyActions
   | NamespaceActions

@@ -1,15 +1,6 @@
 import Immutable from "immutable";
 import { ImmutableMap } from "../typings";
-import { Status } from "./common";
 import { PluginType } from "./plugin";
-
-export const CREATE_COMPONENT_TEMPLATES = "CREATE_COMPONENT_TEMPLATES";
-export const UPDATE_COMPONENT_TEMPLATES = "UPDATE_COMPONENT_TEMPLATES";
-export const DELETE_COMPONENT_TEMPLATES = "DELETE_COMPONENT_TEMPLATES";
-export const DUPLICATE_COMPONENT_TEMPLATES = "DUPLICATE_COMPONENT_TEMPLATES";
-export const LOAD_COMPONENT_TEMPLATES_PENDING = "LOAD_COMPONENT_TEMPLATES_PENDING";
-export const LOAD_COMPONENT_TEMPLATES_FULFILLED = "LOAD_COMPONENT_TEMPLATES_FULFILLED";
-export const LOAD_COMPONENT_TEMPLATES_FAILED = "LOAD_COMPONENT_TEMPLATES_FAILED";
 
 export type WorkloadType = string;
 export const workloadTypeServer: WorkloadType = "server";
@@ -23,36 +14,6 @@ export const newEmptyComponentLike = (): ComponentLike => {
     workloadType: "server",
     dnsPolicy: "ClusterFirst",
   });
-};
-
-export const newEmptyPlugin = (): PluginType => {
-  return Immutable.Map({});
-};
-
-export const newEmptyVolume = (): Volume => {
-  return Immutable.Map({});
-};
-
-export const newEmptyComponentLikeEnv = (): ComponentLikeEnv => {
-  return Immutable.Map({
-    name: "",
-    type: "static",
-    value: "",
-  });
-};
-
-export const newEmptyComponentLikePort = (): ComponentLikePort => {
-  return Immutable.Map({
-    name: "",
-    protocol: "TCP",
-    containerPort: 3000,
-    servicePort: 80,
-  });
-};
-
-export type ComponentStatus = {
-  status: Status;
-  deploymentStatus: any;
 };
 
 export type ComponentLikeEnv = ImmutableMap<{
@@ -163,59 +124,4 @@ export interface ComponentLikeContent {
   podAffinityType?: PodAffinityType;
 }
 
-export interface ComponentTemplateContent extends ComponentLikeContent {}
-
 export type ComponentLike = ImmutableMap<ComponentLikeContent>;
-export type ComponentTemplate = ImmutableMap<ComponentTemplateContent>;
-
-export interface CreateComponentTemplateAction {
-  type: typeof CREATE_COMPONENT_TEMPLATES;
-  payload: {
-    componentTemplate: ComponentTemplate;
-  };
-}
-
-export interface UpdateComponentTemplateAction {
-  type: typeof UPDATE_COMPONENT_TEMPLATES;
-  payload: {
-    componentTemplate: ComponentTemplate;
-  };
-}
-
-export interface DeleteComponentTemplateAction {
-  type: typeof DELETE_COMPONENT_TEMPLATES;
-  payload: {
-    componentTemplateName: string;
-  };
-}
-
-export interface DuplicateComponentTemplateAction {
-  type: typeof DUPLICATE_COMPONENT_TEMPLATES;
-  payload: {
-    componentTemplate: ComponentTemplate;
-  };
-}
-
-export interface LoadComponentTemplatesPendingAction {
-  type: typeof LOAD_COMPONENT_TEMPLATES_PENDING;
-}
-
-export interface LoadComponentTemplatesFailedAction {
-  type: typeof LOAD_COMPONENT_TEMPLATES_FAILED;
-}
-
-export interface LoadComponentTemplatesFulfilledAction {
-  type: typeof LOAD_COMPONENT_TEMPLATES_FULFILLED;
-  payload: {
-    componentTemplates: Array<ComponentTemplate>;
-  };
-}
-
-export type ComponentTemplateActions =
-  | CreateComponentTemplateAction
-  | DeleteComponentTemplateAction
-  | UpdateComponentTemplateAction
-  | LoadComponentTemplatesFulfilledAction
-  | LoadComponentTemplatesPendingAction
-  | LoadComponentTemplatesFailedAction
-  | DuplicateComponentTemplateAction;

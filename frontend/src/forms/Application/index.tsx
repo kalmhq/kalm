@@ -6,7 +6,6 @@ import { connect, DispatchProp } from "react-redux";
 import { Field, formValueSelector, reduxForm } from "redux-form/immutable";
 import { RootState } from "reducers";
 import { Application, SharedEnv } from "types/application";
-import { ComponentTemplate } from "types/componentTemplate";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { KRenderTextField } from "../Basic/textfield";
@@ -52,14 +51,12 @@ const styles = (theme: Theme) =>
 
 const mapStateToProps = (state: RootState) => {
   const selector = formValueSelector("application");
-  const formComponents: ComponentTemplate[] = selector(state, "components");
   const sharedEnvs: Immutable.List<SharedEnv> = selector(state, "sharedEnvs");
 
   return {
     tutorialState: state.get("tutorial"),
     isSubmittingApplication: state.get("applications").get("isSubmittingApplication"),
     sharedEnvs,
-    formComponents,
   };
 };
 

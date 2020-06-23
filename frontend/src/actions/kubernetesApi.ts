@@ -1,10 +1,8 @@
 import axios from "axios";
 import Immutable from "immutable";
 import { LoginStatus, LoginStatusContent } from "types/authorization";
-import { KappDependency } from "types/dependency";
 import { NodesListResponse } from "types/node";
 import { RoleBinding, RoleBindingsRequestBody } from "types/user";
-import { getCurrentNamespace } from "../selectors/namespace";
 import { store } from "../store";
 import {
   Application,
@@ -14,8 +12,6 @@ import {
   ApplicationPlugin,
   ComponentPlugin,
 } from "../types/application";
-import { ComponentTemplate } from "../types/componentTemplate";
-import { ConfigCreate, ConfigRes } from "../types/config";
 import { RegistryType } from "types/registry";
 import {
   Certificate,
@@ -95,38 +91,6 @@ export const deletePersistentVolume = async (name: string): Promise<void> => {
 export const getStorageClasses = async (): Promise<StorageClasses> => {
   const res = await getAxiosClient().get(K8sApiPrefix + "/v1alpha1/storageclasses");
   return Immutable.fromJS(res.data);
-};
-
-export const getKappComponentTemplates = async (): Promise<Array<ComponentTemplate>> => {
-  //   const res = await getAxiosClient().get<V1alpha1ComponentTemplateSpec[]>(
-  //     K8sApiPrefix + "/v1alpha1/componenttemplates"
-  //   );
-  //   return res.data.map(convertFromCRDComponentTemplateSpec);
-  return [];
-};
-
-export const createKappComonentTemplate = async (component: ComponentTemplate): Promise<ComponentTemplate> => {
-  //   const res = await getAxiosClient().post(
-  //     K8sApiPrefix + `/v1alpha1/componenttemplates`,
-  //     convertToCRDComponentTemplateSpec(component)
-  //   );
-  //   return convertFromCRDComponentTemplateSpec(res.data);
-  return {} as ComponentTemplate;
-};
-
-export const updateKappComonentTemplate = async (component: ComponentTemplate): Promise<ComponentTemplate> => {
-  //   const res = await getAxiosClient().put(
-  //     K8sApiPrefix + `/v1alpha1/componenttemplates/${component.get("name")}`,
-  //     convertToCRDComponentTemplateSpec(component)
-  //   );
-  //   return convertFromCRDComponentTemplateSpec(res.data);
-  return {} as ComponentTemplate;
-};
-
-export const deleteKappComonentTemplate = async (component: ComponentTemplate): Promise<void> => {
-  await getAxiosClient().delete(K8sApiPrefix + `/v1alpha1/componenttemplates/${component.get("name")}`);
-
-  // return convertFromCRDComponentTemplate(res.data);
 };
 
 // registry
@@ -250,11 +214,6 @@ export const getHttpRoutes = async (namespace: string): Promise<Immutable.List<H
   return Immutable.fromJS(res.data);
 };
 
-// export const getHttpRoute = async (namespace: string, name: string): Promise<HttpRoute> => {
-//   const res = await getAxiosClient().get(K8sApiPrefix + `/v1alpha1/httproutes/${namespace}/${name}`);
-//   return Immutable.fromJS(res.data);
-// };
-
 export const updateHttpRoute = async (namespace: string, name: string, httpRoute: HttpRoute): Promise<HttpRoute> => {
   const res = await getAxiosClient().put(K8sApiPrefix + `/v1alpha1/httproutes/${namespace}/${name}`, httpRoute);
   return Immutable.fromJS(res.data);
@@ -270,70 +229,9 @@ export const deleteHttpRoute = async (namespace: string, name: string): Promise<
   return res.status === 200;
 };
 
-// dependencies
-
-export const getDependencies = async (): Promise<Array<KappDependency>> => {
-  await getAxiosClient().get<Array<KappDependency>>(K8sApiPrefix + "/v1/dependencies");
-  // return res.data.items.map(convertFromCRDDependency);
-  return {} as Array<KappDependency>;
-};
-
-export const getKappFilesV1alpha1 = async (namespace?: string) => {
-  namespace = namespace || getCurrentNamespace();
-  const res = await getAxiosClient().get(K8sApiPrefix + `/v1alpha1/files/${namespace}`);
-
-  return res.data as ConfigRes;
-};
-
-export const createKappFilesV1alpha1 = async (files: ConfigCreate[]) => {
-  const namespace = getCurrentNamespace();
-  await getAxiosClient().post(K8sApiPrefix + `/v1alpha1/files/${namespace}`, {
-    files,
-  });
-};
-
-export const updateKappFileV1alpha1 = async (path: string, content: string) => {
-  const namespace = getCurrentNamespace();
-  await getAxiosClient().put(K8sApiPrefix + `/v1alpha1/files/${namespace}`, {
-    path,
-    content,
-  });
-};
-
-export const moveKappFileV1alpha1 = async (oldPath: string, newPath: string) => {
-  const namespace = getCurrentNamespace();
-  await getAxiosClient().put(K8sApiPrefix + `/v1alpha1/files/${namespace}/move`, {
-    oldPath,
-    newPath,
-  });
-};
-
-export const deleteKappFileV1alpha1 = async (path: string) => {
-  const namespace = getCurrentNamespace();
-  await getAxiosClient().delete(K8sApiPrefix + `/v1alpha1/files/${namespace}`, {
-    // https://github.com/axios/axios/issues/897#issuecomment-343715381
-    data: {
-      path,
-    },
-  });
-};
-
 export const deletePod = async (namespace: string, name: string) => {
   return await getAxiosClient().delete(K8sApiPrefix + `/v1alpha1/pods/${namespace}/${name}`);
 };
-
-// export const getNamespaces = async () => {
-//   const res = await getAxiosClient().get(K8sApiPrefix + "/v1alpha1/namespaces");
-//   return Immutable.fromJS(res.data) as Namespaces;
-// };
-
-// export const createNamespace = async (name: string) => {
-//   await getAxiosClient().post<null>(K8sApiPrefix + "/v1alpha1/namespaces/" + name);
-// };
-
-// export const deleteNamespace = async (name: string) => {
-//   await getAxiosClient().delete<null>(K8sApiPrefix + "/v1alpha1/namespaces/" + name);
-// };
 
 // RoleBindings
 

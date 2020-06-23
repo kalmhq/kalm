@@ -7,8 +7,6 @@ import { ImmutableMap } from "../typings";
 import roles, { State as RolesState } from "./role";
 import applications, { State as ApplicationState } from "./application";
 import auth, { State as AuthState } from "./auth";
-import componentTemplates, { State as ComponentTemplateState } from "./componentTemplate";
-import configs, { State as ConfigState } from "./config";
 import dependencies, { State as DependencyState } from "./dependency";
 import dialogs, { State as DialogState } from "./dialog";
 import namespaces, { State as NamespacesState } from "./namespaces";
@@ -25,10 +23,8 @@ import services, { State as ServiceState } from "./service";
 import certificates, { State as CertificateState } from "./certificate";
 
 export type RootState = ImmutableMap<{
-  componentTemplates: ComponentTemplateState;
   namespaces: NamespacesState;
   applications: ApplicationState;
-  configs: ConfigState;
   auth: AuthState;
   router: ImmutableMap<any>; //RouterState<LocationState>;
   notification: NotificationState;
@@ -62,10 +58,8 @@ export default (history: History<LocationState>) =>
     dialogs,
     dependencies,
     router: connectRouter(history),
-    componentTemplates,
     persistentVolumes,
     applications,
-    configs,
     notification,
     settings,
     users,

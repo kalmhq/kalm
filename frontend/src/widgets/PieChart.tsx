@@ -7,12 +7,7 @@ import "chartjs-plugin-labels";
 
 const styles = (theme: Theme) =>
   createStyles({
-    root: {
-      // height: "100%",
-      // width: "100%",
-      // display: "flex",
-      // flexDirection: "column"
-    },
+    root: {},
     pieChartWrapper: {
       flex: 1,
       display: "flex",

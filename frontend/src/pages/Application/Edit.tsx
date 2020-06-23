@@ -110,26 +110,7 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
     return (
       <BasePage
         leftDrawer={this.renderApplicationEditDrawer()}
-        secondHeaderRight={
-          "Component"
-          // <div className={classes.secondHeaderRight}>
-          //   <>
-          //     <CustomizedButton
-          //       color="primary"
-          //       className={classes.secondHeaderRightItem}
-          //       onClick={() => dispatch(submit("componentLike"))}>
-          //       Save Component
-          //     </CustomizedButton>
-          //     <CustomizedButton
-          //       color="primary"
-          //       className={classes.secondHeaderRightItem}
-          //       disabled={this.props.application?.get("components")?.size === 0}
-          //       onClick={() => this.handleDeleteComponent()}>
-          //       Delete Component
-          //     </CustomizedButton>
-          //   </>
-          // </div>
-        }
+        secondHeaderRight={"Component"}
         secondHeaderLeft={application && application.get("name")}
       >
         {isLoading && !application ? <Loading /> : this.renderForm()}

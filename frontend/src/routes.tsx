@@ -6,12 +6,6 @@ import { Log } from "pages/Application/Log";
 import { ApplicationNew } from "pages/Application/New";
 import { ApplicationShow } from "pages/Application/Show";
 import { CertificateListPage } from "pages/Certificate/List";
-import { ComponentTemplateEdit } from "pages/ComponentTemplate/Edit";
-import { ComponentTemplateListPage } from "pages/ComponentTemplate/List";
-import { ComponentTemplateNew } from "pages/ComponentTemplate/New";
-// import { ConfigListPage } from "pages/Config/List";
-import { DependencyListPage } from "pages/Dependency/List";
-// import DashboardPage from "pages/Dashboard";
 import InstallPage from "pages/Install";
 import { NodeListPage } from "pages/NodeList";
 import { NoMatch, Page404 } from "pages/NoMatch";
@@ -39,17 +33,10 @@ export const KappRoutes = (
         <Switch>
           <Route exact path="/" component={RequireAdmin(ApplicationListPage)} />
           <Route exact path="/roles" component={RequireAdmin(RolesPage)} />
-          {/* begin, TODO */}
           <Route exact path="/install" component={InstallPage} />
-          <Route exact path="/componenttemplates/new" component={ComponentTemplateNew} />
-          <Route exact path="/componenttemplates/:componentTemplateName/edit" component={ComponentTemplateEdit} />
-          <Route exact path="/componenttemplates" component={ComponentTemplateListPage} />
-          {/* end */}
           <Route exact path="/cluster/nodes" component={NodeListPage} />
           <Route exact path="/cluster/volumes" component={Volumes} />
           <Route exact path="/cluster/registries" component={RegistryListPage} />
-          <Route exact path="/settings/dependencies" component={RequireAdmin(DependencyListPage)} />
-          {/* <Route exact path="/applications/:applicationName/components/:name" component={RequireNamespaceWriter(ApplicationComponentShow)} /> */}
           <Route exact path="/applications" component={RequireAdmin(ApplicationListPage)} />
           <Route exact path="/applications/new" component={RequireAdmin(ApplicationNew)} />
           <Route exact path="/applications/:applicationName" component={RequireNamespaceReader(ApplicationShow)} />
