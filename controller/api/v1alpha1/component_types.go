@@ -53,6 +53,8 @@ type ComponentSpec struct {
 
 	Command string `json:"command,omitempty"`
 
+	EnableHeadlessService bool `json:"enableHeadlessService"`
+
 	Ports []Port `json:"ports,omitempty"`
 
 	// +kubebuilder:validation:Enum=server;cronjob;statefulset;daemonset

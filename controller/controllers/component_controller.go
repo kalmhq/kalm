@@ -59,15 +59,15 @@ type ComponentReconcilerTask struct {
 	ctx       context.Context
 	component *corev1alpha1.Component
 	namespace coreV1.Namespace
-	//ns *corev1alpha1.Application
 
 	// related resources
-	service        *coreV1.Service
-	cronJob        *batchV1Beta1.CronJob
-	deployment     *appsV1.Deployment
-	daemonSet      *appsV1.DaemonSet
-	statefulSet    *appsV1.StatefulSet
-	pluginBindings *corev1alpha1.ComponentPluginBindingList
+	service         *coreV1.Service
+	headlessService *coreV1.Service
+	cronJob         *batchV1Beta1.CronJob
+	deployment      *appsV1.Deployment
+	daemonSet       *appsV1.DaemonSet
+	statefulSet     *appsV1.StatefulSet
+	pluginBindings  *corev1alpha1.ComponentPluginBindingList
 }
 
 // +kubebuilder:rbac:groups=core.kapp.dev,resources=components,verbs=get;list;watch;create;update;patch;delete
@@ -311,6 +311,7 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 
 	if len(r.component.Spec.Ports) > 0 {
 		newService := false
+		newHeadlessService := false
 
 		if r.service == nil {
 			newService = true
@@ -322,6 +323,21 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 				},
 				Spec: coreV1.ServiceSpec{
 					Selector: labels,
+				},
+			}
+		}
+
+		if r.component.Spec.EnableHeadlessService && r.headlessService == nil {
+			newHeadlessService = true
+			r.headlessService = &coreV1.Service{
+				ObjectMeta: metaV1.ObjectMeta{
+					Name:      getNameForHeadlessService(r.component.Name),
+					Namespace: r.component.Namespace,
+					Labels:    labels,
+				},
+				Spec: coreV1.ServiceSpec{
+					Selector:  labels,
+					ClusterIP: "None",
 				},
 			}
 		}
@@ -346,15 +362,9 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 			ps = append(ps, sp)
 		}
 
-		r.service.Spec.Ports = ps
-
 		// TODO service ComponentPlugin call
-
+		r.service.Spec.Ports = ps
 		if newService {
-			//if err := ctrl.SetControllerReference(app, service, r.Scheme); err != nil {
-			//	return err
-			//}
-
 			if err := r.Create(r.ctx, r.service); err != nil {
 				r.WarningEvent(err, "unable to create Service for Component")
 				return err
@@ -365,16 +375,46 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 				return err
 			}
 		}
+
+		if r.component.Spec.EnableHeadlessService {
+			r.headlessService.Spec.Ports = ps
+			if newHeadlessService {
+				if err := r.Create(r.ctx, r.headlessService); err != nil {
+					r.WarningEvent(err, "unable to create headlessService for Component")
+					return err
+				}
+			} else {
+				if err := r.Update(r.ctx, r.headlessService); err != nil {
+					r.WarningEvent(err, "unable to update headlessService for Component")
+					return err
+				}
+			}
+		}
 	}
 
-	if r.service != nil && len(r.component.Spec.Ports) == 0 {
-		if err := r.Delete(r.ctx, r.service); err != nil {
-			r.WarningEvent(err, "unable to delete Service for Application Component")
-			return err
+	if len(r.component.Spec.Ports) == 0 {
+		if r.service != nil {
+			err := r.Delete(r.ctx, r.service)
+			if err != nil {
+				r.WarningEvent(err, "unable to delete Service for Application Component")
+				return err
+			}
+		}
+
+		if r.headlessService != nil {
+			err := r.Delete(r.ctx, r.headlessService)
+			if err != nil {
+				r.WarningEvent(err, "unable to delete headlessService for Application Component")
+				return err
+			}
 		}
 	}
 
 	return r.LoadService()
+}
+
+func getNameForHeadlessService(componentName string) string {
+	return fmt.Sprintf("%s-headless", componentName)
 }
 
 func (r *ComponentReconcilerTask) ReconcileWorkload() (err error) {
@@ -701,6 +741,10 @@ func (r *ComponentReconcilerTask) ReconcileStatefulSet(
 				},
 				VolumeClaimTemplates: volClaimTemplates,
 			},
+		}
+
+		if r.component.Spec.EnableHeadlessService && r.headlessService != nil {
+			sts.Spec.ServiceName = r.headlessService.Name
 		}
 	} else {
 		// for sts, only 'replicas', 'template', and 'updateStrategy' are mutable
@@ -1408,7 +1452,6 @@ func (r *ComponentReconcilerTask) LoadResources() (err error) {
 
 func (r *ComponentReconcilerTask) LoadService() error {
 	var service coreV1.Service
-
 	if err := r.Reader.Get(
 		r.ctx,
 		types.NamespacedName{
@@ -1417,10 +1460,28 @@ func (r *ComponentReconcilerTask) LoadService() error {
 		},
 		&service,
 	); err != nil {
-		return client.IgnoreNotFound(err)
+		if !errors.IsNotFound(err) {
+			return err
+		}
+	} else {
+		r.service = &service
 	}
 
-	r.service = &service
+	var headlessService coreV1.Service
+	if err := r.Reader.Get(
+		r.ctx,
+		types.NamespacedName{
+			Namespace: r.component.Namespace,
+			Name:      getNameForHeadlessService(r.component.Name),
+		},
+		&headlessService,
+	); err != nil {
+		if !errors.IsNotFound(err) {
+			return err
+		}
+	} else {
+		r.headlessService = &headlessService
+	}
 
 	return nil
 }
