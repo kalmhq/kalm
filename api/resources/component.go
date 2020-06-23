@@ -2,6 +2,7 @@ package resources
 
 import (
 	"encoding/json"
+
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	coreV1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -79,7 +80,7 @@ func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component, res
 	podsStatus := make([]PodStatus, 0, len(pods))
 
 	for _, pod := range pods {
-		podStatus := getPodStatus(pod, resources.EventList.Items)
+		podStatus := GetPodStatus(pod, resources.EventList.Items)
 		podMetric := GetPodMetric(pod.Name, pod.Namespace)
 
 		podStatus.Metrics = podMetric.MetricHistories

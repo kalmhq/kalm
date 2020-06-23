@@ -1,178 +1,143 @@
 package ws
 
 import (
-	"encoding/json"
-	"fmt"
-	"time"
-
+	"github.com/kapp-staging/kapp/api/resources"
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
-	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/fields"
+	log "github.com/sirupsen/logrus"
+	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/watch"
-	"k8s.io/client-go/informers"
 	"k8s.io/client-go/tools/cache"
+	runtimeCache "sigs.k8s.io/controller-runtime/pkg/cache"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func StartWatchingComponents(c *Client) {
-	// watchlist := cache.NewListWatchFromClient(
-	// 	c.K8sClientset.CoreV1().RESTClient(),
-	// 	// string(v1.ResourceServices),
-	// 	"components",
-	// 	v1.NamespaceAll,
-	// 	fields.Everything(),
-	// )
-
-	optionsModifier := func(options *metav1.ListOptions) {
-		options.FieldSelector = fields.Everything().String()
-	}
-
-	const namespace = "kapp-hello-world"
-
-	listFunc := func(options metav1.ListOptions) (runtime.Object, error) {
-		optionsModifier(&options)
-
-		var fetched v1alpha1.ComponentList
-
-		err := c.K8sClientset.RESTClient().Get().
-			AbsPath("/apis/core.kapp.dev/v1alpha1/namespaces/" + namespace + "/components").
-			Do().
-			Into(&fetched)
-
-		if err != nil {
-			return nil, err
-		}
-
-		return fetched.DeepCopyObject(), nil
-	}
-	watchFunc := func(options metav1.ListOptions) (watch.Interface, error) {
-		options.Watch = true
-		optionsModifier(&options)
-		return c.K8sClientset.RESTClient().Get().
-			AbsPath("/apis/core.kapp.dev/v1alpha1/namespaces/"+namespace+"/components").
-			VersionedParams(&options, metav1.ParameterCodec).
-			Watch()
-	}
-	watchlist := &cache.ListWatch{ListFunc: listFunc, WatchFunc: watchFunc}
-
-	_, controller := cache.NewInformer( // also take a look at NewSharedIndexInformer
-		watchlist,
-		// &v1.Service{},
-		&v1alpha1.Component{},
-		0, //Duration is int64
-		cache.ResourceEventHandlerFuncs{
-			AddFunc: func(obj interface{}) {
-				fmt.Printf("component added: %s \n", obj)
-
-				bts, err := json.Marshal(obj)
-				if err != nil {
-					panic(err)
-				}
-
-				// TODO TYPE ADD DELETE MODIFY
-				c.Send <- bts
-			},
-			DeleteFunc: func(obj interface{}) {
-				fmt.Printf("component deleted: %s \n", obj)
-				bts, err := json.Marshal(obj)
-				if err != nil {
-					panic(err)
-				}
-
-				// TODO TYPE ADD DELETE MODIFY
-				c.Send <- bts
-			},
-			UpdateFunc: func(oldObj, newObj interface{}) {
-				fmt.Printf("component changed: %s n", newObj)
-				bts, err := json.Marshal(newObj)
-				if err != nil {
-					panic(err)
-				}
-
-				// TODO TYPE ADD DELETE MODIFY
-				c.Send <- bts
-			},
-		},
-	)
-
-	stop := make(chan struct{})
-	defer close(stop)
-	go controller.Run(stop)
-	for {
-		time.Sleep(time.Second)
-	}
+func StartWatching(c *Client) {
+	go WatchComponents(c)
+	go WatchServices(c)
+	go WatchPods(c)
 }
 
-func StartWatchingServices2(c *Client) {
-	kubeInformerFactory := informers.NewSharedInformerFactory(c.K8sClientset, time.Second*30)
-	svcInformer := kubeInformerFactory.Core().V1().Services().Informer()
+func WatchComponents(c *Client) {
+	log.Info("--------------WatchComponents")
+	Watch(c, &v1alpha1.Component{}, buildComponentResMessage)
+}
 
-	svcInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+func WatchServices(c *Client) {
+	log.Info("--------------WatchServices")
+	Watch(c, &coreV1.Service{}, buildServiceResMessage)
+}
+
+func WatchPods(c *Client) {
+	log.Info("--------------WatchPods")
+	Watch(c, &coreV1.Pod{}, buildPodResMessage)
+}
+
+func Watch(c *Client, runtimeObj runtime.Object, buildResMessage func(c *Client, action string, obj interface{}) *ResMessage) {
+	informerCache, err := runtimeCache.New(c.K8SClientConfig, runtimeCache.Options{})
+	if err != nil {
+		panic(err)
+	}
+
+	informer, err := informerCache.GetInformer(runtimeObj)
+	if err != nil {
+		panic(err)
+	}
+
+	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
-			fmt.Printf("component added: %s \n", obj)
-			bts, err := json.Marshal(obj)
-			if err != nil {
-				panic(err)
-			}
-			// TODO TYPE ADD DELETE MODIFY
-			c.Send <- bts
+			log.Infoln("watch added: %s", obj)
+
+			resMessage := buildResMessage(c, "Add", obj)
+			c.sendResMessage(resMessage)
 		},
 		DeleteFunc: func(obj interface{}) {
-			fmt.Printf("component deleted: %s \n", obj)
+			log.Infoln("watch deleted: %s", obj)
+
+			resMessage := buildResMessage(c, "Delete", obj)
+			c.sendResMessage(resMessage)
 		},
-		UpdateFunc: func(oldObj, newObj interface{}) {
-			fmt.Printf("component changed: %s \n", newObj)
+		UpdateFunc: func(oldObj, obj interface{}) {
+			log.Infoln("watch changed: %s", obj)
+
+			resMessage := buildResMessage(c, "Update", obj)
+			c.sendResMessage(resMessage)
 		},
 	})
 
 	stop := make(chan struct{})
 	defer close(stop)
-	kubeInformerFactory.Start(stop)
-	for {
-		time.Sleep(time.Second)
+	informerCache.Start(stop)
+}
+
+func buildComponentResMessage(c *Client, action string, objWatched interface{}) *ResMessage {
+	component, ok := objWatched.(*v1alpha1.Component)
+	if !ok {
+		log.Warnln("convert watch obj to Component failed %s", objWatched)
+		return &ResMessage{}
+	}
+
+	builder := resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, log.New())
+	componentDetails, err := builder.BuildComponentDetails(component, nil)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return &ResMessage{
+		Namespace: component.Namespace,
+		Component: "",
+		Kind:      "Component",
+		Action:    action,
+		Data:      componentDetails,
 	}
 }
 
-func StartWatchingServices(c *Client) {
-	watchlist := cache.NewListWatchFromClient(
-		c.K8sClientset.CoreV1().RESTClient(),
-		string(v1.ResourceServices),
-		// "components",
-		v1.NamespaceAll,
-		fields.Everything(),
-	)
+func buildServiceResMessage(c *Client, action string, objWatched interface{}) *ResMessage {
+	service, ok := objWatched.(*coreV1.Service)
+	if !ok {
+		log.Warnln("convert watch obj to Service failed %s", objWatched)
+		return &ResMessage{}
+	}
 
-	_, controller := cache.NewInformer( // also take a look at NewSharedIndexInformer
-		watchlist,
-		&v1.Service{},
-		// &v1alpha1.Component{},
-		0, //Duration is int64
-		cache.ResourceEventHandlerFuncs{
-			AddFunc: func(obj interface{}) {
-				fmt.Printf("component added: %s \n", obj)
+	serviceStatus := &resources.ServiceStatus{
+		Name:      service.Name,
+		ClusterIP: service.Spec.ClusterIP,
+		Ports:     service.Spec.Ports,
+	}
 
-				bts, err := json.Marshal(obj)
-				if err != nil {
-					panic(err)
-				}
+	return &ResMessage{
+		Namespace: service.Namespace,
+		Component: service.Labels["kapp-component"],
+		Kind:      "Service",
+		Action:    action,
+		Data:      serviceStatus,
+	}
+}
 
-				// TODO TYPE ADD DELETE MODIFY
-				c.Send <- bts
-			},
-			DeleteFunc: func(obj interface{}) {
-				fmt.Printf("component deleted: %s \n", obj)
-			},
-			UpdateFunc: func(oldObj, newObj interface{}) {
-				fmt.Printf("component changed \n")
-			},
-		},
-	)
+func buildPodResMessage(c *Client, action string, objWatched interface{}) *ResMessage {
+	pod, ok := objWatched.(*coreV1.Pod)
+	if !ok {
+		log.Warnln("convert watch obj to Pod failed %s", objWatched)
+		return &ResMessage{}
+	}
 
-	stop := make(chan struct{})
-	defer close(stop)
-	go controller.Run(stop)
-	for {
-		time.Sleep(time.Second)
+	builder := resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, log.New())
+	var eventList coreV1.EventList
+	ns := client.InNamespace(pod.Namespace)
+	err := builder.List(&eventList, ns)
+	if err != nil {
+		log.Error(err)
+	}
+
+	podStatus := resources.GetPodStatus(*pod, eventList.Items)
+	podMetric := resources.GetPodMetric(pod.Name, pod.Namespace)
+
+	podStatus.Metrics = podMetric.MetricHistories
+
+	return &ResMessage{
+		Namespace: pod.Namespace,
+		Component: pod.Labels["kapp-component"],
+		Kind:      "Pod",
+		Action:    action,
+		Data:      objWatched,
 	}
 }

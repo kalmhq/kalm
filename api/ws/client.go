@@ -7,6 +7,7 @@ import (
 	"github.com/kapp-staging/kapp/api/client"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd/api"
 )
 
@@ -16,9 +17,11 @@ type ReqMessage struct {
 }
 
 type ResMessage struct {
-	Method string `json:"method"`
-	Type   string `json:"type"`
-	Data   string `json:"data"`
+	Namespace string      `json:"namespace"`
+	Component string      `json:"component"` // for pods services... kapp-component Label
+	Kind      string      `json:"kind"`
+	Action    string      `json:"action"`
+	Data      interface{} `json:"data"`
 }
 
 type Client struct {
@@ -30,7 +33,11 @@ type Client struct {
 
 	K8sClientManager *client.ClientManager
 
+	K8SClientConfig *rest.Config
+
 	K8sClientset *kubernetes.Clientset
+
+	IsWatching bool
 }
 
 type ClientPool struct {
@@ -80,24 +87,24 @@ func (c *Client) read() {
 		log.Info("-------------reqMessage")
 		log.Info(reqMessage)
 
-		if c.K8sClientset == nil {
+		if c.K8SClientConfig == nil {
 			authInfo := &api.AuthInfo{Token: reqMessage.Token}
 			k8sClientConfig, err := c.K8sClientManager.GetClientConfigWithAuthInfo(authInfo)
 			if err != nil {
 				log.Error(err)
 			}
+			c.K8SClientConfig = k8sClientConfig
 
 			k8sClientset, err := kubernetes.NewForConfig(k8sClientConfig)
 			if err != nil {
 				log.Error(err)
 			}
-
 			c.K8sClientset = k8sClientset
 		}
 
-		// TODO more metheds
-		if reqMessage.Method == "ComponentsList" {
-			StartWatchingComponents(c)
+		if reqMessage.Method == "StartWatching" && !c.IsWatching {
+			c.IsWatching = true
+			StartWatching(c)
 		}
 
 	}
@@ -113,10 +120,22 @@ func (c *Client) write() {
 		case message, ok := <-c.Send:
 			if !ok {
 				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
-				return
+				break
 			}
 
 			c.conn.WriteMessage(websocket.TextMessage, message)
 		}
 	}
+}
+
+func (c *Client) sendResMessage(resMessage *ResMessage) {
+	if resMessage.Action == "" {
+		return
+	}
+
+	bts, err := json.Marshal(resMessage)
+	if err != nil {
+		panic(err)
+	}
+	c.Send <- bts
 }
