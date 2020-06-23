@@ -23,7 +23,9 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState, { subStep, stepIndex, subStepIndex }: OwnProps) => {
-  let completionByState = subStep.shouldCompleteByState ? subStep.shouldCompleteByState(state) : false;
+  const currentStepIndex = state.get("tutorial").get("currentStepIndex");
+  let completionByState =
+    subStep.shouldCompleteByState && currentStepIndex === stepIndex ? subStep.shouldCompleteByState(state) : false;
 
   return {
     definedCompletionByState: !!subStep.shouldCompleteByState,

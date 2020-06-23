@@ -1,62 +1,58 @@
-import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { createRoute } from "actions/routes";
 import { push } from "connected-react-router";
 import { RouteForm } from "forms/Route";
 import React from "react";
-import { connect } from "react-redux";
 import { AllHttpMethods, HttpRouteForm, methodsModeAll, newEmptyRouteForm } from "types/route";
 import { ApplicationViewDrawer } from "widgets/ApplicationViewDrawer";
-import { RootState } from "reducers";
-import { TDispatchProp } from "types";
 import { BasePage } from "../BasePage";
 import { Namespaces } from "widgets/Namespaces";
-import Container from "@material-ui/core/Container";
-import queryString from "query-string";
-import { RouteComponentProps } from "react-router";
+import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
+import { setSuccessNotificationAction } from "actions/notification";
 
 const styles = (theme: Theme) =>
   createStyles({
-    root: {
-      margin: theme.spacing(2),
-    },
+    root: {},
   });
 
-const mapStateToProps = (state: RootState, ownProps: RouteComponentProps) => {
-  const query = queryString.parse(ownProps.location.search);
-  const activeNamespace = state.get("namespaces").get("active");
-
-  return {
-    namespace: (query.namespace as string) || activeNamespace,
-  };
-};
-
-interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {}
+interface Props extends WithStyles<typeof styles>, WithNamespaceProps {}
 
 class RouteNewRaw extends React.PureComponent<Props> {
-  private submit = async (route: HttpRouteForm) => {
-    const { namespace, dispatch } = this.props;
+  private route = newEmptyRouteForm();
+
+  private onSubmit = async (route: HttpRouteForm) => {
+    const { activeNamespaceName, dispatch } = this.props;
 
     try {
       if (route.get("methodsMode") === methodsModeAll) {
         route = route.set("methods", AllHttpMethods);
       }
-      route = route.set("namespace", namespace);
-      await dispatch(createRoute(route.get("name"), route.get("namespace"), route));
-      dispatch(push("/routes"));
+
+      route = route.set("namespace", activeNamespaceName);
+      await dispatch(createRoute(route.get("name"), activeNamespaceName, route));
+      await dispatch(setSuccessNotificationAction("Create route successfully"))
     } catch (e) {
       console.log(e);
     }
   };
 
+  private onSubmitSuccess = () => {
+    const { dispatch, activeNamespaceName } = this.props;
+
+    window.setTimeout(() => {
+      dispatch(push("/applications/" + activeNamespaceName + "/routes"));
+    }, 100);
+  };
+
   public render() {
     return (
       <BasePage leftDrawer={<ApplicationViewDrawer />} secondHeaderLeft={<Namespaces />}>
-        <Container className={this.props.classes.root} maxWidth="lg">
-          <RouteForm onSubmit={this.submit} initialValues={newEmptyRouteForm()} />
-        </Container>
+        <Box p={2}>
+          <RouteForm onSubmit={this.onSubmit} onSubmitSuccess={this.onSubmitSuccess} initialValues={this.route} />
+        </Box>
       </BasePage>
     );
   }
 }
 
-export const RouteNew = withStyles(styles)(connect(mapStateToProps)(RouteNewRaw));
+export const RouteNew = withNamespace(withStyles(styles)(RouteNewRaw));

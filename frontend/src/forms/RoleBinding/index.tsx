@@ -49,10 +49,10 @@ class RoleBindingFormRaw extends React.PureComponent<Props> {
   }
 
   public render() {
-    const { namespaces, kind, dirty } = this.props;
+    const { namespaces, kind, dirty, submitSucceeded } = this.props;
     return (
       <Grid container spacing={2}>
-        <Prompt when={dirty} message="Are you sure to leave without saving changes?" />
+        <Prompt when={dirty && !submitSucceeded} message="Are you sure to leave without saving changes?" />
         <Grid item md={6}>
           <Field
             name="namespace"

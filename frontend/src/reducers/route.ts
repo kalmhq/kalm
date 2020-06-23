@@ -40,10 +40,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
       break;
     }
     case CREATE_ROUTE_FULFILLED: {
-      return state.setIn(
-        ["httpRoutes", action.payload.namespace],
-        state.getIn(["httpRoutes", action.payload.namespace]).push(action.payload.route),
-      );
+      return state.updateIn(["httpRoutes", action.payload.namespace], (arr) => arr.push(action.payload.route));
     }
     case UPDATE_ROUTE_FULFILLED: {
       let routes: Immutable.List<HttpRoute> = state.getIn(["httpRoutes", action.payload.namespace]);

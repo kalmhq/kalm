@@ -1140,8 +1140,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   public renderDirtyPrompt = () => {
-    const { dirty } = this.props;
-    return <Prompt when={dirty} message="Are you sure to leave without saving changes?" />;
+    const { dirty, submitSucceeded } = this.props;
+    return <Prompt when={dirty && !submitSucceeded} message="Are you sure to leave without saving changes?" />;
   };
 
   public render() {

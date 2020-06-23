@@ -32,11 +32,11 @@ class RegistryFormRaw extends React.PureComponent<
     DispatchProp
 > {
   public render() {
-    const { handleSubmit, classes, isEdit, dirty } = this.props;
+    const { handleSubmit, classes, isEdit, dirty, submitSucceeded } = this.props;
 
     return (
       <form onSubmit={handleSubmit} className={classes.root}>
-        <Prompt when={dirty} message="Are you sure to leave without saving changes?" />
+        <Prompt when={dirty && !submitSucceeded} message="Are you sure to leave without saving changes?" />
         <Grid container spacing={2}>
           <Grid item md={12}>
             <Field

@@ -50,15 +50,6 @@ export const createRoute = (name: string, namespace: string, route: HttpRoute): 
           route: routeRes,
         },
       });
-
-      dispatch({
-        type: CREATE_ROUTE_FULFILLED,
-        payload: {
-          name,
-          namespace,
-          route,
-        },
-      });
     } catch (e) {
       dispatch({ type: CREATE_ROUTE_FAILED });
       throw e;
@@ -81,15 +72,6 @@ export const updateRoute = (name: string, namespace: string, route: HttpRoute): 
         },
       });
 
-      dispatch({
-        type: UPDATE_ROUTE_FULFILLED,
-        payload: {
-          name,
-          namespace,
-          route,
-        },
-      });
-
       return route;
     } catch (e) {
       dispatch({ type: UPDATE_ROUTE_FAILED });
@@ -109,14 +91,6 @@ export const deleteRoute = (name: string, namespace: string): ThunkResult<Promis
         dispatch(setErrorNotificationAction("Delete http route failed."));
         return;
       }
-
-      dispatch({
-        type: DELETE_ROUTE_FULFILLED,
-        payload: {
-          name,
-          namespace,
-        },
-      });
 
       dispatch({
         type: DELETE_ROUTE_FULFILLED,

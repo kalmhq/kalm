@@ -260,11 +260,12 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
       submitFailed,
       syncErrors,
       dirty,
+      submitSucceeded
     } = this.props;
 
     return (
       <div className={classes.root}>
-        <Prompt when={dirty} message="Are you sure to leave without saving changes?" />
+        <Prompt when={dirty && !submitSucceeded} message="Are you sure to leave without saving changes?" />
         <h2>Add route</h2>
 
         <Expansion
@@ -541,6 +542,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
 const form = reduxForm<HttpRouteForm, TutorialStateProps>({
   onSubmitFail: console.log,
   form: defaultFormID,
+  enableReinitialize: true,
   touchOnChange: true,
   shouldError: shouldError,
   validate: formValidateOrNotBlockByTutorial,

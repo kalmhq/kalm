@@ -245,11 +245,11 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { classes, dispatch, handleSubmit, managedType, isEdit, dirty } = this.props;
+    const { classes, dispatch, handleSubmit, managedType, isEdit, dirty, submitSucceeded } = this.props;
 
     return (
       <div className={classes.root}>
-        <Prompt when={dirty} message="Are you sure to leave without saving changes?" />
+        <Prompt when={dirty && !submitSucceeded} message="Are you sure to leave without saving changes?" />
         <Grid container spacing={2}>
           {isEdit ? null : (
             <Grid item md={12}>
