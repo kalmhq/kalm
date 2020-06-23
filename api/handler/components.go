@@ -143,7 +143,6 @@ func createComponent(c echo.Context) (*v1alpha1.Component, error) {
 	bts, _ := json.Marshal(crdComponent)
 	var component v1alpha1.Component
 	err = k8sClient.RESTClient().Post().Body(bts).AbsPath("/apis/core.kapp.dev/v1alpha1/namespaces/" + c.Param("applicationName") + "/components").Do().Into(&component)
-
 	if err != nil {
 		return nil, err
 	}
@@ -217,14 +216,13 @@ func getComponentFromContext(c echo.Context) (*v1alpha1.Component, []runtime.Raw
 
 	// for pvc volumes, check if pvcName is set
 	for i, vol := range crdComponent.Spec.Volumes {
-
 		if vol.Type != v1alpha1.VolumeTypePersistentVolumeClaim {
 			continue
 		}
 
-		if vol.PersistentVolumeClaimName == "" {
+		if vol.PVC == "" {
 			genPVCName := fmt.Sprintf("pvc-%s-%d-%d", crdComponent.Name, time.Now().Unix(), rand.Intn(10000))
-			vol.PersistentVolumeClaimName = genPVCName
+			vol.PVC = genPVCName
 		}
 
 		crdComponent.Spec.Volumes[i] = vol

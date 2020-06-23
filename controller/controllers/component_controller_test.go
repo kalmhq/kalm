@@ -18,7 +18,8 @@ import (
 type ComponentControllerSuite struct {
 	BasicSuite
 
-	ns *coreV1.Namespace
+	ns  *coreV1.Namespace
+	ctx context.Context
 }
 
 func (suite *ComponentControllerSuite) SetupSuite() {
@@ -32,6 +33,7 @@ func (suite *ComponentControllerSuite) TearDownSuite() {
 func (suite *ComponentControllerSuite) SetupTest() {
 	ns := suite.SetupKappEnabledNs()
 	suite.ns = &ns
+	suite.ctx = context.Background()
 }
 
 func TestComponentControllerSuite(t *testing.T) {
@@ -264,49 +266,6 @@ func (suite *ComponentControllerSuite) TestLinkedEnv() {
 	)
 }
 
-func (suite *ComponentControllerSuite) TestVolumePVC() {
-	pvcName := "pvc-foobar"
-
-	component := generateEmptyComponent(suite.ns.Name)
-	component.Spec.Volumes = []v1alpha1.Volume{
-		{
-			Type:                      v1alpha1.VolumeTypePersistentVolumeClaim,
-			Path:                      "/test/b",
-			Size:                      resource.MustParse("10m"),
-			PersistentVolumeClaimName: pvcName,
-		},
-	}
-	key := types.NamespacedName{
-		Namespace: component.Namespace,
-		Name:      component.Name,
-	}
-	suite.createComponent(component)
-	var pvc coreV1.PersistentVolumeClaim
-	suite.Eventually(func() bool {
-		return suite.K8sClient.Get(context.Background(), types.NamespacedName{
-			Name:      pvcName,
-			Namespace: component.Namespace,
-		}, &pvc) == nil
-	}, "can't get pvc")
-
-	var deployment appsV1.Deployment
-	suite.Eventually(func() bool {
-		return suite.K8sClient.Get(context.Background(), key, &deployment) == nil
-	}, "can't get deployment")
-
-	volMount := deployment.Spec.Template.Spec.Containers[0].VolumeMounts[0]
-	volume := deployment.Spec.Template.Spec.Volumes[0]
-	suite.Equal(volMount.Name, volume.Name)
-	suite.Equal(volMount.MountPath, "/test/b")
-	suite.Equal(pvcName, pvc.Name)
-	suite.Equal(volume.PersistentVolumeClaim.ClaimName, pvc.Name)
-
-	suite.Eventually(func() bool {
-		suite.reloadComponent(component)
-		return component.Spec.Volumes[0].PersistentVolumeClaimName == pvc.Name
-	}, "pvc name not matched")
-}
-
 func (suite *ComponentControllerSuite) TestVolumeTemporaryDisk() {
 	component := generateEmptyComponent(suite.ns.Name)
 	component.Spec.Volumes = []v1alpha1.Volume{
@@ -424,33 +383,27 @@ func (suite *ComponentControllerSuite) TestPorts() {
 	}, "service should be deleted")
 }
 
-//func (suite *ComponentControllerSuite) reloadApplication(ns *v1alpha1.Application) {
-//	suite.Nil(suite.K8sClient.Get(context.Background(), types.NamespacedName{Name: ns.Name}, ns))
-//}
-//
-//func (suite *ComponentControllerSuite) updateApplication(ns *v1alpha1.Application) {
-//	suite.Nil(suite.K8sClient.Update(context.Background(), ns))
-//}
-
 func (suite *ComponentControllerSuite) getComponentPVCs(component *v1alpha1.Component) []coreV1.PersistentVolumeClaim {
 	var pvcList coreV1.PersistentVolumeClaimList
 	_ = suite.K8sClient.List(context.Background(), &pvcList, client.MatchingLabels{"kapp-component": component.Name})
 	return pvcList.Items
 }
 
-func generateEmptyComponent(namespace string) *v1alpha1.Component {
+func generateEmptyComponent(namespace string, workloadTypeOpt ...v1alpha1.WorkloadType) *v1alpha1.Component {
+
+	workloadType := v1alpha1.WorkloadTypeServer
+	if len(workloadTypeOpt) > 0 {
+		workloadType = workloadTypeOpt[0]
+	}
+
 	name := randomName()[:12]
 	component := &v1alpha1.Component{
-		TypeMeta: metaV1.TypeMeta{
-			Kind:       "Application",
-			APIVersion: "core.kapp.dev/v1alpha1",
-		},
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      name,
 			Namespace: namespace,
 		},
 		Spec: v1alpha1.ComponentSpec{
-			WorkloadType: v1alpha1.WorkloadTypeServer, // TODo test default value
+			WorkloadType: workloadType, // TODo test default value
 			Image:        "nginx:latest",
 			Env: []v1alpha1.EnvVar{
 				{
@@ -471,4 +424,289 @@ func generateEmptyComponent(namespace string) *v1alpha1.Component {
 	}
 
 	return component
+}
+
+// pvc not exist, create new pvc
+func (suite *ComponentControllerSuite) TestDeploymentUsingNewPVC() {
+	pvcName := "pvc-foobar"
+
+	component := generateEmptyComponent(suite.ns.Name)
+	component.Spec.Volumes = []v1alpha1.Volume{
+		{
+			Type: v1alpha1.VolumeTypePersistentVolumeClaim,
+			Path: "/test/b",
+			Size: resource.MustParse("10m"),
+			PVC:  pvcName,
+		},
+	}
+	key := types.NamespacedName{
+		Namespace: component.Namespace,
+		Name:      component.Name,
+	}
+	suite.createComponent(component)
+	var pvc coreV1.PersistentVolumeClaim
+	suite.Eventually(func() bool {
+		return suite.K8sClient.Get(context.Background(), types.NamespacedName{
+			Name:      pvcName,
+			Namespace: component.Namespace,
+		}, &pvc) == nil
+	}, "can't get pvc")
+
+	var deployment appsV1.Deployment
+	suite.Eventually(func() bool {
+		return suite.K8sClient.Get(context.Background(), key, &deployment) == nil
+	}, "can't get deployment")
+
+	// note: in test, pvc won't auto provision pv
+	volMount := deployment.Spec.Template.Spec.Containers[0].VolumeMounts[0]
+	volume := deployment.Spec.Template.Spec.Volumes[0]
+	suite.Equal(volMount.Name, volume.Name)
+	suite.Equal(volMount.MountPath, "/test/b")
+	suite.Equal(pvcName, pvc.Name)
+	suite.Equal(volume.PersistentVolumeClaim.ClaimName, pvc.Name)
+
+	suite.Eventually(func() bool {
+		suite.reloadComponent(component)
+		return component.Spec.Volumes[0].PVC == pvc.Name
+	}, "pvc name not matched")
+}
+
+func genPVC(ns string) coreV1.PersistentVolumeClaim {
+	pvcName := "pvc-" + randomName()
+	sc := "fake-storage-class"
+
+	pvc := coreV1.PersistentVolumeClaim{
+		ObjectMeta: metaV1.ObjectMeta{
+			Namespace: ns,
+			Name:      pvcName,
+		},
+		Spec: coreV1.PersistentVolumeClaimSpec{
+			StorageClassName: &sc,
+			AccessModes:      []coreV1.PersistentVolumeAccessMode{coreV1.ReadWriteOnce},
+			Resources: coreV1.ResourceRequirements{
+				Requests: map[coreV1.ResourceName]resource.Quantity{
+					coreV1.ResourceStorage: resource.MustParse("1Mi"),
+				},
+			},
+		},
+	}
+
+	return pvc
+}
+
+// pvc exist, re-use it
+func (suite *ComponentControllerSuite) TestDeploymentReUsePVC() {
+	// create pvc ahead, and check if dp can reuse it
+	pvc := genPVC(suite.ns.Name)
+	err := suite.K8sClient.Create(suite.ctx, &pvc)
+	suite.Nil(err)
+
+	// create component and try to re-use this pvc
+	component := generateEmptyComponent(suite.ns.Name)
+	component.Spec.Volumes = []v1alpha1.Volume{
+		{
+			Type: v1alpha1.VolumeTypePersistentVolumeClaim,
+			Path: "/test/b",
+			Size: resource.MustParse("1Mi"),
+			PVC:  pvc.Name,
+		},
+	}
+	suite.createComponent(component)
+
+	suite.Eventually(func() bool {
+		// check if dp is using this pvc
+		key := types.NamespacedName{
+			Namespace: component.Namespace,
+			Name:      component.Name,
+		}
+
+		var dp appsV1.Deployment
+		err := suite.K8sClient.Get(suite.ctx, key, &dp)
+		if err != nil {
+			return false
+		}
+
+		vols := dp.Spec.Template.Spec.Volumes
+		if len(vols) != 1 {
+			return false
+		}
+
+		vol := vols[0]
+
+		return vol.PersistentVolumeClaim != nil &&
+			vol.PersistentVolumeClaim.ClaimName == pvc.Name
+	})
+}
+
+// pv exist, delete bounding pvc, and take over the pv
+func (suite *ComponentControllerSuite) TestDeploymentReUsePV() {
+	oldOwningPVC := genPVC(suite.ns.Name)
+	err := suite.K8sClient.Create(suite.ctx, &oldOwningPVC)
+	suite.Nil(err)
+
+	pv := genPVWithClaimRef(oldOwningPVC)
+	err = suite.K8sClient.Create(suite.ctx, &pv)
+	suite.Nil(err)
+
+	// try re-use pv which is bound to other oldOwningPVC
+	component := generateEmptyComponent(suite.ns.Name)
+	newPVCName := "pv-" + randomName()
+	component.Spec.Volumes = []v1alpha1.Volume{
+		{
+			Type:      v1alpha1.VolumeTypePersistentVolumeClaim,
+			Path:      "/test/b",
+			Size:      resource.MustParse("1Mi"),
+			PVC:       newPVCName,
+			PVToMatch: pv.Name,
+		},
+	}
+	suite.createComponent(component)
+
+	// check if dp is using new pvc
+	suite.Eventually(func() bool {
+		var dp appsV1.Deployment
+		if err := suite.K8sClient.Get(suite.ctx, types.NamespacedName{
+			Namespace: component.Namespace,
+			Name:      component.Name,
+		}, &dp); err != nil {
+			return false
+		}
+
+		return len(dp.Spec.Template.Spec.Volumes) == 1 &&
+			dp.Spec.Template.Spec.Volumes[0].PersistentVolumeClaim != nil &&
+			dp.Spec.Template.Spec.Volumes[0].PersistentVolumeClaim.ClaimName == newPVCName
+	})
+
+	// check if oldOwningPVC is deleted
+	suite.Eventually(func() bool {
+		var pvcDeleted coreV1.PersistentVolumeClaim
+		err := suite.K8sClient.Get(suite.ctx, types.NamespacedName{
+			Name:      oldOwningPVC.Name,
+			Namespace: oldOwningPVC.Namespace,
+		}, &pvcDeleted)
+
+		return errors.IsNotFound(err)
+	})
+
+	// check if pv's old claimRef is cleaned
+	suite.Eventually(func() bool {
+		err := suite.K8sClient.Get(suite.ctx, types.NamespacedName{
+			Name: pv.Name,
+		}, &pv)
+		suite.Nil(err)
+
+		// in test, bounded pv won't auto set claimRef
+		return pv.Spec.ClaimRef == nil
+	})
+}
+
+// same as above, but for StatefulSet
+func (suite *ComponentControllerSuite) TestStatefulSetUsingNewPVC() {
+	component := generateEmptyComponent(suite.ns.Name, v1alpha1.WorkloadTypeStatefulSet)
+
+	newPVCName := "pvc-" + randomName()
+	component.Spec.Volumes = []v1alpha1.Volume{
+		{
+			Type: v1alpha1.VolumeTypePersistentVolumeClaim,
+			Path: "/test/b",
+			Size: resource.MustParse("1Mi"),
+			PVC:  newPVCName,
+		},
+	}
+
+	err := suite.K8sClient.Create(suite.ctx, component)
+	suite.Nil(err)
+
+	// check if sts is created with volClaimTemplate using this pvc
+	suite.Eventually(func() bool {
+		var sts appsV1.StatefulSet
+		err := suite.K8sClient.Get(suite.ctx, types.NamespacedName{
+			Namespace: component.Namespace,
+			Name:      component.Name,
+		}, &sts)
+		if err != nil {
+			return false
+		}
+
+		volClaimTpls := sts.Spec.VolumeClaimTemplates
+
+		return len(volClaimTpls) == 1 &&
+			volClaimTpls[0].Name == newPVCName
+	})
+}
+
+// seems meanless cuz in test, sts volClaimTemplate won't really create pvc
+//func (suite *ComponentControllerSuite) TestStatefulSetReUsePVC() {
+//	// create pvc ahead, and check if sts can reuse it
+//	volClaimTpl := genPVC(suite.ns.Name)
+//
+//	// create component and try to re-use this pvc
+//	component := generateEmptyComponent(suite.ns.Name, v1alpha1.WorkloadTypeStatefulSet)
+//	component.Spec.Volumes = []v1alpha1.Volume{
+//		{
+//			Type: v1alpha1.VolumeTypePersistentVolumeClaim,
+//			Path: "/test/b",
+//			Size: resource.MustParse("1Mi"),
+//			PVC:  volClaimTpl.Name,
+//		},
+//	}
+//
+//	// real pvc name is {volClaimTpl}-{stsName}-{0, 1, 2, ...}
+//	pvc := volClaimTpl.DeepCopy()
+//	pvc.Name = fmt.Sprintf("%s-%s-0", pvc.Name, component.Name)
+//	err := suite.K8sClient.Create(suite.ctx, pvc)
+//	suite.Nil(err)
+//
+//	suite.createComponent(component)
+//
+//	suite.Eventually(func() bool {
+//		var sts appsV1.StatefulSet
+//		err := suite.K8sClient.Get(suite.ctx, types.NamespacedName{
+//			Namespace: component.Namespace,
+//			Name:      component.Name,
+//		}, &sts)
+//		if err != nil {
+//			return false
+//		}
+//
+//		volClaimTpls := sts.Spec.VolumeClaimTemplates
+//
+//		return len(volClaimTpls) == 1 &&
+//			volClaimTpls[0].Name == pvc.Name
+//	})
+//}
+
+func genPVWithClaimRef(pvc coreV1.PersistentVolumeClaim) coreV1.PersistentVolume {
+
+	pv := coreV1.PersistentVolume{
+		ObjectMeta: metaV1.ObjectMeta{
+			Name: "pv-" + randomName(),
+		},
+		Spec: coreV1.PersistentVolumeSpec{
+			//     apiVersion: v1                                                                                                                                                          │
+			//     kind: PersistentVolumeClaim                                                                                                                                             │
+			//     name: oldOwningPVC-data                                                                                                                                                          │
+			//     namespace: kapp-vols                                                                                                                                                    │
+			//     resourceVersion: "8051753"                                                                                                                                              │
+			//     uid: a9849600-24bc-4f0e-8bb1-c023e62c7bdd
+			ClaimRef: &coreV1.ObjectReference{
+				APIVersion: "v1",
+				Kind:       "PersistentVolumeClaim",
+				Name:       pvc.Name,
+				Namespace:  pvc.Namespace,
+			},
+			PersistentVolumeReclaimPolicy: coreV1.PersistentVolumeReclaimRetain,
+			Capacity: coreV1.ResourceList(map[coreV1.ResourceName]resource.Quantity{
+				coreV1.ResourceStorage: resource.MustParse("1Mi"),
+			}),
+			AccessModes: []coreV1.PersistentVolumeAccessMode{coreV1.ReadWriteOnce},
+			PersistentVolumeSource: coreV1.PersistentVolumeSource{
+				HostPath: &coreV1.HostPathVolumeSource{
+					Path: "/data",
+				},
+			},
+		},
+	}
+
+	return pv
 }

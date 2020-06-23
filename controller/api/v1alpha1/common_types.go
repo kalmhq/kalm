@@ -69,13 +69,13 @@ type Volume struct {
 
 	// instead of auto-provision new PV using StorageClass
 	// we try to re-use existing PV
-	PersistentVolumeNamePVCToMatch string `json:"persistentVolumeNamePVCToMatch,omitempty"`
+	PVToMatch string `json:"persistentVolumeNamePVCToMatch,omitempty"`
 
 	// use to store pvc name, so the disk won't be recreate during restart
 	// This field also can be used with existing pvc
 	//
 	// for Type: pvc, required, todo validate this in webhook?
-	PersistentVolumeClaimName string `json:"persistentVolumeClaimName,omitempty"`
+	PVC string `json:"persistentVolumeClaimName,omitempty"`
 }
 
 type Config struct {
