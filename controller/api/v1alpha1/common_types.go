@@ -12,6 +12,7 @@ const (
 	EnvVarTypeStatic   EnvVarType = "static"
 	EnvVarTypeExternal EnvVarType = "external"
 	EnvVarTypeLinked   EnvVarType = "linked"
+	EnvVarTypeFieldRef EnvVarType = "fieldref"
 )
 
 // EnvVar represents an environment variable present in a Container.
@@ -21,7 +22,7 @@ type EnvVar struct {
 
 	Value string `json:"value,omitempty"`
 
-	// +kubebuilder:validation:Enum=static;external;linked
+	// +kubebuilder:validation:Enum=static;external;linked;fieldref
 	Type EnvVarType `json:"type,omitempty"`
 
 	Prefix string `json:"prefix,omitempty"`

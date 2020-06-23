@@ -1,3 +1,4 @@
 .idea
 coverage.txt
 .DS_Store
+*.log

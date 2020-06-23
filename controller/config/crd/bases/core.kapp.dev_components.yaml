@@ -113,6 +113,7 @@ spec:
                     - static
                     - external
                     - linked
+                    - fieldref
                     type: string
                   value:
                     type: string
