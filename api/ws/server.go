@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/kapp-staging/kapp/api/client"
 	"github.com/labstack/echo/v4"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -34,6 +35,7 @@ func NewWsHandler(k8sClientManager *client.ClientManager) *WsHandler {
 func (h *WsHandler) Serve(c echo.Context) error {
 	conn, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
 	if err != nil {
+		log.Error(err)
 		return err
 	}
 

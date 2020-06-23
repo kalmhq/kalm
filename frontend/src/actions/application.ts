@@ -263,11 +263,13 @@ export const loadApplicationsAction = (): ThunkResult<Promise<Immutable.List<App
 
       applicationList = Immutable.List(
         await Promise.all(
-          applicationList.map(async application => {
-            const components = await getKappApplicationComponentList(application.get("name"));
-            application = application.set("components", components);
-            return application;
-          }),
+          applicationList
+            .filter(app => app.get("status") === "Active")
+            .map(async application => {
+              const components = await getKappApplicationComponentList(application.get("name"));
+              application = application.set("components", components);
+              return application;
+            }),
         ),
       );
     } catch (e) {

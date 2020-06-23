@@ -31,6 +31,8 @@ type Client struct {
 
 	Send chan []byte
 
+	ExitWrite chan int
+
 	K8sClientManager *client.ClientManager
 
 	K8SClientConfig *rest.Config
@@ -64,22 +66,25 @@ func (h *ClientPool) run() {
 		case client := <-h.unregister:
 			if _, ok := h.clients[client]; ok {
 				delete(h.clients, client)
-				close(client.Send)
+				client.Send = nil
 			}
 		}
 	}
 }
 
 func (c *Client) read() {
+
 	defer func() {
 		c.clientPool.unregister <- c
 		c.conn.Close()
+		c.ExitWrite <- 1
 	}()
 
 	for {
 		_, messageBytes, err := c.conn.ReadMessage()
 		if err != nil {
 			log.Error(err)
+			break
 		}
 
 		var reqMessage ReqMessage
@@ -123,7 +128,17 @@ func (c *Client) write() {
 				break
 			}
 
-			c.conn.WriteMessage(websocket.TextMessage, message)
+			err := c.conn.WriteMessage(websocket.TextMessage, message)
+			if err != nil {
+				log.Error(err)
+				break
+			}
+			continue
+		case _, ok := <-c.ExitWrite:
+			if ok {
+				c.ExitWrite = nil
+				return
+			}
 		}
 	}
 }
@@ -135,7 +150,8 @@ func (c *Client) sendResMessage(resMessage *ResMessage) {
 
 	bts, err := json.Marshal(resMessage)
 	if err != nil {
-		panic(err)
+		log.Error(err)
+		return
 	}
 	c.Send <- bts
 }
