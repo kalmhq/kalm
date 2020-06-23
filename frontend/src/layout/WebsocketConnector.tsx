@@ -4,6 +4,21 @@ import { TDispatchProp } from "types";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { getWebsocketInstance } from "../actions/websocket";
+import {
+  CREATE_COMPONENT,
+  ApplicationComponentDetails,
+  UPDATE_COMPONENT,
+  DELETE_COMPONENT,
+} from "../types/application";
+import Immutable from "immutable";
+
+export interface ResMessage {
+  namespace: string;
+  component: string;
+  kind: string;
+  action: "Add" | "Update" | "Delete";
+  data: any;
+}
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -25,12 +40,11 @@ class WebsocketConnectorRaw extends React.PureComponent<Props, State> {
   // }
 
   private connectWebsocket() {
-    console.log("---------1-------");
+    const { dispatch } = this.props;
 
     const rws = getWebsocketInstance();
 
     rws.addEventListener("open", () => {
-      console.log("---------2-------");
       const message = {
         method: "StartWatching",
         token:
@@ -39,7 +53,38 @@ class WebsocketConnectorRaw extends React.PureComponent<Props, State> {
       rws.send(JSON.stringify(message));
     });
 
-    rws.onmessage = async e => console.log("---3----", e.data);
+    rws.onmessage = async event => {
+      const data: ResMessage = JSON.parse(event.data);
+
+      switch (data.kind) {
+        case "Component": {
+          const componentDetails: ApplicationComponentDetails = Immutable.fromJS(data.data);
+          if (data.action === "Add") {
+            dispatch({
+              type: CREATE_COMPONENT,
+              payload: { applicationName: data.namespace, component: componentDetails },
+            });
+          } else if (data.action === "Update") {
+            dispatch({
+              type: UPDATE_COMPONENT,
+              payload: { applicationName: data.namespace, component: componentDetails },
+            });
+          } else if (data.action === "Delete") {
+            dispatch({
+              type: DELETE_COMPONENT,
+              payload: { applicationName: data.namespace, componentName: componentDetails.get("name") },
+            });
+          }
+          break;
+        }
+        case "Service": {
+          break;
+        }
+        case "Pod": {
+          break;
+        }
+      }
+    };
   }
 
   public componentDidMount() {
