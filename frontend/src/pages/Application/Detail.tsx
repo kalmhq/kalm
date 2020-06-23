@@ -22,25 +22,20 @@ import { withNamespace, withNamespaceProps } from "permission/Namespace";
 import React from "react";
 import { ThunkDispatch } from "redux-thunk";
 import { KappConsoleIcon, KappLogIcon } from "widgets/Icon";
-import { deleteComponentAction, loadApplicationAction } from "../../actions/application";
-import { deletePod } from "../../actions/kubernetesApi";
-import { setErrorNotificationAction, setSuccessNotificationAction } from "../../actions/notification";
-import { RootState } from "../../reducers";
-import { Actions } from "../../types";
-import { ApplicationComponentDetails, ApplicationDetails, PodStatus } from "../../types/application";
-import { formatTimeDistance } from "../../utils";
-import { ErrorBadge, PendingBadge, SuccessBadge } from "../../widgets/Badge";
-import { IconButtonWithTooltip, IconLinkWithToolTip } from "../../widgets/IconButtonWithTooltip";
-import { H5 } from "../../widgets/Label";
-import { PieChartComponent } from "../../widgets/PieChart";
-import {
-  BigCPULineChart,
-  BigMemoryLineChart,
-  SmallCPULineChart,
-  SmallMemoryLineChart,
-} from "../../widgets/SmallLineChart";
+import { deleteComponentAction, loadApplicationAction } from "actions/application";
+import { deletePod } from "actions/kubernetesApi";
+import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
+import { RootState } from "reducers";
+import { Actions } from "types";
+import { ApplicationComponentDetails, ApplicationDetails, PodStatus } from "types/application";
+import { formatTimeDistance } from "utils";
+import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
+import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
+import { H5 } from "widgets/Label";
+import { PieChartComponent } from "widgets/PieChart";
+import { BigCPULineChart, BigMemoryLineChart, SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { generateQueryForPods } from "./Log";
-import { blinkTopProgressAction } from "../../actions/settings";
+import { blinkTopProgressAction } from "actions/settings";
 
 const styles = (theme: Theme) =>
   createStyles({

@@ -8,7 +8,6 @@ import ReactDOM from "react-dom";
 import { Provider } from "react-redux";
 import { theme } from "theme";
 import { HistoryUserConfirmation } from "widgets/History";
-import "./antd.css";
 import configureStore from "./configureStore";
 import "./index.css";
 import { KappRoutes } from "./routes";
