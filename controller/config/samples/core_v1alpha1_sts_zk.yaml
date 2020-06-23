@@ -15,10 +15,10 @@ spec:
     workloadType: statefulset
     image: zookeeper:3.5.5
     command: "/bin/bash -xec /config-scripts/run"
-    replicas: 1
+    replicas: 3
     env:
       - name: ZK_REPLICAS
-        value: "1"
+        value: "3"
       - name: JMXAUTH
         value: "false"
       - name: JMXDISABLE
