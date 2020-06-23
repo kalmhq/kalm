@@ -6,7 +6,6 @@ import (
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 	coreV1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -47,11 +46,11 @@ func (suite *KappVolumeControllerSuite) TestPVCIsLabeled() {
 	component := generateEmptyComponent(suite.ns.Name)
 	component.Spec.Volumes = []v1alpha1.Volume{
 		{
-			Path:                      "/data",
-			Size:                      resource.MustParse("1Mi"),
-			Type:                      v1alpha1.VolumeTypePersistentVolumeClaim,
-			PersistentVolumeClaimName: pvcName,
-			StorageClassName:          &sc,
+			Path:             "/data",
+			Size:             resource.MustParse("1Mi"),
+			Type:             v1alpha1.VolumeTypePersistentVolumeClaim,
+			PVC:              pvcName,
+			StorageClassName: &sc,
 		},
 	}
 	suite.createComponent(component)
@@ -71,46 +70,46 @@ func (suite *KappVolumeControllerSuite) TestPVCIsLabeled() {
 	suite.Equal("true", pvc.Labels[KappLabelManaged])
 }
 
-func (suite *KappVolumeControllerSuite) TestKappPVCWithoutActiveComponentWillBeDeleted() {
-
-	sc := "fake-storage-class"
-	pvcName := fmt.Sprintf("pvc-foobar-%s", randomName())
-	pvName := fmt.Sprintf("fake-pv-foobar-%s", randomName())
-
-	pvc := coreV1.PersistentVolumeClaim{
-		ObjectMeta: v1.ObjectMeta{
-			Name:      pvcName,
-			Namespace: suite.ns.Name,
-			Labels: map[string]string{
-				KappLabelNamespace: suite.ns.Namespace,
-				KappLabelComponent: "comp-not-exist",
-				KappLabelManaged:   "true",
-			},
-		},
-		Spec: coreV1.PersistentVolumeClaimSpec{
-			StorageClassName: &sc,
-			VolumeName:       pvName,
-			AccessModes:      []coreV1.PersistentVolumeAccessMode{coreV1.ReadWriteOnce},
-			Resources: coreV1.ResourceRequirements{
-				Requests: map[coreV1.ResourceName]resource.Quantity{
-					coreV1.ResourceStorage: resource.MustParse("1Mi"),
-				},
-			},
-		},
-	}
-
-	err := suite.K8sClient.Create(suite.ctx, &pvc)
-	suite.Nil(err)
-
-	suite.Eventually(func() bool {
-		err := suite.K8sClient.Get(suite.ctx, client.ObjectKey{
-			Namespace: pvc.Namespace,
-			Name:      pvc.Name,
-		}, &pvc)
-
-		return errors.IsNotFound(err)
-	})
-}
+//func (suite *KappVolumeControllerSuite) TestKappPVCWithoutActiveComponentWillBeDeleted() {
+//
+//	sc := "fake-storage-class"
+//	pvcName := fmt.Sprintf("pvc-foobar-%s", randomName())
+//	pvName := fmt.Sprintf("fake-pv-foobar-%s", randomName())
+//
+//	pvc := coreV1.PersistentVolumeClaim{
+//		ObjectMeta: v1.ObjectMeta{
+//			Name:      pvcName,
+//			Namespace: suite.ns.Name,
+//			Labels: map[string]string{
+//				KappLabelNamespace: suite.ns.Namespace,
+//				KappLabelComponent: "comp-not-exist",
+//				KappLabelManaged:   "true",
+//			},
+//		},
+//		Spec: coreV1.PersistentVolumeClaimSpec{
+//			StorageClassName: &sc,
+//			VolumeName:       pvName,
+//			AccessModes:      []coreV1.PersistentVolumeAccessMode{coreV1.ReadWriteOnce},
+//			Resources: coreV1.ResourceRequirements{
+//				Requests: map[coreV1.ResourceName]resource.Quantity{
+//					coreV1.ResourceStorage: resource.MustParse("1Mi"),
+//				},
+//			},
+//		},
+//	}
+//
+//	err := suite.K8sClient.Create(suite.ctx, &pvc)
+//	suite.Nil(err)
+//
+//	suite.Eventually(func() bool {
+//		err := suite.K8sClient.Get(suite.ctx, client.ObjectKey{
+//			Namespace: pvc.Namespace,
+//			Name:      pvc.Name,
+//		}, &pvc)
+//
+//		return errors.IsNotFound(err)
+//	})
+//}
 
 func (suite *KappVolumeControllerSuite) TestPVIsLabeledForKapp() {
 
@@ -120,11 +119,11 @@ func (suite *KappVolumeControllerSuite) TestPVIsLabeledForKapp() {
 	component := generateEmptyComponent(suite.ns.Name)
 	component.Spec.Volumes = []v1alpha1.Volume{
 		{
-			Path:                      "/data",
-			Size:                      resource.MustParse("1Mi"),
-			Type:                      v1alpha1.VolumeTypePersistentVolumeClaim,
-			PersistentVolumeClaimName: pvcName,
-			StorageClassName:          &sc,
+			Path:             "/data",
+			Size:             resource.MustParse("1Mi"),
+			Type:             v1alpha1.VolumeTypePersistentVolumeClaim,
+			PVC:              pvcName,
+			StorageClassName: &sc,
 		},
 	}
 	suite.createComponent(component)

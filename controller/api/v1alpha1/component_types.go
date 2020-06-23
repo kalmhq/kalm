@@ -33,6 +33,8 @@ type PreInjectFile struct {
 	MountPath string `json:"mountPath"`
 
 	Readonly bool `json:"readonly,omitempty"`
+
+	Runnable bool `json:"runnable"`
 }
 
 // ComponentSpec defines the desired state of Component
@@ -50,6 +52,8 @@ type ComponentSpec struct {
 	StartAfterComponents []string `json:"startAfterComponents,omitempty"`
 
 	Command string `json:"command,omitempty"`
+
+	EnableHeadlessService bool `json:"enableHeadlessService"`
 
 	Ports []Port `json:"ports,omitempty"`
 

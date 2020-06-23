@@ -115,6 +115,8 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 
 	gv1Alpha1WithAuth.GET("/volumes", h.handleListVolumes)
 	gv1Alpha1WithAuth.DELETE("/volumes/:name", h.handleDeletePV)
+	gv1Alpha1WithAuth.GET("/volumes/available/simple-workload/:ns", h.handleAvailableVolsForSimpleWorkload)
+	gv1Alpha1WithAuth.GET("/volumes/available/sts/:ns/:componentName", h.handleAvailableVolsForSts)
 }
 
 func (h *ApiHandler) Builder(c echo.Context) *resources.Builder {
@@ -122,6 +124,7 @@ func (h *ApiHandler) Builder(c echo.Context) *resources.Builder {
 	k8sClientConfig := getK8sClientConfig(c)
 	return resources.NewBuilder(k8sClient, k8sClientConfig, h.logger)
 }
+
 
 func NewApiHandler(clientManager *client.ClientManager) *ApiHandler {
 	return &ApiHandler{
