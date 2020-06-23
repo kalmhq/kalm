@@ -8,6 +8,8 @@ import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { AppBarComponent } from "./AppBar";
 import { RootDrawer } from "./RootDrawer";
+import { TDispatchProp } from "types";
+import { loadClusterInfoAction } from "actions/cluster";
 
 const styles = (theme: Theme) => {
   return createStyles({
@@ -51,9 +53,17 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-interface Props extends WithStyles<typeof styles>, React.Props<any>, ReturnType<typeof mapStateToProps> {}
+interface Props
+  extends WithStyles<typeof styles>,
+    React.Props<any>,
+    ReturnType<typeof mapStateToProps>,
+    TDispatchProp {}
 
 class DashboardLayoutRaw extends React.PureComponent<Props> {
+  componentDidMount(): void {
+    this.props.dispatch(loadClusterInfoAction());
+  }
+
   render() {
     const { classes, children, isShowTopProgress, showTutorialDrawer } = this.props;
     return (

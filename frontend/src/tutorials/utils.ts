@@ -116,7 +116,8 @@ export const isFormFieldValueEqualTo = (rootState: RootState, form: string, fiel
 };
 
 export const isFormFieldMeet = (rootState: RootState, form: string, field: string, cb: (value: any) => boolean) => {
-  return cb(getFormValue(rootState, form, field));
+  const value = getFormValue(rootState, form, field)
+  return !!value && cb(value);
 };
 
 export const isApplicationFormFieldValueEqualTo = (rootState: RootState, field: string, value: string) => {

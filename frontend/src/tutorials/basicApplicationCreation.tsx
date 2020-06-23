@@ -171,34 +171,34 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
           {
             title: (
               <span>
-                Set <strong>publish port</strong> to <strong>80</strong>
+                Set <strong>publish port</strong> to <strong>8080</strong>
               </span>
             ),
             formValidator: [
               {
                 form: "componentLike",
                 field: "ports[0].containerPort",
-                validate: (value) => (value === 80 ? undefined : `Please use "80"`),
+                validate: (value) => (value === 8080 ? undefined : `Please use "8080"`),
               },
             ],
             shouldCompleteByState: (state: RootState) => {
               const ports = getFormValue(state, "componentLike", "ports") as
                 | Immutable.List<ComponentLikePort>
                 | undefined;
-              return !!ports && ports.size > 0 && ports.get(0)!.get("containerPort") === 80;
+              return !!ports && ports.size > 0 && ports.get(0)!.get("containerPort") === 8080;
             },
           },
           {
             title: (
               <span>
-                Set <strong>listening on port</strong> to <strong>80</strong> or leave it blank
+                Set <strong>listening on port</strong> to <strong>8080</strong> or leave it blank
               </span>
             ),
             formValidator: [
               {
                 form: "componentLike",
                 field: "ports[0].servicePort",
-                validate: (value) => (value === 80 || !value ? undefined : `Please use "80"`),
+                validate: (value) => (value === 8080 || !value ? undefined : `Please use "8080"`),
               },
             ],
             shouldCompleteByState: (state: RootState) => {
@@ -208,7 +208,7 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
               return (
                 !!ports &&
                 ports.size > 0 &&
-                (ports.get(0)!.get("servicePort") === 80 || !ports.get(0)!.get("servicePort"))
+                (ports.get(0)!.get("servicePort") === 8080 || !ports.get(0)!.get("servicePort"))
               );
             },
           },

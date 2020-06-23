@@ -22,7 +22,9 @@ const resetTutorial = () => {
 };
 
 export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tutorial => {
-  const apps: Immutable.List<ApplicationDetails> = store.getState().get("applications").get("applications");
+  const state = store.getState();
+
+  const apps: Immutable.List<ApplicationDetails> = state.get("applications").get("applications");
   const application = apps.find((x) => x.get("name") === "hello-world");
 
   if (!application) {
@@ -54,6 +56,11 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
   const applicationDetailPath = "/applications/" + applicationName;
   const applicationRoutesPath = "/applications/" + applicationName + "/routes";
   const applicationNewRoutePath = "/applications/" + applicationName + "/routes/new";
+
+  const clusterInfo = state.get("cluster").get("info");
+  const clusterIngressIP = clusterInfo.get("ingressIP") || "10.0.0.1"; // TODO
+
+  const domain = clusterIngressIP.replace(/\./g, "-") + ".nip.io";
 
   return {
     title,
@@ -134,19 +141,17 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
           {
             title: (
               <span>
-                Use <strong>example.com</strong> as hosts
+                Use <strong>{domain}</strong> as hosts
               </span>
             ),
             formValidator: [
               {
                 form: "route",
                 field: "hosts",
-                validate: (hosts) =>
-                  hosts.size === 1 && hosts.get(0) === "example.com" ? undefined : `Please use "example.com"`,
+                validate: (hosts) => (hosts.size === 1 && hosts.get(0) === domain ? undefined : `Please use ${domain}`),
               },
             ],
-            shouldCompleteByState: (state: RootState) =>
-              isFormFieldValueEqualTo(state, "route", "hosts[0]", "example.com"),
+            shouldCompleteByState: (state: RootState) => isFormFieldValueEqualTo(state, "route", "hosts[0]", domain),
           },
           {
             title: (
@@ -191,7 +196,7 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
                 validate: (destinations: Immutable.List<HttpRouteDestination>) =>
                   destinations.size === 1 &&
                   destinations.find(
-                    (destination) => destination.get("host") === "echoserver.hello-world.svc.cluster.local:80",
+                    (destination) => destination.get("host") === "echoserver.hello-world.svc.cluster.local:8080",
                   )
                     ? undefined
                     : `Please use echoserver as the only target`,
@@ -205,7 +210,7 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
                 (destinations: Immutable.List<HttpRouteDestination>) =>
                   destinations.size === 1 &&
                   !!destinations.find(
-                    (destination) => destination.get("host") === "echoserver.hello-world.svc.cluster.local:80",
+                    (destination) => destination.get("host") === "echoserver.hello-world.svc.cluster.local:8080",
                   ),
               ),
           },
@@ -215,6 +220,20 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
               action.type === (actionTypes.SET_SUBMIT_SUCCEEDED as keyof ActionTypes) && action.meta!.form === "route",
           },
         ],
+        highlights: [],
+      },
+      {
+        name: "Try your route",
+        description: (
+          <span>
+            Try open{" "}
+            <Link href={"http://" + domain} target="_blank" rel="noreferer">
+              {domain}
+            </Link>{" "}
+            in your browser.
+          </span>
+        ),
+        subSteps: [],
         highlights: [],
       },
     ],

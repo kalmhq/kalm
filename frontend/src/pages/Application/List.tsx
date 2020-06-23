@@ -14,7 +14,6 @@ import {
   WithStyles,
 } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
-import { loadClusterInfoAction } from "actions/cluster";
 import { closeDialogAction } from "actions/dialog";
 import { loadRoutes } from "actions/routes";
 import { push } from "connected-react-router";
@@ -48,6 +47,7 @@ import { BasePage } from "../BasePage";
 import { ApplicationListDataWrapper, WithApplicationsListDataProps } from "./ListDataWrapper";
 import withStyles from "@material-ui/core/styles/withStyles";
 import { connect } from "react-redux";
+import { isPrivateIP } from "utils/ip";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -146,7 +146,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   public componentDidMount() {
     const { dispatch } = this.props;
     dispatch(loadRoutes(""));
-    dispatch(loadClusterInfoAction());
   }
 
   // private showDuplicateConfirmDialog = (duplicatingApplicationListItem: ApplicationDetails) => {
@@ -358,7 +357,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     let extraArgs: string[] = [];
 
     // test env
-    if (clusterInfo.get("ingressIP").includes("192.168")) {
+    if (isPrivateIP(clusterInfo.get("ingressIP"))) {
       if (scheme === "https") {
         if (!host.includes(":")) {
           host = host + ":" + clusterInfo.get("httpsPort");
