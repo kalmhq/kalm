@@ -329,45 +329,6 @@ func (suite *ComponentControllerSuite) TestVolumeTemporaryMemoryDisk() {
 	}, "temporary memory disk should not create pvc")
 }
 
-func (suite *ComponentControllerSuite) TestKappXXXXXX() {
-	// create
-
-	go func() {
-		for {
-			component := generateEmptyComponent(suite.ns.Name)
-			suite.createComponent(component)
-			time.Sleep(5 * time.Second)
-		}
-	}()
-
-	cache, err := cache.New(suite.Cfg, cache.Options{})
-
-	if err != nil {
-		panic(err)
-	}
-
-	i, err := cache.GetInformer(&v1alpha1.Component{})
-
-	if err != nil {
-		panic(err)
-	}
-
-	i.AddEventHandler(cache2.ResourceEventHandlerFuncs{
-		AddFunc: func(obj interface{}) {
-			fmt.Printf("component added: %s \n", obj)
-		},
-		DeleteFunc: func(obj interface{}) {
-			fmt.Printf("component deleted: %s \n", obj)
-		},
-		UpdateFunc: func(oldObj, newObj interface{}) {
-			fmt.Printf("component changed: %s \n", newObj)
-		},
-	})
-
-	stop := make(chan struct{})
-	cache.Start(stop)
-}
-
 func (suite *ComponentControllerSuite) TestKappEnabled() {
 	// create
 	component := generateEmptyComponent(suite.ns.Name)
