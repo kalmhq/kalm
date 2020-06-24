@@ -123,7 +123,7 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
     const { changingComponent } = this.state;
 
     if (changingComponent) {
-      return null;
+      return <div />;
     }
 
     return (

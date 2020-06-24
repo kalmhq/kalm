@@ -62,7 +62,7 @@ export const createComponentAction = (
 
     dispatch(setIsSubmittingApplicationComponent(false));
 
-    dispatch(loadApplicationAction(applicationName));
+    // dispatch(loadApplicationAction(applicationName));
     await dispatch({
       type: CREATE_COMPONENT,
       payload: { applicationName, component },
@@ -91,7 +91,7 @@ export const updateComponentAction = (
     }
     dispatch(setIsSubmittingApplicationComponent(false));
 
-    dispatch(loadApplicationAction(applicationName));
+    // dispatch(loadApplicationAction(applicationName));
     await dispatch({
       type: UPDATE_COMPONENT,
       payload: { applicationName, component },
@@ -108,7 +108,7 @@ export const deleteComponentAction = (componentName: string, applicationName?: s
 
     await deleteKappApplicationComponent(applicationName, componentName);
 
-    dispatch(loadApplicationAction(applicationName));
+    // dispatch(loadApplicationAction(applicationName));
     dispatch({
       type: DELETE_COMPONENT,
       payload: { applicationName, componentName },
@@ -137,7 +137,7 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
 
     dispatch(setIsSubmittingApplication(false));
 
-    dispatch(loadApplicationsAction());
+    // dispatch(loadApplicationsAction());
     await dispatch({
       type: CREATE_APPLICATION,
       payload: { application },
@@ -184,7 +184,7 @@ export const updateApplicationAction = (applicationRaw: Application): ThunkResul
 
     dispatch(setIsSubmittingApplication(false));
 
-    dispatch(loadApplicationsAction());
+    // dispatch(loadApplicationsAction());
     dispatch({
       type: UPDATE_APPLICATION,
       payload: { application },
@@ -199,7 +199,7 @@ export const duplicateApplicationAction = (duplicatedApplication: Application): 
     let application: ApplicationDetails;
     application = await createKappApplication(duplicatedApplication);
 
-    dispatch(loadApplicationsAction());
+    // dispatch(loadApplicationsAction());
     dispatch({
       type: DUPLICATE_APPLICATION,
       payload: { application },
@@ -215,13 +215,6 @@ export const deleteApplicationAction = (name: string): ThunkResult<Promise<void>
       type: DELETE_APPLICATION,
       payload: { applicationName: name },
     });
-    // api deleting delay,for deletingApplicationNames
-    setTimeout(() => {
-      dispatch({
-        type: DELETE_APPLICATION,
-        payload: { applicationName: name },
-      });
-    }, 10000);
   };
 };
 

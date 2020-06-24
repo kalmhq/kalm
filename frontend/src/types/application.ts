@@ -18,6 +18,10 @@ export const SET_IS_SUBMITTING_APPLICATION_COMPONENT = "SET_IS_SUBMITTING_APPLIC
 export const CREATE_COMPONENT = "CREATE_COMPONENT";
 export const UPDATE_COMPONENT = "UPDATE_COMPONENT";
 export const DELETE_COMPONENT = "DELETE_COMPONENT";
+export const ADD_OR_UPDATE_SERVICE = "ADD_OR_UPDATE_SERVICE";
+export const DELETE_SERVICE = "DELETE_SERVICE";
+export const ADD_OR_UPDATE_POD = "ADD_OR_UPDATE_POD";
+export const DELETE_POD = "DELETE_POD";
 // export const LOAD_APPLICATION_PLUGINS_FULFILLED = "LOAD_APPLICATION_PLUGINS_FULFILLED";
 export const LOAD_COMPONENT_PLUGINS_FULFILLED = "LOAD_COMPONENT_PLUGINS_FULFILLED";
 
@@ -162,6 +166,42 @@ export interface DeleteComponentAction {
   };
 }
 
+export interface AddOrUpdateServiceAction {
+  type: typeof ADD_OR_UPDATE_SERVICE;
+  payload: {
+    applicationName: string;
+    componentName: string;
+    service: ServiceStatus;
+  };
+}
+
+export interface DeleteServiceAction {
+  type: typeof DELETE_SERVICE;
+  payload: {
+    applicationName: string;
+    componentName: string;
+    serviceName: string;
+  };
+}
+
+export interface AddOrUpdatePodAction {
+  type: typeof ADD_OR_UPDATE_POD;
+  payload: {
+    applicationName: string;
+    componentName: string;
+    pod: PodStatus;
+  };
+}
+
+export interface DeletePodAction {
+  type: typeof DELETE_POD;
+  payload: {
+    applicationName: string;
+    componentName: string;
+    podName: string;
+  };
+}
+
 export interface LoadApplicationsPendingAction {
   type: typeof LOAD_APPLICATIONS_PENDING;
 }
@@ -229,4 +269,8 @@ export type ApplicationActions =
   | CreateComponentAction
   | UpdateComponentAction
   | DeleteComponentAction
+  | AddOrUpdateServiceAction
+  | DeleteServiceAction
+  | AddOrUpdatePodAction
+  | DeletePodAction
   | LoadComponentPluginsFulfilledAction;

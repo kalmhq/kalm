@@ -12,6 +12,12 @@ import {
   CREATE_APPLICATION,
   DELETE_APPLICATION,
   ApplicationDetails,
+  ServiceStatus,
+  ADD_OR_UPDATE_SERVICE,
+  DELETE_SERVICE,
+  ADD_OR_UPDATE_POD,
+  DELETE_POD,
+  PodStatus,
 } from "../types/application";
 import Immutable from "immutable";
 import { getKappApplicationComponentList } from "../actions/kubernetesApi";
@@ -115,9 +121,41 @@ class WebsocketConnectorRaw extends React.PureComponent<Props, State> {
           break;
         }
         case "Service": {
+          const service: ServiceStatus = Immutable.fromJS(data.data);
+          if (data.action === "Add" || data.action === "Update") {
+            dispatch({
+              type: ADD_OR_UPDATE_SERVICE,
+              payload: { applicationName: data.namespace, componentName: data.component, service },
+            });
+          } else if (data.action === "Delete") {
+            dispatch({
+              type: DELETE_SERVICE,
+              payload: {
+                applicationName: data.namespace,
+                componentName: data.component,
+                serviceName: service.get("name"),
+              },
+            });
+          }
           break;
         }
         case "Pod": {
+          const pod: PodStatus = Immutable.fromJS(data.data);
+          if (data.action === "Add" || data.action === "Update") {
+            dispatch({
+              type: ADD_OR_UPDATE_POD,
+              payload: { applicationName: data.namespace, componentName: data.component, pod },
+            });
+          } else if (data.action === "Delete") {
+            dispatch({
+              type: DELETE_POD,
+              payload: {
+                applicationName: data.namespace,
+                componentName: data.component,
+                podName: pod.get("name"),
+              },
+            });
+          }
           break;
         }
       }

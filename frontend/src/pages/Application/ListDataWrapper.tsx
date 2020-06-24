@@ -6,10 +6,7 @@ import { Actions } from "../../types";
 
 const mapStateToProps = (state: RootState) => {
   const applicationsState = state.get("applications");
-  const deletingApplicationNames = state.get("applications").get("deletingApplicationNames");
-  const applications = applicationsState
-    .get("applications")
-    .filter((app) => !deletingApplicationNames.get(app.get("name")));
+  const applications = applicationsState.get("applications");
 
   return {
     applications,
