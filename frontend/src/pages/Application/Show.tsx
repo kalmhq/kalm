@@ -109,5 +109,5 @@ class ApplicationShowRaw extends React.PureComponent<Props> {
 }
 
 export const ApplicationShow = withStyles(styles)(
-  connect(mapStateToProps)(ApplicationItemDataWrapper({ reloadFrequency: 5000 })(withNamespace(ApplicationShowRaw))),
+  connect(mapStateToProps)(ApplicationItemDataWrapper({ autoReload: true })(withNamespace(ApplicationShowRaw))),
 );

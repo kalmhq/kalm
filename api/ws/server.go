@@ -51,26 +51,4 @@ func (h *WsHandler) Serve(c echo.Context) error {
 	go client.write()
 
 	return nil
-
-	// defer conn.Close()
-
-	// for {
-	// 	err := conn.WriteMessage(websocket.TextMessage, []byte("Hello, Client 1!"))
-	// 	if err != nil {
-	// 		c.Logger().Error(err)
-	// 	}
-
-	// 	// Read
-	// 	_, msg, err := conn.ReadMessage()
-	// 	if err != nil {
-	// 		c.Logger().Error(err)
-	// 	}
-	// 	fmt.Printf("%s\n", msg)
-
-	// 	// Write
-	// 	err = conn.WriteMessage(websocket.TextMessage, []byte("Hello, Client 2!"))
-	// 	if err != nil {
-	// 		c.Logger().Error(err)
-	// 	}
-	// }
 }

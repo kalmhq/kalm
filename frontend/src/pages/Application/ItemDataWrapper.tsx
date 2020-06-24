@@ -9,6 +9,7 @@ import { RootState } from "reducers";
 import { Actions } from "types";
 import { ApplicationComponent } from "types/application";
 import { applicationComponentDetailsToApplicationComponent } from "utils/application";
+import { loadApplicationAction } from "../../actions/application";
 
 const mapStateToProps = (state: RootState, props: any) => {
   const applications = state.get("applications");
@@ -42,33 +43,32 @@ export interface WithApplicationItemDataProps extends ReturnType<typeof mapState
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
 }
 
-// if reloadFrequency > 0, will keep reload the item
-// otherwize, will only load the item once
-export const ApplicationItemDataWrapper = ({ reloadFrequency }: { reloadFrequency: number }) => (
+export const ApplicationItemDataWrapper = ({ autoReload }: { autoReload: boolean }) => (
   WrappedComponent: React.ComponentType<any>,
 ) => {
   const WithdApplicationsData: React.ComponentType<WithApplicationItemDataProps> = class extends React.Component<
     WithApplicationItemDataProps
   > {
-    // private interval?: number;
+    private interval?: number;
 
-    // private loadData = () => {
-    //   const { applicationName } = this.props;
-    //   this.props.dispatch(loadApplicationAction(applicationName));
-    //   if (reloadFrequency > 0) {
-    //     this.interval = window.setTimeout(this.loadData, reloadFrequency);
-    //   }
-    // };
+    private loadData = () => {
+      const { applicationName } = this.props;
+      this.props.dispatch(loadApplicationAction(applicationName));
+      if (autoReload) {
+        // Just for refresh mestrics. Reload per minute,
+        this.interval = window.setTimeout(this.loadData, 60000);
+      }
+    };
 
-    // componentDidMount() {
-    //   this.loadData();
-    // }
+    componentDidMount() {
+      this.loadData();
+    }
 
-    // componentWillUnmount() {
-    //   if (this.interval) {
-    //     window.clearTimeout(this.interval);
-    //   }
-    // }
+    componentWillUnmount() {
+      if (this.interval) {
+        window.clearTimeout(this.interval);
+      }
+    }
 
     render() {
       const { application } = this.props;

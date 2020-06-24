@@ -3,6 +3,7 @@ import { RootState } from "../../reducers";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "../../types";
+import { loadApplicationsAction } from "../../actions/application";
 
 const mapStateToProps = (state: RootState) => {
   const applicationsState = state.get("applications");
@@ -24,29 +25,23 @@ export const ApplicationListDataWrapper = (WrappedComponent: React.ComponentType
   const WithdApplicationsData: React.ComponentType<WithApplicationsListDataProps> = class extends React.Component<
     WithApplicationsListDataProps
   > {
-    // private interval?: number;
+    private interval?: number;
 
-    // private loadData = () => {
-    //   this.props.dispatch(loadApplicationsAction());
-    //   this.interval = window.setTimeout(this.loadData, 5000);
-    // };
+    private loadData = () => {
+      this.props.dispatch(loadApplicationsAction());
+      // Just for refresh mestrics. Reload per minute,
+      this.interval = window.setTimeout(this.loadData, 60000);
+    };
 
-    // componentDidMount() {
-    //   this.loadData();
-    // }
+    componentDidMount() {
+      this.loadData();
+    }
 
-    // componentDidUpdate(prevProps: WithApplicationsListDataProps) {
-    //   if (prevProps.activeNamespaceName !== this.props.activeNamespaceName) {
-    //     window.clearTimeout(this.interval);
-    //     this.loadData();
-    //   }
-    // }
-
-    // componentWillUnmount() {
-    //   if (this.interval) {
-    //     window.clearTimeout(this.interval);
-    //   }
-    // }
+    componentWillUnmount() {
+      if (this.interval) {
+        window.clearTimeout(this.interval);
+      }
+    }
 
     render() {
       return <WrappedComponent {...this.props} />;
