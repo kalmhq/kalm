@@ -48,20 +48,14 @@ func Watch(c *Client, runtimeObj runtime.Object, buildResMessage func(c *Client,
 
 	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
-			// log.Infoln("watch added: %s", obj)
-
 			resMessage := buildResMessage(c, "Add", obj)
 			c.sendResMessage(resMessage)
 		},
 		DeleteFunc: func(obj interface{}) {
-			// log.Infoln("watch deleted: %s", obj)
-
 			resMessage := buildResMessage(c, "Delete", obj)
 			c.sendResMessage(resMessage)
 		},
 		UpdateFunc: func(oldObj, obj interface{}) {
-			// log.Infoln("watch changed: %s", obj)
-
 			resMessage := buildResMessage(c, "Update", obj)
 			c.sendResMessage(resMessage)
 		},

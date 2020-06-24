@@ -92,8 +92,6 @@ func (c *Client) read() {
 
 		var reqMessage ReqMessage
 		_ = json.Unmarshal(messageBytes, &reqMessage)
-		// log.Info("-------------reqMessage")
-		// log.Info(reqMessage)
 
 		if c.K8SClientConfig == nil {
 			authInfo := &api.AuthInfo{Token: reqMessage.Token}
