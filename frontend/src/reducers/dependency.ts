@@ -4,9 +4,9 @@ import {
   LOAD_DEPENDENCIES_FAILED,
   LOAD_DEPENDENCIES_FULFILLED,
   LOAD_DEPENDENCIES_PENDING,
-} from "../types/dependency";
-import { ImmutableMap } from "../typings";
-import { Actions } from "../types";
+} from "types/dependency";
+import { ImmutableMap } from "typings";
+import { Actions } from "types";
 import { LOGOUT } from "types/common";
 
 export interface DependencyStateContent {

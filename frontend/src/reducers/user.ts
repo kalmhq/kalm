@@ -1,7 +1,7 @@
 import Immutable from "immutable";
-import { LOAD_USERS_FAILED, LOAD_USERS_FULFILLED, LOAD_USERS_PENDING, Users } from "../types/user";
-import { Actions } from "../types";
-import { ImmutableMap } from "../typings";
+import { LOAD_USERS_FAILED, LOAD_USERS_FULFILLED, LOAD_USERS_PENDING, Users } from "types/user";
+import { Actions } from "types";
+import { ImmutableMap } from "typings";
 import { LOGOUT } from "types/common";
 
 export type State = ImmutableMap<{

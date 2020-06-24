@@ -7,8 +7,8 @@ import {
   INIT_CONTROLLED_DIALOG,
   LOGOUT,
   OPEN_CONTROLLED_DIALOG,
-} from "../types/common";
-import { Actions } from "../types";
+} from "types/common";
+import { Actions } from "types";
 
 export type State = Immutable.Map<string, ControlledDialogParams<any>>;
 

@@ -1,7 +1,7 @@
-import { ImmutableMap } from "../typings";
-import { Actions } from "../types";
+import { ImmutableMap } from "typings";
+import { Actions } from "types";
 import Immutable from "immutable";
-import { SET_SETTINGS } from "../types/common";
+import { SET_SETTINGS } from "types/common";
 
 export interface SettingObject {
   isDisplayingHelpers: boolean;

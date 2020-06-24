@@ -9,9 +9,9 @@ import {
   SET_IS_SUBMITTING_REGISTRY,
   UPDATE_REGISTRY,
 } from "types/registry";
-import { Actions } from "../types";
-import { LOGOUT } from "../types/common";
-import { ImmutableMap } from "../typings";
+import { Actions } from "types";
+import { LOGOUT } from "types/common";
+import { ImmutableMap } from "typings";
 
 export type State = ImmutableMap<{
   isLoading: boolean;

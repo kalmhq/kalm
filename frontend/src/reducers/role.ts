@@ -8,8 +8,8 @@ import {
   LOAD_ROLE_BINDINGS_PENDING,
   RoleBinding,
 } from "types/user";
-import { Actions } from "../types";
-import { ImmutableMap } from "../typings";
+import { Actions } from "types";
+import { ImmutableMap } from "typings";
 import { LOGOUT } from "types/common";
 
 export type State = ImmutableMap<{

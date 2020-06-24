@@ -1,5 +1,5 @@
 import Immutable from "immutable";
-import { ImmutableMap } from "../typings";
+import { ImmutableMap } from "typings";
 import { ComponentLikeContent } from "./componentTemplate";
 import { Metrics } from "./common";
 

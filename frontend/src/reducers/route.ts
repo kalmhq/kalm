@@ -8,8 +8,8 @@ import {
   LOAD_ROUTES_PENDING,
   UPDATE_ROUTE_FULFILLED,
 } from "types/route";
-import { Actions } from "../types";
-import { ImmutableMap } from "../typings";
+import { Actions } from "types";
+import { ImmutableMap } from "typings";
 
 export type State = ImmutableMap<{
   isLoading: boolean;

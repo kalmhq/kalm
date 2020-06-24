@@ -1,6 +1,6 @@
 import Immutable from "immutable";
 import { LOGOUT } from "types/common";
-import { Actions } from "../types";
+import { Actions } from "types";
 import {
   ApplicationComponentDetails,
   ApplicationDetails,
@@ -21,8 +21,8 @@ import {
   SET_IS_SUBMITTING_APPLICATION_COMPONENT,
   UPDATE_APPLICATION,
   UPDATE_COMPONENT,
-} from "../types/application";
-import { ImmutableMap } from "../typings";
+} from "types/application";
+import { ImmutableMap } from "typings";
 
 export type State = ImmutableMap<{
   applications: Immutable.List<ApplicationDetails>;

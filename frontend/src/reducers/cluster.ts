@@ -6,8 +6,8 @@ import {
   LOAD_CLUSTER_INFO_PENDING,
 } from "types/cluster";
 import { LOGOUT } from "types/common";
-import { Actions } from "../types";
-import { ImmutableMap } from "../typings";
+import { Actions } from "types";
+import { ImmutableMap } from "typings";
 
 export interface DependencyStateContent {
   info: ClusterInfo;

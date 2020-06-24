@@ -5,7 +5,7 @@ import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "types";
 import { Loading } from "widgets/Loading";
 import { getDisplayName } from "./utils";
-import { setCurrentNamespaceAction } from "../actions/namespaces";
+import { setCurrentNamespaceAction } from "actions/namespaces";
 import { BasePage } from "pages/BasePage";
 
 const mapStateToProps = (state: RootState, props: any) => {

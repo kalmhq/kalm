@@ -5,9 +5,9 @@ import {
   LOAD_LOGIN_STATUS_PENDING,
   LOGOUT,
   SET_AUTH_TOKEN,
-} from "../types/common";
-import { Actions } from "../types";
-import { ImmutableMap } from "../typings";
+} from "types/common";
+import { Actions } from "types";
+import { ImmutableMap } from "typings";
 
 export type State = ImmutableMap<{
   firstLoaded: boolean;

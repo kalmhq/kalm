@@ -1,14 +1,14 @@
 import Immutable from "immutable";
-import { Actions } from "../types";
-import { ImmutableMap } from "../typings";
-import { LOGOUT } from "../types/common";
+import { Actions } from "types";
+import { ImmutableMap } from "typings";
+import { LOGOUT } from "types/common";
 import {
   DELETE_PERSISTENT_VOLUME,
   LOAD_PERSISTENT_VOLUMES,
   LOAD_STORAGE_CLASSES,
   PersistentVolumes,
   StorageClasses,
-} from "../types/persistentVolume";
+} from "types/persistentVolume";
 
 export type State = ImmutableMap<{
   persistentVolumes: PersistentVolumes;

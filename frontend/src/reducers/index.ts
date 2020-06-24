@@ -3,7 +3,7 @@ import { History, LocationState } from "history";
 import { FormState } from "redux-form";
 import { reducer as formReducer } from "redux-form/immutable";
 import { combineReducers } from "redux-immutable";
-import { ImmutableMap } from "../typings";
+import { ImmutableMap } from "typings";
 import roles, { State as RolesState } from "./role";
 import applications, { State as ApplicationState } from "./application";
 import auth, { State as AuthState } from "./auth";

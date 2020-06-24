@@ -1,7 +1,7 @@
 import Immutable from "immutable";
-import { Actions } from "../types";
-import { SET_CURRENT_NAMESPACE } from "../types/namespace";
-import { ImmutableMap } from "../typings";
+import { Actions } from "types";
+import { SET_CURRENT_NAMESPACE } from "types/namespace";
+import { ImmutableMap } from "typings";
 import queryString from "query-string";
 import { LOGOUT } from "types/common";
 

@@ -1,8 +1,8 @@
 import Immutable from "immutable";
-import { Actions } from "../types";
-import { ImmutableMap } from "../typings";
+import { Actions } from "types";
+import { ImmutableMap } from "typings";
 import { VariantType } from "notistack";
-import { SET_NOTIFICATION_MESSAGE } from "../types/common";
+import { SET_NOTIFICATION_MESSAGE } from "types/common";
 
 export type State = ImmutableMap<{
   message: string;

@@ -10,11 +10,11 @@ import { theme } from "theme";
 import { HistoryUserConfirmation } from "widgets/History";
 import configureStore from "./configureStore";
 import "./index.css";
-import { KappRoutes } from "./routes";
+import { KappRoutes } from "routes";
 import * as serviceWorker from "./serviceWorker";
-import { setStore } from "./store";
-import { Snackbar } from "./widgets/Notification";
-import { ScrollToTop } from "./widgets/ScrollToTop";
+import { setStore } from "store";
+import { Snackbar } from "widgets/Notification";
+import { ScrollToTop } from "widgets/ScrollToTop";
 
 export const history = createBrowserHistory({
   getUserConfirmation: HistoryUserConfirmation,

@@ -1,10 +1,10 @@
-import { RootState } from "../reducers";
-import { Actions } from "../types";
+import { RootState } from "reducers";
+import { Actions } from "types";
 import { ActionTypes, actionTypes } from "redux-form";
 import Immutable from "immutable";
-import { ComponentLikePort } from "../types/componentTemplate";
+import { ComponentLikePort } from "types/componentTemplate";
 import React from "react";
-import { Tutorial, TutorialFactory } from "../types/tutorial";
+import { Tutorial, TutorialFactory } from "types/tutorial";
 import { ApplicationDetails } from "types/application";
 import { store } from "store";
 import {

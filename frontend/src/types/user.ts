@@ -1,5 +1,5 @@
 import Immutable from "immutable";
-import { ImmutableMap } from "../typings";
+import { ImmutableMap } from "typings";
 
 export const LOAD_ROLE_BINDINGS_PENDING = "LOAD_ROLE_BINDINGS_PENDING";
 export const LOAD_ROLE_BINDINGS_FAILED = "LOAD_ROLE_BINDINGS_FAILED";

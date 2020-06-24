@@ -1,5 +1,5 @@
-import { User } from "../types/user";
-import { store } from "../store";
+import { User } from "types/user";
+import { store } from "store";
 
 export const getUserByName = (name: string): User => {
   const state = store.getState();

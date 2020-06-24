@@ -1,6 +1,6 @@
 import Immutable from "immutable";
-import { Actions } from "../types";
-import { ImmutableMap } from "../typings";
+import { Actions } from "types";
+import { ImmutableMap } from "typings";
 import {
   Certificate,
   CertificateIssuerList,

@@ -8,8 +8,8 @@ import {
   SET_TUTORIAL_STEP_COMPLETION_STATUS,
   Tutorial,
 } from "types/tutorial";
-import { Actions } from "../types";
-import { ImmutableMap } from "../typings";
+import { Actions } from "types";
+import { ImmutableMap } from "typings";
 
 export type State = ImmutableMap<{
   drawerOpen: boolean;
@@ -32,8 +32,8 @@ const tryMoveToNextStep = (state: State): State => {
   const currentStepIndex = state.get("currentStepIndex");
   const currentStep = state.get("tutorial")!.steps[currentStepIndex];
 
-  if(currentStep.subSteps.length === 0) {
-    return state
+  if (currentStep.subSteps.length === 0) {
+    return state;
   }
 
   const notCompletedSubSteps = currentStep.subSteps.filter((_subStep, subStepIndex) => {
