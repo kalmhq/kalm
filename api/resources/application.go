@@ -3,9 +3,10 @@ package resources
 import (
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/kapp-staging/kapp/controller/controllers"
 	authorizationV1 "k8s.io/api/authorization/v1"
-	"time"
 
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	appsV1 "k8s.io/api/apps/v1"
@@ -224,7 +225,7 @@ func (builder *Builder) BuildApplicationListResponse(namespaceList coreV1.Namesp
 	return apps, nil
 }
 
-func getPodStatus(pod coreV1.Pod, events []coreV1.Event) *PodStatus {
+func GetPodStatus(pod coreV1.Pod, events []coreV1.Event) *PodStatus {
 	var ips []string
 
 	for _, x := range pod.Status.PodIPs {

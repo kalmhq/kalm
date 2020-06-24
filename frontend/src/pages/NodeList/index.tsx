@@ -82,7 +82,7 @@ export class NodeListRaw extends React.Component<Props, States> {
   };
 
   render() {
-    const { classes, metrics } = this.props;
+    const { metrics } = this.props;
     const tableData = this.getTableData();
     return (
       <BasePage secondHeaderRight="Nodes">

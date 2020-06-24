@@ -7,10 +7,7 @@ import { loadApplicationsAction } from "../../actions/application";
 
 const mapStateToProps = (state: RootState) => {
   const applicationsState = state.get("applications");
-  const deletingApplicationNames = state.get("applications").get("deletingApplicationNames");
-  const applications = applicationsState
-    .get("applications")
-    .filter((app) => app.get("status") === "Active" && !deletingApplicationNames.get(app.get("name")));
+  const applications = applicationsState.get("applications");
 
   return {
     applications,
@@ -32,18 +29,12 @@ export const ApplicationListDataWrapper = (WrappedComponent: React.ComponentType
 
     private loadData = () => {
       this.props.dispatch(loadApplicationsAction());
-      this.interval = window.setTimeout(this.loadData, 500000);
+      // Just for refresh mestrics. Reload per minute,
+      this.interval = window.setTimeout(this.loadData, 60000);
     };
 
     componentDidMount() {
       this.loadData();
-    }
-
-    componentDidUpdate(prevProps: WithApplicationsListDataProps) {
-      if (prevProps.activeNamespaceName !== this.props.activeNamespaceName) {
-        window.clearTimeout(this.interval);
-        this.loadData();
-      }
     }
 
     componentWillUnmount() {

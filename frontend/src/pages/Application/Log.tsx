@@ -590,4 +590,4 @@ export class LogStream extends React.PureComponent<Props, State> {
   }
 }
 
-export const Log = withStyles(styles)(ApplicationItemDataWrapper({ reloadFrequency: 0 })(LogStream));
+export const Log = withStyles(styles)(ApplicationItemDataWrapper({ autoReload: false })(LogStream));
