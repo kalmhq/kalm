@@ -30,7 +30,7 @@ class RouteNewRaw extends React.PureComponent<Props> {
 
       route = route.set("namespace", activeNamespaceName);
       await dispatch(createRoute(route.get("name"), activeNamespaceName, route));
-      await dispatch(setSuccessNotificationAction("Create route successfully"))
+      await dispatch(setSuccessNotificationAction("Create route successfully"));
     } catch (e) {
       console.log(e);
     }

@@ -53,7 +53,7 @@ class WebsocketConnectorRaw extends React.PureComponent<Props, State> {
       rws.send(JSON.stringify(message));
     });
 
-    rws.onmessage = async event => {
+    rws.onmessage = async (event) => {
       const data: ResMessage = JSON.parse(event.data);
 
       switch (data.kind) {

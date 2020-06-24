@@ -3,8 +3,5 @@ import { ApplicationComponentDetails, ApplicationComponent } from "../types/appl
 export const applicationComponentDetailsToApplicationComponent = (
   applicationComponentDetails: ApplicationComponentDetails,
 ): ApplicationComponent => {
-  return applicationComponentDetails
-    .delete("pods")
-    .delete("services")
-    .delete("metrics") as ApplicationComponent;
+  return applicationComponentDetails.delete("pods").delete("services").delete("metrics") as ApplicationComponent;
 };

@@ -48,9 +48,7 @@ export const createComponentAction = (
 ): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     if (!applicationName) {
-      applicationName = getState()
-        .get("namespaces")
-        .get("active");
+      applicationName = getState().get("namespaces").get("active");
     }
     dispatch(setIsSubmittingApplicationComponent(true));
 
@@ -79,9 +77,7 @@ export const updateComponentAction = (
 ): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     if (!applicationName) {
-      applicationName = getState()
-        .get("namespaces")
-        .get("active");
+      applicationName = getState().get("namespaces").get("active");
     }
 
     dispatch(setIsSubmittingApplicationComponent(true));
@@ -107,9 +103,7 @@ export const updateComponentAction = (
 export const deleteComponentAction = (componentName: string, applicationName?: string): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     if (!applicationName) {
-      applicationName = getState()
-        .get("namespaces")
-        .get("active");
+      applicationName = getState().get("namespaces").get("active");
     }
 
     await deleteKappApplicationComponent(applicationName, componentName);
@@ -278,9 +272,7 @@ export const loadApplicationsAction = (): ThunkResult<Promise<Immutable.List<App
       throw e;
     }
 
-    const activeNamespace = getState()
-      .get("namespaces")
-      .get("active");
+    const activeNamespace = getState().get("namespaces").get("active");
     const firstNamespace = applicationList.get(0);
     if (!activeNamespace && applicationList.size > 0 && firstNamespace != null) {
       dispatch(setCurrentNamespaceAction(firstNamespace?.get("name"), false));

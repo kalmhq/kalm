@@ -260,7 +260,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
       submitFailed,
       syncErrors,
       dirty,
-      submitSucceeded
+      submitSucceeded,
     } = this.props;
 
     return (
