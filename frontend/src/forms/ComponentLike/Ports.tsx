@@ -13,6 +13,7 @@ import { RenderSelectField } from "../Basic/select";
 import { KRenderTextField } from "../Basic/textfield";
 import { NormalizePort } from "../normalizer";
 import { ValidatorRequired, ValidatorServiceName } from "../validator";
+
 interface FieldArrayComponentHackType {
   name: any;
   component: any;
@@ -58,7 +59,7 @@ class RenderPorts extends React.PureComponent<Props> {
     const {
       fields,
       dispatch,
-      meta: { error, form }
+      meta: { error, form },
     } = this.props;
     return (
       <>
@@ -77,11 +78,12 @@ class RenderPorts extends React.PureComponent<Props> {
                     Immutable.Map({
                       name: "",
                       protocol: portTypeTCP,
-                      containerPort: null
-                    })
-                  )
+                      containerPort: null,
+                    }),
+                  ),
                 )
-              }>
+              }
+            >
               Add
             </Button>
 
@@ -115,8 +117,9 @@ class RenderPorts extends React.PureComponent<Props> {
                   validate={[ValidatorRequired]}
                   options={[
                     { value: portTypeTCP, text: portTypeTCP },
-                    { value: portTypeUDP, text: portTypeUDP }
-                  ]}>
+                    { value: portTypeUDP, text: portTypeUDP },
+                  ]}
+                >
                   <MenuItem value={portTypeUDP}>{portTypeUDP}</MenuItem>
                   <MenuItem value={portTypeTCP}>{portTypeTCP}</MenuItem>
                 </Field>
@@ -147,7 +150,8 @@ class RenderPorts extends React.PureComponent<Props> {
                   tooltipPlacement="top"
                   tooltipTitle="Delete"
                   aria-label="delete"
-                  onClick={() => fields.remove(index)}>
+                  onClick={() => fields.remove(index)}
+                >
                   <DeleteIcon />
                 </IconButtonWithTooltip>
               </Grid>

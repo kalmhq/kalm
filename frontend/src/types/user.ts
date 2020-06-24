@@ -1,5 +1,5 @@
 import Immutable from "immutable";
-import { ImmutableMap } from "../typings";
+import { ImmutableMap } from "typings";
 
 export const LOAD_ROLE_BINDINGS_PENDING = "LOAD_ROLE_BINDINGS_PENDING";
 export const LOAD_ROLE_BINDINGS_FAILED = "LOAD_ROLE_BINDINGS_FAILED";
@@ -73,7 +73,7 @@ export const allClusterRoleNames = [
   "file_editor_role",
   "file_viewer_role",
   "dependency_editor_role",
-  "dependency_viewer_role"
+  "dependency_viewer_role",
 ];
 
 export type ClusterRoleName =

@@ -3,18 +3,17 @@ import { Theme } from "@material-ui/core/styles";
 import Immutable from "immutable";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
-import { InjectedFormProps } from "redux-form";
-import { Field, formValueSelector, getFormValues, reduxForm } from "redux-form/immutable";
-import { RootState } from "../../reducers";
-import { Application, SharedEnv } from "../../types/application";
-import { ComponentTemplate } from "../../types/componentTemplate";
-import { CustomizedButton } from "../../widgets/Button";
-import { KPanel } from "../../widgets/KPanel";
+import { Field, formValueSelector, reduxForm } from "redux-form/immutable";
+import { RootState } from "reducers";
+import { Application, SharedEnv } from "types/application";
+import { CustomizedButton } from "widgets/Button";
+import { KPanel } from "widgets/KPanel";
 import { KRenderTextField } from "../Basic/textfield";
 import { ValidatorName, ValidatorRequired } from "../validator";
-import { formValidatOrNotBlockByTutorial } from "types/tutorial";
 import { Alert } from "@material-ui/lab";
 import { shouldError } from "forms/common";
+import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
+import { InjectedFormProps } from "redux-form";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -52,27 +51,29 @@ const styles = (theme: Theme) =>
 
 const mapStateToProps = (state: RootState) => {
   const selector = formValueSelector("application");
-  const formComponents: ComponentTemplate[] = selector(state, "components");
   const sharedEnvs: Immutable.List<SharedEnv> = selector(state, "sharedEnvs");
-  const values = getFormValues("application")(state) as Application;
 
   return {
     tutorialState: state.get("tutorial"),
     isSubmittingApplication: state.get("applications").get("isSubmittingApplication"),
     sharedEnvs,
-    formComponents,
-    values,
   };
 };
 
-export interface Props extends ReturnType<typeof mapStateToProps>, DispatchProp {
+interface OwnProps {
   isEdit?: boolean;
   currentTab: "basic" | "sharedEnvs" | "applicationPlugins";
 }
 
-class ApplicationFormRaw extends React.PureComponent<
-  Props & InjectedFormProps<Application, Props> & WithStyles<typeof styles>
-> {
+interface ConnectedProps extends ReturnType<typeof mapStateToProps>, DispatchProp {}
+
+export interface Props
+  extends ConnectedProps,
+    InjectedFormProps<Application, ConnectedProps & OwnProps>,
+    WithStyles<typeof styles>,
+    OwnProps {}
+
+class ApplicationFormRaw extends React.PureComponent<Props> {
   private renderBasic() {
     const { isEdit } = this.props;
     return (
@@ -104,9 +105,10 @@ class ApplicationFormRaw extends React.PureComponent<
           variant="contained"
           color="primary"
           className={`${currentTab === "basic" ? classes.submitButton : classes.displayNone}`}
-          onClick={event => {
+          onClick={(event) => {
             handleSubmit(event);
-          }}>
+          }}
+        >
           Submit
         </CustomizedButton>
         {/* <CustomizedButton
@@ -192,10 +194,10 @@ export const applicationInitialValues: Application = Immutable.fromJS({
 });
 
 export default connect(mapStateToProps)(
-  reduxForm<Application, Props>({
+  reduxForm<Application, ConnectedProps & OwnProps>({
     form: "application",
     initialValues: applicationInitialValues,
-    validate: formValidatOrNotBlockByTutorial,
+    validate: formValidateOrNotBlockByTutorial,
     shouldError: shouldError,
     onSubmitFail: (...args) => {
       console.log("submit failed", args);

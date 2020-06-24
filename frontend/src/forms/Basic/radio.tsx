@@ -12,6 +12,7 @@ interface KRadioGroupRenderOption {
   label: string;
   explain?: string;
 }
+
 interface KRadioGroupRenderProps extends WrappedFieldProps {
   options: KRadioGroupRenderOption[];
   title?: string;
@@ -32,7 +33,7 @@ export const KRadioGroupRender = ({
     <FormControl component="fieldset" fullWidth margin="dense" error={error}>
       {title ? <FormLabel component="legend">{title}</FormLabel> : null}
       <RadioGroup aria-label="gender" name="gender1" value={input.value || defaultValue} onChange={input.onChange}>
-        {options.map(option => {
+        {options.map((option) => {
           return (
             <React.Fragment key={option.value}>
               <FormControlLabel key={option.value} value={option.value} control={<Radio />} label={option.label} />

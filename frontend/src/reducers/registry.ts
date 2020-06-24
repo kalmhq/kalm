@@ -1,17 +1,17 @@
 import Immutable from "immutable";
 import {
+  CREATE_REGISTRY,
+  DELETE_REGISTRY,
   LOAD_REGISTRIES_FAILED,
   LOAD_REGISTRIES_FULFILLED,
   LOAD_REGISTRIES_PENDING,
-  CREATE_REGISTRY,
-  UPDATE_REGISTRY,
-  DELETE_REGISTRY,
   RegistryType,
-  SET_IS_SUBMITTING_REGISTRY
+  SET_IS_SUBMITTING_REGISTRY,
+  UPDATE_REGISTRY,
 } from "types/registry";
-import { Actions } from "../types";
-import { LOGOUT } from "../types/common";
-import { ImmutableMap } from "../typings";
+import { Actions } from "types";
+import { LOGOUT } from "types/common";
+import { ImmutableMap } from "typings";
 
 export type State = ImmutableMap<{
   isLoading: boolean;
@@ -24,12 +24,12 @@ const initialState: State = Immutable.Map({
   isLoading: false,
   isFirstLoaded: false,
   isSubmittingRegistry: false,
-  registries: Immutable.List([])
+  registries: Immutable.List([]),
 });
 
 const putRegistryIntoState = (state: State, registry: RegistryType): State => {
   const registries = state.get("registries");
-  const index = registries.findIndex(app => app.get("name") === registry.get("name"));
+  const index = registries.findIndex((app) => app.get("name") === registry.get("name"));
 
   if (index < 0) {
     state = state.set("registries", registries.push(registry));
@@ -66,7 +66,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
     }
     case DELETE_REGISTRY: {
       const registries = state.get("registries");
-      const index = registries.findIndex(r => r.get("name") === action.payload.name);
+      const index = registries.findIndex((r) => r.get("name") === action.payload.name);
 
       if (index >= 0) {
         state = state.deleteIn(["registries", index]);

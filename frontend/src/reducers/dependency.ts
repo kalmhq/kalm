@@ -1,12 +1,12 @@
 import Immutable from "immutable";
 import {
+  KappDependency,
+  LOAD_DEPENDENCIES_FAILED,
   LOAD_DEPENDENCIES_FULFILLED,
   LOAD_DEPENDENCIES_PENDING,
-  LOAD_DEPENDENCIES_FAILED,
-  KappDependency
-} from "../types/dependency";
-import { ImmutableMap } from "../typings";
-import { Actions } from "../types";
+} from "types/dependency";
+import { ImmutableMap } from "typings";
+import { Actions } from "types";
 import { LOGOUT } from "types/common";
 
 export interface DependencyStateContent {
@@ -20,7 +20,7 @@ export type State = ImmutableMap<DependencyStateContent>;
 const initialState: State = Immutable.Map({
   dependencies: Immutable.OrderedMap({}),
   isListLoading: false,
-  isListFirstLoaded: false
+  isListFirstLoaded: false,
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {
@@ -40,7 +40,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
       state = state.set("isListFirstLoaded", true).set("isListLoading", false);
       let om = Immutable.OrderedMap<string, KappDependency>();
 
-      action.payload.dependencies.forEach(x => {
+      action.payload.dependencies.forEach((x) => {
         om = om.set(x.get("name"), x);
       });
 

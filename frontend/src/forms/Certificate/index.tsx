@@ -1,7 +1,7 @@
 import { Button, Grid } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { createCertificateIssuerAction } from "actions/certificate";
-import { KFreeSoloAutoCompleteMultiValues, KAutoCompleteSingleValue } from "forms/Basic/autoComplete";
+import { KAutoCompleteSingleValue, KFreeSoloAutoCompleteMultiValues } from "forms/Basic/autoComplete";
 import { KRadioGroupRender } from "forms/Basic/radio";
 import { KRenderTextField } from "forms/Basic/textfield";
 import { ValidatorRequired } from "forms/validator";
@@ -13,21 +13,22 @@ import { InjectedFormProps } from "redux-form";
 import { Field, formValueSelector, getFormSyncErrors, reduxForm } from "redux-form/immutable";
 import { TDispatchProp } from "types";
 import {
+  caForTest,
   CertificateFormType,
+  CertificateIssuer,
   CertificateIssuerFormType,
   CertificateIssuerList,
+  cloudFlare,
   issuerManaged,
   newEmptyCertificateIssuerForm,
   selfManaged,
-  CertificateIssuer,
-  caForTest,
-  cloudFlare
 } from "types/certificate";
 import { CertificateIssuerForm } from "./issuerForm";
 import { Uploader } from "forms/Basic/uploader";
 import { addCertificateDialogId } from "pages/Certificate/New";
 import { closeDialogAction } from "actions/dialog";
 import { extractDomainsFromCertificateContent } from "permission/utils";
+import { Prompt } from "widgets/Prompt";
 
 const defaultFormID = "certificate";
 const createIssuer = "createIssuer";
@@ -43,7 +44,7 @@ const mapStateToProps = (state: RootState, { form }: OwnProps) => {
     selfManagedCertPrivateKey: selector(state, "selfManagedCertPrivateKey") as string,
     httpsCertIssuer: selector(state, "httpsCertIssuer") as string,
     certificateIssuers: state.get("certificates").get("certificateIssuers") as CertificateIssuerList,
-    domains: selector(state, "domains") as Immutable.List<string>
+    domains: selector(state, "domains") as Immutable.List<string>,
   };
 };
 
@@ -59,11 +60,11 @@ const styles = (theme: Theme) =>
     label: {
       fontSize: 12,
       marginBottom: 18,
-      display: "block"
+      display: "block",
     },
     editBtn: {
-      marginLeft: 8
-    }
+      marginLeft: 8,
+    },
   });
 
 export interface Props
@@ -82,7 +83,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      isEditCertificateIssuer: false
+      isEditCertificateIssuer: false,
     };
   }
 
@@ -147,16 +148,16 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
     const httpsCertIssuerOptions: any = [
       {
         value: createIssuer,
-        label: "Add new certificate issuer"
-      }
+        label: "Add new certificate issuer",
+      },
     ];
-    certificateIssuers.forEach(certificateIssuer => {
+    certificateIssuers.forEach((certificateIssuer) => {
       const name = certificateIssuer.get("name");
 
       httpsCertIssuerOptions.push({
         value: name,
         label: name,
-        group: !certificateIssuer.get("acmeCloudFlare") ? "CA for Test" : "Cloudflare"
+        group: !certificateIssuer.get("acmeCloudFlare") ? "CA for Test" : "Cloudflare",
       });
     });
 
@@ -199,7 +200,8 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
             name="httpsCertIssuer"
             margin="normal"
             validate={[ValidatorRequired]}
-            options={httpsCertIssuerOptions}></Field>
+            options={httpsCertIssuerOptions}
+          ></Field>
         </Grid>
         {certificateIssuer && certificateIssuer.get("acmeCloudFlare") && (
           <Button
@@ -207,7 +209,8 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
             onClick={() => this.setState({ isEditCertificateIssuer: true })}
             color="primary"
             disabled={isEditCertificateIssuer}
-            variant={isEditCertificateIssuer ? "contained" : undefined}>
+            variant={isEditCertificateIssuer ? "contained" : undefined}
+          >
             Edit cloudflare issuser config
           </Button>
         )}
@@ -224,7 +227,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
 
   private getActiveCertificateIssuer = () => {
     const { httpsCertIssuer, certificateIssuers } = this.props;
-    return certificateIssuers.find(certificate => certificate.get("name") === httpsCertIssuer);
+    return certificateIssuers.find((certificate) => certificate.get("name") === httpsCertIssuer);
   };
 
   private generateCertificateIssuerForm = () => {
@@ -234,7 +237,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
       return Immutable.fromJS({
         name: certificateIssuer.get("name"),
         issuerType: certificateIssuer.get("acmeCloudFlare") ? cloudFlare : caForTest,
-        acmeCloudFlare: certificateIssuer.get("acmeCloudFlare")
+        acmeCloudFlare: certificateIssuer.get("acmeCloudFlare"),
       });
     } else {
       return newEmptyCertificateIssuerForm();
@@ -242,10 +245,11 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { classes, dispatch, handleSubmit, managedType, isEdit } = this.props;
+    const { classes, dispatch, handleSubmit, managedType, isEdit, dirty, submitSucceeded } = this.props;
 
     return (
       <div className={classes.root}>
+        <Prompt when={dirty && !submitSucceeded} message="Are you sure to leave without saving changes?" />
         <Grid container spacing={2}>
           {isEdit ? null : (
             <Grid item md={12}>
@@ -257,14 +261,14 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                   {
                     value: issuerManaged,
                     label: "Apply a new certificate with certificate issuer",
-                    explain: "If you wanna create new cerificate, you can select this."
+                    explain: "If you wanna create new cerificate, you can select this.",
                   },
                   {
                     value: selfManaged,
                     label: "Upload an existing certificate",
                     explain:
-                      "If you have got a ssl certificate from your ssl certificate provider, you can upload and use this."
-                  }
+                      "If you have got a ssl certificate from your ssl certificate provider, you can upload and use this.",
+                  },
                 ]}
               />
             </Grid>
@@ -272,7 +276,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
           <Grid item md={12}>
             <Field
               InputLabelProps={{
-                shrink: true
+                shrink: true,
               }}
               disabled={isEdit}
               placeholder="Please type a certificate name"
@@ -288,7 +292,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
             <Field
               disabled={managedType === selfManaged}
               InputLabelProps={{
-                shrink: true
+                shrink: true,
               }}
               placeholder={
                 managedType === selfManaged
@@ -336,5 +340,5 @@ const ValidatorCertificateValid = (value: any, _allValues?: any, _props?: any, _
 export const CertificateForm = reduxForm<CertificateFormType, OwnProps>({
   onSubmitFail: console.log,
   form: defaultFormID,
-  touchOnChange: true
+  touchOnChange: true,
 })(connect(mapStateToProps)(withStyles(styles)(CertificateFormRaw)));

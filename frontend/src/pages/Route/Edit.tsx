@@ -3,68 +3,57 @@ import { updateRoute } from "actions/routes";
 import { push } from "connected-react-router";
 import { RouteForm } from "forms/Route";
 import React from "react";
-import { connect } from "react-redux";
-import { match } from "react-router";
-import { ThunkDispatch } from "redux-thunk";
-import { HttpRouteForm, methodsModeAll, methodsModeSpecific, AllHttpMethods } from "types/route";
+import { AllHttpMethods, HttpRoute, HttpRouteForm, methodsModeAll, methodsModeSpecific } from "types/route";
 import { ApplicationViewDrawer } from "widgets/ApplicationViewDrawer";
 import { Loading } from "widgets/Loading";
-import { RootState } from "../../reducers";
-import { Actions } from "../../types";
 import { BasePage } from "../BasePage";
 import { Namespaces } from "widgets/Namespaces";
+import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
+import { setSuccessNotificationAction } from "actions/notification";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      margin: theme.spacing(2)
-    }
+      margin: theme.spacing(2),
+    },
   });
 
-const mapStateToProps = (state: RootState, ownProps: any) => {
-  const matchResult = ownProps.match as match<{ name: string }>;
-  const routes = state.get("routes");
-
-  return {
-    isFirstLoaded: routes.get("isFirstLoaded"),
-    isLoading: routes.get("isLoading"),
-    route: routes.get("httpRoutes").find(x => x.get("name") === matchResult.params.name),
-    routeName: matchResult.params.name
-  };
-};
-
-interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps> {
-  dispatch: ThunkDispatch<RootState, undefined, Actions>;
-}
+interface Props extends WithStyles<typeof styles>, WithRoutesDataProps {}
 
 class RouteEditRaw extends React.PureComponent<Props> {
-  private submit = async (route: HttpRouteForm) => {
+  private onSubmit = async (route: HttpRouteForm) => {
+    const { dispatch } = this.props;
     try {
       if (route.get("methodsMode") === methodsModeAll) {
         route = route.set("methods", AllHttpMethods);
       }
-      this.props.dispatch(updateRoute(route.get("name"), route.get("namespace"), route));
-      this.props.dispatch(push("/routes"));
+
+      await dispatch(updateRoute(route.get("name"), route.get("namespace"), route));
+      await dispatch(setSuccessNotificationAction("Update route successfully"));
     } catch (e) {
       console.log(e);
     }
   };
 
-  private renderContent() {
-    const { isFirstLoaded, isLoading, route } = this.props;
+  private onSubmitSuccess = async (route: HttpRoute) => {
+    this.props.dispatch(push("/applications/" + this.props.activeNamespaceName + "/routes"));
+  };
 
-    if (isLoading && !isFirstLoaded) {
+  private renderContent() {
+    const { isRoutesFirstLoaded, isRoutesLoading, httpRoute } = this.props;
+
+    if (isRoutesLoading && !isRoutesFirstLoaded) {
       return <Loading />;
     }
 
-    if (!route) {
+    if (!httpRoute) {
       return "No route found";
     }
 
-    let routeForm = route as HttpRouteForm;
-    routeForm = routeForm.set("methodsMode", route.get("methods").size >= 7 ? methodsModeAll : methodsModeSpecific);
+    let routeForm = httpRoute as HttpRouteForm;
+    routeForm = routeForm.set("methodsMode", httpRoute.get("methods").size >= 7 ? methodsModeAll : methodsModeSpecific);
 
-    return <RouteForm onSubmit={this.submit} initialValues={routeForm} />;
+    return <RouteForm onSubmit={this.onSubmit} onSubmitSuccess={this.onSubmitSuccess} initialValues={routeForm} />;
   }
 
   public render() {
@@ -76,4 +65,4 @@ class RouteEditRaw extends React.PureComponent<Props> {
   }
 }
 
-export const RouteEdit = withStyles(styles)(connect(mapStateToProps)(RouteEditRaw));
+export const RouteEdit = withRoutesData(withStyles(styles)(RouteEditRaw));

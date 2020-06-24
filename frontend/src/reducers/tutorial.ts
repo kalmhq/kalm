@@ -8,12 +8,11 @@ import {
   SET_TUTORIAL_STEP_COMPLETION_STATUS,
   Tutorial,
 } from "types/tutorial";
-import { Actions } from "../types";
-import { ImmutableMap } from "../typings";
+import { Actions } from "types";
+import { ImmutableMap } from "typings";
 
 export type State = ImmutableMap<{
   drawerOpen: boolean;
-  tutorialID: string;
   tutorial?: Tutorial;
   tutorialStepStatus: Immutable.Map<string, boolean>;
   latestHighlight?: string;
@@ -24,7 +23,6 @@ const DISABLE_TUTORIAL_AUTO_OPEN = "DISABLE_TUTORIAL_AUTO_OPEN";
 
 const initialState: State = Immutable.Map({
   drawerOpen: !window.localStorage.getItem(DISABLE_TUTORIAL_AUTO_OPEN),
-  tutorialID: "",
   tutorial: null,
   tutorialStepStatus: Immutable.Map(),
   currentStepIndex: -1,
@@ -33,6 +31,10 @@ const initialState: State = Immutable.Map({
 const tryMoveToNextStep = (state: State): State => {
   const currentStepIndex = state.get("currentStepIndex");
   const currentStep = state.get("tutorial")!.steps[currentStepIndex];
+
+  if (currentStep.subSteps.length === 0) {
+    return state;
+  }
 
   const notCompletedSubSteps = currentStep.subSteps.filter((_subStep, subStepIndex) => {
     const statusKey = `${currentStepIndex}-${subStepIndex}`;
@@ -57,14 +59,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
   }
 
   if (action.type === SET_TUTORIAL_ACTION) {
-    return state
-      .set("tutorialID", action.payload.id)
-      .set("tutorial", action.payload.tutorial)
-      .set("currentStepIndex", 0);
-  }
-
-  if (!state.get("tutorialID")) {
-    return state;
+    return state.set("tutorial", action.payload.tutorial).set("currentStepIndex", 0);
   }
 
   const tutorial = state.get("tutorial");

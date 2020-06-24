@@ -8,7 +8,7 @@ import Typography from "@material-ui/core/Typography";
 import CloseIcon from "@material-ui/icons/Close";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
-import { closeDialogAction, destroyDialogAction, initDialogAction, clearDialogAction } from "../../actions/dialog";
+import { clearDialogAction, closeDialogAction, destroyDialogAction, initDialogAction } from "../../actions/dialog";
 import { RootState } from "../../reducers";
 import ScrollContainer from "../../widgets/ScrollContainer";
 
@@ -16,14 +16,14 @@ const styles = (theme: Theme) =>
   createStyles({
     root: {
       margin: 0,
-      padding: theme.spacing(2)
+      padding: theme.spacing(2),
     },
     closeButton: {
       position: "absolute",
       right: theme.spacing(1),
       top: theme.spacing(1),
-      color: theme.palette.grey[500]
-    }
+      color: theme.palette.grey[500],
+    },
   });
 
 export interface DialogTitleProps extends WithStyles<typeof styles> {
@@ -48,15 +48,15 @@ const DialogTitle = withStyles(styles)((props: DialogTitleProps) => {
 
 const DialogContent = withStyles((theme: Theme) => ({
   root: {
-    padding: theme.spacing(2)
-  }
+    padding: theme.spacing(2),
+  },
 }))(MuiDialogContent);
 
 const DialogActions = withStyles((theme: Theme) => ({
   root: {
     margin: 0,
-    padding: theme.spacing(1)
-  }
+    padding: theme.spacing(1),
+  },
 }))(MuiDialogActions);
 
 interface OwnProps {
@@ -65,9 +65,9 @@ interface OwnProps {
 
 const dialogStyles = (theme: Theme) => ({
   paper: {
-    backgroundColor: "#FAFAFA"
+    backgroundColor: "#FAFAFA",
     // minHeight: "80vh"
-  }
+  },
 });
 
 const mapStateToProps = (state: RootState, ownProps: OwnProps) => {
@@ -120,7 +120,8 @@ class ControlledDialogRaw extends React.PureComponent<Props & WithStyles<typeof 
           open={open}
           onExited={this.handleClear}
           maxWidth="md"
-          {...dialogProps}>
+          {...dialogProps}
+        >
           {title ? (
             <DialogTitle id="customized-dialog-title" onClose={this.handleClose}>
               {title}

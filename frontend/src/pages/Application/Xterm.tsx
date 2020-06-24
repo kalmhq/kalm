@@ -2,7 +2,7 @@ import { createStyles, TextField, Theme, withStyles } from "@material-ui/core";
 import { WithStyles } from "@material-ui/core/styles";
 import CloseIcon from "@material-ui/icons/Close";
 import React, { RefObject } from "react";
-import { Terminal, ITerminalOptions } from "xterm";
+import { ITerminalOptions, Terminal } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
 import { SearchAddon } from "xterm-addon-search";
 import "xterm/css/xterm.css";
@@ -23,14 +23,13 @@ interface XtermState {
   isSearchFocused: boolean;
 }
 
-window.debug = Terminal;
 const xtermStyles = (theme: Theme) =>
   createStyles({
     root: {
       position: "relative",
       "& .terminal.xterm": {
-        padding: 10
-      }
+        padding: 10,
+      },
     },
     searchArea: {
       position: "absolute",
@@ -45,9 +44,9 @@ const xtermStyles = (theme: Theme) =>
       "& .MuiInputBase-root": {
         background: "white",
         width: 250,
-        marginRight: theme.spacing(1)
-      }
-    }
+        marginRight: theme.spacing(1),
+      },
+    },
   });
 
 export class XtermRaw extends React.PureComponent<XtermProps, XtermState> {
@@ -84,7 +83,7 @@ export class XtermRaw extends React.PureComponent<XtermProps, XtermState> {
     this.state = {
       showSearch: false,
       searchValue: "",
-      isSearchFocused: false
+      isSearchFocused: false,
     };
   }
 

@@ -1,5 +1,5 @@
 import Immutable from "immutable";
-import { ImmutableMap } from "../typings";
+import { ImmutableMap } from "typings";
 import { ComponentLikeContent } from "./componentTemplate";
 import { Metrics } from "./common";
 
@@ -40,13 +40,6 @@ export type SharedEnv = ImmutableMap<{
 }>;
 
 export type EnvItem = SharedEnv;
-export type EnvItems = Immutable.List<EnvItem>;
-
-export type ListMeta = ImmutableMap<{
-  totalCount: number;
-  perPage: number;
-  page: number;
-}>;
 
 export type ServiceStatus = ImmutableMap<{
   name: string;
@@ -103,11 +96,6 @@ export type ApplicationComponentDetails = ImmutableMap<ApplicationComponentDetai
 
 export interface ApplicationContent {
   name: string;
-  // isActive: boolean;
-  // sharedEnvs: Immutable.List<SharedEnv>;
-  // plugins?: any;
-
-  // for applciation form submit buttons
   nextAddComponent?: boolean;
 }
 
@@ -218,13 +206,6 @@ export interface SetIsSubmittingApplicationComponent {
   };
 }
 
-// export interface LoadApplicationPluginsFulfilledAction {
-//   type: typeof LOAD_APPLICATION_PLUGINS_FULFILLED;
-//   payload: {
-//     applicationPlugins: ApplicationPlugin[];
-//   };
-// }
-
 export interface LoadComponentPluginsFulfilledAction {
   type: typeof LOAD_COMPONENT_PLUGINS_FULFILLED;
   payload: {
@@ -248,5 +229,4 @@ export type ApplicationActions =
   | CreateComponentAction
   | UpdateComponentAction
   | DeleteComponentAction
-  // | LoadApplicationPluginsFulfilledAction
   | LoadComponentPluginsFulfilledAction;

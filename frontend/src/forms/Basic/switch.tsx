@@ -12,7 +12,7 @@ export const SwitchField = ({
   tooltipProps: TooltipProps;
   disabled?: boolean;
 }) => {
-  const handleChange: (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => void = event => {
+  const handleChange: (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => void = (event) => {
     input.onChange(!input.value);
   };
   let label = formControlLabelProps.label;

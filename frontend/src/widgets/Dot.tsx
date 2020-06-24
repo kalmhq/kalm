@@ -1,5 +1,5 @@
 import React from "react";
-import { withStyles, createStyles, Theme, WithStyles } from "@material-ui/core";
+import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 
 const styles = createStyles({
   dot: {
@@ -8,17 +8,17 @@ const styles = createStyles({
     width: "8px",
     backgroundColor: "#8BC34A",
     display: "inline-block",
-    margin: "0 8px 0 0"
+    margin: "0 8px 0 0",
   },
   green: {
-    backgroundColor: "#8BC34A"
+    backgroundColor: "#8BC34A",
   },
   yellow: {
-    backgroundColor: "#F3E563"
+    backgroundColor: "#F3E563",
   },
   red: {
-    backgroundColor: "#C34A4A"
-  }
+    backgroundColor: "#C34A4A",
+  },
 });
 
 interface Props {

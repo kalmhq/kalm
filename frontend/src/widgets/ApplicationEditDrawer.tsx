@@ -114,23 +114,12 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
       if (!currentComponent.get("name")) {
         const { application } = this.props;
 
-        this.pushRedirect(
-          application
-            ?.get("components")
-            ?.get(0)
-            ?.get("name"),
-        );
+        this.pushRedirect(application?.get("components")?.get(0)?.get("name"));
       } else {
         dispatch(deleteComponentAction(currentComponent.get("name")));
       }
 
-      if (
-        currentComponent.get("name") ===
-        application
-          ?.get("components")
-          .get(0)
-          ?.get("name")
-      ) {
+      if (currentComponent.get("name") === application?.get("components").get(0)?.get("name")) {
         this.pushRedirect("");
       }
     }
@@ -186,8 +175,8 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
         }
       } else {
         // edit component form list
-        const component = application.get("components").find(c => c.get("name") === search.component);
-        const componentIndex = application.get("components").findIndex(c => c.get("name") === search.component);
+        const component = application.get("components").find((c) => c.get("name") === search.component);
+        const componentIndex = application.get("components").findIndex((c) => c.get("name") === search.component);
         if (component) {
           this.handleClickComponent(component, componentIndex);
           return;
@@ -254,7 +243,8 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
             button
             onClick={() => {
               this.handleClickComponent(component, index);
-            }}>
+            }}
+          >
             <ListItemIcon>
               <FiberManualRecordIcon
                 style={{ fontSize: 15 }}
@@ -290,7 +280,8 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
                 tooltipTitle={"Add"}
                 aria-label="add component"
                 disabled={disableAdd}
-                onClick={() => this.handleAdd()}>
+                onClick={() => this.handleAdd()}
+              >
                 <AddIcon />
               </IconButtonWithTooltip>
               <IconButtonWithTooltip
@@ -298,7 +289,8 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
                 tooltipTitle={"Delete"}
                 aria-label="delete component"
                 disabled={disableDelete}
-                onClick={() => this.showDeleteConfirmDialog()}>
+                onClick={() => this.showDeleteConfirmDialog()}
+              >
                 <RemoveIcon />
               </IconButtonWithTooltip>
             </div>

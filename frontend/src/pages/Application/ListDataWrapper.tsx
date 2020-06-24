@@ -10,7 +10,7 @@ const mapStateToProps = (state: RootState) => {
   const deletingApplicationNames = state.get("applications").get("deletingApplicationNames");
   const applications = applicationsState
     .get("applications")
-    .filter(app => !deletingApplicationNames.get(app.get("name")));
+    .filter((app) => !deletingApplicationNames.get(app.get("name")));
 
   return {
     applications,

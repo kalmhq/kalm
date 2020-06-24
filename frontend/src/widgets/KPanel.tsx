@@ -1,5 +1,5 @@
 import React from "react";
-import { createStyles, Theme, withStyles, WithStyles, Paper, Box } from "@material-ui/core";
+import { Box, createStyles, Paper, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { TDispatchProp } from "types";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
@@ -9,8 +9,8 @@ const styles = (theme: Theme) =>
   createStyles({
     root: {},
     borderBottom: {
-      borderBottom: "1px solid rgba(0, 0, 0, 0.12)"
-    }
+      borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+    },
   });
 
 const mapStateToProps = (state: RootState) => {

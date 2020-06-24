@@ -24,10 +24,3 @@ code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
 
-/* https://github.com/kamranahmedse/driver.js/issues/133#issuecomment-549714982 */
-/*div#driver-page-overlay,*/
-/*div#driver-highlighted-element-stage {*/
-/*    pointer-events: none;*/
-/*    background: transparent !important;*/
-/*    outline: 5000px solid rgba(0, 0, 0, 0.3);*/
-/*}*/

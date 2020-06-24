@@ -1,7 +1,7 @@
-import { ImmutableMap } from "../typings";
-import { Actions } from "../types";
+import { ImmutableMap } from "typings";
+import { Actions } from "types";
 import Immutable from "immutable";
-import { SET_SETTINGS } from "../types/common";
+import { SET_SETTINGS } from "types/common";
 
 export interface SettingObject {
   isDisplayingHelpers: boolean;
@@ -17,7 +17,7 @@ const initialState: State = Immutable.Map({
   isDisplayingHelpers: window.localStorage.getItem("isDisplayingHelpers") === "true",
   isOpenRootDrawer: window.localStorage.getItem("isOpenRootDrawer") === "true",
   isOpenComponentStatusDrawer: window.localStorage.getItem("isOpenComponentStatusDrawer") === "true",
-  isShowTopProgress: false
+  isShowTopProgress: false,
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {

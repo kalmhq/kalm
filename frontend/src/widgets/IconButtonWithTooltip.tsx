@@ -21,7 +21,7 @@ export const IconButtonWithTooltip = (
       | "top-end"
       | "top-start"
       | "top";
-  }
+  },
 ) => {
   const { tooltipTitle, tooltipPlacement, ...iconButtonProps } = props;
 
@@ -55,7 +55,7 @@ export const IconLinkWithToolTip = (
       | "top-end"
       | "top-start"
       | "top";
-  }
+  },
 ) => {
   const { tooltipTitle, tooltipPlacement, to, ...iconButtonProps } = props;
 

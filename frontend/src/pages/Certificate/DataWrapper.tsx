@@ -3,14 +3,14 @@ import { RootState } from "../../reducers";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "../../types";
-import { loadCertificates, loadCertificateIssuers } from "actions/certificate";
+import { loadCertificateIssuers, loadCertificates } from "actions/certificate";
 
 const mapStateToProps = (state: RootState) => {
   const certificates = state.get("certificates");
   return {
     componentTemplates: certificates.get("certificates"),
     isLoading: certificates.get("isLoading"),
-    isFirstLoaded: certificates.get("isFirstLoaded")
+    isFirstLoaded: certificates.get("isFirstLoaded"),
   };
 };
 

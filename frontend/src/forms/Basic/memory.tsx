@@ -13,36 +13,36 @@ import { Slider } from "@material-ui/core";
 const memoryMarks = [
   {
     value: 100,
-    label: "10M"
+    label: "10M",
   },
   {
     value: 505,
-    label: "50M"
+    label: "50M",
   },
   {
     value: 1000,
-    label: "100M"
+    label: "100M",
   },
   {
     value: 1400,
-    label: "500M"
+    label: "500M",
   },
   {
     value: 1900,
-    label: "1G"
+    label: "1G",
   },
   {
     value: 2090,
-    label: "2G"
+    label: "2G",
   },
   {
     value: 2290,
-    label: "4G"
+    label: "4G",
   },
   {
     value: 2690,
-    label: "8G"
-  }
+    label: "8G",
+  },
 ];
 
 const formatMemoryText = (value: number) => {
@@ -74,22 +74,15 @@ const memoryFromRealToNormalize = (value: number): number => {
   }
 };
 
-const renderMemorySlider = ({
-  input
-}: FilledTextFieldProps & WrappedFieldProps) => {
+const renderMemorySlider = ({ input }: FilledTextFieldProps & WrappedFieldProps) => {
   return (
     <Slider
       defaultValue={memoryFromRealToNormalize(input.value)} // there will be a warning as the default value is changed. TODO
       aria-labelledby="discrete-slider"
       marks={memoryMarks}
       valueLabelDisplay="on"
-      onChangeCommitted={(
-        _event: React.ChangeEvent<{}>,
-        value: number | number[]
-      ) => {
-        input.onChange((value: number | number[]) =>
-          memoryFromNormalizeToReal(value as number)
-        );
+      onChangeCommitted={(_event: React.ChangeEvent<{}>, value: number | number[]) => {
+        input.onChange((value: number | number[]) => memoryFromNormalizeToReal(value as number));
       }}
       // getAriaValueText={this.formatCpuText}
       valueLabelFormat={formatMemoryText}

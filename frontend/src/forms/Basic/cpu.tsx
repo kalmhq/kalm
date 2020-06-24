@@ -11,29 +11,27 @@ const formatCpuText = (value: number) => {
 const cpuMarks = [
   {
     value: 1000,
-    label: "1 Core"
+    label: "1 Core",
   },
   {
     value: 2000,
-    label: "2 Core"
+    label: "2 Core",
   },
   {
     value: 4000,
-    label: "4 Core"
+    label: "4 Core",
   },
   {
     value: 8000,
-    label: "8 Core"
+    label: "8 Core",
   },
   {
     value: 16000,
-    label: "16 Core"
-  }
+    label: "16 Core",
+  },
 ];
 
-const renderCpuSlider = ({
-  input
-}: FilledTextFieldProps & WrappedFieldProps) => {
+const renderCpuSlider = ({ input }: FilledTextFieldProps & WrappedFieldProps) => {
   return (
     <Slider
       defaultValue={input.value} // there will be a warning as the default value is changed. TODO
@@ -44,10 +42,7 @@ const renderCpuSlider = ({
       min={100}
       max={16000}
       valueLabelDisplay="on"
-      onChangeCommitted={(
-        _event: React.ChangeEvent<{}>,
-        value: number | number[]
-      ) => {
+      onChangeCommitted={(_event: React.ChangeEvent<{}>, value: number | number[]) => {
         input.onChange(value);
       }}
     />

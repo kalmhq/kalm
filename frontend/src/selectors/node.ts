@@ -1,4 +1,4 @@
-import { store } from "../store";
+import { store } from "store";
 import Immutable from "immutable";
 
 export const getNodeLabels = (): Immutable.List<string> => {

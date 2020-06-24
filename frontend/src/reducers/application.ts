@@ -1,6 +1,6 @@
 import Immutable from "immutable";
 import { LOGOUT } from "types/common";
-import { Actions } from "../types";
+import { Actions } from "types";
 import {
   ApplicationComponentDetails,
   ApplicationDetails,
@@ -10,19 +10,19 @@ import {
   DELETE_APPLICATION,
   DELETE_COMPONENT,
   DUPLICATE_APPLICATION,
-  LOAD_APPLICATIONS_FAILED,
-  LOAD_APPLICATIONS_FULFILLED,
-  LOAD_APPLICATIONS_PENDING,
   LOAD_APPLICATION_FAILED,
   LOAD_APPLICATION_FULFILLED,
   LOAD_APPLICATION_PENDING,
+  LOAD_APPLICATIONS_FAILED,
+  LOAD_APPLICATIONS_FULFILLED,
+  LOAD_APPLICATIONS_PENDING,
   LOAD_COMPONENT_PLUGINS_FULFILLED,
   SET_IS_SUBMITTING_APPLICATION,
   SET_IS_SUBMITTING_APPLICATION_COMPONENT,
   UPDATE_APPLICATION,
-  UPDATE_COMPONENT
-} from "../types/application";
-import { ImmutableMap } from "../typings";
+  UPDATE_COMPONENT,
+} from "types/application";
+import { ImmutableMap } from "typings";
 
 export type State = ImmutableMap<{
   applications: Immutable.List<ApplicationDetails>;
@@ -46,12 +46,12 @@ const initialState: State = Immutable.Map({
   isSubmittingApplication: false,
   isSubmittingApplicationComponent: false,
   // applicationPlugins: [],
-  componentPlugins: []
+  componentPlugins: [],
 });
 
 const putApplicationIntoState = (state: State, application: ApplicationDetails): State => {
   const applications = state.get("applications");
-  const index = applications.findIndex(app => app.get("name") === application.get("name"));
+  const index = applications.findIndex((app) => app.get("name") === application.get("name"));
 
   if (index < 0) {
     state = state.set("applications", applications.push(application));
@@ -64,16 +64,16 @@ const putApplicationIntoState = (state: State, application: ApplicationDetails):
 const putComponentIntoState = (
   state: State,
   applicationName: string,
-  component: ApplicationComponentDetails
+  component: ApplicationComponentDetails,
 ): State => {
   const applications = state.get("applications");
-  const applicationIndex = applications.findIndex(app => app.get("name") === applicationName);
+  const applicationIndex = applications.findIndex((app) => app.get("name") === applicationName);
   if (applicationIndex < 0) {
     return state;
   }
 
-  const application = applications.find(app => app.get("name") === applicationName);
-  const componentIndex = application!.get("components").findIndex(c => c.get("name") === component.get("name"));
+  const application = applications.find((app) => app.get("name") === applicationName);
+  const componentIndex = application!.get("components").findIndex((c) => c.get("name") === component.get("name"));
   if (componentIndex < 0) {
     state = state.setIn(["applications", applicationIndex, 0], component);
   } else {
@@ -137,7 +137,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
     }
     case DELETE_APPLICATION: {
       const applications = state.get("applications");
-      const index = applications.findIndex(app => app.get("name") === action.payload.applicationName);
+      const index = applications.findIndex((app) => app.get("name") === action.payload.applicationName);
 
       if (index >= 0) {
         state = state.deleteIn(["applications", index]);
@@ -155,7 +155,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
     }
     case DELETE_COMPONENT: {
       const applications = state.get("applications");
-      const applicationIndex = applications.findIndex(app => app.get("name") === action.payload.applicationName);
+      const applicationIndex = applications.findIndex((app) => app.get("name") === action.payload.applicationName);
 
       if (applicationIndex < 0) {
         state = state.setIn(["deletingApplicationNames", action.payload.applicationName], false);
@@ -163,10 +163,10 @@ const reducer = (state: State = initialState, action: Actions): State => {
       }
       state = state.setIn(["deletingApplicationNames", action.payload.applicationName], true);
 
-      const application = applications.find(app => app.get("name") === action.payload.applicationName);
+      const application = applications.find((app) => app.get("name") === action.payload.applicationName);
       const componentIndex = application!
         .get("components")
-        .findIndex(c => c.get("name") === action.payload.componentName);
+        .findIndex((c) => c.get("name") === action.payload.componentName);
       if (componentIndex < 0) {
         break;
       }

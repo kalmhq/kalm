@@ -1,7 +1,7 @@
 import Immutable from "immutable";
-import { Actions } from "../types";
-import { SET_CURRENT_NAMESPACE } from "../types/namespace";
-import { ImmutableMap } from "../typings";
+import { Actions } from "types";
+import { SET_CURRENT_NAMESPACE } from "types/namespace";
+import { ImmutableMap } from "typings";
 import queryString from "query-string";
 import { LOGOUT } from "types/common";
 
@@ -13,7 +13,7 @@ const search = queryString.parse(window.location.search);
 const LAST_SELECTED_NAMESPACE_CACHE_KEY = "LAST_SELECTED_NAMESPACE_CACHE_KEY";
 
 const initialState: State = Immutable.Map({
-  active: search.namespace || window.localStorage.getItem(LAST_SELECTED_NAMESPACE_CACHE_KEY) || ""
+  active: search.namespace || window.localStorage.getItem(LAST_SELECTED_NAMESPACE_CACHE_KEY) || "",
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {

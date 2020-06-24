@@ -1,8 +1,8 @@
-import { Box, createStyles, Theme, WithStyles, withStyles, Grid } from "@material-ui/core";
+import { Box, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import MaterialTable from "material-table";
 import React from "react";
 import { connect } from "react-redux";
-import { SmallCPULineChart, SmallMemoryLineChart, BigCPULineChart, BigMemoryLineChart } from "widgets/SmallLineChart";
+import { BigCPULineChart, BigMemoryLineChart, SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { loadNodesAction } from "../../actions/node";
 import { RootState } from "../../reducers";
 import { TDispatchProp } from "../../types";
@@ -11,15 +11,15 @@ import { BasePage } from "../BasePage";
 const mapStateToProps = (state: RootState) => {
   return {
     nodes: state.get("nodes").get("nodes"),
-    metrics: state.get("nodes").get("metrics")
+    metrics: state.get("nodes").get("metrics"),
   };
 };
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      padding: theme.spacing(3)
-    }
+      padding: theme.spacing(3),
+    },
   });
 
 interface States {}
@@ -56,27 +56,9 @@ export class NodeListRaw extends React.Component<Props, States> {
           name: node.get("name"),
           info: (
             <>
-              <Box>
-                Kernel:{" "}
-                {node
-                  .get("status")
-                  .get("nodeInfo")
-                  .get("kernelVersion")}
-              </Box>
-              <Box>
-                osImage:{" "}
-                {node
-                  .get("status")
-                  .get("nodeInfo")
-                  .get("osImage")}
-              </Box>
-              <Box>
-                containerRuntimeVersion:{" "}
-                {node
-                  .get("status")
-                  .get("nodeInfo")
-                  .get("containerRuntimeVersion")}
-              </Box>
+              <Box>Kernel: {node.get("status").get("nodeInfo").get("kernelVersion")}</Box>
+              <Box>osImage: {node.get("status").get("nodeInfo").get("osImage")}</Box>
+              <Box>containerRuntimeVersion: {node.get("status").get("nodeInfo").get("containerRuntimeVersion")}</Box>
             </>
           ),
           addresses,
@@ -85,31 +67,15 @@ export class NodeListRaw extends React.Component<Props, States> {
           resources: (
             <>
               <Box>
-                Cpu:{" "}
-                {node
-                  .get("status")
-                  .get("allocatable")
-                  .get("cpu")}{" "}
-                allocatable / max{" "}
-                {node
-                  .get("status")
-                  .get("capacity")
-                  .get("cpu")}
+                Cpu: {node.get("status").get("allocatable").get("cpu")} allocatable / max{" "}
+                {node.get("status").get("capacity").get("cpu")}
               </Box>
               <Box>
-                Memory:{" "}
-                {node
-                  .get("status")
-                  .get("allocatable")
-                  .get("memory")}
-                allocatable / max{" "}
-                {node
-                  .get("status")
-                  .get("capacity")
-                  .get("memory")}
+                Memory: {node.get("status").get("allocatable").get("memory")}
+                allocatable / max {node.get("status").get("capacity").get("memory")}
               </Box>
             </>
-          )
+          ),
         };
       })
       .toArray();
@@ -136,7 +102,7 @@ export class NodeListRaw extends React.Component<Props, States> {
               options={{
                 padding: "dense",
                 pageSize: 20,
-                paging: tableData.length > 20
+                paging: tableData.length > 20,
               }}
               columns={[
                 { title: "Name", field: "name", sorting: false },
@@ -145,7 +111,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                 { title: "Resources", field: "resources", sorting: false },
                 { title: "CPU", field: "cpu", sorting: false },
                 { title: "Memory", field: "memory", sorting: false },
-                { title: "Alerts", field: "components", sorting: false }
+                { title: "Alerts", field: "components", sorting: false },
               ]}
               data={tableData}
               title=""

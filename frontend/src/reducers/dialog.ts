@@ -1,14 +1,14 @@
 import Immutable from "immutable";
 import {
+  CLEAR_CONTROLLED_DIALOG_DATA,
+  CLOSE_CONTROLLED_DIALOG,
   ControlledDialogParams,
   DESTROY_CONTROLLED_DIALOG,
   INIT_CONTROLLED_DIALOG,
+  LOGOUT,
   OPEN_CONTROLLED_DIALOG,
-  CLOSE_CONTROLLED_DIALOG,
-  CLEAR_CONTROLLED_DIALOG_DATA,
-  LOGOUT
-} from "../types/common";
-import { Actions } from "../types";
+} from "types/common";
+import { Actions } from "types";
 
 export type State = Immutable.Map<string, ControlledDialogParams<any>>;
 
@@ -17,7 +17,7 @@ const initialState: State = Immutable.Map({});
 const emptyControlledDialogParams = () =>
   Immutable.Map({
     open: false,
-    data: {}
+    data: {},
   });
 
 const reducer = (state: State = initialState, action: Actions): State => {
@@ -38,8 +38,8 @@ const reducer = (state: State = initialState, action: Actions): State => {
         action.payload.dialogID,
         Immutable.Map({
           open: true,
-          data: action.payload.data
-        })
+          data: action.payload.data,
+        }),
       );
       break;
     }

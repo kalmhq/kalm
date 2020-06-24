@@ -22,7 +22,7 @@ const mapStateToProps = (state: RootState, { form }: OwnProps) => {
     name: selector(state, "name") as string,
     issuerType: selector(state, "issuerType") as string,
     caForTest: selector(state, "caForTest") as {} | undefined,
-    acmeCloudFlare: selector(state, "acmeCloudFlare") as AcmeCloudFlare | undefined
+    acmeCloudFlare: selector(state, "acmeCloudFlare") as AcmeCloudFlare | undefined,
   };
 };
 
@@ -38,8 +38,8 @@ const styles = (theme: Theme) =>
       background: grey[50],
       padding: 20,
       margin: 8,
-      width: "100%"
-    }
+      width: "100%",
+    },
   });
 
 export interface Props
@@ -99,8 +99,9 @@ class CertificateIssuerFormRaw extends React.PureComponent<Props, State> {
                 validate={[ValidatorRequired]}
                 options={[
                   { value: cloudFlare, text: "Cloudflare" },
-                  { value: caForTest, text: "CA for test" }
-                ]}></Field>
+                  { value: caForTest, text: "CA for test" },
+                ]}
+              ></Field>
             </Grid>
           )}
           {isEdit ? null : (
@@ -132,5 +133,5 @@ class CertificateIssuerFormRaw extends React.PureComponent<Props, State> {
 export const CertificateIssuerForm = reduxForm<CertificateIssuerFormType, OwnProps>({
   onSubmitFail: console.log,
   form: defaultFormID,
-  touchOnChange: true
+  touchOnChange: true,
 })(connect(mapStateToProps)(withStyles(styles)(CertificateIssuerFormRaw)));

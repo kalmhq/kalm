@@ -1,13 +1,13 @@
 import Immutable from "immutable";
 import {
-  LOAD_LOGIN_STATUS_FULFILLED,
-  SET_AUTH_TOKEN,
-  LOGOUT,
   LOAD_LOGIN_STATUS_FAILED,
-  LOAD_LOGIN_STATUS_PENDING
-} from "../types/common";
-import { Actions } from "../types";
-import { ImmutableMap } from "../typings";
+  LOAD_LOGIN_STATUS_FULFILLED,
+  LOAD_LOGIN_STATUS_PENDING,
+  LOGOUT,
+  SET_AUTH_TOKEN,
+} from "types/common";
+import { Actions } from "types";
+import { ImmutableMap } from "typings";
 
 export type State = ImmutableMap<{
   firstLoaded: boolean;
@@ -28,7 +28,7 @@ const initialState: State = Immutable.Map({
   token: window.localStorage.getItem(AUTHORIZED_TOKEN_KEY) || "",
   entity: "",
   isAdmin: false,
-  csrf: ""
+  csrf: "",
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {

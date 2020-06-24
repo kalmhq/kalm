@@ -3,7 +3,7 @@ import { LOAD_SERVICES_FAILED, LOAD_SERVICES_FULFILLED, LOAD_SERVICES_PENDING } 
 import { loadServices } from "./kubernetesApi";
 
 export const loadServicesAction = (namespace: string): ThunkResult<Promise<void>> => {
-  return async dispatch => {
+  return async (dispatch) => {
     dispatch({ type: LOAD_SERVICES_PENDING });
 
     try {
@@ -12,8 +12,8 @@ export const loadServicesAction = (namespace: string): ThunkResult<Promise<void>
       dispatch({
         type: LOAD_SERVICES_FULFILLED,
         payload: {
-          services: services
-        }
+          services: services,
+        },
       });
     } catch (e) {
       dispatch({ type: LOAD_SERVICES_FAILED });

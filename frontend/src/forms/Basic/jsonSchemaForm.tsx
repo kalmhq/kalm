@@ -29,9 +29,10 @@ export class RenderJsonSchemaForm extends React.PureComponent<Props & WrappedFie
           formData={isImmutable(input.value) ? input.value.toJS() : input.value}
           // onSubmit={() => console.log("RenderPluginConfig onSubmit")}
           // onError={() => console.log("RenderPluginConfig onError")}
-          onChange={v => {
+          onChange={(v) => {
             input.onChange(Immutable.fromJS(v.formData));
-          }}>
+          }}
+        >
           <Button variant="contained" color="primary" type="submit" style={{ display: "none" }}>
             hidden
           </Button>

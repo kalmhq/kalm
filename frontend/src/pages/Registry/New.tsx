@@ -15,12 +15,12 @@ export const RegistryNewModalID = "RegistryNewModalID";
 
 const styles = (theme: Theme) =>
   createStyles({
-    root: {}
+    root: {},
   });
 
 const mapStateToProps = (state: RootState) => {
   return {
-    isSubmittingRegistry: state.get("registries").get("isSubmittingRegistry")
+    isSubmittingRegistry: state.get("registries").get("isSubmittingRegistry"),
   };
 };
 
@@ -56,7 +56,8 @@ class RegistryNewModalRaw extends React.PureComponent<Props, State> {
           <CustomizedButton
             disabled={isSubmittingRegistry}
             onClick={() => dispatch(submit("registry"))}
-            color="primary">
+            color="primary"
+          >
             Save
           </CustomizedButton>
         </Grid>
@@ -73,8 +74,9 @@ class RegistryNewModalRaw extends React.PureComponent<Props, State> {
         actions={this.renderActions()}
         dialogProps={{
           fullWidth: true,
-          maxWidth: "sm"
-        }}>
+          maxWidth: "sm",
+        }}
+      >
         <RegistryForm isEdit={isEdit} onSubmit={this.submit} initialValues={registry || registryInitialValues} />
       </ControlledDialog>
     );

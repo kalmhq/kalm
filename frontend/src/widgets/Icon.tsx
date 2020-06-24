@@ -1,51 +1,51 @@
 import React from "react";
 import {
-  Delete,
-  Clear,
-  CheckBox,
-  Help,
-  ArrowDropDown,
-  CheckBoxOutlineBlank,
-  FilterList,
-  CheckCircle,
-  Error,
   ArrowBack,
-  NoteAdd,
+  ArrowDropDown,
+  CheckBox,
+  CheckBoxOutlineBlank,
+  CheckCircle,
+  Clear,
   CreateNewFolder,
-  Publish,
+  Delete,
   Edit,
-  FileCopy
+  Error,
+  FileCopy,
+  FilterList,
+  Help,
+  NoteAdd,
+  Publish,
 } from "@material-ui/icons";
-import { withStyles, createStyles, WithStyles } from "@material-ui/styles";
+import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import { grey } from "@material-ui/core/colors";
-import { Theme, SvgIconProps, SvgIcon } from "@material-ui/core";
+import { SvgIcon, SvgIconProps, Theme } from "@material-ui/core";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      padding: theme.spacing(1)
+      padding: theme.spacing(1),
     },
     error: {
-      color: theme.palette.error.main
+      color: theme.palette.error.main,
     },
     success: {
-      color: theme.palette.success.main
+      color: theme.palette.success.main,
     },
     action: {
-      color: theme.palette.primary.main
+      color: theme.palette.primary.main,
     },
     disabled: {
-      background: grey[300]
+      background: grey[300],
     },
     hint: {
-      color: grey[700]
+      color: grey[700],
     },
     small: {
-      fontSize: 12
+      fontSize: 12,
     },
     white: {
-      color: "white"
-    }
+      color: "white",
+    },
   });
 
 type IconsProps = WithStyles<typeof styles> & SvgIconProps;

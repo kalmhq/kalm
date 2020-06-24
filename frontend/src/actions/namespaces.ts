@@ -4,7 +4,7 @@ import { ThunkResult } from "../types";
 import { SET_CURRENT_NAMESPACE } from "../types/namespace";
 
 export const setCurrentNamespaceAction = (namespace: string, redirect: boolean = true): ThunkResult<Promise<void>> => {
-  return async dispatch => {
+  return async (dispatch) => {
     if (redirect) {
       const pathname = window.location.pathname;
 
@@ -23,8 +23,8 @@ export const setCurrentNamespaceAction = (namespace: string, redirect: boolean =
     dispatch({
       type: SET_CURRENT_NAMESPACE,
       payload: {
-        namespace
-      }
+        namespace,
+      },
     });
   };
 };

@@ -7,7 +7,7 @@ import {
   TextField,
   Theme,
   Typography,
-  withStyles
+  withStyles,
 } from "@material-ui/core";
 import { WithStyles } from "@material-ui/styles";
 import { NormalizeNumber } from "forms/normalizer";
@@ -53,15 +53,15 @@ const styles = (theme: Theme) =>
       textAlign: "center",
       width: 60,
       "&::placeholder": {
-        textAlign: "center"
-      }
+        textAlign: "center",
+      },
     },
     code: {
       fontFamily: "Hack, monospace",
       "& input": {
-        fontFamily: "Hack, monospace"
-      }
-    }
+        fontFamily: "Hack, monospace",
+      },
+    },
   });
 
 class RenderProbe extends React.PureComponent<Props> {
@@ -72,7 +72,7 @@ class RenderProbe extends React.PureComponent<Props> {
     style,
     select,
     children,
-    type
+    type,
   }: WrappedFieldProps & StandardTextFieldProps & { style?: any; type?: string }) => {
     const { classes } = this.props;
     return (
@@ -86,7 +86,8 @@ class RenderProbe extends React.PureComponent<Props> {
         type={type}
         select={select}
         placeholder={placeholder}
-        inputProps={{ style }}>
+        inputProps={{ style }}
+      >
         {children}
       </TextField>
     );
@@ -116,7 +117,8 @@ class RenderProbe extends React.PureComponent<Props> {
               validate={ValidatorScheme}
               placeholder="http"
               select
-              style={{ width: 60 }}>
+              style={{ width: 60 }}
+            >
               <MenuItem key={"http"} value={"HTTP"}>
                 http
               </MenuItem>
@@ -163,6 +165,7 @@ class RenderProbe extends React.PureComponent<Props> {
       </Box>
     );
   }
+
   private renderExec() {
     const name = this.props.input.name;
     const { classes } = this.props;
@@ -332,12 +335,12 @@ class RenderProbe extends React.PureComponent<Props> {
       ports,
       dispatch,
       meta: { form },
-      input
+      input,
     } = this.props;
 
     if (type === "httpGet") {
       const potentialPort = ports
-        ? ports.find(x => x.get("protocol") === portTypeTCP && !!x.get("containerPort"))
+        ? ports.find((x) => x.get("protocol") === portTypeTCP && !!x.get("containerPort"))
         : null;
       dispatch(
         change(
@@ -347,10 +350,10 @@ class RenderProbe extends React.PureComponent<Props> {
             httpGet: Immutable.Map({
               scheme: "HTTP",
               path: "/health",
-              port: potentialPort ? potentialPort.get("containerPort") : ""
-            })
-          })
-        )
+              port: potentialPort ? potentialPort.get("containerPort") : "",
+            }),
+          }),
+        ),
       );
     } else if (type === "exec") {
       dispatch(
@@ -359,14 +362,14 @@ class RenderProbe extends React.PureComponent<Props> {
           input.name,
           Immutable.Map({
             exec: Immutable.Map({
-              command: Immutable.List([""])
-            })
-          })
-        )
+              command: Immutable.List([""]),
+            }),
+          }),
+        ),
       );
     } else if (type === "tcpSocket") {
       const potentialPort = ports
-        ? ports.find(x => x.get("protocol") === portTypeTCP && !!x.get("containerPort"))
+        ? ports.find((x) => x.get("protocol") === portTypeTCP && !!x.get("containerPort"))
         : null;
       dispatch(
         change(
@@ -374,10 +377,10 @@ class RenderProbe extends React.PureComponent<Props> {
           input.name,
           Immutable.Map({
             tcpSocket: Immutable.Map({
-              port: potentialPort ? potentialPort.get("containerPort") : ""
-            })
-          })
-        )
+              port: potentialPort ? potentialPort.get("containerPort") : "",
+            }),
+          }),
+        ),
       );
     } else {
       dispatch(change(form, input.name, null));
@@ -411,7 +414,7 @@ class RenderProbe extends React.PureComponent<Props> {
             }}
             meta={{
               touched: true,
-              error: undefined
+              error: undefined,
             }}
             options={[
               { value: "none", text: "None" },
@@ -425,7 +428,7 @@ class RenderProbe extends React.PureComponent<Props> {
                       Http get request returns successful response (status {">="} 200 and {"<"} 400).
                     </Typography>
                   </Box>
-                )
+                ),
               },
               {
                 value: "exec",
@@ -435,7 +438,7 @@ class RenderProbe extends React.PureComponent<Props> {
                     <Typography variant="h6">Command</Typography>
                     <Typography variant="caption">Execute command returns 0 exit code.</Typography>
                   </Box>
-                )
+                ),
               },
               {
                 value: "tcpSocket",
@@ -445,8 +448,8 @@ class RenderProbe extends React.PureComponent<Props> {
                     <Typography variant="h6">TCP</Typography>
                     <Typography variant="caption">Establish a TCP connection Successfully.</Typography>
                   </Box>
-                )
-              }
+                ),
+              },
             ]}
           />
         </Grid>

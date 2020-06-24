@@ -1,8 +1,8 @@
 import Immutable from "immutable";
-import { Actions } from "../types";
-import { ImmutableMap } from "../typings";
-import { LOGOUT, Metrics } from "../types/common";
-import { Node, LOAD_NODES_FAILED, LOAD_NODES_PENDING, LOAD_NODES_FULFILlED } from "types/node";
+import { Actions } from "types";
+import { ImmutableMap } from "typings";
+import { LOGOUT, Metrics } from "types/common";
+import { LOAD_NODES_FAILED, LOAD_NODES_FULFILlED, LOAD_NODES_PENDING, Node } from "types/node";
 
 export type State = ImmutableMap<{
   isLoading: boolean;
@@ -18,7 +18,7 @@ const initialState: State = Immutable.Map({
   metrics: Immutable.Map(),
   isLoading: false,
   isFirstLoaded: false,
-  labels: Immutable.List([])
+  labels: Immutable.List([]),
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {
@@ -40,7 +40,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
       state = state.set("metrics", action.payload.get("metrics"));
 
       let labelsSet = Immutable.Set();
-      action.payload.get("nodes").forEach(node => {
+      action.payload.get("nodes").forEach((node) => {
         const labels = node.get("labels");
         if (labels) {
           labels.forEach((value, key) => {

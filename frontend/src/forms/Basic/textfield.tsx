@@ -98,6 +98,7 @@ interface ComplexValueTextFieldProps {
   formValueToEditValue?: (value: any) => string;
   editValueToFormValue?: (value: string) => any;
 }
+
 // value type is complex like array or json, like "command" is array, but using textfield input
 export const RenderComplexValueTextField = ({
   input,

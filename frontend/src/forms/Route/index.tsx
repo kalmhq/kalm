@@ -9,7 +9,7 @@ import {
   KValidatorPaths,
   ValidatorAtLeastOneHttpRouteDestination,
   ValidatorListNotEmpty,
-  ValidatorRequired
+  ValidatorRequired,
 } from "forms/validator";
 import Immutable from "immutable";
 import React from "react";
@@ -24,69 +24,76 @@ import { RenderHttpRouteConditions } from "./conditions";
 import { RenderHttpRouteDestinations } from "./destinations";
 import { Expansion } from "./expansion";
 import { loadCertificates } from "actions/certificate";
-import { loadServicesAction } from "../../actions/service";
+import { loadServicesAction } from "actions/service";
+import { Prompt } from "widgets/Prompt";
+import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
+import { shouldError } from "forms/common";
+import { State as TutorialState } from "reducers/tutorial";
 
 const defaultFormID = "route";
 
-const mapStateToProps = (state: RootState, { form }: OwnProps) => {
+const mapStateToProps = (state: RootState) => {
+  const form = defaultFormID;
   const selector = formValueSelector(form || defaultFormID);
   const syncErrors = getFormSyncErrors(form || defaultFormID)(state) as { [key: string]: any };
   const certifications = state.get("certificates").get("certificates");
   const domains: Set<string> = new Set();
 
-  certifications.forEach(x => {
+  certifications.forEach((x) => {
     x.get("domains")
-      .filter(x => x !== "*")
-      .forEach(domain => domains.add(domain));
+      .filter((x) => x !== "*")
+      .forEach((domain) => domains.add(domain));
   });
 
   return {
+    tutorialState: state.get("tutorial"),
     syncErrors,
-    methodsMode: selector(state, "methodsMode") as string,
     schemes: selector(state, "schemes") as Immutable.List<string>,
+    methodsMode: selector(state, "methodsMode") as string,
     hosts: selector(state, "hosts") as Immutable.List<string>,
     destinations: selector(state, "destinations") as Immutable.List<HttpRouteDestination>,
     domains: Array.from(domains),
-    certifications
+    certifications,
   };
 };
-
-interface OwnProps {
-  form?: string;
-}
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {
       "& .alert": {
         marginTop: theme.spacing(1),
-        marginBottom: theme.spacing(1)
-      }
+        marginBottom: theme.spacing(1),
+      },
     },
     box: {
       padding: theme.spacing(2),
       border: "1px solid black",
-      marginBottom: theme.spacing(2)
+      marginBottom: theme.spacing(2),
     },
     buttonMargin: {
-      margin: theme.spacing(1)
+      margin: theme.spacing(1),
     },
     heading: {
       fontSize: theme.typography.pxToRem(15),
       flexBasis: "20%",
-      flexShrink: 0
+      flexShrink: 0,
     },
     secondaryHeading: {
       fontSize: theme.typography.pxToRem(15),
-      color: theme.palette.text.secondary
-    }
+      color: theme.palette.text.secondary,
+    },
   });
 
+export interface TutorialStateProps {
+  tutorialState: TutorialState;
+}
+
+export interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
+
 export interface Props
-  extends WithStyles<typeof styles>,
-    ReturnType<typeof mapStateToProps>,
-    TDispatchProp,
-    InjectedFormProps<HttpRouteForm> {}
+  extends InjectedFormProps<HttpRouteForm, TutorialStateProps>,
+    ConnectedProps,
+    WithStyles<typeof styles> {}
 
 interface State {
   isAdvancedPartUnfolded: boolean;
@@ -98,7 +105,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
     super(props);
     this.state = {
       isAdvancedPartUnfolded: false,
-      isValidCertificationUnfolded: false
+      isValidCertificationUnfolded: false,
     };
   }
 
@@ -144,19 +151,19 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
 
     let hostCertResults: any[] = [];
 
-    hosts.forEach(host => {
-      const cert = certifications.find(c => this.canCertDomainsSuiteForHost(c.get("domains"), host));
+    hosts.forEach((host) => {
+      const cert = certifications.find((c) => this.canCertDomainsSuiteForHost(c.get("domains"), host));
 
       hostCertResults.push({
         host,
-        cert
+        cert,
       });
     });
 
-    const missingCertsCount = hostCertResults.filter(x => !x.cert).length;
+    const missingCertsCount = hostCertResults.filter((x) => !x.cert).length;
 
-    const missingCertsHosts = hostCertResults.filter(x => !x.cert);
-    const validHosts = hostCertResults.filter(x => !!x.cert);
+    const missingCertsHosts = hostCertResults.filter((x) => !x.cert);
+    const validHosts = hostCertResults.filter((x) => !!x.cert);
 
     return (
       <Alert severity={missingCertsCount === 0 ? "success" : "warning"}>
@@ -217,7 +224,8 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
             <Link
               component="button"
               variant="body2"
-              onClick={() => this.setState({ isValidCertificationUnfolded: !isValidCertificationUnfolded })}>
+              onClick={() => this.setState({ isValidCertificationUnfolded: !isValidCertificationUnfolded })}
+            >
               >> View hosts that have valid certificaions.
             </Link>
           </Box>
@@ -244,23 +252,27 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
       methodsMode,
       classes,
       domains,
-      schemes,
       dispatch,
       destinations,
       form,
+      schemes,
       handleSubmit,
       submitFailed,
-      syncErrors
+      syncErrors,
+      dirty,
+      submitSucceeded
     } = this.props;
 
     return (
       <div className={classes.root}>
+        <Prompt when={dirty && !submitSucceeded} message="Are you sure to leave without saving changes?" />
         <h2>Add route</h2>
 
         <Expansion
           title="Hosts and paths"
           defauldUnfolded
-          hasError={submitFailed && (syncErrors.paths || syncErrors.hosts)}>
+          hasError={submitFailed && (syncErrors.paths || syncErrors.hosts)}
+        >
           <Field
             label="Hosts"
             component={KFreeSoloAutoCompleteMultiValues}
@@ -284,7 +296,8 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
         <Expansion
           title="Schemes and methods"
           subTitle="Define acceptable schemes and methods for incoming requests."
-          hasError={submitFailed && (syncErrors.methods || syncErrors.schemes)}>
+          hasError={submitFailed && (syncErrors.methods || syncErrors.schemes)}
+        >
           <Field
             title="Http methods"
             component={KRadioGroupRender}
@@ -292,12 +305,12 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
             options={[
               {
                 value: methodsModeAll,
-                label: "All http methods are allowed in this route."
+                label: "All http methods are allowed in this route.",
               },
               {
                 value: methodsModeSpecific,
-                label: "Choose allowed methods manually."
-              }
+                label: "Choose allowed methods manually.",
+              },
             ]}
           />
           <Collapse in={methodsMode === methodsModeSpecific}>
@@ -310,40 +323,40 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                 options={[
                   {
                     value: "GET",
-                    label: "GET"
+                    label: "GET",
                   },
                   {
                     value: "POST",
-                    label: "POST"
+                    label: "POST",
                   },
                   {
                     value: "PUT",
-                    label: "PUT"
+                    label: "PUT",
                   },
                   {
                     value: "PATCH",
-                    label: "PATCH"
+                    label: "PATCH",
                   },
                   {
                     value: "DELETE",
-                    label: "DELETE"
+                    label: "DELETE",
                   },
                   {
                     value: "OPTIONS",
-                    label: "OPTIONS"
+                    label: "OPTIONS",
                   },
                   {
                     value: "HEAD",
-                    label: "HEAD"
+                    label: "HEAD",
                   },
                   {
                     value: "TRACE",
-                    label: "TRACE"
+                    label: "TRACE",
                   },
                   {
                     value: "CONNECT",
-                    label: "CONNECT"
-                  }
+                    label: "CONNECT",
+                  },
                 ]}
               />
             </div>
@@ -357,12 +370,12 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
             options={[
               {
                 value: "http",
-                label: "http"
+                label: "http",
               },
               {
                 value: "https",
-                label: "https"
-              }
+                label: "https",
+              },
             ]}
           />
 
@@ -393,7 +406,8 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
         <Expansion
           title="Targets"
           subTitle="Choose targets that will receive requets."
-          hasError={submitFailed && syncErrors.destinations}>
+          hasError={submitFailed && syncErrors.destinations}
+        >
           <Box mb={2}>
             <Button
               variant="outlined"
@@ -407,12 +421,13 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                     "destinations",
                     Immutable.Map({
                       host: "",
-                      weight: 1
-                    })
-                  )
+                      weight: 1,
+                    }),
+                  ),
                 )
               }
-              className={classes.buttonMargin}>
+              className={classes.buttonMargin}
+            >
               Add a target
             </Button>
           </Box>
@@ -433,7 +448,8 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
         <Expansion
           title="Rules"
           subTitle="Set specific rules for this ingress. Only requests that match these conditions will be accepted."
-          hasError={submitFailed && syncErrors.conditions}>
+          hasError={submitFailed && syncErrors.conditions}
+        >
           <Box mb={2}>
             <Button
               variant="outlined"
@@ -449,12 +465,13 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       type: "header",
                       operator: "equal",
                       name: "",
-                      value: ""
-                    })
-                  )
+                      value: "",
+                    }),
+                  ),
                 )
               }
-              className={classes.buttonMargin}>
+              className={classes.buttonMargin}
+            >
               Add Header Rule
             </Button>
             <Button
@@ -471,12 +488,13 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       type: "query",
                       operator: "equal",
                       name: "",
-                      value: ""
-                    })
-                  )
+                      value: "",
+                    }),
+                  ),
                 )
               }
-              className={classes.buttonMargin}>
+              className={classes.buttonMargin}
+            >
               Add Query Rule
             </Button>
           </Box>
@@ -517,8 +535,19 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const RouteForm = reduxForm<HttpRouteForm, OwnProps>({
+// use connect twice
+// The one inside reduxForm is normal usage
+// The one outside of reduxForm is to set tutorialState props for the form
+
+const form = reduxForm<HttpRouteForm, TutorialStateProps>({
   onSubmitFail: console.log,
   form: defaultFormID,
-  touchOnChange: true
+  enableReinitialize: true,
+  touchOnChange: true,
+  shouldError: shouldError,
+  validate: formValidateOrNotBlockByTutorial,
 })(connect(mapStateToProps)(withStyles(styles)(RouteFormRaw)));
+
+export const RouteForm = connect((state: RootState) => ({
+  tutorialState: state.get("tutorial"),
+}))(form);

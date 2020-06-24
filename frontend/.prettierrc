@@ -1,11 +1,10 @@
 {
   "printWidth": 120,
   "tabWidth": 2,
-  "parser": "babel",
   "trailingComma": "all",
-  "jsxBracketSameLine": true,
   "semi": true,
   "singleQuote": false,
+  "arrowParens": "always",
   "overrides": [
     {
       "files": ["*.json", ".eslintrc", ".tslintrc", ".prettierrc", ".tern-project"],

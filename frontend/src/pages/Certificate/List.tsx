@@ -1,18 +1,18 @@
-import { createStyles, Theme, withStyles, WithStyles, Grid } from "@material-ui/core";
+import { createStyles, Grid, Theme, WithStyles, withStyles } from "@material-ui/core";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { NewModal, addCertificateDialogId } from "./New";
+import { addCertificateDialogId, NewModal } from "./New";
 import { CustomizedButton } from "widgets/Button";
 import { H4 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import {
-  loadCertificates,
   deleteCertificateAction,
   loadCertificateIssuers,
-  setEditCertificateModal
+  loadCertificates,
+  setEditCertificateModal,
 } from "actions/certificate";
 import { grey } from "@material-ui/core/colors";
 import MaterialTable from "material-table";
@@ -21,7 +21,7 @@ import { Certificate } from "types/certificate";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { openDialogAction } from "actions/dialog";
-import { SuccessBadge, PendingBadge } from "widgets/Badge";
+import { PendingBadge, SuccessBadge } from "widgets/Badge";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { DeleteIcon, EditIcon } from "widgets/Icon";
 import { FlexRowItemCenterBox } from "widgets/Box";
@@ -35,18 +35,18 @@ const styles = (theme: Theme) =>
       height: "100%",
       width: "100%",
       display: "flex",
-      alignItems: "center"
+      alignItems: "center",
     },
     secondHeaderRightItem: {
-      marginLeft: 20
-    }
+      marginLeft: 20,
+    },
   });
 
 const mapStateToProps = (state: RootState) => {
   return {
     isLoading: state.get("certificates").get("isLoading"),
     isFirstLoaded: state.get("certificates").get("isFirstLoaded"),
-    certificates: state.get("certificates").get("certificates")
+    certificates: state.get("certificates").get("certificates"),
   };
 };
 
@@ -70,7 +70,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     super(props);
     this.state = {
       isDeleteConfirmDialogOpen: false,
-      deletingCertificate: null
+      deletingCertificate: null,
     };
   }
 
@@ -86,7 +86,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   private renderDomains = (rowData: RowData) => {
     return (
       <>
-        {rowData.get("domains")?.map(domain => {
+        {rowData.get("domains")?.map((domain) => {
           return <div key={domain}>{domain}</div>;
         })}
       </>
@@ -106,7 +106,8 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
                 blinkTopProgressAction();
                 dispatch(openDialogAction(addCertificateDialogId));
                 dispatch(setEditCertificateModal(rowData));
-              }}>
+              }}
+            >
               <EditIcon />
             </IconButtonWithTooltip>
           )}
@@ -118,7 +119,8 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
             onClick={() => {
               blinkTopProgressAction();
               this.showDeleteConfirmDialog(rowData);
-            }}>
+            }}
+          >
             <DeleteIcon />
           </IconButtonWithTooltip>
         </Grid>
@@ -143,14 +145,14 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   private closeDeleteConfirmDialog = () => {
     this.setState({
       isDeleteConfirmDialogOpen: false,
-      deletingCertificate: null
+      deletingCertificate: null,
     });
   };
 
   private showDeleteConfirmDialog = (deletingCertificate: Certificate) => {
     this.setState({
       isDeleteConfirmDialogOpen: true,
-      deletingCertificate
+      deletingCertificate,
     });
   };
 
@@ -209,39 +211,39 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
         field: "name",
         sorting: false,
         render: this.renderName,
-        customFilterAndSearch: customSearchForImmutable
+        customFilterAndSearch: customSearchForImmutable,
       },
       {
         title: "Domains",
         field: "domains",
         sorting: false,
-        render: this.renderDomains
+        render: this.renderDomains,
       },
       {
         title: "Status",
         field: "status",
         sorting: false,
-        render: this.renderStatus
+        render: this.renderStatus,
       },
       {
         title: "Type",
         field: "isSelfManaged",
         sorting: false,
-        render: this.renderType
+        render: this.renderType,
       },
       {
         title: "In Use?",
         field: "inUse",
         sorting: false,
-        render: this.renderInUse
+        render: this.renderInUse,
       },
       {
         title: "Actions",
         field: "moreAction",
         sorting: false,
         searchable: false,
-        render: this.renderMoreActions
-      }
+        render: this.renderMoreActions,
+      },
     ];
 
     return columns;
@@ -276,11 +278,13 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
                 blinkTopProgressAction();
                 dispatch(openDialogAction(addCertificateDialogId));
                 dispatch(setEditCertificateModal(null));
-              }}>
+              }}
+            >
               Add
             </CustomizedButton>
           </div>
-        }>
+        }
+      >
         <NewModal />
         {this.renderDeleteConfirmDialog()}
         <div className={classes.root}>
@@ -300,8 +304,8 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
                   fontWeight: 400,
                   height: 20,
                   paddingTop: 0,
-                  paddingBottom: 0
-                }
+                  paddingBottom: 0,
+                },
               }}
               columns={this.getColumns()}
               data={tableData}
@@ -315,5 +319,5 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
 }
 
 export const CertificateListPage = withStyles(styles)(
-  connect(mapStateToProps)(CertificateDataWrapper(CertificateListPageRaw))
+  connect(mapStateToProps)(CertificateDataWrapper(CertificateListPageRaw)),
 );

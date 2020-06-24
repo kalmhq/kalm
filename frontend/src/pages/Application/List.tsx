@@ -12,19 +12,16 @@ import {
   Theme,
   Tooltip,
   WithStyles,
-  withStyles,
 } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
-import { loadClusterInfoAction } from "actions/cluster";
 import { closeDialogAction } from "actions/dialog";
 import { loadRoutes } from "actions/routes";
 import { push } from "connected-react-router";
 import Immutable from "immutable";
-import MaterialTable from "material-table";
+import MaterialTable, { MTableBodyRow } from "material-table";
 import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 import { withNamespace, withNamespaceProps } from "permission/Namespace";
 import React from "react";
-import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
@@ -32,22 +29,25 @@ import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
 import { ControlledDialog } from "widgets/ControlledDialog";
 import { KappConsoleIcon, KappLogIcon } from "widgets/Icon";
-import { deleteApplicationAction } from "../../actions/application";
-import { setErrorNotificationAction, setSuccessNotificationAction } from "../../actions/notification";
-import { blinkTopProgressAction } from "../../actions/settings";
-import { primaryColor } from "../../theme";
-import { ApplicationDetails } from "../../types/application";
-import { HttpRoute } from "../../types/route";
-import { formatDate } from "../../utils";
-import { customSearchForImmutable } from "../../utils/tableSearch";
-import { ConfirmDialog } from "../../widgets/ConfirmDialog";
-import { FoldButtonGroup } from "../../widgets/FoldButtonGroup";
-import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
-import { Body, H4 } from "../../widgets/Label";
-import { Loading } from "../../widgets/Loading";
-import { SmallCPULineChart, SmallMemoryLineChart } from "../../widgets/SmallLineChart";
+import { deleteApplicationAction } from "actions/application";
+import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
+import { blinkTopProgressAction } from "actions/settings";
+import { primaryColor } from "theme";
+import { ApplicationDetails } from "types/application";
+import { HttpRoute } from "types/route";
+import { formatDate } from "utils";
+import { customSearchForImmutable } from "utils/tableSearch";
+import { ConfirmDialog } from "widgets/ConfirmDialog";
+import { FoldButtonGroup } from "widgets/FoldButtonGroup";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import { Body, H4 } from "widgets/Label";
+import { Loading } from "widgets/Loading";
+import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { BasePage } from "../BasePage";
 import { ApplicationListDataWrapper, WithApplicationsListDataProps } from "./ListDataWrapper";
+import withStyles from "@material-ui/core/styles/withStyles";
+import { connect } from "react-redux";
+import { isPrivateIP } from "utils/ip";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -105,6 +105,7 @@ const mapStateToProps = (state: RootState) => {
     routesMap,
   };
 };
+
 interface Props
   extends WithApplicationsListDataProps,
     WithStyles<typeof styles>,
@@ -145,7 +146,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   public componentDidMount() {
     const { dispatch } = this.props;
     dispatch(loadRoutes(""));
-    dispatch(loadClusterInfoAction());
   }
 
   // private showDuplicateConfirmDialog = (duplicatingApplicationListItem: ApplicationDetails) => {
@@ -262,7 +262,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
       <Link
         style={{ color: primaryColor }}
         to={`/applications/${rowData.get("name")}`}
-        onClick={() => blinkTopProgressAction()}>
+        onClick={() => blinkTopProgressAction()}
+      >
         {rowData.get("name")}
       </Link>
     );
@@ -271,8 +272,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   private renderCreatedTime = (applicationDetails: RowData) => {
     let createdAt = new Date(0);
 
-    applicationDetails.get("components")?.forEach(component => {
-      component.get("pods").forEach(podStatus => {
+    applicationDetails.get("components")?.forEach((component) => {
+      component.get("pods").forEach((podStatus) => {
         const ts = podStatus.get("createTimestamp");
         const tsDate = new Date(ts);
         if (createdAt <= new Date(0)) {
@@ -291,8 +292,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     let successCount = 0;
     let pendingCount = 0;
     let errorCount = 0;
-    applicationDetails.get("components")?.forEach(component => {
-      component.get("pods").forEach(podStatus => {
+    applicationDetails.get("components")?.forEach((component) => {
+      component.get("pods").forEach((podStatus) => {
         podCount++;
         switch (podStatus.get("status")) {
           case "Running": {
@@ -321,7 +322,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
       <Link
         to={`/applications/${applicationDetails.get("name")}`}
         style={{ color: primaryColor }}
-        onClick={() => blinkTopProgressAction()}>
+        onClick={() => blinkTopProgressAction()}
+      >
         <Tooltip title={tooltipTitle} enterDelay={500}>
           <FlexRowItemCenterBox>
             {successCount > 0 ? (
@@ -355,7 +357,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     let extraArgs: string[] = [];
 
     // test env
-    if (clusterInfo.get("ingressIP").includes("192.168")) {
+    if (isPrivateIP(clusterInfo.get("ingressIP"))) {
       if (scheme === "https") {
         if (!host.includes(":")) {
           host = host + ":" + clusterInfo.get("httpsPort");
@@ -372,7 +374,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
 
     const url = `${scheme}://${host}${path}`;
 
-    return `curl -v -X ${method}${extraArgs.map(x => " " + x).join("")} ${url}`;
+    return `curl -v -X ${method}${extraArgs.map((x) => " " + x).join("")} ${url}`;
   };
 
   private renderExternalAccesses = (applicationDetails: RowData) => {
@@ -382,7 +384,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     if (applicationRoutes && applicationRoutes.size > 0) {
       return (
         <PopupState variant="popover" popupId={applicationDetails.get("name")}>
-          {popupState => (
+          {(popupState) => (
             <>
               <MLink component="button" variant="body2" {...bindTrigger(popupState)}>
                 {applicationRoutes.size === 1 ? "1 route" : `${applicationRoutes.size} routes`}
@@ -396,11 +398,12 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                 transformOrigin={{
                   vertical: "top",
                   horizontal: "center",
-                }}>
+                }}
+              >
                 {applicationRoutes
                   .map((route, index) => {
                     let items: React.ReactNode[] = [];
-                    route.get("schemes").forEach(scheme => {
+                    route.get("schemes").forEach((scheme) => {
                       // route.get("hosts").forEach(host => {
                       // route.get("paths").forEach(path => {
                       let host = route.get("hosts").first("*");
@@ -430,7 +433,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                               href={url}
                               target="_blank"
                               rel="noreferer"
-                              disabled={!route.get("methods").includes("GET")}>
+                              disabled={!route.get("methods").includes("GET")}
+                            >
                               Open
                             </Button>
                           </Box>
@@ -445,14 +449,15 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                                     this.buildCurlCommand(scheme, host, path, route.get("methods").first("GET")),
                                   )
                                   .then(
-                                    function() {
+                                    function () {
                                       dispatch(setSuccessNotificationAction("Copied successful!"));
                                     },
-                                    function(err) {
+                                    function (err) {
                                       dispatch(setErrorNotificationAction("Copied failed!"));
                                     },
                                   );
-                              }}>
+                              }}
+                            >
                               Copy as curl
                             </Button>
                           </Box>
@@ -462,7 +467,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
 
                     const targetDetails = route
                       .get("destinations")
-                      .map(destination =>
+                      .map((destination) =>
                         destination
                           .get("host")
                           .replace(".svc.cluster.local", "")
@@ -481,7 +486,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                               {route.get("methods").size === 9 ? "ALL methods" : route.get("methods").join(",")}) (
                               {targetDetails})
                             </ListSubheader>
-                          }>
+                          }
+                        >
                           {items}
                         </List>
                         {index < applicationRoutes.size - 1 ? <Divider /> : null}
@@ -514,19 +520,21 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           <CustomizedButton
             onClick={() => this.props.dispatch(closeDialogAction(internalEndpointsModalID))}
             color="default"
-            variant="contained">
+            variant="contained"
+          >
             Close
           </CustomizedButton>
-        }>
+        }
+      >
         {applicationDetails
           ? applicationDetails
               .get("components")
-              .map(component => {
-                return component.get("services").map(serviceStatus => {
+              .map((component) => {
+                return component.get("services").map((serviceStatus) => {
                   const dns = `${serviceStatus.get("name")}.${applicationDetails.get("name")}`;
                   return serviceStatus
                     .get("ports")
-                    .map(port => {
+                    .map((port) => {
                       const url = `${dns}:${port.get("port")}`;
                       return <div key={url}>{url}</div>;
                     })
@@ -554,10 +562,12 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           <CustomizedButton
             onClick={() => this.props.dispatch(closeDialogAction(externalEndpointsModalID))}
             color="default"
-            variant="contained">
+            variant="contained"
+          >
             Close
           </CustomizedButton>
-        }>
+        }
+      >
         {this.renderExternalAccessesDialogContent(applicationDetails)}
       </ControlledDialog>
     );
@@ -569,7 +579,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     }
 
     let urls: string[] = [];
-    applicationDetails.get("components")?.forEach(component => {
+    applicationDetails.get("components")?.forEach((component) => {
       const plugins = component.get("plugins");
       if (!plugins) {
         return;
@@ -597,7 +607,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
       // });
     });
 
-    return urls.map(url => (
+    return urls.map((url) => (
       <a href={url} key={url}>
         {url}
       </a>
@@ -612,7 +622,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           tooltipTitle="Shell"
           style={{ color: primaryColor }}
           component={Link}
-          to={`/applications/${rowData.get("name")}/shells`}>
+          to={`/applications/${rowData.get("name")}/shells`}
+        >
           <KappConsoleIcon />
         </IconButtonWithTooltip>
         <IconButtonWithTooltip
@@ -620,7 +631,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           tooltipTitle="Logs"
           style={{ color: primaryColor }}
           component={Link}
-          to={`/applications/${rowData.get("name")}/logs`}>
+          to={`/applications/${rowData.get("name")}/logs`}
+        >
           <KappLogIcon />
         </IconButtonWithTooltip>
       </>
@@ -686,7 +698,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           onClick={() => {
             blinkTopProgressAction();
             dispatch(push(`/applications/new`));
-          }}>
+          }}
+        >
           Add
         </CustomizedButton>
       </div>
@@ -766,7 +779,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           onClick={() => {
             blinkTopProgressAction();
             dispatch(push(`/applications/new`));
-          }}>
+          }}
+        >
           Create your first application
         </CustomizedButton>
       </div>
@@ -807,6 +821,11 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                   paddingTop: 0,
                   paddingBottom: 0,
                 },
+              }}
+              components={{
+                Row: (props: any) => (
+                  <MTableBodyRow tutorial-anchor-id={"applications-list-item-" + props.data.get("name")} {...props} />
+                ),
               }}
               // @ts-ignore
               columns={this.getColumns()}

@@ -13,7 +13,7 @@ import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
 
 const styles = (theme: Theme) =>
   createStyles({
-    root: {}
+    root: {},
   });
 
 const mapStateToProps = (state: RootState) => {
@@ -34,7 +34,7 @@ class ServiceAccountSecretRaw extends React.PureComponent<Props, State> {
     super(props);
     this.state = {
       token: "",
-      "ca.crt": ""
+      "ca.crt": "",
     };
   }
 
@@ -45,7 +45,7 @@ class ServiceAccountSecretRaw extends React.PureComponent<Props, State> {
     const res = await getServiceAccountSecret(this.props.serviceAccountName);
     this.setState({
       token: res.token,
-      "ca.crt": res["ca.crt"]
+      "ca.crt": res["ca.crt"],
     });
   }
 
@@ -60,12 +60,12 @@ class ServiceAccountSecretRaw extends React.PureComponent<Props, State> {
   private copyText = (text: string) => {
     const { dispatch } = this.props;
     navigator.clipboard.writeText(text).then(
-      function() {
+      function () {
         dispatch(setSuccessNotificationAction("Copied successful!"));
       },
-      function(err) {
+      function (err) {
         dispatch(setErrorNotificationAction("Copied failed!"));
-      }
+      },
     );
   };
 
@@ -79,7 +79,8 @@ class ServiceAccountSecretRaw extends React.PureComponent<Props, State> {
             tooltipTitle="Copy"
             onClick={() => {
               this.copyText(content);
-            }}>
+            }}
+          >
             <FileCopyIcon />
           </IconButtonWithTooltip>
         </FlexRowItemCenterBox>
@@ -90,8 +91,9 @@ class ServiceAccountSecretRaw extends React.PureComponent<Props, State> {
           wrapLines={true}
           customStyle={{
             whiteSpace: "pre-wrap",
-            wordBreak: "break-all"
-          }}>
+            wordBreak: "break-all",
+          }}
+        >
           {content}
         </SyntaxHighlighter>
       </div>

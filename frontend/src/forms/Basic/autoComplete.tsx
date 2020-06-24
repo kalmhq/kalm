@@ -3,7 +3,7 @@ import {
   Autocomplete,
   createFilterOptions,
   UseAutocompleteMultipleProps,
-  UseAutocompleteSingleProps
+  UseAutocompleteSingleProps,
 } from "@material-ui/lab";
 import { WithStyles } from "@material-ui/styles";
 import clsx from "clsx";
@@ -20,7 +20,7 @@ export interface ReduxFormMultiTagsFreeSoloAutoCompleteProps
 
 const styles = (_theme: Theme) =>
   createStyles({
-    root: {}
+    root: {},
   });
 
 const capitalize = (s: string): string => {
@@ -33,7 +33,7 @@ const ReduxFormMultiTagsFreeSoloAutoCompleteRaw = (props: ReduxFormMultiTagsFree
     input,
     meta: { touched, invalid, error },
     classes,
-    placeholder
+    placeholder,
   } = props;
 
   // TODO defualt hosts
@@ -49,7 +49,7 @@ const ReduxFormMultiTagsFreeSoloAutoCompleteRaw = (props: ReduxFormMultiTagsFree
     if (!errorsIsArray) {
       errorText = errors as string;
     } else {
-      errorText = (errors as (string | undefined)[]).find(x => x !== undefined);
+      errorText = (errors as (string | undefined)[]).find((x) => x !== undefined);
     }
   }
 
@@ -94,7 +94,7 @@ const ReduxFormMultiTagsFreeSoloAutoCompleteRaw = (props: ReduxFormMultiTagsFree
           return <Chip variant="outlined" label={option} size="small" color={color} {...getTagProps({ index })} />;
         })
       }
-      renderInput={params => {
+      renderInput={(params) => {
         return (
           <TextField
             {...params}
@@ -127,8 +127,8 @@ const KFreeSoloAutoCompleteMultiValuesStyles = (theme: Theme) =>
     root: {},
     error: {
       color: theme.palette.error.main,
-      border: "1px solid " + theme.palette.error.main
-    }
+      border: "1px solid " + theme.palette.error.main,
+    },
   });
 
 // input value is Immutable.List<string>
@@ -142,7 +142,7 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
     classes,
     placeholder,
     InputLabelProps,
-    disabled
+    disabled,
   } = props;
 
   const errors = error as (string | undefined)[] | undefined | string;
@@ -151,7 +151,7 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
   let errorText: string | undefined = undefined;
 
   if (touched && invalid && errorsIsArray) {
-    errorText = errorsArray.find(x => x !== undefined);
+    errorText = errorsArray.find((x) => x !== undefined);
   }
 
   if (typeof errors === "string") {
@@ -200,7 +200,7 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
           );
         });
       }}
-      renderInput={params => {
+      renderInput={(params) => {
         return (
           <TextField
             {...params}
@@ -219,7 +219,7 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
 };
 
 export const KFreeSoloAutoCompleteMultiValues = withStyles(KFreeSoloAutoCompleteMultiValuesStyles)(
-  KFreeSoloAutoCompleteMultiValuesRaw
+  KFreeSoloAutoCompleteMultiValuesRaw,
 );
 
 export interface KAutoCompleteSingleValueProps<T>
@@ -231,7 +231,7 @@ export interface KAutoCompleteSingleValueProps<T>
 
 const KAutoCompleteSingleValueStyles = (_theme: Theme) =>
   createStyles({
-    root: {}
+    root: {},
   });
 
 export interface KAutoCompleteOption {
@@ -241,7 +241,7 @@ export interface KAutoCompleteOption {
 }
 
 function KFreeSoloAutoCompleteSingleValueRaw<T>(
-  props: KAutoCompleteSingleValueProps<KAutoCompleteOption>
+  props: KAutoCompleteSingleValueProps<KAutoCompleteOption>,
 ): JSX.Element {
   const {
     input,
@@ -250,7 +250,7 @@ function KFreeSoloAutoCompleteSingleValueRaw<T>(
     meta: { touched, invalid, error },
     classes,
     options,
-    placeholder
+    placeholder,
   } = props;
 
   return (
@@ -258,12 +258,12 @@ function KFreeSoloAutoCompleteSingleValueRaw<T>(
       classes={classes}
       freeSolo
       openOnFocus
-      groupBy={option => option.group}
+      groupBy={(option) => option.group}
       // size="small"
       options={options}
       filterOptions={createFilterOptions({
         matchFrom: "any",
-        stringify: option => option.value
+        stringify: (option) => option.value,
       })}
       getOptionLabel={(option: any) => {
         if (option.label) {
@@ -299,7 +299,7 @@ function KFreeSoloAutoCompleteSingleValueRaw<T>(
       //   console.log("onChange", args);
       //   return true;
       // }}
-      renderInput={params => {
+      renderInput={(params) => {
         return (
           <TextField
             {...params}
@@ -317,7 +317,7 @@ function KFreeSoloAutoCompleteSingleValueRaw<T>(
 }
 
 export const KFreeSoloAutoCompleteSingleValue = withStyles(KAutoCompleteSingleValueStyles)(
-  KFreeSoloAutoCompleteSingleValueRaw
+  KFreeSoloAutoCompleteSingleValueRaw,
 );
 
 function KAutoCompleteSingleValueRaw<T>(props: KAutoCompleteSingleValueProps<KAutoCompleteOption>): JSX.Element {
@@ -329,21 +329,21 @@ function KAutoCompleteSingleValueRaw<T>(props: KAutoCompleteSingleValueProps<KAu
     classes,
     options,
     placeholder,
-    noOptionsText
+    noOptionsText,
   } = props;
 
-  const value = options.find(x => x.value === input.value) || null;
+  const value = options.find((x) => x.value === input.value) || null;
 
   return (
     <Autocomplete
       classes={classes}
       openOnFocus
       noOptionsText={noOptionsText}
-      groupBy={option => option.group}
+      groupBy={(option) => option.group}
       options={options}
       filterOptions={createFilterOptions({
         matchFrom: "any",
-        stringify: option => option.value
+        stringify: (option) => option.value,
       })}
       value={value}
       getOptionLabel={(option: KAutoCompleteOption) => option.label}
@@ -359,7 +359,7 @@ function KAutoCompleteSingleValueRaw<T>(props: KAutoCompleteSingleValueProps<KAu
           input.onChange("");
         }
       }}
-      renderInput={params => {
+      renderInput={(params) => {
         return (
           <TextField
             {...params}
@@ -392,20 +392,20 @@ export const RenderAutoCompleteFreeSolo = (props: WrappedFieldProps & AutoComple
     label,
     placeholder,
     // helperText,
-    meta: { touched, invalid, error }
+    meta: { touched, invalid, error },
   } = props;
   return (
     <Autocomplete
       freeSolo
       disableClearable
-      options={options.map(option => option)}
+      options={options.map((option) => option)}
       defaultValue={input.value || ""}
       onChange={(event: React.ChangeEvent<{}>, value: string | null) => {
         if (value) {
           input.onChange(value);
         }
       }}
-      renderInput={params => (
+      renderInput={(params) => (
         <TextField
           {...params}
           label={label}
@@ -414,7 +414,7 @@ export const RenderAutoCompleteFreeSolo = (props: WrappedFieldProps & AutoComple
           fullWidth
           size="small"
           InputLabelProps={{
-            shrink: true
+            shrink: true,
           }}
           placeholder={placeholder}
           error={touched && invalid}
@@ -439,12 +439,12 @@ interface AutoCompleteSelectProps {
 export const RenderAutoCompleteSelect = ({ input, label, children }: WrappedFieldProps & AutoCompleteSelectProps) => {
   children = React.Children.toArray(children);
 
-  const options = children.map(item => ({
+  const options = children.map((item) => ({
     text: item.props.children,
-    value: item.props.value
+    value: item.props.value,
   }));
 
-  let selectedOption = options.find(x => x.value === input.value);
+  let selectedOption = options.find((x) => x.value === input.value);
 
   if (!selectedOption) {
     selectedOption = options[0];
@@ -453,7 +453,7 @@ export const RenderAutoCompleteSelect = ({ input, label, children }: WrappedFiel
   return (
     <Autocomplete
       options={options}
-      getOptionLabel={option => option.text}
+      getOptionLabel={(option) => option.text}
       value={selectedOption}
       disableClearable
       onChange={(event: React.ChangeEvent<{}>, value: { text: string; value: string } | null) => {
@@ -461,7 +461,7 @@ export const RenderAutoCompleteSelect = ({ input, label, children }: WrappedFiel
           input.onChange(value.value);
         }
       }}
-      renderInput={params => <TextField {...params} label={label} variant="outlined" fullWidth size="small" />}
+      renderInput={(params) => <TextField {...params} label={label} variant="outlined" fullWidth size="small" />}
     />
   );
 };

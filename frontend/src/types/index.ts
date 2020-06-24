@@ -2,13 +2,11 @@ import { RouterAction } from "connected-react-router";
 import { FormAction } from "redux-form";
 import { ActionTypes } from "redux-form/lib/actionTypes";
 import { ThunkAction, ThunkDispatch } from "redux-thunk";
-import { RootState } from "../reducers";
+import { RootState } from "reducers";
 import { ApplicationActions } from "./application";
 import { CertificateActions } from "./certificate";
 import { ClusterActions } from "./cluster";
 import { CommonActions } from "./common";
-import { ComponentTemplateActions } from "./componentTemplate";
-import { ConfigActions } from "./config";
 import { DependencyActions } from "./dependency";
 import { NamespaceActions } from "./namespace";
 import { NodeActions } from "./node";
@@ -28,8 +26,6 @@ export type Actions =
   | RouterAction
   | CommonActions
   | ApplicationActions
-  | ComponentTemplateActions
-  | ConfigActions
   | UserActions
   | DependencyActions
   | NamespaceActions

@@ -1,26 +1,26 @@
 import React from "react";
 import { Paper, PaperProps, Theme } from "@material-ui/core";
-import { withStyles, createStyles, WithStyles } from "@material-ui/styles";
+import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import { grey } from "@material-ui/core/colors";
 import clsx from "clsx";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      padding: theme.spacing(1)
+      padding: theme.spacing(1),
     },
     whitePaper: {
-      background: "white"
+      background: "white",
     },
     grey1Paper: {
-      background: grey[100]
+      background: grey[100],
     },
     grey2Paper: {
-      background: grey[200]
+      background: grey[200],
     },
     grey3Paper: {
-      background: grey[300]
-    }
+      background: grey[300],
+    },
   });
 
 type InfoPaperProps = React.Props<any> &
@@ -29,7 +29,7 @@ type InfoPaperProps = React.Props<any> &
     paperType?: "light" | "normal" | "dark" | "white" | null;
   };
 const PaperRaw = (props: InfoPaperProps) => {
-  const { classes, className,paperType,...otherProps } = props;
+  const { classes, className, paperType, ...otherProps } = props;
   let typeClass;
   switch (paperType) {
     case "white":

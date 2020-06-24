@@ -1,7 +1,7 @@
 import Immutable from "immutable";
-import { Actions } from "../types";
-import { ImmutableMap } from "../typings";
-import { LOAD_SERVICES_FAILED, LOAD_SERVICES_FULFILLED, LOAD_SERVICES_PENDING, Service } from "../types/service";
+import { Actions } from "types";
+import { ImmutableMap } from "typings";
+import { LOAD_SERVICES_FAILED, LOAD_SERVICES_FULFILLED, LOAD_SERVICES_PENDING, Service } from "types/service";
 
 export type State = ImmutableMap<{
   isLoading: boolean;
@@ -12,7 +12,7 @@ export type State = ImmutableMap<{
 const initialState: State = Immutable.Map({
   isLoading: false,
   isFirstLoaded: false,
-  services: Immutable.List([])
+  services: Immutable.List([]),
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {

@@ -5,14 +5,15 @@ import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { InjectedFormProps } from "redux-form";
 import { Field, reduxForm } from "redux-form/immutable";
-import { RootState } from "../../reducers";
-import { RegistryType } from "../../types/registry";
+import { RootState } from "reducers";
+import { RegistryType } from "types/registry";
 import { KRenderTextField } from "../Basic/textfield";
 import { ValidatorName, ValidatorRequired } from "../validator";
+import { Prompt } from "widgets/Prompt";
 
 const styles = (theme: Theme) =>
   createStyles({
-    root: {}
+    root: {},
   });
 
 const mapStateToProps = (state: RootState) => {
@@ -31,10 +32,11 @@ class RegistryFormRaw extends React.PureComponent<
     DispatchProp
 > {
   public render() {
-    const { handleSubmit, classes, isEdit } = this.props;
+    const { handleSubmit, classes, isEdit, dirty, submitSucceeded } = this.props;
 
     return (
       <form onSubmit={handleSubmit} className={classes.root}>
+        <Prompt when={dirty && !submitSucceeded} message="Are you sure to leave without saving changes?" />
         <Grid container spacing={2}>
           <Grid item md={12}>
             <Field
@@ -86,7 +88,7 @@ class RegistryFormRaw extends React.PureComponent<
 }
 
 export const registryInitialValues: RegistryType = Immutable.fromJS({
-  name: ""
+  name: "",
 });
 
 export const RegistryForm = reduxForm<RegistryType, Props>({
@@ -96,5 +98,5 @@ export const RegistryForm = reduxForm<RegistryType, Props>({
   initialValues: registryInitialValues,
   onSubmitFail: (...args) => {
     console.log("submit failed", args);
-  }
+  },
 })(connect(mapStateToProps)(withStyles(styles)(RegistryFormRaw)));

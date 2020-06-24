@@ -1,6 +1,6 @@
 import React from "react";
 import PerfectScrollbar from "perfect-scrollbar";
-import { withStyles, Theme, WithStyles, createStyles } from "@material-ui/core";
+import { createStyles, Theme, WithStyles, withStyles } from "@material-ui/core";
 import clsx from "clsx";
 
 const styles = (theme: Theme) =>
@@ -8,8 +8,8 @@ const styles = (theme: Theme) =>
     scrollContainer: {
       height: "100%",
       position: "relative",
-      background: "#fff"
-    }
+      background: "#fff",
+    },
   });
 
 interface ContainerProps {
@@ -34,16 +34,16 @@ class ScrollContainer extends React.PureComponent<Props> {
   public render() {
     const { children, classes, options, component, className } = this.props;
     return React.createElement(component || "div", {
-      ref: ref => {
+      ref: (ref) => {
         if (ref && !this.ps) {
           this.ps = new PerfectScrollbar(ref, {
             suppressScrollX: true,
-            ...options
+            ...options,
           });
         }
       },
       children,
-      className: clsx(classes.scrollContainer, className)
+      className: clsx(classes.scrollContainer, className),
     });
   }
 

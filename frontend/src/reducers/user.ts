@@ -1,8 +1,7 @@
 import Immutable from "immutable";
-import { LOAD_USERS_PENDING, LOAD_USERS_FULFILLED, LOAD_USERS_FAILED } from "../types/user";
-import { Actions } from "../types";
-import { ImmutableMap } from "../typings";
-import { Users } from "../types/user";
+import { LOAD_USERS_FAILED, LOAD_USERS_FULFILLED, LOAD_USERS_PENDING, Users } from "types/user";
+import { Actions } from "types";
+import { ImmutableMap } from "typings";
 import { LOGOUT } from "types/common";
 
 export type State = ImmutableMap<{
@@ -12,7 +11,7 @@ export type State = ImmutableMap<{
 
 const initialState: State = Immutable.Map({
   isLoading: false,
-  users: Immutable.OrderedMap({})
+  users: Immutable.OrderedMap({}),
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {

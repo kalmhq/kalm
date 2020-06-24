@@ -4,6 +4,7 @@ import {
   FormGroup,
   Link,
   Step,
+  StepConnector,
   StepContent,
   StepLabel,
   Stepper,
@@ -11,7 +12,6 @@ import {
   Typography,
   withStyles,
   WithStyles,
-  StepConnector,
 } from "@material-ui/core";
 import Driver from "driver.js";
 import React from "react";
@@ -63,10 +63,7 @@ const mapStateToProps = (state: RootState) => {
   return {
     currentStepIndex: tutorial.get("currentStepIndex"),
     tutorial: tutorial.get("tutorial")!,
-    pathname: state
-      .get("router")
-      .get("location")
-      .get("pathname") as string,
+    pathname: state.get("router").get("location").get("pathname") as string,
   };
 };
 
@@ -75,63 +72,8 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
 interface State {}
 
 class CommonTutorialRaw extends React.PureComponent<Props, State> {
+  // used as a store of children highlight elements
   driver?: Driver;
-
-  componentDidUpdate(prevProps: Props) {
-    // if (!(this.props.currentStepIndex === prevProps.currentStepIndex)) {
-    //   if (this.driver) {
-    //     this.driver.hasHighlightedElement();
-    //     this.driver.reset();
-    //     delete this.driver;
-    //   }
-    //   const currentStep = this.props.tutorial.steps[this.props.currentStepIndex];
-    //   if (!currentStep) {
-    //     return;
-    //   }
-    //   const currentSubStep = currentStep.subSteps[this.props.currentSubStepIndex];
-    //   if (!currentSubStep || !currentSubStep.highlight) {
-    //     return;
-    //   }
-    //   if (
-    //     currentSubStep.highlight.requirePathname &&
-    //     currentSubStep.highlight.requirePathname !== this.props.pathname
-    //   ) {
-    //     return;
-    //   }
-    //   if (
-    //     currentSubStep.highlight.requirePathnamePrefix &&
-    //     !this.props.pathname.startsWith(currentSubStep.highlight.requirePathnamePrefix)
-    //   ) {
-    //     return;
-    //   }
-    //   this.driver = new Driver({
-    //     padding: 0,
-    //     showButtons: false,
-    //   });
-    //   const startedAt = new Date().getTime();
-    //   let interval = window.setInterval(() => {
-    //     if (new Date().getTime() - startedAt > 3110 || !this.driver) {
-    //       window.clearInterval(interval);
-    //       return;
-    //     }
-    //     let node = window.document.querySelector(currentSubStep!.highlight!.anchor);
-    //     if (!node) {
-    //       return;
-    //     } else {
-    //       window.clearInterval(interval);
-    //       this.driver!.highlight({
-    //         element: currentSubStep!.highlight!.anchor,
-    //         popover: {
-    //           title: currentSubStep!.highlight!.title,
-    //           description: currentSubStep.highlight!.description,
-    //           position: currentSubStep!.highlight!.position,
-    //         },
-    //       });
-    //       return;
-    //     }
-    //   }, 200);
-    // }
-  }
 
   componentWillUnmount() {
     if (this.driver) {
@@ -149,16 +91,17 @@ class CommonTutorialRaw extends React.PureComponent<Props, State> {
     return (
       <>
         <Box mb={2}>
-          <Typography variant="h2">{tutorial.id}</Typography>
+          <Typography variant="h2">{tutorial.title}</Typography>
         </Box>
         <Stepper
           activeStep={currentStepIndex}
           orientation="vertical"
           style={{ padding: 0 }}
-          connector={<StepConnector classes={{ lineVertical: classes.connectorLineVertical }} />}>
+          connector={<StepConnector classes={{ lineVertical: classes.connectorLineVertical }} />}
+        >
           {tutorial.steps.map((step, stepIndex) => (
             <Step key={step.name}>
-              <StepLabel>{step.name}</StepLabel>
+              <StepLabel error={!!step.error}>{step.name}</StepLabel>
               <StepContent>
                 <Typography>{step.description}</Typography>
                 <Box ml={2} mt={1}>

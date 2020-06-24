@@ -1,15 +1,15 @@
 import Immutable from "immutable";
 import {
-  LOAD_ROLE_BINDINGS_FAILED,
-  LOAD_ROLE_BINDINGS_FULFILLED,
-  RoleBinding,
-  LOAD_ROLE_BINDINGS_PENDING,
   CREATE_ROLE_BINDINGS_FAILED,
   CREATE_ROLE_BINDINGS_FULFILLED,
-  CREATE_ROLE_BINDINGS_PENDING
+  CREATE_ROLE_BINDINGS_PENDING,
+  LOAD_ROLE_BINDINGS_FAILED,
+  LOAD_ROLE_BINDINGS_FULFILLED,
+  LOAD_ROLE_BINDINGS_PENDING,
+  RoleBinding,
 } from "types/user";
-import { Actions } from "../types";
-import { ImmutableMap } from "../typings";
+import { Actions } from "types";
+import { ImmutableMap } from "typings";
 import { LOGOUT } from "types/common";
 
 export type State = ImmutableMap<{
@@ -23,7 +23,7 @@ const initialState: State = Immutable.Map({
   roleBindings: Immutable.List(),
   roleBindingsLoading: false,
   roleBindingsFirstLoaded: false,
-  isRoleBindingCreating: false
+  isRoleBindingCreating: false,
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {
