@@ -9,7 +9,7 @@ import { ErrorBadge, PendingBadge, SuccessBadge } from "../../widgets/Badge";
 import { BigCPULineChart, BigMemoryLineChart } from "../../widgets/SmallLineChart";
 import Typography from "@material-ui/core/Typography";
 import { grey } from "@material-ui/core/colors";
-import MaterialTable from "material-table";
+import { KTable } from "widgets/Table";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -268,29 +268,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
           </div>
           <div className={classes.tableList}>
             <div className={classes.tableLabel}>Pods</div>
-            <MaterialTable
-              options={{
-                padding: "dense",
-                draggable: false,
-                toolbar: false,
-                paging: false,
-                rowStyle: {
-                  verticalAlign: "baseline",
-                },
-                headerStyle: {
-                  color: "black",
-                  backgroundColor: grey[100],
-                  fontSize: 12,
-                  fontWeight: 400,
-                  height: 20,
-                  paddingTop: 0,
-                  paddingBottom: 0,
-                },
-              }}
-              columns={this.getColumns()}
-              data={this.getData()}
-              title=""
-            />
+            <KTable columns={this.getColumns()} data={this.getData()} title="" />
           </div>
         </TabPanel>
 

@@ -38,7 +38,7 @@ export const FoldButtonGroup = (props: Props) => {
 
   return (
     <div>
-      <IconButton aria-label="more" aria-controls="long-menu" aria-haspopup="true" onClick={handleClick}>
+      <IconButton size={"small"} aria-label="more" aria-controls="long-menu" aria-haspopup="true" onClick={handleClick}>
         <MoreVertIcon />
       </IconButton>
       <Menu

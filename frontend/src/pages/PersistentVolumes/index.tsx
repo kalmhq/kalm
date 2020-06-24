@@ -1,6 +1,5 @@
 import { Box, createStyles, Theme, WithStyles, withStyles } from "@material-ui/core";
 import { Alert } from "@material-ui/lab";
-import MaterialTable from "material-table";
 import React from "react";
 import { connect } from "react-redux";
 import { K8sApiPrefix } from "../../actions/kubernetesApi";
@@ -14,6 +13,7 @@ import { ConfirmDialog } from "../../widgets/ConfirmDialog";
 import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
 import { primaryColor } from "../../theme";
 import { DeleteIcon } from "../../widgets/Icon";
+import { KTable } from "widgets/Table";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -23,9 +23,7 @@ const mapStateToProps = (state: RootState) => {
 
 const styles = (theme: Theme) =>
   createStyles({
-    root: {
-      // padding: theme.spacing(3)
-    },
+    root: {},
   });
 
 interface States {
@@ -144,14 +142,13 @@ export class VolumesRaw extends React.Component<Props, States> {
   };
 
   render() {
-    const { classes } = this.props;
     const { loadPersistentVolumesError } = this.state;
     const tableData = this.getTableData();
 
     return (
       <BasePage secondHeaderRight="Volumes">
         {this.renderDeleteConfirmDialog()}
-        <div className={classes.root}>
+        <Box p={2}>
           {loadPersistentVolumesError ? (
             <Alert severity="error">
               <Box>
@@ -161,10 +158,8 @@ export class VolumesRaw extends React.Component<Props, States> {
             </Alert>
           ) : null}
 
-          <MaterialTable
+          <KTable
             options={{
-              padding: "dense",
-              pageSize: 20,
               paging: tableData.length > 20,
             }}
             columns={[
@@ -185,7 +180,7 @@ export class VolumesRaw extends React.Component<Props, States> {
             data={tableData}
             title=""
           />
-        </div>
+        </Box>
       </BasePage>
     );
   }

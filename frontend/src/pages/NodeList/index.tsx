@@ -1,5 +1,4 @@
 import { Box, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
-import MaterialTable from "material-table";
 import React from "react";
 import { connect } from "react-redux";
 import { BigCPULineChart, BigMemoryLineChart, SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
@@ -7,6 +6,7 @@ import { loadNodesAction } from "../../actions/node";
 import { RootState } from "../../reducers";
 import { TDispatchProp } from "../../types";
 import { BasePage } from "../BasePage";
+import { KTable } from "widgets/Table";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -17,9 +17,7 @@ const mapStateToProps = (state: RootState) => {
 
 const styles = (theme: Theme) =>
   createStyles({
-    root: {
-      padding: theme.spacing(3),
-    },
+    root: {},
   });
 
 interface States {}
@@ -88,7 +86,7 @@ export class NodeListRaw extends React.Component<Props, States> {
     const tableData = this.getTableData();
     return (
       <BasePage secondHeaderRight="Nodes">
-        <div className={classes.root}>
+        <Box p={2}>
           <Grid container spacing={2}>
             <Grid item md={6}>
               <BigCPULineChart data={metrics.get("cpu")} />
@@ -98,10 +96,8 @@ export class NodeListRaw extends React.Component<Props, States> {
             </Grid>
           </Grid>
           <Box mt={3}>
-            <MaterialTable
+            <KTable
               options={{
-                padding: "dense",
-                pageSize: 20,
                 paging: tableData.length > 20,
               }}
               columns={[
@@ -117,7 +113,7 @@ export class NodeListRaw extends React.Component<Props, States> {
               title=""
             />
           </Box>
-        </div>
+        </Box>
       </BasePage>
     );
   }

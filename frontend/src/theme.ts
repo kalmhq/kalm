@@ -115,12 +115,6 @@ let themeRaw = createMuiTheme({
         fontSize: "1.0rem",
       },
     },
-    MuiTableCell: {
-      sizeSmall: {
-        paddingTop: 0,
-        paddingBottom: 0,
-      },
-    },
     MuiToolbar: {
       regular: {
         height: 20,

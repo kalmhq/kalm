@@ -1,4 +1,4 @@
-import { createStyles, Grid, Theme, WithStyles, withStyles } from "@material-ui/core";
+import { Box, createStyles, Grid, Theme, WithStyles, withStyles } from "@material-ui/core";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { connect } from "react-redux";
@@ -14,8 +14,6 @@ import {
   loadCertificates,
   setEditCertificateModal,
 } from "actions/certificate";
-import { grey } from "@material-ui/core/colors";
-import MaterialTable from "material-table";
 import { customSearchForImmutable } from "../../utils/tableSearch";
 import { Certificate } from "types/certificate";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
@@ -27,6 +25,7 @@ import { DeleteIcon, EditIcon } from "widgets/Icon";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { CertificateDataWrapper, WithCertificatesDataProps } from "./DataWrapper";
 import { blinkTopProgressAction } from "../../actions/settings";
+import { KTable } from "widgets/Table";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -102,6 +101,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
             <IconButtonWithTooltip
               tooltipTitle="Edit"
               aria-label="edit"
+              size="small"
               onClick={() => {
                 blinkTopProgressAction();
                 dispatch(openDialogAction(addCertificateDialogId));
@@ -116,6 +116,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
           <IconButtonWithTooltip
             tooltipTitle="Delete"
             aria-label="delete"
+            size="small"
             onClick={() => {
               blinkTopProgressAction();
               this.showDeleteConfirmDialog(rowData);
@@ -287,32 +288,20 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
       >
         <NewModal />
         {this.renderDeleteConfirmDialog()}
-        <div className={classes.root}>
+        <Box p={2}>
           {isLoading && !isFirstLoaded ? (
             <Loading />
           ) : (
-            <MaterialTable
+            <KTable
               options={{
-                pageSize: 20,
-                padding: "dense",
-                draggable: false,
                 paging: tableData.length > 20,
-                headerStyle: {
-                  color: "black",
-                  backgroundColor: grey[100],
-                  fontSize: 12,
-                  fontWeight: 400,
-                  height: 20,
-                  paddingTop: 0,
-                  paddingBottom: 0,
-                },
               }}
               columns={this.getColumns()}
               data={tableData}
               title=""
             />
           )}
-        </div>
+        </Box>
       </BasePage>
     );
   }

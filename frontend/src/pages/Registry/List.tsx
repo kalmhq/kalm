@@ -1,7 +1,5 @@
-import { createStyles, Theme, WithStyles, withStyles } from "@material-ui/core";
-import { grey } from "@material-ui/core/colors";
+import { Box, createStyles, Theme, WithStyles, withStyles } from "@material-ui/core";
 import { deleteRegistryAction, loadRegistriesAction } from "actions/registries";
-import MaterialTable from "material-table";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
@@ -20,6 +18,7 @@ import { H4 } from "../../widgets/Label";
 import { BasePage } from "../BasePage";
 import { RegistryNewModal, RegistryNewModalID } from "./New";
 import { Loading } from "../../widgets/Loading";
+import { KTable } from "widgets/Table";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -211,87 +210,74 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
     const { isLoading, isFirstLoaded } = this.props;
     const { editingRegistry } = this.state;
     const tableData = this.getData();
-    console.log("isEdit", !!editingRegistry);
+
     return (
       <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
         {this.renderDeleteConfirmDialog()}
         <RegistryNewModal isEdit={!!editingRegistry} registry={editingRegistry} />
-        {isLoading && !isFirstLoaded ? (
-          <Loading />
-        ) : (
-          <MaterialTable
-            options={{
-              pageSize: 20,
-              paging: tableData.length > 20,
-              padding: "dense",
-              draggable: false,
-              rowStyle: {
-                verticalAlign: "baseline",
-              },
-              headerStyle: {
-                color: "black",
-                backgroundColor: grey[100],
-                fontSize: 12,
-                fontWeight: 400,
-                height: 20,
-                paddingTop: 0,
-                paddingBottom: 0,
-              },
-            }}
-            columns={[
-              {
-                title: "Name",
-                field: "name",
-                sorting: false,
-                render: this.renderName,
-              },
-              {
-                title: "Host",
-                field: "host",
-                sorting: false,
-                render: this.renderHost,
-              },
-              {
-                title: "Username",
-                field: "username",
-                sorting: false,
-                render: this.renderUsername,
-              },
-              {
-                title: "Password",
-                field: "password",
-                sorting: false,
-                render: this.renderPassword,
-              },
-              // {
-              //   title: "Verified",
-              //   field: "verified",
-              //   sorting: false,
-              //   render: this.renderVerified
-              // },
-              // {
-              //   title: "Repositories",
-              //   field: "repositories",
-              //   sorting: false,
-              //   render: this.renderRepositories
-              // },
-              {
-                title: "Actions",
-                field: "action",
-                sorting: false,
-                searchable: false,
-                render: (row) => this.renderActions(row),
-              },
-            ]}
-            // detailPanel={this.renderDetails}
-            // onRowClick={(_event, _rowData, togglePanel) => {
-            //   togglePanel!();
-            //   console.log(_event);
-            // }}
-            data={tableData}
-            title=""
-          />
-        )}
+        <Box p={2}>
+          {isLoading && !isFirstLoaded ? (
+            <Loading />
+          ) : (
+            <KTable
+              options={{
+                paging: tableData.length > 20,
+              }}
+              columns={[
+                {
+                  title: "Name",
+                  field: "name",
+                  sorting: false,
+                  render: this.renderName,
+                },
+                {
+                  title: "Host",
+                  field: "host",
+                  sorting: false,
+                  render: this.renderHost,
+                },
+                {
+                  title: "Username",
+                  field: "username",
+                  sorting: false,
+                  render: this.renderUsername,
+                },
+                {
+                  title: "Password",
+                  field: "password",
+                  sorting: false,
+                  render: this.renderPassword,
+                },
+                // {
+                //   title: "Verified",
+                //   field: "verified",
+                //   sorting: false,
+                //   render: this.renderVerified
+                // },
+                // {
+                //   title: "Repositories",
+                //   field: "repositories",
+                //   sorting: false,
+                //   render: this.renderRepositories
+                // },
+                {
+                  title: "Actions",
+                  field: "action",
+                  sorting: false,
+                  searchable: false,
+                  render: (row) => this.renderActions(row),
+                },
+              ]}
+              // detailPanel={this.renderDetails}
+              // onRowClick={(_event, _rowData, togglePanel) => {
+              //   togglePanel!();
+              //   console.log(_event);
+              // }}
+              data={tableData}
+              title=""
+            />
+          )}
+        </Box>
       </BasePage>
     );
   }

@@ -20,7 +20,6 @@ const styles = (theme: Theme) =>
     root: {
       // height: "100%",
       // overflow: "hidden",
-      background: "#fff",
       padding: 20,
     },
     // formSection: {
