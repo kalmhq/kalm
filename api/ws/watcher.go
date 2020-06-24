@@ -75,7 +75,7 @@ func Watch(c *Client, runtimeObj runtime.Object, buildResMessage func(c *Client,
 func buildNamespaceResMessage(c *Client, action string, objWatched interface{}) *ResMessage {
 	namespace, ok := objWatched.(*coreV1.Namespace)
 	if !ok {
-		log.Warnln("convert watch obj to Namespace failed %s", objWatched)
+		log.Warnln("convert watch obj to Namespace failed :", objWatched)
 		return &ResMessage{}
 	}
 
@@ -101,7 +101,7 @@ func buildNamespaceResMessage(c *Client, action string, objWatched interface{}) 
 func buildComponentResMessage(c *Client, action string, objWatched interface{}) *ResMessage {
 	component, ok := objWatched.(*v1alpha1.Component)
 	if !ok {
-		log.Warnln("convert watch obj to Component failed %s", objWatched)
+		log.Warnln("convert watch obj to Component failed :", objWatched)
 		return &ResMessage{}
 	}
 
@@ -123,7 +123,7 @@ func buildComponentResMessage(c *Client, action string, objWatched interface{}) 
 func buildServiceResMessage(c *Client, action string, objWatched interface{}) *ResMessage {
 	service, ok := objWatched.(*coreV1.Service)
 	if !ok {
-		log.Warnln("convert watch obj to Service failed %s", objWatched)
+		log.Warnln("convert watch obj to Service failed :", objWatched)
 		return &ResMessage{}
 	}
 
@@ -150,7 +150,7 @@ func buildServiceResMessage(c *Client, action string, objWatched interface{}) *R
 func buildPodResMessage(c *Client, action string, objWatched interface{}) *ResMessage {
 	pod, ok := objWatched.(*coreV1.Pod)
 	if !ok {
-		log.Warnln("convert watch obj to Pod failed %s", objWatched)
+		log.Warnln("convert watch obj to Pod failed :", objWatched)
 		return &ResMessage{}
 	}
 
