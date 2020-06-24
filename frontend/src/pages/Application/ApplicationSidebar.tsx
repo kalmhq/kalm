@@ -3,7 +3,7 @@ import AppsIcon from "@material-ui/icons/Apps";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import React from "react";
 import { connect } from "react-redux";
-import { NavLink } from "react-router-dom";
+import { NavLink, RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { BaseDrawer } from "layout/BaseDrawer";
@@ -13,11 +13,9 @@ import { blinkTopProgressAction } from "actions/settings";
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
   const isAdmin = auth.get("isAdmin");
-  const entity = auth.get("entity");
   return {
     activeNamespaceName: state.get("namespaces").get("active"),
     isAdmin,
-    entity,
   };
 };
 
@@ -41,7 +39,10 @@ const styles = (theme: Theme) =>
     },
   });
 
-interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps> {
+interface Props
+  extends WithStyles<typeof styles>,
+    ReturnType<typeof mapStateToProps>,
+    RouteComponentProps<{ applicationName: string }> {
   dispatch: TDispatch;
 }
 
@@ -69,9 +70,11 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
   }
 
   render() {
-    const { classes } = this.props;
+    const {
+      classes,
+      location: { pathname },
+    } = this.props;
     const menuData = this.getMenuData();
-    const pathname = window.location.pathname;
 
     return (
       <BaseDrawer>
@@ -87,7 +90,7 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
               component={NavLink}
               to={item.to}
               key={item.text}
-              selected={pathname.startsWith(item.to.split("?")[0])}
+              selected={pathname === item.to}
             >
               <ListItemIcon>
                 <AppsIcon />
@@ -101,4 +104,4 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const ApplicationViewDrawer = connect(mapStateToProps)(withStyles(styles)(ApplicationViewDrawerRaw));
+export const ApplicationSidebar = withRouter(connect(mapStateToProps)(withStyles(styles)(ApplicationViewDrawerRaw)));

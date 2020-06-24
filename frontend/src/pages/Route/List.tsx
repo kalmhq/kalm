@@ -1,10 +1,10 @@
-import { Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { Box, Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { deleteRoute, loadRoutes } from "actions/routes";
 import { push } from "connected-react-router";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { HttpRoute } from "types/route";
-import { ApplicationViewDrawer } from "widgets/ApplicationViewDrawer";
+import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { SuccessBadge } from "widgets/Badge";
 import { CustomizedButton } from "widgets/Button";
 import { H4 } from "widgets/Label";
@@ -169,7 +169,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     const tableData = this.getData();
     return (
       <BasePage
-        leftDrawer={<ApplicationViewDrawer />}
+        leftDrawer={<ApplicationSidebar />}
         secondHeaderLeft={<Namespaces />}
         secondHeaderRight={
           <div className={classes.secondHeaderRight}>
@@ -189,7 +189,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
           </div>
         }
       >
-        <div>
+        <Box p={2}>
           {isRoutesLoading && !isRoutesFirstLoaded ? (
             <Loading />
           ) : (
@@ -259,7 +259,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
               title=""
             />
           )}
-        </div>
+        </Box>
       </BasePage>
     );
   }

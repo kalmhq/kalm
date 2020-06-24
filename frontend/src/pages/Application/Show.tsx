@@ -5,7 +5,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { RouteChildrenProps } from "react-router-dom";
 import { CustomizedButton } from "widgets/Button";
-import { ApplicationViewDrawer } from "../../widgets/ApplicationViewDrawer";
+import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { H4 } from "../../widgets/Label";
 import { Loading } from "../../widgets/Loading";
 import { Namespaces } from "../../widgets/Namespaces";
@@ -87,7 +87,7 @@ class ApplicationShowRaw extends React.PureComponent<Props> {
       <BasePage
         secondHeaderLeft={<Namespaces />}
         secondHeaderRight={this.renderSecondHeaderRight()}
-        leftDrawer={<ApplicationViewDrawer />}
+        leftDrawer={<ApplicationSidebar />}
       >
         {isLoading && !application ? (
           <Loading />

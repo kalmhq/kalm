@@ -15,7 +15,7 @@ import { Namespaces } from "../../widgets/Namespaces";
 import { BasePage } from "../BasePage";
 import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./ItemDataWrapper";
 import { Xterm, XtermRaw } from "./Xterm";
-import { ApplicationViewDrawer } from "../../widgets/ApplicationViewDrawer";
+import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { PodStatus } from "types/application";
 
 const logger = debug("ws");
@@ -555,7 +555,7 @@ export class LogStream extends React.PureComponent<Props, State> {
       <BasePage
         secondHeaderLeft={<Namespaces />}
         secondHeaderRight={this.isLog ? "Log" : "Shell"}
-        leftDrawer={<ApplicationViewDrawer />}
+        leftDrawer={<ApplicationSidebar />}
       >
         <Paper elevation={2} classes={{ root: classes.paper }}>
           {isLoading || !application ? (

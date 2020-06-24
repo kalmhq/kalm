@@ -4,7 +4,7 @@ import { push } from "connected-react-router";
 import { RouteForm } from "forms/Route";
 import React from "react";
 import { AllHttpMethods, HttpRouteForm, methodsModeAll, newEmptyRouteForm } from "types/route";
-import { ApplicationViewDrawer } from "widgets/ApplicationViewDrawer";
+import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { BasePage } from "../BasePage";
 import { Namespaces } from "widgets/Namespaces";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
@@ -46,7 +46,7 @@ class RouteNewRaw extends React.PureComponent<Props> {
 
   public render() {
     return (
-      <BasePage leftDrawer={<ApplicationViewDrawer />} secondHeaderLeft={<Namespaces />}>
+      <BasePage leftDrawer={<ApplicationSidebar />} secondHeaderLeft={<Namespaces />}>
         <Box p={2}>
           <RouteForm onSubmit={this.onSubmit} onSubmitSuccess={this.onSubmitSuccess} initialValues={this.route} />
         </Box>

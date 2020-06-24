@@ -4,7 +4,7 @@ import { push } from "connected-react-router";
 import { RouteForm } from "forms/Route";
 import React from "react";
 import { AllHttpMethods, HttpRoute, HttpRouteForm, methodsModeAll, methodsModeSpecific } from "types/route";
-import { ApplicationViewDrawer } from "widgets/ApplicationViewDrawer";
+import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { Loading } from "widgets/Loading";
 import { BasePage } from "../BasePage";
 import { Namespaces } from "widgets/Namespaces";
@@ -58,7 +58,7 @@ class RouteEditRaw extends React.PureComponent<Props> {
 
   public render() {
     return (
-      <BasePage leftDrawer={<ApplicationViewDrawer />} secondHeaderLeft={<Namespaces />}>
+      <BasePage leftDrawer={<ApplicationSidebar />} secondHeaderLeft={<Namespaces />}>
         <div className={this.props.classes.root}>{this.renderContent()}</div>
       </BasePage>
     );
