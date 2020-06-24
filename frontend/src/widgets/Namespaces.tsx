@@ -80,7 +80,7 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { classes, applications, activeNamespace, dispatch, isNamespaceFirstLoaded, isNamespaceLoading } = this.props;
+    const { classes, applications, activeNamespace, dispatch, isNamespaceLoading } = this.props;
     const { open } = this.state;
     const hasApplication = applications.count() > 0;
 

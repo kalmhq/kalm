@@ -18,7 +18,6 @@ import { push } from "connected-react-router";
 import Immutable from "immutable";
 import MaterialTable, { MTableBodyRow } from "material-table";
 import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
-import { withNamespace, withNamespaceProps } from "permission/Namespace";
 import React from "react";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
@@ -41,11 +40,11 @@ import { Body, H4 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { BasePage } from "../BasePage";
-import { ApplicationListDataWrapper, WithApplicationsListDataProps } from "./ListDataWrapper";
 import withStyles from "@material-ui/core/styles/withStyles";
 import { connect } from "react-redux";
 import { isPrivateIP } from "utils/ip";
 import { KTable } from "widgets/Table";
+import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -82,11 +81,7 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-interface Props
-  extends WithApplicationsListDataProps,
-    WithStyles<typeof styles>,
-    withNamespaceProps,
-    ReturnType<typeof mapStateToProps> {}
+interface Props extends WithStyles<typeof styles>, WithNamespaceProps, ReturnType<typeof mapStateToProps> {}
 
 interface State {
   isDeleteConfirmDialogOpen: boolean;
@@ -498,9 +493,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   }
 
   private getColumns() {
-    const { hasRole } = this.props;
-    const hasWriterRole = hasRole("writer");
-
     const columns = [
       // @ts-ignore
       {
@@ -534,7 +526,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         field: "active",
         sorting: false,
         render: this.renderCreatedTime,
-        hidden: !hasWriterRole,
+        // hidden: !hasWriterRole,
       },
       {
         title: "Routes",
@@ -580,13 +572,13 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { isLoading, isFirstLoaded, applications } = this.props;
+    const { isNamespaceLoading, isNamespaceFirstLoaded, applications } = this.props;
 
     return (
       <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
         {this.renderDeleteConfirmDialog()}
         <Box p={2}>
-          {isLoading && !isFirstLoaded ? (
+          {isNamespaceLoading && !isNamespaceFirstLoaded ? (
             <Loading />
           ) : applications.size === 0 ? (
             this.renderEmpty()
@@ -613,6 +605,4 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const ApplicationListPage = withStyles(styles)(
-  withNamespace(ApplicationListDataWrapper(connect(mapStateToProps)(ApplicationListRaw))),
-);
+export const ApplicationListPage = withStyles(styles)(withNamespace(connect(mapStateToProps)(ApplicationListRaw)));
