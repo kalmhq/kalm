@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { loadApplicationsAction } from "actions/application";
-import { RouteComponentProps } from "react-router";
+import { RouteComponentProps, withRouter } from "react-router-dom";
 
 const mapStateToProps = (
   state: RootState,
@@ -42,7 +42,7 @@ export const withNamespace = (WrappedComponent: React.ComponentType<any>) => {
 
   HOC.displayName = `WithNamespace(${getDisplayName(WrappedComponent)})`;
 
-  return connect(mapStateToProps)(HOC);
+  return withRouter(connect(mapStateToProps)(HOC));
 };
 
 function getDisplayName(WrappedComponent: React.ComponentType<any>) {

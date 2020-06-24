@@ -12,16 +12,14 @@ import {
   WithStyles,
 } from "@material-ui/core";
 import React from "react";
-import { connect } from "react-redux";
-import { TDispatchProp } from "types";
-import { setCurrentNamespaceAction } from "actions/namespaces";
 import { push } from "connected-react-router";
-import { RootState } from "reducers";
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
-import { SECOND_HEADER_HEIGHT } from "../layout/SecondHeader";
-import { LEFT_SECTION_OPEN_WIDTH } from "../pages/BasePage";
+import { SECOND_HEADER_HEIGHT } from "layout/SecondHeader";
+import { LEFT_SECTION_OPEN_WIDTH } from "pages/BasePage";
 import { H4 } from "./Label";
+import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
+import { setCurrentNamespaceAction } from "actions/namespaces";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -40,16 +38,7 @@ const styles = (theme: Theme) =>
     },
   });
 
-const mapStateToProps = (state: RootState) => {
-  const applicationsRoot = state.get("applications");
-  return {
-    applications: applicationsRoot.get("applications"),
-    isListFirstLoading: applicationsRoot.get("isListLoading") && !applicationsRoot.get("isListFirstLoaded"),
-    active: state.get("namespaces").get("active"),
-  };
-};
-
-interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {}
+interface Props extends WithStyles<typeof styles>, WithNamespaceProps {}
 
 interface State {
   open: boolean;
@@ -84,17 +73,18 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  componentDidMount() {
-    // this.props.dispatch(loadApplicationsAction());
-  }
+  private handleSelect = (event: React.MouseEvent) => {
+    const { dispatch } = this.props;
+    dispatch(setCurrentNamespaceAction(event.currentTarget.getAttribute("namespace-name")!));
+    this.handleClose();
+  };
 
   public render() {
-    const { classes, applications, active, dispatch, isListFirstLoading } = this.props;
+    const { classes, applications, activeNamespace, dispatch, isNamespaceFirstLoaded, isNamespaceLoading } = this.props;
     const { open } = this.state;
     const hasApplication = applications.count() > 0;
-    const activeNamespace = applications.find((application) => application.get("name") === active);
 
-    if (isListFirstLoading) {
+    if (isNamespaceLoading) {
       return (
         <div className={classes.root}>
           <Button className={classes.namespaceButton}>
@@ -103,7 +93,8 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
         </div>
       );
     }
-    if (!isListFirstLoading && hasApplication) {
+
+    if (!isNamespaceLoading && hasApplication) {
       return (
         <div className={classes.root}>
           <Button
@@ -114,7 +105,7 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
             onClick={this.handleToggle}
           >
             <H4>
-              {isListFirstLoading
+              {isNamespaceLoading
                 ? "Loading..."
                 : activeNamespace
                 ? activeNamespace.get("name")
@@ -147,10 +138,8 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
                       {applications
                         .map((application) => (
                           <MenuItem
-                            onClick={() => {
-                              dispatch(setCurrentNamespaceAction(application.get("name")));
-                              this.handleClose();
-                            }}
+                            onClick={this.handleSelect}
+                            namespace-name={application.get("name")}
                             key={application.get("name")}
                           >
                             <H4>{application.get("name")}</H4>
@@ -182,4 +171,4 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const Namespaces = withStyles(styles)(connect(mapStateToProps)(NamespacesRaw));
+export const Namespaces = withNamespace(withStyles(styles)(NamespacesRaw));
