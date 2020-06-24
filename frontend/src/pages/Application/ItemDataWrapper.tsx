@@ -50,31 +50,25 @@ export const ApplicationItemDataWrapper = ({ reloadFrequency }: { reloadFrequenc
   const WithdApplicationsData: React.ComponentType<WithApplicationItemDataProps> = class extends React.Component<
     WithApplicationItemDataProps
   > {
-    private interval?: number;
+    // private interval?: number;
 
-    private loadData = () => {
-      // const { applicationName } = this.props;
-      // this.props.dispatch(loadApplicationAction(applicationName));
-      // if (reloadFrequency > 0) {
-      //   this.interval = window.setTimeout(this.loadData, reloadFrequency);
-      // }
-    };
-
-    componentDidMount() {
-      this.loadData();
-    }
-
-    // componentDidUpdate(prevProps: WithApplicationItemDataProps) {
-    //   if (prevProps.activeNamespaceName !== this.props.activeNamespaceName) {
-    //     this.props.dispatch(push("/applications"));
+    // private loadData = () => {
+    //   const { applicationName } = this.props;
+    //   this.props.dispatch(loadApplicationAction(applicationName));
+    //   if (reloadFrequency > 0) {
+    //     this.interval = window.setTimeout(this.loadData, reloadFrequency);
     //   }
+    // };
+
+    // componentDidMount() {
+    //   this.loadData();
     // }
 
-    componentWillUnmount() {
-      if (this.interval) {
-        window.clearTimeout(this.interval);
-      }
-    }
+    // componentWillUnmount() {
+    //   if (this.interval) {
+    //     window.clearTimeout(this.interval);
+    //   }
+    // }
 
     render() {
       const { application } = this.props;

@@ -24,29 +24,29 @@ export const ApplicationListDataWrapper = (WrappedComponent: React.ComponentType
   const WithdApplicationsData: React.ComponentType<WithApplicationsListDataProps> = class extends React.Component<
     WithApplicationsListDataProps
   > {
-    private interval?: number;
+    // private interval?: number;
 
-    private loadData = () => {
-      // this.props.dispatch(loadApplicationsAction());
-      // this.interval = window.setTimeout(this.loadData, 5000);
-    };
+    // private loadData = () => {
+    //   this.props.dispatch(loadApplicationsAction());
+    //   this.interval = window.setTimeout(this.loadData, 5000);
+    // };
 
-    componentDidMount() {
-      this.loadData();
-    }
+    // componentDidMount() {
+    //   this.loadData();
+    // }
 
-    componentDidUpdate(prevProps: WithApplicationsListDataProps) {
-      if (prevProps.activeNamespaceName !== this.props.activeNamespaceName) {
-        window.clearTimeout(this.interval);
-        this.loadData();
-      }
-    }
+    // componentDidUpdate(prevProps: WithApplicationsListDataProps) {
+    //   if (prevProps.activeNamespaceName !== this.props.activeNamespaceName) {
+    //     window.clearTimeout(this.interval);
+    //     this.loadData();
+    //   }
+    // }
 
-    componentWillUnmount() {
-      if (this.interval) {
-        window.clearTimeout(this.interval);
-      }
-    }
+    // componentWillUnmount() {
+    //   if (this.interval) {
+    //     window.clearTimeout(this.interval);
+    //   }
+    // }
 
     render() {
       return <WrappedComponent {...this.props} />;
