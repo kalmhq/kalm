@@ -5,7 +5,6 @@ import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
 import { newEmptyComponentLike } from "types/componentTemplate";
 import { Loading } from "widgets/Loading";
-import { loadApplicationAction } from "actions/application";
 import { RootState } from "reducers";
 import { Actions } from "types";
 import { ApplicationComponent } from "types/application";
@@ -54,12 +53,11 @@ export const ApplicationItemDataWrapper = ({ reloadFrequency }: { reloadFrequenc
     private interval?: number;
 
     private loadData = () => {
-      const { applicationName } = this.props;
-      this.props.dispatch(loadApplicationAction(applicationName));
-
-      if (reloadFrequency > 0) {
-        this.interval = window.setTimeout(this.loadData, reloadFrequency);
-      }
+      // const { applicationName } = this.props;
+      // this.props.dispatch(loadApplicationAction(applicationName));
+      // if (reloadFrequency > 0) {
+      //   this.interval = window.setTimeout(this.loadData, reloadFrequency);
+      // }
     };
 
     componentDidMount() {

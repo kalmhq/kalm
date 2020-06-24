@@ -73,6 +73,10 @@ const putComponentIntoState = (
   }
 
   const application = applications.find((app) => app.get("name") === applicationName);
+  const components = application?.get("components");
+  if (!components) {
+    return state;
+  }
   const componentIndex = application!.get("components").findIndex((c) => c.get("name") === component.get("name"));
   if (componentIndex < 0) {
     state = state.setIn(["applications", applicationIndex, 0], component);

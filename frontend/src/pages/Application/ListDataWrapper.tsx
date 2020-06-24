@@ -3,7 +3,6 @@ import { RootState } from "../../reducers";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "../../types";
-import { loadApplicationsAction } from "../../actions/application";
 
 const mapStateToProps = (state: RootState) => {
   const applicationsState = state.get("applications");
@@ -31,8 +30,8 @@ export const ApplicationListDataWrapper = (WrappedComponent: React.ComponentType
     private interval?: number;
 
     private loadData = () => {
-      this.props.dispatch(loadApplicationsAction());
-      this.interval = window.setTimeout(this.loadData, 5000);
+      // this.props.dispatch(loadApplicationsAction());
+      // this.interval = window.setTimeout(this.loadData, 5000);
     };
 
     componentDidMount() {

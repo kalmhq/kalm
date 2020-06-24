@@ -9,8 +9,12 @@ import {
   ApplicationComponentDetails,
   UPDATE_COMPONENT,
   DELETE_COMPONENT,
+  CREATE_APPLICATION,
+  DELETE_APPLICATION,
+  ApplicationDetails,
 } from "../types/application";
 import Immutable from "immutable";
+import { getKappApplicationComponentList } from "../actions/kubernetesApi";
 
 export interface ResMessage {
   namespace: string;
@@ -73,6 +77,39 @@ class WebsocketConnectorRaw extends React.PureComponent<Props, State> {
             dispatch({
               type: DELETE_COMPONENT,
               payload: { applicationName: data.namespace, componentName: componentDetails.get("name") },
+            });
+          }
+          break;
+        }
+        case "Application": {
+          let application: ApplicationDetails = Immutable.fromJS(data.data);
+          if (data.action === "Add") {
+            if (application.get("status") === "Active") {
+              const components = await getKappApplicationComponentList(application.get("name"));
+              application = application.set("components", components);
+              dispatch({
+                type: CREATE_APPLICATION,
+                payload: { application },
+              });
+            }
+          } else if (data.action === "Update") {
+            if (application.get("status") === "Terminating") {
+              dispatch({
+                type: DELETE_APPLICATION,
+                payload: { applicationName: application.get("name") },
+              });
+            } else {
+              const components = await getKappApplicationComponentList(application.get("name"));
+              application = application.set("components", components);
+              dispatch({
+                type: CREATE_APPLICATION,
+                payload: { application },
+              });
+            }
+          } else if (data.action === "Delete") {
+            dispatch({
+              type: DELETE_APPLICATION,
+              payload: { applicationName: application.get("name") },
             });
           }
           break;

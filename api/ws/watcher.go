@@ -3,6 +3,7 @@ package ws
 import (
 	"github.com/kapp-staging/kapp/api/resources"
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/kapp-staging/kapp/controller/controllers"
 	log "github.com/sirupsen/logrus"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -12,23 +13,25 @@ import (
 )
 
 func StartWatching(c *Client) {
+	go WatchNamespaces(c)
 	go WatchComponents(c)
 	go WatchServices(c)
 	go WatchPods(c)
 }
 
+func WatchNamespaces(c *Client) {
+	Watch(c, &coreV1.Namespace{}, buildNamespaceResMessage)
+}
+
 func WatchComponents(c *Client) {
-	log.Info("--------------WatchComponents")
 	Watch(c, &v1alpha1.Component{}, buildComponentResMessage)
 }
 
 func WatchServices(c *Client) {
-	log.Info("--------------WatchServices")
 	Watch(c, &coreV1.Service{}, buildServiceResMessage)
 }
 
 func WatchPods(c *Client) {
-	log.Info("--------------WatchPods")
 	Watch(c, &coreV1.Pod{}, buildPodResMessage)
 }
 
@@ -67,6 +70,32 @@ func Watch(c *Client, runtimeObj runtime.Object, buildResMessage func(c *Client,
 	stop := make(chan struct{})
 	defer close(stop)
 	informerCache.Start(stop)
+}
+
+func buildNamespaceResMessage(c *Client, action string, objWatched interface{}) *ResMessage {
+	namespace, ok := objWatched.(*coreV1.Namespace)
+	if !ok {
+		log.Warnln("convert watch obj to Namespace failed %s", objWatched)
+		return &ResMessage{}
+	}
+
+	if _, exist := namespace.Labels[controllers.KappEnableLabelName]; !exist {
+		return &ResMessage{}
+	}
+
+	builder := resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, log.New())
+	applicationDetails, err := builder.BuildApplicationDetails(*namespace)
+	if err != nil {
+		log.Error(err)
+	}
+
+	return &ResMessage{
+		Namespace: "",
+		Component: "",
+		Kind:      "Application",
+		Action:    action,
+		Data:      applicationDetails,
+	}
 }
 
 func buildComponentResMessage(c *Client, action string, objWatched interface{}) *ResMessage {
