@@ -13,8 +13,6 @@ import {
   Tooltip,
   WithStyles,
 } from "@material-ui/core";
-import { grey } from "@material-ui/core/colors";
-import { closeDialogAction } from "actions/dialog";
 import { loadRoutes } from "actions/routes";
 import { push } from "connected-react-router";
 import Immutable from "immutable";
@@ -27,7 +25,6 @@ import { RootState } from "reducers";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
-import { ControlledDialog } from "widgets/ControlledDialog";
 import { KappConsoleIcon, KappLogIcon } from "widgets/Icon";
 import { deleteApplicationAction } from "actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
@@ -48,34 +45,13 @@ import { ApplicationListDataWrapper, WithApplicationsListDataProps } from "./Lis
 import withStyles from "@material-ui/core/styles/withStyles";
 import { connect } from "react-redux";
 import { isPrivateIP } from "utils/ip";
+import { KTable } from "widgets/Table";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
 
-// function ListItemLink(props: ListItemProps<"a", { button?: true }>) {
-//   return <ListItem button component="a" {...props} />;
-// }
-
 const styles = (theme: Theme) =>
   createStyles({
-    root: {
-      // padding: theme.spacing(3),
-      "& tr.MuiTableRow-root td": {
-        verticalAlign: "middle",
-      },
-    },
-    componentWrapper: {
-      minWidth: "120px",
-    },
-    componentLine: {
-      display: "inline-block",
-    },
-    duplicateConfirmFileds: {
-      marginTop: "20px",
-      width: "100%",
-      display: "flex",
-      justifyContent: "space-between",
-    },
     secondHeaderRight: {
       height: "100%",
       width: "100%",
@@ -115,8 +91,6 @@ interface Props
 interface State {
   isDeleteConfirmDialogOpen: boolean;
   deletingApplicationListItem?: ApplicationDetails;
-  // isDuplicateConfirmDialogOpen: boolean;
-  // duplicatingApplicationListItem?: ApplicationDetails;
 }
 
 interface RowData extends ApplicationDetails {
@@ -124,91 +98,22 @@ interface RowData extends ApplicationDetails {
 }
 
 class ApplicationListRaw extends React.PureComponent<Props, State> {
-  // private duplicateApplicationNameRef: React.RefObject<any>;
-  // private duplicateApplicationNamespaceRef: React.RefObject<any>;
   private tableRef: React.RefObject<MaterialTable<ApplicationDetails>> = React.createRef();
 
   private defaultState = {
     isDeleteConfirmDialogOpen: false,
     deletingApplicationListItem: undefined,
-    // isDuplicateConfirmDialogOpen: false,
-    // duplicatingApplicationListItem: undefined
   };
 
   constructor(props: Props) {
     super(props);
     this.state = this.defaultState;
-
-    // this.duplicateApplicationNameRef = React.createRef();
-    // this.duplicateApplicationNamespaceRef = React.createRef();
   }
 
   public componentDidMount() {
     const { dispatch } = this.props;
     dispatch(loadRoutes(""));
   }
-
-  // private showDuplicateConfirmDialog = (duplicatingApplicationListItem: ApplicationDetails) => {
-  //   this.setState({
-  //     isDuplicateConfirmDialogOpen: true,
-  //     duplicatingApplicationListItem
-  //   });
-  // };
-
-  // private closeDuplicateConfirmDialog = () => {
-  //   this.setState(this.defaultState);
-  // };
-
-  // private renderDuplicateConfirmDialog = () => {
-  //   const { classes } = this.props;
-  //   const { isDuplicateConfirmDialogOpen, duplicatingApplicationListItem } = this.state;
-
-  //   let title, content;
-  //   title = "Duplicate Application";
-  //   content = (
-  //     <div>
-  //       Please confirm the namespace and name of new application.
-  //       <div className={classes.duplicateConfirmFileds}>
-  //         <TextField
-  //           inputRef={this.duplicateApplicationNameRef}
-  //           label="Name"
-  //           size="small"
-  //           variant="outlined"
-  //           defaultValue={duplicateApplicationName(duplicatingApplicationListItem?.get("name") as string)}
-  //           required
-  //         />
-  //       </div>
-  //     </div>
-  //   );
-
-  //   return (
-  //     <ConfirmDialog
-  //       open={isDuplicateConfirmDialogOpen}
-  //       onClose={this.closeDuplicateConfirmDialog}
-  //       title={title}
-  //       content={content}
-  //       onAgree={this.confirmDuplicate}
-  //     />
-  //   );
-  // };
-
-  // private confirmDuplicate = async () => {
-  //   const { dispatch } = this.props;
-  //   try {
-  //     const { duplicatingApplicationListItem } = this.state;
-  //     if (duplicatingApplicationListItem) {
-  //       await dispatch(loadApplicationAction(duplicatingApplicationListItem.get("name")));
-
-  //       let newApplication = getApplicationByName(duplicatingApplicationListItem.get("name"));
-
-  //       newApplication = newApplication.set("name", this.duplicateApplicationNameRef.current.value);
-
-  //       dispatch(duplicateApplicationAction(newApplication));
-  //     }
-  //   } catch {
-  //     dispatch(setErrorNotificationAction());
-  //   }
-  // };
 
   private showDeleteConfirmDialog = (deletingApplicationListItem: ApplicationDetails) => {
     this.setState({
@@ -506,114 +411,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private renderInternalEndpointsDialog = () => {
-    const applicationDetails: RowData = this.props.internalEndpointsDialogData.applicationDetails;
-    return (
-      <ControlledDialog
-        dialogID={internalEndpointsModalID}
-        title="Internal Endpoints"
-        dialogProps={{
-          fullWidth: true,
-          maxWidth: "sm",
-        }}
-        actions={
-          <CustomizedButton
-            onClick={() => this.props.dispatch(closeDialogAction(internalEndpointsModalID))}
-            color="default"
-            variant="contained"
-          >
-            Close
-          </CustomizedButton>
-        }
-      >
-        {applicationDetails
-          ? applicationDetails
-              .get("components")
-              .map((component) => {
-                return component.get("services").map((serviceStatus) => {
-                  const dns = `${serviceStatus.get("name")}.${applicationDetails.get("name")}`;
-                  return serviceStatus
-                    .get("ports")
-                    .map((port) => {
-                      const url = `${dns}:${port.get("port")}`;
-                      return <div key={url}>{url}</div>;
-                    })
-                    .toArray();
-                });
-              })
-              .toArray()
-              .flat()
-          : null}
-      </ControlledDialog>
-    );
-  };
-
-  private renderExternalAccessesDialog = () => {
-    const applicationDetails: RowData = this.props.externalEndpointsDialogData.applicationDetails;
-    return (
-      <ControlledDialog
-        dialogID={externalEndpointsModalID}
-        title="External Endpoints"
-        dialogProps={{
-          fullWidth: true,
-          maxWidth: "sm",
-        }}
-        actions={
-          <CustomizedButton
-            onClick={() => this.props.dispatch(closeDialogAction(externalEndpointsModalID))}
-            color="default"
-            variant="contained"
-          >
-            Close
-          </CustomizedButton>
-        }
-      >
-        {this.renderExternalAccessesDialogContent(applicationDetails)}
-      </ControlledDialog>
-    );
-  };
-
-  private renderExternalAccessesDialogContent = (applicationDetails: RowData) => {
-    if (!applicationDetails) {
-      return null;
-    }
-
-    let urls: string[] = [];
-    applicationDetails.get("components")?.forEach((component) => {
-      const plugins = component.get("plugins");
-      if (!plugins) {
-        return;
-      }
-
-      // TODO
-      return;
-
-      // plugins.forEach(plugin => {
-      //   if (plugin.get("type") !== EXTERNAL_ACCESS_PLUGIN_TYPE) {
-      //     return;
-      //   }
-
-      //   const _plugin = plugin as ImmutableMap<ExternalAccessPlugin>;
-
-      //   const hosts: string[] = _plugin.get("hosts") ? _plugin.get("hosts")!.toArray() : [];
-      //   const paths: string[] = _plugin.get("paths") ? _plugin.get("paths")!.toArray() : ["/"];
-      //   const schema = _plugin.get("enableHttps") ? "https" : "http";
-      //   hosts.forEach(host => {
-      //     paths.forEach(path => {
-      //       const url = `${schema}://${host}${path}`;
-      //       urls.push(url);
-      //     });
-      //   });
-      // });
-    });
-
-    return urls.map((url) => (
-      <a href={url} key={url}>
-        {url}
-      </a>
-    ));
-  };
-
   private renderActions = (rowData: RowData) => {
     return (
       <>
@@ -622,6 +419,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           tooltipTitle="Shell"
           style={{ color: primaryColor }}
           component={Link}
+          size={"small"}
           to={`/applications/${rowData.get("name")}/shells`}
         >
           <KappConsoleIcon />
@@ -631,6 +429,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           tooltipTitle="Logs"
           style={{ color: primaryColor }}
           component={Link}
+          size={"small"}
           to={`/applications/${rowData.get("name")}/logs`}
         >
           <KappLogIcon />
@@ -652,14 +451,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         iconName: "edit",
         requiredRole: "writer",
       },
-      // {
-      //   text: "Duplicate",
-      //   onClick: () => {
-      //     this.showDuplicateConfirmDialog(rowData);
-      //   },
-      //   iconName: "file_copy",
-      //   requiredRole: "writer"
-      // },
       {
         text: "Delete",
         onClick: () => {
@@ -724,6 +515,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         title: "CPU",
         field: "cpu",
         render: this.renderCPU,
+        sorting: false,
         headerStyle: {
           textAlign: "center",
         },
@@ -732,6 +524,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         title: "Memory",
         field: "memory",
         render: this.renderMemory,
+        sorting: false,
         headerStyle: {
           textAlign: "center",
         },
@@ -775,7 +568,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         <CustomizedButton
           variant="contained"
           color="primary"
-          // size="large"
           onClick={() => {
             blinkTopProgressAction();
             dispatch(push(`/applications/new`));
@@ -788,39 +580,21 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { classes, isLoading, isFirstLoaded, applications } = this.props;
+    const { isLoading, isFirstLoaded, applications } = this.props;
 
     return (
       <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
-        {this.renderInternalEndpointsDialog()}
-        {this.renderExternalAccessesDialog()}
         {this.renderDeleteConfirmDialog()}
-        {/* {this.renderDuplicateConfirmDialog()} */}
-        <div className={classes.root}>
+        <Box p={2}>
           {isLoading && !isFirstLoaded ? (
             <Loading />
           ) : applications.size === 0 ? (
             this.renderEmpty()
           ) : (
-            <MaterialTable
+            <KTable
               tableRef={this.tableRef}
               options={{
-                pageSize: 20,
-                padding: "dense",
-                draggable: false,
-                rowStyle: {
-                  verticalAlign: "baseline",
-                },
                 paging: applications.size > 20,
-                headerStyle: {
-                  color: "black",
-                  backgroundColor: grey[100],
-                  fontSize: 12,
-                  fontWeight: 400,
-                  height: 20,
-                  paddingTop: 0,
-                  paddingBottom: 0,
-                },
               }}
               components={{
                 Row: (props: any) => (
@@ -829,16 +603,11 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
               }}
               // @ts-ignore
               columns={this.getColumns()}
-              // detailPanel={this.renderDetails}
-              // onRowClick={(_event, _rowData, togglePanel) => {
-              //   togglePanel!();
-              //   console.log(_event);
-              // }}
               data={this.getData()}
               title=""
             />
           )}
-        </div>
+        </Box>
       </BasePage>
     );
   }

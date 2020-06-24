@@ -20,15 +20,14 @@ import { AdminDrawer } from "../../layout/AdminDrawer";
 import { H4 } from "../../widgets/Label";
 import { BasePage } from "../BasePage";
 import { blinkTopProgressAction } from "../../actions/settings";
+import { KTable } from "widgets/Table";
 
 const dialogID = "rolebinding/add";
 const serviceAccountSecretDialogID = "serviceAccountSecretDialogID";
 
 const styles = (theme: Theme) =>
   createStyles({
-    root: {
-      // padding: theme.spacing(2)
-    },
+    root: {},
     roleChell: {
       "& .add-button": {
         display: "none",
@@ -274,7 +273,7 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { classes, namespaces } = this.props;
+    const { namespaces } = this.props;
     const tableData = this.getData();
     return (
       <BasePage
@@ -282,10 +281,15 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
         secondHeaderLeft={"Admin"}
         secondHeaderRight={this.renderSecondHeaderRight()}
       >
-        <div className={classes.root}>
+        <Box p={2}>
           {this.renderAddForm()}
           {this.renderShowServiceAccountSecretDialog()}
-          <MaterialTable
+          <KTable
+            options={{
+              paging: tableData.length > 20,
+              actionsColumnIndex: -1,
+              addRowPosition: "first",
+            }}
             tableRef={this.tableRef}
             icons={{
               Delete: forwardRef((props, ref) => <DeleteIcon ref={ref} {...props} color="secondary" />),
@@ -299,20 +303,6 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
                 },
               },
             }}
-            options={{
-              pageSize: 20,
-              draggable: false,
-              search: true,
-              paging: false,
-              padding: "dense",
-              //   toolbar: false
-              actionsColumnIndex: -1,
-              addRowPosition: "first",
-              headerStyle: {
-                // backgroundColor: "#01579b",
-                // color: "#FFF"
-              },
-            }}
             columns={([
               {
                 title: "Entity",
@@ -320,7 +310,6 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
                 render: this.renderEntity,
                 cellStyle: {
                   // backgroundColor: "#039be5",
-                  // color: "#FFF"
                 },
               },
             ] as any).concat(
@@ -343,7 +332,7 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
               onRowDelete: this.handleDelete,
             }}
           />
-        </div>
+        </Box>
       </BasePage>
     );
   }

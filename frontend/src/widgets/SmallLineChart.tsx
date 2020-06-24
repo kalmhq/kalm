@@ -330,7 +330,7 @@ export const SmallMemoryLineChart = (props: Pick<Props, "data">) => {
       {...props}
       formatValue={formatMemory}
       width={120}
-      height={30}
+      height={24}
       borderColor="rgba(75,192,192, 1)"
       backgroundColor="rgba(75,192,192,0.5)"
     />
@@ -343,7 +343,7 @@ export const SmallCPULineChart = (props: Pick<Props, "data">) => {
       {...props}
       formatValue={formatCPU}
       width={120}
-      height={30}
+      height={24}
       borderColor="rgba(33, 150, 243, 1)"
       backgroundColor="rgba(33, 150, 243, 0.5)"
     />

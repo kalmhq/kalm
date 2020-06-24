@@ -1,8 +1,6 @@
 import { Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { grey } from "@material-ui/core/colors";
 import { deleteRoute, loadRoutes } from "actions/routes";
 import { push } from "connected-react-router";
-import MaterialTable from "material-table";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { HttpRoute } from "types/route";
@@ -14,6 +12,7 @@ import { Loading } from "widgets/Loading";
 import { Namespaces } from "widgets/Namespaces";
 import { blinkTopProgressAction } from "../../actions/settings";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
+import { KTable } from "widgets/Table";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -194,24 +193,9 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
           {isRoutesLoading && !isRoutesFirstLoaded ? (
             <Loading />
           ) : (
-            <MaterialTable
+            <KTable
               options={{
-                pageSize: 20,
                 paging: tableData.length > 20,
-                padding: "dense",
-                draggable: false,
-                rowStyle: {
-                  verticalAlign: "baseline",
-                },
-                headerStyle: {
-                  color: "black",
-                  backgroundColor: grey[100],
-                  fontSize: 12,
-                  fontWeight: 400,
-                  height: 20,
-                  paddingTop: 0,
-                  paddingBottom: 0,
-                },
               }}
               columns={[
                 {
