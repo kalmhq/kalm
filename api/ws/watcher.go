@@ -98,6 +98,11 @@ func buildServiceResMessage(c *Client, action string, objWatched interface{}) *R
 		return &ResMessage{}
 	}
 
+	labelComponent := service.Labels["kapp-component"]
+	if labelComponent == "" {
+		return &ResMessage{}
+	}
+
 	serviceStatus := &resources.ServiceStatus{
 		Name:      service.Name,
 		ClusterIP: service.Spec.ClusterIP,
@@ -106,7 +111,7 @@ func buildServiceResMessage(c *Client, action string, objWatched interface{}) *R
 
 	return &ResMessage{
 		Namespace: service.Namespace,
-		Component: service.Labels["kapp-component"],
+		Component: labelComponent,
 		Kind:      "Service",
 		Action:    action,
 		Data:      serviceStatus,
@@ -117,6 +122,11 @@ func buildPodResMessage(c *Client, action string, objWatched interface{}) *ResMe
 	pod, ok := objWatched.(*coreV1.Pod)
 	if !ok {
 		log.Warnln("convert watch obj to Pod failed %s", objWatched)
+		return &ResMessage{}
+	}
+
+	labelComponent := pod.Labels["kapp-component"]
+	if labelComponent == "" {
 		return &ResMessage{}
 	}
 
@@ -135,9 +145,9 @@ func buildPodResMessage(c *Client, action string, objWatched interface{}) *ResMe
 
 	return &ResMessage{
 		Namespace: pod.Namespace,
-		Component: pod.Labels["kapp-component"],
+		Component: labelComponent,
 		Kind:      "Pod",
 		Action:    action,
-		Data:      objWatched,
+		Data:      podStatus,
 	}
 }
