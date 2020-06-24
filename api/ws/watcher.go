@@ -67,9 +67,9 @@ func Watch(c *Client, runtimeObj runtime.Object, buildResMessage func(c *Client,
 		},
 	})
 
-	stop := make(chan struct{})
-	defer close(stop)
-	informerCache.Start(stop)
+	// stop := make(chan struct{})
+	// defer close(stop)
+	informerCache.Start(c.StopWatcher)
 }
 
 func buildNamespaceResMessage(c *Client, action string, objWatched interface{}) *ResMessage {

@@ -42,7 +42,9 @@ func (h *WsHandler) Serve(c echo.Context) error {
 	client := &Client{
 		clientPool:       h.clientPool,
 		conn:             conn,
-		Send:             make(chan []byte, 128),
+		Send:             make(chan []byte, 256),
+		ExitWrite:        make(chan int),
+		StopWatcher:      make(chan struct{}),
 		K8sClientManager: h.k8sClientManager,
 	}
 	client.clientPool.register <- client

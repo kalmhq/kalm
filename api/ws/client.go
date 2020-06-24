@@ -33,6 +33,8 @@ type Client struct {
 
 	ExitWrite chan int
 
+	StopWatcher chan struct{}
+
 	K8sClientManager *client.ClientManager
 
 	K8SClientConfig *rest.Config
@@ -78,6 +80,7 @@ func (c *Client) read() {
 		c.clientPool.unregister <- c
 		c.conn.Close()
 		c.ExitWrite <- 1
+		close(c.StopWatcher)
 	}()
 
 	for {
