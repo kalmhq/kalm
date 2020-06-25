@@ -4,6 +4,7 @@ import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { loadApplicationsAction } from "actions/application";
 import { RouteComponentProps, withRouter } from "react-router-dom";
+import { Loading } from "widgets/Loading";
 
 const mapStateToProps = (
   state: RootState,
@@ -36,6 +37,16 @@ export const withNamespace = (WrappedComponent: React.ComponentType<any>) => {
     }
 
     render() {
+      const { activeNamespace, isNamespaceLoading, isNamespaceFirstLoaded } = this.props;
+
+      if (isNamespaceLoading && !isNamespaceFirstLoaded) {
+        return <Loading />;
+      }
+
+      // if (!activeNamespace) {
+      //   return <BasePage>Please create a application first</BasePage>;
+      // }
+
       return <WrappedComponent {...this.props} />;
     }
   };
