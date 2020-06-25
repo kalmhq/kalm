@@ -69,6 +69,7 @@ const putComponentIntoState = (
   state: State,
   applicationName: string,
   component: ApplicationComponentDetails,
+  isCreate: boolean,
 ): State => {
   const applications = state.get("applications");
   const applicationIndex = applications.findIndex((app) => app.get("name") === applicationName);
@@ -82,7 +83,9 @@ const putComponentIntoState = (
   }
   const componentIndex = components.findIndex((c) => c.get("name") === component.get("name"));
   if (componentIndex < 0) {
-    state = state.setIn(["applications", applicationIndex, "components", components.size], component);
+    if (isCreate) {
+      state = state.setIn(["applications", applicationIndex, "components", components.size], component);
+    }
   } else {
     state = state.setIn(["applications", applicationIndex, "components", componentIndex], component);
   }
@@ -220,11 +223,11 @@ const reducer = (state: State = initialState, action: Actions): State => {
       break;
     }
     case CREATE_COMPONENT: {
-      state = putComponentIntoState(state, action.payload.applicationName, action.payload.component);
+      state = putComponentIntoState(state, action.payload.applicationName, action.payload.component, true);
       break;
     }
     case UPDATE_COMPONENT: {
-      state = putComponentIntoState(state, action.payload.applicationName, action.payload.component);
+      state = putComponentIntoState(state, action.payload.applicationName, action.payload.component, false);
       break;
     }
     case DELETE_COMPONENT: {
