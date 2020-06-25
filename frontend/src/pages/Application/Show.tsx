@@ -63,7 +63,7 @@ class ApplicationShowRaw extends React.PureComponent<Props> {
             <ArrowBackIcon />
           </IconButton>
         )}
-        <H4 className={classes.secondHeaderRightItem}>{componentName ? "Component Details" : "Application Details"}</H4>
+        <H4 className={classes.secondHeaderRightItem}>{componentName ? "Component Details" : "Overview"}</H4>
         <CustomizedButton
           color="primary"
           size="large"

@@ -7,7 +7,7 @@ import { CheckCircleIcon, ErrorIcon } from "./Icon";
 export const SuccessBadge = (props: { text?: string }) => {
   return (
     <Box display="inline-flex" alignItems="center">
-      <CheckCircleIcon style={{ marginRight: 6 }} />
+      <CheckCircleIcon />
       {props.text}
     </Box>
   );
@@ -16,14 +16,7 @@ export const SuccessBadge = (props: { text?: string }) => {
 export const PendingBadge = (props: { text?: string }) => {
   return (
     <Box display="inline-flex" alignItems="center">
-      <CircularProgress
-        variant="indeterminate"
-        disableShrink
-        size={18}
-        thickness={4}
-        {...props}
-        style={{ marginRight: 6 }}
-      />
+      <CircularProgress variant="indeterminate" disableShrink size={18} thickness={4} {...props} />
       {props.text}
     </Box>
   );
@@ -32,7 +25,7 @@ export const PendingBadge = (props: { text?: string }) => {
 export const WarningBadge = (props: { text?: string }) => {
   return (
     <Box display="inline-flex" alignItems="center">
-      <WarningIcon style={{ marginRight: 6 }} color="secondary" />
+      <WarningIcon color="secondary" />
       {props.text}
     </Box>
   );
@@ -41,7 +34,7 @@ export const WarningBadge = (props: { text?: string }) => {
 export const ErrorBadge = (props: { text?: string }) => {
   return (
     <Box display="inline-flex" alignItems="center">
-      <ErrorIcon style={{ marginRight: 6 }} />
+      <ErrorIcon />
       {props.text}
     </Box>
   );
@@ -50,7 +43,7 @@ export const ErrorBadge = (props: { text?: string }) => {
 export const UnknownBadge = (props: { text?: string }) => {
   return (
     <Box display="inline-flex" alignItems="center">
-      <HelpIcon style={{ marginRight: 6 }} color="disabled" />
+      <HelpIcon color="disabled" />
       {props.text}
     </Box>
   );

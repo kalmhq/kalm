@@ -5,12 +5,13 @@ import { ThunkDispatch } from "redux-thunk";
 import { RootState } from "reducers";
 import { Actions } from "types";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
+import Immutable from "immutable";
 
 const mapStateToProps = (state: RootState, props: WithNamespaceProps) => {
   const activeNamespace = props.activeNamespace!;
 
   return {
-    components: activeNamespace.get("components"),
+    components: activeNamespace.get("components") || Immutable.List(),
   };
 };
 

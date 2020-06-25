@@ -1,26 +1,25 @@
 import React from "react";
-import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { TDispatchProp } from "types";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
-import { getWebsocketInstance } from "../actions/websocket";
+import { getWebsocketInstance } from "actions/websocket";
 import {
-  CREATE_COMPONENT,
-  ApplicationComponentDetails,
-  UPDATE_COMPONENT,
-  DELETE_COMPONENT,
-  CREATE_APPLICATION,
-  DELETE_APPLICATION,
-  ApplicationDetails,
-  ServiceStatus,
-  ADD_OR_UPDATE_SERVICE,
-  DELETE_SERVICE,
   ADD_OR_UPDATE_POD,
+  ADD_OR_UPDATE_SERVICE,
+  ApplicationComponentDetails,
+  ApplicationDetails,
+  CREATE_APPLICATION,
+  CREATE_COMPONENT,
+  DELETE_APPLICATION,
+  DELETE_COMPONENT,
   DELETE_POD,
+  DELETE_SERVICE,
   PodStatus,
-} from "../types/application";
+  ServiceStatus,
+  UPDATE_COMPONENT,
+} from "types/application";
 import Immutable from "immutable";
-import { getKappApplicationComponentList } from "../actions/kubernetesApi";
+import { getKappApplicationComponentList } from "actions/kubernetesApi";
 
 export interface ResMessage {
   namespace: string;
@@ -30,27 +29,15 @@ export interface ResMessage {
   data: any;
 }
 
-const styles = (theme: Theme) =>
-  createStyles({
-    root: {},
-  });
-
 const mapStateToProps = (state: RootState) => {
   return {
     token: state.get("auth").get("token"),
   };
 };
 
-interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {}
+interface Props extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
-interface State {}
-
-class WebsocketConnectorRaw extends React.PureComponent<Props, State> {
-  // constructor(props: Props) {
-  //   super(props);
-  //   this.state = {};
-  // }
-
+class WebsocketConnectorRaw extends React.PureComponent<Props> {
   private connectWebsocket() {
     const { dispatch, token } = this.props;
 
@@ -172,4 +159,4 @@ class WebsocketConnectorRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const WebsocketConnector = withStyles(styles)(connect(mapStateToProps)(WebsocketConnectorRaw));
+export const WebsocketConnector = connect(mapStateToProps)(WebsocketConnectorRaw);
