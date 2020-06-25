@@ -9,14 +9,15 @@ metadata:
 apiVersion: core.kapp.dev/v1alpha1
 kind: Component
 metadata:
-    name: hello-world
-    namespace: kapp-hello-world
+  name: hello-world
+  namespace: kapp-hello-world
 spec:
-    image: strm/helloworld-http:latest
-    ports:
-        - name: http
-          containerPort: 80
-          servicePort: 80
+  enableHeadlessService: false
+  image: strm/helloworld-http:latest
+  ports:
+    - name: http
+      containerPort: 80
+      servicePort: 80
 ---
 apiVersion: core.kapp.dev/v1alpha1
 kind: HttpRoute

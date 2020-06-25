@@ -8,6 +8,7 @@ import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { AppBarComponent } from "./AppBar";
 import { RootDrawer } from "./RootDrawer";
+import { WebsocketConnector } from "./WebsocketConnector";
 import { TDispatchProp } from "types";
 import { loadClusterInfoAction } from "actions/cluster";
 
@@ -84,6 +85,8 @@ class DashboardLayoutRaw extends React.PureComponent<Props> {
         </div>
 
         <TutorialDrawer />
+
+        <WebsocketConnector />
       </div>
     );
   }

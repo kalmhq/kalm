@@ -73,7 +73,6 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
 }
 
 interface State {
-  selectededComponentIndex: number;
   isDeleteConfirmDialogOpen: boolean;
 }
 
@@ -82,7 +81,6 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
     super(props);
 
     this.state = {
-      selectededComponentIndex: 0,
       isDeleteConfirmDialogOpen: false,
     };
   }
@@ -95,10 +93,6 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
 
   private handleClickComponent(component: ApplicationComponent, index: number) {
     blinkTopProgressAction();
-
-    this.setState({
-      selectededComponentIndex: index,
-    });
 
     this.pushRedirect(component.get("name"));
   }
@@ -114,13 +108,15 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
       if (!currentComponent.get("name")) {
         const { application } = this.props;
 
-        this.pushRedirect(application?.get("components")?.get(0)?.get("name"));
+        this.pushRedirect(application?.get("components")?.get(0)?.get("name") || "");
       } else {
         dispatch(deleteComponentAction(currentComponent.get("name")));
-      }
-
-      if (currentComponent.get("name") === application?.get("components").get(0)?.get("name")) {
-        this.pushRedirect("");
+        // delete first
+        if (currentComponent.get("name") === application?.get("components").get(0)?.get("name")) {
+          this.pushRedirect("");
+        } else {
+          this.pushRedirect(application?.get("components")?.get(0)?.get("name"));
+        }
       }
     }
   }
@@ -145,9 +141,9 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
       <ConfirmDialog
         open={isDeleteConfirmDialogOpen}
         onClose={this.closeDeleteConfirmDialog}
-        title={`Are you sure to delete this component${
+        title={`Are you sure to delete this component(${
           currentComponent && currentComponent.get("name") ? currentComponent.get("name") : ""
-        }?`}
+        })?`}
         content="You will lost this component, and this action is irrevocable."
         onAgree={() => this.confirmDelete()}
       />
@@ -165,35 +161,6 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
       // default select
       if (application && application.get("components")?.get(0)) {
         this.handleClickComponent(application.get("components").get(0) as ApplicationComponent, 0);
-      }
-    } else if (search.component !== undefined) {
-      if (search.component === "") {
-        // new component form list
-        if (application.get("components").size !== 0) {
-          this.handleClickComponent(componentInitialValues as ApplicationComponent, application.get("components").size);
-          return;
-        }
-      } else {
-        // edit component form list
-        const component = application.get("components").find((c) => c.get("name") === search.component);
-        const componentIndex = application.get("components").findIndex((c) => c.get("name") === search.component);
-        if (component) {
-          this.handleClickComponent(component, componentIndex);
-          return;
-        }
-      }
-    }
-  }
-
-  public componentDidUpdate(prevProps: Props) {
-    if (prevProps.application && this.props.application) {
-      // after create
-      if (this.props.application.get("components")?.size - prevProps.application.get("components")?.size === 1) {
-        // select new created item
-        this.handleClickComponent(
-          this.props.application.get("components")?.get(this.state.selectededComponentIndex) as ApplicationComponent,
-          this.props.application.get("components")!.size - 1,
-        );
       }
     }
   }
@@ -219,23 +186,11 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
       components = Immutable.List([componentInitialValues as ApplicationComponent]);
     }
 
-    let selectededComponentIndex = this.state.selectededComponentIndex;
-    // correct selected index
-    if (application.get("components")) {
-      if (selectededComponentIndex > application.get("components").size) {
-        selectededComponentIndex = 0;
-      } else if (selectededComponentIndex === application.get("components").size) {
-        if (!(currentComponent && !currentComponent.get("name"))) {
-          selectededComponentIndex = 0;
-        }
-      }
-    }
-
     return components.map((component, index) => {
       return (
         <React.Fragment key={index}>
           <ListItem
-            selected={selectededComponentIndex === index}
+            selected={currentComponent?.get("name") === component.get("name")}
             className={classes.listItem}
             classes={{
               selected: classes.listItemSeleted,
@@ -248,7 +203,7 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
             <ListItemIcon>
               <FiberManualRecordIcon
                 style={{ fontSize: 15 }}
-                htmlColor={selectededComponentIndex === index ? primaryColor : grey[400]}
+                htmlColor={currentComponent?.get("name") === component.get("name") ? primaryColor : grey[400]}
               />
             </ListItemIcon>
             <ListItemText primary={component.get("name") || `Please type component name`} />
@@ -266,7 +221,7 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
     }
 
     const disableAdd = (currentComponent && !currentComponent.get("name")) || application.get("components")?.size === 0;
-    const disableDelete = !currentComponent || !currentComponent.get("name");
+    // const disableDelete = !currentComponent || !currentComponent.get("name");
 
     return (
       <BaseDrawer>
@@ -288,7 +243,7 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
                 size="small"
                 tooltipTitle={"Delete"}
                 aria-label="delete component"
-                disabled={disableDelete}
+                // disabled={disableDelete}
                 onClick={() => this.showDeleteConfirmDialog()}
               >
                 <RemoveIcon />

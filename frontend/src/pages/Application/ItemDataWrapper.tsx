@@ -5,11 +5,11 @@ import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
 import { newEmptyComponentLike } from "types/componentTemplate";
 import { Loading } from "widgets/Loading";
-import { loadApplicationAction } from "actions/application";
 import { RootState } from "reducers";
 import { Actions } from "types";
 import { ApplicationComponent } from "types/application";
 import { applicationComponentDetailsToApplicationComponent } from "utils/application";
+import { loadApplicationAction } from "../../actions/application";
 
 const mapStateToProps = (state: RootState, props: any) => {
   const applications = state.get("applications");
@@ -43,9 +43,7 @@ export interface WithApplicationItemDataProps extends ReturnType<typeof mapState
   dispatch: ThunkDispatch<RootState, undefined, Actions>;
 }
 
-// if reloadFrequency > 0, will keep reload the item
-// otherwize, will only load the item once
-export const ApplicationItemDataWrapper = ({ reloadFrequency }: { reloadFrequency: number }) => (
+export const ApplicationItemDataWrapper = ({ autoReload }: { autoReload: boolean }) => (
   WrappedComponent: React.ComponentType<any>,
 ) => {
   const WithdApplicationsData: React.ComponentType<WithApplicationItemDataProps> = class extends React.Component<
@@ -56,21 +54,15 @@ export const ApplicationItemDataWrapper = ({ reloadFrequency }: { reloadFrequenc
     private loadData = () => {
       const { applicationName } = this.props;
       this.props.dispatch(loadApplicationAction(applicationName));
-
-      if (reloadFrequency > 0) {
-        this.interval = window.setTimeout(this.loadData, reloadFrequency);
+      if (autoReload) {
+        // Just for refresh mestrics. Reload per minute,
+        this.interval = window.setTimeout(this.loadData, 60000);
       }
     };
 
     componentDidMount() {
       this.loadData();
     }
-
-    // componentDidUpdate(prevProps: WithApplicationItemDataProps) {
-    //   if (prevProps.activeNamespaceName !== this.props.activeNamespaceName) {
-    //     this.props.dispatch(push("/applications"));
-    //   }
-    // }
 
     componentWillUnmount() {
       if (this.interval) {

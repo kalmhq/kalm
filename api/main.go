@@ -2,21 +2,20 @@ package main
 
 import (
 	"context"
-	_ "github.com/joho/godotenv/autoload"
-	"github.com/kapp-staging/kapp/api/client"
-	"github.com/kapp-staging/kapp/api/handler"
-	"github.com/kapp-staging/kapp/api/resources"
-	"github.com/kapp-staging/kapp/api/server"
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
-	"k8s.io/client-go/kubernetes/scheme"
-)
-
-import (
-	"github.com/kapp-staging/kapp/api/config"
-	"github.com/urfave/cli/v2"
 	"log"
 	"os"
 	"sort"
+
+	_ "github.com/joho/godotenv/autoload"
+	"github.com/kapp-staging/kapp/api/client"
+	"github.com/kapp-staging/kapp/api/config"
+	"github.com/kapp-staging/kapp/api/handler"
+	"github.com/kapp-staging/kapp/api/resources"
+	"github.com/kapp-staging/kapp/api/server"
+	"github.com/kapp-staging/kapp/api/ws"
+	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/urfave/cli/v2"
+	"k8s.io/client-go/kubernetes/scheme"
 )
 
 func main() {
@@ -104,8 +103,14 @@ func run(runningConfig *config.Config) {
 	e := server.NewEchoServer(runningConfig)
 
 	clientManager := client.NewClientManager(runningConfig)
+
+	wsHandler := ws.NewWsHandler(clientManager)
+	e.GET("/ws", wsHandler.Serve)
+
 	apiHandler := handler.NewApiHandler(clientManager)
 	apiHandler.Install(e)
+
+	// watcher.StartWatching(clientManager)
 
 	go resources.StartMetricScraper(context.Background(), clientManager)
 	e.Logger.Fatal(e.Start(runningConfig.GetServerAddress()))
