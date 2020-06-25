@@ -21,6 +21,7 @@ import { RequireNamespaceReader, RequireNamespaceWriter } from "permission/Names
 import { RequireAdmin } from "permission/Role";
 import React from "react";
 import { Route, Switch } from "react-router";
+import { ComponentListPage } from "pages/Components/List";
 
 const RequireAuthorizatedDashboard = RequireAuthorizated(DashboardLayout);
 
@@ -40,14 +41,13 @@ export const KappRoutes = (
           <Route exact path="/applications" component={RequireAdmin(ApplicationListPage)} />
           <Route exact path="/applications/new" component={RequireAdmin(ApplicationNew)} />
           <Route exact path="/applications/:applicationName" component={RequireNamespaceReader(ApplicationShow)} />
+
           <Route exact path="/applications/:applicationName/routes" component={RequireNamespaceReader(RouteListPage)} />
           <Route exact path="/applications/:applicationName/routes/new" component={RequireNamespaceReader(RouteNew)} />
+          <Route exact path="/applications/:applicationName/routes/:name/edit" component={RouteEdit} />
 
-          <Route
-            exact
-            path="/applications/:applicationName/routes/:name/edit"
-            component={RequireNamespaceReader(RouteEdit)}
-          />
+          <Route exact path="/applications/:applicationName/components" component={ComponentListPage} />
+
           <Route exact path="/applications/:applicationName/edit" component={RequireNamespaceWriter(ApplicationEdit)} />
           <Route exact path="/applications/:applicationName/logs" component={RequireNamespaceReader(Log)} />
           <Route exact path="/applications/:applicationName/shells" component={RequireNamespaceWriter(Log)} />

@@ -80,6 +80,19 @@ let themeRaw = createMuiTheme({
     },
   },
   overrides: {
+    MuiExpansionPanelSummary: {
+      root: {
+        "&$expanded": {
+          minHeight: "auto",
+          background: grey[100],
+        },
+      },
+      content: {
+        "&$expanded": {
+          margin: "inherit",
+        },
+      },
+    },
     MuiInputLabel: {
       root: {
         fontWeight: 500,

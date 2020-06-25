@@ -12,7 +12,6 @@ metadata:
   name: hello-world
   namespace: kapp-hello-world
 spec:
-  enableHeadlessService: false
   image: strm/helloworld-http:latest
   ports:
     - name: http

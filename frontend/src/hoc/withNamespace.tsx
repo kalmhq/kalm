@@ -3,7 +3,8 @@ import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { loadApplicationsAction } from "actions/application";
-import { RouteComponentProps } from "react-router";
+import { RouteComponentProps, withRouter } from "react-router-dom";
+import { Loading } from "widgets/Loading";
 
 const mapStateToProps = (
   state: RootState,
@@ -36,13 +37,23 @@ export const withNamespace = (WrappedComponent: React.ComponentType<any>) => {
     }
 
     render() {
+      const { isNamespaceFirstLoaded } = this.props;
+
+      if (!isNamespaceFirstLoaded) {
+        return <Loading />;
+      }
+
+      // if (!activeNamespace) {
+      //   return <BasePage>Please create a application first</BasePage>;
+      // }
+
       return <WrappedComponent {...this.props} />;
     }
   };
 
   HOC.displayName = `WithNamespace(${getDisplayName(WrappedComponent)})`;
 
-  return connect(mapStateToProps)(HOC);
+  return withRouter(connect(mapStateToProps)(HOC));
 };
 
 function getDisplayName(WrappedComponent: React.ComponentType<any>) {
