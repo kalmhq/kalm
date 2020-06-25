@@ -1,4 +1,4 @@
-import { createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
@@ -45,23 +45,14 @@ class RegistryNewModalRaw extends React.PureComponent<Props, State> {
   private renderActions() {
     const { dispatch, isSubmittingRegistry } = this.props;
     return (
-      <Grid container spacing={2}>
-        <Grid item md={8}></Grid>
-        <Grid item md={2}>
-          <CustomizedButton onClick={() => dispatch(closeDialogAction(RegistryNewModalID))} color="primary">
-            Cancel
-          </CustomizedButton>
-        </Grid>
-        <Grid item md={2}>
-          <CustomizedButton
-            disabled={isSubmittingRegistry}
-            onClick={() => dispatch(submit("registry"))}
-            color="primary"
-          >
-            Save
-          </CustomizedButton>
-        </Grid>
-      </Grid>
+      <>
+        <CustomizedButton onClick={() => dispatch(closeDialogAction(RegistryNewModalID))} color="primary">
+          Cancel
+        </CustomizedButton>
+        <CustomizedButton disabled={isSubmittingRegistry} onClick={() => dispatch(submit("registry"))} color="primary">
+          Save
+        </CustomizedButton>
+      </>
     );
   }
 

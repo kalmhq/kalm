@@ -36,6 +36,7 @@ import { PieChartComponent } from "widgets/PieChart";
 import { BigCPULineChart, BigMemoryLineChart, SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { generateQueryForPods } from "./Log";
 import { blinkTopProgressAction } from "actions/settings";
+import { KPanel } from "../../widgets/KPanel";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -141,9 +142,6 @@ const styles = (theme: Theme) =>
       padding: `0 ${theme.spacing(2)}px`,
     },
     tabs: {},
-    resources: {
-      padding: theme.spacing(2),
-    },
     volumeWrapper: {
       padding: `0 ${theme.spacing(2)}px`,
     },
@@ -292,28 +290,9 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     const { classes, application, dispatch, hasRole } = this.props;
     const component = application.get("components")?.get(index)!;
     const hasWriterRole = hasRole("writer");
-    // const externalAccessPlugin = Immutable.List([]);
-    // component.get("plugins") &&
-    // (component.get("plugins")!.filter(p => p.get("type") === EXTERNAL_ACCESS_PLUGIN_TYPE) as
-    //   | Immutable.List<ImmutableMap<ExternalAccessPlugin>>
-    //   | undefined);
+
     return (
       <Paper className={classes.componentContainer} key={index}>
-        {/* <div className={clsx(classes.rowContainer, classes.componentRow)}>
-          <div className="name">
-            <strong>{component.get("name")}</strong> ({component.get("workloadType")})
-          </div>
-
-          <div className="right-part">
-            <div className={classes.chartTabelCell}>
-              <SmallCPULineChart data={component.get("metrics").get("cpu")!} />
-            </div>
-            <div className={classes.chartTabelCell}>
-              <SmallMemoryLineChart data={component.get("metrics").get("memory")!} />
-            </div>
-          </div>
-        </div> */}
-
         <Box p={2}>
           <div className={classes.flexWrapper}>
             <H5>CPU:</H5>
@@ -364,29 +343,6 @@ class DetailsRaw extends React.PureComponent<Props, State> {
             Delete
           </Button>
         </Box>
-
-        {/* <Box p={2}>
-          <div>Internal Endpoints:</div>
-          <Box ml={2}>
-            {component
-              .get("services")
-              .map(serviceStatus => {
-                const dns = `${serviceStatus.get("name")}.${application.get("namespace")}`;
-                return serviceStatus
-                  .get("ports")
-                  .map(port => {
-                    return (
-                      <div key={port.get("name")}>
-                        <strong>{port.get("name")}</strong>: {dns}:{port.get("port")}
-                      </div>
-                    );
-                  })
-                  .toArray();
-              })
-              .toArray()
-              .flat()}
-          </Box>
-        </Box> */}
 
         <div className={classes.podContainer}>
           {component.get("pods").size > 0 ? (
@@ -583,52 +539,73 @@ class DetailsRaw extends React.PureComponent<Props, State> {
 
     return (
       <>
-        <Grid container spacing={2} className={classes.metrics}>
-          <Grid item md={2} style={{ padding: 20 }}>
-            <PieChartComponent
-              title="Components"
-              labels={["Running", "Pending", "Error"]}
-              data={[pieChartData.componentSuccess, pieChartData.componentPending, pieChartData.componentError]}
-            />
-          </Grid>
-          <Grid item md={2} style={{ padding: 20 }}>
-            <PieChartComponent
-              title="Pods"
-              labels={["Running", "Pending", "Error"]}
-              data={[pieChartData.podSuccess, pieChartData.podPending, pieChartData.podError]}
-            />
-          </Grid>
-          <Grid item md={4}>
-            <BigCPULineChart data={application.get("metrics")?.get("cpu")} />
-          </Grid>
-          <Grid item md={4}>
-            <BigMemoryLineChart data={application.get("metrics")?.get("memory")} />
-          </Grid>
-        </Grid>
-
-        {application
-          .get("components")
-          ?.map((_x, index) => this.renderComponentPanel(index))
-          ?.toArray()}
+        <Box p={2}>
+          <KPanel
+            title={"Overview"}
+            content={
+              <Box p={2}>
+                <Grid container spacing={2} className={classes.metrics}>
+                  <Grid item md={2} style={{ padding: 20 }}>
+                    <PieChartComponent
+                      title="Components"
+                      labels={["Running", "Pending", "Error"]}
+                      data={[pieChartData.componentSuccess, pieChartData.componentPending, pieChartData.componentError]}
+                    />
+                  </Grid>
+                  <Grid item md={2} style={{ padding: 20 }}>
+                    <PieChartComponent
+                      title="Pods"
+                      labels={["Running", "Pending", "Error"]}
+                      data={[pieChartData.podSuccess, pieChartData.podPending, pieChartData.podError]}
+                    />
+                  </Grid>
+                  <Grid item md={4}>
+                    <BigCPULineChart data={application.get("metrics")?.get("cpu")} />
+                  </Grid>
+                  <Grid item md={4}>
+                    <BigMemoryLineChart data={application.get("metrics")?.get("memory")} />
+                  </Grid>
+                </Grid>
+              </Box>
+            }
+          />
+        </Box>
+        <Box p={2}>
+          <KPanel
+            title={"Pod List"}
+            content={
+              <Box>
+                {application
+                  .get("components")
+                  ?.map((_x, index) => this.renderComponentPanel(index))
+                  ?.toArray()}
+              </Box>
+            }
+          />
+        </Box>
       </>
     );
   }
 
   private renderResources() {
-    const { classes, application } = this.props;
+    const { application } = this.props;
+    const volumeNodes: JSX.Element[] = [];
+    application.get("components")?.map((_x, index) => {
+      const componentVolumes = this.renderVolumes(index);
+      if (componentVolumes) {
+        componentVolumes.forEach((c) => {
+          volumeNodes.push(c);
+        });
+      }
+    });
 
     return (
-      <div className={classes.resources}>
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={12} md={12}>
-            <H5>Volumes</H5>
-          </Grid>
-        </Grid>
-        {application
-          .get("components")
-          ?.map((_x, index) => this.renderVolumes(index))
-          ?.toArray()}
-      </div>
+      <Box p={2}>
+        <KPanel
+          title={"Volumes"}
+          content={<Box>{volumeNodes.length > 0 ? volumeNodes : <Box p={2}>No Volumes</Box>}</Box>}
+        />
+      </Box>
     );
   }
 

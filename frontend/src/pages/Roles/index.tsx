@@ -144,17 +144,12 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
         }}
         actions={
           <>
-            <CustomizedButton
-              onClick={() => this.props.dispatch(closeDialogAction(dialogID))}
-              color="default"
-              variant="contained"
-            >
+            <CustomizedButton onClick={() => this.props.dispatch(closeDialogAction(dialogID))} color="primary">
               Cancel
             </CustomizedButton>
             <CustomizedButton
               onClick={() => this.props.dispatch(submit(formID))}
               color="primary"
-              variant="contained"
               pending={isCreating}
               disabled={isCreating}
             >
