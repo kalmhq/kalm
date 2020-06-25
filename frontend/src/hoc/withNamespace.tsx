@@ -37,7 +37,7 @@ export const withNamespace = (WrappedComponent: React.ComponentType<any>) => {
     }
 
     render() {
-      const { activeNamespace, isNamespaceLoading, isNamespaceFirstLoaded } = this.props;
+      const { isNamespaceLoading, isNamespaceFirstLoaded } = this.props;
 
       if (isNamespaceLoading && !isNamespaceFirstLoaded) {
         return <Loading />;
