@@ -5,14 +5,11 @@ import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { KPanel } from "widgets/KPanel";
-import { APP_BAR_HEIGHT } from "../../layout/AppBar";
 import { ApplicationComponentDetails, PodStatus } from "../../types/application";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "../Badge";
 import { H5 } from "../Label";
 import { PieChartComponent } from "../PieChart";
 import { SectionTitle } from "../SectionTitle";
-
-const RIGHT_DRAWER_WIDTH = 340;
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -60,51 +57,10 @@ const styles = (theme: Theme) =>
       maxWidth: "100%",
       whiteSpace: "break-spaces",
     },
-    drawer: {
-      width: RIGHT_DRAWER_WIDTH,
-      flexShrink: 0,
-      whiteSpace: "nowrap",
-    },
-    drawerPaper: {
-      width: RIGHT_DRAWER_WIDTH,
-      paddingTop: APP_BAR_HEIGHT,
-      zIndex: 1201,
-    },
-    flexCenter: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    // <Box boxShadow={3}> doesn't work here, so use style boxShadow
-    drawerShadow: {
-      boxShadow:
-        "rgba(0, 0, 0, 0.2) 0px 3px 3px -2px, rgba(0, 0, 0, 0.14) 0px 3px 4px 0px, rgba(0, 0, 0, 0.12) 0px 1px 8px 0px",
-    },
-    // material-ui official
-    drawerOpen: {
-      width: RIGHT_DRAWER_WIDTH,
-      transition: theme.transitions.create("width", {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.enteringScreen,
-      }),
-    },
-    drawerClose: {
-      transition: theme.transitions.create("width", {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.leavingScreen,
-      }),
-      overflowX: "hidden",
-      width: 70 + 1,
-      [theme.breakpoints.up("sm")]: {
-        width: 70 + 1,
-      },
-    },
   });
 
 const mapStateToProps = (state: RootState) => {
-  return {
-    isOpenComponentStatusDrawer: state.get("settings").get("isOpenComponentStatusDrawer"),
-  };
+  return {};
 };
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {
@@ -140,36 +96,6 @@ class ComponentStatusRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private renderComponentStatus = (component: ApplicationComponentDetails) => {
-    let isError = false;
-    let isPending = false;
-
-    component.get("pods").forEach((pod) => {
-      if (pod.get("isTerminating")) {
-        isPending = true;
-      } else {
-        switch (pod.get("status")) {
-          case "Pending": {
-            isPending = true;
-            break;
-          }
-          case "Failed": {
-            isError = true;
-            break;
-          }
-        }
-      }
-    });
-
-    if (isError) {
-      return <ErrorBadge />;
-    } else if (isPending) {
-      return <PendingBadge />;
-    } else {
-      return <SuccessBadge />;
-    }
-  };
-
   private getPieChartData() {
     const { component } = this.props;
 
@@ -195,16 +121,16 @@ class ComponentStatusRaw extends React.PureComponent<Props, State> {
   }
 
   private renderPodItem(pod: PodStatus) {
-    const { classes, isOpenComponentStatusDrawer: open } = this.props;
+    const { classes } = this.props;
 
     return (
-      <div className={`${classes.podItem} ${open ? "" : classes.flexCenter}`} key={pod.get("name")}>
-        <div className={classes.podName} style={{ marginRight: open ? 0 : "-6px" }}>
+      <div className={`${classes.podItem} `} key={pod.get("name")}>
+        <div className={classes.podName}>
           {this.renderPodStatus(pod)}
-          {open && pod.get("name")}
+          <Box ml={1}>{pod.get("name")}</Box>
         </div>
-        {open && <div className={classes.podStatus}>{pod.get("status")}</div>}
-        {open && (
+        {<div className={classes.podStatus}>{pod.get("status")}</div>}
+        {
           <div className={classes.podMessage}>
             {pod
               .get("warnings")
@@ -217,13 +143,13 @@ class ComponentStatusRaw extends React.PureComponent<Props, State> {
               })
               .toArray()}
           </div>
-        )}
+        }
       </div>
     );
   }
 
   public render() {
-    const { classes, component, isOpenComponentStatusDrawer: open } = this.props;
+    const { classes, component } = this.props;
     const pieChartData = this.getPieChartData();
     if (!component) {
       return null;
@@ -234,44 +160,14 @@ class ComponentStatusRaw extends React.PureComponent<Props, State> {
         title={"Component Status"}
         content={
           <Box p={2} tutorial-anchor-id="component-from-pods-status">
-            {/* <Paper className={classes.root} square>*/}
-            {/* <div className={`${classes.componentTitle} ${open ? "" : classes.flexCenter}`}>
-              <IconButton
-                onClick={() => dispatch(setSettingsAction({ isOpenComponentStatusDrawer: !open }))}
-                size={"small"}>
-                {open ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-              </IconButton>{" "}
-              {open && this.renderComponentStatus(component)} {open && <H5>{component.get("name")}</H5>}
-            </div> */}
+            <div className={classes.chartWrapperOpen}>
+              <PieChartComponent
+                title={""}
+                labels={["Running", "Pending", "Error"]}
+                data={[pieChartData.podSuccess, pieChartData.podPending, pieChartData.podError]}
+              />
+            </div>
 
-            {!open && (
-              <div className={`${classes.componentTitle} ${open ? "" : classes.flexCenter}`}>
-                <H5>Status</H5>
-              </div>
-            )}
-            {!open && (
-              <div className={classes.flexCenter} style={{ marginRight: "-6px", padding: "10px" }}>
-                {this.renderComponentStatus(component)}
-              </div>
-            )}
-            {open ? (
-              <div className={classes.chartWrapperOpen}>
-                <PieChartComponent
-                  title={""}
-                  labels={["Running", "Pending", "Error"]}
-                  data={[pieChartData.podSuccess, pieChartData.podPending, pieChartData.podError]}
-                />
-              </div>
-            ) : (
-              <div className={classes.chartWrapperClose}>
-                <PieChartComponent
-                  insideLabel={true}
-                  title={""}
-                  labels={["Running", "Pending", "Error"]}
-                  data={[pieChartData.podSuccess, pieChartData.podPending, pieChartData.podError]}
-                />
-              </div>
-            )}
             <div className={classes.podsTitle}>
               <SectionTitle>
                 <H5>Pods</H5>
