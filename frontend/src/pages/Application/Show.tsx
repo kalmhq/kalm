@@ -1,35 +1,22 @@
-import { createStyles, IconButton, Theme, WithStyles, withStyles } from "@material-ui/core";
-import { push } from "connected-react-router";
-import { withNamespace, withNamespaceProps } from "permission/Namespace";
+import { Box, createStyles, Theme, WithStyles, withStyles } from "@material-ui/core";
+import { withNamespace } from "permission/Namespace";
 import React from "react";
 import { connect } from "react-redux";
-import { RouteChildrenProps } from "react-router-dom";
-import { CustomizedButton } from "widgets/Button";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
-import { H4 } from "../../widgets/Label";
-import { Loading } from "../../widgets/Loading";
-import { Namespaces } from "../../widgets/Namespaces";
+import { H4 } from "widgets/Label";
+import { Namespaces } from "widgets/Namespaces";
 import { BasePage } from "../BasePage";
-import { Details } from "./Detail";
-import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./ItemDataWrapper";
-import ComponentDetail from "./ComponentDetail";
-import { ArrowBackIcon } from "widgets/Icon";
+import { ApplicationOverview } from "./Detail";
+import { WithNamespaceProps } from "hoc/withNamespace";
+import { RootState } from "reducers";
 
-const mapStateToProps = (_: any, props: any) => {
-  const { match } = props;
-  const { namespace, applicationName, componentName } = match!.params;
-  return {
-    namespace,
-    applicationName,
-    componentName,
-  };
+const mapStateToProps = (_state: RootState) => {
+  return {};
 };
 
 const styles = (theme: Theme) =>
   createStyles({
-    root: {
-      // padding: theme.spacing(3)
-    },
+    root: {},
     secondHeaderRight: {
       height: "100%",
       width: "100%",
@@ -41,73 +28,44 @@ const styles = (theme: Theme) =>
     },
   });
 
-interface Props
-  extends WithApplicationItemDataProps,
-    withNamespaceProps,
-    WithStyles<typeof styles>,
-    ReturnType<typeof mapStateToProps>,
-    RouteChildrenProps<{ applicationName: string; componentName: string }> {}
+interface Props extends WithNamespaceProps, WithStyles<typeof styles> {}
 
 class ApplicationShowRaw extends React.PureComponent<Props> {
   private renderSecondHeaderRight() {
-    const { classes, dispatch, applicationName, componentName } = this.props;
+    const { classes } = this.props;
+
     return (
       <div className={classes.secondHeaderRight}>
-        {componentName && (
-          <IconButton
-            color="primary"
-            onClick={() => {
-              dispatch(push(`/applications/${applicationName}`));
-            }}
-          >
-            <ArrowBackIcon />
-          </IconButton>
-        )}
-        <H4 className={classes.secondHeaderRightItem}>{componentName ? "Component Details" : "Overview"}</H4>
-        <CustomizedButton
-          color="primary"
-          size="large"
-          className={classes.secondHeaderRightItem}
-          onClick={() => {
-            dispatch(
-              push(`/applications/${applicationName}/edit${componentName ? `?component=${componentName}` : ""}`),
-            );
-          }}
-        >
-          Edit
-        </CustomizedButton>
+        <H4 className={classes.secondHeaderRightItem}>Overview</H4>
+        {/*<CustomizedButton*/}
+        {/*  color="primary"*/}
+        {/*  size="large"*/}
+        {/*  className={classes.secondHeaderRightItem}*/}
+        {/*  onClick={() => {*/}
+        {/*    dispatch(*/}
+        {/*      push(`/applications/${applicationName}/edit${componentName ? `?component=${componentName}` : ""}`),*/}
+        {/*    );*/}
+        {/*  }}*/}
+        {/*>*/}
+        {/*  Edit*/}
+        {/*</CustomizedButton>*/}
       </div>
     );
   }
 
   public render() {
-    const { isLoading, application, applicationName, dispatch, component } = this.props;
-
     return (
       <BasePage
         secondHeaderLeft={<Namespaces />}
         secondHeaderRight={this.renderSecondHeaderRight()}
         leftDrawer={<ApplicationSidebar />}
       >
-        {isLoading && !application ? (
-          <Loading />
-        ) : component ? (
-          <ComponentDetail
-            application={application}
-            dispatch={dispatch}
-            component={component}
-            activeNamespaceName={this.props.activeNamespaceName}
-          />
-        ) : application ? (
-          <Details application={application} dispatch={dispatch} activeNamespaceName={this.props.activeNamespaceName} />
-        ) : (
-          `Can't find application with name ${applicationName}`
-        )}
+        <Box p={2}>
+          <ApplicationOverview />
+        </Box>
       </BasePage>
     );
   }
 }
 
-export const ApplicationShow = withStyles(styles)(
-  connect(mapStateToProps)(ApplicationItemDataWrapper({ autoReload: true })(withNamespace(ApplicationShowRaw))),
-);
+export const ApplicationShow = withStyles(styles)(withNamespace(connect(mapStateToProps)(ApplicationShowRaw)));

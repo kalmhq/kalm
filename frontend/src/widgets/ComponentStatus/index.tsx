@@ -5,11 +5,11 @@ import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { KPanel } from "widgets/KPanel";
-import { APP_BAR_HEIGHT } from "../../layout/AppBar";
-import { ApplicationComponentDetails, PodStatus } from "../../types/application";
+import { APP_BAR_HEIGHT } from "layout/AppBar";
+import { ApplicationComponentDetails, PodStatus } from "types/application";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "../Badge";
 import { H5 } from "../Label";
-import { PieChartComponent } from "../PieChart";
+import { DoughnutChart } from "widgets/DoughnutChart";
 import { SectionTitle } from "../SectionTitle";
 
 const RIGHT_DRAWER_WIDTH = 340;
@@ -256,7 +256,7 @@ class ComponentStatusRaw extends React.PureComponent<Props, State> {
             )}
             {open ? (
               <div className={classes.chartWrapperOpen}>
-                <PieChartComponent
+                <DoughnutChart
                   title={""}
                   labels={["Running", "Pending", "Error"]}
                   data={[pieChartData.podSuccess, pieChartData.podPending, pieChartData.podError]}
@@ -264,7 +264,7 @@ class ComponentStatusRaw extends React.PureComponent<Props, State> {
               </div>
             ) : (
               <div className={classes.chartWrapperClose}>
-                <PieChartComponent
+                <DoughnutChart
                   insideLabel={true}
                   title={""}
                   labels={["Running", "Pending", "Error"]}

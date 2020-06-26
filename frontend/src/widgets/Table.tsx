@@ -17,7 +17,14 @@ export class KTable<RowData extends object> extends React.PureComponent<Material
         )}
         components={Object.assign(
           {
-            Container: (props: any) => <Paper {...props} variant="outlined" elevation={0} />,
+            Container: (props: any) => (
+              <Paper
+                {...props}
+                variant="outlined"
+                elevation={0}
+                style={{ borderBottom: this.props.options?.paging ? undefined : 0 }}
+              />
+            ),
           },
           this.props.components || {},
         )}

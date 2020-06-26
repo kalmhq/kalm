@@ -270,7 +270,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
 
         <Expansion
           title="Hosts and paths"
-          defauldUnfolded
+          defaultUnfold
           hasError={submitFailed && (syncErrors.paths || syncErrors.hosts)}
         >
           <Field

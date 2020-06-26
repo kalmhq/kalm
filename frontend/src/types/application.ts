@@ -58,6 +58,8 @@ export type ServiceStatus = ImmutableMap<{
   >;
 }>;
 
+export type PodWarning = ImmutableMap<{ message: string }>;
+
 export type PodStatus = ImmutableMap<{
   name: string;
   node: string;
@@ -79,11 +81,7 @@ export type PodStatus = ImmutableMap<{
       startedAt: number;
     }>
   >;
-  warnings: Immutable.List<
-    ImmutableMap<{
-      message: string;
-    }>
-  >;
+  warnings: Immutable.List<PodWarning>;
   metrics: Metrics;
 }>;
 

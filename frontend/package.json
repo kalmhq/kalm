@@ -30,7 +30,6 @@
     "antd": "^3.26.11",
     "axios": "^0.19.2",
     "chart.js": "^2.9.3",
-    "chartjs-plugin-labels": "^1.1.0",
     "connected-react-router": "^6.8.0",
     "date-fns": "^2.11.1",
     "debug": "^4.1.1",

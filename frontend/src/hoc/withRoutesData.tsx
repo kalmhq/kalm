@@ -22,7 +22,7 @@ const mapStateToProps = (
   return {
     isRoutesLoading: routeState.get("isLoading"),
     isRoutesFirstLoaded: routeState.get("isFirstLoaded"),
-    httpRoutes: httpRoutes.get(activeNamespaceName) as Immutable.List<HttpRoute> | undefined,
+    httpRoutes: httpRoutes.get(activeNamespaceName) || (Immutable.List() as Immutable.List<HttpRoute>),
     httpRoute:
       name && httpRoutes.get(activeNamespaceName)
         ? httpRoutes.get(activeNamespaceName).find((x) => x.get("name") === name)

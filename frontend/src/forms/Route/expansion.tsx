@@ -1,4 +1,12 @@
-import { createStyles, ExpansionPanel, ExpansionPanelSummary, Theme, Typography } from "@material-ui/core";
+import {
+  Box,
+  createStyles,
+  ExpansionPanel,
+  ExpansionPanelDetails,
+  ExpansionPanelSummary,
+  Theme,
+  Typography,
+} from "@material-ui/core";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import React from "react";
@@ -8,11 +16,6 @@ const styles = (theme: Theme) =>
   createStyles({
     root: {
       background: "#f2f5f5",
-      margin: "16px 0",
-    },
-    details: {
-      padding: theme.spacing(1),
-      background: "white",
     },
     heading: {
       fontSize: theme.typography.pxToRem(15),
@@ -26,14 +29,17 @@ const styles = (theme: Theme) =>
     error: {
       color: theme.palette.error.main,
     },
+    detailsRoot: {
+      background: "#fff",
+    },
   });
 
 interface Props extends WithStyles<typeof styles> {
-  title: string;
+  title: React.ReactNode;
   hasError?: boolean;
   subTitle?: string;
   children: React.ReactNode;
-  defauldUnfolded?: boolean;
+  defaultUnfold?: boolean;
 }
 
 interface State {
@@ -44,29 +50,41 @@ class ExpansionRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      isUnfolded: !!props.defauldUnfolded,
+      isUnfolded: !!props.defaultUnfold,
     };
   }
 
+  private renderHeader = () => {
+    const { title, subTitle, classes } = this.props;
+
+    if (typeof title === "string") {
+      return (
+        <>
+          <Typography className={classes.heading}>{title}</Typography>
+          {subTitle ? <Typography className={classes.secondaryHeading}>{subTitle}</Typography> : null}
+        </>
+      );
+    }
+
+    return title;
+  };
+
   public render() {
     const { isUnfolded } = this.state;
-    const { classes, title, subTitle, children, hasError } = this.props;
+    const { classes, children, hasError } = this.props;
     return (
       <ExpansionPanel
         className={clsx(classes.root)}
+        variant="outlined"
         expanded={isUnfolded}
         onChange={() => this.setState({ isUnfolded: !isUnfolded })}
       >
-        <ExpansionPanelSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel1bh-content"
-          id="panel1bh-header"
-          className={clsx({ [classes.error]: hasError })}
-        >
-          <Typography className={classes.heading}>{title}</Typography>
-          {subTitle ? <Typography className={classes.secondaryHeading}>{subTitle}</Typography> : null}
+        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} className={clsx({ [classes.error]: hasError })}>
+          {this.renderHeader()}
         </ExpansionPanelSummary>
-        <div className={classes.details}>{children}</div>
+        <ExpansionPanelDetails classes={{ root: classes.detailsRoot }}>
+          <Box width={1}>{children}</Box>
+        </ExpansionPanelDetails>
       </ExpansionPanel>
     );
   }

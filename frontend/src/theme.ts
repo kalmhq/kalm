@@ -80,6 +80,7 @@ let themeRaw = createMuiTheme({
     },
   },
   overrides: {
+    MuiTableCell: { root: { width: "auto !important" } },
     MuiExpansionPanelSummary: {
       root: {
         "&$expanded": {

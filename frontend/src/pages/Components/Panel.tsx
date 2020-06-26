@@ -3,9 +3,6 @@ import {
   Box,
   Button,
   createStyles,
-  ExpansionPanel,
-  ExpansionPanelDetails,
-  ExpansionPanelSummary,
   Grid,
   Table,
   TableBody,
@@ -17,9 +14,7 @@ import {
   WithStyles,
 } from "@material-ui/core";
 import { TDispatchProp } from "types";
-import { connect } from "react-redux";
 import { RootState } from "reducers";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import { H5 } from "widgets/Label";
 import { ComponentStatus } from "pages/Components/Status";
 import { push } from "connected-react-router";
@@ -37,6 +32,8 @@ import { Application, ApplicationComponentDetails, PodStatus } from "types/appli
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { KTable } from "widgets/Table";
 import { MaterialTableProps } from "material-table";
+import { Expansion } from "forms/Route/expansion";
+import { connect } from "react-redux";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -375,8 +372,8 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
     const { component } = this.props;
 
     return (
-      <ExpansionPanel variant={"outlined"}>
-        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} aria-controls="panel1a-content">
+      <Expansion
+        title={
           <Grid container spacing={2}>
             <Grid item md={2}>
               <Box display="flex">
@@ -393,9 +390,10 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
               {component.get("workloadType")}
             </Grid>
           </Grid>
-        </ExpansionPanelSummary>
-        <ExpansionPanelDetails>{this.renderComponentDetail()}</ExpansionPanelDetails>
-      </ExpansionPanel>
+        }
+      >
+        {this.renderComponentDetail()}
+      </Expansion>
     );
   };
 }

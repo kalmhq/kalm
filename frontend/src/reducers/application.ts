@@ -2,6 +2,8 @@ import Immutable from "immutable";
 import { LOGOUT } from "types/common";
 import { Actions } from "types";
 import {
+  ADD_OR_UPDATE_POD,
+  ADD_OR_UPDATE_SERVICE,
   ApplicationComponentDetails,
   ApplicationDetails,
   ComponentPlugin,
@@ -9,6 +11,8 @@ import {
   CREATE_COMPONENT,
   DELETE_APPLICATION,
   DELETE_COMPONENT,
+  DELETE_POD,
+  DELETE_SERVICE,
   DUPLICATE_APPLICATION,
   LOAD_APPLICATION_FAILED,
   LOAD_APPLICATION_FULFILLED,
@@ -17,16 +21,12 @@ import {
   LOAD_APPLICATIONS_FULFILLED,
   LOAD_APPLICATIONS_PENDING,
   LOAD_COMPONENT_PLUGINS_FULFILLED,
+  PodStatus,
+  ServiceStatus,
   SET_IS_SUBMITTING_APPLICATION,
   SET_IS_SUBMITTING_APPLICATION_COMPONENT,
   UPDATE_APPLICATION,
   UPDATE_COMPONENT,
-  ServiceStatus,
-  PodStatus,
-  ADD_OR_UPDATE_SERVICE,
-  DELETE_SERVICE,
-  ADD_OR_UPDATE_POD,
-  DELETE_POD,
 } from "types/application";
 import { ImmutableMap } from "typings";
 

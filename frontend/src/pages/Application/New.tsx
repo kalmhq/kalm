@@ -14,7 +14,6 @@ import { push } from "connected-react-router";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      // padding: theme.spacing(3)
       height: "100%",
     },
     secondHeaderRight: {
