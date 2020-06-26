@@ -17,7 +17,6 @@ import { TDispatchProp } from "types";
 import { RootState } from "reducers";
 import { H5 } from "widgets/Label";
 import { ComponentStatus } from "pages/Components/Status";
-import { push } from "connected-react-router";
 import { blinkTopProgressAction } from "actions/settings";
 import { deleteComponentAction, loadApplicationAction } from "actions/application";
 import { formatTimeDistance } from "utils";
@@ -34,6 +33,7 @@ import { KTable } from "widgets/Table";
 import { MaterialTableProps } from "material-table";
 import { Expansion } from "forms/Route/expansion";
 import { connect } from "react-redux";
+import { Link } from "react-router-dom";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -243,39 +243,27 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
       <Box display="flex" flexDirection="column" width={1}>
         <Box pb={2} pt={2}>
           <Button
+            component={(props: any) => <Link {...props} />}
             style={{ marginRight: 20 }}
-            variant="outlined"
             color="primary"
             size="small"
-            onClick={() => {
-              blinkTopProgressAction();
-              dispatch(push(`/applications/${application.get("name")}/components/${component.get("name")}`));
-            }}
+            variant="outlined"
+            to={`/applications/${application.get("name")}/components/${component.get("name")}`}
           >
             View More Details
           </Button>
+
           <Button
-            style={{ marginRight: 20 }}
-            variant="outlined"
-            color="primary"
-            size="small"
-            onClick={() => {
-              dispatch(push(`/applications/${application.get("name")}/edit?component=${component.get("name")}`));
-            }}
-          >
-            Scale
-          </Button>
-          <Button
-            variant="outlined"
+            component={(props: any) => <Link {...props} />}
             style={{ marginRight: 20 }}
             color="primary"
             size="small"
-            onClick={() => {
-              dispatch(push(`/applications/${application.get("name")}/edit?component=${component.get("name")}`));
-            }}
+            variant="outlined"
+            to={`/applications/${application.get("name")}/components/${component.get("name")}/edit`}
           >
             Edit
           </Button>
+
           <Button
             variant="outlined"
             style={{ marginRight: 20 }}

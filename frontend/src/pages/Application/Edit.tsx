@@ -1,18 +1,12 @@
-import { Box, createStyles, Grid, Theme, WithStyles, withStyles } from "@material-ui/core";
+import { createStyles, Theme, WithStyles, withStyles } from "@material-ui/core";
 import { push } from "connected-react-router";
 import React from "react";
 import { connect } from "react-redux";
 import { RouteChildrenProps } from "react-router-dom";
-import {
-  createComponentAction,
-  setIsSubmittingApplicationComponent,
-  updateComponentAction,
-} from "../../actions/application";
-import { ComponentLikeForm } from "../../forms/ComponentLike";
+import { createComponentAction, updateComponentAction } from "../../actions/application";
 import { RootState } from "../../reducers";
 import { ApplicationComponent } from "../../types/application";
 import { ApplicationEditDrawer } from "../../widgets/ApplicationEditDrawer";
-import { ComponentStatus } from "../../widgets/ComponentStatus";
 import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
 import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./ItemDataWrapper";
@@ -131,30 +125,21 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
       return <div />;
     }
 
-    return (
-      <Box p={2}>
-        <Grid container spacing={2} className={classes.root}>
-          <Grid item md={8}>
-            <ComponentLikeForm
-              application={application}
-              // sharedEnv={sharedEnv}
-              onSubmit={this.submitComponent}
-              onSubmitFail={() => {
-                dispatch(setIsSubmittingApplicationComponent(false));
-              }}
-              // onSubmitSuccess={this.onSubmitComponentSuccess}
-              initialValues={currentComponent}
-              showDataView
-            />
-          </Grid>
-          <Grid item md={4}>
-            <ComponentStatus
-              component={application?.get("components")?.find((x) => x.get("name") === currentComponent?.get("name"))}
-            />
-          </Grid>
-        </Grid>
-      </Box>
-    );
+    return null;
+
+    // return (
+    //   <Box p={2}>
+    //     <Grid container spacing={2} className={classes.root}>
+    //       <Grid item md={8}>
+    //       </Grid>
+    //       <Grid item md={4}>
+    //         <ComponentStatus
+    //           component={application?.get("components")?.find((x) => x.get("name") === currentComponent?.get("name"))}
+    //         />
+    //       </Grid>
+    //     </Grid>
+    //   </Box>
+    // );
   }
 }
 

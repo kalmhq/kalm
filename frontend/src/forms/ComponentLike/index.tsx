@@ -16,7 +16,6 @@ import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/s
 import Typography from "@material-ui/core/Typography";
 import HelpIcon from "@material-ui/icons/Help";
 import clsx from "clsx";
-import { push } from "connected-react-router";
 import { KBoolCheckboxRender } from "forms/Basic/checkbox";
 import Immutable from "immutable";
 import queryString from "query-string";
@@ -31,7 +30,6 @@ import { loadNodesAction } from "actions/node";
 import { loadPersistentVolumesAction, loadStorageClassesAction } from "actions/persistentVolume";
 import { RootState } from "reducers";
 import { getNodeLabels } from "selectors/node";
-import { TDispatchProp } from "types";
 import { ApplicationDetails, SharedEnv } from "types/application";
 import { ComponentLike, ComponentLikeContent, workloadTypeCronjob, workloadTypeServer } from "types/componentTemplate";
 import { CustomizedButton } from "widgets/Button";
@@ -50,6 +48,9 @@ import { LivenessProbe, ReadinessProbe } from "./Probes";
 import { Volumes } from "./Volumes";
 import { shouldError } from "forms/common";
 import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
+import { TDispatchProp } from "types";
+import { RouteComponentProps, withRouter } from "react-router-dom";
+import { push } from "connected-react-router";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -177,6 +178,7 @@ interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchPr
 
 export interface Props
   extends InjectedFormProps<ComponentLike, ConnectedProps>,
+    RouteComponentProps,
     WithStyles<typeof styles>,
     ConnectedProps,
     RawProps {}
@@ -1012,15 +1014,12 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
   private pushToTab(tabIndex: number) {
     const tab = this.tabs[tabIndex];
-    const { application, dispatch, search } = this.props;
+    const {
+      dispatch,
+      location: { pathname },
+    } = this.props;
 
-    dispatch(
-      push(
-        `/applications/${application?.get("name")}/edit?component=${search.component || ""}#${
-          tab ? tab.replace(/\s/g, "") : ""
-        }`,
-      ),
-    );
+    dispatch(push(`${pathname}#${tab ? tab.replace(/\s/g, "") : ""}`));
   }
 
   private renderTabs() {
@@ -1191,6 +1190,6 @@ const form = reduxForm<ComponentLike, RawProps & ConnectedProps>({
   validate: formValidateOrNotBlockByTutorial,
   shouldError: shouldError,
   onSubmitFail: console.log,
-})(withStyles(styles)(ComponentLikeFormRaw));
+})(withStyles(styles)(withRouter(ComponentLikeFormRaw)));
 
 export const ComponentLikeForm = connect(mapStateToProps)(form);

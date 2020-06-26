@@ -1,6 +1,5 @@
 import { DashboardLayout } from "layout/DashboardLayout";
 import { Login } from "layout/Login";
-import { ApplicationEdit } from "pages/Application/Edit";
 import { ApplicationListPage } from "pages/Application/List";
 import { Log } from "pages/Application/Log";
 import { ApplicationNew } from "pages/Application/New";
@@ -22,6 +21,8 @@ import { RequireAdmin } from "permission/Role";
 import React from "react";
 import { Route, Switch } from "react-router";
 import { ComponentListPage } from "pages/Components/List";
+import { ComponentNew } from "pages/Components/New";
+import { ComponentEdit } from "pages/Components/Edit";
 
 const RequireAuthorizatedDashboard = RequireAuthorizated(DashboardLayout);
 
@@ -47,8 +48,9 @@ export const KappRoutes = (
           <Route exact path="/applications/:applicationName/routes/:name/edit" component={RouteEdit} />
 
           <Route exact path="/applications/:applicationName/components" component={ComponentListPage} />
+          <Route exact path="/applications/:applicationName/components/new" component={ComponentNew} />
+          <Route exact path="/applications/:applicationName/components/:name/edit" component={ComponentEdit} />
 
-          <Route exact path="/applications/:applicationName/edit" component={RequireNamespaceWriter(ApplicationEdit)} />
           <Route exact path="/applications/:applicationName/logs" component={RequireNamespaceReader(Log)} />
           <Route exact path="/applications/:applicationName/shells" component={RequireNamespaceWriter(Log)} />
           <Route

@@ -472,22 +472,21 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   private renderSecondHeaderRight() {
-    const { classes, dispatch } = this.props;
+    const { classes } = this.props;
     return (
       <div className={classes.secondHeaderRight}>
         <H4 className={classes.secondHeaderRightItem}>Applications</H4>
-        <CustomizedButton
+        <Button
           tutorial-anchor-id="add-application"
+          component={(props: any) => <Link {...props} />}
           color="primary"
-          size="large"
+          size="small"
+          variant="outlined"
           className={classes.secondHeaderRightItem}
-          onClick={() => {
-            blinkTopProgressAction();
-            dispatch(push(`/applications/new`));
-          }}
+          to={`/applications/new`}
         >
           Add
-        </CustomizedButton>
+        </Button>
       </div>
     );
   }

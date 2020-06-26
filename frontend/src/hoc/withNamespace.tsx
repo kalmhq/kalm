@@ -28,7 +28,10 @@ const mapStateToProps = (
   };
 };
 
-export interface WithNamespaceProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
+export interface WithNamespaceProps
+  extends ReturnType<typeof mapStateToProps>,
+    TDispatchProp,
+    RouteComponentProps<{}> {}
 
 export const withNamespace = (WrappedComponent: React.ComponentType<any>) => {
   const HOC: React.ComponentType<WithNamespaceProps> = class extends React.Component<WithNamespaceProps> {
