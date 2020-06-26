@@ -245,17 +245,20 @@ class DetailsRaw extends React.PureComponent<Props, State> {
   private renderWarnings() {
     const { activeNamespace } = this.props;
     let warnings: { componentName: string; podName: string; message: string }[] = [];
-    activeNamespace!.get("components").forEach((c) => {
-      c.get("pods").forEach((p) => {
-        p.get("warnings").forEach((w) => {
-          warnings.push({
-            componentName: c.get("name"),
-            podName: p.get("name"),
-            message: w.get("message"),
+
+    if (activeNamespace!.get("components")) {
+      activeNamespace!.get("components").forEach((c) => {
+        c.get("pods").forEach((p) => {
+          p.get("warnings").forEach((w) => {
+            warnings.push({
+              componentName: c.get("name"),
+              podName: p.get("name"),
+              message: w.get("message"),
+            });
           });
         });
       });
-    });
+    }
 
     return (
       <KTable

@@ -1,12 +1,9 @@
-import { Box, createStyles, Theme, WithStyles } from "@material-ui/core";
+import { Box, Button, createStyles, Theme, WithStyles } from "@material-ui/core";
 import { loadRoutes } from "actions/routes";
-import { push } from "connected-react-router";
 import React from "react";
 import { RootState } from "reducers";
-import { CustomizedButton } from "widgets/Button";
 import { deleteApplicationAction } from "actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
-import { blinkTopProgressAction } from "actions/settings";
 import { ApplicationDetails } from "types/application";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { H4 } from "widgets/Label";
@@ -17,6 +14,7 @@ import { withComponents, WithComponentsProps } from "hoc/withComponents";
 import { Namespaces } from "widgets/Namespaces";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { ComponentPanel } from "pages/Components/Panel";
+import { Link } from "react-router-dom";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -108,23 +106,22 @@ class ComponentRaw extends React.PureComponent<Props, State> {
   };
 
   private renderSecondHeaderRight() {
-    const { classes, dispatch, activeNamespaceName } = this.props;
+    const { classes, activeNamespaceName } = this.props;
 
     return (
       <div className={classes.secondHeaderRight}>
         <H4 className={classes.secondHeaderRightItem}>Components</H4>
-        <CustomizedButton
+        <Button
           tutorial-anchor-id="add-component"
+          component={(props: any) => <Link {...props} />}
           color="primary"
-          size="large"
+          size="small"
+          variant="outlined"
           className={classes.secondHeaderRightItem}
-          onClick={() => {
-            blinkTopProgressAction();
-            dispatch(push(`/applications/${activeNamespaceName}/components/new`));
-          }}
+          to={`/applications/${activeNamespaceName}/components/new`}
         >
-          Add
-        </CustomizedButton>
+          Add Component
+        </Button>
       </div>
     );
   }

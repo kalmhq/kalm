@@ -16,7 +16,6 @@ import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
 import { SECOND_HEADER_HEIGHT } from "layout/SecondHeader";
 import { LEFT_SECTION_OPEN_WIDTH } from "pages/BasePage";
-import { H4 } from "./Label";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { setCurrentNamespaceAction } from "actions/namespaces";
 
@@ -29,8 +28,9 @@ const styles = (theme: Theme) =>
       height: SECOND_HEADER_HEIGHT,
       width: "100%",
       justifyContent: "space-between",
-      paddingLeft: "32px",
-      border: "0",
+      paddingLeft: 32,
+      border: 0,
+      borderRadius: 0,
     },
     menuList: {
       width: LEFT_SECTION_OPEN_WIDTH,
@@ -85,9 +85,7 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
     if (isNamespaceLoading && !isNamespaceFirstLoaded) {
       return (
         <div className={classes.root}>
-          <Button className={classes.namespaceButton}>
-            <H4>Loading...</H4>
-          </Button>
+          <Button className={classes.namespaceButton}>Loading...</Button>
         </div>
       );
     }
@@ -101,13 +99,11 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
           className={classes.namespaceButton}
           onClick={this.handleToggle}
         >
-          <H4>
-            {isNamespaceLoading && !isNamespaceFirstLoaded
-              ? "Loading..."
-              : activeNamespace
-              ? activeNamespace.get("name")
-              : "Select a Application"}
-          </H4>
+          {isNamespaceLoading && !isNamespaceFirstLoaded
+            ? "Loading..."
+            : activeNamespace
+            ? activeNamespace.get("name")
+            : "Select a Application"}
           {open ? <ExpandLess /> : <ExpandMore />}
         </Button>
 
@@ -139,7 +135,7 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
                           namespace-name={application.get("name")}
                           key={application.get("name")}
                         >
-                          <H4>{application.get("name")}</H4>
+                          {application.get("name")}
                         </MenuItem>
                       ))
                       .toArray()}

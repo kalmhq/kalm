@@ -7,12 +7,12 @@ import React from "react";
 import { HttpRoute } from "types/route";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { SuccessBadge } from "widgets/Badge";
-import { CustomizedButton } from "widgets/Button";
 import { H4 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { Namespaces } from "widgets/Namespaces";
 import { KTable } from "widgets/Table";
 import { blinkTopProgressAction } from "actions/settings";
+import { Link } from "react-router-dom";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -165,7 +165,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { classes, dispatch, isRoutesFirstLoaded, isRoutesLoading, activeNamespaceName } = this.props;
+    const { classes, isRoutesFirstLoaded, isRoutesLoading, activeNamespaceName } = this.props;
     const tableData = this.getData();
     return (
       <BasePage
@@ -174,18 +174,17 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
         secondHeaderRight={
           <div className={classes.secondHeaderRight}>
             <H4 className={classes.secondHeaderRightItem}>Routes</H4>
-            <CustomizedButton
-              color="primary"
-              size="large"
+            <Button
               tutorial-anchor-id="add-route"
+              component={(props: any) => <Link {...props} />}
+              color="primary"
+              size="small"
+              variant="outlined"
               className={classes.secondHeaderRightItem}
-              onClick={() => {
-                blinkTopProgressAction();
-                dispatch(push(`/applications/${activeNamespaceName}/routes/new`));
-              }}
+              to={`/applications/${activeNamespaceName}/routes/new`}
             >
-              Add
-            </CustomizedButton>
+              Add Route
+            </Button>
           </div>
         }
       >
