@@ -94,7 +94,7 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
               component={NavLink}
               to={item.to}
               key={item.text}
-              selected={pathname === item.to}
+              selected={pathname === item.to.split("?")[0]}
             >
               <ListItemIcon>
                 <AppsIcon />

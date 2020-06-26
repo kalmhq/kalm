@@ -1,6 +1,7 @@
 import { Box, Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { deleteRoute, loadRoutes } from "actions/routes";
 import { push } from "connected-react-router";
+import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { HttpRoute } from "types/route";
@@ -10,9 +11,8 @@ import { CustomizedButton } from "widgets/Button";
 import { H4 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { Namespaces } from "widgets/Namespaces";
-import { blinkTopProgressAction } from "../../actions/settings";
-import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
 import { KTable } from "widgets/Table";
+import { blinkTopProgressAction } from "actions/settings";
 
 const styles = (theme: Theme) =>
   createStyles({

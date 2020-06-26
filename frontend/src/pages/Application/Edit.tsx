@@ -77,26 +77,31 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
   }
 
   private submitComponent = async (component: ApplicationComponent) => {
-    const { dispatch, currentComponent } = this.props;
+    const { dispatch, currentComponent, application, anchor } = this.props;
 
     if (!currentComponent || !currentComponent.get("name")) {
       await dispatch(createComponentAction(component));
+      dispatch(
+        push(`/applications/${application?.get("name")}/edit?component=${component.get("name") || ""}#${anchor}`),
+      );
     } else {
       await dispatch(updateComponentAction(component));
     }
   };
 
-  private onSubmitComponentSuccess = (_result: any) => {
-    const { dispatch, application, currentComponent, anchor } = this.props;
+  // !!! should not use currentComponent name, when create currentComponent name is null will cause a bug.
+  // so move to submitComponent to push by using component (submit) name
+  // private onSubmitComponentSuccess = (_result: any) => {
+  //   const { dispatch, application, currentComponent, anchor } = this.props;
 
-    // the form will reinitialize very quick, and make the dirty flag to false.
-    // When dirty flag is false, the route change prompt won't exist.
-    window.setTimeout(() => {
-      dispatch(
-        push(`/applications/${application?.get("name")}/edit?component=${currentComponent.get("name")}#${anchor}`),
-      );
-    }, 100);
-  };
+  //   // the form will reinitialize very quick, and make the dirty flag to false.
+  //   // When dirty flag is false, the route change prompt won't exist.
+  //   window.setTimeout(() => {
+  //     dispatch(
+  //       push(`/applications/${application?.get("name")}/edit?component=${currentComponent.get("name")}#${anchor}`),
+  //     );
+  //   }, 100);
+  // };
 
   public renderApplicationEditDrawer() {
     const { application, currentComponent } = this.props;
@@ -137,7 +142,7 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
               onSubmitFail={() => {
                 dispatch(setIsSubmittingApplicationComponent(false));
               }}
-              onSubmitSuccess={this.onSubmitComponentSuccess}
+              // onSubmitSuccess={this.onSubmitComponentSuccess}
               initialValues={currentComponent}
               showDataView
             />

@@ -3,11 +3,11 @@ import { grey } from "@material-ui/core/colors";
 import React from "react";
 import { ApplicationComponentDetails, PodStatus } from "types/application";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
-import { DoughnutChart } from "widgets/DoughnutChart";
 import { BigCPULineChart, BigMemoryLineChart } from "widgets/SmallLineChart";
-import { Expansion } from "forms/Route/expansion";
-import { KTable } from "widgets/Table";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
+import { KTable } from "widgets/Table";
+import { Expansion } from "forms/Route/expansion";
+import { DoughnutChart } from "widgets/DoughnutChart";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -110,9 +110,6 @@ const styles = (theme: Theme) =>
       padding: `0 ${theme.spacing(2)}px`,
     },
     tabs: {},
-    resources: {
-      padding: theme.spacing(2),
-    },
     volumeWrapper: {
       padding: `0 ${theme.spacing(2)}px`,
     },

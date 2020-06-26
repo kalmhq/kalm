@@ -221,7 +221,6 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
     }
 
     const disableAdd = (currentComponent && !currentComponent.get("name")) || application.get("components")?.size === 0;
-    // const disableDelete = !currentComponent || !currentComponent.get("name");
 
     return (
       <BaseDrawer>
@@ -243,7 +242,6 @@ class ApplicationEditDrawerRaw extends React.PureComponent<Props, State> {
                 size="small"
                 tooltipTitle={"Delete"}
                 aria-label="delete component"
-                // disabled={disableDelete}
                 onClick={() => this.showDeleteConfirmDialog()}
               >
                 <RemoveIcon />

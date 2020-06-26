@@ -323,7 +323,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                       const url = scheme + "://" + host + path;
 
                       items.push(
-                        <ListItem>
+                        <ListItem key={scheme}>
                           <ListItemText primary={url} />
                           <Box ml={2}>
                             <Button
