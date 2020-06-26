@@ -61,6 +61,7 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
       {
         text: "Overview",
         to: "/applications/" + activeNamespaceName,
+        highlightWhenExact: true,
       },
       {
         text: "Components",
@@ -94,7 +95,7 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
               component={NavLink}
               to={item.to}
               key={item.text}
-              selected={pathname === item.to.split("?")[0]}
+              selected={item.highlightWhenExact ? pathname === item.to : pathname.startsWith(item.to.split("?")[0])}
             >
               <ListItemIcon>
                 <AppsIcon />

@@ -266,7 +266,6 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
     return (
       <div className={classes.root}>
         <Prompt when={dirty && !submitSucceeded} message="Are you sure to leave without saving changes?" />
-        <h2>Add route</h2>
 
         <Expansion
           title="Hosts and paths"

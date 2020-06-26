@@ -43,7 +43,7 @@ class ComponentEditRaw extends React.PureComponent<Props> {
         leftDrawer={<ApplicationSidebar />}
         secondHeaderRight={
           <div className={classes.secondHeaderRight}>
-            <H4>Create New Component</H4>
+            <H4>Edit {component!.get("name")} Component</H4>
           </div>
         }
       >
