@@ -19,13 +19,7 @@ import {
   SetIsSubmittingCertificate,
 } from "types/certificate";
 import { ThunkResult } from "../types";
-import {
-  createCertificate,
-  createCertificateIssuer,
-  deleteCertificate,
-  getCertificateIssuerList,
-  getCertificateList,
-} from "./kubernetesApi";
+import { api } from "api";
 
 export const setEditCertificateModal = (certificate: Certificate | null): SetEditCertificateModal => {
   return {
@@ -38,7 +32,7 @@ export const setEditCertificateModal = (certificate: Certificate | null): SetEdi
 
 export const deleteCertificateAction = (name: string): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
-    await deleteCertificate(name);
+    await api.deleteCertificate(name);
 
     dispatch({
       type: DELETE_CERTIFICATE,
@@ -51,7 +45,7 @@ export const loadCertificates = (): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
     dispatch({ type: LOAD_CERTIFICATES_PENDING });
     try {
-      const certificates = await getCertificateList();
+      const certificates = await api.getCertificateList();
       dispatch({
         type: LOAD_CERTIFICATES_FULFILLED,
         payload: {
@@ -69,7 +63,7 @@ export const loadCertificateIssuers = (): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
     dispatch({ type: LOAD_CERTIFICATE_ISSUERS_PENDING });
     try {
-      const certificateIssuers = await getCertificateIssuerList();
+      const certificateIssuers = await api.getCertificateIssuerList();
       dispatch({
         type: LOAD_CERTIFICATE_ISSUERS_FULFILLED,
         payload: {
@@ -92,7 +86,7 @@ export const createCertificateAction = (
 
     let certificate: Certificate;
     try {
-      certificate = await createCertificate(
+      certificate = await api.createCertificate(
         certificateContent.set("isSelfManaged", certificateContent.get("managedType") === selfManaged),
         isEdit,
       );
@@ -115,7 +109,7 @@ export const createCertificateIssuerAction = (
 
     let certificateIssuer: CertificateIssuer;
     try {
-      certificateIssuer = await createCertificateIssuer(certificateIssuerContent, isEdit);
+      certificateIssuer = await api.createCertificateIssuer(certificateIssuerContent, isEdit);
     } catch (e) {
       dispatch(setIsSubmittingCertificate(false));
       throw e;

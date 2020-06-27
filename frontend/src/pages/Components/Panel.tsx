@@ -24,7 +24,6 @@ import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart"
 import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 import { generateQueryForPods } from "pages/Application/Log";
 import { KappConsoleIcon, KappLogIcon } from "widgets/Icon";
-import { deletePod } from "actions/kubernetesApi";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import DeleteIcon from "@material-ui/icons/Delete";
 import { Application, ApplicationComponentDetails, PodStatus } from "types/application";
@@ -34,6 +33,7 @@ import { MaterialTableProps } from "material-table";
 import { Expansion } from "forms/Route/expansion";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
+import { api } from "api";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -178,7 +178,7 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
               blinkTopProgressAction();
 
               try {
-                await deletePod(application.get("name"), pod.get("name"));
+                await api.deletePod(application.get("name"), pod.get("name"));
                 dispatch(setSuccessNotificationAction(`Delete pod ${pod.get("name")} successfully`));
                 // reload
                 dispatch(loadApplicationAction(application.get("name")));

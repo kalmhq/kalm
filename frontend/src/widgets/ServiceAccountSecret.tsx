@@ -1,6 +1,5 @@
 import { createStyles, Theme, Typography, withStyles, WithStyles } from "@material-ui/core";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
-import { getServiceAccountSecret } from "actions/kubernetesApi";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import React from "react";
 import { connect } from "react-redux";
@@ -10,6 +9,7 @@ import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { FlexRowItemCenterBox } from "./Box";
 import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
+import { api } from "api";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -42,7 +42,7 @@ class ServiceAccountSecretRaw extends React.PureComponent<Props, State> {
     if (!this.props.serviceAccountName) {
       return;
     }
-    const res = await getServiceAccountSecret(this.props.serviceAccountName);
+    const res = await api.getServiceAccountSecret(this.props.serviceAccountName);
     this.setState({
       token: res.token,
       "ca.crt": res["ca.crt"],

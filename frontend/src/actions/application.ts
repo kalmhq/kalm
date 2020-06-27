@@ -27,20 +27,9 @@ import {
   UPDATE_COMPONENT,
 } from "../types/application";
 import { resErrorsToSubmitErrors } from "../utils";
-import {
-  createKappApplication,
-  createKappApplicationComponent,
-  deleteKappApplication,
-  deleteKappApplicationComponent,
-  getKappApplication,
-  getKappApplicationComponentList,
-  getKappApplicationList,
-  getKappComponentPlugins,
-  updateKappApplication,
-  updateKappApplicationComponent,
-} from "./kubernetesApi";
 import { setCurrentNamespaceAction } from "./namespaces";
 import { setSuccessNotificationAction } from "./notification";
+import { api } from "api";
 
 export const createComponentAction = (
   componentValues: ApplicationComponent,
@@ -54,7 +43,7 @@ export const createComponentAction = (
 
     let component: ApplicationComponentDetails;
     try {
-      component = await createKappApplicationComponent(applicationName, componentValues);
+      component = await api.createKappApplicationComponent(applicationName, componentValues);
     } catch (e) {
       dispatch(setIsSubmittingApplicationComponent(false));
       throw e;
@@ -84,7 +73,7 @@ export const updateComponentAction = (
 
     let component: ApplicationComponentDetails;
     try {
-      component = await updateKappApplicationComponent(applicationName, componentValues);
+      component = await api.updateKappApplicationComponent(applicationName, componentValues);
     } catch (e) {
       dispatch(setIsSubmittingApplicationComponent(false));
       throw e;
@@ -106,7 +95,7 @@ export const deleteComponentAction = (componentName: string, applicationName?: s
       applicationName = getState().get("namespaces").get("active");
     }
 
-    await deleteKappApplicationComponent(applicationName, componentName);
+    await api.deleteKappApplicationComponent(applicationName, componentName);
 
     // dispatch(loadApplicationAction(applicationName));
     dispatch({
@@ -124,7 +113,7 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
     let application: ApplicationDetails;
 
     try {
-      application = await createKappApplication(applicationValues);
+      application = await api.createKappApplication(applicationValues);
     } catch (e) {
       dispatch(setIsSubmittingApplication(false));
 
@@ -172,7 +161,7 @@ export const updateApplicationAction = (applicationRaw: Application): ThunkResul
     let application: ApplicationDetails;
 
     try {
-      application = await updateKappApplication(applicationRaw);
+      application = await api.updateKappApplication(applicationRaw);
     } catch (e) {
       dispatch(setIsSubmittingApplication(false));
       if (e.response && e.response.data.errors && e.response.data.errors.length > 0) {
@@ -197,7 +186,7 @@ export const updateApplicationAction = (applicationRaw: Application): ThunkResul
 export const duplicateApplicationAction = (duplicatedApplication: Application): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
     let application: ApplicationDetails;
-    application = await createKappApplication(duplicatedApplication);
+    application = await api.createKappApplication(duplicatedApplication);
 
     // dispatch(loadApplicationsAction());
     dispatch({
@@ -209,7 +198,7 @@ export const duplicateApplicationAction = (duplicatedApplication: Application): 
 
 export const deleteApplicationAction = (name: string): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
-    await deleteKappApplication(name);
+    await api.deleteKappApplication(name);
 
     dispatch({
       type: DELETE_APPLICATION,
@@ -224,8 +213,8 @@ export const loadApplicationAction = (name: string): ThunkResult<Promise<void>> 
 
     let application: ApplicationDetails;
     try {
-      application = await getKappApplication(name);
-      const applicationComponents = await getKappApplicationComponentList(application.get("name"));
+      application = await api.getKappApplication(name);
+      const applicationComponents = await api.getKappApplicationComponentList(application.get("name"));
       application = application.set("components", applicationComponents);
     } catch (e) {
       dispatch({ type: LOAD_APPLICATION_FAILED });
@@ -247,14 +236,14 @@ export const loadApplicationsAction = (): ThunkResult<Promise<Immutable.List<App
 
     let applicationList: Immutable.List<ApplicationDetails>;
     try {
-      applicationList = await getKappApplicationList();
+      applicationList = await api.getKappApplicationList();
 
       applicationList = Immutable.List(
         await Promise.all(
           applicationList
             .filter((app) => app.get("status") === "Active")
             .map(async (application) => {
-              const components = await getKappApplicationComponentList(application.get("name"));
+              const components = await api.getKappApplicationComponentList(application.get("name"));
               application = application.set("components", components);
               return application;
             }),
@@ -307,7 +296,7 @@ export const loadApplicationsAction = (): ThunkResult<Promise<Immutable.List<App
 
 export const loadComponentPluginsAction = (): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
-    let componentPlugins = await getKappComponentPlugins();
+    let componentPlugins = await api.getKappComponentPlugins();
 
     dispatch({
       type: LOAD_COMPONENT_PLUGINS_FULFILLED,

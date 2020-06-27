@@ -2,7 +2,6 @@ import { Box, createStyles, Theme, WithStyles, withStyles } from "@material-ui/c
 import { Alert } from "@material-ui/lab";
 import React from "react";
 import { connect } from "react-redux";
-import { K8sApiPrefix } from "../../actions/kubernetesApi";
 import { deletePersistentVolumeAction, loadPersistentVolumesAction } from "../../actions/persistentVolume";
 import { RootState } from "../../reducers";
 import { TDispatchProp } from "../../types";
@@ -14,6 +13,7 @@ import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
 import { primaryColor } from "../../theme";
 import { DeleteIcon } from "../../widgets/Icon";
 import { KTable } from "widgets/Table";
+import { K8sApiPrefix } from "api/realApi";
 
 const mapStateToProps = (state: RootState) => {
   return {

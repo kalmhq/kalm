@@ -10,13 +10,13 @@ import {
   UPDATE_REGISTRY,
 } from "types/registry";
 import { ThunkResult } from "../types";
-import { createRegistry, deleteRegistry, getRegistries, updateRegistry } from "./kubernetesApi";
+import { api } from "api";
 
 export const loadRegistriesAction = (): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
     dispatch({ type: LOAD_REGISTRIES_PENDING });
     try {
-      const registries = await getRegistries();
+      const registries = await api.getRegistries();
 
       dispatch({
         type: LOAD_REGISTRIES_FULFILLED,
@@ -37,7 +37,7 @@ export const createRegistryAction = (registryValues: RegistryType): ThunkResult<
 
     let registry;
     try {
-      registry = await createRegistry(registryValues);
+      registry = await api.createRegistry(registryValues);
     } catch (e) {
       dispatch(setIsSubmittingRegistry(false));
       throw e;
@@ -59,7 +59,7 @@ export const updateRegistryAction = (registryValues: RegistryType): ThunkResult<
 
     let registry;
     try {
-      registry = await updateRegistry(registryValues);
+      registry = await api.updateRegistry(registryValues);
     } catch (e) {
       dispatch(setIsSubmittingRegistry(false));
       throw e;
@@ -77,7 +77,7 @@ export const updateRegistryAction = (registryValues: RegistryType): ThunkResult<
 
 export const deleteRegistryAction = (name: string): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
-    await deleteRegistry(name);
+    await api.deleteRegistry(name);
 
     dispatch({
       type: DELETE_REGISTRY,

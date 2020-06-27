@@ -92,7 +92,7 @@ export type HttpRouteCORS = ImmutableMap<{
   maxAge: string;
 }>;
 
-interface HttpRouteContent {
+export interface HttpRouteContent {
   name: string;
   namespace: string;
   hosts: Immutable.List<string>;

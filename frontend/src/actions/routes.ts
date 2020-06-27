@@ -14,14 +14,14 @@ import {
   UPDATE_ROUTE_PENDING,
 } from "types/route";
 import { ThunkResult } from "../types";
-import { createHttpRoute, deleteHttpRoute, getHttpRoutes, updateHttpRoute } from "./kubernetesApi";
 import { setErrorNotificationAction } from "./notification";
+import { api } from "api";
 
 export const loadRoutes = (namespace: string): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
     dispatch({ type: LOAD_ROUTES_PENDING });
     try {
-      const routes = await getHttpRoutes(namespace);
+      const routes = await api.getHttpRoutes(namespace);
       dispatch({
         type: LOAD_ROUTES_FULFILLED,
         payload: {
@@ -41,7 +41,7 @@ export const createRoute = (name: string, namespace: string, route: HttpRoute): 
     try {
       dispatch({ type: CREATE_ROUTE_PENDING });
 
-      const routeRes = await createHttpRoute(namespace, route);
+      const routeRes = await api.createHttpRoute(namespace, route);
       dispatch({
         type: CREATE_ROUTE_FULFILLED,
         payload: {
@@ -62,7 +62,7 @@ export const updateRoute = (name: string, namespace: string, route: HttpRoute): 
     try {
       dispatch({ type: UPDATE_ROUTE_PENDING });
 
-      const routeRes = await updateHttpRoute(namespace, name, route);
+      const routeRes = await api.updateHttpRoute(namespace, name, route);
       dispatch({
         type: UPDATE_ROUTE_FULFILLED,
         payload: {
@@ -85,7 +85,7 @@ export const deleteRoute = (name: string, namespace: string): ThunkResult<Promis
     try {
       dispatch({ type: DELETE_ROUTE_PENDING });
 
-      const success = await deleteHttpRoute(namespace, name);
+      const success = await api.deleteHttpRoute(namespace, name);
 
       if (!success) {
         dispatch(setErrorNotificationAction("Delete http route failed."));

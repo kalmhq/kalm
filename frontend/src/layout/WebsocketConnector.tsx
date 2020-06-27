@@ -19,7 +19,7 @@ import {
   UPDATE_COMPONENT,
 } from "types/application";
 import Immutable from "immutable";
-import { getKappApplicationComponentList } from "actions/kubernetesApi";
+import { api } from "api";
 
 export interface ResMessage {
   namespace: string;
@@ -79,7 +79,7 @@ class WebsocketConnectorRaw extends React.PureComponent<Props> {
           let application: ApplicationDetails = Immutable.fromJS(data.data);
           if (data.action === "Add") {
             if (application.get("status") === "Active") {
-              const components = await getKappApplicationComponentList(application.get("name"));
+              const components = await api.getKappApplicationComponentList(application.get("name"));
               application = application.set("components", components);
               dispatch({
                 type: CREATE_APPLICATION,
@@ -93,7 +93,7 @@ class WebsocketConnectorRaw extends React.PureComponent<Props> {
                 payload: { applicationName: application.get("name") },
               });
             } else {
-              const components = await getKappApplicationComponentList(application.get("name"));
+              const components = await api.getKappApplicationComponentList(application.get("name"));
               application = application.set("components", components);
               dispatch({
                 type: CREATE_APPLICATION,

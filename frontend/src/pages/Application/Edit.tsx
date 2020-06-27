@@ -118,7 +118,6 @@ class ApplicationEditRaw extends React.PureComponent<Props, State> {
   }
 
   public renderForm() {
-    const { application, dispatch, classes, currentComponent } = this.props;
     const { changingComponent } = this.state;
 
     if (changingComponent) {

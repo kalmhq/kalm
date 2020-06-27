@@ -1,4 +1,3 @@
-import { getLoginStatus, validateToken } from "./kubernetesApi";
 import { SomethingWrong, ThunkResult } from "../types";
 import {
   LOAD_LOGIN_STATUS_FAILED,
@@ -10,6 +9,7 @@ import {
 } from "../types/common";
 import { setErrorNotificationAction } from "./notification";
 import { LoginStatus } from "types/authorization";
+import { api } from "api";
 
 export const loadLoginStatus = (): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
@@ -17,7 +17,7 @@ export const loadLoginStatus = (): ThunkResult<Promise<void>> => {
 
     dispatch({ type: LOAD_LOGIN_STATUS_PENDING });
     try {
-      loginStatus = await getLoginStatus();
+      loginStatus = await api.getLoginStatus();
       dispatch({
         type: LOAD_LOGIN_STATUS_FULFILLED,
         payload: { loginStatus },
@@ -32,7 +32,7 @@ export const loadLoginStatus = (): ThunkResult<Promise<void>> => {
 export const validateTokenAction = (token: string): ThunkResult<Promise<boolean>> => {
   return async (dispatch) => {
     try {
-      await validateToken(token);
+      await api.validateToken(token);
 
       dispatch({
         type: SET_AUTH_TOKEN,

@@ -8,14 +8,14 @@ import {
   LOAD_ROLE_BINDINGS_PENDING,
   RoleBindingsRequestBody,
 } from "../types/user";
-import { createRoleBindings, deleteRoleBindings, loadRolebindings } from "./kubernetesApi";
+import { api } from "api";
 
 export const loadRoleBindingsAction = (): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
     dispatch({ type: LOAD_ROLE_BINDINGS_PENDING });
 
     try {
-      const roleBindings = await loadRolebindings();
+      const roleBindings = await api.loadRolebindings();
 
       dispatch({
         type: LOAD_ROLE_BINDINGS_FULFILLED,
@@ -35,7 +35,7 @@ export const createRoleBindingsAction = (roleBindingsBody: RoleBindingsRequestBo
     dispatch({ type: CREATE_ROLE_BINDINGS_PENDING });
 
     try {
-      await createRoleBindings(roleBindingsBody);
+      await api.createRoleBindings(roleBindingsBody);
       dispatch({ type: CREATE_ROLE_BINDINGS_FULFILLED });
       dispatch(loadRoleBindingsAction());
     } catch (e) {
@@ -50,7 +50,7 @@ export const deleteRoleBindingsAction = (namespace: string, bindingName: string)
     dispatch({ type: CREATE_ROLE_BINDINGS_PENDING });
 
     try {
-      await deleteRoleBindings(namespace, bindingName);
+      await api.deleteRoleBindings(namespace, bindingName);
       dispatch({ type: CREATE_ROLE_BINDINGS_FULFILLED });
       dispatch(loadRoleBindingsAction());
     } catch (e) {

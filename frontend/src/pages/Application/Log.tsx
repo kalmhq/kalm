@@ -9,7 +9,6 @@ import queryString from "query-string";
 import React from "react";
 import ReconnectingWebSocket from "reconnecting-websocket";
 import "xterm/css/xterm.css";
-import { k8sWsPrefix } from "../../actions/kubernetesApi";
 import { Loading } from "../../widgets/Loading";
 import { Namespaces } from "../../widgets/Namespaces";
 import { BasePage } from "../BasePage";
@@ -17,6 +16,7 @@ import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./Item
 import { Xterm, XtermRaw } from "./Xterm";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { PodStatus } from "types/application";
+import { k8sWsPrefix } from "api/realApi";
 
 const logger = debug("ws");
 const detailedLogger = debug("ws:details");

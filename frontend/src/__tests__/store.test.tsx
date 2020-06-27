@@ -4,8 +4,6 @@ import { RootState } from "reducers";
 import { createBrowserHistory } from "history";
 import configureStore from "configureStore";
 import { loadCertificates } from "actions/certificate";
-import Immutable from "immutable";
-import { certificateListData } from "actions/mockApiData";
 import { Provider } from "react-redux";
 import { CertificateForm } from "forms/Certificate";
 import { newEmptyCertificateForm, selfManaged } from "../types/certificate";
@@ -14,10 +12,12 @@ import { getTestFormSyncErrors } from "../utils/testUtils";
 import { readFileSync } from "fs";
 import { configure, mount } from "enzyme";
 import Adapter from "enzyme-adapter-react-16";
+import MockStore from "api/mockStore";
 
 configure({ adapter: new Adapter() });
 
 let store: Store<RootState, any>;
+const mockStore = new MockStore();
 
 beforeAll(() => {
   const history = createBrowserHistory();
@@ -27,7 +27,7 @@ beforeAll(() => {
 
 test("load certificate list", async () => {
   await store.dispatch(loadCertificates());
-  expect(store.getState().get("certificates").get("certificates")).toEqual(Immutable.fromJS(certificateListData.data));
+  expect(store.getState().get("certificates").get("certificates")).toEqual(mockStore.data.mockCertificates);
 });
 
 test("add certificate", () => {
