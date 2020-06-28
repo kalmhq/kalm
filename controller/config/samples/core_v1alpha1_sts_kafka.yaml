@@ -3,7 +3,7 @@ kind: Namespace
 metadata:
   name: kapp-kafka
   labels:
-#    istio-injection: enabled
+    istio-injection: enabled
     kapp-enabled: "true"
 ---
 apiVersion: core.kapp.dev/v1alpha1
