@@ -1,5 +1,5 @@
 import React from "react";
-import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { createStyles, Theme, withStyles, WithStyles, Box } from "@material-ui/core";
 import { TDispatchProp } from "types";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
@@ -17,6 +17,7 @@ const mapStateToProps = (state: RootState) => {
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {
   component: ApplicationComponentDetails;
+  enableMarginRight?: boolean;
 }
 
 interface State {}
@@ -30,7 +31,7 @@ class ComponentStatusRaw extends React.PureComponent<Props, State> {
   public render = () => {
     let isError = false;
     let isPending = false;
-    const { component } = this.props;
+    const { component, enableMarginRight } = this.props;
 
     component.get("pods").forEach((pod) => {
       if (pod.get("isTerminating")) {
@@ -49,13 +50,14 @@ class ComponentStatusRaw extends React.PureComponent<Props, State> {
       }
     });
 
+    let statusBadge = <SuccessBadge />;
     if (isError) {
-      return <ErrorBadge />;
+      statusBadge = <ErrorBadge />;
     } else if (isPending) {
-      return <PendingBadge />;
-    } else {
-      return <SuccessBadge />;
+      statusBadge = <PendingBadge />;
     }
+
+    return <Box mr={enableMarginRight ? 1 : 0}>{statusBadge}</Box>;
   };
 }
 

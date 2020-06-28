@@ -121,7 +121,7 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
           <Grid container spacing={2}>
             <Grid item md={2}>
               <Box display="flex">
-                <ComponentStatus component={component} /> <H5>{component.get("name")}</H5>
+                <ComponentStatus component={component} enableMarginRight /> <H5>{component.get("name")}</H5>
               </Box>
             </Grid>
             <Grid item md={2}>
