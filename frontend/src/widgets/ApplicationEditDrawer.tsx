@@ -20,6 +20,7 @@ import { ConfirmDialog } from "./ConfirmDialog";
 import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
 import { blinkTopProgressAction } from "../actions/settings";
 import { newEmptyComponentLike } from "types/componentTemplate";
+import { COMPONENT_FORM_ID } from "../forms/formIDs";
 
 const componentInitialValues = newEmptyComponentLike();
 
@@ -27,8 +28,8 @@ const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
   const isAdmin = auth.get("isAdmin");
   const entity = auth.get("entity");
-  const componentSyncErrors = getFormSyncErrors("componentLike")(state);
-  const componentFormSubmitFailed = hasSubmitFailed("componentLike")(state);
+  const componentSyncErrors = getFormSyncErrors(COMPONENT_FORM_ID)(state);
+  const componentFormSubmitFailed = hasSubmitFailed(COMPONENT_FORM_ID)(state);
   const hash = window.location.hash;
   const anchor = hash.replace("#", "");
 

@@ -10,6 +10,7 @@ import { RegistryForm, registryInitialValues } from "../../forms/Registry";
 import { RegistryType } from "../../types/registry";
 import { CustomizedButton } from "../../widgets/Button";
 import { ControlledDialog } from "../../widgets/ControlledDialog";
+import { REGISTRY_FORM_ID } from "../../forms/formIDs";
 
 export const RegistryNewModalID = "RegistryNewModalID";
 
@@ -49,7 +50,11 @@ class RegistryNewModalRaw extends React.PureComponent<Props, State> {
         <CustomizedButton onClick={() => dispatch(closeDialogAction(RegistryNewModalID))} color="primary">
           Cancel
         </CustomizedButton>
-        <CustomizedButton disabled={isSubmittingRegistry} onClick={() => dispatch(submit("registry"))} color="primary">
+        <CustomizedButton
+          disabled={isSubmittingRegistry}
+          onClick={() => dispatch(submit(REGISTRY_FORM_ID))}
+          color="primary"
+        >
           Save
         </CustomizedButton>
       </>

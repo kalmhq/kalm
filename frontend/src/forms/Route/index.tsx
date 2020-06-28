@@ -29,13 +29,12 @@ import { Prompt } from "widgets/Prompt";
 import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { shouldError } from "forms/common";
 import { State as TutorialState } from "reducers/tutorial";
-
-const defaultFormID = "route";
+import { ROUTE_FORM_ID } from "forms/formIDs";
 
 const mapStateToProps = (state: RootState) => {
-  const form = defaultFormID;
-  const selector = formValueSelector(form || defaultFormID);
-  const syncErrors = getFormSyncErrors(form || defaultFormID)(state) as { [key: string]: any };
+  const form = ROUTE_FORM_ID;
+  const selector = formValueSelector(form || ROUTE_FORM_ID);
+  const syncErrors = getFormSyncErrors(form || ROUTE_FORM_ID)(state) as { [key: string]: any };
   const certifications = state.get("certificates").get("certificates");
   const domains: Set<string> = new Set();
 
@@ -540,7 +539,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
 
 const form = reduxForm<HttpRouteForm, TutorialStateProps>({
   onSubmitFail: console.log,
-  form: defaultFormID,
+  form: ROUTE_FORM_ID,
   enableReinitialize: true,
   touchOnChange: true,
   shouldError: shouldError,

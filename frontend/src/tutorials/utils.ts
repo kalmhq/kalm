@@ -2,6 +2,7 @@ import Immutable from "immutable";
 import { State as TutorialState } from "../reducers/tutorial";
 import { RootState } from "reducers";
 import { formValueSelector } from "redux-form/immutable";
+import { APPLICATION_FORM_ID, COMPONENT_FORM_ID } from "forms/formIDs";
 
 export const formValidateOrNotBlockByTutorial = (
   values: Immutable.Map<string, any>,
@@ -121,11 +122,11 @@ export const isFormFieldMeet = (rootState: RootState, form: string, field: strin
 };
 
 export const isApplicationFormFieldValueEqualTo = (rootState: RootState, field: string, value: string) => {
-  return isFormFieldValueEqualTo(rootState, "application", field, value);
+  return isFormFieldValueEqualTo(rootState, APPLICATION_FORM_ID, field, value);
 };
 
 export const isComponentFormFieldValueEqualTo = (rootState: RootState, field: string, value: string) => {
-  return isFormFieldValueEqualTo(rootState, "componentLike", field, value);
+  return isFormFieldValueEqualTo(rootState, COMPONENT_FORM_ID, field, value);
 };
 
 export const isUnderPath = (state: RootState, ...paths: string[]) => {

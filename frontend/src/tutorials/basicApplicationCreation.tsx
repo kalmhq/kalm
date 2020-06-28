@@ -15,6 +15,7 @@ import {
   requireSubStepCompleted,
   requireSubStepNotCompleted,
 } from "tutorials/utils";
+import { APPLICATION_FORM_ID, COMPONENT_FORM_ID } from "forms/formIDs";
 
 export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title): Tutorial => {
   let apps: Immutable.List<ApplicationDetails> = store.getState().get("applications").get("applications");
@@ -74,7 +75,7 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
             ),
             formValidator: [
               {
-                form: "application",
+                form: APPLICATION_FORM_ID,
                 field: "name",
                 validate: (name) =>
                   name === applicationName ? undefined : `Please follow the tutorial, use ${applicationName}.`,
@@ -87,7 +88,7 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
             title: "Submit form",
             shouldCompleteByAction: (action: Actions) =>
               action.type === (actionTypes.SET_SUBMIT_SUCCEEDED as keyof ActionTypes) &&
-              action.meta!.form === "application",
+              action.meta!.form === APPLICATION_FORM_ID,
           },
         ],
       },
@@ -113,7 +114,7 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
             ),
             formValidator: [
               {
-                form: "componentLike",
+                form: COMPONENT_FORM_ID,
                 field: "name",
                 validate: (value) => (value === "echoserver" ? undefined : `Please use "echoserver"`),
               },
@@ -128,7 +129,7 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
             ),
             formValidator: [
               {
-                form: "componentLike",
+                form: COMPONENT_FORM_ID,
                 field: "image",
                 validate: (value) =>
                   value === "k8s.gcr.io/echoserver:1.10" ? undefined : `Please use "k8s.gcr.io/echoserver:1.10"`,
@@ -144,7 +145,7 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
               </span>
             ),
             shouldCompleteByState: (state: RootState) => {
-              const ports = getFormValue(state, "componentLike", "ports");
+              const ports = getFormValue(state, COMPONENT_FORM_ID, "ports");
               return ports && ports.size > 0;
             },
           },
@@ -156,13 +157,13 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
             ),
             formValidator: [
               {
-                form: "componentLike",
+                form: COMPONENT_FORM_ID,
                 field: "ports[0].name",
                 validate: (value) => (value === "http" ? undefined : `Please use "http"`),
               },
             ],
             shouldCompleteByState: (state: RootState) => {
-              const ports = getFormValue(state, "componentLike", "ports") as
+              const ports = getFormValue(state, COMPONENT_FORM_ID, "ports") as
                 | Immutable.List<ComponentLikePort>
                 | undefined;
               return !!ports && ports.size > 0 && ports.get(0)!.get("name") === "http";
@@ -176,13 +177,13 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
             ),
             formValidator: [
               {
-                form: "componentLike",
+                form: COMPONENT_FORM_ID,
                 field: "ports[0].containerPort",
                 validate: (value) => (value === 8080 ? undefined : `Please use "8080"`),
               },
             ],
             shouldCompleteByState: (state: RootState) => {
-              const ports = getFormValue(state, "componentLike", "ports") as
+              const ports = getFormValue(state, COMPONENT_FORM_ID, "ports") as
                 | Immutable.List<ComponentLikePort>
                 | undefined;
               return !!ports && ports.size > 0 && ports.get(0)!.get("containerPort") === 8080;
@@ -196,13 +197,13 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
             ),
             formValidator: [
               {
-                form: "componentLike",
+                form: COMPONENT_FORM_ID,
                 field: "ports[0].servicePort",
                 validate: (value) => (value === 8080 || !value ? undefined : `Please use "8080"`),
               },
             ],
             shouldCompleteByState: (state: RootState) => {
-              const ports = getFormValue(state, "componentLike", "ports") as
+              const ports = getFormValue(state, COMPONENT_FORM_ID, "ports") as
                 | Immutable.List<ComponentLikePort>
                 | undefined;
               return (
@@ -216,7 +217,7 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
             title: "Deploy!",
             shouldCompleteByAction: (action: Actions) =>
               action.type === (actionTypes.SET_SUBMIT_SUCCEEDED as keyof ActionTypes) &&
-              action.meta!.form === "componentLike",
+              action.meta!.form === COMPONENT_FORM_ID,
           },
         ],
       },
