@@ -110,7 +110,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
           variant="outlined"
           to={`/applications/${activeNamespaceName}/components/new`}
         >
-          Add Component
+          Add
         </Button>
       </>
     );

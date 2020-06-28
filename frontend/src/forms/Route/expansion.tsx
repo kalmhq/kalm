@@ -5,7 +5,7 @@ import {
   ExpansionPanelDetails,
   ExpansionPanelSummary,
   Theme,
-  Typography
+  Typography,
 } from "@material-ui/core";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import { WithStyles, withStyles } from "@material-ui/styles";
@@ -74,6 +74,7 @@ class ExpansionRaw extends React.PureComponent<ExpansionProps, State> {
     const { classes, children, hasError } = this.props;
     return (
       <ExpansionPanel
+        square
         className={clsx(classes.root)}
         variant="outlined"
         expanded={isUnfolded}

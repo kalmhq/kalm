@@ -223,7 +223,7 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { classes, pods } = this.props;
+    const { pods } = this.props;
     return (
       <KTable
         options={{ padding: "dense", paging: pods.size > 20 }}

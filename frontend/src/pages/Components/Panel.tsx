@@ -12,6 +12,7 @@ import { Application, ApplicationComponentDetails } from "types/application";
 import { H5 } from "widgets/Label";
 import { PodsTable } from "pages/Components/PodsTable";
 import { ComponentBasicInfo } from "pages/Components/BasicInfo";
+import { DangerButton } from "widgets/Button";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -89,10 +90,9 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
             Edit
           </Button>
 
-          <Button
+          <DangerButton
             variant="outlined"
             style={{ marginRight: 20 }}
-            color="primary"
             size="small"
             onClick={() => {
               blinkTopProgressAction();
@@ -100,7 +100,7 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
             }}
           >
             Delete
-          </Button>
+          </DangerButton>
         </Box>
         <ComponentBasicInfo component={component} activeNamespaceName={application.get("name")} />
 
