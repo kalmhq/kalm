@@ -23,6 +23,7 @@ import { Route, Switch } from "react-router";
 import { ComponentListPage } from "pages/Components/List";
 import { ComponentNew } from "pages/Components/New";
 import { ComponentEdit } from "pages/Components/Edit";
+import { ComponentShow } from "pages/Components/Show";
 
 const RequireAuthorizatedDashboard = RequireAuthorizated(DashboardLayout);
 
@@ -49,6 +50,7 @@ export const KappRoutes = (
 
           <Route exact path="/applications/:applicationName/components" component={ComponentListPage} />
           <Route exact path="/applications/:applicationName/components/new" component={ComponentNew} />
+          <Route exact path="/applications/:applicationName/components/:name" component={ComponentShow} />
           <Route exact path="/applications/:applicationName/components/:name/edit" component={ComponentEdit} />
 
           <Route exact path="/applications/:applicationName/logs" component={RequireNamespaceReader(Log)} />

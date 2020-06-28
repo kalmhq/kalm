@@ -30,3 +30,19 @@ export const extractDomainsFromCertificateContent = (certificateContent: string)
     return Immutable.List([]);
   }
 };
+
+export const maxIn = (...args: number[]) => {
+  if (args.length === 0) {
+    return 0;
+  }
+
+  let max = args[0];
+
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] > max) {
+      max = args[i];
+    }
+  }
+
+  return max;
+};

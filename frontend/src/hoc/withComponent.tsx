@@ -17,7 +17,7 @@ const mapStateToProps = (
   }: WithComponentsProps & RouteComponentProps<{ name: string }>,
 ) => {
   return {
-    component: components.find((c) => c.get("name") === name),
+    component: components.find((c) => c.get("name") === name)!,
   };
 };
 
@@ -28,6 +28,10 @@ export interface WithComponentProp extends ReturnType<typeof mapStateToProps>, W
 export const withComponent = (WrappedComponent: React.ComponentType<any>) => {
   const withComponent: React.ComponentType<WithComponentProp> = class extends React.Component<WithComponentProp> {
     render() {
+      if (!this.props.component) {
+        return "Component not found";
+      }
+
       return <WrappedComponent {...this.props} />;
     }
   };

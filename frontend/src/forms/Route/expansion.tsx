@@ -34,11 +34,11 @@ const styles = (theme: Theme) =>
     },
   });
 
-interface Props extends WithStyles<typeof styles> {
+export interface ExpansionProps extends WithStyles<typeof styles> {
   title: React.ReactNode;
   hasError?: boolean;
   subTitle?: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   defaultUnfold?: boolean;
 }
 
@@ -46,8 +46,8 @@ interface State {
   isUnfolded: boolean;
 }
 
-class ExpansionRaw extends React.PureComponent<Props, State> {
-  constructor(props: Props) {
+class ExpansionRaw extends React.PureComponent<ExpansionProps, State> {
+  constructor(props: ExpansionProps) {
     super(props);
     this.state = {
       isUnfolded: !!props.defaultUnfold,

@@ -1,18 +1,4 @@
-import {
-  Box,
-  Button,
-  createStyles,
-  Divider,
-  Link as MLink,
-  List,
-  ListItem,
-  ListItemText,
-  ListSubheader,
-  Popover,
-  Theme,
-  Tooltip,
-  WithStyles,
-} from "@material-ui/core";
+import { Box, Button, createStyles, Link as MLink, Popover, Theme, Tooltip, WithStyles } from "@material-ui/core";
 import withStyles from "@material-ui/core/styles/withStyles";
 import { deleteApplicationAction } from "actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
@@ -23,6 +9,7 @@ import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import Immutable from "immutable";
 import MaterialTable, { MTableBodyRow } from "material-table";
 import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
+import { RouteWidgets } from "pages/Route/Widget";
 import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
@@ -30,7 +17,6 @@ import { RootState } from "reducers";
 import { primaryColor } from "theme";
 import { ApplicationDetails } from "types/application";
 import { HttpRoute } from "types/route";
-import { isPrivateIP } from "utils/ip";
 import { customSearchForImmutable } from "utils/tableSearch";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
@@ -229,35 +215,14 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private buildCurlCommand = (scheme: string, host: string, path: string, method: string) => {
-    const { clusterInfo } = this.props;
-    let extraArgs: string[] = [];
-
-    // test env
-    if (isPrivateIP(clusterInfo.get("ingressIP"))) {
-      if (scheme === "https") {
-        if (!host.includes(":")) {
-          host = host + ":" + clusterInfo.get("httpsPort");
-        }
-        extraArgs.push(`-k`);
-      } else {
-        if (!host.includes(":")) {
-          extraArgs.push(`-H "Host: ${host}"`);
-          host = host + ":" + clusterInfo.get("httpPort");
-        }
-      }
-      extraArgs.push(`--resolve ${host}:${clusterInfo.get("ingressIP")}`);
-    }
-
-    const url = `${scheme}://${host}${path}`;
-
-    return `curl -v -X ${method}${extraArgs.map((x) => " " + x).join("")} ${url}`;
-  };
-
   private renderExternalAccesses = (applicationDetails: RowData) => {
-    const { routesMap, clusterInfo, activeNamespaceName, dispatch } = this.props;
+    const { routesMap, activeNamespaceName } = this.props;
 
-    const applicationRoutes: Immutable.List<HttpRoute> | undefined = routesMap.get(applicationDetails.get("name"));
+    const applicationRoutes: Immutable.List<HttpRoute> = routesMap.get(
+      applicationDetails.get("name"),
+      Immutable.List(),
+    );
+
     if (applicationRoutes && applicationRoutes.size > 0) {
       return (
         <PopupState variant="popover" popupId={applicationDetails.get("name")}>
@@ -277,108 +242,15 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                   horizontal: "center",
                 }}
               >
-                {applicationRoutes
-                  .map((route, index) => {
-                    let items: React.ReactNode[] = [];
-                    route.get("schemes").forEach((scheme) => {
-                      // route.get("hosts").forEach(host => {
-                      // route.get("paths").forEach(path => {
-                      let host = route.get("hosts").first("*");
-                      const path = route.get("paths").first("/");
-
-                      if (host === "*") {
-                        host =
-                          (clusterInfo.get("ingressIP") || clusterInfo.get("ingressHostname")) +
-                          ":" +
-                          clusterInfo.get(scheme === "https" ? "httpsPort" : "httpPort");
-                      }
-
-                      if (host.includes("*")) {
-                        host = host.replace("*", "wildcard");
-                      }
-
-                      const url = scheme + "://" + host + path;
-
-                      items.push(
-                        <ListItem key={scheme}>
-                          <ListItemText primary={url} />
-                          <Box ml={2}>
-                            <Button
-                              variant="text"
-                              size="small"
-                              color="primary"
-                              href={url}
-                              target="_blank"
-                              rel="noreferer"
-                              disabled={!route.get("methods").includes("GET")}
-                            >
-                              Open
-                            </Button>
-                          </Box>
-                          <Box ml={1}>
-                            <Button
-                              variant="text"
-                              size="small"
-                              color="primary"
-                              onClick={() => {
-                                navigator.clipboard
-                                  .writeText(
-                                    this.buildCurlCommand(scheme, host, path, route.get("methods").first("GET")),
-                                  )
-                                  .then(
-                                    function () {
-                                      dispatch(setSuccessNotificationAction("Copied successful!"));
-                                    },
-                                    function (err) {
-                                      dispatch(setErrorNotificationAction("Copied failed!"));
-                                    },
-                                  );
-                              }}
-                            >
-                              Copy as curl
-                            </Button>
-                          </Box>
-                        </ListItem>,
-                      );
-                    });
-
-                    const targetDetails = route
-                      .get("destinations")
-                      .map((destination) =>
-                        destination
-                          .get("host")
-                          .replace(".svc.cluster.local", "")
-                          .replace(`.${activeNamespaceName}`, ""),
-                      )
-                      .join(", ");
-
-                    return (
-                      <>
-                        <List
-                          component="nav"
-                          dense
-                          subheader={
-                            <ListSubheader component="div" id="nested-list-subheader">
-                              #{index} (
-                              {route.get("methods").size === 9 ? "ALL methods" : route.get("methods").join(",")}) (
-                              {targetDetails})
-                            </ListSubheader>
-                          }
-                        >
-                          {items}
-                        </List>
-                        {index < applicationRoutes.size - 1 ? <Divider /> : null}
-                      </>
-                    );
-                  })
-                  .toArray()}
+                <Box p={2}>
+                  <RouteWidgets routes={applicationRoutes} activeNamespaceName={activeNamespaceName} />
+                </Box>
               </Popover>
             </>
           )}
         </PopupState>
       );
     } else {
-      // return <Link to={applicationRouteUrl(applicationDetails.get("name"))}>Add route</Link>;
       return "-";
     }
   };
