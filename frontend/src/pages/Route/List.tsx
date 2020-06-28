@@ -13,19 +13,12 @@ import { Namespaces } from "widgets/Namespaces";
 import { KTable } from "widgets/Table";
 import { blinkTopProgressAction } from "actions/settings";
 import { Link } from "react-router-dom";
+import { Methods } from "pages/Route/Methods";
+import { DangerButton } from "widgets/Button";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
-    secondHeaderRight: {
-      height: "100%",
-      width: "100%",
-      display: "flex",
-      alignItems: "center",
-    },
-    secondHeaderRightItem: {
-      marginLeft: 20,
-    },
   });
 
 interface Props extends WithStyles<typeof styles>, WithRoutesDataProps {}
@@ -78,7 +71,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderMethods(row: RowData) {
-    return row.get("methods").join(",");
+    return <Methods methods={row.get("methods")} />;
   }
 
   private renderSupportHttp(row: RowData) {
@@ -145,6 +138,10 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     return (
       <>
         <Button
+          size="small"
+          variant="outlined"
+          style={{ marginRight: 16 }}
+          color="primary"
           onClick={() => {
             blinkTopProgressAction();
             dispatch(push(`/applications/${activeNamespaceName}/routes/${row.get("name")}/edit`));
@@ -152,40 +149,41 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
         >
           Edit
         </Button>
-        <Button
+        <DangerButton
+          variant="outlined"
+          size="small"
           onClick={() => {
             blinkTopProgressAction();
             dispatch(deleteRoute(row.get("name"), row.get("namespace")));
           }}
         >
           Delete
-        </Button>
+        </DangerButton>
       </>
     );
   };
 
   public render() {
-    const { classes, isRoutesFirstLoaded, isRoutesLoading, activeNamespaceName } = this.props;
+    const { isRoutesFirstLoaded, isRoutesLoading, activeNamespaceName } = this.props;
     const tableData = this.getData();
     return (
       <BasePage
         leftDrawer={<ApplicationSidebar />}
         secondHeaderLeft={<Namespaces />}
         secondHeaderRight={
-          <div className={classes.secondHeaderRight}>
-            <H4 className={classes.secondHeaderRightItem}>Routes</H4>
+          <>
+            <H4>Routes</H4>
             <Button
               tutorial-anchor-id="add-route"
               component={(props: any) => <Link {...props} />}
               color="primary"
               size="small"
               variant="outlined"
-              className={classes.secondHeaderRightItem}
               to={`/applications/${activeNamespaceName}/routes/new`}
             >
-              Add Route
+              Add
             </Button>
-          </div>
+          </>
         }
       >
         <Box p={2}>

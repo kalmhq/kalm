@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"github.com/kapp-staging/kapp/api/resources"
 	"github.com/kapp-staging/kapp/controller/controllers"
 	"github.com/labstack/echo/v4"
@@ -58,6 +59,7 @@ func (h *ApiHandler) handleListVolumes(c echo.Context) error {
 
 		respVolumes = append(respVolumes, resources.Volume{
 			Name:               kappPVC.Name,
+			Namespace:          kappPVC.Namespace,
 			ComponentName:      compName,
 			ComponentNamespace: compNamespace,
 			IsInUse:            isInUse,
@@ -68,21 +70,56 @@ func (h *ApiHandler) handleListVolumes(c echo.Context) error {
 	return c.JSON(200, respVolumes)
 }
 
-func (h *ApiHandler) handleDeletePV(c echo.Context) error {
-	pvName := c.Param("name")
+func (h *ApiHandler) handleDeletePVC(c echo.Context) error {
+	pvcNamespace := c.Param("namespace")
+	pvcName := c.Param("name")
+
 	builder := h.Builder(c)
 
-	var pv v1.PersistentVolume
-	if err := builder.Get("", pvName, &pv); err != nil {
+	var pvc v1.PersistentVolumeClaim
+	if err := builder.Get(pvcNamespace, pvcName, &pvc); err != nil {
 		return err
 	}
 
-	if pv.Status.Phase != v1.VolumeAvailable {
-		return c.JSON(409, "PersistentVolume can only be deleted in phase: Available")
+	if isInUse, err := isPVCInUsed(builder, pvc); err != nil {
+		return err
+	} else if isInUse {
+		return fmt.Errorf("cannot delete PVC in use")
 	}
 
-	if err := builder.Delete(&pv); err != nil {
+	var pvList v1.PersistentVolumeList
+	if err := builder.List(&pvList); err != nil {
+		if errors.IsNotFound(err) {
+			return err
+		}
+	}
+
+	if err := builder.Delete(&pvc); err != nil {
 		return err
+	}
+
+	var underlyingPV *v1.PersistentVolume
+	for i := 0; i < len(pvList.Items); i++ {
+		pv := pvList.Items[i]
+		pvClaimRef := pv.Spec.ClaimRef
+
+		if pvClaimRef == nil {
+			continue
+		}
+
+		if pvClaimRef.Namespace != pvcNamespace ||
+			pvClaimRef.Name != pvcName {
+			continue
+		}
+
+		underlyingPV = &pv
+		break
+	}
+
+	if underlyingPV != nil {
+		if err := builder.Delete(underlyingPV); err != nil {
+			return err
+		}
 	}
 
 	return c.NoContent(200)

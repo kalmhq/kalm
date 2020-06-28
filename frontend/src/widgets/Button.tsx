@@ -1,15 +1,21 @@
 import React from "react";
+import clsx from "clsx";
 import {
   Box,
   Button,
   ButtonProps,
   CircularProgress,
   createStyles,
+  IconButton,
   Theme,
+  useTheme,
   WithStyles,
   withStyles,
 } from "@material-ui/core";
-import { primaryColor } from "../theme";
+import { primaryColor } from "theme";
+import { makeStyles } from "@material-ui/core/styles";
+import CloseIcon from "@material-ui/icons/Close";
+import CheckIcon from "@material-ui/icons/Check";
 
 const customizedButtonStyle = (theme: Theme) => {
   return createStyles({
@@ -100,5 +106,112 @@ export const RaisedButton = (props: RaisedButtonProps) => {
     <CustomizedButton variant="contained" {...props}>
       {props.children}
     </CustomizedButton>
+  );
+};
+
+const DangerButtonStyles = (theme: Theme) =>
+  makeStyles({
+    root: {
+      border: `1px solid ${theme.palette.error.main}`,
+      borderRadius: theme.shape.borderRadius,
+      color: theme.palette.error.main,
+    },
+    buttonRoot: {
+      minWidth: 64,
+      color: theme.palette.error.main,
+      border: 0,
+    },
+    text: {
+      color: theme.palette.error.main,
+      fontWeight: theme.typography.fontWeightBold,
+      maxWidth: 0,
+      opacity: 0,
+      marginLeft: 0,
+      whiteSpace: "nowrap",
+      transition: theme.transitions.create(["max-width", "opacity", "margin-left"], {
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.leavingScreen,
+      }),
+    },
+    textOpen: {
+      maxWidth: 100,
+      marginLeft: theme.spacing(2),
+      opacity: 1,
+      transition: theme.transitions.create(["max-width", "opacity", "margin-left"], {
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.leavingScreen,
+      }),
+    },
+    show: {
+      maxWidth: 80,
+      opacity: 1,
+      transition: theme.transitions.create(["max-width", "opacity", "min-width", "padding-left"], {
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.leavingScreen,
+      }),
+    },
+    hide: {
+      maxWidth: 0,
+      minWidth: 0,
+      opacity: 0,
+      pointerEvents: "none",
+      paddingLeft: "0 !important",
+      transition: theme.transitions.create(["max-width", "opacity", "min-width", "padding-left"], {
+        easing: theme.transitions.easing.sharp,
+        duration: theme.transitions.duration.leavingScreen,
+      }),
+    },
+  });
+
+export const DangerButton = (props: ButtonProps) => {
+  const { onClick, style } = props;
+  const theme = useTheme();
+  const classes = DangerButtonStyles(theme)();
+
+  const [open, setOpen] = React.useState(false);
+
+  const showConfirm = () => {
+    if (!open) {
+      return setOpen(true);
+    }
+
+    return setOpen(false);
+  };
+
+  const reset = () => {
+    setOpen(false);
+  };
+
+  const doDangerAction = (event: React.MouseEvent<HTMLButtonElement>) => {
+    onClick && onClick(event);
+  };
+
+  return (
+    <Box display="inline-block" borderRadius className={classes.root} style={style}>
+      <Box display="inline-block" className={clsx(classes.text, { [classes.textOpen]: open })}>
+        Are you sure?
+      </Box>
+
+      <Box
+        display="inline-block"
+        className={clsx({ [classes.show]: open, [classes.hide]: !open })}
+        style={{ verticalAlign: "middle", paddingLeft: theme.spacing(1) }}
+      >
+        <Box display="flex">
+          <IconButton aria-label="delete" size="small" onClick={doDangerAction} tabIndex={open ? 1 : -1}>
+            <CheckIcon fontSize="small" />
+          </IconButton>
+          <IconButton aria-label="close" size="small" onClick={reset} tabIndex={open ? 2 : -1}>
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </Box>
+      </Box>
+      <Button
+        {...props}
+        style={undefined}
+        className={clsx(classes.buttonRoot, { [classes.show]: !open, [classes.hide]: open })}
+        onClick={showConfirm}
+      />
+    </Box>
   );
 };

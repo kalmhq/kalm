@@ -9,7 +9,7 @@ import { Application, SharedEnv } from "types/application";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { KRenderTextField } from "../Basic/textfield";
-import { ValidatorName, ValidatorRequired } from "../validator";
+import { ValidatorRequired, ValidatorNameWithoutDot } from "../validator";
 import { Alert } from "@material-ui/lab";
 import { shouldError } from "forms/common";
 import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
@@ -82,11 +82,11 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
         label="Name"
         disabled={isEdit}
         component={KRenderTextField}
-        validate={[ValidatorRequired, ValidatorName]}
+        validate={[ValidatorRequired, ValidatorNameWithoutDot]}
         helperText={
           isEdit
             ? "Can't modify name"
-            : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
+            : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), and "-". Max length is 180.'
         }
         placeholder="Please type the component name"
       />

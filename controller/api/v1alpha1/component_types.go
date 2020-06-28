@@ -53,6 +53,7 @@ type ComponentSpec struct {
 
 	Command string `json:"command,omitempty"`
 
+	// +optional
 	EnableHeadlessService bool `json:"enableHeadlessService"`
 
 	Ports []Port `json:"ports,omitempty"`

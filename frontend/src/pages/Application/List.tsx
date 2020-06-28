@@ -1,65 +1,42 @@
-import {
-  Box,
-  Button,
-  createStyles,
-  Divider,
-  Link as MLink,
-  List,
-  ListItem,
-  ListItemText,
-  ListSubheader,
-  Popover,
-  Theme,
-  Tooltip,
-  WithStyles,
-} from "@material-ui/core";
+import { Box, Button, createStyles, Link as MLink, Popover, Theme, Tooltip, WithStyles } from "@material-ui/core";
+import withStyles from "@material-ui/core/styles/withStyles";
+import { deleteApplicationAction } from "actions/application";
+import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { loadRoutes } from "actions/routes";
+import { blinkTopProgressAction } from "actions/settings";
 import { push } from "connected-react-router";
+import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import Immutable from "immutable";
 import MaterialTable, { MTableBodyRow } from "material-table";
 import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
+import { RouteWidgets } from "pages/Route/Widget";
 import React from "react";
+import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
-import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
-import { FlexRowItemCenterBox } from "widgets/Box";
-import { CustomizedButton } from "widgets/Button";
-import { KappConsoleIcon, KappLogIcon } from "widgets/Icon";
-import { deleteApplicationAction } from "actions/application";
-import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
-import { blinkTopProgressAction } from "actions/settings";
 import { primaryColor } from "theme";
 import { ApplicationDetails } from "types/application";
 import { HttpRoute } from "types/route";
-import { formatDate } from "utils";
 import { customSearchForImmutable } from "utils/tableSearch";
+import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
+import { FlexRowItemCenterBox } from "widgets/Box";
+import { CustomizedButton } from "widgets/Button";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { FoldButtonGroup } from "widgets/FoldButtonGroup";
+import { KappConsoleIcon, KappLogIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { Body, H4 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
-import { BasePage } from "../BasePage";
-import withStyles from "@material-ui/core/styles/withStyles";
-import { connect } from "react-redux";
-import { isPrivateIP } from "utils/ip";
 import { KTable } from "widgets/Table";
-import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
+import { getApplicationCreatedAtString } from "../../utils/application";
+import { BasePage } from "../BasePage";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
 
 const styles = (theme: Theme) =>
   createStyles({
-    secondHeaderRight: {
-      height: "100%",
-      width: "100%",
-      display: "flex",
-      alignItems: "center",
-    },
-    secondHeaderRightItem: {
-      marginLeft: 20,
-    },
     emptyWrapper: {
       width: "100%",
       display: "flex",
@@ -169,22 +146,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderCreatedTime = (applicationDetails: RowData) => {
-    let createdAt = new Date(0);
-
-    applicationDetails.get("components")?.forEach((component) => {
-      component.get("pods").forEach((podStatus) => {
-        const ts = podStatus.get("createTimestamp");
-        const tsDate = new Date(ts);
-        if (createdAt <= new Date(0)) {
-          createdAt = tsDate;
-        } else {
-          createdAt = createdAt < tsDate ? createdAt : tsDate;
-        }
-      });
-    });
-    const createdAtString = createdAt <= new Date(0) ? "-" : formatDate(createdAt);
-    return <Body>{createdAtString}</Body>;
+  private renderCreatedAt = (applicationDetails: RowData) => {
+    return <Body>{getApplicationCreatedAtString(applicationDetails)}</Body>;
   };
 
   private renderStatus = (applicationDetails: RowData) => {
@@ -252,35 +215,14 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private buildCurlCommand = (scheme: string, host: string, path: string, method: string) => {
-    const { clusterInfo } = this.props;
-    let extraArgs: string[] = [];
-
-    // test env
-    if (isPrivateIP(clusterInfo.get("ingressIP"))) {
-      if (scheme === "https") {
-        if (!host.includes(":")) {
-          host = host + ":" + clusterInfo.get("httpsPort");
-        }
-        extraArgs.push(`-k`);
-      } else {
-        if (!host.includes(":")) {
-          extraArgs.push(`-H "Host: ${host}"`);
-          host = host + ":" + clusterInfo.get("httpPort");
-        }
-      }
-      extraArgs.push(`--resolve ${host}:${clusterInfo.get("ingressIP")}`);
-    }
-
-    const url = `${scheme}://${host}${path}`;
-
-    return `curl -v -X ${method}${extraArgs.map((x) => " " + x).join("")} ${url}`;
-  };
-
   private renderExternalAccesses = (applicationDetails: RowData) => {
-    const { routesMap, clusterInfo, activeNamespaceName, dispatch } = this.props;
+    const { routesMap, activeNamespaceName } = this.props;
 
-    const applicationRoutes: Immutable.List<HttpRoute> | undefined = routesMap.get(applicationDetails.get("name"));
+    const applicationRoutes: Immutable.List<HttpRoute> = routesMap.get(
+      applicationDetails.get("name"),
+      Immutable.List(),
+    );
+
     if (applicationRoutes && applicationRoutes.size > 0) {
       return (
         <PopupState variant="popover" popupId={applicationDetails.get("name")}>
@@ -300,108 +242,15 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                   horizontal: "center",
                 }}
               >
-                {applicationRoutes
-                  .map((route, index) => {
-                    let items: React.ReactNode[] = [];
-                    route.get("schemes").forEach((scheme) => {
-                      // route.get("hosts").forEach(host => {
-                      // route.get("paths").forEach(path => {
-                      let host = route.get("hosts").first("*");
-                      const path = route.get("paths").first("/");
-
-                      if (host === "*") {
-                        host =
-                          (clusterInfo.get("ingressIP") || clusterInfo.get("ingressHostname")) +
-                          ":" +
-                          clusterInfo.get(scheme === "https" ? "httpsPort" : "httpPort");
-                      }
-
-                      if (host.includes("*")) {
-                        host = host.replace("*", "wildcard");
-                      }
-
-                      const url = scheme + "://" + host + path;
-
-                      items.push(
-                        <ListItem key={scheme}>
-                          <ListItemText primary={url} />
-                          <Box ml={2}>
-                            <Button
-                              variant="text"
-                              size="small"
-                              color="primary"
-                              href={url}
-                              target="_blank"
-                              rel="noreferer"
-                              disabled={!route.get("methods").includes("GET")}
-                            >
-                              Open
-                            </Button>
-                          </Box>
-                          <Box ml={1}>
-                            <Button
-                              variant="text"
-                              size="small"
-                              color="primary"
-                              onClick={() => {
-                                navigator.clipboard
-                                  .writeText(
-                                    this.buildCurlCommand(scheme, host, path, route.get("methods").first("GET")),
-                                  )
-                                  .then(
-                                    function () {
-                                      dispatch(setSuccessNotificationAction("Copied successful!"));
-                                    },
-                                    function (err) {
-                                      dispatch(setErrorNotificationAction("Copied failed!"));
-                                    },
-                                  );
-                              }}
-                            >
-                              Copy as curl
-                            </Button>
-                          </Box>
-                        </ListItem>,
-                      );
-                    });
-
-                    const targetDetails = route
-                      .get("destinations")
-                      .map((destination) =>
-                        destination
-                          .get("host")
-                          .replace(".svc.cluster.local", "")
-                          .replace(`.${activeNamespaceName}`, ""),
-                      )
-                      .join(", ");
-
-                    return (
-                      <>
-                        <List
-                          component="nav"
-                          dense
-                          subheader={
-                            <ListSubheader component="div" id="nested-list-subheader">
-                              #{index} (
-                              {route.get("methods").size === 9 ? "ALL methods" : route.get("methods").join(",")}) (
-                              {targetDetails})
-                            </ListSubheader>
-                          }
-                        >
-                          {items}
-                        </List>
-                        {index < applicationRoutes.size - 1 ? <Divider /> : null}
-                      </>
-                    );
-                  })
-                  .toArray()}
+                <Box p={2}>
+                  <RouteWidgets routes={applicationRoutes} activeNamespaceName={activeNamespaceName} />
+                </Box>
               </Popover>
             </>
           )}
         </PopupState>
       );
     } else {
-      // return <Link to={applicationRouteUrl(applicationDetails.get("name"))}>Add route</Link>;
       return "-";
     }
   };
@@ -440,12 +289,12 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         to: `/applications/${rowData.get("name")}`,
         iconName: "fullscreen",
       },
-      {
-        text: "Edit",
-        to: `/applications/${rowData.get("name")}/edit`,
-        iconName: "edit",
-        requiredRole: "writer",
-      },
+      // {
+      //   text: "Edit",
+      //   to: `/applications/${rowData.get("name")}/edit`,
+      //   iconName: "edit",
+      //   requiredRole: "writer",
+      // },
       {
         text: "Delete",
         onClick: () => {
@@ -472,22 +321,20 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   private renderSecondHeaderRight() {
-    const { classes } = this.props;
     return (
-      <div className={classes.secondHeaderRight}>
-        <H4 className={classes.secondHeaderRightItem}>Applications</H4>
+      <>
+        <H4>Applications</H4>
         <Button
           tutorial-anchor-id="add-application"
           component={(props: any) => <Link {...props} />}
           color="primary"
           size="small"
           variant="outlined"
-          className={classes.secondHeaderRightItem}
           to={`/applications/new`}
         >
           Add
         </Button>
-      </div>
+      </>
     );
   }
 
@@ -521,10 +368,10 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         },
       },
       {
-        title: "Created On",
+        title: "Created At",
         field: "active",
         sorting: false,
-        render: this.renderCreatedTime,
+        render: this.renderCreatedAt,
         // hidden: !hasWriterRole,
       },
       {

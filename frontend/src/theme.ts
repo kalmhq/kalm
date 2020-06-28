@@ -80,7 +80,17 @@ let themeRaw = createMuiTheme({
     },
   },
   overrides: {
-    MuiTableCell: { root: { width: "auto !important" } },
+    MuiTableCell: { root: { width: "auto !important", fontWeight: "normal" } },
+    MuiExpansionPanel: {
+      root: {
+        marginTop: 16,
+        marginBottom: 16,
+        borderRadius: 0,
+        "&:first-child": {
+          marginTop: 0,
+        },
+      },
+    },
     MuiExpansionPanelSummary: {
       root: {
         "&$expanded": {
@@ -92,6 +102,11 @@ let themeRaw = createMuiTheme({
         "&$expanded": {
           margin: "inherit",
         },
+      },
+    },
+    MuiExpansionPanelDetails: {
+      root: {
+        padding: 16,
       },
     },
     MuiInputLabel: {
