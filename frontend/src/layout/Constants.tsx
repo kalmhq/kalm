@@ -2,6 +2,7 @@ export const APP_BAR_HEIGHT = 48;
 export const SECOND_HEADER_HEIGHT = 48;
 export const LEFT_SECTION_OPEN_WIDTH = 220;
 export const LEFT_SECTION_CLOSE_WIDTH = 61;
+export const TUTORIAL_DRAWER_WIDTH = 400;
 
 export const NAMESPACES_ZINDEX = 10;
 export const COMPONENT_DEPLOY_BUTTON_ZINDEX = 99;

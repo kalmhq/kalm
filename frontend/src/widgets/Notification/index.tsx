@@ -3,8 +3,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "../../reducers";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { tutorialDrawerWidth } from "pages/Tutorial";
-import { SNACKBAR_ZINDEX } from "layout/Constants";
+import { SNACKBAR_ZINDEX, TUTORIAL_DRAWER_WIDTH } from "layout/Constants";
 
 const getMessageFromState = (state: RootState) => ({
   message: state.get("notification"),
@@ -42,7 +41,7 @@ const styles = (theme: Theme) =>
       }),
     },
     anchorOriginBottomRightWhenTutorialOpen: {
-      marginRight: tutorialDrawerWidth,
+      marginRight: TUTORIAL_DRAWER_WIDTH,
     },
   });
 

@@ -22,7 +22,7 @@ import { TDispatchProp } from "types";
 import { Tutorial, TutorialFactory } from "types/tutorial";
 import { Body } from "widgets/Label";
 import { CommonTutorial } from "./CommonTutorial";
-import { DRAWER_HIGH_ZINDEX } from "layout/Constants";
+import { DRAWER_HIGH_ZINDEX, TUTORIAL_DRAWER_WIDTH } from "layout/Constants";
 
 class TutorialItem extends React.PureComponent<{
   title: string;
@@ -46,14 +46,12 @@ class TutorialItem extends React.PureComponent<{
   }
 }
 
-export const tutorialDrawerWidth: number = 400;
-
 const styles = (theme: Theme) => {
   return createStyles({
     root: {},
     list: {},
     drawer: {
-      width: tutorialDrawerWidth,
+      width: TUTORIAL_DRAWER_WIDTH,
       flexShrink: 0,
       // greater than driver.js overlay z-index
       // make this part visible when the driver.js is actived
@@ -62,7 +60,7 @@ const styles = (theme: Theme) => {
       zIndex: DRAWER_HIGH_ZINDEX,
     },
     drawerPaper: {
-      width: tutorialDrawerWidth,
+      width: TUTORIAL_DRAWER_WIDTH,
       padding: theme.spacing(2),
     },
   });
