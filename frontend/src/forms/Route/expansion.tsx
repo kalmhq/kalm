@@ -38,7 +38,7 @@ interface Props extends WithStyles<typeof styles> {
   title: React.ReactNode;
   hasError?: boolean;
   subTitle?: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   defaultUnfold?: boolean;
 }
 

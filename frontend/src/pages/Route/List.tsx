@@ -13,6 +13,7 @@ import { Namespaces } from "widgets/Namespaces";
 import { KTable } from "widgets/Table";
 import { blinkTopProgressAction } from "actions/settings";
 import { Link } from "react-router-dom";
+import { Methods } from "pages/Route/Methods";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -78,7 +79,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderMethods(row: RowData) {
-    return row.get("methods").join(",");
+    return <Methods methods={row.get("methods")} />;
   }
 
   private renderSupportHttp(row: RowData) {
