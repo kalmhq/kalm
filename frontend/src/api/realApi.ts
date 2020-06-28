@@ -20,7 +20,7 @@ export default class RealApi extends Api {
   };
 
   public validateToken = async (token: string): Promise<boolean> => {
-    const res = await axiosRequest({ method: "post", url: "/login/token", data: token });
+    const res = await axiosRequest({ method: "post", url: "/login/token", data: { token } });
     return res.status === 200;
   };
 
