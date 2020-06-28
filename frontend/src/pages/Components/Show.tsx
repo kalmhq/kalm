@@ -1,16 +1,5 @@
 import React from "react";
-import {
-  Box,
-  createStyles,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableRow,
-  Theme,
-  withStyles,
-  WithStyles,
-} from "@material-ui/core";
+import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { Expansion } from "forms/Route/expansion";
@@ -21,6 +10,8 @@ import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { H4 } from "widgets/Label";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
 import { RouteWidgets } from "pages/Route/Widget";
+import { PodsTable } from "pages/Components/PodsTable";
+import { ComponentBasicInfo } from "pages/Components/BasicInfo";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -72,6 +63,15 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
       </Expansion>
     );
   }
+  private renderPods() {
+    const { component, activeNamespaceName } = this.props;
+
+    return (
+      <Expansion title="pods" defaultUnfold>
+        <PodsTable activeNamespaceName={activeNamespaceName} pods={component.get("pods")} />
+      </Expansion>
+    );
+  }
 
   private renderSecondHeaderRight() {
     const { classes, component } = this.props;
@@ -84,7 +84,7 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { component } = this.props;
+    const { component, activeNamespaceName } = this.props;
     return (
       <BasePage
         secondHeaderRight={this.renderSecondHeaderRight()}
@@ -93,45 +93,9 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
       >
         <Box p={2}>
           <Expansion title={"Basic"} defaultUnfold>
-            <TableContainer>
-              <Table aria-label="table" size="small">
-                <TableBody>
-                  <TableRow>
-                    <TableCell>Created At</TableCell>
-                    <TableCell>TODO</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Name</TableCell>
-                    <TableCell>{component.get("name")}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Image</TableCell>
-                    <TableCell>{component.get("image")}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Workload Type</TableCell>
-                    <TableCell>{component.get("workloadType")}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Update Strategy</TableCell>
-                    <TableCell>{component.get("restartStrategy")}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Pod Status</TableCell>
-                    <TableCell>TODO: Running: 1, Pending: 1, Error: 2</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>CPU</TableCell>
-                    <TableCell>TODO: Running: 1, Pending: 1, Error: 2</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Memory</TableCell>
-                    <TableCell>TODO: Running: 1, Pending: 1, Error: 2</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </TableContainer>
+            <ComponentBasicInfo component={component} activeNamespaceName={activeNamespaceName} />
           </Expansion>
+          {this.renderPods()}
           {this.renderRoutes()}
         </Box>
       </BasePage>
