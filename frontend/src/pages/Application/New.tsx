@@ -29,7 +29,9 @@ class ApplicationNewRaw extends React.PureComponent<Props> {
   };
 
   private onSubmitSuccess = (app: Application) => {
-    this.props.dispatch(push(`/applications/${app.get("name")}`));
+    if (app) {
+      this.props.dispatch(push(`/applications/${app.get("name")}`));
+    }
   };
 
   public render() {

@@ -39,7 +39,13 @@ import { KRadioGroupRender } from "../Basic/radio";
 import { RenderSelectField } from "../Basic/select";
 import { KRenderCommandTextField, KRenderTextField, RenderComplexValueTextField } from "../Basic/textfield";
 import { NormalizeCPU, NormalizeNumber } from "../normalizer";
-import { ValidatorCPU, ValidatorMemory, ValidatorName, ValidatorRequired, ValidatorSchedule } from "../validator";
+import {
+  ValidatorCPU,
+  ValidatorMemory,
+  ValidatorRequired,
+  ValidatorSchedule,
+  ValidatorNameWithoutDot,
+} from "../validator";
 import { Envs } from "./Envs";
 import { RenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
@@ -1078,12 +1084,12 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             name="name"
             label="Name"
             margin
-            validate={[ValidatorRequired, ValidatorName]}
+            validate={[ValidatorRequired, ValidatorNameWithoutDot]}
             disabled={isEdit}
             helperText={
               isEdit
                 ? "Name can't be changed."
-                : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
+                : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), and "-". Max length is 180.'
             }
             placeholder="Please type the component name"
           />
