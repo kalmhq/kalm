@@ -12,7 +12,7 @@ import { BasePage } from "../BasePage";
 import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./ItemDataWrapper";
 
 const mapStateToProps = (state: RootState, props: any) => {
-  // const selector = formValueSelector("application");
+  // const selector = formValueSelector(APPLICATION_FORM_ID);
   // const sharedEnv: Immutable.List<SharedEnv> = selector(state, "sharedEnvs");
   const hash = window.location.hash;
   const anchor = hash.replace("#", "");
@@ -23,18 +23,8 @@ const mapStateToProps = (state: RootState, props: any) => {
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      // padding: theme.spacing(3)
       minHeight: "100%",
       backgroundColor: "#F4F5F7",
-    },
-    secondHeaderRight: {
-      height: "100%",
-      width: "100%",
-      display: "flex",
-      alignItems: "center",
-    },
-    secondHeaderRightItem: {
-      marginLeft: 20,
     },
   });
 

@@ -4,9 +4,6 @@ import React from "react";
 import { SecondHeader } from "../../layout/SecondHeader";
 import { Box, Container } from "@material-ui/core";
 
-export const LEFT_SECTION_OPEN_WIDTH = 220;
-export const LEFT_SECTION_CLOSE_WIDTH = 61;
-
 const styles = (_theme: Theme) =>
   createStyles({
     root: {},

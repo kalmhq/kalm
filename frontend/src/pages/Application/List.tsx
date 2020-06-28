@@ -37,15 +37,6 @@ const internalEndpointsModalID = "internalEndpointsModalID";
 
 const styles = (theme: Theme) =>
   createStyles({
-    secondHeaderRight: {
-      height: "100%",
-      width: "100%",
-      display: "flex",
-      alignItems: "center",
-    },
-    secondHeaderRightItem: {
-      marginLeft: 20,
-    },
     emptyWrapper: {
       width: "100%",
       display: "flex",
@@ -344,22 +335,20 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   private renderSecondHeaderRight() {
-    const { classes } = this.props;
     return (
-      <div className={classes.secondHeaderRight}>
-        <H4 className={classes.secondHeaderRightItem}>Applications</H4>
+      <>
+        <H4>Applications</H4>
         <Button
           tutorial-anchor-id="add-application"
           component={(props: any) => <Link {...props} />}
           color="primary"
           size="small"
           variant="outlined"
-          className={classes.secondHeaderRightItem}
           to={`/applications/new`}
         >
           Add
         </Button>
-      </div>
+      </>
     );
   }
 

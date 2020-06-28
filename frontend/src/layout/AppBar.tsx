@@ -14,8 +14,7 @@ import { FlexRowItemCenterBox } from "widgets/Box";
 import { loadApplicationsAction } from "../actions/application";
 import { blinkTopProgressAction, setSettingsAction } from "../actions/settings";
 import { closeTutorialDrawerAction, openTutorialDrawerAction } from "actions/tutorial";
-
-export const APP_BAR_HEIGHT = 48;
+import { APP_BAR_ZINDEX, APP_BAR_HEIGHT } from "./Constants";
 
 const mapStateToProps = (state: RootState) => {
   const activeNamespace = state.get("namespaces").get("active");
@@ -41,7 +40,7 @@ const styles = (theme: Theme) =>
       top: "0px",
       transition: "0.2s",
       height: APP_BAR_HEIGHT,
-      zIndex: 1203,
+      zIndex: APP_BAR_ZINDEX,
     },
     barContainer: {
       height: "100%",

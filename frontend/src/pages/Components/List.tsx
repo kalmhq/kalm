@@ -21,15 +21,6 @@ const internalEndpointsModalID = "internalEndpointsModalID";
 
 const styles = (theme: Theme) =>
   createStyles({
-    secondHeaderRight: {
-      height: "100%",
-      width: "100%",
-      display: "flex",
-      alignItems: "center",
-    },
-    secondHeaderRightItem: {
-      marginLeft: 20,
-    },
     emptyWrapper: {
       width: "100%",
       display: "flex",
@@ -106,23 +97,22 @@ class ComponentRaw extends React.PureComponent<Props, State> {
   };
 
   private renderSecondHeaderRight() {
-    const { classes, activeNamespaceName } = this.props;
+    const { activeNamespaceName } = this.props;
 
     return (
-      <div className={classes.secondHeaderRight}>
-        <H4 className={classes.secondHeaderRightItem}>Components</H4>
+      <>
+        <H4>Components</H4>
         <Button
           tutorial-anchor-id="add-component"
           component={(props: any) => <Link {...props} />}
           color="primary"
           size="small"
           variant="outlined"
-          className={classes.secondHeaderRightItem}
           to={`/applications/${activeNamespaceName}/components/new`}
         >
           Add Component
         </Button>
-      </div>
+      </>
     );
   }
 

@@ -17,32 +17,22 @@ const mapStateToProps = (_state: RootState) => {
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
-    secondHeaderRight: {
-      height: "100%",
-      width: "100%",
-      display: "flex",
-      alignItems: "center",
-    },
-    secondHeaderRightItem: {
-      marginLeft: 20,
-    },
   });
 
 interface Props extends WithNamespaceProps, WithStyles<typeof styles> {}
 
 class ApplicationShowRaw extends React.PureComponent<Props> {
   private renderSecondHeaderRight() {
-    const { classes, activeNamespaceName } = this.props;
+    const { activeNamespaceName } = this.props;
 
     return (
-      <div className={classes.secondHeaderRight}>
-        <H4 className={classes.secondHeaderRightItem}>Overview</H4>
+      <>
+        <H4>Overview</H4>
         <Button
           component={(props: any) => <Link {...props} />}
           color="primary"
           size="small"
           variant="outlined"
-          className={classes.secondHeaderRightItem}
           to={`/applications/${activeNamespaceName}/components/new`}
         >
           Add Component
@@ -52,12 +42,11 @@ class ApplicationShowRaw extends React.PureComponent<Props> {
           color="primary"
           size="small"
           variant="outlined"
-          className={classes.secondHeaderRightItem}
           to={`/applications/${activeNamespaceName}/routes/new`}
         >
           Add Route
         </Button>
-      </div>
+      </>
     );
   }
 

@@ -284,7 +284,7 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
   //           ),
   //           formValidator: [
   //             {
-  //               form: "application",
+  //               form: APPLICATION_FORM_ID,
   //               field: "name",
   //               validate: (name) =>
   //                 name === applicationName ? undefined : `Please follow the tutorial, use ${applicationName}.`,
@@ -297,7 +297,7 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
   //           title: "Submit form",
   //           shouldCompleteByAction: (action: Actions) =>
   //             action.type === (actionTypes.SET_SUBMIT_SUCCEEDED as keyof ActionTypes) &&
-  //             action.meta!.form === "application",
+  //             action.meta!.form === APPLICATION_FORM_ID,
   //         },
   //       ],
   //     },
@@ -323,7 +323,7 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
   //           ),
   //           formValidator: [
   //             {
-  //               form: "componentLike",
+  //               form: COMPONENT_FORM_ID,
   //               field: "name",
   //               validate: (value) => (value === "echoserver" ? undefined : `Please use "echoserver"`),
   //             },
@@ -338,7 +338,7 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
   //           ),
   //           formValidator: [
   //             {
-  //               form: "componentLike",
+  //               form: COMPONENT_FORM_ID,
   //               field: "image",
   //               validate: (value) =>
   //                 value === "k8s.gcr.io/echoserver:1.10" ? undefined : `Please use "k8s.gcr.io/echoserver:1.10"`,
@@ -354,7 +354,7 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
   //             </span>
   //           ),
   //           shouldCompleteByState: (state: RootState) => {
-  //             const ports = getFormValue(state, "componentLike", "ports");
+  //             const ports = getFormValue(state, COMPONENT_FORM_ID, "ports");
   //             return ports && ports.size > 0;
   //           },
   //         },
@@ -366,13 +366,13 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
   //           ),
   //           formValidator: [
   //             {
-  //               form: "componentLike",
+  //               form: COMPONENT_FORM_ID,
   //               field: "ports[0].name",
   //               validate: (value) => (value === "http" ? undefined : `Please use "http"`),
   //             },
   //           ],
   //           shouldCompleteByState: (state: RootState) => {
-  //             const ports = getFormValue(state, "componentLike", "ports") as
+  //             const ports = getFormValue(state, COMPONENT_FORM_ID, "ports") as
   //               | Immutable.List<ComponentLikePort>
   //               | undefined;
   //             return !!ports && ports.size > 0 && ports.get(0)!.get("name") === "http";
@@ -386,13 +386,13 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
   //           ),
   //           formValidator: [
   //             {
-  //               form: "componentLike",
+  //               form: COMPONENT_FORM_ID,
   //               field: "ports[0].containerPort",
   //               validate: (value) => (value === 80 ? undefined : `Please use "80"`),
   //             },
   //           ],
   //           shouldCompleteByState: (state: RootState) => {
-  //             const ports = getFormValue(state, "componentLike", "ports") as
+  //             const ports = getFormValue(state, COMPONENT_FORM_ID, "ports") as
   //               | Immutable.List<ComponentLikePort>
   //               | undefined;
   //             return !!ports && ports.size > 0 && ports.get(0)!.get("containerPort") === 80;
@@ -406,13 +406,13 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
   //           ),
   //           formValidator: [
   //             {
-  //               form: "componentLike",
+  //               form: COMPONENT_FORM_ID,
   //               field: "ports[0].servicePort",
   //               validate: (value) => (value === 80 || !value ? undefined : `Please use "80"`),
   //             },
   //           ],
   //           shouldCompleteByState: (state: RootState) => {
-  //             const ports = getFormValue(state, "componentLike", "ports") as
+  //             const ports = getFormValue(state, COMPONENT_FORM_ID, "ports") as
   //               | Immutable.List<ComponentLikePort>
   //               | undefined;
   //             return (
@@ -426,7 +426,7 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
   //           title: "Deploy!",
   //           shouldCompleteByAction: (action: Actions) =>
   //             action.type === (actionTypes.SET_SUBMIT_SUCCEEDED as keyof ActionTypes) &&
-  //             action.meta!.form === "componentLike",
+  //             action.meta!.form === COMPONENT_FORM_ID,
   //         },
   //       ],
   //     },

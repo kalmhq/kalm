@@ -1,26 +1,16 @@
 import { Box, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
-import React from "react";
-import { push } from "connected-react-router";
-import { BasePage } from "pages/BasePage";
 import { createComponentAction } from "actions/application";
+import { push } from "connected-react-router";
+import { ComponentLikeForm } from "forms/ComponentLike";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
+import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
+import { BasePage } from "pages/BasePage";
+import React from "react";
+import { connect } from "react-redux";
 import { ComponentLike, newEmptyComponentLike } from "types/componentTemplate";
 import { Namespaces } from "widgets/Namespaces";
-import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
-import { H4 } from "widgets/Label";
-import { ComponentLikeForm } from "forms/ComponentLike";
-import { connect } from "react-redux";
 
-const styles = (theme: Theme) =>
-  createStyles({
-    secondHeaderRight: {
-      height: "100%",
-      width: "100%",
-      display: "flex",
-      alignItems: "center",
-      paddingLeft: 20,
-    },
-  });
+const styles = (theme: Theme) => createStyles({});
 
 interface Props extends WithStyles<typeof styles>, WithNamespaceProps {}
 
@@ -36,16 +26,11 @@ class ComponentNewRaw extends React.PureComponent<Props> {
   };
 
   public render() {
-    const { classes } = this.props;
     return (
       <BasePage
         secondHeaderLeft={<Namespaces />}
         leftDrawer={<ApplicationSidebar />}
-        secondHeaderRight={
-          <div className={classes.secondHeaderRight}>
-            <H4>Create New Component</H4>
-          </div>
-        }
+        secondHeaderRight="Create New Component"
       >
         <Box p={2}>
           <Grid container spacing={2}>

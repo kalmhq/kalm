@@ -5,10 +5,8 @@ import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
-import { LEFT_SECTION_OPEN_WIDTH } from "../pages/BasePage";
-import { H4 } from "../widgets/Label";
-
-export const SECOND_HEADER_HEIGHT = 48;
+import { H4 } from "widgets/Label";
+import { SECOND_HEADER_HEIGHT, LEFT_SECTION_OPEN_WIDTH, SECOND_HEADER_ZINDEX } from "./Constants";
 
 const mapStateToProps = (state: RootState) => {
   return {};
@@ -18,7 +16,7 @@ const styles = (theme: Theme) =>
   createStyles({
     root: {
       position: "sticky",
-      zIndex: 1201,
+      zIndex: SECOND_HEADER_ZINDEX,
       height: SECOND_HEADER_HEIGHT,
       width: "100%",
       background: "white",
@@ -41,6 +39,9 @@ const styles = (theme: Theme) =>
       height: SECOND_HEADER_HEIGHT,
       display: "flex",
       alignItems: "center",
+      "& > *": {
+        marginLeft: 20,
+      },
     },
   });
 
@@ -70,9 +71,7 @@ class SecondHeaderRaw extends React.PureComponent<Props, State> {
           </div>
         ) : null}
 
-        <div className={classes.right}>
-          {typeof right === "string" ? <H4 style={{ marginLeft: 20 }}>{right}</H4> : right}
-        </div>
+        <div className={classes.right}>{typeof right === "string" ? <H4>{right}</H4> : right}</div>
       </div>
     );
   }

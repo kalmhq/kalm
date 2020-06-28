@@ -1,39 +1,27 @@
-import React from "react";
-import {
-  Box,
-  Button,
-  createStyles,
-  Grid,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableRow,
-  Theme,
-  withStyles,
-  WithStyles,
-} from "@material-ui/core";
-import { TDispatchProp } from "types";
-import { RootState } from "reducers";
-import { H5 } from "widgets/Label";
-import { ComponentStatus } from "pages/Components/Status";
-import { blinkTopProgressAction } from "actions/settings";
-import { deleteComponentAction, loadApplicationAction } from "actions/application";
-import { formatTimeDistance } from "utils";
-import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
-import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
-import { generateQueryForPods } from "pages/Application/Log";
-import { KappConsoleIcon, KappLogIcon } from "widgets/Icon";
-import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
+import { Box, Button, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import DeleteIcon from "@material-ui/icons/Delete";
-import { Application, ApplicationComponentDetails, PodStatus } from "types/application";
-import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
-import { KTable } from "widgets/Table";
-import { MaterialTableProps } from "material-table";
+import { deleteComponentAction, loadApplicationAction } from "actions/application";
+import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
+import { blinkTopProgressAction } from "actions/settings";
+import { api } from "api";
 import { Expansion } from "forms/Route/expansion";
+import { MaterialTableProps } from "material-table";
+import { generateQueryForPods } from "pages/Application/Log";
+import { ComponentStatus } from "pages/Components/Status";
+import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
-import { api } from "api";
+import { RootState } from "reducers";
+import { TDispatchProp } from "types";
+import { Application, ApplicationComponentDetails, PodStatus } from "types/application";
+import { formatTimeDistance } from "utils";
+import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
+import { KappConsoleIcon, KappLogIcon } from "widgets/Icon";
+import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
+import { H5 } from "widgets/Label";
+import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
+import { KTable } from "widgets/Table";
+import { VerticalHeadTable } from "widgets/VerticalHeadTable";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -278,48 +266,22 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
           </Button>
         </Box>
 
-        <TableContainer>
-          <Table aria-label="table" size="small">
-            <TableBody>
-              <TableRow>
-                <TableCell>Created At</TableCell>
-                <TableCell>TODO</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>{component.get("name")}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Namespace</TableCell>
-                <TableCell>{application.get("name")}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Image</TableCell>
-                <TableCell>{component.get("image")}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Workload Type</TableCell>
-                <TableCell>{component.get("workloadType")}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Update Strategy</TableCell>
-                <TableCell>{component.get("restartStrategy")}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Pod Status</TableCell>
-                <TableCell>TODO: Running: 1, Pending: 1, Error: 2</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>CPU</TableCell>
-                <TableCell>TODO: Running: 1, Pending: 1, Error: 2</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Memory</TableCell>
-                <TableCell>TODO: Running: 1, Pending: 1, Error: 2</TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </TableContainer>
+        <VerticalHeadTable
+          items={[
+            {
+              name: "Created At",
+              content: "TODO",
+            },
+            { name: "Name", content: component.get("name") },
+            { name: "Namespace", content: application.get("name") },
+            { name: "Image", content: component.get("image") },
+            { name: "Workload Type", content: component.get("workloadType") },
+            { name: "Update Strategy", content: component.get("restartStrategy") },
+            { name: "Pod Status", content: "TODO: Running: 1, Pending: 1, Error: 2" },
+            { name: "CPU", content: "TODO: Running: 1, Pending: 1, Error: 2" },
+            { name: "Memory", content: "TODO: Running: 1, Pending: 1, Error: 2" },
+          ]}
+        />
 
         <Box pt={2} pb={2}>
           <KTable
