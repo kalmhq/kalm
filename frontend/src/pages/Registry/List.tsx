@@ -23,15 +23,6 @@ import { KTable } from "widgets/Table";
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
-    secondHeaderRight: {
-      height: "100%",
-      width: "100%",
-      display: "flex",
-      alignItems: "center",
-    },
-    secondHeaderRightItem: {
-      marginLeft: 20,
-    },
   });
 
 const mapStateToProps = (state: RootState) => {
@@ -184,14 +175,13 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderSecondHeaderRight() {
-    const { classes, dispatch } = this.props;
+    const { dispatch } = this.props;
     return (
-      <div className={classes.secondHeaderRight}>
-        <H4 className={classes.secondHeaderRightItem}>Registries</H4>
+      <>
+        <H4>Registries</H4>
         <CustomizedButton
           color="primary"
           size="large"
-          className={classes.secondHeaderRightItem}
           onClick={() => {
             this.setState({
               editingRegistry: undefined,
@@ -202,7 +192,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
         >
           Add
         </CustomizedButton>
-      </div>
+      </>
     );
   }
 

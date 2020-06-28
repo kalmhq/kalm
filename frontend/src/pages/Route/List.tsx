@@ -17,15 +17,6 @@ import { Link } from "react-router-dom";
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
-    secondHeaderRight: {
-      height: "100%",
-      width: "100%",
-      display: "flex",
-      alignItems: "center",
-    },
-    secondHeaderRightItem: {
-      marginLeft: 20,
-    },
   });
 
 interface Props extends WithStyles<typeof styles>, WithRoutesDataProps {}
@@ -165,27 +156,26 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { classes, isRoutesFirstLoaded, isRoutesLoading, activeNamespaceName } = this.props;
+    const { isRoutesFirstLoaded, isRoutesLoading, activeNamespaceName } = this.props;
     const tableData = this.getData();
     return (
       <BasePage
         leftDrawer={<ApplicationSidebar />}
         secondHeaderLeft={<Namespaces />}
         secondHeaderRight={
-          <div className={classes.secondHeaderRight}>
-            <H4 className={classes.secondHeaderRightItem}>Routes</H4>
+          <>
+            <H4>Routes</H4>
             <Button
               tutorial-anchor-id="add-route"
               component={(props: any) => <Link {...props} />}
               color="primary"
               size="small"
               variant="outlined"
-              className={classes.secondHeaderRightItem}
               to={`/applications/${activeNamespaceName}/routes/new`}
             >
               Add Route
             </Button>
-          </div>
+          </>
         }
       >
         <Box p={2}>

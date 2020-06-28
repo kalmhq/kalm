@@ -36,15 +36,6 @@ const styles = (theme: Theme) =>
         display: "inline-block",
       },
     },
-    secondHeaderRight: {
-      height: "100%",
-      width: "100%",
-      display: "flex",
-      alignItems: "center",
-    },
-    secondHeaderRightItem: {
-      marginLeft: 20,
-    },
   });
 
 const mapStateToProps = (state: RootState) => {
@@ -249,13 +240,11 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderSecondHeaderRight() {
-    const { classes } = this.props;
     return (
-      <div className={classes.secondHeaderRight}>
-        <H4 className={classes.secondHeaderRightItem}>Roles & Permissions</H4>
+      <>
+        <H4>Roles & Permissions</H4>
         <CustomizedButton
           color="primary"
-          className={classes.secondHeaderRightItem}
           onClick={() => {
             blinkTopProgressAction();
             this.openAddModal();
@@ -263,7 +252,7 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
         >
           Add
         </CustomizedButton>
-      </div>
+      </>
     );
   }
 

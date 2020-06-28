@@ -30,15 +30,6 @@ import { KTable } from "widgets/Table";
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
-    secondHeaderRight: {
-      height: "100%",
-      width: "100%",
-      display: "flex",
-      alignItems: "center",
-    },
-    secondHeaderRightItem: {
-      marginLeft: 20,
-    },
   });
 
 const mapStateToProps = (state: RootState) => {
@@ -264,17 +255,16 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { classes, dispatch, isFirstLoaded, isLoading } = this.props;
+    const { dispatch, isFirstLoaded, isLoading } = this.props;
     const tableData = this.getData();
     return (
       <BasePage
         secondHeaderRight={
-          <div className={classes.secondHeaderRight}>
-            <H4 className={classes.secondHeaderRightItem}>Certificates</H4>
+          <>
+            <H4>Certificates</H4>
             <CustomizedButton
               color="primary"
               size="large"
-              className={classes.secondHeaderRightItem}
               onClick={() => {
                 blinkTopProgressAction();
                 dispatch(openDialogAction(addCertificateDialogId));
@@ -283,7 +273,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
             >
               Add
             </CustomizedButton>
-          </div>
+          </>
         }
       >
         <NewModal />
