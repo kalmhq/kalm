@@ -16,13 +16,6 @@ const styles = (theme: Theme) =>
     root: {
       height: "100%",
     },
-    secondHeaderRight: {
-      height: "100%",
-      width: "100%",
-      display: "flex",
-      alignItems: "center",
-      paddingLeft: 20,
-    },
   });
 
 interface Props extends WithStyles<typeof styles> {
@@ -36,19 +29,15 @@ class ApplicationNewRaw extends React.PureComponent<Props> {
   };
 
   private onSubmitSuccess = (app: Application) => {
-    this.props.dispatch(push(`/applications/${app.get("name")}`));
+    if (app) {
+      this.props.dispatch(push(`/applications/${app.get("name")}`));
+    }
   };
 
   public render() {
     const { classes } = this.props;
     return (
-      <BasePage
-        secondHeaderRight={
-          <div className={classes.secondHeaderRight}>
-            <H4>Create New Application</H4>
-          </div>
-        }
-      >
+      <BasePage secondHeaderRight={<H4>Create New Application</H4>}>
         <div className={classes.root}>
           <Grid container spacing={2}>
             <Grid item xs={8} sm={8} md={8}>

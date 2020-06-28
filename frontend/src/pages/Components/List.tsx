@@ -21,15 +21,6 @@ const internalEndpointsModalID = "internalEndpointsModalID";
 
 const styles = (theme: Theme) =>
   createStyles({
-    secondHeaderRight: {
-      height: "100%",
-      width: "100%",
-      display: "flex",
-      alignItems: "center",
-    },
-    secondHeaderRightItem: {
-      marginLeft: 20,
-    },
     emptyWrapper: {
       width: "100%",
       display: "flex",
@@ -55,6 +46,7 @@ interface Props extends WithStyles<typeof styles>, WithComponentsProps, ReturnTy
 
 interface State {
   isDeleteConfirmDialogOpen: boolean;
+  // TODO correct here
   deletingComponentItem?: ApplicationDetails;
 }
 
@@ -106,23 +98,22 @@ class ComponentRaw extends React.PureComponent<Props, State> {
   };
 
   private renderSecondHeaderRight() {
-    const { classes, activeNamespaceName } = this.props;
+    const { activeNamespaceName } = this.props;
 
     return (
-      <div className={classes.secondHeaderRight}>
-        <H4 className={classes.secondHeaderRightItem}>Components</H4>
+      <>
+        <H4>Components</H4>
         <Button
           tutorial-anchor-id="add-component"
           component={(props: any) => <Link {...props} />}
           color="primary"
           size="small"
           variant="outlined"
-          className={classes.secondHeaderRightItem}
           to={`/applications/${activeNamespaceName}/components/new`}
         >
           Add Component
         </Button>
-      </div>
+      </>
     );
   }
 
@@ -138,9 +129,9 @@ class ComponentRaw extends React.PureComponent<Props, State> {
         {this.renderDeleteConfirmDialog()}
 
         <Box p={2}>
-          {components.map((component) => (
+          {components.map((component, index) => (
             <Box pb={1} key={component.get("name")}>
-              <ComponentPanel component={component} application={activeNamespace!} />
+              <ComponentPanel component={component} application={activeNamespace!} defaultUnfold={index === 0} />
             </Box>
           ))}
         </Box>

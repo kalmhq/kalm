@@ -13,7 +13,7 @@ import {
 import { FieldArrayWrapper } from "../Basic/FieldArrayWrapper";
 import { RenderSelectField } from "../Basic/select";
 import { KRenderTextField } from "../Basic/textfield";
-import { ValidatorRequired } from "../validator";
+import { ValidatorRequired, ValidatorVolumeSize } from "../validator";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -99,7 +99,6 @@ class RenderVolumes extends React.PureComponent<Props> {
     ];
 
     if (volumeType === VolumeTypePersistentVolumeClaim) {
-      // if (volumeType === VolumeTypePersistentVolumeClaimNew) {
       fieldComponents.push(
         <Field
           disabled={isOld}
@@ -121,15 +120,6 @@ class RenderVolumes extends React.PureComponent<Props> {
           options={this.getStorageClassesOptions()}
         ></Field>,
       );
-      // } else if (volumeType === VolumeTypePersistentVolumeClaimExisting) {
-      //   fieldComponents.push(
-      //     <Field
-      //       label="Storage Class"
-      //       name={`${member}.storageClassName`}
-      //       component={RenderSelectField}
-      //       placeholder="Select the type of your disk"
-      //       options={this.getStorageClassesOptions()}></Field>
-      //   );
     }
 
     fieldComponents.push(
@@ -149,7 +139,7 @@ class RenderVolumes extends React.PureComponent<Props> {
         name={`${member}.size`}
         label="Size"
         margin
-        validate={[ValidatorRequired]}
+        validate={[ValidatorRequired, ValidatorVolumeSize]}
       />,
     );
 

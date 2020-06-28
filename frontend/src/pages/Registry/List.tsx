@@ -23,15 +23,6 @@ import { KTable } from "widgets/Table";
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
-    secondHeaderRight: {
-      height: "100%",
-      width: "100%",
-      display: "flex",
-      alignItems: "center",
-    },
-    secondHeaderRightItem: {
-      marginLeft: 20,
-    },
   });
 
 const mapStateToProps = (state: RootState) => {
@@ -86,8 +77,8 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
       <ConfirmDialog
         open={isDeleteConfirmDialogOpen}
         onClose={this.closeDeleteConfirmDialog}
-        title={`Are you sure to delete this Persistent Volume(${deletingItemName})?`}
-        content="You will lost this Persistent Volume, and this action is irrevocable."
+        title={`Are you sure to delete this registry(${deletingItemName})?`}
+        content="You will lost this registry, and this action is irrevocable."
         onAgree={this.confirmDelete}
       />
     );
@@ -184,14 +175,14 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderSecondHeaderRight() {
-    const { classes, dispatch } = this.props;
+    const { dispatch } = this.props;
     return (
-      <div className={classes.secondHeaderRight}>
-        <H4 className={classes.secondHeaderRightItem}>Registries</H4>
+      <>
+        <H4>Registries</H4>
         <CustomizedButton
           color="primary"
-          size="large"
-          className={classes.secondHeaderRightItem}
+          variant="outlined"
+          size="small"
           onClick={() => {
             this.setState({
               editingRegistry: undefined,
@@ -202,7 +193,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
         >
           Add
         </CustomizedButton>
-      </div>
+      </>
     );
   }
 

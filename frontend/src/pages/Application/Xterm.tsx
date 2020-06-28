@@ -7,6 +7,7 @@ import { FitAddon } from "xterm-addon-fit";
 import { SearchAddon } from "xterm-addon-search";
 import "xterm/css/xterm.css";
 import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
+import { XTERM_SEARCH_ZINDEX } from "layout/Constants";
 
 interface XtermProps extends WithStyles<typeof xtermStyles> {
   show: boolean;
@@ -36,7 +37,7 @@ const xtermStyles = (theme: Theme) =>
       top: 0,
       right: 0,
       padding: theme.spacing(1),
-      zIndex: 999,
+      zIndex: XTERM_SEARCH_ZINDEX,
       display: "flex",
       alignItems: "center",
       background: "#f1f1f1",

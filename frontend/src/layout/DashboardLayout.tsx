@@ -1,7 +1,7 @@
 import { Box, LinearProgress } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import clsx from "clsx";
-import { TutorialDrawer, tutorialDrawerWidth } from "pages/Tutorial";
+import { TutorialDrawer } from "pages/Tutorial";
 import { RequireAuthorizated } from "permission/Authorization";
 import React from "react";
 import { connect } from "react-redux";
@@ -11,6 +11,7 @@ import { RootDrawer } from "./RootDrawer";
 import { WebsocketConnector } from "./WebsocketConnector";
 import { TDispatchProp } from "types";
 import { loadClusterInfoAction } from "actions/cluster";
+import { TOP_PROGRESS_ZINDEX, TUTORIAL_DRAWER_WIDTH } from "./Constants";
 
 const styles = (theme: Theme) => {
   return createStyles({
@@ -21,7 +22,7 @@ const styles = (theme: Theme) => {
     progress: {
       position: "fixed",
       top: "0",
-      zIndex: 9999,
+      zIndex: TOP_PROGRESS_ZINDEX,
       width: "100%",
       height: "2px",
     },
@@ -30,7 +31,7 @@ const styles = (theme: Theme) => {
       display: "flex",
       flexDirection: "column",
       position: "relative",
-      marginRight: -1 * tutorialDrawerWidth,
+      marginRight: -1 * TUTORIAL_DRAWER_WIDTH,
 
       transition: theme.transitions.create("margin", {
         easing: theme.transitions.easing.sharp,

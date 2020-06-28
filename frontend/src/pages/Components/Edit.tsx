@@ -2,7 +2,7 @@ import { Box, createStyles, Grid, Theme, withStyles, WithStyles } from "@materia
 import React from "react";
 import { push } from "connected-react-router";
 import { BasePage } from "pages/BasePage";
-import { createComponentAction } from "actions/application";
+import { updateComponentAction } from "actions/application";
 import { ComponentLike } from "types/componentTemplate";
 import { Namespaces } from "widgets/Namespaces";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
@@ -11,23 +11,14 @@ import { ComponentLikeForm } from "forms/ComponentLike";
 import { connect } from "react-redux";
 import { withComponent, WithComponentProp } from "hoc/withComponent";
 
-const styles = (theme: Theme) =>
-  createStyles({
-    secondHeaderRight: {
-      height: "100%",
-      width: "100%",
-      display: "flex",
-      alignItems: "center",
-      paddingLeft: 20,
-    },
-  });
+const styles = (theme: Theme) => createStyles({});
 
 interface Props extends WithStyles<typeof styles>, WithComponentProp {}
 
 class ComponentEditRaw extends React.PureComponent<Props> {
   private submit = async (formValues: ComponentLike) => {
     const { dispatch, activeNamespaceName } = this.props;
-    return await dispatch(createComponentAction(formValues, activeNamespaceName));
+    return await dispatch(updateComponentAction(formValues, activeNamespaceName));
   };
 
   private onSubmitSuccess = () => {
@@ -36,16 +27,12 @@ class ComponentEditRaw extends React.PureComponent<Props> {
   };
 
   public render() {
-    const { classes, component } = this.props;
+    const { component } = this.props;
     return (
       <BasePage
         secondHeaderLeft={<Namespaces />}
         leftDrawer={<ApplicationSidebar />}
-        secondHeaderRight={
-          <div className={classes.secondHeaderRight}>
-            <H4>Edit {component!.get("name")} Component</H4>
-          </div>
-        }
+        secondHeaderRight={<H4>Edit {component!.get("name")} Component</H4>}
       >
         <Box p={2}>
           <Grid container spacing={2}>

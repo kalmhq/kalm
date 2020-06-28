@@ -39,7 +39,13 @@ import { KRadioGroupRender } from "../Basic/radio";
 import { RenderSelectField } from "../Basic/select";
 import { KRenderCommandTextField, KRenderTextField, RenderComplexValueTextField } from "../Basic/textfield";
 import { NormalizeCPU, NormalizeNumber } from "../normalizer";
-import { ValidatorCPU, ValidatorMemory, ValidatorName, ValidatorRequired, ValidatorSchedule } from "../validator";
+import {
+  ValidatorCPU,
+  ValidatorMemory,
+  ValidatorRequired,
+  ValidatorSchedule,
+  ValidatorNameWithoutDot,
+} from "../validator";
 import { Envs } from "./Envs";
 import { RenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
@@ -52,6 +58,7 @@ import { TDispatchProp } from "types";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import { push } from "connected-react-router";
 import { COMPONENT_FORM_ID } from "forms/formIDs";
+import { COMPONENT_DEPLOY_BUTTON_ZINDEX } from "layout/Constants";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -162,7 +169,7 @@ const styles = (theme: Theme) =>
     deployBtn: {
       width: 360,
       position: "fixed",
-      zIndex: 99,
+      zIndex: COMPONENT_DEPLOY_BUTTON_ZINDEX,
       bottom: theme.spacing(3),
     },
   });
@@ -1077,12 +1084,12 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             name="name"
             label="Name"
             margin
-            validate={[ValidatorRequired, ValidatorName]}
+            validate={[ValidatorRequired, ValidatorNameWithoutDot]}
             disabled={isEdit}
             helperText={
               isEdit
                 ? "Name can't be changed."
-                : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
+                : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), and "-". Max length is 180.'
             }
             placeholder="Please type the component name"
           />

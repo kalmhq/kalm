@@ -18,10 +18,9 @@ import { connect } from "react-redux";
 import { NavLink } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
-import { LEFT_SECTION_CLOSE_WIDTH, LEFT_SECTION_OPEN_WIDTH } from "../pages/BasePage";
+import { LEFT_SECTION_CLOSE_WIDTH, LEFT_SECTION_OPEN_WIDTH, APP_BAR_HEIGHT } from "layout/Constants";
 import { primaryBackgroud, primaryColor } from "../theme";
 import { KappApplicationIcon, KappNodeIcon, KappVolumeIcon } from "../widgets/Icon";
-import { APP_BAR_HEIGHT } from "./AppBar";
 import { blinkTopProgressAction } from "../actions/settings";
 
 const mapStateToProps = (state: RootState) => {

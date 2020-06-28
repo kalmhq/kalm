@@ -14,15 +14,14 @@ import {
 import React from "react";
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
-import { SECOND_HEADER_HEIGHT } from "layout/SecondHeader";
-import { LEFT_SECTION_OPEN_WIDTH } from "pages/BasePage";
+import { SECOND_HEADER_HEIGHT, LEFT_SECTION_OPEN_WIDTH, NAMESPACES_ZINDEX } from "layout/Constants";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { setCurrentNamespaceAction } from "actions/namespaces";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      zIndex: 10,
+      zIndex: NAMESPACES_ZINDEX,
     },
     namespaceButton: {
       height: SECOND_HEADER_HEIGHT,
