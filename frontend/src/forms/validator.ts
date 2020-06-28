@@ -100,6 +100,26 @@ export const ValidatorOneof = (...options: (string | RegExp)[]) => {
   };
 };
 
+export const ValidatorVolumeSize = (value: string) => {
+  if (!value) return undefined;
+
+  if (!value.match(/^^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/i) || value === "0") {
+    return "Invalid Value";
+  }
+
+  return undefined;
+};
+
+export const ValidatorNameWithoutDot = (value: string) => {
+  if (!value) return undefined;
+
+  if (!value.match(/^[a-zA-Z0-9-]*$/i) || value === "0") {
+    return "Invalid Name Value";
+  }
+
+  return undefined;
+};
+
 export const ValidatorName = (value: string) => {
   if (!value) return undefined;
 

@@ -2,7 +2,7 @@ import { Box, createStyles, Grid, Theme, withStyles, WithStyles } from "@materia
 import React from "react";
 import { push } from "connected-react-router";
 import { BasePage } from "pages/BasePage";
-import { createComponentAction } from "actions/application";
+import { updateComponentAction } from "actions/application";
 import { ComponentLike } from "types/componentTemplate";
 import { Namespaces } from "widgets/Namespaces";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
@@ -19,7 +19,7 @@ interface Props extends WithStyles<typeof styles>, WithComponentProp {}
 class ComponentEditRaw extends React.PureComponent<Props> {
   private submit = async (formValues: ComponentLike) => {
     const { dispatch, activeNamespaceName } = this.props;
-    return await dispatch(createComponentAction(formValues, activeNamespaceName));
+    return await dispatch(updateComponentAction(formValues, activeNamespaceName));
   };
 
   private onSubmitSuccess = () => {

@@ -46,6 +46,7 @@ interface Props extends WithStyles<typeof styles>, WithComponentsProps, ReturnTy
 
 interface State {
   isDeleteConfirmDialogOpen: boolean;
+  // TODO correct here
   deletingComponentItem?: ApplicationDetails;
 }
 

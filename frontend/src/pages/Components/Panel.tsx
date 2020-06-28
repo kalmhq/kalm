@@ -2,6 +2,8 @@ import { Box, Button, createStyles, Grid, Theme, withStyles, WithStyles } from "
 import { deleteComponentAction } from "actions/application";
 import { blinkTopProgressAction } from "actions/settings";
 import { Expansion, ExpansionProps } from "forms/Route/expansion";
+import { ComponentBasicInfo } from "pages/Components/BasicInfo";
+import { PodsTable } from "pages/Components/PodsTable";
 import { ComponentStatus } from "pages/Components/Status";
 import React from "react";
 import { connect } from "react-redux";
@@ -10,8 +12,6 @@ import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { Application, ApplicationComponentDetails } from "types/application";
 import { H5 } from "widgets/Label";
-import { PodsTable } from "pages/Components/PodsTable";
-import { ComponentBasicInfo } from "pages/Components/BasicInfo";
 import { DangerButton } from "widgets/Button";
 
 const styles = (theme: Theme) =>
@@ -121,7 +121,7 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
           <Grid container spacing={2}>
             <Grid item md={2}>
               <Box display="flex">
-                <ComponentStatus component={component} /> <H5>{component.get("name")}</H5>
+                <ComponentStatus component={component} enableMarginRight /> <H5>{component.get("name")}</H5>
               </Box>
             </Grid>
             <Grid item md={2}>
