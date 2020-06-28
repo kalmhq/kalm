@@ -45,31 +45,31 @@ test("add certificate", () => {
     component.find("button#save-certificate-button").simulate("click");
   };
 
-  // domains没有输入时，提交时validate未通过，onSubmit不会被执行
+  // When domains is not typed, validation will not pass and onSubmit will not be executed
   component.find("input#certificate-name").getDOMNode().setAttribute("value", "123");
   component.find("input#certificate-name").simulate("change");
   clickSubmitButton();
   expect(getTestFormSyncErrors(store, formID).domains).toBe(requiredError);
   expect(onSubmit).toHaveBeenCalledTimes(0);
 
-  // 输入domains，提交就是一个合法的form，onSubmit会被执行一次
+  // When a valid form is submitted, onSubmit is executed once
   store.dispatch(change(formID, "domains", ["test.io"]));
   clickSubmitButton();
   expect(onSubmit).toHaveBeenCalledTimes(1);
 
-  // 修改selfManaged类型，需要上传证书文件
+  // To change the managedType as selfManaged, need to upload the certificate file
   store.dispatch(change(formID, "managedType", selfManaged));
   clickSubmitButton();
   expect(getTestFormSyncErrors(store, formID).selfManagedCertContent).toBe(requiredError);
   expect(getTestFormSyncErrors(store, formID).selfManagedCertPrivateKey).toBe(requiredError);
 
-  // 不合法证书
+  // invalid certificate
   const invalidCert = "just for test invalid certificate";
   store.dispatch(change(formID, "selfManagedCertContent", invalidCert));
   clickSubmitButton();
   expect(getTestFormSyncErrors(store, formID).selfManagedCertContent).toBe("Invalid Certificate");
 
-  // 上传合法的证书
+  // valid certificate
   const validCert = readFileSync("src/certs/server.crt", "utf8");
   const validPrivateKey = readFileSync("src/certs/server_private.key", "utf8");
   store.dispatch(change(formID, "selfManagedCertContent", validCert));
