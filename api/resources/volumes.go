@@ -15,6 +15,7 @@ import (
 // actual aggregation info of PVC & PV
 type Volume struct {
 	Name               string `json:"name"`
+	Namespace          string `json:"namespace"`
 	IsInUse            bool   `json:"isInUse"`                      // can be reused or not
 	ComponentNamespace string `json:"componentNamespace,omitempty"` // ns of latest component using this Volume
 	ComponentName      string `json:"componentName,omitempty"`      // name of latest component using this Volume
