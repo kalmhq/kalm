@@ -1,7 +1,7 @@
 import { Box, Button, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { deleteComponentAction } from "actions/application";
 import { blinkTopProgressAction } from "actions/settings";
-import { Expansion } from "forms/Route/expansion";
+import { Expansion, ExpansionProps } from "forms/Route/expansion";
 import { ComponentStatus } from "pages/Components/Status";
 import React from "react";
 import { connect } from "react-redux";
@@ -32,7 +32,11 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
-interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {
+interface Props
+  extends WithStyles<typeof styles>,
+    ReturnType<typeof mapStateToProps>,
+    TDispatchProp,
+    Pick<ExpansionProps, "defaultUnfold"> {
   application: Application;
   component: ApplicationComponentDetails;
 }
@@ -108,10 +112,11 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
   };
 
   public render = () => {
-    const { component } = this.props;
+    const { component, defaultUnfold } = this.props;
 
     return (
       <Expansion
+        defaultUnfold={defaultUnfold}
         title={
           <Grid container spacing={2}>
             <Grid item md={2}>

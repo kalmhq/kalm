@@ -128,9 +128,9 @@ class ComponentRaw extends React.PureComponent<Props, State> {
         {this.renderDeleteConfirmDialog()}
 
         <Box p={2}>
-          {components.map((component) => (
+          {components.map((component, index) => (
             <Box pb={1} key={component.get("name")}>
-              <ComponentPanel component={component} application={activeNamespace!} />
+              <ComponentPanel component={component} application={activeNamespace!} defaultUnfold={index === 0} />
             </Box>
           ))}
         </Box>
