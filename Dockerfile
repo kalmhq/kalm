@@ -4,6 +4,7 @@ WORKDIR /workspace
 
 # Frontend and api will run on the same domain
 ENV REACT_APP_K8S_API_PERFIX ""
+ENV REACT_APP_K8S_API_VERSION v1alpha1
 
 # Copy npm packages manifests
 COPY frontend/package.json package.json

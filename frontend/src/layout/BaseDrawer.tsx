@@ -4,9 +4,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
-import { LEFT_SECTION_OPEN_WIDTH } from "../pages/BasePage";
-import { APP_BAR_HEIGHT } from "./AppBar";
-import { SECOND_HEADER_HEIGHT } from "./SecondHeader";
+import { LEFT_SECTION_OPEN_WIDTH, SECOND_HEADER_HEIGHT, APP_BAR_HEIGHT } from "layout/Constants";
 
 const mapStateToProps = (state: RootState) => {
   return {};
