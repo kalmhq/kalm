@@ -77,8 +77,8 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
       <ConfirmDialog
         open={isDeleteConfirmDialogOpen}
         onClose={this.closeDeleteConfirmDialog}
-        title={`Are you sure to delete this Persistent Volume(${deletingItemName})?`}
-        content="You will lost this Persistent Volume, and this action is irrevocable."
+        title={`Are you sure to delete this registry(${deletingItemName})?`}
+        content="You will lost this registry, and this action is irrevocable."
         onAgree={this.confirmDelete}
       />
     );
