@@ -264,7 +264,8 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
             <H4>Certificates</H4>
             <CustomizedButton
               color="primary"
-              size="large"
+              variant="outlined"
+              size="small"
               onClick={() => {
                 blinkTopProgressAction();
                 dispatch(openDialogAction(addCertificateDialogId));

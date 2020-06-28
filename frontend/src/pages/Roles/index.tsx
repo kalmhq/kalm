@@ -245,6 +245,8 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
         <H4>Roles & Permissions</H4>
         <CustomizedButton
           color="primary"
+          variant="outlined"
+          size="small"
           onClick={() => {
             blinkTopProgressAction();
             this.openAddModal();

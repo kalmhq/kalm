@@ -181,7 +181,8 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
         <H4>Registries</H4>
         <CustomizedButton
           color="primary"
-          size="large"
+          variant="outlined"
+          size="small"
           onClick={() => {
             this.setState({
               editingRegistry: undefined,
