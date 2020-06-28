@@ -12,7 +12,7 @@ import { BasePage } from "../BasePage";
 import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./ItemDataWrapper";
 
 const mapStateToProps = (state: RootState, props: any) => {
-  // const selector = formValueSelector("application");
+  // const selector = formValueSelector(APPLICATION_FORM_ID);
   // const sharedEnv: Immutable.List<SharedEnv> = selector(state, "sharedEnvs");
   const hash = window.location.hash;
   const anchor = hash.replace("#", "");

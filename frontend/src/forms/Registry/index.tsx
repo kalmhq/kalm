@@ -10,6 +10,7 @@ import { RegistryType } from "types/registry";
 import { KRenderTextField } from "../Basic/textfield";
 import { ValidatorName, ValidatorRequired } from "../validator";
 import { Prompt } from "widgets/Prompt";
+import { REGISTRY_FORM_ID } from "../formIDs";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -92,7 +93,7 @@ export const registryInitialValues: RegistryType = Immutable.fromJS({
 });
 
 export const RegistryForm = reduxForm<RegistryType, Props>({
-  form: "registry",
+  form: REGISTRY_FORM_ID,
   enableReinitialize: true,
   keepDirtyOnReinitialize: false,
   initialValues: registryInitialValues,

@@ -29,13 +29,11 @@ import { addCertificateDialogId } from "pages/Certificate/New";
 import { closeDialogAction } from "actions/dialog";
 import { extractDomainsFromCertificateContent } from "permission/utils";
 import { Prompt } from "widgets/Prompt";
-
-const defaultFormID = "certificate";
-const createIssuer = "createIssuer";
+import { CERTIFICATE_FORM_ID, ISSUER_FORM_ID } from "../formIDs";
 
 const mapStateToProps = (state: RootState, { form }: OwnProps) => {
-  const selector = formValueSelector(form || defaultFormID);
-  const syncErrors = getFormSyncErrors(form || defaultFormID)(state) as { [key: string]: any };
+  const selector = formValueSelector(form || CERTIFICATE_FORM_ID);
+  const syncErrors = getFormSyncErrors(form || CERTIFICATE_FORM_ID)(state) as { [key: string]: any };
   return {
     syncErrors,
     name: selector(state, "name") as string,
@@ -147,7 +145,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
     const { certificateIssuers } = this.props;
     const httpsCertIssuerOptions: any = [
       {
-        value: createIssuer,
+        value: ISSUER_FORM_ID,
         label: "Add new certificate issuer",
       },
     ];
@@ -162,7 +160,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
     });
 
     if (certificateIssuers.size === 0) {
-      this.setDefaultHttpsCertIssuer(createIssuer);
+      this.setDefaultHttpsCertIssuer(ISSUER_FORM_ID);
     } else {
       const certificateIssuer = certificateIssuers.first() as CertificateIssuer;
       this.setDefaultHttpsCertIssuer(certificateIssuer.get("name"));
@@ -214,7 +212,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
             Edit cloudflare issuser config
           </Button>
         )}
-        {httpsCertIssuer === createIssuer || isEditCertificateIssuer ? (
+        {httpsCertIssuer === ISSUER_FORM_ID || isEditCertificateIssuer ? (
           <CertificateIssuerForm
             isEdit={isEditCertificateIssuer}
             onSubmit={this.submitCreateIssuer}
@@ -339,6 +337,6 @@ const ValidatorCertificateValid = (value: any, _allValues?: any, _props?: any, _
 
 export const CertificateForm = reduxForm<CertificateFormType, OwnProps>({
   onSubmitFail: console.log,
-  form: defaultFormID,
+  form: CERTIFICATE_FORM_ID,
   touchOnChange: true,
 })(connect(mapStateToProps)(withStyles(styles)(CertificateFormRaw)));

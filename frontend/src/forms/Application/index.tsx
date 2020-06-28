@@ -14,6 +14,7 @@ import { Alert } from "@material-ui/lab";
 import { shouldError } from "forms/common";
 import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { InjectedFormProps } from "redux-form";
+import { APPLICATION_FORM_ID } from "../formIDs";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -49,7 +50,7 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState) => {
-  const selector = formValueSelector("application");
+  const selector = formValueSelector(APPLICATION_FORM_ID);
   const sharedEnvs: Immutable.List<SharedEnv> = selector(state, "sharedEnvs");
 
   return {
@@ -194,7 +195,7 @@ export const applicationInitialValues: Application = Immutable.fromJS({
 
 export default connect(mapStateToProps)(
   reduxForm<Application, ConnectedProps & OwnProps>({
-    form: "application",
+    form: APPLICATION_FORM_ID,
     initialValues: applicationInitialValues,
     validate: formValidateOrNotBlockByTutorial,
     shouldError: shouldError,

@@ -51,6 +51,7 @@ import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import { push } from "connected-react-router";
+import { COMPONENT_FORM_ID } from "forms/formIDs";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -79,8 +80,10 @@ const UpgradePolicy = "Upgrade Policy";
 const tabs = [Configurations, Networking, Disks, Health, Scheduling, UpgradePolicy];
 
 const mapStateToProps = (state: RootState) => {
-  const fieldValues = (getFormValues("componentLike")(state) as ComponentLike) || (Immutable.Map() as ComponentLike);
-  const syncValidationErrors = getFormSyncErrors("componentLike")(state) as { [x in keyof ComponentLikeContent]: any };
+  const fieldValues = (getFormValues(COMPONENT_FORM_ID)(state) as ComponentLike) || (Immutable.Map() as ComponentLike);
+  const syncValidationErrors = getFormSyncErrors(COMPONENT_FORM_ID)(state) as {
+    [x in keyof ComponentLikeContent]: any;
+  };
   const nodeLabels = getNodeLabels();
 
   const search = queryString.parse(window.location.search);
@@ -1185,7 +1188,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 }
 
 const form = reduxForm<ComponentLike, RawProps & ConnectedProps>({
-  form: "componentLike",
+  form: COMPONENT_FORM_ID,
   enableReinitialize: true,
   validate: formValidateOrNotBlockByTutorial,
   shouldError: shouldError,

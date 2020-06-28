@@ -12,12 +12,10 @@ import { TDispatchProp } from "types";
 import { RoleBindingsRequestBody } from "types/user";
 import { ValidatorRequired } from "../validator";
 import { Prompt } from "widgets/Prompt";
-// import { loadNamespacesAction } from "actions/namespaces";
-
-const defaultFormID = "rolebinding";
+import { ROLE_BINDING_FORM_ID } from "forms/formIDs";
 
 const mapStateToProps = (state: RootState, { form }: OwnProps) => {
-  const selector = formValueSelector(form || defaultFormID);
+  const selector = formValueSelector(form || ROLE_BINDING_FORM_ID);
   return {
     namespaces: state
       .get("applications")
@@ -125,5 +123,5 @@ const initialValues: RoleBindingsRequestBody = Immutable.Map({
 export const RoleBindingForm = reduxForm<RoleBindingsRequestBody, OwnProps>({
   onSubmitFail: console.log,
   initialValues,
-  form: defaultFormID,
+  form: ROLE_BINDING_FORM_ID,
 })(connect(mapStateToProps)(withStyles(styles)(RoleBindingFormRaw)));
