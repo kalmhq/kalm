@@ -22,6 +22,7 @@ import { TDispatchProp } from "types";
 import { Tutorial, TutorialFactory } from "types/tutorial";
 import { Body } from "widgets/Label";
 import { CommonTutorial } from "./CommonTutorial";
+import { DRAWER_HIGH_ZINDEX } from "layout/Constants";
 
 class TutorialItem extends React.PureComponent<{
   title: string;
@@ -58,7 +59,7 @@ const styles = (theme: Theme) => {
       // make this part visible when the driver.js is actived
     },
     drawerHighZIndex: {
-      zIndex: 100004,
+      zIndex: DRAWER_HIGH_ZINDEX,
     },
     drawerPaper: {
       width: tutorialDrawerWidth,

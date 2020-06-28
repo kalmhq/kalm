@@ -52,6 +52,7 @@ import { TDispatchProp } from "types";
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import { push } from "connected-react-router";
 import { COMPONENT_FORM_ID } from "forms/formIDs";
+import { COMPONENT_DEPLOY_BUTTON_ZINDEX } from "layout/Constants";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -162,7 +163,7 @@ const styles = (theme: Theme) =>
     deployBtn: {
       width: 360,
       position: "fixed",
-      zIndex: 99,
+      zIndex: COMPONENT_DEPLOY_BUTTON_ZINDEX,
       bottom: theme.spacing(3),
     },
   });

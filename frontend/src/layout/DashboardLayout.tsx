@@ -11,6 +11,7 @@ import { RootDrawer } from "./RootDrawer";
 import { WebsocketConnector } from "./WebsocketConnector";
 import { TDispatchProp } from "types";
 import { loadClusterInfoAction } from "actions/cluster";
+import { TOP_PROGRESS_ZINDEX } from "./Constants";
 
 const styles = (theme: Theme) => {
   return createStyles({
@@ -21,7 +22,7 @@ const styles = (theme: Theme) => {
     progress: {
       position: "fixed",
       top: "0",
-      zIndex: 9999,
+      zIndex: TOP_PROGRESS_ZINDEX,
       width: "100%",
       height: "2px",
     },

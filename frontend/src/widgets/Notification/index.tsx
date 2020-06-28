@@ -4,6 +4,7 @@ import { connect } from "react-redux";
 import { RootState } from "../../reducers";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { tutorialDrawerWidth } from "pages/Tutorial";
+import { SNACKBAR_ZINDEX } from "layout/Constants";
 
 const getMessageFromState = (state: RootState) => ({
   message: state.get("notification"),
@@ -32,7 +33,7 @@ const mapStateToProps = (state: RootState) => {
 const styles = (theme: Theme) =>
   createStyles({
     containerRoot: {
-      zIndex: 1400,
+      zIndex: SNACKBAR_ZINDEX,
     },
     root: {
       transition: theme.transitions.create("margin-right", {
