@@ -20,7 +20,7 @@ export default class RealApi extends Api {
   };
 
   public validateToken = async (token: string): Promise<boolean> => {
-    const res = await axiosRequest({ method: "post", url: "/login/token", data: { token } });
+    const res = await axiosRequest({ method: "post", url: "/login/token", data: token });
     return res.status === 200;
   };
 
@@ -56,7 +56,7 @@ export default class RealApi extends Api {
   };
 
   public createRegistry = async (registry: RegistryType) => {
-    const res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/registries`, data: { registry } });
+    const res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/registries`, data: registry });
     return Immutable.fromJS(res.data);
   };
 
@@ -64,7 +64,7 @@ export default class RealApi extends Api {
     const res = await axiosRequest({
       method: "put",
       url: `/${K8sApiVersion}/registries/${registry.get("name")}`,
-      data: { registry },
+      data: registry,
     });
     return Immutable.fromJS(res.data);
   };
@@ -86,7 +86,7 @@ export default class RealApi extends Api {
   };
 
   public createKappApplication = async (application: Application) => {
-    const res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/applications`, data: { application } });
+    const res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/applications`, data: application });
     return Immutable.fromJS(res.data);
   };
 
@@ -94,7 +94,7 @@ export default class RealApi extends Api {
     const res = await axiosRequest({
       method: "put",
       url: `/${K8sApiVersion}/applications/${application.get("name")}`,
-      data: { application },
+      data: application,
     });
     return Immutable.fromJS(res.data);
   };
@@ -123,7 +123,7 @@ export default class RealApi extends Api {
     const res = await axiosRequest({
       method: "post",
       url: `/${K8sApiVersion}/applications/${applicationName}/components`,
-      data: { component },
+      data: component,
     });
     return Immutable.fromJS(res.data);
   };
@@ -132,7 +132,7 @@ export default class RealApi extends Api {
     const res = await axiosRequest({
       method: "put",
       url: `/${K8sApiVersion}/applications/${applicationName}/components/${component.get("name")}`,
-      data: { component },
+      data: component,
     });
     return Immutable.fromJS(res.data);
   };
@@ -172,7 +172,7 @@ export default class RealApi extends Api {
     const res = await axiosRequest({
       method: "put",
       url: `/${K8sApiVersion}/httproutes/${namespace}/${name}`,
-      data: { httpRoute },
+      data: httpRoute,
     });
     return Immutable.fromJS(res.data);
   };
@@ -181,7 +181,7 @@ export default class RealApi extends Api {
     const res = await axiosRequest({
       method: "post",
       url: `/${K8sApiVersion}/httproutes/${namespace}`,
-      data: { httpRoute },
+      data: httpRoute,
     });
     return Immutable.fromJS(res.data);
   };
@@ -204,7 +204,7 @@ export default class RealApi extends Api {
   };
 
   public createRoleBindings = async (roleBindingRequestBody: RoleBindingsRequestBody) => {
-    await axiosRequest({ method: "post", url: `/${K8sApiVersion}/rolebindings`, data: { roleBindingRequestBody } });
+    await axiosRequest({ method: "post", url: `/${K8sApiVersion}/rolebindings`, data: roleBindingRequestBody });
   };
 
   public deleteRoleBindings = async (namespace: string, bindingName: string) => {
@@ -235,12 +235,12 @@ export default class RealApi extends Api {
       res = await axiosRequest({
         method: "put",
         url: `/${K8sApiVersion}/httpscerts/${certificate.get("name")}`,
-        data: { certificate },
+        data: certificate,
       });
     } else if (certificate.get("isSelfManaged")) {
-      res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/httpscerts/upload`, data: { certificate } });
+      res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/httpscerts/upload`, data: certificate });
     } else {
-      res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/httpscerts`, data: { certificate } });
+      res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/httpscerts`, data: certificate });
     }
 
     return Immutable.fromJS(res.data);
@@ -252,7 +252,7 @@ export default class RealApi extends Api {
       res = await axiosRequest({
         method: "put",
         url: `/${K8sApiVersion}/httpscertissuers/${certificateIssuer.get("name")}`,
-        data: { certificateIssuer },
+        data: certificateIssuer,
       });
     } else {
       res = await axiosRequest({
