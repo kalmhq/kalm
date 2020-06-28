@@ -513,7 +513,6 @@ spec:
               - daemonset
               type: string
           required:
-          - enableHeadlessService
           - image
           type: object
         status:

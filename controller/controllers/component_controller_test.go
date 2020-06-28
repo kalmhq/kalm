@@ -80,7 +80,7 @@ func (suite *ComponentControllerSuite) TestComponentBasicCRUD() {
 		ServicePort:   2233,
 		Protocol:      "TCP",
 	})
-	suite.updateComponent(component)
+	suite.updateComponent(component) // todo sometimes this line fail the test e.g. https://travis-ci.com/github/kapp-staging/kapp/jobs/354813530
 
 	suite.Eventually(func() bool {
 		var deployment appsV1.Deployment
