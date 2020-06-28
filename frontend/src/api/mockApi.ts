@@ -77,7 +77,7 @@ export default class MockApi extends Api {
     } else {
       mockStore.data.mockCertificates = mockStore.data.mockCertificates.push(certificate);
     }
-
+    mockStore.saveData();
     return certificate as any;
   };
 
@@ -90,30 +90,32 @@ export default class MockApi extends Api {
     } else {
       mockStore.data.mockCertificateIssuers = mockStore.data.mockCertificateIssuers.push(certificateIssuer);
     }
+    mockStore.saveData();
     return certificateIssuer;
   };
 
   public createHttpRoute = async (namespace: string, httpRoute: HttpRoute) => {
     mockStore.data.mockHttpRoutes = mockStore.data.mockHttpRoutes.push(httpRoute);
+    mockStore.saveData();
     return httpRoute;
   };
 
   public createKappApplication = async (application: Application) => {
     mockStore.data.mockApplications = mockStore.data.mockApplications.push(application as ApplicationDetails);
+    mockStore.saveData();
     return application as ApplicationDetails;
   };
 
   public createKappApplicationComponent = async (applicationName: string, component: ApplicationComponent) => {
     mockStore.data.mockApplicationComponents.push(component as ApplicationComponentDetails);
+    mockStore.saveData();
     return component as ApplicationComponentDetails;
   };
 
   public createRegistry = async (registry: RegistryType) => {
-    const index = mockStore.data.mockRegistries.findIndex((c) => c.get("name") === registry.get("name"));
-    if (index >= 0) {
-      // mockStore.data.mockRegistries.
-    }
-    return Immutable.fromJS({});
+    mockStore.data.mockRegistries.push(registry as any);
+    mockStore.saveData();
+    return Immutable.fromJS(registry);
   };
 
   // TODO
@@ -122,12 +124,14 @@ export default class MockApi extends Api {
   public deleteCertificate = async (name: string) => {
     const index = mockStore.data.mockCertificates.findIndex((c) => c.get("name") === name);
     mockStore.data.mockCertificates = mockStore.data.mockCertificates.delete(index);
+    mockStore.saveData();
   };
 
   public deleteHttpRoute = async (namespace: string, name: string) => {
     const index = mockStore.data.mockHttpRoutes.findIndex((c) => c.get("name") === name);
     if (index >= 0) {
       mockStore.data.mockHttpRoutes = mockStore.data.mockHttpRoutes.delete(index);
+      mockStore.saveData();
       return true;
     } else {
       return false;
@@ -138,6 +142,7 @@ export default class MockApi extends Api {
     const index = mockStore.data.mockApplications.findIndex((c) => c.get("name") === name);
     if (index >= 0) {
       mockStore.data.mockApplications = mockStore.data.mockApplications.delete(index);
+      mockStore.saveData();
     }
   };
 
@@ -145,6 +150,7 @@ export default class MockApi extends Api {
     const index = mockStore.data.mockApplicationComponents.findIndex((c) => c.get("name") === name);
     if (index >= 0) {
       mockStore.data.mockApplicationComponents = mockStore.data.mockApplicationComponents.delete(index);
+      mockStore.saveData();
     }
   };
 
@@ -195,6 +201,7 @@ export default class MockApi extends Api {
     const index = mockStore.data.mockHttpRoutes.findIndex((c) => c.get("name") === name);
     if (index >= 0) {
       mockStore.data.mockHttpRoutes = mockStore.data.mockHttpRoutes.update(index, httpRoute as any);
+      mockStore.saveData();
     }
     return Immutable.fromJS(httpRoute);
   };
@@ -203,6 +210,7 @@ export default class MockApi extends Api {
     const index = mockStore.data.mockApplications.findIndex((c) => c.get("name") === application.get("name"));
     if (index >= 0) {
       mockStore.data.mockApplications = mockStore.data.mockApplications.update(index, application as any);
+      mockStore.saveData();
     }
     return Immutable.fromJS(application);
   };
@@ -214,12 +222,17 @@ export default class MockApi extends Api {
         index,
         component as any,
       );
+      mockStore.saveData();
     }
     return Immutable.fromJS(component);
   };
 
-  // TODO
   public updateRegistry = async (registry: RegistryType) => {
+    const index = mockStore.data.mockRegistries.findIndex((c) => c.get("name") === registry.get("name"));
+    if (index >= 0) {
+      mockStore.data.mockRegistries = mockStore.data.mockRegistries.update(index, registry as any);
+      mockStore.saveData();
+    }
     return Immutable.fromJS({});
   };
 }
