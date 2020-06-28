@@ -1,7 +1,7 @@
 import Immutable from "immutable";
 import { Api } from "./base";
 import { store } from "store";
-import Axios, { AxiosRequestConfig, AxiosPromise } from "axios";
+import Axios, { AxiosRequestConfig } from "axios";
 import { RegistryType } from "types/registry";
 import { Application, ApplicationComponent } from "types/application";
 import { HttpRoute } from "types/route";
@@ -10,128 +10,150 @@ import { CertificateFormType, CertificateIssuerFormType } from "types/certificat
 
 export default class RealApi extends Api {
   public getClusterInfo = async () => {
-    const res = await api.get(`/${K8sApiVersion}/cluster`);
+    const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/cluster` });
     return Immutable.fromJS(res.data);
   };
 
   public getLoginStatus = async () => {
-    const res = await api.get("/login/status");
+    const res = await axiosRequest({ method: "get", url: "/login/status" });
     return Immutable.fromJS(res.data);
   };
 
   public validateToken = async (token: string): Promise<boolean> => {
-    const res = await api.post("/login/token", { token });
+    const res = await axiosRequest({ method: "post", url: "/login/token", data: { token } });
     return res.status === 200;
   };
 
   public getNodes = async () => {
-    const res = await api.get(`/${K8sApiVersion}/nodes`);
+    const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/nodes` });
     return Immutable.fromJS(res.data);
   };
 
   public getPersistentVolumes = async () => {
-    const res = await api.get(`/${K8sApiVersion}/volumes`);
+    const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/volumes` });
     return Immutable.fromJS(res.data);
   };
 
   public deletePersistentVolume = async (name: string): Promise<void> => {
-    await api.delete(`/${K8sApiVersion}/volumes/${name}`);
+    await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/volumes/${name}` });
   };
 
   public getStorageClasses = async () => {
-    const res = await api.get(`/${K8sApiVersion}/storageclasses`);
+    const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/storageclasses` });
     return Immutable.fromJS(res.data);
   };
 
   // registry
 
   public getRegistries = async () => {
-    const res = await api.get(`/${K8sApiVersion}/registries`);
+    const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/registries` });
     return Immutable.fromJS(res.data);
   };
 
   public getRegistry = async (name: string) => {
-    const res = await api.get(`/${K8sApiVersion}/registries/${name}`);
+    const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/registries/${name}` });
     return Immutable.fromJS(res.data);
   };
 
   public createRegistry = async (registry: RegistryType) => {
-    const res = await api.post(`/${K8sApiVersion}/registries`, registry);
+    const res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/registries`, data: { registry } });
     return Immutable.fromJS(res.data);
   };
 
   public updateRegistry = async (registry: RegistryType) => {
-    const res = await api.put(`/${K8sApiVersion}/registries/${registry.get("name")}`, registry);
+    const res = await axiosRequest({
+      method: "put",
+      url: `/${K8sApiVersion}/registries/${registry.get("name")}`,
+      data: { registry },
+    });
     return Immutable.fromJS(res.data);
   };
 
   public deleteRegistry = async (name: string) => {
-    await api.delete(`/${K8sApiVersion}/registries/${name}`);
+    await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/registries/${name}` });
   };
 
   // applications
 
   public getKappApplicationList = async () => {
-    const res = await api.get(`/${K8sApiVersion}/applications`);
+    const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/applications` });
     return Immutable.fromJS(res.data);
   };
 
   public getKappApplication = async (name: string) => {
-    const res = await api.get(`/${K8sApiVersion}/applications/${name}`);
+    const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/applications/${name}` });
     return Immutable.fromJS(res.data);
   };
 
   public createKappApplication = async (application: Application) => {
-    const res = await api.post(`/${K8sApiVersion}/applications`, application);
+    const res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/applications`, data: { application } });
     return Immutable.fromJS(res.data);
   };
 
   public updateKappApplication = async (application: Application) => {
-    const res = await api.put(`/${K8sApiVersion}/applications/${application.get("name")}`, application);
+    const res = await axiosRequest({
+      method: "put",
+      url: `/${K8sApiVersion}/applications/${application.get("name")}`,
+      data: { application },
+    });
     return Immutable.fromJS(res.data);
   };
 
   public deleteKappApplication = async (name: string): Promise<void> => {
-    await api.delete(`/${K8sApiVersion}/applications/${name}`);
+    await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/applications/${name}` });
   };
 
   public getKappApplicationComponentList = async (applicationName: string) => {
-    const res = await api.get(`/${K8sApiVersion}/applications/${applicationName}/components`);
+    const res = await axiosRequest({
+      method: "get",
+      url: `/${K8sApiVersion}/applications/${applicationName}/components`,
+    });
     return Immutable.fromJS(res.data);
   };
 
   public getKappApplicationComponent = async (applicationName: string, name: string) => {
-    const res = await api.get(`/${K8sApiVersion}/applications/${applicationName}/components/${name}`);
+    const res = await axiosRequest({
+      method: "get",
+      url: `/${K8sApiVersion}/applications/${applicationName}/components/${name}`,
+    });
     return Immutable.fromJS(res.data);
   };
 
   public createKappApplicationComponent = async (applicationName: string, component: ApplicationComponent) => {
-    const res = await api.post(`/${K8sApiVersion}/applications/${applicationName}/components`, component);
+    const res = await axiosRequest({
+      method: "post",
+      url: `/${K8sApiVersion}/applications/${applicationName}/components`,
+      data: { component },
+    });
     return Immutable.fromJS(res.data);
   };
 
   public updateKappApplicationComponent = async (applicationName: string, component: ApplicationComponent) => {
-    const res = await api.put(
-      `/${K8sApiVersion}/applications/${applicationName}/components/${component.get("name")}`,
-      component,
-    );
+    const res = await axiosRequest({
+      method: "put",
+      url: `/${K8sApiVersion}/applications/${applicationName}/components/${component.get("name")}`,
+      data: { component },
+    });
     return Immutable.fromJS(res.data);
   };
 
   public deleteKappApplicationComponent = async (applicationName: string, name: string) => {
-    await api.delete(`/${K8sApiVersion}/applications/${applicationName}/components/${name}`);
+    await axiosRequest({
+      method: "delete",
+      url: `/${K8sApiVersion}/applications/${applicationName}/components/${name}`,
+    });
   };
 
   // plugins
 
   public getKappApplicationPlugins = async () => {
-    const res = await api.get(`/${K8sApiVersion}/applicationplugins`);
+    const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/applicationplugins` });
     console.log(JSON.stringify(res.data));
     return res.data;
   };
 
   public getKappComponentPlugins = async () => {
-    const res = await api.get(`/${K8sApiVersion}/componentplugins`);
+    const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/componentplugins` });
     console.log(JSON.stringify(res.data));
     return res.data;
   };
@@ -139,49 +161,58 @@ export default class RealApi extends Api {
   // routes
 
   public getHttpRoutes = async (namespace: string) => {
-    const res = await api.get(
-      !!namespace ? `/${K8sApiVersion}/httproutes/${namespace}` : `/${K8sApiVersion}/httproutes`,
-    );
+    const res = await axiosRequest({
+      method: "get",
+      url: !!namespace ? `/${K8sApiVersion}/httproutes/${namespace}` : `/${K8sApiVersion}/httproutes`,
+    });
     return Immutable.fromJS(res.data);
   };
 
   public updateHttpRoute = async (namespace: string, name: string, httpRoute: HttpRoute) => {
-    const res = await api.put(`/${K8sApiVersion}/httproutes/${namespace}/${name}`, httpRoute);
+    const res = await axiosRequest({
+      method: "put",
+      url: `/${K8sApiVersion}/httproutes/${namespace}/${name}`,
+      data: { httpRoute },
+    });
     return Immutable.fromJS(res.data);
   };
 
   public createHttpRoute = async (namespace: string, httpRoute: HttpRoute) => {
-    const res = await api.post(`/${K8sApiVersion}/httproutes/${namespace}`, httpRoute);
+    const res = await axiosRequest({
+      method: "post",
+      url: `/${K8sApiVersion}/httproutes/${namespace}`,
+      data: { httpRoute },
+    });
     return Immutable.fromJS(res.data);
   };
 
   public deleteHttpRoute = async (namespace: string, name: string) => {
-    const res = await api.delete(`/${K8sApiVersion}/httproutes/${namespace}/${name}`);
+    const res = await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/httproutes/${namespace}/${name}` });
     return res.status === 200;
   };
 
   public deletePod = async (namespace: string, name: string) => {
-    return await api.delete(`/${K8sApiVersion}/pods/${namespace}/${name}`);
+    return await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/pods/${namespace}/${name}` });
   };
 
   // RoleBindings
 
   public loadRolebindings = async () => {
-    const res = await api.get(`/${K8sApiVersion}/rolebindings`);
+    const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/rolebindings` });
     console.log(JSON.stringify(res.data));
     return Immutable.fromJS(res.data.roleBindings);
   };
 
   public createRoleBindings = async (roleBindingRequestBody: RoleBindingsRequestBody) => {
-    await api.post(`/${K8sApiVersion}/rolebindings`, roleBindingRequestBody.toJS());
+    await axiosRequest({ method: "post", url: `/${K8sApiVersion}/rolebindings`, data: { roleBindingRequestBody } });
   };
 
   public deleteRoleBindings = async (namespace: string, bindingName: string) => {
-    await api.delete(`/${K8sApiVersion}/rolebindings/` + namespace + "/" + bindingName);
+    await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/rolebindings/` + namespace + "/" + bindingName });
   };
 
   public getServiceAccountSecret = async (name: string) => {
-    const res = await api.get(`/${K8sApiVersion}/serviceaccounts/` + name);
+    const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/serviceaccounts/` + name });
     console.log(JSON.stringify(res.data));
     return res.data;
   };
@@ -189,23 +220,27 @@ export default class RealApi extends Api {
   // certificate
 
   public getCertificateList = async () => {
-    const res = await api.get(`/${K8sApiVersion}/httpscerts`);
+    const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/httpscerts` });
     return Immutable.fromJS(res.data);
   };
 
   public getCertificateIssuerList = async () => {
-    const res = await api.get(`/${K8sApiVersion}/httpscertissuers`);
+    const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/httpscertissuers` });
     return Immutable.fromJS(res.data);
   };
 
   public createCertificate = async (certificate: CertificateFormType, isEdit?: boolean) => {
     let res;
     if (isEdit) {
-      res = await api.put(`/${K8sApiVersion}/httpscerts/${certificate.get("name")}`, certificate);
+      res = await axiosRequest({
+        method: "put",
+        url: `/${K8sApiVersion}/httpscerts/${certificate.get("name")}`,
+        data: { certificate },
+      });
     } else if (certificate.get("isSelfManaged")) {
-      res = await api.post(`/${K8sApiVersion}/httpscerts/upload`, certificate);
+      res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/httpscerts/upload`, data: { certificate } });
     } else {
-      res = await api.post(`/${K8sApiVersion}/httpscerts`, certificate);
+      res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/httpscerts`, data: { certificate } });
     }
 
     return Immutable.fromJS(res.data);
@@ -214,21 +249,29 @@ export default class RealApi extends Api {
   public createCertificateIssuer = async (certificateIssuer: CertificateIssuerFormType, isEdit?: boolean) => {
     let res;
     if (isEdit) {
-      res = await api.put(`/${K8sApiVersion}/httpscertissuers/${certificateIssuer.get("name")}`, certificateIssuer);
+      res = await axiosRequest({
+        method: "put",
+        url: `/${K8sApiVersion}/httpscertissuers/${certificateIssuer.get("name")}`,
+        data: { certificateIssuer },
+      });
     } else {
-      res = await api.post(`/${K8sApiVersion}/httpscertissuers`, certificateIssuer);
+      res = await axiosRequest({
+        method: "post",
+        url: `/${K8sApiVersion}/httpscertissuers`,
+        data: { certificateIssuer },
+      });
     }
     return Immutable.fromJS(res.data);
   };
 
   public deleteCertificate = async (name: string) => {
-    await api.delete(`/${K8sApiVersion}/httpscerts/${name}`);
+    await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/httpscerts/${name}` });
   };
 
   // services
 
   public loadServices = async (name: string) => {
-    const res = await api.get(`/${K8sApiVersion}/services`);
+    const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/services` });
     console.log(JSON.stringify(res.data));
     return Immutable.fromJS(res.data);
   };
@@ -266,22 +309,9 @@ const getAxiosClient = () => {
   return instance;
 };
 
-const _request = (method: string, url: string, ...args: any) => {
-  return getAxiosClient().call(method, `${K8sApiPrefix}${url}`, ...args);
-};
-
-const api: {
-  get<T = any>(url: string, config?: AxiosRequestConfig): AxiosPromise<T>;
-  delete(url: string, config?: AxiosRequestConfig): AxiosPromise;
-  head(url: string, config?: AxiosRequestConfig): AxiosPromise;
-  post<T = any>(url: string, data?: any, config?: AxiosRequestConfig): AxiosPromise<T>;
-  put<T = any>(url: string, data?: any, config?: AxiosRequestConfig): AxiosPromise<T>;
-  patch<T = any>(url: string, data?: any, config?: AxiosRequestConfig): AxiosPromise<T>;
-} = {
-  get: (url, ...args) => _request("get", url, ...args),
-  delete: (url, ...args) => _request("delete", url, ...args),
-  head: (url, ...args) => _request("head", url, ...args),
-  post: (url, ...args) => _request("post", url, ...args),
-  put: (url, ...args) => _request("put", url, ...args),
-  patch: (url, ...args) => _request("patch", url, ...args),
+const axiosRequest = (config: AxiosRequestConfig) => {
+  return getAxiosClient()({
+    ...config,
+    url: `${K8sApiPrefix}${config.url}`,
+  });
 };
