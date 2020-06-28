@@ -3,7 +3,7 @@ kind: Namespace
 metadata:
   name: kapp-zk
   labels:
-#    istio-injection: enabled
+    istio-injection: enabled
     kapp-enabled: "true"
 ---
 apiVersion: core.kapp.dev/v1alpha1
@@ -121,6 +121,10 @@ spec:
           echo "autopurge.snapRetainCount=$ZK_SNAP_RETAIN_COUNT" >> $ZK_CONFIG_FILE
           echo "autopurge.purgeInterval=$ZK_PURGE_INTERVAL" >> $ZK_CONFIG_FILE
           echo "4lw.commands.whitelist=*" >> $ZK_CONFIG_FILE
+          echo "4lw.commands.whitelist=*" >> $ZK_CONFIG_FILE
+
+          # https://github.com/istio/istio/issues/19280#issuecomment-560542530
+          echo "quorumListenOnAllIPs=true" >> $ZK_CONFIG_FILE
 
           for (( i=1; i<=$ZK_REPLICAS; i++ ))
           do
