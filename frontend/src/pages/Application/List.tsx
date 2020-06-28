@@ -13,38 +13,38 @@ import {
   Tooltip,
   WithStyles,
 } from "@material-ui/core";
+import withStyles from "@material-ui/core/styles/withStyles";
+import { deleteApplicationAction } from "actions/application";
+import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { loadRoutes } from "actions/routes";
+import { blinkTopProgressAction } from "actions/settings";
 import { push } from "connected-react-router";
+import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import Immutable from "immutable";
 import MaterialTable, { MTableBodyRow } from "material-table";
 import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 import React from "react";
+import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
-import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
-import { FlexRowItemCenterBox } from "widgets/Box";
-import { CustomizedButton } from "widgets/Button";
-import { KappConsoleIcon, KappLogIcon } from "widgets/Icon";
-import { deleteApplicationAction } from "actions/application";
-import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
-import { blinkTopProgressAction } from "actions/settings";
 import { primaryColor } from "theme";
 import { ApplicationDetails } from "types/application";
 import { HttpRoute } from "types/route";
-import { formatDate } from "utils";
+import { isPrivateIP } from "utils/ip";
 import { customSearchForImmutable } from "utils/tableSearch";
+import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
+import { FlexRowItemCenterBox } from "widgets/Box";
+import { CustomizedButton } from "widgets/Button";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { FoldButtonGroup } from "widgets/FoldButtonGroup";
+import { KappConsoleIcon, KappLogIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { Body, H4 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
-import { BasePage } from "../BasePage";
-import withStyles from "@material-ui/core/styles/withStyles";
-import { connect } from "react-redux";
-import { isPrivateIP } from "utils/ip";
 import { KTable } from "widgets/Table";
-import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
+import { getApplicationCreatedAtString } from "../../utils/application";
+import { BasePage } from "../BasePage";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -160,22 +160,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderCreatedTime = (applicationDetails: RowData) => {
-    let createdAt = new Date(0);
-
-    applicationDetails.get("components")?.forEach((component) => {
-      component.get("pods").forEach((podStatus) => {
-        const ts = podStatus.get("createTimestamp");
-        const tsDate = new Date(ts);
-        if (createdAt <= new Date(0)) {
-          createdAt = tsDate;
-        } else {
-          createdAt = createdAt < tsDate ? createdAt : tsDate;
-        }
-      });
-    });
-    const createdAtString = createdAt <= new Date(0) ? "-" : formatDate(createdAt);
-    return <Body>{createdAtString}</Body>;
+  private renderCreatedAt = (applicationDetails: RowData) => {
+    return <Body>{getApplicationCreatedAtString(applicationDetails)}</Body>;
   };
 
   private renderStatus = (applicationDetails: RowData) => {
@@ -510,10 +496,10 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         },
       },
       {
-        title: "Created On",
+        title: "Created At",
         field: "active",
         sorting: false,
-        render: this.renderCreatedTime,
+        render: this.renderCreatedAt,
         // hidden: !hasWriterRole,
       },
       {

@@ -22,6 +22,7 @@ import { H5 } from "widgets/Label";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { KTable } from "widgets/Table";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
+import { getComponentCreatedAtString } from "../../utils/application";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -225,6 +226,55 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
     ];
   };
 
+  private renderCreatedAt = () => {
+    const { component } = this.props;
+    return getComponentCreatedAtString(component);
+  };
+
+  private renderComponentStatus = () => {
+    const { component } = this.props;
+
+    let running = 0;
+    let pending = 0;
+    let error = 0;
+
+    component.get("pods").forEach((pod) => {
+      if (pod.get("isTerminating")) {
+        pending = pending + 1;
+      } else {
+        switch (pod.get("status")) {
+          case "Pending": {
+            pending = pending + 1;
+            break;
+          }
+          case "Failed": {
+            error = error + 1;
+            break;
+          }
+          case "Running":
+          case "Succeeded": {
+            running = running + 1;
+            break;
+          }
+        }
+      }
+    });
+
+    return `Running: ${running}, Pending: ${pending}, Error: ${error}`;
+  };
+
+  private renderComponentCPU = () => {
+    const { component } = this.props;
+
+    return <SmallCPULineChart data={component.get("metrics").get("cpu")!} />;
+  };
+
+  private renderComponentMemory = () => {
+    const { component } = this.props;
+
+    return <SmallMemoryLineChart data={component.get("metrics").get("memory")!} />;
+  };
+
   private renderComponentDetail = () => {
     const { application, dispatch, component } = this.props;
     return (
@@ -268,18 +318,15 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
 
         <VerticalHeadTable
           items={[
-            {
-              name: "Created At",
-              content: "TODO",
-            },
+            { name: "Created At", content: this.renderCreatedAt() },
             { name: "Name", content: component.get("name") },
             { name: "Namespace", content: application.get("name") },
             { name: "Image", content: component.get("image") },
             { name: "Workload Type", content: component.get("workloadType") },
             { name: "Update Strategy", content: component.get("restartStrategy") },
-            { name: "Pod Status", content: "TODO: Running: 1, Pending: 1, Error: 2" },
-            { name: "CPU", content: "TODO: Running: 1, Pending: 1, Error: 2" },
-            { name: "Memory", content: "TODO: Running: 1, Pending: 1, Error: 2" },
+            { name: "Pod Status", content: this.renderComponentStatus() },
+            { name: "CPU", content: this.renderComponentCPU() },
+            { name: "Memory", content: this.renderComponentMemory() },
           ]}
         />
 
