@@ -8,7 +8,7 @@ import {
   ListItemText,
   Tab,
   Tabs,
-  Tooltip,
+  Tooltip
 } from "@material-ui/core";
 import { Prompt } from "widgets/Prompt";
 import { grey } from "@material-ui/core/colors";
@@ -45,7 +45,7 @@ import { RenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
-import { Volumes } from "./Volumes";
+import { Disks } from "forms/ComponentLike/Disks";
 import { shouldError } from "forms/common";
 import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
@@ -73,12 +73,12 @@ const IngressHint = () => {
 };
 
 const Configurations = "Configurations";
-const Disks = "Disks";
+const DisksTab = "Disks";
 export const HealthTab = "Health";
 export const NetworkingTab = "Networking";
 const Scheduling = "Scheduling";
 const Deploy = "Deploy Policy";
-const tabs = [Configurations, NetworkingTab, Disks, HealthTab, Scheduling, Deploy];
+const tabs = [Configurations, NetworkingTab, DisksTab, HealthTab, Scheduling, Deploy];
 
 const mapStateToProps = (state: RootState) => {
   const fieldValues = (getFormValues(COMPONENT_FORM_ID)(state) as ComponentLike) || (Immutable.Map() as ComponentLike);
@@ -407,7 +407,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderVolumes() {
+  private renderDisks() {
     const { classes } = this.props;
 
     const helperContainer = (
@@ -443,7 +443,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             <ListItemText
               primary="Existing Persistent Volume Claim"
               secondary={
-                "PersistentVolumeClaim and PersistentVolume are a kubernetes original resources. A persistentVolumeClaim volume is used to mount a PersistentVolume into a Pod. PersistentVolumes are a way for users to “claim” durable storage (such as a GCE PersistentDisk or an iSCSI volume) without knowing the details of the particular cloud environment."
+                "PersistentVolumeClaim and Disk are a kubernetes original resources. A persistentVolumeClaim volume is used to mount a Disk into a Pod. Disks are a way for users to “claim” durable storage (such as a GCE PersistentDisk or an iSCSI volume) without knowing the details of the particular cloud environment."
               }
               secondaryTypographyProps={{ color: "inherit" }}
             />
@@ -453,7 +453,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
 
     return (
-      <>
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          <Body>Mount various type of disks into your component.</Body>
+        </Grid>
         <Grid item xs={12}>
           <SectionTitle>
             <H5>Disks</H5>
@@ -463,9 +466,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </SectionTitle>
         </Grid>
         <Grid item xs={12}>
-          <Volumes />
+          <Disks />
         </Grid>
-      </>
+      </Grid>
     );
   }
 
@@ -764,19 +767,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderDisks() {
-    return (
-      <>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <Body>Mount various type of disks into your component.</Body>
-          </Grid>
-          {this.renderVolumes()}
-        </Grid>
-      </>
-    );
-  }
-
   private renderHealth() {
     const { classes } = this.props;
     return (
@@ -1002,7 +992,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <div className={`${this.tabs[currentTabIndex] === NetworkingTab ? "" : classes.displayNone}`}>
           {this.renderNetworking()}
         </div>
-        <div className={`${this.tabs[currentTabIndex] === Disks ? "" : classes.displayNone}`}>{this.renderDisks()}</div>
+        <div className={`${this.tabs[currentTabIndex] === DisksTab ? "" : classes.displayNone}`}>
+          {this.renderDisks()}
+        </div>
         <div className={`${this.tabs[currentTabIndex] === HealthTab ? "" : classes.displayNone}`}>
           {this.renderHealth()}
         </div>
@@ -1047,7 +1039,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             submitFailed &&
             ((tab === Configurations &&
               (syncValidationErrors.preInjectedFiles || syncValidationErrors.env || syncValidationErrors.command)) ||
-              (tab === Disks && syncValidationErrors.volumes) ||
+              (tab === DisksTab && syncValidationErrors.volumes) ||
               (tab === HealthTab && (syncValidationErrors.livenessProbe || syncValidationErrors.readinessProbe)) ||
               (tab === NetworkingTab && syncValidationErrors.ports) ||
               (tab === Scheduling &&

@@ -8,7 +8,7 @@ import { CertificateListPage } from "pages/Certificate/List";
 import InstallPage from "pages/Install";
 import { NodeListPage } from "pages/NodeList";
 import { NoMatch, Page404 } from "pages/NoMatch";
-import { Volumes } from "pages/PersistentVolumes";
+import { Disks } from "pages/Disks";
 import { RegistryListPage } from "pages/Registry/List";
 import { RolesPage } from "pages/Roles";
 import { RouteEdit } from "pages/Route/Edit";
@@ -38,7 +38,7 @@ export const KappRoutes = (
           <Route exact path="/roles" component={RequireAdmin(RolesPage)} />
           <Route exact path="/install" component={InstallPage} />
           <Route exact path="/cluster/nodes" component={NodeListPage} />
-          <Route exact path="/cluster/volumes" component={Volumes} />
+          <Route exact path="/cluster/disks" component={Disks} />
           <Route exact path="/cluster/registries" component={RegistryListPage} />
           <Route exact path="/applications" component={RequireAdmin(ApplicationListPage)} />
           <Route exact path="/applications/new" component={RequireAdmin(ApplicationNew)} />

@@ -1,5 +1,5 @@
 import { ThunkResult } from "../types";
-import { DELETE_PERSISTENT_VOLUME, LOAD_PERSISTENT_VOLUMES, LOAD_STORAGE_CLASSES } from "../types/persistentVolume";
+import { DELETE_PERSISTENT_VOLUME, LOAD_PERSISTENT_VOLUMES, LOAD_STORAGE_CLASSES } from "types/disk";
 import { api } from "api";
 
 export const loadPersistentVolumesAction = (): ThunkResult<Promise<void>> => {
