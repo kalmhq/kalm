@@ -59,7 +59,6 @@ func (h *ApiHandler) handleListVolumes(c echo.Context) error {
 
 		respVolumes = append(respVolumes, resources.Volume{
 			Name:               kappPVC.Name,
-			Namespace:          kappPVC.Namespace,
 			ComponentName:      compName,
 			ComponentNamespace: compNamespace,
 			IsInUse:            isInUse,
