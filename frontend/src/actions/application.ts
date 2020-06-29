@@ -53,12 +53,13 @@ const correctComponentFormValues = (componentValues: ApplicationComponent): Appl
   const correctedVolumes = volumes?.map((v) => {
     // set pvToMatch
     if (v.get("type") === VolumeTypePersistentVolumeClaim) {
-      v.set("pvToMatch", findPVToMatch(v.get("pvc")));
+      v = v.set("pvToMatch", findPVToMatch(v.get("pvc")));
     }
     // if is pvc-new, set to pvc
     if (v.get("type") === VolumeTypePersistentVolumeClaimNew) {
       v = v.set("type", VolumeTypePersistentVolumeClaim);
     }
+    return v;
   });
 
   return componentValues.set("volumes", correctedVolumes);
