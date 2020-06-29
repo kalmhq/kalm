@@ -10,6 +10,7 @@ import { H4 } from "widgets/Label";
 import { ComponentLikeForm } from "forms/ComponentLike";
 import { connect } from "react-redux";
 import { withComponent, WithComponentProp } from "hoc/withComponent";
+import { ComponentStatus } from "widgets/ComponentStatus";
 
 const styles = (theme: Theme) => createStyles({});
 
@@ -43,6 +44,9 @@ class ComponentEditRaw extends React.PureComponent<Props> {
                 onSubmitSuccess={this.onSubmitSuccess}
               />
             </Grid>
+            <Grid xs={4} item>
+              <ComponentStatus component={component} />
+            </Grid>
           </Grid>
         </Box>
       </BasePage>
@@ -50,4 +54,4 @@ class ComponentEditRaw extends React.PureComponent<Props> {
   }
 }
 
-export const ComponentEdit = withComponent(withStyles(styles)(connect()(ComponentEditRaw)));
+export const ComponentEditPage = withComponent(withStyles(styles)(connect()(ComponentEditRaw)));

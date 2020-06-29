@@ -123,7 +123,7 @@ class RouteWidgetRaw extends React.PureComponent<Props, State> {
         <Card className={classes.root} variant="outlined">
           <CardContent>
             <Grid container spacing={2} alignItems="center">
-              <Grid item>
+              <Grid item xs>
                 <TableContainer>
                   <Table size="small" aria-label="a dense table">
                     <TableHead>

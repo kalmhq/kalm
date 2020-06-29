@@ -526,7 +526,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
           </div>
         </Expansion> */}
         <Button type="submit" onClick={handleSubmit} color="primary" variant="contained">
-          Submit Form
+          Create Route
         </Button>
       </div>
     );

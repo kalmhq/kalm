@@ -65,4 +65,4 @@ class RouteEditRaw extends React.PureComponent<Props> {
   }
 }
 
-export const RouteEdit = withRoutesData(withStyles(styles)(RouteEditRaw));
+export const RouteEditPage = withRoutesData(withStyles(styles)(RouteEditRaw));

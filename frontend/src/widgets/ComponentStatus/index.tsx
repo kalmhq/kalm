@@ -37,7 +37,9 @@ const styles = (theme: Theme) =>
       width: 58,
       margin: "-0 -10px 16px",
     },
-    podsTitle: {},
+    podsTitle: {
+      marginTop: theme.spacing(2),
+    },
     podItem: {
       width: "100%",
       position: "relative",

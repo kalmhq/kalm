@@ -1,12 +1,13 @@
 import { ClusterInfo } from "types/cluster";
 import { LoginStatus } from "types/authorization";
 import { NodesListResponse } from "types/node";
-import { StorageClasses } from "types/persistentVolume";
+import { StorageClasses } from "types/disk";
 import Immutable from "immutable";
-import { ApplicationDetails, ApplicationComponentDetails } from "types/application";
+import { Application, ApplicationComponent, ApplicationComponentDetails, ApplicationDetails } from "types/application";
 import { HttpRoute } from "types/route";
-import { CertificateList, CertificateIssuerList } from "types/certificate";
+import { Certificate, CertificateIssuer, CertificateIssuerList, CertificateList } from "types/certificate";
 import { RegistryType } from "types/registry";
+import { ImmutableMap } from "typings";
 
 interface MockStoreData {
   mockClusterInfo: ClusterInfo;
@@ -22,26 +23,129 @@ interface MockStoreData {
 }
 
 export default class MockStore {
-  public data: MockStoreData;
+  public data: ImmutableMap<MockStoreData>;
   public CACHE_KEY = "kubernetes-api-mock-data";
+  public onmessage?: any;
 
   constructor() {
     const cachedData = this.getCachedData();
     this.data = cachedData || this.getInitData();
   }
 
-  public saveData = () => {
+  public deleteCertificate = async (name: string) => {
+    const index = this.data.get("mockCertificates").findIndex((c) => c.get("name") === name);
+    this.data = this.data.deleteIn(["mockCertificates", index]);
+    await this.saveData();
+  };
+
+  public deleteHttpRoute = async (name: string) => {
+    const index = this.data.get("mockHttpRoutes").findIndex((c) => c.get("name") === name);
+    this.data = this.data.deleteIn(["mockHttpRoutes", index]);
+    await this.saveData();
+  };
+
+  public deleteKappApplication = async (name: string): Promise<void> => {
+    const index = this.data.get("mockApplications").findIndex((c) => c.get("name") === name);
+    this.data = this.data.deleteIn(["mockApplications", index]);
+    await this.saveData();
+  };
+
+  public deleteKappApplicationComponent = async (applicationName: string, name: string) => {
+    const index = this.data.get("mockApplicationComponents").findIndex((c) => c.get("name") === name);
+    const component = this.data.getIn(["mockApplicationComponents", index]);
+    this.data = this.data.deleteIn(["mockApplicationComponents", index]);
+    await this.saveData({
+      kind: "Component",
+      namespace: applicationName,
+      action: "Delete",
+      data: component,
+    });
+  };
+
+  public updateCertificate = async (certificate: Certificate) => {
+    const index = this.data.get("mockCertificates").findIndex((c) => c.get("name") === certificate.get("name"));
+    if (index >= 0) {
+      this.data = this.data.setIn(["mockCertificates", index], certificate);
+    } else {
+      this.data = this.data.updateIn(["mockCertificates"], (c) => c.push(certificate));
+    }
+    await this.saveData();
+  };
+
+  public updateCertificateIssuer = async (certificateIssuer: CertificateIssuer) => {
+    const index = this.data
+      .get("mockCertificateIssuers")
+      .findIndex((c) => c.get("name") === certificateIssuer.get("name"));
+    if (index >= 0) {
+      this.data = this.data.setIn(["mockCertificateIssuers", index], certificateIssuer);
+    } else {
+      this.data = this.data.updateIn(["mockCertificateIssuers"], (c) => c.push("certificateIssuer"));
+    }
+    await this.saveData();
+  };
+
+  public updateHttpRoute = async (httpRoute: HttpRoute) => {
+    const index = this.data.get("mockHttpRoutes").findIndex((c) => c.get("name") === httpRoute.get("name"));
+    if (index >= 0) {
+      this.data = this.data.updateIn(["mockHttpRoutes", index], httpRoute as any);
+    } else {
+      this.data = this.data.updateIn(["mockHttpRoutes"], (c) => c.push(httpRoute));
+    }
+    await this.saveData();
+  };
+
+  public updateKappApplication = async (application: Application) => {
+    const index = this.data.get("mockApplications").findIndex((c) => c.get("name") === application.get("name"));
+    if (index >= 0) {
+      this.data = this.data.updateIn(["mockApplications", index], application as any);
+    } else {
+      this.data = this.data.updateIn(["mockApplications"], (c) => c.push(application));
+    }
+    await this.saveData();
+  };
+
+  public updateKappApplicationComponent = async (applicationName: string, component: ApplicationComponent) => {
+    const index = this.data.get("mockApplicationComponents").findIndex((c) => c.get("name") === component.get("name"));
+    let data = {
+      kind: "Component",
+      namespace: applicationName,
+      data: component,
+      action: "Add",
+    };
+    if (index >= 0) {
+      this.data = this.data.updateIn(["mockApplicationComponents", index], component as any);
+      data.action = "Update";
+    } else {
+      this.data = this.data.updateIn(["mockApplicationComponents"], (c) => c.push(component));
+    }
+    await this.saveData(data);
+  };
+
+  public updateRegistry = async (registry: RegistryType) => {
+    const index = this.data.get("mockRegistries").findIndex((c) => c.get("name") === registry.get("name"));
+    if (index >= 0) {
+      this.data = this.data.updateIn(["mockRegistries", index], registry as any);
+    } else {
+      this.data = this.data.updateIn(["mockRegistries"], (c) => c.push(registry));
+    }
+    await this.saveData();
+  };
+
+  public saveData = async (messageData?: any) => {
     window.localStorage.setItem(this.CACHE_KEY, JSON.stringify(this.data));
+    if (this.onmessage && messageData) {
+      await this.onmessage({ data: JSON.stringify(messageData) });
+    }
   };
 
   public getCachedData = () => {
     const cacheJSON = window.localStorage.getItem(this.CACHE_KEY);
 
-    return !!cacheJSON ? JSON.parse(cacheJSON) : null;
+    return !!cacheJSON ? Immutable.fromJS(JSON.parse(cacheJSON)) : null;
   };
 
   public getInitData = () => {
-    return {
+    return Immutable.fromJS({
       mockClusterInfo: Immutable.fromJS({
         version: "v1.15.0",
         ingressIP: "192.168.64.3",
@@ -3972,6 +4076,6 @@ export default class MockStore {
       mockCertificateIssuers: Immutable.fromJS([{ name: "default-cert-issuer", caForTest: {} }]),
 
       mockRegistries: Immutable.fromJS([{ host: "has.dd", name: "ll", username: "", password: "" }]),
-    };
+    });
   };
 }

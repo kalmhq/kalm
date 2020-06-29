@@ -1,10 +1,10 @@
 package resources
 
 import (
-	"fmt"
 	"github.com/kapp-staging/kapp/controller/controllers"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"regexp"
 	"strings"
 
@@ -21,7 +21,7 @@ type Volume struct {
 	ComponentName      string `json:"componentName,omitempty"`      // name of latest component using this Volume
 	Capacity           string `json:"capacity"`                     // size, e.g. 1Gi
 	PVC                string `json:"pvc"`
-	PV                 string `json:"pv"`
+	PV                 string `json:"pvToMatch"`
 }
 
 func (builder *Builder) GetPVs() ([]coreV1.PersistentVolume, error) {
@@ -98,7 +98,7 @@ func (builder *Builder) FindAvailableVolsForSimpleWorkload(ns string) ([]Volume,
 
 	sameNsFreePairs, diffNsFreePairs := divideAccordingToNs(freePairs, ns)
 
-	var rst []Volume
+	rst := []Volume{}
 	for _, sameNsFreePair := range sameNsFreePairs {
 		pvc := sameNsFreePair.pvc
 		pv := sameNsFreePair.pv
@@ -154,8 +154,8 @@ func (builder *Builder) FindAvailableVolsForSimpleWorkload(ns string) ([]Volume,
 	return rst, nil
 }
 
-func (builder *Builder) FindAvailableVolsForSts(ns, stsName string) ([]Volume, error) {
-	pvcList, err := builder.GetPVCs(client.InNamespace(ns) /*, client.MatchingLabels{controllers.KappLabelManaged: "true"}*/)
+func (builder *Builder) FindAvailableVolsForSts(ns string) ([]Volume, error) {
+	pvcList, err := builder.GetPVCs(client.InNamespace(ns), client.MatchingLabels{controllers.KappLabelManaged: "true"})
 	if client.IgnoreNotFound(err) != nil {
 		return nil, err
 	}
@@ -165,14 +165,24 @@ func (builder *Builder) FindAvailableVolsForSts(ns, stsName string) ([]Volume, e
 
 	//format of pvc generated from volClaimTemplate is: <volClaimTplName>-<stsName>-{0,1,2}
 	for _, pvc := range pvcList {
-		stsPVCPattern := fmt.Sprintf(`^*.-%s-[0-9]+$`, stsName)
+		componentName, _ := GetComponentNameAndNs(&pvc)
+		if componentName == "" {
+			continue
+		}
+
+		stsPVCPattern := `^*.-[0-9]+$`
 		stsPVCRegex := regexp.MustCompile(stsPVCPattern)
 
 		if match := stsPVCRegex.Match([]byte(pvc.Name)); !match {
 			continue
 		}
 
-		idx := strings.LastIndex(pvc.Name, fmt.Sprintf("-%s-", stsName))
+		stsName := componentName
+		idx := strings.LastIndex(pvc.Name, "-"+stsName+"-")
+		if idx == -1 {
+			continue
+		}
+
 		volClaimTplName := pvc.Name[:idx]
 
 		isInUse, err := builder.IsPVCInUse(pvc)
@@ -198,11 +208,12 @@ func (builder *Builder) FindAvailableVolsForSts(ns, stsName string) ([]Volume, e
 		capacity := GetCapacityOfPVC(pvc)
 
 		rst = append(rst, Volume{
-			Name:     freeVolClaimTpl,
-			IsInUse:  false,
-			Capacity: capacity,
-			PVC:      freeVolClaimTpl,
-			PV:       "",
+			Name:      freeVolClaimTpl,
+			Namespace: ns,
+			IsInUse:   false,
+			Capacity:  capacity,
+			PVC:       freeVolClaimTpl,
+			PV:        "",
 		})
 	}
 
@@ -230,6 +241,17 @@ func GetNameAndNsOfPVOwnerComponent(pv coreV1.PersistentVolume) (compName, compN
 		compName = v
 	}
 	if v, exist := pv.Labels[controllers.KappLabelNamespace]; exist {
+		compNamespace = v
+	}
+
+	return
+}
+
+func GetComponentNameAndNs(metaObj metav1.Object) (compName, compNamespace string) {
+	if v, exist := metaObj.GetLabels()[controllers.KappLabelComponent]; exist {
+		compName = v
+	}
+	if v, exist := metaObj.GetLabels()[controllers.KappLabelNamespace]; exist {
 		compNamespace = v
 	}
 

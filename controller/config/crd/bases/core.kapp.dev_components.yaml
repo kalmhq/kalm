@@ -481,14 +481,14 @@ spec:
                   path:
                     description: the path we use to mount this volume to container
                     type: string
-                  persistentVolumeClaimName:
+                  pvToMatch:
+                    description: instead of auto-provision new PV using StorageClass
+                      we try to re-use existing PV
+                    type: string
+                  pvc:
                     description: "use to store pvc name, so the disk won't be recreate
                       during restart This field also can be used with existing pvc
                       \n for Type: pvc, required, todo validate this in webhook?"
-                    type: string
-                  persistentVolumeNamePVCToMatch:
-                    description: instead of auto-provision new PV using StorageClass
-                      we try to re-use existing PV
                     type: string
                   size:
                     description: If we need to create this volume first, the size

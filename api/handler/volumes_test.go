@@ -63,7 +63,7 @@ func (suite *VolumeTestSuite) TestGetAvailableVolsForDP() {
 	suite.createInUseBoundedPVCAndPV(suite.NS2)
 
 	// call API from ns
-	urlPath := fmt.Sprintf("/v1alpha1/volumes/available/simple-workload/%s", suite.NS)
+	urlPath := fmt.Sprintf("/v1alpha1/volumes/available/simple-workload?currentNamespace=%s", suite.NS)
 	rec := suite.NewRequest(http.MethodGet, urlPath, nil)
 
 	var resList []resources.Volume
@@ -89,7 +89,7 @@ func (suite *VolumeTestSuite) TestGetAvailableVolsForDP() {
 	}, resList))
 
 	// call API from ns2
-	urlPath = fmt.Sprintf("/v1alpha1/volumes/available/simple-workload/%s", suite.NS2)
+	urlPath = fmt.Sprintf("/v1alpha1/volumes/available/simple-workload?currentNamespace=%s", suite.NS2)
 	rec = suite.NewRequest(http.MethodGet, urlPath, nil)
 	rec.BodyAsJSON(&resList)
 
@@ -137,9 +137,9 @@ func volNotExists(vol resources.Volume, list []resources.Volume) bool {
 	return true
 }
 
-func (suite *VolumeTestSuite) TestGetAvailableVolsForSTS() {
-	//todo
-}
+//todo
+//func (suite *VolumeTestSuite) TestGetAvailableVolsForSTS() {
+//}
 
 func randomName() string {
 	return rand.String(10)

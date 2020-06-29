@@ -289,12 +289,12 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         to: `/applications/${rowData.get("name")}`,
         iconName: "fullscreen",
       },
-      {
-        text: "Edit",
-        to: `/applications/${rowData.get("name")}/edit`,
-        iconName: "edit",
-        requiredRole: "writer",
-      },
+      // {
+      //   text: "Edit",
+      //   to: `/applications/${rowData.get("name")}/edit`,
+      //   iconName: "edit",
+      //   requiredRole: "writer",
+      // },
       {
         text: "Delete",
         onClick: () => {

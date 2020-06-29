@@ -48,4 +48,4 @@ class ComponentNewRaw extends React.PureComponent<Props> {
   }
 }
 
-export const ComponentNew = withNamespace(withStyles(styles)(connect()(ComponentNewRaw)));
+export const ComponentNewPage = withNamespace(withStyles(styles)(connect()(ComponentNewRaw)));

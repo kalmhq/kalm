@@ -18,7 +18,7 @@ import { connect } from "react-redux";
 import { NavLink } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
-import { LEFT_SECTION_CLOSE_WIDTH, LEFT_SECTION_OPEN_WIDTH, APP_BAR_HEIGHT } from "layout/Constants";
+import { APP_BAR_HEIGHT, LEFT_SECTION_CLOSE_WIDTH, LEFT_SECTION_OPEN_WIDTH } from "layout/Constants";
 import { primaryBackgroud, primaryColor } from "../theme";
 import { KappApplicationIcon, KappNodeIcon, KappVolumeIcon } from "../widgets/Icon";
 import { blinkTopProgressAction } from "../actions/settings";
@@ -127,8 +127,8 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
       },
       {
         icon: KappVolumeIcon,
-        text: "Volumes",
-        to: "/cluster/volumes",
+        text: "Disks",
+        to: "/cluster/disks",
       },
       {
         icon: AssignmentReturnedIcon,

@@ -7,15 +7,15 @@ import { RegistryType } from "types/registry";
 import { RoleBindingsRequestBody } from "types/user";
 import MockStore from "./mockStore";
 
-const mockStore = new MockStore();
+export const mockStore = new MockStore();
 
 export default class MockApi extends Api {
   public getClusterInfo = async () => {
-    return mockStore.data.mockClusterInfo;
+    return await mockStore.data.get("mockClusterInfo");
   };
 
   public getLoginStatus = async () => {
-    return mockStore.data.mockLoginStatus;
+    return await mockStore.data.get("mockLoginStatus");
   };
 
   public validateToken = async (token: string): Promise<boolean> => {
@@ -23,7 +23,7 @@ export default class MockApi extends Api {
   };
 
   public getNodes = async () => {
-    return mockStore.data.mockNodes;
+    return await mockStore.data.get("mockNodes");
   };
 
   public getPersistentVolumes = async () => {
@@ -31,31 +31,31 @@ export default class MockApi extends Api {
   };
 
   public getStorageClasses = async () => {
-    return mockStore.data.mockStorageClasses;
+    return await mockStore.data.get("mockStorageClasses");
   };
 
   public getRegistries = async () => {
-    return mockStore.data.mockRegistries;
+    return await mockStore.data.get("mockRegistries");
   };
 
   public getKappApplicationList = async () => {
-    return mockStore.data.mockApplications;
+    return await mockStore.data.get("mockApplications");
   };
 
   public getKappApplication = async (name: string) => {
-    return mockStore.data.mockApplications.find((application) => application.get("name") === name)!;
+    return await mockStore.data.get("mockApplications").find((application) => application.get("name") === name)!;
   };
 
   public getKappApplicationComponentList = async (applicationName: string) => {
-    return mockStore.data.mockApplicationComponents;
+    return await mockStore.data.get("mockApplicationComponents");
   };
 
   public getKappApplicationComponent = async (applicationName: string, name: string) => {
-    return mockStore.data.mockApplicationComponents.find((component) => component.get("name") === name)!;
+    return await mockStore.data.get("mockApplicationComponents").find((component) => component.get("name") === name)!;
   };
 
   public getHttpRoutes = async (namespace: string) => {
-    return mockStore.data.mockHttpRoutes;
+    return await mockStore.data.get("mockHttpRoutes");
   };
 
   public mockLoadRolebindings = async () => {
@@ -63,58 +63,40 @@ export default class MockApi extends Api {
   };
 
   public getCertificateList = async () => {
-    return mockStore.data.mockCertificates;
+    return await mockStore.data.get("mockCertificates");
   };
 
   public getCertificateIssuerList = async () => {
-    return mockStore.data.mockCertificateIssuers;
+    return await mockStore.data.get("mockCertificateIssuers");
   };
 
   public createCertificate = async (certificate: CertificateFormType, isEdit?: boolean) => {
-    if (isEdit) {
-      const index = mockStore.data.mockCertificates.findIndex((c) => c.get("name") === certificate.get("name"));
-      mockStore.data.mockCertificates = mockStore.data.mockCertificates.set(index, certificate);
-    } else {
-      mockStore.data.mockCertificates = mockStore.data.mockCertificates.push(certificate);
-    }
-    mockStore.saveData();
+    await mockStore.updateCertificate(certificate);
     return certificate as any;
   };
 
   public createCertificateIssuer = async (certificateIssuer: CertificateIssuerFormType, isEdit?: boolean) => {
-    if (isEdit) {
-      const index = mockStore.data.mockCertificateIssuers.findIndex(
-        (c) => c.get("name") === certificateIssuer.get("name"),
-      );
-      mockStore.data.mockCertificateIssuers = mockStore.data.mockCertificateIssuers.set(index, certificateIssuer);
-    } else {
-      mockStore.data.mockCertificateIssuers = mockStore.data.mockCertificateIssuers.push(certificateIssuer);
-    }
-    mockStore.saveData();
+    await mockStore.updateCertificateIssuer(certificateIssuer);
     return certificateIssuer;
   };
 
   public createHttpRoute = async (namespace: string, httpRoute: HttpRoute) => {
-    mockStore.data.mockHttpRoutes = mockStore.data.mockHttpRoutes.push(httpRoute);
-    mockStore.saveData();
+    await mockStore.updateHttpRoute(httpRoute);
     return httpRoute;
   };
 
   public createKappApplication = async (application: Application) => {
-    mockStore.data.mockApplications = mockStore.data.mockApplications.push(application as ApplicationDetails);
-    mockStore.saveData();
+    await mockStore.updateKappApplication(application);
     return application as ApplicationDetails;
   };
 
   public createKappApplicationComponent = async (applicationName: string, component: ApplicationComponent) => {
-    mockStore.data.mockApplicationComponents.push(component as ApplicationComponentDetails);
-    mockStore.saveData();
+    await mockStore.updateKappApplicationComponent(applicationName, component);
     return component as ApplicationComponentDetails;
   };
 
   public createRegistry = async (registry: RegistryType) => {
-    mockStore.data.mockRegistries.push(registry as any);
-    mockStore.saveData();
+    await mockStore.updateRegistry(registry);
     return Immutable.fromJS(registry);
   };
 
@@ -122,36 +104,20 @@ export default class MockApi extends Api {
   public createRoleBindings = async (roleBindingRequestBody: RoleBindingsRequestBody) => {};
 
   public deleteCertificate = async (name: string) => {
-    const index = mockStore.data.mockCertificates.findIndex((c) => c.get("name") === name);
-    mockStore.data.mockCertificates = mockStore.data.mockCertificates.delete(index);
-    mockStore.saveData();
+    await mockStore.deleteCertificate(name);
   };
 
   public deleteHttpRoute = async (namespace: string, name: string) => {
-    const index = mockStore.data.mockHttpRoutes.findIndex((c) => c.get("name") === name);
-    if (index >= 0) {
-      mockStore.data.mockHttpRoutes = mockStore.data.mockHttpRoutes.delete(index);
-      mockStore.saveData();
-      return true;
-    } else {
-      return false;
-    }
+    await mockStore.deleteHttpRoute(name);
+    return true;
   };
 
   public deleteKappApplication = async (name: string): Promise<void> => {
-    const index = mockStore.data.mockApplications.findIndex((c) => c.get("name") === name);
-    if (index >= 0) {
-      mockStore.data.mockApplications = mockStore.data.mockApplications.delete(index);
-      mockStore.saveData();
-    }
+    await mockStore.deleteKappApplication(name);
   };
 
   public deleteKappApplicationComponent = async (applicationName: string, name: string) => {
-    const index = mockStore.data.mockApplicationComponents.findIndex((c) => c.get("name") === name);
-    if (index >= 0) {
-      mockStore.data.mockApplicationComponents = mockStore.data.mockApplicationComponents.delete(index);
-      mockStore.saveData();
-    }
+    await mockStore.deleteKappApplicationComponent(applicationName, name);
   };
 
   // TODO
@@ -181,9 +147,8 @@ export default class MockApi extends Api {
     return [];
   };
 
-  // TODO
   public getRegistry = async (name: string) => {
-    return mockStore.data.mockRegistries.find((c) => c.get("name") === name)!;
+    return await mockStore.data.get("mockRegistries").find((c) => c.get("name") === name)!;
   };
 
   // TODO
@@ -196,43 +161,23 @@ export default class MockApi extends Api {
     return Immutable.fromJS([]);
   };
 
-  // TODO
   public updateHttpRoute = async (namespace: string, name: string, httpRoute: HttpRoute) => {
-    const index = mockStore.data.mockHttpRoutes.findIndex((c) => c.get("name") === name);
-    if (index >= 0) {
-      mockStore.data.mockHttpRoutes = mockStore.data.mockHttpRoutes.update(index, httpRoute as any);
-      mockStore.saveData();
-    }
+    await mockStore.updateHttpRoute(httpRoute);
     return Immutable.fromJS(httpRoute);
   };
 
   public updateKappApplication = async (application: Application) => {
-    const index = mockStore.data.mockApplications.findIndex((c) => c.get("name") === application.get("name"));
-    if (index >= 0) {
-      mockStore.data.mockApplications = mockStore.data.mockApplications.update(index, application as any);
-      mockStore.saveData();
-    }
+    await mockStore.updateKappApplication(application);
     return Immutable.fromJS(application);
   };
 
   public updateKappApplicationComponent = async (applicationName: string, component: ApplicationComponent) => {
-    const index = mockStore.data.mockApplicationComponents.findIndex((c) => c.get("name") === component.get("name"));
-    if (index >= 0) {
-      mockStore.data.mockApplicationComponents = mockStore.data.mockApplicationComponents.update(
-        index,
-        component as any,
-      );
-      mockStore.saveData();
-    }
+    await mockStore.updateKappApplicationComponent(applicationName, component);
     return Immutable.fromJS(component);
   };
 
   public updateRegistry = async (registry: RegistryType) => {
-    const index = mockStore.data.mockRegistries.findIndex((c) => c.get("name") === registry.get("name"));
-    if (index >= 0) {
-      mockStore.data.mockRegistries = mockStore.data.mockRegistries.update(index, registry as any);
-      mockStore.saveData();
-    }
-    return Immutable.fromJS({});
+    await mockStore.updateRegistry(registry);
+    return Immutable.fromJS(registry);
   };
 }
