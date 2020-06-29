@@ -20,7 +20,7 @@ spec:
         size: 1Mi
         type: pvc
         storageClassName: kapp-standard
-        persistentVolumeClaimName: my-pvc
+        pvc: my-pvc
       - path: /tmp
         size: 2Mi
         type: emptyDirMemory

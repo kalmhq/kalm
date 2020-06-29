@@ -115,8 +115,8 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 
 	gv1Alpha1WithAuth.GET("/volumes", h.handleListVolumes)
 	gv1Alpha1WithAuth.DELETE("/volumes/:namespace/:name", h.handleDeletePVC)
-	gv1Alpha1WithAuth.GET("/volumes/available/simple-workload/:ns", h.handleAvailableVolsForSimpleWorkload)
-	gv1Alpha1WithAuth.GET("/volumes/available/sts/:ns/:componentName", h.handleAvailableVolsForSts)
+	gv1Alpha1WithAuth.GET("/volumes/available/simple-workload", h.handleAvailableVolsForSimpleWorkload)
+	gv1Alpha1WithAuth.GET("/volumes/available/sts/:namespace", h.handleAvailableVolsForSts)
 }
 
 func (h *ApiHandler) Builder(c echo.Context) *resources.Builder {
