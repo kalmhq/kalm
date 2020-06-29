@@ -37,7 +37,7 @@ func (h *ApiHandler) handleListVolumes(c echo.Context) error {
 	respVolumes := []resources.Volume{}
 	for _, kappPVC := range kappPVCList.Items {
 
-		isInUse, err := isPVCInUsed(builder, kappPVC)
+		isInUse, err := builder.IsPVCInUse(kappPVC)
 		if err != nil {
 			continue
 		}
@@ -81,7 +81,7 @@ func (h *ApiHandler) handleDeletePVC(c echo.Context) error {
 		return err
 	}
 
-	if isInUse, err := isPVCInUsed(builder, pvc); err != nil {
+	if isInUse, err := builder.IsPVCInUse(pvc); err != nil {
 		return err
 	} else if isInUse {
 		return fmt.Errorf("cannot delete PVC in use")
@@ -125,36 +125,8 @@ func (h *ApiHandler) handleDeletePVC(c echo.Context) error {
 	return c.NoContent(200)
 }
 
-func isPVCInUsed(builder *resources.Builder, pvc v1.PersistentVolumeClaim) (bool, error) {
-	var podList v1.PodList
-	err := builder.List(&podList, client.InNamespace(pvc.Namespace))
-	if errors.IsNotFound(err) {
-		return false, err
-	}
-
-	isInUse := false
-	for _, pod := range podList.Items {
-		for _, vol := range pod.Spec.Volumes {
-			if vol.PersistentVolumeClaim == nil {
-				continue
-			}
-
-			if vol.PersistentVolumeClaim.ClaimName == pvc.Name {
-				isInUse = true
-				break
-			}
-		}
-
-		if isInUse {
-			break
-		}
-	}
-
-	return isInUse, nil
-}
-
 func (h *ApiHandler) handleAvailableVolsForSimpleWorkload(c echo.Context) error {
-	ns := c.Param("ns")
+	ns := c.QueryParam("currentNamespace")
 
 	builder := h.Builder(c)
 	vols, err := builder.FindAvailableVolsForSimpleWorkload(ns)
@@ -166,11 +138,10 @@ func (h *ApiHandler) handleAvailableVolsForSimpleWorkload(c echo.Context) error 
 }
 
 func (h *ApiHandler) handleAvailableVolsForSts(c echo.Context) error {
-	ns := c.Param("ns")
-	compName := c.Param("componentName")
+	ns := c.Param("namespace")
 
 	builder := h.Builder(c)
-	vols, err := builder.FindAvailableVolsForSts(ns, compName)
+	vols, err := builder.FindAvailableVolsForSts(ns)
 	if err != nil {
 		return err
 	}
