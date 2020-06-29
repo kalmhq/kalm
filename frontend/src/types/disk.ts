@@ -7,7 +7,7 @@ export const LOAD_STORAGE_CLASSES = "LOAD_STORAGE_CLASSES";
 export const LOAD_SIMPLE_OPTIONS = "LOAD_SIMPLE_OPTIONS";
 export const LOAD_STATEFULSET_OPTIONS = "LOAD_STATEFULSET_OPTIONS";
 
-export interface PersistentVolumeContent {
+export interface DiskContent {
   name: string;
   isInUse: boolean;
   componentNamespace?: string;
@@ -15,8 +15,9 @@ export interface PersistentVolumeContent {
   phase: string;
   capacity: string;
 }
-export type PersistentVolume = ImmutableMap<PersistentVolumeContent>;
-export type PersistentVolumes = Immutable.List<PersistentVolume>;
+
+export type Disk = ImmutableMap<DiskContent>;
+export type PersistentVolumes = Immutable.List<Disk>;
 
 export interface VolumeOptionContent {
   name: string;

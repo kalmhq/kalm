@@ -3,13 +3,13 @@ import { Alert } from "@material-ui/lab";
 import { K8sApiPrefix } from "api/realApi";
 import React from "react";
 import { connect } from "react-redux";
+import { DiskContent } from "types/disk";
 import { KTable } from "widgets/Table";
 import { setErrorNotificationAction } from "../../actions/notification";
 import { deletePersistentVolumeAction, loadPersistentVolumesAction } from "../../actions/persistentVolume";
 import { RootState } from "../../reducers";
 import { primaryColor } from "../../theme";
 import { TDispatchProp } from "../../types";
-import { PersistentVolumeContent } from "../../types/persistentVolume";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
 import { DeleteIcon } from "../../widgets/Icon";
 import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
@@ -30,10 +30,10 @@ interface States {
   loadPersistentVolumesError: boolean;
   loadingPersistentVolumes: boolean;
   isDeleteConfirmDialogOpen: boolean;
-  deletingPersistentVolume?: PersistentVolumeContent;
+  deletingPersistentVolume?: DiskContent;
 }
 
-interface RowData extends PersistentVolumeContent {
+interface RowData extends DiskContent {
   index: number;
 }
 
@@ -50,7 +50,7 @@ export class VolumesRaw extends React.Component<Props, States> {
     };
   }
 
-  private showDeleteConfirmDialog = (deletingPersistentVolume: PersistentVolumeContent) => {
+  private showDeleteConfirmDialog = (deletingPersistentVolume: DiskContent) => {
     this.setState({
       isDeleteConfirmDialogOpen: true,
       deletingPersistentVolume,
@@ -191,4 +191,4 @@ export class VolumesRaw extends React.Component<Props, States> {
   }
 }
 
-export const Volumes = connect(mapStateToProps)(withStyles(styles)(VolumesRaw));
+export const DiskListPage = connect(mapStateToProps)(withStyles(styles)(VolumesRaw));

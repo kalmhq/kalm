@@ -11,7 +11,7 @@ import {
   VolumeOptions,
   LOAD_SIMPLE_OPTIONS,
   LOAD_STATEFULSET_OPTIONS,
-} from "types/persistentVolume";
+} from "types/disk";
 
 export type State = ImmutableMap<{
   persistentVolumes: PersistentVolumes;

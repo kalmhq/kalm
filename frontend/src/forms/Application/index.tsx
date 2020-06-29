@@ -9,12 +9,13 @@ import { Application, SharedEnv } from "types/application";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { KRenderTextField } from "../Basic/textfield";
-import { ValidatorRequired, ValidatorNameWithoutDot } from "../validator";
+import { ValidatorName, ValidatorRequired } from "../validator";
 import { Alert } from "@material-ui/lab";
 import { shouldError } from "forms/common";
 import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { InjectedFormProps } from "redux-form";
 import { APPLICATION_FORM_ID } from "../formIDs";
+import { Body } from "widgets/Label";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -52,10 +53,12 @@ const styles = (theme: Theme) =>
 const mapStateToProps = (state: RootState) => {
   const selector = formValueSelector(APPLICATION_FORM_ID);
   const sharedEnvs: Immutable.List<SharedEnv> = selector(state, "sharedEnvs");
+  const name = selector(state, "name") as string;
 
   return {
     tutorialState: state.get("tutorial"),
     isSubmittingApplication: state.get("applications").get("isSubmittingApplication"),
+    name,
     sharedEnvs,
   };
 };
@@ -75,21 +78,36 @@ export interface Props
 
 class ApplicationFormRaw extends React.PureComponent<Props> {
   private renderBasic() {
-    const { isEdit } = this.props;
+    const { isEdit, name } = this.props;
     return (
-      <Field
-        name="name"
-        label="Name"
-        disabled={isEdit}
-        component={KRenderTextField}
-        validate={[ValidatorRequired, ValidatorNameWithoutDot]}
-        helperText={
-          isEdit
-            ? "Can't modify name"
-            : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), and "-". Max length is 180.'
-        }
-        placeholder="Please type the component name"
-      />
+      <>
+        <Field
+          name="name"
+          label="Name"
+          disabled={isEdit}
+          component={KRenderTextField}
+          validate={[ValidatorRequired, ValidatorName]}
+          helperText={
+            isEdit
+              ? "Can't modify name"
+              : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), and "-". Max length is 180.'
+          }
+          placeholder="Please type the component name"
+        />
+
+        <Box mt={2} style={{ color: "#797979" }}>
+          <Body>
+            Workloads in Kalm can access each other via auto-generated DNS name. Application name will be a part of the
+            DNS names of its children resources.
+          </Body>
+          <Box p={1}>
+            <code>
+              {"<COMPONENT_NAME>"}.<strong style={{ color: "black" }}>{name || "<APPLICATION_NAME_HERE>"}</strong>
+              .svc.cluster.local
+            </code>
+          </Box>
+        </Box>
+      </>
     );
   }
 
@@ -111,19 +129,6 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
         >
           Submit
         </CustomizedButton>
-        {/* <CustomizedButton
-          pending={isSubmittingApplication && !values.get("nextAddComponent")}
-          disabled={isSubmittingApplication && values.get("nextAddComponent")}
-          variant="contained"
-          className={`${currentTab === "basic" ? "" : classes.displayNone}`}
-          onClick={event => {
-            change("nextAddComponent", false);
-            setTimeout(() => {
-              handleSubmit(event);
-            }, 200);
-          }}>
-          Save And Back
-        </CustomizedButton> */}
       </>
     );
   }
