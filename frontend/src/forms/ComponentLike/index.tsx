@@ -8,7 +8,7 @@ import {
   ListItemText,
   Tab,
   Tabs,
-  Tooltip
+  Tooltip,
 } from "@material-ui/core";
 import { Prompt } from "widgets/Prompt";
 import { grey } from "@material-ui/core/colors";
@@ -39,13 +39,7 @@ import { KRadioGroupRender } from "../Basic/radio";
 import { RenderSelectField } from "../Basic/select";
 import { KRenderCommandTextField, KRenderTextField, RenderComplexValueTextField } from "../Basic/textfield";
 import { NormalizeCPU, NormalizeNumber } from "../normalizer";
-import {
-  ValidatorCPU,
-  ValidatorMemory,
-  ValidatorNameWithoutDot,
-  ValidatorRequired,
-  ValidatorSchedule
-} from "../validator";
+import { ValidatorCPU, ValidatorMemory, ValidatorName, ValidatorRequired, ValidatorSchedule } from "../validator";
 import { Envs } from "./Envs";
 import { RenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
@@ -1084,7 +1078,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             name="name"
             label="Name"
             margin
-            validate={[ValidatorRequired, ValidatorNameWithoutDot]}
+            validate={[ValidatorRequired, ValidatorName]}
             disabled={isEdit}
             helperText={
               isEdit
