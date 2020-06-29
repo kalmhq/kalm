@@ -51,14 +51,19 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
   }
   private renderNetwork() {
     const { component, activeNamespaceName } = this.props;
+    const hasService = component.get("ports") && component.get("ports")!.size > 0;
     return (
       <Expansion title={"Networking"} defaultUnfold>
-        <Box pl={2} pb={2}>
+        <Box pb={2}>
           <Body>
-            Cluster DNS Name:{" "}
-            <strong>
-              {component.get("name")}.{activeNamespaceName}.svc.cluster.local
-            </strong>
+            Cluster FQDN DNS:{" "}
+            <strong>{hasService ? `${component.get("name")}.${activeNamespaceName}.svc.cluster.local` : "none"}</strong>
+          </Body>
+          <Body>
+            Cluster DNS: <strong>{hasService ? `${component.get("name")}.${activeNamespaceName}` : "none"}</strong>
+          </Body>
+          <Body>
+            Namespace DNS: <strong>{hasService ? `${component.get("name")}` : "none"}</strong>
           </Body>
         </Box>
         <VerticalHeadTable
@@ -73,6 +78,7 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
                 </span>
               ),
             }))
+
             .toArray()}
         />
       </Expansion>

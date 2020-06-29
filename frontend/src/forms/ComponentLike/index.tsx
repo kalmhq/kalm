@@ -8,7 +8,7 @@ import {
   ListItemText,
   Tab,
   Tabs,
-  Tooltip,
+  Tooltip
 } from "@material-ui/core";
 import { Prompt } from "widgets/Prompt";
 import { grey } from "@material-ui/core/colors";
@@ -42,9 +42,9 @@ import { NormalizeCPU, NormalizeNumber } from "../normalizer";
 import {
   ValidatorCPU,
   ValidatorMemory,
-  ValidatorRequired,
-  ValidatorSchedule,
   ValidatorNameWithoutDot,
+  ValidatorRequired,
+  ValidatorSchedule
 } from "../validator";
 import { Envs } from "./Envs";
 import { RenderSelectLabels } from "./NodeSelector";
@@ -80,11 +80,11 @@ const IngressHint = () => {
 
 const Configurations = "Configurations";
 const Disks = "Disks";
-const Health = "Health";
-const Networking = "Networking";
+export const HealthTab = "Health";
+export const NetworkingTab = "Networking";
 const Scheduling = "Scheduling";
-const UpgradePolicy = "Upgrade Policy";
-const tabs = [Configurations, Networking, Disks, Health, Scheduling, UpgradePolicy];
+const Deploy = "Deploy Policy";
+const tabs = [Configurations, NetworkingTab, Disks, HealthTab, Scheduling, Deploy];
 
 const mapStateToProps = (state: RootState) => {
   const fieldValues = (getFormValues(COMPONENT_FORM_ID)(state) as ComponentLike) || (Immutable.Map() as ComponentLike);
@@ -1005,17 +1005,17 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <div className={`${this.tabs[currentTabIndex] === Configurations ? "" : classes.displayNone}`}>
           {this.renderConfigurations()}
         </div>
-        <div className={`${this.tabs[currentTabIndex] === Networking ? "" : classes.displayNone}`}>
+        <div className={`${this.tabs[currentTabIndex] === NetworkingTab ? "" : classes.displayNone}`}>
           {this.renderNetworking()}
         </div>
         <div className={`${this.tabs[currentTabIndex] === Disks ? "" : classes.displayNone}`}>{this.renderDisks()}</div>
-        <div className={`${this.tabs[currentTabIndex] === Health ? "" : classes.displayNone}`}>
+        <div className={`${this.tabs[currentTabIndex] === HealthTab ? "" : classes.displayNone}`}>
           {this.renderHealth()}
         </div>
         <div className={`${this.tabs[currentTabIndex] === Scheduling ? "" : classes.displayNone}`}>
           {this.renderScheduling()}
         </div>
-        <div className={`${this.tabs[currentTabIndex] === UpgradePolicy ? "" : classes.displayNone}`}>
+        <div className={`${this.tabs[currentTabIndex] === Deploy ? "" : classes.displayNone}`}>
           {this.renderUpgradePolicy()}
         </div>
       </>
@@ -1054,8 +1054,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             ((tab === Configurations &&
               (syncValidationErrors.preInjectedFiles || syncValidationErrors.env || syncValidationErrors.command)) ||
               (tab === Disks && syncValidationErrors.volumes) ||
-              (tab === Health && (syncValidationErrors.livenessProbe || syncValidationErrors.ReadinessProbe)) ||
-              (tab === Networking && syncValidationErrors.ports) ||
+              (tab === HealthTab && (syncValidationErrors.livenessProbe || syncValidationErrors.readinessProbe)) ||
+              (tab === NetworkingTab && syncValidationErrors.ports) ||
               (tab === Scheduling &&
                 (syncValidationErrors.cpu || syncValidationErrors.memory || syncValidationErrors.nodeSelectorLabels)))
           ) {
