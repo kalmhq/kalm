@@ -324,4 +324,4 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const RolesPage = withStyles(styles)(connect(mapStateToProps)(RolesPageRaw));
+export const RoleListPage = withStyles(styles)(connect(mapStateToProps)(RolesPageRaw));

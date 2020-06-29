@@ -186,4 +186,4 @@ export class VolumesRaw extends React.Component<Props, States> {
   }
 }
 
-export const Disks = connect(mapStateToProps)(withStyles(styles)(VolumesRaw));
+export const DiskListPage = connect(mapStateToProps)(withStyles(styles)(VolumesRaw));

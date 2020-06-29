@@ -54,4 +54,4 @@ class ComponentEditRaw extends React.PureComponent<Props> {
   }
 }
 
-export const ComponentEdit = withComponent(withStyles(styles)(connect()(ComponentEditRaw)));
+export const ComponentEditPage = withComponent(withStyles(styles)(connect()(ComponentEditRaw)));

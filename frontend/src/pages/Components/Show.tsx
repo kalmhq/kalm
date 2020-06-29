@@ -153,6 +153,6 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const ComponentShow = withStyles(styles)(
+export const ComponentShowPage = withStyles(styles)(
   connect(mapStateToProps)(withRoutesData(withComponent(ComponentShowRaw))),
 );
