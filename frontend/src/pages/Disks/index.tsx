@@ -5,7 +5,7 @@ import { connect } from "react-redux";
 import { deletePersistentVolumeAction, loadPersistentVolumesAction } from "../../actions/persistentVolume";
 import { RootState } from "../../reducers";
 import { TDispatchProp } from "../../types";
-import { PersistentVolumeContent } from "../../types/persistentVolume";
+import { DiskContent } from "types/disk";
 import { BasePage } from "../BasePage";
 import { setErrorNotificationAction } from "../../actions/notification";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
@@ -33,7 +33,7 @@ interface States {
   deletingPersistentVolumeName?: string;
 }
 
-interface RowData extends PersistentVolumeContent {
+interface RowData extends DiskContent {
   index: number;
 }
 
@@ -186,4 +186,4 @@ export class VolumesRaw extends React.Component<Props, States> {
   }
 }
 
-export const Volumes = connect(mapStateToProps)(withStyles(styles)(VolumesRaw));
+export const DiskListPage = connect(mapStateToProps)(withStyles(styles)(VolumesRaw));

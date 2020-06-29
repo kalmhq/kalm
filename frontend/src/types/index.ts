@@ -10,7 +10,7 @@ import { CommonActions } from "./common";
 import { DependencyActions } from "./dependency";
 import { NamespaceActions } from "./namespace";
 import { NodeActions } from "./node";
-import { VolumeActions } from "./persistentVolume";
+import { VolumeActions } from "types/disk";
 import { RegistriesActions } from "./registry";
 import { RouteActions } from "./route";
 import { ServiceActions } from "./service";

@@ -56,4 +56,4 @@ class ApplicationNewRaw extends React.PureComponent<Props> {
   }
 }
 
-export const ApplicationNew = withStyles(styles)(connect()(ApplicationNewRaw));
+export const ApplicationNewPage = withStyles(styles)(connect()(ApplicationNewRaw));

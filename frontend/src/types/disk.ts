@@ -5,7 +5,7 @@ export const LOAD_PERSISTENT_VOLUMES = "LOAD_PERSISTENT_VOLUMES";
 export const DELETE_PERSISTENT_VOLUME = "DELETE_PERSISTENT_VOLUME";
 export const LOAD_STORAGE_CLASSES = "LOAD_STORAGE_CLASSES";
 
-export interface PersistentVolumeContent {
+export interface DiskContent {
   name: string;
   isInUse: boolean;
   componentNamespace?: string;
@@ -14,8 +14,8 @@ export interface PersistentVolumeContent {
   capacity: string;
 }
 
-export type PersistentVolume = ImmutableMap<PersistentVolumeContent>;
-export type PersistentVolumes = Immutable.List<PersistentVolume>;
+export type Disk = ImmutableMap<DiskContent>;
+export type PersistentVolumes = Immutable.List<Disk>;
 
 export interface StorageClassContent {
   name: string;

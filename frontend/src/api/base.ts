@@ -18,11 +18,11 @@ import {
 } from "types/certificate";
 import { ClusterInfo } from "types/cluster";
 import { NodesListResponse } from "types/node";
-import { PersistentVolumes, StorageClasses } from "types/persistentVolume";
 import { RegistryType } from "types/registry";
 import { HttpRoute } from "types/route";
 import { Service } from "types/service";
 import { RoleBinding, RoleBindingsRequestBody } from "types/user";
+import { PersistentVolumes, StorageClasses } from "types/disk";
 
 export abstract class Api {
   public abstract getClusterInfo(): Promise<ClusterInfo>;

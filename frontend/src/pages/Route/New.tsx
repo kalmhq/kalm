@@ -55,4 +55,4 @@ class RouteNewRaw extends React.PureComponent<Props> {
   }
 }
 
-export const RouteNew = withNamespace(withStyles(styles)(RouteNewRaw));
+export const RouteNewPage = withNamespace(withStyles(styles)(RouteNewRaw));
