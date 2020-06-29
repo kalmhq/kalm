@@ -8,7 +8,7 @@ import {
   Volume,
   VolumeTypePersistentVolumeClaim,
   VolumeTypeTemporaryDisk,
-  VolumeTypeTemporaryMemory
+  VolumeTypeTemporaryMemory,
 } from "../../types/componentTemplate";
 import { FieldArrayWrapper } from "../Basic/FieldArrayWrapper";
 import { RenderSelectField } from "../Basic/select";
