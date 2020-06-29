@@ -119,7 +119,7 @@ export interface ComponentLikeContent {
   plugins?: Immutable.List<PluginType>;
   preInjectedFiles?: Immutable.List<PreInjectedFile>;
   livenessProbe?: Probe;
-  ReadinessProbe?: Probe;
+  readinessProbe?: Probe;
   nodeSelectorLabels?: NodeSelectorLabels;
   podAffinityType?: PodAffinityType;
 }
