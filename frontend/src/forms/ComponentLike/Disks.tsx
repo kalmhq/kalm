@@ -8,7 +8,7 @@ import {
   Volume,
   VolumeTypePersistentVolumeClaim,
   VolumeTypeTemporaryDisk,
-  VolumeTypeTemporaryMemory,
+  VolumeTypeTemporaryMemory
 } from "../../types/componentTemplate";
 import { FieldArrayWrapper } from "../Basic/FieldArrayWrapper";
 import { RenderSelectField } from "../Basic/select";
@@ -157,6 +157,6 @@ class RenderVolumes extends React.PureComponent<Props> {
   }
 }
 
-export const Volumes = connect(mapStateToProps)((props: FieldArrayProps) => {
+export const Disks = connect(mapStateToProps)((props: FieldArrayProps) => {
   return <FieldArray name="volumes" component={RenderVolumes} {...props} />;
 });

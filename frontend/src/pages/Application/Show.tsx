@@ -65,4 +65,4 @@ class ApplicationShowRaw extends React.PureComponent<Props> {
   }
 }
 
-export const ApplicationShow = withStyles(styles)(withNamespace(connect(mapStateToProps)(ApplicationShowRaw)));
+export const ApplicationShowPage = withStyles(styles)(withNamespace(connect(mapStateToProps)(ApplicationShowRaw)));

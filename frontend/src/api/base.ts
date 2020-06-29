@@ -1,25 +1,25 @@
 import { ClusterInfo } from "types/cluster";
 import { LoginStatus } from "types/authorization";
 import { NodesListResponse } from "types/node";
-import { PersistentVolumes, StorageClasses } from "types/persistentVolume";
+import { PersistentVolumes, StorageClasses } from "types/disk";
 import { RegistryType } from "types/registry";
 import Immutable from "immutable";
 import {
-  ApplicationDetails,
   Application,
-  ApplicationComponentDetails,
   ApplicationComponent,
+  ApplicationComponentDetails,
+  ApplicationDetails,
   ApplicationPlugin,
-  ComponentPlugin,
+  ComponentPlugin
 } from "types/application";
 import { HttpRoute } from "types/route";
 import { RoleBinding, RoleBindingsRequestBody } from "types/user";
 import {
-  CertificateList,
-  CertificateIssuerList,
+  CertificateFormType,
   CertificateIssuer,
   CertificateIssuerFormType,
-  CertificateFormType,
+  CertificateIssuerList,
+  CertificateList
 } from "types/certificate";
 import { Certificate } from "crypto";
 import { Service } from "types/service";

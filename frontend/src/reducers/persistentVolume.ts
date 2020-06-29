@@ -7,8 +7,8 @@ import {
   LOAD_PERSISTENT_VOLUMES,
   LOAD_STORAGE_CLASSES,
   PersistentVolumes,
-  StorageClasses,
-} from "types/persistentVolume";
+  StorageClasses
+} from "types/disk";
 
 export type State = ImmutableMap<{
   persistentVolumes: PersistentVolumes;
