@@ -3,10 +3,11 @@ import { connect, DispatchProp } from "react-redux";
 import { WrappedFieldArrayProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
 import { RootState } from "../../reducers";
-import { getComponentVolumeType, isDirtyField } from "../../selectors/component";
+import { getComponentFormVolumeOptions, getComponentFormVolumeType } from "../../selectors/component";
 import {
   Volume,
   VolumeTypePersistentVolumeClaim,
+  VolumeTypePersistentVolumeClaimNew,
   VolumeTypeTemporaryDisk,
   VolumeTypeTemporaryMemory,
 } from "../../types/componentTemplate";
@@ -17,8 +18,8 @@ import { ValidatorRequired, ValidatorVolumeSize } from "../validator";
 
 const mapStateToProps = (state: RootState) => {
   return {
+    volumeOptions: getComponentFormVolumeOptions(),
     storageClasses: state.get("persistentVolumes").get("storageClasses"),
-    persistentVolumes: state.get("persistentVolumes").get("persistentVolumes"),
   };
 };
 
@@ -33,19 +34,14 @@ interface Props extends WrappedFieldArrayProps<Volume>, FieldArrayComponentHackT
 
 class RenderVolumes extends React.PureComponent<Props> {
   private getClaimNameOptions() {
-    const { persistentVolumes } = this.props;
+    const { volumeOptions } = this.props;
 
     const options: {
       value: string;
       text: string;
     }[] = [];
 
-    options.push({
-      value: "",
-      text: "Create a new disk",
-    });
-
-    persistentVolumes.forEach((pv) => {
+    volumeOptions.forEach((pv) => {
       options.push({
         value: pv.get("name"),
         text: pv.get("name"),
@@ -74,35 +70,36 @@ class RenderVolumes extends React.PureComponent<Props> {
   }
 
   public getFieldComponents(member: string) {
-    const volumeType = getComponentVolumeType(member);
-    // console.log("volumeType", volumeType);
-    // console.log("isDirtyField", member, isDirtyField(member + "type"));
-
-    const isOld = volumeType !== undefined && !isDirtyField(member + "type");
+    const volumeType = getComponentFormVolumeType(member);
 
     const fieldComponents = [
       <Field
-        disabled={isOld}
         name={`${member}.type`}
         component={RenderSelectField}
         label="Type"
         validate={[ValidatorRequired]}
         placeholder="Select a volume type"
         options={[
-          { value: VolumeTypePersistentVolumeClaim, text: "Mount a disk" },
-          // { value: VolumeTypePersistentVolumeClaimNew, text: "Create and mount disk" },
-          // { value: VolumeTypePersistentVolumeClaimExisting, text: "Mount an existing disk" },
+          // { value: VolumeTypePersistentVolumeClaim, text: "Mount a disk" },
+          { value: VolumeTypePersistentVolumeClaimNew, text: "Create and mount disk" },
+          { value: VolumeTypePersistentVolumeClaim, text: "Mount an existing disk" },
           { value: VolumeTypeTemporaryDisk, text: "Mount a temporary disk" },
           { value: VolumeTypeTemporaryMemory, text: "Mount a temporary memory disk" },
         ]}
       ></Field>,
+      <Field
+        component={KRenderTextField}
+        name={`${member}.path`}
+        label="Mount Path"
+        margin
+        validate={[ValidatorRequired]}
+      />,
     ];
 
     if (volumeType === VolumeTypePersistentVolumeClaim) {
       fieldComponents.push(
         <Field
-          disabled={isOld}
-          name={`${member}.persistentVolumeClaimName`}
+          name={`${member}.pvc`}
           component={RenderSelectField}
           label="Claim Name"
           // validate={[ValidatorRequired]}
@@ -112,7 +109,17 @@ class RenderVolumes extends React.PureComponent<Props> {
       );
       fieldComponents.push(
         <Field
-          disabled={isOld}
+          disabled={true}
+          label="Storage Class"
+          name={`${member}.storageClassName`}
+          component={RenderSelectField}
+          placeholder="Select the type of your disk"
+          options={this.getStorageClassesOptions()}
+        ></Field>,
+      );
+    } else if (volumeType === VolumeTypePersistentVolumeClaimNew) {
+      fieldComponents.push(
+        <Field
           label="Storage Class"
           name={`${member}.storageClassName`}
           component={RenderSelectField}
@@ -124,17 +131,7 @@ class RenderVolumes extends React.PureComponent<Props> {
 
     fieldComponents.push(
       <Field
-        disabled={isOld}
-        component={KRenderTextField}
-        name={`${member}.path`}
-        label="Mount Path"
-        margin
-        validate={[ValidatorRequired]}
-      />,
-    );
-    fieldComponents.push(
-      <Field
-        disabled={isOld}
+        disabled={volumeType === VolumeTypePersistentVolumeClaim}
         component={KRenderTextField}
         name={`${member}.size`}
         label="Size"

@@ -103,7 +103,7 @@ export const ValidatorOneof = (...options: (string | RegExp)[]) => {
 export const ValidatorVolumeSize = (value: string) => {
   if (!value) return undefined;
 
-  if (!value.match(/^^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/i) || value === "0") {
+  if (!value.match(/^^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/) || value === "0") {
     return "Invalid Value";
   }
 
