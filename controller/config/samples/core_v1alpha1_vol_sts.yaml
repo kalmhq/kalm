@@ -9,7 +9,7 @@ metadata:
 apiVersion: core.kapp.dev/v1alpha1
 kind: Component
 metadata:
-    name: hello-sts
+    name: hi-sts
     namespace: kapp-vols
 spec:
     image: strm/helloworld-http:latest
@@ -20,7 +20,7 @@ spec:
         size: 1Mi
         type: pvc
         storageClassName: kapp-standard
-        persistentVolumeClaimName: my-pvc
+        pvc: my-pvc
       - path: /tmp
         size: 2Mi
         type: emptyDirMemory

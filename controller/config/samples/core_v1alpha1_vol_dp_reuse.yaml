@@ -22,5 +22,5 @@ spec:
       size: 1Mi
       type: pvc
       storageClassName: kapp-standard
-      persistentVolumeNamePVCToMatch: pvc-a9849600-24bc-4f0e-8bb1-c023e62c7bdd
-      persistentVolumeClaimName: pvc-data
+      pvToMatch: pvc-a9849600-24bc-4f0e-8bb1-c023e62c7bdd
+      pvc: pvc-data
