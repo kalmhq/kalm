@@ -20,6 +20,7 @@ import {
 } from "types/application";
 import Immutable from "immutable";
 import { api } from "api";
+import { mockStore } from "api/mockApi";
 
 export interface ResMessage {
   namespace: string;
@@ -40,18 +41,21 @@ interface Props extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 class WebsocketConnectorRaw extends React.PureComponent<Props> {
   private connectWebsocket() {
     const { dispatch, token } = this.props;
+    let rws: any;
+    if (process.env.REACT_APP_USE_MOCK_API) {
+      rws = mockStore;
+    } else {
+      rws = getWebsocketInstance();
+      rws.addEventListener("open", () => {
+        const message = {
+          method: "StartWatching",
+          token,
+        };
+        rws.send(JSON.stringify(message));
+      });
+    }
 
-    const rws = getWebsocketInstance();
-
-    rws.addEventListener("open", () => {
-      const message = {
-        method: "StartWatching",
-        token,
-      };
-      rws.send(JSON.stringify(message));
-    });
-
-    rws.onmessage = async (event) => {
+    rws.onmessage = async (event: any) => {
       const data: ResMessage = JSON.parse(event.data);
 
       switch (data.kind) {

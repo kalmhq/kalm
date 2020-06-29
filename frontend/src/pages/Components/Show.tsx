@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { Box, Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { Expansion } from "forms/Route/expansion";
@@ -7,11 +7,14 @@ import { withComponent, WithComponentProp } from "hoc/withComponent";
 import { BasePage } from "pages/BasePage";
 import { Namespaces } from "widgets/Namespaces";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
-import { H4 } from "widgets/Label";
+import { Body, H4 } from "widgets/Label";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
 import { RouteWidgets } from "pages/Route/Widget";
 import { PodsTable } from "pages/Components/PodsTable";
 import { ComponentBasicInfo } from "pages/Components/BasicInfo";
+import { VerticalHeadTable } from "widgets/VerticalHeadTable";
+import Immutable from "immutable";
+import { Link } from "react-router-dom";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -22,7 +25,8 @@ const styles = (theme: Theme) =>
       alignItems: "center",
     },
     secondHeaderRightItem: {
-      marginLeft: 20,
+      marginLeft: theme.spacing(2),
+      marginRight: theme.spacing(2),
     },
   });
 
@@ -45,6 +49,35 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
     super(props);
     this.state = {};
   }
+  private renderNetwork() {
+    const { component, activeNamespaceName } = this.props;
+    return (
+      <Expansion title={"Networking"} defaultUnfold>
+        <Box pl={2} pb={2}>
+          <Body>
+            Cluster DNS Name:{" "}
+            <strong>
+              {component.get("name")}.{activeNamespaceName}.svc.cluster.local
+            </strong>
+          </Body>
+        </Box>
+        <VerticalHeadTable
+          items={component!
+            .get("ports", Immutable.List())!
+            .map((port) => ({
+              name: "Exposed port Name: " + port.get("name"),
+              content: (
+                <span>
+                  Expose port <strong>{port.get("containerPort")}</strong> to cluster port{" "}
+                  <strong>{port.get("servicePort") || port.get("containerPort")}</strong>
+                </span>
+              ),
+            }))
+            .toArray()}
+        />
+      </Expansion>
+    );
+  }
 
   private renderRoutes() {
     const { httpRoutes, component, activeNamespaceName } = this.props;
@@ -58,7 +91,7 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
     // console.log(serviceName, httpRoutes.toJS(), routes.toJS());
 
     return (
-      <Expansion title={"routes"} defaultUnfold>
+      <Expansion title={"Routes"} defaultUnfold>
         <RouteWidgets routes={routes} activeNamespaceName={activeNamespaceName} />
       </Expansion>
     );
@@ -74,11 +107,21 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
   }
 
   private renderSecondHeaderRight() {
-    const { classes, component } = this.props;
+    const { classes, component, activeNamespaceName } = this.props;
 
     return (
       <div className={classes.secondHeaderRight}>
         <H4 className={classes.secondHeaderRightItem}>Component {component.get("name")}</H4>
+        <Button
+          tutorial-anchor-id="edit-component"
+          component={(props: any) => <Link {...props} />}
+          color="primary"
+          size="small"
+          variant="outlined"
+          to={`/applications/${activeNamespaceName}/components/${component.get("name")}/edit`}
+        >
+          Edit
+        </Button>
       </div>
     );
   }
@@ -96,6 +139,7 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
             <ComponentBasicInfo component={component} activeNamespaceName={activeNamespaceName} />
           </Expansion>
           {this.renderPods()}
+          {this.renderNetwork()}
           {this.renderRoutes()}
         </Box>
       </BasePage>

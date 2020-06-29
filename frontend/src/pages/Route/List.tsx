@@ -14,6 +14,7 @@ import { KTable } from "widgets/Table";
 import { blinkTopProgressAction } from "actions/settings";
 import { Link } from "react-router-dom";
 import { Methods } from "pages/Route/Methods";
+import { DangerButton } from "widgets/Button";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -137,6 +138,10 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     return (
       <>
         <Button
+          size="small"
+          variant="outlined"
+          style={{ marginRight: 16 }}
+          color="primary"
           onClick={() => {
             blinkTopProgressAction();
             dispatch(push(`/applications/${activeNamespaceName}/routes/${row.get("name")}/edit`));
@@ -144,14 +149,16 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
         >
           Edit
         </Button>
-        <Button
+        <DangerButton
+          variant="outlined"
+          size="small"
           onClick={() => {
             blinkTopProgressAction();
             dispatch(deleteRoute(row.get("name"), row.get("namespace")));
           }}
         >
           Delete
-        </Button>
+        </DangerButton>
       </>
     );
   };
@@ -174,7 +181,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
               variant="outlined"
               to={`/applications/${activeNamespaceName}/routes/new`}
             >
-              Add Route
+              Add
             </Button>
           </>
         }
