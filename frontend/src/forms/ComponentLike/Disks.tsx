@@ -37,8 +37,26 @@ interface FieldArrayProps extends DispatchProp, ReturnType<typeof mapStateToProp
 interface Props extends WrappedFieldArrayProps<Volume>, FieldArrayComponentHackType, FieldArrayProps {}
 
 class RenderVolumes extends React.PureComponent<Props> {
-  private getClaimNameOptions() {
+  private getUsingPVCs() {
+    const { fields } = this.props;
+
+    const pvcs: { [key: string]: boolean } = {};
+
+    fields.forEach((member) => {
+      const type = getComponentFormVolumeType(member);
+      if (type === VolumeTypePersistentVolumeClaim) {
+        const pvc = getComponentFormVolumePVC(member);
+        pvcs[pvc] = true;
+      }
+    });
+
+    return pvcs;
+  }
+
+  private getClaimNameOptions(currentMember: string) {
     const { volumeOptions } = this.props;
+    const usingPVCs = this.getUsingPVCs();
+    const currentPVC = getComponentFormVolumePVC(currentMember);
 
     const options: {
       value: string;
@@ -46,10 +64,12 @@ class RenderVolumes extends React.PureComponent<Props> {
     }[] = [];
 
     volumeOptions.forEach((pv) => {
-      options.push({
-        value: pv.get("name"),
-        text: pv.get("name"),
-      });
+      if (pv.get("name") === currentPVC || !usingPVCs[pv.get("name")]) {
+        options.push({
+          value: pv.get("name"),
+          text: pv.get("name"),
+        });
+      }
     });
 
     return options;
@@ -113,7 +133,7 @@ class RenderVolumes extends React.PureComponent<Props> {
           label="Claim Name"
           // validate={[ValidatorRequired]}
           placeholder="Select a Claim Name"
-          options={this.getClaimNameOptions()}
+          options={this.getClaimNameOptions(member)}
         ></Field>,
       );
       // only for show info
@@ -179,7 +199,7 @@ class RenderVolumes extends React.PureComponent<Props> {
       storageClasses,
       meta: { submitFailed, error, form },
     } = this.props;
-    console.log("render disks");
+
     return (
       <Box>
         <Box mb={2}>
