@@ -2,20 +2,19 @@ import { Box, Button, Grid, Icon, TextField } from "@material-ui/core";
 import Immutable from "immutable";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
+import { RootState } from "reducers";
 import { arrayPush, WrappedFieldArrayProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
-import { getComponentFormVolumeClaimName, getComponentFormVolumeType } from "selectors/component";
-import { DeleteIcon } from "widgets/Icon";
-import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { RootState } from "../../reducers";
-import { getComponentFormVolumeOptions } from "../../selectors/component";
+import { getComponentFormVolumeOptions } from "selectors/component";
 import {
   Volume,
   VolumeTypePersistentVolumeClaim,
   VolumeTypePersistentVolumeClaimNew,
   VolumeTypeTemporaryDisk,
   VolumeTypeTemporaryMemory,
-} from "../../types/componentTemplate";
+} from "types/componentTemplate";
+import { DeleteIcon } from "widgets/Icon";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { RenderSelectField } from "../Basic/select";
 import { KRenderTextField } from "../Basic/textfield";
 import { ValidatorRequired, ValidatorVolumeSize } from "../validator";
@@ -42,10 +41,10 @@ class RenderVolumes extends React.PureComponent<Props> {
 
     const claimNames: { [key: string]: boolean } = {};
 
-    fields.forEach((member) => {
-      const type = getComponentFormVolumeType(member);
-      if (type === VolumeTypePersistentVolumeClaim) {
-        const claimName = getComponentFormVolumeClaimName(member);
+    fields.forEach((member, index) => {
+      const volume = fields.get(index);
+      if (volume.get("type") === VolumeTypePersistentVolumeClaim) {
+        const claimName = volume.get("claimName");
         claimNames[claimName] = true;
       }
     });
@@ -53,10 +52,10 @@ class RenderVolumes extends React.PureComponent<Props> {
     return claimNames;
   }
 
-  private getClaimNameOptions(currentMember: string) {
+  private getClaimNameOptions(disk: Volume) {
     const { volumeOptions } = this.props;
     const usingClaimNames = this.getUsingClaimNames();
-    const currentClaimName = getComponentFormVolumeClaimName(currentMember);
+    const currentClaimName = disk.get("claimName");
 
     const options: {
       value: string;
@@ -93,10 +92,9 @@ class RenderVolumes extends React.PureComponent<Props> {
     return options;
   }
 
-  public getFieldComponents(member: string) {
-    const volumeType = getComponentFormVolumeType(member);
+  public getFieldComponents(member: string, disk: Volume) {
     const { volumeOptions } = this.props;
-
+    const volumeType = disk.get("type");
     const fieldComponents = [
       <Field
         name={`${member}.type`}
@@ -112,7 +110,7 @@ class RenderVolumes extends React.PureComponent<Props> {
           { value: VolumeTypeTemporaryDisk, text: "Mount a temporary disk" },
           { value: VolumeTypeTemporaryMemory, text: "Mount a temporary memory disk" },
         ]}
-      ></Field>,
+      />,
       <Field
         component={KRenderTextField}
         name={`${member}.path`}
@@ -123,7 +121,7 @@ class RenderVolumes extends React.PureComponent<Props> {
     ];
 
     if (volumeType === VolumeTypePersistentVolumeClaim) {
-      const claimName = getComponentFormVolumeClaimName(member);
+      const claimName = disk.get("claimName");
       const volumeOption = volumeOptions.find((vo) => vo.get("name") === claimName);
 
       fieldComponents.push(
@@ -133,8 +131,8 @@ class RenderVolumes extends React.PureComponent<Props> {
           label="Claim Name"
           // validate={[ValidatorRequired]}
           placeholder="Select a Claim Name"
-          options={this.getClaimNameOptions(member)}
-        ></Field>,
+          options={this.getClaimNameOptions(disk)}
+        />,
       );
       // only for show info
       fieldComponents.push(
@@ -166,7 +164,7 @@ class RenderVolumes extends React.PureComponent<Props> {
           component={RenderSelectField}
           placeholder="Select the type of your disk"
           options={this.getStorageClassesOptions()}
-        ></Field>,
+        />,
       );
       fieldComponents.push(
         <Field
@@ -229,9 +227,10 @@ class RenderVolumes extends React.PureComponent<Props> {
         </Box>
 
         {fields.map((member, index) => {
+          const disk = fields.get(index);
           return (
             <Grid container spacing={2} key={member}>
-              {this.getFieldComponents(member).map((fieldComponent, fieldIndex) => {
+              {this.getFieldComponents(member, disk).map((fieldComponent, fieldIndex) => {
                 return (
                   <Grid item xs key={`${member}-${fieldIndex}`}>
                     {fieldComponent}

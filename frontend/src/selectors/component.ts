@@ -20,20 +20,6 @@ export const getComponentFormVolumeOptions = (componentName?: string, componentW
   return volumeOptions;
 };
 
-export const getComponentFormVolumeType = (member: string): string => {
-  const state = store.getState();
-
-  const selector = formValueSelector(COMPONENT_FORM_ID);
-  return selector(state, `${member}.type`);
-};
-
-export const getComponentFormVolumeClaimName = (member: string): string => {
-  const state = store.getState();
-
-  const selector = formValueSelector(COMPONENT_FORM_ID);
-  return selector(state, `${member}.claimName`);
-};
-
 export const getComponentFormPluginName = (member: string): string => {
   const state = store.getState();
 
