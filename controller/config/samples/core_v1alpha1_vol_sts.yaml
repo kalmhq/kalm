@@ -9,7 +9,7 @@ metadata:
 apiVersion: core.kapp.dev/v1alpha1
 kind: Component
 metadata:
-    name: hello-sts
+    name: hi-sts
     namespace: kapp-vols
 spec:
     image: strm/helloworld-http:latest

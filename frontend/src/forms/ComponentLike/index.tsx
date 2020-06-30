@@ -8,7 +8,7 @@ import {
   ListItemText,
   Tab,
   Tabs,
-  Tooltip
+  Tooltip,
 } from "@material-ui/core";
 import { Prompt } from "widgets/Prompt";
 import { grey } from "@material-ui/core/colors";
