@@ -37,6 +37,10 @@ class PromptRaw extends React.PureComponent<Props> {
       //   false: prevent the change
       //   string: ask to change
 
+      if (process.env.REACT_APP_DEBUG) {
+        return;
+      }
+
       // `when` must be fetched from props on each call, can't use a closure value
       if (!this.props.when) {
         return;
@@ -57,6 +61,10 @@ class PromptRaw extends React.PureComponent<Props> {
 
   private beforeunload = (e: any) => {
     if (!this.props.when) {
+      return;
+    }
+
+    if (process.env.REACT_APP_DEBUG) {
       return;
     }
 

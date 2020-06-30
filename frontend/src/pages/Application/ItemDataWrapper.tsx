@@ -8,7 +8,7 @@ import { Loading } from "widgets/Loading";
 import { RootState } from "reducers";
 import { Actions } from "types";
 import { ApplicationComponent } from "types/application";
-import { applicationComponentDetailsToApplicationComponent } from "utils/application";
+import { componentDetailsToComponent } from "utils/application";
 import { loadApplicationAction } from "../../actions/application";
 
 const mapStateToProps = (state: RootState, props: any) => {
@@ -24,7 +24,7 @@ const mapStateToProps = (state: RootState, props: any) => {
   const component = application && application.get("components")?.find((x) => x.get("name") === componentName);
   // for edit
   const currentComponent = component
-    ? applicationComponentDetailsToApplicationComponent(component)
+    ? componentDetailsToComponent(component)
     : (newEmptyComponentLike() as ApplicationComponent);
 
   const activeNamespaceName = state.get("namespaces").get("active");

@@ -42,6 +42,8 @@ export const KRenderTextField = ({
       type={type}
       multiline={multiline}
       rows={rows}
+      onFocus={input.onFocus}
+      onBlur={input.onBlur}
       InputLabelProps={{
         shrink: true,
       }}

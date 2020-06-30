@@ -34,6 +34,14 @@ export default class MockApi extends Api {
     return mockStore.data.get("mockStorageClasses");
   };
 
+  public getSimpleOptions = async (namespace: string) => {
+    return await mockStore.data.get("mockSimpleOptions");
+  };
+
+  public getStatefulSetOptions = async (namespace: string) => {
+    return await mockStore.data.get("mockStatefulSetOptions");
+  };
+
   public getRegistries = async () => {
     return mockStore.data.get("mockRegistries");
   };

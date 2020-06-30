@@ -146,9 +146,6 @@ export const RenderSelectField = ({
 
   let value = input.value;
 
-  //https://github.com/mui-org/material-ui/issues/8581#issuecomment-421487873
-  const EMPTY = "__none__";
-
   // select doesn't support endAdornment
   // tooltip doesn't work in FormControl
   // https://stackoverflow.com/questions/60384230/tooltip-inside-textinput-label-is-not-working-material-ui-react
@@ -170,12 +167,9 @@ export const RenderSelectField = ({
         labelWidth={labelWidth}
         autoFocus={autoFocus}
         labelId={labelId}
-        value={value === "" ? EMPTY : value}
-        onChange={(e) => input.onChange(e.target.value === EMPTY ? "" : e.target.value)}
+        value={value}
+        onChange={(e) => input.onChange(e.target.value)}
         renderValue={(value: any) => {
-          if (value === EMPTY) {
-            value = "";
-          }
           const option = options.find((x) => x.value === value);
 
           if (!option) {
