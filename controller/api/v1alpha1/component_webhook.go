@@ -18,6 +18,7 @@ package v1alpha1
 import (
 	"fmt"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
@@ -78,7 +79,7 @@ func (r *Component) ValidateDelete() error {
 	return nil
 }
 
-func (r *Component) validateVolumeOfComponent() error {
+func (r *Component) validateVolumeOfComponent() (rst KappValidateErrorList) {
 	vols := r.Spec.Volumes
 
 	for i, vol := range vols {
@@ -90,17 +91,21 @@ func (r *Component) validateVolumeOfComponent() error {
 
 		// 1. field: pvc must be set
 		if vol.PVC == "" {
-			return KappValidateError{
-				Err:  "must set pvc for volume",
+			rst = append(rst, KappValidateError{
+				Err:  "must set pvc for this volume",
 				Path: fmt.Sprintf(".spec.volumes[%d]", i),
-			}
+			})
 		}
 
-		// 2. if pvToMatch is set, pv must exist
-		if vol.PVToMatch != "" {
+		//// 2. if pvToMatch is set, pv must exist
+		// todo no idea how to call k8s api in validator
+		//if vol.PVToMatch != "" {
+		//
+		//}
 
-		}
-
+		fld := field.NewPath(fmt.Sprintf(".spec.volumes[%d].size", i))
+		errList := ValidateResourceQuantityValue(vol.Size, fld)
+		rst = append(rst, toKappValidateErrors(errList)...)
 	}
 
 	return nil

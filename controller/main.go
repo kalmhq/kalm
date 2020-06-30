@@ -160,7 +160,6 @@ func main() {
 		os.Exit(1)
 	}
 
-
 	//(controllers.NewComponentAdmissionWebhook()).SetupWithManager(mgr)
 	if err = (&corev1alpha1.Component{}).SetupWebhookWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create webhook", "webhook", "Component")
