@@ -11,7 +11,7 @@ const mapStateToProps = (state: RootState, props: WithNamespaceProps) => {
   const activeNamespace = props.activeNamespace!;
 
   return {
-    components: activeNamespace.get("components") || Immutable.List(),
+    components: activeNamespace?.get("components") || Immutable.List(),
   };
 };
 
