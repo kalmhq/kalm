@@ -54,8 +54,10 @@ var _ webhook.Validator = &Component{}
 func (r *Component) ValidateCreate() error {
 	componentlog.Info("validate create", "name", r.Name)
 
-	fmt.Println("validating creation of component")
-	// TODO(user): fill in your validation logic upon object creation.
+	if err := r.validateVolumeOfComponent(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -63,15 +65,43 @@ func (r *Component) ValidateCreate() error {
 func (r *Component) ValidateUpdate(old runtime.Object) error {
 	componentlog.Info("validate update", "name", r.Name)
 
-	fmt.Println("validating update of component")
-	// TODO(user): fill in your validation logic upon object update.
+	if err := r.validateVolumeOfComponent(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *Component) ValidateDelete() error {
 	componentlog.Info("validate delete", "name", r.Name)
+	return nil
+}
 
-	// TODO(user): fill in your validation logic upon object deletion.
+func (r *Component) validateVolumeOfComponent() error {
+	vols := r.Spec.Volumes
+
+	for i, vol := range vols {
+		if vol.Type != VolumeTypePersistentVolumeClaim {
+			continue
+		}
+
+		// for pvc vol
+
+		// 1. field: pvc must be set
+		if vol.PVC == "" {
+			return KappValidateError{
+				Err:  "must set pvc for volume",
+				Path: fmt.Sprintf(".spec.volumes[%d]", i),
+			}
+		}
+
+		// 2. if pvToMatch is set, pv must exist
+		if vol.PVToMatch != "" {
+
+		}
+
+	}
+
 	return nil
 }
