@@ -1,6 +1,6 @@
-import { formValueSelector, isDirty } from "redux-form/immutable";
-import { store } from "store";
 import { APPLICATION_FORM_ID, COMPONENT_FORM_ID } from "forms/formIDs";
+import { formValueSelector } from "redux-form/immutable";
+import { store } from "store";
 import { workloadTypeStatefulSet } from "types/componentTemplate";
 
 export const getComponentFormVolumeOptions = (componentName?: string, componentWorkloadType?: string) => {
@@ -25,6 +25,13 @@ export const getComponentFormVolumeType = (member: string): string => {
 
   const selector = formValueSelector(COMPONENT_FORM_ID);
   return selector(state, `${member}.type`);
+};
+
+export const getComponentFormVolumePVC = (member: string): string => {
+  const state = store.getState();
+
+  const selector = formValueSelector(COMPONENT_FORM_ID);
+  return selector(state, `${member}.pvc`);
 };
 
 export const getComponentFormPluginName = (member: string): string => {

@@ -1,10 +1,10 @@
-import { Box, Button, Grid, Icon } from "@material-ui/core";
+import { Box, Button, Grid, Icon, TextField } from "@material-ui/core";
 import Immutable from "immutable";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { arrayPush, WrappedFieldArrayProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
-import { getComponentFormVolumeType } from "selectors/component";
+import { getComponentFormVolumePVC, getComponentFormVolumeType } from "selectors/component";
 import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { RootState } from "../../reducers";
@@ -73,13 +73,113 @@ class RenderVolumes extends React.PureComponent<Props> {
     return options;
   }
 
+  public getFieldComponents(member: string) {
+    const volumeType = getComponentFormVolumeType(member);
+    const { volumeOptions } = this.props;
+
+    const fieldComponents = [
+      <Field
+        name={`${member}.type`}
+        component={RenderSelectField}
+        label="Type"
+        validate={[ValidatorRequired]}
+        placeholder="Select a volume type"
+        defaultValue={VolumeTypePersistentVolumeClaimNew}
+        options={[
+          // { value: VolumeTypePersistentVolumeClaim, text: "Mount a disk" },
+          { value: VolumeTypePersistentVolumeClaimNew, text: "Create and mount disk" },
+          { value: VolumeTypePersistentVolumeClaim, text: "Mount an existing disk" },
+          { value: VolumeTypeTemporaryDisk, text: "Mount a temporary disk" },
+          { value: VolumeTypeTemporaryMemory, text: "Mount a temporary memory disk" },
+        ]}
+      ></Field>,
+      <Field
+        component={KRenderTextField}
+        name={`${member}.path`}
+        label="Mount Path"
+        margin
+        validate={[ValidatorRequired]}
+      />,
+    ];
+
+    if (volumeType === VolumeTypePersistentVolumeClaim) {
+      const pvc = getComponentFormVolumePVC(member);
+      const volumeOption = volumeOptions.find((vo) => vo.get("pvc") === pvc);
+
+      fieldComponents.push(
+        <Field
+          name={`${member}.pvc`}
+          component={RenderSelectField}
+          label="Claim Name"
+          // validate={[ValidatorRequired]}
+          placeholder="Select a Claim Name"
+          options={this.getClaimNameOptions()}
+        ></Field>,
+      );
+      // only for show info
+      fieldComponents.push(
+        <TextField
+          fullWidth
+          disabled
+          label="Claim Name"
+          value={volumeOption?.get("storageClass") || ""}
+          margin="dense"
+          variant="outlined"
+        />,
+      );
+      // only for show info
+      fieldComponents.push(
+        <TextField
+          fullWidth
+          disabled
+          label="Claim Name"
+          value={volumeOption?.get("capacity") || ""}
+          margin="dense"
+          variant="outlined"
+        />,
+      );
+    } else if (volumeType === VolumeTypePersistentVolumeClaimNew) {
+      fieldComponents.push(
+        <Field
+          label="Storage Class"
+          name={`${member}.storageClassName`}
+          component={RenderSelectField}
+          placeholder="Select the type of your disk"
+          options={this.getStorageClassesOptions()}
+        ></Field>,
+      );
+      fieldComponents.push(
+        <Field
+          component={KRenderTextField}
+          name={`${member}.size`}
+          label="Size"
+          margin
+          validate={[ValidatorRequired, ValidatorVolumeSize]}
+        />,
+      );
+    } else {
+      fieldComponents.push(
+        <Field
+          component={KRenderTextField}
+          name={`${member}.size`}
+          label="Size"
+          margin
+          validate={[ValidatorRequired, ValidatorVolumeSize]}
+        />,
+      );
+    }
+
+    return fieldComponents;
+  }
+
   public render() {
     const {
       fields,
       dispatch,
+      storageClasses,
       meta: { submitFailed, error, form },
     } = this.props;
-
+    console.log("render disks");
     return (
       <Box>
         <Box mb={2}>
@@ -90,7 +190,16 @@ class RenderVolumes extends React.PureComponent<Props> {
               startIcon={<Icon>add</Icon>}
               size="small"
               onClick={() => {
-                dispatch(arrayPush(form, fields.name, Immutable.Map({})));
+                dispatch(
+                  arrayPush(
+                    form,
+                    fields.name,
+                    Immutable.Map({
+                      type: VolumeTypePersistentVolumeClaimNew,
+                      storageClassName: storageClasses.get(0)?.get("name"),
+                    }),
+                  ),
+                );
               }}
             >
               Add
@@ -100,79 +209,16 @@ class RenderVolumes extends React.PureComponent<Props> {
         </Box>
 
         {fields.map((member, index) => {
-          const volumeType = getComponentFormVolumeType(member);
           return (
             <Grid container spacing={2} key={member}>
-              <Grid item xs key={index}>
-                <Field
-                  name={`${member}.type`}
-                  component={RenderSelectField}
-                  label="Type"
-                  validate={[ValidatorRequired]}
-                  placeholder="Select a volume type"
-                  options={[
-                    // { value: VolumeTypePersistentVolumeClaim, text: "Mount a disk" },
-                    { value: VolumeTypePersistentVolumeClaimNew, text: "Create and mount disk" },
-                    { value: VolumeTypePersistentVolumeClaim, text: "Mount an existing disk" },
-                    { value: VolumeTypeTemporaryDisk, text: "Mount a temporary disk" },
-                    { value: VolumeTypeTemporaryMemory, text: "Mount a temporary memory disk" },
-                  ]}
-                ></Field>
-              </Grid>
-              <Grid item xs>
-                <Field
-                  component={KRenderTextField}
-                  name={`${member}.path`}
-                  label="Mount Path"
-                  margin
-                  validate={[ValidatorRequired]}
-                />
-              </Grid>
-              {volumeType === VolumeTypePersistentVolumeClaim && (
-                <Grid item xs>
-                  <Field
-                    name={`${member}.pvc`}
-                    component={RenderSelectField}
-                    label="Claim Name"
-                    // validate={[ValidatorRequired]}
-                    placeholder="Select a Claim Name"
-                    options={this.getClaimNameOptions()}
-                  ></Field>
-                </Grid>
-              )}
-              {volumeType === VolumeTypePersistentVolumeClaim && (
-                <Grid item xs>
-                  <Field
-                    disabled={true}
-                    label="Storage Class"
-                    name={`${member}.storageClassName`}
-                    component={RenderSelectField}
-                    placeholder="Select the type of your disk"
-                    options={this.getStorageClassesOptions()}
-                  ></Field>
-                </Grid>
-              )}
-              {volumeType === VolumeTypePersistentVolumeClaim && (
-                <Grid item xs>
-                  <Field
-                    label="Storage Class"
-                    name={`${member}.storageClassName`}
-                    component={RenderSelectField}
-                    placeholder="Select the type of your disk"
-                    options={this.getStorageClassesOptions()}
-                  ></Field>
-                </Grid>
-              )}
-              <Grid item xs>
-                <Field
-                  disabled={volumeType === VolumeTypePersistentVolumeClaim}
-                  component={KRenderTextField}
-                  name={`${member}.size`}
-                  label="Size"
-                  margin
-                  validate={[ValidatorRequired, ValidatorVolumeSize]}
-                />
-              </Grid>
+              {this.getFieldComponents(member).map((fieldComponent, fieldIndex) => {
+                return (
+                  <Grid item xs key={`${member}-${fieldIndex}`}>
+                    {fieldComponent}
+                  </Grid>
+                );
+              })}
+
               <Grid item xs>
                 <IconButtonWithTooltip
                   tooltipPlacement="top"
