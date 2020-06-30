@@ -5,16 +5,24 @@ import { action } from "@storybook/addon-actions";
 
 <Meta title="Design System/Basic" />
 
-Here's some _markdown_!sddd
+# Colors
 
-# Preview
+## Preview
 
 <Preview>
-  <Story name="button">
+  <Story
+    name="Colors"
+    parameters={{
+      previewTabs: {
+        // one hides the canvas
+        canvas: { hidden: true },
+      },
+    }}
+  >
     <Button onClick={action("xxxx")}>hello</Button>
   </Story>
 </Preview>
 
-# Props
+## Props
 
 <Props of={Button} />

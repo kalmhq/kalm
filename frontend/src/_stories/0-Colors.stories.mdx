@@ -1,0 +1,75 @@
+import { Meta, ColorPalette, ColorItem } from "@storybook/addon-docs/blocks";
+import { primaryColor } from "../theme";
+import colors from "../colors";
+
+<Meta title="Design System/Basic" />
+
+# Colors
+
+<ColorPalette>
+  <ColorItem title="theme.color.primary" subtitle="indigo[500]" colors={[colors.primary]} />
+  <ColorItem
+    title="theme.color.primary[n]"
+    subtitle="indigos"
+    colors={[
+      colors.primary900,
+      colors.primary800,
+      colors.primary700,
+      colors.primary600,
+      colors.primary,
+      colors.primary400,
+      colors.primary300,
+      colors.primary200,
+      colors.primary100,
+      colors.primary50,
+    ]}
+  />
+  <ColorItem title="theme.color.secondary" subtitle="amber[500]" colors={[colors.secondary]} />
+  <ColorItem
+    title="theme.color.secondary[n]"
+    subtitle="ambers"
+    colors={[
+      colors.secondary900,
+      colors.secondary800,
+      colors.secondary700,
+      colors.secondary600,
+      colors.secondary,
+      colors.secondary400,
+      colors.secondary300,
+      colors.secondary200,
+      colors.secondary100,
+      colors.secondary50,
+    ]}
+  />
+  <ColorItem title="theme.color.success" subtitle="Green" colors={[colors.success]} />
+  <ColorItem title="theme.color.warning" subtitle="Yellow" colors={[colors.warning]} />
+  <ColorItem title="theme.color.error" subtitle="Red" colors={[colors.error]} />
+  <ColorItem title="theme.color.textPrimary" subtitle="textPrimary" colors={[colors.textPrimary]} />
+  <ColorItem title="theme.color.textSecondary" subtitle="textSecondary" colors={[colors.textSecondary]} />
+  <ColorItem
+    title="Monochrome"
+    colors={[
+      colors.darkest,
+      colors.darker,
+      colors.dark,
+      colors.mediumdark,
+      colors.medium,
+      colors.mediumlight,
+      colors.light,
+      colors.lighter,
+      colors.lightest,
+    ]}
+  />
+  {/* <ColorItem title="theme.color.secondary" subtitle="Blue" colors={[color.secondary]} />
+  <ColorItem title="theme.color.tertiary" subtitle="Grey" colors={[color.tertiary]} />
+  <ColorItem title="theme.color.positive" subtitle="Green" colors={[color.positive]} />
+  <ColorItem title="theme.color.warning" subtitle="Ochre" colors={[color.warning]} />
+  <ColorItem title="theme.color.negative" subtitle="Red" colors={[color.negative]} />
+  <ColorItem title="theme.color.orange" subtitle="Orange" colors={[color.orange]} />
+  <ColorItem title="theme.color.gold" subtitle="Gold" colors={[color.gold]} />
+  <ColorItem title="theme.color.green" subtitle="Green" colors={[color.green]} />
+  <ColorItem title="theme.color.seafoam" subtitle="Seafoam" colors={[color.seafoam]} />
+  <ColorItem title="theme.color.purple" subtitle="Purple" colors={[color.purple]} />
+  <ColorItem title="theme.color.ultraviolet" subtitle="Ultraviolet" colors={[color.ultraviolet]} />
+  */}
+</ColorPalette>
