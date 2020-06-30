@@ -27,11 +27,11 @@ export const getComponentFormVolumeType = (member: string): string => {
   return selector(state, `${member}.type`);
 };
 
-export const getComponentFormVolumePVC = (member: string): string => {
+export const getComponentFormVolumeClaimName = (member: string): string => {
   const state = store.getState();
 
   const selector = formValueSelector(COMPONENT_FORM_ID);
-  return selector(state, `${member}.pvc`);
+  return selector(state, `${member}.claimName`);
 };
 
 export const getComponentFormPluginName = (member: string): string => {

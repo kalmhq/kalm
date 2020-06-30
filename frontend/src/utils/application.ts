@@ -1,10 +1,81 @@
 import { ApplicationComponentDetails, ApplicationComponent, ApplicationDetails } from "types/application";
 import { formatDate } from "utils";
+import { getComponentFormVolumeOptions } from "selectors/component";
+import { VolumeTypePersistentVolumeClaim, VolumeTypePersistentVolumeClaimNew } from "types/componentTemplate";
 
-export const applicationComponentDetailsToApplicationComponent = (
-  applicationComponentDetails: ApplicationComponentDetails,
-): ApplicationComponent => {
-  return applicationComponentDetails.delete("pods").delete("services").delete("metrics") as ApplicationComponent;
+export const componentDetailsToComponent = (componentDetails: ApplicationComponentDetails): ApplicationComponent => {
+  return componentDetails.delete("pods").delete("services").delete("metrics") as ApplicationComponent;
+};
+
+export const correctComponentFormValuesForSubmit = (componentValues: ApplicationComponent): ApplicationComponent => {
+  const volumes = componentValues.get("volumes");
+
+  const volumeOptions = getComponentFormVolumeOptions(componentValues.get("name"), componentValues.get("workloadType"));
+
+  const findPVC = (claimName: string) => {
+    let pvc = "";
+    let pvToMatch = "";
+
+    volumeOptions.forEach((vo) => {
+      if (vo.get("name") === claimName) {
+        pvc = vo.get("pvc");
+        pvToMatch = vo.get("pvToMatch");
+      }
+    });
+
+    return { pvc, pvToMatch };
+  };
+
+  const correctedVolumes = volumes?.map((v) => {
+    // set pvc and pvToMatch
+    if (v.get("type") === VolumeTypePersistentVolumeClaim) {
+      const findResult = findPVC(v.get("claimName"));
+      v = v.set("pvc", findResult.pvc);
+      v = v.set("pvToMatch", findResult.pvToMatch);
+    }
+    // if is pvc-new, set to pvc
+    if (v.get("type") === VolumeTypePersistentVolumeClaimNew) {
+      v = v.set("type", VolumeTypePersistentVolumeClaim);
+    }
+    return v;
+  });
+
+  return componentValues.set("volumes", correctedVolumes);
+};
+
+export const correctComponentFormValuesForInit = (component: ApplicationComponent): ApplicationComponent => {
+  let volumes = component.get("volumes");
+  if (volumes) {
+    const volumeOptions = getComponentFormVolumeOptions(component.get("name"), component.get("workloadType"));
+
+    const findClaimName = (pvc?: string, pvToMatch?: string) => {
+      pvc = pvc || "";
+      pvToMatch = pvToMatch || "";
+      let claimName = "";
+
+      volumeOptions.forEach((vo) => {
+        if (vo.get("pvc") === pvc && vo.get("pvToMatch") === pvToMatch) {
+          claimName = vo.get("name");
+        }
+      });
+
+      return claimName;
+    };
+
+    const correctedVolumes = volumes?.map((v) => {
+      // set pvc and pvToMatch
+      if (v.get("type") === VolumeTypePersistentVolumeClaim) {
+        const claimName = findClaimName(v.get("pvc"), v.get("pvToMatch"));
+        v = v.set("claimName", claimName);
+      }
+
+      return v;
+    });
+
+    component = component.set("volumes", correctedVolumes);
+  }
+
+  return component;
 };
 
 export const getApplicationCreatedAtString = (application: ApplicationDetails): string => {

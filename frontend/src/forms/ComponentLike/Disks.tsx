@@ -4,7 +4,7 @@ import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { arrayPush, WrappedFieldArrayProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
-import { getComponentFormVolumePVC, getComponentFormVolumeType } from "selectors/component";
+import { getComponentFormVolumeClaimName, getComponentFormVolumeType } from "selectors/component";
 import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { RootState } from "../../reducers";
@@ -37,37 +37,37 @@ interface FieldArrayProps extends DispatchProp, ReturnType<typeof mapStateToProp
 interface Props extends WrappedFieldArrayProps<Volume>, FieldArrayComponentHackType, FieldArrayProps {}
 
 class RenderVolumes extends React.PureComponent<Props> {
-  private getUsingPVCs() {
+  private getUsingClaimNames() {
     const { fields } = this.props;
 
-    const pvcs: { [key: string]: boolean } = {};
+    const claimNames: { [key: string]: boolean } = {};
 
     fields.forEach((member) => {
       const type = getComponentFormVolumeType(member);
       if (type === VolumeTypePersistentVolumeClaim) {
-        const pvc = getComponentFormVolumePVC(member);
-        pvcs[pvc] = true;
+        const claimName = getComponentFormVolumeClaimName(member);
+        claimNames[claimName] = true;
       }
     });
 
-    return pvcs;
+    return claimNames;
   }
 
   private getClaimNameOptions(currentMember: string) {
     const { volumeOptions } = this.props;
-    const usingPVCs = this.getUsingPVCs();
-    const currentPVC = getComponentFormVolumePVC(currentMember);
+    const usingClaimNames = this.getUsingClaimNames();
+    const currentClaimName = getComponentFormVolumeClaimName(currentMember);
 
     const options: {
       value: string;
       text: string;
     }[] = [];
 
-    volumeOptions.forEach((pv) => {
-      if (pv.get("name") === currentPVC || !usingPVCs[pv.get("name")]) {
+    volumeOptions.forEach((vo) => {
+      if (vo.get("name") === currentClaimName || !usingClaimNames[vo.get("name")]) {
         options.push({
-          value: pv.get("name"),
-          text: pv.get("name"),
+          value: vo.get("name"),
+          text: vo.get("name"),
         });
       }
     });
@@ -123,12 +123,12 @@ class RenderVolumes extends React.PureComponent<Props> {
     ];
 
     if (volumeType === VolumeTypePersistentVolumeClaim) {
-      const pvc = getComponentFormVolumePVC(member);
-      const volumeOption = volumeOptions.find((vo) => vo.get("pvc") === pvc);
+      const claimName = getComponentFormVolumeClaimName(member);
+      const volumeOption = volumeOptions.find((vo) => vo.get("name") === claimName);
 
       fieldComponents.push(
         <Field
-          name={`${member}.pvc`}
+          name={`${member}.claimName`}
           component={RenderSelectField}
           label="Claim Name"
           // validate={[ValidatorRequired]}
