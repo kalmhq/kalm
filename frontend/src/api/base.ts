@@ -17,9 +17,8 @@ import {
   CertificateList,
 } from "types/certificate";
 import { ClusterInfo } from "types/cluster";
-import { PersistentVolumes, StorageClasses } from "types/disk";
+import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
 import { NodesListResponse } from "types/node";
-import { VolumeOptions } from "types/disk";
 import { RegistryType } from "types/registry";
 import { HttpRoute } from "types/route";
 import { Service } from "types/service";

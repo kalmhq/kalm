@@ -1,9 +1,12 @@
-import { Box, createStyles, Theme, WithStyles, withStyles } from "@material-ui/core";
+import { Box, Button, createStyles, Popover, Theme, WithStyles, withStyles } from "@material-ui/core";
 import { Alert } from "@material-ui/lab";
 import { K8sApiPrefix } from "api/realApi";
+import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
+import { StorageType } from "pages/Disks/StorageType";
 import React from "react";
 import { connect } from "react-redux";
 import { DiskContent } from "types/disk";
+import { H4 } from "widgets/Label";
 import { KTable } from "widgets/Table";
 import { setErrorNotificationAction } from "../../actions/notification";
 import { deletePersistentVolumeAction, loadPersistentVolumesAction } from "../../actions/persistentVolume";
@@ -146,12 +149,46 @@ export class VolumesRaw extends React.Component<Props, States> {
     );
   };
 
+  private renderSecondHeaderRight() {
+    return (
+      <>
+        <H4>Disks</H4>
+        <PopupState variant="popover" popupId={"disks-creation-helper"}>
+          {(popupState) => (
+            <>
+              <Button color="primary" size="small" variant="text" {...bindTrigger(popupState)}>
+                How to attach new disk?
+              </Button>
+              <Popover
+                {...bindPopover(popupState)}
+                anchorOrigin={{
+                  vertical: "bottom",
+                  horizontal: "center",
+                }}
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "center",
+                }}
+              >
+                <Box p={2}>
+                  You don't need to apply disk manually. Disk will be created when you declare authentic disks in
+                  component form.
+                </Box>
+              </Popover>
+            </>
+          )}
+        </PopupState>
+        <StorageType />
+      </>
+    );
+  }
+
   render() {
     const { loadPersistentVolumesError } = this.state;
     const tableData = this.getTableData();
 
     return (
-      <BasePage secondHeaderRight="Volumes">
+      <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
         {this.renderDeleteConfirmDialog()}
         <Box p={2}>
           {loadPersistentVolumesError ? (

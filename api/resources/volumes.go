@@ -6,6 +6,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"regexp"
+	"sort"
 	"strings"
 
 	//v1 "k8s.io/apiserver/pkg/apis/example/v1"
@@ -15,11 +16,11 @@ import (
 // actual aggregation info of PVC & PV
 type Volume struct {
 	Name               string `json:"name"`
-	Namespace          string `json:"namespace"`
 	IsInUse            bool   `json:"isInUse"`                      // can be reused or not
 	ComponentNamespace string `json:"componentNamespace,omitempty"` // ns of latest component using this Volume
 	ComponentName      string `json:"componentName,omitempty"`      // name of latest component using this Volume
-	Capacity           string `json:"capacity"`                     // size, e.g. 1Gi
+	StorageClass       string `json:"storageClass"`
+	Capacity           string `json:"capacity"` // size, e.g. 1Gi
 	PVC                string `json:"pvc"`
 	PV                 string `json:"pvToMatch"`
 }
@@ -77,6 +78,7 @@ func (builder *Builder) FindAvailableVolsForSimpleWorkload(ns string) ([]Volume,
 	}
 
 	var freePairs []volPair
+	var curNsInUsePairs []volPair
 
 	// find if boundedPV's pvc is in use
 	for _, boundedPV := range boundedPVs {
@@ -87,6 +89,13 @@ func (builder *Builder) FindAvailableVolsForSimpleWorkload(ns string) ([]Volume,
 		}
 
 		if isInUse {
+			if pvc.Namespace == ns {
+				curNsInUsePairs = append(curNsInUsePairs, volPair{
+					pv:  boundedPV,
+					pvc: pvc,
+				})
+			}
+
 			continue
 		}
 
@@ -111,6 +120,7 @@ func (builder *Builder) FindAvailableVolsForSimpleWorkload(ns string) ([]Volume,
 			IsInUse:            false,
 			ComponentNamespace: compNs,
 			ComponentName:      compName,
+			StorageClass:       getValOfString(pvc.Spec.StorageClassName),
 			Capacity:           GetCapacityOfPVC(pvc),
 			PVC:                sameNsFreePair.pvc.Name,
 			PV:                 "",
@@ -130,6 +140,7 @@ func (builder *Builder) FindAvailableVolsForSimpleWorkload(ns string) ([]Volume,
 			IsInUse:            false,
 			ComponentNamespace: compNs,
 			ComponentName:      compName,
+			StorageClass:       getValOfString(pvc.Spec.StorageClassName),
 			Capacity:           GetCapacityOfPVC(pvc),
 			PVC:                "",
 			PV:                 pv.Name,
@@ -145,9 +156,29 @@ func (builder *Builder) FindAvailableVolsForSimpleWorkload(ns string) ([]Volume,
 			IsInUse:            false,
 			ComponentNamespace: compNs,
 			ComponentName:      compName,
+			StorageClass:       unboundPV.Spec.StorageClassName,
 			Capacity:           GetCapacityOfPV(unboundPV),
 			PVC:                "",
 			PV:                 unboundPV.Name,
+		})
+	}
+
+	// for frontend convenient, also append curNs in use PVC in response
+	for _, curNsInUsePair := range curNsInUsePairs {
+		pv := curNsInUsePair.pv
+		pvc := curNsInUsePair.pvc
+
+		compNs, compName := GetComponentNameAndNs(&pvc)
+
+		rst = append(rst, Volume{
+			Name:               pvc.Name,
+			IsInUse:            true,
+			ComponentNamespace: compNs,
+			ComponentName:      compName,
+			StorageClass:       getValOfString(pvc.Spec.StorageClassName),
+			Capacity:           GetCapacityOfPV(pv),
+			PVC:                pvc.Name,
+			PV:                 "",
 		})
 	}
 
@@ -160,8 +191,8 @@ func (builder *Builder) FindAvailableVolsForSts(ns string) ([]Volume, error) {
 		return nil, err
 	}
 
-	volClaimTplName2PVCsMap := make(map[string][]coreV1.PersistentVolumeClaim)
-	volClaimTplHasInUsePVC := make(map[string]interface{})
+	pvcNamePrefix2PVCsMap := make(map[string][]coreV1.PersistentVolumeClaim)
+	pvcNamePrefixHasInUsePVC := make(map[string]interface{})
 
 	//format of pvc generated from volClaimTemplate is: <volClaimTplName>-<stsName>-{0,1,2}
 	for _, pvc := range pvcList {
@@ -177,13 +208,12 @@ func (builder *Builder) FindAvailableVolsForSts(ns string) ([]Volume, error) {
 			continue
 		}
 
-		stsName := componentName
-		idx := strings.LastIndex(pvc.Name, "-"+stsName+"-")
+		idx := strings.LastIndex(pvc.Name, "-")
 		if idx == -1 {
 			continue
 		}
 
-		volClaimTplName := pvc.Name[:idx]
+		pvcNamePrefix := pvc.Name[:idx]
 
 		isInUse, err := builder.IsPVCInUse(pvc)
 		if err != nil {
@@ -191,33 +221,72 @@ func (builder *Builder) FindAvailableVolsForSts(ns string) ([]Volume, error) {
 		}
 
 		if isInUse {
-			volClaimTplHasInUsePVC[volClaimTplName] = true
+			pvcNamePrefixHasInUsePVC[pvcNamePrefix] = true
 		}
 
-		volClaimTplName2PVCsMap[volClaimTplName] = append(volClaimTplName2PVCsMap[volClaimTplName], pvc)
+		pvcNamePrefix2PVCsMap[pvcNamePrefix] = append(pvcNamePrefix2PVCsMap[pvcNamePrefix], pvc)
 	}
 
 	// rm volClaimTmpl if any pvc belonging to it is in use
-	for volClaimTpl := range volClaimTplHasInUsePVC {
-		delete(volClaimTplName2PVCsMap, volClaimTpl)
-	}
+	//for volClaimTpl := range pvcNamePrefixHasInUsePVC {
+	//	delete(pvcNamePrefix2PVCsMap, volClaimTpl)
+	//}
 
 	rst := []Volume{}
-	for freeVolClaimTpl, pvcs := range volClaimTplName2PVCsMap {
+	for pvcNamePrefix, pvcs := range pvcNamePrefix2PVCsMap {
 		pvc := pvcs[0]
 		capacity := GetCapacityOfPVC(pvc)
+		compName, compNs := GetComponentNameAndNs(&pvc)
+
+		isInUse := false
+		if pvcNamePrefixHasInUsePVC[pvcNamePrefix] == true {
+			isInUse = true
+		}
+
+		idx := strings.LastIndex(pvcNamePrefix, "-"+compName)
+		if idx == -1 {
+			continue
+		}
+
+		volClaimTplName := pvcNamePrefix[:idx]
 
 		rst = append(rst, Volume{
-			Name:      freeVolClaimTpl,
-			Namespace: ns,
-			IsInUse:   false,
-			Capacity:  capacity,
-			PVC:       freeVolClaimTpl,
-			PV:        "",
+			Name:               volClaimTplName,
+			IsInUse:            isInUse,
+			ComponentName:      compName,
+			ComponentNamespace: compNs,
+			StorageClass:       getValOfString(pvc.Spec.StorageClassName),
+			Capacity:           capacity,
+			PVC:                volClaimTplName,
+			PV:                 "",
 		})
 	}
 
+	sort.Slice(rst, func(i, j int) bool {
+		// free vol comes first
+		if rst[i].IsInUse != rst[j].IsInUse {
+			if !rst[i].IsInUse {
+				return true
+			} else {
+				return false
+			}
+		}
+
+		return false
+	})
 	return rst, nil
+}
+
+func getValOfString(s *string, fallbackOpt ...string) string {
+	if s == nil {
+		if len(fallbackOpt) == 0 {
+			return ""
+		}
+
+		return fallbackOpt[0]
+	}
+
+	return *s
 }
 
 func GetCapacityOfPVC(pvc coreV1.PersistentVolumeClaim) string {

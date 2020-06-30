@@ -20,12 +20,6 @@ export const getComponentFormVolumeOptions = (componentName?: string, componentW
   return volumeOptions;
 };
 
-export const isComponentFormDirtyField = (field: string): boolean => {
-  const state = store.getState();
-
-  return isDirty(COMPONENT_FORM_ID)(state, field);
-};
-
 export const getComponentFormVolumeType = (member: string): string => {
   const state = store.getState();
 

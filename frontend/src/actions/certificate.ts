@@ -1,3 +1,4 @@
+import { api } from "api";
 import Immutable from "immutable";
 import {
   Certificate,
@@ -7,19 +8,18 @@ import {
   CREATE_CERTIFICATE,
   CREATE_CERTIFICATE_ISSUER,
   DELETE_CERTIFICATE,
-  LOAD_CERTIFICATE_ISSUERS_FULFILLED,
-  LOAD_CERTIFICATE_ISSUERS_PENDING,
   LOAD_CERTIFICATES_FAILED,
   LOAD_CERTIFICATES_FULFILLED,
   LOAD_CERTIFICATES_PENDING,
+  LOAD_CERTIFICATE_ISSUERS_FULFILLED,
+  LOAD_CERTIFICATE_ISSUERS_PENDING,
   selfManaged,
-  SET_EDIT_CERTIFICATE_MODAL,
-  SET_IS_SUBMITTING_CERTIFICATE,
   SetEditCertificateModal,
   SetIsSubmittingCertificate,
+  SET_EDIT_CERTIFICATE_MODAL,
+  SET_IS_SUBMITTING_CERTIFICATE,
 } from "types/certificate";
 import { ThunkResult } from "../types";
-import { api } from "api";
 
 export const setEditCertificateModal = (certificate: Certificate | null): SetEditCertificateModal => {
   return {

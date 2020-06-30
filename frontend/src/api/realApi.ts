@@ -164,13 +164,11 @@ export default class RealApi extends Api {
 
   public getKappApplicationPlugins = async () => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/applicationplugins` });
-    console.log(JSON.stringify(res.data));
     return res.data;
   };
 
   public getKappComponentPlugins = async () => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/componentplugins` });
-    console.log(JSON.stringify(res.data));
     return res.data;
   };
 
@@ -288,7 +286,6 @@ export default class RealApi extends Api {
 
   public loadServices = async (name: string) => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/services` });
-    console.log(JSON.stringify(res.data));
     return Immutable.fromJS(res.data);
   };
 }
