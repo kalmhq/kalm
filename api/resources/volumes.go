@@ -19,7 +19,7 @@ type Volume struct {
 	IsInUse            bool   `json:"isInUse"`                      // can be reused or not
 	ComponentNamespace string `json:"componentNamespace,omitempty"` // ns of latest component using this Volume
 	ComponentName      string `json:"componentName,omitempty"`      // name of latest component using this Volume
-	StorageClass       string `json:"storageClass"`
+	StorageClassName   string `json:"storageClassName"`
 	Capacity           string `json:"capacity"` // size, e.g. 1Gi
 	PVC                string `json:"pvc"`
 	PV                 string `json:"pvToMatch"`
@@ -120,7 +120,7 @@ func (builder *Builder) FindAvailableVolsForSimpleWorkload(ns string) ([]Volume,
 			IsInUse:            false,
 			ComponentNamespace: compNs,
 			ComponentName:      compName,
-			StorageClass:       getValOfString(pvc.Spec.StorageClassName),
+			StorageClassName:   getValOfString(pvc.Spec.StorageClassName),
 			Capacity:           GetCapacityOfPVC(pvc),
 			PVC:                sameNsFreePair.pvc.Name,
 			PV:                 "",
@@ -140,7 +140,7 @@ func (builder *Builder) FindAvailableVolsForSimpleWorkload(ns string) ([]Volume,
 			IsInUse:            false,
 			ComponentNamespace: compNs,
 			ComponentName:      compName,
-			StorageClass:       getValOfString(pvc.Spec.StorageClassName),
+			StorageClassName:   getValOfString(pvc.Spec.StorageClassName),
 			Capacity:           GetCapacityOfPVC(pvc),
 			PVC:                "",
 			PV:                 pv.Name,
@@ -156,7 +156,7 @@ func (builder *Builder) FindAvailableVolsForSimpleWorkload(ns string) ([]Volume,
 			IsInUse:            false,
 			ComponentNamespace: compNs,
 			ComponentName:      compName,
-			StorageClass:       unboundPV.Spec.StorageClassName,
+			StorageClassName:   unboundPV.Spec.StorageClassName,
 			Capacity:           GetCapacityOfPV(unboundPV),
 			PVC:                "",
 			PV:                 unboundPV.Name,
@@ -175,7 +175,7 @@ func (builder *Builder) FindAvailableVolsForSimpleWorkload(ns string) ([]Volume,
 			IsInUse:            true,
 			ComponentNamespace: compNs,
 			ComponentName:      compName,
-			StorageClass:       getValOfString(pvc.Spec.StorageClassName),
+			StorageClassName:   getValOfString(pvc.Spec.StorageClassName),
 			Capacity:           GetCapacityOfPV(pv),
 			PVC:                pvc.Name,
 			PV:                 "",
@@ -255,7 +255,7 @@ func (builder *Builder) FindAvailableVolsForSts(ns string) ([]Volume, error) {
 			IsInUse:            isInUse,
 			ComponentName:      compName,
 			ComponentNamespace: compNs,
-			StorageClass:       getValOfString(pvc.Spec.StorageClassName),
+			StorageClassName:   getValOfString(pvc.Spec.StorageClassName),
 			Capacity:           capacity,
 			PVC:                volClaimTplName,
 			PV:                 "",

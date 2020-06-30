@@ -108,7 +108,7 @@ func (suite *ComponentTestSuite) TestCreateComponentWithReUsingPVCAsVolume() {
 	pvNameToReuse := "exist-available-pv"
 
 	// prepare Volume & scName
-	//sc := storagev1.StorageClass{
+	//sc := storagev1.StorageClassName{
 	//	ObjectMeta: v1.ObjectMeta{
 	//		Name: scName,
 	//	},
