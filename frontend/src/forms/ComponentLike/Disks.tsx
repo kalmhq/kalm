@@ -141,7 +141,7 @@ class RenderVolumes extends React.PureComponent<Props> {
         <TextField
           fullWidth
           disabled
-          label="Claim Name"
+          label="Storage Class"
           value={volumeOption?.get("storageClassName") || ""}
           margin="dense"
           variant="outlined"
@@ -152,7 +152,7 @@ class RenderVolumes extends React.PureComponent<Props> {
         <TextField
           fullWidth
           disabled
-          label="Claim Name"
+          label="Size"
           value={volumeOption?.get("capacity") || ""}
           margin="dense"
           variant="outlined"
