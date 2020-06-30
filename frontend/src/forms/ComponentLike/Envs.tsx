@@ -100,7 +100,7 @@ class RenderEnvs extends React.PureComponent<Props> {
         ) : null}
         {fields.map((field, index) => {
           return (
-            <Fade in>
+            <Fade in key={field}>
               <Grid container spacing={2}>
                 <Grid item xs={3}>
                   <Field
