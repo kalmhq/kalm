@@ -142,7 +142,7 @@ class RenderVolumes extends React.PureComponent<Props> {
           fullWidth
           disabled
           label="Claim Name"
-          value={volumeOption?.get("storageClass") || ""}
+          value={volumeOption?.get("storageClassName") || ""}
           margin="dense"
           variant="outlined"
         />,

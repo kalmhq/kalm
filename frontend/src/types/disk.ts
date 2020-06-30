@@ -27,7 +27,7 @@ export interface VolumeOptionContent {
   capacity: string;
   pvc: string;
   pvToMatch: string;
-  storageClass: string;
+  storageClassName: string;
 }
 export type VolumeOption = ImmutableMap<VolumeOptionContent>;
 export type VolumeOptions = Immutable.List<VolumeOption>;
