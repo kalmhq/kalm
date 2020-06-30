@@ -4,6 +4,8 @@ import (
 	"github.com/labstack/echo/v4"
 	coreV1 "k8s.io/api/core/v1"
 	"regexp"
+	"strconv"
+	"strings"
 )
 
 type ClusterInfo struct {
@@ -13,6 +15,30 @@ type ClusterInfo struct {
 	HttpPort        *int   `json:"httpPort"`
 	HttpsPort       *int   `json:"httpsPort"`
 	TLSPort         *int   `json:"tlsPort"`
+}
+
+func isPrivateIP(ip string) bool {
+	parts := strings.Split(ip, ".")
+	if len(parts) != 4 {
+		return false
+	}
+
+	if parts[0] == "10" || parts[0] == "192" && parts[1] == "168" {
+		return true
+	}
+
+	if parts[0] == "172" {
+		part2, err := strconv.ParseInt(parts[1], 0, 0)
+
+		if err != nil {
+			return false
+		}
+
+		return part2 >= 16 && part2 <= 31
+
+	}
+
+	return false
 }
 
 func (h *ApiHandler) handleClusterInfo(c echo.Context) error {
@@ -38,14 +64,15 @@ func (h *ApiHandler) handleClusterInfo(c echo.Context) error {
 		}
 
 		// For development and test env.
-		// If the cluster is in a C-Class network (192.168.0.0/16), we assume it's a development env.
+		// If the cluster is in a private network, we assume it's a development env.
 		// Use the api server host as the cluster ingress ip
+
 		if info.IngressIP == "" {
-			r := regexp.MustCompile(`192\.168\.(\d+)\.(\d+)`)
+			r := regexp.MustCompile(`(\d+)\.(\d+)\.(\d+)\.(\d+)`)
 			cfg := getK8sClientConfig(c)
 			matches := r.FindStringSubmatch(cfg.Host)
 
-			if len(matches) > 0 {
+			if len(matches) > 0 && isPrivateIP(matches[0]) {
 				info.IngressIP = matches[0]
 
 				for _, port := range ingressService.Spec.Ports {
