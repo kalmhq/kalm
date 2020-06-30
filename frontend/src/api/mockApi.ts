@@ -27,11 +27,19 @@ export default class MockApi extends Api {
   };
 
   public getPersistentVolumes = async () => {
-    return Immutable.fromJS([]);
+    return await mockStore.data.get("mockVolumes");
   };
 
   public getStorageClasses = async () => {
     return mockStore.data.get("mockStorageClasses");
+  };
+
+  public getSimpleOptions = async (namespace: string) => {
+    return await mockStore.data.get("mockSimpleOptions");
+  };
+
+  public getStatefulSetOptions = async (namespace: string) => {
+    return await mockStore.data.get("mockStatefulSetOptions");
   };
 
   public getRegistries = async () => {
@@ -148,7 +156,7 @@ export default class MockApi extends Api {
   };
 
   // TODO
-  public deletePersistentVolume = async (name: string): Promise<void> => {};
+  public deletePersistentVolume = async (namespace: string, name: string): Promise<void> => {};
 
   // TODO
   public deletePod = async (namespace: string, name: string) => {};

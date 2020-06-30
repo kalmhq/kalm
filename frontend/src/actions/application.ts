@@ -30,6 +30,40 @@ import { resErrorsToSubmitErrors } from "../utils";
 import { setCurrentNamespaceAction } from "./namespaces";
 import { setSuccessNotificationAction } from "./notification";
 import { api } from "api";
+import { VolumeTypePersistentVolumeClaimNew, VolumeTypePersistentVolumeClaim } from "../types/componentTemplate";
+import { getComponentFormVolumeOptions } from "../selectors/component";
+
+const correctComponentFormValues = (componentValues: ApplicationComponent): ApplicationComponent => {
+  const volumes = componentValues.get("volumes");
+
+  const volumeOptions = getComponentFormVolumeOptions(componentValues.get("name"), componentValues.get("workloadType"));
+
+  const findPVToMatch = (pvc: string): string => {
+    let pvToMatch = "";
+
+    volumeOptions.forEach((vo) => {
+      if (vo.get("pvc") === pvc) {
+        pvToMatch = vo.get("pvToMatch");
+      }
+    });
+
+    return pvToMatch;
+  };
+
+  const correctedVolumes = volumes?.map((v) => {
+    // set pvToMatch
+    if (v.get("type") === VolumeTypePersistentVolumeClaim) {
+      v = v.set("pvToMatch", findPVToMatch(v.get("pvc")));
+    }
+    // if is pvc-new, set to pvc
+    if (v.get("type") === VolumeTypePersistentVolumeClaimNew) {
+      v = v.set("type", VolumeTypePersistentVolumeClaim);
+    }
+    return v;
+  });
+
+  return componentValues.set("volumes", correctedVolumes);
+};
 
 export const createComponentAction = (
   componentValues: ApplicationComponent,
@@ -43,7 +77,10 @@ export const createComponentAction = (
 
     let component: ApplicationComponentDetails;
     try {
-      component = await api.createKappApplicationComponent(applicationName, componentValues);
+      component = await api.createKappApplicationComponent(
+        applicationName,
+        correctComponentFormValues(componentValues),
+      );
     } catch (e) {
       dispatch(setIsSubmittingApplicationComponent(false));
       throw e;
@@ -73,7 +110,10 @@ export const updateComponentAction = (
 
     let component: ApplicationComponentDetails;
     try {
-      component = await api.updateKappApplicationComponent(applicationName, componentValues);
+      component = await api.updateKappApplicationComponent(
+        applicationName,
+        correctComponentFormValues(componentValues),
+      );
     } catch (e) {
       dispatch(setIsSubmittingApplicationComponent(false));
       throw e;

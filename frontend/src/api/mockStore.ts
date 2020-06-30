@@ -1,7 +1,7 @@
 import { ClusterInfo } from "types/cluster";
 import { LoginStatus } from "types/authorization";
 import { NodesListResponse } from "types/node";
-import { StorageClasses } from "types/disk";
+import { StorageClasses, PersistentVolumes, VolumeOptions } from "types/disk";
 import Immutable from "immutable";
 import { ApplicationDetails, ApplicationComponentDetails, PodStatus, ComponentPlugin } from "types/application";
 import { HttpRoute } from "types/route";
@@ -14,7 +14,10 @@ interface MockStoreData {
   mockClusterInfo: ClusterInfo;
   mockLoginStatus: LoginStatus;
   mockNodes: NodesListResponse;
+  mockVolumes: PersistentVolumes;
   mockStorageClasses: StorageClasses;
+  mockSimpleOptions: VolumeOptions;
+  mockStatefulSetOptions: VolumeOptions;
   mockApplications: Immutable.List<ApplicationDetails>;
   mockApplicationComponents: Immutable.Map<string, Immutable.List<ApplicationComponentDetails>>;
   mockHttpRoutes: Immutable.List<HttpRoute>;
@@ -1111,9 +1114,45 @@ export default class MockStore {
         },
       }),
 
+      mockVolumes: Immutable.fromJS([
+        {
+          name: "pvc-5c3132fc-0508-4a7f-b11a-b6b924424016",
+          isInUse: true,
+          componentNamespace: "asdfasdf",
+          componentName: "test",
+          phase: "Available",
+          capacity: "1Gi",
+        },
+      ]),
+
       mockStorageClasses: Immutable.fromJS([
         { name: "standard", isKappManaged: false },
         { name: "kapp-standard", isKappManaged: true },
+      ]),
+
+      mockSimpleOptions: Immutable.fromJS([
+        {
+          name: "my-pvc-hello-sts-1",
+          isInUse: false,
+          componentNamespace: "kapp-vols",
+          componentName: "hello-sts",
+          capacity: "1Mi",
+          pvc: "my-pvc-hello-sts-1",
+          pvToMatch: "underlying-pv-name",
+        },
+      ]),
+
+      mockStatefulSetOptions: Immutable.fromJS([
+        {
+          name: "my-pvc",
+          isInUse: false,
+          componentNamespace: "kapp-vols",
+          componentName: "hello-sts",
+          capacity: "1Mi",
+          pvc: "my-pvc",
+          pvToMatch: "",
+          pvList: ["my-pv-1", "my-pv-2", "my-pv-3"],
+        },
       ]),
 
       mockApplications: Immutable.fromJS([

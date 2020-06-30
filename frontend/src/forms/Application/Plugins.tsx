@@ -6,7 +6,7 @@ import { WrappedFieldArrayProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
 import { closeDialogAction, openDialogAction } from "../../actions/dialog";
 import { RootState } from "../../reducers";
-import { getApplicationPluginName } from "../../selectors/component";
+import { getApplicationFormPluginName } from "../../selectors/component";
 import { ApplicationPlugin } from "../../types/application";
 import { PluginType } from "../../types/plugin";
 import { ButtonWhite, CustomizedButton } from "../../widgets/Button";
@@ -66,7 +66,7 @@ class RenderPlugins extends React.PureComponent<Props, State> {
 
     const existPluginNames: { [key: string]: boolean } = {};
     fields.forEach((member, index) => {
-      const pluginName = getApplicationPluginName(member);
+      const pluginName = getApplicationFormPluginName(member);
       existPluginNames[pluginName] = true;
     });
 
@@ -130,7 +130,7 @@ class RenderPlugins extends React.PureComponent<Props, State> {
 
   private renderBasic(member: string, index: number) {
     const { applicationPluginsMap, fields } = this.props;
-    const pluginName = getApplicationPluginName(member);
+    const pluginName = getApplicationFormPluginName(member);
     const schema =
       applicationPluginsMap[pluginName] && applicationPluginsMap[pluginName].configSchema
         ? applicationPluginsMap[pluginName].configSchema
