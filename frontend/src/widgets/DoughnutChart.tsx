@@ -74,7 +74,7 @@ class DoughnutChartRaw extends React.PureComponent<Props, State> {
               return null;
             } else {
               return (
-                <Box display="flex" alignItems="center" justifyContent="space-between">
+                <Box display="flex" alignItems="center" justifyContent="space-between" key={label}>
                   <Box style={{ backgroundColor: colors[index] }} width={10} height={10} mr={1}></Box>
                   <Typography variant="body2">
                     {label}({data[index]})

@@ -1,5 +1,5 @@
 import React from "react";
-import { createStyles, Theme, withStyles, WithStyles, Box } from "@material-ui/core";
+import { Box, createStyles, Theme, WithStyles, withStyles } from "@material-ui/core";
 import { TDispatchProp } from "types";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
@@ -57,7 +57,11 @@ class ComponentStatusRaw extends React.PureComponent<Props, State> {
       statusBadge = <PendingBadge />;
     }
 
-    return <Box mr={enableMarginRight ? 1 : 0}>{statusBadge}</Box>;
+    return (
+      <Box fontSize={0} mr={enableMarginRight ? 1 : 0}>
+        {statusBadge}
+      </Box>
+    );
   };
 }
 

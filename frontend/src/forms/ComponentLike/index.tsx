@@ -10,55 +10,60 @@ import {
   Tabs,
   Tooltip,
 } from "@material-ui/core";
-import { Prompt } from "widgets/Prompt";
 import { grey } from "@material-ui/core/colors";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import HelpIcon from "@material-ui/icons/Help";
+import { loadComponentPluginsAction } from "actions/application";
+import { loadNodesAction } from "actions/node";
+import {
+  loadSimpleOptionsAction,
+  loadStatefulSetOptionsAction,
+  loadStorageClassesAction,
+} from "actions/persistentVolume";
 import clsx from "clsx";
+import { push } from "connected-react-router";
 import { KBoolCheckboxRender } from "forms/Basic/checkbox";
+import { shouldError } from "forms/common";
+import { Disks } from "forms/ComponentLike/Disks";
+import { COMPONENT_FORM_ID } from "forms/formIDs";
 import Immutable from "immutable";
+import { COMPONENT_DEPLOY_BUTTON_ZINDEX } from "layout/Constants";
 import queryString from "query-string";
 import React from "react";
 import { connect } from "react-redux";
+import { RouteComponentProps, withRouter } from "react-router-dom";
+import { RootState } from "reducers";
 import { InjectedFormProps } from "redux-form";
 import { Field, getFormSyncErrors, getFormValues, reduxForm } from "redux-form/immutable";
-import { Body, H5 } from "widgets/Label";
-import { SectionTitle } from "widgets/SectionTitle";
-import { loadComponentPluginsAction } from "actions/application";
-import { loadNodesAction } from "actions/node";
-import { loadPersistentVolumesAction, loadStorageClassesAction } from "actions/persistentVolume";
-import { RootState } from "reducers";
 import { getNodeLabels } from "selectors/node";
+import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
+import { TDispatchProp } from "types";
 import { ApplicationDetails, SharedEnv } from "types/application";
-import { ComponentLike, ComponentLikeContent, workloadTypeCronjob, workloadTypeServer } from "types/componentTemplate";
+import {
+  ComponentLike,
+  ComponentLikeContent,
+  workloadTypeCronjob,
+  workloadTypeDaemonSet,
+  workloadTypeServer,
+  workloadTypeStatefulSet,
+} from "types/componentTemplate";
 import { CustomizedButton } from "widgets/Button";
 import { HelperContainer } from "widgets/Helper";
 import { KPanel } from "widgets/KPanel";
+import { Body, H5 } from "widgets/Label";
+import { Prompt } from "widgets/Prompt";
+import { SectionTitle } from "widgets/SectionTitle";
 import { KRadioGroupRender } from "../Basic/radio";
 import { RenderSelectField } from "../Basic/select";
 import { KRenderCommandTextField, KRenderTextField, RenderComplexValueTextField } from "../Basic/textfield";
 import { NormalizeCPU, NormalizeNumber } from "../normalizer";
-import {
-  ValidatorCPU,
-  ValidatorMemory,
-  ValidatorRequired,
-  ValidatorSchedule,
-  ValidatorNameWithoutDot,
-} from "../validator";
+import { ValidatorCPU, ValidatorMemory, ValidatorName, ValidatorRequired, ValidatorSchedule } from "../validator";
 import { Envs } from "./Envs";
 import { RenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
-import { Volumes } from "./Volumes";
-import { shouldError } from "forms/common";
-import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
-import { TDispatchProp } from "types";
-import { RouteComponentProps, withRouter } from "react-router-dom";
-import { push } from "connected-react-router";
-import { COMPONENT_FORM_ID } from "forms/formIDs";
-import { COMPONENT_DEPLOY_BUTTON_ZINDEX } from "layout/Constants";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -79,12 +84,12 @@ const IngressHint = () => {
 };
 
 const Configurations = "Configurations";
-const Disks = "Disks";
-const Health = "Health";
-const Networking = "Networking";
+const DisksTab = "Disks";
+export const HealthTab = "Health";
+export const NetworkingTab = "Networking";
 const Scheduling = "Scheduling";
-const UpgradePolicy = "Upgrade Policy";
-const tabs = [Configurations, Networking, Disks, Health, Scheduling, UpgradePolicy];
+const Deploy = "Deploy Policy";
+const tabs = [Configurations, NetworkingTab, DisksTab, HealthTab, Scheduling, Deploy];
 
 const mapStateToProps = (state: RootState) => {
   const fieldValues = (getFormValues(COMPONENT_FORM_ID)(state) as ComponentLike) || (Immutable.Map() as ComponentLike);
@@ -199,17 +204,16 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private tabs = tabs;
 
   public componentDidMount() {
-    const { dispatch } = this.props;
+    const { dispatch, application } = this.props;
     // load application plugins schema
     // dispatch(loadApplicationPluginsAction());
     // load component plugins schema
     dispatch(loadComponentPluginsAction());
     // load node labels for node selectors
     dispatch(loadNodesAction());
-    // load configs for volume
-    // dispatch(loadConfigsAction());
     dispatch(loadStorageClassesAction());
-    dispatch(loadPersistentVolumesAction());
+    dispatch(loadSimpleOptionsAction(application?.get("name")));
+    dispatch(loadStatefulSetOptionsAction(application?.get("name")));
   }
 
   private renderReplicasOrSchedule = () => {
@@ -413,7 +417,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderVolumes() {
+  private renderDisks() {
     const { classes } = this.props;
 
     const helperContainer = (
@@ -449,7 +453,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             <ListItemText
               primary="Existing Persistent Volume Claim"
               secondary={
-                "PersistentVolumeClaim and PersistentVolume are a kubernetes original resources. A persistentVolumeClaim volume is used to mount a PersistentVolume into a Pod. PersistentVolumes are a way for users to “claim” durable storage (such as a GCE PersistentDisk or an iSCSI volume) without knowing the details of the particular cloud environment."
+                "PersistentVolumeClaim and Disk are a kubernetes original resources. A persistentVolumeClaim volume is used to mount a Disk into a Pod. Disks are a way for users to “claim” durable storage (such as a GCE PersistentDisk or an iSCSI volume) without knowing the details of the particular cloud environment."
               }
               secondaryTypographyProps={{ color: "inherit" }}
             />
@@ -459,7 +463,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
 
     return (
-      <>
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          <Body>Mount various type of disks into your component.</Body>
+        </Grid>
         <Grid item xs={12}>
           <SectionTitle>
             <H5>Disks</H5>
@@ -469,9 +476,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </SectionTitle>
         </Grid>
         <Grid item xs={12}>
-          <Volumes />
+          <Disks />
         </Grid>
-      </>
+      </Grid>
     );
   }
 
@@ -770,19 +777,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderDisks() {
-    return (
-      <>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <Body>Mount various type of disks into your component.</Body>
-          </Grid>
-          {this.renderVolumes()}
-        </Grid>
-      </>
-    );
-  }
-
   private renderHealth() {
     const { classes } = this.props;
     return (
@@ -1005,17 +999,19 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <div className={`${this.tabs[currentTabIndex] === Configurations ? "" : classes.displayNone}`}>
           {this.renderConfigurations()}
         </div>
-        <div className={`${this.tabs[currentTabIndex] === Networking ? "" : classes.displayNone}`}>
+        <div className={`${this.tabs[currentTabIndex] === NetworkingTab ? "" : classes.displayNone}`}>
           {this.renderNetworking()}
         </div>
-        <div className={`${this.tabs[currentTabIndex] === Disks ? "" : classes.displayNone}`}>{this.renderDisks()}</div>
-        <div className={`${this.tabs[currentTabIndex] === Health ? "" : classes.displayNone}`}>
+        <div className={`${this.tabs[currentTabIndex] === DisksTab ? "" : classes.displayNone}`}>
+          {this.renderDisks()}
+        </div>
+        <div className={`${this.tabs[currentTabIndex] === HealthTab ? "" : classes.displayNone}`}>
           {this.renderHealth()}
         </div>
         <div className={`${this.tabs[currentTabIndex] === Scheduling ? "" : classes.displayNone}`}>
           {this.renderScheduling()}
         </div>
-        <div className={`${this.tabs[currentTabIndex] === UpgradePolicy ? "" : classes.displayNone}`}>
+        <div className={`${this.tabs[currentTabIndex] === Deploy ? "" : classes.displayNone}`}>
           {this.renderUpgradePolicy()}
         </div>
       </>
@@ -1053,9 +1049,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             submitFailed &&
             ((tab === Configurations &&
               (syncValidationErrors.preInjectedFiles || syncValidationErrors.env || syncValidationErrors.command)) ||
-              (tab === Disks && syncValidationErrors.volumes) ||
-              (tab === Health && (syncValidationErrors.livenessProbe || syncValidationErrors.ReadinessProbe)) ||
-              (tab === Networking && syncValidationErrors.ports) ||
+              (tab === DisksTab && syncValidationErrors.volumes) ||
+              (tab === HealthTab && (syncValidationErrors.livenessProbe || syncValidationErrors.readinessProbe)) ||
+              (tab === NetworkingTab && syncValidationErrors.ports) ||
               (tab === Scheduling &&
                 (syncValidationErrors.cpu || syncValidationErrors.memory || syncValidationErrors.nodeSelectorLabels)))
           ) {
@@ -1084,7 +1080,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             name="name"
             label="Name"
             margin
-            validate={[ValidatorRequired, ValidatorNameWithoutDot]}
+            validate={[ValidatorRequired, ValidatorName]}
             disabled={isEdit}
             helperText={
               isEdit
@@ -1111,9 +1107,12 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             component={RenderSelectField}
             label="Workload Type"
             validate={[ValidatorRequired]}
+            disabled={isEdit}
             options={[
               { value: workloadTypeServer, text: "Server (continuous running)" },
               { value: workloadTypeCronjob, text: "Cronjob (periodic running)" },
+              { value: workloadTypeDaemonSet, text: "DaemonSet" },
+              { value: workloadTypeStatefulSet, text: "StatefulSet" },
             ]}
           ></Field>
         </Grid>

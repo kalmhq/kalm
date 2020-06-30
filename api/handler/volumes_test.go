@@ -59,18 +59,18 @@ func (suite *VolumeTestSuite) TestGetAvailableVolsForDP() {
 	pvc2, pv2 := suite.createBoundedPVCAndPV(suite.NS2)
 
 	// inUsed volume in same & diff ns
-	suite.createInUseBoundedPVCAndPV(suite.NS)
-	suite.createInUseBoundedPVCAndPV(suite.NS2)
+	inUsePVC, _ := suite.createInUseBoundedPVCAndPV(suite.NS)
+	inUsePVC2, _ := suite.createInUseBoundedPVCAndPV(suite.NS2)
 
 	// call API from ns
-	urlPath := fmt.Sprintf("/v1alpha1/volumes/available/simple-workload/%s", suite.NS)
+	urlPath := fmt.Sprintf("/v1alpha1/volumes/available/simple-workload?currentNamespace=%s", suite.NS)
 	rec := suite.NewRequest(http.MethodGet, urlPath, nil)
 
 	var resList []resources.Volume
 	rec.BodyAsJSON(&resList)
 
 	suite.Equal(200, rec.Code)
-	suite.Equal(3, len(resList))
+	suite.Equal(4, len(resList))
 
 	suite.True(volExists(resources.Volume{
 		Name: unboundPV.Name,
@@ -88,13 +88,21 @@ func (suite *VolumeTestSuite) TestGetAvailableVolsForDP() {
 		PV:   pv2.Name,
 	}, resList))
 
+	// in-use
+	suite.True(volExists(resources.Volume{
+		Name: inUsePVC.Name,
+		IsInUse: true,
+		PVC:  inUsePVC.Name,
+		PV:   "",
+	}, resList))
+
 	// call API from ns2
-	urlPath = fmt.Sprintf("/v1alpha1/volumes/available/simple-workload/%s", suite.NS2)
+	urlPath = fmt.Sprintf("/v1alpha1/volumes/available/simple-workload?currentNamespace=%s", suite.NS2)
 	rec = suite.NewRequest(http.MethodGet, urlPath, nil)
 	rec.BodyAsJSON(&resList)
 
 	suite.Equal(200, rec.Code)
-	suite.Equal(3, len(resList))
+	suite.Equal(4, len(resList))
 
 	suite.True(volExists(resources.Volume{
 		Name: unboundPV.Name,
@@ -111,13 +119,21 @@ func (suite *VolumeTestSuite) TestGetAvailableVolsForDP() {
 		PVC:  pvc2.Name,
 		PV:   "",
 	}, resList))
+	// in-use
+	suite.True(volExists(resources.Volume{
+		Name: inUsePVC2.Name,
+		IsInUse: true,
+		PVC:  inUsePVC2.Name,
+		PV:   "",
+	}, resList))
 }
 
 func volExists(vol resources.Volume, list []resources.Volume) bool {
 	for _, one := range list {
 		if one.Name == vol.Name &&
 			one.PVC == vol.PVC &&
-			one.PV == vol.PV {
+			one.PV == vol.PV &&
+			one.IsInUse == vol.IsInUse {
 			return true
 		}
 	}
@@ -137,9 +153,9 @@ func volNotExists(vol resources.Volume, list []resources.Volume) bool {
 	return true
 }
 
-func (suite *VolumeTestSuite) TestGetAvailableVolsForSTS() {
-	//todo
-}
+//todo
+//func (suite *VolumeTestSuite) TestGetAvailableVolsForSTS() {
+//}
 
 func randomName() string {
 	return rand.String(10)

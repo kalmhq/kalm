@@ -1,19 +1,22 @@
-import { Box, createStyles, Theme, WithStyles, withStyles } from "@material-ui/core";
+import { Box, Button, createStyles, Popover, Theme, WithStyles, withStyles } from "@material-ui/core";
 import { Alert } from "@material-ui/lab";
+import { K8sApiPrefix } from "api/realApi";
+import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
+import { StorageType } from "pages/Disks/StorageType";
 import React from "react";
 import { connect } from "react-redux";
+import { DiskContent } from "types/disk";
+import { H4 } from "widgets/Label";
+import { KTable } from "widgets/Table";
+import { setErrorNotificationAction } from "../../actions/notification";
 import { deletePersistentVolumeAction, loadPersistentVolumesAction } from "../../actions/persistentVolume";
 import { RootState } from "../../reducers";
-import { TDispatchProp } from "../../types";
-import { PersistentVolumeContent } from "../../types/persistentVolume";
-import { BasePage } from "../BasePage";
-import { setErrorNotificationAction } from "../../actions/notification";
-import { ConfirmDialog } from "../../widgets/ConfirmDialog";
-import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
 import { primaryColor } from "../../theme";
+import { TDispatchProp } from "../../types";
+import { ConfirmDialog } from "../../widgets/ConfirmDialog";
 import { DeleteIcon } from "../../widgets/Icon";
-import { KTable } from "widgets/Table";
-import { K8sApiPrefix } from "api/realApi";
+import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
+import { BasePage } from "../BasePage";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -30,10 +33,10 @@ interface States {
   loadPersistentVolumesError: boolean;
   loadingPersistentVolumes: boolean;
   isDeleteConfirmDialogOpen: boolean;
-  deletingPersistentVolumeName?: string;
+  deletingPersistentVolume?: DiskContent;
 }
 
-interface RowData extends PersistentVolumeContent {
+interface RowData extends DiskContent {
   index: number;
 }
 
@@ -46,32 +49,32 @@ export class VolumesRaw extends React.Component<Props, States> {
       loadPersistentVolumesError: false,
       loadingPersistentVolumes: true,
       isDeleteConfirmDialogOpen: false,
-      deletingPersistentVolumeName: undefined,
+      deletingPersistentVolume: undefined,
     };
   }
 
-  private showDeleteConfirmDialog = (deletingPersistentVolumeName: string) => {
+  private showDeleteConfirmDialog = (deletingPersistentVolume: DiskContent) => {
     this.setState({
       isDeleteConfirmDialogOpen: true,
-      deletingPersistentVolumeName,
+      deletingPersistentVolume,
     });
   };
 
   private closeDeleteConfirmDialog = () => {
     this.setState({
       isDeleteConfirmDialogOpen: false,
-      deletingPersistentVolumeName: undefined,
+      deletingPersistentVolume: undefined,
     });
   };
 
   private renderDeleteConfirmDialog = () => {
-    const { isDeleteConfirmDialogOpen, deletingPersistentVolumeName } = this.state;
+    const { isDeleteConfirmDialogOpen, deletingPersistentVolume } = this.state;
 
     return (
       <ConfirmDialog
         open={isDeleteConfirmDialogOpen}
         onClose={this.closeDeleteConfirmDialog}
-        title={`Are you sure to delete this Persistent Volume(${deletingPersistentVolumeName})?`}
+        title={`Are you sure to delete this Persistent Volume(${deletingPersistentVolume?.name})?`}
         content="You will lost this Persistent Volume, and this action is irrevocable."
         onAgree={this.confirmDelete}
       />
@@ -81,9 +84,14 @@ export class VolumesRaw extends React.Component<Props, States> {
   private confirmDelete = async () => {
     const { dispatch } = this.props;
     try {
-      const { deletingPersistentVolumeName } = this.state;
-      if (deletingPersistentVolumeName) {
-        await dispatch(deletePersistentVolumeAction(deletingPersistentVolumeName));
+      const { deletingPersistentVolume } = this.state;
+      if (deletingPersistentVolume) {
+        await dispatch(
+          deletePersistentVolumeAction(
+            deletingPersistentVolume.componentNamespace as string,
+            deletingPersistentVolume.name,
+          ),
+        );
       }
     } catch {
       dispatch(setErrorNotificationAction());
@@ -132,7 +140,7 @@ export class VolumesRaw extends React.Component<Props, States> {
           tooltipTitle={rowData.isInUse ? "This Persistent Volume can't be removed" : "Delete"}
           style={{ color: primaryColor }}
           onClick={() => {
-            this.showDeleteConfirmDialog(rowData.name);
+            this.showDeleteConfirmDialog(rowData);
           }}
         >
           <DeleteIcon />
@@ -141,12 +149,46 @@ export class VolumesRaw extends React.Component<Props, States> {
     );
   };
 
+  private renderSecondHeaderRight() {
+    return (
+      <>
+        <H4>Disks</H4>
+        <PopupState variant="popover" popupId={"disks-creation-helper"}>
+          {(popupState) => (
+            <>
+              <Button color="primary" size="small" variant="text" {...bindTrigger(popupState)}>
+                How to attach new disk?
+              </Button>
+              <Popover
+                {...bindPopover(popupState)}
+                anchorOrigin={{
+                  vertical: "bottom",
+                  horizontal: "center",
+                }}
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "center",
+                }}
+              >
+                <Box p={2}>
+                  You don't need to apply disk manually. Disk will be created when you declare authentic disks in
+                  component form.
+                </Box>
+              </Popover>
+            </>
+          )}
+        </PopupState>
+        <StorageType />
+      </>
+    );
+  }
+
   render() {
     const { loadPersistentVolumesError } = this.state;
     const tableData = this.getTableData();
 
     return (
-      <BasePage secondHeaderRight="Volumes">
+      <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
         {this.renderDeleteConfirmDialog()}
         <Box p={2}>
           {loadPersistentVolumesError ? (
@@ -186,4 +228,4 @@ export class VolumesRaw extends React.Component<Props, States> {
   }
 }
 
-export const Volumes = connect(mapStateToProps)(withStyles(styles)(VolumesRaw));
+export const DiskListPage = connect(mapStateToProps)(withStyles(styles)(VolumesRaw));

@@ -114,25 +114,24 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
   public render = () => {
     const { component, defaultUnfold } = this.props;
 
+    if (!component) {
+      return "no component";
+    }
+
     return (
       <Expansion
         defaultUnfold={defaultUnfold}
         title={
           <Grid container spacing={2}>
-            <Grid item md={2}>
+            <Grid item>
               <Box display="flex">
                 <ComponentStatus component={component} enableMarginRight /> <H5>{component.get("name")}</H5>
               </Box>
             </Grid>
-            <Grid item md={2}>
+            <Grid item>
               <span>Pods:</span> <span>{this.getPodsNumber()}</span>
             </Grid>
-            <Grid item md={2}>
-              {component.get("image")}
-            </Grid>
-            <Grid item md={2}>
-              {component.get("workloadType")}
-            </Grid>
+            <Grid item>{component.get("workloadType")}</Grid>
           </Grid>
         }
       >

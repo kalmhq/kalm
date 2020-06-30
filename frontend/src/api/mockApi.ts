@@ -11,11 +11,11 @@ export const mockStore = new MockStore();
 
 export default class MockApi extends Api {
   public getClusterInfo = async () => {
-    return await mockStore.data.get("mockClusterInfo");
+    return mockStore.data.get("mockClusterInfo");
   };
 
   public getLoginStatus = async () => {
-    return await mockStore.data.get("mockLoginStatus");
+    return mockStore.data.get("mockLoginStatus");
   };
 
   public validateToken = async (token: string): Promise<boolean> => {
@@ -23,39 +23,50 @@ export default class MockApi extends Api {
   };
 
   public getNodes = async () => {
-    return await mockStore.data.get("mockNodes");
+    return mockStore.data.get("mockNodes");
   };
 
   public getPersistentVolumes = async () => {
-    return Immutable.fromJS([]);
+    return await mockStore.data.get("mockVolumes");
   };
 
   public getStorageClasses = async () => {
-    return await mockStore.data.get("mockStorageClasses");
+    return mockStore.data.get("mockStorageClasses");
+  };
+
+  public getSimpleOptions = async (namespace: string) => {
+    return await mockStore.data.get("mockSimpleOptions");
+  };
+
+  public getStatefulSetOptions = async (namespace: string) => {
+    return await mockStore.data.get("mockStatefulSetOptions");
   };
 
   public getRegistries = async () => {
-    return await mockStore.data.get("mockRegistries");
+    return mockStore.data.get("mockRegistries");
   };
 
   public getKappApplicationList = async () => {
-    return await mockStore.data.get("mockApplications");
+    return mockStore.data.get("mockApplications");
   };
 
   public getKappApplication = async (name: string) => {
-    return await mockStore.data.get("mockApplications").find((application) => application.get("name") === name)!;
+    return mockStore.data.get("mockApplications").find((application) => application.get("name") === name)!;
   };
 
   public getKappApplicationComponentList = async (applicationName: string) => {
-    return await mockStore.data.get("mockApplicationComponents");
+    return mockStore.data.getIn(["mockApplicationComponents", applicationName]);
   };
 
   public getKappApplicationComponent = async (applicationName: string, name: string) => {
-    return await mockStore.data.get("mockApplicationComponents").find((component) => component.get("name") === name)!;
+    return mockStore.data
+      .get("mockApplicationComponents")
+      .get(applicationName)
+      ?.find((component) => component.get("name") === name)!;
   };
 
   public getHttpRoutes = async (namespace: string) => {
-    return await mockStore.data.get("mockHttpRoutes");
+    return mockStore.data.get("mockHttpRoutes");
   };
 
   public mockLoadRolebindings = async () => {
@@ -63,11 +74,11 @@ export default class MockApi extends Api {
   };
 
   public getCertificateList = async () => {
-    return await mockStore.data.get("mockCertificates");
+    return mockStore.data.get("mockCertificates");
   };
 
   public getCertificateIssuerList = async () => {
-    return await mockStore.data.get("mockCertificateIssuers");
+    return mockStore.data.get("mockCertificateIssuers");
   };
 
   public createCertificate = async (certificate: CertificateFormType, isEdit?: boolean) => {
@@ -86,12 +97,32 @@ export default class MockApi extends Api {
   };
 
   public createKappApplication = async (application: Application) => {
-    await mockStore.updateKappApplication(application);
+    let applicationDetails = application as ApplicationDetails;
+    applicationDetails = applicationDetails.set(
+      "metrics",
+      Immutable.fromJS({
+        cpu: null,
+        memory: null,
+      }),
+    );
+    applicationDetails = applicationDetails.set("roles", Immutable.fromJS(["writer", "reader"]));
+    applicationDetails = applicationDetails.set("status", "Active");
+    await mockStore.updateKappApplication(applicationDetails);
     return application as ApplicationDetails;
   };
 
   public createKappApplicationComponent = async (applicationName: string, component: ApplicationComponent) => {
-    await mockStore.updateKappApplicationComponent(applicationName, component);
+    let componentDetails = component as ApplicationComponentDetails;
+    componentDetails = componentDetails.set(
+      "metrics",
+      Immutable.fromJS({
+        cpu: null,
+        memory: null,
+      }),
+    );
+    componentDetails = componentDetails.set("services", Immutable.fromJS([]));
+    componentDetails = componentDetails.set("pods", Immutable.List([mockStore.data.get("mockErrorPod")]));
+    await mockStore.updateKappApplicationComponent(applicationName, componentDetails);
     return component as ApplicationComponentDetails;
   };
 
@@ -120,13 +151,12 @@ export default class MockApi extends Api {
     await mockStore.deleteKappApplicationComponent(applicationName, name);
   };
 
-  // TODO
   public loadServices = async (name: string) => {
-    return Immutable.fromJS({});
+    return mockStore.data.get("mockServices");
   };
 
   // TODO
-  public deletePersistentVolume = async (name: string): Promise<void> => {};
+  public deletePersistentVolume = async (namespace: string, name: string): Promise<void> => {};
 
   // TODO
   public deletePod = async (namespace: string, name: string) => {};
@@ -142,13 +172,12 @@ export default class MockApi extends Api {
     return [];
   };
 
-  // TODO
   public getKappComponentPlugins = async () => {
-    return [];
+    return mockStore.data.get("mockComponentPlugins").toArray();
   };
 
   public getRegistry = async (name: string) => {
-    return await mockStore.data.get("mockRegistries").find((c) => c.get("name") === name)!;
+    return mockStore.data.get("mockRegistries").find((c) => c.get("name") === name)!;
   };
 
   // TODO
@@ -167,12 +196,12 @@ export default class MockApi extends Api {
   };
 
   public updateKappApplication = async (application: Application) => {
-    await mockStore.updateKappApplication(application);
+    await mockStore.updateKappApplication(application as ApplicationDetails);
     return Immutable.fromJS(application);
   };
 
   public updateKappApplicationComponent = async (applicationName: string, component: ApplicationComponent) => {
-    await mockStore.updateKappApplicationComponent(applicationName, component);
+    await mockStore.updateKappApplicationComponent(applicationName, component as ApplicationComponentDetails);
     return Immutable.fromJS(component);
   };
 

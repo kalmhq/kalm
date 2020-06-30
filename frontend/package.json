@@ -42,7 +42,7 @@
     "immutable": "^4.0.0-rc.12",
     "install": "^0.13.0",
     "material-table": "^1.57.2",
-    "material-ui-popup-state": "^1.5.4",
+    "material-ui-popup-state": "^1.6.1",
     "node-forge": "^0.9.1",
     "notistack": "^0.9.7",
     "npm": "^6.13.7",

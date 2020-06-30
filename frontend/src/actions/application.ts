@@ -1,3 +1,4 @@
+import { api } from "api";
 import { push } from "connected-react-router";
 import Immutable from "immutable";
 import { SubmissionError } from "redux-form";
@@ -12,24 +13,24 @@ import {
   DELETE_APPLICATION,
   DELETE_COMPONENT,
   DUPLICATE_APPLICATION,
-  LOAD_APPLICATION_FAILED,
-  LOAD_APPLICATION_FULFILLED,
-  LOAD_APPLICATION_PENDING,
   LOAD_APPLICATIONS_FAILED,
   LOAD_APPLICATIONS_FULFILLED,
   LOAD_APPLICATIONS_PENDING,
+  LOAD_APPLICATION_FAILED,
+  LOAD_APPLICATION_FULFILLED,
+  LOAD_APPLICATION_PENDING,
   LOAD_COMPONENT_PLUGINS_FULFILLED,
-  SET_IS_SUBMITTING_APPLICATION,
-  SET_IS_SUBMITTING_APPLICATION_COMPONENT,
   SetIsSubmittingApplication,
   SetIsSubmittingApplicationComponent,
+  SET_IS_SUBMITTING_APPLICATION,
+  SET_IS_SUBMITTING_APPLICATION_COMPONENT,
   UPDATE_APPLICATION,
   UPDATE_COMPONENT,
 } from "../types/application";
 import { resErrorsToSubmitErrors } from "../utils";
+import { correctComponentFormValuesForSubmit } from "../utils/application";
 import { setCurrentNamespaceAction } from "./namespaces";
 import { setSuccessNotificationAction } from "./notification";
-import { api } from "api";
 
 export const createComponentAction = (
   componentValues: ApplicationComponent,
@@ -43,7 +44,10 @@ export const createComponentAction = (
 
     let component: ApplicationComponentDetails;
     try {
-      component = await api.createKappApplicationComponent(applicationName, componentValues);
+      component = await api.createKappApplicationComponent(
+        applicationName,
+        correctComponentFormValuesForSubmit(componentValues),
+      );
     } catch (e) {
       dispatch(setIsSubmittingApplicationComponent(false));
       throw e;
@@ -73,7 +77,10 @@ export const updateComponentAction = (
 
     let component: ApplicationComponentDetails;
     try {
-      component = await api.updateKappApplicationComponent(applicationName, componentValues);
+      component = await api.updateKappApplicationComponent(
+        applicationName,
+        correctComponentFormValuesForSubmit(componentValues),
+      );
     } catch (e) {
       dispatch(setIsSubmittingApplicationComponent(false));
       throw e;

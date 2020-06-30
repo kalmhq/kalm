@@ -103,18 +103,8 @@ export const ValidatorOneof = (...options: (string | RegExp)[]) => {
 export const ValidatorVolumeSize = (value: string) => {
   if (!value) return undefined;
 
-  if (!value.match(/^^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/i) || value === "0") {
+  if (!value.match(/^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/) || value === "0") {
     return "Invalid Value";
-  }
-
-  return undefined;
-};
-
-export const ValidatorNameWithoutDot = (value: string) => {
-  if (!value) return undefined;
-
-  if (!value.match(/^[a-zA-Z0-9-]*$/i) || value === "0") {
-    return "Invalid Name Value";
   }
 
   return undefined;
@@ -123,8 +113,8 @@ export const ValidatorNameWithoutDot = (value: string) => {
 export const ValidatorName = (value: string) => {
   if (!value) return undefined;
 
-  if (!value.match(/^[a-zA-Z0-9.-]*$/i) || value === "0") {
-    return "Invalid Name Value";
+  if (!value.match(/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/) || value === "0") {
+    return "Invalid Name Value, digits (0-9), lower case letters (a-z), and \"-\" are allowed.";
   }
 
   return undefined;
@@ -144,7 +134,7 @@ export const ValidatorHttpHeaders = (value: any) => {
 export const ValidatorCPU = (value: string) => {
   if (!value) return undefined;
 
-  if (!value.match(/^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/i) || value === "0") {
+  if (!value.match(/^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/) || value === "0") {
     return "Invalid CPU Value";
   }
 
@@ -154,7 +144,7 @@ export const ValidatorCPU = (value: string) => {
 export const ValidatorMemory = (value: string) => {
   if (!value) return undefined;
 
-  if (!value.match(/^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/i) || value === "0") {
+  if (!value.match(/^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/) || value === "0") {
     return "Invalid Memory Value";
   }
 
