@@ -15,15 +15,19 @@ export const correctComponentFormValuesForSubmit = (componentValues: Application
   const findPVC = (claimName: string) => {
     let pvc = "";
     let pvToMatch = "";
+    let storageClassName = "";
+    let size = "";
 
     volumeOptions.forEach((vo) => {
       if (vo.get("name") === claimName) {
         pvc = vo.get("pvc");
         pvToMatch = vo.get("pvToMatch");
+        storageClassName = vo.get("storageClassName");
+        size = vo.get("capacity");
       }
     });
 
-    return { pvc, pvToMatch };
+    return { pvc, pvToMatch, storageClassName, size };
   };
 
   const correctedVolumes = volumes?.map((v) => {
@@ -32,6 +36,8 @@ export const correctComponentFormValuesForSubmit = (componentValues: Application
       const findResult = findPVC(v.get("claimName"));
       v = v.set("pvc", findResult.pvc);
       v = v.set("pvToMatch", findResult.pvToMatch);
+      v = v.set("storageClassName", findResult.storageClassName);
+      v = v.set("size", findResult.size);
     }
     // if is pvc-new, set to pvc
     if (v.get("type") === VolumeTypePersistentVolumeClaimNew) {
