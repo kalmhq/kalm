@@ -172,7 +172,7 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
           {
             title: (
               <span>
-                Set <strong>publish port</strong> to <strong>8080</strong>
+                Set <strong>container port</strong> to <strong>8080</strong>
               </span>
             ),
             formValidator: [
@@ -192,7 +192,7 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
           {
             title: (
               <span>
-                Set <strong>listening on port</strong> to <strong>8080</strong> or leave it blank
+                Set <strong>service port</strong> to <strong>8080</strong> or leave it blank
               </span>
             ),
             formValidator: [
