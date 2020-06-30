@@ -27,7 +27,7 @@ export default class MockApi extends Api {
   };
 
   public getPersistentVolumes = async () => {
-    return Immutable.fromJS([]);
+    return mockStore.data.get("mockVolumes");
   };
 
   public getStorageClasses = async () => {
@@ -123,7 +123,7 @@ export default class MockApi extends Api {
     return Immutable.fromJS(registry);
   };
 
-  // TODO
+  // TODO (has not been used)
   public createRoleBindings = async (roleBindingRequestBody: RoleBindingsRequestBody) => {};
 
   public deleteCertificate = async (name: string) => {
@@ -147,19 +147,22 @@ export default class MockApi extends Api {
     return mockStore.data.get("mockServices");
   };
 
-  // TODO
-  public deletePersistentVolume = async (name: string): Promise<void> => {};
+  public deletePersistentVolume = async (name: string): Promise<void> => {
+    await mockStore.deleteVolume(name);
+  };
 
-  // TODO
-  public deletePod = async (namespace: string, name: string) => {};
+  public deletePod = async (namespace: string, name: string) => {
+    await mockStore.deletePod(namespace, name);
+  };
 
-  // TODO
-  public deleteRegistry = async (name: string) => {};
+  public deleteRegistry = async (name: string) => {
+    await mockStore.deleteRegistry(name);
+  };
 
   // TODO
   public deleteRoleBindings = async (namespace: string, bindingName: string) => {};
 
-  // TODO
+  // TODO (has not been used)
   public getKappApplicationPlugins = async () => {
     return [];
   };
