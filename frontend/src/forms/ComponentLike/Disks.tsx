@@ -214,7 +214,9 @@ class RenderVolumes extends React.PureComponent<Props> {
                     fields.name,
                     Immutable.Map({
                       type: VolumeTypePersistentVolumeClaimNew,
+                      path: "",
                       storageClassName: storageClasses.get(0)?.get("name"),
+                      size: "",
                     }),
                   ),
                 );
