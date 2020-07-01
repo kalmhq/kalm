@@ -1,12 +1,15 @@
+import React from "react";
+
 import { DashboardLayout } from "layout/DashboardLayout";
 import { Login } from "layout/Login";
+
 import { ApplicationListPage } from "pages/Application/List";
 import { Log } from "pages/Application/Log";
 import { ApplicationNewPage } from "pages/Application/New";
 import { ApplicationShowPage } from "pages/Application/Show";
 import { CertificateListPage } from "pages/Certificate/List";
 import InstallPage from "pages/Install";
-import { NodeListPage } from "pages/NodeList";
+import { NodeListPage } from "pages/Nodes/List";
 import { NoMatch, Page404 } from "pages/NoMatch";
 import { DiskListPage } from "pages/Disks";
 import { RegistryListPage } from "pages/Registry/List";
@@ -15,15 +18,15 @@ import { RouteEditPage } from "pages/Route/Edit";
 import { RouteListPage } from "pages/Route/List";
 import { RouteNewPage } from "pages/Route/New";
 import { UIComponentsPage } from "pages/UIComponents";
-import { RequireAuthorizated, RequireNotAuthorizated } from "permission/Authorization";
-import { RequireNamespaceReader, RequireNamespaceWriter } from "permission/Namespace";
-import { RequireAdmin } from "permission/Role";
-import React from "react";
 import { Route, Switch } from "react-router";
 import { ComponentListPage } from "pages/Components/List";
 import { ComponentNewPage } from "pages/Components/New";
 import { ComponentEditPage } from "pages/Components/Edit";
 import { ComponentShowPage } from "pages/Components/Show";
+
+import { RequireAuthorizated, RequireNotAuthorizated } from "permission/Authorization";
+import { RequireNamespaceReader, RequireNamespaceWriter } from "permission/Namespace";
+import { RequireAdmin } from "permission/Role";
 
 const RequireAuthorizatedDashboard = RequireAuthorizated(DashboardLayout);
 
@@ -59,11 +62,7 @@ export const KappRoutes = (
 
           <Route exact path="/applications/:applicationName/logs" component={RequireNamespaceReader(Log)} />
           <Route exact path="/applications/:applicationName/shells" component={RequireNamespaceWriter(Log)} />
-          <Route
-            exact
-            path="/applications/:applicationName/components/:componentName"
-            component={RequireNamespaceReader(ApplicationShowPage)}
-          />
+
           <Route exact path="/ui-components" component={UIComponentsPage} />
           <Route exact path="/certificates" component={CertificateListPage} />
           <Route component={NoMatch} />
