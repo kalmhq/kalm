@@ -1,9 +1,9 @@
-import React from "react";
-import { Tooltip, Box } from "@material-ui/core";
-import Immutable from "immutable";
-import { KChip } from "widgets/Chip";
+import { Box } from "@material-ui/core";
 import { WhiteTooltip } from "forms/Application/KappTooltip";
+import Immutable from "immutable";
+import React from "react";
 import { httpMethods } from "types/route";
+import { KChip } from "widgets/Chip";
 
 export const Methods = ({ methods }: { methods: Immutable.List<string> }) => {
   return (
