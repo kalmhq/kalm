@@ -25,8 +25,6 @@ import (
 	elkv1 "github.com/elastic/cloud-on-k8s/pkg/apis/elasticsearch/v1"
 	kibanav1 "github.com/elastic/cloud-on-k8s/pkg/apis/kibana/v1"
 
-	corev1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
-	"github.com/kapp-staging/kapp/controller/controllers"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -34,10 +32,12 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	corev1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/kapp-staging/kapp/controller/controllers"
+
 	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	apiregistration "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
-
-	corekappdevv1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	//corekappdevv1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -69,7 +69,6 @@ func init() {
 	kibanav1.AddToScheme(scheme)
 	istioScheme.AddToScheme(scheme)
 
-	_ = corekappdevv1alpha1.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme
 }
 
@@ -132,16 +131,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	//if err = controllers.NewApplicationPluginReconciler(mgr).SetupWithManager(mgr); err != nil {
-	//	setupLog.Error(err, "unable to create controller", "controller", "ApplicationPlugin")
-	//	os.Exit(1)
-	//}
-	//
-	//if err = controllers.NewApplicationPluginBindingReconciler(mgr).SetupWithManager(mgr); err != nil {
-	//	setupLog.Error(err, "unable to create controller", "controller", "ApplicationPluginBinding")
-	//	os.Exit(1)
-	//}
-
 	if err = controllers.NewHttpsCertIssuerReconciler(mgr).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "HttpsCertIssuer")
 		os.Exit(1)
@@ -170,18 +159,18 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "KappPVC")
 		os.Exit(1)
 	}
-	// +kubebuilder:scaffold:builder
 
 	// only run webhook if explicitly declared
-	//if os.Getenv("ENABLE_WEBHOOKS") == "true" {
-	//	if err = (&corekappdevv1alpha1.Application{}).SetupWebhookWithManager(mgr); err != nil {
-	//		setupLog.Error(err, "unable to create webhook", "webhook", "Application")
-	//		os.Exit(1)
-	//	}
-	//	setupLog.Info("WEBHOOK enabled")
-	//} else {
-	//	setupLog.Info("WEBHOOK not enabled")
-	//}
+	if os.Getenv("ENABLE_WEBHOOKS") == "true" {
+		if err = (&corev1alpha1.Component{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "Component")
+			os.Exit(1)
+		}
+		setupLog.Info("WEBHOOK enabled")
+	} else {
+		setupLog.Info("WEBHOOK not enabled")
+	}
+	//+kubebuilder:scaffold:builder
 
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
