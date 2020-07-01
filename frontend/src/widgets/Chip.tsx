@@ -11,7 +11,11 @@ interface KChipProps {
 export const KChip = (props: ChipProps & KChipProps) => {
   const { disabledStyle, htmlColor, color, size, ...otherProps } = props;
 
-  const style: any = { borderRadius: 2, opacity: disabledStyle ? 0.5 : 1 };
+  const style: any = { borderRadius: 2 };
+
+  if (disabledStyle) {
+    style.opacity = 0.5;
+  }
 
   if (htmlColor) {
     style.backgroundColor = htmlColor;
