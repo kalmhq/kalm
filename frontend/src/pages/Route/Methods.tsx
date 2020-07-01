@@ -12,7 +12,7 @@ export const Methods = ({ methods }: { methods: Immutable.List<string> }) => {
         <Box display={"flex"} width={300} flexWrap={"wrap"} pt={1}>
           {httpMethods.map((m) => {
             return (
-              <Box mr={1} mb={1}>
+              <Box mr={1} mb={1} key={m}>
                 <KChip label={m} color="primary" disabled={!methods.includes(m)} />
               </Box>
             );
