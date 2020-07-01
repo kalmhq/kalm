@@ -274,6 +274,11 @@ func isMinikube(node corev1.Node) bool {
 	return false
 }
 
+const (
+	KappAnnoSCDocLink   = "kapp-annotation-sc-doc-link"
+	KappAnnoSCPriceLink = "kapp-annotation-sc-price-link"
+)
+
 func (r *KappPVCReconciler) reconcileDefaultStorageClass(cloudProvider string) error {
 	var expectedStorageClasses []v1.StorageClass
 
@@ -284,6 +289,10 @@ func (r *KappPVCReconciler) reconcileDefaultStorageClass(cloudProvider string) e
 		hdd := v1.StorageClass{
 			ObjectMeta: ctrl.ObjectMeta{
 				Name: "kapp-hdd",
+				Annotations: map[string]string{
+					KappAnnoSCDocLink: "todo",
+					KappAnnoSCPriceLink: "todo",
+				},
 			},
 			Provisioner:   "kubernetes.io/aws-ebs",
 			ReclaimPolicy: &reclaimPolicy,
@@ -304,6 +313,10 @@ func (r *KappPVCReconciler) reconcileDefaultStorageClass(cloudProvider string) e
 		hdd := v1.StorageClass{
 			ObjectMeta: ctrl.ObjectMeta{
 				Name: "kapp-hdd",
+				Annotations: map[string]string{
+					KappAnnoSCDocLink:   "https://cloud.google.com/compute/docs/disks#pdspecs",
+					KappAnnoSCPriceLink: "https://cloud.google.com/compute/disks-image-pricing#disk",
+				},
 			},
 			Provisioner:   "kubernetes.io/gce-pd",
 			ReclaimPolicy: &reclaimPolicy,
@@ -331,6 +344,9 @@ func (r *KappPVCReconciler) reconcileDefaultStorageClass(cloudProvider string) e
 		std := v1.StorageClass{
 			ObjectMeta: ctrl.ObjectMeta{
 				Name: "kapp-standard",
+				Annotations: map[string]string{
+					KappAnnoSCDocLink: "https://minikube.sigs.k8s.io/docs/handbook/persistent_volumes/",
+				},
 			},
 			Provisioner:   "k8s.io/minikube-hostpath",
 			ReclaimPolicy: &reclaimPolicy,
