@@ -390,6 +390,7 @@ func (r *KappPVCReconciler) reconcileDefaultStorageClass(cloudProvider string) e
 			sc.Parameters = expectedSC.Parameters
 			sc.Provisioner = expectedSC.Provisioner
 			sc.ReclaimPolicy = expectedSC.ReclaimPolicy
+			sc.Annotations = mergeMap(sc.Annotations, expectedSC.Annotations)
 
 			if err := r.Update(r.ctx, &expectedSC); err != nil {
 				return err
@@ -398,4 +399,16 @@ func (r *KappPVCReconciler) reconcileDefaultStorageClass(cloudProvider string) e
 	}
 
 	return nil
+}
+
+func mergeMap(old, new map[string]string) map[string]string {
+	if old == nil {
+		old = make(map[string]string)
+	}
+
+	for k, v := range new {
+		old[k] = v
+	}
+
+	return old
 }
