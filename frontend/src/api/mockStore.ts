@@ -1,9 +1,9 @@
 import { ClusterInfo } from "types/cluster";
 import { LoginStatus } from "types/authorization";
 import { NodesListResponse } from "types/node";
-import { StorageClasses, PersistentVolumes, VolumeOptions } from "types/disk";
+import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
 import Immutable from "immutable";
-import { ApplicationDetails, ApplicationComponentDetails, PodStatus, ComponentPlugin } from "types/application";
+import { ApplicationComponentDetails, ApplicationDetails, ComponentPlugin, PodStatus } from "types/application";
 import { HttpRoute } from "types/route";
 import { Certificate, CertificateIssuer, CertificateIssuerList, CertificateList } from "types/certificate";
 import { RegistryType } from "types/registry";
@@ -66,7 +66,7 @@ export default class MockStore {
       });
 
     if (componentIndex && podIndex) {
-      this.data = this.data.deleteIn(["mockApplicationComponents", namespace, componentIndex, podIndex]);
+      this.data = this.data.deleteIn(["mockApplicationComponents", namespace, componentIndex, "pods", podIndex]);
       this.saveData({
         kind: "Pod",
         data: pod,
@@ -103,7 +103,7 @@ export default class MockStore {
       .get("mockApplicationComponents")
       .get(applicationName)
       ?.findIndex((c) => c.get("name") === name);
-    const component = this.data.getIn(["mockApplicationComponents", index]);
+    const component = this.data.getIn(["mockApplicationComponents", applicationName, index]);
     this.data = this.data.deleteIn(["mockApplicationComponents", index]);
     await this.saveData({
       kind: "Component",
@@ -228,6 +228,7 @@ export default class MockStore {
         nodes: [
           {
             name: "minikube",
+            roles: ["master"],
             labels: {
               "beta.kubernetes.io/arch": "amd64",
               "beta.kubernetes.io/os": "linux",
