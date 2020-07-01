@@ -10,6 +10,10 @@ const styles = (theme: Theme) =>
     root: {},
     borderBottom: {
       borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+      height: "40px",
+      padding: `0 ${theme.spacing(2)}px`,
+      display: "flex",
+      alignItems: "center",
     },
   });
 
