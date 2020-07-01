@@ -21,12 +21,19 @@ import {
 import Immutable from "immutable";
 import { api } from "api";
 import { mockStore } from "api/mockApi";
+import {
+  RESOURCE_ACTION_ADD,
+  RESOURCE_ACTION_DELETE,
+  RESOURCE_ACTION_UPDATE,
+  RESOURCE_TYPE_NODE,
+  WATCHED_RESOURCE_CHANGE,
+} from "types/resources";
 
 export interface ResMessage {
   namespace: string;
   component: string;
   kind: string;
-  action: "Add" | "Update" | "Delete";
+  action: typeof RESOURCE_ACTION_UPDATE | typeof RESOURCE_ACTION_ADD | typeof RESOURCE_ACTION_DELETE;
   data: any;
 }
 
@@ -148,6 +155,17 @@ class WebsocketConnectorRaw extends React.PureComponent<Props> {
               },
             });
           }
+          break;
+        }
+        case RESOURCE_TYPE_NODE: {
+          dispatch({
+            type: WATCHED_RESOURCE_CHANGE,
+            kind: RESOURCE_TYPE_NODE,
+            payload: {
+              action: data.action,
+              data: Immutable.fromJS(data.data),
+            },
+          });
           break;
         }
       }

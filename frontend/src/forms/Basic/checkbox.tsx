@@ -14,6 +14,7 @@ import {
 import Immutable from "immutable";
 import React from "react";
 import { WrappedFieldProps } from "redux-form";
+import { KChip } from "widgets/Chip";
 
 export const CheckboxField = ({
   input,
@@ -84,16 +85,25 @@ export const KBoolCheckboxRender = ({ input, meta, title, helperText, label }: K
 interface KCheckboxGroupRenderOption {
   value: string;
   label: string;
+  htmlColor?: string;
 }
 
 interface KCheckboxGroupRenderProps extends WrappedFieldProps {
   title?: string;
   helperText?: string;
   options: KCheckboxGroupRenderOption[];
+  componentType?: "Checkbox" | "Chip";
 }
 
 // For value type is Immutable.List<string>
-export const KCheckboxGroupRender = ({ input, meta, title, options, helperText }: KCheckboxGroupRenderProps) => {
+export const KCheckboxGroupRender = ({
+  input,
+  meta,
+  title,
+  options,
+  helperText,
+  componentType,
+}: KCheckboxGroupRenderProps) => {
   const value: Immutable.List<string> = input.value;
   const { error, touched } = meta;
   const showError = !!error && touched;
@@ -111,6 +121,22 @@ export const KCheckboxGroupRender = ({ input, meta, title, options, helperText }
               input.onChange(value.remove(value.indexOf(x.value)));
             }
           };
+
+          if (componentType === "Chip") {
+            return (
+              <Box mt={1} mr={1} mb={1}>
+                <KChip
+                  clickable
+                  disabledStyle={!value.includes(x.value)}
+                  htmlColor={x.htmlColor}
+                  label={x.value}
+                  onClick={() => {
+                    onChange(null, !value.includes(x.value));
+                  }}
+                />
+              </Box>
+            );
+          }
 
           return (
             <FormControlLabel

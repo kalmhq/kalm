@@ -10,6 +10,7 @@ import { BasePage } from "../BasePage";
 import { Namespaces } from "widgets/Namespaces";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
 import { setSuccessNotificationAction } from "actions/notification";
+import { H4 } from "widgets/Label";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -58,7 +59,11 @@ class RouteEditRaw extends React.PureComponent<Props> {
 
   public render() {
     return (
-      <BasePage leftDrawer={<ApplicationSidebar />} secondHeaderLeft={<Namespaces />}>
+      <BasePage
+        leftDrawer={<ApplicationSidebar />}
+        secondHeaderLeft={<Namespaces />}
+        secondHeaderRight={<H4>Edit Route</H4>}
+      >
         <div className={this.props.classes.root}>{this.renderContent()}</div>
       </BasePage>
     );

@@ -1,20 +1,21 @@
 import { Box, Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { deleteRoute, loadRoutes } from "actions/routes";
+import { blinkTopProgressAction } from "actions/settings";
 import { push } from "connected-react-router";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
-import { BasePage } from "pages/BasePage";
-import React from "react";
-import { HttpRoute } from "types/route";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
+import { BasePage } from "pages/BasePage";
+import { Methods } from "pages/Route/Methods";
+import React from "react";
+import { Link } from "react-router-dom";
+import { HttpRoute } from "types/route";
 import { SuccessBadge } from "widgets/Badge";
+import { DangerButton } from "widgets/Button";
 import { H4 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { Namespaces } from "widgets/Namespaces";
 import { KTable } from "widgets/Table";
-import { blinkTopProgressAction } from "actions/settings";
-import { Link } from "react-router-dom";
-import { Methods } from "pages/Route/Methods";
-import { DangerButton } from "widgets/Button";
+import { Targets } from "widgets/Targets";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -49,11 +50,23 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderHosts(row: RowData) {
-    return row.get("hosts").join(",");
+    return (
+      <Box>
+        {row.get("hosts").map((h) => {
+          return <Box key={h}>{h}</Box>;
+        })}
+      </Box>
+    );
   }
 
   private renderUrls(row: RowData) {
-    return row.get("paths").join(",");
+    return (
+      <Box>
+        {row.get("paths").map((h) => {
+          return <Box key={h}>{h}</Box>;
+        })}
+      </Box>
+    );
   }
 
   private renderRules(row: RowData) {
@@ -88,15 +101,8 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
 
   private renderTargets = (row: RowData) => {
     const { activeNamespaceName } = this.props;
-    let sum = 0;
-    row.get("destinations").forEach((x) => (sum += x.get("weight")));
 
-    return row.get("destinations").map((x) => (
-      <div key={x.get("host")}>
-        {x.get("host").replace(`.${activeNamespaceName}.svc.cluster.local`, "").replace(`.svc.cluster.local`, "")}(
-        {Math.floor((x.get("weight") / sum) * 1000 + 0.5) / 10}%)
-      </div>
-    ));
+    return <Targets activeNamespaceName={activeNamespaceName} destinations={row.get("destinations")} />;
   };
 
   private renderAdvanced(row: RowData) {
@@ -137,6 +143,28 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     const { activeNamespaceName, dispatch } = this.props;
     return (
       <>
+        {/* <IconButtonWithTooltip
+          tooltipPlacement="top"
+          tooltipTitle="Delete"
+          aria-label="delete"
+          onClick={() => {
+            blinkTopProgressAction();
+            dispatch(push(`/applications/${activeNamespaceName}/routes/${row.get("name")}/edit`));
+          }}
+        >
+          <EditIcon />
+        </IconButtonWithTooltip>
+        <IconButtonWithTooltip
+          tooltipPlacement="top"
+          tooltipTitle="Delete"
+          aria-label="delete"
+          onClick={() => {
+            blinkTopProgressAction();
+            dispatch(deleteRoute(row.get("name"), row.get("namespace")));
+          }}
+        >
+          <DeleteIcon />
+        </IconButtonWithTooltip> */}
         <Button
           size="small"
           variant="outlined"
@@ -201,7 +229,6 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
                   sorting: false,
                   render: this.renderHosts,
                 },
-
                 {
                   title: "Http",
                   field: "http",
@@ -232,12 +259,12 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
                   sorting: false,
                   render: this.renderTargets,
                 },
-                {
-                  title: "Rules",
-                  field: "rules",
-                  sorting: false,
-                  render: this.renderRules,
-                },
+                // {
+                //   title: "Rules",
+                //   field: "rules",
+                //   sorting: false,
+                //   render: this.renderRules,
+                // },
                 // {
                 //   title: "Advanced Settings",
                 //   field: "advanced",
