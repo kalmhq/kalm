@@ -18,7 +18,7 @@ import {
 } from "types/certificate";
 import { ClusterInfo } from "types/cluster";
 import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
-import { NodesListResponse } from "types/node";
+import { Node, NodesListResponse } from "types/node";
 import { RegistryType } from "types/registry";
 import { HttpRoute } from "types/route";
 import { Service } from "types/service";
@@ -28,7 +28,11 @@ export abstract class Api {
   public abstract getClusterInfo(): Promise<ClusterInfo>;
   public abstract getLoginStatus(): Promise<LoginStatus>;
   public abstract validateToken(token: string): Promise<boolean>;
+
   public abstract getNodes(): Promise<NodesListResponse>;
+  public abstract cordonNode(name: string): Promise<Node>;
+  public abstract uncordonNode(name: string): Promise<Node>;
+
   public abstract getPersistentVolumes(): Promise<PersistentVolumes>;
   public abstract deletePersistentVolume(namespace: string, name: string): Promise<void>;
   public abstract getStorageClasses(): Promise<StorageClasses>;
