@@ -101,7 +101,7 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
             DNS names of its children resources.
           </Body>
           <Box p={1}>
-            <code>
+            <code id="application-name-code">
               {"<COMPONENT_NAME>"}.<strong style={{ color: "black" }}>{name || "<APPLICATION_NAME_HERE>"}</strong>
               .svc.cluster.local
             </code>
@@ -126,6 +126,7 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
           onClick={(event) => {
             handleSubmit(event);
           }}
+          id="add-application-submit-button"
         >
           Submit
         </CustomizedButton>

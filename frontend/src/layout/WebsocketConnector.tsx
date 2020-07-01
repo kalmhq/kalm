@@ -42,7 +42,7 @@ class WebsocketConnectorRaw extends React.PureComponent<Props> {
   private connectWebsocket() {
     const { dispatch, token } = this.props;
     let rws: any;
-    if (process.env.REACT_APP_USE_MOCK_API === "true") {
+    if (process.env.REACT_APP_USE_MOCK_API === "true" || process.env.NODE_ENV === "test") {
       rws = mockStore;
     } else {
       rws = getWebsocketInstance();
