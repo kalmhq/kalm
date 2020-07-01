@@ -1,20 +1,21 @@
 import { Box, Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { deleteRoute, loadRoutes } from "actions/routes";
+import { blinkTopProgressAction } from "actions/settings";
 import { push } from "connected-react-router";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
-import { BasePage } from "pages/BasePage";
-import React from "react";
-import { HttpRoute } from "types/route";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
+import { BasePage } from "pages/BasePage";
+import { Methods } from "pages/Route/Methods";
+import React from "react";
+import { Link } from "react-router-dom";
+import { HttpRoute } from "types/route";
 import { SuccessBadge } from "widgets/Badge";
 import { H4 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { Namespaces } from "widgets/Namespaces";
 import { KTable } from "widgets/Table";
-import { blinkTopProgressAction } from "actions/settings";
-import { Link } from "react-router-dom";
-import { Methods } from "pages/Route/Methods";
-import { DangerButton } from "widgets/Button";
+import { DeleteIcon, EditIcon } from "../../widgets/Icon";
+import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -49,11 +50,23 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderHosts(row: RowData) {
-    return row.get("hosts").join(",");
+    return (
+      <Box>
+        {row.get("hosts").map((h) => {
+          return <Box key={h}>{h}</Box>;
+        })}
+      </Box>
+    );
   }
 
   private renderUrls(row: RowData) {
-    return row.get("paths").join(",");
+    return (
+      <Box>
+        {row.get("paths").map((h) => {
+          return <Box key={h}>{h}</Box>;
+        })}
+      </Box>
+    );
   }
 
   private renderRules(row: RowData) {
@@ -137,7 +150,29 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     const { activeNamespaceName, dispatch } = this.props;
     return (
       <>
-        <Button
+        <IconButtonWithTooltip
+          tooltipPlacement="top"
+          tooltipTitle="Delete"
+          aria-label="delete"
+          onClick={() => {
+            blinkTopProgressAction();
+            dispatch(push(`/applications/${activeNamespaceName}/routes/${row.get("name")}/edit`));
+          }}
+        >
+          <EditIcon />
+        </IconButtonWithTooltip>
+        <IconButtonWithTooltip
+          tooltipPlacement="top"
+          tooltipTitle="Delete"
+          aria-label="delete"
+          onClick={() => {
+            blinkTopProgressAction();
+            dispatch(deleteRoute(row.get("name"), row.get("namespace")));
+          }}
+        >
+          <DeleteIcon />
+        </IconButtonWithTooltip>
+        {/* <Button
           size="small"
           variant="outlined"
           style={{ marginRight: 16 }}
@@ -158,7 +193,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
           }}
         >
           Delete
-        </DangerButton>
+        </DangerButton> */}
       </>
     );
   };
@@ -196,18 +231,17 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
               }}
               columns={[
                 {
-                  title: "Host",
+                  title: "Domain",
                   field: "host",
                   sorting: false,
                   render: this.renderHosts,
                 },
-
-                {
-                  title: "Http",
-                  field: "http",
-                  sorting: false,
-                  render: this.renderSupportHttp,
-                },
+                // {
+                //   title: "Http",
+                //   field: "http",
+                //   sorting: false,
+                //   render: this.renderSupportHttp,
+                // },
                 {
                   title: "Https",
                   field: "https",
@@ -232,12 +266,12 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
                   sorting: false,
                   render: this.renderTargets,
                 },
-                {
-                  title: "Rules",
-                  field: "rules",
-                  sorting: false,
-                  render: this.renderRules,
-                },
+                // {
+                //   title: "Rules",
+                //   field: "rules",
+                //   sorting: false,
+                //   render: this.renderRules,
+                // },
                 // {
                 //   title: "Advanced Settings",
                 //   field: "advanced",

@@ -29,11 +29,11 @@ export const formatTimeDistance = (t: any) => {
   let res = "";
 
   if (day > 0) {
-    res += `${day}d`;
+    res += `${day}d `;
   }
 
   if (hour > 0) {
-    res += `${hour}h`;
+    res += `${hour}h `;
   }
 
   if (minutes > 0) {

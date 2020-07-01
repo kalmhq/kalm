@@ -38,6 +38,7 @@ const smallLineChartStyles = (theme: Theme) =>
       position: "relative",
       background: "white",
       display: "inline-block",
+      verticalAlign: "middle",
     },
     text: {
       left: 0,

@@ -187,7 +187,7 @@ export const DangerButton = (props: ButtonProps) => {
   };
 
   return (
-    <Box display="inline-block" borderRadius className={classes.root} style={style}>
+    <Box display="inline-block" className={classes.root} style={style}>
       <Box display="inline-block" className={clsx(classes.text, { [classes.textOpen]: open })}>
         Are you sure?
       </Box>
