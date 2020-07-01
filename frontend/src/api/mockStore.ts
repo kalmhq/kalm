@@ -14,7 +14,6 @@ interface MockStoreData {
   mockClusterInfo: ClusterInfo;
   mockLoginStatus: LoginStatus;
   mockNodes: NodesListResponse;
-  mockVolumes: PersistentVolumes;
   mockStorageClasses: StorageClasses;
   mockSimpleOptions: VolumeOptions;
   mockStatefulSetOptions: VolumeOptions;
@@ -27,6 +26,7 @@ interface MockStoreData {
   mockErrorPod: PodStatus;
   mockComponentPlugins: Immutable.List<ComponentPlugin>;
   mockServices: Immutable.List<Service>;
+  mockVolumes: PersistentVolumes;
 }
 
 export default class MockStore {
@@ -38,6 +38,42 @@ export default class MockStore {
     const cachedData = this.getCachedData();
     this.data = cachedData || this.getInitData();
   }
+
+  public deleteRegistry = async (name: string) => {
+    const index = this.data.get("mockRegistries").findIndex((c) => c.get("name") === name);
+    this.data = this.data.deleteIn(["mockRegistries", index]);
+    await this.saveData();
+  };
+
+  public deleteVolume = async (name: string) => {
+    const index = this.data.get("mockVolumes").findIndex((c) => c.get("name") === name);
+    this.data = this.data.deleteIn(["mockVolumes", index]);
+    await this.saveData();
+  };
+
+  public deletePod = async (namespace: string, name: string) => {
+    let componentIndex, podIndex, pod;
+    this.data
+      .get("mockApplicationComponents")
+      .get(namespace)
+      ?.forEach((component, index) => {
+        const i = component.get("pods").findIndex((c) => c.get("name") === name);
+        if (i >= 0) {
+          componentIndex = index;
+          podIndex = i;
+          pod = component.get("pods").find((c) => c.get("name") === name);
+        }
+      });
+
+    if (componentIndex && podIndex) {
+      this.data = this.data.deleteIn(["mockApplicationComponents", namespace, componentIndex, podIndex]);
+      this.saveData({
+        kind: "Pod",
+        data: pod,
+        action: "Delete",
+      });
+    }
+  };
 
   public deleteCertificate = async (name: string) => {
     const index = this.data.get("mockCertificates").findIndex((c) => c.get("name") === name);
@@ -53,8 +89,13 @@ export default class MockStore {
 
   public deleteKappApplication = async (name: string): Promise<void> => {
     const index = this.data.get("mockApplications").findIndex((c) => c.get("name") === name);
+    const application = this.data.getIn(["mockApplications", index]);
     this.data = this.data.deleteIn(["mockApplications", index]);
-    await this.saveData();
+    await this.saveData({
+      kind: "Application",
+      action: "Delete",
+      data: application,
+    });
   };
 
   public deleteKappApplicationComponent = async (applicationName: string, name: string) => {
@@ -106,12 +147,18 @@ export default class MockStore {
 
   public updateKappApplication = async (application: ApplicationDetails) => {
     const index = this.data.get("mockApplications").findIndex((c) => c.get("name") === application.get("name"));
+    let data = {
+      kind: "Application",
+      data: application,
+      action: "Add",
+    };
     if (index >= 0) {
       this.data = this.data.updateIn(["mockApplications", index], application as any);
+      data.action = "Update";
     } else {
       this.data = this.data.updateIn(["mockApplications"], (c) => c.push(application));
     }
-    await this.saveData();
+    await this.saveData(data);
   };
 
   public updateKappApplicationComponent = async (applicationName: string, component: ApplicationComponentDetails) => {

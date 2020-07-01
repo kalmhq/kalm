@@ -31,6 +31,7 @@ export default class RealApi extends Api {
 
   public getPersistentVolumes = async () => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/volumes` });
+    console.log(JSON.stringify(res.data));
     return Immutable.fromJS(res.data);
   };
 
