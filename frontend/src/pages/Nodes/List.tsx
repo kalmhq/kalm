@@ -15,7 +15,6 @@ import { NodeMemory } from "./Memory";
 import { NodePods } from "./Pods";
 import { Link } from "react-router-dom";
 import { Expansion } from "forms/Route/expansion";
-import { DangerButton } from "widgets/Button";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
 import { api } from "api";
 
@@ -108,10 +107,6 @@ export class NodeListRaw extends React.Component<Props, States> {
           >
             {this.hasCordon(node) ? "Enable Scheduling" : "Disable Scheduling"}
           </Button>
-
-          <DangerButton variant="outlined" style={{ marginRight: 20 }} size="small" onClick={() => {}}>
-            Delete (TODO)
-          </DangerButton>
         </Box>
 
         <VerticalHeadTable
