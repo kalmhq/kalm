@@ -10,11 +10,12 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { HttpRoute } from "types/route";
 import { SuccessBadge } from "widgets/Badge";
+import { DangerButton } from "widgets/Button";
 import { H4 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { Namespaces } from "widgets/Namespaces";
 import { KTable } from "widgets/Table";
-import { DangerButton } from "widgets/Button";
+import { Targets } from "widgets/Targets";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -100,15 +101,8 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
 
   private renderTargets = (row: RowData) => {
     const { activeNamespaceName } = this.props;
-    let sum = 0;
-    row.get("destinations").forEach((x) => (sum += x.get("weight")));
 
-    return row.get("destinations").map((x) => (
-      <div key={x.get("host")}>
-        {x.get("host").replace(`.${activeNamespaceName}.svc.cluster.local`, "").replace(`.svc.cluster.local`, "")}(
-        {Math.floor((x.get("weight") / sum) * 1000 + 0.5) / 10}%)
-      </div>
-    ));
+    return <Targets activeNamespaceName={activeNamespaceName} destinations={row.get("destinations")} />;
   };
 
   private renderAdvanced(row: RowData) {
@@ -265,12 +259,12 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
                   sorting: false,
                   render: this.renderTargets,
                 },
-                {
-                  title: "Rules",
-                  field: "rules",
-                  sorting: false,
-                  render: this.renderRules,
-                },
+                // {
+                //   title: "Rules",
+                //   field: "rules",
+                //   sorting: false,
+                //   render: this.renderRules,
+                // },
                 // {
                 //   title: "Advanced Settings",
                 //   field: "advanced",
