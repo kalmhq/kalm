@@ -235,12 +235,12 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
                   sorting: false,
                   render: this.renderHosts,
                 },
-                // {
-                //   title: "Http",
-                //   field: "http",
-                //   sorting: false,
-                //   render: this.renderSupportHttp,
-                // },
+                {
+                  title: "Http",
+                  field: "http",
+                  sorting: false,
+                  render: this.renderSupportHttp,
+                },
                 {
                   title: "Https",
                   field: "https",
@@ -265,12 +265,12 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
                   sorting: false,
                   render: this.renderTargets,
                 },
-                // {
-                //   title: "Rules",
-                //   field: "rules",
-                //   sorting: false,
-                //   render: this.renderRules,
-                // },
+                {
+                  title: "Rules",
+                  field: "rules",
+                  sorting: false,
+                  render: this.renderRules,
+                },
                 // {
                 //   title: "Advanced Settings",
                 //   field: "advanced",
