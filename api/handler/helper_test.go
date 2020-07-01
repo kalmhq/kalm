@@ -87,6 +87,7 @@ func (suite *WithControllerTestSuite) SetupSuite() {
 }
 
 func (suite *WithControllerTestSuite) TearDownSuite() {
+	suite.testEnv.Stop()
 }
 
 func (suite *WithControllerTestSuite) Eventually(condition func() bool, msgAndArgs ...interface{}) bool {

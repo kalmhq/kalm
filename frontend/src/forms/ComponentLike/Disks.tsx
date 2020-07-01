@@ -2,12 +2,10 @@ import { Box, Button, Grid, Icon, TextField } from "@material-ui/core";
 import Immutable from "immutable";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
+import { RootState } from "reducers";
 import { arrayPush, WrappedFieldArrayProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
 import { getComponentFormVolumeOptions } from "selectors/component";
-import { DeleteIcon } from "widgets/Icon";
-import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { RootState } from "reducers";
 import {
   Volume,
   VolumeTypePersistentVolumeClaim,
@@ -15,6 +13,8 @@ import {
   VolumeTypeTemporaryDisk,
   VolumeTypeTemporaryMemory,
 } from "types/componentTemplate";
+import { DeleteIcon } from "widgets/Icon";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { RenderSelectField } from "../Basic/select";
 import { KRenderTextField } from "../Basic/textfield";
 import { ValidatorRequired, ValidatorVolumeSize } from "../validator";
@@ -36,37 +36,37 @@ interface FieldArrayProps extends DispatchProp, ReturnType<typeof mapStateToProp
 interface Props extends WrappedFieldArrayProps<Volume>, FieldArrayComponentHackType, FieldArrayProps {}
 
 class RenderVolumes extends React.PureComponent<Props> {
-  private getUsingPVCs() {
+  private getUsingClaimNames() {
     const { fields } = this.props;
 
-    const pvcs: { [key: string]: boolean } = {};
+    const claimNames: { [key: string]: boolean } = {};
 
     fields.forEach((member, index) => {
       const volume = fields.get(index);
       if (volume.get("type") === VolumeTypePersistentVolumeClaim) {
-        const pvc = volume.get("pvc");
-        pvcs[pvc] = true;
+        const claimName = volume.get("claimName");
+        claimNames[claimName] = true;
       }
     });
 
-    return pvcs;
+    return claimNames;
   }
 
   private getClaimNameOptions(disk: Volume) {
     const { volumeOptions } = this.props;
-    const usingPVCs = this.getUsingPVCs();
-    const currentPVC = disk.get("pvc");
+    const usingClaimNames = this.getUsingClaimNames();
+    const currentClaimName = disk.get("claimName");
 
     const options: {
       value: string;
       text: string;
     }[] = [];
 
-    volumeOptions.forEach((pv) => {
-      if (pv.get("name") === currentPVC || !usingPVCs[pv.get("name")]) {
+    volumeOptions.forEach((vo) => {
+      if (vo.get("name") === currentClaimName || !usingClaimNames[vo.get("name")]) {
         options.push({
-          value: pv.get("name"),
-          text: pv.get("name"),
+          value: vo.get("name"),
+          text: vo.get("name"),
         });
       }
     });
@@ -121,12 +121,12 @@ class RenderVolumes extends React.PureComponent<Props> {
     ];
 
     if (volumeType === VolumeTypePersistentVolumeClaim) {
-      const pvc = disk.get("pvc");
-      const volumeOption = volumeOptions.find((vo) => vo.get("pvc") === pvc);
+      const claimName = disk.get("claimName");
+      const volumeOption = volumeOptions.find((vo) => vo.get("name") === claimName);
 
       fieldComponents.push(
         <Field
-          name={`${member}.pvc`}
+          name={`${member}.claimName`}
           component={RenderSelectField}
           label="Claim Name"
           // validate={[ValidatorRequired]}
@@ -214,7 +214,9 @@ class RenderVolumes extends React.PureComponent<Props> {
                     fields.name,
                     Immutable.Map({
                       type: VolumeTypePersistentVolumeClaimNew,
-                      storageClassName: storageClasses.get(0)?.get("name"),
+                      path: "",
+                      storageClassName: storageClasses.get(0)?.get("name") || "",
+                      size: "",
                     }),
                   ),
                 );

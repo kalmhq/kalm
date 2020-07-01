@@ -11,6 +11,7 @@ import { ComponentLikeForm } from "forms/ComponentLike";
 import { connect } from "react-redux";
 import { withComponent, WithComponentProp } from "hoc/withComponent";
 import { ComponentStatus } from "widgets/ComponentStatus";
+import { correctComponentFormValuesForInit, componentDetailsToComponent } from "utils/application";
 
 const styles = (theme: Theme) => createStyles({});
 
@@ -39,7 +40,7 @@ class ComponentEditRaw extends React.PureComponent<Props> {
           <Grid container spacing={2}>
             <Grid item xs={8}>
               <ComponentLikeForm
-                initialValues={component}
+                initialValues={correctComponentFormValuesForInit(componentDetailsToComponent(component))}
                 onSubmit={this.submit}
                 onSubmitSuccess={this.onSubmitSuccess}
               />

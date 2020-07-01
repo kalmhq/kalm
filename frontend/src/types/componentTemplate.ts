@@ -56,6 +56,8 @@ export interface VolumeContent {
   // persistentVolumeClaimName: string;
   pvc: string;
   pvToMatch: string;
+  // select claimName then pass pvc and pvToMatch
+  claimName: string;
 }
 
 export type PreInjectedFile = ImmutableMap<{

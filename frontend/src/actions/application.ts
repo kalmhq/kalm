@@ -1,3 +1,4 @@
+import { api } from "api";
 import { push } from "connected-react-router";
 import Immutable from "immutable";
 import { SubmissionError } from "redux-form";
@@ -12,58 +13,24 @@ import {
   DELETE_APPLICATION,
   DELETE_COMPONENT,
   DUPLICATE_APPLICATION,
-  LOAD_APPLICATION_FAILED,
-  LOAD_APPLICATION_FULFILLED,
-  LOAD_APPLICATION_PENDING,
   LOAD_APPLICATIONS_FAILED,
   LOAD_APPLICATIONS_FULFILLED,
   LOAD_APPLICATIONS_PENDING,
+  LOAD_APPLICATION_FAILED,
+  LOAD_APPLICATION_FULFILLED,
+  LOAD_APPLICATION_PENDING,
   LOAD_COMPONENT_PLUGINS_FULFILLED,
-  SET_IS_SUBMITTING_APPLICATION,
-  SET_IS_SUBMITTING_APPLICATION_COMPONENT,
   SetIsSubmittingApplication,
   SetIsSubmittingApplicationComponent,
+  SET_IS_SUBMITTING_APPLICATION,
+  SET_IS_SUBMITTING_APPLICATION_COMPONENT,
   UPDATE_APPLICATION,
   UPDATE_COMPONENT,
 } from "../types/application";
 import { resErrorsToSubmitErrors } from "../utils";
+import { correctComponentFormValuesForSubmit } from "../utils/application";
 import { setCurrentNamespaceAction } from "./namespaces";
 import { setSuccessNotificationAction } from "./notification";
-import { api } from "api";
-import { VolumeTypePersistentVolumeClaimNew, VolumeTypePersistentVolumeClaim } from "../types/componentTemplate";
-import { getComponentFormVolumeOptions } from "../selectors/component";
-
-const correctComponentFormValues = (componentValues: ApplicationComponent): ApplicationComponent => {
-  const volumes = componentValues.get("volumes");
-
-  const volumeOptions = getComponentFormVolumeOptions(componentValues.get("name"), componentValues.get("workloadType"));
-
-  const findPVToMatch = (pvc: string): string => {
-    let pvToMatch = "";
-
-    volumeOptions.forEach((vo) => {
-      if (vo.get("pvc") === pvc) {
-        pvToMatch = vo.get("pvToMatch");
-      }
-    });
-
-    return pvToMatch;
-  };
-
-  const correctedVolumes = volumes?.map((v) => {
-    // set pvToMatch
-    if (v.get("type") === VolumeTypePersistentVolumeClaim) {
-      v = v.set("pvToMatch", findPVToMatch(v.get("pvc")));
-    }
-    // if is pvc-new, set to pvc
-    if (v.get("type") === VolumeTypePersistentVolumeClaimNew) {
-      v = v.set("type", VolumeTypePersistentVolumeClaim);
-    }
-    return v;
-  });
-
-  return componentValues.set("volumes", correctedVolumes);
-};
 
 export const createComponentAction = (
   componentValues: ApplicationComponent,
@@ -79,7 +46,7 @@ export const createComponentAction = (
     try {
       component = await api.createKappApplicationComponent(
         applicationName,
-        correctComponentFormValues(componentValues),
+        correctComponentFormValuesForSubmit(componentValues),
       );
     } catch (e) {
       dispatch(setIsSubmittingApplicationComponent(false));
@@ -112,7 +79,7 @@ export const updateComponentAction = (
     try {
       component = await api.updateKappApplicationComponent(
         applicationName,
-        correctComponentFormValues(componentValues),
+        correctComponentFormValuesForSubmit(componentValues),
       );
     } catch (e) {
       dispatch(setIsSubmittingApplicationComponent(false));
