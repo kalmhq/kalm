@@ -103,7 +103,7 @@ export default class MockStore {
       .get("mockApplicationComponents")
       .get(applicationName)
       ?.findIndex((c) => c.get("name") === name);
-    const component = this.data.getIn(["mockApplicationComponents", index]);
+    const component = this.data.getIn(["mockApplicationComponents", applicationName, index]);
     this.data = this.data.deleteIn(["mockApplicationComponents", index]);
     await this.saveData({
       kind: "Component",
