@@ -115,6 +115,7 @@ export type HttpRoute = ImmutableMap<HttpRouteContent>;
 
 export const methodsModeAll = "all";
 export const methodsModeSpecific = "specific";
+export const httpMethods = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD", "TRACE", "CONNECT"];
 
 export interface HttpRouteFormContent extends HttpRouteContent {
   methodsMode: string;
