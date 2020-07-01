@@ -17,6 +17,7 @@ func StartWatching(c *Client) {
 	go WatchComponents(c)
 	go WatchServices(c)
 	go WatchPods(c)
+	go Watch(c, &coreV1.Node{}, buildNodeResMessage)
 }
 
 func WatchNamespaces(c *Client) {
@@ -172,5 +173,22 @@ func buildPodResMessage(c *Client, action string, objWatched interface{}) *ResMe
 		Kind:      "Pod",
 		Action:    action,
 		Data:      podStatus,
+	}
+}
+
+func buildNodeResMessage(_ *Client, action string, objWatched interface{}) *ResMessage {
+	node, ok := objWatched.(*coreV1.Node)
+
+	if !ok {
+		log.Warnln("convert watch obj to Pod failed :", objWatched)
+		return &ResMessage{}
+	}
+
+	//builder := resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, log.New())
+
+	return &ResMessage{
+		Kind:   "Node",
+		Action: action,
+		Data:   resources.BuildNodeResponse(node),
 	}
 }

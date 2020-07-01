@@ -290,7 +290,7 @@ func (r *KappPVCReconciler) reconcileDefaultStorageClass(cloudProvider string) e
 			ObjectMeta: ctrl.ObjectMeta{
 				Name: "kapp-hdd",
 				Annotations: map[string]string{
-					KappAnnoSCDocLink: "todo",
+					KappAnnoSCDocLink:   "todo",
 					KappAnnoSCPriceLink: "todo",
 				},
 			},

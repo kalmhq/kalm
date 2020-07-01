@@ -93,6 +93,8 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gv1Alpha1WithAuth.GET("/serviceaccounts/:name", h.handleGetServiceAccount)
 
 	gv1Alpha1WithAuth.GET("/nodes", h.handleListNodes)
+	gv1Alpha1WithAuth.POST("/nodes/:name/cordon", h.handleCordonNode)
+	gv1Alpha1WithAuth.POST("/nodes/:name/uncordon", h.handleUncordonNode)
 
 	gv1Alpha1WithAuth.GET("/httproutes", h.handleListAllRoutes)
 	gv1Alpha1WithAuth.GET("/httproutes/:namespace", h.handleListRoutes)
@@ -124,7 +126,6 @@ func (h *ApiHandler) Builder(c echo.Context) *resources.Builder {
 	k8sClientConfig := getK8sClientConfig(c)
 	return resources.NewBuilder(k8sClient, k8sClientConfig, h.logger)
 }
-
 
 func NewApiHandler(clientManager *client.ClientManager) *ApiHandler {
 	return &ApiHandler{

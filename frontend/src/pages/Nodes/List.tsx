@@ -17,6 +17,7 @@ import { Link } from "react-router-dom";
 import { Expansion } from "forms/Route/expansion";
 import { DangerButton } from "widgets/Button";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
+import { api } from "api";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -43,6 +44,22 @@ export class NodeListRaw extends React.Component<Props, States> {
   componentDidMount() {
     this.props.dispatch(loadNodesAction());
   }
+
+  private hasCordon = (node: Node) => node.get("statusTexts").includes("SchedulingDisabled");
+
+  private handleClickCordonButton = (event: React.MouseEvent) => {
+    const name = event.currentTarget!.getAttribute("node-name")!;
+    if (!name) return;
+
+    const node = this.props.nodes.find((n) => n.get("name") === name)!;
+    if (!node) return;
+
+    if (this.hasCordon(node)) {
+      api.uncordonNode(name);
+    } else {
+      api.cordonNode(name);
+    }
+  };
 
   private renderNodePanel = (node: Node) => {
     let labels: React.ReactNode[] = [];
@@ -86,30 +103,10 @@ export class NodeListRaw extends React.Component<Props, States> {
             color="primary"
             size="small"
             variant="outlined"
-            to={`#`}
+            node-name={node.get("name")}
+            onClick={this.handleClickCordonButton}
           >
-            Node Shell (TODO)
-          </Button>
-
-          <Button
-            component={(props: any) => <Link {...props} />}
-            style={{ marginRight: 20 }}
-            color="primary"
-            size="small"
-            variant="outlined"
-            to={``}
-          >
-            Cordon (TODO)
-          </Button>
-          <Button
-            component={(props: any) => <Link {...props} />}
-            style={{ marginRight: 20 }}
-            color="primary"
-            size="small"
-            variant="outlined"
-            to={``}
-          >
-            Drain (TODO)
+            {this.hasCordon(node) ? "Enable Scheduling" : "Disable Scheduling"}
           </Button>
 
           <DangerButton variant="outlined" style={{ marginRight: 20 }} size="small" onClick={() => {}}>
