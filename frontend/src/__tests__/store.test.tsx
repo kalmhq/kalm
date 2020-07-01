@@ -17,9 +17,6 @@ import ApplicationForm, { applicationInitialValues } from "forms/Application";
 import { CERTIFICATE_FORM_ID, APPLICATION_FORM_ID } from "forms/formIDs";
 import { Route } from "react-router";
 import { ConnectedRouter } from "connected-react-router/immutable";
-import { RequireAdmin } from "permission/Role";
-import { ApplicationListPage } from "pages/Application/List";
-import { ApplicationNewPage } from "pages/Application/New";
 import { createApplicationAction } from "actions/application";
 import { Application } from "types/application";
 
