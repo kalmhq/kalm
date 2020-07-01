@@ -5,6 +5,8 @@ import { PluginType } from "./plugin";
 export type WorkloadType = string;
 export const workloadTypeServer: WorkloadType = "server";
 export const workloadTypeCronjob: WorkloadType = "cronjob";
+export const workloadTypeDaemonSet: WorkloadType = "daemonset";
+export const workloadTypeStatefulSet: WorkloadType = "statefulset";
 
 export const newEmptyComponentLike = (): ComponentLike => {
   return Immutable.Map({
@@ -43,7 +45,7 @@ export const VolumeTypeTemporaryDisk: VolumeType = "emptyDir";
 export const VolumeTypePersistentVolumeClaim: VolumeType = "pvc";
 
 // derivative
-// export const VolumeTypePersistentVolumeClaimNew: VolumeType = "pvc-new";
+export const VolumeTypePersistentVolumeClaimNew: VolumeType = "pvc-new";
 // export const VolumeTypePersistentVolumeClaimExisting: VolumeType = "pvc-existing";
 
 export interface VolumeContent {
@@ -51,7 +53,11 @@ export interface VolumeContent {
   path: string;
   size: string;
   storageClassName: string;
-  persistentVolumeClaimName: string;
+  // persistentVolumeClaimName: string;
+  pvc: string;
+  pvToMatch: string;
+  // select claimName then pass pvc and pvToMatch
+  claimName: string;
 }
 
 export type PreInjectedFile = ImmutableMap<{

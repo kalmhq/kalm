@@ -1,4 +1,4 @@
-import { Box, Button, Grid, Icon, MenuItem } from "@material-ui/core";
+import { Box, Button, Fade, Grid, Icon, MenuItem, Paper, Popper } from "@material-ui/core";
 import { Alert } from "@material-ui/lab";
 import Immutable from "immutable";
 import React from "react";
@@ -7,12 +7,15 @@ import { arrayPush, WrappedFieldArrayProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
 import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { portTypeTCP, portTypeUDP } from "../../types/common";
-import { ComponentLikePort } from "../../types/componentTemplate";
+import { portTypeTCP, portTypeUDP } from "types/common";
+import { ComponentLikePort } from "types/componentTemplate";
 import { RenderSelectField } from "../Basic/select";
 import { KRenderTextField } from "../Basic/textfield";
 import { NormalizePort } from "../normalizer";
 import { ValidatorRequired, ValidatorServiceName } from "../validator";
+import PopupState, { anchorRef, bindPopper, InjectedProps } from "material-ui-popup-state";
+import { PortChart } from "widgets/PortChart";
+import { POPPER_ZINDEX } from "layout/Constants";
 
 interface FieldArrayComponentHackType {
   name: any;
@@ -124,27 +127,81 @@ class RenderPorts extends React.PureComponent<Props> {
                   <MenuItem value={portTypeTCP}>{portTypeTCP}</MenuItem>
                 </Field>
               </Grid>
-              <Grid item xs>
-                <Field
-                  component={KRenderTextField}
-                  name={`${field}.containerPort`}
-                  label="Publish port"
-                  placeholder="Port number between 1-65535"
-                  required
-                  validate={[ValidatorRequired]}
-                  normalize={NormalizePort}
-                />
-              </Grid>
-              <Grid item xs>
-                <Field
-                  component={KRenderTextField}
-                  name={`${field}.servicePort`}
-                  label="listening on port"
-                  placeholder="Default to equal publish port"
-                  // validate={[ValidatorRequired]}
-                  normalize={NormalizePort}
-                />
-              </Grid>
+              <PopupState variant="popover" popupId={`container-port-${index}`} disableAutoFocus>
+                {(popupState: InjectedProps) => {
+                  return (
+                    <>
+                      <Grid
+                        item
+                        xs
+                        ref={(c: any) => {
+                          anchorRef(popupState)(c);
+                        }}
+                      >
+                        <Field
+                          component={KRenderTextField}
+                          onFocus={popupState.open}
+                          onBlur={popupState.close}
+                          name={`${field}.containerPort`}
+                          label="Container port"
+                          placeholder="Port number between 1-65535"
+                          required
+                          validate={[ValidatorRequired]}
+                          normalize={NormalizePort}
+                        />
+                      </Grid>
+                      <Popper {...bindPopper(popupState)} transition placement="top" style={{ zIndex: POPPER_ZINDEX }}>
+                        {({ TransitionProps }) => (
+                          <Fade {...TransitionProps} timeout={350}>
+                            <Paper elevation={2}>
+                              <Box p={2}>
+                                <PortChart highlightContainerPort />
+                              </Box>
+                            </Paper>
+                          </Fade>
+                        )}
+                      </Popper>
+                    </>
+                  );
+                }}
+              </PopupState>
+              <PopupState variant="popover" popupId={`service-port-${index}`} disableAutoFocus>
+                {(popupState: InjectedProps) => {
+                  return (
+                    <>
+                      <Grid
+                        item
+                        xs
+                        ref={(c: any) => {
+                          anchorRef(popupState)(c);
+                        }}
+                      >
+                        <Field
+                          component={KRenderTextField}
+                          onFocus={popupState.open}
+                          onBlur={popupState.close}
+                          name={`${field}.servicePort`}
+                          label="Service Port"
+                          placeholder="Default to equal publish port"
+                          normalize={NormalizePort}
+                        />
+                      </Grid>
+                      <Popper {...bindPopper(popupState)} transition placement="top" style={{ zIndex: POPPER_ZINDEX }}>
+                        {({ TransitionProps }) => (
+                          <Fade {...TransitionProps} timeout={350}>
+                            <Paper elevation={2}>
+                              <Box p={2}>
+                                <PortChart highlightServicePort />
+                              </Box>
+                            </Paper>
+                          </Fade>
+                        )}
+                      </Popper>
+                    </>
+                  );
+                }}
+              </PopupState>
+
               <Grid item xs={1}>
                 <IconButtonWithTooltip
                   tooltipPlacement="top"

@@ -17,12 +17,12 @@ import {
   CertificateList,
 } from "types/certificate";
 import { ClusterInfo } from "types/cluster";
+import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
 import { NodesListResponse } from "types/node";
 import { RegistryType } from "types/registry";
 import { HttpRoute } from "types/route";
 import { Service } from "types/service";
 import { RoleBinding, RoleBindingsRequestBody } from "types/user";
-import { PersistentVolumes, StorageClasses } from "types/disk";
 
 export abstract class Api {
   public abstract getClusterInfo(): Promise<ClusterInfo>;
@@ -30,8 +30,10 @@ export abstract class Api {
   public abstract validateToken(token: string): Promise<boolean>;
   public abstract getNodes(): Promise<NodesListResponse>;
   public abstract getPersistentVolumes(): Promise<PersistentVolumes>;
-  public abstract deletePersistentVolume(name: string): Promise<void>;
+  public abstract deletePersistentVolume(namespace: string, name: string): Promise<void>;
   public abstract getStorageClasses(): Promise<StorageClasses>;
+  public abstract getSimpleOptions(namespace: string): Promise<VolumeOptions>;
+  public abstract getStatefulSetOptions(namespace: string): Promise<VolumeOptions>;
   // registry
   public abstract getRegistries(): Promise<Immutable.List<RegistryType>>;
   public abstract getRegistry(name: string): Promise<RegistryType>;

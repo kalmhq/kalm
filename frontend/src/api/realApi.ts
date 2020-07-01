@@ -31,15 +31,32 @@ export default class RealApi extends Api {
 
   public getPersistentVolumes = async () => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/volumes` });
+    console.log(JSON.stringify(res.data));
     return Immutable.fromJS(res.data);
   };
 
-  public deletePersistentVolume = async (name: string): Promise<void> => {
-    await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/volumes/${name}` });
+  public deletePersistentVolume = async (namespace: string, name: string): Promise<void> => {
+    await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/volumes/${namespace}/${name}` });
   };
 
   public getStorageClasses = async () => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/storageclasses` });
+    return Immutable.fromJS(res.data);
+  };
+
+  public getSimpleOptions = async (namespace: string) => {
+    const res = await axiosRequest({
+      method: "get",
+      url: `/${K8sApiVersion}/volumes/available/simple-workload?currentNamespace=${namespace}`,
+    });
+    return Immutable.fromJS(res.data);
+  };
+
+  public getStatefulSetOptions = async (namespace: string) => {
+    const res = await axiosRequest({
+      method: "get",
+      url: `/${K8sApiVersion}/volumes/available/sts/${namespace}`,
+    });
     return Immutable.fromJS(res.data);
   };
 

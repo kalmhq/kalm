@@ -12,3 +12,4 @@ export const APP_BAR_ZINDEX = 1203;
 export const SNACKBAR_ZINDEX = 1400;
 export const TOP_PROGRESS_ZINDEX = 9999;
 export const DRAWER_HIGH_ZINDEX = 100004;
+export const POPPER_ZINDEX = 1401;

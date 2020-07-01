@@ -8,16 +8,23 @@ import {
   LOAD_STORAGE_CLASSES,
   PersistentVolumes,
   StorageClasses,
+  VolumeOptions,
+  LOAD_SIMPLE_OPTIONS,
+  LOAD_STATEFULSET_OPTIONS,
 } from "types/disk";
 
 export type State = ImmutableMap<{
   persistentVolumes: PersistentVolumes;
   storageClasses: StorageClasses;
+  simpleOptions: VolumeOptions; // for simple workloads, including: Deployment, CronJob and DaemonSet
+  statefulSetOptions: VolumeOptions; // for StatefulSet
 }>;
 
 const initialState: State = Immutable.Map({
-  persistentVolumes: [],
-  storageClasses: [],
+  persistentVolumes: Immutable.List([]),
+  storageClasses: Immutable.List([]),
+  simpleOptions: Immutable.List([]),
+  statefulSetOptions: Immutable.List([]),
 });
 
 const reducer = (state: State = initialState, action: Actions): State => {
@@ -39,6 +46,12 @@ const reducer = (state: State = initialState, action: Actions): State => {
         state = state.deleteIn(["persistentVolumes", index]);
       }
       return state;
+    }
+    case LOAD_SIMPLE_OPTIONS: {
+      return state.set("simpleOptions", action.payload.simpleOptions);
+    }
+    case LOAD_STATEFULSET_OPTIONS: {
+      return state.set("statefulSetOptions", action.payload.statefulSetOptions);
     }
   }
 
