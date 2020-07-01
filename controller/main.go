@@ -160,23 +160,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	//(controllers.NewComponentAdmissionWebhook()).SetupWithManager(mgr)
-	if err = (&corev1alpha1.Component{}).SetupWebhookWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create webhook", "webhook", "Component")
-		os.Exit(1)
-	}
-	// +kubebuilder:scaffold:builder
-
 	// only run webhook if explicitly declared
-	//if os.Getenv("ENABLE_WEBHOOKS") == "true" {
-	//	if err = (&corekappdevv1alpha1.Application{}).SetupWebhookWithManager(mgr); err != nil {
-	//		setupLog.Error(err, "unable to create webhook", "webhook", "Application")
-	//		os.Exit(1)
-	//	}
-	//	setupLog.Info("WEBHOOK enabled")
-	//} else {
-	//	setupLog.Info("WEBHOOK not enabled")
-	//}
+	if os.Getenv("ENABLE_WEBHOOKS") == "true" {
+		if err = (&corev1alpha1.Component{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "Component")
+			os.Exit(1)
+		}
+		setupLog.Info("WEBHOOK enabled")
+	} else {
+		setupLog.Info("WEBHOOK not enabled")
+	}
+	//+kubebuilder:scaffold:builder
 
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {

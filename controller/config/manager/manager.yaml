@@ -30,7 +30,7 @@ spec:
             - /manager
           args:
             - --enable-leader-election
-          image: diveinto/tmp-controller
+          image: kappstaging/controller:latest
           imagePullPolicy: Always
           name: manager
           env:
