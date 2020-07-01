@@ -1,4 +1,4 @@
-import { Box, Button, Collapse, Icon, Link, Typography } from "@material-ui/core";
+import { Box, Button, Collapse, Icon, Link, Typography, Grid } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { Alert, AlertTitle } from "@material-ui/lab";
 import { loadCertificates } from "actions/certificate";
@@ -70,9 +70,7 @@ const styles = (theme: Theme) =>
       border: "1px solid black",
       marginBottom: theme.spacing(2),
     },
-    buttonMargin: {
-      margin: theme.spacing(1),
-    },
+
     heading: {
       fontSize: theme.typography.pxToRem(15),
       flexBasis: "20%",
@@ -263,87 +261,92 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
 
     return (
       <div className={classes.root}>
-        <Prompt when={dirty && !submitSucceeded} message="Are you sure to leave without saving changes?" />
-        <Box mb={2}>
-          <KPanel
-            title="Hosts and paths"
-            content={
-              <Box p={2}>
-                <Field
-                  label="Hosts"
-                  component={KFreeSoloAutoCompleteMultiValues}
-                  name="hosts"
-                  margin="dense"
-                  validate={[ValidatorRequired, KValidatorHosts]}
-                  placeholder="Type a host"
-                  options={domains}
-                />
-                <Field
-                  label="Paths"
-                  component={KFreeSoloAutoCompleteMultiValues}
-                  name="paths"
-                  margin="dense"
-                  validate={[ValidatorRequired, KValidatorPaths]}
-                  placeholder="Type a path"
-                  helperText='Allow to configure multiple paths. Each path must begin with "/".'
-                />
-              </Box>
-            }
-          />
-        </Box>
-
-        <Box mb={2}>
-          <KPanel
-            title="Schemes and methods"
-            content={
-              <Box p={2}>
-                <Caption>Define acceptable schemes and methods for incoming requests.</Caption>
-                <Field
-                  title="Http methods"
-                  component={KRadioGroupRender}
-                  name="methodsMode"
-                  options={[
-                    {
-                      value: methodsModeAll,
-                      label: "All http methods are allowed in this route.",
-                    },
-                    {
-                      value: methodsModeSpecific,
-                      label: "Choose allowed methods manually.",
-                    },
-                  ]}
-                />
-                <Collapse in={methodsMode === methodsModeSpecific}>
-                  <div>
+        <Grid container spacing={2}>
+          <Grid item xs={8}>
+            <Prompt when={dirty && !submitSucceeded} message="Are you sure to leave without saving changes?" />
+            <Box mb={2}>
+              <KPanel
+                title="Hosts and paths"
+                content={
+                  <Box p={2}>
                     <Field
-                      title="Choose methods you need"
-                      component={KCheckboxGroupRender}
-                      validate={methodsMode === methodsModeSpecific ? ValidatorListNotEmpty : []}
-                      name="methods"
-                      options={httpMethods.map((m) => {
-                        return { value: m, label: m };
-                      })}
+                      label="Hosts"
+                      component={KFreeSoloAutoCompleteMultiValues}
+                      name="hosts"
+                      margin="dense"
+                      validate={[ValidatorRequired, KValidatorHosts]}
+                      placeholder="Type a host"
+                      options={domains}
                     />
-                  </div>
-                </Collapse>
-                <Field
-                  title="Allow traffic through"
-                  component={KCheckboxGroupRender}
-                  validate={ValidatorListNotEmpty}
-                  name="schemes"
-                  options={[
-                    {
-                      value: "http",
-                      label: "http",
-                    },
-                    {
-                      value: "https",
-                      label: "https",
-                    },
-                  ]}
-                />
-                {/* TODO: wait backend fix this. */}
-                {/* <Collapse in={schemes.includes("http")}>
+                    <Field
+                      label="Paths"
+                      component={KFreeSoloAutoCompleteMultiValues}
+                      name="paths"
+                      margin="dense"
+                      validate={[ValidatorRequired, KValidatorPaths]}
+                      placeholder="Type a path"
+                      helperText='Allow to configure multiple paths. Each path must begin with "/".'
+                    />
+                  </Box>
+                }
+              />
+            </Box>
+
+            <Box mb={2}>
+              <KPanel
+                title="Schemes and methods"
+                content={
+                  <Box p={2}>
+                    <Caption>Define acceptable schemes and methods for incoming requests.</Caption>
+                    <Field
+                      title="Http methods"
+                      component={KRadioGroupRender}
+                      name="methodsMode"
+                      options={[
+                        {
+                          value: methodsModeAll,
+                          label: "All http methods are allowed in this route.",
+                        },
+                        {
+                          value: methodsModeSpecific,
+                          label: "Choose allowed methods manually.",
+                        },
+                      ]}
+                    />
+                    <Collapse in={methodsMode === methodsModeSpecific}>
+                      <div>
+                        <Field
+                          title="Choose methods you need"
+                          component={KCheckboxGroupRender}
+                          componentType={"Chip"}
+                          validate={methodsMode === methodsModeSpecific ? ValidatorListNotEmpty : []}
+                          name="methods"
+                          options={httpMethods.map((m) => {
+                            return { value: m, label: m };
+                          })}
+                        />
+                      </div>
+                    </Collapse>
+                    <Field
+                      title="Allow traffic through"
+                      component={KCheckboxGroupRender}
+                      componentType={"Chip"}
+                      validate={ValidatorListNotEmpty}
+                      name="schemes"
+                      options={[
+                        {
+                          value: "http",
+                          label: "http",
+                        },
+                        {
+                          value: "https",
+                          label: "https",
+                          htmlColor: "#9CCC65",
+                        },
+                      ]}
+                    />
+                    {/* TODO: wait backend fix this. */}
+                    {/* <Collapse in={schemes.includes("http")}>
             <div>
               <Field
                 component={KBoolCheckboxRender}
@@ -356,127 +359,128 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
               />
             </div>
           </Collapse> */}
-                <Collapse in={schemes.includes("https")}>
-                  <Alert className="alert" severity="info">
-                    You choosed https. Please note that the TLS termination will be happened in this route level, which
-                    means the targets will receive http requests instead.
-                  </Alert>
-                  {this.renderCertificationStatus()}
-                </Collapse>
-              </Box>
-            }
-          />
-        </Box>
+                    <Collapse in={schemes.includes("https")}>
+                      <Alert className="alert" severity="info">
+                        You choosed https. Please note that the TLS termination will be happened in this route level,
+                        which means the targets will receive http requests instead.
+                      </Alert>
+                      {this.renderCertificationStatus()}
+                    </Collapse>
+                  </Box>
+                }
+              />
+            </Box>
 
-        <Box mb={2}>
-          <KPanel
-            title="Targets"
-            content={
-              <Box p={2}>
-                <Caption>Choose targets that will receive requets.</Caption>
-                <Box mb={2}>
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    startIcon={<Icon>add</Icon>}
-                    size="small"
-                    onClick={() =>
-                      dispatch(
-                        arrayPush(
-                          form,
-                          "destinations",
-                          Immutable.Map({
-                            host: "",
-                            weight: 1,
-                          }),
-                        ),
-                      )
-                    }
-                    className={classes.buttonMargin}
-                  >
-                    Add a target
-                  </Button>
-                </Box>
-                <Collapse in={destinations.size > 1}>
-                  <Alert className="alert" severity="info">
-                    There are more than one target, traffic will be forwarded to each target by weight. Read more about
-                    canary rollout.
-                  </Alert>
-                </Collapse>
-                <FieldArray
-                  name="destinations"
-                  component={RenderHttpRouteDestinations}
-                  rerenderOnEveryChange
-                  validate={ValidatorAtLeastOneHttpRouteDestination}
-                />
-              </Box>
-            }
-          />
-        </Box>
+            <Box mb={2}>
+              <KPanel
+                title="Targets"
+                content={
+                  <Box p={2}>
+                    <Caption>Choose targets that will receive requets.</Caption>
+                    <Box mt={2} mr={2} mb={2}>
+                      <Button
+                        variant="outlined"
+                        color="primary"
+                        startIcon={<Icon>add</Icon>}
+                        size="small"
+                        onClick={() =>
+                          dispatch(
+                            arrayPush(
+                              form,
+                              "destinations",
+                              Immutable.Map({
+                                host: "",
+                                weight: 1,
+                              }),
+                            ),
+                          )
+                        }
+                      >
+                        Add a target
+                      </Button>
+                    </Box>
+                    <Collapse in={destinations.size > 1}>
+                      <Alert className="alert" severity="info">
+                        There are more than one target, traffic will be forwarded to each target by weight. Read more
+                        about canary rollout.
+                      </Alert>
+                    </Collapse>
+                    <FieldArray
+                      name="destinations"
+                      component={RenderHttpRouteDestinations}
+                      rerenderOnEveryChange
+                      validate={ValidatorAtLeastOneHttpRouteDestination}
+                    />
+                  </Box>
+                }
+              />
+            </Box>
 
-        <Box mb={2}>
-          <KPanel
-            title="Rules"
-            content={
-              <Box p={2}>
-                <Caption>
-                  Set specific rules for this ingress. Only requests that match these conditions will be accepted.
-                </Caption>
-                <Box mb={2}>
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    startIcon={<Icon>add</Icon>}
-                    size="small"
-                    onClick={() =>
-                      dispatch(
-                        arrayPush(
-                          form,
-                          "conditions",
-                          Immutable.Map({
-                            type: "header",
-                            operator: "equal",
-                            name: "",
-                            value: "",
-                          }),
-                        ),
-                      )
-                    }
-                    className={classes.buttonMargin}
-                  >
-                    Add Header Rule
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    startIcon={<Icon>add</Icon>}
-                    size="small"
-                    onClick={() =>
-                      dispatch(
-                        arrayPush(
-                          form,
-                          "conditions",
-                          Immutable.Map({
-                            type: "query",
-                            operator: "equal",
-                            name: "",
-                            value: "",
-                          }),
-                        ),
-                      )
-                    }
-                    className={classes.buttonMargin}
-                  >
-                    Add Query Rule
-                  </Button>
-                </Box>
-                <FieldArray name="conditions" component={RenderHttpRouteConditions} />
-              </Box>
-            }
-          />
-        </Box>
+            <Box mb={2}>
+              <KPanel
+                title="Rules"
+                content={
+                  <Box p={2}>
+                    <Caption>
+                      Set specific rules for this ingress. Only requests that match these conditions will be accepted.
+                    </Caption>
+                    <Box display="flex">
+                      <Box mt={2} mr={2} mb={2}>
+                        <Button
+                          variant="outlined"
+                          color="primary"
+                          startIcon={<Icon>add</Icon>}
+                          size="small"
+                          onClick={() =>
+                            dispatch(
+                              arrayPush(
+                                form,
+                                "conditions",
+                                Immutable.Map({
+                                  type: "header",
+                                  operator: "equal",
+                                  name: "",
+                                  value: "",
+                                }),
+                              ),
+                            )
+                          }
+                        >
+                          Add Header Rule
+                        </Button>
+                      </Box>
+                      <Box mt={2} mr={2} mb={2}>
+                        <Button
+                          variant="outlined"
+                          color="primary"
+                          startIcon={<Icon>add</Icon>}
+                          size="small"
+                          onClick={() =>
+                            dispatch(
+                              arrayPush(
+                                form,
+                                "conditions",
+                                Immutable.Map({
+                                  type: "query",
+                                  operator: "equal",
+                                  name: "",
+                                  value: "",
+                                }),
+                              ),
+                            )
+                          }
+                        >
+                          Add Query Rule
+                        </Button>
+                      </Box>
+                    </Box>
+                    <FieldArray name="conditions" component={RenderHttpRouteConditions} />
+                  </Box>
+                }
+              />
+            </Box>
 
-        {/* <Expansion title="Advanced" subTitle="more powerful settings">
+            {/* <Expansion title="Advanced" subTitle="more powerful settings">
           <h1>TODO</h1>
           <div className={classes.box}>
             <FormControl component="fieldset">
@@ -502,9 +506,11 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
             </FormControl>
           </div>
         </Expansion> */}
-        <Button type="submit" onClick={handleSubmit} color="primary" variant="contained">
-          Create Route
-        </Button>
+            <Button type="submit" onClick={handleSubmit} color="primary" variant="contained">
+              Create Route
+            </Button>
+          </Grid>
+        </Grid>
       </div>
     );
   }
