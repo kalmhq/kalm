@@ -10,8 +10,13 @@ import (
 )
 
 type StorageClass struct {
-	Name          string `json:"name"`
-	IsKappManaged bool   `json:"isKappManaged"`
+	Name      string `json:"name"`
+	IsManaged bool   `json:"isManaged"`
+	DocLink   string `json:"docLink"`
+	PriceLink string `json:"priceLink"`
+
+	//deprecated
+	IsKappManaged bool `json:"isKappManaged"`
 }
 
 func (h *ApiHandler) handleListStorageClasses(c echo.Context) error {
@@ -26,9 +31,15 @@ func (h *ApiHandler) handleListStorageClasses(c echo.Context) error {
 
 	var scList []StorageClass
 	for _, sc := range storageClassList.Items {
+
+		docLink, priceLink := getDocAndPriceLink(sc)
+
 		scList = append(scList, StorageClass{
 			Name:          sc.Name,
 			IsKappManaged: isKappManagedStorageClass(sc),
+			IsManaged:     isKappManagedStorageClass(sc),
+			DocLink:       docLink,
+			PriceLink:     priceLink,
 		})
 	}
 
@@ -36,12 +47,10 @@ func (h *ApiHandler) handleListStorageClasses(c echo.Context) error {
 		a := scList[i]
 		b := scList[j]
 
-		if a.IsKappManaged && b.IsKappManaged {
+		if a.IsManaged && b.IsManaged {
 			return strings.Compare(a.Name, b.Name) <= 0
-		} else if a.IsKappManaged{
-			return false
 		} else {
-			return true
+			return a.IsManaged
 		}
 	})
 
@@ -54,4 +63,15 @@ func isKappManagedStorageClass(sc v1.StorageClass) bool {
 	}
 
 	return false
+}
+
+func getDocAndPriceLink(sc v1.StorageClass) (docLink string, priceLink string) {
+	if sc.Annotations == nil {
+		return
+	}
+
+	docLink = sc.Annotations[controllers.KappAnnoSCDocLink]
+	priceLink = sc.Annotations[controllers.KappAnnoSCPriceLink]
+
+	return
 }

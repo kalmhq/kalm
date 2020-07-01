@@ -24,3 +24,10 @@ export class KappTooltip extends React.PureComponent<Props> {
     );
   }
 }
+
+export const WhiteTooltip = withStyles({
+  tooltip: {
+    backgroundColor: "#fff",
+    border: "1px solid #eee",
+  },
+})(Tooltip);

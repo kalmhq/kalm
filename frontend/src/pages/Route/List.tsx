@@ -196,7 +196,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
               }}
               columns={[
                 {
-                  title: "Host",
+                  title: "Domain",
                   field: "host",
                   sorting: false,
                   render: this.renderHosts,

@@ -1,9 +1,13 @@
 import { Box, Button, Collapse, Icon, Link, Typography } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { Alert, AlertTitle } from "@material-ui/lab";
+import { loadCertificates } from "actions/certificate";
+import { loadServicesAction } from "actions/service";
 import { KFreeSoloAutoCompleteMultiValues } from "forms/Basic/autoComplete";
 import { KCheckboxGroupRender } from "forms/Basic/checkbox";
 import { KRadioGroupRender } from "forms/Basic/radio";
+import { shouldError } from "forms/common";
+import { ROUTE_FORM_ID } from "forms/formIDs";
 import {
   KValidatorHosts,
   KValidatorPaths,
@@ -15,21 +19,17 @@ import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
+import { State as TutorialState } from "reducers/tutorial";
 import { arrayPush, InjectedFormProps } from "redux-form";
 import { Field, FieldArray, formValueSelector, getFormSyncErrors, reduxForm } from "redux-form/immutable";
+import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
-import { HttpRouteDestination, HttpRouteForm, methodsModeAll, methodsModeSpecific } from "types/route";
+import { httpMethods, HttpRouteDestination, HttpRouteForm, methodsModeAll, methodsModeSpecific } from "types/route";
 import { arraysMatch } from "utils";
+import { Prompt } from "widgets/Prompt";
 import { RenderHttpRouteConditions } from "./conditions";
 import { RenderHttpRouteDestinations } from "./destinations";
 import { Expansion } from "./expansion";
-import { loadCertificates } from "actions/certificate";
-import { loadServicesAction } from "actions/service";
-import { Prompt } from "widgets/Prompt";
-import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
-import { shouldError } from "forms/common";
-import { State as TutorialState } from "reducers/tutorial";
-import { ROUTE_FORM_ID } from "forms/formIDs";
 
 const mapStateToProps = (state: RootState) => {
   const form = ROUTE_FORM_ID;
@@ -318,44 +318,9 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                 component={KCheckboxGroupRender}
                 validate={methodsMode === methodsModeSpecific ? ValidatorListNotEmpty : []}
                 name="methods"
-                options={[
-                  {
-                    value: "GET",
-                    label: "GET",
-                  },
-                  {
-                    value: "POST",
-                    label: "POST",
-                  },
-                  {
-                    value: "PUT",
-                    label: "PUT",
-                  },
-                  {
-                    value: "PATCH",
-                    label: "PATCH",
-                  },
-                  {
-                    value: "DELETE",
-                    label: "DELETE",
-                  },
-                  {
-                    value: "OPTIONS",
-                    label: "OPTIONS",
-                  },
-                  {
-                    value: "HEAD",
-                    label: "HEAD",
-                  },
-                  {
-                    value: "TRACE",
-                    label: "TRACE",
-                  },
-                  {
-                    value: "CONNECT",
-                    label: "CONNECT",
-                  },
-                ]}
+                options={httpMethods.map((m) => {
+                  return { value: m, label: m };
+                })}
               />
             </div>
           </Collapse>

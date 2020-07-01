@@ -15,7 +15,13 @@ export type ResourceList = ImmutableMap<{
 
 export interface NodeContent {
   name: string;
+  creationTimestamp: number;
   labels: ImmutableMap<{ [key: string]: string }>;
+  annotations: ImmutableMap<{ [key: string]: string }>;
+  roles: Immutable.List<string>;
+  statusTexts: Immutable.List<string>;
+  internalIP: string;
+  externalIP: string;
   status: ImmutableMap<{
     capacity: ResourceList;
     allocatable: ResourceList;

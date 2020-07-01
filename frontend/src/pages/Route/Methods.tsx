@@ -1,15 +1,28 @@
-import React from "react";
-import { Tooltip } from "@material-ui/core";
+import { Box } from "@material-ui/core";
+import { WhiteTooltip } from "forms/Application/KappTooltip";
 import Immutable from "immutable";
+import React from "react";
+import { httpMethods } from "types/route";
+import { KChip } from "widgets/Chip";
 
 export const Methods = ({ methods }: { methods: Immutable.List<string> }) => {
-  if (methods.size < 3) {
-    return <span>{methods.join(", ")}</span>;
-  } else {
-    return (
-      <Tooltip title={methods.join(", ")}>
-        <span>{methods.slice(0, 2).join(", ") + ` (${methods.size - 2} more)`}</span>
-      </Tooltip>
-    );
-  }
+  return (
+    <WhiteTooltip
+      title={
+        <Box display={"flex"} width={300} flexWrap={"wrap"} pt={1}>
+          {httpMethods.map((m) => {
+            return (
+              <Box mr={1} mb={1}>
+                <KChip label={m} color="primary" disabled={!methods.includes(m)} />
+              </Box>
+            );
+          })}
+        </Box>
+      }
+    >
+      <span>
+        <KChip label={methods.size === httpMethods.length ? "All" : "Custom"} color="primary" />
+      </span>
+    </WhiteTooltip>
+  );
 };

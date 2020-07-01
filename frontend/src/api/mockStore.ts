@@ -1,9 +1,9 @@
 import { ClusterInfo } from "types/cluster";
 import { LoginStatus } from "types/authorization";
 import { NodesListResponse } from "types/node";
-import { StorageClasses, PersistentVolumes, VolumeOptions } from "types/disk";
+import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
 import Immutable from "immutable";
-import { ApplicationDetails, ApplicationComponentDetails, PodStatus, ComponentPlugin } from "types/application";
+import { ApplicationComponentDetails, ApplicationDetails, ComponentPlugin, PodStatus } from "types/application";
 import { HttpRoute } from "types/route";
 import { Certificate, CertificateIssuer, CertificateIssuerList, CertificateList } from "types/certificate";
 import { RegistryType } from "types/registry";
@@ -228,6 +228,7 @@ export default class MockStore {
         nodes: [
           {
             name: "minikube",
+            roles: ["master"],
             labels: {
               "beta.kubernetes.io/arch": "amd64",
               "beta.kubernetes.io/os": "linux",
