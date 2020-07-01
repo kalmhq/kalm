@@ -14,8 +14,7 @@ import { H4 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { Namespaces } from "widgets/Namespaces";
 import { KTable } from "widgets/Table";
-import { DeleteIcon, EditIcon } from "../../widgets/Icon";
-import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
+import { DangerButton } from "widgets/Button";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -150,7 +149,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     const { activeNamespaceName, dispatch } = this.props;
     return (
       <>
-        <IconButtonWithTooltip
+        {/* <IconButtonWithTooltip
           tooltipPlacement="top"
           tooltipTitle="Delete"
           aria-label="delete"
@@ -171,8 +170,8 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
           }}
         >
           <DeleteIcon />
-        </IconButtonWithTooltip>
-        {/* <Button
+        </IconButtonWithTooltip> */}
+        <Button
           size="small"
           variant="outlined"
           style={{ marginRight: 16 }}
@@ -193,7 +192,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
           }}
         >
           Delete
-        </DangerButton> */}
+        </DangerButton>
       </>
     );
   };

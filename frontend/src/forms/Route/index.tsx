@@ -318,6 +318,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                         <Field
                           title="Choose methods you need"
                           component={KCheckboxGroupRender}
+                          componentType={"Chip"}
                           validate={methodsMode === methodsModeSpecific ? ValidatorListNotEmpty : []}
                           name="methods"
                           options={httpMethods.map((m) => {
@@ -329,6 +330,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                     <Field
                       title="Allow traffic through"
                       component={KCheckboxGroupRender}
+                      componentType={"Chip"}
                       validate={ValidatorListNotEmpty}
                       name="schemes"
                       options={[
@@ -339,6 +341,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                         {
                           value: "https",
                           label: "https",
+                          htmlColor: "#9CCC65",
                         },
                       ]}
                     />
