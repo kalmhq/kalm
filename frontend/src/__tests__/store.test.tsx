@@ -91,11 +91,17 @@ test("add certificate", () => {
   expect(onSubmit).toHaveBeenCalledTimes(2);
 });
 
-test("add application", async () => {
+test("add application", async (done) => {
   const onSubmit = async (applicationFormValue: Application) => {
     return await store.dispatch(createApplicationAction(applicationFormValue));
   };
   const onSubmitSuccess = (app: Application) => {
+    try {
+      expect(app.get("name")).toBe("test-application");
+      done();
+    } catch (error) {
+      done(error);
+    }
     expect(app.get("name")).toBe("test-application");
   };
   const WrappedApplicationForm = class extends React.Component {
