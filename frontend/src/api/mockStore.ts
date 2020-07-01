@@ -66,7 +66,7 @@ export default class MockStore {
       });
 
     if (componentIndex && podIndex) {
-      this.data = this.data.deleteIn(["mockApplicationComponents", namespace, componentIndex, podIndex]);
+      this.data = this.data.deleteIn(["mockApplicationComponents", namespace, componentIndex, "pods", podIndex]);
       this.saveData({
         kind: "Pod",
         data: pod,
