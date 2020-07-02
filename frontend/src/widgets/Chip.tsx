@@ -14,7 +14,7 @@ export const KChip = (props: ChipProps & KChipProps) => {
   const style: any = { borderRadius: 2 };
 
   if (disabledStyle) {
-    style.opacity = 0.5;
+    style.opacity = 0.4;
   }
 
   if (htmlColor) {

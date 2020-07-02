@@ -258,14 +258,15 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                 options={[
                   {
                     value: issuerManaged,
-                    label: "Apply a new certificate with certificate issuer",
-                    explain: "If you wanna create new cerificate, you can select this.",
+                    label: "Apply a new certificate (Let's Encrypt)",
+                    explain:
+                      "Use a certificate signed by Let's Encrypt. Safe and fast. Renew and update are full-automatic.",
                   },
                   {
                     value: selfManaged,
                     label: "Upload an existing certificate",
                     explain:
-                      "If you have got a ssl certificate from your ssl certificate provider, you can upload and use this.",
+                      "Use an existing certificate. The renew and update of the certificate are maintained by you.",
                   },
                 ]}
               />

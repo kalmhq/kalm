@@ -6,7 +6,7 @@ export const tutorialConfigs = [
     name: "Basic",
     items: [
       {
-        name: "Deployment an application",
+        name: "Deploy an application",
         factory: BasicApplicationCreationTutorialFactory,
       },
       {
