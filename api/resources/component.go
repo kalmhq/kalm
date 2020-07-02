@@ -124,14 +124,15 @@ func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component, res
 	}
 
 	istioMetricRst := IstioMetric{}
-
 	for svcName, metric := range resources.IstioMetricList {
 		ownerCompName, ownerNsName := getComponentAndNSNameFromSvcName(svcName)
-		if ownerCompName != component.Name || ownerNsName != component.Namespace {
+		if (ownerCompName != component.Name && ownerCompName != component.Name+"-headless") ||
+			ownerNsName != component.Namespace {
 			continue
 		}
 
-		istioMetricRst = mergeIstioMetric(istioMetricRst, metric)
+		istioMetricRst = metric
+		break
 	}
 
 	details = &ComponentDetails{
