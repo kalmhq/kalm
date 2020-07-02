@@ -72,11 +72,10 @@ func (c *ResourceChannels) ToResources() (r *Resources, err error) {
 	if c.IstioMetricList != nil {
 		err = <-c.IstioMetricList.Error
 		if err != nil {
-			fmt.Println("err when querying istioMetricList, ignored, err:", err)
-			return nil, nil
+			fmt.Printf("err when querying istioMetricList, ignored, err: %s", err)
+		} else {
+			resources.IstioMetricList = <-c.IstioMetricList.List
 		}
-
-		resources.IstioMetricList = <-c.IstioMetricList.List
 	}
 
 	if c.DeploymentList != nil {

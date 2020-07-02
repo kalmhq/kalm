@@ -45,9 +45,7 @@ func TestUnmarshalPromResp(t *testing.T) {
         ]
     }
 ]`
-	var rsts PromResponse
+	var rsts []PromResult
 	err := json.Unmarshal([]byte(resp), &rsts)
 	assert.Nil(t, err)
-
-	//fmt.Println(rsts[0].Value)
 }
