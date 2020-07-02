@@ -1,26 +1,20 @@
+import { getWebsocketInstance } from "actions/websocket";
+import { api } from "api";
+import { mockStore } from "api/mockApi";
+import Immutable from "immutable";
 import React from "react";
-import { TDispatchProp } from "types";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
-import { getWebsocketInstance } from "actions/websocket";
+import { TDispatchProp } from "types";
 import {
-  ADD_OR_UPDATE_POD,
-  ADD_OR_UPDATE_SERVICE,
   ApplicationComponentDetails,
   ApplicationDetails,
   CREATE_APPLICATION,
   CREATE_COMPONENT,
   DELETE_APPLICATION,
   DELETE_COMPONENT,
-  DELETE_POD,
-  DELETE_SERVICE,
-  PodStatus,
-  ServiceStatus,
   UPDATE_COMPONENT,
 } from "types/application";
-import Immutable from "immutable";
-import { api } from "api";
-import { mockStore } from "api/mockApi";
 import {
   RESOURCE_ACTION_ADD,
   RESOURCE_ACTION_DELETE,
@@ -119,44 +113,7 @@ class WebsocketConnectorRaw extends React.PureComponent<Props> {
           }
           break;
         }
-        case "Service": {
-          const service: ServiceStatus = Immutable.fromJS(data.data);
-          if (data.action === "Add" || data.action === "Update") {
-            dispatch({
-              type: ADD_OR_UPDATE_SERVICE,
-              payload: { applicationName: data.namespace, componentName: data.component, service },
-            });
-          } else if (data.action === "Delete") {
-            dispatch({
-              type: DELETE_SERVICE,
-              payload: {
-                applicationName: data.namespace,
-                componentName: data.component,
-                serviceName: service.get("name"),
-              },
-            });
-          }
-          break;
-        }
-        case "Pod": {
-          const pod: PodStatus = Immutable.fromJS(data.data);
-          if (data.action === "Add" || data.action === "Update") {
-            dispatch({
-              type: ADD_OR_UPDATE_POD,
-              payload: { applicationName: data.namespace, componentName: data.component, pod },
-            });
-          } else if (data.action === "Delete") {
-            dispatch({
-              type: DELETE_POD,
-              payload: {
-                applicationName: data.namespace,
-                componentName: data.component,
-                podName: pod.get("name"),
-              },
-            });
-          }
-          break;
-        }
+
         case RESOURCE_TYPE_NODE: {
           dispatch({
             type: WATCHED_RESOURCE_CHANGE,

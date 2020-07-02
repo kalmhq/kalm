@@ -1,9 +1,6 @@
 import Immutable from "immutable";
-import { LOGOUT } from "types/common";
 import { Actions } from "types";
 import {
-  ADD_OR_UPDATE_POD,
-  ADD_OR_UPDATE_SERVICE,
   ApplicationComponentDetails,
   ApplicationDetails,
   ComponentPlugin,
@@ -11,23 +8,20 @@ import {
   CREATE_COMPONENT,
   DELETE_APPLICATION,
   DELETE_COMPONENT,
-  DELETE_POD,
-  DELETE_SERVICE,
   DUPLICATE_APPLICATION,
-  LOAD_APPLICATION_FAILED,
-  LOAD_APPLICATION_FULFILLED,
-  LOAD_APPLICATION_PENDING,
   LOAD_APPLICATIONS_FAILED,
   LOAD_APPLICATIONS_FULFILLED,
   LOAD_APPLICATIONS_PENDING,
+  LOAD_APPLICATION_FAILED,
+  LOAD_APPLICATION_FULFILLED,
+  LOAD_APPLICATION_PENDING,
   LOAD_COMPONENT_PLUGINS_FULFILLED,
-  PodStatus,
-  ServiceStatus,
   SET_IS_SUBMITTING_APPLICATION,
   SET_IS_SUBMITTING_APPLICATION_COMPONENT,
   UPDATE_APPLICATION,
   UPDATE_COMPONENT,
 } from "types/application";
+import { LOGOUT } from "types/common";
 import { ImmutableMap } from "typings";
 
 export type State = ImmutableMap<{
@@ -88,73 +82,6 @@ const putComponentIntoState = (
     }
   } else {
     state = state.setIn(["applications", applicationIndex, "components", componentIndex], component);
-  }
-
-  return state;
-};
-
-const putServiceIntoState = (
-  state: State,
-  applicationName: string,
-  componentName: string,
-  service: ServiceStatus,
-): State => {
-  const applications = state.get("applications");
-  const applicationIndex = applications.findIndex((app) => app.get("name") === applicationName);
-  if (applicationIndex < 0) {
-    return state;
-  }
-  const application = applications.find((app) => app.get("name") === applicationName);
-  const components = application?.get("components");
-  if (!components) {
-    return state;
-  }
-  const componentIndex = components.findIndex((c) => c.get("name") === componentName);
-  if (componentIndex < 0) {
-    return state;
-  }
-  const component = components.find((c) => c.get("name") === componentName);
-  const services = component!.get("services");
-  const serviceIndex = services.findIndex((s) => s.get("name") === service.get("name"));
-
-  if (serviceIndex < 0) {
-    state = state.setIn(
-      ["applications", applicationIndex, "components", componentIndex, "services", services.size],
-      service,
-    );
-  } else {
-    state = state.setIn(
-      ["applications", applicationIndex, "components", componentIndex, "services", serviceIndex],
-      service,
-    );
-  }
-
-  return state;
-};
-
-const putPodIntoState = (state: State, applicationName: string, componentName: string, pod: PodStatus): State => {
-  const applications = state.get("applications");
-  const applicationIndex = applications.findIndex((app) => app.get("name") === applicationName);
-  if (applicationIndex < 0) {
-    return state;
-  }
-  const application = applications.find((app) => app.get("name") === applicationName);
-  const components = application?.get("components");
-  if (!components) {
-    return state;
-  }
-  const componentIndex = components.findIndex((c) => c.get("name") === componentName);
-  if (componentIndex < 0) {
-    return state;
-  }
-  const component = components.find((c) => c.get("name") === componentName);
-  const pods = component!.get("pods");
-  const podIndex = pods.findIndex((s) => s.get("name") === pod.get("name"));
-
-  if (podIndex < 0) {
-    state = state.setIn(["applications", applicationIndex, "components", componentIndex, "pods", pods.size], pod);
-  } else {
-    state = state.setIn(["applications", applicationIndex, "components", componentIndex, "pods", podIndex], pod);
   }
 
   return state;
@@ -247,70 +174,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
       state = state.deleteIn(["applications", applicationIndex, "components", componentIndex]);
       break;
     }
-    case ADD_OR_UPDATE_SERVICE: {
-      state = putServiceIntoState(
-        state,
-        action.payload.applicationName,
-        action.payload.componentName,
-        action.payload.service,
-      );
-      break;
-    }
-    case DELETE_SERVICE: {
-      const { applicationName, componentName, serviceName } = action.payload;
-      const applications = state.get("applications");
-      const applicationIndex = applications.findIndex((app) => app.get("name") === applicationName);
-      if (applicationIndex < 0) {
-        return state;
-      }
-      const application = applications.find((app) => app.get("name") === applicationName);
-      const components = application?.get("components");
-      if (!components) {
-        return state;
-      }
-      const componentIndex = components.findIndex((c) => c.get("name") === componentName);
-      if (componentIndex < 0) {
-        return state;
-      }
-      const component = components.find((c) => c.get("name") === componentName);
-      const serviceIndex = component!.get("services").findIndex((s) => s.get("name") === serviceName);
 
-      state = state.deleteIn([
-        "applications",
-        applicationIndex,
-        "components",
-        componentIndex,
-        "services",
-        serviceIndex,
-      ]);
-      break;
-    }
-    case ADD_OR_UPDATE_POD: {
-      state = putPodIntoState(state, action.payload.applicationName, action.payload.componentName, action.payload.pod);
-      break;
-    }
-    case DELETE_POD: {
-      const { applicationName, componentName, podName } = action.payload;
-      const applications = state.get("applications");
-      const applicationIndex = applications.findIndex((app) => app.get("name") === applicationName);
-      if (applicationIndex < 0) {
-        return state;
-      }
-      const application = applications.find((app) => app.get("name") === applicationName);
-      const components = application?.get("components");
-      if (!components) {
-        return state;
-      }
-      const componentIndex = components.findIndex((c) => c.get("name") === componentName);
-      if (componentIndex < 0) {
-        return state;
-      }
-      const component = components.find((c) => c.get("name") === componentName);
-      const podIndex = component!.get("pods").findIndex((s) => s.get("name") === podName);
-
-      state = state.deleteIn(["applications", applicationIndex, "components", componentIndex, "pods", podIndex]);
-      break;
-    }
     case LOAD_COMPONENT_PLUGINS_FULFILLED: {
       state = state.set("componentPlugins", action.payload.componentPlugins);
 

@@ -1,6 +1,9 @@
 package ws
 
 import (
+	"errors"
+
+	"github.com/kapp-staging/kapp/api/handler"
 	"github.com/kapp-staging/kapp/api/resources"
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	"github.com/kapp-staging/kapp/controller/controllers"
@@ -9,7 +12,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/cache"
 	runtimeCache "sigs.k8s.io/controller-runtime/pkg/cache"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func StartWatching(c *Client) {
@@ -36,7 +38,7 @@ func WatchPods(c *Client) {
 	Watch(c, &coreV1.Pod{}, buildPodResMessage)
 }
 
-func Watch(c *Client, runtimeObj runtime.Object, buildResMessage func(c *Client, action string, obj interface{}) *ResMessage) {
+func Watch(c *Client, runtimeObj runtime.Object, buildResMessage func(c *Client, action string, obj interface{}) (*ResMessage, error)) {
 	informerCache, err := runtimeCache.New(c.K8SClientConfig, runtimeCache.Options{})
 	if err != nil {
 		panic(err)
@@ -49,15 +51,27 @@ func Watch(c *Client, runtimeObj runtime.Object, buildResMessage func(c *Client,
 
 	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
-			resMessage := buildResMessage(c, "Add", obj)
+			resMessage, err := buildResMessage(c, "Add", obj)
+			if err != nil {
+				log.Info(err)
+				return
+			}
 			c.sendResMessage(resMessage)
 		},
 		DeleteFunc: func(obj interface{}) {
-			resMessage := buildResMessage(c, "Delete", obj)
+			resMessage, err := buildResMessage(c, "Delete", obj)
+			if err != nil {
+				log.Info(err)
+				return
+			}
 			c.sendResMessage(resMessage)
 		},
 		UpdateFunc: func(oldObj, obj interface{}) {
-			resMessage := buildResMessage(c, "Update", obj)
+			resMessage, err := buildResMessage(c, "Update", obj)
+			if err != nil {
+				log.Info(err)
+				return
+			}
 			c.sendResMessage(resMessage)
 		},
 	})
@@ -67,15 +81,14 @@ func Watch(c *Client, runtimeObj runtime.Object, buildResMessage func(c *Client,
 	informerCache.Start(c.StopWatcher)
 }
 
-func buildNamespaceResMessage(c *Client, action string, objWatched interface{}) *ResMessage {
+func buildNamespaceResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
 	namespace, ok := objWatched.(*coreV1.Namespace)
 	if !ok {
-		log.Warnln("convert watch obj to Namespace failed :", objWatched)
-		return &ResMessage{}
+		return nil, errors.New("convert watch obj to Namespace failed")
 	}
 
 	if _, exist := namespace.Labels[controllers.KappEnableLabelName]; !exist {
-		return &ResMessage{}
+		return nil, errors.New("Namespace " + namespace.Name + " has no kapp-enabled label")
 	}
 
 	builder := resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, log.New())
@@ -86,102 +99,79 @@ func buildNamespaceResMessage(c *Client, action string, objWatched interface{}) 
 
 	return &ResMessage{
 		Namespace: "",
-		Component: "",
 		Kind:      "Application",
 		Action:    action,
 		Data:      applicationDetails,
-	}
+	}, nil
 }
 
-func buildComponentResMessage(c *Client, action string, objWatched interface{}) *ResMessage {
-	component, ok := objWatched.(*v1alpha1.Component)
-	if !ok {
-		log.Warnln("convert watch obj to Component failed :", objWatched)
-		return &ResMessage{}
-	}
-
+func componentToResMessage(c *Client, action string, component *v1alpha1.Component) (*ResMessage, error) {
 	builder := resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, log.New())
 	componentDetails, err := builder.BuildComponentDetails(component, nil)
 	if err != nil {
-		log.Error(err)
+		return nil, err
 	}
 
 	return &ResMessage{
 		Namespace: component.Namespace,
-		Component: "",
 		Kind:      "Component",
 		Action:    action,
 		Data:      componentDetails,
-	}
+	}, nil
 }
 
-func buildServiceResMessage(c *Client, action string, objWatched interface{}) *ResMessage {
+func buildComponentResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
+	component, ok := objWatched.(*v1alpha1.Component)
+	if !ok {
+		return nil, errors.New("convert watch obj to Component failed")
+	}
+
+	return componentToResMessage(c, action, component)
+}
+
+func buildServiceResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
 	service, ok := objWatched.(*coreV1.Service)
 	if !ok {
-		log.Warnln("convert watch obj to Service failed :", objWatched)
-		return &ResMessage{}
+		return nil, errors.New("convert watch obj to Service failed")
 	}
 
-	labelComponent := service.Labels["kapp-component"]
-	if labelComponent == "" {
-		return &ResMessage{}
+	componentName := service.Labels["kapp-component"]
+	if componentName == "" {
+		return nil, errors.New("Service " + service.Name + " has no kapp-component label")
 	}
 
-	serviceStatus := &resources.ServiceStatus{
-		Name:      service.Name,
-		ClusterIP: service.Spec.ClusterIP,
-		Ports:     service.Spec.Ports,
+	component, err := handler.GetComponent(c.K8sClientset, service.Namespace, componentName)
+	if err != nil {
+		return nil, err
 	}
 
-	return &ResMessage{
-		Namespace: service.Namespace,
-		Component: labelComponent,
-		Kind:      "Service",
-		Action:    action,
-		Data:      serviceStatus,
-	}
+	return componentToResMessage(c, "Update", component)
 }
 
-func buildPodResMessage(c *Client, action string, objWatched interface{}) *ResMessage {
+func buildPodResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
 	pod, ok := objWatched.(*coreV1.Pod)
 	if !ok {
-		log.Warnln("convert watch obj to Pod failed :", objWatched)
-		return &ResMessage{}
+		return nil, errors.New("convert watch obj to Pod failed")
 	}
 
-	labelComponent := pod.Labels["kapp-component"]
-	if labelComponent == "" {
-		return &ResMessage{}
+	componentName := pod.Labels["kapp-component"]
+	if componentName == "" {
+		return nil, errors.New("Pod " + pod.Name + " has no kapp-component label")
 	}
 
-	builder := resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, log.New())
-	var eventList coreV1.EventList
-	ns := client.InNamespace(pod.Namespace)
-	err := builder.List(&eventList, ns)
+	component, err := handler.GetComponent(c.K8sClientset, pod.Namespace, componentName)
 	if err != nil {
-		log.Error(err)
+		return nil, err
 	}
 
-	podStatus := resources.GetPodStatus(*pod, eventList.Items)
-	podMetric := resources.GetPodMetric(pod.Name, pod.Namespace)
-
-	podStatus.Metrics = podMetric.MetricHistories
-
-	return &ResMessage{
-		Namespace: pod.Namespace,
-		Component: labelComponent,
-		Kind:      "Pod",
-		Action:    action,
-		Data:      podStatus,
-	}
+	return componentToResMessage(c, "Update", component)
 }
 
-func buildNodeResMessage(_ *Client, action string, objWatched interface{}) *ResMessage {
+func buildNodeResMessage(_ *Client, action string, objWatched interface{}) (*ResMessage, error) {
 	node, ok := objWatched.(*coreV1.Node)
 
 	if !ok {
-		log.Warnln("convert watch obj to Pod failed :", objWatched)
-		return &ResMessage{}
+		return nil, errors.New("convert watch obj to Node failed")
 	}
 
 	//builder := resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, log.New())
@@ -190,5 +180,5 @@ func buildNodeResMessage(_ *Client, action string, objWatched interface{}) *ResM
 		Kind:   "Node",
 		Action: action,
 		Data:   resources.BuildNodeResponse(node),
-	}
+	}, nil
 }

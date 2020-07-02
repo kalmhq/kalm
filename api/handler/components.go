@@ -12,6 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes"
 )
 
 func (h *ApiHandler) handleListComponents(c echo.Context) error {
@@ -107,14 +108,18 @@ func deleteComponent(c echo.Context) error {
 	return err
 }
 
-func getComponent(c echo.Context) (*v1alpha1.Component, error) {
-	k8sClient := getK8sClient(c)
+func GetComponent(k8sClient *kubernetes.Clientset, applicationName, componentName string) (*v1alpha1.Component, error) {
 	var fetched v1alpha1.Component
-	err := k8sClient.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/namespaces/" + c.Param("applicationName") + "/components/" + c.Param("name")).Do().Into(&fetched)
+	err := k8sClient.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/namespaces/" + applicationName + "/components/" + componentName).Do().Into(&fetched)
 	if err != nil {
 		return nil, err
 	}
 	return &fetched, nil
+}
+
+func getComponent(c echo.Context) (*v1alpha1.Component, error) {
+	k8sClient := getK8sClient(c)
+	return GetComponent(k8sClient, c.Param("applicationName"), c.Param("name"))
 }
 
 func getComponentList(c echo.Context) (*v1alpha1.ComponentList, error) {
