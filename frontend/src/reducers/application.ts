@@ -4,7 +4,6 @@ import {
   ApplicationDetails,
   CREATE_APPLICATION,
   DELETE_APPLICATION,
-  DUPLICATE_APPLICATION,
   LOAD_APPLICATIONS_FAILED,
   LOAD_APPLICATIONS_FULFILLED,
   LOAD_APPLICATIONS_PENDING,
@@ -16,6 +15,14 @@ import {
 } from "types/application";
 import { LOGOUT } from "types/common";
 import { ImmutableMap } from "typings";
+import {
+  WATCHED_RESOURCE_CHANGE,
+  RESOURCE_ACTION_ADD,
+  RESOURCE_ACTION_DELETE,
+  RESOURCE_TYPE_APPLICATION,
+  RESOURCE_ACTION_UPDATE,
+} from "../types/resources";
+import { addOrUpdateInList, removeInList, removeInListByName } from "./utils";
 
 export type State = ImmutableMap<{
   applications: Immutable.List<ApplicationDetails>;
@@ -36,18 +43,6 @@ const initialState: State = Immutable.Map({
   // applicationPlugins: [],
   componentPlugins: [],
 });
-
-const putApplicationIntoState = (state: State, application: ApplicationDetails): State => {
-  const applications = state.get("applications");
-  const index = applications.findIndex((app) => app.get("name") === application.get("name"));
-
-  if (index < 0) {
-    state = state.set("applications", applications.push(application));
-  } else {
-    state = state.setIn(["applications", index], application);
-  }
-  return state;
-};
 
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
@@ -82,32 +77,50 @@ const reducer = (state: State = initialState, action: Actions): State => {
     }
     case LOAD_APPLICATION_FULFILLED: {
       state = state.set("isItemLoading", false);
-      state = putApplicationIntoState(state, action.payload.application);
+      state = state.update("applications", (x) => addOrUpdateInList(x, action.payload.application));
       break;
     }
     case CREATE_APPLICATION: {
-      state = putApplicationIntoState(state, action.payload.application);
-      break;
-    }
-    case DUPLICATE_APPLICATION: {
-      state = putApplicationIntoState(state, action.payload.application);
+      state = state.update("applications", (x) => addOrUpdateInList(x, action.payload.application));
       break;
     }
     case UPDATE_APPLICATION: {
-      state = putApplicationIntoState(state, action.payload.application);
+      state = state.update("applications", (x) => addOrUpdateInList(x, action.payload.application));
       break;
     }
     case DELETE_APPLICATION: {
-      const applications = state.get("applications");
-      const index = applications.findIndex((app) => app.get("name") === action.payload.applicationName);
+      state = state.update("applications", (x) => removeInListByName(x, action.payload.applicationName));
+      break;
+    }
+    case WATCHED_RESOURCE_CHANGE: {
+      if (action.kind !== RESOURCE_TYPE_APPLICATION) {
+        break;
+      }
 
-      if (index >= 0) {
-        state = state.deleteIn(["applications", index]);
+      switch (action.payload.action) {
+        case RESOURCE_ACTION_ADD: {
+          if (action.payload.data.get("status") === "Active") {
+            state = state.update("applications", (x) => addOrUpdateInList(x, action.payload.data));
+          }
+          break;
+        }
+        case RESOURCE_ACTION_DELETE: {
+          state = state.update("applications", (x) => removeInList(x, action.payload.data));
+          break;
+        }
+        case RESOURCE_ACTION_UPDATE: {
+          if (action.payload.data.get("status") === "Terminating") {
+            state = state.update("applications", (x) => removeInList(x, action.payload.data));
+            break;
+          }
+
+          state = state.update("applications", (x) => addOrUpdateInList(x, action.payload.data));
+          break;
+        }
       }
 
       break;
     }
-
     // case LOAD_APPLICATION_PLUGINS_FULFILLED: {
     //   state = state.set("applicationPlugins", action.payload.applicationPlugins);
 

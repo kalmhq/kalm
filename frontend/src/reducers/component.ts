@@ -15,6 +15,13 @@ import {
 } from "types/application";
 import { LOGOUT } from "types/common";
 import { ImmutableMap } from "typings";
+import {
+  WATCHED_RESOURCE_CHANGE,
+  RESOURCE_TYPE_COMPONENT,
+  RESOURCE_ACTION_ADD,
+  RESOURCE_ACTION_DELETE,
+  RESOURCE_ACTION_UPDATE,
+} from "types/resources";
 
 export type State = ImmutableMap<{
   components: Immutable.Map<string, Immutable.List<ApplicationComponentDetails>>; // key applicationName
@@ -49,6 +56,19 @@ const putComponentIntoState = (
     }
   } else {
     state = state.setIn(["components", applicationName, componentIndex], component);
+  }
+
+  return state;
+};
+
+const deleteComponentFromState = (state: State, applicationName: string, componentName: string): State => {
+  const components = state.get("components").get(applicationName);
+  if (!components) {
+    return state;
+  }
+  const componentIndex = components.findIndex((c) => c.get("name") === componentName);
+  if (componentIndex >= 0) {
+    state = state.deleteIn(["components", applicationName, componentIndex]);
   }
 
   return state;
@@ -91,15 +111,29 @@ const reducer = (state: State = initialState, action: Actions): State => {
     }
     case DELETE_COMPONENT: {
       const { applicationName, componentName } = action.payload;
-      const components = state.get("components").get(applicationName);
-      if (!components) {
+      state = deleteComponentFromState(state, applicationName, componentName);
+      break;
+    }
+    case WATCHED_RESOURCE_CHANGE: {
+      if (action.kind !== RESOURCE_TYPE_COMPONENT) {
         return state;
       }
-      const componentIndex = components.findIndex((c) => c.get("name") === componentName);
-      if (componentIndex < 0) {
-        break;
+
+      switch (action.payload.action) {
+        case RESOURCE_ACTION_ADD: {
+          state = putComponentIntoState(state, action.payload.namespace, action.payload.data, true);
+          break;
+        }
+        case RESOURCE_ACTION_DELETE: {
+          state = deleteComponentFromState(state, action.payload.namespace, action.payload.data.get("name"));
+          break;
+        }
+        case RESOURCE_ACTION_UPDATE: {
+          state = putComponentIntoState(state, action.payload.namespace, action.payload.data, false);
+          break;
+        }
       }
-      state = state.deleteIn(["components", applicationName, componentIndex]);
+
       break;
     }
 

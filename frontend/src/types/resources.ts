@@ -1,4 +1,5 @@
 import { Node } from "types/node";
+import { ApplicationDetails, ApplicationComponentDetails } from "./application";
 
 export const WATCHED_RESOURCE_CHANGE = "WATCHED_RESOURCE_CHANGE";
 
@@ -7,6 +8,8 @@ export const RESOURCE_ACTION_ADD = "Add";
 export const RESOURCE_ACTION_DELETE = "Delete";
 
 export const RESOURCE_TYPE_NODE = "Node";
+export const RESOURCE_TYPE_APPLICATION = "Application";
+export const RESOURCE_TYPE_COMPONENT = "Component";
 
 export type ResourceActionType =
   | typeof RESOURCE_ACTION_UPDATE
@@ -22,4 +25,23 @@ export interface NodeResourceAction {
   };
 }
 
-export type ResourceActions = NodeResourceAction;
+export interface ApplicationResourceAction {
+  type: typeof WATCHED_RESOURCE_CHANGE;
+  kind: typeof RESOURCE_TYPE_APPLICATION;
+  payload: {
+    action: ResourceActionType;
+    data: ApplicationDetails;
+  };
+}
+
+export interface ComponentResourceAction {
+  type: typeof WATCHED_RESOURCE_CHANGE;
+  kind: typeof RESOURCE_TYPE_COMPONENT;
+  payload: {
+    action: ResourceActionType;
+    namespace: string;
+    data: ApplicationComponentDetails;
+  };
+}
+
+export type ResourceActions = NodeResourceAction | ApplicationResourceAction | ComponentResourceAction;
