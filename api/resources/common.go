@@ -35,13 +35,13 @@ type ResourceChannels struct {
 	ComponentList              *ComponentListChannel
 	ComponentPluginList        *ComponentPluginListChannel
 	ComponentPluginBindingList *ComponentPluginBindingListChannel
-	//ApplicationPluginList        *ApplicationPluginListChannel
-	//ApplicationPluginBindingList *ApplicationPluginBindingListChannel
-	DockerRegistryList *DockerRegistryListChannel
-	SecretList         *SecretListChannel
+	DockerRegistryList         *DockerRegistryListChannel
+	SecretList                 *SecretListChannel
+	IstioMetricList            *IstioMetricListChannel
 }
 
 type Resources struct {
+	IstioMetricList         map[string]IstioMetric
 	DeploymentList          *appV1.DeploymentList
 	PodList                 *coreV1.PodList
 	EventList               *coreV1.EventList
@@ -68,6 +68,14 @@ var AllNamespaces = ""
 func (c *ResourceChannels) ToResources() (r *Resources, err error) {
 	resources := &Resources{}
 
+	if c.IstioMetricList != nil {
+		err = <-c.IstioMetricList.Error
+		if err != nil {
+			return nil, err
+		}
+
+		resources.IstioMetricList = <-c.IstioMetricList.List
+	}
 	if c.DeploymentList != nil {
 		err = <-c.DeploymentList.Error
 		if err != nil {
@@ -139,22 +147,6 @@ func (c *ResourceChannels) ToResources() (r *Resources, err error) {
 		}
 		resources.ComponentPluginBindings = <-c.ComponentPluginBindingList.List
 	}
-
-	//if c.ApplicationPluginList != nil {
-	//	err = <-c.ApplicationPluginList.Error
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//	resources.ApplicationPlugins = <-c.ApplicationPluginList.List
-	//}
-	//
-	//if c.ApplicationPluginBindingList != nil {
-	//	err = <-c.ApplicationPluginBindingList.Error
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//	resources.ApplicationPluginBindings = <-c.ApplicationPluginBindingList.List
-	//}
 
 	if c.DockerRegistryList != nil {
 		err = <-c.DockerRegistryList.Error
