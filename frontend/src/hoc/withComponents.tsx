@@ -1,17 +1,16 @@
+import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import hoistNonReactStatics from "hoist-non-react-statics";
 import React from "react";
 import { connect } from "react-redux";
-import { ThunkDispatch } from "redux-thunk";
 import { RootState } from "reducers";
+import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "types";
-import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
-import Immutable from "immutable";
 
 const mapStateToProps = (state: RootState, props: WithNamespaceProps) => {
-  const activeNamespace = props.activeNamespace!;
+  // const activeNamespace = props.activeNamespace!;
 
   return {
-    components: activeNamespace?.get("components") || Immutable.List(),
+    // components: state.get("components").get("components").get(activeNamespace.get("name")) || Immutable.List(),
   };
 };
 

@@ -6,6 +6,7 @@ import { combineReducers } from "redux-immutable";
 import { ImmutableMap } from "typings";
 import roles, { State as RolesState } from "./role";
 import applications, { State as ApplicationState } from "./application";
+import components, { State as ApplicationComponentState } from "./component";
 import auth, { State as AuthState } from "./auth";
 import dependencies, { State as DependencyState } from "./dependency";
 import dialogs, { State as DialogState } from "./dialog";
@@ -25,6 +26,7 @@ import certificates, { State as CertificateState } from "./certificate";
 export type RootState = ImmutableMap<{
   namespaces: NamespacesState;
   applications: ApplicationState;
+  components: ApplicationComponentState;
   auth: AuthState;
   router: ImmutableMap<any>; //RouterState<LocationState>;
   notification: NotificationState;
@@ -60,6 +62,7 @@ export default (history: History<LocationState>) =>
     router: connectRouter(history),
     persistentVolumes,
     applications,
+    components,
     notification,
     settings,
     users,

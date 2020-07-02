@@ -1,5 +1,5 @@
 import { Box, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { createComponentAction } from "actions/application";
+import { createComponentAction } from "actions/component";
 import { push } from "connected-react-router";
 import { ComponentLikeForm } from "forms/ComponentLike";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";

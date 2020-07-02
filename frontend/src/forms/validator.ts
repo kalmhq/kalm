@@ -155,7 +155,7 @@ export const ValidatorSchedule = (value: string) => {
   if (
     !value ||
     !value.match(
-      /^(\*|((\*\/)?[1-5]?[0-9])) (\*|((\*\/)?[1-5]?[0-9])) (\*|((\*\/)?(1?[0-9]|2[0-3]))) (\*|((\*\/)?([1-9]|[12][0-9]|3[0-1]))) (\*|((\*\/)?([1-9]|1[0-2]))) (\*|((\*\/)?[0-6]))$/,
+      /^(\*|((\*\/)?[1-5]?[0-9])) (\*|((\*\/)?[1-5]?[0-9])) (\*|((\*\/)?(1?[0-9]|2[0-3]))) (\*|((\*\/)?([1-9]|[12][0-9]|3[0-1]))) (\*|((\*\/)?([1-9]|1[0-2])))$/,
     )
   ) {
     return "Invalid Schedule Rule";
@@ -245,5 +245,17 @@ export const ValidatorServiceName = (value: string) => {
     return `Port name must consist of lower case alphanumeric characters or '-', and must start and end with an alphanumeric character. (e.g. 'my-name',  or '123-abc', regex used for validation is '[a-z0-9]([-a-z0-9]*[a-z0-9])?')`;
   }
 
+  return undefined;
+};
+
+export const RequirePrefix = (prefix: string) => (value: string) => {
+  if (value === undefined) return undefined;
+  if (!value.startsWith(prefix)) return `Require prefix "${prefix}"`;
+  return undefined;
+};
+
+export const RequireNoSuffix = (suffix: string) => (value: string) => {
+  if (value === undefined) return undefined;
+  if (value.endsWith(suffix)) return `Require no suffix "${suffix}"`;
   return undefined;
 };

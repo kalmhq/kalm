@@ -54,7 +54,7 @@ func (builder *Builder) GetHttpRoute(namespace, name string) (*HttpRoute, error)
 		return nil, err
 	}
 
-	return buildHttpRouteFromResource(&route), nil
+	return BuildHttpRouteFromResource(&route), nil
 }
 
 func (builder *Builder) GetHttpRoutes(namespace string) ([]*HttpRoute, error) {
@@ -67,13 +67,13 @@ func (builder *Builder) GetHttpRoutes(namespace string) ([]*HttpRoute, error) {
 	res := make([]*HttpRoute, len(routes.Items))
 
 	for i := range routes.Items {
-		res[i] = buildHttpRouteFromResource(&routes.Items[i])
+		res[i] = BuildHttpRouteFromResource(&routes.Items[i])
 	}
 
 	return res, nil
 }
 
-func buildHttpRouteFromResource(route *v1alpha1.HttpRoute) *HttpRoute {
+func BuildHttpRouteFromResource(route *v1alpha1.HttpRoute) *HttpRoute {
 	return &HttpRoute{
 		HttpRouteSpec: &route.Spec,
 		Name:          route.Name,
@@ -94,7 +94,7 @@ func (builder *Builder) CreateHttpRoute(routeSpec *HttpRoute) (*HttpRoute, error
 		return nil, err
 	}
 
-	return buildHttpRouteFromResource(route), nil
+	return BuildHttpRouteFromResource(route), nil
 }
 
 func (builder *Builder) UpdateHttpRoute(routeSpec *HttpRoute) (*HttpRoute, error) {
@@ -110,7 +110,7 @@ func (builder *Builder) UpdateHttpRoute(routeSpec *HttpRoute) (*HttpRoute, error
 		return nil, err
 	}
 
-	return buildHttpRouteFromResource(route), nil
+	return BuildHttpRouteFromResource(route), nil
 }
 
 func (builder *Builder) DeleteHttpRoute(namespace, name string) error {

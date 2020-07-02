@@ -279,3 +279,7 @@ func (builder *Builder) Delete(obj runtime.Object, opts ...client.DeleteOption) 
 func (builder *Builder) Update(obj runtime.Object, opts ...client.UpdateOption) error {
 	return builder.Client.Update(builder.ctx, obj, opts...)
 }
+
+func (builder *Builder) Patch(obj runtime.Object, patch client.Patch, opts ...client.PatchOption) error {
+	return builder.Client.Patch(builder.ctx, obj, patch, opts...)
+}

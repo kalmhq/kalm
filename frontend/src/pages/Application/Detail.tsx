@@ -184,7 +184,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
   };
 
   private getPieChartData() {
-    const { activeNamespace } = this.props;
+    const { components } = this.props;
 
     let componentSuccess = 0;
     let componentPending = 0;
@@ -193,7 +193,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     let podPending = 0;
     let podError = 0;
 
-    activeNamespace!.get("components")?.forEach((component) => {
+    components?.forEach((component) => {
       let hasError = false;
       let hasPending = false;
       component.get("pods").forEach((pod) => {
@@ -243,11 +243,11 @@ class DetailsRaw extends React.PureComponent<Props, State> {
   }
 
   private renderWarnings() {
-    const { activeNamespace } = this.props;
+    const { components } = this.props;
     let warnings: { componentName: string; podName: string; message: string }[] = [];
 
-    if (activeNamespace!.get("components")) {
-      activeNamespace!.get("components").forEach((c) => {
+    if (components) {
+      components.forEach((c) => {
         c.get("pods").forEach((p) => {
           p.get("warnings").forEach((w) => {
             warnings.push({

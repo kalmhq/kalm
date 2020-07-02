@@ -46,7 +46,11 @@ class RouteNewRaw extends React.PureComponent<Props> {
 
   public render() {
     return (
-      <BasePage leftDrawer={<ApplicationSidebar />} secondHeaderLeft={<Namespaces />}>
+      <BasePage
+        leftDrawer={<ApplicationSidebar />}
+        secondHeaderLeft={<Namespaces />}
+        secondHeaderRight="Create New Route"
+      >
         <Box p={2}>
           <RouteForm onSubmit={this.onSubmit} onSubmitSuccess={this.onSubmitSuccess} initialValues={this.route} />
         </Box>

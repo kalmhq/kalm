@@ -4,6 +4,7 @@ import (
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strings"
 	"time"
 )
@@ -94,6 +95,54 @@ func getNodeInternalIP(node *coreV1.Node) string {
 	return "<none>"
 }
 
+func (builder *Builder) GetNode(name string) (*coreV1.Node, error) {
+	var node coreV1.Node
+
+	if err := builder.Get("", name, &node); err != nil {
+		return nil, err
+	}
+
+	return &node, nil
+}
+
+func (builder *Builder) CordonNode(node *coreV1.Node) error {
+	nodeCopy := node.DeepCopy()
+	nodeCopy.Spec.Unschedulable = true
+
+	if err := builder.Patch(nodeCopy, client.MergeFrom(node)); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (builder *Builder) UncordonNode(node *coreV1.Node) error {
+	nodeCopy := node.DeepCopy()
+	nodeCopy.Spec.Unschedulable = false
+
+	if err := builder.Patch(nodeCopy, client.MergeFrom(node)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func BuildNodeResponse(node *coreV1.Node) *Node {
+	histories := GetFilteredNodeMetrics([]string{node.Name})
+
+	return &Node{
+		Name:              node.Name,
+		Labels:            node.Labels,
+		Annotations:       node.Annotations,
+		Status:            node.Status,
+		Metrics:           histories.Nodes[node.Name],
+		Roles:             findNodeRoles(node),
+		CreationTimestamp: node.CreationTimestamp.UnixNano() / int64(time.Millisecond),
+		StatusTexts:       getNodeRunningStatus(node),
+		InternalIP:        getNodeInternalIP(node),
+		ExternalIP:        getNodeExternalIP(node),
+	}
+}
+
 func ListNodes(k8sClient *kubernetes.Clientset) (*NodesResponse, error) {
 	list, err := k8sClient.CoreV1().Nodes().List(ListAll)
 
@@ -117,18 +166,7 @@ func ListNodes(k8sClient *kubernetes.Clientset) (*NodesResponse, error) {
 	}
 
 	for _, node := range list.Items {
-		res.Nodes = append(res.Nodes, Node{
-			Name:              node.Name,
-			Labels:            node.Labels,
-			Annotations:       node.Annotations,
-			Status:            node.Status,
-			Metrics:           histories.Nodes[node.Name],
-			Roles:             findNodeRoles(&node),
-			CreationTimestamp: node.CreationTimestamp.UnixNano() / int64(time.Millisecond),
-			StatusTexts:       getNodeRunningStatus(&node),
-			InternalIP:        getNodeInternalIP(&node),
-			ExternalIP:        getNodeExternalIP(&node),
-		})
+		res.Nodes = append(res.Nodes, *BuildNodeResponse(&node))
 	}
 
 	return res, nil

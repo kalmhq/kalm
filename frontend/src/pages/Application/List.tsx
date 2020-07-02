@@ -49,12 +49,14 @@ const mapStateToProps = (state: RootState) => {
   const internalEndpointsDialog = state.get("dialogs").get(internalEndpointsModalID);
   const externalEndpointsDialog = state.get("dialogs").get(externalEndpointsModalID);
   const routesMap = state.get("routes").get("httpRoutes");
+  const componentsMap = state.get("components").get("components");
   const clusterInfo = state.get("cluster").get("info");
   return {
     clusterInfo,
     internalEndpointsDialogData: internalEndpointsDialog ? internalEndpointsDialog.get("data") : {},
     externalEndpointsDialogData: externalEndpointsDialog ? externalEndpointsDialog.get("data") : {},
     routesMap,
+    componentsMap,
   };
 };
 
@@ -147,15 +149,20 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   private renderCreatedAt = (applicationDetails: RowData) => {
-    return <Body>{getApplicationCreatedAtString(applicationDetails)}</Body>;
+    const { componentsMap } = this.props;
+    const components = componentsMap.get(applicationDetails.get("name"));
+
+    return <Body>{components ? getApplicationCreatedAtString(components) : "-"}</Body>;
   };
 
   private renderStatus = (applicationDetails: RowData) => {
+    const { componentsMap } = this.props;
+
     let podCount = 0;
     let successCount = 0;
     let pendingCount = 0;
     let errorCount = 0;
-    applicationDetails.get("components")?.forEach((component) => {
+    componentsMap.get(applicationDetails.get("name"))?.forEach((component) => {
       component.get("pods").forEach((podStatus) => {
         podCount++;
         switch (podStatus.get("status")) {
@@ -326,7 +333,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         <H4>Applications</H4>
         <Button
           tutorial-anchor-id="add-application"
-          component={(props: any) => <Link {...props} />}
+          component={Link}
           color="primary"
           size="small"
           variant="outlined"
@@ -381,13 +388,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
       },
       {
         title: "Actions",
-        field: "action",
-        sorting: false,
-        searchable: false,
-        render: this.renderActions,
-      },
-      {
-        title: "",
         field: "moreAction",
         sorting: false,
         searchable: false,

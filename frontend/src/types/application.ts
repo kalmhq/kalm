@@ -18,10 +18,10 @@ export const SET_IS_SUBMITTING_APPLICATION_COMPONENT = "SET_IS_SUBMITTING_APPLIC
 export const CREATE_COMPONENT = "CREATE_COMPONENT";
 export const UPDATE_COMPONENT = "UPDATE_COMPONENT";
 export const DELETE_COMPONENT = "DELETE_COMPONENT";
-export const ADD_OR_UPDATE_SERVICE = "ADD_OR_UPDATE_SERVICE";
-export const DELETE_SERVICE = "DELETE_SERVICE";
-export const ADD_OR_UPDATE_POD = "ADD_OR_UPDATE_POD";
-export const DELETE_POD = "DELETE_POD";
+export const LOAD_ALL_NAMESAPCES_COMPONETS = "LOAD_ALL_NAMESAPCES_COMPONETS"; // for application list page
+export const LOAD_COMPONENTS_PENDING = "LOAD_COMPONENTS_PENDING";
+export const LOAD_COMPONENTS_FULFILLED = "LOAD_COMPONENTS_FULFILLED";
+export const LOAD_COMPONENTS_FAILED = "LOAD_COMPONENTS_FAILED";
 // export const LOAD_APPLICATION_PLUGINS_FULFILLED = "LOAD_APPLICATION_PLUGINS_FULFILLED";
 export const LOAD_COMPONENT_PLUGINS_FULFILLED = "LOAD_COMPONENT_PLUGINS_FULFILLED";
 
@@ -98,14 +98,13 @@ export type ApplicationComponentDetails = ImmutableMap<ApplicationComponentDetai
 
 export interface ApplicationContent {
   name: string;
-  nextAddComponent?: boolean;
 }
 
 export type Application = ImmutableMap<ApplicationContent>;
 
 export interface ApplicationDetailsContent extends ApplicationContent {
   status: string; // Active or Terminating
-  components: Immutable.List<ApplicationComponentDetails>;
+  // components: Immutable.List<ApplicationComponentDetails>;
   metrics: Metrics;
   roles: Immutable.List<string>;
 }
@@ -164,39 +163,26 @@ export interface DeleteComponentAction {
   };
 }
 
-export interface AddOrUpdateServiceAction {
-  type: typeof ADD_OR_UPDATE_SERVICE;
+export interface LoadComponentsPendingAction {
+  type: typeof LOAD_COMPONENTS_PENDING;
+}
+
+export interface LoadComponentsFailedAction {
+  type: typeof LOAD_COMPONENTS_FAILED;
+}
+
+export interface LoadComponentsFulfilledAction {
+  type: typeof LOAD_COMPONENTS_FULFILLED;
   payload: {
     applicationName: string;
-    componentName: string;
-    service: ServiceStatus;
+    components: Immutable.List<ApplicationComponentDetails>;
   };
 }
 
-export interface DeleteServiceAction {
-  type: typeof DELETE_SERVICE;
+export interface LoadAllNamespacesComponentsAction {
+  type: typeof LOAD_ALL_NAMESAPCES_COMPONETS;
   payload: {
-    applicationName: string;
-    componentName: string;
-    serviceName: string;
-  };
-}
-
-export interface AddOrUpdatePodAction {
-  type: typeof ADD_OR_UPDATE_POD;
-  payload: {
-    applicationName: string;
-    componentName: string;
-    pod: PodStatus;
-  };
-}
-
-export interface DeletePodAction {
-  type: typeof DELETE_POD;
-  payload: {
-    applicationName: string;
-    componentName: string;
-    podName: string;
+    components: Immutable.Map<string, Immutable.List<ApplicationComponentDetails>>; // key applicationName
   };
 }
 
@@ -267,8 +253,8 @@ export type ApplicationActions =
   | CreateComponentAction
   | UpdateComponentAction
   | DeleteComponentAction
-  | AddOrUpdateServiceAction
-  | DeleteServiceAction
-  | AddOrUpdatePodAction
-  | DeletePodAction
+  | LoadComponentsFulfilledAction
+  | LoadComponentsPendingAction
+  | LoadComponentsFailedAction
+  | LoadAllNamespacesComponentsAction
   | LoadComponentPluginsFulfilledAction;

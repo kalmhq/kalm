@@ -2,14 +2,12 @@ import hoistNonReactStatics from "hoist-non-react-statics";
 import queryString from "query-string";
 import React from "react";
 import { connect } from "react-redux";
-import { ThunkDispatch } from "redux-thunk";
-import { newEmptyComponentLike } from "types/componentTemplate";
-import { Loading } from "widgets/Loading";
 import { RootState } from "reducers";
+import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "types";
-import { ApplicationComponent } from "types/application";
-import { componentDetailsToComponent } from "utils/application";
+import { Loading } from "widgets/Loading";
 import { loadApplicationAction } from "../../actions/application";
+import { loadComponentsAction } from "../../actions/component";
 
 const mapStateToProps = (state: RootState, props: any) => {
   const applications = state.get("applications");
@@ -20,12 +18,8 @@ const mapStateToProps = (state: RootState, props: any) => {
   componentName = componentName || search.component;
 
   const application = applications.get("applications").find((x) => x.get("name") === applicationName);
-  // for detail
-  const component = application && application.get("components")?.find((x) => x.get("name") === componentName);
-  // for edit
-  const currentComponent = component
-    ? componentDetailsToComponent(component)
-    : (newEmptyComponentLike() as ApplicationComponent);
+  const components = application && state.get("components").get("components").get(application?.get("name"));
+  const component = components?.find((x) => x.get("name") === componentName);
 
   const activeNamespaceName = state.get("namespaces").get("active");
 
@@ -33,8 +27,8 @@ const mapStateToProps = (state: RootState, props: any) => {
     applicationName,
     activeNamespaceName,
     application,
+    components,
     component,
-    currentComponent,
     isLoading: applications.get("isItemLoading"),
   };
 };
@@ -53,6 +47,7 @@ export const ApplicationItemDataWrapper = ({ autoReload }: { autoReload: boolean
 
     private loadData = () => {
       const { applicationName } = this.props;
+      this.props.dispatch(loadComponentsAction(applicationName));
       this.props.dispatch(loadApplicationAction(applicationName));
       if (autoReload) {
         // Just for refresh mestrics. Reload per minute,
