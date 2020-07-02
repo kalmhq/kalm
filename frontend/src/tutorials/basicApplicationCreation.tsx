@@ -16,13 +16,15 @@ import {
   requireSubStepNotCompleted,
 } from "tutorials/utils";
 import { APPLICATION_FORM_ID, COMPONENT_FORM_ID } from "forms/formIDs";
+import { AccessYourApplicationTutorialFactory } from "tutorials/accessYourApplication";
+import { setTutorialAction } from "actions/tutorial";
 
 export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title): Tutorial => {
   let apps: Immutable.List<ApplicationDetails> = store.getState().get("applications").get("applications");
 
-  const applicationNameTemplate = "hello-world-";
+  const applicationNameTemplate = "tutorial-";
   let i = 0;
-  let applicationName = "hello-world";
+  let applicationName = "tutorial";
 
   // eslint-disable-next-line
   while (apps.find((app) => app.get("name") === applicationName)) {
@@ -97,6 +99,12 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
         description:
           "Component describes how a program is running, includes start, scheduling, update and termination. Also, you can configure disks, health checker and resources limit for it.",
         highlights: [
+          {
+            title: "Chick Here",
+            description: "Go to add component page",
+            anchor: "[tutorial-anchor-id=add-component-button]",
+            triggeredByState: (state: RootState) => requireSubStepNotCompleted(state, 0),
+          },
           {
             title: "Chick Here",
             description: "Go to networking tab",
@@ -228,16 +236,13 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
           {
             title: "Wait the component to be running.",
             shouldCompleteByState: (state: RootState) => {
-              const application = state
-                .get("applications")
-                .get("applications")
-                .find((x) => x.get("name") === applicationName);
+              const components = state.get("components").get("components").get(applicationName);
 
-              if (!application) {
+              if (!components) {
                 return false;
               }
 
-              const pod = application.getIn(["components", 0, "pods", 0]);
+              const pod = components.getIn([0, "pods", 0]);
 
               if (!pod) {
                 return false;
@@ -252,7 +257,11 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
     ],
     nextStep: {
       text: "Add external access for your application.",
-      onClick: () => {},
+      onClick: () => {
+        store.dispatch(
+          setTutorialAction(AccessYourApplicationTutorialFactory(`Access ${applicationName} application`)),
+        );
+      },
     },
   };
 };

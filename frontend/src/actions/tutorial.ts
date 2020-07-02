@@ -13,11 +13,10 @@ import {
   TutorialDrawerAction,
 } from "types/tutorial";
 
-export const setTutorialAction = (id: string, tutorial: Tutorial): SetTutorialAction => {
+export const setTutorialAction = (tutorial: Tutorial): SetTutorialAction => {
   return {
     type: SET_TUTORIAL_ACTION,
     payload: {
-      id,
       tutorial,
     },
   };

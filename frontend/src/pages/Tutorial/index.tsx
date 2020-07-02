@@ -80,7 +80,7 @@ interface State {}
 
 class TutorialRaw extends React.PureComponent<Props, State> {
   private handleChoice = (tutorial: Tutorial) => {
-    this.props.dispatch(setTutorialAction("CreateApplicationTutorial", tutorial));
+    this.props.dispatch(setTutorialAction(tutorial));
   };
 
   private renderOptions = () => {
@@ -112,7 +112,7 @@ class TutorialRaw extends React.PureComponent<Props, State> {
             target="_blank"
             rel="noreferer"
           >
-            Still have questions? Tell us! (Todo)
+            Still have questions? Tell us!
           </Link>
         </Box>
         {/* This tutorial will walk you through kapp dashboard */}

@@ -35,6 +35,7 @@ class ApplicationShowRaw extends React.PureComponent<Props> {
           variant="outlined"
           to={`/applications/${activeNamespaceName}/components/new`}
           id="add-component-button"
+          tutorial-anchor-id="add-component-button"
         >
           Add Component
         </Button>
