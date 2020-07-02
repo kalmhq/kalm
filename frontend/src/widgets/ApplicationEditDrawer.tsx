@@ -14,7 +14,7 @@ import { getFormSyncErrors, hasSubmitFailed } from "redux-form/immutable";
 import { TDispatch } from "types";
 import { deleteComponentAction } from "../actions/application";
 import { BaseDrawer } from "../layout/BaseDrawer";
-import { primaryBackgroud, primaryColor } from "../theme";
+import { primaryBackgroud, primaryColor } from "theme/theme";
 import { ApplicationComponent, ApplicationComponentDetails, ApplicationDetails } from "../types/application";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { IconButtonWithTooltip } from "./IconButtonWithTooltip";

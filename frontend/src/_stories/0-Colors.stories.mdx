@@ -1,15 +1,15 @@
 import { Meta, ColorPalette, ColorItem } from "@storybook/addon-docs/blocks";
-import { primaryColor } from "../theme";
-import colors from "../colors";
+import { primaryColor } from "theme/theme";
+import colors from "theme/colors";
 
-<Meta title="Design System/Basic" />
+<Meta title="Design System/Colors" />
 
 # Colors
 
 <ColorPalette>
-  <ColorItem title="theme.color.primary" subtitle="indigo[500]" colors={[colors.primary]} />
+  <ColorItem title="colors.primary" subtitle="indigo[500]" colors={[colors.primary]} />
   <ColorItem
-    title="theme.color.primary[n]"
+    title="colors.primary[n]"
     subtitle="indigos"
     colors={[
       colors.primary900,
@@ -24,9 +24,9 @@ import colors from "../colors";
       colors.primary50,
     ]}
   />
-  <ColorItem title="theme.color.secondary" subtitle="amber[500]" colors={[colors.secondary]} />
+  <ColorItem title="colors.secondary" subtitle="amber[500]" colors={[colors.secondary]} />
   <ColorItem
-    title="theme.color.secondary[n]"
+    title="colors.secondary[n]"
     subtitle="ambers"
     colors={[
       colors.secondary900,
@@ -41,11 +41,39 @@ import colors from "../colors";
       colors.secondary50,
     ]}
   />
-  <ColorItem title="theme.color.success" subtitle="Green" colors={[colors.success]} />
-  <ColorItem title="theme.color.warning" subtitle="Yellow" colors={[colors.warning]} />
-  <ColorItem title="theme.color.error" subtitle="Red" colors={[colors.error]} />
-  <ColorItem title="theme.color.textPrimary" subtitle="textPrimary" colors={[colors.textPrimary]} />
-  <ColorItem title="theme.color.textSecondary" subtitle="textSecondary" colors={[colors.textSecondary]} />
+  <ColorItem title="colors.success" subtitle="Green" colors={[colors.success]} />
+  <ColorItem title="colors.warning" subtitle="Yellow" colors={[colors.warning]} />
+  <ColorItem title="colors.error" subtitle="Red" colors={[colors.error]} />
+  <ColorItem
+    title="colors.textWhiteHighEmphasis"
+    subtitle="textWhiteHighEmphasis"
+    colors={[colors.textWhiteHighEmphasis]}
+  />
+  <ColorItem
+    title="colors.textWhiteMediumEmphasis"
+    subtitle="textWhiteMediumEmphasis"
+    colors={[colors.textWhiteMediumEmphasis]}
+  />
+  <ColorItem
+    title="colors.textWhiteDisabledEmphasis"
+    subtitle="textWhiteDisabledEmphasis"
+    colors={[colors.textWhiteDisabledEmphasis]}
+  />
+  <ColorItem
+    title="colors.textBlackHighEmphasis"
+    subtitle="textBlackHighEmphasis"
+    colors={[colors.textBlackHighEmphasis]}
+  />
+  <ColorItem
+    title="colors.textBlackMediumEmphasis"
+    subtitle="textBlackMediumEmphasis"
+    colors={[colors.textBlackMediumEmphasis]}
+  />
+  <ColorItem
+    title="colors.textBlackDisabledEmphasis"
+    subtitle="textBlackDisabledEmphasis"
+    colors={[colors.textBlackDisabledEmphasis]}
+  />
   <ColorItem
     title="Monochrome"
     colors={[
@@ -60,16 +88,20 @@ import colors from "../colors";
       colors.lightest,
     ]}
   />
-  {/* <ColorItem title="theme.color.secondary" subtitle="Blue" colors={[color.secondary]} />
-  <ColorItem title="theme.color.tertiary" subtitle="Grey" colors={[color.tertiary]} />
-  <ColorItem title="theme.color.positive" subtitle="Green" colors={[color.positive]} />
-  <ColorItem title="theme.color.warning" subtitle="Ochre" colors={[color.warning]} />
-  <ColorItem title="theme.color.negative" subtitle="Red" colors={[color.negative]} />
-  <ColorItem title="theme.color.orange" subtitle="Orange" colors={[color.orange]} />
-  <ColorItem title="theme.color.gold" subtitle="Gold" colors={[color.gold]} />
-  <ColorItem title="theme.color.green" subtitle="Green" colors={[color.green]} />
-  <ColorItem title="theme.color.seafoam" subtitle="Seafoam" colors={[color.seafoam]} />
-  <ColorItem title="theme.color.purple" subtitle="Purple" colors={[color.purple]} />
-  <ColorItem title="theme.color.ultraviolet" subtitle="Ultraviolet" colors={[color.ultraviolet]} />
-  */}
+
+<ColorItem title="colors.surfaceCard" subtitle="surfaceCard" colors={[colors.surfaceCard]} />
+<ColorItem title="colors.surfaceAppUI" subtitle="surfaceAppUI" colors={[colors.surfaceAppUI]} />
+<ColorItem title="colors.surfaceMenu" subtitle="surfaceMenu" colors={[colors.surfaceMenu]} />
+<ColorItem title="colors.surfaceSheets" subtitle="surfaceSheets" colors={[colors.surfaceSheets]} />
+<ColorItem title="colors.surfaceDrawers" subtitle="surfaceDrawers" colors={[colors.surfaceDrawers]} />
+<ColorItem title="colors.surfaceDialogs" subtitle="surfaceDialogs" colors={[colors.surfaceDialogs]} />
+<ColorItem title="colors.surfaceSideSheets" subtitle="surfaceSideSheets" colors={[colors.surfaceSideSheets]} />
+<ColorItem title="colors.surfacePage" subtitle="surfacePage" colors={[colors.surfacePage]} />
+<ColorItem title="colors.surfaceTableHeader" subtitle="surfaceTableHeader" colors={[colors.surfaceTableHeader]} />
+<ColorItem
+  title="colors.surfaceInputBackground"
+  subtitle="surfaceInputBackground"
+  colors={[colors.surfaceInputBackground]}
+/>
+
 </ColorPalette>

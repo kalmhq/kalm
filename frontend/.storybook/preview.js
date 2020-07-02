@@ -14,11 +14,10 @@ addParameters({
   dependencies: {
     // display only dependencies/dependents that have a story in storybook
     // by default this is false
-    withStoriesOnly: false,
-
+    // withStoriesOnly: false,
     // completely hide a dependency/dependents block if it has no elements
     // by default this is false
-    hideEmpty: false,
+    // hideEmpty: false,
   },
   viewport: {
     viewports: INITIAL_VIEWPORTS, // newViewports would be an ViewportMap. (see below for examples)

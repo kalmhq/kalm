@@ -1,6 +1,6 @@
 import React from "react";
 import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
-import { theme } from "theme";
+import { theme } from "theme/theme";
 
 const styles = () =>
   createStyles({

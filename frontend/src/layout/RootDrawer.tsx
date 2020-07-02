@@ -19,7 +19,7 @@ import { NavLink } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { APP_BAR_HEIGHT, LEFT_SECTION_CLOSE_WIDTH, LEFT_SECTION_OPEN_WIDTH } from "layout/Constants";
-import { primaryBackgroud, primaryColor } from "../theme";
+import { primaryBackgroud, primaryColor } from "theme/theme";
 import { KappApplicationIcon, KappNodeIcon, KappVolumeIcon } from "../widgets/Icon";
 import { blinkTopProgressAction } from "../actions/settings";
 

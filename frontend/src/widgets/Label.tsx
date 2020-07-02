@@ -1,7 +1,7 @@
 import { Box, Typography, TypographyProps } from "@material-ui/core";
 import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import React from "react";
-import { theme } from "theme";
+import { theme } from "theme/theme";
 
 const styles = () =>
   createStyles({
@@ -31,6 +31,7 @@ export const H1 = withStyles(styles)((props: LabelProps) => {
     </Label>
   );
 });
+H1.displayName = "H1";
 
 export const H2 = withStyles(styles)((props: LabelProps) => {
   return (
@@ -39,6 +40,7 @@ export const H2 = withStyles(styles)((props: LabelProps) => {
     </Label>
   );
 });
+H2.displayName = "H2";
 
 export const H3 = withStyles(styles)((props: LabelProps) => {
   return (
@@ -47,6 +49,7 @@ export const H3 = withStyles(styles)((props: LabelProps) => {
     </Label>
   );
 });
+H3.displayName = "H3";
 
 export const H4 = withStyles(styles)((props: LabelProps) => {
   return (
@@ -55,6 +58,7 @@ export const H4 = withStyles(styles)((props: LabelProps) => {
     </Label>
   );
 });
+H4.displayName = "H4";
 
 export const H5 = withStyles(styles)((props: LabelProps) => {
   return (
@@ -63,6 +67,7 @@ export const H5 = withStyles(styles)((props: LabelProps) => {
     </Label>
   );
 });
+H5.displayName = "H5";
 
 export const H6 = withStyles(styles)((props: LabelProps) => {
   return (
@@ -71,6 +76,7 @@ export const H6 = withStyles(styles)((props: LabelProps) => {
     </Label>
   );
 });
+H6.displayName = "H6";
 
 export const Subtitle1 = withStyles(styles)((props: LabelProps) => {
   return (
@@ -79,6 +85,7 @@ export const Subtitle1 = withStyles(styles)((props: LabelProps) => {
     </Label>
   );
 });
+Subtitle1.displayName = "Subtitle1";
 
 export const Subtitle2 = withStyles(styles)((props: LabelProps) => {
   return (
@@ -87,6 +94,7 @@ export const Subtitle2 = withStyles(styles)((props: LabelProps) => {
     </Label>
   );
 });
+Subtitle2.displayName = "Subtitle2";
 
 export const Body = withStyles(styles)((props: LabelProps) => {
   return (
@@ -95,6 +103,7 @@ export const Body = withStyles(styles)((props: LabelProps) => {
     </Label>
   );
 });
+Body.displayName = "Body";
 
 export const BoldBody = withStyles(styles)((props: LabelProps) => {
   return (
@@ -103,6 +112,7 @@ export const BoldBody = withStyles(styles)((props: LabelProps) => {
     </Label>
   );
 });
+BoldBody.displayName = "BoldBody";
 
 export const Caption = withStyles(styles)((props: LabelProps) => {
   return (
@@ -111,6 +121,7 @@ export const Caption = withStyles(styles)((props: LabelProps) => {
     </Label>
   );
 });
+Caption.displayName = "Caption";
 
 export const CenterCaption = withStyles(styles)((props: LabelProps) => {
   return (
@@ -119,3 +130,4 @@ export const CenterCaption = withStyles(styles)((props: LabelProps) => {
     </Box>
   );
 });
+CenterCaption.displayName = "CenterCaption";

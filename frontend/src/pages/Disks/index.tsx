@@ -11,7 +11,7 @@ import { KTable } from "widgets/Table";
 import { setErrorNotificationAction } from "../../actions/notification";
 import { deletePersistentVolumeAction, loadPersistentVolumesAction } from "../../actions/persistentVolume";
 import { RootState } from "../../reducers";
-import { primaryColor } from "../../theme";
+import { primaryColor } from "theme/theme";
 import { TDispatchProp } from "../../types";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
 import { DeleteIcon } from "../../widgets/Icon";

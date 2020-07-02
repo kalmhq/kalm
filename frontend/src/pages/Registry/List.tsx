@@ -10,7 +10,7 @@ import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { openDialogAction } from "../../actions/dialog";
 import { setErrorNotificationAction } from "../../actions/notification";
 import { blinkTopProgressAction } from "../../actions/settings";
-import { primaryColor } from "../../theme";
+import { primaryColor } from "theme/theme";
 import { CustomizedButton } from "../../widgets/Button";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
 import { DeleteIcon, EditIcon } from "../../widgets/Icon";

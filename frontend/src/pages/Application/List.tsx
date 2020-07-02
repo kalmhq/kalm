@@ -14,7 +14,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
-import { primaryColor } from "theme";
+import { primaryColor } from "theme/theme";
 import { ApplicationDetails } from "types/application";
 import { HttpRoute } from "types/route";
 import { customSearchForImmutable } from "utils/tableSearch";

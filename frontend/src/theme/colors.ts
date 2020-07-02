@@ -1,4 +1,4 @@
-import { green, indigo, grey, red, amber, yellow } from "@material-ui/core/colors";
+import { green, indigo, red, amber, yellow } from "@material-ui/core/colors";
 
 export default {
   primary: indigo[500],
@@ -37,6 +37,22 @@ export default {
   success: green[500],
   warning: yellow[500],
 
-  textPrimary: grey[900],
-  textSecondary: grey[500],
+  textWhiteHighEmphasis: "rgba(255, 255, 255, 1.0)",
+  textWhiteMediumEmphasis: "rgba(255, 255, 255, 0.7)",
+  textWhiteDisabledEmphasis: "rgba(255, 255, 255, 0.5)",
+
+  textBlackHighEmphasis: "rgba(0,0,0, 0.87)",
+  textBlackMediumEmphasis: "rgba(0,0,0, 0.6)",
+  textBlackDisabledEmphasis: "rgba(0,0,0, 0.38)",
+
+  surfaceCard: "#FAFAFA",
+  surfaceMenu: "#FAFAFA",
+  surfaceSheets: "#FAFAFA",
+  surfaceAppUI: "#FFFFFF",
+  surfaceDrawers: "#FFFFFF",
+  surfaceDialogs: "#FFFFFF",
+  surfaceSideSheets: "#FFFFFF",
+  surfacePage: "#F4F5F7",
+  surfaceTableHeader: "rgba(0,0,0,0.5)",
+  surfaceInputBackground: "#E8E8E8",
 };
