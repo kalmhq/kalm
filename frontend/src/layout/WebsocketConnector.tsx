@@ -11,6 +11,7 @@ import {
   RESOURCE_TYPE_COMPONENT,
   RESOURCE_TYPE_NODE,
   WATCHED_RESOURCE_CHANGE,
+  RESOURCE_TYPE_HTTP_ROUTE,
 } from "types/resources";
 
 export interface ResMessage {
@@ -49,6 +50,17 @@ class WebsocketConnectorRaw extends React.PureComponent<Props> {
       const data: ResMessage = JSON.parse(event.data);
 
       switch (data.kind) {
+        case RESOURCE_TYPE_APPLICATION: {
+          dispatch({
+            type: WATCHED_RESOURCE_CHANGE,
+            kind: RESOURCE_TYPE_APPLICATION,
+            payload: {
+              action: data.action,
+              data: Immutable.fromJS(data.data),
+            },
+          });
+          break;
+        }
         case RESOURCE_TYPE_COMPONENT: {
           dispatch({
             type: WATCHED_RESOURCE_CHANGE,
@@ -61,19 +73,18 @@ class WebsocketConnectorRaw extends React.PureComponent<Props> {
           });
           break;
         }
-
-        case RESOURCE_TYPE_APPLICATION: {
+        case RESOURCE_TYPE_HTTP_ROUTE: {
           dispatch({
             type: WATCHED_RESOURCE_CHANGE,
-            kind: RESOURCE_TYPE_APPLICATION,
+            kind: RESOURCE_TYPE_HTTP_ROUTE,
             payload: {
+              namespace: data.namespace,
               action: data.action,
               data: Immutable.fromJS(data.data),
             },
           });
           break;
         }
-
         case RESOURCE_TYPE_NODE: {
           dispatch({
             type: WATCHED_RESOURCE_CHANGE,

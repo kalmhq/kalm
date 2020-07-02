@@ -19,11 +19,16 @@ func StartWatching(c *Client) {
 	go WatchComponents(c)
 	go WatchServices(c)
 	go WatchPods(c)
+	go WatchHttpRoutes(c)
 	go Watch(c, &coreV1.Node{}, buildNodeResMessage)
 }
 
 func WatchNamespaces(c *Client) {
 	Watch(c, &coreV1.Namespace{}, buildNamespaceResMessage)
+}
+
+func WatchHttpRoutes(c *Client) {
+	Watch(c, &v1alpha1.HttpRoute{}, buildHttpRouteResMessage)
 }
 
 func WatchComponents(c *Client) {
@@ -165,6 +170,21 @@ func buildPodResMessage(c *Client, action string, objWatched interface{}) (*ResM
 	}
 
 	return componentToResMessage(c, "Update", component)
+}
+
+func buildHttpRouteResMessage(_ *Client, action string, objWatched interface{}) (*ResMessage, error) {
+	route, ok := objWatched.(*v1alpha1.HttpRoute)
+
+	if !ok {
+		return nil, errors.New("convert watch obj to Node failed")
+	}
+
+	return &ResMessage{
+		Kind:      "HttpRoute",
+		Namespace: route.Namespace,
+		Action:    action,
+		Data:      resources.BuildHttpRouteFromResource(route),
+	}, nil
 }
 
 func buildNodeResMessage(_ *Client, action string, objWatched interface{}) (*ResMessage, error) {
