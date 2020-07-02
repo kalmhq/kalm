@@ -11,12 +11,13 @@ import {
   withStyles,
   WithStyles,
 } from "@material-ui/core";
-import React from "react";
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
-import { SECOND_HEADER_HEIGHT, LEFT_SECTION_OPEN_WIDTH, NAMESPACES_ZINDEX } from "layout/Constants";
-import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { setCurrentNamespaceAction } from "actions/namespaces";
+import { setSuccessNotificationAction } from "actions/notification";
+import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
+import { LEFT_SECTION_OPEN_WIDTH, NAMESPACES_ZINDEX, SECOND_HEADER_HEIGHT } from "layout/Constants";
+import React from "react";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -73,7 +74,9 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
 
   private handleSelect = (event: React.MouseEvent) => {
     const { dispatch } = this.props;
-    dispatch(setCurrentNamespaceAction(event.currentTarget.getAttribute("namespace-name")!));
+    const applicationName = event.currentTarget.getAttribute("namespace-name")!;
+    dispatch(setCurrentNamespaceAction(applicationName));
+    dispatch(setSuccessNotificationAction(`Application changed to ${applicationName}`));
     this.handleClose();
   };
 
