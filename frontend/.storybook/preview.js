@@ -1,9 +1,13 @@
-import { addParameters } from "@storybook/react";
+import React from "react";
+import { addParameters, addDecorator } from "@storybook/react";
 import { themes } from "@storybook/theming";
 import { INITIAL_VIEWPORTS } from "@storybook/addon-viewport";
 import { DocsPage } from "storybook-addon-deps/blocks";
 import { global } from "@storybook/design-system";
-const { GlobalStyle } = global;
+import { StylesProvider } from "@material-ui/styles";
+import { ThemeProvider } from "@material-ui/core/styles";
+import { theme } from "theme/theme";
+import { select, withKnobs } from "@storybook/addon-knobs";
 
 addParameters({
   options: {
@@ -30,13 +34,23 @@ addParameters({
   ],
 });
 
-const withGlobalStyle = (storyFn) => (
-  <>
-    <GlobalStyle />
-    {storyFn()}
-  </>
-);
+const { GlobalStyle } = global;
+const muiThemes = { KAMLTheme1: theme, KAMLTheme2: theme };
+const muiThemeNames = Object.keys(muiThemes);
 
-export const decorators = [withGlobalStyle];
+const withGlobalStyle = (storyFn) => {
+  const theme = select("Theme", muiThemeNames, muiThemeNames[0], "Themes");
 
+  return (
+    <StylesProvider injectFirst>
+      <GlobalStyle />
+      <ThemeProvider theme={muiThemes[theme]}>{storyFn()}</ThemeProvider>
+    </StylesProvider>
+  );
+};
+
+// export const decorators = [withGlobalStyle];
+
+addDecorator(withGlobalStyle);
+addDecorator(withKnobs);
 //   loadFontsForStorybook();
