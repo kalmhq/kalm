@@ -93,6 +93,7 @@ type MetricHistories struct {
 type ApplicationDetails struct {
 	*Application `json:",inline"`
 	Metrics      MetricHistories `json:"metrics"`
+	IstioMetric  IstioMetric     `json:"istioMetric"`
 	Roles        []string        `json:"roles"`
 	Status       string          `json:"status"` // Active or Terminating
 }
@@ -150,19 +151,32 @@ func (builder *Builder) BuildApplicationDetails(namespace coreV1.Namespace) (*Ap
 	}
 
 	applicationMetric := GetApplicationMetric(nsName)
-	//isActive := controllers.IsNamespaceKappEnabled(namespace)
+
+	var istioMetric IstioMetric
+	istioMetricListChan := builder.GetIstioMetricsListChannel(nsName)
+	err = <-istioMetricListChan.Error
+	if err != nil {
+		fmt.Printf("fail to GetIstioMetricsListChannel for ns: %s, ignored, err: %s", nsName, err)
+	} else {
+		istioMetricMap := <-istioMetricListChan.List
+
+		// todo filter out non-kapp service?
+		for _, v := range istioMetricMap {
+			istioMetric = mergeIstioMetric(istioMetric, v)
+		}
+	}
 
 	return &ApplicationDetails{
 		Application: &Application{
 			Name: nsName,
-			//IsActive:  isActive,
 		},
 		Metrics: MetricHistories{
 			CPU:    applicationMetric.CPU,
 			Memory: applicationMetric.Memory,
 		},
-		Roles:  roles,
-		Status: string(namespace.Status.Phase),
+		IstioMetric: istioMetric,
+		Roles:       roles,
+		Status:      string(namespace.Status.Phase),
 	}, nil
 }
 
