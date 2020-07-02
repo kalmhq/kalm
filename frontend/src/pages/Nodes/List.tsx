@@ -1,4 +1,4 @@
-import { Box, Button, createStyles, Grid, Theme, WithStyles, withStyles } from "@material-ui/core";
+import { Box, Button, createStyles, Grid, Popover, Theme, WithStyles, withStyles } from "@material-ui/core";
 import { loadNodesAction } from "actions/node";
 import { NodeStatus } from "pages/Nodes/NodeStatus";
 import React from "react";
@@ -7,7 +7,7 @@ import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { Node } from "types/node";
 import { formatTimeDistance } from "utils";
-import { H5 } from "widgets/Label";
+import { H4, H5 } from "widgets/Label";
 import { BigCPULineChart, BigMemoryLineChart, SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { BasePage } from "../BasePage";
 import { NodeCPU } from "./CPU";
@@ -17,6 +17,7 @@ import { Link } from "react-router-dom";
 import { Expansion } from "forms/Route/expansion";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
 import { api } from "api";
+import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -184,10 +185,43 @@ export class NodeListRaw extends React.Component<Props, States> {
     );
   };
 
+  private renderSecondHeaderRight = () => {
+    return (
+      <>
+        <H4>Nodes</H4>
+        <PopupState variant="popover" popupId={"nodes"}>
+          {(popupState) => (
+            <>
+              <Button color="primary" size="small" variant="text" {...bindTrigger(popupState)}>
+                How to add a new node?
+              </Button>
+              <Popover
+                {...bindPopover(popupState)}
+                anchorOrigin={{
+                  vertical: "bottom",
+                  horizontal: "center",
+                }}
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "center",
+                }}
+              >
+                <Box p={2}>
+                  Kalm is not responsible for managing the addition and deletion of nodes. You need to operate where
+                  your kubernetes cluster is created.
+                </Box>
+              </Popover>
+            </>
+          )}
+        </PopupState>
+      </>
+    );
+  };
+
   render() {
     const { metrics, nodes } = this.props;
     return (
-      <BasePage secondHeaderRight="Nodes">
+      <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
         <Box p={2}>
           <Grid container spacing={2}>
             <Grid item md={6}>
