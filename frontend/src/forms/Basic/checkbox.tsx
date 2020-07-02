@@ -124,7 +124,7 @@ export const KCheckboxGroupRender = ({
 
           if (componentType === "Chip") {
             return (
-              <Box mt={1} mr={1} mb={1}>
+              <Box mt={1} mr={1} mb={1} key={x.value}>
                 <KChip
                   clickable
                   disabledStyle={!value.includes(x.value)}
