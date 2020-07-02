@@ -90,6 +90,9 @@ class RegistryFormRaw extends React.PureComponent<
 
 export const registryInitialValues: RegistryType = Immutable.fromJS({
   name: "",
+  host: "",
+  username: "",
+  password: "",
 });
 
 export const RegistryForm = reduxForm<RegistryType, Props>({
