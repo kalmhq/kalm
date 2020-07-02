@@ -1,5 +1,5 @@
 import { Box, Button, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { deleteComponentAction } from "actions/application";
+import { deleteComponentAction } from "actions/component";
 import { blinkTopProgressAction } from "actions/settings";
 import { Expansion, ExpansionProps } from "forms/Route/expansion";
 import { ComponentBasicInfo } from "pages/Components/BasicInfo";

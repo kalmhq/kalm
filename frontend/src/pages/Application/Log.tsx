@@ -2,21 +2,21 @@ import { Chip, createStyles, Grid, Paper, TextField, Theme, withStyles } from "@
 import { WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import { Autocomplete, AutocompleteProps, UseAutocompleteProps } from "@material-ui/lab";
+import { k8sWsPrefix } from "api/realApi";
 import { replace } from "connected-react-router";
 import debug from "debug";
 import Immutable from "immutable";
+import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import queryString from "query-string";
 import React from "react";
 import ReconnectingWebSocket from "reconnecting-websocket";
+import { PodStatus } from "types/application";
 import "xterm/css/xterm.css";
 import { Loading } from "../../widgets/Loading";
 import { Namespaces } from "../../widgets/Namespaces";
 import { BasePage } from "../BasePage";
 import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./ItemDataWrapper";
 import { Xterm, XtermRaw } from "./Xterm";
-import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
-import { PodStatus } from "types/application";
-import { k8sWsPrefix } from "api/realApi";
 
 const logger = debug("ws");
 const detailedLogger = debug("ws:details");
@@ -155,10 +155,10 @@ export class LogStream extends React.PureComponent<Props, State> {
   }
 
   componentDidUpdate(prevProps: Props, prevState: State) {
-    const { application } = this.props;
+    const { components } = this.props;
 
     let pods: Immutable.List<string> = Immutable.List();
-    application?.get("components")?.forEach((component) => {
+    components?.forEach((component) => {
       component.get("pods").forEach((pod) => {
         pods = pods.push(pod.get("name"));
       });
@@ -331,10 +331,10 @@ export class LogStream extends React.PureComponent<Props, State> {
   };
 
   getAllPods = (): Immutable.List<PodStatus> => {
-    const { application } = this.props;
+    const { components } = this.props;
 
     let pods: Immutable.List<PodStatus> = Immutable.List();
-    application?.get("components")?.forEach((component) => {
+    components?.forEach((component) => {
       component.get("pods").forEach((pod) => {
         pods = pods.push(pod);
       });
@@ -411,10 +411,10 @@ export class LogStream extends React.PureComponent<Props, State> {
   };
 
   private renderInputPod() {
-    const { application } = this.props;
+    const { components } = this.props;
 
     let podNames: Immutable.List<string> = Immutable.List([]);
-    application?.get("components")?.forEach((component) => {
+    components?.forEach((component) => {
       component.get("pods").forEach((pod) => {
         podNames = podNames.push(pod.get("name"));
       });

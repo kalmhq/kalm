@@ -110,7 +110,7 @@ const mapStateToProps = (state: RootState) => {
     tutorialState: state.get("tutorial"),
     search,
     fieldValues,
-    isSubmittingApplicationComponent: state.get("applications").get("isSubmittingApplicationComponent"),
+    isSubmittingApplicationComponent: state.get("components").get("isSubmittingApplicationComponent"),
     syncValidationErrors,
     nodeLabels,
     currentTabIndex,

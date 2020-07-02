@@ -1,13 +1,9 @@
 import Immutable from "immutable";
 import { Actions } from "types";
 import {
-  ApplicationComponentDetails,
   ApplicationDetails,
-  ComponentPlugin,
   CREATE_APPLICATION,
-  CREATE_COMPONENT,
   DELETE_APPLICATION,
-  DELETE_COMPONENT,
   DUPLICATE_APPLICATION,
   LOAD_APPLICATIONS_FAILED,
   LOAD_APPLICATIONS_FULFILLED,
@@ -15,11 +11,8 @@ import {
   LOAD_APPLICATION_FAILED,
   LOAD_APPLICATION_FULFILLED,
   LOAD_APPLICATION_PENDING,
-  LOAD_COMPONENT_PLUGINS_FULFILLED,
   SET_IS_SUBMITTING_APPLICATION,
-  SET_IS_SUBMITTING_APPLICATION_COMPONENT,
   UPDATE_APPLICATION,
-  UPDATE_COMPONENT,
 } from "types/application";
 import { LOGOUT } from "types/common";
 import { ImmutableMap } from "typings";
@@ -30,14 +23,11 @@ export type State = ImmutableMap<{
   isListFirstLoaded: boolean;
   isItemLoading: boolean;
   isSubmittingApplication: boolean;
-  isSubmittingApplicationComponent: boolean;
   // applicationPlugins: ApplicationPlugin[];
-  componentPlugins: ComponentPlugin[];
 }>;
 
 const initialState: State = Immutable.Map({
   applications: Immutable.List(),
-  deletingApplicationNames: Immutable.Map({}),
   isListLoading: false,
   isListFirstLoaded: false,
   isItemLoading: false,
@@ -59,34 +49,6 @@ const putApplicationIntoState = (state: State, application: ApplicationDetails):
   return state;
 };
 
-const putComponentIntoState = (
-  state: State,
-  applicationName: string,
-  component: ApplicationComponentDetails,
-  isCreate: boolean,
-): State => {
-  const applications = state.get("applications");
-  const applicationIndex = applications.findIndex((app) => app.get("name") === applicationName);
-  if (applicationIndex < 0) {
-    return state;
-  }
-  const application = applications.find((app) => app.get("name") === applicationName);
-  const components = application?.get("components");
-  if (!components) {
-    return state;
-  }
-  const componentIndex = components.findIndex((c) => c.get("name") === component.get("name"));
-  if (componentIndex < 0) {
-    if (isCreate) {
-      state = state.setIn(["applications", applicationIndex, "components", components.size], component);
-    }
-  } else {
-    state = state.setIn(["applications", applicationIndex, "components", componentIndex], component);
-  }
-
-  return state;
-};
-
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
     case LOGOUT: {
@@ -94,10 +56,6 @@ const reducer = (state: State = initialState, action: Actions): State => {
     }
     case SET_IS_SUBMITTING_APPLICATION: {
       state = state.set("isSubmittingApplication", action.payload.isSubmittingApplication);
-      break;
-    }
-    case SET_IS_SUBMITTING_APPLICATION_COMPONENT: {
-      state = state.set("isSubmittingApplicationComponent", action.payload.isSubmittingApplicationComponent);
       break;
     }
     case LOAD_APPLICATIONS_PENDING: {
@@ -149,37 +107,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
 
       break;
     }
-    case CREATE_COMPONENT: {
-      state = putComponentIntoState(state, action.payload.applicationName, action.payload.component, true);
-      break;
-    }
-    case UPDATE_COMPONENT: {
-      state = putComponentIntoState(state, action.payload.applicationName, action.payload.component, false);
-      break;
-    }
-    case DELETE_COMPONENT: {
-      const applications = state.get("applications");
-      const applicationIndex = applications.findIndex((app) => app.get("name") === action.payload.applicationName);
-      if (applicationIndex < 0) {
-        break;
-      }
-      const application = applications.find((app) => app.get("name") === action.payload.applicationName);
-      const componentIndex = application!
-        .get("components")
-        .findIndex((c) => c.get("name") === action.payload.componentName);
-      if (componentIndex < 0) {
-        break;
-      }
 
-      state = state.deleteIn(["applications", applicationIndex, "components", componentIndex]);
-      break;
-    }
-
-    case LOAD_COMPONENT_PLUGINS_FULFILLED: {
-      state = state.set("componentPlugins", action.payload.componentPlugins);
-
-      break;
-    }
     // case LOAD_APPLICATION_PLUGINS_FULFILLED: {
     //   state = state.set("applicationPlugins", action.payload.applicationPlugins);
 

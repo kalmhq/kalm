@@ -18,6 +18,10 @@ export const SET_IS_SUBMITTING_APPLICATION_COMPONENT = "SET_IS_SUBMITTING_APPLIC
 export const CREATE_COMPONENT = "CREATE_COMPONENT";
 export const UPDATE_COMPONENT = "UPDATE_COMPONENT";
 export const DELETE_COMPONENT = "DELETE_COMPONENT";
+export const LOAD_ALL_NAMESAPCES_COMPONETS = "LOAD_ALL_NAMESAPCES_COMPONETS"; // for application list page
+export const LOAD_COMPONENTS_PENDING = "LOAD_COMPONENTS_PENDING";
+export const LOAD_COMPONENTS_FULFILLED = "LOAD_COMPONENTS_FULFILLED";
+export const LOAD_COMPONENTS_FAILED = "LOAD_COMPONENTS_FAILED";
 // export const LOAD_APPLICATION_PLUGINS_FULFILLED = "LOAD_APPLICATION_PLUGINS_FULFILLED";
 export const LOAD_COMPONENT_PLUGINS_FULFILLED = "LOAD_COMPONENT_PLUGINS_FULFILLED";
 
@@ -100,7 +104,7 @@ export type Application = ImmutableMap<ApplicationContent>;
 
 export interface ApplicationDetailsContent extends ApplicationContent {
   status: string; // Active or Terminating
-  components: Immutable.List<ApplicationComponentDetails>;
+  // components: Immutable.List<ApplicationComponentDetails>;
   metrics: Metrics;
   roles: Immutable.List<string>;
 }
@@ -156,6 +160,29 @@ export interface DeleteComponentAction {
   payload: {
     applicationName: string;
     componentName: string;
+  };
+}
+
+export interface LoadComponentsPendingAction {
+  type: typeof LOAD_COMPONENTS_PENDING;
+}
+
+export interface LoadComponentsFailedAction {
+  type: typeof LOAD_COMPONENTS_FAILED;
+}
+
+export interface LoadComponentsFulfilledAction {
+  type: typeof LOAD_COMPONENTS_FULFILLED;
+  payload: {
+    applicationName: string;
+    components: Immutable.List<ApplicationComponentDetails>;
+  };
+}
+
+export interface LoadAllNamespacesComponentsAction {
+  type: typeof LOAD_ALL_NAMESAPCES_COMPONETS;
+  payload: {
+    components: Immutable.Map<string, Immutable.List<ApplicationComponentDetails>>; // key applicationName
   };
 }
 
@@ -226,4 +253,8 @@ export type ApplicationActions =
   | CreateComponentAction
   | UpdateComponentAction
   | DeleteComponentAction
+  | LoadComponentsFulfilledAction
+  | LoadComponentsPendingAction
+  | LoadComponentsFailedAction
+  | LoadAllNamespacesComponentsAction
   | LoadComponentPluginsFulfilledAction;

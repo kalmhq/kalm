@@ -1,5 +1,4 @@
 import { getWebsocketInstance } from "actions/websocket";
-import { api } from "api";
 import { mockStore } from "api/mockApi";
 import Immutable from "immutable";
 import React from "react";
@@ -84,8 +83,6 @@ class WebsocketConnectorRaw extends React.PureComponent<Props> {
           let application: ApplicationDetails = Immutable.fromJS(data.data);
           if (data.action === "Add") {
             if (application.get("status") === "Active") {
-              const components = await api.getKappApplicationComponentList(application.get("name"));
-              application = application.set("components", components);
               dispatch({
                 type: CREATE_APPLICATION,
                 payload: { application },
@@ -98,8 +95,6 @@ class WebsocketConnectorRaw extends React.PureComponent<Props> {
                 payload: { applicationName: application.get("name") },
               });
             } else {
-              const components = await api.getKappApplicationComponentList(application.get("name"));
-              application = application.set("components", components);
               dispatch({
                 type: CREATE_APPLICATION,
                 payload: { application },

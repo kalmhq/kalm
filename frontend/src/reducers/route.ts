@@ -14,9 +14,7 @@ import { ImmutableMap } from "typings";
 export type State = ImmutableMap<{
   isLoading: boolean;
   isFirstLoaded: boolean;
-  httpRoutes: ImmutableMap<{
-    [key: string]: Immutable.List<HttpRoute>;
-  }>;
+  httpRoutes: Immutable.Map<string, Immutable.List<HttpRoute>>;
 }>;
 
 const initialState: State = Immutable.Map({
