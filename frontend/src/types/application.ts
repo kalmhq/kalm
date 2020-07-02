@@ -98,7 +98,6 @@ export type ApplicationComponentDetails = ImmutableMap<ApplicationComponentDetai
 
 export interface ApplicationContent {
   name: string;
-  nextAddComponent?: boolean;
 }
 
 export type Application = ImmutableMap<ApplicationContent>;
