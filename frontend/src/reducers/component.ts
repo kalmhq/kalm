@@ -50,10 +50,8 @@ const putComponentIntoState = (
     return state;
   }
   const componentIndex = components.findIndex((c) => c.get("name") === component.get("name"));
-  if (componentIndex < 0) {
-    if (isCreate) {
-      state = state.setIn(["components", applicationName, components.size], component);
-    }
+  if (componentIndex < 0 && isCreate) {
+    state = state.setIn(["components", applicationName, components.size], component);
   } else {
     state = state.setIn(["components", applicationName, componentIndex], component);
   }
@@ -118,7 +116,6 @@ const reducer = (state: State = initialState, action: Actions): State => {
       if (action.kind !== RESOURCE_TYPE_COMPONENT) {
         return state;
       }
-
       switch (action.payload.action) {
         case RESOURCE_ACTION_ADD: {
           state = putComponentIntoState(state, action.payload.namespace, action.payload.data, true);
@@ -133,10 +130,8 @@ const reducer = (state: State = initialState, action: Actions): State => {
           break;
         }
       }
-
       break;
     }
-
     case LOAD_COMPONENT_PLUGINS_FULFILLED: {
       state = state.set("componentPlugins", action.payload.componentPlugins);
 

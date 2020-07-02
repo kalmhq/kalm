@@ -1,5 +1,6 @@
 import { Node } from "types/node";
 import { ApplicationDetails, ApplicationComponentDetails } from "./application";
+import { HttpRoute } from "./route";
 
 export const WATCHED_RESOURCE_CHANGE = "WATCHED_RESOURCE_CHANGE";
 
@@ -10,6 +11,7 @@ export const RESOURCE_ACTION_DELETE = "Delete";
 export const RESOURCE_TYPE_NODE = "Node";
 export const RESOURCE_TYPE_APPLICATION = "Application";
 export const RESOURCE_TYPE_COMPONENT = "Component";
+export const RESOURCE_TYPE_HTTP_ROUTE = "HttpRoute";
 
 export type ResourceActionType =
   | typeof RESOURCE_ACTION_UPDATE
@@ -44,4 +46,18 @@ export interface ComponentResourceAction {
   };
 }
 
-export type ResourceActions = NodeResourceAction | ApplicationResourceAction | ComponentResourceAction;
+export interface HttpRouteResourceAction {
+  type: typeof WATCHED_RESOURCE_CHANGE;
+  kind: typeof RESOURCE_TYPE_HTTP_ROUTE;
+  payload: {
+    action: ResourceActionType;
+    namespace: string;
+    data: HttpRoute;
+  };
+}
+
+export type ResourceActions =
+  | NodeResourceAction
+  | ApplicationResourceAction
+  | ComponentResourceAction
+  | HttpRouteResourceAction;
