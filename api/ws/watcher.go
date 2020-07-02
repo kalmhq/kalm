@@ -15,41 +15,29 @@ import (
 )
 
 func StartWatching(c *Client) {
-	go WatchNamespaces(c)
-	go WatchComponents(c)
-	go WatchServices(c)
-	go WatchPods(c)
-	go WatchHttpRoutes(c)
-	go Watch(c, &coreV1.Node{}, buildNodeResMessage)
-}
-
-func WatchNamespaces(c *Client) {
-	Watch(c, &coreV1.Namespace{}, buildNamespaceResMessage)
-}
-
-func WatchHttpRoutes(c *Client) {
-	Watch(c, &v1alpha1.HttpRoute{}, buildHttpRouteResMessage)
-}
-
-func WatchComponents(c *Client) {
-	Watch(c, &v1alpha1.Component{}, buildComponentResMessage)
-}
-
-func WatchServices(c *Client) {
-	Watch(c, &coreV1.Service{}, buildServiceResMessage)
-}
-
-func WatchPods(c *Client) {
-	Watch(c, &coreV1.Pod{}, buildPodResMessage)
-}
-
-func Watch(c *Client, runtimeObj runtime.Object, buildResMessage func(c *Client, action string, obj interface{}) (*ResMessage, error)) {
 	informerCache, err := runtimeCache.New(c.K8SClientConfig, runtimeCache.Options{})
 	if err != nil {
 		panic(err)
 	}
 
-	informer, err := informerCache.GetInformer(runtimeObj)
+	registerWatchHandler(c, &informerCache, &coreV1.Namespace{}, buildNamespaceResMessage)
+	registerWatchHandler(c, &informerCache, &v1alpha1.Component{}, buildComponentResMessage)
+	registerWatchHandler(c, &informerCache, &coreV1.Service{}, buildServiceResMessage)
+	registerWatchHandler(c, &informerCache, &coreV1.Pod{}, buildPodResMessage)
+	registerWatchHandler(c, &informerCache, &v1alpha1.HttpRoute{}, buildHttpRouteResMessage)
+	registerWatchHandler(c, &informerCache, &coreV1.Node{}, buildNodeResMessage)
+
+	// stop := make(chan struct{})
+	// defer close(stop)
+	informerCache.Start(c.StopWatcher)
+}
+
+func registerWatchHandler(c *Client,
+	informerCache *runtimeCache.Cache,
+	runtimeObj runtime.Object,
+	buildResMessage func(c *Client, action string, obj interface{}) (*ResMessage, error)) {
+
+	informer, err := (*informerCache).GetInformer(runtimeObj)
 	if err != nil {
 		panic(err)
 	}
@@ -81,9 +69,6 @@ func Watch(c *Client, runtimeObj runtime.Object, buildResMessage func(c *Client,
 		},
 	})
 
-	// stop := make(chan struct{})
-	// defer close(stop)
-	informerCache.Start(c.StopWatcher)
 }
 
 func buildNamespaceResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
