@@ -381,13 +381,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
       },
       {
         title: "Actions",
-        field: "action",
-        sorting: false,
-        searchable: false,
-        render: this.renderActions,
-      },
-      {
-        title: "",
         field: "moreAction",
         sorting: false,
         searchable: false,

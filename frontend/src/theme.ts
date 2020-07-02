@@ -38,45 +38,35 @@ let themeRaw = createMuiTheme({
   typography: {
     h1: {
       fontSize: 28,
-      fontWeight: 500,
     },
     h2: {
       fontSize: 20,
-      fontWeight: 400,
     },
     h3: {
       fontSize: 18,
-      fontWeight: 500,
     },
     h4: {
       fontSize: 18,
-      fontWeight: 400,
     },
     h5: {
       fontSize: 15,
-      fontWeight: 500,
     },
     h6: {
       fontSize: 15,
-      fontWeight: 400,
     },
     body1: {
       fontSize: 13,
-      fontWeight: 400,
     },
     body2: {
       fontSize: 13,
-      fontWeight: 500,
       color: "rgba(0, 0, 0, 0.6);",
     },
     button: {
       fontSize: 13,
-      fontWeight: 500,
       textTransform: "capitalize",
     },
     caption: {
       fontSize: 12,
-      fontWeight: 400,
     },
   },
   overrides: {

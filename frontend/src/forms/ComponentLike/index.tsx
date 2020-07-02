@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   Collapse,
   Grid,
   Link,
@@ -10,6 +11,7 @@ import {
   Tabs,
   Tooltip,
 } from "@material-ui/core";
+import { Link as RouteLink, RouteComponentProps, withRouter } from "react-router-dom";
 import { grey } from "@material-ui/core/colors";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
@@ -32,7 +34,6 @@ import { COMPONENT_DEPLOY_BUTTON_ZINDEX } from "layout/Constants";
 import queryString from "query-string";
 import React from "react";
 import { connect } from "react-redux";
-import { RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
 import { InjectedFormProps } from "redux-form";
 import { Field, getFormSyncErrors, getFormValues, reduxForm } from "redux-form/immutable";
@@ -64,6 +65,7 @@ import { RenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
+import { Alert } from "@material-ui/lab";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -107,6 +109,7 @@ const mapStateToProps = (state: RootState) => {
   }
 
   return {
+    registries: state.get("registries").get("registries"),
     tutorialState: state.get("tutorial"),
     search,
     fieldValues,
@@ -1114,14 +1117,58 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               { value: workloadTypeDaemonSet, text: "DaemonSet" },
               { value: workloadTypeStatefulSet, text: "StatefulSet" },
             ]}
-          ></Field>
+          />
         </Grid>
         <Grid item xs={6}>
           {this.renderReplicasOrSchedule()}
         </Grid>
+        {this.renderPrivateRegistryAlert()}
       </Grid>
     );
   }
+
+  // TODO: any better idea??
+  private isUnknownPrivateRegistry = (image: string) => {
+    const { registries } = this.props;
+    const parts = image.split("/");
+
+    if (parts.length < 3) {
+      return false;
+    }
+
+    return !registries.find((r) => r.get("host").includes(parts[0]));
+  };
+
+  private renderPrivateRegistryAlert = () => {
+    const { fieldValues } = this.props;
+    const image = fieldValues.get("image");
+
+    if (!image || !this.isUnknownPrivateRegistry(image)) {
+      return null;
+    }
+
+    return (
+      <Grid item xs={12}>
+        <Alert
+          severity="info"
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              style={{ textAlign: "center" }}
+              component={RouteLink}
+              to="/cluster/registries"
+            >
+              Configure registry
+            </Button>
+          }
+        >
+          You seem to be using a private docker image registry. No image pull secret for this registry is retrieved. If
+          the image is not public accessible, the image pull process may encounter errors.
+        </Alert>
+      </Grid>
+    );
+  };
 
   private renderDeployButton() {
     const { classes, handleSubmit, isSubmittingApplicationComponent } = this.props;

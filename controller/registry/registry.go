@@ -245,25 +245,3 @@ func (r *Registry) Tags(repository string) (tags []string, err error) {
 		}
 	}
 }
-
-func (r *Registry) Manifests(repository, reference string) (tags []string, err error) {
-	url := fmt.Sprintf("%s/v2/%s/tags/list", r.Host, repository)
-
-	var response struct {
-		Tags []string `json:"tags"`
-	}
-
-	for {
-		url, err = r.GetResponseAndNextUrl(url, &response)
-		switch err {
-		case io.EOF:
-			tags = append(tags, response.Tags...)
-			return tags, nil
-		case nil:
-			tags = append(tags, response.Tags...)
-			continue
-		default:
-			return nil, err
-		}
-	}
-}

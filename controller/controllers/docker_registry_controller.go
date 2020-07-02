@@ -121,32 +121,46 @@ func (r *DockerRegistryReconcileTask) UpdateStatus() (err error) {
 
 		r.Recorder.Event(r.registry, v1.EventTypeWarning, "AuthFailed", err.Error())
 		return nil
+	} else {
+		registryCopy := r.registry.DeepCopy()
+		registryCopy.Status.AuthenticationVerified = true
+
+		if err := r.Status().Patch(r.ctx, registryCopy, client.MergeFrom(r.registry)); err != nil {
+			r.WarningEvent(err, "Patch docker registry status error.")
+			return err
+		}
 	}
+	r.Recorder.Eventf(r.registry, v1.EventTypeNormal, "AuthSucceed", "Fetch repositories successfully.")
 
-	repos, err := registryInstance.Repositories()
+	// fetch repos and tags on registry, this step would be slow, run this in a separated process
+	//go func() {
+	//	registryCopy := r.registry.DeepCopy()
+	//	repos, err := registryInstance.Repositories()
+	//
+	//	if err != nil {
+	//		r.Recorder.Event(r.registry, v1.EventTypeWarning, "ReadRepositoriesFailed", err.Error())
+	//		return
+	//	}
+	//
+	//	var repositories []*corev1alpha1.Repository
+	//	for _, repo := range repos {
+	//		tags, err := registryInstance.Tags(repo)
+	//
+	//		if err != nil {
+	//			r.Recorder.Event(r.registry, v1.EventTypeWarning, "ReadRepositoriesFailed", err.Error())
+	//			return
+	//		}
+	//
+	//		repositories = append(repositories, &corev1alpha1.Repository{
+	//			Name: repo,
+	//			Tags: []corev1alpha1.RepositoryTag{},
+	//		})
+	//	}
+	//
+	//	registryCopy.Status.Repositories = repositories
+	//	r.Recorder.Eventf(r.registry, v1.EventTypeNormal, "FetchRepositories", "%d repos found.", len(repos))
+	//}()
 
-	if err != nil {
-		r.Recorder.Event(r.registry, v1.EventTypeWarning, "ReadRepositoriesFailed", err.Error())
-		return err
-	}
-	var repositories []*corev1alpha1.Repository
-	for _, repo := range repos {
-		repositories = append(repositories, &corev1alpha1.Repository{
-			Name: repo,
-			Tags: []corev1alpha1.RepositoryTag{},
-		})
-	}
-
-	registryCopy := r.registry.DeepCopy()
-	registryCopy.Status.AuthenticationVerified = true
-	registryCopy.Status.Repositories = repositories
-
-	if err := r.Status().Patch(r.ctx, registryCopy, client.MergeFrom(r.registry)); err != nil {
-		r.WarningEvent(err, "Patch docker registry status error.")
-		return err
-	}
-
-	r.Recorder.Eventf(r.registry, v1.EventTypeNormal, "AuthSucceed", "Fetch repositories successfully. %d images found.", len(repos))
 	return nil
 }
 
