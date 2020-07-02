@@ -12,10 +12,19 @@ import { connect } from "react-redux";
 import { withComponent, WithComponentProp } from "hoc/withComponent";
 import { ComponentStatus } from "widgets/ComponentStatus";
 import { correctComponentFormValuesForInit, componentDetailsToComponent } from "utils/application";
+import { RootState } from "reducers";
 
 const styles = (theme: Theme) => createStyles({});
 
-interface Props extends WithStyles<typeof styles>, WithComponentProp {}
+interface Props extends WithStyles<typeof styles>, WithComponentProp {
+  initialValues: ComponentLike;
+}
+
+const mapStateToProps = (state: RootState, ownProps: any) => {
+  return {
+    initialValues: correctComponentFormValuesForInit(state, componentDetailsToComponent(ownProps.component)),
+  };
+};
 
 class ComponentEditRaw extends React.PureComponent<Props> {
   private submit = async (formValues: ComponentLike) => {
@@ -29,7 +38,7 @@ class ComponentEditRaw extends React.PureComponent<Props> {
   };
 
   public render() {
-    const { component } = this.props;
+    const { component, initialValues } = this.props;
     return (
       <BasePage
         secondHeaderLeft={<Namespaces />}
@@ -40,7 +49,7 @@ class ComponentEditRaw extends React.PureComponent<Props> {
           <Grid container spacing={2}>
             <Grid item xs={8}>
               <ComponentLikeForm
-                initialValues={correctComponentFormValuesForInit(componentDetailsToComponent(component))}
+                initialValues={initialValues}
                 onSubmit={this.submit}
                 onSubmitSuccess={this.onSubmitSuccess}
               />
@@ -55,4 +64,4 @@ class ComponentEditRaw extends React.PureComponent<Props> {
   }
 }
 
-export const ComponentEditPage = withComponent(withStyles(styles)(connect()(ComponentEditRaw)));
+export const ComponentEditPage = withComponent(withStyles(styles)(connect(mapStateToProps)(ComponentEditRaw)));

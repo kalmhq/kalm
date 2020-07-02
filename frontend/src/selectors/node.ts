@@ -1,8 +1,6 @@
-import { store } from "store";
 import Immutable from "immutable";
+import { RootState } from "reducers";
 
-export const getNodeLabels = (): Immutable.List<string> => {
-  const state = store.getState();
-
+export const getNodeLabels = (state: RootState): Immutable.List<string> => {
   return state.get("nodes").get("labels");
 };

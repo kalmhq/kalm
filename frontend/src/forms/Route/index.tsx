@@ -383,6 +383,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                         color="primary"
                         startIcon={<Icon>add</Icon>}
                         size="small"
+                        id="add-target-button"
                         onClick={() =>
                           dispatch(
                             arrayPush(
@@ -506,7 +507,13 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
             </FormControl>
           </div>
         </Expansion> */}
-            <Button type="submit" onClick={handleSubmit} color="primary" variant="contained">
+            <Button
+              id="add-route-submit-button"
+              type="submit"
+              onClick={handleSubmit}
+              color="primary"
+              variant="contained"
+            >
               Save Route
             </Button>
           </Grid>

@@ -96,7 +96,7 @@ const mapStateToProps = (state: RootState) => {
   const syncValidationErrors = getFormSyncErrors(COMPONENT_FORM_ID)(state) as {
     [x in keyof ComponentLikeContent]: any;
   };
-  const nodeLabels = getNodeLabels();
+  const nodeLabels = getNodeLabels(state);
 
   const search = queryString.parse(window.location.search);
   const hash = window.location.hash;
@@ -1135,6 +1135,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             color="primary"
             className={classes.deployBtn}
             onClick={handleSubmit}
+            id="add-component-submit-button"
           >
             Deploy
           </CustomizedButton>

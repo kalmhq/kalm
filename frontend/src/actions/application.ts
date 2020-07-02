@@ -46,7 +46,7 @@ export const createComponentAction = (
     try {
       component = await api.createKappApplicationComponent(
         applicationName,
-        correctComponentFormValuesForSubmit(componentValues),
+        correctComponentFormValuesForSubmit(getState(), componentValues),
       );
     } catch (e) {
       dispatch(setIsSubmittingApplicationComponent(false));
@@ -79,7 +79,7 @@ export const updateComponentAction = (
     try {
       component = await api.updateKappApplicationComponent(
         applicationName,
-        correctComponentFormValuesForSubmit(componentValues),
+        correctComponentFormValuesForSubmit(getState(), componentValues),
       );
     } catch (e) {
       dispatch(setIsSubmittingApplicationComponent(false));

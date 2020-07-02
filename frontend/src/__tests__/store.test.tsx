@@ -1,24 +1,33 @@
-import React from "react";
-import { Store } from "redux";
-import { RootState } from "reducers";
-import { createBrowserHistory } from "history";
-import configureStore from "configureStore";
+import { createApplicationAction, createComponentAction, loadApplicationsAction } from "actions/application";
 import { loadCertificates } from "actions/certificate";
-import { Provider } from "react-redux";
-import { CertificateForm } from "forms/Certificate";
-import { newEmptyCertificateForm, selfManaged } from "../types/certificate";
-import { change } from "redux-form";
-import { getTestFormSyncErrors } from "../utils/testUtils";
-import { readFileSync } from "fs";
+import MockStore from "api/mockStore";
+import configureStore from "configureStore";
+import { ConnectedRouter } from "connected-react-router/immutable";
 import { configure, mount } from "enzyme";
 import Adapter from "enzyme-adapter-react-16";
-import MockStore from "api/mockStore";
 import ApplicationForm, { applicationInitialValues } from "forms/Application";
-import { CERTIFICATE_FORM_ID, APPLICATION_FORM_ID } from "forms/formIDs";
+import { CertificateForm } from "forms/Certificate";
+import { ComponentLikeForm } from "forms/ComponentLike";
+import { APPLICATION_FORM_ID, CERTIFICATE_FORM_ID, COMPONENT_FORM_ID, ROUTE_FORM_ID } from "forms/formIDs";
+import { readFileSync } from "fs";
+import { createBrowserHistory } from "history";
+import React from "react";
+import { Provider } from "react-redux";
 import { Route } from "react-router";
-import { ConnectedRouter } from "connected-react-router/immutable";
-import { createApplicationAction } from "actions/application";
+import { RootState } from "reducers";
+import { Store } from "redux";
+import { change } from "redux-form";
 import { Application } from "types/application";
+import { ComponentLike, newEmptyComponentLike } from "types/componentTemplate";
+import { newEmptyCertificateForm, selfManaged } from "../types/certificate";
+import { getTestFormSyncErrors } from "../utils/testUtils";
+import { ThemeProvider } from "@material-ui/core";
+import { theme } from "theme";
+import { HttpRouteForm, newEmptyRouteForm } from "types/route";
+import { createRoute } from "actions/routes";
+import { RouteForm } from "forms/Route";
+import { loadServicesAction } from "actions/service";
+import Immutable from "immutable";
 
 configure({ adapter: new Adapter() });
 
@@ -26,6 +35,8 @@ let store: Store<RootState, any>;
 let history: any;
 const mockStore = new MockStore();
 const requiredError = "Required";
+const applicationName = "test-application";
+const componentName = "test-component";
 
 beforeAll(() => {
   history = createBrowserHistory();
@@ -95,15 +106,16 @@ test("add application", async (done) => {
   const onSubmit = async (applicationFormValue: Application) => {
     return await store.dispatch(createApplicationAction(applicationFormValue));
   };
+
   const onSubmitSuccess = (app: Application) => {
     try {
-      expect(app.get("name")).toBe("test-application");
+      expect(app.get("name")).toBe(applicationName);
       done();
     } catch (error) {
       done(error);
     }
-    expect(app.get("name")).toBe("test-application");
   };
+
   const WrappedApplicationForm = class extends React.Component {
     public render() {
       return (
@@ -124,7 +136,59 @@ test("add application", async (done) => {
       </ConnectedRouter>
     </Provider>,
   );
-  store.dispatch(change(APPLICATION_FORM_ID, "name", "test-application"));
-  expect(component.find("code#application-name-code").text()).toContain("test-application");
+  store.dispatch(change(APPLICATION_FORM_ID, "name", applicationName));
+  expect(component.find("code#application-name-code").text()).toContain(applicationName);
   component.find("button#add-application-submit-button").simulate("click");
+});
+
+test("add component", async (done) => {
+  await store.dispatch(loadApplicationsAction());
+  const testApplication = store.getState().get("applications").get("applications").get(0);
+  const onSubmit = async (formValues: ComponentLike) => {
+    return await store.dispatch(createComponentAction(formValues, testApplication?.get("name")));
+  };
+
+  const onSubmitSuccess = () => {
+    try {
+      const testApplicationComponent = store
+        .getState()
+        .get("applications")
+        .get("applications")
+        .get(0)
+        ?.get("components")
+        .find((c) => c.get("name") === componentName);
+      expect(!!testApplicationComponent).toBeTruthy();
+      done();
+    } catch (error) {
+      done(error);
+    }
+  };
+  const WrappedComponentForm = class extends React.Component {
+    public render() {
+      return (
+        <ComponentLikeForm
+          initialValues={newEmptyComponentLike()}
+          onSubmit={onSubmit}
+          onSubmitSuccess={onSubmitSuccess}
+        />
+      );
+    }
+  };
+  const component = mount(
+    <Provider store={store}>
+      <ThemeProvider theme={theme}>
+        <ConnectedRouter history={history}>
+          <Route component={WrappedComponentForm} />
+        </ConnectedRouter>
+      </ThemeProvider>
+    </Provider>,
+  );
+
+  component.find("button#add-component-submit-button").simulate("click");
+  expect(getTestFormSyncErrors(store, COMPONENT_FORM_ID).name).toBe(requiredError);
+  expect(getTestFormSyncErrors(store, COMPONENT_FORM_ID).image).toBe(requiredError);
+
+  store.dispatch(change(COMPONENT_FORM_ID, "name", componentName));
+  store.dispatch(change(COMPONENT_FORM_ID, "image", "test-image"));
+  component.find("button#add-component-submit-button").simulate("click");
 });

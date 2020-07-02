@@ -21,7 +21,7 @@ import { ValidatorRequired, ValidatorVolumeSize } from "../validator";
 
 const mapStateToProps = (state: RootState) => {
   return {
-    volumeOptions: getComponentFormVolumeOptions(),
+    volumeOptions: getComponentFormVolumeOptions(state),
     storageClasses: state.get("persistentVolumes").get("storageClasses"),
   };
 };
