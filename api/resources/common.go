@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	"github.com/sirupsen/logrus"
@@ -71,11 +72,13 @@ func (c *ResourceChannels) ToResources() (r *Resources, err error) {
 	if c.IstioMetricList != nil {
 		err = <-c.IstioMetricList.Error
 		if err != nil {
-			return nil, err
+			fmt.Println("err when querying istioMetricList, ignored, err:", err)
+			return nil, nil
 		}
 
 		resources.IstioMetricList = <-c.IstioMetricList.List
 	}
+
 	if c.DeploymentList != nil {
 		err = <-c.DeploymentList.Error
 		if err != nil {

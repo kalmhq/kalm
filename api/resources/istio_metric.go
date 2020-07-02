@@ -145,8 +145,8 @@ func concatErr(errSlice ...error) error {
 	return rstErr
 }
 
-//var hardCodedIstioPrometheusAPIAdx = "http://prometheus.istio-system:9090"
-var hardCodedIstioPrometheusAPIAdx = "localhost:9090"
+//var hardCodedIstioPrometheusAPIAdx = "localhost:9090"
+var hardCodedIstioPrometheusAPIAdx = "http://prometheus.istio-system:9090"
 
 func getIstioHTTPMetricMap(ns string) (map[string]IstioMetric, error) {
 	svcName := fmt.Sprintf(`.*.%s.svc.cluster.local`, ns)
