@@ -4,11 +4,11 @@ import Immutable from "immutable";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { InjectedFormProps } from "redux-form";
-import { Field, reduxForm } from "redux-form/immutable";
+import { Field, getFormValues, reduxForm } from "redux-form/immutable";
 import { RootState } from "reducers";
-import { RegistryType } from "types/registry";
+import { newEmptyRegistry, RegistryType } from "types/registry";
 import { KRenderTextField } from "../Basic/textfield";
-import { ValidatorName, ValidatorRequired } from "../validator";
+import { RequireNoSuffix, RequirePrefix, ValidatorName, ValidatorRequired } from "../validator";
 import { Prompt } from "widgets/Prompt";
 import { REGISTRY_FORM_ID } from "../formIDs";
 
@@ -18,12 +18,19 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState) => {
-  return {};
+  const fieldValues = (getFormValues(REGISTRY_FORM_ID)(state) as RegistryType) || (Immutable.Map() as RegistryType);
+
+  return {
+    fieldValues,
+  };
 };
 
 export interface Props {
   isEdit?: boolean;
 }
+
+const validateName = [ValidatorRequired, ValidatorName];
+const validateHost = [ValidatorRequired, RequirePrefix("https://"), RequireNoSuffix("/")];
 
 class RegistryFormRaw extends React.PureComponent<
   Props &
@@ -45,7 +52,7 @@ class RegistryFormRaw extends React.PureComponent<
               label="Name"
               disabled={isEdit}
               component={KRenderTextField}
-              validate={[ValidatorRequired, ValidatorName]}
+              validate={validateName}
               helperText={
                 isEdit
                   ? "Can't modify name"
@@ -59,7 +66,7 @@ class RegistryFormRaw extends React.PureComponent<
               name="host"
               label="Host"
               component={KRenderTextField}
-              validate={[ValidatorRequired]}
+              validate={validateHost}
               placeholder="Please type the registry host"
             />
           </Grid>
@@ -67,8 +74,9 @@ class RegistryFormRaw extends React.PureComponent<
             <Field
               name="username"
               label="Username"
+              autocomplete="off"
               component={KRenderTextField}
-              validate={[ValidatorRequired]}
+              validate={ValidatorRequired}
               placeholder="Please type the registry username"
             />
           </Grid>{" "}
@@ -77,29 +85,29 @@ class RegistryFormRaw extends React.PureComponent<
               type="password"
               name="password"
               label="Password"
+              autocomplete="off"
               component={KRenderTextField}
-              validate={[ValidatorRequired]}
+              validate={ValidatorRequired}
               placeholder="Please type the registry password"
             />
           </Grid>
         </Grid>
+
+        {process.env.REACT_APP_DEBUG ? (
+          <pre style={{ maxWidth: 1500, background: "#eee" }}>
+            {JSON.stringify(this.props.fieldValues, undefined, 2)}
+          </pre>
+        ) : null}
       </form>
     );
   }
 }
 
-export const registryInitialValues: RegistryType = Immutable.fromJS({
-  name: "",
-  host: "",
-  username: "",
-  password: "",
-});
-
 export const RegistryForm = reduxForm<RegistryType, Props>({
   form: REGISTRY_FORM_ID,
   enableReinitialize: true,
   keepDirtyOnReinitialize: false,
-  initialValues: registryInitialValues,
+  initialValues: newEmptyRegistry(),
   onSubmitFail: (...args) => {
     console.log("submit failed", args);
   },

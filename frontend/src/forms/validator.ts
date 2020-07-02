@@ -247,3 +247,15 @@ export const ValidatorServiceName = (value: string) => {
 
   return undefined;
 };
+
+export const RequirePrefix = (prefix: string) => (value: string) => {
+  if (value === undefined) return undefined;
+  if (!value.startsWith(prefix)) return `Require prefix "${prefix}"`;
+  return undefined;
+};
+
+export const RequireNoSuffix = (suffix: string) => (value: string) => {
+  if (value === undefined) return undefined;
+  if (value.endsWith(suffix)) return `Require no suffix "${suffix}"`;
+  return undefined;
+};
