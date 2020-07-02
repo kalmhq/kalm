@@ -145,14 +145,14 @@ func concatErr(errSlice ...error) error {
 	return rstErr
 }
 
-//var hardCodedIstioPrometheusAPIAdx = "localhost:9090"
-var hardCodedIstioPrometheusAPIAdx = "http://prometheus.istio-system:9090"
+//var hardCodedIstioPrometheusAPIHost = "localhost:9090"
+var hardCodedIstioPrometheusAPIHost = "prometheus.istio-system:9090"
 
 func getIstioHTTPMetricMap(ns string) (map[string]IstioMetric, error) {
 	svcName := fmt.Sprintf(`.*.%s.svc.cluster.local`, ns)
 	query := fmt.Sprintf(`istio_requests_total{destination_service=~"%s"}`, svcName)
 
-	api := fmt.Sprintf("http://%s/api/v1/query?query=%s", hardCodedIstioPrometheusAPIAdx, query)
+	api := fmt.Sprintf("http://%s/api/v1/query?query=%s", hardCodedIstioPrometheusAPIHost, query)
 
 	promResp, err := queryPrometheusAPI(api)
 	if err != nil {
@@ -238,7 +238,7 @@ func getSentOrReceiveIstioTCPMetricMap(ns string, isSentData bool) (map[string]I
 		query = fmt.Sprintf(`istio_tcp_received_bytes_total{destination_service=~"%s"}`, svcName)
 	}
 
-	api := fmt.Sprintf("http://%s/api/v1/query?query=%s", hardCodedIstioPrometheusAPIAdx, query)
+	api := fmt.Sprintf("http://%s/api/v1/query?query=%s", hardCodedIstioPrometheusAPIHost, query)
 
 	promResp, err := queryPrometheusAPI(api)
 	if err != nil {
