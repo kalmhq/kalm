@@ -1,34 +1,28 @@
 import Immutable from "immutable";
-import { LOGOUT } from "types/common";
 import { Actions } from "types";
 import {
-  ADD_OR_UPDATE_POD,
-  ADD_OR_UPDATE_SERVICE,
-  ApplicationComponentDetails,
   ApplicationDetails,
-  ComponentPlugin,
   CREATE_APPLICATION,
-  CREATE_COMPONENT,
   DELETE_APPLICATION,
-  DELETE_COMPONENT,
-  DELETE_POD,
-  DELETE_SERVICE,
-  DUPLICATE_APPLICATION,
-  LOAD_APPLICATION_FAILED,
-  LOAD_APPLICATION_FULFILLED,
-  LOAD_APPLICATION_PENDING,
   LOAD_APPLICATIONS_FAILED,
   LOAD_APPLICATIONS_FULFILLED,
   LOAD_APPLICATIONS_PENDING,
-  LOAD_COMPONENT_PLUGINS_FULFILLED,
-  PodStatus,
-  ServiceStatus,
+  LOAD_APPLICATION_FAILED,
+  LOAD_APPLICATION_FULFILLED,
+  LOAD_APPLICATION_PENDING,
   SET_IS_SUBMITTING_APPLICATION,
-  SET_IS_SUBMITTING_APPLICATION_COMPONENT,
   UPDATE_APPLICATION,
-  UPDATE_COMPONENT,
 } from "types/application";
+import { LOGOUT } from "types/common";
 import { ImmutableMap } from "typings";
+import {
+  WATCHED_RESOURCE_CHANGE,
+  RESOURCE_ACTION_ADD,
+  RESOURCE_ACTION_DELETE,
+  RESOURCE_TYPE_APPLICATION,
+  RESOURCE_ACTION_UPDATE,
+} from "../types/resources";
+import { addOrUpdateInList, removeInList, removeInListByName } from "./utils";
 
 export type State = ImmutableMap<{
   applications: Immutable.List<ApplicationDetails>;
@@ -36,14 +30,11 @@ export type State = ImmutableMap<{
   isListFirstLoaded: boolean;
   isItemLoading: boolean;
   isSubmittingApplication: boolean;
-  isSubmittingApplicationComponent: boolean;
   // applicationPlugins: ApplicationPlugin[];
-  componentPlugins: ComponentPlugin[];
 }>;
 
 const initialState: State = Immutable.Map({
   applications: Immutable.List(),
-  deletingApplicationNames: Immutable.Map({}),
   isListLoading: false,
   isListFirstLoaded: false,
   isItemLoading: false,
@@ -53,113 +44,6 @@ const initialState: State = Immutable.Map({
   componentPlugins: [],
 });
 
-const putApplicationIntoState = (state: State, application: ApplicationDetails): State => {
-  const applications = state.get("applications");
-  const index = applications.findIndex((app) => app.get("name") === application.get("name"));
-
-  if (index < 0) {
-    state = state.set("applications", applications.push(application));
-  } else {
-    state = state.setIn(["applications", index], application);
-  }
-  return state;
-};
-
-const putComponentIntoState = (
-  state: State,
-  applicationName: string,
-  component: ApplicationComponentDetails,
-  isCreate: boolean,
-): State => {
-  const applications = state.get("applications");
-  const applicationIndex = applications.findIndex((app) => app.get("name") === applicationName);
-  if (applicationIndex < 0) {
-    return state;
-  }
-  const application = applications.find((app) => app.get("name") === applicationName);
-  const components = application?.get("components");
-  if (!components) {
-    return state;
-  }
-  const componentIndex = components.findIndex((c) => c.get("name") === component.get("name"));
-  if (componentIndex < 0) {
-    if (isCreate) {
-      state = state.setIn(["applications", applicationIndex, "components", components.size], component);
-    }
-  } else {
-    state = state.setIn(["applications", applicationIndex, "components", componentIndex], component);
-  }
-
-  return state;
-};
-
-const putServiceIntoState = (
-  state: State,
-  applicationName: string,
-  componentName: string,
-  service: ServiceStatus,
-): State => {
-  const applications = state.get("applications");
-  const applicationIndex = applications.findIndex((app) => app.get("name") === applicationName);
-  if (applicationIndex < 0) {
-    return state;
-  }
-  const application = applications.find((app) => app.get("name") === applicationName);
-  const components = application?.get("components");
-  if (!components) {
-    return state;
-  }
-  const componentIndex = components.findIndex((c) => c.get("name") === componentName);
-  if (componentIndex < 0) {
-    return state;
-  }
-  const component = components.find((c) => c.get("name") === componentName);
-  const services = component!.get("services");
-  const serviceIndex = services.findIndex((s) => s.get("name") === service.get("name"));
-
-  if (serviceIndex < 0) {
-    state = state.setIn(
-      ["applications", applicationIndex, "components", componentIndex, "services", services.size],
-      service,
-    );
-  } else {
-    state = state.setIn(
-      ["applications", applicationIndex, "components", componentIndex, "services", serviceIndex],
-      service,
-    );
-  }
-
-  return state;
-};
-
-const putPodIntoState = (state: State, applicationName: string, componentName: string, pod: PodStatus): State => {
-  const applications = state.get("applications");
-  const applicationIndex = applications.findIndex((app) => app.get("name") === applicationName);
-  if (applicationIndex < 0) {
-    return state;
-  }
-  const application = applications.find((app) => app.get("name") === applicationName);
-  const components = application?.get("components");
-  if (!components) {
-    return state;
-  }
-  const componentIndex = components.findIndex((c) => c.get("name") === componentName);
-  if (componentIndex < 0) {
-    return state;
-  }
-  const component = components.find((c) => c.get("name") === componentName);
-  const pods = component!.get("pods");
-  const podIndex = pods.findIndex((s) => s.get("name") === pod.get("name"));
-
-  if (podIndex < 0) {
-    state = state.setIn(["applications", applicationIndex, "components", componentIndex, "pods", pods.size], pod);
-  } else {
-    state = state.setIn(["applications", applicationIndex, "components", componentIndex, "pods", podIndex], pod);
-  }
-
-  return state;
-};
-
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
     case LOGOUT: {
@@ -167,10 +51,6 @@ const reducer = (state: State = initialState, action: Actions): State => {
     }
     case SET_IS_SUBMITTING_APPLICATION: {
       state = state.set("isSubmittingApplication", action.payload.isSubmittingApplication);
-      break;
-    }
-    case SET_IS_SUBMITTING_APPLICATION_COMPONENT: {
-      state = state.set("isSubmittingApplicationComponent", action.payload.isSubmittingApplicationComponent);
       break;
     }
     case LOAD_APPLICATIONS_PENDING: {
@@ -197,122 +77,47 @@ const reducer = (state: State = initialState, action: Actions): State => {
     }
     case LOAD_APPLICATION_FULFILLED: {
       state = state.set("isItemLoading", false);
-      state = putApplicationIntoState(state, action.payload.application);
+      state = state.update("applications", (x) => addOrUpdateInList(x, action.payload.application));
       break;
     }
     case CREATE_APPLICATION: {
-      state = putApplicationIntoState(state, action.payload.application);
-      break;
-    }
-    case DUPLICATE_APPLICATION: {
-      state = putApplicationIntoState(state, action.payload.application);
+      state = state.update("applications", (x) => addOrUpdateInList(x, action.payload.application));
       break;
     }
     case UPDATE_APPLICATION: {
-      state = putApplicationIntoState(state, action.payload.application);
+      state = state.update("applications", (x) => addOrUpdateInList(x, action.payload.application));
       break;
     }
     case DELETE_APPLICATION: {
-      const applications = state.get("applications");
-      const index = applications.findIndex((app) => app.get("name") === action.payload.applicationName);
-
-      if (index >= 0) {
-        state = state.deleteIn(["applications", index]);
-      }
-
+      state = state.update("applications", (x) => removeInListByName(x, action.payload.applicationName));
       break;
     }
-    case CREATE_COMPONENT: {
-      state = putComponentIntoState(state, action.payload.applicationName, action.payload.component, true);
-      break;
-    }
-    case UPDATE_COMPONENT: {
-      state = putComponentIntoState(state, action.payload.applicationName, action.payload.component, false);
-      break;
-    }
-    case DELETE_COMPONENT: {
-      const applications = state.get("applications");
-      const applicationIndex = applications.findIndex((app) => app.get("name") === action.payload.applicationName);
-      if (applicationIndex < 0) {
-        break;
-      }
-      const application = applications.find((app) => app.get("name") === action.payload.applicationName);
-      const componentIndex = application!
-        .get("components")
-        .findIndex((c) => c.get("name") === action.payload.componentName);
-      if (componentIndex < 0) {
+    case WATCHED_RESOURCE_CHANGE: {
+      if (action.kind !== RESOURCE_TYPE_APPLICATION) {
         break;
       }
 
-      state = state.deleteIn(["applications", applicationIndex, "components", componentIndex]);
-      break;
-    }
-    case ADD_OR_UPDATE_SERVICE: {
-      state = putServiceIntoState(
-        state,
-        action.payload.applicationName,
-        action.payload.componentName,
-        action.payload.service,
-      );
-      break;
-    }
-    case DELETE_SERVICE: {
-      const { applicationName, componentName, serviceName } = action.payload;
-      const applications = state.get("applications");
-      const applicationIndex = applications.findIndex((app) => app.get("name") === applicationName);
-      if (applicationIndex < 0) {
-        return state;
-      }
-      const application = applications.find((app) => app.get("name") === applicationName);
-      const components = application?.get("components");
-      if (!components) {
-        return state;
-      }
-      const componentIndex = components.findIndex((c) => c.get("name") === componentName);
-      if (componentIndex < 0) {
-        return state;
-      }
-      const component = components.find((c) => c.get("name") === componentName);
-      const serviceIndex = component!.get("services").findIndex((s) => s.get("name") === serviceName);
+      switch (action.payload.action) {
+        case RESOURCE_ACTION_ADD: {
+          if (action.payload.data.get("status") === "Active") {
+            state = state.update("applications", (x) => addOrUpdateInList(x, action.payload.data));
+          }
+          break;
+        }
+        case RESOURCE_ACTION_DELETE: {
+          state = state.update("applications", (x) => removeInList(x, action.payload.data));
+          break;
+        }
+        case RESOURCE_ACTION_UPDATE: {
+          if (action.payload.data.get("status") === "Terminating") {
+            state = state.update("applications", (x) => removeInList(x, action.payload.data));
+            break;
+          }
 
-      state = state.deleteIn([
-        "applications",
-        applicationIndex,
-        "components",
-        componentIndex,
-        "services",
-        serviceIndex,
-      ]);
-      break;
-    }
-    case ADD_OR_UPDATE_POD: {
-      state = putPodIntoState(state, action.payload.applicationName, action.payload.componentName, action.payload.pod);
-      break;
-    }
-    case DELETE_POD: {
-      const { applicationName, componentName, podName } = action.payload;
-      const applications = state.get("applications");
-      const applicationIndex = applications.findIndex((app) => app.get("name") === applicationName);
-      if (applicationIndex < 0) {
-        return state;
+          state = state.update("applications", (x) => addOrUpdateInList(x, action.payload.data));
+          break;
+        }
       }
-      const application = applications.find((app) => app.get("name") === applicationName);
-      const components = application?.get("components");
-      if (!components) {
-        return state;
-      }
-      const componentIndex = components.findIndex((c) => c.get("name") === componentName);
-      if (componentIndex < 0) {
-        return state;
-      }
-      const component = components.find((c) => c.get("name") === componentName);
-      const podIndex = component!.get("pods").findIndex((s) => s.get("name") === podName);
-
-      state = state.deleteIn(["applications", applicationIndex, "components", componentIndex, "pods", podIndex]);
-      break;
-    }
-    case LOAD_COMPONENT_PLUGINS_FULFILLED: {
-      state = state.set("componentPlugins", action.payload.componentPlugins);
 
       break;
     }

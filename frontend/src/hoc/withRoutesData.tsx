@@ -25,7 +25,7 @@ const mapStateToProps = (
     httpRoutes: httpRoutes.get(activeNamespaceName) || (Immutable.List() as Immutable.List<HttpRoute>),
     httpRoute:
       name && httpRoutes.get(activeNamespaceName)
-        ? httpRoutes.get(activeNamespaceName).find((x) => x.get("name") === name)
+        ? httpRoutes.get(activeNamespaceName)?.find((x) => x.get("name") === name)
         : undefined,
   };
 };

@@ -2,7 +2,7 @@ import { Box, createStyles, Grid, Theme, withStyles, WithStyles } from "@materia
 import React from "react";
 import { push } from "connected-react-router";
 import { BasePage } from "pages/BasePage";
-import { updateComponentAction } from "actions/application";
+import { updateComponentAction } from "actions/component";
 import { ComponentLike } from "types/componentTemplate";
 import { Namespaces } from "widgets/Namespaces";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";

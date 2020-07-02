@@ -1174,8 +1174,8 @@ export default class MockStore {
       ]),
 
       mockStorageClasses: Immutable.fromJS([
-        { name: "standard", isKappManaged: false },
-        { name: "kapp-standard", isKappManaged: true },
+        { name: "standard", isManaged: false },
+        { name: "kapp-standard", isManaged: true },
       ]),
 
       mockSimpleOptions: Immutable.fromJS([

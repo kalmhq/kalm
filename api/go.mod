@@ -10,6 +10,7 @@ require (
 	github.com/kapp-staging/kapp/controller v0.1.0
 	github.com/labstack/echo/v4 v4.1.15
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
+	github.com/prometheus/client_golang v1.7.1 // indirect
 	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.5.1
 	github.com/urfave/cli/v2 v2.2.0

@@ -10,12 +10,12 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { HttpRoute } from "types/route";
 import { SuccessBadge } from "widgets/Badge";
+import { DangerButton } from "widgets/Button";
 import { H4 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { Namespaces } from "widgets/Namespaces";
 import { KTable } from "widgets/Table";
-import { DeleteIcon, EditIcon } from "../../widgets/Icon";
-import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
+import { Targets } from "widgets/Targets";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -101,15 +101,8 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
 
   private renderTargets = (row: RowData) => {
     const { activeNamespaceName } = this.props;
-    let sum = 0;
-    row.get("destinations").forEach((x) => (sum += x.get("weight")));
 
-    return row.get("destinations").map((x) => (
-      <div key={x.get("host")}>
-        {x.get("host").replace(`.${activeNamespaceName}.svc.cluster.local`, "").replace(`.svc.cluster.local`, "")}(
-        {Math.floor((x.get("weight") / sum) * 1000 + 0.5) / 10}%)
-      </div>
-    ));
+    return <Targets activeNamespaceName={activeNamespaceName} destinations={row.get("destinations")} />;
   };
 
   private renderAdvanced(row: RowData) {
@@ -150,7 +143,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     const { activeNamespaceName, dispatch } = this.props;
     return (
       <>
-        <IconButtonWithTooltip
+        {/* <IconButtonWithTooltip
           tooltipPlacement="top"
           tooltipTitle="Delete"
           aria-label="delete"
@@ -171,8 +164,8 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
           }}
         >
           <DeleteIcon />
-        </IconButtonWithTooltip>
-        {/* <Button
+        </IconButtonWithTooltip> */}
+        <Button
           size="small"
           variant="outlined"
           style={{ marginRight: 16 }}
@@ -193,7 +186,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
           }}
         >
           Delete
-        </DangerButton> */}
+        </DangerButton>
       </>
     );
   };
@@ -210,7 +203,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
             <H4>Routes</H4>
             <Button
               tutorial-anchor-id="add-route"
-              component={(props: any) => <Link {...props} />}
+              component={Link}
               color="primary"
               size="small"
               variant="outlined"
@@ -236,12 +229,12 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
                   sorting: false,
                   render: this.renderHosts,
                 },
-                // {
-                //   title: "Http",
-                //   field: "http",
-                //   sorting: false,
-                //   render: this.renderSupportHttp,
-                // },
+                {
+                  title: "Http",
+                  field: "http",
+                  sorting: false,
+                  render: this.renderSupportHttp,
+                },
                 {
                   title: "Https",
                   field: "https",

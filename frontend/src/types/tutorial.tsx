@@ -67,7 +67,6 @@ export interface Tutorial {
 export interface SetTutorialAction {
   type: typeof SET_TUTORIAL_ACTION;
   payload: {
-    id: string;
     tutorial: Tutorial;
   };
 }

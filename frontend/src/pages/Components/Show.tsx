@@ -120,7 +120,7 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
         <H4 className={classes.secondHeaderRightItem}>Component {component.get("name")}</H4>
         <Button
           tutorial-anchor-id="edit-component"
-          component={(props: any) => <Link {...props} />}
+          component={Link}
           color="primary"
           size="small"
           variant="outlined"

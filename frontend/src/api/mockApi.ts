@@ -26,6 +26,14 @@ export default class MockApi extends Api {
     return mockStore.data.get("mockNodes");
   };
 
+  public cordonNode = async () => {
+    return mockStore.data.get("mockNodes").get("nodes").get(0)!;
+  };
+
+  public uncordonNode = async () => {
+    return mockStore.data.get("mockNodes").get("nodes").get(0)!;
+  };
+
   public getPersistentVolumes = async () => {
     return mockStore.data.get("mockVolumes");
   };

@@ -3,7 +3,7 @@ import { Box, createStyles, Paper, Theme, withStyles, WithStyles } from "@materi
 import { TDispatchProp } from "types";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
-import { H4 } from "./Label";
+import { H5 } from "./Label";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -42,7 +42,7 @@ class KPanelRaw extends React.PureComponent<Props, State> {
     return (
       <Paper square variant="outlined">
         <Box p={2} className={classes.borderBottom}>
-          <H4>{title}</H4>
+          <H5>{title}</H5>
         </Box>
         {content}
       </Paper>

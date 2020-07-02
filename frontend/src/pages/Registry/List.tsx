@@ -137,6 +137,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
       <>
         <IconButtonWithTooltip
           tooltipTitle={"Edit"}
+          size="small"
           style={{ color: primaryColor }}
           onClick={() => {
             const registry = registries.find((r) => r.get("name") === row.get("name"));
@@ -149,6 +150,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
           <EditIcon />
         </IconButtonWithTooltip>
         <IconButtonWithTooltip
+          size="small"
           tooltipTitle={"Delete"}
           style={{ color: primaryColor }}
           onClick={() => {
@@ -178,7 +180,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
     const { dispatch } = this.props;
     return (
       <>
-        <H4>Registries</H4>
+        <H4>Private Docker Registries</H4>
         <CustomizedButton
           color="primary"
           variant="outlined"
@@ -239,12 +241,12 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
                   sorting: false,
                   render: this.renderPassword,
                 },
-                // {
-                //   title: "Verified",
-                //   field: "verified",
-                //   sorting: false,
-                //   render: this.renderVerified
-                // },
+                {
+                  title: "Verified",
+                  field: "verified",
+                  sorting: false,
+                  render: this.renderVerified,
+                },
                 // {
                 //   title: "Repositories",
                 //   field: "repositories",

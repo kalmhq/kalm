@@ -6,6 +6,7 @@ import { RootState } from "reducers";
 import { Actions } from "types";
 import { withComponents, WithComponentsProps } from "hoc/withComponents";
 import { RouteComponentProps } from "react-router-dom";
+import { WithNamespaceProps } from "./withNamespace";
 
 const mapStateToProps = (
   state: RootState,
@@ -14,10 +15,10 @@ const mapStateToProps = (
     match: {
       params: { name },
     },
-  }: WithComponentsProps & RouteComponentProps<{ name: string }>,
+  }: WithComponentsProps & WithNamespaceProps & RouteComponentProps<{ name: string }>,
 ) => {
   return {
-    component: components.find((c) => c.get("name") === name)!,
+    component: components?.find((c) => c.get("name") === name)!,
   };
 };
 

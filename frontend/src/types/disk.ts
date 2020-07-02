@@ -34,7 +34,7 @@ export type VolumeOptions = Immutable.List<VolumeOption>;
 
 export interface StorageClassContent {
   name: string;
-  isKappManaged: boolean;
+  isManaged: boolean;
 }
 
 export type StorageClass = ImmutableMap<StorageClassContent>;

@@ -104,8 +104,8 @@ class ComponentRaw extends React.PureComponent<Props, State> {
       <>
         <H4>Components</H4>
         <Button
-          tutorial-anchor-id="add-component"
-          component={(props: any) => <Link {...props} />}
+          tutorial-anchor-id="add-component-button"
+          component={Link}
           color="primary"
           size="small"
           variant="outlined"
@@ -129,7 +129,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
         {this.renderDeleteConfirmDialog()}
 
         <Box p={2}>
-          {components.map((component, index) => (
+          {components?.map((component, index) => (
             <Box pb={1} key={component.get("name")}>
               <ComponentPanel component={component} application={activeNamespace!} defaultUnfold={index === 0} />
             </Box>

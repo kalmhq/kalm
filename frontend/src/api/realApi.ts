@@ -7,6 +7,7 @@ import { Application, ApplicationComponent } from "types/application";
 import { HttpRoute } from "types/route";
 import { RoleBindingsRequestBody } from "types/user";
 import { CertificateFormType, CertificateIssuerFormType } from "types/certificate";
+import { Node } from "types/node";
 
 export default class RealApi extends Api {
   public getClusterInfo = async () => {
@@ -29,9 +30,18 @@ export default class RealApi extends Api {
     return Immutable.fromJS(res.data);
   };
 
+  public cordonNode = async (name: string): Promise<Node> => {
+    const res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/nodes/${name}/cordon` });
+    return Immutable.fromJS(res.data);
+  };
+
+  public uncordonNode = async (name: string): Promise<Node> => {
+    const res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/nodes/${name}/uncordon` });
+    return Immutable.fromJS(res.data);
+  };
+
   public getPersistentVolumes = async () => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/volumes` });
-    console.log(JSON.stringify(res.data));
     return Immutable.fromJS(res.data);
   };
 
