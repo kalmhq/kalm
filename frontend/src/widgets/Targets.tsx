@@ -56,7 +56,7 @@ class TargetsRaw extends React.PureComponent<Props> {
           outputs={outputs}
           width={36}
           height={leftPoinitHeight}
-        ></Flowpoint>
+        />
 
         {destinations.map((x, index) => {
           return (
