@@ -220,7 +220,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderReplicasOrSchedule = () => {
-    if (this.props.fieldValues.get("workloadType") !== workloadTypeCronjob) {
+    const workloadType = this.props.fieldValues.get("workloadType");
+    if (workloadType === workloadTypeServer || workloadType === workloadTypeStatefulSet) {
       return (
         <Field
           component={RenderComplexValueTextField}
@@ -239,31 +240,33 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       );
     }
 
-    return (
-      <>
-        <Field
-          name="schedule"
-          component={KRenderTextField}
-          placeholder="* * * * *"
-          label="Cronjob Schedule"
-          required
-          validate={[ValidatorSchedule]}
-          helperText={
-            <span>
-              <a href="https://en.wikipedia.org/wiki/Cron" target="_blank" rel="noopener noreferrer">
-                Cron
-              </a>
-              {" \n"}
-              format string. You can create schedule expressions with{" "}
-              <a href="https://crontab.guru/" target="_blank" rel="noopener noreferrer">
-                Crontab Guru
-              </a>
-              .
-            </span>
-          }
-        />
-      </>
-    );
+    if (workloadType === workloadTypeCronjob) {
+      return (
+        <>
+          <Field
+            name="schedule"
+            component={KRenderTextField}
+            placeholder="* * * * *"
+            label="Cronjob Schedule"
+            required
+            validate={[ValidatorSchedule]}
+            helperText={
+              <span>
+                <a href="https://en.wikipedia.org/wiki/Cron" target="_blank" rel="noopener noreferrer">
+                  Cron
+                </a>
+                {" \n"}
+                format string. You can create schedule expressions with{" "}
+                <a href="https://crontab.guru/" target="_blank" rel="noopener noreferrer">
+                  Crontab Guru
+                </a>
+                .
+              </span>
+            }
+          />
+        </>
+      );
+    }
   };
 
   private getCPUHelper() {

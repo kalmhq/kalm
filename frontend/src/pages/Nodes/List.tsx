@@ -13,7 +13,6 @@ import { BasePage } from "../BasePage";
 import { NodeCPU } from "./CPU";
 import { NodeMemory } from "./Memory";
 import { NodePods } from "./Pods";
-import { Link } from "react-router-dom";
 import { Expansion } from "forms/Route/expansion";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
 import { api } from "api";
@@ -98,7 +97,6 @@ export class NodeListRaw extends React.Component<Props, States> {
       >
         <Box pb={2} pt={2}>
           <Button
-            component={(props: any) => <Link {...props} />}
             style={{ marginRight: 20 }}
             color="primary"
             size="small"

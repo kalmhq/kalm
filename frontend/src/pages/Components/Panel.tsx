@@ -69,7 +69,7 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
       <Box display="flex" flexDirection="column" width={1}>
         <Box pb={2} pt={2}>
           <Button
-            component={(props: any) => <Link {...props} />}
+            component={Link}
             style={{ marginRight: 20 }}
             color="primary"
             size="small"
@@ -80,7 +80,7 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
           </Button>
 
           <Button
-            component={(props: any) => <Link {...props} />}
+            component={Link}
             style={{ marginRight: 20 }}
             color="primary"
             size="small"
