@@ -30,6 +30,7 @@ import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart"
 import { KTable } from "widgets/Table";
 import { getApplicationCreatedAtString } from "../../utils/application";
 import { BasePage } from "../BasePage";
+import { POPPER_ZINDEX } from "layout/Constants";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -223,7 +224,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
       applicationDetails.get("name"),
       Immutable.List(),
     );
-    console.log("routesMap", routesMap.toJS());
+
     if (applicationRoutes && applicationRoutes.size > 0) {
       return (
         <PopupState variant="popover" popupId={applicationDetails.get("name")}>
@@ -233,6 +234,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                 {applicationRoutes.size === 1 ? "1 route" : `${applicationRoutes.size} routes`}
               </MLink>
               <Popover
+                style={{ zIndex: POPPER_ZINDEX }}
                 {...bindPopover(popupState)}
                 anchorOrigin={{
                   vertical: "bottom",
