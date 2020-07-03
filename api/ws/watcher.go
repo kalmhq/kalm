@@ -232,8 +232,12 @@ func buildVolumeResMessage(c *Client, action string, objWatched interface{}) (*R
 	builder := resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, log.New())
 
 	var pv coreV1.PersistentVolume
-	if err := builder.Get("", pvc.Spec.VolumeName, &pv); err != nil {
-		return nil, err
+	if action == "Delete" {
+		pv = coreV1.PersistentVolume{}
+	} else {
+		if err := builder.Get("", pvc.Spec.VolumeName, &pv); err != nil {
+			return nil, err
+		}
 	}
 
 	volume, err := builder.BuildVolumeResponse(*pvc, pv)
