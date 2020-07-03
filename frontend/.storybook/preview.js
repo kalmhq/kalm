@@ -9,19 +9,54 @@ import { ThemeProvider } from "@material-ui/core/styles";
 import { theme } from "theme/theme";
 import { select, withKnobs } from "@storybook/addon-knobs";
 
+const { GlobalStyle } = global;
+const muiThemes = { KAMLTheme1: theme, KAMLTheme2: theme };
+const muiThemeNames = Object.keys(muiThemes);
+
+const withGlobalStyle = (storyFn) => {
+  const theme = select("Theme", muiThemeNames, muiThemeNames[0], "Themes");
+  console.log("withGlobalStyle");
+  return (
+    <StylesProvider injectFirst>
+      <GlobalStyle />
+      <ThemeProvider theme={muiThemes[theme]}>{storyFn()}</ThemeProvider>
+    </StylesProvider>
+  );
+};
+
+addDecorator(withGlobalStyle);
+addDecorator(withKnobs);
+//   loadFontsForStorybook();
+
 addParameters({
   options: {
     theme: themes.light,
     showRoots: true,
   },
-  docs: { page: DocsPage },
+  // docs: {
+  //   // page: DocsPage,
+
+  // },
+  docs: {
+    page: DocsPage,
+    // ({ children, context }) => (
+    //   // const theme = select("Theme", muiThemeNames, muiThemeNames[0], "Themes");
+    //   // return (
+    //   <DocsContainer context={context}>
+    //     {/* <ThemeProvider theme={muiThemes[theme]}> */}
+    //     <div style={{ border: "5px solid red" }}>{children}</div>
+    //     {/* </ThemeProvider> */}
+    //   </DocsContainer>
+    //   // );
+    // ),
+  },
   dependencies: {
     // display only dependencies/dependents that have a story in storybook
     // by default this is false
-    // withStoriesOnly: false,
+    withStoriesOnly: false,
     // completely hide a dependency/dependents block if it has no elements
     // by default this is false
-    // hideEmpty: false,
+    hideEmpty: false,
   },
   viewport: {
     viewports: INITIAL_VIEWPORTS, // newViewports would be an ViewportMap. (see below for examples)
@@ -34,23 +69,4 @@ addParameters({
   ],
 });
 
-const { GlobalStyle } = global;
-const muiThemes = { KAMLTheme1: theme, KAMLTheme2: theme };
-const muiThemeNames = Object.keys(muiThemes);
-
-const withGlobalStyle = (storyFn) => {
-  const theme = select("Theme", muiThemeNames, muiThemeNames[0], "Themes");
-
-  return (
-    <StylesProvider injectFirst>
-      <GlobalStyle />
-      <ThemeProvider theme={muiThemes[theme]}>{storyFn()}</ThemeProvider>
-    </StylesProvider>
-  );
-};
-
 // export const decorators = [withGlobalStyle];
-
-addDecorator(withGlobalStyle);
-addDecorator(withKnobs);
-//   loadFontsForStorybook();

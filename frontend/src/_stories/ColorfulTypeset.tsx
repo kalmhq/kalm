@@ -43,15 +43,14 @@ type ColorfulTypesetProps = BoxProps &
 
 const ColorfulTypesetRow = (props: ColorfulTypesetProps) => {
   const { classes, labels, sampleText, foregroundColor, backgroundColor } = props;
-  console.log(labels);
   const bg = backgroundColor != null ? backgroundColor : "#FFFFFF";
   const fg = foregroundColor || "black";
   return (
     <Box className={clsx(classes.root)} style={{ backgroundColor: bg, color: fg }}>
-      {labels.map((element: ComponentClass) => {
+      {labels.map((element: ComponentClass, index) => {
         const Ele = element;
         return (
-          <Box className={clsx(classes.item)}>
+          <Box key={index} className={clsx(classes.item)}>
             <Caption className={clsx(classes.label)}>{Ele.displayName}</Caption>
             <Box className={classes.expand}>
               <Ele>{sampleText || "KAML ❤️"}</Ele>
