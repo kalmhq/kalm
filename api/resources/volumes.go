@@ -1,13 +1,14 @@
 package resources
 
 import (
+	"regexp"
+	"sort"
+	"strings"
+
 	"github.com/kapp-staging/kapp/controller/controllers"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"regexp"
-	"sort"
-	"strings"
 
 	//v1 "k8s.io/apiserver/pkg/apis/example/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -23,6 +24,34 @@ type Volume struct {
 	Capacity           string `json:"capacity"` // size, e.g. 1Gi
 	PVC                string `json:"pvc"`
 	PV                 string `json:"pvToMatch"`
+}
+
+func (builder *Builder) BuildVolumeResponse(pvc coreV1.PersistentVolumeClaim, pv coreV1.PersistentVolume) (*Volume, error) {
+	isInUse, err := builder.IsPVCInUse(pvc)
+	if err != nil {
+		return nil, err
+	}
+
+	var capInStr string
+	if cap, exist := pvc.Spec.Resources.Requests[coreV1.ResourceStorage]; exist {
+		capInStr = cap.String()
+	}
+
+	var compName, compNamespace string
+	if v, exist := pv.Labels[controllers.KappLabelComponent]; exist {
+		compName = v
+	}
+	if v, exist := pv.Labels[controllers.KappLabelNamespace]; exist {
+		compNamespace = v
+	}
+
+	return &Volume{
+		Name:               pvc.Name,
+		ComponentName:      compName,
+		ComponentNamespace: compNamespace,
+		IsInUse:            isInUse,
+		Capacity:           capInStr,
+	}, nil
 }
 
 func (builder *Builder) GetPVs() ([]coreV1.PersistentVolume, error) {

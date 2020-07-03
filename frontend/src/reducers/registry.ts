@@ -12,6 +12,14 @@ import {
 import { Actions } from "types";
 import { LOGOUT } from "types/common";
 import { ImmutableMap } from "typings";
+import {
+  WATCHED_RESOURCE_CHANGE,
+  RESOURCE_TYPE_REGISTRY,
+  RESOURCE_ACTION_ADD,
+  RESOURCE_ACTION_DELETE,
+  RESOURCE_ACTION_UPDATE,
+} from "types/resources";
+import { addOrUpdateInList, removeInList, removeInListByName } from "./utils";
 
 export type State = ImmutableMap<{
   isLoading: boolean;
@@ -26,18 +34,6 @@ const initialState: State = Immutable.Map({
   isSubmittingRegistry: false,
   registries: Immutable.List([]),
 });
-
-const putRegistryIntoState = (state: State, registry: RegistryType): State => {
-  const registries = state.get("registries");
-  const index = registries.findIndex((app) => app.get("name") === registry.get("name"));
-
-  if (index < 0) {
-    state = state.set("registries", registries.push(registry));
-  } else {
-    state = state.setIn(["registries", index], registry);
-  }
-  return state;
-};
 
 const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
@@ -57,19 +53,35 @@ const reducer = (state: State = initialState, action: Actions): State => {
       return state;
     }
     case CREATE_REGISTRY: {
-      state = putRegistryIntoState(state, action.payload.registry);
+      state = state.update("registries", (x) => addOrUpdateInList(x, action.payload.registry));
       break;
     }
     case UPDATE_REGISTRY: {
-      state = putRegistryIntoState(state, action.payload.registry);
+      state = state.update("registries", (x) => addOrUpdateInList(x, action.payload.registry));
       break;
     }
     case DELETE_REGISTRY: {
-      const registries = state.get("registries");
-      const index = registries.findIndex((r) => r.get("name") === action.payload.name);
+      state = state.update("registries", (x) => removeInListByName(x, action.payload.name));
+      break;
+    }
+    case WATCHED_RESOURCE_CHANGE: {
+      if (action.kind !== RESOURCE_TYPE_REGISTRY) {
+        return state;
+      }
 
-      if (index >= 0) {
-        state = state.deleteIn(["registries", index]);
+      switch (action.payload.action) {
+        case RESOURCE_ACTION_ADD: {
+          state = state.update("registries", (x) => addOrUpdateInList(x, action.payload.data));
+          break;
+        }
+        case RESOURCE_ACTION_DELETE: {
+          state = state.update("registries", (x) => removeInList(x, action.payload.data));
+          break;
+        }
+        case RESOURCE_ACTION_UPDATE: {
+          state = state.update("registries", (x) => addOrUpdateInList(x, action.payload.data));
+          break;
+        }
       }
 
       break;

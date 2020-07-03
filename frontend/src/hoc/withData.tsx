@@ -12,6 +12,9 @@ import {
   RESOURCE_TYPE_NODE,
   WATCHED_RESOURCE_CHANGE,
   RESOURCE_TYPE_HTTP_ROUTE,
+  RESOURCE_TYPE_HTTPS_CERT,
+  RESOURCE_TYPE_REGISTRY,
+  RESOURCE_TYPE_VOLUME,
 } from "types/resources";
 import { loadApplicationsAction } from "actions/application";
 import { loadRoutes } from "actions/routes";
@@ -57,7 +60,6 @@ class WithDataRaw extends React.PureComponent<Props> {
     dispatch(loadRegistriesAction());
     dispatch(loadRoleBindingsAction());
     dispatch(loadServicesAction("")); // for routes destinations
-
     dispatch(loadStorageClassesAction());
 
     // dispatch(loadApplicationPluginsAction());
@@ -122,6 +124,39 @@ class WithDataRaw extends React.PureComponent<Props> {
           dispatch({
             type: WATCHED_RESOURCE_CHANGE,
             kind: RESOURCE_TYPE_NODE,
+            payload: {
+              action: data.action,
+              data: Immutable.fromJS(data.data),
+            },
+          });
+          break;
+        }
+        case RESOURCE_TYPE_HTTPS_CERT: {
+          dispatch({
+            type: WATCHED_RESOURCE_CHANGE,
+            kind: RESOURCE_TYPE_HTTPS_CERT,
+            payload: {
+              action: data.action,
+              data: Immutable.fromJS(data.data),
+            },
+          });
+          break;
+        }
+        case RESOURCE_TYPE_REGISTRY: {
+          dispatch({
+            type: WATCHED_RESOURCE_CHANGE,
+            kind: RESOURCE_TYPE_REGISTRY,
+            payload: {
+              action: data.action,
+              data: Immutable.fromJS(data.data),
+            },
+          });
+          break;
+        }
+        case RESOURCE_TYPE_VOLUME: {
+          dispatch({
+            type: WATCHED_RESOURCE_CHANGE,
+            kind: RESOURCE_TYPE_VOLUME,
             payload: {
               action: data.action,
               data: Immutable.fromJS(data.data),

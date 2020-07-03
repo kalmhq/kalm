@@ -4,11 +4,12 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"strings"
+	"sync"
+
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	coreV1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strings"
-	"sync"
 )
 
 type HttpsCert struct {
@@ -30,6 +31,47 @@ type HttpsCertResp struct {
 
 var ReasonForNoReadyConditions = "no feedback on cert status yet"
 
+func BuildHttpsCertResponse(httpsCert v1alpha1.HttpsCert) *HttpsCertResp {
+	var readyCond *v1alpha1.HttpsCertCondition
+	for i := range httpsCert.Status.Conditions {
+		cond := httpsCert.Status.Conditions[i]
+
+		if cond.Type != v1alpha1.HttpsCertConditionReady {
+			continue
+		}
+
+		readyCond = &cond
+		break
+	}
+
+	var ready, reason string
+	if readyCond == nil {
+		ready = string(v1.ConditionUnknown)
+		reason = ReasonForNoReadyConditions
+	} else {
+		ready = string(readyCond.Status)
+		reason = readyCond.Message
+	}
+
+	resp := HttpsCertResp{
+		HttpsCert: HttpsCert{
+			Name:          httpsCert.Name,
+			IsSelfManaged: httpsCert.Spec.IsSelfManaged,
+			Domains:       httpsCert.Spec.Domains,
+		},
+		Ready:  ready,
+		Reason: reason,
+	}
+
+	if !resp.IsSelfManaged {
+		resp.HttpsCertIssuer = httpsCert.Spec.HttpsCertIssuer
+	} else {
+		//todo show content of cert?
+	}
+
+	return &resp
+}
+
 func (builder *Builder) GetHttpsCerts() ([]HttpsCertResp, error) {
 	var fetched v1alpha1.HttpsCertList
 	if err := builder.List(&fetched); err != nil {
@@ -38,45 +80,9 @@ func (builder *Builder) GetHttpsCerts() ([]HttpsCertResp, error) {
 
 	var httpsCerts []HttpsCertResp
 	for _, ele := range fetched.Items {
+		cur := BuildHttpsCertResponse(ele)
 
-		var readyCond *v1alpha1.HttpsCertCondition
-		for i := range ele.Status.Conditions {
-			cond := ele.Status.Conditions[i]
-
-			if cond.Type != v1alpha1.HttpsCertConditionReady {
-				continue
-			}
-
-			readyCond = &cond
-			break
-		}
-
-		var ready, reason string
-		if readyCond == nil {
-			ready = string(v1.ConditionUnknown)
-			reason = ReasonForNoReadyConditions
-		} else {
-			ready = string(readyCond.Status)
-			reason = readyCond.Message
-		}
-
-		cur := HttpsCertResp{
-			HttpsCert: HttpsCert{
-				Name:          ele.Name,
-				IsSelfManaged: ele.Spec.IsSelfManaged,
-				Domains:       ele.Spec.Domains,
-			},
-			Ready:  ready,
-			Reason: reason,
-		}
-
-		if !cur.IsSelfManaged {
-			cur.HttpsCertIssuer = ele.Spec.HttpsCertIssuer
-		} else {
-			//todo show content of cert?
-		}
-
-		httpsCerts = append(httpsCerts, cur)
+		httpsCerts = append(httpsCerts, *cur)
 	}
 
 	return httpsCerts, nil

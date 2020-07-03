@@ -26,6 +26,9 @@ func StartWatching(c *Client) {
 	registerWatchHandler(c, &informerCache, &coreV1.Pod{}, buildPodResMessage)
 	registerWatchHandler(c, &informerCache, &v1alpha1.HttpRoute{}, buildHttpRouteResMessage)
 	registerWatchHandler(c, &informerCache, &coreV1.Node{}, buildNodeResMessage)
+	registerWatchHandler(c, &informerCache, &v1alpha1.HttpsCert{}, buildHttpsCertResMessage)
+	registerWatchHandler(c, &informerCache, &v1alpha1.DockerRegistry{}, buildRegistryResMessage)
+	registerWatchHandler(c, &informerCache, &coreV1.PersistentVolumeClaim{}, buildVolumeResMessage)
 
 	// stop := make(chan struct{})
 	// defer close(stop)
@@ -46,7 +49,7 @@ func registerWatchHandler(c *Client,
 		AddFunc: func(obj interface{}) {
 			resMessage, err := buildResMessage(c, "Add", obj)
 			if err != nil {
-				log.Info(err)
+				log.Warn(err)
 				return
 			}
 			c.sendResMessage(resMessage)
@@ -54,7 +57,7 @@ func registerWatchHandler(c *Client,
 		DeleteFunc: func(obj interface{}) {
 			resMessage, err := buildResMessage(c, "Delete", obj)
 			if err != nil {
-				log.Info(err)
+				log.Warn(err)
 				return
 			}
 			c.sendResMessage(resMessage)
@@ -62,7 +65,7 @@ func registerWatchHandler(c *Client,
 		UpdateFunc: func(oldObj, obj interface{}) {
 			resMessage, err := buildResMessage(c, "Update", obj)
 			if err != nil {
-				log.Info(err)
+				log.Warn(err)
 				return
 			}
 			c.sendResMessage(resMessage)
@@ -84,7 +87,7 @@ func buildNamespaceResMessage(c *Client, action string, objWatched interface{}) 
 	builder := resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, log.New())
 	applicationDetails, err := builder.BuildApplicationDetails(*namespace)
 	if err != nil {
-		log.Error(err)
+		return nil, err
 	}
 
 	return &ResMessage{
@@ -185,5 +188,62 @@ func buildNodeResMessage(_ *Client, action string, objWatched interface{}) (*Res
 		Kind:   "Node",
 		Action: action,
 		Data:   resources.BuildNodeResponse(node),
+	}, nil
+}
+
+func buildHttpsCertResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
+	httpsCert, ok := objWatched.(*v1alpha1.HttpsCert)
+	if !ok {
+		return nil, errors.New("convert watch obj to HttpsCert failed")
+	}
+
+	return &ResMessage{
+		Kind:   "HttpsCert",
+		Action: action,
+		Data:   resources.BuildHttpsCertResponse(*httpsCert),
+	}, nil
+}
+
+func buildRegistryResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
+	registry, ok := objWatched.(*v1alpha1.DockerRegistry)
+	if !ok {
+		return nil, errors.New("convert watch obj to Registry failed")
+	}
+
+	builder := resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, log.New())
+	registryRes, err := builder.GetDockerRegistry(registry.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ResMessage{
+		Kind:   "Registry",
+		Action: action,
+		Data:   registryRes,
+	}, nil
+}
+
+func buildVolumeResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
+	pvc, ok := objWatched.(*coreV1.PersistentVolumeClaim)
+	if !ok {
+		return nil, errors.New("convert watch obj to PersistentVolume failed")
+	}
+
+	builder := resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, log.New())
+
+	var pv coreV1.PersistentVolume
+	if err := builder.Get("", pvc.Spec.VolumeName, &pv); err != nil {
+		return nil, err
+	}
+
+	volume, err := builder.BuildVolumeResponse(*pvc, pv)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ResMessage{
+		Kind:   "Volume",
+		Action: action,
+		Data:   volume,
 	}, nil
 }

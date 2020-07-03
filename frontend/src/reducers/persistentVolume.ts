@@ -12,6 +12,14 @@ import {
   LOAD_SIMPLE_OPTIONS,
   LOAD_STATEFULSET_OPTIONS,
 } from "types/disk";
+import {
+  RESOURCE_TYPE_VOLUME,
+  WATCHED_RESOURCE_CHANGE,
+  RESOURCE_ACTION_ADD,
+  RESOURCE_ACTION_DELETE,
+  RESOURCE_ACTION_UPDATE,
+} from "types/resources";
+import { addOrUpdateInList, removeInList, removeInListByName } from "./utils";
 
 export type State = ImmutableMap<{
   persistentVolumes: PersistentVolumes;
@@ -39,13 +47,30 @@ const reducer = (state: State = initialState, action: Actions): State => {
       return state.set("storageClasses", action.payload.storageClasses);
     }
     case DELETE_PERSISTENT_VOLUME: {
-      const persistentVolumes = state.get("persistentVolumes");
-      const index = persistentVolumes.findIndex((v) => v.get("name") === action.payload.name);
-
-      if (index >= 0) {
-        state = state.deleteIn(["persistentVolumes", index]);
-      }
+      state = state.update("persistentVolumes", (x) => removeInListByName(x, action.payload.name));
       return state;
+    }
+    case WATCHED_RESOURCE_CHANGE: {
+      if (action.kind !== RESOURCE_TYPE_VOLUME) {
+        return state;
+      }
+
+      switch (action.payload.action) {
+        case RESOURCE_ACTION_ADD: {
+          state = state.update("persistentVolumes", (x) => addOrUpdateInList(x, action.payload.data));
+          break;
+        }
+        case RESOURCE_ACTION_DELETE: {
+          state = state.update("persistentVolumes", (x) => removeInList(x, action.payload.data));
+          break;
+        }
+        case RESOURCE_ACTION_UPDATE: {
+          state = state.update("persistentVolumes", (x) => addOrUpdateInList(x, action.payload.data));
+          break;
+        }
+      }
+
+      break;
     }
     case LOAD_SIMPLE_OPTIONS: {
       return state.set("simpleOptions", action.payload.simpleOptions);
