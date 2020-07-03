@@ -42,21 +42,28 @@ func mergeIstioMetric(a, b IstioMetric) (rst IstioMetric) {
 	}
 
 	//tcp
-	rec := 0
-	sent := 0
+	var rec, sent int
+	var recRate, sentRate float32
+
 	if a.TCP != nil {
 		rec += a.TCP.ReceivedBytesTotal
 		sent += a.TCP.SentBytesTotal
+		recRate += a.TCP.ReceivedBytesPerSecond
+		sentRate += a.TCP.SentBytesPerSecond
 	}
 	if b.TCP != nil {
 		rec += b.TCP.ReceivedBytesTotal
 		sent += b.TCP.SentBytesTotal
+		recRate += b.TCP.ReceivedBytesPerSecond
+		sentRate += b.TCP.SentBytesPerSecond
 	}
 
 	if a.TCP != nil || b.TCP != nil {
 		rst.TCP = &TCPMetric{
-			ReceivedBytesTotal: rec,
-			SentBytesTotal:     sent,
+			ReceivedBytesTotal:     rec,
+			SentBytesTotal:         sent,
+			ReceivedBytesPerSecond: recRate,
+			SentBytesPerSecond:     sentRate,
 		}
 	}
 
@@ -111,8 +118,10 @@ type HTTPMetric struct {
 
 // istio_tcp_sent_bytes_total{destination_service="zk-headless.kapp-zk.svc.cluster.local", instance="10.24.1.120:15090"}
 type TCPMetric struct {
-	SentBytesTotal     int `json:"sentBytesTotal"`
-	ReceivedBytesTotal int `json:"receivedBytesTotal"`
+	SentBytesTotal         int     `json:"sentBytesTotal"`
+	ReceivedBytesTotal     int     `json:"receivedBytesTotal"`
+	SentBytesPerSecond     float32 `json:"sentBytesPerSecond"`
+	ReceivedBytesPerSecond float32 `json:"receivedBytesPerSecond"`
 }
 
 func (builder *Builder) GetIstioMetricsListChannel(ns string) *IstioMetricListChannel {
@@ -145,8 +154,9 @@ func concatErr(errSlice ...error) error {
 	return rstErr
 }
 
-//var hardCodedIstioPrometheusAPIHost = "localhost:9090"
-var hardCodedIstioPrometheusAPIHost = "prometheus.istio-system:9090"
+var hardCodedIstioPrometheusAPIHost = "localhost:9090"
+
+//var hardCodedIstioPrometheusAPIHost = "prometheus.istio-system:9090"
 
 func getIstioHTTPMetricMap(ns string) (map[string]IstioMetric, error) {
 	svcName := fmt.Sprintf(`.*.%s.svc.cluster.local`, ns)
@@ -205,37 +215,63 @@ func parseInterfaceAsInt(i interface{}) (int, bool) {
 }
 
 func getIstioTCPMetricMap(ns string) (map[string]IstioMetric, error) {
-	sentMap, err := getSentOrReceiveIstioTCPMetricMap(ns, true)
+	sentTotalMap, err := getSentOrReceiveIstioTCPMetricMap(ns, true, true)
 	if err != nil {
 		return nil, err
 	}
 
-	receiveMap, err := getSentOrReceiveIstioTCPMetricMap(ns, false)
+	sentRateMap, err := getSentOrReceiveIstioTCPMetricMap(ns, true, false)
 	if err != nil {
 		return nil, err
 	}
+
+	receiveTotalMap, err := getSentOrReceiveIstioTCPMetricMap(ns, false, true)
+	if err != nil {
+		return nil, err
+	}
+
+	receiveRateMap, err := getSentOrReceiveIstioTCPMetricMap(ns, false, false)
+	if err != nil {
+		return nil, err
+	}
+
+	maps := []map[string]IstioMetric{
+		sentTotalMap,
+		sentRateMap,
+		receiveTotalMap,
+		receiveRateMap,
+	}
+
+	rstMap := make(map[string]IstioMetric)
 
 	// merge same svc into 1 recMetric
-	for svcName, recMetric := range receiveMap {
-		if _, exist := sentMap[svcName]; !exist {
-			sentMap[svcName] = recMetric
-			continue
+	for _, metricMap := range maps {
+		for svcName, metric := range metricMap {
+			rstMap[svcName] = mergeIstioMetric(rstMap[svcName], metric)
 		}
-
-		sentMap[svcName].TCP.ReceivedBytesTotal += recMetric.TCP.ReceivedBytesTotal
 	}
 
-	return sentMap, nil
+	return rstMap, nil
 }
 
-func getSentOrReceiveIstioTCPMetricMap(ns string, isSentData bool) (map[string]IstioMetric, error) {
+// sent or received: istio_tcp_sent_bytes_total or istio_tcp_receive_bytes_total
+// simple value or use function: rate()
+func getSentOrReceiveIstioTCPMetricMap(ns string, isSentData, isTotal bool) (map[string]IstioMetric, error) {
 	svcName := fmt.Sprintf(`.*.%s.svc.cluster.local`, ns)
 
 	var query string
 	if isSentData {
-		query = fmt.Sprintf(`istio_tcp_sent_bytes_total{destination_service=~"%s"}`, svcName)
+		if isTotal {
+			query = fmt.Sprintf(`istio_tcp_sent_bytes_total{destination_service=~"%s"}`, svcName)
+		} else {
+			query = fmt.Sprintf(`rate(istio_tcp_sent_bytes_total{destination_service=~"%s"}[5m])`, svcName)
+		}
 	} else {
-		query = fmt.Sprintf(`istio_tcp_received_bytes_total{destination_service=~"%s"}`, svcName)
+		if isTotal {
+			query = fmt.Sprintf(`istio_tcp_received_bytes_total{destination_service=~"%s"}`, svcName)
+		} else {
+			query = fmt.Sprintf(`rate(istio_tcp_received_bytes_total{destination_service=~"%s"}[5m])`, svcName)
+		}
 	}
 
 	api := fmt.Sprintf("http://%s/api/v1/query?query=%s", hardCodedIstioPrometheusAPIHost, query)
