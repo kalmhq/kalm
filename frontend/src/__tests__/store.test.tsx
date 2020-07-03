@@ -8,7 +8,7 @@ import Adapter from "enzyme-adapter-react-16";
 import ApplicationForm, { applicationInitialValues } from "forms/Application";
 import { CertificateForm } from "forms/Certificate";
 import { ComponentLikeForm } from "forms/ComponentLike";
-import { APPLICATION_FORM_ID, CERTIFICATE_FORM_ID, COMPONENT_FORM_ID, ROUTE_FORM_ID } from "forms/formIDs";
+import { APPLICATION_FORM_ID, CERTIFICATE_FORM_ID, COMPONENT_FORM_ID } from "forms/formIDs";
 import { readFileSync } from "fs";
 import { createBrowserHistory } from "history";
 import React from "react";
