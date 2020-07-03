@@ -8,7 +8,6 @@ import roles, { State as RolesState } from "./role";
 import applications, { State as ApplicationState } from "./application";
 import components, { State as ApplicationComponentState } from "./component";
 import auth, { State as AuthState } from "./auth";
-import dependencies, { State as DependencyState } from "./dependency";
 import dialogs, { State as DialogState } from "./dialog";
 import namespaces, { State as NamespacesState } from "./namespaces";
 import nodes, { State as NodesState } from "./node";
@@ -30,7 +29,6 @@ export type RootState = ImmutableMap<{
   auth: AuthState;
   router: ImmutableMap<any>; //RouterState<LocationState>;
   notification: NotificationState;
-  dependencies: DependencyState;
   dialogs: DialogState;
   form: FormState;
   nodes: NodesState;
@@ -58,7 +56,6 @@ export default (history: History<LocationState>) =>
     registries,
     auth,
     dialogs,
-    dependencies,
     router: connectRouter(history),
     persistentVolumes,
     applications,

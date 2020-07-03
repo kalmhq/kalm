@@ -7,7 +7,6 @@ import { ApplicationActions } from "./application";
 import { CertificateActions } from "./certificate";
 import { ClusterActions } from "./cluster";
 import { CommonActions } from "./common";
-import { DependencyActions } from "./dependency";
 import { NamespaceActions } from "./namespace";
 import { NodeActions } from "./node";
 import { VolumeActions } from "types/disk";
@@ -28,7 +27,6 @@ export type Actions =
   | CommonActions
   | ApplicationActions
   | UserActions
-  | DependencyActions
   | NamespaceActions
   | NodeActions
   | RegistriesActions

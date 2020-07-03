@@ -6,7 +6,6 @@ import { Metrics } from "./common";
 export const CREATE_APPLICATION = "CREATE_APPLICATION";
 export const UPDATE_APPLICATION = "UPDATE_APPLICATION";
 export const DELETE_APPLICATION = "DELETE_APPLICATION";
-export const DUPLICATE_APPLICATION = "DUPLICATE_APPLICATION";
 export const LOAD_APPLICATIONS_PENDING = "LOAD_APPLICATIONS_PENDING";
 export const LOAD_APPLICATIONS_FULFILLED = "LOAD_APPLICATIONS_FULFILLED";
 export const LOAD_APPLICATIONS_FAILED = "LOAD_APPLICATIONS_FAILED";
@@ -113,13 +112,6 @@ export type ApplicationDetails = ImmutableMap<ApplicationDetailsContent>;
 
 export interface CreateApplicationAction {
   type: typeof CREATE_APPLICATION;
-  payload: {
-    application: ApplicationDetails;
-  };
-}
-
-export interface DuplicateApplicationAction {
-  type: typeof DUPLICATE_APPLICATION;
   payload: {
     application: ApplicationDetails;
   };
@@ -241,7 +233,6 @@ export type ApplicationActions =
   | CreateApplicationAction
   | UpdateApplicationAction
   | DeleteApplicationAction
-  | DuplicateApplicationAction
   | LoadApplicationsFulfilledAction
   | LoadApplicationsPendingAction
   | LoadApplicationsFailedAction

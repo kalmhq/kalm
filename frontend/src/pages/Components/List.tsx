@@ -2,7 +2,6 @@ import { Box, Button, createStyles, Theme, WithStyles } from "@material-ui/core"
 import withStyles from "@material-ui/core/styles/withStyles";
 import { deleteApplicationAction } from "actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
-import { loadRoutes } from "actions/routes";
 import { withComponents, WithComponentsProps } from "hoc/withComponents";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
 import { ComponentPanel } from "pages/Components/Panel";
@@ -59,11 +58,6 @@ class ComponentRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = this.defaultState;
-  }
-
-  public componentDidMount() {
-    const { dispatch } = this.props;
-    dispatch(loadRoutes(""));
   }
 
   private closeDeleteConfirmDialog = () => {

@@ -13,8 +13,17 @@ import {
   WATCHED_RESOURCE_CHANGE,
   RESOURCE_TYPE_HTTP_ROUTE,
 } from "types/resources";
+import { loadApplicationsAction } from "actions/application";
+import { loadRoutes } from "actions/routes";
+import { loadNodesAction } from "actions/node";
+import { loadCertificates, loadCertificateIssuers } from "actions/certificate";
+import { loadClusterInfoAction } from "actions/cluster";
+import { loadPersistentVolumesAction, loadStorageClassesAction } from "actions/persistentVolume";
+import { loadRegistriesAction } from "actions/registries";
+import { loadRoleBindingsAction } from "actions/user";
+import { loadServicesAction } from "actions/service";
 
-export interface ResMessage {
+export interface WatchResMessage {
   namespace: string;
   kind: string;
   action: ResourceActionType;
@@ -29,7 +38,31 @@ const mapStateToProps = (state: RootState) => {
 
 interface Props extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
-class WebsocketConnectorRaw extends React.PureComponent<Props> {
+class WithDataRaw extends React.PureComponent<Props> {
+  public componentDidMount() {
+    this.loadData();
+    this.connectWebsocket();
+  }
+
+  private loadData() {
+    const { dispatch } = this.props;
+
+    dispatch(loadRoutes("")); // all namespaces
+    dispatch(loadApplicationsAction());
+    dispatch(loadNodesAction());
+    dispatch(loadCertificates());
+    dispatch(loadCertificateIssuers());
+    dispatch(loadClusterInfoAction());
+    dispatch(loadPersistentVolumesAction());
+    dispatch(loadRegistriesAction());
+    dispatch(loadRoleBindingsAction());
+    dispatch(loadServicesAction("")); // for routes destinations
+
+    dispatch(loadStorageClassesAction());
+
+    // dispatch(loadApplicationPluginsAction());
+  }
+
   private connectWebsocket() {
     const { dispatch, token } = this.props;
     let rws: any;
@@ -47,7 +80,7 @@ class WebsocketConnectorRaw extends React.PureComponent<Props> {
     }
 
     rws.onmessage = async (event: any) => {
-      const data: ResMessage = JSON.parse(event.data);
+      const data: WatchResMessage = JSON.parse(event.data);
 
       switch (data.kind) {
         case RESOURCE_TYPE_APPLICATION: {
@@ -100,13 +133,9 @@ class WebsocketConnectorRaw extends React.PureComponent<Props> {
     };
   }
 
-  public componentDidMount() {
-    this.connectWebsocket();
-  }
-
   public render() {
     return null;
   }
 }
 
-export const WebsocketConnector = connect(mapStateToProps)(WebsocketConnectorRaw);
+export const WithData = connect(mapStateToProps)(WithDataRaw);
