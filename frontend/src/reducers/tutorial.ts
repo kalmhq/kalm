@@ -59,7 +59,10 @@ const reducer = (state: State = initialState, action: Actions): State => {
   }
 
   if (action.type === SET_TUTORIAL_ACTION) {
-    return state.set("tutorial", action.payload.tutorial).set("currentStepIndex", 0);
+    return initialState
+      .set("drawerOpen", state.get("drawerOpen"))
+      .set("tutorial", action.payload.tutorial)
+      .set("currentStepIndex", 0);
   }
 
   const tutorial = state.get("tutorial");

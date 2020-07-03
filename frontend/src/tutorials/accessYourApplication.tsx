@@ -25,7 +25,7 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
   const state = store.getState();
 
   const apps: Immutable.List<ApplicationDetails> = state.get("applications").get("applications");
-  const application = apps.find((x) => x.get("name") === "hello-world");
+  const application = apps.find((x) => x.get("name") === "tutorial");
 
   if (!application) {
     return {
@@ -61,6 +61,12 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
   const clusterIngressIP = clusterInfo.get("ingressIP") || "10.0.0.1"; // TODO
 
   const domain = clusterIngressIP.replace(/\./g, "-") + ".nip.io";
+
+  let finialLink = "http://" + domain;
+
+  if (clusterInfo.get("httpPort") !== 80) {
+    finialLink = finialLink + ":" + clusterInfo.get("httpPort");
+  }
 
   return {
     title,
@@ -188,7 +194,7 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
               isFormFieldMeet(state, "route", "schemes", (schemes: Immutable.List<string>) => schemes.includes("http")),
           },
           {
-            title: <span>Add echoserver in hello-world application as the only target</span>,
+            title: <span>Add echoserver in tutorial application as the only target</span>,
             formValidator: [
               {
                 form: "route",
@@ -196,7 +202,7 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
                 validate: (destinations: Immutable.List<HttpRouteDestination>) =>
                   destinations.size === 1 &&
                   destinations.find(
-                    (destination) => destination.get("host") === "echoserver.hello-world.svc.cluster.local:8080",
+                    (destination) => destination.get("host") === "echoserver.tutorial.svc.cluster.local:8080",
                   )
                     ? undefined
                     : `Please use echoserver as the only target`,
@@ -210,7 +216,7 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
                 (destinations: Immutable.List<HttpRouteDestination>) =>
                   destinations.size === 1 &&
                   !!destinations.find(
-                    (destination) => destination.get("host") === "echoserver.hello-world.svc.cluster.local:8080",
+                    (destination) => destination.get("host") === "echoserver.tutorial.svc.cluster.local:8080",
                   ),
               ),
           },
@@ -227,8 +233,8 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
         description: (
           <span>
             Try open{" "}
-            <Link href={"http://" + domain} target="_blank" rel="noreferer">
-              {domain}
+            <Link href={finialLink} target="_blank" rel="noreferer">
+              {finialLink}
             </Link>{" "}
             in your browser.
           </span>
@@ -238,230 +244,4 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
       },
     ],
   };
-
-  // return {
-  //   title,
-  //   steps: [
-  //     {
-  //       name: "Create an application",
-  //       description:
-  //         "Application is a virtual group of other resources or configurations. It help to organize different deployment environment. For example, production, staging, testing environments can be treated as three applications.",
-  //       highlights: [
-  //         {
-  //           title: "Chick Here",
-  //           description: "Go to applications page",
-  //           anchor: "[tutorial-anchor-id=first-level-sidebar-item-applications]",
-  //           triggeredByState: (state: RootState) => requireSubStepNotCompleted(state, 0),
-  //         },
-  //         {
-  //           title: "Chick Here",
-  //           description: "Go to new application page",
-  //           anchor: "[tutorial-anchor-id=add-application]",
-  //           triggeredByState: (state: RootState) =>
-  //             requireSubStepNotCompleted(state, 1) && requireSubStepCompleted(state, 0),
-  //         },
-  //       ],
-  //       subSteps: [
-  //         {
-  //           title: "Go to applications page",
-  //           irrevocable: true,
-  //           shouldCompleteByState: (state: RootState) => isUnderPath(state, "/applications", "/applications/new"),
-  //         },
-  //         {
-  //           title: (
-  //             <span>
-  //               Click the <strong>Add</strong> button
-  //             </span>
-  //           ),
-  //           irrevocable: true,
-  //           shouldCompleteByState: (state: RootState) => isUnderPath(state, "/applications/new"),
-  //         },
-  //         {
-  //           title: (
-  //             <span>
-  //               Type <strong>{applicationName}</strong> in name field
-  //             </span>
-  //           ),
-  //           formValidator: [
-  //             {
-  //               form: APPLICATION_FORM_ID,
-  //               field: "name",
-  //               validate: (name) =>
-  //                 name === applicationName ? undefined : `Please follow the tutorial, use ${applicationName}.`,
-  //             },
-  //           ],
-  //           shouldCompleteByState: (state: RootState) =>
-  //             isApplicationFormFieldValueEqualTo(state, "name", applicationName),
-  //         },
-  //         {
-  //           title: "Submit form",
-  //           shouldCompleteByAction: (action: Actions) =>
-  //             action.type === (actionTypes.SET_SUBMIT_SUCCEEDED as keyof ActionTypes) &&
-  //             action.meta!.form === APPLICATION_FORM_ID,
-  //         },
-  //       ],
-  //     },
-  //     {
-  //       name: "Add a component",
-  //       description:
-  //         "Component describes how a program is running, includes start, scheduling, update and termination. Also, you can configure disks, health checker and resources limit for it.",
-  //       highlights: [
-  //         {
-  //           title: "Chick Here",
-  //           description: "Go to networking tab",
-  //           anchor: "[tutorial-anchor-id=Networking]",
-  //           triggeredByState: (state: RootState) =>
-  //             requireSubStepNotCompleted(state, 2) && requireSubStepCompleted(state, 0, 1),
-  //         },
-  //       ],
-  //       subSteps: [
-  //         {
-  //           title: (
-  //             <span>
-  //               Use <strong>echoserver</strong> as name
-  //             </span>
-  //           ),
-  //           formValidator: [
-  //             {
-  //               form: COMPONENT_FORM_ID,
-  //               field: "name",
-  //               validate: (value) => (value === "echoserver" ? undefined : `Please use "echoserver"`),
-  //             },
-  //           ],
-  //           shouldCompleteByState: (state: RootState) => isComponentFormFieldValueEqualTo(state, "name", "echoserver"),
-  //         },
-  //         {
-  //           title: (
-  //             <span>
-  //               Use <strong>k8s.gcr.io/echoserver:1.10</strong> image
-  //             </span>
-  //           ),
-  //           formValidator: [
-  //             {
-  //               form: COMPONENT_FORM_ID,
-  //               field: "image",
-  //               validate: (value) =>
-  //                 value === "k8s.gcr.io/echoserver:1.10" ? undefined : `Please use "k8s.gcr.io/echoserver:1.10"`,
-  //             },
-  //           ],
-  //           shouldCompleteByState: (state: RootState) =>
-  //             isComponentFormFieldValueEqualTo(state, "image", "k8s.gcr.io/echoserver:1.10"),
-  //         },
-  //         {
-  //           title: (
-  //             <span>
-  //               Add an port in advanced <strong>networking tab</strong>
-  //             </span>
-  //           ),
-  //           shouldCompleteByState: (state: RootState) => {
-  //             const ports = getFormValue(state, COMPONENT_FORM_ID, "ports");
-  //             return ports && ports.size > 0;
-  //           },
-  //         },
-  //         {
-  //           title: (
-  //             <span>
-  //               Name the port <strong>http</strong>
-  //             </span>
-  //           ),
-  //           formValidator: [
-  //             {
-  //               form: COMPONENT_FORM_ID,
-  //               field: "ports[0].name",
-  //               validate: (value) => (value === "http" ? undefined : `Please use "http"`),
-  //             },
-  //           ],
-  //           shouldCompleteByState: (state: RootState) => {
-  //             const ports = getFormValue(state, COMPONENT_FORM_ID, "ports") as
-  //               | Immutable.List<ComponentLikePort>
-  //               | undefined;
-  //             return !!ports && ports.size > 0 && ports.get(0)!.get("name") === "http";
-  //           },
-  //         },
-  //         {
-  //           title: (
-  //             <span>
-  //               Set <strong>publish port</strong> to <strong>80</strong>
-  //             </span>
-  //           ),
-  //           formValidator: [
-  //             {
-  //               form: COMPONENT_FORM_ID,
-  //               field: "ports[0].containerPort",
-  //               validate: (value) => (value === 80 ? undefined : `Please use "80"`),
-  //             },
-  //           ],
-  //           shouldCompleteByState: (state: RootState) => {
-  //             const ports = getFormValue(state, COMPONENT_FORM_ID, "ports") as
-  //               | Immutable.List<ComponentLikePort>
-  //               | undefined;
-  //             return !!ports && ports.size > 0 && ports.get(0)!.get("containerPort") === 80;
-  //           },
-  //         },
-  //         {
-  //           title: (
-  //             <span>
-  //               Set <strong>listening on port</strong> to <strong>80</strong> or leave it blank
-  //             </span>
-  //           ),
-  //           formValidator: [
-  //             {
-  //               form: COMPONENT_FORM_ID,
-  //               field: "ports[0].servicePort",
-  //               validate: (value) => (value === 80 || !value ? undefined : `Please use "80"`),
-  //             },
-  //           ],
-  //           shouldCompleteByState: (state: RootState) => {
-  //             const ports = getFormValue(state, COMPONENT_FORM_ID, "ports") as
-  //               | Immutable.List<ComponentLikePort>
-  //               | undefined;
-  //             return (
-  //               !!ports &&
-  //               ports.size > 0 &&
-  //               (ports.get(0)!.get("servicePort") === 80 || !ports.get(0)!.get("servicePort"))
-  //             );
-  //           },
-  //         },
-  //         {
-  //           title: "Deploy!",
-  //           shouldCompleteByAction: (action: Actions) =>
-  //             action.type === (actionTypes.SET_SUBMIT_SUCCEEDED as keyof ActionTypes) &&
-  //             action.meta!.form === COMPONENT_FORM_ID,
-  //         },
-  //       ],
-  //     },
-  //     {
-  //       name: "Vailidate Status",
-  //       description: "Take a look at the component status panel. It shows that your deployment is in progress.",
-  //       subSteps: [
-  //         {
-  //           title: "Wait the component to be running.",
-  //           shouldCompleteByState: (state: RootState) => {
-  //             const application = state
-  //               .get("applications")
-  //               .get("applications")
-  //               .find((x) => x.get("name") === applicationName);
-  //
-  //             if (!application) {
-  //               return false;
-  //             }
-  //
-  //             const pod = application.getIn(["components", 0, "pods", 0]);
-  //
-  //             if (!pod) {
-  //               return false;
-  //             }
-  //
-  //             return pod.get("phase") === "Running" && pod.get("status") === "Running";
-  //           },
-  //         },
-  //       ],
-  //       highlights: [],
-  //     },
-  //   ],
-  //   nextStep: {
-  //     text: "Add external access for your application.",
-  //     onClick: () => {},
-  //   },
-  // };
 };

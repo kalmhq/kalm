@@ -104,7 +104,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
       <>
         <H4>Components</H4>
         <Button
-          tutorial-anchor-id="add-component"
+          tutorial-anchor-id="add-component-button"
           component={Link}
           color="primary"
           size="small"
