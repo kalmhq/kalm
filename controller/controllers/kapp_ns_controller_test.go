@@ -26,6 +26,16 @@ func (suite *KappNSControllerSuite) TearDownSuite() {
 	suite.BasicSuite.TearDownSuite()
 }
 
+func (suite *KappNSControllerSuite) TestKappNSIstioEnabled() {
+	ns := suite.SetupKappEnabledNs()
+
+	suite.Eventually(func() bool {
+		err := suite.K8sClient.Get(context.Background(), types.NamespacedName{Name: ns.Name}, &ns)
+
+		return err == nil && ns.Labels[IstioInjectionLabelName] == IstioInjectionLabelEnableValue
+	}, "can't get deployment")
+}
+
 func (suite *KappNSControllerSuite) TestUpdateOfNSWillAffectComponentWithin() {
 	ns := suite.SetupKappEnabledNs()
 
