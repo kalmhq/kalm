@@ -62,6 +62,7 @@ func (r *KappNSReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 // +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;create;update;patch;delete
+
 func (r *KappNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := r.ctx
 	logger := r.Log.WithValues("kappns", req.NamespacedName)
