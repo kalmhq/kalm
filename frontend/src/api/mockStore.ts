@@ -31,7 +31,7 @@ interface MockStoreData {
 
 export default class MockStore {
   public data: ImmutableMap<MockStoreData>;
-  public CACHE_KEY = "kubernetes-api-mock-data";
+  public CACHE_KEY = "kubernetes-api-mock-data-v1";
   public onmessage?: any;
 
   constructor() {
@@ -81,7 +81,7 @@ export default class MockStore {
     await this.saveData();
   };
 
-  public deleteHttpRoute = async (name: string) => {
+  public deleteHttpRoute = async (namespace: string, name: string) => {
     const index = this.data.get("mockHttpRoutes").findIndex((c) => c.get("name") === name);
     this.data = this.data.deleteIn(["mockHttpRoutes", index]);
     await this.saveData();
@@ -135,9 +135,9 @@ export default class MockStore {
     await this.saveData();
   };
 
-  public updateHttpRoute = async (httpRoute: HttpRoute) => {
+  public updateHttpRoute = async (namepace: string, httpRoute: HttpRoute) => {
     const index = this.data.get("mockHttpRoutes").findIndex((c) => c.get("name") === httpRoute.get("name"));
-    if (index >= 0) {
+    if (index && index >= 0) {
       this.data = this.data.updateIn(["mockHttpRoutes", index], httpRoute as any);
     } else {
       this.data = this.data.updateIn(["mockHttpRoutes"], (c) => c.push(httpRoute));

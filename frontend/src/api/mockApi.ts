@@ -100,7 +100,7 @@ export default class MockApi extends Api {
   };
 
   public createHttpRoute = async (namespace: string, httpRoute: HttpRoute) => {
-    await mockStore.updateHttpRoute(httpRoute);
+    await mockStore.updateHttpRoute(namespace, httpRoute);
     return httpRoute;
   };
 
@@ -147,7 +147,7 @@ export default class MockApi extends Api {
   };
 
   public deleteHttpRoute = async (namespace: string, name: string) => {
-    await mockStore.deleteHttpRoute(name);
+    await mockStore.deleteHttpRoute(namespace, name);
     return true;
   };
 
@@ -202,7 +202,7 @@ export default class MockApi extends Api {
   };
 
   public updateHttpRoute = async (namespace: string, name: string, httpRoute: HttpRoute) => {
-    await mockStore.updateHttpRoute(httpRoute);
+    await mockStore.updateHttpRoute(namespace, httpRoute);
     return Immutable.fromJS(httpRoute);
   };
 
