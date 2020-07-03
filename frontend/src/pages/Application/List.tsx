@@ -2,7 +2,6 @@ import { Box, Button, createStyles, Link as MLink, Popover, Theme, Tooltip, With
 import withStyles from "@material-ui/core/styles/withStyles";
 import { deleteApplicationAction } from "actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
-import { loadRoutes } from "actions/routes";
 import { blinkTopProgressAction } from "actions/settings";
 import { push } from "connected-react-router";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
@@ -82,11 +81,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = this.defaultState;
-  }
-
-  public componentDidMount() {
-    const { dispatch } = this.props;
-    dispatch(loadRoutes(""));
   }
 
   private showDeleteConfirmDialog = (deletingApplicationListItem: ApplicationDetails) => {
@@ -229,7 +223,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
       applicationDetails.get("name"),
       Immutable.List(),
     );
-
+    console.log("routesMap", routesMap.toJS());
     if (applicationRoutes && applicationRoutes.size > 0) {
       return (
         <PopupState variant="popover" popupId={applicationDetails.get("name")}>

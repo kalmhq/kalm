@@ -1,9 +1,8 @@
 import React from "react";
-import { RootState } from "../../reducers";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
+import { RootState } from "../../reducers";
 import { Actions } from "../../types";
-import { loadCertificateIssuers, loadCertificates } from "actions/certificate";
 
 const mapStateToProps = (state: RootState) => {
   const certificates = state.get("certificates");
@@ -22,24 +21,6 @@ export const CertificateDataWrapper = (WrappedComponent: React.ComponentType<any
   const WithCertificatesData: React.ComponentType<WithCertificatesDataProps> = class extends React.Component<
     WithCertificatesDataProps
   > {
-    private interval?: number;
-
-    private loadData = () => {
-      this.props.dispatch(loadCertificates());
-      this.props.dispatch(loadCertificateIssuers());
-      this.interval = window.setTimeout(this.loadData, 5000);
-    };
-
-    componentDidMount() {
-      this.loadData();
-    }
-
-    componentWillUnmount() {
-      if (this.interval) {
-        window.clearTimeout(this.interval);
-      }
-    }
-
     render() {
       return <WrappedComponent {...this.props} />;
     }

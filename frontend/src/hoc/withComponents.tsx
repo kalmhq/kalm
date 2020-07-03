@@ -10,7 +10,7 @@ const mapStateToProps = (state: RootState, props: WithNamespaceProps) => {
   // const activeNamespace = props.activeNamespace!;
 
   return {
-    // components: state.get("components").get("components").get(activeNamespace.get("name")) || Immutable.List(),
+    // components: state.get("components").get("components").get(activeNamespace.get("name")),
   };
 };
 

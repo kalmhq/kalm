@@ -6,6 +6,7 @@ import (
 	appsV1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"testing"
 	"time"
 )
@@ -26,6 +27,16 @@ func (suite *KappNSControllerSuite) TearDownSuite() {
 	suite.BasicSuite.TearDownSuite()
 }
 
+func (suite *KappNSControllerSuite) TestKappNSIstioEnabled() {
+	ns := suite.SetupKappEnabledNs()
+
+	suite.Eventually(func() bool {
+		err := suite.K8sClient.Get(context.Background(), types.NamespacedName{Name: ns.Name}, &ns)
+
+		return err == nil && ns.Labels[IstioInjectionLabelName] == IstioInjectionLabelEnableValue
+	}, "can't get deployment")
+}
+
 func (suite *KappNSControllerSuite) TestUpdateOfNSWillAffectComponentWithin() {
 	ns := suite.SetupKappEnabledNs()
 
@@ -41,6 +52,8 @@ func (suite *KappNSControllerSuite) TestUpdateOfNSWillAffectComponentWithin() {
 	suite.Eventually(func() bool {
 		return suite.K8sClient.Get(context.Background(), key, &deployment) == nil
 	}, "can't get deployment")
+
+	suite.reloadObject(client.ObjectKey{Name: ns.Name}, &ns)
 
 	ns.Labels[KappEnableLabelName] = "false"
 	suite.updateObject(&ns)

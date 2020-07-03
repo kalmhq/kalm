@@ -2,7 +2,6 @@ import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { loadApplicationsAction } from "actions/application";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -14,10 +13,6 @@ export interface WithClusterInfoProps extends ReturnType<typeof mapStateToProps>
 
 export const withClusterInfo = (WrappedComponent: React.ComponentType<any>) => {
   const HOC: React.ComponentType<WithClusterInfoProps> = class extends React.Component<WithClusterInfoProps> {
-    componentDidMount() {
-      this.props.dispatch(loadApplicationsAction());
-    }
-
     render() {
       return <WrappedComponent {...this.props} />;
     }

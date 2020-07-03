@@ -1,5 +1,7 @@
 import { Box, Button, createStyles, Grid, Popover, Theme, WithStyles, withStyles } from "@material-ui/core";
-import { loadNodesAction } from "actions/node";
+import { api } from "api";
+import { Expansion } from "forms/Route/expansion";
+import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 import { NodeStatus } from "pages/Nodes/NodeStatus";
 import React from "react";
 import { connect } from "react-redux";
@@ -9,14 +11,11 @@ import { Node } from "types/node";
 import { formatTimeDistance } from "utils";
 import { H4, H5 } from "widgets/Label";
 import { BigCPULineChart, BigMemoryLineChart, SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
+import { VerticalHeadTable } from "widgets/VerticalHeadTable";
 import { BasePage } from "../BasePage";
 import { NodeCPU } from "./CPU";
 import { NodeMemory } from "./Memory";
 import { NodePods } from "./Pods";
-import { Expansion } from "forms/Route/expansion";
-import { VerticalHeadTable } from "widgets/VerticalHeadTable";
-import { api } from "api";
-import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -38,10 +37,6 @@ export class NodeListRaw extends React.Component<Props, States> {
   constructor(props: Props) {
     super(props);
     this.state = {};
-  }
-
-  componentDidMount() {
-    this.props.dispatch(loadNodesAction());
   }
 
   private hasCordon = (node: Node) => node.get("statusTexts").includes("SchedulingDisabled");

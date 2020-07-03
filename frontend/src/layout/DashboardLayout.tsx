@@ -1,17 +1,16 @@
 import { Box, LinearProgress } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import clsx from "clsx";
+import { WithData } from "hoc/withData";
 import { TutorialDrawer } from "pages/Tutorial";
 import { RequireAuthorizated } from "permission/Authorization";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
-import { AppBarComponent } from "./AppBar";
-import { RootDrawer } from "./RootDrawer";
-import { WebsocketConnector } from "./WebsocketConnector";
 import { TDispatchProp } from "types";
-import { loadClusterInfoAction } from "actions/cluster";
+import { AppBarComponent } from "./AppBar";
 import { TOP_PROGRESS_ZINDEX, TUTORIAL_DRAWER_WIDTH } from "./Constants";
+import { RootDrawer } from "./RootDrawer";
 
 const styles = (theme: Theme) => {
   return createStyles({
@@ -62,10 +61,6 @@ interface Props
     TDispatchProp {}
 
 class DashboardLayoutRaw extends React.PureComponent<Props> {
-  componentDidMount(): void {
-    this.props.dispatch(loadClusterInfoAction());
-  }
-
   render() {
     const { classes, children, isShowTopProgress, showTutorialDrawer } = this.props;
     return (
@@ -87,7 +82,7 @@ class DashboardLayoutRaw extends React.PureComponent<Props> {
 
         <TutorialDrawer />
 
-        <WebsocketConnector />
+        <WithData />
       </div>
     );
   }

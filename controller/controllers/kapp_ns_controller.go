@@ -34,6 +34,9 @@ import (
 const (
 	KappEnableLabelName  = "kapp-enabled"
 	KappEnableLabelValue = "true"
+
+	IstioInjectionLabelName        = "istio-injection"
+	IstioInjectionLabelEnableValue = "enabled"
 )
 
 // KappNSReconciler watches all namespaces
@@ -59,6 +62,7 @@ func (r *KappNSReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 // +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;create;update;patch;delete
+
 func (r *KappNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := r.ctx
 	logger := r.Log.WithValues("kappns", req.NamespacedName)
@@ -77,6 +81,14 @@ func (r *KappNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		_, exist := ns.Labels[KappEnableLabelName]
 		if !exist {
 			continue
+		}
+
+		if v, exist := ns.Labels[IstioInjectionLabelName]; !exist || v != IstioInjectionLabelEnableValue {
+			deepCopiedNs := ns.DeepCopy()
+			deepCopiedNs.Labels[IstioInjectionLabelName] = IstioInjectionLabelEnableValue
+			if err := r.Update(ctx, deepCopiedNs); err != nil {
+				return ctrl.Result{}, err
+			}
 		}
 
 		var compList v1alpha1.ComponentList

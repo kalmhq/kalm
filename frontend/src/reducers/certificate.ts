@@ -1,6 +1,5 @@
 import Immutable from "immutable";
 import { Actions } from "types";
-import { ImmutableMap } from "typings";
 import {
   Certificate,
   CertificateIssuerList,
@@ -8,13 +7,22 @@ import {
   CREATE_CERTIFICATE,
   CREATE_CERTIFICATE_ISSUER,
   DELETE_CERTIFICATE,
-  LOAD_CERTIFICATE_ISSUERS_FULFILLED,
   LOAD_CERTIFICATES_FAILED,
   LOAD_CERTIFICATES_FULFILLED,
   LOAD_CERTIFICATES_PENDING,
+  LOAD_CERTIFICATE_ISSUERS_FULFILLED,
   SET_EDIT_CERTIFICATE_MODAL,
   SET_IS_SUBMITTING_CERTIFICATE,
 } from "types/certificate";
+import {
+  RESOURCE_ACTION_ADD,
+  RESOURCE_ACTION_DELETE,
+  RESOURCE_TYPE_HTTPS_CERT,
+  WATCHED_RESOURCE_CHANGE,
+  RESOURCE_ACTION_UPDATE,
+} from "types/resources";
+import { ImmutableMap } from "typings";
+import { addOrUpdateInList, removeInList, removeInListByName } from "./utils";
 
 export type State = ImmutableMap<{
   isLoading: boolean;
@@ -53,24 +61,12 @@ const reducer = (state: State = initialState, action: Actions): State => {
       return state.set("editingCertificate", action.payload.certificate);
     }
     case DELETE_CERTIFICATE: {
-      const certificates = state.get("certificates");
-      const index = certificates.findIndex((cert) => cert.get("name") === action.payload.name);
-
-      if (index >= 0) {
-        state = state.deleteIn(["certificates", index]);
-      }
-
+      state = state.update("certificates", (x) => removeInListByName(x, action.payload.name));
       break;
     }
     case CREATE_CERTIFICATE: {
-      const index = state
-        .get("certificates")
-        .findIndex((certificate) => certificate.get("name") === action.payload.certificate.get("name"));
-      if (index >= 0) {
-        state = state.setIn(["certificates", index], action.payload.certificate);
-      } else {
-        state = state.update("certificates", (certificates) => certificates.push(action.payload.certificate));
-      }
+      state = state.update("certificates", (x) => addOrUpdateInList(x, action.payload.certificate));
+
       break;
     }
     case CREATE_CERTIFICATE_ISSUER: {
@@ -86,6 +82,28 @@ const reducer = (state: State = initialState, action: Actions): State => {
           certificateIssuers.push(action.payload.certificateIssuer),
         );
       }
+      break;
+    }
+    case WATCHED_RESOURCE_CHANGE: {
+      if (action.kind !== RESOURCE_TYPE_HTTPS_CERT) {
+        return state;
+      }
+
+      switch (action.payload.action) {
+        case RESOURCE_ACTION_ADD: {
+          state = state.update("certificates", (x) => addOrUpdateInList(x, action.payload.data));
+          break;
+        }
+        case RESOURCE_ACTION_DELETE: {
+          state = state.update("certificates", (x) => removeInList(x, action.payload.data));
+          break;
+        }
+        case RESOURCE_ACTION_UPDATE: {
+          state = state.update("certificates", (x) => addOrUpdateInList(x, action.payload.data));
+          break;
+        }
+      }
+
       break;
     }
     case SET_IS_SUBMITTING_CERTIFICATE: {
