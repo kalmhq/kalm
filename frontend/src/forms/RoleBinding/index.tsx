@@ -42,10 +42,6 @@ export interface Props
     TDispatchProp {}
 
 class RoleBindingFormRaw extends React.PureComponent<Props> {
-  public componentDidMount() {
-    // this.props.dispatch(loadNamespacesAction());
-  }
-
   public render() {
     const { namespaces, kind, dirty, submitSucceeded } = this.props;
     return (

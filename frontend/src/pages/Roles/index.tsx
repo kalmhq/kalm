@@ -2,7 +2,7 @@ import { Box, Chip, createStyles, IconButton, Theme, withStyles, WithStyles } fr
 import DeleteIcon from "@material-ui/icons/Delete";
 import VisibilityOffIcon from "@material-ui/icons/VisibilityOff";
 import { closeDialogAction, openDialogAction } from "actions/dialog";
-import { createRoleBindingsAction, deleteRoleBindingsAction, loadRoleBindingsAction } from "actions/user";
+import { createRoleBindingsAction, deleteRoleBindingsAction } from "actions/user";
 import { RoleBindingForm } from "forms/RoleBinding";
 import Immutable from "immutable";
 import MaterialTable from "material-table";
@@ -16,11 +16,11 @@ import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
 import { ControlledDialog } from "widgets/ControlledDialog";
 import { ServiceAccountSecret } from "widgets/ServiceAccountSecret";
+import { KTable } from "widgets/Table";
+import { blinkTopProgressAction } from "../../actions/settings";
 import { AdminDrawer } from "../../layout/AdminDrawer";
 import { H4 } from "../../widgets/Label";
 import { BasePage } from "../BasePage";
-import { blinkTopProgressAction } from "../../actions/settings";
-import { KTable } from "widgets/Table";
 
 const dialogID = "rolebinding/add";
 const serviceAccountSecretDialogID = "serviceAccountSecretDialogID";
@@ -73,11 +73,6 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {};
-  }
-
-  componentDidMount() {
-    this.props.dispatch(loadRoleBindingsAction());
-    // this.props.dispatch(loadNamespacesAction());
   }
 
   private getData = (): RowData[] => {

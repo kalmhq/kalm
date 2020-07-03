@@ -1,11 +1,10 @@
+import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
+import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
-import { RootState } from "reducers";
 import { RouteComponentProps } from "react-router";
-import Immutable from "immutable";
+import { RootState } from "reducers";
 import { HttpRoute } from "types/route";
-import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
-import { loadRoutes } from "actions/routes";
 
 const mapStateToProps = (
   state: RootState,
@@ -34,11 +33,6 @@ export interface WithRoutesDataProps extends ReturnType<typeof mapStateToProps>,
 
 export const withRoutesData = (WrappedComponent: React.ComponentType<any>) => {
   const HOC: React.ComponentType<WithRoutesDataProps> = class extends React.Component<WithRoutesDataProps> {
-    componentDidMount() {
-      const { dispatch, activeNamespaceName } = this.props;
-      dispatch(loadRoutes(activeNamespaceName));
-    }
-
     render() {
       return <WrappedComponent {...this.props} />;
     }

@@ -1,5 +1,5 @@
 import { Box, createStyles, Theme, WithStyles, withStyles } from "@material-ui/core";
-import { deleteRegistryAction, loadRegistriesAction } from "actions/registries";
+import { deleteRegistryAction } from "actions/registries";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
@@ -7,6 +7,7 @@ import { TDispatchProp } from "types";
 import { RegistryType } from "types/registry";
 import { ErrorBadge, SuccessBadge } from "widgets/Badge";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import { KTable } from "widgets/Table";
 import { openDialogAction } from "../../actions/dialog";
 import { setErrorNotificationAction } from "../../actions/notification";
 import { blinkTopProgressAction } from "../../actions/settings";
@@ -15,10 +16,9 @@ import { CustomizedButton } from "../../widgets/Button";
 import { ConfirmDialog } from "../../widgets/ConfirmDialog";
 import { DeleteIcon, EditIcon } from "../../widgets/Icon";
 import { H4 } from "../../widgets/Label";
+import { Loading } from "../../widgets/Loading";
 import { BasePage } from "../BasePage";
 import { RegistryNewModal, RegistryNewModalID } from "./New";
-import { Loading } from "../../widgets/Loading";
-import { KTable } from "widgets/Table";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -95,10 +95,6 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
       dispatch(setErrorNotificationAction());
     }
   };
-
-  componentDidMount() {
-    this.props.dispatch(loadRegistriesAction());
-  }
 
   private renderName(row: RowData) {
     return row.get("name");

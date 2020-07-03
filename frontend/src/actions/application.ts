@@ -9,7 +9,6 @@ import {
   ApplicationDetails,
   CREATE_APPLICATION,
   DELETE_APPLICATION,
-  DUPLICATE_APPLICATION,
   LOAD_ALL_NAMESAPCES_COMPONETS,
   LOAD_APPLICATIONS_FAILED,
   LOAD_APPLICATIONS_FULFILLED,
@@ -48,7 +47,6 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
 
     dispatch(setIsSubmittingApplication(false));
 
-    // dispatch(loadApplicationsAction());
     await dispatch({
       type: CREATE_APPLICATION,
       payload: { application },
@@ -95,26 +93,12 @@ export const updateApplicationAction = (applicationRaw: Application): ThunkResul
 
     dispatch(setIsSubmittingApplication(false));
 
-    // dispatch(loadApplicationsAction());
     dispatch({
       type: UPDATE_APPLICATION,
       payload: { application },
     });
     dispatch(setSuccessNotificationAction("Edit application successfully"));
     dispatch(push("/applications"));
-  };
-};
-
-export const duplicateApplicationAction = (duplicatedApplication: Application): ThunkResult<Promise<void>> => {
-  return async (dispatch) => {
-    let application: ApplicationDetails;
-    application = await api.createKappApplication(duplicatedApplication);
-
-    // dispatch(loadApplicationsAction());
-    dispatch({
-      type: DUPLICATE_APPLICATION,
-      payload: { application },
-    });
   };
 };
 

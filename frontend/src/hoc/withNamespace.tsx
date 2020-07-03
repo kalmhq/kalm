@@ -1,9 +1,9 @@
+import { loadSimpleOptionsAction, loadStatefulSetOptionsAction } from "actions/persistentVolume";
 import React from "react";
 import { connect } from "react-redux";
+import { RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { loadApplicationsAction } from "actions/application";
-import { RouteComponentProps, withRouter } from "react-router-dom";
 import { Loading } from "widgets/Loading";
 
 const mapStateToProps = (
@@ -23,7 +23,7 @@ const mapStateToProps = (
     activeNamespaceName,
     activeNamespace,
     applications,
-    components: state.get("components").get("components").get(activeNamespaceName),
+    components: state.get("components").get("components").get(activeNamespaceName), // application details page need components and withRoutesData
     isNamespaceLoading: applicationsState.get("isListLoading"),
     isNamespaceFirstLoaded: applicationsState.get("isListFirstLoaded"),
   };
@@ -37,7 +37,11 @@ export interface WithNamespaceProps
 export const withNamespace = (WrappedComponent: React.ComponentType<any>) => {
   const HOC: React.ComponentType<WithNamespaceProps> = class extends React.Component<WithNamespaceProps> {
     componentDidMount() {
-      this.props.dispatch(loadApplicationsAction());
+      const { dispatch, activeNamespaceName } = this.props;
+
+      // for volumes
+      dispatch(loadSimpleOptionsAction(activeNamespaceName));
+      dispatch(loadStatefulSetOptionsAction(activeNamespaceName));
     }
 
     render() {

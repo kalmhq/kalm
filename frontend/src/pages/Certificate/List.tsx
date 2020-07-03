@@ -1,31 +1,26 @@
 import { Box, createStyles, Theme, WithStyles, withStyles } from "@material-ui/core";
+import { deleteCertificateAction, setEditCertificateModal } from "actions/certificate";
+import { openDialogAction } from "actions/dialog";
+import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
+import { blinkTopProgressAction } from "actions/settings";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { addCertificateDialogId, NewModal } from "./New";
+import { Certificate } from "types/certificate";
+import { customSearchForImmutable } from "utils/tableSearch";
+import { PendingBadge, SuccessBadge } from "widgets/Badge";
+import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
+import { ConfirmDialog } from "widgets/ConfirmDialog";
+import { DeleteIcon, EditIcon } from "widgets/Icon";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { H4 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
-import {
-  deleteCertificateAction,
-  loadCertificateIssuers,
-  loadCertificates,
-  setEditCertificateModal,
-} from "actions/certificate";
-import { customSearchForImmutable } from "utils/tableSearch";
-import { Certificate } from "types/certificate";
-import { ConfirmDialog } from "widgets/ConfirmDialog";
-import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
-import { openDialogAction } from "actions/dialog";
-import { PendingBadge, SuccessBadge } from "widgets/Badge";
-import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { DeleteIcon, EditIcon } from "widgets/Icon";
-import { FlexRowItemCenterBox } from "widgets/Box";
-import { CertificateDataWrapper, WithCertificatesDataProps } from "./DataWrapper";
-import { blinkTopProgressAction } from "actions/settings";
 import { KTable } from "widgets/Table";
+import { CertificateDataWrapper, WithCertificatesDataProps } from "./DataWrapper";
+import { addCertificateDialogId, NewModal } from "./New";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -62,11 +57,6 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
       isDeleteConfirmDialogOpen: false,
       deletingCertificate: null,
     };
-  }
-
-  componentDidMount() {
-    this.props.dispatch(loadCertificates());
-    this.props.dispatch(loadCertificateIssuers());
   }
 
   private renderName = (rowData: RowData) => {
