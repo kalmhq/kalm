@@ -10,12 +10,12 @@ import (
 	log "github.com/sirupsen/logrus"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/tools/cache"
-	runtimeCache "sigs.k8s.io/controller-runtime/pkg/cache"
+	toolscache "k8s.io/client-go/tools/cache"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 )
 
 func StartWatching(c *Client) {
-	informerCache, err := runtimeCache.New(c.K8SClientConfig, runtimeCache.Options{})
+	informerCache, err := cache.New(c.K8SClientConfig, cache.Options{})
 	if err != nil {
 		panic(err)
 	}
@@ -33,7 +33,7 @@ func StartWatching(c *Client) {
 }
 
 func registerWatchHandler(c *Client,
-	informerCache *runtimeCache.Cache,
+	informerCache *cache.Cache,
 	runtimeObj runtime.Object,
 	buildResMessage func(c *Client, action string, obj interface{}) (*ResMessage, error)) {
 
@@ -42,7 +42,7 @@ func registerWatchHandler(c *Client,
 		panic(err)
 	}
 
-	informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+	informer.AddEventHandler(toolscache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			resMessage, err := buildResMessage(c, "Add", obj)
 			if err != nil {
