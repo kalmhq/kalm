@@ -74,7 +74,7 @@ export default class MockApi extends Api {
   };
 
   public getHttpRoutes = async (namespace: string) => {
-    return mockStore.data.get("mockHttpRoutes").get(namespace)!;
+    return mockStore.data.get("mockHttpRoutes");
   };
 
   public mockLoadRolebindings = async () => {

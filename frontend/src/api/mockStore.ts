@@ -19,7 +19,7 @@ interface MockStoreData {
   mockStatefulSetOptions: VolumeOptions;
   mockApplications: Immutable.List<ApplicationDetails>;
   mockApplicationComponents: Immutable.Map<string, Immutable.List<ApplicationComponentDetails>>;
-  mockHttpRoutes: Immutable.Map<string, Immutable.List<HttpRoute>>;
+  mockHttpRoutes: Immutable.List<HttpRoute>;
   mockCertificates: CertificateList;
   mockCertificateIssuers: CertificateIssuerList;
   mockRegistries: Immutable.List<RegistryType>;
@@ -31,7 +31,7 @@ interface MockStoreData {
 
 export default class MockStore {
   public data: ImmutableMap<MockStoreData>;
-  public CACHE_KEY = "kubernetes-api-mock-data";
+  public CACHE_KEY = "kubernetes-api-mock-data-v1";
   public onmessage?: any;
 
   constructor() {
@@ -82,11 +82,8 @@ export default class MockStore {
   };
 
   public deleteHttpRoute = async (namespace: string, name: string) => {
-    const index = this.data
-      .get("mockHttpRoutes")
-      .get(namespace)
-      ?.findIndex((c) => c.get("name") === name);
-    this.data = this.data.deleteIn(["mockHttpRoutes", namespace, index]);
+    const index = this.data.get("mockHttpRoutes").findIndex((c) => c.get("name") === name);
+    this.data = this.data.deleteIn(["mockHttpRoutes", index]);
     await this.saveData();
   };
 
@@ -139,14 +136,11 @@ export default class MockStore {
   };
 
   public updateHttpRoute = async (namepace: string, httpRoute: HttpRoute) => {
-    const index = this.data
-      .get("mockHttpRoutes")
-      .get(namepace)
-      ?.findIndex((c) => c.get("name") === httpRoute.get("name"));
+    const index = this.data.get("mockHttpRoutes").findIndex((c) => c.get("name") === httpRoute.get("name"));
     if (index && index >= 0) {
-      this.data = this.data.updateIn(["mockHttpRoutes", namepace, index], httpRoute as any);
+      this.data = this.data.updateIn(["mockHttpRoutes", index], httpRoute as any);
     } else {
-      this.data = this.data.updateIn(["mockHttpRoutes", namepace], (c) => c.push(httpRoute));
+      this.data = this.data.updateIn(["mockHttpRoutes"], (c) => c.push(httpRoute));
     }
     await this.saveData();
   };
@@ -4129,20 +4123,18 @@ export default class MockStore {
         ],
       }),
 
-      mockHttpRoutes: Immutable.fromJS({
-        "kapp-bookinfo": [
-          {
-            hosts: ["bookinfo.demo.com"],
-            paths: ["/"],
-            methods: ["GET", "POST"],
-            schemes: ["http"],
-            stripPath: true,
-            destinations: [{ host: "productpage", weight: 1 }],
-            name: "bookinfo",
-            namespace: "kapp-bookinfo",
-          },
-        ],
-      }),
+      mockHttpRoutes: Immutable.fromJS([
+        {
+          hosts: ["bookinfo.demo.com"],
+          paths: ["/"],
+          methods: ["GET", "POST"],
+          schemes: ["http"],
+          stripPath: true,
+          destinations: [{ host: "productpage", weight: 1 }],
+          name: "bookinfo",
+          namespace: "kapp-bookinfo",
+        },
+      ]),
 
       mockCertificates: Immutable.fromJS([
         {
