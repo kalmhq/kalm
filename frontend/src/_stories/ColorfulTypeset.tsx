@@ -53,7 +53,7 @@ const ColorfulTypesetRow = (props: ColorfulTypesetProps) => {
           <Box key={index} className={clsx(classes.item)}>
             <Caption className={clsx(classes.label)}>{Ele.displayName}</Caption>
             <Box className={classes.expand}>
-              <Ele>{sampleText || "KAML ❤️"}</Ele>
+              <Ele>{sampleText || "KALM ❤️"}</Ele>
             </Box>
           </Box>
         );

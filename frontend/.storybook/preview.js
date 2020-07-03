@@ -10,7 +10,7 @@ import { theme } from "theme/theme";
 import { select, withKnobs } from "@storybook/addon-knobs";
 
 const { GlobalStyle } = global;
-const muiThemes = { KAMLTheme1: theme, KAMLTheme2: theme };
+const muiThemes = { KALMTheme1: theme, KALMTheme2: theme };
 const muiThemeNames = Object.keys(muiThemes);
 
 const withGlobalStyle = (storyFn) => {

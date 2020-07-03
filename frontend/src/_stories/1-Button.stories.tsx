@@ -4,8 +4,8 @@ import { boolean } from "@storybook/addon-knobs";
 import { DangerButton, ButtonWhite, ButtonGrey, RaisedButton, CustomizedButton } from "widgets/Button";
 
 export default {
-  title: "Button",
-  component: ButtonWhite,
+  title: "Widgets/Buttons",
+  component: CustomizedButton,
 };
 
 export const White = () => (
