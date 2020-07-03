@@ -8,7 +8,7 @@ import Adapter from "enzyme-adapter-react-16";
 import ApplicationForm, { applicationInitialValues } from "forms/Application";
 import { CertificateForm } from "forms/Certificate";
 import { ComponentLikeForm } from "forms/ComponentLike";
-import { APPLICATION_FORM_ID, CERTIFICATE_FORM_ID, COMPONENT_FORM_ID } from "forms/formIDs";
+import { APPLICATION_FORM_ID, CERTIFICATE_FORM_ID, COMPONENT_FORM_ID, ROUTE_FORM_ID } from "forms/formIDs";
 import { readFileSync } from "fs";
 import { createBrowserHistory } from "history";
 import React from "react";
@@ -24,6 +24,11 @@ import { getTestFormSyncErrors } from "../utils/testUtils";
 import { ThemeProvider } from "@material-ui/core";
 import { theme } from "theme";
 import { createComponentAction } from "actions/component";
+import { HttpRouteForm, newEmptyRouteForm } from "types/route";
+import { createRoute } from "actions/routes";
+import { RouteForm } from "forms/Route";
+import { loadServicesAction } from "actions/service";
+import Immutable from "immutable";
 
 configure({ adapter: new Adapter() });
 
@@ -186,4 +191,56 @@ test("add component", async (done) => {
   store.dispatch(change(COMPONENT_FORM_ID, "name", componentName));
   store.dispatch(change(COMPONENT_FORM_ID, "image", "test-image"));
   component.find("button#add-component-submit-button").simulate("click");
+});
+
+test("add route", async (done) => {
+  await store.dispatch(loadApplicationsAction());
+  await store.dispatch(loadServicesAction(applicationName));
+  const testApplication = store.getState().get("applications").get("applications").get(0);
+  const testService = store.getState().get("services").get("services").get(0);
+  const onSubmit = async (route: HttpRouteForm) => {
+    route = route.set("namespace", testApplication?.get("name"));
+    await store.dispatch(createRoute(route.get("name"), testApplication?.get("name")!, route));
+  };
+
+  const onSubmitSuccess = () => {
+    try {
+      expect(!!store.getState().get("routes").get("httpRoutes")).toBeTruthy();
+      done();
+    } catch (e) {
+      done(e);
+    }
+  };
+
+  const WrappedRouteForm = class extends React.Component {
+    public render() {
+      return <RouteForm onSubmit={onSubmit} onSubmitSuccess={onSubmitSuccess} initialValues={newEmptyRouteForm()} />;
+    }
+  };
+
+  const component = mount(
+    <Provider store={store}>
+      <ThemeProvider theme={theme}>
+        <ConnectedRouter history={history}>
+          <Route component={WrappedRouteForm} />
+        </ConnectedRouter>
+      </ThemeProvider>
+    </Provider>,
+  );
+
+  component.find("button#add-route-submit-button").simulate("click");
+  expect(getTestFormSyncErrors(store, ROUTE_FORM_ID).hosts).toBe(requiredError);
+  store.dispatch(change(ROUTE_FORM_ID, "hosts", Immutable.fromJS(["test.io"])));
+  component.find("button#add-target-button").simulate("click");
+  store.dispatch(
+    change(
+      ROUTE_FORM_ID,
+      "destinations[0].host",
+      `${testService?.get("name")}.${testService?.get("namespace")}.svc.cluster.local:${testService
+        ?.get("ports")
+        .get(0)
+        ?.get("port")}`,
+    ),
+  );
+  component.find("button#add-route-submit-button").simulate("click");
 });
