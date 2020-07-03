@@ -10,13 +10,12 @@ npm run start
 ## How to connect the backend services
 
 1. Download the kapp project, Update master to latest.
-2. Install [Docker]([Docker](https://docs.docker.com/install/)), [kubectl]([kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)), [kind]([kind](https://github.com/kubernetes-sigs/kind)) and [kustomize]([kustomize](https://github.com/kubernetes-sigs/kustomize))
+2. Install [Docker](<[Docker](https://docs.docker.com/install/)>), [kubectl](<[kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)>), [kind](<[kind](https://github.com/kubernetes-sigs/kind)>) and [kustomize](<[kustomize](https://github.com/kubernetes-sigs/kustomize)>)
 3. Enter kapp project root dir. Start kind cluster `kind create cluster --config hack/kind-config.yaml --image=kindest/node:v1.14.2`
 4. After kind cluster is running. Create a new term session. Enter kapp project root dir. `make install`
 5. Create a new term session. `kubectl proxy`.
 6. Enter kapp-web project root dir. Start a proxy server. `node src/proxyServer/index.js`
 7. Done
-
 
 # Create React App Raw Content
 
@@ -65,3 +64,36 @@ You can learn more in the [Create React App documentation](https://facebook.gith
 
 To learn React, check out the [React documentation](https://reactjs.org/).
 
+# Storybook Design System
+
+We will use storybook as a tool for designing assets for the KALM system. With storybook, we can integrate the design into the product faster and the frontend development process(design and engineering realization) can be organized according to components.
+
+## features
+
+- support material-ui custom theme
+- support change background colors
+- support change viewport
+- support custom state and property
+
+## how to run storybook
+
+```
+npm run storybook
+```
+
+## how to write a storybook for a components
+
+There are two parts of the code that relate to storybook
+
+- `frontend/.storybook`: all storybook configs here.
+- `frontend/src/_stories`: all stories and story related widgets
+
+### support parameters when preview storybook
+
+please checkout `frontend/src/_stories/1-Button.stories.tsx` as a references.
+
+### References:
+
+- https://github.com/storybookjs/storybook/tree/master/addons/knobs
+- https://github.com/storybookjs/storybook/tree/master/addons/viewport
+- https://github.com/storybookjs/storybook/tree/master/addons/actions
