@@ -234,13 +234,13 @@ class RenderVolumes extends React.PureComponent<Props> {
             <Grid container spacing={2} key={member}>
               {this.getFieldComponents(member, disk).map((fieldComponent, fieldIndex) => {
                 return (
-                  <Grid item xs key={`${member}-${fieldIndex}`}>
+                  <Grid item xs={fieldIndex === 0 ? 3 : 2} key={`${member}-${fieldIndex}`}>
                     {fieldComponent}
                   </Grid>
                 );
               })}
 
-              <Grid item xs>
+              <Grid item xs={1}>
                 <IconButtonWithTooltip
                   tooltipPlacement="top"
                   tooltipTitle="Delete"
