@@ -1,20 +1,19 @@
 import { Box, Button, createStyles, Theme, WithStyles } from "@material-ui/core";
-import { loadRoutes } from "actions/routes";
-import React from "react";
-import { RootState } from "reducers";
+import withStyles from "@material-ui/core/styles/withStyles";
 import { deleteApplicationAction } from "actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
+import { withComponents, WithComponentsProps } from "hoc/withComponents";
+import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
+import { ComponentPanel } from "pages/Components/Panel";
+import React from "react";
+import { connect } from "react-redux";
+import { Link } from "react-router-dom";
+import { RootState } from "reducers";
 import { ApplicationDetails } from "types/application";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { H4 } from "widgets/Label";
-import { BasePage } from "../BasePage";
-import withStyles from "@material-ui/core/styles/withStyles";
-import { connect } from "react-redux";
-import { withComponents, WithComponentsProps } from "hoc/withComponents";
 import { Namespaces } from "widgets/Namespaces";
-import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
-import { ComponentPanel } from "pages/Components/Panel";
-import { Link } from "react-router-dom";
+import { BasePage } from "../BasePage";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -59,11 +58,6 @@ class ComponentRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = this.defaultState;
-  }
-
-  public componentDidMount() {
-    const { dispatch } = this.props;
-    dispatch(loadRoutes(""));
   }
 
   private closeDeleteConfirmDialog = () => {
@@ -118,7 +112,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { components, activeNamespace } = this.props;
+    const { components, activeNamespace, activeNamespaceName, classes } = this.props;
 
     return (
       <BasePage
@@ -129,11 +123,26 @@ class ComponentRaw extends React.PureComponent<Props, State> {
         {this.renderDeleteConfirmDialog()}
 
         <Box p={2}>
-          {components?.map((component, index) => (
-            <Box pb={1} key={component.get("name")}>
-              <ComponentPanel component={component} application={activeNamespace!} defaultUnfold={index === 0} />
-            </Box>
-          ))}
+          {components && components.size > 0 ? (
+            components?.map((component, index) => (
+              <Box pb={1} key={component.get("name")}>
+                <ComponentPanel component={component} application={activeNamespace!} defaultUnfold={index === 0} />
+              </Box>
+            ))
+          ) : (
+            <div className={classes.emptyWrapper}>
+              <Box>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  component={Link}
+                  to={`/applications/${activeNamespaceName}/components/new`}
+                >
+                  Add Component
+                </Button>
+              </Box>
+            </div>
+          )}
         </Box>
       </BasePage>
     );

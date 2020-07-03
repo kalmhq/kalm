@@ -2,8 +2,8 @@ package handler
 
 import (
 	"fmt"
+
 	"github.com/kapp-staging/kapp/api/resources"
-	"github.com/kapp-staging/kapp/controller/controllers"
 	"github.com/labstack/echo/v4"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -36,34 +36,12 @@ func (h *ApiHandler) handleListVolumes(c echo.Context) error {
 
 	respVolumes := []resources.Volume{}
 	for _, kappPVC := range kappPVCList.Items {
-
-		isInUse, err := builder.IsPVCInUse(kappPVC)
+		respVolume, err := builder.BuildVolumeResponse(kappPVC, kappPVMap[kappPVC.Spec.VolumeName])
 		if err != nil {
-			continue
+			return err
 		}
 
-		var capInStr string
-		if cap, exist := kappPVC.Spec.Resources.Requests[v1.ResourceStorage]; exist {
-			capInStr = cap.String()
-		}
-
-		var compName, compNamespace string
-		if kappPV, exist := kappPVMap[kappPVC.Spec.VolumeName]; exist {
-			if v, exist := kappPV.Labels[controllers.KappLabelComponent]; exist {
-				compName = v
-			}
-			if v, exist := kappPV.Labels[controllers.KappLabelNamespace]; exist {
-				compNamespace = v
-			}
-		}
-
-		respVolumes = append(respVolumes, resources.Volume{
-			Name:               kappPVC.Name,
-			ComponentName:      compName,
-			ComponentNamespace: compNamespace,
-			IsInUse:            isInUse,
-			Capacity:           capInStr,
-		})
+		respVolumes = append(respVolumes, *respVolume)
 	}
 
 	return c.JSON(200, respVolumes)

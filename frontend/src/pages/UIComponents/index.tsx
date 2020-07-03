@@ -51,10 +51,6 @@ export class UIComponentsRaw extends React.Component<Props, States> {
     this.state = {};
   }
 
-  componentDidMount() {
-    // this.props.dispatch(loadNodesAction());
-  }
-
   render() {
     const { classes } = this.props;
 

@@ -1,8 +1,6 @@
-import { Box, Button, Collapse, Icon, Link, Typography, Grid } from "@material-ui/core";
+import { Box, Button, Collapse, Grid, Icon, Link, Typography } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { Alert, AlertTitle } from "@material-ui/lab";
-import { loadCertificates } from "actions/certificate";
-import { loadServicesAction } from "actions/service";
 import { KFreeSoloAutoCompleteMultiValues } from "forms/Basic/autoComplete";
 import { KCheckboxGroupRender } from "forms/Basic/checkbox";
 import { KRadioGroupRender } from "forms/Basic/radio";
@@ -105,12 +103,6 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
       isAdvancedPartUnfolded: false,
       isValidCertificationUnfolded: false,
     };
-  }
-
-  public componentDidMount() {
-    const { dispatch } = this.props;
-    dispatch(loadCertificates());
-    dispatch(loadServicesAction(""));
   }
 
   private canCertDomainsSuiteForHost = (domains: Immutable.List<string>, host: string) => {
@@ -383,6 +375,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                         color="primary"
                         startIcon={<Icon>add</Icon>}
                         size="small"
+                        id="add-target-button"
                         onClick={() =>
                           dispatch(
                             arrayPush(
@@ -506,7 +499,13 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
             </FormControl>
           </div>
         </Expansion> */}
-            <Button type="submit" onClick={handleSubmit} color="primary" variant="contained">
+            <Button
+              id="add-route-submit-button"
+              type="submit"
+              onClick={handleSubmit}
+              color="primary"
+              variant="contained"
+            >
               Save Route
             </Button>
           </Grid>

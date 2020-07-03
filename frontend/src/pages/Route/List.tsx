@@ -1,5 +1,5 @@
 import { Box, Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { deleteRoute, loadRoutes } from "actions/routes";
+import { deleteRoute } from "actions/routes";
 import { blinkTopProgressAction } from "actions/settings";
 import { push } from "connected-react-router";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
@@ -34,19 +34,6 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {};
-  }
-
-  componentDidMount() {
-    const { dispatch, activeNamespaceName } = this.props;
-    dispatch(loadRoutes(activeNamespaceName));
-  }
-
-  componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any): void {
-    const { dispatch, activeNamespaceName } = this.props;
-
-    if (prevProps.activeNamespaceName !== activeNamespaceName) {
-      dispatch(loadRoutes(activeNamespaceName));
-    }
   }
 
   private renderHosts(row: RowData) {

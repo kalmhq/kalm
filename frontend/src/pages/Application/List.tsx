@@ -2,7 +2,6 @@ import { Box, Button, createStyles, Link as MLink, Popover, Theme, Tooltip, With
 import withStyles from "@material-ui/core/styles/withStyles";
 import { deleteApplicationAction } from "actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
-import { loadRoutes } from "actions/routes";
 import { blinkTopProgressAction } from "actions/settings";
 import { push } from "connected-react-router";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
@@ -31,6 +30,7 @@ import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart"
 import { KTable } from "widgets/Table";
 import { getApplicationCreatedAtString } from "../../utils/application";
 import { BasePage } from "../BasePage";
+import { POPPER_ZINDEX } from "layout/Constants";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -82,11 +82,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = this.defaultState;
-  }
-
-  public componentDidMount() {
-    const { dispatch } = this.props;
-    dispatch(loadRoutes(""));
   }
 
   private showDeleteConfirmDialog = (deletingApplicationListItem: ApplicationDetails) => {
@@ -239,6 +234,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
                 {applicationRoutes.size === 1 ? "1 route" : `${applicationRoutes.size} routes`}
               </MLink>
               <Popover
+                style={{ zIndex: POPPER_ZINDEX }}
                 {...bindPopover(popupState)}
                 anchorOrigin={{
                   vertical: "bottom",

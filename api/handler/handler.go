@@ -36,9 +36,6 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gV1 := e.Group("/v1", h.AuthClientMiddleware)
 	gV1.GET("/persistentvolumes", h.handleGetPVs)
 
-	gV1.GET("/dependencies", h.handleGetDependencies)
-	gV1.GET("/dependencies/available", h.handleGetAvailableDependencies)
-
 	gv1Alpha1 := e.Group("/v1alpha1")
 	gv1Alpha1.GET("/logs", h.logWebsocketHandler)
 	gv1Alpha1.GET("/exec", h.execWebsocketHandler)

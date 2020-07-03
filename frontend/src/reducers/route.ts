@@ -74,7 +74,22 @@ const reducer = (state: State = initialState, action: Actions): State => {
     case LOAD_ROUTES_FULFILLED: {
       state = state.set("isLoading", false);
       state = state.set("isFirstLoaded", true);
-      state = state.setIn(["httpRoutes", action.payload.namespace], action.payload.httpRoutes);
+      if (action.payload.namespace) {
+        state = state.setIn(["httpRoutes", action.payload.namespace], action.payload.httpRoutes);
+      } else {
+        // all namespaces
+        let routesMap: Immutable.Map<string, Immutable.List<HttpRoute>> = Immutable.Map({});
+        action.payload.httpRoutes.forEach((route) => {
+          const namespace = route.get("namespace");
+          const routes = routesMap.get(namespace);
+          if (routes && routes.size > 0) {
+            routesMap = routesMap.set(namespace, routes.push(route));
+          } else {
+            routesMap = routesMap.set(namespace, Immutable.List([route]));
+          }
+        });
+        state = state.set("httpRoutes", routesMap);
+      }
       break;
     }
     case CREATE_ROUTE_FULFILLED: {

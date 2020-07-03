@@ -1,6 +1,9 @@
 import { Node } from "types/node";
 import { ApplicationDetails, ApplicationComponentDetails } from "./application";
 import { HttpRoute } from "./route";
+import { Certificate } from "./certificate";
+import { RegistryType } from "./registry";
+import { Disk } from "./disk";
 
 export const WATCHED_RESOURCE_CHANGE = "WATCHED_RESOURCE_CHANGE";
 
@@ -12,6 +15,9 @@ export const RESOURCE_TYPE_NODE = "Node";
 export const RESOURCE_TYPE_APPLICATION = "Application";
 export const RESOURCE_TYPE_COMPONENT = "Component";
 export const RESOURCE_TYPE_HTTP_ROUTE = "HttpRoute";
+export const RESOURCE_TYPE_HTTPS_CERT = "HttpsCert";
+export const RESOURCE_TYPE_REGISTRY = "Registry";
+export const RESOURCE_TYPE_VOLUME = "Volume";
 
 export type ResourceActionType =
   | typeof RESOURCE_ACTION_UPDATE
@@ -56,8 +62,38 @@ export interface HttpRouteResourceAction {
   };
 }
 
+export interface HttpsCertResourceAction {
+  type: typeof WATCHED_RESOURCE_CHANGE;
+  kind: typeof RESOURCE_TYPE_HTTPS_CERT;
+  payload: {
+    action: ResourceActionType;
+    data: Certificate;
+  };
+}
+
+export interface RegistryResourceAction {
+  type: typeof WATCHED_RESOURCE_CHANGE;
+  kind: typeof RESOURCE_TYPE_REGISTRY;
+  payload: {
+    action: ResourceActionType;
+    data: RegistryType;
+  };
+}
+
+export interface VolumeResourceAction {
+  type: typeof WATCHED_RESOURCE_CHANGE;
+  kind: typeof RESOURCE_TYPE_VOLUME;
+  payload: {
+    action: ResourceActionType;
+    data: Disk;
+  };
+}
+
 export type ResourceActions =
   | NodeResourceAction
   | ApplicationResourceAction
   | ComponentResourceAction
-  | HttpRouteResourceAction;
+  | HttpRouteResourceAction
+  | HttpsCertResourceAction
+  | RegistryResourceAction
+  | VolumeResourceAction;

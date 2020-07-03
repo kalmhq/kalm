@@ -2,16 +2,24 @@ import Immutable from "immutable";
 import { getComponentFormVolumeOptions } from "selectors/component";
 import { ApplicationComponent, ApplicationComponentDetails } from "types/application";
 import { VolumeTypePersistentVolumeClaim, VolumeTypePersistentVolumeClaimNew } from "types/componentTemplate";
+import { RootState } from "reducers";
 import { formatDate } from "utils";
 
 export const componentDetailsToComponent = (componentDetails: ApplicationComponentDetails): ApplicationComponent => {
   return componentDetails.delete("pods").delete("services").delete("metrics") as ApplicationComponent;
 };
 
-export const correctComponentFormValuesForSubmit = (componentValues: ApplicationComponent): ApplicationComponent => {
+export const correctComponentFormValuesForSubmit = (
+  state: RootState,
+  componentValues: ApplicationComponent,
+): ApplicationComponent => {
   const volumes = componentValues.get("volumes");
 
-  const volumeOptions = getComponentFormVolumeOptions(componentValues.get("name"), componentValues.get("workloadType"));
+  const volumeOptions = getComponentFormVolumeOptions(
+    state,
+    componentValues.get("name"),
+    componentValues.get("workloadType"),
+  );
 
   const findPVC = (claimName: string) => {
     let pvc = "";
@@ -50,10 +58,13 @@ export const correctComponentFormValuesForSubmit = (componentValues: Application
   return componentValues.set("volumes", correctedVolumes);
 };
 
-export const correctComponentFormValuesForInit = (component: ApplicationComponent): ApplicationComponent => {
+export const correctComponentFormValuesForInit = (
+  state: RootState,
+  component: ApplicationComponent,
+): ApplicationComponent => {
   let volumes = component.get("volumes");
   if (volumes) {
-    const volumeOptions = getComponentFormVolumeOptions(component.get("name"), component.get("workloadType"));
+    const volumeOptions = getComponentFormVolumeOptions(state, component.get("name"), component.get("workloadType"));
 
     const findClaimName = (pvc?: string, pvToMatch?: string) => {
       pvc = pvc || "";

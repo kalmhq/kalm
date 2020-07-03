@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Box,
   Button,
@@ -17,17 +16,18 @@ import {
   withStyles,
   WithStyles,
 } from "@material-ui/core";
-import { connect } from "react-redux";
-import { RootState } from "reducers";
-import { HttpRoute } from "types/route";
-import { maxIn } from "permission/utils";
-import { Methods } from "pages/Route/Methods";
-import { displayRouteWeightAsPercentage, displaySvcNameUnder } from "pages/Route/util";
 import { ArrowRightAlt } from "@material-ui/icons";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
-import { TDispatchProp } from "types";
-import { isPrivateIP } from "utils/ip";
 import Immutable from "immutable";
+import { Methods } from "pages/Route/Methods";
+import { maxIn } from "permission/utils";
+import React from "react";
+import { connect } from "react-redux";
+import { RootState } from "reducers";
+import { TDispatchProp } from "types";
+import { HttpRoute } from "types/route";
+import { isPrivateIP } from "utils/ip";
+import { Targets } from "widgets/Targets";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -161,18 +161,12 @@ class RouteWidgetRaw extends React.PureComponent<Props, State> {
                     <TableHead>
                       <TableRow>
                         <TableCell>Targets</TableCell>
-                        <TableCell>Weight</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {route.get("destinations").map((destination, index) => {
-                        return (
-                          <TableRow key={destination.get("host") + "-" + index}>
-                            <TableCell>{displaySvcNameUnder(destination.get("host"), activeNamespaceName)}</TableCell>
-                            <TableCell>{displayRouteWeightAsPercentage(route, destination.get("weight"))}</TableCell>
-                          </TableRow>
-                        );
-                      })}
+                      <TableCell>
+                        <Targets activeNamespaceName={activeNamespaceName} destinations={route.get("destinations")} />
+                      </TableCell>
                     </TableBody>
                   </Table>
                 </TableContainer>

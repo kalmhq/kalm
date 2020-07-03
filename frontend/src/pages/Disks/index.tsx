@@ -9,7 +9,7 @@ import { DiskContent } from "types/disk";
 import { H4 } from "widgets/Label";
 import { KTable } from "widgets/Table";
 import { setErrorNotificationAction } from "../../actions/notification";
-import { deletePersistentVolumeAction, loadPersistentVolumesAction } from "../../actions/persistentVolume";
+import { deletePersistentVolumeAction } from "../../actions/persistentVolume";
 import { RootState } from "../../reducers";
 import { primaryColor } from "theme/theme";
 import { TDispatchProp } from "../../types";
@@ -97,21 +97,6 @@ export class VolumesRaw extends React.Component<Props, States> {
       dispatch(setErrorNotificationAction());
     }
   };
-
-  componentDidMount() {
-    this.props
-      .dispatch(loadPersistentVolumesAction())
-      .catch((e) => {
-        if (e.isAxiosError) {
-          this.setState({ loadPersistentVolumesError: true });
-        }
-      })
-      .finally(() => {
-        this.setState({
-          loadingPersistentVolumes: false,
-        });
-      });
-  }
 
   getTableData = () => {
     const { persistentVolumes } = this.props;

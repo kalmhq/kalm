@@ -11,18 +11,11 @@ import {
   Tabs,
   Tooltip,
 } from "@material-ui/core";
-import { Link as RouteLink, RouteComponentProps, withRouter } from "react-router-dom";
 import { grey } from "@material-ui/core/colors";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import HelpIcon from "@material-ui/icons/Help";
-import { loadComponentPluginsAction } from "actions/application";
-import { loadNodesAction } from "actions/node";
-import {
-  loadSimpleOptionsAction,
-  loadStatefulSetOptionsAction,
-  loadStorageClassesAction,
-} from "actions/persistentVolume";
+import { Alert } from "@material-ui/lab";
 import clsx from "clsx";
 import { push } from "connected-react-router";
 import { KBoolCheckboxRender } from "forms/Basic/checkbox";
@@ -34,6 +27,7 @@ import { COMPONENT_DEPLOY_BUTTON_ZINDEX } from "layout/Constants";
 import queryString from "query-string";
 import React from "react";
 import { connect } from "react-redux";
+import { Link as RouteLink, RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
 import { InjectedFormProps } from "redux-form";
 import { Field, getFormSyncErrors, getFormValues, reduxForm } from "redux-form/immutable";
@@ -65,7 +59,6 @@ import { RenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
-import { Alert } from "@material-ui/lab";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -98,7 +91,7 @@ const mapStateToProps = (state: RootState) => {
   const syncValidationErrors = getFormSyncErrors(COMPONENT_FORM_ID)(state) as {
     [x in keyof ComponentLikeContent]: any;
   };
-  const nodeLabels = getNodeLabels();
+  const nodeLabels = getNodeLabels(state);
 
   const search = queryString.parse(window.location.search);
   const hash = window.location.hash;
@@ -205,19 +198,6 @@ interface State {}
 
 class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private tabs = tabs;
-
-  public componentDidMount() {
-    const { dispatch, application } = this.props;
-    // load application plugins schema
-    // dispatch(loadApplicationPluginsAction());
-    // load component plugins schema
-    dispatch(loadComponentPluginsAction());
-    // load node labels for node selectors
-    dispatch(loadNodesAction());
-    dispatch(loadStorageClassesAction());
-    dispatch(loadSimpleOptionsAction(application?.get("name")));
-    dispatch(loadStatefulSetOptionsAction(application?.get("name")));
-  }
 
   private renderReplicasOrSchedule = () => {
     const workloadType = this.props.fieldValues.get("workloadType");
@@ -1185,6 +1165,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             color="primary"
             className={classes.deployBtn}
             onClick={handleSubmit}
+            id="add-component-submit-button"
           >
             Deploy
           </CustomizedButton>

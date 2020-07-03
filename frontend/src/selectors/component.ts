@@ -2,9 +2,13 @@ import { APPLICATION_FORM_ID, COMPONENT_FORM_ID } from "forms/formIDs";
 import { formValueSelector } from "redux-form/immutable";
 import { store } from "store";
 import { workloadTypeStatefulSet } from "types/componentTemplate";
+import { RootState } from "reducers";
 
-export const getComponentFormVolumeOptions = (componentName?: string, componentWorkloadType?: string) => {
-  const state = store.getState();
+export const getComponentFormVolumeOptions = (
+  state: RootState,
+  componentName?: string,
+  componentWorkloadType?: string,
+) => {
   const selector = formValueSelector(COMPONENT_FORM_ID);
   componentName = componentName || selector(state, "name");
   componentWorkloadType = componentWorkloadType || selector(state, "workloadType");

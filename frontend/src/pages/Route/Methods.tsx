@@ -1,6 +1,7 @@
 import { Box, Fade, Paper, Popper } from "@material-ui/core";
 import Immutable from "immutable";
-import PopupState, { bindHover, bindPopper, bindPopover } from "material-ui-popup-state";
+import { POPPER_ZINDEX } from "layout/Constants";
+import PopupState, { bindHover, bindPopover, bindPopper } from "material-ui-popup-state";
 import React from "react";
 import { httpMethods } from "types/route";
 import { KChip } from "widgets/Chip";
@@ -19,7 +20,7 @@ export const Methods = ({ methods }: { methods: Immutable.List<string> }) => {
               {...bindPopover(popupState)}
             />
 
-            <Popper {...bindPopper(popupState)} transition>
+            <Popper {...bindPopper(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>
               {({ TransitionProps }) => (
                 <Fade {...TransitionProps} timeout={100}>
                   <Paper>
