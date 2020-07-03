@@ -29,17 +29,18 @@ class ApplicationShowRaw extends React.PureComponent<Props> {
       <>
         <H4>Overview</H4>
         <Button
-          component={(props: any) => <Link {...props} />}
+          component={Link}
           color="primary"
           size="small"
           variant="outlined"
           to={`/applications/${activeNamespaceName}/components/new`}
           id="add-component-button"
+          tutorial-anchor-id="add-component-button"
         >
           Add Component
         </Button>
         <Button
-          component={(props: any) => <Link {...props} />}
+          component={Link}
           color="primary"
           size="small"
           variant="outlined"

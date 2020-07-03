@@ -18,6 +18,7 @@ import { MaterialTableProps } from "material-table";
 import { PodStatus } from "types/application";
 import Immutable from "immutable";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
+import { loadComponentsAction } from "actions/component";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -143,6 +144,7 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
                 await api.deletePod(activeNamespaceName, pod.get("name"));
                 dispatch(setSuccessNotificationAction(`Delete pod ${pod.get("name")} successfully`));
                 // reload
+                dispatch(loadComponentsAction(activeNamespaceName));
                 dispatch(loadApplicationAction(activeNamespaceName));
               } catch (e) {
                 dispatch(setErrorNotificationAction(e.response.data.message));

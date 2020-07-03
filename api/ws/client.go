@@ -18,7 +18,6 @@ type ReqMessage struct {
 
 type ResMessage struct {
 	Namespace string      `json:"namespace"`
-	Component string      `json:"component"` // for pods services... kapp-component Label
 	Kind      string      `json:"kind"`
 	Action    string      `json:"action"` // Add Delete Update
 	Data      interface{} `json:"data"`

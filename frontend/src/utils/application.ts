@@ -1,8 +1,9 @@
-import { ApplicationComponentDetails, ApplicationComponent, ApplicationDetails } from "types/application";
-import { formatDate } from "utils";
+import Immutable from "immutable";
 import { getComponentFormVolumeOptions } from "selectors/component";
+import { ApplicationComponent, ApplicationComponentDetails } from "types/application";
 import { VolumeTypePersistentVolumeClaim, VolumeTypePersistentVolumeClaimNew } from "types/componentTemplate";
 import { RootState } from "reducers";
+import { formatDate } from "utils";
 
 export const componentDetailsToComponent = (componentDetails: ApplicationComponentDetails): ApplicationComponent => {
   return componentDetails.delete("pods").delete("services").delete("metrics") as ApplicationComponent;
@@ -95,16 +96,16 @@ export const correctComponentFormValuesForInit = (
   return component;
 };
 
-export const getApplicationCreatedAtString = (application: ApplicationDetails): string => {
-  const createdAt = getApplicationCreatedAtDate(application);
+export const getApplicationCreatedAtString = (components: Immutable.List<ApplicationComponentDetails>): string => {
+  const createdAt = getApplicationCreatedAtDate(components);
   const createdAtString = createdAt <= new Date(0) ? "-" : formatDate(createdAt);
   return createdAtString;
 };
 
-export const getApplicationCreatedAtDate = (application: ApplicationDetails): Date => {
+export const getApplicationCreatedAtDate = (components: Immutable.List<ApplicationComponentDetails>): Date => {
   let createdAt = new Date(0);
 
-  application.get("components")?.forEach((component) => {
+  components.forEach((component) => {
     const componentCreatedAt = getComponentCreatedAtDate(component);
     if (createdAt <= new Date(0) || (componentCreatedAt > new Date(0) && componentCreatedAt < createdAt)) {
       createdAt = componentCreatedAt;

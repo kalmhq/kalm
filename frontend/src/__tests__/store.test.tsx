@@ -1,4 +1,4 @@
-import { createApplicationAction, createComponentAction, loadApplicationsAction } from "actions/application";
+import { createApplicationAction, loadApplicationsAction } from "actions/application";
 import { loadCertificates } from "actions/certificate";
 import MockStore from "api/mockStore";
 import configureStore from "configureStore";
@@ -23,11 +23,7 @@ import { newEmptyCertificateForm, selfManaged } from "../types/certificate";
 import { getTestFormSyncErrors } from "../utils/testUtils";
 import { ThemeProvider } from "@material-ui/core";
 import { theme } from "theme";
-import { HttpRouteForm, newEmptyRouteForm } from "types/route";
-import { createRoute } from "actions/routes";
-import { RouteForm } from "forms/Route";
-import { loadServicesAction } from "actions/service";
-import Immutable from "immutable";
+import { createComponentAction } from "actions/component";
 
 configure({ adapter: new Adapter() });
 
@@ -152,11 +148,10 @@ test("add component", async (done) => {
     try {
       const testApplicationComponent = store
         .getState()
-        .get("applications")
-        .get("applications")
-        .get(0)
-        ?.get("components")
-        .find((c) => c.get("name") === componentName);
+        .get("components")
+        .get("components")
+        .get(testApplication!.get("name"))
+        ?.get(0);
       expect(!!testApplicationComponent).toBeTruthy();
       done();
     } catch (error) {

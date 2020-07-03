@@ -6,7 +6,7 @@ export const tutorialConfigs = [
     name: "Basic",
     items: [
       {
-        name: "Deployment an application",
+        name: "Deploy an application",
         factory: BasicApplicationCreationTutorialFactory,
       },
       {
@@ -22,22 +22,22 @@ export const tutorialConfigs = [
         name: "Configure https certs",
         factory: BasicApplicationCreationTutorialFactory,
       },
-      {
-        name: "Connect to private image registry",
-        factory: BasicApplicationCreationTutorialFactory,
-      },
-      {
-        name: "Use disks",
-        factory: BasicApplicationCreationTutorialFactory,
-      },
-      {
-        name: "Integration with CI pipeline",
-        factory: BasicApplicationCreationTutorialFactory,
-      },
-      {
-        name: "I'm an kubernetes expert",
-        factory: BasicApplicationCreationTutorialFactory,
-      },
+      // {
+      //   name: "Connect to private image registry",
+      //   factory: BasicApplicationCreationTutorialFactory,
+      // },
+      // {
+      //   name: "Use disks",
+      //   factory: BasicApplicationCreationTutorialFactory,
+      // },
+      // {
+      //   name: "Integration with CI pipeline",
+      //   factory: BasicApplicationCreationTutorialFactory,
+      // },
+      // {
+      //   name: "I'm an kubernetes expert",
+      //   factory: BasicApplicationCreationTutorialFactory,
+      // },
     ],
   },
 ];

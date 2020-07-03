@@ -23,6 +23,7 @@ const mapStateToProps = (
     activeNamespaceName,
     activeNamespace,
     applications,
+    components: state.get("components").get("components").get(activeNamespaceName),
     isNamespaceLoading: applicationsState.get("isListLoading"),
     isNamespaceFirstLoaded: applicationsState.get("isListFirstLoaded"),
   };

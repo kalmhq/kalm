@@ -1,5 +1,5 @@
 import { Box, Button, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { deleteComponentAction } from "actions/application";
+import { deleteComponentAction } from "actions/component";
 import { blinkTopProgressAction } from "actions/settings";
 import { Expansion, ExpansionProps } from "forms/Route/expansion";
 import { ComponentBasicInfo } from "pages/Components/BasicInfo";
@@ -69,7 +69,7 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
       <Box display="flex" flexDirection="column" width={1}>
         <Box pb={2} pt={2}>
           <Button
-            component={(props: any) => <Link {...props} />}
+            component={Link}
             style={{ marginRight: 20 }}
             color="primary"
             size="small"
@@ -80,7 +80,7 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
           </Button>
 
           <Button
-            component={(props: any) => <Link {...props} />}
+            component={Link}
             style={{ marginRight: 20 }}
             color="primary"
             size="small"

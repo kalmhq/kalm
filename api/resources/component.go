@@ -2,12 +2,13 @@ package resources
 
 import (
 	"encoding/json"
-
+	"fmt"
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	coreV1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"strings"
 )
 
 type ComponentListChannel struct {
@@ -44,10 +45,11 @@ type Component struct {
 }
 
 type ComponentDetails struct {
-	*Component `json:",inline"`
-	Metrics    MetricHistories `json:"metrics"`
-	Services   []ServiceStatus `json:"services"`
-	Pods       []PodStatus     `json:"pods"`
+	*Component  `json:",inline"`
+	Metrics     MetricHistories `json:"metrics"`
+	IstioMetric IstioMetric     `json:"istioMetric"`
+	Services    []ServiceStatus `json:"services"`
+	Pods        []PodStatus     `json:"pods"`
 }
 
 func labelsBelongsToComponent(name string) metaV1.ListOptions {
@@ -56,16 +58,17 @@ func labelsBelongsToComponent(name string) metaV1.ListOptions {
 
 func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component, resources *Resources) (details *ComponentDetails, err error) {
 	if resources == nil {
-		ns := client.InNamespace(component.Namespace)
+		ns := component.Namespace
+		nsListOption := client.InNamespace(ns)
+
 		belongsToComponent := client.MatchingLabels{"kapp-component": component.Name}
 
 		resourceChannels := &ResourceChannels{
-			PodList: builder.GetPodListChannel(
-				ns, belongsToComponent,
-			),
-			EventList:                  builder.GetEventListChannel(ns),
-			ServiceList:                builder.GetServiceListChannel(ns, belongsToComponent),
-			ComponentPluginBindingList: builder.GetComponentPluginBindingListChannel(ns, belongsToComponent),
+			IstioMetricList:            builder.GetIstioMetricsListChannel(ns),
+			PodList:                    builder.GetPodListChannel(nsListOption, belongsToComponent),
+			EventList:                  builder.GetEventListChannel(nsListOption),
+			ServiceList:                builder.GetServiceListChannel(nsListOption, belongsToComponent),
+			ComponentPluginBindingList: builder.GetComponentPluginBindingListChannel(nsListOption, belongsToComponent),
 		}
 
 		resources, err = resourceChannels.ToResources()
@@ -120,6 +123,18 @@ func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component, res
 		}
 	}
 
+	istioMetricRst := IstioMetric{}
+	for svcName, metric := range resources.IstioMetricList {
+		ownerCompName, ownerNsName := getComponentAndNSNameFromSvcName(svcName)
+		if (ownerCompName != component.Name && ownerCompName != component.Name+"-headless") ||
+			ownerNsName != component.Namespace {
+			continue
+		}
+
+		istioMetricRst = metric
+		break
+	}
+
 	details = &ComponentDetails{
 		Component: &Component{
 			Name:          component.Name,
@@ -131,10 +146,23 @@ func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component, res
 			CPU:    componentMetric.CPU,
 			Memory: componentMetric.Memory,
 		},
-		Pods: podsStatus,
+		IstioMetric: istioMetricRst,
+		Pods:        podsStatus,
 	}
 
 	return details, nil
+}
+
+func getComponentAndNSNameFromSvcName(svcName string) (string, string) {
+	parts := strings.Split(svcName, ".")
+	if len(parts) < 2 {
+		return "", ""
+	}
+
+	compName := parts[0]
+	nsName := parts[1]
+
+	return compName, nsName
 }
 
 func (builder *Builder) BuildComponentDetailsResponse(components *v1alpha1.ComponentList) ([]ComponentDetails, error) {
@@ -144,19 +172,26 @@ func (builder *Builder) BuildComponentDetailsResponse(components *v1alpha1.Compo
 	}
 
 	var res []ComponentDetails
-	ns := client.InNamespace(components.Items[0].Namespace)
+
+	ns := components.Items[0].Namespace
+	nsListOption := client.InNamespace(ns)
 
 	resourceChannels := &ResourceChannels{
-		PodList:                    builder.GetPodListChannel(ns),
-		EventList:                  builder.GetEventListChannel(ns),
-		ServiceList:                builder.GetServiceListChannel(ns),
-		ComponentPluginBindingList: builder.GetComponentPluginBindingListChannel(ns),
+		IstioMetricList:            builder.GetIstioMetricsListChannel(ns),
+		PodList:                    builder.GetPodListChannel(nsListOption),
+		EventList:                  builder.GetEventListChannel(nsListOption),
+		ServiceList:                builder.GetServiceListChannel(nsListOption),
+		ComponentPluginBindingList: builder.GetComponentPluginBindingListChannel(nsListOption),
 	}
 
 	resources, err := resourceChannels.ToResources()
-
 	if err != nil {
 		return nil, err
+	}
+
+	fmt.Println("istio metrics:", resources.IstioMetricList)
+	for _, one := range resources.IstioMetricList {
+		fmt.Printf("%+v", one.HTTP)
 	}
 
 	for i := range components.Items {

@@ -1,4 +1,4 @@
-import { Box, createStyles, Grid, Theme, WithStyles, withStyles } from "@material-ui/core";
+import { Box, createStyles, Theme, WithStyles, withStyles } from "@material-ui/core";
 import { BasePage } from "pages/BasePage";
 import React from "react";
 import { connect } from "react-redux";
@@ -14,7 +14,7 @@ import {
   loadCertificates,
   setEditCertificateModal,
 } from "actions/certificate";
-import { customSearchForImmutable } from "../../utils/tableSearch";
+import { customSearchForImmutable } from "utils/tableSearch";
 import { Certificate } from "types/certificate";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
@@ -24,7 +24,7 @@ import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { DeleteIcon, EditIcon } from "widgets/Icon";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { CertificateDataWrapper, WithCertificatesDataProps } from "./DataWrapper";
-import { blinkTopProgressAction } from "../../actions/settings";
+import { blinkTopProgressAction } from "actions/settings";
 import { KTable } from "widgets/Table";
 
 const styles = (theme: Theme) =>
@@ -86,37 +86,33 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   private renderMoreActions = (rowData: RowData) => {
     const { dispatch } = this.props;
     return (
-      <Grid container spacing={2}>
-        <Grid item md={6}>
-          {rowData.get("isSelfManaged") && (
-            <IconButtonWithTooltip
-              tooltipTitle="Edit"
-              aria-label="edit"
-              size="small"
-              onClick={() => {
-                blinkTopProgressAction();
-                dispatch(openDialogAction(addCertificateDialogId));
-                dispatch(setEditCertificateModal(rowData));
-              }}
-            >
-              <EditIcon />
-            </IconButtonWithTooltip>
-          )}
-        </Grid>
-        <Grid item md={6}>
+      <>
+        {rowData.get("isSelfManaged") && (
           <IconButtonWithTooltip
-            tooltipTitle="Delete"
-            aria-label="delete"
+            tooltipTitle="Edit"
+            aria-label="edit"
             size="small"
             onClick={() => {
               blinkTopProgressAction();
-              this.showDeleteConfirmDialog(rowData);
+              dispatch(openDialogAction(addCertificateDialogId));
+              dispatch(setEditCertificateModal(rowData));
             }}
           >
-            <DeleteIcon />
+            <EditIcon />
           </IconButtonWithTooltip>
-        </Grid>
-      </Grid>
+        )}
+        <IconButtonWithTooltip
+          tooltipTitle="Delete"
+          aria-label="delete"
+          size="small"
+          onClick={() => {
+            blinkTopProgressAction();
+            this.showDeleteConfirmDialog(rowData);
+          }}
+        >
+          <DeleteIcon />
+        </IconButtonWithTooltip>
+      </>
     );
   };
 
@@ -188,11 +184,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderType = (rowData: RowData) => {
-    return rowData.get("isSelfManaged") ? "SELF UPLOADED" : "KAPP ISSUED";
-  };
-
-  private renderInUse = (rowData: RowData) => {
-    return "Yes";
+    return rowData.get("isSelfManaged") ? "UPLOADED" : "MANAGED";
   };
 
   private getColumns() {
@@ -222,12 +214,6 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
         field: "isSelfManaged",
         sorting: false,
         render: this.renderType,
-      },
-      {
-        title: "In Use?",
-        field: "inUse",
-        sorting: false,
-        render: this.renderInUse,
       },
       {
         title: "Actions",

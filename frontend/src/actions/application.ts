@@ -5,14 +5,12 @@ import { SubmissionError } from "redux-form";
 import { ThunkResult } from "../types";
 import {
   Application,
-  ApplicationComponent,
   ApplicationComponentDetails,
   ApplicationDetails,
   CREATE_APPLICATION,
-  CREATE_COMPONENT,
   DELETE_APPLICATION,
-  DELETE_COMPONENT,
   DUPLICATE_APPLICATION,
+  LOAD_ALL_NAMESAPCES_COMPONETS,
   LOAD_APPLICATIONS_FAILED,
   LOAD_APPLICATIONS_FULFILLED,
   LOAD_APPLICATIONS_PENDING,
@@ -25,93 +23,10 @@ import {
   SET_IS_SUBMITTING_APPLICATION,
   SET_IS_SUBMITTING_APPLICATION_COMPONENT,
   UPDATE_APPLICATION,
-  UPDATE_COMPONENT,
 } from "../types/application";
 import { resErrorsToSubmitErrors } from "../utils";
-import { correctComponentFormValuesForSubmit } from "../utils/application";
 import { setCurrentNamespaceAction } from "./namespaces";
 import { setSuccessNotificationAction } from "./notification";
-
-export const createComponentAction = (
-  componentValues: ApplicationComponent,
-  applicationName?: string,
-): ThunkResult<Promise<void>> => {
-  return async (dispatch, getState) => {
-    if (!applicationName) {
-      applicationName = getState().get("namespaces").get("active");
-    }
-    dispatch(setIsSubmittingApplicationComponent(true));
-
-    let component: ApplicationComponentDetails;
-    try {
-      component = await api.createKappApplicationComponent(
-        applicationName,
-        correctComponentFormValuesForSubmit(getState(), componentValues),
-      );
-    } catch (e) {
-      dispatch(setIsSubmittingApplicationComponent(false));
-      throw e;
-    }
-
-    dispatch(setIsSubmittingApplicationComponent(false));
-
-    // dispatch(loadApplicationAction(applicationName));
-    await dispatch({
-      type: CREATE_COMPONENT,
-      payload: { applicationName, component },
-    });
-    dispatch(setSuccessNotificationAction("Create component successfully"));
-  };
-};
-
-export const updateComponentAction = (
-  componentValues: ApplicationComponent,
-  applicationName?: string,
-): ThunkResult<Promise<void>> => {
-  return async (dispatch, getState) => {
-    if (!applicationName) {
-      applicationName = getState().get("namespaces").get("active");
-    }
-
-    dispatch(setIsSubmittingApplicationComponent(true));
-
-    let component: ApplicationComponentDetails;
-    try {
-      component = await api.updateKappApplicationComponent(
-        applicationName,
-        correctComponentFormValuesForSubmit(getState(), componentValues),
-      );
-    } catch (e) {
-      dispatch(setIsSubmittingApplicationComponent(false));
-      throw e;
-    }
-    dispatch(setIsSubmittingApplicationComponent(false));
-
-    // dispatch(loadApplicationAction(applicationName));
-    await dispatch({
-      type: UPDATE_COMPONENT,
-      payload: { applicationName, component },
-    });
-    dispatch(setSuccessNotificationAction("Update component successfully"));
-  };
-};
-
-export const deleteComponentAction = (componentName: string, applicationName?: string): ThunkResult<Promise<void>> => {
-  return async (dispatch, getState) => {
-    if (!applicationName) {
-      applicationName = getState().get("namespaces").get("active");
-    }
-
-    await api.deleteKappApplicationComponent(applicationName, componentName);
-
-    // dispatch(loadApplicationAction(applicationName));
-    dispatch({
-      type: DELETE_COMPONENT,
-      payload: { applicationName, componentName },
-    });
-    dispatch(setSuccessNotificationAction("Delete component successfully"));
-  };
-};
 
 export const createApplicationAction = (applicationValues: Application): ThunkResult<Promise<Application>> => {
   return async (dispatch) => {
@@ -221,8 +136,6 @@ export const loadApplicationAction = (name: string): ThunkResult<Promise<void>> 
     let application: ApplicationDetails;
     try {
       application = await api.getKappApplication(name);
-      const applicationComponents = await api.getKappApplicationComponentList(application.get("name"));
-      application = application.set("components", applicationComponents);
     } catch (e) {
       dispatch({ type: LOAD_APPLICATION_FAILED });
       throw e;
@@ -242,19 +155,18 @@ export const loadApplicationsAction = (): ThunkResult<Promise<Immutable.List<App
     dispatch({ type: LOAD_APPLICATIONS_PENDING });
 
     let applicationList: Immutable.List<ApplicationDetails>;
+    // keep consistency, in application list page need pods info in components
+    let allNamespacesComponents: Immutable.Map<string, Immutable.List<ApplicationComponentDetails>> = Immutable.Map({});
     try {
       applicationList = await api.getKappApplicationList();
 
-      applicationList = Immutable.List(
-        await Promise.all(
-          applicationList
-            .filter((app) => app.get("status") === "Active")
-            .map(async (application) => {
-              const components = await api.getKappApplicationComponentList(application.get("name"));
-              application = application.set("components", components);
-              return application;
-            }),
-        ),
+      await Promise.all(
+        applicationList
+          .filter((app) => app.get("status") === "Active")
+          .map(async (app) => {
+            const components = await api.getKappApplicationComponentList(app.get("name"));
+            allNamespacesComponents = allNamespacesComponents.set(app.get("name"), components);
+          }),
       );
     } catch (e) {
       dispatch({ type: LOAD_APPLICATIONS_FAILED });
@@ -266,6 +178,13 @@ export const loadApplicationsAction = (): ThunkResult<Promise<Immutable.List<App
     if (!activeNamespace && applicationList.size > 0 && firstNamespace != null) {
       dispatch(setCurrentNamespaceAction(firstNamespace?.get("name"), false));
     }
+
+    dispatch({
+      type: LOAD_ALL_NAMESAPCES_COMPONETS,
+      payload: {
+        components: allNamespacesComponents,
+      },
+    });
 
     dispatch({
       type: LOAD_APPLICATIONS_FULFILLED,
