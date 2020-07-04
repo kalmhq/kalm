@@ -9,7 +9,6 @@ require (
 	github.com/dlclark/regexp2 v1.2.0 // indirect
 	github.com/dop251/goja v0.0.0-20200414142002-77e84ffb8c65
 	github.com/elastic/cloud-on-k8s v0.0.0-20200204083752-bcb7468838a8
-	github.com/go-bindata/go-bindata v3.1.2+incompatible // indirect
 	github.com/go-logr/logr v0.1.0
 	github.com/go-openapi/validate v0.19.5
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect

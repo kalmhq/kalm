@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	coreV1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -90,4 +91,17 @@ func (suite *HttpRouteControllerSuite) TestBasicHttpRoute() {
 
 func TestHttpRouteControllerSuite(t *testing.T) {
 	suite.Run(t, new(HttpRouteControllerSuite))
+}
+
+func TestAdjustWeightToSumTo100(t *testing.T) {
+	wSlice := [][]int{
+		{1, 1, 6},// sum([13 13 75]) == 101
+		{1, 1, 7},
+		{2, 2, 7},
+	}
+
+	for _, w := range wSlice {
+		rst := adjustWeightToSumTo100(w)
+		assert.True(t, 100 == sum(rst))
+	}
 }
