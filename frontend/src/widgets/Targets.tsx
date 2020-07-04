@@ -30,9 +30,9 @@ class TargetsRaw extends React.PureComponent<Props> {
       outputs[`point_${index}`] = {
         output: "right",
         input: "left",
-        width: 6,
-        outputColor: "#5C6BC0",
-        inputColor: "#5C6BC0",
+        width: 3,
+        outputColor: "#3949ab",
+        inputColor: "#AACAF1",
       };
     });
 
@@ -45,18 +45,19 @@ class TargetsRaw extends React.PureComponent<Props> {
           overflow: "hidden",
           backgroundColor: "rgba(0,0,0,0)",
         }}
+        arrowEnd={true}
       >
         <Flowpoint
           variant="filled"
-          style={{ backgroundColor: "#5C6BC0", border: "1px #5C6BC0" }}
+          style={{ backgroundColor: "#3949ab", border: "1px #3949ab" }}
           startPosition={{ x: 0, y: spaceHeight / 2 - leftPoinitHeight / 2 }}
           dragX={false}
           dragY={false}
           key="point_a"
           outputs={outputs}
-          width={36}
+          width={12}
           height={leftPoinitHeight}
-        />
+        ></Flowpoint>
 
         {destinations.map((x, index) => {
           return (
