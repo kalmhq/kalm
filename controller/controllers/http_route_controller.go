@@ -468,18 +468,72 @@ func toHttpRouteDestination(destination corev1alpha1.HttpRouteDestination, weigh
 
 func (r *HttpRouteReconcilerTask) BuildDestinations(route *corev1alpha1.HttpRoute) []*istioNetworkingV1Beta1.HTTPRouteDestination {
 	res := make([]*istioNetworkingV1Beta1.HTTPRouteDestination, 0)
-	weightSum := 0
 
-	for _, destination := range route.Spec.Destinations {
-		weightSum = weightSum + destination.Weight
-	}
-
-	for _, destination := range route.Spec.Destinations {
-		weight := int32(math.Floor(float64(destination.Weight)/float64(weightSum)*100 + 0.5))
+	weights := adjustDestinationWeightToSumTo100(route.Spec.Destinations)
+	for i, destination := range route.Spec.Destinations {
+		weight := weights[i]
 		res = append(res, toHttpRouteDestination(destination, weight, route.Namespace))
 	}
 
 	return res
+}
+
+func adjustDestinationWeightToSumTo100(destinations []corev1alpha1.HttpRouteDestination) []int32 {
+	var originWeights []int
+	for _, destination := range destinations {
+		originWeights = append(originWeights, destination.Weight)
+	}
+
+	return adjustWeightToSumTo100(originWeights)
+}
+
+func adjustWeightToSumTo100(originWeights []int) []int32 {
+	var rst []int32
+
+	var weightSum int
+	for _, w := range originWeights {
+		weightSum += w
+	}
+
+	for _, originWeight := range originWeights {
+		weight := int32(math.Floor(float64(originWeight)/float64(weightSum)*100 + 0.5))
+		rst = append(rst, weight)
+	}
+
+	total := sum(rst)
+	if total != 100 {
+		diff := 100 - total
+
+		//fmt.Printf("adjust, %d + %d, %v", total, diff, rst)
+		adjustBiggestWeight(rst, diff)
+	}
+
+	return rst
+}
+
+func adjustBiggestWeight(rst []int32, diff int32) {
+	if len(rst) <= 0 {
+		return
+	}
+
+	var maxIdx int
+	for i := 0; i < len(rst); i++ {
+		if rst[i] <= rst[maxIdx] {
+			continue
+		}
+
+		maxIdx = i
+	}
+
+	rst[maxIdx] += diff
+}
+
+func sum(nums []int32) int32 {
+	var rst int32
+	for _, num := range nums {
+		rst += num
+	}
+	return rst
 }
 
 // HttpRouteReconciler reconciles a HttpRoute object
