@@ -44,6 +44,7 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
 
         // TODO should we ignore the system namespaces??
         return (
+          ns !== "kalm-system" &&
           ns !== "kapp-system" &&
           ns !== "kube-system" &&
           ns !== "istio-system" &&

@@ -177,7 +177,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
             </IconButton>
             <FlexRowItemCenterBox>
               <Link className={classes.barTitle} to="/" onClick={() => blinkTopProgressAction()}>
-                KApp Dashboard
+                Kalm Dashboard
               </Link>
             </FlexRowItemCenterBox>
           </div>

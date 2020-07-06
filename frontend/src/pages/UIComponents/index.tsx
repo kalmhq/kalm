@@ -19,8 +19,8 @@ import {
   ErrorIcon,
   FilterListIcon,
   HelpIcon,
-  KappConsoleIcon,
-  KappLogIcon,
+  KalmConsoleIcon,
+  KalmLogIcon
 } from "widgets/Icon";
 
 const mapStateToProps = (state: RootState) => {
@@ -153,8 +153,8 @@ export class UIComponentsRaw extends React.Component<Props, States> {
               <CheckCircleIcon />
               <ErrorIcon />
               <ArrowBackIcon />
-              <KappConsoleIcon />
-              <KappLogIcon />
+              <KalmConsoleIcon />
+              <KalmLogIcon />
             </RowItemBox>
           </Box>
         </Box>

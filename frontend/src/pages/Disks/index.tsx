@@ -179,7 +179,7 @@ export class VolumesRaw extends React.Component<Props, States> {
           {loadPersistentVolumesError ? (
             <Alert severity="error">
               <Box>
-                Kapp fails to load persistentVolumes from current cluster with endpoint <strong>{K8sApiPrefix}</strong>.
+                Kalm fails to load persistentVolumes from current cluster with endpoint <strong>{K8sApiPrefix}</strong>.
                 Please check your connection.
               </Box>
             </Alert>
