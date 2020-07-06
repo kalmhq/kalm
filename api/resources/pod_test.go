@@ -45,7 +45,7 @@ func TestUnmarshalPromResp(t *testing.T) {
         ]
     }
 ]`
-	var rsts []PromResult
+	var rsts []PromMatrixResult
 	err := json.Unmarshal([]byte(resp), &rsts)
 	assert.Nil(t, err)
 }

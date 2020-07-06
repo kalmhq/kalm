@@ -4,200 +4,206 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	coreV1 "k8s.io/api/core/v1"
 	"net/http"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	"net/url"
+	"os"
 	"strconv"
+	"time"
 )
 
+var istioPrometheusAPIHOST string
+
+func init() {
+	if os.Getenv("KALM_ISTIO_PROMETHEUS_API_HOST") != "" {
+		istioPrometheusAPIHOST = os.Getenv("KALM_ISTIO_PROMETHEUS_API_HOST")
+	} else {
+		istioPrometheusAPIHOST = "prometheus.istio-system:9090"
+	}
+}
+
 type IstioMetricListChannel struct {
-	List  chan map[string]IstioMetric
+	// svc -> histories
+	List  chan map[string]*IstioMetricHistories
 	Error chan error
 }
 
-// https://istio.io/latest/docs/reference/config/metrics/
-type IstioMetric struct {
-	HTTP *HTTPMetric `json:"http,omitempty"`
-	TCP  *TCPMetric  `json:"tcp,omitempty"`
+//type MetricHistory []MetricPoint
+
+type IstioMetricHistories struct {
+	//HTTP
+	RequestsTotal    MetricHistory `json:"requestsTotal"`
+	RespCode200Count MetricHistory `json:"respCode200Count"`
+	RespCode400Count MetricHistory `json:"respCode400Count"`
+	RespCode500Count MetricHistory `json:"respCode500Count"`
+
+	//TCP
+	SentBytesTotal     MetricHistory `json:"sentBytesTotal"`
+	ReceivedBytesTotal MetricHistory `json:"receivedBytesTotal"`
 }
 
-func mergeIstioMetric(a, b IstioMetric) (rst IstioMetric) {
-
-	httpReqTotal := 0
-	var aMap, bMap map[string]int
-	if a.HTTP != nil {
-		httpReqTotal += a.HTTP.RequestsTotal
-		aMap = a.HTTP.RespCodeCountMap
-	}
-	if b.HTTP != nil {
-		httpReqTotal += b.HTTP.RequestsTotal
-		bMap = b.HTTP.RespCodeCountMap
+func mergeIstioMetricHistories(a, b *IstioMetricHistories) *IstioMetricHistories {
+	if a == nil {
+		return b
+	} else if b == nil {
+		return a
 	}
 
-	if a.HTTP != nil || b.HTTP != nil {
-		rst.HTTP = &HTTPMetric{
-			RequestsTotal:    httpReqTotal,
-			RespCodeCountMap: mergeMap(aMap, bMap),
-		}
-	}
+	rst := IstioMetricHistories{}
 
-	//tcp
-	var rec, sent int
-	var recRate, sentRate float32
+	rst.RequestsTotal = mergeMetricHistories(a.RequestsTotal, b.RequestsTotal)
+	rst.RespCode200Count = mergeMetricHistories(a.RespCode200Count, b.RespCode200Count)
+	rst.RespCode400Count = mergeMetricHistories(a.RespCode400Count, b.RespCode400Count)
+	rst.RespCode500Count = mergeMetricHistories(a.RespCode500Count, b.RespCode500Count)
+	rst.ReceivedBytesTotal = mergeMetricHistories(a.ReceivedBytesTotal, b.ReceivedBytesTotal)
+	rst.SentBytesTotal = mergeMetricHistories(a.SentBytesTotal, b.SentBytesTotal)
 
-	if a.TCP != nil {
-		rec += a.TCP.ReceivedBytesTotal
-		sent += a.TCP.SentBytesTotal
-		recRate += a.TCP.ReceivedBytesPerSecond
-		sentRate += a.TCP.SentBytesPerSecond
-	}
-	if b.TCP != nil {
-		rec += b.TCP.ReceivedBytesTotal
-		sent += b.TCP.SentBytesTotal
-		recRate += b.TCP.ReceivedBytesPerSecond
-		sentRate += b.TCP.SentBytesPerSecond
-	}
-
-	if a.TCP != nil || b.TCP != nil {
-		rst.TCP = &TCPMetric{
-			ReceivedBytesTotal:     rec,
-			SentBytesTotal:         sent,
-			ReceivedBytesPerSecond: recRate,
-			SentBytesPerSecond:     sentRate,
-		}
-	}
-
-	return rst
+	return &rst
 }
 
-func mergeMap(a, b map[string]int) map[string]int {
-	rst := make(map[string]int)
-
-	for k, v := range a {
-		rst[k] += v
-	}
-	for k, v := range b {
-		rst[k] += v
-	}
-
-	return rst
+func mergeMetricHistories(a, b MetricHistory) MetricHistory {
+	//todo
 }
 
-func mergeIstioMetricMap(a, b map[string]IstioMetric) map[string]IstioMetric {
-	fmt.Println("merge map:", a, b)
-	rst := make(map[string]IstioMetric)
-
-	for svc, v := range a {
-		// clone metric in a
-		rst[svc] = mergeIstioMetric(IstioMetric{}, v)
-	}
-
-	for svc, v := range b {
-		rst[svc] = mergeIstioMetric(rst[svc], v)
-	}
-
-	fmt.Println("merge map rst:", rst)
-	return rst
-}
-
-// original data:
+//func mergeMap(a, b map[string]int) map[string]int {
+//	rst := make(map[string]int)
 //
-// istio_requests_total{
-//   destination_service="kapp-dashboard.kapp-system.svc.cluster.local"
-//   destination_service_name="kapp-dashboard.kapp-system.svc.cluster.local"
-//   ...
-//   response_code="0"
-//   ...
-// }
+//	for k, v := range a {
+//		rst[k] += v
+//	}
+//	for k, v := range b {
+//		rst[k] += v
+//	}
 //
-// istio_requests_total{destination_service="kapp-dashboard.kapp-system.svc.cluster.local", response_code="200"}
-type HTTPMetric struct {
-	RequestsTotal    int            `json:"requestsTotal"`
-	RespCodeCountMap map[string]int `json:"respCodeCountMap"`
-}
-
-// istio_tcp_sent_bytes_total{destination_service="zk-headless.kapp-zk.svc.cluster.local", instance="10.24.1.120:15090"}
-type TCPMetric struct {
-	SentBytesTotal         int     `json:"sentBytesTotal"`
-	ReceivedBytesTotal     int     `json:"receivedBytesTotal"`
-	SentBytesPerSecond     float32 `json:"sentBytesPerSecond"`
-	ReceivedBytesPerSecond float32 `json:"receivedBytesPerSecond"`
-}
+//	return rst
+//}
 
 func (builder *Builder) GetIstioMetricsListChannel(ns string) *IstioMetricListChannel {
 	channel := IstioMetricListChannel{
-		List:  make(chan map[string]IstioMetric, 1),
+		List:  make(chan map[string]*IstioMetricHistories, 1),
 		Error: make(chan error, 1),
 	}
 
 	go func() {
-		httpSvc2MetricMap, err1 := getIstioHTTPMetricMap(ns)
-		tcpSvc2MetricMap, err2 := getIstioTCPMetricMap(ns)
+		httpSvc2MetricMap, err := getIstioMetricHistoriesMap(ns)
 
-		channel.List <- mergeIstioMetricMap(httpSvc2MetricMap, tcpSvc2MetricMap)
-		channel.Error <- concatErr(err1, err2)
+		channel.List <- httpSvc2MetricMap
+		channel.Error <- err
 	}()
 
 	return &channel
 }
 
-func concatErr(errSlice ...error) error {
-	var rstErr error
-	for _, err := range errSlice {
-		if err == nil {
-			continue
-		}
+//func concatErr(errSlice ...error) error {
+//	var rstErr error
+//	for _, err := range errSlice {
+//		if err == nil {
+//			continue
+//		}
+//
+//		rstErr = fmt.Errorf("%s; %s", rstErr, err)
+//	}
+//
+//	return rstErr
+//}
 
-		rstErr = fmt.Errorf("%s; %s", rstErr, err)
-	}
-
-	return rstErr
-}
-
-//var hardCodedIstioPrometheusAPIHost = "localhost:9090"
-
-var hardCodedIstioPrometheusAPIHost = "prometheus.istio-system:9090"
-
-func getIstioHTTPMetricMap(ns string) (map[string]IstioMetric, error) {
+// map of {svc -> istioMetricHistories}
+func getIstioMetricHistoriesMap(ns string) (map[string]*IstioMetricHistories, error) {
 	svcName := fmt.Sprintf(`.*.%s.svc.cluster.local`, ns)
-	query := fmt.Sprintf(`istio_requests_total{destination_service=~"%s"}`, svcName)
 
-	api := fmt.Sprintf("http://%s/api/v1/query?query=%s", hardCodedIstioPrometheusAPIHost, query)
+	queryTotal := fmt.Sprintf(`(sum by (destination_service) (istio_requests_total{destination_service=~"%s"})) `, svcName)
+	resp200 := fmt.Sprintf(`(sum by (destination_service) (istio_requests_total{destination_service=~"%s", response_code="200"})) `, svcName)
+	resp400 := fmt.Sprintf(`(sum by (destination_service) (istio_requests_total{destination_service=~"%s", response_code="400"})) `, svcName)
+	resp500 := fmt.Sprintf(`(sum by (destination_service) (istio_requests_total{destination_service=~"%s", response_code="500"})) `, svcName)
 
-	promResp, err := queryPrometheusAPI(api)
-	if err != nil {
-		return nil, err
+	queryMap := map[string]string{
+		"requestTotal": queryTotal,
+		"resp200":      resp200,
+		"resp400":      resp400,
+		"resp500":      resp500,
+		//todo tcp
 	}
 
-	// aggregate rsts by svc
-	svc2MetricMap := make(map[string]IstioMetric)
-	for _, rst := range promResp.Data.Result {
-		val, ok := parseInterfaceAsInt(rst.Value[1])
-		if !ok {
-			continue
+	now := time.Now().Unix()
+	startAs30MinAgo := now - 30*60
+	stepAs1Min := 60
+
+	svc2MetricHistoriesMap := make(map[string]*IstioMetricHistories)
+
+	for k, query := range queryMap {
+
+		api := fmt.Sprintf("http://%s/api/v1/query_range?query=%s&start=%d&end=%d&step=%d",
+			istioPrometheusAPIHOST,
+			url.QueryEscape(query),
+			startAs30MinAgo,
+			now,
+			stepAs1Min,
+		)
+
+		promResp, err := queryPrometheusAPI(api)
+		if err != nil {
+			fmt.Printf("err when queryPrometheusAPI(%s), err: %s, ignroed\n", api, err)
+			return nil, err
 		}
 
-		svc, exist1 := rst.Metric["destination_service"]
-		respCode, exist2 := rst.Metric["response_code"]
-		if !exist1 || !exist2 {
-			continue
-		}
+		// aggregate rsts by svc
+		for _, rst := range promResp.Data.Result {
 
-		if _, exist := svc2MetricMap[svc]; !exist {
-			svc2MetricMap[svc] = IstioMetric{
-				HTTP: &HTTPMetric{
-					RequestsTotal:    0,
-					RespCodeCountMap: map[string]int{},
-				},
+			fmt.Println(1)
+			svc, exist := rst.Metric["destination_service"]
+			if !exist {
+				continue
+			}
+
+			fmt.Println(1)
+			metricPoints := trans2MetricPoints(rst.Values)
+			fmt.Println(1, rst.Values, metricPoints)
+
+			if _, exist := svc2MetricHistoriesMap[svc]; !exist {
+				svc2MetricHistoriesMap[svc] = &IstioMetricHistories{}
+			}
+
+			switch k {
+			case "requestTotal":
+				svc2MetricHistoriesMap[svc].RequestsTotal = metricPoints
+			case "resp200":
+				svc2MetricHistoriesMap[svc].RespCode200Count = metricPoints
+			case "resp400":
+				svc2MetricHistoriesMap[svc].RespCode400Count = metricPoints
+			case "resp500":
+				svc2MetricHistoriesMap[svc].RespCode500Count = metricPoints
+				//todo tcp
+			default:
+				fmt.Println("unknown query key:", k)
 			}
 		}
-
-		httpMetric := svc2MetricMap[svc].HTTP
-		httpMetric.RequestsTotal += val
-		httpMetric.RespCodeCountMap[respCode] += val
 	}
 
-	return svc2MetricMap, nil
+	for k, v := range svc2MetricHistoriesMap {
+		fmt.Printf("svc2MetricHistoriesMap, k: %s, v: %+v\n", k, v)
+	}
+
+	return svc2MetricHistoriesMap, nil
+}
+
+func trans2MetricPoints(value [][]interface{}) (rst []MetricPoint) {
+	for _, v := range value {
+		if len(v) != 2 {
+			continue
+		}
+
+		t, ok1 := parseInterfaceAsTime(v[0])
+		n, ok2 := parseInterfaceAsInt(v[1])
+		if !ok1 || !ok2 {
+			continue
+		}
+
+		rst = append(rst, MetricPoint{
+			Timestamp: t,
+			Value:     uint64(n),
+		})
+	}
+
+	return
 }
 
 func parseInterfaceAsInt(i interface{}) (int, bool) {
@@ -214,102 +220,113 @@ func parseInterfaceAsInt(i interface{}) (int, bool) {
 	return val, true
 }
 
-func getIstioTCPMetricMap(ns string) (map[string]IstioMetric, error) {
-	sentTotalMap, err := getSentOrReceiveIstioTCPMetricMap(ns, true, true)
-	if err != nil {
-		return nil, err
+func parseInterfaceAsTime(i interface{}) (time.Time, bool) {
+	val, ok := i.(float64)
+	if !ok {
+		fmt.Println("a")
+		return time.Time{}, false
 	}
 
-	sentRateMap, err := getSentOrReceiveIstioTCPMetricMap(ns, true, false)
-	if err != nil {
-		return nil, err
-	}
-
-	receiveTotalMap, err := getSentOrReceiveIstioTCPMetricMap(ns, false, true)
-	if err != nil {
-		return nil, err
-	}
-
-	receiveRateMap, err := getSentOrReceiveIstioTCPMetricMap(ns, false, false)
-	if err != nil {
-		return nil, err
-	}
-
-	maps := []map[string]IstioMetric{
-		sentTotalMap,
-		sentRateMap,
-		receiveTotalMap,
-		receiveRateMap,
-	}
-
-	rstMap := make(map[string]IstioMetric)
-
-	// merge same svc into 1 recMetric
-	for _, metricMap := range maps {
-		for svcName, metric := range metricMap {
-			rstMap[svcName] = mergeIstioMetric(rstMap[svcName], metric)
-		}
-	}
-
-	return rstMap, nil
+	t := time.Unix(int64(val), 0)
+	return t, true
 }
+
+//func getIstioTCPMetricMap(ns string) (map[string]IstioMetric, error) {
+//	sentTotalMap, err := getSentOrReceiveIstioTCPMetricMap(ns, true, true)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	sentRateMap, err := getSentOrReceiveIstioTCPMetricMap(ns, true, false)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	receiveTotalMap, err := getSentOrReceiveIstioTCPMetricMap(ns, false, true)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	receiveRateMap, err := getSentOrReceiveIstioTCPMetricMap(ns, false, false)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	maps := []map[string]IstioMetric{
+//		sentTotalMap,
+//		sentRateMap,
+//		receiveTotalMap,
+//		receiveRateMap,
+//	}
+//
+//	rstMap := make(map[string]IstioMetric)
+//
+//	// merge same svc into 1 recMetric
+//	for _, metricMap := range maps {
+//		for svcName, metric := range metricMap {
+//			rstMap[svcName] = mergeIstioMetric(rstMap[svcName], metric)
+//		}
+//	}
+//
+//	return rstMap, nil
+//}
 
 // sent or received: istio_tcp_sent_bytes_total or istio_tcp_receive_bytes_total
 // simple value or use function: rate()
-func getSentOrReceiveIstioTCPMetricMap(ns string, isSentData, isTotal bool) (map[string]IstioMetric, error) {
-	svcName := fmt.Sprintf(`.*.%s.svc.cluster.local`, ns)
-
-	var query string
-	if isSentData {
-		if isTotal {
-			query = fmt.Sprintf(`istio_tcp_sent_bytes_total{destination_service=~"%s"}`, svcName)
-		} else {
-			query = fmt.Sprintf(`rate(istio_tcp_sent_bytes_total{destination_service=~"%s"}[5m])`, svcName)
-		}
-	} else {
-		if isTotal {
-			query = fmt.Sprintf(`istio_tcp_received_bytes_total{destination_service=~"%s"}`, svcName)
-		} else {
-			query = fmt.Sprintf(`rate(istio_tcp_received_bytes_total{destination_service=~"%s"}[5m])`, svcName)
-		}
-	}
-
-	api := fmt.Sprintf("http://%s/api/v1/query?query=%s", hardCodedIstioPrometheusAPIHost, query)
-
-	promResp, err := queryPrometheusAPI(api)
-	if err != nil {
-		return nil, err
-	}
-
-	svc2MetricMap := make(map[string]IstioMetric)
-	for _, rst := range promResp.Data.Result {
-		val, ok := parseInterfaceAsInt(rst.Value[1])
-		if !ok {
-			continue
-		}
-
-		svc, exist := rst.Metric["destination_service"]
-		if !exist {
-			continue
-		}
-
-		if _, exist := svc2MetricMap[svc]; !exist {
-			svc2MetricMap[svc] = IstioMetric{
-				TCP: &TCPMetric{},
-			}
-		}
-
-		if isSentData {
-			svc2MetricMap[svc].TCP.SentBytesTotal += val
-		} else {
-			svc2MetricMap[svc].TCP.ReceivedBytesTotal += val
-		}
-	}
-
-	fmt.Println(api, len(svc2MetricMap), svc2MetricMap)
-
-	return svc2MetricMap, nil
-}
+//func getSentOrReceiveIstioTCPMetricMap(ns string, isSentData, isTotal bool) (map[string]IstioMetric, error) {
+//	svcName := fmt.Sprintf(`.*.%s.svc.cluster.local`, ns)
+//
+//	var query string
+//	if isSentData {
+//		if isTotal {
+//			query = fmt.Sprintf(`istio_tcp_sent_bytes_total{destination_service=~"%s"}`, svcName)
+//		} else {
+//			query = fmt.Sprintf(`rate(istio_tcp_sent_bytes_total{destination_service=~"%s"}[5m])`, svcName)
+//		}
+//	} else {
+//		if isTotal {
+//			query = fmt.Sprintf(`istio_tcp_received_bytes_total{destination_service=~"%s"}`, svcName)
+//		} else {
+//			query = fmt.Sprintf(`rate(istio_tcp_received_bytes_total{destination_service=~"%s"}[5m])`, svcName)
+//		}
+//	}
+//
+//	api := fmt.Sprintf("http://%s/api/v1/query?query=%s", hardCodedIstioPrometheusAPIHost, query)
+//
+//	promResp, err := queryPrometheusAPI(api)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	svc2MetricMap := make(map[string]IstioMetric)
+//	for _, rst := range promResp.Data.Result {
+//		val, ok := parseInterfaceAsInt(rst.Value[1])
+//		if !ok {
+//			continue
+//		}
+//
+//		svc, exist := rst.Metric["destination_service"]
+//		if !exist {
+//			continue
+//		}
+//
+//		if _, exist := svc2MetricMap[svc]; !exist {
+//			svc2MetricMap[svc] = IstioMetric{
+//				TCP: &TCPMetric{},
+//			}
+//		}
+//
+//		if isSentData {
+//			svc2MetricMap[svc].TCP.SentBytesTotal += val
+//		} else {
+//			svc2MetricMap[svc].TCP.ReceivedBytesTotal += val
+//		}
+//	}
+//
+//	fmt.Println(api, len(svc2MetricMap), svc2MetricMap)
+//
+//	return svc2MetricMap, nil
+//}
 
 func queryPrometheusAPI(api string) (PromResponse, error) {
 	resp, err := http.Get(api)
@@ -337,37 +354,12 @@ func queryPrometheusAPI(api string) (PromResponse, error) {
 type PromResponse struct {
 	Status string `json:"status"`
 	Data   struct {
-		ResultType string       `json:"resultType"`
-		Result     []PromResult `json:"result"`
+		ResultType string             `json:"resultType"`
+		Result     []PromMatrixResult `json:"result"`
 	} `json:"data"`
 }
 
-type PromResult struct {
-	//Metric struct {
-	//	DestService  string `json:"destination_service"`
-	//	ResponseCode string `json:"response_code"`
-	//} `json:"metric"`
+type PromMatrixResult struct {
 	Metric map[string]string `json:"metric"`
-	Value  []interface{}     `json:"value,string"`
-}
-
-type PodListChannel struct {
-	List  chan *coreV1.PodList
-	Error chan error
-}
-
-func (builder *Builder) GetPodListChannel(opts ...client.ListOption) *PodListChannel {
-	channel := &PodListChannel{
-		List:  make(chan *coreV1.PodList, 1),
-		Error: make(chan error, 1),
-	}
-
-	go func() {
-		var list coreV1.PodList
-		err := builder.List(&list, opts...)
-		channel.List <- &list
-		channel.Error <- err
-	}()
-
-	return channel
+	Values [][]interface{}   `json:"values,string"`
 }

@@ -75,7 +75,7 @@ type PodMetrics struct {
 // https://github.com/kubernetes/dashboard/blob/master/src/app/backend/integration/metric/api/types.go#L121
 type MetricPoint struct {
 	Timestamp time.Time
-	Value     uint64
+	Value     uint64 // todo why uint, can not be negative?
 }
 
 func (m *MetricPoint) MarshalJSON() ([]byte, error) {
@@ -91,11 +91,11 @@ type MetricHistories struct {
 }
 
 type ApplicationDetails struct {
-	*Application `json:",inline"`
-	Metrics      MetricHistories `json:"metrics"`
-	IstioMetric  IstioMetric     `json:"istioMetric"`
-	Roles        []string        `json:"roles"`
-	Status       string          `json:"status"` // Active or Terminating
+	*Application         `json:",inline"`
+	Metrics              MetricHistories      `json:"metrics"`
+	IstioMetricHistories IstioMetricHistories `json:"istioMetricHistories"`
+	Roles                []string             `json:"roles"`
+	Status               string               `json:"status"` // Active or Terminating
 }
 
 type CreateOrUpdateApplicationRequest struct {
@@ -152,18 +152,19 @@ func (builder *Builder) BuildApplicationDetails(namespace coreV1.Namespace) (*Ap
 
 	applicationMetric := GetApplicationMetric(nsName)
 
-	var istioMetric IstioMetric
+	var istioMetric IstioMetricHistories
 	istioMetricListChan := builder.GetIstioMetricsListChannel(nsName)
 	err = <-istioMetricListChan.Error
 	if err != nil {
 		fmt.Printf("fail to GetIstioMetricsListChannel for ns: %s, ignored, err: %s", nsName, err)
 	} else {
-		istioMetricMap := <-istioMetricListChan.List
+		//istioMetricMap := <-istioMetricListChan.List
 
 		// todo filter out non-kapp service?
-		for _, v := range istioMetricMap {
-			istioMetric = mergeIstioMetric(istioMetric, v)
-		}
+		// todo todo
+		//for _, v := range istioMetricMap {
+		//	istioMetric = mergeIstioMetric(istioMetric, v)
+		//}
 	}
 
 	return &ApplicationDetails{
@@ -174,9 +175,9 @@ func (builder *Builder) BuildApplicationDetails(namespace coreV1.Namespace) (*Ap
 			CPU:    applicationMetric.CPU,
 			Memory: applicationMetric.Memory,
 		},
-		IstioMetric: istioMetric,
-		Roles:       roles,
-		Status:      string(namespace.Status.Phase),
+		IstioMetricHistories: istioMetric,
+		Roles:                roles,
+		Status:               string(namespace.Status.Phase),
 	}, nil
 }
 
