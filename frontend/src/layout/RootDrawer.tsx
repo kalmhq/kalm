@@ -6,7 +6,7 @@ import {
   ListItemIcon,
   ListItemText,
   ListSubheader,
-  Theme
+  Theme,
 } from "@material-ui/core";
 import AssignmentReturnedIcon from "@material-ui/icons/AssignmentReturned";
 import VerifiedUser from "@material-ui/icons/VerifiedUser";
