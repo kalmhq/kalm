@@ -7,7 +7,7 @@ import { NavLink, RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { BaseDrawer } from "layout/BaseDrawer";
-import { primaryBackgroud, primaryColor } from "theme";
+import { primaryBackgroud, primaryColor } from "theme/theme";
 import { blinkTopProgressAction } from "actions/settings";
 
 const mapStateToProps = (state: RootState) => {

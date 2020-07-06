@@ -1,0 +1,147 @@
+import { Meta, Typeset, Story, Preview, Props } from "@storybook/addon-docs/blocks";
+
+import typography from "theme/typography";
+
+import { H1, H2, H3, H4, H5, H6, Subtitle1, Subtitle2, Body, BoldBody, Caption, CenterCaption } from "widgets/Label";
+
+import { ColorfulTypeset } from "./ColorfulTypeset";
+import colors from "theme/colors";
+const sampleText = "KALM Kubernetes App ❤️ Manager";
+
+<Meta title="Design System/Typography" />
+
+# Typography
+
+**Font:** Roboto
+
+---
+
+**Foreground:** light colors `colors.textWhiteHighEmphasis` `colors.textWhiteMediumEmphasis` `colors.textWhiteDisabledEmphasis`
+
+**Background:** primary color
+
+<Story name="whiteHighEmphasis in primary">
+  <ColorfulTypeset
+    foregroundColor={colors.textWhiteHighEmphasis}
+    backgroundColor={colors.primary}
+    labels={[H1, H2, H3, H4, H5, H6, Subtitle1, Subtitle2, Body, BoldBody, Caption, CenterCaption]}
+    sampleText={sampleText}
+  />
+</Story>
+
+<Story name="whiteMediumEmphasis in primary">
+  <ColorfulTypeset
+    foregroundColor={colors.textWhiteMediumEmphasis}
+    backgroundColor={colors.primary}
+    labels={[H1, H2, H3, H4, H5, H6, Subtitle1, Subtitle2, Body, BoldBody, Caption, CenterCaption]}
+    sampleText={sampleText}
+  />
+</Story>
+
+<Story name="whiteDisabledEmphasis in primary">
+  <ColorfulTypeset
+    foregroundColor={colors.textWhiteDisabledEmphasis}
+    backgroundColor={colors.primary}
+    labels={[H1, H2, H3, H4, H5, H6, Subtitle1, Subtitle2, Body, BoldBody, Caption, CenterCaption]}
+    sampleText={sampleText}
+  />
+</Story>
+
+---
+
+**Foreground:** light colors `colors.textBlackHighEmphasis`
+
+**Background:** surface colors `colors.surfacePage` `colors.surfaceCard` `colors.surfaceAppUI`
+
+<Story name="blackHighEmphsis in surfacePage">
+  <ColorfulTypeset
+    foregroundColor={colors.textBlackHighEmphasis}
+    backgroundColor={colors.surfacePage}
+    labels={[H1, H2, H3, H4, H5, H6, Subtitle1, Subtitle2, Body, BoldBody, Caption, CenterCaption]}
+    sampleText={sampleText}
+  />
+</Story>
+
+<Story name="blackHighEmphsis in surfaceCard">
+  <ColorfulTypeset
+    foregroundColor={colors.textBlackHighEmphasis}
+    backgroundColor={colors.surfaceCard}
+    labels={[H1, H2, H3, H4, H5, H6, Subtitle1, Subtitle2, Body, BoldBody, Caption, CenterCaption]}
+    sampleText={sampleText}
+  />
+</Story>
+
+<Story name="blackHighEmphsis in surfaceAppUI">
+  <ColorfulTypeset
+    foregroundColor={colors.textBlackHighEmphasis}
+    backgroundColor={colors.surfaceAppUI}
+    labels={[H1, H2, H3, H4, H5, H6, Subtitle1, Subtitle2, Body, BoldBody, Caption, CenterCaption]}
+    sampleText={sampleText}
+  />
+</Story>
+
+---
+
+**Foreground:** light colors `colors.textBlackMediumEmphasis`
+
+**Background:** surface colors `colors.surfacePage` `colors.surfaceCard` `colors.surfaceAppUI`
+
+<Story name="blackMediumEmphasis in surfacePage">
+  <ColorfulTypeset
+    foregroundColor={colors.textBlackMediumEmphasis}
+    backgroundColor={colors.surfacePage}
+    labels={[H1, H2, H3, H4, H5, H6, Subtitle1, Subtitle2, Body, BoldBody, Caption, CenterCaption]}
+    sampleText={sampleText}
+  />
+</Story>
+
+<Story name="blackMediumEmphasis in surfaceCard">
+  <ColorfulTypeset
+    foregroundColor={colors.textBlackMediumEmphasis}
+    backgroundColor={colors.surfaceCard}
+    labels={[H1, H2, H3, H4, H5, H6, Subtitle1, Subtitle2, Body, BoldBody, Caption, CenterCaption]}
+    sampleText={sampleText}
+  />
+</Story>
+
+<Story name="blackMediumEmphasis in surfaceAppUI">
+  <ColorfulTypeset
+    foregroundColor={colors.textBlackMediumEmphasis}
+    backgroundColor={colors.surfaceAppUI}
+    labels={[H1, H2, H3, H4, H5, H6, Subtitle1, Subtitle2, Body, BoldBody, Caption, CenterCaption]}
+    sampleText={sampleText}
+  />
+</Story>
+
+---
+
+**Foreground:** light colors `colors.textBlackDisabledEmphasis`
+
+**Background:** surface colors `colors.surfacePage` `colors.surfaceCard` `colors.surfaceAppUI`
+
+<Story name="blackDisabledEmphasis in surfacePage">
+  <ColorfulTypeset
+    foregroundColor={colors.textBlackDisabledEmphasis}
+    backgroundColor={colors.surfacePage}
+    labels={[H1, H2, H3, H4, H5, H6, Subtitle1, Subtitle2, Body, BoldBody, Caption, CenterCaption]}
+    sampleText={sampleText}
+  />
+</Story>
+
+<Story name="blackDisabledEmphasis in surfaceCard">
+  <ColorfulTypeset
+    foregroundColor={colors.textBlackDisabledEmphasis}
+    backgroundColor={colors.surfaceCard}
+    labels={[H1, H2, H3, H4, H5, H6, Subtitle1, Subtitle2, Body, BoldBody, Caption, CenterCaption]}
+    sampleText={sampleText}
+  />
+</Story>
+
+<Story name="blackDisabledEmphasis in surfaceAppUI">
+  <ColorfulTypeset
+    foregroundColor={colors.textBlackDisabledEmphasis}
+    backgroundColor={colors.surfaceAppUI}
+    labels={[H1, H2, H3, H4, H5, H6, Subtitle1, Subtitle2, Body, BoldBody, Caption, CenterCaption]}
+    sampleText={sampleText}
+  />
+</Story>

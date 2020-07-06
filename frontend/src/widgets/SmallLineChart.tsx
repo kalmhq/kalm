@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import React from "react";
 // @ts-ignore
 import { Chart, ChartData, Line } from "react-chartjs-2";
-import { MetricList } from "../types/common";
+import { MetricList } from "types/common";
 import { WhitePaper } from "./Paper";
 import { CenterCaption } from "./Label";
 

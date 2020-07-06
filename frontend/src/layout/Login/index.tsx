@@ -2,9 +2,9 @@ import { push } from "connected-react-router";
 import React, { ChangeEvent } from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
-import { Actions } from "../../types";
-import { validateTokenAction } from "../../actions/auth";
-import { RootState } from "../../reducers";
+import { Actions } from "types";
+import { validateTokenAction } from "actions/auth";
+import { RootState } from "reducers";
 import { Button, createStyles, Paper, TextField, Theme, WithStyles, withStyles } from "@material-ui/core";
 
 const styles = (theme: Theme) =>
@@ -89,12 +89,12 @@ export class LoginRaw extends React.PureComponent<Props, State> {
       return;
     }
 
-    const tokenValid = await this.props.dispatch(validateTokenAction(this.state.value));
+    const errorMessage = await this.props.dispatch(validateTokenAction(this.state.value));
 
-    if (tokenValid) {
+    if (!errorMessage) {
       this.props.dispatch(push("/"));
     } else {
-      this.setState({ error: "Authentication failed." });
+      this.setState({ error: errorMessage });
     }
   };
 
@@ -106,7 +106,7 @@ export class LoginRaw extends React.PureComponent<Props, State> {
       <div>
         <Paper className={classes.loginPaper} square>
           <div className={classes.paperContainer}>
-            <div className={classes.portalText}>OpenCore KApp Portal</div>
+            <div className={classes.portalText}>Kalm dashboard</div>
             <div className={classes.loginTriangle}></div>
             <div className={classes.loginArea}>
               <TextField
@@ -117,7 +117,7 @@ export class LoginRaw extends React.PureComponent<Props, State> {
                 variant="outlined"
                 placeholder="auth token"
                 onChange={this.handleChange}
-                helperText={error ? error : "Plaese contact kapp admin to get token"}
+                helperText={error ? error : "Plaese contact your admin to get token"}
                 error={!!error}
               />
 

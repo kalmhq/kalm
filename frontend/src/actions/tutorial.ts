@@ -53,7 +53,7 @@ export const setTutorialHighlightStatusAction = (
   };
 };
 
-export const setTutorialStepCompletionStatus = (
+export const setTutorialStepCompletionStatusAction = (
   stepIndex: number,
   subStepIndex: number,
   isCompleted: boolean,

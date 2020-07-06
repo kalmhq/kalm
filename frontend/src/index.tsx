@@ -6,11 +6,11 @@ import "perfect-scrollbar/css/perfect-scrollbar.css";
 import React from "react";
 import ReactDOM from "react-dom";
 import { Provider } from "react-redux";
-import { theme } from "theme";
+import { theme } from "theme/theme";
 import { HistoryUserConfirmation } from "widgets/History";
 import configureStore from "./configureStore";
 import "./index.css";
-import { KappRoutes } from "routes";
+import { KalmRoutes } from "routes";
 import * as serviceWorker from "./serviceWorker";
 import { setStore } from "store";
 import { Snackbar } from "widgets/Notification";
@@ -32,7 +32,7 @@ ReactDOM.render(
       <ScrollToTop>
         <ThemeProvider theme={theme}>
           <Snackbar />
-          {KappRoutes}
+          {KalmRoutes}
         </ThemeProvider>
       </ScrollToTop>
     </ConnectedRouter>

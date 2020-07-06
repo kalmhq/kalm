@@ -13,7 +13,7 @@ const HtmlTooltip = withStyles((theme: Theme) => ({
   },
 }))(Tooltip);
 
-export class KappTooltip extends React.PureComponent<Props> {
+export class KalmTooltip extends React.PureComponent<Props> {
   public render() {
     return (
       <div>

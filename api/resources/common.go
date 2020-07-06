@@ -42,7 +42,7 @@ type ResourceChannels struct {
 }
 
 type Resources struct {
-	IstioMetricList         map[string]IstioMetric
+	IstioMetricHistories    map[string]*IstioMetricHistories
 	DeploymentList          *appV1.DeploymentList
 	PodList                 *coreV1.PodList
 	EventList               *coreV1.EventList
@@ -74,7 +74,7 @@ func (c *ResourceChannels) ToResources() (r *Resources, err error) {
 		if err != nil {
 			fmt.Printf("err when querying istioMetricList, ignored, err: %s", err)
 		} else {
-			resources.IstioMetricList = <-c.IstioMetricList.List
+			resources.IstioMetricHistories = <-c.IstioMetricList.List
 		}
 	}
 

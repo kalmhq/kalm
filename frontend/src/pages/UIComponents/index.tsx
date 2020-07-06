@@ -1,8 +1,8 @@
 import { Box, createStyles, Link, Theme, Typography, WithStyles, withStyles } from "@material-ui/core";
 import React from "react";
 import { connect } from "react-redux";
-import { RootState } from "../../reducers";
-import { TDispatchProp } from "../../types";
+import { RootState } from "reducers";
+import { TDispatchProp } from "types";
 import { BasePage } from "../BasePage";
 import { RowItemBox } from "widgets/Box";
 import { Body, BoldBody, Caption, H1, H2, H3, H4, H5, H6, Subtitle1, Subtitle2 } from "widgets/Label";
@@ -19,8 +19,8 @@ import {
   ErrorIcon,
   FilterListIcon,
   HelpIcon,
-  KappConsoleIcon,
-  KappLogIcon,
+  KalmConsoleIcon,
+  KalmLogIcon,
 } from "widgets/Icon";
 
 const mapStateToProps = (state: RootState) => {
@@ -153,8 +153,8 @@ export class UIComponentsRaw extends React.Component<Props, States> {
               <CheckCircleIcon />
               <ErrorIcon />
               <ArrowBackIcon />
-              <KappConsoleIcon />
-              <KappLogIcon />
+              <KalmConsoleIcon />
+              <KalmLogIcon />
             </RowItemBox>
           </Box>
         </Box>

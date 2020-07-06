@@ -8,9 +8,9 @@ import Typography from "@material-ui/core/Typography";
 import CloseIcon from "@material-ui/icons/Close";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
-import { clearDialogAction, closeDialogAction, destroyDialogAction, initDialogAction } from "../../actions/dialog";
-import { RootState } from "../../reducers";
-import ScrollContainer from "../../widgets/ScrollContainer";
+import { clearDialogAction, closeDialogAction, destroyDialogAction, initDialogAction } from "actions/dialog";
+import { RootState } from "reducers";
+import ScrollContainer from "widgets/ScrollContainer";
 
 const styles = (theme: Theme) =>
   createStyles({

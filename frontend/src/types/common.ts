@@ -1,7 +1,7 @@
 import { CallHistoryMethodAction } from "connected-react-router";
 import { VariantType } from "notistack";
-import { ImmutableMap } from "../typings";
-import { SettingObject } from "../reducers/settings";
+import { ImmutableMap } from "typings";
+import { SettingObject } from "reducers/settings";
 import { NamespaceActions } from "./namespace";
 import { LoginStatus } from "./authorization";
 import Immutable from "immutable";

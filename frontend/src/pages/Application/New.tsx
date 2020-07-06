@@ -2,12 +2,12 @@ import { createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/
 import React from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
-import { createApplicationAction } from "../../actions/application";
+import { createApplicationAction } from "actions/application";
 import ApplicationForm, { applicationInitialValues } from "../../forms/Application";
-import { RootState } from "../../reducers";
-import { Actions } from "../../types";
-import { Application } from "../../types/application";
-import { H4 } from "../../widgets/Label";
+import { RootState } from "reducers";
+import { Actions } from "types";
+import { Application } from "types/application";
+import { H4 } from "widgets/Label";
 import { BasePage } from "../BasePage";
 import { push } from "connected-react-router";
 

@@ -1,6 +1,6 @@
 import { api } from "api";
 import Immutable from "immutable";
-import { ThunkResult } from "../types";
+import { ThunkResult } from "types";
 import {
   ApplicationComponent,
   ApplicationComponentDetails,
@@ -9,10 +9,10 @@ import {
   LOAD_COMPONENTS_FAILED,
   LOAD_COMPONENTS_FULFILLED,
   LOAD_COMPONENTS_PENDING,
-  UPDATE_COMPONENT,
-} from "../types/application";
-import { correctComponentFormValuesForSubmit } from "../utils/application";
-import { setIsSubmittingApplicationComponent } from "./application";
+  UPDATE_COMPONENT
+} from "types/application";
+import { correctComponentFormValuesForSubmit } from "utils/application";
+import { setIsSubmittingApplicationComponentAction } from "./application";
 import { setSuccessNotificationAction } from "./notification";
 
 export const loadComponentsAction = (namespace: string): ThunkResult<Promise<void>> => {
@@ -21,7 +21,7 @@ export const loadComponentsAction = (namespace: string): ThunkResult<Promise<voi
 
     let components: Immutable.List<ApplicationComponentDetails>;
     try {
-      components = await api.getKappApplicationComponentList(namespace);
+      components = await api.getApplicationComponentList(namespace);
     } catch (e) {
       dispatch({ type: LOAD_COMPONENTS_FAILED });
       throw e;
@@ -45,20 +45,20 @@ export const createComponentAction = (
     if (!applicationName) {
       applicationName = getState().get("namespaces").get("active");
     }
-    dispatch(setIsSubmittingApplicationComponent(true));
+    dispatch(setIsSubmittingApplicationComponentAction(true));
 
     let component: ApplicationComponentDetails;
     try {
-      component = await api.createKappApplicationComponent(
+      component = await api.createApplicationComponent(
         applicationName,
         correctComponentFormValuesForSubmit(getState(), componentValues),
       );
     } catch (e) {
-      dispatch(setIsSubmittingApplicationComponent(false));
+      dispatch(setIsSubmittingApplicationComponentAction(false));
       throw e;
     }
 
-    dispatch(setIsSubmittingApplicationComponent(false));
+    dispatch(setIsSubmittingApplicationComponentAction(false));
 
     await dispatch({
       type: CREATE_COMPONENT,
@@ -77,19 +77,19 @@ export const updateComponentAction = (
       applicationName = getState().get("namespaces").get("active");
     }
 
-    dispatch(setIsSubmittingApplicationComponent(true));
+    dispatch(setIsSubmittingApplicationComponentAction(true));
 
     let component: ApplicationComponentDetails;
     try {
-      component = await api.updateKappApplicationComponent(
+      component = await api.updateApplicationComponent(
         applicationName,
         correctComponentFormValuesForSubmit(getState(), componentValues),
       );
     } catch (e) {
-      dispatch(setIsSubmittingApplicationComponent(false));
+      dispatch(setIsSubmittingApplicationComponentAction(false));
       throw e;
     }
-    dispatch(setIsSubmittingApplicationComponent(false));
+    dispatch(setIsSubmittingApplicationComponentAction(false));
 
     await dispatch({
       type: UPDATE_COMPONENT,
@@ -105,7 +105,7 @@ export const deleteComponentAction = (componentName: string, applicationName?: s
       applicationName = getState().get("namespaces").get("active");
     }
 
-    await api.deleteKappApplicationComponent(applicationName, componentName);
+    await api.deleteApplicationComponent(applicationName, componentName);
 
     dispatch({
       type: DELETE_COMPONENT,

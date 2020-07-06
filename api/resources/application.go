@@ -1,7 +1,6 @@
 package resources
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -72,30 +71,12 @@ type PodMetrics struct {
 	MetricHistories `json:",inline,omitempty"`
 }
 
-// https://github.com/kubernetes/dashboard/blob/master/src/app/backend/integration/metric/api/types.go#L121
-type MetricPoint struct {
-	Timestamp time.Time
-	Value     uint64
-}
-
-func (m *MetricPoint) MarshalJSON() ([]byte, error) {
-	return json.Marshal(map[string]interface{}{
-		"x": m.Timestamp.Unix() * 1000,
-		"y": m.Value,
-	})
-}
-
-type MetricHistories struct {
-	CPU    MetricHistory `json:"cpu"`
-	Memory MetricHistory `json:"memory"`
-}
-
 type ApplicationDetails struct {
-	*Application `json:",inline"`
-	Metrics      MetricHistories `json:"metrics"`
-	IstioMetric  IstioMetric     `json:"istioMetric"`
-	Roles        []string        `json:"roles"`
-	Status       string          `json:"status"` // Active or Terminating
+	*Application         `json:",inline"`
+	Metrics              MetricHistories       `json:"metrics"`
+	IstioMetricHistories *IstioMetricHistories `json:"istioMetricHistories"`
+	Roles                []string              `json:"roles"`
+	Status               string                `json:"status"` // Active or Terminating
 }
 
 type CreateOrUpdateApplicationRequest struct {
@@ -152,17 +133,19 @@ func (builder *Builder) BuildApplicationDetails(namespace coreV1.Namespace) (*Ap
 
 	applicationMetric := GetApplicationMetric(nsName)
 
-	var istioMetric IstioMetric
+	istioMetricHistories := &IstioMetricHistories{}
+
 	istioMetricListChan := builder.GetIstioMetricsListChannel(nsName)
 	err = <-istioMetricListChan.Error
+
 	if err != nil {
 		fmt.Printf("fail to GetIstioMetricsListChannel for ns: %s, ignored, err: %s", nsName, err)
 	} else {
-		istioMetricMap := <-istioMetricListChan.List
+		istioMetricHisMap := <-istioMetricListChan.List
 
 		// todo filter out non-kapp service?
-		for _, v := range istioMetricMap {
-			istioMetric = mergeIstioMetric(istioMetric, v)
+		for _, v := range istioMetricHisMap {
+			istioMetricHistories = mergeIstioMetricHistories(istioMetricHistories, v)
 		}
 	}
 
@@ -174,9 +157,9 @@ func (builder *Builder) BuildApplicationDetails(namespace coreV1.Namespace) (*Ap
 			CPU:    applicationMetric.CPU,
 			Memory: applicationMetric.Memory,
 		},
-		IstioMetric: istioMetric,
-		Roles:       roles,
-		Status:      string(namespace.Status.Phase),
+		IstioMetricHistories: istioMetricHistories,
+		Roles:                roles,
+		Status:               string(namespace.Status.Phase),
 	}, nil
 }
 

@@ -1,5 +1,5 @@
 import { Box, Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { deleteRoute } from "actions/routes";
+import { deleteRouteAction } from "actions/routes";
 import { blinkTopProgressAction } from "actions/settings";
 import { push } from "connected-react-router";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
@@ -169,7 +169,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
           size="small"
           onClick={() => {
             blinkTopProgressAction();
-            dispatch(deleteRoute(row.get("name"), row.get("namespace")));
+            dispatch(deleteRouteAction(row.get("name"), row.get("namespace")));
           }}
         >
           Delete
@@ -211,10 +211,10 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
               }}
               columns={[
                 {
-                  title: "Domain",
-                  field: "host",
+                  title: "Methods",
+                  field: "methods",
                   sorting: false,
-                  render: this.renderHosts,
+                  render: this.renderMethods,
                 },
                 {
                   title: "Http",
@@ -229,10 +229,10 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
                   render: this.renderSupportHttps,
                 },
                 {
-                  title: "Methods",
-                  field: "methods",
+                  title: "Domain",
+                  field: "host",
                   sorting: false,
-                  render: this.renderMethods,
+                  render: this.renderHosts,
                 },
                 {
                   title: "Urls",
@@ -246,18 +246,6 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
                   sorting: false,
                   render: this.renderTargets,
                 },
-                // {
-                //   title: "Rules",
-                //   field: "rules",
-                //   sorting: false,
-                //   render: this.renderRules,
-                // },
-                // {
-                //   title: "Advanced Settings",
-                //   field: "advanced",
-                //   sorting: false,
-                //   render: this.renderAdvanced
-                // },
                 {
                   title: "Actions",
                   field: "action",

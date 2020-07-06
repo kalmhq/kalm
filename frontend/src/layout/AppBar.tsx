@@ -12,7 +12,7 @@ import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { FlexRowItemCenterBox } from "widgets/Box";
-import { blinkTopProgressAction, setSettingsAction } from "../actions/settings";
+import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
 import { APP_BAR_HEIGHT, APP_BAR_ZINDEX } from "./Constants";
 
 const mapStateToProps = (state: RootState) => {
@@ -177,7 +177,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
             </IconButton>
             <FlexRowItemCenterBox>
               <Link className={classes.barTitle} to="/" onClick={() => blinkTopProgressAction()}>
-                KApp Dashboard
+                Kalm Dashboard
               </Link>
             </FlexRowItemCenterBox>
           </div>

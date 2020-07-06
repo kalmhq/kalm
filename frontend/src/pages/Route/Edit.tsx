@@ -1,5 +1,5 @@
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { updateRoute } from "actions/routes";
+import { updateRouteAction } from "actions/routes";
 import { push } from "connected-react-router";
 import { RouteForm } from "forms/Route";
 import React from "react";
@@ -29,7 +29,7 @@ class RouteEditRaw extends React.PureComponent<Props> {
         route = route.set("methods", AllHttpMethods);
       }
 
-      await dispatch(updateRoute(route.get("name"), route.get("namespace"), route));
+      await dispatch(updateRouteAction(route.get("name"), route.get("namespace"), route));
       await dispatch(setSuccessNotificationAction("Update route successfully"));
     } catch (e) {
       console.log(e);

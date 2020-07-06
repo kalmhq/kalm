@@ -12,7 +12,7 @@ import {
   WithStyles,
   withStyles,
 } from "@material-ui/core";
-import { primaryColor } from "theme";
+import { primaryColor } from "theme/theme";
 import { makeStyles } from "@material-ui/core/styles";
 import CloseIcon from "@material-ui/icons/Close";
 import CheckIcon from "@material-ui/icons/Check";

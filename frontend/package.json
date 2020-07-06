@@ -26,6 +26,9 @@
     "@types/redux-form": "^8.2.3",
     "@types/redux-immutable": "^4.0.1",
     "@types/redux-logger": "^3.0.8",
+    "@types/storybook__addon-actions": "^5.2.1",
+    "@types/storybook__addon-links": "^5.2.1",
+    "@types/storybook__react": "^5.2.1",
     "ace-builds": "^1.4.8",
     "axios": "^0.19.2",
     "chart.js": "^2.9.3",
@@ -74,25 +77,40 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "lint": "eslint -c .eslintrc.json --ext tx,tsx src"
+    "lint": "eslint -c .eslintrc.json --ext tx,tsx src --max-warnings 0",
+    "storybook": "start-storybook -p 9009 -s public",
+    "build-storybook": "build-storybook -s public"
   },
   "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+    "production": [">0.2%", "not dead", "not op_mini all"],
+    "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
   },
   "devDependencies": {
+    "@storybook/addon-a11y": "^5.3.19",
+    "@storybook/addon-actions": "^5.3.19",
+    "@storybook/addon-backgrounds": "^5.3.19",
+    "@storybook/addon-docs": "^5.3.19",
+    "@storybook/addon-essentials": "^5.3.19",
+    "@storybook/addon-events": "^5.3.19",
+    "@storybook/addon-info": "^5.3.19",
+    "@storybook/addon-knobs": "^5.3.19",
+    "@storybook/addon-links": "^5.3.19",
+    "@storybook/addon-notes": "^5.3.19",
+    "@storybook/addon-queryparams": "^5.3.19",
+    "@storybook/addon-storysource": "^5.3.19",
+    "@storybook/addon-viewport": "^5.3.19",
+    "@storybook/addons": "^5.3.19",
+    "@storybook/design-system": "^5.1.0",
+    "@storybook/preset-create-react-app": "^3.1.2",
+    "@storybook/react": "^5.3.19",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-prettier": "^3.1.4",
+    "event-emitter": "^0.3.5",
     "husky": "^4.2.1",
-    "prettier": "^2.0.5"
+    "prettier": "^2.0.5",
+    "react-docgen-typescript-loader": "^3.7.2",
+    "storybook-addon-deps": "^2.0.1",
+    "ts-loader": "^7.0.5"
   },
   "husky": {
     "hooks": {

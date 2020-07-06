@@ -9,7 +9,6 @@ import {
   Theme,
 } from "@material-ui/core";
 import AssignmentReturnedIcon from "@material-ui/icons/AssignmentReturned";
-import SettingsIcon from "@material-ui/icons/Settings";
 import VerifiedUser from "@material-ui/icons/VerifiedUser";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import clsx from "clsx";
@@ -19,9 +18,9 @@ import { NavLink } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { APP_BAR_HEIGHT, LEFT_SECTION_CLOSE_WIDTH, LEFT_SECTION_OPEN_WIDTH } from "layout/Constants";
-import { primaryBackgroud, primaryColor } from "../theme";
-import { KappApplicationIcon, KappNodeIcon, KappVolumeIcon } from "../widgets/Icon";
-import { blinkTopProgressAction } from "../actions/settings";
+import { primaryBackgroud, primaryColor } from "theme/theme";
+import { KalmApplicationIcon, KalmNodeIcon, KalmVolumeIcon } from "widgets/Icon";
+import { blinkTopProgressAction } from "actions/settings";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
@@ -104,14 +103,14 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
 
   private getMenuDataApplication() {
     return [
-      { icon: KappApplicationIcon, text: "Applications", to: "/applications" },
+      { icon: KalmApplicationIcon, text: "Applications", to: "/applications" },
       {
         icon: VerifiedUser,
         text: "Certificates",
         to: "/certificates",
       },
       // {
-      //   icon: KappTemplateIcon,
+      //   icon: KalmTemplateIcon,
       //   text: "Templates",
       //   to: "/templates"
       // }
@@ -121,12 +120,12 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
   private getMenuDataCluster() {
     return [
       {
-        icon: KappNodeIcon,
+        icon: KalmNodeIcon,
         text: "Nodes",
         to: "/cluster/nodes",
       },
       {
-        icon: KappVolumeIcon,
+        icon: KalmVolumeIcon,
         text: "Disks",
         to: "/cluster/disks",
       },
@@ -135,11 +134,11 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
         text: "Registries",
         to: "/cluster/registries",
       },
-      {
-        icon: SettingsIcon,
-        text: "Settings",
-        to: "/roles",
-      },
+      // {
+      //   icon: SettingsIcon,
+      //   text: "Settings",
+      //   to: "/roles",
+      // },
     ];
   }
 
