@@ -3,7 +3,7 @@ import { StatusFailure } from "types";
 import { setErrorNotificationAction } from "actions/notification";
 import { store } from "store";
 
-const kappErrorHandler = (e: any) => {
+const ErrorHandler = (e: any) => {
   if (e.response && e.response.data.status === StatusFailure) {
     store.dispatch(setErrorNotificationAction(e.response.data.message));
   } else {
@@ -12,4 +12,4 @@ const kappErrorHandler = (e: any) => {
   }
 };
 
-export const errorHandlerMiddleware = createThunkErrorHandlerMiddleware({ onError: kappErrorHandler });
+export const errorHandlerMiddleware = createThunkErrorHandlerMiddleware({ onError: ErrorHandler });

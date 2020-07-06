@@ -28,7 +28,7 @@ import { RequireAdmin } from "permission/Role";
 
 const RequireAuthorizatedDashboard = RequireAuthorizated(DashboardLayout);
 
-export const KappRoutes = (
+export const KalmRoutes = (
   <Switch>
     <Route path="/404" component={Page404} />
     <Route path="/login" component={RequireNotAuthorizated(Login)} />

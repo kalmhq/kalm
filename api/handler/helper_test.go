@@ -68,8 +68,6 @@ func (suite *WithControllerTestSuite) SetupSuite() {
 	}
 
 	suite.k8sClinet = k8sClient
-	//spew.Dump(k8sClient.ServerVersion())
-	//spew.Dump(k8sClient.CoreV1().Nodes().List(ListAll))
 
 	runningConfig := &config.Config{
 		KubernetesApiServerAddress: cfg.Host,

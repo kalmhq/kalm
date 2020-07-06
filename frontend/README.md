@@ -1,4 +1,4 @@
-# Kapp Dashboard
+# Kalm Dashboard
 
 ## How to run this project.
 

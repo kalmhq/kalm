@@ -1,14 +1,14 @@
 import React from "react";
-import { text, select } from "@storybook/addon-knobs";
+import { select } from "@storybook/addon-knobs";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { KTable } from "widgets/Table";
 import { MTableBodyRow } from "material-table";
 import { ImmutableMap } from "typings";
 import Immutable from "immutable";
-import { SuccessBadge, PendingBadge, ErrorBadge } from "widgets/Badge";
+import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { action } from "@storybook/addon-actions";
-import { EditIcon, DeleteIcon } from "widgets/Icon";
+import { DeleteIcon, EditIcon } from "widgets/Icon";
 
 export default {
   title: "Widgets/Box",
@@ -146,7 +146,7 @@ const getSelect = (labelValue: string, optionsValue: string[], defaultV: string,
 };
 
 const getCertifiate = () => {
-  const domains = Immutable.List(["www.kapp.com", "dashboard.kapp.live"]);
+  const domains = Immutable.List(["kalm.dev"]);
   return Immutable.Map({
     name: "Certificates for Domains",
     domains: domains,

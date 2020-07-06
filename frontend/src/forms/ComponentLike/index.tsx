@@ -524,7 +524,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <Body>
-            Tell kapp more about how to run the project. Customize the <strong>command</strong>,{" "}
+            Tell kalm more about how to run the project. Customize the <strong>command</strong>,{" "}
             <strong>environment variables</strong> and <strong>configuration files</strong> of this component.
           </Body>
         </Grid>
@@ -604,7 +604,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       <Grid container spacing={2}>
         {/* <Grid item xs={12}>
           <Body>
-            Tell kapp more about how to schedule this component. Now there are <Chip size="small" label={"10"} /> nodes
+            Tell kalm more about how to schedule this component. Now there are <Chip size="small" label={"10"} /> nodes
             in this cluster. Base on the following settings, <Chip size="small" label={"10"} /> are available for
             running this component.
           </Body>
@@ -711,7 +711,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
         <Grid item xs={12}>
           <Body>
-            Old instances will be terminated when an upgrade/delete is proformed. Kapp will wait for a while (called
+            Old instances will be terminated when an upgrade/delete is proformed. Kalm will wait for a while (called
             Termination Grace Period Seconds) for the program to exit properly. When the grace period expires, any
             processes still running are killed with SIGKILL.
           </Body>

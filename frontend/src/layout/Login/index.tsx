@@ -106,7 +106,7 @@ export class LoginRaw extends React.PureComponent<Props, State> {
       <div>
         <Paper className={classes.loginPaper} square>
           <div className={classes.paperContainer}>
-            <div className={classes.portalText}>OpenCore KApp Portal</div>
+            <div className={classes.portalText}>Kalm dashboard</div>
             <div className={classes.loginTriangle}></div>
             <div className={classes.loginArea}>
               <TextField
@@ -117,7 +117,7 @@ export class LoginRaw extends React.PureComponent<Props, State> {
                 variant="outlined"
                 placeholder="auth token"
                 onChange={this.handleChange}
-                helperText={error ? error : "Plaese contact kapp admin to get token"}
+                helperText={error ? error : "Plaese contact your admin to get token"}
                 error={!!error}
               />
 

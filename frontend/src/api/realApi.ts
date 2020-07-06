@@ -102,22 +102,22 @@ export default class RealApi extends Api {
 
   // applications
 
-  public getKappApplicationList = async () => {
+  public getApplicationList = async () => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/applications` });
     return Immutable.fromJS(res.data);
   };
 
-  public getKappApplication = async (name: string) => {
+  public getApplication = async (name: string) => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/applications/${name}` });
     return Immutable.fromJS(res.data);
   };
 
-  public createKappApplication = async (application: Application) => {
+  public createApplication = async (application: Application) => {
     const res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/applications`, data: application });
     return Immutable.fromJS(res.data);
   };
 
-  public updateKappApplication = async (application: Application) => {
+  public updateApplication = async (application: Application) => {
     const res = await axiosRequest({
       method: "put",
       url: `/${K8sApiVersion}/applications/${application.get("name")}`,
@@ -126,11 +126,11 @@ export default class RealApi extends Api {
     return Immutable.fromJS(res.data);
   };
 
-  public deleteKappApplication = async (name: string): Promise<void> => {
+  public deleteApplication = async (name: string): Promise<void> => {
     await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/applications/${name}` });
   };
 
-  public getKappApplicationComponentList = async (applicationName: string) => {
+  public getApplicationComponentList = async (applicationName: string) => {
     const res = await axiosRequest({
       method: "get",
       url: `/${K8sApiVersion}/applications/${applicationName}/components`,
@@ -138,7 +138,7 @@ export default class RealApi extends Api {
     return Immutable.fromJS(res.data);
   };
 
-  public getKappApplicationComponent = async (applicationName: string, name: string) => {
+  public getApplicationComponent = async (applicationName: string, name: string) => {
     const res = await axiosRequest({
       method: "get",
       url: `/${K8sApiVersion}/applications/${applicationName}/components/${name}`,
@@ -146,7 +146,7 @@ export default class RealApi extends Api {
     return Immutable.fromJS(res.data);
   };
 
-  public createKappApplicationComponent = async (applicationName: string, component: ApplicationComponent) => {
+  public createApplicationComponent = async (applicationName: string, component: ApplicationComponent) => {
     const res = await axiosRequest({
       method: "post",
       url: `/${K8sApiVersion}/applications/${applicationName}/components`,
@@ -155,7 +155,7 @@ export default class RealApi extends Api {
     return Immutable.fromJS(res.data);
   };
 
-  public updateKappApplicationComponent = async (applicationName: string, component: ApplicationComponent) => {
+  public updateApplicationComponent = async (applicationName: string, component: ApplicationComponent) => {
     const res = await axiosRequest({
       method: "put",
       url: `/${K8sApiVersion}/applications/${applicationName}/components/${component.get("name")}`,
@@ -164,7 +164,7 @@ export default class RealApi extends Api {
     return Immutable.fromJS(res.data);
   };
 
-  public deleteKappApplicationComponent = async (applicationName: string, name: string) => {
+  public deleteApplicationComponent = async (applicationName: string, name: string) => {
     await axiosRequest({
       method: "delete",
       url: `/${K8sApiVersion}/applications/${applicationName}/components/${name}`,
@@ -173,12 +173,12 @@ export default class RealApi extends Api {
 
   // plugins
 
-  public getKappApplicationPlugins = async () => {
+  public getApplicationPlugins = async () => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/applicationplugins` });
     return res.data;
   };
 
-  public getKappComponentPlugins = async () => {
+  public getComponentPlugins = async () => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/componentplugins` });
     return res.data;
   };

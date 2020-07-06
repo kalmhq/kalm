@@ -34,20 +34,20 @@ class Dashboard extends React.PureComponent<Props> {
       <BasePage>
         <div className={classes.container}>
           <Typography className={classes.description}>
-            Kapp is a central hub for you to manage your devop tasks. It let you manage, monitoring{" "}
+            Kalm is a central hub for you to manage your devop tasks. It let you manage, monitoring{" "}
             <strong>Applications</strong> make up of microservices.
           </Typography>
 
           <Grid container spacing={3}>
             <Grid item md={3}>
               <Typography variant="h5" className={classes.cardTitle}>
-                Learn Kapp
+                Learn Kalm
               </Typography>
               <Typography className={classes.cardDescription}>
-                Run a single image is easy, but not for application made up of a bunch of components. Kapp aim to help
-                you handle complicated application with ease. Kapp is build on top of kubernetes. It provides your some
+                Run a single image is easy, but not for application made up of a bunch of components. Kalm aim to help
+                you handle complicated application with ease. Kalm is build on top of kubernetes. It provides your some
                 best practices of using kubernets and hide obscure details. Wondering what all that means? Have a look
-                at the Kapp documentation.
+                at the Kalm documentation.
               </Typography>
               <div>
                 <RaisedButton size="small" startIcon={<MenuBookIcon />}>
@@ -60,7 +60,7 @@ class Dashboard extends React.PureComponent<Props> {
                 Get Start
               </Typography>
               <Typography className={classes.cardDescription}>
-                If you don't know where to start. There are several tutorials of how to use kapp. Please go throught
+                If you don't know where to start. There are several tutorials of how to use kalm. Please go throught
                 them first. You can also view each page of this dashboard, some details on each page can be helpful to
                 you.
               </Typography>
@@ -75,7 +75,7 @@ class Dashboard extends React.PureComponent<Props> {
                 Contribute
               </Typography>
               <Typography className={classes.cardDescription}>
-                Kapp system is an open source system hosted on github under Apache V2 License. See our roadmap for the
+                Kalm system is an open source system hosted on github under Apache V2 License. See our roadmap for the
                 plans. Pull requests are welcomed.
               </Typography>
               <div>
