@@ -131,7 +131,7 @@ export default class MockApi extends Api {
     componentDetails = componentDetails.set("services", Immutable.fromJS([]));
     componentDetails = componentDetails.set("pods", Immutable.List([mockStore.data.get("mockErrorPod")]));
     await mockStore.updateKappApplicationComponent(applicationName, componentDetails);
-    return component as ApplicationComponentDetails;
+    return componentDetails;
   };
 
   public createRegistry = async (registry: RegistryType) => {
