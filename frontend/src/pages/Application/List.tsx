@@ -28,7 +28,7 @@ import { Body, H4 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { KTable } from "widgets/Table";
-import { getApplicationCreatedAtString } from "../../utils/application";
+import { getApplicationCreatedAtString } from "utils/application";
 import { BasePage } from "../BasePage";
 import { POPPER_ZINDEX } from "layout/Constants";
 
