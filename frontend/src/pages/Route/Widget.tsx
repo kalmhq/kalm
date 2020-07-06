@@ -16,7 +16,7 @@ import {
   withStyles,
   WithStyles,
 } from "@material-ui/core";
-import { ArrowRightAlt } from "@material-ui/icons";
+import ArrowRightAlt from "@material-ui/icons/ArrowRightAlt";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import Immutable from "immutable";
 import { Methods } from "pages/Route/Methods";

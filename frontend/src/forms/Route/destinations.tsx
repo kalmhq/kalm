@@ -1,5 +1,5 @@
 import { Grid } from "@material-ui/core";
-import { Warning } from "@material-ui/icons";
+import Warning from "@material-ui/icons/Warning";
 import { Alert, AlertTitle } from "@material-ui/lab";
 import { KAutoCompleteOption, KAutoCompleteSingleValue } from "forms/Basic/autoComplete";
 import { KRenderSlider } from "forms/Basic/slider";

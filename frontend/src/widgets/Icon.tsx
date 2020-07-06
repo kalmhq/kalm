@@ -1,21 +1,19 @@
 import React from "react";
-import {
-  ArrowBack,
-  ArrowDropDown,
-  CheckBox,
-  CheckBoxOutlineBlank,
-  CheckCircle,
-  Clear,
-  CreateNewFolder,
-  Delete,
-  Edit,
-  Error,
-  FileCopy,
-  FilterList,
-  Help,
-  NoteAdd,
-  Publish,
-} from "@material-ui/icons";
+import ArrowDropDown from "@material-ui/icons/ArrowDropDown";
+import CheckBox from "@material-ui/icons/CheckBox";
+import CheckBoxOutlineBlank from "@material-ui/icons/CheckBoxOutlineBlank";
+import CheckCircle from "@material-ui/icons/CheckCircle";
+import Clear from "@material-ui/icons/Clear";
+import CreateNewFolder from "@material-ui/icons/CreateNewFolder";
+import Delete from "@material-ui/icons/Delete";
+import Edit from "@material-ui/icons/Edit";
+import Error from "@material-ui/icons/Error";
+import FileCopy from "@material-ui/icons/FileCopy";
+import FilterList from "@material-ui/icons/FilterList";
+import Help from "@material-ui/icons/Help";
+import NoteAdd from "@material-ui/icons/NoteAdd";
+import Publish from "@material-ui/icons/Publish";
+import ArrowBack from "@material-ui/icons/ArrowBack";
 import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import { grey } from "@material-ui/core/colors";
 import { SvgIcon, SvgIconProps, Theme } from "@material-ui/core";
