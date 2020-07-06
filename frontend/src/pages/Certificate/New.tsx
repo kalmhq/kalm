@@ -3,7 +3,7 @@ import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { connect } from "react-redux";
 import { TDispatchProp } from "types";
 import { CertificateFormType, newEmptyCertificateForm, selfManaged } from "types/certificate";
-import { createCertificateAction, setEditCertificateModal } from "actions/certificate";
+import { createCertificateAction, setEditCertificateModalAction } from "actions/certificate";
 import { CertificateForm } from "forms/Certificate";
 import { ControlledDialog } from "widgets/ControlledDialog";
 import { closeDialogAction } from "actions/dialog";
@@ -42,7 +42,7 @@ class CertificateNewRaw extends React.PureComponent<Props> {
       const { isEdit, dispatch } = this.props;
       await dispatch(createCertificateAction(certificate, isEdit));
       dispatch(closeDialogAction(addCertificateDialogId));
-      dispatch(setEditCertificateModal(null));
+      dispatch(setEditCertificateModalAction(null));
     } catch (e) {
       console.log(e);
     }

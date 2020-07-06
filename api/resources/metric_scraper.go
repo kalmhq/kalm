@@ -324,7 +324,6 @@ func CullDatabase(db *sql.DB, window *time.Duration) error {
 	return nil
 }
 
-type MetricHistory []MetricPoint
 type NodesMetricHistories struct {
 	CPU    MetricHistory              `json:"cpu"`
 	Memory MetricHistory              `json:"memory"`

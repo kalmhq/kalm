@@ -106,20 +106,10 @@ class TutorialRaw extends React.PureComponent<Props, State> {
         ))}
 
         <Box mt={2}>
-          <Link
-            color="textSecondary"
-            href="https://github.com/kapp-staging/kapp/issues/new"
-            target="_blank"
-            rel="noreferer"
-          >
+          <Link color="textSecondary" href="https://github.com/kalmHQ/kalm/issues/new" target="_blank" rel="noreferer">
             Still have questions? Tell us!
           </Link>
         </Box>
-        {/* This tutorial will walk you through kapp dashboard */}
-        {/* <Body>
-          With following this example, you will be able to deploy a demo project called Bookinfo, you can access it from
-          public network.
-        </Body> */}
       </div>
     );
   };

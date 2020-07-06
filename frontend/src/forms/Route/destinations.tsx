@@ -1,5 +1,5 @@
 import { Grid } from "@material-ui/core";
-import { Warning } from "@material-ui/icons";
+import Warning from "@material-ui/icons/Warning";
 import { Alert, AlertTitle } from "@material-ui/lab";
 import { KAutoCompleteOption, KAutoCompleteSingleValue } from "forms/Basic/autoComplete";
 import { KRenderSlider } from "forms/Basic/slider";
@@ -8,9 +8,9 @@ import { WrappedFieldArrayProps } from "redux-form";
 import { Field } from "redux-form/immutable";
 import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { HttpRouteDestination } from "../../types/route";
+import { HttpRouteDestination } from "types/route";
 import { ValidatorRequired } from "../validator";
-import { RootState } from "../../reducers";
+import { RootState } from "reducers";
 import { connect } from "react-redux";
 import Typography from "@material-ui/core/Typography";
 
@@ -44,6 +44,7 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
 
         // TODO should we ignore the system namespaces??
         return (
+          ns !== "kalm-system" &&
           ns !== "kapp-system" &&
           ns !== "kube-system" &&
           ns !== "istio-system" &&

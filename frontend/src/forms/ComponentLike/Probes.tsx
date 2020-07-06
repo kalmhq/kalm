@@ -98,7 +98,7 @@ class RenderProbe extends React.PureComponent<Props> {
     const { classes } = this.props;
     return (
       <Box p={1}>
-        <Typography>
+        <Typography component="div">
           After initial
           <Field
             name={`${name}.initialDelaySeconds`}
@@ -171,7 +171,7 @@ class RenderProbe extends React.PureComponent<Props> {
     const { classes } = this.props;
     return (
       <Box p={1}>
-        <Typography>
+        <Typography component="div">
           After initial
           <Field
             name={`${name}.initialDelaySeconds`}
@@ -213,7 +213,7 @@ class RenderProbe extends React.PureComponent<Props> {
     const { classes } = this.props;
     return (
       <Box p={1}>
-        <Typography>
+        <Typography component="div">
           After initial
           <Field
             name={`${name}.initialDelaySeconds`}
@@ -264,7 +264,7 @@ class RenderProbe extends React.PureComponent<Props> {
 
     return (
       <Box p={1}>
-        <Typography>
+        <Typography component="div">
           If there is no response within{" "}
           <Field
             name={`${name}.timeoutSeconds`}
@@ -284,7 +284,7 @@ class RenderProbe extends React.PureComponent<Props> {
           , the current round of testing is considered to have failed. Otherwise, the it is considered successful.
         </Typography>
         <br />
-        <Typography>
+        <Typography component="div">
           {name === "livenessProbe" ? (
             "One successful testing"
           ) : (

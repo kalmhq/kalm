@@ -3,7 +3,6 @@ import FileCopyIcon from "@material-ui/icons/FileCopy";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import React from "react";
 import { connect } from "react-redux";
-import SyntaxHighlighter from "react-syntax-highlighter";
 import { monokai } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
@@ -27,6 +26,7 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
 interface State {
   token: string;
   "ca.crt": string;
+  SyntaxHighlighter?: any;
 }
 
 class ServiceAccountSecretRaw extends React.PureComponent<Props, State> {
@@ -51,6 +51,9 @@ class ServiceAccountSecretRaw extends React.PureComponent<Props, State> {
 
   componentDidMount() {
     this.loadData();
+    import("react-syntax-highlighter").then((SyntaxHighlighter) => {
+      this.setState({ SyntaxHighlighter: SyntaxHighlighter.default });
+    });
   }
 
   componentDidUpdate() {
@@ -70,6 +73,10 @@ class ServiceAccountSecretRaw extends React.PureComponent<Props, State> {
   };
 
   private renderData(title: string, content: string) {
+    const { SyntaxHighlighter } = this.state;
+    if (!SyntaxHighlighter) {
+      return null;
+    }
     return (
       <div>
         <FlexRowItemCenterBox justifyContent="space-between">

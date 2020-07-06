@@ -1,5 +1,5 @@
 import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { createRoute } from "actions/routes";
+import { createRouteAction } from "actions/routes";
 import { push } from "connected-react-router";
 import { RouteForm } from "forms/Route";
 import React from "react";
@@ -29,7 +29,7 @@ class RouteNewRaw extends React.PureComponent<Props> {
       }
 
       route = route.set("namespace", activeNamespaceName);
-      await dispatch(createRoute(route.get("name"), activeNamespaceName, route));
+      await dispatch(createRouteAction(route.get("name"), activeNamespaceName, route));
       await dispatch(setSuccessNotificationAction("Create route successfully"));
     } catch (e) {
       console.log(e);

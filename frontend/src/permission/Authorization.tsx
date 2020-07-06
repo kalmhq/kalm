@@ -3,7 +3,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "types";
-import { loadLoginStatus } from "actions/auth";
+import { loadLoginStatusAction } from "actions/auth";
 import { RootState } from "reducers";
 import { Loading } from "widgets/Loading";
 import { getDisplayName } from "./utils";
@@ -38,7 +38,7 @@ export const Authorizated = ({ mustAuthorized, mustNotAuthorized }: Options) => 
       const { firstLoaded } = this.props;
 
       if (!firstLoaded) {
-        this.props.dispatch(loadLoginStatus());
+        this.props.dispatch(loadLoginStatusAction());
       }
     }
 

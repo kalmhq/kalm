@@ -1,5 +1,4 @@
 import React from "react";
-import { boolean } from "@storybook/addon-knobs";
 import { Targets } from "widgets/Targets";
 import { HttpRouteDestination } from "types/route";
 import Immutable from "immutable";

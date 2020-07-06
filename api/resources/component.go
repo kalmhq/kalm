@@ -2,7 +2,6 @@ package resources
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	coreV1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -45,11 +44,11 @@ type Component struct {
 }
 
 type ComponentDetails struct {
-	*Component  `json:",inline"`
-	Metrics     MetricHistories `json:"metrics"`
-	IstioMetric IstioMetric     `json:"istioMetric"`
-	Services    []ServiceStatus `json:"services"`
-	Pods        []PodStatus     `json:"pods"`
+	*Component           `json:",inline"`
+	Metrics              MetricHistories       `json:"metrics"`
+	IstioMetricHistories *IstioMetricHistories `json:"istioMetricHistories"`
+	Services             []ServiceStatus       `json:"services"`
+	Pods                 []PodStatus           `json:"pods"`
 }
 
 func labelsBelongsToComponent(name string) metaV1.ListOptions {
@@ -123,14 +122,16 @@ func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component, res
 		}
 	}
 
-	istioMetricRst := IstioMetric{}
-	for svcName, metric := range resources.IstioMetricList {
+	istioMetricRst := &IstioMetricHistories{}
+
+	for svcName, metric := range resources.IstioMetricHistories {
 		ownerCompName, ownerNsName := getComponentAndNSNameFromSvcName(svcName)
 		if (ownerCompName != component.Name && ownerCompName != component.Name+"-headless") ||
 			ownerNsName != component.Namespace {
 			continue
 		}
 
+		//todo need merge?
 		istioMetricRst = metric
 		break
 	}
@@ -146,8 +147,8 @@ func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component, res
 			CPU:    componentMetric.CPU,
 			Memory: componentMetric.Memory,
 		},
-		IstioMetric: istioMetricRst,
-		Pods:        podsStatus,
+		IstioMetricHistories: istioMetricRst,
+		Pods:                 podsStatus,
 	}
 
 	return details, nil
@@ -189,10 +190,10 @@ func (builder *Builder) BuildComponentDetailsResponse(components *v1alpha1.Compo
 		return nil, err
 	}
 
-	fmt.Println("istio metrics:", resources.IstioMetricList)
-	for _, one := range resources.IstioMetricList {
-		fmt.Printf("%+v", one.HTTP)
-	}
+	//fmt.Println("istio metricHistories:", resources.IstioMetricHistories)
+	//for _, one := range resources.IstioMetricHistories {
+	//	fmt.Printf("%+v", one.RequestsTotal)
+	//}
 
 	for i := range components.Items {
 		item, err := builder.BuildComponentDetails(&components.Items[i], resources)

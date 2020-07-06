@@ -3,6 +3,7 @@ import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/s
 import { Alert, AlertTitle } from "@material-ui/lab";
 import { KFreeSoloAutoCompleteMultiValues } from "forms/Basic/autoComplete";
 import { KCheckboxGroupRender } from "forms/Basic/checkbox";
+import { Link as RouteLink } from "react-router-dom";
 import { KRadioGroupRender } from "forms/Basic/radio";
 import { shouldError } from "forms/common";
 import { ROUTE_FORM_ID } from "forms/formIDs";
@@ -159,11 +160,11 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
       <Alert severity={missingCertsCount === 0 ? "success" : "warning"}>
         {missingCertsHosts.length > 0 ? (
           <AlertTitle>
-            {missingCertsHosts.length} host{missingCertsHosts.length > 1 ? "s are" : " is"} missing valid
-            certifications.
+            {missingCertsHosts.length} host{missingCertsHosts.length > 1 ? "s are" : " is"} missing valid SSL
+            certificate signed by a certificate authority.
           </AlertTitle>
         ) : (
-          <AlertTitle>All hosts have valid TLS certifications.</AlertTitle>
+          <AlertTitle>All hosts have valid SSL certifications signed by a certificate authority.</AlertTitle>
         )}
 
         {missingCertsHosts.length > 0 ? (
@@ -180,30 +181,11 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
 
             <Box marginBottom={1}>
               <Typography>
-                Default tls certificaion will be used for these domains. Invalid SSL certificate / Intermediate
-                certificates error could occur when you try to access this route.
-              </Typography>
-            </Box>
-
-            <Box pl={1}>
-              <Typography>
-                1) One solution is{" "}
-                <Link href="#" variant="body2">
-                  download
-                </Link>{" "}
-                and trust default CA certification. Note that this is limited to development and test environments.{" "}
-                <Link href="#" variant="body2">
-                  Learn more
-                </Link>
-                .
-              </Typography>
-
-              <Typography>
-                2) (Recommanded) Create a https certification for the missing hosts.{" "}
-                <Link href="#" variant="body2">
-                  Go to certification page
-                </Link>
-                .
+                Default tls certificate will be used for these domains. Invalid SSL certificate / Intermediate
+                certificates error could occur when you try to access this route. Kalm provides a free & simple way to
+                fix this issue in seconds.
+                <RouteLink to="/certificates">Go to certification page</RouteLink>, and create a certificate for your
+                domain.
               </Typography>
             </Box>
           </>
@@ -216,7 +198,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
               variant="body2"
               onClick={() => this.setState({ isValidCertificationUnfolded: !isValidCertificationUnfolded })}
             >
-              >> View hosts that have valid certificaions.
+              >> View hosts that have valid certificates.
             </Link>
           </Box>
         ) : null}

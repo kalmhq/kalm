@@ -2,6 +2,7 @@ package resources
 
 import (
 	coreV1 "k8s.io/api/core/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 
@@ -40,4 +41,25 @@ func getPodStatusPhase(pod coreV1.Pod, warnings []coreV1.Event) coreV1.PodPhase 
 
 	// pending
 	return coreV1.PodPending
+}
+
+type PodListChannel struct {
+	List  chan *coreV1.PodList
+	Error chan error
+}
+
+func (builder *Builder) GetPodListChannel(opts ...client.ListOption) *PodListChannel {
+	channel := &PodListChannel{
+		List:  make(chan *coreV1.PodList, 1),
+		Error: make(chan error, 1),
+	}
+
+	go func() {
+		var list coreV1.PodList
+		err := builder.List(&list, opts...)
+		channel.List <- &list
+		channel.Error <- err
+	}()
+
+	return channel
 }

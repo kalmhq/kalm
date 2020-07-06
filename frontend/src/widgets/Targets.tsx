@@ -24,6 +24,7 @@ class TargetsRaw extends React.PureComponent<Props> {
     const pointHeight = 32;
     const pointMargin = 10;
     const spaceHeight = size * (pointHeight + pointMargin) - pointMargin;
+    const paddingTop = size > 1 ? "0" : "8px";
 
     const outputs: any = {};
     destinations.forEach((x, index) => {
@@ -57,7 +58,7 @@ class TargetsRaw extends React.PureComponent<Props> {
           outputs={outputs}
           width={12}
           height={leftPoinitHeight}
-        ></Flowpoint>
+        />
 
         {destinations.map((x, index) => {
           return (
@@ -70,9 +71,9 @@ class TargetsRaw extends React.PureComponent<Props> {
                 color: "#000",
                 textAlign: "center",
                 minWidth: "112px",
+                paddingTop: paddingTop,
               }}
               key={`point_${index}`}
-              // width={112}
               height={pointHeight}
               startPosition={{ x: 80, y: index * (pointHeight + pointMargin) }}
               dragX={false}
@@ -84,7 +85,7 @@ class TargetsRaw extends React.PureComponent<Props> {
                   .replace(`.${activeNamespaceName}.svc.cluster.local`, "")
                   .replace(`.svc.cluster.local`, "")}
               </Box>
-              <Box>{Math.floor((x.get("weight") / sum) * 1000 + 0.5) / 10}%</Box>
+              {size > 1 && <Box>{Math.floor((x.get("weight") / sum) * 1000 + 0.5) / 10}%</Box>}
             </Flowpoint>
           );
         })}

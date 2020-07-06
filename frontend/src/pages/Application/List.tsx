@@ -22,13 +22,13 @@ import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { FoldButtonGroup } from "widgets/FoldButtonGroup";
-import { KappConsoleIcon, KappLogIcon } from "widgets/Icon";
+import { KalmConsoleIcon, KalmLogIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { Body, H4 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { KTable } from "widgets/Table";
-import { getApplicationCreatedAtString } from "../../utils/application";
+import { getApplicationCreatedAtString } from "utils/application";
 import { BasePage } from "../BasePage";
 import { POPPER_ZINDEX } from "layout/Constants";
 
@@ -269,7 +269,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           size={"small"}
           to={`/applications/${rowData.get("name")}/shells`}
         >
-          <KappConsoleIcon />
+          <KalmConsoleIcon />
         </IconButtonWithTooltip>
         <IconButtonWithTooltip
           onClick={() => blinkTopProgressAction()}
@@ -279,7 +279,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           size={"small"}
           to={`/applications/${rowData.get("name")}/logs`}
         >
-          <KappLogIcon />
+          <KalmLogIcon />
         </IconButtonWithTooltip>
       </>
     );

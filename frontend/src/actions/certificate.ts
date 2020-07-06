@@ -8,20 +8,20 @@ import {
   CREATE_CERTIFICATE,
   CREATE_CERTIFICATE_ISSUER,
   DELETE_CERTIFICATE,
+  LOAD_CERTIFICATE_ISSUERS_FULFILLED,
+  LOAD_CERTIFICATE_ISSUERS_PENDING,
   LOAD_CERTIFICATES_FAILED,
   LOAD_CERTIFICATES_FULFILLED,
   LOAD_CERTIFICATES_PENDING,
-  LOAD_CERTIFICATE_ISSUERS_FULFILLED,
-  LOAD_CERTIFICATE_ISSUERS_PENDING,
   selfManaged,
-  SetEditCertificateModal,
-  SetIsSubmittingCertificate,
   SET_EDIT_CERTIFICATE_MODAL,
   SET_IS_SUBMITTING_CERTIFICATE,
+  SetEditCertificateModal,
+  SetIsSubmittingCertificate
 } from "types/certificate";
-import { ThunkResult } from "../types";
+import { ThunkResult } from "types";
 
-export const setEditCertificateModal = (certificate: Certificate | null): SetEditCertificateModal => {
+export const setEditCertificateModalAction = (certificate: Certificate | null): SetEditCertificateModal => {
   return {
     type: SET_EDIT_CERTIFICATE_MODAL,
     payload: {
@@ -41,7 +41,7 @@ export const deleteCertificateAction = (name: string): ThunkResult<Promise<void>
   };
 };
 
-export const loadCertificates = (): ThunkResult<Promise<void>> => {
+export const loadCertificatesAction = (): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
     dispatch({ type: LOAD_CERTIFICATES_PENDING });
     try {
@@ -59,7 +59,7 @@ export const loadCertificates = (): ThunkResult<Promise<void>> => {
   };
 };
 
-export const loadCertificateIssuers = (): ThunkResult<Promise<void>> => {
+export const loadCertificateIssuersAction = (): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
     dispatch({ type: LOAD_CERTIFICATE_ISSUERS_PENDING });
     try {
@@ -82,7 +82,7 @@ export const createCertificateAction = (
   isEdit?: boolean,
 ): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
-    dispatch(setIsSubmittingCertificate(true));
+    dispatch(setIsSubmittingCertificateAction(true));
 
     let certificate: Certificate;
     try {
@@ -91,10 +91,10 @@ export const createCertificateAction = (
         isEdit,
       );
     } catch (e) {
-      dispatch(setIsSubmittingCertificate(false));
+      dispatch(setIsSubmittingCertificateAction(false));
       throw e;
     }
-    dispatch(setIsSubmittingCertificate(false));
+    dispatch(setIsSubmittingCertificateAction(false));
 
     dispatch({ type: CREATE_CERTIFICATE, payload: { certificate } });
   };
@@ -105,22 +105,22 @@ export const createCertificateIssuerAction = (
   isEdit?: boolean,
 ): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
-    dispatch(setIsSubmittingCertificate(true));
+    dispatch(setIsSubmittingCertificateAction(true));
 
     let certificateIssuer: CertificateIssuer;
     try {
       certificateIssuer = await api.createCertificateIssuer(certificateIssuerContent, isEdit);
     } catch (e) {
-      dispatch(setIsSubmittingCertificate(false));
+      dispatch(setIsSubmittingCertificateAction(false));
       throw e;
     }
-    dispatch(setIsSubmittingCertificate(false));
+    dispatch(setIsSubmittingCertificateAction(false));
 
     dispatch({ type: CREATE_CERTIFICATE_ISSUER, payload: { certificateIssuer } });
   };
 };
 
-export const setIsSubmittingCertificate = (isSubmittingCertificate: boolean): SetIsSubmittingCertificate => {
+export const setIsSubmittingCertificateAction = (isSubmittingCertificate: boolean): SetIsSubmittingCertificate => {
   return {
     type: SET_IS_SUBMITTING_CERTIFICATE,
     payload: {
@@ -129,7 +129,7 @@ export const setIsSubmittingCertificate = (isSubmittingCertificate: boolean): Se
   };
 };
 
-export const createDefaultTestCert = async (dispatch: any) => {
+export const createDefaultTestCertAction = async (dispatch: any) => {
   const crt =
     "-----BEGIN CERTIFICATE-----\nMIICRTCCAa4CCQCU0lidoQAueDANBgkqhkiG9w0BAQUFADBnMQswCQYDVQQGEwJD\nTjENMAsGA1UECAwEZGRleDERMA8GA1UEBwwIU2hhbmdoYWkxETAPBgNVBAoMCFNo\nYW5naGFpMREwDwYDVQQLDAhTaGFuZ2hhaTEQMA4GA1UEAwwHZGRleC5pbzAeFw0y\nMDA1MjgwOTM4MTRaFw0zMDA1MjYwOTM4MTRaMGcxCzAJBgNVBAYTAkNOMQ0wCwYD\nVQQIDARkZGV4MREwDwYDVQQHDAhTaGFuZ2hhaTERMA8GA1UECgwIU2hhbmdoYWkx\nETAPBgNVBAsMCFNoYW5naGFpMRAwDgYDVQQDDAdkZGV4LmlvMIGfMA0GCSqGSIb3\nDQEBAQUAA4GNADCBiQKBgQCxl4X2ZDmh2DNzuu1uVQIS1h2ONCv5r2jWHmc3r/sY\nzm1v/C5sv03l5iZYjFfvYiIU/8SOnghOTL/7nJL6g3Ik/pgqXiTX5sgDyQ/rUX4m\nwZi97kR9xylT91znNJtbTq+01niMpsAkOQXYLLkrHfkBVIAkW3oGrVkNrrA8q7uW\n4QIDAQABMA0GCSqGSIb3DQEBBQUAA4GBADiZ4DbYiEKm6aNq/PlZ+8as78PK9LYq\nVYvubKyo6SYATa7l23uPhX1NQ8QOPsZhAO0Bf3Wm2sCQODAp2I8ph+etSihzkVyr\n6aDQ2XJFtTEUKxgNqIeAzyNAtoXSJDmprN5z/n1F/hQ1c+K/DiXVlIuoicm8XgCI\n6DxcpbsaZPLI\n-----END CERTIFICATE-----\n";
   const pk =

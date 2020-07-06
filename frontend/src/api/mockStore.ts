@@ -87,7 +87,7 @@ export default class MockStore {
     await this.saveData();
   };
 
-  public deleteKappApplication = async (name: string): Promise<void> => {
+  public deleteApplication = async (name: string): Promise<void> => {
     const index = this.data.get("mockApplications").findIndex((c) => c.get("name") === name);
     const application = this.data.getIn(["mockApplications", index]);
     this.data = this.data.deleteIn(["mockApplications", index]);
@@ -98,7 +98,7 @@ export default class MockStore {
     });
   };
 
-  public deleteKappApplicationComponent = async (applicationName: string, name: string) => {
+  public deleteApplicationComponent = async (applicationName: string, name: string) => {
     const index = this.data
       .get("mockApplicationComponents")
       .get(applicationName)
@@ -145,7 +145,7 @@ export default class MockStore {
     await this.saveData();
   };
 
-  public updateKappApplication = async (application: ApplicationDetails) => {
+  public updateApplication = async (application: ApplicationDetails) => {
     const index = this.data.get("mockApplications").findIndex((c) => c.get("name") === application.get("name"));
     let data = {
       kind: "Application",
@@ -161,7 +161,7 @@ export default class MockStore {
     await this.saveData(data);
   };
 
-  public updateKappApplicationComponent = async (applicationName: string, component: ApplicationComponentDetails) => {
+  public updateApplicationComponent = async (applicationName: string, component: ApplicationComponentDetails) => {
     const index = this.data
       .get("mockApplicationComponents")
       .get(applicationName)
@@ -220,7 +220,7 @@ export default class MockStore {
       mockLoginStatus: Immutable.fromJS({
         authorized: true,
         isAdmin: true,
-        entity: "system:serviceaccount:default:kapp-sample-user",
+        entity: "system:serviceaccount:default:kalm-sample-user",
         csrf: "",
       }),
 
@@ -559,14 +559,14 @@ export default class MockStore {
                 },
                 {
                   names: [
-                    "kappstaging/dashboard@sha256:8e56397ad21d8d4c26adb82c6a7058e28584a47bb49234a4f3c28c4aee3a8caa",
+                    "kalmstaging/dashboard@sha256:8e56397ad21d8d4c26adb82c6a7058e28584a47bb49234a4f3c28c4aee3a8caa",
                   ],
                   sizeBytes: 83470034,
                 },
                 {
                   names: [
-                    "kappstaging/dashboard@sha256:ccfd36b5cd3b44e678eb84bc7bf0e49ca3ec7d74a04e7216037d874f5eb79972",
-                    "kappstaging/dashboard:latest",
+                    "kalmstaging/dashboard@sha256:ccfd36b5cd3b44e678eb84bc7bf0e49ca3ec7d74a04e7216037d874f5eb79972",
+                    "kalmstaging/dashboard:latest",
                   ],
                   sizeBytes: 83467987,
                 },
@@ -4161,8 +4161,8 @@ export default class MockStore {
                 },
                 {
                   names: [
-                    "kappstaging/dashboard@sha256:bca86dceab0becb149b2cc5912ab8ef58042d77e547df06cd64baa63091c13a0",
-                    "kappstaging/dashboard:latest",
+                    "kalmstaging/dashboard@sha256:bca86dceab0becb149b2cc5912ab8ef58042d77e547df06cd64baa63091c13a0",
+                    "kalmstaging/dashboard:latest",
                   ],
                   sizeBytes: 83467987,
                 },
@@ -7081,14 +7081,14 @@ export default class MockStore {
 
       mockStorageClasses: Immutable.fromJS([
         { name: "standard", isManaged: false },
-        { name: "kapp-standard", isManaged: true },
+        { name: "kalm-standard", isManaged: true },
       ]),
 
       mockSimpleOptions: Immutable.fromJS([
         {
           name: "my-pvc-hello-sts-1",
           isInUse: false,
-          componentNamespace: "kapp-vols",
+          componentNamespace: "kalm-vols",
           componentName: "hello-sts",
           capacity: "1Mi",
           pvc: "my-pvc-hello-sts-1",
@@ -7100,7 +7100,7 @@ export default class MockStore {
         {
           name: "my-pvc",
           isInUse: false,
-          componentNamespace: "kapp-vols",
+          componentNamespace: "kalm-vols",
           componentName: "hello-sts",
           capacity: "1Mi",
           pvc: "my-pvc",
@@ -7111,7 +7111,7 @@ export default class MockStore {
 
       mockApplications: Immutable.fromJS([
         {
-          name: "kapp-bookinfo",
+          name: "kalm-bookinfo",
           metrics: {
             cpu: [
               { x: 1592832559000, y: 12 },
@@ -7208,7 +7208,7 @@ export default class MockStore {
       ]),
 
       mockApplicationComponents: Immutable.fromJS({
-        "kapp-bookinfo": [
+        "kalm-bookinfo": [
           {
             image: "docker.io/istio/examples-bookinfo-details-v1:1.15.0",
             nodeSelectorLabels: { "kubernetes.io/os": "linux" },
@@ -10038,7 +10038,7 @@ export default class MockStore {
           stripPath: true,
           destinations: [{ host: "productpage", weight: 1 }],
           name: "bookinfo",
-          namespace: "kapp-bookinfo",
+          namespace: "kalm-bookinfo",
         },
       ]),
 
@@ -10290,54 +10290,54 @@ export default class MockStore {
         },
         {
           name: "details",
-          namespace: "kapp-bookinfo",
+          namespace: "kalm-bookinfo",
           ports: [{ name: "http", protocol: "TCP", port: 9080, targetPort: 9080 }],
-          selector: { "kapp-component": "details", "kapp-managed": "true", "kapp-namespace": "kapp-bookinfo" },
+          selector: { "kalm-component": "details", "kalm-managed": "true", "kalm-namespace": "kalm-bookinfo" },
           clusterIP: "10.96.134.65",
           type: "ClusterIP",
           sessionAffinity: "None",
         },
         {
           name: "productpage",
-          namespace: "kapp-bookinfo",
+          namespace: "kalm-bookinfo",
           ports: [{ name: "http", protocol: "TCP", port: 9080, targetPort: 9080 }],
-          selector: { "kapp-component": "productpage", "kapp-managed": "true", "kapp-namespace": "kapp-bookinfo" },
+          selector: { "kalm-component": "productpage", "kalm-managed": "true", "kalm-namespace": "kalm-bookinfo" },
           clusterIP: "10.108.63.128",
           type: "ClusterIP",
           sessionAffinity: "None",
         },
         {
           name: "ratings",
-          namespace: "kapp-bookinfo",
+          namespace: "kalm-bookinfo",
           ports: [{ name: "http", protocol: "TCP", port: 9080, targetPort: 9080 }],
-          selector: { "kapp-component": "ratings", "kapp-managed": "true", "kapp-namespace": "kapp-bookinfo" },
+          selector: { "kalm-component": "ratings", "kalm-managed": "true", "kalm-namespace": "kalm-bookinfo" },
           clusterIP: "10.111.22.171",
           type: "ClusterIP",
           sessionAffinity: "None",
         },
         {
           name: "reviews",
-          namespace: "kapp-bookinfo",
+          namespace: "kalm-bookinfo",
           ports: [{ name: "http", protocol: "TCP", port: 9080, targetPort: 9080 }],
-          selector: { "kapp-component": "reviews", "kapp-managed": "true", "kapp-namespace": "kapp-bookinfo" },
+          selector: { "kalm-component": "reviews", "kalm-managed": "true", "kalm-namespace": "kalm-bookinfo" },
           clusterIP: "10.102.124.195",
           type: "ClusterIP",
           sessionAffinity: "None",
         },
         {
           name: "reviews-v2",
-          namespace: "kapp-bookinfo",
+          namespace: "kalm-bookinfo",
           ports: [{ name: "http", protocol: "TCP", port: 9080, targetPort: 9080 }],
-          selector: { "kapp-component": "reviews-v2", "kapp-managed": "true", "kapp-namespace": "kapp-bookinfo" },
+          selector: { "kalm-component": "reviews-v2", "kalm-managed": "true", "kalm-namespace": "kalm-bookinfo" },
           clusterIP: "10.103.157.205",
           type: "ClusterIP",
           sessionAffinity: "None",
         },
         {
           name: "reviews-v3",
-          namespace: "kapp-bookinfo",
+          namespace: "kalm-bookinfo",
           ports: [{ name: "http", protocol: "TCP", port: 9080, targetPort: 9080 }],
-          selector: { "kapp-component": "reviews-v3", "kapp-managed": "true", "kapp-namespace": "kapp-bookinfo" },
+          selector: { "kalm-component": "reviews-v3", "kalm-managed": "true", "kalm-namespace": "kalm-bookinfo" },
           clusterIP: "10.104.32.91",
           type: "ClusterIP",
           sessionAffinity: "None",

@@ -2,7 +2,7 @@ import { InputAdornment, OutlinedInputProps } from "@material-ui/core";
 import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
 import React, { ChangeEvent } from "react";
 import { WrappedFieldProps } from "redux-form";
-import { KappConsoleIcon } from "../../widgets/Icon";
+import { KalmConsoleIcon } from "widgets/Icon";
 
 interface Props {
   endAdornment?: React.ReactNode;
@@ -168,7 +168,7 @@ export const KRenderCommandTextField = ({
       InputProps={{
         startAdornment: (
           <InputAdornment position="start">
-            <KappConsoleIcon />
+            <KalmConsoleIcon />
           </InputAdornment>
         ),
       }}

@@ -1,5 +1,5 @@
 import { LOAD_NODES_FAILED, LOAD_NODES_FULFILlED, LOAD_NODES_PENDING } from "types/node";
-import { ThunkResult } from "../types";
+import { ThunkResult } from "types";
 import { api } from "api";
 
 export const loadNodesAction = (): ThunkResult<Promise<void>> => {

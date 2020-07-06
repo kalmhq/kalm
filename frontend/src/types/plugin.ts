@@ -1,7 +1,7 @@
 import { ImmutableMap } from "typings";
 import Immutable from "immutable";
 
-export const EXTERNAL_ACCESS_PLUGIN_TYPE = "plugins.core.kapp.dev/v1alpha1.ingress";
+export const EXTERNAL_ACCESS_PLUGIN_TYPE = "plugins.core.kalm.dev/v1alpha1.ingress";
 
 export interface ExternalAccessPlugin {
   type: typeof EXTERNAL_ACCESS_PLUGIN_TYPE;

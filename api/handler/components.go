@@ -89,19 +89,6 @@ func (h *ApiHandler) handleDeleteComponent(c echo.Context) error {
 
 // helper
 
-//func getApplication(c echo.Context) (*v1alpha1.Application, error) {
-//	applicationName := c.Param("applicationName")
-//	var fetched v1alpha1.Application
-//
-//	err := getK8sClient(c).RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/applications/" + applicationName).Do().Into(&fetched)
-//
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	return &fetched, nil
-//}
-
 func deleteComponent(c echo.Context) error {
 	k8sClient := getK8sClient(c)
 	_, err := k8sClient.RESTClient().Delete().Body(c.Request().Body).AbsPath("/apis/core.kapp.dev/v1alpha1/namespaces/" + c.Param("applicationName") + "/components/" + c.Param("name")).DoRaw()

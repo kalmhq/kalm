@@ -6,7 +6,7 @@ import MoreVertIcon from "@material-ui/icons/MoreVert";
 import Icon from "@material-ui/core/Icon";
 import { Link } from "react-router-dom";
 import { NamespaceVisibleContainer } from "permission/Namespace";
-import { blinkTopProgressAction } from "../actions/settings";
+import { blinkTopProgressAction } from "actions/settings";
 
 const ITEM_HEIGHT = 48;
 

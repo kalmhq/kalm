@@ -1,8 +1,8 @@
 import React from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
-import { RootState } from "../../reducers";
-import { Actions } from "../../types";
+import { RootState } from "reducers";
+import { Actions } from "types";
 
 const mapStateToProps = (state: RootState) => {
   const certificates = state.get("certificates");

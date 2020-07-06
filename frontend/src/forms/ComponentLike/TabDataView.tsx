@@ -1,6 +1,5 @@
 import { Box, createStyles, Tab, Tabs, Theme, Typography, withStyles } from "@material-ui/core";
 import React from "react";
-import SyntaxHighlighter from "react-syntax-highlighter";
 import { monokai } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 interface TabPanelProps {
@@ -74,6 +73,7 @@ interface Props {
 
 interface State {
   tabIndex: number;
+  SyntaxHighlighter?: any;
 }
 
 export class TabDataView extends React.PureComponent<Props, State> {
@@ -84,13 +84,22 @@ export class TabDataView extends React.PureComponent<Props, State> {
     };
   }
 
+  public componentDidMount() {
+    import("react-syntax-highlighter").then((SyntaxHighlighter) => {
+      this.setState({ SyntaxHighlighter: SyntaxHighlighter.default });
+    });
+  }
+
   private handleChangeTab = (_event: React.ChangeEvent<{}>, newValue: number) => {
     this.setState({ tabIndex: newValue });
   };
 
   public render() {
     const { tabOptions } = this.props;
-    const { tabIndex } = this.state;
+    const { tabIndex, SyntaxHighlighter } = this.state;
+    if (!SyntaxHighlighter) {
+      return null;
+    }
 
     return (
       <div>
