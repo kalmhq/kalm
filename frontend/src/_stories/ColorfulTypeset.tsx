@@ -1,7 +1,7 @@
 import React, { ComponentClass } from "react";
-import { Box, BoxProps, WithStyles, Theme, createStyles, withStyles } from "@material-ui/core";
+import { Box, BoxProps, createStyles, Theme, WithStyles, withStyles } from "@material-ui/core";
 import clsx from "clsx";
-import { Caption } from "../widgets/Label";
+import { Caption } from "widgets/Label";
 
 const TypesetStyle = (theme: Theme) => {
   return createStyles({

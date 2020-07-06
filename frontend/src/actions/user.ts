@@ -1,4 +1,4 @@
-import { ThunkResult } from "../types";
+import { ThunkResult } from "types";
 import {
   CREATE_ROLE_BINDINGS_FAILED,
   CREATE_ROLE_BINDINGS_FULFILLED,
@@ -6,8 +6,8 @@ import {
   LOAD_ROLE_BINDINGS_FAILED,
   LOAD_ROLE_BINDINGS_FULFILLED,
   LOAD_ROLE_BINDINGS_PENDING,
-  RoleBindingsRequestBody,
-} from "../types/user";
+  RoleBindingsRequestBody
+} from "types/user";
 import { api } from "api";
 
 export const loadRoleBindingsAction = (): ThunkResult<Promise<void>> => {

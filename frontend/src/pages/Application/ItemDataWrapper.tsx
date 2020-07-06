@@ -6,8 +6,8 @@ import { RootState } from "reducers";
 import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "types";
 import { Loading } from "widgets/Loading";
-import { loadApplicationAction } from "../../actions/application";
-import { loadComponentsAction } from "../../actions/component";
+import { loadApplicationAction } from "actions/application";
+import { loadComponentsAction } from "actions/component";
 
 const mapStateToProps = (state: RootState, props: any) => {
   const applications = state.get("applications");

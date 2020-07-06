@@ -2,7 +2,7 @@ import { api } from "api";
 import { push } from "connected-react-router";
 import Immutable from "immutable";
 import { SubmissionError } from "redux-form";
-import { ThunkResult } from "../types";
+import { ThunkResult } from "types";
 import {
   Application,
   ApplicationComponentDetails,
@@ -21,9 +21,9 @@ import {
   SET_IS_SUBMITTING_APPLICATION_COMPONENT,
   SetIsSubmittingApplication,
   SetIsSubmittingApplicationComponent,
-  UPDATE_APPLICATION
-} from "../types/application";
-import { resErrorsToSubmitErrors } from "../utils";
+  UPDATE_APPLICATION,
+} from "types/application";
+import { resErrorsToSubmitErrors } from "utils";
 import { setCurrentNamespaceAction } from "./namespaces";
 import { setSuccessNotificationAction } from "./notification";
 

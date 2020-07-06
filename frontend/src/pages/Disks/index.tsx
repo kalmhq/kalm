@@ -8,14 +8,14 @@ import { connect } from "react-redux";
 import { DiskContent } from "types/disk";
 import { H4 } from "widgets/Label";
 import { KTable } from "widgets/Table";
-import { setErrorNotificationAction } from "../../actions/notification";
-import { deletePersistentVolumeAction } from "../../actions/persistentVolume";
-import { RootState } from "../../reducers";
+import { setErrorNotificationAction } from "actions/notification";
+import { deletePersistentVolumeAction } from "actions/persistentVolume";
+import { RootState } from "reducers";
 import { primaryColor } from "theme/theme";
-import { TDispatchProp } from "../../types";
-import { ConfirmDialog } from "../../widgets/ConfirmDialog";
-import { DeleteIcon } from "../../widgets/Icon";
-import { IconButtonWithTooltip } from "../../widgets/IconButtonWithTooltip";
+import { TDispatchProp } from "types";
+import { ConfirmDialog } from "widgets/ConfirmDialog";
+import { DeleteIcon } from "widgets/Icon";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { BasePage } from "../BasePage";
 
 const mapStateToProps = (state: RootState) => {

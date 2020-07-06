@@ -8,9 +8,9 @@ import { WrappedFieldArrayProps } from "redux-form";
 import { Field } from "redux-form/immutable";
 import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { HttpRouteDestination } from "../../types/route";
+import { HttpRouteDestination } from "types/route";
 import { ValidatorRequired } from "../validator";
-import { RootState } from "../../reducers";
+import { RootState } from "reducers";
 import { connect } from "react-redux";
 import Typography from "@material-ui/core/Typography";
 

@@ -1,12 +1,12 @@
-import { SomethingWrong, ThunkResult } from "../types";
+import { SomethingWrong, ThunkResult } from "types";
 import {
   LOAD_LOGIN_STATUS_FAILED,
   LOAD_LOGIN_STATUS_FULFILLED,
   LOAD_LOGIN_STATUS_PENDING,
   LOGOUT,
   LogoutAction,
-  SET_AUTH_TOKEN,
-} from "../types/common";
+  SET_AUTH_TOKEN
+} from "types/common";
 import { setErrorNotificationAction } from "./notification";
 import { LoginStatus } from "types/authorization";
 import { api } from "api";

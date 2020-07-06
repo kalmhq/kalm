@@ -4,7 +4,7 @@ export default {};
 // import { WrappedFieldArrayProps } from "redux-form";
 // import { Field, FieldArray } from "redux-form/immutable";
 // import { getApplicationEnvStatus, getCurrentFormApplication } from "../../selectors/application";
-// import { SharedEnv } from "../../types/application";
+// import { SharedEnv } from "types/application";
 // import { RenderAutoCompleteFreeSolo } from "../Basic/autoComplete";
 // import { FieldArrayWrapper } from "../Basic/FieldArrayWrapper";
 // import { ValidatorRequired } from "../validator";

@@ -19,7 +19,7 @@ import { Store } from "redux";
 import { change } from "redux-form";
 import { Application } from "types/application";
 import { ComponentLike, newEmptyComponentLike } from "types/componentTemplate";
-import { newEmptyCertificateForm, selfManaged } from "../types/certificate";
+import { newEmptyCertificateForm, selfManaged } from "types/certificate";
 import { getTestFormSyncErrors } from "../utils/testUtils";
 import { ThemeProvider } from "@material-ui/core";
 import { theme } from "theme";

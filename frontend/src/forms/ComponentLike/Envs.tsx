@@ -6,7 +6,7 @@ import { arrayPush, WrappedFieldArrayProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
 import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { EnvItem, SharedEnv } from "../../types/application";
+import { EnvItem, SharedEnv } from "types/application";
 import { RenderAutoCompleteFreeSolo } from "../Basic/autoComplete";
 import { KRenderTextField } from "../Basic/textfield";
 import { ValidatorEnvName, ValidatorRequired } from "../validator";

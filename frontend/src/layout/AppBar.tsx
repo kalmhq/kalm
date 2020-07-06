@@ -12,7 +12,7 @@ import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { FlexRowItemCenterBox } from "widgets/Box";
-import { blinkTopProgressAction, setSettingsAction } from "../actions/settings";
+import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
 import { APP_BAR_HEIGHT, APP_BAR_ZINDEX } from "./Constants";
 
 const mapStateToProps = (state: RootState) => {

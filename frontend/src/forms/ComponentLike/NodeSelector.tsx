@@ -6,11 +6,7 @@ import Autocomplete from "@material-ui/lab/Autocomplete";
 import Immutable from "immutable";
 import React from "react";
 import { WrappedFieldProps } from "redux-form";
-import {
-  NodeSelectorLabels,
-  PodAffinityTypePreferFanout,
-  PodAffinityTypePreferGather,
-} from "../../types/componentTemplate";
+import { NodeSelectorLabels, PodAffinityTypePreferFanout, PodAffinityTypePreferGather } from "types/componentTemplate";
 import { RenderSelectField } from "../Basic/select";
 
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;

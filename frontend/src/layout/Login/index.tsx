@@ -2,9 +2,9 @@ import { push } from "connected-react-router";
 import React, { ChangeEvent } from "react";
 import { connect } from "react-redux";
 import { ThunkDispatch } from "redux-thunk";
-import { Actions } from "../../types";
-import { validateTokenAction } from "../../actions/auth";
-import { RootState } from "../../reducers";
+import { Actions } from "types";
+import { validateTokenAction } from "actions/auth";
+import { RootState } from "reducers";
 import { Button, createStyles, Paper, TextField, Theme, WithStyles, withStyles } from "@material-ui/core";
 
 const styles = (theme: Theme) =>

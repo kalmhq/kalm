@@ -5,7 +5,7 @@ import {
   ApplicationComponentDetails,
   ApplicationDetails,
   ApplicationPlugin,
-  ComponentPlugin
+  ComponentPlugin,
 } from "types/application";
 import { LoginStatus } from "types/authorization";
 import {
@@ -14,7 +14,7 @@ import {
   CertificateIssuer,
   CertificateIssuerFormType,
   CertificateIssuerList,
-  CertificateList
+  CertificateList,
 } from "types/certificate";
 import { ClusterInfo } from "types/cluster";
 import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
@@ -53,10 +53,7 @@ export abstract class Api {
   public abstract getApplicationComponentList(
     applicationName: string,
   ): Promise<Immutable.List<ApplicationComponentDetails>>;
-  public abstract getApplicationComponent(
-    applicationName: string,
-    name: string,
-  ): Promise<ApplicationComponentDetails>;
+  public abstract getApplicationComponent(applicationName: string, name: string): Promise<ApplicationComponentDetails>;
   public abstract createApplicationComponent(
     applicationName: string,
     component: ApplicationComponent,
