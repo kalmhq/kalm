@@ -81,7 +81,7 @@ func buildNamespaceResMessage(c *Client, action string, objWatched interface{}) 
 	}
 
 	if _, exist := namespace.Labels[controllers.KappEnableLabelName]; !exist {
-		return nil, errors.New("Namespace " + namespace.Name + " has no kapp-enabled label")
+		return &ResMessage{}, nil
 	}
 
 	builder := resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, log.New())
@@ -130,7 +130,7 @@ func buildServiceResMessage(c *Client, action string, objWatched interface{}) (*
 
 	componentName := service.Labels["kapp-component"]
 	if componentName == "" {
-		return nil, errors.New("Service " + service.Name + " has no kapp-component label")
+		return &ResMessage{}, nil
 	}
 
 	component, err := handler.GetComponent(c.K8sClientset, service.Namespace, componentName)
@@ -149,7 +149,7 @@ func buildPodResMessage(c *Client, action string, objWatched interface{}) (*ResM
 
 	componentName := pod.Labels["kapp-component"]
 	if componentName == "" {
-		return nil, errors.New("Pod " + pod.Name + " has no kapp-component label")
+		return &ResMessage{}, nil
 	}
 
 	component, err := handler.GetComponent(c.K8sClientset, pod.Namespace, componentName)
