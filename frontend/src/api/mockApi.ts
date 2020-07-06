@@ -1,7 +1,7 @@
 import { Api } from "./base";
 import Immutable from "immutable";
-import { CertificateIssuerFormType, CertificateFormType } from "types/certificate";
-import { ApplicationDetails, ApplicationComponentDetails, Application, ApplicationComponent } from "types/application";
+import { CertificateFormType, CertificateIssuerFormType } from "types/certificate";
+import { Application, ApplicationComponent, ApplicationComponentDetails, ApplicationDetails } from "types/application";
 import { HttpRoute } from "types/route";
 import { RegistryType } from "types/registry";
 import { RoleBindingsRequestBody } from "types/user";
@@ -54,19 +54,19 @@ export default class MockApi extends Api {
     return mockStore.data.get("mockRegistries");
   };
 
-  public getKappApplicationList = async () => {
+  public getApplicationList = async () => {
     return mockStore.data.get("mockApplications");
   };
 
-  public getKappApplication = async (name: string) => {
+  public getApplication = async (name: string) => {
     return mockStore.data.get("mockApplications").find((application) => application.get("name") === name)!;
   };
 
-  public getKappApplicationComponentList = async (applicationName: string) => {
+  public getApplicationComponentList = async (applicationName: string) => {
     return mockStore.data.getIn(["mockApplicationComponents", applicationName]);
   };
 
-  public getKappApplicationComponent = async (applicationName: string, name: string) => {
+  public getApplicationComponent = async (applicationName: string, name: string) => {
     return mockStore.data
       .get("mockApplicationComponents")
       .get(applicationName)
@@ -104,7 +104,7 @@ export default class MockApi extends Api {
     return httpRoute;
   };
 
-  public createKappApplication = async (application: Application) => {
+  public createApplication = async (application: Application) => {
     let applicationDetails = application as ApplicationDetails;
     applicationDetails = applicationDetails.set(
       "metrics",
@@ -115,11 +115,11 @@ export default class MockApi extends Api {
     );
     applicationDetails = applicationDetails.set("roles", Immutable.fromJS(["writer", "reader"]));
     applicationDetails = applicationDetails.set("status", "Active");
-    await mockStore.updateKappApplication(applicationDetails);
+    await mockStore.updateApplication(applicationDetails);
     return application as ApplicationDetails;
   };
 
-  public createKappApplicationComponent = async (applicationName: string, component: ApplicationComponent) => {
+  public createApplicationComponent = async (applicationName: string, component: ApplicationComponent) => {
     let componentDetails = component as ApplicationComponentDetails;
     componentDetails = componentDetails.set(
       "metrics",
@@ -130,7 +130,7 @@ export default class MockApi extends Api {
     );
     componentDetails = componentDetails.set("services", Immutable.fromJS([]));
     componentDetails = componentDetails.set("pods", Immutable.List([mockStore.data.get("mockErrorPod")]));
-    await mockStore.updateKappApplicationComponent(applicationName, componentDetails);
+    await mockStore.updateApplicationComponent(applicationName, componentDetails);
     return componentDetails;
   };
 
@@ -151,12 +151,12 @@ export default class MockApi extends Api {
     return true;
   };
 
-  public deleteKappApplication = async (name: string): Promise<void> => {
-    await mockStore.deleteKappApplication(name);
+  public deleteApplication = async (name: string): Promise<void> => {
+    await mockStore.deleteApplication(name);
   };
 
-  public deleteKappApplicationComponent = async (applicationName: string, name: string) => {
-    await mockStore.deleteKappApplicationComponent(applicationName, name);
+  public deleteApplicationComponent = async (applicationName: string, name: string) => {
+    await mockStore.deleteApplicationComponent(applicationName, name);
   };
 
   public loadServices = async (name: string) => {
@@ -179,11 +179,11 @@ export default class MockApi extends Api {
   public deleteRoleBindings = async (namespace: string, bindingName: string) => {};
 
   // TODO (has not been used)
-  public getKappApplicationPlugins = async () => {
+  public getApplicationPlugins = async () => {
     return [];
   };
 
-  public getKappComponentPlugins = async () => {
+  public getComponentPlugins = async () => {
     return mockStore.data.get("mockComponentPlugins").toArray();
   };
 
@@ -206,13 +206,13 @@ export default class MockApi extends Api {
     return Immutable.fromJS(httpRoute);
   };
 
-  public updateKappApplication = async (application: Application) => {
-    await mockStore.updateKappApplication(application as ApplicationDetails);
+  public updateApplication = async (application: Application) => {
+    await mockStore.updateApplication(application as ApplicationDetails);
     return Immutable.fromJS(application);
   };
 
-  public updateKappApplicationComponent = async (applicationName: string, component: ApplicationComponent) => {
-    await mockStore.updateKappApplicationComponent(applicationName, component as ApplicationComponentDetails);
+  public updateApplicationComponent = async (applicationName: string, component: ApplicationComponent) => {
+    await mockStore.updateApplicationComponent(applicationName, component as ApplicationComponentDetails);
     return Immutable.fromJS(component);
   };
 

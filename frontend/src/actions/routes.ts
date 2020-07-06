@@ -11,9 +11,9 @@ import {
   LOAD_ROUTES_PENDING,
   UPDATE_ROUTE_FAILED,
   UPDATE_ROUTE_FULFILLED,
-  UPDATE_ROUTE_PENDING,
+  UPDATE_ROUTE_PENDING
 } from "types/route";
-import { ThunkResult } from "../types";
+import { ThunkResult } from "types";
 import { setErrorNotificationAction } from "./notification";
 import { api } from "api";
 

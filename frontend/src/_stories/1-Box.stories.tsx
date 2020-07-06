@@ -1,14 +1,14 @@
 import React from "react";
-import { text, select } from "@storybook/addon-knobs";
+import { select } from "@storybook/addon-knobs";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { KTable } from "widgets/Table";
 import { MTableBodyRow } from "material-table";
 import { ImmutableMap } from "typings";
 import Immutable from "immutable";
-import { SuccessBadge, PendingBadge, ErrorBadge } from "widgets/Badge";
+import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { action } from "@storybook/addon-actions";
-import { EditIcon, DeleteIcon } from "widgets/Icon";
+import { DeleteIcon, EditIcon } from "widgets/Icon";
 
 export default {
   title: "Widgets/Box",
@@ -135,18 +135,8 @@ const renderType = (rowData: RowData) => {
   return rowData.get("isSelfManaged") ? "UPLOADED" : "MANAGED";
 };
 
-const getSelect = (labelValue: string, optionsValue: string[], defaultV: string, group: string) => {
-  const label = labelValue;
-  const options = optionsValue;
-  const defaultValue = defaultV;
-  const groupId = group;
-  const value = select(label, options, defaultValue, groupId);
-
-  return value;
-};
-
 const getCertifiate = () => {
-  const domains = Immutable.List(["www.kapp.com", "dashboard.kapp.live"]);
+  const domains = Immutable.List(["kalm.dev"]);
   return Immutable.Map({
     name: "Certificates for Domains",
     domains: domains,

@@ -1,6 +1,6 @@
 import { api } from "api";
 import Immutable from "immutable";
-import { ThunkResult } from "../types";
+import { ThunkResult } from "types";
 import {
   ApplicationComponent,
   ApplicationComponentDetails,
@@ -10,8 +10,8 @@ import {
   LOAD_COMPONENTS_FULFILLED,
   LOAD_COMPONENTS_PENDING,
   UPDATE_COMPONENT,
-} from "../types/application";
-import { correctComponentFormValuesForSubmit } from "../utils/application";
+} from "types/application";
+import { correctComponentFormValuesForSubmit } from "utils/application";
 import { setIsSubmittingApplicationComponent } from "./application";
 import { setSuccessNotificationAction } from "./notification";
 
@@ -21,7 +21,7 @@ export const loadComponentsAction = (namespace: string): ThunkResult<Promise<voi
 
     let components: Immutable.List<ApplicationComponentDetails>;
     try {
-      components = await api.getKappApplicationComponentList(namespace);
+      components = await api.getApplicationComponentList(namespace);
     } catch (e) {
       dispatch({ type: LOAD_COMPONENTS_FAILED });
       throw e;
@@ -49,7 +49,7 @@ export const createComponentAction = (
 
     let component: ApplicationComponentDetails;
     try {
-      component = await api.createKappApplicationComponent(
+      component = await api.createApplicationComponent(
         applicationName,
         correctComponentFormValuesForSubmit(getState(), componentValues),
       );
@@ -81,7 +81,7 @@ export const updateComponentAction = (
 
     let component: ApplicationComponentDetails;
     try {
-      component = await api.updateKappApplicationComponent(
+      component = await api.updateApplicationComponent(
         applicationName,
         correctComponentFormValuesForSubmit(getState(), componentValues),
       );
@@ -105,7 +105,7 @@ export const deleteComponentAction = (componentName: string, applicationName?: s
       applicationName = getState().get("namespaces").get("active");
     }
 
-    await api.deleteKappApplicationComponent(applicationName, componentName);
+    await api.deleteApplicationComponent(applicationName, componentName);
 
     dispatch({
       type: DELETE_COMPONENT,

@@ -12,7 +12,7 @@ import {
 import FormHelperText from "@material-ui/core/FormHelperText";
 import React from "react";
 import { WrappedFieldMetaProps, WrappedFieldProps } from "redux-form";
-import { ID } from "../../utils";
+import { ID } from "utils";
 
 const renderFormHelper = ({ touched, error }: Pick<WrappedFieldMetaProps, "touched" | "error">) => {
   if (!(touched && error)) {

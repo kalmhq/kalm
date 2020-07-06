@@ -1,15 +1,13 @@
 import { push } from "connected-react-router";
 import queryString from "query-string";
-import { ThunkResult } from "../types";
-import { SET_CURRENT_NAMESPACE } from "../types/namespace";
+import { ThunkResult } from "types";
+import { SET_CURRENT_NAMESPACE } from "types/namespace";
 
 export const setCurrentNamespaceAction = (namespace: string, redirect: boolean = true): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
     if (redirect) {
       const pathname = window.location.pathname;
 
-      // eg. /applications/kapp-hipster or /applications/kapp-hipster/log
-      // ["", "applications", "kapp-hipster"]
       const pathnameSplits = pathname.split("/");
       if (pathnameSplits[1] && pathnameSplits[2] && pathnameSplits[1] === "applications") {
         pathnameSplits[2] = namespace;

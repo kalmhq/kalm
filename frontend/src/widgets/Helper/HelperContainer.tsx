@@ -1,7 +1,7 @@
 import { Collapse } from "@material-ui/core";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
-import { RootState } from "../../reducers";
+import { RootState } from "reducers";
 
 const mapStateToProps = (state: RootState) => {
   return {

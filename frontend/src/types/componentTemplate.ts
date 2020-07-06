@@ -1,5 +1,5 @@
 import Immutable from "immutable";
-import { ImmutableMap } from "../typings";
+import { ImmutableMap } from "typings";
 import { PluginType } from "./plugin";
 
 export type WorkloadType = string;

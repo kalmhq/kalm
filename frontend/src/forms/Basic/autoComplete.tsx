@@ -10,7 +10,7 @@ import clsx from "clsx";
 import Immutable from "immutable";
 import React from "react";
 import { WrappedFieldProps } from "redux-form";
-import { ID } from "../../utils";
+import { ID } from "utils";
 import { AutocompleteProps } from "@material-ui/lab/Autocomplete/Autocomplete";
 
 export interface ReduxFormMultiTagsFreeSoloAutoCompleteProps

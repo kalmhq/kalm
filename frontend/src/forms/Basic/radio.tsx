@@ -5,7 +5,7 @@ import Radio from "@material-ui/core/Radio";
 import RadioGroup from "@material-ui/core/RadioGroup";
 import React from "react";
 import { WrappedFieldProps } from "redux-form";
-import { Caption } from "../../widgets/Label";
+import { Caption } from "widgets/Label";
 
 interface KRadioGroupRenderOption {
   value: string;

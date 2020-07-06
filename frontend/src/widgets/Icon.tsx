@@ -105,7 +105,7 @@ export const ArrowBackIcon = withStyles(styles)((props: IconsProps) => {
   return <ArrowBack className={classes.action} color={color} fontSize={fontSize} style={style} />;
 });
 
-export const KappConsoleIcon = withStyles(styles)((props: IconsProps) => {
+export const KalmConsoleIcon = withStyles(styles)((props: IconsProps) => {
   const { color, fontSize, style } = props;
   return (
     <SvgIcon color={color} fontSize={fontSize} style={style}>
@@ -114,7 +114,7 @@ export const KappConsoleIcon = withStyles(styles)((props: IconsProps) => {
   );
 });
 
-export const KappLogIcon = withStyles(styles)((props: IconsProps) => {
+export const KalmLogIcon = withStyles(styles)((props: IconsProps) => {
   const { color, fontSize, style } = props;
   return (
     <SvgIcon color={color} fontSize={fontSize} style={style}>
@@ -123,7 +123,7 @@ export const KappLogIcon = withStyles(styles)((props: IconsProps) => {
   );
 });
 
-export const KappApplicationIcon = withStyles(styles)((props: IconsProps) => {
+export const KalmApplicationIcon = withStyles(styles)((props: IconsProps) => {
   const { color, fontSize, style } = props;
   return (
     <SvgIcon color={color} fontSize={fontSize} style={style}>
@@ -138,7 +138,7 @@ export const KappApplicationIcon = withStyles(styles)((props: IconsProps) => {
   );
 });
 
-export const KappTemplateIcon = withStyles(styles)((props: IconsProps) => {
+export const KalmTemplateIcon = withStyles(styles)((props: IconsProps) => {
   const { color, fontSize, style } = props;
   return (
     <SvgIcon color={color} fontSize={fontSize} style={style}>
@@ -153,7 +153,7 @@ export const KappTemplateIcon = withStyles(styles)((props: IconsProps) => {
   );
 });
 
-export const KappVolumeIcon = withStyles(styles)((props: IconsProps) => {
+export const KalmVolumeIcon = withStyles(styles)((props: IconsProps) => {
   const { color, fontSize, style } = props;
   return (
     <SvgIcon color={color} fontSize={fontSize} style={style}>
@@ -168,7 +168,7 @@ export const KappVolumeIcon = withStyles(styles)((props: IconsProps) => {
   );
 });
 
-export const KappNodeIcon = withStyles(styles)((props: IconsProps) => {
+export const KalmNodeIcon = withStyles(styles)((props: IconsProps) => {
   const { color, fontSize, style } = props;
   return (
     <SvgIcon color={color} fontSize={fontSize} style={style}>

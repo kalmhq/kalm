@@ -9,7 +9,7 @@ import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart"
 import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 import { blinkTopProgressAction } from "actions/settings";
 import { generateQueryForPods } from "pages/Application/Log";
-import { KappConsoleIcon, KappLogIcon } from "widgets/Icon";
+import { KalmConsoleIcon, KalmLogIcon } from "widgets/Icon";
 import { api } from "api";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { loadApplicationAction } from "actions/application";
@@ -112,7 +112,7 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
             )
           }
         >
-          <KappLogIcon />
+          <KalmLogIcon />
         </IconLinkWithToolTip>
         {hasWriterRole ? (
           <IconLinkWithToolTip
@@ -130,7 +130,7 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
               )
             }
           >
-            <KappConsoleIcon />
+            <KalmConsoleIcon />
           </IconLinkWithToolTip>
         ) : null}
         {hasWriterRole ? (

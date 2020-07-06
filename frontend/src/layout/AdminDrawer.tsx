@@ -8,7 +8,7 @@ import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { BaseDrawer } from "./BaseDrawer";
 import { primaryBackgroud, primaryColor } from "theme/theme";
-import { blinkTopProgressAction } from "../actions/settings";
+import { blinkTopProgressAction } from "actions/settings";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");

@@ -58,7 +58,6 @@ class DoughnutChartRaw extends React.PureComponent<Props, State> {
             height={size}
             width={size}
             data={chartData}
-            legend={{ position: "bottom" }}
             options={{
               maintainAspectRatio: false,
               cutoutPercentage: 70,

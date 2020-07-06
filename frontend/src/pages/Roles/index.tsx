@@ -17,9 +17,9 @@ import { CustomizedButton } from "widgets/Button";
 import { ControlledDialog } from "widgets/ControlledDialog";
 import { ServiceAccountSecret } from "widgets/ServiceAccountSecret";
 import { KTable } from "widgets/Table";
-import { blinkTopProgressAction } from "../../actions/settings";
+import { blinkTopProgressAction } from "actions/settings";
 import { AdminDrawer } from "../../layout/AdminDrawer";
-import { H4 } from "../../widgets/Label";
+import { H4 } from "widgets/Label";
 import { BasePage } from "../BasePage";
 
 const dialogID = "rolebinding/add";

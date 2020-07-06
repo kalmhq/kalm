@@ -8,18 +8,18 @@ import {
   CREATE_CERTIFICATE,
   CREATE_CERTIFICATE_ISSUER,
   DELETE_CERTIFICATE,
+  LOAD_CERTIFICATE_ISSUERS_FULFILLED,
+  LOAD_CERTIFICATE_ISSUERS_PENDING,
   LOAD_CERTIFICATES_FAILED,
   LOAD_CERTIFICATES_FULFILLED,
   LOAD_CERTIFICATES_PENDING,
-  LOAD_CERTIFICATE_ISSUERS_FULFILLED,
-  LOAD_CERTIFICATE_ISSUERS_PENDING,
   selfManaged,
-  SetEditCertificateModal,
-  SetIsSubmittingCertificate,
   SET_EDIT_CERTIFICATE_MODAL,
   SET_IS_SUBMITTING_CERTIFICATE,
+  SetEditCertificateModal,
+  SetIsSubmittingCertificate
 } from "types/certificate";
-import { ThunkResult } from "../types";
+import { ThunkResult } from "types";
 
 export const setEditCertificateModal = (certificate: Certificate | null): SetEditCertificateModal => {
   return {

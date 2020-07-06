@@ -12,8 +12,8 @@ import React from "react";
 import ReconnectingWebSocket from "reconnecting-websocket";
 import { PodStatus } from "types/application";
 import "xterm/css/xterm.css";
-import { Loading } from "../../widgets/Loading";
-import { Namespaces } from "../../widgets/Namespaces";
+import { Loading } from "widgets/Loading";
+import { Namespaces } from "widgets/Namespaces";
 import { BasePage } from "../BasePage";
 import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./ItemDataWrapper";
 import { Xterm, XtermRaw } from "./Xterm";
@@ -37,7 +37,7 @@ const logDocs =
 
 \u001b[1;32m3\u001b[0m. The url is changing with your choices, you can share this url with other colleagues who has permissions.
 
-\u001b[1;32m4\u001b[0m. Only the latest logs of each pod are displayed. If you want query older logs with advanced tool, please try learn about kapp log dependency.`;
+\u001b[1;32m4\u001b[0m. Only the latest logs of each pod are displayed. If you want query older logs with advanced tool, please try learn about kalm log dependency.`;
 
 const shellDocs =
   " _____  _          _ _   _______          _   _____           _                   _   _                 \n" +

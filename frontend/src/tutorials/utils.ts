@@ -1,5 +1,5 @@
 import Immutable from "immutable";
-import { State as TutorialState } from "../reducers/tutorial";
+import { State as TutorialState } from "reducers/tutorial";
 import { RootState } from "reducers";
 import { formValueSelector } from "redux-form/immutable";
 import { APPLICATION_FORM_ID, COMPONENT_FORM_ID } from "forms/formIDs";
