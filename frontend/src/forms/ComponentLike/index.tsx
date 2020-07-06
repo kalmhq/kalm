@@ -1,19 +1,6 @@
-import {
-  Box,
-  Button,
-  Collapse,
-  Grid,
-  Link,
-  List as MList,
-  ListItem,
-  ListItemText,
-  Tab,
-  Tabs,
-  Tooltip,
-} from "@material-ui/core";
+import { Box, Button, Collapse, Grid, Link, List as MList, ListItem, ListItemText, Tab, Tabs } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
-import Typography from "@material-ui/core/Typography";
 import HelpIcon from "@material-ui/icons/Help";
 import { Alert } from "@material-ui/lab";
 import clsx from "clsx";
@@ -44,9 +31,8 @@ import {
   workloadTypeStatefulSet,
 } from "types/componentTemplate";
 import { CustomizedButton } from "widgets/Button";
-import { HelperContainer } from "widgets/Helper";
 import { KPanel } from "widgets/KPanel";
-import { Body, H5 } from "widgets/Label";
+import { Body, Caption, H5 } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { SectionTitle } from "widgets/SectionTitle";
 import { KRadioGroupRender } from "../Basic/radio";
@@ -59,6 +45,7 @@ import { RenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
+import { KTooltip } from "forms/Application/KTooltip";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -139,28 +126,9 @@ const styles = (theme: Theme) =>
     displayNone: {
       display: "none",
     },
-    sectionTitle: {
-      display: "flex",
-      alignItems: "center",
-    },
-    helperField: {
-      position: "relative",
-    },
     textFieldHelperIcon: {
       color: grey[700],
       cursor: "pointer",
-    },
-
-    // Select doesn't support endAdornment
-    // and tooltip doesn't work in FormControl
-    // https://stackoverflow.com/questions/60384230/tooltip-inside-textinput-label-is-not-working-material-ui-react
-    // only way to show helper in Select is using absolute
-    selectHelperIcon: {
-      color: grey[700],
-      cursor: "pointer",
-      position: "absolute",
-      right: 30,
-      top: 10,
     },
     sectionTitleHelperIcon: {
       color: grey[700],
@@ -250,61 +218,27 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   };
 
   private getCPUHelper() {
-    return (
-      <HelperContainer>
-        <MList dense={true}>
-          <ListItem>
-            <ListItemText
-              primary="CPU"
-              secondary={
-                "Fractional values are allowed. A Container that requests 0.5 CPU is guaranteed half as much CPU as a Container that requests 1 CPU. You can use the suffix m to mean milli. For example 100m CPU, 100 milliCPU, and 0.1 CPU are all the same. Precision finer than 1m is not allowed. CPU is always requested as an absolute quantity, never as a relative quantity; 0.1 is the same amount of CPU on a single-core, dual-core, or 48-core machine."
-              }
-              secondaryTypographyProps={{ color: "inherit" }}
-            />
-          </ListItem>
-        </MList>
-      </HelperContainer>
-    );
+    return "Fractional values are allowed. A Container that requests 0.5 CPU is guaranteed half as much CPU as a Container that requests 1 CPU. You can use the suffix m to mean milli. For example 100m CPU, 100 milliCPU, and 0.1 CPU are all the same. Precision finer than 1m is not allowed. CPU is always requested as an absolute quantity, never as a relative quantity; 0.1 is the same amount of CPU on a single-core, dual-core, or 48-core machine.";
   }
 
   private getMemoryHelper() {
-    return (
-      <HelperContainer>
-        <MList dense={true}>
-          <ListItem>
-            <ListItemText
-              primary="Memory"
-              secondary={
-                "The memory resource is measured in bytes. You can express memory as a plain integer or a fixed-point integer with one of these suffixes: E, P, T, G, M, K, Ei, Pi, Ti, Gi, Mi, Ki."
-              }
-              secondaryTypographyProps={{ color: "inherit" }}
-            />
-          </ListItem>
-        </MList>
-      </HelperContainer>
-    );
+    return "The memory resource is measured in bytes. You can express memory as a plain integer or a fixed-point integer with one of these suffixes: E, P, T, G, M, K, Ei, Pi, Ti, Gi, Mi, Ki.";
   }
 
   private preInjectedFiles = () => {
     const { classes } = this.props;
 
-    const helperContainer = (
-      <HelperContainer>
-        <Typography>
-          You can inject some files on customized paths before the process is running. This is helpful when the program
-          need configuration files.
-        </Typography>
-      </HelperContainer>
-    );
+    const helper =
+      "You can inject some files on customized paths before the process is running. This is helpful when the program need configuration files.";
 
     return (
       <>
         <Grid item xs={12}>
           <SectionTitle>
             <H5>Configuration Files</H5>
-            <Tooltip title={helperContainer}>
+            <KTooltip title={helper}>
               <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
-            </Tooltip>
+            </KTooltip>
           </SectionTitle>
         </Grid>
         <Grid item xs={12}>
@@ -316,52 +250,17 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
   private renderEnvs() {
     const { classes, sharedEnv } = this.props;
-    const helperContainer = (
-      <HelperContainer>
-        <Typography>
-          Environment variables are variable whose values are set outside the program, typically through functionality
-          built into the component. An environment variable is made up of a name/value pair, it also support combine a
-          dynamic value associated with other component later in a real running application. Learn More.
-        </Typography>
-
-        {/* <MList dense={true}>
-          <ListItem>
-            <ListItemText
-              primary="Static"
-              secondary={"A constant value environment variable."}
-              secondaryTypographyProps={{ color: "inherit" }}
-            />
-          </ListItem>
-          <ListItem>
-            <ListItemText
-              primary="External"
-              secondary={
-                "Value will be set in an application later. External variable with the same name will be consistent across all components in the same application."
-              }
-              secondaryTypographyProps={{ color: "inherit" }}
-            />
-          </ListItem>
-          <ListItem>
-            <ListItemText
-              primary="Linked"
-              secondary={
-                "Value will be set in an application later. Linked variable can only be set as another component exposed port address in the same application."
-              }
-              secondaryTypographyProps={{ color: "inherit" }}
-            />
-          </ListItem>
-        </MList> */}
-      </HelperContainer>
-    );
+    const helper =
+      "Environment variables are variable whose values are set outside the program, typically through functionality built into the component. An environment variable is made up of a name/value pair, it also support combine a dynamic value associated with other component later in a real running application. Learn More.";
 
     return (
       <>
         <Grid item xs={12}>
           <SectionTitle>
             <H5>Environment variables</H5>
-            <Tooltip title={helperContainer}>
+            <KTooltip title={helper}>
               <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
-            </Tooltip>
+            </KTooltip>
           </SectionTitle>
         </Grid>{" "}
         <Grid item xs={12}>
@@ -374,23 +273,17 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   public renderPorts() {
     const { classes } = this.props;
 
-    const helperContainer = (
-      <HelperContainer>
-        <Typography>
-          Port is the standard way to expose your program. If you want your component can be accessed by some other
-          parts, you need to define a port.
-        </Typography>
-      </HelperContainer>
-    );
+    const helper =
+      "Port is the standard way to expose your program. If you want your component can be accessed by some other parts, you need to define a port.";
 
     return (
       <>
         <Grid item xs={12}>
           <SectionTitle>
             <H5>Expose ports to cluster</H5>
-            <Tooltip title={helperContainer}>
+            <KTooltip title={helper}>
               <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
-            </Tooltip>
+            </KTooltip>
           </SectionTitle>
         </Grid>
         <Grid item xs={12}>
@@ -406,46 +299,36 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private renderDisks() {
     const { classes } = this.props;
 
-    const helperContainer = (
-      <HelperContainer>
-        <Typography>Mount different kinds of volumes to this component.</Typography>
-        <MList dense={true}>
-          <ListItem>
-            <ListItemText
-              primary="New Disk"
-              secondary={"Create a disk according to the storageClass definition you selected."}
-              secondaryTypographyProps={{ color: "inherit" }}
-            />
-          </ListItem>
-          <ListItem>
-            <ListItemText
-              primary="Temporary Disk"
-              secondary={
-                "This sort of volumes are stored on whatever medium is backing the node, which might be disk or SSD or network storage, depending on your environment."
-              }
-              secondaryTypographyProps={{ color: "inherit" }}
-            />
-          </ListItem>
-          <ListItem>
-            <ListItemText
-              primary="Temporary Memory Media Disk"
-              secondary={
-                "It will mount a tmpfs (RAM-backed filesystem) for you. While tmpfs is very fast, be aware that unlike disks, tmpfs is cleared on node reboot and any files you write will count against your Container’s memory limit."
-              }
-              secondaryTypographyProps={{ color: "inherit" }}
-            />
-          </ListItem>
-          <ListItem>
-            <ListItemText
-              primary="Existing Persistent Volume Claim"
-              secondary={
-                "PersistentVolumeClaim and Disk are a kubernetes original resources. A persistentVolumeClaim volume is used to mount a Disk into a Pod. Disks are a way for users to “claim” durable storage (such as a GCE PersistentDisk or an iSCSI volume) without knowing the details of the particular cloud environment."
-              }
-              secondaryTypographyProps={{ color: "inherit" }}
-            />
-          </ListItem>
-        </MList>
-      </HelperContainer>
+    const helper = (
+      <>
+        <Caption>Mount different kinds of volumes to this component.</Caption>
+        <Box mt={1} mb={1}>
+          <Caption>1. New Disk</Caption>
+        </Box>
+        <Caption>Create a disk according to the storageClass definition you selected.</Caption>
+        <Box mt={1} mb={1}>
+          <Caption>2. Existing Persistent Volume Claim</Caption>
+        </Box>
+        <Caption>
+          PersistentVolumeClaim and Disk are a kubernetes original resources. A persistentVolumeClaim volume is used to
+          mount a Disk into a Pod. Disks are a way for users to “claim” durable storage (such as a GCE PersistentDisk or
+          an iSCSI volume) without knowing the details of the particular cloud environment.
+        </Caption>
+        <Box mt={1} mb={1}>
+          <Caption>3. Temporary Disk</Caption>
+        </Box>
+        <Caption>
+          This sort of volumes are stored on whatever medium is backing the node, which might be disk or SSD or network
+          storage, depending on your environment.
+        </Caption>
+        <Box mt={1} mb={1}>
+          <Caption>4. Temporary Memory Media Disk</Caption>
+        </Box>
+        <Caption>
+          It will mount a tmpfs (RAM-backed filesystem) for you. While tmpfs is very fast, be aware that unlike disks,
+          tmpfs is cleared on node reboot and any files you write will count against your Container’s memory limit.
+        </Caption>
+      </>
     );
 
     return (
@@ -456,70 +339,15 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Grid item xs={12}>
           <SectionTitle>
             <H5>Disks</H5>
-            <Tooltip title={helperContainer}>
+            <KTooltip title={helper}>
               <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
-            </Tooltip>
+            </KTooltip>
           </SectionTitle>
         </Grid>
         <Grid item xs={12}>
           <Disks />
         </Grid>
       </Grid>
-    );
-  }
-
-  private getRestartStrategyHelper() {
-    return (
-      <>
-        <HelperContainer>
-          <Typography>
-            In most cases, the default values for the following options are appropriate for most programs. However, you
-            can modify them as required. Before you do so, make sure you understand what these options do.
-          </Typography>
-        </HelperContainer>
-        <Box mt={3}></Box>
-        <MList dense={true}>
-          <ListItem>
-            <ListItemText
-              primary="Rolling Update"
-              secondary={
-                <>
-                  This component updates in a rolling update fashion when strategy is RollingUpdate. You can specify
-                  maxUnavailable and maxSurge to control the rolling update process.
-                  <a
-                    target="_blank"
-                    href="https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-update-deployment"
-                    rel="noopener noreferrer"
-                  >
-                    Read More
-                  </a>
-                  .
-                </>
-              }
-              secondaryTypographyProps={{ color: "inherit" }}
-            />
-          </ListItem>
-          <ListItem>
-            <ListItemText
-              primary="Memory"
-              secondary={
-                <>
-                  All existing components are killed before new ones are created.
-                  <a
-                    target="_blank"
-                    href="https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#recreate-deployment"
-                    rel="noopener noreferrer"
-                  >
-                    Read More
-                  </a>
-                  .
-                </>
-              }
-              secondaryTypographyProps={{ color: "inherit" }}
-            />
-          </ListItem>
-        </MList>
-      </>
     );
   }
 
@@ -542,62 +370,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         ),
       },
     ]);
-  }
-
-  private getDnsPolicyHelper() {
-    return (
-      <>
-        <Typography>DNS policies can be set on a component.</Typography>
-        {this.renderAdvancedHelper([
-          {
-            title: "Default",
-            content: (
-              <>
-                The Pod inherits the name resolution configuration from the node that the pods run on. See{" "}
-                <a
-                  target="_blank"
-                  href="https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/#inheriting-dns-from-the-node"
-                  rel="noopener noreferrer"
-                >
-                  related discussion
-                </a>{" "}
-                for more details.
-              </>
-            ),
-          },
-          {
-            title: "ClusterFirst",
-            content: (
-              <>
-                Any DNS query that does not match the configured cluster domain suffix, such as “www.kubernetes.io”, is
-                forwarded to the upstream nameserver inherited from the node. Cluster administrators may have extra
-                stub-domain and upstream DNS servers configured. See{" "}
-                <a
-                  target="_blank"
-                  href="https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/#impacts-on-pods"
-                  rel="noopener noreferrer"
-                >
-                  related discussion
-                </a>{" "}
-                for details on how DNS queries are handled in those cases.
-              </>
-            ),
-          },
-          {
-            title: "ClusterFirstWithHostNet",
-            content: (
-              <>
-                For Pods running with hostNetwork, you should explicitly set its DNS policy “ClusterFirstWithHostNet”.
-              </>
-            ),
-          },
-          {
-            title: "None",
-            content: <>It allows a Pod to ignore DNS settings from the Kubernetes environment.</>,
-          },
-        ])}
-      </>
-    );
   }
 
   private getDnsPolicyOptions() {
@@ -688,7 +460,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   // private renderPlugins() {
   //   const { classes } = this.props;
 
-  //   const helperContainer = (
+  //   const helper = (
   //     <HelperContainer>
   //       <Typography>
   //         Plugins can affect running state of a program, or provide extra functionality for the programs.
@@ -700,9 +472,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   //     <>
   //       <SectionTitle>
   //         <H5>Plugins</H5>
-  //         <Tooltip title={helperContainer}>
+  //         <KTooltip title={helper}>
   //           <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
-  //         </Tooltip>
+  //         </KTooltip>
   //       </SectionTitle>
 
   //       <Grid container spacing={2}>
@@ -722,16 +494,16 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Grid item xs={12}>
           <SectionTitle>
             <H5>Command</H5>
-            <Tooltip
+            <KTooltip
               title={
-                <span>
+                <Caption>
                   This filed is used to overwrite <strong>entrypoint</strong> and <strong>commands</strong> in image.
                   Leave it blank to use image default settings.
-                </span>
+                </Caption>
               }
             >
               <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
-            </Tooltip>
+            </KTooltip>
           </SectionTitle>
         </Grid>
 
@@ -770,9 +542,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Grid item xs={12}>
           <SectionTitle>
             <H5>Readiness Probe</H5>
-            <Tooltip title={"Readiness probe is used to decide when a component is ready to accepting traffic."}>
+            <KTooltip title={"Readiness probe is used to decide when a component is ready to accepting traffic."}>
               <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
-            </Tooltip>
+            </KTooltip>
           </SectionTitle>
         </Grid>
         <Grid item xs={12}>
@@ -781,13 +553,13 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Grid item xs={12}>
           <SectionTitle>
             <H5>Liveness Probe</H5>
-            <Tooltip
+            <KTooltip
               title={
                 "Liveness probe is used to know if the component is running into an unexpected state and a restart is required."
               }
             >
               <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
-            </Tooltip>
+            </KTooltip>
           </SectionTitle>
         </Grid>
         <Grid item xs={12}>
@@ -853,9 +625,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             placeholder="Please type CPU limit"
             helperText="Eg. 1 = 1Core; 0.1 = 100m = 0.1Core"
             endAdornment={
-              <Tooltip title={this.getCPUHelper()}>
+              <KTooltip title={this.getCPUHelper()}>
                 <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
-              </Tooltip>
+              </KTooltip>
             }
           />
         </Grid>
@@ -870,9 +642,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             // normalize={NormalizeMemory}
             placeholder="Please type memory limit"
             endAdornment={
-              <Tooltip title={this.getMemoryHelper()}>
+              <KTooltip title={this.getMemoryHelper()}>
                 <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
-              </Tooltip>
+              </KTooltip>
             }
           />
         </Grid>
@@ -931,20 +703,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               },
             ]}
           />
-          {/* <div className={classes.helperField}>
-            <Field
-              name="restartStrategy"
-              component={RenderSelectField}
-              // validate={ValidatorRequired}
-              label="Restart Strategy"
-              options={[
-                { value: "RollingUpdate", text: "Rolling Update" },
-                { value: "Recreate", text: "Recreate" }
-              ]}></Field>
-            <Tooltip title={this.getRestartStrategyHelper()}>
-              <HelpIcon fontSize="small" className={classes.selectHelperIcon} />
-            </Tooltip>
-          </div> */}
         </Grid>
         <Grid item xs={12}>
           <SectionTitle>
@@ -967,9 +725,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             normalize={NormalizeNumber}
             placeholder="Default 30s"
             endAdornment={
-              <Tooltip title={this.getTerminationGracePeriodSecondsHelper()}>
+              <KTooltip title={this.getTerminationGracePeriodSecondsHelper()}>
                 <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
-              </Tooltip>
+              </KTooltip>
             }
           />
         </Grid>

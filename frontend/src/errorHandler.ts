@@ -7,7 +7,7 @@ const ErrorHandler = (e: any) => {
   if (e.response && e.response.data.status === StatusFailure) {
     store.dispatch(setErrorNotificationAction(e.response.data.message));
   } else {
-    store.dispatch(setErrorNotificationAction());
+    store.dispatch(setErrorNotificationAction(e.message));
     console.log(e);
   }
 };
