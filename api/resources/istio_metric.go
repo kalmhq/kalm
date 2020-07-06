@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	coreV1 "k8s.io/api/core/v1"
 	"net/http"
+	"os"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strconv"
 )
@@ -19,6 +20,16 @@ type IstioMetricListChannel struct {
 type IstioMetric struct {
 	HTTP *HTTPMetric `json:"http,omitempty"`
 	TCP  *TCPMetric  `json:"tcp,omitempty"`
+}
+
+var istioPrometheusAPIAddress string
+
+func init() {
+	if os.Getenv("KALM_ISTIO_PROMETHEUS_API_ADDRESS") != "" {
+		istioPrometheusAPIAddress = os.Getenv("KALM_ISTIO_PROMETHEUS_API_ADDRESS")
+	} else {
+		istioPrometheusAPIAddress = "prometheus.istio-system:9090"
+	}
 }
 
 func mergeIstioMetric(a, b IstioMetric) (rst IstioMetric) {
@@ -154,15 +165,11 @@ func concatErr(errSlice ...error) error {
 	return rstErr
 }
 
-//var hardCodedIstioPrometheusAPIHost = "localhost:9090"
-
-var hardCodedIstioPrometheusAPIHost = "prometheus.istio-system:9090"
-
 func getIstioHTTPMetricMap(ns string) (map[string]IstioMetric, error) {
 	svcName := fmt.Sprintf(`.*.%s.svc.cluster.local`, ns)
 	query := fmt.Sprintf(`istio_requests_total{destination_service=~"%s"}`, svcName)
 
-	api := fmt.Sprintf("http://%s/api/v1/query?query=%s", hardCodedIstioPrometheusAPIHost, query)
+	api := fmt.Sprintf("%s/api/v1/query?query=%s", istioPrometheusAPIAddress, query)
 
 	promResp, err := queryPrometheusAPI(api)
 	if err != nil {
@@ -274,7 +281,7 @@ func getSentOrReceiveIstioTCPMetricMap(ns string, isSentData, isTotal bool) (map
 		}
 	}
 
-	api := fmt.Sprintf("http://%s/api/v1/query?query=%s", hardCodedIstioPrometheusAPIHost, query)
+	api := fmt.Sprintf("%s/api/v1/query?query=%s", istioPrometheusAPIAddress, query)
 
 	promResp, err := queryPrometheusAPI(api)
 	if err != nil {
