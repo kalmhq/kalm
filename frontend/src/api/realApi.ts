@@ -224,7 +224,6 @@ export default class RealApi extends Api {
 
   public loadRolebindings = async () => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/rolebindings` });
-    console.log(JSON.stringify(res.data));
     return Immutable.fromJS(res.data.roleBindings);
   };
 
@@ -238,7 +237,6 @@ export default class RealApi extends Api {
 
   public getServiceAccountSecret = async (name: string) => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/serviceaccounts/` + name });
-    console.log(JSON.stringify(res.data));
     return res.data;
   };
 

@@ -6,10 +6,9 @@ import {
   ListItemIcon,
   ListItemText,
   ListSubheader,
-  Theme,
+  Theme
 } from "@material-ui/core";
 import AssignmentReturnedIcon from "@material-ui/icons/AssignmentReturned";
-import SettingsIcon from "@material-ui/icons/Settings";
 import VerifiedUser from "@material-ui/icons/VerifiedUser";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import clsx from "clsx";
@@ -135,11 +134,11 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
         text: "Registries",
         to: "/cluster/registries",
       },
-      {
-        icon: SettingsIcon,
-        text: "Settings",
-        to: "/roles",
-      },
+      // {
+      //   icon: SettingsIcon,
+      //   text: "Settings",
+      //   to: "/roles",
+      // },
     ];
   }
 

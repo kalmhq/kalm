@@ -8,12 +8,10 @@ import { Log } from "pages/Application/Log";
 import { ApplicationNewPage } from "pages/Application/New";
 import { ApplicationShowPage } from "pages/Application/Show";
 import { CertificateListPage } from "pages/Certificate/List";
-import InstallPage from "pages/Install";
 import { NodeListPage } from "pages/Nodes/List";
 import { NoMatch, Page404 } from "pages/NoMatch";
 import { DiskListPage } from "pages/Disks";
 import { RegistryListPage } from "pages/Registry/List";
-import { RoleListPage } from "pages/Roles";
 import { RouteEditPage } from "pages/Route/Edit";
 import { RouteListPage } from "pages/Route/List";
 import { RouteNewPage } from "pages/Route/New";
@@ -38,8 +36,8 @@ export const KappRoutes = (
       <RequireAuthorizatedDashboard>
         <Switch>
           <Route exact path="/" component={RequireAdmin(ApplicationListPage)} />
-          <Route exact path="/roles" component={RequireAdmin(RoleListPage)} />
-          <Route exact path="/install" component={InstallPage} />
+          {/*<Route exact path="/roles" component={RequireAdmin(RoleListPage)} />*/}
+          {/*<Route exact path="/install" component={InstallPage} />*/}
           <Route exact path="/cluster/nodes" component={NodeListPage} />
           <Route exact path="/cluster/disks" component={DiskListPage} />
           <Route exact path="/cluster/registries" component={RegistryListPage} />
