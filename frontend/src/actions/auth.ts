@@ -1,4 +1,6 @@
-import { SomethingWrong, ThunkResult } from "../types";
+import { api } from "api";
+import { LoginStatus } from "types/authorization";
+import { ThunkResult } from "../types";
 import {
   LOAD_LOGIN_STATUS_FAILED,
   LOAD_LOGIN_STATUS_FULFILLED,
@@ -8,8 +10,6 @@ import {
   SET_AUTH_TOKEN,
 } from "../types/common";
 import { setErrorNotificationAction } from "./notification";
-import { LoginStatus } from "types/authorization";
-import { api } from "api";
 
 export const loadLoginStatus = (): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
@@ -23,13 +23,13 @@ export const loadLoginStatus = (): ThunkResult<Promise<void>> => {
         payload: { loginStatus },
       });
     } catch (e) {
-      dispatch(setErrorNotificationAction(SomethingWrong));
+      dispatch(setErrorNotificationAction(e.message));
       dispatch({ type: LOAD_LOGIN_STATUS_FAILED });
     }
   };
 };
 
-export const validateTokenAction = (token: string): ThunkResult<Promise<boolean>> => {
+export const validateTokenAction = (token: string): ThunkResult<Promise<string>> => {
   return async (dispatch) => {
     try {
       await api.validateToken(token);
@@ -41,10 +41,10 @@ export const validateTokenAction = (token: string): ThunkResult<Promise<boolean>
 
       dispatch(loadLoginStatus());
 
-      return true;
+      return "";
     } catch (e) {
-      // 401 Unauthorized
-      return false;
+      dispatch(setErrorNotificationAction(e.message));
+      return e.message;
     }
   };
 };
