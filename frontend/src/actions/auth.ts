@@ -1,6 +1,6 @@
 import { api } from "api";
 import { LoginStatus } from "types/authorization";
-import { ThunkResult } from "../types";
+import { ThunkResult } from "types";
 import {
   LOAD_LOGIN_STATUS_FAILED,
   LOAD_LOGIN_STATUS_FULFILLED,
