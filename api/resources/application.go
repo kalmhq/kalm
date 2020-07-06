@@ -1,7 +1,6 @@
 package resources
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -70,26 +69,6 @@ type ComponentMetrics struct {
 type PodMetrics struct {
 	Name            string `json:"-"`
 	MetricHistories `json:",inline,omitempty"`
-}
-
-// https://github.com/kubernetes/dashboard/blob/master/src/app/backend/integration/metric/api/types.go#L121
-type MetricPoint struct {
-	Timestamp time.Time
-	Value     uint64 // todo why uint, can not be negative?
-}
-
-type MetricHistory []MetricPoint
-
-func (m *MetricPoint) MarshalJSON() ([]byte, error) {
-	return json.Marshal(map[string]interface{}{
-		"x": m.Timestamp.Unix() * 1000,
-		"y": m.Value,
-	})
-}
-
-type MetricHistories struct {
-	CPU    MetricHistory `json:"cpu"`
-	Memory MetricHistory `json:"memory"`
 }
 
 type ApplicationDetails struct {

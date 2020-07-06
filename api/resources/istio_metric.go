@@ -3,11 +3,11 @@ package resources
 import (
 	"encoding/json"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
-	"sort"
 	"strconv"
 	"time"
 )
@@ -27,8 +27,6 @@ type IstioMetricListChannel struct {
 	List  chan map[string]*IstioMetricHistories
 	Error chan error
 }
-
-//type MetricHistory []MetricPoint
 
 type IstioMetricHistories struct {
 	//HTTP
@@ -61,58 +59,6 @@ func mergeIstioMetricHistories(a, b *IstioMetricHistories) *IstioMetricHistories
 	return &rst
 }
 
-func mergeMetricHistories(a, b MetricHistory) (rst MetricHistory) {
-	sortMetricHistory(a)
-	sortMetricHistory(b)
-
-	i := 0
-	j := 0
-	for i < len(a) && j < len(b) {
-		eleA := a[i]
-		eleB := b[j]
-
-		if eleA.Timestamp.Unix() == eleB.Timestamp.Unix() {
-			rst = append(rst, MetricPoint{
-				Timestamp: eleA.Timestamp,
-				Value:     eleA.Value + eleB.Value,
-			})
-
-			i++
-			j++
-		} else if eleA.Timestamp.Unix() < eleB.Timestamp.Unix() {
-			rst = append(rst, eleA)
-			i++
-		} else {
-			rst = append(rst, eleB)
-			j++
-		}
-	}
-
-	rst = append(rst, a[i:]...)
-	rst = append(rst, b[j:]...)
-
-	return rst
-}
-
-func sortMetricHistory(a MetricHistory) {
-	sort.Slice(a, func(i, j int) bool {
-		return a[i].Timestamp.Unix() < a[j].Timestamp.Unix()
-	})
-}
-
-//func mergeMap(a, b map[string]int) map[string]int {
-//	rst := make(map[string]int)
-//
-//	for k, v := range a {
-//		rst[k] += v
-//	}
-//	for k, v := range b {
-//		rst[k] += v
-//	}
-//
-//	return rst
-//}
-
 func (builder *Builder) GetIstioMetricsListChannel(ns string) *IstioMetricListChannel {
 	channel := IstioMetricListChannel{
 		List:  make(chan map[string]*IstioMetricHistories, 1),
@@ -128,19 +74,6 @@ func (builder *Builder) GetIstioMetricsListChannel(ns string) *IstioMetricListCh
 
 	return &channel
 }
-
-//func concatErr(errSlice ...error) error {
-//	var rstErr error
-//	for _, err := range errSlice {
-//		if err == nil {
-//			continue
-//		}
-//
-//		rstErr = fmt.Errorf("%s; %s", rstErr, err)
-//	}
-//
-//	return rstErr
-//}
 
 // map of {svc -> istioMetricHistories}
 func getIstioMetricHistoriesMap(ns string) (map[string]*IstioMetricHistories, error) {
@@ -180,7 +113,7 @@ func getIstioMetricHistoriesMap(ns string) (map[string]*IstioMetricHistories, er
 
 		promResp, err := queryPrometheusAPI(api)
 		if err != nil {
-			fmt.Printf("err when queryPrometheusAPI(%s), err: %s, ignroed\n", api, err)
+			log.Warnf("err when queryPrometheusAPI(%s), err: %s, ignroed\n", api, err)
 			return nil, err
 		}
 
@@ -193,7 +126,7 @@ func getIstioMetricHistoriesMap(ns string) (map[string]*IstioMetricHistories, er
 			}
 
 			metricPoints := trans2MetricPoints(rst.Values)
-			
+
 			if _, exist := svc2MetricHistoriesMap[svc]; !exist {
 				svc2MetricHistoriesMap[svc] = &IstioMetricHistories{}
 			}
@@ -212,7 +145,7 @@ func getIstioMetricHistoriesMap(ns string) (map[string]*IstioMetricHistories, er
 			case "receiveBytes":
 				svc2MetricHistoriesMap[svc].ReceivedBytesTotal = metricPoints
 			default:
-				fmt.Println("unknown query key:", k)
+				log.Warnln("unknown query key:", k)
 			}
 		}
 	}
@@ -262,7 +195,6 @@ func parseInterfaceAsInt(i interface{}) (int, bool) {
 func parseInterfaceAsTime(i interface{}) (time.Time, bool) {
 	val, ok := i.(float64)
 	if !ok {
-		fmt.Println("a")
 		return time.Time{}, false
 	}
 
@@ -282,11 +214,11 @@ func queryPrometheusAPI(api string) (PromResponse, error) {
 		return PromResponse{}, err
 	}
 
-	fmt.Printf("prom api: %s, resp: %s\n", api, body)
+	log.Debugf("prom api: %s, resp: %s\n", api, body)
 
 	err = json.Unmarshal(body, &promResp)
 	if err != nil {
-		fmt.Printf("fail to parse resp from prometheus, val: %s, err: %s\n", body, err)
+		log.Warnf("fail to parse resp from prometheus, val: %s, err: %s\n", body, err)
 		return PromResponse{}, err
 	}
 
