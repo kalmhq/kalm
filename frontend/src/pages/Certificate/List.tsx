@@ -1,5 +1,5 @@
 import { Box, createStyles, Theme, WithStyles, withStyles } from "@material-ui/core";
-import { deleteCertificateAction, setEditCertificateModal } from "actions/certificate";
+import { deleteCertificateAction, setEditCertificateModalAction } from "actions/certificate";
 import { openDialogAction } from "actions/dialog";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { blinkTopProgressAction } from "actions/settings";
@@ -85,7 +85,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
             onClick={() => {
               blinkTopProgressAction();
               dispatch(openDialogAction(addCertificateDialogId));
-              dispatch(setEditCertificateModal(rowData));
+              dispatch(setEditCertificateModalAction(rowData));
             }}
           >
             <EditIcon />
@@ -245,7 +245,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
               onClick={() => {
                 blinkTopProgressAction();
                 dispatch(openDialogAction(addCertificateDialogId));
-                dispatch(setEditCertificateModal(null));
+                dispatch(setEditCertificateModalAction(null));
               }}
             >
               Add

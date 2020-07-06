@@ -1,5 +1,5 @@
 import { Box, Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { deleteRoute } from "actions/routes";
+import { deleteRouteAction } from "actions/routes";
 import { blinkTopProgressAction } from "actions/settings";
 import { push } from "connected-react-router";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
@@ -169,7 +169,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
           size="small"
           onClick={() => {
             blinkTopProgressAction();
-            dispatch(deleteRoute(row.get("name"), row.get("namespace")));
+            dispatch(deleteRouteAction(row.get("name"), row.get("namespace")));
           }}
         >
           Delete

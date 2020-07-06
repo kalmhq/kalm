@@ -9,10 +9,10 @@ import {
   LOAD_COMPONENTS_FAILED,
   LOAD_COMPONENTS_FULFILLED,
   LOAD_COMPONENTS_PENDING,
-  UPDATE_COMPONENT,
+  UPDATE_COMPONENT
 } from "types/application";
 import { correctComponentFormValuesForSubmit } from "utils/application";
-import { setIsSubmittingApplicationComponent } from "./application";
+import { setIsSubmittingApplicationComponentAction } from "./application";
 import { setSuccessNotificationAction } from "./notification";
 
 export const loadComponentsAction = (namespace: string): ThunkResult<Promise<void>> => {
@@ -45,7 +45,7 @@ export const createComponentAction = (
     if (!applicationName) {
       applicationName = getState().get("namespaces").get("active");
     }
-    dispatch(setIsSubmittingApplicationComponent(true));
+    dispatch(setIsSubmittingApplicationComponentAction(true));
 
     let component: ApplicationComponentDetails;
     try {
@@ -54,11 +54,11 @@ export const createComponentAction = (
         correctComponentFormValuesForSubmit(getState(), componentValues),
       );
     } catch (e) {
-      dispatch(setIsSubmittingApplicationComponent(false));
+      dispatch(setIsSubmittingApplicationComponentAction(false));
       throw e;
     }
 
-    dispatch(setIsSubmittingApplicationComponent(false));
+    dispatch(setIsSubmittingApplicationComponentAction(false));
 
     await dispatch({
       type: CREATE_COMPONENT,
@@ -77,7 +77,7 @@ export const updateComponentAction = (
       applicationName = getState().get("namespaces").get("active");
     }
 
-    dispatch(setIsSubmittingApplicationComponent(true));
+    dispatch(setIsSubmittingApplicationComponentAction(true));
 
     let component: ApplicationComponentDetails;
     try {
@@ -86,10 +86,10 @@ export const updateComponentAction = (
         correctComponentFormValuesForSubmit(getState(), componentValues),
       );
     } catch (e) {
-      dispatch(setIsSubmittingApplicationComponent(false));
+      dispatch(setIsSubmittingApplicationComponentAction(false));
       throw e;
     }
-    dispatch(setIsSubmittingApplicationComponent(false));
+    dispatch(setIsSubmittingApplicationComponentAction(false));
 
     await dispatch({
       type: UPDATE_COMPONENT,

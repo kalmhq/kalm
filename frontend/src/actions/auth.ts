@@ -11,7 +11,7 @@ import {
 } from "types/common";
 import { setErrorNotificationAction } from "./notification";
 
-export const loadLoginStatus = (): ThunkResult<Promise<void>> => {
+export const loadLoginStatusAction = (): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
     let loginStatus: LoginStatus;
 
@@ -39,7 +39,7 @@ export const validateTokenAction = (token: string): ThunkResult<Promise<string>>
         payload: { token },
       });
 
-      dispatch(loadLoginStatus());
+      dispatch(loadLoginStatusAction());
 
       return "";
     } catch (e) {

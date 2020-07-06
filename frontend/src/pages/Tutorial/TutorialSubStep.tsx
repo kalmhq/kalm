@@ -5,7 +5,7 @@ import { connect } from "react-redux";
 import { RootState } from "reducers";
 import clsx from "clsx";
 import { TutorialSubStep } from "types/tutorial";
-import { setTutorialStepCompletionStatus } from "actions/tutorial";
+import { setTutorialStepCompletionStatusAction } from "actions/tutorial";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -78,7 +78,7 @@ class TutorialSubStepCompoentRaw extends React.PureComponent<Props, State> {
     }
 
     if (completionByState !== isCompleted) {
-      dispatch(setTutorialStepCompletionStatus(stepIndex, subStepIndex, completionByState));
+      dispatch(setTutorialStepCompletionStatusAction(stepIndex, subStepIndex, completionByState));
     }
   };
 

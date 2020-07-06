@@ -6,20 +6,20 @@ import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import {
-  ResourceActionType,
   RESOURCE_TYPE_APPLICATION,
   RESOURCE_TYPE_COMPONENT,
-  RESOURCE_TYPE_NODE,
-  WATCHED_RESOURCE_CHANGE,
   RESOURCE_TYPE_HTTP_ROUTE,
   RESOURCE_TYPE_HTTPS_CERT,
+  RESOURCE_TYPE_NODE,
   RESOURCE_TYPE_REGISTRY,
   RESOURCE_TYPE_VOLUME,
+  ResourceActionType,
+  WATCHED_RESOURCE_CHANGE,
 } from "types/resources";
 import { loadApplicationsAction } from "actions/application";
-import { loadRoutes } from "actions/routes";
+import { loadRoutesAction } from "actions/routes";
 import { loadNodesAction } from "actions/node";
-import { loadCertificates, loadCertificateIssuers } from "actions/certificate";
+import { loadCertificateIssuersAction, loadCertificatesAction } from "actions/certificate";
 import { loadClusterInfoAction } from "actions/cluster";
 import { loadPersistentVolumesAction, loadStorageClassesAction } from "actions/persistentVolume";
 import { loadRegistriesAction } from "actions/registries";
@@ -50,11 +50,11 @@ class WithDataRaw extends React.PureComponent<Props> {
   private loadData() {
     const { dispatch } = this.props;
 
-    dispatch(loadRoutes("")); // all namespaces
+    dispatch(loadRoutesAction("")); // all namespaces
     dispatch(loadApplicationsAction());
     dispatch(loadNodesAction());
-    dispatch(loadCertificates());
-    dispatch(loadCertificateIssuers());
+    dispatch(loadCertificatesAction());
+    dispatch(loadCertificateIssuersAction());
     dispatch(loadClusterInfoAction());
     dispatch(loadPersistentVolumesAction());
     dispatch(loadRegistriesAction());

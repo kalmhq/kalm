@@ -1,5 +1,5 @@
 import { createApplicationAction, loadApplicationsAction } from "actions/application";
-import { loadCertificates } from "actions/certificate";
+import { loadCertificatesAction } from "actions/certificate";
 import MockStore from "api/mockStore";
 import configureStore from "configureStore";
 import { ConnectedRouter } from "connected-react-router/immutable";
@@ -25,7 +25,7 @@ import { ThemeProvider } from "@material-ui/core";
 import { theme } from "theme";
 import { createComponentAction } from "actions/component";
 import { HttpRouteForm, newEmptyRouteForm } from "types/route";
-import { createRoute } from "actions/routes";
+import { createRouteAction } from "actions/routes";
 import { RouteForm } from "forms/Route";
 import { loadServicesAction } from "actions/service";
 import Immutable from "immutable";
@@ -46,7 +46,7 @@ beforeAll(() => {
 });
 
 test("load certificate list", async () => {
-  await store.dispatch(loadCertificates());
+  await store.dispatch(loadCertificatesAction());
   expect(store.getState().get("certificates").get("certificates")).toEqual(mockStore.data.get("mockCertificates"));
 });
 
@@ -200,7 +200,7 @@ test("add route", async (done) => {
   const testService = store.getState().get("services").get("services").get(0);
   const onSubmit = async (route: HttpRouteForm) => {
     route = route.set("namespace", testApplication?.get("name"));
-    await store.dispatch(createRoute(route.get("name"), testApplication?.get("name")!, route));
+    await store.dispatch(createRouteAction(route.get("name"), testApplication?.get("name")!, route));
   };
 
   const onSubmitSuccess = () => {

@@ -21,7 +21,7 @@ import {
   SET_IS_SUBMITTING_APPLICATION_COMPONENT,
   SetIsSubmittingApplication,
   SetIsSubmittingApplicationComponent,
-  UPDATE_APPLICATION,
+  UPDATE_APPLICATION
 } from "types/application";
 import { resErrorsToSubmitErrors } from "utils";
 import { setCurrentNamespaceAction } from "./namespaces";
@@ -29,14 +29,14 @@ import { setSuccessNotificationAction } from "./notification";
 
 export const createApplicationAction = (applicationValues: Application): ThunkResult<Promise<Application>> => {
   return async (dispatch) => {
-    dispatch(setIsSubmittingApplication(true));
+    dispatch(setIsSubmittingApplicationAction(true));
 
     let application: ApplicationDetails;
 
     try {
       application = await api.createApplication(applicationValues);
     } catch (e) {
-      dispatch(setIsSubmittingApplication(false));
+      dispatch(setIsSubmittingApplicationAction(false));
 
       if (e.response && e.response.data.errors && e.response.data.errors.length > 0) {
         const submitErrors = resErrorsToSubmitErrors(e.response.data.errors);
@@ -45,7 +45,7 @@ export const createApplicationAction = (applicationValues: Application): ThunkRe
       throw e;
     }
 
-    dispatch(setIsSubmittingApplication(false));
+    dispatch(setIsSubmittingApplicationAction(false));
 
     await dispatch({
       type: CREATE_APPLICATION,
@@ -76,14 +76,14 @@ export const updateApplicationAction = (applicationRaw: Application): ThunkResul
     // console.log("throw", submitErrors);
     // throw new SubmissionError(submitErrors);
 
-    dispatch(setIsSubmittingApplication(true));
+    dispatch(setIsSubmittingApplicationAction(true));
 
     let application: ApplicationDetails;
 
     try {
       application = await api.updateApplication(applicationRaw);
     } catch (e) {
-      dispatch(setIsSubmittingApplication(false));
+      dispatch(setIsSubmittingApplicationAction(false));
       if (e.response && e.response.data.errors && e.response.data.errors.length > 0) {
         const submitErrors = resErrorsToSubmitErrors(e.response.data.errors);
         throw new SubmissionError(submitErrors);
@@ -91,7 +91,7 @@ export const updateApplicationAction = (applicationRaw: Application): ThunkResul
       throw e;
     }
 
-    dispatch(setIsSubmittingApplication(false));
+    dispatch(setIsSubmittingApplicationAction(false));
 
     dispatch({
       type: UPDATE_APPLICATION,
@@ -217,7 +217,7 @@ export const loadComponentPluginsAction = (): ThunkResult<Promise<void>> => {
   };
 };
 
-export const setIsSubmittingApplication = (isSubmittingApplication: boolean): SetIsSubmittingApplication => {
+export const setIsSubmittingApplicationAction = (isSubmittingApplication: boolean): SetIsSubmittingApplication => {
   return {
     type: SET_IS_SUBMITTING_APPLICATION,
     payload: {
@@ -226,7 +226,7 @@ export const setIsSubmittingApplication = (isSubmittingApplication: boolean): Se
   };
 };
 
-export const setIsSubmittingApplicationComponent = (
+export const setIsSubmittingApplicationComponentAction = (
   isSubmittingApplicationComponent: boolean,
 ): SetIsSubmittingApplicationComponent => {
   return {
