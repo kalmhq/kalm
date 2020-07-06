@@ -20,7 +20,7 @@ import {
   FilterListIcon,
   HelpIcon,
   KalmConsoleIcon,
-  KalmLogIcon
+  KalmLogIcon,
 } from "widgets/Icon";
 
 const mapStateToProps = (state: RootState) => {

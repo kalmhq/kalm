@@ -135,16 +135,6 @@ const renderType = (rowData: RowData) => {
   return rowData.get("isSelfManaged") ? "UPLOADED" : "MANAGED";
 };
 
-const getSelect = (labelValue: string, optionsValue: string[], defaultV: string, group: string) => {
-  const label = labelValue;
-  const options = optionsValue;
-  const defaultValue = defaultV;
-  const groupId = group;
-  const value = select(label, options, defaultValue, groupId);
-
-  return value;
-};
-
 const getCertifiate = () => {
   const domains = Immutable.List(["kalm.dev"]);
   return Immutable.Map({
