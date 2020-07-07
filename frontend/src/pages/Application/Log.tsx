@@ -3,7 +3,7 @@ import { WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import { Autocomplete, AutocompleteProps, UseAutocompleteProps } from "@material-ui/lab";
 import { k8sWsPrefix } from "api/realApi";
-import { replace } from "connected-react-router";
+import { replace, push } from "connected-react-router";
 import debug from "debug";
 import Immutable from "immutable";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
@@ -11,6 +11,7 @@ import queryString from "query-string";
 import React from "react";
 import ReconnectingWebSocket from "reconnecting-websocket";
 import { PodStatus } from "types/application";
+import { KSelect } from "widgets/KSelect";
 import { Loading } from "widgets/Loading";
 import { Namespaces } from "widgets/Namespaces";
 import "xterm/css/xterm.css";
@@ -98,9 +99,19 @@ const MyAutocomplete = withStyles(autocompleteStyles)(
 
 interface Props extends WithApplicationItemDataProps, WithStyles<typeof styles> {}
 
+const tailLinesOptions = [300, 1000, 10000, 100000];
+
+interface LogOptions {
+  tailLines: number;
+  timestamp: boolean;
+  follow: boolean;
+  previous: boolean;
+}
+
 interface State {
   value: [string, string];
   subscribedPods: Immutable.List<[string, string]>;
+  logOptions: LogOptions;
 }
 
 const styles = (theme: Theme) =>
@@ -130,6 +141,12 @@ export class LogStream extends React.PureComponent<Props, State> {
     this.state = {
       value: ["", ""],
       subscribedPods: Immutable.List(),
+      logOptions: {
+        tailLines: tailLinesOptions[0],
+        timestamp: true,
+        follow: true,
+        previous: false,
+      },
     };
 
     this.isLog = window.location.pathname.includes("logs");
@@ -152,7 +169,7 @@ export class LogStream extends React.PureComponent<Props, State> {
   }
 
   componentDidUpdate(prevProps: Props, prevState: State) {
-    const { components } = this.props;
+    const { components, activeNamespaceName } = this.props;
 
     let pods: Immutable.List<string> = Immutable.List();
     components?.forEach((component) => {
@@ -160,6 +177,10 @@ export class LogStream extends React.PureComponent<Props, State> {
         pods = pods.push(pod.get("name"));
       });
     });
+
+    if (!window.location.search) {
+      this.props.dispatch(push(`/applications/${activeNamespaceName}/components`));
+    }
 
     if (prevState.subscribedPods.size !== this.state.subscribedPods.size || this.state.value !== prevState.value) {
       // save selected pods in query
@@ -292,18 +313,28 @@ export class LogStream extends React.PureComponent<Props, State> {
     return ws;
   };
 
-  subscribe = (podName: string, containerName: string) => {
+  subscribe = (podName: string, containerName: string, logOptionsArgs?: LogOptions) => {
     logger("subscribe", podName, containerName);
     const { activeNamespaceName } = this.props;
+
+    const logOptions = logOptionsArgs || this.state.logOptions;
 
     this.sendOrQueueMessage(
       JSON.stringify({
         type: this.isLog ? "subscribePodLog" : "execStartSession",
         podName,
         container: containerName,
+        tailLines: logOptions.tailLines,
+        timestamp: logOptions.timestamp,
+        follow: logOptions.follow,
+        previous: logOptions.previous,
         namespace: activeNamespaceName,
       }),
     );
+
+    if (logOptionsArgs) {
+      this.setState({ logOptions: logOptionsArgs });
+    }
   };
 
   unsubscribe = (podName: string, containerName: string) => {
@@ -388,11 +419,7 @@ export class LogStream extends React.PureComponent<Props, State> {
     this.setState({ subscribedPods: currentPods, value: newValue });
   };
 
-  onInputContainerChange = (_event: React.ChangeEvent<{}>, x: string | null) => {
-    if (!x) {
-      return null;
-    }
-
+  onInputContainerChange = (x: any) => {
     const { subscribedPods, value } = this.state;
     let newSubscribedPods = Immutable.List();
     subscribedPods.forEach(([podName, containerName]) => {
@@ -447,7 +474,13 @@ export class LogStream extends React.PureComponent<Props, State> {
           })
         }
         renderInput={(params) => (
-          <TextField {...params} variant="outlined" size="small" placeholder="Select the pod you want to view logs" />
+          <TextField
+            label={"Pods"}
+            {...params}
+            variant="outlined"
+            size="small"
+            placeholder="Select the pod you want to view logs"
+          />
         )}
       />
     );
@@ -460,20 +493,43 @@ export class LogStream extends React.PureComponent<Props, State> {
     const containerNames = pod ? pod.get("containers").map((container) => container.get("name")) : Immutable.List();
 
     return (
-      <MyAutocomplete
-        multiple={false}
-        id="tags-filled"
-        options={containerNames.toArray()}
-        onChange={this.onInputContainerChange}
+      <KSelect
+        label="Container"
         value={value[1]}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            variant="outlined"
-            size="small"
-            placeholder="Select the container you want to view logs"
-          />
-        )}
+        options={containerNames
+          .map((x) => {
+            return {
+              value: x,
+              text: x,
+            };
+          })
+          .toJS()}
+        onChange={this.onInputContainerChange}
+      />
+    );
+  }
+
+  private renderInputTailLines() {
+    const { logOptions } = this.state;
+
+    return (
+      <KSelect
+        label="Container"
+        value={logOptions.tailLines}
+        options={tailLinesOptions.map((x) => {
+          return {
+            value: x,
+            text: `${x}`,
+          };
+        })}
+        onChange={(x) => {
+          this.setState({
+            logOptions: {
+              ...logOptions,
+              tailLines: x as number,
+            },
+          });
+        }}
       />
     );
   }
@@ -560,14 +616,29 @@ export class LogStream extends React.PureComponent<Props, State> {
             <Loading />
           ) : (
             <>
-              <Grid container spacing={2}>
-                <Grid item md={8}>
-                  {this.renderInputPod()}
+              {this.isLog ? (
+                <Grid container spacing={2}>
+                  <Grid item md={6}>
+                    {this.renderInputPod()}
+                  </Grid>
+                  <Grid item md={2}>
+                    {this.renderInputContainer()}
+                  </Grid>
+                  <Grid item md={2}>
+                    {this.renderInputTailLines()}
+                  </Grid>
                 </Grid>
-                <Grid item md={4}>
-                  {this.renderInputContainer()}
+              ) : (
+                <Grid container spacing={2}>
+                  <Grid item md={8}>
+                    {this.renderInputPod()}
+                  </Grid>
+                  <Grid item md={4}>
+                    {this.renderInputContainer()}
+                  </Grid>
                 </Grid>
-              </Grid>
+              )}
+
               <TabPanel value={value[0]} key={"empty"} index={""}>
                 {this.isLog ? this.renderLogTerminal("", logDocs) : this.renderLogTerminal("", shellDocs)}
               </TabPanel>
