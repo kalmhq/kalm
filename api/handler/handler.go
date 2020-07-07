@@ -45,14 +45,12 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gv1Alpha1WithAuth.GET("/applications", h.handleGetApplications)
 	gv1Alpha1WithAuth.POST("/applications", h.handleCreateApplication)
 	gv1Alpha1WithAuth.GET("/applications/:name", h.handleGetApplicationDetails)
-	//gv1Alpha1WithAuth.POST("/applications/validate", h.handleValidateApplications)
 	gv1Alpha1WithAuth.PUT("/applications/:name", h.handleUpdateApplication)
 	gv1Alpha1WithAuth.DELETE("/applications/:name", h.handleDeleteApplication)
 
 	gv1Alpha1WithAuth.GET("/services", h.handleListClusterServices)
 
 	gv1Alpha1WithAuth.GET("/componentplugins", h.handleListComponentPlugins)
-	//gv1Alpha1WithAuth.GET("/applicationplugins", h.handleListApplicationPlugins)
 
 	gv1Alpha1WithAuth.GET("/applications/:applicationName/components", h.handleListComponents)
 	gv1Alpha1WithAuth.GET("/applications/:applicationName/components/:name", h.handleGetComponent)
@@ -78,10 +76,6 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gv1Alpha1WithAuth.DELETE("/files/:namespace", h.handleDeleteFile)
 
 	gv1Alpha1WithAuth.DELETE("/pods/:namespace/:name", h.handleDeletePod)
-
-	//gv1Alpha1WithAuth.GET("/namespaces", h.handleListNamespaces)
-	//gv1Alpha1WithAuth.POST("/namespaces/:name", h.handleCreateNamespace)
-	//gv1Alpha1WithAuth.DELETE("/namespaces/:name", h.handleDeleteNamespace)
 
 	gv1Alpha1WithAuth.GET("/rolebindings", h.handleListRoleBindings)
 	gv1Alpha1WithAuth.POST("/rolebindings", h.handleCreateRoleBinding)

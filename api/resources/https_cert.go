@@ -4,6 +4,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"github.com/kapp-staging/kapp/controller/controllers"
 	"strings"
 	"sync"
 
@@ -89,6 +90,11 @@ func (builder *Builder) GetHttpsCerts() ([]HttpsCertResp, error) {
 }
 
 func (builder *Builder) CreateAutoManagedHttpsCert(cert HttpsCert) (HttpsCert, error) {
+	// by default, cert use our default http01Issuer
+	if cert.HttpsCertIssuer == "" {
+		cert.HttpsCertIssuer = controllers.DefaultHTTP01IssuerName
+	}
+
 	res := v1alpha1.HttpsCert{
 		ObjectMeta: v1.ObjectMeta{
 			Name: cert.Name,

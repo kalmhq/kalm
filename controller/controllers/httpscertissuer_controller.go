@@ -432,7 +432,7 @@ func (r *HttpsCertIssuerReconciler) ReconcileHTTP01(ctx context.Context, issuer 
 	} else {
 		clusterIssuer.Spec = expectedClusterIssuer.Spec
 
-		err = r.Update(ctx, &expectedClusterIssuer)
+		err = r.Update(ctx, &clusterIssuer)
 		return ctrl.Result{}, err
 	}
 }

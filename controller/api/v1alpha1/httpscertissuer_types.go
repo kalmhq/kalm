@@ -32,7 +32,7 @@ type HttpsCertIssuerSpec struct {
 	// +optional
 	ACMECloudFlare *ACMECloudFlareIssuer `json:"acmeCloudFlare,omitempty"`
 	// +optional
-	HTTP01 *HTTP01 `json:"http01,omitempty"`
+	HTTP01 *HTTP01Issuer `json:"http01,omitempty"`
 }
 
 type CAForTestIssuer struct{}
@@ -42,7 +42,7 @@ type ACMECloudFlareIssuer struct {
 	APITokenSecretName string `json:"apiTokenSecretName"`
 }
 
-type HTTP01 struct {
+type HTTP01Issuer struct {
 	// +optional
 	Email string `json:"email"`
 }
