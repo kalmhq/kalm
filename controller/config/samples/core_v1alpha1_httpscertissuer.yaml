@@ -13,3 +13,11 @@ spec:
 #   acmeCloudFlare:
 #     email: foo@bar.com
 #     apiKey: abcd
+#---
+#apiVersion: core.kapp.dev/v1alpha1
+#kind: HttpsCertIssuer
+#metadata:
+#  name: httpscertissuer-sample
+#spec:
+#  http01:
+#    email: your-email@example.com

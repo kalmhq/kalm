@@ -66,6 +66,7 @@ func NewEchoServer(runningConfig *config.Config) *echo.Echo {
 	// golang api server is charge of return frontend files to users
 	// If the STATIC_FILE_ROOT is set, add extra routes to handle static files
 	staticFileRoot := os.Getenv("STATIC_FILE_ROOT")
+	e.Use(middleware.Gzip())
 	if staticFileRoot != "" {
 		e.Use(middleware.StaticWithConfig(middleware.StaticConfig{
 			Root:  staticFileRoot,

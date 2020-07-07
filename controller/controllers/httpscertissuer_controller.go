@@ -34,6 +34,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"log"
 	"math/big"
+	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"time"
@@ -67,6 +68,9 @@ func (r *HttpsCertIssuerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, er
 		return r.ReconcileACMECloudFlare(ctx, httpsCertIssuer)
 	}
 
+	if httpsCertIssuer.Spec.HTTP01 != nil {
+		return r.ReconcileHTTP01(ctx, httpsCertIssuer)
+	}
 	return ctrl.Result{}, nil
 }
 
@@ -234,10 +238,9 @@ func (r *HttpsCertIssuerReconciler) ReconcileACMECloudFlare(ctx context.Context,
 		Spec: cmv1alpha2.IssuerSpec{
 			IssuerConfig: cmv1alpha2.IssuerConfig{
 				ACME: &v1alpha2.ACMEIssuer{
-					Email: email,
-					//Server: "https://acme-staging-v02.api.letsencrypt.org/directory",
-					Server: "https://acme-v02.api.letsencrypt.org/directory",
-					PrivateKey: cmmetav1.SecretKeySelector{ // what is this prvKey used for?
+					Email:  email,
+					Server: letsEncryptACMEIssuerServerURL,
+					PrivateKey: cmmetav1.SecretKeySelector{
 						LocalObjectReference: cmmetav1.LocalObjectReference{
 							Name: getPrvKeyNameForIssuer(certIssuer),
 						},
@@ -373,5 +376,63 @@ func publicKey(priv interface{}) interface{} {
 		return k.Public().(ed25519.PublicKey)
 	default:
 		return nil
+	}
+}
+
+var letsEncryptACMEIssuerServerURL string
+
+func init() {
+	if os.Getenv("LETSENCRYPT_ACME_ISSUER_SERVER_URL") != "" {
+		letsEncryptACMEIssuerServerURL = os.Getenv("LETSENCRYPT_ACME_ISSUER_SERVER_URL")
+	} else {
+		letsEncryptACMEIssuerServerURL = "https://acme-v02.api.letsencrypt.org/directory"
+	}
+}
+
+func (r *HttpsCertIssuerReconciler) ReconcileHTTP01(ctx context.Context, issuer corev1alpha1.HttpsCertIssuer) (ctrl.Result, error) {
+	issuerName := issuer.Name
+	acmeChallengeSolverHTTP01IngressClass := "istio"
+
+	expectedClusterIssuer := cmv1alpha2.ClusterIssuer{
+		ObjectMeta: v1.ObjectMeta{
+			Name: issuerName,
+		},
+		Spec: cmv1alpha2.IssuerSpec{
+			IssuerConfig: cmv1alpha2.IssuerConfig{
+				ACME: &v1alpha2.ACMEIssuer{
+					Email:  issuer.Spec.HTTP01.Email,
+					Server: letsEncryptACMEIssuerServerURL,
+					PrivateKey: cmmetav1.SecretKeySelector{ // prv key for this acme account
+						LocalObjectReference: cmmetav1.LocalObjectReference{
+							Name: getPrvKeyNameForIssuer(issuer),
+						},
+					},
+					Solvers: []v1alpha2.ACMEChallengeSolver{
+						{
+							HTTP01: &v1alpha2.ACMEChallengeSolverHTTP01{
+								Ingress: &v1alpha2.ACMEChallengeSolverHTTP01Ingress{
+									Class: &acmeChallengeSolverHTTP01IngressClass,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	var clusterIssuer cmv1alpha2.ClusterIssuer
+	if err := r.Get(ctx, client.ObjectKey{Name: issuerName}, &clusterIssuer); err != nil {
+		if !errors.IsNotFound(err) {
+			return ctrl.Result{}, err
+		}
+
+		err = r.Create(ctx, &expectedClusterIssuer)
+		return ctrl.Result{}, err
+	} else {
+		clusterIssuer.Spec = expectedClusterIssuer.Spec
+
+		err = r.Update(ctx, &clusterIssuer)
+		return ctrl.Result{}, err
 	}
 }

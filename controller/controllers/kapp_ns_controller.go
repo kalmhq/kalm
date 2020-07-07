@@ -124,6 +124,10 @@ func (r *KappNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, err
 	}
 
+	if err := r.reconcileDefaultHTTP01Issuer(); err != nil {
+		return ctrl.Result{}, err
+	}
+
 	return ctrl.Result{}, nil
 }
 
@@ -178,6 +182,37 @@ func (r *KappNSReconciler) reconcileDefaultCAIssuerAndCert() error {
 		currentCert.Spec = expectedCert.Spec
 		return r.Update(r.ctx, &currentCert)
 	}
+}
 
-	//return r.Patch(r.ctx, &currentCert, client.MergeFrom(&expectedCert))
+var DefaultHTTP01IssuerName = "default-http01-issuer"
+
+func (r *KappNSReconciler) reconcileDefaultHTTP01Issuer() error {
+
+	expectedHTTP01Issuer := v1alpha1.HttpsCertIssuer{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: DefaultHTTP01IssuerName,
+		},
+		Spec: v1alpha1.HttpsCertIssuerSpec{
+			HTTP01: &v1alpha1.HTTP01Issuer{},
+		},
+	}
+
+	currentIssuer := v1alpha1.HttpsCertIssuer{}
+	err := r.Get(r.ctx, types.NamespacedName{Name: DefaultHTTP01IssuerName}, &currentIssuer)
+	if err != nil {
+		if !errors.IsNotFound(err) {
+			return err
+		}
+
+		if err := r.Create(r.ctx, &expectedHTTP01Issuer); err != nil {
+			return err
+		}
+	} else {
+		currentIssuer.Spec = expectedHTTP01Issuer.Spec
+		if err := r.Update(r.ctx, &currentIssuer); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

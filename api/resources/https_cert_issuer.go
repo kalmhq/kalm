@@ -13,6 +13,7 @@ type HttpsCertIssuer struct {
 	Name           string                    `json:"name"`
 	CAForTest      *v1alpha1.CAForTestIssuer `json:"caForTest,omitempty"`
 	ACMECloudFlare *AccountAndSecret         `json:"acmeCloudFlare,omitempty"`
+	HTTP01         *v1alpha1.HTTP01Issuer    `json:"http01,omitempty"`
 }
 
 type AccountAndSecret struct {
@@ -43,6 +44,10 @@ func (builder *Builder) GetHttpsCertIssuerList() ([]HttpsCertIssuer, error) {
 			}
 		}
 
+		if ele.Spec.HTTP01 != nil {
+			issuer.HTTP01 = ele.Spec.HTTP01
+		}
+
 		rst = append(rst, issuer)
 	}
 
@@ -62,11 +67,13 @@ func (builder *Builder) UpdateHttpsCertIssuer(hcIssuer HttpsCertIssuer) (HttpsCe
 	}
 
 	if (res.Spec.CAForTest == nil) != (hcIssuer.CAForTest == nil) ||
-		(res.Spec.ACMECloudFlare == nil) != (hcIssuer.ACMECloudFlare == nil) {
+		(res.Spec.ACMECloudFlare == nil) != (hcIssuer.ACMECloudFlare == nil) ||
+		(res.Spec.HTTP01 == nil) != (hcIssuer.HTTP01 == nil) {
 		return HttpsCertIssuer{}, fmt.Errorf("can not change type of HttpsCertIssuer")
 	}
 
 	res.Spec.CAForTest = hcIssuer.CAForTest
+	res.Spec.HTTP01 = hcIssuer.HTTP01
 
 	if hcIssuer.ACMECloudFlare != nil {
 
