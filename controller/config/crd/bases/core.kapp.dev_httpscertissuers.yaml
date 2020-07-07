@@ -52,8 +52,6 @@ spec:
               properties:
                 email:
                   type: string
-              required:
-              - email
               type: object
           type: object
         status:
