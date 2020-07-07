@@ -6,11 +6,6 @@ import * as icons from "widgets/Icon";
 import { storiesOf } from "@storybook/react";
 import { Caption } from "widgets/Label";
 
-export default {
-  title: "Design System/Icons",
-  component: icons,
-};
-
 const Size = [24, 26, 30, 32];
 
 const wrapper = (child: React.ReactNode, title: string) => {
