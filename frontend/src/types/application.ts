@@ -1,7 +1,7 @@
 import Immutable from "immutable";
 import { ImmutableMap } from "typings";
 import { ComponentLikeContent } from "./componentTemplate";
-import { Metrics } from "./common";
+import { MetricList, Metrics } from "./common";
 
 export const CREATE_APPLICATION = "CREATE_APPLICATION";
 export const UPDATE_APPLICATION = "UPDATE_APPLICATION";
@@ -90,13 +90,26 @@ export interface ApplicationComponentDetailsContent extends ApplicationComponent
   metrics: Metrics;
   pods: Immutable.List<PodStatus>;
   services: Immutable.List<ServiceStatus>;
+  istioMetricHistories: IstioMetricHistories;
 }
+
+export type IstioMetricHistories = ImmutableMap<{
+  httpRequestsTotal?: MetricList;
+  httpRespCode2XXCount?: MetricList;
+  httpRespCode4XXCount?: MetricList;
+  httpRespCode5XXCount?: MetricList;
+  httpRequestBytes?: MetricList;
+  httpResponseBytes?: MetricList;
+  tcpSentBytesTotal?: MetricList;
+  tcpReceivedBytesTotal?: MetricList;
+}>;
 
 export type ApplicationComponent = ImmutableMap<ApplicationComponentContent>;
 export type ApplicationComponentDetails = ImmutableMap<ApplicationComponentDetailsContent>;
 
 export interface ApplicationContent {
   name: string;
+  istioMetricHistories: IstioMetricHistories;
 }
 
 export type Application = ImmutableMap<ApplicationContent>;

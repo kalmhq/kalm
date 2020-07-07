@@ -4,32 +4,10 @@ import * as chartjs from "chart.js";
 import { format } from "date-fns";
 import React from "react";
 // @ts-ignore
-import { Chart, ChartData, Line } from "react-chartjs-2";
+import { ChartData, Line } from "react-chartjs-2";
 import { MetricList } from "types/common";
 import { WhitePaper } from "./Paper";
 import { CenterCaption } from "./Label";
-
-Chart.controllers.line = Chart.controllers.line.extend({
-  draw: function (ease: any) {
-    if (this.chart.tooltip._active && this.chart.tooltip._active.length) {
-      var activePoint = this.chart.tooltip._active[0],
-        ctx = this.chart.ctx,
-        x = activePoint.tooltipPosition().x,
-        topY = this.chart.legend.bottom,
-        bottomY = this.chart.chartArea.bottom;
-
-      // draw line
-      ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(x, topY);
-      ctx.lineTo(x, bottomY);
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = "rgba(75,192,192,0.4)";
-      ctx.stroke();
-      ctx.restore();
-    }
-  },
-});
 
 const smallLineChartStyles = (theme: Theme) =>
   createStyles({
@@ -273,14 +251,12 @@ class LineChartRaw extends React.PureComponent<LineChartProps> {
 
 export const LineChart = withStyles(lineChartStyles)(LineChartRaw);
 
-const formatMemory = (value: number, si?: boolean): string => {
+export const formatMemory = (value: number, si?: boolean): string => {
   const thresh = si ? 1000 : 1024;
   if (Math.abs(value) < thresh) {
     return value + " B";
   }
-  const units = si
-    ? ["kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"]
-    : ["KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"];
+  const units = si ? ["k", "M", "G", "T", "P", "E", "Z", "Y"] : ["Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi", "Yi"];
   let u = -1;
   do {
     value /= thresh;
@@ -289,8 +265,29 @@ const formatMemory = (value: number, si?: boolean): string => {
   return value.toFixed(1) + " " + units[u];
 };
 
+export const formatNumerical = (value: number): string => {
+  return value.toString();
+};
+
 const formatCPU = (value: number): string => {
   return value / 1000 + " Core";
+};
+
+export const NumericalLineChart = (props: Pick<Props, "data"> & { title: string }) => {
+  const { title } = props;
+  return (
+    <WhitePaper elevation={0} style={{ overflow: "hidden" }}>
+      <LineChart
+        {...props}
+        formatValue={formatNumerical}
+        height={160}
+        width={"100%"}
+        borderColor="rgba(33, 150, 243, 1)"
+        backgroundColor="rgba(33, 150, 243, 0.5)"
+      />
+      <CenterCaption>{title}</CenterCaption>
+    </WhitePaper>
+  );
 };
 
 export const BigCPULineChart = (props: Pick<Props, "data">) => {

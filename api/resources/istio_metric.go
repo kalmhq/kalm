@@ -34,6 +34,8 @@ type IstioMetricHistories struct {
 	HTTPRespCode2XXCount MetricHistory `json:"httpRespCode2XXCount,omitempty"`
 	HTTPRespCode4XXCount MetricHistory `json:"httpRespCode4XXCount,omitempty"`
 	HTTPRespCode5XXCount MetricHistory `json:"httpRespCode5XXCount,omitempty"`
+	HTTPRequestBytes     MetricHistory `json:"httpRequestBytes,omitempty"`
+	HTTPResponseBytes    MetricHistory `json:"httpResponseBytes,omitempty"`
 
 	//TCP
 	TCPSentBytesTotal     MetricHistory `json:"tcpSentBytesTotal,omitempty"`
@@ -53,6 +55,8 @@ func mergeIstioMetricHistories(a, b *IstioMetricHistories) *IstioMetricHistories
 	rst.HTTPRespCode2XXCount = mergeMetricHistories(a.HTTPRespCode2XXCount, b.HTTPRespCode2XXCount)
 	rst.HTTPRespCode4XXCount = mergeMetricHistories(a.HTTPRespCode4XXCount, b.HTTPRespCode4XXCount)
 	rst.HTTPRespCode5XXCount = mergeMetricHistories(a.HTTPRespCode5XXCount, b.HTTPRespCode5XXCount)
+	rst.HTTPRequestBytes = mergeMetricHistories(a.HTTPRequestBytes, b.HTTPRequestBytes)
+	rst.HTTPResponseBytes = mergeMetricHistories(a.HTTPResponseBytes, b.HTTPResponseBytes)
 	rst.TCPReceivedBytesTotal = mergeMetricHistories(a.TCPReceivedBytesTotal, b.TCPReceivedBytesTotal)
 	rst.TCPSentBytesTotal = mergeMetricHistories(a.TCPSentBytesTotal, b.TCPSentBytesTotal)
 
@@ -79,20 +83,24 @@ func (builder *Builder) GetIstioMetricsListChannel(ns string) *IstioMetricListCh
 func getIstioMetricHistoriesMap(ns string) (map[string]*IstioMetricHistories, error) {
 	svcName := fmt.Sprintf(`.*.%s.svc.cluster.local`, ns)
 
-	httpRequestsTotal := fmt.Sprintf(`(sum by (destination_service) (istio_requests_total{destination_service=~"%s"})) `, svcName)
-	resp2XX := fmt.Sprintf(`(sum by (destination_service) (istio_requests_total{destination_service=~"%s", response_code=~"2.*"})) `, svcName)
-	resp4XX := fmt.Sprintf(`(sum by (destination_service) (istio_requests_total{destination_service=~"%s", response_code=~"4.*"})) `, svcName)
-	resp5XX := fmt.Sprintf(`(sum by (destination_service) (istio_requests_total{destination_service=~"%s", response_code=~"5.*"})) `, svcName)
-	sentBytes := fmt.Sprintf(`(sum by (destination_service) (istio_tcp_sent_bytes_total{destination_service=~"%s"}))`, svcName)
-	receiveBytes := fmt.Sprintf(`(sum by (destination_service) (istio_tcp_received_bytes_total{destination_service=~"%s"}))`, svcName)
+	httpRequestsTotal := fmt.Sprintf(`(sum by (destination_service) (rate(istio_requests_total{destination_service=~"%s"}[5m])))`, svcName)
+	resp2XX := fmt.Sprintf(`(sum by (destination_service) (rate(istio_requests_total{destination_service=~"%s", response_code=~"2.*"}[5m])))`, svcName)
+	resp4XX := fmt.Sprintf(`(sum by (destination_service) (rate(istio_requests_total{destination_service=~"%s", response_code=~"4.*"}[5m])))`, svcName)
+	resp5XX := fmt.Sprintf(`(sum by (destination_service) (rate(istio_requests_total{destination_service=~"%s", response_code=~"5.*"}[5m])))`, svcName)
+	requestBytes := fmt.Sprintf(`(sum by (destination_service) (rate(istio_request_bytes_sum{destination_service=~"%s"}[5m])))`, svcName)
+	responseBytes := fmt.Sprintf(`(sum by (destination_service) (rate(istio_response_bytes_sum{destination_service=~"%s"}[5m])))`, svcName)
+	sentBytes := fmt.Sprintf(`(sum by (destination_service) (rate(istio_tcp_sent_bytes_total{destination_service=~"%s"}[5m])))`, svcName)
+	receiveBytes := fmt.Sprintf(`(sum by (destination_service) (rate(istio_tcp_received_bytes_total{destination_service=~"%s"}[5m])))`, svcName)
 
 	queryMap := map[string]string{
 		"httpRequestsTotal": httpRequestsTotal,
-		"httpResp2XX":      resp2XX,
-		"httpResp4XX":      resp4XX,
-		"httpResp5XX":      resp5XX,
-		"tcpSentBytes":     sentBytes,
-		"tcpReceiveBytes":  receiveBytes,
+		"httpResp2XX":       resp2XX,
+		"httpResp4XX":       resp4XX,
+		"httpResp5XX":       resp5XX,
+		"httpRequestBytes":  requestBytes,
+		"httpRespBytes":     responseBytes,
+		"tcpSentBytes":      sentBytes,
+		"tcpReceiveBytes":   receiveBytes,
 	}
 
 	now := time.Now().Unix()
@@ -169,6 +177,10 @@ func getIstioMetricHistoriesMap(ns string) (map[string]*IstioMetricHistories, er
 				svc2MetricHistoriesMap[svc].HTTPRespCode4XXCount = metricPoints
 			case "httpResp5XX":
 				svc2MetricHistoriesMap[svc].HTTPRespCode5XXCount = metricPoints
+			case "httpRequestBytes":
+				svc2MetricHistoriesMap[svc].HTTPRequestBytes = metricPoints
+			case "httpRespBytes":
+				svc2MetricHistoriesMap[svc].HTTPResponseBytes = metricPoints
 			case "tcpSentBytes":
 				svc2MetricHistoriesMap[svc].TCPSentBytesTotal = metricPoints
 			case "tcpReceiveBytes":
@@ -197,27 +209,27 @@ func trans2MetricPoints(value [][]interface{}) (rst []MetricPoint) {
 		}
 
 		t, ok1 := parseInterfaceAsTime(v[0])
-		n, ok2 := parseInterfaceAsInt(v[1])
+		n, ok2 := parseInterfaceAsFloat(v[1])
 		if !ok1 || !ok2 {
 			continue
 		}
 
 		rst = append(rst, MetricPoint{
 			Timestamp: t,
-			Value:     uint64(n),
+			Value:     n,
 		})
 	}
 
 	return
 }
 
-func parseInterfaceAsInt(i interface{}) (int, bool) {
+func parseInterfaceAsFloat(i interface{}) (float64, bool) {
 	valInStr, ok := i.(string)
 	if !ok {
 		return 0, false
 	}
 
-	val, err := strconv.Atoi(valInStr)
+	val, err := strconv.ParseFloat(valInStr, 64)
 	if err != nil {
 		return 0, false
 	}

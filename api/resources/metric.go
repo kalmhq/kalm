@@ -9,7 +9,7 @@ import (
 // https://github.com/kubernetes/dashboard/blob/master/src/app/backend/integration/metric/api/types.go#L121
 type MetricPoint struct {
 	Timestamp time.Time
-	Value     uint64 // todo why uint, can not be negative?
+	Value     float64
 }
 
 type MetricHistory []MetricPoint

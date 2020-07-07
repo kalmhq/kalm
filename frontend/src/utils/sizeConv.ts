@@ -1,8 +1,8 @@
-export const humanFileSize = (bytes: number, si = false, dp = 1) => {
+export const humanFileSize = (bytes: number, si = false, dp = 2) => {
   const thresh = si ? 1000 : 1024;
 
   if (Math.abs(bytes) < thresh) {
-    return bytes + " B";
+    return bytes.toFixed(dp) + " B";
   }
 
   const units = si ? ["k", "M", "G", "T", "P", "E", "Z", "Y"] : ["Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi", "Yi"];
