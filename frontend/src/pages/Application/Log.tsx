@@ -1,4 +1,4 @@
-import { Chip, createStyles, Grid, Paper, TextField, Theme, withStyles } from "@material-ui/core";
+import { Box, Chip, createStyles, Grid, TextField, Theme, withStyles } from "@material-ui/core";
 import { WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import { Autocomplete, AutocompleteProps, UseAutocompleteProps } from "@material-ui/lab";
@@ -11,9 +11,9 @@ import queryString from "query-string";
 import React from "react";
 import ReconnectingWebSocket from "reconnecting-websocket";
 import { PodStatus } from "types/application";
-import "xterm/css/xterm.css";
 import { Loading } from "widgets/Loading";
 import { Namespaces } from "widgets/Namespaces";
+import "xterm/css/xterm.css";
 import { BasePage } from "../BasePage";
 import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./ItemDataWrapper";
 import { Xterm, XtermRaw } from "./Xterm";
@@ -82,7 +82,7 @@ const autocompleteStyles = (_theme: Theme) =>
       width: "100%",
       "& .MuiFormControl-root": {
         width: "100%",
-        margin: "12px 0",
+        margin: "0 0 16px",
         "& input": {
           height: 24,
         },
@@ -106,9 +106,6 @@ interface State {
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
-    paper: {
-      padding: theme.spacing(2),
-    },
   });
 
 export const generateQueryForPods = (namespace: string, podNames: [string, string][], active?: [string, string]) => {
@@ -548,7 +545,7 @@ export class LogStream extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { isLoading, application, classes } = this.props;
+    const { isLoading, application } = this.props;
     const { value, subscribedPods } = this.state;
 
     return (
@@ -556,8 +553,9 @@ export class LogStream extends React.PureComponent<Props, State> {
         secondHeaderLeft={<Namespaces />}
         secondHeaderRight={this.isLog ? "Log" : "Shell"}
         leftDrawer={<ApplicationSidebar />}
+        fullContainer={true}
       >
-        <Paper elevation={2} classes={{ root: classes.paper }}>
+        <Box p={2}>
           {isLoading || !application ? (
             <Loading />
           ) : (
@@ -570,21 +568,19 @@ export class LogStream extends React.PureComponent<Props, State> {
                   {this.renderInputContainer()}
                 </Grid>
               </Grid>
-              <div>
-                <TabPanel value={value[0]} key={"empty"} index={""}>
-                  {this.isLog ? this.renderLogTerminal("", logDocs) : this.renderLogTerminal("", shellDocs)}
-                </TabPanel>
-                {Array.from(subscribedPods).map(([podName]) => {
-                  return (
-                    <TabPanel value={value[0]} key={podName} index={podName}>
-                      {this.isLog ? this.renderLogTerminal(podName) : this.renderExecTerminal(podName)}
-                    </TabPanel>
-                  );
-                })}
-              </div>
+              <TabPanel value={value[0]} key={"empty"} index={""}>
+                {this.isLog ? this.renderLogTerminal("", logDocs) : this.renderLogTerminal("", shellDocs)}
+              </TabPanel>
+              {Array.from(subscribedPods).map(([podName]) => {
+                return (
+                  <TabPanel value={value[0]} key={podName} index={podName}>
+                    {this.isLog ? this.renderLogTerminal(podName) : this.renderExecTerminal(podName)}
+                  </TabPanel>
+                );
+              })}
             </>
           )}
-        </Paper>
+        </Box>
       </BasePage>
     );
   }

@@ -14,11 +14,12 @@ export interface BasePageProps extends React.Props<any>, WithStyles<typeof style
   leftDrawer?: React.ReactNode;
   secondHeaderLeft?: React.ReactNode;
   secondHeaderRight?: React.ReactNode;
+  fullContainer?: boolean;
 }
 
 export class BasePageRaw extends React.PureComponent<BasePageProps> {
   public render() {
-    const { children, leftDrawer, secondHeaderLeft, secondHeaderRight } = this.props;
+    const { children, leftDrawer, secondHeaderLeft, secondHeaderRight, fullContainer } = this.props;
     return (
       <Box display="flex" flexDirection="column">
         <SecondHeader left={secondHeaderLeft} right={secondHeaderRight} />
@@ -27,7 +28,7 @@ export class BasePageRaw extends React.PureComponent<BasePageProps> {
           <Box flex="1">
             {/* <div className={classes.rightSection}> */}
             {/*{noScrollContainer ? children : <ScrollContainer>{children}</ScrollContainer>}*/}
-            <Container maxWidth="lg" disableGutters style={{ margin: 0 }}>
+            <Container maxWidth={fullContainer ? false : "lg"} disableGutters style={{ margin: 0 }}>
               {children}
             </Container>
           </Box>
