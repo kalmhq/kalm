@@ -11,7 +11,7 @@ import {
   LOAD_APPLICATIONS_FULFILLED,
   LOAD_APPLICATIONS_PENDING,
   SET_IS_SUBMITTING_APPLICATION,
-  UPDATE_APPLICATION
+  UPDATE_APPLICATION,
 } from "types/application";
 import { LOGOUT } from "types/common";
 import { ImmutableMap } from "typings";
@@ -20,7 +20,7 @@ import {
   RESOURCE_ACTION_DELETE,
   RESOURCE_ACTION_UPDATE,
   RESOURCE_TYPE_APPLICATION,
-  WATCHED_RESOURCE_CHANGE
+  WATCHED_RESOURCE_CHANGE,
 } from "types/resources";
 import { addOrUpdateInList, removeInList, removeInListByName } from "./utils";
 

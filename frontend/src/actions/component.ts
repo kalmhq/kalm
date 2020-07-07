@@ -9,7 +9,7 @@ import {
   LOAD_COMPONENTS_FAILED,
   LOAD_COMPONENTS_FULFILLED,
   LOAD_COMPONENTS_PENDING,
-  UPDATE_COMPONENT
+  UPDATE_COMPONENT,
 } from "types/application";
 import { correctComponentFormValuesForSubmit } from "utils/application";
 import { setIsSubmittingApplicationComponentAction } from "./application";

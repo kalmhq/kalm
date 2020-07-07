@@ -17,7 +17,7 @@ import {
   SET_EDIT_CERTIFICATE_MODAL,
   SET_IS_SUBMITTING_CERTIFICATE,
   SetEditCertificateModal,
-  SetIsSubmittingCertificate
+  SetIsSubmittingCertificate,
 } from "types/certificate";
 import { ThunkResult } from "types";
 

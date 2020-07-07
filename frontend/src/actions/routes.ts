@@ -11,7 +11,7 @@ import {
   LOAD_ROUTES_PENDING,
   UPDATE_ROUTE_FAILED,
   UPDATE_ROUTE_FULFILLED,
-  UPDATE_ROUTE_PENDING
+  UPDATE_ROUTE_PENDING,
 } from "types/route";
 import { ThunkResult } from "types";
 import { setErrorNotificationAction } from "./notification";
@@ -57,7 +57,11 @@ export const createRouteAction = (name: string, namespace: string, route: HttpRo
   };
 };
 
-export const updateRouteAction = (name: string, namespace: string, route: HttpRoute): ThunkResult<Promise<HttpRoute>> => {
+export const updateRouteAction = (
+  name: string,
+  namespace: string,
+  route: HttpRoute,
+): ThunkResult<Promise<HttpRoute>> => {
   return async (dispatch, getState) => {
     try {
       dispatch({ type: UPDATE_ROUTE_PENDING });

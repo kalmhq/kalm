@@ -5,7 +5,7 @@ import {
   LOAD_PERSISTENT_VOLUMES,
   LOAD_SIMPLE_OPTIONS,
   LOAD_STATEFULSET_OPTIONS,
-  LOAD_STORAGE_CLASSES
+  LOAD_STORAGE_CLASSES,
 } from "types/disk";
 
 export const loadPersistentVolumesAction = (): ThunkResult<Promise<void>> => {

@@ -6,7 +6,7 @@ import {
   LOAD_ROLE_BINDINGS_FAILED,
   LOAD_ROLE_BINDINGS_FULFILLED,
   LOAD_ROLE_BINDINGS_PENDING,
-  RoleBindingsRequestBody
+  RoleBindingsRequestBody,
 } from "types/user";
 import { api } from "api";
 

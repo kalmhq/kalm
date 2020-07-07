@@ -4,7 +4,7 @@ import {
   CLOSE_CONTROLLED_DIALOG,
   DESTROY_CONTROLLED_DIALOG,
   INIT_CONTROLLED_DIALOG,
-  OPEN_CONTROLLED_DIALOG
+  OPEN_CONTROLLED_DIALOG,
 } from "types/common";
 
 export const destroyDialogAction = (dialogID: string): Actions => {

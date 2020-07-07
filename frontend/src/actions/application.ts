@@ -21,7 +21,7 @@ import {
   SET_IS_SUBMITTING_APPLICATION_COMPONENT,
   SetIsSubmittingApplication,
   SetIsSubmittingApplicationComponent,
-  UPDATE_APPLICATION
+  UPDATE_APPLICATION,
 } from "types/application";
 import { resErrorsToSubmitErrors } from "utils";
 import { setCurrentNamespaceAction } from "./namespaces";
