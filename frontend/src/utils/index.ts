@@ -1,4 +1,4 @@
-import { differenceInMinutes, format } from "date-fns";
+import { differenceInMinutes, format, parseISO } from "date-fns";
 
 export const ID = (): string => {
   // Math.random should be unique because of its seeding algorithm.
@@ -12,6 +12,10 @@ export const randomName = (): string => {
   // Convert it to base 36 (numbers + letters), and grab the first 9 characters
   // after the decimal.
   return Math.random().toString(36).substr(2, 9);
+};
+
+export const formatTimestamp = (timestamp: string): string => {
+  return formatDate(parseISO(timestamp));
 };
 
 export const formatDate = (date: Date): string => {

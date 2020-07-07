@@ -4,22 +4,23 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+	"strconv"
+	"strings"
+	"sync"
+
 	"github.com/gorilla/websocket"
 	"github.com/kapp-staging/kapp/api/client"
 	"github.com/kapp-staging/kapp/api/utils"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
-	"io"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/client-go/tools/remotecommand"
-	"net/http"
-	"strconv"
-	"strings"
-	"sync"
 )
 
 type WSConn struct {
@@ -69,11 +70,15 @@ type WSClientAuthRequest struct {
 }
 
 type WSPodResourceRequest struct {
-	WSRequest `json:",inline"`
-	PodName   string `json:"podName"`
-	Container string `json:"container"`
-	Namespace string `json:"namespace"`
-	Data      string `json:"data"`
+	WSRequest  `json:",inline"`
+	PodName    string `json:"podName"`
+	Container  string `json:"container"`
+	TailLines  int64  `json:"tailLines"`
+	Timestamps bool   `json:"timestamps"`
+	Follow     bool   `json:"follow"`
+	Previous   bool   `json:"previous"`
+	Namespace  string `json:"namespace"`
+	Data       string `json:"data"`
 }
 
 type StatusValue int
@@ -313,12 +318,12 @@ func handleLogRequests(conn *WSConn) {
 			if m.Type == WSRequestTypeSubscribePodLog {
 				k8sClient := conn.K8sClient
 
-				lines := int64(300)
-
 				podLogOpts := coreV1.PodLogOptions{
-					Container: m.Container,
-					Follow:    true,
-					TailLines: &lines,
+					Container:  m.Container,
+					TailLines:  &m.TailLines,
+					Timestamps: m.Timestamps,
+					Follow:     m.Follow,
+					Previous:   m.Previous,
 				}
 
 				req := k8sClient.CoreV1().Pods(m.Namespace).GetLogs(m.PodName, &podLogOpts)
