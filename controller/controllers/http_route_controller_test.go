@@ -95,7 +95,7 @@ func TestHttpRouteControllerSuite(t *testing.T) {
 
 func TestAdjustWeightToSumTo100(t *testing.T) {
 	wSlice := [][]int{
-		{1, 1, 6},// sum([13 13 75]) == 101
+		{1, 1, 6}, // sum([13 13 75]) == 101
 		{1, 1, 7},
 		{2, 2, 7},
 	}

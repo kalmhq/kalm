@@ -19,6 +19,7 @@ import (
 	"flag"
 	"os"
 
+	_ "github.com/joho/godotenv/autoload"
 	istioScheme "istio.io/client-go/pkg/clientset/versioned/scheme"
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"

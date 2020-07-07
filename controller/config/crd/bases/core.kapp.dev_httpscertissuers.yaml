@@ -48,6 +48,11 @@ spec:
               type: object
             caForTest:
               type: object
+            http01:
+              properties:
+                email:
+                  type: string
+              type: object
           type: object
         status:
           description: HttpsCertIssuerStatus defines the observed state of HttpsCertIssuer
