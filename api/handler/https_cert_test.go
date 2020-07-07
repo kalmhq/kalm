@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/kapp-staging/kapp/api/resources"
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/kapp-staging/kapp/controller/controllers"
 	"github.com/stretchr/testify/suite"
 	coreV1 "k8s.io/api/core/v1"
 	"net/http"
@@ -68,6 +69,30 @@ func (suite *HttpsCertTestSuite) TestCreateHttpsCert() {
 	suite.Equal(1, len(resList))
 	suite.Equal(string(coreV1.ConditionUnknown), resList[0].Ready)
 	suite.Equal(resources.ReasonForNoReadyConditions, resList[0].Reason)
+}
+
+func (suite *HttpsCertTestSuite) TestCreateHttpsCertWithoutSetIssuer() {
+	body := `{
+  "name":    "foobar-cert",
+  "domains": ["example.com"]
+}`
+
+	rec := suite.NewRequest(http.MethodPost, "/v1alpha1/httpscerts", body)
+
+	var httpsCert resources.HttpsCert
+	rec.BodyAsJSON(&httpsCert)
+
+	suite.Equal(201, rec.Code)
+	suite.Equal("foobar-cert", httpsCert.Name)
+
+	var res v1alpha1.HttpsCertList
+	err := suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/httpscerts").Do().Into(&res)
+	suite.Nil(err)
+
+	suite.Equal(1, len(res.Items))
+	suite.Equal("foobar-cert", res.Items[0].Name)
+	suite.Equal(controllers.DefaultHTTP01IssuerName, res.Items[0].Spec.HttpsCertIssuer)
+	suite.Equal("example.com", strings.Join(res.Items[0].Spec.Domains, ""))
 }
 
 const tlsCert = `-----BEGIN CERTIFICATE-----
