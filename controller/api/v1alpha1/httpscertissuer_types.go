@@ -31,6 +31,8 @@ type HttpsCertIssuerSpec struct {
 	CAForTest *CAForTestIssuer `json:"caForTest,omitempty"`
 	// +optional
 	ACMECloudFlare *ACMECloudFlareIssuer `json:"acmeCloudFlare,omitempty"`
+	// +optional
+	HTTP01 *HTTP01 `json:"http01,omitempty"`
 }
 
 type CAForTestIssuer struct{}
@@ -38,6 +40,10 @@ type CAForTestIssuer struct{}
 type ACMECloudFlareIssuer struct {
 	Email              string `json:"email"`
 	APITokenSecretName string `json:"apiTokenSecretName"`
+}
+
+type HTTP01 struct {
+	Email string `json:"email"`
 }
 
 // HttpsCertIssuerStatus defines the observed state of HttpsCertIssuer
