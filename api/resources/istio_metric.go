@@ -87,7 +87,7 @@ func getIstioMetricHistoriesMap(ns string) (map[string]*IstioMetricHistories, er
 	receiveBytes := fmt.Sprintf(`(sum by (destination_service) (istio_tcp_received_bytes_total{destination_service=~"%s"}))`, svcName)
 
 	queryMap := map[string]string{
-		"httpRequestTotal": httpRequestsTotal,
+		"httpRequestsTotal": httpRequestsTotal,
 		"httpResp2XX":      resp2XX,
 		"httpResp4XX":      resp4XX,
 		"httpResp5XX":      resp5XX,
@@ -101,8 +101,15 @@ func getIstioMetricHistoriesMap(ns string) (map[string]*IstioMetricHistories, er
 
 	svc2MetricHistoriesMap := make(map[string]*IstioMetricHistories)
 
-	for k, query := range queryMap {
+	type respContent struct {
+		Key  string
+		Resp PromResponse
+		Err  error
+	}
 
+	respContentChan := make(chan respContent, len(queryMap))
+
+	for k, query := range queryMap {
 		api := fmt.Sprintf("%s/api/v1/query_range?query=%s&start=%d&end=%d&step=%d",
 			istioPrometheusAPIAddress,
 			url.QueryEscape(query),
@@ -111,13 +118,35 @@ func getIstioMetricHistoriesMap(ns string) (map[string]*IstioMetricHistories, er
 			stepAs1Min,
 		)
 
-		promResp, err := queryPrometheusAPI(api)
-		if err != nil {
-			log.Warnf("err when queryPrometheusAPI(%s), err: %s, ignroed\n", api, err)
-			return nil, err
+		go func(k, api string) {
+			promResp, err := queryPrometheusAPI(api)
+			if err != nil {
+				log.Warnf("err when queryPrometheusAPI(%s), err: %s, ignored\n", api, err)
+			}
+
+			respContentChan <- respContent{
+				Key:  k,
+				Resp: promResp,
+				Err:  err,
+			}
+		}(k, api)
+	}
+
+	cnt := 0
+	for resp := range respContentChan {
+		cnt++
+
+		if resp.Err != nil {
+			if cnt == len(queryMap) {
+				break
+			}
+
+			continue
 		}
 
-		// aggregate rsts by svc
+		k := resp.Key
+		promResp := resp.Resp
+
 		for _, rst := range promResp.Data.Result {
 
 			svc, exist := rst.Metric["destination_service"]
@@ -132,7 +161,7 @@ func getIstioMetricHistoriesMap(ns string) (map[string]*IstioMetricHistories, er
 			}
 
 			switch k {
-			case "httpRequestTotal":
+			case "httpRequestsTotal":
 				svc2MetricHistoriesMap[svc].HTTPRequestsTotal = metricPoints
 			case "httpResp2XX":
 				svc2MetricHistoriesMap[svc].HTTPRespCode2XXCount = metricPoints
@@ -147,6 +176,10 @@ func getIstioMetricHistoriesMap(ns string) (map[string]*IstioMetricHistories, er
 			default:
 				log.Warnln("unknown query key:", k)
 			}
+		}
+
+		if cnt == len(queryMap) {
+			break
 		}
 	}
 
