@@ -1,9 +1,23 @@
-import { Box, Chip, createStyles, Grid, TextField, Theme, withStyles } from "@material-ui/core";
+import {
+  Box,
+  Checkbox,
+  Chip,
+  createStyles,
+  FormControlLabel,
+  Grid,
+  IconButton,
+  Menu,
+  MenuItem,
+  TextField,
+  Theme,
+  withStyles,
+} from "@material-ui/core";
 import { WithStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
+import MoreVertIcon from "@material-ui/icons/MoreVert";
 import { Autocomplete, AutocompleteProps, UseAutocompleteProps } from "@material-ui/lab";
 import { k8sWsPrefix } from "api/realApi";
-import { replace, push } from "connected-react-router";
+import { push, replace } from "connected-react-router";
 import debug from "debug";
 import Immutable from "immutable";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
@@ -11,9 +25,13 @@ import queryString from "query-string";
 import React from "react";
 import ReconnectingWebSocket from "reconnecting-websocket";
 import { PodStatus } from "types/application";
+import { ImmutableMap } from "typings";
+import { formatTimestamp, formatDate } from "utils";
 import { KSelect } from "widgets/KSelect";
+import { BoldBody } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { Namespaces } from "widgets/Namespaces";
+import { Terminal } from "xterm";
 import "xterm/css/xterm.css";
 import { BasePage } from "../BasePage";
 import { ApplicationItemDataWrapper, WithApplicationItemDataProps } from "./ItemDataWrapper";
@@ -101,22 +119,30 @@ interface Props extends WithApplicationItemDataProps, WithStyles<typeof styles> 
 
 const tailLinesOptions = [300, 1000, 10000, 100000];
 
-interface LogOptions {
+type LogOptions = ImmutableMap<{
   tailLines: number;
-  timestamp: boolean;
+  // local filter timestamps refer Lens https://github.com/lensapp/lens/blob/b7974827d2b767d52b1d57fc01a9782e15dce28c/src/renderer/components/%2Bworkloads-pods/pod-logs-dialog.tsx#L141
+  timestamps: boolean;
   follow: boolean;
   previous: boolean;
-}
+}>;
 
 interface State {
   value: [string, string];
   subscribedPods: Immutable.List<[string, string]>;
+  moreEl: null | HTMLElement;
   logOptions: LogOptions;
+  timestampsFrom: Immutable.Map<string, string>;
 }
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
+    more: {
+      display: "flex",
+      justifyContent: "flex-end",
+      alignItems: "flex-start",
+    },
   });
 
 export const generateQueryForPods = (namespace: string, podNames: [string, string][], active?: [string, string]) => {
@@ -141,12 +167,14 @@ export class LogStream extends React.PureComponent<Props, State> {
     this.state = {
       value: ["", ""],
       subscribedPods: Immutable.List(),
-      logOptions: {
+      logOptions: Immutable.Map({
         tailLines: tailLinesOptions[0],
-        timestamp: true,
+        timestamps: true,
         follow: true,
         previous: false,
-      },
+      }),
+      moreEl: null,
+      timestampsFrom: Immutable.Map({}),
     };
 
     this.isLog = window.location.pathname.includes("logs");
@@ -235,6 +263,22 @@ export class LogStream extends React.PureComponent<Props, State> {
     }
   }
 
+  private getTimestamps = (logs: string) => {
+    const timestamps = logs.match(/^\d+\S+/gm);
+    if (timestamps && timestamps.length > 0) {
+      return timestamps[0];
+    }
+    return "";
+  };
+
+  private removeTimestamps = (logs: string) => {
+    return logs.replace(/^\d+.*?\s/gm, "");
+  };
+
+  private writeData = (xterm: Terminal, data: string) => {
+    this.state.logOptions.get("timestamps") ? xterm.write(data) : xterm.write(this.removeTimestamps(data));
+  };
+
   connectWs = () => {
     const ws = new ReconnectingWebSocket(`${k8sWsPrefix}/v1alpha1/${this.isLog ? "logs" : "exec"}`);
 
@@ -263,10 +307,21 @@ export class LogStream extends React.PureComponent<Props, State> {
       detailedLogger("Received Message: " + evt.data);
       const data = JSON.parse(evt.data);
 
+      if (data.type === "logStreamUpdate") {
+        const timestampsFrom = this.state.timestampsFrom;
+        const timestamp = this.getTimestamps(data.data);
+
+        if (!timestampsFrom.get(data.podName)) {
+          this.setState({
+            timestampsFrom: timestampsFrom.set(data.podName, timestamp),
+          });
+        }
+      }
+
       if (data.type === "logStreamUpdate" || data.type === "execStreamUpdate") {
         const terminal = this.terminals.get(data.podName);
         if (terminal && terminal.xterm) {
-          terminal.xterm.write(data.data);
+          this.writeData(terminal.xterm, data.data);
         }
 
         return;
@@ -275,8 +330,9 @@ export class LogStream extends React.PureComponent<Props, State> {
       if (data.type === "logStreamDisconnected") {
         const terminal = this.terminals.get(data.podName);
         if (terminal && terminal.xterm) {
-          terminal.xterm.write(data.data);
-          terminal.xterm.writeln("\n\u001b[1;31mPod log stream disconnected\u001b[0m\n");
+          this.writeData(terminal.xterm, data.data);
+          // terminal.xterm.writeln("\n\u001b[1;31mPod log stream disconnected\u001b[0m\n");
+          // terminal.xterm.clear();
         }
         return;
       }
@@ -284,7 +340,7 @@ export class LogStream extends React.PureComponent<Props, State> {
       if (data.type === "execStreamDisconnected") {
         const terminal = this.terminals.get(data.podName);
         if (terminal && terminal.xterm) {
-          terminal.xterm.write(data.data);
+          this.writeData(terminal.xterm, data.data);
           terminal.xterm.writeln("\n\r\u001b[1;31mTerminal disconnected\u001b[0m\n");
         }
         return;
@@ -313,28 +369,28 @@ export class LogStream extends React.PureComponent<Props, State> {
     return ws;
   };
 
-  subscribe = (podName: string, containerName: string, logOptionsArgs?: LogOptions) => {
+  subscribe = (podName: string, containerName: string, newLogOptions?: LogOptions) => {
     logger("subscribe", podName, containerName);
     const { activeNamespaceName } = this.props;
+    const logOptions = newLogOptions || this.state.logOptions;
 
-    const logOptions = logOptionsArgs || this.state.logOptions;
+    const terminal = this.terminals.get(podName);
+    if (terminal && terminal.xterm) {
+      terminal.xterm.clear();
+    }
 
     this.sendOrQueueMessage(
       JSON.stringify({
         type: this.isLog ? "subscribePodLog" : "execStartSession",
         podName,
         container: containerName,
-        tailLines: logOptions.tailLines,
-        timestamp: logOptions.timestamp,
-        follow: logOptions.follow,
-        previous: logOptions.previous,
+        tailLines: logOptions.get("tailLines"),
+        timestamps: true,
+        follow: logOptions.get("follow"),
+        previous: logOptions.get("previous"),
         namespace: activeNamespaceName,
       }),
     );
-
-    if (logOptionsArgs) {
-      this.setState({ logOptions: logOptionsArgs });
-    }
   };
 
   unsubscribe = (podName: string, containerName: string) => {
@@ -434,6 +490,15 @@ export class LogStream extends React.PureComponent<Props, State> {
     this.setState({ subscribedPods: newSubscribedPods, value: [value[0], x] });
   };
 
+  onLogOptionsChange = (newLogOptions: LogOptions) => {
+    const { subscribedPods } = this.state;
+    subscribedPods.forEach(([podName, containerName]) => {
+      this.unsubscribe(podName, containerName);
+      this.subscribe(podName, containerName, newLogOptions);
+    });
+    this.setState({ logOptions: newLogOptions });
+  };
+
   private renderInputPod() {
     const { components } = this.props;
 
@@ -515,7 +580,7 @@ export class LogStream extends React.PureComponent<Props, State> {
     return (
       <KSelect
         label="Container"
-        value={logOptions.tailLines}
+        value={logOptions.get("tailLines")}
         options={tailLinesOptions.map((x) => {
           return {
             value: x,
@@ -523,14 +588,103 @@ export class LogStream extends React.PureComponent<Props, State> {
           };
         })}
         onChange={(x) => {
-          this.setState({
-            logOptions: {
-              ...logOptions,
-              tailLines: x as number,
-            },
-          });
+          this.onLogOptionsChange(logOptions.set("tailLines", x));
         }}
       />
+    );
+  }
+
+  handleClickMore = (event: React.MouseEvent<HTMLButtonElement>) => {
+    this.setState({ moreEl: event.currentTarget });
+  };
+
+  handleCloseMore = (logOptions?: LogOptions) => {
+    if (logOptions) {
+      this.onLogOptionsChange(logOptions);
+    }
+    this.setState({ moreEl: null });
+  };
+
+  private renderFromTo() {
+    const { value, timestampsFrom } = this.state;
+    const podName = value[0];
+    if (!podName || !timestampsFrom.get(podName)) {
+      return null;
+    }
+    return (
+      <Box width="100%" display="flex" justifyContent="flex-end">
+        <Box pt="3px">
+          <Box display="flex">
+            <Box width="50px">
+              <BoldBody>From</BoldBody>
+            </Box>
+            <BoldBody>{formatTimestamp(timestampsFrom.get(podName) as string)}</BoldBody>
+          </Box>
+          <Box display="flex">
+            <Box width="50px" pl={2}>
+              <BoldBody>To</BoldBody>
+            </Box>
+            <BoldBody>{formatDate(new Date())}</BoldBody>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
+
+  private renderMore() {
+    const { classes } = this.props;
+    const { moreEl, logOptions } = this.state;
+
+    const options: {
+      key: "timestamps" | "follow" | "previous";
+      text: string;
+    }[] = [
+      {
+        key: "timestamps",
+        text: "Show timestamps",
+      },
+      {
+        key: "follow",
+        text: "Follow logs",
+      },
+      {
+        key: "previous",
+        text: "Show previous logs",
+      },
+    ];
+
+    return (
+      <div className={classes.more}>
+        <IconButton aria-label="more" aria-controls="log-more-menu" aria-haspopup="true" onClick={this.handleClickMore}>
+          <MoreVertIcon />
+        </IconButton>
+        <Menu
+          id="log-more-menu"
+          anchorEl={moreEl}
+          keepMounted
+          open={Boolean(moreEl)}
+          onClose={() => this.handleCloseMore()}
+        >
+          {options.map((option) => {
+            return (
+              <MenuItem key={option.key}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={logOptions.get(option.key)}
+                      name={option.key}
+                      onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                        this.handleCloseMore(logOptions.set(option.key, event.target.checked));
+                      }}
+                    />
+                  }
+                  label={option.text}
+                />
+              </MenuItem>
+            );
+          })}
+        </Menu>
+      </div>
     );
   }
 
@@ -618,7 +772,7 @@ export class LogStream extends React.PureComponent<Props, State> {
             <>
               {this.isLog ? (
                 <Grid container spacing={2}>
-                  <Grid item md={6}>
+                  <Grid item md={5}>
                     {this.renderInputPod()}
                   </Grid>
                   <Grid item md={2}>
@@ -626,6 +780,12 @@ export class LogStream extends React.PureComponent<Props, State> {
                   </Grid>
                   <Grid item md={2}>
                     {this.renderInputTailLines()}
+                  </Grid>
+                  <Grid item md={2}>
+                    {this.renderFromTo()}
+                  </Grid>
+                  <Grid item md={1}>
+                    {this.renderMore()}
                   </Grid>
                 </Grid>
               ) : (
