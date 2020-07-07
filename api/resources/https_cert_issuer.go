@@ -13,7 +13,7 @@ type HttpsCertIssuer struct {
 	Name           string                    `json:"name"`
 	CAForTest      *v1alpha1.CAForTestIssuer `json:"caForTest,omitempty"`
 	ACMECloudFlare *AccountAndSecret         `json:"acmeCloudFlare,omitempty"`
-	HTTP01         *v1alpha1.HTTP01          `json:"http01,omitempty"`
+	HTTP01         *v1alpha1.HTTP01Issuer    `json:"http01,omitempty"`
 }
 
 type AccountAndSecret struct {
