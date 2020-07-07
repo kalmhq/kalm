@@ -192,7 +192,7 @@ func (builder *Builder) BuildComponentDetailsResponse(components *v1alpha1.Compo
 
 	//fmt.Println("istio metricHistories:", resources.IstioMetricHistories)
 	//for _, one := range resources.IstioMetricHistories {
-	//	fmt.Printf("%+v", one.RequestsTotal)
+	//	fmt.Printf("%+v", one.HTTPRequestsTotal)
 	//}
 
 	for i := range components.Items {
