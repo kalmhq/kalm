@@ -12,13 +12,13 @@ import (
 	"time"
 )
 
-var istioPrometheusAPIHOST string
+var istioPrometheusAPIAddress string
 
 func init() {
-	if os.Getenv("KALM_ISTIO_PROMETHEUS_API_HOST") != "" {
-		istioPrometheusAPIHOST = os.Getenv("KALM_ISTIO_PROMETHEUS_API_HOST")
+	if os.Getenv("KALM_ISTIO_PROMETHEUS_API_ADDRESS") != "" {
+		istioPrometheusAPIAddress = os.Getenv("KALM_ISTIO_PROMETHEUS_API_ADDRESS")
 	} else {
-		istioPrometheusAPIHOST = "prometheus.istio-system:9090"
+		istioPrometheusAPIAddress = "http://prometheus.istio-system:9090"
 	}
 }
 
@@ -30,14 +30,14 @@ type IstioMetricListChannel struct {
 
 type IstioMetricHistories struct {
 	//HTTP
-	RequestsTotal    MetricHistory `json:"requestsTotal"`
-	RespCode200Count MetricHistory `json:"respCode200Count"`
-	RespCode400Count MetricHistory `json:"respCode400Count"`
-	RespCode500Count MetricHistory `json:"respCode500Count"`
+	HTTPRequestsTotal    MetricHistory `json:"httpRequestsTotal,omitempty"`
+	HTTPRespCode2XXCount MetricHistory `json:"httpRespCode2XXCount,omitempty"`
+	HTTPRespCode4XXCount MetricHistory `json:"httpRespCode4XXCount,omitempty"`
+	HTTPRespCode5XXCount MetricHistory `json:"httpRespCode5XXCount,omitempty"`
 
 	//TCP
-	SentBytesTotal     MetricHistory `json:"sentBytesTotal"`
-	ReceivedBytesTotal MetricHistory `json:"receivedBytesTotal"`
+	TCPSentBytesTotal     MetricHistory `json:"tcpSentBytesTotal,omitempty"`
+	TCPReceivedBytesTotal MetricHistory `json:"tcpReceivedBytesTotal,omitempty"`
 }
 
 func mergeIstioMetricHistories(a, b *IstioMetricHistories) *IstioMetricHistories {
@@ -49,12 +49,12 @@ func mergeIstioMetricHistories(a, b *IstioMetricHistories) *IstioMetricHistories
 
 	rst := IstioMetricHistories{}
 
-	rst.RequestsTotal = mergeMetricHistories(a.RequestsTotal, b.RequestsTotal)
-	rst.RespCode200Count = mergeMetricHistories(a.RespCode200Count, b.RespCode200Count)
-	rst.RespCode400Count = mergeMetricHistories(a.RespCode400Count, b.RespCode400Count)
-	rst.RespCode500Count = mergeMetricHistories(a.RespCode500Count, b.RespCode500Count)
-	rst.ReceivedBytesTotal = mergeMetricHistories(a.ReceivedBytesTotal, b.ReceivedBytesTotal)
-	rst.SentBytesTotal = mergeMetricHistories(a.SentBytesTotal, b.SentBytesTotal)
+	rst.HTTPRequestsTotal = mergeMetricHistories(a.HTTPRequestsTotal, b.HTTPRequestsTotal)
+	rst.HTTPRespCode2XXCount = mergeMetricHistories(a.HTTPRespCode2XXCount, b.HTTPRespCode2XXCount)
+	rst.HTTPRespCode4XXCount = mergeMetricHistories(a.HTTPRespCode4XXCount, b.HTTPRespCode4XXCount)
+	rst.HTTPRespCode5XXCount = mergeMetricHistories(a.HTTPRespCode5XXCount, b.HTTPRespCode5XXCount)
+	rst.TCPReceivedBytesTotal = mergeMetricHistories(a.TCPReceivedBytesTotal, b.TCPReceivedBytesTotal)
+	rst.TCPSentBytesTotal = mergeMetricHistories(a.TCPSentBytesTotal, b.TCPSentBytesTotal)
 
 	return &rst
 }
@@ -79,20 +79,20 @@ func (builder *Builder) GetIstioMetricsListChannel(ns string) *IstioMetricListCh
 func getIstioMetricHistoriesMap(ns string) (map[string]*IstioMetricHistories, error) {
 	svcName := fmt.Sprintf(`.*.%s.svc.cluster.local`, ns)
 
-	queryTotal := fmt.Sprintf(`(sum by (destination_service) (istio_requests_total{destination_service=~"%s"})) `, svcName)
-	resp200 := fmt.Sprintf(`(sum by (destination_service) (istio_requests_total{destination_service=~"%s", response_code="200"})) `, svcName)
-	resp400 := fmt.Sprintf(`(sum by (destination_service) (istio_requests_total{destination_service=~"%s", response_code="400"})) `, svcName)
-	resp500 := fmt.Sprintf(`(sum by (destination_service) (istio_requests_total{destination_service=~"%s", response_code="500"})) `, svcName)
+	httpRequestsTotal := fmt.Sprintf(`(sum by (destination_service) (istio_requests_total{destination_service=~"%s"})) `, svcName)
+	resp2XX := fmt.Sprintf(`(sum by (destination_service) (istio_requests_total{destination_service=~"%s", response_code=~"2.*"})) `, svcName)
+	resp4XX := fmt.Sprintf(`(sum by (destination_service) (istio_requests_total{destination_service=~"%s", response_code=~"4.*"})) `, svcName)
+	resp5XX := fmt.Sprintf(`(sum by (destination_service) (istio_requests_total{destination_service=~"%s", response_code=~"5.*"})) `, svcName)
 	sentBytes := fmt.Sprintf(`(sum by (destination_service) (istio_tcp_sent_bytes_total{destination_service=~"%s"}))`, svcName)
 	receiveBytes := fmt.Sprintf(`(sum by (destination_service) (istio_tcp_received_bytes_total{destination_service=~"%s"}))`, svcName)
 
 	queryMap := map[string]string{
-		"requestTotal": queryTotal,
-		"resp200":      resp200,
-		"resp400":      resp400,
-		"resp500":      resp500,
-		"sentBytes":    sentBytes,
-		"receiveBytes": receiveBytes,
+		"httpRequestTotal": httpRequestsTotal,
+		"httpResp2XX":      resp2XX,
+		"httpResp4XX":      resp4XX,
+		"httpResp5XX":      resp5XX,
+		"tcpSentBytes":     sentBytes,
+		"tcpReceiveBytes":  receiveBytes,
 	}
 
 	now := time.Now().Unix()
@@ -103,8 +103,8 @@ func getIstioMetricHistoriesMap(ns string) (map[string]*IstioMetricHistories, er
 
 	for k, query := range queryMap {
 
-		api := fmt.Sprintf("http://%s/api/v1/query_range?query=%s&start=%d&end=%d&step=%d",
-			istioPrometheusAPIHOST,
+		api := fmt.Sprintf("%s/api/v1/query_range?query=%s&start=%d&end=%d&step=%d",
+			istioPrometheusAPIAddress,
 			url.QueryEscape(query),
 			startAs30MinAgo,
 			now,
@@ -132,18 +132,18 @@ func getIstioMetricHistoriesMap(ns string) (map[string]*IstioMetricHistories, er
 			}
 
 			switch k {
-			case "requestTotal":
-				svc2MetricHistoriesMap[svc].RequestsTotal = metricPoints
-			case "resp200":
-				svc2MetricHistoriesMap[svc].RespCode200Count = metricPoints
-			case "resp400":
-				svc2MetricHistoriesMap[svc].RespCode400Count = metricPoints
-			case "resp500":
-				svc2MetricHistoriesMap[svc].RespCode500Count = metricPoints
-			case "sentBytes":
-				svc2MetricHistoriesMap[svc].SentBytesTotal = metricPoints
-			case "receiveBytes":
-				svc2MetricHistoriesMap[svc].ReceivedBytesTotal = metricPoints
+			case "httpRequestTotal":
+				svc2MetricHistoriesMap[svc].HTTPRequestsTotal = metricPoints
+			case "httpResp2XX":
+				svc2MetricHistoriesMap[svc].HTTPRespCode2XXCount = metricPoints
+			case "httpResp4XX":
+				svc2MetricHistoriesMap[svc].HTTPRespCode4XXCount = metricPoints
+			case "httpResp5XX":
+				svc2MetricHistoriesMap[svc].HTTPRespCode5XXCount = metricPoints
+			case "tcpSentBytes":
+				svc2MetricHistoriesMap[svc].TCPSentBytesTotal = metricPoints
+			case "tcpReceiveBytes":
+				svc2MetricHistoriesMap[svc].TCPReceivedBytesTotal = metricPoints
 			default:
 				log.Warnln("unknown query key:", k)
 			}
