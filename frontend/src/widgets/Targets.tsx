@@ -70,7 +70,10 @@ class TargetsRaw extends React.PureComponent<Props> {
                 fontSize: "12px",
                 color: "#000",
                 textAlign: "center",
+                width: "auto",
                 minWidth: "112px",
+                paddingLeft: "8px",
+                paddingRight: "8px",
                 paddingTop: paddingTop,
               }}
               key={`point_${index}`}

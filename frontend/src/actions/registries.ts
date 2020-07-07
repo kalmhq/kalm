@@ -7,7 +7,7 @@ import {
   RegistryType,
   SET_IS_SUBMITTING_REGISTRY,
   SetIsSubmittingRegistry,
-  UPDATE_REGISTRY
+  UPDATE_REGISTRY,
 } from "types/registry";
 import { ThunkResult } from "types";
 import { api } from "api";
