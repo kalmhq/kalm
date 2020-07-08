@@ -22,7 +22,7 @@ import { ComponentLike, newEmptyComponentLike } from "types/componentTemplate";
 import { newEmptyCertificateForm, selfManaged } from "types/certificate";
 import { getTestFormSyncErrors } from "utils/testUtils";
 import { ThemeProvider } from "@material-ui/core";
-import { theme } from "theme";
+import { theme } from "theme/theme";
 import { createComponentAction } from "actions/component";
 import { HttpRouteForm, newEmptyRouteForm } from "types/route";
 import { createRouteAction } from "actions/routes";
