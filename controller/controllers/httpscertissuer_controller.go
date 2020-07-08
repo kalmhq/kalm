@@ -88,6 +88,11 @@ func (r *HttpsCertIssuerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
+const (
+	SecretKeyOfTLSCert = "tls.crt"
+	SecretKeyOfTLSKey  = "tls.key"
+)
+
 func (r *HttpsCertIssuerReconciler) ReconcileCAForTest(ctx context.Context, certIssuer corev1alpha1.HttpsCertIssuer) (ctrl.Result, error) {
 	caSecretName := certIssuer.Name
 
@@ -112,8 +117,8 @@ func (r *HttpsCertIssuerReconciler) ReconcileCAForTest(ctx context.Context, cert
 				Name:      caSecretName,
 			},
 			StringData: map[string]string{
-				"tls.key": string(key),
-				"tls.crt": string(crt),
+				SecretKeyOfTLSKey:  string(key),
+				SecretKeyOfTLSCert: string(crt),
 			},
 			Type: "kubernetes.io/tls",
 		}

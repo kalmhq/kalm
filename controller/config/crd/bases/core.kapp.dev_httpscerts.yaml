@@ -82,6 +82,11 @@ spec:
                 - type
                 type: object
               type: array
+            expireTimestamp:
+              format: int64
+              type: integer
+            isSignedByTrustedCA:
+              type: boolean
           type: object
       type: object
   version: v1alpha1
