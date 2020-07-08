@@ -194,7 +194,6 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
             multiline={true}
             className={classes.fileInput}
             component={KAutoCompleteSingleValue}
-            rows={12}
             name="httpsCertIssuer"
             margin="normal"
             validate={[ValidatorRequired]}
@@ -308,7 +307,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
               validate={managedType === selfManaged ? [] : [ValidatorRequired]}
             />
           </Grid>
-          {managedType === selfManaged ? this.renderSelfManagedFields() : this.renderIssuerManagedFields()}
+          {managedType === selfManaged ? this.renderSelfManagedFields() : null}
           <Grid container spacing={2}>
             <Grid item md={8}></Grid>
             <Grid item md={2}>
