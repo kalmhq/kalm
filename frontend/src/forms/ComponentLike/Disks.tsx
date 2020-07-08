@@ -18,6 +18,9 @@ import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { RenderSelectField } from "../Basic/select";
 import { KRenderTextField } from "../Basic/textfield";
 import { ValidatorRequired, ValidatorVolumeSize } from "../validator";
+import { KTooltip } from "forms/Application/KTooltip";
+import HelpIcon from "@material-ui/icons/Help";
+import { grey } from "@material-ui/core/colors";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -173,6 +176,7 @@ class RenderVolumes extends React.PureComponent<Props> {
           label="Size"
           margin
           validate={[ValidatorRequired, ValidatorVolumeSize]}
+          endAdornment={this.getSizeEndAdornment()}
         />,
       );
     } else {
@@ -183,11 +187,24 @@ class RenderVolumes extends React.PureComponent<Props> {
           label="Size"
           margin
           validate={[ValidatorRequired, ValidatorVolumeSize]}
+          endAdornment={this.getSizeEndAdornment()}
         />,
       );
     }
 
     return fieldComponents;
+  }
+
+  private getSizeEndAdornment() {
+    return (
+      <KTooltip title={this.getSizeHelper()}>
+        <HelpIcon fontSize="small" style={{ cursor: "pointer", color: grey[700] }} />
+      </KTooltip>
+    );
+  }
+
+  private getSizeHelper() {
+    return "The disk size is measured in bytes. You can express size as a plain integer or a fixed-point integer with one of these suffixes: E, P, T, G, M, K, Ei, Pi, Ti, Gi, Mi, Ki.";
   }
 
   public render() {
