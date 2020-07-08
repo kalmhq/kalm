@@ -1,6 +1,5 @@
 import React from "react";
 import { storiesOf } from "@storybook/react";
-import { withQuery } from "@storybook/addon-queryparams";
 import Immutable from "immutable";
 
 import { ComponentListPage } from "pages/Components/List";
@@ -40,21 +39,10 @@ const createRoutes = (appNames: string[]) => {
 
 storiesOf("Screens/Components", module)
   .addDecorator(withProvider)
-  .addDecorator(withQuery)
-  .addParameters({
-    query: {
-      applicationName: "kalm-bookinfo",
-    },
-  })
   .add("Loading Applications", () => {
     resetStore();
     store.dispatch({ type: LOAD_APPLICATIONS_PENDING });
     return <ComponentListPage />;
-  })
-  .add("Prints the mocked parameter", () => {
-    const urlParams = new URLSearchParams(document.location.search);
-    const mockedParam = urlParams.get("applicationName");
-    return <div>Mocked value: {mockedParam}</div>;
   })
   .add("Load Application Failed", () => {
     resetStore();
