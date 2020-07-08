@@ -8,6 +8,9 @@ import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
 import { KTable } from "widgets/Table";
 import { Expansion } from "forms/Route/expansion";
 import { DoughnutChart } from "widgets/DoughnutChart";
+import { HttpStatusCodeLineChart } from "widgets/charts/httpStatusCodeChart";
+import Immutable from "immutable";
+import { HttpBytesSizeChart } from "widgets/charts/httpBytesSizeChart";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -227,21 +230,6 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     };
   }
 
-  private renderResourcesUsage() {
-    const { activeNamespace } = this.props;
-
-    return (
-      <Grid container spacing={2}>
-        <Grid item md>
-          <BigCPULineChart data={activeNamespace!.get("metrics")?.get("cpu")} />
-        </Grid>
-        <Grid item md>
-          <BigMemoryLineChart data={activeNamespace!.get("metrics")?.get("memory")} />
-        </Grid>
-      </Grid>
-    );
-  }
-
   private renderWarnings() {
     const { components } = this.props;
     let warnings: { componentName: string; podName: string; message: string }[] = [];
@@ -281,6 +269,8 @@ class DetailsRaw extends React.PureComponent<Props, State> {
 
   public render() {
     const pieChartData = this.getPieChartData();
+    const { activeNamespace } = this.props;
+
     return (
       <>
         <Expansion title="Workload" defaultUnfold>
@@ -305,17 +295,50 @@ class DetailsRaw extends React.PureComponent<Props, State> {
           </Grid>
         </Expansion>
         <Expansion title="Metrics" defaultUnfold>
-          {/*{this.renderResourcesUsage()}*/}
-          <div>Ingress bytes / minute</div>
-          <div>Exgress bytes / minute</div>
-          <div>http 500 count</div>
-          <div>http 200 count</div>
-          <div>http 400 count</div>
-          <div>response legacy data</div>
-        </Expansion>
-
-        <Expansion title="Resources" defaultUnfold>
-          {this.renderResourcesUsage()}
+          <Grid container spacing={2}>
+            <Grid item xs>
+              <HttpStatusCodeLineChart
+                data={[
+                  {
+                    legend: "2xx",
+                    data: activeNamespace!.get("istioMetricHistories").get("httpRespCode2XXCount") || Immutable.List(),
+                  },
+                  {
+                    legend: "4xx",
+                    data: activeNamespace!.get("istioMetricHistories").get("httpRespCode4XXCount") || Immutable.List(),
+                  },
+                  {
+                    legend: "5xx",
+                    data: activeNamespace!.get("istioMetricHistories").get("httpRespCode5XXCount") || Immutable.List(),
+                  },
+                ]}
+                title="http response code per second"
+              />
+            </Grid>
+            <Grid item xs>
+              <HttpBytesSizeChart
+                data={[
+                  {
+                    legend: "request",
+                    data: activeNamespace!.get("istioMetricHistories").get("httpRequestBytes") || Immutable.List(),
+                  },
+                  {
+                    legend: "response",
+                    data: activeNamespace!.get("istioMetricHistories").get("httpResponseBytes") || Immutable.List(),
+                  },
+                ]}
+                title="http traffic"
+              />
+            </Grid>
+          </Grid>
+          <Grid container spacing={2}>
+            <Grid item md>
+              <BigCPULineChart data={activeNamespace!.get("metrics")?.get("cpu")} />
+            </Grid>
+            <Grid item md>
+              <BigMemoryLineChart data={activeNamespace!.get("metrics")?.get("memory")} />
+            </Grid>
+          </Grid>
         </Expansion>
 
         <Expansion title="Warnings" defaultUnfold>

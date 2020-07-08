@@ -35,7 +35,7 @@ func StartMetricScraper(ctx context.Context, manager *client.ClientManager) erro
 	metricDb, err = sql.Open("sqlite3", "/tmp/metric_scraper.db")
 	if err != nil {
 		log.Errorf("Unable to open Sqlite database: %s", err)
-		return  err
+		return err
 	}
 	defer metricDb.Close()
 
@@ -43,7 +43,7 @@ func StartMetricScraper(ctx context.Context, manager *client.ClientManager) erro
 	err = CreateDatabase(metricDb)
 	if err != nil {
 		log.Errorf("Unable to initialize database tables: %s", err)
-		return  err
+		return err
 	}
 
 	log.Info("Metric scraper started")
@@ -187,8 +187,8 @@ func getMetricHistories(sql string, args ...interface{}) MetricHistories {
 			return metricHistories
 		}
 
-		cpuUint, err := strconv.ParseUint(cpuValue, 10, 64)
-		memoryUnit, err := strconv.ParseUint(memoryValue, 10, 64)
+		cpuUint, err := strconv.ParseFloat(cpuValue, 64)
+		memoryUnit, err := strconv.ParseFloat(memoryValue, 64)
 
 		metricHistories.CPU = append(metricHistories.CPU, MetricPoint{
 			Timestamp: t,
@@ -207,7 +207,6 @@ func getMetricHistories(sql string, args ...interface{}) MetricHistories {
 
 	return metricHistories
 }
-
 
 /*
 	CreateDatabase creates tables for node and pod metrics
