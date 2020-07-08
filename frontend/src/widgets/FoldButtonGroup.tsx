@@ -7,6 +7,7 @@ import Icon from "@material-ui/core/Icon";
 import { Link } from "react-router-dom";
 import { NamespaceVisibleContainer } from "permission/Namespace";
 import { blinkTopProgressAction } from "actions/settings";
+import { Box } from "@material-ui/core";
 
 const ITEM_HEIGHT = 48;
 
@@ -67,8 +68,10 @@ export const FoldButtonGroup = (props: Props) => {
               <MenuItem key={option.text} selected={false} style={{ padding: "6px 20px" }}>
                 {/* onClick={option.onClick}  */}
 
-                {option.iconName ? <Icon style={{ marginRight: "20px" }}>{option.iconName}</Icon> : null}
-                {option.icon ? option.icon : null}
+                <Box mr={2}>
+                  {option.iconName ? <Icon>{option.iconName}</Icon> : null}
+                  {option.icon ? option.icon : null}
+                </Box>
                 {option.text}
               </MenuItem>
             </Link>

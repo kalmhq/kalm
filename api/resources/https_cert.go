@@ -2,15 +2,13 @@ package resources
 
 import (
 	"crypto/x509"
-	"encoding/pem"
 	"fmt"
-	"github.com/kapp-staging/kapp/controller/controllers"
-	"strings"
-	"sync"
-
 	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/kapp-staging/kapp/controller/controllers"
 	coreV1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"strings"
+	"sync"
 )
 
 type HttpsCert struct {
@@ -25,9 +23,11 @@ type HttpsCert struct {
 }
 
 type HttpsCertResp struct {
-	HttpsCert `json:",inline"`
-	Ready     string `json:"ready"`
-	Reason    string `json:"reason"`
+	HttpsCert                 `json:",inline"`
+	Ready                     string `json:"ready"`
+	Reason                    string `json:"reason"`
+	IsSignedByPublicTrustedCA bool   `json:"isSignedByTrustedCA,omitempty"`
+	ExpireTimestamp           int64  `json:"expireTime,omitempty"`
 }
 
 var ReasonForNoReadyConditions = "no feedback on cert status yet"
@@ -62,6 +62,14 @@ func BuildHttpsCertResponse(httpsCert v1alpha1.HttpsCert) *HttpsCertResp {
 		},
 		Ready:  ready,
 		Reason: reason,
+	}
+
+	if readyCond.Status == coreV1.ConditionTrue {
+		isSignedByTrustedCA := httpsCert.Status.IsSignedByPublicTrustedCA
+		expireTimestamp := httpsCert.Status.ExpireTimestamp
+
+		resp.IsSignedByPublicTrustedCA = isSignedByTrustedCA
+		resp.ExpireTimestamp = expireTimestamp
 	}
 
 	if !resp.IsSelfManaged {
@@ -133,7 +141,7 @@ func (builder *Builder) UpdateAutoManagedCert(cert HttpsCert) (HttpsCert, error)
 }
 
 func (builder *Builder) UpdateSelfManagedCert(cert HttpsCert) (HttpsCert, error) {
-	x509Cert, err := parseCert(cert.SelfManagedCertContent)
+	x509Cert, err := controllers.ParseCert(cert.SelfManagedCertContent)
 	if err != nil {
 		builder.Logger.WithError(err).Errorf("fail to parse SelfManagedCertContent as cert")
 		return HttpsCert{}, err
@@ -197,7 +205,7 @@ func (builder *Builder) UpdateSelfManagedCert(cert HttpsCert) (HttpsCert, error)
 }
 
 func (builder *Builder) CreateSelfManagedHttpsCert(cert HttpsCert) (HttpsCert, error) {
-	x509Cert, err := parseCert(cert.SelfManagedCertContent)
+	x509Cert, err := controllers.ParseCert(cert.SelfManagedCertContent)
 	if err != nil {
 		builder.Logger.WithError(err).Errorf("fail to parse SelfManagedCertContent as cert")
 		return HttpsCert{}, err
@@ -249,18 +257,18 @@ func checkPrivateKey(cert *x509.Certificate, prvKey string) bool {
 	return true
 }
 
-func parseCert(certPEM string) (*x509.Certificate, error) {
-	block, _ := pem.Decode([]byte(certPEM))
-	if block == nil {
-		panic("failed to parse certificate PEM")
-	}
-	cert, err := x509.ParseCertificate(block.Bytes)
-	if err != nil {
-		return nil, err
-	}
-
-	return cert, nil
-}
+//func parseCert(certPEM string) (*x509.Certificate, error) {
+//	block, _ := pem.Decode([]byte(certPEM))
+//	if block == nil {
+//		panic("failed to parse certificate PEM")
+//	}
+//	cert, err := x509.ParseCertificate(block.Bytes)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	return cert, nil
+//}
 
 func (builder *Builder) DeleteHttpsCert(name string) error {
 	return builder.Delete(&v1alpha1.HttpsCert{ObjectMeta: v1.ObjectMeta{Name: name}})

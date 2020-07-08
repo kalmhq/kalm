@@ -1,7 +1,6 @@
 import { AppBar, createStyles, Divider, IconButton, Menu, MenuItem, Theme } from "@material-ui/core";
 import AccountCircle from "@material-ui/icons/AccountCircle";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
-import Info from "@material-ui/icons/Info";
 import MenuIcon from "@material-ui/icons/Menu";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import { logoutAction } from "actions/auth";
@@ -14,6 +13,7 @@ import { TDispatch } from "types";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
 import { APP_BAR_HEIGHT, APP_BAR_ZINDEX } from "./Constants";
+import { HelpIcon } from "widgets/Icon";
 
 const mapStateToProps = (state: RootState) => {
   const activeNamespace = state.get("namespaces").get("active");
@@ -156,7 +156,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
         }}
         color="inherit"
       >
-        <Info />
+        <HelpIcon style={{ fill: "white" }} />
       </IconButton>
     );
   };

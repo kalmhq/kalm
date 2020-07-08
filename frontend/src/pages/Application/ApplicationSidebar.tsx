@@ -9,6 +9,7 @@ import { TDispatch } from "types";
 import { BaseDrawer } from "layout/BaseDrawer";
 import { primaryBackgroud, primaryColor } from "theme/theme";
 import { blinkTopProgressAction } from "actions/settings";
+import { KalmDetailsIcon } from "widgets/Icon";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
@@ -62,6 +63,7 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
         text: "Overview",
         to: "/applications/" + activeNamespaceName,
         highlightWhenExact: true,
+        icon: <KalmDetailsIcon />,
       },
       {
         text: "Components",
@@ -97,9 +99,7 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
               key={item.text}
               selected={item.highlightWhenExact ? pathname === item.to : pathname.startsWith(item.to.split("?")[0])}
             >
-              <ListItemIcon>
-                <AppsIcon />
-              </ListItemIcon>
+              <ListItemIcon>{item.icon ? item.icon : <AppsIcon />}</ListItemIcon>
               <ListItemText primary={item.text} />
             </ListItem>
           ))}

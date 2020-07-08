@@ -15,7 +15,7 @@ export const NodePods = ({ node }: { node: Node }) => {
           variant="determinate"
           value={progress}
         />{" "}
-        ({progress}%)
+        ({progress.toFixed(2)}%)
       </Box>
       allocatable {allocatable} pods, capacity {capacity} pods.
     </Box>

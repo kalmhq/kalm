@@ -41,6 +41,10 @@ type HttpsCertStatus struct {
 
 	// +optional
 	Conditions []HttpsCertCondition `json:"conditions,omitempty"`
+	// +optional
+	ExpireTimestamp int64 `json:"expireTimestamp"`
+	// +optional
+	IsSignedByPublicTrustedCA bool `json:"isSignedByTrustedCA"`
 }
 
 type HttpsCertConditionType string

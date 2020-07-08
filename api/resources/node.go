@@ -1,12 +1,13 @@
 package resources
 
 import (
+	"strings"
+	"time"
+
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"strings"
-	"time"
 )
 
 type Node struct {
@@ -165,8 +166,8 @@ func ListNodes(k8sClient *kubernetes.Clientset) (*NodesResponse, error) {
 		},
 	}
 
-	for _, node := range list.Items {
-		res.Nodes = append(res.Nodes, *BuildNodeResponse(&node))
+	for i, _ := range list.Items {
+		res.Nodes = append(res.Nodes, *BuildNodeResponse(&list.Items[i]))
 	}
 
 	return res, nil
