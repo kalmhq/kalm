@@ -10,7 +10,63 @@ import {
   // LOAD_APPLICATIONS_PENDING,
 } from "types/application";
 import { MetricList, MetricItem } from "types/common";
+import { optionsKnob, array, object } from "@storybook/addon-knobs";
+import { OptionsKnobOptions } from "@storybook/addon-knobs/dist/components/types";
 
+export const createRountes = (name: string, namespace: string) => {
+  const label = "Methods";
+  const valuesObj = {
+    GET: "GET",
+    POST: "POST",
+    PUT: "PUT",
+    PATCH: "PATCH",
+    DELETE: "DELETE",
+    OPTIONS: "OPTIONS",
+    HEAD: "HEAD",
+    TRACE: "TRACE",
+    CONNECT: "CONNECT",
+  };
+  const defaultValue = ["GET"];
+  const optionsObj: OptionsKnobOptions = {
+    display: "check",
+  };
+  const groupId = namespace;
+
+  const methods = optionsKnob(label, valuesObj, defaultValue, optionsObj, groupId);
+
+  const hosts = array("Hosts", ["bookinfo.demo.com"], ",", namespace);
+  const schemes = optionsKnob(
+    "Schemes",
+    { http: "http", https: "https" },
+    ["http"],
+    {
+      display: "check",
+    },
+    namespace,
+  );
+
+  const paths = array("Paths", ["/"], ",", namespace);
+
+  const destinationOptions = [
+    { host: "productV1page", weight: 1 },
+    { host: "productV2page", weight: 1 },
+    { host: "productV3page", weight: 1 },
+  ];
+  // @ts-ignore
+  const destinations = object("Destinations", [destinationOptions[0]], groupId);
+  return Immutable.fromJS([
+    {
+      hosts: hosts,
+      paths: paths, //["/"],
+      methods: methods, //["GET", "POST"],
+      schemes: schemes, //["http"],
+      stripPath: true,
+      destinations: destinations,
+      name: "bookinfo",
+      namespace: name,
+    },
+  ]);
+};
 export const createApplication = (name: string) => {
   return Immutable.fromJS({
     name: name,
@@ -117,8 +173,6 @@ const createMetricsSegements = ({
 
 export const getCPUSamples = (value: any) => {
   let samples = createMetricsSegements({ value: value });
-  console.log(samples.toJS());
-
   return samples.toJS();
 };
 
