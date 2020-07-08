@@ -27,7 +27,7 @@ type HttpsCertResp struct {
 	Ready                     string `json:"ready"`
 	Reason                    string `json:"reason"`
 	IsSignedByPublicTrustedCA bool   `json:"isSignedByTrustedCA,omitempty"`
-	ExpireTimestamp           int64  `json:"expireTime,omitempty"`
+	ExpireTimestamp           int64  `json:"expireTimestamp,omitempty"`
 }
 
 var ReasonForNoReadyConditions = "no feedback on cert status yet"
