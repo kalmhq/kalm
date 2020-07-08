@@ -146,6 +146,7 @@ export const mergeMetrics = (
         const mergedValue =
           metricsCPU.get(index, Immutable.Map({ x: 0, y: 0 }) as MetricItem).get("y", 0) + cpu.get("y", 0);
         metricsCPU = metricsCPU.set(index, Immutable.fromJS({ x: x, y: mergedValue }));
+        return cpu;
       });
       const memoryList: MetricList = pod.getIn(["metrics", "memory"], Immutable.List<MetricItem>());
       memoryList.map((memory, index) => {
@@ -153,8 +154,11 @@ export const mergeMetrics = (
         const mergedValue =
           metricsMemory.get(index, Immutable.Map({ x: 0, y: 0 }) as MetricItem).get("y", 0) + memory.get("y", 0);
         metricsMemory = metricsMemory.set(index, Immutable.fromJS({ x: x, y: mergedValue }));
+        return memory;
       });
+      return pod;
     });
+    return component;
   });
   application = application.setIn(["metrics", "cpu"], metricsCPU);
   application = application.setIn(["metrics", "memory"], metricsMemory);
