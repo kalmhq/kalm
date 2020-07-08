@@ -1,369 +1,162 @@
+import Immutable from "immutable";
+import {
+  ApplicationComponentDetails,
+  ApplicationDetails,
+  PodStatus,
+  // ApplicationDetails,
+  // LOAD_ALL_NAMESAPCES_COMPONETS,
+  // LOAD_APPLICATIONS_FAILED,
+  // LOAD_APPLICATIONS_FULFILLED,
+  // LOAD_APPLICATIONS_PENDING,
+} from "types/application";
+import { MetricList, MetricItem } from "types/common";
+
+export const createApplication = (name: string) => {
+  return Immutable.fromJS({
+    name: name,
+    metrics: {
+      cpu: getCPUSamples(4),
+      memory: getMemorySamples(172149760),
+    },
+    roles: ["writer", "reader"],
+    status: "Active",
+  });
+};
+
+export const createApplicationComponent = (name: string, podCount: number, createTS: number) => {
+  const counterArray = new Array(podCount);
+  const podArray = [];
+  for (var i = 0; i < counterArray.length; i++) {
+    podArray.push(createApplicationComponentDetails(createTS));
+  }
+  const components: Immutable.List<ApplicationComponentDetails> = Immutable.fromJS(podArray);
+  let componentsMap: Immutable.Map<string, Immutable.List<ApplicationComponentDetails>> = Immutable.Map({});
+  componentsMap = componentsMap.set(name, components);
+  return componentsMap;
+};
+export const createApplicationComponentDetails = (createTS: number) => {
+  let appComponent = Immutable.fromJS({
+    env: [{ name: "LOG_DIR", value: "/tmp/logs" }],
+    image: "docker.io/istio/examples-bookinfo-reviews-v3:1.15.0",
+    nodeSelectorLabels: { "kubernetes.io/os": "linux" },
+    preferNotCoLocated: true,
+    ports: [{ name: "http", containerPort: 9080, servicePort: 9080 }],
+    volumes: [
+      { path: "/tmp", size: "32Mi", type: "emptyDir" },
+      { path: "/opt/ibm/wlp/output", size: "32Mi", type: "emptyDir" },
+    ],
+    name: "reviews-v3",
+    metrics: { cpu: null, memory: null },
+    services: [
+      {
+        name: "reviews-v3",
+        clusterIP: "10.104.32.91",
+        ports: [{ name: "http", protocol: "TCP", port: 9080, targetPort: 9080 }],
+      },
+    ],
+    pods: [
+      {
+        name: "reviews-v3-5c5fc9c7b8-gjtjs",
+        node: "minikube",
+        status: "Running",
+        phase: "Running",
+        statusText: "Running",
+        restarts: 0,
+        isTerminating: false,
+        podIps: null,
+        hostIp: "192.168.64.3",
+        createTimestamp: createTS,
+        startTimestamp: 1592592679000,
+        containers: [
+          { name: "reviews-v3", restartCount: 0, ready: true, started: false, startedAt: 0 },
+          { name: "istio-proxy", restartCount: 0, ready: true, started: false, startedAt: 0 },
+        ],
+        metrics: {
+          cpu: getCPUSamples(3),
+          memory: getMemorySamples(101941248),
+        },
+        warnings: [],
+      },
+    ],
+  });
+  return appComponent;
+};
+interface ICreateMetricsSegmentType {
+  from?: Date;
+  counter?: number;
+  value?: number;
+  thresholds?: number;
+}
+
+const createMetricsSegements = ({
+  from = new Date(),
+  counter = 180,
+  value = 3,
+  thresholds = 3,
+}: ICreateMetricsSegmentType) => {
+  let cpuSegments: Immutable.List<MetricItem> = Immutable.List();
+  const fromTS = from.getTime();
+  const validateRange = [value - thresholds > 0 ? value - thresholds : 0, value + thresholds];
+
+  for (let index = 0; index < counter; index++) {
+    let lastValue = validateRange[0];
+    let value = Math.floor(Math.random() * validateRange[1]) + validateRange[0];
+    if (index > 0) {
+      lastValue = cpuSegments.get(index - 1)?.get("y") as number;
+      const seed = Math.floor(Math.random() * 3) + 1;
+      const direction = seed >= 2 ? 1 : -1;
+      value = lastValue + (direction * thresholds * 1) / 4;
+      value = Math.max(validateRange[0], Math.min(value, validateRange[1]));
+    }
+
+    const element: MetricItem = Immutable.Map({ x: fromTS + 500 * index, y: value });
+    cpuSegments = cpuSegments.push(element);
+  }
+  return cpuSegments;
+};
+
 export const getCPUSamples = (value: any) => {
-  return [
-    { x: 1592848044000, y: value },
-    { x: 1592848049000, y: value },
-    { x: 1592848054000, y: value },
-    { x: 1592848059000, y: value },
-    { x: 1592848064000, y: value },
-    { x: 1592848069000, y: value },
-    { x: 1592848074000, y: value },
-    { x: 1592848079000, y: value },
-    { x: 1592848084000, y: value },
-    { x: 1592848089000, y: value },
-    { x: 1592848094000, y: value },
-    { x: 1592848099000, y: value },
-    { x: 1592848104000, y: value },
-    { x: 1592848109000, y: value },
-    { x: 1592848114000, y: value },
-    { x: 1592848119000, y: value },
-    { x: 1592848124000, y: value },
-    { x: 1592848129000, y: value },
-    { x: 1592848134000, y: value },
-    { x: 1592848139000, y: value },
-    { x: 1592848144000, y: value },
-    { x: 1592848149000, y: value },
-    { x: 1592848154000, y: value },
-    { x: 1592848159000, y: value },
-    { x: 1592848164000, y: value },
-    { x: 1592848169000, y: value },
-    { x: 1592848174000, y: value },
-    { x: 1592848179000, y: value },
-    { x: 1592848184000, y: value },
-    { x: 1592848189000, y: value },
-    { x: 1592848194000, y: value },
-    { x: 1592848199000, y: value },
-    { x: 1592848204000, y: value },
-    { x: 1592848209000, y: value },
-    { x: 1592848214000, y: value },
-    { x: 1592848219000, y: value },
-    { x: 1592848224000, y: value },
-    { x: 1592848229000, y: value },
-    { x: 1592848234000, y: value },
-    { x: 1592848239000, y: value },
-    { x: 1592848244000, y: value },
-    { x: 1592848249000, y: value },
-    { x: 1592848254000, y: value },
-    { x: 1592848259000, y: value },
-    { x: 1592848264000, y: value },
-    { x: 1592848269000, y: value },
-    { x: 1592848274000, y: value },
-    { x: 1592848279000, y: value },
-    { x: 1592848284000, y: value },
-    { x: 1592848289000, y: value },
-    { x: 1592848294000, y: value },
-    { x: 1592848299000, y: value },
-    { x: 1592848304000, y: value },
-    { x: 1592848309000, y: value },
-    { x: 1592848314000, y: value },
-    { x: 1592848319000, y: value },
-    { x: 1592848324000, y: value },
-    { x: 1592848329000, y: value },
-    { x: 1592848334000, y: value },
-    { x: 1592848339000, y: value },
-    { x: 1592848344000, y: value },
-    { x: 1592848349000, y: value },
-    { x: 1592848354000, y: value },
-    { x: 1592848359000, y: value },
-    { x: 1592848364000, y: value },
-    { x: 1592848369000, y: value },
-    { x: 1592848374000, y: value },
-    { x: 1592848379000, y: value },
-    { x: 1592848384000, y: value },
-    { x: 1592848389000, y: value },
-    { x: 1592848394000, y: value },
-    { x: 1592848399000, y: value },
-    { x: 1592848404000, y: value },
-    { x: 1592848409000, y: value },
-    { x: 1592848414000, y: value },
-    { x: 1592848419000, y: value },
-    { x: 1592848424000, y: value },
-    { x: 1592848429000, y: value },
-    { x: 1592848434000, y: value },
-    { x: 1592848439000, y: value },
-    { x: 1592848444000, y: value },
-    { x: 1592848449000, y: value },
-    { x: 1592848454000, y: value },
-    { x: 1592848459000, y: value },
-    { x: 1592848464000, y: value },
-    { x: 1592848469000, y: value },
-    { x: 1592848474000, y: value },
-    { x: 1592848479000, y: value },
-    { x: 1592848484000, y: value },
-    { x: 1592848489000, y: value },
-    { x: 1592848494000, y: value },
-    { x: 1592848499000, y: value },
-    { x: 1592848504000, y: value },
-    { x: 1592848509000, y: value },
-    { x: 1592848514000, y: value },
-    { x: 1592848519000, y: value },
-    { x: 1592848524000, y: value },
-    { x: 1592848529000, y: value },
-    { x: 1592848534000, y: value },
-    { x: 1592848539000, y: value },
-    { x: 1592848544000, y: value },
-    { x: 1592848549000, y: value },
-    { x: 1592848554000, y: value },
-    { x: 1592848559000, y: value },
-    { x: 1592848564000, y: value },
-    { x: 1592848569000, y: value },
-    { x: 1592848574000, y: value },
-    { x: 1592848579000, y: value },
-    { x: 1592848584000, y: value },
-    { x: 1592848589000, y: value },
-    { x: 1592848594000, y: value },
-    { x: 1592848599000, y: value },
-    { x: 1592848604000, y: value },
-    { x: 1592848609000, y: value },
-    { x: 1592848614000, y: value },
-    { x: 1592848619000, y: value },
-    { x: 1592848624000, y: value },
-    { x: 1592848629000, y: value },
-    { x: 1592848634000, y: value },
-    { x: 1592848639000, y: value },
-    { x: 1592848644000, y: value },
-    { x: 1592848649000, y: value },
-    { x: 1592848654000, y: value },
-    { x: 1592848659000, y: value },
-    { x: 1592848664000, y: value },
-    { x: 1592848669000, y: value },
-    { x: 1592848674000, y: value },
-    { x: 1592848679000, y: value },
-    { x: 1592848684000, y: value },
-    { x: 1592848689000, y: value },
-    { x: 1592848694000, y: value },
-    { x: 1592848699000, y: value },
-    { x: 1592848704000, y: value },
-    { x: 1592848709000, y: value },
-    { x: 1592848714000, y: value },
-    { x: 1592848719000, y: value },
-    { x: 1592848724000, y: value },
-    { x: 1592848729000, y: value },
-    { x: 1592848734000, y: value },
-    { x: 1592848739000, y: value },
-    { x: 1592848744000, y: value },
-    { x: 1592848749000, y: value },
-    { x: 1592848754000, y: value },
-    { x: 1592848759000, y: value },
-    { x: 1592848764000, y: value },
-    { x: 1592848769000, y: value },
-    { x: 1592848774000, y: value },
-    { x: 1592848779000, y: value },
-    { x: 1592848784000, y: value },
-    { x: 1592848789000, y: value },
-    { x: 1592848794000, y: value },
-    { x: 1592848799000, y: value },
-    { x: 1592848804000, y: value },
-    { x: 1592848809000, y: value },
-    { x: 1592848814000, y: value },
-    { x: 1592848819000, y: value },
-    { x: 1592848824000, y: value },
-    { x: 1592848829000, y: value },
-    { x: 1592848834000, y: value },
-    { x: 1592848839000, y: value },
-    { x: 1592848844000, y: value },
-    { x: 1592848849000, y: value },
-    { x: 1592848854000, y: value },
-    { x: 1592848859000, y: value },
-    { x: 1592848864000, y: value },
-    { x: 1592848869000, y: value },
-    { x: 1592848874000, y: value },
-    { x: 1592848879000, y: value },
-    { x: 1592848884000, y: value },
-    { x: 1592848889000, y: value },
-    { x: 1592848894000, y: value },
-    { x: 1592848899000, y: value },
-    { x: 1592848904000, y: value },
-    { x: 1592848909000, y: value },
-    { x: 1592848914000, y: value },
-    { x: 1592848919000, y: value },
-    { x: 1592848924000, y: value },
-    { x: 1592848929000, y: value },
-    { x: 1592848934000, y: value },
-    { x: 1592848939000, y: value },
-  ];
+  let samples = createMetricsSegements({ value: value });
+  console.log(samples.toJS());
+
+  return samples.toJS();
 };
 
 export const getMemorySamples = (value: any) => {
-  return [
-    { x: 1592848044000, y: value },
-    { x: 1592848049000, y: value },
-    { x: 1592848054000, y: value },
-    { x: 1592848059000, y: value },
-    { x: 1592848064000, y: value },
-    { x: 1592848069000, y: value },
-    { x: 1592848074000, y: value },
-    { x: 1592848079000, y: value },
-    { x: 1592848084000, y: value },
-    { x: 1592848089000, y: value },
-    { x: 1592848094000, y: value },
-    { x: 1592848099000, y: value },
-    { x: 1592848104000, y: value },
-    { x: 1592848109000, y: value },
-    { x: 1592848114000, y: value },
-    { x: 1592848119000, y: value },
-    { x: 1592848124000, y: value },
-    { x: 1592848129000, y: value },
-    { x: 1592848134000, y: value },
-    { x: 1592848139000, y: value },
-    { x: 1592848144000, y: value },
-    { x: 1592848149000, y: value },
-    { x: 1592848154000, y: value },
-    { x: 1592848159000, y: value },
-    { x: 1592848164000, y: value },
-    { x: 1592848169000, y: value },
-    { x: 1592848174000, y: value },
-    { x: 1592848179000, y: value },
-    { x: 1592848184000, y: value },
-    { x: 1592848189000, y: value },
-    { x: 1592848194000, y: value },
-    { x: 1592848199000, y: value },
-    { x: 1592848204000, y: value },
-    { x: 1592848209000, y: value },
-    { x: 1592848214000, y: value },
-    { x: 1592848219000, y: value },
-    { x: 1592848224000, y: value },
-    { x: 1592848229000, y: value },
-    { x: 1592848234000, y: value },
-    { x: 1592848239000, y: value },
-    { x: 1592848244000, y: value },
-    { x: 1592848249000, y: value },
-    { x: 1592848254000, y: value },
-    { x: 1592848259000, y: value },
-    { x: 1592848264000, y: value },
-    { x: 1592848269000, y: value },
-    { x: 1592848274000, y: value },
-    { x: 1592848279000, y: value },
-    { x: 1592848284000, y: value },
-    { x: 1592848289000, y: value },
-    { x: 1592848294000, y: value },
-    { x: 1592848299000, y: value },
-    { x: 1592848304000, y: value },
-    { x: 1592848309000, y: value },
-    { x: 1592848314000, y: value },
-    { x: 1592848319000, y: value },
-    { x: 1592848324000, y: value },
-    { x: 1592848329000, y: value },
-    { x: 1592848334000, y: value },
-    { x: 1592848339000, y: value },
-    { x: 1592848344000, y: value },
-    { x: 1592848349000, y: value },
-    { x: 1592848354000, y: value },
-    { x: 1592848359000, y: value },
-    { x: 1592848364000, y: value },
-    { x: 1592848369000, y: value },
-    { x: 1592848374000, y: value },
-    { x: 1592848379000, y: value },
-    { x: 1592848384000, y: value },
-    { x: 1592848389000, y: value },
-    { x: 1592848394000, y: value },
-    { x: 1592848399000, y: value },
-    { x: 1592848404000, y: value },
-    { x: 1592848409000, y: value },
-    { x: 1592848414000, y: value },
-    { x: 1592848419000, y: value },
-    { x: 1592848424000, y: value },
-    { x: 1592848429000, y: value },
-    { x: 1592848434000, y: value },
-    { x: 1592848439000, y: value },
-    { x: 1592848444000, y: value },
-    { x: 1592848449000, y: value },
-    { x: 1592848454000, y: value },
-    { x: 1592848459000, y: value },
-    { x: 1592848464000, y: value },
-    { x: 1592848469000, y: value },
-    { x: 1592848474000, y: value },
-    { x: 1592848479000, y: value },
-    { x: 1592848484000, y: value },
-    { x: 1592848489000, y: value },
-    { x: 1592848494000, y: value },
-    { x: 1592848499000, y: value },
-    { x: 1592848504000, y: value },
-    { x: 1592848509000, y: value },
-    { x: 1592848514000, y: value },
-    { x: 1592848519000, y: value },
-    { x: 1592848524000, y: value },
-    { x: 1592848529000, y: value },
-    { x: 1592848534000, y: value },
-    { x: 1592848539000, y: value },
-    { x: 1592848544000, y: value },
-    { x: 1592848549000, y: value },
-    { x: 1592848554000, y: value },
-    { x: 1592848559000, y: value },
-    { x: 1592848564000, y: value },
-    { x: 1592848569000, y: value },
-    { x: 1592848574000, y: value },
-    { x: 1592848579000, y: value },
-    { x: 1592848584000, y: value },
-    { x: 1592848589000, y: value },
-    { x: 1592848594000, y: value },
-    { x: 1592848599000, y: value },
-    { x: 1592848604000, y: value },
-    { x: 1592848609000, y: value },
-    { x: 1592848614000, y: value },
-    { x: 1592848619000, y: value },
-    { x: 1592848624000, y: value },
-    { x: 1592848629000, y: value },
-    { x: 1592848634000, y: value },
-    { x: 1592848639000, y: value },
-    { x: 1592848644000, y: value },
-    { x: 1592848649000, y: value },
-    { x: 1592848654000, y: value },
-    { x: 1592848659000, y: value },
-    { x: 1592848664000, y: value },
-    { x: 1592848669000, y: value },
-    { x: 1592848674000, y: value },
-    { x: 1592848679000, y: value },
-    { x: 1592848684000, y: value },
-    { x: 1592848689000, y: value },
-    { x: 1592848694000, y: value },
-    { x: 1592848699000, y: value },
-    { x: 1592848704000, y: value },
-    { x: 1592848709000, y: value },
-    { x: 1592848714000, y: value },
-    { x: 1592848719000, y: value },
-    { x: 1592848724000, y: value },
-    { x: 1592848729000, y: value },
-    { x: 1592848734000, y: value },
-    { x: 1592848739000, y: value },
-    { x: 1592848744000, y: value },
-    { x: 1592848749000, y: value },
-    { x: 1592848754000, y: value },
-    { x: 1592848759000, y: value },
-    { x: 1592848764000, y: value },
-    { x: 1592848769000, y: value },
-    { x: 1592848774000, y: value },
-    { x: 1592848779000, y: value },
-    { x: 1592848784000, y: value },
-    { x: 1592848789000, y: value },
-    { x: 1592848794000, y: value },
-    { x: 1592848799000, y: value },
-    { x: 1592848804000, y: value },
-    { x: 1592848809000, y: value },
-    { x: 1592848814000, y: value },
-    { x: 1592848819000, y: value },
-    { x: 1592848824000, y: value },
-    { x: 1592848829000, y: value },
-    { x: 1592848834000, y: value },
-    { x: 1592848839000, y: value },
-    { x: 1592848844000, y: value },
-    { x: 1592848849000, y: value },
-    { x: 1592848854000, y: value },
-    { x: 1592848859000, y: value },
-    { x: 1592848864000, y: value },
-    { x: 1592848869000, y: value },
-    { x: 1592848874000, y: value },
-    { x: 1592848879000, y: value },
-    { x: 1592848884000, y: value },
-    { x: 1592848889000, y: value },
-    { x: 1592848894000, y: value },
-    { x: 1592848899000, y: value },
-    { x: 1592848904000, y: value },
-    { x: 1592848909000, y: value },
-    { x: 1592848914000, y: value },
-    { x: 1592848919000, y: value },
-    { x: 1592848924000, y: value },
-    { x: 1592848929000, y: value },
-    { x: 1592848934000, y: value },
-    { x: 1592848939000, y: value },
-  ];
+  let samples = createMetricsSegements({ value: value, thresholds: 10000 });
+  return samples.toJS();
+};
+
+export const mergeMetrics = (
+  application: ApplicationDetails,
+  components: Immutable.Map<string, Immutable.List<ApplicationComponentDetails>>,
+) => {
+  let metricsCPU: Immutable.List<MetricItem> = Immutable.List();
+  let metricsMemory: Immutable.List<MetricItem> = Immutable.List();
+  let componentList: Immutable.List<ApplicationComponentDetails> = components.get(
+    application.get("name"),
+    Immutable.List<ApplicationComponentDetails>(),
+  );
+  componentList.map((component) => {
+    const pods: Immutable.List<PodStatus> = component.getIn(["pods"], Immutable.List<PodStatus>());
+    pods.map((pod) => {
+      const cpuList: MetricList = pod.getIn(["metrics", "cpu"], Immutable.List<MetricItem>());
+      cpuList.map((cpu, index) => {
+        const x = cpu.get("x", 0);
+        const mergedValue =
+          metricsCPU.get(index, Immutable.Map({ x: 0, y: 0 }) as MetricItem).get("y", 0) + cpu.get("y", 0);
+        metricsCPU = metricsCPU.set(index, Immutable.fromJS({ x: x, y: mergedValue }));
+      });
+      const memoryList: MetricList = pod.getIn(["metrics", "memory"], Immutable.List<MetricItem>());
+      memoryList.map((memory, index) => {
+        const x = memory.get("x", 0);
+        const mergedValue =
+          metricsMemory.get(index, Immutable.Map({ x: 0, y: 0 }) as MetricItem).get("y", 0) + memory.get("y", 0);
+        metricsMemory = metricsMemory.set(index, Immutable.fromJS({ x: x, y: mergedValue }));
+      });
+    });
+  });
+  application = application.setIn(["metrics", "cpu"], metricsCPU);
+  application = application.setIn(["metrics", "memory"], metricsMemory);
+  return application;
 };

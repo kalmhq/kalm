@@ -19,7 +19,7 @@ import {
 import Immutable from "immutable";
 import { LOAD_LOGIN_STATUS_FULFILLED, LOGOUT } from "types/common";
 import { date, number, text } from "@storybook/addon-knobs";
-import { getCPUSamples, getMemorySamples } from "./data/application";
+import { createApplicationComponent, createApplication, mergeMetrics } from "./data/application";
 
 const history = createBrowserHistory();
 const store: Store<RootState, any> = configureStore(history) as any;
@@ -51,10 +51,6 @@ storiesOf("Screens/Applications", module)
   .add("Loading Applications", () => {
     resetStore();
     store.dispatch({ type: LOAD_APPLICATIONS_PENDING });
-    // store.dispatch(loadApplicationsAction());
-    // store.dispatch(loadServicesAction("applicationName"));
-    // const testApplication = store.getState().get("applications").get("applications").get(0);
-    // const testService = store.getState().get("services").get("services").get(0);
     return <ApplicationListPage />;
   })
   .add("Load Application Failed", () => {
@@ -76,13 +72,16 @@ storiesOf("Screens/Applications", module)
     const appName = text("applicationName", "kalm-bookinfo", "Application");
     const podCounter = number("pod counter", 5, undefined, "Application");
     const createTime = date("create Date", new Date("2020-06-11"), "Application");
-    const oneApp: ApplicationDetails = createApplication(appName);
-    const applications: Immutable.List<ApplicationDetails> = Immutable.List<ApplicationDetails>([oneApp]);
+    let oneApp: ApplicationDetails = createApplication(appName);
 
     const allComponents: Immutable.Map<
       string,
       Immutable.List<ApplicationComponentDetails>
     > = createApplicationComponent(appName, podCounter, createTime);
+
+    oneApp = mergeMetrics(oneApp, allComponents);
+
+    const applications: Immutable.List<ApplicationDetails> = Immutable.List<ApplicationDetails>([oneApp]);
     store.dispatch({ type: LOAD_APPLICATIONS_PENDING });
     store.dispatch({
       type: LOAD_ALL_NAMESAPCES_COMPONETS,
@@ -111,17 +110,21 @@ storiesOf("Screens/Applications", module)
     const threePodCounter = number("pod counter", 4, undefined, "Application3");
     const fourPodCounter = number("pod counter", 5, undefined, "Application4");
 
-    const oneApp: ApplicationDetails = createApplication(oneAppName);
+    let oneApp: ApplicationDetails = createApplication(oneAppName);
     const oneAppComponent = createApplicationComponent(oneAppName, onePodCounter, oneAppCreateTime);
+    oneApp = mergeMetrics(oneApp, oneAppComponent);
 
-    const twoApp: ApplicationDetails = createApplication(twoAppName);
+    let twoApp: ApplicationDetails = createApplication(twoAppName);
     const twoAppComponent = createApplicationComponent(twoAppName, twoPodCounter, twoAppCreateTime);
+    twoApp = mergeMetrics(twoApp, twoAppComponent);
 
-    const threeApp: ApplicationDetails = createApplication(threeAppName);
+    let threeApp: ApplicationDetails = createApplication(threeAppName);
     const threeAppComponent = createApplicationComponent(threeAppName, threePodCounter, threeAppCreateTime);
+    threeApp = mergeMetrics(threeApp, threeAppComponent);
 
-    const fourApp: ApplicationDetails = createApplication(fourAppName);
+    let fourApp: ApplicationDetails = createApplication(fourAppName);
     let fourAppComponent = createApplicationComponent(fourAppName, fourPodCounter, fourAppCreateTime);
+    fourApp = mergeMetrics(fourApp, fourAppComponent);
 
     fourAppComponent = fourAppComponent.merge(oneAppComponent, twoAppComponent, threeAppComponent);
     store.dispatch({
@@ -143,74 +146,3 @@ storiesOf("Screens/Applications", module)
     store.dispatch({ type: LOAD_APPLICATIONS_FULFILLED, payload: { applicationList: applications } });
     return <ApplicationListPage />;
   });
-
-const createApplication = (name: string) => {
-  return Immutable.fromJS({
-    name: name,
-    metrics: {
-      cpu: getCPUSamples(4),
-      memory: getMemorySamples(572149760),
-    },
-    roles: ["writer", "reader"],
-    status: "Active",
-  });
-};
-
-const createApplicationComponent = (name: string, podCount: number, createTS: number) => {
-  const counterArray = new Array(podCount);
-  const podArray = [];
-  for (var i = 0; i < counterArray.length; i++) {
-    podArray.push(createApplicationComponentDetails(createTS));
-  }
-  const components: Immutable.List<ApplicationComponentDetails> = Immutable.fromJS(podArray);
-  let componentsMap: Immutable.Map<string, Immutable.List<ApplicationComponentDetails>> = Immutable.Map({});
-  componentsMap = componentsMap.set(name, components);
-  return componentsMap;
-};
-const createApplicationComponentDetails = (createTS: number) => {
-  let appComponent = Immutable.fromJS({
-    env: [{ name: "LOG_DIR", value: "/tmp/logs" }],
-    image: "docker.io/istio/examples-bookinfo-reviews-v3:1.15.0",
-    nodeSelectorLabels: { "kubernetes.io/os": "linux" },
-    preferNotCoLocated: true,
-    ports: [{ name: "http", containerPort: 9080, servicePort: 9080 }],
-    volumes: [
-      { path: "/tmp", size: "32Mi", type: "emptyDir" },
-      { path: "/opt/ibm/wlp/output", size: "32Mi", type: "emptyDir" },
-    ],
-    name: "reviews-v3",
-    metrics: { cpu: null, memory: null },
-    services: [
-      {
-        name: "reviews-v3",
-        clusterIP: "10.104.32.91",
-        ports: [{ name: "http", protocol: "TCP", port: 9080, targetPort: 9080 }],
-      },
-    ],
-    pods: [
-      {
-        name: "reviews-v3-5c5fc9c7b8-gjtjs",
-        node: "minikube",
-        status: "Running",
-        phase: "Running",
-        statusText: "Running",
-        restarts: 0,
-        isTerminating: false,
-        podIps: null,
-        hostIp: "192.168.64.3",
-        createTimestamp: createTS,
-        startTimestamp: 1592592679000,
-        containers: [
-          { name: "reviews-v3", restartCount: 0, ready: true, started: false, startedAt: 0 },
-          { name: "istio-proxy", restartCount: 0, ready: true, started: false, startedAt: 0 },
-        ],
-        metrics: {
-          cpu: getCPUSamples(3),
-          memory: getMemorySamples(101941248),
-        },
-        warnings: [],
-      },
-    ],
-  });
-  return appComponent;
-};
