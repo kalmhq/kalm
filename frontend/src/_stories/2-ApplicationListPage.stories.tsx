@@ -1,13 +1,9 @@
 import React from "react";
+import Immutable from "immutable";
 import { storiesOf } from "@storybook/react";
-import configureStore from "configureStore";
-import { Store } from "redux";
-import { Provider } from "react-redux";
 
-import { createBrowserHistory } from "history";
 import { ApplicationListPage } from "pages/Application/List";
-import { ConnectedRouter } from "connected-react-router/immutable";
-import { RootState } from "reducers";
+
 import {
   ApplicationComponentDetails,
   ApplicationDetails,
@@ -16,36 +12,11 @@ import {
   LOAD_APPLICATIONS_FULFILLED,
   LOAD_APPLICATIONS_PENDING,
 } from "types/application";
-import Immutable from "immutable";
-import { LOAD_LOGIN_STATUS_FULFILLED, LOGOUT } from "types/common";
+
 import { date, number, text } from "@storybook/addon-knobs";
 import { createApplicationComponent, createApplication, mergeMetrics, createRountes } from "./data/application";
 import { LOAD_ROUTES_PENDING, LOAD_ROUTES_FULFILLED, HttpRoute } from "types/route";
-
-const history = createBrowserHistory();
-const store: Store<RootState, any> = configureStore(history) as any;
-
-// @ts-ignore
-export const withProvider = (story) => (
-  <Provider store={store}>
-    <ConnectedRouter history={history}>{story()}</ConnectedRouter>
-  </Provider>
-);
-
-const resetStore = () => {
-  store.dispatch({ type: LOGOUT });
-  store.dispatch({
-    type: LOAD_LOGIN_STATUS_FULFILLED,
-    payload: {
-      loginStatus: Immutable.fromJS({
-        authorized: true,
-        isAdmin: true,
-        entity: "system:serviceaccount:default:kalm-sample-user",
-        csrf: "",
-      }),
-    },
-  });
-};
+import { store, withProvider, resetStore } from "./redux";
 
 const createRoutes = (appNames: string[]) => {
   let routes = Immutable.List<HttpRoute>();
