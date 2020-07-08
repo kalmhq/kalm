@@ -17,16 +17,19 @@ package controllers
 
 import (
 	"context"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/pem"
+	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
+	corev1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
-	corev1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"strings"
 )
 
 // HttpsCertReconciler reconciles a HttpsCert object
@@ -77,12 +80,26 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 		if err != nil {
 			httpsCert.Status.Conditions = []corev1alpha1.HttpsCertCondition{genConditionWithErr(err)}
+
+			httpsCert.Status.ExpireTimestamp = 0
+			httpsCert.Status.IsSignedByPublicTrustedCA = false
 		} else {
 			httpsCert.Status.Conditions = []corev1alpha1.HttpsCertCondition{
 				{
 					Type:   corev1alpha1.HttpsCertConditionReady,
 					Status: corev1.ConditionTrue,
 				},
+			}
+
+			cert, err := ParseCert(string(certSec.Data[SecretKeyOfTLSCert]))
+			if err != nil {
+				httpsCert.Status.ExpireTimestamp = 0
+				httpsCert.Status.IsSignedByPublicTrustedCA = false
+			} else {
+				isTrusted := checkIfIssuerIsTrusted(cert.Issuer)
+
+				httpsCert.Status.ExpireTimestamp = cert.NotAfter.Unix()
+				httpsCert.Status.IsSignedByPublicTrustedCA = isTrusted
 			}
 		}
 
@@ -171,6 +188,31 @@ func (r *HttpsCertReconciler) reconcileForAutoManagedHttpsCert(ctx context.Conte
 				}
 
 				httpsCert.Status.Conditions = []corev1alpha1.HttpsCertCondition{transCertCondition(cond)}
+
+				if cond.Status == cmmeta.ConditionTrue {
+					var certSec corev1.Secret
+					err := r.Get(
+						ctx,
+						client.ObjectKey{Name: cert.Spec.SecretName, Namespace: istioNamespace},
+						&certSec,
+					)
+					if err != nil {
+						return err
+					}
+
+					cert, err := ParseCert(string(certSec.Data[SecretKeyOfTLSCert]))
+
+					expireAt := cert.NotAfter
+					isTrusted := checkIfIssuerIsTrusted(cert.Issuer)
+
+					httpsCert.Status.ExpireTimestamp = expireAt.Unix()
+					httpsCert.Status.IsSignedByPublicTrustedCA = isTrusted
+				} else {
+					// cert is not ready yet, reset fields
+					httpsCert.Status.ExpireTimestamp = 0
+					httpsCert.Status.IsSignedByPublicTrustedCA = false
+				}
+
 				break
 			}
 		}
@@ -179,6 +221,23 @@ func (r *HttpsCertReconciler) reconcileForAutoManagedHttpsCert(ctx context.Conte
 	r.Status().Update(ctx, &httpsCert)
 
 	return err
+}
+
+// todo a buggy way to tell is issuer is trusted
+func checkIfIssuerIsTrusted(issuer pkix.Name) bool {
+	trustedList := []string{
+		"Let's Encrypt Authority",
+	}
+
+	for _, one := range trustedList {
+		if !strings.Contains(issuer.CommonName, one) {
+			continue
+		}
+
+		return true
+	}
+
+	return false
 }
 
 func genConditionWithErr(err error) corev1alpha1.HttpsCertCondition {
@@ -197,4 +256,17 @@ func transCertCondition(cond cmv1alpha2.CertificateCondition) corev1alpha1.Https
 		Reason:  cond.Reason,
 		Message: cond.Message,
 	}
+}
+
+func ParseCert(certPEM string) (*x509.Certificate, error) {
+	block, _ := pem.Decode([]byte(certPEM))
+	if block == nil {
+		panic("failed to parse certificate PEM")
+	}
+	cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return nil, err
+	}
+
+	return cert, nil
 }
