@@ -80,6 +80,9 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 		if err != nil {
 			httpsCert.Status.Conditions = []corev1alpha1.HttpsCertCondition{genConditionWithErr(err)}
+
+			httpsCert.Status.ExpireTimestamp = 0
+			httpsCert.Status.IsSignedByPublicTrustedCA = false
 		} else {
 			httpsCert.Status.Conditions = []corev1alpha1.HttpsCertCondition{
 				{
@@ -88,7 +91,16 @@ func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 				},
 			}
 
-			//todo
+			cert, err := ParseCert(string(certSec.Data[SecretKeyOfTLSCert]))
+			if err != nil {
+				httpsCert.Status.ExpireTimestamp = 0
+				httpsCert.Status.IsSignedByPublicTrustedCA = false
+			} else {
+				isTrusted := checkIfIssuerIsTrusted(cert.Issuer)
+
+				httpsCert.Status.ExpireTimestamp = cert.NotAfter.Unix()
+				httpsCert.Status.IsSignedByPublicTrustedCA = isTrusted
+			}
 		}
 
 		r.Status().Update(ctx, &httpsCert)
@@ -188,8 +200,7 @@ func (r *HttpsCertReconciler) reconcileForAutoManagedHttpsCert(ctx context.Conte
 						return err
 					}
 
-					v := certSec.Data[SecretKeyOfTLSCert]
-					cert, err := ParseCert(string(v))
+					cert, err := ParseCert(string(certSec.Data[SecretKeyOfTLSCert]))
 
 					expireAt := cert.NotAfter
 					isTrusted := checkIfIssuerIsTrusted(cert.Issuer)
