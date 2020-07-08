@@ -102,8 +102,7 @@ storiesOf("Screens/Components", module)
         namespace: appName,
       },
     });
-    // @ts-ignore
-    return <ComponentListPage activeNamespaceName={appName} />;
+    return <ComponentListPage />;
   })
   .add("Load Four Applications", () => {
     resetStore();
