@@ -15,7 +15,7 @@ export const NodeMemory = ({ node }: { node: Node }) => {
           variant="determinate"
           value={progress}
         />{" "}
-        ({progress}%)
+        ({progress.toFixed(2)}%)
       </Box>
       allocatable {humanFileSize(allocatable)}, capacity {humanFileSize(capacity)}.
     </Box>

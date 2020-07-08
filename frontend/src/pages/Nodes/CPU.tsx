@@ -15,9 +15,9 @@ export const NodeCPU = ({ node }: { node: Node }) => {
           variant="determinate"
           value={progress}
         />{" "}
-        ({progress}%)
+        ({progress.toFixed(2)}%)
       </Box>
-      allocatable {allocatable} Cores, capacity {capacity} Cores.
+      allocatable {allocatable.toFixed(2)} Cores, capacity {capacity.toFixed(2)} Cores.
     </Box>
   );
 };
