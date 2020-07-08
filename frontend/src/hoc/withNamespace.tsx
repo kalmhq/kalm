@@ -15,7 +15,7 @@ const mapStateToProps = (
   }: RouteComponentProps<{ applicationName: string }>,
 ) => {
   const applicationsState = state.get("applications");
-  const activeNamespaceName = applicationName;
+  const activeNamespaceName = applicationName || state.getIn(["namespaces", "active"]);
   const applications = applicationsState.get("applications");
   const activeNamespace = applications.find((x) => x.get("name") === activeNamespaceName);
 
