@@ -579,7 +579,7 @@ export class LogStream extends React.PureComponent<Props, State> {
 
     return (
       <KSelect
-        label="Container"
+        label="Lines"
         value={logOptions.get("tailLines")}
         options={tailLinesOptions.map((x) => {
           return {
