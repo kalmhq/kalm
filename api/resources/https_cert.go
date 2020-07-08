@@ -9,7 +9,6 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strings"
 	"sync"
-	"time"
 )
 
 type HttpsCert struct {
@@ -25,10 +24,10 @@ type HttpsCert struct {
 
 type HttpsCertResp struct {
 	HttpsCert                 `json:",inline"`
-	IsSignedByPublicTrustedCA bool      `json:"isSignedByTrustedCA"`
-	ExpireTime                time.Time `json:"expireTime"`
-	Ready                     string    `json:"ready"`
-	Reason                    string    `json:"reason"`
+	Ready                     string `json:"ready"`
+	Reason                    string `json:"reason"`
+	IsSignedByPublicTrustedCA bool   `json:"isSignedByTrustedCA,omitempty"`
+	ExpireTimestamp           int64  `json:"expireTime,omitempty"`
 }
 
 var ReasonForNoReadyConditions = "no feedback on cert status yet"
@@ -63,6 +62,14 @@ func BuildHttpsCertResponse(httpsCert v1alpha1.HttpsCert) *HttpsCertResp {
 		},
 		Ready:  ready,
 		Reason: reason,
+	}
+
+	if readyCond.Status == coreV1.ConditionTrue {
+		isSignedByTrustedCA := httpsCert.Status.IsSignedByPublicTrustedCA
+		expireTimestamp := httpsCert.Status.ExpireTimestamp
+
+		resp.IsSignedByPublicTrustedCA = isSignedByTrustedCA
+		resp.ExpireTimestamp = expireTimestamp
 	}
 
 	if !resp.IsSelfManaged {
