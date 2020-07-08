@@ -1,6 +1,4 @@
 import React from "react";
-import { Box, BoxProps, WithStyles, Theme, createStyles, withStyles, Typography } from "@material-ui/core";
-import { primaryColor } from "theme/theme";
 import { color, select } from "@storybook/addon-knobs";
 import * as icons from "widgets/Icon";
 import { storiesOf } from "@storybook/react";

@@ -9,20 +9,20 @@ import { ApplicationListPage } from "pages/Application/List";
 import { ConnectedRouter } from "connected-react-router/immutable";
 import { RootState } from "reducers";
 import {
-  ApplicationDetails,
   ApplicationComponentDetails,
-  LOAD_APPLICATIONS_PENDING,
+  ApplicationDetails,
+  LOAD_ALL_NAMESAPCES_COMPONETS,
   LOAD_APPLICATIONS_FAILED,
   LOAD_APPLICATIONS_FULFILLED,
-  LOAD_ALL_NAMESAPCES_COMPONETS,
+  LOAD_APPLICATIONS_PENDING,
 } from "types/application";
 import Immutable from "immutable";
-import { LOGOUT, LOAD_LOGIN_STATUS_FULFILLED } from "types/common";
-import { text, number, date } from "@storybook/addon-knobs";
+import { LOAD_LOGIN_STATUS_FULFILLED, LOGOUT } from "types/common";
+import { date, number, text } from "@storybook/addon-knobs";
 import { getCPUSamples, getMemorySamples } from "./data/application";
 
 const history = createBrowserHistory();
-const store: Store<RootState, any> = configureStore(history);
+const store: Store<RootState, any> = configureStore(history) as any;
 
 // @ts-ignore
 export const withProvider = (story) => (

@@ -17,7 +17,6 @@ import {
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import Immutable from "immutable";
 import { Methods } from "pages/Route/Methods";
-import { maxIn } from "permission/utils";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
@@ -113,8 +112,9 @@ class RouteWidgetRaw extends React.PureComponent<Props, State> {
 
   public render() {
     const { classes, route, activeNamespaceName } = this.props;
-    const rowNumbers = maxIn(route.get("hosts").size, route.get("schemes").size, route.get("paths").size);
-
+    const scheme = route.get("schemes").size > 1 ? "http(s)" : route.get("schemes").get(0);
+    const host = route.get("hosts").join(", ");
+    const path = route.get("paths").join(", ");
     return (
       <Card className={classes.root} variant="outlined">
         <CardContent>
@@ -131,37 +131,32 @@ class RouteWidgetRaw extends React.PureComponent<Props, State> {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {[...Array(rowNumbers)].map((_, i) => {
-                  const scheme = route.get("schemes").get(i);
-                  const host = route.get("hosts").get(i);
-                  const path = route.get("paths").get(i);
-                  return (
-                    <TableRow key={i}>
-                      <TableCell>{i === 0 && <Methods methods={route.get("methods")} />}</TableCell>
-                      <TableCell>{scheme + "://"}</TableCell>
-                      <TableCell>{host}</TableCell>
-                      <TableCell>{path}</TableCell>
-                      <TableCell>
-                        <Targets activeNamespaceName={activeNamespaceName} destinations={route.get("destinations")} />
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          disabled={!route.get("methods").includes("GET")}
-                          href={this.getUrl()}
-                          target="_blank"
-                          rel="noreferer"
-                        >
-                          Open in browser
-                        </Button>
-                        <Button size="small" variant="outlined" onClick={this.copyAsCurl} style={{ marginLeft: 16 }}>
-                          Copy as curl
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                <TableRow>
+                  <TableCell>
+                    <Methods methods={route.get("methods")} />
+                  </TableCell>
+                  <TableCell>{scheme + "://"}</TableCell>
+                  <TableCell>{host}</TableCell>
+                  <TableCell>{path}</TableCell>
+                  <TableCell>
+                    <Targets activeNamespaceName={activeNamespaceName} destinations={route.get("destinations")} />
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      disabled={!route.get("methods").includes("GET")}
+                      href={this.getUrl()}
+                      target="_blank"
+                      rel="noreferer"
+                    >
+                      Open in browser
+                    </Button>
+                    <Button size="small" variant="outlined" onClick={this.copyAsCurl} style={{ marginLeft: 16 }}>
+                      Copy as curl
+                    </Button>
+                  </TableCell>
+                </TableRow>
               </TableBody>
             </Table>
           </TableContainer>
