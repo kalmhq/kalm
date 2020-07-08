@@ -117,7 +117,7 @@ const MyAutocomplete = withStyles(autocompleteStyles)(
 
 interface Props extends WithApplicationItemDataProps, WithStyles<typeof styles> {}
 
-const tailLinesOptions = [300, 1000, 10000, 100000];
+const tailLinesOptions = [100, 200, 500, 1000, 2000];
 
 type LogOptions = ImmutableMap<{
   tailLines: number;
@@ -667,17 +667,16 @@ export class LogStream extends React.PureComponent<Props, State> {
         >
           {options.map((option) => {
             return (
-              <MenuItem key={option.key}>
+              <MenuItem
+                key={option.key}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  this.handleCloseMore(logOptions.set(option.key, !logOptions.get(option.key)));
+                }}
+              >
                 <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={logOptions.get(option.key)}
-                      name={option.key}
-                      onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                        this.handleCloseMore(logOptions.set(option.key, event.target.checked));
-                      }}
-                    />
-                  }
+                  control={<Checkbox checked={logOptions.get(option.key)} name={option.key} />}
                   label={option.text}
                 />
               </MenuItem>
