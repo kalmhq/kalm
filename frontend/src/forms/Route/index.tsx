@@ -376,8 +376,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                     </Box>
                     <Collapse in={destinations.size > 1}>
                       <Alert className="alert" severity="info">
-                        There are more than one target, traffic will be forwarded to each target by weight. Read more
-                        about canary rollout.
+                        There are more than one target, traffic will be forwarded to each target by weight.
                       </Alert>
                     </Collapse>
                     <FieldArray
