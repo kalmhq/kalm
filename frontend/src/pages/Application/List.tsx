@@ -22,7 +22,7 @@ import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { FoldButtonGroup } from "widgets/FoldButtonGroup";
-import { KalmConsoleIcon, KalmLogIcon } from "widgets/Icon";
+import { DeleteIcon, KalmConsoleIcon, KalmDetailsIcon, KalmLogIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { Body, H4 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
@@ -290,7 +290,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
       {
         text: "Details",
         to: `/applications/${rowData.get("name")}`,
-        iconName: "fullscreen",
+        icon: <KalmDetailsIcon />,
       },
       // {
       //   text: "Edit",
@@ -303,7 +303,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         onClick: () => {
           this.showDeleteConfirmDialog(rowData);
         },
-        iconName: "delete",
+        icon: <DeleteIcon />,
         requiredRole: "writer",
       },
     ];

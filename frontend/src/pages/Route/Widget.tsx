@@ -113,8 +113,8 @@ class RouteWidgetRaw extends React.PureComponent<Props, State> {
   public render() {
     const { classes, route, activeNamespaceName } = this.props;
     const scheme = route.get("schemes").size > 1 ? "http(s)" : route.get("schemes").get(0);
-    const host = route.get("hosts").join(", ");
-    const path = route.get("paths").join(", ");
+    const hosts = route.get("hosts");
+    const paths = route.get("paths");
     return (
       <Card className={classes.root} variant="outlined">
         <CardContent>
@@ -136,8 +136,16 @@ class RouteWidgetRaw extends React.PureComponent<Props, State> {
                     <Methods methods={route.get("methods")} />
                   </TableCell>
                   <TableCell>{scheme + "://"}</TableCell>
-                  <TableCell>{host}</TableCell>
-                  <TableCell>{path}</TableCell>
+                  <TableCell>
+                    {hosts.map((x) => (
+                      <Box key={x}>{x}</Box>
+                    ))}
+                  </TableCell>
+                  <TableCell>
+                    {paths.map((x) => (
+                      <Box key={x}>{x}</Box>
+                    ))}
+                  </TableCell>
                   <TableCell>
                     <Targets activeNamespaceName={activeNamespaceName} destinations={route.get("destinations")} />
                   </TableCell>

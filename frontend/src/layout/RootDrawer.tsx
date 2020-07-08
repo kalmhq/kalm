@@ -8,8 +8,6 @@ import {
   ListSubheader,
   Theme,
 } from "@material-ui/core";
-import AssignmentReturnedIcon from "@material-ui/icons/AssignmentReturned";
-import VerifiedUser from "@material-ui/icons/VerifiedUser";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import clsx from "clsx";
 import React from "react";
@@ -19,7 +17,13 @@ import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { APP_BAR_HEIGHT, LEFT_SECTION_CLOSE_WIDTH, LEFT_SECTION_OPEN_WIDTH } from "layout/Constants";
 import { primaryBackgroud, primaryColor } from "theme/theme";
-import { KalmApplicationIcon, KalmNodeIcon, KalmVolumeIcon } from "widgets/Icon";
+import {
+  KalmApplicationIcon,
+  KalmCertificatesIcon,
+  KalmNodeIcon,
+  KalmRegistryIcon,
+  KalmVolumeIcon,
+} from "widgets/Icon";
 import { blinkTopProgressAction } from "actions/settings";
 
 const mapStateToProps = (state: RootState) => {
@@ -105,7 +109,7 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
     return [
       { icon: KalmApplicationIcon, text: "Applications", to: "/applications" },
       {
-        icon: VerifiedUser,
+        icon: KalmCertificatesIcon,
         text: "Certificates",
         to: "/certificates",
       },
@@ -130,7 +134,7 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
         to: "/cluster/disks",
       },
       {
-        icon: AssignmentReturnedIcon,
+        icon: KalmRegistryIcon,
         text: "Registries",
         to: "/cluster/registries",
       },

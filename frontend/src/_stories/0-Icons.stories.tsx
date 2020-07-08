@@ -46,15 +46,15 @@ storiesOf("Design System/Icons", module).add("Icon", () => {
       {wrapper(<icons.ErrorIcon style={{ color: fill, fontSize: size }} />, "ErrorIcon")}
       {wrapper(<icons.FilterListIcon style={{ color: fill, fontSize: size }} />, "FilterListIcon")}
       {wrapper(<icons.HelpIcon style={{ color: fill, fontSize: size }} />, "HelpIcon")}
-      {wrapper(<icons.KalmApplicationIcon style={{ color: fill, fontSize: size }} />, "KappApplicationIcon")}
-      {wrapper(<icons.KalmCertificatesIcon style={{ color: fill, fontSize: size }} />, "KappCertificatesIcon")}
-      {wrapper(<icons.KalmConsoleIcon style={{ color: fill, fontSize: size }} />, "KappConsoleIcon")}
-      {wrapper(<icons.KalmDetailsIcon style={{ color: fill, fontSize: size }} />, "KappDetailsIcon")}
-      {wrapper(<icons.KalmLogIcon style={{ color: fill, fontSize: size }} />, "KappLogIcon")}
-      {wrapper(<icons.KalmNodeIcon style={{ color: fill, fontSize: size }} />, "KappNodeIcon")}
-      {wrapper(<icons.KalmRegistryIcon style={{ color: fill, fontSize: size }} />, "KappRegistryIcon")}
-      {wrapper(<icons.KalmTemplateIcon style={{ color: fill, fontSize: size }} />, "KappTemplateIcon")}
-      {wrapper(<icons.KalmVolumeIcon style={{ color: fill, fontSize: size }} />, "KappVolumeIcon")}
+      {wrapper(<icons.KalmApplicationIcon style={{ color: fill, fontSize: size }} />, "KalmApplicationIcon")}
+      {wrapper(<icons.KalmCertificatesIcon style={{ color: fill, fontSize: size }} />, "KalmCertificatesIcon")}
+      {wrapper(<icons.KalmConsoleIcon style={{ color: fill, fontSize: size }} />, "KalmConsoleIcon")}
+      {wrapper(<icons.KalmDetailsIcon style={{ color: fill, fontSize: size }} />, "KalmDetailsIcon")}
+      {wrapper(<icons.KalmLogIcon style={{ color: fill, fontSize: size }} />, "KalmLogIcon")}
+      {wrapper(<icons.KalmNodeIcon style={{ color: fill, fontSize: size }} />, "KalmNodeIcon")}
+      {wrapper(<icons.KalmRegistryIcon style={{ color: fill, fontSize: size }} />, "KalmRegistryIcon")}
+      {wrapper(<icons.KalmTemplateIcon style={{ color: fill, fontSize: size }} />, "KalmTemplateIcon")}
+      {wrapper(<icons.KalmVolumeIcon style={{ color: fill, fontSize: size }} />, "KalmVolumeIcon")}
       {wrapper(<icons.UploadIcon style={{ color: fill, fontSize: size }} />, "UploadIcon")}
     </div>
   );
