@@ -64,7 +64,7 @@ func BuildHttpsCertResponse(httpsCert v1alpha1.HttpsCert) *HttpsCertResp {
 		Reason: reason,
 	}
 
-	if readyCond.Status == coreV1.ConditionTrue {
+	if readyCond != nil && readyCond.Status == coreV1.ConditionTrue {
 		isSignedByTrustedCA := httpsCert.Status.IsSignedByPublicTrustedCA
 		expireTimestamp := httpsCert.Status.ExpireTimestamp
 
