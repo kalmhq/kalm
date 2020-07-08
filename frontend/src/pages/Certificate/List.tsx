@@ -21,6 +21,7 @@ import { Loading } from "widgets/Loading";
 import { KTable } from "widgets/Table";
 import { CertificateDataWrapper, WithCertificatesDataProps } from "./DataWrapper";
 import { addCertificateDialogId, NewModal } from "./New";
+import { formatDate } from "utils";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -177,6 +178,14 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     return rowData.get("isSelfManaged") ? "UPLOADED" : "MANAGED";
   };
 
+  private renderIsSignedByTrustedCA = (rowData: RowData) => {
+    return rowData.get("isSignedByTrustedCA") ? "True" : "False";
+  };
+
+  private renderExpireTimestamp = (rowData: RowData) => {
+    return rowData.get("expireTimestamp") ? formatDate(new Date(rowData.get("expireTimestamp") * 1000)) : "-";
+  };
+
   private getColumns() {
     const columns = [
       // @ts-ignore
@@ -204,6 +213,18 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
         field: "isSelfManaged",
         sorting: false,
         render: this.renderType,
+      },
+      {
+        title: "Is Singed by Trusted CA",
+        field: "isSignedByTrustedCA",
+        sorting: false,
+        render: this.renderIsSignedByTrustedCA,
+      },
+      {
+        title: "Expire Time",
+        field: "expireTimestamp",
+        sorting: false,
+        render: this.renderExpireTimestamp,
       },
       {
         title: "Actions",
