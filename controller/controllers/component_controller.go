@@ -327,11 +327,11 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 			}
 		}
 
-		if r.component.Spec.EnableHeadlessService && r.headlessService == nil {
+		if (r.component.Spec.EnableHeadlessService && r.headlessService == nil) || r.component.Spec.WorkloadType == corev1alpha1.WorkloadTypeStatefulSet {
 			newHeadlessService = true
 			r.headlessService = &coreV1.Service{
 				ObjectMeta: metaV1.ObjectMeta{
-					Name:      getNameForHeadlessService(r.component.Name),
+					Name:      r.component.Name,
 					Namespace: r.component.Namespace,
 					Labels:    labels,
 				},
@@ -740,6 +740,7 @@ func (r *ComponentReconcilerTask) ReconcileStatefulSet(
 					MatchLabels: labelMap,
 				},
 				VolumeClaimTemplates: volClaimTemplates,
+				ServiceName: r.component.Name,
 			},
 		}
 
