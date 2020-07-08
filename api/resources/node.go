@@ -166,8 +166,9 @@ func ListNodes(k8sClient *kubernetes.Clientset) (*NodesResponse, error) {
 		},
 	}
 
-	for i, _ := range list.Items {
-		res.Nodes = append(res.Nodes, *BuildNodeResponse(&list.Items[i]))
+	for i := range list.Items {
+		node := list.Items[i]
+		res.Nodes = append(res.Nodes, *BuildNodeResponse(&node))
 	}
 
 	return res, nil

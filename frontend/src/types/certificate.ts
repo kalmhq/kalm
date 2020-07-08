@@ -124,6 +124,8 @@ export const newEmptyCertificateIssuerForm = (): CertificateIssuerFormType => {
 export interface CertificateContent {
   name: string;
   isSelfManaged: boolean;
+  isSignedByTrustedCA: boolean;
+  expireTimestamp: number;
   selfManagedCertContent: string;
   selfManagedCertPrivateKey: string;
   httpsCertIssuer: string;
