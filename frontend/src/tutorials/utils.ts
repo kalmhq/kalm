@@ -1,8 +1,8 @@
-import Immutable from "immutable";
+import Immutable, { isImmutable } from "immutable";
 import { State as TutorialState } from "reducers/tutorial";
 import { RootState } from "reducers";
 import { formValueSelector } from "redux-form/immutable";
-import { APPLICATION_FORM_ID, COMPONENT_FORM_ID } from "forms/formIDs";
+import { APPLICATION_FORM_ID, COMPONENT_FORM_ID, CERTIFICATE_FORM_ID } from "forms/formIDs";
 
 export const formValidateOrNotBlockByTutorial = (
   values: Immutable.Map<string, any>,
@@ -113,7 +113,8 @@ export const getFormValue = (rootState: RootState, form: string, field: string) 
 };
 
 export const isFormFieldValueEqualTo = (rootState: RootState, form: string, field: string, value: any) => {
-  return getFormValue(rootState, form, field) === value;
+  const formValue = getFormValue(rootState, form, field);
+  return isImmutable(formValue) ? formValue.equals(value) : formValue === value;
 };
 
 export const isFormFieldMeet = (rootState: RootState, form: string, field: string, cb: (value: any) => boolean) => {
@@ -129,8 +130,16 @@ export const isComponentFormFieldValueEqualTo = (rootState: RootState, field: st
   return isFormFieldValueEqualTo(rootState, COMPONENT_FORM_ID, field, value);
 };
 
+export const isCertificateFormFieldValueEqualTo = (rootState: RootState, field: string, value: any) => {
+  return isFormFieldValueEqualTo(rootState, CERTIFICATE_FORM_ID, field, value);
+};
+
 export const isUnderPath = (state: RootState, ...paths: string[]) => {
   const pathname = state.get("router").get("location").get("pathname") as string;
 
   return paths.includes(pathname);
+};
+
+export const isDialogOpened = (state: RootState, dialogID: string) => {
+  return !!state.get("dialogs").get(dialogID)?.get("open");
 };

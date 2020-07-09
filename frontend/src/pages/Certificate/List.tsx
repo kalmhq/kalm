@@ -1,4 +1,4 @@
-import { Box, createStyles, Theme, WithStyles, withStyles } from "@material-ui/core";
+import { Box, createStyles, Theme, WithStyles, withStyles, Button } from "@material-ui/core";
 import { deleteCertificateAction, setEditCertificateModalAction } from "actions/certificate";
 import { openDialogAction } from "actions/dialog";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
@@ -12,7 +12,6 @@ import { Certificate } from "types/certificate";
 import { customSearchForImmutable } from "utils/tableSearch";
 import { PendingBadge, SuccessBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
-import { CustomizedButton } from "widgets/Button";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { DeleteIcon, EditIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
@@ -259,10 +258,11 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
         secondHeaderRight={
           <>
             <H4>Certificates</H4>
-            <CustomizedButton
+            <Button
               color="primary"
               variant="outlined"
               size="small"
+              tutorial-anchor-id="add-certificate"
               onClick={() => {
                 blinkTopProgressAction();
                 dispatch(openDialogAction(addCertificateDialogId));
@@ -270,7 +270,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
               }}
             >
               Add
-            </CustomizedButton>
+            </Button>
           </>
         }
       >
