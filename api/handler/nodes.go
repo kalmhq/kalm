@@ -27,7 +27,7 @@ func (h *ApiHandler) handleCordonNode(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(200, resources.BuildNodeResponse(node))
+	return c.JSON(200, resources.BuildNodeResponse(getK8sClient(c), node))
 }
 
 func (h *ApiHandler) handleUncordonNode(c echo.Context) error {
@@ -42,5 +42,5 @@ func (h *ApiHandler) handleUncordonNode(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(200, resources.BuildNodeResponse(node))
+	return c.JSON(200, resources.BuildNodeResponse(getK8sClient(c), node))
 }

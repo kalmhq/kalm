@@ -5,8 +5,9 @@ import { sizeStringToNumber, humanFileSize } from "utils/sizeConv";
 
 export const NodeMemory = ({ node }: { node: Node }) => {
   const allocatable = sizeStringToNumber(node.get("status").get("allocatable").get("memory"));
-  const capacity = sizeStringToNumber(node.get("status").get("capacity").get("memory"));
-  const progress = ((capacity - allocatable) / capacity) * 100;
+  const requests = sizeStringToNumber(node.get("allocatedResources").get("requests").get("memory"));
+
+  const progress = (requests / allocatable) * 100;
   return (
     <Box>
       <Box mr={2} display="inline-block">
@@ -17,7 +18,7 @@ export const NodeMemory = ({ node }: { node: Node }) => {
         />{" "}
         ({progress.toFixed(2)}%)
       </Box>
-      allocatable {humanFileSize(allocatable)}, capacity {humanFileSize(capacity)}.
+      Allocated {humanFileSize(requests)}, Total allocatable {humanFileSize(allocatable)}.
     </Box>
   );
 };

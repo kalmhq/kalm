@@ -45,13 +45,16 @@ const putComponentIntoState = (
   component: ApplicationComponentDetails,
   isCreate: boolean,
 ): State => {
-  const components = state.get("components").get(applicationName);
+  let components = state.get("components").get(applicationName);
   if (!components) {
-    return state;
+    components = Immutable.List([]) as Immutable.List<ApplicationComponentDetails>;
+    state = state.setIn(["components", applicationName], components);
   }
   const componentIndex = components.findIndex((c) => c.get("name") === component.get("name"));
-  if (componentIndex < 0 && isCreate) {
-    state = state.setIn(["components", applicationName, components.size], component);
+  if (componentIndex < 0) {
+    if (isCreate) {
+      state = state.setIn(["components", applicationName, components.size], component);
+    }
   } else {
     state = state.setIn(["components", applicationName, componentIndex], component);
   }
