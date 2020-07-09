@@ -88,7 +88,8 @@ const styles = (theme: Theme) =>
     },
     itemBorder: {
       borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
-      height: 60,
+      height: 48,
+      paddingLeft: 12,
     },
   });
 
