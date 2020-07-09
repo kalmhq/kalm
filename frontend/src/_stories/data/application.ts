@@ -79,19 +79,27 @@ export const createApplication = (name: string) => {
   });
 };
 
-export const createApplicationComponent = (name: string, podCount: number, createTS: number) => {
-  const counterArray = new Array(podCount);
-  const podArray = [];
-  for (var i = 0; i < counterArray.length; i++) {
-    podArray.push(createApplicationComponentDetails(createTS));
+export const createApplicationComponent = (
+  name: string,
+  componentCount: number,
+  createTS: number,
+  podCounters: number[],
+) => {
+  const componentArray = [];
+  for (var i = 0; i < componentCount; i++) {
+    componentArray.push(createApplicationComponentDetails(i, createTS, podCounters[i]));
   }
-  const components: Immutable.List<ApplicationComponentDetails> = Immutable.fromJS(podArray);
+  const components: Immutable.List<ApplicationComponentDetails> = Immutable.fromJS(componentArray);
   let componentsMap: Immutable.Map<string, Immutable.List<ApplicationComponentDetails>> = Immutable.Map({});
   componentsMap = componentsMap.set(name, components);
   return componentsMap;
 };
-export const createApplicationComponentDetails = (createTS: number) => {
-  let appComponent = Immutable.fromJS({
+export const createApplicationComponentDetails = (index: number, createTS: number, pod: number) => {
+  const pods = [];
+  for (let index = 0; index < pod; index++) {
+    pods.push(createPodDetails(createTS));
+  }
+  const appComponent = Immutable.fromJS({
     env: [{ name: "LOG_DIR", value: "/tmp/logs" }],
     image: "docker.io/istio/examples-bookinfo-reviews-v3:1.15.0",
     nodeSelectorLabels: { "kubernetes.io/os": "linux" },
@@ -101,41 +109,43 @@ export const createApplicationComponentDetails = (createTS: number) => {
       { path: "/tmp", size: "32Mi", type: "emptyDir" },
       { path: "/opt/ibm/wlp/output", size: "32Mi", type: "emptyDir" },
     ],
-    name: "reviews-v3",
+    name: `reviews-v3-${index}`,
     metrics: { cpu: null, memory: null },
     services: [
       {
-        name: "reviews-v3",
+        name: `reviews-v3-${index}`,
         clusterIP: "10.104.32.91",
         ports: [{ name: "http", protocol: "TCP", port: 9080, targetPort: 9080 }],
       },
     ],
-    pods: [
-      {
-        name: "reviews-v3-5c5fc9c7b8-gjtjs",
-        node: "minikube",
-        status: "Running",
-        phase: "Running",
-        statusText: "Running",
-        restarts: 0,
-        isTerminating: false,
-        podIps: null,
-        hostIp: "192.168.64.3",
-        createTimestamp: createTS,
-        startTimestamp: 1592592679000,
-        containers: [
-          { name: "reviews-v3", restartCount: 0, ready: true, started: false, startedAt: 0 },
-          { name: "istio-proxy", restartCount: 0, ready: true, started: false, startedAt: 0 },
-        ],
-        metrics: {
-          cpu: getCPUSamples(3),
-          memory: getMemorySamples(101941248),
-        },
-        warnings: [],
-      },
-    ],
+    pods: pods,
   });
   return appComponent;
+};
+
+const createPodDetails = (createTS: number) => {
+  return {
+    name: "reviews-v3-5c5fc9c7b8-gjtjs",
+    node: "minikube",
+    status: "Running",
+    phase: "Running",
+    statusText: "Running",
+    restarts: 0,
+    isTerminating: false,
+    podIps: null,
+    hostIp: "192.168.64.3",
+    createTimestamp: createTS,
+    startTimestamp: 1592592679000,
+    containers: [
+      { name: "reviews-v3", restartCount: 0, ready: true, started: false, startedAt: 0 },
+      { name: "istio-proxy", restartCount: 0, ready: true, started: false, startedAt: 0 },
+    ],
+    metrics: {
+      cpu: getCPUSamples(3),
+      memory: getMemorySamples(101941248),
+    },
+    warnings: [],
+  };
 };
 interface ICreateMetricsSegmentType {
   from?: Date;
@@ -217,4 +227,12 @@ export const mergeMetrics = (
   application = application.setIn(["metrics", "cpu"], metricsCPU);
   application = application.setIn(["metrics", "memory"], metricsMemory);
   return application;
+};
+
+export const generateRandomIntList = (count: number, min: number, max: number) => {
+  const list = Array<number>();
+  for (let index = 0; index < count; index++) {
+    list.push(Math.floor(Math.random() * max) + min);
+  }
+  return list;
 };

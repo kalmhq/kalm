@@ -14,7 +14,13 @@ import {
 } from "types/application";
 
 import { date, number, text } from "@storybook/addon-knobs";
-import { createApplicationComponent, createApplication, mergeMetrics, createRountes } from "./data/application";
+import {
+  createApplicationComponent,
+  createApplication,
+  mergeMetrics,
+  createRountes,
+  generateRandomIntList,
+} from "./data/application";
 import { LOAD_ROUTES_PENDING, LOAD_ROUTES_FULFILLED, HttpRoute } from "types/route";
 import { store, withProvider, resetStore } from "./redux";
 
@@ -60,6 +66,7 @@ storiesOf("Screens/Applications", module)
     resetStore();
 
     const appName = text("applicationName", "kalm-bookinfo", "Application1");
+    const componentCounter = number("pod counter", 5, undefined, "Application1");
     const podCounter = number("pod counter", 5, undefined, "Application1");
     const createTime = date("create Date", new Date("2020-06-11"), "Application1");
 
@@ -70,7 +77,7 @@ storiesOf("Screens/Applications", module)
     const allComponents: Immutable.Map<
       string,
       Immutable.List<ApplicationComponentDetails>
-    > = createApplicationComponent(appName, podCounter, createTime);
+    > = createApplicationComponent(appName, componentCounter, createTime, generateRandomIntList(podCounter, 0, 5));
 
     oneApp = mergeMetrics(oneApp, allComponents);
 
@@ -98,6 +105,11 @@ storiesOf("Screens/Applications", module)
     const threeAppCreateTime = date("create Date", new Date("2020-06-19"), "Application3");
     const fourAppCreateTime = date("create Date", new Date("2020-06-11"), "Application4");
 
+    const oneComponentCounter = number("pod counter", 2, undefined, "Application1");
+    const twoComponentCounter = number("pod counter", 3, undefined, "Application2");
+    const threeComponentCounter = number("pod counter", 4, undefined, "Application3");
+    const fourComponentCounter = number("pod counter", 5, undefined, "Application4");
+
     const onePodCounter = number("pod counter", 2, undefined, "Application1");
     const twoPodCounter = number("pod counter", 3, undefined, "Application2");
     const threePodCounter = number("pod counter", 4, undefined, "Application3");
@@ -106,19 +118,39 @@ storiesOf("Screens/Applications", module)
     createRoutes([oneAppName, twoAppName, threeAppName, fourAppName]);
 
     let oneApp: ApplicationDetails = createApplication(oneAppName);
-    const oneAppComponent = createApplicationComponent(oneAppName, onePodCounter, oneAppCreateTime);
+    const oneAppComponent = createApplicationComponent(
+      oneAppName,
+      oneComponentCounter,
+      oneAppCreateTime,
+      generateRandomIntList(onePodCounter, 0, 5),
+    );
     oneApp = mergeMetrics(oneApp, oneAppComponent);
 
     let twoApp: ApplicationDetails = createApplication(twoAppName);
-    const twoAppComponent = createApplicationComponent(twoAppName, twoPodCounter, twoAppCreateTime);
+    const twoAppComponent = createApplicationComponent(
+      twoAppName,
+      twoComponentCounter,
+      twoAppCreateTime,
+      generateRandomIntList(twoPodCounter, 0, 5),
+    );
     twoApp = mergeMetrics(twoApp, twoAppComponent);
 
     let threeApp: ApplicationDetails = createApplication(threeAppName);
-    const threeAppComponent = createApplicationComponent(threeAppName, threePodCounter, threeAppCreateTime);
+    const threeAppComponent = createApplicationComponent(
+      threeAppName,
+      threeComponentCounter,
+      threeAppCreateTime,
+      generateRandomIntList(threePodCounter, 0, 5),
+    );
     threeApp = mergeMetrics(threeApp, threeAppComponent);
 
     let fourApp: ApplicationDetails = createApplication(fourAppName);
-    let fourAppComponent = createApplicationComponent(fourAppName, fourPodCounter, fourAppCreateTime);
+    let fourAppComponent = createApplicationComponent(
+      fourAppName,
+      fourComponentCounter,
+      fourAppCreateTime,
+      generateRandomIntList(fourPodCounter, 0, 5),
+    );
     fourApp = mergeMetrics(fourApp, fourAppComponent);
 
     fourAppComponent = fourAppComponent.merge(oneAppComponent, twoAppComponent, threeAppComponent);
