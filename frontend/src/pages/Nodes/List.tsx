@@ -126,15 +126,15 @@ export class NodeListRaw extends React.Component<Props, States> {
               content: <SmallMemoryLineChart data={node.get("metrics").get("memory")} />,
             },
             {
-              name: "CPU (Allocatable/Capacity)",
+              name: "CPU (Allocated / Total allocatable)",
               content: <NodeCPU node={node} />,
             },
             {
-              name: "Memory (Allocatable/Capacity)",
+              name: "Memory (Allocated / Total allocatable)",
               content: <NodeMemory node={node} />,
             },
             {
-              name: "Pods (Allocatable/Capacity)",
+              name: "Pods (Allocated / Total allocatable)",
               content: <NodePods node={node} />,
             },
             {
