@@ -17,7 +17,8 @@ import (
 func StartWatching(c *Client) {
 	informerCache, err := cache.New(c.K8SClientConfig, cache.Options{})
 	if err != nil {
-		panic(err)
+		log.Error(err)
+		return
 	}
 
 	registerWatchHandler(c, &informerCache, &coreV1.Namespace{}, buildNamespaceResMessage)
@@ -42,7 +43,8 @@ func registerWatchHandler(c *Client,
 
 	informer, err := (*informerCache).GetInformer(runtimeObj)
 	if err != nil {
-		panic(err)
+		log.Error(err)
+		return
 	}
 
 	informer.AddEventHandler(toolscache.ResourceEventHandlerFuncs{
