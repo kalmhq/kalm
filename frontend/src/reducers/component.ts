@@ -103,7 +103,6 @@ const reducer = (state: State = initialState, action: Actions): State => {
       break;
     }
     case CREATE_COMPONENT: {
-      console.log("action", action);
       state = putComponentIntoState(state, action.payload.applicationName, action.payload.component, true);
       break;
     }
@@ -122,8 +121,6 @@ const reducer = (state: State = initialState, action: Actions): State => {
       }
       switch (action.payload.action) {
         case RESOURCE_ACTION_ADD: {
-          console.log("action", action);
-
           state = putComponentIntoState(state, action.payload.namespace, action.payload.data, true);
           break;
         }
