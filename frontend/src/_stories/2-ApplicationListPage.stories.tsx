@@ -20,7 +20,7 @@ import { store, withProvider, resetStore } from "./redux";
 
 const createRoutes = (appNames: string[]) => {
   let routes = Immutable.List<HttpRoute>();
-  appNames.map((appName, index) => {
+  appNames.forEach((appName, index) => {
     const namespace = `Application${index + 1}`;
     routes = routes.merge(createRountes(appName, namespace));
   });
