@@ -21,7 +21,7 @@ export default class RealApi extends Api {
   };
 
   public validateToken = async (token: string): Promise<boolean> => {
-    const res = await axiosRequest({ method: "post", url: "/login/token", data: { token } });
+    const res = await axiosRequest({ method: "post", url: "/login/token", data: { token } }, false);
     return res.status === 200;
   };
 
@@ -305,19 +305,19 @@ export const k8sWsPrefix = !K8sApiPrefix
   ? window.location.origin.replace(/^http/, "ws")
   : K8sApiPrefix.replace(/^http/, "ws");
 
-const getAxiosClient = () => {
+const getAxiosClient = (withHeaderToken: boolean) => {
   const token = store.getState().get("auth").get("token");
-
-  const instance = token
-    ? Axios.create({
-        timeout: 10000,
-        withCredentials: true,
-        headers: {
-          "X-CSRF-Token": store.getState().get("auth").get("csrf"),
-          Authorization: `Bearer ${store.getState().get("auth").get("token")}`,
-        },
-      })
-    : Axios;
+  const instance =
+    withHeaderToken && token
+      ? Axios.create({
+          timeout: 10000,
+          withCredentials: true,
+          headers: {
+            "X-CSRF-Token": store.getState().get("auth").get("csrf"),
+            Authorization: `Bearer ${store.getState().get("auth").get("token")}`,
+          },
+        })
+      : Axios;
 
   instance.interceptors.response.use(
     (response) => {
@@ -331,8 +331,8 @@ const getAxiosClient = () => {
   return instance;
 };
 
-const axiosRequest = (config: AxiosRequestConfig) => {
-  return getAxiosClient()({
+const axiosRequest = (config: AxiosRequestConfig, withHeaderToken: boolean = true) => {
+  return getAxiosClient(withHeaderToken)({
     ...config,
     url: `${K8sApiPrefix}${config.url}`,
   });

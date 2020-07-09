@@ -36,13 +36,16 @@ const putHttpRouteIntoState = (
   httpRoute: HttpRoute,
   isCreate: boolean,
 ): State => {
-  const httpRoutes = state.get("httpRoutes").get(applicationName);
+  let httpRoutes = state.get("httpRoutes").get(applicationName);
   if (!httpRoutes) {
-    return state;
+    httpRoutes = Immutable.List([]) as Immutable.List<HttpRoute>;
+    state = state.setIn(["httpRoutes", applicationName], httpRoutes);
   }
   const httpRouteIndex = httpRoutes.findIndex((c) => c.get("name") === httpRoute.get("name"));
-  if (httpRouteIndex < 0 && isCreate) {
-    state = state.setIn(["httpRoutes", applicationName, httpRoutes.size], httpRoute);
+  if (httpRouteIndex < 0) {
+    if (isCreate) {
+      state = state.setIn(["httpRoutes", applicationName, httpRoutes.size], httpRoute);
+    }
   } else {
     state = state.setIn(["httpRoutes", applicationName, httpRouteIndex], httpRoute);
   }

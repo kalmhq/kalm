@@ -46,6 +46,7 @@ import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
 import { KTooltip } from "forms/Application/KTooltip";
+import { PublicRegistriesList } from "types/registry";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -868,12 +869,23 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  // TODO: any better idea??
   private isUnknownPrivateRegistry = (image: string) => {
     const { registries } = this.props;
     const parts = image.split("/");
 
-    if (parts.length < 3) {
+    // eg. nginx:latest
+    if (parts.length === 1) {
+      return false;
+    }
+
+    // docker Hub User Id Use 4 to 30 letters & digits only.
+    // is not a url
+    if (!parts[0].includes(".")) {
+      return false;
+    }
+
+    // eg. gcr.io/kaniko-project/executor:latest
+    if (PublicRegistriesList.includes(parts[0])) {
       return false;
     }
 

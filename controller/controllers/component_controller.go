@@ -327,7 +327,7 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 			}
 		}
 
-		if r.component.Spec.EnableHeadlessService && r.headlessService == nil {
+		if (r.component.Spec.EnableHeadlessService && r.headlessService == nil) || r.component.Spec.WorkloadType == corev1alpha1.WorkloadTypeStatefulSet {
 			newHeadlessService = true
 			r.headlessService = &coreV1.Service{
 				ObjectMeta: metaV1.ObjectMeta{
@@ -376,7 +376,7 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 			}
 		}
 
-		if r.component.Spec.EnableHeadlessService {
+		if r.component.Spec.EnableHeadlessService || r.component.Spec.WorkloadType == corev1alpha1.WorkloadTypeStatefulSet {
 			r.headlessService.Spec.Ports = ps
 			if newHeadlessService {
 				if err := r.Create(r.ctx, r.headlessService); err != nil {
@@ -740,11 +740,8 @@ func (r *ComponentReconcilerTask) ReconcileStatefulSet(
 					MatchLabels: labelMap,
 				},
 				VolumeClaimTemplates: volClaimTemplates,
+				ServiceName: r.headlessService.Name,
 			},
-		}
-
-		if r.component.Spec.EnableHeadlessService && r.headlessService != nil {
-			sts.Spec.ServiceName = r.headlessService.Name
 		}
 	} else {
 		// for sts, only 'replicas', 'template', and 'updateStrategy' are mutable

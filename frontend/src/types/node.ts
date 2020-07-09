@@ -22,6 +22,11 @@ export interface NodeContent {
   statusTexts: Immutable.List<string>;
   internalIP: string;
   externalIP: string;
+  allocatedResources: ImmutableMap<{
+    podsCount: number;
+    requests: ResourceList;
+    limits: ResourceList;
+  }>;
   status: ImmutableMap<{
     capacity: ResourceList;
     allocatable: ResourceList;
