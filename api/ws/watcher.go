@@ -175,7 +175,7 @@ func buildHttpRouteResMessage(_ *Client, action string, objWatched interface{}) 
 	}, nil
 }
 
-func buildNodeResMessage(_ *Client, action string, objWatched interface{}) (*ResMessage, error) {
+func buildNodeResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
 	node, ok := objWatched.(*coreV1.Node)
 
 	if !ok {
@@ -187,7 +187,7 @@ func buildNodeResMessage(_ *Client, action string, objWatched interface{}) (*Res
 	return &ResMessage{
 		Kind:   "Node",
 		Action: action,
-		Data:   resources.BuildNodeResponse(node),
+		Data:   resources.BuildNodeResponse(c.K8sClientset, node),
 	}, nil
 }
 

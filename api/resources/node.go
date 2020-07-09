@@ -5,7 +5,6 @@ import (
 	"time"
 
 	coreV1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -14,9 +13,9 @@ import (
 )
 
 type AllocatedResources struct {
-	PodsCount int                                       `json:"podsCount"`
-	Requests  map[coreV1.ResourceName]resource.Quantity `json:"requests"`
-	Limits    map[coreV1.ResourceName]resource.Quantity `json:"limits"`
+	PodsCount int                 `json:"podsCount"`
+	Requests  coreV1.ResourceList `json:"requests"`
+	Limits    coreV1.ResourceList `json:"limits"`
 }
 
 type Node struct {
@@ -137,20 +136,21 @@ func (builder *Builder) UncordonNode(node *coreV1.Node) error {
 	return nil
 }
 
-func BuildNodeResponse(node *coreV1.Node) *Node {
+func BuildNodeResponse(k8sClient *kubernetes.Clientset, node *coreV1.Node) *Node {
 	histories := GetFilteredNodeMetrics([]string{node.Name})
 
 	return &Node{
-		Name:              node.Name,
-		Labels:            node.Labels,
-		Annotations:       node.Annotations,
-		Status:            node.Status,
-		Metrics:           histories.Nodes[node.Name],
-		Roles:             findNodeRoles(node),
-		CreationTimestamp: node.CreationTimestamp.UnixNano() / int64(time.Millisecond),
-		StatusTexts:       getNodeRunningStatus(node),
-		InternalIP:        getNodeInternalIP(node),
-		ExternalIP:        getNodeExternalIP(node),
+		Name:               node.Name,
+		Labels:             node.Labels,
+		Annotations:        node.Annotations,
+		Status:             node.Status,
+		Metrics:            histories.Nodes[node.Name],
+		Roles:              findNodeRoles(node),
+		CreationTimestamp:  node.CreationTimestamp.UnixNano() / int64(time.Millisecond),
+		StatusTexts:        getNodeRunningStatus(node),
+		InternalIP:         getNodeInternalIP(node),
+		ExternalIP:         getNodeExternalIP(node),
+		AllocatedResources: *getAllocatedResources(k8sClient, node),
 	}
 }
 
@@ -178,36 +178,36 @@ func ListNodes(k8sClient *kubernetes.Clientset) (*NodesResponse, error) {
 
 	for i := range list.Items {
 		node := list.Items[i]
-		res.Nodes = append(res.Nodes, *BuildNodeResponse(&node))
+		res.Nodes = append(res.Nodes, *BuildNodeResponse(k8sClient, &node))
 	}
 
 	return res, nil
 }
 
-func getAllocatedResources(k8sClient *kubernetes.Clientset, node *coreV1.Node) (*AllocatedResources, error) {
+func getAllocatedResources(k8sClient *kubernetes.Clientset, node *coreV1.Node) *AllocatedResources {
 	fieldSelector, err := fields.ParseSelector("spec.nodeName=" + node.Name + ",status.phase!=" + string(coreV1.PodSucceeded) + ",status.phase!=" + string(coreV1.PodFailed))
 
 	k8sClient.CoreV1().Nodes().List(ListAll)
 
 	nodeNonTerminatedPodsList, err := k8sClient.CoreV1().Pods("").List(metav1.ListOptions{FieldSelector: fieldSelector.String()})
 	if err != nil {
-		return nil, err
+		return &AllocatedResources{}
 	}
 
 	reqs, limits, err := getPodsTotalRequestsAndLimits(nodeNonTerminatedPodsList)
 	if err != nil {
-		return nil, err
+		return &AllocatedResources{}
 	}
 
 	return &AllocatedResources{
 		PodsCount: len(nodeNonTerminatedPodsList.Items),
 		Requests:  reqs,
 		Limits:    limits,
-	}, nil
+	}
 }
 
-func getPodsTotalRequestsAndLimits(podList *coreV1.PodList) (reqs map[coreV1.ResourceName]resource.Quantity, limits map[coreV1.ResourceName]resource.Quantity, err error) {
-	reqs, limits = map[coreV1.ResourceName]resource.Quantity{}, map[coreV1.ResourceName]resource.Quantity{}
+func getPodsTotalRequestsAndLimits(podList *coreV1.PodList) (reqs coreV1.ResourceList, limits coreV1.ResourceList, err error) {
+	reqs, limits = coreV1.ResourceList{}, coreV1.ResourceList{}
 	for _, pod := range podList.Items {
 		podReqs, podLimits := PodRequestsAndLimits(&pod)
 		if err != nil {
