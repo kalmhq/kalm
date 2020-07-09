@@ -5,8 +5,9 @@ import { sizeStringToNumber } from "utils/sizeConv";
 
 export const NodeCPU = ({ node }: { node: Node }) => {
   const allocatable = sizeStringToNumber(node.get("status").get("allocatable").get("cpu"));
-  const capacity = sizeStringToNumber(node.get("status").get("capacity").get("cpu"));
-  const progress = ((capacity - allocatable) / capacity) * 100;
+  const requests = sizeStringToNumber(node.get("allocatedResources").get("requests").get("cpu"));
+
+  const progress = (requests / allocatable) * 100;
   return (
     <Box>
       <Box mr={2} display="inline-block">
@@ -17,7 +18,7 @@ export const NodeCPU = ({ node }: { node: Node }) => {
         />{" "}
         ({progress.toFixed(2)}%)
       </Box>
-      allocatable {allocatable.toFixed(2)} Cores, capacity {capacity.toFixed(2)} Cores.
+      Allocated {requests.toFixed(2)} Cores, Total allocatable {allocatable.toFixed(2)} Cores.
     </Box>
   );
 };

@@ -127,7 +127,16 @@ func (r *KappOperatorConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 }
 
 func (r *KappOperatorConfigReconciler) installFromYaml(ctx context.Context, yamlName string) error {
-	objectsBytes := utils.SeparateYamlBytes(MustAsset(yamlName))
+	fileContent := MustAsset(yamlName)
+
+	// debug
+	if yamlName == "kapp.yaml" {
+		fmt.Println("start----")
+		fmt.Println(string(fileContent))
+		fmt.Println("end----")
+	}
+
+	objectsBytes := utils.SeparateYamlBytes(fileContent)
 	decode := serializer.NewCodecFactory(r.Scheme).UniversalDeserializer().Decode
 
 	for _, objectBytes := range objectsBytes {

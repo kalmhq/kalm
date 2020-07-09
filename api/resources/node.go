@@ -5,22 +5,31 @@ import (
 	"time"
 
 	coreV1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+type AllocatedResources struct {
+	PodsCount int                 `json:"podsCount"`
+	Requests  coreV1.ResourceList `json:"requests"`
+	Limits    coreV1.ResourceList `json:"limits"`
+}
+
 type Node struct {
-	Name              string            `json:"name"`
-	CreationTimestamp int64             `json:"creationTimestamp"`
-	Labels            map[string]string `json:"labels"`
-	Annotations       map[string]string `json:"annotations"`
-	Status            coreV1.NodeStatus `json:"status"`
-	StatusTexts       []string          `json:"statusTexts"`
-	Metrics           MetricHistories   `json:"metrics"`
-	Roles             []string          `json:"roles"`
-	InternalIP        string            `json:"internalIP"`
-	ExternalIP        string            `json:"externalIP"`
+	Name               string             `json:"name"`
+	CreationTimestamp  int64              `json:"creationTimestamp"`
+	Labels             map[string]string  `json:"labels"`
+	Annotations        map[string]string  `json:"annotations"`
+	Status             coreV1.NodeStatus  `json:"status"`
+	StatusTexts        []string           `json:"statusTexts"`
+	Metrics            MetricHistories    `json:"metrics"`
+	Roles              []string           `json:"roles"`
+	InternalIP         string             `json:"internalIP"`
+	ExternalIP         string             `json:"externalIP"`
+	AllocatedResources AllocatedResources `json:"allocatedResources"`
 }
 
 type NodesResponse struct {
@@ -127,20 +136,21 @@ func (builder *Builder) UncordonNode(node *coreV1.Node) error {
 	return nil
 }
 
-func BuildNodeResponse(node *coreV1.Node) *Node {
+func BuildNodeResponse(k8sClient *kubernetes.Clientset, node *coreV1.Node) *Node {
 	histories := GetFilteredNodeMetrics([]string{node.Name})
 
 	return &Node{
-		Name:              node.Name,
-		Labels:            node.Labels,
-		Annotations:       node.Annotations,
-		Status:            node.Status,
-		Metrics:           histories.Nodes[node.Name],
-		Roles:             findNodeRoles(node),
-		CreationTimestamp: node.CreationTimestamp.UnixNano() / int64(time.Millisecond),
-		StatusTexts:       getNodeRunningStatus(node),
-		InternalIP:        getNodeInternalIP(node),
-		ExternalIP:        getNodeExternalIP(node),
+		Name:               node.Name,
+		Labels:             node.Labels,
+		Annotations:        node.Annotations,
+		Status:             node.Status,
+		Metrics:            histories.Nodes[node.Name],
+		Roles:              findNodeRoles(node),
+		CreationTimestamp:  node.CreationTimestamp.UnixNano() / int64(time.Millisecond),
+		StatusTexts:        getNodeRunningStatus(node),
+		InternalIP:         getNodeInternalIP(node),
+		ExternalIP:         getNodeExternalIP(node),
+		AllocatedResources: *getAllocatedResources(k8sClient, node),
 	}
 }
 
@@ -168,8 +178,110 @@ func ListNodes(k8sClient *kubernetes.Clientset) (*NodesResponse, error) {
 
 	for i := range list.Items {
 		node := list.Items[i]
-		res.Nodes = append(res.Nodes, *BuildNodeResponse(&node))
+		res.Nodes = append(res.Nodes, *BuildNodeResponse(k8sClient, &node))
 	}
 
 	return res, nil
+}
+
+func getAllocatedResources(k8sClient *kubernetes.Clientset, node *coreV1.Node) *AllocatedResources {
+	fieldSelector, err := fields.ParseSelector("spec.nodeName=" + node.Name + ",status.phase!=" + string(coreV1.PodSucceeded) + ",status.phase!=" + string(coreV1.PodFailed))
+
+	k8sClient.CoreV1().Nodes().List(ListAll)
+
+	nodeNonTerminatedPodsList, err := k8sClient.CoreV1().Pods("").List(metav1.ListOptions{FieldSelector: fieldSelector.String()})
+	if err != nil {
+		return &AllocatedResources{}
+	}
+
+	reqs, limits, err := getPodsTotalRequestsAndLimits(nodeNonTerminatedPodsList)
+	if err != nil {
+		return &AllocatedResources{}
+	}
+
+	return &AllocatedResources{
+		PodsCount: len(nodeNonTerminatedPodsList.Items),
+		Requests:  reqs,
+		Limits:    limits,
+	}
+}
+
+func getPodsTotalRequestsAndLimits(podList *coreV1.PodList) (reqs coreV1.ResourceList, limits coreV1.ResourceList, err error) {
+	reqs, limits = coreV1.ResourceList{}, coreV1.ResourceList{}
+	for _, pod := range podList.Items {
+		podReqs, podLimits := PodRequestsAndLimits(&pod)
+		if err != nil {
+			return nil, nil, err
+		}
+		for podReqName, podReqValue := range podReqs {
+			if value, ok := reqs[podReqName]; !ok {
+				reqs[podReqName] = podReqValue
+			} else {
+				value.Add(podReqValue)
+				reqs[podReqName] = value
+			}
+		}
+		for podLimitName, podLimitValue := range podLimits {
+			if value, ok := limits[podLimitName]; !ok {
+				limits[podLimitName] = podLimitValue
+			} else {
+				value.Add(podLimitValue)
+				limits[podLimitName] = value
+			}
+		}
+	}
+	return
+}
+
+func PodRequestsAndLimits(pod *coreV1.Pod) (reqs, limits coreV1.ResourceList) {
+	reqs, limits = coreV1.ResourceList{}, coreV1.ResourceList{}
+	for _, container := range pod.Spec.Containers {
+		addResourceList(reqs, container.Resources.Requests)
+		addResourceList(limits, container.Resources.Limits)
+	}
+	// init containers define the minimum of any resource
+	for _, container := range pod.Spec.InitContainers {
+		maxResourceList(reqs, container.Resources.Requests)
+		maxResourceList(limits, container.Resources.Limits)
+	}
+
+	// Add overhead for running a pod to the sum of requests and to non-zero limits:
+	if pod.Spec.Overhead != nil {
+		addResourceList(reqs, pod.Spec.Overhead)
+
+		for name, quantity := range pod.Spec.Overhead {
+			if value, ok := limits[name]; ok && !value.IsZero() {
+				value.Add(quantity)
+				limits[name] = value
+			}
+		}
+	}
+	return
+}
+
+// addResourceList adds the resources in newList to list
+func addResourceList(list, new coreV1.ResourceList) {
+	for name, quantity := range new {
+		if value, ok := list[name]; !ok {
+			list[name] = quantity.DeepCopy()
+		} else {
+			value.Add(quantity)
+			list[name] = value
+		}
+	}
+}
+
+// maxResourceList sets list to the greater of list/newList for every resource
+// either list
+func maxResourceList(list, new coreV1.ResourceList) {
+	for name, quantity := range new {
+		if value, ok := list[name]; !ok {
+			list[name] = quantity.DeepCopy()
+			continue
+		} else {
+			if quantity.Cmp(value) > 0 {
+				list[name] = quantity.DeepCopy()
+			}
+		}
+	}
 }

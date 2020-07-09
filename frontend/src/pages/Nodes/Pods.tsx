@@ -5,8 +5,8 @@ import { sizeStringToNumber } from "utils/sizeConv";
 
 export const NodePods = ({ node }: { node: Node }) => {
   const allocatable = sizeStringToNumber(node.get("status").get("allocatable").get("pods"));
-  const capacity = sizeStringToNumber(node.get("status").get("capacity").get("pods"));
-  const progress = ((capacity - allocatable) / capacity) * 100;
+  const allocated = node.get("allocatedResources").get("podsCount");
+  const progress = (allocated / allocatable) * 100;
   return (
     <Box>
       <Box mr={2} display="inline-block">
@@ -17,7 +17,7 @@ export const NodePods = ({ node }: { node: Node }) => {
         />{" "}
         ({progress.toFixed(2)}%)
       </Box>
-      allocatable {allocatable} pods, capacity {capacity} pods.
+      Allocated {allocated} pods, Total allocatable {allocatable} pods.
     </Box>
   );
 };
