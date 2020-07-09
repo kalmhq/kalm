@@ -96,32 +96,32 @@ func (r *KappOperatorConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 
 	config := &configs.Items[0]
 
-	if config.ObjectMeta.DeletionTimestamp.IsZero() {
-		if !utils.ContainsString(config.ObjectMeta.Finalizers, finalizerName) {
-			config.ObjectMeta.Finalizers = append(config.ObjectMeta.Finalizers, finalizerName)
-			if err := r.Update(ctx, config); err != nil {
-				return ctrl.Result{}, err
-			}
-
-			log.Info("add finalizer", config.Namespace, config.Name)
-		}
-	} else {
-		if utils.ContainsString(config.ObjectMeta.Finalizers, finalizerName) {
-			if err := r.deleteResources(config, ctx, log); err != nil {
-				log.Error(err, "delete resources error")
-				return ctrl.Result{}, err
-			}
-
-			config.ObjectMeta.Finalizers = utils.RemoveString(config.ObjectMeta.Finalizers, finalizerName)
-
-			if err := r.Update(ctx, config); err != nil {
-				log.Error(err, "Remove kapp operator finalizer failed.")
-				return ctrl.Result{}, err
-			}
-		}
-
-		return ctrl.Result{}, nil
-	}
+	//if config.ObjectMeta.DeletionTimestamp.IsZero() {
+	//	if !utils.ContainsString(config.ObjectMeta.Finalizers, finalizerName) {
+	//		config.ObjectMeta.Finalizers = append(config.ObjectMeta.Finalizers, finalizerName)
+	//		if err := r.Update(ctx, config); err != nil {
+	//			return ctrl.Result{}, err
+	//		}
+	//
+	//		log.Info("add finalizer", config.Namespace, config.Name)
+	//	}
+	//} else {
+	//	if utils.ContainsString(config.ObjectMeta.Finalizers, finalizerName) {
+	//		if err := r.deleteResources(config, ctx, log); err != nil {
+	//			log.Error(err, "delete resources error")
+	//			return ctrl.Result{}, err
+	//		}
+	//
+	//		config.ObjectMeta.Finalizers = utils.RemoveString(config.ObjectMeta.Finalizers, finalizerName)
+	//
+	//		if err := r.Update(ctx, config); err != nil {
+	//			log.Error(err, "Remove kapp operator finalizer failed.")
+	//			return ctrl.Result{}, err
+	//		}
+	//	}
+	//
+	//	return ctrl.Result{}, nil
+	//}
 
 	return ctrl.Result{}, r.reconcileResources(config, ctx, log)
 }
@@ -191,9 +191,9 @@ func (r *KappOperatorConfigReconciler) reconcileResources(config *installv1alpha
 	return nil
 }
 
-func (r *KappOperatorConfigReconciler) deleteResources(config *installv1alpha1.KappOperatorConfig, ctx context.Context, log logr.Logger) error {
-	return nil
-}
+//func (r *KappOperatorConfigReconciler) deleteResources(config *installv1alpha1.KappOperatorConfig, ctx context.Context, log logr.Logger) error {
+//	return nil
+//}
 
 func (r *KappOperatorConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
