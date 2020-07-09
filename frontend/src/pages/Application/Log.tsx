@@ -21,7 +21,7 @@ import { push, replace } from "connected-react-router";
 import debug from "debug";
 import Immutable from "immutable";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
-import queryString from "query-string";
+import queryString from "qs";
 import React from "react";
 import ReconnectingWebSocket from "reconnecting-websocket";
 import { PodStatus } from "types/application";
@@ -147,12 +147,11 @@ const styles = (theme: Theme) =>
 
 export const generateQueryForPods = (namespace: string, podNames: [string, string][], active?: [string, string]) => {
   const search = {
-    pods: podNames.length > 0 ? JSON.stringify(podNames) : undefined,
+    pods: podNames.length > 0 ? podNames : undefined,
     active: active || undefined,
     namespace,
   };
-
-  return queryString.stringify(search, { arrayFormat: "comma" });
+  return queryString.stringify(search);
 };
 
 export class LogStream extends React.PureComponent<Props, State> {
@@ -213,22 +212,22 @@ export class LogStream extends React.PureComponent<Props, State> {
     if (prevState.subscribedPods.size !== this.state.subscribedPods.size || this.state.value !== prevState.value) {
       // save selected pods in query
       const search = {
-        ...queryString.parse(window.location.search, { arrayFormat: "comma" }),
-        pods: this.state.subscribedPods.size > 0 ? JSON.stringify(this.state.subscribedPods) : undefined,
+        ...queryString.parse(window.location.search.replace("?", "")),
+        pods: this.state.subscribedPods.size > 0 ? this.state.subscribedPods.toJS() : undefined,
         active: !!this.state.value[0] ? this.state.value : undefined,
       };
 
       this.props.dispatch(
         replace({
-          search: queryString.stringify(search, { arrayFormat: "comma" }),
+          search: queryString.stringify(search),
         }),
       );
     }
 
     if (pods && !this.initalizedFromQuery) {
       // load selected pods from query, this is useful when first loaded.
-      const queries = queryString.parse(window.location.search, { arrayFormat: "comma" }) as {
-        pods: [string, string][] | string | undefined;
+      const queries = queryString.parse(window.location.search.replace("?", "")) as {
+        pods: any;
         active: [string, string] | undefined;
       };
       let validPods: [string, string][] = [];
@@ -236,10 +235,10 @@ export class LogStream extends React.PureComponent<Props, State> {
 
       if (queries.pods) {
         if (typeof queries.pods === "string") {
-          queries.pods = JSON.parse(queries.pods);
+          queries.pods = queryString.parse(queries.pods);
         }
         if (typeof queries.pods === "object") {
-          validPods = queries.pods.filter((x) => pods.includes(x[0]));
+          validPods = queries.pods.filter((x: any) => pods.includes(x[0]));
         }
       }
 
