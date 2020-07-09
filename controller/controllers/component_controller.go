@@ -740,7 +740,7 @@ func (r *ComponentReconcilerTask) ReconcileStatefulSet(
 					MatchLabels: labelMap,
 				},
 				VolumeClaimTemplates: volClaimTemplates,
-				ServiceName: r.component.Name,
+				ServiceName:          r.component.Name,
 			},
 		}
 
