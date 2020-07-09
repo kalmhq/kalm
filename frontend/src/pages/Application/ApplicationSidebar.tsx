@@ -9,7 +9,7 @@ import { TDispatch } from "types";
 import { BaseDrawer } from "layout/BaseDrawer";
 import { primaryBackgroud, primaryColor } from "theme/theme";
 import { blinkTopProgressAction } from "actions/settings";
-import { KalmDetailsIcon } from "widgets/Icon";
+import { KalmDetailsIcon, KalmComponentsIcon, KalmRoutesIcon } from "widgets/Icon";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
@@ -68,10 +68,12 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
       {
         text: "Components",
         to: "/applications/" + activeNamespaceName + "/components",
+        icon: <KalmComponentsIcon />,
       },
       {
         text: "Routes",
         to: "/applications/" + activeNamespaceName + "/routes",
+        icon: <KalmRoutesIcon />,
       },
     ];
   }
