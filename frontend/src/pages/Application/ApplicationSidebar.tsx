@@ -32,7 +32,7 @@ const styles = (theme: Theme) =>
     },
     listItemSeleted: {
       backgroundColor: `${primaryBackgroud} !important`,
-      borderRight: `4px solid ${primaryColor}`,
+      borderLeft: `4px solid ${primaryColor}`,
     },
     listSubHeader: {
       textTransform: "uppercase",
