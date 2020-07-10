@@ -337,6 +337,14 @@ rules:
   - update
   - watch
 - apiGroups:
+  - metrics.k8s.io
+  resources:
+  - '*'
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - networking.istio.io
   resources:
   - gateways

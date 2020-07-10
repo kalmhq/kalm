@@ -19,6 +19,7 @@ package main
 import (
 	"flag"
 	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
+	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	installv1alpha1 "github.com/kapp-staging/kapp/operator/api/v1alpha1"
 	"github.com/kapp-staging/kapp/operator/controllers"
 	istioScheme "istio.io/client-go/pkg/clientset/versioned/scheme"
@@ -45,6 +46,7 @@ func init() {
 	_ = cmv1alpha2.AddToScheme(scheme)
 	_ = apiextv1beta1.AddToScheme(scheme)
 	_ = istioScheme.AddToScheme(scheme)
+	_ = v1alpha1.AddToScheme(scheme)
 
 	// add missing istio operator type
 	gv := schema.GroupVersion{Group: "install.istio.io", Version: "v1alpha1"}
