@@ -25,6 +25,7 @@ import { loadPersistentVolumesAction, loadStorageClassesAction } from "actions/p
 import { loadRegistriesAction } from "actions/registries";
 import { loadRoleBindingsAction } from "actions/user";
 import { loadServicesAction } from "actions/service";
+import { throttle } from "utils";
 
 export interface WatchResMessage {
   namespace: string;
@@ -81,6 +82,11 @@ class WithDataRaw extends React.PureComponent<Props> {
       });
     }
 
+    function reloadResouces() {
+      dispatch(loadPersistentVolumesAction()); // is in use can't watch
+      dispatch(loadServicesAction("")); // for routes destinations
+    }
+
     rws.onmessage = async (event: any) => {
       const data: WatchResMessage = JSON.parse(event.data);
 
@@ -97,6 +103,7 @@ class WithDataRaw extends React.PureComponent<Props> {
           break;
         }
         case RESOURCE_TYPE_COMPONENT: {
+          throttle("reloadResouces", reloadResouces, 5000)();
           dispatch({
             type: WATCHED_RESOURCE_CHANGE,
             kind: RESOURCE_TYPE_COMPONENT,
