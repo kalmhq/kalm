@@ -9,12 +9,20 @@ import { getComponentCreatedAtString } from "utils/application";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { NoLivenessProbeWarning, NoPortsWarning, NoReadinessProbeWarning } from "pages/Components/NoPortsWarning";
 import { HealthTab } from "forms/ComponentLike";
-import { Probe } from "types/componentTemplate";
+import { Probe, ComponentLikePort } from "types/componentTemplate";
 import { Link } from "react-router-dom";
+import { List } from "immutable";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
+    portContainer: {
+      display: "flex",
+      flexDirection: "column",
+    },
+    port: {
+      padding: "1 2",
+    },
   });
 
 const mapStateToProps = (state: RootState) => {
@@ -83,11 +91,22 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     return <SmallMemoryLineChart data={component.get("metrics").get("memory")!} />;
   };
 
+  private renderPort = (key: any, name: string, port: number) => {
+    const { classes } = this.props;
+    return (
+      <div className={classes.port} key={key}>
+        {name}:{port}
+      </div>
+    );
+  };
   private renderPorts = () => {
-    const { component } = this.props;
+    const { classes, component } = this.props;
 
     if (component.get("ports") && component.get("ports")!.size > 0) {
-      return `${component.get("ports")!.size} port${component.get("ports")!.size > 1 ? "s" : ""}`;
+      const ports = component.get("ports", List<ComponentLikePort>())?.map((port, index) => {
+        return this.renderPort(index, port.get("name"), port.get("servicePort"));
+      });
+      return <div className={classes.portContainer}>{ports}</div>;
     } else {
       return <NoPortsWarning />;
     }

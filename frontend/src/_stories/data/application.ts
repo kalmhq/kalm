@@ -104,7 +104,10 @@ export const createApplicationComponentDetails = (index: number, createTS: numbe
     image: "docker.io/istio/examples-bookinfo-reviews-v3:1.15.0",
     nodeSelectorLabels: { "kubernetes.io/os": "linux" },
     preferNotCoLocated: true,
-    ports: [{ name: "http", containerPort: 9080, servicePort: 9080 }],
+    ports: [
+      { name: "http", containerPort: 9080, servicePort: 9080 },
+      { name: "http2", protocol: "TCP", port: 8080, servicePort: 8080 },
+    ],
     volumes: [
       { path: "/tmp", size: "32Mi", type: "emptyDir" },
       { path: "/opt/ibm/wlp/output", size: "32Mi", type: "emptyDir" },
