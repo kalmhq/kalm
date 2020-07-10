@@ -237,7 +237,7 @@ const ValidatorInjectedFiles = (
 
     if (!mountPaths.has(mountPath)) {
       mountPaths.add(mountPath);
-    } else {
+    } else if (mountPath !== "") {
       return "Files paths should be unique.  " + mountPath + "";
     }
   }

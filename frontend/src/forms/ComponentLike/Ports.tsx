@@ -50,7 +50,7 @@ const ValidatorPorts = (values: Immutable.List<ComponentLikePort>, _allValues?: 
 
       if (!protocolServicePorts.has(protocolServicePort)) {
         protocolServicePorts.add(protocolServicePort);
-      } else {
+      } else if (protocolServicePort !== "") {
         return "Listening port on a protocol should be unique.  " + protocol + " - " + servicePort;
       }
     }

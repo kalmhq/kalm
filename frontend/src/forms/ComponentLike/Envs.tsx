@@ -147,10 +147,9 @@ const ValidatorEnvs = (values: Immutable.List<EnvItem>, _allValues?: any, _props
   for (let i = 0; i < values.size; i++) {
     const env = values.get(i)!;
     const name = env.get("name");
-
     if (!names.has(name)) {
       names.add(name);
-    } else {
+    } else if (name !== "") {
       return "Env names should be unique.  " + name + "";
     }
   }

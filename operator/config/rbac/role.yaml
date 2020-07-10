@@ -94,6 +94,12 @@ rules:
   verbs:
   - '*'
 - apiGroups:
+  - core.kapp.dev
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
   - extensions
   resources:
   - daemonsets

@@ -11,8 +11,7 @@ This is our ideal way to install kapp for a cluster. The prerequirements are a r
 There will be a generated single file yaml. The only thing you need to do is apply it into your cluster.
 
 ```bash
-# Note: This url is not working now.
-kubectl apply -f https://github.com/kapp-staging/kapp/deploy/kapp-install.yaml
+kubectl apply -f https://raw.githubusercontent.com/kapp-staging/kapp/master/operator/kapp-install.yaml
 ```
 
 This command runs the operator by creating the following resources in the cluster.

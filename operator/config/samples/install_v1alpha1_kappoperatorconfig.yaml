@@ -1,3 +1,9 @@
+# install OperatorResource to install:
+# - cert-manager
+# - istio
+# - Kalm CRD & Roles
+# - Kalm controller
+# - Kalm dashboard
 apiVersion: v1
 kind: Namespace
 metadata:

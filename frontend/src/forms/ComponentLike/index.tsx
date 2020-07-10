@@ -47,6 +47,7 @@ import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
 import { KTooltip } from "forms/Application/KTooltip";
 import { PublicRegistriesList } from "types/registry";
+import { loadSimpleOptionsAction, loadStatefulSetOptionsAction } from "actions/persistentVolume";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -167,6 +168,16 @@ interface State {}
 
 class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private tabs = tabs;
+
+  componentDidMount() {
+    const { dispatch, application } = this.props;
+
+    if (application) {
+      // for volumes
+      dispatch(loadSimpleOptionsAction(application.get("name")));
+      dispatch(loadStatefulSetOptionsAction(application.get("name")));
+    }
+  }
 
   private renderReplicasOrSchedule = () => {
     const workloadType = this.props.fieldValues.get("workloadType");
