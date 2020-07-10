@@ -9,6 +9,8 @@ export const CREATE_REGISTRY = "CREATE_REGISTRY";
 export const UPDATE_REGISTRY = "UPDATE_REGISTRY";
 export const DELETE_REGISTRY = "DELETE_REGISTRY";
 
+export const PublicRegistriesList = ["docker.io", "gcr.io", "k8s.gcr.io", "us.gcr.io", "eu.gcr.io", "asia.gcr.io"];
+
 export interface RepositoryTagContent {
   name: string;
   manifest: string;

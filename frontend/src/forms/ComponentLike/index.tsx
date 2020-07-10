@@ -11,7 +11,7 @@ import { Disks } from "forms/ComponentLike/Disks";
 import { COMPONENT_FORM_ID } from "forms/formIDs";
 import Immutable from "immutable";
 import { COMPONENT_DEPLOY_BUTTON_ZINDEX } from "layout/Constants";
-import queryString from "query-string";
+import queryString from "qs";
 import React from "react";
 import { connect } from "react-redux";
 import { Link as RouteLink, RouteComponentProps, withRouter } from "react-router-dom";
@@ -46,6 +46,7 @@ import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
 import { KTooltip } from "forms/Application/KTooltip";
+import { PublicRegistriesList } from "types/registry";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -80,7 +81,7 @@ const mapStateToProps = (state: RootState) => {
   };
   const nodeLabels = getNodeLabels(state);
 
-  const search = queryString.parse(window.location.search);
+  const search = queryString.parse(window.location.search.replace("?", ""));
   const hash = window.location.hash;
   const anchor = hash.replace("#", "");
   let currentTabIndex = tabs.map((t) => t.replace(/\s/g, "")).indexOf(`${anchor}`);
@@ -868,12 +869,23 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  // TODO: any better idea??
   private isUnknownPrivateRegistry = (image: string) => {
     const { registries } = this.props;
     const parts = image.split("/");
 
-    if (parts.length < 3) {
+    // eg. nginx:latest
+    if (parts.length === 1) {
+      return false;
+    }
+
+    // docker Hub User Id Use 4 to 30 letters & digits only.
+    // is not a url
+    if (!parts[0].includes(".")) {
+      return false;
+    }
+
+    // eg. gcr.io/kaniko-project/executor:latest
+    if (PublicRegistriesList.includes(parts[0])) {
       return false;
     }
 

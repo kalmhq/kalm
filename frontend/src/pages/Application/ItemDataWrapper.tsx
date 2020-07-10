@@ -1,5 +1,5 @@
 import hoistNonReactStatics from "hoist-non-react-statics";
-import queryString from "query-string";
+import queryString from "qs";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
@@ -14,7 +14,7 @@ const mapStateToProps = (state: RootState, props: any) => {
 
   const { match, location } = props;
   let { applicationName, componentName } = match!.params;
-  const search = queryString.parse(location.search);
+  const search = queryString.parse(location.search.replace("?", ""));
   componentName = componentName || search.component;
 
   const application = applications.get("applications").find((x) => x.get("name") === applicationName);
