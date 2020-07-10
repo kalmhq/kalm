@@ -6,7 +6,7 @@ import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { H4 } from "widgets/Label";
-import { SECOND_HEADER_HEIGHT, LEFT_SECTION_OPEN_WIDTH, SECOND_HEADER_ZINDEX } from "./Constants";
+import { SECOND_HEADER_HEIGHT, LEFT_SECTION_OPEN_WIDTH, SECOND_HEADER_ZINDEX, APP_BAR_HEIGHT } from "./Constants";
 
 const mapStateToProps = (state: RootState) => {
   return {};
@@ -16,6 +16,7 @@ const styles = (theme: Theme) =>
   createStyles({
     root: {
       position: "sticky",
+      top: APP_BAR_HEIGHT,
       zIndex: SECOND_HEADER_ZINDEX,
       height: SECOND_HEADER_HEIGHT,
       width: "100%",
