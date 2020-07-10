@@ -3,7 +3,7 @@ import { storiesOf } from "@storybook/react";
 import { boolean } from "@storybook/addon-knobs";
 import { RootDrawer } from "layout/RootDrawer";
 import { AppBarComponent } from "layout/AppBar";
-import { withProvider, store } from "../Redux";
+import { withProvider, store } from "../ReduxConfig";
 import { setSettingsAction } from "actions/settings";
 
 storiesOf("Widgets/ApplicationSidebar", module)
