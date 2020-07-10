@@ -18,6 +18,7 @@
     "@types/jest": "^24.0.25",
     "@types/node": "^12.12.24",
     "@types/node-forge": "^0.9.4",
+    "@types/qs": "^6.9.3",
     "@types/react": "^16.9.17",
     "@types/react-dom": "^16.9.4",
     "@types/react-redux": "^7.1.6",
@@ -48,7 +49,7 @@
     "notistack": "^0.9.7",
     "npm": "^6.13.7",
     "perfect-scrollbar": "^1.5.0",
-    "query-string": "^6.11.1",
+    "qs": "^6.9.4",
     "react": "^16.12.0",
     "react-ace": "^8.0.0",
     "react-chartjs-2": "^2.9.0",
@@ -82,8 +83,16 @@
     "build-storybook": "NODE_ENV=test build-storybook -s public"
   },
   "browserslist": {
-    "production": [">0.2%", "not dead", "not op_mini all"],
-    "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   },
   "devDependencies": {
     "@storybook/addon-a11y": "^5.3.19",

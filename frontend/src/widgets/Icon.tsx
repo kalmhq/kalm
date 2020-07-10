@@ -217,7 +217,7 @@ export const KalmRoutesIcon = withStyles(styles)((props: IconsProps) => {
 export const KalmUserIcon = withStyles(styles)((props: IconsProps) => {
   const { classes, color, fontSize, style } = props;
   return (
-    <SvgIcon className={classes.default} color={color} fontSize={fontSize} style={style} viewBox={"0 0 36 36"}>
+    <SvgIcon className={classes.white} color={color} fontSize={fontSize} style={style} viewBox={"0 0 36 36"}>
       <path d="M30.61,24.52a17.16,17.16,0,0,0-25.22,0,1.51,1.51,0,0,0-.39,1v6A1.5,1.5,0,0,0,6.5,33h23A1.5,1.5,0,0,0,31,31.5v-6A1.51,1.51,0,0,0,30.61,24.52Z"></path>
       <circle cx="18" cy="10" r="7"></circle>
     </SvgIcon>

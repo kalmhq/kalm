@@ -11,7 +11,7 @@ import { Disks } from "forms/ComponentLike/Disks";
 import { COMPONENT_FORM_ID } from "forms/formIDs";
 import Immutable from "immutable";
 import { COMPONENT_DEPLOY_BUTTON_ZINDEX } from "layout/Constants";
-import queryString from "query-string";
+import queryString from "qs";
 import React from "react";
 import { connect } from "react-redux";
 import { Link as RouteLink, RouteComponentProps, withRouter } from "react-router-dom";
@@ -81,7 +81,7 @@ const mapStateToProps = (state: RootState) => {
   };
   const nodeLabels = getNodeLabels(state);
 
-  const search = queryString.parse(window.location.search);
+  const search = queryString.parse(window.location.search.replace("?", ""));
   const hash = window.location.hash;
   const anchor = hash.replace("#", "");
   let currentTabIndex = tabs.map((t) => t.replace(/\s/g, "")).indexOf(`${anchor}`);

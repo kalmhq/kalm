@@ -2,14 +2,14 @@ import Immutable from "immutable";
 import { Actions } from "types";
 import { SET_CURRENT_NAMESPACE } from "types/namespace";
 import { ImmutableMap } from "typings";
-import queryString from "query-string";
+import queryString from "qs";
 import { LOGOUT } from "types/common";
 
 export type State = ImmutableMap<{
   active: string;
 }>;
 
-const search = queryString.parse(window.location.search);
+const search = queryString.parse(window.location.search.replace("?", ""));
 const LAST_SELECTED_NAMESPACE_CACHE_KEY = "LAST_SELECTED_NAMESPACE_CACHE_KEY";
 
 const initialState: State = Immutable.Map({
