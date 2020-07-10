@@ -20,16 +20,23 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-logr/logr"
+	corev1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	installv1alpha1 "github.com/kapp-staging/kapp/operator/api/v1alpha1"
 	"github.com/kapp-staging/kapp/operator/utils"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-var finalizerName = "install.finalizers.kapp.dev"
+const (
+	NamespaceKalmSystem = "kapp-system"
+	KalmImgRepo         = "kappstaging/dashboard"
+)
+
+//var finalizerName = "install.finalizers.kapp.dev"
 
 // KappOperatorConfigReconciler reconciles a KappOperatorConfig object
 type KappOperatorConfigReconciler struct {
@@ -129,13 +136,6 @@ func (r *KappOperatorConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 func (r *KappOperatorConfigReconciler) installFromYaml(ctx context.Context, yamlName string) error {
 	fileContent := MustAsset(yamlName)
 
-	// debug
-	if yamlName == "kapp.yaml" {
-		fmt.Println("start----")
-		fmt.Println(string(fileContent))
-		fmt.Println("end----")
-	}
-
 	objectsBytes := utils.SeparateYamlBytes(fileContent)
 	decode := serializer.NewCodecFactory(r.Scheme).UniversalDeserializer().Decode
 
@@ -185,6 +185,49 @@ func (r *KappOperatorConfigReconciler) reconcileResources(config *installv1alpha
 		if err := r.installFromYaml(ctx, "kapp.yaml"); err != nil {
 			log.Error(err, "install kapp error.")
 			return err
+		}
+	}
+
+	if !config.Spec.SkipKalmDashboardInstallation {
+		dashboardVersion := "latest"
+		if config.Spec.DashboardVersion != "" {
+			dashboardVersion = config.Spec.DashboardVersion
+		}
+
+		dashboardName := "kalm-dashboard"
+		expectedDashboard := corev1alpha1.Component{
+			ObjectMeta: ctrl.ObjectMeta{
+				Namespace: NamespaceKalmSystem,
+				Name:      dashboardName,
+			},
+			Spec: corev1alpha1.ComponentSpec{
+				Image:   fmt.Sprintf("%s:%s", KalmImgRepo, dashboardVersion),
+				Command: "./kapp-api-server",
+				Ports: []corev1alpha1.Port{
+					{
+						Name:          "http",
+						ContainerPort: 3001,
+						ServicePort:   80,
+					},
+				},
+			},
+		}
+
+		dashboard := corev1alpha1.Component{}
+		err := r.Get(ctx, types.NamespacedName{Name: dashboardName, Namespace: NamespaceKalmSystem}, &dashboard)
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				return err
+			}
+
+			if err := r.Client.Create(ctx, &expectedDashboard); err != nil {
+				return err
+			}
+		} else {
+			dashboard.Spec = expectedDashboard.Spec
+			if err := r.Client.Update(ctx, &dashboard); err != nil {
+				return err
+			}
 		}
 	}
 
