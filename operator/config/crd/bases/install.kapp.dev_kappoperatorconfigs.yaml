@@ -34,9 +34,13 @@ spec:
         spec:
           description: KappOperatorConfigSpec defines the desired state of KappOperatorConfig
           properties:
+            dashboardVersion:
+              type: string
             skipCertManagerInstallation:
               type: boolean
             skipIstioInstallation:
+              type: boolean
+            skipKalmControllerInstallation:
               type: boolean
             skipKappControllerInstallation:
               type: boolean
