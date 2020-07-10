@@ -14,7 +14,37 @@ TODO
 
 ## Try kapp in action
 
-TODO
+```shell
+kubectl apply -f https://raw.githubusercontent.com/kapp-staging/kapp/master/kapp-install.yaml
+```
+
+wait till `k get pods -n kapp-operator` returns something like this:
+
+```
+NAME                            READY   STATUS    RESTARTS   AGE
+kapp-operator-c7cd8cffc-4grps   2/2     Running   0          4m26s
+```
+
+and `k get pods -n kapp-system` returns something like this:
+
+```
+NAME                               READY   STATUS    RESTARTS   AGE
+kalm-dashboard-6bbb5894-q8sb5      2/2     Running   0          3m42s
+kapp-controller-686c55b89b-6s29x   2/2     Running   0          4m8s
+```
+
+Kalm is installed now.
+
+
+
+if your prefer commond line, go read [tutorial-1-hello-world.md](doc/tutorial-1-hello-world.md) to see what you can do with Kalm, or if you prefer GUI, Kalm has a dashboard prepared for you, to visited the dashboard, you need:
+
+```
+# your dashboard pod name should be different
+k port-forward -n kapp-system kalm-dashboard-6bbb5894-q8sb5 3001:3001 
+```
+
+then go to `http://localhost:3001`, follow the doc [create-test-service-account.md](doc/create-test-service-account.md) to get the token to access dashboard.
 
 ## Documentation
 
