@@ -1,4 +1,3 @@
-import { loadSimpleOptionsAction, loadStatefulSetOptionsAction } from "actions/persistentVolume";
 import React from "react";
 import { connect } from "react-redux";
 import { RouteComponentProps, withRouter } from "react-router-dom";
@@ -36,14 +35,6 @@ export interface WithNamespaceProps
 
 export const withNamespace = (WrappedComponent: React.ComponentType<any>) => {
   const HOC: React.ComponentType<WithNamespaceProps> = class extends React.Component<WithNamespaceProps> {
-    componentDidMount() {
-      const { dispatch, activeNamespaceName } = this.props;
-
-      // for volumes
-      dispatch(loadSimpleOptionsAction(activeNamespaceName));
-      dispatch(loadStatefulSetOptionsAction(activeNamespaceName));
-    }
-
     render() {
       const { isNamespaceFirstLoaded } = this.props;
 
