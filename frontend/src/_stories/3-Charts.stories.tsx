@@ -3,10 +3,21 @@ import { Targets } from "widgets/Targets";
 import Immutable from "immutable";
 import { HttpStatusCodeLineChart } from "widgets/charts/httpStatusCodeChart";
 import { HttpBytesSizeChart } from "widgets/charts/httpBytesSizeChart";
+import { DoughnutChart } from "widgets/DoughnutChart";
 
 export default {
   title: "Widgets/Charts",
   component: Targets,
+};
+
+export const PodsDoughnutChart = () => {
+  const data = [2, 0, 1];
+  return <DoughnutChart title="Pods" labels={["Running", "Pending", "Error"]} data={data} />;
+};
+
+export const EmptyDoughnutChart = () => {
+  const data = [0];
+  return <DoughnutChart title="Routes" labels={["Running"]} data={data} />;
 };
 
 export const HttpStatusCode = () => {

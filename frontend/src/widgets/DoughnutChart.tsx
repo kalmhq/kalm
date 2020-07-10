@@ -33,7 +33,13 @@ interface State {}
 
 class DoughnutChartRaw extends React.PureComponent<Props, State> {
   private getData = (): chartjs.ChartData => {
-    const { labels, data } = this.props;
+    let { labels, data } = this.props;
+
+    const dataSum = data.reduce((a, b) => a + b, 0);
+    if (dataSum === 0) {
+      data = [0, 1]; // show grey
+    }
+
     return {
       labels,
       datasets: [
@@ -49,6 +55,7 @@ class DoughnutChartRaw extends React.PureComponent<Props, State> {
 
   public render() {
     const { classes, labels, data, title } = this.props;
+    const dataSum = data.reduce((a, b) => a + b, 0);
     const chartData: chartjs.ChartData = this.getData();
     return (
       <div className={classes.root} style={{ width: size }}>
@@ -61,6 +68,7 @@ class DoughnutChartRaw extends React.PureComponent<Props, State> {
             options={{
               maintainAspectRatio: false,
               cutoutPercentage: 70,
+              tooltips: { enabled: dataSum === 0 ? false : true },
               legend: {
                 display: false,
               },
@@ -68,6 +76,12 @@ class DoughnutChartRaw extends React.PureComponent<Props, State> {
           />
         </div>
         <Box mt={1}>
+          {dataSum === 0 && (
+            <Box display="flex" alignItems="center" justifyContent="center">
+              <Typography variant="body2">No {title}</Typography>
+            </Box>
+          )}
+
           {labels.map((label, index) => {
             if (data[index] === 0) {
               return null;

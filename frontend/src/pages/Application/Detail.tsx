@@ -1,4 +1,4 @@
-import { createStyles, Grid, Theme, Typography, withStyles, WithStyles } from "@material-ui/core";
+import { createStyles, Grid, Theme, Typography, withStyles, WithStyles, Box } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import React from "react";
 import { ApplicationComponentDetails, PodStatus } from "types/application";
@@ -274,61 +274,62 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     return (
       <>
         <Expansion title="Workload" defaultUnfold>
-          <Grid container spacing={2}>
-            <Grid item md={2}>
-              <DoughnutChart
-                title="Components"
-                labels={["Running", "Pending", "Error"]}
-                data={[pieChartData.componentSuccess, pieChartData.componentPending, pieChartData.componentError]}
-              />
-            </Grid>
-            <Grid item md={2}>
-              <DoughnutChart
-                title="Pods"
-                labels={["Running", "Pending", "Error"]}
-                data={[pieChartData.podSuccess, pieChartData.podPending, pieChartData.podError]}
-              />
-            </Grid>
-            <Grid item md={2}>
-              <DoughnutChart title="Routes" labels={["Running"]} data={[this.props.httpRoutes.size]} />
-            </Grid>
-          </Grid>
+          <Box display="flex" justifyContent={"space-around"}>
+            <DoughnutChart
+              title="Components"
+              labels={["Running", "Pending", "Error"]}
+              data={[pieChartData.componentSuccess, pieChartData.componentPending, pieChartData.componentError]}
+            />
+            <DoughnutChart
+              title="Pods"
+              labels={["Running", "Pending", "Error"]}
+              data={[pieChartData.podSuccess, pieChartData.podPending, pieChartData.podError]}
+            />
+            <DoughnutChart title="Routes" labels={["Running"]} data={[this.props.httpRoutes.size]} />
+          </Box>
         </Expansion>
         <Expansion title="Metrics" defaultUnfold>
           <Grid container spacing={2}>
             <Grid item xs>
-              <HttpStatusCodeLineChart
-                data={[
-                  {
-                    legend: "2xx",
-                    data: activeNamespace!.get("istioMetricHistories").get("httpRespCode2XXCount") || Immutable.List(),
-                  },
-                  {
-                    legend: "4xx",
-                    data: activeNamespace!.get("istioMetricHistories").get("httpRespCode4XXCount") || Immutable.List(),
-                  },
-                  {
-                    legend: "5xx",
-                    data: activeNamespace!.get("istioMetricHistories").get("httpRespCode5XXCount") || Immutable.List(),
-                  },
-                ]}
-                title="http response code per second"
-              />
+              <Box pl={"58px"}>
+                <HttpStatusCodeLineChart
+                  data={[
+                    {
+                      legend: "2xx",
+                      data:
+                        activeNamespace!.get("istioMetricHistories").get("httpRespCode2XXCount") || Immutable.List(),
+                    },
+                    {
+                      legend: "4xx",
+                      data:
+                        activeNamespace!.get("istioMetricHistories").get("httpRespCode4XXCount") || Immutable.List(),
+                    },
+                    {
+                      legend: "5xx",
+                      data:
+                        activeNamespace!.get("istioMetricHistories").get("httpRespCode5XXCount") || Immutable.List(),
+                    },
+                  ]}
+                  title="http response code per second"
+                />
+              </Box>
             </Grid>
             <Grid item xs>
-              <HttpBytesSizeChart
-                data={[
-                  {
-                    legend: "request",
-                    data: activeNamespace!.get("istioMetricHistories").get("httpRequestBytes") || Immutable.List(),
-                  },
-                  {
-                    legend: "response",
-                    data: activeNamespace!.get("istioMetricHistories").get("httpResponseBytes") || Immutable.List(),
-                  },
-                ]}
-                title="http traffic"
-              />
+              <Box pl={"16px"}>
+                <HttpBytesSizeChart
+                  data={[
+                    {
+                      legend: "request",
+                      data: activeNamespace!.get("istioMetricHistories").get("httpRequestBytes") || Immutable.List(),
+                    },
+                    {
+                      legend: "response",
+                      data: activeNamespace!.get("istioMetricHistories").get("httpResponseBytes") || Immutable.List(),
+                    },
+                  ]}
+                  title="http traffic"
+                />
+              </Box>
             </Grid>
           </Grid>
           <Grid container spacing={2}>
