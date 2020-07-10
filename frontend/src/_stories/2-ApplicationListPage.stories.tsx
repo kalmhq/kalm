@@ -22,7 +22,7 @@ import {
   generateRandomIntList,
 } from "./data/application";
 import { LOAD_ROUTES_PENDING, LOAD_ROUTES_FULFILLED, HttpRoute } from "types/route";
-import { store, withProvider, resetStore } from "./Redux";
+import { store, withProvider, resetStore } from "./redux";
 
 const createRoutes = (appNames: string[]) => {
   let routes = Immutable.List<HttpRoute>();

@@ -24,7 +24,6 @@ const styles = (theme: Theme) =>
       borderBottom: `1px solid ${grey[200]}`,
       display: "flex",
     },
-
     left: {
       width: LEFT_SECTION_OPEN_WIDTH,
       height: SECOND_HEADER_HEIGHT,
