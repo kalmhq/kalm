@@ -105,9 +105,13 @@ func (suite *ComponentControllerSuite) TestComponentBasicCRUD() {
 	suite.Eventually(func() bool {
 		var deployment appsV1.Deployment
 		var service coreV1.Service
+		suite.K8sClient.Get(context.Background(), key, &deployment)
+		suite.K8sClient.Get(context.Background(), key, &service)
 
-		return errors.IsNotFound(suite.K8sClient.Get(context.Background(), key, &deployment)) &&
-			errors.IsNotFound(suite.K8sClient.Get(context.Background(), key, &service))
+		t1 := isOwner(deployment.OwnerReferences, component.Name, component.TypeMeta.Kind)
+		t2 := isOwner(service.OwnerReferences, component.Name, component.TypeMeta.Kind)
+
+		return t1 && t2
 
 	}, "component delete is not working")
 }
