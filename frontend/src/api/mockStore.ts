@@ -7112,6 +7112,7 @@ export default class MockStore {
       mockApplications: Immutable.fromJS([
         {
           name: "kalm-bookinfo",
+          istioMetricHistories: {},
           metrics: {
             cpu: [
               { x: 1592832559000, y: 12 },
