@@ -215,7 +215,18 @@ func (suite *PluginBindingControllerSuite) TestDeletePluginBinding() {
 	})
 }
 
+// https://book.kubebuilder.io/reference/testing/envtest.html#testing-considerations
+// One common example is garbage collection;
+// because there are no controllers monitoring built-in resources,
+// objects do not get deleted, even if an OwnerReference is set up.
+//
+// To test that the deletion lifecycle works,
+// test the ownership instead of asserting on existence.
 func (suite *PluginBindingControllerSuite) TestDeleteComponent() {
+	suite.reloadComponent(suite.component)
+	compName := suite.component.Name
+	compKind := suite.component.TypeMeta.Kind
+
 	// Please see the initialization function to understand the test context
 	suite.Nil(suite.K8sClient.Delete(context.Background(), suite.component))
 
@@ -228,21 +239,36 @@ func (suite *PluginBindingControllerSuite) TestDeleteComponent() {
 
 	// binding should be deleted
 	suite.Eventually(func() bool {
-		return errors.IsNotFound(suite.K8sClient.Get(context.Background(), types.NamespacedName{
+		suite.K8sClient.Get(context.Background(), types.NamespacedName{
 			Name:      suite.pluginBinding.Name,
 			Namespace: suite.pluginBinding.Namespace,
-		}, suite.pluginBinding))
+		}, suite.pluginBinding)
+
+		return isOwner(suite.pluginBinding.ObjectMeta.OwnerReferences, compName, compKind)
 	})
 
 	// deployment should be deleted
 	suite.Eventually(func() bool {
 		var deployment appsV1.Deployment
-
-		return errors.IsNotFound(suite.K8sClient.Get(context.Background(), types.NamespacedName{
+		suite.K8sClient.Get(context.Background(), types.NamespacedName{
 			Namespace: suite.component.Namespace,
 			Name:      suite.component.Name,
-		}, &deployment))
+		}, &deployment)
+
+		return isOwner(deployment.ObjectMeta.OwnerReferences, suite.component.Name, suite.component.TypeMeta.Kind)
 	})
+}
+
+func isOwner(ownerRefs []v1.OwnerReference, name, kind string) bool {
+	for _, owner := range ownerRefs {
+		if owner.Name != name || owner.Kind != kind {
+			continue
+		}
+
+		return true
+	}
+
+	return false
 }
 
 func (suite *PluginBindingControllerSuite) TestUpdateBindingConfig() {
