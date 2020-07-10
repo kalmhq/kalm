@@ -62,7 +62,7 @@ func (r *KappNSReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 // +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=metrics.k8s.io,resources=pods,verbs=get;list;watch
+// +kubebuilder:rbac:groups=metrics.k8s.io,resources=*,verbs=get;list;watch
 
 func (r *KappNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := r.ctx
