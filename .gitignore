@@ -2,3 +2,5 @@
 coverage.txt
 .DS_Store
 *.log
+
+*.local.yaml

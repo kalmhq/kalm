@@ -76,6 +76,7 @@ type KappOperatorConfigReconciler struct {
 // +kubebuilder:rbac:groups=security.istio.io,resources=*,verbs=*
 // +kubebuilder:rbac:groups=authentication.istio.io,resources=*,verbs=*
 // +kubebuilder:rbac:groups=config.istio.io,resources=*,verbs=*
+// +kubebuilder:rbac:groups=core.kapp.dev,resources=*,verbs=*
 
 func (r *KappOperatorConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
