@@ -39,9 +39,13 @@ spec:
         spec:
           description: KappOperatorConfigSpec defines the desired state of KappOperatorConfig
           properties:
+            dashboardVersion:
+              type: string
             skipCertManagerInstallation:
               type: boolean
             skipIstioInstallation:
+              type: boolean
+            skipKalmControllerInstallation:
               type: boolean
             skipKappControllerInstallation:
               type: boolean
@@ -184,6 +188,12 @@ rules:
   - '*'
 - apiGroups:
   - config.istio.io
+  resources:
+  - '*'
+  verbs:
+  - '*'
+- apiGroups:
+  - core.kapp.dev
   resources:
   - '*'
   verbs:
@@ -391,6 +401,12 @@ spec:
             memory: 20Mi
       terminationGracePeriodSeconds: 10
 ---
+# install OperatorResource to install:
+# - cert-manager
+# - istio
+# - Kalm CRD & Roles
+# - Kalm controller
+# - Kalm dashboard
 apiVersion: v1
 kind: Namespace
 metadata:

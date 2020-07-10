@@ -206,6 +206,10 @@ func (builder *Builder) BuildApplicationListResponse(namespaceList coreV1.Namesp
 	for i := range namespaceList.Items {
 		ns := namespaceList.Items[i]
 
+		if ns.Name == KAPP_SYSTEM_NAMESPACE {
+			continue
+		}
+
 		if _, exist := ns.Labels[controllers.KappEnableLabelName]; !exist {
 			continue
 		}

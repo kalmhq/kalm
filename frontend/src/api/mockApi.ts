@@ -115,8 +115,9 @@ export default class MockApi extends Api {
     );
     applicationDetails = applicationDetails.set("roles", Immutable.fromJS(["writer", "reader"]));
     applicationDetails = applicationDetails.set("status", "Active");
+    applicationDetails = applicationDetails.set("istioMetricHistories", Immutable.fromJS({}));
     await mockStore.updateApplication(applicationDetails);
-    return application as ApplicationDetails;
+    return applicationDetails;
   };
 
   public createApplicationComponent = async (applicationName: string, component: ApplicationComponent) => {

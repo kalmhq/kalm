@@ -224,9 +224,10 @@ func (r *ComponentReconcilerTask) Run(req ctrl.Request) error {
 		return err
 	}
 
-	if err := r.HandleDelete(); err != nil {
-		return err
-	}
+	//if err := r.HandleDelete(); err != nil {
+	//	return err
+	//}
+
 	if !r.component.ObjectMeta.DeletionTimestamp.IsZero() {
 		return nil
 	}
@@ -369,6 +370,8 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 				r.WarningEvent(err, "unable to create Service for Component")
 				return err
 			}
+
+			ctrl.SetControllerReference(r.component, r.service, r.Scheme)
 		} else {
 			if err := r.Update(r.ctx, r.service); err != nil {
 				r.WarningEvent(err, "unable to update Service for Component")
@@ -383,6 +386,8 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 					r.WarningEvent(err, "unable to create headlessService for Component")
 					return err
 				}
+
+				ctrl.SetControllerReference(r.component, r.headlessService, r.Scheme)
 			} else {
 				if err := r.Update(r.ctx, r.headlessService); err != nil {
 					r.WarningEvent(err, "unable to update headlessService for Component")
@@ -740,7 +745,7 @@ func (r *ComponentReconcilerTask) ReconcileStatefulSet(
 					MatchLabels: labelMap,
 				},
 				VolumeClaimTemplates: volClaimTemplates,
-				ServiceName: r.headlessService.Name,
+				ServiceName:          r.headlessService.Name,
 			},
 		}
 	} else {
