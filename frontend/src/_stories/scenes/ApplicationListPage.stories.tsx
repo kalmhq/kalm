@@ -1,8 +1,8 @@
 import React from "react";
-import { storiesOf } from "@storybook/react";
 import Immutable from "immutable";
+import { storiesOf } from "@storybook/react";
 
-import { ComponentListPage } from "pages/Components/List";
+import { ApplicationListPage } from "pages/Application/List";
 
 import {
   ApplicationComponentDetails,
@@ -20,10 +20,9 @@ import {
   mergeMetrics,
   createRountes,
   generateRandomIntList,
-} from "./data/application";
+} from "../data/application";
 import { LOAD_ROUTES_PENDING, LOAD_ROUTES_FULFILLED, HttpRoute } from "types/route";
-import { store, withProvider, resetStore } from "./redux";
-import { SET_CURRENT_NAMESPACE } from "types/namespace";
+import { store, withProvider, resetStore } from "../Redux";
 
 const createRoutes = (appNames: string[]) => {
   let routes = Immutable.List<HttpRoute>();
@@ -43,25 +42,25 @@ const createRoutes = (appNames: string[]) => {
   });
 };
 
-storiesOf("Screens/Components", module)
+storiesOf("Screens/Applications", module)
   .addDecorator(withProvider)
   .add("Loading Applications", () => {
     resetStore();
     store.dispatch({ type: LOAD_APPLICATIONS_PENDING });
-    return <ComponentListPage />;
+    return <ApplicationListPage />;
   })
   .add("Load Application Failed", () => {
     resetStore();
     store.dispatch({ type: LOAD_APPLICATIONS_PENDING });
     store.dispatch({ type: LOAD_APPLICATIONS_FAILED });
-    return <ComponentListPage />;
+    return <ApplicationListPage />;
   })
   .add("Load Empty Application", () => {
     resetStore();
     const applications: Immutable.List<ApplicationDetails> = Immutable.List<ApplicationDetails>([]);
     store.dispatch({ type: LOAD_APPLICATIONS_PENDING });
     store.dispatch({ type: LOAD_APPLICATIONS_FULFILLED, payload: { applicationList: applications } });
-    return <ComponentListPage />;
+    return <ApplicationListPage />;
   })
   .add("Load One Application", () => {
     resetStore();
@@ -91,13 +90,7 @@ storiesOf("Screens/Components", module)
       },
     });
     store.dispatch({ type: LOAD_APPLICATIONS_FULFILLED, payload: { applicationList: applications } });
-    store.dispatch({
-      type: SET_CURRENT_NAMESPACE,
-      payload: {
-        namespace: appName,
-      },
-    });
-    return <ComponentListPage />;
+    return <ApplicationListPage />;
   })
   .add("Load Four Applications", () => {
     resetStore();
@@ -167,12 +160,6 @@ storiesOf("Screens/Components", module)
         components: fourAppComponent,
       },
     });
-    store.dispatch({
-      type: SET_CURRENT_NAMESPACE,
-      payload: {
-        namespace: oneAppName,
-      },
-    });
 
     const applications: Immutable.List<ApplicationDetails> = Immutable.List<ApplicationDetails>([
       oneApp,
@@ -184,5 +171,5 @@ storiesOf("Screens/Components", module)
     // store.dispatch(loadApplicationsAction());
     store.dispatch({ type: LOAD_APPLICATIONS_PENDING });
     store.dispatch({ type: LOAD_APPLICATIONS_FULFILLED, payload: { applicationList: applications } });
-    return <ComponentListPage />;
+    return <ApplicationListPage />;
   });
