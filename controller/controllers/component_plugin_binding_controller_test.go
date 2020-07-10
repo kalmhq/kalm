@@ -223,6 +223,10 @@ func (suite *PluginBindingControllerSuite) TestDeletePluginBinding() {
 // To test that the deletion lifecycle works,
 // test the ownership instead of asserting on existence.
 func (suite *PluginBindingControllerSuite) TestDeleteComponent() {
+	suite.reloadComponent(suite.component)
+	compName := suite.component.Name
+	compKind := suite.component.TypeMeta.Kind
+
 	// Please see the initialization function to understand the test context
 	suite.Nil(suite.K8sClient.Delete(context.Background(), suite.component))
 
@@ -240,20 +244,7 @@ func (suite *PluginBindingControllerSuite) TestDeleteComponent() {
 			Namespace: suite.pluginBinding.Namespace,
 		}, suite.pluginBinding)
 
-		//fmt.Println("ownerRefs:", suite.pluginBinding.ObjectMeta.OwnerReferences)
-
-		var ownerIsSet bool
-		for _, owner := range suite.pluginBinding.ObjectMeta.OwnerReferences {
-			if owner.Name != suite.component.Name ||
-				owner.Kind != suite.component.TypeMeta.Kind {
-			}
-
-			//fmt.Println(">>>:", owner, suite.component.Name, suite.component.TypeMeta.Kind)
-			ownerIsSet = true
-			break
-		}
-
-		return ownerIsSet
+		return isOwner(suite.pluginBinding.ObjectMeta.OwnerReferences, compName, compKind)
 	})
 
 	// deployment should be deleted
@@ -264,18 +255,20 @@ func (suite *PluginBindingControllerSuite) TestDeleteComponent() {
 			Name:      suite.component.Name,
 		}, &deployment)
 
-		var ownerIsSet bool
-		for _, owner := range deployment.ObjectMeta.OwnerReferences {
-			if owner.Name != suite.component.Name ||
-				owner.Kind != suite.component.TypeMeta.Kind {
-			}
+		return isOwner(deployment.ObjectMeta.OwnerReferences, suite.component.Name, suite.component.TypeMeta.Kind)
+	})
+}
 
-			ownerIsSet = true
-			break
+func isOwner(ownerRefs []v1.OwnerReference, name, kind string) bool {
+	for _, owner := range ownerRefs {
+		if owner.Name != name || owner.Kind != kind {
+			continue
 		}
 
-		return ownerIsSet
-	})
+		return true
+	}
+
+	return false
 }
 
 func (suite *PluginBindingControllerSuite) TestUpdateBindingConfig() {
