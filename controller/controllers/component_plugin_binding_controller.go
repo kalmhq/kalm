@@ -19,6 +19,8 @@ import (
 	"context"
 	corev1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
 	"github.com/xeipuuv/gojsonschema"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -65,6 +67,28 @@ func (r *ComponentPluginBindingReconcilerTask) Run(req ctrl.Request) error {
 
 	if r.binding.Spec.ComponentName != "" {
 		r.binding.ObjectMeta.Labels[KappLabelComponent] = r.binding.Spec.ComponentName
+	}
+
+	var component corev1alpha1.Component
+	err := r.Get(
+		ctx,
+		types.NamespacedName{
+			Name:      r.binding.Spec.ComponentName,
+			Namespace: r.binding.Namespace,
+		},
+		&component)
+
+	if err != nil {
+		if !errors.IsNotFound(err) {
+			return err
+		}
+
+		r.WarningEvent(err, "try to bind to non-exist component")
+	} else {
+		err := ctrl.SetControllerReference(&component, r.binding, r.Scheme)
+		if err != nil {
+			r.WarningEvent(err, "fail to set component as owner of binding")
+		}
 	}
 
 	if err := r.Update(context.Background(), r.binding); err != nil {
