@@ -215,6 +215,13 @@ func (suite *PluginBindingControllerSuite) TestDeletePluginBinding() {
 	})
 }
 
+// https://book.kubebuilder.io/reference/testing/envtest.html#testing-considerations
+// One common example is garbage collection;
+// because there are no controllers monitoring built-in resources,
+// objects do not get deleted, even if an OwnerReference is set up.
+//
+// To test that the deletion lifecycle works,
+// test the ownership instead of asserting on existence.
 func (suite *PluginBindingControllerSuite) TestDeleteComponent() {
 	// Please see the initialization function to understand the test context
 	suite.Nil(suite.K8sClient.Delete(context.Background(), suite.component))
@@ -228,20 +235,46 @@ func (suite *PluginBindingControllerSuite) TestDeleteComponent() {
 
 	// binding should be deleted
 	suite.Eventually(func() bool {
-		return errors.IsNotFound(suite.K8sClient.Get(context.Background(), types.NamespacedName{
+		suite.K8sClient.Get(context.Background(), types.NamespacedName{
 			Name:      suite.pluginBinding.Name,
 			Namespace: suite.pluginBinding.Namespace,
-		}, suite.pluginBinding))
+		}, suite.pluginBinding)
+
+		//fmt.Println("ownerRefs:", suite.pluginBinding.ObjectMeta.OwnerReferences)
+
+		var ownerIsSet bool
+		for _, owner := range suite.pluginBinding.ObjectMeta.OwnerReferences {
+			if owner.Name != suite.component.Name ||
+				owner.Kind != suite.component.TypeMeta.Kind {
+			}
+
+			//fmt.Println(">>>:", owner, suite.component.Name, suite.component.TypeMeta.Kind)
+			ownerIsSet = true
+			break
+		}
+
+		return ownerIsSet
 	})
 
 	// deployment should be deleted
 	suite.Eventually(func() bool {
 		var deployment appsV1.Deployment
-
-		return errors.IsNotFound(suite.K8sClient.Get(context.Background(), types.NamespacedName{
+		suite.K8sClient.Get(context.Background(), types.NamespacedName{
 			Namespace: suite.component.Namespace,
 			Name:      suite.component.Name,
-		}, &deployment))
+		}, &deployment)
+
+		var ownerIsSet bool
+		for _, owner := range deployment.ObjectMeta.OwnerReferences {
+			if owner.Name != suite.component.Name ||
+				owner.Kind != suite.component.TypeMeta.Kind {
+			}
+
+			ownerIsSet = true
+			break
+		}
+
+		return ownerIsSet
 	})
 }
 
