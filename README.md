@@ -14,7 +14,64 @@ TODO
 
 ## Try kapp in action
 
-TODO
+```shell
+kubectl apply -f https://raw.githubusercontent.com/kapp-staging/kapp/master/kapp-install.yaml
+```
+
+to check if Kalm is installed successfully, run 
+
+```
+curl -s https://raw.githubusercontent.com/kapp-staging/kapp/master/scripts/check-kalm-pods.sh | bash
+```
+
+if you see somthing like this, then Kalm is running as expected:
+
+```
+NAME                            READY   STATUS    RESTARTS   AGE
+kapp-operator-c7cd8cffc-4grps   2/2     Running   0          56m
+
+NAME                               READY   STATUS    RESTARTS   AGE
+kalm-dashboard-6bbb5894-q8sb5      2/2     Running   0          55m
+kapp-controller-686c55b89b-6s29x   2/2     Running   0          55m
+
+NAME                                       READY   STATUS    RESTARTS   AGE
+cert-manager-7cb75cf6b4-gbhw7              1/1     Running   1          43h
+cert-manager-cainjector-759496659c-h6ggk   1/1     Running   1          43h
+cert-manager-webhook-7c75b89bf6-lfpp5      1/1     Running   1          43h
+
+NAME                                    READY   STATUS    RESTARTS   AGE
+istio-ingressgateway-7bf98d4db8-c4czn   1/1     Running   1          43h
+istiod-6fd48c8cc7-9gj6m                 1/1     Running   1          43h
+prometheus-5767f54db5-82p66             2/2     Running   2          43h
+```
+
+
+
+if your prefer commond line, go read [tutorial-1-hello-world.md](doc/tutorial-1-hello-world.md) to see what you can do with Kalm, or if you prefer GUI, Kalm has a dashboard prepared for you, to visited the dashboard, you need:
+
+```
+kubectl port-forward -n kapp-system $(kubectl get pod -n kapp-system -l app=kalm-dashboard -ojsonpath="{.items[0].metadata.name}") 3001:3001
+```
+
+then go to [http://localhost:3001](http://localhost:3001), follow the doc [create-test-service-account.md](doc/create-test-service-account.md) to get the token to access dashboard.
+
+## Clean up
+
+```
+# first clone this repo
+git clone https://github.com/kapp-staging/kapp.git
+
+cd kapp
+
+# to delete kalm operator & controller, run:
+make delete
+# error like `Error from server (NotFound): error when deleting xxx not found` is safe to ignore because some resources may have been deleted hierarchically.
+
+# to delete all things Kalm installed, including istio and cert-manager, run:
+# make delete-all
+```
+
+
 
 ## Documentation
 
