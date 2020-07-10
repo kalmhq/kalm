@@ -56,7 +56,7 @@ kubectl port-forward -n kapp-system kalm-dashboard-6bbb5894-q8sb5 3001:3001
 
 then go to `http://localhost:3001`, follow the doc [create-test-service-account.md](doc/create-test-service-account.md) to get the token to access dashboard.
 
-# Clean up
+## Clean up
 
 ```
 # first clone this repo
