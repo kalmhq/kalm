@@ -52,7 +52,9 @@ export default class MockStore {
   };
 
   public deletePod = async (namespace: string, name: string) => {
-    let componentIndex, podIndex, pod;
+    let componentIndex = -1,
+      podIndex = -1,
+      pod;
     this.data
       .get("mockApplicationComponents")
       .get(namespace)
@@ -65,7 +67,7 @@ export default class MockStore {
         }
       });
 
-    if (componentIndex && podIndex) {
+    if (componentIndex >= 0 && podIndex >= 0) {
       this.data = this.data.deleteIn(["mockApplicationComponents", namespace, componentIndex, "pods", podIndex]);
       this.saveData({
         kind: "Pod",

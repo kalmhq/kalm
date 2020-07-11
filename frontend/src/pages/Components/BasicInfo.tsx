@@ -146,7 +146,7 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
             size="small"
             color="primary"
           >
-            edit to fix
+            Add Health Probes
           </Button>
         ) : null}
       </>
