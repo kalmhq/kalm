@@ -11,6 +11,9 @@ import { NoLivenessProbeWarning, NoPortsWarning, NoReadinessProbeWarning } from 
 import { HealthTab } from "forms/ComponentLike";
 import { Probe } from "types/componentTemplate";
 import { Link } from "react-router-dom";
+import { CopyIconDefault } from "widgets/Icon";
+import copy from "copy-to-clipboard";
+import { setSuccessNotificationAction } from "actions/notification";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -87,7 +90,12 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     const { component } = this.props;
 
     if (component.get("ports") && component.get("ports")!.size > 0) {
-      return `${component.get("ports")!.size} port${component.get("ports")!.size > 1 ? "s" : ""}`;
+      return component
+        .get("ports")
+        ?.map((port) => {
+          return `${port.get("containerPort")}:${port.get("servicePort")}`;
+        })
+        .join("/");
     } else {
       return <NoPortsWarning />;
     }
@@ -145,6 +153,23 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     );
   };
 
+  private renderImage = (image: string) => {
+    return (
+      <>
+        {image}
+        <span
+          style={{ cursor: "pointer" }}
+          onClick={() => {
+            copy(image);
+            this.props.dispatch(setSuccessNotificationAction("Copied to clipboard"));
+          }}
+        >
+          <CopyIconDefault style={{ height: 13 }} />
+        </span>
+      </>
+    );
+  };
+
   public render() {
     const { component, activeNamespaceName } = this.props;
     return (
@@ -153,7 +178,7 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
           { name: "Created At", content: this.renderCreatedAt() },
           { name: "Name", content: component.get("name") },
           { name: "Namespace", content: activeNamespaceName },
-          { name: "Image", content: component.get("image") },
+          { name: "Image", content: this.renderImage(component.get("image")) },
           { name: "Workload Type", content: component.get("workloadType") },
           { name: "Update Strategy", content: component.get("restartStrategy") },
           { name: "Pod Status", content: this.renderComponentStatus() },
