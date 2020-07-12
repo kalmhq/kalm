@@ -43,10 +43,10 @@ const ConfirmDialog = ({
         </DialogContent>
       )}
       <DialogActions>
-        <Button onClick={() => handleCloseWithResult(false)} variant="contained">
+        <Button onClick={() => handleCloseWithResult(false)} variant="text">
           No, I will stay
         </Button>
-        <Button autoFocus onClick={() => handleCloseWithResult(true)} color="primary" variant="contained">
+        <Button autoFocus onClick={() => handleCloseWithResult(true)} color="primary" variant="text">
           Yes, I'm leaving
         </Button>
       </DialogActions>

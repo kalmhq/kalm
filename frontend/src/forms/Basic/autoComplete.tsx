@@ -252,6 +252,8 @@ const KAutoCompleteSingleValueStyles = (_theme: Theme) =>
       alignItems: "center",
       fontSize: theme.typography.subtitle2.fontSize,
       textTransform: "capitalize",
+      paddingTop: 4,
+      paddingBottom: 4,
     },
     groupLabelDefault: {
       background: theme.palette.grey[100],
@@ -260,6 +262,8 @@ const KAutoCompleteSingleValueStyles = (_theme: Theme) =>
       alignItems: "center",
       fontSize: theme.typography.subtitle2.fontSize,
       textTransform: "capitalize",
+      paddingTop: 4,
+      paddingBottom: 4,
     },
     groupLabelCurrent: {
       color: theme.palette.primary.main,
