@@ -251,7 +251,7 @@ const KAutoCompleteSingleValueStyles = (_theme: Theme) =>
       display: "flex",
       alignItems: "center",
       fontSize: theme.typography.subtitle2.fontSize,
-      textTransform: "uppercase",
+      textTransform: "capitalize",
     },
     groupLabelDefault: {
       background: theme.palette.grey[100],
@@ -259,7 +259,7 @@ const KAutoCompleteSingleValueStyles = (_theme: Theme) =>
       display: "flex",
       alignItems: "center",
       fontSize: theme.typography.subtitle2.fontSize,
-      textTransform: "uppercase",
+      textTransform: "capitalize",
     },
     groupLabelCurrent: {
       color: theme.palette.primary.main,
@@ -399,9 +399,11 @@ function KAutoCompleteSingleValueRaw<T>(props: KAutoCompleteSingleValueProps<KAu
         } else {
           return (
             <div key={group.key}>
-              <div className={clsx(classes.groupLabel, group.key.includes("Current") ? classes.groupLabelCurrent : {})}>
+              <div className={classes.groupLabel}>
                 <KalmApplicationIcon className={classes.groupIcon} />
-                <Caption>{group.key}</Caption>
+                <Caption className={clsx(group.key.includes("Current") ? classes.groupLabelCurrent : {})}>
+                  {group.key}
+                </Caption>
               </div>
               {group.children}
               <Divider />
