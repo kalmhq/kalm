@@ -1,4 +1,14 @@
-import { Chip, createStyles, OutlinedTextFieldProps, PropTypes, TextField, Theme, withStyles } from "@material-ui/core";
+import {
+  Chip,
+  createStyles,
+  OutlinedTextFieldProps,
+  PropTypes,
+  TextField,
+  Theme,
+  withStyles,
+  Typography,
+  Divider,
+} from "@material-ui/core";
 import {
   Autocomplete,
   createFilterOptions,
@@ -11,7 +21,10 @@ import Immutable from "immutable";
 import React from "react";
 import { WrappedFieldProps } from "redux-form";
 import { ID } from "utils";
-import { AutocompleteProps } from "@material-ui/lab/Autocomplete/Autocomplete";
+import { AutocompleteProps, RenderGroupParams } from "@material-ui/lab/Autocomplete/Autocomplete";
+import { theme } from "theme/theme";
+import { Caption } from "widgets/Label";
+import { KalmApplicationIcon, KalmLogoIcon } from "widgets/Icon";
 
 export interface ReduxFormMultiTagsFreeSoloAutoCompleteProps
   extends WrappedFieldProps,
@@ -232,6 +245,32 @@ export interface KAutoCompleteSingleValueProps<T>
 const KAutoCompleteSingleValueStyles = (_theme: Theme) =>
   createStyles({
     root: {},
+    groupLabel: {
+      background: theme.palette.grey[100],
+      paddingLeft: 12,
+      display: "flex",
+      alignItems: "center",
+      fontSize: theme.typography.subtitle2.fontSize,
+      textTransform: "uppercase",
+    },
+    groupLabelDefault: {
+      background: theme.palette.grey[100],
+      paddingLeft: 12,
+      display: "flex",
+      alignItems: "center",
+      fontSize: theme.typography.subtitle2.fontSize,
+      textTransform: "uppercase",
+    },
+    groupLabelCurrent: {
+      color: theme.palette.primary.main,
+      fontWeight: 500,
+    },
+    groupIcon: {
+      marginRight: 4,
+    },
+    groupUl: {
+      marginLeft: 32,
+    },
   });
 
 export interface KAutoCompleteOption {
@@ -345,6 +384,38 @@ function KAutoCompleteSingleValueRaw<T>(props: KAutoCompleteSingleValueProps<KAu
         matchFrom: "any",
         stringify: (option) => option.value,
       })}
+      renderGroup={(group: RenderGroupParams) => {
+        if (group.key === "default") {
+          return (
+            <div key={group.key}>
+              <div className={classes.groupLabelDefault}>
+                <KalmLogoIcon className={classes.groupIcon} />
+                <Caption>{group.key}</Caption>
+              </div>
+              {group.children}
+              <Divider />
+            </div>
+          );
+        } else {
+          return (
+            <div key={group.key}>
+              <div className={clsx(classes.groupLabel, group.key.includes("Current") ? classes.groupLabelCurrent : {})}>
+                <KalmApplicationIcon className={classes.groupIcon} />
+                <Caption>{group.key}</Caption>
+              </div>
+              {group.children}
+              <Divider />
+            </div>
+          );
+        }
+      }}
+      renderOption={(option: KAutoCompleteOption) => {
+        return (
+          <div className={classes.groupUl}>
+            <Typography>{option.label}</Typography>
+          </div>
+        );
+      }}
       value={value}
       getOptionLabel={(option: KAutoCompleteOption) => option.label}
       onFocus={input.onFocus}
