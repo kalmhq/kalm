@@ -8,6 +8,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/kubernetes"
 )
 
 var (
@@ -27,6 +28,14 @@ type H map[string]interface{}
 func (h *ApiHandler) Install(e *echo.Echo) {
 	// liveness readiness probes
 	e.GET("/ping", handlePing)
+
+	// oidc auth proxy handlers
+	e.GET("/oidc/login", h.handleOIDCLogin)
+	e.GET("/oidc/callback", h.handleOIDCCallback)
+
+	// envoy ext_authz handlers
+	e.GET("/"+ENVOY_EXT_AUTH_PATH_PREFIX+"/*", h.handleExtAuthz)
+	e.GET("/"+ENVOY_EXT_AUTH_PATH_PREFIX, h.handleExtAuthz)
 
 	// login
 	e.POST("/login/token", h.handleValidateToken)
@@ -112,10 +121,25 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gv1Alpha1WithAuth.GET("/volumes/available/sts/:namespace", h.handleAvailableVolsForSts)
 }
 
+// use user token and permission
 func (h *ApiHandler) Builder(c echo.Context) *resources.Builder {
 	k8sClient := getK8sClient(c)
 	k8sClientConfig := getK8sClientConfig(c)
 	return resources.NewBuilder(k8sClient, k8sClientConfig, h.logger)
+}
+
+// use server account name permission
+func (h *ApiHandler) KalmBuilder() *resources.Builder {
+	cfg := h.clientManager.ClusterConfig
+
+	k8sClient, err := kubernetes.NewForConfig(cfg)
+
+	if err != nil {
+		h.logger.Error("Can't get k8s client")
+		return nil
+	}
+
+	return resources.NewBuilder(k8sClient, cfg, h.logger)
 }
 
 func NewApiHandler(clientManager *client.ClientManager) *ApiHandler {

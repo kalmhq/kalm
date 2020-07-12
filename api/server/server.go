@@ -29,6 +29,7 @@ func newEchoInstance() *echo.Echo {
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: "method=${method}, uri=${uri}, status=${status}\n",
 	}))
+	e.Pre(middleware.RemoveTrailingSlash())
 
 	// TODO, only enabled cors on dev env
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
