@@ -18,29 +18,12 @@ import {
   createApplicationComponent,
   createApplication,
   mergeMetrics,
-  createRountes,
+  createRoute,
   generateRandomIntList,
+  createRoutes,
 } from "../data/application";
 import { LOAD_ROUTES_PENDING, LOAD_ROUTES_FULFILLED, HttpRoute } from "types/route";
 import { store, withProvider, resetStore } from "../ReduxConfig";
-
-const createRoutes = (appNames: string[]) => {
-  let routes = Immutable.List<HttpRoute>();
-  appNames.forEach((appName, index) => {
-    const namespace = `Application${index + 1}`;
-    routes = routes.merge(createRountes(appName, namespace));
-  });
-
-  store.dispatch({ type: LOAD_ROUTES_PENDING });
-
-  store.dispatch({
-    type: LOAD_ROUTES_FULFILLED,
-    payload: {
-      httpRoutes: routes,
-      namespace: "",
-    },
-  });
-};
 
 storiesOf("Screens/Applications", module)
   .addDecorator(withProvider)
@@ -70,7 +53,7 @@ storiesOf("Screens/Applications", module)
     const podCounter = number("pod counter", 5, undefined, "Application1");
     const createTime = date("create Date", new Date("2020-06-11"), "Application1");
 
-    createRoutes([appName]);
+    createRoutes(store, [appName]);
 
     let oneApp: ApplicationDetails = createApplication(appName);
 
@@ -115,7 +98,7 @@ storiesOf("Screens/Applications", module)
     const threePodCounter = number("pod counter", 4, undefined, "Application3");
     const fourPodCounter = number("pod counter", 5, undefined, "Application4");
 
-    createRoutes([oneAppName, twoAppName, threeAppName, fourAppName]);
+    createRoutes(store, [oneAppName, twoAppName, threeAppName, fourAppName]);
 
     let oneApp: ApplicationDetails = createApplication(oneAppName);
     const oneAppComponent = createApplicationComponent(
