@@ -30,6 +30,7 @@ const styles = (theme: Theme) =>
       "& > .MuiListItemIcon-root": {
         minWidth: 40,
       },
+      borderLeft: `4px solid transparent`,
     },
     listItemSeleted: {
       backgroundColor: `${primaryBackgroud} !important`,

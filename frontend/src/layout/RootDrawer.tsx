@@ -23,6 +23,7 @@ import {
   KalmNodeIcon,
   KalmRegistryIcon,
   KalmVolumeIcon,
+  KalmIngressIcon,
 } from "widgets/Icon";
 import { blinkTopProgressAction } from "actions/settings";
 
@@ -129,6 +130,11 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
         icon: KalmNodeIcon,
         text: "Nodes",
         to: "/cluster/nodes",
+      },
+      {
+        icon: KalmIngressIcon,
+        text: "Ingress",
+        to: "/cluster/ingress",
       },
       {
         icon: KalmVolumeIcon,
