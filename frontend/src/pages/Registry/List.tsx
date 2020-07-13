@@ -15,7 +15,6 @@ import { primaryColor } from "theme/theme";
 import { CustomizedButton } from "widgets/Button";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { DeleteIcon, EditIcon } from "widgets/Icon";
-import { H4 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { BasePage } from "../BasePage";
 import { RegistryNewModal, RegistryNewModalID } from "./New";
@@ -176,7 +175,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
     const { dispatch } = this.props;
     return (
       <>
-        <H4>Private Docker Registries</H4>
+        {/* <H4>Private Docker Registries</H4> */}
         <CustomizedButton
           color="primary"
           variant="outlined"
@@ -189,7 +188,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
             dispatch(openDialogAction(RegistryNewModalID));
           }}
         >
-          Add
+          Add Private Docker Registrie
         </CustomizedButton>
       </>
     );

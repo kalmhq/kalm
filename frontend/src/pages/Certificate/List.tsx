@@ -15,7 +15,6 @@ import { FlexRowItemCenterBox } from "widgets/Box";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { DeleteIcon, EditIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { H4 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { KTable } from "widgets/Table";
 import { CertificateDataWrapper, WithCertificatesDataProps } from "./DataWrapper";
@@ -257,7 +256,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
       <BasePage
         secondHeaderRight={
           <>
-            <H4>Certificates</H4>
+            {/* <H4>Certificates</H4> */}
             <Button
               color="primary"
               variant="outlined"
@@ -269,7 +268,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
                 dispatch(setEditCertificateModalAction(null));
               }}
             >
-              Add
+              Add Certificate
             </Button>
           </>
         }

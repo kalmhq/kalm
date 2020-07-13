@@ -11,7 +11,6 @@ import { Link } from "react-router-dom";
 import { HttpRoute } from "types/route";
 import { SuccessBadge } from "widgets/Badge";
 import { DangerButton } from "widgets/Button";
-import { H4 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { Namespaces } from "widgets/Namespaces";
 import { KTable } from "widgets/Table";
@@ -169,7 +168,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
         secondHeaderLeft={<Namespaces />}
         secondHeaderRight={
           <>
-            <H4>Routes</H4>
+            {/* <H4>Routes</H4> */}
             <Button
               tutorial-anchor-id="add-route"
               component={Link}
@@ -178,7 +177,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
               variant="outlined"
               to={`/applications/${activeNamespaceName}/routes/new`}
             >
-              Add
+              Add Route
             </Button>
           </>
         }
