@@ -1,0 +1,20 @@
+# permissions to do viewer protectedendpoints.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: protectedendpoint-viewer-role
+rules:
+- apiGroups:
+  - core.kapp.dev
+  resources:
+  - protectedendpoints
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - core.kapp.dev
+  resources:
+  - protectedendpoints/status
+  verbs:
+  - get

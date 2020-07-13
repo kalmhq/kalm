@@ -1,0 +1,26 @@
+# permissions to do edit singlesignonconfigs.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: singlesignonconfig-editor-role
+rules:
+- apiGroups:
+  - core.kapp.dev
+  resources:
+  - singlesignonconfigs
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kapp.dev
+  resources:
+  - singlesignonconfigs/status
+  verbs:
+  - get
+  - patch
+  - update

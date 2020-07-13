@@ -137,8 +137,8 @@ func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		}
 
 		pv.Labels[KappLabelManaged] = "true"
-		pv.Labels[KappLabelComponent] = kappPVC.Labels[KappLabelComponent]
-		pv.Labels[KappLabelNamespace] = kappPVC.Labels[KappLabelNamespace]
+		pv.Labels[KappLabelComponentKey] = kappPVC.Labels[KappLabelComponentKey]
+		pv.Labels[KappLabelNamespaceKey] = kappPVC.Labels[KappLabelNamespaceKey]
 		// to be selectable by PVC
 		pv.Labels[KappLabelPV] = pv.Name
 

@@ -9,8 +9,9 @@ import { getComponentCreatedAtString } from "utils/application";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { NoLivenessProbeWarning, NoPortsWarning, NoReadinessProbeWarning } from "pages/Components/NoPortsWarning";
 import { HealthTab } from "forms/ComponentLike";
-import { Probe } from "types/componentTemplate";
+import { Probe, ComponentLikePort } from "types/componentTemplate";
 import { Link } from "react-router-dom";
+import { List } from "immutable";
 import { CopyIconDefault } from "widgets/Icon";
 import copy from "copy-to-clipboard";
 import { setSuccessNotificationAction } from "actions/notification";
@@ -18,6 +19,13 @@ import { setSuccessNotificationAction } from "actions/notification";
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
+    portContainer: {
+      display: "flex",
+      flexDirection: "column",
+    },
+    port: {
+      padding: "1 2",
+    },
   });
 
 const mapStateToProps = (state: RootState) => {
@@ -86,16 +94,31 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     return <SmallMemoryLineChart data={component.get("metrics").get("memory")!} />;
   };
 
+  private renderPort = (key: any, name: string, port: number) => {
+    const { classes } = this.props;
+    return (
+      <div className={classes.port} key={key}>
+        {name}:{port}
+      </div>
+    );
+  };
   private renderPorts = () => {
-    const { component } = this.props;
+    const { classes, component } = this.props;
 
     if (component.get("ports") && component.get("ports")!.size > 0) {
-      return component
-        .get("ports")
-        ?.map((port) => {
-          return `${port.get("containerPort")}:${port.get("servicePort")}`;
-        })
-        .join("/");
+      // <<<<<<< HEAD
+      const ports = component.get("ports", List<ComponentLikePort>())?.map((port, index) => {
+        return this.renderPort(index, port.get("name"), port.get("servicePort"));
+      });
+      return <div className={classes.portContainer}>{ports}</div>;
+      // =======
+      //       return component
+      //         .get("ports")
+      //         ?.map((port) => {
+      //           return `${port.get("containerPort")}:${port.get("servicePort")}`;
+      //         })
+      //         .join("/");
+      // >>>>>>> f3dc64cd95f71ad48762e30e03d1bbc53a48ba1e
     } else {
       return <NoPortsWarning />;
     }

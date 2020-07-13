@@ -445,9 +445,7 @@ spec:
                         type: array
                       resources:
                         description: Resources is a list of resources this rule applies
-                          to.  '*' represents all resources in the specified apiGroups.
-                          '*/foo' represents the subresource 'foo' for all resources
-                          in the specified apiGroups.
+                          to.  ResourceAll represents all resources.
                         items:
                           type: string
                         type: array

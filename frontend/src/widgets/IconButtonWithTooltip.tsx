@@ -1,42 +1,61 @@
 import React from "react";
-import { IconButton, IconButtonProps, Tooltip } from "@material-ui/core";
+import { IconButton, IconButtonProps, Tooltip, withStyles, WithStyles } from "@material-ui/core";
 import { Link } from "react-router-dom";
 
-export const IconButtonWithTooltip = (
-  props: IconButtonProps & {
-    tooltipTitle: string;
-    component?: any;
-    to?: any;
-    href?: any;
-    tooltipPlacement?:
-      | "bottom-end"
-      | "bottom-start"
-      | "bottom"
-      | "left-end"
-      | "left-start"
-      | "left"
-      | "right-end"
-      | "right-start"
-      | "right"
-      | "top-end"
-      | "top-start"
-      | "top";
+const styles = () => ({
+  button: {
+    "&:disabled": {
+      cursor: "not-allowed !important",
+    },
   },
-) => {
-  const { tooltipTitle, tooltipPlacement, ...iconButtonProps } = props;
+});
 
-  const tooltipChild = <IconButton {...iconButtonProps}>{props.children}</IconButton>;
+export const IconButtonWithTooltip = withStyles(styles)(
+  (
+    props: IconButtonProps &
+      WithStyles<typeof styles> & {
+        tooltipTitle: string;
+        component?: any;
+        to?: any;
+        href?: any;
+        tooltipPlacement?:
+          | "bottom-end"
+          | "bottom-start"
+          | "bottom"
+          | "left-end"
+          | "left-start"
+          | "left"
+          | "right-end"
+          | "right-start"
+          | "right"
+          | "top-end"
+          | "top-start"
+          | "top";
+      },
+  ) => {
+    const { tooltipTitle, tooltipPlacement, classes, ...iconButtonProps } = props;
 
-  if (props.disabled) {
-    return tooltipChild;
-  }
+    const tooltipChild = (
+      <IconButton className={classes.button} {...iconButtonProps}>
+        {props.children}
+      </IconButton>
+    );
 
-  return (
-    <Tooltip title={tooltipTitle} placement={tooltipPlacement}>
-      {tooltipChild}
-    </Tooltip>
-  );
-};
+    if (props.disabled) {
+      return (
+        <Tooltip title={tooltipTitle} placement={tooltipPlacement}>
+          <div>{tooltipChild}</div>
+        </Tooltip>
+      );
+    }
+
+    return (
+      <Tooltip title={tooltipTitle} placement={tooltipPlacement}>
+        {tooltipChild}
+      </Tooltip>
+    );
+  },
+);
 
 export const IconLinkWithToolTip = (
   props: IconButtonProps & {

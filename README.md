@@ -15,13 +15,13 @@ TODO
 ## Try kapp in action
 
 ```shell
-kubectl apply -f https://raw.githubusercontent.com/kapp-staging/kapp/master/kapp-install.yaml
+curl -sL https://raw.githubusercontent.com/kapp-staging/kapp/master/scripts/install.sh | bash
 ```
 
 to check if Kalm is installed successfully, run 
 
 ```
-curl -s https://raw.githubusercontent.com/kapp-staging/kapp/master/scripts/check-kalm-pods.sh | bash
+curl -sL https://raw.githubusercontent.com/kapp-staging/kapp/master/scripts/check-kalm-pods.sh | bash
 ```
 
 if you see somthing like this, then Kalm is running as expected:

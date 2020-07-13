@@ -169,14 +169,15 @@ interface State {}
 class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private tabs = tabs;
 
-  componentDidMount() {
-    const { dispatch, application } = this.props;
+  private loadRequiredData() {
+    const { dispatch } = this.props;
+    // for volumes
+    dispatch(loadSimpleOptionsAction());
+    dispatch(loadStatefulSetOptionsAction());
+  }
 
-    if (application) {
-      // for volumes
-      dispatch(loadSimpleOptionsAction(application.get("name")));
-      dispatch(loadStatefulSetOptionsAction(application.get("name")));
-    }
+  componentDidMount() {
+    this.loadRequiredData();
   }
 
   private renderReplicasOrSchedule = () => {
@@ -970,7 +971,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
   public render() {
     const { handleSubmit, classes } = this.props;
-
     return (
       <form onSubmit={handleSubmit} className={classes.root}>
         {this.renderDirtyPrompt()}

@@ -28,12 +28,15 @@ const styles = (theme: Theme) =>
       height: SECOND_HEADER_HEIGHT,
       width: "100%",
       justifyContent: "space-between",
-      paddingLeft: 32,
+      paddingLeft: 24,
       border: 0,
       borderRadius: 0,
     },
     menuList: {
       width: LEFT_SECTION_OPEN_WIDTH,
+    },
+    menuItem: {
+      paddingLeft: 24,
     },
   });
 
@@ -136,6 +139,7 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
                           onClick={this.handleSelect}
                           namespace-name={application.get("name")}
                           key={application.get("name")}
+                          className={classes.menuItem}
                         >
                           {application.get("name")}
                         </MenuItem>

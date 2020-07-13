@@ -12,8 +12,9 @@ import {
 import { MetricList, MetricItem } from "types/common";
 import { optionsKnob, array, object } from "@storybook/addon-knobs";
 import { OptionsKnobOptions } from "@storybook/addon-knobs/dist/components/types";
+import { LOAD_ROUTES_PENDING, LOAD_ROUTES_FULFILLED, HttpRoute } from "types/route";
 
-export const createRountes = (name: string, namespace: string) => {
+export const createRoute = (name: string, namespace: string) => {
   const label = "Methods";
   const valuesObj = {
     GET: "GET",
@@ -67,6 +68,25 @@ export const createRountes = (name: string, namespace: string) => {
     },
   ]);
 };
+
+export const createRoutes = (store: any, appNames: string[]) => {
+  let routes = Immutable.List<HttpRoute>();
+  appNames.forEach((appName, index) => {
+    const namespace = `Application${index + 1}`;
+    routes = routes.merge(createRoute(appName, namespace));
+  });
+
+  store.dispatch({ type: LOAD_ROUTES_PENDING });
+
+  store.dispatch({
+    type: LOAD_ROUTES_FULFILLED,
+    payload: {
+      httpRoutes: routes,
+      namespace: "",
+    },
+  });
+};
+
 export const createApplication = (name: string) => {
   return Immutable.fromJS({
     name: name,
@@ -104,7 +124,10 @@ export const createApplicationComponentDetails = (index: number, createTS: numbe
     image: "docker.io/istio/examples-bookinfo-reviews-v3:1.15.0",
     nodeSelectorLabels: { "kubernetes.io/os": "linux" },
     preferNotCoLocated: true,
-    ports: [{ name: "http", containerPort: 9080, servicePort: 9080 }],
+    ports: [
+      { name: "http", containerPort: 9080, servicePort: 9080 },
+      { name: "http2", protocol: "TCP", port: 8080, servicePort: 8080 },
+    ],
     volumes: [
       { path: "/tmp", size: "32Mi", type: "emptyDir" },
       { path: "/opt/ibm/wlp/output", size: "32Mi", type: "emptyDir" },

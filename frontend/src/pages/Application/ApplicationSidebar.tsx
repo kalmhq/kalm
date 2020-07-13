@@ -28,11 +28,13 @@ const styles = (theme: Theme) =>
 
       "& > .MuiListItemIcon-root": {
         minWidth: 40,
+        marginLeft: -4,
       },
+      borderLeft: `4px solid transparent`,
     },
     listItemSeleted: {
       backgroundColor: `${primaryBackgroud} !important`,
-      borderRight: `4px solid ${primaryColor}`,
+      borderLeft: `4px solid ${primaryColor}`,
     },
     listSubHeader: {
       textTransform: "uppercase",
@@ -60,12 +62,6 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
     const { activeNamespaceName } = this.props;
     return [
       {
-        text: "Overview",
-        to: "/applications/" + activeNamespaceName,
-        highlightWhenExact: true,
-        icon: <KalmDetailsIcon />,
-      },
-      {
         text: "Components",
         to: "/applications/" + activeNamespaceName + "/components",
         icon: <KalmComponentsIcon />,
@@ -74,6 +70,12 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
         text: "Routes",
         to: "/applications/" + activeNamespaceName + "/routes",
         icon: <KalmRoutesIcon />,
+      },
+      {
+        text: "Metric Dashboard",
+        to: "/applications/" + activeNamespaceName + "/metrics",
+        highlightWhenExact: true,
+        icon: <KalmDetailsIcon />,
       },
     ];
   }

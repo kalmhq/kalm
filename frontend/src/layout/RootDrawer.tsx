@@ -23,6 +23,7 @@ import {
   KalmNodeIcon,
   KalmRegistryIcon,
   KalmVolumeIcon,
+  KalmIngressIcon,
 } from "widgets/Icon";
 import { blinkTopProgressAction } from "actions/settings";
 
@@ -47,11 +48,13 @@ const styles = (theme: Theme) =>
 
       "& > .MuiListItemIcon-root": {
         minWidth: 40,
+        marginLeft: -4,
       },
+      borderLeft: `4px solid transparent`,
     },
     listItemSeleted: {
       backgroundColor: `${primaryBackgroud} !important`,
-      borderRight: `4px solid ${primaryColor}`,
+      borderLeft: `4px solid ${primaryColor}`,
     },
     listSubHeader: {
       textTransform: "uppercase",
@@ -128,6 +131,11 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
         icon: KalmNodeIcon,
         text: "Nodes",
         to: "/cluster/nodes",
+      },
+      {
+        icon: KalmIngressIcon,
+        text: "Ingress",
+        to: "/cluster/ingress",
       },
       {
         icon: KalmVolumeIcon,

@@ -29,11 +29,13 @@ const styles = (theme: Theme) =>
 
       "& > .MuiListItemIcon-root": {
         minWidth: 40,
+        marginLeft: -4,
       },
+      borderLeft: `4px solid transparent`,
     },
     listItemSeleted: {
       backgroundColor: `${primaryBackgroud} !important`,
-      borderRight: `4px solid ${primaryColor}`,
+      borderLeft: `4px solid ${primaryColor}`,
     },
     listSubHeader: {
       textTransform: "uppercase",

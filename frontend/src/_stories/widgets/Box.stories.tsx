@@ -1,14 +1,14 @@
 import React from "react";
-import { select } from "@storybook/addon-knobs";
-import { FlexRowItemCenterBox } from "widgets/Box";
-import { KTable } from "widgets/Table";
-import { MTableBodyRow } from "material-table";
-import { ImmutableMap } from "typings";
 import Immutable from "immutable";
-import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
+import { select } from "@storybook/addon-knobs";
+import { MTableBodyRow } from "material-table";
+import { KTable } from "widgets/Table";
+import { ImmutableMap } from "typings";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { action } from "@storybook/addon-actions";
+import { FlexRowItemCenterBox } from "widgets/Box";
+import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { DeleteIcon, EditIcon } from "widgets/Icon";
+import { action } from "@storybook/addon-actions";
 
 export default {
   title: "Widgets/Box",

@@ -2,7 +2,7 @@ package v1alpha1
 
 import (
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/api/rbac/v1beta1"
+	rbacV1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
@@ -90,6 +90,6 @@ type DirectConfig struct {
 }
 
 type RunnerPermission struct {
-	RoleType string               `json:"roleType"`
-	Rules    []v1beta1.PolicyRule `json:"rules"`
+	RoleType string              `json:"roleType"`
+	Rules    []rbacV1.PolicyRule `json:"rules"`
 }

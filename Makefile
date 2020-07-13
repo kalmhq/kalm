@@ -12,7 +12,8 @@ gen-install-file: prepare
 
 # delete kalm crd, operator, controller, dashboard
 delete: prepare
-	-kubectl delete -f kapp-install.yaml
+	-kubectl delete -f kapp-install-kappoperatorconfig.yaml
+	-kubectl delete -f kapp-install-operator.yaml
 	-kustomize build controller/config/default | kubectl delete -f -
 
 # delete all kalm related things, including

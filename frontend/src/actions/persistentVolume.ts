@@ -46,7 +46,6 @@ export const loadSimpleOptionsAction = (namespace?: string): ThunkResult<Promise
     if (!namespace) {
       namespace = getState().get("namespaces").get("active");
     }
-
     const simpleOptions = await api.getSimpleOptions(namespace);
 
     dispatch({
