@@ -36,7 +36,7 @@ const styles = (theme: Theme) =>
       color: theme.palette.primary.main,
     },
     disabled: {
-      background: grey[300],
+      color: grey[400],
     },
     hint: {
       color: grey[700],
@@ -86,12 +86,14 @@ export const ClearIcon = withStyles(styles)((props: IconsProps) => {
 
 export const DeleteIcon = withStyles(styles)((props: IconsProps) => {
   const { classes, color, fontSize, style } = props;
-  return <Delete className={classes.hint} color={color} fontSize={fontSize} style={style} />;
+  const colorClass = color === "disabled" ? classes.disabled : classes.hint;
+  return <Delete className={colorClass} color={color} fontSize={fontSize} style={style} />;
 });
 
 export const EditIcon = withStyles(styles)((props: IconsProps) => {
   const { classes, color, fontSize, style } = props;
-  return <Edit className={classes.hint} color={color} fontSize={fontSize} style={style} />;
+  const colorClass = color === "disabled" ? classes.disabled : classes.hint;
+  return <Edit className={colorClass} color={color} fontSize={fontSize} style={style} />;
 });
 
 export const CheckCircleIcon = withStyles(styles)((props: IconsProps) => {

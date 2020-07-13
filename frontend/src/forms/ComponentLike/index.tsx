@@ -169,14 +169,15 @@ interface State {}
 class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private tabs = tabs;
 
-  componentDidMount() {
-    const { dispatch, application } = this.props;
+  private loadRequiredData() {
+    const { dispatch } = this.props;
+    // for volumes
+    dispatch(loadSimpleOptionsAction());
+    dispatch(loadStatefulSetOptionsAction());
+  }
 
-    if (application) {
-      // for volumes
-      dispatch(loadSimpleOptionsAction(application.get("name")));
-      dispatch(loadStatefulSetOptionsAction(application.get("name")));
-    }
+  componentDidMount() {
+    this.loadRequiredData();
   }
 
   private renderReplicasOrSchedule = () => {
@@ -935,7 +936,11 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   };
 
   private renderDeployButton() {
-    const { classes, handleSubmit, isSubmittingApplicationComponent } = this.props;
+    const { classes, handleSubmit, isSubmittingApplicationComponent, initialValues } = this.props;
+
+    // @ts-ignore
+    const isEdit = initialValues && initialValues!.get("name");
+
     return (
       <Grid container spacing={2}>
         <Grid item xs={6} sm={6} md={6}>
@@ -948,7 +953,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             onClick={handleSubmit}
             id="add-component-submit-button"
           >
-            Deploy
+            {isEdit ? "Update" : "Deploy"} Component
           </CustomizedButton>
 
           {/* <Button variant="contained" color="primary" type="submit" className={classes.deployBtn}>
@@ -966,7 +971,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
   public render() {
     const { handleSubmit, classes } = this.props;
-
     return (
       <form onSubmit={handleSubmit} className={classes.root}>
         {this.renderDirtyPrompt()}

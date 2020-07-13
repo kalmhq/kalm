@@ -11,7 +11,6 @@ import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { ApplicationDetails } from "types/application";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
-import { H4 } from "widgets/Label";
 import { Namespaces } from "widgets/Namespaces";
 import { BasePage } from "../BasePage";
 
@@ -96,7 +95,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
 
     return (
       <>
-        <H4>Components</H4>
+        {/* <H4>Components</H4> */}
         <Button
           tutorial-anchor-id="add-component-button"
           component={Link}
@@ -105,7 +104,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
           variant="outlined"
           to={`/applications/${activeNamespaceName}/components/new`}
         >
-          Add
+          Add Component
         </Button>
       </>
     );

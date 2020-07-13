@@ -24,7 +24,7 @@ import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { FoldButtonGroup } from "widgets/FoldButtonGroup";
 import { DeleteIcon, KalmConsoleIcon, KalmDetailsIcon, KalmLogIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { Body, H4 } from "widgets/Label";
+import { Body } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { KTable } from "widgets/Table";
@@ -326,7 +326,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   private renderSecondHeaderRight() {
     return (
       <>
-        <H4>Applications</H4>
+        {/* <H4>Applications</H4> */}
         <Button
           tutorial-anchor-id="add-application"
           component={Link}
@@ -335,7 +335,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           variant="outlined"
           to={`/applications/new`}
         >
-          Add
+          Add Application
         </Button>
       </>
     );
