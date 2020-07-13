@@ -935,7 +935,11 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   };
 
   private renderDeployButton() {
-    const { classes, handleSubmit, isSubmittingApplicationComponent } = this.props;
+    const { classes, handleSubmit, isSubmittingApplicationComponent, initialValues } = this.props;
+
+    // @ts-ignore
+    const isEdit = initialValues && initialValues!.get("name");
+
     return (
       <Grid container spacing={2}>
         <Grid item xs={6} sm={6} md={6}>
@@ -948,7 +952,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             onClick={handleSubmit}
             id="add-component-submit-button"
           >
-            Deploy
+            {isEdit ? "Update" : "Deploy"} Component
           </CustomizedButton>
 
           {/* <Button variant="contained" color="primary" type="submit" className={classes.deployBtn}>

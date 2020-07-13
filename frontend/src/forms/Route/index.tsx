@@ -231,7 +231,11 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
       handleSubmit,
       dirty,
       submitSucceeded,
+      initialValues,
     } = this.props;
+
+    // @ts-ignore
+    const isEdit = initialValues && initialValues!.get("name");
 
     return (
       <div className={classes.root}>
@@ -487,7 +491,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
               color="primary"
               variant="contained"
             >
-              Save Route
+              {isEdit ? "Update" : "Create"} Route
             </Button>
           </Grid>
         </Grid>

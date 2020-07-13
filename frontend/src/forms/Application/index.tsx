@@ -128,7 +128,7 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
           }}
           id="add-application-submit-button"
         >
-          Submit
+          Create Application
         </CustomizedButton>
       </>
     );

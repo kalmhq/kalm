@@ -317,7 +317,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
             </Grid>
             <Grid item md={2}>
               <Button id="save-certificate-button" type="submit" onClick={handleSubmit} color="primary">
-                Save
+                {isEdit ? "Update" : "Create"}
               </Button>
             </Grid>
           </Grid>
