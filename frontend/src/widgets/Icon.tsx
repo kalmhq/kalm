@@ -13,6 +13,7 @@ import FilterList from "@material-ui/icons/FilterList";
 import Help from "@material-ui/icons/Help";
 import NoteAdd from "@material-ui/icons/NoteAdd";
 import Publish from "@material-ui/icons/Publish";
+import Build from "@material-ui/icons/Build";
 import ArrowBack from "@material-ui/icons/ArrowBack";
 import SubjectIcon from "@material-ui/icons/Subject";
 import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
@@ -288,4 +289,10 @@ export const CopyIcon = withStyles(styles)((props: IconsProps) => {
 export const CopyIconDefault = withStyles(styles)((props: IconsProps) => {
   const { classes, color, fontSize, style } = props;
   return <FileCopy className={classes.default} color={color} fontSize={fontSize} style={style} />;
+});
+
+export const WrenchIcon = withStyles(styles)((props: IconsProps) => {
+  const { classes, color, fontSize, style } = props;
+  const colorClass = color === "disabled" ? classes.disabled : classes.hint;
+  return <Build className={colorClass} color={color} fontSize={fontSize} style={style} />;
 });
