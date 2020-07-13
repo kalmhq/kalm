@@ -140,7 +140,6 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
     return (
       <form onSubmit={handleSubmit} className={classes.root} tutorial-anchor-id="application-form">
         <KPanel
-          title={"Application Basic"}
           content={
             <Box p={2} tutorial-anchor-id="application-form-name-field">
               {this.renderBasic()}

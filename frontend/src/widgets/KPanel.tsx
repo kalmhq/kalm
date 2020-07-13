@@ -24,7 +24,7 @@ const mapStateToProps = (state: RootState) => {
 // const PANEL_DEFAULT_MAX_WITDTH = 800;
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {
-  title: string;
+  title?: string;
   content: React.ReactNode;
   maxWidth?: number | string;
 }
@@ -41,9 +41,11 @@ class KPanelRaw extends React.PureComponent<Props, State> {
     const { classes, title, content } = this.props;
     return (
       <Paper square variant="outlined">
-        <Box p={2} className={classes.borderBottom}>
-          <H5>{title}</H5>
-        </Box>
+        {title && (
+          <Box p={2} className={classes.borderBottom}>
+            <H5>{title}</H5>
+          </Box>
+        )}
         {content}
       </Paper>
     );
