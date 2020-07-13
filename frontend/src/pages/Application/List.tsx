@@ -135,7 +135,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     return (
       <Link
         style={{ color: primaryColor }}
-        to={`/applications/${rowData.get("name")}`}
+        to={`/applications/${rowData.get("name")}/components`}
         onClick={() => blinkTopProgressAction()}
       >
         {rowData.get("name")}
