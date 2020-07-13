@@ -1,38 +1,29 @@
 import React from "react";
 import { storiesOf } from "@storybook/react";
-import { RenderHttpRouteDestinations } from "forms/Route/destinations";
-import { FieldArray, arrayPush, formValueSelector, reduxForm, Field } from "redux-form";
-import { KPanel } from "widgets/KPanel";
-import { connect } from "react-redux";
-import { Box, Button, Collapse, Icon, Typography } from "@material-ui/core";
+import { Field } from "redux-form";
+import { Typography } from "@material-ui/core";
 import { Alert, AlertTitle } from "@material-ui/lab";
-import { Caption } from "widgets/Label";
 import Immutable from "immutable";
-import { withStyles } from "@material-ui/core/styles";
-import { withProvider, store, resetStore } from "_stories/ReduxConfig";
-import { ValidatorAtLeastOneHttpRouteDestination } from "forms/validator";
-import { ROUTE_FORM_ID } from "forms/formIDs";
-import { HttpRouteDestination, HttpRouteForm } from "types/route";
+import { resetStore, store } from "_stories/ReduxConfig";
 import { Service } from "types/service";
-import { text, number, date } from "@storybook/addon-knobs";
+import { date, number, text } from "@storybook/addon-knobs";
+
 import {
-  createRoute,
   createApplication,
   createApplicationComponent,
+  createRoutes,
   generateRandomIntList,
   mergeMetrics,
-  createRoutes,
 } from "_stories/data/application";
 import {
-  ApplicationDetails,
   ApplicationComponentDetails,
+  ApplicationDetails,
+  LOAD_ALL_NAMESAPCES_COMPONETS,
   LOAD_APPLICATIONS_FULFILLED,
   LOAD_APPLICATIONS_PENDING,
-  LOAD_ALL_NAMESAPCES_COMPONETS,
 } from "types/application";
 import { SET_CURRENT_NAMESPACE } from "types/namespace";
-import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
-import { KAutoCompleteSingleValue, KAutoCompleteOption } from "forms/Basic/autoComplete";
+import { KAutoCompleteOption, KAutoCompleteSingleValue } from "forms/Basic/autoComplete";
 import { createServices } from "_stories/data/service";
 import withReduxForm from "_stories/ReduxFormConfig";
 

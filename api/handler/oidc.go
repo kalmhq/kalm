@@ -151,7 +151,7 @@ func redirectToAuthProxyUrl(c echo.Context) error {
 	uri, err := url.Parse(authProxyURL)
 
 	if err != nil {
-		log.Errorf("parse auth proxy url error.", err)
+		log.Error("parse auth proxy url error.", err)
 		return err
 	}
 
