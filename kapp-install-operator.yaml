@@ -400,20 +400,3 @@ spec:
             cpu: 100m
             memory: 20Mi
       terminationGracePeriodSeconds: 10
----
-# install OperatorResource to install:
-# - cert-manager
-# - istio
-# - Kalm CRD & Roles
-# - Kalm controller
-# - Kalm dashboard
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: kapp-operator
----
-apiVersion: install.kapp.dev/v1alpha1
-kind: KappOperatorConfig
-metadata:
-  namespace: kapp-operator
-  name: kappoperatorconfig-sample

@@ -15,15 +15,13 @@ import {
 
 import { date, number, text } from "@storybook/addon-knobs";
 import {
-  createApplicationComponent,
   createApplication,
-  mergeMetrics,
-  createRoute,
-  generateRandomIntList,
+  createApplicationComponent,
   createRoutes,
+  generateRandomIntList,
+  mergeMetrics,
 } from "../data/application";
-import { LOAD_ROUTES_PENDING, LOAD_ROUTES_FULFILLED, HttpRoute } from "types/route";
-import { store, withProvider, resetStore } from "../ReduxConfig";
+import { resetStore, store, withProvider } from "../ReduxConfig";
 
 storiesOf("Screens/Applications", module)
   .addDecorator(withProvider)
