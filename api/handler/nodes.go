@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/kapp-staging/kapp/api/resources"
+	"github.com/kalm-staging/kalm/api/resources"
 	"github.com/labstack/echo/v4"
 )
 

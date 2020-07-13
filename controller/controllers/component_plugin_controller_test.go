@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"context"
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -36,7 +36,7 @@ func generateEmptyComponentPlugin() *v1alpha1.ComponentPlugin {
 	plugin := &v1alpha1.ComponentPlugin{
 		TypeMeta: metaV1.TypeMeta{
 			Kind:       "ComponentPlugin",
-			APIVersion: "core.kapp.dev/v1alpha1",
+			APIVersion: "core.kalm.dev/v1alpha1",
 		},
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: name,

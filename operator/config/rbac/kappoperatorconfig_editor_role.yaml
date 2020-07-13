@@ -1,13 +1,13 @@
-# permissions to do edit kappoperatorconfigs.
+# permissions to do edit kalmoperatorconfigs.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: kappoperatorconfig-editor-role
+  name: kalmoperatorconfig-editor-role
 rules:
 - apiGroups:
-  - install.kapp.dev
+  - install.kalm.dev
   resources:
-  - kappoperatorconfigs
+  - kalmoperatorconfigs
   verbs:
   - create
   - delete
@@ -17,9 +17,9 @@ rules:
   - update
   - watch
 - apiGroups:
-  - install.kapp.dev
+  - install.kalm.dev
   resources:
-  - kappoperatorconfigs/status
+  - kalmoperatorconfigs/status
   verbs:
   - get
   - patch

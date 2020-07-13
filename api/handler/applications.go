@@ -2,8 +2,8 @@ package handler
 
 import (
 	"encoding/json"
-	"github.com/kapp-staging/kapp/api/resources"
-	"github.com/kapp-staging/kapp/controller/controllers"
+	"github.com/kalm-staging/kalm/api/resources"
+	"github.com/kalm-staging/kalm/controller/controllers"
 	"github.com/labstack/echo/v4"
 	coreV1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -11,7 +11,7 @@ import (
 )
 
 func (h *ApiHandler) handleGetApplications(c echo.Context) error {
-	applicationList, err := getKappNamespaceList(c)
+	applicationList, err := getKalmNamespaceList(c)
 
 	if err != nil {
 		return err
@@ -27,7 +27,7 @@ func (h *ApiHandler) handleGetApplications(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleGetApplicationDetails(c echo.Context) error {
-	application, err := getKappApplication(c)
+	application, err := getKalmApplication(c)
 
 	if err != nil {
 		return err
@@ -43,7 +43,7 @@ func (h *ApiHandler) handleGetApplicationDetails(c echo.Context) error {
 }
 
 //func (h *ApiHandler) handleValidateApplications(c echo.Context) error {
-//	crdApplication, _, err := getKappNamespaceFromContext(c)
+//	crdApplication, _, err := getKalmNamespaceFromContext(c)
 //	if err != nil {
 //		return err
 //	}
@@ -56,7 +56,7 @@ func (h *ApiHandler) handleGetApplicationDetails(c echo.Context) error {
 //}
 
 func (h *ApiHandler) handleCreateApplication(c echo.Context) error {
-	application, err := createKappNamespace(c)
+	application, err := createKalmNamespace(c)
 
 	if err != nil {
 		return err
@@ -72,7 +72,7 @@ func (h *ApiHandler) handleCreateApplication(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleUpdateApplication(c echo.Context) error {
-	application, err := updateKappApplication(c)
+	application, err := updateKalmApplication(c)
 
 	if err != nil {
 		return err
@@ -88,7 +88,7 @@ func (h *ApiHandler) handleUpdateApplication(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteApplication(c echo.Context) error {
-	err := deleteKappApplication(c)
+	err := deleteKalmApplication(c)
 	if err != nil {
 		return err
 	}
@@ -97,29 +97,29 @@ func (h *ApiHandler) handleDeleteApplication(c echo.Context) error {
 
 // Helper functions
 
-func deleteKappApplication(c echo.Context) error {
+func deleteKalmApplication(c echo.Context) error {
 	k8sClient := getK8sClient(c)
-	_, err := k8sClient.RESTClient().Delete().Body(c.Request().Body).AbsPath(kappNamespaceUrl(c)).DoRaw()
+	_, err := k8sClient.RESTClient().Delete().Body(c.Request().Body).AbsPath(kalmNamespaceUrl(c)).DoRaw()
 	return err
 }
 
-func createKappNamespace(c echo.Context) (coreV1.Namespace, error) {
+func createKalmNamespace(c echo.Context) (coreV1.Namespace, error) {
 	k8sClient := getK8sClient(c)
 
-	kappNamespace, err := getKappNamespaceFromContext(c)
+	kalmNamespace, err := getKalmNamespaceFromContext(c)
 	if err != nil {
 		return coreV1.Namespace{}, err
 	}
 
-	bts, _ := json.Marshal(kappNamespace)
+	bts, _ := json.Marshal(kalmNamespace)
 	var application coreV1.Namespace
-	err = k8sClient.RESTClient().Post().Body(bts).AbsPath(kappNamespaceUrl(c)).Do().Into(&application)
+	err = k8sClient.RESTClient().Post().Body(bts).AbsPath(kalmNamespaceUrl(c)).Do().Into(&application)
 	if err != nil {
 		return coreV1.Namespace{}, err
 	}
 
-	//kappClient, _ := getKappV1Alpha1Client(c)
-	//err = resources.UpdateApplicationPluginBindingsForObject(kappClient, application.Name, "", plugins)
+	//kalmClient, _ := getKalmV1Alpha1Client(c)
+	//err = resources.UpdateApplicationPluginBindingsForObject(kalmClient, application.Name, "", plugins)
 	//if err != nil {
 	//	return nil, err
 	//}
@@ -127,16 +127,16 @@ func createKappNamespace(c echo.Context) (coreV1.Namespace, error) {
 	return application, nil
 }
 
-func updateKappApplication(c echo.Context) (coreV1.Namespace, error) {
+func updateKalmApplication(c echo.Context) (coreV1.Namespace, error) {
 	k8sClient := getK8sClient(c)
 
-	crdApplication, err := getKappNamespaceFromContext(c)
+	crdApplication, err := getKalmNamespaceFromContext(c)
 
 	if err != nil {
 		return coreV1.Namespace{}, err
 	}
 
-	fetched, err := getKappApplication(c)
+	fetched, err := getKalmApplication(c)
 	if err != nil {
 		return coreV1.Namespace{}, err
 	}
@@ -144,29 +144,29 @@ func updateKappApplication(c echo.Context) (coreV1.Namespace, error) {
 	crdApplication.ResourceVersion = fetched.ResourceVersion
 
 	bts, _ := json.Marshal(crdApplication)
-	var kappNS coreV1.Namespace
-	err = k8sClient.RESTClient().Put().Body(bts).AbsPath(kappNamespaceUrl(c)).Do().Into(&kappNS)
+	var kalmNS coreV1.Namespace
+	err = k8sClient.RESTClient().Put().Body(bts).AbsPath(kalmNamespaceUrl(c)).Do().Into(&kalmNS)
 	if err != nil {
 		return coreV1.Namespace{}, err
 	}
 
-	return kappNS, nil
+	return kalmNS, nil
 }
 
-func getKappApplication(c echo.Context) (coreV1.Namespace, error) {
+func getKalmApplication(c echo.Context) (coreV1.Namespace, error) {
 	k8sClient := getK8sClient(c)
 	var fetched coreV1.Namespace
-	err := k8sClient.RESTClient().Get().AbsPath(kappNamespaceUrl(c)).Do().Into(&fetched)
+	err := k8sClient.RESTClient().Get().AbsPath(kalmNamespaceUrl(c)).Do().Into(&fetched)
 	if err != nil {
 		return coreV1.Namespace{}, err
 	}
 	return fetched, nil
 }
 
-func getKappNamespaceList(c echo.Context) (coreV1.NamespaceList, error) {
+func getKalmNamespaceList(c echo.Context) (coreV1.NamespaceList, error) {
 	k8sClient := getK8sClient(c)
 	var fetched coreV1.NamespaceList
-	err := k8sClient.RESTClient().Get().AbsPath(kappNamespaceUrl(c)).Do().Into(&fetched)
+	err := k8sClient.RESTClient().Get().AbsPath(kalmNamespaceUrl(c)).Do().Into(&fetched)
 	if err != nil {
 		return coreV1.NamespaceList{}, err
 	}
@@ -174,7 +174,7 @@ func getKappNamespaceList(c echo.Context) (coreV1.NamespaceList, error) {
 	return fetched, nil
 }
 
-func kappNamespaceUrl(c echo.Context) string {
+func kalmNamespaceUrl(c echo.Context) string {
 	name := c.Param("name")
 
 	if name == "" {
@@ -184,7 +184,7 @@ func kappNamespaceUrl(c echo.Context) string {
 	return "/api/v1/namespaces/" + name
 }
 
-func getKappNamespaceFromContext(c echo.Context) (coreV1.Namespace, error) {
+func getKalmNamespaceFromContext(c echo.Context) (coreV1.Namespace, error) {
 	var application resources.Application
 
 	if err := c.Bind(&application); err != nil {
@@ -195,7 +195,7 @@ func getKappNamespaceFromContext(c echo.Context) (coreV1.Namespace, error) {
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: application.Name,
 			Labels: map[string]string{
-				controllers.KappEnableLabelName: controllers.KappEnableLabelValue,
+				controllers.KalmEnableLabelName: controllers.KalmEnableLabelValue,
 			},
 		},
 	}

@@ -2,7 +2,7 @@ package handler
 
 import (
 	"fmt"
-	"github.com/kapp-staging/kapp/api/resources"
+	"github.com/kalm-staging/kalm/api/resources"
 	"github.com/stretchr/testify/suite"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -28,7 +28,7 @@ func (suite *VolumeTestSuite) SetupSuite() {
 	// prepare ns
 	ns := coreV1.Namespace{
 		ObjectMeta: v1.ObjectMeta{
-			Name: "kapp-test-" + rand.String(10),
+			Name: "kalm-test-" + rand.String(10),
 		},
 	}
 	suite.k8sClinet.CoreV1().Namespaces().Create(&ns)
@@ -36,7 +36,7 @@ func (suite *VolumeTestSuite) SetupSuite() {
 
 	ns2 := coreV1.Namespace{
 		ObjectMeta: v1.ObjectMeta{
-			Name: "kapp-test-" + rand.String(10),
+			Name: "kalm-test-" + rand.String(10),
 		},
 	}
 	suite.k8sClinet.CoreV1().Namespaces().Create(&ns2)

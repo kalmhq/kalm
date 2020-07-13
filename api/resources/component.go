@@ -2,7 +2,7 @@ package resources
 
 import (
 	"encoding/json"
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
 	coreV1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -23,7 +23,7 @@ func (builder *Builder) GetComponentListChannel(namespaces string, listOptions m
 
 	go func() {
 		var fetched v1alpha1.ComponentList
-		err := builder.K8sClient.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/" + namespaces + "/components").Do().Into(&fetched)
+		err := builder.K8sClient.RESTClient().Get().AbsPath("/apis/core.kalm.dev/v1alpha1/" + namespaces + "/components").Do().Into(&fetched)
 		res := make([]v1alpha1.Component, len(fetched.Items))
 
 		for i, item := range fetched.Items {
@@ -52,7 +52,7 @@ type ComponentDetails struct {
 }
 
 func labelsBelongsToComponent(name string) metaV1.ListOptions {
-	return matchLabel("kapp-component", name)
+	return matchLabel("kalm-component", name)
 }
 
 func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component, resources *Resources) (details *ComponentDetails, err error) {
@@ -60,7 +60,7 @@ func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component, res
 		ns := component.Namespace
 		nsListOption := client.InNamespace(ns)
 
-		belongsToComponent := client.MatchingLabels{"kapp-component": component.Name}
+		belongsToComponent := client.MatchingLabels{"kalm-component": component.Name}
 
 		resourceChannels := &ResourceChannels{
 			IstioMetricList:            builder.GetIstioMetricsListChannel(ns),
@@ -210,7 +210,7 @@ func findComponentServices(list []coreV1.Service, componentName string) []coreV1
 	res := []coreV1.Service{}
 
 	for i := range list {
-		if list[i].Labels["kapp-component"] == componentName {
+		if list[i].Labels["kalm-component"] == componentName {
 			res = append(res, list[i])
 		}
 	}
@@ -222,7 +222,7 @@ func findComponentPluginBindings(list []v1alpha1.ComponentPluginBinding, compone
 	res := []v1alpha1.ComponentPluginBinding{}
 
 	for i := range list {
-		if list[i].Labels["kapp-component"] == componentName {
+		if list[i].Labels["kalm-component"] == componentName {
 			res = append(res, list[i])
 		}
 	}

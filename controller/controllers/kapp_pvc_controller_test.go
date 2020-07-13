@@ -3,7 +3,7 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -12,33 +12,33 @@ import (
 	"testing"
 )
 
-type KappVolumeControllerSuite struct {
+type KalmVolumeControllerSuite struct {
 	BasicSuite
 	ns *coreV1.Namespace
 
 	ctx context.Context
 }
 
-func TestKappVolumeControllerSuite(t *testing.T) {
-	suite.Run(t, new(KappVolumeControllerSuite))
+func TestKalmVolumeControllerSuite(t *testing.T) {
+	suite.Run(t, new(KalmVolumeControllerSuite))
 }
 
-func (suite *KappVolumeControllerSuite) SetupSuite() {
+func (suite *KalmVolumeControllerSuite) SetupSuite() {
 	suite.BasicSuite.SetupSuite()
 }
 
-func (suite *KappVolumeControllerSuite) TearDownSuite() {
+func (suite *KalmVolumeControllerSuite) TearDownSuite() {
 	suite.BasicSuite.TearDownSuite()
 }
 
-func (suite *KappVolumeControllerSuite) SetupTest() {
-	ns := suite.SetupKappEnabledNs()
+func (suite *KalmVolumeControllerSuite) SetupTest() {
+	ns := suite.SetupKalmEnabledNs()
 	suite.ns = &ns
 
 	suite.ctx = context.Background()
 }
 
-func (suite *KappVolumeControllerSuite) TestPVCIsLabeled() {
+func (suite *KalmVolumeControllerSuite) TestPVCIsLabeled() {
 
 	sc := "fake-storage-class"
 	pvcName := fmt.Sprintf("pvc-foobar-%s", randomName())
@@ -65,12 +65,12 @@ func (suite *KappVolumeControllerSuite) TestPVCIsLabeled() {
 		return err == nil
 	})
 
-	suite.Equal(component.Namespace, pvc.Labels[KappLabelNamespaceKey])
-	suite.Equal(component.Name, pvc.Labels[KappLabelComponentKey])
-	suite.Equal("true", pvc.Labels[KappLabelManaged])
+	suite.Equal(component.Namespace, pvc.Labels[KalmLabelNamespaceKey])
+	suite.Equal(component.Name, pvc.Labels[KalmLabelComponentKey])
+	suite.Equal("true", pvc.Labels[KalmLabelManaged])
 }
 
-//func (suite *KappVolumeControllerSuite) TestKappPVCWithoutActiveComponentWillBeDeleted() {
+//func (suite *KalmVolumeControllerSuite) TestKalmPVCWithoutActiveComponentWillBeDeleted() {
 //
 //	sc := "fake-storage-class"
 //	pvcName := fmt.Sprintf("pvc-foobar-%s", randomName())
@@ -81,9 +81,9 @@ func (suite *KappVolumeControllerSuite) TestPVCIsLabeled() {
 //			Name:      pvcName,
 //			Namespace: suite.ns.Name,
 //			Labels: map[string]string{
-//				KappLabelNamespaceKey: suite.ns.Namespace,
-//				KappLabelComponentKey: "comp-not-exist",
-//				KappLabelManaged:   "true",
+//				KalmLabelNamespaceKey: suite.ns.Namespace,
+//				KalmLabelComponentKey: "comp-not-exist",
+//				KalmLabelManaged:   "true",
 //			},
 //		},
 //		Spec: coreV1.PersistentVolumeClaimSpec{
@@ -111,7 +111,7 @@ func (suite *KappVolumeControllerSuite) TestPVCIsLabeled() {
 //	})
 //}
 
-func (suite *KappVolumeControllerSuite) TestPVIsLabeledForKapp() {
+func (suite *KalmVolumeControllerSuite) TestPVIsLabeledForKalm() {
 
 	sc := "fake-storage-class"
 	pvcName := fmt.Sprintf("pvc-foobar-%s", randomName())
@@ -192,8 +192,8 @@ func (suite *KappVolumeControllerSuite) TestPVIsLabeledForKapp() {
 
 		//fmt.Println("pvLabels:", pv.Labels, pv)
 
-		return pv.Labels[KappLabelNamespaceKey] == pvc.Namespace &&
-			pv.Labels[KappLabelManaged] == "true" &&
-			pv.Labels[KappLabelComponentKey] == component.Name
+		return pv.Labels[KalmLabelNamespaceKey] == pvc.Namespace &&
+			pv.Labels[KalmLabelManaged] == "true" &&
+			pv.Labels[KalmLabelComponentKey] == component.Name
 	})
 }

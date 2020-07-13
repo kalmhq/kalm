@@ -10,7 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 )
 
-func getValidatorForKappSpec(crdDefinition []byte) (*validate.SchemaValidator, error) {
+func getValidatorForKalmSpec(crdDefinition []byte) (*validate.SchemaValidator, error) {
 	sch := runtime.NewScheme()
 	_ = apiextv1beta1.AddToScheme(sch)
 
@@ -24,7 +24,7 @@ func getValidatorForKappSpec(crdDefinition []byte) (*validate.SchemaValidator, e
 	//fmt.Println("obj:", obj)
 	crd, ok := obj.(*apiextv1beta1.CustomResourceDefinition)
 	if !ok {
-		return nil, fmt.Errorf("kapp CRD not valid")
+		return nil, fmt.Errorf("kalm CRD not valid")
 	}
 
 	openAPIV3Schema := crd.Spec.Validation.OpenAPIV3Schema

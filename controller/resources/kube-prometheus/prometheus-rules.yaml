@@ -5,7 +5,7 @@ metadata:
     prometheus: k8s
     role: alert-rules
   name: prometheus-k8s-rules
-  namespace: kapp-monitoring
+  namespace: kalm-monitoring
 spec:
   groups:
   - name: node-exporter.rules
@@ -1182,7 +1182,7 @@ spec:
       expr: |
         # Without max_over_time, failed scrapes could create false negatives, see
         # https://www.robustperception.io/alerting-on-gauges-in-prometheus-2-0 for details.
-        max_over_time(prometheus_config_last_reload_successful{job="prometheus-k8s",namespace="kapp-monitoring"}[5m]) == 0
+        max_over_time(prometheus_config_last_reload_successful{job="prometheus-k8s",namespace="kalm-monitoring"}[5m]) == 0
       for: 10m
       labels:
         severity: critical
@@ -1196,9 +1196,9 @@ spec:
         # Without min_over_time, failed scrapes could create false negatives, see
         # https://www.robustperception.io/alerting-on-gauges-in-prometheus-2-0 for details.
         (
-          predict_linear(prometheus_notifications_queue_length{job="prometheus-k8s",namespace="kapp-monitoring"}[5m], 60 * 30)
+          predict_linear(prometheus_notifications_queue_length{job="prometheus-k8s",namespace="kalm-monitoring"}[5m], 60 * 30)
         >
-          min_over_time(prometheus_notifications_queue_capacity{job="prometheus-k8s",namespace="kapp-monitoring"}[5m])
+          min_over_time(prometheus_notifications_queue_capacity{job="prometheus-k8s",namespace="kalm-monitoring"}[5m])
         )
       for: 15m
       labels:
@@ -1211,9 +1211,9 @@ spec:
           a specific Alertmanager.
       expr: |
         (
-          rate(prometheus_notifications_errors_total{job="prometheus-k8s",namespace="kapp-monitoring"}[5m])
+          rate(prometheus_notifications_errors_total{job="prometheus-k8s",namespace="kalm-monitoring"}[5m])
         /
-          rate(prometheus_notifications_sent_total{job="prometheus-k8s",namespace="kapp-monitoring"}[5m])
+          rate(prometheus_notifications_sent_total{job="prometheus-k8s",namespace="kalm-monitoring"}[5m])
         )
         * 100
         > 1
@@ -1227,9 +1227,9 @@ spec:
         summary: Prometheus encounters more than 3% errors sending alerts to any Alertmanager.
       expr: |
         min without(alertmanager) (
-          rate(prometheus_notifications_errors_total{job="prometheus-k8s",namespace="kapp-monitoring"}[5m])
+          rate(prometheus_notifications_errors_total{job="prometheus-k8s",namespace="kalm-monitoring"}[5m])
         /
-          rate(prometheus_notifications_sent_total{job="prometheus-k8s",namespace="kapp-monitoring"}[5m])
+          rate(prometheus_notifications_sent_total{job="prometheus-k8s",namespace="kalm-monitoring"}[5m])
         )
         * 100
         > 3
@@ -1244,7 +1244,7 @@ spec:
       expr: |
         # Without max_over_time, failed scrapes could create false negatives, see
         # https://www.robustperception.io/alerting-on-gauges-in-prometheus-2-0 for details.
-        max_over_time(prometheus_notifications_alertmanagers_discovered{job="prometheus-k8s",namespace="kapp-monitoring"}[5m]) < 1
+        max_over_time(prometheus_notifications_alertmanagers_discovered{job="prometheus-k8s",namespace="kalm-monitoring"}[5m]) < 1
       for: 10m
       labels:
         severity: warning
@@ -1254,7 +1254,7 @@ spec:
           {{$value | humanize}} reload failures over the last 3h.
         summary: Prometheus has issues reloading blocks from disk.
       expr: |
-        increase(prometheus_tsdb_reloads_failures_total{job="prometheus-k8s",namespace="kapp-monitoring"}[3h]) > 0
+        increase(prometheus_tsdb_reloads_failures_total{job="prometheus-k8s",namespace="kalm-monitoring"}[3h]) > 0
       for: 4h
       labels:
         severity: warning
@@ -1264,7 +1264,7 @@ spec:
           {{$value | humanize}} compaction failures over the last 3h.
         summary: Prometheus has issues compacting blocks.
       expr: |
-        increase(prometheus_tsdb_compactions_failed_total{job="prometheus-k8s",namespace="kapp-monitoring"}[3h]) > 0
+        increase(prometheus_tsdb_compactions_failed_total{job="prometheus-k8s",namespace="kalm-monitoring"}[3h]) > 0
       for: 4h
       labels:
         severity: warning
@@ -1274,7 +1274,7 @@ spec:
           samples.
         summary: Prometheus is not ingesting samples.
       expr: |
-        rate(prometheus_tsdb_head_samples_appended_total{job="prometheus-k8s",namespace="kapp-monitoring"}[5m]) <= 0
+        rate(prometheus_tsdb_head_samples_appended_total{job="prometheus-k8s",namespace="kalm-monitoring"}[5m]) <= 0
       for: 10m
       labels:
         severity: warning
@@ -1285,7 +1285,7 @@ spec:
           timestamp.
         summary: Prometheus is dropping samples with duplicate timestamps.
       expr: |
-        rate(prometheus_target_scrapes_sample_duplicate_timestamp_total{job="prometheus-k8s",namespace="kapp-monitoring"}[5m]) > 0
+        rate(prometheus_target_scrapes_sample_duplicate_timestamp_total{job="prometheus-k8s",namespace="kalm-monitoring"}[5m]) > 0
       for: 10m
       labels:
         severity: warning
@@ -1295,7 +1295,7 @@ spec:
           {{ printf "%.4g" $value  }} samples/s with timestamps arriving out of order.
         summary: Prometheus drops samples with out-of-order timestamps.
       expr: |
-        rate(prometheus_target_scrapes_sample_out_of_order_total{job="prometheus-k8s",namespace="kapp-monitoring"}[5m]) > 0
+        rate(prometheus_target_scrapes_sample_out_of_order_total{job="prometheus-k8s",namespace="kalm-monitoring"}[5m]) > 0
       for: 10m
       labels:
         severity: warning
@@ -1307,12 +1307,12 @@ spec:
         summary: Prometheus fails to send samples to remote storage.
       expr: |
         (
-          rate(prometheus_remote_storage_failed_samples_total{job="prometheus-k8s",namespace="kapp-monitoring"}[5m])
+          rate(prometheus_remote_storage_failed_samples_total{job="prometheus-k8s",namespace="kalm-monitoring"}[5m])
         /
           (
-            rate(prometheus_remote_storage_failed_samples_total{job="prometheus-k8s",namespace="kapp-monitoring"}[5m])
+            rate(prometheus_remote_storage_failed_samples_total{job="prometheus-k8s",namespace="kalm-monitoring"}[5m])
           +
-            rate(prometheus_remote_storage_succeeded_samples_total{job="prometheus-k8s",namespace="kapp-monitoring"}[5m])
+            rate(prometheus_remote_storage_succeeded_samples_total{job="prometheus-k8s",namespace="kalm-monitoring"}[5m])
           )
         )
         * 100
@@ -1330,9 +1330,9 @@ spec:
         # Without max_over_time, failed scrapes could create false negatives, see
         # https://www.robustperception.io/alerting-on-gauges-in-prometheus-2-0 for details.
         (
-          max_over_time(prometheus_remote_storage_highest_timestamp_in_seconds{job="prometheus-k8s",namespace="kapp-monitoring"}[5m])
+          max_over_time(prometheus_remote_storage_highest_timestamp_in_seconds{job="prometheus-k8s",namespace="kalm-monitoring"}[5m])
         - on(job, instance) group_right
-          max_over_time(prometheus_remote_storage_queue_highest_sent_timestamp_seconds{job="prometheus-k8s",namespace="kapp-monitoring"}[5m])
+          max_over_time(prometheus_remote_storage_queue_highest_sent_timestamp_seconds{job="prometheus-k8s",namespace="kalm-monitoring"}[5m])
         )
         > 120
       for: 15m
@@ -1342,7 +1342,7 @@ spec:
       annotations:
         description: Prometheus {{$labels.namespace}}/{{$labels.pod}} remote write
           desired shards calculation wants to run {{ $value }} shards, which is more
-          than the max of {{ printf `prometheus_remote_storage_shards_max{instance="%s",job="prometheus-k8s",namespace="kapp-monitoring"}`
+          than the max of {{ printf `prometheus_remote_storage_shards_max{instance="%s",job="prometheus-k8s",namespace="kalm-monitoring"}`
           $labels.instance | query | first | value }}.
         summary: Prometheus remote write desired shards calculation wants to run more
           than configured max shards.
@@ -1350,9 +1350,9 @@ spec:
         # Without max_over_time, failed scrapes could create false negatives, see
         # https://www.robustperception.io/alerting-on-gauges-in-prometheus-2-0 for details.
         (
-          max_over_time(prometheus_remote_storage_shards_desired{job="prometheus-k8s",namespace="kapp-monitoring"}[5m])
+          max_over_time(prometheus_remote_storage_shards_desired{job="prometheus-k8s",namespace="kalm-monitoring"}[5m])
         >
-          max_over_time(prometheus_remote_storage_shards_max{job="prometheus-k8s",namespace="kapp-monitoring"}[5m])
+          max_over_time(prometheus_remote_storage_shards_max{job="prometheus-k8s",namespace="kalm-monitoring"}[5m])
         )
       for: 15m
       labels:
@@ -1363,7 +1363,7 @@ spec:
           evaluate {{ printf "%.0f" $value }} rules in the last 5m.
         summary: Prometheus is failing rule evaluations.
       expr: |
-        increase(prometheus_rule_evaluation_failures_total{job="prometheus-k8s",namespace="kapp-monitoring"}[5m]) > 0
+        increase(prometheus_rule_evaluation_failures_total{job="prometheus-k8s",namespace="kalm-monitoring"}[5m]) > 0
       for: 15m
       labels:
         severity: critical
@@ -1373,7 +1373,7 @@ spec:
           printf "%.0f" $value }} rule group evaluations in the last 5m.
         summary: Prometheus is missing rule evaluations due to slow rule group evaluation.
       expr: |
-        increase(prometheus_rule_group_iterations_missed_total{job="prometheus-k8s",namespace="kapp-monitoring"}[5m]) > 0
+        increase(prometheus_rule_group_iterations_missed_total{job="prometheus-k8s",namespace="kalm-monitoring"}[5m]) > 0
       for: 15m
       labels:
         severity: warning
@@ -1384,7 +1384,7 @@ spec:
         message: The configuration of the instances of the Alertmanager cluster `{{$labels.service}}`
           are out of sync.
       expr: |
-        count_values("config_hash", alertmanager_config_hash{job="alertmanager-main",namespace="kapp-monitoring"}) BY (service) / ON(service) GROUP_LEFT() label_replace(max(prometheus_operator_spec_replicas{job="prometheus-operator",namespace="kapp-monitoring",controller="alertmanager"}) by (name, job, namespace, controller), "service", "alertmanager-$1", "name", "(.*)") != 1
+        count_values("config_hash", alertmanager_config_hash{job="alertmanager-main",namespace="kalm-monitoring"}) BY (service) / ON(service) GROUP_LEFT() label_replace(max(prometheus_operator_spec_replicas{job="prometheus-operator",namespace="kalm-monitoring",controller="alertmanager"}) by (name, job, namespace, controller), "service", "alertmanager-$1", "name", "(.*)") != 1
       for: 5m
       labels:
         severity: critical
@@ -1393,7 +1393,7 @@ spec:
         message: Reloading Alertmanager's configuration has failed for {{ $labels.namespace
           }}/{{ $labels.pod}}.
       expr: |
-        alertmanager_config_last_reload_successful{job="alertmanager-main",namespace="kapp-monitoring"} == 0
+        alertmanager_config_last_reload_successful{job="alertmanager-main",namespace="kalm-monitoring"} == 0
       for: 10m
       labels:
         severity: warning
@@ -1401,9 +1401,9 @@ spec:
       annotations:
         message: Alertmanager has not found all other members of the cluster.
       expr: |
-        alertmanager_cluster_members{job="alertmanager-main",namespace="kapp-monitoring"}
+        alertmanager_cluster_members{job="alertmanager-main",namespace="kalm-monitoring"}
           != on (service) GROUP_LEFT()
-        count by (service) (alertmanager_cluster_members{job="alertmanager-main",namespace="kapp-monitoring"})
+        count by (service) (alertmanager_cluster_members{job="alertmanager-main",namespace="kalm-monitoring"})
       for: 5m
       labels:
         severity: critical
@@ -1458,7 +1458,7 @@ spec:
         message: Errors while reconciling {{ $labels.controller }} in {{ $labels.namespace
           }} Namespace.
       expr: |
-        rate(prometheus_operator_reconcile_errors_total{job="prometheus-operator",namespace="kapp-monitoring"}[5m]) > 0.1
+        rate(prometheus_operator_reconcile_errors_total{job="prometheus-operator",namespace="kalm-monitoring"}[5m]) > 0.1
       for: 10m
       labels:
         severity: warning
@@ -1466,7 +1466,7 @@ spec:
       annotations:
         message: Errors while reconciling Prometheus in {{ $labels.namespace }} Namespace.
       expr: |
-        rate(prometheus_operator_node_address_lookup_errors_total{job="prometheus-operator",namespace="kapp-monitoring"}[5m]) > 0.1
+        rate(prometheus_operator_node_address_lookup_errors_total{job="prometheus-operator",namespace="kalm-monitoring"}[5m]) > 0.1
       for: 10m
       labels:
         severity: warning

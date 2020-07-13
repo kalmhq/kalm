@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"github.com/kapp-staging/kapp/api/client"
-	"github.com/kapp-staging/kapp/api/resources"
+	"github.com/kalm-staging/kalm/api/client"
+	"github.com/kalm-staging/kalm/api/resources"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"

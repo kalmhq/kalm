@@ -4,7 +4,7 @@ metadata:
   labels:
     app: node-exporter
   name: node-exporter
-  namespace: kapp-monitoring
+  namespace: kalm-monitoring
 spec:
   selector:
     matchLabels:

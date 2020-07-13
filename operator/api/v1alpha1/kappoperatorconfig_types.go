@@ -1,5 +1,5 @@
 /*
-Copyright 2020 Kapp Dev.
+Copyright 2020 Kalm Dev.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,39 +20,39 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// KappOperatorConfigSpec defines the desired state of KappOperatorConfig
-type KappOperatorConfigSpec struct {
+// KalmOperatorConfigSpec defines the desired state of KalmOperatorConfig
+type KalmOperatorConfigSpec struct {
 	SkipIstioInstallation          bool   `json:"skipIstioInstallation,omitempty"`
 	SkipCertManagerInstallation    bool   `json:"skipCertManagerInstallation,omitempty"`
-	SkipKappControllerInstallation bool   `json:"skipKappControllerInstallation,omitempty"`
-	SkipKalmDashboardInstallation  bool   `json:"skipKalmControllerInstallation,omitempty"`
+	SkipKalmControllerInstallation bool   `json:"skipKalmControllerInstallation,omitempty"`
+	SkipKalmDashboardInstallation  bool   `json:"skipKalmDashboardInstallation,omitempty"`
 	DashboardVersion               string `json:"dashboardVersion,omitempty"`
 }
 
-// KappOperatorConfigStatus defines the observed state of KappOperatorConfig
-type KappOperatorConfigStatus struct {
+// KalmOperatorConfigStatus defines the observed state of KalmOperatorConfig
+type KalmOperatorConfigStatus struct {
 }
 
 // +kubebuilder:object:root=true
 
-// KappOperatorConfig is the Schema for the kappoperatorconfigs API
-type KappOperatorConfig struct {
+// KalmOperatorConfig is the Schema for the kalmoperatorconfigs API
+type KalmOperatorConfig struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   KappOperatorConfigSpec   `json:"spec,omitempty"`
-	Status KappOperatorConfigStatus `json:"status,omitempty"`
+	Spec   KalmOperatorConfigSpec   `json:"spec,omitempty"`
+	Status KalmOperatorConfigStatus `json:"status,omitempty"`
 }
 
 // +kubebuilder:object:root=true
 
-// KappOperatorConfigList contains a list of KappOperatorConfig
-type KappOperatorConfigList struct {
+// KalmOperatorConfigList contains a list of KalmOperatorConfig
+type KalmOperatorConfigList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []KappOperatorConfig `json:"items"`
+	Items           []KalmOperatorConfig `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&KappOperatorConfig{}, &KappOperatorConfigList{})
+	SchemeBuilder.Register(&KalmOperatorConfig{}, &KalmOperatorConfigList{})
 }

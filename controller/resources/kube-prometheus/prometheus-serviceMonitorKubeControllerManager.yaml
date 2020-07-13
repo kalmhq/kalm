@@ -4,7 +4,7 @@ metadata:
   labels:
     k8s-app: kube-controller-manager
   name: kube-controller-manager
-  namespace: kapp-monitoring
+  namespace: kalm-monitoring
 spec:
   endpoints:
   - interval: 30s

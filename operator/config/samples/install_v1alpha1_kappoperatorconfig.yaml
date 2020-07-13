@@ -7,10 +7,10 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: kapp-operator
+  name: kalm-operator
 ---
-apiVersion: install.kapp.dev/v1alpha1
-kind: KappOperatorConfig
+apiVersion: install.kalm.dev/v1alpha1
+kind: KalmOperatorConfig
 metadata:
-  namespace: kapp-operator
-  name: kappoperatorconfig-sample
+  namespace: kalm-operator
+  name: kalmoperatorconfig-sample

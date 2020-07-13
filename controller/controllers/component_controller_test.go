@@ -3,7 +3,7 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 	appsV1 "k8s.io/api/apps/v1"
 	coreV1 "k8s.io/api/core/v1"
@@ -31,7 +31,7 @@ func (suite *ComponentControllerSuite) TearDownSuite() {
 }
 
 func (suite *ComponentControllerSuite) SetupTest() {
-	ns := suite.SetupKappEnabledNs()
+	ns := suite.SetupKalmEnabledNs()
 	suite.ns = &ns
 	suite.ctx = context.Background()
 }
@@ -80,7 +80,7 @@ func (suite *ComponentControllerSuite) TestComponentBasicCRUD() {
 		ServicePort:   2233,
 		Protocol:      "TCP",
 	})
-	suite.updateComponent(component) // todo sometimes this line fail the test e.g. https://travis-ci.com/github/kapp-staging/kapp/jobs/354813530
+	suite.updateComponent(component) // todo sometimes this line fail the test e.g. https://travis-ci.com/github/kalm-staging/kalm/jobs/354813530
 
 	suite.Eventually(func() bool {
 		var deployment appsV1.Deployment
@@ -330,7 +330,7 @@ func (suite *ComponentControllerSuite) TestVolumeTemporaryMemoryDisk() {
 	}, "temporary memory disk should not create pvc")
 }
 
-func (suite *ComponentControllerSuite) TestKappEnabled() {
+func (suite *ComponentControllerSuite) TestKalmEnabled() {
 	// create
 	component := generateEmptyComponent(suite.ns.Name)
 	suite.createComponent(component)
@@ -345,7 +345,7 @@ func (suite *ComponentControllerSuite) TestKappEnabled() {
 		return suite.K8sClient.Get(context.Background(), key, &deployment) == nil
 	}, "can't get deployment")
 
-	suite.ns.Labels[KappEnableLabelName] = "false"
+	suite.ns.Labels[KalmEnableLabelName] = "false"
 	suite.updateObject(suite.ns)
 
 	suite.Eventually(func() bool {
@@ -389,7 +389,7 @@ func (suite *ComponentControllerSuite) TestPorts() {
 
 func (suite *ComponentControllerSuite) getComponentPVCs(component *v1alpha1.Component) []coreV1.PersistentVolumeClaim {
 	var pvcList coreV1.PersistentVolumeClaimList
-	_ = suite.K8sClient.List(context.Background(), &pvcList, client.MatchingLabels{"kapp-component": component.Name})
+	_ = suite.K8sClient.List(context.Background(), &pvcList, client.MatchingLabels{"kalm-component": component.Name})
 	return pvcList.Items
 }
 
@@ -690,7 +690,7 @@ func genPVWithClaimRef(pvc coreV1.PersistentVolumeClaim) coreV1.PersistentVolume
 			//     apiVersion: v1                                                                                                                                                          │
 			//     kind: PersistentVolumeClaim                                                                                                                                             │
 			//     name: oldOwningPVC-data                                                                                                                                                          │
-			//     namespace: kapp-vols                                                                                                                                                    │
+			//     namespace: kalm-vols                                                                                                                                                    │
 			//     resourceVersion: "8051753"                                                                                                                                              │
 			//     uid: a9849600-24bc-4f0e-8bb1-c023e62c7bdd
 			ClaimRef: &coreV1.ObjectReference{

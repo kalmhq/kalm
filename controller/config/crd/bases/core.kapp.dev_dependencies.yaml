@@ -6,9 +6,9 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.4
   creationTimestamp: null
-  name: dependencies.core.kapp.dev
+  name: dependencies.core.kalm.dev
 spec:
-  group: core.kapp.dev
+  group: core.kalm.dev
   names:
     kind: Dependency
     listKind: DependencyList

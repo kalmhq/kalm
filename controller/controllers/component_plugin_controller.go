@@ -19,8 +19,8 @@ import (
 	"context"
 	"fmt"
 	js "github.com/dop251/goja"
-	"github.com/kapp-staging/kapp/controller/utils"
-	"github.com/kapp-staging/kapp/controller/vm"
+	"github.com/kalm-staging/kalm/controller/utils"
+	"github.com/kalm-staging/kalm/controller/vm"
 	"github.com/xeipuuv/gojsonschema"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"sync"
@@ -28,7 +28,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	corev1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	corev1alpha1 "github.com/kalm-staging/kalm/controller/api/v1alpha1"
 )
 
 type ComponentPluginMethod = string
@@ -101,10 +101,10 @@ type ComponentPluginReconciler struct {
 	*BaseReconciler
 }
 
-// +kubebuilder:rbac:groups=core.kapp.dev,resources=componentplugins,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=core.kapp.dev,resources=componentplugins/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=core.kapp.dev,resources=componentpluginbindings,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=core.kapp.dev,resources=componentpluginbindings/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=core.kalm.dev,resources=componentplugins,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core.kalm.dev,resources=componentplugins/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=core.kalm.dev,resources=componentpluginbindings,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core.kalm.dev,resources=componentpluginbindings/status,verbs=get;update;patch
 
 func (r *ComponentPluginReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	task := &ComponentPluginReconcilerTask{
@@ -227,7 +227,7 @@ func (r *ComponentPluginReconcilerTask) deletePluginBindings() error {
 	var bindingList corev1alpha1.ComponentPluginBindingList
 
 	if err := r.Reader.List(r.ctx, &bindingList, client.MatchingLabels{
-		"kapp-plugin": r.plugin.Name,
+		"kalm-plugin": r.plugin.Name,
 	}); err != nil {
 		r.WarningEvent(err, "get plugin binding list error.")
 		return err

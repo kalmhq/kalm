@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: prometheus-adapter
-  namespace: kapp-monitoring
+  namespace: kalm-monitoring
 spec:
   replicas: 1
   selector:
@@ -23,7 +23,7 @@ spec:
         - --config=/etc/adapter/config.yaml
         - --logtostderr=true
         - --metrics-relist-interval=1m
-        - --prometheus-url=http://prometheus-k8s.kapp-monitoring.svc:9090/
+        - --prometheus-url=http://prometheus-k8s.kalm-monitoring.svc:9090/
         - --secure-port=6443
         image: quay.io/coreos/k8s-prometheus-adapter-amd64:v0.5.0
         name: prometheus-adapter

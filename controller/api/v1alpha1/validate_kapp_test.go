@@ -19,9 +19,9 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.4
   creationTimestamp: null
-  name: applications.core.kapp.dev
+  name: applications.core.kalm.dev
 spec:
-  group: core.kapp.dev
+  group: core.kalm.dev
   names:
     kind: Application
     listKind: ApplicationList
@@ -61,16 +61,16 @@ status:
 
 func TestValidateUsingOpenAPI(t *testing.T) {
 
-	validator, err := getValidatorForKappSpec(crdDefinitionInYaml)
+	validator, err := getValidatorForKalmSpec(crdDefinitionInYaml)
 	assert.Nil(t, err)
 
-	goodSampleApp := `apiVersion: core.kapp.dev/v1alpha1
+	goodSampleApp := `apiVersion: core.kalm.dev/v1alpha1
 kind: Application
 metadata:
   name: socks
-  namespace: kapp-socks`
+  namespace: kalm-socks`
 
-	badSampleApp := `apiVersion: core.kapp.dev/v1alpha1
+	badSampleApp := `apiVersion: core.kalm.dev/v1alpha1
 kind: Application
 metadata: foobar`
 
@@ -148,21 +148,21 @@ metadata: foobar`
 //	fmt.Println(errList)
 //}
 //
-//func TestUsingRealKappCRD(t *testing.T) {
-//	realCrdDef, err := ioutil.ReadFile("../../config/crd/bases/core.kapp.dev_applications.yaml")
+//func TestUsingRealKalmCRD(t *testing.T) {
+//	realCrdDef, err := ioutil.ReadFile("../../config/crd/bases/core.kalm.dev_applications.yaml")
 //	if err != nil {
 //		t.Fatal(err)
 //	}
 //
-//	validator, err := getValidatorForKappSpec(realCrdDef)
+//	validator, err := getValidatorForKalmSpec(realCrdDef)
 //	assert.NotNil(t, validator)
 //	assert.Nil(t, err)
 //
-//	appSpecWithoutImage := `apiVersion: core.kapp.dev/v1alpha1
+//	appSpecWithoutImage := `apiVersion: core.kalm.dev/v1alpha1
 //kind: Application
 //metadata:
 //  name: socks
-//  namespace: kapp-socks
+//  namespace: kalm-socks
 //spec:
 //  isActive: true
 //  components:

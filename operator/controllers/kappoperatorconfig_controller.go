@@ -1,5 +1,5 @@
 /*
-Copyright 2020 Kapp Dev.
+Copyright 2020 Kalm Dev.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,9 +20,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-logr/logr"
-	corev1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
-	installv1alpha1 "github.com/kapp-staging/kapp/operator/api/v1alpha1"
-	"github.com/kapp-staging/kapp/operator/utils"
+	corev1alpha1 "github.com/kalm-staging/kalm/controller/api/v1alpha1"
+	installv1alpha1 "github.com/kalm-staging/kalm/operator/api/v1alpha1"
+	"github.com/kalm-staging/kalm/operator/utils"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
@@ -32,14 +32,14 @@ import (
 )
 
 const (
-	NamespaceKalmSystem = "kapp-system"
-	KalmImgRepo         = "kappstaging/dashboard"
+	NamespaceKalmSystem = "kalm-system"
+	KalmImgRepo         = "kalmstaging/dashboard"
 )
 
-//var finalizerName = "install.finalizers.kapp.dev"
+//var finalizerName = "install.finalizers.kalm.dev"
 
-// KappOperatorConfigReconciler reconciles a KappOperatorConfig object
-type KappOperatorConfigReconciler struct {
+// KalmOperatorConfigReconciler reconciles a KalmOperatorConfig object
+type KalmOperatorConfigReconciler struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
@@ -48,15 +48,15 @@ type KappOperatorConfigReconciler struct {
 
 //go:generate mkdir -p tmp
 //go:generate sh -c "make -C ../../controller manifests" # make sure CRD & RBAC is up to date
-//go:generate sh -c "kustomize build ../../controller/config/default > tmp/kapp.yaml"
+//go:generate sh -c "kustomize build ../../controller/config/default > tmp/kalm.yaml"
 //go:generate sh -c "kustomize build ../resources/istio > tmp/istio.yaml"
 //go:generate sh -c "cp ../resources/cert-manager/cert-manager.yaml tmp/cert-manager.yaml"
 //go:generate sh -c "cp ../resources/istiocontrolplane.yaml tmp/istiocontrolplane.yaml"
 //go:generate go-bindata -pkg controllers -nometadata -prefix tmp -o resources.gen.go ./tmp
 //go:generate rm -rf ./tmp
 
-// +kubebuilder:rbac:groups=install.kapp.dev,resources=kappoperatorconfigs,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=install.kapp.dev,resources=kappoperatorconfigs/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=install.kalm.dev,resources=kalmoperatorconfigs,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=install.kalm.dev,resources=kalmoperatorconfigs/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=policy,resources=poddisruptionbudgets*,verbs=*
 // +kubebuilder:rbac:groups=monitoring.coreos.com,resources=servicemonitors,verbs=get;create
 // +kubebuilder:rbac:groups=apiextensions.k8s.io,resources=customresourcedefinitions;customresourcedefinitions.apiextensions.k8s.io,verbs=*
@@ -77,16 +77,16 @@ type KappOperatorConfigReconciler struct {
 // +kubebuilder:rbac:groups=security.istio.io,resources=*,verbs=*
 // +kubebuilder:rbac:groups=authentication.istio.io,resources=*,verbs=*
 // +kubebuilder:rbac:groups=config.istio.io,resources=*,verbs=*
-// +kubebuilder:rbac:groups=core.kapp.dev,resources=*,verbs=*
+// +kubebuilder:rbac:groups=core.kalm.dev,resources=*,verbs=*
 
-func (r *KappOperatorConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+func (r *KalmOperatorConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
-	log := r.Log.WithValues("kappoperatorconfig", req.NamespacedName)
+	log := r.Log.WithValues("kalmoperatorconfig", req.NamespacedName)
 
 	// only allow one operator config in a namespace. If there is no config or more than one,
 	// this controller won't do anything to the system.
 
-	var configs installv1alpha1.KappOperatorConfigList
+	var configs installv1alpha1.KalmOperatorConfigList
 	if err := r.Reader.List(ctx, &configs); err != nil {
 		log.Error(err, "list configs error")
 		return ctrl.Result{}, err
@@ -124,7 +124,7 @@ func (r *KappOperatorConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 	//		config.ObjectMeta.Finalizers = utils.RemoveString(config.ObjectMeta.Finalizers, finalizerName)
 	//
 	//		if err := r.Update(ctx, config); err != nil {
-	//			log.Error(err, "Remove kapp operator finalizer failed.")
+	//			log.Error(err, "Remove kalm operator finalizer failed.")
 	//			return ctrl.Result{}, err
 	//		}
 	//	}
@@ -135,7 +135,7 @@ func (r *KappOperatorConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 	return ctrl.Result{}, r.reconcileResources(config, ctx, log)
 }
 
-func (r *KappOperatorConfigReconciler) installFromYaml(ctx context.Context, yamlName string) error {
+func (r *KalmOperatorConfigReconciler) installFromYaml(ctx context.Context, yamlName string) error {
 	fileContent := MustAsset(yamlName)
 
 	objectsBytes := utils.SeparateYamlBytes(fileContent)
@@ -162,7 +162,7 @@ func (r *KappOperatorConfigReconciler) installFromYaml(ctx context.Context, yaml
 	return nil
 }
 
-func (r *KappOperatorConfigReconciler) reconcileResources(config *installv1alpha1.KappOperatorConfig, ctx context.Context, log logr.Logger) error {
+func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha1.KalmOperatorConfig, ctx context.Context, log logr.Logger) error {
 	// TODO delete when skip
 	if !config.Spec.SkipCertManagerInstallation {
 		if err := r.installFromYaml(ctx, "cert-manager.yaml"); err != nil {
@@ -183,9 +183,9 @@ func (r *KappOperatorConfigReconciler) reconcileResources(config *installv1alpha
 		}
 	}
 
-	if !config.Spec.SkipKappControllerInstallation {
-		if err := r.installFromYaml(ctx, "kapp.yaml"); err != nil {
-			log.Error(err, "install kapp error.")
+	if !config.Spec.SkipKalmControllerInstallation {
+		if err := r.installFromYaml(ctx, "kalm.yaml"); err != nil {
+			log.Error(err, "install kalm error.")
 			return err
 		}
 	}
@@ -204,7 +204,7 @@ func (r *KappOperatorConfigReconciler) reconcileResources(config *installv1alpha
 			},
 			Spec: corev1alpha1.ComponentSpec{
 				Image:   fmt.Sprintf("%s:%s", KalmImgRepo, dashboardVersion),
-				Command: "./kapp-api-server",
+				Command: "./kalm-api-server",
 				Ports: []corev1alpha1.Port{
 					{
 						Name:          "http",
@@ -236,12 +236,12 @@ func (r *KappOperatorConfigReconciler) reconcileResources(config *installv1alpha
 	return nil
 }
 
-//func (r *KappOperatorConfigReconciler) deleteResources(config *installv1alpha1.KappOperatorConfig, ctx context.Context, log logr.Logger) error {
+//func (r *KalmOperatorConfigReconciler) deleteResources(config *installv1alpha1.KalmOperatorConfig, ctx context.Context, log logr.Logger) error {
 //	return nil
 //}
 
-func (r *KappOperatorConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *KalmOperatorConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&installv1alpha1.KappOperatorConfig{}).
+		For(&installv1alpha1.KalmOperatorConfig{}).
 		Complete(r)
 }

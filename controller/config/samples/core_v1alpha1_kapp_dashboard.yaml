@@ -26,44 +26,44 @@
 #              name: cloudflare-api-token-secret
 #              key: api-token
 #---
-#apiVersion: core.kapp.dev/v1alpha1
+#apiVersion: core.kalm.dev/v1alpha1
 #kind: HttpsCert
 #metadata:
 #  name: https-cert-wildcard
 #spec:
 #  httpsCertIssuer: https-cert-issuer-hello
 #  domains:
-#    - "*.kapp.live"
+#    - "*.kalm.live"
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: kapp-system
+  name: kalm-system
   labels:
-    kapp-enabled: "true"
+    kalm-enabled: "true"
 ---
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: Component
 metadata:
-  name: kapp-dashboard
-  namespace: kapp-system
+  name: kalm-dashboard
+  namespace: kalm-system
 spec:
-  image: kappstaging/dashboard:latest
+  image: kalmstaging/dashboard:latest
   workloadType: server
-  command: ./kapp-api-server
+  command: ./kalm-api-server
   ports:
     - name: http
       containerPort: 3001
       servicePort: 80
 ---
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: HttpRoute
 metadata:
   name: v1-only-route
-  namespace: kapp-system
+  namespace: kalm-system
 spec:
   hosts:
-    - dashboard.kapp.live
+    - dashboard.kalm.live
   methods:
     - GET
     - POST
@@ -80,6 +80,6 @@ spec:
   paths:
     - /
   destinations:
-    - host: kapp-dashboard
+    - host: kalm-dashboard
       weight: 1
   stripPath: true

@@ -1,4 +1,4 @@
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: HttpsCertIssuer
 metadata:
   name: default-cert-issuer
@@ -8,7 +8,7 @@ spec:
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: kapp-system
+  name: kalm-system
 ---
 apiVersion: v1
 kind: Namespace
@@ -16,9 +16,9 @@ metadata:
   name: test-inject-files
   labels:
     istio-injection: enabled
-    kapp-enabled: "true"
+    kalm-enabled: "true"
 ---
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: Component
 metadata:
   name: test
@@ -73,7 +73,7 @@ spec:
             }
         }
 ---
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: HttpRoute
 metadata:
   name: hello-world

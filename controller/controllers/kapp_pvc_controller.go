@@ -18,7 +18,7 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -30,46 +30,46 @@ import (
 )
 
 const (
-	KappLabelPV      = "kapp-pv"
-	KappLabelManaged = "kapp-managed"
+	KalmLabelPV      = "kalm-pv"
+	KalmLabelManaged = "kalm-managed"
 )
 
-// KappPVCReconciler reconciles a KappPVC object
-type KappPVCReconciler struct {
+// KalmPVCReconciler reconciles a KalmPVC object
+type KalmPVCReconciler struct {
 	*BaseReconciler
 	ctx context.Context
 }
 
-func NewKappPVCReconciler(mgr ctrl.Manager) *KappPVCReconciler {
-	return &KappPVCReconciler{
-		BaseReconciler: NewBaseReconciler(mgr, "KappPVC"),
+func NewKalmPVCReconciler(mgr ctrl.Manager) *KalmPVCReconciler {
+	return &KalmPVCReconciler{
+		BaseReconciler: NewBaseReconciler(mgr, "KalmPVC"),
 		ctx:            context.Background(),
 	}
 }
 
-// +kubebuilder:rbac:groups=core.kapp.dev,resources=components,verbs=get;list;watch
+// +kubebuilder:rbac:groups=core.kalm.dev,resources=components,verbs=get;list;watch
 // +kubebuilder:rbac:groups="",resources=persistentvolumeclaims,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="",resources=persistentvolumes,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="",resources=nodes,verbs=get;list;watch
 // +kubebuilder:rbac:groups=storage.k8s.io,resources=storageclasses,verbs=get;list;watch;create;update;patch;delete
 
-func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	r.Log.Info("reconciling kappPvc volumes", "req", req)
+func (r *KalmPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+	r.Log.Info("reconciling kalmPvc volumes", "req", req)
 
 	ctx := context.Background()
-	log := r.Log.WithValues("kapppvc", req.NamespacedName)
+	log := r.Log.WithValues("kalmpvc", req.NamespacedName)
 
-	// 1. check if any Component is using this kappPvc, if not delete it
-	// todo skip delete if reclaim policy of kappPV is not Retain
-	//      or if storage class of PV is not Kapp-Managed
-	var kappPvcList corev1.PersistentVolumeClaimList
-	err := r.List(ctx, &kappPvcList, client.MatchingLabels{KappLabelManaged: "true"})
+	// 1. check if any Component is using this kalmPvc, if not delete it
+	// todo skip delete if reclaim policy of kalmPV is not Retain
+	//      or if storage class of PV is not Kalm-Managed
+	var kalmPvcList corev1.PersistentVolumeClaimList
+	err := r.List(ctx, &kalmPvcList, client.MatchingLabels{KalmLabelManaged: "true"})
 	if client.IgnoreNotFound(err) != nil {
 		//fmt.Println("unexpected err:", err)
 		return ctrl.Result{}, err
 	}
 
-	//fmt.Println("kappPVC:", len(kappPvcList.Items), kappPvcList.Items)
+	//fmt.Println("kalmPVC:", len(kalmPvcList.Items), kalmPvcList.Items)
 
 	var componentList v1alpha1.ComponentList
 	if err = r.List(ctx, &componentList); err != nil {
@@ -80,43 +80,43 @@ func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 
 	//var activePVCs []corev1.PersistentVolumeClaim
 	//
-	//for _, kappPvc := range kappPvcList.Items {
-	//	if _, exist := findComponentUsingPVC(kappPvc, componentList); exist {
-	//		activePVCs = append(activePVCs, kappPvc)
+	//for _, kalmPvc := range kalmPvcList.Items {
+	//	if _, exist := findComponentUsingPVC(kalmPvc, componentList); exist {
+	//		activePVCs = append(activePVCs, kalmPvc)
 	//
 	//		continue
 	//	}
 	//
-	//	// todo more careful deleting this kappPvc
-	//	r.Log.Info("deleting un-used kappPvc", "kappPvc", kappPvc.Name, "comps", componentList.Items)
-	//	if err := r.Delete(ctx, &kappPvc); err != nil {
+	//	// todo more careful deleting this kalmPvc
+	//	r.Log.Info("deleting un-used kalmPvc", "kalmPvc", kalmPvc.Name, "comps", componentList.Items)
+	//	if err := r.Delete(ctx, &kalmPvc); err != nil {
 	//		return ctrl.Result{}, nil
 	//	}
 	//}
 
 	// 2. PV
 
-	var kappPVList corev1.PersistentVolumeList
-	if err := r.List(ctx, &kappPVList, client.MatchingLabels{KappLabelManaged: "true"}); err != nil {
+	var kalmPVList corev1.PersistentVolumeList
+	if err := r.List(ctx, &kalmPVList, client.MatchingLabels{KalmLabelManaged: "true"}); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	// 2.1 for all kapp PV in Released stats, clean claimRef to make it available again
-	for _, kappPV := range kappPVList.Items {
-		if kappPV.Status.Phase != corev1.VolumeReleased {
+	// 2.1 for all kalm PV in Released stats, clean claimRef to make it available again
+	for _, kalmPV := range kalmPVList.Items {
+		if kalmPV.Status.Phase != corev1.VolumeReleased {
 			continue
 		}
 
-		if kappPV.Spec.ClaimRef != nil {
-			kappPV.Spec.ClaimRef = nil
+		if kalmPV.Spec.ClaimRef != nil {
+			kalmPV.Spec.ClaimRef = nil
 
-			if err := r.Update(ctx, &kappPV); err != nil {
+			if err := r.Update(ctx, &kalmPV); err != nil {
 				return ctrl.Result{}, nil
 			}
 		}
 	}
 
-	// 2.2 make sure for each active kappPvc, underlying kappPV is labeled with its name
+	// 2.2 make sure for each active kalmPvc, underlying kalmPV is labeled with its name
 	//     (to be selected using selector)
 	var pvList corev1.PersistentVolumeList
 	if err := r.List(ctx, &pvList); client.IgnoreNotFound(err) != nil {
@@ -126,7 +126,7 @@ func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	//fmt.Println("aaaa", len(pvList.Items), pvList.Items, req)
 
 	for _, pv := range pvList.Items {
-		kappPVC, isRefed := isReferencedByKappPVC(pv, kappPvcList)
+		kalmPVC, isRefed := isReferencedByKalmPVC(pv, kalmPvcList)
 		if !isRefed {
 			log.Info("pv is not refed, skipped", "pv:", pv.Name)
 			continue
@@ -136,11 +136,11 @@ func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			pv.Labels = make(map[string]string)
 		}
 
-		pv.Labels[KappLabelManaged] = "true"
-		pv.Labels[KappLabelComponentKey] = kappPVC.Labels[KappLabelComponentKey]
-		pv.Labels[KappLabelNamespaceKey] = kappPVC.Labels[KappLabelNamespaceKey]
+		pv.Labels[KalmLabelManaged] = "true"
+		pv.Labels[KalmLabelComponentKey] = kalmPVC.Labels[KalmLabelComponentKey]
+		pv.Labels[KalmLabelNamespaceKey] = kalmPVC.Labels[KalmLabelNamespaceKey]
 		// to be selectable by PVC
-		pv.Labels[KappLabelPV] = pv.Name
+		pv.Labels[KalmLabelPV] = pv.Name
 
 		if err := r.Update(ctx, &pv); err != nil {
 			return ctrl.Result{}, err
@@ -162,7 +162,7 @@ func (r *KappPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	return ctrl.Result{}, nil
 }
 
-func isReferencedByKappPVC(pv corev1.PersistentVolume, list corev1.PersistentVolumeClaimList,
+func isReferencedByKalmPVC(pv corev1.PersistentVolume, list corev1.PersistentVolumeClaimList,
 ) (pvc corev1.PersistentVolumeClaim, isRefed bool) {
 
 	for _, pvc := range list.Items {
@@ -201,7 +201,7 @@ func findComponentUsingPVC(pvc corev1.PersistentVolumeClaim, compList v1alpha1.C
 	return v1alpha1.Component{}, false
 }
 
-func (r *KappPVCReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *KalmPVCReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		//For(&corev1.PersistentVolume{}).
 		//For(&v1.StorageClass{}).
@@ -226,7 +226,7 @@ func (r *KappPVCReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func (r *KappPVCReconciler) guessCurrentCloudProvider() (string, bool) {
+func (r *KalmPVCReconciler) guessCurrentCloudProvider() (string, bool) {
 	var nodeList corev1.NodeList
 	err := r.List(r.ctx, &nodeList)
 	if err != nil {
@@ -275,11 +275,11 @@ func isMinikube(node corev1.Node) bool {
 }
 
 const (
-	KappAnnoSCDocLink   = "kapp-annotation-sc-doc-link"
-	KappAnnoSCPriceLink = "kapp-annotation-sc-price-link"
+	KalmAnnoSCDocLink   = "kalm-annotation-sc-doc-link"
+	KalmAnnoSCPriceLink = "kalm-annotation-sc-price-link"
 )
 
-func (r *KappPVCReconciler) reconcileDefaultStorageClass(cloudProvider string) error {
+func (r *KalmPVCReconciler) reconcileDefaultStorageClass(cloudProvider string) error {
 	var expectedStorageClasses []v1.StorageClass
 
 	reclaimPolicy := corev1.PersistentVolumeReclaimRetain
@@ -288,10 +288,10 @@ func (r *KappPVCReconciler) reconcileDefaultStorageClass(cloudProvider string) e
 	case "aws":
 		hdd := v1.StorageClass{
 			ObjectMeta: ctrl.ObjectMeta{
-				Name: "kapp-hdd",
+				Name: "kalm-hdd",
 				Annotations: map[string]string{
-					KappAnnoSCDocLink:   "todo",
-					KappAnnoSCPriceLink: "todo",
+					KalmAnnoSCDocLink:   "todo",
+					KalmAnnoSCPriceLink: "todo",
 				},
 			},
 			Provisioner:   "kubernetes.io/aws-ebs",
@@ -312,10 +312,10 @@ func (r *KappPVCReconciler) reconcileDefaultStorageClass(cloudProvider string) e
 	case "gcp":
 		hdd := v1.StorageClass{
 			ObjectMeta: ctrl.ObjectMeta{
-				Name: "kapp-hdd",
+				Name: "kalm-hdd",
 				Annotations: map[string]string{
-					KappAnnoSCDocLink:   "https://cloud.google.com/compute/docs/disks#pdspecs",
-					KappAnnoSCPriceLink: "https://cloud.google.com/compute/disks-image-pricing#disk",
+					KalmAnnoSCDocLink:   "https://cloud.google.com/compute/docs/disks#pdspecs",
+					KalmAnnoSCPriceLink: "https://cloud.google.com/compute/disks-image-pricing#disk",
 				},
 			},
 			Provisioner:   "kubernetes.io/gce-pd",
@@ -328,7 +328,7 @@ func (r *KappPVCReconciler) reconcileDefaultStorageClass(cloudProvider string) e
 		}
 		ssd := v1.StorageClass{
 			ObjectMeta: ctrl.ObjectMeta{
-				Name: "kapp-ssd",
+				Name: "kalm-ssd",
 			},
 			Provisioner:   "kubernetes.io/gce-pd",
 			ReclaimPolicy: &reclaimPolicy,
@@ -343,9 +343,9 @@ func (r *KappPVCReconciler) reconcileDefaultStorageClass(cloudProvider string) e
 	case "minikube":
 		std := v1.StorageClass{
 			ObjectMeta: ctrl.ObjectMeta{
-				Name: "kapp-standard",
+				Name: "kalm-standard",
 				Annotations: map[string]string{
-					KappAnnoSCDocLink: "https://minikube.sigs.k8s.io/docs/handbook/persistent_volumes/",
+					KalmAnnoSCDocLink: "https://minikube.sigs.k8s.io/docs/handbook/persistent_volumes/",
 				},
 			},
 			Provisioner:   "k8s.io/minikube-hostpath",
@@ -358,7 +358,7 @@ func (r *KappPVCReconciler) reconcileDefaultStorageClass(cloudProvider string) e
 		return nil
 	}
 
-	// set labels for kapp managed storage class
+	// set labels for kalm managed storage class
 	for i := 0; i < len(expectedStorageClasses); i++ {
 		sc := &expectedStorageClasses[i]
 
@@ -366,7 +366,7 @@ func (r *KappPVCReconciler) reconcileDefaultStorageClass(cloudProvider string) e
 			sc.Labels = make(map[string]string)
 		}
 
-		sc.Labels[KappLabelManaged] = "true"
+		sc.Labels[KalmLabelManaged] = "true"
 	}
 
 	for _, expectedSC := range expectedStorageClasses {

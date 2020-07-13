@@ -4,7 +4,7 @@ metadata:
   labels:
     k8s-app: coredns
   name: coredns
-  namespace: kapp-monitoring
+  namespace: kalm-monitoring
 spec:
   endpoints:
   - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token

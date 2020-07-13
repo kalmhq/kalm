@@ -30,4 +30,4 @@ data:
 kind: ConfigMap
 metadata:
   name: adapter-config
-  namespace: kapp-monitoring
+  namespace: kalm-monitoring

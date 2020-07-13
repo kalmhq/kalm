@@ -1,20 +1,20 @@
-# permissions to do viewer kappoperatorconfigs.
+# permissions to do viewer kalmoperatorconfigs.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: kappoperatorconfig-viewer-role
+  name: kalmoperatorconfig-viewer-role
 rules:
 - apiGroups:
-  - install.kapp.dev
+  - install.kalm.dev
   resources:
-  - kappoperatorconfigs
+  - kalmoperatorconfigs
   verbs:
   - get
   - list
   - watch
 - apiGroups:
-  - install.kapp.dev
+  - install.kalm.dev
   resources:
-  - kappoperatorconfigs/status
+  - kalmoperatorconfigs/status
   verbs:
   - get

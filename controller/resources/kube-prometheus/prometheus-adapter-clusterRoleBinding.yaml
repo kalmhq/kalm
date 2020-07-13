@@ -9,4 +9,4 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: prometheus-adapter
-  namespace: kapp-monitoring
+  namespace: kalm-monitoring

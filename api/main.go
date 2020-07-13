@@ -7,13 +7,13 @@ import (
 	"sort"
 
 	_ "github.com/joho/godotenv/autoload"
-	"github.com/kapp-staging/kapp/api/client"
-	"github.com/kapp-staging/kapp/api/config"
-	"github.com/kapp-staging/kapp/api/handler"
-	"github.com/kapp-staging/kapp/api/resources"
-	"github.com/kapp-staging/kapp/api/server"
-	"github.com/kapp-staging/kapp/api/ws"
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/kalm-staging/kalm/api/client"
+	"github.com/kalm-staging/kalm/api/config"
+	"github.com/kalm-staging/kalm/api/handler"
+	"github.com/kalm-staging/kalm/api/resources"
+	"github.com/kalm-staging/kalm/api/server"
+	"github.com/kalm-staging/kalm/api/ws"
+	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
 	"github.com/urfave/cli/v2"
 	"k8s.io/client-go/kubernetes/scheme"
 )
@@ -22,10 +22,10 @@ func main() {
 	runningConfig := &config.Config{}
 
 	app := &cli.App{
-		Name:        "kapp-apiserver",
+		Name:        "kalm-apiserver",
 		Version:     "0.1.0",
-		Usage:       "Kapp Api Server",
-		Description: "KappApiServer is a key component in kapp system. It works between kapp dashboard and kubernetes api server to proxy requests and delegate authorizations.",
+		Usage:       "Kalm Api Server",
+		Description: "KalmApiServer is a key component in kalm system. It works between kalm dashboard and kubernetes api server to proxy requests and delegate authorizations.",
 		Action: func(c *cli.Context) error {
 			runningConfig.Install()
 			run(runningConfig)
@@ -56,7 +56,7 @@ func main() {
 			},
 			&cli.StringFlag{
 				Name:        "k8s-api-server-address",
-				Usage:       "Only required when running kapp api server out of kubernetes cluster. The kubernetes api server address",
+				Usage:       "Only required when running kalm api server out of kubernetes cluster. The kubernetes api server address",
 				Destination: &runningConfig.KubernetesApiServerAddress,
 				EnvVars:     []string{"K8S_API_SERVER_ADDRESS"},
 			},
@@ -69,8 +69,8 @@ func main() {
 			},
 			&cli.StringFlag{
 				Name: "kube-config-path",
-				Usage: "Only required when running kapp api server out of kubernetes cluster. " +
-					"Kapp api server will read kubernetes config file and try to connect the current context kubernetes cluster. " +
+				Usage: "Only required when running kalm api server out of kubernetes cluster. " +
+					"Kalm api server will read kubernetes config file and try to connect the current context kubernetes cluster. " +
 					"It only recommend to use this way in DEVELOPMENT mode.",
 				DefaultText: "$HOME/.kube/config",
 				Destination: &runningConfig.KubeConfigPath,

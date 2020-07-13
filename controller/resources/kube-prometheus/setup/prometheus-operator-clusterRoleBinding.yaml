@@ -13,4 +13,4 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: prometheus-operator
-  namespace: kapp-monitoring
+  namespace: kalm-monitoring

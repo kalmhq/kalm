@@ -10,24 +10,24 @@ import (
 	"time"
 )
 
-type KappNSControllerSuite struct {
+type KalmNSControllerSuite struct {
 	BasicSuite
 }
 
-func TestKappNSControllerSuite(t *testing.T) {
-	suite.Run(t, new(KappNSControllerSuite))
+func TestKalmNSControllerSuite(t *testing.T) {
+	suite.Run(t, new(KalmNSControllerSuite))
 }
 
-func (suite *KappNSControllerSuite) SetupSuite() {
+func (suite *KalmNSControllerSuite) SetupSuite() {
 	suite.BasicSuite.SetupSuite()
 }
 
-func (suite *KappNSControllerSuite) TearDownSuite() {
+func (suite *KalmNSControllerSuite) TearDownSuite() {
 	suite.BasicSuite.TearDownSuite()
 }
 
-func (suite *KappNSControllerSuite) TestKappNSIstioEnabled() {
-	ns := suite.SetupKappEnabledNs()
+func (suite *KalmNSControllerSuite) TestKalmNSIstioEnabled() {
+	ns := suite.SetupKalmEnabledNs()
 
 	suite.Eventually(func() bool {
 		err := suite.K8sClient.Get(context.Background(), types.NamespacedName{Name: ns.Name}, &ns)
@@ -36,8 +36,8 @@ func (suite *KappNSControllerSuite) TestKappNSIstioEnabled() {
 	}, "ns labels is not updated")
 }
 
-func (suite *KappNSControllerSuite) TestUpdateOfNSWillAffectComponentWithin() {
-	ns := suite.SetupKappEnabledNs()
+func (suite *KalmNSControllerSuite) TestUpdateOfNSWillAffectComponentWithin() {
+	ns := suite.SetupKalmEnabledNs()
 
 	component := generateEmptyComponent(ns.Name)
 	suite.createComponent(component)
@@ -58,7 +58,7 @@ func (suite *KappNSControllerSuite) TestUpdateOfNSWillAffectComponentWithin() {
 		return err == nil && ns.Labels[IstioInjectionLabelName] == IstioInjectionLabelEnableValue
 	}, "ns labels is not updated")
 
-	ns.Labels[KappEnableLabelName] = "false"
+	ns.Labels[KalmEnableLabelName] = "false"
 	suite.updateObject(&ns)
 
 	suite.Eventually(func() bool {
@@ -69,7 +69,7 @@ func (suite *KappNSControllerSuite) TestUpdateOfNSWillAffectComponentWithin() {
 
 	// make ns active again
 	suite.reloadObject(types.NamespacedName{Name: ns.Name}, &ns)
-	ns.Labels[KappEnableLabelName] = KappEnableLabelValue
+	ns.Labels[KalmEnableLabelName] = KalmEnableLabelValue
 	suite.updateObject(&ns)
 	suite.Eventually(func() bool {
 		return suite.K8sClient.Get(context.Background(), key, &deployment) == nil

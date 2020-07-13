@@ -17,7 +17,7 @@ package controllers
 
 import (
 	"context"
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -32,27 +32,27 @@ import (
 )
 
 const (
-	KappEnableLabelName  = "kapp-enabled"
-	KappEnableLabelValue = "true"
+	KalmEnableLabelName  = "kalm-enabled"
+	KalmEnableLabelValue = "true"
 
 	IstioInjectionLabelName        = "istio-injection"
 	IstioInjectionLabelEnableValue = "enabled"
 )
 
-// KappNSReconciler watches all namespaces
-type KappNSReconciler struct {
+// KalmNSReconciler watches all namespaces
+type KalmNSReconciler struct {
 	*BaseReconciler
 	ctx context.Context
 }
 
-func NewKappNSReconciler(mgr ctrl.Manager) *KappNSReconciler {
-	return &KappNSReconciler{
-		BaseReconciler: NewBaseReconciler(mgr, "KappNS"),
+func NewKalmNSReconciler(mgr ctrl.Manager) *KalmNSReconciler {
+	return &KalmNSReconciler{
+		BaseReconciler: NewBaseReconciler(mgr, "KalmNS"),
 		ctx:            context.Background(),
 	}
 }
 
-func (r *KappNSReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *KalmNSReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1.Namespace{}).
 		Watches(&source.Kind{Type: &v1alpha1.HttpsCertIssuer{}}, &handler.EnqueueRequestForObject{}).
@@ -64,11 +64,11 @@ func (r *KappNSReconciler) SetupWithManager(mgr ctrl.Manager) error {
 // +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=metrics.k8s.io,resources=*,verbs=get;list;watch
 
-func (r *KappNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
+func (r *KalmNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := r.ctx
-	logger := r.Log.WithValues("kappns", req.NamespacedName)
+	logger := r.Log.WithValues("kalmns", req.NamespacedName)
 
-	logger.Info("kapp ns reconciling...")
+	logger.Info("kalm ns reconciling...")
 
 	var namespaceList v1.NamespaceList
 	if err := r.List(ctx, &namespaceList); err != nil {
@@ -79,7 +79,7 @@ func (r *KappNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	now := time.Now()
 
 	for _, ns := range namespaceList.Items {
-		_, exist := ns.Labels[KappEnableLabelName]
+		_, exist := ns.Labels[KalmEnableLabelName]
 		if !exist {
 			continue
 		}
@@ -97,7 +97,7 @@ func (r *KappNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 			return ctrl.Result{}, err
 		}
 
-		isActive := IsNamespaceKappEnabled(ns)
+		isActive := IsNamespaceKalmEnabled(ns)
 
 		for _, item := range compList.Items {
 			component := item.DeepCopy()
@@ -112,7 +112,7 @@ func (r *KappNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 				suffix = "disabled"
 			}
 
-			component.Labels["kapp-namespace-updated-at"] = strconv.Itoa(int(now.Unix())) + "-" + suffix
+			component.Labels["kalm-namespace-updated-at"] = strconv.Itoa(int(now.Unix())) + "-" + suffix
 
 			if err := r.Update(ctx, component); err != nil {
 				return ctrl.Result{}, err
@@ -132,7 +132,7 @@ func (r *KappNSReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	return ctrl.Result{}, nil
 }
 
-func (r *KappNSReconciler) reconcileDefaultCAIssuerAndCert() error {
+func (r *KalmNSReconciler) reconcileDefaultCAIssuerAndCert() error {
 	defaultCAIssuerName := "default-cert-issuer"
 
 	expectedCAIssuer := v1alpha1.HttpsCertIssuer{
@@ -187,7 +187,7 @@ func (r *KappNSReconciler) reconcileDefaultCAIssuerAndCert() error {
 
 var DefaultHTTP01IssuerName = "default-http01-issuer"
 
-func (r *KappNSReconciler) reconcileDefaultHTTP01Issuer() error {
+func (r *KalmNSReconciler) reconcileDefaultHTTP01Issuer() error {
 
 	expectedHTTP01Issuer := v1alpha1.HttpsCertIssuer{
 		ObjectMeta: metav1.ObjectMeta{

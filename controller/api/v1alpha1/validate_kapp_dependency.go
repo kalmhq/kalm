@@ -6,7 +6,7 @@ import (
 )
 
 // 1. check if there is any loop in dependency graph
-//func isValidateDependency(spec ComponentSpec) KappValidateErrorList {
+//func isValidateDependency(spec ComponentSpec) KalmValidateErrorList {
 //	//spec := app.Spec
 //
 //	// build graph
@@ -17,9 +17,9 @@ import (
 //		return nil
 //	}
 //
-//	var errs []KappValidateError
+//	var errs []KalmValidateError
 //	for _, node := range nodesInLoop {
-//		errs = append(errs, KappValidateError{
+//		errs = append(errs, KalmValidateError{
 //			Err:  "dependency loop exist",
 //			Path: getJsonPathOfWrongField(node.Name, spec),
 //		})

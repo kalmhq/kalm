@@ -6,18 +6,18 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.4
   creationTimestamp: null
-  name: kappoperatorconfigs.install.kapp.dev
+  name: kalmoperatorconfigs.install.kalm.dev
 spec:
-  group: install.kapp.dev
+  group: install.kalm.dev
   names:
-    kind: KappOperatorConfig
-    listKind: KappOperatorConfigList
-    plural: kappoperatorconfigs
-    singular: kappoperatorconfig
+    kind: KalmOperatorConfig
+    listKind: KalmOperatorConfigList
+    plural: kalmoperatorconfigs
+    singular: kalmoperatorconfig
   scope: Namespaced
   validation:
     openAPIV3Schema:
-      description: KappOperatorConfig is the Schema for the kappoperatorconfigs API
+      description: KalmOperatorConfig is the Schema for the kalmoperatorconfigs API
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -32,7 +32,7 @@ spec:
         metadata:
           type: object
         spec:
-          description: KappOperatorConfigSpec defines the desired state of KappOperatorConfig
+          description: KalmOperatorConfigSpec defines the desired state of KalmOperatorConfig
           properties:
             dashboardVersion:
               type: string
@@ -42,11 +42,11 @@ spec:
               type: boolean
             skipKalmControllerInstallation:
               type: boolean
-            skipKappControllerInstallation:
+            skipKalmControllerInstallation:
               type: boolean
           type: object
         status:
-          description: KappOperatorConfigStatus defines the observed state of KappOperatorConfig
+          description: KalmOperatorConfigStatus defines the observed state of KalmOperatorConfig
           type: object
       type: object
   version: v1alpha1

@@ -2,8 +2,8 @@ package resources
 
 import (
 	"encoding/json"
-	"github.com/kapp-staging/kapp/api/errors"
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/kalm-staging/kalm/api/errors"
+	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -45,17 +45,17 @@ func (builder *Builder) GetComponentPluginBindingListChannel(opts ...client.List
 	return channel
 }
 
-func UpdateComponentPluginBindingsForObject(kappClient *rest.RESTClient, namespace, componentName string, plugins []runtime.RawExtension) (err error) {
+func UpdateComponentPluginBindingsForObject(kalmClient *rest.RESTClient, namespace, componentName string, plugins []runtime.RawExtension) (err error) {
 	var oldPluginList v1alpha1.ComponentPluginBindingList
 	selector := labels.NewSelector()
-	requirement, _ := labels.NewRequirement("kapp-component", selection.Equals, []string{componentName})
+	requirement, _ := labels.NewRequirement("kalm-component", selection.Equals, []string{componentName})
 	selector = selector.Add(*requirement)
 
 	options := metaV1.ListOptions{
 		LabelSelector: selector.String(),
 	}
 
-	err = kappClient.Get().
+	err = kalmClient.Get().
 		Namespace(namespace).
 		Resource("componentpluginbindings").
 		VersionedParams(&options, metaV1.ParameterCodec).
@@ -77,7 +77,7 @@ func UpdateComponentPluginBindingsForObject(kappClient *rest.RESTClient, namespa
 			ObjectMeta: metaV1.ObjectMeta{
 				Namespace: namespace,
 				Labels: map[string]string{
-					"kapp-component": componentName,
+					"kalm-component": componentName,
 				},
 			},
 			Spec: v1alpha1.ComponentPluginBindingSpec{
@@ -112,7 +112,7 @@ func UpdateComponentPluginBindingsForObject(kappClient *rest.RESTClient, namespa
 	}
 
 	for _, np := range shouldCreate {
-		err := kappClient.Post().
+		err := kalmClient.Post().
 			Namespace(namespace).
 			Resource("componentpluginbindings").
 			Body(np).
@@ -129,7 +129,7 @@ func UpdateComponentPluginBindingsForObject(kappClient *rest.RESTClient, namespa
 	}
 
 	for name := range shouldDelete {
-		err := kappClient.Delete().
+		err := kalmClient.Delete().
 			Namespace(namespace).
 			Resource("componentpluginbindings").
 			Name(name).

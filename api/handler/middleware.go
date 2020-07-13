@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/kubernetes"
@@ -39,7 +39,7 @@ func getK8sClient(c echo.Context) *kubernetes.Clientset {
 	return c.Get(KUBERNETES_CLIENT_CLIENT_KEY).(*kubernetes.Clientset)
 }
 
-func getKappV1Alpha1Client(c echo.Context) (*rest.RESTClient, error) {
+func getKalmV1Alpha1Client(c echo.Context) (*rest.RESTClient, error) {
 	// copy a cfg
 	cfg := getK8sClientConfig(c)
 	cfg.ContentConfig.GroupVersion = &v1alpha1.GroupVersion

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/kapp-staging/kapp/controller/lib/files"
+	"github.com/kalm-staging/kalm/controller/lib/files"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 	coreV1 "k8s.io/api/core/v1"
@@ -14,7 +14,7 @@ import (
 
 // TODO validate path
 
-func (h *ApiHandler) findOrCreateKappConfigMap(c echo.Context) (*coreV1.ConfigMap, error) {
+func (h *ApiHandler) findOrCreateKalmConfigMap(c echo.Context) (*coreV1.ConfigMap, error) {
 	k8sClient := getK8sClient(c)
 	namespace := c.Param("namespace")
 
@@ -35,7 +35,7 @@ func (h *ApiHandler) findOrCreateKappConfigMap(c echo.Context) (*coreV1.ConfigMa
 		})
 
 		if err != nil {
-			log.Error("create kapp config map error", err)
+			log.Error("create kalm config map error", err)
 			return nil, err
 		}
 
@@ -53,7 +53,7 @@ func (h *ApiHandler) findOrCreateKappConfigMap(c echo.Context) (*coreV1.ConfigMa
 		}
 
 	} else if err != nil {
-		log.Error("get kapp config map error", err)
+		log.Error("get kalm config map error", err)
 		return nil, err
 	}
 
@@ -86,7 +86,7 @@ func (h *ApiHandler) handleCreateFile(c echo.Context) (err error) {
 		return err
 	}
 
-	configMap, err := h.findOrCreateKappConfigMap(c)
+	configMap, err := h.findOrCreateKalmConfigMap(c)
 
 	if err != nil {
 		return err
@@ -127,7 +127,7 @@ func (h *ApiHandler) handleUpdateFile(c echo.Context) error {
 		return err
 	}
 
-	configMap, err := h.findOrCreateKappConfigMap(c)
+	configMap, err := h.findOrCreateKalmConfigMap(c)
 
 	if err != nil {
 		return err
@@ -159,7 +159,7 @@ func (h *ApiHandler) handleMoveFile(c echo.Context) error {
 		return err
 	}
 
-	configMap, err := h.findOrCreateKappConfigMap(c)
+	configMap, err := h.findOrCreateKalmConfigMap(c)
 
 	if err != nil {
 		return err
@@ -195,7 +195,7 @@ func (h *ApiHandler) handleDeleteFile(c echo.Context) error {
 		return err
 	}
 
-	configMap, err := h.findOrCreateKappConfigMap(c)
+	configMap, err := h.findOrCreateKalmConfigMap(c)
 
 	if err != nil {
 		return err
@@ -220,7 +220,7 @@ func (h *ApiHandler) handleDeleteFile(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleListFiles(c echo.Context) error {
-	configMap, err := h.findOrCreateKappConfigMap(c)
+	configMap, err := h.findOrCreateKalmConfigMap(c)
 
 	if err != nil {
 		return err

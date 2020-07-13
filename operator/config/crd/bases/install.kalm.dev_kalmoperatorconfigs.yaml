@@ -6,17 +6,18 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.4
   creationTimestamp: null
-  name: istiooperators.install.kalm.dev
+  name: kalmoperatorconfigs.install.kalm.dev
 spec:
   group: install.kalm.dev
   names:
-    kind: IstioOperator
-    listKind: IstioOperatorList
-    plural: istiooperators
-    singular: istiooperator
+    kind: KalmOperatorConfig
+    listKind: KalmOperatorConfigList
+    plural: kalmoperatorconfigs
+    singular: kalmoperatorconfig
   scope: Namespaced
   validation:
     openAPIV3Schema:
+      description: KalmOperatorConfig is the Schema for the kalmoperatorconfigs API
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -31,7 +32,21 @@ spec:
         metadata:
           type: object
         spec:
-          description: Spec defines the implementation of this definition.
+          description: KalmOperatorConfigSpec defines the desired state of KalmOperatorConfig
+          properties:
+            dashboardVersion:
+              type: string
+            skipCertManagerInstallation:
+              type: boolean
+            skipIstioInstallation:
+              type: boolean
+            skipKalmControllerInstallation:
+              type: boolean
+            skipKalmDashboardInstallation:
+              type: boolean
+          type: object
+        status:
+          description: KalmOperatorConfigStatus defines the observed state of KalmOperatorConfig
           type: object
       type: object
   version: v1alpha1

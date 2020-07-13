@@ -19,7 +19,7 @@ package v1alpha1
 //	assert.Equal(t, 2, len(errs))
 //}
 //
-//func TestKappProbeValidator(t *testing.T) {
+//func TestKalmProbeValidator(t *testing.T) {
 //	appSpec := ApplicationSpec{
 //		Components: []ComponentSpec{
 //			{

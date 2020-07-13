@@ -2,8 +2,8 @@ package resources
 
 import (
 	"fmt"
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
-	"github.com/kapp-staging/kapp/controller/controllers"
+	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
+	"github.com/kalm-staging/kalm/controller/controllers"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -55,7 +55,7 @@ func (builder *Builder) GetHttpsCertIssuerList() ([]HttpsCertIssuer, error) {
 }
 
 func GenerateSecretNameForACME(issuer HttpsCertIssuer) string {
-	return "kapp-sec-acme-" + issuer.Name
+	return "kalm-sec-acme-" + issuer.Name
 }
 
 func (builder *Builder) UpdateHttpsCertIssuer(hcIssuer HttpsCertIssuer) (HttpsCertIssuer, error) {
@@ -114,7 +114,7 @@ func (builder *Builder) ReconcileSecretForIssuer(secNs, secName string, secret s
 			Name:      secName,
 			Namespace: secNs,
 			Labels: map[string]string{
-				controllers.KappLabelManaged: "true",
+				controllers.KalmLabelManaged: "true",
 			},
 		},
 		Data: map[string][]byte{

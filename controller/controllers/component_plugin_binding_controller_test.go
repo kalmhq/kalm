@@ -3,7 +3,7 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 	appsV1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -33,7 +33,7 @@ func (suite *PluginBindingControllerSuite) TearDownSuite() {
 }
 
 func (suite *PluginBindingControllerSuite) SetupTest() {
-	namespace := suite.SetupKappEnabledNs()
+	namespace := suite.SetupKalmEnabledNs()
 	suite.namespace = &namespace
 
 	plugin := generateEmptyComponentPlugin()
@@ -86,8 +86,8 @@ function BeforeDeploymentSave(deployment) {
 			return false
 		}
 
-		return binding.Labels["kapp-component"] == suite.component.Name &&
-			binding.Labels["kapp-plugin"] == suite.plugin.Name &&
+		return binding.Labels["kalm-component"] == suite.component.Name &&
+			binding.Labels["kalm-plugin"] == suite.plugin.Name &&
 			binding.Status.ConfigValid &&
 			binding.Status.ConfigError == ""
 

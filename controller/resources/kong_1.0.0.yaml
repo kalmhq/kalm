@@ -1,13 +1,13 @@
 #apiVersion: v1
 #kind: Namespace
 #metadata:
-#  name: kapp-kong
+#  name: kalm-kong
 #---
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: Application
 metadata:
-  name: kapp-kong
-  #namespace: kapp-kong
+  name: kalm-kong
+  #namespace: kalm-kong
 spec:
   isActive: true
 ---
@@ -324,7 +324,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: kong-serviceaccount
-  namespace: kapp-kong
+  namespace: kalm-kong
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
@@ -416,7 +416,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: kong-serviceaccount
-  namespace: kapp-kong
+  namespace: kalm-kong
 ---
 apiVersion: v1
 data:
@@ -453,7 +453,7 @@ data:
 kind: ConfigMap
 metadata:
   name: kong-server-blocks
-  namespace: kapp-kong
+  namespace: kalm-kong
 ---
 apiVersion: v1
 kind: Service
@@ -462,7 +462,7 @@ metadata:
     service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
     service.beta.kubernetes.io/aws-load-balancer-type: nlb
   name: kong-proxy
-  namespace: kapp-kong
+  namespace: kalm-kong
 spec:
   externalTrafficPolicy: Local
   ports:
@@ -482,7 +482,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: kong-validation-webhook
-  namespace: kapp-kong
+  namespace: kalm-kong
 spec:
   ports:
   - name: webhook
@@ -492,11 +492,11 @@ spec:
   selector:
     app: ingress-kong
 ---
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: Component
 metadata:
   name: proxy
-  namespace: kapp-kong
+  namespace: kalm-kong
 spec:
   workloadType: server
   image: kong:1.4
@@ -585,23 +585,23 @@ spec:
       mountFilePath: /kong/servers.conf
   # todo lifecycle, securityContext
 ---
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: Component
 metadata:
   name: ingress-controller
-  namespace: kapp-kong
+  namespace: kalm-kong
 spec:
   image: kong-docker-kubernetes-ingress-controller.bintray.io/kong-ingress-controller:0.7.1
   args:
     - /kong-ingress-controller
     - --kong-url=https://proxy:8444
     - --admin-tls-skip-verify
-    - --publish-service=kapp-kong/kong-proxy
+    - --publish-service=kalm-kong/kong-proxy
   env:
     - name: POD_NAME
       value: ingress-kong
     - name: POD_NAMESPACE
-      value: kapp-kong
+      value: kalm-kong
   ports:
     - containerPort: 8080
       name: webhook

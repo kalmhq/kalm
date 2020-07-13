@@ -23,7 +23,7 @@ import (
 	"fmt"
 	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
-	corev1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	corev1alpha1 "github.com/kalm-staging/kalm/controller/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -53,8 +53,8 @@ func getCertAndCertSecretName(httpsCert corev1alpha1.HttpsCert) (certName string
 
 const istioNamespace = "istio-system"
 
-// +kubebuilder:rbac:groups=core.kapp.dev,resources=httpscerts,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=core.kapp.dev,resources=httpscerts/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=core.kalm.dev,resources=httpscerts,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core.kalm.dev,resources=httpscerts/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=cert-manager.io,resources=certificates,verbs=get;list;watch;create;update;patch;delete
 
 func (r *HttpsCertReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
