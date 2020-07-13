@@ -3,7 +3,7 @@ kind: Namespace
 metadata:
   labels:
     control-plane: operator
-  name: kapp-operator
+  name: kalm-operator
 ---
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
@@ -11,18 +11,18 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.2.4
   creationTimestamp: null
-  name: kappoperatorconfigs.install.kapp.dev
+  name: kalmoperatorconfigs.install.kalm.dev
 spec:
-  group: install.kapp.dev
+  group: install.kalm.dev
   names:
-    kind: KappOperatorConfig
-    listKind: KappOperatorConfigList
-    plural: kappoperatorconfigs
-    singular: kappoperatorconfig
+    kind: KalmOperatorConfig
+    listKind: KalmOperatorConfigList
+    plural: kalmoperatorconfigs
+    singular: kalmoperatorconfig
   scope: Namespaced
   validation:
     openAPIV3Schema:
-      description: KappOperatorConfig is the Schema for the kappoperatorconfigs API
+      description: KalmOperatorConfig is the Schema for the kalmoperatorconfigs API
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -37,7 +37,7 @@ spec:
         metadata:
           type: object
         spec:
-          description: KappOperatorConfigSpec defines the desired state of KappOperatorConfig
+          description: KalmOperatorConfigSpec defines the desired state of KalmOperatorConfig
           properties:
             dashboardVersion:
               type: string
@@ -47,11 +47,11 @@ spec:
               type: boolean
             skipKalmControllerInstallation:
               type: boolean
-            skipKappControllerInstallation:
+            skipKalmControllerInstallation:
               type: boolean
           type: object
         status:
-          description: KappOperatorConfigStatus defines the observed state of KappOperatorConfig
+          description: KalmOperatorConfigStatus defines the observed state of KalmOperatorConfig
           type: object
       type: object
   version: v1alpha1
@@ -69,8 +69,8 @@ status:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: kapp-operator-leader-election-role
-  namespace: kapp-operator
+  name: kalm-operator-leader-election-role
+  namespace: kalm-operator
 rules:
 - apiGroups:
   - ""
@@ -103,7 +103,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   creationTimestamp: null
-  name: kapp-operator
+  name: kalm-operator
 rules:
 - apiGroups:
   - ""
@@ -193,7 +193,7 @@ rules:
   verbs:
   - '*'
 - apiGroups:
-  - core.kapp.dev
+  - core.kalm.dev
   resources:
   - '*'
   verbs:
@@ -217,9 +217,9 @@ rules:
   verbs:
   - '*'
 - apiGroups:
-  - install.kapp.dev
+  - install.kalm.dev
   resources:
-  - kappoperatorconfigs
+  - kalmoperatorconfigs
   verbs:
   - create
   - delete
@@ -229,9 +229,9 @@ rules:
   - update
   - watch
 - apiGroups:
-  - install.kapp.dev
+  - install.kalm.dev
   resources:
-  - kappoperatorconfigs/status
+  - kalmoperatorconfigs/status
   verbs:
   - get
   - patch
@@ -286,7 +286,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: kapp-proxy-role
+  name: kalm-proxy-role
 rules:
 - apiGroups:
   - authentication.k8s.io
@@ -304,50 +304,50 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: kapp-operator-leader-election-rolebinding
-  namespace: kapp-operator
+  name: kalm-operator-leader-election-rolebinding
+  namespace: kalm-operator
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: kapp-operator-leader-election-role
+  name: kalm-operator-leader-election-role
 subjects:
 - kind: ServiceAccount
   name: default
-  namespace: kapp-operator
+  namespace: kalm-operator
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: kapp-operator-rolebinding
+  name: kalm-operator-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: kapp-operator
+  name: kalm-operator
 subjects:
 - kind: ServiceAccount
   name: default
-  namespace: kapp-operator
+  namespace: kalm-operator
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: kapp-proxy-rolebinding
+  name: kalm-proxy-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: kapp-proxy-role
+  name: kalm-proxy-role
 subjects:
 - kind: ServiceAccount
   name: default
-  namespace: kapp-operator
+  namespace: kalm-operator
 ---
 apiVersion: v1
 kind: Service
 metadata:
   labels:
     control-plane: operator
-  name: kapp-operator-metrics-service
-  namespace: kapp-operator
+  name: kalm-operator-metrics-service
+  namespace: kalm-operator
 spec:
   ports:
   - name: https
@@ -361,8 +361,8 @@ kind: Deployment
 metadata:
   labels:
     control-plane: operator
-  name: kapp-operator
-  namespace: kapp-operator
+  name: kalm-operator
+  namespace: kalm-operator
 spec:
   replicas: 1
   selector:
@@ -389,7 +389,7 @@ spec:
         - --enable-leader-election
         command:
         - /manager
-        image: kappstaging/operator:latest
+        image: kalmstaging/operator:latest
         imagePullPolicy: Always
         name: manager
         resources:

@@ -1,27 +1,27 @@
-# Kapp Operator
+# Kalm Operator
 
-The kapp operator is a crd controller that runs on the cluster as a deployment. It will install the entire kapp environment, including istio and cert-manager.
+The kalm operator is a crd controller that runs on the cluster as a deployment. It will install the entire kalm environment, including istio and cert-manager.
 
-Using the kapp operator in production and development environments can be significantly different. Let's talk about them case by case.
+Using the kalm operator in production and development environments can be significantly different. Let's talk about them case by case.
 
-# Using kapp operator in production
+# Using kalm operator in production
 
-This is our ideal way to install kapp for a cluster. The prerequirements are a running k8s cluster and a configured kubectl command.
+This is our ideal way to install kalm for a cluster. The prerequirements are a running k8s cluster and a configured kubectl command.
 
 There will be a generated single file yaml. The only thing you need to do is apply it into your cluster.
 
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/kapp-staging/kapp/master/operator/kapp-install.yaml
+kubectl apply -f https://raw.githubusercontent.com/kalm-staging/kalm/master/operator/kalm-install.yaml
 ```
 
 This command runs the operator by creating the following resources in the cluster.
 
-- The kapp operator config custom resource definition
-- Necessary kapp operator RBAC rules, roles and bindings
-- The kapp operator controller deployment
+- The kalm operator config custom resource definition
+- Necessary kalm operator RBAC rules, roles and bindings
+- The kalm operator controller deployment
 - A service to access operator metrics
 
-The following resources will be also installed. They are kapp dependencies.
+The following resources will be also installed. They are kalm dependencies.
 
 - Cert Manager custom resource definitions
 - Cert Manager RBAC rules, roles and bindings
@@ -31,11 +31,11 @@ The following resources will be also installed. They are kapp dependencies.
 - Istio deployments and services in istio-system namespace
 - Istio RBAC rules, roles and bindings
 
-#### How is this `kapp-install` file generated?
+#### How is this `kalm-install` file generated?
 
-You can view the operator project under root kapp dir. It is based on the kubebuilder framework. `Kustomize build config / default` in the root directory of the project can almost do the job. The only remaining problem is that you have to ensure that the images(kapp controller and kapp operator) in yaml have been uploaded to docker hub correctly.
+You can view the operator project under root kalm dir. It is based on the kubebuilder framework. `Kustomize build config / default` in the root directory of the project can almost do the job. The only remaining problem is that you have to ensure that the images(kalm controller and kalm operator) in yaml have been uploaded to docker hub correctly.
 
-# Using Kapp operator in development env
+# Using Kalm operator in development env
 
 This part is useful for developers who won't make change for controller and operator, and only need them are running. Otherwize, you'd better launch each component manuanlly as usual.
 
@@ -61,7 +61,7 @@ make docker-build
 # wait the build process finished
 docker images
 
-# You should see a image called kappstaging/controller:latest
+# You should see a image called kalmstaging/controller:latest
 # This step won't happen in production because we will publish a controller image on docker hub.
 ```
 
@@ -71,7 +71,7 @@ There are two ways to run operator. The first is running it manually on your loc
 
 ##### run on localhost
 
-Keep in mind, in this way, the operator is running under the kubectl current context user's psermission. It means kapp operator RBACs are not take effects.
+Keep in mind, in this way, the operator is running under the kubectl current context user's psermission. It means kalm operator RBACs are not take effects.
 
 ```bash
 cd operator
@@ -92,7 +92,7 @@ make docker-build
 make deploy
 ```
 
-#### Apply a kapp operator config
+#### Apply a kalm operator config
 
 open a new terminal
 
@@ -100,15 +100,15 @@ open a new terminal
 # goto operator dir
 cd operator
 
-# apply a kapp operator config
+# apply a kalm operator config
 
 # If you are running controller manually, please use
-kubectl apply -f config/samples/install_v1alpha1_kappoperatorconfig_ignore_kapp_controller.yaml
+kubectl apply -f config/samples/install_v1alpha1_kalmoperatorconfig_ignore_kalm_controller.yaml
 # otherwize
-kubectl apply -f config/samples/install_v1alpha1_kappoperatorconfig.yaml
+kubectl apply -f config/samples/install_v1alpha1_kalmoperatorconfig.yaml
 ```
 
-#### Check kapp operator status
+#### Check kalm operator status
 
 ```bash
 # There should be three pods running in cert manager namespace
@@ -120,13 +120,13 @@ kubectl get pods -n istio-operator
 # There should be some pods running in istio-sysmtem namespace
 kubectl get pods -n istio-system
 
-# Kapp Controller should be running in kapp-system namespace
-kubectl get pods -n kapp-system
+# Kalm Controller should be running in kalm-system namespace
+kubectl get pods -n kalm-system
 
-# Kapp Operator should be running in kapp-operator namespace
-kubectl get pods -n kapp-operator
+# Kalm Operator should be running in kalm-operator namespace
+kubectl get pods -n kalm-operator
 
-# View kapp controller and operator logs
-kubectl logs -f -n kapp-system -c manager kapp-controller-xxxxx
-kubectl logs -f -n kapp-operator -c manager kapp-operator-xxxxx
+# View kalm controller and operator logs
+kubectl logs -f -n kalm-system -c manager kalm-controller-xxxxx
+kubectl logs -f -n kalm-operator -c manager kalm-operator-xxxxx
 ```

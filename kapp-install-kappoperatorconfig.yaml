@@ -4,8 +4,8 @@
 # - Kalm CRD & Roles
 # - Kalm controller
 # - Kalm dashboard
-apiVersion: install.kapp.dev/v1alpha1
-kind: KappOperatorConfig
+apiVersion: install.kalm.dev/v1alpha1
+kind: KalmOperatorConfig
 metadata:
-  namespace: kapp-operator
-  name: kappoperatorconfig-sample
+  namespace: kalm-operator
+  name: kalmoperatorconfig-sample
