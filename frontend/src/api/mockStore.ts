@@ -7221,10 +7221,10 @@ export default class MockStore {
       mockApplicationComponents: Immutable.fromJS({
         "kalm-bookinfo": [
           {
-            image: "docker.io/istio/examples-bookinfo-details-v1:1.15.0",
+            image: "docker.io/istio/examples-bookinfo-details-v1:1.15.2",
             nodeSelectorLabels: { "kubernetes.io/os": "linux" },
             preferNotCoLocated: true,
-            ports: [{ name: "http", containerPort: 9080, servicePort: 9080 }],
+            ports: [{ name: "http", containerPort: 9080 }],
             cpu: "50m",
             memory: "64Mi",
             name: "details",

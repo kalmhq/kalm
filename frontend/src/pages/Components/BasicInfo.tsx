@@ -108,7 +108,8 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     if (component.get("ports") && component.get("ports")!.size > 0) {
       // <<<<<<< HEAD
       const ports = component.get("ports", List<ComponentLikePort>())?.map((port, index) => {
-        return this.renderPort(index, port.get("name"), port.get("servicePort"));
+        const portString = port.get("servicePort") ?? port.get("containerPort");
+        return this.renderPort(index, port.get("name"), portString);
       });
       return <div className={classes.portContainer}>{ports}</div>;
       // =======
