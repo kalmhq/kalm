@@ -244,15 +244,15 @@ func (r *ComponentReconcilerTask) Run(req ctrl.Request) error {
 }
 
 const (
-	KappLabelComponent = "kapp-component"
-	KappLabelNamespace = "kapp-namespace"
+	KappLabelComponentKey = "kapp-component"
+	KappLabelNamespaceKey = "kapp-namespace"
 )
 
 func (r *ComponentReconcilerTask) GetLabels() map[string]string {
 	return map[string]string{
-		KappLabelNamespace: r.namespace.Name,
-		KappLabelComponent: r.component.Name,
-		KappLabelManaged:   "true",
+		KappLabelNamespaceKey: r.namespace.Name,
+		KappLabelComponentKey: r.component.Name,
+		KappLabelManaged:      "true",
 	}
 }
 
@@ -366,12 +366,16 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 		// TODO service ComponentPlugin call
 		r.service.Spec.Ports = ps
 		if newService {
+			if err := ctrl.SetControllerReference(r.component, r.service, r.Scheme); err != nil {
+				r.WarningEvent(err, "unable to set owner for Service")
+				return err
+			}
+
 			if err := r.Create(r.ctx, r.service); err != nil {
 				r.WarningEvent(err, "unable to create Service for Component")
 				return err
 			}
 
-			ctrl.SetControllerReference(r.component, r.service, r.Scheme)
 		} else {
 			if err := r.Update(r.ctx, r.service); err != nil {
 				r.WarningEvent(err, "unable to update Service for Component")
@@ -382,6 +386,11 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 		if r.component.Spec.EnableHeadlessService || r.component.Spec.WorkloadType == corev1alpha1.WorkloadTypeStatefulSet {
 			r.headlessService.Spec.Ports = ps
 			if newHeadlessService {
+				if err := ctrl.SetControllerReference(r.component, r.headlessService, r.Scheme); err != nil {
+					r.WarningEvent(err, "unable to set owner for headlessService")
+					return err
+				}
+
 				if err := r.Create(r.ctx, r.headlessService); err != nil {
 					r.WarningEvent(err, "unable to create headlessService for Component")
 					return err
@@ -1415,7 +1424,7 @@ func (r *ComponentReconcilerTask) DeleteResources() (err error) {
 	var bindingList corev1alpha1.ComponentPluginBindingList
 
 	if err := r.Reader.List(r.ctx, &bindingList, client.MatchingLabels{
-		KappLabelComponent: r.component.Name,
+		KappLabelComponentKey: r.component.Name,
 	}); client.IgnoreNotFound(err) != nil {
 		r.WarningEvent(err, "get plugin binding list error.")
 		return err

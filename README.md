@@ -65,6 +65,7 @@ cd kapp
 
 # to delete kalm operator & controller, run:
 make delete
+# error like `Error from server (NotFound): error when deleting xxx not found` is safe to ignore because some resources may have been deleted hierarchically.
 
 # to delete all things Kalm installed, including istio and cert-manager, run:
 # make delete-all

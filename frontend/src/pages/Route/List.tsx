@@ -16,6 +16,8 @@ import { Loading } from "widgets/Loading";
 import { Namespaces } from "widgets/Namespaces";
 import { KTable } from "widgets/Table";
 import { Targets } from "widgets/Targets";
+import { OpenInBrowser } from "widgets/OpenInBrowser";
+import { CopyAsCurl } from "widgets/CopyAsCurl";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -130,32 +132,12 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     const { activeNamespaceName, dispatch } = this.props;
     return (
       <>
-        {/* <IconButtonWithTooltip
-          tooltipPlacement="top"
-          tooltipTitle="Delete"
-          aria-label="delete"
-          onClick={() => {
-            blinkTopProgressAction();
-            dispatch(push(`/applications/${activeNamespaceName}/routes/${row.get("name")}/edit`));
-          }}
-        >
-          <EditIcon />
-        </IconButtonWithTooltip>
-        <IconButtonWithTooltip
-          tooltipPlacement="top"
-          tooltipTitle="Delete"
-          aria-label="delete"
-          onClick={() => {
-            blinkTopProgressAction();
-            dispatch(deleteRoute(row.get("name"), row.get("namespace")));
-          }}
-        >
-          <DeleteIcon />
-        </IconButtonWithTooltip> */}
+        <OpenInBrowser route={row as HttpRoute} />
+        <CopyAsCurl route={row as HttpRoute} />
         <Button
           size="small"
           variant="outlined"
-          style={{ marginRight: 16 }}
+          style={{ marginLeft: 16, marginRight: 16 }}
           color="primary"
           onClick={() => {
             blinkTopProgressAction();

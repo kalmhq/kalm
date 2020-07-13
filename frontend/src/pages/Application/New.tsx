@@ -30,7 +30,7 @@ class ApplicationNewRaw extends React.PureComponent<Props> {
 
   private onSubmitSuccess = (app: Application) => {
     if (app) {
-      this.props.dispatch(push(`/applications/${app.get("name")}`));
+      this.props.dispatch(push(`/applications/${app.get("name")}/components/new`));
     }
   };
 

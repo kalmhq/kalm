@@ -65,8 +65,8 @@ func (suite *KappVolumeControllerSuite) TestPVCIsLabeled() {
 		return err == nil
 	})
 
-	suite.Equal(component.Namespace, pvc.Labels[KappLabelNamespace])
-	suite.Equal(component.Name, pvc.Labels[KappLabelComponent])
+	suite.Equal(component.Namespace, pvc.Labels[KappLabelNamespaceKey])
+	suite.Equal(component.Name, pvc.Labels[KappLabelComponentKey])
 	suite.Equal("true", pvc.Labels[KappLabelManaged])
 }
 
@@ -81,8 +81,8 @@ func (suite *KappVolumeControllerSuite) TestPVCIsLabeled() {
 //			Name:      pvcName,
 //			Namespace: suite.ns.Name,
 //			Labels: map[string]string{
-//				KappLabelNamespace: suite.ns.Namespace,
-//				KappLabelComponent: "comp-not-exist",
+//				KappLabelNamespaceKey: suite.ns.Namespace,
+//				KappLabelComponentKey: "comp-not-exist",
 //				KappLabelManaged:   "true",
 //			},
 //		},
@@ -192,8 +192,8 @@ func (suite *KappVolumeControllerSuite) TestPVIsLabeledForKapp() {
 
 		//fmt.Println("pvLabels:", pv.Labels, pv)
 
-		return pv.Labels[KappLabelNamespace] == pvc.Namespace &&
+		return pv.Labels[KappLabelNamespaceKey] == pvc.Namespace &&
 			pv.Labels[KappLabelManaged] == "true" &&
-			pv.Labels[KappLabelComponent] == component.Name
+			pv.Labels[KappLabelComponentKey] == component.Name
 	})
 }

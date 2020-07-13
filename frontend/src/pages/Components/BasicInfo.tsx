@@ -12,6 +12,9 @@ import { HealthTab } from "forms/ComponentLike";
 import { Probe, ComponentLikePort } from "types/componentTemplate";
 import { Link } from "react-router-dom";
 import { List } from "immutable";
+import { CopyIconDefault } from "widgets/Icon";
+import copy from "copy-to-clipboard";
+import { setSuccessNotificationAction } from "actions/notification";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -103,10 +106,19 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     const { classes, component } = this.props;
 
     if (component.get("ports") && component.get("ports")!.size > 0) {
+      // <<<<<<< HEAD
       const ports = component.get("ports", List<ComponentLikePort>())?.map((port, index) => {
         return this.renderPort(index, port.get("name"), port.get("servicePort"));
       });
       return <div className={classes.portContainer}>{ports}</div>;
+      // =======
+      //       return component
+      //         .get("ports")
+      //         ?.map((port) => {
+      //           return `${port.get("containerPort")}:${port.get("servicePort")}`;
+      //         })
+      //         .join("/");
+      // >>>>>>> f3dc64cd95f71ad48762e30e03d1bbc53a48ba1e
     } else {
       return <NoPortsWarning />;
     }
@@ -157,9 +169,26 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
             size="small"
             color="primary"
           >
-            edit to fix
+            Add Health Probes
           </Button>
         ) : null}
+      </>
+    );
+  };
+
+  private renderImage = (image: string) => {
+    return (
+      <>
+        {image}
+        <span
+          style={{ cursor: "pointer" }}
+          onClick={() => {
+            copy(image);
+            this.props.dispatch(setSuccessNotificationAction("Copied to clipboard"));
+          }}
+        >
+          <CopyIconDefault style={{ height: 13 }} />
+        </span>
       </>
     );
   };
@@ -172,7 +201,7 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
           { name: "Created At", content: this.renderCreatedAt() },
           { name: "Name", content: component.get("name") },
           { name: "Namespace", content: activeNamespaceName },
-          { name: "Image", content: component.get("image") },
+          { name: "Image", content: this.renderImage(component.get("image")) },
           { name: "Workload Type", content: component.get("workloadType") },
           { name: "Update Strategy", content: component.get("restartStrategy") },
           { name: "Pod Status", content: this.renderComponentStatus() },
