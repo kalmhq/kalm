@@ -1,4 +1,4 @@
-import { Box, createStyles, Theme, WithStyles, withStyles, Typography } from "@material-ui/core";
+import { Box, createStyles, Theme, WithStyles, withStyles } from "@material-ui/core";
 import { Alert } from "@material-ui/lab";
 import { K8sApiPrefix } from "api/realApi";
 import React from "react";
