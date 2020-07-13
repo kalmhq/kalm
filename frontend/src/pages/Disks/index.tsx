@@ -5,7 +5,7 @@ import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 import { StorageType } from "pages/Disks/StorageType";
 import React from "react";
 import { connect } from "react-redux";
-import { DiskContent } from "types/disk";
+import { Disk } from "types/disk";
 import { H4 } from "widgets/Label";
 import { KTable } from "widgets/Table";
 import { setErrorNotificationAction } from "actions/notification";
@@ -17,6 +17,8 @@ import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { BasePage } from "../BasePage";
+import { Link } from "react-router-dom";
+import { blinkTopProgressAction } from "actions/settings";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -33,10 +35,10 @@ interface States {
   loadPersistentVolumesError: boolean;
   loadingPersistentVolumes: boolean;
   isDeleteConfirmDialogOpen: boolean;
-  deletingPersistentVolume?: DiskContent;
+  deletingPersistentVolume?: Disk;
 }
 
-interface RowData extends DiskContent {
+interface RowData extends Disk {
   index: number;
 }
 
@@ -53,7 +55,7 @@ export class VolumesRaw extends React.Component<Props, States> {
     };
   }
 
-  private showDeleteConfirmDialog = (deletingPersistentVolume: DiskContent) => {
+  private showDeleteConfirmDialog = (deletingPersistentVolume: Disk) => {
     this.setState({
       isDeleteConfirmDialogOpen: true,
       deletingPersistentVolume,
@@ -74,7 +76,7 @@ export class VolumesRaw extends React.Component<Props, States> {
       <ConfirmDialog
         open={isDeleteConfirmDialogOpen}
         onClose={this.closeDeleteConfirmDialog}
-        title={`Are you sure to delete this Persistent Volume(${deletingPersistentVolume?.name})?`}
+        title={`Are you sure to delete this Persistent Volume(${deletingPersistentVolume?.get("name")})?`}
         content="You will lost this Persistent Volume, and this action is irrevocable."
         onAgree={this.confirmDelete}
       />
@@ -88,8 +90,8 @@ export class VolumesRaw extends React.Component<Props, States> {
       if (deletingPersistentVolume) {
         await dispatch(
           deletePersistentVolumeAction(
-            deletingPersistentVolume.componentNamespace as string,
-            deletingPersistentVolume.name,
+            deletingPersistentVolume.get("componentNamespace") as string,
+            deletingPersistentVolume.get("name"),
           ),
         );
       }
@@ -101,28 +103,22 @@ export class VolumesRaw extends React.Component<Props, States> {
   getTableData = () => {
     const { persistentVolumes } = this.props;
 
-    const data: RowData[] = [];
+    const dataList: RowData[] = [];
     persistentVolumes.forEach((pv, index) => {
-      data.push({
-        index: index,
-        name: pv.get("name"),
-        isInUse: pv.get("isInUse"),
-        componentNamespace: pv.get("componentNamespace"),
-        componentName: pv.get("componentName"),
-        phase: pv.get("phase"),
-        capacity: pv.get("capacity"),
-      });
+      const data = pv as RowData;
+      data.index = index;
+      dataList.push(data);
     });
 
-    return data;
+    return dataList;
   };
 
   private renderActions = (rowData: RowData) => {
     return (
       <>
         <IconButtonWithTooltip
-          disabled={rowData.isInUse}
-          tooltipTitle={rowData.isInUse ? "This Persistent Volume can't be removed" : "Delete"}
+          disabled={rowData.get("isInUse")}
+          tooltipTitle={rowData.get("isInUse") ? "This Persistent Volume can't be removed" : "Delete"}
           style={{ color: primaryColor }}
           onClick={() => {
             this.showDeleteConfirmDialog(rowData);
@@ -168,6 +164,46 @@ export class VolumesRaw extends React.Component<Props, States> {
     );
   }
 
+  private renderApplication = (rowData: RowData) => {
+    return (
+      <Link
+        style={{ color: primaryColor }}
+        to={`/applications/${rowData.get("componentNamespace")}/components`}
+        onClick={() => blinkTopProgressAction()}
+      >
+        {rowData.get("componentNamespace")}
+      </Link>
+    );
+  };
+
+  private renderComponent = (rowData: RowData) => {
+    return (
+      <Link
+        style={{ color: primaryColor }}
+        to={`/applications/${rowData.get("componentNamespace")}/components/${rowData.get("componentName")}`}
+        onClick={() => blinkTopProgressAction()}
+      >
+        {rowData.get("componentName")}
+      </Link>
+    );
+  };
+
+  private renderName = (rowData: RowData) => {
+    return rowData.get("name");
+  };
+
+  private renderUse = (rowData: RowData) => {
+    return rowData.get("isInUse") ? "True" : "False";
+  };
+
+  private renderPhase = (rowData: RowData) => {
+    return rowData.get("phase");
+  };
+
+  private renderCapacity = (rowData: RowData) => {
+    return rowData.get("capacity");
+  };
+
   render() {
     const { loadPersistentVolumesError } = this.state;
     const tableData = this.getTableData();
@@ -190,12 +226,12 @@ export class VolumesRaw extends React.Component<Props, States> {
               paging: tableData.length > 20,
             }}
             columns={[
-              { title: "Name", field: "name", sorting: false },
-              { title: "Is In Use", field: "isInUse", sorting: false },
-              { title: "ComponentNamespace", field: "componentNamespace", sorting: false },
-              { title: "ComponentName", field: "componentName", sorting: false },
-              { title: "Phase", field: "phase", sorting: false },
-              { title: "Capacity", field: "capacity", sorting: false },
+              { title: "Name", field: "name", sorting: false, render: this.renderName },
+              { title: "Is In Use", field: "isInUse", sorting: false, render: this.renderUse },
+              { title: "Application", field: "componentNamespace", sorting: false, render: this.renderApplication },
+              { title: "Component Name", field: "componentName", sorting: false, render: this.renderComponent },
+              { title: "Phase", field: "phase", sorting: false, render: this.renderPhase },
+              { title: "Capacity", field: "capacity", sorting: false, render: this.renderCapacity },
               {
                 title: "Actions",
                 field: "action",

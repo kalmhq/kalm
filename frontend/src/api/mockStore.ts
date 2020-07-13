@@ -7074,8 +7074,16 @@ export default class MockStore {
         {
           name: "pvc-5c3132fc-0508-4a7f-b11a-b6b924424016",
           isInUse: true,
-          componentNamespace: "asdfasdf",
-          componentName: "test",
+          componentNamespace: "kalm-bookinfo",
+          componentName: "reviews",
+          phase: "Available",
+          capacity: "1Gi",
+        },
+        {
+          name: "pvc-5c3132fc-0508-4a7f-b11a-b6b924424012",
+          isInUse: false,
+          componentNamespace: "kalm-empty",
+          componentName: "",
           phase: "Available",
           capacity: "1Gi",
         },
