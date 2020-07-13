@@ -62,7 +62,6 @@ type Props = ReturnType<typeof mapStateToProps> & TDispatchProp & WithStyles<typ
 export class IngressInfoRaw extends React.Component<Props, States> {
   constructor(props: Props) {
     super(props);
-    console.log("props.classes", props.classes);
     this.state = {
       loadIngressInfoError: false,
       loadingIngressInfo: true,

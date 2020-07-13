@@ -48,6 +48,7 @@ const styles = (theme: Theme) =>
 
       "& > .MuiListItemIcon-root": {
         minWidth: 40,
+        marginLeft: -4,
       },
       borderLeft: `4px solid transparent`,
     },
