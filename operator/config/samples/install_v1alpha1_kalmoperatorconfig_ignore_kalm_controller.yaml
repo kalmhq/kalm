@@ -10,3 +10,4 @@ metadata:
   name: kalmoperatorconfig-sample
 spec:
   skipKalmControllerInstallation: true
+  skipKalmDashboardInstallation: true

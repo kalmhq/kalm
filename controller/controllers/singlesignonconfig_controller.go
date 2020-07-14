@@ -108,7 +108,7 @@ func (r *SingleSignOnConfigReconcilerTask) LoadResources() error {
 	var authProxyComponent corev1alpha1.Component
 
 	err = r.Get(r.ctx, types.NamespacedName{
-		Name:      KAPP_DEX_NAME,
+		Name:      KAPP_AUTH_PROXY_NAME,
 		Namespace: KAPP_DEX_NAMESPACE,
 	}, &authProxyComponent)
 
@@ -346,7 +346,7 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexComponent() error {
 				},
 			},
 			RunnerPermission: &corev1alpha1.RunnerPermission{
-				RoleType: "ClusterRole",
+				RoleType: "clusterRole",
 				Rules: []rbacV1.PolicyRule{
 					{
 						APIGroups: []string{"dex.coreos.com"},
