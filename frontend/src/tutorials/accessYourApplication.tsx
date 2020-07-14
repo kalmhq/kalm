@@ -53,7 +53,7 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
 
   const applicationName = application.get("name");
   const applicationsPath = "/applications";
-  const applicationDetailPath = "/applications/" + applicationName;
+  const applicationDetailPath = "/applications/" + applicationName + "/components";
   const applicationRoutesPath = "/applications/" + applicationName + "/routes";
   const applicationNewRoutePath = "/applications/" + applicationName + "/routes/new";
 

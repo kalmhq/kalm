@@ -287,7 +287,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     let options = [
       {
         text: "Details",
-        to: `/applications/${rowData.get("name")}`,
+        to: `/applications/${rowData.get("name")}/components`,
         icon: <KalmDetailsIcon />,
       },
       // {
