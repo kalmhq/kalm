@@ -29,14 +29,6 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	// liveness readiness probes
 	e.GET("/ping", handlePing)
 
-	// oidc auth proxy handlers
-	e.GET("/oidc/login", h.handleOIDCLogin)
-	e.GET("/oidc/callback", h.handleOIDCCallback)
-
-	// envoy ext_authz handlers
-	e.GET("/"+ENVOY_EXT_AUTH_PATH_PREFIX+"/*", h.handleExtAuthz)
-	e.GET("/"+ENVOY_EXT_AUTH_PATH_PREFIX, h.handleExtAuthz)
-
 	// login
 	e.POST("/login/token", h.handleValidateToken)
 	e.GET("/login/status", h.handleLoginStatus)
