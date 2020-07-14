@@ -32,16 +32,16 @@ import (
 )
 
 const (
-	KAPP_GATEWAY_NAMESPACE = "istio-system"
-	KAPP_GATEWAY_NAME      = "kalm-gateway"
+	KALM_GATEWAY_NAMESPACE = "istio-system"
+	KALM_GATEWAY_NAME      = "kalm-gateway"
 
 	HTTPS_GATEWAY_NAME = "kalm-https-gateway"
 	HTTP_GATEWAY_NAME  = "kalm-http-gateway"
 )
 
 var (
-	HTTPS_GATEWAY_NAMESPACED_NAME = types.NamespacedName{Namespace: KAPP_GATEWAY_NAMESPACE, Name: HTTPS_GATEWAY_NAME}
-	HTTP_GATEWAY_NAMESPACED_NAME  = types.NamespacedName{Namespace: KAPP_GATEWAY_NAMESPACE, Name: HTTP_GATEWAY_NAME}
+	HTTPS_GATEWAY_NAMESPACED_NAME = types.NamespacedName{Namespace: KALM_GATEWAY_NAMESPACE, Name: HTTPS_GATEWAY_NAME}
+	HTTP_GATEWAY_NAMESPACED_NAME  = types.NamespacedName{Namespace: KALM_GATEWAY_NAMESPACE, Name: HTTP_GATEWAY_NAME}
 )
 
 type GatewayReconcilerTask struct {
@@ -52,12 +52,12 @@ type GatewayReconcilerTask struct {
 
 func (r *GatewayReconcilerTask) ReconcileNamespace() error {
 	var ns coreV1.Namespace
-	if err := r.Reader.Get(r.ctx, types.NamespacedName{Name: KAPP_GATEWAY_NAMESPACE}, &ns); err != nil {
+	if err := r.Reader.Get(r.ctx, types.NamespacedName{Name: KALM_GATEWAY_NAMESPACE}, &ns); err != nil {
 		if !errors.IsNotFound(err) {
 			return err
 		}
 
-		ns.Name = KAPP_GATEWAY_NAMESPACE
+		ns.Name = KALM_GATEWAY_NAMESPACE
 		if err := r.Create(r.ctx, &ns); err != nil {
 			return err
 		}
@@ -202,7 +202,7 @@ type GatewayReconciler struct {
 // +kubebuilder:rbac:groups=networking.istio.io,resources=gateways,verbs=*
 
 func (r *GatewayReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	if req.Namespace != KAPP_GATEWAY_NAMESPACE || req.Name != KAPP_GATEWAY_NAME {
+	if req.Namespace != KALM_GATEWAY_NAMESPACE || req.Name != KALM_GATEWAY_NAME {
 		return ctrl.Result{}, nil
 	}
 
@@ -223,7 +223,7 @@ type KalmGatewayRequestMapper struct {
 }
 
 func (r *KalmGatewayRequestMapper) Map(handler.MapObject) []reconcile.Request {
-	return []reconcile.Request{{NamespacedName: types.NamespacedName{Namespace: KAPP_GATEWAY_NAMESPACE, Name: KAPP_GATEWAY_NAME}}}
+	return []reconcile.Request{{NamespacedName: types.NamespacedName{Namespace: KALM_GATEWAY_NAMESPACE, Name: KALM_GATEWAY_NAME}}}
 }
 
 func (r *GatewayReconciler) SetupWithManager(mgr ctrl.Manager) error {

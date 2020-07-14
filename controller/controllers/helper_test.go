@@ -246,6 +246,8 @@ func (suite *BasicSuite) SetupSuite() {
 	suite.Nil(NewDockerRegistryReconciler(mgr).SetupWithManager(mgr))
 	suite.Nil(NewHttpRouteReconciler(mgr).SetupWithManager(mgr))
 	suite.Nil(NewGatewayReconciler(mgr).SetupWithManager(mgr))
+	suite.Nil(NewSingleSignOnConfigReconciler(mgr).SetupWithManager(mgr))
+	suite.Nil(NewProtectedEndpointReconciler(mgr).SetupWithManager(mgr))
 
 	mgrStopChannel := make(chan struct{})
 	suite.MgrStopChannel = mgrStopChannel
@@ -313,10 +315,14 @@ func randomName() string {
 	return string(b)
 }
 
-func (suite *BasicSuite) SetupKalmEnabledNs() v1.Namespace {
+func (suite *BasicSuite) SetupKalmEnabledNs(name string) v1.Namespace {
+	if name == "" {
+		name = randomName()
+	}
+
 	ns := v1.Namespace{
 		ObjectMeta: metaV1.ObjectMeta{
-			Name: randomName(),
+			Name: name,
 			Labels: map[string]string{
 				KalmEnableLabelName: "true",
 			},

@@ -15,14 +15,11 @@ require (
 	github.com/go-openapi/validate v0.19.5
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/gogo/protobuf v1.3.1
-	github.com/golang/groupcache v0.0.0-20191027212112-611e8accdfc9 // indirect
-	github.com/influxdata/influxdb v1.7.7
 	github.com/jetstack/cert-manager v0.13.1
 	github.com/joho/godotenv v1.3.0
 	github.com/onsi/ginkgo v1.10.3
 	github.com/onsi/gomega v1.7.1
 	github.com/prometheus/client_golang v1.2.1 // indirect
-	github.com/prometheus/procfs v0.0.6 // indirect
 	github.com/stretchr/testify v1.5.1
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/net v0.0.0-20191112182307-2180aed22343 // indirect

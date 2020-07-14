@@ -32,7 +32,7 @@ func (suite *KalmVolumeControllerSuite) TearDownSuite() {
 }
 
 func (suite *KalmVolumeControllerSuite) SetupTest() {
-	ns := suite.SetupKalmEnabledNs()
+	ns := suite.SetupKalmEnabledNs("")
 	suite.ns = &ns
 
 	suite.ctx = context.Background()

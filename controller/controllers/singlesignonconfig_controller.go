@@ -33,10 +33,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-const KAPP_EXTERNAL_ENVOY_EXT_AUTHZ_SERVER_NAME = "external-envoy-ext-authz-server"
-const KAPP_DEX_SECRET_NAME = "dex-secret"
-const KAPP_DEX_NAMESPACE = "kalm-system"
-const KAPP_DEX_NAME = "dex"
+const KALM_EXTERNAL_ENVOY_EXT_AUTHZ_SERVER_NAME = "external-envoy-ext-authz-server"
+const KALM_DEX_SECRET_NAME = "dex-secret"
+const KALM_DEX_NAMESPACE = "kalm-system"
+const KALM_DEX_NAME = "dex"
+const KALM_AUTH_PROXY_NAME = "auth-proxy"
 
 // SingleSignOnConfigReconciler reconciles a SingleSignOnConfig object
 type SingleSignOnConfigReconciler struct {
@@ -46,9 +47,12 @@ type SingleSignOnConfigReconciler struct {
 type SingleSignOnConfigReconcilerTask struct {
 	*SingleSignOnConfigReconciler
 	ctx                   context.Context
+	ssoConfig             *corev1alpha1.SingleSignOnConfig
 	secret                *coreV1.Secret
 	dexComponent          *corev1alpha1.Component
-	route                 *corev1alpha1.HttpRoute
+	authProxyComponent    *corev1alpha1.Component
+	dexRoute              *corev1alpha1.HttpRoute
+	authProxyRoute        *corev1alpha1.HttpRoute
 	externalEnvoyExtAuthz *v1alpha32.ServiceEntry
 }
 
@@ -79,36 +83,49 @@ func (r *SingleSignOnConfigReconcilerTask) Run(req ctrl.Request) error {
 
 	ssoConfig := ssoList.Items[0]
 
-	if ssoConfig.Spec.Issuer != "" {
-		r.Log.Info(fmt.Sprintf("Using external OIDC provider %s.", ssoConfig.Spec.Issuer))
-		return nil
-	}
+	r.ssoConfig = &ssoConfig
 
-	return r.ReconcileResources(&ssoConfig)
+	return r.ReconcileResources()
 }
 
 func (r *SingleSignOnConfigReconcilerTask) LoadResources() error {
 	var dexComponent corev1alpha1.Component
 
 	err := r.Get(r.ctx, types.NamespacedName{
-		Name:      KAPP_DEX_NAME,
-		Namespace: KAPP_DEX_NAMESPACE,
+		Name:      KALM_DEX_NAME,
+		Namespace: KALM_DEX_NAMESPACE,
 	}, &dexComponent)
 
 	if err != nil {
 		if !errors.IsNotFound(err) {
-			r.Log.Error(err, "get dex failed.")
+			r.Log.Error(err, "get dexComponent failed.")
 			return err
 		}
 	} else {
 		r.dexComponent = &dexComponent
 	}
 
+	var authProxyComponent corev1alpha1.Component
+
+	err = r.Get(r.ctx, types.NamespacedName{
+		Name:      KALM_AUTH_PROXY_NAME,
+		Namespace: KALM_DEX_NAMESPACE,
+	}, &authProxyComponent)
+
+	if err != nil {
+		if !errors.IsNotFound(err) {
+			r.Log.Error(err, "get authProxyComponent failed.")
+			return err
+		}
+	} else {
+		r.authProxyComponent = &authProxyComponent
+	}
+
 	var route corev1alpha1.HttpRoute
 
 	err = r.Get(r.ctx, types.NamespacedName{
-		Name:      KAPP_DEX_NAME,
-		Namespace: KAPP_DEX_NAMESPACE,
+		Name:      KALM_DEX_NAME,
+		Namespace: KALM_DEX_NAMESPACE,
 	}, &route)
 
 	if err != nil {
@@ -117,14 +134,30 @@ func (r *SingleSignOnConfigReconcilerTask) LoadResources() error {
 			return err
 		}
 	} else {
-		r.route = &route
+		r.dexRoute = &route
+	}
+
+	var authProxyRoute corev1alpha1.HttpRoute
+
+	err = r.Get(r.ctx, types.NamespacedName{
+		Name:      KALM_AUTH_PROXY_NAME,
+		Namespace: KALM_DEX_NAMESPACE,
+	}, &authProxyRoute)
+
+	if err != nil {
+		if !errors.IsNotFound(err) {
+			r.Log.Error(err, "get authProxyRoute failed.")
+			return err
+		}
+	} else {
+		r.authProxyRoute = &authProxyRoute
 	}
 
 	var externalEnvoyExtAuthz v1alpha32.ServiceEntry
 
 	err = r.Get(r.ctx, types.NamespacedName{
-		Name:      KAPP_EXTERNAL_ENVOY_EXT_AUTHZ_SERVER_NAME,
-		Namespace: KAPP_DEX_NAMESPACE,
+		Name:      KALM_EXTERNAL_ENVOY_EXT_AUTHZ_SERVER_NAME,
+		Namespace: KALM_DEX_NAMESPACE,
 	}, &externalEnvoyExtAuthz)
 
 	if err != nil {
@@ -139,8 +172,8 @@ func (r *SingleSignOnConfigReconcilerTask) LoadResources() error {
 	var secret coreV1.Secret
 
 	err = r.Get(r.ctx, types.NamespacedName{
-		Name:      KAPP_DEX_SECRET_NAME,
-		Namespace: KAPP_DEX_NAMESPACE,
+		Name:      KALM_DEX_SECRET_NAME,
+		Namespace: KALM_DEX_NAMESPACE,
 	}, &secret)
 
 	if err != nil {
@@ -170,8 +203,8 @@ func (r *SingleSignOnConfigReconcilerTask) DeleteResources() error {
 		}
 	}
 
-	if r.route != nil {
-		if err := r.Delete(r.ctx, r.route); err != nil {
+	if r.dexRoute != nil {
+		if err := r.Delete(r.ctx, r.dexRoute); err != nil {
 			r.Log.Error(err, "delete dex route error")
 			return err
 		}
@@ -241,7 +274,7 @@ func (r *SingleSignOnConfigReconcilerTask) BuildDexConfigYaml(ssoConfig *corev1a
 				"name":   string(r.secret.Data["client_name"]),
 				"secret": string(r.secret.Data["client_secret"]),
 				"redirectURIs": []string{
-					fmt.Sprintf("%s/oidc/callback", oidcProviderInfo.ExtAuthzServerUrl),
+					fmt.Sprintf("%s/oidc/callback", oidcProviderInfo.AuthProxyExternalUrl),
 				},
 			},
 		},
@@ -252,12 +285,12 @@ func (r *SingleSignOnConfigReconcilerTask) BuildDexConfigYaml(ssoConfig *corev1a
 	return string(configBytes), nil
 }
 
-func (r *SingleSignOnConfigReconcilerTask) ReconcileResources(ssoConfig *corev1alpha1.SingleSignOnConfig) error {
+func (r *SingleSignOnConfigReconcilerTask) ReconcileSecret() error {
 	if r.secret == nil {
 		secret := coreV1.Secret{
 			ObjectMeta: metaV1.ObjectMeta{
-				Namespace: KAPP_DEX_NAMESPACE,
-				Name:      KAPP_DEX_SECRET_NAME,
+				Namespace: KALM_DEX_NAMESPACE,
+				Name:      KALM_DEX_SECRET_NAME,
 			},
 			Data: map[string][]byte{
 				"client_id":     []byte("kalm-sso"),
@@ -266,8 +299,8 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileResources(ssoConfig *corev1a
 			},
 		}
 
-		if err := ctrl.SetControllerReference(ssoConfig, &secret, r.Scheme); err != nil {
-			r.EmitWarningEvent(ssoConfig, err, "unable to set owner for dex secret")
+		if err := ctrl.SetControllerReference(r.ssoConfig, &secret, r.Scheme); err != nil {
+			r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for dex secret")
 			return err
 		}
 
@@ -279,7 +312,11 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileResources(ssoConfig *corev1a
 		r.secret = &secret
 	}
 
-	configFileContent, err := r.BuildDexConfigYaml(ssoConfig)
+	return nil
+}
+
+func (r *SingleSignOnConfigReconcilerTask) ReconcileDexComponent() error {
+	configFileContent, err := r.BuildDexConfigYaml(r.ssoConfig)
 
 	if err != nil {
 		r.Log.Error(err, "get dex config file error")
@@ -288,8 +325,8 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileResources(ssoConfig *corev1a
 
 	dexComponent := corev1alpha1.Component{
 		ObjectMeta: metaV1.ObjectMeta{
-			Name:      KAPP_DEX_NAME,
-			Namespace: KAPP_DEX_NAMESPACE,
+			Name:      KALM_DEX_NAME,
+			Namespace: KALM_DEX_NAMESPACE,
 		},
 		Spec: corev1alpha1.ComponentSpec{
 			WorkloadType: corev1alpha1.WorkloadTypeServer,
@@ -309,7 +346,7 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileResources(ssoConfig *corev1a
 				},
 			},
 			RunnerPermission: &corev1alpha1.RunnerPermission{
-				RoleType: "ClusterRole",
+				RoleType: "clusterRole",
 				Rules: []rbacV1.PolicyRule{
 					{
 						APIGroups: []string{"dex.coreos.com"},
@@ -330,8 +367,8 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileResources(ssoConfig *corev1a
 		copied := r.dexComponent.DeepCopy()
 		copied.Spec = dexComponent.Spec
 
-		if err := ctrl.SetControllerReference(ssoConfig, copied, r.Scheme); err != nil {
-			r.EmitWarningEvent(ssoConfig, err, "unable to set owner for dex component")
+		if err := ctrl.SetControllerReference(r.ssoConfig, copied, r.Scheme); err != nil {
+			r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for dex component")
 			return err
 		}
 
@@ -340,8 +377,8 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileResources(ssoConfig *corev1a
 			return err
 		}
 	} else {
-		if err := ctrl.SetControllerReference(ssoConfig, &dexComponent, r.Scheme); err != nil {
-			r.EmitWarningEvent(ssoConfig, err, "unable to set owner for dex component")
+		if err := ctrl.SetControllerReference(r.ssoConfig, &dexComponent, r.Scheme); err != nil {
+			r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for dex component")
 			return err
 		}
 
@@ -351,24 +388,28 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileResources(ssoConfig *corev1a
 		}
 	}
 
+	return nil
+}
+
+func (r *SingleSignOnConfigReconcilerTask) ReconcileDexRoute() error {
 	timeout := 5
 
 	var scheme string
 
-	if ssoConfig.Spec.UseHttp {
+	if r.ssoConfig.Spec.UseHttp {
 		scheme = "http"
 	} else {
 		scheme = "https"
 	}
 
-	route := corev1alpha1.HttpRoute{
+	dexRoute := corev1alpha1.HttpRoute{
 		ObjectMeta: metaV1.ObjectMeta{
-			Name:      KAPP_DEX_NAME,
-			Namespace: KAPP_DEX_NAMESPACE,
+			Name:      KALM_DEX_NAME,
+			Namespace: KALM_DEX_NAMESPACE,
 		},
 		Spec: corev1alpha1.HttpRouteSpec{
 			Hosts: []string{
-				ssoConfig.Spec.Domain,
+				r.ssoConfig.Spec.Domain,
 			},
 			Methods: []corev1alpha1.HttpRouteMethod{
 				"GET",
@@ -385,7 +426,7 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileResources(ssoConfig *corev1a
 			Schemes: []string{scheme},
 			Destinations: []corev1alpha1.HttpRouteDestination{
 				{
-					Host:   fmt.Sprintf("%s.%s.svc.cluster.local:%d", KAPP_DEX_NAME, KAPP_DEX_NAMESPACE, 5556),
+					Host:   fmt.Sprintf("%s.%s.svc.cluster.local:%d", KALM_DEX_NAME, KALM_DEX_NAMESPACE, 5556),
 					Weight: 1,
 				},
 			},
@@ -398,31 +439,35 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileResources(ssoConfig *corev1a
 		},
 	}
 
-	if r.route != nil {
-		copied := r.route.DeepCopy()
-		copied.Spec = route.Spec
+	if r.dexRoute != nil {
+		copied := r.dexRoute.DeepCopy()
+		copied.Spec = dexRoute.Spec
 
-		if err := ctrl.SetControllerReference(ssoConfig, copied, r.Scheme); err != nil {
-			r.EmitWarningEvent(ssoConfig, err, "unable to set owner for dex route")
+		if err := ctrl.SetControllerReference(r.ssoConfig, copied, r.Scheme); err != nil {
+			r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for dex dexRoute")
 			return err
 		}
 
-		if err := r.Patch(r.ctx, copied, client.MergeFrom(r.route)); err != nil {
-			r.Log.Error(err, "Patch dex route failed.")
+		if err := r.Patch(r.ctx, copied, client.MergeFrom(r.dexRoute)); err != nil {
+			r.Log.Error(err, "Patch dex dexRoute failed.")
 			return err
 		}
 	} else {
-		if err := ctrl.SetControllerReference(ssoConfig, &route, r.Scheme); err != nil {
-			r.EmitWarningEvent(ssoConfig, err, "unable to set owner for dex route")
+		if err := ctrl.SetControllerReference(r.ssoConfig, &dexRoute, r.Scheme); err != nil {
+			r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for dex dexRoute")
 			return err
 		}
 
-		if err := r.Create(r.ctx, &route); err != nil {
-			r.Log.Error(err, "Create dex route failed.")
+		if err := r.Create(r.ctx, &dexRoute); err != nil {
+			r.Log.Error(err, "Create dex dexRoute failed.")
 			return err
 		}
 	}
 
+	return nil
+}
+
+func (r *SingleSignOnConfigReconcilerTask) ReconcileExternalAuthProxyServiceEntry(ssoConfig *corev1alpha1.SingleSignOnConfig) error {
 	var externalEnvoyExtAuthzProtocol, externalEnvoyExtAuthzName string
 
 	if ssoConfig.Spec.ExternalEnvoyExtAuthz.Scheme == "http" {
@@ -435,8 +480,8 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileResources(ssoConfig *corev1a
 
 	externalEnvoyExtAuthz := v1alpha32.ServiceEntry{
 		ObjectMeta: metaV1.ObjectMeta{
-			Namespace: KAPP_DEX_NAMESPACE,
-			Name:      KAPP_EXTERNAL_ENVOY_EXT_AUTHZ_SERVER_NAME,
+			Namespace: KALM_DEX_NAMESPACE,
+			Name:      KALM_EXTERNAL_ENVOY_EXT_AUTHZ_SERVER_NAME,
 		},
 		Spec: v1alpha3.ServiceEntry{
 			Hosts: []string{ssoConfig.Spec.ExternalEnvoyExtAuthz.Host},
@@ -475,6 +520,209 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileResources(ssoConfig *corev1a
 			r.Log.Error(err, "Create externalEnvoyExtAuthz failed.")
 			return err
 		}
+	}
+	return nil
+}
+
+func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyComponent() error {
+	clientID := string(r.secret.Data["client_id"])
+	clientSecret := string(r.secret.Data["client_secret"])
+	oidcProviderInfo := GetOIDCProviderInfo(r.ssoConfig)
+
+	authProxyComponent := corev1alpha1.Component{
+		ObjectMeta: metaV1.ObjectMeta{
+			Name:      KALM_AUTH_PROXY_NAME,
+			Namespace: KALM_DEX_NAMESPACE,
+		},
+		Spec: corev1alpha1.ComponentSpec{
+			WorkloadType: corev1alpha1.WorkloadTypeServer,
+			Image:        "kappstaging/dashboard:latest", // TODO change the image
+			Command:      "./auth-proxy",
+			Ports: []corev1alpha1.Port{
+				{
+					Name:          "http",
+					ContainerPort: 3002,
+					ServicePort:   80,
+					Protocol:      coreV1.ProtocolTCP,
+				},
+			},
+			Env: []corev1alpha1.EnvVar{
+				{
+					Type:  corev1alpha1.EnvVarTypeStatic,
+					Name:  "KALM_OIDC_CLIENT_ID",
+					Value: clientID,
+				},
+				{
+					Type:  corev1alpha1.EnvVarTypeStatic,
+					Name:  "KALM_OIDC_CLIENT_SECRET",
+					Value: clientSecret,
+				},
+				{
+					Type:  corev1alpha1.EnvVarTypeStatic,
+					Name:  "KALM_OIDC_PROVIDER_URL",
+					Value: oidcProviderInfo.Issuer,
+				},
+				{
+					Type:  corev1alpha1.EnvVarTypeStatic,
+					Name:  "KALM_OIDC_AUTH_PROXY_URL",
+					Value: oidcProviderInfo.AuthProxyExternalUrl,
+				},
+			},
+		},
+	}
+
+	if r.authProxyComponent != nil {
+		copied := r.authProxyComponent.DeepCopy()
+		copied.Spec = authProxyComponent.Spec
+
+		if err := ctrl.SetControllerReference(r.ssoConfig, copied, r.Scheme); err != nil {
+			r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for authProxyComponent")
+			return err
+		}
+
+		if err := r.Patch(r.ctx, copied, client.MergeFrom(r.authProxyComponent)); err != nil {
+			r.Log.Error(err, "Patch authProxyComponent failed.")
+			return err
+		}
+	} else {
+		if err := ctrl.SetControllerReference(r.ssoConfig, &authProxyComponent, r.Scheme); err != nil {
+			r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for authProxyComponent")
+			return err
+		}
+
+		if err := r.Create(r.ctx, &authProxyComponent); err != nil {
+			r.Log.Error(err, "Create authProxyComponent failed.")
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyRoute() error {
+	timeout := 5
+
+	var scheme string
+
+	if r.ssoConfig.Spec.UseHttp {
+		scheme = "http"
+	} else {
+		scheme = "https"
+	}
+
+	authProxyRoute := corev1alpha1.HttpRoute{
+		ObjectMeta: metaV1.ObjectMeta{
+			Name:      KALM_AUTH_PROXY_NAME,
+			Namespace: KALM_DEX_NAMESPACE,
+		},
+		Spec: corev1alpha1.HttpRouteSpec{
+			Hosts: []string{
+				r.ssoConfig.Spec.Domain,
+			},
+			Methods: []corev1alpha1.HttpRouteMethod{
+				"GET",
+			},
+			Paths:   []string{"/oidc/login", "/oidc/callback"},
+			Schemes: []string{scheme},
+			Destinations: []corev1alpha1.HttpRouteDestination{
+				{
+					Host:   fmt.Sprintf("%s.%s.svc.cluster.local", KALM_AUTH_PROXY_NAME, KALM_DEX_NAMESPACE),
+					Weight: 1,
+				},
+			},
+			Timeout: &timeout,
+			Retries: &corev1alpha1.HttpRouteRetries{
+				Attempts:             3,
+				PerTtyTimeoutSeconds: 2,
+				RetryOn:              []string{"gateway-error", "connect-failure", "refused-stream"},
+			},
+		},
+	}
+
+	if r.authProxyRoute != nil {
+		copied := r.authProxyRoute.DeepCopy()
+		copied.Spec = authProxyRoute.Spec
+
+		if err := ctrl.SetControllerReference(r.ssoConfig, copied, r.Scheme); err != nil {
+			r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for authProxyRoute")
+			return err
+		}
+
+		if err := r.Patch(r.ctx, copied, client.MergeFrom(r.authProxyRoute)); err != nil {
+			r.Log.Error(err, "Patch authProxyRoute failed.")
+			return err
+		}
+	} else {
+		if err := ctrl.SetControllerReference(r.ssoConfig, &authProxyRoute, r.Scheme); err != nil {
+			r.EmitWarningEvent(r.ssoConfig, err, "unable to set owner for authProxyRoute")
+			return err
+		}
+
+		if err := r.Create(r.ctx, &authProxyRoute); err != nil {
+			r.Log.Error(err, "Create authProxyRoute failed.")
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r *SingleSignOnConfigReconcilerTask) ReconcileAuthProxy() error {
+	if r.ssoConfig.Spec.ExternalEnvoyExtAuthz != nil {
+		if r.authProxyComponent != nil {
+			if err := r.Delete(r.ctx, r.authProxyComponent); err != nil {
+				r.Log.Error(err, "Delete authProxyComponent failed.")
+				return err
+			}
+		}
+
+		if r.authProxyRoute != nil {
+			if err := r.Delete(r.ctx, r.authProxyRoute); err != nil {
+				r.Log.Error(err, "Delete authProxyRoute failed.")
+				return err
+			}
+		}
+
+		return r.ReconcileExternalAuthProxyServiceEntry(r.ssoConfig)
+	}
+
+	if r.externalEnvoyExtAuthz != nil {
+		if err := r.Delete(r.ctx, r.externalEnvoyExtAuthz); err != nil {
+			r.Log.Error(err, "Delete externalEnvoyExtAuthz failed.")
+			return err
+		}
+	}
+
+	if err := r.ReconcileInternalAuthProxyComponent(); err != nil {
+		r.Log.Error(err, "reconcile internal auth proxy failed.")
+		return err
+	}
+
+	if err := r.ReconcileInternalAuthProxyRoute(); err != nil {
+		r.Log.Error(err, "reconcile internal auth proxy route failed.")
+		return err
+	}
+
+	return nil
+}
+
+func (r *SingleSignOnConfigReconcilerTask) ReconcileResources() error {
+	if r.ssoConfig.Spec.Issuer == "" {
+		if err := r.ReconcileSecret(); err != nil {
+			return err
+		}
+
+		if err := r.ReconcileDexComponent(); err != nil {
+			return err
+		}
+
+		if err := r.ReconcileDexRoute(); err != nil {
+			return err
+		}
+	}
+
+	if err := r.ReconcileAuthProxy(); err != nil {
+		return err
 	}
 
 	return nil

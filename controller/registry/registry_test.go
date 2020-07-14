@@ -13,12 +13,12 @@ func TestRegistry(t *testing.T) {
 	_ = godotenv.Load("../.env")
 	_ = godotenv.Load()
 
-	if os.Getenv("KAPP_TEST_DOCKER_REGISTRY_PASSWORD") == "" || os.Getenv("KAPP_TEST_DOCKER_REGISTRY_USERNAME") == "" {
+	if os.Getenv("KALM_TEST_DOCKER_REGISTRY_PASSWORD") == "" || os.Getenv("KALM_TEST_DOCKER_REGISTRY_USERNAME") == "" {
 		t.Skip()
 	}
 
-	username := os.Getenv("KAPP_TEST_DOCKER_REGISTRY_USERNAME")
-	password := os.Getenv("KAPP_TEST_DOCKER_REGISTRY_PASSWORD")
+	username := os.Getenv("KALM_TEST_DOCKER_REGISTRY_USERNAME")
+	password := os.Getenv("KALM_TEST_DOCKER_REGISTRY_PASSWORD")
 
 	registry := NewRegistry("https://gcr.io", username, password)
 	repos, err := registry.Repositories()

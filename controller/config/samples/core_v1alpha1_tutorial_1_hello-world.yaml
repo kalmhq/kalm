@@ -12,10 +12,10 @@ metadata:
   name: hello-world
   namespace: kalm-hello-world
 spec:
-  image: strm/helloworld-http:latest
+  image: k8s.gcr.io/echoserver:1.10
   ports:
     - name: http
-      containerPort: 80
+      containerPort: 8080
       servicePort: 80
 ---
 apiVersion: core.kalm.dev/v1alpha1
