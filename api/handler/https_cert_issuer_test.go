@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"github.com/kapp-staging/kapp/api/resources"
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
-	"github.com/kapp-staging/kapp/controller/controllers"
+	"github.com/kalm-staging/kalm/api/resources"
+	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
+	"github.com/kalm-staging/kalm/controller/controllers"
 	"github.com/stretchr/testify/suite"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/http"
@@ -19,7 +19,7 @@ func TestHttpsCertIssuerTestSuite(t *testing.T) {
 }
 
 func (suite *HttpsCertIssuerTestSuite) TearDownTest() {
-	suite.k8sClinet.RESTClient().Delete().AbsPath("/apis/core.kapp.dev/v1alpha1/httpscertissuers/my-foobar-issuer").Do().Error()
+	suite.k8sClinet.RESTClient().Delete().AbsPath("/apis/core.kalm.dev/v1alpha1/httpscertissuers/my-foobar-issuer").Do().Error()
 }
 
 func (suite *HttpsCertIssuerTestSuite) TestGetEmptyHCIssuerList() {
@@ -46,7 +46,7 @@ func (suite *HttpsCertIssuerTestSuite) TestCreateHttpsCertIssuer() {
 	suite.Equal("my-foobar-issuer", issuer.Name)
 
 	var res v1alpha1.HttpsCertIssuerList
-	err := suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/httpscertissuers").Do().Into(&res)
+	err := suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kalm.dev/v1alpha1/httpscertissuers").Do().Into(&res)
 	suite.Nil(err)
 
 	suite.Equal(1, len(res.Items))
@@ -73,7 +73,7 @@ func (suite *HttpsCertIssuerTestSuite) TestUpdateHttpsCertIssuer() {
 	suite.Equal("my-foobar-issuer", issuer.Name)
 
 	var res v1alpha1.HttpsCertIssuerList
-	err := suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/httpscertissuers").Do().Into(&res)
+	err := suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kalm.dev/v1alpha1/httpscertissuers").Do().Into(&res)
 	suite.Nil(err)
 
 	secName := resources.GenerateSecretNameForACME(issuer)
@@ -106,7 +106,7 @@ func (suite *HttpsCertIssuerTestSuite) TestUpdateHttpsCertIssuer() {
 	suite.Equal(200, rec.Code)
 	suite.Equal("my-foobar-issuer", issuer.Name)
 
-	err = suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/httpscertissuers").Do().Into(&res)
+	err = suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kalm.dev/v1alpha1/httpscertissuers").Do().Into(&res)
 	suite.Nil(err)
 
 	suite.Equal(1, len(res.Items))
@@ -139,7 +139,7 @@ func (suite *HttpsCertIssuerTestSuite) TestDeleteHttpsCertIssuer() {
 	suite.Equal("my-foobar-issuer", issuer.Name)
 
 	var res v1alpha1.HttpsCertIssuerList
-	err := suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/httpscertissuers").Do().Into(&res)
+	err := suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kalm.dev/v1alpha1/httpscertissuers").Do().Into(&res)
 	suite.Nil(err)
 
 	suite.Equal(1, len(res.Items))
@@ -149,7 +149,7 @@ func (suite *HttpsCertIssuerTestSuite) TestDeleteHttpsCertIssuer() {
 	rec.BodyAsJSON(&issuer)
 	suite.Equal(200, rec.Code)
 
-	err = suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/httpscertissuers").Do().Into(&res)
+	err = suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kalm.dev/v1alpha1/httpscertissuers").Do().Into(&res)
 	suite.Nil(err)
 	suite.Equal(0, len(res.Items))
 }

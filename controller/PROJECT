@@ -1,5 +1,5 @@
-domain: kapp.dev
-repo: github.com/kapp-staging/kapp/controller
+domain: kalm.dev
+repo: github.com/kalm-staging/kalm/controller
 resources:
 - group: core
   kind: Application

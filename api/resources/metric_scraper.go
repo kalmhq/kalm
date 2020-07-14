@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/kapp-staging/kapp/api/client"
+	"github.com/kalm-staging/kalm/api/client"
 	_ "github.com/mattn/go-sqlite3"
 	log "github.com/sirupsen/logrus"
 	v12 "k8s.io/api/core/v1"
@@ -253,9 +253,9 @@ func UpdateDatabase(db *sql.DB, nodeMetrics *v1beta1.NodeMetricsList, podMetrics
 
 	for _, v := range podMetrics.Items {
 		component := ""
-		_, ok := v.ObjectMeta.Labels["kapp-component"]
+		_, ok := v.ObjectMeta.Labels["kalm-component"]
 		if ok {
-			component = v.ObjectMeta.Labels["kapp-component"]
+			component = v.ObjectMeta.Labels["kalm-component"]
 		}
 		for _, u := range v.Containers {
 			_, err = stmt.Exec(v.UID, v.Name, v.Namespace, u.Name, component, u.Usage.Cpu().Value(), u.Usage.Memory().Value(), u.Usage.StorageEphemeral().MilliValue()/1000)

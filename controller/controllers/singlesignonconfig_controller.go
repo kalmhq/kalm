@@ -19,8 +19,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	corev1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
-	"github.com/kapp-staging/kapp/controller/utils"
+	corev1alpha1 "github.com/kalm-staging/kalm/controller/api/v1alpha1"
+	"github.com/kalm-staging/kalm/controller/utils"
 	"gopkg.in/yaml.v3"
 	"istio.io/api/networking/v1alpha3"
 	v1alpha32 "istio.io/client-go/pkg/apis/networking/v1alpha3"
@@ -35,7 +35,7 @@ import (
 
 const KAPP_EXTERNAL_ENVOY_EXT_AUTHZ_SERVER_NAME = "external-envoy-ext-authz-server"
 const KAPP_DEX_SECRET_NAME = "dex-secret"
-const KAPP_DEX_NAMESPACE = "kapp-system"
+const KAPP_DEX_NAMESPACE = "kalm-system"
 const KAPP_DEX_NAME = "dex"
 
 // SingleSignOnConfigReconciler reconciles a SingleSignOnConfig object
@@ -480,8 +480,8 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileResources(ssoConfig *corev1a
 	return nil
 }
 
-// +kubebuilder:rbac:groups=core.kapp.dev,resources=singlesignonconfigs,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=core.kapp.dev,resources=singlesignonconfigs/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=core.kalm.dev,resources=singlesignonconfigs,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core.kalm.dev,resources=singlesignonconfigs/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=networking.istio.io,resources=serviceentries,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=networking.istio.io,resources=serviceentries/status,verbs=get;update;patch
 

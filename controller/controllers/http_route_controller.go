@@ -33,12 +33,12 @@ import (
 	"strconv"
 	"strings"
 
-	corev1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	corev1alpha1 "github.com/kalm-staging/kalm/controller/api/v1alpha1"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 const (
-	KAPP_ROUTE_LABEL = "kapp-route"
+	KAPP_ROUTE_LABEL = "kalm-route"
 )
 
 type HttpRouteReconcilerTask struct {
@@ -206,7 +206,7 @@ func (r *HttpRouteReconcilerTask) Run(ctrl.Request) error {
 	r.virtualServices = virtualServices.Items
 
 	// Each host will has a virtual service
-	// Kapp will order http route rules, and set them in the virtual service http field.
+	// Kalm will order http route rules, and set them in the virtual service http field.
 	hostVirtualService := make(map[string][]*istioNetworkingV1Beta1.HTTPRoute)
 
 	for _, route := range r.routes {
@@ -243,7 +243,7 @@ func (r *HttpRouteReconcilerTask) Run(ctrl.Request) error {
 
 func (r *HttpRouteReconcilerTask) SaveVirtualService(host string, routes []*istioNetworkingV1Beta1.HTTPRoute) error {
 	virtualServiceName := fmt.Sprintf("vs-%s", strings.ReplaceAll(strings.ReplaceAll(host, "*", "wildcard"), ".", "-"))
-	virtualServiceNamespace := "kapp-system"
+	virtualServiceNamespace := "kalm-system"
 
 	var virtualService v1beta1.VirtualService
 
@@ -541,8 +541,8 @@ type HttpRouteReconciler struct {
 	*BaseReconciler
 }
 
-// +kubebuilder:rbac:groups=core.kapp.dev,resources=httproutes,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=core.kapp.dev,resources=httproutes/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=core.kalm.dev,resources=httproutes,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core.kalm.dev,resources=httproutes/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=networking.istio.io,resources=virtualservices,verbs=*
 // +kubebuilder:rbac:groups=networking.istio.io,resources=gateways,verbs=*
 
@@ -559,10 +559,10 @@ func NewHttpRouteReconciler(mgr ctrl.Manager) *HttpRouteReconciler {
 	return &HttpRouteReconciler{NewBaseReconciler(mgr, "HttpRoute")}
 }
 
-type WatchAllKappGateway struct{}
-type WatchAllKappVirtualService struct{}
+type WatchAllKalmGateway struct{}
+type WatchAllKalmVirtualService struct{}
 
-func (*WatchAllKappGateway) Map(object handler.MapObject) []reconcile.Request {
+func (*WatchAllKalmGateway) Map(object handler.MapObject) []reconcile.Request {
 	gateway, ok := object.Object.(*v1beta1.Gateway)
 
 	if !ok || gateway.Labels == nil || gateway.Labels[KAPP_ROUTE_LABEL] != "true" {
@@ -571,7 +571,7 @@ func (*WatchAllKappGateway) Map(object handler.MapObject) []reconcile.Request {
 
 	return []reconcile.Request{{NamespacedName: types.NamespacedName{}}}
 }
-func (*WatchAllKappVirtualService) Map(object handler.MapObject) []reconcile.Request {
+func (*WatchAllKalmVirtualService) Map(object handler.MapObject) []reconcile.Request {
 	vs, ok := object.Object.(*v1beta1.VirtualService)
 
 	if !ok || vs.Labels == nil || vs.Labels[KAPP_ROUTE_LABEL] != "true" {
@@ -587,13 +587,13 @@ func (r *HttpRouteReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Watches(
 			&source.Kind{Type: &v1beta1.Gateway{}},
 			&handler.EnqueueRequestsFromMapFunc{
-				ToRequests: &WatchAllKappGateway{},
+				ToRequests: &WatchAllKalmGateway{},
 			},
 		).
 		Watches(
 			&source.Kind{Type: &v1beta1.VirtualService{}},
 			&handler.EnqueueRequestsFromMapFunc{
-				ToRequests: &WatchAllKappVirtualService{},
+				ToRequests: &WatchAllKalmVirtualService{},
 			},
 		).
 		Complete(r)

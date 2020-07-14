@@ -5,7 +5,7 @@ metadata:
   name: httpscert-editor-role
 rules:
 - apiGroups:
-  - core.kapp.dev
+  - core.kalm.dev
   resources:
   - httpscerts
   verbs:
@@ -17,7 +17,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - core.kapp.dev
+  - core.kalm.dev
   resources:
   - httpscerts/status
   verbs:

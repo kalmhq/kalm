@@ -1,0 +1,11 @@
+# install OperatorResource to install:
+# - cert-manager
+# - istio
+# - Kalm CRD & Roles
+# - Kalm controller
+# - Kalm dashboard
+apiVersion: install.kalm.dev/v1alpha1
+kind: KalmOperatorConfig
+metadata:
+  namespace: kalm-operator
+  name: kalmoperatorconfig-sample

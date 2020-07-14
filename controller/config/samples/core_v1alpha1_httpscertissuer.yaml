@@ -1,11 +1,11 @@
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: HttpsCertIssuer
 metadata:
   name: httpscertissuer-sample
 spec:
   caForTest: {}
 ---
-# apiVersion: core.kapp.dev/v1alpha1
+# apiVersion: core.kalm.dev/v1alpha1
 # kind: HttpsCertIssuer
 # metadata:
 #   name: httpscertissuer-acme-sample
@@ -14,7 +14,7 @@ spec:
 #     email: foo@bar.com
 #     apiKey: abcd
 #---
-#apiVersion: core.kapp.dev/v1alpha1
+#apiVersion: core.kalm.dev/v1alpha1
 #kind: HttpsCertIssuer
 #metadata:
 #  name: httpscertissuer-sample

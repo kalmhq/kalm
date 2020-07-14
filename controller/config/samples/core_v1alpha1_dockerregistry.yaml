@@ -1,4 +1,4 @@
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: DockerRegistry
 metadata:
   name: gcr

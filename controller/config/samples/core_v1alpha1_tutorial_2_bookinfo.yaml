@@ -10,19 +10,19 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: kapp-bookinfo
+  name: kalm-bookinfo
   labels:
     istio-injection: enabled
-    kapp-enabled: "true"
+    kalm-enabled: "true"
 ---
 ##################################################################################################
 # Details service
 ##################################################################################################
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: Component
 metadata:
     name: details
-    namespace: kapp-bookinfo
+    namespace: kalm-bookinfo
 spec:
     image: docker.io/istio/examples-bookinfo-details-v1:1.15.0
     preferNotCoLocated: true
@@ -38,11 +38,11 @@ spec:
 ##################################################################################################
 # Ratings service
 ##################################################################################################
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: Component
 metadata:
     name: ratings
-    namespace: kapp-bookinfo
+    namespace: kalm-bookinfo
 spec:
     image: docker.io/istio/examples-bookinfo-ratings-v1:1.15.0
     preferNotCoLocated: true
@@ -58,11 +58,11 @@ spec:
 ##################################################################################################
 # Reviews service
 ##################################################################################################
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: Component
 metadata:
     name: reviews
-    namespace: kapp-bookinfo
+    namespace: kalm-bookinfo
 spec:
     image: docker.io/istio/examples-bookinfo-reviews-v1:1.15.0
     preferNotCoLocated: true
@@ -85,11 +85,11 @@ spec:
           type: emptyDir
           size: 32Mi
 ---
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: Component
 metadata:
     name: reviews-v2
-    namespace: kapp-bookinfo
+    namespace: kalm-bookinfo
 spec:
     image: docker.io/istio/examples-bookinfo-reviews-v2:1.15.0
     preferNotCoLocated: true
@@ -112,11 +112,11 @@ spec:
           type: emptyDir
           size: 32Mi
 ---
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: Component
 metadata:
     name: reviews-v3
-    namespace: kapp-bookinfo
+    namespace: kalm-bookinfo
 spec:
     image: docker.io/istio/examples-bookinfo-reviews-v3:1.15.0
     preferNotCoLocated: true
@@ -142,11 +142,11 @@ spec:
 ##################################################################################################
 # Productpage services
 ##################################################################################################
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: Component
 metadata:
     name: productpage
-    namespace: kapp-bookinfo
+    namespace: kalm-bookinfo
 spec:
     image: docker.io/istio/examples-bookinfo-productpage-v1:1.15.0
     replicas: 2
@@ -165,7 +165,7 @@ spec:
           size: 32Mi
 ---
 # part2 - plugin
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: ComponentPlugin
 metadata:
   name: termination-grace
@@ -190,18 +190,18 @@ spec:
       periodSeconds:
         type: number
 ---
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: ComponentPluginBinding
 metadata:
   name: termination-grace
-  namespace: kapp-bookinfo
+  namespace: kalm-bookinfo
 spec:
   pluginName: termination-grace
   componentName: productpage
   config:
     periodSeconds: 5
 ---
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: ComponentPlugin
 metadata:
   name: http-health-probe
@@ -250,22 +250,22 @@ spec:
       periodSeconds:
         type: number
 ---
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: ComponentPluginBinding
 metadata:
   name: productpage-http-health-probe
-  namespace: kapp-bookinfo
+  namespace: kalm-bookinfo
 spec:
   pluginName:  http-health-probe
   componentName: productpage
   config:
     port: 9080
 ---
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: HttpRoute
 metadata:
   name: bookinfo
-  namespace: kapp-bookinfo
+  namespace: kalm-bookinfo
 spec:
   hosts:
     - "bookinfo.demo.com"

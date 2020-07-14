@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/kapp-staging/kapp/api/resources"
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/kalm-staging/kalm/api/resources"
+	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -91,13 +91,13 @@ func (h *ApiHandler) handleDeleteComponent(c echo.Context) error {
 
 func deleteComponent(c echo.Context) error {
 	k8sClient := getK8sClient(c)
-	_, err := k8sClient.RESTClient().Delete().Body(c.Request().Body).AbsPath("/apis/core.kapp.dev/v1alpha1/namespaces/" + c.Param("applicationName") + "/components/" + c.Param("name")).DoRaw()
+	_, err := k8sClient.RESTClient().Delete().Body(c.Request().Body).AbsPath("/apis/core.kalm.dev/v1alpha1/namespaces/" + c.Param("applicationName") + "/components/" + c.Param("name")).DoRaw()
 	return err
 }
 
 func GetComponent(k8sClient *kubernetes.Clientset, applicationName, componentName string) (*v1alpha1.Component, error) {
 	var fetched v1alpha1.Component
-	err := k8sClient.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/namespaces/" + applicationName + "/components/" + componentName).Do().Into(&fetched)
+	err := k8sClient.RESTClient().Get().AbsPath("/apis/core.kalm.dev/v1alpha1/namespaces/" + applicationName + "/components/" + componentName).Do().Into(&fetched)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +112,7 @@ func getComponent(c echo.Context) (*v1alpha1.Component, error) {
 func getComponentList(c echo.Context) (*v1alpha1.ComponentList, error) {
 	k8sClient := getK8sClient(c)
 	var fetched v1alpha1.ComponentList
-	err := k8sClient.RESTClient().Get().AbsPath("/apis/core.kapp.dev/v1alpha1/namespaces/" + c.Param("applicationName") + "/components").Do().Into(&fetched)
+	err := k8sClient.RESTClient().Get().AbsPath("/apis/core.kalm.dev/v1alpha1/namespaces/" + c.Param("applicationName") + "/components").Do().Into(&fetched)
 	if err != nil {
 		return nil, err
 	}
@@ -134,13 +134,13 @@ func createComponent(c echo.Context) (*v1alpha1.Component, error) {
 
 	bts, _ := json.Marshal(crdComponent)
 	var component v1alpha1.Component
-	err = k8sClient.RESTClient().Post().Body(bts).AbsPath("/apis/core.kapp.dev/v1alpha1/namespaces/" + c.Param("applicationName") + "/components").Do().Into(&component)
+	err = k8sClient.RESTClient().Post().Body(bts).AbsPath("/apis/core.kalm.dev/v1alpha1/namespaces/" + c.Param("applicationName") + "/components").Do().Into(&component)
 	if err != nil {
 		return nil, err
 	}
 
-	kappClient, _ := getKappV1Alpha1Client(c)
-	err = resources.UpdateComponentPluginBindingsForObject(kappClient, component.Namespace, component.Name, plugins)
+	kalmClient, _ := getKalmV1Alpha1Client(c)
+	err = resources.UpdateComponentPluginBindingsForObject(kalmClient, component.Namespace, component.Name, plugins)
 
 	if err != nil {
 		return nil, err
@@ -166,14 +166,14 @@ func updateComponent(c echo.Context) (*v1alpha1.Component, error) {
 
 	bts, _ := json.Marshal(crdComponent)
 	var component v1alpha1.Component
-	err = k8sClient.RESTClient().Put().Body(bts).AbsPath("/apis/core.kapp.dev/v1alpha1/namespaces/" + c.Param("applicationName") + "/components/" + c.Param("name")).Do().Into(&component)
+	err = k8sClient.RESTClient().Put().Body(bts).AbsPath("/apis/core.kalm.dev/v1alpha1/namespaces/" + c.Param("applicationName") + "/components/" + c.Param("name")).Do().Into(&component)
 
 	if err != nil {
 		return nil, err
 	}
 
-	kappClient, _ := getKappV1Alpha1Client(c)
-	err = resources.UpdateComponentPluginBindingsForObject(kappClient, component.Namespace, component.Name, plugins)
+	kalmClient, _ := getKalmV1Alpha1Client(c)
+	err = resources.UpdateComponentPluginBindingsForObject(kalmClient, component.Namespace, component.Name, plugins)
 
 	if err != nil {
 		return nil, err
@@ -197,7 +197,7 @@ func getComponentFromContext(c echo.Context) (*v1alpha1.Component, []runtime.Raw
 	crdComponent := &v1alpha1.Component{
 		TypeMeta: metaV1.TypeMeta{
 			Kind:       "Component",
-			APIVersion: "core.kapp.dev/v1alpha1",
+			APIVersion: "core.kalm.dev/v1alpha1",
 		},
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      name,

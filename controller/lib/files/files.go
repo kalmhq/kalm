@@ -16,8 +16,8 @@ type File struct {
 
 // TODO validate path
 
-// will use this a config-map called kapp-files to store files in each namespace
-const KAPP_CONFIG_MAP_NAME = "kapp-files"
+// will use this a config-map called kalm-files to store files in each namespace
+const KAPP_CONFIG_MAP_NAME = "kalm-files"
 
 // auto-generated dir
 const KAPP_DIR_PLACEHOLDER = "__DIR__"

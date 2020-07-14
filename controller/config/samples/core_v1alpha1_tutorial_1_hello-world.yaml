@@ -1,16 +1,16 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: kapp-hello-world
+  name: kalm-hello-world
   labels:
     istio-injection: enabled
-    kapp-enabled: "true"
+    kalm-enabled: "true"
 ---
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: Component
 metadata:
   name: hello-world
-  namespace: kapp-hello-world
+  namespace: kalm-hello-world
 spec:
   image: strm/helloworld-http:latest
   ports:
@@ -18,11 +18,11 @@ spec:
       containerPort: 80
       servicePort: 80
 ---
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: HttpRoute
 metadata:
   name: hello-world
-  namespace: kapp-hello-world
+  namespace: kalm-hello-world
 spec:
   hosts:
     - "*"

@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: kapp-test
+  name: kalm-test
   labels:
-    kapp-enabled: "true"
+    kalm-enabled: "true"
 ---
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: ComponentPlugin
 metadata:
   name: configurable-probes
@@ -271,20 +271,20 @@ spec:
     - server
 
 ---
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: Component
 metadata:
   name: test
-  namespace: kapp-test
+  namespace: kalm-test
 spec:
   image: nginx:alpine
   workloadType: server
 ---
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: ComponentPluginBinding
 metadata:
   name: test-configurable-probes
-  namespace: kapp-test
+  namespace: kalm-test
 spec:
   pluginName: configurable-probes
   componentName: test

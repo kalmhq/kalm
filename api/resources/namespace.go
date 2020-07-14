@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	KAPP_SYSTEM_NAMESPACE = "kapp-system"
-	KAPP_NAMESPACE_PREFIX = "kapp-"
+	KAPP_SYSTEM_NAMESPACE = "kalm-system"
+	KAPP_NAMESPACE_PREFIX = "kalm-"
 )
 
 type NamespaceListChannel struct {
@@ -64,7 +64,7 @@ func getNamespaceListChannel(k8sClient *kubernetes.Clientset, listOptions metaV1
 						Namespace: item.Name,
 						Resource:  "applications",
 						Verb:      "create",
-						Group:     "core.kapp.dev",
+						Group:     "core.kalm.dev",
 					},
 				},
 			})
@@ -85,7 +85,7 @@ func getNamespaceListChannel(k8sClient *kubernetes.Clientset, listOptions metaV1
 						Namespace: item.Name,
 						Resource:  "applications",
 						Verb:      "get",
-						Group:     "core.kapp.dev",
+						Group:     "core.kalm.dev",
 					},
 				},
 			})
@@ -142,7 +142,7 @@ func CreateNamespace(k8sClient *kubernetes.Clientset, name string) error {
 		return err
 	}
 
-	return createDefaultKappRoles(k8sClient, namespace.Name)
+	return createDefaultKalmRoles(k8sClient, namespace.Name)
 }
 
 func DeleteNamespace(k8sClient *kubernetes.Clientset, name string) error {

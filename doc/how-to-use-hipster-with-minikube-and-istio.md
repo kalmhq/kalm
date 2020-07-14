@@ -38,7 +38,7 @@ kubectl get pods -n istio-operator
 launch istio in our cluster
 
 ```bash
-# go to kapp root dir, install istio config. The operator will intall istio components for us.
+# go to kalm root dir, install istio config. The operator will intall istio components for us.
 kubectl apply -f resources/istiocontrolplane.yaml
 
 # check istio components status
@@ -52,10 +52,10 @@ kubectl get pods -n istio-system
 # prometheus-fd997976c-qzqr5              2/2     Running   0          9h
 ```
 
-# Install kapp controller
+# Install kalm controller
 
 ```bash
-# go to kapp controller dir
+# go to kalm controller dir
 make install
 make run
 
@@ -67,11 +67,11 @@ Start another terminal and continue.
 # Install hipster application
 
 ```bash
-# go to kapp controller dir
+# go to kalm controller dir
 kubectl apply -f config/samples/core_v1alpha1_hipster.yaml
 
 # check istio components status
-kubectl get pods -n kapp-hipster
+kubectl get pods -n kalm-hipster
 
 # You will see 12 pods. There will be 2 containers in each pod. (READY 2/2 means the pod has 2 ready containers).
 ```
@@ -83,13 +83,13 @@ This step is view status only. The following commands are very helpful for under
 ```bash
 # view istio settings of a pod
 
-istioctl x describe pod -n kapp-hipster $(kubectl get pods -n kapp-hipster -l kapp-component=frontend -o jsonpath='{.items[0].metadata.name}')
+istioctl x describe pod -n kalm-hipster $(kubectl get pods -n kalm-hipster -l kalm-component=frontend -o jsonpath='{.items[0].metadata.name}')
 ```
 
 ```bash
 # view istio sidecar iptable rules of a pod
 
-kubectl logs $(kubectl get pods -n kapp-hipster -l kapp-component=frontend -o jsonpath='{.items[0].metadata.name}') -n kapp-hipster -c istio-init
+kubectl logs $(kubectl get pods -n kalm-hipster -l kalm-component=frontend -o jsonpath='{.items[0].metadata.name}') -n kalm-hipster -c istio-init
 ```
 
 ```bash
@@ -99,7 +99,7 @@ istioctl proxy-status
 
 ```bash
 # istio proxy-config of a pod
-istioctl proxy-config cluster -n kapp-hipster $(kubectl get pods -n kapp-hipster -l kapp-component=frontend -o jsonpath='{.items[0].metadata.name}')
+istioctl proxy-config cluster -n kalm-hipster $(kubectl get pods -n kalm-hipster -l kalm-component=frontend -o jsonpath='{.items[0].metadata.name}')
 
 # istioctl proxy-config -h for more available commands
 ```
@@ -151,8 +151,8 @@ echo "http://$(minikube ip):$ISTIO_GATEWAY_PORT"
 istioctl dashboard kiali
 
 # go to graph page
-# select kapp-hipster namespace
-# make kapp-hipster requests from browser and view graph changes
+# select kalm-hipster namespace
+# make kalm-hipster requests from browser and view graph changes
 ```
 
 # test HTTPS certificate at localhost

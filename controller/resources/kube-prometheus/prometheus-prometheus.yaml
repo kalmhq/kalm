@@ -4,12 +4,12 @@ metadata:
   labels:
     prometheus: k8s
   name: k8s
-  namespace: kapp-monitoring
+  namespace: kalm-monitoring
 spec:
   alerting:
     alertmanagers:
     - name: alertmanager-main
-      namespace: kapp-monitoring
+      namespace: kalm-monitoring
       port: web
   baseImage: quay.io/prometheus/prometheus
   nodeSelector:

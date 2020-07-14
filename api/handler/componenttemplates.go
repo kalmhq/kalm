@@ -2,15 +2,15 @@ package handler
 
 import (
 	"encoding/json"
-	"github.com/kapp-staging/kapp/api/resources"
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/kalm-staging/kalm/api/resources"
+	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/http"
 )
 
 func (h *ApiHandler) handleGetComponentTemplates(c echo.Context) error {
-	componentTemplateList, err := getKappComponentTemplateList(c)
+	componentTemplateList, err := getKalmComponentTemplateList(c)
 
 	if err != nil {
 		return err
@@ -20,7 +20,7 @@ func (h *ApiHandler) handleGetComponentTemplates(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleCreateComponentTemplate(c echo.Context) error {
-	componentTemplate, err := createKappComponentTemplate(c)
+	componentTemplate, err := createKalmComponentTemplate(c)
 
 	if err != nil {
 		return err
@@ -30,7 +30,7 @@ func (h *ApiHandler) handleCreateComponentTemplate(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleUpdateComponentTemplate(c echo.Context) error {
-	componentTemplate, err := updateKappComponentTemplate(c)
+	componentTemplate, err := updateKalmComponentTemplate(c)
 
 	if err != nil {
 		return err
@@ -40,7 +40,7 @@ func (h *ApiHandler) handleUpdateComponentTemplate(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteComponentTemplate(c echo.Context) error {
-	err := deleteKappComponentTemplate(c)
+	err := deleteKalmComponentTemplate(c)
 	if err != nil {
 		return err
 	}
@@ -49,13 +49,13 @@ func (h *ApiHandler) handleDeleteComponentTemplate(c echo.Context) error {
 
 // Helper functions
 
-func deleteKappComponentTemplate(c echo.Context) error {
+func deleteKalmComponentTemplate(c echo.Context) error {
 	k8sClient := getK8sClient(c)
-	_, err := k8sClient.RESTClient().Delete().Body(c.Request().Body).AbsPath(kappComponentTemplateUrl(c)).DoRaw()
+	_, err := k8sClient.RESTClient().Delete().Body(c.Request().Body).AbsPath(kalmComponentTemplateUrl(c)).DoRaw()
 	return err
 }
 
-func createKappComponentTemplate(c echo.Context) (*v1alpha1.ComponentTemplate, error) {
+func createKalmComponentTemplate(c echo.Context) (*v1alpha1.ComponentTemplate, error) {
 	k8sClient := getK8sClient(c)
 
 	crdComponentTemplate, err := getComponentTemplateFromContext(c)
@@ -66,14 +66,14 @@ func createKappComponentTemplate(c echo.Context) (*v1alpha1.ComponentTemplate, e
 
 	bts, _ := json.Marshal(crdComponentTemplate)
 	var componentTemplate v1alpha1.ComponentTemplate
-	err = k8sClient.RESTClient().Post().Body(bts).AbsPath(kappComponentTemplateUrl(c)).Do().Into(&componentTemplate)
+	err = k8sClient.RESTClient().Post().Body(bts).AbsPath(kalmComponentTemplateUrl(c)).Do().Into(&componentTemplate)
 	if err != nil {
 		return nil, err
 	}
 	return &componentTemplate, nil
 }
 
-func updateKappComponentTemplate(c echo.Context) (*v1alpha1.ComponentTemplate, error) {
+func updateKalmComponentTemplate(c echo.Context) (*v1alpha1.ComponentTemplate, error) {
 	k8sClient := getK8sClient(c)
 
 	crdComponentTemplate, err := getComponentTemplateFromContext(c)
@@ -82,7 +82,7 @@ func updateKappComponentTemplate(c echo.Context) (*v1alpha1.ComponentTemplate, e
 		return nil, err
 	}
 
-	fetched, err := getKappComponentTemplate(c)
+	fetched, err := getKalmComponentTemplate(c)
 
 	if err != nil {
 		return nil, err
@@ -92,7 +92,7 @@ func updateKappComponentTemplate(c echo.Context) (*v1alpha1.ComponentTemplate, e
 
 	bts, _ := json.Marshal(crdComponentTemplate)
 	var componentTemplate v1alpha1.ComponentTemplate
-	err = k8sClient.RESTClient().Put().Body(bts).AbsPath(kappComponentTemplateUrl(c)).Do().Into(&componentTemplate)
+	err = k8sClient.RESTClient().Put().Body(bts).AbsPath(kalmComponentTemplateUrl(c)).Do().Into(&componentTemplate)
 
 	if err != nil {
 		return nil, err
@@ -101,39 +101,39 @@ func updateKappComponentTemplate(c echo.Context) (*v1alpha1.ComponentTemplate, e
 	return &componentTemplate, nil
 }
 
-func getKappComponentTemplate(c echo.Context) (*v1alpha1.ComponentTemplate, error) {
+func getKalmComponentTemplate(c echo.Context) (*v1alpha1.ComponentTemplate, error) {
 	k8sClient := getK8sClient(c)
 	var fetched v1alpha1.ComponentTemplate
-	err := k8sClient.RESTClient().Get().AbsPath(kappComponentTemplateUrl(c)).Do().Into(&fetched)
+	err := k8sClient.RESTClient().Get().AbsPath(kalmComponentTemplateUrl(c)).Do().Into(&fetched)
 	if err != nil {
 		return nil, err
 	}
 	return &fetched, nil
 }
 
-func getKappComponentTemplateList(c echo.Context) (*v1alpha1.ComponentTemplateList, error) {
+func getKalmComponentTemplateList(c echo.Context) (*v1alpha1.ComponentTemplateList, error) {
 	k8sClient := getK8sClient(c)
 	var fetched v1alpha1.ComponentTemplateList
-	err := k8sClient.RESTClient().Get().AbsPath(kappComponentTemplateUrl(c)).Do().Into(&fetched)
+	err := k8sClient.RESTClient().Get().AbsPath(kalmComponentTemplateUrl(c)).Do().Into(&fetched)
 	if err != nil {
 		return nil, err
 	}
 	return &fetched, nil
 }
 
-func kappComponentTemplateUrl(c echo.Context) string {
+func kalmComponentTemplateUrl(c echo.Context) string {
 	//namespace := c.Param("namespace")
 	name := c.Param("name")
 
 	//if namespace == "" && name == "" {
-	//	return "/apis/core.kapp.dev/v1alpha1/componenttemplates"
+	//	return "/apis/core.kalm.dev/v1alpha1/componenttemplates"
 	//}
 
 	if name == "" {
-		//return "/apis/core.kapp.dev/v1alpha1/namespaces/" + namespace + "/componenttemplates"
-		return "/apis/core.kapp.dev/v1alpha1/componenttemplates"
+		//return "/apis/core.kalm.dev/v1alpha1/namespaces/" + namespace + "/componenttemplates"
+		return "/apis/core.kalm.dev/v1alpha1/componenttemplates"
 	}
-	return "/apis/core.kapp.dev/v1alpha1/componenttemplates/" + name
+	return "/apis/core.kalm.dev/v1alpha1/componenttemplates/" + name
 }
 
 func getComponentTemplateFromContext(c echo.Context) (*v1alpha1.ComponentTemplate, error) {
@@ -146,7 +146,7 @@ func getComponentTemplateFromContext(c echo.Context) (*v1alpha1.ComponentTemplat
 	crdComponentTemplate := &v1alpha1.ComponentTemplate{
 		TypeMeta: metaV1.TypeMeta{
 			Kind:       "ComponentTemplate",
-			APIVersion: "core.kapp.dev/v1alpha1",
+			APIVersion: "core.kalm.dev/v1alpha1",
 		},
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: req.Name,

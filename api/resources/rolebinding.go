@@ -105,8 +105,8 @@ func DeleteRoleBinding(k8sClient *kubernetes.Clientset, namespace string, name s
 	return resolveSubjectClusterRoleBindings(k8sClient, parts[0], parts[1])
 }
 
-// If a subject still has some roles in kapp namespaces, the user will have `kapp-cluster-resources-reader` cluster role
-// Otherwise, the `kapp-cluster-resources-reader` binding will be deleted
+// If a subject still has some roles in kalm namespaces, the user will have `kalm-cluster-resources-reader` cluster role
+// Otherwise, the `kalm-cluster-resources-reader` binding will be deleted
 func resolveSubjectClusterRoleBindings(k8sClient *kubernetes.Clientset, kind string, name string) (err error) {
 	err = fixDefaultClusterRole(k8sClient)
 
@@ -135,7 +135,7 @@ func resolveSubjectClusterRoleBindings(k8sClient *kubernetes.Clientset, kind str
 		}
 	}
 
-	clusterRoleBindingName := fmt.Sprintf("%s:%s:kapp-cluster-resources-reader", kind, name)
+	clusterRoleBindingName := fmt.Sprintf("%s:%s:kalm-cluster-resources-reader", kind, name)
 
 	if hasRole {
 		subject := rbacV1.Subject{
@@ -159,7 +159,7 @@ func resolveSubjectClusterRoleBindings(k8sClient *kubernetes.Clientset, kind str
 			RoleRef: rbacV1.RoleRef{
 				APIGroup: "rbac.authorization.k8s.io",
 				Kind:     "ClusterRole",
-				Name:     "kapp-cluster-resources-reader",
+				Name:     "kalm-cluster-resources-reader",
 			},
 		})
 
@@ -176,7 +176,7 @@ func resolveSubjectClusterRoleBindings(k8sClient *kubernetes.Clientset, kind str
 func fixDefaultClusterRole(k8sClient *kubernetes.Clientset) (err error) {
 	_, err = k8sClient.RbacV1().ClusterRoles().Create(&rbacV1.ClusterRole{
 		ObjectMeta: metaV1.ObjectMeta{
-			Name: "kapp-cluster-resources-reader",
+			Name: "kalm-cluster-resources-reader",
 		},
 		Rules: []rbacV1.PolicyRule{
 			{
@@ -271,7 +271,7 @@ func createReaderRole(k8sClient *kubernetes.Clientset, namespace string) (err er
 					"applications",
 				},
 				APIGroups: []string{
-					"core.kapp.dev",
+					"core.kalm.dev",
 				},
 			},
 		},
@@ -342,7 +342,7 @@ func createWriterRole(k8sClient *kubernetes.Clientset, namespace string) (err er
 					"applications",
 				},
 				APIGroups: []string{
-					"core.kapp.dev",
+					"core.kalm.dev",
 				},
 			},
 		},
@@ -354,7 +354,7 @@ func createWriterRole(k8sClient *kubernetes.Clientset, namespace string) (err er
 	return nil
 }
 
-func createDefaultKappRoles(k8sClient *kubernetes.Clientset, namespace string) (err error) {
+func createDefaultKalmRoles(k8sClient *kubernetes.Clientset, namespace string) (err error) {
 	err = createReaderRole(k8sClient, namespace)
 	if err != nil {
 		return

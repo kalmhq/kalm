@@ -33,12 +33,12 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	corev1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
-	"github.com/kapp-staging/kapp/controller/controllers"
+	corev1alpha1 "github.com/kalm-staging/kalm/controller/api/v1alpha1"
+	"github.com/kalm-staging/kalm/controller/controllers"
 
 	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	apiregistration "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
-	//corekappdevv1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	//corekalmdevv1alpha1 "github.com/kalm-staging/kalm/controller/api/v1alpha1"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -101,19 +101,19 @@ func main() {
 	//	os.Exit(1)
 	//}
 
-	if err = (controllers.NewKappNSReconciler(mgr)).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "KappNS")
+	if err = (controllers.NewKalmNSReconciler(mgr)).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "KalmNS")
 		os.Exit(1)
 	}
 
-	//if err = (&controllers.KappNamespacesReconciler{
+	//if err = (&controllers.KalmNamespacesReconciler{
 	//	BaseReconciler: &controllers.BaseReconciler{
 	//		Client: mgr.GetClient(),
-	//		Log:    ctrl.Log.WithName("controllers").WithName("KappNamespace"),
+	//		Log:    ctrl.Log.WithName("controllers").WithName("KalmNamespace"),
 	//		Scheme: mgr.GetScheme(),
 	//	},
 	//}).SetupWithManager(mgr); err != nil {
-	//	setupLog.Error(err, "unable to create controller", "controller", "KappNamespaces")
+	//	setupLog.Error(err, "unable to create controller", "controller", "KalmNamespaces")
 	//	os.Exit(1)
 	//}
 
@@ -156,8 +156,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (controllers.NewKappPVCReconciler(mgr)).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "KappPVC")
+	if err = (controllers.NewKalmPVCReconciler(mgr)).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "KalmPVC")
 		os.Exit(1)
 	}
 

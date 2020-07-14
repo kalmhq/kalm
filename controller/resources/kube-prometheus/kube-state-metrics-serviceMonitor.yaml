@@ -4,7 +4,7 @@ metadata:
   labels:
     k8s-app: kube-state-metrics
   name: kube-state-metrics
-  namespace: kapp-monitoring
+  namespace: kalm-monitoring
 spec:
   endpoints:
   - bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token

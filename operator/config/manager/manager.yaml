@@ -27,7 +27,7 @@ spec:
             - /manager
           args:
             - --enable-leader-election
-          image: kappstaging/operator:latest
+          image: kalmstaging/operator:latest
           imagePullPolicy: Always
           name: manager
           resources:

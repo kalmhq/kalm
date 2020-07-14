@@ -4,5 +4,5 @@ data:
 kind: Secret
 metadata:
   name: grafana-datasources
-  namespace: kapp-monitoring
+  namespace: kalm-monitoring
 type: Opaque

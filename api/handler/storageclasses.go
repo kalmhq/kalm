@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/kapp-staging/kapp/controller/controllers"
+	"github.com/kalm-staging/kalm/controller/controllers"
 	"github.com/labstack/echo/v4"
 	v1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -16,7 +16,7 @@ type StorageClass struct {
 	PriceLink string `json:"priceLink"`
 
 	//deprecated
-	IsKappManaged bool `json:"isKappManaged"`
+	IsKalmManaged bool `json:"isKalmManaged"`
 }
 
 func (h *ApiHandler) handleListStorageClasses(c echo.Context) error {
@@ -36,8 +36,8 @@ func (h *ApiHandler) handleListStorageClasses(c echo.Context) error {
 
 		scList = append(scList, StorageClass{
 			Name:          sc.Name,
-			IsKappManaged: isKappManagedStorageClass(sc),
-			IsManaged:     isKappManagedStorageClass(sc),
+			IsKalmManaged: isKalmManagedStorageClass(sc),
+			IsManaged:     isKalmManagedStorageClass(sc),
 			DocLink:       docLink,
 			PriceLink:     priceLink,
 		})
@@ -57,8 +57,8 @@ func (h *ApiHandler) handleListStorageClasses(c echo.Context) error {
 	return c.JSON(200, scList)
 }
 
-func isKappManagedStorageClass(sc v1.StorageClass) bool {
-	if _, exist := sc.Labels[controllers.KappLabelManaged]; exist {
+func isKalmManagedStorageClass(sc v1.StorageClass) bool {
+	if _, exist := sc.Labels[controllers.KalmLabelManaged]; exist {
 		return true
 	}
 
@@ -70,8 +70,8 @@ func getDocAndPriceLink(sc v1.StorageClass) (docLink string, priceLink string) {
 		return
 	}
 
-	docLink = sc.Annotations[controllers.KappAnnoSCDocLink]
-	priceLink = sc.Annotations[controllers.KappAnnoSCPriceLink]
+	docLink = sc.Annotations[controllers.KalmAnnoSCDocLink]
+	priceLink = sc.Annotations[controllers.KalmAnnoSCPriceLink]
 
 	return
 }

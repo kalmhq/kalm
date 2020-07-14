@@ -10,7 +10,7 @@ import (
 )
 
 func (r *ComponentReconcilerTask) getNameForPermission() string {
-	name := fmt.Sprintf("kapp-permission-%s", r.component.Name)
+	name := fmt.Sprintf("kalm-permission-%s", r.component.Name)
 	return name
 }
 

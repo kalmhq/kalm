@@ -19,7 +19,7 @@ import (
 	"context"
 	"fmt"
 	protoTypes "github.com/gogo/protobuf/types"
-	corev1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	corev1alpha1 "github.com/kalm-staging/kalm/controller/api/v1alpha1"
 	v1alpha32 "istio.io/api/networking/v1alpha3"
 	v1beta12 "istio.io/api/security/v1beta1"
 	v1beta13 "istio.io/api/type/v1beta1"
@@ -208,8 +208,8 @@ func GetOIDCProviderInfo(ssoConfig *corev1alpha1.SingleSignOnConfig) *OIDCProvid
 		info.ExtAuthzServerUrl = fmt.Sprintf("%s://%s:%d", spec.ExternalEnvoyExtAuthz.Scheme, spec.ExternalEnvoyExtAuthz.Host, spec.ExternalEnvoyExtAuthz.Port)
 		info.ExtAuthzServerEnvoyClusterName = fmt.Sprintf("outbound|%d||%s", spec.ExternalEnvoyExtAuthz.Port, spec.ExternalEnvoyExtAuthz.Host)
 	} else {
-		info.ExtAuthzServerUrl = "http://auth-proxy.kapp-systerm.svc.cluster.local"
-		info.ExtAuthzServerEnvoyClusterName = "outbound|80||auth-proxy.kapp-systerm.svc.cluster.local"
+		info.ExtAuthzServerUrl = "http://auth-proxy.kalm-systerm.svc.cluster.local"
+		info.ExtAuthzServerEnvoyClusterName = "outbound|80||auth-proxy.kalm-systerm.svc.cluster.local"
 	}
 
 	return info
@@ -229,7 +229,7 @@ func (r *ProtectedEndpointReconcilerTask) ReconcileResources(req ctrl.Request) e
 		Spec: v1beta12.RequestAuthentication{
 			Selector: &v1beta13.WorkloadSelector{
 				MatchLabels: map[string]string{
-					KappLabelComponentKey: r.endpoint.Spec.EndpointName,
+					KalmLabelComponentKey: r.endpoint.Spec.EndpointName,
 				},
 			},
 			JwtRules: []*v1beta12.JWTRule{
@@ -275,7 +275,7 @@ func (r *ProtectedEndpointReconcilerTask) ReconcileResources(req ctrl.Request) e
 		Spec: v1alpha32.EnvoyFilter{
 			WorkloadSelector: &v1alpha32.WorkloadSelector{
 				Labels: map[string]string{
-					KappLabelComponentKey: r.endpoint.Spec.EndpointName,
+					KalmLabelComponentKey: r.endpoint.Spec.EndpointName,
 				},
 			},
 			ConfigPatches: []*v1alpha32.EnvoyFilter_EnvoyConfigObjectPatch{
@@ -370,7 +370,7 @@ func (r *ProtectedEndpointReconcilerTask) ReconcileResources(req ctrl.Request) e
 		Spec: v1beta12.AuthorizationPolicy{
 			Selector: &v1beta13.WorkloadSelector{
 				MatchLabels: map[string]string{
-					KappLabelComponentKey: r.endpoint.Spec.EndpointName,
+					KalmLabelComponentKey: r.endpoint.Spec.EndpointName,
 				},
 			},
 			Action: v1beta12.AuthorizationPolicy_ALLOW,
@@ -462,8 +462,8 @@ func v2v(val interface{}) *protoTypes.Value {
 	return nil
 }
 
-// +kubebuilder:rbac:groups=core.kapp.dev,resources=protectedendpoints,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=core.kapp.dev,resources=protectedendpoints/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=core.kalm.dev,resources=protectedendpoints,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core.kalm.dev,resources=protectedendpoints/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=networking.istio.io,resources=envoyfilters,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=networking.istio.io,resources=envoyfilters/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=security.istio.io,resources=requestauthentications,verbs=get;list;watch;create;update;patch;delete

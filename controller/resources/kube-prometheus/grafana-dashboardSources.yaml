@@ -18,4 +18,4 @@ data:
 kind: ConfigMap
 metadata:
   name: grafana-dashboards
-  namespace: kapp-monitoring
+  namespace: kalm-monitoring

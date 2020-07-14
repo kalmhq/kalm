@@ -1,7 +1,7 @@
 package resources
 
 import (
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"time"
@@ -32,7 +32,7 @@ func (builder *Builder) GetComponentPluginListChannel(listOptions metaV1.ListOpt
 			timeout = time.Duration(*listOptions.TimeoutSeconds) * time.Second
 		}
 
-		client, err := builder.KappV1Alpha1()
+		client, err := builder.KalmV1Alpha1()
 
 		if err != nil {
 			channel.List <- nil

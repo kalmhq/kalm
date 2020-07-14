@@ -3,8 +3,8 @@ package resources
 import (
 	"sync"
 
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
-	"github.com/kapp-staging/kapp/controller/controllers"
+	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
+	"github.com/kalm-staging/kalm/controller/controllers"
 	coreV1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -69,7 +69,7 @@ func (builder *Builder) GetDockerRegistry(name string) (*DockerRegistry, error) 
 	go func() {
 		defer wg.Done()
 		secretName := controllers.GetRegistryAuthenticationName(name)
-		err = builder.Get("kapp-system", secretName, &secret)
+		err = builder.Get("kalm-system", secretName, &secret)
 	}()
 
 	wg.Wait()
@@ -84,7 +84,7 @@ func (builder *Builder) GetDockerRegistry(name string) (*DockerRegistry, error) 
 func (builder *Builder) GetDockerRegistries() ([]*DockerRegistry, error) {
 	resourceChannels := &ResourceChannels{
 		DockerRegistryList: builder.GetDockerRegistryListChannel(ListAll),
-		SecretList:         builder.GetSecretListChannel("kapp-system", client.MatchingLabels{"kapp-docker-registry-authentication": "true"}),
+		SecretList:         builder.GetSecretListChannel("kalm-system", client.MatchingLabels{"kalm-docker-registry-authentication": "true"}),
 	}
 
 	resources, err := resourceChannels.ToResources()
@@ -139,7 +139,7 @@ func (builder *Builder) CreateDockerRegistry(registry *DockerRegistry) (*DockerR
 	secret := &coreV1.Secret{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      controllers.GetRegistryAuthenticationName(registry.Name),
-			Namespace: "kapp-system",
+			Namespace: "kalm-system",
 		},
 		Data: map[string][]byte{
 			"username": []byte(registry.Username),
@@ -186,7 +186,7 @@ func (builder *Builder) UpdateDockerRegistry(registry *DockerRegistry) (*DockerR
 
 	go func() {
 		defer wg.Done()
-		err = builder.Get("kapp-system", controllers.GetRegistryAuthenticationName(registry.Name), secret)
+		err = builder.Get("kalm-system", controllers.GetRegistryAuthenticationName(registry.Name), secret)
 	}()
 
 	wg.Wait()

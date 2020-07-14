@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/websocket"
-	"github.com/kapp-staging/kapp/api/client"
+	"github.com/kalm-staging/kalm/api/client"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 )

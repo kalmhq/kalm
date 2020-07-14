@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
-	v1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	v1alpha1 "github.com/kalm-staging/kalm/controller/api/v1alpha1"
 	"github.com/onsi/ginkgo"
 	"github.com/stretchr/testify/suite"
 	istioScheme "istio.io/client-go/pkg/clientset/versioned/scheme"
@@ -232,9 +232,9 @@ func (suite *BasicSuite) SetupSuite() {
 	//suite.Nil(NewApplicationReconciler(mgr).SetupWithManager(mgr))
 	//suite.Nil(NewApplicationPluginReconciler(mgr).SetupWithManager(mgr))
 	//suite.Nil(NewApplicationPluginBindingReconciler(mgr).SetupWithManager(mgr))
-	//suite.Nil(NewKappNamespacesReconciler(mgr).SetupWithManager(mgr))
-	suite.Nil(NewKappNSReconciler(mgr).SetupWithManager(mgr))
-	suite.Nil(NewKappPVCReconciler(mgr).SetupWithManager(mgr))
+	//suite.Nil(NewKalmNamespacesReconciler(mgr).SetupWithManager(mgr))
+	suite.Nil(NewKalmNSReconciler(mgr).SetupWithManager(mgr))
+	suite.Nil(NewKalmPVCReconciler(mgr).SetupWithManager(mgr))
 
 	suite.Nil(NewComponentReconciler(mgr).SetupWithManager(mgr))
 	suite.Nil(NewComponentPluginReconciler(mgr).SetupWithManager(mgr))
@@ -313,12 +313,12 @@ func randomName() string {
 	return string(b)
 }
 
-func (suite *BasicSuite) SetupKappEnabledNs() v1.Namespace {
+func (suite *BasicSuite) SetupKalmEnabledNs() v1.Namespace {
 	ns := v1.Namespace{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: randomName(),
 			Labels: map[string]string{
-				KappEnableLabelName: "true",
+				KalmEnableLabelName: "true",
 			},
 		},
 	}

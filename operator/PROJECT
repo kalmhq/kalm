@@ -1,7 +1,7 @@
-domain: kapp.dev
-repo: github.com/kapp-staging/kapp/operator
+domain: kalm.dev
+repo: github.com/kalm-staging/kalm/operator
 resources:
 - group: install
-  kind: KappOperatorConfig
+  kind: KalmOperatorConfig
   version: v1alpha1
 version: "2"

@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/kapp-staging/kapp/api/client"
-	"github.com/kapp-staging/kapp/api/config"
-	"github.com/kapp-staging/kapp/api/server"
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/kalm-staging/kalm/api/client"
+	"github.com/kalm-staging/kalm/api/config"
+	"github.com/kalm-staging/kalm/api/server"
+	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/suite"
 	"io"
@@ -139,7 +139,7 @@ func (suite *WithControllerTestSuite) getPVCList(ns string) (*v1.PersistentVolum
 }
 
 func (suite *WithControllerTestSuite) getComponentList(ns string) (v1alpha1.ComponentList, error) {
-	compListAPIURL := fmt.Sprintf("/apis/core.kapp.dev/v1alpha1/namespaces/%s/components", ns)
+	compListAPIURL := fmt.Sprintf("/apis/core.kalm.dev/v1alpha1/namespaces/%s/components", ns)
 
 	var compList v1alpha1.ComponentList
 	err := suite.k8sClinet.RESTClient().Get().AbsPath(compListAPIURL).Do().Into(&compList)
@@ -148,7 +148,7 @@ func (suite *WithControllerTestSuite) getComponentList(ns string) (v1alpha1.Comp
 }
 
 func (suite *WithControllerTestSuite) getComponent(ns, compName string) (v1alpha1.Component, error) {
-	compAPIURL := fmt.Sprintf("/apis/core.kapp.dev/v1alpha1/namespaces/%s/components/%s", ns, compName)
+	compAPIURL := fmt.Sprintf("/apis/core.kalm.dev/v1alpha1/namespaces/%s/components/%s", ns, compName)
 
 	var comp v1alpha1.Component
 	err := suite.k8sClinet.RESTClient().Get().AbsPath(compAPIURL).Do().Into(&comp)

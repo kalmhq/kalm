@@ -1,4 +1,4 @@
-# more real life Kapp demo
+# more real life Kalm demo
 
 After the hello-world demo, let's see a more real life one: bookinfo, it's an online book store composed by 4 micro services:
 
@@ -11,9 +11,9 @@ After the hello-world demo, let's see a more real life one: bookinfo, it's an on
 
 
 
-you can find the Kapp yaml file [here](https://github.com/Kapp-staging/Kapp/blob/doc-hello-world/controller/config/samples/core_v1alpha1_tutorial_2_bookinfo.yaml).
+you can find the Kalm yaml file [here](https://github.com/Kalm-staging/Kalm/blob/doc-hello-world/controller/config/samples/core_v1alpha1_tutorial_2_bookinfo.yaml).
 
-To apply the config, go to directory of Kapp project, and run:
+To apply the config, go to directory of Kalm project, and run:
 
 ```shell
 kubectl apply -f controller/config/samples/core_v1alpha1_tutorial_2_bookinfo.yaml
@@ -21,16 +21,16 @@ kubectl apply -f controller/config/samples/core_v1alpha1_tutorial_2_bookinfo.yam
 
 The file has serveral yaml configs within, after the walk-through of our previous hello-world demo, most parts in this file should be familiar to you.
 
-The kapp-enabled namesapce:
+The kalm-enabled namesapce:
 
 ```yaml
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: kapp-bookinfo
+  name: kalm-bookinfo
   labels:
     istio-injection: enabled
-    kapp-enabled: "true"
+    kalm-enabled: "true"
 ```
 
 
@@ -45,11 +45,11 @@ We defined 4 `Component`s for bookinfo:
 let's take the product-page Component for example:
 
 ```yaml
-apiVersion: core.Kapp.dev/v1alpha1
+apiVersion: core.Kalm.dev/v1alpha1
 kind: Component
 metadata:
     name: productpage
-    namespace: Kapp-bookinfo
+    namespace: Kalm-bookinfo
 spec:
     image: docker.io/istio/examples-bookinfo-productpage-v1:1.15.0
     replicas: 2
@@ -86,7 +86,7 @@ spec:
 - prefer-fanout
 - prefer-gather
 
-when `prefer-fanout` is set, Kapp will try it is best to arrange the instances on different nodes, so that if 1 node on which our frontend `productpage` is down, we still have another frontend running.
+when `prefer-fanout` is set, Kalm will try it is best to arrange the instances on different nodes, so that if 1 node on which our frontend `productpage` is down, we still have another frontend running.
 
  if in some cases, you want all your instances running on the same node, you can use `prefer-gather`
 
@@ -118,7 +118,7 @@ spec:
           size: 32Mi
 ```
 
-Kapp support 3 volumes types:
+Kalm support 3 volumes types:
 
 - emptyDir
 - emptyDirMemory
@@ -132,10 +132,10 @@ Kapp support 3 volumes types:
 
 
 
-Kapp tries to simplify the use of kubernetes, one way to do this is to hide the complex but not so often used concepts, and only expose the more common used concepts to our user, but when you want to use the less-common-used features in k8s, it's possible too, and this is done by plugins:
+Kalm tries to simplify the use of kubernetes, one way to do this is to hide the complex but not so often used concepts, and only expose the more common used concepts to our user, but when you want to use the less-common-used features in k8s, it's possible too, and this is done by plugins:
 
 ```yaml
-apiVersion: core.Kapp.dev/v1alpha1
+apiVersion: core.Kalm.dev/v1alpha1
 kind: ComponentPlugin
 metadata:
   name: termination-grace
@@ -163,7 +163,7 @@ spec:
 
 In above config, we define a `ComponentPlugin` named: `termination-grace`.  
 
-In k8s pod spec, `terminationGracePeriodSeconds` controls the time when pod ends, how long it will wait to be killed, Kapp don't support configuration of this parameter directly, but you can achieve it using a Kapp plugin like above.
+In k8s pod spec, `terminationGracePeriodSeconds` controls the time when pod ends, how long it will wait to be killed, Kalm don't support configuration of this parameter directly, but you can achieve it using a Kalm plugin like above.
 
 
 
@@ -180,7 +180,7 @@ kind: ComponentPlugin
 
 `src` is Javasript code that can do various things, here in our example, we mutate the pod definition, add `terminationGracePeriodSeconds` to it. 
 
-Kapp provides serveral hooks for us to call to run your code in diffenent stages, including:
+Kalm provides serveral hooks for us to call to run your code in diffenent stages, including:
 
 - AfterPodTemplateGeneration
 - BeforeDeploymentSave
@@ -212,11 +212,11 @@ it's a OpenAPI 3.0 definition which shows the config is an object, which has 1 p
 we pass the config  and apply the plugin to our Component using a binding: `ComponentPluginBinding`:
 
 ```yaml
-apiVersion: core.Kapp.dev/v1alpha1
+apiVersion: core.Kalm.dev/v1alpha1
 kind: ComponentPluginBinding
 metadata:
   name: termination-grace
-  namespace: Kapp-bookinfo
+  namespace: Kalm-bookinfo
 spec:
   pluginName: termination-grace
   componentName: productpage
@@ -228,12 +228,12 @@ in the binding, we bind the plugin: `termination-grace` to Component `productpag
 
 With this `ComponentPluginBinding`, after  the pod definition for our productpage is generated, the code in  plugin: `termination-grace` will be called, and we insert `terminationGracePeriodSeconds` into the spec of our pod. 
 
-So we managed to config a native kubernetes concept not directy exposed in Kapp. 
+So we managed to config a native kubernetes concept not directy exposed in Kalm. 
 
 Next, let's see another similar but slightly more complex user-defined plugin: 
 
 ```yaml
-apiVersion: core.Kapp.dev/v1alpha1
+apiVersion: core.Kalm.dev/v1alpha1
 kind: ComponentPlugin
 metadata:
   name: http-health-probe
@@ -259,9 +259,9 @@ spec:
         type: number
 ```
 
-In native k8s config, we can set Probes to check if our instance is running ok, Probe is also not directly available in Kapp.
+In native k8s config, we can set Probes to check if our instance is running ok, Probe is also not directly available in Kalm.
 
-Here we use the kapp plugin to add `readinessProbe` and `livenessProbe` to our container.
+Here we use the kalm plugin to add `readinessProbe` and `livenessProbe` to our container.
 
 The code of this plugin is longer but the structure is quite similiar, we implement the hook: `AfterPodTemplateGeneration`, and for each pod, we call `addProbesForContainer` to add probes to our containers:
 
@@ -282,11 +282,11 @@ spec:
 the binding is also similiar: 
 
 ```yaml
-apiVersion: core.Kapp.dev/v1alpha1
+apiVersion: core.Kalm.dev/v1alpha1
 kind: ComponentPluginBinding
 metadata:
   name: productpage-http-health-probe
-  namespace: Kapp-bookinfo
+  namespace: Kalm-bookinfo
 spec:
   pluginName:  http-health-probe
   componentName: productpage
@@ -301,11 +301,11 @@ we bind component: `productpage` to our plugin: `http-health-probe`, and we set 
 Finally, it's the `HttpRoute`:
 
 ```yaml
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: HttpRoute
 metadata:
   name: bookinfo
-  namespace: kapp-bookinfo
+  namespace: kalm-bookinfo
 spec:
   hosts:
     - "bookinfo.demo.com"

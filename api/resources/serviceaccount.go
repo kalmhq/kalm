@@ -6,7 +6,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func CreateKappServiceAccount(k8sClient *kubernetes.Clientset, name string) error {
+func CreateKalmServiceAccount(k8sClient *kubernetes.Clientset, name string) error {
 	k8sClient.CoreV1().Namespaces().Create(&coreV1.Namespace{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: KAPP_SYSTEM_NAMESPACE,

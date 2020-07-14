@@ -6,7 +6,7 @@ metadata:
     app.kubernetes.io/name: prometheus-operator
     app.kubernetes.io/version: v0.34.1
   name: prometheus-operator
-  namespace: kapp-monitoring
+  namespace: kalm-monitoring
 spec:
   endpoints:
   - honorLabels: true

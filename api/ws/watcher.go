@@ -3,10 +3,10 @@ package ws
 import (
 	"errors"
 
-	"github.com/kapp-staging/kapp/api/handler"
-	"github.com/kapp-staging/kapp/api/resources"
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
-	"github.com/kapp-staging/kapp/controller/controllers"
+	"github.com/kalm-staging/kalm/api/handler"
+	"github.com/kalm-staging/kalm/api/resources"
+	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
+	"github.com/kalm-staging/kalm/controller/controllers"
 	log "github.com/sirupsen/logrus"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -86,7 +86,7 @@ func buildNamespaceResMessage(c *Client, action string, objWatched interface{}) 
 		return &ResMessage{}, nil
 	}
 
-	if _, exist := namespace.Labels[controllers.KappEnableLabelName]; !exist {
+	if _, exist := namespace.Labels[controllers.KalmEnableLabelName]; !exist {
 		return &ResMessage{}, nil
 	}
 
@@ -134,7 +134,7 @@ func buildServiceResMessage(c *Client, action string, objWatched interface{}) (*
 		return nil, errors.New("convert watch obj to Service failed")
 	}
 
-	componentName := service.Labels["kapp-component"]
+	componentName := service.Labels["kalm-component"]
 	if componentName == "" {
 		return &ResMessage{}, nil
 	}
@@ -153,7 +153,7 @@ func buildPodResMessage(c *Client, action string, objWatched interface{}) (*ResM
 		return nil, errors.New("convert watch obj to Pod failed")
 	}
 
-	componentName := pod.Labels["kapp-component"]
+	componentName := pod.Labels["kalm-component"]
 	if componentName == "" {
 		return &ResMessage{}, nil
 	}

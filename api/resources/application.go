@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/kapp-staging/kapp/controller/controllers"
+	"github.com/kalm-staging/kalm/controller/controllers"
 	authorizationV1 "k8s.io/api/authorization/v1"
 
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
 	appsV1 "k8s.io/api/apps/v1"
 	coreV1 "k8s.io/api/core/v1"
 )
@@ -99,7 +99,7 @@ func (builder *Builder) BuildApplicationDetails(namespace coreV1.Namespace) (*Ap
 				Namespace: nsName,
 				Resource:  "applications",
 				Verb:      "create",
-				Group:     "core.kapp.dev",
+				Group:     "core.kalm.dev",
 			},
 		},
 	})
@@ -118,7 +118,7 @@ func (builder *Builder) BuildApplicationDetails(namespace coreV1.Namespace) (*Ap
 				Namespace: nsName,
 				Resource:  "applications",
 				Verb:      "get",
-				Group:     "core.kapp.dev",
+				Group:     "core.kalm.dev",
 			},
 		},
 	})
@@ -143,7 +143,7 @@ func (builder *Builder) BuildApplicationDetails(namespace coreV1.Namespace) (*Ap
 	} else {
 		istioMetricHisMap := <-istioMetricListChan.List
 
-		// todo filter out non-kapp service?
+		// todo filter out non-kalm service?
 		for _, v := range istioMetricHisMap {
 			istioMetricHistories = mergeIstioMetricHistories(istioMetricHistories, v)
 		}
@@ -210,7 +210,7 @@ func (builder *Builder) BuildApplicationListResponse(namespaceList coreV1.Namesp
 			continue
 		}
 
-		if _, exist := ns.Labels[controllers.KappEnableLabelName]; !exist {
+		if _, exist := ns.Labels[controllers.KalmEnableLabelName]; !exist {
 			continue
 		}
 
@@ -330,7 +330,7 @@ func findPods(list *coreV1.PodList, componentName string) []coreV1.Pod {
 	var res []coreV1.Pod
 
 	for i := range list.Items {
-		if list.Items[i].Labels["kapp-component"] == componentName {
+		if list.Items[i].Labels["kalm-component"] == componentName {
 			res = append(res, list.Items[i])
 		}
 	}

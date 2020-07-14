@@ -5,7 +5,7 @@ metadata:
   name: dependency-viewer-role
 rules:
 - apiGroups:
-  - core.kapp.dev
+  - core.kalm.dev
   resources:
   - dependencies
   verbs:
@@ -13,7 +13,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - core.kapp.dev
+  - core.kalm.dev
   resources:
   - dependencies/status
   verbs:

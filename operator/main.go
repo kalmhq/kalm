@@ -1,5 +1,5 @@
 /*
-Copyright 2020 Kapp Dev.
+Copyright 2020 Kalm Dev.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@ package main
 import (
 	"flag"
 	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
-	installv1alpha1 "github.com/kapp-staging/kapp/operator/api/v1alpha1"
-	"github.com/kapp-staging/kapp/operator/controllers"
+	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
+	installv1alpha1 "github.com/kalm-staging/kalm/operator/api/v1alpha1"
+	"github.com/kalm-staging/kalm/operator/controllers"
 	istioScheme "istio.io/client-go/pkg/clientset/versioned/scheme"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -79,13 +79,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.KappOperatorConfigReconciler{
+	if err = (&controllers.KalmOperatorConfigReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("KappOperatorConfig"),
+		Log:    ctrl.Log.WithName("controllers").WithName("KalmOperatorConfig"),
 		Reader: mgr.GetAPIReader(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "KappOperatorConfig")
+		setupLog.Error(err, "unable to create controller", "controller", "KalmOperatorConfig")
 		os.Exit(1)
 	}
 	// +kubebuilder:scaffold:builder
