@@ -81,11 +81,21 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
   };
 
   private renderPodCPU = (pod: PodRowData) => {
-    return <SmallCPULineChart data={pod.get("metrics").get("cpu")!} />;
+    return (
+      <SmallCPULineChart
+        data={pod.get("metrics").get("cpu")!}
+        isMetricServerEnabled={pod.get("metrics").get("isMetricServerEnabled")}
+      />
+    );
   };
 
   private renderPodMemory = (pod: PodRowData) => {
-    return <SmallMemoryLineChart data={pod.get("metrics").get("memory")!} />;
+    return (
+      <SmallMemoryLineChart
+        data={pod.get("metrics").get("memory")!}
+        isMetricServerEnabled={pod.get("metrics").get("isMetricServerEnabled")}
+      />
+    );
   };
 
   private renderPodActions = (pod: PodRowData) => {

@@ -41,6 +41,7 @@ export type MetricItem = ImmutableMap<{
 export type MetricList = Immutable.List<MetricItem>;
 
 export type Metrics = ImmutableMap<{
+  isMetricServerEnabled: boolean;
   cpu: MetricList;
   memory: MetricList;
 }>;

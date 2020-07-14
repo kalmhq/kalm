@@ -123,12 +123,15 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   private renderCPU = (applicationListItem: RowData) => {
-    const cpuData = applicationListItem.get("metrics").get("cpu");
-    return <SmallCPULineChart data={cpuData} />;
+    const metrics = applicationListItem.get("metrics");
+    return <SmallCPULineChart data={metrics.get("cpu")} isMetricServerEnabled={metrics.get("isMetricServerEnabled")} />;
   };
+
   private renderMemory = (applicationListItem: RowData) => {
-    const memoryData = applicationListItem.get("metrics").get("memory");
-    return <SmallMemoryLineChart data={memoryData} />;
+    const metrics = applicationListItem.get("metrics");
+    return (
+      <SmallMemoryLineChart data={metrics.get("memory")} isMetricServerEnabled={metrics.get("isMetricServerEnabled")} />
+    );
   };
 
   private renderName = (rowData: RowData) => {
