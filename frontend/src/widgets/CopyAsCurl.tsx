@@ -1,11 +1,12 @@
 import { Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
+import { setSuccessNotificationAction } from "actions/notification";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { HttpRoute } from "types/route";
 import { isPrivateIP } from "utils/ip";
+import copy from "copy-to-clipboard";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -53,14 +54,8 @@ class CopyAsCurlRaw extends React.PureComponent<Props> {
     const path = route.get("paths").first("/");
     const method = route.get("methods").first("GET");
 
-    navigator.clipboard.writeText(this.buildCurlCommand(scheme, host, path, method)).then(
-      function () {
-        dispatch(setSuccessNotificationAction("Copied successful!"));
-      },
-      function (err) {
-        dispatch(setErrorNotificationAction("Copied failed!"));
-      },
-    );
+    copy(this.buildCurlCommand(scheme, host, path, method));
+    dispatch(setSuccessNotificationAction("Copied successful!"));
   };
 
   public render() {
