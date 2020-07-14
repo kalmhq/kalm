@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/kalm-staging/kalm/controller/controllers"
+	"github.com/kalmhq/kalm/controller/controllers"
 	authorizationV1 "k8s.io/api/authorization/v1"
 
-	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	appsV1 "k8s.io/api/apps/v1"
 	coreV1 "k8s.io/api/core/v1"
 )

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/kalm-staging/kalm/controller/lib/files"
+	"github.com/kalmhq/kalm/controller/lib/files"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 	coreV1 "k8s.io/api/core/v1"

@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/kalm-staging/kalm/api/client"
+	"github.com/kalmhq/kalm/api/client"
 	_ "github.com/mattn/go-sqlite3"
 	log "github.com/sirupsen/logrus"
 	v12 "k8s.io/api/core/v1"

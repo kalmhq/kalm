@@ -40,7 +40,7 @@ import (
 	"time"
 
 	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
-	corev1alpha1 "github.com/kalm-staging/kalm/controller/api/v1alpha1"
+	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 )
 
 // HttpsCertIssuerReconciler reconciles a HttpsCertIssuer object

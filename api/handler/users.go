@@ -2,8 +2,8 @@ package handler
 
 import (
 	"fmt"
-	"github.com/kalm-staging/kalm/api/errors"
-	"github.com/kalm-staging/kalm/api/resources"
+	"github.com/kalmhq/kalm/api/errors"
+	"github.com/kalmhq/kalm/api/resources"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 	rbacV1 "k8s.io/api/rbac/v1"

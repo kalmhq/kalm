@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
-	v1alpha1 "github.com/kalm-staging/kalm/controller/api/v1alpha1"
+	v1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/onsi/ginkgo"
 	"github.com/stretchr/testify/suite"
 	istioScheme "istio.io/client-go/pkg/clientset/versioned/scheme"

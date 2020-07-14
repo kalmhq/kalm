@@ -3,7 +3,7 @@ package controllers
 import (
 	"context"
 	"github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
-	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"

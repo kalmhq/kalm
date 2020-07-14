@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/kalm-staging/kalm/controller/lib/files"
+	"github.com/kalmhq/kalm/controller/lib/files"
 	"github.com/stretchr/testify/suite"
 	"net/http"
 	"testing"
