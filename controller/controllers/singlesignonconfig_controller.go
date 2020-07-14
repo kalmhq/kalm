@@ -33,11 +33,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-const KAPP_EXTERNAL_ENVOY_EXT_AUTHZ_SERVER_NAME = "external-envoy-ext-authz-server"
-const KAPP_DEX_SECRET_NAME = "dex-secret"
-const KAPP_DEX_NAMESPACE = "kalm-system"
-const KAPP_DEX_NAME = "dex"
-const KAPP_AUTH_PROXY_NAME = "auth-proxy"
+const KALM_EXTERNAL_ENVOY_EXT_AUTHZ_SERVER_NAME = "external-envoy-ext-authz-server"
+const KALM_DEX_SECRET_NAME = "dex-secret"
+const KALM_DEX_NAMESPACE = "kalm-system"
+const KALM_DEX_NAME = "dex"
+const KALM_AUTH_PROXY_NAME = "auth-proxy"
 
 // SingleSignOnConfigReconciler reconciles a SingleSignOnConfig object
 type SingleSignOnConfigReconciler struct {
@@ -92,8 +92,8 @@ func (r *SingleSignOnConfigReconcilerTask) LoadResources() error {
 	var dexComponent corev1alpha1.Component
 
 	err := r.Get(r.ctx, types.NamespacedName{
-		Name:      KAPP_DEX_NAME,
-		Namespace: KAPP_DEX_NAMESPACE,
+		Name:      KALM_DEX_NAME,
+		Namespace: KALM_DEX_NAMESPACE,
 	}, &dexComponent)
 
 	if err != nil {
@@ -108,8 +108,8 @@ func (r *SingleSignOnConfigReconcilerTask) LoadResources() error {
 	var authProxyComponent corev1alpha1.Component
 
 	err = r.Get(r.ctx, types.NamespacedName{
-		Name:      KAPP_AUTH_PROXY_NAME,
-		Namespace: KAPP_DEX_NAMESPACE,
+		Name:      KALM_AUTH_PROXY_NAME,
+		Namespace: KALM_DEX_NAMESPACE,
 	}, &authProxyComponent)
 
 	if err != nil {
@@ -124,8 +124,8 @@ func (r *SingleSignOnConfigReconcilerTask) LoadResources() error {
 	var route corev1alpha1.HttpRoute
 
 	err = r.Get(r.ctx, types.NamespacedName{
-		Name:      KAPP_DEX_NAME,
-		Namespace: KAPP_DEX_NAMESPACE,
+		Name:      KALM_DEX_NAME,
+		Namespace: KALM_DEX_NAMESPACE,
 	}, &route)
 
 	if err != nil {
@@ -140,8 +140,8 @@ func (r *SingleSignOnConfigReconcilerTask) LoadResources() error {
 	var authProxyRoute corev1alpha1.HttpRoute
 
 	err = r.Get(r.ctx, types.NamespacedName{
-		Name:      KAPP_AUTH_PROXY_NAME,
-		Namespace: KAPP_DEX_NAMESPACE,
+		Name:      KALM_AUTH_PROXY_NAME,
+		Namespace: KALM_DEX_NAMESPACE,
 	}, &authProxyRoute)
 
 	if err != nil {
@@ -156,8 +156,8 @@ func (r *SingleSignOnConfigReconcilerTask) LoadResources() error {
 	var externalEnvoyExtAuthz v1alpha32.ServiceEntry
 
 	err = r.Get(r.ctx, types.NamespacedName{
-		Name:      KAPP_EXTERNAL_ENVOY_EXT_AUTHZ_SERVER_NAME,
-		Namespace: KAPP_DEX_NAMESPACE,
+		Name:      KALM_EXTERNAL_ENVOY_EXT_AUTHZ_SERVER_NAME,
+		Namespace: KALM_DEX_NAMESPACE,
 	}, &externalEnvoyExtAuthz)
 
 	if err != nil {
@@ -172,8 +172,8 @@ func (r *SingleSignOnConfigReconcilerTask) LoadResources() error {
 	var secret coreV1.Secret
 
 	err = r.Get(r.ctx, types.NamespacedName{
-		Name:      KAPP_DEX_SECRET_NAME,
-		Namespace: KAPP_DEX_NAMESPACE,
+		Name:      KALM_DEX_SECRET_NAME,
+		Namespace: KALM_DEX_NAMESPACE,
 	}, &secret)
 
 	if err != nil {
@@ -289,8 +289,8 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileSecret() error {
 	if r.secret == nil {
 		secret := coreV1.Secret{
 			ObjectMeta: metaV1.ObjectMeta{
-				Namespace: KAPP_DEX_NAMESPACE,
-				Name:      KAPP_DEX_SECRET_NAME,
+				Namespace: KALM_DEX_NAMESPACE,
+				Name:      KALM_DEX_SECRET_NAME,
 			},
 			Data: map[string][]byte{
 				"client_id":     []byte("kalm-sso"),
@@ -325,8 +325,8 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexComponent() error {
 
 	dexComponent := corev1alpha1.Component{
 		ObjectMeta: metaV1.ObjectMeta{
-			Name:      KAPP_DEX_NAME,
-			Namespace: KAPP_DEX_NAMESPACE,
+			Name:      KALM_DEX_NAME,
+			Namespace: KALM_DEX_NAMESPACE,
 		},
 		Spec: corev1alpha1.ComponentSpec{
 			WorkloadType: corev1alpha1.WorkloadTypeServer,
@@ -404,8 +404,8 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexRoute() error {
 
 	dexRoute := corev1alpha1.HttpRoute{
 		ObjectMeta: metaV1.ObjectMeta{
-			Name:      KAPP_DEX_NAME,
-			Namespace: KAPP_DEX_NAMESPACE,
+			Name:      KALM_DEX_NAME,
+			Namespace: KALM_DEX_NAMESPACE,
 		},
 		Spec: corev1alpha1.HttpRouteSpec{
 			Hosts: []string{
@@ -426,7 +426,7 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileDexRoute() error {
 			Schemes: []string{scheme},
 			Destinations: []corev1alpha1.HttpRouteDestination{
 				{
-					Host:   fmt.Sprintf("%s.%s.svc.cluster.local:%d", KAPP_DEX_NAME, KAPP_DEX_NAMESPACE, 5556),
+					Host:   fmt.Sprintf("%s.%s.svc.cluster.local:%d", KALM_DEX_NAME, KALM_DEX_NAMESPACE, 5556),
 					Weight: 1,
 				},
 			},
@@ -480,8 +480,8 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileExternalAuthProxyServiceEntr
 
 	externalEnvoyExtAuthz := v1alpha32.ServiceEntry{
 		ObjectMeta: metaV1.ObjectMeta{
-			Namespace: KAPP_DEX_NAMESPACE,
-			Name:      KAPP_EXTERNAL_ENVOY_EXT_AUTHZ_SERVER_NAME,
+			Namespace: KALM_DEX_NAMESPACE,
+			Name:      KALM_EXTERNAL_ENVOY_EXT_AUTHZ_SERVER_NAME,
 		},
 		Spec: v1alpha3.ServiceEntry{
 			Hosts: []string{ssoConfig.Spec.ExternalEnvoyExtAuthz.Host},
@@ -531,12 +531,12 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyComponent()
 
 	authProxyComponent := corev1alpha1.Component{
 		ObjectMeta: metaV1.ObjectMeta{
-			Name:      KAPP_AUTH_PROXY_NAME,
-			Namespace: KAPP_DEX_NAMESPACE,
+			Name:      KALM_AUTH_PROXY_NAME,
+			Namespace: KALM_DEX_NAMESPACE,
 		},
 		Spec: corev1alpha1.ComponentSpec{
 			WorkloadType: corev1alpha1.WorkloadTypeServer,
-			Image:        "kappstaging/dashboard:latest",
+			Image:        "kappstaging/dashboard:latest", // TODO change the image
 			Command:      "./auth-proxy",
 			Ports: []corev1alpha1.Port{
 				{
@@ -612,8 +612,8 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyRoute() err
 
 	authProxyRoute := corev1alpha1.HttpRoute{
 		ObjectMeta: metaV1.ObjectMeta{
-			Name:      KAPP_AUTH_PROXY_NAME,
-			Namespace: KAPP_DEX_NAMESPACE,
+			Name:      KALM_AUTH_PROXY_NAME,
+			Namespace: KALM_DEX_NAMESPACE,
 		},
 		Spec: corev1alpha1.HttpRouteSpec{
 			Hosts: []string{
@@ -626,7 +626,7 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyRoute() err
 			Schemes: []string{scheme},
 			Destinations: []corev1alpha1.HttpRouteDestination{
 				{
-					Host:   fmt.Sprintf("%s.%s.svc.cluster.local", KAPP_AUTH_PROXY_NAME, KAPP_DEX_NAMESPACE),
+					Host:   fmt.Sprintf("%s.%s.svc.cluster.local", KALM_AUTH_PROXY_NAME, KALM_DEX_NAMESPACE),
 					Weight: 1,
 				},
 			},

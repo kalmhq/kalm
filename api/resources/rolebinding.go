@@ -32,11 +32,11 @@ func getRoleBindingListChannel(k8sClient *kubernetes.Clientset, namespace string
 		list := make([]rbacV1.RoleBinding, 0, len(res.Items))
 
 		for _, item := range res.Items {
-			if !strings.HasPrefix(item.Namespace, KAPP_NAMESPACE_PREFIX) {
+			if !strings.HasPrefix(item.Namespace, KALM_NAMESPACE_PREFIX) {
 				continue
 			}
 
-			if item.Namespace == KAPP_SYSTEM_NAMESPACE {
+			if item.Namespace == KALM_SYSTEM_NAMESPACE {
 				continue
 			}
 
@@ -145,7 +145,7 @@ func resolveSubjectClusterRoleBindings(k8sClient *kubernetes.Clientset, kind str
 		}
 
 		if kind == "ServiceAccount" {
-			subject.Namespace = KAPP_SYSTEM_NAMESPACE
+			subject.Namespace = KALM_SYSTEM_NAMESPACE
 			subject.APIGroup = ""
 		}
 

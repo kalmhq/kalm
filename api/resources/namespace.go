@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	KAPP_SYSTEM_NAMESPACE = "kalm-system"
-	KAPP_NAMESPACE_PREFIX = "kalm-"
+	KALM_SYSTEM_NAMESPACE = "kalm-system"
+	KALM_NAMESPACE_PREFIX = "kalm-"
 )
 
 type NamespaceListChannel struct {
@@ -41,11 +41,11 @@ func getNamespaceListChannel(k8sClient *kubernetes.Clientset, listOptions metaV1
 		list := make([]Namespace, 0, len(res.Items))
 
 		for _, item := range res.Items {
-			if !strings.HasPrefix(item.Name, KAPP_NAMESPACE_PREFIX) {
+			if !strings.HasPrefix(item.Name, KALM_NAMESPACE_PREFIX) {
 				continue
 			}
 
-			if item.Name == KAPP_SYSTEM_NAMESPACE {
+			if item.Name == KALM_SYSTEM_NAMESPACE {
 				continue
 			}
 
@@ -150,8 +150,8 @@ func DeleteNamespace(k8sClient *kubernetes.Clientset, name string) error {
 }
 
 func formatNamespaceName(name string) string {
-	if strings.HasPrefix(name, KAPP_NAMESPACE_PREFIX) {
-		name = strings.ReplaceAll(name, KAPP_NAMESPACE_PREFIX, "")
+	if strings.HasPrefix(name, KALM_NAMESPACE_PREFIX) {
+		name = strings.ReplaceAll(name, KALM_NAMESPACE_PREFIX, "")
 	}
-	return KAPP_NAMESPACE_PREFIX + name
+	return KALM_NAMESPACE_PREFIX + name
 }

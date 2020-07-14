@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 	"gopkg.in/yaml.v3"
 	appsV1 "k8s.io/api/apps/v1"
@@ -36,7 +36,7 @@ func (suite *SSOConfigControllerSuite) TearDownSuite() {
 }
 
 func (suite *SSOConfigControllerSuite) SetupTest() {
-	suite.SetupKappEnabledNs("kapp-system")
+	suite.SetupKalmEnabledNs("kalm-system")
 	suite.ctx = context.Background()
 }
 
@@ -93,7 +93,7 @@ func (suite *SSOConfigControllerSuite) TestSSOBasicCRUD() {
 
 	ssoConfig := v1alpha1.SingleSignOnConfig{
 		ObjectMeta: metaV1.ObjectMeta{
-			Namespace: "kapp-system",
+			Namespace: "kalm-system",
 			Name:      "sso",
 		},
 		Spec: v1alpha1.SingleSignOnConfigSpec{
@@ -115,7 +115,7 @@ func (suite *SSOConfigControllerSuite) TestSSOBasicCRUD() {
 	suite.Eventually(func() bool {
 		if err := suite.K8sClient.Get(suite.ctx, types.NamespacedName{
 			Name:      "dex",
-			Namespace: "kapp-system",
+			Namespace: "kalm-system",
 		}, &component); err != nil {
 			return false
 		}
@@ -132,13 +132,13 @@ func (suite *SSOConfigControllerSuite) TestSSOBasicCRUD() {
 		)
 	})
 
-	// will create a dex deployment under kapp-system namespace
+	// will create a dex deployment under kalm-system namespace
 	var deployment appsV1.Deployment
 
 	suite.Eventually(func() bool {
 		if err := suite.K8sClient.Get(suite.ctx, types.NamespacedName{
 			Name:      "dex",
-			Namespace: "kapp-system",
+			Namespace: "kalm-system",
 		}, &deployment); err != nil {
 			return false
 		}
@@ -146,12 +146,12 @@ func (suite *SSOConfigControllerSuite) TestSSOBasicCRUD() {
 		return true
 	})
 
-	// will create a dex route under kapp-system namespace
+	// will create a dex route under kalm-system namespace
 	var route v1alpha1.HttpRoute
 	suite.Eventually(func() bool {
 		if err := suite.K8sClient.Get(suite.ctx, types.NamespacedName{
 			Name:      "dex",
-			Namespace: "kapp-system",
+			Namespace: "kalm-system",
 		}, &route); err != nil {
 			return false
 		}
@@ -160,7 +160,7 @@ func (suite *SSOConfigControllerSuite) TestSSOBasicCRUD() {
 			route.Spec.Hosts[0] == domain &&
 			route.Spec.Schemes[0] == "https" &&
 			route.Spec.Paths[0] == "/dex" &&
-			route.Spec.Destinations[0].Host == "dex.kapp-system.svc.cluster.local:5556"
+			route.Spec.Destinations[0].Host == "dex.kalm-system.svc.cluster.local:5556"
 	})
 
 	suite.reloadObject(types.NamespacedName{Name: ssoConfig.Name, Namespace: ssoConfig.Namespace}, &ssoConfig)
@@ -174,7 +174,7 @@ func (suite *SSOConfigControllerSuite) TestSSOBasicCRUD() {
 	suite.Eventually(func() bool {
 		if err := suite.K8sClient.Get(suite.ctx, types.NamespacedName{
 			Name:      "dex",
-			Namespace: "kapp-system",
+			Namespace: "kalm-system",
 		}, &route); err != nil {
 			return false
 		}
@@ -186,7 +186,7 @@ func (suite *SSOConfigControllerSuite) TestSSOBasicCRUD() {
 	suite.Eventually(func() bool {
 		if err := suite.K8sClient.Get(suite.ctx, types.NamespacedName{
 			Name:      "dex",
-			Namespace: "kapp-system",
+			Namespace: "kalm-system",
 		}, &component); err != nil {
 			return false
 		}

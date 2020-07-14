@@ -37,7 +37,7 @@ import (
 )
 
 const (
-	KAPP_ROUTE_LABEL = "kalm-route"
+	KALM_ROUTE_LABEL = "kalm-route"
 )
 
 type HttpRouteReconcilerTask struct {
@@ -199,7 +199,7 @@ func (r *HttpRouteReconcilerTask) Run(ctrl.Request) error {
 	r.routes = routes.Items
 
 	var virtualServices v1beta1.VirtualServiceList
-	if err := r.Reader.List(r.ctx, &virtualServices, client.MatchingLabels{KAPP_ROUTE_LABEL: "true"}); err != nil {
+	if err := r.Reader.List(r.ctx, &virtualServices, client.MatchingLabels{KALM_ROUTE_LABEL: "true"}); err != nil {
 		return err
 	}
 	r.virtualServices = virtualServices.Items
@@ -262,7 +262,7 @@ func (r *HttpRouteReconcilerTask) SaveVirtualService(host string, routes []*isti
 		virtualService.Labels = make(map[string]string)
 	}
 
-	virtualService.Labels[KAPP_ROUTE_LABEL] = "true"
+	virtualService.Labels[KALM_ROUTE_LABEL] = "true"
 	virtualService.Spec.Hosts = []string{host}
 	virtualService.Spec.Http = routes
 	virtualService.Spec.ExportTo = []string{"*"}
@@ -564,7 +564,7 @@ type WatchAllKalmVirtualService struct{}
 func (*WatchAllKalmGateway) Map(object handler.MapObject) []reconcile.Request {
 	gateway, ok := object.Object.(*v1beta1.Gateway)
 
-	if !ok || gateway.Labels == nil || gateway.Labels[KAPP_ROUTE_LABEL] != "true" {
+	if !ok || gateway.Labels == nil || gateway.Labels[KALM_ROUTE_LABEL] != "true" {
 		return nil
 	}
 
@@ -573,7 +573,7 @@ func (*WatchAllKalmGateway) Map(object handler.MapObject) []reconcile.Request {
 func (*WatchAllKalmVirtualService) Map(object handler.MapObject) []reconcile.Request {
 	vs, ok := object.Object.(*v1beta1.VirtualService)
 
-	if !ok || vs.Labels == nil || vs.Labels[KAPP_ROUTE_LABEL] != "true" {
+	if !ok || vs.Labels == nil || vs.Labels[KALM_ROUTE_LABEL] != "true" {
 		return nil
 	}
 

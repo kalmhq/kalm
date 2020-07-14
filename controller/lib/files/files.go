@@ -17,16 +17,16 @@ type File struct {
 // TODO validate path
 
 // will use this a config-map called kalm-files to store files in each namespace
-const KAPP_CONFIG_MAP_NAME = "kalm-files"
+const KALM_CONFIG_MAP_NAME = "kalm-files"
 
 // auto-generated dir
-const KAPP_DIR_PLACEHOLDER = "__DIR__"
+const KALM_DIR_PLACEHOLDER = "__DIR__"
 
 // user created dir
-const KAPP_PERSISTENT_DIR_PLACEHOLDER = "__PDIR__"
+const KALM_PERSISTENT_DIR_PLACEHOLDER = "__PDIR__"
 
 // config map key can't include "/", use this replace "/" in key
-const KAPP_SLASH_REPLACER = "__D__"
+const KALM_SLASH_REPLACER = "__D__"
 
 type FileItem struct {
 	Name     string      `json:"name"`
@@ -60,11 +60,11 @@ func GetFileNameFromRawPath(path string) string {
 }
 
 func DecodeFilePath(path string) string {
-	return strings.ReplaceAll(path, KAPP_SLASH_REPLACER, "/")
+	return strings.ReplaceAll(path, KALM_SLASH_REPLACER, "/")
 }
 
 func EncodeFilePath(path string) string {
-	return strings.ReplaceAll(path, "/", KAPP_SLASH_REPLACER)
+	return strings.ReplaceAll(path, "/", KALM_SLASH_REPLACER)
 }
 
 func AddFile(configMap *coreV1.ConfigMap, file *File, replaceExistingOpt ...bool) error {
@@ -83,20 +83,20 @@ func AddFile(configMap *coreV1.ConfigMap, file *File, replaceExistingOpt ...bool
 
 	for i := range pathParts {
 		if i < len(pathParts)-1 {
-			dirName := KAPP_SLASH_REPLACER + strings.Join(pathParts[:i+1], KAPP_SLASH_REPLACER)
+			dirName := KALM_SLASH_REPLACER + strings.Join(pathParts[:i+1], KALM_SLASH_REPLACER)
 
 			if data, ok := configMap.Data[dirName]; ok {
-				if data == KAPP_DIR_PLACEHOLDER || data == KAPP_PERSISTENT_DIR_PLACEHOLDER {
+				if data == KALM_DIR_PLACEHOLDER || data == KALM_PERSISTENT_DIR_PLACEHOLDER {
 					continue
 				} else {
 					return fmt.Errorf("Can't create file at %s, %s exists and it's not a dir.", file.Path, dirName)
 				}
 			}
 
-			configMap.Data[dirName] = KAPP_DIR_PLACEHOLDER
+			configMap.Data[dirName] = KALM_DIR_PLACEHOLDER
 		} else {
 			if file.IsDir {
-				configMap.Data[fileKey] = KAPP_PERSISTENT_DIR_PLACEHOLDER
+				configMap.Data[fileKey] = KALM_PERSISTENT_DIR_PLACEHOLDER
 			} else {
 				configMap.Data[fileKey] = file.Content
 			}
@@ -114,7 +114,7 @@ func UpdateFile(configMap *coreV1.ConfigMap, file *File) error {
 		return fmt.Errorf("File or dir doesn't exist")
 	}
 
-	if data == KAPP_DIR_PLACEHOLDER || data == KAPP_PERSISTENT_DIR_PLACEHOLDER {
+	if data == KALM_DIR_PLACEHOLDER || data == KALM_PERSISTENT_DIR_PLACEHOLDER {
 		return fmt.Errorf("%s is a dir, not a file", file.Path)
 	}
 
@@ -160,9 +160,9 @@ func DeleteFile(configMap *coreV1.ConfigMap, file *File) error {
 		return fmt.Errorf("File or dir doesn't exist")
 	}
 
-	if data == KAPP_DIR_PLACEHOLDER || data == KAPP_PERSISTENT_DIR_PLACEHOLDER {
+	if data == KALM_DIR_PLACEHOLDER || data == KALM_PERSISTENT_DIR_PLACEHOLDER {
 		for key := range configMap.Data {
-			if strings.HasPrefix(key, fileKey+KAPP_SLASH_REPLACER) {
+			if strings.HasPrefix(key, fileKey+KALM_SLASH_REPLACER) {
 				delete(configMap.Data, key)
 			}
 		}
@@ -213,7 +213,7 @@ func GetFileItemTree(configMap *coreV1.ConfigMap, basePath string) (*FileItem, e
 		rawFilePath := DecodeFilePath(filePath)
 
 		var node *FileItem
-		if content == KAPP_DIR_PLACEHOLDER || content == KAPP_PERSISTENT_DIR_PLACEHOLDER {
+		if content == KALM_DIR_PLACEHOLDER || content == KALM_PERSISTENT_DIR_PLACEHOLDER {
 			node = NewFileItem(rawFilePath, true, "")
 
 			if root == nil {
@@ -247,14 +247,14 @@ func CleanUpConfigMap(configMap *coreV1.ConfigMap) {
 	existingDirs := map[string]bool{}
 
 	for encodedFilePath, content := range configMap.Data {
-		if content == KAPP_DIR_PLACEHOLDER {
+		if content == KALM_DIR_PLACEHOLDER {
 			existingDirs[encodedFilePath] = true
 		} else {
-			parts := strings.Split(encodedFilePath, KAPP_SLASH_REPLACER)
+			parts := strings.Split(encodedFilePath, KALM_SLASH_REPLACER)
 
 			for i := range parts {
 				if i < len(parts)-1 {
-					validDirs[strings.Join(parts[:i+1], KAPP_SLASH_REPLACER)] = true
+					validDirs[strings.Join(parts[:i+1], KALM_SLASH_REPLACER)] = true
 				}
 			}
 		}

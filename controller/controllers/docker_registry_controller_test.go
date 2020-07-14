@@ -28,7 +28,7 @@ func (suite *DockerRegistryControllerSuite) SetupSuite() {
 	_ = godotenv.Load("../.env")
 	_ = godotenv.Load()
 
-	if os.Getenv("KAPP_TEST_DOCKER_REGISTRY_PASSWORD") == "" || os.Getenv("KAPP_TEST_DOCKER_REGISTRY_USERNAME") == "" {
+	if os.Getenv("KALM_TEST_DOCKER_REGISTRY_PASSWORD") == "" || os.Getenv("KALM_TEST_DOCKER_REGISTRY_USERNAME") == "" {
 		suite.T().Skip()
 	}
 
@@ -65,8 +65,8 @@ func (suite *DockerRegistryControllerSuite) SetupTest() {
 			Namespace: "kalm-system",
 		},
 		Data: map[string][]byte{
-			"username": []byte(os.Getenv("KAPP_TEST_DOCKER_REGISTRY_USERNAME")),
-			"password": []byte(os.Getenv("KAPP_TEST_DOCKER_REGISTRY_PASSWORD")),
+			"username": []byte(os.Getenv("KALM_TEST_DOCKER_REGISTRY_USERNAME")),
+			"password": []byte(os.Getenv("KALM_TEST_DOCKER_REGISTRY_PASSWORD")),
 		},
 	}
 	suite.Nil(suite.K8sClient.Create(context.Background(), &secret))

@@ -1167,7 +1167,7 @@ func (r *ComponentReconcilerTask) parseComponentConfigs(component *corev1alpha1.
 	var configMap coreV1.ConfigMap
 
 	err := r.Client.Get(r.ctx, types.NamespacedName{
-		Name:      files.KAPP_CONFIG_MAP_NAME,
+		Name:      files.KALM_CONFIG_MAP_NAME,
 		Namespace: r.component.Namespace,
 	}, &configMap)
 
@@ -1211,7 +1211,7 @@ func (r *ComponentReconcilerTask) parseComponentConfigs(component *corev1alpha1.
 			VolumeSource: coreV1.VolumeSource{
 				ConfigMap: &coreV1.ConfigMapVolumeSource{
 					LocalObjectReference: coreV1.LocalObjectReference{
-						Name: files.KAPP_CONFIG_MAP_NAME,
+						Name: files.KALM_CONFIG_MAP_NAME,
 					},
 					Items: items,
 				},
@@ -1238,7 +1238,7 @@ func (r *ComponentReconcilerTask) parseComponentConfigs(component *corev1alpha1.
 			VolumeSource: coreV1.VolumeSource{
 				ConfigMap: &coreV1.ConfigMapVolumeSource{
 					LocalObjectReference: coreV1.LocalObjectReference{
-						Name: files.KAPP_CONFIG_MAP_NAME,
+						Name: files.KALM_CONFIG_MAP_NAME,
 					},
 					Items: []coreV1.KeyToPath{
 						{
