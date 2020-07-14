@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { TDispatchProp } from "types";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
@@ -8,13 +8,14 @@ import { ApplicationComponentDetails } from "types/application";
 import { getComponentCreatedAtString } from "utils/application";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { NoLivenessProbeWarning, NoPortsWarning, NoReadinessProbeWarning } from "pages/Components/NoPortsWarning";
-import { HealthTab } from "forms/ComponentLike";
+import { HealthTab, NetworkingTab } from "forms/ComponentLike";
 import { Probe, ComponentLikePort } from "types/componentTemplate";
-import { Link } from "react-router-dom";
 import { List } from "immutable";
-import { CopyIconDefault } from "widgets/Icon";
+import { CopyIconDefault, WrenchIcon } from "widgets/Icon";
 import copy from "copy-to-clipboard";
 import { setSuccessNotificationAction } from "actions/notification";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import { push } from "connected-react-router";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -121,7 +122,21 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
       //         .join("/");
       // >>>>>>> f3dc64cd95f71ad48762e30e03d1bbc53a48ba1e
     } else {
-      return <NoPortsWarning />;
+      return (
+        <div>
+          <NoPortsWarning />{" "}
+          <IconButtonWithTooltip
+            tooltipPlacement="top"
+            tooltipTitle="Add Exposed Ports"
+            aria-label="add-exposed-ports"
+            onClick={() =>
+              this.props.dispatch(push(`applications/:applicationName/components/web/edit#${NetworkingTab}`))
+            }
+          >
+            <WrenchIcon fontSize="small" />
+          </IconButtonWithTooltip>
+        </div>
+      );
     }
   };
 
@@ -142,7 +157,7 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
   };
 
   private renderHealth = () => {
-    const { component, activeNamespaceName } = this.props;
+    const { component, activeNamespaceName, dispatch } = this.props;
     const readinessProbe = component.get("readinessProbe");
     const livenessProbe = component.get("livenessProbe");
 
@@ -163,15 +178,18 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
           )}
         </Box>
         {!readinessProbe || !livenessProbe ? (
-          <Button
-            component={Link}
-            to={`/applications/${activeNamespaceName}/components/${component.get("name")}/edit#${HealthTab}`}
-            variant="text"
-            size="small"
-            color="primary"
+          <IconButtonWithTooltip
+            tooltipPlacement="top"
+            tooltipTitle="Add Health Probes"
+            aria-label="add-health-probes"
+            onClick={() =>
+              dispatch(
+                push(`/applications/${activeNamespaceName}/components/${component.get("name")}/edit#${HealthTab}`),
+              )
+            }
           >
-            Add Health Probes
-          </Button>
+            <WrenchIcon fontSize="small" />
+          </IconButtonWithTooltip>
         ) : null}
       </>
     );
