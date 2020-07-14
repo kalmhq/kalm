@@ -21,14 +21,15 @@ const smallLineChartStyles = (theme: Theme) =>
       border: "1px solid #DDD",
     },
     text: {
-      left: 0,
-      right: 0,
-      top: 0,
-      bottom: 0,
-      position: "absolute",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-around",
+      paddingTop: "2px",
+      // left: 0,
+      // right: 0,
+      // top: 0,
+      // bottom: 0,
+      // position: "absolute",
+      // display: "flex",
+      // alignItems: "center",
+      // justifyContent: "space-around",
     },
   });
 
