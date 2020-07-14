@@ -178,7 +178,7 @@ export const KRenderCommandTextField = ({
       InputProps={{
         startAdornment: (
           <InputAdornment position="start">
-            <KalmConsoleIcon />
+            <KalmConsoleIcon color={"default"} />
           </InputAdornment>
         ),
       }}
