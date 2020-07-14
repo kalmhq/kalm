@@ -1,4 +1,4 @@
-module github.com/kalm-staging/kalm/controller
+module github.com/kalmhq/kalm/controller
 
 go 1.13
 

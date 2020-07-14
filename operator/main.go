@@ -19,9 +19,9 @@ package main
 import (
 	"flag"
 	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
-	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
-	installv1alpha1 "github.com/kalm-staging/kalm/operator/api/v1alpha1"
-	"github.com/kalm-staging/kalm/operator/controllers"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
+	installv1alpha1 "github.com/kalmhq/kalm/operator/api/v1alpha1"
+	"github.com/kalmhq/kalm/operator/controllers"
 	istioScheme "istio.io/client-go/pkg/clientset/versioned/scheme"
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

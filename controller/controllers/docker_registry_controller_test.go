@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/joho/godotenv"
-	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 	appsV1 "k8s.io/api/apps/v1"
 	"k8s.io/api/core/v1"

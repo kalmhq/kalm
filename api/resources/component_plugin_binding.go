@@ -2,8 +2,8 @@ package resources
 
 import (
 	"encoding/json"
-	"github.com/kalm-staging/kalm/api/errors"
-	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
+	"github.com/kalmhq/kalm/api/errors"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"

@@ -19,7 +19,7 @@ import (
 	"context"
 	"fmt"
 	protoTypes "github.com/gogo/protobuf/types"
-	corev1alpha1 "github.com/kalm-staging/kalm/controller/api/v1alpha1"
+	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 	v1alpha32 "istio.io/api/networking/v1alpha3"
 	v1beta12 "istio.io/api/security/v1beta1"
 	v1beta13 "istio.io/api/type/v1beta1"

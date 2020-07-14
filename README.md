@@ -1,6 +1,6 @@
 # Kalm - Kubernetes application manager
 
-[![codecov](https://codecov.io/gh/kalm-staging/kalm/branch/master/graph/badge.svg)](https://codecov.io/gh/kalm-staging/kalm) [![Build Status](https://travis-ci.com/kalm-staging/kalm.svg?branch=master)](https://travis-ci.com/kalm-staging/kalm) [![Go Report](https://goreportcard.com/badge/github.com/kalm-staging/kalm)](https://goreportcard.com/badge/github.com/kalm-staging/kalm)
+[![codecov](https://codecov.io/gh/kalmhq/kalm/branch/master/graph/badge.svg)](https://codecov.io/gh/kalmhq/kalm) [![Build Status](https://travis-ci.com/kalmhq/kalm.svg?branch=master)](https://travis-ci.com/kalmhq/kalm) [![Go Report](https://goreportcard.com/badge/github.com/kalmhq/kalm)](https://goreportcard.com/badge/github.com/kalmhq/kalm)
 
 More than just another kubernetes dashboard, but also a new angle of application management.
 
@@ -15,13 +15,13 @@ TODO
 ## Try kalm in action
 
 ```shell
-curl -sL https://raw.githubusercontent.com/kalm-staging/kalm/master/scripts/install.sh | bash
+curl -sL https://raw.githubusercontent.com/kalmhq/kalm/master/scripts/install.sh | bash
 ```
 
 to check if Kalm is installed successfully, run 
 
 ```
-curl -sL https://raw.githubusercontent.com/kalm-staging/kalm/master/scripts/check-kalm-pods.sh | bash
+curl -sL https://raw.githubusercontent.com/kalmhq/kalm/master/scripts/check-kalm-pods.sh | bash
 ```
 
 if you see somthing like this, then Kalm is running as expected:
@@ -59,7 +59,7 @@ then go to [http://localhost:3001](http://localhost:3001), follow the doc [creat
 
 ```
 # first clone this repo
-git clone https://github.com/kalm-staging/kalm.git
+git clone https://github.com/kalmhq/kalm.git
 
 cd kalm
 

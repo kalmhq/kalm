@@ -3,7 +3,7 @@ package handler
 import (
 	"fmt"
 
-	"github.com/kalm-staging/kalm/api/resources"
+	"github.com/kalmhq/kalm/api/resources"
 	"github.com/labstack/echo/v4"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"

@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/kalm-staging/kalm/api/resources"
+	"github.com/kalmhq/kalm/api/resources"
 	"github.com/stretchr/testify/suite"
 	"net/http"
 	"testing"

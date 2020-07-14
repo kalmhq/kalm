@@ -22,9 +22,9 @@ import (
 	"encoding/json"
 	"fmt"
 	js "github.com/dop251/goja"
-	"github.com/kalm-staging/kalm/controller/lib/files"
-	"github.com/kalm-staging/kalm/controller/utils"
-	"github.com/kalm-staging/kalm/controller/vm"
+	"github.com/kalmhq/kalm/controller/lib/files"
+	"github.com/kalmhq/kalm/controller/utils"
+	"github.com/kalmhq/kalm/controller/vm"
 	"github.com/xeipuuv/gojsonschema"
 	appsV1 "k8s.io/api/apps/v1"
 	batchV1 "k8s.io/api/batch/v1"
@@ -44,7 +44,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 	"strings"
 
-	corev1alpha1 "github.com/kalm-staging/kalm/controller/api/v1alpha1"
+	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 )
 
 // ComponentReconciler reconciles a Component object
