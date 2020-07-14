@@ -4,6 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strconv"
+	"time"
+
 	"github.com/kalmhq/kalm/api/client"
 	_ "github.com/mattn/go-sqlite3"
 	log "github.com/sirupsen/logrus"
@@ -12,8 +15,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/metrics/pkg/apis/metrics/v1beta1"
 	mclientv1beta1 "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
-	"strconv"
-	"time"
 )
 
 var metricDb *sql.DB
@@ -204,6 +205,8 @@ func getMetricHistories(sql string, args ...interface{}) MetricHistories {
 	if err != nil {
 		return metricHistories
 	}
+
+	metricHistories.IsMetricServerEnabled = true
 
 	return metricHistories
 }
