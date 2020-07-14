@@ -16,6 +16,7 @@ import Publish from "@material-ui/icons/Publish";
 import Build from "@material-ui/icons/Build";
 import ArrowBack from "@material-ui/icons/ArrowBack";
 import SubjectIcon from "@material-ui/icons/Subject";
+import Dashboard from "@material-ui/icons/Dashboard";
 import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import { grey } from "@material-ui/core/colors";
 import { SvgIcon, SvgIconProps, Theme } from "@material-ui/core";
@@ -337,4 +338,10 @@ export const WrenchIcon = withStyles(styles)((props: ColorIconsProps) => {
   const { fontSize, style } = props;
   const className = getClassNameByColorName(props);
   return <Build className={className} fontSize={fontSize} style={style} />;
+});
+
+export const DashboardIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return <Dashboard className={className} fontSize={fontSize} style={style} />;
 });

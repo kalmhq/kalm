@@ -9,7 +9,7 @@ import { TDispatch } from "types";
 import { BaseDrawer } from "layout/BaseDrawer";
 import { primaryBackgroud, primaryColor } from "theme/theme";
 import { blinkTopProgressAction } from "actions/settings";
-import { KalmDetailsIcon, KalmComponentsIcon, KalmRoutesIcon } from "widgets/Icon";
+import { KalmComponentsIcon, KalmRoutesIcon, DashboardIcon } from "widgets/Icon";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
@@ -75,7 +75,7 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
         text: "Metric Dashboard",
         to: "/applications/" + activeNamespaceName + "/metrics",
         highlightWhenExact: true,
-        icon: <KalmDetailsIcon />,
+        icon: <DashboardIcon />,
       },
     ];
   }
