@@ -33,7 +33,7 @@ func (suite *PluginBindingControllerSuite) TearDownSuite() {
 }
 
 func (suite *PluginBindingControllerSuite) SetupTest() {
-	namespace := suite.SetupKalmEnabledNs()
+	namespace := suite.SetupKalmEnabledNs("")
 	suite.namespace = &namespace
 
 	plugin := generateEmptyComponentPlugin()

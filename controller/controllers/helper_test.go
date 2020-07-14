@@ -313,10 +313,14 @@ func randomName() string {
 	return string(b)
 }
 
-func (suite *BasicSuite) SetupKalmEnabledNs() v1.Namespace {
+func (suite *BasicSuite) SetupKalmEnabledNs(name string) v1.Namespace {
+	if name == "" {
+		name = randomName()
+	}
+
 	ns := v1.Namespace{
 		ObjectMeta: metaV1.ObjectMeta{
-			Name: randomName(),
+			Name: name,
 			Labels: map[string]string{
 				KalmEnableLabelName: "true",
 			},

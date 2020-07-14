@@ -78,7 +78,7 @@ func (suite *DockerRegistryControllerSuite) SetupTest() {
 	suite.registry = registry
 	suite.secret = &secret
 
-	ns := suite.SetupKalmEnabledNs()
+	ns := suite.SetupKalmEnabledNs("")
 	suite.namespace = &ns
 }
 
