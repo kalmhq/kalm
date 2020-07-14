@@ -7,7 +7,7 @@ import Icon from "@material-ui/core/Icon";
 import { Link } from "react-router-dom";
 import { NamespaceVisibleContainer } from "permission/Namespace";
 import { blinkTopProgressAction } from "actions/settings";
-import { Box } from "@material-ui/core";
+import { Box, Theme, withStyles, WithStyles } from "@material-ui/core";
 
 const ITEM_HEIGHT = 48;
 
@@ -20,13 +20,31 @@ interface Option {
   requiredRole?: string;
 }
 
+const styles = (theme: Theme) => ({
+  button: {
+    color: theme.palette.grey[600],
+    "&:disabled": {
+      cursor: "not-allowed !important",
+      background: theme.palette.grey[100],
+    },
+    "&:hover": {
+      background: theme.palette.primary.light,
+      color: theme.palette.primary.main,
+    },
+  },
+});
+
 interface Props {
   options: Option[];
 }
 
-export const FoldButtonGroup = (props: Props) => {
+type FoldButtonGroupProps = WithStyles<typeof styles> & Props;
+
+export const FoldButtonGroup = withStyles(styles)((props: FoldButtonGroupProps) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+
+  const { classes, ...iconButtonProps } = props;
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -39,7 +57,15 @@ export const FoldButtonGroup = (props: Props) => {
 
   return (
     <div>
-      <IconButton size={"small"} aria-label="more" aria-controls="long-menu" aria-haspopup="true" onClick={handleClick}>
+      <IconButton
+        className={classes.button}
+        size={"small"}
+        aria-label="more"
+        aria-controls="long-menu"
+        aria-haspopup="true"
+        onClick={handleClick}
+        {...iconButtonProps}
+      >
         <MoreVertIcon />
       </IconButton>
       <Menu
@@ -65,7 +91,7 @@ export const FoldButtonGroup = (props: Props) => {
               style={{ color: "inherit" }}
               key={index}
             >
-              <MenuItem key={option.text} selected={false} style={{ padding: "6px 20px" }}>
+              <MenuItem className={classes.button} key={option.text} selected={false} style={{ padding: "6px 20px" }}>
                 {/* onClick={option.onClick}  */}
 
                 <Box mr={2}>
@@ -80,4 +106,4 @@ export const FoldButtonGroup = (props: Props) => {
       </Menu>
     </div>
   );
-};
+});

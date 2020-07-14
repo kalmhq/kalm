@@ -4,9 +4,14 @@ import { Link } from "react-router-dom";
 
 const styles = (theme: Theme) => ({
   button: {
+    color: theme.palette.grey[600],
     "&:disabled": {
       cursor: "not-allowed !important",
       background: theme.palette.grey[100],
+    },
+    "&:hover": {
+      background: theme.palette.primary.light,
+      color: theme.palette.primary.main,
     },
   },
 });

@@ -119,12 +119,11 @@ export class VolumesRaw extends React.Component<Props, States> {
         <IconButtonWithTooltip
           disabled={rowData.get("isInUse")}
           tooltipTitle={rowData.get("isInUse") ? "This disk in in used and can't be removed" : "Delete"}
-          // style={{ color: primaryColor }}
           onClick={() => {
             this.showDeleteConfirmDialog(rowData);
           }}
         >
-          <DeleteIcon color={rowData.get("isInUse") ? "disabled" : "inherit"} />
+          <DeleteIcon />
         </IconButtonWithTooltip>
       </>
     );

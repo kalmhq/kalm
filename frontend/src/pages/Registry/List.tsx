@@ -11,7 +11,6 @@ import { KTable } from "widgets/Table";
 import { openDialogAction } from "actions/dialog";
 import { setErrorNotificationAction } from "actions/notification";
 import { blinkTopProgressAction } from "actions/settings";
-import { primaryColor } from "theme/theme";
 import { CustomizedButton } from "widgets/Button";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { DeleteIcon, EditIcon } from "widgets/Icon";
@@ -133,7 +132,6 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
         <IconButtonWithTooltip
           tooltipTitle={"Edit"}
           size="small"
-          style={{ color: primaryColor }}
           onClick={() => {
             const registry = registries.find((r) => r.get("name") === row.get("name"));
             this.setState({
@@ -147,7 +145,6 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
         <IconButtonWithTooltip
           size="small"
           tooltipTitle={"Delete"}
-          style={{ color: primaryColor }}
           onClick={() => {
             this.showDeleteConfirmDialog(row.get("name"));
           }}

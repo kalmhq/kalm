@@ -1,9 +1,9 @@
-import { Box, createStyles, Theme, WithStyles, withStyles } from "@material-ui/core";
+import { Box, createStyles, Theme, WithStyles, withStyles, Typography } from "@material-ui/core";
 import { Alert } from "@material-ui/lab";
 import { K8sApiPrefix } from "api/realApi";
 import React from "react";
 import { connect } from "react-redux";
-import { H4, Body } from "widgets/Label";
+import { H4 } from "widgets/Label";
 import { KTable } from "widgets/Table";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
@@ -116,7 +116,7 @@ export class IngressInfoRaw extends React.Component<Props, States> {
     const ipContent = row.get("ingressIP");
     return (
       <FlexRowItemCenterBox>
-        <Body>{ipContent}</Body>
+        <Typography>{ipContent}</Typography>
         <IconButtonWithTooltip
           size="small"
           tooltipTitle="Copy"
@@ -124,7 +124,7 @@ export class IngressInfoRaw extends React.Component<Props, States> {
             this.copyText(ipContent);
           }}
         >
-          <CopyIcon style={{ color: "rgba(0, 0, 0, 0.54)", fontSize: 16 }} />
+          <CopyIcon style={{ fontSize: 16 }} />
         </IconButtonWithTooltip>
       </FlexRowItemCenterBox>
     );

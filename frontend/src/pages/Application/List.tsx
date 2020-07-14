@@ -264,7 +264,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         <IconButtonWithTooltip
           onClick={() => blinkTopProgressAction()}
           tooltipTitle="Shell"
-          style={{ color: primaryColor }}
           component={Link}
           size={"small"}
           to={`/applications/${rowData.get("name")}/shells`}
@@ -274,7 +273,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         <IconButtonWithTooltip
           onClick={() => blinkTopProgressAction()}
           tooltipTitle="Logs"
-          style={{ color: primaryColor }}
           component={Link}
           size={"small"}
           to={`/applications/${rowData.get("name")}/logs`}

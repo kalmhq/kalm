@@ -12,7 +12,12 @@ let themeRaw = createMuiTheme({
     },
   },
   palette: {
-    primary: indigo,
+    primary: {
+      main: indigo[500],
+      light: indigo[50],
+      dark: indigo[700],
+      contrastText: "white",
+    },
     secondary: grey,
     success: {
       main: green[700],
