@@ -119,11 +119,21 @@ export class NodeListRaw extends React.Component<Props, States> {
             },
             {
               name: "CPU",
-              content: <SmallCPULineChart data={node.get("metrics").get("cpu")} />,
+              content: (
+                <SmallCPULineChart
+                  data={node.get("metrics").get("cpu")}
+                  isMetricServerEnabled={node.get("metrics").get("isMetricServerEnabled")}
+                />
+              ),
             },
             {
               name: "Memory",
-              content: <SmallMemoryLineChart data={node.get("metrics").get("memory")} />,
+              content: (
+                <SmallMemoryLineChart
+                  data={node.get("metrics").get("memory")}
+                  isMetricServerEnabled={node.get("metrics").get("isMetricServerEnabled")}
+                />
+              ),
             },
             {
               name: "CPU (Allocated / Total allocatable)",
