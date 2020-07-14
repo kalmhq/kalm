@@ -5,7 +5,7 @@ import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
 import { ApplicationComponentDetails } from "types/application";
-import { getComponentCreatedAtString } from "utils/application";
+import { getComponentCreatedFromAndAtString } from "utils/application";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { NoLivenessProbeWarning, NoPortsWarning, NoReadinessProbeWarning } from "pages/Components/NoPortsWarning";
 import { HealthTab } from "forms/ComponentLike";
@@ -49,7 +49,7 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
 
   private renderCreatedAt = () => {
     const { component } = this.props;
-    return getComponentCreatedAtString(component);
+    return getComponentCreatedFromAndAtString(component);
   };
 
   private renderComponentStatus = () => {
@@ -116,20 +116,11 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     const { classes, component } = this.props;
 
     if (component.get("ports") && component.get("ports")!.size > 0) {
-      // <<<<<<< HEAD
       const ports = component.get("ports", List<ComponentLikePort>())?.map((port, index) => {
         const portString = port.get("servicePort") ?? port.get("containerPort");
         return this.renderPort(index, port.get("name"), portString);
       });
       return <div className={classes.portContainer}>{ports}</div>;
-      // =======
-      //       return component
-      //         .get("ports")
-      //         ?.map((port) => {
-      //           return `${port.get("containerPort")}:${port.get("servicePort")}`;
-      //         })
-      //         .join("/");
-      // >>>>>>> f3dc64cd95f71ad48762e30e03d1bbc53a48ba1e
     } else {
       return <NoPortsWarning />;
     }
