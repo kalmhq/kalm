@@ -40,7 +40,7 @@ import (
 	"time"
 
 	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
-	corev1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	corev1alpha1 "github.com/kalm-staging/kalm/controller/api/v1alpha1"
 )
 
 // HttpsCertIssuerReconciler reconciles a HttpsCertIssuer object
@@ -48,8 +48,8 @@ type HttpsCertIssuerReconciler struct {
 	*BaseReconciler
 }
 
-// +kubebuilder:rbac:groups=core.kapp.dev,resources=httpscertissuers,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=core.kapp.dev,resources=httpscertissuers/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=core.kalm.dev,resources=httpscertissuers,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core.kalm.dev,resources=httpscertissuers/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=cert-manager.io,resources=clusterissuers,verbs=get;list;watch;create;update;patch;delete
 
 func (r *HttpsCertIssuerReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
@@ -322,7 +322,7 @@ func (r *HttpsCertIssuerReconciler) ReconcileACMECloudFlare(ctx context.Context,
 }
 
 func getPrvKeyNameForIssuer(issuer corev1alpha1.HttpsCertIssuer) string {
-	return fmt.Sprintf("kapp-prvkey-%s", issuer.Name)
+	return fmt.Sprintf("kalm-prvkey-%s", issuer.Name)
 }
 
 func (r *HttpsCertIssuerReconciler) generateRandomPrvKeyAndCrtForCA() (prvKey []byte, crt []byte, err error) {
@@ -339,7 +339,7 @@ func (r *HttpsCertIssuerReconciler) generateRandomPrvKeyAndCrtForCA() (prvKey []
 	template := x509.Certificate{
 		SerialNumber: big.NewInt(2020),
 		Subject: pkix.Name{
-			Organization: []string{"Kapp CA for Test Co"},
+			Organization: []string{"Kalm CA for Test Co"},
 		},
 		NotBefore:             time.Now(),
 		NotAfter:              time.Now().AddDate(0, 0, 1),

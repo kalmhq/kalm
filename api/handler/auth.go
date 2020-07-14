@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/kapp-staging/kapp/api/auth"
+	"github.com/kalm-staging/kalm/api/auth"
 	"github.com/labstack/echo/v4"
 	authorizationV1 "k8s.io/api/authorization/v1"
 	"k8s.io/client-go/kubernetes"

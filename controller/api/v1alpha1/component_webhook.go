@@ -35,7 +35,7 @@ func (r *Component) SetupWebhookWithManager(mgr ctrl.Manager) error {
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 
-// +kubebuilder:webhook:path=/mutate-core-kapp-dev-v1alpha1-component,mutating=true,failurePolicy=fail,groups=core.kapp.dev,resources=components,verbs=create;update,versions=v1alpha1,name=mcomponent.kb.io
+// +kubebuilder:webhook:path=/mutate-core-kalm-dev-v1alpha1-component,mutating=true,failurePolicy=fail,groups=core.kalm.dev,resources=components,verbs=create;update,versions=v1alpha1,name=mcomponent.kb.io
 
 var _ webhook.Defaulter = &Component{}
 
@@ -47,7 +47,7 @@ func (r *Component) Default() {
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
-// +kubebuilder:webhook:verbs=create;update,path=/validate-core-kapp-dev-v1alpha1-component,mutating=false,failurePolicy=fail,groups=core.kapp.dev,resources=components,versions=v1alpha1,name=vcomponent.kb.io
+// +kubebuilder:webhook:verbs=create;update,path=/validate-core-kalm-dev-v1alpha1-component,mutating=false,failurePolicy=fail,groups=core.kalm.dev,resources=components,versions=v1alpha1,name=vcomponent.kb.io
 
 var _ webhook.Validator = &Component{}
 
@@ -79,7 +79,7 @@ func (r *Component) ValidateDelete() error {
 	return nil
 }
 
-func (r *Component) validateVolumeOfComponent() (rst KappValidateErrorList) {
+func (r *Component) validateVolumeOfComponent() (rst KalmValidateErrorList) {
 	vols := r.Spec.Volumes
 
 	for i, vol := range vols {
@@ -91,7 +91,7 @@ func (r *Component) validateVolumeOfComponent() (rst KappValidateErrorList) {
 
 		// 1. field: pvc must be set
 		if vol.PVC == "" {
-			rst = append(rst, KappValidateError{
+			rst = append(rst, KalmValidateError{
 				Err:  "must set pvc for this volume",
 				Path: fmt.Sprintf(".spec.volumes[%d]", i),
 			})
@@ -105,7 +105,7 @@ func (r *Component) validateVolumeOfComponent() (rst KappValidateErrorList) {
 
 		fld := field.NewPath(fmt.Sprintf(".spec.volumes[%d].size", i))
 		errList := ValidateResourceQuantityValue(vol.Size, fld)
-		rst = append(rst, toKappValidateErrors(errList)...)
+		rst = append(rst, toKalmValidateErrors(errList)...)
 	}
 
 	return nil

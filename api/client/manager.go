@@ -3,9 +3,9 @@ package client
 import (
 	"log"
 
-	"github.com/kapp-staging/kapp/api/auth"
-	"github.com/kapp-staging/kapp/api/config"
-	"github.com/kapp-staging/kapp/api/errors"
+	"github.com/kalm-staging/kalm/api/auth"
+	"github.com/kalm-staging/kalm/api/config"
+	"github.com/kalm-staging/kalm/api/errors"
 	"github.com/labstack/echo/v4"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"

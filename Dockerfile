@@ -34,15 +34,15 @@ RUN go mod download
 COPY api/ .
 
 # Build
-RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -installsuffix 'static' -ldflags '-extldflags "-static"' -o kapp-api-server main.go
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -installsuffix 'static' -ldflags '-extldflags "-static"' -o kalm-api-server main.go
 
 # ============== Finial ==============
 FROM alpine
 WORKDIR /workspace
 
-# tell kapp api server the location of static files
+# tell kalm api server the location of static files
 ENV STATIC_FILE_ROOT build
 
 # Collect binaries and assets
-COPY --from=api-builder /workspace/api/kapp-api-server .
+COPY --from=api-builder /workspace/api/kalm-api-server .
 COPY --from=frontend-builder /workspace/build/ build/

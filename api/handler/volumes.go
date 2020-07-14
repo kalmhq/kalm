@@ -3,7 +3,7 @@ package handler
 import (
 	"fmt"
 
-	"github.com/kapp-staging/kapp/api/resources"
+	"github.com/kalm-staging/kalm/api/resources"
 	"github.com/labstack/echo/v4"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -15,28 +15,28 @@ import (
 func (h *ApiHandler) handleListVolumes(c echo.Context) error {
 	builder := h.Builder(c)
 
-	var kappPVCList v1.PersistentVolumeClaimList
-	if err := builder.List(&kappPVCList, client.MatchingLabels{"kapp-managed": "true"}); err != nil {
+	var kalmPVCList v1.PersistentVolumeClaimList
+	if err := builder.List(&kalmPVCList, client.MatchingLabels{"kalm-managed": "true"}); err != nil {
 		if !errors.IsNotFound(err) {
 			return err
 		}
 	}
 
-	var kappPVList v1.PersistentVolumeList
-	if err := builder.List(&kappPVList, client.MatchingLabels{"kapp-managed": "true"}); err != nil {
+	var kalmPVList v1.PersistentVolumeList
+	if err := builder.List(&kalmPVList, client.MatchingLabels{"kalm-managed": "true"}); err != nil {
 		if !errors.IsNotFound(err) {
 			return err
 		}
 	}
 
-	kappPVMap := make(map[string]v1.PersistentVolume)
-	for _, kappPV := range kappPVList.Items {
-		kappPVMap[kappPV.Name] = kappPV
+	kalmPVMap := make(map[string]v1.PersistentVolume)
+	for _, kalmPV := range kalmPVList.Items {
+		kalmPVMap[kalmPV.Name] = kalmPV
 	}
 
 	respVolumes := []resources.Volume{}
-	for _, kappPVC := range kappPVCList.Items {
-		respVolume, err := builder.BuildVolumeResponse(kappPVC, kappPVMap[kappPVC.Spec.VolumeName])
+	for _, kalmPVC := range kalmPVCList.Items {
+		respVolume, err := builder.BuildVolumeResponse(kalmPVC, kalmPVMap[kalmPVC.Spec.VolumeName])
 		if err != nil {
 			return err
 		}

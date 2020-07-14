@@ -22,9 +22,9 @@ import (
 	"encoding/json"
 	"fmt"
 	js "github.com/dop251/goja"
-	"github.com/kapp-staging/kapp/controller/lib/files"
-	"github.com/kapp-staging/kapp/controller/utils"
-	"github.com/kapp-staging/kapp/controller/vm"
+	"github.com/kalm-staging/kalm/controller/lib/files"
+	"github.com/kalm-staging/kalm/controller/utils"
+	"github.com/kalm-staging/kalm/controller/vm"
 	"github.com/xeipuuv/gojsonschema"
 	appsV1 "k8s.io/api/apps/v1"
 	batchV1 "k8s.io/api/batch/v1"
@@ -44,7 +44,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 	"strings"
 
-	corev1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	corev1alpha1 "github.com/kalm-staging/kalm/controller/api/v1alpha1"
 )
 
 // ComponentReconciler reconciles a Component object
@@ -70,10 +70,10 @@ type ComponentReconcilerTask struct {
 	pluginBindings  *corev1alpha1.ComponentPluginBindingList
 }
 
-// +kubebuilder:rbac:groups=core.kapp.dev,resources=components,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=core.kapp.dev,resources=components/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=core.kapp.dev,resources=componentplugins,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=core.kapp.dev,resources=componentplugins/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=core.kalm.dev,resources=components,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core.kalm.dev,resources=components/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=core.kalm.dev,resources=componentplugins,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core.kalm.dev,resources=componentplugins/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=extensions,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=extensions,resources=daemonsets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=apps,resources=statefulsets,verbs=get;list;watch;create;update;patch;delete
@@ -244,15 +244,15 @@ func (r *ComponentReconcilerTask) Run(req ctrl.Request) error {
 }
 
 const (
-	KappLabelComponentKey = "kapp-component"
-	KappLabelNamespaceKey = "kapp-namespace"
+	KalmLabelComponentKey = "kalm-component"
+	KalmLabelNamespaceKey = "kalm-namespace"
 )
 
 func (r *ComponentReconcilerTask) GetLabels() map[string]string {
 	return map[string]string{
-		KappLabelNamespaceKey: r.namespace.Name,
-		KappLabelComponentKey: r.component.Name,
-		KappLabelManaged:      "true",
+		KalmLabelNamespaceKey: r.namespace.Name,
+		KalmLabelComponentKey: r.component.Name,
+		KalmLabelManaged:      "true",
 	}
 }
 
@@ -291,8 +291,8 @@ func (r *ComponentReconcilerTask) FixComponentDefaultValues() (err error) {
 	return r.Update(r.ctx, r.component)
 }
 
-func IsNamespaceKappEnabled(namespace coreV1.Namespace) bool {
-	if v, exist := namespace.Labels[KappEnableLabelName]; !exist || v != KappEnableLabelValue {
+func IsNamespaceKalmEnabled(namespace coreV1.Namespace) bool {
+	if v, exist := namespace.Labels[KalmEnableLabelName]; !exist || v != KalmEnableLabelValue {
 		return false
 	}
 
@@ -302,7 +302,7 @@ func IsNamespaceKappEnabled(namespace coreV1.Namespace) bool {
 func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 	labels := r.GetLabels()
 
-	if !IsNamespaceKappEnabled(r.namespace) {
+	if !IsNamespaceKalmEnabled(r.namespace) {
 		if r.service != nil {
 			return r.Delete(r.ctx, r.service)
 		}
@@ -433,7 +433,7 @@ func getNameForHeadlessService(componentName string) string {
 
 func (r *ComponentReconcilerTask) ReconcileWorkload() (err error) {
 
-	if !IsNamespaceKappEnabled(r.namespace) {
+	if !IsNamespaceKalmEnabled(r.namespace) {
 		if r.deployment != nil {
 			if err := r.Delete(r.ctx, r.deployment); err != nil {
 				return err
@@ -869,7 +869,7 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 	if err := r.Client.List(
 		r.ctx,
 		&pullImageSecrets,
-		client.MatchingLabels{"kapp-docker-registry-image-pull-secret": "true"},
+		client.MatchingLabels{"kalm-docker-registry-image-pull-secret": "true"},
 		client.InNamespace(component.Namespace),
 	); err != nil {
 		r.WarningEvent(err, "get pull image secrets failed")
@@ -929,7 +929,7 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 	}
 
 	// set image secret
-	// todo put into secret for kapp?
+	// todo put into secret for kalm?
 	//if r.ns.Spec.ImagePullSecretName != "" {
 	//	secs := []coreV1.LocalObjectReference{
 	//		{Name: r.ns.Spec.ImagePullSecretName},
@@ -1424,7 +1424,7 @@ func (r *ComponentReconcilerTask) DeleteResources() (err error) {
 	var bindingList corev1alpha1.ComponentPluginBindingList
 
 	if err := r.Reader.List(r.ctx, &bindingList, client.MatchingLabels{
-		KappLabelComponentKey: r.component.Name,
+		KalmLabelComponentKey: r.component.Name,
 	}); client.IgnoreNotFound(err) != nil {
 		r.WarningEvent(err, "get plugin binding list error.")
 		return err
@@ -1798,7 +1798,7 @@ func (r *ComponentReconcilerTask) prepareVolsForSimpleWorkload(template *coreV1.
 					}
 
 					expectedPVC.Spec.Selector.MatchLabels = map[string]string{
-						KappLabelPV: disk.PVToMatch,
+						KalmLabelPV: disk.PVToMatch,
 					}
 
 					// expectation: PVToMatch only need to be set when try to re-use pv from other ns,

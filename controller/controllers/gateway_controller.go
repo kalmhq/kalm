@@ -27,16 +27,16 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	corev1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	corev1alpha1 "github.com/kalm-staging/kalm/controller/api/v1alpha1"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 const (
 	KAPP_GATEWAY_NAMESPACE = "istio-system"
-	KAPP_GATEWAY_NAME      = "kapp-gateway"
+	KAPP_GATEWAY_NAME      = "kalm-gateway"
 
-	HTTPS_GATEWAY_NAME = "kapp-https-gateway"
-	HTTP_GATEWAY_NAME  = "kapp-http-gateway"
+	HTTPS_GATEWAY_NAME = "kalm-https-gateway"
+	HTTP_GATEWAY_NAME  = "kalm-http-gateway"
 )
 
 var (
@@ -147,7 +147,7 @@ func (r *GatewayReconcilerTask) HttpGateway() error {
 			Port: &istioNetworkingV1Beta1.Port{
 				Number:   80,
 				Protocol: "http",
-				Name:     "kapp-http",
+				Name:     "kalm-http",
 			},
 		},
 	}
@@ -218,11 +218,11 @@ func NewGatewayReconciler(mgr ctrl.Manager) *GatewayReconciler {
 	return &GatewayReconciler{NewBaseReconciler(mgr, "HttpRoute")}
 }
 
-type KappGatewayRequestMapper struct {
+type KalmGatewayRequestMapper struct {
 	*BaseReconciler
 }
 
-func (r *KappGatewayRequestMapper) Map(handler.MapObject) []reconcile.Request {
+func (r *KalmGatewayRequestMapper) Map(handler.MapObject) []reconcile.Request {
 	return []reconcile.Request{{NamespacedName: types.NamespacedName{Namespace: KAPP_GATEWAY_NAMESPACE, Name: KAPP_GATEWAY_NAME}}}
 }
 
@@ -232,7 +232,7 @@ func (r *GatewayReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Watches(
 			&source.Kind{Type: &corev1alpha1.HttpsCert{}},
 			&handler.EnqueueRequestsFromMapFunc{
-				ToRequests: &KappGatewayRequestMapper{r.BaseReconciler},
+				ToRequests: &KalmGatewayRequestMapper{r.BaseReconciler},
 			},
 		).
 		Complete(r)

@@ -166,14 +166,14 @@ rules:
   - update
   - watch
 - apiGroups:
-  - core.kapp.dev
+  - core.kalm.dev
   resources:
   - applications
   verbs:
   - get
   - list
 - apiGroups:
-  - core.kapp.dev
+  - core.kalm.dev
   resources:
   - componentpluginbindings
   verbs:
@@ -185,7 +185,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - core.kapp.dev
+  - core.kalm.dev
   resources:
   - componentpluginbindings/status
   verbs:
@@ -193,7 +193,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - core.kapp.dev
+  - core.kalm.dev
   resources:
   - componentplugins
   verbs:
@@ -205,7 +205,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - core.kapp.dev
+  - core.kalm.dev
   resources:
   - componentplugins/status
   verbs:
@@ -213,7 +213,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - core.kapp.dev
+  - core.kalm.dev
   resources:
   - components
   verbs:
@@ -225,7 +225,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - core.kapp.dev
+  - core.kalm.dev
   resources:
   - components/status
   verbs:
@@ -233,7 +233,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - core.kapp.dev
+  - core.kalm.dev
   resources:
   - dockerregistries
   verbs:
@@ -245,7 +245,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - core.kapp.dev
+  - core.kalm.dev
   resources:
   - dockerregistries/status
   verbs:
@@ -253,7 +253,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - core.kapp.dev
+  - core.kalm.dev
   resources:
   - httproutes
   verbs:
@@ -265,7 +265,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - core.kapp.dev
+  - core.kalm.dev
   resources:
   - httproutes/status
   verbs:
@@ -273,7 +273,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - core.kapp.dev
+  - core.kalm.dev
   resources:
   - httpscertissuers
   verbs:
@@ -285,7 +285,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - core.kapp.dev
+  - core.kalm.dev
   resources:
   - httpscertissuers/status
   verbs:
@@ -293,7 +293,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - core.kapp.dev
+  - core.kalm.dev
   resources:
   - httpscerts
   verbs:
@@ -305,7 +305,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - core.kapp.dev
+  - core.kalm.dev
   resources:
   - httpscerts/status
   verbs:
@@ -313,7 +313,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - core.kapp.dev
+  - core.kalm.dev
   resources:
   - protectedendpoints
   verbs:
@@ -325,7 +325,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - core.kapp.dev
+  - core.kalm.dev
   resources:
   - protectedendpoints/status
   verbs:
@@ -333,7 +333,7 @@ rules:
   - patch
   - update
 - apiGroups:
-  - core.kapp.dev
+  - core.kalm.dev
   resources:
   - singlesignonconfigs
   verbs:
@@ -345,7 +345,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - core.kapp.dev
+  - core.kalm.dev
   resources:
   - singlesignonconfigs/status
   verbs:

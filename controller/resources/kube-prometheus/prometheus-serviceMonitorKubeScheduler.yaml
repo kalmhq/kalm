@@ -4,7 +4,7 @@ metadata:
   labels:
     k8s-app: kube-scheduler
   name: kube-scheduler
-  namespace: kapp-monitoring
+  namespace: kalm-monitoring
 spec:
   endpoints:
   - interval: 30s

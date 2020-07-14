@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/kapp-staging/kapp/controller/controllers"
+	"github.com/kalm-staging/kalm/controller/controllers"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -38,10 +38,10 @@ func (builder *Builder) BuildVolumeResponse(pvc coreV1.PersistentVolumeClaim, pv
 	}
 
 	var compName, compNamespace string
-	if v, exist := pv.Labels[controllers.KappLabelComponentKey]; exist {
+	if v, exist := pv.Labels[controllers.KalmLabelComponentKey]; exist {
 		compName = v
 	}
-	if v, exist := pv.Labels[controllers.KappLabelNamespaceKey]; exist {
+	if v, exist := pv.Labels[controllers.KalmLabelNamespaceKey]; exist {
 		compNamespace = v
 	}
 
@@ -75,8 +75,8 @@ type volPair struct {
 	pvc coreV1.PersistentVolumeClaim
 }
 
-// 1. list all kapp pvcs
-// 2. filter all available kappPVCs
+// 1. list all kalm pvcs
+// 2. filter all available kalmPVCs
 // 3. separate into 2 groups: same-ns pvc & diff-ns pvc (pv reclaimType must be Retain)
 // 4. resp: same-ns pvc: pvcName, diff-ns pvc: pvName
 func (builder *Builder) FindAvailableVolsForSimpleWorkload(ns string) ([]Volume, error) {
@@ -215,7 +215,7 @@ func (builder *Builder) FindAvailableVolsForSimpleWorkload(ns string) ([]Volume,
 }
 
 func (builder *Builder) FindAvailableVolsForSts(ns string) ([]Volume, error) {
-	pvcList, err := builder.GetPVCs(client.InNamespace(ns), client.MatchingLabels{controllers.KappLabelManaged: "true"})
+	pvcList, err := builder.GetPVCs(client.InNamespace(ns), client.MatchingLabels{controllers.KalmLabelManaged: "true"})
 	if client.IgnoreNotFound(err) != nil {
 		return nil, err
 	}
@@ -335,10 +335,10 @@ func GetCapacityOfPV(pv coreV1.PersistentVolume) string {
 }
 
 func GetNameAndNsOfPVOwnerComponent(pv coreV1.PersistentVolume) (compName, compNamespace string) {
-	if v, exist := pv.Labels[controllers.KappLabelComponentKey]; exist {
+	if v, exist := pv.Labels[controllers.KalmLabelComponentKey]; exist {
 		compName = v
 	}
-	if v, exist := pv.Labels[controllers.KappLabelNamespaceKey]; exist {
+	if v, exist := pv.Labels[controllers.KalmLabelNamespaceKey]; exist {
 		compNamespace = v
 	}
 
@@ -346,10 +346,10 @@ func GetNameAndNsOfPVOwnerComponent(pv coreV1.PersistentVolume) (compName, compN
 }
 
 func GetComponentNameAndNs(metaObj metav1.Object) (compName, compNamespace string) {
-	if v, exist := metaObj.GetLabels()[controllers.KappLabelComponentKey]; exist {
+	if v, exist := metaObj.GetLabels()[controllers.KalmLabelComponentKey]; exist {
 		compName = v
 	}
-	if v, exist := metaObj.GetLabels()[controllers.KappLabelNamespaceKey]; exist {
+	if v, exist := metaObj.GetLabels()[controllers.KalmLabelNamespaceKey]; exist {
 		compNamespace = v
 	}
 

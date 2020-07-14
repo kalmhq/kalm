@@ -4,7 +4,7 @@ metadata:
   labels:
     name: prometheus-adapter
   name: prometheus-adapter
-  namespace: kapp-monitoring
+  namespace: kalm-monitoring
 spec:
   ports:
   - name: https

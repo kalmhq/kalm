@@ -51,7 +51,7 @@ kubectl get pods -n istio-operator
 launch istio in our cluster
 
 ```bash
-# go to kapp root dir, install istio config. The operator will intall istio components for us.
+# go to kalm root dir, install istio config. The operator will intall istio components for us.
 kubectl apply -f resources/istiocontrolplane.yaml
 
 # check istio components status
@@ -86,13 +86,13 @@ before you start, you need to apply a token for authorization. If you already ha
 
 You should login with this token on login page.
 
-6. test kapp hipster
+6. test kalm hipster
 
 ```bash
 
 kubectl apply -f controller/config/samples/core_v1alpha1_application-hipster.yaml
 
-kubectl port-forward $(kubectl get pod -n kapp-hipster -l kapp-component=frontend  -o jsonpath='{.items[0].metadata.name}') -n kapp-hipster 8080:8080
+kubectl port-forward $(kubectl get pod -n kalm-hipster -l kalm-component=frontend  -o jsonpath='{.items[0].metadata.name}') -n kalm-hipster 8080:8080
 
 view http://localhost:8080
 ```

@@ -5,7 +5,7 @@ metadata:
   name: dependency-editor-role
 rules:
 - apiGroups:
-  - core.kapp.dev
+  - core.kalm.dev
   resources:
   - dependencies
   verbs:
@@ -17,7 +17,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - core.kapp.dev
+  - core.kalm.dev
   resources:
   - dependencies/status
   verbs:

@@ -3,7 +3,7 @@ kind: Namespace
 metadata:
   labels:
     control-plane: controller
-    kapp-enabled: "true"
+    kalm-enabled: "true"
   name: system
 ---
 apiVersion: apps/v1
@@ -30,7 +30,7 @@ spec:
             - /manager
           args:
             - --enable-leader-election
-          image: kappstaging/controller:latest
+          image: kalmstaging/controller:latest
           imagePullPolicy: Always
           name: manager
           env:

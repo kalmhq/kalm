@@ -19,7 +19,7 @@ type IstioOperator struct {
 
 // +kubebuilder:object:root=true
 
-// KappOperatorConfigList contains a list of KappOperatorConfig
+// KalmOperatorConfigList contains a list of KalmOperatorConfig
 type IstioOperatorList struct {
 	metaV1.TypeMeta `json:",inline"`
 	metaV1.ListMeta `json:"metadata,omitempty"`

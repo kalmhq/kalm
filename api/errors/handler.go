@@ -1,7 +1,7 @@
 package errors
 
 import (
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -29,7 +29,7 @@ func CustomHTTPErrorHandler(err error, c echo.Context) {
 		return
 	}
 
-	if validateErrList, ok := err.(v1alpha1.KappValidateErrorList); ok {
+	if validateErrList, ok := err.(v1alpha1.KalmValidateErrorList); ok {
 		code := http.StatusBadRequest
 
 		var errs []ErrDetail

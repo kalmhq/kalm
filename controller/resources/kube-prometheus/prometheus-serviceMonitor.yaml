@@ -4,7 +4,7 @@ metadata:
   labels:
     k8s-app: prometheus
   name: prometheus
-  namespace: kapp-monitoring
+  namespace: kalm-monitoring
 spec:
   endpoints:
   - interval: 30s

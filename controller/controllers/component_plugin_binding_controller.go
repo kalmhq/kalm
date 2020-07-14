@@ -17,7 +17,7 @@ package controllers
 
 import (
 	"context"
-	corev1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	corev1alpha1 "github.com/kalm-staging/kalm/controller/api/v1alpha1"
 	"github.com/xeipuuv/gojsonschema"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -30,8 +30,8 @@ type ComponentPluginBindingReconciler struct {
 	*BaseReconciler
 }
 
-// +kubebuilder:rbac:groups=core.kapp.dev,resources=componentpluginbindings,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=core.kapp.dev,resources=componentpluginbindings/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=core.kalm.dev,resources=componentpluginbindings,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core.kalm.dev,resources=componentpluginbindings/status,verbs=get;update;patch
 
 func (r *ComponentPluginBindingReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	task := &ComponentPluginBindingReconcilerTask{
@@ -63,10 +63,10 @@ func (r *ComponentPluginBindingReconcilerTask) Run(req ctrl.Request) error {
 		r.binding.ObjectMeta.Labels = make(map[string]string)
 	}
 
-	r.binding.ObjectMeta.Labels["kapp-plugin"] = r.binding.Spec.PluginName
+	r.binding.ObjectMeta.Labels["kalm-plugin"] = r.binding.Spec.PluginName
 
 	if r.binding.Spec.ComponentName != "" {
-		r.binding.ObjectMeta.Labels[KappLabelComponentKey] = r.binding.Spec.ComponentName
+		r.binding.ObjectMeta.Labels[KalmLabelComponentKey] = r.binding.Spec.ComponentName
 	}
 
 	var component corev1alpha1.Component

@@ -1,0 +1,85 @@
+#---
+#apiVersion: v1
+#kind: Secret
+#metadata:
+#  name: cloudflare-api-token-secret
+#  namespace: cert-manager
+#type: Opaque
+#stringData:
+#  api-token: <---hide--->
+#---
+#apiVersion: cert-manager.io/v1alpha2
+#kind: ClusterIssuer
+#metadata:
+#  name: letsencrypt
+#spec:
+#  acme:
+#    email: <---hide--->
+#    server: https://acme-v02.api.letsencrypt.org/directory
+#    privateKeySecretRef:
+#      name: letsencrypt-account
+#    solvers:
+#      - dns01:
+#          cloudflare:
+#            email: <---hide--->
+#            apiTokenSecretRef:
+#              name: cloudflare-api-token-secret
+#              key: api-token
+#---
+#apiVersion: core.kalm.dev/v1alpha1
+#kind: HttpsCert
+#metadata:
+#  name: https-cert-wildcard
+#spec:
+#  httpsCertIssuer: https-cert-issuer-hello
+#  domains:
+#    - "*.kalm.live"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kalm-system
+  labels:
+    kalm-enabled: "true"
+---
+apiVersion: core.kalm.dev/v1alpha1
+kind: Component
+metadata:
+  name: kalm-dashboard
+  namespace: kalm-system
+spec:
+  image: kalmstaging/dashboard:latest
+  workloadType: server
+  command: ./kalm-api-server
+  ports:
+    - name: http
+      containerPort: 3001
+      servicePort: 80
+---
+apiVersion: core.kalm.dev/v1alpha1
+kind: HttpRoute
+metadata:
+  name: v1-only-route
+  namespace: kalm-system
+spec:
+  hosts:
+    - dashboard.kalm.live
+  methods:
+    - GET
+    - POST
+    - PUT
+    - PATCH
+    - DELETE
+    - OPTIONS
+    - CONNECT
+    - TRACE
+    - HEAD
+  schemes:
+    - http
+    - https
+  paths:
+    - /
+  destinations:
+    - host: kalm-dashboard
+      weight: 1
+  stripPath: true

@@ -11,12 +11,12 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /mutate-core-kapp-dev-v1alpha1-component
+      path: /mutate-core-kalm-dev-v1alpha1-component
   failurePolicy: Fail
   name: mcomponent.kb.io
   rules:
   - apiGroups:
-    - core.kapp.dev
+    - core.kalm.dev
     apiVersions:
     - v1alpha1
     operations:
@@ -37,12 +37,12 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /validate-core-kapp-dev-v1alpha1-component
+      path: /validate-core-kalm-dev-v1alpha1-component
   failurePolicy: Fail
   name: vcomponent.kb.io
   rules:
   - apiGroups:
-    - core.kapp.dev
+    - core.kalm.dev
     apiVersions:
     - v1alpha1
     operations:

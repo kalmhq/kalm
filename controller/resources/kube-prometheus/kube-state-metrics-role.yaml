@@ -2,7 +2,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: kube-state-metrics
-  namespace: kapp-monitoring
+  namespace: kalm-monitoring
 rules:
 - apiGroups:
   - ""

@@ -12,9 +12,9 @@ import (
 	"strings"
 )
 
-type KappValidateErrorList []KappValidateError
+type KalmValidateErrorList []KalmValidateError
 
-func (k KappValidateErrorList) Error() string {
+func (k KalmValidateErrorList) Error() string {
 	var errs []string
 	for _, one := range k {
 		errs = append(errs, one.Error())
@@ -23,12 +23,12 @@ func (k KappValidateErrorList) Error() string {
 	return strings.Join(errs, ";")
 }
 
-type KappValidateError struct {
+type KalmValidateError struct {
 	Err  string
 	Path string
 }
 
-func (k KappValidateError) Error() string {
+func (k KalmValidateError) Error() string {
 	return fmt.Sprintf("err: %s, path: %s", k.Err, k.Path)
 }
 

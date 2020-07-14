@@ -1,16 +1,16 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: kapp-vols
+  name: kalm-vols
   labels:
     istio-injection: enabled
-    kapp-enabled: "true"
+    kalm-enabled: "true"
 ---
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: Component
 metadata:
     name: hi-sts
-    namespace: kapp-vols
+    namespace: kalm-vols
 spec:
     image: strm/helloworld-http:latest
     workloadType: statefulset
@@ -19,7 +19,7 @@ spec:
       - path: /data
         size: 1Mi
         type: pvc
-        storageClassName: kapp-standard
+        storageClassName: kalm-standard
         pvc: my-pvc
       - path: /tmp
         size: 2Mi

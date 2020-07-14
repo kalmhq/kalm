@@ -5,7 +5,7 @@ metadata:
   name: httpscertissuer-viewer-role
 rules:
 - apiGroups:
-  - core.kapp.dev
+  - core.kalm.dev
   resources:
   - httpscertissuers
   verbs:
@@ -13,7 +13,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - core.kapp.dev
+  - core.kalm.dev
   resources:
   - httpscertissuers/status
   verbs:

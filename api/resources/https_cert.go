@@ -3,8 +3,8 @@ package resources
 import (
 	"crypto/x509"
 	"fmt"
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
-	"github.com/kapp-staging/kapp/controller/controllers"
+	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
+	"github.com/kalm-staging/kalm/controller/controllers"
 	coreV1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strings"
@@ -277,7 +277,7 @@ func (builder *Builder) DeleteHttpsCert(name string) error {
 const nsIstioSystem = "istio-system"
 
 func getSecNameForSelfManagedCert(cert HttpsCert) string {
-	certSecName := "kapp-self-managed-" + cert.Name
+	certSecName := "kalm-self-managed-" + cert.Name
 	return certSecName
 }
 

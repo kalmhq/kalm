@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/joho/godotenv"
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 	appsV1 "k8s.io/api/apps/v1"
 	"k8s.io/api/core/v1"
@@ -62,7 +62,7 @@ func (suite *DockerRegistryControllerSuite) SetupTest() {
 	secret := v1.Secret{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      GetRegistryAuthenticationName(name),
-			Namespace: "kapp-system",
+			Namespace: "kalm-system",
 		},
 		Data: map[string][]byte{
 			"username": []byte(os.Getenv("KAPP_TEST_DOCKER_REGISTRY_USERNAME")),
@@ -78,7 +78,7 @@ func (suite *DockerRegistryControllerSuite) SetupTest() {
 	suite.registry = registry
 	suite.secret = &secret
 
-	ns := suite.SetupKappEnabledNs()
+	ns := suite.SetupKalmEnabledNs()
 	suite.namespace = &ns
 }
 

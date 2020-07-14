@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"fmt"
-	"github.com/kapp-staging/kapp/controller/lib/files"
+	"github.com/kalm-staging/kalm/controller/lib/files"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -32,7 +32,7 @@ func (r *ComponentReconcilerTask) reconcileDirectConfigs() error {
 	var myFiles []*files.File
 	for i, directConfig := range componentSpec.DirectConfigs {
 		myFiles = append(myFiles, &files.File{
-			Path:    fmt.Sprintf("/kapp-direct-configs/%s/%d", r.component.Name, i),
+			Path:    fmt.Sprintf("/kalm-direct-configs/%s/%d", r.component.Name, i),
 			IsDir:   false,
 			Content: directConfig.Content,
 		})
@@ -55,11 +55,11 @@ func (r *ComponentReconcilerTask) reconcileDirectConfigs() error {
 
 		err = r.Create(r.ctx, &cm)
 		if err != nil {
-			r.Log.Error(err, "create kapp config map error")
+			r.Log.Error(err, "create kalm config map error")
 			return err
 		}
 	} else if err != nil {
-		r.Log.Error(err, "get kapp config map error")
+		r.Log.Error(err, "get kalm config map error")
 		return err
 	} else {
 
@@ -70,7 +70,7 @@ func (r *ComponentReconcilerTask) reconcileDirectConfigs() error {
 
 		err = r.Update(r.ctx, &cm)
 		if err != nil {
-			r.Log.Error(err, "update kapp config map error")
+			r.Log.Error(err, "update kalm config map error")
 			return err
 		}
 	}
@@ -79,5 +79,5 @@ func (r *ComponentReconcilerTask) reconcileDirectConfigs() error {
 }
 
 func getPathOfDirectConfig(componentName string, idx int) string {
-	return fmt.Sprintf("/kapp-direct-configs/%s/%d", componentName, idx)
+	return fmt.Sprintf("/kalm-direct-configs/%s/%d", componentName, idx)
 }

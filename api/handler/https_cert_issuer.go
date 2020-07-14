@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"github.com/kapp-staging/kapp/api/resources"
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
-	"github.com/kapp-staging/kapp/controller/controllers"
+	"github.com/kalm-staging/kalm/api/resources"
+	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
+	"github.com/kalm-staging/kalm/controller/controllers"
 	"github.com/labstack/echo/v4"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

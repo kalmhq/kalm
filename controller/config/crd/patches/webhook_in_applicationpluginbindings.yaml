@@ -3,7 +3,7 @@
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  name: applicationpluginbindings.core.kapp.dev
+  name: applicationpluginbindings.core.kalm.dev
 spec:
   conversion:
     strategy: Webhook

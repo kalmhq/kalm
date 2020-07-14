@@ -2,8 +2,8 @@ package handler
 
 import (
 	"fmt"
-	"github.com/kapp-staging/kapp/api/errors"
-	"github.com/kapp-staging/kapp/api/resources"
+	"github.com/kalm-staging/kalm/api/errors"
+	"github.com/kalm-staging/kalm/api/resources"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 	rbacV1 "k8s.io/api/rbac/v1"
@@ -27,7 +27,7 @@ const (
 type RoleBindingsRequestBody struct {
 	Name      string `json:"name" validate:"required"`
 	Kind      string `json:"kind" validate:"required,oneof=User Group ServiceAccount"`
-	Namespace string `json:"namespace" validate:"required,startswith=kapp-"`
+	Namespace string `json:"namespace" validate:"required,startswith=kalm-"`
 	Roles     []Role `json:"roles,omitempty" validate:"gt=0,dive,oneof=reader writer"`
 }
 
@@ -132,10 +132,10 @@ func (h *ApiHandler) handleCreateRoleBinding(c echo.Context) (err error) {
 		}
 
 		if body.Kind == "ServiceAccount" {
-			subject.Namespace = "kapp-system"
+			subject.Namespace = "kalm-system"
 			subject.APIGroup = ""
 
-			err = resources.CreateKappServiceAccount(k8sClient, subject.Name)
+			err = resources.CreateKalmServiceAccount(k8sClient, subject.Name)
 			if err != nil && !errors.IsAlreadyExists(err) {
 				return err
 			}

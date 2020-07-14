@@ -94,7 +94,7 @@ rules:
   verbs:
   - '*'
 - apiGroups:
-  - core.kapp.dev
+  - core.kalm.dev
   resources:
   - '*'
   verbs:
@@ -118,9 +118,9 @@ rules:
   verbs:
   - '*'
 - apiGroups:
-  - install.kapp.dev
+  - install.kalm.dev
   resources:
-  - kappoperatorconfigs
+  - kalmoperatorconfigs
   verbs:
   - create
   - delete
@@ -130,9 +130,9 @@ rules:
   - update
   - watch
 - apiGroups:
-  - install.kapp.dev
+  - install.kalm.dev
   resources:
-  - kappoperatorconfigs/status
+  - kalmoperatorconfigs/status
   verbs:
   - get
   - patch

@@ -4,7 +4,7 @@ metadata:
   labels:
     alertmanager: main
   name: main
-  namespace: kapp-monitoring
+  namespace: kalm-monitoring
 spec:
   baseImage: quay.io/prometheus/alertmanager
   nodeSelector:

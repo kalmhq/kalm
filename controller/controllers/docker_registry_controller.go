@@ -19,8 +19,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/kapp-staging/kapp/controller/registry"
-	"github.com/kapp-staging/kapp/controller/utils"
+	"github.com/kalm-staging/kalm/controller/registry"
+	"github.com/kalm-staging/kalm/controller/utils"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -34,7 +34,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 	"strings"
 
-	corev1alpha1 "github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	corev1alpha1 "github.com/kalm-staging/kalm/controller/api/v1alpha1"
 )
 
 // DockerRegistryReconciler reconciles a DockerRegistry object
@@ -113,7 +113,7 @@ func (r *DockerRegistryReconcileTask) UpdateStatus() (err error) {
 			message = fmt.Sprintf(
 				"Registry Secret \"%s\" is not found in %s namespace. ",
 				GetRegistryAuthenticationName(r.registry.Name),
-				"kapp-system",
+				"kalm-system",
 			)
 		}
 
@@ -166,7 +166,7 @@ func (r *DockerRegistryReconcileTask) UpdateStatus() (err error) {
 
 func (r *DockerRegistryReconcileTask) DeleteSecrets() (err error) {
 	var secretList v1.SecretList
-	if err := r.Reader.List(r.ctx, &secretList, client.MatchingLabels{"kapp-docker-registry": r.registry.Name}); err != nil {
+	if err := r.Reader.List(r.ctx, &secretList, client.MatchingLabels{"kalm-docker-registry": r.registry.Name}); err != nil {
 		r.WarningEvent(err, "get secrets error when deleting docker registry.")
 		return err
 	}
@@ -201,7 +201,7 @@ func (r *DockerRegistryReconcileTask) DistributeSecrets() (err error) {
 			continue
 		}
 
-		if v, exist := ns.Labels[KappEnableLabelName]; !exist || v != "true" {
+		if v, exist := ns.Labels[KalmEnableLabelName]; !exist || v != "true" {
 			//todo clean secret if exist
 			continue
 		}
@@ -230,8 +230,8 @@ func (r *DockerRegistryReconcileTask) DistributeSecrets() (err error) {
 			secret.Labels = make(map[string]string)
 		}
 
-		secret.Labels["kapp-docker-registry"] = r.registry.Name
-		secret.Labels["kapp-docker-registry-image-pull-secret"] = "true"
+		secret.Labels["kalm-docker-registry"] = r.registry.Name
+		secret.Labels["kalm-docker-registry-image-pull-secret"] = "true"
 
 		data := map[string]struct {
 			Username string `json:"username"`
@@ -285,13 +285,13 @@ func GetRegistryNameFromAuthenticationName(secretName string) string {
 }
 
 func IsRegistryAuthenticationSecret(secret *v1.Secret) bool {
-	return secret.Namespace == "kapp-system" && strings.HasSuffix(secret.Name, "-authentication")
+	return secret.Namespace == "kalm-system" && strings.HasSuffix(secret.Name, "-authentication")
 }
 
 func (r *DockerRegistryReconcileTask) LoadResources(req ctrl.Request) (err error) {
 	var secret v1.Secret
 	err = r.Reader.Get(r.ctx, types.NamespacedName{
-		Namespace: "kapp-system",
+		Namespace: "kalm-system",
 		Name:      GetRegistryAuthenticationName(req.Name),
 	}, &secret)
 
@@ -305,7 +305,7 @@ func (r *DockerRegistryReconcileTask) LoadResources(req ctrl.Request) (err error
 		secretCopy.Labels = make(map[string]string)
 	}
 
-	secretCopy.Labels["kapp-docker-registry-authentication"] = "true"
+	secretCopy.Labels["kalm-docker-registry-authentication"] = "true"
 
 	if err := ctrl.SetControllerReference(r.registry, secretCopy, r.Scheme); err != nil {
 		r.WarningEvent(err, "unable to set owner for secret")
@@ -356,9 +356,9 @@ func (r *DockerRegistryReconcileTask) SetupAttributes(req ctrl.Request) (err err
 	return
 }
 
-// +kubebuilder:rbac:groups=core.kapp.dev,resources=dockerregistries,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=core.kapp.dev,resources=dockerregistries/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=core.kapp.dev,resources=applications,verbs=get;list
+// +kubebuilder:rbac:groups=core.kalm.dev,resources=dockerregistries,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core.kalm.dev,resources=dockerregistries/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=core.kalm.dev,resources=applications,verbs=get;list
 // +kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="",resources=events,verbs=create;patch
 

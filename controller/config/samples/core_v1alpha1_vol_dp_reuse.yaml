@@ -1,16 +1,16 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: kapp-vols
+  name: kalm-vols
   labels:
     istio-injection: enabled
-    kapp-enabled: "true"
+    kalm-enabled: "true"
 ---
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: Component
 metadata:
   name: hello-world
-  namespace: kapp-vols
+  namespace: kalm-vols
 spec:
   image: strm/helloworld-http:latest
   ports:
@@ -21,6 +21,6 @@ spec:
     - path: /tmp/foobar
       size: 1Mi
       type: pvc
-      storageClassName: kapp-standard
+      storageClassName: kalm-standard
       pvToMatch: pvc-a9849600-24bc-4f0e-8bb1-c023e62c7bdd
       pvc: pvc-data

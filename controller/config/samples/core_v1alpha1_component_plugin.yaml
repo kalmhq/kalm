@@ -1,8 +1,8 @@
 
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: ComponentPlugin
 metadata:
-  name: kapp-static-sacle-double
+  name: kalm-static-sacle-double
 spec:
   src: |
     function BeforeDeploymentSave(deployment) {
@@ -12,10 +12,10 @@ spec:
   availableWorkloadType:
     - server
 ---
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: ComponentPlugin
 metadata:
-  name: kapp-scale-name-with-suffix-tiple
+  name: kalm-scale-name-with-suffix-tiple
 spec:
   src: |
     function ComponentFilter(component) {
@@ -29,10 +29,10 @@ spec:
   availableWorkloadType:
     - server
 ---
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: ComponentPlugin
 metadata:
-  name: kapp-test-default-embedded-functions
+  name: kalm-test-default-embedded-functions
 spec:
   src: |
     // you will see logs in controller consoles
@@ -42,10 +42,10 @@ spec:
       return deployment;
     }
 ---
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: ComponentPlugin
 metadata:
-  name: kapp-customize-probes
+  name: kalm-customize-probes
 spec:
   src: |
     function addProbesForContainer(container) {
@@ -78,33 +78,33 @@ kind: Namespace
 metadata:
   name: test
   labels:
-    kapp-enabled: "true"
+    kalm-enabled: "true"
 ---
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: ComponentPluginBinding
 metadata:
-  name:  test-kapp-scale-name-with-suffix-tiple
+  name:  test-kalm-scale-name-with-suffix-tiple
   namespace: test
 spec:
-  pluginName: kapp-scale-name-with-suffix-tiple
+  pluginName: kalm-scale-name-with-suffix-tiple
 ---
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: ComponentPluginBinding
 metadata:
-  name:  test-kapp-customize-probes
+  name:  test-kalm-customize-probes
   namespace: test
 spec:
-  pluginName: kapp-customize-probes
+  pluginName: kalm-customize-probes
 ---
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: ComponentPluginBinding
 metadata:
-  name:  test-kapp-test-default-embedded-functions
+  name:  test-kalm-test-default-embedded-functions
   namespace: test
 spec:
-  pluginName: kapp-test-default-embedded-functions
+  pluginName: kalm-test-default-embedded-functions
 ---
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: Component
 metadata:
   name: nginx-double
@@ -113,16 +113,16 @@ spec:
     image: nginx:alpine
     workloadType: server
 ---
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: ComponentPluginBinding
 metadata:
-  name:  nginx-double-kapp-static-sacle-double
+  name:  nginx-double-kalm-static-sacle-double
   namespace: test
 spec:
-  pluginName: kapp-static-sacle-double
+  pluginName: kalm-static-sacle-double
   componentName: nginx-double
 ---
-apiVersion: core.kapp.dev/v1alpha1
+apiVersion: core.kalm.dev/v1alpha1
 kind: Component
 metadata:
   name: nginx-tiple

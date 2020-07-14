@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
 	"github.com/sirupsen/logrus"
 	appV1 "k8s.io/api/apps/v1"
 	coreV1 "k8s.io/api/core/v1"
@@ -226,7 +226,7 @@ func matchLabel(key, value string) metaV1.ListOptions {
 }
 
 func labelsBelongsToApplication(name string) metaV1.ListOptions {
-	return matchLabel("kapp-application", name)
+	return matchLabel("kalm-application", name)
 }
 
 type Builder struct {
@@ -237,7 +237,7 @@ type Builder struct {
 	Config    *rest.Config
 }
 
-func (builder *Builder) KappV1Alpha1() (*rest.RESTClient, error) {
+func (builder *Builder) KalmV1Alpha1() (*rest.RESTClient, error) {
 	// copy a cfg
 	cfg := rest.CopyConfig(builder.Config)
 	cfg.ContentConfig.GroupVersion = &v1alpha1.GroupVersion

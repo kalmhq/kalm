@@ -3,8 +3,8 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/kapp-staging/kapp/api/resources"
-	"github.com/kapp-staging/kapp/controller/api/v1alpha1"
+	"github.com/kalm-staging/kalm/api/resources"
+	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -22,7 +22,7 @@ func TestComponentTestSuite(t *testing.T) {
 	suite.Run(t, new(ComponentTestSuite))
 }
 
-var nsName = "kapp-test"
+var nsName = "kalm-test"
 
 func (suite *ComponentTestSuite) SetupSuite() {
 	suite.WithControllerTestSuite.SetupSuite()
@@ -50,7 +50,7 @@ func (suite *ComponentTestSuite) TeardownSuite() {
 }
 
 //func (suite *ComponentTestSuite) TestGetEmptyComponentList() {
-//	rec := suite.NewRequest(http.MethodGet, "/v1alpha1/applications/testKapp/components", nil)
+//	rec := suite.NewRequest(http.MethodGet, "/v1alpha1/applications/testKalm/components", nil)
 //
 //	var res []resources.Component
 //	rec.BodyAsJSON(&res)
@@ -60,7 +60,7 @@ func (suite *ComponentTestSuite) TeardownSuite() {
 
 func (suite *ComponentTestSuite) TestCreateComponentWithPVCAsVolume() {
 
-	sc := "kapp-standard"
+	sc := "kalm-standard"
 	reqComp := resources.Component{
 		Name: "foobar-create-new-pv",
 		ComponentSpec: v1alpha1.ComponentSpec{
@@ -104,7 +104,7 @@ func (suite *ComponentTestSuite) TestCreateComponentWithPVCAsVolume() {
 }
 
 func (suite *ComponentTestSuite) TestCreateComponentWithReUsingPVCAsVolume() {
-	scName := "kapp-standard"
+	scName := "kalm-standard"
 	pvNameToReuse := "exist-available-pv"
 
 	// prepare Volume & scName

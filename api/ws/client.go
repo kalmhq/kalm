@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/gorilla/websocket"
-	"github.com/kapp-staging/kapp/api/client"
+	"github.com/kalm-staging/kalm/api/client"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
