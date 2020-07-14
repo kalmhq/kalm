@@ -18,7 +18,7 @@ func (h *ApiHandler) findOrCreateKalmConfigMap(c echo.Context) (*coreV1.ConfigMa
 	k8sClient := getK8sClient(c)
 	namespace := c.Param("namespace")
 
-	configMap, err := k8sClient.CoreV1().ConfigMaps(namespace).Get(files.KAPP_CONFIG_MAP_NAME, metaV1.GetOptions{TypeMeta: metaV1.TypeMeta{
+	configMap, err := k8sClient.CoreV1().ConfigMaps(namespace).Get(files.KALM_CONFIG_MAP_NAME, metaV1.GetOptions{TypeMeta: metaV1.TypeMeta{
 		Kind:       "ConfigMap",
 		APIVersion: "coreV1",
 	}})
@@ -26,11 +26,11 @@ func (h *ApiHandler) findOrCreateKalmConfigMap(c echo.Context) (*coreV1.ConfigMa
 	if errors.IsNotFound(err) {
 		configMap, err = k8sClient.CoreV1().ConfigMaps(namespace).Create(&coreV1.ConfigMap{
 			ObjectMeta: metaV1.ObjectMeta{
-				Name:      files.KAPP_CONFIG_MAP_NAME,
+				Name:      files.KALM_CONFIG_MAP_NAME,
 				Namespace: namespace,
 			},
 			Data: map[string]string{
-				files.KAPP_SLASH_REPLACER: files.KAPP_PERSISTENT_DIR_PLACEHOLDER,
+				files.KALM_SLASH_REPLACER: files.KALM_PERSISTENT_DIR_PLACEHOLDER,
 			},
 		})
 
@@ -39,7 +39,7 @@ func (h *ApiHandler) findOrCreateKalmConfigMap(c echo.Context) (*coreV1.ConfigMa
 			return nil, err
 		}
 
-	} else if _, ok := configMap.Data[files.KAPP_SLASH_REPLACER]; !ok {
+	} else if _, ok := configMap.Data[files.KALM_SLASH_REPLACER]; !ok {
 		if err := files.AddFile(configMap, &files.File{
 			Path:    "/",
 			IsDir:   true,

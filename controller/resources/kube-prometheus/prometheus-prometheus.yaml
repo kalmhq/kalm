@@ -43,6 +43,6 @@ spec:
 #       - ReadWriteOnce
 #       resources:
 #         requests:
-#           storage: KAPP-PROMETHEUS-STORAGE-PLACEHOLDER
+#           storage: KALM-PROMETHEUS-STORAGE-PLACEHOLDER
 #       storageClassName: standard
   version: v2.11.0

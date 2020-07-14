@@ -82,7 +82,7 @@ func buildNamespaceResMessage(c *Client, action string, objWatched interface{}) 
 		return nil, errors.New("convert watch obj to Namespace failed")
 	}
 
-	if namespace.Name == resources.KAPP_SYSTEM_NAMESPACE {
+	if namespace.Name == resources.KALM_SYSTEM_NAMESPACE {
 		return &ResMessage{}, nil
 	}
 

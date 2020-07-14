@@ -31,7 +31,7 @@ func (suite *ComponentControllerSuite) TearDownSuite() {
 }
 
 func (suite *ComponentControllerSuite) SetupTest() {
-	ns := suite.SetupKalmEnabledNs()
+	ns := suite.SetupKalmEnabledNs("")
 	suite.ns = &ns
 	suite.ctx = context.Background()
 }

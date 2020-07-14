@@ -206,7 +206,7 @@ func (builder *Builder) BuildApplicationListResponse(namespaceList coreV1.Namesp
 	for i := range namespaceList.Items {
 		ns := namespaceList.Items[i]
 
-		if ns.Name == KAPP_SYSTEM_NAMESPACE {
+		if ns.Name == KALM_SYSTEM_NAMESPACE {
 			continue
 		}
 
