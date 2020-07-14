@@ -246,6 +246,8 @@ func (suite *BasicSuite) SetupSuite() {
 	suite.Nil(NewDockerRegistryReconciler(mgr).SetupWithManager(mgr))
 	suite.Nil(NewHttpRouteReconciler(mgr).SetupWithManager(mgr))
 	suite.Nil(NewGatewayReconciler(mgr).SetupWithManager(mgr))
+	suite.Nil(NewSingleSignOnConfigReconciler(mgr).SetupWithManager(mgr))
+	suite.Nil(NewProtectedEndpointReconciler(mgr).SetupWithManager(mgr))
 
 	mgrStopChannel := make(chan struct{})
 	suite.MgrStopChannel = mgrStopChannel

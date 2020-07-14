@@ -19,7 +19,6 @@ import (
 	"context"
 	"fmt"
 	pbTypes "github.com/gogo/protobuf/types"
-	"github.com/influxdata/influxdb/pkg/slices"
 	istioNetworkingV1Beta1 "istio.io/api/networking/v1beta1"
 	"istio.io/client-go/pkg/apis/networking/v1beta1"
 	"k8s.io/apimachinery/pkg/types"
@@ -300,7 +299,7 @@ func certCanBeUsedOnDomain(domains []string, host string) bool {
 			continue
 		}
 
-		if slices.CompareSlice(slices.StringsToBytes(domainParts[1:]...), slices.StringsToBytes(hostParts[1:]...)) == 0 {
+		if strings.Join(domainParts[1:], ".") == strings.Join(hostParts[1:], ".") {
 			return true
 		}
 	}
