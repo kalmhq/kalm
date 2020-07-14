@@ -846,7 +846,7 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 	template.ObjectMeta.Annotations["sidecar.istio.io/proxyMemoryLimit"] = "50Mi"
 
 	if component.Spec.EnableResourcesRequests {
-		template.ObjectMeta.Annotations["sidecar.istio.io/proxyCPU"] = "100m"
+		template.ObjectMeta.Annotations["sidecar.istio.io/proxyCPU"] = "10m"
 		template.ObjectMeta.Annotations["sidecar.istio.io/proxyMemory"] = "50Mi"
 	}
 
