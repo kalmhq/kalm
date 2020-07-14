@@ -16,11 +16,12 @@ import {
 import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { RenderSelectField } from "../Basic/select";
-import { KRenderTextField } from "../Basic/textfield";
+import { KRenderTextField, RenderComplexValueTextField } from "../Basic/textfield";
 import { ValidatorRequired, ValidatorVolumeSize } from "../validator";
 import { KTooltip } from "forms/Application/KTooltip";
 import HelpIcon from "@material-ui/icons/Help";
 import { grey } from "@material-ui/core/colors";
+import { sizeStringToGi } from "utils/sizeConv";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -171,23 +172,35 @@ class RenderVolumes extends React.PureComponent<Props> {
       );
       fieldComponents.push(
         <Field
-          component={KRenderTextField}
+          component={RenderComplexValueTextField}
           name={`${member}.size`}
           label="Size"
           margin
           validate={[ValidatorRequired, ValidatorVolumeSize]}
           endAdornment={this.getSizeEndAdornment()}
+          formValueToEditValue={(value: any) => {
+            return !value ? "" : sizeStringToGi(value);
+          }}
+          editValueToFormValue={(value: any) => {
+            return !value ? "" : value + "Gi";
+          }}
         />,
       );
     } else {
       fieldComponents.push(
         <Field
-          component={KRenderTextField}
+          component={RenderComplexValueTextField}
           name={`${member}.size`}
           label="Size"
           margin
           validate={[ValidatorRequired, ValidatorVolumeSize]}
           endAdornment={this.getSizeEndAdornment()}
+          formValueToEditValue={(value: any) => {
+            return !value ? "" : sizeStringToGi(value);
+          }}
+          editValueToFormValue={(value: any) => {
+            return !value ? "" : value + "Gi";
+          }}
         />,
       );
     }
@@ -198,13 +211,16 @@ class RenderVolumes extends React.PureComponent<Props> {
   private getSizeEndAdornment() {
     return (
       <KTooltip title={this.getSizeHelper()}>
-        <HelpIcon fontSize="small" style={{ cursor: "pointer", color: grey[700] }} />
+        <Box display="flex" alignItems="center">
+          <HelpIcon fontSize="small" style={{ cursor: "pointer", color: grey[700] }} />
+          <Box ml={0.5}>Gi</Box>
+        </Box>
       </KTooltip>
     );
   }
 
   private getSizeHelper() {
-    return "The disk size is measured in bytes. You can express size as a plain integer or a fixed-point integer with one of these suffixes: E, P, T, G, M, K, Ei, Pi, Ti, Gi, Mi, Ki.";
+    return "Kalm uses Mi as the base unit of disk. 1 Gi equals 1024 Mi.";
   }
 
   public render() {
