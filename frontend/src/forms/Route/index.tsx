@@ -100,10 +100,21 @@ interface State {
 class RouteFormRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
+    const { form, dispatch } = props;
     this.state = {
       isAdvancedPartUnfolded: false,
       isValidCertificationUnfolded: false,
     };
+    dispatch(
+      arrayPush(
+        form,
+        "destinations",
+        Immutable.Map({
+          host: "",
+          weight: 1,
+        }),
+      ),
+    );
   }
 
   private canCertDomainsSuiteForHost = (domains: Immutable.List<string>, host: string) => {
