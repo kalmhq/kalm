@@ -35,7 +35,7 @@ COPY api/ .
 
 # Build
 RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -installsuffix 'static' -ldflags '-extldflags "-static"' -o kalm-api-server main.go
-RUN GOOS=linux GOARCH=amd64 go build -installsuffix 'static' -ldflags '-extldflags "-static"' -o auth-proxy ./cmd/auth-proxy
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -installsuffix 'static' -ldflags '-extldflags "-static"' -o auth-proxy ./cmd/auth-proxy
 
 # ============== Finial ==============
 FROM alpine

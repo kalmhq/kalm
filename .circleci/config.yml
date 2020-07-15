@@ -195,14 +195,13 @@ workflows:
     jobs:
       - test-dashboard
       - build-dashboard-image:
-          requires:
-            - test-dashboard
           filters:
             branches:
               only: master
       - push-dashboard-image:
           context: kalm-ci
           requires:
+            - test-dashboard
             - build-dashboard-image
           filters:
             branches:
