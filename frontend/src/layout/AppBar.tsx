@@ -1,14 +1,4 @@
-import {
-  AppBar,
-  createStyles,
-  Divider,
-  IconButton,
-  Menu,
-  MenuItem,
-  Theme,
-  Breadcrumbs,
-  Button,
-} from "@material-ui/core";
+import { AppBar, createStyles, Divider, IconButton, Menu, MenuItem, Theme, Breadcrumbs } from "@material-ui/core";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import MenuIcon from "@material-ui/icons/Menu";
 import { WithStyles, withStyles } from "@material-ui/styles";
@@ -197,6 +187,10 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
         return "Metrics";
       case "new":
         return "New";
+      case "edit":
+        return "Edit";
+      case "details":
+        return "Details";
       default:
         return path;
     }
@@ -229,9 +223,9 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
                     );
                   } else if (index + 1 === pathArray.length) {
                     return (
-                      <Button key={index} className={`${classes.barTitle} disabled`}>
+                      <span key={index} className={`${classes.barTitle} disabled`}>
                         {this.renderBreadcrumbContent(path)}
-                      </Button>
+                      </span>
                     );
                   } else {
                     return (
