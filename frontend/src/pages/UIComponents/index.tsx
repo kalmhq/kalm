@@ -5,7 +5,7 @@ import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { BasePage } from "../BasePage";
 import { RowItemBox } from "widgets/Box";
-import { Body, BoldBody, Caption, H1, H2, H3, H4, H5, H6, Subtitle1, Subtitle2 } from "widgets/Label";
+import { Body, Body2, Caption, H1, H2, H3, H4, H5, H6, Subtitle1, Subtitle2 } from "widgets/Label";
 import { CustomizedButton, RaisedButton } from "widgets/Button";
 import { DarkInfoPaper, LightInfoPaper, NormalInfoPaper } from "widgets/Paper";
 import {
@@ -95,9 +95,9 @@ export class UIComponentsRaw extends React.Component<Props, States> {
               <Link>inline-text-link 13px font-weight 400</Link>
             </RowItemBox>
             <RowItemBox long>
-              <BoldBody>BoldBody</BoldBody>
-              <BoldBody>text-body-strong 13px font-weight 500</BoldBody>
-              <BoldBody>label-content-selected 13px font-weight 500</BoldBody>
+              <Body2>BoldBody</Body2>
+              <Body2>text-body-strong 13px font-weight 500</Body2>
+              <Body2>label-content-selected 13px font-weight 500</Body2>
             </RowItemBox>
             <RowItemBox>
               <Typography variant="button">button</Typography>
