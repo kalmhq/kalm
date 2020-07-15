@@ -171,6 +171,8 @@ func getMetricHistories(sql string, args ...interface{}) MetricHistories {
 		return metricHistories
 	}
 
+	metricHistories.IsMetricServerEnabled = true
+
 	defer rows.Close()
 
 	for rows.Next() {
@@ -205,8 +207,6 @@ func getMetricHistories(sql string, args ...interface{}) MetricHistories {
 	if err != nil {
 		return metricHistories
 	}
-
-	metricHistories.IsMetricServerEnabled = true
 
 	return metricHistories
 }

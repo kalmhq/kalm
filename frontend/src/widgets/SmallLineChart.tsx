@@ -96,7 +96,7 @@ class SmallLineChartRaw extends React.PureComponent<Props> {
     const hasData = this.hasData();
     return (
       <div style={{ width, height }} className={`${classes.root} ${hasData ? classes.border : ""}`}>
-        {this.renderText()}
+        {!hasData ? this.renderText() : null}
         {hasData ? (
           <Line
             legend={{ display: false }}

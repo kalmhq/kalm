@@ -64,7 +64,6 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
   private closeDeleteConfirmDialog = () => {
     this.setState({
       isDeleteConfirmDialogOpen: false,
-      deletingItemName: undefined,
     });
   };
 
