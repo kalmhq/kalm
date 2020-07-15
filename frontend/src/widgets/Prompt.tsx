@@ -37,7 +37,7 @@ class PromptRaw extends React.PureComponent<Props> {
       //   false: prevent the change
       //   string: ask to change
 
-      if (process.env.REACT_APP_DEBUG) {
+      if (process.env.REACT_APP_DEBUG === "true") {
         return;
       }
 
@@ -64,7 +64,7 @@ class PromptRaw extends React.PureComponent<Props> {
       return;
     }
 
-    if (process.env.REACT_APP_DEBUG) {
+    if (process.env.REACT_APP_DEBUG === "true") {
       return;
     }
 
