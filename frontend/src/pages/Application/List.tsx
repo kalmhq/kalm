@@ -25,12 +25,13 @@ import { CustomizedButton } from "widgets/Button";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { EmptyList } from "widgets/EmptyList";
 import { FoldButtonGroup } from "widgets/FoldButtonGroup";
-import { DeleteIcon, KalmDetailsIcon } from "widgets/Icon";
+import { DeleteIcon, KalmDetailsIcon, KalmApplicationIcon } from "widgets/Icon";
 import { Body } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { KTable } from "widgets/Table";
 import { BasePage } from "../BasePage";
+import { indigo } from "@material-ui/core/colors";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -375,6 +376,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
 
     return (
       <EmptyList
+        image={<KalmApplicationIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
         title={"You don't have any Applications"}
         content="You don't have any Applications yet, you can create an application at once."
         button={
@@ -386,7 +388,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
               dispatch(push(`/applications/new`));
             }}
           >
-            Create Application
+            Add Application
           </CustomizedButton>
         }
       />

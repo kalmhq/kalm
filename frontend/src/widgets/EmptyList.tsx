@@ -1,11 +1,9 @@
-import React from "react";
 import { Box, createStyles, Paper, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { TDispatchProp } from "types";
+import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
-import { H5, Body2 } from "./Label";
-import { KalmApplicationIcon } from "widgets/Icon";
-import { indigo } from "@material-ui/core/colors";
+import { TDispatchProp } from "types";
+import { Body2, H5 } from "./Label";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -37,13 +35,7 @@ class EmptyListRaw extends React.PureComponent<Props, State> {
       <Paper square variant="outlined">
         <Box p={2}>
           <Box p={2} display="flex" justifyContent="center">
-            {image ? (
-              image
-            ) : (
-              <div style={{ height: 150, width: 150 }}>
-                <KalmApplicationIcon style={{ height: 150, width: 150, color: indigo[200] }} />
-              </div>
-            )}
+            {image ? image : null}
           </Box>
           <Box p={2} display="flex" justifyContent="center">
             <H5>{title}</H5>
