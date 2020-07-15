@@ -378,7 +378,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
       <EmptyList
         image={<KalmApplicationIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
         title={"You don't have any Applications"}
-        content="You don't have any Applications yet, you can create an application at once."
+        content="You don't have any Applications yet, you can create an Application at once."
         button={
           <CustomizedButton
             variant="contained"

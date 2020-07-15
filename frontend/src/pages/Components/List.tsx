@@ -122,8 +122,8 @@ class ComponentRaw extends React.PureComponent<Props, State> {
     return (
       <EmptyList
         image={<KalmComponentsIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
-        title={"You don't have any Applications"}
-        content="You don't have any Applications yet, you can create an application at once."
+        title={"You don't have any Components"}
+        content="You don't have any Components yet, you can create a Component at once."
         button={
           <CustomizedButton
             variant="contained"
@@ -153,12 +153,12 @@ class ComponentRaw extends React.PureComponent<Props, State> {
 
         <Box p={2}>
           {components && components.size > 0
-            ? this.renderEmpty()
-            : components?.map((component, index) => (
+            ? components?.map((component, index) => (
                 <Box pb={1} key={component.get("name")}>
                   <ComponentPanel component={component} application={activeNamespace!} defaultUnfold={index === 0} />
                 </Box>
-              ))}
+              ))
+            : this.renderEmpty()}
         </Box>
       </BasePage>
     );
