@@ -1,14 +1,13 @@
 # generate kalm-install.yaml
 gen-install-file: prepare
 	# operator yaml files
-	kustomize build operator/config/default > kalm-install.yaml
+	kustomize build operator/config/default > kalm-install-operator.yaml
 	# append kalmoperatorconfig to trigger install of:
 	# - cert-manager
 	# - istio
 	# - kalm crd & rbac etc
 	# - kalm controller & dashboard
-	echo "---" >> kalm-install.yaml
-	cat operator/config/samples/install_v1alpha1_kalmoperatorconfig.yaml >> kalm-install.yaml
+	cat operator/config/samples/install_v1alpha1_kalmoperatorconfig.yaml > kalm-install-kalmoperatorconfig.yaml
 
 # delete kalm crd, operator, controller, dashboard
 delete: prepare
