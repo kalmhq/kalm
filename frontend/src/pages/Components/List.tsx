@@ -60,7 +60,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
   }
 
   private closeDeleteConfirmDialog = () => {
-    this.setState(this.defaultState);
+    this.setState({ isDeleteConfirmDialogOpen: false });
   };
 
   private renderDeleteConfirmDialog = () => {
