@@ -188,7 +188,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
 
     return (
       <Link
-        to={`/applications/${applicationDetails.get("name")}/metrics`}
+        to={`/applications/${applicationDetails.get("name")}/components`}
         style={{ color: primaryColor }}
         onClick={() => blinkTopProgressAction()}
       >
