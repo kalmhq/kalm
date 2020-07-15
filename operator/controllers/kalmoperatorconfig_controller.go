@@ -196,7 +196,7 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 			dashboardVersion = config.Spec.DashboardVersion
 		}
 
-		dashboardName := "kalm-dashboard"
+		dashboardName := "kalm"
 		expectedDashboard := corev1alpha1.Component{
 			ObjectMeta: ctrl.ObjectMeta{
 				Namespace: NamespaceKalmSystem,
