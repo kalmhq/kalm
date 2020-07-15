@@ -2,6 +2,8 @@
 FROM golang:1.13 as builder
 
 WORKDIR /workspace
+COPY controller/ /controller
+
 # Copy the Go Modules manifests
 COPY go.mod go.mod
 COPY go.sum go.sum

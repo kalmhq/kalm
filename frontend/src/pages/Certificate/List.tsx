@@ -13,13 +13,16 @@ import { customSearchForImmutable } from "utils/tableSearch";
 import { PendingBadge, SuccessBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
-import { DeleteIcon, EditIcon } from "widgets/Icon";
+import { DeleteIcon, EditIcon, KalmCertificatesIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { Loading } from "widgets/Loading";
 import { KTable } from "widgets/Table";
 import { CertificateDataWrapper, WithCertificatesDataProps } from "./DataWrapper";
 import { addCertificateDialogId, NewModal } from "./New";
 import { formatDate } from "utils";
+import { CustomizedButton } from "widgets/Button";
+import { EmptyList } from "widgets/EmptyList";
+import { indigo } from "@material-ui/core/colors";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -122,7 +125,6 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   private closeDeleteConfirmDialog = () => {
     this.setState({
       isDeleteConfirmDialogOpen: false,
-      deletingCertificate: null,
     });
   };
 
@@ -249,8 +251,33 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     return data;
   };
 
+  private renderEmpty() {
+    const { dispatch } = this.props;
+
+    return (
+      <EmptyList
+        image={<KalmCertificatesIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
+        title={"You don't have any Certificates"}
+        content="You don't have any Certificates yet, you can create a Certificate at once."
+        button={
+          <CustomizedButton
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              blinkTopProgressAction();
+              dispatch(openDialogAction(addCertificateDialogId));
+              dispatch(setEditCertificateModalAction(null));
+            }}
+          >
+            Add Certificate
+          </CustomizedButton>
+        }
+      />
+    );
+  }
+
   public render() {
-    const { dispatch, isFirstLoaded, isLoading } = this.props;
+    const { dispatch, isFirstLoaded, isLoading, certificates } = this.props;
     const tableData = this.getData();
     return (
       <BasePage
@@ -278,7 +305,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
         <Box p={2}>
           {isLoading && !isFirstLoaded ? (
             <Loading />
-          ) : (
+          ) : certificates && certificates.size > 0 ? (
             <KTable
               options={{
                 paging: tableData.length > 20,
@@ -287,6 +314,8 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
               data={tableData}
               title=""
             />
+          ) : (
+            this.renderEmpty()
           )}
         </Box>
       </BasePage>

@@ -105,14 +105,14 @@ export const Body = withStyles(styles)((props: LabelProps) => {
 });
 Body.displayName = "Body";
 
-export const BoldBody = withStyles(styles)((props: LabelProps) => {
+export const Body2 = withStyles(styles)((props: LabelProps) => {
   return (
     <Label variant="body2" {...props}>
       {props.children}
     </Label>
   );
 });
-BoldBody.displayName = "BoldBody";
+Body2.displayName = "Body2";
 
 export const Caption = withStyles(styles)((props: LabelProps) => {
   return (

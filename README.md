@@ -1,12 +1,12 @@
 # Kalm - Kubernetes application manager
 
-[![codecov](https://codecov.io/gh/kalmhq/kalm/branch/master/graph/badge.svg)](https://codecov.io/gh/kalmhq/kalm) [![Build Status](https://travis-ci.com/kalmhq/kalm.svg?branch=master)](https://travis-ci.com/kalmhq/kalm) [![Go Report](https://goreportcard.com/badge/github.com/kalmhq/kalm)](https://goreportcard.com/badge/github.com/kalmhq/kalm)
+[![codecov](https://codecov.io/gh/kalmhq/kalm/branch/master/graph/badge.svg)](https://codecov.io/gh/kalmhq/kalm) [![CircleCI](https://circleci.com/gh/kalmhq/kalm.svg?style=svg)](https://circleci.com/gh/kalmhq/kalm) [![Go Report](https://goreportcard.com/badge/github.com/kalmhq/kalm)](https://goreportcard.com/badge/github.com/kalmhq/kalm)
 
 More than just another kubernetes dashboard, but also a new angle of application management.
 
 ## Warning
 
-This project is under a very aggressive development. Application schema and api will change and forward compatibility is not guaranteed. Please do not use this project in your production environment. It will be super helpful if you use Kalm in your staging/alpha release system and give us feedbacks. This warning will be removed until  the first official release, which means it's production ready.
+This project is under a very aggressive development. Application schema and api will change and forward compatibility is not guaranteed. Please do not use this project in your production environment. It will be super helpful if you use Kalm in your staging/alpha release system and give us feedbacks. This warning will be removed until the first official release, which means it's production ready.
 
 ## What's kalm?
 
@@ -18,7 +18,7 @@ TODO
 curl -sL https://raw.githubusercontent.com/kalmhq/kalm/master/scripts/install.sh | bash
 ```
 
-to check if Kalm is installed successfully, run 
+to check if Kalm is installed successfully, run
 
 ```
 curl -sL https://raw.githubusercontent.com/kalmhq/kalm/master/scripts/check-kalm-pods.sh | bash
@@ -45,8 +45,6 @@ istiod-6fd48c8cc7-9gj6m                 1/1     Running   1          43h
 prometheus-5767f54db5-82p66             2/2     Running   2          43h
 ```
 
-
-
 if your prefer commond line, go read [tutorial-1-hello-world.md](doc/tutorial-1-hello-world.md) to see what you can do with Kalm, or if you prefer GUI, Kalm has a dashboard prepared for you, to visited the dashboard, you need:
 
 ```
@@ -70,8 +68,6 @@ make delete
 # to delete all things Kalm installed, including istio and cert-manager, run:
 # make delete-all
 ```
-
-
 
 ## Documentation
 

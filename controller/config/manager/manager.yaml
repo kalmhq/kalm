@@ -22,6 +22,8 @@ spec:
     metadata:
       labels:
         control-plane: controller
+        sidecar.istio.io/proxyCPU: "10m"
+        sidecar.istio.io/proxyMemory: "50m"
     spec:
       imagePullSecrets:
         - name: docker-registry-secret
@@ -30,7 +32,7 @@ spec:
             - /manager
           args:
             - --enable-leader-election
-          image: kalmstaging/controller:latest
+          image: quay.io/kalmhq/kalm-controller:latest
           imagePullPolicy: Always
           name: manager
           env:
@@ -41,6 +43,6 @@ spec:
               cpu: 100m
               memory: 256Mi
             requests:
-              cpu: 100m
+              cpu: 10m
               memory: 128Mi
       terminationGracePeriodSeconds: 10

@@ -1,0 +1,243 @@
+version: 2
+jobs:
+  test-dashboard:
+    docker:
+      - image: circleci/golang:1.13.11
+    environment:
+      KUBEBUILDER_ASSETS: /home/circleci/kubebuilder/bin
+      GO111MODULE: "on"
+    steps:
+      - checkout
+      - run:
+          name: Install kubebuilder
+          command: |
+            os=$(go env GOOS)
+            arch=$(go env GOARCH)
+            echo $os $arch
+            echo https://go.kubebuilder.io/dl/2.3.1/${os}/${arch}
+            curl -L https://go.kubebuilder.io/dl/2.3.1/${os}/${arch} | tar -xz -C /tmp/
+            sudo mv /tmp/kubebuilder_2.3.1_${os}_${arch} $HOME/kubebuilder
+            export PATH=$PATH:$HOME/kubebuilder/bin
+      - run:
+          name: go get
+          working_directory: ./api
+          command: go get -d ./...
+      - run:
+          name: run test
+          working_directory: ./api
+          command: go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
+      - run:
+          name: upload coverage
+          working_directory: ./api
+          command: bash <(curl -s https://codecov.io/bash)
+  build-dashboard-image:
+    environment:
+      IMAGE_NAME: quay.io/kalmhq/kalm
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run: cd api
+      - run:
+          name: Build Docker image
+          command: docker build -t $IMAGE_NAME:latest .
+      - run:
+          name: Archive Docker image
+          command: docker save -o image.tar $IMAGE_NAME
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./image.tar
+  push-dashboard-image:
+    environment:
+      IMAGE_NAME: quay.io/kalmhq/kalm
+    docker:
+      - image: circleci/buildpack-deps:stretch
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - setup_remote_docker
+      - run:
+          name: Load archived Docker image
+          command: docker load -i /tmp/workspace/image.tar
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$QUAYIO_PASS" | docker login -u "$QUAYIO_USERNAME" --password-stdin quay.io
+            docker push $IMAGE_NAME:latest
+  test-controller:
+    docker:
+      - image: circleci/golang:1.13.11
+    environment:
+      KUBEBUILDER_ASSETS: /home/circleci/kubebuilder/bin
+      GO111MODULE: "on"
+    steps:
+      - checkout
+      - run:
+          name: Install kubebuilder
+          command: |
+            os=$(go env GOOS)
+            arch=$(go env GOARCH)
+            echo $os $arch
+            echo https://go.kubebuilder.io/dl/2.3.1/${os}/${arch}
+            curl -L https://go.kubebuilder.io/dl/2.3.1/${os}/${arch} | tar -xz -C /tmp/
+            sudo mv /tmp/kubebuilder_2.3.1_${os}_${arch} $HOME/kubebuilder
+            export PATH=$PATH:$HOME/kubebuilder/bin
+      - run:
+          name: go get
+          working_directory: ./controller
+          command: go get -d ./...
+      - run:
+          name: run test
+          working_directory: ./controller
+          command: make test
+      - run:
+          name: upload coverage
+          working_directory: ./controller
+          command: bash <(curl -s https://codecov.io/bash)
+  build-push-controller-image:
+    environment:
+      IMAGE_NAME: quay.io/kalmhq/kalm-controller
+    docker:
+      - image: circleci/golang:1.13.11
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker image
+          working_directory: ./controller
+          command: docker build -t $IMAGE_NAME:latest .
+      - run:
+          name: Publish Docker Image to Docker Hub
+          working_directory: ./controller
+          command: |
+            echo "$QUAYIO_PASS" | docker login -u "$QUAYIO_USERNAME" --password-stdin quay.io
+            docker push $IMAGE_NAME:latest
+  build-push-operator-image:
+    environment:
+      IMAGE_NAME: quay.io/kalmhq/kalm-operator
+    docker:
+      - image: circleci/golang:1.13.11
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: cp controller
+          working_directory: ./operator
+          command: cp -r ../controller .
+      - run:
+          name: Build Docker image
+          working_directory: ./operator
+          command: docker build -t $IMAGE_NAME:latest .
+      - run:
+          name: Publish Docker Image to Docker Hub
+          working_directory: ./operator
+          command: |
+            echo "$QUAYIO_PASS" | docker login -u "$QUAYIO_USERNAME" --password-stdin quay.io
+            docker push $IMAGE_NAME:latest
+  deploy-dashboard:
+    environment:
+      IMAGE_NAME: quay.io/kalmhq/kalm-controller
+    docker:
+      - image: circleci/golang:1.13.11
+    steps:
+      - checkout
+      - run:
+          name: download kubectl
+          working_directory: ./controller
+          command: |
+            curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.15.9/bin/linux/amd64/kubectl
+            chmod +x ./kubectl
+            sudo mv ./kubectl /usr/local/bin/kubectl
+            mkdir ${HOME}/.kube
+            echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
+            kubectl delete pod -n kalm-system $(kubectl get pods -n kalm-system -l app=kalm-dashboard -o jsonpath="{.items[].metadata.name}"
+  deploy-controller:
+    environment:
+      IMAGE_NAME: quay.io/kalmhq/kalm-controller
+    docker:
+      - image: circleci/golang:1.13.11
+    steps:
+      - checkout
+      - run:
+          name: download kubectl
+          working_directory: ./controller
+          command: |
+            curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.15.9/bin/linux/amd64/kubectl
+            chmod +x ./kubectl
+            sudo mv ./kubectl /usr/local/bin/kubectl
+            mkdir ${HOME}/.kube
+            echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
+            IMG=$IMAGE_NAME make deploy
+            kubectl -n kalm-controller patch deployment kalm-controller -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"date\":\"`date +'%s'`\"}}}}}"
+  deploy-operator:
+    environment:
+      IMAGE_NAME: quay.io/kalmhq/kalm-operator
+    docker:
+      - image: circleci/golang:1.13.11
+    steps:
+      - checkout
+      - run:
+          name: download kubectl
+          working_directory: ./operator
+          command: |
+            curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.15.9/bin/linux/amd64/kubectl
+            chmod +x ./kubectl
+            sudo mv ./kubectl /usr/local/bin/kubectl
+            mkdir ${HOME}/.kube
+            echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
+            IMG=$IMAGE_NAME make deploy
+            kubectl -n kalm-operator patch deployment kalm-operator -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"date\":\"`date +'%s'`\"}}}}}"
+workflows:
+  version: 2
+  dashboard:
+    jobs:
+      - test-dashboard
+      - build-dashboard-image:
+          filters:
+            branches:
+              only: master
+      - push-dashboard-image:
+          context: kalm-ci
+          requires:
+            - test-dashboard
+            - build-dashboard-image
+          filters:
+            branches:
+              only: master
+      # - deploy-dashboard:
+      #     requires:
+      #       - push-dashboard-image
+      #     filters:
+      #       branches:
+      #         only: master
+  controller:
+    jobs:
+      - test-controller
+      - build-push-controller-image:
+          context: kalm-ci
+          requires:
+            - test-controller
+          filters:
+            branches:
+              only: master
+      # - deploy-controller:
+      #     requires:
+      #       - build-push-controller-image
+      #     filters:
+      #       branches:
+      #         only: master
+  operator:
+    jobs:
+      - build-push-operator-image:
+          context: kalm-ci
+          filters:
+            branches:
+              only: master
+      # - deploy-operator:
+      #     requires:
+      #       - build-push-operator-image
+      #     filters:
+      #       branches:
+      #         only: master

@@ -6,6 +6,7 @@ import { blinkTopProgressAction } from "actions/settings";
 import { push } from "connected-react-router";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import Immutable from "immutable";
+import { POPPER_ZINDEX } from "layout/Constants";
 import MaterialTable, { MTableBodyRow } from "material-table";
 import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 import { RouteWidgets } from "pages/Route/Widget";
@@ -16,21 +17,21 @@ import { RootState } from "reducers";
 import { primaryColor } from "theme/theme";
 import { ApplicationDetails } from "types/application";
 import { HttpRoute } from "types/route";
+import { getApplicationCreatedAtString } from "utils/application";
 import { customSearchForImmutable } from "utils/tableSearch";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
+import { EmptyList } from "widgets/EmptyList";
 import { FoldButtonGroup } from "widgets/FoldButtonGroup";
-import { DeleteIcon, KalmConsoleIcon, KalmDetailsIcon, KalmLogIcon } from "widgets/Icon";
-import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import { DeleteIcon, KalmDetailsIcon, KalmApplicationIcon } from "widgets/Icon";
 import { Body } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { KTable } from "widgets/Table";
-import { getApplicationCreatedAtString } from "utils/application";
 import { BasePage } from "../BasePage";
-import { POPPER_ZINDEX } from "layout/Constants";
+import { indigo } from "@material-ui/core/colors";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -92,7 +93,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   private closeDeleteConfirmDialog = () => {
-    this.setState(this.defaultState);
+    this.setState({ isDeleteConfirmDialogOpen: false });
   };
 
   private renderDeleteConfirmDialog = () => {
@@ -261,31 +262,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private renderActions = (rowData: RowData) => {
-    return (
-      <>
-        <IconButtonWithTooltip
-          onClick={() => blinkTopProgressAction()}
-          tooltipTitle="Shell"
-          component={Link}
-          size={"small"}
-          to={`/applications/${rowData.get("name")}/shells`}
-        >
-          <KalmConsoleIcon />
-        </IconButtonWithTooltip>
-        <IconButtonWithTooltip
-          onClick={() => blinkTopProgressAction()}
-          tooltipTitle="Logs"
-          component={Link}
-          size={"small"}
-          to={`/applications/${rowData.get("name")}/logs`}
-        >
-          <KalmLogIcon />
-        </IconButtonWithTooltip>
-      </>
-    );
-  };
-
   private renderMoreActions = (rowData: RowData) => {
     let options = [
       {
@@ -396,21 +372,26 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   }
 
   private renderEmpty() {
-    const { dispatch, classes } = this.props;
+    const { dispatch } = this.props;
 
     return (
-      <div className={classes.emptyWrapper}>
-        <CustomizedButton
-          variant="contained"
-          color="primary"
-          onClick={() => {
-            blinkTopProgressAction();
-            dispatch(push(`/applications/new`));
-          }}
-        >
-          Create your first application
-        </CustomizedButton>
-      </div>
+      <EmptyList
+        image={<KalmApplicationIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
+        title={"You don't have any Applications"}
+        content="You don't have any Applications yet, you can create an Application at once."
+        button={
+          <CustomizedButton
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              blinkTopProgressAction();
+              dispatch(push(`/applications/new`));
+            }}
+          >
+            Add Application
+          </CustomizedButton>
+        }
+      />
     );
   }
 

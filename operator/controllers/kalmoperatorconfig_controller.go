@@ -23,17 +23,19 @@ import (
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 	installv1alpha1 "github.com/kalmhq/kalm/operator/api/v1alpha1"
 	"github.com/kalmhq/kalm/operator/utils"
+	v1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"time"
 )
 
 const (
 	NamespaceKalmSystem = "kalm-system"
-	KalmImgRepo         = "kalmstaging/dashboard"
+	KalmImgRepo         = "quay.io/kalmhq/kalm"
 )
 
 //var finalizerName = "install.finalizers.kalm.dev"
@@ -98,7 +100,7 @@ func (r *KalmOperatorConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 	}
 
 	if len(configs.Items) > 1 {
-		err := fmt.Errorf("More than one operator configs found")
+		err := fmt.Errorf("more than one operator configs found")
 		log.Error(err, "Controller won't be working until there is only one config")
 		return ctrl.Result{}, err
 	}
@@ -132,7 +134,12 @@ func (r *KalmOperatorConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 	//	return ctrl.Result{}, nil
 	//}
 
-	return ctrl.Result{}, r.reconcileResources(config, ctx, log)
+	err := r.reconcileResources(config, ctx, log)
+	if err == retryLaterErr {
+		return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
+	}
+
+	return ctrl.Result{}, err
 }
 
 func (r *KalmOperatorConfigReconciler) installFromYaml(ctx context.Context, yamlName string) error {
@@ -162,9 +169,13 @@ func (r *KalmOperatorConfigReconciler) installFromYaml(ctx context.Context, yaml
 	return nil
 }
 
+var retryLaterErr = fmt.Errorf("retry later")
+
 func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha1.KalmOperatorConfig, ctx context.Context, log logr.Logger) error {
 	// TODO delete when skip
 	if !config.Spec.SkipCertManagerInstallation {
+		//r.Log.Info("installing cert-manager")
+
 		if err := r.installFromYaml(ctx, "cert-manager.yaml"); err != nil {
 			log.Error(err, "install certManager error.")
 			return err
@@ -172,6 +183,8 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 	}
 
 	if !config.Spec.SkipIstioInstallation {
+		//r.Log.Info("installing istio")
+
 		if err := r.installFromYaml(ctx, "istio.yaml"); err != nil {
 			log.Error(err, "install istio error.")
 			return err
@@ -183,20 +196,42 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 		}
 	}
 
+	if !config.Spec.SkipCertManagerInstallation && !config.Spec.SkipIstioInstallation {
+		if !r.isIstioReady(ctx) || !r.isCertManagerReady(ctx) {
+			return retryLaterErr
+		}
+	} else if !config.Spec.SkipCertManagerInstallation {
+		if !r.isCertManagerReady(ctx) {
+			return retryLaterErr
+		}
+	} else if !config.Spec.SkipIstioInstallation {
+		if !r.isIstioReady(ctx) {
+			return retryLaterErr
+		}
+	}
+
 	if !config.Spec.SkipKalmControllerInstallation {
+		//r.Log.Info("installing kalm-controller")
 		if err := r.installFromYaml(ctx, "kalm.yaml"); err != nil {
 			log.Error(err, "install kalm error.")
 			return err
 		}
+
+		kalmNS := "kalm-system"
+		if !r.checkIfDPReady(ctx, kalmNS, "kalm-controller") {
+			return retryLaterErr
+		}
 	}
 
 	if !config.Spec.SkipKalmDashboardInstallation {
+		//r.Log.Info("installing kalm-dashboard")
+
 		dashboardVersion := "latest"
 		if config.Spec.DashboardVersion != "" {
 			dashboardVersion = config.Spec.DashboardVersion
 		}
 
-		dashboardName := "kalm-dashboard"
+		dashboardName := "kalm"
 		expectedDashboard := corev1alpha1.Component{
 			ObjectMeta: ctrl.ObjectMeta{
 				Namespace: NamespaceKalmSystem,
@@ -234,6 +269,37 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 	}
 
 	return nil
+}
+
+func (r *KalmOperatorConfigReconciler) checkIfDPReady(ctx context.Context, ns string, dpNameOpt ...string) bool {
+	for _, dpName := range dpNameOpt {
+		var dp v1.Deployment
+		err := r.Get(ctx, types.NamespacedName{Name: dpName, Namespace: ns}, &dp)
+		if err != nil {
+			return false
+		}
+
+		if dp.Status.ReadyReplicas < 1 {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (r *KalmOperatorConfigReconciler) isCertManagerReady(ctx context.Context) bool {
+	// make sure cert-manager is ready
+	certMgrNamespace := "cert-manager"
+	dps := []string{"cert-manager", "cert-manager-cainjector", "cert-manager-webhook"}
+
+	return r.checkIfDPReady(ctx, certMgrNamespace, dps...)
+}
+
+func (r *KalmOperatorConfigReconciler) isIstioReady(ctx context.Context) bool {
+	istioNamespace := "istio-system"
+	dps := []string{"istiod", "istio-ingressgateway", "prometheus"}
+
+	return r.checkIfDPReady(ctx, istioNamespace, dps...)
 }
 
 //func (r *KalmOperatorConfigReconciler) deleteResources(config *installv1alpha1.KalmOperatorConfig, ctx context.Context, log logr.Logger) error {

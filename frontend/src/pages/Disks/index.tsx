@@ -65,7 +65,6 @@ export class VolumesRaw extends React.Component<Props, States> {
   private closeDeleteConfirmDialog = () => {
     this.setState({
       isDeleteConfirmDialogOpen: false,
-      deletingPersistentVolume: undefined,
     });
   };
 
