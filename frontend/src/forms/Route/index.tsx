@@ -52,6 +52,7 @@ const mapStateToProps = (state: RootState) => {
     hosts: selector(state, "hosts") as Immutable.List<string>,
     destinations: selector(state, "destinations") as Immutable.List<HttpRouteDestination>,
     domains: Array.from(domains),
+    ingressIP: state.get("cluster").get("info").get("ingressIP"),
     certifications,
   };
 };
@@ -77,6 +78,9 @@ const styles = (theme: Theme) =>
     },
     secondaryHeading: {
       fontSize: theme.typography.pxToRem(15),
+      color: theme.palette.text.secondary,
+    },
+    secondaryTip: {
       color: theme.palette.text.secondary,
     },
   });
@@ -234,7 +238,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
     const {
       methodsMode,
       classes,
-      domains,
+      ingressIP,
       dispatch,
       destinations,
       form,
@@ -243,6 +247,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
       dirty,
       submitSucceeded,
       initialValues,
+      change,
     } = this.props;
 
     // @ts-ignore
@@ -268,8 +273,19 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       margin="normal"
                       validate={[ValidatorRequired, KValidatorHosts]}
                       placeholder="Type a host"
-                      options={domains}
                     />
+                    <div>
+                      <Button
+                        color="primary"
+                        size="small"
+                        onClick={() => {
+                          change("hosts", Immutable.List([ingressIP]));
+                        }}
+                      >
+                        Ingress IP
+                      </Button>
+                      <span className={classes.secondaryTip}>* Using ip to access this port</span>
+                    </div>
                     <Field
                       InputLabelProps={{
                         shrink: true,
