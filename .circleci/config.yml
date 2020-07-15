@@ -199,20 +199,20 @@ workflows:
             - test-dashboard
           filters:
             branches:
-              only: circleci-project-setup
+              only: master
       - push-dashboard-image:
           context: kalm-ci
           requires:
             - build-dashboard-image
           filters:
             branches:
-              only: circleci-project-setup
-      - deploy-dashboard:
-          requires:
-            - push-dashboard-image
-          filters:
-            branches:
-              only: circleci-project-setu
+              only: master
+      # - deploy-dashboard:
+      #     requires:
+      #       - push-dashboard-image
+      #     filters:
+      #       branches:
+      #         only: master
   controller:
     jobs:
       - test-controller
@@ -222,23 +222,23 @@ workflows:
             - test-controller
           filters:
             branches:
-              only: circleci-project-setup
-      - deploy-controller:
-          requires:
-            - build-push-controller-image
-          filters:
-            branches:
-              only: circleci-project-setup
+              only: master
+      # - deploy-controller:
+      #     requires:
+      #       - build-push-controller-image
+      #     filters:
+      #       branches:
+      #         only: master
   operator:
     jobs:
       - build-push-operator-image:
           context: kalm-ci
           filters:
             branches:
-              only: circleci-project-setup
-      - deploy-operator:
-          requires:
-            - build-push-operator-image
-          filters:
-            branches:
-              only: circleci-project-setup
+              only: master
+      # - deploy-operator:
+      #     requires:
+      #       - build-push-operator-image
+      #     filters:
+      #       branches:
+      #         only: master
