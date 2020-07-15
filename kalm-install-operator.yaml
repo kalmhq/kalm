@@ -389,7 +389,7 @@ spec:
         - --enable-leader-election
         command:
         - /manager
-        image: kalmstaging/operator:latest
+        image: quay.io/kalmhq/kalm-operator:latest
         imagePullPolicy: Always
         name: manager
         resources:

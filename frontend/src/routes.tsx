@@ -45,6 +45,7 @@ export const KalmRoutes = (
           <Route exact path="/cluster/registries" component={RegistryListPage} />
           <Route exact path="/applications" component={RequireAdmin(ApplicationListPage)} />
           <Route exact path="/applications/new" component={RequireAdmin(ApplicationNewPage)} />
+          <Route exact path="/applications/:applicationName/" component={ComponentListPage} />
           <Route
             exact
             path="/applications/:applicationName/metrics"

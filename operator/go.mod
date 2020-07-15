@@ -8,7 +8,6 @@ require (
 	github.com/kalmhq/kalm/controller v0.0.0-20200709120351-d96177bbf37a
 	gopkg.in/yaml.v3 v3.0.0-20191120175047-4206685974f2
 	istio.io/client-go v0.0.0-20200324231647-289a91f51a8e
-	k8s.io/api v0.17.3
 	k8s.io/apiextensions-apiserver v0.17.3
 	k8s.io/apimachinery v0.17.3
 	k8s.io/client-go v0.17.3
