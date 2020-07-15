@@ -35,16 +35,18 @@ COPY api/ .
 
 # Build
 RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -installsuffix 'static' -ldflags '-extldflags "-static"' -o kalm-api-server main.go
-RUN GOOS=linux GOARCH=amd64 go build -installsuffix 'static' -ldflags '-extldflags "-static"' -o auth-proxy ./cmd/auth-proxy
+RUN GOOS=linux GOARCH=amd64 go build -ldflags "-s -w" -o auth-proxy ./cmd/auth-proxy
 
 # ============== Finial ==============
 FROM alpine
 WORKDIR /workspace
-
 # tell kalm api server the location of static files
 ENV STATIC_FILE_ROOT build
 
 # Collect binaries and assets
 COPY --from=api-builder /workspace/api/kalm-api-server .
+
+RUN mkdir /lib64 && ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
 COPY --from=api-builder /workspace/api/auth-proxy .
+
 COPY --from=frontend-builder /workspace/build/ build/

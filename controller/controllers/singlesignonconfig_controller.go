@@ -536,7 +536,7 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileInternalAuthProxyComponent()
 		},
 		Spec: corev1alpha1.ComponentSpec{
 			WorkloadType: corev1alpha1.WorkloadTypeServer,
-			Image:        "kappstaging/dashboard:latest", // TODO change the image
+			Image:        "quay.io/kalmhq/kalm:latest",
 			Command:      "./auth-proxy",
 			Ports: []corev1alpha1.Port{
 				{
@@ -732,6 +732,11 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileResources() error {
 // +kubebuilder:rbac:groups=core.kalm.dev,resources=singlesignonconfigs/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=networking.istio.io,resources=serviceentries,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=networking.istio.io,resources=serviceentries/status,verbs=get;update;patch
+
+// +kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=*
+// +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=clusterroles;clusterrolebindings,verbs=*
+// +kubebuilder:rbac:groups=apiextensions.k8s.io,resources=customresourcedefinitions,verbs=create
+// +kubebuilder:rbac:groups=dex.coreos.com,resources=*,verbs=create
 
 func (r *SingleSignOnConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	task := &SingleSignOnConfigReconcilerTask{
