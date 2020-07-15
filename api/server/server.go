@@ -7,8 +7,8 @@ import (
 
 	"github.com/go-playground/validator/v10"
 
-	"github.com/kalm-staging/kalm/api/config"
-	"github.com/kalm-staging/kalm/api/errors"
+	"github.com/kalmhq/kalm/api/config"
+	"github.com/kalmhq/kalm/api/errors"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -23,12 +23,14 @@ func isTest() bool {
 	return testFlag.Value.String() == "true"
 }
 
-func newEchoInstance() *echo.Echo {
+func NewEchoInstance() *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
+	e.Use(middleware.Gzip())
 	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: "method=${method}, uri=${uri}, status=${status}\n",
 	}))
+
 	e.Pre(middleware.RemoveTrailingSlash())
 
 	// TODO, only enabled cors on dev env
@@ -61,13 +63,13 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 }
 
 func NewEchoServer(runningConfig *config.Config) *echo.Echo {
-	e := newEchoInstance()
+	e := NewEchoInstance()
 
 	// in production docker build, all things are in a single docker
 	// golang api server is charge of return frontend files to users
 	// If the STATIC_FILE_ROOT is set, add extra routes to handle static files
 	staticFileRoot := os.Getenv("STATIC_FILE_ROOT")
-	e.Use(middleware.Gzip())
+
 	if staticFileRoot != "" {
 		e.Use(middleware.StaticWithConfig(middleware.StaticConfig{
 			Root:  staticFileRoot,

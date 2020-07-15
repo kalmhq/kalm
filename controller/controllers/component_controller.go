@@ -22,9 +22,9 @@ import (
 	"encoding/json"
 	"fmt"
 	js "github.com/dop251/goja"
-	"github.com/kalm-staging/kalm/controller/lib/files"
-	"github.com/kalm-staging/kalm/controller/utils"
-	"github.com/kalm-staging/kalm/controller/vm"
+	"github.com/kalmhq/kalm/controller/lib/files"
+	"github.com/kalmhq/kalm/controller/utils"
+	"github.com/kalmhq/kalm/controller/vm"
 	"github.com/xeipuuv/gojsonschema"
 	appsV1 "k8s.io/api/apps/v1"
 	batchV1 "k8s.io/api/batch/v1"
@@ -44,7 +44,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 	"strings"
 
-	corev1alpha1 "github.com/kalm-staging/kalm/controller/api/v1alpha1"
+	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 )
 
 // ComponentReconciler reconciles a Component object
@@ -846,7 +846,7 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 	template.ObjectMeta.Annotations["sidecar.istio.io/proxyMemoryLimit"] = "50Mi"
 
 	if component.Spec.EnableResourcesRequests {
-		template.ObjectMeta.Annotations["sidecar.istio.io/proxyCPU"] = "100m"
+		template.ObjectMeta.Annotations["sidecar.istio.io/proxyCPU"] = "10m"
 		template.ObjectMeta.Annotations["sidecar.istio.io/proxyMemory"] = "50Mi"
 	}
 
@@ -1167,7 +1167,7 @@ func (r *ComponentReconcilerTask) parseComponentConfigs(component *corev1alpha1.
 	var configMap coreV1.ConfigMap
 
 	err := r.Client.Get(r.ctx, types.NamespacedName{
-		Name:      files.KAPP_CONFIG_MAP_NAME,
+		Name:      files.KALM_CONFIG_MAP_NAME,
 		Namespace: r.component.Namespace,
 	}, &configMap)
 
@@ -1211,7 +1211,7 @@ func (r *ComponentReconcilerTask) parseComponentConfigs(component *corev1alpha1.
 			VolumeSource: coreV1.VolumeSource{
 				ConfigMap: &coreV1.ConfigMapVolumeSource{
 					LocalObjectReference: coreV1.LocalObjectReference{
-						Name: files.KAPP_CONFIG_MAP_NAME,
+						Name: files.KALM_CONFIG_MAP_NAME,
 					},
 					Items: items,
 				},
@@ -1238,7 +1238,7 @@ func (r *ComponentReconcilerTask) parseComponentConfigs(component *corev1alpha1.
 			VolumeSource: coreV1.VolumeSource{
 				ConfigMap: &coreV1.ConfigMapVolumeSource{
 					LocalObjectReference: coreV1.LocalObjectReference{
-						Name: files.KAPP_CONFIG_MAP_NAME,
+						Name: files.KALM_CONFIG_MAP_NAME,
 					},
 					Items: []coreV1.KeyToPath{
 						{

@@ -1,4 +1,4 @@
-package handler
+package main
 
 import (
 	"bytes"
@@ -9,13 +9,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/coreos/go-oidc"
-	"github.com/kalm-staging/kalm/api/utils"
-	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
-	"github.com/kalm-staging/kalm/controller/controllers"
+	"github.com/kalmhq/kalm/api/server"
+	"github.com/kalmhq/kalm/api/utils"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
-	coreV1 "k8s.io/api/core/v1"
 	"net/http"
 	"net/url"
 	"os"
@@ -25,10 +23,9 @@ import (
 
 var oauth2Config *oauth2.Config
 var oauth2ConfigMut = &sync.Mutex{}
+
 var stateEncryptKey [16]byte
-var oidcProvider *oidc.Provider
 var oidcVerifier *oidc.IDTokenVerifier
-var oidcProviderInfo *controllers.OIDCProviderInfo
 
 var authProxyURL string
 var clientSecret string
@@ -44,7 +41,7 @@ type OauthState struct {
 	OriginalURL string
 }
 
-func (h *ApiHandler) getOauth2Config() *oauth2.Config {
+func getOauth2Config() *oauth2.Config {
 	if oauth2Config != nil {
 		return oauth2Config
 	}
@@ -59,40 +56,14 @@ func (h *ApiHandler) getOauth2Config() *oauth2.Config {
 	clientID := os.Getenv("KALM_OIDC_CLIENT_ID")
 	clientSecret = os.Getenv("KALM_OIDC_CLIENT_SECRET")
 	oidcProviderUrl := os.Getenv("KALM_OIDC_PROVIDER_URL")
+	authProxyURL = os.Getenv("KALM_OIDC_AUTH_PROXY_URL")
 
-	if clientID == "" || clientSecret == "" || oidcProviderUrl == "" {
-		builder := h.KalmBuilder()
-		var dexSecret coreV1.Secret
-		err := builder.Get(controllers.KAPP_DEX_NAMESPACE, controllers.KAPP_DEX_SECRET_NAME, &dexSecret)
-
-		if err != nil {
-			h.logger.Error("Can't get dex secret")
-			return nil
-		}
-
-		clientID = string(dexSecret.Data["client_id"])
-		clientSecret = string(dexSecret.Data["client_secret"])
-
-		var ssoConfigList v1alpha1.SingleSignOnConfigList
-		err = builder.List(&ssoConfigList)
-
-		if err != nil {
-			h.logger.Error("Can't list ssoConfigs")
-			return nil
-		}
-
-		if len(ssoConfigList.Items) > 1 || len(ssoConfigList.Items) == 0 {
-			h.logger.Error("Found no or more than one sso configs. Nothing will happen until there is only one sso config.")
-			return nil
-		}
-
-		oidcProviderInfo = controllers.GetOIDCProviderInfo(&ssoConfigList.Items[0])
-		oidcProviderUrl = oidcProviderInfo.Issuer
-		authProxyURL = oidcProviderInfo.ExtAuthzServerUrl + "/oidc/login"
+	if clientID == "" || clientSecret == "" || oidcProviderUrl == "" || authProxyURL == "" {
+		log.Error("KALM OIDC ENVs are not configured.")
+		return nil
 	}
 
 	stateEncryptKey = md5.Sum([]byte(clientSecret))
-
 	provider, err := oidc.NewProvider(context.Background(), oidcProviderUrl)
 
 	if err != nil {
@@ -100,22 +71,17 @@ func (h *ApiHandler) getOauth2Config() *oauth2.Config {
 		return nil
 	}
 
-	oidcProvider = provider
 	oidcVerifier = provider.Verifier(&oidc.Config{ClientID: clientID})
-
-	// if set up dex later, how to make sure provider exist?
 
 	scopes := []string{}
 	scopes = append(scopes, oidc.ScopeOpenID, "profile", "email", "groups")
-
-	// get current path from headers
 
 	oauth2Config = &oauth2.Config{
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
 		Endpoint:     provider.Endpoint(),
 		Scopes:       scopes,
-		RedirectURL:  oidcProviderInfo.ExtAuthzServerUrl + "/oidc/callback",
+		RedirectURL:  authProxyURL + "/oidc/callback",
 	}
 
 	return oauth2Config
@@ -148,7 +114,7 @@ func getStringSignature(data string) string {
 
 func redirectToAuthProxyUrl(c echo.Context) error {
 	originalURL := getOriginalURL(c)
-	uri, err := url.Parse(authProxyURL)
+	uri, err := url.Parse(authProxyURL + "/oidc/login")
 
 	if err != nil {
 		log.Error("parse auth proxy url error.", err)
@@ -168,8 +134,8 @@ func redirectToAuthProxyUrl(c echo.Context) error {
 // Run as Envoy ext_authz filter //
 ///////////////////////////////////
 
-func (h *ApiHandler) handleExtAuthz(c echo.Context) error {
-	if h.getOauth2Config() == nil {
+func handleExtAuthz(c echo.Context) error {
+	if getOauth2Config() == nil {
 		return c.String(503, "Please configure KALM OIDC environments.")
 	}
 
@@ -239,8 +205,8 @@ func handleSetIDToken(c echo.Context) error {
 // Run as Auth proxy //
 ///////////////////////
 
-func (h *ApiHandler) handleOIDCLogin(c echo.Context) error {
-	if h.getOauth2Config() == nil {
+func handleOIDCLogin(c echo.Context) error {
+	if getOauth2Config() == nil {
 		return c.String(503, "Please configure KALM OIDC environments.")
 	}
 
@@ -289,8 +255,8 @@ func (h *ApiHandler) handleOIDCLogin(c echo.Context) error {
 }
 
 // this handler run under dashboard api domain
-func (h *ApiHandler) handleOIDCCallback(c echo.Context) error {
-	if h.getOauth2Config() == nil {
+func handleOIDCCallback(c echo.Context) error {
+	if getOauth2Config() == nil {
 		return c.String(503, "Please configure KALM OIDC environments.")
 	}
 
@@ -361,4 +327,18 @@ func (h *ApiHandler) handleOIDCCallback(c echo.Context) error {
 	uri.RawQuery = params.Encode()
 
 	return c.Redirect(302, uri.String())
+}
+
+func main() {
+	e := server.NewEchoInstance()
+
+	// oidc auth proxy handlers
+	e.GET("/oidc/login", handleOIDCLogin)
+	e.GET("/oidc/callback", handleOIDCCallback)
+
+	// envoy ext_authz handlers
+	e.GET("/"+ENVOY_EXT_AUTH_PATH_PREFIX+"/*", handleExtAuthz)
+	e.GET("/"+ENVOY_EXT_AUTH_PATH_PREFIX, handleExtAuthz)
+
+	e.Logger.Fatal(e.Start("0.0.0.0:3002"))
 }

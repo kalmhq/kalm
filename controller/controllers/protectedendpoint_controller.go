@@ -19,7 +19,7 @@ import (
 	"context"
 	"fmt"
 	protoTypes "github.com/gogo/protobuf/types"
-	corev1alpha1 "github.com/kalm-staging/kalm/controller/api/v1alpha1"
+	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 	v1alpha32 "istio.io/api/networking/v1alpha3"
 	v1beta12 "istio.io/api/security/v1beta1"
 	v1beta13 "istio.io/api/type/v1beta1"
@@ -173,23 +173,24 @@ func (r *ProtectedEndpointReconcilerTask) DeleteResources() error {
 }
 
 type OIDCProviderInfo struct {
-	Issuer                         string
-	JwksURI                        string
-	ExtAuthzServerUrl              string
-	ExtAuthzServerEnvoyClusterName string
+	Issuer                            string
+	JwksURI                           string
+	AuthProxyInternalUrl              string
+	AuthProxyExternalUrl              string
+	AuthProxyInternalEnvoyClusterName string
 }
 
 func GetOIDCProviderInfo(ssoConfig *corev1alpha1.SingleSignOnConfig) *OIDCProviderInfo {
 	info := &OIDCProviderInfo{}
 	spec := ssoConfig.Spec
 
+	var scheme string
+	var port string
+
 	if spec.Issuer != "" {
 		info.Issuer = spec.Issuer
 		info.JwksURI = spec.JwksURI
 	} else {
-		var scheme string
-		var port string
-
 		if spec.UseHttp {
 			scheme = "http"
 		} else {
@@ -205,11 +206,13 @@ func GetOIDCProviderInfo(ssoConfig *corev1alpha1.SingleSignOnConfig) *OIDCProvid
 	}
 
 	if spec.ExternalEnvoyExtAuthz != nil {
-		info.ExtAuthzServerUrl = fmt.Sprintf("%s://%s:%d", spec.ExternalEnvoyExtAuthz.Scheme, spec.ExternalEnvoyExtAuthz.Host, spec.ExternalEnvoyExtAuthz.Port)
-		info.ExtAuthzServerEnvoyClusterName = fmt.Sprintf("outbound|%d||%s", spec.ExternalEnvoyExtAuthz.Port, spec.ExternalEnvoyExtAuthz.Host)
+		info.AuthProxyExternalUrl = fmt.Sprintf("%s://%s:%d", spec.ExternalEnvoyExtAuthz.Scheme, spec.ExternalEnvoyExtAuthz.Host, spec.ExternalEnvoyExtAuthz.Port)
+		info.AuthProxyInternalUrl = info.AuthProxyExternalUrl
+		info.AuthProxyInternalEnvoyClusterName = fmt.Sprintf("outbound|%d||%s", spec.ExternalEnvoyExtAuthz.Port, spec.ExternalEnvoyExtAuthz.Host)
 	} else {
-		info.ExtAuthzServerUrl = "http://auth-proxy.kalm-systerm.svc.cluster.local"
-		info.ExtAuthzServerEnvoyClusterName = "outbound|80||auth-proxy.kalm-systerm.svc.cluster.local"
+		info.AuthProxyExternalUrl = fmt.Sprintf("%s://%s%s", scheme, spec.Domain, port)
+		info.AuthProxyInternalUrl = fmt.Sprint("http://auth-proxy.kalm-system.svc.cluster.local")
+		info.AuthProxyInternalEnvoyClusterName = "outbound|80||auth-proxy.kalm-system.svc.cluster.local"
 	}
 
 	return info
@@ -301,8 +304,8 @@ func (r *ProtectedEndpointReconcilerTask) ReconcileResources(req ctrl.Request) e
 								"config": v2v(map[string]interface{}{
 									"httpService": map[string]interface{}{
 										"serverUri": map[string]interface{}{
-											"uri":     oidcProviderInfo.ExtAuthzServerUrl + "/ext_authz",
-											"cluster": oidcProviderInfo.ExtAuthzServerEnvoyClusterName,
+											"uri":     oidcProviderInfo.AuthProxyInternalUrl + "/ext_authz",
+											"cluster": oidcProviderInfo.AuthProxyInternalEnvoyClusterName,
 											"timeout": "1s",
 										},
 										"path_prefix": "/ext_authz",

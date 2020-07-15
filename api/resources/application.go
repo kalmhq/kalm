@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/kalm-staging/kalm/controller/controllers"
+	"github.com/kalmhq/kalm/controller/controllers"
 	authorizationV1 "k8s.io/api/authorization/v1"
 
-	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	appsV1 "k8s.io/api/apps/v1"
 	coreV1 "k8s.io/api/core/v1"
 )
@@ -206,7 +206,7 @@ func (builder *Builder) BuildApplicationListResponse(namespaceList coreV1.Namesp
 	for i := range namespaceList.Items {
 		ns := namespaceList.Items[i]
 
-		if ns.Name == KAPP_SYSTEM_NAMESPACE {
+		if ns.Name == KALM_SYSTEM_NAMESPACE {
 			continue
 		}
 

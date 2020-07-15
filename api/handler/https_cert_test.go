@@ -2,9 +2,9 @@ package handler
 
 import (
 	"encoding/json"
-	"github.com/kalm-staging/kalm/api/resources"
-	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
-	"github.com/kalm-staging/kalm/controller/controllers"
+	"github.com/kalmhq/kalm/api/resources"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
+	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/stretchr/testify/suite"
 	coreV1 "k8s.io/api/core/v1"
 	"net/http"
@@ -184,7 +184,7 @@ func (suite *HttpsCertTestSuite) TestUploadHttpsCert() {
 	//fmt.Println("item:", res.Items[0])
 	suite.Equal(true, res.Items[0].Spec.IsSelfManaged)
 	suite.Equal("", res.Items[0].Spec.HttpsCertIssuer)
-	suite.Equal("hello.kalm.live", strings.Join(res.Items[0].Spec.Domains, ""))
+	suite.Equal("hello.kapp.live", strings.Join(res.Items[0].Spec.Domains, ""))
 	suite.Equal("kalm-self-managed-foobar-cert", res.Items[0].Spec.SelfManagedCertSecretName)
 
 	// sec
@@ -199,7 +199,7 @@ func (suite *HttpsCertTestSuite) TestUploadHttpsCert() {
 	rec.BodyAsJSON(&resList)
 	suite.Equal(200, rec.Code)
 	suite.Equal(1, len(resList))
-	suite.Equal("hello.kalm.live", strings.Join(resList[0].Domains, ""))
+	suite.Equal("hello.kapp.live", strings.Join(resList[0].Domains, ""))
 }
 
 func (suite *HttpsCertTestSuite) TestUpdateSelfManagedHttpsCert() {
@@ -232,7 +232,7 @@ func (suite *HttpsCertTestSuite) TestUpdateSelfManagedHttpsCert() {
 	suite.Equal("foobar-cert", res.Items[0].Name)
 	suite.Equal(true, res.Items[0].Spec.IsSelfManaged)
 	suite.Equal("", res.Items[0].Spec.HttpsCertIssuer)
-	suite.Equal("hello.kalm.live", strings.Join(res.Items[0].Spec.Domains, ""))
+	suite.Equal("hello.kapp.live", strings.Join(res.Items[0].Spec.Domains, ""))
 	suite.Equal("kalm-self-managed-foobar-cert", res.Items[0].Spec.SelfManagedCertSecretName)
 
 	// sec

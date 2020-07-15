@@ -19,7 +19,7 @@ func (suite *FilesTestSuite) SetupTest() {
 			Namespace: "default",
 		},
 		Data: map[string]string{
-			KAPP_SLASH_REPLACER: KAPP_PERSISTENT_DIR_PLACEHOLDER,
+			KALM_SLASH_REPLACER: KALM_PERSISTENT_DIR_PLACEHOLDER,
 		},
 	}
 }

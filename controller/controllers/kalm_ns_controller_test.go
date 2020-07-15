@@ -27,7 +27,7 @@ func (suite *KalmNSControllerSuite) TearDownSuite() {
 }
 
 func (suite *KalmNSControllerSuite) TestKalmNSIstioEnabled() {
-	ns := suite.SetupKalmEnabledNs()
+	ns := suite.SetupKalmEnabledNs("")
 
 	suite.Eventually(func() bool {
 		err := suite.K8sClient.Get(context.Background(), types.NamespacedName{Name: ns.Name}, &ns)
@@ -37,7 +37,7 @@ func (suite *KalmNSControllerSuite) TestKalmNSIstioEnabled() {
 }
 
 func (suite *KalmNSControllerSuite) TestUpdateOfNSWillAffectComponentWithin() {
-	ns := suite.SetupKalmEnabledNs()
+	ns := suite.SetupKalmEnabledNs("")
 
 	component := generateEmptyComponent(ns.Name)
 	suite.createComponent(component)

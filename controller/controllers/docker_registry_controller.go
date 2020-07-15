@@ -19,8 +19,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/kalm-staging/kalm/controller/registry"
-	"github.com/kalm-staging/kalm/controller/utils"
+	"github.com/kalmhq/kalm/controller/registry"
+	"github.com/kalmhq/kalm/controller/utils"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -34,7 +34,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 	"strings"
 
-	corev1alpha1 "github.com/kalm-staging/kalm/controller/api/v1alpha1"
+	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 )
 
 // DockerRegistryReconciler reconciles a DockerRegistry object

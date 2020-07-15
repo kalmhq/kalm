@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"fmt"
-	"github.com/kalm-staging/kalm/controller/lib/files"
+	"github.com/kalmhq/kalm/controller/lib/files"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,7 +26,7 @@ func (r *ComponentReconcilerTask) reconcileDirectConfigs() error {
 	var cm coreV1.ConfigMap
 	err := r.Reader.Get(r.ctx, types.NamespacedName{
 		Namespace: namespace,
-		Name:      files.KAPP_CONFIG_MAP_NAME,
+		Name:      files.KALM_CONFIG_MAP_NAME,
 	}, &cm)
 
 	var myFiles []*files.File
@@ -41,11 +41,11 @@ func (r *ComponentReconcilerTask) reconcileDirectConfigs() error {
 	if errors.IsNotFound(err) {
 		cm = coreV1.ConfigMap{
 			ObjectMeta: metaV1.ObjectMeta{
-				Name:      files.KAPP_CONFIG_MAP_NAME,
+				Name:      files.KALM_CONFIG_MAP_NAME,
 				Namespace: namespace,
 			},
 			Data: map[string]string{
-				files.KAPP_SLASH_REPLACER: files.KAPP_PERSISTENT_DIR_PLACEHOLDER,
+				files.KALM_SLASH_REPLACER: files.KALM_PERSISTENT_DIR_PLACEHOLDER,
 			},
 		}
 

@@ -3,7 +3,7 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -32,7 +32,7 @@ func (suite *KalmVolumeControllerSuite) TearDownSuite() {
 }
 
 func (suite *KalmVolumeControllerSuite) SetupTest() {
-	ns := suite.SetupKalmEnabledNs()
+	ns := suite.SetupKalmEnabledNs("")
 	suite.ns = &ns
 
 	suite.ctx = context.Background()

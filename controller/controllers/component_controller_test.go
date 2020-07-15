@@ -3,7 +3,7 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 	appsV1 "k8s.io/api/apps/v1"
 	coreV1 "k8s.io/api/core/v1"
@@ -31,7 +31,7 @@ func (suite *ComponentControllerSuite) TearDownSuite() {
 }
 
 func (suite *ComponentControllerSuite) SetupTest() {
-	ns := suite.SetupKalmEnabledNs()
+	ns := suite.SetupKalmEnabledNs("")
 	suite.ns = &ns
 	suite.ctx = context.Background()
 }
@@ -80,7 +80,7 @@ func (suite *ComponentControllerSuite) TestComponentBasicCRUD() {
 		ServicePort:   2233,
 		Protocol:      "TCP",
 	})
-	suite.updateComponent(component) // todo sometimes this line fail the test e.g. https://travis-ci.com/github/kalm-staging/kalm/jobs/354813530
+	suite.updateComponent(component) // todo sometimes this line fail the test e.g. https://travis-ci.com/github/kalmhq/kalm/jobs/354813530
 
 	suite.Eventually(func() bool {
 		var deployment appsV1.Deployment

@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/kalm-staging/kalm/controller/lib/files"
+	"github.com/kalmhq/kalm/controller/lib/files"
 	"github.com/stretchr/testify/suite"
 	"net/http"
 	"testing"
@@ -12,7 +12,7 @@ type FilesTestSuite struct {
 }
 
 func (suite *FilesTestSuite) TearDownTest() {
-	err := suite.k8sClinet.CoreV1().ConfigMaps("default").Delete(files.KAPP_CONFIG_MAP_NAME, nil)
+	err := suite.k8sClinet.CoreV1().ConfigMaps("default").Delete(files.KALM_CONFIG_MAP_NAME, nil)
 	suite.Nil(err)
 }
 

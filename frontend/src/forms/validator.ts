@@ -103,9 +103,12 @@ export const ValidatorOneof = (...options: (string | RegExp)[]) => {
 export const ValidatorVolumeSize = (value: string) => {
   if (!value) return undefined;
 
-  if (!value.match(/^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/) || value === "0") {
-    return "Invalid Value";
+  if (value === "Gi") {
+    return "Required";
   }
+  // if (!value.match(/^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/) || value === "0") {
+  //   return "Invalid Value";
+  // }
 
   return undefined;
 };
@@ -131,12 +134,16 @@ export const ValidatorHttpHeaders = (value: any) => {
 };
 
 // https://regex101.com/r/cJ74bX/1/
-export const ValidatorCPU = (value: string) => {
+export const ValidatorCPU = (value: number) => {
   if (!value) return undefined;
 
-  if (!value.match(/^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/) || value === "0") {
-    return "Invalid CPU Value";
+  if (parseFloat(`${value}`) < 0.001) {
+    return "The minimum support is 0.001 Core";
   }
+
+  // if (!value.match(/^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/) || value === "0") {
+  //   return "Invalid CPU Value";
+  // }
 
   return undefined;
 };
@@ -144,9 +151,13 @@ export const ValidatorCPU = (value: string) => {
 export const ValidatorMemory = (value: string) => {
   if (!value) return undefined;
 
-  if (!value.match(/^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/) || value === "0") {
-    return "Invalid Memory Value";
+  if (value === "Gi") {
+    return "Required";
   }
+
+  // if (!value.match(/^([+-]?[0-9.]+)([eEinumkKMGTP]*[-+]?[0-9]*)$/) || value === "0") {
+  //   return "Invalid Memory Value";
+  // }
 
   return undefined;
 };

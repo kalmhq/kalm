@@ -19,8 +19,8 @@ import (
 	"context"
 	"fmt"
 	js "github.com/dop251/goja"
-	"github.com/kalm-staging/kalm/controller/utils"
-	"github.com/kalm-staging/kalm/controller/vm"
+	"github.com/kalmhq/kalm/controller/utils"
+	"github.com/kalmhq/kalm/controller/vm"
 	"github.com/xeipuuv/gojsonschema"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"sync"
@@ -28,7 +28,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	corev1alpha1 "github.com/kalm-staging/kalm/controller/api/v1alpha1"
+	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 )
 
 type ComponentPluginMethod = string

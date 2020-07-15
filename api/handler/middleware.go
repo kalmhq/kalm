@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/labstack/echo/v4"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/kubernetes"

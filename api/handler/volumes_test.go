@@ -2,7 +2,7 @@ package handler
 
 import (
 	"fmt"
-	"github.com/kalm-staging/kalm/api/resources"
+	"github.com/kalmhq/kalm/api/resources"
 	"github.com/stretchr/testify/suite"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"

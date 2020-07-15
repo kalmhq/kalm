@@ -1,7 +1,7 @@
 package errors
 
 import (
-	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"net/http"
 
 	"github.com/labstack/echo/v4"

@@ -48,3 +48,10 @@ export const sizeStringToNumber = (str: string) => {
 
   return base;
 };
+
+// for edit memory and disk
+export const sizeStringToGi = (str: string) => {
+  const num = sizeStringToNumber(str);
+  const gigaBytes = 1024 * 1024 * 1024;
+  return (num / gigaBytes).toFixed(3);
+};

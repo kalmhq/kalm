@@ -97,6 +97,7 @@ export const KRenderTextareaField = ({
 };
 
 interface ComplexValueTextFieldProps {
+  endAdornment?: React.ReactNode;
   formValueToEditValue?: (value: any) => string;
   editValueToFormValue?: (value: string) => any;
 }
@@ -109,6 +110,8 @@ export const RenderComplexValueTextField = ({
   placeholder,
   required,
   disabled,
+  type,
+  endAdornment,
   formValueToEditValue,
   editValueToFormValue,
   meta: { touched, invalid, error },
@@ -116,8 +119,15 @@ export const RenderComplexValueTextField = ({
 }: FilledTextFieldProps & WrappedFieldProps & ComplexValueTextFieldProps) => {
   const showError = !!error && touched;
 
+  const inputProps: Partial<OutlinedInputProps> = {};
+  if (endAdornment) {
+    inputProps.endAdornment = <InputAdornment position="end">{endAdornment}</InputAdornment>;
+  }
+
   return (
     <TextField
+      type={type}
+      InputProps={inputProps}
       fullWidth
       label={label}
       placeholder={placeholder}

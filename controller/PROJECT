@@ -1,5 +1,5 @@
 domain: kalm.dev
-repo: github.com/kalm-staging/kalm/controller
+repo: github.com/kalmhq/kalm/controller
 resources:
 - group: core
   kind: Application

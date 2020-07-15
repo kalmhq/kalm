@@ -3,7 +3,7 @@ package controllers
 import (
 	"context"
 	"fmt"
-	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 	appsV1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -33,7 +33,7 @@ func (suite *PluginBindingControllerSuite) TearDownSuite() {
 }
 
 func (suite *PluginBindingControllerSuite) SetupTest() {
-	namespace := suite.SetupKalmEnabledNs()
+	namespace := suite.SetupKalmEnabledNs("")
 	suite.namespace = &namespace
 
 	plugin := generateEmptyComponentPlugin()

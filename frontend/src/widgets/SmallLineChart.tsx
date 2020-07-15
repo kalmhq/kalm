@@ -12,26 +12,30 @@ import { CenterCaption } from "./Label";
 const smallLineChartStyles = (theme: Theme) =>
   createStyles({
     root: {
-      border: "1px solid #DDD",
       position: "relative",
-      background: "white",
       display: "inline-block",
       verticalAlign: "middle",
     },
+    border: {
+      background: "white",
+      border: "1px solid #DDD",
+    },
     text: {
-      left: 0,
-      right: 0,
-      top: 0,
-      bottom: 0,
-      position: "absolute",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-around",
+      paddingTop: "2px",
+      // left: 0,
+      // right: 0,
+      // top: 0,
+      // bottom: 0,
+      // position: "absolute",
+      // display: "flex",
+      // alignItems: "center",
+      // justifyContent: "space-around",
     },
   });
 
 interface Props extends WithStyles<typeof smallLineChartStyles> {
   data: MetricList;
+  isMetricServerEnabled: boolean;
   width: number | string;
   height: number | string;
   formatValue?: (value: number) => string;
@@ -61,10 +65,14 @@ class SmallLineChartRaw extends React.PureComponent<Props> {
   };
 
   private renderText() {
-    const { data, formatValue } = this.props;
-    let text = "No Data";
+    const { data, formatValue, isMetricServerEnabled } = this.props;
+    let text = "Data available soon";
 
-    if (data && data.size > 0) {
+    if (!isMetricServerEnabled) {
+      text = "Metrics not ready";
+    }
+
+    if (isMetricServerEnabled && data && data.size > 0) {
       if (formatValue) {
         text = formatValue(data.get(data.size - 1)!.get("y"));
       } else {
@@ -87,7 +95,7 @@ class SmallLineChartRaw extends React.PureComponent<Props> {
     const { classes, width, height } = this.props;
     const hasData = this.hasData();
     return (
-      <div style={{ width, height }} className={classes.root}>
+      <div style={{ width, height }} className={`${classes.root} ${hasData ? classes.border : ""}`}>
         {this.renderText()}
         {hasData ? (
           <Line
@@ -322,7 +330,7 @@ export const BigMemoryLineChart = (props: Pick<Props, "data">) => {
   );
 };
 
-export const SmallMemoryLineChart = (props: Pick<Props, "data">) => {
+export const SmallMemoryLineChart = (props: Pick<Props, "data" | "isMetricServerEnabled">) => {
   return (
     <SmallLineChart
       {...props}
@@ -335,7 +343,7 @@ export const SmallMemoryLineChart = (props: Pick<Props, "data">) => {
   );
 };
 
-export const SmallCPULineChart = (props: Pick<Props, "data">) => {
+export const SmallCPULineChart = (props: Pick<Props, "data" | "isMetricServerEnabled">) => {
   return (
     <SmallLineChart
       {...props}

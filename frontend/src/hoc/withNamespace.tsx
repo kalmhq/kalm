@@ -4,6 +4,7 @@ import { RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { Loading } from "widgets/Loading";
+import { setCurrentNamespaceAction } from "actions/namespaces";
 
 const mapStateToProps = (
   state: RootState,
@@ -35,6 +36,10 @@ export interface WithNamespaceProps
 
 export const withNamespace = (WrappedComponent: React.ComponentType<any>) => {
   const HOC: React.ComponentType<WithNamespaceProps> = class extends React.Component<WithNamespaceProps> {
+    componentDidMount() {
+      this.props.dispatch(setCurrentNamespaceAction(this.props.activeNamespaceName, false));
+    }
+
     render() {
       const { isNamespaceFirstLoaded } = this.props;
 

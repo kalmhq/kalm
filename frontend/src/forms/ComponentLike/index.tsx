@@ -3,8 +3,10 @@ import { grey } from "@material-ui/core/colors";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import HelpIcon from "@material-ui/icons/Help";
 import { Alert } from "@material-ui/lab";
+import { loadSimpleOptionsAction, loadStatefulSetOptionsAction } from "actions/persistentVolume";
 import clsx from "clsx";
 import { push } from "connected-react-router";
+import { KTooltip } from "forms/Application/KTooltip";
 import { KBoolCheckboxRender } from "forms/Basic/checkbox";
 import { shouldError } from "forms/common";
 import { Disks } from "forms/ComponentLike/Disks";
@@ -30,6 +32,8 @@ import {
   workloadTypeServer,
   workloadTypeStatefulSet,
 } from "types/componentTemplate";
+import { PublicRegistriesList } from "types/registry";
+import { sizeStringToGi, sizeStringToNumber } from "utils/sizeConv";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Body, Caption, H5 } from "widgets/Label";
@@ -38,16 +42,13 @@ import { SectionTitle } from "widgets/SectionTitle";
 import { KRadioGroupRender } from "../Basic/radio";
 import { RenderSelectField } from "../Basic/select";
 import { KRenderCommandTextField, KRenderTextField, RenderComplexValueTextField } from "../Basic/textfield";
-import { NormalizeCPU, NormalizeNumber } from "../normalizer";
+import { NormalizeNumber } from "../normalizer";
 import { ValidatorCPU, ValidatorMemory, ValidatorName, ValidatorRequired, ValidatorSchedule } from "../validator";
 import { Envs } from "./Envs";
 import { RenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
-import { KTooltip } from "forms/Application/KTooltip";
-import { PublicRegistriesList } from "types/registry";
-import { loadSimpleOptionsAction, loadStatefulSetOptionsAction } from "actions/persistentVolume";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -231,11 +232,11 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   };
 
   private getCPUHelper() {
-    return "Fractional values are allowed. A Container that requests 0.5 CPU is guaranteed half as much CPU as a Container that requests 1 CPU. You can use the suffix m to mean milli. For example 100m CPU, 100 milliCPU, and 0.1 CPU are all the same. Precision finer than 1m is not allowed. CPU is always requested as an absolute quantity, never as a relative quantity; 0.1 is the same amount of CPU on a single-core, dual-core, or 48-core machine.";
+    return "Kalm uses 1 Core as the base unit of CPU. The minimum support is 0.001 Core.";
   }
 
   private getMemoryHelper() {
-    return "The memory resource is measured in bytes. You can express memory as a plain integer or a fixed-point integer with one of these suffixes: E, P, T, G, M, K, Ei, Pi, Ti, Gi, Mi, Ki.";
+    return "Kalm uses Mi as the base unit of Memory. 1 Gi equals 1024 Mi.";
   }
 
   private preInjectedFiles = () => {
@@ -630,16 +631,25 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
         <Grid item xs={6}>
           <Field
-            component={KRenderTextField}
+            component={RenderComplexValueTextField}
             name="cpu"
             label="CPU Limit"
             validate={[ValidatorCPU]}
-            normalize={NormalizeCPU}
+            // normalize={NormalizeCPU}
             placeholder="Please type CPU limit"
-            helperText="Eg. 1 = 1Core; 0.1 = 100m = 0.1Core"
+            type="number"
+            formValueToEditValue={(value: any) => {
+              return !value ? "" : sizeStringToNumber(value);
+            }}
+            editValueToFormValue={(value: any) => {
+              return !value ? "" : value;
+            }}
             endAdornment={
               <KTooltip title={this.getCPUHelper()}>
-                <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
+                <Box display="flex" alignItems="center">
+                  <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
+                  <Box ml={0.5}>Core</Box>
+                </Box>
               </KTooltip>
             }
           />
@@ -647,16 +657,26 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
         <Grid item xs={6}>
           <Field
-            component={KRenderTextField}
+            component={RenderComplexValueTextField}
             name="memory"
             label="Memory Limit"
             margin
             validate={[ValidatorMemory]}
             // normalize={NormalizeMemory}
             placeholder="Please type memory limit"
+            type="number"
+            formValueToEditValue={(value: any) => {
+              return !value ? "" : sizeStringToGi(value);
+            }}
+            editValueToFormValue={(value: any) => {
+              return !value ? "" : value + "Gi";
+            }}
             endAdornment={
               <KTooltip title={this.getMemoryHelper()}>
-                <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
+                <Box display="flex" alignItems="center">
+                  <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
+                  <Box ml={0.5}>Gi</Box>
+                </Box>
               </KTooltip>
             }
           />

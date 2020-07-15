@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"github.com/kalm-staging/kalm/api/client"
-	"github.com/kalm-staging/kalm/api/resources"
+	"github.com/kalmhq/kalm/api/client"
+	"github.com/kalmhq/kalm/api/resources"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,14 +28,6 @@ type H map[string]interface{}
 func (h *ApiHandler) Install(e *echo.Echo) {
 	// liveness readiness probes
 	e.GET("/ping", handlePing)
-
-	// oidc auth proxy handlers
-	e.GET("/oidc/login", h.handleOIDCLogin)
-	e.GET("/oidc/callback", h.handleOIDCCallback)
-
-	// envoy ext_authz handlers
-	e.GET("/"+ENVOY_EXT_AUTH_PATH_PREFIX+"/*", h.handleExtAuthz)
-	e.GET("/"+ENVOY_EXT_AUTH_PATH_PREFIX, h.handleExtAuthz)
 
 	// login
 	e.POST("/login/token", h.handleValidateToken)

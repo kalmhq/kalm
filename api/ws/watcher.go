@@ -3,10 +3,10 @@ package ws
 import (
 	"errors"
 
-	"github.com/kalm-staging/kalm/api/handler"
-	"github.com/kalm-staging/kalm/api/resources"
-	"github.com/kalm-staging/kalm/controller/api/v1alpha1"
-	"github.com/kalm-staging/kalm/controller/controllers"
+	"github.com/kalmhq/kalm/api/handler"
+	"github.com/kalmhq/kalm/api/resources"
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
+	"github.com/kalmhq/kalm/controller/controllers"
 	log "github.com/sirupsen/logrus"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -82,7 +82,7 @@ func buildNamespaceResMessage(c *Client, action string, objWatched interface{}) 
 		return nil, errors.New("convert watch obj to Namespace failed")
 	}
 
-	if namespace.Name == resources.KAPP_SYSTEM_NAMESPACE {
+	if namespace.Name == resources.KALM_SYSTEM_NAMESPACE {
 		return &ResMessage{}, nil
 	}
 

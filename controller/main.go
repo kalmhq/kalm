@@ -33,12 +33,12 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	corev1alpha1 "github.com/kalm-staging/kalm/controller/api/v1alpha1"
-	"github.com/kalm-staging/kalm/controller/controllers"
+	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
+	"github.com/kalmhq/kalm/controller/controllers"
 
 	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	apiregistration "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1"
-	//corekalmdevv1alpha1 "github.com/kalm-staging/kalm/controller/api/v1alpha1"
+	//corekalmdevv1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 	// +kubebuilder:scaffold:imports
 )
 
