@@ -134,7 +134,7 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
       },
       {
         icon: KalmIngressIcon,
-        text: "Ingress",
+        text: "Load Balancer",
         to: "/cluster/ingress",
       },
       {

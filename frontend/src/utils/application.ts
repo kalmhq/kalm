@@ -3,7 +3,7 @@ import { getComponentFormVolumeOptions } from "selectors/component";
 import { ApplicationComponent, ApplicationComponentDetails } from "types/application";
 import { VolumeTypePersistentVolumeClaim, VolumeTypePersistentVolumeClaimNew } from "types/componentTemplate";
 import { RootState } from "reducers";
-import { formatDate } from "utils";
+import { formatDate, formatTimeDistance } from "utils";
 
 export const componentDetailsToComponent = (componentDetails: ApplicationComponentDetails): ApplicationComponent => {
   return componentDetails.delete("pods").delete("services").delete("metrics") as ApplicationComponent;
@@ -118,6 +118,13 @@ export const getApplicationCreatedAtDate = (components: Immutable.List<Applicati
 export const getComponentCreatedAtString = (component: ApplicationComponentDetails): string => {
   const createdAt = getComponentCreatedAtDate(component);
   const createdAtString = createdAt <= new Date(0) ? "-" : formatDate(createdAt);
+  return createdAtString;
+};
+
+export const getComponentCreatedFromAndAtString = (component: ApplicationComponentDetails): string => {
+  const createdAt = getComponentCreatedAtDate(component);
+  const createdAtString =
+    createdAt <= new Date(0) ? "-" : `${formatTimeDistance(createdAt)} ago(${formatDate(createdAt)})`;
   return createdAtString;
 };
 

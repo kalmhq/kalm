@@ -17,9 +17,9 @@ export class VerticalHeadTable extends React.PureComponent<Props> {
       <TableContainer>
         <Table aria-label="table" size="small">
           <TableBody>
-            {items.map((item) => {
+            {items.map((item, index) => {
               return (
-                <TableRow key={item.name}>
+                <TableRow key={index}>
                   <TableCell>{item.name}</TableCell>
                   <TableCell>{item.content}</TableCell>
                 </TableRow>
