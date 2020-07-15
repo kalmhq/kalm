@@ -13,10 +13,12 @@ import { setErrorNotificationAction } from "actions/notification";
 import { blinkTopProgressAction } from "actions/settings";
 import { CustomizedButton } from "widgets/Button";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
-import { DeleteIcon, EditIcon } from "widgets/Icon";
+import { DeleteIcon, EditIcon, KalmRegistryIcon } from "widgets/Icon";
 import { Loading } from "widgets/Loading";
 import { BasePage } from "../BasePage";
 import { RegistryNewModal, RegistryNewModalID } from "./New";
+import { EmptyList } from "widgets/EmptyList";
+import { indigo } from "@material-ui/core/colors";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -190,8 +192,35 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
     );
   }
 
+  private renderEmpty() {
+    const { dispatch } = this.props;
+
+    return (
+      <EmptyList
+        image={<KalmRegistryIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
+        title={"You don't have any Registries"}
+        content="You don't have any Registries yet, you can create a Registry at once."
+        button={
+          <CustomizedButton
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              this.setState({
+                editingRegistry: undefined,
+              });
+              blinkTopProgressAction();
+              dispatch(openDialogAction(RegistryNewModalID));
+            }}
+          >
+            Add Registry
+          </CustomizedButton>
+        }
+      />
+    );
+  }
+
   public render() {
-    const { isLoading, isFirstLoaded } = this.props;
+    const { isLoading, isFirstLoaded, registries } = this.props;
     const { editingRegistry } = this.state;
     const tableData = this.getData();
 
@@ -202,7 +231,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
         <Box p={2}>
           {isLoading && !isFirstLoaded ? (
             <Loading />
-          ) : (
+          ) : registries.size > 0 ? (
             <KTable
               options={{
                 paging: tableData.length > 20,
@@ -238,12 +267,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
                   sorting: false,
                   render: this.renderVerified,
                 },
-                // {
-                //   title: "Repositories",
-                //   field: "repositories",
-                //   sorting: false,
-                //   render: this.renderRepositories
-                // },
+
                 {
                   title: "Actions",
                   field: "action",
@@ -252,14 +276,11 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
                   render: (row) => this.renderActions(row),
                 },
               ]}
-              // detailPanel={this.renderDetails}
-              // onRowClick={(_event, _rowData, togglePanel) => {
-              //   togglePanel!();
-              //   console.log(_event);
-              // }}
               data={tableData}
               title=""
             />
+          ) : (
+            this.renderEmpty()
           )}
         </Box>
       </BasePage>
