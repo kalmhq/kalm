@@ -1,4 +1,4 @@
-import { AppBar, createStyles, Divider, IconButton, Menu, MenuItem, Theme } from "@material-ui/core";
+import { AppBar, createStyles, Divider, IconButton, Menu, MenuItem, Theme, Breadcrumbs } from "@material-ui/core";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import MenuIcon from "@material-ui/icons/Menu";
 import { WithStyles, withStyles } from "@material-ui/styles";
@@ -6,7 +6,7 @@ import { logoutAction } from "actions/auth";
 import { closeTutorialDrawerAction, openTutorialDrawerAction } from "actions/tutorial";
 import React from "react";
 import { connect } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, withRouter, RouteComponentProps } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { FlexRowItemCenterBox } from "widgets/Box";
@@ -58,10 +58,14 @@ const styles = (theme: Theme) =>
       // margin: `0 10px`
     },
     barTitle: {
-      color: "inherit",
+      color: "#fff",
       fontSize: "18px",
       fontWeight: "normal",
       padding: "10px 0",
+      "&.disabled": {
+        color: "inherit",
+        cursor: "unset",
+      },
       "&:hover": {
         color: "inherit",
       },
@@ -78,7 +82,7 @@ const styles = (theme: Theme) =>
     },
   });
 
-interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps> {
+interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, RouteComponentProps {
   dispatch: TDispatch;
 }
 
@@ -160,9 +164,41 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  render() {
-    const { classes, dispatch, isOpenRootDrawer } = this.props;
+  private renderBreadcrumbContent = (path: string) => {
+    switch (path) {
+      case "applications":
+      case "":
+        return "Applications";
+      case "components":
+        return "Components";
+      case "certificates":
+        return "Certificates";
+      case "nodes":
+        return "Nodes";
+      case "ingress":
+        return "Ingress";
+      case "disks":
+        return "Disks";
+      case "registries":
+        return "Registries";
+      case "routes":
+        return "Routes";
+      case "metrics":
+        return "Metrics";
+      case "new":
+        return "New";
+      case "edit":
+        return "Edit";
+      case "details":
+        return "Details";
+      default:
+        return path;
+    }
+  };
 
+  render() {
+    const { classes, dispatch, isOpenRootDrawer, location } = this.props;
+    const pathArray = location.pathname.split("/");
     return (
       <AppBar ref={this.headerRef} id="header" position="relative" className={classes.appBar}>
         <div className={classes.barContainer}>
@@ -175,9 +211,36 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
               {isOpenRootDrawer ? <ChevronLeftIcon htmlColor={"#fff"} /> : <MenuIcon htmlColor={"#fff"} />}
             </IconButton>
             <FlexRowItemCenterBox>
-              <Link className={classes.barTitle} to="/" onClick={() => blinkTopProgressAction()}>
-                Kalm Dashboard
-              </Link>
+              <Breadcrumbs aria-label="breadcrumb">
+                {pathArray.map((path, index) => {
+                  if (path === "cluster") {
+                    return null;
+                  } else if (index === 0) {
+                    return (
+                      <Link key={index} className={classes.barTitle} to="/" onClick={() => blinkTopProgressAction()}>
+                        Kalm Dashboard
+                      </Link>
+                    );
+                  } else if (index + 1 === pathArray.length) {
+                    return (
+                      <span key={index} className={`${classes.barTitle} disabled`}>
+                        {this.renderBreadcrumbContent(path)}
+                      </span>
+                    );
+                  } else {
+                    return (
+                      <Link
+                        key={index}
+                        className={classes.barTitle}
+                        to={pathArray.slice(0, index + 1).join("/")}
+                        onClick={() => blinkTopProgressAction()}
+                      >
+                        {this.renderBreadcrumbContent(path)}
+                      </Link>
+                    );
+                  }
+                })}
+              </Breadcrumbs>
             </FlexRowItemCenterBox>
           </div>
 
@@ -196,4 +259,4 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const AppBarComponent = connect(mapStateToProps)(withStyles(styles)(AppBarComponentRaw));
+export const AppBarComponent = connect(mapStateToProps)(withStyles(styles)(withRouter(AppBarComponentRaw)));
