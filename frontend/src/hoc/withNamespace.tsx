@@ -40,6 +40,12 @@ export const withNamespace = (WrappedComponent: React.ComponentType<any>) => {
       this.props.dispatch(setCurrentNamespaceAction(this.props.activeNamespaceName, false));
     }
 
+    componentDidUpdate(prevProps: any) {
+      if (this.props.activeNamespaceName !== prevProps.activeNamespaceName) {
+        this.props.dispatch(setCurrentNamespaceAction(this.props.activeNamespaceName, false));
+      }
+    }
+
     render() {
       const { isNamespaceFirstLoaded } = this.props;
 

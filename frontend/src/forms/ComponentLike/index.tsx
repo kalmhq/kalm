@@ -1013,7 +1013,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             }
           />
         </Box>
-        {process.env.REACT_APP_DEBUG ? (
+        {process.env.REACT_APP_DEBUG === "true" ? (
           <pre style={{ maxWidth: 1500, background: "#eee" }}>
             {JSON.stringify(
               (this.props.fieldValues as any).delete("metrics").delete("pods").delete("services"),

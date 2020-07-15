@@ -9,7 +9,7 @@ import createRootReducer from "./reducers";
 const configureStore = (history: History<LocationState>) => {
   const middlewares: any = [routerMiddleware(history), errorHandlerMiddleware, thunkMiddleware];
 
-  if (process.env.REACT_APP_DEBUG) {
+  if (process.env.REACT_APP_DEBUG === "true") {
     const logger = createLogger({
       diff: true,
       collapsed: true,

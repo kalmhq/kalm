@@ -13,11 +13,10 @@ import {
 } from "@material-ui/core";
 import ExpandLess from "@material-ui/icons/ExpandLess";
 import ExpandMore from "@material-ui/icons/ExpandMore";
-import { setCurrentNamespaceAction } from "actions/namespaces";
-import { setSuccessNotificationAction } from "actions/notification";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { LEFT_SECTION_OPEN_WIDTH, NAMESPACES_ZINDEX, SECOND_HEADER_HEIGHT } from "layout/Constants";
 import React from "react";
+import { Link, withRouter } from "react-router-dom";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -75,16 +74,8 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private handleSelect = (event: React.MouseEvent) => {
-    const { dispatch } = this.props;
-    const applicationName = event.currentTarget.getAttribute("namespace-name")!;
-    dispatch(setCurrentNamespaceAction(applicationName));
-    dispatch(setSuccessNotificationAction(`Application changed to ${applicationName}`));
-    this.handleClose();
-  };
-
   public render() {
-    const { classes, applications, activeNamespace, isNamespaceLoading, isNamespaceFirstLoaded } = this.props;
+    const { classes, applications, activeNamespace, isNamespaceLoading, isNamespaceFirstLoaded, location } = this.props;
     const { open } = this.state;
 
     if (isNamespaceLoading && !isNamespaceFirstLoaded) {
@@ -94,6 +85,8 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
         </div>
       );
     }
+
+    const pathnameSplits = location.pathname.split("/");
 
     return (
       <div className={classes.root}>
@@ -134,16 +127,25 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
                     classes={{ root: classes.menuList }}
                   >
                     {applications
-                      .map((application) => (
-                        <MenuItem
-                          onClick={this.handleSelect}
-                          namespace-name={application.get("name")}
-                          key={application.get("name")}
-                          className={classes.menuItem}
-                        >
-                          {application.get("name")}
-                        </MenuItem>
-                      ))
+                      .map((application) => {
+                        let to = `/applications/${application.get("name")}/components`;
+                        if (pathnameSplits[1] && pathnameSplits[2] && pathnameSplits[1] === "applications") {
+                          pathnameSplits[2] = application.get("name");
+                          to = pathnameSplits.slice(0, 4).join("/");
+                        }
+                        return (
+                          <MenuItem
+                            onClick={this.handleClose}
+                            namespace-name={application.get("name")}
+                            key={application.get("name")}
+                            className={classes.menuItem}
+                            component={Link}
+                            to={to}
+                          >
+                            {application.get("name")}
+                          </MenuItem>
+                        );
+                      })
                       .toArray()}
                   </MenuList>
                 </ClickAwayListener>
@@ -156,4 +158,4 @@ class NamespacesRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const Namespaces = withNamespace(withStyles(styles)(NamespacesRaw));
+export const Namespaces = withNamespace(withStyles(styles)(withRouter(NamespacesRaw)));
