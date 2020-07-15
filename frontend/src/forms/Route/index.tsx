@@ -100,21 +100,10 @@ interface State {
 class RouteFormRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
-    const { form, dispatch } = props;
     this.state = {
       isAdvancedPartUnfolded: false,
       isValidCertificationUnfolded: false,
     };
-    dispatch(
-      arrayPush(
-        form,
-        "destinations",
-        Immutable.Map({
-          host: "",
-          weight: 1,
-        }),
-      ),
-    );
   }
 
   private canCertDomainsSuiteForHost = (domains: Immutable.List<string>, host: string) => {
@@ -230,14 +219,67 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
+  private renderTargets = () => {
+    const { dispatch, form, destinations } = this.props;
+    if (destinations.size === 0) {
+      dispatch(
+        arrayPush(
+          form,
+          "destinations",
+          Immutable.Map({
+            host: "",
+            weight: 1,
+          }),
+        ),
+      );
+    }
+    return (
+      <Box p={2}>
+        <Caption>Choose targets that will receive requets.</Caption>
+        <Box mt={2} mr={2} mb={2}>
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<Icon>add</Icon>}
+            size="small"
+            id="add-target-button"
+            onClick={() =>
+              dispatch(
+                arrayPush(
+                  form,
+                  "destinations",
+                  Immutable.Map({
+                    host: "",
+                    weight: 1,
+                  }),
+                ),
+              )
+            }
+          >
+            Add a target
+          </Button>
+        </Box>
+        <Collapse in={destinations.size > 1}>
+          <Alert className="alert" severity="info">
+            There are more than one target, traffic will be forwarded to each target by weight.
+          </Alert>
+        </Collapse>
+        <FieldArray
+          name="destinations"
+          component={RenderHttpRouteDestinations}
+          rerenderOnEveryChange
+          validate={ValidatorAtLeastOneHttpRouteDestination}
+        />
+      </Box>
+    );
+  };
   public render() {
     const {
       methodsMode,
       classes,
-      domains,
       dispatch,
-      destinations,
       form,
+      domains,
       schemes,
       handleSubmit,
       dirty,
@@ -367,48 +409,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
             </Box>
 
             <Box mb={2}>
-              <KPanel
-                title="Targets"
-                content={
-                  <Box p={2}>
-                    <Caption>Choose targets that will receive requets.</Caption>
-                    <Box mt={2} mr={2} mb={2}>
-                      <Button
-                        variant="outlined"
-                        color="primary"
-                        startIcon={<Icon>add</Icon>}
-                        size="small"
-                        id="add-target-button"
-                        onClick={() =>
-                          dispatch(
-                            arrayPush(
-                              form,
-                              "destinations",
-                              Immutable.Map({
-                                host: "",
-                                weight: 1,
-                              }),
-                            ),
-                          )
-                        }
-                      >
-                        Add a target
-                      </Button>
-                    </Box>
-                    <Collapse in={destinations.size > 1}>
-                      <Alert className="alert" severity="info">
-                        There are more than one target, traffic will be forwarded to each target by weight.
-                      </Alert>
-                    </Collapse>
-                    <FieldArray
-                      name="destinations"
-                      component={RenderHttpRouteDestinations}
-                      rerenderOnEveryChange
-                      validate={ValidatorAtLeastOneHttpRouteDestination}
-                    />
-                  </Box>
-                }
-              />
+              <KPanel title="Targets" content={this.renderTargets()} />
             </Box>
 
             <Box mb={2}>
