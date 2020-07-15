@@ -561,14 +561,14 @@ export default class MockStore {
                 },
                 {
                   names: [
-                    "kalmstaging/dashboard@sha256:8e56397ad21d8d4c26adb82c6a7058e28584a47bb49234a4f3c28c4aee3a8caa",
+                    "quay.io/kalmhq/kalm@sha256:8e56397ad21d8d4c26adb82c6a7058e28584a47bb49234a4f3c28c4aee3a8caa",
                   ],
                   sizeBytes: 83470034,
                 },
                 {
                   names: [
-                    "kalmstaging/dashboard@sha256:ccfd36b5cd3b44e678eb84bc7bf0e49ca3ec7d74a04e7216037d874f5eb79972",
-                    "kalmstaging/dashboard:latest",
+                    "quay.io/kalmhq/kalm@sha256:ccfd36b5cd3b44e678eb84bc7bf0e49ca3ec7d74a04e7216037d874f5eb79972",
+                    "quay.io/kalmhq/kalm:latest",
                   ],
                   sizeBytes: 83467987,
                 },
@@ -4163,8 +4163,8 @@ export default class MockStore {
                 },
                 {
                   names: [
-                    "kalmstaging/dashboard@sha256:bca86dceab0becb149b2cc5912ab8ef58042d77e547df06cd64baa63091c13a0",
-                    "kalmstaging/dashboard:latest",
+                    "quay.io/kalmhq/kalm@sha256:bca86dceab0becb149b2cc5912ab8ef58042d77e547df06cd64baa63091c13a0",
+                    "quay.io/kalmhq/kalm:latest",
                   ],
                   sizeBytes: 83467987,
                 },

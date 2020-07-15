@@ -27,7 +27,7 @@ spec:
             - /manager
           args:
             - --enable-leader-election
-          image: kalmstaging/operator:latest
+          image: quay.io/kalmhq/kalm-operator:latest
           imagePullPolicy: Always
           name: manager
           resources:

@@ -33,7 +33,7 @@ import (
 
 const (
 	NamespaceKalmSystem = "kalm-system"
-	KalmImgRepo         = "kalmstaging/dashboard"
+	KalmImgRepo         = "quay.io/kalmhq/kalm"
 )
 
 //var finalizerName = "install.finalizers.kalm.dev"

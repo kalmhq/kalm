@@ -88,8 +88,8 @@ jobs:
       install:
         - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
       script:
-        - docker build . -t kalmstaging/dashboard:latest
-        - docker push kalmstaging/dashboard:latest
+        - docker build . -t quay.io/kalmhq/kalm:latest
+        - docker push quay.io/kalmhq/kalm:latest
     - language: go
       go:
         - 1.13
