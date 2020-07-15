@@ -31,6 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"strings"
 )
 
 const KALM_EXTERNAL_ENVOY_EXT_AUTHZ_SERVER_NAME = "external-envoy-ext-authz-server"
@@ -64,11 +65,6 @@ func (r *SingleSignOnConfigReconcilerTask) Run(req ctrl.Request) error {
 		return err
 	}
 
-	if err := r.LoadResources(); err != nil {
-		r.Log.Error(err, "Load resources error")
-		return err
-	}
-
 	if len(ssoList.Items) == 0 {
 		return r.DeleteResources()
 	}
@@ -84,6 +80,11 @@ func (r *SingleSignOnConfigReconcilerTask) Run(req ctrl.Request) error {
 	ssoConfig := ssoList.Items[0]
 
 	r.ssoConfig = &ssoConfig
+
+	if err := r.LoadResources(); err != nil {
+		r.Log.Error(err, "Load resources error")
+		return err
+	}
 
 	return r.ReconcileResources()
 }
@@ -706,6 +707,48 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileAuthProxy() error {
 	return nil
 }
 
+func (r *SingleSignOnConfigReconcilerTask) ReconcileDexRouteCert() error {
+	if r.ssoConfig.Spec.UseHttp {
+		return nil
+	}
+
+	if r.ssoConfig.Spec.Domain == "" {
+		return nil
+	}
+
+	certName := "sso-domain-" + strings.ReplaceAll(strings.ToLower(r.ssoConfig.Spec.Domain), ".", "-")
+
+	var cert corev1alpha1.HttpsCert
+
+	if err := r.Reader.Get(r.ctx, types.NamespacedName{
+		Name:      certName,
+		Namespace: KALM_DEX_NAMESPACE,
+	}, &cert); err != nil {
+		if errors.IsNotFound(err) {
+			res := corev1alpha1.HttpsCert{
+				ObjectMeta: metaV1.ObjectMeta{
+					Name:      certName,
+					Namespace: KALM_DEX_NAMESPACE,
+				},
+				Spec: corev1alpha1.HttpsCertSpec{
+					HttpsCertIssuer: DefaultHTTP01IssuerName,
+					Domains:         []string{r.ssoConfig.Spec.Domain},
+				},
+			}
+
+			if err := r.Create(r.ctx, &res); err != nil {
+				r.Log.Error(err, "Create cert failed.")
+				return err
+			}
+		} else {
+			r.Log.Error(err, fmt.Sprintf("Get sso domain cert error, certName: %s", certName))
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (r *SingleSignOnConfigReconcilerTask) ReconcileResources() error {
 	if r.ssoConfig.Spec.Issuer == "" {
 		if err := r.ReconcileSecret(); err != nil {
@@ -722,6 +765,10 @@ func (r *SingleSignOnConfigReconcilerTask) ReconcileResources() error {
 	}
 
 	if err := r.ReconcileAuthProxy(); err != nil {
+		return err
+	}
+
+	if err := r.ReconcileDexRouteCert(); err != nil {
 		return err
 	}
 
