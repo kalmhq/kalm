@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"k8s.io/apimachinery/pkg/api/errors"
 	"sync"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
@@ -174,25 +175,20 @@ func (builder *Builder) UpdateDockerRegistry(registry *DockerRegistry) (*DockerR
 	dockerRegistry := &v1alpha1.DockerRegistry{}
 	secret := &coreV1.Secret{}
 
-	var err error
-
-	wg := sync.WaitGroup{}
-	wg.Add(2)
-
-	go func() {
-		defer wg.Done()
-		err = builder.Get("", registry.Name, dockerRegistry)
-	}()
-
-	go func() {
-		defer wg.Done()
-		err = builder.Get("kalm-system", controllers.GetRegistryAuthenticationName(registry.Name), secret)
-	}()
-
-	wg.Wait()
-
-	if err != nil {
+	if err := builder.Get("", registry.Name, dockerRegistry); err != nil {
 		return nil, err
+	}
+
+	secretName := controllers.GetRegistryAuthenticationName(registry.Name)
+
+	secretNotExist := false
+
+	if err := builder.Get("kalm-system", secretName, secret); err != nil {
+		if errors.IsNotFound(err) {
+			secretNotExist = true
+		} else {
+			return nil, err
+		}
 	}
 
 	secret.Data = map[string][]byte{
@@ -201,19 +197,21 @@ func (builder *Builder) UpdateDockerRegistry(registry *DockerRegistry) (*DockerR
 	}
 	dockerRegistry.Spec = *registry.DockerRegistrySpec
 
-	wg.Add(2)
+	if err := builder.Update(dockerRegistry); err != nil {
+		return nil, err
+	}
 
-	go func() {
-		defer wg.Done()
-		err = builder.Update(dockerRegistry)
-	}()
-
-	go func() {
-		defer wg.Done()
-		err = builder.Update(secret)
-	}()
-
-	wg.Wait()
+	if secretNotExist {
+		secret.Namespace = "kalm-system"
+		secret.Name = secretName
+		if err := builder.Create(secret); err != nil {
+			return nil, err
+		}
+	} else {
+		if err := builder.Update(secret); err != nil {
+			return nil, err
+		}
+	}
 
 	return buildDockerRegistryFromResource(dockerRegistry, secret), nil
 }

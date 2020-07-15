@@ -291,6 +291,9 @@ func (r *ProtectedEndpointReconcilerTask) ReconcileResources(req ctrl.Request) e
 								FilterChain: &v1alpha32.EnvoyFilter_ListenerMatch_FilterChainMatch{
 									Filter: &v1alpha32.EnvoyFilter_ListenerMatch_FilterMatch{
 										Name: "envoy.http_connection_manager",
+										SubFilter: &v1alpha32.EnvoyFilter_ListenerMatch_SubFilterMatch{
+											Name: "envoy.filters.http.jwt_authn",
+										},
 									},
 								},
 							},

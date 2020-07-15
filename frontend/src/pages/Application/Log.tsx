@@ -28,7 +28,7 @@ import { PodStatus } from "types/application";
 import { ImmutableMap } from "typings";
 import { formatTimestamp, formatDate } from "utils";
 import { KSelect } from "widgets/KSelect";
-import { BoldBody } from "widgets/Label";
+import { Body2 } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { Namespaces } from "widgets/Namespaces";
 import { Terminal } from "xterm";
@@ -615,15 +615,15 @@ export class LogStream extends React.PureComponent<Props, State> {
         <Box pt="3px">
           <Box display="flex">
             <Box width="50px">
-              <BoldBody>From</BoldBody>
+              <Body2>From</Body2>
             </Box>
-            <BoldBody>{formatTimestamp(timestampsFrom.get(podName) as string)}</BoldBody>
+            <Body2>{formatTimestamp(timestampsFrom.get(podName) as string)}</Body2>
           </Box>
           <Box display="flex">
             <Box width="50px" pl={2}>
-              <BoldBody>To</BoldBody>
+              <Body2>To</Body2>
             </Box>
-            <BoldBody>{formatDate(new Date())}</BoldBody>
+            <Body2>{formatDate(new Date())}</Body2>
           </Box>
         </Box>
       </Box>

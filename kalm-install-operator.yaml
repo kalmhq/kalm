@@ -47,7 +47,7 @@ spec:
               type: boolean
             skipKalmControllerInstallation:
               type: boolean
-            skipKalmControllerInstallation:
+            skipKalmDashboardInstallation:
               type: boolean
           type: object
         status:

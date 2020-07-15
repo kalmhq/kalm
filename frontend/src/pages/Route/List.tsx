@@ -10,13 +10,16 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { HttpRoute } from "types/route";
 import { SuccessBadge } from "widgets/Badge";
-import { DangerButton } from "widgets/Button";
+import { DangerButton, CustomizedButton } from "widgets/Button";
 import { Loading } from "widgets/Loading";
 import { Namespaces } from "widgets/Namespaces";
 import { KTable } from "widgets/Table";
 import { Targets } from "widgets/Targets";
 import { OpenInBrowser } from "widgets/OpenInBrowser";
 import { CopyAsCurl } from "widgets/CopyAsCurl";
+import { EmptyList } from "widgets/EmptyList";
+import { KalmRoutesIcon } from "widgets/Icon";
+import { indigo } from "@material-ui/core/colors";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -159,8 +162,32 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     );
   };
 
+  private renderEmpty() {
+    const { dispatch, activeNamespaceName } = this.props;
+
+    return (
+      <EmptyList
+        image={<KalmRoutesIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
+        title={"You don't have any Routes"}
+        content="You don't have any Routes yet, you can create a Route at once."
+        button={
+          <CustomizedButton
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              blinkTopProgressAction();
+              dispatch(push(`/applications/${activeNamespaceName}/routes/new`));
+            }}
+          >
+            Add Route
+          </CustomizedButton>
+        }
+      />
+    );
+  }
+
   public render() {
-    const { isRoutesFirstLoaded, isRoutesLoading, activeNamespaceName } = this.props;
+    const { isRoutesFirstLoaded, isRoutesLoading, activeNamespaceName, httpRoutes } = this.props;
     const tableData = this.getData();
     return (
       <BasePage
@@ -185,7 +212,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
         <Box p={2}>
           {isRoutesLoading && !isRoutesFirstLoaded ? (
             <Loading />
-          ) : (
+          ) : httpRoutes && httpRoutes.size > 0 ? (
             <KTable
               options={{
                 paging: tableData.length > 20,
@@ -238,6 +265,8 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
               data={tableData}
               title=""
             />
+          ) : (
+            this.renderEmpty()
           )}
         </Box>
       </BasePage>
