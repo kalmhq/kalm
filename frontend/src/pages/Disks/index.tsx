@@ -118,6 +118,7 @@ export class VolumesRaw extends React.Component<Props, States> {
     return (
       <>
         <IconButtonWithTooltip
+          size="small"
           disabled={rowData.get("isInUse")}
           tooltipTitle={rowData.get("isInUse") ? "This disk in in used and can't be removed" : "Delete"}
           onClick={() => {

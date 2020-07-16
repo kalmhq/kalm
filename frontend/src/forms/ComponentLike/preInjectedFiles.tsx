@@ -209,6 +209,7 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
                   tooltipPlacement="top"
                   tooltipTitle="Delete"
                   aria-label="delete"
+                  size="small"
                   onClick={() => dispatch(arrayRemove(form, "preInjectedFiles", index))}
                 >
                   <DeleteIcon />
