@@ -43,7 +43,7 @@ interface Props extends WithStyles<typeof smallLineChartStyles> {
 }
 
 const emptyChartDataX = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-const emptyChartDataY = [1, 3, 2, 5, 2, 6, 3, 6, 8];
+const emptyChartDataY = [1, 3, 1, 5, 2, 7, 2, 5, 8];
 
 class SmallLineChartRaw extends React.PureComponent<Props> {
   private generateData = (): ChartData<chartjs.ChartData> => {
