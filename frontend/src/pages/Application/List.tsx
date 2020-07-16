@@ -125,12 +125,19 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
 
   private renderCPU = (applicationListItem: RowData) => {
     const metrics = applicationListItem.get("metrics");
-    return <SmallCPULineChart data={metrics.get("cpu")} />;
+    return (
+      <SmallCPULineChart data={metrics.get("cpu")} hoverText={this.hasPods(applicationListItem) ? "No data" : ""} />
+    );
   };
 
   private renderMemory = (applicationListItem: RowData) => {
     const metrics = applicationListItem.get("metrics");
-    return <SmallMemoryLineChart data={metrics.get("memory")} />;
+    return (
+      <SmallMemoryLineChart
+        data={metrics.get("memory")}
+        hoverText={this.hasPods(applicationListItem) ? "No data" : ""}
+      />
+    );
   };
 
   private renderName = (rowData: RowData) => {
@@ -150,6 +157,18 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     const components = componentsMap.get(applicationDetails.get("name"));
 
     return <Body>{components ? getApplicationCreatedAtString(components) : "-"}</Body>;
+  };
+
+  private hasPods = (applicationDetails: RowData) => {
+    const { componentsMap } = this.props;
+    let count = 0;
+    componentsMap.get(applicationDetails.get("name"))?.forEach((component) => {
+      component.get("pods").forEach((podStatus) => {
+        count++;
+      });
+    });
+
+    return count !== 0;
   };
 
   private renderStatus = (applicationDetails: RowData) => {
