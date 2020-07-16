@@ -23,13 +23,16 @@ import (
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 	installv1alpha1 "github.com/kalmhq/kalm/operator/api/v1alpha1"
 	"github.com/kalmhq/kalm/operator/utils"
+	promconfig "github.com/prometheus/prometheus/config"
 	v1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"strconv"
 	"time"
 )
 
@@ -193,6 +196,59 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 		if err := r.installFromYaml(ctx, "istiocontrolplane.yaml"); err != nil {
 			log.Error(err, "install istio plane error.")
 			return err
+		}
+
+		cmPrometheus := corev1.ConfigMap{}
+		err := r.Get(ctx, types.NamespacedName{Name: "prometheus", Namespace: "istio-system"}, &cmPrometheus)
+		if err != nil {
+			return err
+		}
+
+		v := cmPrometheus.Data["prometheus.yml"]
+		pConfig, _ := promconfig.Load(v)
+		if len(pConfig.RuleFiles) <= 0 {
+			pConfig.RuleFiles = []string{"rules.yml"}
+
+			cmPrometheus.Data["prometheus.yml"] = pConfig.String()
+			cmPrometheus.Data["rules.yml"] = `groups:
+- name: "istio.recording-rules"
+  interval: 5s
+  rules:
+  - record: "istio:istio_requests_total:by_destination_service:rate5m"
+    expr: (sum by (destination_service) (rate(istio_requests_total{destination_service=~"%s"}[5m])))
+  - record: "istio:istio_requests_total:by_destination_service:resp2xx_rate5m"
+    expr: (sum by (destination_service) (rate(istio_requests_total{destination_service=~"%s", response_code=~"2.*"}[5m])))
+  - record: "istio:istio_requests_total:by_destination_service:resp4xx_rate5m"
+    expr: (sum by (destination_service) (rate(istio_requests_total{destination_service=~"%s", response_code=~"4.*"}[5m])))
+  - record: "istio:istio_requests_total:by_destination_service:resp5xx_rate5m"
+    expr: (sum by (destination_service) (rate(istio_requests_total{destination_service=~"%s", response_code=~"5.*"}[5m])))
+  - record: "istio:istio_request_bytes_sum:by_destination_service:rate5m"
+    expr: (sum by (destination_service) (rate(istio_request_bytes_sum{destination_service=~"%s"}[5m])))
+  - record: "istio:istio_response_bytes_sum:by_destination_service:rate5m"
+    expr: (sum by (destination_service) (rate(istio_response_bytes_sum{destination_service=~"%s"}[5m])))
+  - record: "istio:istio_tcp_sent_bytes_total:by_destination_service:rate5m"
+    expr: (sum by (destination_service) (rate(istio_tcp_sent_bytes_total{destination_service=~"%s"}[5m])))
+  - record: "istio:istio_tcp_received_bytes_total:by_destination_service:rate5m"
+    expr: (sum by (destination_service) (rate(istio_tcp_received_bytes_total{destination_service=~"%s"}[5m])))
+`
+			if err := r.Update(ctx, &cmPrometheus); err != nil {
+				return err
+			}
+
+			// trigger update
+			dpPromethues := v1.Deployment{}
+			err := r.Get(ctx, types.NamespacedName{Name: "prometheus", Namespace: "istio-system"}, &dpPromethues)
+			if err != nil {
+				return err
+			}
+
+			dpPrometheusCopy := dpPromethues.DeepCopy()
+			dpPrometheusCopy.Spec.Template.ObjectMeta.Labels["date"] = strconv.Itoa(int(time.Now().Unix()))
+
+			err = r.Patch(ctx, dpPrometheusCopy, client.MergeFrom(&dpPromethues))
+			if err != nil {
+				return err
+			}
 		}
 	}
 
