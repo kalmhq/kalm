@@ -14,11 +14,13 @@ import { RootState } from "reducers";
 import { primaryColor } from "theme/theme";
 import { TDispatchProp } from "types";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
-import { DeleteIcon } from "widgets/Icon";
+import { DeleteIcon, KalmVolumeIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { BasePage } from "../BasePage";
 import { Link } from "react-router-dom";
 import { blinkTopProgressAction } from "actions/settings";
+import { EmptyList } from "widgets/EmptyList";
+import { indigo } from "@material-ui/core/colors";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -128,35 +130,41 @@ export class VolumesRaw extends React.Component<Props, States> {
     );
   };
 
+  private renderDiskHelp() {
+    return (
+      <PopupState variant="popover" popupId={"disks-creation-helper"}>
+        {(popupState) => (
+          <>
+            <Button color="primary" size="small" variant="text" {...bindTrigger(popupState)}>
+              How to attach new disk?
+            </Button>
+            <Popover
+              {...bindPopover(popupState)}
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "center",
+              }}
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "center",
+              }}
+            >
+              <Box p={2}>
+                You don't need to apply disk manually. Disk will be created when you declare authentic disks in
+                component form.
+              </Box>
+            </Popover>
+          </>
+        )}
+      </PopupState>
+    );
+  }
+
   private renderSecondHeaderRight() {
     return (
       <>
         <H4>Disks</H4>
-        <PopupState variant="popover" popupId={"disks-creation-helper"}>
-          {(popupState) => (
-            <>
-              <Button color="primary" size="small" variant="text" {...bindTrigger(popupState)}>
-                How to attach new disk?
-              </Button>
-              <Popover
-                {...bindPopover(popupState)}
-                anchorOrigin={{
-                  vertical: "bottom",
-                  horizontal: "center",
-                }}
-                transformOrigin={{
-                  vertical: "top",
-                  horizontal: "center",
-                }}
-              >
-                <Box p={2}>
-                  You don't need to apply disk manually. Disk will be created when you declare authentic disks in
-                  component form.
-                </Box>
-              </Popover>
-            </>
-          )}
-        </PopupState>
+        {this.renderDiskHelp()}
         <StorageType />
       </>
     );
@@ -202,7 +210,19 @@ export class VolumesRaw extends React.Component<Props, States> {
     return rowData.get("capacity");
   };
 
+  private renderEmpty() {
+    return (
+      <EmptyList
+        image={<KalmVolumeIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
+        title={"You don't have any Disks"}
+        content="You don't need to apply disk manually. Disk will be created when you declare authentic disks in component form."
+        button={<StorageType />}
+      />
+    );
+  }
+
   render() {
+    const { persistentVolumes } = this.props;
     const { loadPersistentVolumesError } = this.state;
     const tableData = this.getTableData();
 
@@ -219,28 +239,32 @@ export class VolumesRaw extends React.Component<Props, States> {
             </Alert>
           ) : null}
 
-          <KTable
-            options={{
-              paging: tableData.length > 20,
-            }}
-            columns={[
-              { title: "Name", field: "name", sorting: false, render: this.renderName },
-              { title: "Is In Use", field: "isInUse", sorting: false, render: this.renderUse },
-              { title: "Application", field: "componentNamespace", sorting: false, render: this.renderApplication },
-              { title: "Component Name", field: "componentName", sorting: false, render: this.renderComponent },
-              { title: "Phase", field: "phase", sorting: false, render: this.renderPhase },
-              { title: "Capacity", field: "capacity", sorting: false, render: this.renderCapacity },
-              {
-                title: "Actions",
-                field: "action",
-                sorting: false,
-                searchable: false,
-                render: this.renderActions,
-              },
-            ]}
-            data={tableData}
-            title=""
-          />
+          {persistentVolumes.size > 0 ? (
+            <KTable
+              options={{
+                paging: tableData.length > 20,
+              }}
+              columns={[
+                { title: "Name", field: "name", sorting: false, render: this.renderName },
+                { title: "Is In Use", field: "isInUse", sorting: false, render: this.renderUse },
+                { title: "Application", field: "componentNamespace", sorting: false, render: this.renderApplication },
+                { title: "Component Name", field: "componentName", sorting: false, render: this.renderComponent },
+                { title: "Phase", field: "phase", sorting: false, render: this.renderPhase },
+                { title: "Capacity", field: "capacity", sorting: false, render: this.renderCapacity },
+                {
+                  title: "Actions",
+                  field: "action",
+                  sorting: false,
+                  searchable: false,
+                  render: this.renderActions,
+                },
+              ]}
+              data={tableData}
+              title=""
+            />
+          ) : (
+            this.renderEmpty()
+          )}
         </Box>
       </BasePage>
     );

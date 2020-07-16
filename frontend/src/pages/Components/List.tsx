@@ -13,6 +13,12 @@ import { ApplicationDetails } from "types/application";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { Namespaces } from "widgets/Namespaces";
 import { BasePage } from "../BasePage";
+import { EmptyList } from "widgets/EmptyList";
+import { CustomizedButton } from "widgets/Button";
+import { blinkTopProgressAction } from "actions/settings";
+import { push } from "connected-react-router";
+import { KalmComponentsIcon } from "widgets/Icon";
+import { indigo } from "@material-ui/core/colors";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -110,8 +116,32 @@ class ComponentRaw extends React.PureComponent<Props, State> {
     );
   }
 
+  private renderEmpty() {
+    const { dispatch, activeNamespaceName } = this.props;
+
+    return (
+      <EmptyList
+        image={<KalmComponentsIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
+        title={"You don't have any Components"}
+        content="You don't have any Components yet, you can create a Component at once."
+        button={
+          <CustomizedButton
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              blinkTopProgressAction();
+              dispatch(push(`/applications/${activeNamespaceName}/components/new`));
+            }}
+          >
+            Add Component
+          </CustomizedButton>
+        }
+      />
+    );
+  }
+
   public render() {
-    const { components, activeNamespace, activeNamespaceName, classes } = this.props;
+    const { components, activeNamespace } = this.props;
 
     return (
       <BasePage
@@ -122,26 +152,13 @@ class ComponentRaw extends React.PureComponent<Props, State> {
         {this.renderDeleteConfirmDialog()}
 
         <Box p={2}>
-          {components && components.size > 0 ? (
-            components?.map((component, index) => (
-              <Box pb={1} key={component.get("name")}>
-                <ComponentPanel component={component} application={activeNamespace!} defaultUnfold={index === 0} />
-              </Box>
-            ))
-          ) : (
-            <div className={classes.emptyWrapper}>
-              <Box>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  component={Link}
-                  to={`/applications/${activeNamespaceName}/components/new`}
-                >
-                  Add Component
-                </Button>
-              </Box>
-            </div>
-          )}
+          {components && components.size > 0
+            ? components?.map((component, index) => (
+                <Box pb={1} key={component.get("name")}>
+                  <ComponentPanel component={component} application={activeNamespace!} defaultUnfold={index === 0} />
+                </Box>
+              ))
+            : this.renderEmpty()}
         </Box>
       </BasePage>
     );

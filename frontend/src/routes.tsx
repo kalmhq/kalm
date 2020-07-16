@@ -16,7 +16,6 @@ import { RegistryListPage } from "pages/Registry/List";
 import { RouteEditPage } from "pages/Route/Edit";
 import { RouteListPage } from "pages/Route/List";
 import { RouteNewPage } from "pages/Route/New";
-import { UIComponentsPage } from "pages/UIComponents";
 import { Route, Switch } from "react-router";
 import { ComponentListPage } from "pages/Components/List";
 import { ComponentNewPage } from "pages/Components/New";
@@ -68,7 +67,6 @@ export const KalmRoutes = (
           <Route exact path="/applications/:applicationName/logs" component={RequireNamespaceReader(Log)} />
           <Route exact path="/applications/:applicationName/shells" component={RequireNamespaceWriter(Log)} />
 
-          <Route exact path="/ui-components" component={UIComponentsPage} />
           <Route exact path="/certificates" component={CertificateListPage} />
           <Route component={NoMatch} />
         </Switch>

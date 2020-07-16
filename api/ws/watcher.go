@@ -235,6 +235,11 @@ func buildVolumeResMessage(c *Client, action string, objWatched interface{}) (*R
 		return nil, errors.New("convert watch obj to PersistentVolume failed")
 	}
 
+	label := pvc.Labels["kalm-managed"]
+	if label != "true" {
+		return &ResMessage{}, nil
+	}
+
 	builder := resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, log.New())
 
 	var pv coreV1.PersistentVolume

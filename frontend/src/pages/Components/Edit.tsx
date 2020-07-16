@@ -33,8 +33,9 @@ class ComponentEditRaw extends React.PureComponent<Props> {
   };
 
   private onSubmitSuccess = () => {
-    const { dispatch, activeNamespaceName } = this.props;
-    dispatch(push(`/applications/${activeNamespaceName}/components`));
+    const { dispatch, activeNamespaceName, component } = this.props;
+    const name = component.get("name");
+    dispatch(push(`/applications/${activeNamespaceName}/components/${name}`));
   };
 
   public render() {

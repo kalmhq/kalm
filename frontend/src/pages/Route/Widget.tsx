@@ -35,7 +35,7 @@ const mapStateToProps = (state: RootState) => {
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {
   activeNamespaceName: string;
-  route: HttpRoute;
+  routes: Immutable.List<HttpRoute>;
 }
 
 interface State {}
@@ -46,11 +46,41 @@ class RouteWidgetRaw extends React.PureComponent<Props, State> {
     this.state = {};
   }
 
-  public render() {
-    const { classes, route, activeNamespaceName } = this.props;
+  private renderRouteItem = (route: HttpRoute, index: number) => {
+    const { activeNamespaceName } = this.props;
     const scheme = route.get("schemes").size > 1 ? "http(s)" : route.get("schemes").get(0);
     const hosts = route.get("hosts");
     const paths = route.get("paths");
+    return (
+      <TableRow key={`route_${index}`}>
+        <TableCell>
+          <Methods methods={route.get("methods")} />
+        </TableCell>
+        <TableCell>{scheme + "://"}</TableCell>
+        <TableCell>
+          {hosts.map((x) => (
+            <Box key={x}>{x}</Box>
+          ))}
+        </TableCell>
+        <TableCell>
+          {paths.map((x) => (
+            <Box key={x}>{x}</Box>
+          ))}
+        </TableCell>
+        <TableCell>
+          <Targets activeNamespaceName={activeNamespaceName} destinations={route.get("destinations")} />
+        </TableCell>
+        <TableCell>
+          <OpenInBrowser route={route} />
+          <CopyAsCurl route={route} />
+        </TableCell>
+      </TableRow>
+    );
+  };
+
+  public render() {
+    const { classes, routes } = this.props;
+
     return (
       <Card className={classes.root} variant="outlined">
         <CardContent>
@@ -67,29 +97,9 @@ class RouteWidgetRaw extends React.PureComponent<Props, State> {
                 </TableRow>
               </TableHead>
               <TableBody>
-                <TableRow>
-                  <TableCell>
-                    <Methods methods={route.get("methods")} />
-                  </TableCell>
-                  <TableCell>{scheme + "://"}</TableCell>
-                  <TableCell>
-                    {hosts.map((x) => (
-                      <Box key={x}>{x}</Box>
-                    ))}
-                  </TableCell>
-                  <TableCell>
-                    {paths.map((x) => (
-                      <Box key={x}>{x}</Box>
-                    ))}
-                  </TableCell>
-                  <TableCell>
-                    <Targets activeNamespaceName={activeNamespaceName} destinations={route.get("destinations")} />
-                  </TableCell>
-                  <TableCell>
-                    <OpenInBrowser route={route} />
-                    <CopyAsCurl route={route} />
-                  </TableCell>
-                </TableRow>
+                {routes.map((route, index) => {
+                  return this.renderRouteItem(route, index);
+                })}
               </TableBody>
             </Table>
           </TableContainer>
@@ -109,16 +119,8 @@ export const RouteWidgets = ({
   activeNamespaceName: string;
 }) => {
   return (
-    <>
-      {routes
-        .map((route, i) => {
-          return (
-            <Box mb={i < routes.size - 1 ? 2 : 0} key={route.get("name")}>
-              <RouteWidget route={route} activeNamespaceName={activeNamespaceName} />
-            </Box>
-          );
-        })
-        .toArray()}
-    </>
+    <Box>
+      <RouteWidget routes={routes} activeNamespaceName={activeNamespaceName} />
+    </Box>
   );
 };

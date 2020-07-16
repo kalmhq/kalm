@@ -5,7 +5,7 @@ import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
 import { ApplicationComponentDetails } from "types/application";
-import { getComponentCreatedAtString } from "utils/application";
+import { getComponentCreatedFromAndAtString } from "utils/application";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { NoLivenessProbeWarning, NoPortsWarning, NoReadinessProbeWarning } from "pages/Components/NoPortsWarning";
 import { HealthTab, NetworkingTab } from "forms/ComponentLike";
@@ -16,6 +16,7 @@ import copy from "copy-to-clipboard";
 import { setSuccessNotificationAction } from "actions/notification";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { push } from "connected-react-router";
+import clsx from "clsx";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -26,6 +27,25 @@ const styles = (theme: Theme) =>
     },
     port: {
       padding: "1 2",
+    },
+
+    envKey: { paddingRight: 4 },
+    envValue: {
+      paddingLeft: 4,
+    },
+    rowWrapper: {
+      display: "flex",
+      flexDirection: "row",
+    },
+    rowEven: {
+      backgroundColor: theme.palette.grey[100],
+    },
+    rowOdd: {
+      backgroundColor: theme.palette.grey[50],
+    },
+    columnWrapper: {
+      display: "flex",
+      flexDirection: "column",
     },
   });
 
@@ -50,7 +70,7 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
 
   private renderCreatedAt = () => {
     const { component } = this.props;
-    return getComponentCreatedAtString(component);
+    return getComponentCreatedFromAndAtString(component);
   };
 
   private renderComponentStatus = () => {
@@ -114,23 +134,14 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     );
   };
   private renderPorts = () => {
-    const { classes, component } = this.props;
+    const { classes, activeNamespaceName, component } = this.props;
 
     if (component.get("ports") && component.get("ports")!.size > 0) {
-      // <<<<<<< HEAD
       const ports = component.get("ports", List<ComponentLikePort>())?.map((port, index) => {
         const portString = port.get("servicePort") ?? port.get("containerPort");
         return this.renderPort(index, port.get("name"), portString);
       });
       return <div className={classes.portContainer}>{ports}</div>;
-      // =======
-      //       return component
-      //         .get("ports")
-      //         ?.map((port) => {
-      //           return `${port.get("containerPort")}:${port.get("servicePort")}`;
-      //         })
-      //         .join("/");
-      // >>>>>>> f3dc64cd95f71ad48762e30e03d1bbc53a48ba1e
     } else {
       return (
         <div>
@@ -140,7 +151,9 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
             tooltipTitle="Add Exposed Ports"
             aria-label="add-exposed-ports"
             onClick={() =>
-              this.props.dispatch(push(`applications/:applicationName/components/web/edit#${NetworkingTab}`))
+              this.props.dispatch(
+                push(`/applications/${activeNamespaceName}/components/${component.get("name")}/edit#${NetworkingTab}`),
+              )
             }
           >
             <WrenchIcon fontSize="small" />
@@ -170,7 +183,6 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     const { component, activeNamespaceName, dispatch } = this.props;
     const readinessProbe = component.get("readinessProbe");
     const livenessProbe = component.get("livenessProbe");
-
     return (
       <>
         <Box display="inline-block" pr={2}>
@@ -205,21 +217,99 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderImage = (image: string) => {
-    return (
-      <>
-        {image}
-        <span
-          style={{ cursor: "pointer" }}
-          onClick={() => {
-            copy(image);
-            this.props.dispatch(setSuccessNotificationAction("Copied to clipboard"));
-          }}
-        >
-          <CopyIconDefault style={{ height: 13 }} />
-        </span>
-      </>
-    );
+  private renderCopiableValue = (value: any) => {
+    if (value === undefined || value === "") {
+      return "-";
+    } else {
+      return (
+        <>
+          {value}
+          <span
+            style={{ cursor: "pointer" }}
+            onClick={() => {
+              copy(value);
+              this.props.dispatch(setSuccessNotificationAction("Copied to clipboard"));
+            }}
+          >
+            <CopyIconDefault style={{ height: 13 }} />
+          </span>
+        </>
+      );
+    }
+  };
+
+  private renderEnvs = () => {
+    const { component, classes } = this.props;
+    const envs = component.get("env");
+    if (envs === undefined || envs?.size === 0) {
+      return "-";
+    }
+    return envs?.map((env, index) => {
+      return (
+        <Box key={index} className={classes.columnWrapper}>
+          <div className={clsx(classes.rowWrapper, index % 2 === 0 ? classes.rowEven : classes.rowOdd)}>
+            <div className={classes.envKey}>{env.get("name")}</div> =
+            <div className={classes.envValue}>{env.get("value")}</div>
+          </div>
+        </Box>
+      );
+    });
+  };
+
+  private renderConfigFiles = () => {
+    const { component, classes } = this.props;
+    const configs = component.get("preInjectedFiles");
+    if (configs === undefined || configs?.size === 0) {
+      return <>-</>;
+    }
+    return configs?.map((config, index) => {
+      return (
+        <Box key={index} className={classes.columnWrapper}>
+          <div className={classes.rowWrapper}>
+            <div className={classes.envKey}>MountPath:</div>
+            <div className={clsx(index % 2 === 0 ? classes.rowEven : classes.rowOdd, classes.envValue)}>
+              {config.get("mountPath")}
+            </div>
+          </div>
+        </Box>
+      );
+    });
+  };
+
+  private renderRestartStrategy = () => {
+    const { component } = this.props;
+    return component.get("restartStrategy") ?? "Rolling Update";
+  };
+
+  private renderGracefulTermination = () => {
+    const { component } = this.props;
+    const duration =
+      component.get("terminationGracePeriodSeconds") === undefined
+        ? "30"
+        : component.get("terminationGracePeriodSeconds");
+
+    return duration + "s";
+  };
+
+  private renderDisks = () => {
+    const { component, classes } = this.props;
+    const disks = component.get("volumes");
+    if (disks?.size === 0) {
+      return "-";
+    }
+    return disks?.map((disk, index) => {
+      return (
+        <Box key={index} className={classes.columnWrapper}>
+          <div className={clsx(classes.rowWrapper, index % 2 === 0 ? classes.rowEven : classes.rowOdd)}>
+            <div className={classes.envValue}>{disk.get("type")}</div>
+            <div className={classes.envValue}>{disk.get("pvc")}</div>
+            <div className={classes.envValue}>{disk.get("storageClassName")}</div>
+            <div className={classes.envKey}>{disk.get("path")}</div>
+            <div className={classes.envValue}>{disk.get("size")}</div>
+          </div>
+        </Box>
+      );
+    });
   };
 
   public render() {
@@ -227,17 +317,22 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     return (
       <VerticalHeadTable
         items={[
-          { name: "Created At", content: this.renderCreatedAt() },
+          { name: "Created at", content: this.renderCreatedAt() },
           { name: "Name", content: component.get("name") },
           { name: "Namespace", content: activeNamespaceName },
-          { name: "Image", content: this.renderImage(component.get("image")) },
-          { name: "Workload Type", content: component.get("workloadType") },
-          { name: "Update Strategy", content: component.get("restartStrategy") },
+          { name: "Workload type", content: component.get("workloadType") },
           { name: "Pod Status", content: this.renderComponentStatus() },
+          { name: "Image", content: this.renderCopiableValue(component.get("image")) },
+          { name: "Command", content: this.renderCopiableValue(component.get("command")) },
+          { name: "Environment variables", content: this.renderEnvs() },
+          { name: "Configuration files", content: this.renderConfigFiles() },
+          { name: "Exposed ports", content: this.renderPorts() },
+          { name: "Disks", content: this.renderDisks() },
+          { name: "Health", content: this.renderHealth() },
           { name: "CPU", content: this.renderComponentCPU() },
           { name: "Memory", content: this.renderComponentMemory() },
-          { name: "Exposed ports", content: this.renderPorts() },
-          { name: "Health", content: this.renderHealth() },
+          { name: "Restart strategy", content: this.renderRestartStrategy() },
+          { name: "Graceful termination", content: this.renderGracefulTermination() },
         ]}
       />
     );

@@ -58,16 +58,24 @@ const styles = (theme: Theme) =>
       // margin: `0 10px`
     },
     barTitle: {
-      color: "#fff",
+      color: theme.palette.primary.light,
       fontSize: "18px",
       fontWeight: "normal",
       padding: "10px 0",
+      borderRadius: 6,
+      paddingLeft: 5,
+      paddingRight: 5,
       "&.disabled": {
-        color: "inherit",
+        color: "#FFF",
         cursor: "unset",
       },
+      "&.disabled:hover": {
+        color: "#FFF",
+        backgroundColor: "unset",
+      },
       "&:hover": {
-        color: "inherit",
+        color: theme.palette.primary.light,
+        backgroundColor: theme.palette.primary.dark,
       },
     },
     barRight: {
