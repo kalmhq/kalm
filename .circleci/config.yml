@@ -150,7 +150,7 @@ jobs:
             sudo mv ./kubectl /usr/local/bin/kubectl
             mkdir ${HOME}/.kube
             echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
-            kubectl delete pod -n kalm-system $(kubectl get pods -n kalm-system -l app=kalm -o jsonpath="{.items[].metadata.name}"
+            kubectl delete pod -n kalm-system $(kubectl get pods -n kalm-system -l app=kalm -o jsonpath="{.items[].metadata.name}")
   deploy-controller:
     environment:
       IMAGE_NAME: quay.io/kalmhq/kalm-controller:latest
