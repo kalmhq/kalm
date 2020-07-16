@@ -317,16 +317,18 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       placeholder="Type a host"
                     />
                     <div>
-                      <Button
-                        color="primary"
-                        size="small"
-                        onClick={() => {
-                          change("hosts", Immutable.List([ingressIP]));
-                        }}
-                      >
-                        Ingress IP
-                      </Button>
-                      <span className={classes.secondaryTip}>* Using ip to access this port</span>
+                      <span className={classes.secondaryTip}>
+                        Your cluster ip is{" "}
+                        <Link
+                          href="#"
+                          onClick={() => {
+                            change("hosts", Immutable.List([ingressIP]));
+                          }}
+                        >
+                          {ingressIP}
+                        </Link>
+                        . If you don't have any DNS record point to this ip, you can use the ip directly in this field.
+                      </span>
                     </div>
                     <Field
                       InputLabelProps={{
