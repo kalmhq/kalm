@@ -1,6 +1,6 @@
-import { createStyles, Grid, Theme, Typography, withStyles, WithStyles, Box } from "@material-ui/core";
+import { createStyles, Grid, Theme, Typography, withStyles, WithStyles, Box, Link } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
-import React from "react";
+import React, { ReactElement } from "react";
 import { ApplicationComponentDetails, PodStatus } from "types/application";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { BigCPULineChart, BigMemoryLineChart } from "widgets/SmallLineChart";
@@ -231,16 +231,24 @@ class DetailsRaw extends React.PureComponent<Props, State> {
   }
 
   private renderWarnings() {
-    const { components } = this.props;
-    let warnings: { componentName: string; podName: string; message: string }[] = [];
+    const { components, activeNamespace } = this.props;
+    let warnings: { componentName: ReactElement; podName: ReactElement; message: string }[] = [];
 
     if (components) {
       components.forEach((c) => {
         c.get("pods").forEach((p) => {
           p.get("warnings").forEach((w) => {
             warnings.push({
-              componentName: c.get("name"),
-              podName: p.get("name"),
+              componentName: (
+                <Link href={`/applications/${activeNamespace?.get("name")}/components/${c.get("name")}`}>
+                  {c.get("name")}
+                </Link>
+              ),
+              podName: (
+                <Link href={`/applications/${activeNamespace?.get("name")}/components/${c.get("name")}`}>
+                  {p.get("name")}
+                </Link>
+              ),
               message: w.get("message"),
             });
           });
