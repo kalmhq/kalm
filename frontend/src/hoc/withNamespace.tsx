@@ -5,6 +5,7 @@ import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { Loading } from "widgets/Loading";
 import { setCurrentNamespaceAction } from "actions/namespaces";
+import { Box } from "@material-ui/core";
 
 const mapStateToProps = (
   state: RootState,
@@ -50,7 +51,11 @@ export const withNamespace = (WrappedComponent: React.ComponentType<any>) => {
       const { isNamespaceFirstLoaded } = this.props;
 
       if (!isNamespaceFirstLoaded) {
-        return <Loading />;
+        return (
+          <Box flex="1">
+            <Loading />
+          </Box>
+        );
       }
 
       // if (!activeNamespace) {
