@@ -93,7 +93,9 @@ class BaseLineChartRaw extends React.PureComponent<BaseLineChartProps & WithStyl
                 // @ts-ignore
                 const value: number = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
                 // @ts-ignore
-                return formatYAxesValue ? formatYAxesValue(value) : value;
+                const label: string = data.datasets[tooltipItem.datasetIndex].label;
+                // @ts-ignore
+                return formatYAxesValue ? formatYAxesValue(value, label) : value;
               },
             },
           },

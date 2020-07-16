@@ -275,6 +275,10 @@ class DetailsRaw extends React.PureComponent<Props, State> {
     );
   }
 
+  private formatYAxesValue = (value: number, label: string) => {
+    return `${label}: ${value.toFixed(2)}`;
+  };
+
   public render() {
     const pieChartData = this.getPieChartData();
     const { activeNamespace } = this.props;
@@ -301,6 +305,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
             <Grid item xs>
               <Box pl={"58px"}>
                 <HttpStatusCodeLineChart
+                  formatYAxesValue={this.formatYAxesValue}
                   data={[
                     {
                       legend: "2xx",
@@ -325,6 +330,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
             <Grid item xs>
               <Box pl={"16px"}>
                 <HttpBytesSizeChart
+                  formatYAxesValue={this.formatYAxesValue}
                   data={[
                     {
                       legend: "request",
