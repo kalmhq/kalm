@@ -1,11 +1,18 @@
 import Immutable from "immutable";
 import { getComponentFormVolumeOptions } from "selectors/component";
 import { ApplicationComponent, ApplicationComponentDetails } from "types/application";
-import { VolumeTypePersistentVolumeClaim, VolumeTypePersistentVolumeClaimNew } from "types/componentTemplate";
+import {
+  VolumeTypePersistentVolumeClaim,
+  VolumeTypePersistentVolumeClaimNew,
+  workloadTypeServer,
+} from "types/componentTemplate";
 import { RootState } from "reducers";
 import { formatDate, formatTimeDistance } from "utils";
 
 export const componentDetailsToComponent = (componentDetails: ApplicationComponentDetails): ApplicationComponent => {
+  if (!componentDetails.get("workloadType")) {
+    componentDetails = componentDetails.set("workloadType", workloadTypeServer);
+  }
   return componentDetails.delete("pods").delete("services").delete("metrics") as ApplicationComponent;
 };
 

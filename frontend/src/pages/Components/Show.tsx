@@ -88,10 +88,11 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
   private renderRoutes() {
     const { httpRoutes, component, activeNamespaceName } = this.props;
 
-    const serviceName = `${component.get("name")}.${activeNamespaceName}`;
+    const serviceName = `${component.get("name")}`;
 
-    const routes = httpRoutes.filter((route) =>
-      route.get("destinations").filter((destination) => destination.get("host").startsWith(serviceName)),
+    const routes = httpRoutes.filter(
+      (route) =>
+        route.get("destinations").filter((destination) => destination.get("host").startsWith(serviceName)).size > 0,
     );
 
     // console.log(serviceName, httpRoutes.toJS(), routes.toJS());

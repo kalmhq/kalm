@@ -137,14 +137,12 @@ jobs:
             echo "$QUAYIO_PASS" | docker login -u "$QUAYIO_USERNAME" --password-stdin quay.io
             docker push $IMAGE_NAME:latest
   deploy-dashboard:
-    environment:
-      IMAGE_NAME: quay.io/kalmhq/kalm-controller
     docker:
       - image: circleci/golang:1.13.11
     steps:
       - checkout
       - run:
-          name: download kubectl
+          name: deploy
           working_directory: ./controller
           command: |
             curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.15.9/bin/linux/amd64/kubectl
@@ -152,16 +150,16 @@ jobs:
             sudo mv ./kubectl /usr/local/bin/kubectl
             mkdir ${HOME}/.kube
             echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
-            kubectl delete pod -n kalm-system $(kubectl get pods -n kalm-system -l app=kalm-dashboard -o jsonpath="{.items[].metadata.name}"
+            kubectl delete pod -n kalm-system $(kubectl get pods -n kalm-system -l app=kalm -o jsonpath="{.items[].metadata.name}")
   deploy-controller:
     environment:
-      IMAGE_NAME: quay.io/kalmhq/kalm-controller
+      IMAGE_NAME: quay.io/kalmhq/kalm-controller:latest
     docker:
       - image: circleci/golang:1.13.11
     steps:
       - checkout
       - run:
-          name: download kubectl
+          name: deploy
           working_directory: ./controller
           command: |
             curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.15.9/bin/linux/amd64/kubectl
@@ -170,16 +168,16 @@ jobs:
             mkdir ${HOME}/.kube
             echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
             IMG=$IMAGE_NAME make deploy
-            kubectl -n kalm-controller patch deployment kalm-controller -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"date\":\"`date +'%s'`\"}}}}}"
+            kubectl -n kalm-system patch deployment kalm-controller -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"date\":\"`date +'%s'`\"}}}}}"
   deploy-operator:
     environment:
-      IMAGE_NAME: quay.io/kalmhq/kalm-operator
+      IMAGE_NAME: quay.io/kalmhq/kalm-operator:latest
     docker:
       - image: circleci/golang:1.13.11
     steps:
       - checkout
       - run:
-          name: download kubectl
+          name: deploy
           working_directory: ./operator
           command: |
             curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.15.9/bin/linux/amd64/kubectl
@@ -206,12 +204,13 @@ workflows:
           filters:
             branches:
               only: master
-      # - deploy-dashboard:
-      #     requires:
-      #       - push-dashboard-image
-      #     filters:
-      #       branches:
-      #         only: master
+      - deploy-dashboard:
+          context: deploy-demo-cluster
+          requires:
+            - push-dashboard-image
+          filters:
+            branches:
+              only: master
   controller:
     jobs:
       - test-controller
@@ -222,12 +221,13 @@ workflows:
           filters:
             branches:
               only: master
-      # - deploy-controller:
-      #     requires:
-      #       - build-push-controller-image
-      #     filters:
-      #       branches:
-      #         only: master
+      - deploy-controller:
+          context: deploy-demo-cluster
+          requires:
+            - build-push-controller-image
+          filters:
+            branches:
+              only: master
   operator:
     jobs:
       - build-push-operator-image:
@@ -235,9 +235,10 @@ workflows:
           filters:
             branches:
               only: master
-      # - deploy-operator:
-      #     requires:
-      #       - build-push-operator-image
-      #     filters:
-      #       branches:
-      #         only: master
+      - deploy-operator:
+          context: deploy-demo-cluster
+          requires:
+            - build-push-operator-image
+          filters:
+            branches:
+              only: master

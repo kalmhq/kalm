@@ -47,6 +47,14 @@ const styles = (theme: Theme) =>
       display: "flex",
       flexDirection: "column",
     },
+    copyIcon: {
+      cursor: "pointer",
+      "& > svg": {
+        position: "relative",
+        top: 4,
+        marginLeft: 6,
+      },
+    },
   });
 
 const mapStateToProps = (state: RootState) => {
@@ -215,13 +223,13 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
         <>
           {value}
           <span
-            style={{ cursor: "pointer" }}
+            className={this.props.classes.copyIcon}
             onClick={() => {
               copy(value);
-              this.props.dispatch(setSuccessNotificationAction("Copied to clipboard"));
+              this.props.dispatch(setSuccessNotificationAction("Copied successful!"));
             }}
           >
-            <CopyIconDefault style={{ height: 13 }} />
+            <CopyIconDefault fontSize="small" />
           </span>
         </>
       );
