@@ -107,22 +107,12 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
 
   private renderComponentCPU = () => {
     const { component } = this.props;
-    return (
-      <SmallCPULineChart
-        data={component.get("metrics").get("cpu")!}
-        isMetricServerEnabled={component.get("metrics").get("isMetricServerEnabled")}
-      />
-    );
+    return <SmallCPULineChart data={component.get("metrics").get("cpu")!} />;
   };
 
   private renderComponentMemory = () => {
     const { component } = this.props;
-    return (
-      <SmallMemoryLineChart
-        data={component.get("metrics").get("memory")!}
-        isMetricServerEnabled={component.get("metrics").get("isMetricServerEnabled")}
-      />
-    );
+    return <SmallMemoryLineChart data={component.get("metrics").get("memory")!} />;
   };
 
   private renderPort = (key: any, name: string, port: number) => {
