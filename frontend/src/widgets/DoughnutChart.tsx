@@ -6,7 +6,7 @@ import { green, grey, red } from "@material-ui/core/colors";
 import * as chartjs from "chart.js";
 
 const size = 96;
-const colors = [green[700], grey[700], red[700]];
+const defaultColors = [green[700], grey[700], red[700]];
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -35,9 +35,11 @@ class DoughnutChartRaw extends React.PureComponent<Props, State> {
   private getData = (): chartjs.ChartData => {
     let { labels, data } = this.props;
 
+    let colors: string[] = defaultColors;
     const dataSum = data.reduce((a, b) => a + b, 0);
     if (dataSum === 0) {
       data = [0, 1]; // show grey
+      colors[1] = grey[400];
     }
 
     return {
@@ -88,7 +90,7 @@ class DoughnutChartRaw extends React.PureComponent<Props, State> {
             } else {
               return (
                 <Box display="flex" alignItems="center" justifyContent="space-between" key={label}>
-                  <Box style={{ backgroundColor: colors[index] }} width={10} height={10} mr={1}></Box>
+                  <Box style={{ backgroundColor: defaultColors[index] }} width={10} height={10} mr={1}></Box>
                   <Typography variant="body2">
                     {label}({data[index]})
                   </Typography>
