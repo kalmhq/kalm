@@ -1,5 +1,19 @@
 import React from "react";
-import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import {
+  Box,
+  createStyles,
+  Theme,
+  withStyles,
+  WithStyles,
+  ExpansionPanel,
+  ExpansionPanelSummary,
+  ExpansionPanelDetails,
+  TableHead,
+  TableRow,
+  TableCell,
+  Table,
+  TableBody,
+} from "@material-ui/core";
 import { TDispatchProp } from "types";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
@@ -7,6 +21,7 @@ import { VerticalHeadTable } from "widgets/VerticalHeadTable";
 import { ApplicationComponentDetails } from "types/application";
 import { getComponentCreatedFromAndAtString } from "utils/application";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import { NoLivenessProbeWarning, NoPortsWarning, NoReadinessProbeWarning } from "pages/Components/NoPortsWarning";
 import { HealthTab, NetworkingTab } from "forms/ComponentLike";
 import { Probe, ComponentLikePort } from "types/componentTemplate";
@@ -29,18 +44,24 @@ const styles = (theme: Theme) =>
       padding: "1 2",
     },
 
-    envKey: { paddingRight: 4 },
+    envKey: {
+      paddingRight: 4,
+      minWidth: 50,
+      maxWidth: 500,
+    },
     envValue: {
       paddingLeft: 4,
+      minWidth: 200,
+      maxWidth: 300,
     },
     rowWrapper: {
       display: "flex",
       flexDirection: "row",
     },
-    rowEven: {
+    rowOdd: {
       backgroundColor: theme.palette.grey[100],
     },
-    rowOdd: {
+    rowEven: {
       backgroundColor: theme.palette.grey[50],
     },
     columnWrapper: {
@@ -53,6 +74,26 @@ const styles = (theme: Theme) =>
         position: "relative",
         top: 4,
         marginLeft: 6,
+      },
+    },
+    rootEnv: {
+      marginBottom: 4,
+      marginTop: 4,
+      padding: 0,
+      paddingLeft: 0,
+      paddingRight: 0,
+      "& .MuiButtonBase-root": {
+        padding: 0,
+        minHeight: 24,
+        height: 24,
+      },
+      "& .MuiExpansionPanelDetails-root": {
+        display: "flex",
+        flexDirection: "column",
+        padding: 0,
+      },
+      "& .MuiIconButton-edgeEnd": {
+        marginRight: 0,
       },
     },
   });
@@ -242,16 +283,31 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     if (envs === undefined || envs?.size === 0) {
       return "-";
     }
-    return envs?.map((env, index) => {
-      return (
-        <Box key={index} className={classes.columnWrapper}>
-          <div className={clsx(classes.rowWrapper, index % 2 === 0 ? classes.rowEven : classes.rowOdd)}>
-            <div className={classes.envKey}>{env.get("name")}</div> =
-            <div className={classes.envValue}>{env.get("value")}</div>
-          </div>
-        </Box>
-      );
-    });
+    return (
+      <ExpansionPanel square className={clsx(classes.rootEnv)} elevation={0} defaultExpanded={envs.size <= 1}>
+        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>{envs.size} variables</ExpansionPanelSummary>
+        <ExpansionPanelDetails>
+          <Table size="small" aria-label="Envs-Table">
+            <TableHead key="title">
+              <TableRow>
+                <TableCell>Name</TableCell>
+                <TableCell>Value</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {envs?.map((env, index) => {
+                return (
+                  <TableRow key={index}>
+                    <TableCell>{env.get("name")}</TableCell>
+                    <TableCell>{env.get("value")}</TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </ExpansionPanelDetails>
+      </ExpansionPanel>
+    );
   };
 
   private renderConfigFiles = () => {
@@ -292,22 +348,40 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
   private renderDisks = () => {
     const { component, classes } = this.props;
     const disks = component.get("volumes");
-    if (disks?.size === 0) {
+    if (disks === undefined || disks?.size === 0) {
       return "-";
     }
-    return disks?.map((disk, index) => {
-      return (
-        <Box key={index} className={classes.columnWrapper}>
-          <div className={clsx(classes.rowWrapper, index % 2 === 0 ? classes.rowEven : classes.rowOdd)}>
-            <div className={classes.envValue}>{disk.get("type")}</div>
-            <div className={classes.envValue}>{disk.get("pvc")}</div>
-            <div className={classes.envValue}>{disk.get("storageClassName")}</div>
-            <div className={classes.envKey}>{disk.get("path")}</div>
-            <div className={classes.envValue}>{disk.get("size")}</div>
-          </div>
-        </Box>
-      );
-    });
+    return (
+      <ExpansionPanel square className={clsx(classes.rootEnv)} elevation={0} defaultExpanded={true}>
+        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>{disks?.size} disks</ExpansionPanelSummary>
+        <ExpansionPanelDetails>
+          <Table size="small" aria-label="Envs-Table">
+            <TableHead key="title">
+              <TableRow>
+                <TableCell>Type</TableCell>
+                <TableCell>PVC</TableCell>
+                <TableCell>Storage Class</TableCell>
+                <TableCell>Path</TableCell>
+                <TableCell>Size</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {disks?.map((disk, index) => {
+                return (
+                  <TableRow key={index}>
+                    <TableCell>{disk.get("type")}</TableCell>
+                    <TableCell>{disk.get("pvc")}</TableCell>
+                    <TableCell>{disk.get("storageClassName")}</TableCell>
+                    <TableCell>{disk.get("path")}</TableCell>
+                    <TableCell>{disk.get("size")}</TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </ExpansionPanelDetails>
+      </ExpansionPanel>
+    );
   };
 
   public render() {
@@ -315,22 +389,22 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     return (
       <VerticalHeadTable
         items={[
-          { name: "Created at", content: this.renderCreatedAt() },
+          { name: "Created At", content: this.renderCreatedAt() },
           { name: "Name", content: component.get("name") },
           { name: "Namespace", content: activeNamespaceName },
-          { name: "Workload type", content: component.get("workloadType") },
+          { name: "Workload Type", content: component.get("workloadType") },
           { name: "Pod Status", content: this.renderComponentStatus() },
           { name: "Image", content: this.renderCopiableValue(component.get("image")) },
           { name: "Command", content: this.renderCopiableValue(component.get("command")) },
-          { name: "Environment variables", content: this.renderEnvs() },
-          { name: "Configuration files", content: this.renderConfigFiles() },
-          { name: "Exposed ports", content: this.renderPorts() },
+          { name: "Environment Variables", content: this.renderEnvs() },
+          { name: "Configuration Files", content: this.renderConfigFiles() },
+          { name: "Exposed Ports", content: this.renderPorts() },
           { name: "Disks", content: this.renderDisks() },
           { name: "Health", content: this.renderHealth() },
           { name: "CPU", content: this.renderComponentCPU() },
           { name: "Memory", content: this.renderComponentMemory() },
-          { name: "Restart strategy", content: this.renderRestartStrategy() },
-          { name: "Graceful termination", content: this.renderGracefulTermination() },
+          { name: "Restart Strategy", content: this.renderRestartStrategy() },
+          { name: "Graceful Termination", content: this.renderGracefulTermination() },
         ]}
       />
     );

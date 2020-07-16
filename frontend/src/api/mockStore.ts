@@ -7635,6 +7635,11 @@ export default class MockStore {
                 value: "v2",
                 type: "static",
               },
+              {
+                name: "kjlksdjflkasjflksajlafkjsldkfjalskdjflkasdjflkasdjalfkasdjklfsdjfla2",
+                value: "v2kjlksdjflkasjflksajlafkjsldkfjalskdjflkasdjflkasdjalfkasdjklfsdjfla2",
+                type: "static",
+              },
             ],
             image: "nginx:latest",
             replicas: 1,
