@@ -1,15 +1,16 @@
-import { Box, Tooltip } from "@material-ui/core";
+import { Box } from "@material-ui/core";
 import HelpIcon from "@material-ui/icons/Help";
 import React from "react";
+import { KTooltip } from "forms/Application/KTooltip";
 
 const Warning = ({ title, tooltip }: { title: string; tooltip: string }) => {
   return (
-    <Tooltip title={tooltip}>
+    <KTooltip title={tooltip}>
       <Box color="warning.main" display={"inline-block"}>
         {title}
         <HelpIcon fontSize="small" style={{ verticalAlign: "middle", marginLeft: 4 }} />
       </Box>
-    </Tooltip>
+    </KTooltip>
   );
 };
 

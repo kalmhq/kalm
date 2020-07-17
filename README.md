@@ -48,7 +48,7 @@ prometheus-5767f54db5-82p66             2/2     Running   2          43h
 if your prefer commond line, go read [tutorial-1-hello-world.md](doc/tutorial-1-hello-world.md) to see what you can do with Kalm, or if you prefer GUI, Kalm has a dashboard prepared for you, to visited the dashboard, you need:
 
 ```
-kubectl port-forward -n kalm-system $(kubectl get pod -n kalm-system -l app=kalm-dashboard -ojsonpath="{.items[0].metadata.name}") 3001:3001
+kubectl port-forward -n kalm-system $(kubectl get pod -n kalm-system -l app=kalm -ojsonpath="{.items[0].metadata.name}") 3001:3001
 ```
 
 then go to [http://localhost:3001](http://localhost:3001), follow the doc [create-test-service-account.md](doc/create-test-service-account.md) to get the token to access dashboard.

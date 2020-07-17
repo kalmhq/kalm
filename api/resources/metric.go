@@ -22,9 +22,8 @@ func (m *MetricPoint) MarshalJSON() ([]byte, error) {
 }
 
 type MetricHistories struct {
-	IsMetricServerEnabled bool          `json:"isMetricServerEnabled"`
-	CPU                   MetricHistory `json:"cpu"`
-	Memory                MetricHistory `json:"memory"`
+	CPU    MetricHistory `json:"cpu"`
+	Memory MetricHistory `json:"memory"`
 }
 
 func mergeMetricHistories(a, b MetricHistory) (rst MetricHistory) {

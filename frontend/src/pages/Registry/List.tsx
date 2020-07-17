@@ -198,8 +198,8 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
     return (
       <EmptyList
         image={<KalmRegistryIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
-        title={"You don't have any Registries"}
-        content="You don't have any Registries yet, you can create a Registry at once."
+        title={"You don’t have any Private Image Registries."}
+        content="To pull images from Private registries such as gcr or aws, you must setup the corresponding permissions here. Public registries such as dockerhub can be used without any additional setup."
         button={
           <CustomizedButton
             variant="contained"

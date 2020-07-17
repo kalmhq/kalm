@@ -258,7 +258,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
       <EmptyList
         image={<KalmCertificatesIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
         title={"You don't have any Certificates"}
-        content="You don't have any Certificates yet, you can create a Certificate at once."
+        content="To enable HTTPS please upload an existing SSL certificate. Alternatively Kalm can help you setup automatic TLS certification via Let's Encrypt."
         button={
           <CustomizedButton
             variant="contained"

@@ -21,6 +21,8 @@ import { Link } from "react-router-dom";
 import { blinkTopProgressAction } from "actions/settings";
 import { EmptyList } from "widgets/EmptyList";
 import { indigo } from "@material-ui/core/colors";
+import { CustomizedButton } from "widgets/Button";
+import { push } from "connected-react-router";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -118,6 +120,7 @@ export class VolumesRaw extends React.Component<Props, States> {
     return (
       <>
         <IconButtonWithTooltip
+          size="small"
           disabled={rowData.get("isInUse")}
           tooltipTitle={rowData.get("isInUse") ? "This disk in in used and can't be removed" : "Delete"}
           onClick={() => {
@@ -211,12 +214,24 @@ export class VolumesRaw extends React.Component<Props, States> {
   };
 
   private renderEmpty() {
+    const { dispatch } = this.props;
     return (
       <EmptyList
         image={<KalmVolumeIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
-        title={"You don't have any Disks"}
-        content="You don't need to apply disk manually. Disk will be created when you declare authentic disks in component form."
-        button={<StorageType />}
+        title={"You don’t have any Disks."}
+        content="Disks can be attached to Components to provide persistent storage. Disks can be created in the App Components page, and will show up here automatically."
+        button={
+          <CustomizedButton
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              blinkTopProgressAction();
+              dispatch(push(`/applications`));
+            }}
+          >
+            View Applications
+          </CustomizedButton>
+        }
       />
     );
   }

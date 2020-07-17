@@ -1,4 +1,5 @@
 import { Box, Button, createStyles, Link as MLink, Popover, Theme, Tooltip, WithStyles } from "@material-ui/core";
+import { indigo } from "@material-ui/core/colors";
 import withStyles from "@material-ui/core/styles/withStyles";
 import { deleteApplicationAction } from "actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
@@ -25,13 +26,12 @@ import { CustomizedButton } from "widgets/Button";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { EmptyList } from "widgets/EmptyList";
 import { FoldButtonGroup } from "widgets/FoldButtonGroup";
-import { DeleteIcon, KalmDetailsIcon, KalmApplicationIcon } from "widgets/Icon";
+import { DeleteIcon, KalmApplicationIcon, KalmDetailsIcon } from "widgets/Icon";
 import { Body } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { KTable } from "widgets/Table";
 import { BasePage } from "../BasePage";
-import { indigo } from "@material-ui/core/colors";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -125,13 +125,18 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
 
   private renderCPU = (applicationListItem: RowData) => {
     const metrics = applicationListItem.get("metrics");
-    return <SmallCPULineChart data={metrics.get("cpu")} isMetricServerEnabled={metrics.get("isMetricServerEnabled")} />;
+    return (
+      <SmallCPULineChart data={metrics.get("cpu")} hoverText={this.hasPods(applicationListItem) ? "No data" : ""} />
+    );
   };
 
   private renderMemory = (applicationListItem: RowData) => {
     const metrics = applicationListItem.get("metrics");
     return (
-      <SmallMemoryLineChart data={metrics.get("memory")} isMetricServerEnabled={metrics.get("isMetricServerEnabled")} />
+      <SmallMemoryLineChart
+        data={metrics.get("memory")}
+        hoverText={this.hasPods(applicationListItem) ? "No data" : ""}
+      />
     );
   };
 
@@ -152,6 +157,18 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     const components = componentsMap.get(applicationDetails.get("name"));
 
     return <Body>{components ? getApplicationCreatedAtString(components) : "-"}</Body>;
+  };
+
+  private hasPods = (applicationDetails: RowData) => {
+    const { componentsMap } = this.props;
+    let count = 0;
+    componentsMap.get(applicationDetails.get("name"))?.forEach((component) => {
+      component.get("pods").forEach((podStatus) => {
+        count++;
+      });
+    });
+
+    return count !== 0;
   };
 
   private renderStatus = (applicationDetails: RowData) => {
@@ -184,6 +201,10 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         }
       });
     });
+
+    if (podCount === 0) {
+      return "No Pods";
+    }
 
     const tooltipTitle = `Total ${podCount} pods are found. \n${successCount} ready, ${pendingCount} pending, ${errorCount} failed. Click to view details.`;
 

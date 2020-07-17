@@ -68,6 +68,14 @@ const styles = (theme: Theme) =>
       display: "flex",
       flexDirection: "column",
     },
+    copyIcon: {
+      cursor: "pointer",
+      "& > svg": {
+        position: "relative",
+        top: 4,
+        marginLeft: 6,
+      },
+    },
     rootEnv: {
       marginBottom: 4,
       marginTop: 4,
@@ -148,22 +156,12 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
 
   private renderComponentCPU = () => {
     const { component } = this.props;
-    return (
-      <SmallCPULineChart
-        data={component.get("metrics").get("cpu")!}
-        isMetricServerEnabled={component.get("metrics").get("isMetricServerEnabled")}
-      />
-    );
+    return <SmallCPULineChart data={component.get("metrics").get("cpu")!} />;
   };
 
   private renderComponentMemory = () => {
     const { component } = this.props;
-    return (
-      <SmallMemoryLineChart
-        data={component.get("metrics").get("memory")!}
-        isMetricServerEnabled={component.get("metrics").get("isMetricServerEnabled")}
-      />
-    );
+    return <SmallMemoryLineChart data={component.get("metrics").get("memory")!} />;
   };
 
   private renderPort = (key: any, name: string, port: number) => {
@@ -266,13 +264,13 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
         <>
           {value}
           <span
-            style={{ cursor: "pointer" }}
+            className={this.props.classes.copyIcon}
             onClick={() => {
               copy(value);
-              this.props.dispatch(setSuccessNotificationAction("Copied to clipboard"));
+              this.props.dispatch(setSuccessNotificationAction("Copied successful!"));
             }}
           >
-            <CopyIconDefault style={{ height: 13 }} />
+            <CopyIconDefault fontSize="small" />
           </span>
         </>
       );
