@@ -201,6 +201,7 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
                   tooltipPlacement="top"
                   tooltipTitle="Edit"
                   aria-label="edit"
+                  size="small"
                   onClick={() => this.privateOpenEditDialog(injectedFile, index)}
                 >
                   <EditIcon />
