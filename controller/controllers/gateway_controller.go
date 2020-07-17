@@ -141,16 +141,51 @@ func (r *GatewayReconcilerTask) HttpGateway() error {
 	}
 
 	gw.Spec.Selector["istio"] = "ingressgateway"
-	gw.Spec.Servers = []*istioNetworkingV1Beta1.Server{
-		{
-			Hosts: []string{"*"},
+
+	// find httpsRedirect
+	var httpRouteList corev1alpha1.HttpRouteList
+	if err := r.List(r.ctx, &httpRouteList); !errors.IsNotFound(err) {
+		return err
+	}
+
+	var needRedirectHosts []string
+	for _, httpRoute := range httpRouteList.Items {
+		if !httpRoute.Spec.HttpRedirectToHttps {
+			continue
+		}
+
+		needRedirectHosts = append(needRedirectHosts, httpRoute.Spec.Hosts...)
+	}
+
+	var servers []*istioNetworkingV1Beta1.Server
+
+	if len(needRedirectHosts) > 0 {
+		redirectServer := istioNetworkingV1Beta1.Server{
+			Hosts: needRedirectHosts,
 			Port: &istioNetworkingV1Beta1.Port{
 				Number:   80,
 				Protocol: "http",
-				Name:     "kalm-http",
+				Name:     "kalm-http0",
 			},
+			Tls: &istioNetworkingV1Beta1.Server_TLSOptions{
+				HttpsRedirect: true,
+			},
+		}
+
+		servers = append(servers, &redirectServer)
+	}
+
+	serveAllServer := istioNetworkingV1Beta1.Server{
+		Hosts: []string{"*"},
+		Port: &istioNetworkingV1Beta1.Port{
+			Number:   80,
+			Protocol: "http",
+			Name:     "kalm-http",
 		},
 	}
+	servers = append(servers, &serveAllServer)
+
+	gw.Spec.Servers = servers
 
 	return r.updateGateway(isCreate, gw)
 }

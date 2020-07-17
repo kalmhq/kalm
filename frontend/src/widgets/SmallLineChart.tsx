@@ -8,6 +8,8 @@ import { ChartData, Line } from "react-chartjs-2";
 import { MetricList } from "types/common";
 import { WhitePaper } from "./Paper";
 import { CenterCaption } from "./Label";
+import { grey } from "@material-ui/core/colors";
+import { KTooltip } from "forms/Application/KTooltip";
 
 const smallLineChartStyles = (theme: Theme) =>
   createStyles({
@@ -15,27 +17,24 @@ const smallLineChartStyles = (theme: Theme) =>
       position: "relative",
       display: "inline-block",
       verticalAlign: "middle",
-    },
-    border: {
       background: "white",
       border: "1px solid #DDD",
     },
     text: {
-      paddingTop: "2px",
-      // left: 0,
-      // right: 0,
-      // top: 0,
-      // bottom: 0,
-      // position: "absolute",
-      // display: "flex",
-      // alignItems: "center",
-      // justifyContent: "space-around",
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0,
+      position: "absolute",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-around",
     },
   });
 
 interface Props extends WithStyles<typeof smallLineChartStyles> {
   data: MetricList;
-  isMetricServerEnabled: boolean;
+  hoverText?: string;
   width: number | string;
   height: number | string;
   formatValue?: (value: number) => string;
@@ -43,36 +42,48 @@ interface Props extends WithStyles<typeof smallLineChartStyles> {
   backgroundColor?: string;
 }
 
+const emptyChartDataX = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+const emptyChartDataY = [1, 3, 1, 5, 2, 7, 2, 5, 8];
+
 class SmallLineChartRaw extends React.PureComponent<Props> {
   private generateData = (): ChartData<chartjs.ChartData> => {
     const { data, borderColor, backgroundColor } = this.props;
 
+    let dataX = emptyChartDataX;
+    let dataY = emptyChartDataY;
+    let backgroundColorFixed = backgroundColor;
+    let borderColorFixed = borderColor;
+    if (data && data.size > 0) {
+      dataY = data.map((n) => n.get("y")).toArray();
+      dataX = data.map((n) => n.get("x")).toArray();
+    } else {
+      backgroundColorFixed = grey[400];
+      borderColorFixed = grey[400];
+    }
+
     return {
-      labels: data.map((n) => n.get("x")).toArray(),
+      labels: dataX,
       datasets: [
         {
           lineTension: 0.1,
-          borderColor: borderColor || "#DDD",
+          borderColor: borderColorFixed || "#DDD",
           borderWidth: 1,
-          backgroundColor: backgroundColor || "rgba(75,192,192,0.4)",
+          backgroundColor: backgroundColorFixed || "rgba(75,192,192,0.4)",
           pointHoverRadius: 0,
           pointRadius: 0,
           pointHitRadius: 0,
-          data: data.map((n) => n.get("y")).toArray(),
+          data: dataY,
         },
       ],
     };
   };
 
   private renderText() {
-    const { data, formatValue, isMetricServerEnabled } = this.props;
-    let text = "Data available soon";
+    const { data, formatValue } = this.props;
+    // let text = "Data available soon";
+    let text = "";
 
-    if (!isMetricServerEnabled) {
-      text = "Metrics not ready";
-    }
-
-    if (isMetricServerEnabled && data && data.size > 0) {
+    if (data && data.size > 0) {
       if (formatValue) {
         text = formatValue(data.get(data.size - 1)!.get("y"));
       } else {
@@ -92,47 +103,57 @@ class SmallLineChartRaw extends React.PureComponent<Props> {
   };
 
   public render() {
-    const { classes, width, height } = this.props;
+    const { classes, width, height, hoverText } = this.props;
     const hasData = this.hasData();
-    return (
-      <div style={{ width, height }} className={`${classes.root} ${hasData ? classes.border : ""}`}>
-        {!hasData ? this.renderText() : null}
-        {hasData ? (
-          <Line
-            legend={{ display: false }}
-            options={{
-              responsive: true,
-              maintainAspectRatio: false,
-              tooltips: {
-                enabled: false,
-              },
-              scales: {
-                yAxes: [
-                  {
+
+    const line = (
+      <div style={{ width, height }} className={classes.root}>
+        {this.renderText()}
+        <Line
+          legend={{ display: false }}
+          options={{
+            responsive: true,
+            maintainAspectRatio: false,
+            tooltips: {
+              enabled: false,
+            },
+            scales: {
+              yAxes: [
+                {
+                  display: false,
+                  gridLines: {
                     display: false,
-                    gridLines: {
-                      display: false,
-                    },
-                    ticks: {
-                      beginAtZero: true,
-                    },
                   },
-                ],
-                xAxes: [
-                  {
+                  ticks: {
+                    beginAtZero: true,
+                  },
+                },
+              ],
+              xAxes: [
+                {
+                  display: false,
+                  gridLines: {
                     display: false,
-                    gridLines: {
-                      display: false,
-                    },
                   },
-                ],
-              },
-            }}
-            data={this.generateData()}
-          />
-        ) : null}
+                },
+              ],
+            },
+            animation: {
+              duration: 0,
+              animateScale: false,
+              animateRotate: false,
+            },
+          }}
+          data={this.generateData()}
+        />
       </div>
     );
+
+    if (hasData) {
+      return line;
+    }
+
+    return <KTooltip title={hoverText || "Data available soon"}>{line}</KTooltip>;
   }
 }
 
@@ -330,7 +351,7 @@ export const BigMemoryLineChart = (props: Pick<Props, "data">) => {
   );
 };
 
-export const SmallMemoryLineChart = (props: Pick<Props, "data" | "isMetricServerEnabled">) => {
+export const SmallMemoryLineChart = (props: Pick<Props, "data" | "hoverText">) => {
   return (
     <SmallLineChart
       {...props}
@@ -343,7 +364,7 @@ export const SmallMemoryLineChart = (props: Pick<Props, "data" | "isMetricServer
   );
 };
 
-export const SmallCPULineChart = (props: Pick<Props, "data" | "isMetricServerEnabled">) => {
+export const SmallCPULineChart = (props: Pick<Props, "data" | "hoverText">) => {
   return (
     <SmallLineChart
       {...props}

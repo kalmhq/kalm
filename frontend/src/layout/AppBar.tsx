@@ -61,10 +61,10 @@ const styles = (theme: Theme) =>
       color: theme.palette.primary.light,
       fontSize: "18px",
       fontWeight: "normal",
-      padding: "10px 0",
-      borderRadius: 6,
+      padding: "0 0",
       paddingLeft: 5,
       paddingRight: 5,
+      borderBottom: "2px solid transparent",
       "&.disabled": {
         color: "#FFF",
         cursor: "unset",
@@ -72,10 +72,13 @@ const styles = (theme: Theme) =>
       "&.disabled:hover": {
         color: "#FFF",
         backgroundColor: "unset",
+        fontWeight: "unset",
+        borderBottom: "2px solid transparent",
       },
       "&:hover": {
-        color: theme.palette.primary.light,
-        backgroundColor: theme.palette.primary.dark,
+        color: "white",
+        // fontWeight: "bold",
+        borderBottom: "2px solid white",
       },
     },
     barRight: {
