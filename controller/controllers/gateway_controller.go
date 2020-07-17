@@ -23,6 +23,7 @@ import (
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
@@ -144,7 +145,7 @@ func (r *GatewayReconcilerTask) HttpGateway() error {
 
 	// find httpsRedirect
 	var httpRouteList corev1alpha1.HttpRouteList
-	if err := r.List(r.ctx, &httpRouteList); !errors.IsNotFound(err) {
+	if err := r.List(r.ctx, &httpRouteList); client.IgnoreNotFound(err) != nil {
 		return err
 	}
 
@@ -266,6 +267,12 @@ func (r *GatewayReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&v1beta1.Gateway{}).
 		Watches(
 			&source.Kind{Type: &corev1alpha1.HttpsCert{}},
+			&handler.EnqueueRequestsFromMapFunc{
+				ToRequests: &KalmGatewayRequestMapper{r.BaseReconciler},
+			},
+		).
+		Watches(
+			&source.Kind{Type: &corev1alpha1.HttpRoute{}},
 			&handler.EnqueueRequestsFromMapFunc{
 				ToRequests: &KalmGatewayRequestMapper{r.BaseReconciler},
 			},

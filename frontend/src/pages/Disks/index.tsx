@@ -6,7 +6,6 @@ import { StorageType } from "pages/Disks/StorageType";
 import React from "react";
 import { connect } from "react-redux";
 import { Disk } from "types/disk";
-import { H4 } from "widgets/Label";
 import { KTable } from "widgets/Table";
 import { setErrorNotificationAction } from "actions/notification";
 import { deletePersistentVolumeAction } from "actions/persistentVolume";
@@ -166,7 +165,6 @@ export class VolumesRaw extends React.Component<Props, States> {
   private renderSecondHeaderRight() {
     return (
       <>
-        <H4>Disks</H4>
         {this.renderDiskHelp()}
         <StorageType />
       </>

@@ -184,11 +184,14 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     } else {
       return (
         <div>
-          <NoPortsWarning />{" "}
+          <Box display="inline-block" pr={2}>
+            <NoPortsWarning />
+          </Box>
           <IconButtonWithTooltip
             tooltipPlacement="top"
             tooltipTitle="Add Exposed Ports"
             aria-label="add-exposed-ports"
+            size="small"
             onClick={() =>
               this.props.dispatch(
                 push(`/applications/${activeNamespaceName}/components/${component.get("name")}/edit#${NetworkingTab}`),
@@ -243,6 +246,7 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
             tooltipPlacement="top"
             tooltipTitle="Add Health Probes"
             aria-label="add-health-probes"
+            size="small"
             onClick={() =>
               dispatch(
                 push(`/applications/${activeNamespaceName}/components/${component.get("name")}/edit#${HealthTab}`),
