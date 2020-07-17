@@ -126,7 +126,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   private renderCPU = (applicationListItem: RowData) => {
     const metrics = applicationListItem.get("metrics");
     return (
-      <SmallCPULineChart data={metrics.get("cpu")} hoverText={this.hasPods(applicationListItem) ? "No data" : ""} />
+      <SmallCPULineChart data={metrics.get("cpu")} hoverText={this.hasPods(applicationListItem) ? "" : "No data"} />
     );
   };
 
