@@ -180,30 +180,8 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
       case "applications":
       case "":
         return "Applications";
-      case "components":
-        return "Components";
-      case "certificates":
-        return "Certificates";
-      case "nodes":
-        return "Nodes";
-      case "ingress":
-        return "Ingress";
-      case "disks":
-        return "Disks";
-      case "registries":
-        return "Registries";
-      case "routes":
-        return "Routes";
-      case "metrics":
-        return "Metrics";
-      case "new":
-        return "New";
-      case "edit":
-        return "Edit";
-      case "details":
-        return "Details";
       default:
-        return path;
+        return path[0].toUpperCase() + path.slice(1);
     }
   };
 
