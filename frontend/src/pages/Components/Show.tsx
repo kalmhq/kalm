@@ -95,8 +95,6 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
         route.get("destinations").filter((destination) => destination.get("host").startsWith(serviceName)).size > 0,
     );
 
-    // console.log(serviceName, httpRoutes.toJS(), routes.toJS());
-
     return (
       <Expansion title={"Routes"} defaultUnfold>
         <RouteWidgets routes={routes} activeNamespaceName={activeNamespaceName} />

@@ -23,6 +23,8 @@ import { HttpRoute } from "types/route";
 import { CopyAsCurl } from "widgets/CopyAsCurl";
 import { OpenInBrowser } from "widgets/OpenInBrowser";
 import { Targets } from "widgets/Targets";
+import { FlexRowItemCenterBox } from "widgets/Box";
+import { CenterTypography } from "widgets/Label";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -119,8 +121,12 @@ export const RouteWidgets = ({
   activeNamespaceName: string;
 }) => {
   return (
-    <Box>
-      <RouteWidget routes={routes} activeNamespaceName={activeNamespaceName} />
-    </Box>
+    <FlexRowItemCenterBox>
+      {routes.size > 0 ? (
+        <RouteWidget routes={routes} activeNamespaceName={activeNamespaceName} />
+      ) : (
+        <CenterTypography>No Route</CenterTypography>
+      )}
+    </FlexRowItemCenterBox>
   );
 };

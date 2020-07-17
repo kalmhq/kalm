@@ -11,6 +11,11 @@ const styles = () =>
     body1: {
       paddingTop: theme.spacing(1),
     },
+    center: {
+      display: "flex",
+      justifyContent: "center",
+      flex: 1,
+    },
   });
 
 type LabelProps = React.Props<any> & WithStyles<typeof styles> & TypographyProps;
@@ -131,3 +136,13 @@ export const CenterCaption = withStyles(styles)((props: LabelProps) => {
   );
 });
 CenterCaption.displayName = "CenterCaption";
+
+export const CenterTypography = withStyles(styles)((props: LabelProps) => {
+  const { classes } = props;
+  return (
+    <Box className={classes.center}>
+      <Typography>{props.children}</Typography>
+    </Box>
+  );
+});
+CenterTypography.displayName = "CenterTypography";
