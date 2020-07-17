@@ -305,8 +305,11 @@ function KFreeSoloAutoCompleteSingleValueRaw<T>(
       // size="small"
       options={options}
       filterOptions={createFilterOptions({
+        ignoreCase: true,
         matchFrom: "any",
-        stringify: (option) => option.value,
+        stringify: (option) => {
+          return option.label;
+        },
       })}
       getOptionLabel={(option: any) => {
         if (option.label) {
@@ -385,8 +388,11 @@ function KAutoCompleteSingleValueRaw<T>(props: KAutoCompleteSingleValueProps<KAu
       groupBy={(option) => option.group}
       options={options}
       filterOptions={createFilterOptions({
+        ignoreCase: true,
         matchFrom: "any",
-        stringify: (option) => option.value,
+        stringify: (option) => {
+          return option.label;
+        },
       })}
       renderGroup={(group: RenderGroupParams) => {
         if (group.key === "default") {
