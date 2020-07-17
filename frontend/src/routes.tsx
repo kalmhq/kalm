@@ -36,7 +36,6 @@ export const KalmRoutes = (
     <Route path="/">
       <RequireAuthorizatedDashboard>
         <Switch>
-          <Route exact path="/" component={RequireAdmin(ApplicationListPage)} />
           <Route exact path="/admin/sso" component={AdminSSOPage} />
           <Route exact path="/cluster/nodes" component={NodeListPage} />
           <Route exact path="/cluster/ingress" component={IngressInfoPage} />
