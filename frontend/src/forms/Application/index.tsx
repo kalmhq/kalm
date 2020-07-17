@@ -92,7 +92,7 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
               ? "Can't modify name"
               : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), and "-". Max length is 180.'
           }
-          placeholder="Please type the component name"
+          placeholder="Please type the application name"
         />
 
         <Box mt={2} style={{ color: "#797979" }}>
