@@ -42,8 +42,8 @@ const styles = (theme: Theme) =>
   });
 
 interface States {
-  loadIngressInfoError: boolean;
-  loadingIngressInfo: boolean;
+  loadLoadBalancerInfoError: boolean;
+  loadingLoadBalancerInfo: boolean;
 }
 
 interface PortsInfo {
@@ -59,12 +59,12 @@ interface RowData extends ClusterInfo {
 
 type Props = ReturnType<typeof mapStateToProps> & TDispatchProp & WithStyles<typeof styles>;
 
-export class IngressInfoRaw extends React.Component<Props, States> {
+export class LoadBalancerInfoRaw extends React.Component<Props, States> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      loadIngressInfoError: false,
-      loadingIngressInfo: true,
+      loadLoadBalancerInfoError: false,
+      loadingLoadBalancerInfo: true,
     };
   }
 
@@ -92,14 +92,6 @@ export class IngressInfoRaw extends React.Component<Props, States> {
     );
   };
 
-  private renderVersion = (row: RowData) => {
-    return row.get("version");
-  };
-
-  private renderHostName = (row: RowData) => {
-    return row.get("ingressHostname");
-  };
-
   private copyText = (text: string) => {
     const { dispatch } = this.props;
     navigator.clipboard.writeText(text).then(
@@ -112,22 +104,44 @@ export class IngressInfoRaw extends React.Component<Props, States> {
     );
   };
 
-  private renderHostIP = (row: RowData) => {
+  private renderHostName = (row: RowData) => {
     const ipContent = row.get("ingressIP");
-    return (
-      <FlexRowItemCenterBox>
-        <Typography>{ipContent}</Typography>
-        <IconButtonWithTooltip
-          size="small"
-          tooltipTitle="Copy"
-          onClick={() => {
-            this.copyText(ipContent);
-          }}
-        >
-          <CopyIcon style={{ fontSize: 16 }} />
-        </IconButtonWithTooltip>
-      </FlexRowItemCenterBox>
-    );
+    const hostName = row.get("ingressHostname");
+    const coms = [];
+    if (hostName) {
+      coms.push(
+        <>
+          <Typography>{hostName}</Typography>
+          <IconButtonWithTooltip
+            size="small"
+            tooltipTitle="Copy"
+            onClick={() => {
+              this.copyText(hostName);
+            }}
+          >
+            <CopyIcon style={{ fontSize: 16 }} />
+          </IconButtonWithTooltip>
+        </>,
+      );
+    }
+    if (ipContent) {
+      coms.push(
+        <>
+          <Typography>{ipContent}</Typography>
+          <IconButtonWithTooltip
+            size="small"
+            tooltipTitle="Copy"
+            onClick={() => {
+              this.copyText(ipContent);
+            }}
+          >
+            <CopyIcon style={{ fontSize: 16 }} />
+          </IconButtonWithTooltip>
+        </>,
+      );
+    }
+
+    return <FlexRowItemCenterBox>{coms}</FlexRowItemCenterBox>;
   };
 
   getTableData = () => {
@@ -145,19 +159,19 @@ export class IngressInfoRaw extends React.Component<Props, States> {
   private renderSecondHeaderRight() {
     return (
       <>
-        <H4>Ingress</H4>
+        <H4>Load Balancer</H4>
       </>
     );
   }
 
   render() {
-    const { loadIngressInfoError } = this.state;
+    const { loadLoadBalancerInfoError } = this.state;
     const tableData = this.getTableData();
 
     return (
       <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
         <Box p={2}>
-          {loadIngressInfoError ? (
+          {loadLoadBalancerInfoError ? (
             <Alert severity="error">
               <Box>
                 Kalm fails to load persistentVolumes from current cluster with endpoint <strong>{K8sApiPrefix}</strong>.
@@ -171,10 +185,8 @@ export class IngressInfoRaw extends React.Component<Props, States> {
               paging: tableData.length > 20,
             }}
             columns={[
-              { title: "Hostname", field: "ingressHostname", sorting: false, render: this.renderHostName },
-              { title: "IP", field: "ingressIP", sorting: false, render: this.renderHostIP },
+              { title: "Hostname / IP", field: "ingressHostname", sorting: false, render: this.renderHostName },
               { title: "Ports", field: "ports", sorting: false, render: this.renderPorts },
-              { title: "Kubernetes Version", field: "version", sorting: false, render: this.renderVersion },
             ]}
             data={tableData}
             title=""
@@ -185,4 +197,4 @@ export class IngressInfoRaw extends React.Component<Props, States> {
   }
 }
 
-export const IngressInfoPage = connect(mapStateToProps)(withStyles(styles)(IngressInfoRaw));
+export const LoadBalancerInfoPage = connect(mapStateToProps)(withStyles(styles)(LoadBalancerInfoRaw));

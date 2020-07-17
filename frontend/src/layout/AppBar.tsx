@@ -186,8 +186,8 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
         return "Certificates";
       case "nodes":
         return "Nodes";
-      case "ingress":
-        return "Ingress";
+      case "loadbalancer":
+        return "Load Balancer";
       case "disks":
         return "Disks";
       case "registries":

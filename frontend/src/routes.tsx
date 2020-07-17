@@ -9,7 +9,7 @@ import { ApplicationNewPage } from "pages/Application/New";
 import { ApplicationShowPage } from "pages/Application/Show";
 import { CertificateListPage } from "pages/Certificate/List";
 import { NodeListPage } from "pages/Nodes/List";
-import { IngressInfoPage } from "pages/Ingress";
+import { LoadBalancerInfoPage } from "pages/LoadBalancer";
 import { NoMatch, Page404 } from "pages/NoMatch";
 import { DiskListPage } from "pages/Disks";
 import { RegistryListPage } from "pages/Registry/List";
@@ -39,7 +39,7 @@ export const KalmRoutes = (
           {/*<Route exact path="/roles" component={RequireAdmin(RoleListPage)} />*/}
           {/*<Route exact path="/install" component={InstallPage} />*/}
           <Route exact path="/cluster/nodes" component={NodeListPage} />
-          <Route exact path="/cluster/ingress" component={IngressInfoPage} />
+          <Route exact path="/cluster/loadbalancer" component={LoadBalancerInfoPage} />
           <Route exact path="/cluster/disks" component={DiskListPage} />
           <Route exact path="/cluster/registries" component={RegistryListPage} />
           <Route exact path="/applications" component={RequireAdmin(ApplicationListPage)} />
