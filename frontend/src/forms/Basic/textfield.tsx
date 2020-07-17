@@ -16,6 +16,7 @@ export const KRenderTextField = ({
   placeholder,
   required,
   disabled,
+  autoFocus,
   type,
   endAdornment,
   multiline,
@@ -42,6 +43,7 @@ export const KRenderTextField = ({
       type={type}
       multiline={multiline}
       rows={rows}
+      autoFocus={autoFocus}
       onFocus={input.onFocus}
       onBlur={input.onBlur}
       InputLabelProps={{

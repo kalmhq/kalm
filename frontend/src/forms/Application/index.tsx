@@ -20,22 +20,8 @@ import { Body } from "widgets/Label";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      // height: "100%",
-      // overflow: "hidden",
       padding: 20,
     },
-    // formSection: {
-    //   padding: theme.spacing(2),
-    //   margin: theme.spacing(3)
-    // },
-    // formSectionTable: {
-    //   padding: theme.spacing(0),
-    //   margin: theme.spacing(3)
-    // },
-    // formSectionContainer: {
-    //   margin: "0",
-    //   width: "auto"
-    // },
     displayNone: {
       display: "none",
     },
@@ -86,6 +72,7 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
           label="Name"
           disabled={isEdit}
           component={KRenderTextField}
+          autoFocus={true}
           validate={[ValidatorRequired, ValidatorName]}
           helperText={
             isEdit
@@ -156,37 +143,6 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
         <Box pt={3} className={classes.displayFlex}>
           {this.renderButtons()}
         </Box>
-
-        {/*
-        <Grid
-          container
-          spacing={2}
-          className={`${classes.formSectionContainer} ${currentTab === "sharedEnvs" ? "" : classes.displayNone}`}>
-          <Grid item xs={12} sm={12} md={12}>
-            <SectionTitle>
-              <H5>Shared Environments</H5>
-            </SectionTitle>
-          </Grid>
-          <Grid item xs={12} sm={12} md={12}>
-            <SharedEnvs />
-          </Grid>
-        </Grid>
-
-        <Grid
-          container
-          spacing={2}
-          className={`${classes.formSectionContainer} ${
-            currentTab === "applicationPlugins" ? "" : classes.displayNone
-          }`}>
-          <Grid item xs={12} sm={12} md={12}>
-            <SectionTitle>
-              <H5>Application Plugins</H5>
-            </SectionTitle>
-          </Grid>
-          <Grid item xs={12} sm={12} md={12}>
-            <Plugins />
-          </Grid>
-        </Grid> */}
       </form>
     );
   }

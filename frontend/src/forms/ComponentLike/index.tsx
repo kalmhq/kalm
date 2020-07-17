@@ -854,6 +854,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Grid item xs={6}>
           <Field
             component={KRenderTextField}
+            autoFocus={true}
             name="name"
             label="Name"
             margin
