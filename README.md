@@ -21,28 +21,32 @@ curl -sL https://raw.githubusercontent.com/kalmhq/kalm/master/scripts/install.sh
 to check if Kalm is installed successfully, run
 
 ```
-curl -sL https://raw.githubusercontent.com/kalmhq/kalm/master/scripts/check-kalm-pods.sh | bash
+curl -sL https://raw.githubusercontent.com/kalmhq/kalm/master/scripts/check-kalm-install-status.sh | bash
 ```
 
-if you see somthing like this, then Kalm is running as expected:
+the script will keep polling for the status until the installation is done, the whole process can take up to 5 minutes for the first time setup:
 
 ```
-NAME                            READY   STATUS    RESTARTS   AGE
-kalm-operator-c7cd8cffc-4grps   2/2     Running   0          56m
+this outputs deployments status in all Kalm related namespaces
 
-NAME                               READY   STATUS    RESTARTS   AGE
-kalm-dashboard-6bbb5894-q8sb5      2/2     Running   0          55m
-kalm-controller-686c55b89b-6s29x   2/2     Running   0          55m
+NAME            READY   UP-TO-DATE   AVAILABLE   AGE
+kalm-operator   1/1     1            1           16m
 
-NAME                                       READY   STATUS    RESTARTS   AGE
-cert-manager-7cb75cf6b4-gbhw7              1/1     Running   1          43h
-cert-manager-cainjector-759496659c-h6ggk   1/1     Running   1          43h
-cert-manager-webhook-7c75b89bf6-lfpp5      1/1     Running   1          43h
+NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
+cert-manager              1/1     1            1           15m
+cert-manager-cainjector   1/1     1            1           15m
+cert-manager-webhook      1/1     1            1           15m
 
-NAME                                    READY   STATUS    RESTARTS   AGE
-istio-ingressgateway-7bf98d4db8-c4czn   1/1     Running   1          43h
-istiod-6fd48c8cc7-9gj6m                 1/1     Running   1          43h
-prometheus-5767f54db5-82p66             2/2     Running   2          43h
+NAME                   READY   UP-TO-DATE   AVAILABLE   AGE
+istio-ingressgateway   1/1     1            1           13m
+istiod                 1/1     1            1           14m
+prometheus             1/1     1            1           13m
+
+NAME              READY   UP-TO-DATE   AVAILABLE   AGE
+kalm              1/1     1            1           11m
+kalm-controller   1/1     1            1           12m
+
+🎉 installing done
 ```
 
 if your prefer commond line, go read [tutorial-1-hello-world.md](doc/tutorial-1-hello-world.md) to see what you can do with Kalm, or if you prefer GUI, Kalm has a dashboard prepared for you, to visited the dashboard, you need:

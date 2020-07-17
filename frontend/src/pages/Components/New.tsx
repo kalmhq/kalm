@@ -30,7 +30,7 @@ class ComponentNewRaw extends React.PureComponent<Props> {
       <BasePage
         secondHeaderLeft={<Namespaces />}
         leftDrawer={<ApplicationSidebar />}
-        secondHeaderRight="Create New Component"
+        secondHeaderRight="Create Component"
       >
         <Box p={2}>
           <Grid container spacing={2}>

@@ -9,7 +9,7 @@ import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { Node } from "types/node";
 import { formatTimeDistance } from "utils";
-import { H4, H5 } from "widgets/Label";
+import { H5 } from "widgets/Label";
 import { BigCPULineChart, BigMemoryLineChart, SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
 import { BasePage } from "../BasePage";
@@ -181,7 +181,6 @@ export class NodeListRaw extends React.Component<Props, States> {
   private renderSecondHeaderRight = () => {
     return (
       <>
-        <H4>Nodes</H4>
         <PopupState variant="popover" popupId={"nodes"}>
           {(popupState) => (
             <>

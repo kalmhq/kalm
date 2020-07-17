@@ -37,7 +37,7 @@ class ApplicationNewRaw extends React.PureComponent<Props> {
   public render() {
     const { classes } = this.props;
     return (
-      <BasePage secondHeaderRight={<H4>Create New Application</H4>}>
+      <BasePage secondHeaderRight={<H4>Create Application</H4>}>
         <div className={classes.root}>
           <Grid container spacing={2}>
             <Grid item xs={8} sm={8} md={8}>
