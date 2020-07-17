@@ -107,7 +107,6 @@ type HttpRouteSpec struct {
 	// +kubebuilder:validation:MinItems=1
 	Destinations []HttpRouteDestination `json:"destinations"`
 
-	// This field has no effect for now
 	HttpRedirectToHttps bool `json:"httpRedirectToHttps,omitempty"`
 
 	Timeout *int              `json:"timeout,omitempty"`

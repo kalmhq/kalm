@@ -132,7 +132,6 @@ spec:
               minItems: 1
               type: array
             httpRedirectToHttps:
-              description: This field has no effect for now
               type: boolean
             methods:
               items:
