@@ -9,7 +9,7 @@ import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { AppBarComponent } from "./AppBar";
-import { TOP_PROGRESS_ZINDEX, TUTORIAL_DRAWER_WIDTH } from "./Constants";
+import { APP_BAR_HEIGHT, TOP_PROGRESS_ZINDEX, TUTORIAL_DRAWER_WIDTH } from "./Constants";
 import { RootDrawer } from "./RootDrawer";
 
 const styles = (theme: Theme) => {
@@ -74,9 +74,11 @@ class DashboardLayoutRaw extends React.PureComponent<Props> {
 
           <AppBarComponent />
 
-          <Box display="flex">
+          <Box display="flex" flex="1" marginTop={APP_BAR_HEIGHT + "px"}>
             <RootDrawer />
-            <Box flex="1">{children}</Box>
+            <Box flex="1" display="flex">
+              {children}
+            </Box>
           </Box>
         </div>
 

@@ -7,6 +7,7 @@ import { loadLoginStatusAction } from "actions/auth";
 import { RootState } from "reducers";
 import { Loading } from "widgets/Loading";
 import { getDisplayName } from "./utils";
+import { Box } from "@material-ui/core";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
@@ -62,7 +63,11 @@ export const Authorizated = ({ mustAuthorized, mustNotAuthorized }: Options) => 
       const { firstLoaded, authorized, isLoading } = this.props;
 
       if (!firstLoaded && isLoading) {
-        return <Loading />;
+        return (
+          <Box flex="1">
+            <Loading />
+          </Box>
+        );
       }
 
       if ((!authorized && mustAuthorized) || (authorized && mustNotAuthorized)) {

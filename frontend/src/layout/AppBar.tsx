@@ -1,4 +1,4 @@
-import { AppBar, createStyles, Divider, IconButton, Menu, MenuItem, Theme, Breadcrumbs } from "@material-ui/core";
+import { AppBar, Breadcrumbs, createStyles, Divider, IconButton, Menu, MenuItem, Theme } from "@material-ui/core";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import MenuIcon from "@material-ui/icons/Menu";
 import { WithStyles, withStyles } from "@material-ui/styles";
@@ -6,7 +6,7 @@ import { logoutAction } from "actions/auth";
 import { closeTutorialDrawerAction, openTutorialDrawerAction } from "actions/tutorial";
 import React from "react";
 import { connect } from "react-redux";
-import { Link, withRouter, RouteComponentProps } from "react-router-dom";
+import { Link, RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { FlexRowItemCenterBox } from "widgets/Box";
@@ -34,7 +34,7 @@ const styles = (theme: Theme) =>
     appBar: {
       color: "white",
       backgroundColor: theme.palette.primary.main,
-      position: "sticky",
+      position: "fixed",
       top: "0px",
       transition: "0.2s",
       height: APP_BAR_HEIGHT,
@@ -180,30 +180,8 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
       case "applications":
       case "":
         return "Applications";
-      case "components":
-        return "Components";
-      case "certificates":
-        return "Certificates";
-      case "nodes":
-        return "Nodes";
-      case "ingress":
-        return "Load Balancer";
-      case "disks":
-        return "Disks";
-      case "registries":
-        return "Registries";
-      case "routes":
-        return "Routes";
-      case "metrics":
-        return "Metrics";
-      case "new":
-        return "New";
-      case "edit":
-        return "Edit";
-      case "details":
-        return "Details";
       default:
-        return path;
+        return path[0].toUpperCase() + path.slice(1);
     }
   };
 

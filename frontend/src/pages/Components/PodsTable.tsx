@@ -1,24 +1,24 @@
-import React from "react";
 import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { TDispatchProp } from "types";
+import DeleteIcon from "@material-ui/icons/Delete";
+import { loadApplicationAction } from "actions/application";
+import { loadComponentsAction } from "actions/component";
+import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
+import { blinkTopProgressAction } from "actions/settings";
+import { api } from "api";
+import Immutable from "immutable";
+import { MaterialTableProps } from "material-table";
+import { getPodLogQuery } from "pages/Application/Log";
+import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
-import { KTable } from "widgets/Table";
-import { formatTimeDistance } from "utils";
-import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
-import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
-import { blinkTopProgressAction } from "actions/settings";
-import { generateQueryForPods } from "pages/Application/Log";
-import { KalmConsoleIcon, KalmLogIcon } from "widgets/Icon";
-import { api } from "api";
-import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
-import { loadApplicationAction } from "actions/application";
-import DeleteIcon from "@material-ui/icons/Delete";
-import { MaterialTableProps } from "material-table";
+import { TDispatchProp } from "types";
 import { PodStatus } from "types/application";
-import Immutable from "immutable";
+import { formatTimeDistance } from "utils";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
-import { loadComponentsAction } from "actions/component";
+import { KalmConsoleIcon, KalmLogIcon } from "widgets/Icon";
+import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
+import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
+import { KTable } from "widgets/Table";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -91,10 +91,7 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
   private renderPodActions = (pod: PodRowData) => {
     const { activeNamespaceName, dispatch } = this.props;
     const hasWriterRole = true;
-    const containerNames = pod
-      .get("containers")
-      .map((container) => container.get("name"))
-      .toArray();
+
     return (
       <>
         <IconLinkWithToolTip
@@ -103,14 +100,7 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
           }}
           size="small"
           tooltipTitle="Log"
-          to={
-            `/applications/${activeNamespaceName}/logs?` +
-            generateQueryForPods(
-              activeNamespaceName,
-              [[pod.get("name"), containerNames[0]]],
-              [pod.get("name"), containerNames[0]],
-            )
-          }
+          to={`/applications/${activeNamespaceName}/logs?` + getPodLogQuery(activeNamespaceName, pod)}
         >
           <KalmLogIcon />
         </IconLinkWithToolTip>
@@ -121,14 +111,7 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
             }}
             tooltipTitle="Shell"
             size="small"
-            to={
-              `/applications/${activeNamespaceName}/shells?` +
-              generateQueryForPods(
-                activeNamespaceName,
-                [[pod.get("name"), containerNames[0]]],
-                [pod.get("name"), containerNames[0]],
-              )
-            }
+            to={`/applications/${activeNamespaceName}/shells?` + getPodLogQuery(activeNamespaceName, pod)}
           >
             <KalmConsoleIcon />
           </IconLinkWithToolTip>

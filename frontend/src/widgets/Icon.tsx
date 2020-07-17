@@ -4,6 +4,7 @@ import CheckBox from "@material-ui/icons/CheckBox";
 import CheckBoxOutlineBlank from "@material-ui/icons/CheckBoxOutlineBlank";
 import CheckCircle from "@material-ui/icons/CheckCircle";
 import Clear from "@material-ui/icons/Clear";
+import SettingsIcon from "@material-ui/icons/Settings";
 import CreateNewFolder from "@material-ui/icons/CreateNewFolder";
 import Delete from "@material-ui/icons/Delete";
 import Edit from "@material-ui/icons/Edit";
@@ -136,6 +137,12 @@ export const DeleteIcon = withStyles(styles)((props: ColorIconsProps) => {
   const { fontSize, style } = props;
   const className = getClassNameByColorName(props);
   return <Delete className={className} fontSize={fontSize} style={style} />;
+});
+
+export const SettingIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return <SettingsIcon className={className} fontSize={fontSize} style={style} />;
 });
 
 export const EditIcon = withStyles(styles)((props: ColorIconsProps) => {

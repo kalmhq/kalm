@@ -85,7 +85,11 @@ class CommonTutorialRaw extends React.PureComponent<Props, State> {
     const { classes, tutorial, currentStepIndex } = this.props;
 
     if (!tutorial) {
-      return <Loading />;
+      return (
+        <Box flex="1">
+          <Loading />
+        </Box>
+      );
     }
 
     return (
