@@ -184,7 +184,9 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     } else {
       return (
         <div>
-          <NoPortsWarning />{" "}
+          <Box display="inline-block" pr={2}>
+            <NoPortsWarning />
+          </Box>
           <IconButtonWithTooltip
             tooltipPlacement="top"
             tooltipTitle="Add Exposed Ports"
