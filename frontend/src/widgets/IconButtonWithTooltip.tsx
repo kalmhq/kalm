@@ -63,40 +63,45 @@ export const IconButtonWithTooltip = withStyles(styles)(
   },
 );
 
-export const IconLinkWithToolTip = (
-  props: IconButtonProps & {
-    tooltipTitle: string;
-    to: string;
-    tooltipPlacement?:
-      | "bottom-end"
-      | "bottom-start"
-      | "bottom"
-      | "left-end"
-      | "left-start"
-      | "left"
-      | "right-end"
-      | "right-start"
-      | "right"
-      | "top-end"
-      | "top-start"
-      | "top";
+export const IconLinkWithToolTip = withStyles(styles)(
+  (
+    props: IconButtonProps &
+      WithStyles<typeof styles> & {
+        tooltipTitle: string;
+        to: string;
+        tooltipPlacement?:
+          | "bottom-end"
+          | "bottom-start"
+          | "bottom"
+          | "left-end"
+          | "left-start"
+          | "left"
+          | "right-end"
+          | "right-start"
+          | "right"
+          | "top-end"
+          | "top-start"
+          | "top";
+      },
+  ) => {
+    const { tooltipTitle, tooltipPlacement, classes, to, ...iconButtonProps } = props;
+
+    const tooltipChild = (
+      <Link to={to}>
+        <IconButton className={classes.button} {...iconButtonProps}>
+          {props.children}
+        </IconButton>
+      </Link>
+    );
+
+    if (props.disabled) {
+      return tooltipChild;
+    }
+
+    return (
+      <Tooltip title={tooltipTitle} placement={tooltipPlacement}>
+        {tooltipChild}
+      </Tooltip>
+    );
   },
-) => {
-  const { tooltipTitle, tooltipPlacement, to, ...iconButtonProps } = props;
-
-  const tooltipChild = (
-    <Link to={to} style={{ color: "inherit" }}>
-      <IconButton {...iconButtonProps}>{props.children}</IconButton>
-    </Link>
-  );
-
-  if (props.disabled) {
-    return tooltipChild;
-  }
-
-  return (
-    <Tooltip title={tooltipTitle} placement={tooltipPlacement}>
-      {tooltipChild}
-    </Tooltip>
-  );
-};
+);
