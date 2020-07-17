@@ -122,8 +122,8 @@ class ComponentRaw extends React.PureComponent<Props, State> {
     return (
       <EmptyList
         image={<KalmComponentsIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
-        title={"You don't have any Components"}
-        content="You don't have any Components yet, you can create a Component at once."
+        title={"This App doesn’t have any Components"}
+        content="Components are the fundamental building blocks of your Application. Each Component corresponds to a single image, but can be scaled up to many Pods."
         button={
           <CustomizedButton
             variant="contained"

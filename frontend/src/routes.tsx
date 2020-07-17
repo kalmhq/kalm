@@ -11,7 +11,7 @@ import { CertificateListPage } from "pages/Certificate/List";
 import { NodeListPage } from "pages/Nodes/List";
 import { IngressInfoPage } from "pages/Ingress";
 import { NoMatch, Page404 } from "pages/NoMatch";
-import { DiskListPage } from "pages/Disks";
+import { DiskListPage } from "pages/Disks/Lisk";
 import { RegistryListPage } from "pages/Registry/List";
 import { RouteEditPage } from "pages/Route/Edit";
 import { RouteListPage } from "pages/Route/List";

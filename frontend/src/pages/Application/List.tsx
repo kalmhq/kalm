@@ -398,8 +398,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     return (
       <EmptyList
         image={<KalmApplicationIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
-        title={"You don't have any Applications"}
-        content="You don't have any Applications yet, you can create an Application at once."
+        title={"To get started, create your first Application"}
+        content="In Kalm, *Applications* are the basis of how you organize stuff. One Application represents a set of micro-services which works together to provide functionality. For example, you could use an Application a “website”, which is made of multiple components: web-server, an api-server, and an auth-server."
         button={
           <CustomizedButton
             variant="contained"
@@ -409,7 +409,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
               dispatch(push(`/applications/new`));
             }}
           >
-            Add Application
+            Create Application
           </CustomizedButton>
         }
       />
