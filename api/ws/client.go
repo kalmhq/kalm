@@ -77,9 +77,9 @@ func (c *Client) read() {
 
 	defer func() {
 		c.clientPool.unregister <- c
+		close(c.StopWatcher)
 		c.ExitWrite <- 1
 		c.conn.Close()
-		close(c.StopWatcher)
 	}()
 
 	for {
