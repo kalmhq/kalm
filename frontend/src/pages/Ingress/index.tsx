@@ -3,7 +3,6 @@ import { Alert } from "@material-ui/lab";
 import { K8sApiPrefix } from "api/realApi";
 import React from "react";
 import { connect } from "react-redux";
-import { H4 } from "widgets/Label";
 import { KTable } from "widgets/Table";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
@@ -141,21 +140,12 @@ export class IngressInfoRaw extends React.Component<Props, States> {
 
     return data;
   };
-
-  private renderSecondHeaderRight() {
-    return (
-      <>
-        <H4>Ingress</H4>
-      </>
-    );
-  }
-
   render() {
     const { loadIngressInfoError } = this.state;
     const tableData = this.getTableData();
 
     return (
-      <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
+      <BasePage>
         <Box p={2}>
           {loadIngressInfoError ? (
             <Alert severity="error">
