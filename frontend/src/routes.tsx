@@ -25,6 +25,7 @@ import { ComponentShowPage } from "pages/Components/Show";
 import { RequireAuthorizated, RequireNotAuthorizated } from "permission/Authorization";
 import { RequireNamespaceReader, RequireNamespaceWriter } from "permission/Namespace";
 import { RequireAdmin } from "permission/Role";
+import { AdminSSOPage } from "pages/Admin/SSO";
 
 const RequireAuthorizatedDashboard = RequireAuthorizated(DashboardLayout);
 
@@ -35,9 +36,7 @@ export const KalmRoutes = (
     <Route path="/">
       <RequireAuthorizatedDashboard>
         <Switch>
-          <Route exact path="/" component={RequireAdmin(ApplicationListPage)} />
-          {/*<Route exact path="/roles" component={RequireAdmin(RoleListPage)} />*/}
-          {/*<Route exact path="/install" component={InstallPage} />*/}
+          <Route exact path="/admin/sso" component={AdminSSOPage} />
           <Route exact path="/cluster/nodes" component={NodeListPage} />
           <Route exact path="/cluster/ingress" component={IngressInfoPage} />
           <Route exact path="/cluster/disks" component={DiskListPage} />

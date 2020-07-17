@@ -8,6 +8,7 @@ import { Actions } from "types";
 import { Loading } from "widgets/Loading";
 import { loadApplicationAction } from "actions/application";
 import { loadComponentsAction } from "actions/component";
+import { Box } from "@material-ui/core";
 
 const mapStateToProps = (state: RootState, props: any) => {
   const applications = state.get("applications");
@@ -69,7 +70,11 @@ export const ApplicationItemDataWrapper = ({ autoReload }: { autoReload: boolean
       const { application } = this.props;
 
       if (!application) {
-        return <Loading />;
+        return (
+          <Box flex="1">
+            <Loading />
+          </Box>
+        );
       }
 
       return <WrappedComponent {...this.props} />;

@@ -32,6 +32,7 @@ import { setSuccessNotificationAction } from "actions/notification";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { push } from "connected-react-router";
 import clsx from "clsx";
+import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -183,24 +184,29 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
       return <div className={classes.portContainer}>{ports}</div>;
     } else {
       return (
-        <div>
+        <ItemWithHoverIcon
+          icon={
+            <IconButtonWithTooltip
+              tooltipPlacement="top"
+              tooltipTitle="Add Exposed Ports"
+              aria-label="add-exposed-ports"
+              size="small"
+              onClick={() =>
+                this.props.dispatch(
+                  push(
+                    `/applications/${activeNamespaceName}/components/${component.get("name")}/edit#${NetworkingTab}`,
+                  ),
+                )
+              }
+            >
+              <WrenchIcon fontSize="small" />
+            </IconButtonWithTooltip>
+          }
+        >
           <Box display="inline-block" pr={2}>
             <NoPortsWarning />
           </Box>
-          <IconButtonWithTooltip
-            tooltipPlacement="top"
-            tooltipTitle="Add Exposed Ports"
-            aria-label="add-exposed-ports"
-            size="small"
-            onClick={() =>
-              this.props.dispatch(
-                push(`/applications/${activeNamespaceName}/components/${component.get("name")}/edit#${NetworkingTab}`),
-              )
-            }
-          >
-            <WrenchIcon fontSize="small" />
-          </IconButtonWithTooltip>
-        </div>
+        </ItemWithHoverIcon>
       );
     }
   };
@@ -225,8 +231,22 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     const { component, activeNamespaceName, dispatch } = this.props;
     const readinessProbe = component.get("readinessProbe");
     const livenessProbe = component.get("livenessProbe");
+    const icon =
+      !readinessProbe || !livenessProbe ? (
+        <IconButtonWithTooltip
+          tooltipPlacement="top"
+          tooltipTitle="Add Health Probes"
+          aria-label="add-health-probes"
+          size="small"
+          onClick={() =>
+            dispatch(push(`/applications/${activeNamespaceName}/components/${component.get("name")}/edit#${HealthTab}`))
+          }
+        >
+          <WrenchIcon fontSize="small" />
+        </IconButtonWithTooltip>
+      ) : undefined;
     return (
-      <>
+      <ItemWithHoverIcon icon={icon}>
         <Box display="inline-block" pr={2}>
           {readinessProbe ? (
             `${this.getProbeType(readinessProbe)} readiness probe configured.`
@@ -241,22 +261,7 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
             <NoLivenessProbeWarning />
           )}
         </Box>
-        {!readinessProbe || !livenessProbe ? (
-          <IconButtonWithTooltip
-            tooltipPlacement="top"
-            tooltipTitle="Add Health Probes"
-            aria-label="add-health-probes"
-            size="small"
-            onClick={() =>
-              dispatch(
-                push(`/applications/${activeNamespaceName}/components/${component.get("name")}/edit#${HealthTab}`),
-              )
-            }
-          >
-            <WrenchIcon fontSize="small" />
-          </IconButtonWithTooltip>
-        ) : null}
-      </>
+      </ItemWithHoverIcon>
     );
   };
 
@@ -265,18 +270,21 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
       return "-";
     } else {
       return (
-        <>
+        <ItemWithHoverIcon
+          icon={
+            <span
+              className={this.props.classes.copyIcon}
+              onClick={() => {
+                copy(value);
+                this.props.dispatch(setSuccessNotificationAction("Copied successful!"));
+              }}
+            >
+              <CopyIconDefault fontSize="small" />
+            </span>
+          }
+        >
           {value}
-          <span
-            className={this.props.classes.copyIcon}
-            onClick={() => {
-              copy(value);
-              this.props.dispatch(setSuccessNotificationAction("Copied successful!"));
-            }}
-          >
-            <CopyIconDefault fontSize="small" />
-          </span>
-        </>
+        </ItemWithHoverIcon>
       );
     }
   };

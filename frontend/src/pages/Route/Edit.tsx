@@ -1,4 +1,4 @@
-import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { updateRouteAction } from "actions/routes";
 import { push } from "connected-react-router";
 import { RouteForm } from "forms/Route";
@@ -44,7 +44,11 @@ class RouteEditRaw extends React.PureComponent<Props> {
     const { isRoutesFirstLoaded, isRoutesLoading, httpRoute } = this.props;
 
     if (isRoutesLoading && !isRoutesFirstLoaded) {
-      return <Loading />;
+      return (
+        <Box flex="1">
+          <Loading />
+        </Box>
+      );
     }
 
     if (!httpRoute) {

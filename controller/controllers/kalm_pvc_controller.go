@@ -329,6 +329,10 @@ func (r *KalmPVCReconciler) reconcileDefaultStorageClass(cloudProvider string) e
 		ssd := v1.StorageClass{
 			ObjectMeta: ctrl.ObjectMeta{
 				Name: "kalm-ssd",
+				Annotations: map[string]string{
+					KalmAnnoSCDocLink:   "https://cloud.google.com/compute/docs/disks#pdspecs",
+					KalmAnnoSCPriceLink: "https://cloud.google.com/compute/disks-image-pricing#disk",
+				},
 			},
 			Provisioner:   "kubernetes.io/gce-pd",
 			ReclaimPolicy: &reclaimPolicy,
