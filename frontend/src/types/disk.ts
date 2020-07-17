@@ -35,6 +35,8 @@ export type VolumeOptions = Immutable.List<VolumeOption>;
 export interface StorageClassContent {
   name: string;
   isManaged: boolean;
+  docLink: string;
+  priceLink: string;
 }
 
 export type StorageClass = ImmutableMap<StorageClassContent>;

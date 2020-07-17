@@ -32,6 +32,7 @@ import { Loading } from "widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { KTable } from "widgets/Table";
 import { BasePage } from "../BasePage";
+import { InfoBox } from "widgets/InfoBox";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -416,6 +417,31 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     );
   }
 
+  private renderInfoBox() {
+    const title = "Application References";
+
+    const options = [
+      {
+        title: (
+          <MLink href="#" target="_blank">
+            Link to docks
+          </MLink>
+        ),
+        content: "",
+      },
+      {
+        title: (
+          <MLink href="#" target="_blank">
+            Link to tutorial
+          </MLink>
+        ),
+        content: "",
+      },
+    ];
+
+    return <InfoBox title={title} options={options}></InfoBox>;
+  }
+
   public render() {
     const { isNamespaceLoading, isNamespaceFirstLoaded, applications } = this.props;
 
@@ -445,6 +471,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
             />
           )}
         </Box>
+        <Box p={2}>{this.renderInfoBox()}</Box>
       </BasePage>
     );
   }

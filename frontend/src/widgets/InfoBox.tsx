@@ -12,7 +12,7 @@ const styles = (theme: Theme) =>
 
 interface InfoBoxOption {
   title: string | React.ReactNode;
-  content: string;
+  content: string | React.ReactNode;
 }
 
 interface Props extends WithStyles<typeof styles> {

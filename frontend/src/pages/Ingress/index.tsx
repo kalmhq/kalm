@@ -1,4 +1,4 @@
-import { Box, createStyles, Theme, WithStyles, withStyles, Typography } from "@material-ui/core";
+import { Box, createStyles, Theme, WithStyles, withStyles, Typography, Link } from "@material-ui/core";
 import { Alert } from "@material-ui/lab";
 import { K8sApiPrefix } from "api/realApi";
 import React from "react";
@@ -12,6 +12,7 @@ import { FlexRowItemCenterBox } from "widgets/Box";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { CopyIcon } from "widgets/Icon";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
+import { InfoBox } from "widgets/InfoBox";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -140,6 +141,32 @@ export class IngressInfoRaw extends React.Component<Props, States> {
 
     return data;
   };
+
+  private renderInfoBox() {
+    const title = "Load Balancer References";
+
+    const options = [
+      {
+        title: (
+          <Link href="#" target="_blank">
+            Link to docks
+          </Link>
+        ),
+        content: "",
+      },
+      {
+        title: (
+          <Link href="#" target="_blank">
+            Link to tutorial
+          </Link>
+        ),
+        content: "",
+      },
+    ];
+
+    return <InfoBox title={title} options={options}></InfoBox>;
+  }
+
   render() {
     const { loadIngressInfoError } = this.state;
     const tableData = this.getTableData();
@@ -170,6 +197,7 @@ export class IngressInfoRaw extends React.Component<Props, States> {
             title=""
           />
         </Box>
+        <Box p={2}>{this.renderInfoBox()}</Box>
       </BasePage>
     );
   }

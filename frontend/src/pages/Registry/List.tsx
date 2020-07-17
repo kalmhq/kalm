@@ -1,4 +1,4 @@
-import { Box, createStyles, Theme, WithStyles, withStyles } from "@material-ui/core";
+import { Box, createStyles, Theme, WithStyles, withStyles, Link } from "@material-ui/core";
 import { deleteRegistryAction } from "actions/registries";
 import React from "react";
 import { connect } from "react-redux";
@@ -19,6 +19,7 @@ import { BasePage } from "../BasePage";
 import { RegistryNewModal, RegistryNewModalID } from "./New";
 import { EmptyList } from "widgets/EmptyList";
 import { indigo } from "@material-ui/core/colors";
+import { InfoBox } from "widgets/InfoBox";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -219,6 +220,31 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
     );
   }
 
+  private renderInfoBox() {
+    const title = "Load Balancer References";
+
+    const options = [
+      {
+        title: (
+          <Link href="#" target="_blank">
+            Link to docks
+          </Link>
+        ),
+        content: "",
+      },
+      {
+        title: (
+          <Link href="#" target="_blank">
+            Link to tutorial
+          </Link>
+        ),
+        content: "",
+      },
+    ];
+
+    return <InfoBox title={title} options={options}></InfoBox>;
+  }
+
   public render() {
     const { isLoading, isFirstLoaded, registries } = this.props;
     const { editingRegistry } = this.state;
@@ -283,6 +309,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
             this.renderEmpty()
           )}
         </Box>
+        <Box p={2}>{this.renderInfoBox()}</Box>
       </BasePage>
     );
   }
