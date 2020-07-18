@@ -92,9 +92,12 @@ const styles = (theme: Theme) =>
         minHeight: 24,
         height: 24,
       },
+      "& .MuiExpansionPanelSummary-content": {
+        transition: "all 150ms",
+      },
       "& .MuiExpansionPanelSummary-content.Mui-expanded": {
         color: "transparent",
-        transitions: "color 150ms",
+        transition: "all 150ms",
       },
       "& .MuiExpansionPanelDetails-root": {
         display: "flex",
