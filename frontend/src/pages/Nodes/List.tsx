@@ -1,4 +1,4 @@
-import { Box, Button, createStyles, Grid, Popover, Theme, WithStyles, withStyles } from "@material-ui/core";
+import { Box, Button, createStyles, Grid, Popover, Theme, WithStyles, withStyles, Link } from "@material-ui/core";
 import { api } from "api";
 import { Expansion } from "forms/Route/expansion";
 import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
@@ -9,7 +9,8 @@ import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { Node } from "types/node";
 import { formatTimeDistance } from "utils";
-import { H4, H5 } from "widgets/Label";
+import { InfoBox } from "widgets/InfoBox";
+import { H5 } from "widgets/Label";
 import { BigCPULineChart, BigMemoryLineChart, SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
 import { BasePage } from "../BasePage";
@@ -181,7 +182,6 @@ export class NodeListRaw extends React.Component<Props, States> {
   private renderSecondHeaderRight = () => {
     return (
       <>
-        <H4>Nodes</H4>
         <PopupState variant="popover" popupId={"nodes"}>
           {(popupState) => (
             <>
@@ -211,6 +211,40 @@ export class NodeListRaw extends React.Component<Props, States> {
     );
   };
 
+  private renderInfoBox() {
+    const title =
+      "Data and metrics regarding nodes in the cluster is displayed here. For cluster administration operations, please see platform specific instructions:";
+
+    const options = [
+      {
+        title: (
+          <Link href="https://docs.microsoft.com/en-us/azure/aks/upgrade-cluster" target="_blank">
+            Azure Kubernetes Service cluster
+          </Link>
+        ),
+        content: "",
+      },
+      {
+        title: (
+          <Link href="https://cloud.google.com/kubernetes-engine/docs/how-to/cluster-admin-overview" target="_blank">
+            Google Compute Engine cluster
+          </Link>
+        ),
+        content: "",
+      },
+      {
+        title: (
+          <Link href="https://docs.aws.amazon.com/eks/latest/userguide/clusters.html" target="_blank">
+            Amazon EKS cluster
+          </Link>
+        ),
+        content: "",
+      },
+    ];
+
+    return <InfoBox title={title} options={options}></InfoBox>;
+  }
+
   render() {
     const { metrics, nodes } = this.props;
     return (
@@ -226,13 +260,14 @@ export class NodeListRaw extends React.Component<Props, States> {
           </Grid>
         </Box>
 
-        <Box p={2}>
+        <Box p={2} pb={0}>
           {nodes.map((node, index) => (
-            <Box pb={1} key={node.get("name")}>
+            <Box pb={index === nodes.size ? 0 : 1} key={node.get("name")}>
               {this.renderNodePanel(node)}
             </Box>
           ))}
         </Box>
+        <Box p={2}>{this.renderInfoBox()}</Box>
       </BasePage>
     );
   }

@@ -1,4 +1,4 @@
-import { Box, createStyles, Theme, WithStyles, withStyles, Button } from "@material-ui/core";
+import { Box, createStyles, Theme, WithStyles, withStyles, Button, Link } from "@material-ui/core";
 import { deleteCertificateAction, setEditCertificateModalAction } from "actions/certificate";
 import { openDialogAction } from "actions/dialog";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
@@ -23,6 +23,7 @@ import { formatDate } from "utils";
 import { CustomizedButton } from "widgets/Button";
 import { EmptyList } from "widgets/EmptyList";
 import { indigo } from "@material-ui/core/colors";
+import { InfoBox } from "widgets/InfoBox";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -276,6 +277,31 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     );
   }
 
+  private renderInfoBox() {
+    const title = "Certificate References";
+
+    const options = [
+      {
+        title: (
+          <Link href="#" target="_blank">
+            Link to docks
+          </Link>
+        ),
+        content: "",
+      },
+      {
+        title: (
+          <Link href="#" target="_blank">
+            Link to tutorial
+          </Link>
+        ),
+        content: "",
+      },
+    ];
+
+    return <InfoBox title={title} options={options}></InfoBox>;
+  }
+
   public render() {
     const { dispatch, isFirstLoaded, isLoading, certificates } = this.props;
     const tableData = this.getData();
@@ -318,6 +344,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
             this.renderEmpty()
           )}
         </Box>
+        <Box p={2}>{this.renderInfoBox()}</Box>
       </BasePage>
     );
   }

@@ -2,18 +2,25 @@ import { createStyles, Link, Theme, Typography, withStyles, WithStyles } from "@
 import { push, replace } from "connected-react-router";
 import React, { Component } from "react";
 import { connect, DispatchProp } from "react-redux";
+import { withRouter, RouteComponentProps } from "react-router-dom";
 
-interface NoMatchRawProps extends DispatchProp {}
+interface NoMatchRawProps extends DispatchProp, RouteComponentProps {}
 
 class NoMatchRaw extends Component<NoMatchRawProps> {
   componentDidMount() {
-    this.props.dispatch(replace("/404"));
+    const { dispatch, location } = this.props;
+    if (location.pathname === "/") {
+      // auto redirect applications
+      dispatch(replace("/applications"));
+    } else {
+      dispatch(replace("/404"));
+    }
   }
 
   render = () => null;
 }
 
-export const NoMatch = connect()(NoMatchRaw);
+export const NoMatch = withRouter(connect()(NoMatchRaw));
 
 const styles = (theme: Theme) =>
   createStyles({

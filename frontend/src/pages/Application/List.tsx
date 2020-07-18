@@ -32,6 +32,7 @@ import { Loading } from "widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { KTable } from "widgets/Table";
 import { BasePage } from "../BasePage";
+import { InfoBox } from "widgets/InfoBox";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -126,7 +127,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   private renderCPU = (applicationListItem: RowData) => {
     const metrics = applicationListItem.get("metrics");
     return (
-      <SmallCPULineChart data={metrics.get("cpu")} hoverText={this.hasPods(applicationListItem) ? "No data" : ""} />
+      <SmallCPULineChart data={metrics.get("cpu")} hoverText={this.hasPods(applicationListItem) ? "" : "No data"} />
     );
   };
 
@@ -135,7 +136,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     return (
       <SmallMemoryLineChart
         data={metrics.get("memory")}
-        hoverText={this.hasPods(applicationListItem) ? "No data" : ""}
+        hoverText={this.hasPods(applicationListItem) ? "" : "No data"}
       />
     );
   };
@@ -398,8 +399,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     return (
       <EmptyList
         image={<KalmApplicationIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
-        title={"You don't have any Applications"}
-        content="You don't have any Applications yet, you can create an Application at once."
+        title={"To get started, create your first Application"}
+        content="In Kalm, Applications are the basis of how you organize stuff. One Application represents a set of micro-services which works together to provide functionality. For example, you could use an Application a “website”, which is made of multiple components: web-server, an api-server, and an auth-server."
         button={
           <CustomizedButton
             variant="contained"
@@ -409,11 +410,36 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
               dispatch(push(`/applications/new`));
             }}
           >
-            Add Application
+            Create Application
           </CustomizedButton>
         }
       />
     );
+  }
+
+  private renderInfoBox() {
+    const title = "Application References";
+
+    const options = [
+      {
+        title: (
+          <MLink href="#" target="_blank">
+            Link to docks
+          </MLink>
+        ),
+        content: "",
+      },
+      {
+        title: (
+          <MLink href="#" target="_blank">
+            Link to tutorial
+          </MLink>
+        ),
+        content: "",
+      },
+    ];
+
+    return <InfoBox title={title} options={options}></InfoBox>;
   }
 
   public render() {
@@ -445,6 +471,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
             />
           )}
         </Box>
+        <Box p={2}>{this.renderInfoBox()}</Box>
       </BasePage>
     );
   }

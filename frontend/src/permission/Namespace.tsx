@@ -7,6 +7,7 @@ import { Loading } from "widgets/Loading";
 import { getDisplayName } from "./utils";
 import { setCurrentNamespaceAction } from "actions/namespaces";
 import { BasePage } from "pages/BasePage";
+import { Box } from "@material-ui/core";
 
 const mapStateToProps = (state: RootState, props: any) => {
   const applicationsRoot = state.get("applications");
@@ -69,7 +70,11 @@ export const RequireRoleInNamespce = ({ requiredRole }: Options) => (WrappedComp
       const { isAdmin, isApplicationListLoading, isApplicationListFirstLoaded, activeApplication } = this.props;
 
       if (isApplicationListLoading && !isApplicationListFirstLoaded) {
-        return <Loading />;
+        return (
+          <Box flex="1">
+            <Loading />
+          </Box>
+        );
       }
 
       if (!activeApplication || (!isAdmin && !activeApplication.get("roles").find((x) => x === requiredRole))) {

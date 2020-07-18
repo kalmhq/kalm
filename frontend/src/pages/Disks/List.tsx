@@ -1,32 +1,33 @@
 import { Box, Button, createStyles, Popover, Theme, WithStyles, withStyles } from "@material-ui/core";
+import { indigo } from "@material-ui/core/colors";
 import { Alert } from "@material-ui/lab";
+import { setErrorNotificationAction } from "actions/notification";
+import { deletePersistentVolumeAction } from "actions/persistentVolume";
+import { blinkTopProgressAction } from "actions/settings";
 import { K8sApiPrefix } from "api/realApi";
+import { push } from "connected-react-router";
 import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 import { StorageType } from "pages/Disks/StorageType";
 import React from "react";
 import { connect } from "react-redux";
-import { Disk } from "types/disk";
-import { H4 } from "widgets/Label";
-import { KTable } from "widgets/Table";
-import { setErrorNotificationAction } from "actions/notification";
-import { deletePersistentVolumeAction } from "actions/persistentVolume";
+import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { primaryColor } from "theme/theme";
 import { TDispatchProp } from "types";
+import { Disk } from "types/disk";
+import { CustomizedButton } from "widgets/Button";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
+import { EmptyList } from "widgets/EmptyList";
 import { DeleteIcon, KalmVolumeIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import { InfoBox } from "widgets/InfoBox";
+import { KTable } from "widgets/Table";
 import { BasePage } from "../BasePage";
-import { Link } from "react-router-dom";
-import { blinkTopProgressAction } from "actions/settings";
-import { EmptyList } from "widgets/EmptyList";
-import { indigo } from "@material-ui/core/colors";
-import { CustomizedButton } from "widgets/Button";
-import { push } from "connected-react-router";
 
 const mapStateToProps = (state: RootState) => {
   return {
     persistentVolumes: state.get("persistentVolumes").get("persistentVolumes"),
+    storageClasses: state.get("persistentVolumes").get("storageClasses"),
   };
 };
 
@@ -164,13 +165,9 @@ export class VolumesRaw extends React.Component<Props, States> {
   }
 
   private renderSecondHeaderRight() {
-    return (
-      <>
-        <H4>Disks</H4>
+    return <>{/* <H4>Disks</H4>
         {this.renderDiskHelp()}
-        <StorageType />
-      </>
-    );
+        <StorageType /> */}</>;
   }
 
   private renderApplication = (rowData: RowData) => {
@@ -236,6 +233,26 @@ export class VolumesRaw extends React.Component<Props, States> {
     );
   }
 
+  private renderInfoBox() {
+    const { storageClasses } = this.props;
+
+    const title = "Disk References";
+
+    const options = [
+      {
+        title: "How to attach new disk?",
+        content:
+          "You don't need to apply disk manually. Disk will be created when you declare authentic disks in component form.",
+      },
+      {
+        title: <StorageType storageClasses={storageClasses} />,
+        content: "",
+      },
+    ];
+
+    return <InfoBox title={title} options={options}></InfoBox>;
+  }
+
   render() {
     const { persistentVolumes } = this.props;
     const { loadPersistentVolumesError } = this.state;
@@ -281,6 +298,7 @@ export class VolumesRaw extends React.Component<Props, States> {
             this.renderEmpty()
           )}
         </Box>
+        <Box p={2}>{this.renderInfoBox()}</Box>
       </BasePage>
     );
   }

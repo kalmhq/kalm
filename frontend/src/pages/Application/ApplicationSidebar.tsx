@@ -6,10 +6,9 @@ import { connect } from "react-redux";
 import { NavLink, RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
-import { BaseDrawer } from "layout/BaseDrawer";
 import { primaryBackgroud, primaryColor } from "theme/theme";
 import { blinkTopProgressAction } from "actions/settings";
-import { KalmComponentsIcon, KalmRoutesIcon, DashboardIcon } from "widgets/Icon";
+import { DashboardIcon, KalmComponentsIcon, KalmRoutesIcon } from "widgets/Icon";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
@@ -88,27 +87,25 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
     const menuData = this.getMenuData();
 
     return (
-      <BaseDrawer>
-        <List>
-          {menuData.map((item, index) => (
-            <ListItem
-              onClick={() => blinkTopProgressAction()}
-              className={classes.listItem}
-              classes={{
-                selected: classes.listItemSeleted,
-              }}
-              button
-              component={NavLink}
-              to={item.to}
-              key={item.text}
-              selected={item.highlightWhenExact ? pathname === item.to : pathname.startsWith(item.to.split("?")[0])}
-            >
-              <ListItemIcon>{item.icon ? item.icon : <AppsIcon />}</ListItemIcon>
-              <ListItemText primary={item.text} />
-            </ListItem>
-          ))}
-        </List>
-      </BaseDrawer>
+      <List style={{ width: "100%" }}>
+        {menuData.map((item, index) => (
+          <ListItem
+            onClick={() => blinkTopProgressAction()}
+            className={classes.listItem}
+            classes={{
+              selected: classes.listItemSeleted,
+            }}
+            button
+            component={NavLink}
+            to={item.to}
+            key={item.text}
+            selected={item.highlightWhenExact ? pathname === item.to : pathname.startsWith(item.to.split("?")[0])}
+          >
+            <ListItemIcon>{item.icon ? item.icon : <AppsIcon />}</ListItemIcon>
+            <ListItemText primary={item.text} />
+          </ListItem>
+        ))}
+      </List>
     );
   }
 }

@@ -20,10 +20,11 @@ import { primaryBackgroud, primaryColor } from "theme/theme";
 import {
   KalmApplicationIcon,
   KalmCertificatesIcon,
+  KalmIngressIcon,
   KalmNodeIcon,
   KalmRegistryIcon,
   KalmVolumeIcon,
-  KalmIngressIcon,
+  SettingIcon,
 } from "widgets/Icon";
 import { blinkTopProgressAction } from "actions/settings";
 
@@ -102,31 +103,21 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
 
 interface State {}
 
-class RootDrawerRaw extends React.PureComponent<Props, State> {
-  constructor(props: Props) {
-    super(props);
-
-    this.state = {};
-  }
-
-  private getMenuDataApplication() {
-    return [
+const sideBarData = [
+  {
+    name: "Application",
+    items: [
       { icon: KalmApplicationIcon, text: "Applications", to: "/applications" },
       {
         icon: KalmCertificatesIcon,
         text: "Certificates",
         to: "/certificates",
       },
-      // {
-      //   icon: KalmTemplateIcon,
-      //   text: "Templates",
-      //   to: "/templates"
-      // }
-    ];
-  }
-
-  private getMenuDataCluster() {
-    return [
+    ],
+  },
+  {
+    name: "Cluster",
+    items: [
       {
         icon: KalmNodeIcon,
         text: "Nodes",
@@ -147,12 +138,25 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
         text: "Registries",
         to: "/cluster/registries",
       },
-      // {
-      //   icon: SettingsIcon,
-      //   text: "Settings",
-      //   to: "/roles",
-      // },
-    ];
+    ],
+  },
+  {
+    name: "Settings",
+    items: [
+      {
+        icon: SettingIcon,
+        text: "Admin Area",
+        to: "/admin/sso",
+      },
+    ],
+  },
+];
+
+class RootDrawerRaw extends React.PureComponent<Props, State> {
+  constructor(props: Props) {
+    super(props);
+
+    this.state = {};
   }
 
   render() {
@@ -171,69 +175,43 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
           }),
         }}
       >
-        {/* <div className={clsx(classes.openBtnWrapper, { [classes.itemBorder]: !open })}>
-          <IconButton onClick={() => dispatch(setSettingsAction({ isOpenRootDrawer: !open }))} size={"small"}>
-            {open ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-          </IconButton>
-        </div> */}
-
         <List style={{ paddingTop: open ? 8 : 0 }}>
-          {open ? (
-            <ListSubheader disableSticky={true} className={classes.listSubHeader}>
-              Application
-            </ListSubheader>
-          ) : null}
+          {sideBarData.map((group) => {
+            return (
+              <React.Fragment key={group.name}>
+                {open ? (
+                  <ListSubheader disableSticky={true} className={classes.listSubHeader}>
+                    {group.name}
+                  </ListSubheader>
+                ) : null}
 
-          {this.getMenuDataApplication().map((item, index) => (
-            <ListItem
-              onClick={() => blinkTopProgressAction()}
-              className={clsx(classes.listItem, {
-                [classes.itemBorder]: !open,
-              })}
-              classes={{
-                selected: classes.listItemSeleted,
-              }}
-              button
-              component={NavLink}
-              to={item.to}
-              key={item.text}
-              tutorial-anchor-id={"first-level-sidebar-item-" + item.text.toLocaleLowerCase()}
-              selected={pathname.startsWith(item.to.split("?")[0])}
-            >
-              <ListItemIcon>
-                <item.icon />
-              </ListItemIcon>
-              {open ? <ListItemText primary={item.text} /> : null}
-            </ListItem>
-          ))}
-
-          {open ? (
-            <ListSubheader disableSticky={true} className={classes.listSubHeader}>
-              Cluster
-            </ListSubheader>
-          ) : null}
-
-          {this.getMenuDataCluster().map((item, index) => (
-            <ListItem
-              onClick={() => blinkTopProgressAction()}
-              className={clsx(classes.listItem, {
-                [classes.itemBorder]: !open,
-              })}
-              classes={{
-                selected: classes.listItemSeleted,
-              }}
-              button
-              component={NavLink}
-              to={item.to}
-              key={item.text}
-              selected={pathname.startsWith(item.to.split("?")[0])}
-            >
-              <ListItemIcon>
-                <item.icon />
-              </ListItemIcon>
-              {open ? <ListItemText primary={item.text} /> : null}
-            </ListItem>
-          ))}
+                {group.items!.map((item) => {
+                  return (
+                    <ListItem
+                      onClick={() => blinkTopProgressAction()}
+                      className={clsx(classes.listItem, {
+                        [classes.itemBorder]: !open,
+                      })}
+                      classes={{
+                        selected: classes.listItemSeleted,
+                      }}
+                      button
+                      component={NavLink}
+                      to={item.to}
+                      key={item.text}
+                      tutorial-anchor-id={"first-level-sidebar-item-" + item.text.toLocaleLowerCase()}
+                      selected={pathname.startsWith(item.to.split("?")[0])}
+                    >
+                      <ListItemIcon>
+                        <item.icon />
+                      </ListItemIcon>
+                      {open ? <ListItemText primary={item.text} /> : null}
+                    </ListItem>
+                  );
+                })}
+              </React.Fragment>
+            );
+          })}
         </List>
       </Drawer>
     );

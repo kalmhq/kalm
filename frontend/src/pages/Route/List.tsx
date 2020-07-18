@@ -169,7 +169,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
       <EmptyList
         image={<KalmRoutesIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
         title={"You don't have any Routes"}
-        content="You don't have any Routes yet, you can create a Route at once."
+        content="Routes let you specify how external requests should be handled by your application. You can define the host and path for services, configure HTTPS access, and setup advanced schemes such as Blue-Green deployment or Canary releases."
         button={
           <CustomizedButton
             variant="contained"
@@ -179,7 +179,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
               dispatch(push(`/applications/${activeNamespaceName}/routes/new`));
             }}
           >
-            Add Route
+            Create New Route
           </CustomizedButton>
         }
       />

@@ -1,21 +1,16 @@
-import React from "react";
 import { Box, Button, Popover } from "@material-ui/core";
 import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
+import React from "react";
+import { StorageClasses } from "types/disk";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
-import Immutable from "immutable";
-import { ImmutableMap } from "typings";
 
-export class StorageType extends React.PureComponent {
+interface Props {
+  storageClasses: StorageClasses;
+}
+
+export class StorageType extends React.PureComponent<Props> {
   public render() {
-    const disksTypes: Immutable.List<ImmutableMap<{ name: string }>> = Immutable.fromJS([
-      {
-        name: "ssd",
-      },
-      {
-        name: "hhd",
-      },
-    ]);
-
+    const { storageClasses } = this.props;
     return (
       <PopupState variant="popover" popupId={"disks-creation-helper"}>
         {(popupState) => (
@@ -35,12 +30,12 @@ export class StorageType extends React.PureComponent {
               }}
             >
               <VerticalHeadTable
-                items={disksTypes
+                items={storageClasses
                   .map((x) => ({
                     name: "Type: " + x.get("name"),
                     content: (
                       <Box>
-                        <Button variant="text" href="#">
+                        <Button variant="text" href={x.get("docLink")} target="_blank">
                           Details
                         </Button>
                       </Box>

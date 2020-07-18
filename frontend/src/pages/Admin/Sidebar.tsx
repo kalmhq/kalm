@@ -3,21 +3,15 @@ import AppsIcon from "@material-ui/icons/Apps";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import React from "react";
 import { connect } from "react-redux";
-import { NavLink } from "react-router-dom";
+import { NavLink, RouteComponentProps, withRouter } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { primaryBackgroud, primaryColor } from "theme/theme";
 import { blinkTopProgressAction } from "actions/settings";
+import { KalmComponentsIcon } from "widgets/Icon";
 
 const mapStateToProps = (state: RootState) => {
-  const auth = state.get("auth");
-  const isAdmin = auth.get("isAdmin");
-  const entity = auth.get("entity");
-  return {
-    activeNamespaceName: state.get("namespaces").get("active"),
-    isAdmin,
-    entity,
-  };
+  return {};
 };
 
 const styles = (theme: Theme) =>
@@ -42,13 +36,16 @@ const styles = (theme: Theme) =>
     },
   });
 
-interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps> {
+interface Props
+  extends WithStyles<typeof styles>,
+    ReturnType<typeof mapStateToProps>,
+    RouteComponentProps<{ applicationName: string }> {
   dispatch: TDispatch;
 }
 
 interface State {}
 
-class AdminDrawerRaw extends React.PureComponent<Props, State> {
+class AdminSidebarRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
 
@@ -58,17 +55,21 @@ class AdminDrawerRaw extends React.PureComponent<Props, State> {
   private getMenuData() {
     return [
       {
-        text: "Roles & Permissions",
-        to: "/roles",
-        requireAdmin: true,
+        text: "Single Sign-on",
+        to: "/admin/sso",
+        icon: <KalmComponentsIcon />,
+        highlightWhenExact: false,
       },
     ];
   }
 
-  render() {
-    const { classes } = this.props;
+  public render() {
+    const {
+      classes,
+      location: { pathname },
+    } = this.props;
+
     const menuData = this.getMenuData();
-    const pathname = window.location.pathname;
 
     return (
       <List style={{ width: "100%" }}>
@@ -83,11 +84,9 @@ class AdminDrawerRaw extends React.PureComponent<Props, State> {
             component={NavLink}
             to={item.to}
             key={item.text}
-            selected={pathname.startsWith(item.to.split("?")[0])}
+            selected={item.highlightWhenExact ? pathname === item.to : pathname.startsWith(item.to.split("?")[0])}
           >
-            <ListItemIcon>
-              <AppsIcon />
-            </ListItemIcon>
+            <ListItemIcon>{item.icon ? item.icon : <AppsIcon />}</ListItemIcon>
             <ListItemText primary={item.text} />
           </ListItem>
         ))}
@@ -96,4 +95,4 @@ class AdminDrawerRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const AdminDrawer = connect(mapStateToProps)(withStyles(styles)(AdminDrawerRaw));
+export const AdminSidebar = withRouter(connect(mapStateToProps)(withStyles(styles)(AdminSidebarRaw)));
