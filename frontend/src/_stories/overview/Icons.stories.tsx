@@ -66,6 +66,8 @@ storiesOf("Design System/Icons", module).add("Icon", () => {
         {wrapper(<icons.KalmRoutesIcon style={{ color: fill, fontSize: size }} />, "KalmRoutesIcon")}
         {wrapper(<icons.KalmIngressIcon style={{ color: fill, fontSize: size }} />, "KalmIngressIcon")}
         {wrapper(<icons.WrenchIcon style={{ color: fill, fontSize: size }} />, "WrenchIcon")}
+        {wrapper(<icons.VisibilityIcon style={{ color: fill, fontSize: size }} />, "VisibilityIcon")}
+        {wrapper(<icons.VisibilityOffIcon style={{ color: fill, fontSize: size }} />, "VisibilityOffIcon")}
       </div>
     </div>
   );
