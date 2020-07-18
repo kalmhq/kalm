@@ -2,6 +2,8 @@ import { Box, Typography, TypographyProps } from "@material-ui/core";
 import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import React from "react";
 import { theme } from "theme/theme";
+import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
+import { VisibilityIcon, VisibilityOffIcon } from "./Icon";
 
 const styles = () =>
   createStyles({
@@ -146,3 +148,47 @@ export const CenterTypography = withStyles(styles)((props: LabelProps) => {
   );
 });
 CenterTypography.displayName = "CenterTypography";
+
+const SecretLabelStyles = () =>
+  createStyles({
+    root: {
+      overflow: "hidden",
+      display: "flex",
+      flexDirection: "row",
+      alignItems: "center",
+      maxWidth: "inherit",
+    },
+    icons: {},
+    valueWrapper: {
+      paddingLeft: theme.spacing(1),
+      maxWidth: "inherit",
+      overflowWrap: "inherit",
+      paddingRight: 20,
+    },
+  });
+
+type SecretLabelProps = React.Props<any> & WithStyles<typeof SecretLabelStyles> & TypographyProps;
+
+export const SecretValueLabel = withStyles(SecretLabelStyles)((props: SecretLabelProps) => {
+  const { children, classes } = props;
+  const [showSecret, setShowSecret] = React.useState(false);
+
+  const handleClick = () => {
+    setShowSecret((prev) => !prev);
+  };
+  const tooltips = showSecret ? "Hide Value" : "Show Value";
+  return (
+    <Box className={classes.root}>
+      <IconButtonWithTooltip
+        tooltipTitle={tooltips}
+        aria-label="show value"
+        size="small"
+        onClick={handleClick}
+        edge="end"
+      >
+        {showSecret ? <VisibilityIcon fontSize="small" /> : <VisibilityOffIcon fontSize="small" />}
+      </IconButtonWithTooltip>
+      <Box className={classes.valueWrapper}>{showSecret ? children : null}</Box>
+    </Box>
+  );
+});

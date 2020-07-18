@@ -32,6 +32,7 @@ import { setSuccessNotificationAction } from "actions/notification";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { push } from "connected-react-router";
 import clsx from "clsx";
+import { SecretValueLabel } from "widgets/Label";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -45,14 +46,18 @@ const styles = (theme: Theme) =>
     },
 
     envKey: {
-      paddingRight: 4,
+      paddingRight: 16,
       minWidth: 50,
-      maxWidth: 500,
+      maxWidth: 300,
+      width: 300,
+      overflowWrap: "break-word",
     },
     envValue: {
-      paddingLeft: 4,
+      paddingLeft: 16,
+      paddingRight: 16,
       minWidth: 200,
-      maxWidth: 300,
+      maxWidth: 500,
+      overflowWrap: "break-word",
     },
     rowWrapper: {
       display: "flex",
@@ -82,10 +87,14 @@ const styles = (theme: Theme) =>
       padding: 0,
       paddingLeft: 0,
       paddingRight: 0,
-      "& .MuiButtonBase-root": {
+      "& .MuiExpansionPanelSummary-root": {
         padding: 0,
         minHeight: 24,
         height: 24,
+      },
+      "& .MuiExpansionPanelSummary-content.Mui-expanded": {
+        color: "transparent",
+        transitions: "color 150ms",
       },
       "& .MuiExpansionPanelDetails-root": {
         display: "flex",
@@ -298,8 +307,10 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
               {envs?.map((env, index) => {
                 return (
                   <TableRow key={index}>
-                    <TableCell>{env.get("name")}</TableCell>
-                    <TableCell>{env.get("value")}</TableCell>
+                    <TableCell className={classes.envKey}>{env.get("name")}</TableCell>
+                    <TableCell className={classes.envValue}>
+                      <SecretValueLabel>{env.get("value")}</SecretValueLabel>
+                    </TableCell>
                   </TableRow>
                 );
               })}
@@ -353,7 +364,9 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     }
     return (
       <ExpansionPanel square className={clsx(classes.rootEnv)} elevation={0} defaultExpanded={true}>
-        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>{disks?.size} disks</ExpansionPanelSummary>
+        <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+          {disks?.size} {disks?.size > 1 ? "disks" : "disk"}
+        </ExpansionPanelSummary>
         <ExpansionPanelDetails>
           <Table size="small" aria-label="Envs-Table">
             <TableHead key="title">

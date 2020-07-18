@@ -17,6 +17,8 @@ import Build from "@material-ui/icons/Build";
 import ArrowBack from "@material-ui/icons/ArrowBack";
 import SubjectIcon from "@material-ui/icons/Subject";
 import Dashboard from "@material-ui/icons/Dashboard";
+import Visibility from "@material-ui/icons/Visibility";
+import VisibilityOff from "@material-ui/icons/VisibilityOff";
 import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import { grey } from "@material-ui/core/colors";
 import { SvgIcon, SvgIconProps, Theme } from "@material-ui/core";
@@ -346,4 +348,16 @@ export const DashboardIcon = withStyles(styles)((props: ColorIconsProps) => {
   const { fontSize, style } = props;
   const className = getClassNameByColorName(props);
   return <Dashboard className={className} fontSize={fontSize} style={style} />;
+});
+
+export const VisibilityIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return <Visibility className={className} fontSize={fontSize} style={style} />;
+});
+
+export const VisibilityOffIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return <VisibilityOff className={className} fontSize={fontSize} style={style} />;
 });
