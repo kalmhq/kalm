@@ -3,9 +3,11 @@ import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
 import React, { ChangeEvent } from "react";
 import { WrappedFieldProps } from "redux-form";
 import { KalmConsoleIcon } from "widgets/Icon";
+import { inputOnChangeWithDebounce } from "forms/debounce";
 
 interface Props {
   endAdornment?: React.ReactNode;
+  isDisplayDebounceError?: boolean;
 }
 
 // value type is string
@@ -20,10 +22,12 @@ export const KRenderTextField = ({
   endAdornment,
   multiline,
   rows,
-  meta: { touched, invalid, error },
+  meta,
+  meta: { touched, invalid, error, form, dirty },
+  isDisplayDebounceError,
   ...custom
 }: FilledTextFieldProps & WrappedFieldProps & Props) => {
-  const showError = !!error && touched;
+  const showError = !!error && (touched || (dirty && isDisplayDebounceError));
 
   const inputProps: Partial<OutlinedInputProps> = {};
   if (endAdornment) {
@@ -55,7 +59,9 @@ export const KRenderTextField = ({
         required: false, // bypass html5 required feature
       }}
       value={input.value}
-      onChange={(event: ChangeEvent<HTMLInputElement>) => input.onChange(event.target.value)}
+      onChange={(event: ChangeEvent<HTMLInputElement>) => {
+        inputOnChangeWithDebounce(input.onChange, event.target.value, form, input.name);
+      }}
     />
   );
 };

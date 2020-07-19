@@ -16,6 +16,7 @@ import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { InjectedFormProps } from "redux-form";
 import { APPLICATION_FORM_ID } from "../formIDs";
 import { Body } from "widgets/Label";
+import { getIsDisplayDebounceError } from "selectors/debounce";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -54,12 +55,13 @@ const mapStateToProps = (state: RootState) => {
   const selector = formValueSelector(APPLICATION_FORM_ID);
   const sharedEnvs: Immutable.List<SharedEnv> = selector(state, "sharedEnvs");
   const name = selector(state, "name") as string;
-
+  const formDebounceState = state.get("debounce").get(APPLICATION_FORM_ID);
   return {
     tutorialState: state.get("tutorial"),
     isSubmittingApplication: state.get("applications").get("isSubmittingApplication"),
     name,
     sharedEnvs,
+    formDebounceState,
   };
 };
 
@@ -78,7 +80,8 @@ export interface Props
 
 class ApplicationFormRaw extends React.PureComponent<Props> {
   private renderBasic() {
-    const { isEdit, name } = this.props;
+    const { isEdit, name, formDebounceState } = this.props;
+    const isDisplayNameDebounceError = getIsDisplayDebounceError(formDebounceState, "name");
     return (
       <>
         <Field
@@ -86,6 +89,7 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
           label="Name"
           disabled={isEdit}
           component={KRenderTextField}
+          isDisplayDebounceError={isDisplayNameDebounceError}
           validate={[ValidatorRequired, ValidatorName]}
           helperText={
             isEdit
