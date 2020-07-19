@@ -26,7 +26,7 @@ import { NoLivenessProbeWarning, NoPortsWarning, NoReadinessProbeWarning } from 
 import { HealthTab, NetworkingTab } from "forms/ComponentLike";
 import { Probe, ComponentLikePort } from "types/componentTemplate";
 import { List } from "immutable";
-import { CopyIconDefault, WrenchIcon } from "widgets/Icon";
+import { WrenchIcon, CopyIcon } from "widgets/Icon";
 import copy from "copy-to-clipboard";
 import { setSuccessNotificationAction } from "actions/notification";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
@@ -50,7 +50,6 @@ const styles = (theme: Theme) =>
       paddingRight: 16,
       minWidth: 50,
       maxWidth: 300,
-      width: 300,
       overflowWrap: "break-word",
     },
     envValue: {
@@ -288,15 +287,17 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
       return (
         <ItemWithHoverIcon
           icon={
-            <span
-              className={this.props.classes.copyIcon}
+            <IconButtonWithTooltip
+              tooltipTitle="Copy"
+              aria-label="copy"
+              size="small"
               onClick={() => {
                 copy(value);
                 this.props.dispatch(setSuccessNotificationAction("Copied successful!"));
               }}
             >
-              <CopyIconDefault fontSize="small" />
-            </span>
+              <CopyIcon fontSize="small" />
+            </IconButtonWithTooltip>
           }
         >
           {value}

@@ -1,4 +1,4 @@
-import { Box, createStyles, Theme, WithStyles, withStyles, Typography, Link } from "@material-ui/core";
+import { Box, createStyles, Theme, WithStyles, withStyles, Link } from "@material-ui/core";
 import { Alert } from "@material-ui/lab";
 import { K8sApiPrefix } from "api/realApi";
 import React from "react";
@@ -13,6 +13,8 @@ import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { CopyIcon } from "widgets/Icon";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { InfoBox } from "widgets/InfoBox";
+import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
+import copy from "copy-to-clipboard";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -104,41 +106,38 @@ export class LoadBalancerInfoRaw extends React.Component<Props, States> {
     );
   };
 
+  private generateCopyContent = (content: string) => {
+    return (
+      <ItemWithHoverIcon
+        key={content}
+        icon={
+          <IconButtonWithTooltip
+            tooltipTitle="Copy"
+            aria-label="copy"
+            size="small"
+            onClick={() => {
+              copy(content);
+              this.props.dispatch(setSuccessNotificationAction("Copied successful!"));
+            }}
+          >
+            <CopyIcon fontSize="small" />
+          </IconButtonWithTooltip>
+        }
+      >
+        {content}
+      </ItemWithHoverIcon>
+    );
+  };
+
   private renderHostName = (row: RowData) => {
     const ipContent = row.get("ingressIP");
     const hostName = row.get("ingressHostname");
     const coms = [];
     if (hostName) {
-      coms.push(
-        <>
-          <Typography>{hostName}</Typography>
-          <IconButtonWithTooltip
-            size="small"
-            tooltipTitle="Copy"
-            onClick={() => {
-              this.copyText(hostName);
-            }}
-          >
-            <CopyIcon style={{ fontSize: 16 }} />
-          </IconButtonWithTooltip>
-        </>,
-      );
+      coms.push(this.generateCopyContent(hostName));
     }
     if (ipContent) {
-      coms.push(
-        <>
-          <Typography>{ipContent}</Typography>
-          <IconButtonWithTooltip
-            size="small"
-            tooltipTitle="Copy"
-            onClick={() => {
-              this.copyText(ipContent);
-            }}
-          >
-            <CopyIcon style={{ fontSize: 16 }} />
-          </IconButtonWithTooltip>
-        </>,
-      );
+      coms.push(this.generateCopyContent(ipContent));
     }
 
     return <FlexRowItemCenterBox>{coms}</FlexRowItemCenterBox>;

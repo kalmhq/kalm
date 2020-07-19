@@ -3,8 +3,13 @@ import { withStyles, createStyles, Theme, WithStyles } from "@material-ui/core";
 
 const styles = (theme: Theme) =>
   createStyles({
-    root: {},
+    root: {
+      display: "flex",
+      flexDirection: "row",
+      alignItems: "center",
+    },
     icon: {
+      paddingLeft: theme.spacing(1),
       transition: theme.transitions.create("opacity", {
         duration: theme.transitions.duration.short,
       }),
@@ -31,6 +36,7 @@ class ItemWithHoverIconRaw extends React.PureComponent<Props, State> {
     const { children, icon, classes } = this.props;
     return (
       <span
+        className={classes.root}
         onMouseEnter={() => this.setState({ displayIcon: true })}
         onMouseLeave={() => this.setState({ displayIcon: false })}
       >
