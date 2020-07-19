@@ -1,4 +1,4 @@
-import { Box, Button, createStyles, Link as MLink, Popover, Theme, Tooltip, WithStyles } from "@material-ui/core";
+import { Box, Button, createStyles, Link as MLink, Popover, Theme, Tooltip, WithStyles, Grid } from "@material-ui/core";
 import { indigo } from "@material-ui/core/colors";
 import withStyles from "@material-ui/core/styles/withStyles";
 import { deleteApplicationAction } from "actions/application";
@@ -33,6 +33,7 @@ import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart"
 import { KTable } from "widgets/Table";
 import { BasePage } from "../BasePage";
 import { InfoBox } from "widgets/InfoBox";
+import { ApplicationCard } from "widgets/ApplicationCard";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -442,9 +443,58 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     return <InfoBox title={title} options={options}></InfoBox>;
   }
 
+  private renderList = () => {
+    const { applications } = this.props;
+    return (
+      <KTable
+        tableRef={this.tableRef}
+        options={{
+          paging: applications.size > 20,
+        }}
+        components={{
+          Row: (props: any) => (
+            // <ApplicationCard application={props.data} />
+
+            <MTableBodyRow tutorial-anchor-id={"applications-list-item-" + props.data.get("name")} {...props} />
+          ),
+        }}
+        // @ts-ignore
+        columns={this.getColumns()}
+        data={this.getData()}
+        title=""
+      />
+    );
+  };
+
+  private renderGrid = () => {
+    const { applications, componentsMap, routesMap, activeNamespaceName } = this.props;
+    const GridRow = (app: ApplicationDetails) => {
+      return (
+        <>
+          <Grid item xs={4}>
+            <ApplicationCard
+              application={app}
+              componentsMap={componentsMap}
+              routesMap={routesMap}
+              activeNamespaceName={activeNamespaceName}
+            />
+          </Grid>
+        </>
+      );
+    };
+
+    return (
+      <Grid container spacing={1}>
+        {applications.map((app) => {
+          return GridRow(app);
+        })}
+      </Grid>
+    );
+  };
+
   public render() {
     const { isNamespaceLoading, isNamespaceFirstLoaded, applications } = this.props;
-
+    const usingCard = false;
     return (
       <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
         {this.renderDeleteConfirmDialog()}
@@ -453,22 +503,10 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
             <Loading />
           ) : applications.size === 0 ? (
             this.renderEmpty()
+          ) : usingCard ? (
+            this.renderGrid()
           ) : (
-            <KTable
-              tableRef={this.tableRef}
-              options={{
-                paging: applications.size > 20,
-              }}
-              components={{
-                Row: (props: any) => (
-                  <MTableBodyRow tutorial-anchor-id={"applications-list-item-" + props.data.get("name")} {...props} />
-                ),
-              }}
-              // @ts-ignore
-              columns={this.getColumns()}
-              data={this.getData()}
-              title=""
-            />
+            this.renderList()
           )}
         </Box>
         <Box p={2}>{this.renderInfoBox()}</Box>
