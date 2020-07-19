@@ -16,6 +16,7 @@ import { ServiceActions } from "./service";
 import { TutorialActions } from "./tutorial";
 import { UserActions } from "./user";
 import { ResourceActions } from "./resources";
+import { DebounceActions } from "./debounce";
 
 interface ReduxFormAction extends FormAction {
   type: keyof ActionTypes;
@@ -36,7 +37,8 @@ export type Actions =
   | VolumeActions
   | ClusterActions
   | TutorialActions
-  | ResourceActions;
+  | ResourceActions
+  | DebounceActions;
 
 export type ThunkResult<R> = ThunkAction<R, RootState, undefined, Actions>;
 export type TDispatch = ThunkDispatch<RootState, undefined, Actions>;

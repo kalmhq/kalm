@@ -21,6 +21,7 @@ import cluster, { State as ClusterState } from "./cluster";
 import tutorial, { State as TutorialState } from "./tutorial";
 import services, { State as ServiceState } from "./service";
 import certificates, { State as CertificateState } from "./certificate";
+import debounce, { State as DebounceState } from "./debounce";
 
 export type RootState = ImmutableMap<{
   namespaces: NamespacesState;
@@ -42,6 +43,7 @@ export type RootState = ImmutableMap<{
   tutorial: TutorialState;
   services: ServiceState;
   certificates: CertificateState;
+  debounce: DebounceState;
 }>;
 
 // combineReducers returns immutable map, but the type is not working correctly
@@ -69,4 +71,5 @@ export default (history: History<LocationState>) =>
     cluster,
     services,
     certificates,
+    debounce,
   });
