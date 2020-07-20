@@ -376,3 +376,29 @@ export const SmallCPULineChart = (props: Pick<Props, "data" | "hoverText">) => {
     />
   );
 };
+
+export const CardMemoryLineChart = (props: Pick<Props, "data" | "hoverText">) => {
+  return (
+    <SmallLineChart
+      {...props}
+      formatValue={formatMemory}
+      width={200}
+      height={24}
+      borderColor="rgba(75,192,192, 1)"
+      backgroundColor="rgba(75,192,192,0.5)"
+    />
+  );
+};
+
+export const CardCPULineChart = (props: Pick<Props, "data" | "hoverText">) => {
+  return (
+    <SmallLineChart
+      {...props}
+      formatValue={formatCPU}
+      width={200}
+      height={24}
+      borderColor="rgba(33, 150, 243, 1)"
+      backgroundColor="rgba(33, 150, 243, 0.5)"
+    />
+  );
+};
