@@ -22,7 +22,7 @@ import { ApplicationDetails, ApplicationComponentDetails } from "types/applicati
 import { stringToColor } from "utils/color";
 import { Body, H4 } from "widgets/Label";
 import { getApplicationCreatedAtString } from "utils/application";
-import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
+import { CardCPULineChart, CardMemoryLineChart } from "widgets/SmallLineChart";
 import { HttpRoute } from "types/route";
 import PopupState, { bindTrigger, bindPopover } from "material-ui-popup-state";
 import { RouteWidgets } from "pages/Route/Widget";
@@ -32,8 +32,9 @@ import { Link } from "react-router-dom";
 import { primaryColor } from "theme/theme";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { SuccessBadge, PendingBadge, ErrorBadge } from "widgets/Badge";
-import { DeleteIcon, KalmDetailsIcon } from "widgets/Icon";
+import { DeleteIcon, KalmDetailsIcon, KalmComponentsIcon, KalmApplicationIcon, KalmRoutesIcon } from "widgets/Icon";
 import { FoldButtonGroup } from "widgets/FoldButtonGroup";
+import { DoughnutChart } from "widgets/DoughnutChart";
 
 const ApplicationCardStyles = (theme: Theme) =>
   createStyles({
@@ -90,13 +91,13 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
   private renderCPU = () => {
     const { application } = this.props;
     const metrics = application.get("metrics");
-    return <SmallCPULineChart data={metrics.get("cpu")} hoverText={this.hasPods() ? "" : "No data"} />;
+    return <CardCPULineChart data={metrics.get("cpu")} hoverText={this.hasPods() ? "" : "No data"} />;
   };
 
   private renderMemory = () => {
     const { application } = this.props;
     const metrics = application.get("metrics");
-    return <SmallMemoryLineChart data={metrics.get("memory")} hoverText={this.hasPods() ? "" : "No data"} />;
+    return <CardMemoryLineChart data={metrics.get("memory")} hoverText={this.hasPods() ? "" : "No data"} />;
   };
 
   private renderExternalAccesses = () => {
@@ -208,6 +209,74 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
     );
   };
 
+  private getPieChartData() {
+    const { componentsMap, application } = this.props;
+    const components = componentsMap.get(application.get("name"));
+
+    let componentSuccess = 0;
+    let componentPending = 0;
+    let componentError = 0;
+    let podSuccess = 0;
+    let podPending = 0;
+    let podError = 0;
+
+    components?.forEach((component) => {
+      let hasError = false;
+      let hasPending = false;
+      component.get("pods").forEach((pod) => {
+        if (pod.get("status") === "Succeeded" || pod.get("status") === "Running") {
+          podSuccess = podSuccess + 1;
+        } else if (pod.get("status") === "Failed") {
+          podError = podError + 1;
+          hasError = true;
+        } else {
+          podPending = podPending + 1;
+          hasPending = true;
+        }
+      });
+
+      if (hasError) {
+        componentError = componentError + 1;
+      } else if (hasPending) {
+        componentPending = componentPending + 1;
+      } else {
+        componentSuccess = componentSuccess + 1;
+      }
+    });
+
+    return {
+      componentSuccess,
+      componentPending,
+      componentError,
+      podSuccess,
+      podPending,
+      podError,
+    };
+  }
+
+  private renderDoughnutChartStatus = () => {
+    const pieChartData = this.getPieChartData();
+    const { routesMap, application } = this.props;
+    const applicationRoutes: Immutable.List<HttpRoute> = routesMap.get(application.get("name"), Immutable.List());
+    return (
+      <Box display="flex" justifyContent={"space-around"}>
+        <DoughnutChart
+          title="Components"
+          labels={["Running", "Pending", "Error"]}
+          data={[pieChartData.componentSuccess, pieChartData.componentPending, pieChartData.componentError]}
+          icon={<KalmComponentsIcon />}
+        />
+        <DoughnutChart
+          title="Pods"
+          labels={["Running", "Pending", "Error"]}
+          data={[pieChartData.podSuccess, pieChartData.podPending, pieChartData.podError]}
+          icon={<KalmApplicationIcon />}
+        />
+        <DoughnutChart title="Routes" labels={["Running"]} data={[applicationRoutes.size]} icon={<KalmRoutesIcon />} />
+      </Box>
+    );
+  };
+
   private showDeleteConfirmDialog = (deletingApplicationListItem: ApplicationDetails) => {
     this.setState({
       isDeleteConfirmDialogOpen: true,
@@ -262,22 +331,23 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
         />
         <CardContent>
           <Grid container>
-            <Grid item md={12}>
-              {this.renderStatus()}
+            <Grid item md={12} style={{ paddingBottom: 10 }}>
+              {this.renderDoughnutChartStatus()}
+              {/* {this.renderStatus()} */}
             </Grid>
             <Grid container>
-              <Grid item md={6}>
+              <Grid item md={3}>
                 <Body>CPU:</Body>
               </Grid>
-              <Grid item md={6}>
+              <Grid item md={9}>
                 {this.renderCPU()}
               </Grid>
             </Grid>
             <Grid container>
-              <Grid item md={6}>
+              <Grid item md={3}>
                 <Body>Memory:</Body>
               </Grid>
-              <Grid item md={6}>
+              <Grid item md={9}>
                 {this.renderMemory()}
               </Grid>
             </Grid>

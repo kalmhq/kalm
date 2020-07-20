@@ -15,6 +15,11 @@ const styles = (theme: Theme) =>
       flex: 1,
       display: "flex",
       alignItems: "center",
+      position: "relative",
+      justifyContent: "center",
+    },
+    icon: {
+      position: "absolute",
     },
     text: {
       display: "flex",
@@ -27,6 +32,7 @@ interface Props extends WithStyles<typeof styles> {
   labels: string[];
   data: number[];
   insideLabel?: boolean;
+  icon?: React.ReactNode;
 }
 
 interface State {}
@@ -55,21 +61,49 @@ class DoughnutChartRaw extends React.PureComponent<Props, State> {
     };
   };
 
+  private renderLabels = (dataSum: number, labels: string[], data: number[], title: string) => {
+    return (
+      <Box mt={1}>
+        {dataSum === 0 && (
+          <Box display="flex" alignItems="center" justifyContent="center">
+            <Typography variant="body2">No {title}</Typography>
+          </Box>
+        )}
+
+        {labels.map((label, index) => {
+          if (data[index] === 0) {
+            return null;
+          } else {
+            return (
+              <Box display="flex" alignItems="center" justifyContent="space-between" key={label}>
+                <Box style={{ backgroundColor: defaultColors[index] }} width={10} height={10} mr={1}></Box>
+                <Typography variant="body2">
+                  {label}({data[index]})
+                </Typography>
+              </Box>
+            );
+          }
+        })}
+      </Box>
+    );
+  };
+
   public render() {
-    const { classes, labels, data, title } = this.props;
+    const { classes, labels, data, title, icon } = this.props;
     const dataSum = data.reduce((a, b) => a + b, 0);
     const chartData: chartjs.ChartData = this.getData();
     return (
       <div className={classes.root} style={{ width: size }}>
         {title && <CenterCaption>{title}</CenterCaption>}
         <div className={classes.pieChartWrapper}>
+          <div className={classes.icon}>{icon ? icon : null}</div>
           <Doughnut
             height={size}
             width={size}
             data={chartData}
             options={{
               maintainAspectRatio: false,
-              cutoutPercentage: 70,
+              cutoutPercentage: icon ? 60 : 70,
               tooltips: { enabled: dataSum === 0 ? false : true },
               legend: {
                 display: false,
@@ -77,28 +111,7 @@ class DoughnutChartRaw extends React.PureComponent<Props, State> {
             }}
           />
         </div>
-        <Box mt={1}>
-          {dataSum === 0 && (
-            <Box display="flex" alignItems="center" justifyContent="center">
-              <Typography variant="body2">No {title}</Typography>
-            </Box>
-          )}
-
-          {labels.map((label, index) => {
-            if (data[index] === 0) {
-              return null;
-            } else {
-              return (
-                <Box display="flex" alignItems="center" justifyContent="space-between" key={label}>
-                  <Box style={{ backgroundColor: defaultColors[index] }} width={10} height={10} mr={1}></Box>
-                  <Typography variant="body2">
-                    {label}({data[index]})
-                  </Typography>
-                </Box>
-              );
-            }
-          })}
-        </Box>
+        {icon == null && this.renderLabels(dataSum, labels, data, title)}
       </div>
     );
   }
