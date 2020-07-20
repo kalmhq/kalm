@@ -1,15 +1,13 @@
 import { Theme } from "@material-ui/core";
+import { grey } from "@material-ui/core/colors";
 import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import * as chartjs from "chart.js";
 import { format } from "date-fns";
+import { KTooltip } from "forms/Application/KTooltip";
 import React from "react";
 // @ts-ignore
 import { ChartData, Line } from "react-chartjs-2";
 import { MetricList } from "types/common";
-import { WhitePaper } from "./Paper";
-import { CenterCaption } from "./Label";
-import { grey } from "@material-ui/core/colors";
-import { KTooltip } from "forms/Application/KTooltip";
 
 const smallLineChartStyles = (theme: Theme) =>
   createStyles({
@@ -165,7 +163,6 @@ const lineChartStyles = (theme: Theme) =>
       position: "relative",
       background: "white",
       display: "inline-block",
-      paddingTop: theme.spacing(2),
     },
     text: {
       left: 0,
@@ -181,6 +178,7 @@ const lineChartStyles = (theme: Theme) =>
 
 interface LineChartProps extends WithStyles<typeof lineChartStyles> {
   data: MetricList;
+  title?: string;
   width: number | string;
   height: number | string;
   formatValue?: (value: number) => string;
@@ -196,24 +194,11 @@ class LineChartRaw extends React.PureComponent<LineChartProps> {
       labels: data ? data.map((n) => n.get("x")).toArray() : [],
       datasets: [
         {
-          //   fill: false,
           lineTension: 0.1,
-          borderColor: borderColor || "#DDD",
+          borderColor: borderColor,
           borderWidth: 1,
-          backgroundColor: backgroundColor || "rgba(75,192,192,0.4)",
-          borderCapStyle: "butt",
-          borderDash: [],
-          borderDashOffset: 0.0,
-          borderJoinStyle: "miter",
-          pointBorderColor: "rgba(75,192,192,1)",
-          pointBackgroundColor: "#fff",
-          pointBorderWidth: 1,
-          pointHoverRadius: 2,
-          pointHoverBackgroundColor: "rgba(75,192,192,1)",
-          pointHoverBorderColor: "rgba(220,220,220,1)",
-          pointHoverBorderWidth: 2,
+          backgroundColor: backgroundColor,
           pointRadius: 1,
-          pointHitRadius: 1,
           data: data ? data.map((n) => n.get("y")).toArray() : [],
         },
       ],
@@ -221,12 +206,16 @@ class LineChartRaw extends React.PureComponent<LineChartProps> {
   };
 
   public render() {
-    const { classes, width, height, formatValue } = this.props;
+    const { classes, width, height, formatValue, title } = this.props;
     return (
       <div style={{ width, height }} className={classes.root}>
         <Line
           legend={{ display: false }}
           options={{
+            title: {
+              display: title ? true : false,
+              text: title,
+            },
             responsive: true,
             maintainAspectRatio: false,
             layout: {
@@ -263,6 +252,7 @@ class LineChartRaw extends React.PureComponent<LineChartProps> {
               xAxes: [
                 {
                   ticks: {
+                    maxTicksLimit: 10,
                     callback: (value) => {
                       return format(value, "HH:mm");
                     },
@@ -302,52 +292,31 @@ const formatCPU = (value: number): string => {
   return value / 1000 + " Core";
 };
 
-export const NumericalLineChart = (props: Pick<Props, "data"> & { title: string }) => {
-  const { title } = props;
-  return (
-    <WhitePaper elevation={0} style={{ overflow: "hidden" }}>
-      <LineChart
-        {...props}
-        formatValue={formatNumerical}
-        height={160}
-        width={"100%"}
-        borderColor="rgba(33, 150, 243, 1)"
-        backgroundColor="rgba(33, 150, 243, 0.5)"
-      />
-      <CenterCaption>{title}</CenterCaption>
-    </WhitePaper>
-  );
-};
-
 export const BigCPULineChart = (props: Pick<Props, "data">) => {
   return (
-    <WhitePaper elevation={0} style={{ overflow: "hidden" }}>
-      <LineChart
-        {...props}
-        formatValue={formatCPU}
-        height={160}
-        width={"100%"}
-        borderColor="rgba(33, 150, 243, 1)"
-        backgroundColor="rgba(33, 150, 243, 0.5)"
-      />
-      <CenterCaption>CPU</CenterCaption>
-    </WhitePaper>
+    <LineChart
+      {...props}
+      title={"CPU"}
+      formatValue={formatCPU}
+      height={180}
+      width={"100%"}
+      borderColor="rgba(33, 150, 243, 1)"
+      backgroundColor="rgba(33, 150, 243, 0.5)"
+    />
   );
 };
 
 export const BigMemoryLineChart = (props: Pick<Props, "data">) => {
   return (
-    <WhitePaper elevation={0} style={{ overflow: "hidden" }}>
-      <LineChart
-        {...props}
-        formatValue={formatMemory}
-        height={160}
-        width={"100%"}
-        borderColor="rgba(75,192,192, 1)"
-        backgroundColor="rgba(75,192,192,0.5)"
-      />
-      <CenterCaption>Memory</CenterCaption>
-    </WhitePaper>
+    <LineChart
+      title="Memory"
+      {...props}
+      formatValue={formatMemory}
+      height={180}
+      width={"100%"}
+      borderColor="rgba(75,192,192, 1)"
+      backgroundColor="rgba(75,192,192,0.5)"
+    />
   );
 };
 

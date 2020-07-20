@@ -17,6 +17,7 @@ import { BasePage } from "../BasePage";
 import { NodeCPU } from "./CPU";
 import { NodeMemory } from "./Memory";
 import { NodePods } from "./Pods";
+import { WhitePaper } from "widgets/Paper";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -252,10 +253,14 @@ export class NodeListRaw extends React.Component<Props, States> {
         <Box p={2}>
           <Grid container spacing={2}>
             <Grid item md={6}>
-              <BigCPULineChart data={metrics.get("cpu")} />
+              <WhitePaper elevation={0} style={{ overflow: "hidden" }}>
+                <BigCPULineChart data={metrics.get("cpu")} />
+              </WhitePaper>
             </Grid>
             <Grid item md={6}>
-              <BigMemoryLineChart data={metrics.get("memory")} />
+              <WhitePaper elevation={0} style={{ overflow: "hidden" }}>
+                <BigMemoryLineChart data={metrics.get("memory")} />
+              </WhitePaper>
             </Grid>
           </Grid>
         </Box>
