@@ -1,20 +1,21 @@
-import React from "react";
 import { Box, Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-import { connect } from "react-redux";
-import { RootState } from "reducers";
 import { Expansion } from "forms/Route/expansion";
 import { withComponent, WithComponentProp } from "hoc/withComponent";
-import { BasePage } from "pages/BasePage";
-import { Namespaces } from "widgets/Namespaces";
-import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
-import { Body, H4 } from "widgets/Label";
 import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
-import { RouteWidgets } from "pages/Route/Widget";
-import { PodsTable } from "pages/Components/PodsTable";
-import { ComponentBasicInfo } from "pages/Components/BasicInfo";
-import { VerticalHeadTable } from "widgets/VerticalHeadTable";
 import Immutable from "immutable";
+import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
+import { BasePage } from "pages/BasePage";
+import { ComponentBasicInfo } from "pages/Components/BasicInfo";
+import { PodsTable } from "pages/Components/PodsTable";
+import { RouteWidgets } from "pages/Route/Widget";
+import React from "react";
+import { connect } from "react-redux";
 import { Link } from "react-router-dom";
+import { RootState } from "reducers";
+import { WorkloadType } from "types/componentTemplate";
+import { Body, H4 } from "widgets/Label";
+import { Namespaces } from "widgets/Namespaces";
+import { VerticalHeadTable } from "widgets/VerticalHeadTable";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -106,7 +107,11 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
 
     return (
       <Expansion title="pods" defaultUnfold>
-        <PodsTable activeNamespaceName={activeNamespaceName} pods={component.get("pods")} />
+        <PodsTable
+          activeNamespaceName={activeNamespaceName}
+          pods={component.get("pods")}
+          workloadType={component.get("workloadType") as WorkloadType}
+        />
       </Expansion>
     );
   }

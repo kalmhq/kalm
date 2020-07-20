@@ -11,8 +11,9 @@ import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { Application, ApplicationComponentDetails } from "types/application";
-import { H5 } from "widgets/Label";
+import { WorkloadType } from "types/componentTemplate";
 import { DangerButton } from "widgets/Button";
+import { H5 } from "widgets/Label";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -28,9 +29,7 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState) => {
-  return {
-    // xxx: state.get("xxx").get("xxx"),
-  };
+  return {};
 };
 
 interface Props
@@ -105,7 +104,11 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
         <ComponentBasicInfo component={component} activeNamespaceName={application.get("name")} />
 
         <Box pt={2} pb={2}>
-          <PodsTable activeNamespaceName={application.get("name")} pods={component.get("pods")} />
+          <PodsTable
+            activeNamespaceName={application.get("name")}
+            pods={component.get("pods")}
+            workloadType={component.get("workloadType") as WorkloadType}
+          />
         </Box>
       </Box>
     );
