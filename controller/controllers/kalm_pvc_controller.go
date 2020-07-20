@@ -17,8 +17,6 @@ package controllers
 
 import (
 	"context"
-	"fmt"
-	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -59,49 +57,12 @@ func (r *KalmPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
 	log := r.Log.WithValues("kalmpvc", req.NamespacedName)
 
-	// 1. check if any Component is using this kalmPvc, if not delete it
-	// todo skip delete if reclaim policy of kalmPV is not Retain
-	//      or if storage class of PV is not Kalm-Managed
-	var kalmPvcList corev1.PersistentVolumeClaimList
-	err := r.List(ctx, &kalmPvcList, client.MatchingLabels{KalmLabelManaged: "true"})
-	if client.IgnoreNotFound(err) != nil {
-		//fmt.Println("unexpected err:", err)
-		return ctrl.Result{}, err
-	}
-
-	//fmt.Println("kalmPVC:", len(kalmPvcList.Items), kalmPvcList.Items)
-
-	var componentList v1alpha1.ComponentList
-	if err = r.List(ctx, &componentList); err != nil {
-		if !errors.IsNotFound(err) {
-			return ctrl.Result{}, err
-		}
-	}
-
-	//var activePVCs []corev1.PersistentVolumeClaim
-	//
-	//for _, kalmPvc := range kalmPvcList.Items {
-	//	if _, exist := findComponentUsingPVC(kalmPvc, componentList); exist {
-	//		activePVCs = append(activePVCs, kalmPvc)
-	//
-	//		continue
-	//	}
-	//
-	//	// todo more careful deleting this kalmPvc
-	//	r.Log.Info("deleting un-used kalmPvc", "kalmPvc", kalmPvc.Name, "comps", componentList.Items)
-	//	if err := r.Delete(ctx, &kalmPvc); err != nil {
-	//		return ctrl.Result{}, nil
-	//	}
-	//}
-
-	// 2. PV
-
 	var kalmPVList corev1.PersistentVolumeList
 	if err := r.List(ctx, &kalmPVList, client.MatchingLabels{KalmLabelManaged: "true"}); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	// 2.1 for all kalm PV in Released stats, clean claimRef to make it available again
+	// for all kalm PV in Released stats, clean claimRef to make it available again
 	for _, kalmPV := range kalmPVList.Items {
 		if kalmPV.Status.Phase != corev1.VolumeReleased {
 			continue
@@ -116,14 +77,18 @@ func (r *KalmPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		}
 	}
 
-	// 2.2 make sure for each active kalmPvc, underlying kalmPV is labeled with its name
-	//     (to be selected using selector)
+	// make sure for each active kalmPvc, underlying kalmPV is labeled with its name
+	// (to be selected using selector)
 	var pvList corev1.PersistentVolumeList
 	if err := r.List(ctx, &pvList); client.IgnoreNotFound(err) != nil {
 		return ctrl.Result{}, err
 	}
 
-	//fmt.Println("aaaa", len(pvList.Items), pvList.Items, req)
+	var kalmPvcList corev1.PersistentVolumeClaimList
+	err := r.List(ctx, &kalmPvcList, client.MatchingLabels{KalmLabelManaged: "true"})
+	if client.IgnoreNotFound(err) != nil {
+		return ctrl.Result{}, err
+	}
 
 	for _, pv := range pvList.Items {
 		kalmPVC, isRefed := isReferencedByKalmPVC(pv, kalmPvcList)
@@ -147,7 +112,7 @@ func (r *KalmPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		}
 	}
 
-	// 3. prepare storage class
+	// prepare storage class
 	cloudProvider, ok := r.guessCurrentCloudProvider()
 	if !ok {
 		log.Info("fail to find current cloudProvier")
@@ -175,31 +140,31 @@ func isReferencedByKalmPVC(pv corev1.PersistentVolume, list corev1.PersistentVol
 	return
 }
 
-func findComponentUsingPVC(pvc corev1.PersistentVolumeClaim, compList v1alpha1.ComponentList) (v1alpha1.Component, bool) {
-	for _, comp := range compList.Items {
-
-		if pvc.Namespace != comp.Namespace {
-			continue
-		}
-
-		for _, vol := range comp.Spec.Volumes {
-			if vol.Type != v1alpha1.VolumeTypePersistentVolumeClaim {
-				continue
-			}
-
-			if !isStatefulSet(&comp) && vol.PVC == pvc.Name {
-				return comp, true
-			}
-
-			pvcNamePrefix := fmt.Sprintf("%s-%s-", vol.PVC, comp.Name)
-			if isStatefulSet(&comp) && strings.HasPrefix(pvc.Name, pvcNamePrefix) {
-				return comp, true
-			}
-		}
-	}
-
-	return v1alpha1.Component{}, false
-}
+//func findComponentUsingPVC(pvc corev1.PersistentVolumeClaim, compList v1alpha1.ComponentList) (v1alpha1.Component, bool) {
+//	for _, comp := range compList.Items {
+//
+//		if pvc.Namespace != comp.Namespace {
+//			continue
+//		}
+//
+//		for _, vol := range comp.Spec.Volumes {
+//			if vol.Type != v1alpha1.VolumeTypePersistentVolumeClaim {
+//				continue
+//			}
+//
+//			if !isStatefulSet(&comp) && vol.PVC == pvc.Name {
+//				return comp, true
+//			}
+//
+//			pvcNamePrefix := fmt.Sprintf("%s-%s-", vol.PVC, comp.Name)
+//			if isStatefulSet(&comp) && strings.HasPrefix(pvc.Name, pvcNamePrefix) {
+//				return comp, true
+//			}
+//		}
+//	}
+//
+//	return v1alpha1.Component{}, false
+//}
 
 func (r *KalmPVCReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
@@ -211,10 +176,10 @@ func (r *KalmPVCReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			&handler.EnqueueRequestForObject{},
 		).
 		//For(&v1alpha1.Component{}).
-		Watches(
-			&source.Kind{Type: &v1alpha1.Component{}},
-			&handler.EnqueueRequestForObject{},
-		).
+		//Watches(
+		//	&source.Kind{Type: &v1alpha1.Component{}},
+		//	&handler.EnqueueRequestForObject{},
+		//).
 		Watches(
 			&source.Kind{Type: &corev1.PersistentVolume{}},
 			&handler.EnqueueRequestForObject{},
@@ -279,6 +244,25 @@ const (
 	KalmAnnoSCPriceLink = "kalm-annotation-sc-price-link"
 )
 
+var docInfoOnStorageClass = map[string]map[string]string{
+	"aws": {
+		KalmAnnoSCDocLink:   "todo",
+		KalmAnnoSCPriceLink: "todo",
+	},
+	"azure": {
+		KalmAnnoSCDocLink:   "todo",
+		KalmAnnoSCPriceLink: "todo",
+	},
+	"gcp": {
+		KalmAnnoSCDocLink:   "https://cloud.google.com/compute/docs/disks#pdspecs",
+		KalmAnnoSCPriceLink: "https://cloud.google.com/compute/disks-image-pricing#disk",
+	},
+	"minikube": {
+		KalmAnnoSCDocLink:   "https://minikube.sigs.k8s.io/docs/handbook/persistent_volumes/",
+		KalmAnnoSCPriceLink: "",
+	},
+}
+
 func (r *KalmPVCReconciler) reconcileDefaultStorageClass(cloudProvider string) error {
 	var expectedStorageClasses []v1.StorageClass
 
@@ -288,11 +272,8 @@ func (r *KalmPVCReconciler) reconcileDefaultStorageClass(cloudProvider string) e
 	case "aws":
 		hdd := v1.StorageClass{
 			ObjectMeta: ctrl.ObjectMeta{
-				Name: "kalm-hdd",
-				Annotations: map[string]string{
-					KalmAnnoSCDocLink:   "todo",
-					KalmAnnoSCPriceLink: "todo",
-				},
+				Name:        "kalm-hdd",
+				Annotations: docInfoOnStorageClass["aws"],
 			},
 			Provisioner:   "kubernetes.io/aws-ebs",
 			ReclaimPolicy: &reclaimPolicy,
@@ -312,11 +293,8 @@ func (r *KalmPVCReconciler) reconcileDefaultStorageClass(cloudProvider string) e
 	case "gcp":
 		hdd := v1.StorageClass{
 			ObjectMeta: ctrl.ObjectMeta{
-				Name: "kalm-hdd",
-				Annotations: map[string]string{
-					KalmAnnoSCDocLink:   "https://cloud.google.com/compute/docs/disks#pdspecs",
-					KalmAnnoSCPriceLink: "https://cloud.google.com/compute/disks-image-pricing#disk",
-				},
+				Name:        "kalm-hdd",
+				Annotations: docInfoOnStorageClass["gcp"],
 			},
 			Provisioner:   "kubernetes.io/gce-pd",
 			ReclaimPolicy: &reclaimPolicy,
@@ -328,11 +306,8 @@ func (r *KalmPVCReconciler) reconcileDefaultStorageClass(cloudProvider string) e
 		}
 		ssd := v1.StorageClass{
 			ObjectMeta: ctrl.ObjectMeta{
-				Name: "kalm-ssd",
-				Annotations: map[string]string{
-					KalmAnnoSCDocLink:   "https://cloud.google.com/compute/docs/disks#pdspecs",
-					KalmAnnoSCPriceLink: "https://cloud.google.com/compute/disks-image-pricing#disk",
-				},
+				Name:        "kalm-ssd",
+				Annotations: docInfoOnStorageClass["gcp"],
 			},
 			Provisioner:   "kubernetes.io/gce-pd",
 			ReclaimPolicy: &reclaimPolicy,
@@ -347,10 +322,8 @@ func (r *KalmPVCReconciler) reconcileDefaultStorageClass(cloudProvider string) e
 	case "minikube":
 		std := v1.StorageClass{
 			ObjectMeta: ctrl.ObjectMeta{
-				Name: "kalm-standard",
-				Annotations: map[string]string{
-					KalmAnnoSCDocLink: "https://minikube.sigs.k8s.io/docs/handbook/persistent_volumes/",
-				},
+				Name:        "kalm-standard",
+				Annotations: docInfoOnStorageClass["minikube"],
 			},
 			Provisioner:   "k8s.io/minikube-hostpath",
 			ReclaimPolicy: &reclaimPolicy,

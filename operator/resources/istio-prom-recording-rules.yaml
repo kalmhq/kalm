@@ -1,0 +1,20 @@
+groups:
+- name: "istio.recording-rules"
+  interval: 5s
+  rules:
+    - record: "istio:istio_requests_total:by_destination_service:rate5m"
+      expr: (sum by (destination_service) (rate(istio_requests_total{destination_service=~".*.svc.cluster.local"}[5m])))
+    - record: "istio:istio_requests_total:by_destination_service:resp2xx_rate5m"
+      expr: (sum by (destination_service) (rate(istio_requests_total{destination_service=~".*.svc.cluster.local", response_code=~"2.*"}[5m])))
+    - record: "istio:istio_requests_total:by_destination_service:resp4xx_rate5m"
+      expr: (sum by (destination_service) (rate(istio_requests_total{destination_service=~".*.svc.cluster.local", response_code=~"4.*"}[5m])))
+    - record: "istio:istio_requests_total:by_destination_service:resp5xx_rate5m"
+      expr: (sum by (destination_service) (rate(istio_requests_total{destination_service=~".*.svc.cluster.local", response_code=~"5.*"}[5m])))
+    - record: "istio:istio_request_bytes_sum:by_destination_service:rate5m"
+      expr: (sum by (destination_service) (rate(istio_request_bytes_sum{destination_service=~".*.svc.cluster.local"}[5m])))
+    - record: "istio:istio_response_bytes_sum:by_destination_service:rate5m"
+      expr: (sum by (destination_service) (rate(istio_response_bytes_sum{destination_service=~".*.svc.cluster.local"}[5m])))
+    - record: "istio:istio_tcp_sent_bytes_total:by_destination_service:rate5m"
+      expr: (sum by (destination_service) (rate(istio_tcp_sent_bytes_total{destination_service=~".*.svc.cluster.local"}[5m])))
+    - record: "istio:istio_tcp_received_bytes_total:by_destination_service:rate5m"
+      expr: (sum by (destination_service) (rate(istio_tcp_received_bytes_total{destination_service=~".*.svc.cluster.local"}[5m])))

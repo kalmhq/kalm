@@ -57,6 +57,7 @@ type KalmOperatorConfigReconciler struct {
 //go:generate sh -c "kustomize build ../resources/istio > tmp/istio.yaml"
 //go:generate sh -c "cp ../resources/cert-manager/cert-manager.yaml tmp/cert-manager.yaml"
 //go:generate sh -c "cp ../resources/istiocontrolplane.yaml tmp/istiocontrolplane.yaml"
+//go:generate sh -c "cp ../resources/istio-prom-recording-rules.yaml tmp/istio-prom-recording-rules.yaml"
 //go:generate go-bindata -pkg controllers -nometadata -prefix tmp -o resources.gen.go ./tmp
 //go:generate rm -rf ./tmp
 
@@ -174,6 +175,8 @@ func (r *KalmOperatorConfigReconciler) installFromYaml(ctx context.Context, yaml
 
 var retryLaterErr = fmt.Errorf("retry later")
 
+const istioPromRecordingRulesFileName = "istio-prom-recording-rules.yaml"
+
 func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha1.KalmOperatorConfig, ctx context.Context, log logr.Logger) error {
 	// TODO delete when skip
 	if !config.Spec.SkipCertManagerInstallation {
@@ -207,30 +210,11 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 		v := cmPrometheus.Data["prometheus.yml"]
 		pConfig, _ := promconfig.Load(v)
 		if len(pConfig.RuleFiles) <= 0 {
-			pConfig.RuleFiles = []string{"rules.yml"}
+			pConfig.RuleFiles = []string{istioPromRecordingRulesFileName}
 
 			cmPrometheus.Data["prometheus.yml"] = pConfig.String()
-			cmPrometheus.Data["rules.yml"] = `groups:
-- name: "istio.recording-rules"
-  interval: 5s
-  rules:
-  - record: "istio:istio_requests_total:by_destination_service:rate5m"
-    expr: (sum by (destination_service) (rate(istio_requests_total{destination_service=~"%s"}[5m])))
-  - record: "istio:istio_requests_total:by_destination_service:resp2xx_rate5m"
-    expr: (sum by (destination_service) (rate(istio_requests_total{destination_service=~"%s", response_code=~"2.*"}[5m])))
-  - record: "istio:istio_requests_total:by_destination_service:resp4xx_rate5m"
-    expr: (sum by (destination_service) (rate(istio_requests_total{destination_service=~"%s", response_code=~"4.*"}[5m])))
-  - record: "istio:istio_requests_total:by_destination_service:resp5xx_rate5m"
-    expr: (sum by (destination_service) (rate(istio_requests_total{destination_service=~"%s", response_code=~"5.*"}[5m])))
-  - record: "istio:istio_request_bytes_sum:by_destination_service:rate5m"
-    expr: (sum by (destination_service) (rate(istio_request_bytes_sum{destination_service=~"%s"}[5m])))
-  - record: "istio:istio_response_bytes_sum:by_destination_service:rate5m"
-    expr: (sum by (destination_service) (rate(istio_response_bytes_sum{destination_service=~"%s"}[5m])))
-  - record: "istio:istio_tcp_sent_bytes_total:by_destination_service:rate5m"
-    expr: (sum by (destination_service) (rate(istio_tcp_sent_bytes_total{destination_service=~"%s"}[5m])))
-  - record: "istio:istio_tcp_received_bytes_total:by_destination_service:rate5m"
-    expr: (sum by (destination_service) (rate(istio_tcp_received_bytes_total{destination_service=~"%s"}[5m])))
-`
+			cmPrometheus.Data[istioPromRecordingRulesFileName] = string(MustAsset("istio-prom-recording-rules.yaml"))
+
 			if err := r.Update(ctx, &cmPrometheus); err != nil {
 				return err
 			}
