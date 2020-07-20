@@ -483,7 +483,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     const { applications, componentsMap, routesMap, activeNamespaceName } = this.props;
     const GridRow = (app: ApplicationDetails, index: number) => {
       return (
-        <Grid key={index} item md={3}>
+        <Grid key={index} item sm={5} md={4} lg={3}>
           <ApplicationCard
             application={app}
             componentsMap={componentsMap}
