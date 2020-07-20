@@ -276,7 +276,8 @@ class DetailsRaw extends React.PureComponent<Props, State> {
   }
 
   private formatYAxesValue = (value: number, label: string) => {
-    return `${label}: ${value.toFixed(2)}`;
+    return value.toFixed(2);
+    // return `${label}: ${value.toFixed(2)}`;
   };
 
   public render() {
@@ -303,47 +304,40 @@ class DetailsRaw extends React.PureComponent<Props, State> {
         <Expansion title="Metrics" defaultUnfold>
           <Grid container spacing={2}>
             <Grid item xs>
-              <Box pl={"58px"}>
-                <HttpStatusCodeLineChart
-                  formatYAxesValue={this.formatYAxesValue}
-                  data={[
-                    {
-                      legend: "2xx",
-                      data:
-                        activeNamespace!.get("istioMetricHistories").get("httpRespCode2XXCount") || Immutable.List(),
-                    },
-                    {
-                      legend: "4xx",
-                      data:
-                        activeNamespace!.get("istioMetricHistories").get("httpRespCode4XXCount") || Immutable.List(),
-                    },
-                    {
-                      legend: "5xx",
-                      data:
-                        activeNamespace!.get("istioMetricHistories").get("httpRespCode5XXCount") || Immutable.List(),
-                    },
-                  ]}
-                  title="http response code per second"
-                />
-              </Box>
+              <HttpStatusCodeLineChart
+                formatYAxesValue={this.formatYAxesValue}
+                data={[
+                  {
+                    legend: "2xx",
+                    data: activeNamespace!.get("istioMetricHistories").get("httpRespCode2XXCount") || Immutable.List(),
+                  },
+                  {
+                    legend: "4xx",
+                    data: activeNamespace!.get("istioMetricHistories").get("httpRespCode4XXCount") || Immutable.List(),
+                  },
+                  {
+                    legend: "5xx",
+                    data: activeNamespace!.get("istioMetricHistories").get("httpRespCode5XXCount") || Immutable.List(),
+                  },
+                ]}
+                title="http response code per second"
+              />
             </Grid>
             <Grid item xs>
-              <Box pl={"16px"}>
-                <HttpBytesSizeChart
-                  formatYAxesValue={this.formatYAxesValue}
-                  data={[
-                    {
-                      legend: "request",
-                      data: activeNamespace!.get("istioMetricHistories").get("httpRequestBytes") || Immutable.List(),
-                    },
-                    {
-                      legend: "response",
-                      data: activeNamespace!.get("istioMetricHistories").get("httpResponseBytes") || Immutable.List(),
-                    },
-                  ]}
-                  title="http traffic"
-                />
-              </Box>
+              <HttpBytesSizeChart
+                formatYAxesValue={this.formatYAxesValue}
+                data={[
+                  {
+                    legend: "request",
+                    data: activeNamespace!.get("istioMetricHistories").get("httpRequestBytes") || Immutable.List(),
+                  },
+                  {
+                    legend: "response",
+                    data: activeNamespace!.get("istioMetricHistories").get("httpResponseBytes") || Immutable.List(),
+                  },
+                ]}
+                title="http traffic"
+              />
             </Grid>
           </Grid>
           <Grid container spacing={2}>
