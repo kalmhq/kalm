@@ -83,14 +83,14 @@ func (builder *Builder) GetIstioMetricsListChannel(ns string) *IstioMetricListCh
 func getIstioMetricHistoriesMap(ns string) (map[string]*IstioMetricHistories, error) {
 	svcName := fmt.Sprintf(`.*.%s.svc.cluster.local`, ns)
 
-	httpRequestsTotal := fmt.Sprintf(`(sum by (destination_service) (rate(istio_requests_total{destination_service=~"%s"}[5m])))`, svcName)
-	resp2XX := fmt.Sprintf(`(sum by (destination_service) (rate(istio_requests_total{destination_service=~"%s", response_code=~"2.*"}[5m])))`, svcName)
-	resp4XX := fmt.Sprintf(`(sum by (destination_service) (rate(istio_requests_total{destination_service=~"%s", response_code=~"4.*"}[5m])))`, svcName)
-	resp5XX := fmt.Sprintf(`(sum by (destination_service) (rate(istio_requests_total{destination_service=~"%s", response_code=~"5.*"}[5m])))`, svcName)
-	requestBytes := fmt.Sprintf(`(sum by (destination_service) (rate(istio_request_bytes_sum{destination_service=~"%s"}[5m])))`, svcName)
-	responseBytes := fmt.Sprintf(`(sum by (destination_service) (rate(istio_response_bytes_sum{destination_service=~"%s"}[5m])))`, svcName)
-	sentBytes := fmt.Sprintf(`(sum by (destination_service) (rate(istio_tcp_sent_bytes_total{destination_service=~"%s"}[5m])))`, svcName)
-	receiveBytes := fmt.Sprintf(`(sum by (destination_service) (rate(istio_tcp_received_bytes_total{destination_service=~"%s"}[5m])))`, svcName)
+	httpRequestsTotal := fmt.Sprintf(`istio:istio_requests_total:by_destination_service:rate5m{destination_service=~"%s"}`, svcName)
+	resp2XX := fmt.Sprintf(`istio:istio_requests_total:by_destination_service:resp2xx_rate5m{destination_service=~"%s"}`, svcName)
+	resp4XX := fmt.Sprintf(`istio:istio_requests_total:by_destination_service:resp4xx_rate5m{destination_service=~"%s"}`, svcName)
+	resp5XX := fmt.Sprintf(`istio:istio_requests_total:by_destination_service:resp5xx_rate5m{destination_service=~"%s"}`, svcName)
+	requestBytes := fmt.Sprintf(`istio:istio_request_bytes_sum:by_destination_service:rate5m{destination_service=~"%s"}`, svcName)
+	responseBytes := fmt.Sprintf(`istio:istio_response_bytes_sum:by_destination_service:rate5m{destination_service=~"%s"}`, svcName)
+	sentBytes := fmt.Sprintf(`istio:istio_tcp_sent_bytes_total:by_destination_service:rate5m{destination_service=~"%s"}`, svcName)
+	receiveBytes := fmt.Sprintf(`istio:istio_tcp_received_bytes_total:by_destination_service:rate5m{destination_service=~"%s"}`, svcName)
 
 	queryMap := map[string]string{
 		"httpRequestsTotal": httpRequestsTotal,
