@@ -31,6 +31,8 @@ const mapStateToProps = (state: RootState) => {
   };
 };
 
+export const TerminatedCompleted = "Terminated:Completed";
+
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {
   activeNamespaceName: string;
   pods: Immutable.List<PodStatus>;
@@ -142,6 +144,10 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
   };
 
   private renderPodStatus = (pod: PodStatus) => {
+    if (pod.get("statusText").replace(/\s/g, "") === TerminatedCompleted) {
+      return <SuccessBadge />;
+    }
+
     if (pod.get("isTerminating")) {
       return <PendingBadge />;
     }
