@@ -13,6 +13,7 @@ import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { PodStatus } from "types/application";
+import { WorkloadType, workloadTypeCronjob } from "types/componentTemplate";
 import { formatTimeDistance } from "utils";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { KalmConsoleIcon, KalmLogIcon } from "widgets/Icon";
@@ -26,15 +27,14 @@ const styles = (theme: Theme) =>
   });
 
 const mapStateToProps = (state: RootState) => {
-  return {
-    // xxx: state.get("xxx").get("xxx"),
-  };
+  return {};
 };
 
 export const TerminatedCompleted = "Terminated:Completed";
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {
   activeNamespaceName: string;
+  workloadType: WorkloadType;
   pods: Immutable.List<PodStatus>;
 }
 
@@ -144,7 +144,8 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
   };
 
   private renderPodStatus = (pod: PodStatus) => {
-    if (pod.get("statusText").replace(/\s/g, "") === TerminatedCompleted) {
+    const { workloadType } = this.props;
+    if (workloadType === workloadTypeCronjob && pod.get("statusText").replace(/\s/g, "") === TerminatedCompleted) {
       return <SuccessBadge />;
     }
 
