@@ -16,10 +16,11 @@ import {
   Box,
   CardActions,
   Tooltip,
+  Grid,
 } from "@material-ui/core";
 import { ApplicationDetails, ApplicationComponentDetails } from "types/application";
 import { stringToColor } from "utils/color";
-import { Body } from "widgets/Label";
+import { Body, H4 } from "widgets/Label";
 import { getApplicationCreatedAtString } from "utils/application";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { HttpRoute } from "types/route";
@@ -36,8 +37,15 @@ import { FoldButtonGroup } from "widgets/FoldButtonGroup";
 
 const ApplicationCardStyles = (theme: Theme) =>
   createStyles({
-    root: {},
+    root: {
+      border: "1px solid rgba(0, 0, 0, 0.12)",
+      background: theme.palette.background.paper,
+    },
     avatar: {},
+    actionArea: {
+      borderTop: "1px solid rgba(0, 0, 0, 0.12)",
+      paddingLeft: theme.spacing(2),
+    },
   });
 
 type ApplicationCardProps = {
@@ -57,7 +65,7 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
         to={`/applications/${application.get("name")}/components`}
         onClick={() => blinkTopProgressAction()}
       >
-        {application.get("name")}
+        <H4>{application.get("name")}</H4>
       </Link>
     );
   };
@@ -172,7 +180,7 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
         style={{ color: primaryColor }}
         onClick={() => blinkTopProgressAction()}
       >
-        <Tooltip title={tooltipTitle} enterDelay={500}>
+        <Tooltip title={tooltipTitle} enterDelay={500} style={{ justifyContent: "center" }}>
           <FlexRowItemCenterBox>
             {successCount > 0 ? (
               <FlexRowItemCenterBox mr={1}>
@@ -235,7 +243,7 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
   public render() {
     const { application, classes } = this.props;
     return (
-      <Card>
+      <Card raised={false} elevation={0} square className={classes.root}>
         <CardHeader
           avatar={
             <Avatar
@@ -253,29 +261,35 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
           subheader={this.renderCreatedAt()}
         />
         <CardContent>
-          {this.renderStatus()}
-          {this.renderCPU()}
-          {this.renderMemory()}
+          <Grid container>
+            <Grid item md={12}>
+              {this.renderStatus()}
+            </Grid>
+            <Grid container>
+              <Grid item md={6}>
+                <Body>CPU:</Body>
+              </Grid>
+              <Grid item md={6}>
+                {this.renderCPU()}
+              </Grid>
+            </Grid>
+            <Grid container>
+              <Grid item md={6}>
+                <Body>Memory:</Body>
+              </Grid>
+              <Grid item md={6}>
+                {this.renderMemory()}
+              </Grid>
+            </Grid>
+          </Grid>
         </CardContent>
-        <CardActions disableSpacing>
-          {this.renderExternalAccesses()}
-          <div style={{ marginLeft: "auto" }}>{this.renderMoreActions()}</div>
-          {/* <IconButton aria-label="add to favorites">
-            <FavoriteIcon />
-          </IconButton>
-          <IconButton aria-label="share">
-            <ShareIcon />
-          </IconButton>
-          <IconButton
-            className={clsx(classes.expand, {
-              [classes.expandOpen]: expanded,
-            })}
-            onClick={handleExpandClick}
-            aria-expanded={expanded}
-            aria-label="show more"
-          >
-            <ExpandMoreIcon />
-          </IconButton> */}
+        <CardActions className={classes.actionArea}>
+          <Grid container>
+            <Grid item>{this.renderExternalAccesses()}</Grid>
+            <Grid item style={{ marginLeft: "auto" }}>
+              {this.renderMoreActions()}
+            </Grid>
+          </Grid>
         </CardActions>
       </Card>
     );

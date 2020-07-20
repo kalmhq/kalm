@@ -26,7 +26,7 @@ import { CustomizedButton } from "widgets/Button";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { EmptyList } from "widgets/EmptyList";
 import { FoldButtonGroup } from "widgets/FoldButtonGroup";
-import { DeleteIcon, KalmApplicationIcon, KalmDetailsIcon } from "widgets/Icon";
+import { DeleteIcon, KalmApplicationIcon, KalmDetailsIcon, KalmGridViewIcon, KalmListViewIcon } from "widgets/Icon";
 import { Body } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
@@ -34,6 +34,7 @@ import { KTable } from "widgets/Table";
 import { BasePage } from "../BasePage";
 import { InfoBox } from "widgets/InfoBox";
 import { ApplicationCard } from "widgets/ApplicationCard";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -68,6 +69,7 @@ interface Props extends WithStyles<typeof styles>, WithNamespaceProps, ReturnTyp
 interface State {
   isDeleteConfirmDialogOpen: boolean;
   deletingApplicationListItem?: ApplicationDetails;
+  usingCard: boolean;
 }
 
 interface RowData extends ApplicationDetails {
@@ -80,6 +82,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   private defaultState = {
     isDeleteConfirmDialogOpen: false,
     deletingApplicationListItem: undefined,
+    usingCard: false,
   };
 
   constructor(props: Props) {
@@ -324,6 +327,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   private renderSecondHeaderRight() {
+    const { usingCard } = this.state;
     return (
       <>
         {/* <H4>Applications</H4> */}
@@ -337,6 +341,15 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         >
           Add Application
         </Button>
+        <IconButtonWithTooltip
+          tooltipTitle={usingCard ? "Using List View" : "Using Card View"}
+          aria-label={usingCard ? "Using List View" : "Using Card View"}
+          size="small"
+          onClick={() => this.setState({ usingCard: !usingCard })}
+          style={{ marginLeft: 12 }}
+        >
+          {usingCard ? <KalmGridViewIcon /> : <KalmListViewIcon />}
+        </IconButtonWithTooltip>
       </>
     );
   }
@@ -468,25 +481,23 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
 
   private renderGrid = () => {
     const { applications, componentsMap, routesMap, activeNamespaceName } = this.props;
-    const GridRow = (app: ApplicationDetails) => {
+    const GridRow = (app: ApplicationDetails, index: number) => {
       return (
-        <>
-          <Grid item xs={4}>
-            <ApplicationCard
-              application={app}
-              componentsMap={componentsMap}
-              routesMap={routesMap}
-              activeNamespaceName={activeNamespaceName}
-            />
-          </Grid>
-        </>
+        <Grid key={index} item md={3}>
+          <ApplicationCard
+            application={app}
+            componentsMap={componentsMap}
+            routesMap={routesMap}
+            activeNamespaceName={activeNamespaceName}
+          />
+        </Grid>
       );
     };
 
     return (
       <Grid container spacing={1}>
-        {applications.map((app) => {
-          return GridRow(app);
+        {applications.map((app, index) => {
+          return GridRow(app, index);
         })}
       </Grid>
     );
@@ -494,7 +505,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
 
   public render() {
     const { isNamespaceLoading, isNamespaceFirstLoaded, applications } = this.props;
-    const usingCard = false;
+    const { usingCard } = this.state;
     return (
       <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
         {this.renderDeleteConfirmDialog()}

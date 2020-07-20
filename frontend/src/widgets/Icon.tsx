@@ -321,6 +321,36 @@ export const KalmIngressIcon = withStyles(styles)((props: ColorIconsProps) => {
   );
 });
 
+export const KalmGridViewIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { classes, fontSize, style } = props;
+  return (
+    <SvgIcon className={classes.default} fontSize={fontSize} style={style} viewBox={"0 0 36 36"}>
+      <rect x="4" y="4" width="12" height="12" rx="2" ry="2"></rect>
+      <rect x="20" y="4" width="12" height="12" rx="2" ry="2"></rect>
+      <rect x="4" y="20" width="12" height="12" rx="2" ry="2"></rect>
+      <rect x="20" y="20" width="12" height="12" rx="2" ry="2"></rect>
+      <rect x="0" y="0" width="36" height="36" fillOpacity="0" />
+    </SvgIcon>
+  );
+});
+
+export const KalmListViewIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { classes, fontSize, style } = props;
+  return (
+    <SvgIcon className={classes.default} fontSize={fontSize} style={style} viewBox={"0 0 36 36"}>
+      <rect x="2" y="8" width="2" height="2"></rect>
+      <path d="M7,10H31a1,1,0,0,0,0-2H7a1,1,0,0,0,0,2Z"></path>
+      <rect x="2" y="14" width="2" height="2"></rect>
+      <path d="M31,14H7a1,1,0,0,0,0,2H31a1,1,0,0,0,0-2Z"></path>
+      <rect x="2" y="20" width="2" height="2"></rect>
+      <path d="M31,20H7a1,1,0,0,0,0,2H31a1,1,0,0,0,0-2Z"></path>
+      <rect x="2" y="26" width="2" height="2"></rect>
+      <path d="M31,26H7a1,1,0,0,0,0,2H31a1,1,0,0,0,0-2Z"></path>
+      <rect x="0" y="0" width="36" height="36" fillOpacity="0" />
+    </SvgIcon>
+  );
+});
+
 export const AddFileIcon = withStyles(styles)((props: ColorIconsProps) => {
   const { classes, fontSize, style } = props;
   return <NoteAdd className={classes.white} fontSize={fontSize} style={style} />;
