@@ -14,7 +14,7 @@ interface FieldArrayComponentHackType {
   component: any;
 }
 
-interface Props extends WrappedFieldArrayProps<HttpRouteCondition>, FieldArrayComponentHackType {}
+export interface Props extends WrappedFieldArrayProps<HttpRouteCondition>, FieldArrayComponentHackType {}
 
 export class RenderHttpRouteConditions extends React.PureComponent<Props> {
   public render() {

@@ -41,7 +41,13 @@ import { Prompt } from "widgets/Prompt";
 import { SectionTitle } from "widgets/SectionTitle";
 import { KRadioGroupRender } from "../Basic/radio";
 import { RenderSelectField } from "../Basic/select";
-import { KRenderCommandTextField, KRenderTextField, RenderComplexValueTextField } from "../Basic/textfield";
+import {
+  KRenderCommandTextField,
+  KRenderTextField,
+  RenderComplexValueTextField,
+  KRenderDebounceTextField,
+  RenderComplexValueTextDebounceField,
+} from "../Basic/textfield";
 import { NormalizeNumber } from "../normalizer";
 import { ValidatorCPU, ValidatorMemory, ValidatorName, ValidatorRequired, ValidatorSchedule } from "../validator";
 import { Envs } from "./Envs";
@@ -207,7 +213,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <>
           <Field
             name="schedule"
-            component={KRenderTextField}
+            component={KRenderDebounceTextField}
             placeholder="* * * * *"
             label="Cronjob Schedule"
             required
@@ -631,7 +637,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
         <Grid item xs={6}>
           <Field
-            component={RenderComplexValueTextField}
+            component={RenderComplexValueTextDebounceField}
             name="cpu"
             label="CPU Limit"
             validate={[ValidatorCPU]}
@@ -657,7 +663,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
         <Grid item xs={6}>
           <Field
-            component={RenderComplexValueTextField}
+            component={RenderComplexValueTextDebounceField}
             name="memory"
             label="Memory Limit"
             margin
@@ -853,7 +859,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       <Grid container spacing={2}>
         <Grid item xs={6}>
           <Field
-            component={KRenderTextField}
+            component={KRenderDebounceTextField}
             autoFocus={true}
             name="name"
             label="Name"

@@ -7,7 +7,7 @@ import { InjectedFormProps } from "redux-form";
 import { Field, getFormValues, reduxForm } from "redux-form/immutable";
 import { RootState } from "reducers";
 import { newEmptyRegistry, RegistryType } from "types/registry";
-import { KRenderTextField } from "../Basic/textfield";
+import { KRenderTextField, KRenderDebounceTextField } from "../Basic/textfield";
 import { RequireNoSuffix, RequirePrefix, ValidatorName, ValidatorRequired } from "../validator";
 import { Prompt } from "widgets/Prompt";
 import { REGISTRY_FORM_ID } from "../formIDs";
@@ -51,7 +51,7 @@ class RegistryFormRaw extends React.PureComponent<
               name="name"
               label="Name"
               disabled={isEdit}
-              component={KRenderTextField}
+              component={KRenderDebounceTextField}
               validate={validateName}
               helperText={
                 isEdit
@@ -65,7 +65,7 @@ class RegistryFormRaw extends React.PureComponent<
             <Field
               name="host"
               label="Host"
-              component={KRenderTextField}
+              component={KRenderDebounceTextField}
               validate={validateHost}
               placeholder="Please type the registry host"
             />
