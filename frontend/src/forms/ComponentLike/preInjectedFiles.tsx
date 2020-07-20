@@ -13,7 +13,7 @@ import { ControlledDialog } from "widgets/ControlledDialog";
 import { PreInjectedFile } from "types/componentTemplate";
 import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { KRenderTextField } from "../Basic/textfield";
+import { KRenderDebounceTextField } from "../Basic/textfield";
 import { KValidatorInjectedFilePath, ValidatorRequired } from "../validator";
 import { Alert } from "@material-ui/lab";
 
@@ -179,7 +179,7 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
                 <Field
                   name={`${member}.mountPath`}
                   label="Mount Path"
-                  component={KRenderTextField}
+                  component={KRenderDebounceTextField}
                   margin
                   validate={validateMountPath}
                 />
