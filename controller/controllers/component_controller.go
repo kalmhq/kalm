@@ -857,6 +857,10 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 		template.ObjectMeta.Annotations["sidecar.istio.io/proxyMemory"] = "50Mi"
 	}
 
+	if v, exist := component.Annotations[AnnoLastUpdatedByWebhook]; exist {
+		template.ObjectMeta.Annotations[AnnoLastUpdatedByWebhook] = v
+	}
+
 	mainContainer := &template.Spec.Containers[0]
 
 	if component.Spec.TerminationGracePeriodSeconds != nil {
