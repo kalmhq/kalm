@@ -28,9 +28,12 @@ type DeployKeySpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// +kubebuilder:validation:Enum=component;app;all
-	Type           string `json:"type"`
-	Content        string `json:"content"`
-	ServiceAccount string `json:"serviceAccount"`
+	Type string `json:"type"`
+
+	// +optional
+	Content string `json:"content,omitempty"`
+
+	ServiceAccountToken string `json:"serviceAccountToken"`
 }
 
 // DeployKeyStatus defines the observed state of DeployKey
@@ -40,6 +43,7 @@ type DeployKeyStatus struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:resource:scope=Cluster
 
 // DeployKey is the Schema for the deploykeys API
 type DeployKey struct {
