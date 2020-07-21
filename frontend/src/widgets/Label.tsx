@@ -13,7 +13,7 @@ const styles = () =>
     body1: {
       paddingTop: theme.spacing(1),
     },
-    center: {
+    alignCenter: {
       display: "flex",
       justifyContent: "center",
       flex: 1,
@@ -142,7 +142,7 @@ CenterCaption.displayName = "CenterCaption";
 export const CenterTypography = withStyles(styles)((props: LabelProps) => {
   const { classes } = props;
   return (
-    <Box className={classes.center}>
+    <Box className={classes.alignCenter}>
       <Typography>{props.children}</Typography>
     </Box>
   );
