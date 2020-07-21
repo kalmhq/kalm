@@ -247,6 +247,26 @@ rules:
 - apiGroups:
   - core.kalm.dev
   resources:
+  - deploykeys
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - deploykeys/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - core.kalm.dev
+  resources:
   - dockerregistries
   verbs:
   - create

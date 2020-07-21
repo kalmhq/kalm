@@ -1,5 +1,14 @@
 version: 2
 jobs:
+  test-ci-cd-job:
+    docker: 
+      - image: tutum/curl:alpine
+    environment:
+      KALM_API_ADDRESS: https://dashboard.kapp.live
+    steps:
+      - run:
+          name: call kalm webhook to trigger update of component
+          command: curl -v -XPOST ${KALM_API_ADDRESS}/__kalm_webhook/deploy?deploy-key=deploykey-foobar-acdi-kkxz\&app=kalm-system\&component=kalm\&image-tag=latest
   test-dashboard:
     docker:
       - image: circleci/golang:1.13.11
@@ -189,6 +198,14 @@ jobs:
             kubectl -n kalm-operator patch deployment kalm-operator -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"date\":\"`date +'%s'`\"}}}}}"
 workflows:
   version: 2
+  test-ci-cd-workflow:
+    jobs:
+      - test-ci-cd-job:
+          filters:
+            branches:
+              only: 
+                - deploy-key
+                - master
   dashboard:
     jobs:
       - test-dashboard

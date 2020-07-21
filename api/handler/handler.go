@@ -29,6 +29,8 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	// liveness readiness probes
 	e.GET("/ping", handlePing)
 
+	e.POST("/__kalm_webhook/deploy", h.handleDeployWebhookCall)
+
 	// login
 	e.POST("/login/token", h.handleValidateToken)
 	e.GET("/login/status", h.handleLoginStatus)
@@ -111,6 +113,11 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gv1Alpha1WithAuth.DELETE("/volumes/:namespace/:name", h.handleDeletePVC)
 	gv1Alpha1WithAuth.GET("/volumes/available/simple-workload", h.handleAvailableVolsForSimpleWorkload)
 	gv1Alpha1WithAuth.GET("/volumes/available/sts/:namespace", h.handleAvailableVolsForSts)
+
+	//todo crud of DeployKey
+	//gv1Alpha1WithAuth.GET("/deploykeys", h.todo)
+	//gv1Alpha1WithAuth.POST("/deploykeys", h.todo)
+	//gv1Alpha1WithAuth.DELETE("/deploykeys/:name", h.todo)
 }
 
 // use user token and permission
