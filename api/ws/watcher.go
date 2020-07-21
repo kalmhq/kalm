@@ -31,8 +31,6 @@ func StartWatching(c *Client) {
 	registerWatchHandler(c, &informerCache, &v1alpha1.DockerRegistry{}, buildRegistryResMessage)
 	registerWatchHandler(c, &informerCache, &coreV1.PersistentVolumeClaim{}, buildVolumeResMessage)
 
-	// stop := make(chan struct{})
-	// defer close(stop)
 	informerCache.Start(c.StopWatcher)
 }
 
@@ -187,8 +185,6 @@ func buildNodeResMessage(c *Client, action string, objWatched interface{}) (*Res
 	if !ok {
 		return nil, errors.New("convert watch obj to Node failed")
 	}
-
-	//builder := resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, log.New())
 
 	return &ResMessage{
 		Kind:   "Node",
