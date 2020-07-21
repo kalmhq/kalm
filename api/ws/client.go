@@ -30,7 +30,7 @@ type Client struct {
 
 	Send chan []byte
 
-	ExitWrite chan int
+	Done chan struct{}
 
 	StopWatcher chan struct{}
 
@@ -74,11 +74,10 @@ func (h *ClientPool) run() {
 }
 
 func (c *Client) read() {
-
 	defer func() {
 		c.clientPool.unregister <- c
 		close(c.StopWatcher)
-		c.ExitWrite <- 1
+		close(c.Done)
 		c.conn.Close()
 	}()
 
@@ -86,7 +85,7 @@ func (c *Client) read() {
 		_, messageBytes, err := c.conn.ReadMessage()
 		if err != nil {
 			log.Error(err)
-			break
+			return
 		}
 
 		var reqMessage ReqMessage
@@ -109,7 +108,7 @@ func (c *Client) read() {
 
 		if reqMessage.Method == "StartWatching" && !c.IsWatching {
 			c.IsWatching = true
-			StartWatching(c)
+			go StartWatching(c)
 		}
 
 	}
@@ -134,11 +133,8 @@ func (c *Client) write() {
 				break
 			}
 			continue
-		case _, ok := <-c.ExitWrite:
-			if ok {
-				c.ExitWrite = nil
-				return
-			}
+		case <-c.Done:
+			return
 		}
 	}
 }
