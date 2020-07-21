@@ -8,6 +8,7 @@ export interface SettingObject {
   isSubmittingApplication: boolean;
   isOpenRootDrawer: boolean;
   isShowTopProgress: boolean;
+  usingApplicationCard: boolean;
 }
 
 export type State = ImmutableMap<SettingObject>;
@@ -15,6 +16,7 @@ export type State = ImmutableMap<SettingObject>;
 const initialState: State = Immutable.Map({
   isDisplayingHelpers: window.localStorage.getItem("isDisplayingHelpers") === "true",
   isOpenRootDrawer: window.localStorage.getItem("isOpenRootDrawer") === "true",
+  usingApplicationCard: window.localStorage.getItem("usingApplicationCard") === "true",
   isShowTopProgress: false,
 });
 
@@ -29,6 +31,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
 
   window.localStorage.setItem("isDisplayingHelpers", state.get("isDisplayingHelpers").toString());
   window.localStorage.setItem("isOpenRootDrawer", state.get("isOpenRootDrawer").toString());
+  window.localStorage.setItem("usingApplicationCard", state.get("usingApplicationCard").toString());
 
   return state;
 };

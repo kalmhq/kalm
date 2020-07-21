@@ -41,12 +41,15 @@ const ApplicationCardStyles = (theme: Theme) =>
     root: {
       border: "1px solid rgba(0, 0, 0, 0.12)",
       background: theme.palette.background.paper,
-      width: 310,
+      maxWidth: 310,
     },
     avatar: {},
     actionArea: {
       borderTop: "1px solid rgba(0, 0, 0, 0.12)",
       paddingLeft: theme.spacing(2),
+    },
+    actionContainer: {
+      alignItems: "center",
     },
   });
 
@@ -332,30 +335,30 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
         />
         <CardContent>
           <Grid container>
-            <Grid item md={12} style={{ paddingBottom: 10 }}>
+            <Grid item xs={12} sm={12} md={12} lg={12} style={{ paddingBottom: 10 }}>
               {this.renderDoughnutChartStatus()}
               {/* {this.renderStatus()} */}
             </Grid>
-            <Grid container>
-              <Grid item md={3}>
+            <Grid container spacing={1}>
+              <Grid item xs={3} sm={3} md={3} lg={3}>
                 <Body>CPU:</Body>
               </Grid>
-              <Grid item md={9}>
+              <Grid item xs={9} sm={9} md={9} lg={9}>
                 {this.renderCPU()}
               </Grid>
             </Grid>
-            <Grid container>
-              <Grid item md={3}>
+            <Grid container spacing={1}>
+              <Grid item xs={3} sm={3} md={3} lg={3}>
                 <Body>Memory:</Body>
               </Grid>
-              <Grid item md={9}>
+              <Grid item xs={9} sm={9} md={9} lg={9}>
                 {this.renderMemory()}
               </Grid>
             </Grid>
           </Grid>
         </CardContent>
         <CardActions className={classes.actionArea}>
-          <Grid container>
+          <Grid container className={classes.actionContainer}>
             <Grid item>{this.renderExternalAccesses()}</Grid>
             <Grid item style={{ marginLeft: "auto" }}>
               {this.renderMoreActions()}

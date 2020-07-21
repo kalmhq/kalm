@@ -6,6 +6,7 @@ import { green, grey, red } from "@material-ui/core/colors";
 import * as chartjs from "chart.js";
 
 const size = 96;
+const smallSize = 82;
 const defaultColors = [green[700], grey[700], red[700]];
 
 const styles = (theme: Theme) =>
@@ -98,12 +99,12 @@ class DoughnutChartRaw extends React.PureComponent<Props, State> {
         <div className={classes.pieChartWrapper}>
           <div className={classes.icon}>{icon ? icon : null}</div>
           <Doughnut
-            height={size}
-            width={size}
+            height={icon ? smallSize : size}
+            width={icon ? smallSize : size}
             data={chartData}
             options={{
               maintainAspectRatio: false,
-              cutoutPercentage: icon ? 60 : 70,
+              cutoutPercentage: icon ? 65 : 70,
               tooltips: { enabled: dataSum === 0 ? false : true },
               legend: {
                 display: false,
