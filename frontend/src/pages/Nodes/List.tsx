@@ -14,8 +14,8 @@ import { H5 } from "widgets/Label";
 import { BigCPULineChart, BigMemoryLineChart, SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
 import { BasePage } from "../BasePage";
-import { NodeCPU } from "./CPU";
-import { NodeMemory } from "./Memory";
+import { NodeCPU, NodesCPU } from "./CPU";
+import { NodeMemory, NodesMemory } from "./Memory";
 import { NodePods } from "./Pods";
 import { WhitePaper } from "widgets/Paper";
 
@@ -89,6 +89,18 @@ export class NodeListRaw extends React.Component<Props, States> {
             <Grid item>{node.get("status").get("nodeInfo").get("kubeletVersion")}</Grid>
             <Grid item>Age: {formatTimeDistance(node.get("creationTimestamp"))}</Grid>
             <Grid item>{node.get("statusTexts").join(",")}</Grid>
+            <Grid item>
+              <Box display="flex">
+                <Box mr={2}>CPU:</Box>
+                <NodeCPU node={node} />
+              </Box>
+            </Grid>
+            <Grid item>
+              <Box display="flex">
+                <Box mr={2}>Memory:</Box>
+                <NodeMemory node={node} />
+              </Box>
+            </Grid>
           </Grid>
         }
       >
@@ -129,7 +141,7 @@ export class NodeListRaw extends React.Component<Props, States> {
             },
             {
               name: "CPU (Allocated / Total allocatable)",
-              content: <NodeCPU node={node} />,
+              content: <NodeCPU node={node} showDetails={true} />,
             },
             {
               name: "Memory (Allocated / Total allocatable)",
@@ -255,11 +267,13 @@ export class NodeListRaw extends React.Component<Props, States> {
             <Grid item md={6}>
               <WhitePaper elevation={0} style={{ overflow: "hidden" }}>
                 <BigCPULineChart data={metrics.get("cpu")} />
+                <NodesCPU nodes={nodes} />
               </WhitePaper>
             </Grid>
             <Grid item md={6}>
               <WhitePaper elevation={0} style={{ overflow: "hidden" }}>
                 <BigMemoryLineChart data={metrics.get("memory")} />
+                <NodesMemory nodes={nodes} />
               </WhitePaper>
             </Grid>
           </Grid>

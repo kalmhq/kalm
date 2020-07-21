@@ -43,4 +43,7 @@ resources:
 - group: core
   kind: ProtectedEndpoint
   version: v1alpha1
+- group: core
+  kind: DeployKey
+  version: v1alpha1
 version: "2"

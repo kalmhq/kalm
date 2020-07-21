@@ -43,14 +43,14 @@ func (h *WsHandler) Serve(c echo.Context) error {
 		clientPool:       h.clientPool,
 		conn:             conn,
 		Send:             make(chan []byte, 256),
-		ExitWrite:        make(chan int),
+		Done:             make(chan struct{}),
 		StopWatcher:      make(chan struct{}),
 		K8sClientManager: h.k8sClientManager,
 	}
 	client.clientPool.register <- client
 
-	go client.read()
 	go client.write()
+	client.read()
 
 	return nil
 }

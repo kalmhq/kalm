@@ -1,0 +1,24 @@
+# permissions for end users to edit deploykeys.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: deploykey-editor-role
+rules:
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - deploykeys
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - core.kalm.dev
+  resources:
+  - deploykeys/status
+  verbs:
+  - get

@@ -47,6 +47,8 @@ import (
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 )
 
+const AnnoLastUpdatedByWebhook = "last-updated-by-webhook"
+
 // ComponentReconciler reconciles a Component object
 type ComponentReconciler struct {
 	*BaseReconciler
@@ -530,6 +532,11 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 		deployment.Spec.Template = *podTemplateSpec
 	}
 
+	// inherit annotation: AnnoLastUpdatedByWebhook
+	if v, exist := component.Annotations[AnnoLastUpdatedByWebhook]; exist {
+		deployment.Annotations[AnnoLastUpdatedByWebhook] = v
+	}
+
 	if component.Spec.RestartStrategy != "" {
 		deployment.Spec.Strategy = appsV1.DeploymentStrategy{
 			Type: component.Spec.RestartStrategy,
@@ -848,6 +855,10 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 	if component.Spec.EnableResourcesRequests {
 		template.ObjectMeta.Annotations["sidecar.istio.io/proxyCPU"] = "10m"
 		template.ObjectMeta.Annotations["sidecar.istio.io/proxyMemory"] = "50Mi"
+	}
+
+	if v, exist := component.Annotations[AnnoLastUpdatedByWebhook]; exist {
+		template.ObjectMeta.Annotations[AnnoLastUpdatedByWebhook] = v
 	}
 
 	mainContainer := &template.Spec.Containers[0]
