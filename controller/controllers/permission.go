@@ -76,7 +76,7 @@ func (r *ComponentReconcilerTask) reconcilePermission() error {
 			},
 			Subjects: []rbacV1.Subject{
 				{
-					Kind:      "ServiceAccountToken",
+					Kind:      "ServiceAccount",
 					Name:      name,
 					Namespace: r.component.Namespace,
 				},
@@ -127,7 +127,7 @@ func (r *ComponentReconcilerTask) reconcilePermission() error {
 			},
 			Subjects: []rbacV1.Subject{
 				{
-					Kind:      "ServiceAccountToken",
+					Kind:      "ServiceAccount",
 					Name:      name,
 					Namespace: r.component.Namespace,
 				},
