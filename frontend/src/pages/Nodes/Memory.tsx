@@ -1,7 +1,8 @@
-import { Box, LinearProgress } from "@material-ui/core";
-import { Node } from "types/node";
+import { Box } from "@material-ui/core";
 import React from "react";
-import { sizeStringToNumber, humanFileSize } from "utils/sizeConv";
+import { Node } from "types/node";
+import { humanFileSize, sizeStringToNumber } from "utils/sizeConv";
+import { ColoredLinearProgress } from "./LinearProgress";
 
 export const NodeMemory = ({ node }: { node: Node }) => {
   const allocatable = sizeStringToNumber(node.get("status").get("allocatable").get("memory"));
@@ -11,7 +12,7 @@ export const NodeMemory = ({ node }: { node: Node }) => {
   return (
     <Box>
       <Box mr={2} display="inline-block">
-        <LinearProgress
+        <ColoredLinearProgress
           style={{ width: "120px", display: "inline-block", verticalAlign: "middle" }}
           variant="determinate"
           value={progress}
