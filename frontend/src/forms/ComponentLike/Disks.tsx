@@ -16,7 +16,7 @@ import {
 import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { RenderSelectField } from "../Basic/select";
-import { KRenderTextField, RenderComplexValueTextField } from "../Basic/textfield";
+import { KRenderTextField, RenderComplexValueTextDebounceField } from "../Basic/textfield";
 import { ValidatorRequired, ValidatorVolumeSize } from "../validator";
 import { KTooltip } from "forms/Application/KTooltip";
 import HelpIcon from "@material-ui/icons/Help";
@@ -172,7 +172,7 @@ class RenderVolumes extends React.PureComponent<Props> {
       );
       fieldComponents.push(
         <Field
-          component={RenderComplexValueTextField}
+          component={RenderComplexValueTextDebounceField}
           name={`${member}.size`}
           label="Size"
           margin
@@ -189,7 +189,7 @@ class RenderVolumes extends React.PureComponent<Props> {
     } else {
       fieldComponents.push(
         <Field
-          component={RenderComplexValueTextField}
+          component={RenderComplexValueTextDebounceField}
           name={`${member}.size`}
           label="Size"
           margin
