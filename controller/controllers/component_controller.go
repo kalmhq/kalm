@@ -47,6 +47,8 @@ import (
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
 )
 
+const AnnoLastUpdatedByWebhook = "last-updated-by-webhook"
+
 // ComponentReconciler reconciles a Component object
 type ComponentReconciler struct {
 	*BaseReconciler
@@ -528,6 +530,11 @@ func (r *ComponentReconcilerTask) ReconcileDeployment(podTemplateSpec *coreV1.Po
 		}
 	} else {
 		deployment.Spec.Template = *podTemplateSpec
+	}
+
+	// inherit annotation: AnnoLastUpdatedByWebhook
+	if v, exist := component.Annotations[AnnoLastUpdatedByWebhook]; exist {
+		deployment.Annotations[AnnoLastUpdatedByWebhook] = v
 	}
 
 	if component.Spec.RestartStrategy != "" {
