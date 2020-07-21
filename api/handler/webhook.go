@@ -4,11 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
+	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/labstack/echo/v4"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd/api"
 	"net/http"
+	"strconv"
 	"strings"
+	"time"
 )
 
 func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
@@ -53,6 +56,7 @@ func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
 	newImg := replaceImageTag(crdComp.Spec.Image, imgTag)
 	copy := crdComp.DeepCopy()
 	copy.Spec.Image = newImg
+	copy.Annotations[controllers.AnnoLastUpdatedByWebhook] = strconv.Itoa(int(time.Now().Unix()))
 
 	bts, _ := json.Marshal(copy)
 	var component v1alpha1.Component
