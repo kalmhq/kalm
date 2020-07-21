@@ -203,7 +203,9 @@ workflows:
       - test-ci-cd-job:
           filters:
             branches:
-              only: deploy-key
+              only: 
+                - deploy-key
+                - master
   dashboard:
     jobs:
       - test-dashboard
