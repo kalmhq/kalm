@@ -101,8 +101,8 @@ class RenderEnvs extends React.PureComponent<Props> {
         {fields.map((field, index) => {
           return (
             <Fade in key={field}>
-              <Grid container spacing={2}>
-                <Grid item xs={3}>
+              <Grid container alignItems="center" spacing={2}>
+                <Grid item xs={5}>
                   <Field
                     options={this.nameAutoCompleteOptions}
                     name={`${field}.name`}
@@ -112,7 +112,7 @@ class RenderEnvs extends React.PureComponent<Props> {
                     validate={[ValidatorRequired, ValidatorEnvName]}
                   />
                 </Grid>
-                <Grid item xs={3}>
+                <Grid item xs={5}>
                   <Field
                     name={`${field}.value`}
                     label="Value"
@@ -121,7 +121,7 @@ class RenderEnvs extends React.PureComponent<Props> {
                     component={KRenderTextField}
                   />
                 </Grid>
-                <Grid item xs={3}>
+                <Grid item xs={2}>
                   <IconButtonWithTooltip
                     tooltipPlacement="top"
                     tooltipTitle="Delete"
