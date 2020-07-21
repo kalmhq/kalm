@@ -56,6 +56,10 @@ func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
 	newImg := replaceImageTag(crdComp.Spec.Image, imgTag)
 	copy := crdComp.DeepCopy()
 	copy.Spec.Image = newImg
+
+	if copy.Annotations == nil {
+		copy.Annotations = make(map[string]string)
+	}
 	copy.Annotations[controllers.AnnoLastUpdatedByWebhook] = strconv.Itoa(int(time.Now().Unix()))
 
 	bts, _ := json.Marshal(copy)
