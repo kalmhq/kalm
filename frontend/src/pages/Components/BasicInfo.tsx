@@ -13,6 +13,7 @@ import {
   TableCell,
   Table,
   TableBody,
+  Grid,
 } from "@material-ui/core";
 import { TDispatchProp } from "types";
 import { connect } from "react-redux";
@@ -44,6 +45,10 @@ const styles = (theme: Theme) =>
     },
     port: {
       padding: "1 2",
+    },
+    gridWrapper: {
+      display: "flex",
+      alignItems: "center",
     },
 
     envKey: {
@@ -171,13 +176,31 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
   };
 
   private renderComponentCPU = () => {
-    const { component } = this.props;
-    return <SmallCPULineChart data={component.get("metrics").get("cpu")!} />;
+    const { component, classes } = this.props;
+    return (
+      <Grid container className={classes.gridWrapper}>
+        <Grid item md={2}>
+          Allocated: {component.get("cpu")}
+        </Grid>
+        <Grid item md={10}>
+          Usage: <SmallCPULineChart data={component.get("metrics").get("cpu")!} />
+        </Grid>
+      </Grid>
+    );
   };
 
   private renderComponentMemory = () => {
-    const { component } = this.props;
-    return <SmallMemoryLineChart data={component.get("metrics").get("memory")!} />;
+    const { component, classes } = this.props;
+    return (
+      <Grid container className={classes.gridWrapper}>
+        <Grid item md={2}>
+          Allocated: {component.get("memory")}
+        </Grid>
+        <Grid item md={10}>
+          Usage: <SmallMemoryLineChart data={component.get("metrics").get("memory")!} />
+        </Grid>
+      </Grid>
+    );
   };
 
   private renderPort = (key: any, name: string, port: number) => {
