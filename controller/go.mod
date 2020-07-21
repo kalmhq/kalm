@@ -16,7 +16,7 @@ require (
 	github.com/jetstack/cert-manager v0.13.1
 	github.com/joho/godotenv v1.3.0
 	github.com/onsi/ginkgo v1.10.3
-	github.com/onsi/gomega v1.7.1 // indirect
+	github.com/onsi/gomega v1.7.1
 	github.com/prometheus/client_golang v1.2.1 // indirect
 	github.com/stretchr/testify v1.5.1
 	github.com/xeipuuv/gojsonschema v1.2.0
