@@ -342,10 +342,10 @@ class DetailsRaw extends React.PureComponent<Props, State> {
           </Grid>
           <Grid container spacing={2}>
             <Grid item md>
-              <BigCPULineChart data={activeNamespace!.get("metrics")?.get("cpu")} />
+              <BigCPULineChart data={activeNamespace!.get("metrics")?.get("cpu")} yAxesWidth={80} />
             </Grid>
             <Grid item md>
-              <BigMemoryLineChart data={activeNamespace!.get("metrics")?.get("memory")} />
+              <BigMemoryLineChart data={activeNamespace!.get("metrics")?.get("memory")} yAxesWidth={80} />
             </Grid>
           </Grid>
         </Expansion>

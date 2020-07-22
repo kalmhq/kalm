@@ -35,6 +35,7 @@ interface Props extends WithStyles<typeof smallLineChartStyles> {
   hoverText?: string;
   width: number | string;
   height: number | string;
+  yAxesWidth?: number;
   formatValue?: (value: number) => string;
   borderColor?: string;
   backgroundColor?: string;
@@ -181,6 +182,7 @@ interface LineChartProps extends WithStyles<typeof lineChartStyles> {
   title?: string;
   width: number | string;
   height: number | string;
+  yAxesWidth?: number;
   formatValue?: (value: number) => string;
   borderColor?: string;
   backgroundColor?: string;
@@ -206,7 +208,7 @@ class LineChartRaw extends React.PureComponent<LineChartProps> {
   };
 
   public render() {
-    const { classes, width, height, formatValue, title } = this.props;
+    const { classes, width, height, formatValue, title, yAxesWidth } = this.props;
     return (
       <div style={{ width, height }} className={classes.root}>
         <Line
@@ -218,12 +220,6 @@ class LineChartRaw extends React.PureComponent<LineChartProps> {
             },
             responsive: true,
             maintainAspectRatio: false,
-            layout: {
-              padding: {
-                top: 10,
-                right: 10,
-              },
-            },
             tooltips: {
               intersect: false,
               callbacks: {
@@ -242,6 +238,11 @@ class LineChartRaw extends React.PureComponent<LineChartProps> {
             scales: {
               yAxes: [
                 {
+                  afterFit: yAxesWidth
+                    ? (scaleInstance) => {
+                        scaleInstance.width = 80; // sets the width to 100px
+                      }
+                    : undefined,
                   ticks: {
                     maxTicksLimit: 5,
                     beginAtZero: true,
@@ -292,13 +293,13 @@ const formatCPU = (value: number): string => {
   return value / 1000 + " Core";
 };
 
-export const BigCPULineChart = (props: Pick<Props, "data">) => {
+export const BigCPULineChart = (props: Pick<Props, "data" | "yAxesWidth">) => {
   return (
     <LineChart
       {...props}
       title={"CPU"}
       formatValue={formatCPU}
-      height={180}
+      height={170}
       width={"100%"}
       borderColor="rgba(33, 150, 243, 1)"
       backgroundColor="rgba(33, 150, 243, 0.5)"
@@ -306,13 +307,13 @@ export const BigCPULineChart = (props: Pick<Props, "data">) => {
   );
 };
 
-export const BigMemoryLineChart = (props: Pick<Props, "data">) => {
+export const BigMemoryLineChart = (props: Pick<Props, "data" | "yAxesWidth">) => {
   return (
     <LineChart
       title="Memory"
       {...props}
       formatValue={formatMemory}
-      height={180}
+      height={170}
       width={"100%"}
       borderColor="rgba(75,192,192, 1)"
       backgroundColor="rgba(75,192,192,0.5)"
