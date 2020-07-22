@@ -1,2 +1,3 @@
 ignore:
-  - "controller/api"
+  - "controller/api/**/*"
+
