@@ -17,32 +17,220 @@ package controllers
 
 import (
 	"context"
-
-	"github.com/go-logr/logr"
-	"k8s.io/apimachinery/pkg/runtime"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
+	"fmt"
 	corev1alpha1 "github.com/kalmhq/kalm/controller/api/v1alpha1"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/api/rbac/v1beta1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/types"
+	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 // DeployKeyReconciler reconciles a DeployKey object
 type DeployKeyReconciler struct {
-	client.Client
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	*BaseReconciler
 }
+
+type DeployKeyReconcilerTask struct {
+	*DeployKeyReconciler
+	ctx context.Context
+}
+
+var retryLaterErr = fmt.Errorf("retry later")
 
 // +kubebuilder:rbac:groups=core.kalm.dev,resources=deploykeys,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core.kalm.dev,resources=deploykeys/status,verbs=get;update;patch
 
 func (r *DeployKeyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	_ = context.Background()
-	_ = r.Log.WithValues("deploykey", req.NamespacedName)
+	task := &DeployKeyReconcilerTask{
+		DeployKeyReconciler: r,
+		ctx:                 context.Background(),
+	}
 
-	// your logic here
+	err := task.Run(req)
+	if err == retryLaterErr {
+		return ctrl.Result{Requeue: true}, nil
+	}
 
-	return ctrl.Result{}, nil
+	return ctrl.Result{}, err
+}
+
+func (r *DeployKeyReconcilerTask) Run(req ctrl.Request) error {
+	var deployKey corev1alpha1.DeployKey
+	if err := r.Get(r.ctx, req.NamespacedName, &deployKey); err != nil {
+		if errors.IsNotFound(err) {
+			return nil
+		}
+
+		return err
+	}
+
+	expectedSA := v1.ServiceAccount{
+		ObjectMeta: ctrl.ObjectMeta{
+			Namespace: deployKey.Namespace,
+			Name:      deployKey.Name,
+		},
+	}
+
+	sa := v1.ServiceAccount{}
+	err := r.Get(r.ctx, types.NamespacedName{Namespace: deployKey.Namespace, Name: deployKey.Name}, &sa)
+	if err != nil {
+		if !errors.IsNotFound(err) {
+			return err
+		}
+
+		sa = expectedSA
+
+		if err := ctrl.SetControllerReference(&deployKey, &sa, r.Scheme); err != nil {
+			return err
+		}
+
+		if err := r.Create(r.ctx, &expectedSA); err != nil {
+			return err
+		}
+	} else {
+		// need do nothing
+	}
+
+	var expectedRole v1beta1.Role
+
+	switch deployKey.Spec.Type {
+	case corev1alpha1.DeployKeyTypeApp:
+		expectedRole = v1beta1.Role{
+			ObjectMeta: ctrl.ObjectMeta{
+				Namespace: deployKey.Namespace,
+				Name:      deployKey.Name,
+			},
+			Rules: []v1beta1.PolicyRule{
+				{
+					Verbs:     []string{"get", "list", "watch", "update"},
+					APIGroups: []string{"core.kalm.dev"},
+					Resources: []string{"components"},
+				},
+			},
+		}
+	case corev1alpha1.DeployKeyTypeComponent:
+		expectedRole = v1beta1.Role{
+			ObjectMeta: ctrl.ObjectMeta{
+				Namespace: deployKey.Namespace,
+				Name:      deployKey.Name,
+			},
+			Rules: []v1beta1.PolicyRule{
+				{
+					Verbs:         []string{"get", "list", "watch", "update"},
+					APIGroups:     []string{"core.kalm.dev"},
+					Resources:     []string{"components"},
+					ResourceNames: deployKey.Spec.Content,
+				},
+			},
+		}
+	default:
+		return fmt.Errorf("unknown deployKey type: %s", deployKey.Spec.Type)
+	}
+
+	role := v1beta1.Role{}
+	err = r.Get(r.ctx, types.NamespacedName{
+		Namespace: deployKey.Namespace,
+		Name:      deployKey.Name,
+	}, &role)
+	if err != nil {
+		if !errors.IsNotFound(err) {
+			return err
+		}
+
+		role = expectedRole
+
+		if err := ctrl.SetControllerReference(&deployKey, &role, r.Scheme); err != nil {
+			return err
+		}
+
+		if err := r.Create(r.ctx, &role); err != nil {
+			return err
+		}
+	} else {
+		role.Rules = expectedRole.Rules
+		if err := r.Update(r.ctx, &role); err != nil {
+			return err
+		}
+	}
+
+	// ensure binding
+	expectedRoleBinding := v1beta1.RoleBinding{
+		ObjectMeta: ctrl.ObjectMeta{
+			Namespace: deployKey.Namespace,
+			Name:      deployKey.Name,
+		},
+		Subjects: []v1beta1.Subject{
+			{
+				Kind:      "ServiceAccount",
+				Name:      expectedSA.Name,
+				Namespace: expectedSA.Namespace,
+			},
+		},
+		RoleRef: v1beta1.RoleRef{
+			Kind:     "Role",
+			Name:     expectedRole.Name,
+			APIGroup: "rbac.authorization.k8s.io",
+		},
+	}
+
+	roleBinding := v1beta1.RoleBinding{}
+	err = r.Get(r.ctx, types.NamespacedName{
+		Namespace: deployKey.Namespace,
+		Name:      deployKey.Name,
+	}, &roleBinding)
+
+	if err != nil {
+		if !errors.IsNotFound(err) {
+			return err
+		}
+
+		roleBinding = expectedRoleBinding
+
+		if err := ctrl.SetControllerReference(&deployKey, &roleBinding, r.Scheme); err != nil {
+			return err
+		}
+
+		if err := r.Create(r.ctx, &roleBinding); err != nil {
+			return err
+		}
+	} else {
+		roleBinding.Subjects = expectedRoleBinding.Subjects
+		roleBinding.RoleRef = expectedRoleBinding.RoleRef
+
+		if err := r.Update(r.ctx, &roleBinding); err != nil {
+			return err
+		}
+	}
+
+	err = r.Get(r.ctx, types.NamespacedName{Namespace: sa.Namespace, Name: sa.Name}, &sa)
+	if err != nil {
+		return err
+	}
+
+	if len(sa.Secrets) <= 0 {
+		return retryLaterErr
+	}
+
+	secObjRef := sa.Secrets[0]
+
+	var sec v1.Secret
+	err = r.Get(r.ctx, types.NamespacedName{Namespace: sa.Namespace, Name: secObjRef.Name}, &sec)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return retryLaterErr
+		}
+
+		return err
+	}
+
+	v, exist := sec.Data["token"]
+	if !exist || len(v) == 0 {
+		return retryLaterErr
+	}
+
+	deployKey.Status.ServiceAccountToken = string(v)
+	return r.Status().Update(r.ctx, &deployKey)
 }
 
 func (r *DeployKeyReconciler) SetupWithManager(mgr ctrl.Manager) error {
