@@ -42,6 +42,7 @@ const (
 	SSOConnectorTypeGitlab = "gitlab"
 )
 
+// +kubebuilder:object:generate=false
 type SSOGithubConnector struct {
 	ID     string `json:"id"`
 	Type   string `json:"type"`
@@ -56,6 +57,7 @@ type SSOGithubConnector struct {
 	} `json:"config"`
 }
 
+// +kubebuilder:object:generate=false
 type SSOGitlabConnector struct {
 	ID     string `json:"id"`
 	Type   string `json:"type"`
