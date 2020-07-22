@@ -22,6 +22,7 @@ import tutorial, { State as TutorialState } from "./tutorial";
 import services, { State as ServiceState } from "./service";
 import certificates, { State as CertificateState } from "./certificate";
 import debounce, { State as DebounceState } from "./debounce";
+import sso, { State as SSOState } from "./sso";
 
 export type RootState = ImmutableMap<{
   namespaces: NamespacesState;
@@ -44,6 +45,7 @@ export type RootState = ImmutableMap<{
   services: ServiceState;
   certificates: CertificateState;
   debounce: DebounceState;
+  sso: SSOState;
 }>;
 
 // combineReducers returns immutable map, but the type is not working correctly
@@ -64,6 +66,7 @@ export default (history: History<LocationState>) =>
     components,
     notification,
     settings,
+    sso,
     users,
     roles,
     routes,

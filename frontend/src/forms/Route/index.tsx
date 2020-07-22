@@ -8,7 +8,7 @@ import { KRadioGroupRender } from "forms/Basic/radio";
 import { shouldError } from "forms/common";
 import { ROUTE_FORM_ID } from "forms/formIDs";
 import {
-  KValidatorHosts,
+  KValidatorHostsWithWildcardPrefix,
   KValidatorPaths,
   ValidatorAtLeastOneHttpRouteDestination,
   ValidatorListNotEmpty,
@@ -313,7 +313,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       component={KFreeSoloAutoCompleteMultiValues}
                       name="hosts"
                       margin="normal"
-                      validate={[ValidatorRequired, KValidatorHosts]}
+                      validate={[ValidatorRequired, KValidatorHostsWithWildcardPrefix]}
                       placeholder="Type a host"
                       helperText={
                         <>

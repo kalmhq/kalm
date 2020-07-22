@@ -8,6 +8,7 @@ import { HttpRoute } from "types/route";
 import { RoleBindingsRequestBody } from "types/user";
 import { CertificateFormType, CertificateIssuerFormType } from "types/certificate";
 import { Node } from "types/node";
+import { SSOConfig } from "types/sso";
 
 export default class RealApi extends Api {
   public getClusterInfo = async () => {
@@ -296,6 +297,26 @@ export default class RealApi extends Api {
   public loadServices = async (name: string) => {
     const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/services` });
     return Immutable.fromJS(res.data);
+  };
+
+  // sso
+  public getSSOConfig = async (): Promise<SSOConfig> => {
+    const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/sso` });
+    return Immutable.fromJS(res.data);
+  };
+
+  public createSSOConfig = async (ssoConfig: SSOConfig): Promise<SSOConfig> => {
+    const res = await axiosRequest({ method: "post", url: `/${K8sApiVersion}/sso`, data: ssoConfig });
+    return Immutable.fromJS(res.data);
+  };
+
+  public updateSSOConfig = async (ssoConfig: SSOConfig): Promise<SSOConfig> => {
+    const res = await axiosRequest({ method: "put", url: `/${K8sApiVersion}/sso`, data: ssoConfig });
+    return Immutable.fromJS(res.data);
+  };
+
+  public deleteSSOConfig = async (): Promise<void> => {
+    await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/sso` });
   };
 }
 

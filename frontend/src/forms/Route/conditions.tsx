@@ -28,14 +28,14 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
             {rule.get("type")} Rule
           </Grid>
           <Grid item md={2}>
-            <Field name={`${member}.name`} component={KRenderTextField} label="Name" validate={[ValidatorRequired]} />
+            <Field name={`${member}.name`} component={KRenderTextField} label="Name" validate={ValidatorRequired} />
           </Grid>
           <Grid item md={2}>
             <Field
               name={`${member}.operator`}
               component={RenderSelectField}
               label="operator"
-              validate={[ValidatorRequired]}
+              validate={ValidatorRequired}
               options={[
                 { value: "equal", text: "Equal" },
                 { value: "withPrifix", text: "With Prifix" },
@@ -44,7 +44,7 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
             ></Field>
           </Grid>
           <Grid item md={2}>
-            <Field name={`${member}.value`} component={KRenderTextField} label="Value" validate={[ValidatorRequired]} />
+            <Field name={`${member}.value`} component={KRenderTextField} label="Value" validate={ValidatorRequired} />
           </Grid>
           <Grid item md={2}>
             <IconButtonWithTooltip

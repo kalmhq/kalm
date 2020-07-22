@@ -27,9 +27,13 @@ type ExtAuthzEndpoint struct {
 }
 
 type DexConnector struct {
-	Type   string                `json:"type"`
-	ID     string                `json:"id"`
-	Name   string                `json:"name"`
+	// +kubebuilder:validation:Required
+	Type string `json:"type"`
+	// +kubebuilder:validation:Required
+	ID string `json:"id"`
+	// +kubebuilder:validation:Required
+	Name string `json:"name"`
+	// +kubebuilder:validation:Required
 	Config *runtime.RawExtension `json:"config"`
 }
 

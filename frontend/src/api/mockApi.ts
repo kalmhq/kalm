@@ -6,6 +6,7 @@ import { HttpRoute } from "types/route";
 import { RegistryType } from "types/registry";
 import { RoleBindingsRequestBody } from "types/user";
 import MockStore from "./mockStore";
+import { SSOConfig } from "types/sso";
 
 export const mockStore = new MockStore();
 
@@ -221,4 +222,19 @@ export default class MockApi extends Api {
     await mockStore.updateRegistry(registry);
     return Immutable.fromJS(registry);
   };
+
+  // TODO
+  public getSSOConfig = async (): Promise<SSOConfig> => {
+    return Immutable.Map();
+  };
+
+  public createSSOConfig = async (ssoConfig: SSOConfig): Promise<SSOConfig> => {
+    return Immutable.Map();
+  };
+
+  public updateSSOConfig = async (ssoConfig: SSOConfig): Promise<SSOConfig> => {
+    return Immutable.Map();
+  };
+
+  public deleteSSOConfig = async (): Promise<void> => {};
 }

@@ -17,6 +17,7 @@ import { TutorialActions } from "./tutorial";
 import { UserActions } from "./user";
 import { ResourceActions } from "./resources";
 import { DebounceActions } from "./debounce";
+import { SSOConfigActions } from "types/sso";
 
 interface ReduxFormAction extends FormAction {
   type: keyof ActionTypes;
@@ -38,7 +39,8 @@ export type Actions =
   | ClusterActions
   | TutorialActions
   | ResourceActions
-  | DebounceActions;
+  | DebounceActions
+  | SSOConfigActions;
 
 export type ThunkResult<R> = ThunkAction<R, RootState, undefined, Actions>;
 export type TDispatch = ThunkDispatch<RootState, undefined, Actions>;
