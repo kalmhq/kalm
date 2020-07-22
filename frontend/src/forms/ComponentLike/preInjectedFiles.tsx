@@ -175,7 +175,7 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
 
           return (
             <Grid container spacing={1} key={member}>
-              <Grid item md={5}>
+              <Grid item lg={5}>
                 <Field
                   name={`${member}.mountPath`}
                   label="Mount Path"
@@ -184,10 +184,10 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
                   validate={validateMountPath}
                 />
               </Grid>
-              <Grid item md={2}>
+              <Grid item lg={2}>
                 <Field name={`${member}.readonly`} component={KBoolCheckboxRender} label="Read Only"></Field>
               </Grid>
-              <Grid item md={3}>
+              <Grid item lg={3}>
                 <Field
                   name={`${member}.content`}
                   component={this.renderContent}
@@ -196,7 +196,7 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
                   index={index}
                 />
               </Grid>
-              <Grid item md={2}>
+              <Grid item lg={2}>
                 <IconButtonWithTooltip
                   tooltipPlacement="top"
                   tooltipTitle="Edit"

@@ -301,7 +301,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
     return (
       <div className={classes.root}>
         <Grid container spacing={2}>
-          <Grid item xs={8}>
+          <Grid item xs={12}>
             <Prompt when={dirty && !submitSucceeded} message="Are you sure to leave without saving changes?" />
             <Box mb={2}>
               <KPanel
