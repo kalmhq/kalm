@@ -114,7 +114,6 @@ export class LoadBalancerInfoRaw extends React.Component<Props, States> {
           <IconButtonWithTooltip
             tooltipTitle="Copy"
             aria-label="copy"
-            size="small"
             onClick={() => {
               copy(content);
               this.props.dispatch(setSuccessNotificationAction("Copied successful!"));

@@ -175,7 +175,7 @@ export class XtermRaw extends React.PureComponent<XtermProps, XtermState> {
             this.setState({ isSearchFocused: false });
           }}
         />
-        <IconButtonWithTooltip tooltipTitle="Close" size="small" onClick={this.closeSearch}>
+        <IconButtonWithTooltip tooltipTitle="Close" onClick={this.closeSearch}>
           <CloseIcon />
         </IconButtonWithTooltip>
       </div>

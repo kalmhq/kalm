@@ -344,7 +344,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         <IconButtonWithTooltip
           tooltipTitle={usingApplicationCard ? "Using List View" : "Using Card View"}
           aria-label={usingApplicationCard ? "Using List View" : "Using Card View"}
-          size="small"
           onClick={() =>
             dispatch(
               setSettingsAction({

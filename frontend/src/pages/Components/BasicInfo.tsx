@@ -275,7 +275,6 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
           tooltipPlacement="top"
           tooltipTitle="Add Health Probes"
           aria-label="add-health-probes"
-          size="small"
           onClick={() =>
             dispatch(push(`/applications/${activeNamespaceName}/components/${component.get("name")}/edit#${HealthTab}`))
           }
@@ -313,7 +312,6 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
             <IconButtonWithTooltip
               tooltipTitle="Copy"
               aria-label="copy"
-              size="small"
               onClick={() => {
                 copy(value);
                 this.props.dispatch(setSuccessNotificationAction("Copied successful!"));
