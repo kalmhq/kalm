@@ -349,9 +349,15 @@ class RenderProbe extends React.PureComponent<Props> {
           Immutable.Map({
             httpGet: Immutable.Map({
               scheme: "HTTP",
+              host: "0.0.0.0",
               path: "/health",
-              port: potentialPort ? potentialPort.get("containerPort") : "",
+              port: potentialPort ? potentialPort.get("containerPort") : 8080,
             }),
+            failureThreshold: 3,
+            periodSeconds: 10,
+            successThreshold: 1,
+            timeoutSeconds: 1,
+            initialDelaySeconds: 10,
           }),
         ),
       );
@@ -364,6 +370,11 @@ class RenderProbe extends React.PureComponent<Props> {
             exec: Immutable.Map({
               command: Immutable.List([""]),
             }),
+            failureThreshold: 3,
+            periodSeconds: 10,
+            successThreshold: 1,
+            timeoutSeconds: 1,
+            initialDelaySeconds: 10,
           }),
         ),
       );
@@ -377,8 +388,14 @@ class RenderProbe extends React.PureComponent<Props> {
           input.name,
           Immutable.Map({
             tcpSocket: Immutable.Map({
-              port: potentialPort ? potentialPort.get("containerPort") : "",
+              port: potentialPort ? potentialPort.get("containerPort") : 8080,
+              host: "0.0.0.0",
             }),
+            failureThreshold: 3,
+            periodSeconds: 10,
+            successThreshold: 1,
+            timeoutSeconds: 1,
+            initialDelaySeconds: 10,
           }),
         ),
       );
