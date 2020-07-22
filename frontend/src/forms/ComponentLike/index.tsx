@@ -880,7 +880,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             name="image"
             label="Image"
             margin
-            validate={[ValidatorRequired]}
+            validate={ValidatorRequired}
             helperText='Eg: "nginx:latest", "registry.example.com/group/repo:tag"'
           />
         </Grid>
@@ -890,7 +890,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             name="workloadType"
             component={RenderSelectField}
             label="Workload Type"
-            validate={[ValidatorRequired]}
+            validate={ValidatorRequired}
             disabled={isEdit}
             options={[
               { value: workloadTypeServer, text: "Server (continuous running)" },

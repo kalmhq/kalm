@@ -67,7 +67,7 @@ class CertificateIssuerFormRaw extends React.PureComponent<Props, State> {
             component={KRenderTextField}
             name="acmeCloudFlare.account"
             margin="normal"
-            validate={[ValidatorRequired]}
+            validate={ValidatorRequired}
           />
         </Grid>
         <Grid item md={12}>
@@ -76,7 +76,7 @@ class CertificateIssuerFormRaw extends React.PureComponent<Props, State> {
             component={KRenderTextField}
             name="acmeCloudFlare.secret"
             margin="normal"
-            validate={[ValidatorRequired]}
+            validate={ValidatorRequired}
           />
         </Grid>
       </>
@@ -96,7 +96,7 @@ class CertificateIssuerFormRaw extends React.PureComponent<Props, State> {
                 component={RenderSelectField}
                 name="issuerType"
                 margin="normal"
-                validate={[ValidatorRequired]}
+                validate={ValidatorRequired}
                 options={[
                   { value: cloudFlare, text: "Cloudflare" },
                   { value: caForTest, text: "CA for test" },
@@ -111,7 +111,7 @@ class CertificateIssuerFormRaw extends React.PureComponent<Props, State> {
                 component={KRenderTextField}
                 name="name"
                 margin="normal"
-                validate={[ValidatorRequired]}
+                validate={ValidatorRequired}
               />
             </Grid>
           )}

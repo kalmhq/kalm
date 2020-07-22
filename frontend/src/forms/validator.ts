@@ -48,12 +48,6 @@ export const ValidatorAtLeastOneHttpRouteDestination = (
 };
 
 export const ValidatorRequired = (value: any, _allValues?: any, _props?: any, _name?: any) => {
-  // After delete an item of an array, the validator is still invoked.
-  // The value is undefined.
-  if (value === undefined) {
-    return undefined;
-  }
-
   if (Array.isArray(value)) {
     return value.length > 0 ? undefined : "Required";
   }
@@ -177,7 +171,26 @@ export const ValidatorSchedule = (value: string) => {
 
 export const ValidatorStringLength = () => {};
 
-const validateHost = (value: string) => {
+export const ValidateHost = (value: string) => {
+  if (value === undefined) return undefined;
+
+  if (value.length === 0 || value.length > 511) {
+    return "Host length must be between 1 and 511 characters.";
+  }
+
+  var regExpHostname = new RegExp(
+    /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/,
+  ); // RFC 1123
+
+  var regResultHostname = regExpHostname.exec(value);
+  if (regResultHostname === null) {
+    return "Domain is invalid.";
+  }
+
+  return undefined;
+};
+
+const validateHostWithWildcardPrefix = (value: string) => {
   if (value.length === 0 || value.length > 511) {
     return "Host length must be between 1 and 511 characters.";
   }
@@ -198,7 +211,7 @@ const validateHost = (value: string) => {
   return undefined;
 };
 
-export const KValidatorHosts = (
+export const KValidatorHostsWithWildcardPrefix = (
   values: Immutable.List<string>,
   _allValues?: any,
   _props?: any,
@@ -208,7 +221,7 @@ export const KValidatorHosts = (
     return undefined;
   }
 
-  const errors = values.map((host) => (host === "*" ? undefined : validateHost(host))).toArray();
+  const errors = values.map((host) => (host === "*" ? undefined : validateHostWithWildcardPrefix(host))).toArray();
 
   return errors.filter((x) => !!x).length > 0 ? errors : undefined;
 };
