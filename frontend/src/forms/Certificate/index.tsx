@@ -134,7 +134,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
             rows={12}
             name="selfManagedCertPrivateKey"
             margin="normal"
-            validate={[ValidatorRequired]}
+            validate={ValidatorRequired}
           />
         </Grid>
       </>
@@ -196,7 +196,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
             component={KAutoCompleteSingleValue}
             name="httpsCertIssuer"
             margin="normal"
-            validate={[ValidatorRequired]}
+            validate={ValidatorRequired}
             options={httpsCertIssuerOptions}
           ></Field>
         </Grid>
@@ -283,7 +283,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
               name="name"
               id="certificate-name"
               margin="normal"
-              validate={[ValidatorRequired]}
+              validate={ValidatorRequired}
             />
           </Grid>
           <Grid item md={12}>
@@ -304,7 +304,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
               rows={12}
               name="domains"
               margin="normal"
-              validate={managedType === selfManaged ? [] : [ValidatorRequired]}
+              validate={managedType === selfManaged ? [] : ValidatorRequired}
             />
           </Grid>
           {managedType === selfManaged ? this.renderSelfManagedFields() : null}

@@ -20,6 +20,7 @@ import SubjectIcon from "@material-ui/icons/Subject";
 import Dashboard from "@material-ui/icons/Dashboard";
 import Visibility from "@material-ui/icons/Visibility";
 import VisibilityOff from "@material-ui/icons/VisibilityOff";
+import GitHubIcon from "@material-ui/icons/GitHub";
 import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import { grey } from "@material-ui/core/colors";
 import { SvgIcon, SvgIconProps, Theme } from "@material-ui/core";
@@ -322,9 +323,9 @@ export const KalmIngressIcon = withStyles(styles)((props: ColorIconsProps) => {
 });
 
 export const KalmGridViewIcon = withStyles(styles)((props: ColorIconsProps) => {
-  const { classes, fontSize, style } = props;
+  const { fontSize, style, className } = props;
   return (
-    <SvgIcon className={classes.default} fontSize={fontSize} style={style} viewBox={"0 0 36 36"}>
+    <SvgIcon className={className} fontSize={fontSize} style={style} viewBox={"0 0 36 36"}>
       <rect x="4" y="4" width="12" height="12" rx="2" ry="2"></rect>
       <rect x="20" y="4" width="12" height="12" rx="2" ry="2"></rect>
       <rect x="4" y="20" width="12" height="12" rx="2" ry="2"></rect>
@@ -335,9 +336,9 @@ export const KalmGridViewIcon = withStyles(styles)((props: ColorIconsProps) => {
 });
 
 export const KalmListViewIcon = withStyles(styles)((props: ColorIconsProps) => {
-  const { classes, fontSize, style } = props;
+  const { fontSize, style, className } = props;
   return (
-    <SvgIcon className={classes.default} fontSize={fontSize} style={style} viewBox={"0 0 36 36"}>
+    <SvgIcon className={className} fontSize={fontSize} style={style} viewBox={"0 0 36 36"}>
       <rect x="2" y="8" width="2" height="2"></rect>
       <path d="M7,10H31a1,1,0,0,0,0-2H7a1,1,0,0,0,0,2Z"></path>
       <rect x="2" y="14" width="2" height="2"></rect>
@@ -397,4 +398,10 @@ export const VisibilityOffIcon = withStyles(styles)((props: ColorIconsProps) => 
   const { fontSize, style } = props;
   const className = getClassNameByColorName(props);
   return <VisibilityOff className={className} fontSize={fontSize} style={style} />;
+});
+
+export const GithubIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return <GitHubIcon className={className} fontSize={fontSize} style={style} />;
 });

@@ -74,7 +74,7 @@ class RegistryFormRaw extends React.PureComponent<
             <Field
               name="username"
               label="Username"
-              autocomplete="off"
+              autoComplete="off"
               component={KRenderTextField}
               validate={ValidatorRequired}
               placeholder="Please type the registry username"
@@ -85,7 +85,7 @@ class RegistryFormRaw extends React.PureComponent<
               type="password"
               name="password"
               label="Password"
-              autocomplete="off"
+              autoComplete="off"
               component={KRenderTextField}
               validate={ValidatorRequired}
               placeholder="Please type the registry password"

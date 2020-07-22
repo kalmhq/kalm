@@ -182,6 +182,8 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
       case "applications":
       case "":
         return "Applications";
+      case "sso":
+        return "SSO";
       default:
         return path[0].toUpperCase() + path.slice(1);
     }

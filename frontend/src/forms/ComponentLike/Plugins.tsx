@@ -144,7 +144,7 @@ class RenderPlugins extends React.PureComponent<Props, State> {
               label="Name"
               disabled={true}
               margin
-              validate={[ValidatorRequired]}
+              validate={ValidatorRequired}
             />
           </Grid>
         </Grid> */}

@@ -3,7 +3,7 @@ import { indigo } from "@material-ui/core/colors";
 import withStyles from "@material-ui/core/styles/withStyles";
 import { deleteApplicationAction } from "actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
-import { blinkTopProgressAction } from "actions/settings";
+import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
 import { push } from "connected-react-router";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import Immutable from "immutable";
@@ -55,12 +55,14 @@ const mapStateToProps = (state: RootState) => {
   const routesMap = state.get("routes").get("httpRoutes");
   const componentsMap = state.get("components").get("components");
   const clusterInfo = state.get("cluster").get("info");
+  const usingApplicationCard = state.get("settings").get("usingApplicationCard");
   return {
     clusterInfo,
     internalEndpointsDialogData: internalEndpointsDialog ? internalEndpointsDialog.get("data") : {},
     externalEndpointsDialogData: externalEndpointsDialog ? externalEndpointsDialog.get("data") : {},
     routesMap,
     componentsMap,
+    usingApplicationCard,
   };
 };
 
@@ -69,7 +71,6 @@ interface Props extends WithStyles<typeof styles>, WithNamespaceProps, ReturnTyp
 interface State {
   isDeleteConfirmDialogOpen: boolean;
   deletingApplicationListItem?: ApplicationDetails;
-  usingCard: boolean;
 }
 
 interface RowData extends ApplicationDetails {
@@ -82,7 +83,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   private defaultState = {
     isDeleteConfirmDialogOpen: false,
     deletingApplicationListItem: undefined,
-    usingCard: false,
   };
 
   constructor(props: Props) {
@@ -327,7 +327,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   private renderSecondHeaderRight() {
-    const { usingCard } = this.state;
+    const { usingApplicationCard, dispatch } = this.props;
     return (
       <>
         {/* <H4>Applications</H4> */}
@@ -342,13 +342,19 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           Add Application
         </Button>
         <IconButtonWithTooltip
-          tooltipTitle={usingCard ? "Using List View" : "Using Card View"}
-          aria-label={usingCard ? "Using List View" : "Using Card View"}
+          tooltipTitle={usingApplicationCard ? "Using List View" : "Using Card View"}
+          aria-label={usingApplicationCard ? "Using List View" : "Using Card View"}
           size="small"
-          onClick={() => this.setState({ usingCard: !usingCard })}
+          onClick={() =>
+            dispatch(
+              setSettingsAction({
+                usingApplicationCard: !usingApplicationCard,
+              }),
+            )
+          }
           style={{ marginLeft: 12 }}
         >
-          {usingCard ? <KalmGridViewIcon /> : <KalmListViewIcon />}
+          {usingApplicationCard ? <KalmGridViewIcon /> : <KalmListViewIcon />}
         </IconButtonWithTooltip>
       </>
     );
@@ -483,7 +489,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     const { applications, componentsMap, routesMap, activeNamespaceName } = this.props;
     const GridRow = (app: ApplicationDetails, index: number) => {
       return (
-        <Grid key={index} item sm={5} md={4} lg={3}>
+        <Grid key={index} item sm={6} md={4} lg={3}>
           <ApplicationCard
             application={app}
             componentsMap={componentsMap}
@@ -495,7 +501,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     };
 
     return (
-      <Grid container spacing={1}>
+      <Grid container spacing={2}>
         {applications.map((app, index) => {
           return GridRow(app, index);
         })}
@@ -504,8 +510,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { isNamespaceLoading, isNamespaceFirstLoaded, applications } = this.props;
-    const { usingCard } = this.state;
+    const { isNamespaceLoading, isNamespaceFirstLoaded, applications, usingApplicationCard } = this.props;
     return (
       <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
         {this.renderDeleteConfirmDialog()}
@@ -514,7 +519,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
             <Loading />
           ) : applications.size === 0 ? (
             this.renderEmpty()
-          ) : usingCard ? (
+          ) : usingApplicationCard ? (
             this.renderGrid()
           ) : (
             this.renderList()

@@ -92,7 +92,7 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
               name={`${member}.host`}
               component={KAutoCompleteSingleValue}
               label="Choose a target"
-              validate={[ValidatorRequired]}
+              validate={ValidatorRequired}
               options={options}
               noOptionsText={
                 <Alert severity="warning">

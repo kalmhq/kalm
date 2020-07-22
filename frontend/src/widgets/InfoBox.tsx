@@ -1,12 +1,11 @@
 import { createStyles, Paper, Theme, withStyles, WithStyles, Box, Grid } from "@material-ui/core";
 import React from "react";
-import { indigo } from "@material-ui/core/colors";
 import { H5, Body, Caption } from "widgets/Label";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      backgroundColor: indigo[50],
+      backgroundColor: theme.palette.grey[50],
     },
   });
 

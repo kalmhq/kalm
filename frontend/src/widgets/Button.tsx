@@ -78,6 +78,8 @@ export const ButtonGrey = (props: ButtonProps) => {
 type CustomizedButtonProps = ButtonProps &
   WithStyles<typeof customizedButtonStyle> & {
     pending?: boolean;
+    to?: string;
+    component?: React.ReactNode;
   };
 
 type RaisedButtonProps = ButtonProps & {
@@ -119,15 +121,16 @@ const DangerButtonStyles = (theme: Theme) =>
     buttonRoot: {
       minWidth: 64,
       color: theme.palette.error.main,
+      whiteSpace: "nowrap",
       border: 0,
     },
     text: {
       color: theme.palette.error.main,
       fontWeight: theme.typography.fontWeightBold,
+      whiteSpace: "nowrap",
       maxWidth: 0,
       opacity: 0,
       marginLeft: 0,
-      whiteSpace: "nowrap",
       transition: theme.transitions.create(["max-width", "opacity", "margin-left"], {
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.leavingScreen,
@@ -143,7 +146,7 @@ const DangerButtonStyles = (theme: Theme) =>
       }),
     },
     show: {
-      maxWidth: 80,
+      maxWidth: 200,
       opacity: 1,
       transition: theme.transitions.create(["max-width", "opacity", "min-width", "padding-left"], {
         easing: theme.transitions.easing.sharp,

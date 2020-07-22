@@ -117,7 +117,7 @@ class RenderPorts extends React.PureComponent<Props> {
                   name={`${field}.protocol`}
                   component={RenderSelectField}
                   label="Protocol"
-                  validate={[ValidatorRequired]}
+                  validate={ValidatorRequired}
                   options={[
                     { value: portTypeTCP, text: portTypeTCP },
                     { value: portTypeUDP, text: portTypeUDP },
@@ -146,7 +146,7 @@ class RenderPorts extends React.PureComponent<Props> {
                           label="Container port"
                           placeholder="Port number between 1-65535"
                           required
-                          validate={[ValidatorRequired]}
+                          validate={ValidatorRequired}
                           normalize={NormalizePort}
                         />
                       </Grid>
