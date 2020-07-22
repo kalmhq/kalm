@@ -121,6 +121,7 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
         {hasWriterRole ? (
           <IconButtonWithTooltip
             tooltipTitle="Delete"
+            size="small"
             onClick={async () => {
               blinkTopProgressAction();
 

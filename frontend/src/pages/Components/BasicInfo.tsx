@@ -228,7 +228,6 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
               tooltipPlacement="top"
               tooltipTitle="Add Exposed Ports"
               aria-label="add-exposed-ports"
-              size="small"
               onClick={() =>
                 this.props.dispatch(
                   push(
