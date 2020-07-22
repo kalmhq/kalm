@@ -284,8 +284,8 @@ export const formatMemory = (value: number, si?: boolean): string => {
   // } while (Math.abs(value) >= thresh && u < units.length - 1);
   // return value.toFixed(1) + " " + units[u];
 
-  const MiBytes = 1024 * 1024;
-  return (value / MiBytes).toFixed(0) + " Mi";
+  const gigaBytes = 1024 * 1024 * 1024;
+  return (value / gigaBytes).toFixed(0) + " Gi";
 };
 
 export const formatNumerical = (value: number): string => {
