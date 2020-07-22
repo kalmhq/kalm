@@ -151,7 +151,7 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
     label,
     options,
     helperText,
-    meta: { touched, invalid, error },
+    meta: { touched, invalid, error, active },
     classes,
     placeholder,
     InputLabelProps,
@@ -163,11 +163,11 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
   const errorsArray = errors as (string | undefined)[];
   let errorText: string | undefined = undefined;
 
-  if (touched && invalid && errorsIsArray) {
+  if (touched && invalid && errorsIsArray && !active) {
     errorText = errorsArray.find((x) => x !== undefined);
   }
 
-  if (typeof errors === "string") {
+  if (typeof errors === "string" && !active) {
     errorText = errors;
   }
 
@@ -219,7 +219,7 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
             {...params}
             margin="dense"
             variant="outlined"
-            error={touched && invalid}
+            error={touched && invalid && !active}
             label={label}
             InputLabelProps={InputLabelProps}
             placeholder={placeholder}

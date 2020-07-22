@@ -120,7 +120,7 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
         <Box color={touched && invalid ? "error.main" : undefined}>
           <Button
             variant={touched && invalid ? "outlined" : "text"}
-            size="small"
+            style={{ padding: 12, width: "100%" }}
             onClick={() => this.privateOpenEditDialog(file, index)}
             color="inherit"
           >
