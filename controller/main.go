@@ -177,6 +177,11 @@ func main() {
 			setupLog.Error(err, "unable to create webhook", "webhook", "Component")
 			os.Exit(1)
 		}
+
+		if err = (&corev1alpha1.SingleSignOnConfig{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "SingleSignOnConfig")
+			os.Exit(1)
+		}
 		setupLog.Info("WEBHOOK enabled")
 	} else {
 		setupLog.Info("WEBHOOK not enabled")

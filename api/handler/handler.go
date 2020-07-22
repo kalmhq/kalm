@@ -118,6 +118,11 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	//gv1Alpha1WithAuth.GET("/deploykeys", h.todo)
 	//gv1Alpha1WithAuth.POST("/deploykeys", h.todo)
 	//gv1Alpha1WithAuth.DELETE("/deploykeys/:name", h.todo)
+
+	gv1Alpha1WithAuth.GET("/sso", h.handleListSSOConfig)
+	gv1Alpha1WithAuth.DELETE("/sso", h.handleDeleteSSOConfig)
+	gv1Alpha1WithAuth.PUT("/sso", h.handleUpdateSSOConfig)
+	gv1Alpha1WithAuth.POST("/sso", h.handleCreateSSOConfig)
 }
 
 // use user token and permission

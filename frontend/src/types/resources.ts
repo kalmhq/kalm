@@ -1,9 +1,10 @@
 import { Node } from "types/node";
-import { ApplicationDetails, ApplicationComponentDetails } from "./application";
+import { ApplicationComponentDetails, ApplicationDetails } from "./application";
 import { HttpRoute } from "./route";
 import { Certificate } from "./certificate";
 import { RegistryType } from "./registry";
 import { Disk } from "./disk";
+import { SSOConfig } from "types/sso";
 
 export const WATCHED_RESOURCE_CHANGE = "WATCHED_RESOURCE_CHANGE";
 
@@ -18,6 +19,7 @@ export const RESOURCE_TYPE_HTTP_ROUTE = "HttpRoute";
 export const RESOURCE_TYPE_HTTPS_CERT = "HttpsCert";
 export const RESOURCE_TYPE_REGISTRY = "Registry";
 export const RESOURCE_TYPE_VOLUME = "Volume";
+export const RESOURCE_TYPE_SSO = "SingleSignOnConfig";
 
 export type ResourceActionType =
   | typeof RESOURCE_ACTION_UPDATE
@@ -89,6 +91,15 @@ export interface VolumeResourceAction {
   };
 }
 
+export interface SSOConfigResourceAction {
+  type: typeof WATCHED_RESOURCE_CHANGE;
+  kind: typeof RESOURCE_TYPE_SSO;
+  payload: {
+    action: ResourceActionType;
+    data: SSOConfig;
+  };
+}
+
 export type ResourceActions =
   | NodeResourceAction
   | ApplicationResourceAction
@@ -96,4 +107,5 @@ export type ResourceActions =
   | HttpRouteResourceAction
   | HttpsCertResourceAction
   | RegistryResourceAction
-  | VolumeResourceAction;
+  | VolumeResourceAction
+  | SSOConfigResourceAction;

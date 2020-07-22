@@ -117,7 +117,7 @@ class RenderEnvs extends React.PureComponent<Props> {
                     name={`${field}.value`}
                     label="Value"
                     margin
-                    validate={[ValidatorRequired]}
+                    validate={ValidatorRequired}
                     component={KRenderTextField}
                   />
                 </Grid>

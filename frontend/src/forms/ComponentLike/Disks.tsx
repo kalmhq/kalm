@@ -6,13 +6,6 @@ import { RootState } from "reducers";
 import { arrayPush, WrappedFieldArrayProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
 import { getComponentFormVolumeOptions } from "selectors/component";
-import {
-  Volume,
-  VolumeTypePersistentVolumeClaim,
-  VolumeTypePersistentVolumeClaimNew,
-  VolumeTypeTemporaryDisk,
-  VolumeTypeTemporaryMemory,
-} from "types/componentTemplate";
 import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { RenderSelectField } from "../Basic/select";
@@ -22,6 +15,13 @@ import { KTooltip } from "forms/Application/KTooltip";
 import HelpIcon from "@material-ui/icons/Help";
 import { grey } from "@material-ui/core/colors";
 import { sizeStringToGi } from "utils/sizeConv";
+import {
+  Volume,
+  VolumeTypePersistentVolumeClaim,
+  VolumeTypePersistentVolumeClaimNew,
+  VolumeTypeTemporaryDisk,
+  VolumeTypeTemporaryMemory,
+} from "types/componentTemplate";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -104,7 +104,7 @@ class RenderVolumes extends React.PureComponent<Props> {
         name={`${member}.type`}
         component={RenderSelectField}
         label="Type"
-        validate={[ValidatorRequired]}
+        validate={ValidatorRequired}
         placeholder="Select a volume type"
         defaultValue={VolumeTypePersistentVolumeClaimNew}
         options={[
@@ -120,7 +120,7 @@ class RenderVolumes extends React.PureComponent<Props> {
         name={`${member}.path`}
         label="Mount Path"
         margin
-        validate={[ValidatorRequired]}
+        validate={ValidatorRequired}
       />,
     ];
 
@@ -133,7 +133,7 @@ class RenderVolumes extends React.PureComponent<Props> {
           name={`${member}.claimName`}
           component={RenderSelectField}
           label="Claim Name"
-          // validate={[ValidatorRequired]}
+          // validate={ValidatorRequired}
           placeholder="Select a Claim Name"
           options={this.getClaimNameOptions(disk)}
         />,

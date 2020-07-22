@@ -55,3 +55,9 @@ export const sizeStringToGi = (str: string) => {
   const gigaBytes = 1024 * 1024 * 1024;
   return (num / gigaBytes).toFixed(3);
 };
+
+export const sizeStringToMi = (str: string) => {
+  const num = sizeStringToNumber(str);
+  const MiBytes = 1024 * 1024;
+  return (num / MiBytes).toFixed(0);
+};

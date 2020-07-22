@@ -20,6 +20,8 @@ a {
     text-decoration-line: none;
 }
 
-code {
+code,
+pre {
+    margin: 0;
     font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
