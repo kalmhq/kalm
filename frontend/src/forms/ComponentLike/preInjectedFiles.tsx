@@ -174,7 +174,7 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
           const injectedFile = fields.get(index);
 
           return (
-            <Grid container spacing={1} alignItems="center" key={member}>
+            <Grid container spacing={1} key={member}>
               <Grid item md={5}>
                 <Field
                   name={`${member}.mountPath`}
@@ -201,7 +201,6 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
                   tooltipPlacement="top"
                   tooltipTitle="Edit"
                   aria-label="edit"
-                  size="small"
                   onClick={() => this.privateOpenEditDialog(injectedFile, index)}
                 >
                   <EditIcon />
@@ -210,7 +209,6 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
                   tooltipPlacement="top"
                   tooltipTitle="Delete"
                   aria-label="delete"
-                  size="small"
                   onClick={() => dispatch(arrayRemove(form, "preInjectedFiles", index))}
                 >
                   <DeleteIcon />

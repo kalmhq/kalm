@@ -82,7 +82,6 @@ class ServiceAccountSecretRaw extends React.PureComponent<Props, State> {
         <FlexRowItemCenterBox justifyContent="space-between">
           <Typography variant="h6">{title}</Typography>
           <IconButtonWithTooltip
-            size="small"
             tooltipTitle="Copy"
             onClick={() => {
               this.copyText(content);

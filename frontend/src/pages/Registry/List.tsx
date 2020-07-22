@@ -133,7 +133,6 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
       <>
         <IconButtonWithTooltip
           tooltipTitle={"Edit"}
-          size="small"
           onClick={() => {
             const registry = registries.find((r) => r.get("name") === row.get("name"));
             this.setState({
@@ -145,7 +144,6 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
           <EditIcon />
         </IconButtonWithTooltip>
         <IconButtonWithTooltip
-          size="small"
           tooltipTitle={"Delete"}
           onClick={() => {
             this.showDeleteConfirmDialog(row.get("name"));
