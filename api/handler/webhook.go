@@ -15,28 +15,17 @@ import (
 )
 
 func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
-	deployKeyName := c.QueryParam("deploy-key")
+	deployKeyToken := c.QueryParam("deploy-key")
 	ns := c.QueryParam("app")
 	componentName := c.QueryParam("component")
 	imgTag := c.QueryParam("image-tag")
 
-	if existEmpty(deployKeyName, ns, componentName, imgTag) {
+	if existEmpty(deployKeyToken, ns, componentName, imgTag) {
 		return c.NoContent(http.StatusBadRequest)
 	}
 
-	// API should has permission to list DeployKeys
-	cSet, err := kubernetes.NewForConfig(h.clientManager.ClusterConfig)
-
-	deployKey := v1alpha1.DeployKey{}
-	deployKeysAbsPath := fmt.Sprintf("/apis/core.kalm.dev/v1alpha1/deploykeys/%s", deployKeyName)
-	err = cSet.RESTClient().Get().AbsPath(deployKeysAbsPath).Do().Into(&deployKey)
-	if err != nil {
-		return err
-	}
-
-	token := deployKey.Spec.ServiceAccountToken
 	deployKeyConfig, err := h.clientManager.GetClientConfigWithAuthInfo(
-		&api.AuthInfo{Token: token},
+		&api.AuthInfo{Token: deployKeyToken},
 	)
 	if err != nil {
 		return err
