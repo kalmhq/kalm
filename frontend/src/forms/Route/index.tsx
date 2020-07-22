@@ -101,6 +101,9 @@ interface State {
   isValidCertificationUnfolded: boolean;
 }
 
+const hostsValidators = [ValidatorRequired, KValidatorHostsWithWildcardPrefix];
+const pathsValidators = [ValidatorRequired, KValidatorPaths];
+
 class RouteFormRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -313,7 +316,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       component={KFreeSoloAutoCompleteMultiValues}
                       name="hosts"
                       margin="normal"
-                      validate={[ValidatorRequired, KValidatorHostsWithWildcardPrefix]}
+                      validate={hostsValidators}
                       placeholder="Type a host"
                       helperText={
                         <>
@@ -339,7 +342,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       component={KFreeSoloAutoCompleteMultiValues}
                       name="paths"
                       margin="normal"
-                      validate={[ValidatorRequired, KValidatorPaths]}
+                      validate={pathsValidators}
                       placeholder="Type a path"
                       helperText='Allow to configure multiple paths. Each path must begin with "/".'
                     />

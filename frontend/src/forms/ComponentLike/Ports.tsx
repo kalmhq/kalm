@@ -57,6 +57,8 @@ const ValidatorPorts = (values: Immutable.List<ComponentLikePort>, _allValues?: 
   }
 };
 
+const nameValidators = [ValidatorRequired, ValidatorServiceName];
+
 class RenderPorts extends React.PureComponent<Props> {
   public render() {
     const {
@@ -108,7 +110,7 @@ class RenderPorts extends React.PureComponent<Props> {
                   name={`${field}.name`}
                   label="Name"
                   placeholder="Port Name"
-                  validate={[ValidatorRequired, ValidatorServiceName]}
+                  validate={nameValidators}
                   required
                 />
               </Grid>

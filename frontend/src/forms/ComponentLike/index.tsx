@@ -173,6 +173,8 @@ export interface Props
 
 interface State {}
 
+const nameValidators = [ValidatorRequired, ValidatorName];
+
 class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private tabs = tabs;
 
@@ -217,7 +219,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             placeholder="* * * * *"
             label="Cronjob Schedule"
             required
-            validate={[ValidatorSchedule]}
+            validate={ValidatorSchedule}
             helperText={
               <span>
                 <a href="https://en.wikipedia.org/wiki/Cron" target="_blank" rel="noopener noreferrer">
@@ -640,7 +642,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             component={RenderComplexValueTextDebounceField}
             name="cpu"
             label="CPU Limit"
-            validate={[ValidatorCPU]}
+            validate={ValidatorCPU}
             // normalize={NormalizeCPU}
             placeholder="Please type CPU limit"
             type="number"
@@ -667,7 +669,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             name="memory"
             label="Memory Limit"
             margin
-            validate={[ValidatorMemory]}
+            validate={ValidatorMemory}
             // normalize={NormalizeMemory}
             placeholder="Please type memory limit"
             type="number"
@@ -864,7 +866,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             name="name"
             label="Name"
             margin
-            validate={[ValidatorRequired, ValidatorName]}
+            validate={nameValidators}
             disabled={isEdit}
             helperText={
               isEdit

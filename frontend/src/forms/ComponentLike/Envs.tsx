@@ -24,6 +24,8 @@ interface FieldArrayProps extends DispatchProp {
 
 interface Props extends WrappedFieldArrayProps<SharedEnv>, FieldArrayComponentHackType, FieldArrayProps {}
 
+const nameValidators = [ValidatorRequired, ValidatorEnvName];
+
 class RenderEnvs extends React.PureComponent<Props> {
   private nameAutoCompleteOptions: string[];
 
@@ -109,7 +111,7 @@ class RenderEnvs extends React.PureComponent<Props> {
                     label="Name"
                     component={RenderAutoCompleteFreeSolo}
                     margin
-                    validate={[ValidatorRequired, ValidatorEnvName]}
+                    validate={nameValidators}
                   />
                 </Grid>
                 <Grid item xs={5}>

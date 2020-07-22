@@ -61,6 +61,8 @@ export interface Props
     WithStyles<typeof styles>,
     OwnProps {}
 
+const nameValidators = [ValidatorRequired, ValidatorName];
+
 class ApplicationFormRaw extends React.PureComponent<Props> {
   private renderBasic() {
     const { isEdit, name } = this.props;
@@ -72,7 +74,7 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
           disabled={isEdit}
           component={KRenderDebounceTextField}
           autoFocus={true}
-          validate={[ValidatorRequired, ValidatorName]}
+          validate={nameValidators}
           helperText={
             isEdit
               ? "Can't modify name"
