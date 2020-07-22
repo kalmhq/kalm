@@ -4,11 +4,11 @@
 
 Kalm is an easy way to manage applications on Kubernetes. Kalm provides a web UI for common workflows including creating and updating applications, scaling, routing, scheduling jobs, auto-healing, and setting up HTTPS certificates.
 
-In addition, Kalm defines a set of CRDs that simplifies the underlying configuration and drastically reduce copy-pasting and boilerplate, as well as hooking up useful operators such as [cert-manager](https://cert-manager.io/docs/) and [istio](https://istio.io/).
+In addition, Kalm defines a set of CRDs that simplifies the underlying configuration and drastically reduces copy-pasting and boilerplate, as well as hooking up useful operators such as [cert-manager](https://cert-manager.io/docs/) and [istio](https://istio.io/).
 
 ![Kalm](https://kalm.dev/docs/assets/kalm.png)
 
-Kalm is designed for developers and teams who wants a simple and friendly interface to kubernetes without having to build and maintain internal tools.
+Kalm is designed for developers and teams who want a simple and friendly interface for kubernetes without having to build and maintain internal tools.
 
 ## Install
 
