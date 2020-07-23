@@ -97,17 +97,29 @@ func (r *DeployKeyReconcilerTask) Run(req ctrl.Request) error {
 		if err := r.Create(r.ctx, &expectedSA); err != nil {
 			return err
 		}
-	} else {
-		// need do nothing
 	}
 
 	var expectedRoles []v1beta1.Role
 
 	switch deployKey.Spec.Type {
 	case corev1alpha1.DeployKeyTypeAll:
-		//todo
+		var nsList v1.NamespaceList
+		err := r.List(r.ctx, &nsList, client.MatchingLabels{KalmEnableLabelName: KalmEnableLabelValue})
+		if err != nil {
+			return err
+		}
 
+		var nsSlice []string
+		for _, ns := range nsList.Items {
+			nsSlice = append(nsSlice, ns.Name)
+		}
+
+		expectedRoles, err = r.prepareRoles(deployKey.Name, nsSlice)
+		if err != nil {
+			return err
+		}
 	case corev1alpha1.DeployKeyTypeApp:
+		var validNs []string
 		for _, ns := range deployKey.Spec.Content {
 			exist, err := r.isNamespaceExist(ns)
 			if err != nil {
@@ -118,21 +130,12 @@ func (r *DeployKeyReconcilerTask) Run(req ctrl.Request) error {
 				continue
 			}
 
-			expectedRole := v1beta1.Role{
-				ObjectMeta: ctrl.ObjectMeta{
-					Namespace: ns,
-					Name:      deployKey.Name,
-				},
-				Rules: []v1beta1.PolicyRule{
-					{
-						Verbs:     []string{"get", "list", "watch", "update"},
-						APIGroups: []string{"core.kalm.dev"},
-						Resources: []string{"components"},
-					},
-				},
-			}
+			validNs = append(validNs, ns)
+		}
 
-			expectedRoles = append(expectedRoles, expectedRole)
+		expectedRoles, err = r.prepareRoles(deployKey.Name, validNs)
+		if err != nil {
+			return err
 		}
 	case corev1alpha1.DeployKeyTypeComponent:
 		ns2ComponentsMap := make(map[string][]string)
@@ -307,6 +310,31 @@ func (r *DeployKeyReconcilerTask) isNamespaceExist(namespace string) (bool, erro
 	}
 
 	return true, nil
+}
+
+func (r *DeployKeyReconcilerTask) prepareRoles(roleName string, nsList []string) ([]v1beta1.Role, error) {
+
+	var rst []v1beta1.Role
+	for _, ns := range nsList {
+
+		expectedRole := v1beta1.Role{
+			ObjectMeta: ctrl.ObjectMeta{
+				Namespace: ns,
+				Name:      roleName,
+			},
+			Rules: []v1beta1.PolicyRule{
+				{
+					Verbs:     []string{"get", "list", "watch", "update"},
+					APIGroups: []string{"core.kalm.dev"},
+					Resources: []string{"components"},
+				},
+			},
+		}
+
+		rst = append(rst, expectedRole)
+	}
+
+	return rst, nil
 }
 
 func (r *DeployKeyReconciler) SetupWithManager(mgr ctrl.Manager) error {
