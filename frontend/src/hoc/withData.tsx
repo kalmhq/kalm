@@ -12,6 +12,7 @@ import {
   RESOURCE_TYPE_HTTPS_CERT,
   RESOURCE_TYPE_NODE,
   RESOURCE_TYPE_REGISTRY,
+  RESOURCE_TYPE_SSO,
   RESOURCE_TYPE_VOLUME,
   ResourceActionType,
   WATCHED_RESOURCE_CHANGE,
@@ -26,6 +27,7 @@ import { loadRegistriesAction } from "actions/registries";
 import { loadRoleBindingsAction } from "actions/user";
 import { loadServicesAction } from "actions/service";
 import { throttle } from "utils";
+import { loadSSOConfigAction } from "actions/sso";
 
 export interface WatchResMessage {
   namespace: string;
@@ -64,6 +66,7 @@ class WithDataRaw extends React.PureComponent<Props> {
     dispatch(loadStorageClassesAction());
 
     // dispatch(loadComponentPluginsAction());
+    dispatch(loadSSOConfigAction());
   }
 
   private connectWebsocket() {
@@ -164,6 +167,17 @@ class WithDataRaw extends React.PureComponent<Props> {
           dispatch({
             type: WATCHED_RESOURCE_CHANGE,
             kind: RESOURCE_TYPE_VOLUME,
+            payload: {
+              action: data.action,
+              data: Immutable.fromJS(data.data),
+            },
+          });
+          break;
+        }
+        case RESOURCE_TYPE_SSO: {
+          dispatch({
+            type: WATCHED_RESOURCE_CHANGE,
+            kind: RESOURCE_TYPE_SSO,
             payload: {
               action: data.action,
               data: Immutable.fromJS(data.data),

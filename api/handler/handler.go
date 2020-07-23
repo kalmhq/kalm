@@ -114,10 +114,15 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gv1Alpha1WithAuth.GET("/volumes/available/simple-workload", h.handleAvailableVolsForSimpleWorkload)
 	gv1Alpha1WithAuth.GET("/volumes/available/sts/:namespace", h.handleAvailableVolsForSts)
 
-	//todo crud of DeployKey
-	//gv1Alpha1WithAuth.GET("/deploykeys", h.todo)
-	//gv1Alpha1WithAuth.POST("/deploykeys", h.todo)
-	//gv1Alpha1WithAuth.DELETE("/deploykeys/:name", h.todo)
+	// crud of DeployKey
+	gv1Alpha1WithAuth.GET("/deploykeys/:namespace", h.handleListDeployKeys)
+	gv1Alpha1WithAuth.POST("/deploykeys", h.handleCreateDeployKey)
+	gv1Alpha1WithAuth.DELETE("/deploykeys/:namespace/:name", h.handleDeleteDeployKey)
+
+	gv1Alpha1WithAuth.GET("/sso", h.handleListSSOConfig)
+	gv1Alpha1WithAuth.DELETE("/sso", h.handleDeleteSSOConfig)
+	gv1Alpha1WithAuth.PUT("/sso", h.handleUpdateSSOConfig)
+	gv1Alpha1WithAuth.POST("/sso", h.handleCreateSSOConfig)
 }
 
 // use user token and permission

@@ -53,7 +53,7 @@ export class KRenderTextField extends React.PureComponent<withDebounceProps & Pr
         InputLabelProps={{
           shrink: true,
         }}
-        helperText={showError ? error : helperText ? helperText : ""}
+        helperText={showError ? error : helperText ? helperText : " "}
         margin="dense"
         variant="outlined"
         InputProps={inputProps}

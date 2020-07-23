@@ -116,7 +116,7 @@ storiesOf("Widgets/HttpRouteDestinations", module)
         name={"name"}
         component={KAutoCompleteSingleValue}
         label="Choose a target"
-        // validate={[ValidatorRequired]}
+        // validate={ValidatorRequired}
         options={options}
         noOptionsText={
           <Alert severity="warning">

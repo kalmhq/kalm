@@ -21,5 +21,5 @@ export const HttpStatusCodeLineChart = (props: BaseLineChartProps) => {
       }
     }
   }
-  return <BaseLineChart fill={false} {...props} />;
+  return <BaseLineChart fill={false} {...props} yAxesWidth={50} />;
 };

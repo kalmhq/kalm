@@ -8,7 +8,7 @@ import { KRadioGroupRender } from "forms/Basic/radio";
 import { shouldError } from "forms/common";
 import { ROUTE_FORM_ID } from "forms/formIDs";
 import {
-  KValidatorHosts,
+  KValidatorHostsWithWildcardPrefix,
   KValidatorPaths,
   ValidatorAtLeastOneHttpRouteDestination,
   ValidatorListNotEmpty,
@@ -100,6 +100,9 @@ interface State {
   isAdvancedPartUnfolded: boolean;
   isValidCertificationUnfolded: boolean;
 }
+
+const hostsValidators = [ValidatorRequired, KValidatorHostsWithWildcardPrefix];
+const pathsValidators = [ValidatorRequired, KValidatorPaths];
 
 class RouteFormRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
@@ -298,7 +301,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
     return (
       <div className={classes.root}>
         <Grid container spacing={2}>
-          <Grid item xs={8}>
+          <Grid item xs={12}>
             <Prompt when={dirty && !submitSucceeded} message="Are you sure to leave without saving changes?" />
             <Box mb={2}>
               <KPanel
@@ -313,7 +316,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       component={KFreeSoloAutoCompleteMultiValues}
                       name="hosts"
                       margin="normal"
-                      validate={[ValidatorRequired, KValidatorHosts]}
+                      validate={hostsValidators}
                       placeholder="Type a host"
                       helperText={
                         <>
@@ -339,7 +342,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       component={KFreeSoloAutoCompleteMultiValues}
                       name="paths"
                       margin="normal"
-                      validate={[ValidatorRequired, KValidatorPaths]}
+                      validate={pathsValidators}
                       placeholder="Type a path"
                       helperText='Allow to configure multiple paths. Each path must begin with "/".'
                     />

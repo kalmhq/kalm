@@ -50,13 +50,13 @@ export default {};
 //         label="Name"
 //         component={RenderAutoCompleteFreeSolo}
 //         margin
-//         validate={[ValidatorRequired]}
+//         validate={ValidatorRequired}
 //       />,
 //       <Field
 //         name={`${member}.value`}
 //         label="Value"
 //         margin
-//         validate={[ValidatorRequired]}
+//         validate={ValidatorRequired}
 //         component={KRenderTextField}
 //       />
 //     ];

@@ -179,13 +179,7 @@ export const SecretValueLabel = withStyles(SecretLabelStyles)((props: SecretLabe
   const tooltips = showSecret ? "Hide Value" : "Show Value";
   return (
     <Box className={classes.root}>
-      <IconButtonWithTooltip
-        tooltipTitle={tooltips}
-        aria-label="show value"
-        size="small"
-        onClick={handleClick}
-        edge="end"
-      >
+      <IconButtonWithTooltip tooltipTitle={tooltips} aria-label="show value" onClick={handleClick} edge="end">
         {showSecret ? <VisibilityIcon fontSize="small" /> : <VisibilityOffIcon fontSize="small" />}
       </IconButtonWithTooltip>
       <Box className={classes.valueWrapper}>{showSecret ? children : null}</Box>

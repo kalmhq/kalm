@@ -120,7 +120,7 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
         <Box color={touched && invalid ? "error.main" : undefined}>
           <Button
             variant={touched && invalid ? "outlined" : "text"}
-            size="small"
+            style={{ padding: 12, width: "100%" }}
             onClick={() => this.privateOpenEditDialog(file, index)}
             color="inherit"
           >
@@ -174,8 +174,8 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
           const injectedFile = fields.get(index);
 
           return (
-            <Grid container spacing={1} alignItems="center" key={member}>
-              <Grid item md={5}>
+            <Grid container spacing={1} key={member}>
+              <Grid item lg={5}>
                 <Field
                   name={`${member}.mountPath`}
                   label="Mount Path"
@@ -184,10 +184,10 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
                   validate={validateMountPath}
                 />
               </Grid>
-              <Grid item md={2}>
+              <Grid item lg={2}>
                 <Field name={`${member}.readonly`} component={KBoolCheckboxRender} label="Read Only"></Field>
               </Grid>
-              <Grid item md={3}>
+              <Grid item lg={3}>
                 <Field
                   name={`${member}.content`}
                   component={this.renderContent}
@@ -196,12 +196,11 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
                   index={index}
                 />
               </Grid>
-              <Grid item md={2}>
+              <Grid item lg={2}>
                 <IconButtonWithTooltip
                   tooltipPlacement="top"
                   tooltipTitle="Edit"
                   aria-label="edit"
-                  size="small"
                   onClick={() => this.privateOpenEditDialog(injectedFile, index)}
                 >
                   <EditIcon />
@@ -210,7 +209,6 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
                   tooltipPlacement="top"
                   tooltipTitle="Delete"
                   aria-label="delete"
-                  size="small"
                   onClick={() => dispatch(arrayRemove(form, "preInjectedFiles", index))}
                 >
                   <DeleteIcon />

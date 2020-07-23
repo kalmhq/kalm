@@ -13129,7 +13129,7 @@ export default class MockStore {
         {
           name: "http-health-probe",
           src:
-            'function addProbesForContainer(container) {\n  var config = getConfig();\n\n  if (!config) {\n    return\n  }\n\n  var probe = {\n    httpGet: {\n      path: "/",\n      port: config.port\n    }\n  }\n\n  container.readinessProbe = probe;\n  container.livenessProbe = probe;\n\n  if (config.initialDelaySeconds) {\n    container.readinessProbe.initialDelaySeconds = config.initialDelaySeconds;\n    container.livenessProbe.initialDelaySeconds = config.initialDelaySeconds;\n  }\n\n  if (config.periodSeconds) {\n    container.readinessProbe.periodSeconds = config.periodSeconds;\n    container.livenessProbe.periodSeconds = config.periodSeconds;\n  }\n}\n\nfunction AfterPodTemplateGeneration(pod) {\n  var containers = pod.spec.containers;\n  containers.forEach(addProbesForContainer)\n  return pod;\n}\n',
+            'function addProbesForContainer(container) {\n  var SSOConfig = getConfig();\n\n  if (!SSOConfig) {\n    return\n  }\n\n  var probe = {\n    httpGet: {\n      path: "/",\n      port: SSOConfig.port\n    }\n  }\n\n  container.readinessProbe = probe;\n  container.livenessProbe = probe;\n\n  if (SSOConfig.initialDelaySeconds) {\n    container.readinessProbe.initialDelaySeconds = SSOConfig.initialDelaySeconds;\n    container.livenessProbe.initialDelaySeconds = SSOConfig.initialDelaySeconds;\n  }\n\n  if (SSOConfig.periodSeconds) {\n    container.readinessProbe.periodSeconds = SSOConfig.periodSeconds;\n    container.livenessProbe.periodSeconds = SSOConfig.periodSeconds;\n  }\n}\n\nfunction AfterPodTemplateGeneration(pod) {\n  var containers = pod.spec.containers;\n  containers.forEach(addProbesForContainer)\n  return pod;\n}\n',
           configSchema: {
             properties: {
               initialDelaySeconds: {
@@ -13148,7 +13148,7 @@ export default class MockStore {
         {
           name: "termination-grace",
           src:
-            "function AfterPodTemplateGeneration(pod) {\n  var config = getConfig();\n\n  if (!config) {\n    return;\n  }\n\n  if (config.periodSeconds) {\n    pod.spec.terminationGracePeriodSeconds = config.periodSeconds;\n  }\n\n  return pod;\n}\n",
+            "function AfterPodTemplateGeneration(pod) {\n  var SSOConfig = getConfig();\n\n  if (!SSOConfig) {\n    return;\n  }\n\n  if (SSOConfig.periodSeconds) {\n    pod.spec.terminationGracePeriodSeconds = SSOConfig.periodSeconds;\n  }\n\n  return pod;\n}\n",
           configSchema: {
             properties: {
               periodSeconds: {

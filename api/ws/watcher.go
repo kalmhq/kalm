@@ -30,6 +30,7 @@ func StartWatching(c *Client) {
 	registerWatchHandler(c, &informerCache, &v1alpha1.HttpsCert{}, buildHttpsCertResMessage)
 	registerWatchHandler(c, &informerCache, &v1alpha1.DockerRegistry{}, buildRegistryResMessage)
 	registerWatchHandler(c, &informerCache, &coreV1.PersistentVolumeClaim{}, buildVolumeResMessage)
+	registerWatchHandler(c, &informerCache, &v1alpha1.SingleSignOnConfig{}, buildSSOConfigResMessage)
 
 	informerCache.Start(c.StopWatcher)
 }
@@ -256,5 +257,30 @@ func buildVolumeResMessage(c *Client, action string, objWatched interface{}) (*R
 		Kind:   "Volume",
 		Action: action,
 		Data:   volume,
+	}, nil
+}
+
+func buildSSOConfigResMessage(c *Client, action string, objWatched interface{}) (*ResMessage, error) {
+	ssoConfig, ok := objWatched.(*v1alpha1.SingleSignOnConfig)
+
+	if !ok {
+		return nil, errors.New("convert watch obj to SingleSignOnConfig failed")
+	}
+
+	if ssoConfig.Name != resources.SSO_NAME {
+		// Ignore non SSO_NAME notification
+		return nil, nil
+	}
+
+	builder := resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, log.New())
+	ssoConfigRes, err := builder.GetSSOConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	return &ResMessage{
+		Kind:   "SingleSignOnConfig",
+		Action: action,
+		Data:   ssoConfigRes,
 	}, nil
 }

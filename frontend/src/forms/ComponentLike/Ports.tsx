@@ -57,6 +57,8 @@ const ValidatorPorts = (values: Immutable.List<ComponentLikePort>, _allValues?: 
   }
 };
 
+const nameValidators = [ValidatorRequired, ValidatorServiceName];
+
 class RenderPorts extends React.PureComponent<Props> {
   public render() {
     const {
@@ -108,7 +110,7 @@ class RenderPorts extends React.PureComponent<Props> {
                   name={`${field}.name`}
                   label="Name"
                   placeholder="Port Name"
-                  validate={[ValidatorRequired, ValidatorServiceName]}
+                  validate={nameValidators}
                   required
                 />
               </Grid>
@@ -117,7 +119,7 @@ class RenderPorts extends React.PureComponent<Props> {
                   name={`${field}.protocol`}
                   component={RenderSelectField}
                   label="Protocol"
-                  validate={[ValidatorRequired]}
+                  validate={ValidatorRequired}
                   options={[
                     { value: portTypeTCP, text: portTypeTCP },
                     { value: portTypeUDP, text: portTypeUDP },
@@ -146,7 +148,7 @@ class RenderPorts extends React.PureComponent<Props> {
                           label="Container port"
                           placeholder="Port number between 1-65535"
                           required
-                          validate={[ValidatorRequired]}
+                          validate={ValidatorRequired}
                           normalize={NormalizePort}
                         />
                       </Grid>
@@ -207,7 +209,6 @@ class RenderPorts extends React.PureComponent<Props> {
                   tooltipPlacement="top"
                   tooltipTitle="Delete"
                   aria-label="delete"
-                  size="small"
                   onClick={() => fields.remove(index)}
                 >
                   <DeleteIcon />

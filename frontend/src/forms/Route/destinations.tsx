@@ -92,7 +92,7 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
               name={`${member}.host`}
               component={KAutoCompleteSingleValue}
               label="Choose a target"
-              validate={[ValidatorRequired]}
+              validate={ValidatorRequired}
               options={options}
               noOptionsText={
                 <Alert severity="warning">
@@ -123,7 +123,6 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
               tooltipPlacement="top"
               tooltipTitle="Delete"
               aria-label="delete"
-              size="small"
               onClick={() => fields.remove(index)}
             >
               <DeleteIcon />
