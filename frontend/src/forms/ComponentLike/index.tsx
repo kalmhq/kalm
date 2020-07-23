@@ -200,7 +200,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           label="Replicas"
           helperText=""
           formValueToEditValue={(value: any) => {
-            return value ? value : 1;
+            let displayValue;
+            if (value !== null && value !== undefined) {
+              displayValue = `${value}`.length > 0 ? value : 1;
+            } else {
+              displayValue = 1;
+            }
+
+            return displayValue;
           }}
           editValueToFormValue={(value: any) => {
             return value;

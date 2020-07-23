@@ -377,7 +377,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                         <Field
                           title="Choose methods you need"
                           component={KCheckboxGroupRender}
-                          componentType={"Chip"}
+                          componentType={"Checkbox"}
                           validate={methodsMode === methodsModeSpecific ? ValidatorListNotEmpty : []}
                           name="methods"
                           options={httpMethods.map((m) => {
@@ -389,7 +389,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                     <Field
                       title="Allow traffic through"
                       component={KCheckboxGroupRender}
-                      componentType={"Chip"}
+                      componentType={"Checkbox"}
                       validate={ValidatorListNotEmpty}
                       name="schemes"
                       options={[
