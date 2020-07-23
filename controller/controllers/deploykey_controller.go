@@ -25,6 +25,9 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 	"strings"
 )
 
@@ -78,6 +81,9 @@ func (r *DeployKeyReconcilerTask) Run(req ctrl.Request) error {
 		ObjectMeta: ctrl.ObjectMeta{
 			Namespace: saKey.Namespace,
 			Name:      saKey.Name,
+			Labels: map[string]string{
+				KalmLabelManaged: "true",
+			},
 		},
 	}
 
@@ -95,6 +101,11 @@ func (r *DeployKeyReconcilerTask) Run(req ctrl.Request) error {
 		}
 
 		if err := r.Create(r.ctx, &expectedSA); err != nil {
+			return err
+		}
+	} else {
+		sa.Labels = mergeMap(sa.Labels, expectedSA.Labels)
+		if err := r.Update(r.ctx, &sa); err != nil {
 			return err
 		}
 	}
@@ -165,6 +176,9 @@ func (r *DeployKeyReconcilerTask) Run(req ctrl.Request) error {
 				ObjectMeta: ctrl.ObjectMeta{
 					Namespace: ns,
 					Name:      deployKey.Name,
+					Labels: map[string]string{
+						KalmLabelManaged: "true",
+					},
 				},
 				Rules: []v1beta1.PolicyRule{
 					{
@@ -207,6 +221,8 @@ func (r *DeployKeyReconcilerTask) Run(req ctrl.Request) error {
 			}
 		} else {
 			role.Rules = expectedRole.Rules
+			role.Labels = mergeMap(role.Labels, expectedRole.Labels)
+
 			if err := r.Update(r.ctx, &role); err != nil {
 				return err
 			}
@@ -226,6 +242,9 @@ func (r *DeployKeyReconcilerTask) Run(req ctrl.Request) error {
 			ObjectMeta: ctrl.ObjectMeta{
 				Namespace: roleBindingKey.Namespace,
 				Name:      roleBindingKey.Name,
+				Labels: map[string]string{
+					KalmLabelManaged: "true",
+				},
 			},
 			Subjects: []v1beta1.Subject{
 				{
@@ -261,6 +280,7 @@ func (r *DeployKeyReconcilerTask) Run(req ctrl.Request) error {
 		} else {
 			roleBinding.Subjects = expectedRoleBinding.Subjects
 			roleBinding.RoleRef = expectedRoleBinding.RoleRef
+			roleBinding.Labels = mergeMap(roleBinding.Labels, expectedRoleBinding.Labels)
 
 			if err := r.Update(r.ctx, &roleBinding); err != nil {
 				return err
@@ -321,6 +341,9 @@ func (r *DeployKeyReconcilerTask) prepareRoles(roleName string, nsList []string)
 			ObjectMeta: ctrl.ObjectMeta{
 				Namespace: ns,
 				Name:      roleName,
+				Labels: map[string]string{
+					KalmLabelManaged: "true",
+				},
 			},
 			Rules: []v1beta1.PolicyRule{
 				{
@@ -340,5 +363,58 @@ func (r *DeployKeyReconcilerTask) prepareRoles(roleName string, nsList []string)
 func (r *DeployKeyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1alpha1.DeployKey{}).
+		Watches(
+			&source.Kind{Type: &v1.ServiceAccount{}},
+			&handler.EnqueueRequestsFromMapFunc{
+				ToRequests: DeployKeyGeneralMapper{r.BaseReconciler},
+			}).
+		Watches(
+			&source.Kind{Type: &v1beta1.Role{}},
+			&handler.EnqueueRequestsFromMapFunc{
+				ToRequests: DeployKeyGeneralMapper{r.BaseReconciler},
+			}).
+		Watches(
+			&source.Kind{Type: &v1beta1.RoleBinding{}},
+			&handler.EnqueueRequestsFromMapFunc{
+				ToRequests: DeployKeyGeneralMapper{r.BaseReconciler},
+			}).
 		Complete(r)
 }
+
+type DeployKeyGeneralMapper struct {
+	*BaseReconciler
+}
+
+func (s DeployKeyGeneralMapper) Map(object handler.MapObject) []reconcile.Request {
+	labels := object.Meta.GetLabels()
+	if labels == nil || labels[KalmLabelManaged] != "true" {
+		return nil
+	}
+
+	return []reconcile.Request{
+		{NamespacedName: client.ObjectKey{
+			Name: object.Meta.GetName(),
+		}},
+	}
+}
+
+//func mapAllDeployKeyToReqs(b *BaseReconciler) []reconcile.Request {
+//	var dKeys corev1alpha1.DeployKeyList
+//	err := b.List(context.Background(), &dKeys)
+//	if err != nil {
+//		b.Log.Error(err, "fail list deployKeys")
+//		return nil
+//	}
+//
+//	var rst []reconcile.Request
+//	for _, dKey := range dKeys.Items {
+//		rst = append(rst, reconcile.Request{
+//			NamespacedName: types.NamespacedName{
+//				Namespace: dKey.Namespace,
+//				Name:      dKey.Name,
+//			},
+//		})
+//	}
+//
+//	return rst
+//}
