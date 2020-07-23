@@ -172,8 +172,20 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
         }
       }
     });
+    let displayInfo = "";
+    if (running > 0) {
+      displayInfo += `Running: ${running} `;
+    }
 
-    return `Running: ${running}, Pending: ${pending}, Error: ${error}`;
+    if (pending > 0) {
+      displayInfo += `Pending: ${pending} `;
+    }
+
+    if (error > 0) {
+      displayInfo += `Error: ${error} `;
+    }
+
+    return displayInfo;
   };
 
   private renderComponentCPU = () => {
@@ -195,7 +207,7 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     return (
       <Grid container className={classes.gridWrapper}>
         <Grid item md={2}>
-          {component.get("memory") ? `Allocated: ${sizeStringToMi(`${component.get("memory")}`)} Mi` : "No Limit"}
+          {component.get("memory") ? `Allocated: ${sizeStringToMi(`${component.get("memory")}`)}Mi` : "No Limit"}
         </Grid>
         <Grid item md={10}>
           Usage: <SmallMemoryLineChart data={component.get("metrics").get("memory")!} />
