@@ -53,7 +53,7 @@ func registerWatchHandler(c *Client,
 				log.Warn(err)
 				return
 			}
-			c.sendResMessage(resMessage)
+			c.sendWatchResMessage(resMessage)
 		},
 		DeleteFunc: func(obj interface{}) {
 			resMessage, err := buildResMessage(c, "Delete", obj)
@@ -61,7 +61,7 @@ func registerWatchHandler(c *Client,
 				log.Warn(err)
 				return
 			}
-			c.sendResMessage(resMessage)
+			c.sendWatchResMessage(resMessage)
 		},
 		UpdateFunc: func(oldObj, obj interface{}) {
 			resMessage, err := buildResMessage(c, "Update", obj)
@@ -69,7 +69,7 @@ func registerWatchHandler(c *Client,
 				log.Warn(err)
 				return
 			}
-			c.sendResMessage(resMessage)
+			c.sendWatchResMessage(resMessage)
 		},
 	})
 

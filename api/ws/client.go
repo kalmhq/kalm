@@ -2,6 +2,7 @@ package ws
 
 import (
 	"encoding/json"
+
 	"github.com/kalmhq/kalm/api/resources"
 
 	"github.com/gorilla/websocket"
@@ -96,6 +97,11 @@ func (c *Client) read() {
 
 		if c.K8SClientConfig == nil {
 			authInfo := &api.AuthInfo{Token: reqMessage.Token}
+			err := c.K8sClientManager.IsAuthInfoWorking(authInfo)
+			if err != nil {
+				c.conn.WriteJSON(&ResMessage{Kind: "error", Data: "Invalid Auth Token"})
+			}
+
 			k8sClientConfig, err := c.K8sClientManager.GetClientConfigWithAuthInfo(authInfo)
 			if err != nil {
 				log.Error(err)
@@ -145,7 +151,7 @@ func (c *Client) write() {
 	}
 }
 
-func (c *Client) sendResMessage(resMessage *ResMessage) {
+func (c *Client) sendWatchResMessage(resMessage *ResMessage) {
 	if resMessage.Action == "" {
 		return
 	}
