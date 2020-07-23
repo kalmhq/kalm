@@ -45,6 +45,9 @@ var retryLaterErr = fmt.Errorf("retry later")
 
 // +kubebuilder:rbac:groups=core.kalm.dev,resources=deploykeys,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core.kalm.dev,resources=deploykeys/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups="",resources=serviceaccounts,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups="",resources=namespaces;secrets,verbs=get;list;watch
+// +kubebuilder:rbac:groups="rbac.authorization.k8s.io",resources=roles;rolebindings,verbs=get;list;watch;create;update;patch;delete
 
 func (r *DeployKeyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	task := &DeployKeyReconcilerTask{
