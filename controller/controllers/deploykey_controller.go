@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strings"
 )
 
@@ -108,6 +109,15 @@ func (r *DeployKeyReconcilerTask) Run(req ctrl.Request) error {
 
 	case corev1alpha1.DeployKeyTypeApp:
 		for _, ns := range deployKey.Spec.Content {
+			exist, err := r.isNamespaceExist(ns)
+			if err != nil {
+				return err
+			}
+
+			if !exist {
+				continue
+			}
+
 			expectedRole := v1beta1.Role{
 				ObjectMeta: ctrl.ObjectMeta{
 					Namespace: ns,
@@ -139,6 +149,15 @@ func (r *DeployKeyReconcilerTask) Run(req ctrl.Request) error {
 		}
 
 		for ns, compList := range ns2ComponentsMap {
+			exist, err := r.isNamespaceExist(ns)
+			if err != nil {
+				return err
+			}
+
+			if !exist {
+				continue
+			}
+
 			expectedRole := v1beta1.Role{
 				ObjectMeta: ctrl.ObjectMeta{
 					Namespace: ns,
@@ -159,8 +178,6 @@ func (r *DeployKeyReconcilerTask) Run(req ctrl.Request) error {
 	default:
 		return fmt.Errorf("unknown deployKey type: %s", deployKey.Spec.Type)
 	}
-
-	// todo check and filter roles belongs to existing namespace
 
 	var resRoles []v1beta1.Role
 	for _, expectedRole := range expectedRoles {
@@ -276,6 +293,20 @@ func (r *DeployKeyReconcilerTask) Run(req ctrl.Request) error {
 
 	deployKey.Status.ServiceAccountToken = string(v)
 	return r.Status().Update(r.ctx, &deployKey)
+}
+
+func (r *DeployKeyReconcilerTask) isNamespaceExist(namespace string) (bool, error) {
+	ns := v1.Namespace{}
+	err := r.Get(r.ctx, client.ObjectKey{Name: namespace}, &ns)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			return false, nil
+		}
+
+		return false, err
+	}
+
+	return true, nil
 }
 
 func (r *DeployKeyReconciler) SetupWithManager(mgr ctrl.Manager) error {
