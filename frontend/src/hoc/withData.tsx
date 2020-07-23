@@ -80,7 +80,7 @@ class WithDataRaw extends React.PureComponent<Props> {
       rws.addEventListener("open", () => {
         const message = {
           method: "StartWatching",
-          token: token + "test",
+          token,
         };
         rws.send(JSON.stringify(message));
       });
