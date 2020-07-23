@@ -64,6 +64,7 @@ type SingleSignOnConfigStatus struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:printcolumn:name="Domain",type="string",JSONPath=".spec.domain",description="Domain of dex"
 
 // SingleSignOnConfig is the Schema for the singlesignonconfigs API
 type SingleSignOnConfig struct {
