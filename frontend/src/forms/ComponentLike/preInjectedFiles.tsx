@@ -70,6 +70,9 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
         }}
         actions={
           <>
+            <Button onClick={() => dispatch(closeDialogAction(updateContentDialogID))} color="primary">
+              Discard
+            </Button>
             <Button
               onClick={() => {
                 dispatch(
@@ -81,17 +84,9 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
                 );
                 dispatch(closeDialogAction(updateContentDialogID));
               }}
-              color="default"
-              variant="contained"
+              color="primary"
             >
-              OK
-            </Button>
-            <Button
-              onClick={() => dispatch(closeDialogAction(updateContentDialogID))}
-              color="default"
-              variant="contained"
-            >
-              Close
+              Save
             </Button>
           </>
         }
