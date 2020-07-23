@@ -316,8 +316,8 @@ export const formatNumerical = (value: number): string => {
 };
 
 const formatCPU = (value: number): string => {
-  return (value * 1000).toFixed(0) + " m";
-  // return value + " Core";
+  return value + " m";
+  // return value / 1000 + " Core";
 };
 
 export const BigCPULineChart = (props: Pick<LineChartProps, "data" | "yAxesWidth" | "filter">) => {
