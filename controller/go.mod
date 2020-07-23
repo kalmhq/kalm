@@ -3,34 +3,32 @@ module github.com/kalmhq/kalm/controller
 go 1.13
 
 require (
-	cloud.google.com/go v0.49.0 // indirect
-	github.com/cespare/xxhash/v2 v2.1.1 // indirect
+	github.com/Venafi/vcert v0.0.0-20200207035730-5a915d73be5d // indirect
 	github.com/coreos/prometheus-operator v0.29.0
+	github.com/davecgh/go-spew v1.1.1
 	github.com/dlclark/regexp2 v1.2.0 // indirect
-	github.com/dop251/goja v0.0.0-20200414142002-77e84ffb8c65
-	github.com/elastic/cloud-on-k8s v0.0.0-20200204083752-bcb7468838a8
+	github.com/dop251/goja v0.0.0-20200721192441-a695b0cdd498
+	github.com/elastic/cloud-on-k8s v0.0.0-20200721161711-b12a39f14ab1
 	github.com/go-logr/logr v0.1.0
-	github.com/go-openapi/validate v0.19.5
+	github.com/go-openapi/validate v0.19.10
 	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/gogo/protobuf v1.3.1
 	github.com/jetstack/cert-manager v0.13.1
 	github.com/joho/godotenv v1.3.0
-	github.com/onsi/ginkgo v1.10.3
-	github.com/onsi/gomega v1.7.1
-	github.com/prometheus/client_golang v1.2.1 // indirect
-	github.com/stretchr/testify v1.5.1
+	github.com/onsi/ginkgo v1.12.1
+	github.com/onsi/gomega v1.10.1
+	github.com/pavel-v-chernykh/keystore-go v2.1.0+incompatible // indirect
+	github.com/stretchr/testify v1.6.1
 	github.com/xeipuuv/gojsonschema v1.2.0
-	golang.org/x/net v0.0.0-20191112182307-2180aed22343 // indirect
-	golang.org/x/sys v0.0.0-20191113165036-4c7a9d0fe056 // indirect
-	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20191120175047-4206685974f2
-	istio.io/api v0.0.0-20200324230725-4b064f75ad8f
-	istio.io/client-go v0.0.0-20200324231647-289a91f51a8e
-	k8s.io/api v0.17.3
-	k8s.io/apiextensions-apiserver v0.17.3
-	k8s.io/apimachinery v0.17.3
-	k8s.io/client-go v0.17.3
-	k8s.io/kube-aggregator v0.17.0
-	k8s.io/utils v0.0.0-20191114200735-6ca3b61696b6 // indirect
-	sigs.k8s.io/controller-runtime v0.4.0
+	gopkg.in/ini.v1 v1.52.0 // indirect
+	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
+	istio.io/api v0.0.0-20200721175012-ae75c7e9ae26
+	istio.io/client-go v0.0.0-20200717004237-1af75184beba
+	k8s.io/api v0.18.6
+	k8s.io/apiextensions-apiserver v0.18.4
+	k8s.io/apimachinery v0.18.6
+	k8s.io/client-go v0.18.4
+	k8s.io/kube-aggregator v0.17.2
+	sigs.k8s.io/controller-runtime v0.6.1
+	sigs.k8s.io/testing_frameworks v0.1.2 // indirect
 )

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/kalmhq/kalm/api/resources"
 	"net/http"
 
 	"github.com/dgrijalva/jwt-go"
@@ -51,8 +52,7 @@ func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
 
 	res.Authorized = true
 
-	// If the user can create clusterrolebinding, the user is an admin.
-	review, err := k8sClient.AuthorizationV1().SelfSubjectAccessReviews().Create(&authorizationV1.SelfSubjectAccessReview{
+	review := &authorizationV1.SelfSubjectAccessReview{
 		Spec: authorizationV1.SelfSubjectAccessReviewSpec{
 			ResourceAttributes: &authorizationV1.ResourceAttributes{
 				Namespace: "",
@@ -60,7 +60,12 @@ func (h *ApiHandler) handleLoginStatus(c echo.Context) error {
 				Verb:      "create",
 			},
 		},
-	})
+	}
+
+	builder := resources.NewBuilder(k8sClient, clientConfig, h.logger)
+
+	// If the user can create clusterrolebinding, the user is an admin.
+	err = builder.Create(review)
 
 	if err != nil {
 		return err

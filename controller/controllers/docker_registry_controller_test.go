@@ -10,7 +10,7 @@ import (
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	types "k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/types"
 	"os"
 	"testing"
 	"time"
@@ -33,6 +33,7 @@ func (suite *DockerRegistryControllerSuite) SetupSuite() {
 	}
 
 	suite.BasicSuite.SetupSuite()
+	suite.SetupKalmEnabledNs("kalm-system")
 }
 
 func (suite *DockerRegistryControllerSuite) TearDownSuite() {

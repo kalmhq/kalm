@@ -5,10 +5,8 @@ import (
 	"time"
 
 	coreV1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -136,7 +134,7 @@ func (builder *Builder) UncordonNode(node *coreV1.Node) error {
 	return nil
 }
 
-func BuildNodeResponse(k8sClient *kubernetes.Clientset, node *coreV1.Node) *Node {
+func (builder *Builder) BuildNodeResponse(node *coreV1.Node) *Node {
 	histories := GetFilteredNodeMetrics([]string{node.Name})
 
 	return &Node{
@@ -150,46 +148,47 @@ func BuildNodeResponse(k8sClient *kubernetes.Clientset, node *coreV1.Node) *Node
 		StatusTexts:        getNodeRunningStatus(node),
 		InternalIP:         getNodeInternalIP(node),
 		ExternalIP:         getNodeExternalIP(node),
-		AllocatedResources: *getAllocatedResources(k8sClient, node),
+		AllocatedResources: *builder.getAllocatedResources(node),
 	}
 }
 
-func ListNodes(k8sClient *kubernetes.Clientset) (*NodesResponse, error) {
-	list, err := k8sClient.CoreV1().Nodes().List(ListAll)
+func (builder *Builder) ListNodes() (*NodesResponse, error) {
+	nodeList := &coreV1.NodeList{}
+	err := builder.List(nodeList)
 
 	if err != nil {
 		return nil, err
 	}
 
 	var nodeNames []string
-	for _, n := range list.Items {
+	for _, n := range nodeList.Items {
 		nodeNames = append(nodeNames, n.Name)
 	}
 
 	histories := GetFilteredNodeMetrics(nodeNames)
 
 	res := &NodesResponse{
-		Nodes: make([]Node, 0, len(list.Items)),
+		Nodes: make([]Node, 0, len(nodeList.Items)),
 		Metrics: MetricHistories{
 			CPU:    histories.CPU,
 			Memory: histories.Memory,
 		},
 	}
 
-	for i := range list.Items {
-		node := list.Items[i]
-		res.Nodes = append(res.Nodes, *BuildNodeResponse(k8sClient, &node))
+	for i := range nodeList.Items {
+		node := nodeList.Items[i]
+		res.Nodes = append(res.Nodes, *builder.BuildNodeResponse(&node))
 	}
 
 	return res, nil
 }
 
-func getAllocatedResources(k8sClient *kubernetes.Clientset, node *coreV1.Node) *AllocatedResources {
+func (builder *Builder) getAllocatedResources(node *coreV1.Node) *AllocatedResources {
 	fieldSelector, err := fields.ParseSelector("spec.nodeName=" + node.Name + ",status.phase!=" + string(coreV1.PodSucceeded) + ",status.phase!=" + string(coreV1.PodFailed))
 
-	k8sClient.CoreV1().Nodes().List(ListAll)
+	nodeNonTerminatedPodsList := &coreV1.PodList{}
+	err = builder.List(nodeNonTerminatedPodsList, client.MatchingFieldsSelector{Selector: fieldSelector})
 
-	nodeNonTerminatedPodsList, err := k8sClient.CoreV1().Pods("").List(metav1.ListOptions{FieldSelector: fieldSelector.String()})
 	if err != nil {
 		return &AllocatedResources{}
 	}

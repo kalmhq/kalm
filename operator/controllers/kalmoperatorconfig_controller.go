@@ -32,6 +32,9 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 	"strconv"
 	"time"
 )
@@ -139,14 +142,16 @@ func (r *KalmOperatorConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 	//}
 
 	err := r.reconcileResources(config, ctx, log)
+
 	if err == retryLaterErr {
-		return ctrl.Result{RequeueAfter: 1 * time.Second}, nil
+		r.Log.Info("Dependency not ready, retry after 5 seconds")
+		return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
 	}
 
 	return ctrl.Result{}, err
 }
 
-func (r *KalmOperatorConfigReconciler) installFromYaml(ctx context.Context, yamlName string) error {
+func (r *KalmOperatorConfigReconciler) applyFromYaml(ctx context.Context, yamlName string) error {
 	fileContent := MustAsset(yamlName)
 
 	objectsBytes := utils.SeparateYamlBytes(fileContent)
@@ -156,20 +161,50 @@ func (r *KalmOperatorConfigReconciler) installFromYaml(ctx context.Context, yaml
 		object, _, err := decode(objectBytes, nil, nil)
 
 		if err != nil {
-			r.Log.Error(err, fmt.Sprintf("Install from yaml %s error.", yamlName))
+			r.Log.Error(err, fmt.Sprintf("Decode yaml %s error.", yamlName))
 			return err
 		}
 
-		err = r.Client.Create(ctx, object)
-
-		if errors.IsAlreadyExists(err) {
-			continue
-		}
+		objectKey, err := client.ObjectKeyFromObject(object)
 
 		if err != nil {
+			r.Log.Error(err, fmt.Sprintf("Get Object Key from object error"))
 			return err
 		}
+
+		apiVersion, kind := object.GetObjectKind().GroupVersionKind().ToAPIVersionAndKind()
+		fetchedObj, err := r.Scheme.New(object.GetObjectKind().GroupVersionKind())
+
+		if err != nil {
+			r.Log.Error(err, fmt.Sprintf("New object error, apiVersion: %s, kind: %s", apiVersion, kind))
+			return err
+		}
+
+		if err := r.Client.Get(ctx, objectKey, fetchedObj); err != nil {
+			if errors.IsNotFound(err) {
+				err = r.Client.Create(ctx, object)
+
+				if err != nil {
+					r.Log.Error(err, fmt.Sprintf("Create object error: %v", objectKey))
+					return err
+				}
+
+				r.Log.Info(fmt.Sprintf("Create object %s", objectKey.String()))
+				continue
+			} else {
+				r.Log.Error(err, fmt.Sprintf("Get object failed. %v", objectKey))
+				return err
+			}
+		}
+
+		if err := r.Client.Patch(ctx, object, client.Merge); err != nil {
+			r.Log.Error(err, fmt.Sprintf("Apply object failed. %v", objectKey))
+			return err
+		}
+
+		r.Log.Info(fmt.Sprintf("Patch object %s", objectKey.String()))
 	}
+
 	return nil
 }
 
@@ -182,7 +217,7 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 	if !config.Spec.SkipCertManagerInstallation {
 		//r.Log.Info("installing cert-manager")
 
-		if err := r.installFromYaml(ctx, "cert-manager.yaml"); err != nil {
+		if err := r.applyFromYaml(ctx, "cert-manager.yaml"); err != nil {
 			log.Error(err, "install certManager error.")
 			return err
 		}
@@ -191,51 +226,23 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 	if !config.Spec.SkipIstioInstallation {
 		//r.Log.Info("installing istio")
 
-		if err := r.installFromYaml(ctx, "istio.yaml"); err != nil {
+		if err := r.applyFromYaml(ctx, "istio.yaml"); err != nil {
 			log.Error(err, "install istio error.")
 			return err
 		}
 
-		if err := r.installFromYaml(ctx, "istiocontrolplane.yaml"); err != nil {
+		if err := r.applyFromYaml(ctx, "istiocontrolplane.yaml"); err != nil {
 			log.Error(err, "install istio plane error.")
 			return err
 		}
 
-		cmPrometheus := corev1.ConfigMap{}
-		err := r.Get(ctx, types.NamespacedName{Name: "prometheus", Namespace: "istio-system"}, &cmPrometheus)
-		if err != nil {
+		if err := r.AddRecordingRulesForIstioPrometheus(ctx); err != nil {
+			log.Error(err, "add recording rules form istio prometheus failed.")
 			return err
-		}
-
-		v := cmPrometheus.Data["prometheus.yml"]
-		pConfig, _ := promconfig.Load(v)
-		if len(pConfig.RuleFiles) <= 0 {
-			pConfig.RuleFiles = []string{istioPromRecordingRulesFileName}
-
-			cmPrometheus.Data["prometheus.yml"] = pConfig.String()
-			cmPrometheus.Data[istioPromRecordingRulesFileName] = string(MustAsset("istio-prom-recording-rules.yaml"))
-
-			if err := r.Update(ctx, &cmPrometheus); err != nil {
-				return err
-			}
-
-			// trigger update
-			dpPromethues := v1.Deployment{}
-			err := r.Get(ctx, types.NamespacedName{Name: "prometheus", Namespace: "istio-system"}, &dpPromethues)
-			if err != nil {
-				return err
-			}
-
-			dpPrometheusCopy := dpPromethues.DeepCopy()
-			dpPrometheusCopy.Spec.Template.ObjectMeta.Labels["date"] = strconv.Itoa(int(time.Now().Unix()))
-
-			err = r.Patch(ctx, dpPrometheusCopy, client.MergeFrom(&dpPromethues))
-			if err != nil {
-				return err
-			}
 		}
 	}
 
+	// TODO kalm need some specific CRD to be installed. Not some deployment to be running. Should we change the checks below?
 	if !config.Spec.SkipCertManagerInstallation && !config.Spec.SkipIstioInstallation {
 		if !r.isIstioReady(ctx) || !r.isCertManagerReady(ctx) {
 			return retryLaterErr
@@ -252,7 +259,7 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 
 	if !config.Spec.SkipKalmControllerInstallation {
 		//r.Log.Info("installing kalm-controller")
-		if err := r.installFromYaml(ctx, "kalm.yaml"); err != nil {
+		if err := r.applyFromYaml(ctx, "kalm.yaml"); err != nil {
 			log.Error(err, "install kalm error.")
 			return err
 		}
@@ -311,6 +318,60 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 	return nil
 }
 
+func (r *KalmOperatorConfigReconciler) AddRecordingRulesForIstioPrometheus(ctx context.Context) error {
+	cmPrometheus := corev1.ConfigMap{}
+	err := r.Get(ctx, types.NamespacedName{Name: "prometheus", Namespace: "istio-system"}, &cmPrometheus)
+
+	if err != nil {
+		if !errors.IsNotFound(err) {
+			return err
+		}
+
+		// Not found. It should be created later by istio-operator
+		// Skip for now.
+		return nil
+	}
+
+	dpPromethues := v1.Deployment{}
+	err = r.Get(ctx, types.NamespacedName{Name: "prometheus", Namespace: "istio-system"}, &dpPromethues)
+	if err != nil {
+		if !errors.IsNotFound(err) {
+			return err
+		}
+
+		// Not found. It should be created later by istio-operator
+		// Skip for now.
+		return nil
+	}
+
+	v := cmPrometheus.Data["prometheus.yml"]
+	pConfig, _ := promconfig.Load(v)
+
+	// TODO is this part ok if it executes more than once? @mingmin
+	if len(pConfig.RuleFiles) <= 0 {
+		pConfig.RuleFiles = []string{istioPromRecordingRulesFileName}
+
+		cmPrometheus.Data["prometheus.yml"] = pConfig.String()
+		cmPrometheus.Data[istioPromRecordingRulesFileName] = string(MustAsset("istio-prom-recording-rules.yaml"))
+
+		if err := r.Update(ctx, &cmPrometheus); err != nil {
+			return err
+		}
+
+		// trigger update
+		dpPrometheusCopy := dpPromethues.DeepCopy()
+		dpPrometheusCopy.Spec.Template.ObjectMeta.Labels["date"] = strconv.Itoa(int(time.Now().Unix()))
+
+		err = r.Patch(ctx, dpPrometheusCopy, client.MergeFrom(&dpPromethues))
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (r *KalmOperatorConfigReconciler) checkIfDPReady(ctx context.Context, ns string, dpNameOpt ...string) bool {
 	for _, dpName := range dpNameOpt {
 		var dp v1.Deployment
@@ -346,8 +407,25 @@ func (r *KalmOperatorConfigReconciler) isIstioReady(ctx context.Context) bool {
 //	return nil
 //}
 
+type KalmIstioPrometheusWather struct {
+}
+
+func (r *KalmIstioPrometheusWather) Map(obj handler.MapObject) []reconcile.Request {
+	if obj.Meta.GetNamespace() != "istio-system" || obj.Meta.GetName() != "prometheus" {
+		return nil
+	}
+
+	return []reconcile.Request{{NamespacedName: types.NamespacedName{Namespace: "kalm-operator", Name: "reconcile-caused-by-prometheus-config"}}}
+}
+
 func (r *KalmOperatorConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&installv1alpha1.KalmOperatorConfig{}).
+		Watches(&source.Kind{Type: &corev1.ConfigMap{}}, &handler.EnqueueRequestsFromMapFunc{
+			ToRequests: &KalmIstioPrometheusWather{},
+		}).
+		Watches(&source.Kind{Type: &v1.Deployment{}}, &handler.EnqueueRequestsFromMapFunc{
+			ToRequests: &KalmIstioPrometheusWather{},
+		}).
 		Complete(r)
 }

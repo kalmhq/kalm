@@ -1,10 +1,12 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"math/rand"
 	"net/http"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"time"
 
 	"github.com/kalmhq/kalm/api/resources"
@@ -12,11 +14,10 @@ import (
 	"github.com/labstack/echo/v4"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/kubernetes"
 )
 
 func (h *ApiHandler) handleListComponents(c echo.Context) error {
-	componentList, err := getComponentList(c)
+	componentList, err := h.getComponentList(c)
 
 	if err != nil {
 		return err
@@ -32,7 +33,7 @@ func (h *ApiHandler) handleListComponents(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleCreateComponent(c echo.Context) error {
-	component, err := createComponent(c)
+	component, err := h.createComponent(c)
 
 	if err != nil {
 		return err
@@ -48,7 +49,7 @@ func (h *ApiHandler) handleCreateComponent(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleUpdateComponent(c echo.Context) error {
-	component, err := updateComponent(c)
+	component, err := h.updateComponent(c)
 
 	if err != nil {
 		return err
@@ -64,7 +65,7 @@ func (h *ApiHandler) handleUpdateComponent(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleGetComponent(c echo.Context) error {
-	component, err := getComponent(c)
+	component, err := h.getComponent(c)
 
 	if err != nil {
 		return err
@@ -80,7 +81,7 @@ func (h *ApiHandler) handleGetComponent(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteComponent(c echo.Context) error {
-	err := deleteComponent(c)
+	err := h.deleteComponent(c)
 	if err != nil {
 		return err
 	}
@@ -89,39 +90,35 @@ func (h *ApiHandler) handleDeleteComponent(c echo.Context) error {
 
 // helper
 
-func deleteComponent(c echo.Context) error {
-	k8sClient := getK8sClient(c)
-	_, err := k8sClient.RESTClient().Delete().Body(c.Request().Body).AbsPath("/apis/core.kalm.dev/v1alpha1/namespaces/" + c.Param("applicationName") + "/components/" + c.Param("name")).DoRaw()
+func (h *ApiHandler) deleteComponent(c echo.Context) error {
+	err := h.Builder(c).Delete(&v1alpha1.Component{ObjectMeta: metaV1.ObjectMeta{
+		Name:      c.Param("name"),
+		Namespace: c.Param("applicationName"),
+	}})
 	return err
 }
 
-func GetComponent(k8sClient *kubernetes.Clientset, applicationName, componentName string) (*v1alpha1.Component, error) {
-	var fetched v1alpha1.Component
-	err := k8sClient.RESTClient().Get().AbsPath("/apis/core.kalm.dev/v1alpha1/namespaces/" + applicationName + "/components/" + componentName).Do().Into(&fetched)
+func (h *ApiHandler) getComponent(c echo.Context) (*v1alpha1.Component, error) {
+	var component v1alpha1.Component
+	err := h.Builder(c).Get(c.Param("applicationName"), c.Param("name"), &component)
+
 	if err != nil {
 		return nil, err
 	}
-	return &fetched, nil
+
+	return &component, nil
 }
 
-func getComponent(c echo.Context) (*v1alpha1.Component, error) {
-	k8sClient := getK8sClient(c)
-	return GetComponent(k8sClient, c.Param("applicationName"), c.Param("name"))
-}
-
-func getComponentList(c echo.Context) (*v1alpha1.ComponentList, error) {
-	k8sClient := getK8sClient(c)
+func (h *ApiHandler) getComponentList(c echo.Context) (*v1alpha1.ComponentList, error) {
 	var fetched v1alpha1.ComponentList
-	err := k8sClient.RESTClient().Get().AbsPath("/apis/core.kalm.dev/v1alpha1/namespaces/" + c.Param("applicationName") + "/components").Do().Into(&fetched)
+	err := h.Builder(c).List(&fetched, client.InNamespace(c.Param("applicationName")))
 	if err != nil {
 		return nil, err
 	}
 	return &fetched, nil
 }
 
-func createComponent(c echo.Context) (*v1alpha1.Component, error) {
-	k8sClient := getK8sClient(c)
-
+func (h *ApiHandler) createComponent(c echo.Context) (*v1alpha1.Component, error) {
 	crdComponent, plugins, err := getComponentFromContext(c)
 	if err != nil {
 		return nil, err
@@ -132,23 +129,22 @@ func createComponent(c echo.Context) (*v1alpha1.Component, error) {
 	//	return nil, err
 	//}
 
-	bts, _ := json.Marshal(crdComponent)
-	var component v1alpha1.Component
-	err = k8sClient.RESTClient().Post().Body(bts).AbsPath("/apis/core.kalm.dev/v1alpha1/namespaces/" + c.Param("applicationName") + "/components").Do().Into(&component)
+	crdComponent.Namespace = c.Param("applicationName")
+	err = h.Builder(c).Create(crdComponent)
 	if err != nil {
 		return nil, err
 	}
 
 	kalmClient, _ := getKalmV1Alpha1Client(c)
-	err = resources.UpdateComponentPluginBindingsForObject(kalmClient, component.Namespace, component.Name, plugins)
+	err = resources.UpdateComponentPluginBindingsForObject(kalmClient, crdComponent.Namespace, crdComponent.Name, plugins)
 
 	if err != nil {
 		return nil, err
 	}
-	return &component, nil
+	return crdComponent, nil
 }
 
-func updateComponent(c echo.Context) (*v1alpha1.Component, error) {
+func (h *ApiHandler) updateComponent(c echo.Context) (*v1alpha1.Component, error) {
 	k8sClient := getK8sClient(c)
 
 	crdComponent, plugins, err := getComponentFromContext(c)
@@ -157,7 +153,7 @@ func updateComponent(c echo.Context) (*v1alpha1.Component, error) {
 		return nil, err
 	}
 
-	fetched, err := getComponent(c)
+	fetched, err := h.getComponent(c)
 
 	if err != nil {
 		return nil, err
@@ -166,7 +162,7 @@ func updateComponent(c echo.Context) (*v1alpha1.Component, error) {
 
 	bts, _ := json.Marshal(crdComponent)
 	var component v1alpha1.Component
-	err = k8sClient.RESTClient().Put().Body(bts).AbsPath("/apis/core.kalm.dev/v1alpha1/namespaces/" + c.Param("applicationName") + "/components/" + c.Param("name")).Do().Into(&component)
+	err = k8sClient.RESTClient().Put().Body(bts).AbsPath("/apis/core.kalm.dev/v1alpha1/namespaces/" + c.Param("applicationName") + "/components/" + c.Param("name")).Do(context.Background()).Into(&component)
 
 	if err != nil {
 		return nil, err

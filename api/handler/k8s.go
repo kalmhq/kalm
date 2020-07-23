@@ -6,7 +6,7 @@ import (
 
 func (h *ApiHandler) handleGetPVs(c echo.Context) error {
 	k8sClient := getK8sClient(c)
-	list, err := k8sClient.CoreV1().PersistentVolumes().List(ListAll)
+	list, err := k8sClient.CoreV1().PersistentVolumes().List(c.Request().Context(), ListAll)
 	if err != nil {
 		return err
 	}
@@ -15,7 +15,7 @@ func (h *ApiHandler) handleGetPVs(c echo.Context) error {
 
 func (h *ApiHandler) handleGetNodes(c echo.Context) error {
 	k8sClient := getK8sClient(c)
-	list, err := k8sClient.CoreV1().Nodes().List(ListAll)
+	list, err := k8sClient.CoreV1().Nodes().List(c.Request().Context(), ListAll)
 	if err != nil {
 		return err
 	}

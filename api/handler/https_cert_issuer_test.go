@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"context"
+	"fmt"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
@@ -18,8 +20,15 @@ func TestHttpsCertIssuerTestSuite(t *testing.T) {
 	suite.Run(t, new(HttpsCertIssuerTestSuite))
 }
 
+func (suite *HttpsCertIssuerTestSuite) SetupSuite() {
+	suite.WithControllerTestSuite.SetupSuite()
+
+	suite.ensureNamespaceExist(controllers.CertManagerNamespace)
+}
+
 func (suite *HttpsCertIssuerTestSuite) TearDownTest() {
-	suite.k8sClinet.RESTClient().Delete().AbsPath("/apis/core.kalm.dev/v1alpha1/httpscertissuers/my-foobar-issuer").Do().Error()
+	fmt.Println("tear down test........")
+	suite.k8sClinet.RESTClient().Delete().AbsPath("/apis/core.kalm.dev/v1alpha1/httpscertissuers/my-foobar-issuer").Do(context.Background()).Error()
 }
 
 func (suite *HttpsCertIssuerTestSuite) TestGetEmptyHCIssuerList() {
@@ -46,7 +55,7 @@ func (suite *HttpsCertIssuerTestSuite) TestCreateHttpsCertIssuer() {
 	suite.Equal("my-foobar-issuer", issuer.Name)
 
 	var res v1alpha1.HttpsCertIssuerList
-	err := suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kalm.dev/v1alpha1/httpscertissuers").Do().Into(&res)
+	err := suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kalm.dev/v1alpha1/httpscertissuers").Do(context.Background()).Into(&res)
 	suite.Nil(err)
 
 	suite.Equal(1, len(res.Items))
@@ -73,7 +82,7 @@ func (suite *HttpsCertIssuerTestSuite) TestUpdateHttpsCertIssuer() {
 	suite.Equal("my-foobar-issuer", issuer.Name)
 
 	var res v1alpha1.HttpsCertIssuerList
-	err := suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kalm.dev/v1alpha1/httpscertissuers").Do().Into(&res)
+	err := suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kalm.dev/v1alpha1/httpscertissuers").Do(context.Background()).Into(&res)
 	suite.Nil(err)
 
 	secName := resources.GenerateSecretNameForACME(issuer)
@@ -87,7 +96,7 @@ func (suite *HttpsCertIssuerTestSuite) TestUpdateHttpsCertIssuer() {
 	suite.Equal(secName, res.Items[0].Spec.ACMECloudFlare.APITokenSecretName)
 
 	// check content of secret
-	sec, err := suite.k8sClinet.CoreV1().Secrets(secNs).Get(secName, metav1.GetOptions{})
+	sec, err := suite.k8sClinet.CoreV1().Secrets(secNs).Get(context.Background(), secName, metav1.GetOptions{})
 	suite.Nil(err)
 	suite.Equal("foobar", string(sec.Data["content"]))
 
@@ -106,7 +115,7 @@ func (suite *HttpsCertIssuerTestSuite) TestUpdateHttpsCertIssuer() {
 	suite.Equal(200, rec.Code)
 	suite.Equal("my-foobar-issuer", issuer.Name)
 
-	err = suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kalm.dev/v1alpha1/httpscertissuers").Do().Into(&res)
+	err = suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kalm.dev/v1alpha1/httpscertissuers").Do(context.Background()).Into(&res)
 	suite.Nil(err)
 
 	suite.Equal(1, len(res.Items))
@@ -116,7 +125,7 @@ func (suite *HttpsCertIssuerTestSuite) TestUpdateHttpsCertIssuer() {
 	suite.Equal("foo@bar2.com", res.Items[0].Spec.ACMECloudFlare.Email)
 	suite.Equal(resources.GenerateSecretNameForACME(issuer), res.Items[0].Spec.ACMECloudFlare.APITokenSecretName)
 
-	sec, err = suite.k8sClinet.CoreV1().Secrets(secNs).Get(secName, metav1.GetOptions{})
+	sec, err = suite.k8sClinet.CoreV1().Secrets(secNs).Get(context.Background(), secName, metav1.GetOptions{})
 	suite.Nil(err)
 	suite.Equal("foobar2", string(sec.Data["content"]))
 }
@@ -139,7 +148,7 @@ func (suite *HttpsCertIssuerTestSuite) TestDeleteHttpsCertIssuer() {
 	suite.Equal("my-foobar-issuer", issuer.Name)
 
 	var res v1alpha1.HttpsCertIssuerList
-	err := suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kalm.dev/v1alpha1/httpscertissuers").Do().Into(&res)
+	err := suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kalm.dev/v1alpha1/httpscertissuers").Do(context.Background()).Into(&res)
 	suite.Nil(err)
 
 	suite.Equal(1, len(res.Items))
@@ -149,7 +158,7 @@ func (suite *HttpsCertIssuerTestSuite) TestDeleteHttpsCertIssuer() {
 	rec.BodyAsJSON(&issuer)
 	suite.Equal(200, rec.Code)
 
-	err = suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kalm.dev/v1alpha1/httpscertissuers").Do().Into(&res)
+	err = suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kalm.dev/v1alpha1/httpscertissuers").Do(context.Background()).Into(&res)
 	suite.Nil(err)
 	suite.Equal(0, len(res.Items))
 }

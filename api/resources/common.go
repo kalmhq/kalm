@@ -13,7 +13,6 @@ import (
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
@@ -234,17 +233,6 @@ type Builder struct {
 	K8sClient *kubernetes.Clientset
 	Client    client.Client
 	Logger    *logrus.Logger
-	Config    *rest.Config
-}
-
-func (builder *Builder) KalmV1Alpha1() (*rest.RESTClient, error) {
-	// copy a cfg
-	cfg := rest.CopyConfig(builder.Config)
-	cfg.ContentConfig.GroupVersion = &v1alpha1.GroupVersion
-	cfg.APIPath = "/apis"
-	cfg.NegotiatedSerializer = serializer.NewCodecFactory(scheme.Scheme)
-	cfg.UserAgent = rest.DefaultKubernetesUserAgent()
-	return rest.UnversionedRESTClientFor(cfg)
 }
 
 func NewBuilder(k8sClient *kubernetes.Clientset, cfg *rest.Config, logger *logrus.Logger) *Builder {
@@ -254,7 +242,6 @@ func NewBuilder(k8sClient *kubernetes.Clientset, cfg *rest.Config, logger *logru
 		ctx:       context.Background(), // TODO
 		K8sClient: k8sClient,
 		Client:    c,
-		Config:    cfg,
 		Logger:    logger,
 	}
 }

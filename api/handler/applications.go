@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/controllers"
@@ -99,7 +100,7 @@ func (h *ApiHandler) handleDeleteApplication(c echo.Context) error {
 
 func deleteKalmApplication(c echo.Context) error {
 	k8sClient := getK8sClient(c)
-	_, err := k8sClient.RESTClient().Delete().Body(c.Request().Body).AbsPath(kalmNamespaceUrl(c)).DoRaw()
+	_, err := k8sClient.RESTClient().Delete().Body(c.Request().Body).AbsPath(kalmNamespaceUrl(c)).DoRaw(context.Background())
 	return err
 }
 
@@ -113,7 +114,7 @@ func createKalmNamespace(c echo.Context) (coreV1.Namespace, error) {
 
 	bts, _ := json.Marshal(kalmNamespace)
 	var application coreV1.Namespace
-	err = k8sClient.RESTClient().Post().Body(bts).AbsPath(kalmNamespaceUrl(c)).Do().Into(&application)
+	err = k8sClient.RESTClient().Post().Body(bts).AbsPath(kalmNamespaceUrl(c)).Do(context.Background()).Into(&application)
 	if err != nil {
 		return coreV1.Namespace{}, err
 	}
@@ -145,7 +146,7 @@ func updateKalmApplication(c echo.Context) (coreV1.Namespace, error) {
 
 	bts, _ := json.Marshal(crdApplication)
 	var kalmNS coreV1.Namespace
-	err = k8sClient.RESTClient().Put().Body(bts).AbsPath(kalmNamespaceUrl(c)).Do().Into(&kalmNS)
+	err = k8sClient.RESTClient().Put().Body(bts).AbsPath(kalmNamespaceUrl(c)).Do(context.Background()).Into(&kalmNS)
 	if err != nil {
 		return coreV1.Namespace{}, err
 	}
@@ -156,7 +157,7 @@ func updateKalmApplication(c echo.Context) (coreV1.Namespace, error) {
 func getKalmApplication(c echo.Context) (coreV1.Namespace, error) {
 	k8sClient := getK8sClient(c)
 	var fetched coreV1.Namespace
-	err := k8sClient.RESTClient().Get().AbsPath(kalmNamespaceUrl(c)).Do().Into(&fetched)
+	err := k8sClient.RESTClient().Get().AbsPath(kalmNamespaceUrl(c)).Do(context.Background()).Into(&fetched)
 	if err != nil {
 		return coreV1.Namespace{}, err
 	}
@@ -166,7 +167,7 @@ func getKalmApplication(c echo.Context) (coreV1.Namespace, error) {
 func getKalmNamespaceList(c echo.Context) (coreV1.NamespaceList, error) {
 	k8sClient := getK8sClient(c)
 	var fetched coreV1.NamespaceList
-	err := k8sClient.RESTClient().Get().AbsPath(kalmNamespaceUrl(c)).Do().Into(&fetched)
+	err := k8sClient.RESTClient().Get().AbsPath(kalmNamespaceUrl(c)).Do(context.Background()).Into(&fetched)
 	if err != nil {
 		return coreV1.NamespaceList{}, err
 	}

@@ -148,7 +148,7 @@ func (r *ComponentPluginBindingsMapper) Map(object handler.MapObject) []reconcil
 }
 
 func (r *ComponentReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	if err := mgr.GetFieldIndexer().IndexField(&appsV1.Deployment{}, ownerKey, func(rawObj runtime.Object) []string {
+	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &appsV1.Deployment{}, ownerKey, func(rawObj runtime.Object) []string {
 		deployment := rawObj.(*appsV1.Deployment)
 		owner := metaV1.GetControllerOf(deployment)
 
@@ -165,7 +165,7 @@ func (r *ComponentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		return err
 	}
 
-	if err := mgr.GetFieldIndexer().IndexField(&batchV1Beta1.CronJob{}, ownerKey, func(rawObj runtime.Object) []string {
+	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &batchV1Beta1.CronJob{}, ownerKey, func(rawObj runtime.Object) []string {
 		cronjob := rawObj.(*batchV1Beta1.CronJob)
 		owner := metaV1.GetControllerOf(cronjob)
 
@@ -182,7 +182,7 @@ func (r *ComponentReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		return err
 	}
 
-	if err := mgr.GetFieldIndexer().IndexField(&coreV1.Service{}, ownerKey, func(rawObj runtime.Object) []string {
+	if err := mgr.GetFieldIndexer().IndexField(context.Background(), &coreV1.Service{}, ownerKey, func(rawObj runtime.Object) []string {
 		// grab the job object, extract the owner...
 		service := rawObj.(*coreV1.Service)
 		owner := metaV1.GetControllerOf(service)

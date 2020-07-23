@@ -327,7 +327,7 @@ func handleLogRequests(conn *WSConn) {
 				}
 
 				req := k8sClient.CoreV1().Pods(m.Namespace).GetLogs(m.PodName, &podLogOpts)
-				podLogs, err := req.Stream()
+				podLogs, err := req.Stream(conn.ctx)
 
 				if err != nil {
 					log.Error(err)

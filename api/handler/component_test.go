@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/kalmhq/kalm/api/resources"
@@ -28,23 +29,23 @@ func (suite *ComponentTestSuite) SetupSuite() {
 	suite.WithControllerTestSuite.SetupSuite()
 
 	// prepare ns
-	suite.k8sClinet.CoreV1().Namespaces().Create(&coreV1.Namespace{
+	suite.k8sClinet.CoreV1().Namespaces().Create(context.Background(), &coreV1.Namespace{
 		ObjectMeta: v1.ObjectMeta{
 			Name: nsName,
 		},
-	})
+	}, v1.CreateOptions{})
 
 	suite.Eventually(func() bool {
-		ns, err := suite.k8sClinet.CoreV1().Namespaces().Get(nsName, v1.GetOptions{})
+		ns, err := suite.k8sClinet.CoreV1().Namespaces().Get(context.Background(), nsName, v1.GetOptions{})
 		return err == nil && ns != nil
 	})
 }
 
 func (suite *ComponentTestSuite) TeardownSuite() {
-	suite.k8sClinet.CoreV1().Namespaces().Delete(nsName, nil)
+	suite.k8sClinet.CoreV1().Namespaces().Delete(context.Background(), nsName, v1.DeleteOptions{})
 
 	suite.Eventually(func() bool {
-		_, err := suite.k8sClinet.CoreV1().Namespaces().Get(nsName, v1.GetOptions{})
+		_, err := suite.k8sClinet.CoreV1().Namespaces().Get(context.Background(), nsName, v1.GetOptions{})
 		return errors.IsNotFound(err)
 	})
 }
@@ -137,7 +138,7 @@ func (suite *ComponentTestSuite) TestCreateComponentWithReUsingPVCAsVolume() {
 			},
 		},
 	}
-	_, err := suite.k8sClinet.CoreV1().PersistentVolumes().Create(&pv)
+	_, err := suite.k8sClinet.CoreV1().PersistentVolumes().Create(context.Background(), &pv, v1.CreateOptions{})
 	suite.Nil(err)
 
 	reqComp := resources.Component{
