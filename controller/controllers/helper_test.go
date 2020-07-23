@@ -336,3 +336,13 @@ func (suite *BasicSuite) SetupKalmEnabledNs(name string) v1.Namespace {
 
 	return ns
 }
+
+func (suite *BasicSuite) ensureNsExists(name string) v1.Namespace {
+	ns := v1.Namespace{
+		ObjectMeta: metaV1.ObjectMeta{
+			Name: name,
+		},
+	}
+	suite.K8sClient.Create(context.Background(), &ns)
+	return ns
+}
