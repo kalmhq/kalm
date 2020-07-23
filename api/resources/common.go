@@ -3,7 +3,6 @@ package resources
 import (
 	"context"
 	"fmt"
-
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/sirupsen/logrus"
 	appV1 "k8s.io/api/apps/v1"
@@ -38,6 +37,7 @@ type ResourceChannels struct {
 	DockerRegistryList         *DockerRegistryListChannel
 	SecretList                 *SecretListChannel
 	IstioMetricList            *IstioMetricListChannel
+	ProtectedEndpoint          *ProtectedEndpointsChannel
 }
 
 type Resources struct {
@@ -53,9 +53,10 @@ type Resources struct {
 	ComponentPluginBindings []v1alpha1.ComponentPluginBinding
 	//ApplicationPlugins        []v1alpha1.ApplicationPlugin
 	//ApplicationPluginBindings []v1alpha1.ApplicationPluginBinding
-	DockerRegistries []v1alpha1.DockerRegistry
-	Secrets          []coreV1.Secret
-	HttpsCertIssuers []v1alpha1.HttpsCertIssuer
+	DockerRegistries  []v1alpha1.DockerRegistry
+	Secrets           []coreV1.Secret
+	HttpsCertIssuers  []v1alpha1.HttpsCertIssuer
+	ProtectedEndpoint []v1alpha1.ProtectedEndpoint
 }
 
 var ListAll = metaV1.ListOptions{
@@ -163,6 +164,14 @@ func (c *ResourceChannels) ToResources() (r *Resources, err error) {
 			return nil, err
 		}
 		resources.Secrets = <-c.SecretList.List
+	}
+
+	if c.ProtectedEndpoint != nil {
+		err = <-c.ProtectedEndpoint.Error
+		if err != nil {
+			return nil, err
+		}
+		resources.ProtectedEndpoint = <-c.ProtectedEndpoint.List
 	}
 
 	return resources, nil

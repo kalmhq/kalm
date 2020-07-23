@@ -4,7 +4,7 @@ import { HttpRoute } from "./route";
 import { Certificate } from "./certificate";
 import { RegistryType } from "./registry";
 import { Disk } from "./disk";
-import { SSOConfig } from "types/sso";
+import { ProtectedEndpoint, SSOConfig } from "types/sso";
 
 export const WATCHED_RESOURCE_CHANGE = "WATCHED_RESOURCE_CHANGE";
 
@@ -20,6 +20,7 @@ export const RESOURCE_TYPE_HTTPS_CERT = "HttpsCert";
 export const RESOURCE_TYPE_REGISTRY = "Registry";
 export const RESOURCE_TYPE_VOLUME = "Volume";
 export const RESOURCE_TYPE_SSO = "SingleSignOnConfig";
+export const RESOURCE_TYPE_PROTECTED_ENDPOINT = "ProtectedEndpoint";
 
 export type ResourceActionType =
   | typeof RESOURCE_ACTION_UPDATE
@@ -100,6 +101,15 @@ export interface SSOConfigResourceAction {
   };
 }
 
+export interface ProtectedEndpointResourceAction {
+  type: typeof WATCHED_RESOURCE_CHANGE;
+  kind: typeof RESOURCE_TYPE_PROTECTED_ENDPOINT;
+  payload: {
+    action: ResourceActionType;
+    data: ProtectedEndpoint;
+  };
+}
+
 export type ResourceActions =
   | NodeResourceAction
   | ApplicationResourceAction
@@ -108,4 +118,5 @@ export type ResourceActions =
   | HttpsCertResourceAction
   | RegistryResourceAction
   | VolumeResourceAction
-  | SSOConfigResourceAction;
+  | SSOConfigResourceAction
+  | ProtectedEndpointResourceAction;

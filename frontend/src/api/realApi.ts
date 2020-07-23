@@ -8,7 +8,7 @@ import { HttpRoute } from "types/route";
 import { RoleBindingsRequestBody } from "types/user";
 import { CertificateFormType, CertificateIssuerFormType } from "types/certificate";
 import { Node } from "types/node";
-import { SSOConfig } from "types/sso";
+import { ProtectedEndpoint, SSOConfig } from "types/sso";
 
 export default class RealApi extends Api {
   public getClusterInfo = async () => {
@@ -317,6 +317,25 @@ export default class RealApi extends Api {
 
   public deleteSSOConfig = async (): Promise<void> => {
     await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/sso` });
+  };
+
+  public listProtectedEndpoints = async (): Promise<Immutable.List<ProtectedEndpoint>> => {
+    const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/protectedendpoints` });
+    return Immutable.fromJS(res.data);
+  };
+
+  public createProtectedEndpoint = async (protectedEndpoint: ProtectedEndpoint): Promise<ProtectedEndpoint> => {
+    const res = await axiosRequest({
+      method: "post",
+      url: `/${K8sApiVersion}/protectedendpoints`,
+      data: protectedEndpoint,
+    });
+
+    return Immutable.fromJS(res.data);
+  };
+
+  public deleteProtectedEndpoint = async (protectedEndpoint: ProtectedEndpoint): Promise<void> => {
+    await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/protectedendpoints`, data: protectedEndpoint });
   };
 }
 

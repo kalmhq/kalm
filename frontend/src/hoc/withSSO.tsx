@@ -9,6 +9,9 @@ const mapStateToProps = (state: RootState) => {
     ssoConfig: sso.get("config"),
     isSSOConfigLoaded: sso.get("loaded"),
     isSSOConfigLoading: sso.get("isLoading"),
+    isProtectedEndpointsLoaded: sso.get("isProtectedEndpointsLoaded"),
+    isProtectedEndpointsLoading: sso.get("isProtectedEndpointsLoading"),
+    protectedEndpoints: sso.get("protectedEndpoints"),
   };
 };
 

@@ -6,7 +6,7 @@ import { HttpRoute } from "types/route";
 import { RegistryType } from "types/registry";
 import { RoleBindingsRequestBody } from "types/user";
 import MockStore from "./mockStore";
-import { SSOConfig } from "types/sso";
+import { ProtectedEndpoint, SSOConfig } from "types/sso";
 
 export const mockStore = new MockStore();
 
@@ -237,4 +237,14 @@ export default class MockApi extends Api {
   };
 
   public deleteSSOConfig = async (): Promise<void> => {};
+
+  public listProtectedEndpoints = async (): Promise<Immutable.List<ProtectedEndpoint>> => {
+    return Immutable.List();
+  };
+
+  public createProtectedEndpoint = async (protectedEndpoint: ProtectedEndpoint): Promise<ProtectedEndpoint> => {
+    return Immutable.Map();
+  };
+
+  public deleteProtectedEndpoint = async (protectedEndpoint: ProtectedEndpoint): Promise<void> => {};
 }

@@ -12,6 +12,11 @@ type SSOConfigListChannel struct {
 	Error chan error
 }
 
+type ProtectedEndpointsChannel struct {
+	List  chan []v1alpha1.ProtectedEndpoint
+	Error chan error
+}
+
 const SSO_NAME = "sso"
 
 func (builder *Builder) GetSSOConfigListChannel(listOptions ...client.ListOption) *SSOConfigListChannel {
@@ -41,6 +46,40 @@ func (builder *Builder) GetSSOConfigListChannel(listOptions ...client.ListOption
 	}()
 
 	return channel
+}
+
+func (builder *Builder) GetProtectedEndpointsChannel(listOptions ...client.ListOption) *ProtectedEndpointsChannel {
+	channel := &ProtectedEndpointsChannel{
+		List:  make(chan []v1alpha1.ProtectedEndpoint, 1),
+		Error: make(chan error, 1),
+	}
+
+	go func() {
+		var fetched v1alpha1.ProtectedEndpointList
+		err := builder.List(&fetched, listOptions...)
+
+		if err != nil {
+			channel.List <- nil
+			channel.Error <- err
+			return
+		}
+
+		res := make([]v1alpha1.ProtectedEndpoint, len(fetched.Items))
+
+		for i, item := range fetched.Items {
+			res[i] = item
+		}
+
+		channel.List <- res
+		channel.Error <- nil
+	}()
+
+	return channel
+}
+
+type ProtectedEndpoint struct {
+	Namespace    string `json:"namespace"`
+	EndpointName string `json:"endpointName"`
 }
 
 type SSOConfig struct {
@@ -97,4 +136,66 @@ func (builder *Builder) UpdateSSOConfig(ssoConfig *SSOConfig) (*SSOConfig, error
 
 func (builder *Builder) DeleteSSOConfig() error {
 	return builder.Delete(&v1alpha1.SingleSignOnConfig{ObjectMeta: metaV1.ObjectMeta{Name: SSO_NAME, Namespace: controllers.KALM_DEX_NAMESPACE}})
+}
+
+func ProtectedEndpointCRDToProtectedEndpoint(endpoint *v1alpha1.ProtectedEndpoint) *ProtectedEndpoint {
+	return &ProtectedEndpoint{
+		Namespace:    endpoint.Namespace,
+		EndpointName: endpoint.Spec.EndpointName,
+	}
+}
+
+func (builder *Builder) ListProtectedEndpoints() ([]*ProtectedEndpoint, error) {
+	channel := ResourceChannels{
+		ProtectedEndpoint: builder.GetProtectedEndpointsChannel(),
+	}
+
+	resources, err := channel.ToResources()
+
+	if err != nil {
+		return nil, err
+	}
+
+	res := make([]*ProtectedEndpoint, len(resources.ProtectedEndpoint))
+
+	for i := range resources.ProtectedEndpoint {
+		res[i] = ProtectedEndpointCRDToProtectedEndpoint(&resources.ProtectedEndpoint[i])
+	}
+
+	return res, nil
+}
+
+func getProtectedEndpointCRDNameFromEndpointName(endpointName string) string {
+	return "component-" + endpointName
+}
+
+func (builder *Builder) CreateProtectedEndpoint(ep *ProtectedEndpoint) (*ProtectedEndpoint, error) {
+	endpoint := &v1alpha1.ProtectedEndpoint{
+		ObjectMeta: metaV1.ObjectMeta{
+			Namespace: ep.Namespace,
+			Name:      getProtectedEndpointCRDNameFromEndpointName(ep.EndpointName),
+		},
+		Spec: v1alpha1.ProtectedEndpointSpec{
+			EndpointName: ep.EndpointName,
+		},
+	}
+
+	err := builder.Create(endpoint)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return ProtectedEndpointCRDToProtectedEndpoint(endpoint), nil
+}
+
+func (builder *Builder) DeleteProtectedEndpoints(ep *ProtectedEndpoint) error {
+	endpoint := &v1alpha1.ProtectedEndpoint{
+		ObjectMeta: metaV1.ObjectMeta{
+			Namespace: ep.Namespace,
+			Name:      getProtectedEndpointCRDNameFromEndpointName(ep.EndpointName),
+		},
+	}
+
+	return builder.Delete(endpoint)
 }
