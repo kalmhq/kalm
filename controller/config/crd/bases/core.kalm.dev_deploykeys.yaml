@@ -14,7 +14,7 @@ spec:
     listKind: DeployKeyList
     plural: deploykeys
     singular: deploykey
-  scope: Namespaced
+  scope: Cluster
   subresources:
     status: {}
   validation:
@@ -47,6 +47,7 @@ spec:
               enum:
               - component
               - app
+              - all
               type: string
           required:
           - type
