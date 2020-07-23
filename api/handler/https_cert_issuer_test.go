@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
@@ -19,7 +20,14 @@ func TestHttpsCertIssuerTestSuite(t *testing.T) {
 	suite.Run(t, new(HttpsCertIssuerTestSuite))
 }
 
+func (suite *HttpsCertIssuerTestSuite) SetupSuite() {
+	suite.WithControllerTestSuite.SetupSuite()
+
+	suite.ensureNamespaceExist(controllers.CertManagerNamespace)
+}
+
 func (suite *HttpsCertIssuerTestSuite) TearDownTest() {
+	fmt.Println("tear down test........")
 	suite.k8sClinet.RESTClient().Delete().AbsPath("/apis/core.kalm.dev/v1alpha1/httpscertissuers/my-foobar-issuer").Do(context.Background()).Error()
 }
 

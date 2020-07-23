@@ -21,6 +21,13 @@ func TestHttpsCertTestSuite(t *testing.T) {
 	suite.Run(t, new(HttpsCertTestSuite))
 }
 
+func (suite *HttpsCertTestSuite) SetupSuite() {
+	suite.WithControllerTestSuite.SetupSuite()
+
+	suite.ensureNamespaceExist("istio-system")
+	suite.ensureNamespaceExist(controllers.CertManagerNamespace)
+}
+
 func (suite *HttpsCertTestSuite) TearDownTest() {
 	suite.k8sClinet.RESTClient().Delete().AbsPath("/apis/core.kalm.dev/v1alpha1/httpscerts/foobar-cert").Do(context.Background()).Error()
 	suite.k8sClinet.RESTClient().Delete().AbsPath("/api/v1/namespaces/istio-system/secrets/kalm-self-managed-foobar-cert").Do(context.Background()).Error()
