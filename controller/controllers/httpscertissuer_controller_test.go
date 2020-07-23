@@ -21,6 +21,8 @@ func TestHttpsCertIssuerControllerSuite(t *testing.T) {
 
 func (suite *HttpsCertIssuerControllerSuite) SetupSuite() {
 	suite.BasicSuite.SetupSuite()
+
+	suite.ensureNsExists(CertManagerNamespace)
 }
 
 func (suite *HttpsCertIssuerControllerSuite) TearDownSuite() {

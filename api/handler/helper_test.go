@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"io"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -155,4 +156,24 @@ func (suite *WithControllerTestSuite) getComponent(ns, compName string) (v1alpha
 	err := suite.k8sClinet.RESTClient().Get().AbsPath(compAPIURL).Do(context.Background()).Into(&comp)
 
 	return comp, err
+}
+
+func (suite *WithControllerTestSuite) ensureNamespaceExist(ns string) {
+	nsKey := metav1.ObjectMeta{Name: ns}
+
+	_, err := suite.k8sClinet.CoreV1().Namespaces().Get(
+		context.Background(),
+		nsKey.Name,
+		metav1.GetOptions{},
+	)
+
+	if errors.IsNotFound(err) {
+		_, err = suite.k8sClinet.CoreV1().Namespaces().Create(
+			context.Background(),
+			&v1.Namespace{ObjectMeta: nsKey},
+			metav1.CreateOptions{},
+		)
+
+		suite.Nil(err)
+	}
 }
