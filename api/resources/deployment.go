@@ -2,7 +2,7 @@ package resources
 
 import (
 	appsV1 "k8s.io/api/apps/v1"
-	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type DeploymentListChannel struct {
@@ -10,17 +10,17 @@ type DeploymentListChannel struct {
 	Error chan error
 }
 
-func (builder *Builder) GetDeploymentListChannel(namespaces string, listOptions metaV1.ListOptions) *DeploymentListChannel {
+func (builder *Builder) GetDeploymentListChannel(namespaces string) *DeploymentListChannel {
 	channel := &DeploymentListChannel{
 		List:  make(chan *appsV1.DeploymentList, 1),
 		Error: make(chan error, 1),
 	}
 
 	go func() {
-		list, err := builder.K8sClient.AppsV1().Deployments(namespaces).
-			List(listOptions)
+		var deployments appsV1.DeploymentList
+		err := builder.List(&deployments, client.InNamespace(namespaces))
 
-		channel.List <- list
+		channel.List <- &deployments
 		channel.Error <- err
 	}()
 

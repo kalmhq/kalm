@@ -1,9 +1,9 @@
 package ws
 
 import (
+	"context"
 	"errors"
 
-	"github.com/kalmhq/kalm/api/handler"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
@@ -40,7 +40,7 @@ func registerWatchHandler(c *Client,
 	runtimeObj runtime.Object,
 	buildResMessage func(c *Client, action string, obj interface{}) (*ResMessage, error)) {
 
-	informer, err := (*informerCache).GetInformer(runtimeObj)
+	informer, err := (*informerCache).GetInformer(context.Background(), runtimeObj)
 	if err != nil {
 		log.Error(err)
 		return
@@ -138,7 +138,7 @@ func buildServiceResMessage(c *Client, action string, objWatched interface{}) (*
 		return &ResMessage{}, nil
 	}
 
-	component, err := handler.GetComponent(c.K8sClientset, service.Namespace, componentName)
+	component, err := c.Builder().GetComponent(service.Namespace, componentName)
 	if err != nil {
 		return nil, err
 	}
@@ -157,7 +157,7 @@ func buildPodResMessage(c *Client, action string, objWatched interface{}) (*ResM
 		return &ResMessage{}, nil
 	}
 
-	component, err := handler.GetComponent(c.K8sClientset, pod.Namespace, componentName)
+	component, err := c.Builder().GetComponent(pod.Namespace, componentName)
 	if err != nil {
 		return nil, err
 	}
@@ -190,7 +190,7 @@ func buildNodeResMessage(c *Client, action string, objWatched interface{}) (*Res
 	return &ResMessage{
 		Kind:   "Node",
 		Action: action,
-		Data:   resources.BuildNodeResponse(c.K8sClientset, node),
+		Data:   c.Builder().BuildNodeResponse(node),
 	}, nil
 }
 

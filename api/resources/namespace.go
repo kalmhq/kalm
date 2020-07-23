@@ -4,7 +4,6 @@ import (
 	authorizationV1 "k8s.io/api/authorization/v1"
 	coreV1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 	"strings"
 )
 
@@ -23,14 +22,15 @@ type Namespace struct {
 	Roles []string `json:"roles"`
 }
 
-func getNamespaceListChannel(k8sClient *kubernetes.Clientset, listOptions metaV1.ListOptions) *NamespaceListChannel {
+func (builder *Builder) GetNamespaceListChannel() *NamespaceListChannel {
 	channel := &NamespaceListChannel{
 		List:  make(chan []Namespace, 1),
 		Error: make(chan error, 1),
 	}
 
 	go func() {
-		res, err := k8sClient.CoreV1().Namespaces().List(listOptions)
+		var nsList coreV1.NamespaceList
+		err := builder.List(&nsList)
 
 		if err != nil {
 			channel.List <- nil
@@ -38,9 +38,9 @@ func getNamespaceListChannel(k8sClient *kubernetes.Clientset, listOptions metaV1
 			return
 		}
 
-		list := make([]Namespace, 0, len(res.Items))
+		list := make([]Namespace, 0, len(nsList.Items))
 
-		for _, item := range res.Items {
+		for _, item := range nsList.Items {
 			if !strings.HasPrefix(item.Name, KALM_NAMESPACE_PREFIX) {
 				continue
 			}
@@ -56,9 +56,7 @@ func getNamespaceListChannel(k8sClient *kubernetes.Clientset, listOptions metaV1
 
 			roles := make([]string, 0, 2)
 
-			// TODO Is there a better way?
-			// Infer user roles with some specific access review. This is not accurate but a trade off.
-			writerReview, err := k8sClient.AuthorizationV1().SelfSubjectAccessReviews().Create(&authorizationV1.SelfSubjectAccessReview{
+			writerReview := &authorizationV1.SelfSubjectAccessReview{
 				Spec: authorizationV1.SelfSubjectAccessReviewSpec{
 					ResourceAttributes: &authorizationV1.ResourceAttributes{
 						Namespace: item.Name,
@@ -67,7 +65,11 @@ func getNamespaceListChannel(k8sClient *kubernetes.Clientset, listOptions metaV1
 						Group:     "core.kalm.dev",
 					},
 				},
-			})
+			}
+
+			// TODO Is there a better way?
+			// Infer user roles with some specific access review. This is not accurate but a trade off.
+			err := builder.Create(writerReview)
 
 			if err != nil {
 				channel.List <- nil
@@ -79,7 +81,7 @@ func getNamespaceListChannel(k8sClient *kubernetes.Clientset, listOptions metaV1
 				roles = append(roles, "writer")
 			}
 
-			readerReview, err := k8sClient.AuthorizationV1().SelfSubjectAccessReviews().Create(&authorizationV1.SelfSubjectAccessReview{
+			readerReview := &authorizationV1.SelfSubjectAccessReview{
 				Spec: authorizationV1.SelfSubjectAccessReviewSpec{
 					ResourceAttributes: &authorizationV1.ResourceAttributes{
 						Namespace: item.Name,
@@ -88,7 +90,9 @@ func getNamespaceListChannel(k8sClient *kubernetes.Clientset, listOptions metaV1
 						Group:     "core.kalm.dev",
 					},
 				},
-			})
+			}
+
+			err = builder.Create(readerReview)
 
 			if err != nil {
 				channel.List <- nil
@@ -115,9 +119,9 @@ func getNamespaceListChannel(k8sClient *kubernetes.Clientset, listOptions metaV1
 	return channel
 }
 
-func ListNamespaces(k8sClient *kubernetes.Clientset) ([]Namespace, error) {
+func (builder *Builder) ListNamespaces() ([]Namespace, error) {
 	resourceChannels := &ResourceChannels{
-		NamespaceList: getNamespaceListChannel(k8sClient, ListAll),
+		NamespaceList: builder.GetNamespaceListChannel(),
 	}
 
 	resources, err := resourceChannels.ToResources()
@@ -129,24 +133,24 @@ func ListNamespaces(k8sClient *kubernetes.Clientset) ([]Namespace, error) {
 	return resources.Namespaces, nil
 }
 
-func CreateNamespace(k8sClient *kubernetes.Clientset, name string) error {
+func (builder *Builder) CreateNamespace(name string) error {
 	namespace := &coreV1.Namespace{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: formatNamespaceName(name),
 		},
 	}
 
-	_, err := k8sClient.CoreV1().Namespaces().Create(namespace)
+	err := builder.Create(namespace)
 
 	if err != nil {
 		return err
 	}
 
-	return createDefaultKalmRoles(k8sClient, namespace.Name)
+	return builder.createDefaultKalmRoles(namespace.Name)
 }
 
-func DeleteNamespace(k8sClient *kubernetes.Clientset, name string) error {
-	return k8sClient.CoreV1().Namespaces().Delete(formatNamespaceName(name), nil)
+func (builder *Builder) DeleteNamespace(name string) error {
+	return builder.Delete(&coreV1.Namespace{ObjectMeta: metaV1.ObjectMeta{Name: formatNamespaceName(name)}})
 }
 
 func formatNamespaceName(name string) string {

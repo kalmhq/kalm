@@ -6,7 +6,7 @@ import (
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 	"k8s.io/apimachinery/pkg/api/errors"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"testing"
 )
@@ -105,7 +105,7 @@ func (suite *HttpsCertIssuerControllerSuite) reloadHttpsCertIssuer(issuer *v1alp
 
 func genEmptyCAHttpsCertIssuer() v1alpha1.HttpsCertIssuer {
 	return v1alpha1.HttpsCertIssuer{
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metaV1.ObjectMeta{
 			Name: randomName()[:12],
 		},
 		Spec: v1alpha1.HttpsCertIssuerSpec{

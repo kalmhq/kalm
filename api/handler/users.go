@@ -3,7 +3,6 @@ package handler
 import (
 	"fmt"
 	"github.com/kalmhq/kalm/api/errors"
-	"github.com/kalmhq/kalm/api/resources"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 	rbacV1 "k8s.io/api/rbac/v1"
@@ -53,9 +52,7 @@ type RoleBindingResponse struct {
 }
 
 func (h *ApiHandler) handleListRoleBindings(c echo.Context) error {
-	k8sClient := getK8sClient(c)
-
-	bindings, err := resources.ListRoleBindings(k8sClient, "")
+	bindings, err := h.Builder(c).ListRoleBindings("")
 
 	if err != nil {
 		log.Error("list role bindings error", err)
@@ -122,8 +119,6 @@ func (h *ApiHandler) handleCreateRoleBinding(c echo.Context) (err error) {
 		return err
 	}
 
-	k8sClient := getK8sClient(c)
-
 	for _, role := range body.Roles {
 		subject := rbacV1.Subject{
 			Kind:     body.Kind,
@@ -135,13 +130,13 @@ func (h *ApiHandler) handleCreateRoleBinding(c echo.Context) (err error) {
 			subject.Namespace = "kalm-system"
 			subject.APIGroup = ""
 
-			err = resources.CreateKalmServiceAccount(k8sClient, subject.Name)
+			err = h.Builder(c).CreateKalmServiceAccount(subject.Name)
 			if err != nil && !errors.IsAlreadyExists(err) {
 				return err
 			}
 		}
 
-		err := resources.CreateRoleBinding(k8sClient, body.Namespace, subject, string(role))
+		err := h.Builder(c).CreateRoleBinding(body.Namespace, subject, string(role))
 
 		if err != nil && errors.IsAlreadyExists(err) {
 			continue
@@ -156,7 +151,7 @@ func (h *ApiHandler) handleCreateRoleBinding(c echo.Context) (err error) {
 }
 
 func (h *ApiHandler) handleDeleteRoleBinding(c echo.Context) error {
-	err := resources.DeleteRoleBinding(getK8sClient(c), c.Param("namespace"), c.Param("name"))
+	err := h.Builder(c).DeleteRoleBinding(c.Param("namespace"), c.Param("name"))
 
 	if err != nil {
 		return err
@@ -170,7 +165,7 @@ func (h *ApiHandler) resolveClusterRole() error {
 }
 
 func (h *ApiHandler) handleGetServiceAccount(c echo.Context) error {
-	token, crt, err := resources.GetServiceAccountSecrets(getK8sClient(c), c.Param("name"))
+	token, crt, err := h.Builder(c).GetServiceAccountSecrets(c.Param("name"))
 
 	if err != nil {
 		return err

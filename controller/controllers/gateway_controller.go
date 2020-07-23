@@ -110,8 +110,8 @@ func (r *GatewayReconcilerTask) HttpsGateway() error {
 				Protocol: "HTTPS",
 				Name:     fmt.Sprintf("https-%s", secretName),
 			},
-			Tls: &istioNetworkingV1Beta1.Server_TLSOptions{
-				Mode:           istioNetworkingV1Beta1.Server_TLSOptions_SIMPLE,
+			Tls: &istioNetworkingV1Beta1.ServerTLSSettings{
+				Mode:           istioNetworkingV1Beta1.ServerTLSSettings_SIMPLE,
 				CredentialName: secretName,
 			},
 		}
@@ -168,7 +168,7 @@ func (r *GatewayReconcilerTask) HttpGateway() error {
 				Protocol: "http",
 				Name:     "kalm-http0",
 			},
-			Tls: &istioNetworkingV1Beta1.Server_TLSOptions{
+			Tls: &istioNetworkingV1Beta1.ServerTLSSettings{
 				HttpsRedirect: true,
 			},
 		}

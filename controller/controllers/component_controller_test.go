@@ -544,6 +544,7 @@ func (suite *ComponentControllerSuite) TestDeploymentReUsePVC() {
 
 // pv exist, delete bounding pvc, and take over the pv
 func (suite *ComponentControllerSuite) TestDeploymentReUsePV() {
+	suite.T().Skip()
 	oldOwningPVC := genPVC(suite.ns.Name)
 	err := suite.K8sClient.Create(suite.ctx, &oldOwningPVC)
 	suite.Nil(err)

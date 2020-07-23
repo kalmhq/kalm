@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/kalmhq/kalm/api/errors"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
@@ -59,7 +60,7 @@ func UpdateComponentPluginBindingsForObject(kalmClient *rest.RESTClient, namespa
 		Namespace(namespace).
 		Resource("componentpluginbindings").
 		VersionedParams(&options, metaV1.ParameterCodec).
-		Do().
+		Do(context.Background()).
 		Into(&oldPluginList)
 
 	if err != nil {
@@ -116,7 +117,7 @@ func UpdateComponentPluginBindingsForObject(kalmClient *rest.RESTClient, namespa
 			Namespace(namespace).
 			Resource("componentpluginbindings").
 			Body(np).
-			Do().
+			Do(context.Background()).
 			Into(np)
 
 		if errors.IsAlreadyExists(err) {
@@ -133,7 +134,7 @@ func UpdateComponentPluginBindingsForObject(kalmClient *rest.RESTClient, namespa
 			Namespace(namespace).
 			Resource("componentpluginbindings").
 			Name(name).
-			Do().
+			Do(context.Background()).
 			Error()
 
 		if err != nil {

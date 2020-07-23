@@ -72,12 +72,6 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	//gv1Alpha1WithAuth.PUT("/componenttemplates/:name", h.handleUpdateComponentTemplate)
 	//gv1Alpha1WithAuth.DELETE("/componenttemplates/:name", h.handleDeleteComponentTemplate)
 
-	gv1Alpha1WithAuth.GET("/files/:namespace", h.handleListFiles)
-	gv1Alpha1WithAuth.POST("/files/:namespace", h.handleCreateFile)
-	gv1Alpha1WithAuth.PUT("/files/:namespace", h.handleUpdateFile)
-	gv1Alpha1WithAuth.PUT("/files/:namespace/move", h.handleMoveFile)
-	gv1Alpha1WithAuth.DELETE("/files/:namespace", h.handleDeleteFile)
-
 	gv1Alpha1WithAuth.DELETE("/pods/:namespace/:name", h.handleDeletePod)
 
 	gv1Alpha1WithAuth.GET("/rolebindings", h.handleListRoleBindings)

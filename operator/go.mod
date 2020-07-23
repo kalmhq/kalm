@@ -8,13 +8,13 @@ require (
 	github.com/jetstack/cert-manager v0.13.1
 	github.com/kalmhq/kalm/controller v0.0.0-20200709120351-d96177bbf37a
 	github.com/prometheus/prometheus v1.8.2
-	gopkg.in/yaml.v3 v3.0.0-20191120175047-4206685974f2
-	istio.io/client-go v0.0.0-20200324231647-289a91f51a8e
-	k8s.io/api v0.17.3
-	k8s.io/apiextensions-apiserver v0.17.3
-	k8s.io/apimachinery v0.17.3
-	k8s.io/client-go v0.17.3
-	sigs.k8s.io/controller-runtime v0.4.0
+	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
+	istio.io/client-go v0.0.0-20200717004237-1af75184beba
+	k8s.io/api v0.18.6
+	k8s.io/apiextensions-apiserver v0.18.4
+	k8s.io/apimachinery v0.18.6
+	k8s.io/client-go v0.18.4
+	sigs.k8s.io/controller-runtime v0.6.1
 )
 
 replace github.com/kalmhq/kalm/controller => ../controller

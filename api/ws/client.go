@@ -2,6 +2,7 @@ package ws
 
 import (
 	"encoding/json"
+	"github.com/kalmhq/kalm/api/resources"
 
 	"github.com/gorilla/websocket"
 	"github.com/kalmhq/kalm/api/client"
@@ -39,6 +40,8 @@ type Client struct {
 	K8SClientConfig *rest.Config
 
 	K8sClientset *kubernetes.Clientset
+
+	logger *log.Logger
 
 	IsWatching bool
 }
@@ -112,6 +115,9 @@ func (c *Client) read() {
 		}
 
 	}
+}
+func (c *Client) Builder() *resources.Builder {
+	return resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, c.logger)
 }
 
 func (c *Client) write() {

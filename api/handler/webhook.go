@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/labstack/echo/v4"
@@ -29,7 +30,7 @@ func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
 
 	deployKey := v1alpha1.DeployKey{}
 	deployKeysAbsPath := fmt.Sprintf("/apis/core.kalm.dev/v1alpha1/deploykeys/%s", deployKeyName)
-	err = cSet.RESTClient().Get().AbsPath(deployKeysAbsPath).Do().Into(&deployKey)
+	err = cSet.RESTClient().Get().AbsPath(deployKeysAbsPath).Do(c.Request().Context()).Into(&deployKey)
 	if err != nil {
 		return err
 	}
@@ -47,7 +48,8 @@ func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
 		return err
 	}
 
-	crdComp, err := GetComponent(deployKeyClient, ns, componentName)
+	builder := resources.NewBuilder(deployKeyClient, deployKeyConfig, h.logger)
+	crdComp, err := builder.GetComponent(ns, componentName)
 	if err != nil {
 		return err
 	}
@@ -66,7 +68,7 @@ func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
 	var component v1alpha1.Component
 
 	compAbsPath := fmt.Sprintf("/apis/core.kalm.dev/v1alpha1/namespaces/%s/components/%s", ns, componentName)
-	err = deployKeyClient.RESTClient().Put().Body(bts).AbsPath(compAbsPath).Do().Into(&component)
+	err = deployKeyClient.RESTClient().Put().Body(bts).AbsPath(compAbsPath).Do(c.Request().Context()).Into(&component)
 	if err != nil {
 		return err
 	}

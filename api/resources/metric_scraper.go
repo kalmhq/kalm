@@ -68,20 +68,20 @@ func StartMetricScraper(ctx context.Context, manager *client.ClientManager) erro
 }
 
 func update(client *mclientv1beta1.MetricsV1beta1Client, restClient *kubernetes.Clientset, db *sql.DB, metricDuration *time.Duration) error {
-	podMetrics, err := client.PodMetricses("").List(v1.ListOptions{})
+	podMetrics, err := client.PodMetricses("").List(context.Background(), v1.ListOptions{})
 	if err != nil {
 		log.Errorf("Error scraping pod metrics: %s", err)
 		return err
 	}
 
-	podDetails, err := restClient.CoreV1().Pods("").List(v1.ListOptions{})
+	podDetails, err := restClient.CoreV1().Pods("").List(context.Background(), v1.ListOptions{})
 	if err != nil {
 		log.Errorf("Error scraping pod details: %s", err)
 		return err
 	}
 	completePodMetrics(podMetrics, podDetails)
 
-	nodeMetrics, err := client.NodeMetricses().List(v1.ListOptions{})
+	nodeMetrics, err := client.NodeMetricses().List(context.Background(), v1.ListOptions{})
 	if err != nil {
 		log.Errorf("Error scraping node metrics: %s", err)
 		return err

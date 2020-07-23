@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
@@ -51,7 +52,7 @@ func (h *ApiHandler) handleDeleteComponentTemplate(c echo.Context) error {
 
 func deleteKalmComponentTemplate(c echo.Context) error {
 	k8sClient := getK8sClient(c)
-	_, err := k8sClient.RESTClient().Delete().Body(c.Request().Body).AbsPath(kalmComponentTemplateUrl(c)).DoRaw()
+	_, err := k8sClient.RESTClient().Delete().Body(c.Request().Body).AbsPath(kalmComponentTemplateUrl(c)).DoRaw(context.Background())
 	return err
 }
 
@@ -66,7 +67,7 @@ func createKalmComponentTemplate(c echo.Context) (*v1alpha1.ComponentTemplate, e
 
 	bts, _ := json.Marshal(crdComponentTemplate)
 	var componentTemplate v1alpha1.ComponentTemplate
-	err = k8sClient.RESTClient().Post().Body(bts).AbsPath(kalmComponentTemplateUrl(c)).Do().Into(&componentTemplate)
+	err = k8sClient.RESTClient().Post().Body(bts).AbsPath(kalmComponentTemplateUrl(c)).Do(context.Background()).Into(&componentTemplate)
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +93,7 @@ func updateKalmComponentTemplate(c echo.Context) (*v1alpha1.ComponentTemplate, e
 
 	bts, _ := json.Marshal(crdComponentTemplate)
 	var componentTemplate v1alpha1.ComponentTemplate
-	err = k8sClient.RESTClient().Put().Body(bts).AbsPath(kalmComponentTemplateUrl(c)).Do().Into(&componentTemplate)
+	err = k8sClient.RESTClient().Put().Body(bts).AbsPath(kalmComponentTemplateUrl(c)).Do(context.Background()).Into(&componentTemplate)
 
 	if err != nil {
 		return nil, err
@@ -104,7 +105,7 @@ func updateKalmComponentTemplate(c echo.Context) (*v1alpha1.ComponentTemplate, e
 func getKalmComponentTemplate(c echo.Context) (*v1alpha1.ComponentTemplate, error) {
 	k8sClient := getK8sClient(c)
 	var fetched v1alpha1.ComponentTemplate
-	err := k8sClient.RESTClient().Get().AbsPath(kalmComponentTemplateUrl(c)).Do().Into(&fetched)
+	err := k8sClient.RESTClient().Get().AbsPath(kalmComponentTemplateUrl(c)).Do(context.Background()).Into(&fetched)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +115,7 @@ func getKalmComponentTemplate(c echo.Context) (*v1alpha1.ComponentTemplate, erro
 func getKalmComponentTemplateList(c echo.Context) (*v1alpha1.ComponentTemplateList, error) {
 	k8sClient := getK8sClient(c)
 	var fetched v1alpha1.ComponentTemplateList
-	err := k8sClient.RESTClient().Get().AbsPath(kalmComponentTemplateUrl(c)).Do().Into(&fetched)
+	err := k8sClient.RESTClient().Get().AbsPath(kalmComponentTemplateUrl(c)).Do(context.Background()).Into(&fetched)
 	if err != nil {
 		return nil, err
 	}

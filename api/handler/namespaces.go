@@ -1,13 +1,12 @@
 package handler
 
 import (
-	"github.com/kalmhq/kalm/api/resources"
 	"github.com/labstack/echo/v4"
 	"net/http"
 )
 
 func (h *ApiHandler) handleListNamespaces(c echo.Context) error {
-	namespaces, err := resources.ListNamespaces(getK8sClient(c))
+	namespaces, err := h.Builder(c).ListNamespaces()
 
 	if err != nil {
 		return err
@@ -17,7 +16,7 @@ func (h *ApiHandler) handleListNamespaces(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleCreateNamespace(c echo.Context) error {
-	err := resources.CreateNamespace(getK8sClient(c), c.Param("name"))
+	err := h.Builder(c).CreateNamespace(c.Param("name"))
 
 	if err != nil {
 		return err
@@ -27,7 +26,7 @@ func (h *ApiHandler) handleCreateNamespace(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteNamespace(c echo.Context) error {
-	err := resources.DeleteNamespace(getK8sClient(c), c.Param("name"))
+	err := h.Builder(c).DeleteNamespace(c.Param("name"))
 
 	if err != nil {
 		return err

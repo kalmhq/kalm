@@ -2,6 +2,7 @@ package handler
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/kalmhq/kalm/api/client"
@@ -134,7 +135,7 @@ func toReader(obj interface{}) io.Reader {
 }
 
 func (suite *WithControllerTestSuite) getPVCList(ns string) (*v1.PersistentVolumeClaimList, error) {
-	pvsList, err := suite.k8sClinet.CoreV1().PersistentVolumeClaims(ns).List(metav1.ListOptions{})
+	pvsList, err := suite.k8sClinet.CoreV1().PersistentVolumeClaims(ns).List(context.Background(), metav1.ListOptions{})
 	return pvsList, err
 }
 
@@ -142,7 +143,7 @@ func (suite *WithControllerTestSuite) getComponentList(ns string) (v1alpha1.Comp
 	compListAPIURL := fmt.Sprintf("/apis/core.kalm.dev/v1alpha1/namespaces/%s/components", ns)
 
 	var compList v1alpha1.ComponentList
-	err := suite.k8sClinet.RESTClient().Get().AbsPath(compListAPIURL).Do().Into(&compList)
+	err := suite.k8sClinet.RESTClient().Get().AbsPath(compListAPIURL).Do(context.Background()).Into(&compList)
 
 	return compList, err
 }
@@ -151,7 +152,7 @@ func (suite *WithControllerTestSuite) getComponent(ns, compName string) (v1alpha
 	compAPIURL := fmt.Sprintf("/apis/core.kalm.dev/v1alpha1/namespaces/%s/components/%s", ns, compName)
 
 	var comp v1alpha1.Component
-	err := suite.k8sClinet.RESTClient().Get().AbsPath(compAPIURL).Do().Into(&comp)
+	err := suite.k8sClinet.RESTClient().Get().AbsPath(compAPIURL).Do(context.Background()).Into(&comp)
 
 	return comp, err
 }

@@ -91,9 +91,7 @@ func (builder *Builder) BuildApplicationDetails(namespace coreV1.Namespace) (*Ap
 	nsName := namespace.Name
 	roles := make([]string, 0, 2)
 
-	// TODO Is there a better way?
-	// Infer user roles with some specific access review. This is not accurate but a trade off.
-	writerReview, err := builder.K8sClient.AuthorizationV1().SelfSubjectAccessReviews().Create(&authorizationV1.SelfSubjectAccessReview{
+	writeReview := &authorizationV1.SelfSubjectAccessReview{
 		Spec: authorizationV1.SelfSubjectAccessReviewSpec{
 			ResourceAttributes: &authorizationV1.ResourceAttributes{
 				Namespace: nsName,
@@ -102,17 +100,21 @@ func (builder *Builder) BuildApplicationDetails(namespace coreV1.Namespace) (*Ap
 				Group:     "core.kalm.dev",
 			},
 		},
-	})
+	}
+
+	// TODO Is there a better way?
+	// Infer user roles with some specific access review. This is not accurate but a trade off.
+	err := builder.Create(writeReview)
 
 	if err != nil {
 		return nil, err
 	}
 
-	if writerReview.Status.Allowed {
+	if writeReview.Status.Allowed {
 		roles = append(roles, "writer")
 	}
 
-	readerReview, err := builder.K8sClient.AuthorizationV1().SelfSubjectAccessReviews().Create(&authorizationV1.SelfSubjectAccessReview{
+	readReview := &authorizationV1.SelfSubjectAccessReview{
 		Spec: authorizationV1.SelfSubjectAccessReviewSpec{
 			ResourceAttributes: &authorizationV1.ResourceAttributes{
 				Namespace: nsName,
@@ -121,13 +123,15 @@ func (builder *Builder) BuildApplicationDetails(namespace coreV1.Namespace) (*Ap
 				Group:     "core.kalm.dev",
 			},
 		},
-	})
+	}
+
+	err = builder.Create(readReview)
 
 	if err != nil {
 		return nil, err
 	}
 
-	if readerReview.Status.Allowed {
+	if readReview.Status.Allowed {
 		roles = append(roles, "reader")
 	}
 
