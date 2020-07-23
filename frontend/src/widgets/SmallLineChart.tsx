@@ -284,8 +284,8 @@ export const formatMemory = (value: number, si?: boolean): string => {
   // } while (Math.abs(value) >= thresh && u < units.length - 1);
   // return value.toFixed(1) + " " + units[u];
 
-  const gigaBytes = 1024 * 1024 * 1024;
-  return (value / gigaBytes).toFixed(0) + " Gi";
+  const MiBytes = 1024 * 1024 * 1024;
+  return (value / MiBytes).toFixed(0) + " Mi";
 };
 
 export const formatNumerical = (value: number): string => {
@@ -293,8 +293,8 @@ export const formatNumerical = (value: number): string => {
 };
 
 const formatCPU = (value: number): string => {
-  return value + " m";
-  // return value / 1000 + " Core";
+  return (value * 1000).toFixed(0) + " m";
+  // return value + " Core";
 };
 
 export const BigCPULineChart = (props: Pick<Props, "data" | "yAxesWidth">) => {

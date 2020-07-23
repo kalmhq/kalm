@@ -33,7 +33,7 @@ import {
   workloadTypeStatefulSet,
 } from "types/componentTemplate";
 import { PublicRegistriesList } from "types/registry";
-import { sizeStringToGi, sizeStringToNumber } from "utils/sizeConv";
+import { sizeStringToMi, sizeStringToNumber } from "utils/sizeConv";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Body, Caption, H5 } from "widgets/Label";
@@ -247,7 +247,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   };
 
   private getCPUHelper() {
-    return "Kalm uses 1 Core as the base unit of CPU. The minimum support is 0.001 Core.";
+    return "Kalm uses 1m as the base unit of CPU. 1 Core equals 1000m. The minimum support is 1m.";
   }
 
   private getMemoryHelper() {
@@ -654,16 +654,16 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             placeholder="Please type CPU limit"
             type="number"
             formValueToEditValue={(value: any) => {
-              return !value ? "" : sizeStringToNumber(value);
+              return !value ? "" : (sizeStringToNumber(value) * 1000).toFixed();
             }}
             editValueToFormValue={(value: any) => {
-              return !value ? "" : value;
+              return !value ? "" : value + "m";
             }}
             endAdornment={
               <KTooltip title={this.getCPUHelper()}>
                 <Box display="flex" alignItems="center">
                   <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
-                  <Box ml={0.5}>Core</Box>
+                  <Box ml={0.5}>m</Box>
                 </Box>
               </KTooltip>
             }
@@ -681,16 +681,16 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             placeholder="Please type memory limit"
             type="number"
             formValueToEditValue={(value: any) => {
-              return !value ? "" : sizeStringToGi(value);
+              return !value ? "" : sizeStringToMi(value);
             }}
             editValueToFormValue={(value: any) => {
-              return !value ? "" : value + "Gi";
+              return !value ? "" : value + "Mi";
             }}
             endAdornment={
               <KTooltip title={this.getMemoryHelper()}>
                 <Box display="flex" alignItems="center">
                   <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
-                  <Box ml={0.5}>Gi</Box>
+                  <Box ml={0.5}>Mi</Box>
                 </Box>
               </KTooltip>
             }
