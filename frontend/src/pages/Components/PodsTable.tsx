@@ -14,7 +14,7 @@ import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { PodStatus } from "types/application";
 import { WorkloadType, workloadTypeCronjob } from "types/componentTemplate";
-import { formatTimeDistance } from "utils";
+import { formatTimeDistance } from "utils/date";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { KalmConsoleIcon, KalmLogIcon } from "widgets/Icon";
 import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";

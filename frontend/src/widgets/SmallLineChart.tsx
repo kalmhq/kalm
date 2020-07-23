@@ -8,6 +8,7 @@ import React from "react";
 // @ts-ignore
 import { ChartData, Line } from "react-chartjs-2";
 import { MetricList } from "types/common";
+import { TimestampFilter, getStartTimestamp } from "utils/date";
 
 const smallLineChartStyles = (theme: Theme) =>
   createStyles({
@@ -35,7 +36,6 @@ interface Props extends WithStyles<typeof smallLineChartStyles> {
   hoverText?: string;
   width: number | string;
   height: number | string;
-  yAxesWidth?: number;
   formatValue?: (value: number) => string;
   borderColor?: string;
   backgroundColor?: string;
@@ -179,6 +179,7 @@ const lineChartStyles = (theme: Theme) =>
 
 interface LineChartProps extends WithStyles<typeof lineChartStyles> {
   data: MetricList;
+  filter?: TimestampFilter;
   title?: string;
   width: number | string;
   height: number | string;
@@ -190,10 +191,22 @@ interface LineChartProps extends WithStyles<typeof lineChartStyles> {
 
 class LineChartRaw extends React.PureComponent<LineChartProps> {
   private generateData = (): ChartData<chartjs.ChartData> => {
-    const { data, borderColor, backgroundColor } = this.props;
+    const { data, borderColor, backgroundColor, filter } = this.props;
+
+    const startTimestamp = getStartTimestamp(filter);
 
     return {
-      labels: data ? data.map((n) => n.get("x")).toArray() : [],
+      labels: data
+        ? data
+            .filter((item) => {
+              if (!filter || filter === "all") {
+                return true;
+              }
+              return item.get("x") >= startTimestamp;
+            })
+            .map((n) => n.get("x"))
+            .toArray()
+        : [],
       datasets: [
         {
           lineTension: 0.1,
@@ -201,7 +214,17 @@ class LineChartRaw extends React.PureComponent<LineChartProps> {
           borderWidth: 1,
           backgroundColor: backgroundColor,
           pointRadius: 1,
-          data: data ? data.map((n) => n.get("y")).toArray() : [],
+          data: data
+            ? data
+                .filter((item) => {
+                  if (!filter || filter === "all") {
+                    return true;
+                  }
+                  return item.get("x") >= startTimestamp;
+                })
+                .map((n) => n.get("y"))
+                .toArray()
+            : [],
         },
       ],
     };
@@ -284,7 +307,7 @@ export const formatMemory = (value: number, si?: boolean): string => {
   // } while (Math.abs(value) >= thresh && u < units.length - 1);
   // return value.toFixed(1) + " " + units[u];
 
-  const MiBytes = 1024 * 1024 * 1024;
+  const MiBytes = 1024 * 1024;
   return (value / MiBytes).toFixed(0) + " Mi";
 };
 
@@ -297,7 +320,7 @@ const formatCPU = (value: number): string => {
   // return value + " Core";
 };
 
-export const BigCPULineChart = (props: Pick<Props, "data" | "yAxesWidth">) => {
+export const BigCPULineChart = (props: Pick<LineChartProps, "data" | "yAxesWidth" | "filter">) => {
   return (
     <LineChart
       {...props}
@@ -311,7 +334,7 @@ export const BigCPULineChart = (props: Pick<Props, "data" | "yAxesWidth">) => {
   );
 };
 
-export const BigMemoryLineChart = (props: Pick<Props, "data" | "yAxesWidth">) => {
+export const BigMemoryLineChart = (props: Pick<LineChartProps, "data" | "yAxesWidth" | "filter">) => {
   return (
     <LineChart
       title="Memory"

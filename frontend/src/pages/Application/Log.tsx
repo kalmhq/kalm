@@ -26,7 +26,7 @@ import React from "react";
 import ReconnectingWebSocket from "reconnecting-websocket";
 import { PodStatus } from "types/application";
 import { ImmutableMap } from "typings";
-import { formatTimestamp, formatDate } from "utils";
+import { formatTimestamp, formatDate } from "utils/date";
 import { KSelect } from "widgets/KSelect";
 import { Body2 } from "widgets/Label";
 import { Loading } from "widgets/Loading";

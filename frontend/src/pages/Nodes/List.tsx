@@ -22,7 +22,7 @@ import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { Node } from "types/node";
-import { formatTimeDistance } from "utils";
+import { formatTimeDistance, TimestampFilter } from "utils/date";
 import { InfoBox } from "widgets/InfoBox";
 import { H5 } from "widgets/Label";
 import { WhitePaper } from "widgets/Paper";
@@ -34,6 +34,7 @@ import { NodeMemory, NodesMemory } from "./Memory";
 import { NodePods } from "./Pods";
 import { ResourceRank } from "./ResourceRank";
 import { customBindHover } from "utils/popper";
+import { KSelect } from "widgets/KSelect";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -47,7 +48,9 @@ const styles = (theme: Theme) =>
     root: {},
   });
 
-interface States {}
+interface States {
+  chartDateFilter: string;
+}
 
 // TODO remove this and use real
 const fakePopperData = [
@@ -83,7 +86,9 @@ type Props = ReturnType<typeof mapStateToProps> & TDispatchProp & WithStyles<typ
 export class NodeListRaw extends React.Component<Props, States> {
   constructor(props: Props) {
     super(props);
-    this.state = {};
+    this.state = {
+      chartDateFilter: "all",
+    };
   }
 
   private hasCordon = (node: Node) => node.get("statusTexts").includes("SchedulingDisabled");
@@ -399,9 +404,43 @@ export class NodeListRaw extends React.Component<Props, States> {
       <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
         <Box p={2}>
           <Grid container spacing={2}>
+            <Grid item xs={10}></Grid>
+            <Grid item xs={2}>
+              <KSelect
+                label="Filter"
+                value={this.state.chartDateFilter}
+                options={[
+                  {
+                    value: "1h",
+                    text: "1h",
+                  },
+                  {
+                    value: "12h",
+                    text: "12h",
+                  },
+                  {
+                    value: "24h",
+                    text: "24h",
+                  },
+                  {
+                    value: "7days",
+                    text: "7days",
+                  },
+                  {
+                    value: "all",
+                    text: "all",
+                  },
+                ]}
+                onChange={(x) => {
+                  this.setState({ chartDateFilter: x as string });
+                }}
+              />
+            </Grid>
+          </Grid>
+          <Grid container spacing={2}>
             <Grid item md={6}>
               <WhitePaper elevation={0} style={{ overflow: "hidden" }}>
-                <BigCPULineChart data={metrics.get("cpu")} />
+                <BigCPULineChart data={metrics.get("cpu")} filter={this.state.chartDateFilter as TimestampFilter} />
                 <PopupState variant="popper" popupId="big-cpu-popup-popper">
                   {(popupState) => {
                     return (
@@ -426,7 +465,10 @@ export class NodeListRaw extends React.Component<Props, States> {
             </Grid>
             <Grid item md={6}>
               <WhitePaper elevation={0} style={{ overflow: "hidden" }}>
-                <BigMemoryLineChart data={metrics.get("memory")} />
+                <BigMemoryLineChart
+                  data={metrics.get("memory")}
+                  filter={this.state.chartDateFilter as TimestampFilter}
+                />
                 <PopupState variant="popper" popupId="big-memory-popup-popper">
                   {(popupState) => {
                     return (
