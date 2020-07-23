@@ -29,6 +29,7 @@ import { loadRoleBindingsAction } from "actions/user";
 import { loadServicesAction } from "actions/service";
 import { throttle } from "utils";
 import { loadProtectedEndpointAction, loadSSOConfigAction } from "actions/sso";
+import { setErrorNotificationAction } from "actions/notification";
 
 export interface WatchResMessage {
   namespace: string;
@@ -96,6 +97,10 @@ class WithDataRaw extends React.PureComponent<Props> {
       const data: WatchResMessage = JSON.parse(event.data);
 
       switch (data.kind) {
+        case "error": {
+          dispatch(setErrorNotificationAction(data.data));
+          break;
+        }
         case RESOURCE_TYPE_APPLICATION: {
           dispatch({
             type: WATCHED_RESOURCE_CHANGE,

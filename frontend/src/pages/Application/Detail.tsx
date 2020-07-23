@@ -1,16 +1,18 @@
-import { createStyles, Grid, Theme, Typography, withStyles, WithStyles, Box, Link } from "@material-ui/core";
+import { Box, createStyles, Grid, Link, Theme, Typography, withStyles, WithStyles } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
+import { Expansion } from "forms/Route/expansion";
+import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
+import Immutable from "immutable";
 import React, { ReactElement } from "react";
 import { ApplicationComponentDetails, PodStatus } from "types/application";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
-import { BigCPULineChart, BigMemoryLineChart } from "widgets/SmallLineChart";
-import { withRoutesData, WithRoutesDataProps } from "hoc/withRoutesData";
-import { KTable } from "widgets/Table";
-import { Expansion } from "forms/Route/expansion";
-import { DoughnutChart } from "widgets/DoughnutChart";
-import { HttpStatusCodeLineChart } from "widgets/charts/httpStatusCodeChart";
-import Immutable from "immutable";
 import { HttpBytesSizeChart } from "widgets/charts/httpBytesSizeChart";
+import { HttpStatusCodeLineChart } from "widgets/charts/httpStatusCodeChart";
+import { DoughnutChart } from "widgets/DoughnutChart";
+import { KSelect } from "widgets/KSelect";
+import { BigCPULineChart, BigMemoryLineChart } from "widgets/SmallLineChart";
+import { KTable } from "widgets/Table";
+import { TimestampFilter } from "utils/date";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -120,9 +122,19 @@ const styles = (theme: Theme) =>
 
 interface Props extends WithStyles<typeof styles>, WithRoutesDataProps {}
 
-interface State {}
+interface State {
+  chartDateFilter: string;
+}
 
 class DetailsRaw extends React.PureComponent<Props, State> {
+  constructor(props: Props) {
+    super(props);
+
+    this.state = {
+      chartDateFilter: "all",
+    };
+  }
+
   private renderPodStatus = (pod: PodStatus) => {
     if (pod.get("isTerminating")) {
       return <PendingBadge />;
@@ -303,6 +315,40 @@ class DetailsRaw extends React.PureComponent<Props, State> {
         </Expansion>
         <Expansion title="Metrics" defaultUnfold>
           <Grid container spacing={2}>
+            <Grid item xs={10}></Grid>
+            <Grid item xs={2}>
+              <KSelect
+                label="Filter"
+                value={this.state.chartDateFilter}
+                options={[
+                  {
+                    value: "1h",
+                    text: "1h",
+                  },
+                  {
+                    value: "12h",
+                    text: "12h",
+                  },
+                  {
+                    value: "24h",
+                    text: "24h",
+                  },
+                  {
+                    value: "7days",
+                    text: "7days",
+                  },
+                  {
+                    value: "all",
+                    text: "all",
+                  },
+                ]}
+                onChange={(x) => {
+                  this.setState({ chartDateFilter: x as string });
+                }}
+              />
+            </Grid>
+          </Grid>
+          <Grid container spacing={2}>
             <Grid item xs>
               <HttpStatusCodeLineChart
                 formatYAxesValue={this.formatYAxesValue}
@@ -321,6 +367,7 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                   },
                 ]}
                 title="http response code per second"
+                filter={this.state.chartDateFilter as TimestampFilter}
               />
             </Grid>
             <Grid item xs>
@@ -337,15 +384,24 @@ class DetailsRaw extends React.PureComponent<Props, State> {
                   },
                 ]}
                 title="http traffic"
+                filter={this.state.chartDateFilter as TimestampFilter}
               />
             </Grid>
           </Grid>
           <Grid container spacing={2}>
             <Grid item md>
-              <BigCPULineChart data={activeNamespace!.get("metrics")?.get("cpu")} yAxesWidth={50} />
+              <BigCPULineChart
+                data={activeNamespace!.get("metrics")?.get("cpu")}
+                yAxesWidth={50}
+                filter={this.state.chartDateFilter as TimestampFilter}
+              />
             </Grid>
             <Grid item md>
-              <BigMemoryLineChart data={activeNamespace!.get("metrics")?.get("memory")} yAxesWidth={50} />
+              <BigMemoryLineChart
+                data={activeNamespace!.get("metrics")?.get("memory")}
+                yAxesWidth={50}
+                filter={this.state.chartDateFilter as TimestampFilter}
+              />
             </Grid>
           </Grid>
         </Expansion>

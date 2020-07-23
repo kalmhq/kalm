@@ -35,7 +35,7 @@ type DeployKeySpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// +kubebuilder:validation:Enum=component;app
+	// +kubebuilder:validation:Enum=component;app;all
 	Type DeployKeyType `json:"type"`
 
 	// for type: component, content lists all components
@@ -56,6 +56,7 @@ type DeployKeyStatus struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:resource:scope=Cluster
 // +kubebuilder:subresource:status
 
 // DeployKey is the Schema for the deploykeys API

@@ -7,7 +7,7 @@ import {
   workloadTypeServer,
 } from "types/componentTemplate";
 import { RootState } from "reducers";
-import { formatDate, formatTimeDistance } from "utils";
+import { formatDate, formatTimeDistance } from "utils/date";
 
 export const componentDetailsToComponent = (componentDetails: ApplicationComponentDetails): ApplicationComponent => {
   if (!componentDetails.get("workloadType")) {

@@ -22,6 +22,7 @@ const styles = (theme: Theme) =>
   });
 
 interface Props extends WithStyles<typeof styles> {
+  variant?: "standard" | "outlined" | "filled";
   label: string;
   value: string | number;
   options: {
@@ -39,9 +40,9 @@ class KSelectRaw extends React.PureComponent<Props> {
   };
 
   public render() {
-    const { classes, label, value, options } = this.props;
+    const { classes, label, value, options, variant } = this.props;
     return (
-      <FormControl variant="outlined" className={classes.root}>
+      <FormControl variant={variant || "outlined"} className={classes.root}>
         <InputLabel id="input-container-label">{label}</InputLabel>
         <Select
           labelId="input-container-label"
