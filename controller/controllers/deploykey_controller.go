@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"strings"
 )
 
 // DeployKeyReconciler reconciles a DeployKey object
@@ -55,6 +56,8 @@ func (r *DeployKeyReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	return ctrl.Result{}, err
 }
 
+const NamespaceKalmSystem = "kalm-system"
+
 func (r *DeployKeyReconcilerTask) Run(req ctrl.Request) error {
 	var deployKey corev1alpha1.DeployKey
 	if err := r.Get(r.ctx, req.NamespacedName, &deployKey); err != nil {
@@ -65,15 +68,20 @@ func (r *DeployKeyReconcilerTask) Run(req ctrl.Request) error {
 		return err
 	}
 
+	saKey := types.NamespacedName{
+		Namespace: NamespaceKalmSystem,
+		Name:      deployKey.Name,
+	}
+
 	expectedSA := v1.ServiceAccount{
 		ObjectMeta: ctrl.ObjectMeta{
-			Namespace: deployKey.Namespace,
-			Name:      deployKey.Name,
+			Namespace: saKey.Namespace,
+			Name:      saKey.Name,
 		},
 	}
 
 	sa := v1.ServiceAccount{}
-	err := r.Get(r.ctx, types.NamespacedName{Namespace: deployKey.Namespace, Name: deployKey.Name}, &sa)
+	err := r.Get(r.ctx, saKey, &sa)
 	if err != nil {
 		if !errors.IsNotFound(err) {
 			return err
@@ -92,114 +100,151 @@ func (r *DeployKeyReconcilerTask) Run(req ctrl.Request) error {
 		// need do nothing
 	}
 
-	var expectedRole v1beta1.Role
+	var expectedRoles []v1beta1.Role
 
 	switch deployKey.Spec.Type {
+	case corev1alpha1.DeployKeyTypeAll:
+		//todo
+
 	case corev1alpha1.DeployKeyTypeApp:
-		expectedRole = v1beta1.Role{
-			ObjectMeta: ctrl.ObjectMeta{
-				Namespace: deployKey.Namespace,
-				Name:      deployKey.Name,
-			},
-			Rules: []v1beta1.PolicyRule{
-				{
-					Verbs:     []string{"get", "list", "watch", "update"},
-					APIGroups: []string{"core.kalm.dev"},
-					Resources: []string{"components"},
+		for _, ns := range deployKey.Spec.Content {
+			expectedRole := v1beta1.Role{
+				ObjectMeta: ctrl.ObjectMeta{
+					Namespace: ns,
+					Name:      deployKey.Name,
 				},
-			},
+				Rules: []v1beta1.PolicyRule{
+					{
+						Verbs:     []string{"get", "list", "watch", "update"},
+						APIGroups: []string{"core.kalm.dev"},
+						Resources: []string{"components"},
+					},
+				},
+			}
+
+			expectedRoles = append(expectedRoles, expectedRole)
 		}
 	case corev1alpha1.DeployKeyTypeComponent:
-		expectedRole = v1beta1.Role{
-			ObjectMeta: ctrl.ObjectMeta{
-				Namespace: deployKey.Namespace,
-				Name:      deployKey.Name,
-			},
-			Rules: []v1beta1.PolicyRule{
-				{
-					Verbs:         []string{"get", "list", "watch", "update"},
-					APIGroups:     []string{"core.kalm.dev"},
-					Resources:     []string{"components"},
-					ResourceNames: deployKey.Spec.Content,
+		ns2ComponentsMap := make(map[string][]string)
+		for _, content := range deployKey.Spec.Content {
+			parts := strings.Split(content, "/")
+			if len(parts) != 2 {
+				r.Recorder.Event(&deployKey, v1.EventTypeWarning, "invalid-format", "should be like: ns/component")
+			}
+
+			ns := parts[0]
+			comp := parts[1]
+
+			ns2ComponentsMap[ns] = append(ns2ComponentsMap[ns], comp)
+		}
+
+		for ns, compList := range ns2ComponentsMap {
+			expectedRole := v1beta1.Role{
+				ObjectMeta: ctrl.ObjectMeta{
+					Namespace: ns,
+					Name:      deployKey.Name,
 				},
-			},
+				Rules: []v1beta1.PolicyRule{
+					{
+						Verbs:         []string{"get", "list", "watch", "update"},
+						APIGroups:     []string{"core.kalm.dev"},
+						Resources:     []string{"components"},
+						ResourceNames: compList,
+					},
+				},
+			}
+
+			expectedRoles = append(expectedRoles, expectedRole)
 		}
 	default:
 		return fmt.Errorf("unknown deployKey type: %s", deployKey.Spec.Type)
 	}
 
-	role := v1beta1.Role{}
-	err = r.Get(r.ctx, types.NamespacedName{
-		Namespace: deployKey.Namespace,
-		Name:      deployKey.Name,
-	}, &role)
-	if err != nil {
-		if !errors.IsNotFound(err) {
-			return err
+	// todo check and filter roles belongs to existing namespace
+
+	var resRoles []v1beta1.Role
+	for _, expectedRole := range expectedRoles {
+		key := types.NamespacedName{
+			Namespace: expectedRole.Namespace,
+			Name:      expectedRole.Name,
 		}
 
-		role = expectedRole
+		role := v1beta1.Role{}
+		err = r.Get(r.ctx, key, &role)
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				return err
+			}
 
-		if err := ctrl.SetControllerReference(&deployKey, &role, r.Scheme); err != nil {
-			return err
+			role = expectedRole
+
+			if err := ctrl.SetControllerReference(&deployKey, &role, r.Scheme); err != nil {
+				return err
+			}
+
+			if err := r.Create(r.ctx, &role); err != nil {
+				return err
+			}
+		} else {
+			role.Rules = expectedRole.Rules
+			if err := r.Update(r.ctx, &role); err != nil {
+				return err
+			}
 		}
 
-		if err := r.Create(r.ctx, &role); err != nil {
-			return err
-		}
-	} else {
-		role.Rules = expectedRole.Rules
-		if err := r.Update(r.ctx, &role); err != nil {
-			return err
-		}
+		resRoles = append(resRoles, role)
 	}
 
 	// ensure binding
-	expectedRoleBinding := v1beta1.RoleBinding{
-		ObjectMeta: ctrl.ObjectMeta{
-			Namespace: deployKey.Namespace,
-			Name:      deployKey.Name,
-		},
-		Subjects: []v1beta1.Subject{
-			{
-				Kind:      "ServiceAccount",
-				Name:      expectedSA.Name,
-				Namespace: expectedSA.Namespace,
+	for _, resRole := range resRoles {
+		roleBindingKey := types.NamespacedName{
+			Namespace: resRole.Namespace,
+			Name:      resRole.Name,
+		}
+
+		expectedRoleBinding := v1beta1.RoleBinding{
+			ObjectMeta: ctrl.ObjectMeta{
+				Namespace: roleBindingKey.Namespace,
+				Name:      roleBindingKey.Name,
 			},
-		},
-		RoleRef: v1beta1.RoleRef{
-			Kind:     "Role",
-			Name:     expectedRole.Name,
-			APIGroup: "rbac.authorization.k8s.io",
-		},
-	}
-
-	roleBinding := v1beta1.RoleBinding{}
-	err = r.Get(r.ctx, types.NamespacedName{
-		Namespace: deployKey.Namespace,
-		Name:      deployKey.Name,
-	}, &roleBinding)
-
-	if err != nil {
-		if !errors.IsNotFound(err) {
-			return err
+			Subjects: []v1beta1.Subject{
+				{
+					Kind:      "ServiceAccount",
+					Name:      expectedSA.Name,
+					Namespace: expectedSA.Namespace,
+				},
+			},
+			RoleRef: v1beta1.RoleRef{
+				Kind:     "Role",
+				Name:     resRole.Name,
+				APIGroup: "rbac.authorization.k8s.io",
+			},
 		}
 
-		roleBinding = expectedRoleBinding
+		roleBinding := v1beta1.RoleBinding{}
+		err = r.Get(r.ctx, roleBindingKey, &roleBinding)
 
-		if err := ctrl.SetControllerReference(&deployKey, &roleBinding, r.Scheme); err != nil {
-			return err
-		}
+		if err != nil {
+			if !errors.IsNotFound(err) {
+				return err
+			}
 
-		if err := r.Create(r.ctx, &roleBinding); err != nil {
-			return err
-		}
-	} else {
-		roleBinding.Subjects = expectedRoleBinding.Subjects
-		roleBinding.RoleRef = expectedRoleBinding.RoleRef
+			roleBinding = expectedRoleBinding
 
-		if err := r.Update(r.ctx, &roleBinding); err != nil {
-			return err
+			if err := ctrl.SetControllerReference(&deployKey, &roleBinding, r.Scheme); err != nil {
+				return err
+			}
+
+			if err := r.Create(r.ctx, &roleBinding); err != nil {
+				return err
+			}
+		} else {
+			roleBinding.Subjects = expectedRoleBinding.Subjects
+			roleBinding.RoleRef = expectedRoleBinding.RoleRef
+
+			if err := r.Update(r.ctx, &roleBinding); err != nil {
+				return err
+			}
 		}
 	}
 
