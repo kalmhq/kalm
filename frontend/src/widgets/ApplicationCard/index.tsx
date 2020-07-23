@@ -15,7 +15,6 @@ import {
   Popover,
   Box,
   CardActions,
-  Tooltip,
   Grid,
 } from "@material-ui/core";
 import { ApplicationDetails, ApplicationComponentDetails } from "types/application";
@@ -30,8 +29,6 @@ import { POPPER_ZINDEX } from "layout/Constants";
 import { blinkTopProgressAction } from "actions/settings";
 import { Link } from "react-router-dom";
 import { primaryColor } from "theme/theme";
-import { FlexRowItemCenterBox } from "widgets/Box";
-import { SuccessBadge, PendingBadge, ErrorBadge } from "widgets/Badge";
 import { DeleteIcon, KalmDetailsIcon, KalmComponentsIcon, KalmApplicationIcon, KalmRoutesIcon } from "widgets/Icon";
 import { FoldButtonGroup } from "widgets/FoldButtonGroup";
 import { DoughnutChart } from "widgets/DoughnutChart";
@@ -58,6 +55,7 @@ type ApplicationCardProps = {
   componentsMap: Immutable.Map<string, Immutable.List<ApplicationComponentDetails>>;
   routesMap: Immutable.Map<string, Immutable.List<HttpRoute>>;
   activeNamespaceName: string;
+  showDeleteConfirmDialog: (deletingApplicationListItem: ApplicationDetails) => void;
 } & CardProps &
   WithStyles<typeof ApplicationCardStyles>;
 
@@ -142,77 +140,6 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
     }
   };
 
-  private renderStatus = () => {
-    const { componentsMap, application } = this.props;
-
-    let podCount = 0;
-    let successCount = 0;
-    let pendingCount = 0;
-    let errorCount = 0;
-    componentsMap.get(application.get("name"))?.forEach((component) => {
-      component.get("pods").forEach((podStatus) => {
-        podCount++;
-        switch (podStatus.get("status")) {
-          case "Running": {
-            successCount++;
-            break;
-          }
-          case "Pending": {
-            pendingCount++;
-            break;
-          }
-          case "Succeeded": {
-            successCount++;
-            break;
-          }
-          case "Failed": {
-            errorCount++;
-            break;
-          }
-        }
-      });
-    });
-
-    if (podCount === 0) {
-      return "No Pods";
-    }
-
-    const tooltipTitle = `Total ${podCount} pods are found. \n${successCount} ready, ${pendingCount} pending, ${errorCount} failed. Click to view details.`;
-
-    return (
-      <Link
-        to={`/applications/${application.get("name")}/components`}
-        style={{ color: primaryColor }}
-        onClick={() => blinkTopProgressAction()}
-      >
-        <Tooltip title={tooltipTitle} enterDelay={500} style={{ justifyContent: "center" }}>
-          <FlexRowItemCenterBox>
-            {successCount > 0 ? (
-              <FlexRowItemCenterBox mr={1}>
-                <SuccessBadge />
-                {successCount}
-              </FlexRowItemCenterBox>
-            ) : null}
-
-            {pendingCount > 0 ? (
-              <FlexRowItemCenterBox mr={1}>
-                <PendingBadge />
-                {pendingCount}
-              </FlexRowItemCenterBox>
-            ) : null}
-
-            {errorCount > 0 ? (
-              <FlexRowItemCenterBox>
-                <ErrorBadge />
-                {errorCount}
-              </FlexRowItemCenterBox>
-            ) : null}
-          </FlexRowItemCenterBox>
-        </Tooltip>
-      </Link>
-    );
-  };
-
   private getPieChartData() {
     const { componentsMap, application } = this.props;
     const components = componentsMap.get(application.get("name"));
@@ -281,30 +208,18 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
     );
   };
 
-  private showDeleteConfirmDialog = (deletingApplicationListItem: ApplicationDetails) => {
-    this.setState({
-      isDeleteConfirmDialogOpen: true,
-      deletingApplicationListItem,
-    });
-  };
   private renderMoreActions = () => {
-    const { application } = this.props;
+    const { application, showDeleteConfirmDialog } = this.props;
     let options = [
       {
         text: "Details",
         to: `/applications/${application.get("name")}/components`,
         icon: <KalmDetailsIcon />,
       },
-      // {
-      //   text: "Edit",
-      //   to: `/applications/${rowData.get("name")}/edit`,
-      //   iconName: "edit",
-      //   requiredRole: "writer",
-      // },
       {
         text: "Delete",
         onClick: () => {
-          this.showDeleteConfirmDialog(application);
+          showDeleteConfirmDialog(application);
         },
         icon: <DeleteIcon />,
         requiredRole: "writer",
@@ -337,7 +252,6 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
           <Grid container>
             <Grid item xs={12} sm={12} md={12} lg={12} style={{ paddingBottom: 10 }}>
               {this.renderDoughnutChartStatus()}
-              {/* {this.renderStatus()} */}
             </Grid>
             <Grid container spacing={1}>
               <Grid item xs={3} sm={3} md={3} lg={3}>
