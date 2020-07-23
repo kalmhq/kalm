@@ -7643,7 +7643,7 @@ export default class MockStore {
               },
             ],
             image: "nginx:latest",
-            replicas: 1,
+            replicas: 0,
             command: "npm run start",
             enableHeadlessService: false,
             workloadType: "server",
