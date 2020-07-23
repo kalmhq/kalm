@@ -240,7 +240,7 @@ func UpdateDatabase(db *sql.DB, nodeMetrics *v1beta1.NodeMetricsList, podMetrics
 	defer stmt.Close()
 
 	for _, v := range nodeMetrics.Items {
-		_, err = stmt.Exec(v.UID, v.Name, v.Usage.Cpu().Value(), v.Usage.Memory().Value(), v.Usage.StorageEphemeral().MilliValue()/1000)
+		_, err = stmt.Exec(v.UID, v.Name, v.Usage.Cpu().MilliValue(), v.Usage.Memory().MilliValue() / 1000, v.Usage.StorageEphemeral().MilliValue()/1000)
 		if err != nil {
 			return err
 		}
@@ -259,7 +259,7 @@ func UpdateDatabase(db *sql.DB, nodeMetrics *v1beta1.NodeMetricsList, podMetrics
 			component = v.ObjectMeta.Labels["kalm-component"]
 		}
 		for _, u := range v.Containers {
-			_, err = stmt.Exec(v.UID, v.Name, v.Namespace, u.Name, component, u.Usage.Cpu().Value(), u.Usage.Memory().Value(), u.Usage.StorageEphemeral().MilliValue()/1000)
+			_, err = stmt.Exec(v.UID, v.Name, v.Namespace, u.Name, component, u.Usage.Cpu().MilliValue(), u.Usage.Memory().MilliValue() / 1000, u.Usage.StorageEphemeral().MilliValue()/1000)
 			if err != nil {
 				return err
 			}
