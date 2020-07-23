@@ -242,7 +242,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
     }
     return (
       <Box p={2}>
-        <Caption>Choose targets that will receive requets.</Caption>
+        <Caption>You can add extra targets and assign weights to them.</Caption>
         <Box mt={2} mr={2} mb={2}>
           <Button
             variant="outlined"
