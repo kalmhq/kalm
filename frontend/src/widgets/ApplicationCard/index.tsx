@@ -39,6 +39,7 @@ const ApplicationCardStyles = (theme: Theme) =>
       border: "1px solid rgba(0, 0, 0, 0.12)",
       background: theme.palette.background.paper,
       maxWidth: 310,
+      minWidth: 290,
     },
     avatar: {},
     actionArea: {
