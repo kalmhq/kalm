@@ -39,6 +39,8 @@ interface FieldArrayProps extends DispatchProp, ReturnType<typeof mapStateToProp
 
 interface Props extends WrappedFieldArrayProps<Volume>, FieldArrayComponentHackType, FieldArrayProps {}
 
+const sizeValidators = [ValidatorRequired, ValidatorVolumeSize];
+
 class RenderVolumes extends React.PureComponent<Props> {
   private getUsingClaimNames() {
     const { fields } = this.props;
@@ -176,7 +178,7 @@ class RenderVolumes extends React.PureComponent<Props> {
           name={`${member}.size`}
           label="Size"
           margin
-          validate={[ValidatorRequired, ValidatorVolumeSize]}
+          validate={sizeValidators}
           endAdornment={this.getSizeEndAdornment()}
           formValueToEditValue={(value: any) => {
             return !value ? "" : sizeStringToGi(value);
@@ -193,7 +195,7 @@ class RenderVolumes extends React.PureComponent<Props> {
           name={`${member}.size`}
           label="Size"
           margin
-          validate={[ValidatorRequired, ValidatorVolumeSize]}
+          validate={sizeValidators}
           endAdornment={this.getSizeEndAdornment()}
           formValueToEditValue={(value: any) => {
             return !value ? "" : sizeStringToGi(value);
@@ -278,7 +280,6 @@ class RenderVolumes extends React.PureComponent<Props> {
                   tooltipPlacement="top"
                   tooltipTitle="Delete"
                   aria-label="delete"
-                  size="small"
                   onClick={() => fields.remove(index)}
                 >
                   <DeleteIcon />

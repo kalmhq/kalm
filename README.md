@@ -1,81 +1,46 @@
-# Kalm - Kubernetes application manager
+# Kalm - Kubernetes Application Manager
 
 [![codecov](https://codecov.io/gh/kalmhq/kalm/branch/master/graph/badge.svg)](https://codecov.io/gh/kalmhq/kalm) [![CircleCI](https://circleci.com/gh/kalmhq/kalm.svg?style=svg)](https://circleci.com/gh/kalmhq/kalm) [![Go Report](https://goreportcard.com/badge/github.com/kalmhq/kalm)](https://goreportcard.com/badge/github.com/kalmhq/kalm)
 
-More than just another kubernetes dashboard, but also a new angle of application management.
+Kalm is an easy way to manage applications on Kubernetes. Kalm provides a web UI for common workflows including creating and updating applications, scaling, routing, scheduling jobs, auto-healing, and setting up HTTPS certificates.
 
-## Warning
+In addition, Kalm defines a set of CRDs that simplifies the underlying configuration and drastically reduces copy-pasting and boilerplate, as well as hooking up useful operators such as [cert-manager](https://cert-manager.io/docs/) and [istio](https://istio.io/).
 
-This project is under a very aggressive development. Application schema and api will change and forward compatibility is not guaranteed. Please do not use this project in your production environment. It will be super helpful if you use Kalm in your staging/alpha release system and give us feedbacks. This warning will be removed until the first official release, which means it's production ready.
+![Kalm](https://kalm.dev/docs/assets/kalm.png)
 
-## What's kalm?
+Kalm is designed for developers and teams who want a simple and friendly interface for kubernetes without having to build and maintain internal tools.
 
-TODO
+## Install
 
-## Try kalm in action
+Kalm is packaged as a [Kubernetes Operator](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/), and can be used with any Kubernetes cluster(minikube, GKE, EKS etc..)
+
+See [detailed instructions](https://kalm.dev/docs/install#step-1-prerequisites) for installing `kubectl` and creating a `minikube` cluster on localhost.
+
+If you already have access to a cluster via kubectl, deploy Kalm via:
 
 ```shell
-curl -sL https://raw.githubusercontent.com/kalmhq/kalm/master/scripts/install.sh | bash
+curl -sL https://get.kalm.dev | bash
 ```
 
-to check if Kalm is installed successfully, run
+To check the installation status:
 
 ```
 curl -sL https://raw.githubusercontent.com/kalmhq/kalm/master/scripts/check-kalm-install-status.sh | bash
 ```
 
-the script will keep polling for the status until the installation is done, the whole process can take up to 5 minutes for the first time setup:
+The whole process typically takes up to 1-5 minutes. Relax or check out the <a href="https://kalm.dev/docs/intro." target="_blank">docs</a> in the mean time.
 
-```
-this outputs deployments status in all Kalm related namespaces
-
-NAME            READY   UP-TO-DATE   AVAILABLE   AGE
-kalm-operator   1/1     1            1           16m
-
-NAME                      READY   UP-TO-DATE   AVAILABLE   AGE
-cert-manager              1/1     1            1           15m
-cert-manager-cainjector   1/1     1            1           15m
-cert-manager-webhook      1/1     1            1           15m
-
-NAME                   READY   UP-TO-DATE   AVAILABLE   AGE
-istio-ingressgateway   1/1     1            1           13m
-istiod                 1/1     1            1           14m
-prometheus             1/1     1            1           13m
-
-NAME              READY   UP-TO-DATE   AVAILABLE   AGE
-kalm              1/1     1            1           11m
-kalm-controller   1/1     1            1           12m
-
-🎉 installing done
-```
-
-if your prefer commond line, go read [tutorial-1-hello-world.md](doc/tutorial-1-hello-world.md) to see what you can do with Kalm, or if you prefer GUI, Kalm has a dashboard prepared for you, to visited the dashboard, you need:
+Once the installation is complete, open a port to the web server.
 
 ```
 kubectl port-forward -n kalm-system $(kubectl get pod -n kalm-system -l app=kalm -ojsonpath="{.items[0].metadata.name}") 3001:3001
 ```
 
-then go to [http://localhost:3001](http://localhost:3001), follow the doc [create-test-service-account.md](doc/create-test-service-account.md) to get the token to access dashboard.
+Kalm should now be accessible at [http://localhost:3001](http://localhost:3001). Refer to [these instructions](https://kalm.dev/docs/install#step-4-admin-service-account) on provisoning an access token and next steps.
 
-## Clean up
+## Docs & Guides
 
-```
-# first clone this repo
-git clone https://github.com/kalmhq/kalm.git
-
-cd kalm
-
-# to delete kalm operator & controller, run:
-make delete
-# error like `Error from server (NotFound): error when deleting xxx not found` is safe to ignore because some resources may have been deleted hierarchically.
-
-# to delete all things Kalm installed, including istio and cert-manager, run:
-# make delete-all
-```
-
-## Documentation
-
-TODO
+Detailed Documentation and Guides can be found at https://kalm.dev/docs/intro.
 
 ## License
 

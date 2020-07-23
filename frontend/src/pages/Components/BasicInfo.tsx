@@ -35,6 +35,7 @@ import { push } from "connected-react-router";
 import clsx from "clsx";
 import { SecretValueLabel } from "widgets/Label";
 import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
+import { sizeStringToGi } from "utils/sizeConv";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -180,7 +181,7 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     return (
       <Grid container className={classes.gridWrapper}>
         <Grid item md={2}>
-          Allocated: {component.get("cpu")}
+          {component.get("cpu") ? `Allocated: ${component.get("cpu")}` : "No Limit"}
         </Grid>
         <Grid item md={10}>
           Usage: <SmallCPULineChart data={component.get("metrics").get("cpu")!} />
@@ -194,7 +195,7 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     return (
       <Grid container className={classes.gridWrapper}>
         <Grid item md={2}>
-          Allocated: {component.get("memory")}
+          {component.get("memory") ? `Allocated: ${sizeStringToGi(`${component.get("memory")}`)}Gi` : "No Limit"}
         </Grid>
         <Grid item md={10}>
           Usage: <SmallMemoryLineChart data={component.get("metrics").get("memory")!} />
@@ -228,7 +229,6 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
               tooltipPlacement="top"
               tooltipTitle="Add Exposed Ports"
               aria-label="add-exposed-ports"
-              size="small"
               onClick={() =>
                 this.props.dispatch(
                   push(
@@ -275,7 +275,6 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
           tooltipPlacement="top"
           tooltipTitle="Add Health Probes"
           aria-label="add-health-probes"
-          size="small"
           onClick={() =>
             dispatch(push(`/applications/${activeNamespaceName}/components/${component.get("name")}/edit#${HealthTab}`))
           }
@@ -313,7 +312,6 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
             <IconButtonWithTooltip
               tooltipTitle="Copy"
               aria-label="copy"
-              size="small"
               onClick={() => {
                 copy(value);
                 this.props.dispatch(setSuccessNotificationAction("Copied successful!"));

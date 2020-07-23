@@ -1,9 +1,10 @@
 import { Box, Fade, Paper, Popper } from "@material-ui/core";
 import Immutable from "immutable";
 import { POPPER_ZINDEX } from "layout/Constants";
-import PopupState, { bindHover, bindPopover, bindPopper } from "material-ui-popup-state";
+import PopupState, { bindPopper } from "material-ui-popup-state";
 import React from "react";
 import { httpMethods } from "types/route";
+import { customBindHover } from "utils/popper";
 import { KChip } from "widgets/Chip";
 
 export const Methods = ({ methods }: { methods: Immutable.List<string> }) => {
@@ -11,25 +12,12 @@ export const Methods = ({ methods }: { methods: Immutable.List<string> }) => {
     <>
       <PopupState variant="popper" popupId="methods-popup-popper">
         {(popupState) => {
-          // delete popupState.disableEnforceFocus;
-
-          const hoverProps = bindHover(popupState);
-          const popupProps = bindPopover(popupState);
-          delete popupProps.anchorEl;
-          // @ts-ignore
-          delete popupProps.disableAutoFocus;
-          // @ts-ignore
-          delete popupProps.disableEnforceFocus;
-          // @ts-ignore
-          delete popupProps.disableRestoreFocus;
           return (
             <div>
               <KChip
                 label={methods.size === httpMethods.length ? "All" : "Custom"}
                 color="primary"
-                {...hoverProps}
-                // for when mouse leave to poper, if not bindPopover will can't dismiss poper
-                {...popupProps}
+                {...customBindHover(popupState)}
               />
 
               <Popper {...bindPopper(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>

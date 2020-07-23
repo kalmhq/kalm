@@ -157,7 +157,6 @@ class RenderPlugins extends React.PureComponent<Props, State> {
                 tooltipPlacement="top"
                 tooltipTitle="Delete"
                 aria-label="delete"
-                size="small"
                 onClick={() => fields.remove(index)}
               >
                 <DeleteIcon />

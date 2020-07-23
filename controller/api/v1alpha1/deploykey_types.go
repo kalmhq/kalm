@@ -22,28 +22,41 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+type DeployKeyType string
+
+const (
+	DeployKeyTypeComponent DeployKeyType = "component"
+	DeployKeyTypeApp       DeployKeyType = "app"
+	DeployKeyTypeAll       DeployKeyType = "all"
+)
+
 // DeployKeySpec defines the desired state of DeployKey
 type DeployKeySpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// +kubebuilder:validation:Enum=component;app;all
-	Type string `json:"type"`
+	// +kubebuilder:validation:Enum=component;app
+	Type DeployKeyType `json:"type"`
+
+	// for type: component, content lists all components
+	// +optional
+	Content []string `json:"content,omitempty"`
 
 	// +optional
-	Content string `json:"content,omitempty"`
-
-	ServiceAccountToken string `json:"serviceAccountToken"`
+	Creator string `json:"creator,omitempty"`
 }
 
 // DeployKeyStatus defines the observed state of DeployKey
 type DeployKeyStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	ServiceAccountToken string `json:"serviceAccountToken"`
+	LastUsedTimestamp   int    `json:"lastUsedTimestamp"`
+	UsedCount           int    `json:"usedCount"`
 }
 
 // +kubebuilder:object:root=true
-// +kubebuilder:resource:scope=Cluster
+// +kubebuilder:subresource:status
 
 // DeployKey is the Schema for the deploykeys API
 type DeployKey struct {

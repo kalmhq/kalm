@@ -17,5 +17,5 @@ export const HttpBytesSizeChart = (props: BaseLineChartProps) => {
       }
     }
   }
-  return <BaseLineChart fill formatYAxesValue={humanFileSize} {...props} />;
+  return <BaseLineChart fill formatYAxesValue={humanFileSize} {...props} yAxesWidth={50} />;
 };

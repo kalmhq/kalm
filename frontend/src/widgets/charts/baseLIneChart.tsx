@@ -19,6 +19,7 @@ export interface BaseLineChartProps {
   title: string;
   fill?: boolean;
   formatYAxesValue?: any;
+  yAxesWidth?: number;
 }
 
 class BaseLineChartRaw extends React.PureComponent<BaseLineChartProps & WithStyles<typeof styles>> {
@@ -49,9 +50,14 @@ class BaseLineChartRaw extends React.PureComponent<BaseLineChartProps & WithStyl
   };
 
   public render() {
-    const { title, formatYAxesValue } = this.props;
+    const { title, formatYAxesValue, yAxesWidth } = this.props;
 
     const yAxes: any = {
+      afterFit: yAxesWidth
+        ? (scaleInstance: any) => {
+            scaleInstance.width = 80; // sets the width to 100px
+          }
+        : undefined,
       ticks: {
         maxTicksLimit: 5,
         beginAtZero: true,

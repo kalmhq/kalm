@@ -24,6 +24,8 @@ interface FieldArrayProps extends DispatchProp {
 
 interface Props extends WrappedFieldArrayProps<SharedEnv>, FieldArrayComponentHackType, FieldArrayProps {}
 
+const nameValidators = [ValidatorRequired, ValidatorEnvName];
+
 class RenderEnvs extends React.PureComponent<Props> {
   private nameAutoCompleteOptions: string[];
 
@@ -101,7 +103,7 @@ class RenderEnvs extends React.PureComponent<Props> {
         {fields.map((field, index) => {
           return (
             <Fade in key={field}>
-              <Grid container alignItems="center" spacing={2}>
+              <Grid container spacing={2}>
                 <Grid item xs={5}>
                   <Field
                     options={this.nameAutoCompleteOptions}
@@ -109,7 +111,7 @@ class RenderEnvs extends React.PureComponent<Props> {
                     label="Name"
                     component={RenderAutoCompleteFreeSolo}
                     margin
-                    validate={[ValidatorRequired, ValidatorEnvName]}
+                    validate={nameValidators}
                   />
                 </Grid>
                 <Grid item xs={5}>
@@ -126,7 +128,6 @@ class RenderEnvs extends React.PureComponent<Props> {
                     tooltipPlacement="top"
                     tooltipTitle="Delete"
                     aria-label="delete"
-                    size="small"
                     onClick={() => fields.remove(index)}
                   >
                     <DeleteIcon />

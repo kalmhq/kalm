@@ -82,11 +82,11 @@ const renderMoreActions = (rowData: RowData) => {
   return (
     <>
       {rowData.get("isSelfManaged") && (
-        <IconButtonWithTooltip tooltipTitle="Edit" aria-label="edit" size="small" onClick={action("Edit")}>
+        <IconButtonWithTooltip tooltipTitle="Edit" aria-label="edit" onClick={action("Edit")}>
           <EditIcon />
         </IconButtonWithTooltip>
       )}
-      <IconButtonWithTooltip tooltipTitle="Delete" aria-label="delete" size="small" onClick={action("Delete")}>
+      <IconButtonWithTooltip tooltipTitle="Delete" aria-label="delete" onClick={action("Delete")}>
         <DeleteIcon />
       </IconButtonWithTooltip>
     </>

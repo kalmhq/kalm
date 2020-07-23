@@ -1,7 +1,21 @@
-import { Box, Button, createStyles, Grid, Popover, Theme, WithStyles, withStyles, Link } from "@material-ui/core";
+import {
+  Box,
+  Button,
+  createStyles,
+  Fade,
+  Grid,
+  Link,
+  Paper,
+  Popover,
+  Popper,
+  Theme,
+  WithStyles,
+  withStyles,
+} from "@material-ui/core";
 import { api } from "api";
 import { Expansion } from "forms/Route/expansion";
-import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
+import { POPPER_ZINDEX } from "layout/Constants";
+import PopupState, { bindPopover, bindPopper, bindTrigger } from "material-ui-popup-state";
 import { NodeStatus } from "pages/Nodes/NodeStatus";
 import React from "react";
 import { connect } from "react-redux";
@@ -11,13 +25,15 @@ import { Node } from "types/node";
 import { formatTimeDistance } from "utils";
 import { InfoBox } from "widgets/InfoBox";
 import { H5 } from "widgets/Label";
+import { WhitePaper } from "widgets/Paper";
 import { BigCPULineChart, BigMemoryLineChart, SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
 import { BasePage } from "../BasePage";
 import { NodeCPU, NodesCPU } from "./CPU";
 import { NodeMemory, NodesMemory } from "./Memory";
 import { NodePods } from "./Pods";
-import { WhitePaper } from "widgets/Paper";
+import { ResourceRank } from "./ResourceRank";
+import { customBindHover } from "utils/popper";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -32,6 +48,35 @@ const styles = (theme: Theme) =>
   });
 
 interface States {}
+
+// TODO remove this and use real
+const fakePopperData = [
+  {
+    name: "application1",
+    value: 1000,
+    unit: "m",
+  },
+  {
+    name: "application2",
+    value: 800,
+    unit: "m",
+  },
+  {
+    name: "application3",
+    value: 700,
+    unit: "m",
+  },
+  {
+    name: "application4",
+    value: 500,
+    unit: "m",
+  },
+  {
+    name: "application5",
+    value: 300,
+    unit: "m",
+  },
+];
 
 type Props = ReturnType<typeof mapStateToProps> & TDispatchProp & WithStyles<typeof styles>;
 
@@ -92,13 +137,51 @@ export class NodeListRaw extends React.Component<Props, States> {
             <Grid item>
               <Box display="flex">
                 <Box mr={2}>CPU:</Box>
-                <NodeCPU node={node} />
+                <PopupState variant="popper" popupId={`big-memory-popup-popper-${node.get("name")}`}>
+                  {(popupState) => {
+                    return (
+                      <div>
+                        <div {...customBindHover(popupState)}>
+                          <NodeCPU node={node} />
+                        </div>
+                        <Popper {...bindPopper(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>
+                          {({ TransitionProps }) => (
+                            <Fade {...TransitionProps} timeout={100}>
+                              <Paper>
+                                <ResourceRank allocateds={fakePopperData} />
+                              </Paper>
+                            </Fade>
+                          )}
+                        </Popper>
+                      </div>
+                    );
+                  }}
+                </PopupState>
               </Box>
             </Grid>
             <Grid item>
               <Box display="flex">
                 <Box mr={2}>Memory:</Box>
-                <NodeMemory node={node} />
+                <PopupState variant="popper" popupId={`big-memory-popup-popper-${node.get("name")}`}>
+                  {(popupState) => {
+                    return (
+                      <div>
+                        <div {...customBindHover(popupState)}>
+                          <NodeMemory node={node} />
+                        </div>
+                        <Popper {...bindPopper(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>
+                          {({ TransitionProps }) => (
+                            <Fade {...TransitionProps} timeout={100}>
+                              <Paper>
+                                <ResourceRank allocateds={fakePopperData} />
+                              </Paper>
+                            </Fade>
+                          )}
+                        </Popper>
+                      </div>
+                    );
+                  }}
+                </PopupState>
               </Box>
             </Grid>
           </Grid>
@@ -141,11 +224,63 @@ export class NodeListRaw extends React.Component<Props, States> {
             },
             {
               name: "CPU (Allocated / Total allocatable)",
-              content: <NodeCPU node={node} showDetails={true} />,
+              content: (
+                <PopupState variant="popper" popupId={`big-memory-popup-popper-${node.get("name")}`}>
+                  {(popupState) => {
+                    return (
+                      <div>
+                        <div {...customBindHover(popupState)}>
+                          <NodeCPU node={node} showDetails={true} />
+                        </div>
+                        <Popper
+                          {...bindPopper(popupState)}
+                          style={{ zIndex: POPPER_ZINDEX }}
+                          placement={"bottom-start"}
+                          transition
+                        >
+                          {({ TransitionProps }) => (
+                            <Fade {...TransitionProps} timeout={100}>
+                              <Paper>
+                                <ResourceRank allocateds={fakePopperData} />
+                              </Paper>
+                            </Fade>
+                          )}
+                        </Popper>
+                      </div>
+                    );
+                  }}
+                </PopupState>
+              ),
             },
             {
               name: "Memory (Allocated / Total allocatable)",
-              content: <NodeMemory node={node} />,
+              content: (
+                <PopupState variant="popper" popupId={`big-memory-popup-popper-${node.get("name")}`}>
+                  {(popupState) => {
+                    return (
+                      <div>
+                        <div {...customBindHover(popupState)}>
+                          <NodeMemory node={node} showDetails={true} />
+                        </div>
+                        <Popper
+                          {...bindPopper(popupState)}
+                          style={{ zIndex: POPPER_ZINDEX }}
+                          placement={"bottom-start"}
+                          transition
+                        >
+                          {({ TransitionProps }) => (
+                            <Fade {...TransitionProps} timeout={100}>
+                              <Paper>
+                                <ResourceRank allocateds={fakePopperData} />
+                              </Paper>
+                            </Fade>
+                          )}
+                        </Popper>
+                      </div>
+                    );
+                  }}
+                </PopupState>
+              ),
             },
             {
               name: "Pods (Allocated / Total allocatable)",
@@ -267,13 +402,51 @@ export class NodeListRaw extends React.Component<Props, States> {
             <Grid item md={6}>
               <WhitePaper elevation={0} style={{ overflow: "hidden" }}>
                 <BigCPULineChart data={metrics.get("cpu")} />
-                <NodesCPU nodes={nodes} />
+                <PopupState variant="popper" popupId="big-cpu-popup-popper">
+                  {(popupState) => {
+                    return (
+                      <div>
+                        <div {...customBindHover(popupState)}>
+                          <NodesCPU nodes={nodes} />
+                        </div>
+                        <Popper {...bindPopper(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>
+                          {({ TransitionProps }) => (
+                            <Fade {...TransitionProps} timeout={100}>
+                              <Paper>
+                                <ResourceRank allocateds={fakePopperData} />
+                              </Paper>
+                            </Fade>
+                          )}
+                        </Popper>
+                      </div>
+                    );
+                  }}
+                </PopupState>
               </WhitePaper>
             </Grid>
             <Grid item md={6}>
               <WhitePaper elevation={0} style={{ overflow: "hidden" }}>
                 <BigMemoryLineChart data={metrics.get("memory")} />
-                <NodesMemory nodes={nodes} />
+                <PopupState variant="popper" popupId="big-memory-popup-popper">
+                  {(popupState) => {
+                    return (
+                      <div>
+                        <div {...customBindHover(popupState)}>
+                          <NodesMemory nodes={nodes} />
+                        </div>
+                        <Popper {...bindPopper(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>
+                          {({ TransitionProps }) => (
+                            <Fade {...TransitionProps} timeout={100}>
+                              <Paper>
+                                <ResourceRank allocateds={fakePopperData} />
+                              </Paper>
+                            </Fade>
+                          )}
+                        </Popper>
+                      </div>
+                    );
+                  }}
+                </PopupState>
               </WhitePaper>
             </Grid>
           </Grid>

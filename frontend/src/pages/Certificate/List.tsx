@@ -84,7 +84,6 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
           <IconButtonWithTooltip
             tooltipTitle="Edit"
             aria-label="edit"
-            size="small"
             onClick={() => {
               blinkTopProgressAction();
               dispatch(openDialogAction(addCertificateDialogId));
@@ -97,7 +96,6 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
         <IconButtonWithTooltip
           tooltipTitle="Delete"
           aria-label="delete"
-          size="small"
           onClick={() => {
             blinkTopProgressAction();
             this.showDeleteConfirmDialog(rowData);

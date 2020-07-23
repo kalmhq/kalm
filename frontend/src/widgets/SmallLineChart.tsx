@@ -35,6 +35,7 @@ interface Props extends WithStyles<typeof smallLineChartStyles> {
   hoverText?: string;
   width: number | string;
   height: number | string;
+  yAxesWidth?: number;
   formatValue?: (value: number) => string;
   borderColor?: string;
   backgroundColor?: string;
@@ -181,6 +182,7 @@ interface LineChartProps extends WithStyles<typeof lineChartStyles> {
   title?: string;
   width: number | string;
   height: number | string;
+  yAxesWidth?: number;
   formatValue?: (value: number) => string;
   borderColor?: string;
   backgroundColor?: string;
@@ -206,7 +208,7 @@ class LineChartRaw extends React.PureComponent<LineChartProps> {
   };
 
   public render() {
-    const { classes, width, height, formatValue, title } = this.props;
+    const { classes, width, height, formatValue, title, yAxesWidth } = this.props;
     return (
       <div style={{ width, height }} className={classes.root}>
         <Line
@@ -218,12 +220,6 @@ class LineChartRaw extends React.PureComponent<LineChartProps> {
             },
             responsive: true,
             maintainAspectRatio: false,
-            layout: {
-              padding: {
-                top: 10,
-                right: 10,
-              },
-            },
             tooltips: {
               intersect: false,
               callbacks: {
@@ -242,6 +238,11 @@ class LineChartRaw extends React.PureComponent<LineChartProps> {
             scales: {
               yAxes: [
                 {
+                  afterFit: yAxesWidth
+                    ? (scaleInstance) => {
+                        scaleInstance.width = 80; // sets the width to 100px
+                      }
+                    : undefined,
                   ticks: {
                     maxTicksLimit: 5,
                     beginAtZero: true,
@@ -271,17 +272,20 @@ class LineChartRaw extends React.PureComponent<LineChartProps> {
 export const LineChart = withStyles(lineChartStyles)(LineChartRaw);
 
 export const formatMemory = (value: number, si?: boolean): string => {
-  const thresh = si ? 1000 : 1024;
-  if (Math.abs(value) < thresh) {
-    return value + " B";
-  }
-  const units = si ? ["k", "M", "G", "T", "P", "E", "Z", "Y"] : ["Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi", "Yi"];
-  let u = -1;
-  do {
-    value /= thresh;
-    ++u;
-  } while (Math.abs(value) >= thresh && u < units.length - 1);
-  return value.toFixed(1) + " " + units[u];
+  // const thresh = si ? 1000 : 1024;
+  // if (Math.abs(value) < thresh) {
+  //   return value + " B";
+  // }
+  // const units = si ? ["k", "M", "G", "T", "P", "E", "Z", "Y"] : ["Ki", "Mi", "Gi", "Ti", "Pi", "Ei", "Zi", "Yi"];
+  // let u = -1;
+  // do {
+  //   value /= thresh;
+  //   ++u;
+  // } while (Math.abs(value) >= thresh && u < units.length - 1);
+  // return value.toFixed(1) + " " + units[u];
+
+  const MiBytes = 1024 * 1024 * 1024;
+  return (value / MiBytes).toFixed(0) + " Mi";
 };
 
 export const formatNumerical = (value: number): string => {
@@ -289,16 +293,17 @@ export const formatNumerical = (value: number): string => {
 };
 
 const formatCPU = (value: number): string => {
-  return value / 1000 + " Core";
+  return (value * 1000).toFixed(0) + " m";
+  // return value + " Core";
 };
 
-export const BigCPULineChart = (props: Pick<Props, "data">) => {
+export const BigCPULineChart = (props: Pick<Props, "data" | "yAxesWidth">) => {
   return (
     <LineChart
       {...props}
       title={"CPU"}
       formatValue={formatCPU}
-      height={180}
+      height={170}
       width={"100%"}
       borderColor="rgba(33, 150, 243, 1)"
       backgroundColor="rgba(33, 150, 243, 0.5)"
@@ -306,13 +311,13 @@ export const BigCPULineChart = (props: Pick<Props, "data">) => {
   );
 };
 
-export const BigMemoryLineChart = (props: Pick<Props, "data">) => {
+export const BigMemoryLineChart = (props: Pick<Props, "data" | "yAxesWidth">) => {
   return (
     <LineChart
       title="Memory"
       {...props}
       formatValue={formatMemory}
-      height={180}
+      height={170}
       width={"100%"}
       borderColor="rgba(75,192,192, 1)"
       backgroundColor="rgba(75,192,192,0.5)"

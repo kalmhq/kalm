@@ -33,7 +33,7 @@ import {
   workloadTypeStatefulSet,
 } from "types/componentTemplate";
 import { PublicRegistriesList } from "types/registry";
-import { sizeStringToGi, sizeStringToNumber } from "utils/sizeConv";
+import { sizeStringToMi, sizeStringToNumber } from "utils/sizeConv";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Body, Caption, H5 } from "widgets/Label";
@@ -173,6 +173,8 @@ export interface Props
 
 interface State {}
 
+const nameValidators = [ValidatorRequired, ValidatorName];
+
 class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private tabs = tabs;
 
@@ -198,7 +200,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           label="Replicas"
           helperText=""
           formValueToEditValue={(value: any) => {
-            return value ? value : 1;
+            let displayValue;
+            if (value !== null && value !== undefined) {
+              displayValue = `${value}`.length > 0 ? value : 1;
+            } else {
+              displayValue = 1;
+            }
+
+            return displayValue;
           }}
           editValueToFormValue={(value: any) => {
             return value;
@@ -217,7 +226,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             placeholder="* * * * *"
             label="Cronjob Schedule"
             required
-            validate={[ValidatorSchedule]}
+            validate={ValidatorSchedule}
             helperText={
               <span>
                 <a href="https://en.wikipedia.org/wiki/Cron" target="_blank" rel="noopener noreferrer">
@@ -238,7 +247,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   };
 
   private getCPUHelper() {
-    return "Kalm uses 1 Core as the base unit of CPU. The minimum support is 0.001 Core.";
+    return "Kalm uses 1m as the base unit of CPU. 1 Core equals 1000m. The minimum support is 1m.";
   }
 
   private getMemoryHelper() {
@@ -640,21 +649,21 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             component={RenderComplexValueTextDebounceField}
             name="cpu"
             label="CPU Limit"
-            validate={[ValidatorCPU]}
+            validate={ValidatorCPU}
             // normalize={NormalizeCPU}
             placeholder="Please type CPU limit"
             type="number"
             formValueToEditValue={(value: any) => {
-              return !value ? "" : sizeStringToNumber(value);
+              return !value ? "" : (sizeStringToNumber(value) * 1000).toFixed();
             }}
             editValueToFormValue={(value: any) => {
-              return !value ? "" : value;
+              return !value ? "" : value + "m";
             }}
             endAdornment={
               <KTooltip title={this.getCPUHelper()}>
                 <Box display="flex" alignItems="center">
                   <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
-                  <Box ml={0.5}>Core</Box>
+                  <Box ml={0.5}>m</Box>
                 </Box>
               </KTooltip>
             }
@@ -667,21 +676,21 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             name="memory"
             label="Memory Limit"
             margin
-            validate={[ValidatorMemory]}
+            validate={ValidatorMemory}
             // normalize={NormalizeMemory}
             placeholder="Please type memory limit"
             type="number"
             formValueToEditValue={(value: any) => {
-              return !value ? "" : sizeStringToGi(value);
+              return !value ? "" : sizeStringToMi(value);
             }}
             editValueToFormValue={(value: any) => {
-              return !value ? "" : value + "Gi";
+              return !value ? "" : value + "Mi";
             }}
             endAdornment={
               <KTooltip title={this.getMemoryHelper()}>
                 <Box display="flex" alignItems="center">
                   <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
-                  <Box ml={0.5}>Gi</Box>
+                  <Box ml={0.5}>Mi</Box>
                 </Box>
               </KTooltip>
             }
@@ -864,7 +873,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             name="name"
             label="Name"
             margin
-            validate={[ValidatorRequired, ValidatorName]}
+            validate={nameValidators}
             disabled={isEdit}
             helperText={
               isEdit

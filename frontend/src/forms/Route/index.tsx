@@ -30,6 +30,7 @@ import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { RenderHttpRouteConditions } from "./conditions";
 import { RenderHttpRouteDestinations } from "./destinations";
+import { Targets } from "widgets/Targets";
 
 const mapStateToProps = (state: RootState) => {
   const form = ROUTE_FORM_ID;
@@ -100,6 +101,9 @@ interface State {
   isAdvancedPartUnfolded: boolean;
   isValidCertificationUnfolded: boolean;
 }
+
+const hostsValidators = [ValidatorRequired, KValidatorHostsWithWildcardPrefix];
+const pathsValidators = [ValidatorRequired, KValidatorPaths];
 
 class RouteFormRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
@@ -239,41 +243,55 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
     }
     return (
       <Box p={2}>
-        <Caption>Choose targets that will receive requets.</Caption>
-        <Box mt={2} mr={2} mb={2}>
-          <Button
-            variant="outlined"
-            color="primary"
-            startIcon={<Icon>add</Icon>}
-            size="small"
-            id="add-target-button"
-            onClick={() =>
-              dispatch(
-                arrayPush(
-                  form,
-                  "destinations",
-                  Immutable.Map({
-                    host: "",
-                    weight: 1,
-                  }),
-                ),
-              )
-            }
-          >
-            Add a target
-          </Button>
-        </Box>
-        <Collapse in={destinations.size > 1}>
-          <Alert className="alert" severity="info">
-            There are more than one target, traffic will be forwarded to each target by weight.
-          </Alert>
-        </Collapse>
-        <FieldArray
-          name="destinations"
-          component={RenderHttpRouteDestinations}
-          rerenderOnEveryChange
-          validate={ValidatorAtLeastOneHttpRouteDestination}
-        />
+        <Grid container>
+          <Grid item xs={8}>
+            <Caption>You can add extra targets and assign weights to them.</Caption>
+            <Box mt={2} mr={2} mb={2}>
+              <Button
+                variant="outlined"
+                color="primary"
+                startIcon={<Icon>add</Icon>}
+                size="small"
+                id="add-target-button"
+                onClick={() =>
+                  dispatch(
+                    arrayPush(
+                      form,
+                      "destinations",
+                      Immutable.Map({
+                        host: "",
+                        weight: 1,
+                      }),
+                    ),
+                  )
+                }
+              >
+                Add a target
+              </Button>
+            </Box>
+            <Collapse in={destinations.size > 1}>
+              <Alert className="alert" severity="info">
+                There are more than one target, traffic will be forwarded to each target by weight.
+              </Alert>
+            </Collapse>
+            <FieldArray
+              name="destinations"
+              component={RenderHttpRouteDestinations}
+              rerenderOnEveryChange
+              validate={ValidatorAtLeastOneHttpRouteDestination}
+            />
+          </Grid>
+          <Grid item xs={4}>
+            <Targets
+              activeNamespaceName={"activeNamespaceName"}
+              destinations={Immutable.fromJS([
+                { host: "web-v1-production", weight: 1 },
+                { host: "web-v2-dark-theme", weight: 1 },
+                { host: "web-v2-ligh-theme", weight: 1 },
+              ])}
+            />
+          </Grid>
+        </Grid>
       </Box>
     );
   };
@@ -298,7 +316,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
     return (
       <div className={classes.root}>
         <Grid container spacing={2}>
-          <Grid item xs={8}>
+          <Grid item xs={12}>
             <Prompt when={dirty && !submitSucceeded} message="Are you sure to leave without saving changes?" />
             <Box mb={2}>
               <KPanel
@@ -313,7 +331,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       component={KFreeSoloAutoCompleteMultiValues}
                       name="hosts"
                       margin="normal"
-                      validate={[ValidatorRequired, KValidatorHostsWithWildcardPrefix]}
+                      validate={hostsValidators}
                       placeholder="Type a host"
                       helperText={
                         <>
@@ -339,7 +357,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       component={KFreeSoloAutoCompleteMultiValues}
                       name="paths"
                       margin="normal"
-                      validate={[ValidatorRequired, KValidatorPaths]}
+                      validate={pathsValidators}
                       placeholder="Type a path"
                       helperText='Allow to configure multiple paths. Each path must begin with "/".'
                     />
@@ -374,7 +392,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                         <Field
                           title="Choose methods you need"
                           component={KCheckboxGroupRender}
-                          componentType={"Chip"}
+                          componentType={"Checkbox"}
                           validate={methodsMode === methodsModeSpecific ? ValidatorListNotEmpty : []}
                           name="methods"
                           options={httpMethods.map((m) => {
@@ -386,7 +404,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                     <Field
                       title="Allow traffic through"
                       component={KCheckboxGroupRender}
-                      componentType={"Chip"}
+                      componentType={"Checkbox"}
                       validate={ValidatorListNotEmpty}
                       name="schemes"
                       options={[

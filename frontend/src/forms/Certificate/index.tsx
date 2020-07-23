@@ -77,6 +77,16 @@ interface State {
   isEditCertificateIssuer: boolean;
 }
 
+const ValidatorCertificateValid = (value: any, _allValues?: any, _props?: any, _name?: any) => {
+  const domains = _props.values.get("domains");
+  if (!domains || domains.size < 1) {
+    return "Invalid Certificate";
+  }
+  return undefined;
+};
+
+const selfManagedCertContentValidators = [ValidatorRequired, ValidatorCertificateValid];
+
 class CertificateFormRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -121,7 +131,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
             rows={12}
             name="selfManagedCertContent"
             margin="normal"
-            validate={[ValidatorRequired, ValidatorCertificateValid]}
+            validate={selfManagedCertContentValidators}
           />
         </Grid>
         <Grid item md={12}>
@@ -326,14 +336,6 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
     );
   }
 }
-
-const ValidatorCertificateValid = (value: any, _allValues?: any, _props?: any, _name?: any) => {
-  const domains = _props.values.get("domains");
-  if (!domains || domains.size < 1) {
-    return "Invalid Certificate";
-  }
-  return undefined;
-};
 
 export const CertificateForm = reduxForm<CertificateFormType, OwnProps>({
   onSubmitFail: console.log,

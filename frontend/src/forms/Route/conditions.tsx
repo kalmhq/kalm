@@ -23,9 +23,9 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
     return fields.map((member, index) => {
       const rule = fields.get(index);
       return (
-        <Grid container spacing={1} key={index} alignItems="center">
+        <Grid container spacing={1} key={index}>
           <Grid item md={2}>
-            {rule.get("type")} Rule
+            <div style={{ padding: "12px 0" }}>{rule.get("type")} Rule</div>
           </Grid>
           <Grid item md={2}>
             <Field name={`${member}.name`} component={KRenderTextField} label="Name" validate={ValidatorRequired} />
@@ -51,7 +51,6 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
               tooltipPlacement="top"
               tooltipTitle="Delete"
               aria-label="delete"
-              size="small"
               onClick={() => fields.remove(index)}
             >
               <DeleteIcon />
