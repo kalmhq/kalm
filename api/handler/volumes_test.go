@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"fmt"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/stretchr/testify/suite"
@@ -31,7 +32,7 @@ func (suite *VolumeTestSuite) SetupSuite() {
 			Name: "kalm-test-" + rand.String(10),
 		},
 	}
-	suite.k8sClinet.CoreV1().Namespaces().Create(&ns)
+	suite.k8sClinet.CoreV1().Namespaces().Create(context.Background(), &ns, v1.CreateOptions{})
 	suite.NS = ns.Name
 
 	ns2 := coreV1.Namespace{
@@ -39,7 +40,7 @@ func (suite *VolumeTestSuite) SetupSuite() {
 			Name: "kalm-test-" + rand.String(10),
 		},
 	}
-	suite.k8sClinet.CoreV1().Namespaces().Create(&ns2)
+	suite.k8sClinet.CoreV1().Namespaces().Create(context.Background(), &ns2, v1.CreateOptions{})
 	suite.NS2 = ns2.Name
 }
 
@@ -90,10 +91,10 @@ func (suite *VolumeTestSuite) TestGetAvailableVolsForDP() {
 
 	// in-use
 	suite.True(volExists(resources.Volume{
-		Name: inUsePVC.Name,
+		Name:    inUsePVC.Name,
 		IsInUse: true,
-		PVC:  inUsePVC.Name,
-		PV:   "",
+		PVC:     inUsePVC.Name,
+		PV:      "",
 	}, resList))
 
 	// call API from ns2
@@ -121,10 +122,10 @@ func (suite *VolumeTestSuite) TestGetAvailableVolsForDP() {
 	}, resList))
 	// in-use
 	suite.True(volExists(resources.Volume{
-		Name: inUsePVC2.Name,
+		Name:    inUsePVC2.Name,
 		IsInUse: true,
-		PVC:  inUsePVC2.Name,
-		PV:   "",
+		PVC:     inUsePVC2.Name,
+		PV:      "",
 	}, resList))
 }
 
@@ -163,7 +164,7 @@ func randomName() string {
 
 func (suite *VolumeTestSuite) createPV() coreV1.PersistentVolume {
 	unboundPV := genPV()
-	rst, err := suite.k8sClinet.CoreV1().PersistentVolumes().Create(&unboundPV)
+	rst, err := suite.k8sClinet.CoreV1().PersistentVolumes().Create(context.Background(), &unboundPV, v1.CreateOptions{})
 
 	suite.Nil(err)
 
@@ -244,7 +245,7 @@ func (suite VolumeTestSuite) createInUseBoundedPVCAndPV(ns string) (coreV1.Persi
 		},
 	}
 
-	_, err := suite.k8sClinet.CoreV1().Pods(pod.Namespace).Create(&pod)
+	_, err := suite.k8sClinet.CoreV1().Pods(pod.Namespace).Create(context.Background(), &pod, v1.CreateOptions{})
 	suite.Nil(err)
 
 	return pvc, pv
@@ -252,9 +253,9 @@ func (suite VolumeTestSuite) createInUseBoundedPVCAndPV(ns string) (coreV1.Persi
 
 func (suite VolumeTestSuite) createBoundedPVCAndPV(ns string) (coreV1.PersistentVolumeClaim, coreV1.PersistentVolume) {
 	pvc, pv := genBoundedPVCAndPV(ns)
-	rstPV, err := suite.k8sClinet.CoreV1().PersistentVolumes().Create(&pv)
+	rstPV, err := suite.k8sClinet.CoreV1().PersistentVolumes().Create(context.Background(), &pv, v1.CreateOptions{})
 	suite.Nil(err)
-	rstPVC, err := suite.k8sClinet.CoreV1().PersistentVolumeClaims(pvc.Namespace).Create(&pvc)
+	rstPVC, err := suite.k8sClinet.CoreV1().PersistentVolumeClaims(pvc.Namespace).Create(context.Background(), &pvc, v1.CreateOptions{})
 	suite.Nil(err)
 
 	return *rstPVC, *rstPV

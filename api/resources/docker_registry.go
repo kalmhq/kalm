@@ -23,7 +23,6 @@ func (builder *Builder) GetDockerRegistryListChannel(listOptions metaV1.ListOpti
 	}
 
 	go func() {
-
 		var fetched v1alpha1.DockerRegistryList
 		err := builder.List(&fetched)
 
@@ -85,7 +84,7 @@ func (builder *Builder) GetDockerRegistry(name string) (*DockerRegistry, error) 
 func (builder *Builder) GetDockerRegistries() ([]*DockerRegistry, error) {
 	resourceChannels := &ResourceChannels{
 		DockerRegistryList: builder.GetDockerRegistryListChannel(ListAll),
-		SecretList:         builder.GetSecretListChannel("kalm-system", client.MatchingLabels{"kalm-docker-registry-authentication": "true"}),
+		SecretList:         builder.GetSecretListChannel(client.InNamespace("kalm-system"), client.MatchingLabels{"kalm-docker-registry-authentication": "true"}),
 	}
 
 	resources, err := resourceChannels.ToResources()

@@ -17,10 +17,11 @@ package main
 
 import (
 	"flag"
-	"os"
-
+	"fmt"
 	_ "github.com/joho/godotenv/autoload"
 	istioScheme "istio.io/client-go/pkg/clientset/versioned/scheme"
+	"os"
+	"time"
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	elkv1 "github.com/elastic/cloud-on-k8s/pkg/apis/elasticsearch/v1"
@@ -89,6 +90,8 @@ func main() {
 		Scheme:             scheme,
 		MetricsBindAddress: metricsAddr,
 		LeaderElection:     enableLeaderElection,
+		//todo ? {"error": "LeaderElectionID must be configured"}
+		LeaderElectionID:   fmt.Sprintf("leader-election-id-%d", time.Now().Unix()),
 		Port:               9443,
 	})
 	if err != nil {

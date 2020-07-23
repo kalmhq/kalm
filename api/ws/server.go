@@ -1,12 +1,11 @@
 package ws
 
 import (
-	"net/http"
-
 	"github.com/gorilla/websocket"
 	"github.com/kalmhq/kalm/api/client"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
+	"net/http"
 )
 
 var (
@@ -20,6 +19,7 @@ var (
 type WsHandler struct {
 	k8sClientManager *client.ClientManager
 	clientPool       *ClientPool
+	logger           *log.Logger
 }
 
 func NewWsHandler(k8sClientManager *client.ClientManager) *WsHandler {
@@ -29,6 +29,7 @@ func NewWsHandler(k8sClientManager *client.ClientManager) *WsHandler {
 	return &WsHandler{
 		k8sClientManager: k8sClientManager,
 		clientPool:       clientPool,
+		logger:           log.New(),
 	}
 }
 
@@ -46,6 +47,7 @@ func (h *WsHandler) Serve(c echo.Context) error {
 		Done:             make(chan struct{}),
 		StopWatcher:      make(chan struct{}),
 		K8sClientManager: h.k8sClientManager,
+		logger:           h.logger,
 	}
 	client.clientPool.register <- client
 

@@ -19,7 +19,7 @@ import { Loading } from "widgets/Loading";
 import { KTable } from "widgets/Table";
 import { CertificateDataWrapper, WithCertificatesDataProps } from "./DataWrapper";
 import { addCertificateDialogId, NewModal } from "./New";
-import { formatDate } from "utils";
+import { formatDate } from "utils/date";
 import { CustomizedButton } from "widgets/Button";
 import { EmptyList } from "widgets/EmptyList";
 import { indigo } from "@material-ui/core/colors";

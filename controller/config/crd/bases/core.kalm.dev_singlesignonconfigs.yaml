@@ -8,6 +8,11 @@ metadata:
   creationTimestamp: null
   name: singlesignonconfigs.core.kalm.dev
 spec:
+  additionalPrinterColumns:
+  - JSONPath: .spec.domain
+    description: Domain of dex
+    name: Domain
+    type: string
   group: core.kalm.dev
   names:
     kind: SingleSignOnConfig
@@ -15,6 +20,7 @@ spec:
     plural: singlesignonconfigs
     singular: singlesignonconfig
   scope: Namespaced
+  subresources: {}
   validation:
     openAPIV3Schema:
       description: SingleSignOnConfig is the Schema for the singlesignonconfigs API

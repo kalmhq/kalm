@@ -35,7 +35,7 @@ import { push } from "connected-react-router";
 import clsx from "clsx";
 import { SecretValueLabel } from "widgets/Label";
 import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
-import { sizeStringToGi } from "utils/sizeConv";
+import { sizeStringToMi } from "utils/sizeConv";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -195,7 +195,7 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     return (
       <Grid container className={classes.gridWrapper}>
         <Grid item md={2}>
-          {component.get("memory") ? `Allocated: ${sizeStringToGi(`${component.get("memory")}`)}Gi` : "No Limit"}
+          {component.get("memory") ? `Allocated: ${sizeStringToMi(`${component.get("memory")}`)} Mi` : "No Limit"}
         </Grid>
         <Grid item md={10}>
           Usage: <SmallMemoryLineChart data={component.get("metrics").get("memory")!} />

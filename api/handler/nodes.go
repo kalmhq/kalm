@@ -1,12 +1,11 @@
 package handler
 
 import (
-	"github.com/kalmhq/kalm/api/resources"
 	"github.com/labstack/echo/v4"
 )
 
 func (h *ApiHandler) handleListNodes(c echo.Context) error {
-	res, err := resources.ListNodes(getK8sClient(c))
+	res, err := h.Builder(c).ListNodes()
 
 	if err != nil {
 		return err
@@ -27,7 +26,7 @@ func (h *ApiHandler) handleCordonNode(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(200, resources.BuildNodeResponse(getK8sClient(c), node))
+	return c.JSON(200, h.Builder(c).BuildNodeResponse(node))
 }
 
 func (h *ApiHandler) handleUncordonNode(c echo.Context) error {
@@ -42,5 +41,5 @@ func (h *ApiHandler) handleUncordonNode(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(200, resources.BuildNodeResponse(getK8sClient(c), node))
+	return c.JSON(200, h.Builder(c).BuildNodeResponse(node))
 }

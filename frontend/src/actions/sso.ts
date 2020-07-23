@@ -2,15 +2,25 @@ import { ThunkResult } from "types";
 import { setErrorNotificationAction } from "./notification";
 import { api } from "api";
 import {
+  CREATE_PROTECTED_ENDPOINT_FAILED,
+  CREATE_PROTECTED_ENDPOINT_FULFILLED,
+  CREATE_PROTECTED_ENDPOINT_PENDING,
   CREATE_SSO_CONFIG_FAILED,
   CREATE_SSO_CONFIG_FULFILLED,
   CREATE_SSO_CONFIG_PENDING,
+  DELETE_PROTECTED_ENDPOINT_FAILED,
+  DELETE_PROTECTED_ENDPOINT_FULFILLED,
+  DELETE_PROTECTED_ENDPOINT_PENDING,
   DELETE_SSO_CONFIG_FAILED,
   DELETE_SSO_CONFIG_FULFILLED,
   DELETE_SSO_CONFIG_PENDING,
+  LOAD_PROTECTED_ENDPOINTS_FAILED,
+  LOAD_PROTECTED_ENDPOINTS_FULFILLED,
+  LOAD_PROTECTED_ENDPOINTS_PENDING,
   LOAD_SSO_CONFIG_FAILED,
   LOAD_SSO_CONFIG_FULFILLED,
   LOAD_SSO_CONFIG_PENDING,
+  ProtectedEndpoint,
   SSOConfig,
   UPDATE_SSO_CONFIG_FAILED,
   UPDATE_SSO_CONFIG_FULFILLED,
@@ -80,6 +90,55 @@ export const deleteSSOConfigAction = (): ThunkResult<Promise<void>> => {
     } catch (e) {
       dispatch({ type: DELETE_SSO_CONFIG_FAILED });
       dispatch(setErrorNotificationAction("Delete SSO Config failed."));
+      throw e;
+    }
+  };
+};
+
+export const loadProtectedEndpointAction = (): ThunkResult<Promise<void>> => {
+  return async (dispatch) => {
+    dispatch({ type: LOAD_PROTECTED_ENDPOINTS_PENDING });
+    try {
+      const endpoints = await api.listProtectedEndpoints();
+
+      dispatch({
+        type: LOAD_PROTECTED_ENDPOINTS_FULFILLED,
+        payload: endpoints,
+      });
+    } catch (e) {
+      dispatch({ type: LOAD_PROTECTED_ENDPOINTS_FAILED });
+      throw e;
+    }
+  };
+};
+
+export const createProtectedEndpointsAction = (protectedEndpoint: ProtectedEndpoint): ThunkResult<Promise<void>> => {
+  return async (dispatch, getState) => {
+    try {
+      dispatch({ type: CREATE_PROTECTED_ENDPOINT_PENDING });
+
+      const protectedEndpointRes = await api.createProtectedEndpoint(protectedEndpoint);
+
+      dispatch({
+        type: CREATE_PROTECTED_ENDPOINT_FULFILLED,
+        payload: protectedEndpointRes,
+      });
+    } catch (e) {
+      dispatch({ type: CREATE_PROTECTED_ENDPOINT_FAILED });
+      throw e;
+    }
+  };
+};
+
+export const deleteProtectedEndpointAction = (protectedEndpoint: ProtectedEndpoint): ThunkResult<Promise<void>> => {
+  return async (dispatch, getState) => {
+    try {
+      dispatch({ type: DELETE_PROTECTED_ENDPOINT_PENDING });
+      await api.deleteProtectedEndpoint(protectedEndpoint);
+      dispatch({ type: DELETE_PROTECTED_ENDPOINT_FULFILLED });
+    } catch (e) {
+      dispatch({ type: DELETE_PROTECTED_ENDPOINT_FAILED });
+      dispatch(setErrorNotificationAction("Delete Protected Endpoint failed."));
       throw e;
     }
   };

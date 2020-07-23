@@ -14,9 +14,40 @@ export const UPDATE_SSO_CONFIG_FULFILLED = "UPDATE_SSO_CONFIG_FULFILLED";
 export const UPDATE_SSO_CONFIG_PENDING = "UPDATE_SSO_CONFIG_PENDING";
 export const UPDATE_SSO_CONFIG_FAILED = "UPDATE_SSO_CONFIG_FAILED";
 
-export const DELETE_SSO_CONFIG_PENDING = "DELETE_SSO_CONFIG_PENDING";
 export const DELETE_SSO_CONFIG_FULFILLED = "DELETE_SSO_CONFIG_FULFILLED";
+export const DELETE_SSO_CONFIG_PENDING = "DELETE_SSO_CONFIG_PENDING";
 export const DELETE_SSO_CONFIG_FAILED = "DELETE_SSO_CONFIG_FAILED";
+
+export const LOAD_PROTECTED_ENDPOINTS_FULFILLED = "LOAD_PROTECTED_ENDPOINTS_FULFILLED";
+export const LOAD_PROTECTED_ENDPOINTS_PENDING = "LOAD_PROTECTED_ENDPOINTS_PENDING";
+export const LOAD_PROTECTED_ENDPOINTS_FAILED = "LOAD_PROTECTED_ENDPOINTS_FAILED";
+
+export const CREATE_PROTECTED_ENDPOINT_FULFILLED = "CREATE_PROTECTED_ENDPOINT_FULFILLED";
+export const CREATE_PROTECTED_ENDPOINT_PENDING = "CREATE_PROTECTED_ENDPOINT_PENDING";
+export const CREATE_PROTECTED_ENDPOINT_FAILED = "CREATE_PROTECTED_ENDPOINT_FAILED";
+
+export const DELETE_PROTECTED_ENDPOINT_FULFILLED = "DELETE_PROTECTED_ENDPOINT_FULFILLED";
+export const DELETE_PROTECTED_ENDPOINT_PENDING = "DELETE_PROTECTED_ENDPOINT_PENDING";
+export const DELETE_PROTECTED_ENDPOINT_FAILED = "DELETE_PROTECTED_ENDPOINT_FAILED";
+
+export interface LoadProtectedEndpointsAction {
+  type: typeof LOAD_PROTECTED_ENDPOINTS_FULFILLED;
+  payload: Immutable.List<ProtectedEndpoint>;
+}
+
+export interface DeleteProtectedEndpointAction {
+  type: typeof DELETE_PROTECTED_ENDPOINT_FULFILLED;
+}
+
+export interface CreateProtectedEndpointAction {
+  type: typeof CREATE_PROTECTED_ENDPOINT_FULFILLED;
+  payload: ProtectedEndpoint;
+}
+
+export type ProtectedEndpoint = ImmutableMap<{
+  namespace: string;
+  endpointName: string;
+}>;
 
 export interface LoadSSOConfigAction {
   type: typeof LOAD_SSO_CONFIG_FULFILLED;
@@ -24,7 +55,7 @@ export interface LoadSSOConfigAction {
 }
 
 export interface DeleteSSOConfigAction {
-  type: typeof DELETE_SSO_CONFIG_PENDING;
+  type: typeof DELETE_SSO_CONFIG_FULFILLED;
 }
 
 export interface CreateSSOConfigAction {
@@ -45,8 +76,14 @@ export interface SSOConfigsStateAction {
     | typeof CREATE_SSO_CONFIG_FAILED
     | typeof UPDATE_SSO_CONFIG_PENDING
     | typeof UPDATE_SSO_CONFIG_FAILED
-    | typeof DELETE_SSO_CONFIG_FULFILLED
-    | typeof DELETE_SSO_CONFIG_FAILED;
+    | typeof DELETE_SSO_CONFIG_PENDING
+    | typeof DELETE_SSO_CONFIG_FAILED
+    | typeof LOAD_PROTECTED_ENDPOINTS_PENDING
+    | typeof LOAD_PROTECTED_ENDPOINTS_FAILED
+    | typeof CREATE_PROTECTED_ENDPOINT_PENDING
+    | typeof CREATE_PROTECTED_ENDPOINT_FAILED
+    | typeof DELETE_PROTECTED_ENDPOINT_PENDING
+    | typeof DELETE_PROTECTED_ENDPOINT_FAILED;
 }
 
 export type SSOConfigActions =
@@ -54,7 +91,10 @@ export type SSOConfigActions =
   | SSOConfigsStateAction
   | DeleteSSOConfigAction
   | CreateSSOConfigAction
-  | UpdateSSOConfigAction;
+  | UpdateSSOConfigAction
+  | LoadProtectedEndpointsAction
+  | CreateProtectedEndpointAction
+  | DeleteProtectedEndpointAction;
 
 export type SSO_CONNECTOR_TYPE = string;
 
@@ -62,9 +102,10 @@ export const SSO_CONNECTOR_TYPE_GITHUB: SSO_CONNECTOR_TYPE = "github";
 export const SSO_CONNECTOR_TYPE_GITLAB: SSO_CONNECTOR_TYPE = "gitlab";
 
 export type GitlabConfig = ImmutableMap<{
+  baseURL: string;
   clientID: string;
   clientSecret: string;
-  orgs: Immutable.List<string>;
+  groups: Immutable.List<string>;
 }>;
 
 export type GithubOrg = ImmutableMap<{

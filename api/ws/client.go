@@ -3,6 +3,8 @@ package ws
 import (
 	"encoding/json"
 
+	"github.com/kalmhq/kalm/api/resources"
+
 	"github.com/gorilla/websocket"
 	"github.com/kalmhq/kalm/api/client"
 	log "github.com/sirupsen/logrus"
@@ -39,6 +41,8 @@ type Client struct {
 	K8SClientConfig *rest.Config
 
 	K8sClientset *kubernetes.Clientset
+
+	logger *log.Logger
 
 	IsWatching bool
 }
@@ -93,6 +97,11 @@ func (c *Client) read() {
 
 		if c.K8SClientConfig == nil {
 			authInfo := &api.AuthInfo{Token: reqMessage.Token}
+			err := c.K8sClientManager.IsAuthInfoWorking(authInfo)
+			if err != nil {
+				c.conn.WriteJSON(&ResMessage{Kind: "error", Data: "Invalid Auth Token"})
+			}
+
 			k8sClientConfig, err := c.K8sClientManager.GetClientConfigWithAuthInfo(authInfo)
 			if err != nil {
 				log.Error(err)
@@ -112,6 +121,9 @@ func (c *Client) read() {
 		}
 
 	}
+}
+func (c *Client) Builder() *resources.Builder {
+	return resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, c.logger)
 }
 
 func (c *Client) write() {
@@ -139,7 +151,7 @@ func (c *Client) write() {
 	}
 }
 
-func (c *Client) sendResMessage(resMessage *ResMessage) {
+func (c *Client) sendWatchResMessage(resMessage *ResMessage) {
 	if resMessage.Action == "" {
 		return
 	}

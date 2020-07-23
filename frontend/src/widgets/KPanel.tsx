@@ -25,7 +25,7 @@ const mapStateToProps = (state: RootState) => {
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {
   title?: string;
-  content: React.ReactNode;
+  content?: React.ReactNode;
   maxWidth?: number | string;
 }
 
@@ -38,7 +38,7 @@ class KPanelRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { classes, title, content } = this.props;
+    const { classes, title, content, children } = this.props;
     return (
       <Paper square variant="outlined">
         {title && (
@@ -46,7 +46,7 @@ class KPanelRaw extends React.PureComponent<Props, State> {
             <H5>{title}</H5>
           </Box>
         )}
-        {content}
+        {content || children}
       </Paper>
     );
   }

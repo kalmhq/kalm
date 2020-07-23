@@ -3,7 +3,6 @@ package resources
 import (
 	"context"
 	"fmt"
-
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/sirupsen/logrus"
 	appV1 "k8s.io/api/apps/v1"
@@ -13,7 +12,6 @@ import (
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
@@ -39,6 +37,7 @@ type ResourceChannels struct {
 	DockerRegistryList         *DockerRegistryListChannel
 	SecretList                 *SecretListChannel
 	IstioMetricList            *IstioMetricListChannel
+	ProtectedEndpoint          *ProtectedEndpointsChannel
 }
 
 type Resources struct {
@@ -54,9 +53,10 @@ type Resources struct {
 	ComponentPluginBindings []v1alpha1.ComponentPluginBinding
 	//ApplicationPlugins        []v1alpha1.ApplicationPlugin
 	//ApplicationPluginBindings []v1alpha1.ApplicationPluginBinding
-	DockerRegistries []v1alpha1.DockerRegistry
-	Secrets          []coreV1.Secret
-	HttpsCertIssuers []v1alpha1.HttpsCertIssuer
+	DockerRegistries  []v1alpha1.DockerRegistry
+	Secrets           []coreV1.Secret
+	HttpsCertIssuers  []v1alpha1.HttpsCertIssuer
+	ProtectedEndpoint []v1alpha1.ProtectedEndpoint
 }
 
 var ListAll = metaV1.ListOptions{
@@ -166,6 +166,14 @@ func (c *ResourceChannels) ToResources() (r *Resources, err error) {
 		resources.Secrets = <-c.SecretList.List
 	}
 
+	if c.ProtectedEndpoint != nil {
+		err = <-c.ProtectedEndpoint.Error
+		if err != nil {
+			return nil, err
+		}
+		resources.ProtectedEndpoint = <-c.ProtectedEndpoint.List
+	}
+
 	return resources, nil
 }
 
@@ -234,17 +242,6 @@ type Builder struct {
 	K8sClient *kubernetes.Clientset
 	Client    client.Client
 	Logger    *logrus.Logger
-	Config    *rest.Config
-}
-
-func (builder *Builder) KalmV1Alpha1() (*rest.RESTClient, error) {
-	// copy a cfg
-	cfg := rest.CopyConfig(builder.Config)
-	cfg.ContentConfig.GroupVersion = &v1alpha1.GroupVersion
-	cfg.APIPath = "/apis"
-	cfg.NegotiatedSerializer = serializer.NewCodecFactory(scheme.Scheme)
-	cfg.UserAgent = rest.DefaultKubernetesUserAgent()
-	return rest.UnversionedRESTClientFor(cfg)
 }
 
 func NewBuilder(k8sClient *kubernetes.Clientset, cfg *rest.Config, logger *logrus.Logger) *Builder {
@@ -254,7 +251,6 @@ func NewBuilder(k8sClient *kubernetes.Clientset, cfg *rest.Config, logger *logru
 		ctx:       context.Background(), // TODO
 		K8sClient: k8sClient,
 		Client:    c,
-		Config:    cfg,
 		Logger:    logger,
 	}
 }

@@ -5,7 +5,7 @@ import (
 	rbacV1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"strings"
 )
 
@@ -14,14 +14,15 @@ type RoleBindingListChannel struct {
 	Error chan error
 }
 
-func getRoleBindingListChannel(k8sClient *kubernetes.Clientset, namespace string, listOptions metaV1.ListOptions) *RoleBindingListChannel {
+func (builder *Builder) getRoleBindingListChannel(namespace string) *RoleBindingListChannel {
 	channel := &RoleBindingListChannel{
 		List:  make(chan []rbacV1.RoleBinding, 1),
 		Error: make(chan error, 1),
 	}
 
 	go func() {
-		res, err := k8sClient.RbacV1().RoleBindings(namespace).List(listOptions)
+		var res rbacV1.RoleBindingList
+		err := builder.List(&res, client.InNamespace(namespace))
 
 		if err != nil {
 			channel.List <- nil
@@ -50,9 +51,9 @@ func getRoleBindingListChannel(k8sClient *kubernetes.Clientset, namespace string
 	return channel
 }
 
-func ListRoleBindings(k8sClient *kubernetes.Clientset, namespace string) ([]rbacV1.RoleBinding, error) {
+func (builder *Builder) ListRoleBindings(namespace string) ([]rbacV1.RoleBinding, error) {
 	resourceChannels := &ResourceChannels{
-		RoleBindingList: getRoleBindingListChannel(k8sClient, namespace, ListAll),
+		RoleBindingList: builder.getRoleBindingListChannel(namespace),
 	}
 
 	resources, err := resourceChannels.ToResources()
@@ -64,8 +65,8 @@ func ListRoleBindings(k8sClient *kubernetes.Clientset, namespace string) ([]rbac
 	return resources.RoleBindings, nil
 }
 
-func CreateRoleBinding(k8sClient *kubernetes.Clientset, namespace string, subject rbacV1.Subject, role string) error {
-	_, err := k8sClient.RbacV1().RoleBindings(namespace).Create(&rbacV1.RoleBinding{
+func (builder *Builder) CreateRoleBinding(namespace string, subject rbacV1.Subject, role string) error {
+	roleBinding := &rbacV1.RoleBinding{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      fmt.Sprintf("%s:%s:Role:%s", subject.Kind, subject.Name, role),
 			Namespace: namespace,
@@ -78,23 +79,25 @@ func CreateRoleBinding(k8sClient *kubernetes.Clientset, namespace string, subjec
 			Name:     role,
 			APIGroup: "rbac.authorization.k8s.io",
 		},
-	})
+	}
+
+	err := builder.Create(roleBinding)
 
 	if err != nil {
 		return err
 	}
 
-	err = fixNamespaceDefaultRole(k8sClient, namespace, role)
+	err = builder.fixNamespaceDefaultRole(namespace, role)
 
 	if err != nil {
 		return err
 	}
 
-	return resolveSubjectClusterRoleBindings(k8sClient, subject.Kind, subject.Name)
+	return builder.resolveSubjectClusterRoleBindings(subject.Kind, subject.Name)
 }
 
-func DeleteRoleBinding(k8sClient *kubernetes.Clientset, namespace string, name string) error {
-	err := k8sClient.RbacV1().RoleBindings(namespace).Delete(name, nil)
+func (builder *Builder) DeleteRoleBinding(namespace string, name string) error {
+	err := builder.Delete(&rbacV1.RoleBinding{ObjectMeta: metaV1.ObjectMeta{Name: name, Namespace: namespace}})
 
 	if err != nil {
 		return err
@@ -102,19 +105,19 @@ func DeleteRoleBinding(k8sClient *kubernetes.Clientset, namespace string, name s
 
 	// TODO refactor this part
 	parts := strings.Split(name, ":")
-	return resolveSubjectClusterRoleBindings(k8sClient, parts[0], parts[1])
+	return builder.resolveSubjectClusterRoleBindings(parts[0], parts[1])
 }
 
 // If a subject still has some roles in kalm namespaces, the user will have `kalm-cluster-resources-reader` cluster role
 // Otherwise, the `kalm-cluster-resources-reader` binding will be deleted
-func resolveSubjectClusterRoleBindings(k8sClient *kubernetes.Clientset, kind string, name string) (err error) {
-	err = fixDefaultClusterRole(k8sClient)
+func (builder *Builder) resolveSubjectClusterRoleBindings(kind string, name string) (err error) {
+	err = builder.fixDefaultClusterRole()
 
 	if err != nil {
 		return err
 	}
 
-	allRoleBindings, err := ListRoleBindings(k8sClient, AllNamespaces)
+	allRoleBindings, err := builder.ListRoleBindings(AllNamespaces)
 
 	if err != nil {
 		return err
@@ -149,7 +152,7 @@ func resolveSubjectClusterRoleBindings(k8sClient *kubernetes.Clientset, kind str
 			subject.APIGroup = ""
 		}
 
-		_, err := k8sClient.RbacV1().ClusterRoleBindings().Create(&rbacV1.ClusterRoleBinding{
+		clusterRoleBinding := &rbacV1.ClusterRoleBinding{
 			ObjectMeta: metaV1.ObjectMeta{
 				Name: clusterRoleBindingName,
 			},
@@ -161,7 +164,9 @@ func resolveSubjectClusterRoleBindings(k8sClient *kubernetes.Clientset, kind str
 				Kind:     "ClusterRole",
 				Name:     "kalm-cluster-resources-reader",
 			},
-		})
+		}
+
+		err := builder.Create(clusterRoleBinding)
 
 		if errors.IsAlreadyExists(err) {
 			return nil
@@ -169,12 +174,16 @@ func resolveSubjectClusterRoleBindings(k8sClient *kubernetes.Clientset, kind str
 
 		return err
 	} else {
-		return k8sClient.RbacV1().ClusterRoleBindings().Delete(clusterRoleBindingName, nil)
+		return builder.Delete(&rbacV1.ClusterRoleBinding{
+			ObjectMeta: metaV1.ObjectMeta{
+				Name: clusterRoleBindingName,
+			},
+		})
 	}
 }
 
-func fixDefaultClusterRole(k8sClient *kubernetes.Clientset) (err error) {
-	_, err = k8sClient.RbacV1().ClusterRoles().Create(&rbacV1.ClusterRole{
+func (builder *Builder) fixDefaultClusterRole() (err error) {
+	clusterRole := &rbacV1.ClusterRole{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: "kalm-cluster-resources-reader",
 		},
@@ -185,7 +194,9 @@ func fixDefaultClusterRole(k8sClient *kubernetes.Clientset) (err error) {
 				Verbs:     []string{"get", "list"},
 			},
 		},
-	})
+	}
+
+	err = builder.Create(clusterRole)
 
 	if err != nil && errors.IsAlreadyExists(err) {
 		return nil
@@ -194,26 +205,28 @@ func fixDefaultClusterRole(k8sClient *kubernetes.Clientset) (err error) {
 	return err
 }
 
-func fixNamespaceDefaultRole(k8sClient *kubernetes.Clientset, namespace string, roleName string) error {
+func (builder *Builder) fixNamespaceDefaultRole(namespace string, roleName string) error {
 
 	switch roleName {
 	case "reader":
-		_, err := k8sClient.RbacV1().Roles(namespace).Get(roleName, metaV1.GetOptions{})
+		role := &rbacV1.Role{}
+		err := builder.Get(namespace, roleName, role)
 
 		if err != nil {
 			if errors.IsNotFound(err) {
-				return createReaderRole(k8sClient, namespace)
+				return builder.createReaderRole(namespace)
 			} else {
 				return err
 			}
 		}
 
 	case "writer":
-		_, err := k8sClient.RbacV1().Roles(namespace).Get(roleName, metaV1.GetOptions{})
+		role := &rbacV1.Role{}
+		err := builder.Get(namespace, roleName, role)
 
 		if err != nil {
 			if errors.IsNotFound(err) {
-				return createWriterRole(k8sClient, namespace)
+				return builder.createWriterRole(namespace)
 			} else {
 				return err
 			}
@@ -223,8 +236,8 @@ func fixNamespaceDefaultRole(k8sClient *kubernetes.Clientset, namespace string, 
 	return nil
 }
 
-func createReaderRole(k8sClient *kubernetes.Clientset, namespace string) (err error) {
-	_, err = k8sClient.RbacV1().Roles(namespace).Create(&rbacV1.Role{
+func (builder *Builder) createReaderRole(namespace string) (err error) {
+	role := &rbacV1.Role{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      "reader",
 			Namespace: namespace,
@@ -275,7 +288,9 @@ func createReaderRole(k8sClient *kubernetes.Clientset, namespace string) (err er
 				},
 			},
 		},
-	})
+	}
+
+	err = builder.Create(role)
 
 	if err != nil {
 		return err
@@ -283,8 +298,8 @@ func createReaderRole(k8sClient *kubernetes.Clientset, namespace string) (err er
 	return nil
 }
 
-func createWriterRole(k8sClient *kubernetes.Clientset, namespace string) (err error) {
-	_, err = k8sClient.RbacV1().Roles(namespace).Create(&rbacV1.Role{
+func (builder *Builder) createWriterRole(namespace string) (err error) {
+	role := &rbacV1.Role{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name:      "writer",
 			Namespace: namespace,
@@ -346,7 +361,9 @@ func createWriterRole(k8sClient *kubernetes.Clientset, namespace string) (err er
 				},
 			},
 		},
-	})
+	}
+
+	err = builder.Create(role)
 
 	if err != nil {
 		return err
@@ -354,13 +371,13 @@ func createWriterRole(k8sClient *kubernetes.Clientset, namespace string) (err er
 	return nil
 }
 
-func createDefaultKalmRoles(k8sClient *kubernetes.Clientset, namespace string) (err error) {
-	err = createReaderRole(k8sClient, namespace)
+func (builder *Builder) createDefaultKalmRoles(namespace string) (err error) {
+	err = builder.createReaderRole(namespace)
 	if err != nil {
 		return
 	}
 
-	err = createWriterRole(k8sClient, namespace)
+	err = builder.createWriterRole(namespace)
 	if err != nil {
 		return
 	}

@@ -56,3 +56,45 @@ func (h *ApiHandler) handleCreateSSOConfig(c echo.Context) error {
 
 	return c.JSON(201, ssoConfig)
 }
+
+func (h *ApiHandler) handleListProtectedEndpoints(c echo.Context) error {
+	endpoints, err := h.Builder(c).ListProtectedEndpoints()
+
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(200, endpoints)
+}
+
+func (h *ApiHandler) handleDeleteProtectedEndpoints(c echo.Context) error {
+	protectedEndpoint := &resources.ProtectedEndpoint{}
+
+	if err := c.Bind(protectedEndpoint); err != nil {
+		return err
+	}
+
+	err := h.Builder(c).DeleteProtectedEndpoints(protectedEndpoint)
+
+	if err != nil {
+		return err
+	}
+
+	return c.NoContent(200)
+}
+
+func (h *ApiHandler) handleCreateProtectedEndpoints(c echo.Context) error {
+	protectedEndpoint := &resources.ProtectedEndpoint{}
+
+	if err := c.Bind(protectedEndpoint); err != nil {
+		return err
+	}
+
+	protectedEndpoint, err := h.Builder(c).CreateProtectedEndpoint(protectedEndpoint)
+
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(201, protectedEndpoint)
+}

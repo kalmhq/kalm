@@ -6,6 +6,7 @@ import { ChartData, Line } from "react-chartjs-2";
 import * as chartjs from "chart.js";
 import { ChartDataSets } from "chart.js";
 import { format } from "date-fns";
+import { getStartTimestamp, TimestampFilter } from "utils/date";
 
 const styles = (theme: Theme) => createStyles({});
 
@@ -16,6 +17,7 @@ export interface BaseLineChartProps {
     borderColor?: string;
     backgroundColor?: string;
   }[];
+  filter?: TimestampFilter;
   title: string;
   fill?: boolean;
   formatYAxesValue?: any;
@@ -24,9 +26,19 @@ export interface BaseLineChartProps {
 
 class BaseLineChartRaw extends React.PureComponent<BaseLineChartProps & WithStyles<typeof styles>> {
   private generateData = (): ChartData<chartjs.ChartData> => {
-    const { data, fill } = this.props;
+    const { data, fill, filter } = this.props;
 
-    const labels = data[0].data.map((item) => format(item.get("x"), "HH:mm")).toArray();
+    const startTimestamp = getStartTimestamp(filter);
+
+    const labels = data[0].data
+      .filter((item) => {
+        if (!filter || filter === "all") {
+          return true;
+        }
+        return item.get("x") >= startTimestamp;
+      })
+      .map((item) => format(item.get("x"), "HH:mm"))
+      .toArray();
 
     const datasets = data.map(
       ({ data, legend, borderColor, backgroundColor }): ChartDataSets => {
@@ -38,7 +50,15 @@ class BaseLineChartRaw extends React.PureComponent<BaseLineChartProps & WithStyl
           borderWidth: 1,
           backgroundColor: backgroundColor,
           pointRadius: 1,
-          data: data.map((n) => n.get("y")).toArray(),
+          data: data
+            .filter((item) => {
+              if (!filter || filter === "all") {
+                return true;
+              }
+              return item.get("x") >= startTimestamp;
+            })
+            .map((n) => n.get("y"))
+            .toArray(),
         };
       },
     );

@@ -15,6 +15,17 @@ type ComponentListChannel struct {
 	Error chan error
 }
 
+func (builder *Builder) GetComponent(namespace, name string) (*v1alpha1.Component, error) {
+	component := &v1alpha1.Component{}
+	err := builder.Get(namespace, name, component)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return component, nil
+}
+
 func (builder *Builder) GetComponentListChannel(namespaces string, listOptions metaV1.ListOptions) *ComponentListChannel {
 	channel := &ComponentListChannel{
 		List:  make(chan []v1alpha1.Component, 1),
@@ -23,7 +34,7 @@ func (builder *Builder) GetComponentListChannel(namespaces string, listOptions m
 
 	go func() {
 		var fetched v1alpha1.ComponentList
-		err := builder.K8sClient.RESTClient().Get().AbsPath("/apis/core.kalm.dev/v1alpha1/" + namespaces + "/components").Do().Into(&fetched)
+		err := builder.List(&fetched, client.InNamespace(namespaces))
 		res := make([]v1alpha1.Component, len(fetched.Items))
 
 		for i, item := range fetched.Items {
