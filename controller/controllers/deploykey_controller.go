@@ -378,6 +378,11 @@ func (r *DeployKeyReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			&handler.EnqueueRequestsFromMapFunc{
 				ToRequests: DeployKeyGeneralMapper{r.BaseReconciler},
 			}).
+		Watches(
+			&source.Kind{Type: &v1.Namespace{}},
+			&handler.EnqueueRequestsFromMapFunc{
+				ToRequests: DeployKeyNamespaceMapper{r.BaseReconciler},
+			}).
 		Complete(r)
 }
 
@@ -398,23 +403,41 @@ func (s DeployKeyGeneralMapper) Map(object handler.MapObject) []reconcile.Reques
 	}
 }
 
-//func mapAllDeployKeyToReqs(b *BaseReconciler) []reconcile.Request {
-//	var dKeys corev1alpha1.DeployKeyList
-//	err := b.List(context.Background(), &dKeys)
-//	if err != nil {
-//		b.Log.Error(err, "fail list deployKeys")
-//		return nil
-//	}
-//
-//	var rst []reconcile.Request
-//	for _, dKey := range dKeys.Items {
-//		rst = append(rst, reconcile.Request{
-//			NamespacedName: types.NamespacedName{
-//				Namespace: dKey.Namespace,
-//				Name:      dKey.Name,
-//			},
-//		})
-//	}
-//
-//	return rst
-//}
+type DeployKeyNamespaceMapper struct {
+	*BaseReconciler
+}
+
+func (s DeployKeyNamespaceMapper) Map(object handler.MapObject) []reconcile.Request {
+	labels := object.Meta.GetLabels()
+	if labels == nil || labels[KalmEnableLabelName] != KalmEnableLabelValue {
+		return nil
+	}
+
+	// trigger update
+	return mapTypeAllDeployKeyToReqs(s.BaseReconciler)
+}
+
+func mapTypeAllDeployKeyToReqs(b *BaseReconciler) []reconcile.Request {
+	var dKeys corev1alpha1.DeployKeyList
+	err := b.List(context.Background(), &dKeys)
+	if err != nil {
+		b.Log.Error(err, "fail list deployKeys")
+		return nil
+	}
+
+	var rst []reconcile.Request
+	for _, dKey := range dKeys.Items {
+		if dKey.Spec.Type != corev1alpha1.DeployKeyTypeAll {
+			continue
+		}
+
+		rst = append(rst, reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				Namespace: dKey.Namespace,
+				Name:      dKey.Name,
+			},
+		})
+	}
+
+	return rst
+}
