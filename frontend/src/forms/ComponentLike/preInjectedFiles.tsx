@@ -111,26 +111,39 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
   };
 
   private renderContent = ({
-    meta: { touched, invalid, error },
+    meta: { touched, invalid, form },
     file,
     index,
   }: WrappedFieldProps & { file: PreInjectedFile; index: number }) => {
-    if (file.get("content") === "") {
-      return (
-        <Box color={touched && invalid ? "error.main" : undefined}>
-          <Button
-            variant={touched && invalid ? "outlined" : "text"}
-            style={{ padding: 12, width: "100%" }}
-            onClick={() => this.privateOpenEditDialog(file, index)}
-            color="inherit"
-          >
-            {touched && invalid ? "Content required" : "Add Content"}
-          </Button>
-        </Box>
-      );
-    } else {
-      return formatBytes(Buffer.byteLength(file.get("content"), "utf8"));
-    }
+    return (
+      <Box color={touched && invalid ? "error.main" : undefined}>
+        <span style={{ padding: 12, width: "100%" }}>
+          {file.get("content") === ""
+            ? touched && invalid
+              ? "File Content required"
+              : "Config File"
+            : formatBytes(Buffer.byteLength(file.get("content"), "utf8"))}
+        </span>
+
+        <IconButtonWithTooltip
+          tooltipPlacement="top"
+          tooltipTitle="Edit"
+          aria-label="edit"
+          onClick={() => this.privateOpenEditDialog(file, index)}
+        >
+          <EditIcon />
+        </IconButtonWithTooltip>
+
+        <IconButtonWithTooltip
+          tooltipPlacement="top"
+          tooltipTitle="Delete"
+          aria-label="delete"
+          onClick={() => this.props.dispatch(arrayRemove(form, "preInjectedFiles", index))}
+        >
+          <DeleteIcon />
+        </IconButtonWithTooltip>
+      </Box>
+    );
   };
 
   public render() {
@@ -187,7 +200,7 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
               <Grid item lg={2}>
                 <Field name={`${member}.readonly`} component={KBoolCheckboxRender} label="Read Only"></Field>
               </Grid>
-              <Grid item lg={3}>
+              <Grid item lg={5}>
                 <Field
                   name={`${member}.content`}
                   component={this.renderContent}
@@ -195,24 +208,6 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
                   validate={ValidatorRequired}
                   index={index}
                 />
-              </Grid>
-              <Grid item lg={2}>
-                <IconButtonWithTooltip
-                  tooltipPlacement="top"
-                  tooltipTitle="Edit"
-                  aria-label="edit"
-                  onClick={() => this.privateOpenEditDialog(injectedFile, index)}
-                >
-                  <EditIcon />
-                </IconButtonWithTooltip>
-                <IconButtonWithTooltip
-                  tooltipPlacement="top"
-                  tooltipTitle="Delete"
-                  aria-label="delete"
-                  onClick={() => dispatch(arrayRemove(form, "preInjectedFiles", index))}
-                >
-                  <DeleteIcon />
-                </IconButtonWithTooltip>
               </Grid>
             </Grid>
           );
