@@ -55,6 +55,8 @@ func NewKalmNSReconciler(mgr ctrl.Manager) *KalmNSReconciler {
 func (r *KalmNSReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1.Namespace{}).
+		//For(&v1alpha1.HttpsCertIssuer{}).
+		//For(&v1alpha1.HttpsCert{}).
 		Watches(&source.Kind{Type: &v1alpha1.HttpsCertIssuer{}}, &handler.EnqueueRequestForObject{}).
 		Watches(&source.Kind{Type: &v1alpha1.HttpsCert{}}, &handler.EnqueueRequestForObject{}).
 		//Owns(&v1alpha1.HttpsCert{}).

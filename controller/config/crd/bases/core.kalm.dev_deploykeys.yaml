@@ -14,7 +14,9 @@ spec:
     listKind: DeployKeyList
     plural: deploykeys
     singular: deploykey
-  scope: Cluster
+  scope: Namespaced
+  subresources:
+    status: {}
   validation:
     openAPIV3Schema:
       description: DeployKey is the Schema for the deploykeys API
@@ -35,21 +37,36 @@ spec:
           description: DeployKeySpec defines the desired state of DeployKey
           properties:
             content:
-              type: string
-            serviceAccountToken:
+              description: 'for type: component, content lists all components'
+              items:
+                type: string
+              type: array
+            creator:
               type: string
             type:
               enum:
               - component
               - app
-              - all
               type: string
           required:
-          - serviceAccountToken
           - type
           type: object
         status:
           description: DeployKeyStatus defines the observed state of DeployKey
+          properties:
+            lastUsedTimestamp:
+              type: integer
+            serviceAccountToken:
+              description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
+                of cluster Important: Run "make" to regenerate code after modifying
+                this file'
+              type: string
+            usedCount:
+              type: integer
+          required:
+          - lastUsedTimestamp
+          - serviceAccountToken
+          - usedCount
           type: object
       type: object
   version: v1alpha1
