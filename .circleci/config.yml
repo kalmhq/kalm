@@ -8,7 +8,7 @@ jobs:
     steps:
       - run:
           name: call kalm webhook to trigger update of component
-          command: curl -v -XPOST ${KALM_API_ADDRESS}/__kalm_webhook/deploy?deploy-key=deploykey-foobar-acdi-kkxz\&app=kalm-system\&component=kalm\&image-tag=latest
+          command: curl -v -XPOST ${KALM_API_ADDRESS}/__kalm_webhook/deploy?deploy-key=${DEPLOY_KEY}\&app=kalm-system\&component=kalm\&image-tag=latest
   test-dashboard:
     docker:
       - image: circleci/golang:1.13.11
@@ -201,6 +201,7 @@ workflows:
   test-ci-cd-workflow:
     jobs:
       - test-ci-cd-job:
+          context: deploy-demo-cluster
           filters:
             branches:
               only: 
