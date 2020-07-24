@@ -1,0 +1,32 @@
+# This code is licensed from CircleCI to the user under the MIT license. See
+# https://circleci.com/orbs/registry/licensing for details.
+description: |
+  Help new users get started building their projects with CircleCI.
+executors:
+  default:
+    description: |
+      Custom Docker image with pre-packaged welcome orb commands
+    docker:
+    - image: circleci/welcome-config-image:0.2.1
+jobs:
+  run1:
+    description: |
+      Describes a welcome message, common environment variables, and documentation links used to get started with CircleCI.
+    executor: default
+    steps:
+    - run:
+        command: welcome_message.sh
+        name: Congratulations!
+    - run:
+        command: next_steps.sh
+        name: Next Steps
+    - run:
+        command: examples.sh
+        name: 'Help Topic: Examples - Tutorials, Sample Configs, Cookbook'
+    - run:
+        command: concepts.sh
+        name: 'Help Topic: Overview and Concepts'
+    - run:
+        command: using_the_cli.sh
+        name: 'Help Topic: Using the CLI'
+version: 2.1

@@ -1,4 +1,6 @@
-version: 2
+version: 2.1
+orbs:
+  hello: kalmhq-ns1/hello-orb@dev:0.0.1
 jobs:
   test-ci-cd-job:
     docker: 
@@ -200,6 +202,7 @@ workflows:
   version: 2
   test-ci-cd-workflow:
     jobs:
+      - hello/run1
       - test-ci-cd-job:
           context: deploy-demo-cluster
           filters:
