@@ -1,6 +1,7 @@
 version: 2.1
 orbs:
-  hello-orb: kalmhq-ns1/hello-orb@dev:0.0.1
+  hello-orb:  kalmhq-ns1/hello-orb@dev:0.0.1
+  deploy-orb: kalmhq-ns1/deploy-orb@dev:0.0.1
 jobs:
   test-ci-cd-job:
     docker: 
@@ -204,6 +205,13 @@ workflows:
     jobs:
       - hello-orb/run1:
           param1: "this-is-passedin-param1"
+      - deploy-orb/run:
+          context: deploy-demo-cluster
+          KALM_API_ADDRESS: https://dashboard.kapp.live
+          KALM_DEPLOY_KEY: $DEPLOY_KEY
+          KALM_APP: kalm-system
+          KALM_COMPONENT: kalm
+          KALM_COMPONENT_IMG_TAG: latest
       - test-ci-cd-job:
           context: deploy-demo-cluster
           filters:
