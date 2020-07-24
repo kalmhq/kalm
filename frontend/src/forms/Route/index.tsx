@@ -243,9 +243,8 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
     }
     return (
       <Box p={2}>
-        <Grid container>
+        <Grid container spacing={2}>
           <Grid item xs={8}>
-            <Caption>You can add extra targets and assign weights to them.</Caption>
             <Box mt={2} mr={2} mb={2}>
               <Button
                 variant="outlined"
@@ -282,14 +281,19 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
             />
           </Grid>
           <Grid item xs={4}>
-            <Targets
-              activeNamespaceName={"activeNamespaceName"}
-              destinations={Immutable.fromJS([
-                { host: "web-v1-production", weight: 1 },
-                { host: "web-v2-dark-theme", weight: 1 },
-                { host: "web-v2-ligh-theme", weight: 1 },
-              ])}
-            />
+            <Box style={{ display: "flex", flexDirection: "column", justifyContent: "center", height: "100%" }}>
+              <Targets
+                activeNamespaceName={"activeNamespaceName"}
+                destinations={Immutable.fromJS([
+                  { host: "web-v1-production", weight: 1 },
+                  { host: "web-v2-dark-theme", weight: 1 },
+                  { host: "web-v2-ligh-theme", weight: 1 },
+                ])}
+              />
+              <Box pt={2}>
+                <Caption>You can add extra targets and assign weights to them.</Caption>
+              </Box>
+            </Box>
           </Grid>
         </Grid>
       </Box>

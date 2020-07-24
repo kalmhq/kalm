@@ -2,7 +2,6 @@ import { Box, Button, createStyles, Grid, Theme, withStyles, WithStyles } from "
 import { deleteComponentAction } from "actions/component";
 import { blinkTopProgressAction } from "actions/settings";
 import { Expansion, ExpansionProps } from "forms/Route/expansion";
-import { ComponentBasicInfo } from "pages/Components/BasicInfo";
 import { PodsTable } from "pages/Components/PodsTable";
 import { ComponentStatus } from "pages/Components/Status";
 import React from "react";
@@ -14,6 +13,7 @@ import { Application, ApplicationComponentDetails } from "types/application";
 import { WorkloadType } from "types/componentTemplate";
 import { DangerButton } from "widgets/Button";
 import { H5 } from "widgets/Label";
+import { ComponentBrifeInfo } from "./BrifeInfo";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -101,7 +101,7 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
             Delete
           </DangerButton>
         </Box>
-        <ComponentBasicInfo component={component} activeNamespaceName={application.get("name")} />
+        <ComponentBrifeInfo component={component} activeNamespaceName={application.get("name")} />
 
         <Box pt={2} pb={2}>
           <PodsTable
