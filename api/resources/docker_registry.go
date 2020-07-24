@@ -133,7 +133,10 @@ func (builder *Builder) CreateDockerRegistry(registry *DockerRegistry) (*DockerR
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: registry.Name,
 		},
-		Spec: *registry.DockerRegistrySpec,
+	}
+
+	if registry.DockerRegistrySpec != nil {
+		dockerRegistry.Spec = *registry.DockerRegistrySpec
 	}
 
 	secret := &coreV1.Secret{
