@@ -194,7 +194,10 @@ func (builder *Builder) UpdateDockerRegistry(registry *DockerRegistry) (*DockerR
 		"username": []byte(registry.Username),
 		"password": []byte(registry.Password),
 	}
-	dockerRegistry.Spec = *registry.DockerRegistrySpec
+
+	if registry.DockerRegistrySpec != nil {
+		dockerRegistry.Spec = *registry.DockerRegistrySpec
+	}
 
 	if err := builder.Update(dockerRegistry); err != nil {
 		return nil, err
