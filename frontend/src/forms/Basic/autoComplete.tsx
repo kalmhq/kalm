@@ -8,6 +8,7 @@ import {
   withStyles,
   Typography,
   Divider,
+  CircularProgress,
 } from "@material-ui/core";
 import {
   Autocomplete,
@@ -24,7 +25,9 @@ import { ID } from "utils";
 import { AutocompleteProps, RenderGroupParams } from "@material-ui/lab/Autocomplete/Autocomplete";
 import { theme } from "theme/theme";
 import { Caption } from "widgets/Label";
-import { KalmApplicationIcon, KalmLogoIcon } from "widgets/Icon";
+import { KalmApplicationIcon, KalmLogoIcon, ErrorIcon } from "widgets/Icon";
+import { SuccessBadge } from "widgets/Badge";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 
 export interface ReduxFormMultiTagsFreeSoloAutoCompleteProps
   extends WrappedFieldProps,
@@ -133,6 +136,12 @@ export interface KFreeSoloAutoCompleteMultiValuesProps<T>
     Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText"> {
   InputLabelProps?: {};
   disabled?: boolean;
+  loadingIconStatus?: Immutable.List<boolean>;
+  errorIconStatus?: Immutable.List<boolean>;
+  displayStatusIcon?: boolean;
+  loadingIconTooltipText?: string;
+  errorIconTooltipText?: string;
+  successIconTooltipText?: string;
 }
 
 const KFreeSoloAutoCompleteMultiValuesStyles = (theme: Theme) =>
@@ -156,6 +165,12 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
     placeholder,
     InputLabelProps,
     disabled,
+    loadingIconStatus,
+    errorIconStatus,
+    displayStatusIcon,
+    loadingIconTooltipText,
+    errorIconTooltipText,
+    successIconTooltipText,
   } = props;
 
   const errors = error as (string | undefined)[] | undefined | string;
@@ -202,8 +217,42 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
       onInputChange={() => {}}
       renderTags={(value: string[], getTagProps) => {
         return value.map((option: string, index: number) => {
+          let icon;
+          if (loadingIconStatus && loadingIconStatus.get(index)) {
+            icon = (
+              <IconButtonWithTooltip
+                style={{ cursor: "unset" }}
+                tooltipTitle={loadingIconTooltipText ? loadingIconTooltipText : "Loading"}
+                aria-label="loading"
+              >
+                <CircularProgress size={16} />;
+              </IconButtonWithTooltip>
+            );
+          } else if (errorIconStatus && errorIconStatus.get(index)) {
+            icon = (
+              <IconButtonWithTooltip
+                style={{ cursor: "unset" }}
+                tooltipTitle={errorIconTooltipText ? errorIconTooltipText : "Error"}
+                aria-label="error"
+              >
+                <ErrorIcon />
+              </IconButtonWithTooltip>
+            );
+          } else {
+            icon = (
+              <IconButtonWithTooltip
+                style={{ cursor: "unset" }}
+                tooltipTitle={successIconTooltipText ? successIconTooltipText : "Success"}
+                aria-label="success"
+              >
+                <SuccessBadge />
+              </IconButtonWithTooltip>
+            );
+          }
+
           return (
             <Chip
+              icon={displayStatusIcon ? icon : undefined}
               variant="outlined"
               label={option}
               classes={{ root: clsx({ [classes.error]: errorsIsArray && errorsArray[index] }) }}
