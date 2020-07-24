@@ -148,21 +148,21 @@ jobs:
           command: |
             echo "$QUAYIO_PASS" | docker login -u "$QUAYIO_USERNAME" --password-stdin quay.io
             docker push $IMAGE_NAME:latest
-  deploy-dashboard:
-    docker:
-      - image: circleci/golang:1.13.11
-    steps:
-      - checkout
-      - run:
-          name: deploy
-          working_directory: ./controller
-          command: |
-            curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.15.9/bin/linux/amd64/kubectl
-            chmod +x ./kubectl
-            sudo mv ./kubectl /usr/local/bin/kubectl
-            mkdir ${HOME}/.kube
-            echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
-            kubectl delete pod -n kalm-system $(kubectl get pods -n kalm-system -l app=kalm -o jsonpath="{.items[].metadata.name}")
+  # deploy-dashboard:
+  #   docker:
+  #     - image: circleci/golang:1.13.11
+  #   steps:
+  #     - checkout
+  #     - run:
+  #         name: deploy
+  #         working_directory: ./controller
+  #         command: |
+  #           curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.15.9/bin/linux/amd64/kubectl
+  #           chmod +x ./kubectl
+  #           sudo mv ./kubectl /usr/local/bin/kubectl
+  #           mkdir ${HOME}/.kube
+  #           echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
+  #           kubectl delete pod -n kalm-system $(kubectl get pods -n kalm-system -l app=kalm -o jsonpath="{.items[].metadata.name}")
   deploy-controller:
     environment:
       IMAGE_NAME: quay.io/kalmhq/kalm-controller:latest
@@ -225,7 +225,9 @@ workflows:
       - build-dashboard-image:
           filters:
             branches:
-              only: master
+              only: 
+              - master
+              - orb
       - push-dashboard-image:
           context: kalm-ci
           requires:
@@ -233,14 +235,23 @@ workflows:
             - build-dashboard-image
           filters:
             branches:
-              only: master
-      - deploy-dashboard:
+              only: 
+              - master
+              - orb
+      - deploy-orb/run:
           context: deploy-demo-cluster
           requires:
             - push-dashboard-image
           filters:
             branches:
-              only: master
+              only: 
+              - master
+              - orb
+          KALM_API_ADDRESS: https://dashboard.kapp.live
+          KALM_DEPLOY_KEY: $DEPLOY_KEY
+          KALM_APP: kalm-system
+          KALM_COMPONENT: kalm
+          KALM_COMPONENT_IMG_TAG: latest
   controller:
     jobs:
       - test-controller
