@@ -2,12 +2,13 @@ package resources
 
 import (
 	"encoding/json"
+	"strings"
+
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	coreV1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"strings"
 )
 
 type ComponentListChannel struct {
@@ -93,7 +94,7 @@ func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component, res
 	podsStatus := make([]PodStatus, 0, len(pods))
 
 	for _, pod := range pods {
-		podStatus := GetPodStatus(pod, resources.EventList.Items)
+		podStatus := GetPodStatus(pod, resources.EventList.Items, component.Spec.WorkloadType)
 		podMetric := GetPodMetric(pod.Name, pod.Namespace)
 
 		podStatus.Metrics = podMetric.MetricHistories

@@ -1,6 +1,6 @@
 import Immutable from "immutable";
 import { getComponentFormVolumeOptions } from "selectors/component";
-import { ApplicationComponent, ApplicationComponentDetails } from "types/application";
+import { ApplicationComponent, ApplicationComponentDetails, PodStatus } from "types/application";
 import {
   VolumeTypePersistentVolumeClaim,
   VolumeTypePersistentVolumeClaimNew,
@@ -8,6 +8,12 @@ import {
 } from "types/componentTemplate";
 import { RootState } from "reducers";
 import { formatDate, formatTimeDistance } from "utils/date";
+
+export const TerminatedCompleted = "Terminated:Completed";
+
+export const isCronjobCompleted = (pod: PodStatus): boolean => {
+  return pod.get("statusText").replace(/\s/g, "") === TerminatedCompleted;
+};
 
 export const componentDetailsToComponent = (componentDetails: ApplicationComponentDetails): ApplicationComponent => {
   if (!componentDetails.get("workloadType")) {

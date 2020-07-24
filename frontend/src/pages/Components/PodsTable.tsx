@@ -20,6 +20,7 @@ import { KalmConsoleIcon, KalmLogIcon } from "widgets/Icon";
 import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { KTable } from "widgets/Table";
+import { isCronjobCompleted } from "utils/application";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -29,8 +30,6 @@ const styles = (theme: Theme) =>
 const mapStateToProps = (state: RootState) => {
   return {};
 };
-
-export const TerminatedCompleted = "Terminated:Completed";
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {
   activeNamespaceName: string;
@@ -145,7 +144,7 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
 
   private renderPodStatus = (pod: PodStatus) => {
     const { workloadType } = this.props;
-    if (workloadType === workloadTypeCronjob && pod.get("statusText").replace(/\s/g, "") === TerminatedCompleted) {
+    if (workloadType === workloadTypeCronjob && isCronjobCompleted(pod)) {
       return <SuccessBadge />;
     }
 
