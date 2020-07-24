@@ -1,6 +1,7 @@
-import { Box, Button, Icon, TextField } from "@material-ui/core";
+import { Box, Button, Icon } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 import EditIcon from "@material-ui/icons/Edit";
+import { Alert } from "@material-ui/lab";
 import { closeDialogAction, openDialogAction } from "actions/dialog";
 import { KBoolCheckboxRender } from "forms/Basic/checkbox";
 import Immutable from "immutable";
@@ -9,13 +10,13 @@ import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { arrayPush, arrayRemove, change, WrappedFieldArrayProps, WrappedFieldProps } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
-import { ControlledDialog } from "widgets/ControlledDialog";
 import { PreInjectedFile } from "types/componentTemplate";
+import { ControlledDialog } from "widgets/ControlledDialog";
 import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import { RichEdtor } from "widgets/RichEditor";
 import { KRenderDebounceTextField } from "../Basic/textfield";
 import { KValidatorInjectedFilePath, ValidatorRequired } from "../validator";
-import { Alert } from "@material-ui/lab";
 
 interface FieldArrayComponentHackType {
   name: any;
@@ -92,15 +93,19 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
         }
       >
         {file ? (
-          <TextField
-            multiline
-            onChange={(event) => this.setState({ fileContentValue: event.target.value })}
-            variant="outlined"
-            fullWidth
-            rows={20}
+          <RichEdtor
             value={this.state.fileContentValue}
-          ></TextField>
-        ) : null}
+            onChange={(value) => this.setState({ fileContentValue: value })}
+          />
+        ) : // <TextField
+        //   multiline
+        //   onChange={(event) => this.setState({ fileContentValue: event.target.value })}
+        //   variant="outlined"
+        //   fullWidth
+        //   rows={20}
+        //   value={this.state.fileContentValue}
+        // ></TextField>
+        null}
       </ControlledDialog>
     );
   };
