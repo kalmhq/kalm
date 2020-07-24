@@ -38,6 +38,10 @@ func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
 	}
 
 	builder := resources.NewBuilder(deployKeyClient, deployKeyConfig, h.logger)
+	if builder == nil {
+		return fmt.Errorf("invalid deploy key")
+	}
+
 	crdComp, err := builder.GetComponent(ns, componentName)
 	if err != nil {
 		return err
@@ -53,10 +57,14 @@ func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
 	}
 	copy.Annotations[controllers.AnnoLastUpdatedByWebhook] = strconv.Itoa(int(time.Now().Unix()))
 
-	bts, _ := json.Marshal(copy)
-	var component v1alpha1.Component
+	// todo weird to set GVK manually
+	copy.Kind = "Component"
+	copy.APIVersion = "core.kalm.dev/v1alpha1"
 
+	bts, _ := json.Marshal(copy)
 	compAbsPath := fmt.Sprintf("/apis/core.kalm.dev/v1alpha1/namespaces/%s/components/%s", ns, componentName)
+
+	var component v1alpha1.Component
 	err = deployKeyClient.RESTClient().Put().Body(bts).AbsPath(compAbsPath).Do(c.Request().Context()).Into(&component)
 	if err != nil {
 		return err

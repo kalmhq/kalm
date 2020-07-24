@@ -160,7 +160,7 @@ class SSOConfigFormRaw extends React.PureComponent<Props> {
                     endIcon={<GithubIcon />}
                     onClick={() => this.addConnector(SSO_CONNECTOR_TYPE_GITHUB)}
                   >
-                    Add Gitlab connector
+                    Add Github connector
                   </Button>
                 </Box>
                 <Box mr={2} display="inline-block">

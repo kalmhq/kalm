@@ -1,13 +1,26 @@
 package resources
 
 import (
+	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	coreV1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-
 // getPodStatusPhase returns one of four pod status phases (Pending, Running, Succeeded, Failed)
-func getPodStatusPhase(pod coreV1.Pod, warnings []coreV1.Event) coreV1.PodPhase {
+func getPodStatusPhase(pod coreV1.Pod, warnings []coreV1.Event, workloadType v1alpha1.WorkloadType) coreV1.PodPhase {
+
+	// For Completed Cronjob
+	isTerminatedCompleted := false
+	for i := len(pod.Status.ContainerStatuses) - 1; i >= 0; i-- {
+		container := pod.Status.ContainerStatuses[i]
+		if container.State.Terminated != nil && container.State.Terminated.Reason == "Completed" {
+			isTerminatedCompleted = true
+		}
+	}
+	if workloadType == v1alpha1.WorkloadTypeCronjob && isTerminatedCompleted {
+		return coreV1.PodSucceeded
+	}
+
 	// For terminated pods that failed
 	if pod.Status.Phase == coreV1.PodFailed {
 		return coreV1.PodFailed

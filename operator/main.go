@@ -68,10 +68,12 @@ func main() {
 	}))
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
-		Scheme:             scheme,
-		MetricsBindAddress: metricsAddr,
-		LeaderElection:     enableLeaderElection,
-		Port:               9443,
+		Scheme:                  scheme,
+		MetricsBindAddress:      metricsAddr,
+		LeaderElection:          enableLeaderElection,
+		Port:                    9443,
+		LeaderElectionID:        "kalm-operator",
+		LeaderElectionNamespace: "kalm-operator",
 	})
 
 	if err != nil {

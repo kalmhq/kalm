@@ -21,7 +21,7 @@ import (
 
 // DockerRegistrySpec defines the desired state of DockerRegistry
 type DockerRegistrySpec struct {
-	Host                   string `json:"host"`
+	Host                   string `json:"host,omitempty"`
 	PoolingIntervalSeconds *int   `json:"poolingIntervalSeconds,omitempty"`
 }
 
@@ -55,7 +55,7 @@ type DockerRegistry struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   DockerRegistrySpec   `json:"spec,omitempty"`
+	Spec   DockerRegistrySpec   `json:"spec"`
 	Status DockerRegistryStatus `json:"status,omitempty"`
 }
 
