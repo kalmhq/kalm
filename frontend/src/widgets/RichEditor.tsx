@@ -1,8 +1,5 @@
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import React from "react";
-import AceEditor from "react-ace";
-import "ace-builds/src-noconflict/mode-javascript";
-import "ace-builds/src-noconflict/theme-monokai";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -16,14 +13,67 @@ interface Props extends WithStyles<typeof styles> {
   onChange?: (value: string, event?: any) => void;
 }
 
-interface State {}
+interface State {
+  AceEditor?: any;
+  mode: string;
+}
+
+// https://github.com/securingsincity/react-ace/issues/305
+const detectMode = (text: string): string => {
+  text = text.replace(/\s/g, "");
+  if (text.startsWith('{"')) {
+    return "json";
+  } else if (text.startsWith("---") || text.match(/^[a-zA-Z0-9]*:/)) {
+    return "yaml";
+  } else if (text.startsWith("server{")) {
+    return "nginx";
+  } else {
+    return "text";
+  }
+};
 
 class RichEdtorRaw extends React.PureComponent<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      mode: "text",
+    };
+  }
+
+  private getMode() {
+    return detectMode(this.props.value);
+  }
+
+  public componentDidMount() {
+    const mode = this.getMode();
+
+    import("react-ace").then((AceEditor) => {
+      if (mode === "json") {
+        import("ace-builds/src-noconflict/mode-json");
+      } else if (mode === "yaml") {
+        import("ace-builds/src-noconflict/mode-yaml");
+      } else if (mode === "nginx") {
+        import("ace-builds/src-noconflict/mode-nginx");
+      } else {
+        import("ace-builds/src-noconflict/mode-text");
+      }
+
+      import("ace-builds/src-noconflict/theme-monokai");
+      this.setState({ AceEditor: AceEditor.default });
+    });
+  }
+
   public render() {
+    const { AceEditor } = this.state;
+    if (!AceEditor) {
+      return null;
+    }
+
     const { classes, value, onChange } = this.props;
     return (
       <AceEditor
         className={classes.root}
+        mode={this.getMode()}
         theme="monokai"
         value={value}
         onChange={onChange}

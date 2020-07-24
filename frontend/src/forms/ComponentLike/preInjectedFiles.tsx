@@ -97,15 +97,7 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
             value={this.state.fileContentValue}
             onChange={(value) => this.setState({ fileContentValue: value })}
           />
-        ) : // <TextField
-        //   multiline
-        //   onChange={(event) => this.setState({ fileContentValue: event.target.value })}
-        //   variant="outlined"
-        //   fullWidth
-        //   rows={20}
-        //   value={this.state.fileContentValue}
-        // ></TextField>
-        null}
+        ) : null}
       </ControlledDialog>
     );
   };
