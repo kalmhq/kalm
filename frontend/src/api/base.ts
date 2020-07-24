@@ -23,7 +23,7 @@ import { RegistryType } from "types/registry";
 import { HttpRoute } from "types/route";
 import { Service } from "types/service";
 import { RoleBinding, RoleBindingsRequestBody } from "types/user";
-import { SSOConfig } from "types/sso";
+import { ProtectedEndpoint, SSOConfig } from "types/sso";
 
 export abstract class Api {
   public abstract getClusterInfo(): Promise<ClusterInfo>;
@@ -138,4 +138,10 @@ export abstract class Api {
   public abstract updateSSOConfig(ssoConfig: SSOConfig): Promise<SSOConfig>;
 
   public abstract deleteSSOConfig(): Promise<void>;
+
+  public abstract listProtectedEndpoints(): Promise<Immutable.List<ProtectedEndpoint>>;
+
+  public abstract createProtectedEndpoint(protectedEndpoint: ProtectedEndpoint): Promise<ProtectedEndpoint>;
+
+  public abstract deleteProtectedEndpoint(protectedEndpoint: ProtectedEndpoint): Promise<void>;
 }

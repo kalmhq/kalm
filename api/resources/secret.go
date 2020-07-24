@@ -10,7 +10,7 @@ type SecretListChannel struct {
 	Error chan error
 }
 
-func (builder *Builder) GetSecretListChannel(namespace string, opts ...client.ListOption) *SecretListChannel {
+func (builder *Builder) GetSecretListChannel(opts ...client.ListOption) *SecretListChannel {
 	channel := &SecretListChannel{
 		List:  make(chan []coreV1.Secret, 1),
 		Error: make(chan error, 1),
