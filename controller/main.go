@@ -88,7 +88,7 @@ func main() {
 		MetricsBindAddress:      metricsAddr,
 		LeaderElection:          enableLeaderElection,
 		LeaderElectionID:        "kalm-controller",
-		LeaderElectionNamespace: "kalm-controller",
+		LeaderElectionNamespace: "kalm-system",
 		Port:                    9443,
 	})
 	if err != nil {
