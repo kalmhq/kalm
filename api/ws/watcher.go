@@ -31,6 +31,7 @@ func StartWatching(c *Client) {
 	registerWatchHandler(c, &informerCache, &v1alpha1.DockerRegistry{}, buildRegistryResMessage)
 	registerWatchHandler(c, &informerCache, &coreV1.PersistentVolumeClaim{}, buildVolumeResMessage)
 	registerWatchHandler(c, &informerCache, &v1alpha1.SingleSignOnConfig{}, buildSSOConfigResMessage)
+	registerWatchHandler(c, &informerCache, &v1alpha1.ProtectedEndpoint{}, buildProtectEndpointResMessage)
 
 	informerCache.Start(c.StopWatcher)
 }
@@ -282,5 +283,19 @@ func buildSSOConfigResMessage(c *Client, action string, objWatched interface{}) 
 		Kind:   "SingleSignOnConfig",
 		Action: action,
 		Data:   ssoConfigRes,
+	}, nil
+}
+
+func buildProtectEndpointResMessage(_ *Client, action string, objWatched interface{}) (*ResMessage, error) {
+	endpoint, ok := objWatched.(*v1alpha1.ProtectedEndpoint)
+
+	if !ok {
+		return nil, errors.New("convert watch obj to ProtectedEndpoint failed")
+	}
+
+	return &ResMessage{
+		Kind:   "ProtectedEndpoint",
+		Action: action,
+		Data:   resources.ProtectedEndpointCRDToProtectedEndpoint(endpoint),
 	}, nil
 }

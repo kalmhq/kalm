@@ -16,6 +16,7 @@ limitations under the License.
 package controllers
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -245,8 +246,13 @@ func (r *DockerRegistryReconcileTask) DistributeSecrets() (err error) {
 			},
 		}
 
-		bts, _ := json.Marshal(data)
-		secret.Data[".dockercfg"] = bts
+		// Do not escape "<" or ">" or "&" char in data
+		var bts bytes.Buffer
+		encoder := json.NewEncoder(&bts)
+		encoder.SetEscapeHTML(false)
+		_ = encoder.Encode(data)
+
+		secret.Data[".dockercfg"] = bts.Bytes()
 
 		if err := ctrl.SetControllerReference(r.registry, &secret, r.Scheme); err != nil {
 			r.WarningEvent(err, "unable to set owner for secret")

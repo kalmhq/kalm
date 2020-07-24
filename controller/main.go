@@ -17,15 +17,12 @@ package main
 
 import (
 	"flag"
-	"fmt"
-	_ "github.com/joho/godotenv/autoload"
-	istioScheme "istio.io/client-go/pkg/clientset/versioned/scheme"
-	"os"
-	"time"
-
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	elkv1 "github.com/elastic/cloud-on-k8s/pkg/apis/elasticsearch/v1"
 	kibanav1 "github.com/elastic/cloud-on-k8s/pkg/apis/kibana/v1"
+	_ "github.com/joho/godotenv/autoload"
+	istioScheme "istio.io/client-go/pkg/clientset/versioned/scheme"
+	"os"
 
 	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -87,12 +84,12 @@ func main() {
 	}))
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
-		Scheme:             scheme,
-		MetricsBindAddress: metricsAddr,
-		LeaderElection:     enableLeaderElection,
-		//todo ? {"error": "LeaderElectionID must be configured"}
-		LeaderElectionID:   fmt.Sprintf("leader-election-id-%d", time.Now().Unix()),
-		Port:               9443,
+		Scheme:                  scheme,
+		MetricsBindAddress:      metricsAddr,
+		LeaderElection:          enableLeaderElection,
+		LeaderElectionID:        "kalm-controller",
+		LeaderElectionNamespace: "kalm-system",
+		Port:                    9443,
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")

@@ -494,6 +494,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
             componentsMap={componentsMap}
             routesMap={routesMap}
             activeNamespaceName={activeNamespaceName}
+            showDeleteConfirmDialog={this.showDeleteConfirmDialog}
           />
         </Grid>
       );
