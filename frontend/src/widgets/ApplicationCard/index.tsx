@@ -32,6 +32,7 @@ import { primaryColor } from "theme/theme";
 import { DeleteIcon, KalmDetailsIcon, KalmComponentsIcon, KalmApplicationIcon, KalmRoutesIcon } from "widgets/Icon";
 import { FoldButtonGroup } from "widgets/FoldButtonGroup";
 import { DoughnutChart } from "widgets/DoughnutChart";
+import { pluralize } from "utils/string";
 
 const ApplicationCardStyles = (theme: Theme) =>
   createStyles({
@@ -114,7 +115,7 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
           {(popupState) => (
             <>
               <MLink component="button" variant="body2" {...bindTrigger(popupState)}>
-                {applicationRoutes.size === 1 ? "1 route" : `${applicationRoutes.size} routes`}
+                {pluralize("route", applicationRoutes.size)}
               </MLink>
               <Popover
                 style={{ zIndex: POPPER_ZINDEX }}
@@ -145,9 +146,11 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
     const { componentsMap, application } = this.props;
     const components = componentsMap.get(application.get("name"));
 
+    let componentSize = 0;
     let componentSuccess = 0;
     let componentPending = 0;
     let componentError = 0;
+    let podSize = 0;
     let podSuccess = 0;
     let podPending = 0;
     let podError = 0;
@@ -176,10 +179,15 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
       }
     });
 
+    componentSize = componentSuccess + componentPending + componentError;
+    podSize = podSuccess + podPending + podError;
+
     return {
+      componentSize,
       componentSuccess,
       componentPending,
       componentError,
+      podSize,
       podSuccess,
       podPending,
       podError,
@@ -193,18 +201,23 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
     return (
       <Box display="flex" justifyContent={"space-around"}>
         <DoughnutChart
-          title="Components"
+          title={pluralize("Component", pieChartData.componentSize)}
           labels={["Running", "Pending", "Error"]}
           data={[pieChartData.componentSuccess, pieChartData.componentPending, pieChartData.componentError]}
           icon={<KalmComponentsIcon />}
         />
         <DoughnutChart
-          title="Pods"
+          title={pluralize("Pod", pieChartData.podSize)}
           labels={["Running", "Pending", "Error"]}
           data={[pieChartData.podSuccess, pieChartData.podPending, pieChartData.podError]}
           icon={<KalmApplicationIcon />}
         />
-        <DoughnutChart title="Routes" labels={["Running"]} data={[applicationRoutes.size]} icon={<KalmRoutesIcon />} />
+        <DoughnutChart
+          title={pluralize("Route", applicationRoutes.size)}
+          labels={["Running"]}
+          data={[applicationRoutes.size]}
+          icon={<KalmRoutesIcon />}
+        />
       </Box>
     );
   };
