@@ -1,0 +1,49 @@
+version: 2.1
+description: |
+  Help deploy Component in Kalm.
+executors:
+  default:
+    description: |
+      Docker image with curl
+    docker:
+    - image: tutum/curl:alpine
+# commands: # a reusable command with parameters
+#   deploy:
+#     parameters:
+#       KALM_API_ADDRESS:
+#         type: string
+#       KALM_DEPLOY_KEY:
+#         type: string
+#       KALM_APP:
+#         type: string
+#       KALM_COMPONENT:
+#         type: string
+#       KALM_COMPONENT_IMG_TAG:
+#         type: string
+#     steps:
+#       - run: # a parameterized run step
+#           name: Deploy New Component
+#           command: curl -v -XPOST ${KALM_API_ADDRESS}/__kalm_webhook/deploy?deploy-key=${KALM_DEPLOY_KEY}\&app=${KALM_APP}\&component=${KALM_COMPONENT}\&image-tag=${KALM_COMPONENT_IMG_TAG}
+jobs:
+  run:
+    description: |
+      Call deploy webhook of Kalm to trigger deploy of Component.
+    executor: default
+    parameters:
+      KALM_API_ADDRESS:
+        type: string
+      KALM_DEPLOY_KEY:
+        type: string
+      KALM_APP:
+        type: string
+      KALM_COMPONENT:
+        type: string
+      KALM_COMPONENT_IMG_TAG:
+        type: string
+    steps:
+    - deploy:
+        KALM_API_ADDRESS: 
+        KALM_DEPLOY_KEY:
+        KALM_APP:
+        KALM_COMPONENT:
+        KALM_COMPONENT_IMG_TAG: 
