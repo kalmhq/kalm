@@ -245,7 +245,10 @@ type Builder struct {
 }
 
 func NewBuilder(k8sClient *kubernetes.Clientset, cfg *rest.Config, logger *logrus.Logger) *Builder {
-	c, _ := client.New(cfg, client.Options{Scheme: scheme.Scheme})
+	c, err := client.New(cfg, client.Options{Scheme: scheme.Scheme})
+	if err != nil {
+		return nil
+	}
 
 	return &Builder{
 		ctx:       context.Background(), // TODO
