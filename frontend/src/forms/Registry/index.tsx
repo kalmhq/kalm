@@ -3,11 +3,11 @@ import { Theme } from "@material-ui/core/styles";
 import Immutable from "immutable";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
-import { InjectedFormProps } from "redux-form";
+import { change, InjectedFormProps } from "redux-form";
 import { Field, getFormValues, reduxForm } from "redux-form/immutable";
 import { RootState } from "reducers";
 import { newEmptyRegistry, RegistryType } from "types/registry";
-import { KRenderTextField, KRenderDebounceTextField } from "../Basic/textfield";
+import { KRenderDebounceTextField, KRenderTextField } from "../Basic/textfield";
 import { RequireNoSuffix, RequirePrefix, ValidatorName, ValidatorRequired } from "../validator";
 import { Prompt } from "widgets/Prompt";
 import { REGISTRY_FORM_ID } from "../formIDs";
@@ -30,7 +30,11 @@ export interface Props {
 }
 
 const validateName = [ValidatorRequired, ValidatorName];
-const validateHost = [ValidatorRequired, RequirePrefix("https://"), RequireNoSuffix("/")];
+const validateHost = (value: any, _allValues?: any, _props?: any, _name?: any) => {
+  if (!value) return undefined;
+
+  return RequirePrefix("https://")(value) || RequireNoSuffix("/")(value);
+};
 
 class RegistryFormRaw extends React.PureComponent<
   Props &
@@ -39,6 +43,10 @@ class RegistryFormRaw extends React.PureComponent<
     WithStyles<typeof styles> &
     DispatchProp
 > {
+  private setDockerRegistry = () => {
+    this.props.dispatch(change(REGISTRY_FORM_ID, "host", "https://registry-1.docker.io"));
+  };
+
   public render() {
     const { handleSubmit, classes, isEdit, dirty, submitSucceeded } = this.props;
 
@@ -63,15 +71,6 @@ class RegistryFormRaw extends React.PureComponent<
           </Grid>
           <Grid item md={12}>
             <Field
-              name="host"
-              label="Host"
-              component={KRenderDebounceTextField}
-              validate={validateHost}
-              placeholder="Please type the registry host"
-            />
-          </Grid>
-          <Grid item md={12}>
-            <Field
               name="username"
               label="Username"
               autoComplete="off"
@@ -89,6 +88,16 @@ class RegistryFormRaw extends React.PureComponent<
               component={KRenderTextField}
               validate={ValidatorRequired}
               placeholder="Please type the registry password"
+            />
+          </Grid>
+          <Grid item md={12}>
+            <Field
+              name="host"
+              label="Host"
+              component={KRenderDebounceTextField}
+              validate={validateHost}
+              placeholder="Please type the registry host"
+              helperText={<span>Leave blank for private docker hub registry</span>}
             />
           </Grid>
         </Grid>
