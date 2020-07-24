@@ -3,6 +3,8 @@ package controllers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"github.com/heroku/docker-registry-client/registry"
 	"github.com/joho/godotenv"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
@@ -38,6 +40,23 @@ func (suite *DockerRegistryControllerSuite) SetupSuite() {
 
 func (suite *DockerRegistryControllerSuite) TearDownSuite() {
 	suite.BasicSuite.TearDownSuite()
+}
+
+func TestDockerRegistry(t *testing.T) {
+	_ = godotenv.Load("../.env")
+	_ = godotenv.Load()
+
+	if os.Getenv("KALM_TEST_DOCKER_REGISTRY_PASSWORD") == "" || os.Getenv("KALM_TEST_DOCKER_REGISTRY_USERNAME") == "" {
+		t.Skip()
+	}
+
+	_, err := registry.New("https://gcr.io", os.Getenv("KALM_TEST_DOCKER_REGISTRY_USERNAME"), os.Getenv("KALM_TEST_DOCKER_REGISTRY_PASSWORD"))
+
+	if err != nil {
+		fmt.Print(err.Error())
+		t.Fail()
+	}
+
 }
 
 func (suite *DockerRegistryControllerSuite) SetupTest() {

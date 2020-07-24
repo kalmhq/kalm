@@ -1,4 +1,4 @@
-import { Box, createStyles, Theme, WithStyles, withStyles, Link } from "@material-ui/core";
+import { Box, createStyles, Link, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { deleteRegistryAction } from "actions/registries";
 import React from "react";
 import { connect } from "react-redux";
@@ -101,7 +101,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderHost(row: RowData) {
-    return row.get("host");
+    return row.get("host") || "DockerHub";
   }
 
   private renderUsername(row: RowData) {

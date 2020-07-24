@@ -3,7 +3,6 @@ module github.com/kalmhq/kalm/api
 go 1.13
 
 require (
-	github.com/coreos/etcd v3.3.15+incompatible
 	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-openapi/runtime v0.19.20 // indirect
@@ -16,13 +15,12 @@ require (
 	github.com/jetstack/cert-manager v0.15.2 // indirect
 	github.com/joho/godotenv v1.3.0
 	github.com/kalmhq/kalm/controller v0.0.0-20200722131031-2336d7eaf4c9
-	github.com/kr/pretty v0.2.0 // indirect
 	github.com/labstack/echo/v4 v4.1.16
 	github.com/mattn/go-colorable v0.1.7 // indirect
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
+	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/pquerna/cachecontrol v0.0.0-20180517163645-1555304b9b35 // indirect
 	github.com/sirupsen/logrus v1.6.0
-	github.com/stoewer/go-strcase v1.2.0 // indirect
 	github.com/stretchr/testify v1.6.1
 	github.com/urfave/cli/v2 v2.2.0
 	github.com/valyala/fasttemplate v1.2.0 // indirect
@@ -42,8 +40,6 @@ require (
 	k8s.io/api v0.18.6
 	k8s.io/apimachinery v0.18.6
 	k8s.io/client-go v0.18.4
-	k8s.io/code-generator v0.18.6 // indirect
-	k8s.io/gengo v0.0.0-20200413195148-3a45101e95ac // indirect
 	k8s.io/klog/v2 v2.1.0 // indirect
 	k8s.io/metrics v0.18.4
 	k8s.io/utils v0.0.0-20200720150651-0bdb4ca86cbc // indirect
