@@ -136,8 +136,8 @@ export interface KFreeSoloAutoCompleteMultiValuesProps<T>
     Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText"> {
   InputLabelProps?: {};
   disabled?: boolean;
-  loadingIconStatus?: Immutable.List<boolean>;
-  errorIconStatus?: Immutable.List<boolean>;
+  loadingIconStatus?: Immutable.Map<string, boolean>;
+  errorIconStatus?: Immutable.Map<string, boolean>;
   displayStatusIcon?: boolean;
   loadingIconTooltipText?: string;
   errorIconTooltipText?: string;
@@ -217,28 +217,19 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
       onInputChange={() => {}}
       renderTags={(value: string[], getTagProps) => {
         return value.map((option: string, index: number) => {
-          let icon;
-          if (loadingIconStatus && loadingIconStatus.get(index)) {
-            icon = (
-              <Tooltip title={loadingIconTooltipText ? loadingIconTooltipText : "Loading"} aria-label="loading">
-                <CircularProgress size={16} />
-              </Tooltip>
-            );
-          } else if (errorIconStatus && errorIconStatus.get(index)) {
-            icon = (
-              <Tooltip title={errorIconTooltipText ? errorIconTooltipText : "Error"} aria-label="error">
-                <ErrorIcon />
-              </Tooltip>
-            );
+          let icon, tooltipTitle;
+          if (loadingIconStatus && loadingIconStatus.get(option)) {
+            icon = <CircularProgress size={16} />;
+            tooltipTitle = loadingIconTooltipText ? loadingIconTooltipText : "Loading";
+          } else if (errorIconStatus && errorIconStatus.get(option)) {
+            icon = <ErrorIcon />;
+            tooltipTitle = errorIconTooltipText ? errorIconTooltipText : "Error";
           } else {
-            icon = (
-              <Tooltip title={successIconTooltipText ? successIconTooltipText : "Success"} aria-label="success">
-                <SuccessBadge />
-              </Tooltip>
-            );
+            icon = <SuccessBadge />;
+            tooltipTitle = successIconTooltipText ? successIconTooltipText : "Success";
           }
 
-          return (
+          const chip = (
             <Chip
               icon={displayStatusIcon ? icon : undefined}
               variant="outlined"
@@ -248,6 +239,16 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
               {...getTagProps({ index })}
             />
           );
+
+          if (displayStatusIcon) {
+            return (
+              <Tooltip title={tooltipTitle} aria-label="loading" key={index}>
+                {chip}
+              </Tooltip>
+            );
+          }
+
+          return chip;
         });
       }}
       renderInput={(params) => {
