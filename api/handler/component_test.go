@@ -25,9 +25,7 @@ func TestComponentTestSuite(t *testing.T) {
 func (suite *ComponentTestSuite) SetupSuite() {
 	suite.WithControllerTestSuite.SetupSuite()
 	suite.namespace = "kalm-test"
-
 	suite.ensureNamespaceExist(suite.namespace)
-
 }
 
 func (suite *ComponentTestSuite) TeardownSuite() {

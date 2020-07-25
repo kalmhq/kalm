@@ -321,7 +321,6 @@ func (suite *HttpsCertTestSuite) TestDeleteHttpsCert() {
 	suite.Equal("example.com", strings.Join(res.Items[0].Spec.Domains, ""))
 
 	rec = suite.NewRequest(http.MethodDelete, "/v1alpha1/httpscerts/foobar-cert", nil)
-	rec.BodyAsJSON(&httpsCert)
 	suite.Equal(200, rec.Code)
 
 	err = suite.List(&res)

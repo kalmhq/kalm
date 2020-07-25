@@ -154,7 +154,6 @@ func (suite *HttpsCertIssuerTestSuite) TestDeleteHttpsCertIssuer() {
 	suite.Equal("my-foobar-issuer", res.Items[0].Name)
 
 	rec = suite.NewRequest(http.MethodDelete, "/v1alpha1/httpscertissuers/my-foobar-issuer", nil)
-	rec.BodyAsJSON(&issuer)
 	suite.Equal(200, rec.Code)
 
 	err = suite.List(&res)
