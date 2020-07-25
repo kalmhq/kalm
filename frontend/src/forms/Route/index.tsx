@@ -94,11 +94,16 @@ export interface TutorialStateProps {
   tutorialState: TutorialState;
 }
 
+interface OwnProps {
+  isEdit?: boolean;
+}
+
 export interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
 export interface Props
   extends InjectedFormProps<HttpRouteForm, TutorialStateProps>,
     ConnectedProps,
+    OwnProps,
     WithStyles<typeof styles> {}
 
 interface State {
@@ -322,14 +327,10 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
       handleSubmit,
       dirty,
       submitSucceeded,
-      initialValues,
       change,
       domainStatus,
+      isEdit,
     } = this.props;
-
-    // @ts-ignore
-    const isEdit = initialValues && initialValues!.get("name");
-
     const loadingIconStatus = domainStatus.map((status) => {
       return !status?.get("cname");
     });
@@ -590,7 +591,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
 // The one inside reduxForm is normal usage
 // The one outside of reduxForm is to set tutorialState props for the form
 
-const form = reduxForm<HttpRouteForm, TutorialStateProps>({
+const form = reduxForm<HttpRouteForm, TutorialStateProps & OwnProps>({
   onSubmitFail: console.log,
   form: ROUTE_FORM_ID,
   enableReinitialize: true,
