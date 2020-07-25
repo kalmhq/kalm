@@ -225,7 +225,7 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
                 tooltipTitle={loadingIconTooltipText ? loadingIconTooltipText : "Loading"}
                 aria-label="loading"
               >
-                <CircularProgress size={16} />;
+                <CircularProgress size={16} />
               </IconButtonWithTooltip>
             );
           } else if (errorIconStatus && errorIconStatus.get(index)) {
