@@ -67,11 +67,6 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	gv1Alpha1WithAuth.POST("/registries", h.handleCreateRegistry)
 	gv1Alpha1WithAuth.DELETE("/registries/:name", h.handleDeleteRegistry)
 
-	//gv1Alpha1WithAuth.GET("/componenttemplates", h.handleGetComponentTemplates)
-	//gv1Alpha1WithAuth.POST("/componenttemplates", h.handleCreateComponentTemplate)
-	//gv1Alpha1WithAuth.PUT("/componenttemplates/:name", h.handleUpdateComponentTemplate)
-	//gv1Alpha1WithAuth.DELETE("/componenttemplates/:name", h.handleDeleteComponentTemplate)
-
 	gv1Alpha1WithAuth.DELETE("/pods/:namespace/:name", h.handleDeletePod)
 
 	gv1Alpha1WithAuth.GET("/rolebindings", h.handleListRoleBindings)
@@ -137,7 +132,7 @@ func (h *ApiHandler) KalmBuilder() *resources.Builder {
 	k8sClient, err := kubernetes.NewForConfig(cfg)
 
 	if err != nil {
-		h.logger.Error("Can't get k8s client")
+		h.logger.Error("Can't get k8s Client")
 		return nil
 	}
 

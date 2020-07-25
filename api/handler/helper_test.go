@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/kalmhq/kalm/api/client"
+	client2 "github.com/kalmhq/kalm/api/client"
 	"github.com/kalmhq/kalm/api/config"
 	"github.com/kalmhq/kalm/api/server"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
@@ -14,11 +14,13 @@ import (
 	"io"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
+	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
 	"net/http/httptest"
 	"path/filepath"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	"strings"
 	"time"
@@ -27,8 +29,9 @@ import (
 type WithControllerTestSuite struct {
 	suite.Suite
 	testEnv   *envtest.Environment
-	k8sClinet *kubernetes.Clientset
+	Client    client.Client
 	apiServer *echo.Echo
+	ctx       context.Context
 }
 
 type ResponseRecorder struct {
@@ -45,12 +48,18 @@ func (r *ResponseRecorder) BodyAsString() string {
 }
 
 func (r *ResponseRecorder) BodyAsJSON(obj interface{}) {
-	//fmt.Println("body:", string(r.bytes))
+	err := json.Unmarshal(r.bytes, obj)
 
-	_ = json.Unmarshal(r.bytes, obj)
+	if err != nil {
+		panic(fmt.Errorf("Unmarshal response body failed, %+v", err))
+	}
 }
 
 func (suite *WithControllerTestSuite) SetupSuite() {
+	suite.Nil(scheme.AddToScheme(scheme.Scheme))
+	suite.Nil(v1alpha1.AddToScheme(scheme.Scheme))
+	suite.ctx = context.Background()
+
 	suite.testEnv = &envtest.Environment{
 		CRDDirectoryPaths: []string{filepath.Join("..", "..", "controller", "config", "crd", "bases")},
 	}
@@ -63,27 +72,48 @@ func (suite *WithControllerTestSuite) SetupSuite() {
 
 	// TODO the test server has no permissions
 
-	k8sClient, err := kubernetes.NewForConfig(cfg)
+	clt, err := client.New(cfg, client.Options{Scheme: scheme.Scheme})
 
 	if err != nil {
 		panic(err)
 	}
 
-	suite.k8sClinet = k8sClient
+	suite.Client = clt
 
 	runningConfig := &config.Config{
 		KubernetesApiServerAddress: cfg.Host,
 	}
 
-	suite.Nil(scheme.AddToScheme(scheme.Scheme))
-	suite.Nil(v1alpha1.AddToScheme(scheme.Scheme))
-
 	e := server.NewEchoServer(runningConfig)
-	clientManager := client.NewClientManager(runningConfig)
+	clientManager := client2.NewClientManager(runningConfig)
 	apiHandler := NewApiHandler(clientManager)
 	apiHandler.Install(e)
 
 	suite.apiServer = e
+}
+
+func (suite *WithControllerTestSuite) Get(namespace, name string, obj runtime.Object) error {
+	return suite.Client.Get(suite.ctx, types.NamespacedName{Namespace: namespace, Name: name}, obj)
+}
+
+func (suite *WithControllerTestSuite) List(obj runtime.Object, opts ...client.ListOption) error {
+	return suite.Client.List(suite.ctx, obj, opts...)
+}
+
+func (suite *WithControllerTestSuite) Create(obj runtime.Object, opts ...client.CreateOption) error {
+	return suite.Client.Create(suite.ctx, obj, opts...)
+}
+
+func (suite *WithControllerTestSuite) Delete(obj runtime.Object, opts ...client.DeleteOption) error {
+	return suite.Client.Delete(suite.ctx, obj, opts...)
+}
+
+func (suite *WithControllerTestSuite) Update(obj runtime.Object, opts ...client.UpdateOption) error {
+	return suite.Client.Update(suite.ctx, obj, opts...)
+}
+
+func (suite *WithControllerTestSuite) Patch(obj runtime.Object, patch client.Patch, opts ...client.PatchOption) error {
+	return suite.Client.Patch(suite.ctx, obj, patch, opts...)
 }
 
 func (suite *WithControllerTestSuite) TearDownSuite() {
@@ -136,44 +166,57 @@ func toReader(obj interface{}) io.Reader {
 }
 
 func (suite *WithControllerTestSuite) getPVCList(ns string) (*v1.PersistentVolumeClaimList, error) {
-	pvsList, err := suite.k8sClinet.CoreV1().PersistentVolumeClaims(ns).List(context.Background(), metav1.ListOptions{})
-	return pvsList, err
+	var pvcList v1.PersistentVolumeClaimList
+	err := suite.List(&pvcList, client.InNamespace(ns))
+	return &pvcList, err
 }
 
 func (suite *WithControllerTestSuite) getComponentList(ns string) (v1alpha1.ComponentList, error) {
-	compListAPIURL := fmt.Sprintf("/apis/core.kalm.dev/v1alpha1/namespaces/%s/components", ns)
-
 	var compList v1alpha1.ComponentList
-	err := suite.k8sClinet.RESTClient().Get().AbsPath(compListAPIURL).Do(context.Background()).Into(&compList)
-
+	err := suite.List(&compList, client.InNamespace(ns))
 	return compList, err
 }
 
 func (suite *WithControllerTestSuite) getComponent(ns, compName string) (v1alpha1.Component, error) {
-	compAPIURL := fmt.Sprintf("/apis/core.kalm.dev/v1alpha1/namespaces/%s/components/%s", ns, compName)
-
 	var comp v1alpha1.Component
-	err := suite.k8sClinet.RESTClient().Get().AbsPath(compAPIURL).Do(context.Background()).Into(&comp)
-
+	err := suite.Get(ns, compName, &comp)
 	return comp, err
 }
 
 func (suite *WithControllerTestSuite) ensureNamespaceExist(ns string) {
-	nsKey := metav1.ObjectMeta{Name: ns}
+	nsKey := metaV1.ObjectMeta{Name: ns}
 
-	_, err := suite.k8sClinet.CoreV1().Namespaces().Get(
-		context.Background(),
-		nsKey.Name,
-		metav1.GetOptions{},
-	)
+	var namespace v1.Namespace
+	err := suite.Get("", ns, &namespace)
 
-	if errors.IsNotFound(err) {
-		_, err = suite.k8sClinet.CoreV1().Namespaces().Create(
-			context.Background(),
-			&v1.Namespace{ObjectMeta: nsKey},
-			metav1.CreateOptions{},
-		)
-
-		suite.Nil(err)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			err = suite.Create(&v1.Namespace{ObjectMeta: nsKey})
+			suite.Nil(err)
+		} else {
+			panic(err)
+		}
 	}
+
+	suite.Eventually(func() bool {
+		err := suite.Get("", ns, &namespace)
+		return err == nil
+	})
+}
+
+func (suite *WithControllerTestSuite) ensureNamespaceDeleted(ns string) {
+	suite.ensureObjectDeleted(&v1.Namespace{ObjectMeta: metaV1.ObjectMeta{Name: ns}})
+}
+
+func (suite *WithControllerTestSuite) ensureObjectDeleted(obj runtime.Object) {
+	_ = suite.Delete(obj)
+
+	suite.Eventually(func() bool {
+		key, err := client.ObjectKeyFromObject(obj)
+		if err != nil {
+			return false
+		}
+		err = suite.Get(key.Namespace, key.Name, obj)
+		return errors.IsNotFound(err)
+	})
 }

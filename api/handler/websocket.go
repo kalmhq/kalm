@@ -364,7 +364,7 @@ func copyPodLogStreamToWS(ctx context.Context, namespace, podName string, conn *
 	defer logStream.Close()
 
 	defer func() {
-		// tell client we are no longer provide logs of this pod
+		// tell Client we are no longer provide logs of this pod
 		// It doesn't matter if the conn is closed, ignore the error
 		_ = conn.WriteJSON(&WSPodDataResponse{
 			Type:      WSResponseTypeLogStreamDisconnected,

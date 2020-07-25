@@ -87,7 +87,7 @@ type Application struct {
 	Name string `json:"name"`
 }
 
-func (builder *Builder) BuildApplicationDetails(namespace coreV1.Namespace) (*ApplicationDetails, error) {
+func (builder *Builder) BuildApplicationDetails(namespace *coreV1.Namespace) (*ApplicationDetails, error) {
 	nsName := namespace.Name
 	roles := make([]string, 0, 2)
 
@@ -218,7 +218,7 @@ func (builder *Builder) BuildApplicationListResponse(namespaceList coreV1.Namesp
 			continue
 		}
 
-		item, err := builder.BuildApplicationDetails(ns)
+		item, err := builder.BuildApplicationDetails(&ns)
 
 		if err != nil {
 			return nil, err

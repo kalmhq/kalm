@@ -1,13 +1,13 @@
 package handler
 
 import (
-	"context"
 	"encoding/json"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/kalmhq/kalm/controller/controllers"
 	"github.com/stretchr/testify/suite"
 	coreV1 "k8s.io/api/core/v1"
+	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/http"
 	"strings"
 	"testing"
@@ -29,8 +29,8 @@ func (suite *HttpsCertTestSuite) SetupSuite() {
 }
 
 func (suite *HttpsCertTestSuite) TearDownTest() {
-	suite.k8sClinet.RESTClient().Delete().AbsPath("/apis/core.kalm.dev/v1alpha1/httpscerts/foobar-cert").Do(context.Background()).Error()
-	suite.k8sClinet.RESTClient().Delete().AbsPath("/api/v1/namespaces/istio-system/secrets/kalm-self-managed-foobar-cert").Do(context.Background()).Error()
+	suite.ensureObjectDeleted(&v1alpha1.HttpsCert{ObjectMeta: metaV1.ObjectMeta{Name: "foobar-cert"}})
+	suite.ensureObjectDeleted(&coreV1.Secret{ObjectMeta: metaV1.ObjectMeta{Name: "kalm-self-managed-foobar-cert", Namespace: "istio-system"}})
 }
 
 func (suite *HttpsCertTestSuite) TestGetEmptyHttpsCertList() {
@@ -58,7 +58,7 @@ func (suite *HttpsCertTestSuite) TestCreateHttpsCert() {
 	suite.Equal("foobar-cert", httpsCert.Name)
 
 	var res v1alpha1.HttpsCertList
-	err := suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kalm.dev/v1alpha1/httpscerts").Do(context.Background()).Into(&res)
+	err := suite.List(&res)
 	suite.Nil(err)
 
 	suite.Equal(1, len(res.Items))
@@ -94,7 +94,7 @@ func (suite *HttpsCertTestSuite) TestCreateHttpsCertWithoutSetIssuer() {
 	suite.Equal("foobar-cert", httpsCert.Name)
 
 	var res v1alpha1.HttpsCertList
-	err := suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kalm.dev/v1alpha1/httpscerts").Do(context.Background()).Into(&res)
+	err := suite.List(&res)
 	suite.Nil(err)
 
 	suite.Equal(1, len(res.Items))
@@ -184,7 +184,7 @@ func (suite *HttpsCertTestSuite) TestUploadHttpsCert() {
 	suite.Equal("foobar-cert", httpsCert.Name)
 
 	var res v1alpha1.HttpsCertList
-	err := suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kalm.dev/v1alpha1/httpscerts").Do(context.Background()).Into(&res)
+	err := suite.List(&res)
 	suite.Nil(err)
 
 	suite.Equal(1, len(res.Items))
@@ -197,7 +197,7 @@ func (suite *HttpsCertTestSuite) TestUploadHttpsCert() {
 
 	// sec
 	var sec coreV1.Secret
-	err = suite.k8sClinet.RESTClient().Get().AbsPath("/api/v1/namespaces/istio-system/secrets/kalm-self-managed-foobar-cert").Do(context.Background()).Into(&sec)
+	err = suite.Get("istio-system", "kalm-self-managed-foobar-cert", &sec)
 	suite.Nil(err)
 	suite.Equal(sec.Data["tls.key"], []byte(""))
 	suite.Equal(sec.Data["tls.crt"], []byte(tlsCert))
@@ -233,7 +233,7 @@ func (suite *HttpsCertTestSuite) TestUpdateSelfManagedHttpsCert() {
 	suite.Equal(200, rec.Code)
 
 	var res v1alpha1.HttpsCertList
-	err := suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kalm.dev/v1alpha1/httpscerts").Do(context.Background()).Into(&res)
+	err := suite.List(&res)
 	suite.Nil(err)
 
 	suite.Equal(1, len(res.Items))
@@ -245,7 +245,7 @@ func (suite *HttpsCertTestSuite) TestUpdateSelfManagedHttpsCert() {
 
 	// sec
 	var sec coreV1.Secret
-	err = suite.k8sClinet.RESTClient().Get().AbsPath("/api/v1/namespaces/istio-system/secrets/kalm-self-managed-foobar-cert").Do(context.Background()).Into(&sec)
+	err = suite.Get("istio-system", "kalm-self-managed-foobar-cert", &sec)
 	suite.Nil(err)
 	suite.Equal(sec.Data["tls.key"], []byte("updatedPrvKey"))
 }
@@ -266,7 +266,7 @@ func (suite *HttpsCertTestSuite) TestUpdateAutoManagedHttpsCert() {
 	suite.Equal("foobar-cert", httpsCert.Name)
 
 	var res v1alpha1.HttpsCertList
-	err := suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kalm.dev/v1alpha1/httpscerts").Do(context.Background()).Into(&res)
+	err := suite.List(&res)
 	suite.Nil(err)
 
 	suite.Equal(1, len(res.Items))
@@ -286,7 +286,7 @@ func (suite *HttpsCertTestSuite) TestUpdateAutoManagedHttpsCert() {
 	suite.Equal(200, rec.Code)
 	suite.Equal("foobar-cert", httpsCert.Name)
 
-	err = suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kalm.dev/v1alpha1/httpscerts").Do(context.Background()).Into(&res)
+	err = suite.List(&res)
 	suite.Nil(err)
 
 	suite.Equal(1, len(res.Items))
@@ -311,7 +311,7 @@ func (suite *HttpsCertTestSuite) TestDeleteHttpsCert() {
 	suite.Equal("foobar-cert", httpsCert.Name)
 
 	var res v1alpha1.HttpsCertList
-	err := suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kalm.dev/v1alpha1/httpscerts").Do(context.Background()).Into(&res)
+	err := suite.List(&res)
 	suite.Nil(err)
 
 	suite.Equal(1, len(res.Items))
@@ -321,10 +321,9 @@ func (suite *HttpsCertTestSuite) TestDeleteHttpsCert() {
 	suite.Equal("example.com", strings.Join(res.Items[0].Spec.Domains, ""))
 
 	rec = suite.NewRequest(http.MethodDelete, "/v1alpha1/httpscerts/foobar-cert", nil)
-	rec.BodyAsJSON(&httpsCert)
 	suite.Equal(200, rec.Code)
 
-	err = suite.k8sClinet.RESTClient().Get().AbsPath("/apis/core.kalm.dev/v1alpha1/httpscerts").Do(context.Background()).Into(&res)
+	err = suite.List(&res)
 	suite.Nil(err)
 	suite.Equal(0, len(res.Items))
 }
