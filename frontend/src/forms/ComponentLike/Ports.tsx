@@ -10,7 +10,7 @@ import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { portTypeTCP, portTypeUDP } from "types/common";
 import { ComponentLikePort } from "types/componentTemplate";
 import { RenderSelectField } from "../Basic/select";
-import { KRenderTextField, KRenderDebounceTextField } from "../Basic/textfield";
+import { KRenderDebounceTextField } from "../Basic/textfield";
 import { NormalizePort } from "../normalizer";
 import { ValidatorRequired, ValidatorServiceName } from "../validator";
 import PopupState, { anchorRef, bindPopper, InjectedProps } from "material-ui-popup-state";
@@ -141,7 +141,7 @@ class RenderPorts extends React.PureComponent<Props> {
                         }}
                       >
                         <Field
-                          component={KRenderTextField}
+                          component={KRenderDebounceTextField}
                           onFocus={popupState.open}
                           onBlur={popupState.close}
                           name={`${field}.containerPort`}
@@ -179,7 +179,7 @@ class RenderPorts extends React.PureComponent<Props> {
                         }}
                       >
                         <Field
-                          component={KRenderTextField}
+                          component={KRenderDebounceTextField}
                           onFocus={popupState.open}
                           onBlur={popupState.close}
                           name={`${field}.servicePort`}

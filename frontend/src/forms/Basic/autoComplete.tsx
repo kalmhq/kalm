@@ -9,6 +9,7 @@ import {
   Typography,
   Divider,
   CircularProgress,
+  Tooltip,
 } from "@material-ui/core";
 import {
   Autocomplete,
@@ -27,7 +28,6 @@ import { theme } from "theme/theme";
 import { Caption } from "widgets/Label";
 import { KalmApplicationIcon, KalmLogoIcon, ErrorIcon } from "widgets/Icon";
 import { SuccessBadge } from "widgets/Badge";
-import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 
 export interface ReduxFormMultiTagsFreeSoloAutoCompleteProps
   extends WrappedFieldProps,
@@ -220,33 +220,21 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
           let icon;
           if (loadingIconStatus && loadingIconStatus.get(index)) {
             icon = (
-              <IconButtonWithTooltip
-                style={{ cursor: "unset" }}
-                tooltipTitle={loadingIconTooltipText ? loadingIconTooltipText : "Loading"}
-                aria-label="loading"
-              >
+              <Tooltip title={loadingIconTooltipText ? loadingIconTooltipText : "Loading"} aria-label="loading">
                 <CircularProgress size={16} />
-              </IconButtonWithTooltip>
+              </Tooltip>
             );
           } else if (errorIconStatus && errorIconStatus.get(index)) {
             icon = (
-              <IconButtonWithTooltip
-                style={{ cursor: "unset" }}
-                tooltipTitle={errorIconTooltipText ? errorIconTooltipText : "Error"}
-                aria-label="error"
-              >
+              <Tooltip title={errorIconTooltipText ? errorIconTooltipText : "Error"} aria-label="error">
                 <ErrorIcon />
-              </IconButtonWithTooltip>
+              </Tooltip>
             );
           } else {
             icon = (
-              <IconButtonWithTooltip
-                style={{ cursor: "unset" }}
-                tooltipTitle={successIconTooltipText ? successIconTooltipText : "Success"}
-                aria-label="success"
-              >
+              <Tooltip title={successIconTooltipText ? successIconTooltipText : "Success"} aria-label="success">
                 <SuccessBadge />
-              </IconButtonWithTooltip>
+              </Tooltip>
             );
           }
 
