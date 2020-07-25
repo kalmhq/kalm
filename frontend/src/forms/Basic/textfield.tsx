@@ -25,12 +25,13 @@ export class KRenderTextField extends React.PureComponent<withDebounceProps & Pr
       multiline,
       rows,
       meta,
-      meta: { error, form },
+      meta: { error, form, touched },
       showError,
       dispatch,
       ...custom
     } = this.props;
     const inputProps: Partial<OutlinedInputProps> = {};
+    const defaultShowError = !!error && touched;
     if (endAdornment) {
       inputProps.endAdornment = <InputAdornment position="end">{endAdornment}</InputAdornment>;
     }
@@ -43,7 +44,7 @@ export class KRenderTextField extends React.PureComponent<withDebounceProps & Pr
         placeholder={placeholder}
         disabled={disabled}
         required={required}
-        error={showError}
+        error={showError || defaultShowError}
         type={type}
         multiline={multiline}
         rows={rows}
@@ -53,7 +54,7 @@ export class KRenderTextField extends React.PureComponent<withDebounceProps & Pr
         InputLabelProps={{
           shrink: true,
         }}
-        helperText={showError ? error : helperText ? helperText : " "}
+        helperText={showError || defaultShowError ? error : helperText ? helperText : " "}
         margin="dense"
         variant="outlined"
         InputProps={inputProps}
@@ -127,10 +128,10 @@ export class RenderComplexValueTextField extends React.PureComponent<withDebounc
       endAdornment,
       formValueToEditValue,
       editValueToFormValue,
-      meta: { error },
+      meta: { error, touched },
       showError,
     } = this.props;
-
+    const defaultShowError = !!error && touched;
     const inputProps: Partial<OutlinedInputProps> = {};
     if (endAdornment) {
       inputProps.endAdornment = <InputAdornment position="end">{endAdornment}</InputAdornment>;
@@ -145,8 +146,8 @@ export class RenderComplexValueTextField extends React.PureComponent<withDebounc
         placeholder={placeholder}
         disabled={disabled}
         required={required}
-        error={showError}
-        helperText={showError ? error : helperText ? helperText : ""}
+        error={showError || defaultShowError}
+        helperText={showError || defaultShowError ? error : helperText ? helperText : ""}
         InputLabelProps={{
           shrink: true,
         }}
