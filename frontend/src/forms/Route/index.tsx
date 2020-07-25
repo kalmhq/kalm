@@ -40,7 +40,7 @@ const mapStateToProps = (state: RootState) => {
   const certifications = state.get("certificates").get("certificates");
   const domains: Set<string> = new Set();
   const hosts = selector(state, "hosts") as Immutable.List<string>;
-  const domainStatus = hosts.map((host) => state.get("domain").get(host));
+  const domainStatus = state.get("domain").filter((status) => hosts.includes(status.get("domain")));
 
   certifications.forEach((x) => {
     x.get("domains")
@@ -329,13 +329,15 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
 
     // @ts-ignore
     const isEdit = initialValues && initialValues!.get("name");
+
     const loadingIconStatus = domainStatus.map((status) => {
       return !status?.get("cname");
     });
     const errorIconStatus = domainStatus.map((status) => {
       const aRecords = status?.get("aRecords");
-      return !aRecords || !aRecords.includes(ingressIP);
+      return (!aRecords || !aRecords.includes(ingressIP)) && status.get("domain") !== ingressIP;
     });
+
     return (
       <div className={classes.root}>
         <Grid container spacing={2}>
