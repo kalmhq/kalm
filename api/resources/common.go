@@ -284,21 +284,21 @@ func (builder *Builder) Patch(obj runtime.Object, patch client.Patch, opts ...cl
 
 // client Side apply
 func (builder *Builder) Apply(obj runtime.Object) error {
-	newObject, err := scheme.Scheme.New(obj.GetObjectKind().GroupVersionKind())
+	//newObject, err := scheme.Scheme.New(obj.GetObjectKind().GroupVersionKind())
 
-	if err != nil {
-		return err
-	}
+	//if err != nil {
+	//	return err
+	//}
 
-	objectKey, err := client.ObjectKeyFromObject(obj)
+	//objectKey, err := client.ObjectKeyFromObject(obj)
 
-	if err != nil {
-		return err
-	}
+	//if err != nil {
+	//	return err
+	//}
 
-	if err := builder.Get(objectKey.Namespace, objectKey.Name, newObject); err != nil {
-		return err
-	}
+	//if err := builder.Get(objectKey.Namespace, objectKey.Name, newObject); err != nil {
+	//	return err
+	//}
 
-	return builder.Patch(obj, client.MergeFrom(newObject))
+	return builder.Patch(obj, client.Merge)
 }

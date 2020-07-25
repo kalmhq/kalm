@@ -1,7 +1,6 @@
 package resources
 
 import (
-	"context"
 	"encoding/json"
 	"github.com/kalmhq/kalm/api/errors"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
@@ -9,7 +8,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/selection"
-	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -46,22 +44,13 @@ func (builder *Builder) GetComponentPluginBindingListChannel(opts ...client.List
 	return channel
 }
 
-func UpdateComponentPluginBindingsForObject(kalmClient *rest.RESTClient, namespace, componentName string, plugins []runtime.RawExtension) (err error) {
+func (builder *Builder) UpdateComponentPluginBindingsForObject(namespace, componentName string, plugins []runtime.RawExtension) (err error) {
 	var oldPluginList v1alpha1.ComponentPluginBindingList
 	selector := labels.NewSelector()
 	requirement, _ := labels.NewRequirement("kalm-component", selection.Equals, []string{componentName})
 	selector = selector.Add(*requirement)
 
-	options := metaV1.ListOptions{
-		LabelSelector: selector.String(),
-	}
-
-	err = kalmClient.Get().
-		Namespace(namespace).
-		Resource("componentpluginbindings").
-		VersionedParams(&options, metaV1.ParameterCodec).
-		Do(context.Background()).
-		Into(&oldPluginList)
+	err = builder.List(&oldPluginList, client.MatchingLabelsSelector{selector})
 
 	if err != nil {
 		return err
@@ -113,12 +102,7 @@ func UpdateComponentPluginBindingsForObject(kalmClient *rest.RESTClient, namespa
 	}
 
 	for _, np := range shouldCreate {
-		err := kalmClient.Post().
-			Namespace(namespace).
-			Resource("componentpluginbindings").
-			Body(np).
-			Do(context.Background()).
-			Into(np)
+		err := builder.Create(np)
 
 		if errors.IsAlreadyExists(err) {
 			continue
@@ -130,12 +114,10 @@ func UpdateComponentPluginBindingsForObject(kalmClient *rest.RESTClient, namespa
 	}
 
 	for name := range shouldDelete {
-		err := kalmClient.Delete().
-			Namespace(namespace).
-			Resource("componentpluginbindings").
-			Name(name).
-			Do(context.Background()).
-			Error()
+		err := builder.Delete(&v1alpha1.ComponentPluginBinding{ObjectMeta: metaV1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		}})
 
 		if err != nil {
 			return err

@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
 	"math/rand"
 	"net/http"
@@ -61,7 +59,7 @@ func (h *ApiHandler) handleUpdateComponent(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusCreated, res)
+	return c.JSON(200, res)
 }
 
 func (h *ApiHandler) handleGetComponent(c echo.Context) error {
@@ -95,6 +93,7 @@ func (h *ApiHandler) deleteComponent(c echo.Context) error {
 		Name:      c.Param("name"),
 		Namespace: c.Param("applicationName"),
 	}})
+
 	return err
 }
 
@@ -124,19 +123,13 @@ func (h *ApiHandler) createComponent(c echo.Context) (*v1alpha1.Component, error
 		return nil, err
 	}
 
-	// TODO validate component
-	//if err := v1alpha1.TryValidateApplicationFromAPI(crdComponent.Spec, crdComponent.Name); err != nil {
-	//	return nil, err
-	//}
-
 	crdComponent.Namespace = c.Param("applicationName")
 	err = h.Builder(c).Create(crdComponent)
 	if err != nil {
 		return nil, err
 	}
 
-	kalmClient, _ := getKalmV1Alpha1Client(c)
-	err = resources.UpdateComponentPluginBindingsForObject(kalmClient, crdComponent.Namespace, crdComponent.Name, plugins)
+	err = h.Builder(c).UpdateComponentPluginBindingsForObject(crdComponent.Namespace, crdComponent.Name, plugins)
 
 	if err != nil {
 		return nil, err
@@ -145,36 +138,23 @@ func (h *ApiHandler) createComponent(c echo.Context) (*v1alpha1.Component, error
 }
 
 func (h *ApiHandler) updateComponent(c echo.Context) (*v1alpha1.Component, error) {
-	k8sClient := getK8sClient(c)
-
 	crdComponent, plugins, err := getComponentFromContext(c)
 
 	if err != nil {
 		return nil, err
 	}
 
-	fetched, err := h.getComponent(c)
-
-	if err != nil {
+	if err := h.Builder(c).Apply(crdComponent); err != nil {
 		return nil, err
 	}
-	crdComponent.ResourceVersion = fetched.ResourceVersion
 
-	bts, _ := json.Marshal(crdComponent)
-	var component v1alpha1.Component
-	err = k8sClient.RESTClient().Put().Body(bts).AbsPath("/apis/core.kalm.dev/v1alpha1/namespaces/" + c.Param("applicationName") + "/components/" + c.Param("name")).Do(context.Background()).Into(&component)
+	err = h.Builder(c).UpdateComponentPluginBindingsForObject(crdComponent.Namespace, crdComponent.Name, plugins)
 
 	if err != nil {
 		return nil, err
 	}
 
-	kalmClient, _ := getKalmV1Alpha1Client(c)
-	err = resources.UpdateComponentPluginBindingsForObject(kalmClient, component.Namespace, component.Name, plugins)
-
-	if err != nil {
-		return nil, err
-	}
-	return &component, nil
+	return crdComponent, nil
 }
 
 func getComponentFromContext(c echo.Context) (*v1alpha1.Component, []runtime.RawExtension, error) {
@@ -220,15 +200,9 @@ func getComponentFromContext(c echo.Context) (*v1alpha1.Component, []runtime.Raw
 }
 
 func (h *ApiHandler) componentResponse(c echo.Context, component *v1alpha1.Component) (*resources.ComponentDetails, error) {
-	k8sClient := getK8sClient(c)
-	k8sClientConfig := getK8sClientConfig(c)
-	builder := resources.NewBuilder(k8sClient, k8sClientConfig, h.logger)
-	return builder.BuildComponentDetails(component, nil)
+	return h.Builder(c).BuildComponentDetails(component, nil)
 }
 
 func (h *ApiHandler) componentListResponse(c echo.Context, componentList *v1alpha1.ComponentList) ([]resources.ComponentDetails, error) {
-	k8sClient := getK8sClient(c)
-	k8sClientConfig := getK8sClientConfig(c)
-	builder := resources.NewBuilder(k8sClient, k8sClientConfig, h.logger)
-	return builder.BuildComponentDetailsResponse(componentList)
+	return h.Builder(c).BuildComponentDetailsResponse(componentList)
 }
