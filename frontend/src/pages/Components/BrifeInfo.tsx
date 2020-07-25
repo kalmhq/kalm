@@ -35,7 +35,7 @@ import { push } from "connected-react-router";
 import clsx from "clsx";
 import { SecretValueLabel } from "widgets/Label";
 import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
-import { sizeStringToMi } from "utils/sizeConv";
+import { sizeStringToMi, sizeStringToGi } from "utils/sizeConv";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -133,7 +133,7 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
 
 interface State {}
 
-class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
+class ComponentBrifeInfoRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {};
@@ -296,14 +296,14 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
       ) : undefined;
     return (
       <ItemWithHoverIcon icon={icon}>
-        <Box display="inline-block" pr={2}>
+        <Box pr={2}>
           {readinessProbe ? (
             `${this.getProbeType(readinessProbe)} readiness probe configured.`
           ) : (
             <NoReadinessProbeWarning />
           )}
         </Box>
-        <Box display="inline-block" pr={2}>
+        <Box pr={2}>
           {livenessProbe ? (
             `${this.getProbeType(livenessProbe)} liveness probe configured.`
           ) : (
@@ -316,7 +316,7 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
 
   private renderCopiableValue = (value: any) => {
     if (value === undefined || value === "") {
-      return "-";
+      return null;
     } else {
       return (
         <ItemWithHoverIcon
@@ -343,7 +343,7 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     const { component, classes } = this.props;
     const envs = component.get("env");
     if (envs === undefined || envs?.size === 0) {
-      return "-";
+      return null;
     }
     return (
       <ExpansionPanel square className={clsx(classes.rootEnv)} elevation={0} defaultExpanded={envs.size <= 1}>
@@ -378,29 +378,35 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     const { component, classes } = this.props;
     const configs = component.get("preInjectedFiles");
     if (configs === undefined || configs?.size === 0) {
-      return <>-</>;
+      return null;
     }
-    return configs?.map((config, index) => {
-      return (
-        <Box key={index} className={classes.columnWrapper}>
-          <div className={classes.rowWrapper}>
-            <div className={classes.envKey}>MountPath:</div>
-            <div className={clsx(index % 2 === 0 ? classes.rowEven : classes.rowOdd, classes.envValue)}>
-              {config.get("mountPath")}
-            </div>
-          </div>
-        </Box>
-      );
-    });
+    return (
+      <div>
+        {configs?.map((config, index) => {
+          return (
+            <Box key={index} className={classes.columnWrapper}>
+              <div className={classes.rowWrapper}>
+                <div className={classes.envKey}>MountPath:</div>
+                <div className={clsx(index % 2 === 0 ? classes.rowEven : classes.rowOdd, classes.envValue)}>
+                  {config.get("mountPath")}
+                </div>
+              </div>
+            </Box>
+          );
+        })}
+      </div>
+    );
   };
 
   private renderRestartStrategy = () => {
     const { component } = this.props;
+    if (component.get("restartStrategy") === undefined) return null;
     return component.get("restartStrategy") ?? "Rolling Update";
   };
 
   private renderGracefulTermination = () => {
     const { component } = this.props;
+    if (component.get("terminationGracePeriodSeconds") === undefined) return null;
     const duration =
       component.get("terminationGracePeriodSeconds") === undefined
         ? "30"
@@ -413,10 +419,10 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     const { component, classes } = this.props;
     const disks = component.get("volumes");
     if (disks === undefined || disks?.size === 0) {
-      return "-";
+      return null;
     }
     return (
-      <ExpansionPanel square className={clsx(classes.rootEnv)} elevation={0} defaultExpanded={true}>
+      <ExpansionPanel square className={clsx(classes.rootEnv)} elevation={0} defaultExpanded={false}>
         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
           {disks?.size} {disks?.size > 1 ? "disks" : "disk"}
         </ExpansionPanelSummary>
@@ -439,7 +445,7 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
                     <TableCell>{disk.get("pvc")}</TableCell>
                     <TableCell>{disk.get("storageClassName")}</TableCell>
                     <TableCell>{disk.get("path")}</TableCell>
-                    <TableCell>{disk.get("size")}</TableCell>
+                    <TableCell>{`${sizeStringToGi(disk.get("size"))}Gi`}</TableCell>
                   </TableRow>
                 );
               })}
@@ -451,30 +457,29 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { component, activeNamespaceName } = this.props;
+    const { component } = this.props;
+    const items = [
+      { name: "Image", content: this.renderCopiableValue(component.get("image")) },
+      { name: "Command", content: this.renderCopiableValue(component.get("command")) },
+      { name: "Environment Variables", content: this.renderEnvs() },
+      { name: "Configuration Files", content: this.renderConfigFiles() },
+      { name: "Exposed Ports", content: this.renderPorts() },
+      { name: "Disks", content: this.renderDisks() },
+      { name: "Health", content: this.renderHealth() },
+      { name: "CPU", content: this.renderComponentCPU() },
+      { name: "Memory", content: this.renderComponentMemory() },
+      { name: "Restart Strategy", content: this.renderRestartStrategy() },
+      { name: "Graceful Termination", content: this.renderGracefulTermination() },
+    ];
+
     return (
       <VerticalHeadTable
-        items={[
-          { name: "Created At", content: this.renderCreatedAt() },
-          { name: "Name", content: component.get("name") },
-          { name: "Namespace", content: activeNamespaceName },
-          { name: "Workload Type", content: component.get("workloadType") },
-          { name: "Pod Status", content: this.renderComponentStatus() },
-          { name: "Image", content: this.renderCopiableValue(component.get("image")) },
-          { name: "Command", content: this.renderCopiableValue(component.get("command")) },
-          { name: "Environment Variables", content: this.renderEnvs() },
-          { name: "Configuration Files", content: this.renderConfigFiles() },
-          { name: "Exposed Ports", content: this.renderPorts() },
-          { name: "Disks", content: this.renderDisks() },
-          { name: "Health", content: this.renderHealth() },
-          { name: "CPU", content: this.renderComponentCPU() },
-          { name: "Memory", content: this.renderComponentMemory() },
-          { name: "Restart Strategy", content: this.renderRestartStrategy() },
-          { name: "Graceful Termination", content: this.renderGracefulTermination() },
-        ]}
+        items={items.filter((item) => {
+          return item.content !== null;
+        })}
       />
     );
   }
 }
 
-export const ComponentBasicInfo = withStyles(styles)(connect(mapStateToProps)(ComponentBasicInfoRaw));
+export const ComponentBrifeInfo = withStyles(styles)(connect(mapStateToProps)(ComponentBrifeInfoRaw));

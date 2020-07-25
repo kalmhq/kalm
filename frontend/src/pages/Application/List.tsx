@@ -35,6 +35,7 @@ import { BasePage } from "../BasePage";
 import { InfoBox } from "widgets/InfoBox";
 import { ApplicationCard } from "widgets/ApplicationCard";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import { pluralize } from "utils/string";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -261,7 +262,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           {(popupState) => (
             <>
               <MLink component="button" variant="body2" {...bindTrigger(popupState)}>
-                {applicationRoutes.size === 1 ? "1 route" : `${applicationRoutes.size} routes`}
+                {pluralize("route", applicationRoutes.size)}
               </MLink>
               <Popover
                 style={{ zIndex: POPPER_ZINDEX }}
