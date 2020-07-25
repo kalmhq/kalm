@@ -9,7 +9,7 @@ import { getComponentFormVolumeOptions } from "selectors/component";
 import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { RenderSelectField } from "../Basic/select";
-import { KRenderTextField, RenderComplexValueTextDebounceField } from "../Basic/textfield";
+import { KRenderDebounceTextField, RenderComplexValueTextDebounceField } from "../Basic/textfield";
 import { ValidatorRequired, ValidatorVolumeSize } from "../validator";
 import { KTooltip } from "forms/Application/KTooltip";
 import HelpIcon from "@material-ui/icons/Help";
@@ -135,7 +135,7 @@ class RenderVolumes extends React.PureComponent<Props> {
         ]}
       />,
       <Field
-        component={KRenderTextField}
+        component={KRenderDebounceTextField}
         name={`${member}.path`}
         label="Mount Path"
         margin

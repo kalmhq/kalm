@@ -3,7 +3,7 @@ import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/s
 import { createCertificateIssuerAction } from "actions/certificate";
 import { KAutoCompleteSingleValue, KFreeSoloAutoCompleteMultiValues } from "forms/Basic/autoComplete";
 import { KRadioGroupRender } from "forms/Basic/radio";
-import { KRenderTextField } from "forms/Basic/textfield";
+import { KRenderDebounceTextField } from "forms/Basic/textfield";
 import { ValidatorRequired } from "forms/validator";
 import Immutable from "immutable";
 import React from "react";
@@ -289,7 +289,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
               disabled={isEdit}
               placeholder="Please type a certificate name"
               label="Certificate name"
-              component={KRenderTextField}
+              component={KRenderDebounceTextField}
               name="name"
               id="certificate-name"
               margin="normal"
