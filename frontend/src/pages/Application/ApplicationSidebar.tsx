@@ -71,7 +71,7 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
         icon: <KalmRoutesIcon />,
       },
       {
-        text: "Metric Dashboard",
+        text: "Metrics",
         to: "/applications/" + activeNamespaceName + "/metrics",
         highlightWhenExact: true,
         icon: <DashboardIcon />,
