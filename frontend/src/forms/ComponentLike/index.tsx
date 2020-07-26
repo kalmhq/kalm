@@ -54,6 +54,7 @@ import { RenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
+import { theme } from "theme/theme";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -156,6 +157,7 @@ const styles = (theme: Theme) =>
  */
 const HelperText = styled(Box)({
   color: "#636d72",
+  "font-size": theme.typography.caption.fontSize,
 });
 
 interface RawProps {
