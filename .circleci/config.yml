@@ -163,13 +163,21 @@ jobs:
   #           mkdir ${HOME}/.kube
   #           echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
   #           kubectl delete pod -n kalm-system $(kubectl get pods -n kalm-system -l app=kalm -o jsonpath="{.items[].metadata.name}")
+  deploy-dashboard:
+    executor: deploy-orb/default
+    steps:
+      - deploy-orb/deploy:
+          KALM_API_ADDRESS: https://dashboard.kapp.live
+          KALM_DEPLOY_KEY: $DEPLOY_KEY
+          KALM_APP: kalm-system
+          KALM_COMPONENT: kalm
+          KALM_COMPONENT_IMG_TAG: latest
   deploy-controller:
     environment:
       IMAGE_NAME: quay.io/kalmhq/kalm-controller:latest
     docker:
       - image: circleci/golang:1.13.11
     steps:
-      - checkout
       - run:
           name: deploy
           working_directory: ./controller
@@ -252,6 +260,15 @@ workflows:
           KALM_APP: kalm-system
           KALM_COMPONENT: kalm
           KALM_COMPONENT_IMG_TAG: latest
+      - deploy-dashboard:
+          context: deploy-demo-cluster
+          requires:
+            - push-dashboard-image
+          filters:
+            branches:
+              only: 
+              - master
+              - orb
   controller:
     jobs:
       - test-controller
