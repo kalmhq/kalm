@@ -206,7 +206,7 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
       { title: "Node", sorting: false, render: this.renderPodNode },
       { title: "Restarts", sorting: false, render: this.renderPodRestarts },
       { title: "Status", sorting: false, render: this.renderPodStatusText },
-      { title: "AGE", sorting: false, render: this.renderPodAGE },
+      { title: "Age", sorting: false, render: this.renderPodAGE },
       { title: "CPU", sorting: false, render: this.renderPodCPU },
       { title: "Memory", sorting: false, render: this.renderPodMemory },
       { title: "", sorting: false, render: this.renderPodActions },
