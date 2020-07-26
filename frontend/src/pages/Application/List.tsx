@@ -32,7 +32,6 @@ import { Loading } from "widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { KTable } from "widgets/Table";
 import { BasePage } from "../BasePage";
-import { InfoBox } from "widgets/InfoBox";
 import { ApplicationCard } from "widgets/ApplicationCard";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { pluralize } from "utils/string";
@@ -437,31 +436,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private renderInfoBox() {
-    const title = "Application References";
-
-    const options = [
-      {
-        title: (
-          <MLink href="#" target="_blank">
-            Link to docks
-          </MLink>
-        ),
-        content: "",
-      },
-      {
-        title: (
-          <MLink href="#" target="_blank">
-            Link to tutorial
-          </MLink>
-        ),
-        content: "",
-      },
-    ];
-
-    return <InfoBox title={title} options={options}></InfoBox>;
-  }
-
   private renderList = () => {
     const { applications } = this.props;
     return (
@@ -526,7 +500,6 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
             this.renderList()
           )}
         </Box>
-        <Box p={2}>{this.renderInfoBox()}</Box>
       </BasePage>
     );
   }
