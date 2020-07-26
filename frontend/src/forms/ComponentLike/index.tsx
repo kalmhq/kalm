@@ -287,6 +287,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           <HelperText>
             Use Config Files to specify file-based configurations for your Component. Config Files created here are
             automatically mounted to the container.
+            <span>&nbsp;</span>
+            <Link href="https://kalm.dev/docs/guide-config#adding-a-config-file" target="_blank">
+              Learn more.
+            </Link>
           </HelperText>
         </Grid>
         <Grid item xs={12}>
@@ -310,6 +314,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           <HelperText>
             Define environment variables for the main container of this component. This overrides enviornment variables
             specified in the image.
+            <span>&nbsp;</span>
+            <Link href="https://kalm.dev/docs/guide-config#environment-varibles" target="_blank">
+              Learn more.
+            </Link>
           </HelperText>
         </Grid>
         <Grid item xs={12}>
