@@ -21,7 +21,16 @@ commands: # a reusable command with parameters
       KALM_COMPONENT_IMG_TAG:
         type: string
     steps:
-    - run: curl -v -XPOST << parameters.KALM_API_ADDRESS >>/__kalm_webhook/deploy?deploy-key=<< parameters.KALM_DEPLOY_KEY >>\&app=<< parameters.KALM_APP >>\&component=<< parameters.KALM_COMPONENT >>\&image-tag=<< parameters.KALM_COMPONENT_IMG_TAG >>
+    - run: |
+        resp_code=$(curl -s -o resp.log -w "%{http_code}" -XPOST << parameters.KALM_API_ADDRESS >>/__kalm_webhook/deploy?deploy-key=<< parameters.KALM_DEPLOY_KEY >>\&app=<< parameters.KALM_APP >>\&component=<< parameters.KALM_COMPONENT >>\&image-tag=<< parameters.KALM_COMPONENT_IMG_TAG >>)
+
+        if [ $resp_code == 200 ] 
+        then
+          exit 0
+        else
+          cat resp.log
+          exit 1
+        fi
 jobs:
   run:
     description: |
