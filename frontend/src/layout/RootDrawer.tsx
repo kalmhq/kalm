@@ -59,7 +59,12 @@ const styles = (theme: Theme) =>
     },
     listSubHeader: {
       textTransform: "uppercase",
-      color: "#000000 !important",
+      color: theme.palette.text.secondary,
+      "font-size": theme.typography.subtitle1.fontSize,
+    },
+    ListItemText: {
+      "font-size": theme.typography.subtitle1.fontSize,
+      color: theme.palette.text.primary,
     },
     drawer: {
       width: LEFT_SECTION_OPEN_WIDTH,
@@ -205,7 +210,7 @@ class RootDrawerRaw extends React.PureComponent<Props, State> {
                       <ListItemIcon>
                         <item.icon />
                       </ListItemIcon>
-                      {open ? <ListItemText primary={item.text} /> : null}
+                      {open ? <ListItemText classes={{ primary: classes.ListItemText }} primary={item.text} /> : null}
                     </ListItem>
                   );
                 })}
