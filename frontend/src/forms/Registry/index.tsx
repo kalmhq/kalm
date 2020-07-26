@@ -11,6 +11,7 @@ import { KRenderDebounceTextField } from "../Basic/textfield";
 import { RequireNoSuffix, RequirePrefix, ValidatorName, ValidatorRequired } from "../validator";
 import { Prompt } from "widgets/Prompt";
 import { REGISTRY_FORM_ID } from "../formIDs";
+import stringConstants from "utils/stringConstants";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -61,11 +62,7 @@ class RegistryFormRaw extends React.PureComponent<
               disabled={isEdit}
               component={KRenderDebounceTextField}
               validate={validateName}
-              helperText={
-                isEdit
-                  ? "Can't modify name"
-                  : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), "-", and ".". Max length is 180.'
-              }
+              helperText={isEdit ? "Can't modify name" : stringConstants.NAME_RULE}
               placeholder="Please type the registry name"
             />
           </Grid>

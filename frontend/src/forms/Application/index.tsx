@@ -16,6 +16,7 @@ import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { InjectedFormProps } from "redux-form";
 import { APPLICATION_FORM_ID } from "../formIDs";
 import { Body } from "widgets/Label";
+import stringConstants from "utils/stringConstants";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -75,11 +76,7 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
           component={KRenderDebounceTextField}
           autoFocus={true}
           validate={nameValidators}
-          helperText={
-            isEdit
-              ? "Can't modify name"
-              : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), and "-". Max length is 180.'
-          }
+          helperText={isEdit ? "Can't modify name" : stringConstants.NAME_RULE}
           placeholder="Please type the application name"
         />
 

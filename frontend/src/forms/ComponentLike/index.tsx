@@ -55,6 +55,7 @@ import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
 import { theme } from "theme/theme";
+import stringConstants from "utils/stringConstants";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -862,12 +863,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             margin
             validate={nameValidators}
             disabled={isEdit}
-            helperText={
-              isEdit
-                ? "Name can't be changed."
-                : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), and "-". Max length is 180.'
-            }
-            placeholder="Please type the component name"
+            helperText={isEdit ? "Name can't be changed." : stringConstants.NAME_RULE}
           />
         </Grid>
         <Grid item xs={6}>
