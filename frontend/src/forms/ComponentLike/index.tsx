@@ -1,4 +1,16 @@
-import { Box, Button, Collapse, Grid, Link, List as MList, ListItem, ListItemText, Tab, Tabs } from "@material-ui/core";
+import {
+  Box,
+  Button,
+  Collapse,
+  Grid,
+  Link,
+  List as MList,
+  ListItem,
+  ListItemText,
+  Tab,
+  Tabs,
+  Typography,
+} from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import { createStyles, Theme, withStyles, WithStyles, styled } from "@material-ui/core/styles";
 import HelpIcon from "@material-ui/icons/Help";
@@ -871,9 +883,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             component={KRenderDebounceTextField}
             name="image"
             label="Image"
+            placeholder="e.g. nginx:latest"
             margin
             validate={ValidatorRequired}
-            helperText='Eg: "nginx:latest", "registry.example.com/group/repo:tag"'
+            helperText="Image URL defaults to hub.docker.com. Use full URL for all other registries."
           />
         </Grid>
 
@@ -885,10 +898,50 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             validate={ValidatorRequired}
             disabled={isEdit}
             options={[
-              { value: workloadTypeServer, text: "Server (continuous running)" },
-              { value: workloadTypeCronjob, text: "Cronjob (periodic running)" },
-              { value: workloadTypeDaemonSet, text: "DaemonSet" },
-              { value: workloadTypeStatefulSet, text: "StatefulSet" },
+              {
+                value: workloadTypeServer,
+                selectedText: "Service Component",
+                text: (
+                  <Box pt={1} pb={1}>
+                    <Typography variant="h6">Service Component</Typography>
+                    <Typography variant="caption">Default choice - Suitable for most continuous services</Typography>
+                  </Box>
+                ),
+              },
+              {
+                value: workloadTypeCronjob,
+                selectedText: "CronJob",
+                text: (
+                  <Box pt={1} pb={1}>
+                    <Typography variant="h6">CronJob</Typography>
+                    <Typography variant="caption">Scheduled tasks to be ran at specific times</Typography>
+                  </Box>
+                ),
+              },
+              {
+                value: workloadTypeDaemonSet,
+                selectedText: "DaemonSet",
+                text: (
+                  <Box pt={1} pb={1}>
+                    <Typography variant="h6">DaemonSet</Typography>
+                    <Typography variant="caption">
+                      For system services which should be deployed once per node
+                    </Typography>
+                  </Box>
+                ),
+              },
+              {
+                value: workloadTypeStatefulSet,
+                selectedText: "StatefulSet",
+                text: (
+                  <Box pt={1} pb={1}>
+                    <Typography variant="h6">StatefulSet</Typography>
+                    <Typography variant="caption">
+                      For stateful apps requiring additional persistence settings
+                    </Typography>
+                  </Box>
+                ),
+              },
             ]}
           />
         </Grid>
