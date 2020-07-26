@@ -26,7 +26,7 @@ export const NoLivenessProbeWarning = () => {
   return (
     <Warning
       title="No liveness probe"
-      tooltip="Liveness probes help detect if containers should be restarted. You can set one up in a Component's `Health` section."
+      tooltip="Liveness probes help detect if problematic containers should be restarted. You can set one up in a Component's `Health` section."
     />
   );
 };
