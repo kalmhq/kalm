@@ -1,4 +1,4 @@
-import { Box, createStyles, Theme, WithStyles, withStyles, Button, Link } from "@material-ui/core";
+import { Box, createStyles, Theme, WithStyles, withStyles, Button } from "@material-ui/core";
 import { deleteCertificateAction, setEditCertificateModalAction } from "actions/certificate";
 import { openDialogAction } from "actions/dialog";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
@@ -277,28 +277,9 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderInfoBox() {
-    const title = "Certificate References";
+    const title = "Certificates";
 
-    const options = [
-      {
-        title: (
-          <Link href="#" target="_blank">
-            Link to docks
-          </Link>
-        ),
-        content: "",
-      },
-      {
-        title: (
-          <Link href="#" target="_blank">
-            Link to tutorial
-          </Link>
-        ),
-        content: "",
-      },
-    ];
-
-    return <InfoBox title={title} options={options}></InfoBox>;
+    return <InfoBox title={title} options={[]} guideLink="https://kalm.dev/docs/certs"></InfoBox>;
   }
 
   public render() {
