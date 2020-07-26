@@ -29,7 +29,7 @@ class InfoBoxRaw extends React.PureComponent<Props> {
         <Box p={2}>
           <Grid container spacing={2}>
             <Grid item md={12}>
-              <H5>About {title}</H5>
+              <H5>{title}</H5>
             </Grid>
           </Grid>
           <Grid container spacing={2}>

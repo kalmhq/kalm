@@ -1,6 +1,6 @@
 import { Box, Button, Collapse, Grid, Link, List as MList, ListItem, ListItemText, Tab, Tabs } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
-import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
+import { createStyles, Theme, withStyles, WithStyles, styled } from "@material-ui/core/styles";
 import HelpIcon from "@material-ui/icons/Help";
 import { Alert } from "@material-ui/lab";
 import { loadSimpleOptionsAction, loadStatefulSetOptionsAction } from "actions/persistentVolume";
@@ -151,6 +151,13 @@ const styles = (theme: Theme) =>
     },
   });
 
+/**
+ * A Styled component representing helper text.
+ */
+const HelperText = styled(Box)({
+  color: "#636d72",
+});
+
 interface RawProps {
   showDataView?: boolean;
   showSubmitButton?: boolean;
@@ -254,20 +261,18 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private preInjectedFiles = () => {
-    const { classes } = this.props;
-
-    const helper =
-      "You can inject some files on customized paths before the process is running. This is helpful when the program need configuration files.";
-
     return (
       <>
         <Grid item xs={12}>
           <SectionTitle>
-            <H5>Configuration Files</H5>
-            <KTooltip title={helper}>
-              <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
-            </KTooltip>
+            <H5>Config Files</H5>
           </SectionTitle>
+        </Grid>
+        <Grid item xs={12}>
+          <HelperText>
+            Use Config Files to specify file-based configurations for your Component. Config Files created here are
+            automatically mounted to the container.
+          </HelperText>
         </Grid>
         <Grid item xs={12}>
           <PreInjectedFiles />
@@ -277,20 +282,21 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   };
 
   private renderEnvs() {
-    const { classes, sharedEnv } = this.props;
-    const helper =
-      "Environment variables are variable whose values are set outside the program, typically through functionality built into the component. An environment variable is made up of a name/value pair, it also support combine a dynamic value associated with other component later in a real running application. Learn More.";
+    const { sharedEnv } = this.props;
 
     return (
       <>
         <Grid item xs={12}>
           <SectionTitle>
             <H5>Environment variables</H5>
-            <KTooltip title={helper}>
-              <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
-            </KTooltip>
           </SectionTitle>
-        </Grid>{" "}
+        </Grid>
+        <Grid item xs={12}>
+          <HelperText>
+            Define environment variables for the main container of this component. This overrides enviornment variables
+            specified in the image.
+          </HelperText>
+        </Grid>
         <Grid item xs={12}>
           <Envs sharedEnv={sharedEnv} />
         </Grid>
@@ -515,32 +521,25 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   // }
 
   private renderCommandAndArgs() {
-    const { classes } = this.props;
-
     return (
       <>
         <Grid item xs={12}>
           <SectionTitle>
             <H5>Command</H5>
-            <KTooltip
-              title={
-                <Caption>
-                  This filed is used to overwrite <strong>entrypoint</strong> and <strong>commands</strong> in image.
-                  Leave it blank to use image default settings.
-                </Caption>
-              }
-            >
-              <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
-            </KTooltip>
           </SectionTitle>
         </Grid>
-
+        <Grid item xs={12}>
+          <HelperText>
+            Define a command for the main container of this component. This overrides the default Entrypoint and Cmd of
+            the image.
+          </HelperText>
+        </Grid>
         <Grid item xs={12}>
           <Field
             component={KRenderCommandTextField}
             name="command"
             label="Command"
-            placeholder="eg: `npm run start` or `bundle exec rails server`"
+            placeholder="e.g. /bin/sh -c 'echo hello; sleep 600'"
           />
         </Grid>
       </>
@@ -550,12 +549,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   private renderConfigurations() {
     return (
       <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <Body>
-            Tell kalm more about how to run the project. Customize the <strong>command</strong>,{" "}
-            <strong>environment variables</strong> and <strong>configuration files</strong> of this component.
-          </Body>
-        </Grid>
         {this.renderCommandAndArgs()}
         {this.renderEnvs()}
         {this.preInjectedFiles()}
@@ -630,13 +623,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     const { nodeLabels, classes } = this.props;
     return (
       <Grid container spacing={2}>
-        {/* <Grid item xs={12}>
-          <Body>
-            Tell kalm more about how to schedule this component. Now there are <Chip size="small" label={"10"} /> nodes
-            in this cluster. Base on the following settings, <Chip size="small" label={"10"} /> are available for
-            running this component.
-          </Body>
-        </Grid> */}
         <Grid item xs={12}>
           <SectionTitle>
             <H5>Resources</H5>
