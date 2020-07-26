@@ -219,7 +219,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           name="replicas"
           margin
           label="Replicas"
-          helperText=""
+          helperText="Number of pods to create for this component."
           formValueToEditValue={(value: any) => {
             let displayValue;
             if (value !== null && value !== undefined) {
@@ -303,7 +303,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       <>
         <Grid item xs={12}>
           <SectionTitle>
-            <H5>Environment variables</H5>
+            <H5>Environment Variables</H5>
           </SectionTitle>
         </Grid>
         <Grid item xs={12}>
@@ -329,7 +329,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       <>
         <Grid item xs={12}>
           <SectionTitle>
-            <H5>Expose ports to cluster</H5>
+            <H5>Ports</H5>
             <KTooltip title={helper}>
               <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
             </KTooltip>

@@ -208,7 +208,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     });
 
     if (podCount === 0) {
-      return "No Pods";
+      return "0 Pods";
     }
 
     const tooltipTitle = `Total ${podCount} pods are found. \n${successCount} ready, ${pendingCount} pending, ${errorCount} failed. Click to view details.`;
@@ -369,7 +369,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         render: this.renderName,
         customFilterAndSearch: customSearchForImmutable,
       },
-      { title: "Pods Status", field: "status", sorting: false, render: this.renderStatus },
+      { title: "Pod Status", field: "status", sorting: false, render: this.renderStatus },
       {
         title: "CPU",
         field: "cpu",
