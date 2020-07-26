@@ -339,7 +339,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           variant="outlined"
           to={`/applications/new`}
         >
-          Create New Application
+          Create New App
         </Button>
         <IconButtonWithTooltip
           tooltipTitle={usingApplicationCard ? "Using List View" : "Using Card View"}

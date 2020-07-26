@@ -112,7 +112,7 @@ const sideBarData = [
   {
     name: "Application",
     items: [
-      { icon: KalmApplicationIcon, text: "Applications", to: "/applications" },
+      { icon: KalmApplicationIcon, text: "Apps", to: "/applications" },
       {
         icon: KalmCertificatesIcon,
         text: "Certificates",
