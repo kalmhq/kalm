@@ -9,6 +9,7 @@ import { RoleBindingsRequestBody } from "types/user";
 import { CertificateFormType, CertificateIssuerFormType } from "types/certificate";
 import { Node } from "types/node";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
+import { DeployKey } from "types/deployKey";
 
 export default class RealApi extends Api {
   public getClusterInfo = async () => {
@@ -336,6 +337,25 @@ export default class RealApi extends Api {
 
   public deleteProtectedEndpoint = async (protectedEndpoint: ProtectedEndpoint): Promise<void> => {
     await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/protectedendpoints`, data: protectedEndpoint });
+  };
+
+  public listDeployKeys = async (): Promise<Immutable.List<DeployKey>> => {
+    const res = await axiosRequest({ method: "get", url: `/${K8sApiVersion}/deploykeys` });
+    return Immutable.fromJS(res.data);
+  };
+
+  public createDeployKey = async (deployKey: DeployKey): Promise<DeployKey> => {
+    const res = await axiosRequest({
+      method: "post",
+      url: `/${K8sApiVersion}/deploykeys`,
+      data: deployKey,
+    });
+
+    return Immutable.fromJS(res.data);
+  };
+
+  public deleteDeployKey = async (deployKey: DeployKey): Promise<void> => {
+    await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/deploykeys`, data: deployKey });
   };
 }
 
