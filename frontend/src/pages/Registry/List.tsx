@@ -188,7 +188,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
             dispatch(openDialogAction(RegistryNewModalID));
           }}
         >
-          Add {pageObjectName}
+          New {pageObjectName}
         </CustomizedButton>
       </>
     );
@@ -214,7 +214,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
               dispatch(openDialogAction(RegistryNewModalID));
             }}
           >
-            Add {pageObjectName}
+            New {pageObjectName}
           </CustomizedButton>
         }
       />

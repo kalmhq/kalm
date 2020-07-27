@@ -1,4 +1,4 @@
-import { Box, Button, createStyles, Link as MLink, Popover, Theme, Tooltip, WithStyles, Grid } from "@material-ui/core";
+import { Box, Button, createStyles, Grid, Link as MLink, Popover, Theme, Tooltip, WithStyles } from "@material-ui/core";
 import { indigo } from "@material-ui/core/colors";
 import withStyles from "@material-ui/core/styles/withStyles";
 import { deleteApplicationAction } from "actions/application";
@@ -339,7 +339,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           variant="outlined"
           to={`/applications/new`}
         >
-          Create New App
+          New Application
         </Button>
         <IconButtonWithTooltip
           tooltipTitle={usingApplicationCard ? "Using List View" : "Using Card View"}
@@ -429,7 +429,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
               dispatch(push(`/applications/new`));
             }}
           >
-            Create Application
+            New Application
           </CustomizedButton>
         }
       />

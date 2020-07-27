@@ -1,4 +1,4 @@
-import { Box, createStyles, Theme, WithStyles, withStyles, Button } from "@material-ui/core";
+import { Box, Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { deleteCertificateAction, setEditCertificateModalAction } from "actions/certificate";
 import { openDialogAction } from "actions/dialog";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
@@ -269,7 +269,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
               dispatch(setEditCertificateModalAction(null));
             }}
           >
-            Add Certificate
+            New Certificate
           </CustomizedButton>
         }
       />
@@ -301,7 +301,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
                 dispatch(setEditCertificateModalAction(null));
               }}
             >
-              Add Certificate
+              New Certificate
             </Button>
           </>
         }

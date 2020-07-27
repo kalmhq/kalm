@@ -106,7 +106,7 @@ class ProtectedEndpointFormRaw extends React.PureComponent<FinalProps> {
           </Grid>
           <Grid item md={2} style={{ display: "flex", alignItems: "center" }}>
             <Button color="primary" variant="outlined" type="submit">
-              Add Protected Endpoint
+              New Protected Endpoint
             </Button>
           </Grid>
         </Grid>
