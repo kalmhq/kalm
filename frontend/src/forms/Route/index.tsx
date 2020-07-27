@@ -365,22 +365,37 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       margin="normal"
                       validate={hostsValidators}
                       placeholder="Type a host"
-                      helperText={
-                        <>
-                          Your cluster ip is{" "}
-                          <Link
-                            href="#"
-                            onClick={() => {
-                              change("hosts", Immutable.List([ingressIP]));
-                            }}
-                          >
-                            {ingressIP}
-                          </Link>
-                          . If you don't have any DNS record point to this ip, you can use the ip directly in this
-                          field.
-                        </>
-                      }
+                      // helperText={
+                      //   <>
+                      //     Your cluster ip is{" "}
+                      //     <Link
+                      //       href="#"
+                      //       onClick={() => {
+                      //         change("hosts", Immutable.List([ingressIP]));
+                      //       }}
+                      //     >
+                      //       {ingressIP}
+                      //     </Link>
+                      //     . If you don't have any DNS record point to this ip, you can use the ip directly in this
+                      //     field.
+                      //   </>
+                      // }
                     />
+                    <Box mt="-4px" mb="4px" pl="14px" pr="14px">
+                      <Caption color="textSecondary">
+                        Your cluster ip is{" "}
+                        <Link
+                          href="#"
+                          onClick={() => {
+                            change("hosts", Immutable.List([ingressIP]));
+                          }}
+                        >
+                          {ingressIP}
+                        </Link>
+                        . If you don't have any DNS record point to this ip, you can use the ip directly in this field.
+                      </Caption>
+                    </Box>
+
                     <Field
                       InputLabelProps={{
                         shrink: true,
