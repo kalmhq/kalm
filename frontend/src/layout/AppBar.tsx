@@ -1,6 +1,4 @@
 import { AppBar, Breadcrumbs, createStyles, Divider, IconButton, Menu, MenuItem, Theme } from "@material-ui/core";
-import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
-import MenuIcon from "@material-ui/icons/Menu";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import { logoutAction } from "actions/auth";
 import { closeTutorialDrawerAction, openTutorialDrawerAction } from "actions/tutorial";
@@ -12,7 +10,7 @@ import { TDispatch } from "types";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
 import { APP_BAR_HEIGHT, APP_BAR_ZINDEX } from "./Constants";
-import { HelpIcon, KalmUserIcon } from "widgets/Icon";
+import { HelpIcon, KalmUserIcon, MenuOpenIcon, MenuIcon } from "widgets/Icon";
 
 const mapStateToProps = (state: RootState) => {
   const activeNamespace = state.get("namespaces").get("active");
@@ -201,7 +199,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
               onClick={() => dispatch(setSettingsAction({ isOpenRootDrawer: !isOpenRootDrawer }))}
               // size={"small"}
             >
-              {isOpenRootDrawer ? <ChevronLeftIcon htmlColor={"#fff"} /> : <MenuIcon htmlColor={"#fff"} />}
+              {isOpenRootDrawer ? <MenuOpenIcon color="white" /> : <MenuIcon color="white" />}
             </IconButton>
             <FlexRowItemCenterBox>
               <Breadcrumbs aria-label="breadcrumb">

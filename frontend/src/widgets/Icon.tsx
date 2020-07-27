@@ -20,6 +20,10 @@ import SubjectIcon from "@material-ui/icons/Subject";
 import Dashboard from "@material-ui/icons/Dashboard";
 import Visibility from "@material-ui/icons/Visibility";
 import VisibilityOff from "@material-ui/icons/VisibilityOff";
+import MenuOpen from "@material-ui/icons/MenuOpen";
+import Menu from "@material-ui/icons/Menu";
+import BrightnessLight from "@material-ui/icons/Brightness7";
+import BrightnessDark from "@material-ui/icons/Brightness4";
 import GitHubIcon from "@material-ui/icons/GitHub";
 import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import { grey } from "@material-ui/core/colors";
@@ -65,12 +69,12 @@ type Overwrite<T, U> = Pick<T, Exclude<keyof T, keyof U>> & U;
 
 type IconsProps = WithStyles<typeof styles> &
   SvgIconProps & {
-    color?: "inherit" | "primary" | "secondary" | "action" | "disabled" | "error" | "success";
+    color?: "inherit" | "primary" | "secondary" | "action" | "disabled" | "error" | "success" | "white";
   };
 
 type ColorIconsProps = Overwrite<
   IconsProps,
-  { color?: "inherit" | "primary" | "secondary" | "action" | "disabled" | "error" | "success" | "default" }
+  { color?: "inherit" | "primary" | "secondary" | "action" | "disabled" | "error" | "success" | "default" | "white" }
 >;
 
 const getClassNameByColorName = (props: ColorIconsProps, defaultColor?: string) => {
@@ -97,6 +101,9 @@ const getClassNameByColorName = (props: ColorIconsProps, defaultColor?: string) 
       break;
     case "default":
       className = classes.default;
+      break;
+    case "white":
+      className = classes.white;
       break;
     case "inherit":
     default:
@@ -404,4 +411,28 @@ export const GithubIcon = withStyles(styles)((props: ColorIconsProps) => {
   const { fontSize, style } = props;
   const className = getClassNameByColorName(props);
   return <GitHubIcon className={className} fontSize={fontSize} style={style} />;
+});
+
+export const MenuIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return <Menu className={className} fontSize={fontSize} style={style} />;
+});
+
+export const MenuOpenIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return <MenuOpen className={className} fontSize={fontSize} style={style} />;
+});
+
+export const BrightnessDarkIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return <BrightnessDark className={className} fontSize={fontSize} style={style} />;
+});
+
+export const BrightnessLightIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return <BrightnessLight className={className} fontSize={fontSize} style={style} />;
 });
