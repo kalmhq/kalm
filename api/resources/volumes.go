@@ -69,13 +69,13 @@ func tryFormatQuantity(quantity resource.Quantity) string {
 	rst := quantity.String()
 
 	if strings.HasSuffix(rst, "m") {
-		oneG := int64(1000000000)
-		oneM := int64(1000000)
+		oneGi := int64(1024*1024*1024)
+		oneMi := int64(1024*1024)
 
-		if quantity.Value()/oneG > 0 {
-			rst = fmt.Sprintf("%.1fG", float64(quantity.Value())/float64(oneG))
-		} else if quantity.Value()/oneM > 0 {
-			rst = fmt.Sprintf("%.1fM", float64(quantity.Value())/float64(oneM))
+		if quantity.Value()/oneGi > 0 {
+			rst = fmt.Sprintf("%.1fG", float64(quantity.Value())/float64(oneGi))
+		} else if quantity.Value()/oneMi > 0 {
+			rst = fmt.Sprintf("%.1fM", float64(quantity.Value())/float64(oneMi))
 		}
 	}
 
