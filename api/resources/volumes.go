@@ -1,6 +1,8 @@
 package resources
 
 import (
+	"fmt"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"regexp"
 	"sort"
 	"strings"
@@ -22,6 +24,8 @@ type Volume struct {
 	ComponentName      string `json:"componentName,omitempty"`      // name of latest component using this Volume
 	StorageClassName   string `json:"storageClassName"`
 	Capacity           string `json:"capacity"` // size, e.g. 1Gi
+	RequestCapacity    string `json:"requestedCapacity"`
+	AllocatedCapacity  string `json:"allocatedCapacity,omitempty"`
 	PVC                string `json:"pvc"`
 	PV                 string `json:"pvToMatch"`
 }
@@ -32,9 +36,14 @@ func (builder *Builder) BuildVolumeResponse(pvc coreV1.PersistentVolumeClaim, pv
 		return nil, err
 	}
 
-	var capInStr string
+	var requestedCapInStr string
 	if cap, exist := pvc.Spec.Resources.Requests[coreV1.ResourceStorage]; exist {
-		capInStr = cap.String()
+		requestedCapInStr = tryFormatQuantity(cap)
+	}
+
+	var allocatedCapInStr string
+	if storage := pvc.Status.Capacity.Storage(); storage != nil {
+		allocatedCapInStr = tryFormatQuantity(*storage)
 	}
 
 	var compName, compNamespace string
@@ -50,8 +59,27 @@ func (builder *Builder) BuildVolumeResponse(pvc coreV1.PersistentVolumeClaim, pv
 		ComponentName:      compName,
 		ComponentNamespace: compNamespace,
 		IsInUse:            isInUse,
-		Capacity:           capInStr,
+		Capacity:           requestedCapInStr,
+		RequestCapacity:    requestedCapInStr,
+		AllocatedCapacity:  allocatedCapInStr,
 	}, nil
+}
+
+func tryFormatQuantity(quantity resource.Quantity) string {
+	rst := quantity.String()
+
+	if strings.HasSuffix(rst, "m") {
+		oneG := int64(1000000000)
+		oneM := int64(1000000)
+
+		if quantity.Value()/oneG > 0 {
+			rst = fmt.Sprintf("%.1fG", float64(quantity.Value())/float64(oneG))
+		} else if quantity.Value()/oneM > 0 {
+			rst = fmt.Sprintf("%.1fM", float64(quantity.Value())/float64(oneM))
+		}
+	}
+
+	return rst
 }
 
 func (builder *Builder) GetPVs() ([]coreV1.PersistentVolume, error) {
