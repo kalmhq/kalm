@@ -91,7 +91,7 @@ func buildNamespaceResMessage(c *Client, action string, objWatched interface{}) 
 	}
 
 	builder := resources.NewBuilder(c.K8sClientset, c.K8SClientConfig, log.New())
-	applicationDetails, err := builder.BuildApplicationDetails(*namespace)
+	applicationDetails, err := builder.BuildApplicationDetails(namespace)
 	if err != nil {
 		return nil, err
 	}

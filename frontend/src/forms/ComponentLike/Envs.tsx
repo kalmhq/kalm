@@ -8,7 +8,7 @@ import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { EnvItem, SharedEnv } from "types/application";
 import { RenderAutoCompleteFreeSolo } from "../Basic/autoComplete";
-import { KRenderTextField } from "../Basic/textfield";
+import { KRenderDebounceTextField } from "../Basic/textfield";
 import { ValidatorEnvName, ValidatorRequired } from "../validator";
 import { Alert } from "@material-ui/lab";
 
@@ -120,7 +120,7 @@ class RenderEnvs extends React.PureComponent<Props> {
                     label="Value"
                     margin
                     validate={ValidatorRequired}
-                    component={KRenderTextField}
+                    component={KRenderDebounceTextField}
                   />
                 </Grid>
                 <Grid item xs={2}>

@@ -3,7 +3,7 @@ import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { Field, FieldArray } from "redux-form/immutable";
 import { DeleteIcon, GithubIcon } from "widgets/Icon";
-import { KRenderTextField } from "../Basic/textfield";
+import { KRenderDebounceTextField } from "../Basic/textfield";
 import { ValidatorRequired } from "../validator";
 import { SSOGithubConnector } from "types/sso";
 import Box from "@material-ui/core/Box";
@@ -44,7 +44,7 @@ class RenderGithubConnectorOrganizations extends React.Component<any> {
             <Grid container spacing={2} key={field}>
               <Grid item xs={3}>
                 <Field
-                  component={KRenderTextField}
+                  component={KRenderDebounceTextField}
                   name={`${field}.name`}
                   label="Organization Name"
                   placeholder="Please type a organization name"
@@ -128,7 +128,7 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
           <Grid container spacing={2}>
             <Grid item xs={8}>
               <Field
-                component={KRenderTextField}
+                component={KRenderDebounceTextField}
                 name={`${field}.name`}
                 label="Name"
                 placeholder="Give a name of this connector"
@@ -140,7 +140,7 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
               <Grid container spacing={2}>
                 <Grid item xs>
                   <Field
-                    component={KRenderTextField}
+                    component={KRenderDebounceTextField}
                     name={`${field}.config.clientID`}
                     label="Client ID"
                     autoComplete="disabled"
@@ -152,7 +152,7 @@ class RenderGithubConnectorRaw extends React.PureComponent<Props> {
                 </Grid>
                 <Grid item xs>
                   <Field
-                    component={KRenderTextField}
+                    component={KRenderDebounceTextField}
                     autoComplete={"false"}
                     name={`${field}.config.clientSecret`}
                     label="Client Secret"

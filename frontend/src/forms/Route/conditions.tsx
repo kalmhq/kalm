@@ -6,7 +6,7 @@ import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { HttpRouteCondition } from "types/route";
 import { RenderSelectField } from "../Basic/select";
-import { KRenderTextField } from "../Basic/textfield";
+import { KRenderDebounceTextField } from "../Basic/textfield";
 import { ValidatorRequired } from "../validator";
 
 interface FieldArrayComponentHackType {
@@ -28,7 +28,12 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
             <div style={{ padding: "12px 0" }}>{rule.get("type")} Rule</div>
           </Grid>
           <Grid item md={2}>
-            <Field name={`${member}.name`} component={KRenderTextField} label="Name" validate={ValidatorRequired} />
+            <Field
+              name={`${member}.name`}
+              component={KRenderDebounceTextField}
+              label="Name"
+              validate={ValidatorRequired}
+            />
           </Grid>
           <Grid item md={2}>
             <Field
@@ -44,7 +49,12 @@ export class RenderHttpRouteConditions extends React.PureComponent<Props> {
             ></Field>
           </Grid>
           <Grid item md={2}>
-            <Field name={`${member}.value`} component={KRenderTextField} label="Value" validate={ValidatorRequired} />
+            <Field
+              name={`${member}.value`}
+              component={KRenderDebounceTextField}
+              label="Value"
+              validate={ValidatorRequired}
+            />
           </Grid>
           <Grid item md={2}>
             <IconButtonWithTooltip

@@ -16,10 +16,12 @@ limitations under the License.
 package controllers
 
 import (
+	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/kalmhq/kalm/controller/registry"
+	"github.com/heroku/docker-registry-client/registry"
 	"github.com/kalmhq/kalm/controller/utils"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -97,9 +99,15 @@ func (r *DockerRegistryReconcileTask) UpdateStatus() (err error) {
 		password = string(r.secret.Data["password"])
 	}
 
-	registryInstance := registry.NewRegistry(r.registry.Spec.Host, username, password)
+	host := r.registry.Spec.Host
 
-	if err := registryInstance.Ping(); err != nil {
+	if host == "" {
+		host = "https://registry-1.docker.io"
+	}
+
+	_, err = registry.New(host, username, password)
+
+	if err != nil {
 		registryCopy := r.registry.DeepCopy()
 		registryCopy.Status.AuthenticationVerified = false
 
@@ -119,7 +127,7 @@ func (r *DockerRegistryReconcileTask) UpdateStatus() (err error) {
 
 		message = message + err.Error()
 
-		r.Recorder.Event(r.registry, v1.EventTypeWarning, "AuthFailed", err.Error())
+		r.Recorder.Event(r.registry, v1.EventTypeWarning, "AuthFailed", message)
 		return nil
 	} else {
 		registryCopy := r.registry.DeepCopy()
@@ -130,37 +138,8 @@ func (r *DockerRegistryReconcileTask) UpdateStatus() (err error) {
 			return err
 		}
 	}
-	r.Recorder.Eventf(r.registry, v1.EventTypeNormal, "AuthSucceed", "Fetch repositories successfully.")
 
-	// fetch repos and tags on registry, this step would be slow, run this in a separated process
-	//go func() {
-	//	registryCopy := r.registry.DeepCopy()
-	//	repos, err := registryInstance.Repositories()
-	//
-	//	if err != nil {
-	//		r.Recorder.Event(r.registry, v1.EventTypeWarning, "ReadRepositoriesFailed", err.Error())
-	//		return
-	//	}
-	//
-	//	var repositories []*corev1alpha1.Repository
-	//	for _, repo := range repos {
-	//		tags, err := registryInstance.Tags(repo)
-	//
-	//		if err != nil {
-	//			r.Recorder.Event(r.registry, v1.EventTypeWarning, "ReadRepositoriesFailed", err.Error())
-	//			return
-	//		}
-	//
-	//		repositories = append(repositories, &corev1alpha1.Repository{
-	//			Name: repo,
-	//			Tags: []corev1alpha1.RepositoryTag{},
-	//		})
-	//	}
-	//
-	//	registryCopy.Status.Repositories = repositories
-	//	r.Recorder.Eventf(r.registry, v1.EventTypeNormal, "FetchRepositories", "%d repos found.", len(repos))
-	//}()
-
+	r.Recorder.Eventf(r.registry, v1.EventTypeNormal, "AuthSucceed", "Authenticate docker registry successfully.")
 	return nil
 }
 
@@ -220,7 +199,7 @@ func (r *DockerRegistryReconcileTask) DistributeSecrets() (err error) {
 
 		secret.Namespace = ns.Name
 		secret.Name = getImagePullSecretName(r.registry.Name)
-		secret.Type = v1.SecretTypeDockercfg
+		secret.Type = v1.SecretTypeDockerConfigJson
 
 		if secret.Data == nil {
 			secret.Data = make(map[string][]byte)
@@ -233,20 +212,37 @@ func (r *DockerRegistryReconcileTask) DistributeSecrets() (err error) {
 		secret.Labels["kalm-docker-registry"] = r.registry.Name
 		secret.Labels["kalm-docker-registry-image-pull-secret"] = "true"
 
-		data := map[string]struct {
+		auth := r.secret.Data["username"]
+		auth = append(auth, []byte(":")...)
+		auth = append(auth, r.secret.Data["password"]...)
+
+		var host = r.registry.Spec.Host
+
+		if host == "" {
+			host = "https://index.docker.io/v1/"
+		}
+
+		data := map[string]map[string]struct {
 			Username string `json:"username"`
 			Password string `json:"password"`
-			Email    string `json:"email"`
+			Auth     string `json:"auth"`
 		}{
-			r.registry.Spec.Host: {
-				Username: string(r.secret.Data["username"]),
-				Password: string(r.secret.Data["password"]),
-				Email:    "ci@example.com",
+			"auths": {
+				host: {
+					Username: string(r.secret.Data["username"]),
+					Password: string(r.secret.Data["password"]),
+					Auth:     base64.StdEncoding.EncodeToString(auth),
+				},
 			},
 		}
 
-		bts, _ := json.Marshal(data)
-		secret.Data[".dockercfg"] = bts
+		// Do not escape "<" or ">" or "&" char in data
+		var bts bytes.Buffer
+		encoder := json.NewEncoder(&bts)
+		encoder.SetEscapeHTML(false)
+		_ = encoder.Encode(data)
+
+		secret.Data[".dockerconfigjson"] = bts.Bytes()
 
 		if err := ctrl.SetControllerReference(r.registry, &secret, r.Scheme); err != nil {
 			r.WarningEvent(err, "unable to set owner for secret")

@@ -1,7 +1,7 @@
 import { Grid } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { RenderMutipleSelectField, RenderSelectField } from "forms/Basic/select";
-import { KRenderTextField } from "forms/Basic/textfield";
+import { KRenderDebounceTextField } from "forms/Basic/textfield";
 import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
@@ -78,7 +78,7 @@ class RoleBindingFormRaw extends React.PureComponent<Props> {
           <Field
             name="name"
             label={kind + " name"}
-            component={KRenderTextField}
+            component={KRenderDebounceTextField}
             validate={ValidatorRequired}
             placeholder={"Name of the " + kind}
           />

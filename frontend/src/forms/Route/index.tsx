@@ -31,6 +31,7 @@ import { Prompt } from "widgets/Prompt";
 import { RenderHttpRouteConditions } from "./conditions";
 import { RenderHttpRouteDestinations } from "./destinations";
 import { Targets } from "widgets/Targets";
+import { loadDomainDNSTypeInfo } from "actions/domain";
 
 const mapStateToProps = (state: RootState) => {
   const form = ROUTE_FORM_ID;
@@ -38,6 +39,8 @@ const mapStateToProps = (state: RootState) => {
   const syncErrors = getFormSyncErrors(form || ROUTE_FORM_ID)(state) as { [key: string]: any };
   const certifications = state.get("certificates").get("certificates");
   const domains: Set<string> = new Set();
+  const hosts = selector(state, "hosts") as Immutable.List<string>;
+  const domainStatus = state.get("domain").filter((status) => hosts.includes(status.get("domain")));
 
   certifications.forEach((x) => {
     x.get("domains")
@@ -50,7 +53,8 @@ const mapStateToProps = (state: RootState) => {
     syncErrors,
     schemes: selector(state, "schemes") as Immutable.List<string>,
     methodsMode: selector(state, "methodsMode") as string,
-    hosts: selector(state, "hosts") as Immutable.List<string>,
+    hosts,
+    domainStatus,
     destinations: selector(state, "destinations") as Immutable.List<HttpRouteDestination>,
     domains: Array.from(domains),
     ingressIP: state.get("cluster").get("info").get("ingressIP"),
@@ -90,11 +94,16 @@ export interface TutorialStateProps {
   tutorialState: TutorialState;
 }
 
+interface OwnProps {
+  isEdit?: boolean;
+}
+
 export interface ConnectedProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
 export interface Props
   extends InjectedFormProps<HttpRouteForm, TutorialStateProps>,
     ConnectedProps,
+    OwnProps,
     WithStyles<typeof styles> {}
 
 interface State {
@@ -104,6 +113,11 @@ interface State {
 
 const hostsValidators = [ValidatorRequired, KValidatorHostsWithWildcardPrefix];
 const pathsValidators = [ValidatorRequired, KValidatorPaths];
+const mockTargetDestinations = Immutable.fromJS([
+  { host: "web-v1-production", weight: 1 },
+  { host: "web-v2-dark-theme", weight: 1 },
+  { host: "web-v2-ligh-theme", weight: 1 },
+]);
 
 class RouteFormRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
@@ -112,6 +126,16 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
       isAdvancedPartUnfolded: false,
       isValidCertificationUnfolded: false,
     };
+  }
+
+  componentDidUpdate(prevProps: Props) {
+    const { hosts, dispatch } = this.props;
+    if (!hosts.equals(prevProps.hosts)) {
+      hosts.forEach((host) => {
+        dispatch(loadDomainDNSTypeInfo(host, "A"));
+        dispatch(loadDomainDNSTypeInfo(host, "CNAME"));
+      });
+    }
   }
 
   private canCertDomainsSuiteForHost = (domains: Immutable.List<string>, host: string) => {
@@ -243,9 +267,8 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
     }
     return (
       <Box p={2}>
-        <Grid container>
+        <Grid container spacing={2}>
           <Grid item xs={8}>
-            <Caption>You can add extra targets and assign weights to them.</Caption>
             <Box mt={2} mr={2} mb={2}>
               <Button
                 variant="outlined"
@@ -282,14 +305,12 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
             />
           </Grid>
           <Grid item xs={4}>
-            <Targets
-              activeNamespaceName={"activeNamespaceName"}
-              destinations={Immutable.fromJS([
-                { host: "web-v1-production", weight: 1 },
-                { host: "web-v2-dark-theme", weight: 1 },
-                { host: "web-v2-ligh-theme", weight: 1 },
-              ])}
-            />
+            <Box style={{ display: "flex", flexDirection: "column", justifyContent: "center", height: "100%" }}>
+              <Targets activeNamespaceName={"activeNamespaceName"} destinations={mockTargetDestinations} />
+              <Box pt={2}>
+                <Caption>You can add extra targets and assign weights to them.</Caption>
+              </Box>
+            </Box>
           </Grid>
         </Grid>
       </Box>
@@ -306,12 +327,17 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
       handleSubmit,
       dirty,
       submitSucceeded,
-      initialValues,
       change,
+      domainStatus,
+      isEdit,
     } = this.props;
-
-    // @ts-ignore
-    const isEdit = initialValues && initialValues!.get("name");
+    const loadingIconStatus = domainStatus.map((status) => {
+      return !status?.get("cname");
+    });
+    const errorIconStatus = domainStatus.map((status) => {
+      const aRecords = status?.get("aRecords");
+      return (!aRecords || !aRecords.includes(ingressIP)) && status.get("domain") !== ingressIP;
+    });
 
     return (
       <div className={classes.root}>
@@ -327,6 +353,12 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       InputLabelProps={{
                         shrink: true,
                       }}
+                      loadingIconTooltipText="checking domain status"
+                      errorIconTooltipText={`please add an A record with your dns provider, point to ${ingressIP}`}
+                      successIconTooltipText="the domain is successfully configured!"
+                      loadingIconStatus={loadingIconStatus}
+                      errorIconStatus={errorIconStatus}
+                      displayStatusIcon={true}
                       label="Hosts"
                       component={KFreeSoloAutoCompleteMultiValues}
                       name="hosts"
@@ -559,7 +591,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
 // The one inside reduxForm is normal usage
 // The one outside of reduxForm is to set tutorialState props for the form
 
-const form = reduxForm<HttpRouteForm, TutorialStateProps>({
+const form = reduxForm<HttpRouteForm, TutorialStateProps & OwnProps>({
   onSubmitFail: console.log,
   form: ROUTE_FORM_ID,
   enableReinitialize: true,

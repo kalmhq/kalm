@@ -15,7 +15,7 @@ import {
 } from "types/sso";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
-import { KRenderTextField } from "../Basic/textfield";
+import { KRenderDebounceTextField } from "../Basic/textfield";
 import { ValidateHost, ValidatorRequired } from "../validator";
 import { Alert } from "@material-ui/lab";
 import { shouldError } from "forms/common";
@@ -115,7 +115,7 @@ class SSOConfigFormRaw extends React.PureComponent<Props> {
                   <Field
                     name="domain"
                     label="Domain"
-                    component={KRenderTextField}
+                    component={KRenderDebounceTextField}
                     validate={fieldValidators}
                     autoFocus
                     placeholder="Please type a domain for your Single Sign-on configuration"
@@ -160,7 +160,7 @@ class SSOConfigFormRaw extends React.PureComponent<Props> {
                     endIcon={<GithubIcon />}
                     onClick={() => this.addConnector(SSO_CONNECTOR_TYPE_GITHUB)}
                   >
-                    Add Gitlab connector
+                    Add Github connector
                   </Button>
                 </Box>
                 <Box mr={2} display="inline-block">

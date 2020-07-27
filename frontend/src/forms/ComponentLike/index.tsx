@@ -44,7 +44,6 @@ import { RenderSelectField } from "../Basic/select";
 import {
   KRenderCommandTextField,
   KRenderDebounceTextField,
-  KRenderTextField,
   RenderComplexValueTextDebounceField,
   RenderComplexValueTextField,
 } from "../Basic/textfield";
@@ -766,7 +765,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
         <Grid item xs={12}>
           <Field
-            component={KRenderTextField}
+            component={KRenderDebounceTextField}
             name="terminationGracePeriodSeconds"
             label="Termination Grace Period Seconds"
             // validate={ValidatorRequired}
@@ -885,7 +884,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
         <Grid item xs={6}>
           <Field
-            component={KRenderTextField}
+            component={KRenderDebounceTextField}
             name="image"
             label="Image"
             margin

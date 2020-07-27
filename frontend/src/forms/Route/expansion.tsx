@@ -40,6 +40,7 @@ export interface ExpansionProps extends WithStyles<typeof styles> {
   subTitle?: string;
   children?: React.ReactNode;
   defaultUnfold?: boolean;
+  nested?: boolean;
 }
 
 interface State {
@@ -71,19 +72,20 @@ class ExpansionRaw extends React.PureComponent<ExpansionProps, State> {
 
   public render() {
     const { isUnfolded } = this.state;
-    const { classes, children, hasError } = this.props;
+    const { classes, children, hasError, nested } = this.props;
     return (
       <ExpansionPanel
         square
         className={clsx(classes.root)}
-        variant="outlined"
+        variant={nested ? "elevation" : "outlined"}
+        elevation={0}
         expanded={isUnfolded}
         onChange={() => this.setState({ isUnfolded: !isUnfolded })}
       >
         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />} className={clsx({ [classes.error]: hasError })}>
           {this.renderHeader()}
         </ExpansionPanelSummary>
-        <ExpansionPanelDetails classes={{ root: classes.detailsRoot }}>
+        <ExpansionPanelDetails classes={{ root: classes.detailsRoot }} style={nested ? { padding: 0 } : {}}>
           <Box width={1}>{children}</Box>
         </ExpansionPanelDetails>
       </ExpansionPanel>

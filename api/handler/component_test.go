@@ -1,14 +1,12 @@
 package handler
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/kalmhq/kalm/api/resources"
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
 	"github.com/stretchr/testify/suite"
 	coreV1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/http"
@@ -17,47 +15,86 @@ import (
 
 type ComponentTestSuite struct {
 	WithControllerTestSuite
+	namespace string
 }
 
 func TestComponentTestSuite(t *testing.T) {
 	suite.Run(t, new(ComponentTestSuite))
 }
 
-var nsName = "kalm-test"
-
 func (suite *ComponentTestSuite) SetupSuite() {
 	suite.WithControllerTestSuite.SetupSuite()
-
-	// prepare ns
-	suite.k8sClinet.CoreV1().Namespaces().Create(context.Background(), &coreV1.Namespace{
-		ObjectMeta: v1.ObjectMeta{
-			Name: nsName,
-		},
-	}, v1.CreateOptions{})
-
-	suite.Eventually(func() bool {
-		ns, err := suite.k8sClinet.CoreV1().Namespaces().Get(context.Background(), nsName, v1.GetOptions{})
-		return err == nil && ns != nil
-	})
+	suite.namespace = "kalm-test"
+	suite.ensureNamespaceExist(suite.namespace)
 }
 
 func (suite *ComponentTestSuite) TeardownSuite() {
-	suite.k8sClinet.CoreV1().Namespaces().Delete(context.Background(), nsName, v1.DeleteOptions{})
-
-	suite.Eventually(func() bool {
-		_, err := suite.k8sClinet.CoreV1().Namespaces().Get(context.Background(), nsName, v1.GetOptions{})
-		return errors.IsNotFound(err)
-	})
+	suite.ensureNamespaceDeleted(suite.namespace)
 }
 
-//func (suite *ComponentTestSuite) TestGetEmptyComponentList() {
-//	rec := suite.NewRequest(http.MethodGet, "/v1alpha1/applications/testKalm/components", nil)
-//
-//	var res []resources.Component
-//	rec.BodyAsJSON(&res)
-//
-//	suite.Equal(200, rec.Code)
-//}
+func (suite *ComponentTestSuite) TestGetEmptyComponentList() {
+	rec := suite.NewRequest(http.MethodGet, fmt.Sprintf("/v1alpha1/applications/%s/components", suite.namespace), nil)
+
+	var res []resources.Component
+	rec.BodyAsJSON(&res)
+
+	suite.Equal(200, rec.Code)
+}
+
+func (suite *ComponentTestSuite) TestBasicRequestOfComponents() {
+	// Create
+	rec := suite.NewRequest(
+		http.MethodPost,
+		fmt.Sprintf("/v1alpha1/applications/%s/components", suite.namespace),
+		resources.Component{
+			Name: "foobar",
+			ComponentSpec: v1alpha1.ComponentSpec{
+				Image: "foo",
+			},
+		},
+	)
+	var res resources.Component
+	rec.BodyAsJSON(&res)
+	suite.Equal(201, rec.Code)
+	suite.Equal("foo", res.Image)
+
+	// Get
+	rec = suite.NewRequest(http.MethodGet,
+		fmt.Sprintf("/v1alpha1/applications/%s/components/%s", suite.namespace, "foobar"),
+		nil,
+	)
+	rec.BodyAsJSON(&res)
+	suite.Equal(200, rec.Code)
+	suite.Equal("foo", res.Image)
+
+	// Update
+	rec = suite.NewRequest(http.MethodPut,
+		fmt.Sprintf("/v1alpha1/applications/%s/components/%s", suite.namespace, "foobar"),
+		resources.Component{
+			Name: "foobar",
+			ComponentSpec: v1alpha1.ComponentSpec{
+				Image: "foo2",
+			},
+		},
+	)
+	rec.BodyAsJSON(&res)
+	suite.Equal(200, rec.Code)
+	suite.Equal("foo2", res.Image)
+
+	// Delete
+	rec = suite.NewRequest(http.MethodDelete,
+		fmt.Sprintf("/v1alpha1/applications/%s/components/%s", suite.namespace, "foobar"),
+		nil,
+	)
+	suite.Equal(204, rec.Code)
+
+	// Get
+	rec = suite.NewRequest(http.MethodGet,
+		fmt.Sprintf("/v1alpha1/applications/%s/components/%s", suite.namespace, "foobar"),
+		nil,
+	)
+	suite.Equal(404, rec.Code)
+}
 
 func (suite *ComponentTestSuite) TestCreateComponentWithPVCAsVolume() {
 
@@ -80,7 +117,7 @@ func (suite *ComponentTestSuite) TestCreateComponentWithPVCAsVolume() {
 	compInJSON, err := json.Marshal(reqComp)
 	suite.Nil(err)
 
-	apiURL := fmt.Sprintf("/v1alpha1/applications/%s/components", nsName)
+	apiURL := fmt.Sprintf("/v1alpha1/applications/%s/components", suite.namespace)
 
 	rec := suite.NewRequest(http.MethodPost, apiURL, string(compInJSON))
 
@@ -90,7 +127,7 @@ func (suite *ComponentTestSuite) TestCreateComponentWithPVCAsVolume() {
 	suite.Equal(201, rec.Code)
 
 	// check if volume in Comp is as expected
-	compList, err := suite.getComponentList(nsName)
+	compList, err := suite.getComponentList(suite.namespace)
 	suite.Nil(err)
 	suite.Equal(1, len(compList.Items))
 
@@ -138,7 +175,8 @@ func (suite *ComponentTestSuite) TestCreateComponentWithReUsingPVCAsVolume() {
 			},
 		},
 	}
-	_, err := suite.k8sClinet.CoreV1().PersistentVolumes().Create(context.Background(), &pv, v1.CreateOptions{})
+
+	err := suite.Create(&pv)
 	suite.Nil(err)
 
 	reqComp := resources.Component{
@@ -160,7 +198,7 @@ func (suite *ComponentTestSuite) TestCreateComponentWithReUsingPVCAsVolume() {
 	compInJSON, err := json.Marshal(reqComp)
 	suite.Nil(err)
 
-	apiURL := fmt.Sprintf("/v1alpha1/applications/%s/components", nsName)
+	apiURL := fmt.Sprintf("/v1alpha1/applications/%s/components", suite.namespace)
 
 	rec := suite.NewRequest(http.MethodPost, apiURL, string(compInJSON))
 
@@ -170,7 +208,7 @@ func (suite *ComponentTestSuite) TestCreateComponentWithReUsingPVCAsVolume() {
 	suite.Equal(201, rec.Code)
 
 	// check if volume in Comp is as expected
-	comp, err := suite.getComponent(nsName, reqComp.Name)
+	comp, err := suite.getComponent(suite.namespace, reqComp.Name)
 	suite.Nil(err)
 
 	expectedPVCName := res.Volumes[0].PVC

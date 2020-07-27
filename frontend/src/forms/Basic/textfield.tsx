@@ -130,7 +130,6 @@ export class RenderComplexValueTextField extends React.PureComponent<withDebounc
       meta: { error },
       showError,
     } = this.props;
-
     const inputProps: Partial<OutlinedInputProps> = {};
     if (endAdornment) {
       inputProps.endAdornment = <InputAdornment position="end">{endAdornment}</InputAdornment>;

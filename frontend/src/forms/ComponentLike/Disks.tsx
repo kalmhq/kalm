@@ -9,7 +9,7 @@ import { getComponentFormVolumeOptions } from "selectors/component";
 import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { RenderSelectField } from "../Basic/select";
-import { KRenderTextField, RenderComplexValueTextDebounceField } from "../Basic/textfield";
+import { KRenderDebounceTextField, RenderComplexValueTextDebounceField } from "../Basic/textfield";
 import { ValidatorRequired, ValidatorVolumeSize } from "../validator";
 import { KTooltip } from "forms/Application/KTooltip";
 import HelpIcon from "@material-ui/icons/Help";
@@ -22,6 +22,7 @@ import {
   VolumeTypeTemporaryDisk,
   VolumeTypeTemporaryMemory,
 } from "types/componentTemplate";
+import { H6, Caption } from "widgets/Label";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -65,14 +66,30 @@ class RenderVolumes extends React.PureComponent<Props> {
 
     const options: {
       value: string;
-      text: string;
+      text: React.ReactNode;
+      selectedText: string;
     }[] = [];
 
     volumeOptions.forEach((vo) => {
       if (vo.get("name") === currentClaimName || !usingClaimNames[vo.get("name")]) {
         options.push({
           value: vo.get("name"),
-          text: vo.get("name"),
+          text: (
+            <Box pt={1} pb={1}>
+              <H6>{vo.get("name")}</H6>
+              <Box>
+                {vo.get("componentNamespace") ? <Caption>Namespace: {vo.get("componentNamespace")}</Caption> : null}
+              </Box>
+              <Box>{vo.get("componentName") ? <Caption>Component: {vo.get("componentName")}</Caption> : null}</Box>
+              <Box>
+                <Caption>Storage Class: {vo.get("storageClassName")}</Caption>
+              </Box>
+              <Box>
+                <Caption>size: {vo.get("capacity")}</Caption>
+              </Box>
+            </Box>
+          ),
+          selectedText: vo.get("name"),
         });
       }
     });
@@ -118,7 +135,7 @@ class RenderVolumes extends React.PureComponent<Props> {
         ]}
       />,
       <Field
-        component={KRenderTextField}
+        component={KRenderDebounceTextField}
         name={`${member}.path`}
         label="Mount Path"
         margin

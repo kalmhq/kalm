@@ -87,7 +87,7 @@ type Application struct {
 	Name string `json:"name"`
 }
 
-func (builder *Builder) BuildApplicationDetails(namespace coreV1.Namespace) (*ApplicationDetails, error) {
+func (builder *Builder) BuildApplicationDetails(namespace *coreV1.Namespace) (*ApplicationDetails, error) {
 	nsName := namespace.Name
 	roles := make([]string, 0, 2)
 
@@ -218,7 +218,7 @@ func (builder *Builder) BuildApplicationListResponse(namespaceList coreV1.Namesp
 			continue
 		}
 
-		item, err := builder.BuildApplicationDetails(ns)
+		item, err := builder.BuildApplicationDetails(&ns)
 
 		if err != nil {
 			return nil, err
@@ -230,7 +230,7 @@ func (builder *Builder) BuildApplicationListResponse(namespaceList coreV1.Namesp
 	return apps, nil
 }
 
-func GetPodStatus(pod coreV1.Pod, events []coreV1.Event) *PodStatus {
+func GetPodStatus(pod coreV1.Pod, events []coreV1.Event, workloadType v1alpha1.WorkloadType) *PodStatus {
 	var ips []string
 
 	for _, x := range pod.Status.PodIPs {
@@ -313,10 +313,12 @@ func GetPodStatus(pod coreV1.Pod, events []coreV1.Event) *PodStatus {
 		warnings = filterPodWarningEvents(events, []coreV1.Pod{pod})
 	}
 
+	status := getPodStatusPhase(pod, warnings, workloadType)
+
 	return &PodStatus{
 		Name:              pod.Name,
 		Node:              pod.Spec.NodeName,
-		Status:            getPodStatusPhase(pod, warnings),
+		Status:            status,
 		StatusText:        statusText,
 		Restarts:          restarts,
 		Phase:             pod.Status.Phase,
