@@ -1,0 +1,56 @@
+version: 2.1
+description: |
+  Help deploy Component in Kalm.
+executors:
+  default:
+    description: |
+      Docker image with curl
+    docker:
+    - image: tutum/curl:alpine
+commands: # a reusable command with parameters
+  deploy:
+    parameters:
+      KALM_API_ADDRESS:
+        type: string
+      KALM_DEPLOY_KEY:
+        type: string
+      KALM_APP:
+        type: string
+      KALM_COMPONENT:
+        type: string
+      KALM_COMPONENT_IMG_TAG:
+        type: string
+    steps:
+    - run: |
+        resp_code=$(curl -s -o resp.log -w "%{http_code}" -XPOST << parameters.KALM_API_ADDRESS >>/__kalm_webhook/deploy?deploy-key=<< parameters.KALM_DEPLOY_KEY >>\&app=<< parameters.KALM_APP >>\&component=<< parameters.KALM_COMPONENT >>\&image-tag=<< parameters.KALM_COMPONENT_IMG_TAG >>)
+
+        if [ $resp_code == 200 ] 
+        then
+          exit 0
+        else
+          cat resp.log
+          exit 1
+        fi
+jobs:
+  run:
+    description: |
+      Call deploy webhook of Kalm to trigger deploy of Component.
+    executor: default
+    parameters:
+      KALM_API_ADDRESS:
+        type: string
+      KALM_DEPLOY_KEY:
+        type: string
+      KALM_APP:
+        type: string
+      KALM_COMPONENT:
+        type: string
+      KALM_COMPONENT_IMG_TAG:
+        type: string
+    steps:
+    - deploy:
+        KALM_API_ADDRESS: << parameters.KALM_API_ADDRESS >>
+        KALM_DEPLOY_KEY: << parameters.KALM_DEPLOY_KEY >>
+        KALM_APP: << parameters.KALM_APP >>
+        KALM_COMPONENT: << parameters.KALM_COMPONENT >>
+        KALM_COMPONENT_IMG_TAG: << parameters.KALM_COMPONENT_IMG_TAG >>
