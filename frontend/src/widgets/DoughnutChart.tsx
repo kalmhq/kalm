@@ -94,7 +94,7 @@ class DoughnutChartRaw extends React.PureComponent<Props, State> {
     const dataSum = data.reduce((a, b) => a + b, 0);
     const chartData: chartjs.ChartData = this.getData();
     return (
-      <div className={classes.root} style={{ width: size }}>
+      <div className={classes.root} style={{ width: size, minWidth: size }}>
         {title && <CenterCaption>{title}</CenterCaption>}
         <div className={classes.pieChartWrapper}>
           <div className={classes.icon}>{icon ? icon : null}</div>
