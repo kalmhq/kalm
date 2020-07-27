@@ -392,13 +392,19 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       InputLabelProps={{
                         shrink: true,
                       }}
-                      label="Paths"
+                      label="Path Prefixes"
                       component={KFreeSoloAutoCompleteMultiValues}
                       name="paths"
                       margin="normal"
                       validate={pathsValidators}
-                      placeholder="Type a path"
+                      placeholder="e.g. /foo/bar"
                       helperText='Allow to configure multiple paths. Each path must begin with "/".'
+                    />
+                    <Field
+                      component={KBoolCheckboxRender}
+                      name="stripPath"
+                      label={<span>Strip path prefix</span>}
+                      helperText={'If enabled, Path prefixes will be rewrite to "/" when request reaches targets.'}
                     />
                   </Box>
                 }
