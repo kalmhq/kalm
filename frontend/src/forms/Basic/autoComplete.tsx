@@ -8,8 +8,7 @@ import {
   withStyles,
   Typography,
   Divider,
-  CircularProgress,
-  Tooltip,
+  Popover,
 } from "@material-ui/core";
 import {
   Autocomplete,
@@ -26,7 +25,9 @@ import { ID } from "utils";
 import { AutocompleteProps, RenderGroupParams } from "@material-ui/lab/Autocomplete/Autocomplete";
 import { theme } from "theme/theme";
 import { Caption } from "widgets/Label";
-import { KalmApplicationIcon, KalmLogoIcon, ErrorIcon, CheckCircleIcon } from "widgets/Icon";
+import { KalmApplicationIcon, KalmLogoIcon } from "widgets/Icon";
+import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
+import { FlexRowItemCenterBox } from "widgets/Box";
 
 export interface ReduxFormMultiTagsFreeSoloAutoCompleteProps
   extends WrappedFieldProps,
@@ -135,12 +136,8 @@ export interface KFreeSoloAutoCompleteMultiValuesProps<T>
     Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText"> {
   InputLabelProps?: {};
   disabled?: boolean;
-  loadingIconStatus?: Immutable.Map<string, boolean>;
-  errorIconStatus?: Immutable.Map<string, boolean>;
-  displayStatusIcon?: boolean;
-  loadingIconTooltipText?: string;
-  errorIconTooltipText?: string;
-  successIconTooltipText?: string;
+  statusIcons?: Immutable.Map<string, any>;
+  statusPopover?: Immutable.Map<string, any>;
 }
 
 const KFreeSoloAutoCompleteMultiValuesStyles = (theme: Theme) =>
@@ -164,12 +161,8 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
     placeholder,
     InputLabelProps,
     disabled,
-    loadingIconStatus,
-    errorIconStatus,
-    displayStatusIcon,
-    loadingIconTooltipText,
-    errorIconTooltipText,
-    successIconTooltipText,
+    statusIcons,
+    statusPopover,
   } = props;
 
   const errors = error as (string | undefined)[] | undefined | string;
@@ -216,21 +209,40 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
       onInputChange={() => {}}
       renderTags={(value: string[], getTagProps) => {
         return value.map((option: string, index: number) => {
-          let icon, tooltipTitle;
-          if (loadingIconStatus && loadingIconStatus.get(option)) {
-            icon = <CircularProgress size={20} />;
-            tooltipTitle = loadingIconTooltipText ? loadingIconTooltipText : "Loading";
-          } else if (errorIconStatus && errorIconStatus.get(option)) {
-            icon = <ErrorIcon style={{ marginRight: -6 }} />;
-            tooltipTitle = errorIconTooltipText ? errorIconTooltipText : "Error";
-          } else {
-            icon = <CheckCircleIcon style={{ marginRight: -6 }} />;
-            tooltipTitle = successIconTooltipText ? successIconTooltipText : "Success";
+          let icon = statusIcons && statusIcons.get(option) ? statusIcons.get(option) : undefined;
+          if (statusPopover && statusPopover.get(option)) {
+            icon = (
+              <PopupState variant="popover" popupId={`${option}-popover`} key={index}>
+                {(popupState) => {
+                  const trigger = bindTrigger(popupState);
+                  return (
+                    <>
+                      <FlexRowItemCenterBox onMouseEnter={trigger.onClick} {...trigger}>
+                        {statusIcons && statusIcons.get(option) ? statusIcons.get(option) : undefined}
+                      </FlexRowItemCenterBox>
+                      <Popover
+                        {...bindPopover(popupState)}
+                        anchorOrigin={{
+                          vertical: "bottom",
+                          horizontal: "center",
+                        }}
+                        transformOrigin={{
+                          vertical: "top",
+                          horizontal: "center",
+                        }}
+                      >
+                        {statusPopover.get(option)}
+                      </Popover>
+                    </>
+                  );
+                }}
+              </PopupState>
+            );
           }
 
-          const chip = (
+          return (
             <Chip
-              icon={displayStatusIcon ? icon : undefined}
+              icon={icon}
               variant="outlined"
               label={option}
               classes={{ root: clsx({ [classes.error]: errorsIsArray && errorsArray[index] }) }}
@@ -238,16 +250,6 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
               {...getTagProps({ index })}
             />
           );
-
-          if (displayStatusIcon) {
-            return (
-              <Tooltip title={tooltipTitle} aria-label="loading" key={index}>
-                {chip}
-              </Tooltip>
-            );
-          }
-
-          return chip;
         });
       }}
       renderInput={(params) => {

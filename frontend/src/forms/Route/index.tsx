@@ -1,4 +1,5 @@
-import { Box, Button, Collapse, Grid, Icon, Link, Typography } from "@material-ui/core";
+import { Box, Button, Collapse, Grid, Icon, Link, CircularProgress } from "@material-ui/core";
+import Typography from "@material-ui/core/Typography";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { Alert, AlertTitle } from "@material-ui/lab";
 import { KFreeSoloAutoCompleteMultiValues } from "forms/Basic/autoComplete";
@@ -32,6 +33,10 @@ import { RenderHttpRouteConditions } from "./conditions";
 import { RenderHttpRouteDestinations } from "./destinations";
 import { Targets } from "widgets/Targets";
 import { loadDomainDNSInfo } from "actions/domain";
+import { ErrorIcon, CheckCircleIcon, CopyIcon } from "widgets/Icon";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import copy from "copy-to-clipboard";
+import { setSuccessNotificationAction } from "actions/notification";
 
 const mapStateToProps = (state: RootState) => {
   const form = ROUTE_FORM_ID;
@@ -330,12 +335,44 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
       domainStatus,
       isEdit,
     } = this.props;
-    const loadingIconStatus = domainStatus.map((status) => {
-      return !status?.get("cname");
-    });
-    const errorIconStatus = domainStatus.map((status) => {
+
+    let statusIcons = Immutable.Map();
+    let statusPopover = Immutable.Map();
+    domainStatus.forEach((status) => {
+      const domain = status.get("domain");
+      const isLoading = !status?.get("cname");
       const aRecords = status?.get("aRecords");
-      return (!aRecords || !aRecords.includes(ingressIP)) && status.get("domain") !== ingressIP;
+      const isError = (!aRecords || !aRecords.includes(ingressIP)) && domain !== ingressIP;
+
+      if (isLoading) {
+        statusIcons = statusIcons.set(
+          domain,
+          <CircularProgress size={20} style={{ marginLeft: 2, marginRight: -4 }} />,
+        );
+        statusPopover = statusPopover.set(domain, <Box p={2}>checking domain status</Box>);
+      } else if (isError) {
+        statusIcons = statusIcons.set(domain, <ErrorIcon style={{ marginRight: -6 }} />);
+        statusPopover = statusPopover.set(
+          domain,
+          <Box p={2}>
+            please add an A record with your dns provider, point to <strong>{ingressIP}</strong>{" "}
+            <IconButtonWithTooltip
+              tooltipTitle="Copy"
+              aria-label="copy"
+              size="small"
+              onClick={() => {
+                copy(ingressIP);
+                this.props.dispatch(setSuccessNotificationAction("Copied successful!"));
+              }}
+            >
+              <CopyIcon fontSize="small" />
+            </IconButtonWithTooltip>
+          </Box>,
+        );
+      } else {
+        statusIcons = statusIcons.set(domain, <CheckCircleIcon style={{ marginRight: -6 }} />);
+        statusPopover = statusPopover.set(domain, <Box p={2}>the domain is successfully configured!</Box>);
+      }
     });
 
     return (
@@ -352,12 +389,8 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       InputLabelProps={{
                         shrink: true,
                       }}
-                      loadingIconTooltipText="checking domain status"
-                      errorIconTooltipText={`please add an A record with your dns provider, point to ${ingressIP}`}
-                      successIconTooltipText="the domain is successfully configured!"
-                      loadingIconStatus={loadingIconStatus}
-                      errorIconStatus={errorIconStatus}
-                      displayStatusIcon={true}
+                      statusIcons={statusIcons}
+                      statusPopover={statusPopover}
                       label="Hosts"
                       component={KFreeSoloAutoCompleteMultiValues}
                       name="hosts"
