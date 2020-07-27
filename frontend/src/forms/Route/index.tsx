@@ -33,7 +33,7 @@ import { RenderHttpRouteConditions } from "./conditions";
 import { RenderHttpRouteDestinations } from "./destinations";
 import { Targets } from "widgets/Targets";
 import { loadDomainDNSInfo } from "actions/domain";
-import { ErrorIcon, CheckCircleIcon, CopyIcon } from "widgets/Icon";
+import { WarningIcon, CheckCircleIcon, CopyIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import copy from "copy-to-clipboard";
 import { setSuccessNotificationAction } from "actions/notification";
@@ -351,7 +351,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
         );
         statusPopover = statusPopover.set(domain, <Box p={2}>checking domain status</Box>);
       } else if (isError) {
-        statusIcons = statusIcons.set(domain, <ErrorIcon style={{ marginRight: -6 }} />);
+        statusIcons = statusIcons.set(domain, <WarningIcon color="action" style={{ marginRight: -6 }} />);
         statusPopover = statusPopover.set(
           domain,
           <Box p={2}>
@@ -397,37 +397,22 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       margin="normal"
                       validate={hostsValidators}
                       placeholder="Type a host"
-                      // helperText={
-                      //   <>
-                      //     Your cluster ip is{" "}
-                      //     <Link
-                      //       href="#"
-                      //       onClick={() => {
-                      //         change("hosts", Immutable.List([ingressIP]));
-                      //       }}
-                      //     >
-                      //       {ingressIP}
-                      //     </Link>
-                      //     . If you don't have any DNS record point to this ip, you can use the ip directly in this
-                      //     field.
-                      //   </>
-                      // }
+                      helperText={
+                        <>
+                          Your cluster ip is{" "}
+                          <Link
+                            href="#"
+                            onClick={() => {
+                              change("hosts", Immutable.List([ingressIP]));
+                            }}
+                          >
+                            {ingressIP}
+                          </Link>
+                          . If you don't have any DNS record point to this ip, you can use the ip directly in this
+                          field.
+                        </>
+                      }
                     />
-                    <Box mt="-4px" mb="4px" pl="14px" pr="14px">
-                      <Caption color="textSecondary">
-                        Your cluster ip is{" "}
-                        <Link
-                          href="#"
-                          onClick={() => {
-                            change("hosts", Immutable.List([ingressIP]));
-                          }}
-                        >
-                          {ingressIP}
-                        </Link>
-                        . If you don't have any DNS record point to this ip, you can use the ip directly in this field.
-                      </Caption>
-                    </Box>
-
                     <Field
                       InputLabelProps={{
                         shrink: true,
