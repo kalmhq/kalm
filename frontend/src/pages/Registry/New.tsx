@@ -6,11 +6,11 @@ import { submit } from "redux-form";
 import { TDispatchProp } from "types";
 import { closeDialogAction } from "actions/dialog";
 import { createRegistryAction, updateRegistryAction } from "actions/registries";
-import { RegistryForm } from "../../forms/Registry";
+import { RegistryForm } from "forms/Registry";
 import { newEmptyRegistry, RegistryType } from "types/registry";
 import { CustomizedButton } from "widgets/Button";
 import { ControlledDialog } from "widgets/ControlledDialog";
-import { REGISTRY_FORM_ID } from "../../forms/formIDs";
+import { REGISTRY_FORM_ID } from "forms/formIDs";
 
 export const RegistryNewModalID = "RegistryNewModalID";
 
