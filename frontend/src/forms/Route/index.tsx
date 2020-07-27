@@ -427,18 +427,16 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       ]}
                     />
                     <Collapse in={methodsMode === methodsModeSpecific}>
-                      <div>
-                        <Field
-                          title="Choose methods you need"
-                          component={KCheckboxGroupRender}
-                          componentType={"Checkbox"}
-                          validate={methodsMode === methodsModeSpecific ? ValidatorListNotEmpty : []}
-                          name="methods"
-                          options={httpMethods.map((m) => {
-                            return { value: m, label: m };
-                          })}
-                        />
-                      </div>
+                      <Field
+                        title="Choose methods you need"
+                        component={KCheckboxGroupRender}
+                        componentType={"Checkbox"}
+                        validate={methodsMode === methodsModeSpecific ? ValidatorListNotEmpty : []}
+                        name="methods"
+                        options={httpMethods.map((m) => {
+                          return { value: m, label: m };
+                        })}
+                      />
                     </Collapse>
                     <Field
                       title="Allow traffic through"
@@ -459,17 +457,15 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       ]}
                     />
                     <Collapse in={schemes.includes("http") && schemes.includes("https")}>
-                      <div>
-                        <Field
-                          component={KBoolCheckboxRender}
-                          name="httpRedirectToHttps"
-                          label={
-                            <span>
-                              Redirect all <strong>http</strong> request to <strong>https</strong> with 301 status code.
-                            </span>
-                          }
-                        />
-                      </div>
+                      <Field
+                        component={KBoolCheckboxRender}
+                        name="httpRedirectToHttps"
+                        label={
+                          <span>
+                            Redirect all <strong>http</strong> request to <strong>https</strong> with 301 status code.
+                          </span>
+                        }
+                      />
                     </Collapse>
                     <Collapse in={schemes.includes("https")}>
                       <Alert className="alert" severity="info">
