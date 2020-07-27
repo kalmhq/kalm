@@ -1,0 +1,30 @@
+name: 'Deploy to Kalm'
+description: 'call deploy callbacks in Kalm'
+inputs:
+  KALM_API_ADDRESS:  # id of input
+    description: 'kalm api address'
+    required: true
+  KALM_DEPLOY_KEY:
+    description: ''
+    required: true
+  KALM_APP:
+    description: ''
+    required: true
+  KALM_COMPONENT:
+    description: ''
+    required: true
+  KALM_COMPONENT_IMG_TAG:
+    description: ''
+    required: true
+# outputs:
+#   time: # id of output
+#     description: 'The time we greeted you'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.KALM_API_ADDRESS }}
+    - ${{ inputs.KALM_DEPLOY_KEY }}
+    - ${{ inputs.KALM_APP }}
+    - ${{ inputs.KALM_COMPONENT }}
+    - ${{ inputs.KALM_COMPONENT_IMG_TAG }}
