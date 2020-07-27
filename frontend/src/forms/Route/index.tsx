@@ -31,7 +31,7 @@ import { Prompt } from "widgets/Prompt";
 import { RenderHttpRouteConditions } from "./conditions";
 import { RenderHttpRouteDestinations } from "./destinations";
 import { Targets } from "widgets/Targets";
-import { loadDomainDNSTypeInfo } from "actions/domain";
+import { loadDomainDNSInfo } from "actions/domain";
 
 const mapStateToProps = (state: RootState) => {
   const form = ROUTE_FORM_ID;
@@ -132,8 +132,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
     const { hosts, dispatch } = this.props;
     if (!hosts.equals(prevProps.hosts)) {
       hosts.forEach((host) => {
-        dispatch(loadDomainDNSTypeInfo(host, "A"));
-        dispatch(loadDomainDNSTypeInfo(host, "CNAME"));
+        dispatch(loadDomainDNSInfo(host));
       });
     }
   }

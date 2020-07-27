@@ -26,8 +26,7 @@ import { ID } from "utils";
 import { AutocompleteProps, RenderGroupParams } from "@material-ui/lab/Autocomplete/Autocomplete";
 import { theme } from "theme/theme";
 import { Caption } from "widgets/Label";
-import { KalmApplicationIcon, KalmLogoIcon, ErrorIcon } from "widgets/Icon";
-import { SuccessBadge } from "widgets/Badge";
+import { KalmApplicationIcon, KalmLogoIcon, ErrorIcon, CheckCircleIcon } from "widgets/Icon";
 
 export interface ReduxFormMultiTagsFreeSoloAutoCompleteProps
   extends WrappedFieldProps,
@@ -219,13 +218,13 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
         return value.map((option: string, index: number) => {
           let icon, tooltipTitle;
           if (loadingIconStatus && loadingIconStatus.get(option)) {
-            icon = <CircularProgress size={16} />;
+            icon = <CircularProgress size={20} />;
             tooltipTitle = loadingIconTooltipText ? loadingIconTooltipText : "Loading";
           } else if (errorIconStatus && errorIconStatus.get(option)) {
-            icon = <ErrorIcon />;
+            icon = <ErrorIcon style={{ marginRight: -6 }} />;
             tooltipTitle = errorIconTooltipText ? errorIconTooltipText : "Error";
           } else {
-            icon = <SuccessBadge />;
+            icon = <CheckCircleIcon style={{ marginRight: -6 }} />;
             tooltipTitle = successIconTooltipText ? successIconTooltipText : "Success";
           }
 
