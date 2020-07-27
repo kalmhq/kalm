@@ -5,6 +5,8 @@ export const capitalize = (str: string) => {
 export const pluralize = (str: string, num: number) => {
   if (num > 1) {
     return `${num} ${str}s`;
+  } else if (num === 0) {
+    return `No ${str}s`;
   }
   return `${num} ${str}`;
 };
