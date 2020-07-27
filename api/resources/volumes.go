@@ -73,9 +73,9 @@ func tryFormatQuantity(quantity resource.Quantity) string {
 		oneMi := int64(1024*1024)
 
 		if quantity.Value()/oneGi > 0 {
-			rst = fmt.Sprintf("%.1fG", float64(quantity.Value())/float64(oneGi))
+			rst = fmt.Sprintf("%.1fGi", float64(quantity.Value())/float64(oneGi))
 		} else if quantity.Value()/oneMi > 0 {
-			rst = fmt.Sprintf("%.1fM", float64(quantity.Value())/float64(oneMi))
+			rst = fmt.Sprintf("%.1fMi", float64(quantity.Value())/float64(oneMi))
 		}
 	}
 
