@@ -2,7 +2,7 @@ import { Box, Button, Collapse, Grid, Icon, Link, Typography } from "@material-u
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { Alert, AlertTitle } from "@material-ui/lab";
 import { KFreeSoloAutoCompleteMultiValues } from "forms/Basic/autoComplete";
-import { KCheckboxGroupRender } from "forms/Basic/checkbox";
+import { KBoolCheckboxRender, KCheckboxGroupRender } from "forms/Basic/checkbox";
 import { Link as RouteLink } from "react-router-dom";
 import { KRadioGroupRender } from "forms/Basic/radio";
 import { shouldError } from "forms/common";
@@ -19,7 +19,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { State as TutorialState } from "reducers/tutorial";
-import { arrayPush, InjectedFormProps } from "redux-form";
+import { arrayPush, change, InjectedFormProps } from "redux-form";
 import { Field, FieldArray, formValueSelector, getFormSyncErrors, reduxForm } from "redux-form/immutable";
 import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
@@ -41,6 +41,7 @@ const mapStateToProps = (state: RootState) => {
   const domains: Set<string> = new Set();
   const hosts = selector(state, "hosts") as Immutable.List<string>;
   const domainStatus = state.get("domain").filter((status) => hosts.includes(status.get("domain")));
+  const httpRedirectToHttps = !!selector(state, "httpRedirectToHttps") as boolean;
 
   certifications.forEach((x) => {
     x.get("domains")
@@ -54,6 +55,7 @@ const mapStateToProps = (state: RootState) => {
     schemes: selector(state, "schemes") as Immutable.List<string>,
     methodsMode: selector(state, "methodsMode") as string,
     hosts,
+    httpRedirectToHttps,
     domainStatus,
     destinations: selector(state, "destinations") as Immutable.List<HttpRouteDestination>,
     domains: Array.from(domains),
@@ -129,12 +131,17 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
   }
 
   componentDidUpdate(prevProps: Props) {
-    const { hosts, dispatch } = this.props;
+    const { schemes, httpRedirectToHttps, hosts, dispatch, form } = this.props;
     if (!hosts.equals(prevProps.hosts)) {
       hosts.forEach((host) => {
         dispatch(loadDomainDNSTypeInfo(host, "A"));
         dispatch(loadDomainDNSTypeInfo(host, "CNAME"));
       });
+    }
+
+    // set httpRedirectToHttps to false if http or https is not in schemes
+    if (!(schemes.includes("http") && schemes.includes("https")) && httpRedirectToHttps) {
+      dispatch(change(form, "httpRedirectToHttps", false));
     }
   }
 
@@ -451,20 +458,19 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                         },
                       ]}
                     />
-                    {/* TODO: wait backend fix this. */}
-                    {/* <Collapse in={schemes.includes("http")}>
-            <div>
-              <Field
-                component={KBoolCheckboxRender}
-                name="httpRedirectToHttps"
-                label={
-                  <span>
-                    Redirect all <strong>http</strong> request to <strong>https</strong> with 301 status code.
-                  </span>
-                }
-              />
-            </div>
-          </Collapse> */}
+                    <Collapse in={schemes.includes("http") && schemes.includes("https")}>
+                      <div>
+                        <Field
+                          component={KBoolCheckboxRender}
+                          name="httpRedirectToHttps"
+                          label={
+                            <span>
+                              Redirect all <strong>http</strong> request to <strong>https</strong> with 301 status code.
+                            </span>
+                          }
+                        />
+                      </div>
+                    </Collapse>
                     <Collapse in={schemes.includes("https")}>
                       <Alert className="alert" severity="info">
                         You choosed https. Please note that the TLS termination will be happened in this route level,
