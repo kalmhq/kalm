@@ -62,6 +62,20 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
     return `${runningCount}/${component.get("pods").size}`;
   };
 
+  private renderPods() {
+    const { component, application } = this.props;
+
+    return (
+      <Expansion title="pods" defaultUnfold nested>
+        <PodsTable
+          activeNamespaceName={application.get("name")}
+          pods={component.get("pods")}
+          workloadType={component.get("workloadType") as WorkloadType}
+        />
+      </Expansion>
+    );
+  }
+
   private renderComponentDetail = () => {
     const { application, dispatch, component } = this.props;
     return (
@@ -103,13 +117,7 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
         </Box>
         <ComponentBrifeInfo component={component} activeNamespaceName={application.get("name")} />
 
-        <Box pt={2} pb={2}>
-          <PodsTable
-            activeNamespaceName={application.get("name")}
-            pods={component.get("pods")}
-            workloadType={component.get("workloadType") as WorkloadType}
-          />
-        </Box>
+        {this.renderPods()}
       </Box>
     );
   };
