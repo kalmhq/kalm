@@ -17,6 +17,6 @@ func TestTryFormatQuantity(t *testing.T) {
 
 	q1Formatted := tryFormatQuantity(q1)
 	q2Formatted := tryFormatQuantity(q2)
-	assert.Equal(t, "102.4M", q1Formatted)
-	assert.Equal(t, "102.4M", q2Formatted)
+	assert.Equal(t, "102.4Mi", q1Formatted)
+	assert.Equal(t, "102.4Mi", q2Formatted)
 }
