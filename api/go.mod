@@ -35,6 +35,7 @@ require (
 	google.golang.org/appengine v1.6.6 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/square/go-jose.v2 v2.5.1 // indirect
+	gotest.tools v2.2.0+incompatible
 	istio.io/api v0.0.0-20200722065756-9d7f2a3afc5b // indirect
 	istio.io/gogo-genproto v0.0.0-20200720193312-b523a30fe746 // indirect
 	k8s.io/api v0.18.6
