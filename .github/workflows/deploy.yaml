@@ -1,10 +1,10 @@
 name: Call Kalm Deploy Webhook
 
-on: 
-  push:
-    branches:
-      - master
-      - github-action
+on: [push]
+  # push:
+  #   branches:
+  #     - master
+  #     - github-action
 
 jobs:
   deploy_job:
