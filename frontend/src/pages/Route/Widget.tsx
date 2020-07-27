@@ -124,7 +124,7 @@ export const RouteWidgets = ({
       {routes.size > 0 ? (
         <RouteWidget routes={routes} activeNamespaceName={activeNamespaceName} />
       ) : (
-        <CenterTypography>No Route</CenterTypography>
+        <CenterTypography>No Routes</CenterTypography>
       )}
     </>
   );

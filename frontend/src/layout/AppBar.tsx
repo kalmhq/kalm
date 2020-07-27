@@ -211,7 +211,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
                   } else if (index === 0) {
                     return (
                       <Link key={index} className={classes.barTitle} to="/" onClick={() => blinkTopProgressAction()}>
-                        Kalm Dashboard
+                        Kalm
                       </Link>
                     );
                   } else if (index + 1 === pathArray.length) {

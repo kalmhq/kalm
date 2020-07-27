@@ -147,34 +147,6 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
     return (
       <>
         {this.renderEditContentDialog()}
-        <Box mb={2}>
-          <Button
-            variant="outlined"
-            color="primary"
-            startIcon={<Icon>add</Icon>}
-            size="small"
-            onClick={() =>
-              dispatch(
-                arrayPush(
-                  form,
-                  "preInjectedFiles",
-                  Immutable.Map({
-                    readonly: true,
-                    content: "",
-                    mountPath: "",
-                  }),
-                ),
-              )
-            }
-          >
-            Add
-          </Button>
-          {error ? (
-            <Box mb={2}>
-              <Alert severity="error">{error}</Alert>
-            </Box>
-          ) : null}
-        </Box>
         {fields.map((member, index) => {
           const injectedFile = fields.get(index);
 
@@ -204,6 +176,34 @@ class RenderPreInjectedFile extends React.PureComponent<Props, State> {
             </Grid>
           );
         })}
+        <Box mb={2}>
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<Icon>add</Icon>}
+            size="small"
+            onClick={() =>
+              dispatch(
+                arrayPush(
+                  form,
+                  "preInjectedFiles",
+                  Immutable.Map({
+                    readonly: true,
+                    content: "",
+                    mountPath: "",
+                  }),
+                ),
+              )
+            }
+          >
+            New File
+          </Button>
+          {error ? (
+            <Box mb={2}>
+              <Alert severity="error">{error}</Alert>
+            </Box>
+          ) : null}
+        </Box>
       </>
     );
   }
