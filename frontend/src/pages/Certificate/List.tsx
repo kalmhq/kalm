@@ -1,4 +1,4 @@
-import { Box, createStyles, Theme, WithStyles, withStyles, Button, Link } from "@material-ui/core";
+import { Box, createStyles, Theme, WithStyles, withStyles, Button } from "@material-ui/core";
 import { deleteCertificateAction, setEditCertificateModalAction } from "actions/certificate";
 import { openDialogAction } from "actions/dialog";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
@@ -108,13 +108,13 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderDeleteConfirmDialog = () => {
-    const { isDeleteConfirmDialogOpen } = this.state;
-
+    const { isDeleteConfirmDialogOpen, deletingCertificate } = this.state;
+    const certName = deletingCertificate ? ` '${deletingCertificate.get("name")}'` : "";
     return (
       <ConfirmDialog
         open={isDeleteConfirmDialogOpen}
         onClose={this.closeDeleteConfirmDialog}
-        title="Are you sure to delete this Certificate?"
+        title={`Are you sure you want to delete the certificate${certName}?`}
         content=""
         onAgree={this.confirmDelete}
       />
@@ -139,8 +139,9 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     try {
       const { deletingCertificate } = this.state;
       if (deletingCertificate) {
-        await dispatch(deleteCertificateAction(deletingCertificate.get("name")));
-        await dispatch(setSuccessNotificationAction("Successfully delete a certificate"));
+        const certName = deletingCertificate.get("name");
+        await dispatch(deleteCertificateAction(certName));
+        await dispatch(setSuccessNotificationAction(`Successfully deleted certificate '${certName}'`));
       }
     } catch {
       dispatch(setErrorNotificationAction());
@@ -174,11 +175,11 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderType = (rowData: RowData) => {
-    return rowData.get("isSelfManaged") ? "UPLOADED" : "MANAGED";
+    return rowData.get("isSelfManaged") ? "Externally Uploaded" : "Let's Encrypt";
   };
 
   private renderIsSignedByTrustedCA = (rowData: RowData) => {
-    return rowData.get("isSignedByTrustedCA") ? "True" : "False";
+    return rowData.get("isSignedByTrustedCA") ? "Yes" : "No";
   };
 
   private renderExpireTimestamp = (rowData: RowData) => {
@@ -214,13 +215,13 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
         render: this.renderType,
       },
       {
-        title: "Is Singed by Trusted CA",
+        title: "Signed by Trusted CA",
         field: "isSignedByTrustedCA",
         sorting: false,
         render: this.renderIsSignedByTrustedCA,
       },
       {
-        title: "Expire Time",
+        title: "Expiration Time",
         field: "expireTimestamp",
         sorting: false,
         render: this.renderExpireTimestamp,
@@ -276,28 +277,9 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderInfoBox() {
-    const title = "Certificate References";
+    const title = "Certificates";
 
-    const options = [
-      {
-        title: (
-          <Link href="#" target="_blank">
-            Link to docks
-          </Link>
-        ),
-        content: "",
-      },
-      {
-        title: (
-          <Link href="#" target="_blank">
-            Link to tutorial
-          </Link>
-        ),
-        content: "",
-      },
-    ];
-
-    return <InfoBox title={title} options={options}></InfoBox>;
+    return <InfoBox title={title} options={[]} guideLink="https://kalm.dev/docs/certs"></InfoBox>;
   }
 
   public render() {

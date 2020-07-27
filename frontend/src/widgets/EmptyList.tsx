@@ -3,11 +3,15 @@ import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { Body2, H5 } from "./Label";
+import { Subtitle1 } from "./Label";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
+    hackBody: {
+      "font-size": "16px", //HACK - discuss re-factoring of global font sizes in theme
+      color: theme.palette.text.secondary,
+    },
   });
 
 const mapStateToProps = (state: RootState) => {
@@ -30,7 +34,7 @@ class EmptyListRaw extends React.PureComponent<Props, State> {
   }
 
   public render() {
-    const { image, title, content, button } = this.props;
+    const { classes, image, title, content, button } = this.props;
     return (
       <Paper square variant="outlined">
         <Box p={2}>
@@ -38,10 +42,10 @@ class EmptyListRaw extends React.PureComponent<Props, State> {
             {image ? image : null}
           </Box>
           <Box p={2} display="flex" justifyContent="center">
-            <H5>{title}</H5>
+            <Subtitle1>{title}</Subtitle1>
           </Box>
           <Box pb={2} display="flex" justifyContent="center">
-            <Body2>{content}</Body2>
+            <Box className={classes.hackBody}>{content}</Box>
           </Box>
           <Box p={2} display="flex" justifyContent="center">
             {button}

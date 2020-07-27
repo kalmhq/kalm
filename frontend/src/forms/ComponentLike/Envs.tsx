@@ -81,7 +81,7 @@ class RenderEnvs extends React.PureComponent<Props> {
             )
           }
         >
-          Add
+          New Variable
         </Button>
       </Box>
     );
@@ -94,7 +94,6 @@ class RenderEnvs extends React.PureComponent<Props> {
     } = this.props;
     return (
       <>
-        {this.renderAddButton()}
         {error ? (
           <Box mb={2}>
             <Alert severity="error">{error}</Alert>
@@ -137,6 +136,7 @@ class RenderEnvs extends React.PureComponent<Props> {
             </Fade>
           );
         })}
+        {this.renderAddButton()}
       </>
     );
   }
