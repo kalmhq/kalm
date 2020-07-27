@@ -30,27 +30,6 @@ export const AllHttpMethods = Immutable.List<string>([
   "TRACE",
 ]);
 
-export const newEmptyRouteForm = (): HttpRouteForm => {
-  return Immutable.fromJS({
-    namespace: "default",
-    name: "http-route-" + ID(),
-    hosts: [],
-    paths: ["/"],
-    conditions: [],
-    destinations: [],
-    httpRedirectToHttps: false,
-    schemes: ["http"],
-    methods: ["GET"],
-    timeout: 5,
-    retries: {
-      attempts: 3,
-      perTtyTimeoutSeconds: 2,
-      retryOn: ["gateway-error", "connect-failure", "refused-stream"],
-    },
-    methodsMode: methodsModeAll,
-  });
-};
-
 export type HttpRouteCondition = ImmutableMap<{
   type: string;
   name: string;
@@ -116,6 +95,25 @@ export type HttpRoute = ImmutableMap<HttpRouteContent>;
 export const methodsModeAll = "all";
 export const methodsModeSpecific = "specific";
 export const httpMethods = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD", "TRACE", "CONNECT"];
+
+export const newEmptyRouteForm: HttpRouteForm = Immutable.fromJS({
+  namespace: "default",
+  name: "http-route-" + ID(),
+  hosts: [],
+  paths: ["/"],
+  conditions: [],
+  destinations: [],
+  httpRedirectToHttps: false,
+  schemes: ["http"],
+  methods: ["GET"],
+  timeout: 5,
+  retries: {
+    attempts: 3,
+    perTtyTimeoutSeconds: 2,
+    retryOn: ["gateway-error", "connect-failure", "refused-stream"],
+  },
+  methodsMode: methodsModeAll,
+});
 
 export interface HttpRouteFormContent extends HttpRouteContent {
   methodsMode: string;

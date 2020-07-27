@@ -18,8 +18,6 @@ const styles = (theme: Theme) =>
 interface Props extends WithStyles<typeof styles>, WithNamespaceProps {}
 
 class RouteNewRaw extends React.PureComponent<Props> {
-  private route = newEmptyRouteForm();
-
   private onSubmit = async (route: HttpRouteForm) => {
     const { activeNamespaceName, dispatch } = this.props;
 
@@ -48,7 +46,11 @@ class RouteNewRaw extends React.PureComponent<Props> {
     return (
       <BasePage leftDrawer={<ApplicationSidebar />} secondHeaderLeft={<Namespaces />} secondHeaderRight="Create Route">
         <Box p={2}>
-          <RouteForm onSubmit={this.onSubmit} onSubmitSuccess={this.onSubmitSuccess} initialValues={this.route} />
+          <RouteForm
+            onSubmit={this.onSubmit}
+            onSubmitSuccess={this.onSubmitSuccess}
+            initialValues={newEmptyRouteForm}
+          />
         </Box>
       </BasePage>
     );
