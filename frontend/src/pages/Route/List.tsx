@@ -260,6 +260,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
                   sorting: false,
                   searchable: false,
                   render: this.renderActions,
+                  cellStyle: { minWidth: 432 },
                 },
               ]}
               data={tableData}
