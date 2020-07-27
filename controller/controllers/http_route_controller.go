@@ -149,7 +149,7 @@ func (r *HttpRouteReconcilerTask) buildIstioHttpRoute(route *corev1alpha1.HttpRo
 
 // Kalm route level http to https redirect is achieved by adding envoy filter for istio ingress gateway
 //
-func (r *HttpRouteReconcilerTask) buildHttpsRedirectEnvoyFilter(route *corev1alpha1.HttpRoute) *v1alpha32.EnvoyFilter {
+func (r *HttpRouteReconcilerTask) buildHttpsRedirectEnvoyFilter(route *corev1alpha1.HttpRoute) (*v1alpha32.EnvoyFilter, error) {
 	filter := &v1alpha32.EnvoyFilter{
 		ObjectMeta: metaV1.ObjectMeta{
 			Namespace: istioNamespace,
@@ -194,7 +194,16 @@ func (r *HttpRouteReconcilerTask) buildHttpsRedirectEnvoyFilter(route *corev1alp
 			},
 		},
 	}
-	return filter
+
+	// TODO route and filter are in different namespace. Can't set owner relationship for them.
+	// This part will be removed or uncomment after we have a decision of http route scope.
+
+	//if err := ctrl.SetControllerReference(route, filter, r.Scheme); err != nil {
+	//	r.EmitWarningEvent(route, err, "unable to set owner for https redirect envoy filter")
+	//	return nil, err
+	//}
+
+	return filter, nil
 }
 
 func (r *HttpRouteReconcilerTask) buildIstioHttpRoutes(route *corev1alpha1.HttpRoute) []*istioNetworkingV1Beta1.HTTPRoute {
@@ -255,6 +264,7 @@ func sortRoutes(a, b *istioNetworkingV1Beta1.HTTPRoute) bool {
 }
 
 func (r *HttpRouteReconcilerTask) Run(ctrl.Request) error {
+
 	var routes corev1alpha1.HttpRouteList
 	if err := r.Reader.List(r.ctx, &routes); err != nil {
 		return err
@@ -308,19 +318,28 @@ func (r *HttpRouteReconcilerTask) Run(ctrl.Request) error {
 		filterName := getHttpsRedirectEnvoyFilterName(&route)
 		if route.Spec.HttpRedirectToHttps {
 			if _, ok := httpsRedirectFilterMap[filterName]; !ok {
-				filter := r.buildHttpsRedirectEnvoyFilter(&route)
+				filter, err := r.buildHttpsRedirectEnvoyFilter(&route)
+
+				if err != nil {
+					return err
+				}
+
 				if err := r.Create(r.ctx, filter); err != nil {
 					r.EmitWarningEvent(&route, err, "Create Https Redirect filter Error")
 					return err
 				}
+			} else {
+				delete(httpsRedirectFilterMap, filterName)
 			}
-		} else {
-			if filter, ok := httpsRedirectFilterMap[filterName]; ok {
-				if err := r.Delete(r.ctx, filter); err != nil {
-					r.EmitWarningEvent(&route, err, "Delete Https Redirect filter Error")
-					return err
-				}
-			}
+		}
+	}
+
+	// clean left unused envoy filters
+	for filterName := range httpsRedirectFilterMap {
+		filter := httpsRedirectFilterMap[filterName]
+
+		if err := r.Delete(r.ctx, filter); err != nil {
+			return err
 		}
 	}
 
