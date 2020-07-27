@@ -208,7 +208,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     });
 
     if (podCount === 0) {
-      return "0 Pods";
+      return "no pods";
     }
 
     const tooltipTitle = `Total ${podCount} pods are found. \n${successCount} ready, ${pendingCount} pending, ${errorCount} failed. Click to view details.`;
