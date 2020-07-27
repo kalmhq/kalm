@@ -493,55 +493,77 @@ func (r *HttpRouteReconcilerTask) BuildMatches(route *corev1alpha1.HttpRoute) []
 	)
 
 	for _, path := range spec.Paths {
-		for _, method := range spec.Methods {
+		var methodRegexp strings.Builder
+		methodRegexp.WriteString("^(")
 
-			match := &istioNetworkingV1Beta1.HTTPMatchRequest{
-				Method: &istioNetworkingV1Beta1.StringMatch{
-					MatchType: &istioNetworkingV1Beta1.StringMatch_Exact{
-						Exact: string(method),
-					},
+		for i, method := range spec.Methods {
+			methodRegexp.WriteString(string(method))
+
+			if i < len(spec.Methods)-1 {
+				methodRegexp.WriteString("|")
+			}
+		}
+
+		methodRegexp.WriteString(")$")
+
+		match := &istioNetworkingV1Beta1.HTTPMatchRequest{
+			Method: &istioNetworkingV1Beta1.StringMatch{
+				MatchType: &istioNetworkingV1Beta1.StringMatch_Regex{
+					Regex: methodRegexp.String(),
+				},
+			},
+		}
+
+		match.Gateways = make([]string, 0, 2)
+
+		for _, scheme := range spec.Schemes {
+			if scheme == "http" {
+				match.Gateways = append(
+					match.Gateways,
+					HTTP_GATEWAY_NAMESPACED_NAME.String(),
+				)
+			} else if scheme == "https" {
+				match.Gateways = append(
+					match.Gateways,
+					HTTPS_GATEWAY_NAMESPACED_NAME.String(),
+				)
+			}
+		}
+
+		// TODO check the path is a regexp or not.
+
+		// https://github.com/istio/istio/blob/6d6a23d1a644a19cec87d7641c4747135d35692b/pilot/pkg/networking/core/v1alpha3/route/route.go#L1026
+		// This is a hack of istio route translation logic, which I think is wrong.
+		// The isCacheAllMatch doesn't consider about m.Methods and will ignore all match cases behind.
+		// If the path is prefix "/", leave the Uri nil to bypass this logic.
+		if path != "/" {
+			match.Uri = &istioNetworkingV1Beta1.StringMatch{
+				MatchType: &istioNetworkingV1Beta1.StringMatch_Prefix{
+					Prefix: path,
+				},
+			}
+		}
+
+		r.PatchConditionsToHttpMatch(match, spec)
+		res = append(res, match)
+
+		// Prevent double slash after strip path rewrite
+		// Assume we have a route that enabled strip path and has a path prefix with /bbbb
+		//   Request #1 with path /bbbbaaaa will be rewritten to /aaaa, this is CORRECT
+		//   Request #2 with path /bbbb/aaaa will be rewritten to //aaaa, which has double slashes and it is WRONG
+		// To solve this, add another route with path prefix /bbbb/
+		//   Request #1 doesn't match this route. Skip
+		//   Request #2 will be rewritten to /aaaa, which is correct.
+		if route.Spec.StripPath && path != "/" {
+			copyedMatch := match.DeepCopy()
+
+			copyedMatch.Uri = &istioNetworkingV1Beta1.StringMatch{
+				MatchType: &istioNetworkingV1Beta1.StringMatch_Prefix{
+					Prefix: path + "/",
 				},
 			}
 
-			match.Gateways = make([]string, 0, 2)
-
-			for _, scheme := range spec.Schemes {
-				if scheme == "http" {
-					//if spec.HttpRedirectToHttps {
-					//	match.Gateways = append(
-					//		match.Gateways,
-					//		HTTP_REDIRECT_GATEWAY_NAMESPACED_NAME.String(),
-					//	)
-					//} else {
-					match.Gateways = append(
-						match.Gateways,
-						HTTP_GATEWAY_NAMESPACED_NAME.String(),
-					)
-					//}
-				} else {
-					match.Gateways = append(
-						match.Gateways,
-						HTTPS_GATEWAY_NAMESPACED_NAME.String(),
-					)
-				}
-			}
-
-			// TODO check the path is a regexp or not.
-
-			// https://github.com/istio/istio/blob/6d6a23d1a644a19cec87d7641c4747135d35692b/pilot/pkg/networking/core/v1alpha3/route/route.go#L1026
-			// This is a hack of istio route translation logic, which I think is wrong.
-			// The isCacheAllMatch doesn't consider about m.Methods and will ignore all match cases behind.
-			// If the path is prefix "/", leave the Uri nil to bypass this logic.
-			if path != "/" {
-				match.Uri = &istioNetworkingV1Beta1.StringMatch{
-					MatchType: &istioNetworkingV1Beta1.StringMatch_Prefix{
-						Prefix: path,
-					},
-				}
-			}
-
-			r.PatchConditionsToHttpMatch(match, spec)
-			res = append(res, match)
+			res = append(res, copyedMatch)
 		}
 	}
 
