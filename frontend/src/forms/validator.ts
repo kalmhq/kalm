@@ -190,14 +190,15 @@ export const ValidateHost = (value: string) => {
   return undefined;
 };
 
+export const regExpIp = new RegExp(
+  "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
+);
+
 const validateHostWithWildcardPrefix = (value: string) => {
   if (value.length === 0 || value.length > 511) {
     return "Host length must be between 1 and 511 characters.";
   }
 
-  var regExpIp = new RegExp(
-    "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
-  );
   var regResultIp = regExpIp.exec(value);
   var regExpHostname = new RegExp(
     /^(\*\.)?(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/,

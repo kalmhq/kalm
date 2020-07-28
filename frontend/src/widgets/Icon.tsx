@@ -45,6 +45,9 @@ const styles = (theme: Theme) =>
     secondary: {
       color: theme.palette.secondary.main,
     },
+    warning: {
+      color: theme.palette.warning.main,
+    },
     disabled: {
       color: grey[400],
     },
@@ -66,12 +69,12 @@ type Overwrite<T, U> = Pick<T, Exclude<keyof T, keyof U>> & U;
 
 type IconsProps = WithStyles<typeof styles> &
   SvgIconProps & {
-    color?: "inherit" | "primary" | "secondary" | "action" | "disabled" | "error" | "success";
+    color?: "inherit" | "primary" | "secondary" | "action" | "disabled" | "error" | "success" | "warning";
   };
 
 type ColorIconsProps = Overwrite<
   IconsProps,
-  { color?: "inherit" | "primary" | "secondary" | "action" | "disabled" | "error" | "success" | "default" }
+  { color?: "inherit" | "primary" | "secondary" | "action" | "disabled" | "error" | "success" | "default" | "warning" }
 >;
 
 const getClassNameByColorName = (props: ColorIconsProps, defaultColor?: string) => {
@@ -98,6 +101,9 @@ const getClassNameByColorName = (props: ColorIconsProps, defaultColor?: string) 
       break;
     case "default":
       className = classes.default;
+      break;
+    case "warning":
+      className = classes.warning;
       break;
     case "inherit":
     default:
@@ -163,6 +169,11 @@ export const CheckCircleIcon = withStyles(styles)((props: ColorIconsProps) => {
 export const ErrorIcon = withStyles(styles)((props: ColorIconsProps) => {
   const { classes, fontSize, style } = props;
   return <Error className={classes.error} fontSize={fontSize} style={style} />;
+});
+
+export const WarningIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { classes, fontSize, style } = props;
+  return <Error className={classes.warning} fontSize={fontSize} style={style} />;
 });
 
 export const ArrowBackIcon = withStyles(styles)((props: ColorIconsProps) => {

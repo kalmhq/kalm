@@ -8,8 +8,6 @@ import {
   withStyles,
   Typography,
   Divider,
-  CircularProgress,
-  Tooltip,
 } from "@material-ui/core";
 import {
   Autocomplete,
@@ -26,8 +24,7 @@ import { ID } from "utils";
 import { AutocompleteProps, RenderGroupParams } from "@material-ui/lab/Autocomplete/Autocomplete";
 import { theme } from "theme/theme";
 import { Caption } from "widgets/Label";
-import { KalmApplicationIcon, KalmLogoIcon, ErrorIcon } from "widgets/Icon";
-import { SuccessBadge } from "widgets/Badge";
+import { KalmApplicationIcon, KalmLogoIcon } from "widgets/Icon";
 
 export interface ReduxFormMultiTagsFreeSoloAutoCompleteProps
   extends WrappedFieldProps,
@@ -136,12 +133,7 @@ export interface KFreeSoloAutoCompleteMultiValuesProps<T>
     Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText"> {
   InputLabelProps?: {};
   disabled?: boolean;
-  loadingIconStatus?: Immutable.Map<string, boolean>;
-  errorIconStatus?: Immutable.Map<string, boolean>;
-  displayStatusIcon?: boolean;
-  loadingIconTooltipText?: string;
-  errorIconTooltipText?: string;
-  successIconTooltipText?: string;
+  icons?: Immutable.List<any>;
 }
 
 const KFreeSoloAutoCompleteMultiValuesStyles = (theme: Theme) =>
@@ -165,12 +157,7 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
     placeholder,
     InputLabelProps,
     disabled,
-    loadingIconStatus,
-    errorIconStatus,
-    displayStatusIcon,
-    loadingIconTooltipText,
-    errorIconTooltipText,
-    successIconTooltipText,
+    icons,
   } = props;
 
   const errors = error as (string | undefined)[] | undefined | string;
@@ -217,21 +204,9 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
       onInputChange={() => {}}
       renderTags={(value: string[], getTagProps) => {
         return value.map((option: string, index: number) => {
-          let icon, tooltipTitle;
-          if (loadingIconStatus && loadingIconStatus.get(option)) {
-            icon = <CircularProgress size={16} />;
-            tooltipTitle = loadingIconTooltipText ? loadingIconTooltipText : "Loading";
-          } else if (errorIconStatus && errorIconStatus.get(option)) {
-            icon = <ErrorIcon />;
-            tooltipTitle = errorIconTooltipText ? errorIconTooltipText : "Error";
-          } else {
-            icon = <SuccessBadge />;
-            tooltipTitle = successIconTooltipText ? successIconTooltipText : "Success";
-          }
-
-          const chip = (
+          return (
             <Chip
-              icon={displayStatusIcon ? icon : undefined}
+              icon={icons ? icons.get(index) : undefined}
               variant="outlined"
               label={option}
               classes={{ root: clsx({ [classes.error]: errorsIsArray && errorsArray[index] }) }}
@@ -239,16 +214,6 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
               {...getTagProps({ index })}
             />
           );
-
-          if (displayStatusIcon) {
-            return (
-              <Tooltip title={tooltipTitle} aria-label="loading" key={index}>
-                {chip}
-              </Tooltip>
-            );
-          }
-
-          return chip;
         });
       }}
       renderInput={(params) => {

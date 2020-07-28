@@ -1,4 +1,4 @@
-import { Box, Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { Box, Button, createStyles, Theme, withStyles, WithStyles, Typography } from "@material-ui/core";
 import { deleteRouteAction } from "actions/routes";
 import { blinkTopProgressAction } from "actions/settings";
 import { push } from "connected-react-router";
@@ -20,6 +20,8 @@ import { CopyAsCurl } from "widgets/CopyAsCurl";
 import { EmptyList } from "widgets/EmptyList";
 import { ForwardIcon, KalmRoutesIcon } from "widgets/Icon";
 import { indigo } from "@material-ui/core/colors";
+import DomainStatus from "widgets/DomainStatus";
+import { FlexRowItemCenterBox } from "widgets/Box";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -44,7 +46,12 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     return (
       <Box>
         {row.get("hosts").map((h) => {
-          return <Box key={h}>{h}</Box>;
+          return (
+            <FlexRowItemCenterBox key={h}>
+              <DomainStatus domain={h} />
+              <Typography>{h}</Typography>
+            </FlexRowItemCenterBox>
+          );
         })}
       </Box>
     );
@@ -264,6 +271,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
                   sorting: false,
                   searchable: false,
                   render: this.renderActions,
+                  cellStyle: { minWidth: 432 },
                 },
               ]}
               data={tableData}

@@ -1,5 +1,5 @@
 import { createMuiTheme } from "@material-ui/core";
-import { green, grey, indigo, red } from "@material-ui/core/colors";
+import { green, grey, indigo, red, yellow } from "@material-ui/core/colors";
 import colors from "./colors";
 
 export const primaryBackgroud = indigo[50];
@@ -23,6 +23,7 @@ let themeRaw = createMuiTheme({
     success: {
       main: green[700],
     },
+    warning: { main: yellow[700] },
     error: {
       main: red[700],
     },
