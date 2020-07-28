@@ -11,10 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     name: A job to deploy new Kalm Component
     steps:
-      # To use this repository's private action,
-      # you must check out the repository
-      - name: Checkout
-        uses: actions/checkout@v2
       - name: Use Deploy Action
         uses: kalmhq/kalm-deploy-action@v0.0.1 # Uses public action
         id: deploy
