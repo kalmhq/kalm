@@ -333,6 +333,10 @@ func GetPodStatus(pod coreV1.Pod, events []coreV1.Event, workloadType v1alpha1.W
 }
 
 func findPods(list *coreV1.PodList, componentName string) []coreV1.Pod {
+	if list == nil {
+		return nil
+	}
+
 	var res []coreV1.Pod
 
 	for i := range list.Items {

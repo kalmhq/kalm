@@ -2,6 +2,8 @@ package resources
 
 import (
 	"encoding/json"
+	"k8s.io/apimachinery/pkg/api/resource"
+	"strconv"
 	"strings"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
@@ -50,9 +52,36 @@ func (builder *Builder) GetComponentListChannel(namespaces string, listOptions m
 }
 
 type Component struct {
+	ComponentSpec `json:",inline"`
+	Plugins       []runtime.RawExtension `json:"plugins,omitempty"`
+	Name          string                 `json:"name"`
+}
+
+// almost direct copy of v1alpha1.ComponentSpec
+// except for CPU & Memory
+type ComponentSpec struct {
 	v1alpha1.ComponentSpec `json:",inline"`
-	Plugins                []runtime.RawExtension `json:"plugins,omitempty"`
-	Name                   string                 `json:"name"`
+
+	CPU *KalmQuantity `json:"cpu,omitempty"`
+
+	Memory *KalmQuantity `json:"memory,omitempty"`
+}
+
+type KalmQuantity struct {
+	IsStorage bool
+	Quantity  resource.Quantity
+}
+
+func (k KalmQuantity) MarshalText() ([]byte, error) {
+	quantity := k.Quantity
+
+	if k.IsStorage {
+		capInStr := strconv.FormatInt(quantity.Value(), 10)
+		return []byte(capInStr), nil
+	} else {
+		capInStr := strconv.FormatInt(quantity.MilliValue(), 10)
+		return []byte(capInStr), nil
+	}
 }
 
 type ComponentDetails struct {
@@ -151,7 +180,7 @@ func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component, res
 	details = &ComponentDetails{
 		Component: &Component{
 			Name:          component.Name,
-			ComponentSpec: component.Spec,
+			ComponentSpec: ComponentSpec{ComponentSpec: component.Spec},
 			Plugins:       plugins,
 		},
 		Services: servicesStatus,
@@ -161,6 +190,14 @@ func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component, res
 		},
 		IstioMetricHistories: istioMetricRst,
 		Pods:                 podsStatus,
+	}
+
+	if component.Spec.CPU != nil {
+		details.Component.ComponentSpec.CPU = &KalmQuantity{false, *component.Spec.CPU}
+	}
+
+	if component.Spec.Memory != nil {
+		details.Component.ComponentSpec.Memory = &KalmQuantity{true, *component.Spec.Memory}
 	}
 
 	return details, nil
