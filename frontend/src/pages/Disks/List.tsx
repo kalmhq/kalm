@@ -202,10 +202,6 @@ export class VolumesRaw extends React.Component<Props, States> {
     return rowData.get("isInUse") ? "True" : "False";
   };
 
-  private renderPhase = (rowData: RowData) => {
-    return rowData.get("phase");
-  };
-
   private renderCapacity = (rowData: RowData) => {
     return sizeStringToGi(rowData.get("capacity")) + " Gi";
   };
@@ -281,7 +277,6 @@ export class VolumesRaw extends React.Component<Props, States> {
                 { title: "Is In Use", field: "isInUse", sorting: false, render: this.renderUse },
                 { title: "Application", field: "componentNamespace", sorting: false, render: this.renderApplication },
                 { title: "Component Name", field: "componentName", sorting: false, render: this.renderComponent },
-                { title: "Phase", field: "phase", sorting: false, render: this.renderPhase },
                 { title: "Capacity", field: "capacity", sorting: false, render: this.renderCapacity },
                 {
                   title: "Actions",
