@@ -150,8 +150,8 @@ const sideBarData = [
     items: [
       {
         icon: SettingIcon,
-        text: "Admin Area",
-        to: "/admin/sso",
+        text: "Single Sign-on",
+        to: "/sso",
       },
     ],
   },
