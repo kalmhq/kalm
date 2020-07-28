@@ -51,16 +51,13 @@ func (suite *GatewayControllerSuite) TestBasicHttpRoute() {
 	}
 	suite.createObject(&route)
 
+	// create a route should not change the default http server
 	suite.Eventually(func() bool {
 		suite.K8sClient.Get(context.Background(), types.NamespacedName{
 			Name:      "kalm-http-gateway",
 			Namespace: "istio-system",
 		}, &gw)
 
-		return len(gw.Spec.Servers) == 2 &&
-			len(gw.Spec.Servers[0].Hosts) == 2 &&
-			gw.Spec.Servers[0].Hosts[0] == "example.com" &&
-			gw.Spec.Servers[0].Hosts[1] == "example.io" &&
-			gw.Spec.Servers[0].Tls.HttpsRedirect == true
+		return len(gw.Spec.Servers) == 1
 	})
 }

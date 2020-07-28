@@ -301,42 +301,40 @@ func (r *ProtectedEndpointReconcilerTask) ReconcileResources(req ctrl.Request) e
 					},
 					Patch: &v1alpha32.EnvoyFilter_Patch{
 						Operation: v1alpha32.EnvoyFilter_Patch_INSERT_BEFORE,
-						Value: &protoTypes.Struct{
-							Fields: map[string]*protoTypes.Value{
-								"name": v2v("envoy.ext_authz"),
-								"config": v2v(map[string]interface{}{
-									"httpService": map[string]interface{}{
-										"serverUri": map[string]interface{}{
-											"uri":     oidcProviderInfo.AuthProxyInternalUrl + "/ext_authz",
-											"cluster": oidcProviderInfo.AuthProxyInternalEnvoyClusterName,
-											"timeout": "1s",
-										},
-										"path_prefix": "/ext_authz",
-										"authorizationRequest": map[string]interface{}{
-											"allowedHeaders": map[string]interface{}{
-												"patterns": []interface{}{
-													map[string]interface{}{
-														"exact": "cookie",
-													},
-												},
-											},
-										},
-										"authorizationResponse": map[string]interface{}{
-											"allowedUpstreamHeaders": map[string]interface{}{
-												"patterns": []interface{}{
-													map[string]interface{}{
-														"exact": "cookie",
-													},
-													map[string]interface{}{
-														"exact": "authorization",
-													},
+						Value: golangMapToProtoStruct(map[string]interface{}{
+							"name": "envoy.ext_authz",
+							"config": map[string]interface{}{
+								"httpService": map[string]interface{}{
+									"serverUri": map[string]interface{}{
+										"uri":     oidcProviderInfo.AuthProxyInternalUrl + "/ext_authz",
+										"cluster": oidcProviderInfo.AuthProxyInternalEnvoyClusterName,
+										"timeout": "1s",
+									},
+									"path_prefix": "/ext_authz",
+									"authorizationRequest": map[string]interface{}{
+										"allowedHeaders": map[string]interface{}{
+											"patterns": []interface{}{
+												map[string]interface{}{
+													"exact": "cookie",
 												},
 											},
 										},
 									},
-								}),
+									"authorizationResponse": map[string]interface{}{
+										"allowedUpstreamHeaders": map[string]interface{}{
+											"patterns": []interface{}{
+												map[string]interface{}{
+													"exact": "cookie",
+												},
+												map[string]interface{}{
+													"exact": "authorization",
+												},
+											},
+										},
+									},
+								},
 							},
-						},
+						}),
 					},
 				},
 			},
@@ -423,8 +421,26 @@ func (r *ProtectedEndpointReconcilerTask) ReconcileResources(req ctrl.Request) e
 	return nil
 }
 
-func v2v(val interface{}) *protoTypes.Value {
+func golangMapToProtoStruct(val map[string]interface{}) *protoTypes.Struct {
+	fields := make(map[string]*protoTypes.Value)
+
+	for k, v := range val {
+		fields[k] = golangValueToProtoValue(v)
+	}
+
+	return &protoTypes.Struct{
+		Fields: fields,
+	}
+}
+
+func golangValueToProtoValue(val interface{}) *protoTypes.Value {
 	switch typeVal := val.(type) {
+	case bool:
+		return &protoTypes.Value{
+			Kind: &protoTypes.Value_BoolValue{
+				BoolValue: typeVal,
+			},
+		}
 	case string:
 		return &protoTypes.Value{
 			Kind: &protoTypes.Value_StringValue{
@@ -435,7 +451,7 @@ func v2v(val interface{}) *protoTypes.Value {
 		values := make([]*protoTypes.Value, len(typeVal))
 
 		for i, v := range typeVal {
-			values[i] = v2v(v)
+			values[i] = golangValueToProtoValue(v)
 		}
 
 		pbValue := &protoTypes.Value{
@@ -450,7 +466,7 @@ func v2v(val interface{}) *protoTypes.Value {
 		fields := make(map[string]*protoTypes.Value)
 
 		for k, v := range typeVal {
-			fields[k] = v2v(v)
+			fields[k] = golangValueToProtoValue(v)
 		}
 
 		pbValue := &protoTypes.Value{
@@ -463,9 +479,9 @@ func v2v(val interface{}) *protoTypes.Value {
 		return pbValue
 	case *protoTypes.Value:
 		return typeVal
+	default:
+		panic(fmt.Errorf("Proto Value convertor error. No convertor for value %+v", val))
 	}
-
-	return nil
 }
 
 // +kubebuilder:rbac:groups=core.kalm.dev,resources=protectedendpoints,verbs=get;list;watch;create;update;patch;delete
