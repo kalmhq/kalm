@@ -21,6 +21,8 @@ import { KPanel } from "widgets/KPanel";
 import { KAutoCompleteMultipleSelectField, KAutoCompleteOption } from "forms/Basic/autoComplete";
 import { KRenderDebounceTextField } from "forms/Basic/textfield";
 import { KRadioGroupRender } from "forms/Basic/radio";
+import { ApplicationComponentDetails } from "types/application";
+import { Loading } from "widgets/Loading";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -55,7 +57,25 @@ class DeployKeyFormRaw extends React.PureComponent<FinalProps> {
   }
 
   public render() {
-    const { handleSubmit, classes, dirty, submitSucceeded, fieldValues, applications, allComponents } = this.props;
+    const {
+      handleSubmit,
+      classes,
+      dirty,
+      submitSucceeded,
+      fieldValues,
+      isNamespaceLoading,
+      isNamespaceFirstLoaded,
+      applications,
+      allComponents,
+    } = this.props;
+
+    if (isNamespaceLoading && !isNamespaceFirstLoaded) {
+      return (
+        <Box p={2}>
+          <Loading />
+        </Box>
+      );
+    }
 
     const applicationOptions = applications
       .map(
@@ -70,7 +90,10 @@ class DeployKeyFormRaw extends React.PureComponent<FinalProps> {
     let componentOptions: KAutoCompleteOption[] = [];
 
     applications.forEach((application) => {
-      const components = allComponents.get(application.get("name"))!;
+      const components = (allComponents.get(application.get("name")) || Immutable.List()) as Immutable.List<
+        ApplicationComponentDetails
+      >;
+
       components.forEach((component) => {
         componentOptions.push({
           label: `${application.get("name")}/${component.get("name")}`,
