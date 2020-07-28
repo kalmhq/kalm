@@ -30,7 +30,6 @@ import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import { grey } from "@material-ui/core/colors";
 import { SvgIcon, SvgIconProps, Theme } from "@material-ui/core";
 import { theme } from "theme/theme";
-import clsx from "clsx";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -208,9 +207,10 @@ export const KalmApplicationIcon = withStyles(styles)((props: ColorIconsProps) =
 });
 
 export const KalmTemplateIcon = withStyles(styles)((props: ColorIconsProps) => {
-  const { classes, fontSize, style } = props;
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
   return (
-    <SvgIcon className={classes.default} fontSize={fontSize} style={style}>
+    <SvgIcon className={className} fontSize={fontSize} style={style}>
       <path
         fillRule="evenodd"
         clipRule="evenodd"
@@ -275,18 +275,20 @@ export const KalmRegistryIcon = withStyles(styles)((props: ColorIconsProps) => {
 });
 
 export const KalmComponentsIcon = withStyles(styles)((props: ColorIconsProps) => {
-  const { classes, fontSize, style } = props;
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
   return (
-    <SvgIcon className={classes.default} fontSize={fontSize} style={style} viewBox={"0 0 36 36"}>
+    <SvgIcon className={className} fontSize={fontSize} style={style} viewBox={"0 0 36 36"}>
       <path d="M33.53,18.76,26.6,15.57V6.43A1,1,0,0,0,26,5.53l-7.5-3.45a1,1,0,0,0-.84,0l-7.5,3.45a1,1,0,0,0-.58.91v9.14L2.68,18.76a1,1,0,0,0-.58.91v9.78h0a1,1,0,0,0,.58.91l7.5,3.45a1,1,0,0,0,.84,0l7.08-3.26,7.08,3.26a1,1,0,0,0,.84,0l7.5-3.45a1,1,0,0,0,.58-.91h0V19.67A1,1,0,0,0,33.53,18.76ZM25.61,22,20.5,19.67l5.11-2.35,5.11,2.35Zm-1-6.44-6.44,3V10.87a1,1,0,0,0,.35-.08L24.6,8v7.58ZM18.1,4.08l5.11,2.35L18.1,8.78,13,6.43ZM10.6,17.31l5.11,2.35L10.6,22,5.49,19.67Zm6.5,11.49-6.5,3h0V24.11h0A1,1,0,0,0,11,24l6.08-2.8Zm15,0-6.46,3V24.11A1,1,0,0,0,26,24l6.08-2.8Z"></path>
     </SvgIcon>
   );
 });
 
 export const KalmRoutesIcon = withStyles(styles)((props: ColorIconsProps) => {
-  const { classes, fontSize, style, className } = props;
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
   return (
-    <SvgIcon className={clsx(classes.default, className)} fontSize={fontSize} style={style} viewBox={"0 0 36 36"}>
+    <SvgIcon className={className} fontSize={fontSize} style={style} viewBox={"0 0 36 36"}>
       <path d="M26.3569 30L30.3604 27.6921L34.3618 25.3832L30.3583 23.0726L26.3569 20.7639V23.3315C25.3761 23.3315 24.2364 23.3315 23.8546 23.3315C22.0342 23.3827 19.7873 21.9502 17.3968 20.1036C16.5057 19.4561 15.6067 18.7437 14.6539 18.1005C15.6067 17.4565 16.5044 16.7449 17.3968 16.0975C19.7873 14.2534 22.0342 12.8183 23.8523 12.8704L26.3569 12.8696V15.4406L30.3583 13.131L34.3618 10.8195L30.3583 8.50558L26.3569 6.19504V8.76444H23.8535C20.1353 8.81648 17.3565 11.0246 14.9249 12.8192C12.511 14.7129 10.3412 16.1385 9.08275 16.0462H1.90405V20.148H9.0851C10.3424 20.0548 12.5133 21.4814 14.927 23.375C17.3576 25.1705 20.1353 27.3768 23.8546 27.4298H26.3569V30Z" />
     </SvgIcon>
   );
@@ -386,8 +388,9 @@ export const CopyIcon = withStyles(styles)((props: ColorIconsProps) => {
 });
 
 export const CopyIconDefault = withStyles(styles)((props: ColorIconsProps) => {
-  const { classes, fontSize, style } = props;
-  return <FileCopy className={classes.default} fontSize={fontSize} style={style} />;
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return <FileCopy className={className} fontSize={fontSize} style={style} />;
 });
 
 export const WrenchIcon = withStyles(styles)((props: ColorIconsProps) => {
