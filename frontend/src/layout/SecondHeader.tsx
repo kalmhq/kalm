@@ -5,7 +5,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
-import { H4 } from "widgets/Label";
+import { H6 } from "widgets/Label";
 import { SECOND_HEADER_HEIGHT, LEFT_SECTION_OPEN_WIDTH, SECOND_HEADER_ZINDEX, APP_BAR_HEIGHT } from "./Constants";
 
 const mapStateToProps = (state: RootState) => {
@@ -68,11 +68,11 @@ class SecondHeaderRaw extends React.PureComponent<Props, State> {
       <div className={classes.root}>
         {left ? (
           <div className={`${classes.left} ${typeof left === "string" ? classes.leftTextContainer : ""}`}>
-            {typeof left === "string" ? <H4>{left}</H4> : left}
+            {typeof left === "string" ? <H6>{left}</H6> : left}
           </div>
         ) : null}
 
-        <div className={classes.right}>{typeof right === "string" ? <H4>{right}</H4> : right}</div>
+        <div className={classes.right}>{typeof right === "string" ? <H6>{right}</H6> : right}</div>
       </div>
     );
   }

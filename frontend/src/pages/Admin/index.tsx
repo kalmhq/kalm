@@ -3,7 +3,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { H4 } from "widgets/Label";
+import { H6 } from "widgets/Label";
 import { Link } from "react-router-dom";
 import { BasePage } from "pages/BasePage";
 import { AdminSidebar } from "pages/Admin/Sidebar";
@@ -25,7 +25,7 @@ class AdminPageRaw extends React.PureComponent<Props, State> {
   private renderSecondHeaderRight() {
     return (
       <>
-        <H4>Overview</H4>
+        <H6>Overview</H6>
         <Button
           component={Link}
           color="primary"

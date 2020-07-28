@@ -199,7 +199,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
         secondHeaderLeft={<Namespaces />}
         secondHeaderRight={
           <>
-            {/* <H4>Routes</H4> */}
+            {/* <H6>Routes</H6> */}
             <Button
               tutorial-anchor-id="add-route"
               component={Link}

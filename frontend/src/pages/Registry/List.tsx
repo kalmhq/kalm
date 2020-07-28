@@ -175,7 +175,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
     const { dispatch } = this.props;
     return (
       <>
-        {/* <H4>Private Docker Registries</H4> */}
+        {/* <H6>Private Docker Registries</H6> */}
         <CustomizedButton
           color="primary"
           variant="outlined"

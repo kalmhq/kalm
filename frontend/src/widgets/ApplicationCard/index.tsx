@@ -19,7 +19,7 @@ import {
 } from "@material-ui/core";
 import { ApplicationDetails, ApplicationComponentDetails } from "types/application";
 import { stringToColor } from "utils/color";
-import { Body, H4 } from "widgets/Label";
+import { Body, H6 } from "widgets/Label";
 import { getApplicationCreatedAtString } from "utils/application";
 import { CardCPULineChart, CardMemoryLineChart } from "widgets/SmallLineChart";
 import { HttpRoute } from "types/route";
@@ -70,7 +70,7 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
         to={`/applications/${application.get("name")}/components`}
         onClick={() => blinkTopProgressAction()}
       >
-        <H4>{application.get("name")}</H4>
+        <H6>{application.get("name")}</H6>
       </Link>
     );
   };

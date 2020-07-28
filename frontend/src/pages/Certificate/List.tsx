@@ -289,7 +289,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
       <BasePage
         secondHeaderRight={
           <>
-            {/* <H4>Certificates</H4> */}
+            {/* <H6>Certificates</H6> */}
             <Button
               color="primary"
               variant="outlined"

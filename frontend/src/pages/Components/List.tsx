@@ -101,7 +101,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
 
     return (
       <>
-        {/* <H4>Components</H4> */}
+        {/* <H6>Components</H6> */}
         <Button
           tutorial-anchor-id="add-component-button"
           component={Link}

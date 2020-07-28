@@ -19,7 +19,7 @@ import { ServiceAccountSecret } from "widgets/ServiceAccountSecret";
 import { KTable } from "widgets/Table";
 import { blinkTopProgressAction } from "actions/settings";
 import { AdminDrawer } from "../../layout/AdminDrawer";
-import { H4 } from "widgets/Label";
+import { H6 } from "widgets/Label";
 import { BasePage } from "../BasePage";
 
 const dialogID = "rolebinding/add";
@@ -237,7 +237,7 @@ class RolesPageRaw extends React.PureComponent<Props, State> {
   private renderSecondHeaderRight() {
     return (
       <>
-        <H4>Roles & Permissions</H4>
+        <H6>Roles & Permissions</H6>
         <CustomizedButton
           color="primary"
           variant="outlined"

@@ -330,7 +330,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     const { usingApplicationCard, dispatch } = this.props;
     return (
       <>
-        {/* <H4>Applications</H4> */}
+        {/* <H6>Applications</H6> */}
         <Button
           tutorial-anchor-id="add-application"
           component={Link}

@@ -164,7 +164,7 @@ export class VolumesRaw extends React.Component<Props, States> {
   }
 
   private renderSecondHeaderRight() {
-    return <>{/* <H4>Disks</H4>
+    return <>{/* <H6>Disks</H6>
         {this.renderDiskHelp()}
         <StorageType /> */}</>;
   }
