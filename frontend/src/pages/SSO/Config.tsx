@@ -1,9 +1,8 @@
 import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import React from "react";
 import { BasePage } from "pages/BasePage";
-import { AdminSidebar } from "pages/Admin/Sidebar";
 import { SSOConfigForm } from "forms/SSOConfig";
-import { SSOImplementDetails } from "pages/Admin/SSO/Details";
+import { SSOImplementDetails } from "pages/SSO/Details";
 import { newEmptySSOConfig, SSOConfig } from "types/sso";
 import { createSSOConfigAction, updateSSOConfigAction } from "actions/sso";
 import { Loading } from "widgets/Loading";
@@ -20,7 +19,7 @@ interface Props extends WithStyles<typeof styles>, WithSSOProps {}
 
 interface State {}
 
-class AdminSSOConfigFormPageRaw extends React.PureComponent<Props, State> {
+class SSOConfigFormPageRaw extends React.PureComponent<Props, State> {
   private submit = async (config: SSOConfig) => {
     const { dispatch } = this.props;
 
@@ -40,7 +39,7 @@ class AdminSSOConfigFormPageRaw extends React.PureComponent<Props, State> {
       dispatch(setSuccessNotificationAction("Create SSO Config Successfully"));
     }
 
-    dispatch(push("/admin/sso"));
+    dispatch(push("/sso"));
   };
 
   private isEdit = () => {
@@ -59,7 +58,7 @@ class AdminSSOConfigFormPageRaw extends React.PureComponent<Props, State> {
     }
 
     return (
-      <BasePage leftDrawer={<AdminSidebar />}>
+      <BasePage>
         <Box p={2}>
           <SSOConfigForm
             onSubmit={this.submit}
@@ -75,4 +74,4 @@ class AdminSSOConfigFormPageRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const AdminSSOConfigPage = withStyles(styles)(withSSO(AdminSSOConfigFormPageRaw));
+export const SSOConfigPage = withStyles(styles)(withSSO(SSOConfigFormPageRaw));
