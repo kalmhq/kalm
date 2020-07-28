@@ -23,6 +23,7 @@ import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { InfoBox } from "widgets/InfoBox";
 import { KTable } from "widgets/Table";
 import { BasePage } from "../BasePage";
+import { sizeStringToGi } from "utils/sizeConv";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -206,7 +207,7 @@ export class VolumesRaw extends React.Component<Props, States> {
   };
 
   private renderCapacity = (rowData: RowData) => {
-    return rowData.get("capacity");
+    return sizeStringToGi(rowData.get("capacity")) + " Gi";
   };
 
   private renderEmpty() {
