@@ -15,7 +15,7 @@ import {
 import { api } from "api";
 import { Expansion } from "forms/Route/expansion";
 import { POPPER_ZINDEX } from "layout/Constants";
-import PopupState, { bindHover, bindPopover, bindTrigger } from "material-ui-popup-state";
+import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 import { NodeStatus } from "pages/Nodes/NodeStatus";
 import React from "react";
 import { connect } from "react-redux";
@@ -34,6 +34,7 @@ import { NodeCPU, NodesCPU } from "./CPU";
 import { NodeMemory, NodesMemory } from "./Memory";
 import { NodePods } from "./Pods";
 import { ResourceRank } from "./ResourceRank";
+import { customBindHover } from "utils/popper";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -145,7 +146,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                   {(popupState) => {
                     return (
                       <div>
-                        <div {...bindHover(popupState)}>
+                        <div {...customBindHover(popupState)}>
                           <NodeCPU node={node} />
                         </div>
                         <Popper {...bindPopover(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>
@@ -170,7 +171,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                   {(popupState) => {
                     return (
                       <div>
-                        <div {...bindHover(popupState)}>
+                        <div {...customBindHover(popupState)}>
                           <NodeMemory node={node} />
                         </div>
                         <Popper {...bindPopover(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>
@@ -233,7 +234,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                   {(popupState) => {
                     return (
                       <div>
-                        <div {...bindHover(popupState)}>
+                        <div {...customBindHover(popupState)}>
                           <NodeCPU node={node} showDetails={true} />
                         </div>
                         <Popper
@@ -263,7 +264,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                   {(popupState) => {
                     return (
                       <div>
-                        <div {...bindHover(popupState)}>
+                        <div {...customBindHover(popupState)}>
                           <NodeMemory node={node} showDetails={true} />
                         </div>
                         <Popper
@@ -444,7 +445,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                   {(popupState) => {
                     return (
                       <div>
-                        <div {...bindHover(popupState)}>
+                        <div {...customBindHover(popupState)}>
                           <NodesCPU nodes={nodes} />
                         </div>
                         <Popper {...bindPopover(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>
@@ -472,7 +473,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                   {(popupState) => {
                     return (
                       <div>
-                        <div {...bindHover(popupState)}>
+                        <div {...customBindHover(popupState)}>
                           <NodesMemory nodes={nodes} />
                         </div>
                         <Popper {...bindPopover(popupState)} style={{ zIndex: POPPER_ZINDEX }} transition>
