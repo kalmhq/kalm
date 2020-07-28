@@ -13,16 +13,26 @@ export const LOAD_DEPLOY_KEYS_PENDING = "LOAD_DEPLOY_KEYS_PENDING";
 
 export type DeployKeyScope = string;
 
-const DeployKeyScopeAll: DeployKeyScope = "all";
-const DeployKeyScopeNamespace: DeployKeyScope = "namespace";
-const DeployKeyScopeComponent: DeployKeyScope = "component";
+export const DeployKeyScopeCluster: DeployKeyScope = "cluster";
+export const DeployKeyScopeNamespace: DeployKeyScope = "namespace";
+export const DeployKeyScopeComponent: DeployKeyScope = "component";
 
 export type DeployKey = ImmutableMap<{
   name: string;
   scope: DeployKeyScope;
   resources: Immutable.List<string>;
+  key: string;
   creator: string;
 }>;
+
+export const newEmptyDeployKey = () => {
+  return Immutable.Map({
+    name: "",
+    scope: DeployKeyScopeCluster,
+    resources: Immutable.List(),
+    creator: "",
+  });
+};
 
 export interface LoadDeployKeysAction {
   type: typeof LOAD_DEPLOY_KEYS_FULFILLED;
