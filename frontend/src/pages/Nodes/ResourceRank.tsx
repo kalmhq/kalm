@@ -50,9 +50,9 @@ class ResourceRankRaw extends React.PureComponent<Props, State> {
     return (
       <Box p={2}>
         <Box pb={2}>Applications (TODO: fake data now)</Box>
-        {allocateds.map((a) => {
+        {allocateds.map((a, index) => {
           return (
-            <Box display="flex" pb={1}>
+            <Box display="flex" pb={1} key={index}>
               <Box width={maxBarWidth} mr={1}>
                 <Box width={(a.value / maxValue) * maxBarWidth} className={classes.bar} pl={1}>
                   {a.name}
