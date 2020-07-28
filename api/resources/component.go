@@ -58,16 +58,13 @@ type Component struct {
 	Name                   string                 `json:"name"`
 }
 
-type ComponentResp struct {
-	ComponentSpec `json:",inline"`
-	Plugins       []runtime.RawExtension `json:"plugins,omitempty"`
-	Name          string                 `json:"name"`
-}
-
-type ComponentSpec struct {
+type ComponentForResp struct {
 	v1alpha1.ComponentSpec `json:",inline"`
-	CPU                    *CPUQuantity    `json:"cpu,omitempty"`
-	Memory                 *MemoryQuantity `json:"memory,omitempty"`
+	CPU                    *CPUQuantity           `json:"cpu,omitempty"`
+	Memory                 *MemoryQuantity        `json:"memory,omitempty"`
+
+	Plugins                []runtime.RawExtension `json:"plugins,omitempty"`
+	Name                   string                 `json:"name"`
 }
 
 type CPUQuantity struct {
@@ -96,8 +93,8 @@ func (m *MemoryQuantity) MarshalJSON() ([]byte, error) {
 //	Pods                 []PodStatus           `json:"pods"`
 //}
 
-type ComponentResponse struct {
-	*ComponentResp       `json:",inline"`
+type ComponentDetails struct {
+	*ComponentForResp    `json:",inline"`
 	Metrics              MetricHistories       `json:"metrics"`
 	IstioMetricHistories *IstioMetricHistories `json:"istioMetricHistories"`
 	Services             []ServiceStatus       `json:"services"`
@@ -111,7 +108,7 @@ func labelsBelongsToComponent(name string) metaV1.ListOptions {
 func (builder *Builder) BuildComponentDetails(
 	component *v1alpha1.Component,
 	resources *Resources,
-) (details *ComponentResponse, err error) {
+) (details *ComponentDetails, err error) {
 	if resources == nil {
 		ns := component.Namespace
 		nsListOption := client.InNamespace(ns)
@@ -192,13 +189,11 @@ func (builder *Builder) BuildComponentDetails(
 		break
 	}
 
-	details = &ComponentResponse{
-		ComponentResp: &ComponentResp{
-			Name: component.Name,
-			ComponentSpec: ComponentSpec{
-				ComponentSpec: component.Spec,
-			},
-			Plugins: plugins,
+	details = &ComponentDetails{
+		ComponentForResp: &ComponentForResp{
+			Name:          component.Name,
+			ComponentSpec: component.Spec,
+			Plugins:       plugins,
 		},
 		Services: servicesStatus,
 		Metrics: MetricHistories{
@@ -210,11 +205,11 @@ func (builder *Builder) BuildComponentDetails(
 	}
 
 	if component.Spec.CPU != nil {
-		details.ComponentResp.ComponentSpec.CPU = &CPUQuantity{*component.Spec.CPU}
+		details.ComponentForResp.CPU = &CPUQuantity{*component.Spec.CPU}
 	}
 
 	if component.Spec.Memory != nil {
-		details.ComponentResp.ComponentSpec.Memory = &MemoryQuantity{*component.Spec.Memory}
+		details.ComponentForResp.Memory = &MemoryQuantity{*component.Spec.Memory}
 	}
 
 	return details, nil
@@ -234,13 +229,13 @@ func getComponentAndNSNameFromSvcName(svcName string) (string, string) {
 
 func (builder *Builder) BuildComponentDetailsResponse(
 	components *v1alpha1.ComponentList,
-) ([]ComponentResponse, error) {
+) ([]ComponentDetails, error) {
 
 	if len(components.Items) == 0 {
 		return nil, nil
 	}
 
-	var res []ComponentResponse
+	var res []ComponentDetails
 
 	ns := components.Items[0].Namespace
 	nsListOption := client.InNamespace(ns)

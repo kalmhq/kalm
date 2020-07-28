@@ -12,12 +12,10 @@ func TestBuilder_MarshalOfComponentDetails(t *testing.T) {
 	cpu := resource.MustParse("100m")
 	memory := resource.MustParse("0.1Gi")
 
-	marshalRst, err := json.Marshal(&ComponentResponse{
-		ComponentResp: &ComponentResp{
-			ComponentSpec: ComponentSpec{
-				CPU:    &CPUQuantity{cpu},
-				Memory: &MemoryQuantity{memory},
-			},
+	marshalRst, err := json.Marshal(&ComponentDetails{
+		ComponentForResp: &ComponentForResp{
+			CPU:    &CPUQuantity{cpu},
+			Memory: &MemoryQuantity{memory},
 		},
 	})
 
