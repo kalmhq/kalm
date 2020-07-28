@@ -71,10 +71,7 @@ export const KBoolCheckboxRender = ({ input, meta, title, helperText, label }: K
     <FormControl fullWidth error={showError}>
       {title ? <FormLabel component="legend">{title}</FormLabel> : null}
       <FormGroup row>
-        <FormControlLabel
-          control={<Checkbox style={{ padding: 12 }} checked={checked} onChange={input.onChange} />}
-          label={label}
-        />
+        <FormControlLabel control={<Checkbox checked={checked} onChange={input.onChange} />} label={label} />
       </FormGroup>
       {showError ? (
         <FormHelperText>{error}</FormHelperText>

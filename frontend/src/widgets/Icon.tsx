@@ -25,6 +25,7 @@ import Menu from "@material-ui/icons/Menu";
 import BrightnessLight from "@material-ui/icons/Brightness7";
 import BrightnessDark from "@material-ui/icons/Brightness4";
 import GitHubIcon from "@material-ui/icons/GitHub";
+import Forward from "@material-ui/icons/Forward";
 import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import { grey } from "@material-ui/core/colors";
 import { SvgIcon, SvgIconProps, Theme } from "@material-ui/core";
@@ -441,4 +442,10 @@ export const BrightnessLightIcon = withStyles(styles)((props: ColorIconsProps) =
   const { fontSize, style } = props;
   const className = getClassNameByColorName(props);
   return <BrightnessLight className={className} fontSize={fontSize} style={style} />;
+});
+
+export const ForwardIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return <Forward className={className} fontSize={fontSize} style={style} />;
 });
