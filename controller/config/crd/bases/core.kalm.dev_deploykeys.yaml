@@ -48,8 +48,8 @@ spec:
             scope:
               enum:
               - component
-              - app
-              - all
+              - namespace
+              - cluster
               type: string
           required:
           - scope
@@ -60,9 +60,6 @@ spec:
             lastUsedTimestamp:
               type: integer
             serviceAccountToken:
-              description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
-                of cluster Important: Run "make" to regenerate code after modifying
-                this file'
               type: string
             usedCount:
               type: integer

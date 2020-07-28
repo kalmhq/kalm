@@ -136,6 +136,7 @@ func (r *DeployKeyReconcilerTask) Run(req ctrl.Request) error {
 		var validNs []string
 		for _, ns := range deployKey.Spec.Resources {
 			exist, err := r.isNamespaceExist(ns)
+
 			if err != nil {
 				return err
 			}
@@ -155,8 +156,10 @@ func (r *DeployKeyReconcilerTask) Run(req ctrl.Request) error {
 		ns2ComponentsMap := make(map[string][]string)
 		for _, content := range deployKey.Spec.Resources {
 			parts := strings.Split(content, "/")
+
 			if len(parts) != 2 {
 				r.Recorder.Event(&deployKey, v1.EventTypeWarning, "invalid-format", "should be like: ns/component")
+				continue
 			}
 
 			ns := parts[0]
@@ -185,7 +188,7 @@ func (r *DeployKeyReconcilerTask) Run(req ctrl.Request) error {
 				},
 				Rules: []v1beta1.PolicyRule{
 					{
-						Verbs:         []string{"get", "list", "watch", "update"},
+						Verbs:         []string{"get", "patch"},
 						APIGroups:     []string{"core.kalm.dev"},
 						Resources:     []string{"components"},
 						ResourceNames: compList,
@@ -350,7 +353,7 @@ func (r *DeployKeyReconcilerTask) prepareRoles(roleName string, nsList []string)
 			},
 			Rules: []v1beta1.PolicyRule{
 				{
-					Verbs:     []string{"get", "list", "watch", "update"},
+					Verbs:     []string{"get", "patch"},
 					APIGroups: []string{"core.kalm.dev"},
 					Resources: []string{"components"},
 				},
@@ -400,9 +403,11 @@ func (s DeployKeyGeneralMapper) Map(object handler.MapObject) []reconcile.Reques
 	}
 
 	return []reconcile.Request{
-		{NamespacedName: client.ObjectKey{
-			Name: object.Meta.GetName(),
-		}},
+		{
+			NamespacedName: client.ObjectKey{
+				Name: object.Meta.GetName(),
+			},
+		},
 	}
 }
 

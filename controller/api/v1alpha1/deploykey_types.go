@@ -32,7 +32,7 @@ const (
 
 // DeployKeySpec defines the desired state of DeployKey
 type DeployKeySpec struct {
-	// +kubebuilder:validation:Enum=component;app;all
+	// +kubebuilder:validation:Enum=component;namespace;cluster
 	Scope DeployKeyScope `json:"scope"`
 
 	// If scope is cluster, this field will be ignored
@@ -47,8 +47,6 @@ type DeployKeySpec struct {
 
 // DeployKeyStatus defines the observed state of DeployKey
 type DeployKeyStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
 	ServiceAccountToken string `json:"serviceAccountToken"`
 	LastUsedTimestamp   int    `json:"lastUsedTimestamp"`
 	UsedCount           int    `json:"usedCount"`
