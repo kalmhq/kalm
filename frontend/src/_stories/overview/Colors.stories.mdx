@@ -1,107 +1,49 @@
 import { Meta, ColorPalette, ColorItem } from "@storybook/addon-docs/blocks";
-import { primaryColor } from "theme/theme";
-import colors from "theme/colors";
+import { primaryColor, getTheme } from "theme/theme";
 
 <Meta title="Design System/Colors" />
 
+export const palette = getTheme("light").palette;
+export const darkPalette = getTheme("dark").palette;
+
+export const toColorArray = (color) => {
+  return [color.light, color.main, color.dark];
+};
+
 # Colors
 
+## Light Theme
+
 <ColorPalette>
-  <ColorItem title="colors.primary" subtitle="indigo[500]" colors={[colors.primary]} />
+  <ColorItem title="Primary" subtitle="light | main | dark" colors={toColorArray(palette.primary)} />
+  <ColorItem title="Secondary" subtitle="light | main | dark" colors={toColorArray(palette.secondary)} />
   <ColorItem
-    title="colors.primary[n]"
-    subtitle="indigos"
-    colors={[
-      colors.primary900,
-      colors.primary800,
-      colors.primary700,
-      colors.primary600,
-      colors.primary,
-      colors.primary400,
-      colors.primary300,
-      colors.primary200,
-      colors.primary100,
-      colors.primary50,
-    ]}
-  />
-  <ColorItem title="colors.secondary" subtitle="amber[500]" colors={[colors.secondary]} />
-  <ColorItem
-    title="colors.secondary[n]"
-    subtitle="ambers"
-    colors={[
-      colors.secondary900,
-      colors.secondary800,
-      colors.secondary700,
-      colors.secondary600,
-      colors.secondary,
-      colors.secondary400,
-      colors.secondary300,
-      colors.secondary200,
-      colors.secondary100,
-      colors.secondary50,
-    ]}
-  />
-  <ColorItem title="colors.success" subtitle="Green" colors={[colors.success]} />
-  <ColorItem title="colors.warning" subtitle="Yellow" colors={[colors.warning]} />
-  <ColorItem title="colors.error" subtitle="Red" colors={[colors.error]} />
-  <ColorItem
-    title="colors.textWhiteHighEmphasis"
-    subtitle="textWhiteHighEmphasis"
-    colors={[colors.textWhiteHighEmphasis]}
+    title="Text"
+    subtitle="primary | secondary | disabled"
+    colors={[palette.text.primary, palette.text.secondary, palette.text.disabled]}
   />
   <ColorItem
-    title="colors.textWhiteMediumEmphasis"
-    subtitle="textWhiteMediumEmphasis"
-    colors={[colors.textWhiteMediumEmphasis]}
+    title="Background"
+    subtitle="default | paper"
+    colors={[palette.background.default, palette.background.paper]}
   />
-  <ColorItem
-    title="colors.textWhiteDisabledEmphasis"
-    subtitle="textWhiteDisabledEmphasis"
-    colors={[colors.textWhiteDisabledEmphasis]}
-  />
-  <ColorItem
-    title="colors.textBlackHighEmphasis"
-    subtitle="textBlackHighEmphasis"
-    colors={[colors.textBlackHighEmphasis]}
-  />
-  <ColorItem
-    title="colors.textBlackMediumEmphasis"
-    subtitle="textBlackMediumEmphasis"
-    colors={[colors.textBlackMediumEmphasis]}
-  />
-  <ColorItem
-    title="colors.textBlackDisabledEmphasis"
-    subtitle="textBlackDisabledEmphasis"
-    colors={[colors.textBlackDisabledEmphasis]}
-  />
-  <ColorItem
-    title="Monochrome"
-    colors={[
-      colors.darkest,
-      colors.darker,
-      colors.dark,
-      colors.mediumdark,
-      colors.medium,
-      colors.mediumlight,
-      colors.light,
-      colors.lighter,
-      colors.lightest,
-    ]}
-  />
-
-<ColorItem title="colors.surfaceCard" subtitle="surfaceCard" colors={[colors.surfaceCard]} />
-<ColorItem title="colors.surfaceAppUI" subtitle="surfaceAppUI" colors={[colors.surfaceAppUI]} />
-<ColorItem title="colors.surfaceMenu" subtitle="surfaceMenu" colors={[colors.surfaceMenu]} />
-<ColorItem title="colors.surfaceSheets" subtitle="surfaceSheets" colors={[colors.surfaceSheets]} />
-<ColorItem title="colors.surfaceDrawers" subtitle="surfaceDrawers" colors={[colors.surfaceDrawers]} />
-<ColorItem title="colors.surfaceDialogs" subtitle="surfaceDialogs" colors={[colors.surfaceDialogs]} />
-<ColorItem title="colors.surfaceSideSheets" subtitle="surfaceSideSheets" colors={[colors.surfaceSideSheets]} />
-<ColorItem title="colors.surfacePage" subtitle="surfacePage" colors={[colors.surfacePage]} />
-<ColorItem title="colors.surfaceTableHeader" subtitle="surfaceTableHeader" colors={[colors.surfaceTableHeader]} />
-<ColorItem
-  title="colors.surfaceInputBackground"
-  subtitle="surfaceInputBackground"
-  colors={[colors.surfaceInputBackground]}
-/>
-
 </ColorPalette>
+
+## Dark Theme
+
+<ColorPalette>
+  <ColorItem title="Primary" subtitle="light | main | dark" colors={toColorArray(darkPalette.primary)} />
+  <ColorItem title="Secondary" subtitle="light | main | dark" colors={toColorArray(darkPalette.secondary)} />
+  <ColorItem
+    title="Text"
+    subtitle="primary | secondary | disabled"
+    colors={[darkPalette.text.primary, darkPalette.text.secondary, darkPalette.text.disabled]}
+  />
+  <ColorItem
+    title="Background"
+    subtitle="default | paper"
+    colors={[darkPalette.background.default, darkPalette.background.paper]}
+  />
+</ColorPalette>
+
+TODO: list for Error, Warning, Info, and Success

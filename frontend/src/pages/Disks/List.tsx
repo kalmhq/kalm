@@ -124,7 +124,11 @@ export class VolumesRaw extends React.Component<Props, States> {
       <>
         <IconButtonWithTooltip
           disabled={rowData.get("isInUse")}
-          tooltipTitle={rowData.get("isInUse") ? "This disk in in used and can't be removed" : "Delete"}
+          tooltipTitle={
+            rowData.get("isInUse")
+              ? "The disk must be unmounted(removed) from all associated components before it can be deleted"
+              : "Delete"
+          }
           onClick={() => {
             this.showDeleteConfirmDialog(rowData);
           }}
@@ -214,7 +218,7 @@ export class VolumesRaw extends React.Component<Props, States> {
   };
 
   private renderUse = (rowData: RowData) => {
-    return rowData.get("isInUse") ? "True" : "False";
+    return rowData.get("isInUse") ? "Yes" : "No";
   };
 
   private renderCapacity = (rowData: RowData) => {
@@ -288,11 +292,11 @@ export class VolumesRaw extends React.Component<Props, States> {
                 paging: tableData.length > 20,
               }}
               columns={[
-                { title: "Name", field: "name", sorting: false, render: this.renderName },
-                { title: "Is In Use", field: "isInUse", sorting: false, render: this.renderUse },
-                { title: "Application", field: "componentNamespace", sorting: false, render: this.renderApplication },
-                { title: "Component Name", field: "componentName", sorting: false, render: this.renderComponent },
-                { title: "Capacity", field: "capacity", sorting: false, render: this.renderCapacity },
+                { title: "Volume Name", field: "name", sorting: false, render: this.renderName },
+                { title: "Mounted", field: "isInUse", sorting: false, render: this.renderUse },
+                { title: "App", field: "componentNamespace", sorting: false, render: this.renderApplication },
+                { title: "Component", field: "componentName", sorting: false, render: this.renderComponent },
+                { title: "Size", field: "capacity", sorting: false, render: this.renderCapacity },
                 {
                   title: "Actions",
                   field: "action",
