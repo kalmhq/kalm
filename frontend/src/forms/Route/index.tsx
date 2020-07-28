@@ -334,6 +334,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
       change,
       domainStatus,
       isEdit,
+      hosts,
     } = this.props;
 
     let statusIcons = Immutable.Map();
@@ -403,7 +404,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                           <Link
                             href="#"
                             onClick={() => {
-                              change("hosts", Immutable.List([ingressIP]));
+                              change("hosts", hosts.push(ingressIP));
                             }}
                           >
                             {ingressIP}
