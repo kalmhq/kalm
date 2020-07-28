@@ -87,12 +87,12 @@ const IngressHint = () => {
   );
 };
 
-const Configurations = "Configurations";
+const Configurations = "Config";
 const DisksTab = "Disks";
 export const HealthTab = "Health";
 export const NetworkingTab = "Networking";
-const Scheduling = "Scheduling";
-const Deploy = "Deploy Policy";
+const Scheduling = "Pod Scheduling";
+const Deploy = "Deployment Strategy";
 const tabs = [Configurations, NetworkingTab, DisksTab, HealthTab, Scheduling, Deploy];
 
 const mapStateToProps = (state: RootState) => {
@@ -408,27 +408,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     );
   }
 
-  private getTerminationGracePeriodSecondsHelper() {
-    return this.renderAdvancedHelper([
-      {
-        title: "Termination Grace Period Seconds",
-        content: (
-          <>
-            Kubernetes waits for a specified time called the termination grace period. By default, this is 30 seconds.
-            <a
-              target="_blank"
-              href="https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-update-deployment"
-              rel="noopener noreferrer"
-            >
-              Read More
-            </a>
-            .
-          </>
-        ),
-      },
-    ]);
-  }
-
   private getDnsPolicyOptions() {
     return [
       {
@@ -734,15 +713,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderUpgradePolicy() {
-    const { classes } = this.props;
     return (
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <SectionTitle>
-            <H5>Restart Strategy</H5>
+            <H5>Deployment Strategy</H5>
           </SectionTitle>
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={8}>
           <Field
             defaultValue="RollingUpdate"
             component={KRadioGroupRender}
@@ -750,41 +728,50 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             options={[
               {
                 value: "RollingUpdate",
-                label:
-                  "Rolling update. The new and old instances exist at the same time. The old ones will be gradually replaced by the new ones.",
+                label: (
+                  <Box>
+                    <strong>Rolling Update</strong> - Replace pods one by one, resulting in zero downtime.
+                  </Box>
+                ),
               },
               {
                 value: "Recreate",
-                label: "Stop all existing instances before creating new ones.",
+                label: (
+                  <Box>
+                    <strong>Recreate</strong> - All old pods are stopped and replaced at once, resulting in downtime.
+                    Useful if application cannot support multiple versions running at the same time.
+                  </Box>
+                ),
               },
             ]}
           />
         </Grid>
         <Grid item xs={12}>
           <SectionTitle>
-            <H5>Graceful termination</H5>
+            <H5>Graceful Terimination Period</H5>
           </SectionTitle>
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={8}>
           <Body>
-            Old instances will be terminated when an upgrade/delete is proformed. Kalm will wait for a while (called
-            Termination Grace Period Seconds) for the program to exit properly. When the grace period expires, any
-            processes still running are killed with SIGKILL.
+            When Pods are teriminated, running processes are first asked to gracefully shutdown with SIGTERM. However
+            some application may not be able to shutdown gracefully. Specify an amount of time to wait before forcefully
+            killing with SIGKILL. The default value is 30 seconds. &nbsp;
+            <Link
+              href="https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#hook-handler-execution"
+              target="_blank"
+            >
+              Learn More
+            </Link>
           </Body>
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={6}>
           <Field
             component={KRenderDebounceTextField}
             name="terminationGracePeriodSeconds"
-            label="Termination Grace Period Seconds"
+            label="Termination Grace Period (seconds)"
             // validate={ValidatorRequired}
             normalize={NormalizeNumber}
-            placeholder="Default 30s"
-            endAdornment={
-              <KTooltip title={this.getTerminationGracePeriodSecondsHelper()}>
-                <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
-              </KTooltip>
-            }
+            placeholder="e.g. 60"
           />
         </Grid>
       </Grid>
