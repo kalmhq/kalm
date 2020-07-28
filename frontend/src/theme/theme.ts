@@ -1,4 +1,4 @@
-import { createMuiTheme } from "@material-ui/core";
+import { createMuiTheme, PaletteType } from "@material-ui/core";
 import { green, grey, indigo, red } from "@material-ui/core/colors";
 import colors from "./colors";
 
@@ -12,67 +12,38 @@ let themeRaw = createMuiTheme({
       size: "small",
     },
   },
-  palette: {
-    primary: {
-      main: indigo[500],
-      light: indigo[50],
-      dark: indigo[700],
-      contrastText: colors.textWhiteHighEmphasis,
-    },
-    secondary: grey,
-    success: {
-      main: green[700],
-    },
-    error: {
-      main: red[700],
-    },
-    text: {
-      primary: grey[900],
-      secondary: grey[500],
-    },
-    // action: {
-    //   active: indigo[700]
-    // },
-    // Used by `getContrastText()` to maximize the contrast between
-    // the background and the text.
-    contrastThreshold: 3,
-    // Used by the functions below to shift a color's luminance by approximately
-    // two indexes within its tonal palette.
-    // E.g., shift from Red 500 to Red 300 or Red 700.
-    tonalOffset: 0.2,
-  },
   typography: {
     h1: {
       fontSize: 28,
     },
     h2: {
-      fontSize: 20,
+      fontSize: 22,
     },
     h3: {
-      fontSize: 18,
+      fontSize: 20,
     },
     h4: {
-      fontSize: 18,
+      fontSize: 20,
     },
     h5: {
-      fontSize: 15,
+      fontSize: 18,
     },
     h6: {
-      fontSize: 15,
+      fontSize: 18,
     },
     body1: {
-      fontSize: 13,
+      fontSize: 16,
     },
     body2: {
-      fontSize: 13,
+      fontSize: 16,
       color: "rgba(0, 0, 0, 0.6);",
     },
     button: {
-      fontSize: 13,
+      fontSize: 16,
       textTransform: "capitalize",
     },
     caption: {
-      fontSize: 12,
+      fontSize: 13,
     },
   },
   overrides: {
@@ -114,7 +85,7 @@ let themeRaw = createMuiTheme({
     },
     MuiPaper: {
       root: {
-        backgroundColor: "#FAFAFA",
+        // backgroundColor: "#FAFAFA",
       },
     },
     MuiButton: {
@@ -162,5 +133,82 @@ let themeRaw = createMuiTheme({
   },
 });
 
+const lightTheme = createMuiTheme({
+  palette: {
+    primary: {
+      main: indigo[500],
+      light: indigo[50],
+      dark: indigo[700],
+      contrastText: colors.textWhiteHighEmphasis,
+    },
+    secondary: grey,
+    success: {
+      main: green[700],
+    },
+    error: {
+      main: red[700],
+    },
+    text: {
+      primary: grey[900],
+      secondary: grey[500],
+    },
+    // action: {
+    //   active: indigo[700]
+    // },
+    // Used by `getContrastText()` to maximize the contrast between
+    // the background and the text.
+    contrastThreshold: 3,
+    // Used by the functions below to shift a color's luminance by approximately
+    // two indexes within its tonal palette.
+    // E.g., shift from Red 500 to Red 300 or Red 700.
+    tonalOffset: 0.2,
+    type: "light",
+  },
+});
+
+const darkTheme = createMuiTheme({
+  palette: {
+    primary: {
+      main: indigo[500],
+      light: indigo[50],
+      dark: indigo[700],
+      contrastText: colors.textWhiteHighEmphasis,
+    },
+    secondary: grey,
+    success: {
+      main: green[700],
+    },
+    error: {
+      main: red[700],
+    },
+    text: {
+      primary: grey[900],
+      secondary: grey[500],
+    },
+    // action: {
+    //   active: indigo[700]
+    // },
+    // Used by `getContrastText()` to maximize the contrast between
+    // the background and the text.
+    contrastThreshold: 3,
+    // Used by the functions below to shift a color's luminance by approximately
+    // two indexes within its tonal palette.
+    // E.g., shift from Red 500 to Red 300 or Red 700.
+    tonalOffset: 0.2,
+    type: "dark",
+  },
+});
+
 // export const theme = responsiveFontSizes(themeRaw);
 export const theme = themeRaw;
+
+export const getTheme = (themeColor: PaletteType) => {
+  const themePalette = themeColor === "light" ? lightTheme : darkTheme;
+  themeRaw.palette = themePalette.palette;
+  return {
+    ...themeRaw,
+    palette: {
+      ...themePalette.palette,
+    },
+  };
+};

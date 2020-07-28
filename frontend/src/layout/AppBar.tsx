@@ -1,4 +1,4 @@
-import { AppBar, Breadcrumbs, createStyles, Divider, IconButton, Menu, MenuItem, Theme } from "@material-ui/core";
+import { AppBar, Breadcrumbs, createStyles, Divider, IconButton, Menu, MenuItem, Theme, Box } from "@material-ui/core";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import { logoutAction } from "actions/auth";
 import { closeTutorialDrawerAction, openTutorialDrawerAction } from "actions/tutorial";
@@ -11,6 +11,7 @@ import { FlexRowItemCenterBox } from "widgets/Box";
 import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
 import { APP_BAR_HEIGHT, APP_BAR_ZINDEX } from "./Constants";
 import { HelpIcon, KalmUserIcon, MenuOpenIcon, MenuIcon } from "widgets/Icon";
+import { ThemeToggle } from "theme/ThemeToggle";
 
 const mapStateToProps = (state: RootState) => {
   const activeNamespace = state.get("namespaces").get("active");
@@ -158,6 +159,9 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
       </div>
     );
   }
+  renderThemeIcon = () => {
+    return <ThemeToggle />;
+  };
 
   renderTutorialIcon = () => {
     const { tutorialDrawerOpen, dispatch } = this.props;
@@ -239,6 +243,8 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
             {/* <IconButtonWithTooltip tooltipTitle="Settings" style={{ color: "#fff" }} component={NavLink} to={"/roles"}>
               <SettingsIcon />
             </IconButtonWithTooltip> */}
+            <Divider orientation="vertical" flexItem color="inherit" />
+            <Box className={classes.barAvatar}>{this.renderThemeIcon()}</Box>
             <Divider orientation="vertical" flexItem color="inherit" />
             <div className={classes.barAvatar}>{this.renderTutorialIcon()}</div>
             <Divider orientation="vertical" flexItem color="inherit" />
