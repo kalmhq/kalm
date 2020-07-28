@@ -1,4 +1,4 @@
-import { Box, Button, createStyles, Link as MLink, Popover, Theme, Tooltip, WithStyles, Grid } from "@material-ui/core";
+import { Box, Button, createStyles, Popover, Theme, Tooltip, WithStyles, Grid } from "@material-ui/core";
 import { indigo } from "@material-ui/core/colors";
 import withStyles from "@material-ui/core/styles/withStyles";
 import { deleteApplicationAction } from "actions/application";
@@ -13,7 +13,6 @@ import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 import { RouteWidgets } from "pages/Route/Widget";
 import React from "react";
 import { connect } from "react-redux";
-import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { primaryColor } from "theme/theme";
 import { ApplicationDetails } from "types/application";
@@ -35,6 +34,7 @@ import { BasePage } from "../BasePage";
 import { ApplicationCard } from "widgets/ApplicationCard";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { pluralize } from "utils/string";
+import { KLink, KMLink } from "widgets/Link";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -147,13 +147,9 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
 
   private renderName = (rowData: RowData) => {
     return (
-      <Link
-        style={{ color: primaryColor }}
-        to={`/applications/${rowData.get("name")}/components`}
-        onClick={() => blinkTopProgressAction()}
-      >
+      <KLink to={`/applications/${rowData.get("name")}/components`} onClick={() => blinkTopProgressAction()}>
         {rowData.get("name")}
-      </Link>
+      </KLink>
     );
   };
 
@@ -214,7 +210,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     const tooltipTitle = `Total ${podCount} pods are found. \n${successCount} ready, ${pendingCount} pending, ${errorCount} failed. Click to view details.`;
 
     return (
-      <Link
+      <KLink
         to={`/applications/${applicationDetails.get("name")}/components`}
         style={{ color: primaryColor }}
         onClick={() => blinkTopProgressAction()}
@@ -243,7 +239,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
             ) : null}
           </FlexRowItemCenterBox>
         </Tooltip>
-      </Link>
+      </KLink>
     );
   };
 
@@ -260,9 +256,9 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         <PopupState variant="popover" popupId={applicationDetails.get("name")}>
           {(popupState) => (
             <>
-              <MLink component="button" variant="body2" {...bindTrigger(popupState)}>
+              <KMLink component="button" variant="body2" color={"inherit"} {...bindTrigger(popupState)}>
                 {pluralize("route", applicationRoutes.size)}
-              </MLink>
+              </KMLink>
               <Popover
                 style={{ zIndex: POPPER_ZINDEX }}
                 {...bindPopover(popupState)}
@@ -333,7 +329,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         {/* <H6>Applications</H6> */}
         <Button
           tutorial-anchor-id="add-application"
-          component={Link}
+          component={KLink}
           color="primary"
           size="small"
           variant="outlined"

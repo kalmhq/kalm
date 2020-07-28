@@ -3,7 +3,6 @@ import React from "react";
 import { Tutorial, TutorialFactory } from "types/tutorial";
 import { ApplicationDetails } from "types/application";
 import { store } from "store";
-import { Link } from "@material-ui/core";
 import { resetTutorialAction } from "actions/tutorial";
 import { RootState } from "reducers";
 import {
@@ -16,6 +15,7 @@ import {
 import { Actions } from "types";
 import { ActionTypes, actionTypes } from "redux-form";
 import { HttpRouteDestination } from "types/route";
+import { KMLink } from "widgets/Link";
 
 const resetTutorial = () => {
   store.dispatch(resetTutorialAction());
@@ -36,9 +36,9 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
           description: (
             <span>
               Please{" "}
-              <Link component="button" onClick={resetTutorial}>
+              <KMLink component="button" onClick={resetTutorial}>
                 go back
-              </Link>{" "}
+              </KMLink>{" "}
               and follow the <strong>Deploy an application</strong> tutorial to create an application. It's required for
               this one.
             </span>
@@ -233,9 +233,9 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
         description: (
           <span>
             Try open{" "}
-            <Link href={finialLink} target="_blank" rel="noreferer">
+            <KMLink href={finialLink} target="_blank" rel="noreferer">
               {finialLink}
-            </Link>{" "}
+            </KMLink>{" "}
             in your browser.
           </span>
         ),

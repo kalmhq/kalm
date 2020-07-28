@@ -11,7 +11,6 @@ import {
   CardHeader,
   Avatar,
   CardContent,
-  Link as MLink,
   Popover,
   Box,
   CardActions,
@@ -33,6 +32,7 @@ import { DeleteIcon, KalmDetailsIcon, KalmComponentsIcon, KalmApplicationIcon, K
 import { FoldButtonGroup } from "widgets/FoldButtonGroup";
 import { DoughnutChart } from "widgets/DoughnutChart";
 import { pluralize } from "utils/string";
+import { KMLink } from "widgets/Link";
 
 const ApplicationCardStyles = (theme: Theme) =>
   createStyles({
@@ -114,9 +114,9 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
         <PopupState variant="popover" popupId={application.get("name")}>
           {(popupState) => (
             <>
-              <MLink component="button" variant="body2" {...bindTrigger(popupState)}>
+              <KMLink component="button" variant="body2" {...bindTrigger(popupState)}>
                 {pluralize("route", applicationRoutes.size)}
-              </MLink>
+              </KMLink>
               <Popover
                 style={{ zIndex: POPPER_ZINDEX }}
                 {...bindPopover(popupState)}
