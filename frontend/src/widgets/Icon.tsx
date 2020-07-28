@@ -21,6 +21,7 @@ import Dashboard from "@material-ui/icons/Dashboard";
 import Visibility from "@material-ui/icons/Visibility";
 import VisibilityOff from "@material-ui/icons/VisibilityOff";
 import GitHubIcon from "@material-ui/icons/GitHub";
+import Forward from "@material-ui/icons/Forward";
 import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import { grey } from "@material-ui/core/colors";
 import { SvgIcon, SvgIconProps, Theme } from "@material-ui/core";
@@ -404,4 +405,10 @@ export const GithubIcon = withStyles(styles)((props: ColorIconsProps) => {
   const { fontSize, style } = props;
   const className = getClassNameByColorName(props);
   return <GitHubIcon className={className} fontSize={fontSize} style={style} />;
+});
+
+export const ForwardIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return <Forward className={className} fontSize={fontSize} style={style} />;
 });

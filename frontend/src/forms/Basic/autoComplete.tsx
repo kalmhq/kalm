@@ -418,9 +418,11 @@ function KAutoCompleteSingleValueRaw<T>(props: KAutoCompleteSingleValueProps<KAu
 
   const value = options.find((x) => x.value === input.value) || null;
 
+  const { groupLabelDefault, groupIcon, groupLabelCurrent, ...autocompleteClasses } = classes;
+
   return (
     <Autocomplete
-      classes={classes}
+      classes={autocompleteClasses}
       openOnFocus
       noOptionsText={noOptionsText}
       groupBy={(option) => option.group}
@@ -436,8 +438,8 @@ function KAutoCompleteSingleValueRaw<T>(props: KAutoCompleteSingleValueProps<KAu
         if (group.key === "default") {
           return (
             <div key={group.key}>
-              <div className={classes.groupLabelDefault}>
-                <KalmLogoIcon className={classes.groupIcon} />
+              <div className={groupLabelDefault}>
+                <KalmLogoIcon className={groupIcon} />
                 <Caption>{group.key}</Caption>
               </div>
               {group.children}
@@ -448,10 +450,8 @@ function KAutoCompleteSingleValueRaw<T>(props: KAutoCompleteSingleValueProps<KAu
           return (
             <div key={group.key}>
               <div className={classes.groupLabel}>
-                <KalmApplicationIcon className={classes.groupIcon} />
-                <Caption className={clsx(group.key.includes("Current") ? classes.groupLabelCurrent : {})}>
-                  {group.key}
-                </Caption>
+                <KalmApplicationIcon className={groupIcon} />
+                <Caption className={clsx(group.key.includes("Current") ? groupLabelCurrent : {})}>{group.key}</Caption>
               </div>
               {group.children}
               <Divider />
