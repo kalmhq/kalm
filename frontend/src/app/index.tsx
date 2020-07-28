@@ -24,9 +24,10 @@ class AppRaw extends React.PureComponent<Props, State> {
     return (
       <>
         <div id="history-prompt-anchor" />
-        <CssBaseline />
+
         <ScrollToTop>
           <ThemeProvider theme={theme}>
+            <CssBaseline />
             <Snackbar />
             {KalmRoutes}
           </ThemeProvider>

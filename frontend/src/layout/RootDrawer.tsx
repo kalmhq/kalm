@@ -16,7 +16,7 @@ import { NavLink } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
 import { APP_BAR_HEIGHT, LEFT_SECTION_CLOSE_WIDTH, LEFT_SECTION_OPEN_WIDTH } from "layout/Constants";
-import { primaryBackgroud, primaryColor } from "theme/theme";
+import { primaryColor } from "theme/theme";
 import {
   KalmApplicationIcon,
   KalmCertificatesIcon,
@@ -54,7 +54,6 @@ const styles = (theme: Theme) =>
       borderLeft: `4px solid transparent`,
     },
     listItemSeleted: {
-      backgroundColor: `${primaryBackgroud} !important`,
       borderLeft: `4px solid ${primaryColor}`,
     },
     listSubHeader: {

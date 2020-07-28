@@ -4,9 +4,7 @@ import { H5, Body, Caption } from "widgets/Label";
 
 const styles = (theme: Theme) =>
   createStyles({
-    root: {
-      backgroundColor: theme.palette.grey[50],
-    },
+    root: {},
   });
 
 interface InfoBoxOption {

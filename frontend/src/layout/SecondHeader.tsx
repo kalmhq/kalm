@@ -20,7 +20,7 @@ const styles = (theme: Theme) =>
       zIndex: SECOND_HEADER_ZINDEX,
       height: SECOND_HEADER_HEIGHT,
       width: "100%",
-      background: "white",
+      // background: "white",
       borderBottom: `1px solid ${grey[200]}`,
       display: "flex",
     },
