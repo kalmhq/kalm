@@ -17,9 +17,12 @@ jobs:
         uses: actions/checkout@v2
       - name: Use Deploy Action
         uses: kalmhq/kalm-deploy-action@v0.0.3 # Uses public action
+        id: deploy
         with:
           KALM_API_ADDRESS: ${{ secrets.KALM_API_ADDRESS }}
           KALM_DEPLOY_KEY: ${{ secrets.KALM_DEPLOY_KEY }}
           KALM_APP: kalm-system
           KALM_COMPONENT: kalm
           KALM_COMPONENT_IMG_TAG: latest
+      - name: output of step deploy
+        run: echo 'The callback response was ${{ steps.deploy.outputs.resp }}.'  
