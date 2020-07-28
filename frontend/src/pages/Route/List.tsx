@@ -10,7 +10,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { HttpRoute } from "types/route";
 import { SuccessBadge } from "widgets/Badge";
-import { DangerButton, CustomizedButton } from "widgets/Button";
+import { CustomizedButton, DangerButton } from "widgets/Button";
 import { Loading } from "widgets/Loading";
 import { Namespaces } from "widgets/Namespaces";
 import { KTable } from "widgets/Table";
@@ -18,7 +18,7 @@ import { Targets } from "widgets/Targets";
 import { OpenInBrowser } from "widgets/OpenInBrowser";
 import { CopyAsCurl } from "widgets/CopyAsCurl";
 import { EmptyList } from "widgets/EmptyList";
-import { KalmRoutesIcon } from "widgets/Icon";
+import { ForwardIcon, KalmRoutesIcon } from "widgets/Icon";
 import { indigo } from "@material-ui/core/colors";
 
 const styles = (theme: Theme) =>
@@ -79,6 +79,10 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderSupportHttp(row: RowData) {
+    if (row.get("httpRedirectToHttps") && row.get("schemes").includes("http") && row.get("schemes").includes("https")) {
+      return <ForwardIcon />;
+    }
+
     if (row.get("schemes").find((x) => x === "http")) {
       return <SuccessBadge />;
     }
@@ -169,7 +173,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
       <EmptyList
         image={<KalmRoutesIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
         title={"You don't have any Routes"}
-        content="Routes let you specify how external requests should be handled by your application. You can define the host and path for services, configure HTTPS access, and setup advanced schemes such as Blue-Green deployment or Canary releases."
+        content="Add a Route to allow external requests to your Application. You can use Routes to specify how hosts and paths map to components, configure HTTPS, and setup canary and blue-green deployments."
         button={
           <CustomizedButton
             variant="contained"
@@ -179,7 +183,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
               dispatch(push(`/applications/${activeNamespaceName}/routes/new`));
             }}
           >
-            Create New Route
+            Add Route
           </CustomizedButton>
         }
       />

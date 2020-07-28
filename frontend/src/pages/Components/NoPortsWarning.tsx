@@ -18,7 +18,7 @@ export const NoPortsWarning = () => {
   return (
     <Warning
       title="No exposed ports"
-      tooltip="This means that there is no entrance for traffic to reach this component. This is not a bug, some components do not need to handle external traffic. You can turn off these reminders in the settings."
+      tooltip="If you want to add routes to a Component and handle external traffic requests, you must first expose the corresponding ports."
     />
   );
 };
@@ -26,7 +26,7 @@ export const NoLivenessProbeWarning = () => {
   return (
     <Warning
       title="No liveness probe"
-      tooltip="Sometimes, a component may be running for long periods of time eventually transitions to broken state, and cannot recover except by being restarted. Liveness probes detect and remedy such situations by restarting it."
+      tooltip="Liveness probes help detect if problematic containers should be restarted. You can set one up in a Component's `Health` section."
     />
   );
 };
@@ -35,7 +35,7 @@ export const NoReadinessProbeWarning = () => {
   return (
     <Warning
       title="No readiness probe"
-      tooltip="Sometimes, components are temporarily unable to serve traffic after startup due to some heavy initialized steps. In such cases, you don't want to kill the application, but you don’t want to send it requests either. Readiness probes is to detect and mitigate these situations. Component with failed readiness probe does not receive traffic."
+      tooltip="Readiness probes help detect when containers are ready to accept traffic. You can set one up in a Component's `Health` section."
     />
   );
 };

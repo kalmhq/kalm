@@ -108,9 +108,9 @@ let themeRaw = createMuiTheme({
     },
     MuiInputLabel: {
       root: {
-        fontWeight: 500,
-        fontSize: 13,
-        color: "#000",
+        // fontWeight: 500,
+        fontSize: 16,
+        // color: "#000",
       },
     },
     MuiPaper: {

@@ -22,7 +22,6 @@ const mapStateToProps = (state: RootState) => {
 const styles = (theme: Theme) =>
   createStyles({
     listItem: {
-      color: "#000000 !important",
       height: 40,
 
       "& > .MuiListItemIcon-root": {
@@ -37,7 +36,9 @@ const styles = (theme: Theme) =>
     },
     listSubHeader: {
       textTransform: "uppercase",
-      color: "#000000 !important",
+    },
+    listItemText: {
+      "font-size": theme.typography.subtitle1.fontSize,
     },
   });
 
@@ -71,7 +72,7 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
         icon: <KalmRoutesIcon />,
       },
       {
-        text: "Metric Dashboard",
+        text: "Metrics",
         to: "/applications/" + activeNamespaceName + "/metrics",
         highlightWhenExact: true,
         icon: <DashboardIcon />,
@@ -102,7 +103,7 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
             selected={item.highlightWhenExact ? pathname === item.to : pathname.startsWith(item.to.split("?")[0])}
           >
             <ListItemIcon>{item.icon ? item.icon : <AppsIcon />}</ListItemIcon>
-            <ListItemText primary={item.text} />
+            <ListItemText classes={{ primary: classes.listItemText }} primary={item.text} />
           </ListItem>
         ))}
       </List>

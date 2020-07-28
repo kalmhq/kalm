@@ -2,12 +2,17 @@ import createThunkErrorHandlerMiddleware from "redux-thunk-error-handler";
 import { StatusFailure } from "types";
 import { setErrorNotificationAction } from "actions/notification";
 import { store } from "store";
+import { throttle } from "utils";
 
 const ErrorHandler = (e: any) => {
   if (e.response && e.response.data.status === StatusFailure) {
-    store.dispatch(setErrorNotificationAction(e.response.data.message));
+    throttle(
+      e.response.data.message,
+      () => store.dispatch(setErrorNotificationAction(e.response.data.message)),
+      5000,
+    )();
   } else {
-    store.dispatch(setErrorNotificationAction(e.message));
+    throttle(e.message, () => store.dispatch(setErrorNotificationAction(e.message)), 5000)();
     console.log(e);
   }
 };

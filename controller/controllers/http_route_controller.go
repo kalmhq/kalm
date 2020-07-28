@@ -18,9 +18,12 @@ package controllers
 import (
 	"context"
 	"fmt"
-	pbTypes "github.com/gogo/protobuf/types"
+	protoTypes "github.com/gogo/protobuf/types"
+	"istio.io/api/networking/v1alpha3"
 	istioNetworkingV1Beta1 "istio.io/api/networking/v1beta1"
+	v1alpha32 "istio.io/client-go/pkg/apis/networking/v1alpha3"
 	"istio.io/client-go/pkg/apis/networking/v1beta1"
+	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"math"
 	"net/http"
@@ -42,16 +45,26 @@ const (
 
 type HttpRouteReconcilerTask struct {
 	*HttpRouteReconciler
-	ctx             context.Context
-	routes          []corev1alpha1.HttpRoute
-	gateways        []v1beta1.Gateway
-	virtualServices []v1beta1.VirtualService
+	ctx                       context.Context
+	routes                    []corev1alpha1.HttpRoute
+	gateways                  []v1beta1.Gateway
+	virtualServices           []v1beta1.VirtualService
+	httpsRedirectEnvoyFilters []v1alpha32.EnvoyFilter
+}
+
+func getIstioHttpRouteName(route *corev1alpha1.HttpRoute) string {
+	return fmt.Sprintf("kalm-route-%s", route.Name)
+}
+
+func getHttpsRedirectEnvoyFilterName(route *corev1alpha1.HttpRoute) string {
+	return fmt.Sprintf("https-redirect-%s", route.Name)
 }
 
 // will not care about match
 func (r *HttpRouteReconcilerTask) buildIstioHttpRoute(route *corev1alpha1.HttpRoute) *istioNetworkingV1Beta1.HTTPRoute {
 	spec := &route.Spec
 	httpRoute := &istioNetworkingV1Beta1.HTTPRoute{
+		Name:  getIstioHttpRouteName(route),
 		Route: r.BuildDestinations(route),
 	}
 
@@ -62,7 +75,7 @@ func (r *HttpRouteReconcilerTask) buildIstioHttpRoute(route *corev1alpha1.HttpRo
 	}
 
 	if spec.Timeout != nil {
-		httpRoute.Timeout = &pbTypes.Duration{
+		httpRoute.Timeout = &protoTypes.Duration{
 			Seconds: int64(*spec.Timeout),
 		}
 	}
@@ -70,7 +83,7 @@ func (r *HttpRouteReconcilerTask) buildIstioHttpRoute(route *corev1alpha1.HttpRo
 	if spec.Retries != nil {
 		httpRoute.Retries = &istioNetworkingV1Beta1.HTTPRetry{
 			Attempts: int32(spec.Retries.Attempts),
-			PerTryTimeout: &pbTypes.Duration{
+			PerTryTimeout: &protoTypes.Duration{
 				Seconds: int64(spec.Retries.PerTtyTimeoutSeconds),
 			},
 			RetryOn: strings.Join(spec.Retries.RetryOn, ","),
@@ -110,7 +123,7 @@ func (r *HttpRouteReconcilerTask) buildIstioHttpRoute(route *corev1alpha1.HttpRo
 				Value: float64(spec.Delay.Percentage),
 			},
 			HttpDelayType: &istioNetworkingV1Beta1.HTTPFaultInjection_Delay_FixedDelay{
-				FixedDelay: &pbTypes.Duration{
+				FixedDelay: &protoTypes.Duration{
 					Seconds: int64(spec.Delay.DelaySeconds),
 				},
 			},
@@ -122,7 +135,7 @@ func (r *HttpRouteReconcilerTask) buildIstioHttpRoute(route *corev1alpha1.HttpRo
 			AllowOrigins: make([]*istioNetworkingV1Beta1.StringMatch, 0, len(spec.CORS.AllowOrigins)),
 			AllowMethods: spec.CORS.AllowMethods,
 			AllowHeaders: spec.CORS.AllowHeaders,
-			MaxAge: &pbTypes.Duration{
+			MaxAge: &protoTypes.Duration{
 				Seconds: int64(spec.CORS.MaxAgeSeconds),
 			},
 		}
@@ -132,6 +145,65 @@ func (r *HttpRouteReconcilerTask) buildIstioHttpRoute(route *corev1alpha1.HttpRo
 		}
 	}
 	return httpRoute
+}
+
+// Kalm route level http to https redirect is achieved by adding envoy filter for istio ingress gateway
+//
+func (r *HttpRouteReconcilerTask) buildHttpsRedirectEnvoyFilter(route *corev1alpha1.HttpRoute) (*v1alpha32.EnvoyFilter, error) {
+	filter := &v1alpha32.EnvoyFilter{
+		ObjectMeta: metaV1.ObjectMeta{
+			Namespace: istioNamespace,
+			Name:      getHttpsRedirectEnvoyFilterName(route),
+			Labels: map[string]string{
+				KALM_ROUTE_LABEL: "true",
+			},
+		},
+		Spec: v1alpha3.EnvoyFilter{
+			WorkloadSelector: &v1alpha3.WorkloadSelector{
+				Labels: map[string]string{
+					"app": "istio-ingressgateway",
+				},
+			},
+			ConfigPatches: []*v1alpha3.EnvoyFilter_EnvoyConfigObjectPatch{
+				{
+					ApplyTo: v1alpha3.EnvoyFilter_HTTP_ROUTE,
+					Match: &v1alpha3.EnvoyFilter_EnvoyConfigObjectMatch{
+						Context: v1alpha3.EnvoyFilter_GATEWAY,
+						ObjectTypes: &v1alpha3.EnvoyFilter_EnvoyConfigObjectMatch_RouteConfiguration{
+							RouteConfiguration: &v1alpha3.EnvoyFilter_RouteConfigurationMatch{
+								Vhost: &v1alpha3.EnvoyFilter_RouteConfigurationMatch_VirtualHostMatch{
+									Route: &v1alpha3.EnvoyFilter_RouteConfigurationMatch_RouteMatch{
+										Name: getIstioHttpRouteName(route),
+									},
+								},
+							},
+						},
+					},
+					Patch: &v1alpha3.EnvoyFilter_Patch{
+						Operation: v1alpha3.EnvoyFilter_Patch_MERGE,
+						Value: golangMapToProtoStruct(map[string]interface{}{
+							"match": map[string]interface{}{
+								"prefix": "/",
+							},
+							"redirect": map[string]interface{}{
+								"https_redirect": true,
+							},
+						}),
+					},
+				},
+			},
+		},
+	}
+
+	// TODO route and filter are in different namespace. Can't set owner relationship for them.
+	// This part will be removed or uncomment after we have a decision of http route scope.
+
+	//if err := ctrl.SetControllerReference(route, filter, r.Scheme); err != nil {
+	//	r.EmitWarningEvent(route, err, "unable to set owner for https redirect envoy filter")
+	//	return nil, err
+	//}
+
+	return filter, nil
 }
 
 func (r *HttpRouteReconcilerTask) buildIstioHttpRoutes(route *corev1alpha1.HttpRoute) []*istioNetworkingV1Beta1.HTTPRoute {
@@ -192,6 +264,7 @@ func sortRoutes(a, b *istioNetworkingV1Beta1.HTTPRoute) bool {
 }
 
 func (r *HttpRouteReconcilerTask) Run(ctrl.Request) error {
+
 	var routes corev1alpha1.HttpRouteList
 	if err := r.Reader.List(r.ctx, &routes); err != nil {
 		return err
@@ -203,6 +276,12 @@ func (r *HttpRouteReconcilerTask) Run(ctrl.Request) error {
 		return err
 	}
 	r.virtualServices = virtualServices.Items
+
+	var httpsRedirectEnvoyFilters v1alpha32.EnvoyFilterList
+	if err := r.Reader.List(r.ctx, &httpsRedirectEnvoyFilters, client.MatchingLabels{KALM_ROUTE_LABEL: "true"}); err != nil {
+		return err
+	}
+	r.httpsRedirectEnvoyFilters = httpsRedirectEnvoyFilters.Items
 
 	// Each host will has a virtual service
 	// Kalm will order http route rules, and set them in the virtual service http field.
@@ -224,6 +303,42 @@ func (r *HttpRouteReconcilerTask) Run(ctrl.Request) error {
 		sort.Slice(routes, func(i, j int) bool { return sortRoutes(routes[i], routes[j]) })
 
 		if err := r.SaveVirtualService(host, routes); err != nil {
+			return err
+		}
+	}
+
+	httpsRedirectFilterMap := make(map[string]*v1alpha32.EnvoyFilter)
+
+	for _, filter := range r.httpsRedirectEnvoyFilters {
+		httpsRedirectFilterMap[filter.Name] = &filter
+	}
+
+	// Create or delete envoy filter on gateway for routes
+	for _, route := range r.routes {
+		filterName := getHttpsRedirectEnvoyFilterName(&route)
+		if route.Spec.HttpRedirectToHttps {
+			if _, ok := httpsRedirectFilterMap[filterName]; !ok {
+				filter, err := r.buildHttpsRedirectEnvoyFilter(&route)
+
+				if err != nil {
+					return err
+				}
+
+				if err := r.Create(r.ctx, filter); err != nil {
+					r.EmitWarningEvent(&route, err, "Create Https Redirect filter Error")
+					return err
+				}
+			} else {
+				delete(httpsRedirectFilterMap, filterName)
+			}
+		}
+	}
+
+	// clean left unused envoy filters
+	for filterName := range httpsRedirectFilterMap {
+		filter := httpsRedirectFilterMap[filterName]
+
+		if err := r.Delete(r.ctx, filter); err != nil {
 			return err
 		}
 	}
@@ -378,55 +493,77 @@ func (r *HttpRouteReconcilerTask) BuildMatches(route *corev1alpha1.HttpRoute) []
 	)
 
 	for _, path := range spec.Paths {
-		for _, method := range spec.Methods {
+		var methodRegexp strings.Builder
+		methodRegexp.WriteString("^(")
 
-			match := &istioNetworkingV1Beta1.HTTPMatchRequest{
-				Method: &istioNetworkingV1Beta1.StringMatch{
-					MatchType: &istioNetworkingV1Beta1.StringMatch_Exact{
-						Exact: string(method),
-					},
+		for i, method := range spec.Methods {
+			methodRegexp.WriteString(string(method))
+
+			if i < len(spec.Methods)-1 {
+				methodRegexp.WriteString("|")
+			}
+		}
+
+		methodRegexp.WriteString(")$")
+
+		match := &istioNetworkingV1Beta1.HTTPMatchRequest{
+			Method: &istioNetworkingV1Beta1.StringMatch{
+				MatchType: &istioNetworkingV1Beta1.StringMatch_Regex{
+					Regex: methodRegexp.String(),
+				},
+			},
+		}
+
+		match.Gateways = make([]string, 0, 2)
+
+		for _, scheme := range spec.Schemes {
+			if scheme == "http" {
+				match.Gateways = append(
+					match.Gateways,
+					HTTP_GATEWAY_NAMESPACED_NAME.String(),
+				)
+			} else if scheme == "https" {
+				match.Gateways = append(
+					match.Gateways,
+					HTTPS_GATEWAY_NAMESPACED_NAME.String(),
+				)
+			}
+		}
+
+		// TODO check the path is a regexp or not.
+
+		// https://github.com/istio/istio/blob/6d6a23d1a644a19cec87d7641c4747135d35692b/pilot/pkg/networking/core/v1alpha3/route/route.go#L1026
+		// This is a hack of istio route translation logic, which I think is wrong.
+		// The isCacheAllMatch doesn't consider about m.Methods and will ignore all match cases behind.
+		// If the path is prefix "/", leave the Uri nil to bypass this logic.
+		if path != "/" {
+			match.Uri = &istioNetworkingV1Beta1.StringMatch{
+				MatchType: &istioNetworkingV1Beta1.StringMatch_Prefix{
+					Prefix: path,
+				},
+			}
+		}
+
+		r.PatchConditionsToHttpMatch(match, spec)
+		res = append(res, match)
+
+		// Prevent double slash after strip path rewrite
+		// Assume we have a route that enabled strip path and has a path prefix with /bbbb
+		//   Request #1 with path /bbbbaaaa will be rewritten to /aaaa, this is CORRECT
+		//   Request #2 with path /bbbb/aaaa will be rewritten to //aaaa, which has double slashes and it is WRONG
+		// To solve this, add another route with path prefix /bbbb/
+		//   Request #1 doesn't match this route. Skip
+		//   Request #2 will be rewritten to /aaaa, which is correct.
+		if route.Spec.StripPath && path != "/" {
+			copyedMatch := match.DeepCopy()
+
+			copyedMatch.Uri = &istioNetworkingV1Beta1.StringMatch{
+				MatchType: &istioNetworkingV1Beta1.StringMatch_Prefix{
+					Prefix: path + "/",
 				},
 			}
 
-			match.Gateways = make([]string, 0, 2)
-
-			for _, scheme := range spec.Schemes {
-				if scheme == "http" {
-					//if spec.HttpRedirectToHttps {
-					//	match.Gateways = append(
-					//		match.Gateways,
-					//		HTTP_REDIRECT_GATEWAY_NAMESPACED_NAME.String(),
-					//	)
-					//} else {
-					match.Gateways = append(
-						match.Gateways,
-						HTTP_GATEWAY_NAMESPACED_NAME.String(),
-					)
-					//}
-				} else {
-					match.Gateways = append(
-						match.Gateways,
-						HTTPS_GATEWAY_NAMESPACED_NAME.String(),
-					)
-				}
-			}
-
-			// TODO check the path is a regexp or not.
-
-			// https://github.com/istio/istio/blob/6d6a23d1a644a19cec87d7641c4747135d35692b/pilot/pkg/networking/core/v1alpha3/route/route.go#L1026
-			// This is a hack of istio route translation logic, which I think is wrong.
-			// The isCacheAllMatch doesn't consider about m.Methods and will ignore all match cases behind.
-			// If the path is prefix "/", leave the Uri nil to bypass this logic.
-			if path != "/" {
-				match.Uri = &istioNetworkingV1Beta1.StringMatch{
-					MatchType: &istioNetworkingV1Beta1.StringMatch_Prefix{
-						Prefix: path,
-					},
-				}
-			}
-
-			r.PatchConditionsToHttpMatch(match, spec)
-			res = append(res, match)
+			res = append(res, copyedMatch)
 		}
 	}
 
@@ -560,6 +697,7 @@ func NewHttpRouteReconciler(mgr ctrl.Manager) *HttpRouteReconciler {
 
 type WatchAllKalmGateway struct{}
 type WatchAllKalmVirtualService struct{}
+type WatchAllKalmEnvoyFilter struct{}
 
 func (*WatchAllKalmGateway) Map(object handler.MapObject) []reconcile.Request {
 	gateway, ok := object.Object.(*v1beta1.Gateway)
@@ -579,6 +717,13 @@ func (*WatchAllKalmVirtualService) Map(object handler.MapObject) []reconcile.Req
 
 	return []reconcile.Request{{NamespacedName: types.NamespacedName{}}}
 }
+func (*WatchAllKalmEnvoyFilter) Map(object handler.MapObject) []reconcile.Request {
+	vs, ok := object.Object.(*v1alpha32.EnvoyFilter)
+	if !ok || vs.Labels == nil || vs.Labels[KALM_ROUTE_LABEL] != "true" {
+		return nil
+	}
+	return []reconcile.Request{{NamespacedName: types.NamespacedName{}}}
+}
 
 func (r *HttpRouteReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
@@ -593,6 +738,12 @@ func (r *HttpRouteReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			&source.Kind{Type: &v1beta1.VirtualService{}},
 			&handler.EnqueueRequestsFromMapFunc{
 				ToRequests: &WatchAllKalmVirtualService{},
+			},
+		).
+		Watches(
+			&source.Kind{Type: &v1alpha32.EnvoyFilter{}},
+			&handler.EnqueueRequestsFromMapFunc{
+				ToRequests: &WatchAllKalmEnvoyFilter{},
 			},
 		).
 		Complete(r)

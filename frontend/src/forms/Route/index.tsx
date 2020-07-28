@@ -3,7 +3,7 @@ import Typography from "@material-ui/core/Typography";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { Alert, AlertTitle } from "@material-ui/lab";
 import { KFreeSoloAutoCompleteMultiValues } from "forms/Basic/autoComplete";
-import { KCheckboxGroupRender } from "forms/Basic/checkbox";
+import { KBoolCheckboxRender, KCheckboxGroupRender } from "forms/Basic/checkbox";
 import { Link as RouteLink } from "react-router-dom";
 import { KRadioGroupRender } from "forms/Basic/radio";
 import { shouldError } from "forms/common";
@@ -20,7 +20,7 @@ import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { State as TutorialState } from "reducers/tutorial";
-import { arrayPush, InjectedFormProps } from "redux-form";
+import { arrayPush, change, InjectedFormProps } from "redux-form";
 import { Field, FieldArray, formValueSelector, getFormSyncErrors, reduxForm } from "redux-form/immutable";
 import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
@@ -46,6 +46,7 @@ const mapStateToProps = (state: RootState) => {
   const domains: Set<string> = new Set();
   const hosts = selector(state, "hosts") as Immutable.List<string>;
   const domainStatus = state.get("domain").filter((status) => hosts.includes(status.get("domain")));
+  const httpRedirectToHttps = !!selector(state, "httpRedirectToHttps") as boolean;
 
   certifications.forEach((x) => {
     x.get("domains")
@@ -59,6 +60,7 @@ const mapStateToProps = (state: RootState) => {
     schemes: selector(state, "schemes") as Immutable.List<string>,
     methodsMode: selector(state, "methodsMode") as string,
     hosts,
+    httpRedirectToHttps,
     domainStatus,
     destinations: selector(state, "destinations") as Immutable.List<HttpRouteDestination>,
     domains: Array.from(domains),
@@ -134,11 +136,16 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
   }
 
   componentDidUpdate(prevProps: Props) {
-    const { hosts, dispatch } = this.props;
+    const { schemes, httpRedirectToHttps, hosts, dispatch, form } = this.props;
     if (!hosts.equals(prevProps.hosts)) {
       hosts.forEach((host) => {
         dispatch(loadDomainDNSInfo(host));
       });
+    }
+
+    // set httpRedirectToHttps to false if http or https is not in schemes
+    if (!(schemes.includes("http") && schemes.includes("https")) && httpRedirectToHttps) {
+      dispatch(change(form, "httpRedirectToHttps", false));
     }
   }
 
@@ -418,13 +425,19 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       InputLabelProps={{
                         shrink: true,
                       }}
-                      label="Paths"
+                      label="Path Prefixes"
                       component={KFreeSoloAutoCompleteMultiValues}
                       name="paths"
                       margin="normal"
                       validate={pathsValidators}
-                      placeholder="Type a path"
+                      placeholder="e.g. /foo/bar"
                       helperText='Allow to configure multiple paths. Each path must begin with "/".'
+                    />
+                    <Field
+                      component={KBoolCheckboxRender}
+                      name="stripPath"
+                      label={<span>Strip path prefix</span>}
+                      helperText={'If enabled, Path prefixes will be rewrite to "/" when request reaches targets.'}
                     />
                   </Box>
                 }
@@ -453,18 +466,16 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       ]}
                     />
                     <Collapse in={methodsMode === methodsModeSpecific}>
-                      <div>
-                        <Field
-                          title="Choose methods you need"
-                          component={KCheckboxGroupRender}
-                          componentType={"Checkbox"}
-                          validate={methodsMode === methodsModeSpecific ? ValidatorListNotEmpty : []}
-                          name="methods"
-                          options={httpMethods.map((m) => {
-                            return { value: m, label: m };
-                          })}
-                        />
-                      </div>
+                      <Field
+                        title="Choose methods you need"
+                        component={KCheckboxGroupRender}
+                        componentType={"Checkbox"}
+                        validate={methodsMode === methodsModeSpecific ? ValidatorListNotEmpty : []}
+                        name="methods"
+                        options={httpMethods.map((m) => {
+                          return { value: m, label: m };
+                        })}
+                      />
                     </Collapse>
                     <Field
                       title="Allow traffic through"
@@ -484,20 +495,17 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                         },
                       ]}
                     />
-                    {/* TODO: wait backend fix this. */}
-                    {/* <Collapse in={schemes.includes("http")}>
-            <div>
-              <Field
-                component={KBoolCheckboxRender}
-                name="httpRedirectToHttps"
-                label={
-                  <span>
-                    Redirect all <strong>http</strong> request to <strong>https</strong> with 301 status code.
-                  </span>
-                }
-              />
-            </div>
-          </Collapse> */}
+                    <Collapse in={schemes.includes("http") && schemes.includes("https")}>
+                      <Field
+                        component={KBoolCheckboxRender}
+                        name="httpRedirectToHttps"
+                        label={
+                          <span>
+                            Redirect all <strong>http</strong> request to <strong>https</strong> with 301 status code.
+                          </span>
+                        }
+                      />
+                    </Collapse>
                     <Collapse in={schemes.includes("https")}>
                       <Alert className="alert" severity="info">
                         You choosed https. Please note that the TLS termination will be happened in this route level,

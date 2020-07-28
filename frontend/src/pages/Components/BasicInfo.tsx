@@ -36,6 +36,7 @@ import clsx from "clsx";
 import { SecretValueLabel } from "widgets/Label";
 import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
 import { sizeStringToMi } from "utils/sizeConv";
+import stringConsts from "utils/stringConstants";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -193,7 +194,7 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     return (
       <Grid container className={classes.gridWrapper}>
         <Grid item md={2}>
-          {component.get("cpu") ? `Allocated: ${component.get("cpu")}` : "No Limit"}
+          {component.get("cpu") ? `Allocated: ${component.get("cpu")}` : stringConsts.LIMIT_NOT_SET}
         </Grid>
         <Grid item md={10}>
           Usage: <SmallCPULineChart data={component.get("metrics").get("cpu")!} />
@@ -207,7 +208,9 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     return (
       <Grid container className={classes.gridWrapper}>
         <Grid item md={2}>
-          {component.get("memory") ? `Allocated: ${sizeStringToMi(`${component.get("memory")}`)}Mi` : "No Limit"}
+          {component.get("memory")
+            ? `Allocated: ${sizeStringToMi(`${component.get("memory")}`)}Mi`
+            : stringConsts.LIMIT_NOT_SET}
         </Grid>
         <Grid item md={10}>
           Usage: <SmallMemoryLineChart data={component.get("metrics").get("memory")!} />

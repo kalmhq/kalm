@@ -1,4 +1,4 @@
-import { Box, createStyles, Link, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { deleteRegistryAction } from "actions/registries";
 import React from "react";
 import { connect } from "react-redux";
@@ -34,6 +34,9 @@ const mapStateToProps = (state: RootState) => {
     registries: registriesState.get("registries"),
   };
 };
+
+const pageObjectName: string = "Private Registry";
+const pageObjectNamePlural: string = "Private Registries";
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
@@ -185,7 +188,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
             dispatch(openDialogAction(RegistryNewModalID));
           }}
         >
-          Add Private Docker Registrie
+          Add {pageObjectName}
         </CustomizedButton>
       </>
     );
@@ -197,8 +200,8 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
     return (
       <EmptyList
         image={<KalmRegistryIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
-        title={"You don’t have any Private Image Registries."}
-        content="To pull images from Private registries such as gcr or aws, you must setup the corresponding permissions here. Public registries such as dockerhub can be used without any additional setup."
+        title={`You don’t have any ${pageObjectNamePlural}`}
+        content="To pull images hosted on a private registry, first add an entry with login info here. Public registries such as Docker Hub can be used directly."
         button={
           <CustomizedButton
             variant="contained"
@@ -211,7 +214,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
               dispatch(openDialogAction(RegistryNewModalID));
             }}
           >
-            Add Registry
+            Add {pageObjectName}
           </CustomizedButton>
         }
       />
@@ -219,28 +222,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderInfoBox() {
-    const title = "Load Balancer References";
-
-    const options = [
-      {
-        title: (
-          <Link href="#" target="_blank">
-            Link to docks
-          </Link>
-        ),
-        content: "",
-      },
-      {
-        title: (
-          <Link href="#" target="_blank">
-            Link to tutorial
-          </Link>
-        ),
-        content: "",
-      },
-    ];
-
-    return <InfoBox title={title} options={options}></InfoBox>;
+    return <InfoBox title={pageObjectName} options={[]} guideLink={"https://kalm.dev/docs/registry"}></InfoBox>;
   }
 
   public render() {
