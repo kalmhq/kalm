@@ -85,14 +85,6 @@ func (m *MemoryQuantity) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf(`"%s"`, capInStr)), nil
 }
 
-//type ComponentDetails struct {
-//	*Component           `json:",inline"`
-//	Metrics              MetricHistories       `json:"metrics"`
-//	IstioMetricHistories *IstioMetricHistories `json:"istioMetricHistories"`
-//	Services             []ServiceStatus       `json:"services"`
-//	Pods                 []PodStatus           `json:"pods"`
-//}
-
 type ComponentDetails struct {
 	*ComponentForResp    `json:",inline"`
 	Metrics              MetricHistories       `json:"metrics"`
