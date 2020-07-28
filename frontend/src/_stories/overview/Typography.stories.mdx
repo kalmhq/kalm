@@ -3,10 +3,11 @@ import { Meta, Typeset, Story, Preview, Props } from "@storybook/addon-docs/bloc
 import typography from "theme/typography";
 
 import { H3, H4, H5, H6, Subtitle1, Subtitle2, Body, Body2, Caption, CenterCaption } from "widgets/Label";
-
+import { primaryColor, getTheme } from "theme/theme";
 import { ColorfulTypeset } from "../ColorfulTypeset";
-import colors from "theme/colors";
-const sampleText = "Kubernetes Application Manager";
+
+export const sampleText = "Kubernetes Application Manager";
+export const palette = getTheme("light").palette;
 
 <Meta title="Design System/Typography" />
 
@@ -22,8 +23,8 @@ const sampleText = "Kubernetes Application Manager";
 
 <Story name="blackDisabledEmphasis in surfacePage">
   <ColorfulTypeset
-    foregroundColor={colors.textBlackHighEmphasis}
-    backgroundColor={colors.surfacePage}
+    foregroundColor={palette.text.primary.main}
+    backgroundColor={palette.background.default}
     labels={[H3, H4, H5, H6, Subtitle1, Subtitle2, Body, Body2, Caption]}
     sampleText={sampleText}
   />
@@ -37,8 +38,8 @@ const sampleText = "Kubernetes Application Manager";
 
 <Story name="whiteHighEmphasis in primary">
   <ColorfulTypeset
-    foregroundColor={colors.textWhiteHighEmphasis}
-    backgroundColor={colors.primary}
+    foregroundColor={palette.primary.contrastText}
+    backgroundColor={palette.primary.main}
     labels={[H3, H4, H5, H6, Subtitle1, Subtitle2, Body, Body2, Caption]}
     sampleText={sampleText}
   />
