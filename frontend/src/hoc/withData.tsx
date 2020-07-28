@@ -113,7 +113,7 @@ class WithDataRaw extends React.PureComponent<Props> {
           break;
         }
         case RESOURCE_TYPE_COMPONENT: {
-          throttle("reloadResouces", reloadResouces, 5000)();
+          throttle("reloadResouces", reloadResouces, 10000)();
           dispatch({
             type: WATCHED_RESOURCE_CHANGE,
             kind: RESOURCE_TYPE_COMPONENT,

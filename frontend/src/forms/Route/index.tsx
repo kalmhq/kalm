@@ -1,4 +1,5 @@
-import { Box, Button, Collapse, Grid, Icon, Link, Typography } from "@material-ui/core";
+import { Box, Button, Collapse, Grid, Icon, Link } from "@material-ui/core";
+import Typography from "@material-ui/core/Typography";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { Alert, AlertTitle } from "@material-ui/lab";
 import { KFreeSoloAutoCompleteMultiValues } from "forms/Basic/autoComplete";
@@ -30,8 +31,9 @@ import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { RenderHttpRouteConditions } from "./conditions";
 import { RenderHttpRouteDestinations } from "./destinations";
-import { loadDomainDNSTypeInfo } from "actions/domain";
 import routesGif from "images/routes.gif";
+import { loadDomainDNSInfo } from "actions/domain";
+import DomainStatus from "widgets/DomainStatus";
 
 const mapStateToProps = (state: RootState) => {
   const form = ROUTE_FORM_ID;
@@ -40,7 +42,6 @@ const mapStateToProps = (state: RootState) => {
   const certifications = state.get("certificates").get("certificates");
   const domains: Set<string> = new Set();
   const hosts = selector(state, "hosts") as Immutable.List<string>;
-  const domainStatus = state.get("domain").filter((status) => hosts.includes(status.get("domain")));
   const httpRedirectToHttps = !!selector(state, "httpRedirectToHttps") as boolean;
 
   certifications.forEach((x) => {
@@ -56,7 +57,6 @@ const mapStateToProps = (state: RootState) => {
     methodsMode: selector(state, "methodsMode") as string,
     hosts,
     httpRedirectToHttps,
-    domainStatus,
     destinations: selector(state, "destinations") as Immutable.List<HttpRouteDestination>,
     domains: Array.from(domains),
     ingressIP: state.get("cluster").get("info").get("ingressIP"),
@@ -129,8 +129,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
     const { schemes, httpRedirectToHttps, hosts, dispatch, form } = this.props;
     if (!hosts.equals(prevProps.hosts)) {
       hosts.forEach((host) => {
-        dispatch(loadDomainDNSTypeInfo(host, "A"));
-        dispatch(loadDomainDNSTypeInfo(host, "CNAME"));
+        dispatch(loadDomainDNSInfo(host));
       });
     }
 
@@ -330,17 +329,10 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
       dirty,
       submitSucceeded,
       change,
-      domainStatus,
       isEdit,
+      hosts,
     } = this.props;
-    const loadingIconStatus = domainStatus.map((status) => {
-      return !status?.get("cname");
-    });
-    const errorIconStatus = domainStatus.map((status) => {
-      const aRecords = status?.get("aRecords");
-      return (!aRecords || !aRecords.includes(ingressIP)) && status.get("domain") !== ingressIP;
-    });
-
+    const icons = hosts.map((host) => <DomainStatus domain={host} />);
     return (
       <div className={classes.root}>
         <Grid container spacing={2}>
@@ -355,12 +347,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       InputLabelProps={{
                         shrink: true,
                       }}
-                      loadingIconTooltipText="checking domain status"
-                      errorIconTooltipText={`please add an A record with your dns provider, point to ${ingressIP}`}
-                      successIconTooltipText="the domain is successfully configured!"
-                      loadingIconStatus={loadingIconStatus}
-                      errorIconStatus={errorIconStatus}
-                      displayStatusIcon={true}
+                      icons={icons}
                       label="Hosts"
                       component={KFreeSoloAutoCompleteMultiValues}
                       name="hosts"
@@ -373,7 +360,10 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                           <Link
                             href="#"
                             onClick={() => {
-                              change("hosts", Immutable.List([ingressIP]));
+                              const isHostsIncludeIngressIP = !!hosts.find((host) => host === ingressIP);
+                              if (!isHostsIncludeIngressIP) {
+                                change("hosts", hosts.push(ingressIP));
+                              }
                             }}
                           >
                             {ingressIP}

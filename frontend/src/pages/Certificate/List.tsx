@@ -1,4 +1,4 @@
-import { Box, createStyles, Theme, WithStyles, withStyles, Button } from "@material-ui/core";
+import { Box, createStyles, Theme, WithStyles, withStyles, Button, Typography } from "@material-ui/core";
 import { deleteCertificateAction, setEditCertificateModalAction } from "actions/certificate";
 import { openDialogAction } from "actions/dialog";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
@@ -24,6 +24,7 @@ import { CustomizedButton } from "widgets/Button";
 import { EmptyList } from "widgets/EmptyList";
 import { indigo } from "@material-ui/core/colors";
 import { InfoBox } from "widgets/InfoBox";
+import DomainStatus from "widgets/DomainStatus";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -70,7 +71,12 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     return (
       <>
         {rowData.get("domains")?.map((domain) => {
-          return <div key={domain}>{domain}</div>;
+          return (
+            <FlexRowItemCenterBox key={domain}>
+              <DomainStatus domain={domain} />
+              <Typography>{domain}</Typography>
+            </FlexRowItemCenterBox>
+          );
         })}
       </>
     );

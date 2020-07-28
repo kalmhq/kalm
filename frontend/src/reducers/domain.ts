@@ -10,7 +10,11 @@ const reducer = (state: State = initialState, action: Actions): State => {
   switch (action.type) {
     case INIT_DOMAIN_STATUS: {
       const { domain } = action.payload;
-      return state.set(domain, Immutable.Map({ domain }));
+      const currentDomain = state.get(domain);
+      if (!currentDomain) {
+        state = state.set(domain, Immutable.Map({ domain }));
+      }
+      return state;
     }
     case SET_DOMAIN_A_RECORDS: {
       const { domain, aRecords } = action.payload;

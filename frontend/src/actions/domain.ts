@@ -16,26 +16,28 @@ interface CnameResponse {
   type: number;
 }
 
-export const loadDomainDNSTypeInfo = (domain: string, type: "A" | "CNAME"): ThunkResult<void> => {
+export const loadDomainDNSInfo = (domain: string): ThunkResult<void> => {
+  return async (dispatch, getState) => {
+    const currentDomainInfo = getState().get("domain").get(domain);
+    if (currentDomainInfo) {
+      return;
+    }
+    dispatch({ type: INIT_DOMAIN_STATUS, payload: { domain } });
+    await dispatch(loadDomainDNSInfoWithType(domain, "A"));
+    await dispatch(loadDomainDNSInfoWithType(domain, "CNAME"));
+  };
+};
+
+export const loadDomainDNSInfoWithType = (domain: string, type: "A" | "CNAME"): ThunkResult<void> => {
   return async (dispatch) => {
-    dispatch({
-      type: INIT_DOMAIN_STATUS,
-      payload: { domain },
-    });
     try {
       const res = await axios.get(`https://dns.google.com/resolve?name=${domain}&type=${type}`);
       if (res.data.Answer) {
         const aRecords = (res.data.Answer as ARecordResponse[]).map((aRecord) => aRecord.data);
-        dispatch({
-          type: SET_DOMAIN_A_RECORDS,
-          payload: { domain, aRecords },
-        });
+        dispatch({ type: SET_DOMAIN_A_RECORDS, payload: { domain, aRecords } });
       } else if (res.data.Authority) {
         const cname = (res.data.Authority as CnameResponse[])[0].data;
-        dispatch({
-          type: SET_DOMAIN_CNAME,
-          payload: { domain, cname },
-        });
+        dispatch({ type: SET_DOMAIN_CNAME, payload: { domain, cname } });
       }
     } catch (e) {
       console.log(e);
