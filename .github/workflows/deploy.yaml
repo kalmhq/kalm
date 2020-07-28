@@ -16,7 +16,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Use Deploy Action
-        uses: kalmhq/kalm-deploy@v0.0.2 # Uses public kalm-deploy action
+        uses: kalmhq/kalm-deploy-action@v0.0.3 # Uses public action
         with:
           KALM_API_ADDRESS: ${{ secrets.KALM_API_ADDRESS }}
           KALM_DEPLOY_KEY: ${{ secrets.KALM_DEPLOY_KEY }}
