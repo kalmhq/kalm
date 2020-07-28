@@ -24,6 +24,7 @@ import { InfoBox } from "widgets/InfoBox";
 import { KTable } from "widgets/Table";
 import { BasePage } from "../BasePage";
 import { sizeStringToGi } from "utils/sizeConv";
+import { KTooltip } from "forms/Application/KTooltip";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -171,6 +172,13 @@ export class VolumesRaw extends React.Component<Props, States> {
   }
 
   private renderApplication = (rowData: RowData) => {
+    if (!rowData.get("isInUse")) {
+      return (
+        <KTooltip title={"Last used by"}>
+          <Box>{rowData.get("componentNamespace")}</Box>
+        </KTooltip>
+      );
+    }
     return (
       <Link
         style={{ color: primaryColor }}
@@ -183,6 +191,13 @@ export class VolumesRaw extends React.Component<Props, States> {
   };
 
   private renderComponent = (rowData: RowData) => {
+    if (!rowData.get("isInUse")) {
+      return (
+        <KTooltip title={"Last used by"}>
+          <Box> {rowData.get("componentName")}</Box>
+        </KTooltip>
+      );
+    }
     return (
       <Link
         style={{ color: primaryColor }}
