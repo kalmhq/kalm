@@ -199,10 +199,10 @@ func getComponentFromContext(c echo.Context) (*v1alpha1.Component, []runtime.Raw
 	return crdComponent, component.Plugins, nil
 }
 
-func (h *ApiHandler) componentResponse(c echo.Context, component *v1alpha1.Component) (*resources.ComponentDetails, error) {
+func (h *ApiHandler) componentResponse(c echo.Context, component *v1alpha1.Component) (*resources.ComponentResponse, error) {
 	return h.Builder(c).BuildComponentDetails(component, nil)
 }
 
-func (h *ApiHandler) componentListResponse(c echo.Context, componentList *v1alpha1.ComponentList) ([]resources.ComponentDetails, error) {
+func (h *ApiHandler) componentListResponse(c echo.Context, componentList *v1alpha1.ComponentList) ([]resources.ComponentResponse, error) {
 	return h.Builder(c).BuildComponentDetailsResponse(componentList)
 }

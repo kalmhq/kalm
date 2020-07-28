@@ -17,6 +17,8 @@ spec:
     - name: http
       containerPort: 8080
       servicePort: 80
+  cpu: "10m"
+  memory: "256Mi"
 ---
 apiVersion: core.kalm.dev/v1alpha1
 kind: HttpRoute

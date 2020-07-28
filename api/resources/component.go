@@ -2,6 +2,7 @@ package resources
 
 import (
 	"encoding/json"
+	"fmt"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"strconv"
 	"strings"
@@ -52,40 +53,51 @@ func (builder *Builder) GetComponentListChannel(namespaces string, listOptions m
 }
 
 type Component struct {
+	v1alpha1.ComponentSpec `json:",inline"`
+	Plugins                []runtime.RawExtension `json:"plugins,omitempty"`
+	Name                   string                 `json:"name"`
+}
+
+type ComponentResp struct {
 	ComponentSpec `json:",inline"`
 	Plugins       []runtime.RawExtension `json:"plugins,omitempty"`
 	Name          string                 `json:"name"`
 }
 
-// almost direct copy of v1alpha1.ComponentSpec
-// except for CPU & Memory
 type ComponentSpec struct {
 	v1alpha1.ComponentSpec `json:",inline"`
-
-	CPU *KalmQuantity `json:"cpu,omitempty"`
-
-	Memory *KalmQuantity `json:"memory,omitempty"`
+	CPU                    *CPUQuantity    `json:"cpu,omitempty"`
+	Memory                 *MemoryQuantity `json:"memory,omitempty"`
 }
 
-type KalmQuantity struct {
-	IsStorage bool
-	Quantity  resource.Quantity
+type CPUQuantity struct {
+	resource.Quantity
 }
 
-func (k KalmQuantity) MarshalText() ([]byte, error) {
-	quantity := k.Quantity
-
-	if k.IsStorage {
-		capInStr := strconv.FormatInt(quantity.Value(), 10)
-		return []byte(capInStr), nil
-	} else {
-		capInStr := strconv.FormatInt(quantity.MilliValue(), 10)
-		return []byte(capInStr), nil
-	}
+func (c *CPUQuantity) MarshalJSON() ([]byte, error) {
+	capInStr := strconv.FormatInt(c.MilliValue(), 10)
+	return []byte(fmt.Sprintf(`"%s"`, capInStr)), nil
 }
 
-type ComponentDetails struct {
-	*Component           `json:",inline"`
+type MemoryQuantity struct {
+	resource.Quantity
+}
+
+func (m *MemoryQuantity) MarshalJSON() ([]byte, error) {
+	capInStr := strconv.FormatInt(m.Value(), 10)
+	return []byte(fmt.Sprintf(`"%s"`, capInStr)), nil
+}
+
+//type ComponentDetails struct {
+//	*Component           `json:",inline"`
+//	Metrics              MetricHistories       `json:"metrics"`
+//	IstioMetricHistories *IstioMetricHistories `json:"istioMetricHistories"`
+//	Services             []ServiceStatus       `json:"services"`
+//	Pods                 []PodStatus           `json:"pods"`
+//}
+
+type ComponentResponse struct {
+	*ComponentResp       `json:",inline"`
 	Metrics              MetricHistories       `json:"metrics"`
 	IstioMetricHistories *IstioMetricHistories `json:"istioMetricHistories"`
 	Services             []ServiceStatus       `json:"services"`
@@ -96,7 +108,10 @@ func labelsBelongsToComponent(name string) metaV1.ListOptions {
 	return matchLabel("kalm-component", name)
 }
 
-func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component, resources *Resources) (details *ComponentDetails, err error) {
+func (builder *Builder) BuildComponentDetails(
+	component *v1alpha1.Component,
+	resources *Resources,
+) (details *ComponentResponse, err error) {
 	if resources == nil {
 		ns := component.Namespace
 		nsListOption := client.InNamespace(ns)
@@ -177,11 +192,13 @@ func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component, res
 		break
 	}
 
-	details = &ComponentDetails{
-		Component: &Component{
-			Name:          component.Name,
-			ComponentSpec: ComponentSpec{ComponentSpec: component.Spec},
-			Plugins:       plugins,
+	details = &ComponentResponse{
+		ComponentResp: &ComponentResp{
+			Name: component.Name,
+			ComponentSpec: ComponentSpec{
+				ComponentSpec: component.Spec,
+			},
+			Plugins: plugins,
 		},
 		Services: servicesStatus,
 		Metrics: MetricHistories{
@@ -193,11 +210,11 @@ func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component, res
 	}
 
 	if component.Spec.CPU != nil {
-		details.Component.ComponentSpec.CPU = &KalmQuantity{false, *component.Spec.CPU}
+		details.ComponentResp.ComponentSpec.CPU = &CPUQuantity{*component.Spec.CPU}
 	}
 
 	if component.Spec.Memory != nil {
-		details.Component.ComponentSpec.Memory = &KalmQuantity{true, *component.Spec.Memory}
+		details.ComponentResp.ComponentSpec.Memory = &MemoryQuantity{*component.Spec.Memory}
 	}
 
 	return details, nil
@@ -215,13 +232,15 @@ func getComponentAndNSNameFromSvcName(svcName string) (string, string) {
 	return compName, nsName
 }
 
-func (builder *Builder) BuildComponentDetailsResponse(components *v1alpha1.ComponentList) ([]ComponentDetails, error) {
+func (builder *Builder) BuildComponentDetailsResponse(
+	components *v1alpha1.ComponentList,
+) ([]ComponentResponse, error) {
 
 	if len(components.Items) == 0 {
 		return nil, nil
 	}
 
-	var res []ComponentDetails
+	var res []ComponentResponse
 
 	ns := components.Items[0].Namespace
 	nsListOption := client.InNamespace(ns)
