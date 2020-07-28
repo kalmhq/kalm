@@ -23,7 +23,6 @@ import (
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
@@ -142,51 +141,16 @@ func (r *GatewayReconcilerTask) HttpGateway() error {
 	}
 
 	gw.Spec.Selector["istio"] = "ingressgateway"
-
-	// find httpsRedirect
-	var httpRouteList corev1alpha1.HttpRouteList
-	if err := r.List(r.ctx, &httpRouteList); client.IgnoreNotFound(err) != nil {
-		return err
-	}
-
-	var needRedirectHosts []string
-	for _, httpRoute := range httpRouteList.Items {
-		if !httpRoute.Spec.HttpRedirectToHttps {
-			continue
-		}
-
-		needRedirectHosts = append(needRedirectHosts, httpRoute.Spec.Hosts...)
-	}
-
-	var servers []*istioNetworkingV1Beta1.Server
-
-	if len(needRedirectHosts) > 0 {
-		redirectServer := istioNetworkingV1Beta1.Server{
-			Hosts: needRedirectHosts,
+	gw.Spec.Servers = []*istioNetworkingV1Beta1.Server{
+		{
+			Hosts: []string{"*"},
 			Port: &istioNetworkingV1Beta1.Port{
 				Number:   80,
 				Protocol: "http",
-				Name:     "kalm-http0",
+				Name:     "kalm-http",
 			},
-			Tls: &istioNetworkingV1Beta1.ServerTLSSettings{
-				HttpsRedirect: true,
-			},
-		}
-
-		servers = append(servers, &redirectServer)
-	}
-
-	serveAllServer := istioNetworkingV1Beta1.Server{
-		Hosts: []string{"*"},
-		Port: &istioNetworkingV1Beta1.Port{
-			Number:   80,
-			Protocol: "http",
-			Name:     "kalm-http",
 		},
 	}
-	servers = append(servers, &serveAllServer)
-
-	gw.Spec.Servers = servers
 
 	return r.updateGateway(isCreate, gw)
 }
