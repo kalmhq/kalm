@@ -1,4 +1,4 @@
-import { createStyles, Paper, Theme, withStyles, WithStyles, Box, Grid } from "@material-ui/core";
+import { Link as MLink, createStyles, Paper, Theme, withStyles, WithStyles, Box, Grid } from "@material-ui/core";
 import React from "react";
 import { H5, Body, Caption } from "widgets/Label";
 
@@ -17,11 +17,13 @@ interface InfoBoxOption {
 interface Props extends WithStyles<typeof styles> {
   title: string;
   options: InfoBoxOption[];
+  guideLink?: string;
 }
 
 class InfoBoxRaw extends React.PureComponent<Props> {
   public render() {
-    const { classes, title, options } = this.props;
+    const { classes, title, options, guideLink } = this.props;
+    const gridItems = guideLink ? wrapGuideLink(guideLink, title) : options;
     return (
       <Paper square variant="outlined" className={classes.root}>
         <Box p={2}>
@@ -31,7 +33,7 @@ class InfoBoxRaw extends React.PureComponent<Props> {
             </Grid>
           </Grid>
           <Grid container spacing={2}>
-            {options.map((option, index) => {
+            {gridItems.map((option, index) => {
               return (
                 <Grid item md={4} key={index}>
                   <Body>{option.title}</Body>
@@ -47,3 +49,20 @@ class InfoBoxRaw extends React.PureComponent<Props> {
 }
 
 export const InfoBox = withStyles(styles)(InfoBoxRaw);
+
+/**
+ * helper method to wrap url into an InfoBox grid object
+ * @param url
+ */
+function wrapGuideLink(url: string, title: string) {
+  return [
+    {
+      title: (
+        <MLink href={url} target="_blank">
+          {title} Guide
+        </MLink>
+      ),
+      content: "",
+    },
+  ];
+}

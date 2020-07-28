@@ -16,6 +16,8 @@ import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { InjectedFormProps } from "redux-form";
 import { APPLICATION_FORM_ID } from "../formIDs";
 import { Body } from "widgets/Label";
+import stringConstants from "utils/stringConstants";
+import { theme } from "theme/theme";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -70,27 +72,19 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
       <>
         <Field
           name="name"
-          label="Name"
+          label="App Name"
           disabled={isEdit}
           component={KRenderDebounceTextField}
           autoFocus={true}
           validate={nameValidators}
-          helperText={
-            isEdit
-              ? "Can't modify name"
-              : 'The characters allowed in names are: digits (0-9), lower case letters (a-z), and "-". Max length is 180.'
-          }
-          placeholder="Please type the application name"
+          helperText={isEdit ? "Can't modify name" : stringConstants.NAME_RULE}
         />
 
-        <Box mt={2} style={{ color: "#797979" }}>
-          <Body>
-            Workloads in Kalm can access each other via auto-generated DNS name. Application name will be a part of the
-            DNS names of its children resources.
-          </Body>
+        <Box mt={2} style={{ color: theme.palette.text.secondary }}>
+          <Body>The App Name becomes part of the DNS name for its resources:</Body>
           <Box p={1}>
             <code id="application-name-code">
-              {"<COMPONENT_NAME>"}.<strong style={{ color: "black" }}>{name || "<APPLICATION_NAME_HERE>"}</strong>
+              {"<COMPONENT_NAME>"}.<strong style={{ color: theme.palette.text.primary }}>{name || "<APP_NAME>"}</strong>
               .svc.cluster.local
             </code>
           </Box>
@@ -116,7 +110,7 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
           }}
           id="add-application-submit-button"
         >
-          Create Application
+          Create App
         </CustomizedButton>
       </>
     );

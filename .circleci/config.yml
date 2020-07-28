@@ -178,6 +178,7 @@ jobs:
     docker:
       - image: circleci/golang:1.13.11
     steps:
+      - checkout
       - run:
           name: deploy
           working_directory: ./controller
