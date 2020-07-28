@@ -23,6 +23,8 @@ import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { InfoBox } from "widgets/InfoBox";
 import { KTable } from "widgets/Table";
 import { BasePage } from "../BasePage";
+import { sizeStringToGi } from "utils/sizeConv";
+import { KTooltip } from "forms/Application/KTooltip";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -174,6 +176,13 @@ export class VolumesRaw extends React.Component<Props, States> {
   }
 
   private renderApplication = (rowData: RowData) => {
+    if (!rowData.get("isInUse")) {
+      return (
+        <KTooltip title={"Last used by"}>
+          <Box>{rowData.get("componentNamespace")}</Box>
+        </KTooltip>
+      );
+    }
     return (
       <Link
         style={{ color: primaryColor }}
@@ -186,6 +195,13 @@ export class VolumesRaw extends React.Component<Props, States> {
   };
 
   private renderComponent = (rowData: RowData) => {
+    if (!rowData.get("isInUse")) {
+      return (
+        <KTooltip title={"Last used by"}>
+          <Box> {rowData.get("componentName")}</Box>
+        </KTooltip>
+      );
+    }
     return (
       <Link
         style={{ color: primaryColor }}
@@ -205,12 +221,8 @@ export class VolumesRaw extends React.Component<Props, States> {
     return rowData.get("isInUse") ? "Yes" : "No";
   };
 
-  private renderPhase = (rowData: RowData) => {
-    return rowData.get("phase");
-  };
-
   private renderCapacity = (rowData: RowData) => {
-    return rowData.get("capacity");
+    return sizeStringToGi(rowData.get("capacity")) + " Gi";
   };
 
   private renderEmpty() {
@@ -284,7 +296,6 @@ export class VolumesRaw extends React.Component<Props, States> {
                 { title: "Mounted", field: "isInUse", sorting: false, render: this.renderUse },
                 { title: "App", field: "componentNamespace", sorting: false, render: this.renderApplication },
                 { title: "Component", field: "componentName", sorting: false, render: this.renderComponent },
-                { title: "Phase", field: "phase", sorting: false, render: this.renderPhase },
                 { title: "Size", field: "capacity", sorting: false, render: this.renderCapacity },
                 {
                   title: "Actions",
