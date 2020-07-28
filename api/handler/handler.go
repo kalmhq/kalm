@@ -29,7 +29,7 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 	// liveness readiness probes
 	e.GET("/ping", handlePing)
 
-	e.POST("/__kalm_webhook/deploy", h.handleDeployWebhookCall)
+	e.POST("/webhook/components", h.handleDeployWebhookCall)
 
 	// login
 	e.POST("/login/token", h.handleValidateToken)
@@ -105,7 +105,7 @@ func (h *ApiHandler) Install(e *echo.Echo) {
 
 	gv1Alpha1WithAuth.GET("/deploykeys", h.handleListDeployKeys)
 	gv1Alpha1WithAuth.POST("/deploykeys", h.handleCreateDeployKey)
-	gv1Alpha1WithAuth.DELETE("/deploykeys/:name", h.handleDeleteDeployKey)
+	gv1Alpha1WithAuth.DELETE("/deploykeys", h.handleDeleteDeployKey)
 
 	gv1Alpha1WithAuth.GET("/sso", h.handleListSSOConfig)
 	gv1Alpha1WithAuth.DELETE("/sso", h.handleDeleteSSOConfig)

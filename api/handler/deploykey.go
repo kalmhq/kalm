@@ -29,19 +29,25 @@ func (h *ApiHandler) handleCreateDeployKey(c echo.Context) error {
 }
 
 func (h *ApiHandler) handleDeleteDeployKey(c echo.Context) error {
-	err := h.Builder(c).DeleteDeployKey(c.Param("namespace"), c.Param("name"))
+	deployKey, err := getDeployKeyFromContext(c)
+
 	if err != nil {
+		return err
+	}
+
+	if err := h.Builder(c).DeleteDeployKey(deployKey.Name); err != nil {
 		return err
 	}
 
 	return c.NoContent(200)
 }
 
-func getDeployKeyFromContext(c echo.Context) (resources.DeployKey, error) {
+func getDeployKeyFromContext(c echo.Context) (*resources.DeployKey, error) {
 	var deployKey resources.DeployKey
+
 	if err := c.Bind(&deployKey); err != nil {
-		return resources.DeployKey{}, err
+		return nil, err
 	}
 
-	return deployKey, nil
+	return &deployKey, nil
 }
