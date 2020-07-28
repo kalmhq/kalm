@@ -1,4 +1,4 @@
-import { Box, Button, Collapse, Grid, Icon, Link, CircularProgress } from "@material-ui/core";
+import { Box, Button, Collapse, Grid, Icon, Link } from "@material-ui/core";
 import Typography from "@material-ui/core/Typography";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { Alert, AlertTitle } from "@material-ui/lab";
@@ -33,10 +33,7 @@ import { RenderHttpRouteConditions } from "./conditions";
 import { RenderHttpRouteDestinations } from "./destinations";
 import { Targets } from "widgets/Targets";
 import { loadDomainDNSInfo } from "actions/domain";
-import { WarningIcon, CheckCircleIcon, CopyIcon } from "widgets/Icon";
-import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import copy from "copy-to-clipboard";
-import { setSuccessNotificationAction } from "actions/notification";
+import DomainStatus from "widgets/DomainStatus";
 
 const mapStateToProps = (state: RootState) => {
   const form = ROUTE_FORM_ID;
@@ -45,7 +42,6 @@ const mapStateToProps = (state: RootState) => {
   const certifications = state.get("certificates").get("certificates");
   const domains: Set<string> = new Set();
   const hosts = selector(state, "hosts") as Immutable.List<string>;
-  const domainStatus = state.get("domain").filter((status) => hosts.includes(status.get("domain")));
   const httpRedirectToHttps = !!selector(state, "httpRedirectToHttps") as boolean;
 
   certifications.forEach((x) => {
@@ -61,7 +57,6 @@ const mapStateToProps = (state: RootState) => {
     methodsMode: selector(state, "methodsMode") as string,
     hosts,
     httpRedirectToHttps,
-    domainStatus,
     destinations: selector(state, "destinations") as Immutable.List<HttpRouteDestination>,
     domains: Array.from(domains),
     ingressIP: state.get("cluster").get("info").get("ingressIP"),
@@ -339,50 +334,10 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
       dirty,
       submitSucceeded,
       change,
-      domainStatus,
       isEdit,
       hosts,
     } = this.props;
-
-    let statusIcons = Immutable.Map();
-    let statusPopover = Immutable.Map();
-    domainStatus.forEach((status) => {
-      const domain = status.get("domain");
-      const isLoading = !status?.get("cname");
-      const aRecords = status?.get("aRecords");
-      const isError = (!aRecords || !aRecords.includes(ingressIP)) && domain !== ingressIP;
-
-      if (isLoading) {
-        statusIcons = statusIcons.set(
-          domain,
-          <CircularProgress size={20} style={{ marginLeft: 2, marginRight: -4 }} />,
-        );
-        statusPopover = statusPopover.set(domain, <Box p={2}>checking domain status</Box>);
-      } else if (isError) {
-        statusIcons = statusIcons.set(domain, <WarningIcon color="action" style={{ marginRight: -6 }} />);
-        statusPopover = statusPopover.set(
-          domain,
-          <Box p={2}>
-            please add an A record with your dns provider, point to <strong>{ingressIP}</strong>{" "}
-            <IconButtonWithTooltip
-              tooltipTitle="Copy"
-              aria-label="copy"
-              size="small"
-              onClick={() => {
-                copy(ingressIP);
-                this.props.dispatch(setSuccessNotificationAction("Copied successful!"));
-              }}
-            >
-              <CopyIcon fontSize="small" />
-            </IconButtonWithTooltip>
-          </Box>,
-        );
-      } else {
-        statusIcons = statusIcons.set(domain, <CheckCircleIcon style={{ marginRight: -6 }} />);
-        statusPopover = statusPopover.set(domain, <Box p={2}>the domain is successfully configured!</Box>);
-      }
-    });
-
+    const icons = hosts.map((host) => <DomainStatus domain={host} />);
     return (
       <div className={classes.root}>
         <Grid container spacing={2}>
@@ -397,8 +352,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       InputLabelProps={{
                         shrink: true,
                       }}
-                      statusIcons={statusIcons}
-                      statusPopover={statusPopover}
+                      icons={icons}
                       label="Hosts"
                       component={KFreeSoloAutoCompleteMultiValues}
                       name="hosts"

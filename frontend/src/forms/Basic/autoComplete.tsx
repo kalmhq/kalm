@@ -8,7 +8,6 @@ import {
   withStyles,
   Typography,
   Divider,
-  Popover,
 } from "@material-ui/core";
 import {
   Autocomplete,
@@ -26,8 +25,6 @@ import { AutocompleteProps, RenderGroupParams } from "@material-ui/lab/Autocompl
 import { theme } from "theme/theme";
 import { Caption } from "widgets/Label";
 import { KalmApplicationIcon, KalmLogoIcon } from "widgets/Icon";
-import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
-import { FlexRowItemCenterBox } from "widgets/Box";
 
 export interface ReduxFormMultiTagsFreeSoloAutoCompleteProps
   extends WrappedFieldProps,
@@ -136,8 +133,7 @@ export interface KFreeSoloAutoCompleteMultiValuesProps<T>
     Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText"> {
   InputLabelProps?: {};
   disabled?: boolean;
-  statusIcons?: Immutable.Map<string, any>;
-  statusPopover?: Immutable.Map<string, any>;
+  icons?: Immutable.List<any>;
 }
 
 const KFreeSoloAutoCompleteMultiValuesStyles = (theme: Theme) =>
@@ -161,8 +157,7 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
     placeholder,
     InputLabelProps,
     disabled,
-    statusIcons,
-    statusPopover,
+    icons,
   } = props;
 
   const errors = error as (string | undefined)[] | undefined | string;
@@ -209,40 +204,9 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
       onInputChange={() => {}}
       renderTags={(value: string[], getTagProps) => {
         return value.map((option: string, index: number) => {
-          let icon = statusIcons && statusIcons.get(option) ? statusIcons.get(option) : undefined;
-          if (statusPopover && statusPopover.get(option)) {
-            icon = (
-              <PopupState variant="popover" popupId={`${option}-popover`} key={index}>
-                {(popupState) => {
-                  const trigger = bindTrigger(popupState);
-                  return (
-                    <>
-                      <FlexRowItemCenterBox onMouseEnter={trigger.onClick} {...trigger}>
-                        {statusIcons && statusIcons.get(option) ? statusIcons.get(option) : undefined}
-                      </FlexRowItemCenterBox>
-                      <Popover
-                        {...bindPopover(popupState)}
-                        anchorOrigin={{
-                          vertical: "bottom",
-                          horizontal: "center",
-                        }}
-                        transformOrigin={{
-                          vertical: "top",
-                          horizontal: "center",
-                        }}
-                      >
-                        {statusPopover.get(option)}
-                      </Popover>
-                    </>
-                  );
-                }}
-              </PopupState>
-            );
-          }
-
           return (
             <Chip
-              icon={icon}
+              icon={icons ? icons.get(index) : undefined}
               variant="outlined"
               label={option}
               classes={{ root: clsx({ [classes.error]: errorsIsArray && errorsArray[index] }) }}
