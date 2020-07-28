@@ -13,7 +13,6 @@ import {
 } from "types/deployKey";
 
 import { api } from "api";
-import { setErrorNotificationAction } from "actions/notification";
 
 export const loadDeployKeyAction = (): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
@@ -32,7 +31,7 @@ export const loadDeployKeyAction = (): ThunkResult<Promise<void>> => {
   };
 };
 
-export const createDeployKeysAction = (key: DeployKey): ThunkResult<Promise<void>> => {
+export const createDeployKeyAction = (key: DeployKey): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     try {
       dispatch({ type: CREATE_DEPLOY_KEY_PENDING });
@@ -58,7 +57,6 @@ export const deleteDeployKeyAction = (key: DeployKey): ThunkResult<Promise<void>
       dispatch({ type: DELETE_DEPLOY_KEY_FULFILLED });
     } catch (e) {
       dispatch({ type: DELETE_DEPLOY_KEY_FAILED });
-      dispatch(setErrorNotificationAction("Delete Deploy Key failed."));
       throw e;
     }
   };

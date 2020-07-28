@@ -12,7 +12,7 @@ import { PROTECTED_ENDPOINT_ID } from "../formIDs";
 import { ProtectedEndpoint } from "types/sso";
 import { RenderSelectField } from "forms/Basic/select";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
-import { createProtectedEndpointsAction } from "actions/sso";
+import { createProtectedEndpointAction } from "actions/sso";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -48,7 +48,7 @@ class ProtectedEndpointFormRaw extends React.PureComponent<FinalProps> {
 
   private handleSubmit = async (values: ProtectedEndpoint) => {
     const { dispatch } = this.props;
-    return dispatch(createProtectedEndpointsAction(values));
+    return dispatch(createProtectedEndpointAction(values));
   };
 
   public render() {
