@@ -411,7 +411,10 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                           <Link
                             href="#"
                             onClick={() => {
-                              change("hosts", hosts.push(ingressIP));
+                              const isHostsIncludeIngressIP = !!hosts.find((host) => host === ingressIP);
+                              if (!isHostsIncludeIngressIP) {
+                                change("hosts", hosts.push(ingressIP));
+                              }
                             }}
                           >
                             {ingressIP}
