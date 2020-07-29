@@ -27,6 +27,8 @@ import { RequireNamespaceReader, RequireNamespaceWriter } from "permission/Names
 import { RequireAdmin } from "permission/Role";
 import { SSOPage } from "pages/SSO";
 import { SSOConfigPage } from "pages/SSO/Config";
+import { CIPage } from "pages/CI";
+import { DeployKeyNewPage } from "pages/CI/New";
 
 const RequireAuthorizatedDashboard = RequireAuthorizated(DashboardLayout);
 
@@ -43,6 +45,8 @@ export const KalmRoutes = (
           <Route exact path="/cluster/loadbalancer" component={LoadBalancerInfoPage} />
           <Route exact path="/cluster/disks" component={DiskListPage} />
           <Route exact path="/cluster/registries" component={RegistryListPage} />
+          <Route exact path="/ci" component={CIPage} />
+          <Route exact path="/ci/keys/new" component={DeployKeyNewPage} />
           <Route exact path="/applications" component={RequireAdmin(ApplicationListPage)} />
           <Route exact path="/applications/new" component={RequireAdmin(ApplicationNewPage)} />
           <Route exact path="/applications/:applicationName/" component={ComponentListPage} />

@@ -1,17 +1,8 @@
 version: 2.1
 orbs:
   hello-orb:  kalmhq-ns1/hello-orb@dev:0.0.1
-  deploy-orb: kalmhq-ns1/deploy-orb@dev:0.0.1
+  deploy-orb: kalmhq-ns1/deploy-orb@dev:0.0.2
 jobs:
-  test-ci-cd-job:
-    docker: 
-      - image: tutum/curl:alpine
-    environment:
-      KALM_API_ADDRESS: https://dashboard.kapp.live
-    steps:
-      - run:
-          name: call kalm webhook to trigger update of component
-          command: curl -v -XPOST ${KALM_API_ADDRESS}/__kalm_webhook/deploy?deploy-key=${DEPLOY_KEY}\&app=kalm-system\&component=kalm\&image-tag=latest
   test-dashboard:
     docker:
       - image: circleci/golang:1.13.11
@@ -148,21 +139,6 @@ jobs:
           command: |
             echo "$QUAYIO_PASS" | docker login -u "$QUAYIO_USERNAME" --password-stdin quay.io
             docker push $IMAGE_NAME:latest
-  # deploy-dashboard:
-  #   docker:
-  #     - image: circleci/golang:1.13.11
-  #   steps:
-  #     - checkout
-  #     - run:
-  #         name: deploy
-  #         working_directory: ./controller
-  #         command: |
-  #           curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.15.9/bin/linux/amd64/kubectl
-  #           chmod +x ./kubectl
-  #           sudo mv ./kubectl /usr/local/bin/kubectl
-  #           mkdir ${HOME}/.kube
-  #           echo "$KUBE_CONFIG" | base64 --decode > ${HOME}/.kube/config
-  #           kubectl delete pod -n kalm-system $(kubectl get pods -n kalm-system -l app=kalm -o jsonpath="{.items[].metadata.name}")
   deploy-dashboard:
     executor: deploy-orb/default
     steps:
@@ -210,24 +186,6 @@ jobs:
             kubectl -n kalm-operator patch deployment kalm-operator -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"date\":\"`date +'%s'`\"}}}}}"
 workflows:
   version: 2
-  test-ci-cd-workflow:
-    jobs:
-      - hello-orb/run1:
-          param1: "this-is-passedin-param1"
-      - deploy-orb/run:
-          context: deploy-demo-cluster
-          KALM_API_ADDRESS: https://dashboard.kapp.live
-          KALM_DEPLOY_KEY: $DEPLOY_KEY
-          KALM_APP: kalm-system
-          KALM_COMPONENT: kalm
-          KALM_COMPONENT_IMG_TAG: latest
-      - test-ci-cd-job:
-          context: deploy-demo-cluster
-          filters:
-            branches:
-              only: 
-                - deploy-key
-                - master
   dashboard:
     jobs:
       - test-dashboard
@@ -247,20 +205,6 @@ workflows:
               only: 
               - master
               - orb
-      - deploy-orb/run:
-          context: deploy-demo-cluster
-          requires:
-            - push-dashboard-image
-          filters:
-            branches:
-              only: 
-              - master
-              - orb
-          KALM_API_ADDRESS: https://dashboard.kapp.live
-          KALM_DEPLOY_KEY: $DEPLOY_KEY
-          KALM_APP: kalm-system
-          KALM_COMPONENT: kalm
-          KALM_COMPONENT_IMG_TAG: latest
       - deploy-dashboard:
           context: deploy-demo-cluster
           requires:
@@ -269,7 +213,6 @@ workflows:
             branches:
               only: 
               - master
-              - orb
   controller:
     jobs:
       - test-controller

@@ -24,6 +24,7 @@ import { HttpRoute } from "types/route";
 import { Service } from "types/service";
 import { RoleBinding, RoleBindingsRequestBody } from "types/user";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
+import { DeployKey } from "types/deployKey";
 
 export abstract class Api {
   public abstract getClusterInfo(): Promise<ClusterInfo>;
@@ -144,4 +145,10 @@ export abstract class Api {
   public abstract createProtectedEndpoint(protectedEndpoint: ProtectedEndpoint): Promise<ProtectedEndpoint>;
 
   public abstract deleteProtectedEndpoint(protectedEndpoint: ProtectedEndpoint): Promise<void>;
+
+  public abstract listDeployKeys(): Promise<Immutable.List<DeployKey>>;
+
+  public abstract createDeployKey(protectedEndpoint: DeployKey): Promise<DeployKey>;
+
+  public abstract deleteDeployKey(protectedEndpoint: DeployKey): Promise<void>;
 }

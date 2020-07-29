@@ -7,3 +7,4 @@ export const ROLE_BINDING_FORM_ID = "roleBinding";
 export const ROUTE_FORM_ID = "route";
 export const SSO_CONFIG_FORM_ID = "sso";
 export const PROTECTED_ENDPOINT_ID = "protectedEndpoint";
+export const DEPLOY_KEY_ID = "deployKey";

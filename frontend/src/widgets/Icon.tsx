@@ -30,6 +30,7 @@ import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import { grey } from "@material-ui/core/colors";
 import { SvgIcon, SvgIconProps, Theme } from "@material-ui/core";
 import { theme } from "theme/theme";
+import SettingsBackupRestoreIcon from "@material-ui/icons/SettingsBackupRestore";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -476,4 +477,16 @@ export const ForwardIcon = withStyles(styles)((props: ColorIconsProps) => {
   const { fontSize, style } = props;
   const className = getClassNameByColorName(props);
   return <Forward className={className} fontSize={fontSize} style={style} />;
+});
+
+export const CIIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return (
+    <SettingsBackupRestoreIcon
+      className={className}
+      fontSize={fontSize}
+      style={{ ...style, transform: "scaleX(-1)" }}
+    />
+  );
 });

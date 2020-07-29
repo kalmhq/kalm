@@ -5,6 +5,7 @@ import { Certificate } from "./certificate";
 import { RegistryType } from "./registry";
 import { Disk } from "./disk";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
+import { DeployKey } from "types/deployKey";
 
 export const WATCHED_RESOURCE_CHANGE = "WATCHED_RESOURCE_CHANGE";
 
@@ -21,6 +22,7 @@ export const RESOURCE_TYPE_REGISTRY = "Registry";
 export const RESOURCE_TYPE_VOLUME = "Volume";
 export const RESOURCE_TYPE_SSO = "SingleSignOnConfig";
 export const RESOURCE_TYPE_PROTECTED_ENDPOINT = "ProtectedEndpoint";
+export const RESOURCE_TYPE_DEPLOY_KEY = "DeployKey";
 
 export type ResourceActionType =
   | typeof RESOURCE_ACTION_UPDATE
@@ -110,6 +112,15 @@ export interface ProtectedEndpointResourceAction {
   };
 }
 
+export interface DeployKeyResourceAction {
+  type: typeof WATCHED_RESOURCE_CHANGE;
+  kind: typeof RESOURCE_TYPE_DEPLOY_KEY;
+  payload: {
+    action: ResourceActionType;
+    data: DeployKey;
+  };
+}
+
 export type ResourceActions =
   | NodeResourceAction
   | ApplicationResourceAction
@@ -119,4 +130,5 @@ export type ResourceActions =
   | RegistryResourceAction
   | VolumeResourceAction
   | SSOConfigResourceAction
-  | ProtectedEndpointResourceAction;
+  | ProtectedEndpointResourceAction
+  | DeployKeyResourceAction;
