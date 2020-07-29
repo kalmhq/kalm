@@ -4,6 +4,8 @@ import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
 import { HttpRoute } from "types/route";
+import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
+import { OpenInBrowserIcon } from "./Icon";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -18,6 +20,7 @@ const mapStateToProps = (state: RootState) => {
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {
   route: HttpRoute;
+  showIconButton?: boolean;
 }
 
 class OpenInBrowserRaw extends React.PureComponent<Props> {
@@ -42,7 +45,22 @@ class OpenInBrowserRaw extends React.PureComponent<Props> {
     return scheme + "://" + host + path;
   };
   public render() {
-    const { route } = this.props;
+    const { route, showIconButton } = this.props;
+    if (showIconButton) {
+      return (
+        <IconButtonWithTooltip
+          tooltipTitle="Open In Browser"
+          disabled={!route.get("methods").includes("GET")}
+          href={this.getUrl()}
+          // @ts-ignore
+          target="_blank"
+          rel="noreferer"
+        >
+          <OpenInBrowserIcon />
+        </IconButtonWithTooltip>
+      );
+    }
+
     return (
       <Button
         size="small"

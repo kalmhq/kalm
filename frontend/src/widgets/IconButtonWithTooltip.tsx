@@ -1,13 +1,14 @@
 import React from "react";
 import { IconButton, IconButtonProps, Tooltip, withStyles, WithStyles, Theme } from "@material-ui/core";
 import { Link } from "react-router-dom";
+import { grey } from "@material-ui/core/colors";
 
 const styles = (theme: Theme) => ({
   button: {
     color: theme.palette.grey[600],
     "&:disabled": {
       cursor: "not-allowed !important",
-      background: theme.palette.grey[100],
+      background: theme.palette.type === "light" ? grey[100] : grey[700],
     },
     "&:hover": {
       background: theme.palette.primary.light,
