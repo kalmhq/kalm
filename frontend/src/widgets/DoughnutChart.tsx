@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, createStyles, Theme, Typography, withStyles, WithStyles, useTheme } from "@material-ui/core";
+import { Box, createStyles, Theme, Typography, withStyles, WithStyles, withTheme, WithTheme } from "@material-ui/core";
 import { Doughnut } from "react-chartjs-2";
 import { CenterCaption } from "./Label";
 import { green, grey, red } from "@material-ui/core/colors";
@@ -28,7 +28,7 @@ const styles = (theme: Theme) =>
     },
   });
 
-interface Props extends WithStyles<typeof styles> {
+interface Props extends WithStyles<typeof styles>, WithTheme {
   title: string;
   labels: string[];
   data: number[];
@@ -40,7 +40,7 @@ interface State {}
 
 class DoughnutChartRaw extends React.PureComponent<Props, State> {
   private getData = (): chartjs.ChartData => {
-    let { labels, data } = this.props;
+    let { labels, data, theme } = this.props;
 
     let colors: string[] = defaultColors;
     const dataSum = data.reduce((a, b) => a + b, 0);
@@ -48,8 +48,6 @@ class DoughnutChartRaw extends React.PureComponent<Props, State> {
       data = [0, 1]; // show grey
       colors[1] = grey[400];
     }
-
-    const theme = useTheme();
 
     return {
       labels,
@@ -121,4 +119,4 @@ class DoughnutChartRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const DoughnutChart = withStyles(styles)(DoughnutChartRaw);
+export const DoughnutChart = withStyles(styles)(withTheme(DoughnutChartRaw));
