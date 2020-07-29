@@ -18,7 +18,6 @@ package v1alpha1
 import (
 	apps1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -76,11 +75,10 @@ type ComponentSpec struct {
 
 	BeforeDestroy []string `json:"beforeDestroy,omitempty"`
 
-	CPU *resource.Quantity `json:"cpu,omitempty"`
+	// +optional
+	ResourceRequirements *v1.ResourceRequirements `json:"resourceRequirements"`
 
-	Memory *resource.Quantity `json:"memory,omitempty"`
-
-	EnableResourcesRequests bool `json:"enableResourcesRequests,omitempty"`
+	//EnableResourcesRequests bool `json:"enableResourcesRequests,omitempty"`
 
 	TerminationGracePeriodSeconds *int64 `json:"terminationGracePeriodSeconds,omitempty"`
 

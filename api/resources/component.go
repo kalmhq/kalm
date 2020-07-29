@@ -58,15 +58,6 @@ type Component struct {
 	Name                   string                 `json:"name"`
 }
 
-type ComponentForResp struct {
-	v1alpha1.ComponentSpec `json:",inline"`
-	CPU                    *CPUQuantity           `json:"cpu,omitempty"`
-	Memory                 *MemoryQuantity        `json:"memory,omitempty"`
-
-	Plugins                []runtime.RawExtension `json:"plugins,omitempty"`
-	Name                   string                 `json:"name"`
-}
-
 type CPUQuantity struct {
 	resource.Quantity
 }
@@ -86,16 +77,29 @@ func (m *MemoryQuantity) MarshalJSON() ([]byte, error) {
 }
 
 type ComponentDetails struct {
-	*ComponentForResp    `json:",inline"`
+	Name string `json:"name"`
+
+	v1alpha1.ComponentSpec `json:",inline"`
+
+	// hack to override & ignore field in ComponentSpec
+	//ResourceRequirements interface{} `json:"resourceRequirements,omitempty"`
+
+	CPURequest    *CPUQuantity    `json:"cpuRequest,omitempty"`
+	MemoryRequest *MemoryQuantity `json:"memoryRequest,omitempty"`
+	CPULimit      *CPUQuantity    `json:"cpuLimit,omitempty"`
+	MemoryLimit   *MemoryQuantity `json:"memoryLimit,omitempty"`
+
+	Plugins []runtime.RawExtension `json:"plugins,omitempty"`
+
 	Metrics              MetricHistories       `json:"metrics"`
 	IstioMetricHistories *IstioMetricHistories `json:"istioMetricHistories"`
 	Services             []ServiceStatus       `json:"services"`
 	Pods                 []PodStatus           `json:"pods"`
 }
 
-func labelsBelongsToComponent(name string) metaV1.ListOptions {
-	return matchLabel("kalm-component", name)
-}
+//func labelsBelongsToComponent(name string) metaV1.ListOptions {
+//	return matchLabel("kalm-component", name)
+//}
 
 func (builder *Builder) BuildComponentDetails(
 	component *v1alpha1.Component,
@@ -182,11 +186,11 @@ func (builder *Builder) BuildComponentDetails(
 	}
 
 	details = &ComponentDetails{
-		ComponentForResp: &ComponentForResp{
-			Name:          component.Name,
-			ComponentSpec: component.Spec,
-			Plugins:       plugins,
-		},
+		Name: component.Name,
+
+		ComponentSpec: component.Spec,
+		Plugins:       plugins,
+
 		Services: servicesStatus,
 		Metrics: MetricHistories{
 			CPU:    componentMetric.CPU,
@@ -196,12 +200,25 @@ func (builder *Builder) BuildComponentDetails(
 		Pods:                 podsStatus,
 	}
 
-	if component.Spec.CPU != nil {
-		details.ComponentForResp.CPU = &CPUQuantity{*component.Spec.CPU}
+	resRequirements := component.Spec.ResourceRequirements
+	if resRequirements != nil && resRequirements.Requests != nil {
+		if cpuReq, exist := resRequirements.Requests[coreV1.ResourceCPU]; exist {
+			details.CPURequest = &CPUQuantity{cpuReq}
+		}
+
+		if memReq, exist := resRequirements.Requests[coreV1.ResourceMemory]; exist {
+			details.MemoryRequest = &MemoryQuantity{memReq}
+		}
 	}
 
-	if component.Spec.Memory != nil {
-		details.ComponentForResp.Memory = &MemoryQuantity{*component.Spec.Memory}
+	if resRequirements != nil && resRequirements.Limits != nil {
+		if cpuLimit, exist := resRequirements.Limits[coreV1.ResourceCPU]; exist {
+			details.CPULimit = &CPUQuantity{cpuLimit}
+		}
+
+		if memLimit, exist := resRequirements.Limits[coreV1.ResourceMemory]; exist {
+			details.MemoryLimit = &MemoryQuantity{memLimit}
+		}
 	}
 
 	return details, nil
