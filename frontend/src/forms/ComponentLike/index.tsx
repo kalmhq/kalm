@@ -66,7 +66,7 @@ import { RenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
-import stringConstants from "utils/stringConstants";
+import sc from "utils/stringConstants";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -74,12 +74,10 @@ const IngressHint = () => {
   return (
     <>
       <Link style={{ cursor: "pointer" }} onClick={() => setOpen(!open)}>
-        Want to have your container accessible to external sources?
+        {sc.PORT_ROUTE_QUESTION}
       </Link>
       <Box pt={1}>
-        <Collapse in={open}>
-          Head to the “Routes” section and create a new route for directing external traffic to this container.
-        </Collapse>
+        <Collapse in={open}>{sc.PORT_ROUTE_ANSWER}</Collapse>
       </Box>
     </>
   );
@@ -166,15 +164,11 @@ const styles = (theme: Theme) =>
 /**
  * A Styled component representing helper text.
  */
-const HelperText: React.FC<{}> = ({ children }) => (
+const HelperTextSection: React.FC<{}> = ({ children }) => (
   <Grid item xs={8}>
     <Body2>{children}</Body2>
   </Grid>
 );
-
-interface HelperTextProps {
-  children: string;
-}
 
 interface RawProps {
   showDataView?: boolean;
@@ -222,7 +216,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           name="replicas"
           margin
           label="Replicas"
-          helperText="Number of pods to create for this component."
+          helperText={sc.REPLICA_INPUT_HELPER}
           formValueToEditValue={(value: any) => {
             let displayValue;
             if (value !== null && value !== undefined) {
@@ -287,14 +281,13 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </SectionTitle>
         </Grid>
         <Grid item xs={12}>
-          <HelperText>
-            Use Config Files to specify file-based configurations for your Component. Config Files created here are
-            automatically mounted to the container.
+          <HelperTextSection>
+            {sc.CONFIG_COMMAND_HELPER}
             <span>&nbsp;</span>
             <Link href="https://kalm.dev/docs/guide-config#adding-a-config-file" target="_blank">
-              Learn more.
+              {sc.LEARN_MORE_LABEL}
             </Link>
-          </HelperText>
+          </HelperTextSection>
         </Grid>
         <Grid item xs={12}>
           <PreInjectedFiles />
@@ -314,14 +307,13 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </SectionTitle>
         </Grid>
         <Grid item xs={12}>
-          <HelperText>
-            Define environment variables for the main container of this component. This overrides enviornment variables
-            specified in the image.
+          <HelperTextSection>
+            {sc.ENV_VAR_HELPER}
             <span>&nbsp;</span>
             <Link href="https://kalm.dev/docs/guide-config#environment-varibles" target="_blank">
-              Learn more.
+              {sc.LEARN_MORE_LABEL}
             </Link>
-          </HelperText>
+          </HelperTextSection>
         </Grid>
         <Grid item xs={12}>
           <Envs sharedEnv={sharedEnv} />
@@ -331,8 +323,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   public renderPorts() {
-    const helper = "To expose your container outside of the pod, you need to open the corresponding ports.";
-
     return (
       <>
         <Grid item xs={12}>
@@ -340,7 +330,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             <Subtitle1>Ports</Subtitle1>
           </SectionTitle>
         </Grid>
-        <HelperText>{helper}</HelperText>
+        <HelperTextSection>{sc.PORTS_HELPER}</HelperTextSection>
         <Grid item xs={12}>
           <Ports />
         </Grid>
@@ -359,9 +349,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             <Subtitle1>Disks</Subtitle1>
           </SectionTitle>
         </Grid>
-        <HelperText>
-          Specify and mount a disk to your component. There are several ways to mount disks with Kalm.
-        </HelperText>
+        <HelperTextSection>{sc.DISKS_HELPER}</HelperTextSection>
         <Grid item xs={12}>
           <Disks />
         </Grid>
@@ -492,17 +480,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </SectionTitle>
         </Grid>
         <Grid item xs={12}>
-          <HelperText>
-            Define a command for the main container of this component. This overrides the default Entrypoint and Cmd of
-            the image.
-          </HelperText>
+          <HelperTextSection>{sc.COMMAND_HELPER}</HelperTextSection>
         </Grid>
         <Grid item xs={12}>
           <Field
             component={KRenderCommandTextField}
             name="command"
             label="Command"
-            placeholder="e.g. /bin/sh -c 'echo hello; sleep 600'"
+            placeholder={sc.COMMAND_INPUT_PLACEHOLDER}
           />
         </Grid>
       </>
@@ -528,7 +513,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </SectionTitle>
         </Grid>
         <Grid item xs={8}>
-          Readiness probe is used to decide when a component is ready to accepting traffic.
+          {sc.READINESS_PROBE_HELPER}
         </Grid>
         <Grid item xs={12}>
           <ReadinessProbe />
@@ -538,9 +523,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             <Subtitle1>Liveness Probe</Subtitle1>
           </SectionTitle>
         </Grid>
-        <HelperText>
-          Liveness probe is used to know if the component is running into an unexpected state and a restart is required.
-        </HelperText>
+        <HelperTextSection>{sc.LIVENESS_PROBE_HELPER}</HelperTextSection>
         <Grid item xs={12}>
           <LivenessProbe />
         </Grid>
@@ -640,11 +623,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           />
         </Grid>
         <Grid item xs={12}>
-          <Field
-            name="enableResourcesRequests"
-            component={KBoolCheckboxRender}
-            label="Only schedule on nodes that meet the above resources"
-          />
+          <Field name="enableResourcesRequests" component={KBoolCheckboxRender} label={sc.SCHEDULING_RR_CHECKBOX} />
         </Grid>
         <Grid item xs={12}>
           <SectionTitle>
@@ -655,11 +634,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           <Field name="nodeSelectorLabels" component={RenderSelectLabels} nodeLabels={nodeLabels} />
         </Grid>
         <Grid item xs={12}>
-          <Field
-            name="preferNotCoLocated"
-            component={KBoolCheckboxRender}
-            label="Prefer to schedule replicas to different nodes. (Recommand for high availablity)"
-          />
+          <Field name="preferNotCoLocated" component={KBoolCheckboxRender} label={sc.SCHEDULING_COLOCATE_CHECKBOX} />
         </Grid>
         {/* <Grid item xs={6}>
           <Field name="podAffinityType" component={KRadioGroupRender} options={this.getPodAffinityOptions()} />
@@ -707,7 +682,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             <Subtitle1>Graceful Terimination Period</Subtitle1>
           </SectionTitle>
         </Grid>
-        <HelperText>
+        <HelperTextSection>
           When Pods are teriminated, running processes are first asked to gracefully shutdown with SIGTERM. However some
           application may not be able to shutdown gracefully. Specify an amount of time to wait before forcefully
           killing with SIGKILL. The default value is 30 seconds. &nbsp;
@@ -717,7 +692,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           >
             Learn More
           </Link>
-        </HelperText>
+        </HelperTextSection>
         <Grid item xs={6}>
           <Field
             component={KRenderDebounceTextField}
@@ -824,7 +799,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             margin
             validate={nameValidators}
             disabled={isEdit}
-            helperText={isEdit ? "Name can't be changed." : stringConstants.NAME_RULE}
+            helperText={isEdit ? "Name can't be changed." : sc.NAME_RULE}
           />
         </Grid>
         <Grid item xs={6}>
