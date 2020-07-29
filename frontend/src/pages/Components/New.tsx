@@ -17,6 +17,11 @@ interface Props extends WithStyles<typeof styles>, WithNamespaceProps {}
 class ComponentNewRaw extends React.PureComponent<Props> {
   private submit = async (formValues: ComponentLike) => {
     const { dispatch, activeNamespaceName } = this.props;
+
+    formValues = formValues.set(
+      "preInjectedFiles",
+      formValues.get("preInjectedFiles")?.filter((file) => file.get("mountPath") || file.get("content")),
+    );
     return await dispatch(createComponentAction(formValues, activeNamespaceName));
   };
 

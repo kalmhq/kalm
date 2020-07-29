@@ -294,7 +294,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </HelperText>
         </Grid>
         <Grid item xs={12}>
-          <PreInjectedFiles />
+          <PreInjectedFiles formID={COMPONENT_FORM_ID} />
         </Grid>
       </>
     );

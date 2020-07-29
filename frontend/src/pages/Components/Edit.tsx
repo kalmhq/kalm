@@ -29,6 +29,10 @@ const mapStateToProps = (state: RootState, ownProps: any) => {
 class ComponentEditRaw extends React.PureComponent<Props> {
   private submit = async (formValues: ComponentLike) => {
     const { dispatch, activeNamespaceName } = this.props;
+    formValues = formValues.set(
+      "preInjectedFiles",
+      formValues.get("preInjectedFiles")?.filter((file) => file.get("mountPath") || file.get("content")),
+    );
     return await dispatch(updateComponentAction(formValues, activeNamespaceName));
   };
 
