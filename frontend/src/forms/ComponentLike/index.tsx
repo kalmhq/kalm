@@ -12,7 +12,7 @@ import {
   Typography,
 } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
-import { createStyles, Theme, withStyles, WithStyles, styled } from "@material-ui/core/styles";
+import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import HelpIcon from "@material-ui/icons/Help";
 import { Alert } from "@material-ui/lab";
 import { loadSimpleOptionsAction, loadStatefulSetOptionsAction } from "actions/persistentVolume";
@@ -48,7 +48,7 @@ import { PublicRegistriesList } from "types/registry";
 import { sizeStringToMi, sizeStringToNumber } from "utils/sizeConv";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
-import { Body, Body2, Caption, Subtitle1 } from "widgets/Label";
+import { Body2, Subtitle1 } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { SectionTitle } from "widgets/SectionTitle";
 import { KRadioGroupRender } from "../Basic/radio";
@@ -66,7 +66,6 @@ import { RenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
-import { theme } from "theme/theme";
 import stringConstants from "utils/stringConstants";
 
 const IngressHint = () => {
@@ -75,12 +74,11 @@ const IngressHint = () => {
   return (
     <>
       <Link style={{ cursor: "pointer" }} onClick={() => setOpen(!open)}>
-        How can I expose my component to the public Internet?
+        Want to have your container accessible to external sources?
       </Link>
       <Box pt={1}>
         <Collapse in={open}>
-          After you have successfully configured this component, you can go to the routing interface and create a
-          suitable routing rule to direct external traffic to this component.
+          Head to the “Routes” section and create a new route for directing external traffic to this container.
         </Collapse>
       </Box>
     </>
@@ -168,10 +166,15 @@ const styles = (theme: Theme) =>
 /**
  * A Styled component representing helper text.
  */
-const HelperText = styled(Box)({
-  color: "#636d72",
-  "font-size": theme.typography.caption.fontSize,
-});
+const HelperText: React.FC<{}> = ({ children }) => (
+  <Grid item xs={8}>
+    <Body2>{children}</Body2>
+  </Grid>
+);
+
+interface HelperTextProps {
+  children: string;
+}
 
 interface RawProps {
   showDataView?: boolean;
@@ -328,21 +331,16 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   public renderPorts() {
-    const { classes } = this.props;
-
-    const helper =
-      "Port is the standard way to expose your program. If you want your component can be accessed by some other parts, you need to define a port.";
+    const helper = "To expose your container outside of the pod, you need to open the corresponding ports.";
 
     return (
       <>
         <Grid item xs={12}>
           <SectionTitle>
             <Subtitle1>Ports</Subtitle1>
-            <KTooltip title={helper}>
-              <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
-            </KTooltip>
           </SectionTitle>
         </Grid>
+        <HelperText>{helper}</HelperText>
         <Grid item xs={12}>
           <Ports />
         </Grid>
@@ -354,53 +352,16 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderDisks() {
-    const { classes } = this.props;
-
-    const helper = (
-      <>
-        <Caption>Mount different kinds of volumes to this component.</Caption>
-        <Box mt={1} mb={1}>
-          <Caption>1. New Disk</Caption>
-        </Box>
-        <Caption>Create a disk according to the storageClass definition you selected.</Caption>
-        <Box mt={1} mb={1}>
-          <Caption>2. Existing Persistent Volume Claim</Caption>
-        </Box>
-        <Caption>
-          PersistentVolumeClaim and Disk are a kubernetes original resources. A persistentVolumeClaim volume is used to
-          mount a Disk into a Pod. Disks are a way for users to “claim” durable storage (such as a GCE PersistentDisk or
-          an iSCSI volume) without knowing the details of the particular cloud environment.
-        </Caption>
-        <Box mt={1} mb={1}>
-          <Caption>3. Temporary Disk</Caption>
-        </Box>
-        <Caption>
-          This sort of volumes are stored on whatever medium is backing the node, which might be disk or SSD or network
-          storage, depending on your environment.
-        </Caption>
-        <Box mt={1} mb={1}>
-          <Caption>4. Temporary Memory Media Disk</Caption>
-        </Box>
-        <Caption>
-          It will mount a tmpfs (RAM-backed filesystem) for you. While tmpfs is very fast, be aware that unlike disks,
-          tmpfs is cleared on node reboot and any files you write will count against your Container’s memory limit.
-        </Caption>
-      </>
-    );
-
     return (
       <Grid container spacing={2}>
         <Grid item xs={12}>
-          <Body>Mount various type of disks into your component.</Body>
-        </Grid>
-        <Grid item xs={12}>
           <SectionTitle>
             <Subtitle1>Disks</Subtitle1>
-            <KTooltip title={helper}>
-              <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
-            </KTooltip>
           </SectionTitle>
         </Grid>
+        <HelperText>
+          Specify and mount a disk to your component. There are several ways to mount disks with Kalm.
+        </HelperText>
         <Grid item xs={12}>
           <Disks />
         </Grid>
@@ -559,16 +520,15 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderHealth() {
-    const { classes } = this.props;
     return (
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <SectionTitle>
             <Subtitle1>Readiness Probe</Subtitle1>
-            <KTooltip title={"Readiness probe is used to decide when a component is ready to accepting traffic."}>
-              <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
-            </KTooltip>
           </SectionTitle>
+        </Grid>
+        <Grid item xs={8}>
+          Readiness probe is used to decide when a component is ready to accepting traffic.
         </Grid>
         <Grid item xs={12}>
           <ReadinessProbe />
@@ -576,15 +536,11 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Grid item xs={12}>
           <SectionTitle>
             <Subtitle1>Liveness Probe</Subtitle1>
-            <KTooltip
-              title={
-                "Liveness probe is used to know if the component is running into an unexpected state and a restart is required."
-              }
-            >
-              <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
-            </KTooltip>
           </SectionTitle>
         </Grid>
+        <HelperText>
+          Liveness probe is used to know if the component is running into an unexpected state and a restart is required.
+        </HelperText>
         <Grid item xs={12}>
           <LivenessProbe />
         </Grid>
@@ -751,19 +707,17 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             <Subtitle1>Graceful Terimination Period</Subtitle1>
           </SectionTitle>
         </Grid>
-        <Grid item xs={8}>
-          <Body2>
-            When Pods are teriminated, running processes are first asked to gracefully shutdown with SIGTERM. However
-            some application may not be able to shutdown gracefully. Specify an amount of time to wait before forcefully
-            killing with SIGKILL. The default value is 30 seconds. &nbsp;
-            <Link
-              href="https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#hook-handler-execution"
-              target="_blank"
-            >
-              Learn More
-            </Link>
-          </Body2>
-        </Grid>
+        <HelperText>
+          When Pods are teriminated, running processes are first asked to gracefully shutdown with SIGTERM. However some
+          application may not be able to shutdown gracefully. Specify an amount of time to wait before forcefully
+          killing with SIGKILL. The default value is 30 seconds. &nbsp;
+          <Link
+            href="https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#hook-handler-execution"
+            target="_blank"
+          >
+            Learn More
+          </Link>
+        </HelperText>
         <Grid item xs={6}>
           <Field
             component={KRenderDebounceTextField}
