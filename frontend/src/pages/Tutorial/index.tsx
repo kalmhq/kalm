@@ -4,7 +4,6 @@ import {
   createStyles,
   Drawer,
   IconButton,
-  Link,
   Theme,
   Typography,
   withStyles,
@@ -23,6 +22,7 @@ import { Tutorial, TutorialFactory } from "types/tutorial";
 import { Body } from "widgets/Label";
 import { CommonTutorial } from "./CommonTutorial";
 import { DRAWER_HIGH_ZINDEX, TUTORIAL_DRAWER_WIDTH } from "layout/Constants";
+import { KMLink } from "widgets/Link";
 
 class TutorialItem extends React.PureComponent<{
   title: string;
@@ -37,9 +37,9 @@ class TutorialItem extends React.PureComponent<{
   public render() {
     return (
       <>
-        <Link component="button" variant="body2" onClick={this.handleClick}>
+        <KMLink component="button" variant="body2" onClick={this.handleClick}>
           {this.props.title}
-        </Link>
+        </KMLink>
         <br />
       </>
     );
@@ -87,13 +87,13 @@ class TutorialRaw extends React.PureComponent<Props, State> {
     return (
       <div>
         <Box mb={2}>
-          <Typography variant="h3">Tutorials</Typography>
+          <Typography variant="h4">Tutorials</Typography>
           <Body>Here are some live tutorials that walk you throught some common tasks step by step. </Body>
         </Box>
         {tutorialConfigs.map((group) => (
           <React.Fragment key={group.name}>
             <Box mb={2}>
-              <Typography variant="h5">{group.name}</Typography>
+              <Typography variant="h6">{group.name}</Typography>
             </Box>
             <Box mb={2}>
               {group.items.map((item) => {
@@ -106,9 +106,14 @@ class TutorialRaw extends React.PureComponent<Props, State> {
         ))}
 
         <Box mt={2}>
-          <Link color="textSecondary" href="https://github.com/kalmHQ/kalm/issues/new" target="_blank" rel="noreferer">
+          <KMLink
+            color="textSecondary"
+            href="https://github.com/kalmHQ/kalm/issues/new"
+            target="_blank"
+            rel="noreferer"
+          >
             Still have questions? Tell us!
-          </Link>
+          </KMLink>
         </Box>
       </div>
     );

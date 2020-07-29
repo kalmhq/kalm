@@ -21,7 +21,7 @@ import { CertificateDataWrapper, WithCertificatesDataProps } from "./DataWrapper
 import { addCertificateDialogId, NewModal } from "./New";
 import { formatDate } from "utils/date";
 import { CustomizedButton } from "widgets/Button";
-import { EmptyList } from "widgets/EmptyList";
+import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { indigo } from "@material-ui/core/colors";
 import { InfoBox } from "widgets/InfoBox";
 import DomainStatus from "widgets/DomainStatus";
@@ -261,7 +261,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     const { dispatch } = this.props;
 
     return (
-      <EmptyList
+      <EmptyInfoBox
         image={<KalmCertificatesIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
         title={"You don't have any Certificates"}
         content="To enable HTTPS please upload an existing SSL certificate. Alternatively Kalm can help you setup automatic TLS certification via Let's Encrypt."
@@ -275,7 +275,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
               dispatch(setEditCertificateModalAction(null));
             }}
           >
-            Add Certificate
+            New Certificate
           </CustomizedButton>
         }
       />
@@ -295,7 +295,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
       <BasePage
         secondHeaderRight={
           <>
-            {/* <H4>Certificates</H4> */}
+            {/* <H6>Certificates</H6> */}
             <Button
               color="primary"
               variant="outlined"
@@ -307,7 +307,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
                 dispatch(setEditCertificateModalAction(null));
               }}
             >
-              Add Certificate
+              New Certificate
             </Button>
           </>
         }

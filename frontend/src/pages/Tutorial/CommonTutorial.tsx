@@ -2,7 +2,6 @@ import {
   Box,
   createStyles,
   FormGroup,
-  Link,
   Step,
   StepConnector,
   StepContent,
@@ -21,6 +20,7 @@ import { TDispatchProp } from "types";
 import { Loading } from "widgets/Loading";
 import { TutorialSubStepCompoent } from "./TutorialSubStep";
 import { Highlight } from "./Highlight";
+import { KMLink } from "widgets/Link";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -95,7 +95,7 @@ class CommonTutorialRaw extends React.PureComponent<Props, State> {
     return (
       <>
         <Box mb={2}>
-          <Typography variant="h2">{tutorial.title}</Typography>
+          <Typography variant="h4">{tutorial.title}</Typography>
         </Box>
         <Stepper
           activeStep={currentStepIndex}
@@ -138,9 +138,9 @@ class CommonTutorialRaw extends React.PureComponent<Props, State> {
             <Typography>Congratulations, you have completed this tutorial!</Typography>
             <Typography>
               Next step:{" "}
-              <Link component="button" onClick={tutorial.nextStep.onClick}>
+              <KMLink component="button" onClick={tutorial.nextStep.onClick}>
                 {tutorial.nextStep.text}
-              </Link>
+              </KMLink>
             </Typography>
           </Box>
         )}

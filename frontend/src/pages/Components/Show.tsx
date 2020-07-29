@@ -13,7 +13,7 @@ import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { WorkloadType } from "types/componentTemplate";
-import { Body, H4 } from "widgets/Label";
+import { Body, H6 } from "widgets/Label";
 import { Namespaces } from "widgets/Namespaces";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
 
@@ -121,7 +121,7 @@ class ComponentShowRaw extends React.PureComponent<Props, State> {
 
     return (
       <div className={classes.secondHeaderRight}>
-        <H4 className={classes.secondHeaderRightItem}>Component {component.get("name")}</H4>
+        <H6 className={classes.secondHeaderRightItem}>Component {component.get("name")}</H6>
         <Button
           tutorial-anchor-id="edit-component"
           component={Link}

@@ -17,13 +17,14 @@ import { TDispatchProp } from "types";
 import { Disk } from "types/disk";
 import { CustomizedButton } from "widgets/Button";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
-import { EmptyList } from "widgets/EmptyList";
+import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { DeleteIcon, KalmVolumeIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { InfoBox } from "widgets/InfoBox";
 import { KTable } from "widgets/Table";
 import { BasePage } from "../BasePage";
 import { sizeStringToGi } from "utils/sizeConv";
+import { KTooltip } from "forms/Application/KTooltip";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -123,7 +124,11 @@ export class VolumesRaw extends React.Component<Props, States> {
       <>
         <IconButtonWithTooltip
           disabled={rowData.get("isInUse")}
-          tooltipTitle={rowData.get("isInUse") ? "This disk in in used and can't be removed" : "Delete"}
+          tooltipTitle={
+            rowData.get("isInUse")
+              ? "The disk must be unmounted(removed) from all associated components before it can be deleted"
+              : "Delete"
+          }
           onClick={() => {
             this.showDeleteConfirmDialog(rowData);
           }}
@@ -165,12 +170,19 @@ export class VolumesRaw extends React.Component<Props, States> {
   }
 
   private renderSecondHeaderRight() {
-    return <>{/* <H4>Disks</H4>
+    return <>{/* <H6>Disks</H6>
         {this.renderDiskHelp()}
         <StorageType /> */}</>;
   }
 
   private renderApplication = (rowData: RowData) => {
+    if (!rowData.get("isInUse")) {
+      return (
+        <KTooltip title={"Last used by"}>
+          <Box>{rowData.get("componentNamespace")}</Box>
+        </KTooltip>
+      );
+    }
     return (
       <Link
         style={{ color: primaryColor }}
@@ -183,6 +195,13 @@ export class VolumesRaw extends React.Component<Props, States> {
   };
 
   private renderComponent = (rowData: RowData) => {
+    if (!rowData.get("isInUse")) {
+      return (
+        <KTooltip title={"Last used by"}>
+          <Box> {rowData.get("componentName")}</Box>
+        </KTooltip>
+      );
+    }
     return (
       <Link
         style={{ color: primaryColor }}
@@ -199,11 +218,7 @@ export class VolumesRaw extends React.Component<Props, States> {
   };
 
   private renderUse = (rowData: RowData) => {
-    return rowData.get("isInUse") ? "True" : "False";
-  };
-
-  private renderPhase = (rowData: RowData) => {
-    return rowData.get("phase");
+    return rowData.get("isInUse") ? "Yes" : "No";
   };
 
   private renderCapacity = (rowData: RowData) => {
@@ -213,7 +228,7 @@ export class VolumesRaw extends React.Component<Props, States> {
   private renderEmpty() {
     const { dispatch } = this.props;
     return (
-      <EmptyList
+      <EmptyInfoBox
         image={<KalmVolumeIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
         title={"You don’t have any Disks."}
         content="Disks can be attached to Components to provide persistent storage. Disks can be created in the App Components page, and will show up here automatically."
@@ -277,12 +292,11 @@ export class VolumesRaw extends React.Component<Props, States> {
                 paging: tableData.length > 20,
               }}
               columns={[
-                { title: "Name", field: "name", sorting: false, render: this.renderName },
-                { title: "Is In Use", field: "isInUse", sorting: false, render: this.renderUse },
-                { title: "Application", field: "componentNamespace", sorting: false, render: this.renderApplication },
-                { title: "Component Name", field: "componentName", sorting: false, render: this.renderComponent },
-                { title: "Phase", field: "phase", sorting: false, render: this.renderPhase },
-                { title: "Capacity", field: "capacity", sorting: false, render: this.renderCapacity },
+                { title: "Volume Name", field: "name", sorting: false, render: this.renderName },
+                { title: "Mounted", field: "isInUse", sorting: false, render: this.renderUse },
+                { title: "App", field: "componentNamespace", sorting: false, render: this.renderApplication },
+                { title: "Component", field: "componentName", sorting: false, render: this.renderComponent },
+                { title: "Size", field: "capacity", sorting: false, render: this.renderCapacity },
                 {
                   title: "Actions",
                   field: "action",

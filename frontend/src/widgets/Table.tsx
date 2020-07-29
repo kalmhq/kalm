@@ -21,6 +21,7 @@ export class KTable<RowData extends object> extends React.PureComponent<Material
               <Paper
                 {...props}
                 variant="outlined"
+                square
                 elevation={0}
                 style={{ borderBottom: this.props.options?.paging ? undefined : 0 }}
               />

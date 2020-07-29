@@ -7,7 +7,7 @@ import ApplicationForm, { applicationInitialValues } from "../../forms/Applicati
 import { RootState } from "reducers";
 import { Actions } from "types";
 import { Application } from "types/application";
-import { H4 } from "widgets/Label";
+import { H6 } from "widgets/Label";
 import { BasePage } from "../BasePage";
 import { push } from "connected-react-router";
 
@@ -37,7 +37,7 @@ class ApplicationNewRaw extends React.PureComponent<Props> {
   public render() {
     const { classes } = this.props;
     return (
-      <BasePage secondHeaderRight={<H4>Create Application</H4>}>
+      <BasePage secondHeaderRight={<H6>Create Application</H6>}>
         <div className={classes.root}>
           <Grid container spacing={2}>
             <Grid item xs={8} sm={8} md={8}>

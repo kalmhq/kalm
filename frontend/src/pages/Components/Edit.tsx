@@ -6,7 +6,7 @@ import { updateComponentAction } from "actions/component";
 import { ComponentLike } from "types/componentTemplate";
 import { Namespaces } from "widgets/Namespaces";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
-import { H4 } from "widgets/Label";
+import { H6 } from "widgets/Label";
 import { ComponentLikeForm } from "forms/ComponentLike";
 import { connect } from "react-redux";
 import { withComponent, WithComponentProp } from "hoc/withComponent";
@@ -48,7 +48,7 @@ class ComponentEditRaw extends React.PureComponent<Props> {
       <BasePage
         secondHeaderLeft={<Namespaces />}
         leftDrawer={<ApplicationSidebar />}
-        secondHeaderRight={<H4>Edit {component!.get("name")} Component</H4>}
+        secondHeaderRight={<H6>Edit {component!.get("name")} Component</H6>}
       >
         <Box p={2}>
           <Grid container spacing={2}>

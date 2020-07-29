@@ -17,7 +17,7 @@ import { DeleteIcon, EditIcon, KalmRegistryIcon } from "widgets/Icon";
 import { Loading } from "widgets/Loading";
 import { BasePage } from "../BasePage";
 import { RegistryNewModal, RegistryNewModalID } from "./New";
-import { EmptyList } from "widgets/EmptyList";
+import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { indigo } from "@material-ui/core/colors";
 import { InfoBox } from "widgets/InfoBox";
 
@@ -175,7 +175,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
     const { dispatch } = this.props;
     return (
       <>
-        {/* <H4>Private Docker Registries</H4> */}
+        {/* <H6>Private Docker Registries</H6> */}
         <CustomizedButton
           color="primary"
           variant="outlined"
@@ -188,7 +188,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
             dispatch(openDialogAction(RegistryNewModalID));
           }}
         >
-          Add {pageObjectName}
+          New {pageObjectName}
         </CustomizedButton>
       </>
     );
@@ -198,7 +198,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
     const { dispatch } = this.props;
 
     return (
-      <EmptyList
+      <EmptyInfoBox
         image={<KalmRegistryIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
         title={`You don’t have any ${pageObjectNamePlural}`}
         content="To pull images hosted on a private registry, first add an entry with login info here. Public registries such as Docker Hub can be used directly."
@@ -214,7 +214,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
               dispatch(openDialogAction(RegistryNewModalID));
             }}
           >
-            Add {pageObjectName}
+            New {pageObjectName}
           </CustomizedButton>
         }
       />

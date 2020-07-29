@@ -36,21 +36,23 @@ spec:
         spec:
           description: DeployKeySpec defines the desired state of DeployKey
           properties:
-            content:
-              description: 'for type: component, content lists all components'
+            creator:
+              type: string
+            resources:
+              description: If scope is cluster, this field will be ignored If scope
+                is namespace, this is a list of namespace names If scope is component,
+                this is a list of components under namespaces (ns1/component1, n2/component2)
               items:
                 type: string
               type: array
-            creator:
-              type: string
-            type:
+            scope:
               enum:
               - component
-              - app
-              - all
+              - namespace
+              - cluster
               type: string
           required:
-          - type
+          - scope
           type: object
         status:
           description: DeployKeyStatus defines the observed state of DeployKey
@@ -58,9 +60,6 @@ spec:
             lastUsedTimestamp:
               type: integer
             serviceAccountToken:
-              description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
-                of cluster Important: Run "make" to regenerate code after modifying
-                this file'
               type: string
             usedCount:
               type: integer

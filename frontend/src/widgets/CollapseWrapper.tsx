@@ -1,5 +1,6 @@
-import { Collapse, Link } from "@material-ui/core";
+import { Collapse } from "@material-ui/core";
 import React, { ReactNode } from "react";
+import { KMLink } from "./Link";
 
 interface Props {
   title: string;
@@ -11,9 +12,9 @@ export const CollapseWrapper = ({ title, defaultOpen, children }: Props) => {
   const [open, setOpen] = React.useState(!!defaultOpen);
   return (
     <>
-      <Link component="button" variant="body2" onClick={() => setOpen(!open)}>
+      <KMLink component="button" variant="body2" onClick={() => setOpen(!open)}>
         {title}
-      </Link>
+      </KMLink>
       <Collapse in={open}>{children}</Collapse>
     </>
   );

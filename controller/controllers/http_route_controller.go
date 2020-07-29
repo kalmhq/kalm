@@ -171,6 +171,7 @@ func (r *HttpRouteReconcilerTask) buildHttpsRedirectEnvoyFilter(route *corev1alp
 						Context: v1alpha3.EnvoyFilter_GATEWAY,
 						ObjectTypes: &v1alpha3.EnvoyFilter_EnvoyConfigObjectMatch_RouteConfiguration{
 							RouteConfiguration: &v1alpha3.EnvoyFilter_RouteConfigurationMatch{
+								PortNumber: 80,
 								Vhost: &v1alpha3.EnvoyFilter_RouteConfigurationMatch_VirtualHostMatch{
 									Route: &v1alpha3.EnvoyFilter_RouteConfigurationMatch_RouteMatch{
 										Name: getIstioHttpRouteName(route),

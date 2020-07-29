@@ -78,6 +78,6 @@ export const throttle = (key: string, func: any, timeout: number) => {
       loadingMap.set(key, false);
       func(...args);
     }, timeout);
-    func(...args);
+    // func(...args);
   };
 };

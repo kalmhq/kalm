@@ -26,11 +26,19 @@ export const removeInList = <T extends NamedResource>(list: Immutable.List<T>, d
   return list.delete(index);
 };
 
-export const addOrUpdateInList = <T extends NamedResource>(list: Immutable.List<T>, data: T): Immutable.List<T> => {
+export const addOrUpdateInList = <T extends NamedResource>(
+  list: Immutable.List<T>,
+  data: T,
+  updateExisted: boolean = true,
+): Immutable.List<T> => {
   const index = list.findIndex((x) => x.get("name") === data.get("name"));
 
   if (index < 0) {
     return list.push(data);
+  }
+
+  if (!updateExisted) {
+    return list;
   }
 
   return list.set(index, data);

@@ -1,17 +1,12 @@
-import { Box, createStyles, Paper, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { Box, createStyles, Paper, Theme, withStyles, WithStyles, Typography } from "@material-ui/core";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { Subtitle1 } from "./Label";
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
-    hackBody: {
-      "font-size": "16px", //HACK - discuss re-factoring of global font sizes in theme
-      color: theme.palette.text.secondary,
-    },
   });
 
 const mapStateToProps = (state: RootState) => {
@@ -27,14 +22,14 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
 
 interface State {}
 
-class EmptyListRaw extends React.PureComponent<Props, State> {
+class EmptyInfoBoxRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {};
   }
 
   public render() {
-    const { classes, image, title, content, button } = this.props;
+    const { image, title, content, button } = this.props;
     return (
       <Paper square variant="outlined">
         <Box p={2}>
@@ -42,10 +37,10 @@ class EmptyListRaw extends React.PureComponent<Props, State> {
             {image ? image : null}
           </Box>
           <Box p={2} display="flex" justifyContent="center">
-            <Subtitle1>{title}</Subtitle1>
+            <Typography color="textPrimary">{title}</Typography>
           </Box>
           <Box pb={2} display="flex" justifyContent="center">
-            <Box className={classes.hackBody}>{content}</Box>
+            <Typography color="textSecondary">{content}</Typography>
           </Box>
           <Box p={2} display="flex" justifyContent="center">
             {button}
@@ -56,4 +51,4 @@ class EmptyListRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const EmptyList = withStyles(styles)(connect(mapStateToProps)(EmptyListRaw));
+export const EmptyInfoBox = withStyles(styles)(connect(mapStateToProps)(EmptyInfoBoxRaw));

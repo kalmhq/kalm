@@ -9,10 +9,10 @@ const ErrorHandler = (e: any) => {
     throttle(
       e.response.data.message,
       () => store.dispatch(setErrorNotificationAction(e.response.data.message)),
-      5000,
+      10000,
     )();
   } else {
-    throttle(e.message, () => store.dispatch(setErrorNotificationAction(e.message)), 5000)();
+    throttle(e.message, () => store.dispatch(setErrorNotificationAction(e.message)), 10000)();
     console.log(e);
   }
 };

@@ -1,11 +1,10 @@
 import { createStyles, Theme } from "@material-ui/core";
-import { grey } from "@material-ui/core/colors";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
-import { H4 } from "widgets/Label";
+import { H6 } from "widgets/Label";
 import { SECOND_HEADER_HEIGHT, LEFT_SECTION_OPEN_WIDTH, SECOND_HEADER_ZINDEX, APP_BAR_HEIGHT } from "./Constants";
 
 const mapStateToProps = (state: RootState) => {
@@ -20,20 +19,20 @@ const styles = (theme: Theme) =>
       zIndex: SECOND_HEADER_ZINDEX,
       height: SECOND_HEADER_HEIGHT,
       width: "100%",
-      background: "white",
-      borderBottom: `1px solid ${grey[200]}`,
+      background: theme.palette.background.paper,
+      borderBottom: `1px solid ${theme.palette.divider}`,
       display: "flex",
     },
     left: {
       width: LEFT_SECTION_OPEN_WIDTH,
       height: SECOND_HEADER_HEIGHT,
-      borderRight: `1px solid ${grey[200]}`,
+      borderRight: `1px solid ${theme.palette.divider}`,
     },
     leftTextContainer: {
       display: "flex",
       alignItems: "center",
       paddingLeft: 32,
-      borderRight: `1px solid ${grey[200]}`,
+      borderRight: `1px solid ${theme.palette.divider}`,
     },
     right: {
       flex: 1,
@@ -68,11 +67,11 @@ class SecondHeaderRaw extends React.PureComponent<Props, State> {
       <div className={classes.root}>
         {left ? (
           <div className={`${classes.left} ${typeof left === "string" ? classes.leftTextContainer : ""}`}>
-            {typeof left === "string" ? <H4>{left}</H4> : left}
+            {typeof left === "string" ? <H6>{left}</H6> : left}
           </div>
         ) : null}
 
-        <div className={classes.right}>{typeof right === "string" ? <H4>{right}</H4> : right}</div>
+        <div className={classes.right}>{typeof right === "string" ? <H6>{right}</H6> : right}</div>
       </div>
     );
   }

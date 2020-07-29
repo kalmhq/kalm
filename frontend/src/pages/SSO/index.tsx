@@ -1,11 +1,10 @@
 import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import React from "react";
 import { BasePage } from "pages/BasePage";
-import { AdminSidebar } from "pages/Admin/Sidebar";
 import { Body, H6 } from "widgets/Label";
 import { CustomizedButton } from "widgets/Button";
 import { Link } from "react-router-dom";
-import { SSOImplementDetails } from "pages/Admin/SSO/Details";
+import { SSOImplementDetails } from "pages/SSO/Details";
 import { withSSO, WithSSOProps } from "hoc/withSSO";
 import { Loading } from "widgets/Loading";
 import { KPanel } from "widgets/KPanel";
@@ -33,7 +32,7 @@ interface Props extends WithStyles<typeof styles>, WithSSOProps {}
 
 interface State {}
 
-class AdminSSOPageRaw extends React.PureComponent<Props, State> {
+class SSOPageRaw extends React.PureComponent<Props, State> {
   private renderConnectorDetails = (connector: SSOGitlabConnector | SSOGithubConnector) => {
     // @ts-ignore
     const type = connector.get("type") as SSO_CONNECTOR_TYPE;
@@ -207,11 +206,11 @@ class AdminSSOPageRaw extends React.PureComponent<Props, State> {
     }
 
     return (
-      <BasePage leftDrawer={<AdminSidebar />}>
+      <BasePage>
         <Box p={2}>
           {!!ssoConfig ? this.renderConfigDetails() : this.renderEmptyText()}
           <Box mt={2} width={300}>
-            <CustomizedButton component={Link} to="/admin/sso/config" variant="contained" color="primary">
+            <CustomizedButton component={Link} to="/sso/config" variant="contained" color="primary">
               {ssoConfig ? "Update Single Sign-on Config" : "Enable Single Sign-on"}
             </CustomizedButton>
             {/*{loaded && ssoConfig ? <DangerButton>Delete Single Sign-On Config</DangerButton> : null}*/}
@@ -225,4 +224,4 @@ class AdminSSOPageRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const AdminSSOPage = withStyles(styles)(withSSO(AdminSSOPageRaw));
+export const SSOPage = withStyles(styles)(withSSO(SSOPageRaw));

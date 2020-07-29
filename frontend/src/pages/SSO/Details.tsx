@@ -1,5 +1,5 @@
 import { Box } from "@material-ui/core";
-import { Body, H4 } from "widgets/Label";
+import { Body, H6 } from "widgets/Label";
 import { ReactComponent as SSOArchitecture } from "images/SSO.svg";
 import { ReactComponent as SSOFlow } from "images/sso-oidc-flow.svg";
 import { CollapseWrapper } from "widgets/CollapseWrapper";
@@ -9,7 +9,7 @@ export const SSOImplementDetails = () => {
   return (
     <CollapseWrapper title="Tell me more details about Kalm Single Sign-on feature.">
       <Box mt={2}>
-        <H4>Standing on the shoulders of giants</H4>
+        <H6>Standing on the shoulders of giants</H6>
         <Body>
           Kalm SSO solution is based on{" "}
           <a href="https://openid.net/connect/" rel="noopener noreferrer" target="_blank">
@@ -49,7 +49,7 @@ export const SSOImplementDetails = () => {
         </Body>
       </Box>
       <Box mt={2}>
-        <H4>Architecture</H4>
+        <H6>Architecture</H6>
         <Body>
           The following picture shows the basic architecture of Kalm SSO. Two extra components will be installed in your
           cluster, AuthProxy and Dex. Any http traffic to your private component will be checked by auth proxy, if no
@@ -61,7 +61,7 @@ export const SSOImplementDetails = () => {
       </Box>
 
       <Box mt={2}>
-        <H4>The OIDC Flow</H4>
+        <H6>The OIDC Flow</H6>
         <Body>The following chart describes how the whole authentication process works.</Body>
         <Box mt={2}>
           <SSOFlow />
