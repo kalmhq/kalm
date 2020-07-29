@@ -1,16 +1,13 @@
 import {
   Chip,
-  CircularProgress,
   createStyles,
   Divider,
   OutlinedTextFieldProps,
   PropTypes,
   TextField,
   Theme,
-  Tooltip,
   Typography,
   withStyles,
-  Divider,
 } from "@material-ui/core";
 import {
   Autocomplete,
@@ -28,8 +25,8 @@ import { ID } from "utils";
 import { AutocompleteProps, RenderGroupParams } from "@material-ui/lab/Autocomplete/Autocomplete";
 import { theme } from "theme/theme";
 import { Caption } from "widgets/Label";
-import { ErrorIcon, KalmApplicationIcon, KalmLogoIcon } from "widgets/Icon";
-import { SuccessBadge } from "widgets/Badge";
+import { KalmApplicationIcon, KalmLogoIcon } from "widgets/Icon";
+
 export interface ReduxFormMultiTagsFreeSoloAutoCompleteProps
   extends WrappedFieldProps,
     WithStyles<typeof styles>,

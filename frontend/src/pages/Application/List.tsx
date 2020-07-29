@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import { Box, Button, createStyles, Grid, Link as MLink, Popover, Theme, Tooltip, WithStyles } from "@material-ui/core";
-=======
-import { Box, Button, createStyles, Popover, Theme, Tooltip, WithStyles, Grid } from "@material-ui/core";
->>>>>>> master
+import { Box, Button, createStyles, Grid, Popover, Theme, Tooltip, WithStyles } from "@material-ui/core";
 import { indigo } from "@material-ui/core/colors";
 import withStyles from "@material-ui/core/styles/withStyles";
 import { deleteApplicationAction } from "actions/application";
