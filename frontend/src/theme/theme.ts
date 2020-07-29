@@ -17,9 +17,9 @@ const lightTheme = createMuiTheme({
 const darkTheme = createMuiTheme({
   palette: {
     primary: {
-      light: indigo[100],
-      main: indigo[200],
-      dark: indigo[300],
+      light: indigo[200],
+      main: indigo[300],
+      dark: indigo[400],
       contrastText: "#FFFFFF",
     },
     secondary: amber,
