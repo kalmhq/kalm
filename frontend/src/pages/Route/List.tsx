@@ -17,7 +17,7 @@ import { KTable } from "widgets/Table";
 import { Targets } from "widgets/Targets";
 import { OpenInBrowser } from "widgets/OpenInBrowser";
 import { CopyAsCurl } from "widgets/CopyAsCurl";
-import { EmptyList } from "widgets/EmptyList";
+import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { ForwardIcon, KalmRoutesIcon } from "widgets/Icon";
 import { indigo } from "@material-ui/core/colors";
 import DomainStatus from "widgets/DomainStatus";
@@ -177,7 +177,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     const { dispatch, activeNamespaceName } = this.props;
 
     return (
-      <EmptyList
+      <EmptyInfoBox
         image={<KalmRoutesIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
         title={"You don't have any Routes"}
         content="Add a Route to allow external requests to your Application. You can use Routes to specify how hosts and paths map to components, configure HTTPS, and setup canary and blue-green deployments."
@@ -206,7 +206,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
         secondHeaderLeft={<Namespaces />}
         secondHeaderRight={
           <>
-            {/* <H4>Routes</H4> */}
+            {/* <H6>Routes</H6> */}
             <Button
               tutorial-anchor-id="add-route"
               component={Link}

@@ -1,6 +1,4 @@
-import { AppBar, Breadcrumbs, createStyles, Divider, IconButton, Menu, MenuItem, Theme } from "@material-ui/core";
-import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
-import MenuIcon from "@material-ui/icons/Menu";
+import { AppBar, Breadcrumbs, createStyles, Divider, IconButton, Menu, MenuItem, Theme, Box } from "@material-ui/core";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import { logoutAction } from "actions/auth";
 import { closeTutorialDrawerAction, openTutorialDrawerAction } from "actions/tutorial";
@@ -12,7 +10,8 @@ import { TDispatch } from "types";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
 import { APP_BAR_HEIGHT, APP_BAR_ZINDEX } from "./Constants";
-import { HelpIcon, KalmUserIcon } from "widgets/Icon";
+import { HelpIcon, KalmUserIcon, MenuOpenIcon, MenuIcon } from "widgets/Icon";
+import { ThemeToggle } from "theme/ThemeToggle";
 
 const mapStateToProps = (state: RootState) => {
   const activeNamespace = state.get("namespaces").get("active");
@@ -160,6 +159,9 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
       </div>
     );
   }
+  renderThemeIcon = () => {
+    return <ThemeToggle />;
+  };
 
   renderTutorialIcon = () => {
     const { tutorialDrawerOpen, dispatch } = this.props;
@@ -201,7 +203,7 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
               onClick={() => dispatch(setSettingsAction({ isOpenRootDrawer: !isOpenRootDrawer }))}
               // size={"small"}
             >
-              {isOpenRootDrawer ? <ChevronLeftIcon htmlColor={"#fff"} /> : <MenuIcon htmlColor={"#fff"} />}
+              {isOpenRootDrawer ? <MenuOpenIcon color="white" /> : <MenuIcon color="white" />}
             </IconButton>
             <FlexRowItemCenterBox>
               <Breadcrumbs aria-label="breadcrumb">
@@ -241,6 +243,8 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
             {/* <IconButtonWithTooltip tooltipTitle="Settings" style={{ color: "#fff" }} component={NavLink} to={"/roles"}>
               <SettingsIcon />
             </IconButtonWithTooltip> */}
+            <Divider orientation="vertical" flexItem color="inherit" />
+            <Box className={classes.barAvatar}>{this.renderThemeIcon()}</Box>
             <Divider orientation="vertical" flexItem color="inherit" />
             <div className={classes.barAvatar}>{this.renderTutorialIcon()}</div>
             <Divider orientation="vertical" flexItem color="inherit" />

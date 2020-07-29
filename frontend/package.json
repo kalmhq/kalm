@@ -79,20 +79,13 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint -c .eslintrc.json --ext tx,tsx src --max-warnings 0",
-    "storybook": "NODE_ENV=test start-storybook -p 9009 -s public",
-    "build-storybook": "NODE_ENV=test build-storybook -s public"
+    "storybook-dev": "NODE_ENV=test start-storybook -p 9009 -s public",
+    "storybook": "NODE_ENV=test start-storybook --docs -p 9009 -s public",
+    "build-storybook": "NODE_ENV=test build-storybook --docs -s public"
   },
   "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+    "production": [">0.2%", "not dead", "not op_mini all"],
+    "development": ["last 1 chrome version", "last 1 firefox version", "last 1 safari version"]
   },
   "devDependencies": {
     "@storybook/addon-a11y": "^5.3.19",

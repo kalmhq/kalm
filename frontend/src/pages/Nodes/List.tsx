@@ -25,7 +25,7 @@ import { Node } from "types/node";
 import { formatTimeDistance, TimestampFilter } from "utils/date";
 import { InfoBox } from "widgets/InfoBox";
 import { KSelect } from "widgets/KSelect";
-import { H5 } from "widgets/Label";
+import { Subtitle1 } from "widgets/Label";
 import { WhitePaper } from "widgets/Paper";
 import { BigCPULineChart, BigMemoryLineChart, SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
@@ -132,7 +132,7 @@ export class NodeListRaw extends React.Component<Props, States> {
           <Grid container spacing={2}>
             <Grid item>
               <Box display="flex">
-                <NodeStatus node={node} enableMarginRight /> <H5>{node.get("name")}</H5>
+                <NodeStatus node={node} enableMarginRight /> <Subtitle1>{node.get("name")}</Subtitle1>
               </Box>
             </Grid>
             <Grid item>{node.get("roles").join(",")}</Grid>

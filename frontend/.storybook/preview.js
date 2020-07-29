@@ -41,30 +41,25 @@ const withGlobalStyle = (storyFn) => {
 };
 
 addDecorator(withGlobalStyle);
-addDecorator(withKnobs);
+// addDecorator(withKnobs);
 //   loadFontsForStorybook();
 
 addParameters({
   options: {
     theme: themes.light,
-    showRoots: true,
+    showRoots: false,
   },
   docs: {
     page: DocsPage,
   },
   dependencies: {
     withStoriesOnly: false,
-    hideEmpty: false,
+    hideEmpty: true,
   },
   viewport: {
     viewports: { ...INITIAL_VIEWPORTS, ...newViewports }, // newViewports would be an ViewportMap. (see below for examples)
     defaultViewport: "macbookpro",
   },
-  backgrounds: [
-    { name: "page", value: "#F4F5F7", default: true },
-    { name: "table", value: "#FAFAFA" },
-    { name: "white", value: "#FFFFFF" },
-  ],
 });
 
 // export const decorators = [withGlobalStyle];

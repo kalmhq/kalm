@@ -9,6 +9,7 @@ export interface SettingObject {
   isOpenRootDrawer: boolean;
   isShowTopProgress: boolean;
   usingApplicationCard: boolean;
+  usingTheme: string;
 }
 
 export type State = ImmutableMap<SettingObject>;
@@ -17,6 +18,7 @@ const initialState: State = Immutable.Map({
   isDisplayingHelpers: window.localStorage.getItem("isDisplayingHelpers") === "true",
   isOpenRootDrawer: window.localStorage.getItem("isOpenRootDrawer") === "true",
   usingApplicationCard: window.localStorage.getItem("usingApplicationCard") === "true",
+  usingTheme: window.localStorage.getItem("usingTheme") ?? "light",
   isShowTopProgress: false,
 });
 
@@ -32,6 +34,7 @@ const reducer = (state: State = initialState, action: Actions): State => {
   window.localStorage.setItem("isDisplayingHelpers", state.get("isDisplayingHelpers").toString());
   window.localStorage.setItem("isOpenRootDrawer", state.get("isOpenRootDrawer").toString());
   window.localStorage.setItem("usingApplicationCard", state.get("usingApplicationCard").toString());
+  window.localStorage.setItem("usingTheme", state.get("usingTheme", "light"));
 
   return state;
 };

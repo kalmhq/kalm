@@ -4,10 +4,10 @@ import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import Icon from "@material-ui/core/Icon";
-import { Link } from "react-router-dom";
 import { NamespaceVisibleContainer } from "permission/Namespace";
 import { blinkTopProgressAction } from "actions/settings";
 import { Box, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { KLink } from "./Link";
 
 const ITEM_HEIGHT = 48;
 
@@ -22,14 +22,14 @@ interface Option {
 
 const styles = (theme: Theme) => ({
   button: {
-    color: theme.palette.grey[600],
+    // color: theme.palette.grey[600],
     "&:disabled": {
       cursor: "not-allowed !important",
-      background: theme.palette.grey[100],
+      // background: theme.palette.grey[100],
     },
     "&:hover": {
-      background: theme.palette.primary.light,
-      color: theme.palette.primary.main,
+      // background: theme.palette.primary.light,
+      // color: theme.palette.primary.main,
     },
   },
 });
@@ -82,13 +82,13 @@ export const FoldButtonGroup = withStyles(styles)((props: FoldButtonGroupProps) 
       >
         {props.options.map((option, index) => (
           <NamespaceVisibleContainer key={index} requiredRole={option.requiredRole}>
-            <Link
+            <KLink
               onClick={() => {
                 blinkTopProgressAction();
                 option.onClick && option.onClick();
               }}
               to={option.to || "#"}
-              style={{ color: "inherit" }}
+              // style={{ color: "inherit" }}
               key={index}
             >
               <MenuItem className={classes.button} key={option.text} selected={false} style={{ padding: "6px 20px" }}>
@@ -100,7 +100,7 @@ export const FoldButtonGroup = withStyles(styles)((props: FoldButtonGroupProps) 
                 </Box>
                 {option.text}
               </MenuItem>
-            </Link>
+            </KLink>
           </NamespaceVisibleContainer>
         ))}
       </Menu>

@@ -1,7 +1,6 @@
-import React, { ComponentClass } from "react";
-import { Box, BoxProps, createStyles, Theme, WithStyles, withStyles } from "@material-ui/core";
+import React from "react";
+import { Box, createStyles, Theme, WithStyles, withStyles, Divider } from "@material-ui/core";
 import clsx from "clsx";
-import { Caption } from "widgets/Label";
 
 const TypesetStyle = (theme: Theme) => {
   return createStyles({
@@ -10,12 +9,17 @@ const TypesetStyle = (theme: Theme) => {
       boxShadow: "rgba(0,0,0,0.10) 0 1px 3px 0",
       border: "1px solid rgba(0,0,0,.1)",
       margin: "25px 0 40px",
+      padding: "16px",
       overflowX: "auto",
       whiteSpace: "nowrap",
       borderRadius: "4px",
     },
+    colorInfo: {
+      margin: "16px 0",
+    },
     item: {
       display: "flex",
+      minHeight: "36px",
       flexDirection: "row",
       alignItems: "center",
     },
@@ -29,13 +33,12 @@ const TypesetStyle = (theme: Theme) => {
   });
 };
 
-type ColorfulTypesetProps = BoxProps &
-  WithStyles<typeof TypesetStyle> & {
-    labels: Array<React.ComponentClass>;
-    sampleText: string;
-    foregroundColor: string;
-    backgroundColor: string;
-  };
+type ColorfulTypesetProps = WithStyles<typeof TypesetStyle> & {
+  labels: Array<React.ComponentType>;
+  sampleText: string;
+  foregroundColor: string;
+  backgroundColor: string;
+};
 
 /**
  * Typeset for Labels
@@ -47,13 +50,18 @@ const ColorfulTypesetRow = (props: ColorfulTypesetProps) => {
   const fg = foregroundColor || "black";
   return (
     <Box className={clsx(classes.root)} style={{ backgroundColor: bg, color: fg }}>
-      {labels.map((element: ComponentClass, index) => {
+      <Box className={classes.colorInfo}>
+        Text: {fg} | Background: {bg}
+      </Box>
+      <Divider />
+      {labels.map((element: React.ComponentType, index) => {
         const Ele = element;
         return (
           <Box key={index} className={clsx(classes.item)}>
-            <Caption className={clsx(classes.label)}>{Ele.displayName}</Caption>
             <Box className={classes.expand}>
-              <Ele>{sampleText || "KALM ❤️"}</Ele>
+              <Ele>
+                {Ele.displayName} - {sampleText}
+              </Ele>
             </Box>
           </Box>
         );

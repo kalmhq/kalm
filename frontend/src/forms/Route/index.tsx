@@ -31,7 +31,7 @@ import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { RenderHttpRouteConditions } from "./conditions";
 import { RenderHttpRouteDestinations } from "./destinations";
-import { Targets } from "widgets/Targets";
+import routesGif from "images/routes.gif";
 import { loadDomainDNSInfo } from "actions/domain";
 import DomainStatus from "widgets/DomainStatus";
 
@@ -115,11 +115,6 @@ interface State {
 
 const hostsValidators = [ValidatorRequired, KValidatorHostsWithWildcardPrefix];
 const pathsValidators = [ValidatorRequired, KValidatorPaths];
-const mockTargetDestinations = Immutable.fromJS([
-  { host: "web-v1-production", weight: 1 },
-  { host: "web-v2-dark-theme", weight: 1 },
-  { host: "web-v2-ligh-theme", weight: 1 },
-]);
 
 class RouteFormRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
@@ -312,7 +307,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
           </Grid>
           <Grid item xs={4}>
             <Box style={{ display: "flex", flexDirection: "column", justifyContent: "center", height: "100%" }}>
-              <Targets activeNamespaceName={"activeNamespaceName"} destinations={mockTargetDestinations} />
+              <img src={routesGif} alt="routes with multi-target" width={233} height={133} />
               <Box pt={2}>
                 <Caption>You can add extra targets and assign weights to them.</Caption>
               </Box>

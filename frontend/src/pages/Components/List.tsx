@@ -13,7 +13,7 @@ import { ApplicationDetails } from "types/application";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { Namespaces } from "widgets/Namespaces";
 import { BasePage } from "../BasePage";
-import { EmptyList } from "widgets/EmptyList";
+import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { CustomizedButton } from "widgets/Button";
 import { blinkTopProgressAction } from "actions/settings";
 import { push } from "connected-react-router";
@@ -101,7 +101,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
 
     return (
       <>
-        {/* <H4>Components</H4> */}
+        {/* <H6>Components</H6> */}
         <Button
           tutorial-anchor-id="add-component-button"
           component={Link}
@@ -120,7 +120,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
     const { dispatch, activeNamespaceName } = this.props;
 
     return (
-      <EmptyList
+      <EmptyInfoBox
         image={<KalmComponentsIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
         title={"This App doesn’t have any Components"}
         content="Components are the fundamental building blocks of your Application. Each Component corresponds to a single image, and typically represents a service or a cronjob."

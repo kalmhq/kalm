@@ -1,4 +1,3 @@
-import { CssBaseline, ThemeProvider } from "@material-ui/core";
 import { ConnectedRouter } from "connected-react-router/immutable";
 import "driver.js/dist/driver.min.css";
 import { createBrowserHistory } from "history";
@@ -6,15 +5,12 @@ import "perfect-scrollbar/css/perfect-scrollbar.css";
 import React from "react";
 import ReactDOM from "react-dom";
 import { Provider } from "react-redux";
-import { theme } from "theme/theme";
 import { HistoryUserConfirmation } from "widgets/History";
 import configureStore from "./configureStore";
 import "./index.css";
-import { KalmRoutes } from "routes";
 import * as serviceWorker from "./serviceWorker";
 import { setStore } from "store";
-import { Snackbar } from "widgets/Notification";
-import { ScrollToTop } from "widgets/ScrollToTop";
+import { App } from "app/index";
 
 export const history = createBrowserHistory({
   getUserConfirmation: HistoryUserConfirmation,
@@ -27,14 +23,7 @@ setStore(store);
 ReactDOM.render(
   <Provider store={store}>
     <ConnectedRouter history={history}>
-      <div id="history-prompt-anchor" />
-      <CssBaseline />
-      <ScrollToTop>
-        <ThemeProvider theme={theme}>
-          <Snackbar />
-          {KalmRoutes}
-        </ThemeProvider>
-      </ScrollToTop>
+      <App />
     </ConnectedRouter>
   </Provider>,
   document.getElementById("root"),
