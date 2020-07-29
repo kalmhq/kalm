@@ -185,6 +185,7 @@ export const KRenderCommandTextField = ({
       disabled={disabled}
       required={required}
       error={showError}
+      spellCheck={false}
       helperText={showError ? error : helperText ? helperText : ""}
       InputLabelProps={{
         shrink: true,
