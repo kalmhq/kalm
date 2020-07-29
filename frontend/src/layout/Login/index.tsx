@@ -34,7 +34,7 @@ const styles = (theme: Theme) =>
     loginTriangle: {
       width: 0,
       height: 0,
-      borderBottom: theme.palette.type === "light" ? "163px solid #fff" : `163px solid ${grey[800]}`,
+      borderBottom: theme.palette.type === "light" ? `163px solid ${grey[50]}` : `163px solid ${grey[800]}`,
       borderLeft: "163px solid transparent",
       position: "absolute",
       right: "415px",
@@ -47,7 +47,7 @@ const styles = (theme: Theme) =>
       position: "absolute",
       right: "0",
       top: "61px",
-      backgroundColor: theme.palette.type === "light" ? "#fff" : grey[800],
+      backgroundColor: theme.palette.type === "light" ? grey[50] : grey[800],
       boxShadow: "4px 4px 4px rgba(0, 0, 0, 0.2)",
       borderTopRightRadius: "4px",
       borderBottomRightRadius: "4px",
