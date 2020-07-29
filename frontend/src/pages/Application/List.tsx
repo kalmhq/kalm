@@ -26,7 +26,7 @@ import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { FoldButtonGroup } from "widgets/FoldButtonGroup";
 import { DeleteIcon, KalmApplicationIcon, KalmDetailsIcon, KalmGridViewIcon, KalmListViewIcon } from "widgets/Icon";
-import { Body } from "widgets/Label";
+import { Caption } from "widgets/Label";
 import { Loading } from "widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { KTable } from "widgets/Table";
@@ -158,7 +158,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     const { componentsMap } = this.props;
     const components = componentsMap.get(applicationDetails.get("name"));
 
-    return <Body>{components ? getApplicationCreatedAtString(components) : "-"}</Body>;
+    return <Caption>{components ? getApplicationCreatedAtString(components) : "-"}</Caption>;
   };
 
   private hasPods = (applicationDetails: RowData) => {
