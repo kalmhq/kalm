@@ -16,8 +16,17 @@ const lightTheme = createMuiTheme({
 
 const darkTheme = createMuiTheme({
   palette: {
-    primary: indigo,
+    primary: {
+      light: indigo[100],
+      main: indigo[200],
+      dark: indigo[300],
+      contrastText: "#FFFFFF",
+    },
     secondary: amber,
+    background: {
+      paper: "#212121",
+      default: "#121212",
+    },
     type: "dark",
   },
 });

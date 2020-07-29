@@ -32,7 +32,7 @@ const styles = (theme: Theme) =>
   createStyles({
     appBar: {
       color: "white",
-      backgroundColor: theme.palette.primary.main,
+      backgroundColor: theme.palette.type === "light" ? theme.palette.primary.main : theme.palette.background.paper,
       position: "fixed",
       top: 0,
       transition: theme.transitions.create("all", {
