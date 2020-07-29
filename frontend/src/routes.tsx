@@ -25,8 +25,8 @@ import { ComponentShowPage } from "pages/Components/Show";
 import { RequireAuthorizated, RequireNotAuthorizated } from "permission/Authorization";
 import { RequireNamespaceReader, RequireNamespaceWriter } from "permission/Namespace";
 import { RequireAdmin } from "permission/Role";
-import { SSOPage } from "pages/Admin/SSO";
-import { SSOConfigPage } from "pages/Admin/SSO/Config";
+import { SSOPage } from "pages/SSO";
+import { SSOConfigPage } from "pages/SSO/Config";
 import { CIPage } from "pages/CI";
 import { DeployKeyNewPage } from "pages/CI/New";
 

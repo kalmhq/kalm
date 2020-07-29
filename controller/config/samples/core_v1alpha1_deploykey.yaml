@@ -1,7 +1,7 @@
 apiVersion: core.kalm.dev/v1alpha1
 kind: DeployKey
 metadata:
-  name: deploykey-sample
+  name: deploykey-kalm-system-abcd
 spec:
-  # Add fields here
-  foo: bar
+  scope: namespace
+  resources: ["kalm-system"]
