@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, createStyles, Theme, Typography, withStyles, WithStyles } from "@material-ui/core";
+import { Box, createStyles, Theme, Typography, withStyles, WithStyles, useTheme } from "@material-ui/core";
 import { Doughnut } from "react-chartjs-2";
 import { CenterCaption } from "./Label";
 import { green, grey, red } from "@material-ui/core/colors";
@@ -49,6 +49,8 @@ class DoughnutChartRaw extends React.PureComponent<Props, State> {
       colors[1] = grey[400];
     }
 
+    const theme = useTheme();
+
     return {
       labels,
       datasets: [
@@ -56,6 +58,7 @@ class DoughnutChartRaw extends React.PureComponent<Props, State> {
           data,
           borderWidth: 2,
           backgroundColor: colors,
+          borderColor: theme.palette.type === "light" ? undefined : grey[800],
           hoverBackgroundColor: colors,
         },
       ],
