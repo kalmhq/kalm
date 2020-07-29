@@ -13,14 +13,12 @@ func TestBuilder_MarshalOfComponentDetails(t *testing.T) {
 	memory := resource.MustParse("0.1Gi")
 
 	marshalRst, err := json.Marshal(&ComponentDetails{
-		ComponentForResp: &ComponentForResp{
-			CPURequest:    &CPUQuantity{cpu},
-			MemoryRequest: &MemoryQuantity{memory},
-		},
+		CPURequest:    &CPUQuantity{cpu},
+		MemoryRequest: &MemoryQuantity{memory},
 	})
 
 	assert.Nil(t, err)
 
-	expected := `{"image":"","enableHeadlessService":false,"cpu":"100","memory":"107374183","name":"","metrics":{"cpu":null,"memory":null},"istioMetricHistories":null,"services":null,"pods":null}`
+	expected := `{"name":"","image":"","enableHeadlessService":false,"cpuRequest":"100","memoryRequest":"107374183","metrics":{"cpu":null,"memory":null},"istioMetricHistories":null,"services":null,"pods":null}`
 	assert.Equal(t, expected, string(marshalRst))
 }

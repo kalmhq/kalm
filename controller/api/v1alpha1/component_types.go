@@ -76,7 +76,7 @@ type ComponentSpec struct {
 	BeforeDestroy []string `json:"beforeDestroy,omitempty"`
 
 	// +optional
-	ResourceRequirements *v1.ResourceRequirements `json:"resourceRequirements"`
+	ResourceRequirements *v1.ResourceRequirements `json:"resourceRequirements,omitempty"`
 
 	//EnableResourcesRequests bool `json:"enableResourcesRequests,omitempty"`
 
