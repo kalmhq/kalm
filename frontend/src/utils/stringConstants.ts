@@ -10,6 +10,7 @@ const stringConstants = {
   PORT_ROUTE_ANSWER:
     "Head to the “Routes” section and create a new route for directing external traffic to this container.",
   IMAGE_INPUT_HELPER: "Image URL defaults to hub.docker.com. Use full URL for all other registries.",
+  IMAGE_PLACEHOLDER: "e.g. nginx:latest",
   REPLICA_INPUT_HELPER: "Number of Pods to create for this component.",
   CONFIG_COMMAND_HELPER:
     "Use Config Files to specify file-based configurations for your Component. Config Files created here are automatically mounted to the container.",
@@ -43,6 +44,27 @@ const stringConstants = {
   GRACEFUL_TERM_INPUT_PLACEHOLDER: "e.g. 60",
   ARE_YOU_SURE_PREFIX: "Are you sure you want to delete",
   CONFIRM_LEAVE_WITHOUT_SAVING: "Are you sure you want to leave without saving changes?",
+  EMPTY_APP_TITLE: "To get started, create your first Application",
+  EMPTY_APP_SUBTITLE:
+    "In Kalm, Applications are the basis of how you organize stuff. One Application represents a set of micro-services which works together to provide functionality. For example, you could use an Application a “website”, which is made of multiple components: web-server, an api-server, and an auth-server.",
+  EMPTY_CERT_TITLE: "You don't have any Certificates",
+  EMPTY_CERT_SUBTITLE:
+    "To enable HTTPS please upload an existing SSL certificate. Alternatively Kalm can help you setup automatic TLS certification via Let's Encrypt.",
+  EMPTY_CI_TITLE: "To integration with your pipeline, apply an deploy key first.",
+  EMPTY_CI_SUBTITLE:
+    "In Kalm, you can update components through webhooks to achieve continuous deployment. Kalm can be easily integrated with popular CI tools, such as CircleCI, Github Actions.",
+  EMPTY_COMPONENTS_TITLE: "This App doesn’t have any Components",
+  EMPTY_COMPONENTS_SUBTITLE:
+    "Components are the fundamental building blocks of your Application. Each Component corresponds to a single image, and typically represents a service or a cronjob.",
+  EMPTY_VOLUME_TITLE: "You don’t have any Disks.",
+  EMPTY_VOLUME_SUBTITLE:
+    "Disks can be attached to Components to provide persistent storage. Disks can be created in the App Components page, and will show up here automatically.",
+  EMPTY_REGISTRY_TITLE: "You haven't configured any Private Registries.",
+  EMPTY_REGISTRY_SUBTITLE:
+    "To pull images hosted on a private registry, first add an entry with login info here. Public registries such as Docker Hub can be used directly.",
+  EMPTY_ROUTES_TITLE: "You don't have any Routes",
+  EMPTY_ROUTES_SUBTITLE:
+    "Add a Route to allow external requests to your Application. You can use Routes to specify how hosts and paths map to components, configure HTTPS, and setup canary and blue-green deployments.",
 };
 
 export default stringConstants;

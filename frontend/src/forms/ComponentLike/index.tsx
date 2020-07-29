@@ -785,7 +785,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             component={KRenderDebounceTextField}
             name="image"
             label="Image"
-            placeholder="e.g. nginx:latest"
+            placeholder={sc.IMAGE_PLACEHOLDER}
             margin
             validate={ValidatorRequired}
             helperText={sc.IMAGE_INPUT_HELPER}
@@ -796,7 +796,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           <Field
             name="workloadType"
             component={RenderSelectField}
-            label="Workload Type"
+            label="Type"
             validate={ValidatorRequired}
             disabled={isEdit}
             options={[

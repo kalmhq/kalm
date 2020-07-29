@@ -231,8 +231,8 @@ export class VolumesRaw extends React.Component<Props, States> {
     return (
       <EmptyInfoBox
         image={<KalmVolumeIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
-        title={"You don’t have any Disks."}
-        content="Disks can be attached to Components to provide persistent storage. Disks can be created in the App Components page, and will show up here automatically."
+        title={sc.EMPTY_VOLUME_TITLE}
+        content={sc.EMPTY_VOLUME_SUBTITLE}
         button={
           <CustomizedButton
             variant="contained"

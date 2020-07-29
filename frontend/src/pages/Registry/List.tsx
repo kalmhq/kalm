@@ -37,7 +37,6 @@ const mapStateToProps = (state: RootState) => {
 };
 
 const pageObjectName: string = "Private Registry";
-const pageObjectNamePlural: string = "Private Registries";
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
@@ -201,8 +200,8 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
     return (
       <EmptyInfoBox
         image={<KalmRegistryIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
-        title={`You don’t have any ${pageObjectNamePlural}`}
-        content="To pull images hosted on a private registry, first add an entry with login info here. Public registries such as Docker Hub can be used directly."
+        title={sc.EMPTY_REGISTRY_TITLE}
+        content={sc.EMPTY_REGISTRY_SUBTITLE}
         button={
           <CustomizedButton
             variant="contained"

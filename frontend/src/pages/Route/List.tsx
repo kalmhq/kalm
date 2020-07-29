@@ -22,6 +22,7 @@ import { ForwardIcon, KalmRoutesIcon } from "widgets/Icon";
 import { indigo } from "@material-ui/core/colors";
 import DomainStatus from "widgets/DomainStatus";
 import { FlexRowItemCenterBox } from "widgets/Box";
+import sc from "utils/stringConstants";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -179,8 +180,8 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     return (
       <EmptyInfoBox
         image={<KalmRoutesIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
-        title={"You don't have any Routes"}
-        content="Add a Route to allow external requests to your Application. You can use Routes to specify how hosts and paths map to components, configure HTTPS, and setup canary and blue-green deployments."
+        title={sc.EMPTY_ROUTES_TITLE}
+        content={sc.EMPTY_ROUTES_SUBTITLE}
         button={
           <CustomizedButton
             variant="contained"

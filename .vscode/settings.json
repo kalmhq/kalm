@@ -1,3 +1,6 @@
 {
-  "eslint.workingDirectories": ["./frontend"]
+  "eslint.workingDirectories": [
+    "./frontend"
+  ],
+  "go.inferGopath": false
 }
