@@ -16,7 +16,7 @@ const smallLineChartStyles = (theme: Theme) =>
       position: "relative",
       display: "inline-block",
       verticalAlign: "middle",
-      background: "white",
+      // background: "white",
       border: "1px solid #DDD",
     },
     text: {
@@ -162,7 +162,7 @@ const lineChartStyles = (theme: Theme) =>
   createStyles({
     root: {
       position: "relative",
-      background: "white",
+      // background: "white",
       display: "inline-block",
     },
     text: {
