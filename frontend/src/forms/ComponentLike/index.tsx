@@ -1,16 +1,4 @@
-import {
-  Box,
-  Button,
-  Collapse,
-  Grid,
-  Link,
-  List as MList,
-  ListItem,
-  ListItemText,
-  Tab,
-  Tabs,
-  Typography,
-} from "@material-ui/core";
+import { Box, Button, Collapse, Grid, Link, List as MList, ListItem, ListItemText, Tab, Tabs } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import HelpIcon from "@material-ui/icons/Help";
@@ -52,7 +40,7 @@ import { Body2, Subtitle1 } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { SectionTitle } from "widgets/SectionTitle";
 import { KRadioGroupRender } from "../Basic/radio";
-import { RenderSelectField } from "../Basic/select";
+import { RenderSelectField, makeSelectOption } from "../Basic/select";
 import {
   KRenderCommandTextField,
   KRenderDebounceTextField,
@@ -661,7 +649,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
                 value: "RollingUpdate",
                 label: (
                   <Body2>
-                    <strong>Rolling Update</strong> - Replace pods one by one, resulting in zero downtime.
+                    <strong>Rolling Update</strong> - {sc.DEPLOYMENT_ROLLING}
                   </Body2>
                 ),
               },
@@ -669,8 +657,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
                 value: "Recreate",
                 label: (
                   <Body2>
-                    <strong>Recreate</strong> - All old pods are stopped and replaced at once, resulting in downtime.
-                    Useful if application cannot support multiple versions running at the same time.
+                    <strong>Recreate</strong> - {sc.DEPLOYMENT_RECREATE}
                   </Body2>
                 ),
               },
@@ -683,14 +670,13 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </SectionTitle>
         </Grid>
         <HelperTextSection>
-          When Pods are teriminated, running processes are first asked to gracefully shutdown with SIGTERM. However some
-          application may not be able to shutdown gracefully. Specify an amount of time to wait before forcefully
-          killing with SIGKILL. The default value is 30 seconds. &nbsp;
+          {sc.GRACEFUL_TERM_HELPER}
+          &nbsp;
           <Link
             href="https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#hook-handler-execution"
             target="_blank"
           >
-            Learn More
+            {sc.LEARN_MORE_LABEL}
           </Link>
         </HelperTextSection>
         <Grid item xs={6}>
@@ -700,7 +686,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             label="Termination Grace Period (seconds)"
             // validate={ValidatorRequired}
             normalize={NormalizeNumber}
-            placeholder="e.g. 60"
+            placeholder={sc.GRACEFUL_TERM_INPUT_PLACEHOLDER}
           />
         </Grid>
       </Grid>
@@ -810,7 +796,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             placeholder="e.g. nginx:latest"
             margin
             validate={ValidatorRequired}
-            helperText="Image URL defaults to hub.docker.com. Use full URL for all other registries."
+            helperText={sc.IMAGE_INPUT_HELPER}
           />
         </Grid>
 
@@ -822,54 +808,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             validate={ValidatorRequired}
             disabled={isEdit}
             options={[
-              {
-                value: workloadTypeServer,
-                selectedText: "Service Component",
-                text: (
-                  <Box pt={1} pb={1}>
-                    <Typography color="textPrimary">Service Component</Typography>
-                    <Typography color="textSecondary" variant="caption">
-                      Default choice - Suitable for most continuous services
-                    </Typography>
-                  </Box>
-                ),
-              },
-              {
-                value: workloadTypeCronjob,
-                selectedText: "CronJob",
-                text: (
-                  <Box pt={1} pb={1}>
-                    <Typography color="textPrimary">CronJob</Typography>
-                    <Typography color="textSecondary" variant="caption">
-                      Scheduled tasks to be ran at specific times
-                    </Typography>
-                  </Box>
-                ),
-              },
-              {
-                value: workloadTypeDaemonSet,
-                selectedText: "DaemonSet",
-                text: (
-                  <Box pt={1} pb={1}>
-                    <Typography color="textPrimary">DaemonSet</Typography>
-                    <Typography color="textSecondary" variant="caption">
-                      For system services which should be deployed once per node
-                    </Typography>
-                  </Box>
-                ),
-              },
-              {
-                value: workloadTypeStatefulSet,
-                selectedText: "StatefulSet",
-                text: (
-                  <Box pt={1} pb={1}>
-                    <Typography color="textPrimary">StatefulSet</Typography>
-                    <Typography color="textSecondary" variant="caption">
-                      For stateful apps requiring additional persistence settings
-                    </Typography>
-                  </Box>
-                ),
-              },
+              makeSelectOption(workloadTypeServer, "Service Component", sc.COMPONENT_TYPE_SERVICE_OPTION),
+              makeSelectOption(workloadTypeCronjob, "CronJob", sc.COMPONENT_TYPE_CRONJOB_OPTION),
+              makeSelectOption(workloadTypeDaemonSet, "DaemonSet", sc.COMPONENT_TYPE_DAEMON_OPTION),
+              makeSelectOption(workloadTypeStatefulSet, "StatefulSet", sc.COMPONENT_TYPE_STATEFUL_SET_OPTION),
             ]}
           />
         </Grid>
