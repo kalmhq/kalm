@@ -23,7 +23,7 @@ import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
-import { EmptyList } from "widgets/EmptyList";
+import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { FoldButtonGroup } from "widgets/FoldButtonGroup";
 import { DeleteIcon, KalmApplicationIcon, KalmDetailsIcon, KalmGridViewIcon, KalmListViewIcon } from "widgets/Icon";
 import { Body } from "widgets/Label";
@@ -412,7 +412,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     const { dispatch } = this.props;
 
     return (
-      <EmptyList
+      <EmptyInfoBox
         image={<KalmApplicationIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
         title={"To get started, create your first Application"}
         content="In Kalm, Applications are the basis of how you organize stuff. One Application represents a set of micro-services which works together to provide functionality. For example, you could use an Application a “website”, which is made of multiple components: web-server, an api-server, and an auth-server."

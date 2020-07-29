@@ -27,7 +27,7 @@ interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToP
 
 interface State {}
 
-class EmptyListRaw extends React.PureComponent<Props, State> {
+class EmptyInfoBoxRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {};
@@ -56,4 +56,4 @@ class EmptyListRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const EmptyList = withStyles(styles)(connect(mapStateToProps)(EmptyListRaw));
+export const EmptyInfoBox = withStyles(styles)(connect(mapStateToProps)(EmptyInfoBoxRaw));

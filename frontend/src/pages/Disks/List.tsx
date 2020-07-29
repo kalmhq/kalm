@@ -17,7 +17,7 @@ import { TDispatchProp } from "types";
 import { Disk } from "types/disk";
 import { CustomizedButton } from "widgets/Button";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
-import { EmptyList } from "widgets/EmptyList";
+import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { DeleteIcon, KalmVolumeIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { InfoBox } from "widgets/InfoBox";
@@ -228,7 +228,7 @@ export class VolumesRaw extends React.Component<Props, States> {
   private renderEmpty() {
     const { dispatch } = this.props;
     return (
-      <EmptyList
+      <EmptyInfoBox
         image={<KalmVolumeIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
         title={"You don’t have any Disks."}
         content="Disks can be attached to Components to provide persistent storage. Disks can be created in the App Components page, and will show up here automatically."
