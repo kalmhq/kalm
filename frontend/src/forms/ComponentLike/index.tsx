@@ -252,14 +252,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private getCPUHelper() {
-    return "Kalm uses 1m as the base unit of CPU. 1 Core equals 1000m. The minimum support is 1m.";
-  }
-
-  private getMemoryHelper() {
-    return "Kalm uses Mi as the base unit of Memory. 1 Gi equals 1024 Mi.";
-  }
-
   private preInjectedFiles = () => {
     return (
       <>
@@ -565,7 +557,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             label="CPU Limit"
             validate={ValidatorCPU}
             // normalize={NormalizeCPU}
-            placeholder="Please type CPU limit"
+            placeholder={sc.CPU_INPUT_PLACEHOLDER}
             type="number"
             formValueToEditValue={(value: any) => {
               return !value ? "" : (sizeStringToNumber(value) * 1000).toFixed();
@@ -574,7 +566,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               return !value ? "" : value + "m";
             }}
             endAdornment={
-              <KTooltip title={this.getCPUHelper()}>
+              <KTooltip title={sc.CPU_INPUT_TOOLTIP}>
                 <Box display="flex" alignItems="center">
                   <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
                   <Box ml={0.5}>m</Box>
@@ -592,7 +584,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             margin
             validate={ValidatorMemory}
             // normalize={NormalizeMemory}
-            placeholder="Please type memory limit"
+            placeholder={sc.MEMORY_INPUT_PLACEHOLDER}
             type="number"
             formValueToEditValue={(value: any) => {
               return !value ? "" : sizeStringToMi(value);
@@ -601,7 +593,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               return !value ? "" : value + "Mi";
             }}
             endAdornment={
-              <KTooltip title={this.getMemoryHelper()}>
+              <KTooltip title={sc.MEMORY_INPUT_TOOLTIP}>
                 <Box display="flex" alignItems="center">
                   <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
                   <Box ml={0.5}>Mi</Box>
@@ -908,7 +900,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
   public renderDirtyPrompt = () => {
     const { dirty, submitSucceeded } = this.props;
-    return <Prompt when={dirty && !submitSucceeded} message="Are you sure to leave without saving changes?" />;
+    return <Prompt when={dirty && !submitSucceeded} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />;
   };
 
   public render() {

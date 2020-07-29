@@ -20,6 +20,7 @@ import { RegistryNewModal, RegistryNewModalID } from "./New";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { indigo } from "@material-ui/core/colors";
 import { InfoBox } from "widgets/InfoBox";
+import sc from "utils/stringConstants";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -80,7 +81,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
       <ConfirmDialog
         open={isDeleteConfirmDialogOpen}
         onClose={this.closeDeleteConfirmDialog}
-        title={`Are you sure to delete this registry(${deletingItemName})?`}
+        title={`${sc.ARE_YOU_SURE_PREFIX} this registry(${deletingItemName})?`}
         content="You will lost this registry, and this action is irrevocable."
         onAgree={this.confirmDelete}
       />

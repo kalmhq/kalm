@@ -25,18 +25,24 @@ const stringConstants = {
   READINESS_PROBE_HELPER: "Readiness probe is used to decide when a component is ready to accepting traffic.",
   LIVENESS_PROBE_HELPER:
     "Liveness probe is used to know if the component is running into an unexpected state and a restart is required.",
-  PROBE_NONE_OPTION: "Remove Current Probe",
+  PROBE_NONE_OPTION: "Remove All Probes",
   PROBE_HTTP_OPTION: "Http get request returns successful response (status >= 200 and < 400).",
   PROBE_COMMAND_OPTION: "Execute command returns 0 exit code.",
   PROBE_TCP_OPTION: "Establish a TCP connection Successfully.",
   SCHEDULING_RR_CHECKBOX: "Only schedule on nodes that meet the above resources",
   SCHEDULING_COLOCATE_CHECKBOX: "Prefer to schedule replicas to different nodes. (Recommand for high availablity)",
+  CPU_INPUT_PLACEHOLDER: "e.g. 100",
+  CPU_INPUT_TOOLTIP: "Kalm uses 1m as the base unit of CPU. 1 Core equals 1000m. The minimum support is 1m.",
+  MEMORY_INPUT_PLACEHOLDER: "e.g. 256",
+  MEMORY_INPUT_TOOLTIP: "Kalm uses Mi as the base unit of Memory. 1 Gi equals 1024 Mi.",
   DEPLOYMENT_ROLLING: "Replace pods one by one, resulting in zero downtime.",
   DEPLOYMENT_RECREATE:
     "All old pods are stopped and replaced at once, resulting in downtime. Useful if application cannot support multiple versions running at the same time.",
   GRACEFUL_TERM_HELPER:
     "When Pods are teriminated, running processes are first asked to gracefully shutdown with SIGTERM. However someapplication may not be able to shutdown gracefully. Specify an amount of time to wait before forcefully killing with SIGKILL. The default value is 30 seconds. ",
   GRACEFUL_TERM_INPUT_PLACEHOLDER: "e.g. 60",
+  ARE_YOU_SURE_PREFIX: "Are you sure you want to delete",
+  CONFIRM_LEAVE_WITHOUT_SAVING: "Are you sure you want to leave without saving changes?",
 };
 
 export default stringConstants;

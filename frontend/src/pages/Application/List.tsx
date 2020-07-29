@@ -35,6 +35,7 @@ import { ApplicationCard } from "widgets/ApplicationCard";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { pluralize } from "utils/string";
 import { KLink, KMLink } from "widgets/Link";
+import sc from "utils/stringConstants";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -108,7 +109,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
       <ConfirmDialog
         open={isDeleteConfirmDialogOpen}
         onClose={this.closeDeleteConfirmDialog}
-        title={`Are you sure to delete this Application(${deletingApplicationListItem?.get("name")})?`}
+        title={`${sc.ARE_YOU_SURE_PREFIX} this Application(${deletingApplicationListItem?.get("name")})?`}
         content="You will lost this application, and this action is irrevocable."
         onAgree={this.confirmDelete}
       />

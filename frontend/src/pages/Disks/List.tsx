@@ -25,6 +25,7 @@ import { KTable } from "widgets/Table";
 import { BasePage } from "../BasePage";
 import { sizeStringToGi } from "utils/sizeConv";
 import { KTooltip } from "forms/Application/KTooltip";
+import sc from "utils/stringConstants";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -82,7 +83,7 @@ export class VolumesRaw extends React.Component<Props, States> {
       <ConfirmDialog
         open={isDeleteConfirmDialogOpen}
         onClose={this.closeDeleteConfirmDialog}
-        title={`Are you sure to delete this Persistent Volume(${deletingPersistentVolume?.get("name")})?`}
+        title={`${sc.ARE_YOU_SURE_PREFIX} this Persistent Volume(${deletingPersistentVolume?.get("name")})?`}
         content="You will lost this Persistent Volume, and this action is irrevocable."
         onAgree={this.confirmDelete}
       />
