@@ -6,6 +6,7 @@ import CheckCircle from "@material-ui/icons/CheckCircle";
 import Clear from "@material-ui/icons/Clear";
 import SettingsIcon from "@material-ui/icons/Settings";
 import CreateNewFolder from "@material-ui/icons/CreateNewFolder";
+import OpenInBrowser from "@material-ui/icons/OpenInBrowser";
 import Delete from "@material-ui/icons/Delete";
 import Edit from "@material-ui/icons/Edit";
 import Error from "@material-ui/icons/Error";
@@ -161,6 +162,12 @@ export const FilterListIcon = withStyles(styles)((props: ColorIconsProps) => {
 export const ClearIcon = withStyles(styles)((props: ColorIconsProps) => {
   const { classes, fontSize, style } = props;
   return <Clear className={classes.hint} fontSize={fontSize} style={style} />;
+});
+
+export const OpenInBrowserIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return <OpenInBrowser className={className} fontSize={fontSize} style={style} />;
 });
 
 export const DeleteIcon = withStyles(styles)((props: ColorIconsProps) => {
