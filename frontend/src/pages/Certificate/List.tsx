@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import { Box, Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
-=======
 import { Box, createStyles, Theme, WithStyles, withStyles, Button, Typography } from "@material-ui/core";
->>>>>>> master
 import { deleteCertificateAction, setEditCertificateModalAction } from "actions/certificate";
 import { openDialogAction } from "actions/dialog";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
