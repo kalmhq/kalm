@@ -25,7 +25,7 @@ const styles = (theme: Theme) => ({
     // color: theme.palette.grey[600],
     "&:disabled": {
       cursor: "not-allowed !important",
-      // background: theme.palette.grey[100],
+      background: theme.palette.type === "light" ? theme.palette.grey[100] : theme.palette.grey[800],
     },
     "&:hover": {
       // background: theme.palette.primary.light,
