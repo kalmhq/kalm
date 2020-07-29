@@ -22,7 +22,7 @@ commands: # a reusable command with parameters
         type: string
     steps:
     - run: |
-        cat <<EOF > data.json
+        cat \<<EOF > data.json
         {
             "deployKey":     "${INPUT_KALM_DEPLOY_KEY}",
             "application":   "${INPUT_KALM_APP}",
