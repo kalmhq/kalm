@@ -95,7 +95,7 @@ class CommonTutorialRaw extends React.PureComponent<Props, State> {
     return (
       <>
         <Box mb={2}>
-          <Typography variant="h2">{tutorial.title}</Typography>
+          <Typography variant="h4">{tutorial.title}</Typography>
         </Box>
         <Stepper
           activeStep={currentStepIndex}

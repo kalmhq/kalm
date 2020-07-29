@@ -48,7 +48,7 @@ import { PublicRegistriesList } from "types/registry";
 import { sizeStringToMi, sizeStringToNumber } from "utils/sizeConv";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
-import { Body, Caption, H5 } from "widgets/Label";
+import { Body, Body2, Caption, Subtitle1 } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { SectionTitle } from "widgets/SectionTitle";
 import { KRadioGroupRender } from "../Basic/radio";
@@ -280,7 +280,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       <>
         <Grid item xs={12}>
           <SectionTitle>
-            <H5>Config Files</H5>
+            <Subtitle1>Config Files</Subtitle1>
           </SectionTitle>
         </Grid>
         <Grid item xs={12}>
@@ -307,7 +307,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       <>
         <Grid item xs={12}>
           <SectionTitle>
-            <H5>Environment Variables</H5>
+            <Subtitle1>Environment Variables</Subtitle1>
           </SectionTitle>
         </Grid>
         <Grid item xs={12}>
@@ -337,7 +337,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       <>
         <Grid item xs={12}>
           <SectionTitle>
-            <H5>Ports</H5>
+            <Subtitle1>Ports</Subtitle1>
             <KTooltip title={helper}>
               <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
             </KTooltip>
@@ -395,7 +395,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
         <Grid item xs={12}>
           <SectionTitle>
-            <H5>Disks</H5>
+            <Subtitle1>Disks</Subtitle1>
             <KTooltip title={helper}>
               <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
             </KTooltip>
@@ -466,7 +466,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       <>
         <Grid item xs={12}>
           <SectionTitle>
-            <H5>DNS Policy</H5>
+            <Subtitle1>DNS Policy</Subtitle1>
           </SectionTitle>
         </Grid>
         <Grid item xs={12}>
@@ -507,7 +507,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   //   return (
   //     <>
   //       <SectionTitle>
-  //         <H5>Plugins</H5>
+  //         <Subtitle1>Plugins</Subtitle1>
   //         <KTooltip title={helper}>
   //           <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
   //         </KTooltip>
@@ -527,7 +527,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       <>
         <Grid item xs={12}>
           <SectionTitle>
-            <H5>Command</H5>
+            <Subtitle1>Command</Subtitle1>
           </SectionTitle>
         </Grid>
         <Grid item xs={12}>
@@ -564,7 +564,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <SectionTitle>
-            <H5>Readiness Probe</H5>
+            <Subtitle1>Readiness Probe</Subtitle1>
             <KTooltip title={"Readiness probe is used to decide when a component is ready to accepting traffic."}>
               <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
             </KTooltip>
@@ -575,7 +575,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
         <Grid item xs={12}>
           <SectionTitle>
-            <H5>Liveness Probe</H5>
+            <Subtitle1>Liveness Probe</Subtitle1>
             <KTooltip
               title={
                 "Liveness probe is used to know if the component is running into an unexpected state and a restart is required."
@@ -597,7 +597,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       <Grid container spacing={2}>
         {/* <Grid item xs={12}>
           <SectionTitle>
-          <H5>Networking</H5>
+          <Subtitle1>Networking</Subtitle1>
           </SectionTitle>
         </Grid> */}
         {this.renderPorts()}
@@ -627,7 +627,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <SectionTitle>
-            <H5>Resources</H5>
+            <Subtitle1>Resources</Subtitle1>
           </SectionTitle>
         </Grid>
 
@@ -692,7 +692,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
         <Grid item xs={12}>
           <SectionTitle>
-            <H5>Nodes</H5>
+            <Subtitle1>Nodes</Subtitle1>
           </SectionTitle>
         </Grid>
         <Grid item xs={12}>
@@ -717,7 +717,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <SectionTitle>
-            <H5>Deployment Strategy</H5>
+            <Subtitle1>Deployment Strategy</Subtitle1>
           </SectionTitle>
         </Grid>
         <Grid item xs={8}>
@@ -729,18 +729,18 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               {
                 value: "RollingUpdate",
                 label: (
-                  <Box>
+                  <Body2>
                     <strong>Rolling Update</strong> - Replace pods one by one, resulting in zero downtime.
-                  </Box>
+                  </Body2>
                 ),
               },
               {
                 value: "Recreate",
                 label: (
-                  <Box>
+                  <Body2>
                     <strong>Recreate</strong> - All old pods are stopped and replaced at once, resulting in downtime.
                     Useful if application cannot support multiple versions running at the same time.
-                  </Box>
+                  </Body2>
                 ),
               },
             ]}
@@ -748,11 +748,11 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
         <Grid item xs={12}>
           <SectionTitle>
-            <H5>Graceful Terimination Period</H5>
+            <Subtitle1>Graceful Terimination Period</Subtitle1>
           </SectionTitle>
         </Grid>
         <Grid item xs={8}>
-          <Body>
+          <Body2>
             When Pods are teriminated, running processes are first asked to gracefully shutdown with SIGTERM. However
             some application may not be able to shutdown gracefully. Specify an amount of time to wait before forcefully
             killing with SIGKILL. The default value is 30 seconds. &nbsp;
@@ -762,7 +762,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             >
               Learn More
             </Link>
-          </Body>
+          </Body2>
         </Grid>
         <Grid item xs={6}>
           <Field
@@ -898,8 +898,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
                 selectedText: "Service Component",
                 text: (
                   <Box pt={1} pb={1}>
-                    <Typography variant="h6">Service Component</Typography>
-                    <Typography variant="caption">Default choice - Suitable for most continuous services</Typography>
+                    <Typography color="textPrimary">Service Component</Typography>
+                    <Typography color="textSecondary" variant="caption">
+                      Default choice - Suitable for most continuous services
+                    </Typography>
                   </Box>
                 ),
               },
@@ -908,8 +910,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
                 selectedText: "CronJob",
                 text: (
                   <Box pt={1} pb={1}>
-                    <Typography variant="h6">CronJob</Typography>
-                    <Typography variant="caption">Scheduled tasks to be ran at specific times</Typography>
+                    <Typography color="textPrimary">CronJob</Typography>
+                    <Typography color="textSecondary" variant="caption">
+                      Scheduled tasks to be ran at specific times
+                    </Typography>
                   </Box>
                 ),
               },
@@ -918,8 +922,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
                 selectedText: "DaemonSet",
                 text: (
                   <Box pt={1} pb={1}>
-                    <Typography variant="h6">DaemonSet</Typography>
-                    <Typography variant="caption">
+                    <Typography color="textPrimary">DaemonSet</Typography>
+                    <Typography color="textSecondary" variant="caption">
                       For system services which should be deployed once per node
                     </Typography>
                   </Box>
@@ -930,8 +934,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
                 selectedText: "StatefulSet",
                 text: (
                   <Box pt={1} pb={1}>
-                    <Typography variant="h6">StatefulSet</Typography>
-                    <Typography variant="caption">
+                    <Typography color="textPrimary">StatefulSet</Typography>
+                    <Typography color="textSecondary" variant="caption">
                       For stateful apps requiring additional persistence settings
                     </Typography>
                   </Box>
@@ -1042,7 +1046,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
       <form onSubmit={handleSubmit} className={classes.root}>
         {this.renderDirtyPrompt()}
         <KPanel
-          title={"Basic Information"}
           content={
             <Box p={2} tutorial-anchor-id="component-from-basic">
               {this.renderMain()}
@@ -1051,7 +1054,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         />
         <Box mt={2}>
           <KPanel
-            title={"Advanced Settings"}
             content={
               <>
                 {this.renderTabs()}
