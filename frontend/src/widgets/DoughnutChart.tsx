@@ -5,7 +5,7 @@ import { CenterCaption } from "./Label";
 import { green, grey, red } from "@material-ui/core/colors";
 import * as chartjs from "chart.js";
 
-const size = 96;
+const size = 104;
 const smallSize = 82;
 const defaultColors = [green[700], grey[700], red[700]];
 
