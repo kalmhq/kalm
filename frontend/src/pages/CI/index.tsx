@@ -3,7 +3,6 @@ import { Box, Button, createStyles, Theme, withStyles, WithStyles } from "@mater
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { BasePage } from "pages/BasePage";
-import { EmptyList } from "widgets/EmptyList";
 import { CIIcon, CopyIcon } from "widgets/Icon";
 import { indigo } from "@material-ui/core/colors";
 import { CustomizedButton, DangerButton } from "widgets/Button";
@@ -18,6 +17,7 @@ import { setSuccessNotificationAction } from "actions/notification";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { InfoBox } from "widgets/InfoBox";
 import { BlankTargetLink } from "widgets/BlankTargetLink";
+import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -40,7 +40,7 @@ class CIPageRaw extends React.PureComponent<Props, State> {
 
   private renderEmpty() {
     return (
-      <EmptyList
+      <EmptyInfoBox
         image={<CIIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
         title={"To integration with your pipeline, apply an deploy key first."}
         content="In Kalm, you can update components through webhooks to achieve continuous deployment. Kalm can be easily integrated with popular CI tools, such as CircleCI, Github Actions."

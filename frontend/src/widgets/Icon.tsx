@@ -31,7 +31,6 @@ import { grey } from "@material-ui/core/colors";
 import { SvgIcon, SvgIconProps, Theme } from "@material-ui/core";
 import { theme } from "theme/theme";
 import SettingsBackupRestoreIcon from "@material-ui/icons/SettingsBackupRestore";
-import clsx from "clsx";
 
 const styles = (theme: Theme) =>
   createStyles({
