@@ -115,8 +115,8 @@ func (r *DeployKeyReconcilerTask) Run(req ctrl.Request) error {
 
 	var expectedRoles []v1beta1.Role
 
-	switch deployKey.Spec.Type {
-	case corev1alpha1.DeployKeyTypeAll:
+	switch deployKey.Spec.Scope {
+	case corev1alpha1.DeployKeyTypeCluster:
 		var nsList v1.NamespaceList
 		err := r.List(r.ctx, &nsList, client.MatchingLabels{KalmEnableLabelName: KalmEnableLabelValue})
 		if err != nil {
@@ -132,10 +132,11 @@ func (r *DeployKeyReconcilerTask) Run(req ctrl.Request) error {
 		if err != nil {
 			return err
 		}
-	case corev1alpha1.DeployKeyTypeApp:
+	case corev1alpha1.DeployKeyTypeNamespace:
 		var validNs []string
-		for _, ns := range deployKey.Spec.Content {
+		for _, ns := range deployKey.Spec.Resources {
 			exist, err := r.isNamespaceExist(ns)
+
 			if err != nil {
 				return err
 			}
@@ -153,10 +154,12 @@ func (r *DeployKeyReconcilerTask) Run(req ctrl.Request) error {
 		}
 	case corev1alpha1.DeployKeyTypeComponent:
 		ns2ComponentsMap := make(map[string][]string)
-		for _, content := range deployKey.Spec.Content {
+		for _, content := range deployKey.Spec.Resources {
 			parts := strings.Split(content, "/")
+
 			if len(parts) != 2 {
 				r.Recorder.Event(&deployKey, v1.EventTypeWarning, "invalid-format", "should be like: ns/component")
+				continue
 			}
 
 			ns := parts[0]
@@ -185,7 +188,7 @@ func (r *DeployKeyReconcilerTask) Run(req ctrl.Request) error {
 				},
 				Rules: []v1beta1.PolicyRule{
 					{
-						Verbs:         []string{"get", "list", "watch", "update"},
+						Verbs:         []string{"get", "patch"},
 						APIGroups:     []string{"core.kalm.dev"},
 						Resources:     []string{"components"},
 						ResourceNames: compList,
@@ -196,7 +199,7 @@ func (r *DeployKeyReconcilerTask) Run(req ctrl.Request) error {
 			expectedRoles = append(expectedRoles, expectedRole)
 		}
 	default:
-		return fmt.Errorf("unknown deployKey type: %s", deployKey.Spec.Type)
+		return fmt.Errorf("unknown deployKey type: %s", deployKey.Spec.Scope)
 	}
 
 	var resRoles []v1beta1.Role
@@ -350,7 +353,7 @@ func (r *DeployKeyReconcilerTask) prepareRoles(roleName string, nsList []string)
 			},
 			Rules: []v1beta1.PolicyRule{
 				{
-					Verbs:     []string{"get", "list", "watch", "update"},
+					Verbs:     []string{"get", "patch"},
 					APIGroups: []string{"core.kalm.dev"},
 					Resources: []string{"components"},
 				},
@@ -400,9 +403,11 @@ func (s DeployKeyGeneralMapper) Map(object handler.MapObject) []reconcile.Reques
 	}
 
 	return []reconcile.Request{
-		{NamespacedName: client.ObjectKey{
-			Name: object.Meta.GetName(),
-		}},
+		{
+			NamespacedName: client.ObjectKey{
+				Name: object.Meta.GetName(),
+			},
+		},
 	}
 }
 
@@ -430,7 +435,7 @@ func mapTypeAllDeployKeyToReqs(b *BaseReconciler) []reconcile.Request {
 
 	var rst []reconcile.Request
 	for _, dKey := range dKeys.Items {
-		if dKey.Spec.Type != corev1alpha1.DeployKeyTypeAll {
+		if dKey.Spec.Scope != corev1alpha1.DeployKeyTypeCluster {
 			continue
 		}
 

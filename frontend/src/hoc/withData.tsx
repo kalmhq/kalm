@@ -8,6 +8,7 @@ import { TDispatchProp } from "types";
 import {
   RESOURCE_TYPE_APPLICATION,
   RESOURCE_TYPE_COMPONENT,
+  RESOURCE_TYPE_DEPLOY_KEY,
   RESOURCE_TYPE_HTTP_ROUTE,
   RESOURCE_TYPE_HTTPS_CERT,
   RESOURCE_TYPE_NODE,
@@ -30,6 +31,7 @@ import { loadServicesAction } from "actions/service";
 import { throttle } from "utils";
 import { loadProtectedEndpointAction, loadSSOConfigAction } from "actions/sso";
 import { setErrorNotificationAction } from "actions/notification";
+import { loadDeployKeyAction } from "actions/deployKey";
 
 export interface WatchResMessage {
   namespace: string;
@@ -66,6 +68,7 @@ class WithDataRaw extends React.PureComponent<Props> {
     dispatch(loadRoleBindingsAction());
     dispatch(loadServicesAction("")); // for routes destinations
     dispatch(loadStorageClassesAction());
+    dispatch(loadDeployKeyAction());
 
     // dispatch(loadComponentPluginsAction());
     dispatch(loadSSOConfigAction());
@@ -196,6 +199,17 @@ class WithDataRaw extends React.PureComponent<Props> {
           dispatch({
             type: WATCHED_RESOURCE_CHANGE,
             kind: RESOURCE_TYPE_PROTECTED_ENDPOINT,
+            payload: {
+              action: data.action,
+              data: Immutable.fromJS(data.data),
+            },
+          });
+          break;
+        }
+        case RESOURCE_TYPE_DEPLOY_KEY: {
+          dispatch({
+            type: WATCHED_RESOURCE_CHANGE,
+            kind: RESOURCE_TYPE_DEPLOY_KEY,
             payload: {
               action: data.action,
               data: Immutable.fromJS(data.data),

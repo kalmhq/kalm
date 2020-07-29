@@ -24,6 +24,7 @@ import certificates, { State as CertificateState } from "./certificate";
 import debounce, { State as DebounceState } from "./debounce";
 import sso, { State as SSOState } from "./sso";
 import domain, { State as DomainState } from "./domain";
+import deployKeys, { State as DeployKeysState } from "./deployKey";
 
 export type RootState = ImmutableMap<{
   namespaces: NamespacesState;
@@ -47,6 +48,7 @@ export type RootState = ImmutableMap<{
   certificates: CertificateState;
   debounce: DebounceState;
   sso: SSOState;
+  deployKeys: DeployKeysState;
   domain: DomainState;
 }>;
 
@@ -78,4 +80,5 @@ export default (history: History<LocationState>) =>
     certificates,
     debounce,
     domain,
+    deployKeys,
   });

@@ -7,6 +7,7 @@ import { RegistryType } from "types/registry";
 import { RoleBindingsRequestBody } from "types/user";
 import MockStore from "./mockStore";
 import { ProtectedEndpoint, SSOConfig } from "types/sso";
+import { DeployKey } from "types/deployKey";
 
 export const mockStore = new MockStore();
 
@@ -247,4 +248,14 @@ export default class MockApi extends Api {
   };
 
   public deleteProtectedEndpoint = async (protectedEndpoint: ProtectedEndpoint): Promise<void> => {};
+
+  public listDeployKeys = async (): Promise<Immutable.List<DeployKey>> => {
+    return Immutable.List();
+  };
+
+  public createDeployKey = async (protectedEndpoint: DeployKey): Promise<DeployKey> => {
+    return Immutable.Map();
+  };
+
+  public deleteDeployKey = async (protectedEndpoint: DeployKey): Promise<void> => {};
 }

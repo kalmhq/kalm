@@ -16,7 +16,7 @@ import { ID } from "utils";
 
 const renderFormHelper = ({ touched, error }: Pick<WrappedFieldMetaProps, "touched" | "error">) => {
   if (!(touched && error)) {
-    return " ";
+    return <FormHelperText> </FormHelperText>;
   } else {
     return <FormHelperText>{touched && error}</FormHelperText>;
   }
