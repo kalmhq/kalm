@@ -85,7 +85,7 @@ class RenderVolumes extends React.PureComponent<Props> {
                 <Caption>Storage Class: {vo.get("storageClassName")}</Caption>
               </Box>
               <Box>
-                <Caption>size: {vo.get("capacity")}</Caption>
+                <Caption>size: {sizeStringToGi(vo.get("capacity")) + " Gi"}</Caption>
               </Box>
             </Box>
           ),
@@ -174,7 +174,7 @@ class RenderVolumes extends React.PureComponent<Props> {
           fullWidth
           disabled
           label="Size"
-          value={volumeOption?.get("capacity") || ""}
+          value={volumeOption?.get("capacity") ? sizeStringToGi(volumeOption?.get("capacity")) + " Gi" : ""}
           margin="dense"
           variant="outlined"
         />,

@@ -12,6 +12,7 @@ import {
   Theme,
   withStyles,
   WithStyles,
+  Typography,
 } from "@material-ui/core";
 import Immutable from "immutable";
 import { Methods } from "pages/Route/Methods";
@@ -24,6 +25,8 @@ import { CopyAsCurl } from "widgets/CopyAsCurl";
 import { OpenInBrowser } from "widgets/OpenInBrowser";
 import { Targets } from "widgets/Targets";
 import { CenterTypography } from "widgets/Label";
+import { FlexRowItemCenterBox } from "widgets/Box";
+import DomainStatus from "widgets/DomainStatus";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -60,7 +63,10 @@ class RouteWidgetRaw extends React.PureComponent<Props, State> {
         <TableCell>{scheme + "://"}</TableCell>
         <TableCell>
           {hosts.map((x) => (
-            <Box key={x}>{x}</Box>
+            <FlexRowItemCenterBox key={x}>
+              <DomainStatus domain={x} />
+              <Typography>{x}</Typography>
+            </FlexRowItemCenterBox>
           ))}
         </TableCell>
         <TableCell>

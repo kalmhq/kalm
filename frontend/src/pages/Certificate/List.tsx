@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { Box, Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+=======
+import { Box, createStyles, Theme, WithStyles, withStyles, Button, Typography } from "@material-ui/core";
+>>>>>>> master
 import { deleteCertificateAction, setEditCertificateModalAction } from "actions/certificate";
 import { openDialogAction } from "actions/dialog";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
@@ -21,9 +25,10 @@ import { CertificateDataWrapper, WithCertificatesDataProps } from "./DataWrapper
 import { addCertificateDialogId, NewModal } from "./New";
 import { formatDate } from "utils/date";
 import { CustomizedButton } from "widgets/Button";
-import { EmptyList } from "widgets/EmptyList";
+import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { indigo } from "@material-ui/core/colors";
 import { InfoBox } from "widgets/InfoBox";
+import DomainStatus from "widgets/DomainStatus";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -70,7 +75,12 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     return (
       <>
         {rowData.get("domains")?.map((domain) => {
-          return <div key={domain}>{domain}</div>;
+          return (
+            <FlexRowItemCenterBox key={domain}>
+              <DomainStatus domain={domain} />
+              <Typography>{domain}</Typography>
+            </FlexRowItemCenterBox>
+          );
         })}
       </>
     );
@@ -255,7 +265,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     const { dispatch } = this.props;
 
     return (
-      <EmptyList
+      <EmptyInfoBox
         image={<KalmCertificatesIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
         title={"You don't have any Certificates"}
         content="To enable HTTPS please upload an existing SSL certificate. Alternatively Kalm can help you setup automatic TLS certification via Let's Encrypt."
@@ -289,7 +299,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
       <BasePage
         secondHeaderRight={
           <>
-            {/* <H4>Certificates</H4> */}
+            {/* <H6>Certificates</H6> */}
             <Button
               color="primary"
               variant="outlined"

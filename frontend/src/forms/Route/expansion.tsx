@@ -15,7 +15,7 @@ import clsx from "clsx";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      background: "#f2f5f5",
+      // background: "#f2f5f5",
     },
     heading: {
       fontSize: theme.typography.pxToRem(15),
@@ -30,7 +30,7 @@ const styles = (theme: Theme) =>
       color: theme.palette.error.main,
     },
     detailsRoot: {
-      background: "#fff",
+      // background: "#fff",
     },
   });
 

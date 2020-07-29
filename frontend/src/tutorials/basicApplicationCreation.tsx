@@ -14,6 +14,7 @@ import {
   isUnderPath,
   requireSubStepCompleted,
   requireSubStepNotCompleted,
+  popupTitle,
 } from "tutorials/utils";
 import { APPLICATION_FORM_ID, COMPONENT_FORM_ID } from "forms/formIDs";
 import { AccessYourApplicationTutorialFactory } from "tutorials/accessYourApplication";
@@ -41,13 +42,13 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
           "Application is a virtual group of other resources or configurations. It help to organize different deployment environment. For example, production, staging, testing environments can be treated as three applications.",
         highlights: [
           {
-            title: "Chick Here",
+            title: popupTitle,
             description: "Go to applications page",
             anchor: "[tutorial-anchor-id=first-level-sidebar-item-applications]",
             triggeredByState: (state: RootState) => requireSubStepNotCompleted(state, 0),
           },
           {
-            title: "Chick Here",
+            title: popupTitle,
             description: "Go to new application page",
             anchor: "[tutorial-anchor-id=add-application]",
             triggeredByState: (state: RootState) =>
@@ -100,13 +101,13 @@ export const BasicApplicationCreationTutorialFactory: TutorialFactory = (title):
           "Component describes how a program is running, includes start, scheduling, update and termination. Also, you can configure disks, health checker and resources limit for it.",
         highlights: [
           {
-            title: "Chick Here",
+            title: popupTitle,
             description: "Go to add component page",
             anchor: "[tutorial-anchor-id=add-component-button]",
             triggeredByState: (state: RootState) => requireSubStepNotCompleted(state, 0),
           },
           {
-            title: "Chick Here",
+            title: popupTitle,
             description: "Go to networking tab",
             anchor: "[tutorial-anchor-id=Networking]",
             triggeredByState: (state: RootState) =>

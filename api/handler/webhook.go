@@ -83,7 +83,9 @@ func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
 		return err
 	}
 
-	return c.NoContent(http.StatusOK)
+	return c.JSON(http.StatusOK, map[string]string{
+		"status": "Success",
+	})
 }
 
 // controller/foo,    v1 -> controller/foo:v1

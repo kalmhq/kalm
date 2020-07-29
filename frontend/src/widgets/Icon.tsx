@@ -20,14 +20,21 @@ import SubjectIcon from "@material-ui/icons/Subject";
 import Dashboard from "@material-ui/icons/Dashboard";
 import Visibility from "@material-ui/icons/Visibility";
 import VisibilityOff from "@material-ui/icons/VisibilityOff";
+import MenuOpen from "@material-ui/icons/MenuOpen";
+import Menu from "@material-ui/icons/Menu";
+import BrightnessLight from "@material-ui/icons/Brightness7";
+import BrightnessDark from "@material-ui/icons/Brightness4";
 import GitHubIcon from "@material-ui/icons/GitHub";
 import Forward from "@material-ui/icons/Forward";
 import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import { grey } from "@material-ui/core/colors";
 import { SvgIcon, SvgIconProps, Theme } from "@material-ui/core";
 import { theme } from "theme/theme";
+<<<<<<< HEAD
 import SettingsBackupRestoreIcon from "@material-ui/icons/SettingsBackupRestore";
 import clsx from "clsx";
+=======
+>>>>>>> master
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -45,6 +52,9 @@ const styles = (theme: Theme) =>
     },
     secondary: {
       color: theme.palette.secondary.main,
+    },
+    warning: {
+      color: theme.palette.warning.main,
     },
     disabled: {
       color: grey[400],
@@ -67,12 +77,24 @@ type Overwrite<T, U> = Pick<T, Exclude<keyof T, keyof U>> & U;
 
 type IconsProps = WithStyles<typeof styles> &
   SvgIconProps & {
-    color?: "inherit" | "primary" | "secondary" | "action" | "disabled" | "error" | "success";
+    color?: "inherit" | "primary" | "secondary" | "action" | "disabled" | "error" | "success" | "white" | "warning";
   };
 
 type ColorIconsProps = Overwrite<
   IconsProps,
-  { color?: "inherit" | "primary" | "secondary" | "action" | "disabled" | "error" | "success" | "default" }
+  {
+    color?:
+      | "inherit"
+      | "primary"
+      | "secondary"
+      | "action"
+      | "disabled"
+      | "error"
+      | "success"
+      | "default"
+      | "white"
+      | "warning";
+  }
 >;
 
 const getClassNameByColorName = (props: ColorIconsProps, defaultColor?: string) => {
@@ -99,6 +121,14 @@ const getClassNameByColorName = (props: ColorIconsProps, defaultColor?: string) 
       break;
     case "default":
       className = classes.default;
+      break;
+
+    case "white":
+      className = classes.white;
+      break;
+    case "warning":
+      className = classes.warning;
+
       break;
     case "inherit":
     default:
@@ -166,6 +196,11 @@ export const ErrorIcon = withStyles(styles)((props: ColorIconsProps) => {
   return <Error className={classes.error} fontSize={fontSize} style={style} />;
 });
 
+export const WarningIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { classes, fontSize, style } = props;
+  return <Error className={classes.warning} fontSize={fontSize} style={style} />;
+});
+
 export const ArrowBackIcon = withStyles(styles)((props: ColorIconsProps) => {
   const { classes, fontSize, style } = props;
   return <ArrowBack className={classes.action} fontSize={fontSize} style={style} />;
@@ -188,9 +223,10 @@ export const KalmLogIcon = withStyles(styles)((props: ColorIconsProps) => {
 });
 
 export const KalmApplicationIcon = withStyles(styles)((props: ColorIconsProps) => {
-  const { classes, fontSize, style, className } = props;
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
   return (
-    <SvgIcon className={clsx(classes.default, className)} fontSize={fontSize} style={style}>
+    <SvgIcon className={className} fontSize={fontSize} style={style}>
       <path
         fillRule="evenodd"
         clipRule="evenodd"
@@ -201,9 +237,10 @@ export const KalmApplicationIcon = withStyles(styles)((props: ColorIconsProps) =
 });
 
 export const KalmTemplateIcon = withStyles(styles)((props: ColorIconsProps) => {
-  const { classes, fontSize, style } = props;
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
   return (
-    <SvgIcon className={classes.default} fontSize={fontSize} style={style}>
+    <SvgIcon className={className} fontSize={fontSize} style={style}>
       <path
         fillRule="evenodd"
         clipRule="evenodd"
@@ -214,9 +251,10 @@ export const KalmTemplateIcon = withStyles(styles)((props: ColorIconsProps) => {
 });
 
 export const KalmVolumeIcon = withStyles(styles)((props: ColorIconsProps) => {
-  const { classes, fontSize, style } = props;
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
   return (
-    <SvgIcon className={classes.default} fontSize={fontSize} style={style} viewBox={"0 0 36 36"}>
+    <SvgIcon className={className} fontSize={fontSize} style={style} viewBox={"0 0 36 36"}>
       <path d="M30.86,8.43A2,2,0,0,0,28.94,7H7.06A2,2,0,0,0,5.13,8.47L2.29,20H33.71Z"></path>
       <path d="M2,22v7a2,2,0,0,0,2,2H32a2,2,0,0,0,2-2V22Zm28,5H26V25h4Z"></path>
     </SvgIcon>
@@ -224,9 +262,10 @@ export const KalmVolumeIcon = withStyles(styles)((props: ColorIconsProps) => {
 });
 
 export const KalmNodeIcon = withStyles(styles)((props: ColorIconsProps) => {
-  const { classes, fontSize, style } = props;
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
   return (
-    <SvgIcon className={classes.default} fontSize={fontSize} style={style} viewBox={"0 0 36 36"}>
+    <SvgIcon className={className} fontSize={fontSize} style={style} viewBox={"0 0 36 36"}>
       <path d="M2,22H34V14H2Zm8-5H24v2H10ZM6,17H8v2H6Z"></path>
       <path d="M32,4H4A2,2,0,0,0,2,6v6H34V6A2,2,0,0,0,32,4ZM8,9H6V7H8ZM24,9H10V7H24Z"></path>
       <path d="M2,30a2,2,0,0,0,2,2H32a2,2,0,0,0,2-2V24H2Zm8-3H24v2H10ZM6,27H8v2H6Z"></path>
@@ -245,9 +284,10 @@ export const KalmDetailsIcon = withStyles(styles)((props: ColorIconsProps) => {
 });
 
 export const KalmCertificatesIcon = withStyles(styles)((props: ColorIconsProps) => {
-  const { classes, fontSize, style } = props;
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
   return (
-    <SvgIcon className={classes.default} fontSize={fontSize} style={style} viewBox={"0 0 36 36"}>
+    <SvgIcon className={className} fontSize={fontSize} style={style} viewBox={"0 0 36 36"}>
       <path d="M19,30H4a2,2,0,0,1-2-2V8A2,2,0,0,1,4,6H32a2,2,0,0,1,2,2V18.37a8.34,8.34,0,0,0-13.49,9.79l-.93,1.14ZM7,12v1.6H24V12Zm0,5.6H18V16H7Zm0,7H17V23H7Z"></path>
       <path d="M33.83,23.59a6.37,6.37,0,1,0-10.77,4.59l-1.94,2.37.9,3.61,3.66-4.46a6.26,6.26,0,0,0,3.55,0l3.66,4.46.9-3.61-1.94-2.37A6.34,6.34,0,0,0,33.83,23.59Zm-10.74,0a4.37,4.37,0,1,1,4.37,4.31A4.35,4.35,0,0,1,23.1,23.59Z"></path>
     </SvgIcon>
@@ -255,27 +295,30 @@ export const KalmCertificatesIcon = withStyles(styles)((props: ColorIconsProps) 
 });
 
 export const KalmRegistryIcon = withStyles(styles)((props: ColorIconsProps) => {
-  const { classes, fontSize, style } = props;
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
   return (
-    <SvgIcon className={classes.default} fontSize={fontSize} style={style} viewBox={"0 0 640 512"}>
+    <SvgIcon className={className} fontSize={fontSize} style={style} viewBox={"0 0 640 512"}>
       <path d="M349.9 236.3h-66.1v-59.4h66.1v59.4zm0-204.3h-66.1v60.7h66.1V32zm78.2 144.8H362v59.4h66.1v-59.4zm-156.3-72.1h-66.1v60.1h66.1v-60.1zm78.1 0h-66.1v60.1h66.1v-60.1zm276.8 100c-14.4-9.7-47.6-13.2-73.1-8.4-3.3-24-16.7-44.9-41.1-63.7l-14-9.3-9.3 14c-18.4 27.8-23.4 73.6-3.7 103.8-8.7 4.7-25.8 11.1-48.4 10.7H2.4c-8.7 50.8 5.8 116.8 44 162.1 37.1 43.9 92.7 66.2 165.4 66.2 157.4 0 273.9-72.5 328.4-204.2 21.4.4 67.6.1 91.3-45.2 1.5-2.5 6.6-13.2 8.5-17.1l-13.3-8.9zm-511.1-27.9h-66v59.4h66.1v-59.4zm78.1 0h-66.1v59.4h66.1v-59.4zm78.1 0h-66.1v59.4h66.1v-59.4zm-78.1-72.1h-66.1v60.1h66.1v-60.1z" />
     </SvgIcon>
   );
 });
 
 export const KalmComponentsIcon = withStyles(styles)((props: ColorIconsProps) => {
-  const { classes, fontSize, style } = props;
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
   return (
-    <SvgIcon className={classes.default} fontSize={fontSize} style={style} viewBox={"0 0 36 36"}>
+    <SvgIcon className={className} fontSize={fontSize} style={style} viewBox={"0 0 36 36"}>
       <path d="M33.53,18.76,26.6,15.57V6.43A1,1,0,0,0,26,5.53l-7.5-3.45a1,1,0,0,0-.84,0l-7.5,3.45a1,1,0,0,0-.58.91v9.14L2.68,18.76a1,1,0,0,0-.58.91v9.78h0a1,1,0,0,0,.58.91l7.5,3.45a1,1,0,0,0,.84,0l7.08-3.26,7.08,3.26a1,1,0,0,0,.84,0l7.5-3.45a1,1,0,0,0,.58-.91h0V19.67A1,1,0,0,0,33.53,18.76ZM25.61,22,20.5,19.67l5.11-2.35,5.11,2.35Zm-1-6.44-6.44,3V10.87a1,1,0,0,0,.35-.08L24.6,8v7.58ZM18.1,4.08l5.11,2.35L18.1,8.78,13,6.43ZM10.6,17.31l5.11,2.35L10.6,22,5.49,19.67Zm6.5,11.49-6.5,3h0V24.11h0A1,1,0,0,0,11,24l6.08-2.8Zm15,0-6.46,3V24.11A1,1,0,0,0,26,24l6.08-2.8Z"></path>
     </SvgIcon>
   );
 });
 
 export const KalmRoutesIcon = withStyles(styles)((props: ColorIconsProps) => {
-  const { classes, fontSize, style, className } = props;
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
   return (
-    <SvgIcon className={clsx(classes.default, className)} fontSize={fontSize} style={style} viewBox={"0 0 36 36"}>
+    <SvgIcon className={className} fontSize={fontSize} style={style} viewBox={"0 0 36 36"}>
       <path d="M26.3569 30L30.3604 27.6921L34.3618 25.3832L30.3583 23.0726L26.3569 20.7639V23.3315C25.3761 23.3315 24.2364 23.3315 23.8546 23.3315C22.0342 23.3827 19.7873 21.9502 17.3968 20.1036C16.5057 19.4561 15.6067 18.7437 14.6539 18.1005C15.6067 17.4565 16.5044 16.7449 17.3968 16.0975C19.7873 14.2534 22.0342 12.8183 23.8523 12.8704L26.3569 12.8696V15.4406L30.3583 13.131L34.3618 10.8195L30.3583 8.50558L26.3569 6.19504V8.76444H23.8535C20.1353 8.81648 17.3565 11.0246 14.9249 12.8192C12.511 14.7129 10.3412 16.1385 9.08275 16.0462H1.90405V20.148H9.0851C10.3424 20.0548 12.5133 21.4814 14.927 23.375C17.3576 25.1705 20.1353 27.3768 23.8546 27.4298H26.3569V30Z" />
     </SvgIcon>
   );
@@ -316,9 +359,10 @@ export const KalmLogoIcon = withStyles(styles)((props: ColorIconsProps) => {
 });
 
 export const KalmIngressIcon = withStyles(styles)((props: ColorIconsProps) => {
-  const { classes, fontSize, style } = props;
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
   return (
-    <SvgIcon className={classes.default} fontSize={fontSize} style={style} viewBox={"0 0 36 36"}>
+    <SvgIcon className={className} fontSize={fontSize} style={style} viewBox={"0 0 36 36"}>
       <path d="M11.4781 15.6602C11.8641 16.0245 12.2479 16.4969 12.6418 17.0306C12.6986 16.9489 12.7522 16.8697 12.809 16.7863C13.3791 15.9496 14.0251 15.0023 14.749 14.0856C14.8639 13.9367 14.9845 13.8116 15.1016 13.6711C14.5583 13.0336 13.9591 12.4217 13.2363 11.8956C12.1185 11.0718 10.6582 10.4989 9.03487 10.5108H2V14.5316H9.03615C10.0145 14.5504 10.6348 14.867 11.4781 15.6602ZM26.7217 18.9508V21.4676C25.6931 21.465 23.9885 21.465 23.5055 21.465C22.0775 21.4318 21.1404 20.9765 20.1654 20.1841C19.7437 19.8377 19.3398 19.4035 18.9415 18.9201C18.6425 19.3397 18.3412 19.7729 18.0346 20.2232C17.662 20.7679 17.2781 21.328 16.8777 21.8787C16.7783 22.014 16.6668 22.1536 16.5619 22.2906C18.185 23.9954 20.4365 25.4653 23.4808 25.4832H26.7217V28L30.6431 25.7403L34.5711 23.4754L30.6431 21.2131L26.7217 18.9508ZM20.1654 15.8134C21.1404 15.0193 22.0775 14.5657 23.5055 14.5325C23.9885 14.5325 25.6931 14.5325 26.7217 14.5308V17.0476L30.6431 14.787L34.5711 12.5247L30.6431 10.2606L26.7217 8V10.5142H23.4808C19.8073 10.5364 17.2747 12.6677 15.6259 14.7784C13.9459 16.9114 12.7275 19.161 11.4781 20.3364C10.6335 21.1271 10.0145 21.4471 9.03614 21.465H2V25.4858H9.03614C10.6593 25.4977 12.1196 24.9257 13.2374 24.1001C14.3664 23.2805 15.2143 22.2583 15.975 21.2293C17.4711 19.1567 18.7127 17.0068 20.1654 15.8134Z" />
     </SvgIcon>
   );
@@ -374,8 +418,9 @@ export const CopyIcon = withStyles(styles)((props: ColorIconsProps) => {
 });
 
 export const CopyIconDefault = withStyles(styles)((props: ColorIconsProps) => {
-  const { classes, fontSize, style } = props;
-  return <FileCopy className={classes.default} fontSize={fontSize} style={style} />;
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return <FileCopy className={className} fontSize={fontSize} style={style} />;
 });
 
 export const WrenchIcon = withStyles(styles)((props: ColorIconsProps) => {
@@ -406,6 +451,30 @@ export const GithubIcon = withStyles(styles)((props: ColorIconsProps) => {
   const { fontSize, style } = props;
   const className = getClassNameByColorName(props);
   return <GitHubIcon className={className} fontSize={fontSize} style={style} />;
+});
+
+export const MenuIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return <Menu className={className} fontSize={fontSize} style={style} />;
+});
+
+export const MenuOpenIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return <MenuOpen className={className} fontSize={fontSize} style={style} />;
+});
+
+export const BrightnessDarkIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return <BrightnessDark className={className} fontSize={fontSize} style={style} />;
+});
+
+export const BrightnessLightIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return <BrightnessLight className={className} fontSize={fontSize} style={style} />;
 });
 
 export const ForwardIcon = withStyles(styles)((props: ColorIconsProps) => {

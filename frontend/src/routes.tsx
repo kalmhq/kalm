@@ -25,10 +25,15 @@ import { ComponentShowPage } from "pages/Components/Show";
 import { RequireAuthorizated, RequireNotAuthorizated } from "permission/Authorization";
 import { RequireNamespaceReader, RequireNamespaceWriter } from "permission/Namespace";
 import { RequireAdmin } from "permission/Role";
+<<<<<<< HEAD
 import { AdminSSOPage } from "pages/Admin/SSO";
 import { AdminSSOConfigPage } from "pages/Admin/SSO/Config";
 import { CIPage } from "pages/CI";
 import { DeployKeyNewPage } from "pages/CI/New";
+=======
+import { SSOPage } from "pages/SSO";
+import { SSOConfigPage } from "pages/SSO/Config";
+>>>>>>> master
 
 const RequireAuthorizatedDashboard = RequireAuthorizated(DashboardLayout);
 
@@ -39,8 +44,8 @@ export const KalmRoutes = (
     <Route path="/">
       <RequireAuthorizatedDashboard>
         <Switch>
-          <Route exact path="/admin/sso" component={AdminSSOPage} />
-          <Route exact path="/admin/sso/config" component={AdminSSOConfigPage} />
+          <Route exact path="/sso" component={SSOPage} />
+          <Route exact path="/sso/config" component={SSOConfigPage} />
           <Route exact path="/cluster/nodes" component={NodeListPage} />
           <Route exact path="/cluster/loadbalancer" component={LoadBalancerInfoPage} />
           <Route exact path="/cluster/disks" component={DiskListPage} />

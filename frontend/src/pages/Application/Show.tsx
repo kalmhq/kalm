@@ -2,7 +2,7 @@ import { Box, createStyles, Theme, WithStyles, withStyles } from "@material-ui/c
 import React from "react";
 import { connect } from "react-redux";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
-import { H4 } from "widgets/Label";
+import { H6 } from "widgets/Label";
 import { Namespaces } from "widgets/Namespaces";
 import { BasePage } from "../BasePage";
 import { ApplicationOverview } from "./Detail";
@@ -25,7 +25,7 @@ class ApplicationShowRaw extends React.PureComponent<Props> {
     return (
       <BasePage
         secondHeaderLeft={<Namespaces />}
-        secondHeaderRight={<H4>Metrics</H4>}
+        secondHeaderRight={<H6>Metrics</H6>}
         leftDrawer={<ApplicationSidebar />}
       >
         <Box p={2}>
