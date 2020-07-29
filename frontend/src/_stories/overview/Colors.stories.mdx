@@ -12,8 +12,6 @@ export const toColorArray = (color) => {
 
 # Colors
 
-## Light Theme
-
 <ColorPalette>
   <ColorItem title="Primary" subtitle="light | main | dark" colors={toColorArray(palette.primary)} />
   <ColorItem title="Secondary" subtitle="light | main | dark" colors={toColorArray(palette.secondary)} />
@@ -27,20 +25,13 @@ export const toColorArray = (color) => {
     subtitle="default | paper"
     colors={[palette.background.default, palette.background.paper]}
   />
-</ColorPalette>
-
-## Dark Theme
-
-<ColorPalette>
-  <ColorItem title="Primary" subtitle="light | main | dark" colors={toColorArray(darkPalette.primary)} />
-  <ColorItem title="Secondary" subtitle="light | main | dark" colors={toColorArray(darkPalette.secondary)} />
   <ColorItem
-    title="Text"
+    title="Dark Text"
     subtitle="primary | secondary | disabled"
     colors={[darkPalette.text.primary, darkPalette.text.secondary, darkPalette.text.disabled]}
   />
   <ColorItem
-    title="Background"
+    title="Dark Background"
     subtitle="default | paper"
     colors={[darkPalette.background.default, darkPalette.background.paper]}
   />

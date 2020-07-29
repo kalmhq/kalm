@@ -87,13 +87,13 @@ class TutorialRaw extends React.PureComponent<Props, State> {
     return (
       <div>
         <Box mb={2}>
-          <Typography variant="h3">Tutorials</Typography>
+          <Typography variant="h4">Tutorials</Typography>
           <Body>Here are some live tutorials that walk you throught some common tasks step by step. </Body>
         </Box>
         {tutorialConfigs.map((group) => (
           <React.Fragment key={group.name}>
             <Box mb={2}>
-              <Typography variant="h5">{group.name}</Typography>
+              <Typography variant="h6">{group.name}</Typography>
             </Box>
             <Box mb={2}>
               {group.items.map((item) => {
