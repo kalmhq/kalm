@@ -186,17 +186,6 @@ jobs:
             kubectl -n kalm-operator patch deployment kalm-operator -p "{\"spec\":{\"template\":{\"metadata\":{\"labels\":{\"date\":\"`date +'%s'`\"}}}}}"
 workflows:
   version: 2
-  test-ci-cd-workflow:
-    jobs:
-      - hello-orb/run1:
-          param1: "this-is-passedin-param1"
-      - deploy-orb/run:
-          context: deploy-demo-cluster
-          KALM_API_ADDRESS: https://dashboard.kapp.live
-          KALM_DEPLOY_KEY: $DEPLOY_KEY
-          KALM_APP: kalm-system
-          KALM_COMPONENT: kalm
-          KALM_COMPONENT_IMG_TAG: latest
   dashboard:
     jobs:
       - test-dashboard
@@ -216,20 +205,6 @@ workflows:
               only: 
               - master
               - orb
-      - deploy-orb/run:
-          context: deploy-demo-cluster
-          requires:
-            - push-dashboard-image
-          filters:
-            branches:
-              only: 
-              - master
-              - orb
-          KALM_API_ADDRESS: https://dashboard.kapp.live
-          KALM_DEPLOY_KEY: $DEPLOY_KEY
-          KALM_APP: kalm-system
-          KALM_COMPONENT: kalm
-          KALM_COMPONENT_IMG_TAG: latest
       - deploy-dashboard:
           context: deploy-demo-cluster
           requires:
@@ -238,7 +213,6 @@ workflows:
             branches:
               only: 
               - master
-              - orb
   controller:
     jobs:
       - test-controller
