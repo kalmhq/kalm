@@ -35,6 +35,7 @@ import { ApplicationCard } from "widgets/ApplicationCard";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { pluralize } from "utils/string";
 import { KLink, KMLink } from "widgets/Link";
+import { Link } from "react-router-dom";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -329,7 +330,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         {/* <H6>Applications</H6> */}
         <Button
           tutorial-anchor-id="add-application"
-          component={KLink}
+          component={Link}
           color="primary"
           size="small"
           variant="outlined"
