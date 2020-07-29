@@ -22,13 +22,26 @@ commands: # a reusable command with parameters
         type: string
     steps:
     - run: |
-        resp_code=$(curl -s -o resp.log -w "%{http_code}" -XPOST << parameters.KALM_API_ADDRESS >>/__kalm_webhook/deploy?deploy-key=<< parameters.KALM_DEPLOY_KEY >>\&app=<< parameters.KALM_APP >>\&component=<< parameters.KALM_COMPONENT >>\&image-tag=<< parameters.KALM_COMPONENT_IMG_TAG >>)
+        cat <<EOF > data.json
+        {
+            "deployKey":     "${INPUT_KALM_DEPLOY_KEY}",
+            "application":   "${INPUT_KALM_APP}",
+            "componentName": "${INPUT_KALM_COMPONENT}",
+            "imageTag":      "${INPUT_KALM_COMPONENT_IMG_TAG}"
+        }
+        EOF
+
+        resp_code=$(curl -s -o resp.log -w "%{http_code}" -XPOST -H "Content-Type: application/json" -d "@data.json" ${INPUT_KALM_API_ADDRESS}/webhook/components)
+
+        rm data.json
+
+        resp=$(cat resp.log)
+        echo "response from webhook: $resp"
 
         if [ $resp_code == 200 ] 
         then
           exit 0
         else
-          cat resp.log
           exit 1
         fi
 jobs:
