@@ -31,7 +31,7 @@ commands: # a reusable command with parameters
         }
         EOF
 
-        resp_code=$(curl -s -o resp.log -w "%{http_code}" -XPOST -H "Content-Type: application/json" -d "@data.json" << parameters.INPUT_KALM_API_ADDRESS >>/webhook/components)
+        resp_code=$(curl -s -o resp.log -w "%{http_code}" -XPOST -H "Content-Type: application/json" -d "@data.json" << parameters.KALM_API_ADDRESS >>/webhook/components)
 
         rm data.json
 
