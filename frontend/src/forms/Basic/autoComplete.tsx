@@ -25,6 +25,7 @@ import { AutocompleteProps, RenderGroupParams } from "@material-ui/lab/Autocompl
 import { theme } from "theme/theme";
 import { Caption } from "widgets/Label";
 import { KalmApplicationIcon, KalmLogoIcon } from "widgets/Icon";
+import { grey } from "@material-ui/core/colors";
 
 export interface ReduxFormMultiTagsFreeSoloAutoCompleteProps
   extends WrappedFieldProps,
@@ -249,7 +250,8 @@ const KAutoCompleteSingleValueStyles = (_theme: Theme) =>
   createStyles({
     root: {},
     groupLabel: {
-      background: theme.palette.grey[100],
+      background: theme.palette.type === "light" ? theme.palette.grey[50] : theme.palette.background.paper,
+      borderBottom: `1px solid ${theme.palette.divider}`,
       paddingLeft: 12,
       display: "flex",
       alignItems: "center",
@@ -259,7 +261,8 @@ const KAutoCompleteSingleValueStyles = (_theme: Theme) =>
       paddingBottom: 4,
     },
     groupLabelDefault: {
-      background: theme.palette.grey[100],
+      background: theme.palette.type === "light" ? theme.palette.grey[50] : theme.palette.background.paper,
+      borderBottom: `1px solid ${theme.palette.divider}`,
       paddingLeft: 12,
       display: "flex",
       alignItems: "center",
@@ -269,12 +272,19 @@ const KAutoCompleteSingleValueStyles = (_theme: Theme) =>
       paddingBottom: 4,
     },
     groupLabelCurrent: {
-      color: theme.palette.primary.main,
+      color: theme.palette.type === "light" ? theme.palette.primary.dark : theme.palette.primary.light,
       fontWeight: 500,
     },
     groupIcon: {
-      marginRight: 4,
+      marginRight: theme.spacing(1),
     },
+    logoIcon: {
+      marginRight: theme.spacing(2),
+      color:
+        theme.palette.type === "light" ? theme.palette.getContrastText(grey[700]) : theme.palette.background.default,
+      background: theme.palette.type === "light" ? grey[700] : "#FFFFFF",
+    },
+
     groupUl: {
       marginLeft: 32,
     },
@@ -383,7 +393,7 @@ function KAutoCompleteSingleValueRaw<T>(props: KAutoCompleteSingleValueProps<KAu
 
   const value = options.find((x) => x.value === input.value) || null;
 
-  const { groupLabelDefault, groupIcon, groupLabelCurrent, ...autocompleteClasses } = classes;
+  const { groupLabelDefault, groupIcon, logoIcon, groupLabelCurrent, ...autocompleteClasses } = classes;
 
   return (
     <Autocomplete
@@ -404,7 +414,7 @@ function KAutoCompleteSingleValueRaw<T>(props: KAutoCompleteSingleValueProps<KAu
           return (
             <div key={group.key}>
               <div className={groupLabelDefault}>
-                <KalmLogoIcon className={groupIcon} />
+                <KalmLogoIcon className={clsx(groupIcon, logoIcon)} />
                 <Caption>{group.key}</Caption>
               </div>
               {group.children}
