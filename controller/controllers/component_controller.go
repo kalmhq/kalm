@@ -23,7 +23,6 @@ import (
 	"fmt"
 	js "github.com/dop251/goja"
 	"github.com/kalmhq/kalm/controller/lib/files"
-	"github.com/kalmhq/kalm/controller/utils"
 	"github.com/kalmhq/kalm/controller/vm"
 	"github.com/xeipuuv/gojsonschema"
 	appsV1 "k8s.io/api/apps/v1"
@@ -1327,34 +1326,6 @@ func (r *ComponentReconcilerTask) decideAffinity() (*coreV1.Affinity, bool) {
 		NodeAffinity:    nodeAffinity,
 		PodAntiAffinity: podAntiAffinity,
 	}, true
-}
-
-func (r *ComponentReconcilerTask) HandleDelete() (err error) {
-
-	if r.component.ObjectMeta.DeletionTimestamp.IsZero() {
-		if !utils.ContainsString(r.component.ObjectMeta.Finalizers, finalizerName) {
-			r.component.ObjectMeta.Finalizers = append(r.component.ObjectMeta.Finalizers, finalizerName)
-			if err := r.Update(context.Background(), r.component); err != nil {
-				return err
-			}
-		}
-	} else {
-		if utils.ContainsString(r.component.ObjectMeta.Finalizers, finalizerName) {
-			// TODO remove resources
-			if err := r.DeleteResources(); client.IgnoreNotFound(err) != nil {
-				r.WarningEvent(err, "fail when DeleteResources")
-				return err
-			}
-
-			r.component.ObjectMeta.Finalizers = utils.RemoveString(r.component.ObjectMeta.Finalizers, finalizerName)
-			if err := r.Update(r.ctx, r.component); err != nil {
-				r.WarningEvent(err, "fail when update component")
-				return err
-			}
-		}
-	}
-
-	return nil
 }
 
 func (r *ComponentReconcilerTask) SetupAttributes(req ctrl.Request) (err error) {

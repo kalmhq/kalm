@@ -10,7 +10,6 @@ import (
 	"github.com/stretchr/testify/suite"
 	appsV1 "k8s.io/api/apps/v1"
 	"k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"os"
@@ -36,6 +35,7 @@ func (suite *DockerRegistryControllerSuite) SetupSuite() {
 
 	suite.BasicSuite.SetupSuite()
 	suite.SetupKalmEnabledNs("kalm-system")
+	suite.ensureNsExists("cert-manager")
 }
 
 func (suite *DockerRegistryControllerSuite) TearDownSuite() {
@@ -98,7 +98,7 @@ func (suite *DockerRegistryControllerSuite) SetupTest() {
 	suite.registry = registry
 	suite.secret = &secret
 
-	ns := suite.SetupKalmEnabledNs("")
+	ns := suite.SetupKalmEnabledNs()
 	suite.namespace = &ns
 }
 
@@ -153,8 +153,8 @@ func (suite *DockerRegistryControllerSuite) TestSecretDistribution() {
 	time.Sleep(5 * time.Second)
 
 	// create a new ns, the image should also exist in this ns
-	//ns := generateEmptyApplication()
-	//suite.createApplication(ns)
+	ns := suite.SetupKalmEnabledNs()
+	suite.namespace = &ns
 
 	suite.Eventually(func() bool {
 		err := suite.K8sClient.Get(context.Background(), types.NamespacedName{
@@ -181,18 +181,32 @@ func (suite *DockerRegistryControllerSuite) TestSecretDistribution() {
 		return len(deployment.Spec.Template.Spec.ImagePullSecrets) > 0
 	}, "can't get deployment")
 
+	expectedOwnerRef := metaV1.OwnerReference{
+		UID: suite.registry.UID,
+	}
+
 	// delete the registry
 	suite.Nil(suite.K8sClient.Delete(context.Background(), suite.registry))
 
 	// generated image pull secret should also be deleted
 	suite.Eventually(func() bool {
-		err := suite.K8sClient.Get(context.Background(), types.NamespacedName{
+		suite.K8sClient.Get(context.Background(), types.NamespacedName{
 			Name:      getImagePullSecretName(suite.registry.Name),
 			Namespace: suite.namespace.Name,
 		}, &imagePullSecret)
 
-		return errors.IsNotFound(err)
+		return containsOwnerRef(imagePullSecret.ObjectMeta.OwnerReferences, expectedOwnerRef)
 	})
+}
+
+func containsOwnerRef(references []metaV1.OwnerReference, target metaV1.OwnerReference) bool {
+	for _, ref := range references {
+		if ref.UID == target.UID {
+			return true
+		}
+	}
+
+	return false
 }
 
 func TestDockerRegistryControllerSuite(t *testing.T) {
