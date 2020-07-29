@@ -102,6 +102,10 @@ class BaseLineChartRaw extends React.PureComponent<BaseLineChartProps & WithStyl
             mode: "index",
             intersect: false,
             callbacks: {
+              title: (tooltipItem: chartjs.ChartTooltipItem[], data: chartjs.ChartData): string => {
+                // @ts-ignore
+                return tooltipItem[0].xLabel ? tooltipItem[0].xLabel : "";
+              },
               label: (tooltipItem: chartjs.ChartTooltipItem, data: chartjs.ChartData): string => {
                 // @ts-ignore
                 const value: number = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];

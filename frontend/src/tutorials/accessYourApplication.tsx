@@ -3,7 +3,6 @@ import React from "react";
 import { Tutorial, TutorialFactory } from "types/tutorial";
 import { ApplicationDetails } from "types/application";
 import { store } from "store";
-import { Link } from "@material-ui/core";
 import { resetTutorialAction } from "actions/tutorial";
 import { RootState } from "reducers";
 import {
@@ -12,10 +11,12 @@ import {
   isUnderPath,
   requireSubStepCompleted,
   requireSubStepNotCompleted,
+  popupTitle,
 } from "tutorials/utils";
 import { Actions } from "types";
 import { ActionTypes, actionTypes } from "redux-form";
 import { HttpRouteDestination } from "types/route";
+import { KMLink } from "widgets/Link";
 
 const resetTutorial = () => {
   store.dispatch(resetTutorialAction());
@@ -36,9 +37,9 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
           description: (
             <span>
               Please{" "}
-              <Link component="button" onClick={resetTutorial}>
+              <KMLink component="button" onClick={resetTutorial}>
                 go back
-              </Link>{" "}
+              </KMLink>{" "}
               and follow the <strong>Deploy an application</strong> tutorial to create an application. It's required for
               this one.
             </span>
@@ -77,27 +78,27 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
           "Route is a rule that describes how to introduce external traffic into the cluster. Route is a sub-resource under an application. Let's find out how to navigate to routes page.",
         highlights: [
           {
-            title: "Chick here",
+            title: popupTitle,
             description: "Go to applications page",
             anchor: "[tutorial-anchor-id=first-level-sidebar-item-applications]",
             triggeredByState: (state: RootState) => requireSubStepNotCompleted(state, 0),
           },
           {
-            title: "Chick the name",
+            title: "Click the Name",
             description: "Go to applications details page",
             anchor: `[tutorial-anchor-id=applications-list-item-${application.get("name")}]`,
             triggeredByState: (state: RootState) =>
               requireSubStepCompleted(state, 0) && requireSubStepNotCompleted(state, 1),
           },
           {
-            title: "Chick here",
+            title: popupTitle,
             description: "Go to routes page",
             anchor: `[href="/applications/${applicationName}/routes"]`,
             triggeredByState: (state: RootState) =>
               requireSubStepCompleted(state, 0, 1) && requireSubStepNotCompleted(state, 2),
           },
           {
-            title: "Chick here",
+            title: popupTitle,
             description: "Go to add route page",
             anchor: "[tutorial-anchor-id=add-route]",
             triggeredByState: (state: RootState) =>
@@ -233,9 +234,9 @@ export const AccessYourApplicationTutorialFactory: TutorialFactory = (title): Tu
         description: (
           <span>
             Try open{" "}
-            <Link href={finialLink} target="_blank" rel="noreferer">
+            <KMLink href={finialLink} target="_blank" rel="noreferer">
               {finialLink}
-            </Link>{" "}
+            </KMLink>{" "}
             in your browser.
           </span>
         ),

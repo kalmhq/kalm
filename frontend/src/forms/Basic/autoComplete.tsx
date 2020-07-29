@@ -1,15 +1,16 @@
 import {
   Chip,
+  CircularProgress,
   createStyles,
+  Divider,
   OutlinedTextFieldProps,
   PropTypes,
   TextField,
   Theme,
-  withStyles,
-  Typography,
-  Divider,
-  CircularProgress,
   Tooltip,
+  Typography,
+  withStyles,
+  Divider,
 } from "@material-ui/core";
 import {
   Autocomplete,
@@ -21,14 +22,14 @@ import { WithStyles } from "@material-ui/styles";
 import clsx from "clsx";
 import Immutable from "immutable";
 import React from "react";
-import { WrappedFieldProps } from "redux-form";
+import { BaseFieldProps, WrappedFieldProps } from "redux-form";
+import { Field } from "redux-form/immutable";
 import { ID } from "utils";
 import { AutocompleteProps, RenderGroupParams } from "@material-ui/lab/Autocomplete/Autocomplete";
 import { theme } from "theme/theme";
 import { Caption } from "widgets/Label";
-import { KalmApplicationIcon, KalmLogoIcon, ErrorIcon } from "widgets/Icon";
+import { ErrorIcon, KalmApplicationIcon, KalmLogoIcon } from "widgets/Icon";
 import { SuccessBadge } from "widgets/Badge";
-
 export interface ReduxFormMultiTagsFreeSoloAutoCompleteProps
   extends WrappedFieldProps,
     WithStyles<typeof styles>,
@@ -136,12 +137,7 @@ export interface KFreeSoloAutoCompleteMultiValuesProps<T>
     Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText"> {
   InputLabelProps?: {};
   disabled?: boolean;
-  loadingIconStatus?: Immutable.Map<string, boolean>;
-  errorIconStatus?: Immutable.Map<string, boolean>;
-  displayStatusIcon?: boolean;
-  loadingIconTooltipText?: string;
-  errorIconTooltipText?: string;
-  successIconTooltipText?: string;
+  icons?: Immutable.List<any>;
 }
 
 const KFreeSoloAutoCompleteMultiValuesStyles = (theme: Theme) =>
@@ -165,12 +161,7 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
     placeholder,
     InputLabelProps,
     disabled,
-    loadingIconStatus,
-    errorIconStatus,
-    displayStatusIcon,
-    loadingIconTooltipText,
-    errorIconTooltipText,
-    successIconTooltipText,
+    icons,
   } = props;
 
   const errors = error as (string | undefined)[] | undefined | string;
@@ -217,21 +208,9 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
       onInputChange={() => {}}
       renderTags={(value: string[], getTagProps) => {
         return value.map((option: string, index: number) => {
-          let icon, tooltipTitle;
-          if (loadingIconStatus && loadingIconStatus.get(option)) {
-            icon = <CircularProgress size={16} />;
-            tooltipTitle = loadingIconTooltipText ? loadingIconTooltipText : "Loading";
-          } else if (errorIconStatus && errorIconStatus.get(option)) {
-            icon = <ErrorIcon />;
-            tooltipTitle = errorIconTooltipText ? errorIconTooltipText : "Error";
-          } else {
-            icon = <SuccessBadge />;
-            tooltipTitle = successIconTooltipText ? successIconTooltipText : "Success";
-          }
-
-          const chip = (
+          return (
             <Chip
-              icon={displayStatusIcon ? icon : undefined}
+              icon={icons ? icons.get(index) : undefined}
               variant="outlined"
               label={option}
               classes={{ root: clsx({ [classes.error]: errorsIsArray && errorsArray[index] }) }}
@@ -239,16 +218,6 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
               {...getTagProps({ index })}
             />
           );
-
-          if (displayStatusIcon) {
-            return (
-              <Tooltip title={tooltipTitle} aria-label="loading" key={index}>
-                {chip}
-              </Tooltip>
-            );
-          }
-
-          return chip;
         });
       }}
       renderInput={(params) => {
@@ -583,6 +552,109 @@ export const RenderAutoCompleteSelect = ({ input, label, children }: WrappedFiel
         }
       }}
       renderInput={(params) => <TextField {...params} label={label} variant="outlined" fullWidth size="small" />}
+    />
+  );
+};
+
+type CommonOutlinedTextFiedlProps = Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText">;
+interface KAutoCompleteMultipleSelectProps<T>
+  extends WrappedFieldProps,
+    UseAutocompleteMultipleProps<T>,
+    CommonOutlinedTextFiedlProps {}
+
+const KAutoCompleteMultipleSelect = (props: KAutoCompleteMultipleSelectProps<KAutoCompleteOption>) => {
+  const {
+    placeholder,
+    input,
+    label,
+    helperText,
+    options,
+    meta: { error, touched, invalid },
+  } = props;
+
+  return (
+    <Autocomplete
+      multiple
+      size="small"
+      options={options}
+      filterSelectedOptions
+      openOnFocus
+      groupBy={(option): string => option.group}
+      filterOptions={createFilterOptions({
+        ignoreCase: true,
+        matchFrom: "any",
+        stringify: (option): string => {
+          return option.value;
+        },
+      })}
+      getOptionLabel={(option): string => {
+        return option.label;
+      }}
+      renderTags={(value, getTagProps) => {
+        return value.map((option, index: number) => {
+          return <Chip variant="outlined" label={option.label} size="small" {...getTagProps({ index })} />;
+        });
+      }}
+      onFocus={input.onFocus}
+      onBlur={(e) => {
+        (input.onBlur as any)();
+      }}
+      value={input.value}
+      onChange={(_event: React.ChangeEvent<{}>, values) => {
+        input.onChange(values);
+      }}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          InputLabelProps={{
+            shrink: true,
+          }}
+          label={label}
+          variant="outlined"
+          placeholder={placeholder}
+          error={touched && invalid}
+          helperText={(touched && invalid && error) || helperText}
+        />
+      )}
+    />
+  );
+};
+
+interface KAutoCompleteMultipleSelectFieldProps
+  extends Pick<BaseFieldProps, "validate" | "name">,
+    CommonOutlinedTextFiedlProps {
+  options: KAutoCompleteOption[];
+}
+
+// value Immutable.List<string>
+export const KAutoCompleteMultipleSelectField = (props: KAutoCompleteMultipleSelectFieldProps) => {
+  const { options } = props;
+
+  return (
+    <Field
+      component={KAutoCompleteMultipleSelect}
+      format={(value: Immutable.List<string>, name: string): KAutoCompleteOption[] => {
+        const res: KAutoCompleteOption[] = [];
+        value.forEach((v) => {
+          const findResult = options.find((o) => o.value === v);
+
+          if (findResult) {
+            res.push(findResult);
+          } else {
+            res.push({
+              label: v,
+              value: v,
+              group: "",
+            });
+          }
+        });
+        return res;
+      }}
+      parse={(value: KAutoCompleteOption[], name: string) => {
+        if (value === undefined) return undefined; // bypass blur set value
+        return Immutable.List(value.map((v) => v.value));
+      }}
+      {...props}
     />
   );
 };

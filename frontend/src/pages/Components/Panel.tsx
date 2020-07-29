@@ -12,7 +12,7 @@ import { TDispatchProp } from "types";
 import { Application, ApplicationComponentDetails } from "types/application";
 import { WorkloadType } from "types/componentTemplate";
 import { DangerButton } from "widgets/Button";
-import { H5 } from "widgets/Label";
+import { Subtitle1 } from "widgets/Label";
 import { ComponentBrifeInfo } from "./BrifeInfo";
 
 const styles = (theme: Theme) =>
@@ -135,14 +135,19 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
         title={
           <Grid container spacing={2}>
             <Grid item>
-              <Box display="flex">
-                <ComponentStatus component={component} enableMarginRight /> <H5>{component.get("name")}</H5>
+              <Box display="flex" minWidth={200}>
+                <ComponentStatus component={component} enableMarginRight />{" "}
+                <Subtitle1>{component.get("name")}</Subtitle1>
               </Box>
             </Grid>
             <Grid item>
-              <span>Pods:</span> <span>{this.getPodsNumber()}</span>
+              <Box display="flex" flexDirection={"row"}>
+                <Subtitle1>Pods: {this.getPodsNumber()}</Subtitle1>
+              </Box>
             </Grid>
-            <Grid item>{component.get("workloadType")}</Grid>
+            <Grid item>
+              <Subtitle1>{component.get("workloadType")}</Subtitle1>
+            </Grid>
           </Grid>
         }
       >

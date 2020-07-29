@@ -17,21 +17,18 @@ const mapStateToProps = (state: RootState) => {
   return {
     isEdit,
     editingCertificate,
+    initialValues: editingCertificate
+      ? Immutable.fromJS({
+          name: editingCertificate.get("name"),
+          managedType: selfManaged,
+        })
+      : newEmptyCertificateForm,
   };
 };
 
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
-    fileInput: {},
-    label: {
-      fontSize: 12,
-      marginBottom: 18,
-      display: "block",
-    },
-    editBtn: {
-      marginLeft: 8,
-    },
   });
 
 export interface Props extends WithStyles<typeof styles>, TDispatchProp, ReturnType<typeof mapStateToProps> {}
@@ -48,20 +45,8 @@ class CertificateNewRaw extends React.PureComponent<Props> {
     }
   };
 
-  private generateCertificateForm = () => {
-    const { editingCertificate } = this.props;
-    if (editingCertificate) {
-      return Immutable.fromJS({
-        name: editingCertificate.get("name"),
-        managedType: selfManaged,
-      });
-    } else {
-      return newEmptyCertificateForm();
-    }
-  };
-
   public render() {
-    const { isEdit } = this.props;
+    const { isEdit, initialValues } = this.props;
     return (
       <ControlledDialog
         dialogID={addCertificateDialogId}
@@ -71,7 +56,7 @@ class CertificateNewRaw extends React.PureComponent<Props> {
           maxWidth: "sm",
         }}
       >
-        <CertificateForm isEdit={isEdit} onSubmit={this.submit} initialValues={this.generateCertificateForm()} />
+        <CertificateForm isEdit={isEdit} onSubmit={this.submit} initialValues={initialValues} />
       </ControlledDialog>
     );
   }

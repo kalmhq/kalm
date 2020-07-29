@@ -11,12 +11,12 @@ import { store } from "store";
 const mapStateToProps = (state: RootState, ownProps: FilledTextFieldProps & WrappedFieldProps) => {
   const {
     input: { name },
-    meta: { form, touched, dirty, error },
+    meta: { form, touched, dirty, error, active },
   } = ownProps;
   const isDisplayDebounceError = getIsDisplayDebounceError(state, form, name);
 
   return {
-    showError: !!error && (touched || (dirty && isDisplayDebounceError)),
+    showError: !!error && (touched || (dirty && isDisplayDebounceError)) && !active,
   };
 };
 

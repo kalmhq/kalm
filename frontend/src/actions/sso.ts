@@ -112,7 +112,7 @@ export const loadProtectedEndpointAction = (): ThunkResult<Promise<void>> => {
   };
 };
 
-export const createProtectedEndpointsAction = (protectedEndpoint: ProtectedEndpoint): ThunkResult<Promise<void>> => {
+export const createProtectedEndpointAction = (protectedEndpoint: ProtectedEndpoint): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     try {
       dispatch({ type: CREATE_PROTECTED_ENDPOINT_PENDING });

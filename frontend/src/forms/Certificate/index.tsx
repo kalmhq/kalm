@@ -30,6 +30,7 @@ import { closeDialogAction } from "actions/dialog";
 import { extractDomainsFromCertificateContent } from "permission/utils";
 import { Prompt } from "widgets/Prompt";
 import { CERTIFICATE_FORM_ID, ISSUER_FORM_ID } from "../formIDs";
+import DomainStatus from "widgets/DomainStatus";
 
 const mapStateToProps = (state: RootState, { form }: OwnProps) => {
   const selector = formValueSelector(form || CERTIFICATE_FORM_ID);
@@ -252,8 +253,8 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { classes, dispatch, handleSubmit, managedType, isEdit, dirty, submitSucceeded } = this.props;
-
+    const { classes, domains, dispatch, handleSubmit, managedType, isEdit, dirty, submitSucceeded } = this.props;
+    const icons = domains.map((domain) => <DomainStatus domain={domain} />);
     return (
       <div className={classes.root}>
         <Prompt when={dirty && !submitSucceeded} message="Are you sure to leave without saving changes?" />
@@ -308,6 +309,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                   : "Please type domains"
               }
               label="Domains"
+              icons={icons}
               multiline={true}
               className={classes.fileInput}
               component={KFreeSoloAutoCompleteMultiValues}

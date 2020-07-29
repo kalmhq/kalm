@@ -11,6 +11,7 @@ import {
   requireSubStepNotCompleted,
   isDialogOpened,
   isCertificateFormFieldValueEqualTo,
+  popupTitle,
 } from "tutorials/utils";
 import { CERTIFICATE_FORM_ID } from "forms/formIDs";
 import { addCertificateDialogId } from "pages/Certificate/New";
@@ -38,13 +39,13 @@ export const ConfigureHttpsCertsTutorialFactory: TutorialFactory = (title): Tuto
         description: "",
         highlights: [
           {
-            title: "Chick Here",
+            title: popupTitle,
             description: "Go to certificates page",
             anchor: "[tutorial-anchor-id=first-level-sidebar-item-certificates]",
             triggeredByState: (state: RootState) => requireSubStepNotCompleted(state, 0),
           },
           {
-            title: "Chick Here",
+            title: popupTitle,
             description: "Open the new certificate dialog",
             anchor: "[tutorial-anchor-id=add-certificate]",
             triggeredByState: (state: RootState) =>

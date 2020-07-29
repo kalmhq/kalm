@@ -15,6 +15,7 @@ export const newEmptyComponentLike = (): ComponentLike => {
     replicas: 1,
     workloadType: "server",
     dnsPolicy: "ClusterFirst",
+    schedule: "* * * * *",
   });
 };
 

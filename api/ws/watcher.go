@@ -32,6 +32,7 @@ func StartWatching(c *Client) {
 	registerWatchHandler(c, &informerCache, &coreV1.PersistentVolumeClaim{}, buildVolumeResMessage)
 	registerWatchHandler(c, &informerCache, &v1alpha1.SingleSignOnConfig{}, buildSSOConfigResMessage)
 	registerWatchHandler(c, &informerCache, &v1alpha1.ProtectedEndpoint{}, buildProtectEndpointResMessage)
+	registerWatchHandler(c, &informerCache, &v1alpha1.DeployKey{}, buildDeployKeyResMessage)
 
 	informerCache.Start(c.StopWatcher)
 }
@@ -297,5 +298,19 @@ func buildProtectEndpointResMessage(_ *Client, action string, objWatched interfa
 		Kind:   "ProtectedEndpoint",
 		Action: action,
 		Data:   resources.ProtectedEndpointCRDToProtectedEndpoint(endpoint),
+	}, nil
+}
+
+func buildDeployKeyResMessage(_ *Client, action string, objWatched interface{}) (*ResMessage, error) {
+	deployKey, ok := objWatched.(*v1alpha1.DeployKey)
+
+	if !ok {
+		return nil, errors.New("convert watch obj to DeployKey failed")
+	}
+
+	return &ResMessage{
+		Kind:   "DeployKey",
+		Action: action,
+		Data:   resources.BuildDeployKeyFromResource(deployKey),
 	}, nil
 }
