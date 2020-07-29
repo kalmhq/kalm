@@ -1,13 +1,13 @@
 import {
   Chip,
   createStyles,
+  Divider,
   OutlinedTextFieldProps,
   PropTypes,
   TextField,
   Theme,
-  withStyles,
   Typography,
-  Divider,
+  withStyles,
 } from "@material-ui/core";
 import {
   Autocomplete,
@@ -19,7 +19,8 @@ import { WithStyles } from "@material-ui/styles";
 import clsx from "clsx";
 import Immutable from "immutable";
 import React from "react";
-import { WrappedFieldProps } from "redux-form";
+import { BaseFieldProps, WrappedFieldProps } from "redux-form";
+import { Field } from "redux-form/immutable";
 import { ID } from "utils";
 import { AutocompleteProps, RenderGroupParams } from "@material-ui/lab/Autocomplete/Autocomplete";
 import { theme } from "theme/theme";
@@ -558,6 +559,109 @@ export const RenderAutoCompleteSelect = ({ input, label, children }: WrappedFiel
         }
       }}
       renderInput={(params) => <TextField {...params} label={label} variant="outlined" fullWidth size="small" />}
+    />
+  );
+};
+
+type CommonOutlinedTextFiedlProps = Pick<OutlinedTextFieldProps, "placeholder" | "label" | "helperText">;
+interface KAutoCompleteMultipleSelectProps<T>
+  extends WrappedFieldProps,
+    UseAutocompleteMultipleProps<T>,
+    CommonOutlinedTextFiedlProps {}
+
+const KAutoCompleteMultipleSelect = (props: KAutoCompleteMultipleSelectProps<KAutoCompleteOption>) => {
+  const {
+    placeholder,
+    input,
+    label,
+    helperText,
+    options,
+    meta: { error, touched, invalid },
+  } = props;
+
+  return (
+    <Autocomplete
+      multiple
+      size="small"
+      options={options}
+      filterSelectedOptions
+      openOnFocus
+      groupBy={(option): string => option.group}
+      filterOptions={createFilterOptions({
+        ignoreCase: true,
+        matchFrom: "any",
+        stringify: (option): string => {
+          return option.value;
+        },
+      })}
+      getOptionLabel={(option): string => {
+        return option.label;
+      }}
+      renderTags={(value, getTagProps) => {
+        return value.map((option, index: number) => {
+          return <Chip variant="outlined" label={option.label} size="small" {...getTagProps({ index })} />;
+        });
+      }}
+      onFocus={input.onFocus}
+      onBlur={(e) => {
+        (input.onBlur as any)();
+      }}
+      value={input.value}
+      onChange={(_event: React.ChangeEvent<{}>, values) => {
+        input.onChange(values);
+      }}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          InputLabelProps={{
+            shrink: true,
+          }}
+          label={label}
+          variant="outlined"
+          placeholder={placeholder}
+          error={touched && invalid}
+          helperText={(touched && invalid && error) || helperText}
+        />
+      )}
+    />
+  );
+};
+
+interface KAutoCompleteMultipleSelectFieldProps
+  extends Pick<BaseFieldProps, "validate" | "name">,
+    CommonOutlinedTextFiedlProps {
+  options: KAutoCompleteOption[];
+}
+
+// value Immutable.List<string>
+export const KAutoCompleteMultipleSelectField = (props: KAutoCompleteMultipleSelectFieldProps) => {
+  const { options } = props;
+
+  return (
+    <Field
+      component={KAutoCompleteMultipleSelect}
+      format={(value: Immutable.List<string>, name: string): KAutoCompleteOption[] => {
+        const res: KAutoCompleteOption[] = [];
+        value.forEach((v) => {
+          const findResult = options.find((o) => o.value === v);
+
+          if (findResult) {
+            res.push(findResult);
+          } else {
+            res.push({
+              label: v,
+              value: v,
+              group: "",
+            });
+          }
+        });
+        return res;
+      }}
+      parse={(value: KAutoCompleteOption[], name: string) => {
+        if (value === undefined) return undefined; // bypass blur set value
+        return Immutable.List(value.map((v) => v.value));
+      }}
+      {...props}
     />
   );
 };

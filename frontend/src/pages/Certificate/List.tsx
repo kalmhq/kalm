@@ -275,7 +275,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
               dispatch(setEditCertificateModalAction(null));
             }}
           >
-            Add Certificate
+            New Certificate
           </CustomizedButton>
         }
       />
@@ -307,7 +307,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
                 dispatch(setEditCertificateModalAction(null));
               }}
             >
-              Add Certificate
+              New Certificate
             </Button>
           </>
         }

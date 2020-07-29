@@ -26,7 +26,7 @@ import { formatTimeDistance, TimestampFilter } from "utils/date";
 import { InfoBox } from "widgets/InfoBox";
 import { KSelect } from "widgets/KSelect";
 import { Subtitle1 } from "widgets/Label";
-import { WhitePaper } from "widgets/Paper";
+import { InfoPaper } from "widgets/Paper";
 import { BigCPULineChart, BigMemoryLineChart, SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { VerticalHeadTable } from "widgets/VerticalHeadTable";
 import { BasePage } from "../BasePage";
@@ -439,7 +439,7 @@ export class NodeListRaw extends React.Component<Props, States> {
           </Grid>
           <Grid container spacing={2}>
             <Grid item md={6}>
-              <WhitePaper elevation={0} style={{ overflow: "hidden" }}>
+              <InfoPaper elevation={0} style={{ overflow: "hidden" }}>
                 <BigCPULineChart data={metrics.get("cpu")} filter={this.state.chartDateFilter as TimestampFilter} />
                 <PopupState variant="popper" popupId="big-cpu-popup-popper">
                   {(popupState) => {
@@ -461,10 +461,10 @@ export class NodeListRaw extends React.Component<Props, States> {
                     );
                   }}
                 </PopupState>
-              </WhitePaper>
+              </InfoPaper>
             </Grid>
             <Grid item md={6}>
-              <WhitePaper elevation={0} style={{ overflow: "hidden" }}>
+              <InfoPaper elevation={0} style={{ overflow: "hidden" }}>
                 <BigMemoryLineChart
                   data={metrics.get("memory")}
                   filter={this.state.chartDateFilter as TimestampFilter}
@@ -489,7 +489,7 @@ export class NodeListRaw extends React.Component<Props, States> {
                     );
                   }}
                 </PopupState>
-              </WhitePaper>
+              </InfoPaper>
             </Grid>
           </Grid>
         </Box>

@@ -7,43 +7,41 @@ import (
 )
 
 type DeployKey struct {
-	Name      string `json:"name"`
-	Namespace string `json:"namespace"`
+	Name string `json:"name"`
 	*v1alpha1.DeployKeySpec
+	Key string `json:"key"`
 }
 
-func (builder *Builder) DeleteDeployKey(ns, name string) error {
+func (builder *Builder) DeleteDeployKey(name string) error {
 	return builder.Delete(
 		&v1alpha1.DeployKey{
 			ObjectMeta: metaV1.ObjectMeta{
-				Namespace: ns,
-				Name:      name,
+				Name: name,
 			},
 		},
 	)
 }
 
-func (builder *Builder) CreateDeployKey(deployKey DeployKey) (DeployKey, error) {
-	resDeployKey := v1alpha1.DeployKey{
+func (builder *Builder) CreateDeployKey(deployKey *DeployKey) (*DeployKey, error) {
+	resDeployKey := &v1alpha1.DeployKey{
 		ObjectMeta: metaV1.ObjectMeta{
-			Name:      deployKey.Name,
-			Namespace: deployKey.Namespace,
+			Name: deployKey.Name,
 		},
 		Spec: *deployKey.DeployKeySpec,
 	}
 
-	if err := builder.Create(&resDeployKey); err != nil {
-		return DeployKey{}, err
+	if err := builder.Create(resDeployKey); err != nil {
+		return nil, err
 	}
 
 	return BuildDeployKeyFromResource(resDeployKey), nil
 }
 
-func BuildDeployKeyFromResource(dk v1alpha1.DeployKey) DeployKey {
-	return DeployKey{
-		Namespace:     dk.Namespace,
+func BuildDeployKeyFromResource(dk *v1alpha1.DeployKey) *DeployKey {
+	return &DeployKey{
 		Name:          dk.Name,
 		DeployKeySpec: &dk.Spec,
+		Key:           dk.Status.ServiceAccountToken,
 	}
 }
 
@@ -54,9 +52,10 @@ func (builder *Builder) GetDeployKeys(ns string) ([]DeployKey, error) {
 		return nil, err
 	}
 
-	var rst []DeployKey
-	for _, dk := range dkList.Items {
-		rst = append(rst, BuildDeployKeyFromResource(dk))
+	rst := make([]DeployKey, len(dkList.Items))
+	for i := range dkList.Items {
+		dk := dkList.Items[i]
+		rst[i] = *BuildDeployKeyFromResource(&dk)
 	}
 
 	return rst, nil

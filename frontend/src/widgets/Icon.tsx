@@ -6,6 +6,7 @@ import CheckCircle from "@material-ui/icons/CheckCircle";
 import Clear from "@material-ui/icons/Clear";
 import SettingsIcon from "@material-ui/icons/Settings";
 import CreateNewFolder from "@material-ui/icons/CreateNewFolder";
+import OpenInBrowser from "@material-ui/icons/OpenInBrowser";
 import Delete from "@material-ui/icons/Delete";
 import Edit from "@material-ui/icons/Edit";
 import Error from "@material-ui/icons/Error";
@@ -30,6 +31,7 @@ import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import { grey } from "@material-ui/core/colors";
 import { SvgIcon, SvgIconProps, Theme } from "@material-ui/core";
 import clsx from "clsx";
+import SettingsBackupRestoreIcon from "@material-ui/icons/SettingsBackupRestore";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -161,6 +163,12 @@ export const FilterListIcon = withStyles(styles)((props: ColorIconsProps) => {
 export const ClearIcon = withStyles(styles)((props: ColorIconsProps) => {
   const { classes, fontSize, style } = props;
   return <Clear className={classes.hint} fontSize={fontSize} style={style} />;
+});
+
+export const OpenInBrowserIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return <OpenInBrowser className={className} fontSize={fontSize} style={style} />;
 });
 
 export const DeleteIcon = withStyles(styles)((props: ColorIconsProps) => {
@@ -476,4 +484,16 @@ export const ForwardIcon = withStyles(styles)((props: ColorIconsProps) => {
   const { fontSize, style } = props;
   const className = getClassNameByColorName(props);
   return <Forward className={className} fontSize={fontSize} style={style} />;
+});
+
+export const CIIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return (
+    <SettingsBackupRestoreIcon
+      className={className}
+      fontSize={fontSize}
+      style={{ ...style, transform: "scaleX(-1)" }}
+    />
+  );
 });
