@@ -13,6 +13,7 @@ import { ProtectedEndpoint } from "types/sso";
 import { RenderSelectField } from "forms/Basic/select";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { createProtectedEndpointAction } from "actions/sso";
+import sc from "utils/stringConstants";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -79,7 +80,7 @@ class ProtectedEndpointFormRaw extends React.PureComponent<FinalProps> {
 
     return (
       <form onSubmit={handleSubmit(this.handleSubmit)} className={classes.root}>
-        <Prompt when={dirty && !submitSucceeded} message="Are you sure to leave without saving changes?" />
+        <Prompt when={dirty && !submitSucceeded} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
         <Grid container spacing={2}>
           <Grid item md={5}>
             <Field

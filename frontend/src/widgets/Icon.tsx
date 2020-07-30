@@ -6,6 +6,7 @@ import CheckCircle from "@material-ui/icons/CheckCircle";
 import Clear from "@material-ui/icons/Clear";
 import SettingsIcon from "@material-ui/icons/Settings";
 import CreateNewFolder from "@material-ui/icons/CreateNewFolder";
+import OpenInBrowser from "@material-ui/icons/OpenInBrowser";
 import Delete from "@material-ui/icons/Delete";
 import Edit from "@material-ui/icons/Edit";
 import Error from "@material-ui/icons/Error";
@@ -29,7 +30,7 @@ import Forward from "@material-ui/icons/Forward";
 import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import { grey } from "@material-ui/core/colors";
 import { SvgIcon, SvgIconProps, Theme } from "@material-ui/core";
-import { theme } from "theme/theme";
+import clsx from "clsx";
 import SettingsBackupRestoreIcon from "@material-ui/icons/SettingsBackupRestore";
 
 const styles = (theme: Theme) =>
@@ -164,6 +165,12 @@ export const ClearIcon = withStyles(styles)((props: ColorIconsProps) => {
   return <Clear className={classes.hint} fontSize={fontSize} style={style} />;
 });
 
+export const OpenInBrowserIcon = withStyles(styles)((props: ColorIconsProps) => {
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
+  return <OpenInBrowser className={className} fontSize={fontSize} style={style} />;
+});
+
 export const DeleteIcon = withStyles(styles)((props: ColorIconsProps) => {
   const { fontSize, style } = props;
   const className = getClassNameByColorName(props);
@@ -219,10 +226,10 @@ export const KalmLogIcon = withStyles(styles)((props: ColorIconsProps) => {
 });
 
 export const KalmApplicationIcon = withStyles(styles)((props: ColorIconsProps) => {
-  const { fontSize, style } = props;
-  const className = getClassNameByColorName(props);
+  const { fontSize, style, className } = props;
+  const iconClassName = getClassNameByColorName(props);
   return (
-    <SvgIcon className={className} fontSize={fontSize} style={style}>
+    <SvgIcon className={clsx(iconClassName, className)} fontSize={fontSize} style={style}>
       <path
         fillRule="evenodd"
         clipRule="evenodd"
@@ -335,8 +342,6 @@ export const KalmLogoIcon = withStyles(styles)((props: ColorIconsProps) => {
   return (
     <div
       style={{
-        background: theme.palette.grey[700],
-        color: "white",
         borderRadius: 4,
         marginLeft: 2,
         marginRight: 8,
@@ -365,7 +370,8 @@ export const KalmIngressIcon = withStyles(styles)((props: ColorIconsProps) => {
 });
 
 export const KalmGridViewIcon = withStyles(styles)((props: ColorIconsProps) => {
-  const { fontSize, style, className } = props;
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
   return (
     <SvgIcon className={className} fontSize={fontSize} style={style} viewBox={"0 0 36 36"}>
       <rect x="4" y="4" width="12" height="12" rx="2" ry="2"></rect>
@@ -378,7 +384,8 @@ export const KalmGridViewIcon = withStyles(styles)((props: ColorIconsProps) => {
 });
 
 export const KalmListViewIcon = withStyles(styles)((props: ColorIconsProps) => {
-  const { fontSize, style, className } = props;
+  const { fontSize, style } = props;
+  const className = getClassNameByColorName(props);
   return (
     <SvgIcon className={className} fontSize={fontSize} style={style} viewBox={"0 0 36 36"}>
       <rect x="2" y="8" width="2" height="2"></rect>

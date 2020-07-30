@@ -64,10 +64,7 @@ interface OwnProps {
 }
 
 const dialogStyles = (theme: Theme) => ({
-  paper: {
-    backgroundColor: "#FAFAFA",
-    // minHeight: "80vh"
-  },
+  paper: {},
 });
 
 const mapStateToProps = (state: RootState, ownProps: OwnProps) => {

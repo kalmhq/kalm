@@ -31,6 +31,7 @@ import { extractDomainsFromCertificateContent } from "permission/utils";
 import { Prompt } from "widgets/Prompt";
 import { CERTIFICATE_FORM_ID, ISSUER_FORM_ID } from "../formIDs";
 import DomainStatus from "widgets/DomainStatus";
+import sc from "utils/stringConstants";
 
 const mapStateToProps = (state: RootState, { form }: OwnProps) => {
   const selector = formValueSelector(form || CERTIFICATE_FORM_ID);
@@ -257,7 +258,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
     const icons = domains.map((domain) => <DomainStatus domain={domain} />);
     return (
       <div className={classes.root}>
-        <Prompt when={dirty && !submitSucceeded} message="Are you sure to leave without saving changes?" />
+        <Prompt when={dirty && !submitSucceeded} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
         <Grid container spacing={2}>
           {isEdit ? null : (
             <Grid item md={12}>
