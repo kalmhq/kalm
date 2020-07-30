@@ -338,7 +338,7 @@ export class NodeListRaw extends React.Component<Props, States> {
         <PopupState variant="popover" popupId={"nodes"}>
           {(popupState) => (
             <>
-              <Button color="primary" size="small" variant="text" {...bindTrigger(popupState)}>
+              <Button style={{ padding: 0 }} color="primary" size="small" variant="text" {...bindTrigger(popupState)}>
                 How to add a new node?
               </Button>
               <Popover
@@ -395,13 +395,23 @@ export class NodeListRaw extends React.Component<Props, States> {
       },
     ];
 
-    return <InfoBox title={title} options={options}></InfoBox>;
+    return (
+      <InfoBox
+        title={
+          <Box>
+            <Box mb={1}>{this.renderSecondHeaderRight()}</Box>
+            {title}
+          </Box>
+        }
+        options={options}
+      ></InfoBox>
+    );
   }
 
   render() {
     const { metrics, nodes } = this.props;
     return (
-      <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
+      <BasePage>
         <Box p={2}>
           <Grid container spacing={2}>
             <Grid item xs={10}></Grid>
