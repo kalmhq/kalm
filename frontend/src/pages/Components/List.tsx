@@ -19,6 +19,7 @@ import { blinkTopProgressAction } from "actions/settings";
 import { push } from "connected-react-router";
 import { KalmComponentsIcon } from "widgets/Icon";
 import { indigo } from "@material-ui/core/colors";
+import sc from "utils/stringConstants";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -76,7 +77,7 @@ class ComponentRaw extends React.PureComponent<Props, State> {
       <ConfirmDialog
         open={isDeleteConfirmDialogOpen}
         onClose={this.closeDeleteConfirmDialog}
-        title={`Are you sure to delete this Application(${deletingComponentItem?.get("name")})?`}
+        title={`${sc.ARE_YOU_SURE_PREFIX} this Application(${deletingComponentItem?.get("name")})?`}
         content="This application is already disabled. You will lost this application config, and this action is irrevocable."
         onAgree={this.confirmDelete}
       />

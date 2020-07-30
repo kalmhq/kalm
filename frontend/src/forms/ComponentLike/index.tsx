@@ -1,18 +1,6 @@
-import {
-  Box,
-  Button,
-  Collapse,
-  Grid,
-  Link,
-  List as MList,
-  ListItem,
-  ListItemText,
-  Tab,
-  Tabs,
-  Typography,
-} from "@material-ui/core";
+import { Box, Button, Collapse, Grid, Link, List as MList, ListItem, ListItemText, Tab, Tabs } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
-import { createStyles, Theme, withStyles, WithStyles, styled } from "@material-ui/core/styles";
+import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import HelpIcon from "@material-ui/icons/Help";
 import { Alert } from "@material-ui/lab";
 import { loadSimpleOptionsAction, loadStatefulSetOptionsAction } from "actions/persistentVolume";
@@ -48,11 +36,11 @@ import { PublicRegistriesList } from "types/registry";
 import { sizeStringToMi, sizeStringToNumber } from "utils/sizeConv";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
-import { Body, Body2, Caption, Subtitle1 } from "widgets/Label";
+import { Body2, Subtitle1 } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { SectionTitle } from "widgets/SectionTitle";
 import { KRadioGroupRender } from "../Basic/radio";
-import { RenderSelectField } from "../Basic/select";
+import { RenderSelectField, makeSelectOption } from "../Basic/select";
 import {
   KRenderCommandTextField,
   KRenderDebounceTextField,
@@ -66,8 +54,7 @@ import { RenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
-import { theme } from "theme/theme";
-import stringConstants from "utils/stringConstants";
+import sc from "utils/stringConstants";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -75,13 +62,10 @@ const IngressHint = () => {
   return (
     <>
       <Link style={{ cursor: "pointer" }} onClick={() => setOpen(!open)}>
-        How can I expose my component to the public Internet?
+        {sc.PORT_ROUTE_QUESTION}
       </Link>
       <Box pt={1}>
-        <Collapse in={open}>
-          After you have successfully configured this component, you can go to the routing interface and create a
-          suitable routing rule to direct external traffic to this component.
-        </Collapse>
+        <Collapse in={open}>{sc.PORT_ROUTE_ANSWER}</Collapse>
       </Box>
     </>
   );
@@ -168,10 +152,11 @@ const styles = (theme: Theme) =>
 /**
  * A Styled component representing helper text.
  */
-const HelperText = styled(Box)({
-  color: "#636d72",
-  "font-size": theme.typography.caption.fontSize,
-});
+const HelperTextSection: React.FC<{}> = ({ children }) => (
+  <Grid item xs={8}>
+    <Body2>{children}</Body2>
+  </Grid>
+);
 
 interface RawProps {
   showDataView?: boolean;
@@ -219,7 +204,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           name="replicas"
           margin
           label="Replicas"
-          helperText="Number of pods to create for this component."
+          helperText={sc.REPLICA_INPUT_HELPER}
           format={(value: any) => {
             let displayValue;
             if (value !== null && value !== undefined) {
@@ -267,14 +252,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private getCPUHelper() {
-    return "Kalm uses 1m as the base unit of CPU. 1 Core equals 1000m. The minimum support is 1m.";
-  }
-
-  private getMemoryHelper() {
-    return "Kalm uses Mi as the base unit of Memory. 1 Gi equals 1024 Mi.";
-  }
-
   private preInjectedFiles = () => {
     return (
       <>
@@ -284,14 +261,13 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </SectionTitle>
         </Grid>
         <Grid item xs={12}>
-          <HelperText>
-            Use Config Files to specify file-based configurations for your Component. Config Files created here are
-            automatically mounted to the container.
+          <HelperTextSection>
+            {sc.CONFIG_COMMAND_HELPER}
             <span>&nbsp;</span>
             <Link href="https://kalm.dev/docs/guide-config#adding-a-config-file" target="_blank">
-              Learn more.
+              {sc.LEARN_MORE_LABEL}
             </Link>
-          </HelperText>
+          </HelperTextSection>
         </Grid>
         <Grid item xs={12}>
           <PreInjectedFiles />
@@ -311,14 +287,13 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </SectionTitle>
         </Grid>
         <Grid item xs={12}>
-          <HelperText>
-            Define environment variables for the main container of this component. This overrides enviornment variables
-            specified in the image.
+          <HelperTextSection>
+            {sc.ENV_VAR_HELPER}
             <span>&nbsp;</span>
             <Link href="https://kalm.dev/docs/guide-config#environment-varibles" target="_blank">
-              Learn more.
+              {sc.LEARN_MORE_LABEL}
             </Link>
-          </HelperText>
+          </HelperTextSection>
         </Grid>
         <Grid item xs={12}>
           <Envs sharedEnv={sharedEnv} />
@@ -328,21 +303,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   public renderPorts() {
-    const { classes } = this.props;
-
-    const helper =
-      "Port is the standard way to expose your program. If you want your component can be accessed by some other parts, you need to define a port.";
-
     return (
       <>
         <Grid item xs={12}>
           <SectionTitle>
             <Subtitle1>Ports</Subtitle1>
-            <KTooltip title={helper}>
-              <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
-            </KTooltip>
           </SectionTitle>
         </Grid>
+        <HelperTextSection>{sc.PORTS_HELPER}</HelperTextSection>
         <Grid item xs={12}>
           <Ports />
         </Grid>
@@ -354,53 +322,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderDisks() {
-    const { classes } = this.props;
-
-    const helper = (
-      <>
-        <Caption>Mount different kinds of volumes to this component.</Caption>
-        <Box mt={1} mb={1}>
-          <Caption>1. New Disk</Caption>
-        </Box>
-        <Caption>Create a disk according to the storageClass definition you selected.</Caption>
-        <Box mt={1} mb={1}>
-          <Caption>2. Existing Persistent Volume Claim</Caption>
-        </Box>
-        <Caption>
-          PersistentVolumeClaim and Disk are a kubernetes original resources. A persistentVolumeClaim volume is used to
-          mount a Disk into a Pod. Disks are a way for users to “claim” durable storage (such as a GCE PersistentDisk or
-          an iSCSI volume) without knowing the details of the particular cloud environment.
-        </Caption>
-        <Box mt={1} mb={1}>
-          <Caption>3. Temporary Disk</Caption>
-        </Box>
-        <Caption>
-          This sort of volumes are stored on whatever medium is backing the node, which might be disk or SSD or network
-          storage, depending on your environment.
-        </Caption>
-        <Box mt={1} mb={1}>
-          <Caption>4. Temporary Memory Media Disk</Caption>
-        </Box>
-        <Caption>
-          It will mount a tmpfs (RAM-backed filesystem) for you. While tmpfs is very fast, be aware that unlike disks,
-          tmpfs is cleared on node reboot and any files you write will count against your Container’s memory limit.
-        </Caption>
-      </>
-    );
-
     return (
       <Grid container spacing={2}>
         <Grid item xs={12}>
-          <Body>Mount various type of disks into your component.</Body>
-        </Grid>
-        <Grid item xs={12}>
           <SectionTitle>
             <Subtitle1>Disks</Subtitle1>
-            <KTooltip title={helper}>
-              <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
-            </KTooltip>
           </SectionTitle>
         </Grid>
+        <HelperTextSection>{sc.DISKS_HELPER}</HelperTextSection>
         <Grid item xs={12}>
           <Disks />
         </Grid>
@@ -531,17 +460,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </SectionTitle>
         </Grid>
         <Grid item xs={12}>
-          <HelperText>
-            Define a command for the main container of this component. This overrides the default Entrypoint and Cmd of
-            the image.
-          </HelperText>
+          <HelperTextSection>{sc.COMMAND_HELPER}</HelperTextSection>
         </Grid>
         <Grid item xs={12}>
           <Field
             component={KRenderCommandTextField}
             name="command"
             label="Command"
-            placeholder="e.g. /bin/sh -c 'echo hello; sleep 600'"
+            placeholder={sc.COMMAND_INPUT_PLACEHOLDER}
           />
         </Grid>
       </>
@@ -559,16 +485,15 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   }
 
   private renderHealth() {
-    const { classes } = this.props;
     return (
       <Grid container spacing={2}>
         <Grid item xs={12}>
           <SectionTitle>
             <Subtitle1>Readiness Probe</Subtitle1>
-            <KTooltip title={"Readiness probe is used to decide when a component is ready to accepting traffic."}>
-              <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
-            </KTooltip>
           </SectionTitle>
+        </Grid>
+        <Grid item xs={8}>
+          {sc.READINESS_PROBE_HELPER}
         </Grid>
         <Grid item xs={12}>
           <ReadinessProbe />
@@ -576,15 +501,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Grid item xs={12}>
           <SectionTitle>
             <Subtitle1>Liveness Probe</Subtitle1>
-            <KTooltip
-              title={
-                "Liveness probe is used to know if the component is running into an unexpected state and a restart is required."
-              }
-            >
-              <HelpIcon fontSize="small" className={classes.sectionTitleHelperIcon} />
-            </KTooltip>
           </SectionTitle>
         </Grid>
+        <HelperTextSection>{sc.LIVENESS_PROBE_HELPER}</HelperTextSection>
         <Grid item xs={12}>
           <LivenessProbe />
         </Grid>
@@ -634,11 +553,11 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Grid item xs={6}>
           <Field
             component={RenderComplexValueTextDebounceField}
-            name="cpu"
+            name="cpuLimit"
             label="CPU Limit"
             validate={ValidatorCPU}
             // normalize={NormalizeCPU}
-            placeholder="Please type CPU limit"
+            placeholder={sc.CPU_INPUT_PLACEHOLDER}
             type="number"
             format={(value: any) => {
               return !value ? "" : (sizeStringToNumber(value) * 1000).toFixed();
@@ -647,7 +566,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               return !value ? "" : value + "m";
             }}
             endAdornment={
-              <KTooltip title={this.getCPUHelper()}>
+              <KTooltip title={sc.CPU_INPUT_TOOLTIP}>
                 <Box display="flex" alignItems="center">
                   <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
                   <Box ml={0.5}>m</Box>
@@ -660,12 +579,12 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Grid item xs={6}>
           <Field
             component={RenderComplexValueTextDebounceField}
-            name="memory"
+            name="memoryLimit"
             label="Memory Limit"
             margin
             validate={ValidatorMemory}
             // normalize={NormalizeMemory}
-            placeholder="Please type memory limit"
+            placeholder={sc.MEMORY_INPUT_PLACEHOLDER}
             type="number"
             format={(value: any) => {
               return !value ? "" : sizeStringToMi(value);
@@ -674,7 +593,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               return !value ? "" : value + "Mi";
             }}
             endAdornment={
-              <KTooltip title={this.getMemoryHelper()}>
+              <KTooltip title={sc.MEMORY_INPUT_TOOLTIP}>
                 <Box display="flex" alignItems="center">
                   <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
                   <Box ml={0.5}>Mi</Box>
@@ -683,12 +602,62 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             }
           />
         </Grid>
-        <Grid item xs={12}>
+
+        <Grid item xs={6}>
           <Field
-            name="enableResourcesRequests"
-            component={KBoolCheckboxRender}
-            label="Only schedule on nodes that meet the above resources"
+            component={RenderComplexValueTextDebounceField}
+            name="cpuRequest"
+            label="CPU Request"
+            validate={ValidatorCPU}
+            // normalize={NormalizeCPU}
+            placeholder={sc.CPU_INPUT_PLACEHOLDER}
+            type="number"
+            format={(value: any) => {
+              return !value ? "" : (sizeStringToNumber(value) * 1000).toFixed();
+            }}
+            parse={(value: any) => {
+              return !value ? "" : value + "m";
+            }}
+            endAdornment={
+              <KTooltip title={sc.CPU_INPUT_TOOLTIP}>
+                <Box display="flex" alignItems="center">
+                  <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
+                  <Box ml={0.5}>m</Box>
+                </Box>
+              </KTooltip>
+            }
           />
+        </Grid>
+
+        <Grid item xs={6}>
+          <Field
+            component={RenderComplexValueTextDebounceField}
+            name="memoryRequest"
+            label="Memory Request"
+            margin
+            validate={ValidatorMemory}
+            // normalize={NormalizeMemory}
+            placeholder={sc.MEMORY_INPUT_PLACEHOLDER}
+            type="number"
+            format={(value: any) => {
+              return !value ? "" : sizeStringToMi(value);
+            }}
+            parse={(value: any) => {
+              return !value ? "" : value + "Mi";
+            }}
+            endAdornment={
+              <KTooltip title={sc.MEMORY_INPUT_TOOLTIP}>
+                <Box display="flex" alignItems="center">
+                  <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
+                  <Box ml={0.5}>Mi</Box>
+                </Box>
+              </KTooltip>
+            }
+          />
+        </Grid>
+
+        <Grid item xs={12}>
+          <Field name="enableResourcesRequests" component={KBoolCheckboxRender} label={sc.SCHEDULING_RR_CHECKBOX} />
         </Grid>
         <Grid item xs={12}>
           <SectionTitle>
@@ -699,11 +668,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           <Field name="nodeSelectorLabels" component={RenderSelectLabels} nodeLabels={nodeLabels} />
         </Grid>
         <Grid item xs={12}>
-          <Field
-            name="preferNotCoLocated"
-            component={KBoolCheckboxRender}
-            label="Prefer to schedule replicas to different nodes. (Recommand for high availablity)"
-          />
+          <Field name="preferNotCoLocated" component={KBoolCheckboxRender} label={sc.SCHEDULING_COLOCATE_CHECKBOX} />
         </Grid>
         {/* <Grid item xs={6}>
           <Field name="podAffinityType" component={KRadioGroupRender} options={this.getPodAffinityOptions()} />
@@ -730,7 +695,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
                 value: "RollingUpdate",
                 label: (
                   <Body2>
-                    <strong>Rolling Update</strong> - Replace pods one by one, resulting in zero downtime.
+                    <strong>Rolling Update</strong> - {sc.DEPLOYMENT_ROLLING}
                   </Body2>
                 ),
               },
@@ -738,8 +703,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
                 value: "Recreate",
                 label: (
                   <Body2>
-                    <strong>Recreate</strong> - All old pods are stopped and replaced at once, resulting in downtime.
-                    Useful if application cannot support multiple versions running at the same time.
+                    <strong>Recreate</strong> - {sc.DEPLOYMENT_RECREATE}
                   </Body2>
                 ),
               },
@@ -751,19 +715,16 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             <Subtitle1>Graceful Terimination Period</Subtitle1>
           </SectionTitle>
         </Grid>
-        <Grid item xs={8}>
-          <Body2>
-            When Pods are teriminated, running processes are first asked to gracefully shutdown with SIGTERM. However
-            some application may not be able to shutdown gracefully. Specify an amount of time to wait before forcefully
-            killing with SIGKILL. The default value is 30 seconds. &nbsp;
-            <Link
-              href="https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#hook-handler-execution"
-              target="_blank"
-            >
-              Learn More
-            </Link>
-          </Body2>
-        </Grid>
+        <HelperTextSection>
+          {sc.GRACEFUL_TERM_HELPER}
+          &nbsp;
+          <Link
+            href="https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/#hook-handler-execution"
+            target="_blank"
+          >
+            {sc.LEARN_MORE_LABEL}
+          </Link>
+        </HelperTextSection>
         <Grid item xs={6}>
           <Field
             component={KRenderDebounceTextField}
@@ -771,7 +732,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             label="Termination Grace Period (seconds)"
             // validate={ValidatorRequired}
             normalize={NormalizeNumber}
-            placeholder="e.g. 60"
+            placeholder={sc.GRACEFUL_TERM_INPUT_PLACEHOLDER}
           />
         </Grid>
       </Grid>
@@ -840,7 +801,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               (tab === HealthTab && (syncValidationErrors.livenessProbe || syncValidationErrors.readinessProbe)) ||
               (tab === NetworkingTab && syncValidationErrors.ports) ||
               (tab === Scheduling &&
-                (syncValidationErrors.cpu || syncValidationErrors.memory || syncValidationErrors.nodeSelectorLabels)))
+                (syncValidationErrors.cpuLimit ||
+                  syncValidationErrors.memoryLimit ||
+                  syncValidationErrors.nodeSelectorLabels)))
           ) {
             return <Tab key={tab} label={tab} className={classes.hasError} />;
           }
@@ -870,7 +833,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             margin
             validate={nameValidators}
             disabled={isEdit}
-            helperText={isEdit ? "Name can't be changed." : stringConstants.NAME_RULE}
+            helperText={isEdit ? "Name can't be changed." : sc.NAME_RULE}
           />
         </Grid>
         <Grid item xs={6}>
@@ -878,10 +841,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             component={KRenderDebounceTextField}
             name="image"
             label="Image"
-            placeholder="e.g. nginx:latest"
+            placeholder={sc.IMAGE_PLACEHOLDER}
             margin
             validate={ValidatorRequired}
-            helperText="Image URL defaults to hub.docker.com. Use full URL for all other registries."
+            helperText={sc.IMAGE_INPUT_HELPER}
           />
         </Grid>
 
@@ -889,58 +852,14 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           <Field
             name="workloadType"
             component={RenderSelectField}
-            label="Workload Type"
+            label="Type"
             validate={ValidatorRequired}
             disabled={isEdit}
             options={[
-              {
-                value: workloadTypeServer,
-                selectedText: "Service Component",
-                text: (
-                  <Box pt={1} pb={1}>
-                    <Typography color="textPrimary">Service Component</Typography>
-                    <Typography color="textSecondary" variant="caption">
-                      Default choice - Suitable for most continuous services
-                    </Typography>
-                  </Box>
-                ),
-              },
-              {
-                value: workloadTypeCronjob,
-                selectedText: "CronJob",
-                text: (
-                  <Box pt={1} pb={1}>
-                    <Typography color="textPrimary">CronJob</Typography>
-                    <Typography color="textSecondary" variant="caption">
-                      Scheduled tasks to be ran at specific times
-                    </Typography>
-                  </Box>
-                ),
-              },
-              {
-                value: workloadTypeDaemonSet,
-                selectedText: "DaemonSet",
-                text: (
-                  <Box pt={1} pb={1}>
-                    <Typography color="textPrimary">DaemonSet</Typography>
-                    <Typography color="textSecondary" variant="caption">
-                      For system services which should be deployed once per node
-                    </Typography>
-                  </Box>
-                ),
-              },
-              {
-                value: workloadTypeStatefulSet,
-                selectedText: "StatefulSet",
-                text: (
-                  <Box pt={1} pb={1}>
-                    <Typography color="textPrimary">StatefulSet</Typography>
-                    <Typography color="textSecondary" variant="caption">
-                      For stateful apps requiring additional persistence settings
-                    </Typography>
-                  </Box>
-                ),
-              },
+              makeSelectOption(workloadTypeServer, "Service Component", sc.COMPONENT_TYPE_SERVICE_OPTION),
+              makeSelectOption(workloadTypeCronjob, "CronJob", sc.COMPONENT_TYPE_CRONJOB_OPTION),
+              makeSelectOption(workloadTypeDaemonSet, "DaemonSet", sc.COMPONENT_TYPE_DAEMON_OPTION),
+              makeSelectOption(workloadTypeStatefulSet, "StatefulSet", sc.COMPONENT_TYPE_STATEFUL_SET_OPTION),
             ]}
           />
         </Grid>
@@ -1037,7 +956,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
   public renderDirtyPrompt = () => {
     const { dirty, submitSucceeded } = this.props;
-    return <Prompt when={dirty && !submitSucceeded} message="Are you sure to leave without saving changes?" />;
+    return <Prompt when={dirty && !submitSucceeded} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />;
   };
 
   public render() {

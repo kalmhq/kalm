@@ -6,25 +6,26 @@ import { deletePersistentVolumeAction } from "actions/persistentVolume";
 import { blinkTopProgressAction } from "actions/settings";
 import { K8sApiPrefix } from "api/realApi";
 import { push } from "connected-react-router";
+import { KTooltip } from "forms/Application/KTooltip";
 import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 import { StorageType } from "pages/Disks/StorageType";
 import React from "react";
 import { connect } from "react-redux";
-import { Link } from "react-router-dom";
 import { RootState } from "reducers";
 import { primaryColor } from "theme/theme";
 import { TDispatchProp } from "types";
 import { Disk } from "types/disk";
+import { sizeStringToGi } from "utils/sizeConv";
 import { CustomizedButton } from "widgets/Button";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { DeleteIcon, KalmVolumeIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { InfoBox } from "widgets/InfoBox";
+import { KLink } from "widgets/Link";
 import { KTable } from "widgets/Table";
 import { BasePage } from "../BasePage";
-import { sizeStringToGi } from "utils/sizeConv";
-import { KTooltip } from "forms/Application/KTooltip";
+import sc from "utils/stringConstants";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -82,7 +83,7 @@ export class VolumesRaw extends React.Component<Props, States> {
       <ConfirmDialog
         open={isDeleteConfirmDialogOpen}
         onClose={this.closeDeleteConfirmDialog}
-        title={`Are you sure to delete this Persistent Volume(${deletingPersistentVolume?.get("name")})?`}
+        title={`${sc.ARE_YOU_SURE_PREFIX} this Persistent Volume(${deletingPersistentVolume?.get("name")})?`}
         content="You will lost this Persistent Volume, and this action is irrevocable."
         onAgree={this.confirmDelete}
       />
@@ -184,13 +185,13 @@ export class VolumesRaw extends React.Component<Props, States> {
       );
     }
     return (
-      <Link
+      <KLink
         style={{ color: primaryColor }}
         to={`/applications/${rowData.get("componentNamespace")}/components`}
         onClick={() => blinkTopProgressAction()}
       >
         {rowData.get("componentNamespace")}
-      </Link>
+      </KLink>
     );
   };
 
@@ -203,13 +204,13 @@ export class VolumesRaw extends React.Component<Props, States> {
       );
     }
     return (
-      <Link
+      <KLink
         style={{ color: primaryColor }}
         to={`/applications/${rowData.get("componentNamespace")}/components/${rowData.get("componentName")}`}
         onClick={() => blinkTopProgressAction()}
       >
         {rowData.get("componentName")}
-      </Link>
+      </KLink>
     );
   };
 
@@ -230,8 +231,8 @@ export class VolumesRaw extends React.Component<Props, States> {
     return (
       <EmptyInfoBox
         image={<KalmVolumeIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
-        title={"You don’t have any Disks."}
-        content="Disks can be attached to Components to provide persistent storage. Disks can be created in the App Components page, and will show up here automatically."
+        title={sc.EMPTY_VOLUME_TITLE}
+        content={sc.EMPTY_VOLUME_SUBTITLE}
         button={
           <CustomizedButton
             variant="contained"

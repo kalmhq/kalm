@@ -18,7 +18,7 @@ import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { InfoBox } from "widgets/InfoBox";
 import { BlankTargetLink } from "widgets/BlankTargetLink";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
-
+import sc from "utils/stringConstants";
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
@@ -42,8 +42,8 @@ class CIPageRaw extends React.PureComponent<Props, State> {
     return (
       <EmptyInfoBox
         image={<CIIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
-        title={"To integration with your pipeline, apply an deploy key first."}
-        content="In Kalm, you can update components through webhooks to achieve continuous deployment. Kalm can be easily integrated with popular CI tools, such as CircleCI, Github Actions."
+        title={sc.EMPTY_CI_TITLE}
+        content={sc.EMPTY_CI_SUBTITLE}
         button={
           <CustomizedButton component={Link} variant="contained" to="/ci/keys/new" color="primary">
             New Deploy Key

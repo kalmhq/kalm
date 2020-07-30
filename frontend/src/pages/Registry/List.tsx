@@ -20,6 +20,7 @@ import { RegistryNewModal, RegistryNewModalID } from "./New";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { indigo } from "@material-ui/core/colors";
 import { InfoBox } from "widgets/InfoBox";
+import sc from "utils/stringConstants";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -36,7 +37,6 @@ const mapStateToProps = (state: RootState) => {
 };
 
 const pageObjectName: string = "Private Registry";
-const pageObjectNamePlural: string = "Private Registries";
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
@@ -80,7 +80,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
       <ConfirmDialog
         open={isDeleteConfirmDialogOpen}
         onClose={this.closeDeleteConfirmDialog}
-        title={`Are you sure to delete this registry(${deletingItemName})?`}
+        title={`${sc.ARE_YOU_SURE_PREFIX} this registry(${deletingItemName})?`}
         content="You will lost this registry, and this action is irrevocable."
         onAgree={this.confirmDelete}
       />
@@ -200,8 +200,8 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
     return (
       <EmptyInfoBox
         image={<KalmRegistryIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
-        title={`You don’t have any ${pageObjectNamePlural}`}
-        content="To pull images hosted on a private registry, first add an entry with login info here. Public registries such as Docker Hub can be used directly."
+        title={sc.EMPTY_REGISTRY_TITLE}
+        content={sc.EMPTY_REGISTRY_SUBTITLE}
         button={
           <CustomizedButton
             variant="contained"

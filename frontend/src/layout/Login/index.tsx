@@ -6,6 +6,7 @@ import { Actions } from "types";
 import { validateTokenAction } from "actions/auth";
 import { RootState } from "reducers";
 import { Button, createStyles, Paper, TextField, Theme, WithStyles, withStyles } from "@material-ui/core";
+import { grey } from "@material-ui/core/colors";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -33,7 +34,7 @@ const styles = (theme: Theme) =>
     loginTriangle: {
       width: 0,
       height: 0,
-      borderBottom: "163px solid #fff",
+      borderBottom: theme.palette.type === "light" ? `163px solid ${grey[50]}` : `163px solid ${grey[800]}`,
       borderLeft: "163px solid transparent",
       position: "absolute",
       right: "415px",
@@ -46,7 +47,7 @@ const styles = (theme: Theme) =>
       position: "absolute",
       right: "0",
       top: "61px",
-      backgroundColor: "#fff",
+      backgroundColor: theme.palette.type === "light" ? grey[50] : grey[800],
       boxShadow: "4px 4px 4px rgba(0, 0, 0, 0.2)",
       borderTopRightRadius: "4px",
       borderBottomRightRadius: "4px",
