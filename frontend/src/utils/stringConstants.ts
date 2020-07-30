@@ -75,6 +75,20 @@ const stringConstants = {
   CERT_UPLOAD_DESC: "Use an existing certificate. You are responsible for renewual.",
   NODES_INFO_BOX_TEXT:
     "Data and metrics regarding nodes in the cluster is displayed here. For cluster administration operations, please see platform specific instructions.",
+  ROUTE_HOSTS_INPUT_HELPER:
+    "If you don't have any DNS record point to this ip, you can use the ip directly in this field.",
+  ROUTE_PATHS_INPUT_HELPER: 'Allow to configure multiple paths. Each path must begin with "/".',
+  ROUTE_STRIP_PATH_LABEL: "Path Prefix should be stripped",
+  ROUTE_STRIP_PATH_HELPER: 'If enabled, Path prefixes will be rewrite to "/" when request reaches targets.',
+  ROUTE_HTTP_METHOD_ALL: "All http methods are allowed in this route.",
+  ROUTE_HTTP_METHOD_CUSTOM: "Choose allowed methods manually.",
+  ROUTE_HTTP_CUSTOM_TITLE: "Choose methods you need",
+  ROUTE_HTTPS_ALERT:
+    "You choosed https. Please note that the TLS termination will be happened in this route level, which means the targets will receive http requests instead.",
+  CI_INFO_BOX_TEXT:
+    "You can call webhook directly. In addition, we also provide some out-of-the-box tools to help you connect with commonly used CI tools.",
+  DISKS_INFOBOX_BOX1:
+    "You don't need to apply disk manually. Disk will be created when you declare authentic disks in component form.",
 };
 
 export default stringConstants;

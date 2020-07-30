@@ -16,6 +16,9 @@ import { KalmComponentsIcon } from "widgets/Icon";
 
 const styles = (theme: Theme) =>
   createStyles({
+    componentTitleRow: {
+      "padding-top": "8px",
+    },
     componentIcon: {
       height: "1.25rem",
       color: theme.palette.primary.light,
@@ -50,7 +53,7 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
     const { classes } = this.props;
     return (
       <Container>
-        <Grid container spacing={2}>
+        <Grid container className={classes.componentTitleRow} spacing={2}>
           <Grid item className={classes.componentIcon}>
             <KalmComponentsIcon fontSize={"large"} />
           </Grid>
