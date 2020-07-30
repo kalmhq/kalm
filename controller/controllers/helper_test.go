@@ -188,12 +188,9 @@ func (suite *BasicSuite) SetupSuite() {
 	suite.NotNil(mgr)
 	suite.Nil(err)
 
-	//suite.Nil(NewApplicationReconciler(mgr).SetupWithManager(mgr))
-	//suite.Nil(NewApplicationPluginReconciler(mgr).SetupWithManager(mgr))
-	//suite.Nil(NewApplicationPluginBindingReconciler(mgr).SetupWithManager(mgr))
-	//suite.Nil(NewKalmNamespacesReconciler(mgr).SetupWithManager(mgr))
 	suite.Nil(NewKalmNSReconciler(mgr).SetupWithManager(mgr))
 	suite.Nil(NewKalmPVCReconciler(mgr).SetupWithManager(mgr))
+	suite.Nil(NewKalmPVReconciler(mgr).SetupWithManager(mgr))
 
 	suite.Nil(NewComponentReconciler(mgr).SetupWithManager(mgr))
 	suite.Nil(NewComponentPluginReconciler(mgr).SetupWithManager(mgr))
@@ -222,6 +219,8 @@ func (suite *BasicSuite) SetupSuite() {
 	suite.TestEnv = testEnv
 	suite.K8sClient = k8sClient
 	suite.Cfg = cfg
+
+	suite.ensureNsExists("cert-manager")
 }
 
 func (suite *BasicSuite) TearDownSuite() {

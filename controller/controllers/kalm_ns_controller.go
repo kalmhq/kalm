@@ -21,6 +21,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -61,15 +62,22 @@ func (m MapAll) Map(_ handler.MapObject) []reconcile.Request {
 }
 
 func (r *KalmNSReconciler) SetupWithManager(mgr ctrl.Manager) error {
+
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1.Namespace{}).
-		Watches(&source.Kind{Type: &v1alpha1.HttpsCertIssuer{}}, &handler.EnqueueRequestsFromMapFunc{
-			ToRequests: MapAll{},
-		}).
-		Watches(&source.Kind{Type: &v1alpha1.HttpsCert{}}, &handler.EnqueueRequestsFromMapFunc{
-			ToRequests: MapAll{},
-		}).
+		Watches(genSourceForObject(&v1alpha1.HttpsCertIssuer{}), genEnqueueAllEventHandler()).
+		Watches(genSourceForObject(&v1alpha1.HttpsCert{}), genEnqueueAllEventHandler()).
 		Complete(r)
+}
+
+func genSourceForObject(obj runtime.Object) source.Source {
+	return &source.Kind{Type: obj}
+}
+
+func genEnqueueAllEventHandler() handler.EventHandler {
+	return &handler.EnqueueRequestsFromMapFunc{
+		ToRequests: MapAll{},
+	}
 }
 
 // +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch;create;update;patch;delete

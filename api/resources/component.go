@@ -64,7 +64,7 @@ type CPUQuantity struct {
 
 func (c *CPUQuantity) MarshalJSON() ([]byte, error) {
 	capInStr := strconv.FormatInt(c.MilliValue(), 10)
-	return []byte(fmt.Sprintf(`"%s"`, capInStr)), nil
+	return []byte(fmt.Sprintf(`"%sm"`, capInStr)), nil
 }
 
 type MemoryQuantity struct {
@@ -96,10 +96,6 @@ type ComponentDetails struct {
 	Services             []ServiceStatus       `json:"services"`
 	Pods                 []PodStatus           `json:"pods"`
 }
-
-//func labelsBelongsToComponent(name string) metaV1.ListOptions {
-//	return matchLabel("kalm-component", name)
-//}
 
 func (builder *Builder) BuildComponentDetails(
 	component *v1alpha1.Component,

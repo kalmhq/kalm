@@ -4,5 +4,4 @@ coverage.txt
 *.log
 
 *.local.yaml
-
 .vscode

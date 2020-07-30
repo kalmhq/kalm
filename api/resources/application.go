@@ -8,7 +8,6 @@ import (
 	authorizationV1 "k8s.io/api/authorization/v1"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
-	appsV1 "k8s.io/api/apps/v1"
 	coreV1 "k8s.io/api/core/v1"
 )
 
@@ -172,33 +171,6 @@ func formatEnvs(envs []v1alpha1.EnvVar) {
 	for i := range envs {
 		if envs[i].Type == "" {
 			envs[i].Type = v1alpha1.EnvVarTypeStatic
-		}
-	}
-}
-
-func formatApplicationComponents(components []Component) {
-	for i := range components {
-		formatEnvs(components[i].Env)
-
-		if components[i].DnsPolicy == "" {
-			components[i].DnsPolicy = coreV1.DNSClusterFirst
-		}
-
-		if components[i].RestartPolicy == "" {
-			components[i].RestartPolicy = coreV1.RestartPolicyAlways
-		}
-
-		if components[i].TerminationGracePeriodSeconds == nil {
-			x := int64(30)
-			components[i].TerminationGracePeriodSeconds = &x
-		}
-
-		if components[i].RestartStrategy == "" {
-			components[i].RestartStrategy = appsV1.RollingUpdateDeploymentStrategyType
-		}
-
-		if components[i].WorkloadType == "" {
-			components[i].WorkloadType = v1alpha1.WorkloadTypeServer
 		}
 	}
 }
