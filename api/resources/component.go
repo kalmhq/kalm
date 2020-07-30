@@ -2,6 +2,9 @@ package resources
 
 import (
 	"encoding/json"
+	"fmt"
+	"k8s.io/apimachinery/pkg/api/resource"
+	"strconv"
 	"strings"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
@@ -55,19 +58,49 @@ type Component struct {
 	Name                   string                 `json:"name"`
 }
 
+type CPUQuantity struct {
+	resource.Quantity
+}
+
+func (c *CPUQuantity) MarshalJSON() ([]byte, error) {
+	capInStr := strconv.FormatInt(c.MilliValue(), 10)
+	return []byte(fmt.Sprintf(`"%s"`, capInStr)), nil
+}
+
+type MemoryQuantity struct {
+	resource.Quantity
+}
+
+func (m *MemoryQuantity) MarshalJSON() ([]byte, error) {
+	capInStr := strconv.FormatInt(m.Value(), 10)
+	return []byte(fmt.Sprintf(`"%s"`, capInStr)), nil
+}
+
 type ComponentDetails struct {
-	*Component           `json:",inline"`
+	Name string `json:"name"`
+
+	v1alpha1.ComponentSpec `json:",inline"`
+
+	// hack to override & ignore field in ComponentSpec
+	//ResourceRequirements interface{} `json:"resourceRequirements,omitempty"`
+
+	CPURequest    *CPUQuantity    `json:"cpuRequest,omitempty"`
+	MemoryRequest *MemoryQuantity `json:"memoryRequest,omitempty"`
+	CPULimit      *CPUQuantity    `json:"cpuLimit,omitempty"`
+	MemoryLimit   *MemoryQuantity `json:"memoryLimit,omitempty"`
+
+	Plugins []runtime.RawExtension `json:"plugins,omitempty"`
+
 	Metrics              MetricHistories       `json:"metrics"`
 	IstioMetricHistories *IstioMetricHistories `json:"istioMetricHistories"`
 	Services             []ServiceStatus       `json:"services"`
 	Pods                 []PodStatus           `json:"pods"`
 }
 
-func labelsBelongsToComponent(name string) metaV1.ListOptions {
-	return matchLabel("kalm-component", name)
-}
-
-func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component, resources *Resources) (details *ComponentDetails, err error) {
+func (builder *Builder) BuildComponentDetails(
+	component *v1alpha1.Component,
+	resources *Resources,
+) (details *ComponentDetails, err error) {
 	if resources == nil {
 		ns := component.Namespace
 		nsListOption := client.InNamespace(ns)
@@ -149,11 +182,11 @@ func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component, res
 	}
 
 	details = &ComponentDetails{
-		Component: &Component{
-			Name:          component.Name,
-			ComponentSpec: component.Spec,
-			Plugins:       plugins,
-		},
+		Name: component.Name,
+
+		ComponentSpec: component.Spec,
+		Plugins:       plugins,
+
 		Services: servicesStatus,
 		Metrics: MetricHistories{
 			CPU:    componentMetric.CPU,
@@ -161,6 +194,27 @@ func (builder *Builder) BuildComponentDetails(component *v1alpha1.Component, res
 		},
 		IstioMetricHistories: istioMetricRst,
 		Pods:                 podsStatus,
+	}
+
+	resRequirements := component.Spec.ResourceRequirements
+	if resRequirements != nil && resRequirements.Requests != nil {
+		if cpuReq, exist := resRequirements.Requests[coreV1.ResourceCPU]; exist {
+			details.CPURequest = &CPUQuantity{cpuReq}
+		}
+
+		if memReq, exist := resRequirements.Requests[coreV1.ResourceMemory]; exist {
+			details.MemoryRequest = &MemoryQuantity{memReq}
+		}
+	}
+
+	if resRequirements != nil && resRequirements.Limits != nil {
+		if cpuLimit, exist := resRequirements.Limits[coreV1.ResourceCPU]; exist {
+			details.CPULimit = &CPUQuantity{cpuLimit}
+		}
+
+		if memLimit, exist := resRequirements.Limits[coreV1.ResourceMemory]; exist {
+			details.MemoryLimit = &MemoryQuantity{memLimit}
+		}
 	}
 
 	return details, nil
@@ -178,7 +232,9 @@ func getComponentAndNSNameFromSvcName(svcName string) (string, string) {
 	return compName, nsName
 }
 
-func (builder *Builder) BuildComponentDetailsResponse(components *v1alpha1.ComponentList) ([]ComponentDetails, error) {
+func (builder *Builder) BuildComponentDetailsResponse(
+	components *v1alpha1.ComponentList,
+) ([]ComponentDetails, error) {
 
 	if len(components.Items) == 0 {
 		return nil, nil
