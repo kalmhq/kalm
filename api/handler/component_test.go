@@ -145,17 +145,6 @@ func (suite *ComponentTestSuite) TestCreateComponentWithReUsingPVCAsVolume() {
 	scName := "kalm-standard"
 	pvNameToReuse := "exist-available-pv"
 
-	// prepare Volume & scName
-	//sc := storagev1.StorageClassName{
-	//	ObjectMeta: v1.ObjectMeta{
-	//		Name: scName,
-	//	},
-	//	Provisioner: "fake-provisioner",
-	//}
-	//
-	//_, err := suite.k8sClinet.StorageV1().StorageClasses().Create(&sc)
-	//suite.Nil(err)
-
 	hostPath := coreV1.HostPathVolumeSource{
 		Path: "/data",
 	}
@@ -218,7 +207,45 @@ func (suite *ComponentTestSuite) TestCreateComponentWithReUsingPVCAsVolume() {
 	suite.Equal(reqComp.Volumes[0].PVToMatch, comp.Spec.Volumes[0].PVToMatch)
 }
 
-func (suite *ComponentTestSuite) TestCreateComponentWithReusePVInvalid() {
-	// todo
-	// 1. pv try to reuse is not available or not exist
+//func (suite *ComponentTestSuite) TestCreateComponentWithReusePVInvalid() {
+// todo
+// 1. pv try to reuse is not available or not exist
+//}
+
+func (suite *ComponentTestSuite) TestCreateComponentWithResourceRequirements() {
+	component := resources.Component{
+		Name: "component-with-resource-requirements",
+		ComponentSpec: v1alpha1.ComponentSpec{
+			Image: "foo",
+			ResourceRequirements: &coreV1.ResourceRequirements{
+				Limits: map[coreV1.ResourceName]resource.Quantity{
+					coreV1.ResourceCPU:    resource.MustParse("100m"),
+					coreV1.ResourceMemory: resource.MustParse("0.1Gi"),
+				},
+				Requests: map[coreV1.ResourceName]resource.Quantity{
+					coreV1.ResourceCPU:    resource.MustParse("10"),
+					coreV1.ResourceMemory: resource.MustParse("10Mi"),
+				},
+			},
+		},
+	}
+
+	compInJSON, err := json.Marshal(component)
+	suite.Nil(err)
+
+	apiURL := fmt.Sprintf("/v1alpha1/applications/%s/components", suite.namespace)
+
+	rec := suite.NewRequest(http.MethodPost, apiURL, string(compInJSON))
+	suite.Equal(201, rec.Code)
+
+	recBytes := rec.bytes
+	respMap := make(map[string]interface{})
+	//fmt.Println("recBytes:", string(recBytes))
+	err = json.Unmarshal(recBytes, &respMap)
+	suite.Nil(err)
+
+	suite.Equal("100", respMap["cpuLimit"])
+	suite.Equal("107374183", respMap["memoryLimit"])
+	suite.Equal("10000", respMap["cpuRequest"])
+	suite.Equal("10485760", respMap["memoryRequest"])
 }
