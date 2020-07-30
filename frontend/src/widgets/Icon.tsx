@@ -9,7 +9,7 @@ import CreateNewFolder from "@material-ui/icons/CreateNewFolder";
 import OpenInBrowser from "@material-ui/icons/OpenInBrowser";
 import Delete from "@material-ui/icons/Delete";
 import Edit from "@material-ui/icons/Edit";
-import Error from "@material-ui/icons/Error";
+import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline";
 import FileCopy from "@material-ui/icons/FileCopy";
 import FilterList from "@material-ui/icons/FilterList";
 import Help from "@material-ui/icons/Help";
@@ -196,12 +196,12 @@ export const CheckCircleIcon = withStyles(styles)((props: ColorIconsProps) => {
 
 export const ErrorIcon = withStyles(styles)((props: ColorIconsProps) => {
   const { classes, fontSize, style } = props;
-  return <Error className={classes.error} fontSize={fontSize} style={style} />;
+  return <ErrorOutlineIcon className={classes.error} fontSize={fontSize} style={style} />;
 });
 
 export const WarningIcon = withStyles(styles)((props: ColorIconsProps) => {
   const { classes, fontSize, style } = props;
-  return <Error className={classes.warning} fontSize={fontSize} style={style} />;
+  return <ErrorOutlineIcon className={classes.warning} fontSize={fontSize} style={style} />;
 });
 
 export const ArrowBackIcon = withStyles(styles)((props: ColorIconsProps) => {
