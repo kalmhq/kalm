@@ -107,13 +107,28 @@ export type Probe = ImmutableMap<{
   failureThreshold?: number;
 }>;
 
+export type ResourceRequirements = ImmutableMap<{
+  limits?: ImmutableMap<{
+    cpu?: string;
+    memory?: string;
+  }>;
+
+  requests?: ImmutableMap<{
+    cpu?: string;
+    memory?: string;
+  }>;
+}>;
+
 export interface ComponentLikeContent {
   name: string;
   image: string;
   replicas: number;
   command?: string;
-  cpu?: string;
-  memory?: string;
+  resourceRequirements?: ResourceRequirements;
+  cpuRequest?: string;
+  memoryRequest?: string;
+  cpuLimit?: string;
+  memoryLimit?: string;
   workloadType?: WorkloadType;
   schedule?: string;
   restartStrategy?: string;

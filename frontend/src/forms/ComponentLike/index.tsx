@@ -553,7 +553,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Grid item xs={6}>
           <Field
             component={RenderComplexValueTextDebounceField}
-            name="cpu"
+            name="cpuLimit"
             label="CPU Limit"
             validate={ValidatorCPU}
             // normalize={NormalizeCPU}
@@ -579,7 +579,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         <Grid item xs={6}>
           <Field
             component={RenderComplexValueTextDebounceField}
-            name="memory"
+            name="memoryLimit"
             label="Memory Limit"
             margin
             validate={ValidatorMemory}
@@ -602,6 +602,60 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             }
           />
         </Grid>
+
+        <Grid item xs={6}>
+          <Field
+            component={RenderComplexValueTextDebounceField}
+            name="cpuRequest"
+            label="CPU Request"
+            validate={ValidatorCPU}
+            // normalize={NormalizeCPU}
+            placeholder={sc.CPU_INPUT_PLACEHOLDER}
+            type="number"
+            formValueToEditValue={(value: any) => {
+              return !value ? "" : (sizeStringToNumber(value) * 1000).toFixed();
+            }}
+            editValueToFormValue={(value: any) => {
+              return !value ? "" : value + "m";
+            }}
+            endAdornment={
+              <KTooltip title={sc.CPU_INPUT_TOOLTIP}>
+                <Box display="flex" alignItems="center">
+                  <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
+                  <Box ml={0.5}>m</Box>
+                </Box>
+              </KTooltip>
+            }
+          />
+        </Grid>
+
+        <Grid item xs={6}>
+          <Field
+            component={RenderComplexValueTextDebounceField}
+            name="memoryRequest"
+            label="Memory Request"
+            margin
+            validate={ValidatorMemory}
+            // normalize={NormalizeMemory}
+            placeholder={sc.MEMORY_INPUT_PLACEHOLDER}
+            type="number"
+            formValueToEditValue={(value: any) => {
+              return !value ? "" : sizeStringToMi(value);
+            }}
+            editValueToFormValue={(value: any) => {
+              return !value ? "" : value + "Mi";
+            }}
+            endAdornment={
+              <KTooltip title={sc.MEMORY_INPUT_TOOLTIP}>
+                <Box display="flex" alignItems="center">
+                  <HelpIcon fontSize="small" className={classes.textFieldHelperIcon} />
+                  <Box ml={0.5}>Mi</Box>
+                </Box>
+              </KTooltip>
+            }
+          />
+        </Grid>
+
         <Grid item xs={12}>
           <Field name="enableResourcesRequests" component={KBoolCheckboxRender} label={sc.SCHEDULING_RR_CHECKBOX} />
         </Grid>
@@ -747,7 +801,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
               (tab === HealthTab && (syncValidationErrors.livenessProbe || syncValidationErrors.readinessProbe)) ||
               (tab === NetworkingTab && syncValidationErrors.ports) ||
               (tab === Scheduling &&
-                (syncValidationErrors.cpu || syncValidationErrors.memory || syncValidationErrors.nodeSelectorLabels)))
+                (syncValidationErrors.cpuLimit ||
+                  syncValidationErrors.memoryLimit ||
+                  syncValidationErrors.nodeSelectorLabels)))
           ) {
             return <Tab key={tab} label={tab} className={classes.hasError} />;
           }

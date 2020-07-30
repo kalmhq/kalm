@@ -194,7 +194,7 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     return (
       <Grid container className={classes.gridWrapper}>
         <Grid item md={2}>
-          {component.get("cpu") ? `Allocated: ${component.get("cpu")}` : stringConsts.LIMIT_NOT_SET}
+          {component.get("cpuLimit") ? `Allocated: ${component.get("cpuLimit")}` : stringConsts.LIMIT_NOT_SET}
         </Grid>
         <Grid item md={10}>
           Usage: <SmallCPULineChart data={component.get("metrics").get("cpu")!} />
@@ -208,8 +208,8 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     return (
       <Grid container className={classes.gridWrapper}>
         <Grid item md={2}>
-          {component.get("memory")
-            ? `Allocated: ${sizeStringToMi(`${component.get("memory")}`)}Mi`
+          {component.get("memoryLimit")
+            ? `Allocated: ${sizeStringToMi(`${component.get("memoryLimit")}`)}Mi`
             : stringConsts.LIMIT_NOT_SET}
         </Grid>
         <Grid item md={10}>
