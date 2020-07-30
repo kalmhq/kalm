@@ -156,6 +156,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err = (controllers.NewKalmPVReconciler(mgr)).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "KalmPV")
+		os.Exit(1)
+	}
+
 	if err = (controllers.NewSingleSignOnConfigReconciler(mgr)).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "SingleSignOnConfig")
 		os.Exit(1)

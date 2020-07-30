@@ -18,10 +18,9 @@ package controllers
 import (
 	"context"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 const (
@@ -48,87 +47,53 @@ func NewKalmPVCReconciler(mgr ctrl.Manager) *KalmPVCReconciler {
 func (r *KalmPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	r.Log.Info("reconciling kalmPvc volumes", "req", req)
 
-	ctx := context.Background()
-	log := r.Log.WithValues("kalmpvc", req.NamespacedName)
+	pvc := corev1.PersistentVolumeClaim{}
+	err := r.Get(r.ctx, client.ObjectKey{Name: req.Name, Namespace: req.Namespace}, &pvc)
+	if err != nil {
+		if !errors.IsNotFound(err) {
+			return ctrl.Result{}, err
+		}
+	}
+
+	// ignore if pvc is not deleted
+	pvcIsDeleted := errors.IsNotFound(err)
+	if !pvcIsDeleted {
+		return ctrl.Result{}, nil
+	}
+
+	// for every deletion of pvc, loop to make unbounded pv available again
 
 	var kalmPVList corev1.PersistentVolumeList
-	if err := r.List(ctx, &kalmPVList, client.MatchingLabels{KalmLabelManaged: "true"}); err != nil {
+	if err := r.List(r.ctx, &kalmPVList, client.MatchingLabels{KalmLabelManaged: "true"}); err != nil {
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	// for all kalm PV in Released stats, clean claimRef to make it available again
-	for _, kalmPV := range kalmPVList.Items {
-		if kalmPV.Status.Phase != corev1.VolumeReleased {
+	// clean claimRef to make it available again
+	for _, pv := range kalmPVList.Items {
+
+		claimRef := pv.Spec.ClaimRef
+
+		if claimRef == nil {
 			continue
 		}
 
-		if kalmPV.Spec.ClaimRef != nil {
-			kalmPV.Spec.ClaimRef = nil
-
-			if err := r.Update(ctx, &kalmPV); err != nil {
-				return ctrl.Result{}, nil
-			}
-		}
-	}
-
-	// make sure for each active kalmPvc, underlying kalmPV is labeled with its name
-	// (to be selected using selector)
-	var pvList corev1.PersistentVolumeList
-	if err := r.List(ctx, &pvList); client.IgnoreNotFound(err) != nil {
-		return ctrl.Result{}, err
-	}
-
-	var kalmPvcList corev1.PersistentVolumeClaimList
-	err := r.List(ctx, &kalmPvcList, client.MatchingLabels{KalmLabelManaged: "true"})
-	if client.IgnoreNotFound(err) != nil {
-		return ctrl.Result{}, err
-	}
-
-	for _, pv := range pvList.Items {
-		kalmPVC, isRefed := isReferencedByKalmPVC(pv, kalmPvcList)
-		if !isRefed {
-			log.Info("pv is not refed, skipped", "pv:", pv.Name)
+		// ignore if claimRef is not this deleted PVC
+		if claimRef.Namespace != req.Namespace ||
+			claimRef.Name != req.Name {
 			continue
 		}
 
-		if pv.Labels == nil {
-			pv.Labels = make(map[string]string)
-		}
-
-		pv.Labels[KalmLabelManaged] = "true"
-		pv.Labels[KalmLabelComponentKey] = kalmPVC.Labels[KalmLabelComponentKey]
-		pv.Labels[KalmLabelNamespaceKey] = kalmPVC.Labels[KalmLabelNamespaceKey]
-		// to be selectable by PVC
-		pv.Labels[KalmLabelPV] = pv.Name
-
-		if err := r.Update(ctx, &pv); err != nil {
-			return ctrl.Result{}, err
+		pv.Spec.ClaimRef = nil
+		if err := r.Update(r.ctx, &pv); err != nil {
+			return ctrl.Result{}, nil
 		}
 	}
 
 	return ctrl.Result{}, nil
 }
 
-func isReferencedByKalmPVC(
-	pv corev1.PersistentVolume,
-	list corev1.PersistentVolumeClaimList,
-) (pvc corev1.PersistentVolumeClaim, isRefed bool) {
-
-	for _, pvc := range list.Items {
-		if pvc.Spec.VolumeName == pv.Name {
-			return pvc, true
-		}
-	}
-
-	return
-}
-
 func (r *KalmPVCReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1.PersistentVolumeClaim{}).
-		Watches(
-			&source.Kind{Type: &corev1.PersistentVolume{}},
-			&handler.EnqueueRequestsFromMapFunc{ToRequests: MapAll{}},
-		).
 		Complete(r)
 }

@@ -330,7 +330,11 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 			}
 		}
 
-		if (r.component.Spec.EnableHeadlessService && r.headlessService == nil) || r.component.Spec.WorkloadType == corev1alpha1.WorkloadTypeStatefulSet {
+		if r.component.Spec.WorkloadType == corev1alpha1.WorkloadTypeStatefulSet {
+			r.component.Spec.EnableHeadlessService = true
+		}
+
+		if r.component.Spec.EnableHeadlessService && r.headlessService == nil {
 			newHeadlessService = true
 			r.headlessService = &coreV1.Service{
 				ObjectMeta: metaV1.ObjectMeta{
