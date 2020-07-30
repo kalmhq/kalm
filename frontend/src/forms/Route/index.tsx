@@ -35,6 +35,7 @@ import routesGif from "images/routes.gif";
 import { loadDomainDNSInfo } from "actions/domain";
 import DomainStatus from "widgets/DomainStatus";
 import { isArray } from "util";
+import sc from "utils/stringConstants";
 
 const mapStateToProps = (state: RootState) => {
   const form = ROUTE_FORM_ID;
@@ -232,7 +233,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
               variant="body2"
               onClick={() => this.setState({ isValidCertificationUnfolded: !isValidCertificationUnfolded })}
             >
-              >> View hosts that have valid certificates.
+              View hosts that have valid certificates.
             </Link>
           </Box>
         ) : null}
@@ -346,7 +347,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
       <div className={classes.root}>
         <Grid container spacing={2}>
           <Grid item xs={12}>
-            <Prompt when={dirty && !submitSucceeded} message="Are you sure to leave without saving changes?" />
+            <Prompt when={dirty && !submitSucceeded} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
             <Box mb={2}>
               <KPanel
                 title="Hosts and paths"

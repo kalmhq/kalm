@@ -8,6 +8,8 @@ import {
   Select,
   SelectProps,
   Tooltip,
+  Typography,
+  Box,
 } from "@material-ui/core";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import React from "react";
@@ -282,4 +284,25 @@ export const RenderMutipleSelectField = ({
       </Select>
     </FormControl>
   );
+};
+
+/**
+ * Helper method to generate a single option for a select input
+ * @param value
+ * @param itemName
+ * @param itemDesc
+ */
+export const makeSelectOption = (value: string, itemName: string, itemDesc: string) => {
+  return {
+    value,
+    selectedText: itemName,
+    text: (
+      <Box pt={1} pb={1}>
+        <Typography color="textPrimary">{itemName}</Typography>
+        <Typography color="textSecondary" variant="caption">
+          {itemDesc}
+        </Typography>
+      </Box>
+    ),
+  };
 };

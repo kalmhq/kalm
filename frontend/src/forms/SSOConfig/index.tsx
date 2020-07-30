@@ -31,6 +31,7 @@ import { TDispatchProp } from "types";
 import Button from "@material-ui/core/Button";
 import { Prompt } from "widgets/Prompt";
 import { Connectors } from "forms/SSOConfig/Connectors";
+import sc from "utils/stringConstants";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -84,7 +85,7 @@ class SSOConfigFormRaw extends React.PureComponent<Props> {
 
   private renderPrompt = () => {
     const { dirty, submitSucceeded } = this.props;
-    return <Prompt when={dirty && !submitSucceeded} message="Are you sure to leave without saving changes?" />;
+    return <Prompt when={dirty && !submitSucceeded} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />;
   };
 
   private addConnector = (type: SSO_CONNECTOR_TYPE) => {

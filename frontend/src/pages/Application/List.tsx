@@ -28,13 +28,14 @@ import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { DeleteIcon, KalmApplicationIcon, KalmDetailsIcon, KalmGridViewIcon, KalmListViewIcon } from "widgets/Icon";
 import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
-import { Body } from "widgets/Label";
+import { Caption } from "widgets/Label";
 import { KLink, KMLink } from "widgets/Link";
 import { Loading } from "widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { KTable } from "widgets/Table";
 import { BasePage } from "../BasePage";
 import { Link } from "react-router-dom";
+import sc from "utils/stringConstants";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -108,7 +109,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
       <ConfirmDialog
         open={isDeleteConfirmDialogOpen}
         onClose={this.closeDeleteConfirmDialog}
-        title={`Are you sure to delete this Application(${deletingApplicationListItem?.get("name")})?`}
+        title={`${sc.ARE_YOU_SURE_PREFIX} this Application(${deletingApplicationListItem?.get("name")})?`}
         content="You will lost this application, and this action is irrevocable."
         onAgree={this.confirmDelete}
       />
@@ -157,7 +158,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     const { componentsMap } = this.props;
     const components = componentsMap.get(applicationDetails.get("name"));
 
-    return <Body>{components ? getApplicationCreatedAtString(components) : "-"}</Body>;
+    return <Caption>{components ? getApplicationCreatedAtString(components) : "-"}</Caption>;
   };
 
   private hasPods = (applicationDetails: RowData) => {
@@ -416,8 +417,8 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     return (
       <EmptyInfoBox
         image={<KalmApplicationIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
-        title={"To get started, create your first Application"}
-        content="In Kalm, Applications are the basis of how you organize stuff. One Application represents a set of micro-services which works together to provide functionality. For example, you could use an Application a “website”, which is made of multiple components: web-server, an api-server, and an auth-server."
+        title={sc.EMPTY_APP_TITLE}
+        content={sc.EMPTY_APP_SUBTITLE}
         button={
           <CustomizedButton
             variant="contained"

@@ -25,6 +25,7 @@ import { InfoBox } from "widgets/InfoBox";
 import { KLink } from "widgets/Link";
 import { KTable } from "widgets/Table";
 import { BasePage } from "../BasePage";
+import sc from "utils/stringConstants";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -82,7 +83,7 @@ export class VolumesRaw extends React.Component<Props, States> {
       <ConfirmDialog
         open={isDeleteConfirmDialogOpen}
         onClose={this.closeDeleteConfirmDialog}
-        title={`Are you sure to delete this Persistent Volume(${deletingPersistentVolume?.get("name")})?`}
+        title={`${sc.ARE_YOU_SURE_PREFIX} this Persistent Volume(${deletingPersistentVolume?.get("name")})?`}
         content="You will lost this Persistent Volume, and this action is irrevocable."
         onAgree={this.confirmDelete}
       />
@@ -230,8 +231,8 @@ export class VolumesRaw extends React.Component<Props, States> {
     return (
       <EmptyInfoBox
         image={<KalmVolumeIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
-        title={"You don’t have any Disks."}
-        content="Disks can be attached to Components to provide persistent storage. Disks can be created in the App Components page, and will show up here automatically."
+        title={sc.EMPTY_VOLUME_TITLE}
+        content={sc.EMPTY_VOLUME_SUBTITLE}
         button={
           <CustomizedButton
             variant="contained"
