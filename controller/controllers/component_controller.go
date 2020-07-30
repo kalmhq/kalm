@@ -225,15 +225,15 @@ func (r *ComponentReconcilerTask) Run(req ctrl.Request) error {
 		return err
 	}
 
-	//if err := r.HandleDelete(); err != nil {
-	//	return err
-	//}
-
 	if !r.component.ObjectMeta.DeletionTimestamp.IsZero() {
 		return nil
 	}
 
 	if err := r.ReconcileService(); err != nil {
+		return err
+	}
+
+	if err := r.ReconcileComponentPluginBinding(); err != nil {
 		return err
 	}
 
@@ -400,8 +400,6 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 					r.WarningEvent(err, "unable to create headlessService for Component")
 					return err
 				}
-
-				ctrl.SetControllerReference(r.component, r.headlessService, r.Scheme)
 			} else {
 				if err := r.Update(r.ctx, r.headlessService); err != nil {
 					r.WarningEvent(err, "unable to update headlessService for Component")
@@ -434,6 +432,20 @@ func (r *ComponentReconcilerTask) ReconcileService() (err error) {
 
 func getNameForHeadlessService(componentName string) string {
 	return fmt.Sprintf("%s-headless", componentName)
+}
+
+func (r *ComponentReconcilerTask) ReconcileComponentPluginBinding() error {
+	if r.pluginBindings == nil {
+		return nil
+	}
+
+	for _, ele := range r.pluginBindings.Items {
+		if err := ctrl.SetControllerReference(&ele, r.component, r.Scheme); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (r *ComponentReconcilerTask) ReconcileWorkload() (err error) {
@@ -1038,15 +1050,6 @@ func (r *ComponentReconcilerTask) initPluginRuntime(component *corev1alpha1.Comp
 }
 
 func (r *ComponentReconcilerTask) runPlugins(methodName string, component *corev1alpha1.Component, desc interface{}, args ...interface{}) (err error) {
-	if r.pluginBindings == nil {
-		var bindings corev1alpha1.ComponentPluginBindingList
-		if err := r.Reader.List(r.ctx, &bindings, client.InNamespace(r.component.Namespace)); err != nil {
-			r.WarningEvent(err, "get plugin bindings error")
-			return err
-		}
-
-		r.pluginBindings = &bindings
-	}
 
 	if r.pluginBindings == nil {
 		return nil
@@ -1422,6 +1425,10 @@ func (r *ComponentReconcilerTask) LoadResources() (err error) {
 		return err
 	}
 
+	if err := r.LoadComponentPluginBinding(); err != nil {
+		return err
+	}
+
 	switch r.component.Spec.WorkloadType {
 	case corev1alpha1.WorkloadTypeServer, "":
 		return r.LoadDeployment()
@@ -1468,6 +1475,19 @@ func (r *ComponentReconcilerTask) LoadService() error {
 	} else {
 		r.headlessService = &headlessService
 	}
+
+	return nil
+}
+
+func (r *ComponentReconcilerTask) LoadComponentPluginBinding() error {
+	var bindings corev1alpha1.ComponentPluginBindingList
+
+	if err := r.Reader.List(r.ctx, &bindings, client.InNamespace(r.component.Namespace)); err != nil {
+		r.WarningEvent(err, "get plugin bindings error")
+		return err
+	}
+
+	r.pluginBindings = &bindings
 
 	return nil
 }
