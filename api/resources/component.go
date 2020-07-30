@@ -97,10 +97,6 @@ type ComponentDetails struct {
 	Pods                 []PodStatus           `json:"pods"`
 }
 
-//func labelsBelongsToComponent(name string) metaV1.ListOptions {
-//	return matchLabel("kalm-component", name)
-//}
-
 func (builder *Builder) BuildComponentDetails(
 	component *v1alpha1.Component,
 	resources *Resources,
