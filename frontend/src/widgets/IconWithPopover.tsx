@@ -18,7 +18,9 @@ class IconWithPopover extends React.PureComponent<Props> {
         {(popupState) => {
           return (
             <>
-              <FlexRowItemCenterBox {...bindHover(popupState)}>{icon}</FlexRowItemCenterBox>
+              <FlexRowItemCenterBox mr={1} {...bindHover(popupState)}>
+                {icon}
+              </FlexRowItemCenterBox>
               <Popper style={{ zIndex: POPPER_ZINDEX }} {...bindPopover(popupState)}>
                 <Paper>{popoverBody}</Paper>
               </Popper>
