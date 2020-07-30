@@ -15,10 +15,11 @@ import clsx from "clsx";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      // background: "#f2f5f5",
+      "&$expanded": {
+        margin: "auto",
+      },
     },
     heading: {
-      fontSize: theme.typography.pxToRem(15),
       flexBasis: "20%",
       flexShrink: 0,
     },
