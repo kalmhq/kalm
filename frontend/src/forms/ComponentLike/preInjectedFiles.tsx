@@ -1,4 +1,4 @@
-import { Box, Button, Icon, Typography } from "@material-ui/core";
+import { Box, Button, Icon } from "@material-ui/core";
 import Grid from "@material-ui/core/Grid";
 import EditIcon from "@material-ui/icons/Edit";
 import { Alert } from "@material-ui/lab";
@@ -7,7 +7,7 @@ import { KBoolCheckboxRender } from "forms/Basic/checkbox";
 import Immutable from "immutable";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
-import { arrayPush, arrayRemove, change, WrappedFieldArrayProps, WrappedFieldProps } from "redux-form";
+import { arrayPush, arrayRemove, change, WrappedFieldArrayProps, WrappedFieldProps, arrayPop } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
 import { PreInjectedFile } from "types/componentTemplate";
 import { ControlledDialog } from "widgets/ControlledDialog";
@@ -17,6 +17,7 @@ import { RichEdtor } from "widgets/RichEditor";
 import { KRenderDebounceTextField } from "../Basic/textfield";
 import { KValidatorInjectedFilePath, ValidatorRequired } from "../validator";
 import { RootState } from "reducers";
+import { Label } from "widgets/Label";
 
 interface FieldArrayComponentHackType {
   name: any;
@@ -53,7 +54,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
     this.state = {
       editingFileIndex: -1,
       fileContentValue: "",
-      activeIndex: 0,
+      activeIndex: props.fields.length,
     };
   }
 
@@ -87,7 +88,15 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
         }}
         actions={
           <>
-            <Button onClick={() => dispatch(closeDialogAction(updateContentDialogID))} color="primary">
+            <Button
+              onClick={() => {
+                if (file.get("mountPath") === "" || file.get("content") === "") {
+                  dispatch(arrayPop(form, "preInjectedFiles"));
+                }
+                dispatch(closeDialogAction(updateContentDialogID));
+              }}
+              color="primary"
+            >
               Discard
             </Button>
             <Button
@@ -139,9 +148,9 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
 
   private renderContent = ({ meta: { error }, file }: WrappedFieldProps & { file: PreInjectedFile; index: number }) => {
     return (
-      <Typography component="span" color={error ? "error" : undefined} style={{ padding: 12, width: "100%" }}>
+      <Label color={error ? "error" : undefined} style={{ padding: 12, width: "100%" }}>
         {error ? "File Content Required" : file.get("mountPath") || "Config File"}
-      </Typography>
+      </Label>
     );
   };
 
@@ -158,7 +167,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
       if (injectedFile.get("mountPath")) {
         fieldsNodes.push(
           <Grid container spacing={1} key={member}>
-            <Grid item lg={5}>
+            <Grid item xs={4}>
               <Field
                 name={`${member}.content`}
                 component={this.renderContent}
@@ -166,6 +175,8 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
                 validate={ValidatorRequired}
                 index={index}
               />
+            </Grid>
+            <Grid item xs={4}>
               <IconButtonWithTooltip
                 tooltipPlacement="top"
                 tooltipTitle="Edit"
@@ -174,7 +185,6 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
               >
                 <EditIcon />
               </IconButtonWithTooltip>
-
               <IconButtonWithTooltip
                 tooltipPlacement="top"
                 tooltipTitle="Delete"
