@@ -6,11 +6,11 @@ import { DocsPage } from "storybook-addon-deps/blocks";
 import { global } from "@storybook/design-system";
 import { StylesProvider } from "@material-ui/styles";
 import { ThemeProvider } from "@material-ui/core/styles";
-import { theme } from "theme/theme";
+import { theme, getTheme } from "theme/theme";
 import { select, withKnobs } from "@storybook/addon-knobs";
 
 const { GlobalStyle } = global;
-const muiThemes = { KALMTheme1: theme, KALMTheme2: theme };
+const muiThemes = { KALMTheme1: getTheme("light"), KALMTheme2: getTheme("dark") };
 const muiThemeNames = Object.keys(muiThemes);
 
 const newViewports = {

@@ -1,11 +1,11 @@
 import React from "react";
-import { Box, createStyles, Theme, Typography, withStyles, WithStyles } from "@material-ui/core";
+import { Box, createStyles, Theme, Typography, withStyles, WithStyles, withTheme, WithTheme } from "@material-ui/core";
 import { Doughnut } from "react-chartjs-2";
 import { CenterCaption } from "./Label";
 import { green, grey, red } from "@material-ui/core/colors";
 import * as chartjs from "chart.js";
 
-const size = 96;
+const size = 104;
 const smallSize = 82;
 const defaultColors = [green[700], grey[700], red[700]];
 
@@ -28,7 +28,7 @@ const styles = (theme: Theme) =>
     },
   });
 
-interface Props extends WithStyles<typeof styles> {
+interface Props extends WithStyles<typeof styles>, WithTheme {
   title: string;
   labels: string[];
   data: number[];
@@ -40,7 +40,7 @@ interface State {}
 
 class DoughnutChartRaw extends React.PureComponent<Props, State> {
   private getData = (): chartjs.ChartData => {
-    let { labels, data } = this.props;
+    let { labels, data, theme } = this.props;
 
     let colors: string[] = defaultColors;
     const dataSum = data.reduce((a, b) => a + b, 0);
@@ -56,6 +56,7 @@ class DoughnutChartRaw extends React.PureComponent<Props, State> {
           data,
           borderWidth: 2,
           backgroundColor: colors,
+          borderColor: theme.palette.type === "light" ? undefined : grey[800],
           hoverBackgroundColor: colors,
         },
       ],
@@ -118,4 +119,4 @@ class DoughnutChartRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const DoughnutChart = withStyles(styles)(DoughnutChartRaw);
+export const DoughnutChart = withStyles(styles)(withTheme(DoughnutChartRaw));

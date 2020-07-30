@@ -71,10 +71,10 @@ const styles = (theme: Theme) =>
       flexDirection: "row",
     },
     rowOdd: {
-      backgroundColor: theme.palette.grey[100],
+      backgroundColor: theme.palette.type === "light" ? theme.palette.grey[100] : theme.palette.grey[700],
     },
     rowEven: {
-      backgroundColor: theme.palette.grey[50],
+      backgroundColor: theme.palette.type === "light" ? theme.palette.grey[50] : theme.palette.grey[800],
     },
     columnWrapper: {
       display: "flex",

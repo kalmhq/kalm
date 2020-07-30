@@ -18,23 +18,23 @@ import { primaryColor } from "theme/theme";
 import { ApplicationDetails } from "types/application";
 import { HttpRoute } from "types/route";
 import { getApplicationCreatedAtString } from "utils/application";
+import { pluralize } from "utils/string";
 import { customSearchForImmutable } from "utils/tableSearch";
+import { ApplicationCard } from "widgets/ApplicationCard";
 import { ErrorBadge, PendingBadge, SuccessBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
 import { ConfirmDialog } from "widgets/ConfirmDialog";
 import { EmptyInfoBox } from "widgets/EmptyInfoBox";
-import { FoldButtonGroup } from "widgets/FoldButtonGroup";
 import { DeleteIcon, KalmApplicationIcon, KalmDetailsIcon, KalmGridViewIcon, KalmListViewIcon } from "widgets/Icon";
+import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 import { Caption } from "widgets/Label";
+import { KLink, KMLink } from "widgets/Link";
 import { Loading } from "widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { KTable } from "widgets/Table";
 import { BasePage } from "../BasePage";
-import { ApplicationCard } from "widgets/ApplicationCard";
-import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { pluralize } from "utils/string";
-import { KLink, KMLink } from "widgets/Link";
+import { Link } from "react-router-dom";
 import sc from "utils/stringConstants";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
@@ -285,29 +285,31 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
     }
   };
 
-  private renderMoreActions = (rowData: RowData) => {
-    let options = [
-      {
-        text: "Details",
-        to: `/applications/${rowData.get("name")}/components`,
-        icon: <KalmDetailsIcon />,
-      },
-      // {
-      //   text: "Edit",
-      //   to: `/applications/${rowData.get("name")}/edit`,
-      //   iconName: "edit",
-      //   requiredRole: "writer",
-      // },
-      {
-        text: "Delete",
-        onClick: () => {
-          this.showDeleteConfirmDialog(rowData);
-        },
-        icon: <DeleteIcon />,
-        requiredRole: "writer",
-      },
-    ];
-    return <FoldButtonGroup options={options} />;
+  private renderActions = (rowData: RowData) => {
+    return (
+      <>
+        <IconLinkWithToolTip
+          onClick={() => {
+            blinkTopProgressAction();
+          }}
+          // size="small"
+          tooltipTitle="Details"
+          to={`/applications/${rowData.get("name")}/components`}
+        >
+          <KalmDetailsIcon />
+        </IconLinkWithToolTip>
+        <IconButtonWithTooltip
+          tooltipTitle="Delete"
+          aria-label="delete"
+          onClick={() => {
+            blinkTopProgressAction();
+            this.showDeleteConfirmDialog(rowData);
+          }}
+        >
+          <DeleteIcon />
+        </IconButtonWithTooltip>
+      </>
+    );
   };
 
   private getData = () => {
@@ -330,7 +332,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         {/* <H6>Applications</H6> */}
         <Button
           tutorial-anchor-id="add-application"
-          component={KLink}
+          component={Link}
           color="primary"
           size="small"
           variant="outlined"
@@ -402,7 +404,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         field: "moreAction",
         sorting: false,
         searchable: false,
-        render: this.renderMoreActions,
+        render: this.renderActions,
       },
     ];
 

@@ -1,4 +1,5 @@
-import { Box, Button, createStyles, Theme, withStyles, WithStyles, Typography } from "@material-ui/core";
+import { Box, Button, createStyles, Theme, Typography, withStyles, WithStyles } from "@material-ui/core";
+import { indigo } from "@material-ui/core/colors";
 import { deleteRouteAction } from "actions/routes";
 import { blinkTopProgressAction } from "actions/settings";
 import { push } from "connected-react-router";
@@ -10,18 +11,18 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { HttpRoute } from "types/route";
 import { SuccessBadge } from "widgets/Badge";
-import { CustomizedButton, DangerButton } from "widgets/Button";
+import { FlexRowItemCenterBox } from "widgets/Box";
+import { CustomizedButton } from "widgets/Button";
+import { CopyAsCurl } from "widgets/CopyAsCurl";
+import DomainStatus from "widgets/DomainStatus";
+import { EmptyInfoBox } from "widgets/EmptyInfoBox";
+import { DeleteIcon, EditIcon, ForwardIcon, KalmRoutesIcon } from "widgets/Icon";
+import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 import { Loading } from "widgets/Loading";
 import { Namespaces } from "widgets/Namespaces";
+import { OpenInBrowser } from "widgets/OpenInBrowser";
 import { KTable } from "widgets/Table";
 import { Targets } from "widgets/Targets";
-import { OpenInBrowser } from "widgets/OpenInBrowser";
-import { CopyAsCurl } from "widgets/CopyAsCurl";
-import { EmptyInfoBox } from "widgets/EmptyInfoBox";
-import { ForwardIcon, KalmRoutesIcon } from "widgets/Icon";
-import { indigo } from "@material-ui/core/colors";
-import DomainStatus from "widgets/DomainStatus";
-import { FlexRowItemCenterBox } from "widgets/Box";
 import sc from "utils/stringConstants";
 
 const styles = (theme: Theme) =>
@@ -146,9 +147,30 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     const { activeNamespaceName, dispatch } = this.props;
     return (
       <>
-        <OpenInBrowser route={row as HttpRoute} />
-        <CopyAsCurl route={row as HttpRoute} />
-        <Button
+        <OpenInBrowser route={row as HttpRoute} showIconButton={true} />
+        <CopyAsCurl route={row as HttpRoute} showIconButton={true} />
+        <IconLinkWithToolTip
+          onClick={() => {
+            blinkTopProgressAction();
+          }}
+          // size="small"
+          tooltipTitle="Edit"
+          to={`/applications/${activeNamespaceName}/routes/${row.get("name")}/edit`}
+        >
+          <EditIcon />
+        </IconLinkWithToolTip>
+        <IconButtonWithTooltip
+          tooltipTitle="Delete"
+          aria-label="delete"
+          onClick={() => {
+            blinkTopProgressAction();
+            dispatch(deleteRouteAction(row.get("name"), row.get("namespace")));
+          }}
+        >
+          <DeleteIcon />
+        </IconButtonWithTooltip>
+
+        {/* <Button
           size="small"
           variant="outlined"
           style={{ marginLeft: 16, marginRight: 16 }}
@@ -169,7 +191,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
           }}
         >
           Delete
-        </DangerButton>
+        </DangerButton> */}
       </>
     );
   };
@@ -272,7 +294,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
                   sorting: false,
                   searchable: false,
                   render: this.renderActions,
-                  cellStyle: { minWidth: 432 },
+                  cellStyle: { minWidth: 226 },
                 },
               ]}
               data={tableData}

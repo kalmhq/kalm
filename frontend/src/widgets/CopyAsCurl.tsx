@@ -7,6 +7,8 @@ import { TDispatchProp } from "types";
 import { HttpRoute } from "types/route";
 import { isPrivateIP } from "utils/ip";
 import copy from "copy-to-clipboard";
+import { CopyIcon } from "./Icon";
+import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -21,6 +23,7 @@ const mapStateToProps = (state: RootState) => {
 
 interface Props extends WithStyles<typeof styles>, ReturnType<typeof mapStateToProps>, TDispatchProp {
   route: HttpRoute;
+  showIconButton?: boolean;
 }
 
 class CopyAsCurlRaw extends React.PureComponent<Props> {
@@ -59,6 +62,15 @@ class CopyAsCurlRaw extends React.PureComponent<Props> {
   };
 
   public render() {
+    const { showIconButton } = this.props;
+    if (showIconButton) {
+      return (
+        <IconButtonWithTooltip tooltipTitle="Copy As Curl" onClick={this.copyAsCurl}>
+          <CopyIcon />
+        </IconButtonWithTooltip>
+      );
+    }
+
     return (
       <Button size="small" variant="outlined" onClick={this.copyAsCurl} style={{ marginLeft: 16 }}>
         Copy as curl
