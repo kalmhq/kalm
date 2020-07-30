@@ -96,10 +96,10 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
         // As a result, Field that is using this component mush not set a normalizer.
         (input.onBlur as any)();
       }}
-      value={Immutable.isCollection(input.value) ? input.value.toArray() : input.value}
+      value={input.value}
       onChange={(_event: React.ChangeEvent<{}>, values) => {
         if (values) {
-          input.onChange(Immutable.List(values));
+          input.onChange(values);
         }
       }}
       onInputChange={() => {}}
@@ -461,6 +461,42 @@ export const KAutoCompleteMultipleSelectField = (props: KAutoCompleteMultipleSel
         if (value === undefined) return undefined; // bypass blur set value
         return Immutable.List(value.map((v) => v.value));
       }}
+      {...props}
+    />
+  );
+};
+
+interface KFreeSoloAutoCompleteMultipleSelectFieldProps
+  extends Pick<BaseFieldProps, "validate" | "name">,
+    CommonOutlinedTextFiedlProps {
+  options?: string[];
+  icons?: Immutable.List<JSX.Element | undefined>;
+  disabled?: boolean;
+  multiline?: boolean;
+  className?: string;
+  rows?: number;
+}
+
+const KFreeSoloAutoCompleteMultipleSelectFieldFormat = (value: any) => {
+  return Immutable.isCollection(value) ? value.toArray() : value;
+};
+
+const KFreeSoloAutoCompleteMultipleSelectFieldParse = (values: any[]) => {
+  if (values === undefined) return undefined; // bypass blur set value
+  return Immutable.List(values);
+};
+
+export const KFreeSoloAutoCompleteMultipleSelectField = (props: KFreeSoloAutoCompleteMultipleSelectFieldProps) => {
+  return (
+    <Field
+      InputLabelProps={{
+        shrink: true,
+      }}
+      margin="normal"
+      component={KFreeSoloAutoCompleteMultiValues}
+      // constant won't cause rerender
+      format={KFreeSoloAutoCompleteMultipleSelectFieldFormat}
+      parse={KFreeSoloAutoCompleteMultipleSelectFieldParse}
       {...props}
     />
   );

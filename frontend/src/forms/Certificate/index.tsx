@@ -1,11 +1,15 @@
 import { Button, Grid } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { createCertificateIssuerAction } from "actions/certificate";
-import { KAutoCompleteSingleValue, KFreeSoloAutoCompleteMultiValues } from "forms/Basic/autoComplete";
+import { closeDialogAction } from "actions/dialog";
+import { KAutoCompleteSingleValue, KFreeSoloAutoCompleteMultipleSelectField } from "forms/Basic/autoComplete";
 import { KRadioGroupRender } from "forms/Basic/radio";
 import { KRenderDebounceTextField } from "forms/Basic/textfield";
+import { Uploader } from "forms/Basic/uploader";
 import { ValidatorRequired } from "forms/validator";
 import Immutable from "immutable";
+import { addCertificateDialogId } from "pages/Certificate/New";
+import { extractDomainsFromCertificateContent } from "permission/utils";
 import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
@@ -23,15 +27,11 @@ import {
   newEmptyCertificateIssuerForm,
   selfManaged,
 } from "types/certificate";
-import { CertificateIssuerForm } from "./issuerForm";
-import { Uploader } from "forms/Basic/uploader";
-import { addCertificateDialogId } from "pages/Certificate/New";
-import { closeDialogAction } from "actions/dialog";
-import { extractDomainsFromCertificateContent } from "permission/utils";
+import sc from "utils/stringConstants";
+import DomainStatus from "widgets/DomainStatus";
 import { Prompt } from "widgets/Prompt";
 import { CERTIFICATE_FORM_ID, ISSUER_FORM_ID } from "../formIDs";
-import DomainStatus from "widgets/DomainStatus";
-import sc from "utils/stringConstants";
+import { CertificateIssuerForm } from "./issuerForm";
 
 const mapStateToProps = (state: RootState, { form }: OwnProps) => {
   const selector = formValueSelector(form || CERTIFICATE_FORM_ID);
@@ -299,11 +299,8 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
             />
           </Grid>
           <Grid item md={12}>
-            <Field
+            <KFreeSoloAutoCompleteMultipleSelectField
               disabled={managedType === selfManaged}
-              InputLabelProps={{
-                shrink: true,
-              }}
               placeholder={
                 managedType === selfManaged
                   ? "Extract domains information when you upload a certificate file"
@@ -313,10 +310,8 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
               icons={icons}
               multiline={true}
               className={classes.fileInput}
-              component={KFreeSoloAutoCompleteMultiValues}
               rows={12}
               name="domains"
-              margin="normal"
               validate={managedType === selfManaged ? [] : ValidatorRequired}
             />
           </Grid>

@@ -1,14 +1,14 @@
 import { Grid } from "@material-ui/core";
+import Box from "@material-ui/core/Box";
+import { KFreeSoloAutoCompleteMultipleSelectField } from "forms/Basic/autoComplete";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
 import { Field } from "redux-form/immutable";
+import { SSOGitlabConnector } from "types/sso";
+import { capitalize } from "utils/string";
+import { Body, Body2, H6, Subtitle1, Subtitle2 } from "widgets/Label";
 import { KRenderDebounceTextField } from "../Basic/textfield";
 import { ValidatorRequired } from "../validator";
-import Box from "@material-ui/core/Box";
-import { Body, Body2, H6, Subtitle1, Subtitle2 } from "widgets/Label";
-import { capitalize } from "utils/string";
-import { KFreeSoloAutoCompleteMultiValues } from "forms/Basic/autoComplete";
-import { SSOGitlabConnector } from "types/sso";
 
 interface Props extends DispatchProp {
   connector: SSOGitlabConnector;
@@ -93,14 +93,9 @@ class RenderGitlabConnectorRaw extends React.PureComponent<Props> {
               {/*  </Body2>*/}
               {/*</Box>*/}
               <Box mt={1}>
-                <Field
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
+                <KFreeSoloAutoCompleteMultipleSelectField
                   label="Groups"
-                  component={KFreeSoloAutoCompleteMultiValues}
                   name={`${field}.config.groups`}
-                  margin="normal"
                   validate={ValidatorRequired}
                   placeholder="Please type a group name"
                   helperText="Multiple groups are allowed. After entering a group name, try to press enter."
