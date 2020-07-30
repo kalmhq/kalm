@@ -34,6 +34,7 @@ import { Loading } from "widgets/Loading";
 import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart";
 import { KTable } from "widgets/Table";
 import { BasePage } from "../BasePage";
+import { Link } from "react-router-dom";
 
 const externalEndpointsModalID = "externalEndpointsModalID";
 const internalEndpointsModalID = "internalEndpointsModalID";
@@ -330,7 +331,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         {/* <H6>Applications</H6> */}
         <Button
           tutorial-anchor-id="add-application"
-          component={KLink}
+          component={Link}
           color="primary"
           size="small"
           variant="outlined"
