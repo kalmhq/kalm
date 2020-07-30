@@ -399,7 +399,7 @@ export class NodeListRaw extends React.Component<Props, States> {
       <InfoBox
         title={
           <Box>
-            <Box mb={1}>{this.renderSecondHeaderRight()}</Box>
+            <Box mb={2}>{this.renderSecondHeaderRight()}</Box>
             {title}
           </Box>
         }
