@@ -9,11 +9,14 @@ import { WarningIcon, CopyIcon, CheckCircleIcon } from "./Icon";
 import { IconButtonWithTooltip } from "./IconButtonWithTooltip";
 import copy from "copy-to-clipboard";
 import { setSuccessNotificationAction } from "actions/notification";
+import { regExpIp } from "forms/validator";
 
 const mapStateToProps = (state: RootState, ownProps: OwnProps) => {
+  const regResultIp = regExpIp.exec(ownProps.domain);
   return {
     domainStatus: state.get("domain").find((status) => status.get("domain") === ownProps.domain),
     ingressIP: state.get("cluster").get("info").get("ingressIP"),
+    isIPDomain: regResultIp !== null,
   };
 };
 
@@ -25,21 +28,45 @@ interface Props extends ReturnType<typeof mapStateToProps>, TDispatchProp, OwnPr
 
 class DomainStatus extends React.PureComponent<Props> {
   componentDidMount() {
-    const { dispatch, domain } = this.props;
-    if (domain !== "*") {
+    const { dispatch, domain, isIPDomain } = this.props;
+    if (domain !== "*" && !isIPDomain) {
       dispatch(loadDomainDNSInfo(domain));
     }
   }
 
   componentDidUpdate(prevProps: Props) {
-    const { dispatch, domain } = this.props;
-    if (domain !== prevProps.domain && domain !== "*") {
+    const { dispatch, domain, isIPDomain } = this.props;
+    if (domain !== prevProps.domain && domain !== "*" && !isIPDomain) {
       dispatch(loadDomainDNSInfo(domain));
     }
   }
 
   private getIconAndBody = () => {
-    const { domainStatus, ingressIP, domain, dispatch } = this.props;
+    const { domainStatus, ingressIP, domain, dispatch, isIPDomain } = this.props;
+    if (isIPDomain) {
+      return {
+        icon: domain === ingressIP ? <CheckCircleIcon /> : <WarningIcon color="action" />,
+        body:
+          domain === ingressIP ? (
+            <Box p={2}>the domain is successfully configured!</Box>
+          ) : (
+            <Box p={2}>
+              The IP address doesn’t match the ingress IP address: <strong>{ingressIP}</strong>{" "}
+              <IconButtonWithTooltip
+                tooltipTitle="Copy"
+                aria-label="copy"
+                size="small"
+                onClick={() => {
+                  copy(ingressIP);
+                  dispatch(setSuccessNotificationAction("Copied successful!"));
+                }}
+              >
+                <CopyIcon fontSize="small" />
+              </IconButtonWithTooltip>
+            </Box>
+          ),
+      };
+    }
     const isLoading = !domainStatus?.get("cname");
     const aRecords = domainStatus?.get("aRecords");
     const isError = (!aRecords || !aRecords.includes(ingressIP)) && domain !== ingressIP;
