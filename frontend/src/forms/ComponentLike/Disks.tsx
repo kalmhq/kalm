@@ -197,10 +197,10 @@ class RenderVolumes extends React.PureComponent<Props> {
           margin
           validate={sizeValidators}
           endAdornment={this.getSizeEndAdornment()}
-          formValueToEditValue={(value: any) => {
+          format={(value: any) => {
             return !value ? "" : sizeStringToGi(value);
           }}
-          editValueToFormValue={(value: any) => {
+          parse={(value: any) => {
             return !value ? "" : value + "Gi";
           }}
         />,
@@ -214,10 +214,10 @@ class RenderVolumes extends React.PureComponent<Props> {
           margin
           validate={sizeValidators}
           endAdornment={this.getSizeEndAdornment()}
-          formValueToEditValue={(value: any) => {
+          format={(value: any) => {
             return !value ? "" : sizeStringToGi(value);
           }}
-          editValueToFormValue={(value: any) => {
+          parse={(value: any) => {
             return !value ? "" : value + "Gi";
           }}
         />,

@@ -23,7 +23,7 @@ import { Field, getFormSyncErrors, getFormValues, reduxForm } from "redux-form/i
 import { getNodeLabels } from "selectors/node";
 import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
-import { ApplicationDetails, SharedEnv } from "types/application";
+import { ApplicationDetails } from "types/application";
 import {
   ComponentLike,
   ComponentLikeContent,
@@ -34,13 +34,14 @@ import {
 } from "types/componentTemplate";
 import { PublicRegistriesList } from "types/registry";
 import { sizeStringToMi, sizeStringToNumber } from "utils/sizeConv";
+import sc from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
 import { Body2, Subtitle1 } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { SectionTitle } from "widgets/SectionTitle";
 import { KRadioGroupRender } from "../Basic/radio";
-import { RenderSelectField, makeSelectOption } from "../Basic/select";
+import { makeSelectOption, RenderSelectField } from "../Basic/select";
 import {
   KRenderCommandTextField,
   KRenderDebounceTextField,
@@ -54,7 +55,6 @@ import { RenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
 import { PreInjectedFiles } from "./preInjectedFiles";
 import { LivenessProbe, ReadinessProbe } from "./Probes";
-import sc from "utils/stringConstants";
 
 const IngressHint = () => {
   const [open, setOpen] = React.useState(false);
@@ -162,7 +162,6 @@ interface RawProps {
   showDataView?: boolean;
   showSubmitButton?: boolean;
   submitButtonText?: string;
-  sharedEnv?: Immutable.List<SharedEnv>;
   application?: ApplicationDetails;
 }
 
@@ -205,7 +204,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           margin
           label="Replicas"
           helperText={sc.REPLICA_INPUT_HELPER}
-          formValueToEditValue={(value: any) => {
+          format={(value: any) => {
             let displayValue;
             if (value !== null && value !== undefined) {
               displayValue = `${value}`.length > 0 ? value : 1;
@@ -215,7 +214,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
             return displayValue;
           }}
-          editValueToFormValue={(value: any) => {
+          parse={(value: any) => {
             return value;
           }}
           normalize={NormalizeNumber}
@@ -277,8 +276,6 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
   };
 
   private renderEnvs() {
-    const { sharedEnv } = this.props;
-
     return (
       <>
         <Grid item xs={12}>
@@ -296,7 +293,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           </HelperTextSection>
         </Grid>
         <Grid item xs={12}>
-          <Envs sharedEnv={sharedEnv} />
+          <Envs />
         </Grid>
       </>
     );
@@ -559,10 +556,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             // normalize={NormalizeCPU}
             placeholder={sc.CPU_INPUT_PLACEHOLDER}
             type="number"
-            formValueToEditValue={(value: any) => {
+            format={(value: any) => {
               return !value ? "" : (sizeStringToNumber(value) * 1000).toFixed();
             }}
-            editValueToFormValue={(value: any) => {
+            parse={(value: any) => {
               return !value ? "" : value + "m";
             }}
             endAdornment={
@@ -586,10 +583,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             // normalize={NormalizeMemory}
             placeholder={sc.MEMORY_INPUT_PLACEHOLDER}
             type="number"
-            formValueToEditValue={(value: any) => {
+            format={(value: any) => {
               return !value ? "" : sizeStringToMi(value);
             }}
-            editValueToFormValue={(value: any) => {
+            parse={(value: any) => {
               return !value ? "" : value + "Mi";
             }}
             endAdornment={
@@ -612,10 +609,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             // normalize={NormalizeCPU}
             placeholder={sc.CPU_INPUT_PLACEHOLDER}
             type="number"
-            formValueToEditValue={(value: any) => {
+            format={(value: any) => {
               return !value ? "" : (sizeStringToNumber(value) * 1000).toFixed();
             }}
-            editValueToFormValue={(value: any) => {
+            parse={(value: any) => {
               return !value ? "" : value + "m";
             }}
             endAdornment={
@@ -639,10 +636,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             // normalize={NormalizeMemory}
             placeholder={sc.MEMORY_INPUT_PLACEHOLDER}
             type="number"
-            formValueToEditValue={(value: any) => {
+            format={(value: any) => {
               return !value ? "" : sizeStringToMi(value);
             }}
-            editValueToFormValue={(value: any) => {
+            parse={(value: any) => {
               return !value ? "" : value + "Mi";
             }}
             endAdornment={

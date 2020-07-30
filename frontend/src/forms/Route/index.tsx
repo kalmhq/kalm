@@ -1,10 +1,10 @@
 import { Box, Button, Collapse, Grid, Icon, Link } from "@material-ui/core";
-import Typography from "@material-ui/core/Typography";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
+import Typography from "@material-ui/core/Typography";
 import { Alert, AlertTitle } from "@material-ui/lab";
-import { KFreeSoloAutoCompleteMultiValues } from "forms/Basic/autoComplete";
+import { loadDomainDNSInfo } from "actions/domain";
+import { KFreeSoloAutoCompleteMultipleSelectField } from "forms/Basic/autoComplete";
 import { KBoolCheckboxRender, KCheckboxGroupRender } from "forms/Basic/checkbox";
-import { Link as RouteLink } from "react-router-dom";
 import { KRadioGroupRender } from "forms/Basic/radio";
 import { shouldError } from "forms/common";
 import { ROUTE_FORM_ID } from "forms/formIDs";
@@ -15,9 +15,11 @@ import {
   ValidatorListNotEmpty,
   ValidatorRequired,
 } from "forms/validator";
+import routesGif from "images/routes.gif";
 import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
+import { Link as RouteLink } from "react-router-dom";
 import { RootState } from "reducers";
 import { State as TutorialState } from "reducers/tutorial";
 import { arrayPush, change, InjectedFormProps } from "redux-form";
@@ -25,17 +27,15 @@ import { Field, FieldArray, formValueSelector, getFormSyncErrors, reduxForm } fr
 import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
 import { TDispatchProp } from "types";
 import { httpMethods, HttpRouteDestination, HttpRouteForm, methodsModeAll, methodsModeSpecific } from "types/route";
+import { isArray } from "util";
 import { arraysMatch } from "utils";
+import sc from "utils/stringConstants";
+import DomainStatus from "widgets/DomainStatus";
 import { KPanel } from "widgets/KPanel";
 import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { RenderHttpRouteConditions } from "./conditions";
 import { RenderHttpRouteDestinations } from "./destinations";
-import routesGif from "images/routes.gif";
-import { loadDomainDNSInfo } from "actions/domain";
-import DomainStatus from "widgets/DomainStatus";
-import { isArray } from "util";
-import sc from "utils/stringConstants";
 
 const mapStateToProps = (state: RootState) => {
   const form = ROUTE_FORM_ID;
@@ -353,37 +353,39 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                 title="Hosts and paths"
                 content={
                   <Box p={2}>
-                    <Field
-                      InputLabelProps={{
-                        shrink: true,
-                      }}
+                    <KFreeSoloAutoCompleteMultipleSelectField
                       icons={icons}
                       label="Hosts"
-                      component={KFreeSoloAutoCompleteMultiValues}
                       name="hosts"
-                      margin="normal"
                       validate={hostsValidators}
                       placeholder="Type a host"
-                      helperText={
-                        <>
-                          Your cluster ip is{" "}
-                          <Link
-                            href="#"
-                            onClick={() => {
-                              const isHostsIncludeIngressIP = !!hosts.find((host) => host === ingressIP);
-                              if (!isHostsIncludeIngressIP) {
-                                change("hosts", hosts.push(ingressIP));
-                              }
-                            }}
-                          >
-                            {ingressIP}
-                          </Link>
-                          . If you don't have any DNS record point to this ip, you can use the ip directly in this
-                          field.
-                        </>
-                      }
                     />
-                    <Field
+                    <Box mt="-4px" mb="4px" pl="14px" pr="14px">
+                      <Caption color="textSecondary">
+                        Your cluster ip is{" "}
+                        <Link
+                          href="#"
+                          onClick={() => {
+                            const isHostsIncludeIngressIP = !!hosts.find((host) => host === ingressIP);
+                            if (!isHostsIncludeIngressIP) {
+                              change("hosts", hosts.push(ingressIP));
+                            }
+                          }}
+                        >
+                          {ingressIP}
+                        </Link>
+                        . If you don't have any DNS record point to this ip, you can use the ip directly in this field.
+                      </Caption>
+                    </Box>
+
+                    <KFreeSoloAutoCompleteMultipleSelectField
+                      label="Path Prefixes"
+                      name="paths"
+                      validate={pathsValidators}
+                      placeholder="e.g. /foo/bar"
+                      helperText='Allow to configure multiple paths. Each path must begin with "/".'
+                    />
+                    {/* <Field
                       InputLabelProps={{
                         shrink: true,
                       }}
@@ -394,7 +396,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       validate={pathsValidators}
                       placeholder="e.g. /foo/bar"
                       helperText='Allow to configure multiple paths. Each path must begin with "/".'
-                    />
+                    /> */}
                     <Field
                       component={KBoolCheckboxRender}
                       name="stripPath"
