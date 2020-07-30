@@ -1,4 +1,4 @@
-import { InputAdornment, OutlinedInputProps } from "@material-ui/core";
+import { InputAdornment, OutlinedInputProps, useTheme } from "@material-ui/core";
 import TextField, { FilledTextFieldProps } from "@material-ui/core/TextField";
 import React, { ChangeEvent } from "react";
 import { WrappedFieldProps } from "redux-form";
@@ -171,6 +171,8 @@ export const KRenderCommandTextField = ({
 }: FilledTextFieldProps & WrappedFieldProps & ComplexValueTextFieldProps) => {
   const showError = !!error && touched;
 
+  const theme = useTheme();
+
   return (
     <TextField
       fullWidth
@@ -187,7 +189,7 @@ export const KRenderCommandTextField = ({
       InputProps={{
         startAdornment: (
           <InputAdornment position="start">
-            <KalmConsoleIcon color={"default"} />
+            <KalmConsoleIcon color={theme.palette.type === "light" ? "default" : "inherit"} />
           </InputAdornment>
         ),
       }}
