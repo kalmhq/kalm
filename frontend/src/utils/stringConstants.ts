@@ -1,5 +1,6 @@
 const stringConstants = {
   LIMIT_NOT_SET: "Limit Not Set",
+  REQUEST_NOT_SET: "Request Not Set",
   NAME_RULE: "Names can only use digits(0-9), lowercase letters(a-z), and dashes(-). Maximum length is 180 characters.",
   PORT_ROUTE_QUESTION: "Want to have your container accessible to external sources?",
   COMPONENT_TYPE_SERVICE_OPTION: "Default choice - Suitable for most continuous services",
