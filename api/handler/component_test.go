@@ -244,8 +244,8 @@ func (suite *ComponentTestSuite) TestCreateComponentWithResourceRequirements() {
 	err = json.Unmarshal(recBytes, &respMap)
 	suite.Nil(err)
 
-	suite.Equal("100", respMap["cpuLimit"])
+	suite.Equal("100m", respMap["cpuLimit"])
 	suite.Equal("107374183", respMap["memoryLimit"])
-	suite.Equal("10000", respMap["cpuRequest"])
+	suite.Equal("10000m", respMap["cpuRequest"])
 	suite.Equal("10485760", respMap["memoryRequest"])
 }

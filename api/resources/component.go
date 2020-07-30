@@ -64,7 +64,7 @@ type CPUQuantity struct {
 
 func (c *CPUQuantity) MarshalJSON() ([]byte, error) {
 	capInStr := strconv.FormatInt(c.MilliValue(), 10)
-	return []byte(fmt.Sprintf(`"%s"`, capInStr)), nil
+	return []byte(fmt.Sprintf(`"%sm"`, capInStr)), nil
 }
 
 type MemoryQuantity struct {
