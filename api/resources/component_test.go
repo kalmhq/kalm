@@ -19,6 +19,6 @@ func TestBuilder_MarshalOfComponentDetails(t *testing.T) {
 
 	assert.Nil(t, err)
 
-	expected := `{"name":"","image":"","enableHeadlessService":false,"cpuRequest":"100","memoryRequest":"107374183","metrics":{"cpu":null,"memory":null},"istioMetricHistories":null,"services":null,"pods":null}`
+	expected := `{"name":"","image":"","enableHeadlessService":false,"cpuRequest":"100m","memoryRequest":"107374183","metrics":{"cpu":null,"memory":null},"istioMetricHistories":null,"services":null,"pods":null}`
 	assert.Equal(t, expected, string(marshalRst))
 }
