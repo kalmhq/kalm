@@ -109,8 +109,6 @@ export const KRenderTextareaField = ({
 
 interface ComplexValueTextFieldProps {
   endAdornment?: React.ReactNode;
-  formValueToEditValue?: (value: any) => string;
-  editValueToFormValue?: (value: string) => any;
 }
 
 // value type is complex like array or json, like "command" is array, but using textfield input
@@ -125,8 +123,6 @@ export class RenderComplexValueTextField extends React.PureComponent<withDebounc
       disabled,
       type,
       endAdornment,
-      formValueToEditValue,
-      editValueToFormValue,
       meta: { error },
       showError,
     } = this.props;
@@ -152,11 +148,9 @@ export class RenderComplexValueTextField extends React.PureComponent<withDebounc
         margin="dense"
         variant="outlined"
         onChange={(event: any) => {
-          editValueToFormValue
-            ? input.onChange(editValueToFormValue(event.target.value))
-            : input.onChange(event.target.value);
+          input.onChange(event.target.value);
         }}
-        defaultValue={formValueToEditValue ? formValueToEditValue(input.value) : input.value}
+        defaultValue={input.value}
         // {...custom}
       />
     );

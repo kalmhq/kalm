@@ -1,20 +1,20 @@
 import { Grid } from "@material-ui/core";
+import Box from "@material-ui/core/Box";
+import Button from "@material-ui/core/Button";
+import { Alert } from "@material-ui/lab";
+import { KFreeSoloAutoCompleteMultipleSelectField } from "forms/Basic/autoComplete";
+import Immutable from "immutable";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
+import { arrayPush } from "redux-form";
 import { Field, FieldArray } from "redux-form/immutable";
+import { SSOGithubConnector } from "types/sso";
+import { capitalize } from "utils/string";
 import { DeleteIcon, GithubIcon } from "widgets/Icon";
+import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import { Body, Body2, H6, Subtitle1, Subtitle2 } from "widgets/Label";
 import { KRenderDebounceTextField } from "../Basic/textfield";
 import { ValidatorRequired } from "../validator";
-import { SSOGithubConnector } from "types/sso";
-import Box from "@material-ui/core/Box";
-import { Body, Body2, H6, Subtitle1, Subtitle2 } from "widgets/Label";
-import Button from "@material-ui/core/Button";
-import { capitalize } from "utils/string";
-import { arrayPush } from "redux-form";
-import Immutable from "immutable";
-import { KFreeSoloAutoCompleteMultiValues } from "forms/Basic/autoComplete";
-import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
-import { Alert } from "@material-ui/lab";
 
 const ValidatorOrgs = (values: Immutable.List<any>, _allValues?: any, _props?: any, _name?: any) => {
   if (!values) return undefined;
@@ -54,14 +54,9 @@ class RenderGithubConnectorOrganizations extends React.Component<any> {
               </Grid>
 
               <Grid item xs={8}>
-                <Field
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
+                <KFreeSoloAutoCompleteMultipleSelectField
                   label="Teams"
-                  component={KFreeSoloAutoCompleteMultiValues}
                   name={`${field}.teams`}
-                  margin="normal"
                   placeholder="Please type a team name"
                   helperText="Multiple teams are allowed. After entering a team name, try to press enter."
                 />
