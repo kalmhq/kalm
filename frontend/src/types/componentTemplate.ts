@@ -64,6 +64,7 @@ export interface VolumeContent {
 export type PreInjectedFile = ImmutableMap<{
   content: string;
   mountPath: string;
+  mountPathTmp?: string;
   base64?: boolean;
   readonly?: boolean;
 }>;

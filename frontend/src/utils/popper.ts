@@ -1,4 +1,4 @@
-import { bindHover } from "material-ui-popup-state";
+import { bindHover, bindPopover } from "material-ui-popup-state";
 
 export const customBindHover = (popupState: any) => {
   const hoverProps = bindHover(popupState);
@@ -12,5 +12,20 @@ export const customBindHover = (popupState: any) => {
 
   return {
     ...hoverProps,
+  };
+};
+
+export const customBindPopover = (popupState: any) => {
+  const popoverProps = bindPopover(popupState);
+
+  // @ts-ignore
+  delete popoverProps.disableAutoFocus;
+  // @ts-ignore
+  delete popoverProps.disableEnforceFocus;
+  // @ts-ignore
+  delete popoverProps.disableRestoreFocus;
+
+  return {
+    ...popoverProps,
   };
 };

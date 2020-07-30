@@ -1,8 +1,9 @@
 import React from "react";
-import PopupState, { bindPopover, bindHover } from "material-ui-popup-state";
+import PopupState from "material-ui-popup-state";
 import { FlexRowItemCenterBox } from "./Box";
 import { Popper, Paper } from "@material-ui/core";
 import { POPPER_ZINDEX } from "layout/Constants";
+import { customBindHover, customBindPopover } from "utils/popper";
 
 interface Props {
   popupId: string;
@@ -18,8 +19,10 @@ class IconWithPopover extends React.PureComponent<Props> {
         {(popupState) => {
           return (
             <>
-              <FlexRowItemCenterBox {...bindHover(popupState)}>{icon}</FlexRowItemCenterBox>
-              <Popper style={{ zIndex: POPPER_ZINDEX }} {...bindPopover(popupState)}>
+              <FlexRowItemCenterBox mr={1} {...customBindHover(popupState)}>
+                {icon}
+              </FlexRowItemCenterBox>
+              <Popper style={{ zIndex: POPPER_ZINDEX }} {...customBindPopover(popupState)}>
                 <Paper>{popoverBody}</Paper>
               </Popper>
             </>
