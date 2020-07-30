@@ -247,17 +247,6 @@ function KFreeSoloAutoCompleteSingleValueRaw<T>(
       onInputChange={(_event: any, value: string) => {
         input.onChange(value);
       }}
-      // onInputChange={(...args: any[]) => {
-      // console.log("onInputChange", args);
-      // }}
-      // onSelect={(...args: any[]) => {
-      //   console.log("onSelect", args);
-      //   return true;
-      // }}
-      // onChange={(...args: any[]) => {
-      //   console.log("onChange", args);
-      //   return true;
-      // }}
       renderInput={(params) => {
         return (
           <TextField
