@@ -1,23 +1,23 @@
 import { Box, createStyles, WithStyles, withStyles } from "@material-ui/core";
 import { Theme } from "@material-ui/core/styles";
+import { Alert } from "@material-ui/lab";
+import { shouldError } from "forms/common";
 import Immutable from "immutable";
 import React from "react";
 import { connect, DispatchProp } from "react-redux";
-import { Field, formValueSelector, reduxForm } from "redux-form/immutable";
 import { RootState } from "reducers";
-import { Application, SharedEnv } from "types/application";
+import { InjectedFormProps } from "redux-form";
+import { Field, formValueSelector, reduxForm } from "redux-form/immutable";
+import { theme } from "theme/theme";
+import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
+import { Application } from "types/application";
+import stringConstants from "utils/stringConstants";
 import { CustomizedButton } from "widgets/Button";
 import { KPanel } from "widgets/KPanel";
-import { KRenderDebounceTextField } from "../Basic/textfield";
-import { ValidatorName, ValidatorRequired } from "../validator";
-import { Alert } from "@material-ui/lab";
-import { shouldError } from "forms/common";
-import { formValidateOrNotBlockByTutorial } from "tutorials/utils";
-import { InjectedFormProps } from "redux-form";
-import { APPLICATION_FORM_ID } from "../formIDs";
 import { Body } from "widgets/Label";
-import stringConstants from "utils/stringConstants";
-import { theme } from "theme/theme";
+import { KRenderDebounceTextField } from "../Basic/textfield";
+import { APPLICATION_FORM_ID } from "../formIDs";
+import { ValidatorName, ValidatorRequired } from "../validator";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -40,19 +40,17 @@ const styles = (theme: Theme) =>
 
 const mapStateToProps = (state: RootState) => {
   const selector = formValueSelector(APPLICATION_FORM_ID);
-  const sharedEnvs: Immutable.List<SharedEnv> = selector(state, "sharedEnvs");
   const name = selector(state, "name") as string;
   return {
     tutorialState: state.get("tutorial"),
     isSubmittingApplication: state.get("applications").get("isSubmittingApplication"),
     name,
-    sharedEnvs,
   };
 };
 
 interface OwnProps {
   isEdit?: boolean;
-  currentTab: "basic" | "sharedEnvs" | "applicationPlugins";
+  currentTab: "basic" | "applicationPlugins";
 }
 
 interface ConnectedProps extends ReturnType<typeof mapStateToProps>, DispatchProp {}
@@ -145,7 +143,6 @@ class ApplicationFormRaw extends React.PureComponent<Props> {
 
 export const applicationInitialValues: Application = Immutable.fromJS({
   name: "",
-  sharedEnvs: [],
   components: [],
 });
 

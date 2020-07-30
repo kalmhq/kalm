@@ -475,57 +475,6 @@ function KAutoCompleteSingleValueRaw<T>(props: KAutoCompleteSingleValueProps<KAu
 
 export const KAutoCompleteSingleValue = withStyles(KAutoCompleteSingleValueStyles)(KAutoCompleteSingleValueRaw);
 
-// Envs
-interface AutoCompleteFreeSoloProps {
-  label?: string;
-  placeholder?: string;
-  options: string[];
-}
-
-export const RenderAutoCompleteFreeSolo = (props: WrappedFieldProps & AutoCompleteFreeSoloProps) => {
-  const {
-    options,
-    input,
-    label,
-    placeholder,
-    // helperText,
-    meta: { touched, invalid, error },
-  } = props;
-  return (
-    <Autocomplete
-      freeSolo
-      disableClearable
-      options={options.map((option) => option)}
-      defaultValue={input.value || ""}
-      onChange={(event: React.ChangeEvent<{}>, value: string | null) => {
-        if (value) {
-          input.onChange(value);
-        }
-      }}
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          label={label}
-          margin="dense"
-          variant="outlined"
-          fullWidth
-          size="small"
-          InputLabelProps={{
-            shrink: true,
-          }}
-          placeholder={placeholder}
-          error={touched && invalid}
-          helperText={touched && error}
-          // defaultValue={input.value || ""}
-          onChange={(event: any) => {
-            input.onChange(event.target.value);
-          }}
-        />
-      )}
-    />
-  );
-};
-
 // Disks
 interface AutoCompleteSelectProps {
   label?: string;
