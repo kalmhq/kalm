@@ -8,7 +8,6 @@ import (
 	authorizationV1 "k8s.io/api/authorization/v1"
 
 	"github.com/kalmhq/kalm/controller/api/v1alpha1"
-	appsV1 "k8s.io/api/apps/v1"
 	coreV1 "k8s.io/api/core/v1"
 )
 
@@ -176,33 +175,6 @@ func formatEnvs(envs []v1alpha1.EnvVar) {
 	}
 }
 
-func formatApplicationComponents(components []Component) {
-	for i := range components {
-		formatEnvs(components[i].Env)
-
-		if components[i].DnsPolicy == "" {
-			components[i].DnsPolicy = coreV1.DNSClusterFirst
-		}
-
-		if components[i].RestartPolicy == "" {
-			components[i].RestartPolicy = coreV1.RestartPolicyAlways
-		}
-
-		if components[i].TerminationGracePeriodSeconds == nil {
-			x := int64(30)
-			components[i].TerminationGracePeriodSeconds = &x
-		}
-
-		if components[i].RestartStrategy == "" {
-			components[i].RestartStrategy = appsV1.RollingUpdateDeploymentStrategyType
-		}
-
-		if components[i].WorkloadType == "" {
-			components[i].WorkloadType = v1alpha1.WorkloadTypeServer
-		}
-	}
-}
-
 func (builder *Builder) BuildApplicationListResponse(namespaceList coreV1.NamespaceList) ([]ApplicationDetails, error) {
 	apps := []ApplicationDetails{}
 
@@ -333,6 +305,10 @@ func GetPodStatus(pod coreV1.Pod, events []coreV1.Event, workloadType v1alpha1.W
 }
 
 func findPods(list *coreV1.PodList, componentName string) []coreV1.Pod {
+	if list == nil {
+		return nil
+	}
+
 	var res []coreV1.Pod
 
 	for i := range list.Items {

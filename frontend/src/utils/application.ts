@@ -5,6 +5,7 @@ import {
   VolumeTypePersistentVolumeClaim,
   VolumeTypePersistentVolumeClaimNew,
   workloadTypeServer,
+  ResourceRequirements,
 } from "types/componentTemplate";
 import { RootState } from "reducers";
 import { formatDate, formatTimeDistance } from "utils/date";
@@ -67,8 +68,29 @@ export const correctComponentFormValuesForSubmit = (
     }
     return v;
   });
+  componentValues = componentValues.set("volumes", correctedVolumes);
 
-  return componentValues.set("volumes", correctedVolumes);
+  if (
+    componentValues.get("cpuLimit") ||
+    componentValues.get("memoryLimit") ||
+    componentValues.get("cpuRequest") ||
+    componentValues.get("memoryRequest")
+  ) {
+    const resourceRequirements: ResourceRequirements = Immutable.Map({
+      limits: Immutable.Map({
+        cpu: componentValues.get("cpuLimit"),
+        memory: componentValues.get("memoryLimit"),
+      }),
+      requests: Immutable.Map({
+        cpu: componentValues.get("cpuRequest"),
+        memory: componentValues.get("memoryRequest"),
+      }),
+    });
+
+    componentValues = componentValues.set("resourceRequirements", resourceRequirements);
+  }
+
+  return componentValues;
 };
 
 export const correctComponentFormValuesForInit = (
