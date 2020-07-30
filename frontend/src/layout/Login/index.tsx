@@ -5,8 +5,9 @@ import { ThunkDispatch } from "redux-thunk";
 import { Actions } from "types";
 import { validateTokenAction } from "actions/auth";
 import { RootState } from "reducers";
-import { Button, createStyles, Paper, TextField, Theme, WithStyles, withStyles } from "@material-ui/core";
+import { Box, Link, Button, createStyles, Paper, TextField, Theme, WithStyles, withStyles } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
+import sc from "utils/stringConstants";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -26,9 +27,9 @@ const styles = (theme: Theme) =>
     portalText: {
       color: "#fff",
       fontWeight: "bold",
-      fontSize: "18px",
+      fontSize: "42px",
       position: "absolute",
-      top: "133px",
+      top: "113px",
       left: "8px",
     },
     loginTriangle: {
@@ -102,23 +103,29 @@ export class LoginRaw extends React.PureComponent<Props, State> {
   public render() {
     const { classes } = this.props;
     const { error } = this.state;
-
+    const instructions = (
+      <Box>
+        <Link target="_blank" href="https://kalm.dev/docs/install#step-4-admin-service-account">
+          View instructions
+        </Link>{" "}
+        for token geneneration
+      </Box>
+    );
     return (
       <div>
         <Paper className={classes.loginPaper} square>
           <div className={classes.paperContainer}>
-            <div className={classes.portalText}>Kalm dashboard</div>
+            <div className={classes.portalText}>{sc.APP_NAME}</div>
             <div className={classes.loginTriangle}></div>
             <div className={classes.loginArea}>
               <TextField
                 className={classes.input}
                 id="login-token"
-                label="Token"
                 size="small"
                 variant="outlined"
-                placeholder="auth token"
+                placeholder="Paste token here"
                 onChange={this.handleChange}
-                helperText={error ? error : "Plaese contact your admin to get token"}
+                helperText={error ? error : instructions}
                 error={!!error}
               />
 

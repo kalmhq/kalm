@@ -1,4 +1,5 @@
 const stringConstants = {
+  APP_NAME: "Kalm",
   LIMIT_NOT_SET: "Limit Not Set",
   REQUEST_NOT_SET: "Request Not Set",
   NAME_RULE: "Names can only use digits(0-9), lowercase letters(a-z), and dashes(-). Maximum length is 180 characters.",
@@ -72,6 +73,8 @@ const stringConstants = {
   CERT_AUTO_DESC: "Use a certificate signed by Let's Encrypt. Safe and fast. Renew and update are full-automatic.",
   CERT_UPLOAD: "Use an existing certificate",
   CERT_UPLOAD_DESC: "Use an existing certificate. You are responsible for renewual.",
+  NODES_INFO_BOX_TEXT:
+    "Data and metrics regarding nodes in the cluster is displayed here. For cluster administration operations, please see platform specific instructions.",
 };
 
 export default stringConstants;
