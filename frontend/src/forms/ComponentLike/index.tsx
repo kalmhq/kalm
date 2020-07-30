@@ -220,7 +220,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           margin
           label="Replicas"
           helperText="Number of pods to create for this component."
-          formValueToEditValue={(value: any) => {
+          format={(value: any) => {
             let displayValue;
             if (value !== null && value !== undefined) {
               displayValue = `${value}`.length > 0 ? value : 1;
@@ -230,7 +230,7 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
 
             return displayValue;
           }}
-          editValueToFormValue={(value: any) => {
+          parse={(value: any) => {
             return value;
           }}
           normalize={NormalizeNumber}
@@ -640,10 +640,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             // normalize={NormalizeCPU}
             placeholder="Please type CPU limit"
             type="number"
-            formValueToEditValue={(value: any) => {
+            format={(value: any) => {
               return !value ? "" : (sizeStringToNumber(value) * 1000).toFixed();
             }}
-            editValueToFormValue={(value: any) => {
+            parse={(value: any) => {
               return !value ? "" : value + "m";
             }}
             endAdornment={
@@ -667,10 +667,10 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
             // normalize={NormalizeMemory}
             placeholder="Please type memory limit"
             type="number"
-            formValueToEditValue={(value: any) => {
+            format={(value: any) => {
               return !value ? "" : sizeStringToMi(value);
             }}
-            editValueToFormValue={(value: any) => {
+            parse={(value: any) => {
               return !value ? "" : value + "Mi";
             }}
             endAdornment={
