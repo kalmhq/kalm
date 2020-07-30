@@ -74,8 +74,6 @@ spec:
                 - paths
                 type: object
               type: array
-            cpu:
-              type: string
             directConfigs:
               description: Deprecated
               items:
@@ -93,8 +91,6 @@ spec:
               description: DNSPolicy defines how a pod's DNS will be configured.
               type: string
             enableHeadlessService:
-              type: boolean
-            enableResourcesRequests:
               type: boolean
             env:
               items:
@@ -232,8 +228,6 @@ spec:
                   format: int32
                   type: integer
               type: object
-            memory:
-              type: string
             nodeSelectorLabels:
               additionalProperties:
                 type: string
@@ -400,6 +394,24 @@ spec:
             replicas:
               format: int32
               type: integer
+            resourceRequirements:
+              description: ResourceRequirements describes the compute resource requirements.
+              properties:
+                limits:
+                  additionalProperties:
+                    type: string
+                  description: 'Limits describes the maximum amount of compute resources
+                    allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                  type: object
+                requests:
+                  additionalProperties:
+                    type: string
+                  description: 'Requests describes the minimum amount of compute resources
+                    required. If Requests is omitted for a container, it defaults
+                    to Limits if that is explicitly specified, otherwise to an implementation-defined
+                    value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                  type: object
+              type: object
             restartPolicy:
               description: RestartPolicy describes how the container should be restarted.
                 Only one of the following restart policies may be specified. If none

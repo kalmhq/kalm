@@ -194,9 +194,12 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     return (
       <Grid container className={classes.gridWrapper}>
         <Grid item md={2}>
-          {component.get("cpu") ? `Allocated: ${component.get("cpu")}` : stringConsts.LIMIT_NOT_SET}
+          {component.get("cpuLimit") ? `Limit: ${component.get("cpuLimit")}` : stringConsts.LIMIT_NOT_SET}
         </Grid>
-        <Grid item md={10}>
+        <Grid item md={2}>
+          {component.get("cpuRequest") ? `Request: ${component.get("cpuRequest")}` : stringConsts.REQUEST_NOT_SET}
+        </Grid>
+        <Grid item md={8}>
           Usage: <SmallCPULineChart data={component.get("metrics").get("cpu")!} />
         </Grid>
       </Grid>
@@ -208,11 +211,16 @@ class ComponentBasicInfoRaw extends React.PureComponent<Props, State> {
     return (
       <Grid container className={classes.gridWrapper}>
         <Grid item md={2}>
-          {component.get("memory")
-            ? `Allocated: ${sizeStringToMi(`${component.get("memory")}`)}Mi`
+          {component.get("memoryLimit")
+            ? `Limit: ${sizeStringToMi(`${component.get("memoryLimit")}`)}Mi`
             : stringConsts.LIMIT_NOT_SET}
         </Grid>
-        <Grid item md={10}>
+        <Grid item md={2}>
+          {component.get("memoryRequest")
+            ? `Request: ${sizeStringToMi(`${component.get("memoryRequest")}`)}Mi`
+            : stringConsts.REQUEST_NOT_SET}
+        </Grid>
+        <Grid item md={8}>
           Usage: <SmallMemoryLineChart data={component.get("metrics").get("memory")!} />
         </Grid>
       </Grid>

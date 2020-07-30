@@ -1,7 +1,7 @@
 const stringConstants = {
   LIMIT_NOT_SET: "Limit Not Set",
-  NAME_RULE:
-    "Names can only use digits(0-9), lowercase letters(a-z), and dashes(-). Maximum length is 180 characters.",
+  REQUEST_NOT_SET: "Request Not Set",
+  NAME_RULE: "Names can only use digits(0-9), lowercase letters(a-z), and dashes(-). Maximum length is 180 characters.",
   PORT_ROUTE_QUESTION: "Want to have your container accessible to external sources?",
   COMPONENT_TYPE_SERVICE_OPTION: "Default choice - Suitable for most continuous services",
   COMPONENT_TYPE_CRONJOB_OPTION: "Scheduled tasks to be ran at specific times",
@@ -31,7 +31,8 @@ const stringConstants = {
   PROBE_COMMAND_OPTION: "Healthy if the command returns a 0 exit code.",
   PROBE_TCP_OPTION: "Healthy if a TCP connection is successfully established.",
   SCHEDULING_RR_CHECKBOX: "Only schedule on nodes that can provide resources specified above",
-  SCHEDULING_COLOCATE_CHECKBOX: "Schedule replicas to different nodes when possible. (Recommended for high availablity)",
+  SCHEDULING_COLOCATE_CHECKBOX:
+    "Schedule replicas to different nodes when possible. (Recommended for high availablity)",
   CPU_INPUT_PLACEHOLDER: "e.g. 100",
   CPU_INPUT_TOOLTIP: "There are 1000m (milliCPU) in a single CPU. The minimum precision is 1m.",
   MEMORY_INPUT_PLACEHOLDER: "e.g. 256",

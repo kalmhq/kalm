@@ -852,10 +852,10 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 	template.ObjectMeta.Annotations["sidecar.istio.io/proxyCPULimit"] = "100m"
 	template.ObjectMeta.Annotations["sidecar.istio.io/proxyMemoryLimit"] = "50Mi"
 
-	if component.Spec.EnableResourcesRequests {
-		template.ObjectMeta.Annotations["sidecar.istio.io/proxyCPU"] = "10m"
-		template.ObjectMeta.Annotations["sidecar.istio.io/proxyMemory"] = "50Mi"
-	}
+	//if component.Spec.EnableResourcesRequests {
+	//	template.ObjectMeta.Annotations["sidecar.istio.io/proxyCPU"] = "10m"
+	//	template.ObjectMeta.Annotations["sidecar.istio.io/proxyMemory"] = "50Mi"
+	//}
 
 	if v, exist := component.Annotations[AnnoLastUpdatedByWebhook]; exist {
 		template.ObjectMeta.Annotations[AnnoLastUpdatedByWebhook] = v
@@ -924,29 +924,11 @@ func (r *ComponentReconcilerTask) GetPodTemplateWithoutVols() (template *coreV1.
 
 	mainContainer.Ports = ports
 
-	// resources
-	if component.Spec.CPU != nil && !component.Spec.CPU.IsZero() {
-		if component.Spec.EnableResourcesRequests {
-			mainContainer.Resources.Requests[coreV1.ResourceCPU] = *component.Spec.CPU
-		}
-		mainContainer.Resources.Limits[coreV1.ResourceCPU] = *component.Spec.CPU
+	// resource requirements
+	resRequirements := component.Spec.ResourceRequirements
+	if resRequirements != nil {
+		mainContainer.Resources = *resRequirements
 	}
-
-	if component.Spec.Memory != nil && !component.Spec.Memory.IsZero() {
-		if component.Spec.EnableResourcesRequests {
-			mainContainer.Resources.Requests[coreV1.ResourceMemory] = *component.Spec.Memory
-		}
-		mainContainer.Resources.Limits[coreV1.ResourceMemory] = *component.Spec.Memory
-	}
-
-	// set image secret
-	// todo put into secret for kalm?
-	//if r.ns.Spec.ImagePullSecretName != "" {
-	//	secs := []coreV1.LocalObjectReference{
-	//		{Name: r.ns.Spec.ImagePullSecretName},
-	//	}
-	//	template.Spec.ImagePullSecrets = secs
-	//}
 
 	// apply envs
 	var envs []coreV1.EnvVar
