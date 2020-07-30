@@ -44,6 +44,7 @@ const stringConstants = {
     "When Pods are teriminated, running processes are first asked to gracefully shutdown with SIGTERM. However some applications may not be able to shutdown gracefully. Specify an amount of time to wait before forcefully killing the component with SIGKILL. The default value is 30 seconds. ",
   GRACEFUL_TERM_INPUT_PLACEHOLDER: "e.g. 60",
   ARE_YOU_SURE_PREFIX: "Are you sure you want to delete",
+  DELETE_APP_SUBTITLE: "This action is irrevocable, the application will be permanently deleted.",
   CONFIRM_LEAVE_WITHOUT_SAVING: "Are you sure you want to leave without saving changes?",
   EMPTY_APP_TITLE: "To get started, create your first Application",
   EMPTY_APP_SUBTITLE:
@@ -66,6 +67,11 @@ const stringConstants = {
   EMPTY_ROUTES_TITLE: "You don't have any Routes",
   EMPTY_ROUTES_SUBTITLE:
     "Add a Route to allow external requests to access your Application. You can use Routes to specify how hosts and paths map to components, configure HTTPS, and setup canary or blue-green deployments.",
+  NEW_APP_BUTTON: "Create App",
+  CERT_AUTO: "Automatic Certification with Let's Encrypt",
+  CERT_AUTO_DESC: "Use a certificate signed by Let's Encrypt. Safe and fast. Renew and update are full-automatic.",
+  CERT_UPLOAD: "Use an existing certificate",
+  CERT_UPLOAD_DESC: "Use an existing certificate. You are responsible for renewual.",
 };
 
 export default stringConstants;
