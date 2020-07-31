@@ -87,11 +87,9 @@ export const IconLinkWithToolTip = withStyles(styles)(
     const { tooltipTitle, tooltipPlacement, classes, to, ...iconButtonProps } = props;
 
     const tooltipChild = (
-      <Link to={to}>
-        <IconButton className={classes.button} {...iconButtonProps}>
-          {props.children}
-        </IconButton>
-      </Link>
+      <IconButton className={classes.button} {...iconButtonProps}>
+        {props.children}
+      </IconButton>
     );
 
     if (props.disabled) {
@@ -99,9 +97,11 @@ export const IconLinkWithToolTip = withStyles(styles)(
     }
 
     return (
-      <Tooltip title={tooltipTitle} placement={tooltipPlacement}>
-        {tooltipChild}
-      </Tooltip>
+      <Link to={to}>
+        <Tooltip title={tooltipTitle} placement={tooltipPlacement}>
+          {tooltipChild}
+        </Tooltip>
+      </Link>
     );
   },
 );
