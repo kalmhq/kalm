@@ -69,7 +69,6 @@ func (r *StorageClassReconciler) reconcileDefaultStorageClass(cloudProvider stri
 
 	reclaimPolicy := corev1.PersistentVolumeReclaimRetain
 	switch cloudProvider {
-	//todo case "minikube":
 	case "aws":
 		hdd := v1.StorageClass{
 			ObjectMeta: ctrl.ObjectMeta{

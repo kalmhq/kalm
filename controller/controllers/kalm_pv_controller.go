@@ -27,6 +27,9 @@ type KalmPVReconciler struct {
 	ctx context.Context
 }
 
+// this controller's task is to ensure all Kalm PVs are labeled with kalm-pv
+// this is done when PV is created
+// and PVC change won't affect this, so no need to watch PVC here
 func NewKalmPVReconciler(mgr ctrl.Manager) *KalmPVReconciler {
 	return &KalmPVReconciler{
 		BaseReconciler: NewBaseReconciler(mgr, "KalmPV"),
@@ -34,7 +37,7 @@ func NewKalmPVReconciler(mgr ctrl.Manager) *KalmPVReconciler {
 	}
 }
 
-// +kubebuilder:rbac:groups="",resources=persistentvolumeclaims,verbs=get;list;watch
+// +kubebuilder:rbac:groups="",resources=persistentvolumeclaims,verbs=get;list
 // +kubebuilder:rbac:groups="",resources=persistentvolumes,verbs=get;list;watch;create;update;patch;delete
 
 func (r *KalmPVReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
