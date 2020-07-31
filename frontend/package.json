@@ -76,7 +76,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test --silent",
+    "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint -c .eslintrc.json --ext tx,tsx src --max-warnings 0",
     "storybook-dev": "NODE_ENV=test start-storybook -p 9009 -s public",
