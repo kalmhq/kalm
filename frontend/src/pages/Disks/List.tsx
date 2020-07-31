@@ -1,4 +1,4 @@
-import { Box, Button, createStyles, Popover, Theme, WithStyles, withStyles } from "@material-ui/core";
+import { Box, createStyles, Theme, WithStyles, withStyles } from "@material-ui/core";
 import { indigo } from "@material-ui/core/colors";
 import { Alert } from "@material-ui/lab";
 import { setErrorNotificationAction } from "actions/notification";
@@ -7,7 +7,6 @@ import { blinkTopProgressAction } from "actions/settings";
 import { K8sApiPrefix } from "api/realApi";
 import { push } from "connected-react-router";
 import { KTooltip } from "forms/Application/KTooltip";
-import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
 import { StorageType } from "pages/Disks/StorageType";
 import React from "react";
 import { connect } from "react-redux";
@@ -140,36 +139,6 @@ export class VolumesRaw extends React.Component<Props, States> {
     );
   };
 
-  private renderDiskHelp() {
-    return (
-      <PopupState variant="popover" popupId={"disks-creation-helper"}>
-        {(popupState) => (
-          <>
-            <Button color="primary" size="small" variant="text" {...bindTrigger(popupState)}>
-              How to attach new disk?
-            </Button>
-            <Popover
-              {...bindPopover(popupState)}
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "center",
-              }}
-              transformOrigin={{
-                vertical: "top",
-                horizontal: "center",
-              }}
-            >
-              <Box p={2}>
-                You don't need to apply disk manually. Disk will be created when you declare authentic disks in
-                component form.
-              </Box>
-            </Popover>
-          </>
-        )}
-      </PopupState>
-    );
-  }
-
   private renderSecondHeaderRight() {
     return <>{/* <H6>Disks</H6>
         {this.renderDiskHelp()}
@@ -256,9 +225,8 @@ export class VolumesRaw extends React.Component<Props, States> {
 
     const options = [
       {
-        title: "How to attach new disk?",
-        content:
-          "You don't need to apply disk manually. Disk will be created when you declare authentic disks in component form.",
+        title: "",
+        content: sc.DISKS_INFOBOX_BOX1,
       },
       {
         title: <StorageType storageClasses={storageClasses} />,

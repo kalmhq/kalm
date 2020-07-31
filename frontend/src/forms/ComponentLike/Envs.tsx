@@ -7,7 +7,6 @@ import { Field, FieldArray } from "redux-form/immutable";
 import { DeleteIcon } from "widgets/Icon";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { EnvItem, SharedEnv } from "types/application";
-import { RenderAutoCompleteFreeSolo } from "../Basic/autoComplete";
 import { KRenderDebounceTextField } from "../Basic/textfield";
 import { ValidatorEnvName, ValidatorRequired } from "../validator";
 import { Alert } from "@material-ui/lab";
@@ -18,43 +17,13 @@ interface FieldArrayComponentHackType {
   validate: any;
 }
 
-interface FieldArrayProps extends DispatchProp {
-  sharedEnv?: Immutable.List<SharedEnv>;
-}
+interface FieldArrayProps extends DispatchProp {}
 
 interface Props extends WrappedFieldArrayProps<SharedEnv>, FieldArrayComponentHackType, FieldArrayProps {}
 
 const nameValidators = [ValidatorRequired, ValidatorEnvName];
 
 class RenderEnvs extends React.PureComponent<Props> {
-  private nameAutoCompleteOptions: string[];
-
-  constructor(props: Props) {
-    super(props);
-    this.nameAutoCompleteOptions = this.generateNameAutoCompleteOptionsFromProps(props);
-  }
-
-  private generateNameAutoCompleteOptionsFromProps = (props: Props): string[] => {
-    const { sharedEnv, fields } = props;
-    if (!sharedEnv) {
-      return [];
-    }
-
-    const sharedEnvNamesSet = new Set(sharedEnv ? sharedEnv.map((x) => x.get("name")).toArray() : []);
-    const fieldsEnvNamesSet = new Set<string>();
-
-    fields.forEach((_, index) => {
-      const env = fields.get(index);
-      fieldsEnvNamesSet.add(env.get("name"));
-    });
-
-    return Array.from(sharedEnvNamesSet).filter((x) => !fieldsEnvNamesSet.has(x));
-  };
-
-  public componentDidUpdate() {
-    this.nameAutoCompleteOptions = this.generateNameAutoCompleteOptionsFromProps(this.props);
-  }
-
   private renderAddButton = () => {
     const {
       meta: { form },
@@ -105,10 +74,9 @@ class RenderEnvs extends React.PureComponent<Props> {
               <Grid container spacing={2}>
                 <Grid item xs={5}>
                   <Field
-                    options={this.nameAutoCompleteOptions}
                     name={`${field}.name`}
                     label="Name"
-                    component={RenderAutoCompleteFreeSolo}
+                    component={KRenderDebounceTextField}
                     margin
                     validate={nameValidators}
                   />

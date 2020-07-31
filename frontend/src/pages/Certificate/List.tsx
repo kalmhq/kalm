@@ -64,7 +64,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderName = (rowData: RowData) => {
-    return rowData.get("name");
+    return <Typography variant={"subtitle2"}>{rowData.get("name")}</Typography>;
   };
 
   private renderDomains = (rowData: RowData) => {
@@ -74,7 +74,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
           return (
             <FlexRowItemCenterBox key={domain}>
               <DomainStatus domain={domain} />
-              <Typography>{domain}</Typography>
+              {domain}
             </FlexRowItemCenterBox>
           );
         })}
@@ -196,7 +196,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     const columns = [
       // @ts-ignore
       {
-        title: "Name",
+        title: "Cert Name",
         field: "name",
         sorting: false,
         render: this.renderName,

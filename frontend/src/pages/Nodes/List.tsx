@@ -35,6 +35,7 @@ import { NodeMemory, NodesMemory } from "./Memory";
 import { NodePods } from "./Pods";
 import { ResourceRank } from "./ResourceRank";
 import { customBindHover } from "utils/popper";
+import sc from "utils/stringConstants";
 
 const mapStateToProps = (state: RootState) => {
   return {
@@ -365,9 +366,6 @@ export class NodeListRaw extends React.Component<Props, States> {
   };
 
   private renderInfoBox() {
-    const title =
-      "Data and metrics regarding nodes in the cluster is displayed here. For cluster administration operations, please see platform specific instructions:";
-
     const options = [
       {
         title: (
@@ -400,7 +398,7 @@ export class NodeListRaw extends React.Component<Props, States> {
         title={
           <Box>
             <Box mb={2}>{this.renderSecondHeaderRight()}</Box>
-            {title}
+            {sc.NODES_INFO_BOX_TEXT}
           </Box>
         }
         options={options}

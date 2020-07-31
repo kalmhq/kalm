@@ -1,4 +1,4 @@
-import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { Box, createStyles, Theme, withStyles, WithStyles, withTheme, WithTheme } from "@material-ui/core";
 import { Flowpoint, Flowspace } from "flowpoints";
 import Immutable from "immutable";
 import React from "react";
@@ -9,14 +9,14 @@ const styles = (theme: Theme) =>
     root: {},
   });
 
-interface Props extends WithStyles<typeof styles> {
+interface Props extends WithStyles<typeof styles>, WithTheme {
   activeNamespaceName: string;
   destinations: Immutable.List<HttpRouteDestination>;
 }
 
 class TargetsRaw extends React.PureComponent<Props> {
   public render() {
-    const { activeNamespaceName, destinations } = this.props;
+    const { activeNamespaceName, destinations, theme } = this.props;
     let sum = 0;
     destinations.forEach((x) => (sum += x.get("weight")));
     const size = destinations.size;
@@ -32,8 +32,8 @@ class TargetsRaw extends React.PureComponent<Props> {
         output: "right",
         input: "left",
         width: 3,
-        outputColor: "#3949ab",
-        inputColor: "#AACAF1",
+        outputColor: theme.palette.type === "light" ? "#3949ab" : theme.palette.primary.dark,
+        inputColor: theme.palette.type === "light" ? "#AACAF1" : theme.palette.primary.light,
       };
     });
 
@@ -50,7 +50,10 @@ class TargetsRaw extends React.PureComponent<Props> {
       >
         <Flowpoint
           variant="filled"
-          style={{ backgroundColor: "#3949ab", border: "1px #3949ab" }}
+          style={{
+            backgroundColor: theme.palette.type === "light" ? "#3949ab" : theme.palette.primary.dark,
+            border: "1px #3949ab",
+          }}
           startPosition={{ x: 0, y: spaceHeight / 2 - leftPoinitHeight / 2 }}
           dragX={false}
           dragY={false}
@@ -65,7 +68,7 @@ class TargetsRaw extends React.PureComponent<Props> {
             <Flowpoint
               variant="filled"
               style={{
-                backgroundColor: "#AACAF1",
+                backgroundColor: theme.palette.type === "light" ? "#AACAF1" : theme.palette.primary.light,
                 border: "1px #AACAF1",
                 fontSize: "12px",
                 color: "#000",
@@ -97,4 +100,4 @@ class TargetsRaw extends React.PureComponent<Props> {
   }
 }
 
-export const Targets = withStyles(styles)(TargetsRaw);
+export const Targets = withStyles(styles)(withTheme(TargetsRaw));

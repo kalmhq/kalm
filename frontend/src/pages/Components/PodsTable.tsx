@@ -202,7 +202,7 @@ class PodsTableRaw extends React.PureComponent<Props, State> {
 
   private getColumns = (): MaterialTableProps<PodRowData>["columns"] => {
     return [
-      { title: "Name", sorting: false, render: this.renderPodName },
+      { title: "Pod Name", sorting: false, render: this.renderPodName },
       { title: "Node", sorting: false, render: this.renderPodNode },
       { title: "Restarts", sorting: false, render: this.renderPodRestarts },
       { title: "Status", sorting: false, render: this.renderPodStatusText },
