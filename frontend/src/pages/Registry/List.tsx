@@ -1,4 +1,4 @@
-import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { Box, createStyles, Theme, withStyles, WithStyles, Typography } from "@material-ui/core";
 import { deleteRegistryAction } from "actions/registries";
 import React from "react";
 import { connect } from "react-redux";
@@ -100,7 +100,7 @@ class RegistryListPageRaw extends React.PureComponent<Props, State> {
   };
 
   private renderName(row: RowData) {
-    return row.get("name");
+    return <Typography variant="subtitle2">{row.get("name")}</Typography>;
   }
 
   private renderHost(row: RowData) {

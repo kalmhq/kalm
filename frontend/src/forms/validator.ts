@@ -1,5 +1,6 @@
 import Immutable from "immutable";
 import { HttpRouteDestination } from "types/route";
+import sc from "utils/stringConstants";
 
 export const validator = () => {
   const errors = {};
@@ -111,7 +112,7 @@ export const ValidatorName = (value: string) => {
   if (!value) return undefined;
 
   if (!value.match(/^[a-z0-9]([-a-z0-9]*[a-z0-9])?$/) || value === "0") {
-    return "Invalid Name Value, digits (0-9), lower case letters (a-z), and \"-\" are allowed.";
+    return sc.NAME_RULE;
   }
 
   return undefined;

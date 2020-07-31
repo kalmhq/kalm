@@ -269,15 +269,13 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                 options={[
                   {
                     value: issuerManaged,
-                    label: "Apply a new certificate (Let's Encrypt)",
-                    explain:
-                      "Use a certificate signed by Let's Encrypt. Safe and fast. Renew and update are full-automatic.",
+                    label: sc.CERT_AUTO,
+                    explain: sc.CERT_AUTO_DESC,
                   },
                   {
                     value: selfManaged,
-                    label: "Upload an existing certificate",
-                    explain:
-                      "Use an existing certificate. The renew and update of the certificate are maintained by you.",
+                    label: sc.CERT_UPLOAD,
+                    explain: sc.CERT_UPLOAD_DESC,
                   },
                 ]}
               />

@@ -110,7 +110,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
         open={isDeleteConfirmDialogOpen}
         onClose={this.closeDeleteConfirmDialog}
         title={`${sc.ARE_YOU_SURE_PREFIX} this Application(${deletingApplicationListItem?.get("name")})?`}
-        content="You will lost this application, and this action is irrevocable."
+        content={sc.DELETE_APP_SUBTITLE}
         onAgree={this.confirmDelete}
       />
     );
@@ -338,7 +338,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
           variant="outlined"
           to={`/applications/new`}
         >
-          New Application
+          {sc.NEW_APP_BUTTON}
         </Button>
         <IconButtonWithTooltip
           tooltipTitle={usingApplicationCard ? "Using List View" : "Using Card View"}
@@ -428,7 +428,7 @@ class ApplicationListRaw extends React.PureComponent<Props, State> {
               dispatch(push(`/applications/new`));
             }}
           >
-            New Application
+            {sc.NEW_APP_BUTTON}
           </CustomizedButton>
         }
       />
