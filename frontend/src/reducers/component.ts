@@ -39,6 +39,20 @@ const initialState: State = Immutable.Map({
   componentPlugins: [],
 });
 
+const isComponentInState = (state: State, applicationName: string, component: ApplicationComponentDetails): boolean => {
+  let components = state.get("components").get(applicationName);
+  if (!components) {
+    return false;
+  }
+
+  const componentIndex = components.findIndex((c) => c.get("name") === component.get("name"));
+  if (componentIndex < 0) {
+    return false;
+  }
+
+  return true;
+};
+
 const putComponentIntoState = (
   state: State,
   applicationName: string,
@@ -121,7 +135,9 @@ const reducer = (state: State = initialState, action: Actions): State => {
       }
       switch (action.payload.action) {
         case RESOURCE_ACTION_ADD: {
-          state = putComponentIntoState(state, action.payload.namespace, action.payload.data, true);
+          if (!isComponentInState(state, action.payload.namespace, action.payload.data)) {
+            state = putComponentIntoState(state, action.payload.namespace, action.payload.data, true);
+          }
           break;
         }
         case RESOURCE_ACTION_DELETE: {

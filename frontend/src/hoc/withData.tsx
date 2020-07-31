@@ -52,9 +52,7 @@ class WithDataRaw extends React.PureComponent<Props> {
   public componentDidMount() {
     this.loadData();
 
-    setTimeout(() => {
-      this.connectWebsocket();
-    }, 3000);
+    this.connectWebsocket();
   }
 
   private loadData() {

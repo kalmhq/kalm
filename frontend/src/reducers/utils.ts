@@ -26,6 +26,16 @@ export const removeInList = <T extends NamedResource>(list: Immutable.List<T>, d
   return list.delete(index);
 };
 
+export const isInList = <T extends NamedResource>(list: Immutable.List<T>, data: T): boolean => {
+  const index = list.findIndex((x) => x.get("name") === data.get("name"));
+
+  if (index < 0) {
+    return false;
+  }
+
+  return true;
+};
+
 export const addOrUpdateInList = <T extends NamedResource>(
   list: Immutable.List<T>,
   data: T,
