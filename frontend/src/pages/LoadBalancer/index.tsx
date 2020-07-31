@@ -39,7 +39,7 @@ const styles = (theme: Theme) =>
     portNumber: {
       fontFamily: "Hack, monospace",
       textAlign: "right",
-      background: theme.palette.grey[200],
+      background: theme.palette.type === "light" ? theme.palette.grey[200] : theme.palette.grey[700],
     },
   });
 

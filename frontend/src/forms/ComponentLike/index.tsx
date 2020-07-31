@@ -1,4 +1,16 @@
-import { Box, Button, Collapse, Grid, Link, List as MList, ListItem, ListItemText, Tab, Tabs } from "@material-ui/core";
+import {
+  Box,
+  Button,
+  Collapse,
+  Grid,
+  Link,
+  List as MList,
+  ListItem,
+  ListItemText,
+  Tab,
+  Tabs,
+  Divider,
+} from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import HelpIcon from "@material-ui/icons/Help";
@@ -494,6 +506,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
         </Grid>
         <Grid item xs={12}>
           <ReadinessProbe />
+        </Grid>
+        <Grid item xs={12}>
+          <Divider orientation="horizontal" color="inherit" />
         </Grid>
         <Grid item xs={12}>
           <SectionTitle>

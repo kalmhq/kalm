@@ -46,7 +46,7 @@ class DoughnutChartRaw extends React.PureComponent<Props, State> {
     const dataSum = data.reduce((a, b) => a + b, 0);
     if (dataSum === 0) {
       data = [0, 1]; // show grey
-      colors[1] = grey[400];
+      colors[1] = theme.palette.type === "light" ? grey[400] : grey[800];
     }
 
     return {

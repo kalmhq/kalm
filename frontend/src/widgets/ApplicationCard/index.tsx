@@ -18,7 +18,7 @@ import {
 } from "@material-ui/core";
 import { ApplicationDetails, ApplicationComponentDetails } from "types/application";
 import { stringToColor } from "utils/color";
-import { Body, H6 } from "widgets/Label";
+import { Body, H6, Caption } from "widgets/Label";
 import { getApplicationCreatedAtString } from "utils/application";
 import { CardCPULineChart, CardMemoryLineChart } from "widgets/SmallLineChart";
 import { HttpRoute } from "types/route";
@@ -26,13 +26,12 @@ import PopupState, { bindTrigger, bindPopover } from "material-ui-popup-state";
 import { RouteWidgets } from "pages/Route/Widget";
 import { POPPER_ZINDEX } from "layout/Constants";
 import { blinkTopProgressAction } from "actions/settings";
-import { Link } from "react-router-dom";
-import { primaryColor } from "theme/theme";
 import { DeleteIcon, KalmDetailsIcon, KalmComponentsIcon, KalmApplicationIcon, KalmRoutesIcon } from "widgets/Icon";
 import { FoldButtonGroup } from "widgets/FoldButtonGroup";
 import { DoughnutChart } from "widgets/DoughnutChart";
 import { pluralize } from "utils/string";
-import { KMLink } from "widgets/Link";
+import { KMLink, KLink } from "widgets/Link";
+import { IconLinkWithToolTip, IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 
 const ApplicationCardStyles = (theme: Theme) =>
   createStyles({
@@ -65,13 +64,9 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
   private renderName = () => {
     const { application } = this.props;
     return (
-      <Link
-        style={{ color: primaryColor }}
-        to={`/applications/${application.get("name")}/components`}
-        onClick={() => blinkTopProgressAction()}
-      >
+      <KLink to={`/applications/${application.get("name")}/components`} onClick={() => blinkTopProgressAction()}>
         <H6>{application.get("name")}</H6>
-      </Link>
+      </KLink>
     );
   };
   private hasPods = () => {
@@ -89,7 +84,7 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
     const { componentsMap, application } = this.props;
     const components = componentsMap.get(application.get("name"));
 
-    return <Body>{components ? getApplicationCreatedAtString(components) : "-"}</Body>;
+    return <Caption>{components ? getApplicationCreatedAtString(components) : "-"}</Caption>;
   };
 
   private renderCPU = () => {
@@ -242,6 +237,34 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
     return <FoldButtonGroup options={options} />;
   };
 
+  private renderActions = () => {
+    const { application, showDeleteConfirmDialog } = this.props;
+    return (
+      <>
+        <IconLinkWithToolTip
+          onClick={() => {
+            blinkTopProgressAction();
+          }}
+          // size="small"
+          tooltipTitle="Details"
+          to={`/applications/${application.get("name")}/components`}
+        >
+          <KalmDetailsIcon />
+        </IconLinkWithToolTip>
+        <IconButtonWithTooltip
+          tooltipTitle="Delete"
+          aria-label="delete"
+          onClick={() => {
+            blinkTopProgressAction();
+            showDeleteConfirmDialog(application);
+          }}
+        >
+          <DeleteIcon />
+        </IconButtonWithTooltip>
+      </>
+    );
+  };
+
   public render() {
     const { application, classes } = this.props;
     return (
@@ -269,7 +292,7 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
             </Grid>
             <Grid container spacing={1}>
               <Grid item xs={3} sm={3} md={3} lg={3}>
-                <Body>CPU:</Body>
+                <Caption>CPU:</Caption>
               </Grid>
               <Grid item xs={9} sm={9} md={9} lg={9}>
                 {this.renderCPU()}
@@ -277,7 +300,7 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
             </Grid>
             <Grid container spacing={1}>
               <Grid item xs={3} sm={3} md={3} lg={3}>
-                <Body>Memory:</Body>
+                <Caption>Memory:</Caption>
               </Grid>
               <Grid item xs={9} sm={9} md={9} lg={9}>
                 {this.renderMemory()}
@@ -289,7 +312,7 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
           <Grid container className={classes.actionContainer}>
             <Grid item>{this.renderExternalAccesses()}</Grid>
             <Grid item style={{ marginLeft: "auto" }}>
-              {this.renderMoreActions()}
+              {this.renderActions()}
             </Grid>
           </Grid>
         </CardActions>

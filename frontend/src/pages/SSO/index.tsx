@@ -1,7 +1,7 @@
 import { Box, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import React from "react";
 import { BasePage } from "pages/BasePage";
-import { Body, H6 } from "widgets/Label";
+import { Body, Subtitle1 } from "widgets/Label";
 import { CustomizedButton } from "widgets/Button";
 import { Link } from "react-router-dom";
 import { SSOImplementDetails } from "pages/SSO/Details";
@@ -22,6 +22,7 @@ import { KTable } from "widgets/Table";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
 import { deleteProtectedEndpointAction } from "actions/sso";
 import { ProtectedEndpointForm } from "forms/ProtectedEndpoint";
+import { KMLink } from "widgets/Link";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -44,20 +45,20 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
         const groups = cnt.get("config").get("groups") || Immutable.List();
         return (
           <Box key={cnt.get("id")} mt={2}>
-            <H6>
+            <Subtitle1>
               Gitlab {cnt.get("name")} (
-              <a href={baseURL} target="_blank" rel="noopener noreferrer">
+              <KMLink href={baseURL} target="_blank" rel="noopener noreferrer">
                 {baseURL}
-              </a>
+              </KMLink>
               )
-            </H6>
+            </Subtitle1>
             Users in groups{" "}
             {groups
               .map((g, index) => (
                 <>
-                  <a target="_blank" rel="noopener noreferrer" href={baseURL + "/" + g}>
+                  <KMLink target="_blank" rel="noopener noreferrer" href={baseURL + "/" + g}>
                     {g}
-                  </a>
+                  </KMLink>
                   {index < cnt.get("config").get("groups").size - 1 ? ", " : " "}
                 </>
               ))
@@ -69,12 +70,12 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
         const cnt = connector as SSOGithubConnector;
         return (
           <Box key={cnt.get("id")} mt={2}>
-            <H6>
+            <Subtitle1>
               <Box display="inline-block" style={{ verticalAlign: "middle" }} mr={1}>
                 <GithubIcon />
               </Box>
               Github {cnt.get("name")}
-            </H6>
+            </Subtitle1>
             {cnt
               .get("config")
               .get("orgs")
