@@ -359,25 +359,24 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       name="hosts"
                       validate={hostsValidators}
                       placeholder="e.g. www.example.com"
+                      helperText={
+                        <Caption color="textSecondary">
+                          Your cluster ip is{" "}
+                          <Link
+                            href="#"
+                            onClick={() => {
+                              const isHostsIncludeIngressIP = !!hosts.find((host) => host === ingressIP);
+                              if (!isHostsIncludeIngressIP) {
+                                change("hosts", hosts.push(ingressIP));
+                              }
+                            }}
+                          >
+                            {ingressIP}
+                          </Link>
+                          . {sc.ROUTE_HOSTS_INPUT_HELPER}
+                        </Caption>
+                      }
                     />
-                    <Box mt="-4px" mb="4px" pl="14px" pr="14px">
-                      <Caption color="textSecondary">
-                        Your cluster ip is{" "}
-                        <Link
-                          href="#"
-                          onClick={() => {
-                            const isHostsIncludeIngressIP = !!hosts.find((host) => host === ingressIP);
-                            if (!isHostsIncludeIngressIP) {
-                              change("hosts", hosts.push(ingressIP));
-                            }
-                          }}
-                        >
-                          {ingressIP}
-                        </Link>
-                        . {sc.ROUTE_HOSTS_INPUT_HELPER}
-                      </Caption>
-                    </Box>
-
                     <KFreeSoloAutoCompleteMultipleSelectField
                       label="Path Prefixes"
                       name="paths"
