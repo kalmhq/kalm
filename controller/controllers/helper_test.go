@@ -70,18 +70,7 @@ func (suite *BasicSuite) createComponentPlugin(plugin *v1alpha1.ComponentPlugin)
 	// after the finalizer is set, the plugin won't auto change
 	suite.Eventually(func() bool {
 		err := suite.K8sClient.Get(context.Background(), getComponentPluginNamespacedName(plugin), plugin)
-
-		if err != nil {
-			return false
-		}
-
-		for i := range plugin.Finalizers {
-			if plugin.Finalizers[i] == finalizerName {
-				return true
-			}
-		}
-
-		return false
+		return err == nil
 	})
 }
 
@@ -106,26 +95,6 @@ func (suite *BasicSuite) createComponentPlugin(plugin *v1alpha1.ComponentPlugin)
 //	})
 //}
 
-//func (suite *BasicSuite) createApplication(ns *v1alpha1.Application) {
-//	suite.Nil(suite.K8sClient.Create(context.Background(), ns))
-//
-//	suite.Eventually(func() bool {
-//		err := suite.K8sClient.Get(context.Background(), getApplicationNamespacedName(ns), ns)
-//
-//		if err != nil {
-//			return false
-//		}
-//
-//		for i := range ns.Finalizers {
-//			if ns.Finalizers[i] == finalizerName {
-//				return true
-//			}
-//		}
-//
-//		return false
-//	}, "Created ns has no finalizer.")
-//}
-
 func getDockerRegistryNamespacedName(registry *v1alpha1.DockerRegistry) types.NamespacedName {
 	return types.NamespacedName{Name: registry.Name, Namespace: registry.Namespace}
 }
@@ -136,17 +105,7 @@ func (suite *BasicSuite) createDockerRegistry(registry *v1alpha1.DockerRegistry)
 	suite.Eventually(func() bool {
 		err := suite.K8sClient.Get(context.Background(), getDockerRegistryNamespacedName(registry), registry)
 
-		if err != nil {
-			return false
-		}
-
-		for i := range registry.Finalizers {
-			if registry.Finalizers[i] == finalizerName {
-				return true
-			}
-		}
-
-		return false
+		return err == nil
 	}, "Created Docker registry has no finalizer.")
 }
 
@@ -229,12 +188,9 @@ func (suite *BasicSuite) SetupSuite() {
 	suite.NotNil(mgr)
 	suite.Nil(err)
 
-	//suite.Nil(NewApplicationReconciler(mgr).SetupWithManager(mgr))
-	//suite.Nil(NewApplicationPluginReconciler(mgr).SetupWithManager(mgr))
-	//suite.Nil(NewApplicationPluginBindingReconciler(mgr).SetupWithManager(mgr))
-	//suite.Nil(NewKalmNamespacesReconciler(mgr).SetupWithManager(mgr))
 	suite.Nil(NewKalmNSReconciler(mgr).SetupWithManager(mgr))
 	suite.Nil(NewKalmPVCReconciler(mgr).SetupWithManager(mgr))
+	suite.Nil(NewKalmPVReconciler(mgr).SetupWithManager(mgr))
 
 	suite.Nil(NewComponentReconciler(mgr).SetupWithManager(mgr))
 	suite.Nil(NewComponentPluginReconciler(mgr).SetupWithManager(mgr))
@@ -263,6 +219,8 @@ func (suite *BasicSuite) SetupSuite() {
 	suite.TestEnv = testEnv
 	suite.K8sClient = k8sClient
 	suite.Cfg = cfg
+
+	suite.ensureNsExists("cert-manager")
 }
 
 func (suite *BasicSuite) TearDownSuite() {
@@ -315,8 +273,12 @@ func randomName() string {
 	return string(b)
 }
 
-func (suite *BasicSuite) SetupKalmEnabledNs(name string) v1.Namespace {
-	if name == "" {
+func (suite *BasicSuite) SetupKalmEnabledNs(nameOpt ...string) v1.Namespace {
+	var name string
+
+	if len(nameOpt) > 0 && nameOpt[0] != "" {
+		name = nameOpt[0]
+	} else {
 		name = randomName()
 	}
 
