@@ -1,4 +1,4 @@
-import { Theme } from "@material-ui/core";
+import { Theme, withTheme, WithTheme } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import { createStyles, withStyles, WithStyles } from "@material-ui/styles";
 import * as chartjs from "chart.js";
@@ -30,7 +30,7 @@ const smallLineChartStyles = (theme: Theme) =>
     },
   });
 
-interface Props extends WithStyles<typeof smallLineChartStyles> {
+interface Props extends WithStyles<typeof smallLineChartStyles>, WithTheme {
   data: MetricList;
   hoverText?: string;
   width: number | string;
@@ -45,7 +45,7 @@ const emptyChartDataY = [1, 3, 1, 5, 2, 7, 2, 5, 8];
 
 class SmallLineChartRaw extends React.PureComponent<Props> {
   private generateData = (): ChartData<chartjs.ChartData> => {
-    const { data, borderColor, backgroundColor } = this.props;
+    const { data, borderColor, backgroundColor, theme } = this.props;
 
     let dataX = emptyChartDataX;
     let dataY = emptyChartDataY;
@@ -55,8 +55,8 @@ class SmallLineChartRaw extends React.PureComponent<Props> {
       dataY = data.map((n) => n.get("y")).toArray();
       dataX = data.map((n) => n.get("x")).toArray();
     } else {
-      backgroundColorFixed = grey[400];
-      borderColorFixed = grey[400];
+      backgroundColorFixed = theme.palette.type === "light" ? grey[400] : grey[800];
+      borderColorFixed = theme.palette.type === "light" ? grey[400] : grey[800];
     }
 
     return {
@@ -155,7 +155,7 @@ class SmallLineChartRaw extends React.PureComponent<Props> {
   }
 }
 
-export const SmallLineChart = withStyles(smallLineChartStyles)(SmallLineChartRaw);
+export const SmallLineChart = withStyles(smallLineChartStyles)(withTheme(SmallLineChartRaw));
 
 const lineChartStyles = (theme: Theme) =>
   createStyles({

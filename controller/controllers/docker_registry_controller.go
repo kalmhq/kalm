@@ -22,7 +22,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/heroku/docker-registry-client/registry"
-	"github.com/kalmhq/kalm/controller/utils"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -66,11 +65,6 @@ func (r *DockerRegistryReconcileTask) Run(req ctrl.Request) error {
 
 	if err := r.LoadResources(req); err != nil {
 		r.WarningEvent(err, "LoadResources error.")
-		return err
-	}
-
-	if err := r.HandleDelete(); err != nil {
-		r.WarningEvent(err, "HandleDelete error.")
 		return err
 	}
 
@@ -143,32 +137,10 @@ func (r *DockerRegistryReconcileTask) UpdateStatus() (err error) {
 	return nil
 }
 
-func (r *DockerRegistryReconcileTask) DeleteSecrets() (err error) {
-	var secretList v1.SecretList
-	if err := r.Reader.List(r.ctx, &secretList, client.MatchingLabels{"kalm-docker-registry": r.registry.Name}); err != nil {
-		r.WarningEvent(err, "get secrets error when deleting docker registry.")
-		return err
-	}
-
-	for _, secret := range secretList.Items {
-		if err := r.Client.Delete(r.ctx, &secret); err != nil {
-			r.WarningEvent(err, "delete secret error.")
-			return err
-		}
-	}
-
-	return nil
-}
-
 func (r *DockerRegistryReconcileTask) DistributeSecrets() (err error) {
 	if r.secret == nil {
 		return nil
 	}
-
-	//var applicationList corev1alpha1.ApplicationList
-	//if err := r.Reader.List(r.ctx, &applicationList); err != nil {
-	//	return err
-	//}
 
 	var nsList v1.NamespaceList
 	if err := r.Reader.List(r.ctx, &nsList); err != nil {
@@ -315,30 +287,6 @@ func (r *DockerRegistryReconcileTask) LoadResources(req ctrl.Request) (err error
 
 	r.secret = &secret
 	return
-}
-
-func (r *DockerRegistryReconcileTask) HandleDelete() (err error) {
-	if r.registry.ObjectMeta.DeletionTimestamp.IsZero() {
-		if !utils.ContainsString(r.registry.ObjectMeta.Finalizers, finalizerName) {
-			r.registry.ObjectMeta.Finalizers = append(r.registry.ObjectMeta.Finalizers, finalizerName)
-			if err := r.Update(r.ctx, r.registry); err != nil {
-				return err
-			}
-		}
-	} else {
-		if utils.ContainsString(r.registry.ObjectMeta.Finalizers, finalizerName) {
-			if err := r.DeleteSecrets(); err != nil {
-				return err
-			}
-
-			r.registry.ObjectMeta.Finalizers = utils.RemoveString(r.registry.ObjectMeta.Finalizers, finalizerName)
-			if err := r.Update(r.ctx, r.registry); err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
 }
 
 func (r *DockerRegistryReconcileTask) SetupAttributes(req ctrl.Request) (err error) {

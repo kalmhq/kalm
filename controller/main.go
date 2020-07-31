@@ -96,11 +96,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	//if err = controllers.NewApplicationReconciler(mgr).SetupWithManager(mgr); err != nil {
-	//	setupLog.Error(err, "unable to create controller", "controller", "Application")
-	//	os.Exit(1)
-	//}
-
 	if err = (controllers.NewKalmNSReconciler(mgr)).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "KalmNS")
 		os.Exit(1)
@@ -161,6 +156,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err = (controllers.NewKalmPVReconciler(mgr)).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "KalmPV")
+		os.Exit(1)
+	}
+
 	if err = (controllers.NewSingleSignOnConfigReconciler(mgr)).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "SingleSignOnConfig")
 		os.Exit(1)
@@ -173,6 +173,11 @@ func main() {
 
 	if err = (controllers.NewDeployKeyReconciler(mgr)).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "DeployKey")
+		os.Exit(1)
+	}
+
+	if err = (controllers.NewStorageClassReconciler(mgr)).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "StorageClass")
 		os.Exit(1)
 	}
 
