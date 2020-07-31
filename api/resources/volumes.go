@@ -1,8 +1,10 @@
 package resources
 
 import (
+	"k8s.io/apimachinery/pkg/api/resource"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/kalmhq/kalm/controller/controllers"
@@ -22,6 +24,8 @@ type Volume struct {
 	ComponentName      string `json:"componentName,omitempty"`      // name of latest component using this Volume
 	StorageClassName   string `json:"storageClassName"`
 	Capacity           string `json:"capacity"` // size, e.g. 1Gi
+	RequestedCapacity  string `json:"requestedCapacity"`
+	AllocatedCapacity  string `json:"allocatedCapacity"`
 	PVC                string `json:"pvc"`
 	PV                 string `json:"pvToMatch"`
 }
@@ -34,7 +38,12 @@ func (builder *Builder) BuildVolumeResponse(pvc coreV1.PersistentVolumeClaim, pv
 
 	var capInStr string
 	if cap, exist := pvc.Spec.Resources.Requests[coreV1.ResourceStorage]; exist {
-		capInStr = cap.String()
+		capInStr = formatQuantity(cap)
+	}
+
+	var allocatedQuantity string
+	if storage := pvc.Status.Capacity.Storage(); storage != nil {
+		allocatedQuantity = formatQuantity(*storage)
 	}
 
 	var compName, compNamespace string
@@ -51,7 +60,14 @@ func (builder *Builder) BuildVolumeResponse(pvc coreV1.PersistentVolumeClaim, pv
 		ComponentNamespace: compNamespace,
 		IsInUse:            isInUse,
 		Capacity:           capInStr,
+		RequestedCapacity:  capInStr,
+		AllocatedCapacity:  allocatedQuantity,
 	}, nil
+}
+
+func formatQuantity(quantity resource.Quantity) string {
+	capInStr := strconv.FormatInt(quantity.Value(), 10)
+	return capInStr
 }
 
 func (builder *Builder) GetPVs() ([]coreV1.PersistentVolume, error) {

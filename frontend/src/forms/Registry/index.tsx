@@ -11,7 +11,7 @@ import { KRenderDebounceTextField } from "../Basic/textfield";
 import { RequireNoSuffix, RequirePrefix, ValidatorName, ValidatorRequired } from "../validator";
 import { Prompt } from "widgets/Prompt";
 import { REGISTRY_FORM_ID } from "../formIDs";
-import stringConstants from "utils/stringConstants";
+import sc from "utils/stringConstants";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -53,7 +53,7 @@ class RegistryFormRaw extends React.PureComponent<
 
     return (
       <form onSubmit={handleSubmit} className={classes.root}>
-        <Prompt when={dirty && !submitSucceeded} message="Are you sure to leave without saving changes?" />
+        <Prompt when={dirty && !submitSucceeded} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
         <Grid container spacing={2}>
           <Grid item md={12}>
             <Field
@@ -62,7 +62,7 @@ class RegistryFormRaw extends React.PureComponent<
               disabled={isEdit}
               component={KRenderDebounceTextField}
               validate={validateName}
-              helperText={isEdit ? "Can't modify name" : stringConstants.NAME_RULE}
+              helperText={isEdit ? "Can't modify name" : sc.NAME_RULE}
               placeholder="Please type the registry name"
             />
           </Grid>

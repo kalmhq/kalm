@@ -59,10 +59,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
   }
 
   private privateOpenEditDialog = (file: PreInjectedFile, index: number) => {
-    const {
-      dispatch,
-      // meta: { form }
-    } = this.props;
+    const { dispatch } = this.props;
     this.setState({ editingFileIndex: index, fileContentValue: file.get("content") });
     dispatch(openDialogAction(updateContentDialogID));
   };
@@ -76,7 +73,11 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
     } = this.props;
     const { editingFileIndex, fileContentValue, activeIndex } = this.state;
     const file = fields.get(editingFileIndex);
-    const isDisabledSaveButton = syncError && !!syncError[editingFileIndex] && !!syncError[editingFileIndex].mountPath;
+    const mountPathTmp = file ? file.get("mountPathTmp") : "";
+    const isDisabledSaveButton =
+      !mountPathTmp ||
+      !fileContentValue ||
+      (syncError && syncError[editingFileIndex] && !!syncError[editingFileIndex].mountPathTmp);
 
     return (
       <ControlledDialog
@@ -88,15 +89,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
         }}
         actions={
           <>
-            <Button
-              onClick={() => {
-                if (file.get("mountPath") === "" || file.get("content") === "") {
-                  dispatch(arrayPop(form, "preInjectedFiles"));
-                }
-                dispatch(closeDialogAction(updateContentDialogID));
-              }}
-              color="primary"
-            >
+            <Button onClick={() => dispatch(closeDialogAction(updateContentDialogID))} color="primary">
               Discard
             </Button>
             <Button
@@ -105,9 +98,9 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
                 if (isDisabledSaveButton) {
                   return;
                 }
-                dispatch(
-                  change(form, "preInjectedFiles[" + editingFileIndex + "]", file.set("content", fileContentValue)),
-                );
+                let newFile = file.set("content", fileContentValue);
+                newFile = newFile.set("mountPath", mountPathTmp);
+                dispatch(change(form, "preInjectedFiles[" + editingFileIndex + "]", newFile));
                 if (editingFileIndex === activeIndex) {
                   this.setState({ activeIndex: activeIndex + 1 });
                 }
@@ -121,17 +114,17 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
         }
       >
         <Grid container>
-          <Grid item lg={8}>
+          <Grid item xs={8}>
             <Field
-              name={`preInjectedFiles[${editingFileIndex}].mountPath`}
+              name={`preInjectedFiles[${editingFileIndex}].mountPathTmp`}
               label="Mount Path"
               component={KRenderDebounceTextField}
               margin
               validate={validateMountPath}
             />
           </Grid>
-          <Grid item lg={1}></Grid>
-          <Grid item lg={3}>
+          <Grid item xs={1}></Grid>
+          <Grid item xs={3}>
             <Field
               name={`preInjectedFiles[${editingFileIndex}].readonly`}
               component={KBoolCheckboxRender}
@@ -139,9 +132,7 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
             ></Field>
           </Grid>
         </Grid>
-        {file ? (
-          <RichEdtor value={fileContentValue} onChange={(value) => this.setState({ fileContentValue: value })} />
-        ) : null}
+        <RichEdtor value={fileContentValue} onChange={(value) => this.setState({ fileContentValue: value })} />
       </ControlledDialog>
     );
   };
@@ -189,7 +180,10 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
                 tooltipPlacement="top"
                 tooltipTitle="Delete"
                 aria-label="delete"
-                onClick={() => dispatch(arrayRemove(form, "preInjectedFiles", index))}
+                onClick={() => {
+                  dispatch(arrayRemove(form, "preInjectedFiles", index));
+                  this.setState({ activeIndex: activeIndex - 1 });
+                }}
               >
                 <DeleteIcon />
               </IconButtonWithTooltip>
@@ -215,6 +209,9 @@ class RenderPreInjectedFileRaw extends React.PureComponent<Props, State> {
                 mountPath: "",
               });
               if (fields.length <= activeIndex) {
+                dispatch(arrayPush(form, "preInjectedFiles", initFile));
+              } else {
+                dispatch(arrayPop(form, "preInjectedFiles"));
                 dispatch(arrayPush(form, "preInjectedFiles", initFile));
               }
               this.privateOpenEditDialog(initFile, activeIndex);

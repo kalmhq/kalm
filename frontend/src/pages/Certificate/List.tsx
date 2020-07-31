@@ -25,7 +25,7 @@ import { EmptyInfoBox } from "widgets/EmptyInfoBox";
 import { indigo } from "@material-ui/core/colors";
 import { InfoBox } from "widgets/InfoBox";
 import DomainStatus from "widgets/DomainStatus";
-
+import sc from "utils/stringConstants";
 const styles = (theme: Theme) =>
   createStyles({
     root: {},
@@ -263,8 +263,8 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
     return (
       <EmptyInfoBox
         image={<KalmCertificatesIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
-        title={"You don't have any Certificates"}
-        content="To enable HTTPS please upload an existing SSL certificate. Alternatively Kalm can help you setup automatic TLS certification via Let's Encrypt."
+        title={sc.EMPTY_CERT_TITLE}
+        content={sc.EMPTY_CERT_SUBTITLE}
         button={
           <CustomizedButton
             variant="contained"

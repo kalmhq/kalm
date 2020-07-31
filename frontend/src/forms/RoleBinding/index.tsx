@@ -13,6 +13,7 @@ import { RoleBindingsRequestBody } from "types/user";
 import { ValidatorRequired } from "../validator";
 import { Prompt } from "widgets/Prompt";
 import { ROLE_BINDING_FORM_ID } from "forms/formIDs";
+import sc from "utils/stringConstants";
 
 const mapStateToProps = (state: RootState, { form }: OwnProps) => {
   const selector = formValueSelector(form || ROLE_BINDING_FORM_ID);
@@ -46,7 +47,7 @@ class RoleBindingFormRaw extends React.PureComponent<Props> {
     const { namespaces, kind, dirty, submitSucceeded } = this.props;
     return (
       <Grid container spacing={2}>
-        <Prompt when={dirty && !submitSucceeded} message="Are you sure to leave without saving changes?" />
+        <Prompt when={dirty && !submitSucceeded} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
         <Grid item md={6}>
           <Field
             name="namespace"

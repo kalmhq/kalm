@@ -23,6 +23,7 @@ import { Namespaces } from "widgets/Namespaces";
 import { OpenInBrowser } from "widgets/OpenInBrowser";
 import { KTable } from "widgets/Table";
 import { Targets } from "widgets/Targets";
+import sc from "utils/stringConstants";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -201,8 +202,8 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     return (
       <EmptyInfoBox
         image={<KalmRoutesIcon style={{ height: 120, width: 120, color: indigo[200] }} />}
-        title={"You don't have any Routes"}
-        content="Add a Route to allow external requests to your Application. You can use Routes to specify how hosts and paths map to components, configure HTTPS, and setup canary and blue-green deployments."
+        title={sc.EMPTY_ROUTES_TITLE}
+        content={sc.EMPTY_ROUTES_SUBTITLE}
         button={
           <CustomizedButton
             variant="contained"

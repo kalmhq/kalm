@@ -23,6 +23,7 @@ import { KRenderDebounceTextField } from "forms/Basic/textfield";
 import { KRadioGroupRender } from "forms/Basic/radio";
 import { ApplicationComponentDetails } from "types/application";
 import { Loading } from "widgets/Loading";
+import sc from "utils/stringConstants";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -105,7 +106,7 @@ class DeployKeyFormRaw extends React.PureComponent<FinalProps> {
 
     return (
       <form onSubmit={handleSubmit} className={classes.root}>
-        <Prompt when={dirty && !submitSucceeded} message="Are you sure to leave without saving changes?" />
+        <Prompt when={dirty && !submitSucceeded} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />
         <KPanel>
           <Box p={2}>
             <Field

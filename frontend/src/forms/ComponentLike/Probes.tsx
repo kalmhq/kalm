@@ -19,9 +19,9 @@ import { change, WrappedFieldArrayProps, WrappedFieldProps } from "redux-form";
 import { Field, formValueSelector } from "redux-form/immutable";
 import { portTypeTCP } from "types/common";
 import { ComponentLikePort, Probe } from "types/componentTemplate";
-import { SelectField } from "../Basic/select";
+import { SelectField, makeSelectOption } from "../Basic/select";
 import { ValidatorOneof, ValidatorRequired } from "../validator";
-
+import sc from "../../utils/stringConstants";
 interface FieldComponentHackType {
   name: any;
   component: any;
@@ -434,39 +434,10 @@ class RenderProbe extends React.PureComponent<Props> {
               error: undefined,
             }}
             options={[
-              { value: "none", text: "None" },
-              {
-                value: "httpGet",
-                selectedText: "Http Get Request",
-                text: (
-                  <Box pt={1} pb={1}>
-                    <Typography variant="h6">Http Get Request</Typography>
-                    <Typography variant="caption">
-                      Http get request returns successful response (status {">="} 200 and {"<"} 400).
-                    </Typography>
-                  </Box>
-                ),
-              },
-              {
-                value: "exec",
-                selectedText: "Command",
-                text: (
-                  <Box pt={1} pb={1}>
-                    <Typography variant="h6">Command</Typography>
-                    <Typography variant="caption">Execute command returns 0 exit code.</Typography>
-                  </Box>
-                ),
-              },
-              {
-                value: "tcpSocket",
-                selectedText: "TCP",
-                text: (
-                  <Box pt={1} pb={1}>
-                    <Typography variant="h6">TCP</Typography>
-                    <Typography variant="caption">Establish a TCP connection Successfully.</Typography>
-                  </Box>
-                ),
-              },
+              makeSelectOption("none", "None", sc.PROBE_NONE_OPTION),
+              makeSelectOption("httpGet", "HTTP", sc.PROBE_HTTP_OPTION),
+              makeSelectOption("exec", "Command", sc.PROBE_COMMAND_OPTION),
+              makeSelectOption("tcpSocket", "TCP", sc.PROBE_TCP_OPTION),
             ]}
           />
         </Grid>
