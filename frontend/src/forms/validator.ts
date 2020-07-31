@@ -179,10 +179,6 @@ export const ValidateHost = (value: string) => {
     return "Host length must be between 1 and 511 characters.";
   }
 
-  var regExpHostname = new RegExp(
-    /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/,
-  ); // RFC 1123
-
   var regResultHostname = regExpHostname.exec(value);
   if (regResultHostname === null) {
     return "Domain is invalid.";
@@ -195,15 +191,16 @@ export const regExpIp = new RegExp(
   "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$",
 );
 
+export const regExpHostname = new RegExp(
+  /^(\*\.)?(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/,
+);
+
 const validateHostWithWildcardPrefix = (value: string) => {
   if (value.length === 0 || value.length > 511) {
     return "Host length must be between 1 and 511 characters.";
   }
 
   var regResultIp = regExpIp.exec(value);
-  var regExpHostname = new RegExp(
-    /^(\*\.)?(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/,
-  ); // RFC 1123 but allow "*." prefix
 
   var regResultHostname = regExpHostname.exec(value);
   if (regResultIp === null && regResultHostname === null) {
