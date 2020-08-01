@@ -14,7 +14,7 @@ metadata:
 spec:
   image: k8s.gcr.io/echoserver:1.10
   ports:
-    - name: http
+    - protocol: http
       containerPort: 8080
       servicePort: 80
 ---
