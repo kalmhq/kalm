@@ -192,7 +192,7 @@ export const regExpIp = new RegExp(
 );
 
 export const regExpHostname = new RegExp(
-  /^([a-z0-9\*])(([a-z0-9-]{1,61})?[a-z0-9]{1})?(\.[a-z0-9](([a-z0-9-]{1,61})?[a-z0-9]{1})?)?(\.[a-zA-Z]{2,4})+$/,
+  /^([a-z0-9*])(([a-z0-9-]{1,61})?[a-z0-9]{1})?(\.[a-z0-9](([a-z0-9-]{1,61})?[a-z0-9]{1})?)?(\.[a-zA-Z]{2,4})+$/,
 );
 
 const validateHostWithWildcardPrefix = (value: string) => {
