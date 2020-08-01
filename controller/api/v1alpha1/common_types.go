@@ -1,7 +1,6 @@
 package v1alpha1
 
 import (
-	corev1 "k8s.io/api/core/v1"
 	rbacV1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
@@ -13,6 +12,17 @@ const (
 	EnvVarTypeExternal EnvVarType = "external"
 	EnvVarTypeLinked   EnvVarType = "linked"
 	EnvVarTypeFieldRef EnvVarType = "fieldref"
+)
+
+type PortProtocol string
+
+const (
+	PortProtocolHTTP  PortProtocol = "http"
+	PortProtocolHTTPS PortProtocol = "https"
+	PortProtocolHTTP2 PortProtocol = "http2"
+	PortProtocolGRPC  PortProtocol = "grpc"
+	PortProtocolTCP   PortProtocol = "tcp"
+	PortProtocolUDP   PortProtocol = "udp"
 )
 
 // EnvVar represents an environment variable present in a Container.
@@ -31,8 +41,6 @@ type EnvVar struct {
 }
 
 type Port struct {
-	Name string `json:"name"`
-
 	// +kubebuilder:validation:Maximum:65535
 	ContainerPort uint32 `json:"containerPort"`
 
@@ -40,8 +48,8 @@ type Port struct {
 	// +kubebuilder:validation:Maximum:65535
 	ServicePort uint32 `json:"servicePort,omitempty"`
 
-	// +kubebuilder:validation:Enum=TCP;UDP;SCTP
-	Protocol corev1.Protocol `json:"protocol,omitempty"`
+	// +kubebuilder:validation:Enum=http;http2;grpc;https;tcp;udp
+	Protocol PortProtocol `json:"protocol"`
 }
 
 type VolumeType string
