@@ -25,8 +25,16 @@ export type ComponentLikeEnv = ImmutableMap<{
   value: string;
 }>;
 
+export type PortProtocol = string;
+
+export const PortProtocolHTTP: PortProtocol = "http";
+export const PortProtocolHTTPS: PortProtocol = "https";
+export const PortProtocolHTTP2: PortProtocol = "http2";
+export const PortProtocolGRPC: PortProtocol = "grpc";
+export const PortProtocolTCP: PortProtocol = "tcp";
+export const PortProtocolUDP: PortProtocol = "udp";
+
 export type ComponentLikePort = ImmutableMap<{
-  name: string;
   protocol: string;
   containerPort: number;
   servicePort: number;
