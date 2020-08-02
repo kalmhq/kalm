@@ -10,7 +10,7 @@ import {
   RESOURCE_TYPE_NODE,
   WATCHED_RESOURCE_CHANGE,
 } from "types/resources";
-import { addOrUpdateInList, removeInList } from "reducers/utils";
+import { addOrUpdateInList, removeInList, isInList } from "reducers/utils";
 
 interface StateContent {
   isLoading: boolean;
@@ -55,7 +55,9 @@ const reducer = (state: State = initialState, action: Actions): State => {
 
       switch (action.payload.action) {
         case RESOURCE_ACTION_ADD: {
-          state = state.update("nodes", (x) => addOrUpdateInList(x, action.payload.data));
+          if (!isInList(state.get("nodes"), action.payload.data)) {
+            state = state.update("nodes", (x) => addOrUpdateInList(x, action.payload.data));
+          }
           break;
         }
         case RESOURCE_ACTION_DELETE: {

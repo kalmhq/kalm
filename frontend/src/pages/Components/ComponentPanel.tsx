@@ -21,7 +21,7 @@ const styles = (theme: Theme) =>
     },
     componentIcon: {
       height: "1.25rem",
-      color: theme.palette.primary.light,
+      color: theme.palette.type === "light" ? theme.palette.primary.light : "#FFFFFF",
     },
   });
 
@@ -54,26 +54,30 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
     return (
       <Container>
         <Grid container className={classes.componentTitleRow} spacing={2}>
-          <Grid item className={classes.componentIcon}>
-            <KalmComponentsIcon fontSize={"large"} />
-          </Grid>
           <Grid item xs={2}>
-            <Box display="flex" minWidth={200}>
-              <H6>{component.get("name")}</H6>
+            <Box display={"flex"}>
+              <Box pr={2}>
+                <KalmComponentsIcon fontSize={"large"} />
+              </Box>
+              <Box display="flex" minWidth={200}>
+                <H6>{component.get("name")}</H6>
+              </Box>
             </Box>
           </Grid>
-          <Grid container xs={8} spacing={10} justify={"flex-start"}>
-            <Grid item>
-              <Caption>Pods</Caption>
-              <Subtitle1>{this.getPodsNumber()}</Subtitle1>
-            </Grid>
-            <Grid item>
-              <Caption>Type</Caption>
-              <Subtitle1>{component.get("workloadType")}</Subtitle1>
-            </Grid>
-            <Grid item>
-              <Caption>Image</Caption>
-              <Subtitle1>{component.get("image")}</Subtitle1>
+          <Grid item xs={9}>
+            <Grid container spacing={10} justify={"flex-start"}>
+              <Grid item>
+                <Caption>Pods</Caption>
+                <Subtitle1>{this.getPodsNumber()}</Subtitle1>
+              </Grid>
+              <Grid item>
+                <Caption>Type</Caption>
+                <Subtitle1>{component.get("workloadType")}</Subtitle1>
+              </Grid>
+              <Grid item>
+                <Caption>Image</Caption>
+                <Subtitle1>{component.get("image")}</Subtitle1>
+              </Grid>
             </Grid>
           </Grid>
         </Grid>

@@ -10,6 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"testing"
@@ -114,6 +115,41 @@ func (suite *ComponentControllerSuite) TestComponentBasicCRUD() {
 		return t1 && t2
 
 	}, "component delete is not working")
+}
+
+func (suite *ComponentControllerSuite) TestComponentSetControllerRef() {
+	plugin := generateEmptyComponentPlugin()
+	suite.createComponentPlugin(plugin)
+
+	component := generateEmptyComponent(suite.ns.Name)
+	suite.createComponent(component)
+
+	binding := &v1alpha1.ComponentPluginBinding{
+		ObjectMeta: metaV1.ObjectMeta{
+			Namespace: component.Namespace,
+			Name:      fmt.Sprintf("%s-%s", component.Name, plugin.Name),
+		},
+		Spec: v1alpha1.ComponentPluginBindingSpec{
+			PluginName:    plugin.Name,
+			ComponentName: component.Name,
+			Config:        &runtime.RawExtension{Raw: []byte(`{"replicas": 2}`)},
+		},
+	}
+
+	suite.Nil(suite.K8sClient.Create(context.Background(), binding))
+
+	suite.Eventually(func() bool {
+		suite.K8sClient.Get(suite.ctx, client.ObjectKey{
+			Namespace: component.Namespace,
+			Name:      fmt.Sprintf("%s-%s", component.Name, plugin.Name),
+		}, binding)
+
+		targetOwnerRef := metaV1.OwnerReference{
+			UID: component.UID,
+		}
+
+		return containsOwnerRef(binding.OwnerReferences, targetOwnerRef)
+	})
 }
 
 func (suite *ComponentControllerSuite) TestOnlyStaticEnvs() {

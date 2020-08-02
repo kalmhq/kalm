@@ -19,7 +19,7 @@ import { AutocompleteProps, RenderGroupParams } from "@material-ui/lab/Autocompl
 import { WithStyles } from "@material-ui/styles";
 import clsx from "clsx";
 import Immutable from "immutable";
-import React from "react";
+import React, { useState } from "react";
 import { BaseFieldProps, WrappedFieldProps } from "redux-form";
 import { Field } from "redux-form/immutable";
 import { theme } from "theme/theme";
@@ -76,6 +76,11 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
 
   const id = ID();
 
+  // input value is not in store or state, when props changed, will clear.
+  // so, use state here to prevent clearing
+  // issue here: https://github.com/mui-org/material-ui/issues/19423#issuecomment-641463808
+  const [inputText, setInputText] = useState("");
+
   return (
     <Autocomplete
       disabled={disabled}
@@ -95,6 +100,7 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
         // So if the blur event is trigger, it will set input value(wrong value) as the autocomplete value
         // As a result, Field that is using this component mush not set a normalizer.
         (input.onBlur as any)();
+        setInputText("");
       }}
       value={input.value}
       onChange={(_event: React.ChangeEvent<{}>, values) => {
@@ -102,7 +108,12 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
           input.onChange(values);
         }
       }}
-      onInputChange={() => {}}
+      inputValue={inputText}
+      onInputChange={(event, value, reason) => {
+        if (reason === "input") {
+          setInputText(value);
+        }
+      }}
       renderTags={(value: string[], getTagProps) => {
         return value.map((option: string, index: number) => {
           return (
