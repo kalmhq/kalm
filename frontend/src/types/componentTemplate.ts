@@ -31,6 +31,7 @@ export const PortProtocolHTTP: PortProtocol = "http";
 export const PortProtocolHTTPS: PortProtocol = "https";
 export const PortProtocolHTTP2: PortProtocol = "http2";
 export const PortProtocolGRPC: PortProtocol = "grpc";
+export const PortProtocolGRPCWEB: PortProtocol = "grpc-web";
 export const PortProtocolTCP: PortProtocol = "tcp";
 export const PortProtocolUDP: PortProtocol = "udp";
 

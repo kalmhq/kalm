@@ -13,6 +13,13 @@ import { ValidatorRequired } from "../validator";
 import { RootState } from "reducers";
 import { connect } from "react-redux";
 import Typography from "@material-ui/core/Typography";
+import {
+  PortProtocolGRPC,
+  PortProtocolGRPCWEB,
+  PortProtocolHTTP,
+  PortProtocolHTTP2,
+  PortProtocolHTTPS,
+} from "types/componentTemplate";
 
 interface FieldArrayComponentHackType {
   name: any;
@@ -72,7 +79,16 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
       .forEach((svc) => {
         svc
           .get("ports")
-          .filter((p) => p.get("protocol") === "TCP")
+          .filter((p) => {
+            const appProtocol = p.get("appProtocol");
+            return (
+              appProtocol === PortProtocolHTTP ||
+              appProtocol === PortProtocolHTTP2 ||
+              appProtocol === PortProtocolHTTPS ||
+              appProtocol === PortProtocolGRPC ||
+              appProtocol === PortProtocolGRPCWEB
+            );
+          })
           .forEach((port) => {
             options.push({
               value: `${svc.get("name")}.${svc.get("namespace")}.svc.cluster.local:${port.get("port")}`,
@@ -86,7 +102,7 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
     return fields.map((member, index) => {
       const target = fields.get(index);
       return (
-        <Grid container spacing={1} key={index} alignItems="center">
+        <Grid container spacing={2} key={index} alignItems="center">
           <Grid item md={6}>
             <Field
               name={`${member}.host`}
@@ -129,7 +145,7 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
             </IconButtonWithTooltip>
           </Grid>
           {target.get("weight") === 0 ? (
-            <Grid item md={5}>
+            <Grid item md={3}>
               <Warning /> Requests won't go into this target since it has 0 weight.
             </Grid>
           ) : null}

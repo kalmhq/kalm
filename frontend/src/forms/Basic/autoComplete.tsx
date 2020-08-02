@@ -302,6 +302,7 @@ function KAutoCompleteSingleValueRaw<T>(props: KAutoCompleteSingleValueProps<KAu
       noOptionsText={noOptionsText}
       groupBy={(option) => option.group}
       options={options}
+      size="small"
       filterOptions={createFilterOptions({
         ignoreCase: true,
         matchFrom: "any",
