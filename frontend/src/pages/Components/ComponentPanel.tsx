@@ -62,18 +62,20 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
               <H6>{component.get("name")}</H6>
             </Box>
           </Grid>
-          <Grid container xs={8} spacing={10} justify={"flex-start"}>
-            <Grid item>
-              <Caption>Pods</Caption>
-              <Subtitle1>{this.getPodsNumber()}</Subtitle1>
-            </Grid>
-            <Grid item>
-              <Caption>Type</Caption>
-              <Subtitle1>{component.get("workloadType")}</Subtitle1>
-            </Grid>
-            <Grid item>
-              <Caption>Image</Caption>
-              <Subtitle1>{component.get("image")}</Subtitle1>
+          <Grid item xs={8}>
+            <Grid container spacing={10} justify={"flex-start"}>
+              <Grid item>
+                <Caption>Pods</Caption>
+                <Subtitle1>{this.getPodsNumber()}</Subtitle1>
+              </Grid>
+              <Grid item>
+                <Caption>Type</Caption>
+                <Subtitle1>{component.get("workloadType")}</Subtitle1>
+              </Grid>
+              <Grid item>
+                <Caption>Image</Caption>
+                <Subtitle1>{component.get("image")}</Subtitle1>
+              </Grid>
             </Grid>
           </Grid>
         </Grid>

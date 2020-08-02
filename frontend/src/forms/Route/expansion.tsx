@@ -15,7 +15,7 @@ import clsx from "clsx";
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      "&$expanded": {
+      "&expanded": {
         margin: "auto",
       },
     },
