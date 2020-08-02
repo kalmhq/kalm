@@ -9,6 +9,7 @@ import { TDispatch } from "types";
 import { primaryColor } from "theme/theme";
 import { blinkTopProgressAction } from "actions/settings";
 import { DashboardIcon, KalmComponentsIcon, KalmRoutesIcon } from "widgets/Icon";
+import sc from "utils/stringConstants";
 
 const mapStateToProps = (state: RootState) => {
   const auth = state.get("auth");
@@ -71,7 +72,7 @@ class ApplicationViewDrawerRaw extends React.PureComponent<Props, State> {
         icon: <KalmRoutesIcon />,
       },
       {
-        text: "Metrics",
+        text: sc.APP_DASHBOARD_PAGE_NAME,
         to: "/applications/" + activeNamespaceName + "/metrics",
         highlightWhenExact: true,
         icon: <DashboardIcon />,

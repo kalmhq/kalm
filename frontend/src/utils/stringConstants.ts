@@ -89,6 +89,7 @@ const stringConstants = {
     "You can call webhook directly. In addition, we also provide some out-of-the-box tools to help you connect with commonly used CI tools.",
   DISKS_INFOBOX_BOX1:
     "You don't need to apply disk manually. Disk will be created when you declare authentic disks in component form.",
+  APP_DASHBOARD_PAGE_NAME: "Dashboard",
 };
 
 export default stringConstants;
