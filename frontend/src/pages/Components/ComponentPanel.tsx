@@ -21,7 +21,7 @@ const styles = (theme: Theme) =>
     },
     componentIcon: {
       height: "1.25rem",
-      color: theme.palette.primary.light,
+      color: theme.palette.type === "light" ? theme.palette.primary.light : "#FFFFFF",
     },
   });
 
