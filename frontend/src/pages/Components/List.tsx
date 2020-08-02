@@ -4,7 +4,7 @@ import { deleteApplicationAction } from "actions/application";
 import { setErrorNotificationAction, setSuccessNotificationAction } from "actions/notification";
 import { withComponents, WithComponentsProps } from "hoc/withComponents";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
-import { ComponentPanel } from "pages/Components/Panel";
+import { ComponentPanel } from "pages/Components/ComponentPanel";
 import React from "react";
 import { connect } from "react-redux";
 import { Link } from "react-router-dom";

@@ -1,6 +1,6 @@
 import { Link as MLink, createStyles, Paper, Theme, withStyles, WithStyles, Box, Grid } from "@material-ui/core";
 import React from "react";
-import { Body, Caption } from "widgets/Label";
+import { Body, Body2 } from "widgets/Label";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -35,7 +35,7 @@ class InfoBoxRaw extends React.PureComponent<Props> {
               return (
                 <Grid item md={4} key={index}>
                   <Body>{option.title}</Body>
-                  <Caption>{option.content}</Caption>
+                  <Body2>{option.content}</Body2>
                 </Grid>
               );
             })}

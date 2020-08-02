@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
+import { Box, Button, createStyles, Theme, withStyles, WithStyles, Typography } from "@material-ui/core";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { BasePage } from "pages/BasePage";
@@ -54,7 +54,7 @@ class CIPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderName = (rowData: DeployKey) => {
-    return rowData.get("name");
+    return <Typography variant="subtitle2">{rowData.get("name")}</Typography>;
   };
 
   private renderScope = (rowData: DeployKey) => {
@@ -132,7 +132,7 @@ class CIPageRaw extends React.PureComponent<Props, State> {
     return (
       <Box mt={2}>
         <InfoBox
-          title="You can call webhook directly. In addition, we also provide some out-of-the-box tools to help you connect with commonly used CI tools."
+          title={sc.CI_INFO_BOX_TEXT}
           options={[
             {
               title: <BlankTargetLink href="https://kalm.dev">Use webhook (fix the link)</BlankTargetLink>,

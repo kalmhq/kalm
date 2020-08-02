@@ -1,4 +1,5 @@
 const stringConstants = {
+  APP_NAME: "Kalm",
   LIMIT_NOT_SET: "Limit Not Set",
   REQUEST_NOT_SET: "Request Not Set",
   NAME_RULE: "Names can only use digits(0-9), lowercase letters(a-z), and dashes(-). Maximum length is 180 characters.",
@@ -44,6 +45,7 @@ const stringConstants = {
     "When Pods are teriminated, running processes are first asked to gracefully shutdown with SIGTERM. However some applications may not be able to shutdown gracefully. Specify an amount of time to wait before forcefully killing the component with SIGKILL. The default value is 30 seconds. ",
   GRACEFUL_TERM_INPUT_PLACEHOLDER: "e.g. 60",
   ARE_YOU_SURE_PREFIX: "Are you sure you want to delete",
+  DELETE_APP_SUBTITLE: "This action is irrevocable, the application will be permanently deleted.",
   CONFIRM_LEAVE_WITHOUT_SAVING: "Are you sure you want to leave without saving changes?",
   EMPTY_APP_TITLE: "To get started, create your first Application",
   EMPTY_APP_SUBTITLE:
@@ -66,6 +68,27 @@ const stringConstants = {
   EMPTY_ROUTES_TITLE: "You don't have any Routes",
   EMPTY_ROUTES_SUBTITLE:
     "Add a Route to allow external requests to access your Application. You can use Routes to specify how hosts and paths map to components, configure HTTPS, and setup canary or blue-green deployments.",
+  NEW_APP_BUTTON: "Create App",
+  CERT_AUTO: "Automatic Certification with Let's Encrypt",
+  CERT_AUTO_DESC: "Use a certificate signed by Let's Encrypt. Safe and fast. Renew and update are full-automatic.",
+  CERT_UPLOAD: "Use an existing certificate",
+  CERT_UPLOAD_DESC: "Use an existing certificate. You are responsible for renewual.",
+  NODES_INFO_BOX_TEXT:
+    "Data and metrics regarding nodes in the cluster is displayed here. For cluster administration operations, please see platform specific instructions.",
+  ROUTE_HOSTS_INPUT_HELPER:
+    "If you don't have any DNS record point to this ip, you can use the ip directly in this field.",
+  ROUTE_PATHS_INPUT_HELPER: 'Allow to configure multiple paths. Each path must begin with "/".',
+  ROUTE_STRIP_PATH_LABEL: "Path Prefix should be stripped",
+  ROUTE_STRIP_PATH_HELPER: 'If enabled, Path prefixes will be rewrite to "/" when request reaches targets.',
+  ROUTE_HTTP_METHOD_ALL: "All http methods are allowed in this route.",
+  ROUTE_HTTP_METHOD_CUSTOM: "Choose allowed methods manually.",
+  ROUTE_HTTP_CUSTOM_TITLE: "Choose methods you need",
+  ROUTE_HTTPS_ALERT:
+    "You choosed https. Please note that the TLS termination will be happened in this route level, which means the targets will receive http requests instead.",
+  CI_INFO_BOX_TEXT:
+    "You can call webhook directly. In addition, we also provide some out-of-the-box tools to help you connect with commonly used CI tools.",
+  DISKS_INFOBOX_BOX1:
+    "You don't need to apply disk manually. Disk will be created when you declare authentic disks in component form.",
 };
 
 export default stringConstants;

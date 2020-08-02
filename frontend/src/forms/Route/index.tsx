@@ -358,50 +358,37 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       label="Hosts"
                       name="hosts"
                       validate={hostsValidators}
-                      placeholder="Type a host"
+                      placeholder="e.g. www.example.com"
+                      helperText={
+                        <Caption color="textSecondary">
+                          Your cluster ip is{" "}
+                          <Link
+                            href="#"
+                            onClick={() => {
+                              const isHostsIncludeIngressIP = !!hosts.find((host) => host === ingressIP);
+                              if (!isHostsIncludeIngressIP) {
+                                change("hosts", hosts.push(ingressIP));
+                              }
+                            }}
+                          >
+                            {ingressIP}
+                          </Link>
+                          . {sc.ROUTE_HOSTS_INPUT_HELPER}
+                        </Caption>
+                      }
                     />
-                    <Box mt="-4px" mb="4px" pl="14px" pr="14px">
-                      <Caption color="textSecondary">
-                        Your cluster ip is{" "}
-                        <Link
-                          href="#"
-                          onClick={() => {
-                            const isHostsIncludeIngressIP = !!hosts.find((host) => host === ingressIP);
-                            if (!isHostsIncludeIngressIP) {
-                              change("hosts", hosts.push(ingressIP));
-                            }
-                          }}
-                        >
-                          {ingressIP}
-                        </Link>
-                        . If you don't have any DNS record point to this ip, you can use the ip directly in this field.
-                      </Caption>
-                    </Box>
-
                     <KFreeSoloAutoCompleteMultipleSelectField
                       label="Path Prefixes"
                       name="paths"
                       validate={pathsValidators}
                       placeholder="e.g. /foo/bar"
-                      helperText='Allow to configure multiple paths. Each path must begin with "/".'
+                      helperText={sc.ROUTE_PATHS_INPUT_HELPER}
                     />
-                    {/* <Field
-                      InputLabelProps={{
-                        shrink: true,
-                      }}
-                      label="Path Prefixes"
-                      component={KFreeSoloAutoCompleteMultiValues}
-                      name="paths"
-                      margin="normal"
-                      validate={pathsValidators}
-                      placeholder="e.g. /foo/bar"
-                      helperText='Allow to configure multiple paths. Each path must begin with "/".'
-                    /> */}
                     <Field
                       component={KBoolCheckboxRender}
                       name="stripPath"
-                      label={<span>Strip path prefix</span>}
-                      helperText={'If enabled, Path prefixes will be rewrite to "/" when request reaches targets.'}
+                      label={sc.ROUTE_STRIP_PATH_LABEL}
+                      helperText={sc.ROUTE_STRIP_PATH_HELPER}
                     />
                   </Box>
                 }
@@ -410,28 +397,26 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
 
             <Box mb={2}>
               <KPanel
-                title="Schemes and methods"
+                title="Schemes and Methods"
                 content={
                   <Box p={2}>
-                    <Caption>Define acceptable schemes and methods for incoming requests.</Caption>
                     <Field
-                      title="Http methods"
+                      title="Http Methods"
                       component={KRadioGroupRender}
                       name="methodsMode"
                       options={[
                         {
                           value: methodsModeAll,
-                          label: "All http methods are allowed in this route.",
+                          label: sc.ROUTE_HTTP_METHOD_ALL,
                         },
                         {
                           value: methodsModeSpecific,
-                          label: "Choose allowed methods manually.",
+                          label: sc.ROUTE_HTTP_METHOD_CUSTOM,
                         },
                       ]}
                     />
                     <Collapse in={methodsMode === methodsModeSpecific}>
                       <Field
-                        title="Choose methods you need"
                         component={KCheckboxGroupRender}
                         componentType={"Checkbox"}
                         validate={methodsMode === methodsModeSpecific ? ValidatorListNotEmpty : []}
@@ -472,8 +457,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                     </Collapse>
                     <Collapse in={schemes.includes("https")}>
                       <Alert className="alert" severity="info">
-                        You choosed https. Please note that the TLS termination will be happened in this route level,
-                        which means the targets will receive http requests instead.
+                        {sc.ROUTE_HTTPS_ALERT}
                       </Alert>
                       {this.renderCertificationStatus()}
                     </Collapse>

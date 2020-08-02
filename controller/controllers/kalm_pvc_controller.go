@@ -18,13 +18,9 @@ package controllers
 import (
 	"context"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/handler"
-	"sigs.k8s.io/controller-runtime/pkg/source"
-	"strings"
 )
 
 const (
@@ -45,347 +41,59 @@ func NewKalmPVCReconciler(mgr ctrl.Manager) *KalmPVCReconciler {
 	}
 }
 
-// +kubebuilder:rbac:groups=core.kalm.dev,resources=components,verbs=get;list;watch
 // +kubebuilder:rbac:groups="",resources=persistentvolumeclaims,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups="",resources=persistentvolumes,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups="",resources=nodes,verbs=get;list;watch
-// +kubebuilder:rbac:groups=storage.k8s.io,resources=storageclasses,verbs=get;list;watch;create;update;patch;delete
 
 func (r *KalmPVCReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	r.Log.Info("reconciling kalmPvc volumes", "req", req)
 
-	ctx := context.Background()
-	log := r.Log.WithValues("kalmpvc", req.NamespacedName)
-
-	var kalmPVList corev1.PersistentVolumeList
-	if err := r.List(ctx, &kalmPVList, client.MatchingLabels{KalmLabelManaged: "true"}); err != nil {
-		return ctrl.Result{}, client.IgnoreNotFound(err)
-	}
-
-	// for all kalm PV in Released stats, clean claimRef to make it available again
-	for _, kalmPV := range kalmPVList.Items {
-		if kalmPV.Status.Phase != corev1.VolumeReleased {
-			continue
-		}
-
-		if kalmPV.Spec.ClaimRef != nil {
-			kalmPV.Spec.ClaimRef = nil
-
-			if err := r.Update(ctx, &kalmPV); err != nil {
-				return ctrl.Result{}, nil
-			}
-		}
-	}
-
-	// make sure for each active kalmPvc, underlying kalmPV is labeled with its name
-	// (to be selected using selector)
-	var pvList corev1.PersistentVolumeList
-	if err := r.List(ctx, &pvList); client.IgnoreNotFound(err) != nil {
-		return ctrl.Result{}, err
-	}
-
-	var kalmPvcList corev1.PersistentVolumeClaimList
-	err := r.List(ctx, &kalmPvcList, client.MatchingLabels{KalmLabelManaged: "true"})
-	if client.IgnoreNotFound(err) != nil {
-		return ctrl.Result{}, err
-	}
-
-	for _, pv := range pvList.Items {
-		kalmPVC, isRefed := isReferencedByKalmPVC(pv, kalmPvcList)
-		if !isRefed {
-			log.Info("pv is not refed, skipped", "pv:", pv.Name)
-			continue
-		}
-
-		if pv.Labels == nil {
-			pv.Labels = make(map[string]string)
-		}
-
-		pv.Labels[KalmLabelManaged] = "true"
-		pv.Labels[KalmLabelComponentKey] = kalmPVC.Labels[KalmLabelComponentKey]
-		pv.Labels[KalmLabelNamespaceKey] = kalmPVC.Labels[KalmLabelNamespaceKey]
-		// to be selectable by PVC
-		pv.Labels[KalmLabelPV] = pv.Name
-
-		if err := r.Update(ctx, &pv); err != nil {
+	pvc := corev1.PersistentVolumeClaim{}
+	err := r.Get(r.ctx, client.ObjectKey{Name: req.Name, Namespace: req.Namespace}, &pvc)
+	if err != nil {
+		if !errors.IsNotFound(err) {
 			return ctrl.Result{}, err
 		}
 	}
 
-	// prepare storage class
-	cloudProvider, ok := r.guessCurrentCloudProvider()
-	if !ok {
-		log.Info("fail to find current cloudProvier")
+	// ignore if pvc is not deleted
+	pvcIsDeleted := errors.IsNotFound(err)
+	if !pvcIsDeleted {
 		return ctrl.Result{}, nil
 	}
 
-	err = r.reconcileDefaultStorageClass(cloudProvider)
-	if err != nil {
-		return ctrl.Result{}, err
+	// for every deletion of pvc, loop to make unbounded pv available again
+
+	var kalmPVList corev1.PersistentVolumeList
+	if err := r.List(r.ctx, &kalmPVList, client.MatchingLabels{KalmLabelManaged: "true"}); err != nil {
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	// clean claimRef to make it available again
+	for _, pv := range kalmPVList.Items {
+
+		claimRef := pv.Spec.ClaimRef
+
+		if claimRef == nil {
+			continue
+		}
+
+		// ignore if claimRef is not this deleted PVC
+		if claimRef.Namespace != req.Namespace ||
+			claimRef.Name != req.Name {
+			continue
+		}
+
+		pv.Spec.ClaimRef = nil
+		if err := r.Update(r.ctx, &pv); err != nil {
+			return ctrl.Result{}, nil
+		}
 	}
 
 	return ctrl.Result{}, nil
 }
 
-func isReferencedByKalmPVC(pv corev1.PersistentVolume, list corev1.PersistentVolumeClaimList,
-) (pvc corev1.PersistentVolumeClaim, isRefed bool) {
-
-	for _, pvc := range list.Items {
-		if pvc.Spec.VolumeName == pv.Name {
-			return pvc, true
-		}
-
-	}
-
-	return
-}
-
-//func findComponentUsingPVC(pvc corev1.PersistentVolumeClaim, compList v1alpha1.ComponentList) (v1alpha1.Component, bool) {
-//	for _, comp := range compList.Items {
-//
-//		if pvc.Namespace != comp.Namespace {
-//			continue
-//		}
-//
-//		for _, vol := range comp.Spec.Volumes {
-//			if vol.Type != v1alpha1.VolumeTypePersistentVolumeClaim {
-//				continue
-//			}
-//
-//			if !isStatefulSet(&comp) && vol.PVC == pvc.Name {
-//				return comp, true
-//			}
-//
-//			pvcNamePrefix := fmt.Sprintf("%s-%s-", vol.PVC, comp.Name)
-//			if isStatefulSet(&comp) && strings.HasPrefix(pvc.Name, pvcNamePrefix) {
-//				return comp, true
-//			}
-//		}
-//	}
-//
-//	return v1alpha1.Component{}, false
-//}
-
 func (r *KalmPVCReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		//For(&corev1.PersistentVolume{}).
-		//For(&v1.StorageClass{}).
 		For(&corev1.PersistentVolumeClaim{}).
-		Watches(
-			&source.Kind{Type: &corev1.PersistentVolumeClaim{}},
-			&handler.EnqueueRequestForObject{},
-		).
-		//For(&v1alpha1.Component{}).
-		//Watches(
-		//	&source.Kind{Type: &v1alpha1.Component{}},
-		//	&handler.EnqueueRequestForObject{},
-		//).
-		Watches(
-			&source.Kind{Type: &corev1.PersistentVolume{}},
-			&handler.EnqueueRequestForObject{},
-		).
-		Watches(
-			&source.Kind{Type: &v1.StorageClass{}},
-			&handler.EnqueueRequestForObject{},
-		).
 		Complete(r)
-}
-
-func (r *KalmPVCReconciler) guessCurrentCloudProvider() (string, bool) {
-	var nodeList corev1.NodeList
-	err := r.List(r.ctx, &nodeList)
-	if err != nil {
-		return "", false
-	}
-
-	for _, node := range nodeList.Items {
-		if isGoogleNode(node) {
-			return "gcp", true
-		}
-
-		if isMinikube(node) {
-			return "minikube", true
-		}
-		// todo, more for minikube & aws & azure
-	}
-
-	return "", false
-}
-
-func isGoogleNode(node corev1.Node) bool {
-	if strings.Contains(node.Name, "gke") {
-		return true
-	}
-
-	gkeLabels := []string{
-		"cloud.google.com/gke-nodepool",
-		"cloud.google.com/gke-os-distribution",
-	}
-
-	for _, gkeLabel := range gkeLabels {
-		if _, exist := node.Labels[gkeLabel]; exist {
-			return true
-		}
-	}
-
-	return false
-}
-
-func isMinikube(node corev1.Node) bool {
-	if node.Name == "minikube" {
-		return true
-	}
-
-	return false
-}
-
-const (
-	KalmAnnoSCDocLink   = "kalm-annotation-sc-doc-link"
-	KalmAnnoSCPriceLink = "kalm-annotation-sc-price-link"
-)
-
-var docInfoOnStorageClass = map[string]map[string]string{
-	"aws": {
-		KalmAnnoSCDocLink:   "todo",
-		KalmAnnoSCPriceLink: "todo",
-	},
-	"azure": {
-		KalmAnnoSCDocLink:   "todo",
-		KalmAnnoSCPriceLink: "todo",
-	},
-	"gcp": {
-		KalmAnnoSCDocLink:   "https://cloud.google.com/compute/docs/disks#pdspecs",
-		KalmAnnoSCPriceLink: "https://cloud.google.com/compute/disks-image-pricing#disk",
-	},
-	"minikube": {
-		KalmAnnoSCDocLink:   "https://minikube.sigs.k8s.io/docs/handbook/persistent_volumes/",
-		KalmAnnoSCPriceLink: "",
-	},
-}
-
-func (r *KalmPVCReconciler) reconcileDefaultStorageClass(cloudProvider string) error {
-	var expectedStorageClasses []v1.StorageClass
-
-	reclaimPolicy := corev1.PersistentVolumeReclaimRetain
-	switch cloudProvider {
-	//todo case "minikube":
-	case "aws":
-		hdd := v1.StorageClass{
-			ObjectMeta: ctrl.ObjectMeta{
-				Name:        "kalm-hdd",
-				Annotations: docInfoOnStorageClass["aws"],
-			},
-			Provisioner:   "kubernetes.io/aws-ebs",
-			ReclaimPolicy: &reclaimPolicy,
-			Parameters: map[string]string{
-				"type":   "gp2",
-				"fstype": "ext4",
-			},
-		}
-
-		//todo ssd
-
-		expectedStorageClasses = []v1.StorageClass{hdd}
-	case "azure":
-
-		//todo
-
-	case "gcp":
-		hdd := v1.StorageClass{
-			ObjectMeta: ctrl.ObjectMeta{
-				Name:        "kalm-hdd",
-				Annotations: docInfoOnStorageClass["gcp"],
-			},
-			Provisioner:   "kubernetes.io/gce-pd",
-			ReclaimPolicy: &reclaimPolicy,
-			Parameters: map[string]string{
-				"type":             "pd-standard",
-				"fstype":           "ext4",
-				"replication-type": "none",
-			},
-		}
-		ssd := v1.StorageClass{
-			ObjectMeta: ctrl.ObjectMeta{
-				Name:        "kalm-ssd",
-				Annotations: docInfoOnStorageClass["gcp"],
-			},
-			Provisioner:   "kubernetes.io/gce-pd",
-			ReclaimPolicy: &reclaimPolicy,
-			Parameters: map[string]string{
-				"type":             "pd-ssd",
-				"fstype":           "ext4",
-				"replication-type": "none",
-			},
-		}
-
-		expectedStorageClasses = []v1.StorageClass{hdd, ssd}
-	case "minikube":
-		std := v1.StorageClass{
-			ObjectMeta: ctrl.ObjectMeta{
-				Name:        "kalm-standard",
-				Annotations: docInfoOnStorageClass["minikube"],
-			},
-			Provisioner:   "k8s.io/minikube-hostpath",
-			ReclaimPolicy: &reclaimPolicy,
-		}
-
-		expectedStorageClasses = []v1.StorageClass{std}
-	default:
-		r.Log.Info("unknown cloudProvider", "cloudProvider:", cloudProvider)
-		return nil
-	}
-
-	// set labels for kalm managed storage class
-	for i := 0; i < len(expectedStorageClasses); i++ {
-		sc := &expectedStorageClasses[i]
-
-		if sc.Labels == nil {
-			sc.Labels = make(map[string]string)
-		}
-
-		sc.Labels[KalmLabelManaged] = "true"
-	}
-
-	for _, expectedSC := range expectedStorageClasses {
-		var sc v1.StorageClass
-		isNew := false
-
-		err := r.Get(r.ctx, client.ObjectKey{Name: expectedSC.Name}, &sc)
-		if err != nil {
-			if !errors.IsNotFound(err) {
-				return err
-			}
-
-			isNew = true
-		}
-
-		if isNew {
-			if err := r.Create(r.ctx, &expectedSC); err != nil {
-				return err
-			}
-		} else {
-			sc.Parameters = expectedSC.Parameters
-			sc.Provisioner = expectedSC.Provisioner
-			sc.ReclaimPolicy = expectedSC.ReclaimPolicy
-			sc.Annotations = mergeMap(sc.Annotations, expectedSC.Annotations)
-
-			if err := r.Update(r.ctx, &expectedSC); err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
-}
-
-func mergeMap(old, new map[string]string) map[string]string {
-	if old == nil {
-		old = make(map[string]string)
-	}
-
-	for k, v := range new {
-		old[k] = v
-	}
-
-	return old
 }

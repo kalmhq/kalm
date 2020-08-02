@@ -30,6 +30,19 @@ const initialState: State = Immutable.Map({
   httpRoutes: Immutable.Map({}),
 });
 
+const isHttpRouteInState = (state: State, applicationName: string, httpRoute: HttpRoute): boolean => {
+  const httpRoutes = state.get("httpRoutes").get(applicationName);
+  if (!httpRoutes) {
+    return false;
+  }
+  const httpRouteIndex = httpRoutes.findIndex((c) => c.get("name") === httpRoute.get("name"));
+  if (httpRouteIndex < 0) {
+    return false;
+  }
+
+  return true;
+};
+
 const putHttpRouteIntoState = (
   state: State,
   applicationName: string,
@@ -113,7 +126,9 @@ const reducer = (state: State = initialState, action: Actions): State => {
       }
       switch (action.payload.action) {
         case RESOURCE_ACTION_ADD: {
-          state = putHttpRouteIntoState(state, action.payload.namespace, action.payload.data, true);
+          if (!isHttpRouteInState(state, action.payload.namespace, action.payload.data)) {
+            state = putHttpRouteIntoState(state, action.payload.namespace, action.payload.data, true);
+          }
           break;
         }
         case RESOURCE_ACTION_DELETE: {
