@@ -253,10 +253,16 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
               }}
               columns={[
                 {
-                  title: "Methods",
-                  field: "methods",
+                  title: "Domain",
+                  field: "host",
                   sorting: false,
-                  render: this.renderMethods,
+                  render: this.renderHosts,
+                },
+                {
+                  title: "Urls",
+                  field: "urls",
+                  sorting: false,
+                  render: this.renderUrls,
                 },
                 {
                   title: "Http",
@@ -271,16 +277,10 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
                   render: this.renderSupportHttps,
                 },
                 {
-                  title: "Domain",
-                  field: "host",
+                  title: "Methods",
+                  field: "methods",
                   sorting: false,
-                  render: this.renderHosts,
-                },
-                {
-                  title: "Urls",
-                  field: "urls",
-                  sorting: false,
-                  render: this.renderUrls,
+                  render: this.renderMethods,
                 },
                 {
                   title: "Targets",
