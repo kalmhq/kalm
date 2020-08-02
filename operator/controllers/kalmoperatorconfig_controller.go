@@ -26,6 +26,11 @@ import (
 	promconfig "github.com/prometheus/prometheus/config"
 	v1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+
+	//apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
+	//apiextv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	//apiextv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
@@ -36,12 +41,15 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 	"strconv"
+	"strings"
 	"time"
 )
 
 const (
-	NamespaceKalmSystem = "kalm-system"
-	KalmImgRepo         = "quay.io/kalmhq/kalm"
+	NamespaceKalmSystem  = "kalm-system"
+	KalmImgRepo          = "quay.io/kalmhq/kalm"
+	NamespaceCertManager = "cert-manager"
+	NamespaceIstio       = "istio-system"
 )
 
 //var finalizerName = "install.finalizers.kalm.dev"
@@ -113,33 +121,6 @@ func (r *KalmOperatorConfigReconciler) Reconcile(req ctrl.Request) (ctrl.Result,
 	}
 
 	config := &configs.Items[0]
-
-	//if config.ObjectMeta.DeletionTimestamp.IsZero() {
-	//	if !utils.ContainsString(config.ObjectMeta.Finalizers, finalizerName) {
-	//		config.ObjectMeta.Finalizers = append(config.ObjectMeta.Finalizers, finalizerName)
-	//		if err := r.Update(ctx, config); err != nil {
-	//			return ctrl.Result{}, err
-	//		}
-	//
-	//		log.Info("add finalizer", config.Namespace, config.Name)
-	//	}
-	//} else {
-	//	if utils.ContainsString(config.ObjectMeta.Finalizers, finalizerName) {
-	//		if err := r.deleteResources(config, ctx, log); err != nil {
-	//			log.Error(err, "delete resources error")
-	//			return ctrl.Result{}, err
-	//		}
-	//
-	//		config.ObjectMeta.Finalizers = utils.RemoveString(config.ObjectMeta.Finalizers, finalizerName)
-	//
-	//		if err := r.Update(ctx, config); err != nil {
-	//			log.Error(err, "Remove kalm operator finalizer failed.")
-	//			return ctrl.Result{}, err
-	//		}
-	//	}
-	//
-	//	return ctrl.Result{}, nil
-	//}
 
 	err := r.reconcileResources(config, ctx, log)
 
@@ -242,37 +223,37 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 		}
 	}
 
-	// TODO kalm need some specific CRD to be installed. Not some deployment to be running. Should we change the checks below?
+	// check both dp & CRD to determine if install is ready
 	if !config.Spec.SkipCertManagerInstallation && !config.Spec.SkipIstioInstallation {
 		if !r.isIstioReady(ctx) || !r.isCertManagerReady(ctx) {
-			return retryLaterErr
+			fmt.Println("1111")
+			return nil
 		}
 	} else if !config.Spec.SkipCertManagerInstallation {
 		if !r.isCertManagerReady(ctx) {
-			return retryLaterErr
+			fmt.Println("2222")
+			return nil
 		}
 	} else if !config.Spec.SkipIstioInstallation {
 		if !r.isIstioReady(ctx) {
-			return retryLaterErr
+			fmt.Println("3333")
+			return nil
 		}
 	}
 
+	fmt.Println("aaaaa")
 	if !config.Spec.SkipKalmControllerInstallation {
-		//r.Log.Info("installing kalm-controller")
 		if err := r.applyFromYaml(ctx, "kalm.yaml"); err != nil {
 			log.Error(err, "install kalm error.")
 			return err
 		}
 
-		kalmNS := "kalm-system"
-		if !r.checkIfDPReady(ctx, kalmNS, "kalm-controller") {
-			return retryLaterErr
+		if !r.isKalmSystemReady(ctx) {
+			return nil
 		}
 	}
 
 	if !config.Spec.SkipKalmDashboardInstallation {
-		//r.Log.Info("installing kalm-dashboard")
-
 		dashboardVersion := "latest"
 		if config.Spec.DashboardVersion != "" {
 			dashboardVersion = config.Spec.DashboardVersion
@@ -332,8 +313,8 @@ func (r *KalmOperatorConfigReconciler) AddRecordingRulesForIstioPrometheus(ctx c
 		return nil
 	}
 
-	dpPromethues := v1.Deployment{}
-	err = r.Get(ctx, types.NamespacedName{Name: "prometheus", Namespace: "istio-system"}, &dpPromethues)
+	dpPrometheus := v1.Deployment{}
+	err = r.Get(ctx, types.NamespacedName{Name: "prometheus", Namespace: "istio-system"}, &dpPrometheus)
 	if err != nil {
 		if !errors.IsNotFound(err) {
 			return err
@@ -347,9 +328,10 @@ func (r *KalmOperatorConfigReconciler) AddRecordingRulesForIstioPrometheus(ctx c
 	v := cmPrometheus.Data["prometheus.yml"]
 	pConfig, _ := promconfig.Load(v)
 
-	// TODO is this part ok if it executes more than once? @mingmin
-	if len(pConfig.RuleFiles) <= 0 {
-		pConfig.RuleFiles = []string{istioPromRecordingRulesFileName}
+	// this can executes multi-times
+	hasRecordingRules := utils.ContainsString(pConfig.RuleFiles, istioPromRecordingRulesFileName)
+	if !hasRecordingRules {
+		pConfig.RuleFiles = append(pConfig.RuleFiles, istioPromRecordingRulesFileName)
 
 		cmPrometheus.Data["prometheus.yml"] = pConfig.String()
 		cmPrometheus.Data[istioPromRecordingRulesFileName] = string(MustAsset("istio-prom-recording-rules.yaml"))
@@ -359,10 +341,10 @@ func (r *KalmOperatorConfigReconciler) AddRecordingRulesForIstioPrometheus(ctx c
 		}
 
 		// trigger update
-		dpPrometheusCopy := dpPromethues.DeepCopy()
+		dpPrometheusCopy := dpPrometheus.DeepCopy()
 		dpPrometheusCopy.Spec.Template.ObjectMeta.Labels["date"] = strconv.Itoa(int(time.Now().Unix()))
 
-		err = r.Patch(ctx, dpPrometheusCopy, client.MergeFrom(&dpPromethues))
+		err = r.Patch(ctx, dpPrometheusCopy, client.MergeFrom(&dpPrometheus))
 
 		if err != nil {
 			return err
@@ -381,6 +363,7 @@ func (r *KalmOperatorConfigReconciler) checkIfDPReady(ctx context.Context, ns st
 		}
 
 		if dp.Status.ReadyReplicas < 1 {
+			r.Log.Info("DP not ready", "dp", dpName, "ns", ns)
 			return false
 		}
 	}
@@ -388,27 +371,89 @@ func (r *KalmOperatorConfigReconciler) checkIfDPReady(ctx context.Context, ns st
 	return true
 }
 
+func (r *KalmOperatorConfigReconciler) checkIfCRDReady(ctx context.Context, crdNameOpt []string) bool {
+	for _, crdName := range crdNameOpt {
+		var crd apiextv1beta1.CustomResourceDefinition
+		err := r.Get(ctx, client.ObjectKey{Name: crdName}, &crd)
+		if err != nil {
+			r.Log.Info("CRD not ready", "crd", crdName, "err", err)
+			return false
+		}
+	}
+
+	return true
+}
+
+// make sure cert-manager is ready
 func (r *KalmOperatorConfigReconciler) isCertManagerReady(ctx context.Context) bool {
-	// make sure cert-manager is ready
-	certMgrNamespace := "cert-manager"
+
 	dps := []string{"cert-manager", "cert-manager-cainjector", "cert-manager-webhook"}
 
-	return r.checkIfDPReady(ctx, certMgrNamespace, dps...)
+	crds := []string{
+		"certificaterequests.cert-manager.io",
+		"certificates.cert-manager.io",
+		"challenges.acme.cert-manager.io",
+		"clusterissuers.cert-manager.io",
+		"issuers.cert-manager.io",
+		"orders.acme.cert-manager.io",
+	}
+
+	return r.checkIfDPReady(ctx, NamespaceCertManager, dps...) && r.checkIfCRDReady(ctx, crds)
 }
 
 func (r *KalmOperatorConfigReconciler) isIstioReady(ctx context.Context) bool {
-	istioNamespace := "istio-system"
 	dps := []string{"istiod", "istio-ingressgateway", "prometheus"}
+	crds := []string{
+		"adapters.config.istio.io",
+		"attributemanifests.config.istio.io",
+		"authorizationpolicies.security.istio.io",
+		"clusterrbacconfigs.rbac.istio.io",
+		"destinationrules.networking.istio.io",
+		"envoyfilters.networking.istio.io",
+		"gateways.networking.istio.io",
+		"handlers.config.istio.io",
+		"httpapispecbindings.config.istio.io",
+		"httpapispecs.config.istio.io",
+		"instances.config.istio.io",
+		"istiooperators.install.istio.io",
+		"peerauthentications.security.istio.io",
+		"quotaspecbindings.config.istio.io",
+		"quotaspecs.config.istio.io",
+		"rbacconfigs.rbac.istio.io",
+		"requestauthentications.security.istio.io",
+		"rules.config.istio.io",
+		"serviceentries.networking.istio.io",
+		"servicerolebindings.rbac.istio.io",
+		"serviceroles.rbac.istio.io",
+		"sidecars.networking.istio.io",
+		"templates.config.istio.io",
+		"virtualservices.networking.istio.io",
+		"workloadentries.networking.istio.io",
+	}
 
-	return r.checkIfDPReady(ctx, istioNamespace, dps...)
+	return r.checkIfDPReady(ctx, NamespaceIstio, dps...) && r.checkIfCRDReady(ctx, crds)
 }
 
-//func (r *KalmOperatorConfigReconciler) deleteResources(config *installv1alpha1.KalmOperatorConfig, ctx context.Context, log logr.Logger) error {
-//	return nil
-//}
+func (r *KalmOperatorConfigReconciler) isKalmSystemReady(ctx context.Context) bool {
+	dps := []string{"kalm-controller"}
+	crds := []string{
+		"componentpluginbindings.core.kalm.dev",
+		"componentplugins.core.kalm.dev",
+		"components.core.kalm.dev",
+		"deploykeys.core.kalm.dev",
+		"dockerregistries.core.kalm.dev",
+		"httproutes.core.kalm.dev",
+		"httpscertissuers.core.kalm.dev",
+		"httpscerts.core.kalm.dev",
+		"kalmoperatorconfigs.install.kalm.dev",
+		"protectedendpoints.core.kalm.dev",
+		"singlesignonconfigs.core.kalm.dev",
+	}
 
-type KalmIstioPrometheusWather struct {
+	return r.checkIfDPReady(ctx, NamespaceKalmSystem, dps...) && r.checkIfCRDReady(ctx, crds)
 }
+
+type KalmIstioPrometheusWather struct{}
 
 func (r *KalmIstioPrometheusWather) Map(obj handler.MapObject) []reconcile.Request {
 	if obj.Meta.GetNamespace() != "istio-system" || obj.Meta.GetName() != "prometheus" {
@@ -418,13 +463,85 @@ func (r *KalmIstioPrometheusWather) Map(obj handler.MapObject) []reconcile.Reque
 	return []reconcile.Request{{NamespacedName: types.NamespacedName{Namespace: "kalm-operator", Name: "reconcile-caused-by-prometheus-config"}}}
 }
 
+type KalmEssentialNSWatcher struct{}
+
+func (k KalmEssentialNSWatcher) Map(object handler.MapObject) []reconcile.Request {
+	// any change in essential namespace will trigger reconciliation
+	targetNamespaces := []string{
+		NamespaceIstio,
+		NamespaceCertManager,
+		NamespaceKalmSystem,
+	}
+
+	curNS := object.Meta.GetName()
+	for _, targetNs := range targetNamespaces {
+		if curNS != targetNs {
+			continue
+		}
+
+		return []reconcile.Request{{NamespacedName: types.NamespacedName{Name: "reconcile-caused-by-essential-ns-change"}}}
+	}
+
+	return nil
+}
+
+type KalmDeploymentInEssentialNSWatcher struct{}
+
+func (k KalmDeploymentInEssentialNSWatcher) Map(object handler.MapObject) []reconcile.Request {
+	// any change of dp in targetNS will trigger reconciliation
+	targetNamespaces := []string{
+		NamespaceIstio,
+		NamespaceCertManager,
+		NamespaceKalmSystem,
+	}
+
+	curNS := object.Meta.GetNamespace()
+	for _, targetNs := range targetNamespaces {
+		if curNS != targetNs {
+			continue
+		}
+
+		return []reconcile.Request{{NamespacedName: types.NamespacedName{Name: "reconcile-caused-by-dp-change-in-essential-ns"}}}
+	}
+
+	return nil
+}
+
+type KalmEssentialCRDWatcher struct{}
+
+func (k KalmEssentialCRDWatcher) Map(object handler.MapObject) []reconcile.Request {
+	fmt.Println("crd watch:", object)
+
+	essentialCRDGroups := []string{
+		"istio.io",
+		"cert-manager.io",
+		"kalm.dev",
+	}
+
+	crdName := object.Meta.GetName()
+
+	for _, essentialCRDGroup := range essentialCRDGroups {
+		if strings.HasSuffix(crdName, essentialCRDGroup) {
+			return []reconcile.Request{{NamespacedName: types.NamespacedName{Name: "reconcile-caused-by-essential-crd-change-" + crdName}}}
+		}
+	}
+
+	return nil
+}
+
 func (r *KalmOperatorConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&installv1alpha1.KalmOperatorConfig{}).
-		Watches(&source.Kind{Type: &corev1.ConfigMap{}}, &handler.EnqueueRequestsFromMapFunc{
-			ToRequests: &KalmIstioPrometheusWather{},
+		Watches(&source.Kind{Type: &corev1.Namespace{}}, &handler.EnqueueRequestsFromMapFunc{
+			ToRequests: &KalmEssentialNSWatcher{},
 		}).
 		Watches(&source.Kind{Type: &v1.Deployment{}}, &handler.EnqueueRequestsFromMapFunc{
+			ToRequests: &KalmDeploymentInEssentialNSWatcher{},
+		}).
+		Watches(&source.Kind{Type: &apiextv1beta1.CustomResourceDefinition{}}, &handler.EnqueueRequestsFromMapFunc{
+			ToRequests: &KalmEssentialCRDWatcher{},
+		}).
+		Watches(&source.Kind{Type: &corev1.ConfigMap{}}, &handler.EnqueueRequestsFromMapFunc{
 			ToRequests: &KalmIstioPrometheusWather{},
 		}).
 		Complete(r)
