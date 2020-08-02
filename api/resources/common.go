@@ -304,7 +304,7 @@ func (builder *Builder) Apply(obj runtime.Object) error {
 
 	fetchedCopy := fetched.DeepCopyObject()
 
-	setSpec(fetchedCopy, obj)
+	setSpec(obj, fetchedCopy)
 	obj = fetchedCopy
 
 	return builder.Patch(obj, client.MergeFrom(fetched))
@@ -338,12 +338,13 @@ func setSpec(fromObject interface{}, toObject interface{}) interface{} {
 		return fmt.Errorf("not a field name: Spec")
 	}
 
-	fv2 := rv.FieldByName("Spec")
+	fv2 := rv2.FieldByName("Spec")
 
 	if !fv2.IsValid() {
 		return fmt.Errorf("not a field name: Spec")
 	}
 
 	fv2.Set(fv)
+
 	return nil
 }
