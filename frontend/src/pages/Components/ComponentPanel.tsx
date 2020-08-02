@@ -54,15 +54,17 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
     return (
       <Container>
         <Grid container className={classes.componentTitleRow} spacing={2}>
-          <Grid item className={classes.componentIcon}>
-            <KalmComponentsIcon fontSize={"large"} />
-          </Grid>
           <Grid item xs={2}>
-            <Box display="flex" minWidth={200}>
-              <H6>{component.get("name")}</H6>
+            <Box display={"flex"}>
+              <Box pr={2}>
+                <KalmComponentsIcon fontSize={"large"} />
+              </Box>
+              <Box display="flex" minWidth={200}>
+                <H6>{component.get("name")}</H6>
+              </Box>
             </Box>
           </Grid>
-          <Grid item xs={8}>
+          <Grid item xs={9}>
             <Grid container spacing={10} justify={"flex-start"}>
               <Grid item>
                 <Caption>Pods</Caption>
