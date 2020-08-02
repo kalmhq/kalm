@@ -62,7 +62,7 @@ export class KRenderTextField extends React.PureComponent<withDebounceProps & Pr
         }}
         value={input.value}
         onChange={(event: ChangeEvent<HTMLInputElement>) => {
-          inputOnChangeWithDebounce(input.onChange, event.target.value, form, input.name);
+          inputOnChangeWithDebounce(dispatch, input.onChange, event.target.value, form, input.name);
         }}
       />
     );

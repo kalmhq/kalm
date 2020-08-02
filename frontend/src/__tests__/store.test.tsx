@@ -39,9 +39,8 @@ const requiredError = "Required";
 const applicationName = "test-application";
 const componentName = "test-component";
 
-beforeAll(() => {
+beforeEach(() => {
   history = createBrowserHistory();
-  // @ts-ignore
   store = configureStore(history);
 });
 
@@ -52,7 +51,7 @@ test("load certificate list", async () => {
 
 test("add certificate", () => {
   const onSubmit = jest.fn();
-  const initialValues = newEmptyCertificateForm();
+  const initialValues = newEmptyCertificateForm;
   const WrappedCertificateForm = class extends React.Component {
     public render() {
       return <CertificateForm isEdit={false} onSubmit={onSubmit} initialValues={initialValues} />;
@@ -202,7 +201,6 @@ test("add route", async (done) => {
     route = route.set("namespace", testApplication?.get("name"));
     await store.dispatch(createRouteAction(route.get("name"), testApplication?.get("name")!, route));
   };
-
   const onSubmitSuccess = () => {
     try {
       expect(!!store.getState().get("routes").get("httpRoutes")).toBeTruthy();
@@ -211,13 +209,11 @@ test("add route", async (done) => {
       done(e);
     }
   };
-
   const WrappedRouteForm = class extends React.Component {
     public render() {
-      return <RouteForm onSubmit={onSubmit} onSubmitSuccess={onSubmitSuccess} initialValues={newEmptyRouteForm()} />;
+      return <RouteForm onSubmit={onSubmit} onSubmitSuccess={onSubmitSuccess} initialValues={newEmptyRouteForm} />;
     }
   };
-
   const component = mount(
     <Provider store={store}>
       <ThemeProvider theme={theme}>
@@ -227,7 +223,6 @@ test("add route", async (done) => {
       </ThemeProvider>
     </Provider>,
   );
-
   component.find("button#add-route-submit-button").simulate("click");
   expect(getTestFormSyncErrors(store, ROUTE_FORM_ID).hosts).toBe(requiredError);
   store.dispatch(change(ROUTE_FORM_ID, "hosts", Immutable.fromJS(["test.io"])));
@@ -243,4 +238,5 @@ test("add route", async (done) => {
     ),
   );
   component.find("button#add-route-submit-button").simulate("click");
+  done();
 });
