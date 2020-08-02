@@ -10,7 +10,7 @@ export interface ServiceContent {
   namespace: string;
   ports: Immutable.List<
     ImmutableMap<{
-      name: string;
+      appProtocol: string;
       protocol: string;
       port: number;
       targetPort?: string | number;

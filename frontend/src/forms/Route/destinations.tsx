@@ -76,7 +76,7 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
           .forEach((port) => {
             options.push({
               value: `${svc.get("name")}.${svc.get("namespace")}.svc.cluster.local:${port.get("port")}`,
-              label: svc.get("name") + ":" + port.get("port"),
+              label: svc.get("name") + ":" + port.get("port") + `(${port.get("appProtocol")})`,
               group:
                 svc.get("namespace") === activeNamespace ? `${svc.get("namespace")} (Current)` : svc.get("namespace"),
             });
@@ -87,7 +87,7 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
       const target = fields.get(index);
       return (
         <Grid container spacing={1} key={index} alignItems="center">
-          <Grid item md={4}>
+          <Grid item md={6}>
             <Field
               name={`${member}.host`}
               component={KAutoCompleteSingleValue}
