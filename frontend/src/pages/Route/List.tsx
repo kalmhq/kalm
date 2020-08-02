@@ -1,4 +1,4 @@
-import { Box, Button, createStyles, Theme, Typography, withStyles, WithStyles } from "@material-ui/core";
+import { Box, Button, createStyles, Theme, withStyles, WithStyles, Link as MuiLink } from "@material-ui/core";
 import { indigo } from "@material-ui/core/colors";
 import { deleteRouteAction } from "actions/routes";
 import { blinkTopProgressAction } from "actions/settings";
@@ -19,11 +19,13 @@ import { DeleteIcon, EditIcon, ForwardIcon, KalmRoutesIcon } from "widgets/Icon"
 import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
 import { Loading } from "widgets/Loading";
 import { Namespaces } from "widgets/Namespaces";
-import { OpenInBrowser } from "widgets/OpenInBrowser";
+import { OpenInBrowser, getRouteUrl } from "widgets/OpenInBrowser";
 import { KTable } from "widgets/Table";
 import { Targets } from "widgets/Targets";
 import CheckIcon from "@material-ui/icons/Check";
 import sc from "utils/stringConstants";
+import { withClusterInfo } from "hoc/withClusterInfo";
+import { ClusterInfo } from "types/cluster";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -38,6 +40,32 @@ interface RowData extends HttpRoute {
   index: number;
 }
 
+type HostCellProps = { row: RowData; clusterInfo: ClusterInfo };
+
+/**
+ * A component that renders a cell for the "Domain" column of the Routes table
+ * Note: currently handle multiple hosts, but not multiple paths, which should probably be changed.
+ */
+const HostCellRaw = ({ row, clusterInfo }: HostCellProps) => {
+  return (
+    <Box>
+      {row.get("hosts").map((h) => {
+        const url = getRouteUrl(row as HttpRoute, clusterInfo, h);
+        return (
+          <FlexRowItemCenterBox key={h}>
+            <DomainStatus domain={h} />
+            <MuiLink href={url} target="_blank">
+              {h}
+            </MuiLink>
+          </FlexRowItemCenterBox>
+        );
+      })}
+    </Box>
+  );
+};
+
+const HostCell = withClusterInfo(HostCellRaw);
+
 class RouteListPageRaw extends React.PureComponent<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -45,18 +73,7 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
   }
 
   private renderHosts(row: RowData) {
-    return (
-      <Box>
-        {row.get("hosts").map((h) => {
-          return (
-            <FlexRowItemCenterBox key={h}>
-              <DomainStatus domain={h} />
-              <Typography>{h}</Typography>
-            </FlexRowItemCenterBox>
-          );
-        })}
-      </Box>
-    );
+    return <HostCell row={row} />;
   }
 
   private renderUrls(row: RowData) {
@@ -308,5 +325,4 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     );
   }
 }
-
 export const RouteListPage = withRoutesData(withStyles(styles)(RouteListPageRaw));
