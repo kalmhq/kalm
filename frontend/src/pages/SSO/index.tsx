@@ -111,7 +111,7 @@ class SSOPageRaw extends React.PureComponent<Props, State> {
     if (!ssoConfig) {
       return null;
     }
-
+    console.log(JSON.stringify(ssoConfig.get("connectors")));
     return (
       <>
         <KPanel title={"Single Sign-on configuration Details"}>
