@@ -1,4 +1,14 @@
-import { Box, Button, Container, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
+import {
+  Box,
+  Button,
+  Container,
+  createStyles,
+  Grid,
+  Theme,
+  withStyles,
+  WithStyles,
+  Typography,
+} from "@material-ui/core";
 import { deleteComponentAction } from "actions/component";
 import { blinkTopProgressAction } from "actions/settings";
 import { Expansion, ExpansionProps } from "forms/Route/expansion";
@@ -11,7 +21,7 @@ import { TDispatchProp } from "types";
 import { Application, ApplicationComponentDetails } from "types/application";
 import { WorkloadType } from "types/componentTemplate";
 import { DangerButton } from "widgets/Button";
-import { Subtitle1, H6, Caption } from "widgets/Label";
+import { Subtitle1, Caption } from "widgets/Label";
 import { KalmComponentsIcon } from "widgets/Icon";
 
 const styles = (theme: Theme) =>
@@ -55,11 +65,11 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
       <Container>
         <Grid container className={classes.componentTitleRow} spacing={2}>
           <Grid item className={classes.componentIcon}>
-            <KalmComponentsIcon fontSize={"large"} />
+            <KalmComponentsIcon fontSize={"default"} />
           </Grid>
           <Grid item xs={2}>
             <Box display="flex" minWidth={200}>
-              <H6>{component.get("name")}</H6>
+              <Typography variant="subtitle1">{component.get("name")}</Typography>
             </Box>
           </Grid>
           <Grid container xs={8} spacing={10} justify={"flex-start"}>
