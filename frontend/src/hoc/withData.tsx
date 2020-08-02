@@ -51,6 +51,7 @@ interface Props extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 class WithDataRaw extends React.PureComponent<Props> {
   public componentDidMount() {
     this.loadData();
+
     this.connectWebsocket();
   }
 

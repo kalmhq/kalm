@@ -19,7 +19,7 @@ import {
   RESOURCE_ACTION_DELETE,
   RESOURCE_ACTION_UPDATE,
 } from "types/resources";
-import { addOrUpdateInList, removeInList, removeInListByName } from "./utils";
+import { addOrUpdateInList, removeInList, removeInListByName, isInList } from "./utils";
 
 export type State = ImmutableMap<{
   isLoading: boolean;
@@ -71,7 +71,9 @@ const reducer = (state: State = initialState, action: Actions): State => {
 
       switch (action.payload.action) {
         case RESOURCE_ACTION_ADD: {
-          state = state.update("registries", (x) => addOrUpdateInList(x, action.payload.data));
+          if (!isInList(state.get("registries"), action.payload.data)) {
+            state = state.update("registries", (x) => addOrUpdateInList(x, action.payload.data));
+          }
           break;
         }
         case RESOURCE_ACTION_DELETE: {

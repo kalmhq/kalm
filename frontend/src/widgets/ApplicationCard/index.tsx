@@ -1,37 +1,37 @@
-import React from "react";
-import Immutable from "immutable";
 import {
-  WithStyles,
-  CardProps,
-  Theme,
-  createStyles,
-  withStyles,
-  Card,
-  IconButton,
-  CardHeader,
   Avatar,
-  CardContent,
-  Popover,
   Box,
+  Card,
   CardActions,
+  CardContent,
+  CardHeader,
+  CardProps,
+  createStyles,
   Grid,
+  IconButton,
+  Popover,
+  Theme,
+  WithStyles,
+  withStyles,
 } from "@material-ui/core";
-import { ApplicationDetails, ApplicationComponentDetails } from "types/application";
-import { stringToColor } from "utils/color";
-import { Body, H6, Caption } from "widgets/Label";
-import { getApplicationCreatedAtString } from "utils/application";
-import { CardCPULineChart, CardMemoryLineChart } from "widgets/SmallLineChart";
-import { HttpRoute } from "types/route";
-import PopupState, { bindTrigger, bindPopover } from "material-ui-popup-state";
-import { RouteWidgets } from "pages/Route/Widget";
-import { POPPER_ZINDEX } from "layout/Constants";
 import { blinkTopProgressAction } from "actions/settings";
-import { DeleteIcon, KalmDetailsIcon, KalmComponentsIcon, KalmApplicationIcon, KalmRoutesIcon } from "widgets/Icon";
-import { FoldButtonGroup } from "widgets/FoldButtonGroup";
-import { DoughnutChart } from "widgets/DoughnutChart";
+import Immutable from "immutable";
+import { POPPER_ZINDEX } from "layout/Constants";
+import PopupState, { bindPopover, bindTrigger } from "material-ui-popup-state";
+import { RouteWidgets } from "pages/Route/Widget";
+import React from "react";
+import { ApplicationComponentDetails, ApplicationDetails } from "types/application";
+import { HttpRoute } from "types/route";
+import { getApplicationCreatedAtString } from "utils/application";
+import { stringToColor } from "utils/color";
 import { pluralize } from "utils/string";
-import { KMLink, KLink } from "widgets/Link";
-import { IconLinkWithToolTip, IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
+import { DoughnutChart } from "widgets/DoughnutChart";
+import { FoldButtonGroup } from "widgets/FoldButtonGroup";
+import { DeleteIcon, KalmApplicationIcon, KalmComponentsIcon, KalmDetailsIcon, KalmRoutesIcon } from "widgets/Icon";
+import { IconButtonWithTooltip, IconLinkWithToolTip } from "widgets/IconButtonWithTooltip";
+import { Caption, H6 } from "widgets/Label";
+import { KLink, KMLink } from "widgets/Link";
+import { CardCPULineChart, CardMemoryLineChart } from "widgets/SmallLineChart";
 
 const ApplicationCardStyles = (theme: Theme) =>
   createStyles({

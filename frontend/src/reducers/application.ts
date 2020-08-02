@@ -22,7 +22,7 @@ import {
   RESOURCE_TYPE_APPLICATION,
   WATCHED_RESOURCE_CHANGE,
 } from "types/resources";
-import { addOrUpdateInList, removeInList, removeInListByName } from "./utils";
+import { addOrUpdateInList, removeInList, removeInListByName, isInList } from "./utils";
 
 export type State = ImmutableMap<{
   applications: Immutable.List<ApplicationDetails>;
@@ -99,7 +99,10 @@ const reducer = (state: State = initialState, action: Actions): State => {
 
       switch (action.payload.action) {
         case RESOURCE_ACTION_ADD: {
-          if (action.payload.data.get("status") === "Active") {
+          if (
+            action.payload.data.get("status") === "Active" &&
+            !isInList(state.get("applications"), action.payload.data)
+          ) {
             state = state.update("applications", (x) => addOrUpdateInList(x, action.payload.data, false));
           }
           break;
