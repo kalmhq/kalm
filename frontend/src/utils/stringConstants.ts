@@ -1,3 +1,9 @@
+/**
+ * Put UI strings in this file either to avoid inconsistencies
+ * or if you would like for a piece of copy to be reviewed.
+ * This flat strings map is probably sufficient for now, but we should
+ * replace this with a sophisticated solution if Localization is ever needed.
+ */
 const stringConstants = {
   APP_NAME: "Kalm",
   LIMIT_NOT_SET: "Limit Not Set",
