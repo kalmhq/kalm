@@ -21,6 +21,7 @@ const styles = (theme: Theme) =>
     },
     icon: {
       position: "absolute",
+      color: theme.palette.type === "light" ? theme.palette.text.secondary : theme.palette.text.primary,
     },
     text: {
       display: "flex",
@@ -98,20 +99,24 @@ class DoughnutChartRaw extends React.PureComponent<Props, State> {
       <div className={classes.root} style={{ width: size, minWidth: size }}>
         {title && <CenterCaption>{title}</CenterCaption>}
         <div className={classes.pieChartWrapper}>
-          <div className={classes.icon}>{icon ? icon : null}</div>
-          <Doughnut
-            height={icon ? smallSize : size}
-            width={icon ? smallSize : size}
-            data={chartData}
-            options={{
-              maintainAspectRatio: false,
-              cutoutPercentage: icon ? 65 : 70,
-              tooltips: { enabled: dataSum === 0 ? false : true },
-              legend: {
-                display: false,
-              },
-            }}
-          />
+          <Box className={classes.icon} zIndex={1}>
+            {icon ? icon : null}
+          </Box>
+          <Box zIndex={10} width={icon ? smallSize : size} height={icon ? smallSize : size}>
+            <Doughnut
+              height={icon ? smallSize : size}
+              width={icon ? smallSize : size}
+              data={chartData}
+              options={{
+                maintainAspectRatio: false,
+                cutoutPercentage: icon ? 65 : 70,
+                tooltips: { enabled: dataSum === 0 ? false : true },
+                legend: {
+                  display: false,
+                },
+              }}
+            />
+          </Box>
         </div>
         {icon == null && this.renderLabels(dataSum, labels, data, title)}
       </div>

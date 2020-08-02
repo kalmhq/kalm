@@ -18,7 +18,7 @@ import {
 } from "@material-ui/core";
 import { ApplicationDetails, ApplicationComponentDetails } from "types/application";
 import { stringToColor } from "utils/color";
-import { Body, H6, Caption } from "widgets/Label";
+import { H6, Caption } from "widgets/Label";
 import { getApplicationCreatedAtString } from "utils/application";
 import { CardCPULineChart, CardMemoryLineChart } from "widgets/SmallLineChart";
 import { HttpRoute } from "types/route";

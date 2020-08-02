@@ -6,7 +6,6 @@ import { connect } from "react-redux";
 import { NavLink } from "react-router-dom";
 import { RootState } from "reducers";
 import { TDispatch } from "types";
-import { primaryColor } from "theme/theme";
 import { blinkTopProgressAction } from "actions/settings";
 
 const mapStateToProps = (state: RootState) => {
@@ -33,7 +32,9 @@ const styles = (theme: Theme) =>
       borderLeft: `4px solid transparent`,
     },
     listItemSeleted: {
-      borderLeft: `4px solid ${primaryColor}`,
+      borderLeft: `4px solid ${
+        theme.palette.type === "light" ? theme.palette.primary.dark : theme.palette.primary.light
+      }`,
     },
     listSubHeader: {
       textTransform: "uppercase",
