@@ -10,7 +10,6 @@ import { Methods } from "pages/Route/Methods";
 import React from "react";
 import { Link } from "react-router-dom";
 import { HttpRoute } from "types/route";
-import { SuccessBadge } from "widgets/Badge";
 import { FlexRowItemCenterBox } from "widgets/Box";
 import { CustomizedButton } from "widgets/Button";
 import { CopyAsCurl } from "widgets/CopyAsCurl";
@@ -23,6 +22,7 @@ import { Namespaces } from "widgets/Namespaces";
 import { OpenInBrowser } from "widgets/OpenInBrowser";
 import { KTable } from "widgets/Table";
 import { Targets } from "widgets/Targets";
+import CheckIcon from "@material-ui/icons/Check";
 import sc from "utils/stringConstants";
 
 const styles = (theme: Theme) =>
@@ -93,13 +93,13 @@ class RouteListPageRaw extends React.PureComponent<Props, State> {
     }
 
     if (row.get("schemes").find((x) => x === "http")) {
-      return <SuccessBadge />;
+      return <CheckIcon />;
     }
   }
 
   private renderSupportHttps(row: RowData) {
     if (row.get("schemes").find((x) => x === "https")) {
-      return <SuccessBadge />;
+      return <CheckIcon />;
     }
   }
 
