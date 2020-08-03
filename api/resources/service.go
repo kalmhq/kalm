@@ -55,6 +55,26 @@ func (builder *Builder) GetServiceListChannel(opts ...client.ListOption) *Servic
 	return channel
 }
 
+func BuildServiceResponse(svc *coreV1.Service) *Service {
+	ports := make([]ServicePort, len(svc.Spec.Ports))
+
+	for j, port := range svc.Spec.Ports {
+		ports[j] = ServicePort{
+			AppProtocol: getAppProtocolFromServiceName(port.Name),
+			Protocol:    port.Protocol,
+			Port:        port.Port,
+			TargetPort:  int32(port.TargetPort.IntValue()),
+			NodePort:    port.NodePort,
+		}
+	}
+
+	return &Service{
+		Name:      svc.Name,
+		Namespace: svc.Namespace,
+		Ports:     ports,
+	}
+}
+
 func (builder *Builder) GetServices(namespace string) ([]*Service, error) {
 	var services coreV1.ServiceList
 
@@ -65,24 +85,7 @@ func (builder *Builder) GetServices(namespace string) ([]*Service, error) {
 	res := make([]*Service, len(services.Items))
 
 	for i := range services.Items {
-
-		ports := make([]ServicePort, len(services.Items[i].Spec.Ports))
-
-		for j, port := range services.Items[i].Spec.Ports {
-			ports[j] = ServicePort{
-				AppProtocol: getAppProtocolFromServiceName(port.Name),
-				Protocol:    port.Protocol,
-				Port:        port.Port,
-				TargetPort:  int32(port.TargetPort.IntValue()),
-				NodePort:    port.NodePort,
-			}
-		}
-
-		res[i] = &Service{
-			Name:      services.Items[i].Name,
-			Namespace: services.Items[i].Namespace,
-			Ports:     ports,
-		}
+		res[i] = BuildServiceResponse(&services.Items[i])
 	}
 
 	return res, nil
