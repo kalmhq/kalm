@@ -71,13 +71,7 @@ class DomainStatus extends React.PureComponent<Props> {
     const isLoading = !domainStatus?.get("cname");
     const aRecords = domainStatus?.get("aRecords");
     const isError = (!aRecords || !aRecords.includes(ingressIP)) && domain !== ingressIP;
-
-    if (isLoading) {
-      return {
-        icon: <CircularProgress size={20} style={{ marginLeft: 2, marginRight: 2 }} />,
-        body: <Box p={2}>checking domain status</Box>,
-      };
-    } else if (isError) {
+    if (isError) {
       return {
         icon: <WarningIcon color="action" />,
         body: (
@@ -96,6 +90,11 @@ class DomainStatus extends React.PureComponent<Props> {
             </IconButtonWithTooltip>
           </Box>
         ),
+      };
+    } else if (isLoading) {
+      return {
+        icon: <CircularProgress size={20} style={{ marginLeft: 2, marginRight: 2 }} />,
+        body: <Box p={2}>checking domain status</Box>,
       };
     } else {
       return {
