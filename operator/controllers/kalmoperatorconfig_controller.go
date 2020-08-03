@@ -178,12 +178,18 @@ func (r *KalmOperatorConfigReconciler) applyFromYaml(ctx context.Context, yamlNa
 			}
 		}
 
-		if err := r.Client.Patch(ctx, object, client.Merge); err != nil {
-			r.Log.Error(err, fmt.Sprintf("Apply object failed. %v", objectKey))
-			return err
+		if object.GetObjectKind().GroupVersionKind().Kind == "CustomResourceDefinition" {
+			r.Log.Info("Skip path crd",
+				"gkv", object.GetObjectKind().GroupVersionKind(),
+				"objKey", objectKey)
+		} else {
+			if err := r.Client.Patch(ctx, object, client.Merge); err != nil {
+				r.Log.Error(err, fmt.Sprintf("Apply object failed. %v", objectKey))
+				return err
+			}
+			r.Log.Info(fmt.Sprintf("Patch object %s", objectKey.String()))
 		}
 
-		r.Log.Info(fmt.Sprintf("Patch object %s", objectKey.String()))
 	}
 
 	return nil
@@ -226,22 +232,18 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 	// check both dp & CRD to determine if install is ready
 	if !config.Spec.SkipCertManagerInstallation && !config.Spec.SkipIstioInstallation {
 		if !r.isIstioReady(ctx) || !r.isCertManagerReady(ctx) {
-			fmt.Println("1111")
 			return nil
 		}
 	} else if !config.Spec.SkipCertManagerInstallation {
 		if !r.isCertManagerReady(ctx) {
-			fmt.Println("2222")
 			return nil
 		}
 	} else if !config.Spec.SkipIstioInstallation {
 		if !r.isIstioReady(ctx) {
-			fmt.Println("3333")
 			return nil
 		}
 	}
 
-	fmt.Println("aaaaa")
 	if !config.Spec.SkipKalmControllerInstallation {
 		if err := r.applyFromYaml(ctx, "kalm.yaml"); err != nil {
 			log.Error(err, "install kalm error.")
@@ -290,7 +292,9 @@ func (r *KalmOperatorConfigReconciler) reconcileResources(config *installv1alpha
 			}
 		} else {
 			dashboard.Spec = expectedDashboard.Spec
+			r.Log.Info("updating dashboard component in kalm-system")
 			if err := r.Client.Update(ctx, &dashboard); err != nil {
+				r.Log.Error(err, "fail updating dashboard component in kalm-system")
 				return err
 			}
 		}
@@ -479,7 +483,12 @@ func (k KalmEssentialNSWatcher) Map(object handler.MapObject) []reconcile.Reques
 			continue
 		}
 
-		return []reconcile.Request{{NamespacedName: types.NamespacedName{Name: "reconcile-caused-by-essential-ns-change"}}}
+		return []reconcile.Request{{
+			NamespacedName: types.NamespacedName{
+				Name:      "reconcile-caused-by-essential-ns-change",
+				Namespace: curNS,
+			}},
+		}
 	}
 
 	return nil
@@ -501,7 +510,12 @@ func (k KalmDeploymentInEssentialNSWatcher) Map(object handler.MapObject) []reco
 			continue
 		}
 
-		return []reconcile.Request{{NamespacedName: types.NamespacedName{Name: "reconcile-caused-by-dp-change-in-essential-ns"}}}
+		return []reconcile.Request{{
+			NamespacedName: types.NamespacedName{
+				Name:      "reconcile-caused-by-dp-change-in-essential-ns-" + object.Meta.GetName(),
+				Namespace: curNS,
+			},
+		}}
 	}
 
 	return nil
@@ -510,7 +524,6 @@ func (k KalmDeploymentInEssentialNSWatcher) Map(object handler.MapObject) []reco
 type KalmEssentialCRDWatcher struct{}
 
 func (k KalmEssentialCRDWatcher) Map(object handler.MapObject) []reconcile.Request {
-	fmt.Println("crd watch:", object)
 
 	essentialCRDGroups := []string{
 		"istio.io",
@@ -522,7 +535,11 @@ func (k KalmEssentialCRDWatcher) Map(object handler.MapObject) []reconcile.Reque
 
 	for _, essentialCRDGroup := range essentialCRDGroups {
 		if strings.HasSuffix(crdName, essentialCRDGroup) {
-			return []reconcile.Request{{NamespacedName: types.NamespacedName{Name: "reconcile-caused-by-essential-crd-change-" + crdName}}}
+			return []reconcile.Request{{
+				NamespacedName: types.NamespacedName{
+					Name: "reconcile-caused-by-essential-crd-change-" + crdName,
+				},
+			}}
 		}
 	}
 

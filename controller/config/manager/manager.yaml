@@ -4,6 +4,7 @@ metadata:
   labels:
     control-plane: controller
     kalm-enabled: "true"
+    istio-injection: enabled
   name: system
 ---
 apiVersion: apps/v1
