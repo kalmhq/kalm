@@ -1,14 +1,4 @@
-import {
-  Box,
-  Button,
-  Container,
-  createStyles,
-  Grid,
-  Theme,
-  withStyles,
-  WithStyles,
-  Typography,
-} from "@material-ui/core";
+import { Box, Button, Container, createStyles, Grid, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { deleteComponentAction } from "actions/component";
 import { blinkTopProgressAction } from "actions/settings";
 import { Expansion, ExpansionProps } from "forms/Route/expansion";
@@ -71,7 +61,7 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
                 <KalmComponentsIcon fontSize={"default"} />
               </Box>
               <Box display="flex" minWidth={200}>
-                <Typography variant="subtitle1">{component.get("name")}</Typography>
+                <Subtitle1>{component.get("name")}</Subtitle1>
               </Box>
             </Box>
           </Grid>
