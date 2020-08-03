@@ -27,7 +27,8 @@ import { KalmComponentsIcon } from "widgets/Icon";
 const styles = (theme: Theme) =>
   createStyles({
     componentTitleRow: {
-      "padding-top": "8px",
+      paddingTop: 8,
+      alignItems: "center",
     },
     componentIcon: {
       height: "1.25rem",
