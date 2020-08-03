@@ -85,6 +85,9 @@ const stringConstants = {
   ROUTE_HTTP_CUSTOM_TITLE: "Choose methods you need",
   ROUTE_HTTPS_ALERT:
     "You choosed https. Please note that the TLS termination will be happened in this route level, which means the targets will receive http requests instead.",
+  ROUTE_MULTIPLE_TARGETS_HELPER: "You can add more than one targets, click here to learn more.",
+  ROUTE_MULTIPLE_TARGETS_DESC:
+    "If you wanna process a A/B test, you can add extra targets and assign weights to them, KALM will automatic distribute requets to different target.",
   CI_INFO_BOX_TEXT:
     "You can call webhook directly. In addition, we also provide some out-of-the-box tools to help you connect with commonly used CI tools.",
   DISKS_INFOBOX_BOX1:

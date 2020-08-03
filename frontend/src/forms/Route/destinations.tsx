@@ -87,7 +87,7 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
       const target = fields.get(index);
       return (
         <Grid container spacing={1} key={index} alignItems="center">
-          <Grid item md={4}>
+          <Grid item xs={8} sm={8} md={6} lg={4} xl={4}>
             <Field
               name={`${member}.host`}
               component={KAutoCompleteSingleValue}
