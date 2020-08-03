@@ -45,11 +45,11 @@ export default class MockApi extends Api {
   };
 
   public getSimpleOptions = async (namespace: string) => {
-    return await mockStore.data.get("mockSimpleOptions");
+    return mockStore.data.get("mockSimpleOptions");
   };
 
   public getStatefulSetOptions = async (namespace: string) => {
-    return await mockStore.data.get("mockStatefulSetOptions");
+    return mockStore.data.get("mockStatefulSetOptions");
   };
 
   public getRegistries = async () => {
@@ -75,8 +75,23 @@ export default class MockApi extends Api {
       ?.find((component) => component.get("name") === name)!;
   };
 
-  public getHttpRoutes = async (namespace: string) => {
+  public getHttpRoutes = async () => {
     return mockStore.data.get("mockHttpRoutes");
+  };
+
+  public createHttpRoute = async (httpRoute: HttpRoute) => {
+    await mockStore.updateHttpRoute(httpRoute.get("namespace"), httpRoute);
+    return httpRoute;
+  };
+
+  public updateHttpRoute = async (httpRoute: HttpRoute) => {
+    await mockStore.updateHttpRoute(httpRoute.get("namespace"), httpRoute);
+    return Immutable.fromJS(httpRoute);
+  };
+
+  public deleteHttpRoute = async (httpRoute: HttpRoute) => {
+    await mockStore.deleteHttpRoute(httpRoute.get("namespace"), httpRoute.get("name"));
+    return true;
   };
 
   public mockLoadRolebindings = async () => {
@@ -99,11 +114,6 @@ export default class MockApi extends Api {
   public createCertificateIssuer = async (certificateIssuer: CertificateIssuerFormType, isEdit?: boolean) => {
     await mockStore.updateCertificateIssuer(certificateIssuer);
     return certificateIssuer;
-  };
-
-  public createHttpRoute = async (namespace: string, httpRoute: HttpRoute) => {
-    await mockStore.updateHttpRoute(namespace, httpRoute);
-    return httpRoute;
   };
 
   public createApplication = async (application: Application) => {
@@ -147,11 +157,6 @@ export default class MockApi extends Api {
 
   public deleteCertificate = async (name: string) => {
     await mockStore.deleteCertificate(name);
-  };
-
-  public deleteHttpRoute = async (namespace: string, name: string) => {
-    await mockStore.deleteHttpRoute(namespace, name);
-    return true;
   };
 
   public deleteApplication = async (name: string): Promise<void> => {
@@ -202,11 +207,6 @@ export default class MockApi extends Api {
   // TODO
   public loadRolebindings = async () => {
     return Immutable.fromJS([]);
-  };
-
-  public updateHttpRoute = async (namespace: string, name: string, httpRoute: HttpRoute) => {
-    await mockStore.updateHttpRoute(namespace, httpRoute);
-    return Immutable.fromJS(httpRoute);
   };
 
   public updateApplication = async (application: Application) => {

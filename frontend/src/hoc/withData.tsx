@@ -58,7 +58,7 @@ class WithDataRaw extends React.PureComponent<Props> {
   private loadData() {
     const { dispatch } = this.props;
 
-    dispatch(loadRoutesAction("")); // all namespaces
+    dispatch(loadRoutesAction()); // all namespaces
     dispatch(loadApplicationsAction());
     dispatch(loadNodesAction());
     dispatch(loadCertificatesAction());

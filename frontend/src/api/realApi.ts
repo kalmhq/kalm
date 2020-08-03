@@ -187,34 +187,37 @@ export default class RealApi extends Api {
 
   // routes
 
-  public getHttpRoutes = async (namespace: string) => {
+  public getHttpRoutes = async () => {
     const res = await axiosRequest({
       method: "get",
-      url: !!namespace ? `/${K8sApiVersion}/httproutes/${namespace}` : `/${K8sApiVersion}/httproutes`,
+      url: `/${K8sApiVersion}/httproutes`,
     });
     return Immutable.fromJS(res.data);
   };
 
-  public updateHttpRoute = async (namespace: string, name: string, httpRoute: HttpRoute) => {
+  public updateHttpRoute = async (httpRoute: HttpRoute) => {
     const res = await axiosRequest({
       method: "put",
-      url: `/${K8sApiVersion}/httproutes/${namespace}/${name}`,
+      url: `/${K8sApiVersion}/httproutes/${httpRoute.get("namespace")}/${httpRoute.get("name")}`,
       data: httpRoute,
     });
     return Immutable.fromJS(res.data);
   };
 
-  public createHttpRoute = async (namespace: string, httpRoute: HttpRoute) => {
+  public createHttpRoute = async (httpRoute: HttpRoute) => {
     const res = await axiosRequest({
       method: "post",
-      url: `/${K8sApiVersion}/httproutes/${namespace}`,
+      url: `/${K8sApiVersion}/httproutes/${httpRoute.get("namespace")}`,
       data: httpRoute,
     });
     return Immutable.fromJS(res.data);
   };
 
-  public deleteHttpRoute = async (namespace: string, name: string) => {
-    const res = await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/httproutes/${namespace}/${name}` });
+  public deleteHttpRoute = async (httpRoute: HttpRoute) => {
+    const res = await axiosRequest({
+      method: "delete",
+      url: `/${K8sApiVersion}/httproutes/${httpRoute.get("namespace")}/${httpRoute.get("name")}`,
+    });
     return res.status === 200;
   };
 

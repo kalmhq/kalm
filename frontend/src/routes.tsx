@@ -56,13 +56,9 @@ export const KalmRoutes = (
             component={RequireNamespaceReader(ApplicationShowPage)}
           />
 
-          <Route exact path="/applications/:applicationName/routes" component={RequireNamespaceReader(RouteListPage)} />
-          <Route
-            exact
-            path="/applications/:applicationName/routes/new"
-            component={RequireNamespaceReader(RouteNewPage)}
-          />
-          <Route exact path="/applications/:applicationName/routes/:name/edit" component={RouteEditPage} />
+          <Route exact path="/routes" component={RequireNamespaceReader(RouteListPage)} />
+          <Route exact path="/routes/new" component={RequireNamespaceReader(RouteNewPage)} />
+          <Route exact path="/routes/:name/edit" component={RouteEditPage} />
 
           <Route exact path="/applications/:applicationName/components" component={ComponentListPage} />
           <Route exact path="/applications/:applicationName/components/new" component={ComponentNewPage} />
