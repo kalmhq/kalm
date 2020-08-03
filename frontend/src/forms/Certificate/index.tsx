@@ -1,4 +1,4 @@
-import { Button, Grid } from "@material-ui/core";
+import { Button, Grid, Link } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { createCertificateIssuerAction } from "actions/certificate";
 import { closeDialogAction } from "actions/dialog";
@@ -32,6 +32,7 @@ import DomainStatus from "widgets/DomainStatus";
 import { Prompt } from "widgets/Prompt";
 import { CERTIFICATE_FORM_ID, ISSUER_FORM_ID } from "../formIDs";
 import { CertificateIssuerForm } from "./issuerForm";
+import { Caption } from "widgets/Label";
 
 const mapStateToProps = (state: RootState, { form }: OwnProps) => {
   const selector = formValueSelector(form || CERTIFICATE_FORM_ID);
@@ -45,6 +46,7 @@ const mapStateToProps = (state: RootState, { form }: OwnProps) => {
     httpsCertIssuer: selector(state, "httpsCertIssuer") as string,
     certificateIssuers: state.get("certificates").get("certificateIssuers") as CertificateIssuerList,
     domains: selector(state, "domains") as Immutable.List<string>,
+    ingressIP: state.get("cluster").get("info").get("ingressIP"),
   };
 };
 
@@ -254,7 +256,18 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
   };
 
   public render() {
-    const { classes, domains, dispatch, handleSubmit, managedType, isEdit, dirty, submitSucceeded } = this.props;
+    const {
+      classes,
+      domains,
+      dispatch,
+      handleSubmit,
+      managedType,
+      isEdit,
+      dirty,
+      submitSucceeded,
+      change,
+      ingressIP,
+    } = this.props;
     const icons = Immutable.List(domains.map((domain) => <DomainStatus domain={domain} />));
     return (
       <div className={classes.root}>
@@ -299,6 +312,23 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
           <Grid item md={12}>
             <KFreeSoloAutoCompleteMultipleSelectField
               disabled={managedType === selfManaged}
+              helperText={
+                <Caption color="textSecondary">
+                  Your cluster ip is{" "}
+                  <Link
+                    href="#"
+                    onClick={() => {
+                      const isDomainsIncludeIngressIP = !!domains.find((domain) => domain === ingressIP);
+                      if (!isDomainsIncludeIngressIP) {
+                        change("domains", domains.push(ingressIP));
+                      }
+                    }}
+                  >
+                    {ingressIP}
+                  </Link>
+                  . {sc.ROUTE_HOSTS_INPUT_HELPER}
+                </Caption>
+              }
               placeholder={
                 managedType === selfManaged
                   ? "Extract domains information when you upload a certificate file"
