@@ -9,6 +9,7 @@ import { Certificate, CertificateIssuer, CertificateIssuerList, CertificateList 
 import { RegistryType } from "types/registry";
 import { ImmutableMap } from "typings";
 import { Service } from "types/service";
+import { SSOConfig } from "types/sso";
 
 interface MockStoreData {
   mockClusterInfo: ClusterInfo;
@@ -27,11 +28,12 @@ interface MockStoreData {
   mockComponentPlugins: Immutable.List<ComponentPlugin>;
   mockServices: Immutable.List<Service>;
   mockVolumes: PersistentVolumes;
+  mockSSO: SSOConfig;
 }
 
 export default class MockStore {
   public data: ImmutableMap<MockStoreData>;
-  public CACHE_KEY = "kubernetes-api-mock-data-v1";
+  public CACHE_KEY = "kubernetes-api-mock-data-v2";
   public onmessage?: any;
 
   constructor() {
@@ -229,2100 +231,513 @@ export default class MockStore {
       mockNodes: Immutable.fromJS({
         nodes: [
           {
-            name: "gke-staging-new-default-pool-32bfe00c-1b67",
-            creationTimestamp: 1591876970000,
-            labels: {
-              "beta.kubernetes.io/arch": "amd64",
-              "beta.kubernetes.io/instance-type": "n1-standard-1",
-              "beta.kubernetes.io/os": "linux",
-              "cloud.google.com/gke-nodepool": "default-pool",
-              "cloud.google.com/gke-os-distribution": "cos",
-              "failure-domain.beta.kubernetes.io/region": "asia-northeast1",
-              "failure-domain.beta.kubernetes.io/zone": "asia-northeast1-a",
-              "kubernetes.io/arch": "amd64",
-              "kubernetes.io/hostname": "gke-staging-new-default-pool-32bfe00c-1b67",
-              "kubernetes.io/os": "linux",
-            },
-            annotations: {
-              "container.googleapis.com/instance_id": "147562253670916702",
-              "node.alpha.kubernetes.io/ttl": "0",
-              "volumes.kubernetes.io/controller-managed-attach-detach": "true",
-            },
-            status: {
-              capacity: {
-                "attachable-volumes-gce-pd": "127",
-                cpu: "1",
-                "ephemeral-storage": "98868448Ki",
-                "hugepages-2Mi": "0",
-                memory: "3785940Ki",
-                pods: "110",
-              },
-              allocatable: {
-                "attachable-volumes-gce-pd": "127",
-                cpu: "940m",
-                "ephemeral-storage": "47093746742",
-                "hugepages-2Mi": "0",
-                memory: "2700500Ki",
-                pods: "110",
-              },
-              conditions: [
-                {
-                  type: "FrequentKubeletRestart",
-                  status: "False",
-                  lastHeartbeatTime: "2020-07-06T02:10:18Z",
-                  lastTransitionTime: "2020-06-11T12:02:52Z",
-                  reason: "NoFrequentKubeletRestart",
-                  message: "kubelet is functioning properly",
-                },
-                {
-                  type: "FrequentDockerRestart",
-                  status: "False",
-                  lastHeartbeatTime: "2020-07-06T02:10:18Z",
-                  lastTransitionTime: "2020-06-11T12:02:52Z",
-                  reason: "NoFrequentDockerRestart",
-                  message: "docker is functioning properly",
-                },
-                {
-                  type: "FrequentContainerdRestart",
-                  status: "False",
-                  lastHeartbeatTime: "2020-07-06T02:10:18Z",
-                  lastTransitionTime: "2020-06-11T12:02:52Z",
-                  reason: "NoFrequentContainerdRestart",
-                  message: "containerd is functioning properly",
-                },
-                {
-                  type: "KernelDeadlock",
-                  status: "False",
-                  lastHeartbeatTime: "2020-07-06T02:10:18Z",
-                  lastTransitionTime: "2020-06-11T12:02:52Z",
-                  reason: "KernelHasNoDeadlock",
-                  message: "kernel has no deadlock",
-                },
-                {
-                  type: "ReadonlyFilesystem",
-                  status: "False",
-                  lastHeartbeatTime: "2020-07-06T02:10:18Z",
-                  lastTransitionTime: "2020-06-11T12:02:52Z",
-                  reason: "FilesystemIsNotReadOnly",
-                  message: "Filesystem is not read-only",
-                },
-                {
-                  type: "CorruptDockerOverlay2",
-                  status: "False",
-                  lastHeartbeatTime: "2020-07-06T02:10:18Z",
-                  lastTransitionTime: "2020-06-11T12:02:52Z",
-                  reason: "NoCorruptDockerOverlay2",
-                  message: "docker overlay2 is functioning properly",
-                },
-                {
-                  type: "FrequentUnregisterNetDevice",
-                  status: "False",
-                  lastHeartbeatTime: "2020-07-06T02:10:18Z",
-                  lastTransitionTime: "2020-06-11T12:02:52Z",
-                  reason: "NoFrequentUnregisterNetDevice",
-                  message: "node is functioning properly",
-                },
-                {
-                  type: "NetworkUnavailable",
-                  status: "False",
-                  lastHeartbeatTime: "2020-06-29T09:13:09Z",
-                  lastTransitionTime: "2020-06-29T09:13:09Z",
-                  reason: "RouteCreated",
-                  message: "NodeController create implicit route",
-                },
-                {
-                  type: "MemoryPressure",
-                  status: "False",
-                  lastHeartbeatTime: "2020-07-06T02:12:51Z",
-                  lastTransitionTime: "2020-06-27T18:07:30Z",
-                  reason: "KubeletHasSufficientMemory",
-                  message: "kubelet has sufficient memory available",
-                },
-                {
-                  type: "DiskPressure",
-                  status: "False",
-                  lastHeartbeatTime: "2020-07-06T02:12:51Z",
-                  lastTransitionTime: "2020-06-11T12:02:50Z",
-                  reason: "KubeletHasNoDiskPressure",
-                  message: "kubelet has no disk pressure",
-                },
-                {
-                  type: "PIDPressure",
-                  status: "False",
-                  lastHeartbeatTime: "2020-07-06T02:12:51Z",
-                  lastTransitionTime: "2020-06-11T12:02:50Z",
-                  reason: "KubeletHasSufficientPID",
-                  message: "kubelet has sufficient PID available",
-                },
-                {
-                  type: "Ready",
-                  status: "True",
-                  lastHeartbeatTime: "2020-07-06T02:12:51Z",
-                  lastTransitionTime: "2020-06-11T12:02:51Z",
-                  reason: "KubeletReady",
-                  message: "kubelet is posting ready status. AppArmor enabled",
-                },
-              ],
-              addresses: [
-                {
-                  type: "InternalIP",
-                  address: "10.146.0.57",
-                },
-                {
-                  type: "ExternalIP",
-                  address: "35.194.123.206",
-                },
-                {
-                  type: "InternalDNS",
-                  address:
-                    "gke-staging-new-default-pool-32bfe00c-1b67.asia-northeast1-a.c.fiery-webbing-255306.internal",
-                },
-                {
-                  type: "Hostname",
-                  address:
-                    "gke-staging-new-default-pool-32bfe00c-1b67.asia-northeast1-a.c.fiery-webbing-255306.internal",
-                },
-              ],
-              daemonEndpoints: {
-                kubeletEndpoint: {
-                  Port: 10250,
-                },
-              },
-              nodeInfo: {
-                machineID: "c72be7598c3a2ac1961a2be98f85436c",
-                systemUUID: "c72be759-8c3a-2ac1-961a-2be98f85436c",
-                bootID: "3f95627a-43b4-49db-9938-a4de250dc1e0",
-                kernelVersion: "4.19.112+",
-                osImage: "Container-Optimized OS from Google",
-                containerRuntimeVersion: "docker://19.3.1",
-                kubeletVersion: "v1.16.9-gke.2",
-                kubeProxyVersion: "v1.16.9-gke.2",
-                operatingSystem: "linux",
-                architecture: "amd64",
-              },
-              images: [
-                {
-                  names: [
-                    "confluentinc/cp-kafka@sha256:c87b1c07fb53b1a82d24b436e53485917876a963dc67311800109fa12fe9a63d",
-                    "confluentinc/cp-kafka:5.0.1",
-                  ],
-                  sizeBytes: 557414026,
-                },
-                {
-                  names: [
-                    "kennethreitz/httpbin@sha256:599fe5e5073102dbb0ee3dbb65f049dab44fa9fc251f6835c9990f8fb196a72b",
-                    "kennethreitz/httpbin:latest",
-                  ],
-                  sizeBytes: 533675008,
-                },
-                {
-                  names: [
-                    "istio/examples-bookinfo-reviews-v3@sha256:f20fe4f7b80b1f1e491f3c54ac5472c622d5ba33007687d7fa46bec5b0fd19e8",
-                    "istio/examples-bookinfo-reviews-v3:1.16.1",
-                  ],
-                  sizeBytes: 465678896,
-                },
-                {
-                  names: [
-                    "istio/examples-bookinfo-reviews-v1@sha256:88ccc5da2dd911bf246ade8f0eb5c2121304bb3c45ed3b8a3799613c6566a142",
-                    "istio/examples-bookinfo-reviews-v1:1.16.1",
-                  ],
-                  sizeBytes: 465678896,
-                },
-                {
-                  names: [
-                    "istio/examples-bookinfo-reviews-v1@sha256:ac2b3c86b73c3c47be1c25ea1f9f1d6af886134b70d13e4dbcc2149963a24063",
-                    "istio/examples-bookinfo-reviews-v1:1.15.1",
-                  ],
-                  sizeBytes: 465678896,
-                },
-                {
-                  names: [
-                    "istio/examples-bookinfo-reviews-v2@sha256:c2cbfb5d6c9a33e7eeff8981e5ac8281e09f06c4b50712b1fe0ef847ff9227bf",
-                    "istio/examples-bookinfo-reviews-v2:1.16.1",
-                  ],
-                  sizeBytes: 465678896,
-                },
-                {
-                  names: [
-                    "istio/proxyv2@sha256:84e3afe9b4404ca94fd2e6e0277c642eb29b8b37ca46deff49dbe1f5e1b7fdc3",
-                    "istio/proxyv2:1.6.1",
-                  ],
-                  sizeBytes: 304102694,
-                },
-                {
-                  names: [
-                    "gcr.io/stackdriver-agents/stackdriver-logging-agent@sha256:d5a1d7fff648bfa37bd163bf6584f79d7d2406cd72d5f4ceb253546cc3e0659e",
-                    "gcr.io/stackdriver-agents/stackdriver-logging-agent:1.6.34",
-                  ],
-                  sizeBytes: 242119837,
-                },
-                {
-                  names: [
-                    "istio/pilot@sha256:dd0fe167963823d4d5eb1e7309ebda03c2227c749254e4d4e68ebeb88fbc28f5",
-                    "istio/pilot:1.6.1",
-                  ],
-                  sizeBytes: 237495442,
-                },
-                {
-                  names: [
-                    "istio/examples-bookinfo-productpage-v1@sha256:d54717a1bd3c8e4a12fa887aadbb764e594099a255b3b892da1483a528b6856c",
-                    "istio/examples-bookinfo-productpage-v1:1.15.1",
-                  ],
-                  sizeBytes: 230142695,
-                },
-                {
-                  names: [
-                    "istio/examples-bookinfo-productpage-v1@sha256:2d612d210d94c1e001745e45981d89cacf796750c11ae431cb0bbb4b77cdf490",
-                    "istio/examples-bookinfo-productpage-v1:1.16.1",
-                  ],
-                  sizeBytes: 230142690,
-                },
-                {
-                  names: [
-                    "zookeeper@sha256:b7a76ec06f68fd9c801b72dfd283701bc7d8a8b0609277a0d570e8e6768e4ad9",
-                    "zookeeper:3.5.5",
-                  ],
-                  sizeBytes: 225210868,
-                },
-                {
-                  names: [
-                    "tutum/curl@sha256:b6f16e88387acd4e6326176b212b3dae63f5b2134e69560d0b0673cfb0fb976f",
-                    "tutum/curl:latest",
-                  ],
-                  sizeBytes: 224373689,
-                },
-                {
-                  names: [
-                    "istio/examples-bookinfo-ratings-v1@sha256:a65aed515f443919baed052f40578169624242da968cc70f5961b1b0e1d88b5f",
-                    "istio/examples-bookinfo-ratings-v1:1.16.1",
-                  ],
-                  sizeBytes: 161134677,
-                },
-                {
-                  names: [
-                    "istio/examples-bookinfo-ratings-v1@sha256:450867ed67aacddb346d3eb0f7d47d76676f2310f66044981270e6a3eecdf556",
-                    "istio/examples-bookinfo-ratings-v1:1.15.1",
-                  ],
-                  sizeBytes: 161133191,
-                },
-                {
-                  names: [
-                    "istio/examples-bookinfo-details-v1@sha256:344b1c18703ab1e51aa6d698f459c95ea734f8317d779189f4638de7a00e61ae",
-                    "istio/examples-bookinfo-details-v1:1.15.1",
-                  ],
-                  sizeBytes: 149054916,
-                },
-                {
-                  names: [
-                    "istio/examples-bookinfo-details-v1@sha256:debc42f2744c1f12b456e37ef77a8905b0417292deef993e7d7c9d5fc960c372",
-                    "istio/examples-bookinfo-details-v1:1.16.1",
-                  ],
-                  sizeBytes: 149054911,
-                },
-                {
-                  names: [
-                    "k8s.gcr.io/kubernetes-dashboard-amd64@sha256:0ae6b69432e78069c5ce2bcde0fe409c5c4d6f0f4d9cd50a17974fea38898747",
-                    "k8s.gcr.io/kubernetes-dashboard-amd64:v1.10.1",
-                  ],
-                  sizeBytes: 121711221,
-                },
-                {
-                  names: [
-                    "k8s.gcr.io/node-problem-detector@sha256:7101cdf7a2fc05facbc39cd9c03c195cbbdbd7eb99efadb45d94473f4e29fe0c",
-                    "k8s.gcr.io/node-problem-detector:v0.7.1",
-                  ],
-                  sizeBytes: 100104055,
-                },
-                {
-                  names: [
-                    "k8s.gcr.io/echoserver@sha256:cb5c1bddd1b5665e1867a7fa1b5fa843a47ee433bbb75d4293888b71def53229",
-                    "k8s.gcr.io/echoserver:1.10",
-                  ],
-                  sizeBytes: 95361986,
-                },
-                {
-                  names: [
-                    "k8s.gcr.io/fluentd-gcp-scaler@sha256:4f28f10fb89506768910b858f7a18ffb996824a16d70d5ac895e49687df9ff58",
-                    "k8s.gcr.io/fluentd-gcp-scaler:0.5.2",
-                  ],
-                  sizeBytes: 90498960,
-                },
-                {
-                  names: [
-                    "k8s.gcr.io/k8s-dns-kube-dns-amd64@sha256:8f8ba87c4ac94aff38d5668da225918c91557591c156cf5f0df4f7f64f16c464",
-                    "k8s.gcr.io/k8s-dns-kube-dns-amd64:1.15.8",
-                  ],
-                  sizeBytes: 87533517,
-                },
-                {
-                  names: ["gke.gcr.io/kube-proxy-amd64:v1.16.9-gke.2", "k8s.gcr.io/kube-proxy-amd64:v1.16.9-gke.2"],
-                  sizeBytes: 84251387,
-                },
-                {
-                  names: [
-                    "quay.io/kalmhq/kalm@sha256:8e56397ad21d8d4c26adb82c6a7058e28584a47bb49234a4f3c28c4aee3a8caa",
-                  ],
-                  sizeBytes: 83470034,
-                },
-                {
-                  names: [
-                    "quay.io/kalmhq/kalm@sha256:ccfd36b5cd3b44e678eb84bc7bf0e49ca3ec7d74a04e7216037d874f5eb79972",
-                    "quay.io/kalmhq/kalm:latest",
-                  ],
-                  sizeBytes: 83467987,
-                },
-              ],
-            },
-            statusTexts: ["Ready"],
             metrics: {
               cpu: [
-                {
-                  x: 1594000731000,
-                  y: 1,
-                },
-                {
-                  x: 1594000736000,
-                  y: 1,
-                },
-                {
-                  x: 1594000741000,
-                  y: 1,
-                },
-                {
-                  x: 1594000746000,
-                  y: 1,
-                },
-                {
-                  x: 1594000751000,
-                  y: 1,
-                },
-                {
-                  x: 1594000756000,
-                  y: 1,
-                },
-                {
-                  x: 1594000761000,
-                  y: 1,
-                },
-                {
-                  x: 1594000766000,
-                  y: 1,
-                },
-                {
-                  x: 1594000771000,
-                  y: 1,
-                },
-                {
-                  x: 1594000776000,
-                  y: 1,
-                },
-                {
-                  x: 1594000781000,
-                  y: 1,
-                },
-                {
-                  x: 1594000786000,
-                  y: 1,
-                },
-                {
-                  x: 1594000791000,
-                  y: 1,
-                },
-                {
-                  x: 1594000796000,
-                  y: 1,
-                },
-                {
-                  x: 1594000801000,
-                  y: 1,
-                },
-                {
-                  x: 1594000807000,
-                  y: 1,
-                },
-                {
-                  x: 1594000811000,
-                  y: 1,
-                },
-                {
-                  x: 1594000816000,
-                  y: 1,
-                },
-                {
-                  x: 1594000821000,
-                  y: 1,
-                },
-                {
-                  x: 1594000826000,
-                  y: 1,
-                },
-                {
-                  x: 1594000831000,
-                  y: 1,
-                },
-                {
-                  x: 1594000836000,
-                  y: 1,
-                },
-                {
-                  x: 1594000841000,
-                  y: 1,
-                },
-                {
-                  x: 1594000846000,
-                  y: 1,
-                },
-                {
-                  x: 1594000851000,
-                  y: 1,
-                },
-                {
-                  x: 1594000856000,
-                  y: 1,
-                },
-                {
-                  x: 1594000861000,
-                  y: 1,
-                },
-                {
-                  x: 1594000866000,
-                  y: 1,
-                },
-                {
-                  x: 1594000871000,
-                  y: 1,
-                },
-                {
-                  x: 1594000876000,
-                  y: 1,
-                },
-                {
-                  x: 1594000881000,
-                  y: 1,
-                },
-                {
-                  x: 1594000887000,
-                  y: 1,
-                },
-                {
-                  x: 1594000891000,
-                  y: 1,
-                },
-                {
-                  x: 1594000896000,
-                  y: 1,
-                },
-                {
-                  x: 1594000901000,
-                  y: 1,
-                },
-                {
-                  x: 1594000906000,
-                  y: 1,
-                },
-                {
-                  x: 1594000911000,
-                  y: 1,
-                },
-                {
-                  x: 1594000916000,
-                  y: 1,
-                },
-                {
-                  x: 1594000921000,
-                  y: 1,
-                },
-                {
-                  x: 1594000926000,
-                  y: 1,
-                },
-                {
-                  x: 1594000931000,
-                  y: 1,
-                },
-                {
-                  x: 1594000936000,
-                  y: 1,
-                },
-                {
-                  x: 1594000941000,
-                  y: 1,
-                },
-                {
-                  x: 1594000946000,
-                  y: 1,
-                },
-                {
-                  x: 1594000951000,
-                  y: 1,
-                },
-                {
-                  x: 1594000956000,
-                  y: 1,
-                },
-                {
-                  x: 1594000962000,
-                  y: 1,
-                },
-                {
-                  x: 1594000966000,
-                  y: 1,
-                },
-                {
-                  x: 1594000971000,
-                  y: 1,
-                },
-                {
-                  x: 1594000976000,
-                  y: 1,
-                },
-                {
-                  x: 1594000981000,
-                  y: 1,
-                },
-                {
-                  x: 1594000986000,
-                  y: 1,
-                },
-                {
-                  x: 1594000991000,
-                  y: 1,
-                },
-                {
-                  x: 1594000996000,
-                  y: 1,
-                },
-                {
-                  x: 1594001001000,
-                  y: 1,
-                },
-                {
-                  x: 1594001006000,
-                  y: 1,
-                },
-                {
-                  x: 1594001011000,
-                  y: 1,
-                },
-                {
-                  x: 1594001016000,
-                  y: 1,
-                },
-                {
-                  x: 1594001021000,
-                  y: 1,
-                },
-                {
-                  x: 1594001026000,
-                  y: 1,
-                },
-                {
-                  x: 1594001031000,
-                  y: 1,
-                },
-                {
-                  x: 1594001036000,
-                  y: 1,
-                },
-                {
-                  x: 1594001042000,
-                  y: 1,
-                },
-                {
-                  x: 1594001046000,
-                  y: 1,
-                },
-                {
-                  x: 1594001051000,
-                  y: 1,
-                },
-                {
-                  x: 1594001056000,
-                  y: 1,
-                },
-                {
-                  x: 1594001061000,
-                  y: 1,
-                },
-                {
-                  x: 1594001066000,
-                  y: 1,
-                },
-                {
-                  x: 1594001071000,
-                  y: 1,
-                },
-                {
-                  x: 1594001076000,
-                  y: 1,
-                },
-                {
-                  x: 1594001081000,
-                  y: 1,
-                },
-                {
-                  x: 1594001086000,
-                  y: 1,
-                },
-                {
-                  x: 1594001091000,
-                  y: 1,
-                },
-                {
-                  x: 1594001096000,
-                  y: 1,
-                },
-                {
-                  x: 1594001101000,
-                  y: 1,
-                },
-                {
-                  x: 1594001106000,
-                  y: 1,
-                },
-                {
-                  x: 1594001111000,
-                  y: 1,
-                },
-                {
-                  x: 1594001117000,
-                  y: 1,
-                },
-                {
-                  x: 1594001121000,
-                  y: 1,
-                },
-                {
-                  x: 1594001126000,
-                  y: 1,
-                },
-                {
-                  x: 1594001131000,
-                  y: 1,
-                },
-                {
-                  x: 1594001136000,
-                  y: 1,
-                },
-                {
-                  x: 1594001141000,
-                  y: 1,
-                },
-                {
-                  x: 1594001146000,
-                  y: 1,
-                },
-                {
-                  x: 1594001151000,
-                  y: 1,
-                },
-                {
-                  x: 1594001156000,
-                  y: 1,
-                },
-                {
-                  x: 1594001161000,
-                  y: 1,
-                },
-                {
-                  x: 1594001166000,
-                  y: 1,
-                },
-                {
-                  x: 1594001171000,
-                  y: 1,
-                },
-                {
-                  x: 1594001176000,
-                  y: 1,
-                },
-                {
-                  x: 1594001181000,
-                  y: 1,
-                },
-                {
-                  x: 1594001186000,
-                  y: 1,
-                },
-                {
-                  x: 1594001191000,
-                  y: 1,
-                },
-                {
-                  x: 1594001197000,
-                  y: 1,
-                },
-                {
-                  x: 1594001201000,
-                  y: 1,
-                },
-                {
-                  x: 1594001206000,
-                  y: 1,
-                },
-                {
-                  x: 1594001211000,
-                  y: 1,
-                },
-                {
-                  x: 1594001216000,
-                  y: 1,
-                },
-                {
-                  x: 1594001221000,
-                  y: 1,
-                },
-                {
-                  x: 1594001226000,
-                  y: 1,
-                },
-                {
-                  x: 1594001231000,
-                  y: 1,
-                },
-                {
-                  x: 1594001236000,
-                  y: 1,
-                },
-                {
-                  x: 1594001241000,
-                  y: 1,
-                },
-                {
-                  x: 1594001246000,
-                  y: 1,
-                },
-                {
-                  x: 1594001251000,
-                  y: 1,
-                },
-                {
-                  x: 1594001256000,
-                  y: 1,
-                },
-                {
-                  x: 1594001261000,
-                  y: 1,
-                },
-                {
-                  x: 1594001266000,
-                  y: 1,
-                },
-                {
-                  x: 1594001271000,
-                  y: 1,
-                },
-                {
-                  x: 1594001276000,
-                  y: 1,
-                },
-                {
-                  x: 1594001281000,
-                  y: 1,
-                },
-                {
-                  x: 1594001286000,
-                  y: 1,
-                },
-                {
-                  x: 1594001291000,
-                  y: 1,
-                },
-                {
-                  x: 1594001296000,
-                  y: 1,
-                },
-                {
-                  x: 1594001301000,
-                  y: 1,
-                },
-                {
-                  x: 1594001306000,
-                  y: 1,
-                },
-                {
-                  x: 1594001311000,
-                  y: 1,
-                },
-                {
-                  x: 1594001316000,
-                  y: 1,
-                },
-                {
-                  x: 1594001321000,
-                  y: 1,
-                },
-                {
-                  x: 1594001326000,
-                  y: 1,
-                },
-                {
-                  x: 1594001331000,
-                  y: 1,
-                },
-                {
-                  x: 1594001336000,
-                  y: 1,
-                },
-                {
-                  x: 1594001341000,
-                  y: 1,
-                },
-                {
-                  x: 1594001346000,
-                  y: 1,
-                },
-                {
-                  x: 1594001352000,
-                  y: 1,
-                },
-                {
-                  x: 1594001356000,
-                  y: 1,
-                },
-                {
-                  x: 1594001361000,
-                  y: 1,
-                },
-                {
-                  x: 1594001366000,
-                  y: 1,
-                },
-                {
-                  x: 1594001371000,
-                  y: 1,
-                },
-                {
-                  x: 1594001376000,
-                  y: 1,
-                },
-                {
-                  x: 1594001381000,
-                  y: 1,
-                },
-                {
-                  x: 1594001386000,
-                  y: 1,
-                },
-                {
-                  x: 1594001391000,
-                  y: 1,
-                },
-                {
-                  x: 1594001396000,
-                  y: 1,
-                },
-                {
-                  x: 1594001401000,
-                  y: 1,
-                },
-                {
-                  x: 1594001406000,
-                  y: 1,
-                },
-                {
-                  x: 1594001412000,
-                  y: 1,
-                },
-                {
-                  x: 1594001416000,
-                  y: 1,
-                },
-                {
-                  x: 1594001421000,
-                  y: 1,
-                },
-                {
-                  x: 1594001426000,
-                  y: 1,
-                },
-                {
-                  x: 1594001431000,
-                  y: 1,
-                },
-                {
-                  x: 1594001436000,
-                  y: 1,
-                },
-                {
-                  x: 1594001441000,
-                  y: 1,
-                },
-                {
-                  x: 1594001446000,
-                  y: 1,
-                },
-                {
-                  x: 1594001451000,
-                  y: 1,
-                },
-                {
-                  x: 1594001456000,
-                  y: 1,
-                },
-                {
-                  x: 1594001461000,
-                  y: 1,
-                },
-                {
-                  x: 1594001466000,
-                  y: 1,
-                },
-                {
-                  x: 1594001471000,
-                  y: 1,
-                },
-                {
-                  x: 1594001476000,
-                  y: 1,
-                },
-                {
-                  x: 1594001481000,
-                  y: 1,
-                },
-                {
-                  x: 1594001487000,
-                  y: 1,
-                },
-                {
-                  x: 1594001491000,
-                  y: 1,
-                },
-                {
-                  x: 1594001496000,
-                  y: 1,
-                },
-                {
-                  x: 1594001501000,
-                  y: 1,
-                },
-                {
-                  x: 1594001506000,
-                  y: 1,
-                },
-                {
-                  x: 1594001511000,
-                  y: 1,
-                },
-                {
-                  x: 1594001516000,
-                  y: 1,
-                },
-                {
-                  x: 1594001521000,
-                  y: 1,
-                },
-                {
-                  x: 1594001526000,
-                  y: 1,
-                },
-                {
-                  x: 1594001531000,
-                  y: 1,
-                },
-                {
-                  x: 1594001536000,
-                  y: 1,
-                },
-                {
-                  x: 1594001541000,
-                  y: 1,
-                },
-                {
-                  x: 1594001546000,
-                  y: 1,
-                },
-                {
-                  x: 1594001551000,
-                  y: 1,
-                },
-                {
-                  x: 1594001556000,
-                  y: 1,
-                },
-                {
-                  x: 1594001562000,
-                  y: 1,
-                },
-                {
-                  x: 1594001566000,
-                  y: 1,
-                },
-                {
-                  x: 1594001571000,
-                  y: 1,
-                },
-                {
-                  x: 1594001576000,
-                  y: 1,
-                },
-                {
-                  x: 1594001581000,
-                  y: 1,
-                },
-                {
-                  x: 1594001586000,
-                  y: 1,
-                },
-                {
-                  x: 1594001591000,
-                  y: 1,
-                },
-                {
-                  x: 1594001596000,
-                  y: 1,
-                },
-                {
-                  x: 1594001601000,
-                  y: 1,
-                },
-                {
-                  x: 1594001606000,
-                  y: 1,
-                },
-                {
-                  x: 1594001611000,
-                  y: 1,
-                },
-                {
-                  x: 1594001616000,
-                  y: 1,
-                },
-                {
-                  x: 1594001621000,
-                  y: 1,
-                },
-                {
-                  x: 1594001627000,
-                  y: 1,
-                },
+                { x: 1596278774000, y: 1 },
+                { x: 1596278779000, y: 1 },
+                { x: 1596278784000, y: 1 },
+                { x: 1596278789000, y: 1 },
+                { x: 1596278794000, y: 1 },
+                { x: 1596278799000, y: 1 },
+                { x: 1596278804000, y: 1 },
+                { x: 1596278809000, y: 1 },
+                { x: 1596278814000, y: 1 },
+                { x: 1596278819000, y: 1 },
+                { x: 1596278824000, y: 1 },
+                { x: 1596278829000, y: 1 },
+                { x: 1596278834000, y: 1 },
+                { x: 1596278839000, y: 1 },
+                { x: 1596278844000, y: 1 },
+                { x: 1596278849000, y: 1 },
+                { x: 1596278854000, y: 1 },
+                { x: 1596278859000, y: 1 },
+                { x: 1596278864000, y: 1 },
+                { x: 1596278869000, y: 1 },
+                { x: 1596278874000, y: 1 },
+                { x: 1596278879000, y: 1 },
+                { x: 1596278884000, y: 1 },
+                { x: 1596278889000, y: 1 },
+                { x: 1596278894000, y: 1 },
+                { x: 1596278899000, y: 1 },
+                { x: 1596278904000, y: 1 },
+                { x: 1596278909000, y: 1 },
+                { x: 1596278914000, y: 1 },
+                { x: 1596278919000, y: 1 },
+                { x: 1596278924000, y: 1 },
+                { x: 1596278929000, y: 1 },
+                { x: 1596278934000, y: 1 },
+                { x: 1596278939000, y: 1 },
+                { x: 1596278944000, y: 1 },
+                { x: 1596278949000, y: 1 },
+                { x: 1596278954000, y: 1 },
+                { x: 1596278959000, y: 1 },
+                { x: 1596278964000, y: 1 },
+                { x: 1596278969000, y: 1 },
+                { x: 1596278974000, y: 1 },
+                { x: 1596278979000, y: 1 },
+                { x: 1596278984000, y: 1 },
+                { x: 1596278989000, y: 1 },
+                { x: 1596278994000, y: 1 },
+                { x: 1596278999000, y: 1 },
+                { x: 1596279004000, y: 1 },
+                { x: 1596279009000, y: 1 },
+                { x: 1596279014000, y: 1 },
+                { x: 1596279019000, y: 1 },
+                { x: 1596279024000, y: 1 },
+                { x: 1596279029000, y: 1 },
+                { x: 1596279034000, y: 1 },
+                { x: 1596279039000, y: 1 },
+                { x: 1596279044000, y: 1 },
+                { x: 1596279049000, y: 1 },
+                { x: 1596279054000, y: 1 },
+                { x: 1596279059000, y: 1 },
+                { x: 1596279064000, y: 1 },
+                { x: 1596279069000, y: 1 },
+                { x: 1596279074000, y: 1 },
+                { x: 1596279079000, y: 1 },
+                { x: 1596279084000, y: 1 },
+                { x: 1596279089000, y: 1 },
+                { x: 1596279094000, y: 1 },
+                { x: 1596279099000, y: 1 },
+                { x: 1596279104000, y: 1 },
+                { x: 1596279109000, y: 1 },
+                { x: 1596279114000, y: 1 },
+                { x: 1596279119000, y: 1 },
+                { x: 1596279124000, y: 1 },
+                { x: 1596279129000, y: 1 },
+                { x: 1596279134000, y: 1 },
+                { x: 1596279139000, y: 1 },
+                { x: 1596279144000, y: 1 },
+                { x: 1596279149000, y: 1 },
+                { x: 1596279154000, y: 1 },
+                { x: 1596279159000, y: 1 },
+                { x: 1596279164000, y: 1 },
+                { x: 1596279169000, y: 1 },
+                { x: 1596279174000, y: 1 },
+                { x: 1596279179000, y: 1 },
+                { x: 1596279184000, y: 1 },
+                { x: 1596279189000, y: 1 },
+                { x: 1596279194000, y: 1 },
+                { x: 1596279199000, y: 1 },
+                { x: 1596279204000, y: 1 },
+                { x: 1596279209000, y: 1 },
+                { x: 1596279214000, y: 1 },
+                { x: 1596279219000, y: 1 },
+                { x: 1596279224000, y: 1 },
+                { x: 1596279229000, y: 1 },
+                { x: 1596279234000, y: 1 },
+                { x: 1596279239000, y: 1 },
+                { x: 1596279244000, y: 1 },
+                { x: 1596279249000, y: 1 },
+                { x: 1596279254000, y: 1 },
+                { x: 1596279259000, y: 1 },
+                { x: 1596279264000, y: 1 },
+                { x: 1596279269000, y: 1 },
+                { x: 1596279274000, y: 1 },
+                { x: 1596279279000, y: 1 },
+                { x: 1596279284000, y: 1 },
+                { x: 1596279289000, y: 1 },
+                { x: 1596279294000, y: 1 },
+                { x: 1596279299000, y: 1 },
+                { x: 1596279304000, y: 1 },
+                { x: 1596279309000, y: 1 },
+                { x: 1596279314000, y: 1 },
+                { x: 1596279319000, y: 1 },
+                { x: 1596279324000, y: 1 },
+                { x: 1596279329000, y: 1 },
+                { x: 1596279334000, y: 1 },
+                { x: 1596279339000, y: 1 },
+                { x: 1596279344000, y: 1 },
+                { x: 1596279349000, y: 1 },
+                { x: 1596279354000, y: 1 },
+                { x: 1596279359000, y: 1 },
+                { x: 1596279364000, y: 1 },
+                { x: 1596279369000, y: 1 },
+                { x: 1596279374000, y: 1 },
+                { x: 1596279379000, y: 1 },
+                { x: 1596279384000, y: 1 },
+                { x: 1596279389000, y: 1 },
+                { x: 1596279394000, y: 1 },
+                { x: 1596279399000, y: 1 },
+                { x: 1596279404000, y: 1 },
+                { x: 1596279409000, y: 1 },
+                { x: 1596279414000, y: 1 },
+                { x: 1596279419000, y: 1 },
+                { x: 1596279424000, y: 1 },
+                { x: 1596279429000, y: 1 },
+                { x: 1596279434000, y: 1 },
+                { x: 1596279439000, y: 1 },
+                { x: 1596279444000, y: 1 },
+                { x: 1596279449000, y: 1 },
+                { x: 1596279454000, y: 1 },
+                { x: 1596279459000, y: 1 },
+                { x: 1596279464000, y: 1 },
+                { x: 1596279469000, y: 1 },
+                { x: 1596279474000, y: 1 },
+                { x: 1596279479000, y: 1 },
+                { x: 1596279484000, y: 1 },
+                { x: 1596279489000, y: 1 },
+                { x: 1596279494000, y: 1 },
+                { x: 1596279499000, y: 1 },
+                { x: 1596279504000, y: 1 },
+                { x: 1596279509000, y: 1 },
+                { x: 1596279514000, y: 1 },
+                { x: 1596279519000, y: 1 },
+                { x: 1596279524000, y: 1 },
+                { x: 1596279529000, y: 1 },
+                { x: 1596279534000, y: 1 },
+                { x: 1596279539000, y: 1 },
+                { x: 1596279544000, y: 1 },
+                { x: 1596279549000, y: 1 },
+                { x: 1596279554000, y: 1 },
+                { x: 1596279559000, y: 1 },
+                { x: 1596279564000, y: 1 },
+                { x: 1596279569000, y: 1 },
+                { x: 1596279574000, y: 1 },
+                { x: 1596279579000, y: 1 },
+                { x: 1596279584000, y: 1 },
+                { x: 1596279589000, y: 1 },
+                { x: 1596279594000, y: 1 },
+                { x: 1596279599000, y: 1 },
+                { x: 1596279604000, y: 1 },
+                { x: 1596279609000, y: 1 },
+                { x: 1596279614000, y: 1 },
+                { x: 1596279619000, y: 1 },
+                { x: 1596279624000, y: 1 },
+                { x: 1596279629000, y: 1 },
+                { x: 1596279634000, y: 1 },
+                { x: 1596279639000, y: 1 },
+                { x: 1596279644000, y: 1 },
+                { x: 1596279649000, y: 1 },
+                { x: 1596279654000, y: 1 },
+                { x: 1596279659000, y: 1 },
+                { x: 1596279664000, y: 1 },
+                { x: 1596279669000, y: 1 },
               ],
               memory: [
-                {
-                  x: 1594000731000,
-                  y: 1791451136,
-                },
-                {
-                  x: 1594000736000,
-                  y: 1791451136,
-                },
-                {
-                  x: 1594000741000,
-                  y: 1791451136,
-                },
-                {
-                  x: 1594000746000,
-                  y: 1789935616,
-                },
-                {
-                  x: 1594000751000,
-                  y: 1789935616,
-                },
-                {
-                  x: 1594000756000,
-                  y: 1789935616,
-                },
-                {
-                  x: 1594000761000,
-                  y: 1789935616,
-                },
-                {
-                  x: 1594000766000,
-                  y: 1789935616,
-                },
-                {
-                  x: 1594000771000,
-                  y: 1789935616,
-                },
-                {
-                  x: 1594000776000,
-                  y: 1790267392,
-                },
-                {
-                  x: 1594000781000,
-                  y: 1790267392,
-                },
-                {
-                  x: 1594000786000,
-                  y: 1790267392,
-                },
-                {
-                  x: 1594000791000,
-                  y: 1790267392,
-                },
-                {
-                  x: 1594000796000,
-                  y: 1790267392,
-                },
-                {
-                  x: 1594000801000,
-                  y: 1790267392,
-                },
-                {
-                  x: 1594000807000,
-                  y: 1791401984,
-                },
-                {
-                  x: 1594000811000,
-                  y: 1791401984,
-                },
-                {
-                  x: 1594000816000,
-                  y: 1791401984,
-                },
-                {
-                  x: 1594000821000,
-                  y: 1791401984,
-                },
-                {
-                  x: 1594000826000,
-                  y: 1791401984,
-                },
-                {
-                  x: 1594000831000,
-                  y: 1791401984,
-                },
-                {
-                  x: 1594000836000,
-                  y: 1792401408,
-                },
-                {
-                  x: 1594000841000,
-                  y: 1792401408,
-                },
-                {
-                  x: 1594000846000,
-                  y: 1792401408,
-                },
-                {
-                  x: 1594000851000,
-                  y: 1792401408,
-                },
-                {
-                  x: 1594000856000,
-                  y: 1792401408,
-                },
-                {
-                  x: 1594000861000,
-                  y: 1792401408,
-                },
-                {
-                  x: 1594000866000,
-                  y: 1791340544,
-                },
-                {
-                  x: 1594000871000,
-                  y: 1791340544,
-                },
-                {
-                  x: 1594000876000,
-                  y: 1791340544,
-                },
-                {
-                  x: 1594000881000,
-                  y: 1791340544,
-                },
-                {
-                  x: 1594000887000,
-                  y: 1791340544,
-                },
-                {
-                  x: 1594000891000,
-                  y: 1791340544,
-                },
-                {
-                  x: 1594000896000,
-                  y: 1791901696,
-                },
-                {
-                  x: 1594000901000,
-                  y: 1791901696,
-                },
-                {
-                  x: 1594000906000,
-                  y: 1791901696,
-                },
-                {
-                  x: 1594000911000,
-                  y: 1791901696,
-                },
-                {
-                  x: 1594000916000,
-                  y: 1791901696,
-                },
-                {
-                  x: 1594000921000,
-                  y: 1791901696,
-                },
-                {
-                  x: 1594000926000,
-                  y: 1790717952,
-                },
-                {
-                  x: 1594000931000,
-                  y: 1790717952,
-                },
-                {
-                  x: 1594000936000,
-                  y: 1790717952,
-                },
-                {
-                  x: 1594000941000,
-                  y: 1790717952,
-                },
-                {
-                  x: 1594000946000,
-                  y: 1790717952,
-                },
-                {
-                  x: 1594000951000,
-                  y: 1790717952,
-                },
-                {
-                  x: 1594000956000,
-                  y: 1791508480,
-                },
-                {
-                  x: 1594000962000,
-                  y: 1791508480,
-                },
-                {
-                  x: 1594000966000,
-                  y: 1791508480,
-                },
-                {
-                  x: 1594000971000,
-                  y: 1791508480,
-                },
-                {
-                  x: 1594000976000,
-                  y: 1791508480,
-                },
-                {
-                  x: 1594000981000,
-                  y: 1791508480,
-                },
-                {
-                  x: 1594000986000,
-                  y: 1790230528,
-                },
-                {
-                  x: 1594000991000,
-                  y: 1790230528,
-                },
-                {
-                  x: 1594000996000,
-                  y: 1790230528,
-                },
-                {
-                  x: 1594001001000,
-                  y: 1790230528,
-                },
-                {
-                  x: 1594001006000,
-                  y: 1790230528,
-                },
-                {
-                  x: 1594001011000,
-                  y: 1790230528,
-                },
-                {
-                  x: 1594001016000,
-                  y: 1790713856,
-                },
-                {
-                  x: 1594001021000,
-                  y: 1790713856,
-                },
-                {
-                  x: 1594001026000,
-                  y: 1790713856,
-                },
-                {
-                  x: 1594001031000,
-                  y: 1790713856,
-                },
-                {
-                  x: 1594001036000,
-                  y: 1790713856,
-                },
-                {
-                  x: 1594001042000,
-                  y: 1790713856,
-                },
-                {
-                  x: 1594001046000,
-                  y: 1790070784,
-                },
-                {
-                  x: 1594001051000,
-                  y: 1790070784,
-                },
-                {
-                  x: 1594001056000,
-                  y: 1790070784,
-                },
-                {
-                  x: 1594001061000,
-                  y: 1790070784,
-                },
-                {
-                  x: 1594001066000,
-                  y: 1790070784,
-                },
-                {
-                  x: 1594001071000,
-                  y: 1790070784,
-                },
-                {
-                  x: 1594001076000,
-                  y: 1790722048,
-                },
-                {
-                  x: 1594001081000,
-                  y: 1790722048,
-                },
-                {
-                  x: 1594001086000,
-                  y: 1790722048,
-                },
-                {
-                  x: 1594001091000,
-                  y: 1790722048,
-                },
-                {
-                  x: 1594001096000,
-                  y: 1790722048,
-                },
-                {
-                  x: 1594001101000,
-                  y: 1790722048,
-                },
-                {
-                  x: 1594001106000,
-                  y: 1788391424,
-                },
-                {
-                  x: 1594001111000,
-                  y: 1788391424,
-                },
-                {
-                  x: 1594001117000,
-                  y: 1788391424,
-                },
-                {
-                  x: 1594001121000,
-                  y: 1788391424,
-                },
-                {
-                  x: 1594001126000,
-                  y: 1788391424,
-                },
-                {
-                  x: 1594001131000,
-                  y: 1788391424,
-                },
-                {
-                  x: 1594001136000,
-                  y: 1790181376,
-                },
-                {
-                  x: 1594001141000,
-                  y: 1790181376,
-                },
-                {
-                  x: 1594001146000,
-                  y: 1790181376,
-                },
-                {
-                  x: 1594001151000,
-                  y: 1790181376,
-                },
-                {
-                  x: 1594001156000,
-                  y: 1790181376,
-                },
-                {
-                  x: 1594001161000,
-                  y: 1790181376,
-                },
-                {
-                  x: 1594001166000,
-                  y: 1789292544,
-                },
-                {
-                  x: 1594001171000,
-                  y: 1789292544,
-                },
-                {
-                  x: 1594001176000,
-                  y: 1789292544,
-                },
-                {
-                  x: 1594001181000,
-                  y: 1789292544,
-                },
-                {
-                  x: 1594001186000,
-                  y: 1789292544,
-                },
-                {
-                  x: 1594001191000,
-                  y: 1789292544,
-                },
-                {
-                  x: 1594001197000,
-                  y: 1789906944,
-                },
-                {
-                  x: 1594001201000,
-                  y: 1789906944,
-                },
-                {
-                  x: 1594001206000,
-                  y: 1789906944,
-                },
-                {
-                  x: 1594001211000,
-                  y: 1789906944,
-                },
-                {
-                  x: 1594001216000,
-                  y: 1789906944,
-                },
-                {
-                  x: 1594001221000,
-                  y: 1789906944,
-                },
-                {
-                  x: 1594001226000,
-                  y: 1789509632,
-                },
-                {
-                  x: 1594001231000,
-                  y: 1789509632,
-                },
-                {
-                  x: 1594001236000,
-                  y: 1789509632,
-                },
-                {
-                  x: 1594001241000,
-                  y: 1789509632,
-                },
-                {
-                  x: 1594001246000,
-                  y: 1789509632,
-                },
-                {
-                  x: 1594001251000,
-                  y: 1789509632,
-                },
-                {
-                  x: 1594001256000,
-                  y: 1788911616,
-                },
-                {
-                  x: 1594001261000,
-                  y: 1788911616,
-                },
-                {
-                  x: 1594001266000,
-                  y: 1788911616,
-                },
-                {
-                  x: 1594001271000,
-                  y: 1788911616,
-                },
-                {
-                  x: 1594001276000,
-                  y: 1788911616,
-                },
-                {
-                  x: 1594001281000,
-                  y: 1788911616,
-                },
-                {
-                  x: 1594001286000,
-                  y: 1788563456,
-                },
-                {
-                  x: 1594001291000,
-                  y: 1788563456,
-                },
-                {
-                  x: 1594001296000,
-                  y: 1788563456,
-                },
-                {
-                  x: 1594001301000,
-                  y: 1788563456,
-                },
-                {
-                  x: 1594001306000,
-                  y: 1788563456,
-                },
-                {
-                  x: 1594001311000,
-                  y: 1788563456,
-                },
-                {
-                  x: 1594001316000,
-                  y: 1788948480,
-                },
-                {
-                  x: 1594001321000,
-                  y: 1788948480,
-                },
-                {
-                  x: 1594001326000,
-                  y: 1788948480,
-                },
-                {
-                  x: 1594001331000,
-                  y: 1788948480,
-                },
-                {
-                  x: 1594001336000,
-                  y: 1788948480,
-                },
-                {
-                  x: 1594001341000,
-                  y: 1788948480,
-                },
-                {
-                  x: 1594001346000,
-                  y: 1788882944,
-                },
-                {
-                  x: 1594001352000,
-                  y: 1788882944,
-                },
-                {
-                  x: 1594001356000,
-                  y: 1788882944,
-                },
-                {
-                  x: 1594001361000,
-                  y: 1788882944,
-                },
-                {
-                  x: 1594001366000,
-                  y: 1788882944,
-                },
-                {
-                  x: 1594001371000,
-                  y: 1788882944,
-                },
-                {
-                  x: 1594001376000,
-                  y: 1791213568,
-                },
-                {
-                  x: 1594001381000,
-                  y: 1791213568,
-                },
-                {
-                  x: 1594001386000,
-                  y: 1791213568,
-                },
-                {
-                  x: 1594001391000,
-                  y: 1791213568,
-                },
-                {
-                  x: 1594001396000,
-                  y: 1791213568,
-                },
-                {
-                  x: 1594001401000,
-                  y: 1791213568,
-                },
-                {
-                  x: 1594001406000,
-                  y: 1791012864,
-                },
-                {
-                  x: 1594001412000,
-                  y: 1791012864,
-                },
-                {
-                  x: 1594001416000,
-                  y: 1791012864,
-                },
-                {
-                  x: 1594001421000,
-                  y: 1791012864,
-                },
-                {
-                  x: 1594001426000,
-                  y: 1791012864,
-                },
-                {
-                  x: 1594001431000,
-                  y: 1791012864,
-                },
-                {
-                  x: 1594001436000,
-                  y: 1790566400,
-                },
-                {
-                  x: 1594001441000,
-                  y: 1790566400,
-                },
-                {
-                  x: 1594001446000,
-                  y: 1790566400,
-                },
-                {
-                  x: 1594001451000,
-                  y: 1790566400,
-                },
-                {
-                  x: 1594001456000,
-                  y: 1790566400,
-                },
-                {
-                  x: 1594001461000,
-                  y: 1790566400,
-                },
-                {
-                  x: 1594001466000,
-                  y: 1791279104,
-                },
-                {
-                  x: 1594001471000,
-                  y: 1791279104,
-                },
-                {
-                  x: 1594001476000,
-                  y: 1791279104,
-                },
-                {
-                  x: 1594001481000,
-                  y: 1791279104,
-                },
-                {
-                  x: 1594001487000,
-                  y: 1791279104,
-                },
-                {
-                  x: 1594001491000,
-                  y: 1791279104,
-                },
-                {
-                  x: 1594001496000,
-                  y: 1791807488,
-                },
-                {
-                  x: 1594001501000,
-                  y: 1791807488,
-                },
-                {
-                  x: 1594001506000,
-                  y: 1791807488,
-                },
-                {
-                  x: 1594001511000,
-                  y: 1791807488,
-                },
-                {
-                  x: 1594001516000,
-                  y: 1791807488,
-                },
-                {
-                  x: 1594001521000,
-                  y: 1791807488,
-                },
-                {
-                  x: 1594001526000,
-                  y: 1792831488,
-                },
-                {
-                  x: 1594001531000,
-                  y: 1792831488,
-                },
-                {
-                  x: 1594001536000,
-                  y: 1792831488,
-                },
-                {
-                  x: 1594001541000,
-                  y: 1792831488,
-                },
-                {
-                  x: 1594001546000,
-                  y: 1792831488,
-                },
-                {
-                  x: 1594001551000,
-                  y: 1792831488,
-                },
-                {
-                  x: 1594001556000,
-                  y: 1792798720,
-                },
-                {
-                  x: 1594001562000,
-                  y: 1792798720,
-                },
-                {
-                  x: 1594001566000,
-                  y: 1792798720,
-                },
-                {
-                  x: 1594001571000,
-                  y: 1792798720,
-                },
-                {
-                  x: 1594001576000,
-                  y: 1792798720,
-                },
-                {
-                  x: 1594001581000,
-                  y: 1792798720,
-                },
-                {
-                  x: 1594001586000,
-                  y: 1793679360,
-                },
-                {
-                  x: 1594001591000,
-                  y: 1793679360,
-                },
-                {
-                  x: 1594001596000,
-                  y: 1793679360,
-                },
-                {
-                  x: 1594001601000,
-                  y: 1793679360,
-                },
-                {
-                  x: 1594001606000,
-                  y: 1793679360,
-                },
-                {
-                  x: 1594001611000,
-                  y: 1793679360,
-                },
-                {
-                  x: 1594001616000,
-                  y: 1794314240,
-                },
-                {
-                  x: 1594001621000,
-                  y: 1794314240,
-                },
-                {
-                  x: 1594001627000,
-                  y: 1794314240,
-                },
+                { x: 1596278774000, y: 4351053824 },
+                { x: 1596278779000, y: 4351053824 },
+                { x: 1596278784000, y: 4351053824 },
+                { x: 1596278789000, y: 4351053824 },
+                { x: 1596278794000, y: 4351053824 },
+                { x: 1596278799000, y: 4351053824 },
+                { x: 1596278804000, y: 4351053824 },
+                { x: 1596278809000, y: 4351053824 },
+                { x: 1596278814000, y: 4351053824 },
+                { x: 1596278819000, y: 4351053824 },
+                { x: 1596278824000, y: 4351053824 },
+                { x: 1596278829000, y: 4351053824 },
+                { x: 1596278834000, y: 4338397184 },
+                { x: 1596278839000, y: 4338397184 },
+                { x: 1596278844000, y: 4338397184 },
+                { x: 1596278849000, y: 4338397184 },
+                { x: 1596278854000, y: 4338397184 },
+                { x: 1596278859000, y: 4338397184 },
+                { x: 1596278864000, y: 4338397184 },
+                { x: 1596278869000, y: 4338397184 },
+                { x: 1596278874000, y: 4338397184 },
+                { x: 1596278879000, y: 4338397184 },
+                { x: 1596278884000, y: 4338397184 },
+                { x: 1596278889000, y: 4338397184 },
+                { x: 1596278894000, y: 4351344640 },
+                { x: 1596278899000, y: 4351344640 },
+                { x: 1596278904000, y: 4351344640 },
+                { x: 1596278909000, y: 4351344640 },
+                { x: 1596278914000, y: 4351344640 },
+                { x: 1596278919000, y: 4351344640 },
+                { x: 1596278924000, y: 4351344640 },
+                { x: 1596278929000, y: 4351344640 },
+                { x: 1596278934000, y: 4351344640 },
+                { x: 1596278939000, y: 4351344640 },
+                { x: 1596278944000, y: 4351344640 },
+                { x: 1596278949000, y: 4351344640 },
+                { x: 1596278954000, y: 4352077824 },
+                { x: 1596278959000, y: 4352077824 },
+                { x: 1596278964000, y: 4352077824 },
+                { x: 1596278969000, y: 4352077824 },
+                { x: 1596278974000, y: 4352077824 },
+                { x: 1596278979000, y: 4352077824 },
+                { x: 1596278984000, y: 4352077824 },
+                { x: 1596278989000, y: 4352077824 },
+                { x: 1596278994000, y: 4352077824 },
+                { x: 1596278999000, y: 4352077824 },
+                { x: 1596279004000, y: 4352077824 },
+                { x: 1596279009000, y: 4352077824 },
+                { x: 1596279014000, y: 4338327552 },
+                { x: 1596279019000, y: 4338327552 },
+                { x: 1596279024000, y: 4338327552 },
+                { x: 1596279029000, y: 4338327552 },
+                { x: 1596279034000, y: 4338327552 },
+                { x: 1596279039000, y: 4338327552 },
+                { x: 1596279044000, y: 4338327552 },
+                { x: 1596279049000, y: 4338327552 },
+                { x: 1596279054000, y: 4338327552 },
+                { x: 1596279059000, y: 4338327552 },
+                { x: 1596279064000, y: 4338327552 },
+                { x: 1596279069000, y: 4338327552 },
+                { x: 1596279074000, y: 4338012160 },
+                { x: 1596279079000, y: 4338012160 },
+                { x: 1596279084000, y: 4338012160 },
+                { x: 1596279089000, y: 4338012160 },
+                { x: 1596279094000, y: 4338012160 },
+                { x: 1596279099000, y: 4338012160 },
+                { x: 1596279104000, y: 4338012160 },
+                { x: 1596279109000, y: 4338012160 },
+                { x: 1596279114000, y: 4338012160 },
+                { x: 1596279119000, y: 4338012160 },
+                { x: 1596279124000, y: 4338012160 },
+                { x: 1596279129000, y: 4338012160 },
+                { x: 1596279134000, y: 4331720704 },
+                { x: 1596279139000, y: 4331720704 },
+                { x: 1596279144000, y: 4331720704 },
+                { x: 1596279149000, y: 4331720704 },
+                { x: 1596279154000, y: 4331720704 },
+                { x: 1596279159000, y: 4331720704 },
+                { x: 1596279164000, y: 4331720704 },
+                { x: 1596279169000, y: 4331720704 },
+                { x: 1596279174000, y: 4331720704 },
+                { x: 1596279179000, y: 4331720704 },
+                { x: 1596279184000, y: 4331720704 },
+                { x: 1596279189000, y: 4331720704 },
+                { x: 1596279194000, y: 4332216320 },
+                { x: 1596279199000, y: 4332216320 },
+                { x: 1596279204000, y: 4332216320 },
+                { x: 1596279209000, y: 4332216320 },
+                { x: 1596279214000, y: 4332216320 },
+                { x: 1596279219000, y: 4332216320 },
+                { x: 1596279224000, y: 4332216320 },
+                { x: 1596279229000, y: 4332216320 },
+                { x: 1596279234000, y: 4332216320 },
+                { x: 1596279239000, y: 4332216320 },
+                { x: 1596279244000, y: 4332216320 },
+                { x: 1596279249000, y: 4332216320 },
+                { x: 1596279254000, y: 4332163072 },
+                { x: 1596279259000, y: 4332163072 },
+                { x: 1596279264000, y: 4332163072 },
+                { x: 1596279269000, y: 4332163072 },
+                { x: 1596279274000, y: 4332163072 },
+                { x: 1596279279000, y: 4332163072 },
+                { x: 1596279284000, y: 4332163072 },
+                { x: 1596279289000, y: 4332163072 },
+                { x: 1596279294000, y: 4332163072 },
+                { x: 1596279299000, y: 4332163072 },
+                { x: 1596279304000, y: 4332163072 },
+                { x: 1596279309000, y: 4332163072 },
+                { x: 1596279314000, y: 4353519616 },
+                { x: 1596279319000, y: 4353519616 },
+                { x: 1596279324000, y: 4353519616 },
+                { x: 1596279329000, y: 4353519616 },
+                { x: 1596279334000, y: 4353519616 },
+                { x: 1596279339000, y: 4353519616 },
+                { x: 1596279344000, y: 4353519616 },
+                { x: 1596279349000, y: 4353519616 },
+                { x: 1596279354000, y: 4353519616 },
+                { x: 1596279359000, y: 4353519616 },
+                { x: 1596279364000, y: 4353519616 },
+                { x: 1596279369000, y: 4353519616 },
+                { x: 1596279374000, y: 4354027520 },
+                { x: 1596279379000, y: 4354027520 },
+                { x: 1596279384000, y: 4354027520 },
+                { x: 1596279389000, y: 4354027520 },
+                { x: 1596279394000, y: 4354027520 },
+                { x: 1596279399000, y: 4354027520 },
+                { x: 1596279404000, y: 4354027520 },
+                { x: 1596279409000, y: 4354027520 },
+                { x: 1596279414000, y: 4354027520 },
+                { x: 1596279419000, y: 4354027520 },
+                { x: 1596279424000, y: 4354027520 },
+                { x: 1596279429000, y: 4354027520 },
+                { x: 1596279434000, y: 4331171840 },
+                { x: 1596279439000, y: 4331171840 },
+                { x: 1596279444000, y: 4331171840 },
+                { x: 1596279449000, y: 4331171840 },
+                { x: 1596279454000, y: 4331171840 },
+                { x: 1596279459000, y: 4331171840 },
+                { x: 1596279464000, y: 4331171840 },
+                { x: 1596279469000, y: 4331171840 },
+                { x: 1596279474000, y: 4331171840 },
+                { x: 1596279479000, y: 4331171840 },
+                { x: 1596279484000, y: 4331171840 },
+                { x: 1596279489000, y: 4331171840 },
+                { x: 1596279494000, y: 4331192320 },
+                { x: 1596279499000, y: 4331192320 },
+                { x: 1596279504000, y: 4331192320 },
+                { x: 1596279509000, y: 4331192320 },
+                { x: 1596279514000, y: 4331192320 },
+                { x: 1596279519000, y: 4331192320 },
+                { x: 1596279524000, y: 4331192320 },
+                { x: 1596279529000, y: 4331192320 },
+                { x: 1596279534000, y: 4331192320 },
+                { x: 1596279539000, y: 4331192320 },
+                { x: 1596279544000, y: 4331192320 },
+                { x: 1596279549000, y: 4331192320 },
+                { x: 1596279554000, y: 4331610112 },
+                { x: 1596279559000, y: 4331610112 },
+                { x: 1596279564000, y: 4331610112 },
+                { x: 1596279569000, y: 4331610112 },
+                { x: 1596279574000, y: 4331610112 },
+                { x: 1596279579000, y: 4331610112 },
+                { x: 1596279584000, y: 4331610112 },
+                { x: 1596279589000, y: 4331610112 },
+                { x: 1596279594000, y: 4331610112 },
+                { x: 1596279599000, y: 4331610112 },
+                { x: 1596279604000, y: 4331610112 },
+                { x: 1596279609000, y: 4331610112 },
+                { x: 1596279614000, y: 4331421696 },
+                { x: 1596279619000, y: 4331421696 },
+                { x: 1596279624000, y: 4331421696 },
+                { x: 1596279629000, y: 4331421696 },
+                { x: 1596279634000, y: 4331421696 },
+                { x: 1596279639000, y: 4331421696 },
+                { x: 1596279644000, y: 4331421696 },
+                { x: 1596279649000, y: 4331421696 },
+                { x: 1596279654000, y: 4331421696 },
+                { x: 1596279659000, y: 4331421696 },
+                { x: 1596279664000, y: 4331421696 },
+                { x: 1596279669000, y: 4331421696 },
               ],
             },
-            roles: [],
-            internalIP: "10.146.0.57",
-            externalIP: "35.194.123.206",
-          },
-          {
-            name: "gke-staging-new-default-pool-32bfe00c-70lw",
-            creationTimestamp: 1591876971000,
-            labels: {
-              "beta.kubernetes.io/arch": "amd64",
-              "beta.kubernetes.io/instance-type": "n1-standard-1",
-              "beta.kubernetes.io/os": "linux",
-              "cloud.google.com/gke-nodepool": "default-pool",
-              "cloud.google.com/gke-os-distribution": "cos",
-              "failure-domain.beta.kubernetes.io/region": "asia-northeast1",
-              "failure-domain.beta.kubernetes.io/zone": "asia-northeast1-a",
-              "kubernetes.io/arch": "amd64",
-              "kubernetes.io/hostname": "gke-staging-new-default-pool-32bfe00c-70lw",
-              "kubernetes.io/os": "linux",
-            },
+            internalIP: "192.168.64.3",
             annotations: {
-              "container.googleapis.com/instance_id": "1217115775887712862",
+              "kubeadm.alpha.kubernetes.io/cri-socket": "/var/run/dockershim.sock",
               "node.alpha.kubernetes.io/ttl": "0",
               "volumes.kubernetes.io/controller-managed-attach-detach": "true",
             },
+            name: "minikube",
+            externalIP: "<none>",
             status: {
               capacity: {
-                "attachable-volumes-gce-pd": "127",
-                cpu: "1",
-                "ephemeral-storage": "98868448Ki",
+                cpu: "4",
+                "ephemeral-storage": "16954224Ki",
                 "hugepages-2Mi": "0",
-                memory: "3785940Ki",
+                memory: "8163668Ki",
                 pods: "110",
               },
               allocatable: {
-                "attachable-volumes-gce-pd": "127",
-                cpu: "940m",
-                "ephemeral-storage": "47093746742",
+                cpu: "4",
+                "ephemeral-storage": "16954224Ki",
                 "hugepages-2Mi": "0",
-                memory: "2700500Ki",
+                memory: "8163668Ki",
                 pods: "110",
               },
               conditions: [
                 {
-                  type: "KernelDeadlock",
-                  status: "False",
-                  lastHeartbeatTime: "2020-07-06T02:10:47Z",
-                  lastTransitionTime: "2020-06-11T12:02:51Z",
-                  reason: "KernelHasNoDeadlock",
-                  message: "kernel has no deadlock",
-                },
-                {
-                  type: "ReadonlyFilesystem",
-                  status: "False",
-                  lastHeartbeatTime: "2020-07-06T02:10:47Z",
-                  lastTransitionTime: "2020-06-11T12:02:51Z",
-                  reason: "FilesystemIsNotReadOnly",
-                  message: "Filesystem is not read-only",
-                },
-                {
-                  type: "CorruptDockerOverlay2",
-                  status: "False",
-                  lastHeartbeatTime: "2020-07-06T02:10:47Z",
-                  lastTransitionTime: "2020-06-11T12:02:51Z",
-                  reason: "NoCorruptDockerOverlay2",
-                  message: "docker overlay2 is functioning properly",
-                },
-                {
-                  type: "FrequentUnregisterNetDevice",
-                  status: "False",
-                  lastHeartbeatTime: "2020-07-06T02:10:47Z",
-                  lastTransitionTime: "2020-06-11T12:02:51Z",
-                  reason: "NoFrequentUnregisterNetDevice",
-                  message: "node is functioning properly",
-                },
-                {
-                  type: "FrequentKubeletRestart",
-                  status: "False",
-                  lastHeartbeatTime: "2020-07-06T02:10:47Z",
-                  lastTransitionTime: "2020-06-11T12:02:51Z",
-                  reason: "NoFrequentKubeletRestart",
-                  message: "kubelet is functioning properly",
-                },
-                {
-                  type: "FrequentDockerRestart",
-                  status: "False",
-                  lastHeartbeatTime: "2020-07-06T02:10:47Z",
-                  lastTransitionTime: "2020-06-11T12:02:51Z",
-                  reason: "NoFrequentDockerRestart",
-                  message: "docker is functioning properly",
-                },
-                {
-                  type: "FrequentContainerdRestart",
-                  status: "False",
-                  lastHeartbeatTime: "2020-07-06T02:10:47Z",
-                  lastTransitionTime: "2020-06-11T12:02:51Z",
-                  reason: "NoFrequentContainerdRestart",
-                  message: "containerd is functioning properly",
-                },
-                {
-                  type: "NetworkUnavailable",
-                  status: "False",
-                  lastHeartbeatTime: "2020-06-29T09:13:09Z",
-                  lastTransitionTime: "2020-06-29T09:13:09Z",
-                  reason: "RouteCreated",
-                  message: "NodeController create implicit route",
-                },
-                {
                   type: "MemoryPressure",
                   status: "False",
-                  lastHeartbeatTime: "2020-07-06T02:13:25Z",
-                  lastTransitionTime: "2020-06-28T19:05:18Z",
+                  lastHeartbeatTime: "2020-07-26T00:01:55Z",
+                  lastTransitionTime: "2020-07-07T16:22:47Z",
                   reason: "KubeletHasSufficientMemory",
                   message: "kubelet has sufficient memory available",
                 },
                 {
                   type: "DiskPressure",
                   status: "False",
-                  lastHeartbeatTime: "2020-07-06T02:13:25Z",
-                  lastTransitionTime: "2020-06-11T12:02:51Z",
+                  lastHeartbeatTime: "2020-07-26T00:01:55Z",
+                  lastTransitionTime: "2020-07-07T16:22:47Z",
                   reason: "KubeletHasNoDiskPressure",
                   message: "kubelet has no disk pressure",
                 },
                 {
                   type: "PIDPressure",
                   status: "False",
-                  lastHeartbeatTime: "2020-07-06T02:13:25Z",
-                  lastTransitionTime: "2020-06-11T12:02:51Z",
+                  lastHeartbeatTime: "2020-07-26T00:01:55Z",
+                  lastTransitionTime: "2020-07-07T16:22:47Z",
                   reason: "KubeletHasSufficientPID",
                   message: "kubelet has sufficient PID available",
                 },
                 {
                   type: "Ready",
                   status: "True",
-                  lastHeartbeatTime: "2020-07-06T02:13:25Z",
-                  lastTransitionTime: "2020-06-11T12:02:51Z",
+                  lastHeartbeatTime: "2020-07-26T00:01:55Z",
+                  lastTransitionTime: "2020-07-07T16:22:47Z",
                   reason: "KubeletReady",
-                  message: "kubelet is posting ready status. AppArmor enabled",
+                  message: "kubelet is posting ready status",
                 },
               ],
               addresses: [
-                {
-                  type: "InternalIP",
-                  address: "10.146.0.58",
-                },
-                {
-                  type: "ExternalIP",
-                  address: "34.85.17.82",
-                },
-                {
-                  type: "InternalDNS",
-                  address:
-                    "gke-staging-new-default-pool-32bfe00c-70lw.asia-northeast1-a.c.fiery-webbing-255306.internal",
-                },
-                {
-                  type: "Hostname",
-                  address:
-                    "gke-staging-new-default-pool-32bfe00c-70lw.asia-northeast1-a.c.fiery-webbing-255306.internal",
-                },
+                { type: "InternalIP", address: "192.168.64.3" },
+                { type: "Hostname", address: "minikube" },
               ],
-              daemonEndpoints: {
-                kubeletEndpoint: {
-                  Port: 10250,
-                },
-              },
+              daemonEndpoints: { kubeletEndpoint: { Port: 10250 } },
               nodeInfo: {
-                machineID: "90cffe5d076829f9c8c24bbc6465b525",
-                systemUUID: "90cffe5d-0768-29f9-c8c2-4bbc6465b525",
-                bootID: "26a4027e-9384-4e7e-96ab-bb3cbfebe21e",
-                kernelVersion: "4.19.112+",
-                osImage: "Container-Optimized OS from Google",
-                containerRuntimeVersion: "docker://19.3.1",
-                kubeletVersion: "v1.16.9-gke.2",
-                kubeProxyVersion: "v1.16.9-gke.2",
+                containerRuntimeVersion: "docker://19.3.8",
+                machineID: "cf517b6996054bc2805f9d6f0a967e04",
+                kubeletVersion: "v1.15.0",
+                systemUUID: "6b0711ea-0000-0000-8f04-acde48001122",
+                bootID: "85429ef0-a5d7-4c64-a4ad-ec145bd87bc5",
                 operatingSystem: "linux",
                 architecture: "amd64",
+                osImage: "Buildroot 2019.02.10",
+                kubeProxyVersion: "v1.15.0",
+                kernelVersion: "4.19.107",
               },
               images: [
                 {
                   names: [
-                    "luksa/kubia-pet-peers@sha256:7a0aa2ab88fb24878a2a96c68e4f2a458d1135dccf60b8be62e993ba0158bd3b",
-                    "luksa/kubia-pet-peers:latest",
+                    "istio/examples-bookinfo-reviews-v2@sha256:e86d247b7ac275eb681a7e9c869325762686ccf0b5cfb6bde100ff2c1f01ae2b",
+                    "istio/examples-bookinfo-reviews-v2:1.15.0",
                   ],
-                  sizeBytes: 665627641,
+                  sizeBytes: 539699348,
                 },
                 {
                   names: [
-                    "luksa/kubia-pet@sha256:4263bc375d3ae2f73fe7486818cab64c07f9cd4a645a7c71a07c1365a6e1a4d2",
-                    "luksa/kubia-pet:latest",
+                    "istio/examples-bookinfo-reviews-v1@sha256:40e8aba77c1b46f37e820a60aa6948485d39e6f55f1492fa1f17383efd95511c",
+                    "istio/examples-bookinfo-reviews-v1:1.15.0",
                   ],
-                  sizeBytes: 665626413,
+                  sizeBytes: 539699348,
                 },
                 {
                   names: [
-                    "confluentinc/cp-kafka@sha256:c87b1c07fb53b1a82d24b436e53485917876a963dc67311800109fa12fe9a63d",
-                    "confluentinc/cp-kafka:5.0.1",
+                    "istio/examples-bookinfo-reviews-v3@sha256:e454cab754cf9234e8b41d7c5e30f53a4c125d7d9443cb3ef2b2eb1c4bd1ec14",
+                    "istio/examples-bookinfo-reviews-v3:1.15.0",
                   ],
-                  sizeBytes: 557414026,
+                  sizeBytes: 539699348,
                 },
                 {
                   names: [
-                    "kennethreitz/httpbin@sha256:599fe5e5073102dbb0ee3dbb65f049dab44fa9fc251f6835c9990f8fb196a72b",
-                    "kennethreitz/httpbin:latest",
+                    "istio/proxyv2@sha256:b569b3226624b63ca007f3252162390545643433770c79a9aadb1406687d767a",
+                    "istio/proxyv2:1.5.2",
                   ],
-                  sizeBytes: 533675008,
+                  sizeBytes: 300343292,
+                },
+                { names: ["k8s.gcr.io/etcd:3.3.10"], sizeBytes: 258116302 },
+                {
+                  names: [
+                    "istio/pilot@sha256:9969a1d0b7f620c972edd706cb84672304096c3f9dbade4d00d4f98215531757",
+                    "istio/pilot:1.5.2",
+                  ],
+                  sizeBytes: 223362302,
+                },
+                { names: ["kubernetesui/dashboard:v2.0.0"], sizeBytes: 221895031 },
+                { names: ["k8s.gcr.io/kube-apiserver:v1.15.0"], sizeBytes: 206815166 },
+                {
+                  names: [
+                    "istio/operator@sha256:3214e38deb9ecc63ce051852b985faf3e956a5e5afc2326ec2401a0127c33ab5",
+                    "istio/operator:1.5.2",
+                  ],
+                  sizeBytes: 192260148,
                 },
                 {
                   names: [
-                    "istio/examples-bookinfo-reviews-v3@sha256:f20fe4f7b80b1f1e491f3c54ac5472c622d5ba33007687d7fa46bec5b0fd19e8",
-                    "istio/examples-bookinfo-reviews-v3:1.16.1",
+                    "istio/examples-bookinfo-productpage-v1@sha256:0a5eb4795952372251d51f72834bccb7ea01a67cb72fd9b58b757cca103b7524",
+                    "istio/examples-bookinfo-productpage-v1:1.15.0",
                   ],
-                  sizeBytes: 465678896,
+                  sizeBytes: 182635847,
+                },
+                { names: ["k8s.gcr.io/kube-controller-manager:v1.15.0"], sizeBytes: 158714430 },
+                {
+                  names: [
+                    "istio/examples-bookinfo-ratings-v1@sha256:09b9d6958a13ad1a97377b7d5c2aa9e0372c008cdf5a44ce3e72fbd9660936cf",
+                    "istio/examples-bookinfo-ratings-v1:1.15.0",
+                  ],
+                  sizeBytes: 155154241,
                 },
                 {
                   names: [
-                    "istio/examples-bookinfo-reviews-v1@sha256:88ccc5da2dd911bf246ade8f0eb5c2121304bb3c45ed3b8a3799613c6566a142",
-                    "istio/examples-bookinfo-reviews-v1:1.16.1",
+                    "quay.io/kiali/kiali@sha256:96e50ee264377fc84b3d82061d4e5eb4ad98fb95f5919ca5800fcea151e5aff9",
+                    "quay.io/kiali/kiali:v1.15",
                   ],
-                  sizeBytes: 465678896,
-                },
-                {
-                  names: [
-                    "istio/examples-bookinfo-reviews-v1@sha256:ac2b3c86b73c3c47be1c25ea1f9f1d6af886134b70d13e4dbcc2149963a24063",
-                    "istio/examples-bookinfo-reviews-v1:1.15.1",
-                  ],
-                  sizeBytes: 465678896,
-                },
-                {
-                  names: [
-                    "istio/examples-bookinfo-reviews-v2@sha256:c2cbfb5d6c9a33e7eeff8981e5ac8281e09f06c4b50712b1fe0ef847ff9227bf",
-                    "istio/examples-bookinfo-reviews-v2:1.16.1",
-                  ],
-                  sizeBytes: 465678896,
-                },
-                {
-                  names: [
-                    "istio/proxyv2@sha256:84e3afe9b4404ca94fd2e6e0277c642eb29b8b37ca46deff49dbe1f5e1b7fdc3",
-                    "istio/proxyv2:1.6.1",
-                  ],
-                  sizeBytes: 304102694,
-                },
-                {
-                  names: [
-                    "gcr.io/stackdriver-agents/stackdriver-logging-agent@sha256:d5a1d7fff648bfa37bd163bf6584f79d7d2406cd72d5f4ceb253546cc3e0659e",
-                    "gcr.io/stackdriver-agents/stackdriver-logging-agent:1.6.34",
-                  ],
-                  sizeBytes: 242119837,
-                },
-                {
-                  names: [
-                    "istio/pilot@sha256:dd0fe167963823d4d5eb1e7309ebda03c2227c749254e4d4e68ebeb88fbc28f5",
-                    "istio/pilot:1.6.1",
-                  ],
-                  sizeBytes: 237495442,
-                },
-                {
-                  names: [
-                    "istio/examples-bookinfo-productpage-v1@sha256:d54717a1bd3c8e4a12fa887aadbb764e594099a255b3b892da1483a528b6856c",
-                    "istio/examples-bookinfo-productpage-v1:1.15.1",
-                  ],
-                  sizeBytes: 230142695,
-                },
-                {
-                  names: [
-                    "istio/examples-bookinfo-productpage-v1@sha256:2d612d210d94c1e001745e45981d89cacf796750c11ae431cb0bbb4b77cdf490",
-                    "istio/examples-bookinfo-productpage-v1:1.16.1",
-                  ],
-                  sizeBytes: 230142690,
-                },
-                {
-                  names: [
-                    "zookeeper@sha256:b7a76ec06f68fd9c801b72dfd283701bc7d8a8b0609277a0d570e8e6768e4ad9",
-                    "zookeeper:3.5.5",
-                  ],
-                  sizeBytes: 225210868,
-                },
-                {
-                  names: [
-                    "tutum/dnsutils@sha256:d2244ad47219529f1003bd1513f5c99e71655353a3a63624ea9cb19f8393d5fe",
-                    "tutum/dnsutils:latest",
-                  ],
-                  sizeBytes: 199923433,
-                },
-                {
-                  names: [
-                    "istio/examples-bookinfo-ratings-v1@sha256:a65aed515f443919baed052f40578169624242da968cc70f5961b1b0e1d88b5f",
-                    "istio/examples-bookinfo-ratings-v1:1.16.1",
-                  ],
-                  sizeBytes: 161134677,
-                },
-                {
-                  names: [
-                    "istio/examples-bookinfo-details-v1@sha256:344b1c18703ab1e51aa6d698f459c95ea734f8317d779189f4638de7a00e61ae",
-                    "istio/examples-bookinfo-details-v1:1.15.1",
-                  ],
-                  sizeBytes: 149054916,
-                },
-                {
-                  names: [
-                    "istio/examples-bookinfo-details-v1@sha256:debc42f2744c1f12b456e37ef77a8905b0417292deef993e7d7c9d5fc960c372",
-                    "istio/examples-bookinfo-details-v1:1.16.1",
-                  ],
-                  sizeBytes: 149054911,
+                  sizeBytes: 154460526,
                 },
                 {
                   names: [
@@ -2333,3293 +748,100 @@ export default class MockStore {
                 },
                 {
                   names: [
-                    "k8s.gcr.io/kubernetes-dashboard-amd64@sha256:0ae6b69432e78069c5ce2bcde0fe409c5c4d6f0f4d9cd50a17974fea38898747",
-                    "k8s.gcr.io/kubernetes-dashboard-amd64:v1.10.1",
+                    "istio/examples-bookinfo-details-v1@sha256:fce0bcbff0bed09116dacffca15695cd345e0c3788c15b0114a05f654ddecc17",
+                    "istio/examples-bookinfo-details-v1:1.15.0",
                   ],
-                  sizeBytes: 121711221,
+                  sizeBytes: 126666747,
+                },
+                {
+                  names: ["redis@sha256:e72b3d93ac43b6bfe76f79f5ccac21fcf3272e1a20349807f776c6ffb2773bc7"],
+                  sizeBytes: 104153916,
                 },
                 {
                   names: [
-                    "k8s.gcr.io/node-problem-detector@sha256:7101cdf7a2fc05facbc39cd9c03c195cbbdbd7eb99efadb45d94473f4e29fe0c",
-                    "k8s.gcr.io/node-problem-detector:v0.7.1",
+                    "redis@sha256:021541c7f7210194b8e41df861b348efe4ffea4e1adee6a4956536d917ca5b50",
+                    "redis@sha256:04f89ad6723f1e74d081bffc187351480cdce5f9f3c368cf07b4c126841db629",
+                    "redis@sha256:0f865ceb68b3a31470f5bf5617bb457cba0782f6906f0a718c3b585f8b6bd949",
+                    "redis@sha256:42de6bbb5e1f33b5783e246bd7c6fcd511598e4284002e41f0e2ee961f3f7bfb",
+                    "redis@sha256:a3c30c2953cea94597bef30dd4c8daa021a8751b17daa6183f9ed5a6b710afb4",
                   ],
-                  sizeBytes: 100104055,
+                  sizeBytes: 104153916,
+                },
+                {
+                  names: ["redis@sha256:800f2587bf3376cb01e6307afe599ddce9439deafbd4fb8562829da96085c9c5"],
+                  sizeBytes: 104124452,
+                },
+                { names: ["k8s.gcr.io/kube-proxy:v1.15.0"], sizeBytes: 82404188 },
+                { names: ["k8s.gcr.io/kube-scheduler:v1.15.0"], sizeBytes: 81103486 },
+                { names: ["gcr.io/k8s-minikube/storage-provisioner:v1.8.1"], sizeBytes: 80815640 },
+                {
+                  names: [
+                    "quay.io/jetstack/cert-manager-controller@sha256:916ad11088651e28923fa6891ac5c27790ba33f6dcc8ca34f223afa6b55f7b54",
+                    "quay.io/jetstack/cert-manager-controller:v0.15.0",
+                  ],
+                  sizeBytes: 52432042,
                 },
                 {
                   names: [
-                    "k8s.gcr.io/echoserver@sha256:cb5c1bddd1b5665e1867a7fa1b5fa843a47ee433bbb75d4293888b71def53229",
-                    "k8s.gcr.io/echoserver:1.10",
+                    "registry.cn-hangzhou.aliyuncs.com/google_containers/metrics-server-amd64@sha256:787a47614c668a9b3536111ee6c28df3bea131481f8b850e3223c41b58e6fffb",
+                    "k8s.gcr.io/metrics-server-amd64:v0.2.1",
+                    "registry.cn-hangzhou.aliyuncs.com/google_containers/metrics-server-amd64:v0.2.1",
                   ],
-                  sizeBytes: 95361986,
+                  sizeBytes: 42541759,
+                },
+                { names: ["k8s.gcr.io/coredns:1.3.1"], sizeBytes: 40303560 },
+                { names: ["kubernetesui/metrics-scraper:v1.0.2"], sizeBytes: 40101552 },
+                {
+                  names: [
+                    "quay.io/jetstack/cert-manager-cainjector@sha256:445e35d3511d5b6e7570bad32eb7978d4116ad2d1866d75e6d7785e3e2cc9d6d",
+                    "quay.io/jetstack/cert-manager-cainjector:v0.15.0",
+                  ],
+                  sizeBytes: 39480964,
                 },
                 {
                   names: [
-                    "k8s.gcr.io/fluentd-gcp-scaler@sha256:4f28f10fb89506768910b858f7a18ffb996824a16d70d5ac895e49687df9ff58",
-                    "k8s.gcr.io/fluentd-gcp-scaler:0.5.2",
+                    "quay.io/jetstack/cert-manager-webhook@sha256:effebe863e61d7fc361fc5a70a2a363523b902668ccbd9c745d4121bf193596f",
+                    "quay.io/jetstack/cert-manager-webhook:v0.15.0",
                   ],
-                  sizeBytes: 90498960,
+                  sizeBytes: 39358529,
                 },
                 {
                   names: [
-                    "k8s.gcr.io/k8s-dns-kube-dns-amd64@sha256:8f8ba87c4ac94aff38d5668da225918c91557591c156cf5f0df4f7f64f16c464",
-                    "k8s.gcr.io/k8s-dns-kube-dns-amd64:1.15.8",
+                    "quay.io/jetstack/cert-manager-acmesolver@sha256:4166abca3db409aad3aa4561e0e11d9857ddf766ae736072b0a769f1fe499450",
+                    "quay.io/jetstack/cert-manager-acmesolver:v0.15.0",
                   ],
-                  sizeBytes: 87533517,
+                  sizeBytes: 30487206,
                 },
                 {
-                  names: ["gke.gcr.io/kube-proxy-amd64:v1.16.9-gke.2", "k8s.gcr.io/kube-proxy-amd64:v1.16.9-gke.2"],
-                  sizeBytes: 84251387,
+                  names: [
+                    "busybox@sha256:4f47c01fa91355af2865ac10fef5bf6ec9c7f42ad2321377c21e844427972977",
+                    "busybox:latest",
+                  ],
+                  sizeBytes: 1223534,
                 },
+                { names: ["k8s.gcr.io/pause:3.1"], sizeBytes: 742472 },
               ],
             },
             statusTexts: ["Ready"],
-            metrics: {
-              cpu: [
-                {
-                  x: 1594000731000,
-                  y: 1,
-                },
-                {
-                  x: 1594000736000,
-                  y: 1,
-                },
-                {
-                  x: 1594000741000,
-                  y: 1,
-                },
-                {
-                  x: 1594000746000,
-                  y: 1,
-                },
-                {
-                  x: 1594000751000,
-                  y: 1,
-                },
-                {
-                  x: 1594000756000,
-                  y: 1,
-                },
-                {
-                  x: 1594000761000,
-                  y: 1,
-                },
-                {
-                  x: 1594000766000,
-                  y: 1,
-                },
-                {
-                  x: 1594000771000,
-                  y: 1,
-                },
-                {
-                  x: 1594000776000,
-                  y: 1,
-                },
-                {
-                  x: 1594000781000,
-                  y: 1,
-                },
-                {
-                  x: 1594000786000,
-                  y: 1,
-                },
-                {
-                  x: 1594000791000,
-                  y: 1,
-                },
-                {
-                  x: 1594000796000,
-                  y: 1,
-                },
-                {
-                  x: 1594000801000,
-                  y: 1,
-                },
-                {
-                  x: 1594000807000,
-                  y: 1,
-                },
-                {
-                  x: 1594000811000,
-                  y: 1,
-                },
-                {
-                  x: 1594000816000,
-                  y: 1,
-                },
-                {
-                  x: 1594000821000,
-                  y: 1,
-                },
-                {
-                  x: 1594000826000,
-                  y: 1,
-                },
-                {
-                  x: 1594000831000,
-                  y: 1,
-                },
-                {
-                  x: 1594000836000,
-                  y: 1,
-                },
-                {
-                  x: 1594000841000,
-                  y: 1,
-                },
-                {
-                  x: 1594000846000,
-                  y: 1,
-                },
-                {
-                  x: 1594000851000,
-                  y: 1,
-                },
-                {
-                  x: 1594000856000,
-                  y: 1,
-                },
-                {
-                  x: 1594000861000,
-                  y: 1,
-                },
-                {
-                  x: 1594000866000,
-                  y: 1,
-                },
-                {
-                  x: 1594000871000,
-                  y: 1,
-                },
-                {
-                  x: 1594000876000,
-                  y: 1,
-                },
-                {
-                  x: 1594000881000,
-                  y: 1,
-                },
-                {
-                  x: 1594000887000,
-                  y: 1,
-                },
-                {
-                  x: 1594000891000,
-                  y: 1,
-                },
-                {
-                  x: 1594000896000,
-                  y: 1,
-                },
-                {
-                  x: 1594000901000,
-                  y: 1,
-                },
-                {
-                  x: 1594000906000,
-                  y: 1,
-                },
-                {
-                  x: 1594000911000,
-                  y: 1,
-                },
-                {
-                  x: 1594000916000,
-                  y: 1,
-                },
-                {
-                  x: 1594000921000,
-                  y: 1,
-                },
-                {
-                  x: 1594000926000,
-                  y: 1,
-                },
-                {
-                  x: 1594000931000,
-                  y: 1,
-                },
-                {
-                  x: 1594000936000,
-                  y: 1,
-                },
-                {
-                  x: 1594000941000,
-                  y: 1,
-                },
-                {
-                  x: 1594000946000,
-                  y: 1,
-                },
-                {
-                  x: 1594000951000,
-                  y: 1,
-                },
-                {
-                  x: 1594000956000,
-                  y: 1,
-                },
-                {
-                  x: 1594000962000,
-                  y: 1,
-                },
-                {
-                  x: 1594000966000,
-                  y: 1,
-                },
-                {
-                  x: 1594000971000,
-                  y: 1,
-                },
-                {
-                  x: 1594000976000,
-                  y: 1,
-                },
-                {
-                  x: 1594000981000,
-                  y: 1,
-                },
-                {
-                  x: 1594000986000,
-                  y: 1,
-                },
-                {
-                  x: 1594000991000,
-                  y: 1,
-                },
-                {
-                  x: 1594000996000,
-                  y: 1,
-                },
-                {
-                  x: 1594001001000,
-                  y: 1,
-                },
-                {
-                  x: 1594001006000,
-                  y: 1,
-                },
-                {
-                  x: 1594001011000,
-                  y: 1,
-                },
-                {
-                  x: 1594001016000,
-                  y: 1,
-                },
-                {
-                  x: 1594001021000,
-                  y: 1,
-                },
-                {
-                  x: 1594001026000,
-                  y: 1,
-                },
-                {
-                  x: 1594001031000,
-                  y: 1,
-                },
-                {
-                  x: 1594001036000,
-                  y: 1,
-                },
-                {
-                  x: 1594001042000,
-                  y: 1,
-                },
-                {
-                  x: 1594001046000,
-                  y: 1,
-                },
-                {
-                  x: 1594001051000,
-                  y: 1,
-                },
-                {
-                  x: 1594001056000,
-                  y: 1,
-                },
-                {
-                  x: 1594001061000,
-                  y: 1,
-                },
-                {
-                  x: 1594001066000,
-                  y: 1,
-                },
-                {
-                  x: 1594001071000,
-                  y: 1,
-                },
-                {
-                  x: 1594001076000,
-                  y: 1,
-                },
-                {
-                  x: 1594001081000,
-                  y: 1,
-                },
-                {
-                  x: 1594001086000,
-                  y: 1,
-                },
-                {
-                  x: 1594001091000,
-                  y: 1,
-                },
-                {
-                  x: 1594001096000,
-                  y: 1,
-                },
-                {
-                  x: 1594001101000,
-                  y: 1,
-                },
-                {
-                  x: 1594001106000,
-                  y: 1,
-                },
-                {
-                  x: 1594001111000,
-                  y: 1,
-                },
-                {
-                  x: 1594001117000,
-                  y: 1,
-                },
-                {
-                  x: 1594001121000,
-                  y: 1,
-                },
-                {
-                  x: 1594001126000,
-                  y: 1,
-                },
-                {
-                  x: 1594001131000,
-                  y: 1,
-                },
-                {
-                  x: 1594001136000,
-                  y: 1,
-                },
-                {
-                  x: 1594001141000,
-                  y: 1,
-                },
-                {
-                  x: 1594001146000,
-                  y: 1,
-                },
-                {
-                  x: 1594001151000,
-                  y: 1,
-                },
-                {
-                  x: 1594001156000,
-                  y: 1,
-                },
-                {
-                  x: 1594001161000,
-                  y: 1,
-                },
-                {
-                  x: 1594001166000,
-                  y: 1,
-                },
-                {
-                  x: 1594001171000,
-                  y: 1,
-                },
-                {
-                  x: 1594001176000,
-                  y: 1,
-                },
-                {
-                  x: 1594001181000,
-                  y: 1,
-                },
-                {
-                  x: 1594001186000,
-                  y: 1,
-                },
-                {
-                  x: 1594001191000,
-                  y: 1,
-                },
-                {
-                  x: 1594001197000,
-                  y: 1,
-                },
-                {
-                  x: 1594001201000,
-                  y: 1,
-                },
-                {
-                  x: 1594001206000,
-                  y: 1,
-                },
-                {
-                  x: 1594001211000,
-                  y: 1,
-                },
-                {
-                  x: 1594001216000,
-                  y: 1,
-                },
-                {
-                  x: 1594001221000,
-                  y: 1,
-                },
-                {
-                  x: 1594001226000,
-                  y: 1,
-                },
-                {
-                  x: 1594001231000,
-                  y: 1,
-                },
-                {
-                  x: 1594001236000,
-                  y: 1,
-                },
-                {
-                  x: 1594001241000,
-                  y: 1,
-                },
-                {
-                  x: 1594001246000,
-                  y: 1,
-                },
-                {
-                  x: 1594001251000,
-                  y: 1,
-                },
-                {
-                  x: 1594001256000,
-                  y: 1,
-                },
-                {
-                  x: 1594001261000,
-                  y: 1,
-                },
-                {
-                  x: 1594001266000,
-                  y: 1,
-                },
-                {
-                  x: 1594001271000,
-                  y: 1,
-                },
-                {
-                  x: 1594001276000,
-                  y: 1,
-                },
-                {
-                  x: 1594001281000,
-                  y: 1,
-                },
-                {
-                  x: 1594001286000,
-                  y: 1,
-                },
-                {
-                  x: 1594001291000,
-                  y: 1,
-                },
-                {
-                  x: 1594001296000,
-                  y: 1,
-                },
-                {
-                  x: 1594001301000,
-                  y: 1,
-                },
-                {
-                  x: 1594001306000,
-                  y: 1,
-                },
-                {
-                  x: 1594001311000,
-                  y: 1,
-                },
-                {
-                  x: 1594001316000,
-                  y: 1,
-                },
-                {
-                  x: 1594001321000,
-                  y: 1,
-                },
-                {
-                  x: 1594001326000,
-                  y: 1,
-                },
-                {
-                  x: 1594001331000,
-                  y: 1,
-                },
-                {
-                  x: 1594001336000,
-                  y: 1,
-                },
-                {
-                  x: 1594001341000,
-                  y: 1,
-                },
-                {
-                  x: 1594001346000,
-                  y: 1,
-                },
-                {
-                  x: 1594001352000,
-                  y: 1,
-                },
-                {
-                  x: 1594001356000,
-                  y: 1,
-                },
-                {
-                  x: 1594001361000,
-                  y: 1,
-                },
-                {
-                  x: 1594001366000,
-                  y: 1,
-                },
-                {
-                  x: 1594001371000,
-                  y: 1,
-                },
-                {
-                  x: 1594001376000,
-                  y: 1,
-                },
-                {
-                  x: 1594001381000,
-                  y: 1,
-                },
-                {
-                  x: 1594001386000,
-                  y: 1,
-                },
-                {
-                  x: 1594001391000,
-                  y: 1,
-                },
-                {
-                  x: 1594001396000,
-                  y: 1,
-                },
-                {
-                  x: 1594001401000,
-                  y: 1,
-                },
-                {
-                  x: 1594001406000,
-                  y: 1,
-                },
-                {
-                  x: 1594001412000,
-                  y: 1,
-                },
-                {
-                  x: 1594001416000,
-                  y: 1,
-                },
-                {
-                  x: 1594001421000,
-                  y: 1,
-                },
-                {
-                  x: 1594001426000,
-                  y: 1,
-                },
-                {
-                  x: 1594001431000,
-                  y: 1,
-                },
-                {
-                  x: 1594001436000,
-                  y: 1,
-                },
-                {
-                  x: 1594001441000,
-                  y: 1,
-                },
-                {
-                  x: 1594001446000,
-                  y: 1,
-                },
-                {
-                  x: 1594001451000,
-                  y: 1,
-                },
-                {
-                  x: 1594001456000,
-                  y: 1,
-                },
-                {
-                  x: 1594001461000,
-                  y: 1,
-                },
-                {
-                  x: 1594001466000,
-                  y: 1,
-                },
-                {
-                  x: 1594001471000,
-                  y: 1,
-                },
-                {
-                  x: 1594001476000,
-                  y: 1,
-                },
-                {
-                  x: 1594001481000,
-                  y: 1,
-                },
-                {
-                  x: 1594001487000,
-                  y: 1,
-                },
-                {
-                  x: 1594001491000,
-                  y: 1,
-                },
-                {
-                  x: 1594001496000,
-                  y: 1,
-                },
-                {
-                  x: 1594001501000,
-                  y: 1,
-                },
-                {
-                  x: 1594001506000,
-                  y: 1,
-                },
-                {
-                  x: 1594001511000,
-                  y: 1,
-                },
-                {
-                  x: 1594001516000,
-                  y: 1,
-                },
-                {
-                  x: 1594001521000,
-                  y: 1,
-                },
-                {
-                  x: 1594001526000,
-                  y: 1,
-                },
-                {
-                  x: 1594001531000,
-                  y: 1,
-                },
-                {
-                  x: 1594001536000,
-                  y: 1,
-                },
-                {
-                  x: 1594001541000,
-                  y: 1,
-                },
-                {
-                  x: 1594001546000,
-                  y: 1,
-                },
-                {
-                  x: 1594001551000,
-                  y: 1,
-                },
-                {
-                  x: 1594001556000,
-                  y: 1,
-                },
-                {
-                  x: 1594001562000,
-                  y: 1,
-                },
-                {
-                  x: 1594001566000,
-                  y: 1,
-                },
-                {
-                  x: 1594001571000,
-                  y: 1,
-                },
-                {
-                  x: 1594001576000,
-                  y: 1,
-                },
-                {
-                  x: 1594001581000,
-                  y: 1,
-                },
-                {
-                  x: 1594001586000,
-                  y: 1,
-                },
-                {
-                  x: 1594001591000,
-                  y: 1,
-                },
-                {
-                  x: 1594001596000,
-                  y: 1,
-                },
-                {
-                  x: 1594001601000,
-                  y: 1,
-                },
-                {
-                  x: 1594001606000,
-                  y: 1,
-                },
-                {
-                  x: 1594001611000,
-                  y: 1,
-                },
-                {
-                  x: 1594001616000,
-                  y: 1,
-                },
-                {
-                  x: 1594001621000,
-                  y: 1,
-                },
-                {
-                  x: 1594001627000,
-                  y: 1,
-                },
-              ],
-              memory: [
-                {
-                  x: 1594000731000,
-                  y: 2562232320,
-                },
-                {
-                  x: 1594000736000,
-                  y: 2562232320,
-                },
-                {
-                  x: 1594000741000,
-                  y: 2562232320,
-                },
-                {
-                  x: 1594000746000,
-                  y: 2587611136,
-                },
-                {
-                  x: 1594000751000,
-                  y: 2587611136,
-                },
-                {
-                  x: 1594000756000,
-                  y: 2587611136,
-                },
-                {
-                  x: 1594000761000,
-                  y: 2587611136,
-                },
-                {
-                  x: 1594000766000,
-                  y: 2587611136,
-                },
-                {
-                  x: 1594000771000,
-                  y: 2587611136,
-                },
-                {
-                  x: 1594000776000,
-                  y: 2561359872,
-                },
-                {
-                  x: 1594000781000,
-                  y: 2561359872,
-                },
-                {
-                  x: 1594000786000,
-                  y: 2561359872,
-                },
-                {
-                  x: 1594000791000,
-                  y: 2561359872,
-                },
-                {
-                  x: 1594000796000,
-                  y: 2561359872,
-                },
-                {
-                  x: 1594000801000,
-                  y: 2561359872,
-                },
-                {
-                  x: 1594000807000,
-                  y: 2562043904,
-                },
-                {
-                  x: 1594000811000,
-                  y: 2562043904,
-                },
-                {
-                  x: 1594000816000,
-                  y: 2562043904,
-                },
-                {
-                  x: 1594000821000,
-                  y: 2562043904,
-                },
-                {
-                  x: 1594000826000,
-                  y: 2562043904,
-                },
-                {
-                  x: 1594000831000,
-                  y: 2562043904,
-                },
-                {
-                  x: 1594000836000,
-                  y: 2561855488,
-                },
-                {
-                  x: 1594000841000,
-                  y: 2561855488,
-                },
-                {
-                  x: 1594000846000,
-                  y: 2561855488,
-                },
-                {
-                  x: 1594000851000,
-                  y: 2561855488,
-                },
-                {
-                  x: 1594000856000,
-                  y: 2561855488,
-                },
-                {
-                  x: 1594000861000,
-                  y: 2561855488,
-                },
-                {
-                  x: 1594000866000,
-                  y: 2557628416,
-                },
-                {
-                  x: 1594000871000,
-                  y: 2557628416,
-                },
-                {
-                  x: 1594000876000,
-                  y: 2557628416,
-                },
-                {
-                  x: 1594000881000,
-                  y: 2557628416,
-                },
-                {
-                  x: 1594000887000,
-                  y: 2557628416,
-                },
-                {
-                  x: 1594000891000,
-                  y: 2557628416,
-                },
-                {
-                  x: 1594000896000,
-                  y: 2558005248,
-                },
-                {
-                  x: 1594000901000,
-                  y: 2558005248,
-                },
-                {
-                  x: 1594000906000,
-                  y: 2558005248,
-                },
-                {
-                  x: 1594000911000,
-                  y: 2558005248,
-                },
-                {
-                  x: 1594000916000,
-                  y: 2558005248,
-                },
-                {
-                  x: 1594000921000,
-                  y: 2558005248,
-                },
-                {
-                  x: 1594000926000,
-                  y: 2559705088,
-                },
-                {
-                  x: 1594000931000,
-                  y: 2559705088,
-                },
-                {
-                  x: 1594000936000,
-                  y: 2559705088,
-                },
-                {
-                  x: 1594000941000,
-                  y: 2559705088,
-                },
-                {
-                  x: 1594000946000,
-                  y: 2559705088,
-                },
-                {
-                  x: 1594000951000,
-                  y: 2559705088,
-                },
-                {
-                  x: 1594000956000,
-                  y: 2559729664,
-                },
-                {
-                  x: 1594000962000,
-                  y: 2559729664,
-                },
-                {
-                  x: 1594000966000,
-                  y: 2559729664,
-                },
-                {
-                  x: 1594000971000,
-                  y: 2559729664,
-                },
-                {
-                  x: 1594000976000,
-                  y: 2559729664,
-                },
-                {
-                  x: 1594000981000,
-                  y: 2559729664,
-                },
-                {
-                  x: 1594000986000,
-                  y: 2560032768,
-                },
-                {
-                  x: 1594000991000,
-                  y: 2560032768,
-                },
-                {
-                  x: 1594000996000,
-                  y: 2560032768,
-                },
-                {
-                  x: 1594001001000,
-                  y: 2560032768,
-                },
-                {
-                  x: 1594001006000,
-                  y: 2560032768,
-                },
-                {
-                  x: 1594001011000,
-                  y: 2560032768,
-                },
-                {
-                  x: 1594001016000,
-                  y: 2559983616,
-                },
-                {
-                  x: 1594001021000,
-                  y: 2559983616,
-                },
-                {
-                  x: 1594001026000,
-                  y: 2559983616,
-                },
-                {
-                  x: 1594001031000,
-                  y: 2559983616,
-                },
-                {
-                  x: 1594001036000,
-                  y: 2559983616,
-                },
-                {
-                  x: 1594001042000,
-                  y: 2559983616,
-                },
-                {
-                  x: 1594001046000,
-                  y: 2559918080,
-                },
-                {
-                  x: 1594001051000,
-                  y: 2559918080,
-                },
-                {
-                  x: 1594001056000,
-                  y: 2559918080,
-                },
-                {
-                  x: 1594001061000,
-                  y: 2559918080,
-                },
-                {
-                  x: 1594001066000,
-                  y: 2559918080,
-                },
-                {
-                  x: 1594001071000,
-                  y: 2559918080,
-                },
-                {
-                  x: 1594001076000,
-                  y: 2558656512,
-                },
-                {
-                  x: 1594001081000,
-                  y: 2558656512,
-                },
-                {
-                  x: 1594001086000,
-                  y: 2558656512,
-                },
-                {
-                  x: 1594001091000,
-                  y: 2558656512,
-                },
-                {
-                  x: 1594001096000,
-                  y: 2558656512,
-                },
-                {
-                  x: 1594001101000,
-                  y: 2558656512,
-                },
-                {
-                  x: 1594001106000,
-                  y: 2558943232,
-                },
-                {
-                  x: 1594001111000,
-                  y: 2558943232,
-                },
-                {
-                  x: 1594001117000,
-                  y: 2558943232,
-                },
-                {
-                  x: 1594001121000,
-                  y: 2558943232,
-                },
-                {
-                  x: 1594001126000,
-                  y: 2558943232,
-                },
-                {
-                  x: 1594001131000,
-                  y: 2558943232,
-                },
-                {
-                  x: 1594001136000,
-                  y: 2558500864,
-                },
-                {
-                  x: 1594001141000,
-                  y: 2558500864,
-                },
-                {
-                  x: 1594001146000,
-                  y: 2558500864,
-                },
-                {
-                  x: 1594001151000,
-                  y: 2558500864,
-                },
-                {
-                  x: 1594001156000,
-                  y: 2558500864,
-                },
-                {
-                  x: 1594001161000,
-                  y: 2558500864,
-                },
-                {
-                  x: 1594001166000,
-                  y: 2559356928,
-                },
-                {
-                  x: 1594001171000,
-                  y: 2559356928,
-                },
-                {
-                  x: 1594001176000,
-                  y: 2559356928,
-                },
-                {
-                  x: 1594001181000,
-                  y: 2559356928,
-                },
-                {
-                  x: 1594001186000,
-                  y: 2559356928,
-                },
-                {
-                  x: 1594001191000,
-                  y: 2559356928,
-                },
-                {
-                  x: 1594001197000,
-                  y: 2559016960,
-                },
-                {
-                  x: 1594001201000,
-                  y: 2559016960,
-                },
-                {
-                  x: 1594001206000,
-                  y: 2559016960,
-                },
-                {
-                  x: 1594001211000,
-                  y: 2559016960,
-                },
-                {
-                  x: 1594001216000,
-                  y: 2559016960,
-                },
-                {
-                  x: 1594001221000,
-                  y: 2559016960,
-                },
-                {
-                  x: 1594001226000,
-                  y: 2558840832,
-                },
-                {
-                  x: 1594001231000,
-                  y: 2558840832,
-                },
-                {
-                  x: 1594001236000,
-                  y: 2558840832,
-                },
-                {
-                  x: 1594001241000,
-                  y: 2558840832,
-                },
-                {
-                  x: 1594001246000,
-                  y: 2558840832,
-                },
-                {
-                  x: 1594001251000,
-                  y: 2558840832,
-                },
-                {
-                  x: 1594001256000,
-                  y: 2558197760,
-                },
-                {
-                  x: 1594001261000,
-                  y: 2558197760,
-                },
-                {
-                  x: 1594001266000,
-                  y: 2558197760,
-                },
-                {
-                  x: 1594001271000,
-                  y: 2558197760,
-                },
-                {
-                  x: 1594001276000,
-                  y: 2558197760,
-                },
-                {
-                  x: 1594001281000,
-                  y: 2558197760,
-                },
-                {
-                  x: 1594001286000,
-                  y: 2558640128,
-                },
-                {
-                  x: 1594001291000,
-                  y: 2558640128,
-                },
-                {
-                  x: 1594001296000,
-                  y: 2558640128,
-                },
-                {
-                  x: 1594001301000,
-                  y: 2558640128,
-                },
-                {
-                  x: 1594001306000,
-                  y: 2558640128,
-                },
-                {
-                  x: 1594001311000,
-                  y: 2558640128,
-                },
-                {
-                  x: 1594001316000,
-                  y: 2559025152,
-                },
-                {
-                  x: 1594001321000,
-                  y: 2559025152,
-                },
-                {
-                  x: 1594001326000,
-                  y: 2559025152,
-                },
-                {
-                  x: 1594001331000,
-                  y: 2559025152,
-                },
-                {
-                  x: 1594001336000,
-                  y: 2559025152,
-                },
-                {
-                  x: 1594001341000,
-                  y: 2559025152,
-                },
-                {
-                  x: 1594001346000,
-                  y: 2553597952,
-                },
-                {
-                  x: 1594001352000,
-                  y: 2553597952,
-                },
-                {
-                  x: 1594001356000,
-                  y: 2553597952,
-                },
-                {
-                  x: 1594001361000,
-                  y: 2553597952,
-                },
-                {
-                  x: 1594001366000,
-                  y: 2553597952,
-                },
-                {
-                  x: 1594001371000,
-                  y: 2553597952,
-                },
-                {
-                  x: 1594001376000,
-                  y: 2554687488,
-                },
-                {
-                  x: 1594001381000,
-                  y: 2554687488,
-                },
-                {
-                  x: 1594001386000,
-                  y: 2554687488,
-                },
-                {
-                  x: 1594001391000,
-                  y: 2554687488,
-                },
-                {
-                  x: 1594001396000,
-                  y: 2554687488,
-                },
-                {
-                  x: 1594001401000,
-                  y: 2554687488,
-                },
-                {
-                  x: 1594001406000,
-                  y: 2555944960,
-                },
-                {
-                  x: 1594001412000,
-                  y: 2555944960,
-                },
-                {
-                  x: 1594001416000,
-                  y: 2555944960,
-                },
-                {
-                  x: 1594001421000,
-                  y: 2555944960,
-                },
-                {
-                  x: 1594001426000,
-                  y: 2555944960,
-                },
-                {
-                  x: 1594001431000,
-                  y: 2555944960,
-                },
-                {
-                  x: 1594001436000,
-                  y: 2555920384,
-                },
-                {
-                  x: 1594001441000,
-                  y: 2555920384,
-                },
-                {
-                  x: 1594001446000,
-                  y: 2555920384,
-                },
-                {
-                  x: 1594001451000,
-                  y: 2555920384,
-                },
-                {
-                  x: 1594001456000,
-                  y: 2555920384,
-                },
-                {
-                  x: 1594001461000,
-                  y: 2555920384,
-                },
-                {
-                  x: 1594001466000,
-                  y: 2555891712,
-                },
-                {
-                  x: 1594001471000,
-                  y: 2555891712,
-                },
-                {
-                  x: 1594001476000,
-                  y: 2555891712,
-                },
-                {
-                  x: 1594001481000,
-                  y: 2555891712,
-                },
-                {
-                  x: 1594001487000,
-                  y: 2555891712,
-                },
-                {
-                  x: 1594001491000,
-                  y: 2555891712,
-                },
-                {
-                  x: 1594001496000,
-                  y: 2556452864,
-                },
-                {
-                  x: 1594001501000,
-                  y: 2556452864,
-                },
-                {
-                  x: 1594001506000,
-                  y: 2556452864,
-                },
-                {
-                  x: 1594001511000,
-                  y: 2556452864,
-                },
-                {
-                  x: 1594001516000,
-                  y: 2556452864,
-                },
-                {
-                  x: 1594001521000,
-                  y: 2556452864,
-                },
-                {
-                  x: 1594001526000,
-                  y: 2556346368,
-                },
-                {
-                  x: 1594001531000,
-                  y: 2556346368,
-                },
-                {
-                  x: 1594001536000,
-                  y: 2556346368,
-                },
-                {
-                  x: 1594001541000,
-                  y: 2556346368,
-                },
-                {
-                  x: 1594001546000,
-                  y: 2556346368,
-                },
-                {
-                  x: 1594001551000,
-                  y: 2556346368,
-                },
-                {
-                  x: 1594001556000,
-                  y: 2556768256,
-                },
-                {
-                  x: 1594001562000,
-                  y: 2556768256,
-                },
-                {
-                  x: 1594001566000,
-                  y: 2556768256,
-                },
-                {
-                  x: 1594001571000,
-                  y: 2556768256,
-                },
-                {
-                  x: 1594001576000,
-                  y: 2556768256,
-                },
-                {
-                  x: 1594001581000,
-                  y: 2556768256,
-                },
-                {
-                  x: 1594001586000,
-                  y: 2561474560,
-                },
-                {
-                  x: 1594001591000,
-                  y: 2561474560,
-                },
-                {
-                  x: 1594001596000,
-                  y: 2561474560,
-                },
-                {
-                  x: 1594001601000,
-                  y: 2561474560,
-                },
-                {
-                  x: 1594001606000,
-                  y: 2561474560,
-                },
-                {
-                  x: 1594001611000,
-                  y: 2561474560,
-                },
-                {
-                  x: 1594001616000,
-                  y: 2562232320,
-                },
-                {
-                  x: 1594001621000,
-                  y: 2562232320,
-                },
-                {
-                  x: 1594001627000,
-                  y: 2562232320,
-                },
-              ],
+            creationTimestamp: 1592560321000,
+            roles: ["master"],
+            allocatedResources: {
+              podsCount: 41,
+              requests: { cpu: "3880m", memory: "4084Mi" },
+              limits: { cpu: "4750m", memory: "3260Mi" },
             },
-            roles: [],
-            internalIP: "10.146.0.58",
-            externalIP: "34.85.17.82",
-          },
-          {
-            name: "gke-staging-new-default-pool-32bfe00c-8v5t",
-            creationTimestamp: 1591876971000,
             labels: {
-              "beta.kubernetes.io/arch": "amd64",
-              "beta.kubernetes.io/instance-type": "n1-standard-1",
+              "minikube.k8s.io/version": "v1.11.0",
+              "minikube.k8s.io/name": "minikube",
               "beta.kubernetes.io/os": "linux",
-              "cloud.google.com/gke-nodepool": "default-pool",
-              "cloud.google.com/gke-os-distribution": "cos",
-              "failure-domain.beta.kubernetes.io/region": "asia-northeast1",
-              "failure-domain.beta.kubernetes.io/zone": "asia-northeast1-a",
-              "kubernetes.io/arch": "amd64",
-              "kubernetes.io/hostname": "gke-staging-new-default-pool-32bfe00c-8v5t",
               "kubernetes.io/os": "linux",
+              "minikube.k8s.io/updated_at": "2020_06_19T17_52_07_0700",
+              "minikube.k8s.io/commit": "57e2f55f47effe9ce396cea42a1e0eb4f611ebbd",
+              "node-role.kubernetes.io/master": "",
+              "kubernetes.io/hostname": "minikube",
+              "beta.kubernetes.io/arch": "amd64",
+              "kubernetes.io/arch": "amd64",
             },
-            annotations: {
-              "container.googleapis.com/instance_id": "4381002618442326622",
-              "node.alpha.kubernetes.io/ttl": "0",
-              "volumes.kubernetes.io/controller-managed-attach-detach": "true",
-            },
-            status: {
-              capacity: {
-                "attachable-volumes-gce-pd": "127",
-                cpu: "1",
-                "ephemeral-storage": "98868448Ki",
-                "hugepages-2Mi": "0",
-                memory: "3785956Ki",
-                pods: "110",
-              },
-              allocatable: {
-                "attachable-volumes-gce-pd": "127",
-                cpu: "940m",
-                "ephemeral-storage": "47093746742",
-                "hugepages-2Mi": "0",
-                memory: "2700516Ki",
-                pods: "110",
-              },
-              conditions: [
-                {
-                  type: "FrequentContainerdRestart",
-                  status: "False",
-                  lastHeartbeatTime: "2020-07-06T02:12:55Z",
-                  lastTransitionTime: "2020-06-24T08:35:35Z",
-                  reason: "NoFrequentContainerdRestart",
-                  message: "containerd is functioning properly",
-                },
-                {
-                  type: "KernelDeadlock",
-                  status: "False",
-                  lastHeartbeatTime: "2020-07-06T02:12:55Z",
-                  lastTransitionTime: "2020-06-24T08:35:35Z",
-                  reason: "KernelHasNoDeadlock",
-                  message: "kernel has no deadlock",
-                },
-                {
-                  type: "ReadonlyFilesystem",
-                  status: "False",
-                  lastHeartbeatTime: "2020-07-06T02:12:55Z",
-                  lastTransitionTime: "2020-06-24T08:35:35Z",
-                  reason: "FilesystemIsNotReadOnly",
-                  message: "Filesystem is not read-only",
-                },
-                {
-                  type: "CorruptDockerOverlay2",
-                  status: "False",
-                  lastHeartbeatTime: "2020-07-06T02:12:55Z",
-                  lastTransitionTime: "2020-06-24T08:35:35Z",
-                  reason: "NoCorruptDockerOverlay2",
-                  message: "docker overlay2 is functioning properly",
-                },
-                {
-                  type: "FrequentUnregisterNetDevice",
-                  status: "False",
-                  lastHeartbeatTime: "2020-07-06T02:12:55Z",
-                  lastTransitionTime: "2020-06-24T08:35:35Z",
-                  reason: "NoFrequentUnregisterNetDevice",
-                  message: "node is functioning properly",
-                },
-                {
-                  type: "FrequentKubeletRestart",
-                  status: "False",
-                  lastHeartbeatTime: "2020-07-06T02:12:55Z",
-                  lastTransitionTime: "2020-06-24T08:35:35Z",
-                  reason: "NoFrequentKubeletRestart",
-                  message: "kubelet is functioning properly",
-                },
-                {
-                  type: "FrequentDockerRestart",
-                  status: "False",
-                  lastHeartbeatTime: "2020-07-06T02:12:55Z",
-                  lastTransitionTime: "2020-06-24T08:35:35Z",
-                  reason: "NoFrequentDockerRestart",
-                  message: "docker is functioning properly",
-                },
-                {
-                  type: "NetworkUnavailable",
-                  status: "False",
-                  lastHeartbeatTime: "2020-06-29T09:13:09Z",
-                  lastTransitionTime: "2020-06-29T09:13:09Z",
-                  reason: "RouteCreated",
-                  message: "NodeController create implicit route",
-                },
-                {
-                  type: "MemoryPressure",
-                  status: "False",
-                  lastHeartbeatTime: "2020-07-06T02:13:41Z",
-                  lastTransitionTime: "2020-06-24T08:35:37Z",
-                  reason: "KubeletHasSufficientMemory",
-                  message: "kubelet has sufficient memory available",
-                },
-                {
-                  type: "DiskPressure",
-                  status: "False",
-                  lastHeartbeatTime: "2020-07-06T02:13:41Z",
-                  lastTransitionTime: "2020-06-24T08:35:37Z",
-                  reason: "KubeletHasNoDiskPressure",
-                  message: "kubelet has no disk pressure",
-                },
-                {
-                  type: "PIDPressure",
-                  status: "False",
-                  lastHeartbeatTime: "2020-07-06T02:13:41Z",
-                  lastTransitionTime: "2020-06-24T08:35:37Z",
-                  reason: "KubeletHasSufficientPID",
-                  message: "kubelet has sufficient PID available",
-                },
-                {
-                  type: "Ready",
-                  status: "True",
-                  lastHeartbeatTime: "2020-07-06T02:13:41Z",
-                  lastTransitionTime: "2020-06-24T08:35:37Z",
-                  reason: "KubeletReady",
-                  message: "kubelet is posting ready status. AppArmor enabled",
-                },
-              ],
-              addresses: [
-                {
-                  type: "InternalIP",
-                  address: "10.146.0.56",
-                },
-                {
-                  type: "ExternalIP",
-                  address: "35.200.117.196",
-                },
-                {
-                  type: "InternalDNS",
-                  address:
-                    "gke-staging-new-default-pool-32bfe00c-8v5t.asia-northeast1-a.c.fiery-webbing-255306.internal",
-                },
-                {
-                  type: "Hostname",
-                  address:
-                    "gke-staging-new-default-pool-32bfe00c-8v5t.asia-northeast1-a.c.fiery-webbing-255306.internal",
-                },
-              ],
-              daemonEndpoints: {
-                kubeletEndpoint: {
-                  Port: 10250,
-                },
-              },
-              nodeInfo: {
-                machineID: "7d78a0c76e8157c2bc2d327f586100ca",
-                systemUUID: "7d78a0c7-6e81-57c2-bc2d-327f586100ca",
-                bootID: "9032ec90-72e8-442a-9c53-f118e8f103de",
-                kernelVersion: "4.19.112+",
-                osImage: "Container-Optimized OS from Google",
-                containerRuntimeVersion: "docker://19.3.1",
-                kubeletVersion: "v1.16.9-gke.2",
-                kubeProxyVersion: "v1.16.9-gke.2",
-                operatingSystem: "linux",
-                architecture: "amd64",
-              },
-              images: [
-                {
-                  names: [
-                    "luksa/kubia-pet-peers@sha256:7a0aa2ab88fb24878a2a96c68e4f2a458d1135dccf60b8be62e993ba0158bd3b",
-                    "luksa/kubia-pet-peers:latest",
-                  ],
-                  sizeBytes: 665627641,
-                },
-                {
-                  names: [
-                    "luksa/kubia-pet@sha256:4263bc375d3ae2f73fe7486818cab64c07f9cd4a645a7c71a07c1365a6e1a4d2",
-                    "luksa/kubia-pet:latest",
-                  ],
-                  sizeBytes: 665626413,
-                },
-                {
-                  names: [
-                    "confluentinc/cp-kafka@sha256:c87b1c07fb53b1a82d24b436e53485917876a963dc67311800109fa12fe9a63d",
-                    "confluentinc/cp-kafka:5.0.1",
-                  ],
-                  sizeBytes: 557414026,
-                },
-                {
-                  names: [
-                    "istio/examples-bookinfo-reviews-v3@sha256:f20fe4f7b80b1f1e491f3c54ac5472c622d5ba33007687d7fa46bec5b0fd19e8",
-                    "istio/examples-bookinfo-reviews-v3:1.16.1",
-                  ],
-                  sizeBytes: 465678896,
-                },
-                {
-                  names: [
-                    "istio/examples-bookinfo-reviews-v1@sha256:88ccc5da2dd911bf246ade8f0eb5c2121304bb3c45ed3b8a3799613c6566a142",
-                    "istio/examples-bookinfo-reviews-v1:1.16.1",
-                  ],
-                  sizeBytes: 465678896,
-                },
-                {
-                  names: [
-                    "istio/examples-bookinfo-reviews-v1@sha256:ac2b3c86b73c3c47be1c25ea1f9f1d6af886134b70d13e4dbcc2149963a24063",
-                    "istio/examples-bookinfo-reviews-v1:1.15.1",
-                  ],
-                  sizeBytes: 465678896,
-                },
-                {
-                  names: [
-                    "istio/examples-bookinfo-reviews-v2@sha256:c2cbfb5d6c9a33e7eeff8981e5ac8281e09f06c4b50712b1fe0ef847ff9227bf",
-                    "istio/examples-bookinfo-reviews-v2:1.16.1",
-                  ],
-                  sizeBytes: 465678896,
-                },
-                {
-                  names: [
-                    "istio/proxyv2@sha256:84e3afe9b4404ca94fd2e6e0277c642eb29b8b37ca46deff49dbe1f5e1b7fdc3",
-                    "istio/proxyv2:1.6.1",
-                  ],
-                  sizeBytes: 304102694,
-                },
-                {
-                  names: [
-                    "gcr.io/stackdriver-agents/stackdriver-logging-agent@sha256:d5a1d7fff648bfa37bd163bf6584f79d7d2406cd72d5f4ceb253546cc3e0659e",
-                    "gcr.io/stackdriver-agents/stackdriver-logging-agent:1.6.34",
-                  ],
-                  sizeBytes: 242119837,
-                },
-                {
-                  names: [
-                    "istio/pilot@sha256:dd0fe167963823d4d5eb1e7309ebda03c2227c749254e4d4e68ebeb88fbc28f5",
-                    "istio/pilot:1.6.1",
-                  ],
-                  sizeBytes: 237495442,
-                },
-                {
-                  names: [
-                    "istio/examples-bookinfo-productpage-v1@sha256:d54717a1bd3c8e4a12fa887aadbb764e594099a255b3b892da1483a528b6856c",
-                    "istio/examples-bookinfo-productpage-v1:1.15.1",
-                  ],
-                  sizeBytes: 230142695,
-                },
-                {
-                  names: [
-                    "istio/examples-bookinfo-productpage-v1@sha256:2d612d210d94c1e001745e45981d89cacf796750c11ae431cb0bbb4b77cdf490",
-                    "istio/examples-bookinfo-productpage-v1:1.16.1",
-                  ],
-                  sizeBytes: 230142690,
-                },
-                {
-                  names: [
-                    "zookeeper@sha256:b7a76ec06f68fd9c801b72dfd283701bc7d8a8b0609277a0d570e8e6768e4ad9",
-                    "zookeeper:3.5.5",
-                  ],
-                  sizeBytes: 225210868,
-                },
-                {
-                  names: [
-                    "tutum/curl@sha256:b6f16e88387acd4e6326176b212b3dae63f5b2134e69560d0b0673cfb0fb976f",
-                    "tutum/curl:latest",
-                  ],
-                  sizeBytes: 224373689,
-                },
-                {
-                  names: [
-                    "istio/operator@sha256:027ca2a5d1d1880222a9067e6b57f2bdd7090bff620c50e5d5b387fba68f655f",
-                    "istio/operator:1.6.1",
-                  ],
-                  sizeBytes: 222779548,
-                },
-                {
-                  names: [
-                    "tutum/dnsutils@sha256:d2244ad47219529f1003bd1513f5c99e71655353a3a63624ea9cb19f8393d5fe",
-                    "tutum/dnsutils:latest",
-                  ],
-                  sizeBytes: 199923433,
-                },
-                {
-                  names: [
-                    "istio/examples-bookinfo-ratings-v1@sha256:a65aed515f443919baed052f40578169624242da968cc70f5961b1b0e1d88b5f",
-                    "istio/examples-bookinfo-ratings-v1:1.16.1",
-                  ],
-                  sizeBytes: 161134677,
-                },
-                {
-                  names: [
-                    "istio/examples-bookinfo-details-v1@sha256:344b1c18703ab1e51aa6d698f459c95ea734f8317d779189f4638de7a00e61ae",
-                    "istio/examples-bookinfo-details-v1:1.15.1",
-                  ],
-                  sizeBytes: 149054916,
-                },
-                {
-                  names: [
-                    "istio/examples-bookinfo-details-v1@sha256:debc42f2744c1f12b456e37ef77a8905b0417292deef993e7d7c9d5fc960c372",
-                    "istio/examples-bookinfo-details-v1:1.16.1",
-                  ],
-                  sizeBytes: 149054911,
-                },
-                {
-                  names: [
-                    "k8s.gcr.io/kubernetes-dashboard-amd64@sha256:0ae6b69432e78069c5ce2bcde0fe409c5c4d6f0f4d9cd50a17974fea38898747",
-                    "k8s.gcr.io/kubernetes-dashboard-amd64:v1.10.1",
-                  ],
-                  sizeBytes: 121711221,
-                },
-                {
-                  names: [
-                    "k8s.gcr.io/node-problem-detector@sha256:7101cdf7a2fc05facbc39cd9c03c195cbbdbd7eb99efadb45d94473f4e29fe0c",
-                    "k8s.gcr.io/node-problem-detector:v0.7.1",
-                  ],
-                  sizeBytes: 100104055,
-                },
-                {
-                  names: [
-                    "k8s.gcr.io/echoserver@sha256:cb5c1bddd1b5665e1867a7fa1b5fa843a47ee433bbb75d4293888b71def53229",
-                    "k8s.gcr.io/echoserver:1.10",
-                  ],
-                  sizeBytes: 95361986,
-                },
-                {
-                  names: [
-                    "k8s.gcr.io/fluentd-gcp-scaler@sha256:4f28f10fb89506768910b858f7a18ffb996824a16d70d5ac895e49687df9ff58",
-                    "k8s.gcr.io/fluentd-gcp-scaler:0.5.2",
-                  ],
-                  sizeBytes: 90498960,
-                },
-                {
-                  names: ["gke.gcr.io/kube-proxy-amd64:v1.16.9-gke.2", "k8s.gcr.io/kube-proxy-amd64:v1.16.9-gke.2"],
-                  sizeBytes: 84251387,
-                },
-                {
-                  names: [
-                    "quay.io/kalmhq/kalm@sha256:bca86dceab0becb149b2cc5912ab8ef58042d77e547df06cd64baa63091c13a0",
-                    "quay.io/kalmhq/kalm:latest",
-                  ],
-                  sizeBytes: 83467987,
-                },
-              ],
-            },
-            statusTexts: ["Ready"],
-            metrics: {
-              cpu: [
-                {
-                  x: 1594000731000,
-                  y: 1,
-                },
-                {
-                  x: 1594000736000,
-                  y: 1,
-                },
-                {
-                  x: 1594000741000,
-                  y: 1,
-                },
-                {
-                  x: 1594000746000,
-                  y: 1,
-                },
-                {
-                  x: 1594000751000,
-                  y: 1,
-                },
-                {
-                  x: 1594000756000,
-                  y: 1,
-                },
-                {
-                  x: 1594000761000,
-                  y: 1,
-                },
-                {
-                  x: 1594000766000,
-                  y: 1,
-                },
-                {
-                  x: 1594000771000,
-                  y: 1,
-                },
-                {
-                  x: 1594000776000,
-                  y: 1,
-                },
-                {
-                  x: 1594000781000,
-                  y: 1,
-                },
-                {
-                  x: 1594000786000,
-                  y: 1,
-                },
-                {
-                  x: 1594000791000,
-                  y: 1,
-                },
-                {
-                  x: 1594000796000,
-                  y: 1,
-                },
-                {
-                  x: 1594000801000,
-                  y: 1,
-                },
-                {
-                  x: 1594000807000,
-                  y: 1,
-                },
-                {
-                  x: 1594000811000,
-                  y: 1,
-                },
-                {
-                  x: 1594000816000,
-                  y: 1,
-                },
-                {
-                  x: 1594000821000,
-                  y: 1,
-                },
-                {
-                  x: 1594000826000,
-                  y: 1,
-                },
-                {
-                  x: 1594000831000,
-                  y: 1,
-                },
-                {
-                  x: 1594000836000,
-                  y: 1,
-                },
-                {
-                  x: 1594000841000,
-                  y: 1,
-                },
-                {
-                  x: 1594000846000,
-                  y: 1,
-                },
-                {
-                  x: 1594000851000,
-                  y: 1,
-                },
-                {
-                  x: 1594000856000,
-                  y: 1,
-                },
-                {
-                  x: 1594000861000,
-                  y: 1,
-                },
-                {
-                  x: 1594000866000,
-                  y: 1,
-                },
-                {
-                  x: 1594000871000,
-                  y: 1,
-                },
-                {
-                  x: 1594000876000,
-                  y: 1,
-                },
-                {
-                  x: 1594000881000,
-                  y: 1,
-                },
-                {
-                  x: 1594000887000,
-                  y: 1,
-                },
-                {
-                  x: 1594000891000,
-                  y: 1,
-                },
-                {
-                  x: 1594000896000,
-                  y: 1,
-                },
-                {
-                  x: 1594000901000,
-                  y: 1,
-                },
-                {
-                  x: 1594000906000,
-                  y: 1,
-                },
-                {
-                  x: 1594000911000,
-                  y: 1,
-                },
-                {
-                  x: 1594000916000,
-                  y: 1,
-                },
-                {
-                  x: 1594000921000,
-                  y: 1,
-                },
-                {
-                  x: 1594000926000,
-                  y: 1,
-                },
-                {
-                  x: 1594000931000,
-                  y: 1,
-                },
-                {
-                  x: 1594000936000,
-                  y: 1,
-                },
-                {
-                  x: 1594000941000,
-                  y: 1,
-                },
-                {
-                  x: 1594000946000,
-                  y: 1,
-                },
-                {
-                  x: 1594000951000,
-                  y: 1,
-                },
-                {
-                  x: 1594000956000,
-                  y: 1,
-                },
-                {
-                  x: 1594000962000,
-                  y: 1,
-                },
-                {
-                  x: 1594000966000,
-                  y: 1,
-                },
-                {
-                  x: 1594000971000,
-                  y: 1,
-                },
-                {
-                  x: 1594000976000,
-                  y: 1,
-                },
-                {
-                  x: 1594000981000,
-                  y: 1,
-                },
-                {
-                  x: 1594000986000,
-                  y: 1,
-                },
-                {
-                  x: 1594000991000,
-                  y: 1,
-                },
-                {
-                  x: 1594000996000,
-                  y: 1,
-                },
-                {
-                  x: 1594001001000,
-                  y: 1,
-                },
-                {
-                  x: 1594001006000,
-                  y: 1,
-                },
-                {
-                  x: 1594001011000,
-                  y: 1,
-                },
-                {
-                  x: 1594001016000,
-                  y: 1,
-                },
-                {
-                  x: 1594001021000,
-                  y: 1,
-                },
-                {
-                  x: 1594001026000,
-                  y: 1,
-                },
-                {
-                  x: 1594001031000,
-                  y: 1,
-                },
-                {
-                  x: 1594001036000,
-                  y: 1,
-                },
-                {
-                  x: 1594001042000,
-                  y: 1,
-                },
-                {
-                  x: 1594001046000,
-                  y: 1,
-                },
-                {
-                  x: 1594001051000,
-                  y: 1,
-                },
-                {
-                  x: 1594001056000,
-                  y: 1,
-                },
-                {
-                  x: 1594001061000,
-                  y: 1,
-                },
-                {
-                  x: 1594001066000,
-                  y: 1,
-                },
-                {
-                  x: 1594001071000,
-                  y: 1,
-                },
-                {
-                  x: 1594001076000,
-                  y: 1,
-                },
-                {
-                  x: 1594001081000,
-                  y: 1,
-                },
-                {
-                  x: 1594001086000,
-                  y: 1,
-                },
-                {
-                  x: 1594001091000,
-                  y: 1,
-                },
-                {
-                  x: 1594001096000,
-                  y: 1,
-                },
-                {
-                  x: 1594001101000,
-                  y: 1,
-                },
-                {
-                  x: 1594001106000,
-                  y: 1,
-                },
-                {
-                  x: 1594001111000,
-                  y: 1,
-                },
-                {
-                  x: 1594001117000,
-                  y: 1,
-                },
-                {
-                  x: 1594001121000,
-                  y: 1,
-                },
-                {
-                  x: 1594001126000,
-                  y: 1,
-                },
-                {
-                  x: 1594001131000,
-                  y: 1,
-                },
-                {
-                  x: 1594001136000,
-                  y: 1,
-                },
-                {
-                  x: 1594001141000,
-                  y: 1,
-                },
-                {
-                  x: 1594001146000,
-                  y: 1,
-                },
-                {
-                  x: 1594001151000,
-                  y: 1,
-                },
-                {
-                  x: 1594001156000,
-                  y: 1,
-                },
-                {
-                  x: 1594001161000,
-                  y: 1,
-                },
-                {
-                  x: 1594001166000,
-                  y: 1,
-                },
-                {
-                  x: 1594001171000,
-                  y: 1,
-                },
-                {
-                  x: 1594001176000,
-                  y: 1,
-                },
-                {
-                  x: 1594001181000,
-                  y: 1,
-                },
-                {
-                  x: 1594001186000,
-                  y: 1,
-                },
-                {
-                  x: 1594001191000,
-                  y: 1,
-                },
-                {
-                  x: 1594001197000,
-                  y: 1,
-                },
-                {
-                  x: 1594001201000,
-                  y: 1,
-                },
-                {
-                  x: 1594001206000,
-                  y: 1,
-                },
-                {
-                  x: 1594001211000,
-                  y: 1,
-                },
-                {
-                  x: 1594001216000,
-                  y: 1,
-                },
-                {
-                  x: 1594001221000,
-                  y: 1,
-                },
-                {
-                  x: 1594001226000,
-                  y: 1,
-                },
-                {
-                  x: 1594001231000,
-                  y: 1,
-                },
-                {
-                  x: 1594001236000,
-                  y: 1,
-                },
-                {
-                  x: 1594001241000,
-                  y: 1,
-                },
-                {
-                  x: 1594001246000,
-                  y: 1,
-                },
-                {
-                  x: 1594001251000,
-                  y: 1,
-                },
-                {
-                  x: 1594001256000,
-                  y: 1,
-                },
-                {
-                  x: 1594001261000,
-                  y: 1,
-                },
-                {
-                  x: 1594001266000,
-                  y: 1,
-                },
-                {
-                  x: 1594001271000,
-                  y: 1,
-                },
-                {
-                  x: 1594001276000,
-                  y: 1,
-                },
-                {
-                  x: 1594001281000,
-                  y: 1,
-                },
-                {
-                  x: 1594001286000,
-                  y: 1,
-                },
-                {
-                  x: 1594001291000,
-                  y: 1,
-                },
-                {
-                  x: 1594001296000,
-                  y: 1,
-                },
-                {
-                  x: 1594001301000,
-                  y: 1,
-                },
-                {
-                  x: 1594001306000,
-                  y: 1,
-                },
-                {
-                  x: 1594001311000,
-                  y: 1,
-                },
-                {
-                  x: 1594001316000,
-                  y: 1,
-                },
-                {
-                  x: 1594001321000,
-                  y: 1,
-                },
-                {
-                  x: 1594001326000,
-                  y: 1,
-                },
-                {
-                  x: 1594001331000,
-                  y: 1,
-                },
-                {
-                  x: 1594001336000,
-                  y: 1,
-                },
-                {
-                  x: 1594001341000,
-                  y: 1,
-                },
-                {
-                  x: 1594001346000,
-                  y: 1,
-                },
-                {
-                  x: 1594001352000,
-                  y: 1,
-                },
-                {
-                  x: 1594001356000,
-                  y: 1,
-                },
-                {
-                  x: 1594001361000,
-                  y: 1,
-                },
-                {
-                  x: 1594001366000,
-                  y: 1,
-                },
-                {
-                  x: 1594001371000,
-                  y: 1,
-                },
-                {
-                  x: 1594001376000,
-                  y: 1,
-                },
-                {
-                  x: 1594001381000,
-                  y: 1,
-                },
-                {
-                  x: 1594001386000,
-                  y: 1,
-                },
-                {
-                  x: 1594001391000,
-                  y: 1,
-                },
-                {
-                  x: 1594001396000,
-                  y: 1,
-                },
-                {
-                  x: 1594001401000,
-                  y: 1,
-                },
-                {
-                  x: 1594001406000,
-                  y: 1,
-                },
-                {
-                  x: 1594001412000,
-                  y: 1,
-                },
-                {
-                  x: 1594001416000,
-                  y: 1,
-                },
-                {
-                  x: 1594001421000,
-                  y: 1,
-                },
-                {
-                  x: 1594001426000,
-                  y: 1,
-                },
-                {
-                  x: 1594001431000,
-                  y: 1,
-                },
-                {
-                  x: 1594001436000,
-                  y: 1,
-                },
-                {
-                  x: 1594001441000,
-                  y: 1,
-                },
-                {
-                  x: 1594001446000,
-                  y: 1,
-                },
-                {
-                  x: 1594001451000,
-                  y: 1,
-                },
-                {
-                  x: 1594001456000,
-                  y: 1,
-                },
-                {
-                  x: 1594001461000,
-                  y: 1,
-                },
-                {
-                  x: 1594001466000,
-                  y: 1,
-                },
-                {
-                  x: 1594001471000,
-                  y: 1,
-                },
-                {
-                  x: 1594001476000,
-                  y: 1,
-                },
-                {
-                  x: 1594001481000,
-                  y: 1,
-                },
-                {
-                  x: 1594001487000,
-                  y: 1,
-                },
-                {
-                  x: 1594001491000,
-                  y: 1,
-                },
-                {
-                  x: 1594001496000,
-                  y: 1,
-                },
-                {
-                  x: 1594001501000,
-                  y: 1,
-                },
-                {
-                  x: 1594001506000,
-                  y: 1,
-                },
-                {
-                  x: 1594001511000,
-                  y: 1,
-                },
-                {
-                  x: 1594001516000,
-                  y: 1,
-                },
-                {
-                  x: 1594001521000,
-                  y: 1,
-                },
-                {
-                  x: 1594001526000,
-                  y: 1,
-                },
-                {
-                  x: 1594001531000,
-                  y: 1,
-                },
-                {
-                  x: 1594001536000,
-                  y: 1,
-                },
-                {
-                  x: 1594001541000,
-                  y: 1,
-                },
-                {
-                  x: 1594001546000,
-                  y: 1,
-                },
-                {
-                  x: 1594001551000,
-                  y: 1,
-                },
-                {
-                  x: 1594001556000,
-                  y: 1,
-                },
-                {
-                  x: 1594001562000,
-                  y: 1,
-                },
-                {
-                  x: 1594001566000,
-                  y: 1,
-                },
-                {
-                  x: 1594001571000,
-                  y: 1,
-                },
-                {
-                  x: 1594001576000,
-                  y: 1,
-                },
-                {
-                  x: 1594001581000,
-                  y: 1,
-                },
-                {
-                  x: 1594001586000,
-                  y: 1,
-                },
-                {
-                  x: 1594001591000,
-                  y: 1,
-                },
-                {
-                  x: 1594001596000,
-                  y: 1,
-                },
-                {
-                  x: 1594001601000,
-                  y: 1,
-                },
-                {
-                  x: 1594001606000,
-                  y: 1,
-                },
-                {
-                  x: 1594001611000,
-                  y: 1,
-                },
-                {
-                  x: 1594001616000,
-                  y: 1,
-                },
-                {
-                  x: 1594001621000,
-                  y: 1,
-                },
-                {
-                  x: 1594001627000,
-                  y: 1,
-                },
-              ],
-              memory: [
-                {
-                  x: 1594000731000,
-                  y: 1798500352,
-                },
-                {
-                  x: 1594000736000,
-                  y: 1798500352,
-                },
-                {
-                  x: 1594000741000,
-                  y: 1798500352,
-                },
-                {
-                  x: 1594000746000,
-                  y: 1798213632,
-                },
-                {
-                  x: 1594000751000,
-                  y: 1798213632,
-                },
-                {
-                  x: 1594000756000,
-                  y: 1798213632,
-                },
-                {
-                  x: 1594000761000,
-                  y: 1798213632,
-                },
-                {
-                  x: 1594000766000,
-                  y: 1798213632,
-                },
-                {
-                  x: 1594000771000,
-                  y: 1798213632,
-                },
-                {
-                  x: 1594000776000,
-                  y: 1798586368,
-                },
-                {
-                  x: 1594000781000,
-                  y: 1798586368,
-                },
-                {
-                  x: 1594000786000,
-                  y: 1798586368,
-                },
-                {
-                  x: 1594000791000,
-                  y: 1798586368,
-                },
-                {
-                  x: 1594000796000,
-                  y: 1798586368,
-                },
-                {
-                  x: 1594000801000,
-                  y: 1798586368,
-                },
-                {
-                  x: 1594000807000,
-                  y: 1798246400,
-                },
-                {
-                  x: 1594000811000,
-                  y: 1798246400,
-                },
-                {
-                  x: 1594000816000,
-                  y: 1798246400,
-                },
-                {
-                  x: 1594000821000,
-                  y: 1798246400,
-                },
-                {
-                  x: 1594000826000,
-                  y: 1798246400,
-                },
-                {
-                  x: 1594000831000,
-                  y: 1798246400,
-                },
-                {
-                  x: 1594000836000,
-                  y: 1798971392,
-                },
-                {
-                  x: 1594000841000,
-                  y: 1798971392,
-                },
-                {
-                  x: 1594000846000,
-                  y: 1798971392,
-                },
-                {
-                  x: 1594000851000,
-                  y: 1798971392,
-                },
-                {
-                  x: 1594000856000,
-                  y: 1798971392,
-                },
-                {
-                  x: 1594000861000,
-                  y: 1798971392,
-                },
-                {
-                  x: 1594000866000,
-                  y: 1798549504,
-                },
-                {
-                  x: 1594000871000,
-                  y: 1798549504,
-                },
-                {
-                  x: 1594000876000,
-                  y: 1798549504,
-                },
-                {
-                  x: 1594000881000,
-                  y: 1798549504,
-                },
-                {
-                  x: 1594000887000,
-                  y: 1798549504,
-                },
-                {
-                  x: 1594000891000,
-                  y: 1798549504,
-                },
-                {
-                  x: 1594000896000,
-                  y: 1798823936,
-                },
-                {
-                  x: 1594000901000,
-                  y: 1798823936,
-                },
-                {
-                  x: 1594000906000,
-                  y: 1798823936,
-                },
-                {
-                  x: 1594000911000,
-                  y: 1798823936,
-                },
-                {
-                  x: 1594000916000,
-                  y: 1798823936,
-                },
-                {
-                  x: 1594000921000,
-                  y: 1798823936,
-                },
-                {
-                  x: 1594000926000,
-                  y: 1798529024,
-                },
-                {
-                  x: 1594000931000,
-                  y: 1798529024,
-                },
-                {
-                  x: 1594000936000,
-                  y: 1798529024,
-                },
-                {
-                  x: 1594000941000,
-                  y: 1798529024,
-                },
-                {
-                  x: 1594000946000,
-                  y: 1798529024,
-                },
-                {
-                  x: 1594000951000,
-                  y: 1798529024,
-                },
-                {
-                  x: 1594000956000,
-                  y: 1798823936,
-                },
-                {
-                  x: 1594000962000,
-                  y: 1798823936,
-                },
-                {
-                  x: 1594000966000,
-                  y: 1798823936,
-                },
-                {
-                  x: 1594000971000,
-                  y: 1798823936,
-                },
-                {
-                  x: 1594000976000,
-                  y: 1798823936,
-                },
-                {
-                  x: 1594000981000,
-                  y: 1798823936,
-                },
-                {
-                  x: 1594000986000,
-                  y: 1798492160,
-                },
-                {
-                  x: 1594000991000,
-                  y: 1798492160,
-                },
-                {
-                  x: 1594000996000,
-                  y: 1798492160,
-                },
-                {
-                  x: 1594001001000,
-                  y: 1798492160,
-                },
-                {
-                  x: 1594001006000,
-                  y: 1798492160,
-                },
-                {
-                  x: 1594001011000,
-                  y: 1798492160,
-                },
-                {
-                  x: 1594001016000,
-                  y: 1798729728,
-                },
-                {
-                  x: 1594001021000,
-                  y: 1798729728,
-                },
-                {
-                  x: 1594001026000,
-                  y: 1798729728,
-                },
-                {
-                  x: 1594001031000,
-                  y: 1798729728,
-                },
-                {
-                  x: 1594001036000,
-                  y: 1798729728,
-                },
-                {
-                  x: 1594001042000,
-                  y: 1798729728,
-                },
-                {
-                  x: 1594001046000,
-                  y: 1807073280,
-                },
-                {
-                  x: 1594001051000,
-                  y: 1807073280,
-                },
-                {
-                  x: 1594001056000,
-                  y: 1807073280,
-                },
-                {
-                  x: 1594001061000,
-                  y: 1807073280,
-                },
-                {
-                  x: 1594001066000,
-                  y: 1807073280,
-                },
-                {
-                  x: 1594001071000,
-                  y: 1807073280,
-                },
-                {
-                  x: 1594001076000,
-                  y: 1798840320,
-                },
-                {
-                  x: 1594001081000,
-                  y: 1798840320,
-                },
-                {
-                  x: 1594001086000,
-                  y: 1798840320,
-                },
-                {
-                  x: 1594001091000,
-                  y: 1798840320,
-                },
-                {
-                  x: 1594001096000,
-                  y: 1798840320,
-                },
-                {
-                  x: 1594001101000,
-                  y: 1798840320,
-                },
-                {
-                  x: 1594001106000,
-                  y: 1807437824,
-                },
-                {
-                  x: 1594001111000,
-                  y: 1807437824,
-                },
-                {
-                  x: 1594001117000,
-                  y: 1807437824,
-                },
-                {
-                  x: 1594001121000,
-                  y: 1807437824,
-                },
-                {
-                  x: 1594001126000,
-                  y: 1807437824,
-                },
-                {
-                  x: 1594001131000,
-                  y: 1807437824,
-                },
-                {
-                  x: 1594001136000,
-                  y: 1799311360,
-                },
-                {
-                  x: 1594001141000,
-                  y: 1799311360,
-                },
-                {
-                  x: 1594001146000,
-                  y: 1799311360,
-                },
-                {
-                  x: 1594001151000,
-                  y: 1799311360,
-                },
-                {
-                  x: 1594001156000,
-                  y: 1799311360,
-                },
-                {
-                  x: 1594001161000,
-                  y: 1799311360,
-                },
-                {
-                  x: 1594001166000,
-                  y: 1798422528,
-                },
-                {
-                  x: 1594001171000,
-                  y: 1798422528,
-                },
-                {
-                  x: 1594001176000,
-                  y: 1798422528,
-                },
-                {
-                  x: 1594001181000,
-                  y: 1798422528,
-                },
-                {
-                  x: 1594001186000,
-                  y: 1798422528,
-                },
-                {
-                  x: 1594001191000,
-                  y: 1798422528,
-                },
-                {
-                  x: 1594001197000,
-                  y: 1798778880,
-                },
-                {
-                  x: 1594001201000,
-                  y: 1798778880,
-                },
-                {
-                  x: 1594001206000,
-                  y: 1798778880,
-                },
-                {
-                  x: 1594001211000,
-                  y: 1798778880,
-                },
-                {
-                  x: 1594001216000,
-                  y: 1798778880,
-                },
-                {
-                  x: 1594001221000,
-                  y: 1798778880,
-                },
-                {
-                  x: 1594001226000,
-                  y: 1798569984,
-                },
-                {
-                  x: 1594001231000,
-                  y: 1798569984,
-                },
-                {
-                  x: 1594001236000,
-                  y: 1798569984,
-                },
-                {
-                  x: 1594001241000,
-                  y: 1798569984,
-                },
-                {
-                  x: 1594001246000,
-                  y: 1798569984,
-                },
-                {
-                  x: 1594001251000,
-                  y: 1798569984,
-                },
-                {
-                  x: 1594001256000,
-                  y: 1797808128,
-                },
-                {
-                  x: 1594001261000,
-                  y: 1797808128,
-                },
-                {
-                  x: 1594001266000,
-                  y: 1797808128,
-                },
-                {
-                  x: 1594001271000,
-                  y: 1797808128,
-                },
-                {
-                  x: 1594001276000,
-                  y: 1797808128,
-                },
-                {
-                  x: 1594001281000,
-                  y: 1797808128,
-                },
-                {
-                  x: 1594001286000,
-                  y: 1797513216,
-                },
-                {
-                  x: 1594001291000,
-                  y: 1797513216,
-                },
-                {
-                  x: 1594001296000,
-                  y: 1797513216,
-                },
-                {
-                  x: 1594001301000,
-                  y: 1797513216,
-                },
-                {
-                  x: 1594001306000,
-                  y: 1797513216,
-                },
-                {
-                  x: 1594001311000,
-                  y: 1797513216,
-                },
-                {
-                  x: 1594001316000,
-                  y: 1820037120,
-                },
-                {
-                  x: 1594001321000,
-                  y: 1820037120,
-                },
-                {
-                  x: 1594001326000,
-                  y: 1820037120,
-                },
-                {
-                  x: 1594001331000,
-                  y: 1820037120,
-                },
-                {
-                  x: 1594001336000,
-                  y: 1820037120,
-                },
-                {
-                  x: 1594001341000,
-                  y: 1820037120,
-                },
-                {
-                  x: 1594001346000,
-                  y: 1797582848,
-                },
-                {
-                  x: 1594001352000,
-                  y: 1797582848,
-                },
-                {
-                  x: 1594001356000,
-                  y: 1797582848,
-                },
-                {
-                  x: 1594001361000,
-                  y: 1797582848,
-                },
-                {
-                  x: 1594001366000,
-                  y: 1797582848,
-                },
-                {
-                  x: 1594001371000,
-                  y: 1797582848,
-                },
-                {
-                  x: 1594001376000,
-                  y: 1797849088,
-                },
-                {
-                  x: 1594001381000,
-                  y: 1797849088,
-                },
-                {
-                  x: 1594001386000,
-                  y: 1797849088,
-                },
-                {
-                  x: 1594001391000,
-                  y: 1797849088,
-                },
-                {
-                  x: 1594001396000,
-                  y: 1797849088,
-                },
-                {
-                  x: 1594001401000,
-                  y: 1797849088,
-                },
-                {
-                  x: 1594001406000,
-                  y: 1797529600,
-                },
-                {
-                  x: 1594001412000,
-                  y: 1797529600,
-                },
-                {
-                  x: 1594001416000,
-                  y: 1797529600,
-                },
-                {
-                  x: 1594001421000,
-                  y: 1797529600,
-                },
-                {
-                  x: 1594001426000,
-                  y: 1797529600,
-                },
-                {
-                  x: 1594001431000,
-                  y: 1797529600,
-                },
-                {
-                  x: 1594001436000,
-                  y: 1797861376,
-                },
-                {
-                  x: 1594001441000,
-                  y: 1797861376,
-                },
-                {
-                  x: 1594001446000,
-                  y: 1797861376,
-                },
-                {
-                  x: 1594001451000,
-                  y: 1797861376,
-                },
-                {
-                  x: 1594001456000,
-                  y: 1797861376,
-                },
-                {
-                  x: 1594001461000,
-                  y: 1797861376,
-                },
-                {
-                  x: 1594001466000,
-                  y: 1797562368,
-                },
-                {
-                  x: 1594001471000,
-                  y: 1797562368,
-                },
-                {
-                  x: 1594001476000,
-                  y: 1797562368,
-                },
-                {
-                  x: 1594001481000,
-                  y: 1797562368,
-                },
-                {
-                  x: 1594001487000,
-                  y: 1797562368,
-                },
-                {
-                  x: 1594001491000,
-                  y: 1797562368,
-                },
-                {
-                  x: 1594001496000,
-                  y: 1797689344,
-                },
-                {
-                  x: 1594001501000,
-                  y: 1797689344,
-                },
-                {
-                  x: 1594001506000,
-                  y: 1797689344,
-                },
-                {
-                  x: 1594001511000,
-                  y: 1797689344,
-                },
-                {
-                  x: 1594001516000,
-                  y: 1797689344,
-                },
-                {
-                  x: 1594001521000,
-                  y: 1797689344,
-                },
-                {
-                  x: 1594001526000,
-                  y: 1797664768,
-                },
-                {
-                  x: 1594001531000,
-                  y: 1797664768,
-                },
-                {
-                  x: 1594001536000,
-                  y: 1797664768,
-                },
-                {
-                  x: 1594001541000,
-                  y: 1797664768,
-                },
-                {
-                  x: 1594001546000,
-                  y: 1797664768,
-                },
-                {
-                  x: 1594001551000,
-                  y: 1797664768,
-                },
-                {
-                  x: 1594001556000,
-                  y: 1797849088,
-                },
-                {
-                  x: 1594001562000,
-                  y: 1797849088,
-                },
-                {
-                  x: 1594001566000,
-                  y: 1797849088,
-                },
-                {
-                  x: 1594001571000,
-                  y: 1797849088,
-                },
-                {
-                  x: 1594001576000,
-                  y: 1797849088,
-                },
-                {
-                  x: 1594001581000,
-                  y: 1797849088,
-                },
-                {
-                  x: 1594001586000,
-                  y: 1797206016,
-                },
-                {
-                  x: 1594001591000,
-                  y: 1797206016,
-                },
-                {
-                  x: 1594001596000,
-                  y: 1797206016,
-                },
-                {
-                  x: 1594001601000,
-                  y: 1797206016,
-                },
-                {
-                  x: 1594001606000,
-                  y: 1797206016,
-                },
-                {
-                  x: 1594001611000,
-                  y: 1797206016,
-                },
-                {
-                  x: 1594001616000,
-                  y: 1797853184,
-                },
-                {
-                  x: 1594001621000,
-                  y: 1797853184,
-                },
-                {
-                  x: 1594001627000,
-                  y: 1797853184,
-                },
-              ],
-            },
-            roles: [],
-            internalIP: "10.146.0.56",
-            externalIP: "35.200.117.196",
           },
         ],
         metrics: {
@@ -13159,6 +8381,22 @@ export default class MockStore {
           },
         },
       ]),
+      mockSSO: Immutable.fromJS({
+        domain: "sso.kapp.live",
+        connectors: [
+          {
+            type: "gitlab",
+            id: "gitlab",
+            name: "Gitlab",
+            config: {
+              baseURL: "https://git.ddex.io",
+              clientID: "aecac1f22d263966ebef9c1074971bf8081419255b25ad82979576405e2ccd43",
+              clientSecret: "7cce984fbf0c8e5026d4013d57129f7b51d60bbb6871af4d2757ecc2c3f1ea84",
+              groups: ["kalm", "ddex", "bfd"],
+            },
+          },
+        ],
+      }),
       mockServices: Immutable.fromJS([
         {
           name: "cert-manager",

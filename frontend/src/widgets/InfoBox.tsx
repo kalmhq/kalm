@@ -13,7 +13,7 @@ interface InfoBoxOption {
 }
 
 interface Props extends WithStyles<typeof styles> {
-  title: string;
+  title: string | React.ReactNode;
   options: InfoBoxOption[];
   guideLink?: string;
 }
@@ -52,7 +52,7 @@ export const InfoBox = withStyles(styles)(InfoBoxRaw);
  * helper method to wrap url into an InfoBox grid object
  * @param url
  */
-function wrapGuideLink(url: string, title: string) {
+function wrapGuideLink(url: string, title: string | React.ReactNode) {
   return [
     {
       title: (

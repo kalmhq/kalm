@@ -6,7 +6,6 @@ import { getIsDisplayDebounceError } from "selectors/debounce";
 import { connect } from "react-redux";
 import { setDebouncing } from "actions/debounce";
 import { TDispatchProp } from "types";
-import { store } from "store";
 
 const mapStateToProps = (state: RootState, ownProps: FilledTextFieldProps & WrappedFieldProps) => {
   const {
@@ -21,13 +20,14 @@ const mapStateToProps = (state: RootState, ownProps: FilledTextFieldProps & Wrap
 };
 
 export const inputOnChangeWithDebounce = (
+  dispatch: any,
   nativeOnChange: EventOrValueHandler<ChangeEvent<any>>,
   value: any,
   formID: string,
   name: string,
 ) => {
   nativeOnChange(value);
-  store.dispatch(setDebouncing(formID, name));
+  dispatch(setDebouncing(formID, name));
 };
 
 export interface withDebounceProps

@@ -33,8 +33,8 @@ export const NodeMemory = ({ node, showDetails }: Props) => {
 export const NodesMemory = ({ nodes }: { nodes: Immutable.List<Node> }) => {
   let allocatable: number = 0;
   let requests: number = 0;
-
   nodes.forEach((node) => {
+    console.log(node.toJS());
     allocatable = allocatable + sizeStringToNumber(node.get("status").get("allocatable").get("memory"));
     requests = requests + sizeStringToNumber(node.get("allocatedResources").get("requests").get("memory"));
   });

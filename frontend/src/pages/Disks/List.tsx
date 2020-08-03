@@ -243,7 +243,7 @@ export class VolumesRaw extends React.Component<Props, States> {
     const tableData = this.getTableData();
 
     return (
-      <BasePage secondHeaderRight={this.renderSecondHeaderRight()}>
+      <BasePage>
         {this.renderDeleteConfirmDialog()}
         <Box p={2}>
           {loadPersistentVolumesError ? (

@@ -255,7 +255,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
 
   public render() {
     const { classes, domains, dispatch, handleSubmit, managedType, isEdit, dirty, submitSucceeded } = this.props;
-    const icons = domains.map((domain) => <DomainStatus domain={domain} />);
+    const icons = Immutable.List(domains.map((domain) => <DomainStatus domain={domain} />));
     return (
       <div className={classes.root}>
         <Prompt when={dirty && !submitSucceeded} message={sc.CONFIRM_LEAVE_WITHOUT_SAVING} />

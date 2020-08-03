@@ -226,7 +226,7 @@ export default class MockApi extends Api {
 
   // TODO
   public getSSOConfig = async (): Promise<SSOConfig> => {
-    return Immutable.Map();
+    return mockStore.data.get("mockSSO");
   };
 
   public createSSOConfig = async (ssoConfig: SSOConfig): Promise<SSOConfig> => {
