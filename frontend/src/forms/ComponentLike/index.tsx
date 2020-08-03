@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   Collapse,
+  Divider,
   Grid,
   Link,
   List as MList,
@@ -9,7 +10,6 @@ import {
   ListItemText,
   Tab,
   Tabs,
-  Divider,
 } from "@material-ui/core";
 import { grey } from "@material-ui/core/colors";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
@@ -58,10 +58,16 @@ import {
   KRenderCommandTextField,
   KRenderDebounceTextField,
   RenderComplexValueTextDebounceField,
-  RenderComplexValueTextField,
 } from "../Basic/textfield";
 import { NormalizeNumber } from "../normalizer";
-import { ValidatorCPU, ValidatorMemory, ValidatorName, ValidatorRequired, ValidatorSchedule } from "../validator";
+import {
+  ValidatorCPU,
+  ValidatorMemory,
+  ValidatorName,
+  ValidatorNaturalNumber,
+  ValidatorRequired,
+  ValidatorSchedule,
+} from "../validator";
 import { Envs } from "./Envs";
 import { RenderSelectLabels } from "./NodeSelector";
 import { Ports } from "./Ports";
@@ -211,7 +217,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
     if (workloadType === workloadTypeServer || workloadType === workloadTypeStatefulSet) {
       return (
         <Field
-          component={RenderComplexValueTextField}
+          component={RenderComplexValueTextDebounceField}
+          validate={ValidatorNaturalNumber}
           name="replicas"
           margin
           label="Replicas"
@@ -229,6 +236,8 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           parse={(value: any) => {
             return value;
           }}
+          type="number"
+          min="0"
           normalize={NormalizeNumber}
         />
       );
