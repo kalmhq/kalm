@@ -75,6 +75,21 @@ export const ValidatorNumberOrAlphabet = (value: any, _allValues?: any, _props?:
   return "Not a valid port value";
 };
 
+export const ValidatorNaturalNumber = (value: string) => {
+  if (!value) return undefined;
+
+  const integerValue = parseInt(value, 10);
+  if (isNaN(integerValue)) {
+    return undefined;
+  }
+
+  if (integerValue < 0) {
+    return 'Number can\'t be negative';
+  }
+
+  return undefined;
+};
+
 export const ValidatorOneof = (...options: (string | RegExp)[]) => {
   return (value: string) => {
     if (!value) return undefined;

@@ -184,11 +184,13 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
     switch (path) {
       case "applications":
       case "":
-        return "Applications";
+        return "Apps";
       case "sso":
         return "SSO";
       case "ci":
         return "CI";
+      case "metrics":
+        return stringConstants.APP_DASHBOARD_PAGE_NAME;
       default:
         return path[0].toUpperCase() + path.slice(1);
     }

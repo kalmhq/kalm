@@ -4,12 +4,12 @@ import React from "react";
 import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { TDispatchProp } from "types";
-import { KPanel } from "widgets/KPanel";
 import { ApplicationComponentDetails, PodStatus } from "types/application";
-import { ErrorBadge, PendingBadge, SuccessBadge } from "../Badge";
-import { H5 } from "../Label";
-import { SectionTitle } from "../SectionTitle";
 import { DoughnutChart } from "widgets/DoughnutChart";
+import { KPanel } from "widgets/KPanel";
+import { ErrorBadge, PendingBadge, SuccessBadge } from "../Badge";
+import { Subtitle1 } from "../Label";
+import { SectionTitle } from "../SectionTitle";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -172,7 +172,7 @@ class ComponentStatusRaw extends React.PureComponent<Props, State> {
 
             <div className={classes.podsTitle}>
               <SectionTitle>
-                <H5>Pods</H5>
+                <Subtitle1>Pods</Subtitle1>
               </SectionTitle>
             </div>
             {component.get("pods").size > 0 ? (

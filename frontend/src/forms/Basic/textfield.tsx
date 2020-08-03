@@ -109,6 +109,8 @@ export const KRenderTextareaField = ({
 
 interface ComplexValueTextFieldProps {
   endAdornment?: React.ReactNode;
+  min?: string;
+  pattern?: string;
 }
 
 // value type is complex like array or json, like "command" is array, but using textfield input
@@ -122,11 +124,16 @@ export class RenderComplexValueTextField extends React.PureComponent<withDebounc
       required,
       disabled,
       type,
+      min,
       endAdornment,
       meta: { error },
       showError,
     } = this.props;
-    const inputProps: Partial<OutlinedInputProps> = {};
+    const inputProps: Partial<OutlinedInputProps> = {
+      inputProps: {
+        min,
+      },
+    };
     if (endAdornment) {
       inputProps.endAdornment = <InputAdornment position="end">{endAdornment}</InputAdornment>;
     }
