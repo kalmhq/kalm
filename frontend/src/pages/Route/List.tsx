@@ -1,4 +1,4 @@
-import { Box, Button, createStyles, Theme, withStyles, WithStyles, Link as MuiLink } from "@material-ui/core";
+import { Box, Button, createStyles, Theme, withStyles, WithStyles } from "@material-ui/core";
 import { indigo } from "@material-ui/core/colors";
 import { deleteRouteAction } from "actions/routes";
 import { blinkTopProgressAction } from "actions/settings";
@@ -26,6 +26,7 @@ import CheckIcon from "@material-ui/icons/Check";
 import sc from "utils/stringConstants";
 import { withClusterInfo } from "hoc/withClusterInfo";
 import { ClusterInfo } from "types/cluster";
+import { KMLink } from "widgets/Link";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -54,9 +55,9 @@ const HostCellRaw = ({ row, clusterInfo }: HostCellProps) => {
         return (
           <FlexRowItemCenterBox key={h}>
             <DomainStatus domain={h} />
-            <MuiLink href={url} target="_blank">
+            <KMLink href={url} target="_blank">
               {h}
-            </MuiLink>
+            </KMLink>
           </FlexRowItemCenterBox>
         );
       })}
