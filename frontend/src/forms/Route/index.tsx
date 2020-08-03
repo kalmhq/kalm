@@ -36,6 +36,7 @@ import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { RenderHttpRouteConditions } from "./conditions";
 import { RenderHttpRouteDestinations } from "./destinations";
+import { includesForceHttpsDomain } from "utils/domain";
 
 const mapStateToProps = (state: RootState) => {
   const form = ROUTE_FORM_ID;
@@ -133,6 +134,17 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
       hosts.forEach((host) => {
         dispatch(loadDomainDNSInfo(host));
       });
+    }
+
+    // for dev, app domains auto enable https
+    if (!schemes.includes("https")) {
+      if (includesForceHttpsDomain(hosts)) {
+        if (schemes.includes("http")) {
+          dispatch(change(form, "schemes", Immutable.List(["http", "https"])));
+        } else {
+          dispatch(change(form, "schemes", Immutable.List(["https"])));
+        }
+      }
     }
 
     // set httpRedirectToHttps to false if http or https is not in schemes
@@ -459,6 +471,11 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       <Alert className="alert" severity="info">
                         {sc.ROUTE_HTTPS_ALERT}
                       </Alert>
+                      {includesForceHttpsDomain(hosts) ? (
+                        <Alert className="alert" severity="warning">
+                          The .dev and .app top-level domains is included on the HSTS preload list, HTTPS is required.
+                        </Alert>
+                      ) : null}
                       {this.renderCertificationStatus()}
                     </Collapse>
                   </Box>
