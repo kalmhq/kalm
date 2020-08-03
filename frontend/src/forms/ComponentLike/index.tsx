@@ -677,9 +677,9 @@ class ComponentLikeFormRaw extends React.PureComponent<Props, State> {
           />
         </Grid>
 
-        <Grid item xs={12}>
+        {/* <Grid item xs={12}>
           <Field name="enableResourcesRequests" component={KBoolCheckboxRender} label={sc.SCHEDULING_RR_CHECKBOX} />
-        </Grid>
+        </Grid> */}
         <Grid item xs={12}>
           <SectionTitle>
             <Subtitle1>Nodes</Subtitle1>
