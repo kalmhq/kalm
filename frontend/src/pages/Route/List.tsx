@@ -54,7 +54,7 @@ const HostCellRaw = ({ row, clusterInfo }: HostCellProps) => {
         const url = getRouteUrl(row as HttpRoute, clusterInfo, h);
         return (
           <FlexRowItemCenterBox key={h}>
-            <DomainStatus domain={h} />
+            <DomainStatus mr={1} domain={h} />
             <KMLink href={url} target="_blank">
               {h}
             </KMLink>

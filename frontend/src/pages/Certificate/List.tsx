@@ -73,7 +73,7 @@ class CertificateListPageRaw extends React.PureComponent<Props, State> {
         {rowData.get("domains")?.map((domain) => {
           return (
             <FlexRowItemCenterBox key={domain}>
-              <DomainStatus domain={domain} />
+              <DomainStatus mr={1} domain={domain} />
               {domain}
             </FlexRowItemCenterBox>
           );

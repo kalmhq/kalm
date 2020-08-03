@@ -22,6 +22,7 @@ const mapStateToProps = (state: RootState, ownProps: OwnProps) => {
 
 interface OwnProps {
   domain: string;
+  mr?: number;
 }
 
 interface Props extends ReturnType<typeof mapStateToProps>, TDispatchProp, OwnProps {}
@@ -105,12 +106,12 @@ class DomainStatus extends React.PureComponent<Props> {
   };
 
   render() {
-    const { domain } = this.props;
+    const { domain, mr } = this.props;
     if (domain === "*") {
       return null;
     }
     const { icon, body } = this.getIconAndBody();
-    return <IconWithPopover icon={icon} popoverBody={body} popupId={`${domain}-popover`} />;
+    return <IconWithPopover icon={icon} popoverBody={body} popupId={`${domain}-popover`} mr={mr} />;
   }
 }
 

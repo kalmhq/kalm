@@ -64,7 +64,7 @@ class RouteWidgetRaw extends React.PureComponent<Props, State> {
         <TableCell>
           {hosts.map((x) => (
             <FlexRowItemCenterBox key={x}>
-              <DomainStatus domain={x} />
+              <DomainStatus mr={1} domain={x} />
               <Typography>{x}</Typography>
             </FlexRowItemCenterBox>
           ))}
