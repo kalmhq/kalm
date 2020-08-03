@@ -381,7 +381,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       label="Path Prefixes"
                       name="paths"
                       validate={pathsValidators}
-                      placeholder="e.g. /foo/bar"
+                      placeholder="e.g. /some/path/to/app"
                       helperText={sc.ROUTE_PATHS_INPUT_HELPER}
                     />
                     <Field

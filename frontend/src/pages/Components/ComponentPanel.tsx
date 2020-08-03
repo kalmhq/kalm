@@ -11,13 +11,14 @@ import { TDispatchProp } from "types";
 import { Application, ApplicationComponentDetails } from "types/application";
 import { WorkloadType } from "types/componentTemplate";
 import { DangerButton } from "widgets/Button";
-import { Subtitle1, H6, Caption } from "widgets/Label";
+import { Subtitle1, Caption } from "widgets/Label";
 import { KalmComponentsIcon } from "widgets/Icon";
 
 const styles = (theme: Theme) =>
   createStyles({
     componentTitleRow: {
-      "padding-top": "8px",
+      paddingTop: 8,
+      alignItems: "center",
     },
     componentIcon: {
       height: "1.25rem",
@@ -56,11 +57,11 @@ class ComponentPanelRaw extends React.PureComponent<Props, State> {
         <Grid container className={classes.componentTitleRow} spacing={2}>
           <Grid item xs={2}>
             <Box display={"flex"}>
-              <Box pr={2}>
-                <KalmComponentsIcon fontSize={"large"} />
+              <Box className={classes.componentIcon} pr={2}>
+                <KalmComponentsIcon fontSize={"default"} />
               </Box>
               <Box display="flex" minWidth={200}>
-                <H6>{component.get("name")}</H6>
+                <Subtitle1>{component.get("name")}</Subtitle1>
               </Box>
             </Box>
           </Grid>
