@@ -100,12 +100,14 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
         // So if the blur event is trigger, it will set input value(wrong value) as the autocomplete value
         // As a result, Field that is using this component mush not set a normalizer.
         (input.onBlur as any)();
-        setInputText("");
       }}
       value={input.value}
       onChange={(_event: React.ChangeEvent<{}>, values) => {
         if (values) {
           input.onChange(values);
+          if (values.length !== 0) {
+            setInputText("");
+          }
         }
       }}
       inputValue={inputText}
