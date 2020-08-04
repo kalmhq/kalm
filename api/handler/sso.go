@@ -98,3 +98,19 @@ func (h *ApiHandler) handleCreateProtectedEndpoints(c echo.Context) error {
 
 	return c.JSON(201, protectedEndpoint)
 }
+
+func (h *ApiHandler) handleUpdateProtectedEndpoints(c echo.Context) error {
+	protectedEndpoint := &resources.ProtectedEndpoint{}
+
+	if err := c.Bind(protectedEndpoint); err != nil {
+		return err
+	}
+
+	protectedEndpoint, err := h.Builder(c).UpdateProtectedEndpoint(protectedEndpoint)
+
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(201, protectedEndpoint)
+}

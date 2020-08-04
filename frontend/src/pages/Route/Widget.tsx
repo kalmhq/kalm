@@ -10,9 +10,9 @@ import {
   TableHead,
   TableRow,
   Theme,
+  Typography,
   withStyles,
   WithStyles,
-  Typography,
 } from "@material-ui/core";
 import Immutable from "immutable";
 import { Methods } from "pages/Route/Methods";
@@ -51,7 +51,6 @@ class RouteWidgetRaw extends React.PureComponent<Props, State> {
   }
 
   private renderRouteItem = (route: HttpRoute, index: number) => {
-    const { activeNamespaceName } = this.props;
     const scheme = route.get("schemes").size > 1 ? "http(s)" : route.get("schemes").get(0);
     const hosts = route.get("hosts");
     const paths = route.get("paths");
@@ -75,7 +74,7 @@ class RouteWidgetRaw extends React.PureComponent<Props, State> {
           ))}
         </TableCell>
         <TableCell>
-          <Targets activeNamespaceName={activeNamespaceName} destinations={route.get("destinations")} />
+          <Targets destinations={route.get("destinations")} />
         </TableCell>
         <TableCell>
           <OpenInBrowser route={route} />

@@ -17,16 +17,15 @@ import { ThunkResult } from "types";
 import { setErrorNotificationAction } from "./notification";
 import { api } from "api";
 
-export const loadRoutesAction = (namespace: string): ThunkResult<Promise<void>> => {
+export const loadRoutesAction = (): ThunkResult<Promise<void>> => {
   return async (dispatch) => {
     dispatch({ type: LOAD_ROUTES_PENDING });
     try {
-      const routes = await api.getHttpRoutes(namespace);
+      const routes = await api.getHttpRoutes();
       dispatch({
         type: LOAD_ROUTES_FULFILLED,
         payload: {
           httpRoutes: routes,
-          namespace,
         },
       });
     } catch (e) {
@@ -36,17 +35,15 @@ export const loadRoutesAction = (namespace: string): ThunkResult<Promise<void>> 
   };
 };
 
-export const createRouteAction = (name: string, namespace: string, route: HttpRoute): ThunkResult<Promise<void>> => {
+export const createRouteAction = (route: HttpRoute): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     try {
       dispatch({ type: CREATE_ROUTE_PENDING });
 
-      const routeRes = await api.createHttpRoute(namespace, route);
+      const routeRes = await api.createHttpRoute(route);
       dispatch({
         type: CREATE_ROUTE_FULFILLED,
         payload: {
-          name,
-          namespace,
           route: routeRes,
         },
       });
@@ -57,21 +54,15 @@ export const createRouteAction = (name: string, namespace: string, route: HttpRo
   };
 };
 
-export const updateRouteAction = (
-  name: string,
-  namespace: string,
-  route: HttpRoute,
-): ThunkResult<Promise<HttpRoute>> => {
+export const updateRouteAction = (route: HttpRoute): ThunkResult<Promise<HttpRoute>> => {
   return async (dispatch, getState) => {
     try {
       dispatch({ type: UPDATE_ROUTE_PENDING });
 
-      const routeRes = await api.updateHttpRoute(namespace, name, route);
+      const routeRes = await api.updateHttpRoute(route);
       dispatch({
         type: UPDATE_ROUTE_FULFILLED,
         payload: {
-          name,
-          namespace,
           route: routeRes,
         },
       });
@@ -84,12 +75,12 @@ export const updateRouteAction = (
   };
 };
 
-export const deleteRouteAction = (name: string, namespace: string): ThunkResult<Promise<void>> => {
+export const deleteRouteAction = (route: HttpRoute): ThunkResult<Promise<void>> => {
   return async (dispatch, getState) => {
     try {
       dispatch({ type: DELETE_ROUTE_PENDING });
 
-      const success = await api.deleteHttpRoute(namespace, name);
+      const success = await api.deleteHttpRoute(route);
 
       if (!success) {
         dispatch(setErrorNotificationAction("Delete http route failed."));
@@ -99,8 +90,7 @@ export const deleteRouteAction = (name: string, namespace: string): ThunkResult<
       dispatch({
         type: DELETE_ROUTE_FULFILLED,
         payload: {
-          name,
-          namespace,
+          route,
         },
       });
     } catch (e) {

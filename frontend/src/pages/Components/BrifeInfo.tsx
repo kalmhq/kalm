@@ -2,18 +2,18 @@ import React from "react";
 import {
   Box,
   createStyles,
+  ExpansionPanel,
+  ExpansionPanelDetails,
+  ExpansionPanelSummary,
+  Grid,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
   Theme,
   withStyles,
   WithStyles,
-  ExpansionPanel,
-  ExpansionPanelSummary,
-  ExpansionPanelDetails,
-  TableHead,
-  TableRow,
-  TableCell,
-  Table,
-  TableBody,
-  Grid,
 } from "@material-ui/core";
 import { TDispatchProp } from "types";
 import { connect } from "react-redux";
@@ -25,9 +25,9 @@ import { SmallCPULineChart, SmallMemoryLineChart } from "widgets/SmallLineChart"
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import { NoLivenessProbeWarning, NoPortsWarning, NoReadinessProbeWarning } from "pages/Components/NoPortsWarning";
 import { HealthTab, NetworkingTab } from "forms/ComponentLike";
-import { Probe, ComponentLikePort } from "types/componentTemplate";
+import { ComponentLikePort, Probe } from "types/componentTemplate";
 import { List } from "immutable";
-import { WrenchIcon, CopyIcon } from "widgets/Icon";
+import { CopyIcon, WrenchIcon } from "widgets/Icon";
 import copy from "copy-to-clipboard";
 import { setSuccessNotificationAction } from "actions/notification";
 import { IconButtonWithTooltip } from "widgets/IconButtonWithTooltip";
@@ -35,7 +35,7 @@ import { push } from "connected-react-router";
 import clsx from "clsx";
 import { SecretValueLabel } from "widgets/Label";
 import { ItemWithHoverIcon } from "widgets/ItemWithHoverIcon";
-import { sizeStringToMi, sizeStringToGi } from "utils/sizeConv";
+import { sizeStringToGi, sizeStringToMi } from "utils/sizeConv";
 import stringConsts from "utils/stringConstants";
 
 const styles = (theme: Theme) =>
@@ -227,11 +227,11 @@ class ComponentBrifeInfoRaw extends React.PureComponent<Props, State> {
     );
   };
 
-  private renderPort = (key: any, name: string, port: number) => {
+  private renderPort = (key: any, protocol: string, port: number) => {
     const { classes } = this.props;
     return (
       <div className={classes.port} key={key}>
-        {name}:{port}
+        {protocol}:{port}
       </div>
     );
   };
@@ -241,7 +241,7 @@ class ComponentBrifeInfoRaw extends React.PureComponent<Props, State> {
     if (component.get("ports") && component.get("ports")!.size > 0) {
       const ports = component.get("ports", List<ComponentLikePort>())?.map((port, index) => {
         const portString = port.get("servicePort") ?? port.get("containerPort");
-        return this.renderPort(index, port.get("name"), portString);
+        return this.renderPort(index, port.get("protocol"), portString);
       });
       return <div className={classes.portContainer}>{ports}</div>;
     } else {

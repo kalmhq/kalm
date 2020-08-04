@@ -1,19 +1,16 @@
-import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
-import Immutable from "immutable";
 import React from "react";
 import { connect } from "react-redux";
 import { RouteComponentProps } from "react-router";
 import { RootState } from "reducers";
-import { HttpRoute } from "types/route";
+import { TDispatchProp } from "types";
 
 const mapStateToProps = (
   state: RootState,
   {
-    activeNamespaceName,
     match: {
       params: { name },
     },
-  }: RouteComponentProps<{ name?: string }> & WithNamespaceProps,
+  }: RouteComponentProps<{ name?: string }>,
 ) => {
   const routeState = state.get("routes");
   const httpRoutes = routeState.get("httpRoutes");
@@ -21,15 +18,12 @@ const mapStateToProps = (
   return {
     isRoutesLoading: routeState.get("isLoading"),
     isRoutesFirstLoaded: routeState.get("isFirstLoaded"),
-    httpRoutes: httpRoutes.get(activeNamespaceName) || (Immutable.List() as Immutable.List<HttpRoute>),
-    httpRoute:
-      name && httpRoutes.get(activeNamespaceName)
-        ? httpRoutes.get(activeNamespaceName)?.find((x) => x.get("name") === name)
-        : undefined,
+    httpRoutes: httpRoutes,
+    httpRoute: httpRoutes.find((x) => x.get("name") === name),
   };
 };
 
-export interface WithRoutesDataProps extends ReturnType<typeof mapStateToProps>, WithNamespaceProps {}
+export interface WithRoutesDataProps extends ReturnType<typeof mapStateToProps>, TDispatchProp {}
 
 export const withRoutesData = (WrappedComponent: React.ComponentType<any>) => {
   const HOC: React.ComponentType<WithRoutesDataProps> = class extends React.Component<WithRoutesDataProps> {
@@ -40,7 +34,7 @@ export const withRoutesData = (WrappedComponent: React.ComponentType<any>) => {
 
   HOC.displayName = `WithRoutesData(${getDisplayName(WrappedComponent)})`;
 
-  return withNamespace(connect(mapStateToProps)(HOC));
+  return connect(mapStateToProps)(HOC);
 };
 
 function getDisplayName(WrappedComponent: React.ComponentType<any>) {

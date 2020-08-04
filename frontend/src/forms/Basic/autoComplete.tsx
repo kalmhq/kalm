@@ -100,12 +100,14 @@ const KFreeSoloAutoCompleteMultiValuesRaw = (props: KFreeSoloAutoCompleteMultiVa
         // So if the blur event is trigger, it will set input value(wrong value) as the autocomplete value
         // As a result, Field that is using this component mush not set a normalizer.
         (input.onBlur as any)();
-        setInputText("");
       }}
       value={input.value}
       onChange={(_event: React.ChangeEvent<{}>, values) => {
         if (values) {
           input.onChange(values);
+          if (values.length !== 0) {
+            setInputText("");
+          }
         }
       }}
       inputValue={inputText}
@@ -302,6 +304,7 @@ function KAutoCompleteSingleValueRaw<T>(props: KAutoCompleteSingleValueProps<KAu
       noOptionsText={noOptionsText}
       groupBy={(option) => option.group}
       options={options}
+      size="small"
       filterOptions={createFilterOptions({
         ignoreCase: true,
         matchFrom: "any",
@@ -478,7 +481,7 @@ export const KAutoCompleteMultipleSelectField = (props: KAutoCompleteMultipleSel
 };
 
 interface KFreeSoloAutoCompleteMultipleSelectFieldProps
-  extends Pick<BaseFieldProps, "validate" | "name">,
+  extends Pick<BaseFieldProps, "validate" | "name" | "normalize">,
     CommonOutlinedTextFiedlProps {
   options?: string[];
   icons?: Immutable.List<JSX.Element | undefined>;
@@ -497,7 +500,9 @@ const KFreeSoloAutoCompleteMultipleSelectFieldParse = (values: any[]) => {
   return Immutable.List(values);
 };
 
-export const KFreeSoloAutoCompleteMultipleSelectField = (props: KFreeSoloAutoCompleteMultipleSelectFieldProps) => {
+export const KFreeSoloAutoCompleteMultipleSelectStringField = (
+  props: KFreeSoloAutoCompleteMultipleSelectFieldProps,
+) => {
   return (
     <Field
       InputLabelProps={{

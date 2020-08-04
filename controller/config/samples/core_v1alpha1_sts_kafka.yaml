@@ -45,7 +45,7 @@ spec:
         size: 512Mi
         persistentVolumeClaimName: kakfa-data
     ports:
-      - name: kafka
+      - protocol: tcp
         containerPort: 9092
         servicePort: 9092
     livenessProbe:

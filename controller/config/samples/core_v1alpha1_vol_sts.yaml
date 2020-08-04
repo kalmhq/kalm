@@ -25,6 +25,6 @@ spec:
         size: 2Mi
         type: emptyDirMemory
     ports:
-        - name: http
+        - protocol: http
           containerPort: 80
           servicePort: 80

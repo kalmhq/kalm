@@ -31,6 +31,8 @@ import { CIPage } from "pages/CI";
 import { DeployKeyNewPage } from "pages/CI/New";
 import { CertificateNewPage } from "pages/Certificate/New";
 import { CertificateEditPage } from "pages/Certificate/Edit";
+import { NewEndpointPage } from "pages/SSO/NewEndpoint";
+import { EditEndpointPage } from "pages/SSO/EditEndpoint";
 
 const RequireAuthorizatedDashboard = RequireAuthorizated(DashboardLayout);
 
@@ -43,6 +45,9 @@ export const KalmRoutes = (
         <Switch>
           <Route exact path="/sso" component={SSOPage} />
           <Route exact path="/sso/config" component={SSOConfigPage} />
+          <Route exact path="/sso/endpoints/new" component={NewEndpointPage} />
+          <Route exact path="/sso/endpoints/:name/edit" component={EditEndpointPage} />
+
           <Route exact path="/cluster/nodes" component={NodeListPage} />
           <Route exact path="/cluster/loadbalancer" component={LoadBalancerInfoPage} />
           <Route exact path="/cluster/disks" component={DiskListPage} />
@@ -58,13 +63,9 @@ export const KalmRoutes = (
             component={RequireNamespaceReader(ApplicationShowPage)}
           />
 
-          <Route exact path="/applications/:applicationName/routes" component={RequireNamespaceReader(RouteListPage)} />
-          <Route
-            exact
-            path="/applications/:applicationName/routes/new"
-            component={RequireNamespaceReader(RouteNewPage)}
-          />
-          <Route exact path="/applications/:applicationName/routes/:name/edit" component={RouteEditPage} />
+          <Route exact path="/routes" component={RequireNamespaceReader(RouteListPage)} />
+          <Route exact path="/routes/new" component={RequireNamespaceReader(RouteNewPage)} />
+          <Route exact path="/routes/:name/edit" component={RouteEditPage} />
 
           <Route exact path="/applications/:applicationName/components" component={ComponentListPage} />
           <Route exact path="/applications/:applicationName/components/new" component={ComponentNewPage} />

@@ -1,19 +1,16 @@
 import { Button, Grid, Box } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
 import { createCertificateIssuerAction } from "actions/certificate";
-import { KAutoCompleteSingleValue, KFreeSoloAutoCompleteMultipleSelectField } from "forms/Basic/autoComplete";
-import { KRadioGroupRender } from "forms/Basic/radio";
-import { KRenderDebounceTextField } from "forms/Basic/textfield";
 import { Uploader } from "forms/Basic/uploader";
 import { ValidatorRequired, KValidatorHostsWithWildcardPrefix } from "forms/validator";
 import Immutable from "immutable";
 import { extractDomainsFromCertificateContent } from "permission/utils";
 import React from "react";
-import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { InjectedFormProps } from "redux-form";
 import { Field, formValueSelector, getFormSyncErrors, reduxForm } from "redux-form/immutable";
 import { TDispatchProp } from "types";
+import sc from "../../utils/stringConstants";
 import {
   caForTest,
   CertificateFormType,
@@ -25,11 +22,14 @@ import {
   newEmptyCertificateIssuerForm,
   selfManaged,
 } from "types/certificate";
-import sc from "utils/stringConstants";
+import { KAutoCompleteSingleValue, KFreeSoloAutoCompleteMultipleSelectStringField } from "forms/Basic/autoComplete";
+import { CertificateIssuerForm } from "forms/Certificate/issuerForm";
 import DomainStatus from "widgets/DomainStatus";
+import { KRenderDebounceTextField } from "forms/Basic/textfield";
+import { KRadioGroupRender } from "forms/Basic/radio";
+import { connect } from "react-redux";
 import { Prompt } from "widgets/Prompt";
 import { CERTIFICATE_FORM_ID, ISSUER_FORM_ID } from "../formIDs";
-import { CertificateIssuerForm } from "./issuerForm";
 import { Caption } from "widgets/Label";
 import { Link } from "react-router-dom";
 import { KPanel } from "widgets/KPanel";
@@ -316,7 +316,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
                   />
                 </Grid>
                 <Grid item md={12}>
-                  <KFreeSoloAutoCompleteMultipleSelectField
+                  <KFreeSoloAutoCompleteMultipleSelectStringField
                     disabled={managedType === selfManaged}
                     helperText={
                       <Caption color="textSecondary">

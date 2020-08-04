@@ -23,6 +23,7 @@ import {
   KalmIngressIcon,
   KalmNodeIcon,
   KalmRegistryIcon,
+  KalmRoutesIcon,
   KalmVolumeIcon,
   SettingIcon,
 } from "widgets/Icon";
@@ -118,6 +119,11 @@ const sideBarData = [
         icon: KalmCertificatesIcon,
         text: "Certificates",
         to: "/certificates",
+      },
+      {
+        text: "Routes",
+        to: "/routes",
+        icon: KalmRoutesIcon,
       },
       {
         icon: CIIcon,
