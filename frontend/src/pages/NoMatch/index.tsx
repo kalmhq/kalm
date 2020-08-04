@@ -25,7 +25,6 @@ export const NoMatch = withRouter(connect()(NoMatchRaw));
 const styles = (theme: Theme) =>
   createStyles({
     root: {
-      backgroundColor: "rgb(245, 245, 245);",
       height: "100vh",
       display: "flex",
       alignItems: "center",
