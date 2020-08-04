@@ -37,6 +37,7 @@ import { Prompt } from "widgets/Prompt";
 import { RenderHttpRouteConditions } from "./conditions";
 import { RenderHttpRouteDestinations } from "./destinations";
 import { includesForceHttpsDomain } from "utils/domain";
+import stringConstants from "utils/stringConstants";
 
 const mapStateToProps = (state: RootState) => {
   const form = ROUTE_FORM_ID;
@@ -138,7 +139,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
 
     // for dev, app domains auto enable https
     if (!schemes.includes("https")) {
-      if (includesForceHttpsDomain(hosts)) {
+      if (includesForceHttpsDomain(hosts).length > 0) {
         if (schemes.includes("http")) {
           dispatch(change(form, "schemes", Immutable.List(["http", "https"])));
         } else {
@@ -348,6 +349,8 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
       syncErrors,
     } = this.props;
 
+    const hstsDomains = includesForceHttpsDomain(hosts);
+
     const icons = hosts.map((host, index) => {
       if (isArray(syncErrors.hosts) && syncErrors.hosts[index]) {
         return undefined;
@@ -471,9 +474,15 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                       <Alert className="alert" severity="info">
                         {sc.ROUTE_HTTPS_ALERT}
                       </Alert>
-                      {includesForceHttpsDomain(hosts) ? (
+                      {hstsDomains.length > 0 ? (
                         <Alert className="alert" severity="warning">
-                          The .dev and .app top-level domains is included on the HSTS preload list, HTTPS is required.
+                          <Box display="flex">
+                            The
+                            <Box ml="4px" mr="4px">
+                              <strong>{hstsDomains.join(", ")}</strong>
+                            </Box>
+                            {stringConstants.HSTS_DOMAINS_REQUIRED_HTTPS}
+                          </Box>
                         </Alert>
                       ) : null}
                       {this.renderCertificationStatus()}
