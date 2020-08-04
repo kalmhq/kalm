@@ -89,14 +89,14 @@ func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
 	}
 
 	if kClient, err := client.New(h.clientManager.ClusterConfig, client.Options{Scheme: scheme.Scheme}); err != nil {
-		h.logger.Warnf("fail create client from clusterConfig, err:", err)
+		h.logger.Warnln("fail create client from clusterConfig, err:", err)
 	} else {
 		var deployKeyList v1alpha1.DeployKeyList
 
 		ctx := context.Background()
 
 		if err := kClient.List(ctx, &deployKeyList); err != nil {
-			h.logger.Warnf("fail to list deployKeys, err:", copiedComp.Name, updateTs)
+			h.logger.Warnf("fail to list deployKeys, err:", err)
 		}
 
 		for _, key := range deployKeyList.Items {
@@ -109,7 +109,7 @@ func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
 			copiedKey.Status.UsedCount += 1
 
 			if err := kClient.Status().Update(ctx, copiedKey); err != nil {
-				h.logger.Warnf("fail update status of deployKeys, err:", err)
+				h.logger.Warnln("fail update status of deployKeys, err:", err)
 			}
 			break
 		}
