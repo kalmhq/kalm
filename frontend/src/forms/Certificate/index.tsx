@@ -1,6 +1,9 @@
+import { createCertificateIssuerAction } from "actions/certificate";
 import { Button, Grid, Box } from "@material-ui/core";
 import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
-import { createCertificateIssuerAction } from "actions/certificate";
+import { KAutoCompleteSingleValue, KFreeSoloAutoCompleteMultipleSelectStringField } from "forms/Basic/autoComplete";
+import { KRadioGroupRender } from "forms/Basic/radio";
+import { KRenderDebounceTextField } from "forms/Basic/textfield";
 import { Uploader } from "forms/Basic/uploader";
 import { ValidatorRequired, KValidatorHostsWithWildcardPrefix } from "forms/validator";
 import Immutable from "immutable";
@@ -22,11 +25,8 @@ import {
   newEmptyCertificateIssuerForm,
   selfManaged,
 } from "types/certificate";
-import { KAutoCompleteSingleValue, KFreeSoloAutoCompleteMultipleSelectStringField } from "forms/Basic/autoComplete";
 import { CertificateIssuerForm } from "forms/Certificate/issuerForm";
 import DomainStatus from "widgets/DomainStatus";
-import { KRenderDebounceTextField } from "forms/Basic/textfield";
-import { KRadioGroupRender } from "forms/Basic/radio";
 import { connect } from "react-redux";
 import { Prompt } from "widgets/Prompt";
 import { CERTIFICATE_FORM_ID, ISSUER_FORM_ID } from "../formIDs";
