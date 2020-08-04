@@ -479,7 +479,7 @@ export const KAutoCompleteMultipleSelectField = (props: KAutoCompleteMultipleSel
 };
 
 interface KFreeSoloAutoCompleteMultipleSelectFieldProps
-  extends Pick<BaseFieldProps, "validate" | "name">,
+  extends Pick<BaseFieldProps, "validate" | "name" | "normalize">,
     CommonOutlinedTextFiedlProps {
   options?: string[];
   icons?: Immutable.List<JSX.Element | undefined>;
@@ -498,7 +498,9 @@ const KFreeSoloAutoCompleteMultipleSelectFieldParse = (values: any[]) => {
   return Immutable.List(values);
 };
 
-export const KFreeSoloAutoCompleteMultipleSelectField = (props: KFreeSoloAutoCompleteMultipleSelectFieldProps) => {
+export const KFreeSoloAutoCompleteMultipleSelectStringField = (
+  props: KFreeSoloAutoCompleteMultipleSelectFieldProps,
+) => {
   return (
     <Field
       InputLabelProps={{

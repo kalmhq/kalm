@@ -1,21 +1,16 @@
-import { Button, Grid } from "@material-ui/core";
-import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/styles";
+import { Grid } from "@material-ui/core";
+import { createStyles, Theme, WithStyles } from "@material-ui/core/styles";
 import { createCertificateIssuerAction } from "actions/certificate";
-import { closeDialogAction } from "actions/dialog";
-import { KAutoCompleteSingleValue, KFreeSoloAutoCompleteMultipleSelectField } from "forms/Basic/autoComplete";
-import { KRadioGroupRender } from "forms/Basic/radio";
-import { KRenderDebounceTextField } from "forms/Basic/textfield";
 import { Uploader } from "forms/Basic/uploader";
 import { ValidatorRequired } from "forms/validator";
 import Immutable from "immutable";
-import { addCertificateDialogId } from "pages/Certificate/New";
 import { extractDomainsFromCertificateContent } from "permission/utils";
 import React from "react";
-import { connect } from "react-redux";
 import { RootState } from "reducers";
 import { InjectedFormProps } from "redux-form";
 import { Field, formValueSelector, getFormSyncErrors, reduxForm } from "redux-form/immutable";
 import { TDispatchProp } from "types";
+import sc from "../../utils/stringConstants";
 import {
   caForTest,
   CertificateFormType,
@@ -27,11 +22,18 @@ import {
   newEmptyCertificateIssuerForm,
   selfManaged,
 } from "types/certificate";
-import sc from "utils/stringConstants";
-import DomainStatus from "widgets/DomainStatus";
-import { Prompt } from "widgets/Prompt";
 import { CERTIFICATE_FORM_ID, ISSUER_FORM_ID } from "../formIDs";
-import { CertificateIssuerForm } from "./issuerForm";
+import Button from "@material-ui/core/Button";
+import { KAutoCompleteSingleValue, KFreeSoloAutoCompleteMultipleSelectStringField } from "forms/Basic/autoComplete";
+import { CertificateIssuerForm } from "forms/Certificate/issuerForm";
+import DomainStatus from "widgets/DomainStatus";
+import { KRenderDebounceTextField } from "forms/Basic/textfield";
+import { KRadioGroupRender } from "forms/Basic/radio";
+import withStyles from "@material-ui/core/styles/withStyles";
+import { connect } from "react-redux";
+import { addCertificateDialogId } from "pages/Certificate/New";
+import { closeDialogAction } from "actions/dialog";
+import { Prompt } from "widgets/Prompt";
 
 const mapStateToProps = (state: RootState, { form }: OwnProps) => {
   const selector = formValueSelector(form || CERTIFICATE_FORM_ID);
@@ -297,7 +299,7 @@ class CertificateFormRaw extends React.PureComponent<Props, State> {
             />
           </Grid>
           <Grid item md={12}>
-            <KFreeSoloAutoCompleteMultipleSelectField
+            <KFreeSoloAutoCompleteMultipleSelectStringField
               disabled={managedType === selfManaged}
               placeholder={
                 managedType === selfManaged

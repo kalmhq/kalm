@@ -5,7 +5,7 @@ import {
   ApplicationComponentDetails,
   ApplicationDetails,
   ApplicationPlugin,
-  ComponentPlugin,
+  ComponentPlugin
 } from "types/application";
 import { LoginStatus } from "types/authorization";
 import {
@@ -14,7 +14,7 @@ import {
   CertificateIssuer,
   CertificateIssuerFormType,
   CertificateIssuerList,
-  CertificateList,
+  CertificateList
 } from "types/certificate";
 import { ClusterInfo } from "types/cluster";
 import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
@@ -143,6 +143,8 @@ export abstract class Api {
   public abstract listProtectedEndpoints(): Promise<Immutable.List<ProtectedEndpoint>>;
 
   public abstract createProtectedEndpoint(protectedEndpoint: ProtectedEndpoint): Promise<ProtectedEndpoint>;
+
+  public abstract updateProtectedEndpoint(protectedEndpoint: ProtectedEndpoint): Promise<ProtectedEndpoint>;
 
   public abstract deleteProtectedEndpoint(protectedEndpoint: ProtectedEndpoint): Promise<void>;
 

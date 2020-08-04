@@ -29,6 +29,8 @@ import { SSOPage } from "pages/SSO";
 import { SSOConfigPage } from "pages/SSO/Config";
 import { CIPage } from "pages/CI";
 import { DeployKeyNewPage } from "pages/CI/New";
+import { NewEndpointPage } from "pages/SSO/NewEndpoint";
+import { EditEndpointPage } from "pages/SSO/EditEndpoint";
 
 const RequireAuthorizatedDashboard = RequireAuthorizated(DashboardLayout);
 
@@ -41,6 +43,9 @@ export const KalmRoutes = (
         <Switch>
           <Route exact path="/sso" component={SSOPage} />
           <Route exact path="/sso/config" component={SSOConfigPage} />
+          <Route exact path="/sso/endpoints/new" component={NewEndpointPage} />
+          <Route exact path="/sso/endpoints/:name/edit" component={EditEndpointPage} />
+
           <Route exact path="/cluster/nodes" component={NodeListPage} />
           <Route exact path="/cluster/loadbalancer" component={LoadBalancerInfoPage} />
           <Route exact path="/cluster/disks" component={DiskListPage} />

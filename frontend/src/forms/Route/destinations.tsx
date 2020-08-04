@@ -59,23 +59,6 @@ class RenderHttpRouteDestinationsRaw extends React.PureComponent<Props> {
           ns !== "istio-operator"
         );
       })
-      .sort((a, b): number => {
-        const aNamespace = a.get("namespace");
-        if (aNamespace === activeNamespace) {
-          return -1;
-        }
-
-        const bNamespace = b.get("namespace");
-        if (bNamespace === activeNamespace) {
-          return 1;
-        }
-
-        if (aNamespace === bNamespace) {
-          return a.get("name").localeCompare(b.get("name"));
-        } else {
-          return aNamespace.localeCompare(bNamespace);
-        }
-      })
       .forEach((svc) => {
         svc
           .get("ports")

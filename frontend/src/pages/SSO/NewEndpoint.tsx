@@ -28,9 +28,9 @@ class NewEndpointPageRaw extends React.PureComponent<Props, State> {
     this.state = {};
   }
 
-  private onSubmit = (values: ProtectedEndpoint) => {
+  private onSubmit = async (values: ProtectedEndpoint) => {
     const { dispatch } = this.props;
-    return dispatch(createProtectedEndpointAction(values));
+    await dispatch(createProtectedEndpointAction(values));
   };
 
   private onSubmitSuccess = () => {

@@ -3,7 +3,7 @@ import { createStyles, Theme, withStyles, WithStyles } from "@material-ui/core/s
 import Typography from "@material-ui/core/Typography";
 import { Alert, AlertTitle } from "@material-ui/lab";
 import { loadDomainDNSInfo } from "actions/domain";
-import { KFreeSoloAutoCompleteMultipleSelectField } from "forms/Basic/autoComplete";
+import { KFreeSoloAutoCompleteMultipleSelectStringField } from "forms/Basic/autoComplete";
 import { KBoolCheckboxRender, KCheckboxGroupRender } from "forms/Basic/checkbox";
 import { KRadioGroupRender } from "forms/Basic/radio";
 import { shouldError } from "forms/common";
@@ -344,7 +344,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                 title="Hosts and paths"
                 content={
                   <Box p={2}>
-                    <KFreeSoloAutoCompleteMultipleSelectField
+                    <KFreeSoloAutoCompleteMultipleSelectStringField
                       icons={icons}
                       label="Hosts"
                       name="hosts"
@@ -368,7 +368,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
                         </Caption>
                       }
                     />
-                    <KFreeSoloAutoCompleteMultipleSelectField
+                    <KFreeSoloAutoCompleteMultipleSelectStringField
                       label="Path Prefixes"
                       name="paths"
                       validate={pathsValidators}

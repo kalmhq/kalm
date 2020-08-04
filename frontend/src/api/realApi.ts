@@ -338,6 +338,16 @@ export default class RealApi extends Api {
     return Immutable.fromJS(res.data);
   };
 
+  public updateProtectedEndpoint = async (protectedEndpoint: ProtectedEndpoint): Promise<ProtectedEndpoint> => {
+    const res = await axiosRequest({
+      method: "put",
+      url: `/${K8sApiVersion}/protectedendpoints`,
+      data: protectedEndpoint,
+    });
+
+    return Immutable.fromJS(res.data);
+  };
+
   public deleteProtectedEndpoint = async (protectedEndpoint: ProtectedEndpoint): Promise<void> => {
     await axiosRequest({ method: "delete", url: `/${K8sApiVersion}/protectedendpoints`, data: protectedEndpoint });
   };

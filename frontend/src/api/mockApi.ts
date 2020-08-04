@@ -247,6 +247,10 @@ export default class MockApi extends Api {
     return Immutable.Map();
   };
 
+  public updateProtectedEndpoint = async (protectedEndpoint: ProtectedEndpoint): Promise<ProtectedEndpoint> => {
+    return Immutable.Map();
+  };
+
   public deleteProtectedEndpoint = async (protectedEndpoint: ProtectedEndpoint): Promise<void> => {};
 
   public listDeployKeys = async (): Promise<Immutable.List<DeployKey>> => {
