@@ -78,8 +78,11 @@ func (builder *Builder) GetProtectedEndpointsChannel(listOptions ...client.ListO
 }
 
 type ProtectedEndpoint struct {
-	Namespace    string `json:"namespace"`
-	EndpointName string `json:"endpointName"`
+	Name         string   `json:"name"`
+	Namespace    string   `json:"namespace"`
+	EndpointName string   `json:"endpointName"`
+	Ports        []uint32 `json:"ports,omitempty"`
+	Groups       []string `json:"groups,omitempty"`
 }
 
 type SSOConfig struct {
@@ -140,8 +143,11 @@ func (builder *Builder) DeleteSSOConfig() error {
 
 func ProtectedEndpointCRDToProtectedEndpoint(endpoint *v1alpha1.ProtectedEndpoint) *ProtectedEndpoint {
 	return &ProtectedEndpoint{
+		Name:         endpoint.Name,
 		Namespace:    endpoint.Namespace,
 		EndpointName: endpoint.Spec.EndpointName,
+		Ports:        endpoint.Spec.Ports,
+		Groups:       endpoint.Spec.Groups,
 	}
 }
 
@@ -177,10 +183,38 @@ func (builder *Builder) CreateProtectedEndpoint(ep *ProtectedEndpoint) (*Protect
 		},
 		Spec: v1alpha1.ProtectedEndpointSpec{
 			EndpointName: ep.EndpointName,
+			Ports:        ep.Ports,
+			Groups:       ep.Groups,
 		},
 	}
 
 	err := builder.Create(endpoint)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return ProtectedEndpointCRDToProtectedEndpoint(endpoint), nil
+}
+
+func (builder *Builder) UpdateProtectedEndpoint(ep *ProtectedEndpoint) (*ProtectedEndpoint, error) {
+	endpoint := &v1alpha1.ProtectedEndpoint{
+		TypeMeta: metaV1.TypeMeta{
+			Kind:       "ProtectedEndpoint",
+			APIVersion: "core.kalm.dev/v1alpha1",
+		},
+		ObjectMeta: metaV1.ObjectMeta{
+			Namespace: ep.Namespace,
+			Name:      getProtectedEndpointCRDNameFromEndpointName(ep.EndpointName),
+		},
+		Spec: v1alpha1.ProtectedEndpointSpec{
+			EndpointName: ep.EndpointName,
+			Ports:        ep.Ports,
+			Groups:       ep.Groups,
+		},
+	}
+
+	err := builder.Apply(endpoint)
 
 	if err != nil {
 		return nil, err
