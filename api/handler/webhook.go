@@ -77,7 +77,10 @@ func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
 		copiedComp.Annotations = make(map[string]string)
 	}
 
-	copiedComp.Annotations[controllers.AnnoLastUpdatedByWebhook] = strconv.Itoa(int(time.Now().Unix()))
+	updateTs := int(time.Now().Unix())
+	copiedComp.Annotations[controllers.AnnoLastUpdatedByWebhook] = strconv.Itoa(updateTs)
+
+	h.logger.Infof("updating component: %s at %d", copiedComp.Name, updateTs)
 
 	if err := builder.Patch(copiedComp, client.MergeFrom(crdComp)); err != nil {
 		return err
