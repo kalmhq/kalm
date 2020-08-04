@@ -78,7 +78,7 @@ export const RequireRoleInNamespce = ({ requiredRole }: Options) => (WrappedComp
         );
       }
 
-      if (!activeApplication || (!isAdmin && !activeApplication.get("roles").find((x) => x === requiredRole))) {
+      if (activeApplication && !isAdmin && !activeApplication.get("roles").find((x) => x === requiredRole)) {
         return (
           <BasePage>
             <Box p={2}>
