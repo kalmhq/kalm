@@ -5,7 +5,8 @@
  * replace this with a sophisticated solution if Localization is ever needed.
  */
 const stringConstants = {
-  APP_NAME: "Kalm", LIMIT_NOT_SET: "Limit Not Set",
+  APP_NAME: "Kalm",
+  LIMIT_NOT_SET: "Limit Not Set",
   REQUEST_NOT_SET: "Request Not Set",
   NAME_RULE: "Names can only use digits(0-9), lowercase letters(a-z), and dashes(-). Maximum length is 180 characters.",
   PORT_ROUTE_QUESTION: "Want to have your container accessible to external sources?",
@@ -102,8 +103,10 @@ const stringConstants = {
   APP_TUTORIAL_TOOLTIPS: "Toggle tutorial",
   APP_AUTH_TOOLTIPS: "Auth menu",
   APP_DASHBOARD_PAGE_NAME: "Dashboard",
-  PROTECTED_ENDPOINT_PORT: "Select the ports you want to protect. Leave blank to protected any ports of the selected component.",
-  PROTECTED_ENDPOINT_SPECIFIC_GROUPS: "Select the groups you want to grant access permissions for the selected component. Leave blank to allow any sso member.",
+  PROTECTED_ENDPOINT_PORT:
+    "Select the ports you want to protect. Leave blank to protected any ports of the selected component.",
+  PROTECTED_ENDPOINT_SPECIFIC_GROUPS:
+    "Select the groups you want to grant access permissions for the selected component. Leave blank to allow any sso member.",
   CANT_NOT_EDIT: "Can NOT edit this field",
 };
 
