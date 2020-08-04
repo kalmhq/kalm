@@ -17,14 +17,14 @@ const (
 type PortProtocol string
 
 const (
-	PortProtocolHTTP  PortProtocol = "http"
-	PortProtocolHTTPS PortProtocol = "https"
-	PortProtocolHTTP2 PortProtocol = "http2"
-	PortProtocolGRPC  PortProtocol = "grpc"
-	PortProtocolGRPCWEB  PortProtocol = "grpc-web"
-	PortProtocolTCP   PortProtocol = "tcp"
-	PortProtocolUDP   PortProtocol = "udp"
-	PortProtocolUnknown   PortProtocol = "unknown"
+	PortProtocolHTTP    PortProtocol = "http"
+	PortProtocolHTTPS   PortProtocol = "https"
+	PortProtocolHTTP2   PortProtocol = "http2"
+	PortProtocolGRPC    PortProtocol = "grpc"
+	PortProtocolGRPCWEB PortProtocol = "grpc-web"
+	PortProtocolTCP     PortProtocol = "tcp"
+	PortProtocolUDP     PortProtocol = "udp"
+	PortProtocolUnknown PortProtocol = "unknown"
 )
 
 // EnvVar represents an environment variable present in a Container.
