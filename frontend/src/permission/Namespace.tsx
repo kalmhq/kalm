@@ -8,6 +8,7 @@ import { getDisplayName } from "./utils";
 import { setCurrentNamespaceAction } from "actions/namespaces";
 import { BasePage } from "pages/BasePage";
 import { Box } from "@material-ui/core";
+import { ResourceNotFound } from "widgets/ResourceNotFound";
 
 const mapStateToProps = (state: RootState, props: any) => {
   const applicationsRoot = state.get("applications");
@@ -78,7 +79,17 @@ export const RequireRoleInNamespce = ({ requiredRole }: Options) => (WrappedComp
       }
 
       if (!activeApplication || (!isAdmin && !activeApplication.get("roles").find((x) => x === requiredRole))) {
-        return <BasePage>Please create a application first</BasePage>;
+        return (
+          <BasePage>
+            <Box p={2}>
+              <ResourceNotFound
+                text="App not found"
+                redirect={`/applications`}
+                redirectText="Go back to Apps List"
+              ></ResourceNotFound>
+            </Box>
+          </BasePage>
+        );
       }
 
       return <WrappedComponent {...this.props} />;
