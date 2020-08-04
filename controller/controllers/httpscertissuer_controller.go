@@ -37,6 +37,8 @@ import (
 	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"time"
 
 	cmv1alpha2 "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
@@ -91,11 +93,44 @@ func NewHttpsCertIssuerReconciler(mgr ctrl.Manager) *HttpsCertIssuerReconciler {
 	}
 }
 
+type CertManagerNSWatcher struct {
+	*HttpsCertIssuerReconciler
+}
+
+func (c CertManagerNSWatcher) Map(object handler.MapObject) []reconcile.Request {
+	if object.Meta.GetName() != CertManagerNamespace {
+		return nil
+	}
+
+	// creation of cert-manager ns triggers reconciliation
+	allCertIssuer := corev1alpha1.HttpsCertIssuerList{}
+	err := c.HttpsCertIssuerReconciler.List(context.Background(), &allCertIssuer)
+	if err != nil {
+		c.Log.Error(err, "fail to list httpsCertIssuers")
+		return nil
+	}
+
+	var reqs []reconcile.Request
+	for _, issuer := range allCertIssuer.Items {
+		reqs = append(reqs, reconcile.Request{
+			NamespacedName: types.NamespacedName{
+				// HttpsCertIssuer is Cluster Scope
+				Name: issuer.Name,
+			},
+		})
+	}
+
+	return reqs
+}
+
 func (r *HttpsCertIssuerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&corev1alpha1.HttpsCertIssuer{}).
 		Owns(&cmv1alpha2.Issuer{}).
 		Owns(&corev1.Secret{}).
+		Watches(genSourceForObject(&corev1.Namespace{}), &handler.EnqueueRequestsFromMapFunc{
+			ToRequests: CertManagerNSWatcher{r},
+		}).
 		Complete(r)
 }
 
