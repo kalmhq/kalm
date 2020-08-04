@@ -1,3 +1,9 @@
+/**
+ * Put UI strings in this file either to avoid inconsistencies
+ * or if you would like for a piece of copy to be reviewed.
+ * This flat strings map is probably sufficient for now, but we should
+ * replace this with a sophisticated solution if Localization is ever needed.
+ */
 const stringConstants = {
   APP_NAME: "Kalm",
   LIMIT_NOT_SET: "Limit Not Set",
@@ -77,9 +83,10 @@ const stringConstants = {
     "Data and metrics regarding nodes in the cluster is displayed here. For cluster administration operations, please see platform specific instructions.",
   ROUTE_HOSTS_INPUT_HELPER:
     "If you don't have any DNS record point to this ip, you can use the ip directly in this field.",
-  ROUTE_PATHS_INPUT_HELPER: 'Allow to configure multiple paths. Each path must begin with "/".',
-  ROUTE_STRIP_PATH_LABEL: "Path Prefix should be stripped",
-  ROUTE_STRIP_PATH_HELPER: 'If enabled, Path prefixes will be rewrite to "/" when request reaches targets.',
+  ROUTE_PATHS_INPUT_HELPER: 'Add paths to be handled. Root("/") added by default. Each path must begin with "/".',
+  ROUTE_STRIP_PATH_LABEL: "Strip Path Prefix from request",
+  ROUTE_STRIP_PATH_HELPER:
+    'Rewrite request so the path is "/". Useful for targets which expects to get requests to root path.',
   ROUTE_HTTP_METHOD_ALL: "All http methods are allowed in this route.",
   ROUTE_HTTP_METHOD_CUSTOM: "Choose allowed methods manually.",
   ROUTE_HTTP_CUSTOM_TITLE: "Choose methods you need",
@@ -90,6 +97,7 @@ const stringConstants = {
   DISKS_INFOBOX_BOX1:
     "You don't need to apply disk manually. Disk will be created when you declare authentic disks in component form.",
   HSTS_DOMAINS_REQUIRED_HTTPS: "domains is included on the HSTS preload list, HTTPS is required.",
+  APP_DASHBOARD_PAGE_NAME: "Dashboard",
 };
 
 export default stringConstants;

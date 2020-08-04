@@ -12,6 +12,7 @@ import { blinkTopProgressAction, setSettingsAction } from "actions/settings";
 import { APP_BAR_HEIGHT, APP_BAR_ZINDEX } from "./Constants";
 import { HelpIcon, KalmUserIcon, MenuOpenIcon, MenuIcon } from "widgets/Icon";
 import { ThemeToggle } from "theme/ThemeToggle";
+import sc from "utils/stringConstants";
 
 const mapStateToProps = (state: RootState) => {
   const activeNamespace = state.get("namespaces").get("active");
@@ -183,11 +184,13 @@ class AppBarComponentRaw extends React.PureComponent<Props, State> {
     switch (path) {
       case "applications":
       case "":
-        return "Applications";
+        return "Apps";
       case "sso":
         return "SSO";
       case "ci":
         return "CI";
+      case "metrics":
+        return sc.APP_DASHBOARD_PAGE_NAME;
       default:
         return path[0].toUpperCase() + path.slice(1);
     }

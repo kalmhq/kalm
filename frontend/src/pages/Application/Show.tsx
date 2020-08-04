@@ -2,12 +2,13 @@ import { Box, createStyles, Theme, WithStyles, withStyles } from "@material-ui/c
 import React from "react";
 import { connect } from "react-redux";
 import { ApplicationSidebar } from "pages/Application/ApplicationSidebar";
-import { H6 } from "widgets/Label";
+import { Body } from "widgets/Label";
 import { Namespaces } from "widgets/Namespaces";
 import { BasePage } from "../BasePage";
 import { ApplicationOverview } from "./Detail";
 import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 import { RootState } from "reducers";
+import sc from "utils/stringConstants";
 
 const mapStateToProps = (_state: RootState) => {
   return {};
@@ -25,7 +26,7 @@ class ApplicationShowRaw extends React.PureComponent<Props> {
     return (
       <BasePage
         secondHeaderLeft={<Namespaces />}
-        secondHeaderRight={<H6>Metrics</H6>}
+        secondHeaderRight={<Body>{sc.APP_DASHBOARD_PAGE_NAME}</Body>}
         leftDrawer={<ApplicationSidebar />}
       >
         <Box p={2}>
