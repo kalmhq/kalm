@@ -35,7 +35,10 @@ import { Caption } from "widgets/Label";
 import { Prompt } from "widgets/Prompt";
 import { RenderHttpRouteConditions } from "./conditions";
 import { RenderHttpRouteDestinations } from "./destinations";
+import { CollapseWrapper } from "widgets/CollapseWrapper";
+import stringConstants from "utils/stringConstants";
 import { includesForceHttpsDomain } from "utils/domain";
+import routesGif from "images/routes.gif";
 
 const mapStateToProps = (state: RootState) => {
   const form = ROUTE_FORM_ID;
@@ -282,7 +285,7 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
     return (
       <Box p={2}>
         <Grid container spacing={2}>
-          <Grid item xs={8}>
+          <Grid item xs={12} sm={12} md={12}>
             <Box mt={2} mr={2} mb={2}>
               <Button
                 variant="outlined"
@@ -317,6 +320,16 @@ class RouteFormRaw extends React.PureComponent<Props, State> {
               rerenderOnEveryChange
               validate={ValidatorHttpRouteDestinations}
             />
+          </Grid>
+          <Grid item xs={8} sm={8} md={8}>
+            <CollapseWrapper title={stringConstants.ROUTE_MULTIPLE_TARGETS_HELPER}>
+              <Box m={2} style={{ display: "flex", flexDirection: "column", justifyContent: "center", height: "100%" }}>
+                <img src={routesGif} alt="routes with multi-target" width={233} height={133} />
+                <Box pt={2}>
+                  <Caption>{stringConstants.ROUTE_MULTIPLE_TARGETS_DESC}</Caption>
+                </Box>
+              </Box>
+            </CollapseWrapper>
           </Grid>
         </Grid>
       </Box>
