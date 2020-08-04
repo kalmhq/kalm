@@ -146,8 +146,8 @@ func (r *GatewayReconcilerTask) HttpGateway() error {
 			Hosts: []string{"*"},
 			Port: &istioNetworkingV1Beta1.Port{
 				Number:   80,
-				Protocol: "http",
-				Name:     "kalm-http",
+				Protocol: "HTTP",
+				Name:     "http-kalm",
 			},
 		},
 	}

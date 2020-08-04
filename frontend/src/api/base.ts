@@ -5,7 +5,7 @@ import {
   ApplicationComponentDetails,
   ApplicationDetails,
   ApplicationPlugin,
-  ComponentPlugin,
+  ComponentPlugin
 } from "types/application";
 import { LoginStatus } from "types/authorization";
 import {
@@ -14,7 +14,7 @@ import {
   CertificateIssuer,
   CertificateIssuerFormType,
   CertificateIssuerList,
-  CertificateList,
+  CertificateList
 } from "types/certificate";
 import { ClusterInfo } from "types/cluster";
 import { PersistentVolumes, StorageClasses, VolumeOptions } from "types/disk";
@@ -95,13 +95,13 @@ export abstract class Api {
   public abstract getComponentPlugins(): Promise<ComponentPlugin[]>;
 
   // routes
-  public abstract getHttpRoutes(namespace: string): Promise<Immutable.List<HttpRoute>>;
+  public abstract getHttpRoutes(): Promise<Immutable.List<HttpRoute>>;
 
-  public abstract updateHttpRoute(namespace: string, name: string, httpRoute: HttpRoute): Promise<HttpRoute>;
+  public abstract updateHttpRoute(httpRoute: HttpRoute): Promise<HttpRoute>;
 
-  public abstract createHttpRoute(namespace: string, httpRoute: HttpRoute): Promise<HttpRoute>;
+  public abstract createHttpRoute(httpRoute: HttpRoute): Promise<HttpRoute>;
 
-  public abstract deleteHttpRoute(namespace: string, name: string): Promise<boolean>;
+  public abstract deleteHttpRoute(httpRoute: HttpRoute): Promise<boolean>;
 
   public abstract deletePod(namespace: string, name: string): Promise<any>;
 
@@ -143,6 +143,8 @@ export abstract class Api {
   public abstract listProtectedEndpoints(): Promise<Immutable.List<ProtectedEndpoint>>;
 
   public abstract createProtectedEndpoint(protectedEndpoint: ProtectedEndpoint): Promise<ProtectedEndpoint>;
+
+  public abstract updateProtectedEndpoint(protectedEndpoint: ProtectedEndpoint): Promise<ProtectedEndpoint>;
 
   public abstract deleteProtectedEndpoint(protectedEndpoint: ProtectedEndpoint): Promise<void>;
 

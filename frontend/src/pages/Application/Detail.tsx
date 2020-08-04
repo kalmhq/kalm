@@ -13,6 +13,7 @@ import { KSelect } from "widgets/KSelect";
 import { BigCPULineChart, BigMemoryLineChart } from "widgets/SmallLineChart";
 import { KTable } from "widgets/Table";
 import { TimestampFilter } from "utils/date";
+import { withNamespace, WithNamespaceProps } from "hoc/withNamespace";
 
 const styles = (theme: Theme) =>
   createStyles({
@@ -120,7 +121,7 @@ const styles = (theme: Theme) =>
     },
   });
 
-interface Props extends WithStyles<typeof styles>, WithRoutesDataProps {}
+interface Props extends WithStyles<typeof styles>, WithNamespaceProps, WithRoutesDataProps {}
 
 interface State {
   chartDateFilter: string;
@@ -414,4 +415,4 @@ class DetailsRaw extends React.PureComponent<Props, State> {
   }
 }
 
-export const ApplicationOverview = withStyles(styles)(withRoutesData(DetailsRaw));
+export const ApplicationOverview = withStyles(styles)(withNamespace(withRoutesData(DetailsRaw)));

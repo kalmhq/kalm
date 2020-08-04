@@ -54,7 +54,7 @@ const ApplicationCardStyles = (theme: Theme) =>
 type ApplicationCardProps = {
   application: ApplicationDetails;
   componentsMap: Immutable.Map<string, Immutable.List<ApplicationComponentDetails>>;
-  routesMap: Immutable.Map<string, Immutable.List<HttpRoute>>;
+  httpRoutes: Immutable.List<HttpRoute>;
   activeNamespaceName: string;
   showDeleteConfirmDialog: (deletingApplicationListItem: ApplicationDetails) => void;
 } & CardProps &
@@ -100,17 +100,15 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
   };
 
   private renderExternalAccesses = () => {
-    const { routesMap, activeNamespaceName, application } = this.props;
+    const { httpRoutes, activeNamespaceName, application } = this.props;
 
-    const applicationRoutes: Immutable.List<HttpRoute> = routesMap.get(application.get("name"), Immutable.List());
-
-    if (applicationRoutes && applicationRoutes.size > 0) {
+    if (httpRoutes && httpRoutes.size > 0) {
       return (
         <PopupState variant="popover" popupId={application.get("name")}>
           {(popupState) => (
             <>
               <KMLink component="button" variant="body2" {...bindTrigger(popupState)}>
-                {pluralize("route", applicationRoutes.size)}
+                {pluralize("route", httpRoutes.size)}
               </KMLink>
               <Popover
                 style={{ zIndex: POPPER_ZINDEX }}
@@ -125,7 +123,7 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
                 }}
               >
                 <Box p={2}>
-                  <RouteWidgets routes={applicationRoutes} activeNamespaceName={activeNamespaceName} />
+                  <RouteWidgets routes={httpRoutes} activeNamespaceName={activeNamespaceName} />
                 </Box>
               </Popover>
             </>
@@ -191,8 +189,7 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
 
   private renderDoughnutChartStatus = () => {
     const pieChartData = this.getPieChartData();
-    const { routesMap, application } = this.props;
-    const applicationRoutes: Immutable.List<HttpRoute> = routesMap.get(application.get("name"), Immutable.List());
+    const { httpRoutes } = this.props;
     return (
       <Box display="flex" justifyContent={"space-around"}>
         <DoughnutChart
@@ -208,9 +205,9 @@ class ApplicationCardRaw extends React.PureComponent<ApplicationCardProps, {}> {
           icon={<KalmApplicationIcon />}
         />
         <DoughnutChart
-          title={pluralize("Route", applicationRoutes.size)}
+          title={pluralize("Route", httpRoutes.size)}
           labels={["Running"]}
-          data={[applicationRoutes.size]}
+          data={[httpRoutes.size]}
           icon={<KalmRoutesIcon />}
         />
       </Box>

@@ -14,7 +14,7 @@ metadata:
 spec:
   image: strm/helloworld-http:latest
   ports:
-    - name: http
+    - protocol: http
       containerPort: 80
       servicePort: 80
   volumes:
