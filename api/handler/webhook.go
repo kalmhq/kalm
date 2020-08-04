@@ -96,7 +96,7 @@ func (h *ApiHandler) handleDeployWebhookCall(c echo.Context) error {
 		ctx := context.Background()
 
 		if err := kClient.List(ctx, &deployKeyList); err != nil {
-			h.logger.Warnf("fail to list deployKeys, err:", err)
+			h.logger.Warnln("fail to list deployKeys, err:", err)
 		}
 
 		for _, key := range deployKeyList.Items {
